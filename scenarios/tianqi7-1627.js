@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v36-2026.04.19-houjin-strengthen-military-realism';
+  var SCENARIO_VERSION = 'v37-2026.04.19-character-locations-audit';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -5934,13 +5934,13 @@
         bio: '南直隶宜兴人。天启二年进士。力能引八石弓。原史崇祯二年入卫京师崭露头角，后历任宣大总督、兵部尚书。十一年鹿庄战死。'
       },
       {
-        name: '孙传庭', title: '吏部验封司主事', officialTitle: '吏部主事', alive: true,
-        age: 34, gender: '男', personality: '沉毅·有谋·刚正', location: '京师',
+        name: '孙传庭', title: '(削籍闲居)前吏部主事', officialTitle: '(天启五年削籍归乡)', alive: true,
+        age: 34, gender: '男', personality: '沉毅·有谋·刚正', location: '山西代州·闲居老家',
         loyalty: 90, ambition: 55, intelligence: 82, valor: 72,
         administration: 78, integrity: 88,
-        stance: '待崛起', faction: '明朝廷', party: '', family: '孙氏',
+        stance: '待崛起(阉党削籍)', faction: '明朝廷', party: '', family: '孙氏',
         traits: ['stubborn', 'honest', 'brave', 'just'],
-        bio: '山西代州人。万历四十七年进士。原史崇祯八年起陕西巡抚，擒高迎祥。十六年潼关战死。"传庭死而明亡矣"。'
+        bio: '山西代州人。万历四十七年进士。天启中任吏部验封司主事时以不附魏忠贤被削籍归乡。原史崇祯八年起陕西巡抚，擒高迎祥。十六年潼关战死。"传庭死而明亡矣"。'
       },
       {
         name: '孙元化', title: '兵部职方司主事', officialTitle: '兵部主事', alive: true,
@@ -5961,12 +5961,12 @@
         bio: '信邸旧侍。朱由检入继大统后倚为耳目。原史崇祯十七年随帝自缢煤山。'
       },
       {
-        name: '曹化淳', title: '司礼监秉笔·东厂掌刑', officialTitle: '司礼监秉笔太监', alive: true,
-        age: 38, gender: '男', personality: '精明·善迎合·首鼠两端', location: '司礼监',
+        name: '曹化淳', title: '(贬南京)前内廷太监', officialTitle: '(南京留守·待召还)', alive: true,
+        age: 38, gender: '男', personality: '精明·善迎合·首鼠两端', location: '南京·内守备(贬居)',
         loyalty: 55, ambition: 55, intelligence: 75, benevolence: 50, integrity: 40,
-        stance: '骑墙宦官', faction: '明朝廷', party: '', family: '曹氏',
+        stance: '待召还(王安旧徒)', faction: '明朝廷', party: '', family: '曹氏',
         traits: ['deceitful', 'gregarious'],
-        bio: '天津武清人。王安旧徒，后归魏忠贤。新帝即位后转倚周后一脉。原史崇祯朝重用。'
+        bio: '天津武清人。王安旧徒。天启初因王安被魏忠贤诛被贬至南京。崇祯元年召还，后司礼监秉笔/提督东厂。'
       },
       {
         name: '方正化', title: '司礼监秉笔', officialTitle: '司礼监秉笔太监', alive: true,
@@ -6070,19 +6070,27 @@
       },
       {
         name: '李自成', title: '银川驿驿卒', officialTitle: '驿卒', alive: true,
-        age: 21, gender: '男', personality: '沉毅·凶猛·善骑射', location: '甘肃银川驿',
+        age: 21, gender: '男', personality: '沉毅·凶猛·善骑射', location: '陕西米脂·银川驿(学界或作甘州驿)',
         loyalty: 25, ambition: 75, intelligence: 70, valor: 82, integrity: 50,
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '李氏',
         traits: ['brave', 'patient', 'ambitious'],
-        bio: '陕西米脂人。此时二十一岁银川驿驿卒。原史崇祯二年驿站被裁，随众起事。崇祯十七年破京称大顺帝。'
+        bio: '陕西米脂人。此时二十一岁银川驿驿卒(一说为甘州驿，学界有争议)。原史崇祯二年驿站被裁，随众起事。崇祯十七年破京称大顺帝。'
       },
       {
-        name: '张献忠', title: '延安卫军卒', officialTitle: '军卒', alive: true,
-        age: 21, gender: '男', personality: '狠辣·果决·多疑', location: '陕西米脂',
+        name: '张献忠', title: '延安卫军卒', officialTitle: '延安卫军卒', alive: true,
+        age: 21, gender: '男', personality: '狠辣·果决·多疑', location: '陕西延安府·延绥镇军营',
         loyalty: 20, ambition: 72, intelligence: 62, valor: 85,
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '张氏',
         traits: ['brave', 'wrathful', 'callous'],
-        bio: '陕西延安定边人。初为延安府捕快，后在延绥镇为军。原史崇祯三年米脂十八寨起事。十六年据武昌建大西。'
+        bio: '陕西延安定边人。初为延安府捕快，后在延绥镇为军(此时约已当兵)。原史崇祯三年米脂十八寨起事。十六年据武昌建大西。'
+      },
+      {
+        name: '秦良玉', title: '石柱宣抚使·总兵官·忠义典范', officialTitle: '石柱宣抚使(正三品袭)·勤王总兵官', alive: true,
+        age: 53, gender: '女', personality: '刚毅·忠烈·善将兵·有古风', location: '四川石柱宣抚司(本地·时届勤王调度)',
+        loyalty: 95, ambition: 30, intelligence: 75, valor: 88, military: 85, benevolence: 82, administration: 70, integrity: 92,
+        stance: '忠义土司', faction: '明朝廷', party: '', family: '秦氏(石柱土司)',
+        traits: ['brave', 'honest', 'just', 'diligent', 'zealous'],
+        bio: '忠州土官马千乘妻(马氏世袭石柱宣抚使)。万历末万历三大征参战。天启元年奢安之乱随兄秦邦屏征永宁，邦屏战死。天启三年以奇功升石柱宣抚使。天启七年仍驻石柱。原史崇祯二年率白杆兵入卫京师。崇祯十七年坚守石柱不降清。南明隆武帝封"忠贞侯"。清顺治五年卒，年七十五。'
       }
     ];
   }

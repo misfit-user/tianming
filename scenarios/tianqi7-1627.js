@@ -1050,6 +1050,113 @@
     // ─── wuchangOverride 兜空 ───
     if (!c.wuchangOverride) c.wuchangOverride = { '仁': null, '义': null, '礼': null, '智': null, '信': null };
 
+    // ─── personalGoals：把单串 personalGoal 转为数组化目标（符合编辑器 schema） ───
+    if (!Array.isArray(c.personalGoals) || c.personalGoals.length === 0) {
+      var _goals = [];
+      if (c.personalGoal) {
+        // 按类型分类
+        var _gtype = 'power';
+        var goalText = String(c.personalGoal);
+        if (/复仇|血仇|报|雪耻/.test(goalText)) _gtype = 'revenge';
+        else if (/钱|银|富|财|敛/.test(goalText)) _gtype = 'wealth';
+        else if (/保|守|护|殉|忠/.test(goalText)) _gtype = 'protect';
+        else if (/格物|学|译|经|道|西学|天主/.test(goalText)) _gtype = 'knowledge';
+        else if (/信|祈|修德|道|佛|天主|格鲁|黄教/.test(goalText)) _gtype = 'faith';
+        _goals.push({ id: 'goal_1', type: _gtype, longTerm: goalText, shortTerm: '', progress: 0, priority: 8, createdTurn: 0, dynamic: false });
+      }
+      // 若有 _DEEP_CHARS 额外目标可在此扩
+      if (c.name === '朱由检') {
+        _goals.push({ id: 'goal_2', type: 'protect', longTerm: '守祖宗江山、避免亡国', shortTerm: '立即除阉党', progress: 0, priority: 10, dynamic: false });
+        _goals.push({ id: 'goal_3', type: 'power', longTerm: '重整吏治·恢复圣君亲裁格局', shortTerm: '起用东林韩爌等老臣', progress: 0, priority: 7, dynamic: false });
+      } else if (c.name === '魏忠贤') {
+        _goals.push({ id: 'goal_1', type: 'protect', longTerm: '自保全家', shortTerm: '笼络新帝', progress: 0, priority: 10, dynamic: false });
+        _goals.push({ id: 'goal_2', type: 'wealth', longTerm: '延续义子义孙网络', shortTerm: '转移金银至外邸', progress: 0, priority: 7 });
+      } else if (c.name === '袁崇焕') {
+        _goals.push({ id: 'goal_2', type: 'power', longTerm: '五年复辽', shortTerm: '召对平台封督师', progress: 0, priority: 9 });
+      } else if (c.name === '皇太极') {
+        _goals.push({ id: 'goal_2', type: 'power', longTerm: '入主中原', shortTerm: '收服察哈尔', progress: 0, priority: 10 });
+      } else if (c.name === '徐光启') {
+        _goals.push({ id: 'goal_2', type: 'knowledge', longTerm: '推广甘薯救荒/修崇祯历书/译西学', shortTerm: '奉诏复出礼部', progress: 0, priority: 8 });
+      } else if (c.name === '韩爌') {
+        _goals.push({ id: 'goal_2', type: 'revenge', longTerm: '为东林六君子平反', shortTerm: '起复入阁', progress: 0, priority: 9 });
+      }
+      c.personalGoals = _goals;
+    }
+
+    // ─── vassalType：封臣类型自动推导 ───
+    if (c.vassalType === undefined) {
+      var title = (c.officialTitle || '') + (c.title || '');
+      if (title.match(/亲王|郡王|福王|潞王|瑞王/)) c.vassalType = '宗室藩王';
+      else if (title.match(/总兵|参将|都督/)) c.vassalType = '总兵武臣';
+      else if (title.match(/土司|宣抚使|宣慰使/)) c.vassalType = '土司';
+      else if ((c.faction||'') === '朝鲜') c.vassalType = '朝贡藩国';
+      else if ((c.faction||'') === '后金') c.vassalType = '敌国';
+      else if ((c.faction||'') === '察哈尔') c.vassalType = '羁縻';
+      else c.vassalType = '';
+    }
+
+    // ─── playerRelation：与玩家(朱由检)关系一语 ───
+    if (c.playerRelation === undefined) {
+      if (c.isPlayer) c.playerRelation = '(本人)';
+      else if (c.name === '周皇后') c.playerRelation = '夫妻';
+      else if (c.name === '张懿安') c.playerRelation = '嫂叔';
+      else if (c.name === '袁贵妃') c.playerRelation = '夫妾';
+      else if (c.name === '王承恩') c.playerRelation = '主仆至亲';
+      else if (c.name === '魏忠贤') c.playerRelation = '待除之奸';
+      else if (c.name === '客氏') c.playerRelation = '已逐之恶妇';
+      else if (c.name === '袁崇焕' || c.name === '孙承宗' || c.name === '徐光启' || c.name === '韩爌' || c.name === '毕自严') c.playerRelation = '欲用之贤能';
+      else if (c.name === '崔呈秀' || c.name === '田尔耕' || c.name === '许显纯') c.playerRelation = '阉党鹰犬';
+      else if (c.name === '温体仁' || c.name === '周延儒') c.playerRelation = '尚观之人';
+      else if (c.name === '朱常洵') c.playerRelation = '三叔(福王)';
+      else if (c.name === '皇太极') c.playerRelation = '大敌之酋';
+      else if ((c.faction||'') === '朝鲜') c.playerRelation = '东藩之君';
+      else c.playerRelation = '';
+    }
+
+    // ─── familyMembers 字段标准化（编辑器用 title/generation/dead/inLaw, 我用 note） ───
+    if (Array.isArray(c.familyMembers)) {
+      c.familyMembers.forEach(function(m) {
+        if (m.note && !m.title) { m.title = m.note; }
+        if (m.generation === undefined) {
+          var rel = m.relation || '';
+          if (/祖/.test(rel)) m.generation = -2;
+          else if (/父|母|叔|伯|舅|姨|姑/.test(rel)) m.generation = -1;
+          else if (/兄|弟|姐|妹|嫂|妻|妾|夫/.test(rel)) m.generation = 0;
+          else if (/子|女|婿|媳/.test(rel)) m.generation = 1;
+          else if (/孙/.test(rel)) m.generation = 2;
+          else m.generation = 0;
+        }
+        if (m.dead === undefined) {
+          m.dead = /殁|卒|死|薨|谢世|殉国|被诛/.test(m.title || m.note || m.relation || '');
+        }
+        if (m.inLaw === undefined) {
+          m.inLaw = /姻|妹夫|姐夫|嫂|媳|婿|岳|舅|姑|外/.test(m.relation || '');
+        }
+        if (!m.zi) m.zi = '';
+        if (m.age === undefined) m.age = undefined;
+      });
+    }
+
+    // ─── career 字段标准化（编辑器用 date/title/desc/milestone, 我用 year/title/note） ───
+    if (Array.isArray(c.career)) {
+      c.career.forEach(function(ce) {
+        if (!ce.date && ce.year) {
+          // year -> "1627 年"等
+          ce.date = (ce.year < 1 ? '' : String(ce.year) + '年');
+        }
+        if (!ce.desc && ce.note) ce.desc = ce.note;
+        if (ce.milestone === undefined) {
+          ce.milestone = /进士|状元|榜眼|登基|即位|首辅|入阁|督师|总督|战死|殉国|致仕|受封|赐死|磔|亡国/.test((ce.title||'') + (ce.desc||''));
+        }
+      });
+    }
+
+    // ─── spouse 布尔标记 ───
+    if (c.spouse === undefined) {
+      // 女性后妃→是配偶
+      c.spouse = !!(c.isRoyal && c.gender === '女' && (c.title||'').match(/皇后|妃|嫔|选侍/));
+    }
+
     // ─── 史料源·史实五常与十维修正 ───
     if (_HIST_SOURCES[c.name]) {
       var hs = _HIST_SOURCES[c.name];
@@ -1134,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v20-2026.04.19-hist-fix-ages';
+  var SCENARIO_VERSION = 'v21-2026.04.19-goals-vassal-editor';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {

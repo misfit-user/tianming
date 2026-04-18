@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v10-2026.04.19-office';
+  var SCENARIO_VERSION = 'v11-2026.04.19-fiscal';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -728,17 +728,55 @@
       // ──── 财政 ────
       fiscalConfig: {
         unit: { money: '两', grain: '石', cloth: '匹' },
-        silverToCoin: 1000,
+        silverToCoin: 1000,  // 一两银 ≈ 1000 文制钱（明末官价，实际浮动 700-1200）
+        // ──── 税种启用（对齐 editor-fiscal taxesEnabled 六档 + 明代特色） ────
         taxesEnabled: {
-          tianfu: true, dingshui: true, caoliang: true, yanlizhuan: true,
-          shipaiShui: true, quanShui: true, juanNa: false, qita: true
+          tianfu: true,       // 田赋（夏税秋粮）
+          dingshui: true,     // 丁税（一条鞭法后折入田赋，但名义仍存）
+          caoliang: true,     // 漕粮（南粮北运）
+          yanlizhuan: true,   // 盐铁专卖·盐课
+          shipaiShui: true,   // 市舶（月港、澳门关税）
+          quanShui: true,     // 榷税（钞关过货税）
+          juanNa: false,      // 捐纳（正途以外；天启朝谨慎开）
+          qita: true          // 其他（茶马/矿税已罢/竹木税）
         },
         customTaxes: [
-          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.009, description: '万历四十六年始征，每亩九厘银；天启朝已翻番' },
-          { id: 'mukou', name: '茶马互市', formulaType: 'flat', amount: 120000, description: '陕甘茶马司年入；为边军备马' }
+          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.009, description: '万历四十六年始征，每亩九厘银；崇祯四年升至一分二厘，崇祯十年每亩三分。原史至亡国时达 2200万两/年。' },
+          { id: 'chama', name: '茶马司', formulaType: 'flat', amount: 120000, description: '陕甘茶马司年入；为边军备马；万历末以降走私严重。' },
+          { id: 'chaoguan', name: '钞关过货税', formulaType: 'flat', amount: 450000, description: '运河沿线八大钞关（临清/淮安等）岁入。' },
+          { id: 'guanshui', name: '海关（月港）', formulaType: 'flat', amount: 30000, description: '福建漳州月港市舶司岁入。万历开海后设。' },
+          { id: 'junhu', name: '军户屯田', formulaType: 'perMu', rate: 0.02, description: '九边军屯。实际已大半被侵占。' }
         ],
-        centralLocalRules: { preset: 'ming-qiyun-cunliu', mode: 'qiyun_cunliu' },
-        floatingCollectionRate: 0.28,
+        // ──── 央地分账（对齐 editor-fiscal centralLocalRules preset）────
+        centralLocalRules: {
+          preset: 'ming_qiyun_cunliu', mode: 'qiyun_cunliu',
+          description: '明代"起运存留"制：夏秋税粮部分上解中央(起运)，部分留地方(存留)。辽饷则全部上解。',
+          regionOverrides: {
+            '江南苏松': { perTax: { land_grain: { qiyun: 0.82, cunliu: 0.18 } }, reason: '苏松重赋，起运占大头' },
+            '陕西': { perTax: { land_grain: { qiyun: 0.55, cunliu: 0.45 } }, reason: '饥荒连年，许留多赈饥' },
+            '辽东': { perTax: { land_grain: { qiyun: 0.20, cunliu: 0.80 } }, reason: '边地大部留守军用' }
+          }
+        },
+        // ──── 货币规则（对齐 aiGenFiscalConfig currencyRules schema）────
+        currencyRules: {
+          enabledCoins: { gold: false, silver: true, copper: true, iron: false, shell: false, paper: true },
+          initialStandard: 'silver_copper_paper',
+          description: '明代通货：白银+制钱+大明宝钞。白银为大额，制钱为日常，大明宝钞已贬值至废（法定仍行）。',
+          silverSourceShares: { '国内矿': 0.08, '美洲银(西葡)': 0.45, '日本银': 0.40, '南洋': 0.07 },
+          paperCurrency: {
+            name: '大明宝钞', issueYear: 1375, currentStatus: '贬值至近乎废',
+            nominalRate: '一贯钞=一千文制钱', actualRate: '一贯钞仅值数文',
+            note: '洪武始行，永乐鼎盛。嘉靖以来实已弃用，天启朝名义仍行。'
+          },
+          mints: [
+            { name: '宝泉局', location: '京师户部', output: '年铸制钱约 30 万贯', condition: '缺铜减铸' },
+            { name: '宝源局', location: '工部', output: '年铸制钱约 10 万贯' },
+            { name: '南京宝泉局', location: '南京', output: '年铸制钱约 5 万贯' }
+          ],
+          privateCoinage: { prevalence: 0.55, note: '民间私铸盛行。"沙板"、"铁镴"劣钱充市，物价紊乱。' }
+        },
+        floatingCollectionRate: 0.28,  // 浮收率：胥吏地方官多征 28%
+        // ──── 固定支出（俸/军/宫）────
         fixedExpense: {
           salaryMonthlyPerRank: {
             '正一品': 88, '从一品': 72, '正二品': 61, '从二品': 48,
@@ -748,8 +786,68 @@
             '正九品': 5, '从九品': 5
           },
           armyMonthlyPay: { money: 1.5, grain: 0.6, cloth: 0.05 },
-          // 明末宫廷月支：内廷供奉 + 赏赐 + 妃嫔月银 + 陵寝维护 + 宗禄内殿供。岁支百余万两不为过。
           imperialMonthly: { money: 95000, grain: 18000, cloth: 4500 }
+        },
+        // ──── 内帑规则（对齐 editor-fiscal neicangRules + NeitangEngine 15 历史预设）────
+        neicangRules: {
+          presetKey: 'ming_tianqi',
+          royalClanPressure: {
+            enabled: true, severity: 'crushing',
+            totalClanMembers: 250000,
+            annualStipendDemanded: 600,   // 万石
+            annualStipendPaid: 300,       // 实际拨付
+            cumulativeArrears: 280,       // 累计欠额
+            description: '明代宗藩压力。太祖分封子孙，二百余年繁衍至 20 余万。岁禄理论 600 万石压户部。'
+          },
+          huangzhuangIncome: {
+            enabled: true,
+            acres: 320000,  // 皇庄田亩数
+            ratePerAcre: 0.45,  // 两银/亩·年
+            note: '皇庄岁租入内帑。万历、天启朝清查松弛，实收不足三成。'
+          },
+          imperialBusinesses: {
+            enabled: true,
+            includes: ['织造局(苏杭江宁三处)', '内库盐引', '贡茶(武夷/阳羡)', '宫廷窑(景德镇御器厂)'],
+            annualRevenue: 500000  // 两
+          },
+          privyTransfers: {
+            fromNational: { enabled: true, condition: '国库告急时由内帑拨出济之', maxPerYear: 500000 },
+            toNational: { enabled: true, condition: '边饷极急时户部借内帑', cumulativeDebt: 1800000, interestFree: true }
+          }
+        },
+        // ──── 户口配置（对齐 aiGenPopulationConfig schema） ────
+        populationConfig: {
+          initial: { nationalHouseholds: 9700000, nationalMouths: 60000000, nationalDing: 18000000, hiddenPopulation: 90000000, note: '明天启朝在籍户约 970 万、口 6000 万；然隐户、逃户估 9000 万。合计接近 1.5 亿。' },
+          dingAgeRange: [16, 60],
+          categoryEnabled: ['bianhu', 'junhu', 'jianghu', 'yuehu', 'jihu', 'shihu', 'daohu'],  // 编户/军户/匠户/乐户/畿户/世匠户/灶户
+          categoryDescriptions: {
+            bianhu: '编户齐民(自耕农+佃农)',
+            junhu: '军户(世袭卫所)，约 200 万',
+            jianghu: '匠户(工部/内府)，约 400 万',
+            yuehu: '乐户(贱籍)',
+            jihu: '畿辅户',
+            shihu: '世匠户',
+            daohu: '灶户(盐场)'
+          },
+          gradeSystem: 'ming_10',  // 上上/上中/上下…下下 十等
+          mobility: { shangSheng: '由匠籍军籍入科举极罕', xiangxia: '破产沦佃农常见' }
+        },
+        // ──── 环境承载力（对齐 aiGenEnvironmentConfig schema） ────
+        environmentConfig: {
+          globalClimate: { trend: 'cooling', factor: 0.85, description: '小冰河期(1580-1680)。年均气温较明初低 1.5°C；霜冻南移；江南冬可冰封运河。' },
+          majorDisasterTypes: ['旱', '蝗', '水', '疫', '霜冻', '地震'],
+          regionCapacity: {
+            '北直隶': { landCapacity: 8500000, waterAvailable: 7000000, climate: 0.82 },
+            '南直隶': { landCapacity: 18000000, waterAvailable: 17500000, climate: 1.00 },
+            '浙江': { landCapacity: 8500000, waterAvailable: 8500000, climate: 1.00 },
+            '陕西': { landCapacity: 6000000, waterAvailable: 5500000, climate: 0.62, note: '3 年连旱' },
+            '河南': { landCapacity: 5500000, waterAvailable: 4500000, climate: 0.75 },
+            '湖广': { landCapacity: 7000000, waterAvailable: 7500000, climate: 1.00 },
+            '四川': { landCapacity: 4000000, waterAvailable: 4200000, climate: 0.98 },
+            '山西': { landCapacity: 5000000, waterAvailable: 4200000, climate: 0.82 },
+            '山东': { landCapacity: 5800000, waterAvailable: 4600000, climate: 0.78 }
+          },
+          yellowRiverRisk: { level: 'high', note: '黄河夺淮入海已两百年，明末堤防失修。每 2-3 年必有大溃。' }
         }
       },
 

@@ -38,6 +38,70 @@
     return (prefix || 'x_') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  //  人物字段标准化（对齐 CharFullSchema）
+  //  · 补齐字/号/籍贯/族/信仰/门第/品级
+  //  · 补齐八才缺失项（武勇/智力/政务/管理/军事/魅力/外交/仁厚）
+  //  · 修正 privateWealth.cash → .money（schema 规定）
+  //  · learning 误用为数字时保留，另加 _academicScore 兼容；若未设则按科举出身默认
+  //  · traits ↔ traitIds 双向兼容
+  // ═══════════════════════════════════════════════════════════════════
+  function _normalizeChar(c) {
+    if (!c) return c;
+    // 籍贯/民族/信仰/门第
+    if (!c.ethnicity) c.ethnicity = (c.faction === '后金') ? '女真' : (c.faction === '察哈尔' ? '蒙古' : (c.faction === '朝鲜' ? '朝鲜' : '汉'));
+    if (!c.faith) c.faith = (c.faction === '后金' ? '萨满' : (c.faction === '察哈尔' ? '藏传佛教' : (c.faction === '朝鲜' ? '儒教' : '儒')));
+    if (!c.familyTier) {
+      if (c.isRoyal || c.royalRelation) c.familyTier = 'imperial';
+      else if ((c.officialTitle || '').match(/尚书|大学士|都督|总兵|巡抚|总督|经略|皇后/)) c.familyTier = 'gentry';
+      else c.familyTier = 'common';
+    }
+    // 学识：若为数字（旧字段），保留原始数字到 _intellectScore
+    if (typeof c.learning === 'number') { c._intellectScore = c.learning; delete c.learning; }
+    if (!c.learning) {
+      if (c.isRoyal) c.learning = '皇子·经筵';
+      else if ((c.officialTitle||'').match(/大学士|尚书|侍郎|御史|主事|翰林/)) c.learning = '进士';
+      else if ((c.officialTitle||'').match(/太监/)) c.learning = '白身·不识字';
+      else if ((c.officialTitle||'').match(/总兵|都督|参将|游击/)) c.learning = '武举/行伍';
+      else c.learning = '白身';
+    }
+    // 品级
+    if (c.rankLevel == null) {
+      var rankMap = { '正一品': 1, '从一品': 2, '正二品': 3, '从二品': 4, '正三品': 5, '从三品': 6, '正四品': 7, '从四品': 8, '正五品': 9, '从五品': 10, '正六品': 11, '正七品': 13 };
+      c.rankLevel = 18;
+      var title = (c.officialTitle || '') + (c.title || '');
+      Object.keys(rankMap).forEach(function(r) { if (title.indexOf(r) >= 0) c.rankLevel = rankMap[r]; });
+      if (c.isPlayer) c.rankLevel = 0;
+    }
+    // 八才补齐
+    if (c.military == null) c.military = Math.max(20, Math.min(95, (c.valor || 50) * 0.6 + (c.intelligence || 50) * 0.4 - 5));
+    if (c.charisma == null) c.charisma = Math.max(20, Math.min(95, (c.benevolence || 50) * 0.5 + (c.intelligence || 50) * 0.3 + (c.ambition || 50) * 0.2));
+    if (c.diplomacy == null) c.diplomacy = Math.max(20, Math.min(95, (c.intelligence || 50) * 0.5 + (c.charisma || 50) * 0.5 - 10));
+    ['military', 'charisma', 'diplomacy'].forEach(function(k) { c[k] = Math.round(c[k]); });
+    // traits ↔ traitIds
+    if (Array.isArray(c.traits) && !Array.isArray(c.traitIds)) c.traitIds = c.traits.slice();
+    if (Array.isArray(c.traitIds) && !Array.isArray(c.traits)) c.traits = c.traitIds.slice();
+    // resources.privateWealth.cash → .money
+    if (c.resources && c.resources.privateWealth) {
+      var pw = c.resources.privateWealth;
+      if (pw.cash != null && pw.money == null) { pw.money = pw.cash; delete pw.cash; }
+      if (pw.money == null) pw.money = 0;
+      if (pw.grain == null) pw.grain = 0;
+      if (pw.cloth == null) pw.cloth = 0;
+    }
+    if (!c.resources) c.resources = {};
+    if (!c.resources.privateWealth) c.resources.privateWealth = { money: 0, grain: 0, cloth: 0 };
+    if (!c.resources.publicPurse) c.resources.publicPurse = { money: 0, grain: 0, cloth: 0 };
+    if (c.resources.fame == null) c.resources.fame = 0;
+    if (c.resources.health == null) c.resources.health = 80;
+    if (c.resources.stress == null) c.resources.stress = 20;
+    // stressSources / career / familyMembers 规范
+    if (!Array.isArray(c.stressSources)) c.stressSources = [];
+    if (!Array.isArray(c.career)) c.career = [];
+    if (!Array.isArray(c.familyMembers)) c.familyMembers = [];
+    return c;
+  }
+
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
       setTimeout(register, 200);
@@ -124,6 +188,22 @@
       masterScript: '',
       refFiles: [],
 
+      // ──── 朝代状态（影响七大核心初值的自然推导） ────
+      // 明末天启七年：政治分裂严重（阉党专权）/ 中央对边镇控制弱化 / 经济崩坏 / 文化心学鼎盛 / 军事专业化低 / 王朝末期
+      eraState: {
+        politicalUnity: 0.35,         // 政治统一度：阉党虽专权但东林仍在野掣肘
+        centralControl: 0.45,         // 中央对地方控制：辽东/陕西渐脱节
+        legitimacySource: 'hereditary', // 合法性：血统继承
+        socialStability: 0.30,        // 社会稳定：北方饥民渐起
+        economicProsperity: 0.35,     // 经济繁荣：北衰南盛
+        culturalVibrancy: 0.75,       // 文化活跃：晚明文学/心学/西学井喷
+        bureaucracyStrength: 0.40,    // 官僚体系：阉党把持+贪腐极重，效能低下
+        militaryProfessionalism: 0.35, // 军事专业化：九边军户虚额严重
+        landSystemType: 'mixed',      // 田制：私田 + 官田 + 皇庄 + 藩田 混合
+        dynastyPhase: 'decline',      // 王朝阶段：由盛转衰/末路前夜
+        contextDescription: '万历怠政、天启阉祸之后，崇祯即位。表面完整的大明帝国已是危房：北有后金虎视，西北有饥民啸聚，江南有缙绅抵税，朝堂有党争血仇。一代新君承百年积弊。'
+      },
+
       // ──── 时间/年号 ────
       gameSettings: {
         enabledSystems: { items: true, military: true, techTree: false, civicTree: false, events: true, map: true, characters: true, factions: true, classes: true, rules: true, officeTree: true },
@@ -158,8 +238,9 @@
             '正七品': 7, '从七品': 6, '正八品': 6, '从八品': 5,
             '正九品': 5, '从九品': 5
           },
-          armyMonthlyPay: { money: 1.4, grain: 0.6, cloth: 0.05 },
-          imperialMonthly: { money: 35000, grain: 8000, cloth: 2000 }
+          armyMonthlyPay: { money: 1.5, grain: 0.6, cloth: 0.05 },
+          // 明末宫廷月支：内廷供奉 + 赏赐 + 妃嫔月银 + 陵寝维护 + 宗禄内殿供。岁支百余万两不为过。
+          imperialMonthly: { money: 95000, grain: 18000, cloth: 4500 }
         }
       },
 
@@ -266,7 +347,7 @@
     // ═══════════════════════════════════════════════════════════════════
     // § 2. 人物——46 位
     // ═══════════════════════════════════════════════════════════════════
-    var chars = buildCharacters();
+    var chars = buildCharacters().map(_normalizeChar);
     chars.forEach(function (c) { c.sid = SID; c.id = _uid('char_'); global.P.characters.push(c); });
 
     // ═══════════════════════════════════════════════════════════════════
@@ -316,29 +397,35 @@
     // ═══════════════════════════════════════════════════════════════════
     // § 6. 变量
     // ═══════════════════════════════════════════════════════════════════
+    // ※ 七大核心变量（帑廪/内帑/皇权/皇威/民心/腐败/环境/人口）由游戏系统自管理：
+    //   · 国库资金：由 adminHierarchy 各区划 publicTreasuryInit + 官制 publicTreasuryInit + CascadeTax + FixedExpense 自然聚合
+    //   · 皇权/皇威/民心/腐败：由 eraState × CorruptionEngine.initFromDynasty × 朝代预设推出初值
+    //   · 人口：由 adminHierarchy 叶子 populationDetail.mouths 自动汇总
+    //   · 环境承载力：由 adminHierarchy carryingCapacity 自动汇总
+    //   此处 P.variables 只定义本剧本额外的"专题变量"——避免与七大核心重复。
     var variables = [
-      { name: '国库资金', value: 2000000, min: 0, max: 50000000, unit: '两', isCore: true, cat: '财政', desc: '太仓银库现银。天启末已近枯竭。' },
-      { name: '皇威', value: 50, min: 0, max: 100, isCore: true, cat: '皇威', desc: '新帝登基，气象未立。' },
-      { name: '皇权', value: 35, min: 0, max: 100, isCore: true, cat: '皇权', desc: '阉党当国，新帝政令出宫不远。' },
-      { name: '民心', value: 42, min: 0, max: 100, isCore: true, cat: '民心', desc: '士林失望久矣；北方饥馑初现。' },
-      { name: '人口', value: 150000000, min: 0, max: 300000000, unit: '口', isCore: true, cat: '户口', desc: '明末户口峰值约一亿五千万（含隐户）。' },
-      { name: '全局腐败', value: 68, min: 0, max: 100, isCore: true, cat: '腐败', desc: '阉党卖官鬻爵，天启朝腐败登峰。', inversed: true },
-      { name: '环境承载力', value: 55, min: 0, max: 100, isCore: true, cat: '环境', desc: '小冰河期持续，黄河淮河水患连年。' },
-      { name: '阉党权势值', value: 90, min: 0, max: 100, cat: '党派', desc: '魏忠贤集团的朝堂支配度。超 50 即摆脱不了其掣肘。', inversed: true },
-      { name: '东林党复苏进度', value: 5, min: 0, max: 100, cat: '党派', desc: '东林骨干归朝与重开书院的进度。' },
-      { name: '党争烈度', value: 55, min: 0, max: 100, cat: '党派', desc: '党争仍以阉党打压东林残余为主，日后东林反扑会更烈。', inversed: true },
-      { name: '宦官干政度', value: 82, min: 0, max: 100, cat: '皇权', desc: '司礼监批红权直追内阁票拟。', inversed: true },
-      { name: '士人风骨指数', value: 35, min: 0, max: 100, cat: '皇权', desc: '东林枯骨后，士林多噤声；慷慨之士凋零殆尽。' },
-      { name: '辽饷积欠', value: 180, min: 0, max: 500, unit: '万两', cat: '财政', desc: '辽东欠饷累计。士兵哗变风险随此增。', inversed: true },
-      { name: '九边欠饷总数', value: 420, min: 0, max: 1500, unit: '万两', cat: '财政', desc: '九边（辽东/蓟州/宣府/大同/山西/延绥/宁夏/甘肃/固原）总欠饷。', inversed: true },
-      { name: '太仓银储量', value: 15, min: 0, max: 100, cat: '财政', desc: '太仓库银占"岁入基准"的比例。' },
-      { name: '江南商税抵制度', value: 72, min: 0, max: 100, cat: '经济', desc: '江南缙绅对商税/矿税的抵制程度。矿税于 1625 年罢。', inversed: true },
-      { name: '海商势力', value: 28, min: 0, max: 100, cat: '经济', desc: '郑芝龙为首的海商集团崛起程度。' },
-      { name: '辽东防线稳固度', value: 48, min: 0, max: 100, cat: '军事', desc: '袁崇焕去后，辽东经略未定。关宁锦防线核心仍在。' },
-      { name: '流民数量', value: 800000, min: 0, max: 50000000, unit: '口', cat: '民生', desc: '北直隶/陕西/山东流民估数。', inversed: true },
-      { name: '小冰河凛冬指数', value: 65, min: 0, max: 100, cat: '环境', desc: '1627 冬寒已异常。指数高则歉收、疫病、民变。', inversed: true },
-      { name: '西北灾荒怨气', value: 70, min: 0, max: 100, cat: '民生', desc: '陕北已三年大旱，怨气积聚。', inversed: true },
-      { name: '漕运通畅度', value: 62, min: 0, max: 100, cat: '经济', desc: '京杭大运河江南至通州段。' }
+      // ──── 党派·权阉 ────
+      { name: '阉党权势值', value: 92, min: 0, max: 100, cat: '党派', desc: '魏忠贤集团的朝堂支配度。内阁、六部、都察院过半阉党或附阉者。', inversed: true },
+      { name: '东林党复苏进度', value: 4, min: 0, max: 100, cat: '党派', desc: '东林骨干多在籍或戍边，归朝尚需圣旨。' },
+      { name: '党争烈度', value: 58, min: 0, max: 100, cat: '党派', desc: '阉党打压东林尚未终结。东林反扑将爆发。', inversed: true },
+      { name: '宦官干政度', value: 85, min: 0, max: 100, cat: '皇权', desc: '司礼监批红直达天听，内外阁票拟形同虚设。', inversed: true },
+      { name: '士人风骨指数', value: 30, min: 0, max: 100, cat: '皇权', desc: '东林六君子诏狱血案后，士林多噤声。' },
+      // ──── 财政·专项欠饷 ────
+      { name: '辽饷积欠', value: 460, min: 0, max: 1000, unit: '万两', cat: '财政', desc: '辽东欠饷累计。袁崇焕去后更甚。宁远、锦州戍卒哗变警报不断。', inversed: true },
+      { name: '九边欠饷总数', value: 720, min: 0, max: 2000, unit: '万两', cat: '财政', desc: '九边（辽东/蓟州/宣府/大同/山西/延绥/宁夏/甘肃/固原）总欠饷。超 1000 万引全面哗变。', inversed: true },
+      { name: '宗禄拖欠', value: 280, min: 0, max: 1000, unit: '万石', cat: '财政', desc: '宗室禄米历年拖欠。万历末宗室逾 20 万，岁禄理论 600 万石，实际拨发不足一半。', inversed: true },
+      { name: '太仓粮实存', value: 130, min: 0, max: 1000, unit: '万石', cat: '财政', desc: '太仓米粮实有。漕运岁运 400 万石，多虚报。京通仓存粮难支半年。', inversed: true },
+      { name: '太仓银储量比', value: 11, min: 0, max: 100, cat: '财政', desc: '太仓库银占岁入基准百分比。史实：20%为常态，低于 15% 危机。' },
+      // ──── 经济 ────
+      { name: '江南商税抵制度', value: 75, min: 0, max: 100, cat: '经济', desc: '江南缙绅对商税/矿税的抵制程度。矿税于 1625 年罢。', inversed: true },
+      { name: '海商势力', value: 25, min: 0, max: 100, cat: '经济', desc: '郑芝龙为首的海商集团崛起程度。' },
+      { name: '漕运通畅度', value: 58, min: 0, max: 100, cat: '经济', desc: '京杭大运河江南至通州段。淤堵频发。' },
+      // ──── 军事 ────
+      { name: '辽东防线稳固度', value: 42, min: 0, max: 100, cat: '军事', desc: '袁崇焕去后，辽东经略未定。王之臣老病。关宁锦防线核心未失。' },
+      // ──── 民生/环境 ────
+      { name: '流民数量', value: 900000, min: 0, max: 50000000, unit: '口', cat: '民生', desc: '北直隶/陕西/山东流民估数。三年连旱将加速。', inversed: true },
+      { name: '小冰河凛冬指数', value: 68, min: 0, max: 100, cat: '环境', desc: '1627 冬寒异常。未来三年将更严酷。', inversed: true },
+      { name: '西北灾荒怨气', value: 76, min: 0, max: 100, cat: '民生', desc: '陕北已三年大旱，观音土食尽，草根掘尽。民变在即。', inversed: true }
     ];
     variables.forEach(function (v) { v.sid = SID; v.id = _uid('var_'); v.color = '#c9a84c'; v.icon = ''; v.visible = true; global.P.variables.push(v); });
 
@@ -406,19 +493,42 @@
     return [
       // ──── 皇帝本尊 ────
       {
-        name: '朱由检', title: '明思宗·崇祯帝', officialTitle: '皇帝', isPlayer: true, isRoyal: true, royalRelation: 'emperor_family', alive: true,
-        age: 17, gender: '男', birthYear: 1611, personality: '多疑·刚愎·勤政·急切', location: '紫禁城',
-        loyalty: 100, ambition: 88, intelligence: 78, valor: 55, benevolence: 50, morale: 70,
-        administration: 62, management: 58, learning: 76, integrity: 82,
-        stance: '中兴之主', faction: '明朝廷', party: '', family: '朱氏·明',
-        traits: ['ambitious', 'diligent', 'paranoid', 'impatient', 'stubborn'],
-        resources: { privateWealth: { cash: 0, grain: 0, cloth: 0 } },
+        name: '朱由检', zi: '', haoName: '',
+        title: '明思宗·崇祯帝', officialTitle: '皇帝', role: '皇帝',
+        isPlayer: true, isRoyal: true, royalRelation: 'emperor_family', alive: true,
+        age: 17, gender: '男', birthYear: 1611, birthplace: '北京·慈庆宫',
+        ethnicity: '汉', faith: '儒', culture: '汉', learning: '皇子·经筵',
+        appearance: '面目清癯，额高鼻直，目光锐利。十七岁身高已成，然身量偏瘦。',
+        diction: '辞令凝重，出语果断，然时有迟疑。',
+        personality: '刚烈·多疑·勤政·急切·寡恩·自苦', location: '紫禁城·乾清宫',
+        rankLevel: 0,
+        loyalty: 100, ambition: 90, intelligence: 76, valor: 50,
+        military: 40, administration: 60, management: 58, charisma: 62, diplomacy: 38, benevolence: 48,
+        integrity: 82,
+        traits: ['ambitious', 'diligent', 'paranoid', 'impatient', 'stubborn', 'wrathful'],
+        stance: '中兴之主', faction: '明朝廷', party: '', partyRank: '',
+        family: '朱氏·明', familyTier: 'imperial', familyRole: '嗣位之君', clanPrestige: 100,
+        mentor: '', hobbies: '读书,书法,骑射,研兵',
+        innerThought: '祖宗二百六十年江山，岂能毁于朕手？然九千岁爪牙满朝，朕孤身入此乾清宫——每夜辗转，思杨涟、左光斗在诏狱血骨，思三叔父福王肥居洛阳，思北疆辽卒索饷哗变。朕当以何自处？当以何自作？',
+        personalGoal: '中兴大明，重整吏治，扫平虏寇；非我太祖、成祖之业，亦应保祖宗宗庙于不坠。',
+        stressSources: ['阉党盘踞内外', '辽东军饷告急', '陕西饥民将起', '兄嫂未育血脉', '朕年少无根基'],
+        resources: { privateWealth: { money: 0, grain: 0, cloth: 0 }, publicPurse: { money: 0, grain: 0, cloth: 0 }, fame: 72, virtueMerit: 15, health: 78, stress: 62 },
+        career: [
+          { year: 1622, title: '信王', note: '天启二年五岁封信王。' },
+          { year: 1627, title: '皇帝', note: '天启七年八月即位。' }
+        ],
+        familyMembers: [
+          { name: '朱由校', relation: '兄长', note: '明熹宗，天启七年八月崩' },
+          { name: '张懿安', relation: '嫂', note: '熹宗皇后' },
+          { name: '周皇后', relation: '妻', note: '苏州人，信王妃' },
+          { name: '朱常洛', relation: '父(殁)', note: '明光宗，在位一月崩' }
+        ],
         _memory: [
           { event: '兄长熹宗落水染疾崩于乾清宫，遗命"来，吾弟当为尧舜"', emotion: '悲', weight: 10, turn: 0 },
           { event: '即位次日，魏忠贤叩首请辞司礼监，朕温言慰留——实则观其党心', emotion: '惧', weight: 8, turn: 0 },
           { event: '读天启朝诏狱旧档，杨涟二十四罪疏血泪俱下', emotion: '怒', weight: 9, turn: 0 }
         ],
-        bio: '明熹宗朱由校之弟，封信王，就藩未果。天启七年八月即位，刚烈而猜忌，急于有为。原史在位十七年，励精图治而多疑寡恩，终亡国自缢。'
+        bio: '明熹宗朱由校之弟，封信王，就藩未果。天启七年八月即位，刚烈而猜忌，急于有为。原史在位十七年，励精图治而多疑寡恩，十七年中换辅臣五十人、尚书侍郎百余人。终亡国自缢于煤山寿皇亭古槐。'
       },
       // ──── 后妃 ────
       {
@@ -456,19 +566,52 @@
       },
       // ──── 阉党核心 ────
       {
-        name: '魏忠贤', title: '司礼监掌印·东厂提督·上公', officialTitle: '司礼监掌印太监·提督东厂', alive: true,
-        age: 59, gender: '男', personality: '阴狠·贪权·好谄·擅专', location: '司礼监',
-        loyalty: 10, ambition: 95, intelligence: 70, valor: 40, benevolence: 5, morale: 55,
-        administration: 62, management: 78, learning: 20, integrity: 5,
-        stance: '权阉', faction: '明朝廷', party: '阉党', family: '魏氏',
-        traits: ['deceitful', 'ambitious', 'callous', 'vengeful', 'gregarious', 'paranoid'],
-        resources: { privateWealth: { cash: 4500000, grain: 50000, cloth: 30000 } },
+        name: '魏忠贤', zi: '', haoName: '九千岁',
+        title: '司礼监掌印·东厂提督·上公', officialTitle: '司礼监掌印太监·提督东厂',
+        role: '内廷首宦',
+        alive: true, age: 59, gender: '男', birthYear: 1568, birthplace: '北直隶·肃宁',
+        ethnicity: '汉', faith: '民间/自立生祠', culture: '汉',
+        learning: '白身·不识字', diction: '粗豪直率，然善察言观色',
+        appearance: '身材短小，面白无须（阉人），瞳仁昏黄。常朝常戴珠冠。',
+        personality: '阴狠·贪权·好谄·睚眦必报·精于笼络',
+        location: '紫禁城·司礼监',
+        rankLevel: 7, // 正四品(阉官)但实权远超
+        loyalty: 10, ambition: 98, intelligence: 72, valor: 40,
+        military: 55, administration: 55, management: 85, charisma: 62, diplomacy: 45, benevolence: 5,
+        integrity: 3,
+        traits: ['deceitful', 'ambitious', 'callous', 'vengeful', 'gregarious', 'paranoid', 'arbitrary', 'greedy'],
+        stance: '权阉·篡权之渐', faction: '明朝廷', party: '阉党', partyRank: '首领·上公',
+        family: '魏氏(义子义孙满朝)', familyTier: 'common', familyRole: '进内充饷',
+        clanPrestige: 25,
+        mentor: '王安(殁)·早年恩主', superior: '(实际无上司)',
+        hobbies: '斗鸡,走狗,蹴鞠,观戏,诵佛',
+        innerThought: '客氏已出宫，是天变之前兆。杨涟六君子之骨犹在诏狱未冷，那个"杀尽东林党"的九千岁之名，日后将是朕之索命符。急流勇退乎？然九千岁岂有余地？或可献贵重礼宝以探帝意；或可借周道登、施凤来为盾。然朕最忧者，是朝中竟无一可托之人。义子义孙虽众，仓卒之变能恃者几？',
+        personalGoal: '延续阉党之局，身后亦不许清算。',
+        stressSources: ['新帝年少而刚猜', '客氏被逐', '东林党人将归', '田尔耕提督京营心思不齐', '地方督抚纷传异动'],
+        resources: { privateWealth: { money: 4500000, grain: 50000, cloth: 30000 }, publicPurse: { money: 3000000, grain: 100000, cloth: 50000 }, fame: -50, virtueMerit: -80, health: 68, stress: 92 },
+        career: [
+          { year: 1589, title: '入宫充饷', note: '二十一岁因赌博欠债入宫。' },
+          { year: 1605, title: '入内膳监', note: '与魏朝对食客氏，得王安赏识。' },
+          { year: 1620, title: '司礼监秉笔', note: '光宗泰昌元年熹宗即位后逐王安，秉笔太监。' },
+          { year: 1623, title: '司礼监掌印·提督东厂', note: '罢王安，掌印握权。' },
+          { year: 1625, title: '上公', note: '赐"顾命元臣"印，立生祠始于浙江。' },
+          { year: 1627, title: '贬凤阳守陵(原史十一月)', note: '魏自缢于阜城。' }
+        ],
+        familyMembers: [
+          { name: '客氏', relation: '对食', note: '内廷情侣二十年' },
+          { name: '崔呈秀', relation: '义子', note: '五虎之首' },
+          { name: '田尔耕', relation: '义子', note: '五彪之首·锦衣卫' },
+          { name: '许显纯', relation: '义子', note: '北镇抚司·诛东林' },
+          { name: '魏良卿', relation: '侄', note: '封宁国公' }
+        ],
         _memory: [
           { event: '天启三年诱帝魏氏赐姓，号"九千岁"，建生祠遍天下', emotion: '喜', weight: 10, turn: -1800 },
           { event: '天启四年命锦衣卫诛杨涟、左光斗于诏狱，尸骨无存', emotion: '快', weight: 9, turn: -1200 },
-          { event: '新帝即位后召对，温言慰留，然客氏被逐；心内震骇', emotion: '惧', weight: 10, turn: 0 }
+          { event: '天启六年浙江潘汝桢首建生祠，天下响应二十五处', emotion: '傲', weight: 8, turn: -300 },
+          { event: '天启七年七月熹宗薨，信王入继——心知大变', emotion: '惧', weight: 10, turn: -30 },
+          { event: '新帝即位数日，客氏被逐出宫', emotion: '恐', weight: 10, turn: 0 }
         ],
-        bio: '直隶肃宁人。进宫充饷，曾为街头无赖。附魏朝、客氏以进，天启三年掌司礼监。号九千岁，建生祠遍天下。原史天启七年十一月六日贬凤阳，夜闻乡人歌谣"白云苍狗"于阜城自缢。'
+        bio: '直隶肃宁人。少无赖，赌博欠债自阉入宫充饷。历二十五年攀附魏朝、王安、客氏而起。天启三年（1623）罢王安掌司礼监，兼提督东厂。以恢复矿税、诛杀东林党称"九千岁"，义子义孙遍六部。所积金帛据崇祯朝清算达数百万两。原史天启七年十一月六日贬凤阳守陵途中，夜宿阜城旅店，闻邻房乡人歌小曲骂"九千岁"，遂于当夜自缢。'
       },
       {
         name: '客氏', title: '奉圣夫人·前熹宗乳母', officialTitle: '奉圣夫人', alive: true,

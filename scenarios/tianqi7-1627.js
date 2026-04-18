@@ -307,12 +307,25 @@
     return c;
   }
 
+  // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
+  var SCENARIO_VERSION = 'v4-2026.04.18';
+
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
       setTimeout(register, 200);
       return;
     }
-    if (global.P.scenarios.find(function (s) { return s.id === SID; })) return;
+    var existingIdx = global.P.scenarios.findIndex(function (s) { return s.id === SID; });
+    var existing = existingIdx >= 0 ? global.P.scenarios[existingIdx] : null;
+    if (existing && existing._version === SCENARIO_VERSION) return; // 同版本，跳过
+    // 清除旧版本残留（旧 scenario + 关联的 chars/facs/parties/classes/variables/events/relations/items）
+    if (existing) {
+      global.P.scenarios.splice(existingIdx, 1);
+      ['characters','factions','parties','classes','variables','events','relations','items'].forEach(function(k){
+        if (Array.isArray(global.P[k])) global.P[k] = global.P[k].filter(function(x){ return x.sid !== SID; });
+      });
+      console.log('[scenario] 已清除 ' + SID + ' 旧版本数据，准备加载 ' + SCENARIO_VERSION);
+    }
 
     // ═══════════════════════════════════════════════════════════════════
     // § 1. 剧本元信息
@@ -747,7 +760,16 @@
       });
     }
 
+    scenario._version = SCENARIO_VERSION;
     global.P.scenarios.push(scenario);
+
+    // 强制持久化——覆盖 localStorage 中的旧 P（editor 侧）
+    try {
+      if (typeof global.saveP === 'function') global.saveP();
+      else if (typeof global.localStorage !== 'undefined') {
+        global.localStorage.setItem('tianming_P', JSON.stringify(global.P));
+      }
+    } catch(e) { /* 静默 */ }
 
     // ═══════════════════════════════════════════════════════════════════
     // § 2. 人物——46 位

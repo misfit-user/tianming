@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v5-2026.04.18-chars-ai';
+  var SCENARIO_VERSION = 'v6-2026.04.19-factions';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1072,13 +1072,140 @@
     // § 3. 势力
     // ═══════════════════════════════════════════════════════════════════
     var facs = [
-      { name: '明朝廷', leader: '朱由检', color: '#c9a84c', strength: 70, militaryStrength: 62, economy: 55, courtInfluence: 100, popularInfluence: 85, territory: '两京十三省+辽东都司+贵州土司', ideology: '礼法·儒教·天下共主', desc: '大明享国二百六十年。神宗怠政后，政局每况愈下。熹宗末年阉党专擅，士林溃散。新帝立，国本未定。', traits: ['儒教', '天朝', '大一统'] },
-      { name: '后金', leader: '皇太极', color: '#6a4c93', strength: 58, militaryStrength: 72, economy: 32, courtInfluence: 10, popularInfluence: 18, territory: '辽东沈阳·赫图阿拉·辽西诸卫', ideology: '萨满·汗权·八旗', desc: '努尔哈赤称汗于天命元年（1616）。皇太极继位改革政制，结纳蒙汉，将成大患。', traits: ['八旗劲旅', '渔猎游牧', '多民族'] },
-      { name: '察哈尔', leader: '林丹汗', color: '#8b4513', strength: 30, militaryStrength: 40, economy: 18, courtInfluence: 8, popularInfluence: 15, territory: '漠南蒙古·归化城', ideology: '藏传佛教·蒙古正统', desc: '元裔。名义漠南蒙古共主。屡败于后金，西迁归化。欲与明结盟共抗后金。', traits: ['骑射', '游牧'] },
-      { name: '朝鲜', leader: '仁祖·李倧', color: '#4a7c2c', strength: 28, militaryStrength: 20, economy: 30, courtInfluence: 22, popularInfluence: 10, territory: '朝鲜八道', ideology: '儒教·事大', desc: '光海君被废（1623），仁祖反正立国。天启七年春被后金所伐，定江都兄弟盟。明之东藩。', traits: ['事大至诚', '衰弱'] },
-      { name: '播州土司·杨氏', leader: '杨朝栋', color: '#9c6633', strength: 8, militaryStrength: 12, economy: 5, courtInfluence: 3, popularInfluence: 8, territory: '贵州遵义·播州', ideology: '土司自治', desc: '万历二十八年播州之役后，杨氏后裔仅存，然西南土司网络犹在。', traits: ['山地', '土司'] },
-      { name: '郑氏海商', leader: '郑芝龙', color: '#2a6f9c', strength: 18, militaryStrength: 26, economy: 42, courtInfluence: 5, popularInfluence: 28, territory: '福建沿海·台湾海峡', ideology: '海权·商贸', desc: '海商兼海盗。1624 年助荷兰人据台湾。1628 年将受明招抚为游击。日后东亚海上霸主。', traits: ['海军强盛', '商人集团', '海盗转正'] },
-      { name: '陕北饥民', leader: '王嘉胤', color: '#7a4e3b', strength: 6, militaryStrength: 4, economy: 1, courtInfluence: 0, popularInfluence: 35, territory: '陕西延安府·榆林', ideology: '求活·均田免赋（后发展）', desc: '连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。', traits: ['饥民', '逃兵'] }
+      {
+        name: '明朝廷', leader: '朱由检', color: '#c9a84c',
+        strength: 70, militaryStrength: 62, economy: 55,
+        courtInfluence: 100, popularInfluence: 85,
+        territory: '两京十三省 + 辽东都司 + 乌思藏 + 各土司', capital: '北京·紫禁城',
+        ideology: '礼法·儒教·天下共主',
+        desc: '大明享国二百六十年。神宗怠政后政局日坏。熹宗末年阉党专擅，士林溃散。新帝立，国本未定。',
+        traits: ['儒教', '天朝', '大一统', '官僚体制', '科举取士'],
+        members: '朱由检(帝)·周皇后·张懿安·魏忠贤(阉党)·韩爌(东林)·孙承宗(武)·袁崇焕·毕自严·徐光启·朱常洵(福王)',
+        leadership: { ruler: '朱由检', regent: '', general: '王之臣/袁崇焕(候)', chancellor: '黄立极(将罢)', spy: '魏忠贤(东厂)' },
+        attitude: { self: '正统天朝', enemies: '后金/土司叛乱/流民', allies: '朝鲜', neutrals: '察哈尔/琉球/安南' },
+        mainResources: '漕粮·银·盐·茶·丝绸·瓷器·棉布·兵器',
+        treasury: { money: 2000000, grain: 5000000, cloth: 500000, note: '太仓见银 200 万两（实可调 85 万）；京通仓粮 130 万石' },
+        partyRelations: '阉党vs东林党为主要矛盾；浙党/齐党/楚党/昆党/宣党环绕。朱由校遗命"弟当为尧舜"。',
+        history: '太祖洪武立国 1368 → 成祖迁都 1421 → 仁宣之治 → 土木之变 1449 → 弘治中兴 → 嘉靖议礼 → 张居正改革 → 万历三大征+怠政 → 天启阉祸。凡 259 年。',
+        strengths: ['正统合法性', '庞大人口', '成熟官僚', '江南财赋', '长城防线', '天朝朝贡体系'],
+        weaknesses: ['阉党专权', '辽东军饷黑洞', '江南抗税', '宗藩负担', '小冰河天灾', '党争内耗', '武备废弛'],
+        strategy: '新帝即位首务：稳京师、除权阉、用贤能、救陕饥、守辽东。',
+        playerRelation: '玩家本尊'
+      },
+      {
+        name: '后金', leader: '皇太极', color: '#6a4c93',
+        strength: 58, militaryStrength: 72, economy: 32,
+        courtInfluence: 10, popularInfluence: 18,
+        territory: '辽东沈阳·赫图阿拉·辽西诸卫·朝鲜西北', capital: '沈阳（盛京）',
+        ideology: '萨满·汗权·八旗·以汉治汉',
+        desc: '努尔哈赤称汗于天命元年（1616）。皇太极继位改革政制，结纳蒙汉，将成大患。明史称为"奴酋""虏"，然自号"大金"追宋金之续。',
+        traits: ['八旗劲旅', '渔猎游牧', '多民族', '骑兵为主', '善长火器'],
+        members: '皇太极(汗)·代善(大贝勒)·阿敏·莽古尔泰·多尔衮·多铎·范文程(汉臣)·宁完我·孔有德(将叛明)',
+        leadership: { ruler: '皇太极', regent: '代善', general: '多尔衮/阿济格', chancellor: '范文程', spy: '(借明朝边镇将领)' },
+        attitude: { self: '女真正统·后金汗业', enemies: '大明/察哈尔/朝鲜(初)', allies: '科尔沁蒙古/朝鲜(已迫盟)', neutrals: '其他蒙古' },
+        mainResources: '马·皮毛·人参·辽东铁·辽河谷平原粮',
+        treasury: { money: 300000, grain: 800000, cloth: 50000, note: '八旗共有制。汗库受限。' },
+        partyRelations: '内部四大贝勒并坐之议——皇太极隐忍削权；外与察哈尔竞蒙古霸；与朝鲜定江都盟。',
+        history: '努尔哈赤 1583 起兵 → 1616 称汗建金 → 1619 萨尔浒破明 → 1621 取沈阳辽阳 → 1626 宁远伤殁 → 1626 皇太极继位 → 1627 征朝鲜。',
+        strengths: ['八旗军纪', '骑射无敌', '皇太极雄才', '汉臣谋主', '内部凝聚'],
+        weaknesses: ['人口不足百万', '攻城不精', '朝鲜未完全臣服', '察哈尔西翼'],
+        strategy: '短期：休养+结蒙古；中期：绕蒙古破长城；长期：取明入主中原。'
+      },
+      {
+        name: '察哈尔', leader: '林丹汗', color: '#8b4513',
+        strength: 30, militaryStrength: 40, economy: 18,
+        courtInfluence: 8, popularInfluence: 15,
+        territory: '漠南蒙古·归化城·宣化塞外', capital: '归化城（呼和浩特）',
+        ideology: '藏传佛教黄教·元裔蒙古正统',
+        desc: '元朝余脉。名义漠南蒙古共主。林丹汗欲效祖成吉思汗重振蒙古，然屡败于后金。',
+        traits: ['骑射', '游牧', '黄教', '元裔'],
+        members: '林丹汗·苏泰太后·囊囊太后·额哲(幼子·日后归清)',
+        leadership: { ruler: '林丹汗', regent: '', general: '', chancellor: '', spy: '' },
+        attitude: { self: '蒙古大汗', enemies: '后金', allies: '(欲结明)', neutrals: '漠北/漠西蒙古' },
+        mainResources: '马·羊·毛皮',
+        treasury: { money: 50000, grain: 100000, cloth: 20000, note: '游牧财富流动。无常备国库。' },
+        partyRelations: '与科尔沁/喀喇沁/土默特等部敌对（皆附后金）；欲与明结盟共抗后金。',
+        history: '1604 继察哈尔汗 → 屡伐诸部不服 → 1625 强推黄教引分裂 → 1627 被后金击败西迁归化。',
+        strengths: ['蒙古正统名分', '骑兵机动'],
+        weaknesses: ['诸部离心', '无稳定财源', '内部教派冲突', '后金压迫'],
+        strategy: '结明联抗后金；恢复蒙古一统。'
+      },
+      {
+        name: '朝鲜', leader: '仁祖·李倧', color: '#4a7c2c',
+        strength: 28, militaryStrength: 20, economy: 30,
+        courtInfluence: 22, popularInfluence: 10,
+        territory: '朝鲜八道（京畿/忠清/庆尚/全罗/江原/黄海/平安/咸镜）', capital: '汉城（今首尔）',
+        ideology: '儒教·事大·小中华',
+        desc: '李氏朝鲜第十六代。仁祖反正（1623）废光海君。天启七年春被后金所伐，定江都兄弟盟。',
+        traits: ['事大至诚', '儒家正统', '衰弱', '两班贵族'],
+        members: '仁祖李倧·昭显世子(日后被清劫为质)·孝宗大君·金尚宪(主战派)·崔鸣吉(主和派)',
+        leadership: { ruler: '仁祖李倧', regent: '', general: '张晚/李贵', chancellor: '金尚宪', spy: '' },
+        attitude: { self: '小中华', enemies: '后金(被迫结盟)/倭', allies: '大明', neutrals: '琉球' },
+        mainResources: '人参·毛皮·银·米·纸',
+        treasury: { money: 40000, grain: 300000, cloth: 15000, note: '被后金勒索赔款后国库空虚' },
+        partyRelations: '国内"西人/南人/老论/少论"四党争。主和派主战派对峙。对明事大、对后金屈辱兄弟盟。',
+        history: '李氏 1392 立国 → 1392 朱元璋册封 → 1592 壬辰倭乱明军援 → 1623 仁祖反正 → 1627 丁卯之役被迫兄事后金。',
+        strengths: ['山地易守', '两班文治', '对明忠诚'],
+        weaknesses: ['兵弱', '党争', '军饷不足', '夹缝生存'],
+        strategy: '对明恭敬求援；对后金虚与委蛇。'
+      },
+      {
+        name: '播州土司·杨氏(余裔)', leader: '杨朝栋', color: '#9c6633',
+        strength: 8, militaryStrength: 12, economy: 5,
+        courtInfluence: 3, popularInfluence: 8,
+        territory: '贵州遵义府边地·原播州地', capital: '(已无)',
+        ideology: '土司自治·彝汉混合',
+        desc: '万历二十八年（1600）播州之役杨应龙族灭，然西南土司网络犹在。残支余裔不甘，联结水西安氏/永宁奢氏观变。',
+        traits: ['山地', '土司', '残余', '勾结奢安之乱'],
+        members: '杨朝栋·土司余孽',
+        leadership: { ruler: '杨朝栋', regent: '', general: '', chancellor: '', spy: '' },
+        attitude: { self: '土司独立', enemies: '明朝改土归流政策', allies: '水西安氏/永宁奢氏', neutrals: '其他小土司' },
+        mainResources: '山地木材·朱砂·汞',
+        treasury: { money: 5000, grain: 8000, cloth: 1000 },
+        partyRelations: '与水西安邦彦、永宁奢崇明同为土司利益共同体（奢安之乱 1621-1629）。',
+        history: '杨氏自唐乾符年间入播 → 700 余年世袭 → 杨应龙 1600 被平 → 剩余族人图谋复国。',
+        strengths: ['山地熟悉', '族人向心'],
+        weaknesses: ['精英尽失', '无财力', '明军仍在附近'],
+        strategy: '等待明内乱时借势复起。'
+      },
+      {
+        name: '郑氏海商', leader: '郑芝龙', color: '#2a6f9c',
+        strength: 18, militaryStrength: 26, economy: 42,
+        courtInfluence: 5, popularInfluence: 28,
+        territory: '福建沿海·台湾海峡·厦门·金门·东番岛部分', capital: '厦门/日本平户',
+        ideology: '海权·商贸·天主教(部分)',
+        desc: '海商兼海盗集团。1624 年助荷兰人据台湾。1628 年将受明招抚为游击。日后东亚海上霸主。',
+        traits: ['海军强盛', '商人集团', '海盗转正', '多语种', '亦中亦西'],
+        members: '郑芝龙·郑鸿逵(弟)·郑芝虎(弟)·郑成功(3岁·未来领袖)·何斌(通事)·杨天生(副)',
+        leadership: { ruler: '郑芝龙', regent: '', general: '郑鸿逵', chancellor: '何斌', spy: '日本平户联络人' },
+        attitude: { self: '海商王侯', enemies: '荷兰东印度公司·西班牙·其他海盗', allies: '日本幕府(通商)·西班牙马尼拉(有限)', neutrals: '明朝(欲归附)' },
+        mainResources: '糖·丝·鹿皮·海贸税·走私',
+        treasury: { money: 300000, grain: 50000, cloth: 20000, note: '海贸流水极大，金银储备数百万两' },
+        partyRelations: '与荷兰东印度公司（台湾大员）竞争台海；与明福建官府"时叛时抚"；与日本平户保持商贸。',
+        history: '1604 出生南安 → 1621 赴日本平户 → 1624 助荷兰据台 → 1625-1627 海上壮大 → 1628 将受抚。',
+        strengths: ['舰船数量', '海贸网络', '通译多国', '财力'],
+        weaknesses: ['朝廷视为海盗', '荷兰人武备优', '内部宗派'],
+        strategy: '受抚得官，换取合法性；以剿其他海盗为条件扩张。'
+      },
+      {
+        name: '陕北饥民(将起)', leader: '王嘉胤', color: '#7a4e3b',
+        strength: 6, militaryStrength: 4, economy: 1,
+        courtInfluence: 0, popularInfluence: 35,
+        territory: '陕西延安府·榆林·米脂·府谷', capital: '(无·流动)',
+        ideology: '求活·均田免赋（后发展）·反明',
+        desc: '连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。',
+        traits: ['饥民', '逃兵', '流动作战', '无组织'],
+        members: '王嘉胤(首)·高迎祥(舅)·李自成(尚为驿卒)·张献忠(尚为军卒)·罗汝才·刘宗敏',
+        leadership: { ruler: '王嘉胤(名义)', regent: '', general: '高迎祥(潜)', chancellor: '', spy: '' },
+        attitude: { self: '求活之民', enemies: '明官军·缙绅', allies: '其他流民', neutrals: '地方武装' },
+        mainResources: '劫掠所得',
+        treasury: { money: 0, grain: 500, cloth: 0 },
+        partyRelations: '此时尚无政治组织。内部散乱。',
+        history: '1625-1626 陕北持续大旱 → 1627 饥民聚啸 → 1628 崇祯元年秋王嘉胤起事 → 1629 李自成驿站被裁加入 → 1644 破京。',
+        strengths: ['兵员无限补充(饥民)', '机动', '知地利'],
+        weaknesses: ['无军纪', '无根据地', '首脑不稳', '补给难'],
+        strategy: '此时仅求食。若民变燎原则走"流寇"战略——不据一城，流动求活。'
+      }
     ];
     facs.forEach(function (f) { f.sid = SID; f.id = _uid('fac_'); global.P.factions.push(f); });
 

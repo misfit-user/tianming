@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v30-2026.04.19-local-weisuo-garrisons';
+  var SCENARIO_VERSION = 'v31-2026.04.19-corruption-fiscal-initial';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1620,6 +1620,136 @@
             '山东': { landCapacity: 5800000, waterAvailable: 4600000, climate: 0.78 }
           },
           yellowRiverRisk: { level: 'high', note: '黄河夺淮入海已两百年，明末堤防失修。每 2-3 年必有大溃。' }
+        }
+      },
+
+      // ──── 吏治初值（编辑器 scriptData.corruption · 对齐 editor-corruption.js · 明·末世偏上）────
+      // 预设表: 明·末世 85，天启七年处于"中衰末→末世初"过渡，取 76 合理
+      corruption: {
+        trueIndex: 76,
+        subDepts: {
+          central:    { true: 65, note: '内阁/六部/都察院多阉党把持；黄立极/崔呈秀/周应秋/王绍徽/薛贞等阉党或附阉' },
+          provincial: { true: 70, note: '督抚/州县浮收严重，胥吏包揽里甲，江南尤甚；陕西胡廷宴粉饰太平不报饥' },
+          military:   { true: 78, note: '九边卫所军官冒饷/侵屯田/吃空饷极重；京营老弱空额 50%；毛文龙东江冒饷数倍' },
+          fiscal:     { true: 75, note: '户部/盐铁司/钞关盐引全有侵渔；盐引滥发积欠上千万引；钞关夹带漏税' },
+          judicial:   { true: 68, note: '刑部/都察院三法司被诏狱架空；锦衣卫东厂罗织案多于正常审案' },
+          imperial:   { true: 92, note: '魏忠贤九千岁巅峰；东厂+司礼监完全私有化；宗室福王侵田 4 万顷；生祠遍天下' }
+        },
+        supervision: {
+          level: 22,  // 监察力度极低（都察院/六科被阉党把持，不能弹魏党）
+          note: '名器尚在，实效已无。李养正任左都御史，都御史附阉；六科给事中名"独立"实多附阉；按察使司仅有半数能独立执法',
+          institutions: [
+            { name: '都察院', coverage: ['central', 'provincial'], radius: 70, independence: 15, corruption: 55, vacancies: 0.30, note: '李养正(阉党)任左都御史，右都御史空缺' },
+            { name: '六科给事中', coverage: ['central'], radius: 60, independence: 40, corruption: 45, vacancies: 0.25, note: '户科最重·阉党把持多年；吏科存希望' },
+            { name: '东厂', coverage: ['imperial', 'central', 'military'], radius: 95, independence: 5, corruption: 90, vacancies: 0, note: '魏忠贤完全私器；缇骑四出' },
+            { name: '锦衣卫·北镇抚司', coverage: ['imperial', 'central', 'military'], radius: 85, independence: 10, corruption: 85, vacancies: 0.10, note: '田尔耕/许显纯主诏狱' },
+            { name: '十三道按察使司', coverage: ['provincial'], radius: 65, independence: 50, corruption: 55, vacancies: 0.23, note: '省级独立司法·部分尚清' },
+            { name: '巡按御史(十三道)', coverage: ['provincial'], radius: 55, independence: 45, corruption: 50, vacancies: 0.18, note: '代皇帝按察地方·任期一年·多被阉党附庸' }
+          ]
+        },
+        entrenchedFactions: [
+          { name: '阉党', dept: 'imperial', strength: 92, years: 5, note: '天启二年魏忠贤掌司礼监始成规模；崔呈秀/田尔耕/许显纯/周应秋等五虎五彪十狗' },
+          { name: '阉党·中央外廷', dept: 'central', strength: 82, years: 4, note: '内阁/六部/都察院过半；黄立极/施凤来/张瑞图阁臣' },
+          { name: '阉党·军镇', dept: 'military', strength: 65, years: 3, note: '崔呈秀督京营；阎鸣泰辽东经略；侯世禄/朱梅等附阉' },
+          { name: '阉党·税司', dept: 'fiscal', strength: 58, years: 3, note: '钞关盐引江南织造局多阉党亲信' },
+          { name: '东林残余', dept: 'central', strength: 15, years: 24, note: '万历三十二年顾宪成创东林书院；天启四年六君子死；硕果仅存者韩爌/钱龙锡等散居' },
+          { name: '浙党', dept: 'central', strength: 48, years: 28, note: '万历二十九年沈一贯入阁起；附阉党求存；温体仁将兴' },
+          { name: '楚党', dept: 'central', strength: 18, years: 20, note: '熊廷弼死后大衰；官应震勉力支撑' },
+          { name: '齐党', dept: 'central', strength: 22, years: 14, note: '亓诗教/李精白等，附阉；李精白为山东巡抚' },
+          { name: '宗室·侵田集团', dept: 'imperial', strength: 78, years: 13, note: '万历四十二年福王朱常洵就国洛阳，侵田 4 万顷+岁米 2 万石；潞王/瑞王类之' },
+          { name: '辽东军头', dept: 'military', strength: 62, years: 10, note: '祖氏三代辽东世将·家丁 3000 为私军；毛文龙东江桀骜' },
+          { name: '江南缙绅·抗税网络', dept: 'fiscal', strength: 70, years: 40, note: '苏松常镇缙绅包揽里甲+荫户逃税+抗商税；天启六年苏州五人墓事件代表' },
+          { name: '西南土司残余', dept: 'provincial', strength: 45, years: 8, note: '奢安之乱刚平。水西安氏/播州杨氏余脉仍存异心' }
+        ]
+      },
+
+      // ──── 财政库存初值（编辑器 top-level scriptData.guoku · 国库太仓）────
+      // 说明: 编辑器新版不再手填库存，由 行政区划 publicTreasuryInit + 官制 publicTreasuryInit + 税收级联 自然聚合
+      // 此处填 top-level 供旧流程兼容 + 运行时初始化之用
+      guoku: {
+        initialMoney: 800000,   // 太仓银库存·两
+        initialGrain: 2800000,  // 太仓粮储·石
+        initialCloth: 80000,    // 布匹·匹
+        monthlyIncomeEstimate: { money: 650000, grain: 720000, cloth: 18000 },  // 月均估计
+        monthlyExpenseEstimate: { money: 920000, grain: 980000, cloth: 22000 },  // 月均估计(含辽饷)
+        deficitNote: '月赤字约 27 万两+26 万石粮。辽饷岁需 500 万靠加派。三大征八百万两已耗尽张居正遗积',
+        quotaMoney: 8000000,   // 天下税银理论总额
+        quotaGrain: 20000000,  // 天下税粮理论总额
+        quotaCloth: 500000,
+        historicalContext: '《明史·食货志》《崇祯实录》: 天启末太仓库存银仅 80 余万两（张居正积八百万已尽于三大征）；辽饷加派每年 500 万两勉强补九边；崇祯元年盘查时太仓实存银不足百万',
+        source: '户部主管+十三清吏司分掌；太仓银库存通州；京通十三仓储粮'
+      },
+
+      // ──── 内帑初值（编辑器 top-level scriptData.neitang · 皇帝私藏）────
+      neitang: {
+        initialMoney: 2000000,  // 内承运库存银·两（魏忠贤聚敛+万历馈余）
+        initialGrain: 200000,
+        initialCloth: 150000,
+        huangzhuangAcres: 320000,  // 皇庄田亩
+        huangzhuangRatePerAcre: 0.45,  // 每亩租两/年
+        monthlyIncomeEstimate: { money: 45000, grain: 12000, cloth: 3500 },
+        monthlyExpenseEstimate: { money: 95000, grain: 18000, cloth: 4500 },
+        historicalContext: '魏忠贤掌内承运库八年聚敛无数。崇祯元年清查时实存约 200 万两+金数万+宝石锦缎无算。万历末原有 500-600 万两(矿税积累)，三大征+阉党挥霍后剩此数',
+        imperialBusinesses: ['苏州织造局', '杭州织造局', '江宁织造局', '内库盐引', '贡茶(武夷/阳羡)', '景德镇御器厂(宫廷窑)'],
+        imperialBusinessRevenueAnnual: 500000,
+        debtToGuoku: { amount: 1800000, interestFree: true, note: '边饷极急时户部借内帑形成的累计欠额' },
+        source: '司礼监秉笔太监(魏忠贤)节制；王体乾掌印太监；内承运库掌库提调'
+      },
+
+      // ──── 诏令权威初值（编辑器 fiscalConfig·诏令 Tab）────
+      edictAuthority: {
+        initialPower: 55,  // 0-100。新帝威柄尚未立
+        tokenMintRate: 0.8,  // 每月生成诏令令牌数
+        maxConcurrentEdicts: 3,
+        resistanceByFaction: {
+          '阉党': 85,     // 阉党完全抗拒新帝诏令(除非有利)
+          '东林残': 15,
+          '浙党': 60,
+          '楚党': 45,
+          '齐党': 55,
+          '宗室': 70,     // 侵田利益集团抗减禄
+          '辽东军头': 50,
+          '江南缙绅': 60
+        },
+        inertiaByCategory: {
+          '政治': 0.4,    // 低惯性(新帝用人自由)
+          '经济': 0.7,    // 中高惯性(加减税阻力大)
+          '军事': 0.5,
+          '外交': 0.6,
+          '宗藩': 0.85,   // 极高惯性(祖制不可改)
+          '刑罚': 0.5
+        },
+        note: '新帝即位初诏令效能系数: 威柄 55 × (1 - 党争烈度 0.35) ≈ 36 份实效。阉党完全掌握司礼监批红+通政司抄发，诏令每下需与阉党博弈'
+      },
+
+      // ──── 权力初值（编辑器 fiscalConfig·权力初值 Tab ）────
+      powerInitial: {
+        imperial: {       // 皇权
+          legitimacy: 85,  // 合法性：朱由校遗诏+张皇嫂召之入继
+          centralControl: 45,  // 中央控制：阁臣/六部多阉党牵制
+          edictEfficacy: 36,   // 诏令实效性
+          note: '合法性高(正统继位)但实控弱(阉党掣肘)'
+        },
+        bureaucratic: {  // 官僚权力
+          aristocrats: 28,    // 世家勋贵(明代已无)
+          literati: 45,       // 文官集团(东林将复但现残存+浙党附阉)
+          eunuchs: 92,        // 宦官(魏党巅峰)
+          military: 62,       // 将帅(家丁化+辽东独立)
+          foreign: 5          // 外藩(无干预朝政权)
+        },
+        regional: {      // 地方分权
+          provinces: 65,  // 督抚独立性(陕西胡廷宴敢粉饰太平)
+          tusi: 75,       // 土司半独立(奢安之乱余波)
+          frontiers: 80,  // 边镇军头(祖氏/毛文龙)
+          capital: 40     // 京畿(阉党控东厂+京营)
+        },
+        factional: {     // 党争烈度
+          level: 78,      // 0-100
+          dominant: '阉党',
+          rising: '东林(将起)·浙党(转舵)',
+          waning: '楚党·宣党·昆党',
+          mode: 'zero_sum',  // 你死我活
+          note: '天启朝末，党争即将进入"清算阉党→东林复起→东林与温体仁决裂"三步循环'
         }
       },
 

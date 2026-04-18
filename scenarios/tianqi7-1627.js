@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v27-2026.04.19-scriptinfo-canonical-fields';
+  var SCENARIO_VERSION = 'v28-2026.04.19-military-editor-schema';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1747,6 +1747,15 @@
           { name: '九边总兵制', type: '边防指挥', description: '每镇总兵一员，加都督衔。' },
           { name: '监军太监', type: '内廷派遣', description: '东厂/司礼监派内侍监察边镇。' }
         ],
+        // 编辑器 scriptData.military.militarySystem（名/类型/时代/描述/效果）——合并 organization+top-militarySystems
+        militarySystem: [
+          { name: '卫所制', type: '世袭军户', era: '洪武至今', description: '卫(5600人)-千户所(1120人)-百户所(112人)三级。军户世袭，屯田自耕(三边亩九七自耕三纳粮)。明中叶后虚化严重：军户逃亡/军官侵田/实额不及三成。', effects: '开局免饷但战力-30%·逐年虚化+2%' },
+          { name: '募兵制', type: '招募制', era: '嘉靖以降', description: '九边/京营/戚家军/关宁军皆募兵。年饷约 18 两银+米 12 石。以银米募之。精锐多由此出。', effects: '每月支银米·战力+20·饷银开支+大' },
+          { name: '家丁制', type: '将帅私兵', era: '万历以降', description: '总兵自募亲兵。祖氏三千家丁冠辽东。战力最强但忠于主将，独立化倾向重。', effects: '战力+35·忠诚绑总兵·中央控弱-15' },
+          { name: '九边总兵制', type: '边防指挥', era: '明代', description: '辽东/蓟州/宣府/大同/山西/延绥/宁夏/甘肃/固原九镇各设总兵一员，加都督衔节制本镇。', effects: '边防自主·文臣节制限度' },
+          { name: '监军太监', type: '内廷派遣', era: '正德以降', description: '东厂/司礼监派内侍监察边镇。魏忠贤朝派遣尤多。', effects: '帝控+20·军效-10·腐败风险+' },
+          { name: '督抚总督制', type: '文臣节军', era: '嘉靖以降', description: '文臣以都察院右都御史/兵部右侍郎加衔任总督/经略，节制数镇。如辽东经略/三边总督。', effects: '文武相制·实权在督抚' }
+        ],
         campaigns: [
           { name: '宁远大捷', type: '过往胜仗', description: '天启六年袁崇焕以红衣大炮退努尔哈赤，破老奴不败神话。' },
           { name: '宁锦大捷', type: '过往胜仗', description: '天启七年五月袁崇焕据宁锦退皇太极。然阉党论功偏袒王之臣。' },
@@ -1764,36 +1773,552 @@
           { name: '江都盟(1627 春)', type: '外敌条约·新', description: '后金皇太极迫朝鲜仁祖定兄弟之盟。明失一东藩屏。' }
         ],
         armies: [
-          // ─── 京营 ───
-          { name: '京营·五军营', commander: '(督京营)崔呈秀', size: 60000, type: '步骑混合', morale: 48, supply: 60, location: '京师', equipment: ['鸟铳', '长矛', '纸甲', '佛朗机'], desc: '名员 12 万实 6 万，多老弱空额。阉党把持。', units: ['五军营·中军', '五军营·左军', '五军营·右军', '五军营·前军', '五军营·后军'], combatRecord: '久未实战' },
-          { name: '京营·三千营', commander: '(与五军营同督)', size: 8000, type: '骑兵·侍卫', morale: 52, supply: 65, location: '京师', equipment: ['弓矢', '长矛', '铁甲'], desc: '侍卫骑兵。扈驾兼缉察。' },
-          { name: '京营·神机营', commander: '', size: 12000, type: '火器·炮兵', morale: 55, supply: 62, location: '京师', equipment: ['神机炮', '火铳', '三眼铳', '佛朗机'], desc: '火器精锐。守九门。' },
-          // ─── 关宁 ───
-          { name: '关宁军主力', commander: '(经略)王之臣', size: 80000, type: '骑兵为主', morale: 65, supply: 52, location: '宁远-锦州', equipment: ['红衣大炮', '鸟铳', '明盔', '棉甲', '三眼铳'], desc: '辽东精锐。孙承宗所筑防线核心。', units: ['宁远卫', '锦州卫', '松山卫', '塔山卫', '杏山卫', '大凌河卫', '小凌河卫'], combatRecord: '1626 宁远大捷击退努尔哈赤·1627 宁锦大捷击退皇太极' },
-          { name: '宁远卫·满桂部', commander: '满桂', size: 15000, type: '骑兵·蒙古裔', morale: 72, supply: 55, location: '宁远', equipment: ['鸟铳', '长矛', '佛朗机', '铁甲', '蒙古马'], combatRecord: '宁远大战亲督城头' },
-          { name: '宁远副总兵·祖氏家丁', commander: '祖大寿', size: 3000, type: '家丁精锐·骑兵', morale: 88, supply: 80, location: '宁远', equipment: ['上等棉甲', '明盔', '强弓', '宝剑'], desc: '祖氏三代辽东世将。战力冠三军。', combatRecord: '宁远/宁锦皆骨干' },
-          { name: '山海关军', commander: '赵率教', size: 20000, type: '步骑混合', morale: 70, supply: 60, location: '山海关', equipment: ['红衣大炮', '鸟铳', '棉甲'], units: ['前屯卫', '中前所', '中后所'], combatRecord: '天下第一关守军' },
-          // ─── 东江 ───
-          { name: '东江镇军', commander: '毛文龙', size: 30000, type: '步兵·海岛游击', morale: 55, supply: 35, location: '皮岛', equipment: ['鸟铳', '藤牌', '长矛'], desc: '冒饷严重。实兵约三万，报十万。与朝鲜边境接壤。', units: ['皮岛本营', '鹿岛', '身弥岛', '云从岛'], combatRecord: '袭扰后金后方屡奏功，但亦屡假功' },
-          { name: '东江水师', commander: '(毛文龙节制)', size: 4000, type: '水军', morale: 50, supply: 40, location: '皮岛', equipment: ['福船', '沙船', '红夷炮'], desc: '辽海与朝鲜间小股水师。' },
-          // ─── 九边 ───
-          { name: '宣府镇军', commander: '侯世禄', size: 28000, type: '步兵·城守', morale: 55, supply: 50, location: '宣府', equipment: ['鸟铳', '长矛'], units: ['宣府本镇', '怀来卫', '万全都司'], combatRecord: '防蒙古' },
-          { name: '大同镇军', commander: '渠家祯', size: 35000, type: '步骑混合', morale: 54, supply: 48, location: '大同', equipment: ['鸟铳', '长矛', '铁甲'], combatRecord: '俺答汗和议后防蒙古' },
-          { name: '山西镇军', commander: '(空缺·将补)', size: 22000, type: '步兵', morale: 50, supply: 45, location: '太原', equipment: ['鸟铳', '长矛'] },
-          { name: '延绥镇军', commander: '吴自勉', size: 25000, type: '骑兵', morale: 50, supply: 40, location: '榆林', equipment: ['弓矢', '长矛', '棉甲'], desc: '控河套。兵马多陕北之人，日后民变即出其营。' },
-          { name: '宁夏镇军', commander: '(空缺)', size: 22000, type: '骑兵', morale: 48, supply: 42, location: '宁夏', equipment: ['弓矢', '长矛'] },
-          { name: '甘肃镇军', commander: '(空缺)', size: 22000, type: '骑兵', morale: 52, supply: 45, location: '甘州', equipment: ['弓矢', '长矛'] },
-          { name: '固原镇军', commander: '(三边总督武之望直辖)', size: 20000, type: '步骑混合', morale: 53, supply: 46, location: '固原', equipment: ['鸟铳', '长矛'] },
-          { name: '蓟州镇军', commander: '朱梅', size: 28000, type: '步兵', morale: 52, supply: 50, location: '蓟州', equipment: ['鸟铳', '长矛'], units: ['蓟镇本部', '昌平卫', '密云卫', '遵化卫'] },
-          // ─── 地方 ───
-          { name: '四川白杆兵', commander: '秦良玉', size: 6000, type: '土司兵·长杆步兵', morale: 78, supply: 65, location: '四川石柱·征援陕西', equipment: ['白杆长矛', '藤牌', '弓箭'], desc: '石柱宣抚使秦良玉(女将)所统。参万历三大征、奢安之乱、勤王。朝廷忠义典范。', combatRecord: '奢安之乱中屡破土司军' },
-          { name: '广西狼兵', commander: '(各土司首领)', size: 8000, type: '土司兵·山地步兵', morale: 70, supply: 55, location: '广西·援四川', equipment: ['藤牌', '鸟铳', '钩镰枪'], desc: '广西土司壮丁。山地骁勇。' },
-          // ─── 水师 ───
-          { name: '福建水师', commander: '(俞咨皋)', size: 5000, type: '水军', morale: 58, supply: 55, location: '福建沿海', equipment: ['福船', '苍山船', '海沧船', '红夷炮'], desc: '明末水师主力之一。防倭防荷。', combatRecord: '1625 料罗湾战荷兰(有限胜)' },
-          { name: '广东水师', commander: '', size: 3500, type: '水军', morale: 52, supply: 55, location: '广东沿海', equipment: ['广船', '鸟铳'], desc: '防倭防荷防海盗。' },
-          { name: '郑芝龙所部(将归附)', commander: '郑芝龙', size: 20000, type: '海商+海盗', morale: 75, supply: 80, location: '福建沿海·台海', equipment: ['福船', '红夷炮', '鸟铳', '佛朗机'], desc: '崇祯元年即将受抚为海防游击。战力远超福建官军水师。', combatRecord: '1624 助荷取澎湖逐退红夷·1627 击败许心素等诸海盗' },
-          // ─── 边外羁縻 ───
-          { name: '辽东土官·女真归附部', commander: '(各酋)', size: 2000, type: '骑兵·羁縻', morale: 55, supply: 40, location: '辽东·辽西诸卫', equipment: ['弓矢', '马'], desc: '海西/建州残部未归附后金者。现摇摆。' }
+          // ─── 旧字段·向后兼容·保留 ─── (新字段见下方 initialTroops)
+          { name: '京营·五军营', commander: '崔呈秀', size: 60000, type: '步骑混合', morale: 48, supply: 60, location: '京师', equipment: ['鸟铳', '长矛', '纸甲', '佛朗机'], desc: '名员 12 万实 6 万，多老弱空额。阉党把持。' },
+          { name: '关宁军主力', commander: '阎鸣泰', size: 80000, type: '骑兵为主', morale: 65, supply: 52, location: '宁远-锦州', equipment: ['红衣大炮', '鸟铳', '明盔', '棉甲'], desc: '辽东精锐。孙承宗所筑防线核心。' }
+        ],
+        // 编辑器 scriptData.military.initialTroops（完整 schema 对齐 editor-military.js openInitialTroopModal）
+        initialTroops: [
+          // ═══ 京营 ═══
+          {
+            name: '京营·五军营', armyType: '禁军', soldiers: 60000, garrison: '京师',
+            quality: '普通', morale: 48, training: 35, loyalty: 55, control: 65,
+            commander: '崔呈秀', commanderTitle: '兵部尚书·督京营戎政',
+            ethnicity: '汉', activity: '宿卫京师·久未实战',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '步兵(长矛刀牌)', count: 38000 },
+              { type: '骑兵', count: 9000 },
+              { type: '火器兵(鸟铳)', count: 8000 },
+              { type: '工兵·辎重', count: 5000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 720000, unit: '两' },
+              { resource: '粮食', amount: 420000, unit: '石' },
+              { resource: '布匹', amount: 60000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 6000, condition: '缺损' },
+              { name: '长矛', count: 45000, condition: '一般' },
+              { name: '纸甲', count: 38000, condition: '缺损' },
+              { name: '佛朗机', count: 80, condition: '一般' }
+            ],
+            description: '名员 12 万实 6 万，多老弱空额，甲胄朽烂。阉党崔呈秀把持，军制废弛。包括中/左/右/前/后五军营。'
+          },
+          {
+            name: '京营·三千营', armyType: '禁军', soldiers: 8000, garrison: '京师',
+            quality: '普通', morale: 52, training: 48, loyalty: 62, control: 78,
+            commander: '(崔呈秀总督·都指挥分统)', commanderTitle: '(崔呈秀总督·都指挥分统)',
+            ethnicity: '汉为主·蒙古降兵', activity: '扈驾·缉察',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '侍卫骑兵', count: 5000 },
+              { type: '扈从步兵', count: 3000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 180000, unit: '两' },
+              { resource: '粮食', amount: 72000, unit: '石' }
+            ],
+            equipment: [
+              { name: '弓矢', count: 5000, condition: '一般' },
+              { name: '长矛', count: 8000, condition: '一般' },
+              { name: '铁甲', count: 6000, condition: '一般' },
+              { name: '战马', count: 5200, condition: '一般' }
+            ],
+            description: '侍卫骑兵。扈驾兼缉察。明初由归附的蒙古骑兵编成，今多汉化。'
+          },
+          {
+            name: '京营·神机营', armyType: '禁军', soldiers: 12000, garrison: '京师',
+            quality: '普通', morale: 55, training: 52, loyalty: 60, control: 72,
+            commander: '', commanderTitle: '提督神机营',
+            ethnicity: '汉', activity: '守九门·阅兵',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '火铳兵', count: 7000 },
+              { type: '炮兵', count: 3000 },
+              { type: '辅兵·弹药', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 230000, unit: '两' },
+              { resource: '粮食', amount: 108000, unit: '石' },
+              { resource: '火药', amount: 25000, unit: '斤' }
+            ],
+            equipment: [
+              { name: '神机炮', count: 200, condition: '一般' },
+              { name: '火铳', count: 7000, condition: '一般' },
+              { name: '三眼铳', count: 1500, condition: '一般' },
+              { name: '佛朗机', count: 120, condition: '一般' }
+            ],
+            description: '火器精锐。守九门。成祖朱棣创制，以火器为核心。明末仍为京师最可用之师。'
+          },
+          // ═══ 关宁军 ═══
+          {
+            name: '关宁军主力', armyType: '边军', soldiers: 80000, garrison: '宁远-锦州',
+            quality: '精锐', morale: 65, training: 72, loyalty: 62, control: 78,
+            commander: '阎鸣泰', commanderTitle: '辽东经略',
+            ethnicity: '汉·蒙古降丁·辽民',
+            activity: '边防·守宁锦防线·对后金',
+            equipmentCondition: '优良',
+            composition: [
+              { type: '关宁铁骑', count: 10000 },
+              { type: '步兵', count: 48000 },
+              { type: '炮兵', count: 4000 },
+              { type: '家丁亲兵', count: 6000 },
+              { type: '辅兵·工兵', count: 12000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 3000000, unit: '两' },
+              { resource: '粮食', amount: 1500000, unit: '石' },
+              { resource: '布匹', amount: 150000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '红衣大炮', count: 25, condition: '优良' },
+              { name: '鸟铳', count: 14000, condition: '一般' },
+              { name: '三眼铳', count: 7000, condition: '一般' },
+              { name: '明盔', count: 30000, condition: '一般' },
+              { name: '棉甲', count: 45000, condition: '一般' },
+              { name: '战马', count: 16000, condition: '一般' }
+            ],
+            description: '辽东精锐。孙承宗所筑防线核心，袁崇焕曾倚此。1626 宁远大捷击退努尔哈赤，1627 宁锦大捷击退皇太极。辖宁远/锦州/松山/塔山/杏山/大凌河/小凌河诸卫。年饷约 300 万两，为九边之首。'
+          },
+          {
+            name: '宁远卫·满桂部', armyType: '边军', soldiers: 15000, garrison: '宁远',
+            quality: '精锐', morale: 72, training: 70, loyalty: 65, control: 70,
+            commander: '满桂', commanderTitle: '右军都督·宁远总兵',
+            ethnicity: '蒙古为主·汉军',
+            activity: '宁远城守·对后金前沿',
+            equipmentCondition: '优良',
+            composition: [
+              { type: '蒙古骑兵', count: 5000 },
+              { type: '步兵', count: 7000 },
+              { type: '炮兵', count: 1500 },
+              { type: '家丁', count: 1500 }
+            ],
+            salary: [
+              { resource: '钱', amount: 540000, unit: '两' },
+              { resource: '粮食', amount: 280000, unit: '石' },
+              { resource: '布匹', amount: 25000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 3500, condition: '一般' },
+              { name: '长矛', count: 10000, condition: '一般' },
+              { name: '佛朗机', count: 45, condition: '优良' },
+              { name: '铁甲', count: 4000, condition: '一般' },
+              { name: '蒙古马', count: 5200, condition: '优良' }
+            ],
+            description: '满桂蒙古裔，善骑射。宁远大战中亲督城头，血肉搏战。天启七年五月由大同总兵调宁远接替赵率教。'
+          },
+          {
+            name: '宁远副总兵·祖氏家丁', armyType: '边军', soldiers: 3000, garrison: '宁远',
+            quality: '精锐', morale: 88, training: 85, loyalty: 90, control: 35,
+            commander: '祖大寿', commanderTitle: '宁远副总兵·祖氏家主',
+            ethnicity: '汉·辽民',
+            activity: '家丁亲兵·宁远城守',
+            equipmentCondition: '优良',
+            composition: [
+              { type: '精锐骑兵', count: 2000 },
+              { type: '亲军步兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 180000, unit: '两' },
+              { resource: '粮食', amount: 72000, unit: '石' },
+              { resource: '布匹', amount: 8000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '上等棉甲', count: 3000, condition: '优良' },
+              { name: '明盔', count: 3000, condition: '优良' },
+              { name: '强弓', count: 2000, condition: '优良' },
+              { name: '宝剑', count: 1500, condition: '优良' },
+              { name: '战马', count: 2200, condition: '优良' }
+            ],
+            description: '祖氏三代辽东世将。战力冠三军。宁远/宁锦皆骨干。忠于祖氏而非朝廷——control 仅 35，为典型家丁化军队。日后大凌河、松锦皆祖氏骨干。'
+          },
+          {
+            name: '山海关军', armyType: '边军', soldiers: 20000, garrison: '山海关',
+            quality: '精锐', morale: 70, training: 68, loyalty: 70, control: 80,
+            commander: '赵率教', commanderTitle: '左军都督·山海关总兵',
+            ethnicity: '汉',
+            activity: '山海关咽喉·防后金入关',
+            equipmentCondition: '优良',
+            composition: [
+              { type: '步兵', count: 14000 },
+              { type: '骑兵', count: 3000 },
+              { type: '炮兵', count: 2000 },
+              { type: '辅兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 720000, unit: '两' },
+              { resource: '粮食', amount: 360000, unit: '石' },
+              { resource: '布匹', amount: 32000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '红衣大炮', count: 20, condition: '优良' },
+              { name: '鸟铳', count: 5000, condition: '一般' },
+              { name: '棉甲', count: 15000, condition: '一般' },
+              { name: '三眼铳', count: 1800, condition: '一般' }
+            ],
+            description: '天下第一关守军。辖前屯卫/中前所/中后所。天启七年五月满桂移宁远后赵率教接山海，为关宁重要一员。'
+          },
+          // ═══ 东江 ═══
+          {
+            name: '东江镇军', armyType: '边军', soldiers: 30000, garrison: '皮岛',
+            quality: '普通', morale: 55, training: 45, loyalty: 50, control: 30,
+            commander: '毛文龙', commanderTitle: '前军都督·东江总兵',
+            ethnicity: '汉·辽民·朝鲜归附',
+            activity: '海岛游击·袭扰后金后方',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '步兵', count: 18000 },
+              { type: '水兵', count: 5000 },
+              { type: '游击骑兵', count: 2000 },
+              { type: '辅兵', count: 5000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 600000, unit: '两' },
+              { resource: '粮食', amount: 360000, unit: '石' },
+              { resource: '布匹', amount: 20000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 4000, condition: '缺损' },
+              { name: '藤牌', count: 8000, condition: '一般' },
+              { name: '长矛', count: 15000, condition: '一般' }
+            ],
+            description: '冒饷严重。实兵约 3 万，报十万。驻皮岛(鹿岛/身弥岛/云从岛)，与朝鲜边境接壤。control 仅 30，桀骜独立。'
+          },
+          {
+            name: '东江水师', armyType: '水师', soldiers: 4000, garrison: '皮岛',
+            quality: '普通', morale: 50, training: 45, loyalty: 50, control: 30,
+            commander: '(毛文龙节制)', commanderTitle: '(毛文龙节制)',
+            ethnicity: '汉·辽民', activity: '辽海巡弋·援朝鲜',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '水军战兵', count: 3000 },
+              { type: '船工·辅兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 80000, unit: '两' },
+              { resource: '粮食', amount: 48000, unit: '石' }
+            ],
+            equipment: [
+              { name: '福船', count: 30, condition: '一般' },
+              { name: '沙船', count: 50, condition: '一般' },
+              { name: '红夷炮', count: 20, condition: '一般' }
+            ],
+            description: '辽海与朝鲜间小股水师。毛文龙麾下。'
+          },
+          // ═══ 九边(关外+长城诸镇) ═══
+          {
+            name: '蓟州镇军', armyType: '边军', soldiers: 28000, garrison: '蓟州',
+            quality: '普通', morale: 52, training: 48, loyalty: 65, control: 75,
+            commander: '朱梅', commanderTitle: '蓟州总兵',
+            ethnicity: '汉', activity: '长城关隘守御·卫京师北屏',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '步兵', count: 20000 },
+              { type: '骑兵', count: 5000 },
+              { type: '炮兵', count: 2000 },
+              { type: '辅兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 500000, unit: '两' },
+              { resource: '粮食', amount: 240000, unit: '石' },
+              { resource: '布匹', amount: 20000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 4500, condition: '一般' },
+              { name: '长矛', count: 18000, condition: '一般' },
+              { name: '佛朗机', count: 50, condition: '一般' }
+            ],
+            description: '辖蓟镇本部/昌平卫/密云卫/遵化卫。卫京师北屏。天启七年朱梅任。'
+          },
+          {
+            name: '宣府镇军', armyType: '边军', soldiers: 28000, garrison: '宣府',
+            quality: '普通', morale: 55, training: 50, loyalty: 65, control: 72,
+            commander: '侯世禄', commanderTitle: '宣府总兵',
+            ethnicity: '汉', activity: '城守·防蒙古察哈尔',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '城守步兵', count: 22000 },
+              { type: '骑兵', count: 4000 },
+              { type: '辅兵', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 460000, unit: '两' },
+              { resource: '粮食', amount: 228000, unit: '石' },
+              { resource: '布匹', amount: 18000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 4000, condition: '一般' },
+              { name: '长矛', count: 18000, condition: '一般' }
+            ],
+            description: '辖宣府本镇/怀来卫/万全都司。九边第一屏。防察哈尔林丹汗。'
+          },
+          {
+            name: '大同镇军', armyType: '边军', soldiers: 35000, garrison: '大同',
+            quality: '普通', morale: 54, training: 52, loyalty: 65, control: 72,
+            commander: '渠家祯', commanderTitle: '大同总兵',
+            ethnicity: '汉·蒙古降丁', activity: '防蒙古·守大同府',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '步兵', count: 24000 },
+              { type: '骑兵', count: 8000 },
+              { type: '炮兵', count: 2000 },
+              { type: '辅兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 580000, unit: '两' },
+              { resource: '粮食', amount: 300000, unit: '石' },
+              { resource: '布匹', amount: 24000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 5500, condition: '一般' },
+              { name: '长矛', count: 22000, condition: '一般' },
+              { name: '铁甲', count: 8000, condition: '一般' },
+              { name: '战马', count: 8500, condition: '一般' }
+            ],
+            description: '满桂刚卸任(天启七年五月调宁远)。俺答汗和议后长期防蒙古。渠家祯继任。'
+          },
+          {
+            name: '山西镇军', armyType: '边军', soldiers: 22000, garrison: '太原',
+            quality: '普通', morale: 50, training: 45, loyalty: 60, control: 70,
+            commander: '', commanderTitle: '山西总兵(空缺)',
+            ethnicity: '汉', activity: '守山西内镇',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '步兵', count: 18000 },
+              { type: '骑兵', count: 3000 },
+              { type: '辅兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 330000, unit: '两' },
+              { resource: '粮食', amount: 162000, unit: '石' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 3000, condition: '一般' },
+              { name: '长矛', count: 15000, condition: '一般' }
+            ],
+            description: '驻太原，节制宁武关诸堡。总兵暂缺。'
+          },
+          {
+            name: '延绥镇军', armyType: '边军', soldiers: 25000, garrison: '榆林',
+            quality: '普通', morale: 50, training: 50, loyalty: 58, control: 65,
+            commander: '杜文焕', commanderTitle: '延绥总兵',
+            ethnicity: '汉·陕北', activity: '控河套·守长城',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '骑兵', count: 10000 },
+              { type: '步兵', count: 13000 },
+              { type: '辅兵', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 360000, unit: '两' },
+              { resource: '粮食', amount: 180000, unit: '石' },
+              { resource: '布匹', amount: 15000, unit: '匹' }
+            ],
+            equipment: [
+              { name: '弓矢', count: 8000, condition: '缺损' },
+              { name: '长矛', count: 15000, condition: '缺损' },
+              { name: '棉甲', count: 12000, condition: '缺损' },
+              { name: '战马', count: 10000, condition: '一般' }
+            ],
+            description: '控河套。兵马多陕北之人。崇祯元年王二起义/王嘉胤起义即出本镇逃兵。欠饷数月。'
+          },
+          {
+            name: '宁夏镇军', armyType: '边军', soldiers: 22000, garrison: '宁夏',
+            quality: '普通', morale: 48, training: 45, loyalty: 55, control: 65,
+            commander: '', commanderTitle: '宁夏总兵(空缺)',
+            ethnicity: '汉·回·蒙', activity: '守河套西段',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '骑兵', count: 8000 },
+              { type: '步兵', count: 12000 },
+              { type: '辅兵', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 300000, unit: '两' },
+              { resource: '粮食', amount: 150000, unit: '石' }
+            ],
+            equipment: [
+              { name: '弓矢', count: 7000, condition: '缺损' },
+              { name: '长矛', count: 13000, condition: '缺损' }
+            ],
+            description: '宁夏镇总兵暂缺。哱拜旧乱之地。'
+          },
+          {
+            name: '甘肃镇军', armyType: '边军', soldiers: 22000, garrison: '甘州',
+            quality: '普通', morale: 52, training: 48, loyalty: 58, control: 68,
+            commander: '', commanderTitle: '甘肃总兵(空缺)',
+            ethnicity: '汉·回·番', activity: '河西走廊守御·对番部',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '骑兵', count: 9000 },
+              { type: '步兵', count: 11000 },
+              { type: '辅兵', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 300000, unit: '两' },
+              { resource: '粮食', amount: 135000, unit: '石' }
+            ],
+            equipment: [
+              { name: '弓矢', count: 7500, condition: '一般' },
+              { name: '长矛', count: 12000, condition: '缺损' }
+            ],
+            description: '河西走廊。与番部、吐鲁番对峙。'
+          },
+          {
+            name: '固原镇军', armyType: '边军', soldiers: 20000, garrison: '固原',
+            quality: '普通', morale: 53, training: 50, loyalty: 60, control: 70,
+            commander: '武之望(兼)', commanderTitle: '三边总督直辖',
+            ethnicity: '汉', activity: '陕西腹地军备',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '步兵', count: 13000 },
+              { type: '骑兵', count: 5000 },
+              { type: '辅兵', count: 2000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 280000, unit: '两' },
+              { resource: '粮食', amount: 135000, unit: '石' }
+            ],
+            equipment: [
+              { name: '鸟铳', count: 2500, condition: '一般' },
+              { name: '长矛', count: 13000, condition: '一般' }
+            ],
+            description: '三边总督武之望直辖。陕甘腹地支援。'
+          },
+          // ═══ 地方·土司 ═══
+          {
+            name: '四川白杆兵', armyType: '乡勇/民兵', soldiers: 6000, garrison: '四川石柱·征援陕西',
+            quality: '精锐', morale: 78, training: 75, loyalty: 85, control: 45,
+            commander: '秦良玉', commanderTitle: '石柱宣抚使·总兵官',
+            ethnicity: '土家·汉', activity: '征援陕西·剿奢安余部',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '白杆长矛兵', count: 4500 },
+              { type: '藤牌兵', count: 1000 },
+              { type: '弓箭兵', count: 500 }
+            ],
+            salary: [
+              { resource: '钱', amount: 50000, unit: '两' },
+              { resource: '粮食', amount: 36000, unit: '石' }
+            ],
+            equipment: [
+              { name: '白杆长矛', count: 5000, condition: '优良' },
+              { name: '藤牌', count: 1200, condition: '优良' },
+              { name: '弓箭', count: 600, condition: '一般' }
+            ],
+            description: '石柱宣抚使秦良玉(女将，时 52 岁)所统。参万历三大征、奢安之乱、勤王。朝廷忠义典范。'
+          },
+          {
+            name: '广西狼兵', armyType: '乡勇/民兵', soldiers: 8000, garrison: '广西·援四川',
+            quality: '精锐', morale: 70, training: 65, loyalty: 55, control: 40,
+            commander: '(各土司首领)', commanderTitle: '(各土司首领)',
+            ethnicity: '壮·苗·瑶', activity: '山地征战·粤桂边',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '山地步兵', count: 5500 },
+              { type: '弓弩兵', count: 1500 },
+              { type: '鸟铳兵', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 50000, unit: '两' },
+              { resource: '粮食', amount: 30000, unit: '石' }
+            ],
+            equipment: [
+              { name: '藤牌', count: 5500, condition: '一般' },
+              { name: '鸟铳', count: 1000, condition: '一般' },
+              { name: '钩镰枪', count: 3500, condition: '一般' }
+            ],
+            description: '广西土司壮丁。山地骁勇。明代倚为征战利器。'
+          },
+          // ═══ 水师 ═══
+          {
+            name: '福建水师', armyType: '水师', soldiers: 5000, garrison: '福建沿海',
+            quality: '普通', morale: 58, training: 55, loyalty: 60, control: 65,
+            commander: '俞咨皋', commanderTitle: '福建总兵官',
+            ethnicity: '汉·闽民', activity: '防倭·防荷·巡海',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '水军战兵', count: 3500 },
+              { type: '船工·桨手', count: 1500 }
+            ],
+            salary: [
+              { resource: '钱', amount: 120000, unit: '两' },
+              { resource: '粮食', amount: 60000, unit: '石' }
+            ],
+            equipment: [
+              { name: '福船', count: 50, condition: '一般' },
+              { name: '苍山船', count: 30, condition: '一般' },
+              { name: '海沧船', count: 40, condition: '一般' },
+              { name: '红夷炮', count: 15, condition: '一般' },
+              { name: '鸟铳', count: 1500, condition: '一般' }
+            ],
+            description: '明末水师主力之一。防倭防荷。1625 料罗湾战荷兰有限胜。'
+          },
+          {
+            name: '广东水师', armyType: '水师', soldiers: 3500, garrison: '广东沿海',
+            quality: '普通', morale: 52, training: 48, loyalty: 58, control: 65,
+            commander: '', commanderTitle: '广东总兵官',
+            ethnicity: '汉·粤民·疍民', activity: '防倭·防荷·防海盗',
+            equipmentCondition: '一般',
+            composition: [
+              { type: '水军战兵', count: 2500 },
+              { type: '船工·桨手', count: 1000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 80000, unit: '两' },
+              { resource: '粮食', amount: 42000, unit: '石' }
+            ],
+            equipment: [
+              { name: '广船', count: 40, condition: '一般' },
+              { name: '鸟铳', count: 1000, condition: '一般' }
+            ],
+            description: '防倭防荷防海盗。'
+          },
+          {
+            name: '郑芝龙所部(将归附)', armyType: '自定义', soldiers: 20000, garrison: '福建沿海·台海',
+            quality: '精锐', morale: 75, training: 72, loyalty: 30, control: 15,
+            commander: '郑芝龙', commanderTitle: '海商首领·将任海防游击',
+            ethnicity: '汉·闽海民·日本', activity: '海上贸易+袭扰海盗·将受抚',
+            equipmentCondition: '优良',
+            composition: [
+              { type: '海商精兵', count: 12000 },
+              { type: '降附海盗', count: 5000 },
+              { type: '炮手·商船水手', count: 3000 }
+            ],
+            salary: [
+              { resource: '钱', amount: 400000, unit: '两' },
+              { resource: '粮食', amount: 180000, unit: '石' }
+            ],
+            equipment: [
+              { name: '福船', count: 120, condition: '优良' },
+              { name: '红夷炮', count: 80, condition: '优良' },
+              { name: '鸟铳', count: 8000, condition: '一般' },
+              { name: '佛朗机', count: 250, condition: '优良' }
+            ],
+            description: '崇祯元年即将受抚为海防游击。战力远超福建官军水师。1624 助荷取澎湖逐退红夷·1627 击败许心素等诸海盗。忠诚仅 30——实为半独立海上军阀。'
+          },
+          // ═══ 边外羁縻 ═══
+          {
+            name: '辽东土官·女真归附部', armyType: '自定义', soldiers: 2000, garrison: '辽东·辽西诸卫',
+            quality: '普通', morale: 55, training: 50, loyalty: 40, control: 25,
+            commander: '(各酋)', commanderTitle: '(各酋)',
+            ethnicity: '海西女真·建州残部', activity: '羁縻·摇摆',
+            equipmentCondition: '简陋',
+            composition: [
+              { type: '骑兵', count: 1500 },
+              { type: '步兵', count: 500 }
+            ],
+            salary: [
+              { resource: '钱', amount: 20000, unit: '两' },
+              { resource: '粮食', amount: 10000, unit: '石' }
+            ],
+            equipment: [
+              { name: '弓矢', count: 2000, condition: '一般' },
+              { name: '战马', count: 1500, condition: '一般' }
+            ],
+            description: '海西/建州残部未归附后金者。现摇摆。朝廷以岁赐+官衔笼络之。'
+          }
         ],
         // ─── 补充：武器库存/征兵/军政 ───
         weaponArsenal: {

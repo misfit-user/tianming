@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v24-2026.04.19-admin-office-pub-treasury';
+  var SCENARIO_VERSION = 'v25-2026.04.19-population-salary-audit';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1420,12 +1420,23 @@
         floatingCollectionRate: 0.28,  // 浮收率：胥吏地方官多征 28%
         // ──── 固定支出（俸/军/宫）────
         fixedExpense: {
+          // 明代《明史·食货志》《明会典》岁俸折月（月米石）—— 正一品1044石/岁→87石/月。
+          // 实际发放折色：月米本色约4-10石，余俸折银(每石约0.25-0.7两)+胡椒+苏木。
+          // 天启末户部常欠俸，京官多以数月一给；外官稍好（就地截留公费）。
           salaryMonthlyPerRank: {
-            '正一品': 88, '从一品': 72, '正二品': 61, '从二品': 48,
+            '正一品': 87, '从一品': 74, '正二品': 61, '从二品': 48,
             '正三品': 35, '从三品': 26, '正四品': 24, '从四品': 21,
             '正五品': 16, '从五品': 14, '正六品': 10, '从六品': 8,
-            '正七品': 7, '从七品': 6, '正八品': 6, '从八品': 5,
-            '正九品': 5, '从九品': 5
+            '正七品': 7.5, '从七品': 7, '正八品': 6.5, '从八品': 6,
+            '正九品': 5.5, '从九品': 5
+          },
+          salaryNote: '单位：月米石。折色比例(本色米/折银+物)天启末约为 3:7。户部实发率约 0.82（拖欠常见）。京官靠"柴薪银"、外官靠"公费"、边官靠"养廉差补"补贴。',
+          salaryHistorical: {
+            '洪武': '定制：正一品岁俸 1044 石米。此为最高',
+            '永乐后': '始行折色，米/钞/布三色混发，实值下降',
+            '成化': '折银化，1 石折 0.25 两（远低于市价）',
+            '张居正': '一条鞭法推广，折色统一，实发略有改善',
+            '天启末': '户部匮乏，京官多欠俸；宗藩岁禄亦欠。魏忠贤赏赐亲信超俸十倍以上'
           },
           armyMonthlyPay: { money: 1.5, grain: 0.6, cloth: 0.05 },
           imperialMonthly: { money: 95000, grain: 18000, cloth: 4500 }
@@ -4566,7 +4577,7 @@
         regionType: 'normal',
         populationDetail: { households: 0, mouths: 0, ding: 0, fugitives: 0, hiddenCount: 0 },
         byGender: { male: 0, female: 0, sexRatio: 1.05 },
-        byAge: { old: { count: 0, ratio: 0.14 }, ding: { count: 0, ratio: 0.56 }, young: { count: 0, ratio: 0.30 } },
+        byAge: { old: { count: 0, ratio: 0.10 }, ding: { count: 0, ratio: 0.55 }, young: { count: 0, ratio: 0.35 } },
         byEthnicity: { '汉': 0.96, '其他': 0.04 },
         byFaith: { '儒': 0.35, '佛': 0.20, '道': 0.15, '民间': 0.30 },
         baojia: { baoCount: 0, jiaCount: 0, paiCount: 0, registerAccuracy: 0.62 },
@@ -4644,8 +4655,8 @@
           // ═══ 十三布政使司 ═══
           division({
             name: '浙江布政使司', level: 'province', officialPosition: '浙江巡抚', governor: '潘汝桢',
-            description: '东南形胜。下辖杭/嘉/湖/宁/绍/台/金华/衢/严/温/处十一府。杭州为东南财赋中枢，宁波通日本朝鲜；潘汝桢附阉党首建生祠。',
-            populationDetail: { mouths: 7800000, fugitives: 80000, hiddenCount: 250000 },
+            description: '东南形胜。下辖杭/嘉/湖/宁/绍/台/金华/衢/严/温/处十一府。杭州为东南财赋中枢，宁波通日本朝鲜；潘汝桢附阉党首建生祠。《万历会计录》在籍口 512 万，含商贾隐户实际约 900 万。',
+            populationDetail: { mouths: 9200000, fugitives: 90000, hiddenCount: 320000 },
             terrain: '丘陵', specialResources: '丝绸·茶·纸·瓷·海贸', taxLevel: '重',
             publicTreasuryInit: { money: 500000, grain: 900000, cloth: 180000 },
             minxinLocal: 58, corruptionLocal: 68,
@@ -4653,8 +4664,8 @@
           }),
           division({
             name: '江西布政使司', level: 'province', officialPosition: '江西巡抚', governor: '谢元珧',
-            description: '文献之邦。下辖南昌/饶州/广信/南康/九江/建昌/抚州/临江/吉安/瑞州/袁州/赣州/南安十三府。景德镇御窑所在。谢元珧天启五年至七年任江西巡抚。',
-            populationDetail: { mouths: 6800000, fugitives: 60000, hiddenCount: 200000 },
+            description: '文献之邦。下辖南昌/饶州/广信/南康/九江/建昌/抚州/临江/吉安/瑞州/袁州/赣州/南安十三府。景德镇御窑所在。《万历会计录》在籍 583 万，含宗族隐户实际 800 余万。谢元珧天启五年至七年任江西巡抚。',
+            populationDetail: { mouths: 8100000, fugitives: 80000, hiddenCount: 260000 },
             terrain: '丘陵', specialResources: '瓷(景德镇)·纸·米·茶', taxLevel: '中',
             publicTreasuryInit: { money: 260000, grain: 620000, cloth: 90000 },
             minxinLocal: 52, corruptionLocal: 62,
@@ -4662,8 +4673,8 @@
           }),
           division({
             name: '湖广布政使司', level: 'province', officialPosition: '湖广巡抚', governor: '钱希言',
-            description: '楚地广大。下辖武昌/汉阳/黄州/承天/德安/岳州/荆州/襄阳/郧阳/长沙/宝庆/衡州/常德/辰州/永州十五府 + 靖州等。"湖广熟、天下足"。钱希言天启六年起任湖广巡抚。',
-            populationDetail: { mouths: 6200000, fugitives: 100000, hiddenCount: 180000 },
+            description: '楚地广大。下辖武昌/汉阳/黄州/承天/德安/岳州/荆州/襄阳/郧阳/长沙/宝庆/衡州/常德/辰州/永州十五府 + 靖州等。"湖广熟、天下足"。《万历会计录》在籍 438 万，然苗汉杂居+江湖隐户极多，实际 800 余万。钱希言天启六年起任湖广巡抚。',
+            populationDetail: { mouths: 8300000, fugitives: 120000, hiddenCount: 380000 },
             terrain: '平原', specialResources: '稻米·茶·桐油·湘水军器', taxLevel: '中',
             publicTreasuryInit: { money: 200000, grain: 720000, cloth: 65000 },
             minxinLocal: 50, corruptionLocal: 60,
@@ -4676,12 +4687,12 @@
             terrain: '沿海', specialResources: '海贸·茶·糖·木材·海船', taxLevel: '中',
             publicTreasuryInit: { money: 180000, grain: 340000, cloth: 45000 },
             minxinLocal: 54, corruptionLocal: 63,
-            byFaith: { '儒': 0.40, '佛': 0.28, '道': 0.18, '民间': 0.12, '天主教': 0.02 }
+            byFaith: { '儒': 0.40, '佛': 0.28, '道': 0.18, '民间': 0.13, '天主教': 0.01 }
           }),
           division({
             name: '山东布政使司', level: 'province', officialPosition: '山东巡抚', governor: '李精白',
-            description: '孔孟之乡。下辖济南/兖州/东昌/青州/莱州/登州六府 + 辽海卫属。登州为对辽前哨，孙元化日后所驻。',
-            populationDetail: { mouths: 5400000, fugitives: 95000, hiddenCount: 150000 },
+            description: '孔孟之乡。下辖济南/兖州/东昌/青州/莱州/登州六府 + 辽海卫属。登州为对辽前哨，孙元化日后所驻。《万历会计录》在籍 563 万。',
+            populationDetail: { mouths: 6200000, fugitives: 100000, hiddenCount: 180000 },
             terrain: '平原', specialResources: '盐(长芦下延)·麦·棉·铁·海鲜', taxLevel: '中',
             publicTreasuryInit: { money: 240000, grain: 580000, cloth: 70000 },
             minxinLocal: 44, corruptionLocal: 65,
@@ -4699,8 +4710,8 @@
           }),
           division({
             name: '河南布政使司', level: 'province', officialPosition: '河南巡抚', governor: '郭增光',
-            description: '中州古地。下辖开封/归德/河南/怀庆/彰德/卫辉/南阳/汝宁八府。福王就国洛阳，侵吞大量民田。黄河频溃。',
-            populationDetail: { mouths: 5600000, fugitives: 160000, hiddenCount: 180000 },
+            description: '中州古地。下辖开封/归德/河南/怀庆/彰德/卫辉/南阳/汝宁八府。福王就国洛阳，侵吞大量民田。黄河频溃。《万历会计录》在籍 519 万。福王岁米 2 万石+田 4 万顷，宗藩压力最重。',
+            populationDetail: { mouths: 6800000, fugitives: 200000, hiddenCount: 240000 },
             terrain: '平原', specialResources: '麦·棉·豆·药材', taxLevel: '重',
             publicTreasuryInit: { money: 180000, grain: 520000, cloth: 55000 },
             minxinLocal: 38, corruptionLocal: 72,
@@ -4728,13 +4739,13 @@
           }),
           division({
             name: '广东布政使司', level: 'province', officialPosition: '广东巡抚', governor: '李待问',
-            description: '岭海之邦。下辖广州/韶州/南雄/惠州/潮州/肇庆/高州/雷州/廉州/琼州十府。广州为海上贸易枢纽，葡萄牙居澳门；琼州辖海南岛。',
-            populationDetail: { mouths: 3200000, fugitives: 40000, hiddenCount: 200000 },
+            description: '岭海之邦。下辖广州/韶州/南雄/惠州/潮州/肇庆/高州/雷州/廉州/琼州十府。广州为海上贸易枢纽，葡萄牙居澳门(月租银五百两)；琼州辖海南岛。《万历会计录》在籍 504 万，含疍户/山客/瑶民实际近 600 万。',
+            populationDetail: { mouths: 5000000, fugitives: 60000, hiddenCount: 280000 },
             terrain: '沿海', specialResources: '海贸·糖·果·珠(合浦)·瓷·香料', taxLevel: '中',
             publicTreasuryInit: { money: 240000, grain: 280000, cloth: 60000 },
             minxinLocal: 56, corruptionLocal: 60,
-            byEthnicity: { '汉': 0.85, '壮': 0.06, '黎': 0.04, '瑶': 0.03, '其他': 0.02 },
-            byFaith: { '儒': 0.40, '佛': 0.22, '道': 0.18, '民间': 0.15, '天主教': 0.03, '伊斯兰': 0.02 }
+            byEthnicity: { '汉': 0.86, '壮': 0.05, '黎': 0.04, '瑶': 0.03, '疍': 0.01, '其他': 0.01 },
+            byFaith: { '儒': 0.42, '佛': 0.22, '道': 0.18, '民间': 0.16, '天主教': 0.01, '伊斯兰': 0.01 }
           }),
           division({
             name: '广西布政使司', level: 'province', officialPosition: '广西巡抚', governor: '毛堪',
@@ -4759,8 +4770,8 @@
           }),
           division({
             name: '贵州布政使司', level: 'province', officialPosition: '贵州巡抚', governor: '王瑊',
-            description: '黔中山地。下辖贵阳/思南/镇远/思州/石阡/铜仁/都匀/平越/黎平/安顺等府 + 水西安氏、播州杨氏（1600年被平）、永宁奢氏（1621起事）等大土司。奢安之乱刚平定。',
-            populationDetail: { mouths: 900000, fugitives: 60000, hiddenCount: 140000 },
+            description: '黔中山地。下辖贵阳/思南/镇远/思州/石阡/铜仁/都匀/平越/黎平/安顺等府 + 水西安氏、播州杨氏（1600年被平）、永宁奢氏（1621起事）等大土司。奢安之乱刚平定。《万历会计录》在籍 29 万（汉民为主），然苗彝布依诸族多未入籍，实际约 110-130 万。',
+            populationDetail: { mouths: 1150000, fugitives: 70000, hiddenCount: 280000 },
             terrain: '山地', specialResources: '汞·铅·朱砂·马·木材', taxLevel: '轻',
             publicTreasuryInit: { money: 30000, grain: 80000, cloth: 8000 },
             minxinLocal: 38, corruptionLocal: 65,
@@ -4771,19 +4782,19 @@
           // ═══ 都司卫所 ═══
           division({
             name: '辽东都指挥使司', level: 'province', officialPosition: '辽东经略', governor: '阎鸣泰',
-            description: '九边之首。山东布政使司节制。辖辽阳/广宁/沈阳/铁岭/开原/锦州/广宁卫/宁远卫/前屯卫/山海关等二十五卫。沈阳/辽阳已陷后金；现只余辽西走廊+山海关+东江镇(皮岛)。王之臣天启七年五月因宁锦失守被罢，阎鸣泰继任。',
-            populationDetail: { mouths: 850000, fugitives: 220000, hiddenCount: 90000 },
+            description: '九边之首。山东布政使司节制。辖辽阳/广宁/沈阳/铁岭/开原/锦州/广宁卫/宁远卫/前屯卫/山海关等二十五卫。沈阳/辽阳已陷后金；现只余辽西走廊+山海关+东江镇(皮岛)。天启五年广宁战役后实控人口锐减，仅存 30-50 万汉民（军户+流民）。王之臣天启七年五月因宁锦失守被罢，阎鸣泰继任。',
+            populationDetail: { mouths: 500000, fugitives: 280000, hiddenCount: 40000 },
             terrain: '山地', specialResources: '马·皮毛·人参·煤·铁', taxLevel: '轻',
             publicTreasuryInit: { money: 150000, grain: 300000, cloth: 20000 },
             regionType: 'normal', minxinLocal: 38, corruptionLocal: 58,
-            byEthnicity: { '汉': 0.70, '女真': 0.14, '蒙古': 0.10, '朝鲜': 0.04, '其他': 0.02 },
-            carryingCapacity: { arable: 800000, water: 900000, climate: 0.74, historicalCap: 1200000, currentLoad: 1.06, carryingRegime: 'strained' }
+            byEthnicity: { '汉': 0.92, '蒙古': 0.04, '女真': 0.02, '朝鲜': 0.02 },
+            carryingCapacity: { arable: 600000, water: 700000, climate: 0.74, historicalCap: 1000000, currentLoad: 0.85, carryingRegime: 'strained' }
           }),
           // ═══ 羁縻 ═══
           division({
             name: '乌思藏都指挥使司', level: 'province', officialPosition: '灌顶国师', governor: '(五世达赖未立·此时洛桑嘉措幼)',
-            description: '乌思藏(前藏)及朵甘(康区)。此时为藏传佛教格鲁/噶举诸派并立之局。明朝以册封诸派法王与赐金印羁縻之。实际内政由各大寺院与土司自治。',
-            populationDetail: { mouths: 500000, fugitives: 0, hiddenCount: 300000 },
+            description: '乌思藏(前藏)及朵甘(康区)。此时为藏传佛教格鲁/噶举诸派并立之局。明朝以册封诸派法王与赐金印羁縻之。实际内政由各大寺院与土司自治。藏族主体居住区，人口估 300 万左右（格鲁派僧众约 30 万）。',
+            populationDetail: { mouths: 1800000, fugitives: 0, hiddenCount: 1200000 },
             terrain: '山地', specialResources: '马·羊毛·药材·盐(湖盐)·金', taxLevel: '贡赋',
             publicTreasuryInit: { money: 5000, grain: 10000, cloth: 1000 },
             regionType: 'jimi', minxinLocal: 55, corruptionLocal: 50,

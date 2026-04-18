@@ -632,7 +632,106 @@
         { name: '心学（阳明学）', desc: '王守仁创。至天启已成显学。东林、泰州派衍生。', effect: '士风活跃+20', era: '嘉靖以降', prereqs: [], unlocked: true },
         { name: '天主教传入', desc: '利玛窦 1582 入华。徐光启等受洗。', effect: '西学+15', era: '万历·天启', prereqs: [], unlocked: true },
         { name: '八股取士', desc: '明代科举定制。四书五经为本。', effect: '儒家正统+20, 思想僵化+10', era: '明代', prereqs: [], unlocked: true }
-      ]
+      ],
+
+      // ──── 人物特质定义（剧本特色 trait，超出通用库） ────
+      traitDefinitions: [
+        { id: 'east_lin_core', name: '东林骨干', category: 'political', desc: '东林书院讲学派系核心。清议刚直、反阉党、主"顾宪成遗意"；一生以气节为重。', effects: { loyalty: +5, integrity: +15, ambition: -5, partyAffinity: { '东林党': 30 } } },
+        { id: 'yan_accomplice', name: '阉党附势', category: 'political', desc: '依附魏忠贤集团，为鹰犬爪牙。天启朝得志，崇祯朝罹难。', effects: { loyalty: -20, integrity: -20, ambition: +10, partyAffinity: { '阉党': 30 } } },
+        { id: 'jinshi_hanlin', name: '翰林清流', category: 'career', desc: '进士+翰林出身，"非翰林不入阁"明代惯例。清望素著。', effects: { intelligence: +5, charisma: +5, integrity: +5 } },
+        { id: 'frontier_general', name: '边镇悍将', category: 'military', desc: '九边出身，习战善骑射。家丁众多，战力极强。', effects: { valor: +10, military: +10, loyalty: -5 } },
+        { id: 'western_learning', name: '西学通', category: 'scholar', desc: '通天主教/几何/历法/火器等西学。利玛窦、徐光启、孙元化、李之藻一脉。', effects: { intelligence: +10, learning: +15, faith: '天主教' } },
+        { id: 'merchant_background', name: '商贾出身', category: 'background', desc: '商人家族或海商。通商贸实务，重利而轻儒礼。', effects: { management: +8, charisma: +5, integrity: -5 } },
+        { id: 'manchu_eight_banner', name: '八旗勋贵', category: 'political', desc: '后金八旗制下，世袭勋贵。忠于汗，然四大贝勒制下仍有分权。', effects: { valor: +10, loyalty: +15, military: +10 } },
+        { id: 'ming_royal_cadet', name: '宗藩疏属', category: 'political', desc: '明太祖以降藩王后裔。无实权，岁食禄米。', effects: { ambition: -15, benevolence: +5, integrity: -5 } }
+      ],
+
+      // ──── 家族谱系 ────
+      families: [
+        { name: '朱氏·大明皇室', prestige: 100, tier: 'imperial', members: ['朱由检', '朱由校(殁)', '张懿安', '周皇后', '袁贵妃'], note: '太祖朱元璋以来二百六十年。宗室 20 余万，岁禄压倒户部。福王朱常洵、潞王朱常淓等藩王散居。' },
+        { name: '魏氏·九千岁党', prestige: 75, tier: 'common', members: ['魏忠贤', '魏良卿(侄·宁国公)', '崔呈秀(义子)', '田尔耕(义子)', '许显纯(义子)'], note: '肃宁出，以阉权骤起。义子义孙满朝。一朝天子一朝臣，覆巢之下。' },
+        { name: '韩氏·蒲州', prestige: 68, tier: 'gentry', members: ['韩爌', '韩霖'], note: '山西蒲州世族。万历以来十余进士。东林党清流一脉。' },
+        { name: '徐氏·松江', prestige: 72, tier: 'gentry', members: ['徐光启', '徐骥(子)', '徐尔爵(孙)', '徐尔默(孙)'], note: '松江上海徐氏。以农学、西学传家。三代信天主教。' },
+        { name: '袁氏·东莞', prestige: 60, tier: 'common', members: ['袁崇焕', '袁文炳(父·贡生)'], note: '广东东莞袁氏。父贡生兴商。袁崇焕一支孤立。' },
+        { name: '孙氏·高阳', prestige: 70, tier: 'gentry', members: ['孙承宗', '孙鉁(长子·日后阖门殉国)'], note: '北直隶高阳孙氏。崇祯十一年清军破高阳，阖门殉国。' },
+        { name: '祖氏·辽东世将', prestige: 65, tier: 'gentry', members: ['祖大寿', '祖大乐', '祖泽远(侄)', '吴三桂(外甥·此时 15 岁未出)'], note: '辽东宁远世将。吴三桂母为祖大寿妹。日后松锦降清、吴三桂引清入关。' },
+        { name: '爱新觉罗·后金', prestige: 95, tier: 'imperial', members: ['皇太极', '代善', '多尔衮', '多铎', '阿敏', '莽古尔泰', '福临(未生)'], note: '努尔哈赤所建。日后改姓，入主中原为清。' },
+        { name: '郑氏·南安', prestige: 40, tier: 'common', members: ['郑芝龙', '郑鸿逵(弟)', '郑成功(子·3岁)', '田川松(妻)'], note: '福建南安海商。郑成功母为日本平户人。' },
+        { name: '福王·朱常洵一系', prestige: 85, tier: 'imperial', members: ['朱常洵', '朱由崧(日后弘光帝)'], note: '神宗爱子。就国洛阳。田产 4 万顷。原史崇祯十四年李自成破洛阳烹之。' }
+      ],
+
+      // ──── 后宫体系 ────
+      harem: {
+        enabled: true,
+        rankOrder: ['皇后', '皇贵妃', '贵妃', '妃', '嫔', '贵人', '常在', '答应'],
+        consorts: [
+          { name: '周皇后', rank: '皇后', palace: '坤宁宫', favor: 85, children: 0, note: '正宫。贤淑节俭。' },
+          { name: '袁贵妃', rank: '贵妃', palace: '承乾宫', favor: 70, children: 0, note: '温顺体弱。' }
+          // 田贵妃将于崇祯元年后入宫
+        ],
+        _pendingEntries: [
+          { turn: 8, name: '田贵妃', rank: '贵妃', note: '扬州人，崇祯元年入宫。精琴棋书画，后为崇祯最宠。原史崇祯十五年病卒。' }
+        ]
+      },
+
+      // ──── 驿站系统 ────
+      postSystem: {
+        enabled: true,
+        totalStations: 1600,
+        mainRoutes: [
+          { name: '京-辽走廊', from: '北京', to: '山海关·宁远', distance: 700, stations: 14, urgentSpeed: '每日 400 里', note: '军情主通道。' },
+          { name: '京-宣大', from: '北京', to: '大同', distance: 700, stations: 14, urgentSpeed: '每日 400 里' },
+          { name: '京-西安', from: '北京', to: '西安', distance: 2100, stations: 42, urgentSpeed: '每日 300 里' },
+          { name: '京杭大运河', from: '北京通州', to: '杭州', distance: 3200, stations: 70, urgentSpeed: '水驿每日 200 里', note: '漕运主线。' },
+          { name: '京-云贵', from: '北京', to: '昆明', distance: 5000, stations: 100, urgentSpeed: '每日 200 里', note: '最远驿路。' }
+        ],
+        _reformRisk: { description: '崇祯二年户部议裁驿卒。原史裁驿使李自成失业。削减驿站节银 60 万，代价 = 数万流民。', turn: 18, severity: 'high' }
+      },
+
+      // ──── 刚性触发器·天文异象 ────
+      rigidTriggers: {
+        tianqi7_comet: { turn: 1, type: 'heavenSign', name: '彗星出于房心', narrative: '天启七年闰六月，彗星见于房心之间，光芒数尺。钦天监解"大凶"。', effect: { '皇威': -5, '小冰河凛冬指数': +3 } },
+        chongzhen1_lunar: { turn: 5, type: 'heavenSign', name: '月食', narrative: '崇祯元年正月戊寅朔，月食。', effect: { '皇威': -2 } },
+        chongzhen1_eclipse: { turn: 11, type: 'heavenSign', name: '日食', narrative: '崇祯元年六月甲午朔，日食。钦天监言"帝室之象，警戒在躬"。', effect: { '皇威': -5, '皇权': -3 } },
+        chongzhen2_earthquake: { turn: 19, type: 'heavenSign', name: '北京地震', narrative: '崇祯二年春，京师地震。', effect: { '民心': -3, '皇威': -3 } },
+        chongzhen3_locust: { turn: 32, type: 'disaster', name: '河南蝗灾', narrative: '崇祯三年夏，河南大蝗。', effect: { '西北灾荒怨气': +5, '流民数量': +100000 } },
+        chongzhen_great_plague: { turn: 120, type: 'disaster', name: '华北大疫', narrative: '崇祯十四年起华北大疫（推测为鼠疫），死亡不计其数。', effect: { '人口': -500000, '小冰河凛冬指数': +5 } }
+      },
+
+      // ──── 文苑作品（初始在世的著作） ────
+      culturalWorks: [
+        { title: '《几何原本》前六卷', author: '利玛窦/徐光启', year: 1607, type: '译著·西学', desc: '欧几里得几何学首次入华。', status: '刊行' },
+        { title: '《农政全书》', author: '徐光启', year: '编撰中', type: '农学', desc: '60 卷。论救荒、水利、屯田。崇祯十二年陈子龙整理刊行。', status: '稿本' },
+        { title: '《武备志》', author: '茅元仪', year: 1621, type: '兵书', desc: '240 卷。集古今兵书之大成。' },
+        { title: '《本草纲目》', author: '李时珍', year: 1578, type: '医学', desc: '16 部 52 卷。医药巨典。万历末已刻。' },
+        { title: '《金瓶梅》', author: '兰陵笑笑生', year: '万历末', type: '小说', desc: '中国第一部世情长篇小说。' },
+        { title: '《三言二拍》', author: '冯梦龙/凌濛初', year: '天启末', type: '白话小说集', desc: '喻世明言/警世通言/醒世恒言；初刻二刻拍案惊奇。市民文学巅峰。' },
+        { title: '《徐霞客游记》', author: '徐弘祖', year: '编撰中', type: '地理游记', desc: '此时徐霞客 42 岁，正周游云贵，尚未写成。' },
+        { title: '《天工开物》', author: '宋应星', year: '酝酿', type: '工艺百科', desc: '原史崇祯十年刊。宋应星此时 40 岁。' },
+        { title: '《五人墓碑记》', author: '张溥', year: 1626, type: '文章', desc: '天启六年为苏州抗税五义士所作。东林遗志。' }
+      ],
+
+      // ──── 家规族法·科举·战斗等辅助配置 ────
+      battleConfig: {
+        thresholds: { decisive: 1.6, victory: 1.1, stalemate: 0.7 },
+        varianceRange: 0.18,
+        seasonMod: { '春': 1.0, '夏': 0.95, '秋': 1.05, '冬': 0.80 },
+        fortLevelBonus: [1.0, 1.3, 1.7, 2.1, 2.6, 3.2],
+        _historicalNotes: '明末城守系数高——宁远、锦州、开原、铁岭等城皆重重叠叠。然器不如人、将不肯力战时亦易破。'
+      },
+      warConfig: {
+        casusBelliTypes: [
+          { id: 'rebellion', name: '平叛讨逆', legitimacyCost: 0, truceMonths: 12 },
+          { id: 'frontier', name: '征虏御边', legitimacyCost: 0, truceMonths: 24 },
+          { id: 'sacred', name: '天子讨不臣', legitimacyCost: 5, truceMonths: 36 },
+          { id: 'tusi', name: '改土归流', legitimacyCost: 10, truceMonths: 48 },
+          { id: 'pirate', name: '剿海寇', legitimacyCost: 0, truceMonths: 12 }
+        ]
+      },
+
+      // ──── 剧本本体标签 ────
+      // 注：scenario.tags 已在 § 1 元信息设定（6 项）。此处 sceneTags 补充更细项供检索/过滤
+      sceneTags: ['明末', '天启', '崇祯即位', '魏忠贤', '阉党', '东林党', '小冰河', '辽东', '皇帝视角', '官方剧本', '史实', '大悲剧', '末世', '权阉倾覆', '后金', '陕北民变']
     };
 
     // 为 armies / items 打 sid（以便 GM filter-by-sid 能捕获）
@@ -660,13 +759,13 @@
     // § 3. 势力
     // ═══════════════════════════════════════════════════════════════════
     var facs = [
-      { name: '明朝廷', leader: '朱由检', color: '#c9a84c', strength: 70, militaryStrength: 62, economy: 55, territory: '两京十三省+辽东都司+贵州土司', ideology: '礼法·儒教·天下共主', desc: '大明享国二百六十年。神宗怠政后，政局每况愈下。熹宗末年阉党专擅，士林溃散。新帝立，国本未定。', traits: ['儒教', '天朝', '大一统'] },
-      { name: '后金', leader: '皇太极', color: '#6a4c93', strength: 58, militaryStrength: 72, economy: 32, territory: '辽东沈阳·赫图阿拉·辽西诸卫', ideology: '萨满·汗权·八旗', desc: '努尔哈赤称汗于天命元年（1616）。皇太极继位改革政制，结纳蒙汉，将成大患。', traits: ['八旗劲旅', '渔猎游牧', '多民族'] },
-      { name: '察哈尔', leader: '林丹汗', color: '#8b4513', strength: 30, militaryStrength: 40, economy: 18, territory: '漠南蒙古·归化城', ideology: '藏传佛教·蒙古正统', desc: '元裔。名义漠南蒙古共主。屡败于后金，西迁归化。欲与明结盟共抗后金。', traits: ['骑射', '游牧'] },
-      { name: '朝鲜', leader: '仁祖·李倧', color: '#4a7c2c', strength: 28, militaryStrength: 20, economy: 30, territory: '朝鲜八道', ideology: '儒教·事大', desc: '光海君被废（1623），仁祖反正立国。天启七年春被后金所伐，定江都兄弟盟。明之东藩。', traits: ['事大至诚', '衰弱'] },
-      { name: '播州土司·杨氏', leader: '杨朝栋', color: '#9c6633', strength: 8, militaryStrength: 12, economy: 5, territory: '贵州遵义·播州', ideology: '土司自治', desc: '万历二十八年播州之役后，杨氏后裔仅存，然西南土司网络犹在。', traits: ['山地', '土司'] },
-      { name: '郑氏海商', leader: '郑芝龙', color: '#2a6f9c', strength: 18, militaryStrength: 26, economy: 42, territory: '福建沿海·台湾海峡', ideology: '海权·商贸', desc: '海商兼海盗。1624 年助荷兰人据台湾。1628 年将受明招抚为游击。日后东亚海上霸主。', traits: ['海军强盛', '商人集团', '海盗转正'] },
-      { name: '陕北饥民', leader: '王嘉胤', color: '#7a4e3b', strength: 6, militaryStrength: 4, economy: 1, territory: '陕西延安府·榆林', ideology: '求活·均田免赋（后发展）', desc: '连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。', traits: ['饥民', '逃兵'] }
+      { name: '明朝廷', leader: '朱由检', color: '#c9a84c', strength: 70, militaryStrength: 62, economy: 55, courtInfluence: 100, popularInfluence: 85, territory: '两京十三省+辽东都司+贵州土司', ideology: '礼法·儒教·天下共主', desc: '大明享国二百六十年。神宗怠政后，政局每况愈下。熹宗末年阉党专擅，士林溃散。新帝立，国本未定。', traits: ['儒教', '天朝', '大一统'] },
+      { name: '后金', leader: '皇太极', color: '#6a4c93', strength: 58, militaryStrength: 72, economy: 32, courtInfluence: 10, popularInfluence: 18, territory: '辽东沈阳·赫图阿拉·辽西诸卫', ideology: '萨满·汗权·八旗', desc: '努尔哈赤称汗于天命元年（1616）。皇太极继位改革政制，结纳蒙汉，将成大患。', traits: ['八旗劲旅', '渔猎游牧', '多民族'] },
+      { name: '察哈尔', leader: '林丹汗', color: '#8b4513', strength: 30, militaryStrength: 40, economy: 18, courtInfluence: 8, popularInfluence: 15, territory: '漠南蒙古·归化城', ideology: '藏传佛教·蒙古正统', desc: '元裔。名义漠南蒙古共主。屡败于后金，西迁归化。欲与明结盟共抗后金。', traits: ['骑射', '游牧'] },
+      { name: '朝鲜', leader: '仁祖·李倧', color: '#4a7c2c', strength: 28, militaryStrength: 20, economy: 30, courtInfluence: 22, popularInfluence: 10, territory: '朝鲜八道', ideology: '儒教·事大', desc: '光海君被废（1623），仁祖反正立国。天启七年春被后金所伐，定江都兄弟盟。明之东藩。', traits: ['事大至诚', '衰弱'] },
+      { name: '播州土司·杨氏', leader: '杨朝栋', color: '#9c6633', strength: 8, militaryStrength: 12, economy: 5, courtInfluence: 3, popularInfluence: 8, territory: '贵州遵义·播州', ideology: '土司自治', desc: '万历二十八年播州之役后，杨氏后裔仅存，然西南土司网络犹在。', traits: ['山地', '土司'] },
+      { name: '郑氏海商', leader: '郑芝龙', color: '#2a6f9c', strength: 18, militaryStrength: 26, economy: 42, courtInfluence: 5, popularInfluence: 28, territory: '福建沿海·台湾海峡', ideology: '海权·商贸', desc: '海商兼海盗。1624 年助荷兰人据台湾。1628 年将受明招抚为游击。日后东亚海上霸主。', traits: ['海军强盛', '商人集团', '海盗转正'] },
+      { name: '陕北饥民', leader: '王嘉胤', color: '#7a4e3b', strength: 6, militaryStrength: 4, economy: 1, courtInfluence: 0, popularInfluence: 35, territory: '陕西延安府·榆林', ideology: '求活·均田免赋（后发展）', desc: '连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。', traits: ['饥民', '逃兵'] }
     ];
     facs.forEach(function (f) { f.sid = SID; f.id = _uid('fac_'); global.P.factions.push(f); });
 

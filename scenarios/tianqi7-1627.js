@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v9-2026.04.19-vars-rels';
+  var SCENARIO_VERSION = 'v10-2026.04.19-office';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -2545,6 +2545,182 @@
           { name: '顺天巡抚(北直隶)', rank: '正二品', holder: '刘诏', establishedCount: 1, vacancyCount: 0, publicTreasuryInit: { money: 300000, grain: 600000, cloth: 50000 }, bindingHint: 'region' },
           { name: '浙江巡抚', rank: '正二品', holder: '潘汝桢', establishedCount: 1, vacancyCount: 0, duties: '阉党，为魏忠贤建生祠第一人。' },
           { name: '大名府知府', rank: '正四品', holder: '卢象升', establishedCount: 1, vacancyCount: 0, duties: '北直隶南部要冲。' }
+        ],
+        subs: []
+      },
+      // ═══ 补充：六科给事中（独立言官，监察六部） ═══
+      {
+        id: _uid('off_'), name: '六科给事中', desc: '吏/户/礼/兵/刑/工 各科。独立于都察院。掌抄发章疏、科参稽核，权重位尊，小臣制大臣',
+        positions: [
+          { name: '吏科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true, supervise: true }, duties: '驳正吏部之误；核察文选升降。', bindingHint: 'ministry' },
+          { name: '户科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true, supervise: true }, duties: '户部钱粮事关。阉党把持多年。' },
+          { name: '礼科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true } },
+          { name: '兵科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true, supervise: true }, duties: '辽东兵饷甘苦最苦。' },
+          { name: '刑科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true } },
+          { name: '工科都给事中', rank: '正七品', holder: '', establishedCount: 1, vacancyCount: 1, authority: 'supervision', powers: { impeach: true } },
+          { name: '各科给事中', rank: '从七品', holder: '', establishedCount: 50, vacancyCount: 15, authority: 'supervision', powers: { impeach: true } }
+        ],
+        subs: []
+      },
+      // ═══ 钦天监（天象历法，本剧本异象触发关键） ═══
+      {
+        id: _uid('off_'), name: '钦天监', desc: '掌天象/历法/占卜/冠礼阴阳。元设司天监，明洪武改钦天监',
+        positions: [
+          { name: '钦天监监正', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '总理天象观测、报异象于帝。彗星日食月食地震皆由此奏。', bindingHint: 'ministry', hooks: { triggerOnHeavenSign: '必即日奏闻' } },
+          { name: '监副', rank: '正六品', holder: '', establishedCount: 2, vacancyCount: 1 },
+          { name: '五官正', rank: '从六品', holder: '', establishedCount: 5, vacancyCount: 2, duties: '春官正/夏官正/秋官正/冬官正/中官正。分掌五行占星。' },
+          { name: '博士/挈壶正', rank: '从八品', holder: '', establishedCount: 10, vacancyCount: 3 }
+        ],
+        subs: []
+      },
+      // ═══ 太医院 ═══
+      {
+        id: _uid('off_'), name: '太医院', desc: '御医及天下医政',
+        positions: [
+          { name: '太医院使', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '总领御医，亦诊治百官。' },
+          { name: '御医', rank: '正八品', holder: '', establishedCount: 10, vacancyCount: 2 },
+          { name: '吏目·医士', rank: '从九品', holder: '', establishedCount: 40, vacancyCount: 10 }
+        ],
+        subs: []
+      },
+      // ═══ 五寺（太常/光禄/太仆/鸿胪/尚宝） ═══
+      {
+        id: _uid('off_'), name: '太常寺', desc: '掌祭祀礼乐',
+        positions: [
+          { name: '太常寺卿', rank: '正三品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '祭祀天地宗庙；礼乐典章。'}
+        ],
+        subs: []
+      },
+      {
+        id: _uid('off_'), name: '光禄寺', desc: '掌宫廷宴享·皇家膳食',
+        positions: [
+          { name: '光禄寺卿', rank: '从三品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '办万寿/千秋/进贡各节宴；宫廷果饼。', publicTreasuryInit: { money: 80000, grain: 50000, cloth: 0 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'medium', bonusNote: '采买时常油水' } }
+        ],
+        subs: []
+      },
+      {
+        id: _uid('off_'), name: '太仆寺', desc: '掌马政·九边战马',
+        positions: [
+          { name: '太仆寺卿', rank: '从三品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '掌全国马政。北直隶/山东/河南/陕西/南直隶五省牧监。', publicTreasuryInit: { money: 60000, grain: 20000, cloth: 0 }, bindingHint: 'military', powers: { militaryCommand: false } },
+          { name: '寺丞·苑马寺', rank: '正六品', holder: '', establishedCount: 8, vacancyCount: 3 }
+        ],
+        subs: []
+      },
+      {
+        id: _uid('off_'), name: '鸿胪寺', desc: '掌朝会礼仪·外藩宾客',
+        positions: [
+          { name: '鸿胪寺卿', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '朝会班序；番使入朝引导；皇族婚丧典礼。', bindingHint: 'imperial' }
+        ],
+        subs: []
+      },
+      {
+        id: _uid('off_'), name: '尚宝司', desc: '掌御用印玺',
+        positions: [
+          { name: '尚宝司卿', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '保管二十五宝玺。铨用多勋戚。' }
+        ],
+        subs: []
+      },
+      // ═══ 国子监·宗人府 ═══
+      {
+        id: _uid('off_'), name: '国子监', desc: '天下最高学府',
+        positions: [
+          { name: '国子监祭酒', rank: '从四品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '教育监生。南北两监。' },
+          { name: '司业', rank: '正六品', holder: '', establishedCount: 2, vacancyCount: 1 }
+        ],
+        subs: []
+      },
+      {
+        id: _uid('off_'), name: '宗人府', desc: '管理皇族宗室',
+        positions: [
+          { name: '宗人令', rank: '正一品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '宗室首席。常由亲王兼。目前空缺。', bindingHint: 'imperial' },
+          { name: '左/右宗正', rank: '正一品', holder: '', establishedCount: 2, vacancyCount: 2 },
+          { name: '经历司经历', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '日常文书、宗室档案。' }
+        ],
+        subs: []
+      },
+      // ═══ 三公三孤（虚衔加衔，无实职但地位尊崇） ═══
+      {
+        id: _uid('off_'), name: '三公·三孤·三少', desc: '虚衔加衔。明代三公(太师/太傅/太保 正一品)、三孤(少师/少傅/少保 从一品)、三少(太子太师/太子太傅/太子太保 正二品)，多为加官',
+        positions: [
+          { name: '太师(虚职)', rank: '正一品', holder: '', establishedCount: 1, vacancyCount: 1, duties: '最高加衔。多用于大臣赠谥。' },
+          { name: '太傅(虚职)', rank: '正一品', holder: '', establishedCount: 1, vacancyCount: 1 },
+          { name: '太保(虚职)', rank: '正一品', holder: '', establishedCount: 1, vacancyCount: 1 },
+          { name: '少师(加衔)', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1 },
+          { name: '少傅(加衔)', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1 },
+          { name: '少保(加衔)', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1 }
+        ],
+        subs: []
+      },
+      // ═══ 御马监（内廷武职） ═══
+      {
+        id: _uid('off_'), name: '御马监', desc: '内廷十二监之一。掌御用战马 + 四卫营（腾骧左卫/右卫/武骧左卫/右卫）',
+        positions: [
+          { name: '提督太监·御马监', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, authority: 'execution', duties: '掌皇城武备。与司礼监并称"两大监"。', bindingHint: 'imperial', privateIncome: { illicitRisk: 'high' }, powers: { militaryCommand: true } },
+          { name: '掌印太监', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0 }
+        ],
+        subs: []
+      },
+      // ═══ 内官十二监（简化）——御马监已单列，此处仅列其余 ═══
+      {
+        id: _uid('off_'), name: '内官监·其余诸监', desc: '内官监/神宫监/尚宝监/印绶监/直殿监/尚衣监/尚膳监/都知监/内织染局/内承运库 等',
+        positions: [
+          { name: '内官监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '掌营造、御用之物。', bindingHint: 'imperial' },
+          { name: '神宫监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '掌太庙洒扫/陵寝。', bindingHint: 'imperial' },
+          { name: '尚衣监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0 },
+          { name: '尚膳监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0 },
+          { name: '内承运库掌库', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '内帑金银仓。', bindingHint: 'imperial', privateIncome: { illicitRisk: 'high' } }
+        ],
+        subs: []
+      },
+      // ═══ 十三布政使司（地方正官） ═══
+      {
+        id: _uid('off_'), name: '布政使司（两京十三省）', desc: '每省：左右布政使（从二品）+ 参政+参议。掌民政与钱粮。北直隶/南直隶无布政使司，直属六部',
+        positions: [
+          { name: '浙江左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region', publicTreasuryInit: { money: 300000, grain: 700000, cloth: 120000 } },
+          { name: '江西左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region', publicTreasuryInit: { money: 160000, grain: 480000, cloth: 70000 } },
+          { name: '湖广左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '福建左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '山东左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '山西左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '河南左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '陕西左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '四川左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '广东左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '广西左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '云南左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' },
+          { name: '贵州左布政使', rank: '从二品', holder: '', establishedCount: 1, vacancyCount: 0, bindingHint: 'region' }
+        ],
+        subs: []
+      },
+      // ═══ 十三按察使司 ═══
+      {
+        id: _uid('off_'), name: '按察使司（十三省）', desc: '每省：提刑按察使（正三品）+ 副使+佥事。掌刑名与监察',
+        positions: [
+          { name: '各省按察使', rank: '正三品', holder: '', establishedCount: 13, vacancyCount: 3, authority: 'supervision', powers: { impeach: true, supervise: true }, bindingHint: 'region', duties: '提点刑狱、稽察属吏。' }
+        ],
+        subs: []
+      },
+      // ═══ 都指挥使司 ═══
+      {
+        id: _uid('off_'), name: '都指挥使司（省级卫所）', desc: '都司：每省（含北直/南直/辽东等）均设。掌卫所军户',
+        positions: [
+          { name: '各省都指挥使', rank: '正二品', holder: '', establishedCount: 16, vacancyCount: 4, bindingHint: 'military', powers: { militaryCommand: true }, duties: '节制本省卫所。明中叶后已虚化，实权归总兵。' }
+        ],
+        subs: []
+      },
+      // ═══ 九边总兵 ═══
+      {
+        id: _uid('off_'), name: '九边总兵', desc: '辽东/蓟州/宣府/大同/山西/延绥/宁夏/甘肃/固原',
+        positions: [
+          { name: '辽东总兵', rank: '从一品', holder: '(袁崇焕去后尚未定)', establishedCount: 1, vacancyCount: 0, bindingHint: 'military', powers: { militaryCommand: true }, publicTreasuryInit: { money: 200000, grain: 400000, cloth: 50000 } },
+          { name: '蓟州总兵', rank: '从一品', holder: '朱梅', establishedCount: 1, vacancyCount: 0, bindingHint: 'military' },
+          { name: '宣府总兵', rank: '从一品', holder: '侯世禄', establishedCount: 1, vacancyCount: 0, bindingHint: 'military' },
+          { name: '大同总兵', rank: '从一品', holder: '渠家祯', establishedCount: 1, vacancyCount: 0, bindingHint: 'military' },
+          { name: '山西总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military' },
+          { name: '延绥总兵', rank: '从一品', holder: '吴自勉', establishedCount: 1, vacancyCount: 0, bindingHint: 'military' },
+          { name: '宁夏总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military' },
+          { name: '甘肃总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military' },
+          { name: '固原总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military' }
         ],
         subs: []
       }

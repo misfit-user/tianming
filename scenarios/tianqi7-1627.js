@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v15-2026.04.19-items-fac2';
+  var SCENARIO_VERSION = 'v16-2026.04.19-families';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1148,18 +1148,255 @@
         { id: 'ming_royal_cadet', name: '宗藩疏属', category: 'political', desc: '明太祖以降藩王后裔。无实权，岁食禄米。', effects: { ambition: -15, benevolence: +5, integrity: -5 } }
       ],
 
-      // ──── 家族谱系 ────
+      // ──── 家族谱系（22 家族·深化版） ────
       families: [
-        { name: '朱氏·大明皇室', prestige: 100, tier: 'imperial', members: ['朱由检', '朱由校(殁)', '张懿安', '周皇后', '袁贵妃'], note: '太祖朱元璋以来二百六十年。宗室 20 余万，岁禄压倒户部。福王朱常洵、潞王朱常淓等藩王散居。' },
-        { name: '魏氏·九千岁党', prestige: 75, tier: 'common', members: ['魏忠贤', '魏良卿(侄·宁国公)', '崔呈秀(义子)', '田尔耕(义子)', '许显纯(义子)'], note: '肃宁出，以阉权骤起。义子义孙满朝。一朝天子一朝臣，覆巢之下。' },
-        { name: '韩氏·蒲州', prestige: 68, tier: 'gentry', members: ['韩爌', '韩霖'], note: '山西蒲州世族。万历以来十余进士。东林党清流一脉。' },
-        { name: '徐氏·松江', prestige: 72, tier: 'gentry', members: ['徐光启', '徐骥(子)', '徐尔爵(孙)', '徐尔默(孙)'], note: '松江上海徐氏。以农学、西学传家。三代信天主教。' },
-        { name: '袁氏·东莞', prestige: 60, tier: 'common', members: ['袁崇焕', '袁文炳(父·贡生)'], note: '广东东莞袁氏。父贡生兴商。袁崇焕一支孤立。' },
-        { name: '孙氏·高阳', prestige: 70, tier: 'gentry', members: ['孙承宗', '孙鉁(长子·日后阖门殉国)'], note: '北直隶高阳孙氏。崇祯十一年清军破高阳，阖门殉国。' },
-        { name: '祖氏·辽东世将', prestige: 65, tier: 'gentry', members: ['祖大寿', '祖大乐', '祖泽远(侄)', '吴三桂(外甥·此时 15 岁未出)'], note: '辽东宁远世将。吴三桂母为祖大寿妹。日后松锦降清、吴三桂引清入关。' },
-        { name: '爱新觉罗·后金', prestige: 95, tier: 'imperial', members: ['皇太极', '代善', '多尔衮', '多铎', '阿敏', '莽古尔泰', '福临(未生)'], note: '努尔哈赤所建。日后改姓，入主中原为清。' },
-        { name: '郑氏·南安', prestige: 40, tier: 'common', members: ['郑芝龙', '郑鸿逵(弟)', '郑成功(子·3岁)', '田川松(妻)'], note: '福建南安海商。郑成功母为日本平户人。' },
-        { name: '福王·朱常洵一系', prestige: 85, tier: 'imperial', members: ['朱常洵', '朱由崧(日后弘光帝)'], note: '神宗爱子。就国洛阳。田产 4 万顷。原史崇祯十四年李自成破洛阳烹之。' }
+        // ═══ 帝系 ═══
+        {
+          name: '朱氏·大明皇室', tier: 'imperial', prestige: 100,
+          ancestralSeat: '南京凤阳+北京紫禁城', founder: '朱元璋(明太祖·1368 立国)',
+          notableAncestors: ['朱元璋', '朱棣(成祖永乐)', '朱祁镇(土木之变)', '朱厚熜(嘉靖)', '朱翊钧(万历)'],
+          currentHead: '朱由检', heir: '(尚无嫡子)',
+          members: ['朱由检', '朱由校(兄·殁)', '张懿安', '周皇后', '袁贵妃', '朱常洵(叔·福王)', '朱常淓(潞王)', '朱常浩(瑞王)', '朱常溁'],
+          wealth: '皇庄 32 万亩+内帑+天下岁贡', politicalStance: '正统天命', prominence: 'declining',
+          marriages: '与勋贵联姻(张氏·周氏·田氏·袁氏·王氏等)', feuds: '(为天下共主·无敌可言然内忧外患)',
+          tradition: '祖制不可违·科举经筵·铨选任官',
+          recentFortunes: '熹宗刚崩·新帝孤立入主·阉党盘踞',
+          note: '太祖朱元璋以来 259 年。宗室 20 余万，岁禄 600 万石压户部。原史崇祯十七年(1644)朱由检自缢煤山。'
+        },
+        {
+          name: '福王·朱常洵一系', tier: 'imperial', prestige: 85,
+          ancestralSeat: '河南洛阳·福王府', founder: '朱常洵(神宗第三子·万历封福王)',
+          currentHead: '朱常洵', heir: '朱由崧',
+          members: ['朱常洵', '朱由崧(日后弘光帝)', '朱由榘'],
+          wealth: '田 4 万顷+盐引+内库·富甲天下', politicalStance: '藩王安分·侵吞民田',
+          marriages: '与其他藩王联姻', feuds: '东林党(争国本之役)', prominence: 'stable',
+          tradition: '神宗爱子·独占万历心血',
+          recentFortunes: '就国洛阳未至 1627·万历赐田 4 万顷',
+          note: '神宗爱子。原史崇祯十四年(1641) 李自成破洛阳烹之。次子朱由崧立南京为弘光帝。'
+        },
+        {
+          name: '潞王·朱常淓一系', tier: 'imperial', prestige: 60,
+          ancestralSeat: '河南卫辉', founder: '朱翊镠(潞简王·穆宗四子)',
+          currentHead: '朱常淓', members: ['朱常淓'], wealth: '田万亩·内库银', politicalStance: '安分藩王',
+          prominence: 'stable', note: '万历胞弟潞简王之子。善琴棋书画。原史南都覆灭后降清被诛。'
+        },
+        // ═══ 权阉 ═══
+        {
+          name: '魏氏·九千岁党', tier: 'common', prestige: 60,
+          ancestralSeat: '北直隶肃宁', founder: '(魏忠贤本人创)',
+          currentHead: '魏忠贤', heir: '魏良卿(侄)',
+          members: ['魏忠贤', '魏良卿(侄·宁国公)', '魏鹏翼(从孙·安平伯)', '崔呈秀(义子)', '田尔耕(义子)', '许显纯(义子)', '李实(义子)'],
+          wealth: '(抄没估数百万两)·生祠田产遍天下', politicalStance: '阉党弄权·排除异己',
+          marriages: '无实婚·义子义孙取代',
+          feuds: '东林党(杀六君子)·张懿安皇后·西宫',
+          tradition: '"义子义孙四十孙·十狗十孩儿五虎五彪"',
+          prominence: 'declining',
+          recentFortunes: '客氏被逐·新帝意变·身首系于一线',
+          note: '肃宁街头无赖入宫充饷·天启三年(1623)掌司礼监·天启七年十一月贬凤阳自缢于阜城。'
+        },
+        // ═══ 东林·士林清流 ═══
+        {
+          name: '韩氏·蒲州', tier: 'gentry', prestige: 72,
+          ancestralSeat: '山西蒲州', founder: '韩桦(明初迁蒲)',
+          notableAncestors: ['韩爌(曾祖·嘉靖进士)'], currentHead: '韩爌', members: ['韩爌', '韩霖(子·天主教徒)', '韩云(侄孙)'],
+          wealth: '蒲州田产+书香门第', politicalStance: '东林党清流', prominence: 'rising',
+          marriages: '与同邑梁氏/晋中王氏联姻', feuds: '阉党', tradition: '科举制艺·诗文传家·理学',
+          recentFortunes: '天启四年(1624)韩爌被阉党构陷罢归·即将起复为首辅',
+          note: '山西蒲州世族。万历以来十余进士。东林党清流一脉。'
+        },
+        {
+          name: '徐氏·松江上海', tier: 'gentry', prestige: 75,
+          ancestralSeat: '南直隶松江府上海县', founder: '徐氏入松江(元末)',
+          currentHead: '徐光启', heir: '徐骥',
+          members: ['徐光启', '徐骥(子)', '徐尔爵(孙)', '徐尔默(孙)', '徐尔斗(孙)'],
+          wealth: '家学渊博·田产中等', politicalStance: '东林实学·天主教', prominence: 'rising',
+          marriages: '与松江文艺世家联姻', feuds: '排斥西学的保守派',
+          tradition: '农政西学·天主教(三代)',
+          recentFortunes: '告归养病·将复职为礼部尚书',
+          note: '三代信天主教。徐光启译《几何原本》《农政全书》。原史崇祯六年卒于礼部尚书·文渊阁大学士任。'
+        },
+        {
+          name: '钱氏·常熟', tier: 'gentry', prestige: 65,
+          ancestralSeat: '南直隶苏州府常熟县', founder: '钱氏入常熟(宋)',
+          notableAncestors: ['钱缪(五代吴越王远祖)'], currentHead: '钱谦益', heir: '',
+          members: ['钱谦益(虞山派·将立)', '钱龙锡(族亲·在朝)', '柳如是(谦益妾·未定)', '钱曾(日后藏书家)'],
+          wealth: '江南田产·藏书冠江南·绛云楼', politicalStance: '东林领袖后辈', prominence: 'rising',
+          marriages: '名妓文人', feuds: '温体仁(将起)',
+          tradition: '虞山诗文·藏书·史学',
+          recentFortunes: '钱谦益复出路上',
+          note: '常熟虞山钱氏。钱谦益为东林领袖，日后降清。著《初学集》《有学集》。'
+        },
+        {
+          name: '顾氏·无锡·东林', tier: 'gentry', prestige: 55,
+          ancestralSeat: '南直隶常州府无锡县', founder: '顾琛(南朝高士)',
+          notableAncestors: ['顾宪成(东林创始·万历三十二年立书院·1612 卒)', '顾允成(宪成弟)'],
+          currentHead: '(主要骨干死于天启四年)', members: ['顾允成子嗣'],
+          wealth: '书香门第·田产中等', politicalStance: '东林祖脉', prominence: 'declining(暂)',
+          feuds: '阉党',
+          tradition: '讲学·清议·经世致用',
+          recentFortunes: '顾宪成逝 15 年·东林书院被毁·东林党被诛',
+          note: '顾宪成创东林书院(1604)。天启四年后阉党毁书院杀东林。将随新帝起而复兴。'
+        },
+        {
+          name: '董氏·华亭', tier: 'gentry', prestige: 82,
+          ancestralSeat: '南直隶松江府华亭', founder: '董氏入松江(元)',
+          currentHead: '董其昌(73岁·已告归)', members: ['董其昌', '董祖源(子)', '董祖和(孙)'],
+          wealth: '田产+书画·豪富', politicalStance: '风雅派', prominence: 'stable',
+          marriages: '与松江名门联姻',
+          tradition: '书画传家·"南宗画"理论·士大夫审美',
+          recentFortunes: '董其昌七十三岁·书画冠天下·家人豪横',
+          note: '明代最伟大书画家之一·"画禅室"创始人。家人侵占民田致 1616 民变"民抄董宦事件"。'
+        },
+        // ═══ 名将世家 ═══
+        {
+          name: '袁氏·东莞', tier: 'common', prestige: 62,
+          ancestralSeat: '广东东莞(原籍广西藤县)', founder: '袁文炳(父·贡生)',
+          currentHead: '袁崇焕', members: ['袁崇焕', '袁文炳(父·贡生)', '袁崇煜(兄)', '袁崇熿(弟)'],
+          wealth: '父贡生·家道中等', politicalStance: '主战复辽', prominence: 'rising',
+          marriages: '与岭南士子', feuds: '阉党',
+          tradition: '贡生起家·袁崇焕自成一脉',
+          recentFortunes: '丁忧归乡·即将被诏起复督师蓟辽',
+          note: '袁崇焕一支孤立。原史崇祯三年磔死·孤子被流徙。'
+        },
+        {
+          name: '孙氏·高阳', tier: 'gentry', prestige: 78,
+          ancestralSeat: '北直隶保定府高阳县', founder: '孙氏入高阳(元末)',
+          currentHead: '孙承宗(65岁)', members: ['孙承宗', '孙鉁(长子)', '孙铨(次子)', '孙珀', '孙鼎(孙)'],
+          wealth: '高阳田产+督师恩荫', politicalStance: '清正持正·师帝', prominence: 'stable',
+          marriages: '与高阳同邑', feuds: '阉党',
+          tradition: '进士世家·兵学+理学+帝师',
+          recentFortunes: '罢归乡·即将崇祯二年再起督辽',
+          note: '孙承宗帝师。原史崇祯十一年(1638)清军破高阳城，孙承宗阖门 40 口殉国。'
+        },
+        {
+          name: '祖氏·辽东宁远·世将', tier: 'gentry', prestige: 68,
+          ancestralSeat: '辽东宁远卫', founder: '祖镇(明初辽东世袭指挥)',
+          currentHead: '祖大寿(40)', members: ['祖大寿', '祖大乐(弟)', '祖大弼(弟)', '祖泽远(侄)', '祖泽润(侄)', '吴襄(妹夫)', '吴三桂(外甥·15 岁)'],
+          wealth: '辽东田+家丁精锐 3000', politicalStance: '军头自保·倚袁崇焕', prominence: 'stable',
+          marriages: '与辽东其他将家(吴氏、李氏、何氏)互通婚',
+          tradition: '辽东世将·以家丁为本·宁远为大本',
+          recentFortunes: '宁远守军副将·袁崇焕去后辽东靠他',
+          note: '祖氏辽东世将。日后祖大寿松锦降清·吴三桂引清入关皆源于此。'
+        },
+        {
+          name: '李氏·辽东铁岭·殁', tier: 'gentry', prestige: 40,
+          ancestralSeat: '辽东铁岭', founder: '李英(朝鲜内附入明)',
+          notableAncestors: ['李成梁(辽东王·1591 卒)', '李如松(万历援朝·1598 战死)', '李如柏(萨尔浒主将·1619 下狱)'],
+          currentHead: '(无主·族已衰)', members: ['李如桢(已罢)'],
+          wealth: '曾冠辽东·现已式微', politicalStance: '辽东旧势·已崩',
+          tradition: '辽东第一武门·三代总兵',
+          recentFortunes: '萨尔浒之败李如柏自杀·族势尽衰',
+          prominence: 'declining',
+          note: '李成梁万历朝辽东之主。族势随努尔哈赤崛起而衰。努尔哈赤原是李成梁家奴出身。'
+        },
+        {
+          name: '秦氏·石柱·白杆兵', tier: 'gentry', prestige: 58,
+          ancestralSeat: '四川石柱宣抚司', founder: '秦氏土司(元)',
+          currentHead: '秦良玉(54岁·女将·石柱宣抚使)', members: ['秦良玉', '马祥麟(子)', '马翔麟(子)', '秦邦屏(兄·1621 战死浑河)'],
+          wealth: '石柱土司领+白杆兵六千', politicalStance: '忠明殷切', prominence: 'stable',
+          marriages: '夫马千乘(殁)',
+          tradition: '白杆枪+土司武艺',
+          recentFortunes: '征辽援沈于 1620·正参奢安之乱',
+          note: '明唯一列传女将。原史崇祯三年勤王入京·崇祯帝赋诗赠之。清兵入石柱 1648 不附。'
+        },
+        {
+          name: '戚氏·定远·戚继光后', tier: 'gentry', prestige: 38,
+          ancestralSeat: '南直隶定远', founder: '戚祥(元末从朱元璋)',
+          notableAncestors: ['戚继光(1588 卒·抗倭名将)'], currentHead: '戚金(戚继光族子·将殉国)',
+          members: ['戚金(浑河之役殉)', '戚元辅(继光孙)'],
+          wealth: '已不显', politicalStance: '承袭抗倭武风', prominence: 'declining',
+          tradition: '戚家军·鸳鸯阵',
+          recentFortunes: '戚金 1621 浑河阵亡·家族遭罢',
+          note: '戚继光去后戚家军尚存部分，参万历援朝及辽东守卫。'
+        },
+        // ═══ 未来奸相 ═══
+        {
+          name: '温氏·乌程', tier: 'gentry', prestige: 68,
+          ancestralSeat: '浙江湖州府乌程', founder: '温氏入乌程(宋)',
+          currentHead: '温体仁(54·礼部侍郎)', members: ['温体仁', '温体行(弟)', '温育仁(子)'],
+          wealth: '乌程田产+官位俸银', politicalStance: '柔佞·浙党', prominence: 'rising(rapid)',
+          marriages: '与浙地土豪联姻', feuds: '东林党',
+          tradition: '进士科举·柔言应对',
+          recentFortunes: '礼部左侍郎·即将入阁首辅(崇祯三年)',
+          note: '柔佞奸相。日后执政八年。崇祯十年罢归卒。'
+        },
+        {
+          name: '周氏·宜兴', tier: 'gentry', prestige: 65,
+          ancestralSeat: '南直隶常州府宜兴县', founder: '周顺昌(万历进士)',
+          currentHead: '周延儒(34·翰林院侍读)', members: ['周延儒', '周延祚(兄)', '周奕封(族)'],
+          wealth: '宜兴田+状元恩', politicalStance: '投机·才敏', prominence: 'rising',
+          marriages: '与常州望族', feuds: '温体仁(同榜将仇)',
+          tradition: '状元及第(万历四十一年)',
+          recentFortunes: '翰林院侍读学士·即将入阁(崇祯二年)',
+          note: '原史两度首辅·崇祯十六年赐死。'
+        },
+        // ═══ 工艺·学术 ═══
+        {
+          name: '宋氏·奉新', tier: 'common', prestige: 45,
+          ancestralSeat: '江西奉新', founder: '宋应昇父(举人)',
+          currentHead: '宋应昇(41·举人·将任浙江分水县令)', members: ['宋应昇', '宋应星(弟·将著《天工开物》)'],
+          wealth: '寒门·读书为本', politicalStance: '实学', prominence: 'rising',
+          tradition: '工艺百科+科举',
+          recentFortunes: '宋应星今 40 岁·正编《天工开物》(1637 刊)',
+          note: '奉新宋氏两兄弟。宋应星《天工开物》为明代工艺学集大成。'
+        },
+        {
+          name: '徐氏·江阴·徐霞客', tier: 'gentry', prestige: 42,
+          ancestralSeat: '南直隶常州府江阴', founder: '徐经(弘治状元·族尊)',
+          currentHead: '徐霞客(42·正游历)', members: ['徐霞客', '徐经子嗣(族人)', '徐仲昭(弟)'],
+          wealth: '江阴田产+游资', politicalStance: '隐逸', prominence: 'stable',
+          tradition: '隐逸游历·地理',
+          recentFortunes: '徐霞客正游云贵川黔(1627 游历中)',
+          note: '徐霞客(1587-1641)正游云贵未归·《徐霞客游记》未成。'
+        },
+        // ═══ 晋商 ═══
+        {
+          name: '范氏·介休', tier: 'common', prestige: 35,
+          ancestralSeat: '山西平阳府介休', founder: '范永斗父祖(晋中商人)',
+          currentHead: '范永斗(父辈·将立八大皇商)', members: ['范永斗', '范三拔(孙辈)'],
+          wealth: '晋商富家·银号+边贸', politicalStance: '商利为先', prominence: 'rising',
+          tradition: '票号+边贸+抄盐引',
+          recentFortunes: '晋商在张家口-归化-沈阳 线崛起',
+          note: '日后清初"八大皇商"首家。原史为后金-清输粮运货立下功勋。'
+        },
+        // ═══ 后金 ═══
+        {
+          name: '爱新觉罗·后金汗族', tier: 'imperial', prestige: 92,
+          ancestralSeat: '辽东赫图阿拉·沈阳', founder: '努尔哈赤(1616 称汗·1626 殁)',
+          notableAncestors: ['布库里雍顺(传说始祖)', '猛哥帖木儿(元末建州酋)', '努尔哈赤'],
+          currentHead: '皇太极(35)', heir: '(尚未立)',
+          members: ['皇太极', '代善(兄·礼亲王)', '阿敏(堂兄·镶蓝旗)', '莽古尔泰(兄·正蓝旗)', '多尔衮(弟·15岁)', '多铎(弟·14岁)', '阿济格(弟)', '济尔哈朗(堂弟)', '豪格(皇太极子·19岁)', '福临(未生·1638 生)'],
+          wealth: '八旗共有·皇太极私库尚浅', politicalStance: '汗业扩张', prominence: 'rising(rapid)',
+          marriages: '与科尔沁蒙古联姻(哲哲/海兰珠/布木布泰)',
+          tradition: '八旗制度·旗主议政·武勇尚骑射',
+          feuds: '大明·察哈尔·朝鲜(已迫降)',
+          recentFortunes: '皇太极继位一年·伐朝鲜成·宁锦败于袁崇焕',
+          note: '努尔哈赤所建。日后改姓，入主中原为清。'
+        },
+        // ═══ 郑氏 ═══
+        {
+          name: '郑氏·南安', tier: 'common', prestige: 45,
+          ancestralSeat: '福建泉州府南安县', founder: '郑芝龙(海商自立)',
+          currentHead: '郑芝龙(23)', heir: '郑成功(3岁·日本平户生)',
+          members: ['郑芝龙', '郑鸿逵(弟)', '郑芝虎(弟)', '郑芝豹(弟)', '郑成功(子)', '田川松(妻·日)'],
+          wealth: '海贸巨富+舰船+武装', politicalStance: '海商半盗', prominence: 'rising',
+          marriages: '郑芝龙与日本田川氏·其他海商联姻',
+          tradition: '海贸+武装保卫·多国混合',
+          feuds: '荷兰东印度·其他海盗',
+          recentFortunes: '即将受抚为海防游击(崇祯元年)',
+          note: '福建南安海商。郑成功母为日本平户人。日后福建海上霸主。'
+        },
+        // ═══ 贱籍/僧道 ═══
+        {
+          name: '衍圣公孔府·曲阜', tier: 'imperial', prestige: 90,
+          ancestralSeat: '山东兖州府曲阜', founder: '孔子(公元前 551)',
+          notableAncestors: ['孔子', '孔鲋(秦焚书时护典)', '孔融(建安七子)'],
+          currentHead: '孔胤植(六十五代衍圣公)', members: ['孔胤植', '孔胤燮(弟)', '孔氏南宗(衢州分支)'],
+          wealth: '曲阜封地+天下孔庙供奉+圣朝恩赐', politicalStance: '儒教正统', prominence: 'stable',
+          tradition: '圣裔·掌天下儒教典礼·祭孔',
+          marriages: '与鲁地缙绅',
+          note: '孔子后裔。世袭衍圣公正一品。1644 后投清续封。'
+        }
       ],
 
       // ──── 后宫体系 ────

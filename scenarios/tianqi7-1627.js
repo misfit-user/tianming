@@ -825,6 +825,120 @@
         '《蜀碧》：献忠屠蜀，千里无人烟。'
       ],
       wuchangOverride: { '仁': 12, '义': 32, '礼': 25, '智': 58, '信': 28 }
+    },
+    '客氏': {
+      sources: [
+        '《明史·客氏传》：客氏，熹宗乳母也。性淫而狠。',
+        '《明史》：与魏忠贤结为对食，出入内廷二十年。',
+        '《明史》：张皇后尝孕，客魏用法使堕之。',
+        '《明季北略》：天启七年九月，帝遣出宫；十二月杖毙于浣衣局，尸为崇祯诏分。'
+      ],
+      wuchangOverride: { '仁': 8, '义': 10, '礼': 12, '智': 55, '信': 15 }
+    },
+    '袁贵妃': {
+      sources: [
+        '《明史·后妃传·庄烈帝贵妃袁氏》：性仁柔，恭谨侍帝。',
+        '《明史》：城陷日，帝令自尽，贵妃悬帛自缢，帛断坠地，复自起。帝大恸。'
+      ],
+      wuchangOverride: { '仁': 78, '义': 72, '礼': 85, '智': 58, '信': 82 }
+    },
+    '许显纯': {
+      sources: [
+        '《明史·阉党传·许显纯》：显纯，定远卫人。武进士。为锦衣卫北镇抚使。',
+        '《明史》：为魏忠贤办事，锻炼狱情，以苦掠六君子。',
+        '《明史》：六君子杨涟、左光斗等死其手。',
+        '《国榷》：崇祯元年，论死，弃市。'
+      ],
+      wuchangOverride: { '仁': 5, '义': 5, '礼': 18, '智': 58, '信': 10 }
+    },
+    '施凤来': {
+      sources: [
+        '《明史·阉党传·施凤来》：凤来，平湖人。居相位，依违于忠贤。',
+        '《明史》：凤来以工诗著。',
+        '《国榷》：虽位极人臣，多巧言令色。'
+      ],
+      wuchangOverride: { '仁': 42, '义': 32, '礼': 62, '智': 70, '信': 30 }
+    },
+    '冯铨': {
+      sources: [
+        '《明史·阉党传·冯铨》：铨少颖敏，及长，颇好学。',
+        '《明史》：附忠贤，骤进太子太保、文渊阁大学士。',
+        '《清史稿·冯铨传》：国朝定鼎，先自投诚，授内院大学士。',
+        '《国榷》：无耻之尤也。'
+      ],
+      wuchangOverride: { '仁': 28, '义': 10, '礼': 58, '智': 82, '信': 15 }
+    },
+    '阎鸣泰': {
+      sources: [
+        '《明史·阉党传·阎鸣泰》：鸣泰，太原人。为辽东经略，畏缩不敢战。',
+        '《明史》：附魏忠贤，为之建生祠于九边。',
+        '《崇祯长编》：崇祯元年论罪戍边。'
+      ],
+      wuchangOverride: { '仁': 30, '义': 15, '礼': 45, '智': 55, '信': 25 }
+    },
+    '成基命': {
+      sources: [
+        '《明史·成基命传》：基命，大名人。万历三十五年进士。',
+        '《明史》：性长厚。崇祯二年以礼部尚书兼东阁大学士入阁。',
+        '《明史》：先锋慎密，遇事坚执。',
+        '《国榷》：君子也。'
+      ],
+      wuchangOverride: { '仁': 82, '义': 78, '礼': 88, '智': 70, '信': 85 }
+    },
+    '刘鸿训': {
+      sources: [
+        '《明史·刘鸿训传》：鸿训，山东长山人。',
+        '《明史》：有才而躁。崇祯元年入阁。',
+        '《明史》：以擅改敕书事罢。戍边卒。'
+      ],
+      wuchangOverride: { '仁': 68, '义': 72, '礼': 60, '智': 82, '信': 72 }
+    },
+    '李标': {
+      sources: [
+        '《明史·李标传》：标，高邑人。持正公厚。',
+        '《明史》：崇祯元年入阁。朝议称为长者。',
+        '《国榷》：李高邑，东林清流。'
+      ],
+      wuchangOverride: { '仁': 80, '义': 75, '礼': 85, '智': 70, '信': 82 }
+    },
+    '郭允厚': {
+      sources: [
+        '《明史·郭允厚传》：允厚，福山人。',
+        '《明史》：为户部尚书，善理财。',
+        '《国榷》：清刚有为，屡陈加派之弊而不能止。'
+      ],
+      wuchangOverride: { '仁': 68, '义': 78, '礼': 75, '智': 82, '信': 80 }
+    },
+    '王在晋': {
+      sources: [
+        '《明史·王在晋传》：在晋，太仓人。',
+        '《明史》：主弃宁锦守山海，与孙承宗议不合。',
+        '《明史》：性保守，用兵持重。'
+      ],
+      wuchangOverride: { '仁': 65, '义': 68, '礼': 72, '智': 70, '信': 70 }
+    },
+    '方正化': {
+      sources: [
+        '《明史·宦官传·方正化》：勇敢有胆略，异于他珰。',
+        '《明史》：崇祯十七年监军保定，城陷，与敌格斗数十人，死焉。'
+      ],
+      wuchangOverride: { '仁': 65, '义': 92, '礼': 62, '智': 60, '信': 88 }
+    },
+    '阿敏': {
+      sources: [
+        '《清史稿·阿敏传》：阿敏骁勇冠军，然粗猛多忤。',
+        '《清史稿》：天聪四年因永平失守被幽。',
+        '《满文老档》：阿敏自恃为努尔哈赤之侄，不服皇太极。'
+      ],
+      wuchangOverride: { '仁': 35, '义': 52, '礼': 28, '智': 55, '信': 48 }
+    },
+    '高迎祥': {
+      sources: [
+        '《明史·流贼传·高迎祥》：迎祥，安塞人。善骑射。',
+        '《明史》：自号"闯王"，李自成之舅也。',
+        '《明史》：崇祯九年，为孙传庭所擒，械送京师，磔。'
+      ],
+      wuchangOverride: { '仁': 42, '义': 58, '礼': 35, '智': 58, '信': 55 }
     }
   };
 
@@ -1020,7 +1134,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v19-2026.04.19-hist-sources';
+  var SCENARIO_VERSION = 'v20-2026.04.19-hist-fix-ages';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -2915,8 +3029,8 @@
         bio: '天启末信王府选侍，新帝即位册贵妃。'
       },
       {
-        name: '李选侍', title: '选侍·万历遗妃', officialTitle: '先朝选侍', isRoyal: true, royalRelation: 'former_consort', alive: true,
-        age: 48, gender: '女', personality: '贪利·好权·已败', location: '哕鸾宫',
+        name: '李选侍', title: '选侍·光宗遗妃·移宫案当事人', officialTitle: '先朝选侍', isRoyal: true, royalRelation: 'former_consort', alive: true,
+        age: 30, gender: '女', birthYear: 1597, personality: '贪利·好权·已败', location: '哕鸾宫',
         loyalty: 40, ambition: 55, intelligence: 65, integrity: 30,
         stance: '失势', faction: '明朝廷', party: '', family: '李氏',
         bio: '万历末年选侍。与光宗有子。移宫案中被东林党逼出乾清宫。'
@@ -3163,7 +3277,7 @@
       },
       {
         name: '毛文龙', title: '东江总兵·左都督·太子太保', officialTitle: '左都督·东江总兵', alive: true,
-        age: 51, gender: '男', personality: '骄横·能战·跋扈·取巧', location: '皮岛',
+        age: 48, gender: '男', birthYear: 1579, personality: '骄横·能战·跋扈·取巧', location: '皮岛',
         loyalty: 55, ambition: 75, intelligence: 65, valor: 78, benevolence: 35,
         administration: 45, integrity: 30,
         stance: '东江镇军头', faction: '明朝廷', party: '', family: '毛氏',
@@ -3173,7 +3287,7 @@
       },
       {
         name: '满桂', title: '宁远总兵·右都督', officialTitle: '宁远总兵·右都督', alive: true,
-        age: 43, gender: '男', personality: '骁勇·暴躁·不识字', location: '宁远',
+        age: 33, gender: '男', birthYear: 1594, personality: '骁勇·暴躁·不识字', location: '宁远',
         loyalty: 80, ambition: 50, intelligence: 55, valor: 88, benevolence: 50, integrity: 70,
         stance: '蒙古裔骁将', faction: '明朝廷', party: '', family: '满氏',
         traits: ['brave', 'wrathful', 'stubborn'],
@@ -3189,7 +3303,7 @@
       },
       {
         name: '祖大寿', title: '宁远副总兵·后都督', officialTitle: '宁远副总兵', alive: true,
-        age: 40, gender: '男', personality: '骁勇·重情·多疑', location: '宁远',
+        age: 48, gender: '男', birthYear: 1579, personality: '骁勇·重情·多疑', location: '宁远',
         loyalty: 70, ambition: 55, intelligence: 62, valor: 82, integrity: 58,
         stance: '辽东武将世家', faction: '明朝廷', party: '', family: '祖氏·辽东',
         traits: ['brave', 'paranoid', 'stubborn'],

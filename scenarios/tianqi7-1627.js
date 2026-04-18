@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v8-2026.04.19-classes';
+  var SCENARIO_VERSION = 'v9-2026.04.19-vars-rels';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1587,7 +1587,10 @@
       { name: '九边欠饷总数', value: 720, min: 0, max: 2000, unit: '万两', cat: '财政', desc: '九边（辽东/蓟州/宣府/大同/山西/延绥/宁夏/甘肃/固原）总欠饷。超 1000 万引全面哗变。', inversed: true },
       { name: '宗禄拖欠', value: 280, min: 0, max: 1000, unit: '万石', cat: '财政', desc: '宗室禄米历年拖欠。万历末宗室逾 20 万，岁禄理论 600 万石，实际拨发不足一半。', inversed: true },
       { name: '太仓粮实存', value: 130, min: 0, max: 1000, unit: '万石', cat: '财政', desc: '太仓米粮实有。漕运岁运 400 万石，多虚报。京通仓存粮难支半年。', inversed: true },
-      { name: '太仓银储量比', value: 11, min: 0, max: 100, cat: '财政', desc: '太仓库银占岁入基准百分比。史实：20%为常态，低于 15% 危机。' },
+      // (太仓银储量比已删除——与七大核心中的国库资金功能重叠)
+      { name: '银荒指数', value: 55, min: 0, max: 100, cat: '财政', desc: '白银流通紧张度。一条鞭法后民间银两需求激增，美洲银流入放缓则银价昂贵。超 70 即钱贱谷贵民不聊生。', inversed: true },
+      { name: '宝泉局铸钱量', value: 40, min: 0, max: 100, cat: '财政', desc: '工部宝源局/户部宝泉局岁铸制钱(铜钱)数量。明末铸币减少，私铸盛行。' },
+      { name: '海贸银流入', value: 28, min: 0, max: 100, cat: '财政', desc: '马尼拉-月港-澳门海贸流入白银。天启七年荷西竞争影响流速。' },
       // ──── 经济 ────
       { name: '江南商税抵制度', value: 75, min: 0, max: 100, cat: '经济', desc: '江南缙绅对商税/矿税的抵制程度。矿税于 1625 年罢。', inversed: true },
       { name: '海商势力', value: 25, min: 0, max: 100, cat: '经济', desc: '郑芝龙为首的海商集团崛起程度。' },
@@ -1597,7 +1600,17 @@
       // ──── 民生/环境 ────
       { name: '流民数量', value: 900000, min: 0, max: 50000000, unit: '口', cat: '民生', desc: '北直隶/陕西/山东流民估数。三年连旱将加速。', inversed: true },
       { name: '小冰河凛冬指数', value: 68, min: 0, max: 100, cat: '环境', desc: '1627 冬寒异常。未来三年将更严酷。', inversed: true },
-      { name: '西北灾荒怨气', value: 76, min: 0, max: 100, cat: '民生', desc: '陕北已三年大旱，观音土食尽，草根掘尽。民变在即。', inversed: true }
+      { name: '西北灾荒怨气', value: 76, min: 0, max: 100, cat: '民生', desc: '陕北已三年大旱，观音土食尽，草根掘尽。民变在即。', inversed: true },
+      // ──── 制度/风气 ────
+      { name: '卫所虚额率', value: 62, min: 0, max: 100, cat: '军事', desc: '九边卫所"在册"与"实存"差距。>60 即战事无可用兵。', inversed: true },
+      { name: '官场冗员指数', value: 55, min: 0, max: 100, cat: '政治', desc: '超定员的闲散官。阉党"恩荫"泛滥，卖官鬻爵。', inversed: true },
+      { name: '言路通塞', value: 22, min: 0, max: 100, cat: '政治', desc: '科道敢言度。阉党时"讳言国事、谏者必诛"。高则言路畅，低则噤声。' },
+      { name: '科举选士质量', value: 45, min: 0, max: 100, cat: '政治', desc: '会试/殿试取中者之素质与独立性。阉党座主门生勾结严重。' },
+      { name: '诏狱案件积压', value: 78, min: 0, max: 100, cat: '政治', desc: '锦衣卫北镇抚司未决案件。天启朝诏狱杀人无数，积压亦重。', inversed: true },
+      // ──── 社会/水利 ────
+      { name: '黄河水利失修度', value: 68, min: 0, max: 100, cat: '环境', desc: '黄河淮河堤防失修。万历末至天启连年溃决，田卢漂没。', inversed: true },
+      { name: '宗族兼并度', value: 72, min: 0, max: 100, cat: '经济', desc: '宗藩/缙绅侵占民田之烈度。福王田 4 万顷即典型。', inversed: true },
+      { name: '天下文社数', value: 18, min: 0, max: 100, cat: '政治', desc: '文人社团（将孕育复社）。以士子议政、讲学、联属试卷为名。' }
     ];
     variables.forEach(function (v) { v.sid = SID; v.id = _uid('var_'); v.color = '#c9a84c'; v.icon = ''; v.visible = true; global.P.variables.push(v); });
 
@@ -1645,7 +1658,35 @@
       { from: '毕自严', to: '郭允厚', type: '同僚·理财', value: 70, desc: '皆精度支，然毕更有担当。' },
       { from: '温体仁', to: '周延儒', type: '同榜·将仇', value: 50, desc: '此时尚可，日后同列首辅交恶。' },
       // 朝鲜
-      { from: '仁祖李倧', to: '朱由检', type: '藩臣', value: 80, desc: '事大至诚，又苦后金。' }
+      { from: '仁祖李倧', to: '朱由检', type: '藩臣', value: 80, desc: '事大至诚，又苦后金。' },
+      // ──── 补充：师承·同榜·恩仇 ────
+      { from: '徐光启', to: '利玛窦', type: '亡友·教父', value: 95, desc: '1600 年订交，1604 合译《几何原本》；利玛窦 1610 卒时徐执丧礼。' },
+      { from: '徐光启', to: '汤若望', type: '同道·天主教', value: 85, desc: '将于崇祯二年历局共事。' },
+      { from: '孙承宗', to: '朱由校', type: '师生', value: 90, desc: '熹宗东宫讲官。讲学二十余次。' },
+      { from: '孙承宗', to: '朱由检', type: '师(间接)', value: 72, desc: '新帝幼时亦闻孙师讲义。' },
+      { from: '毛文龙', to: '皇太极', type: '疑似通敌', value: -70, desc: '暗中书信往来，原史袁崇焕斩之口实。' },
+      { from: '满桂', to: '祖大寿', type: '同袍·微隙', value: 40, desc: '宁远共守，宁锦分功时小有龃龉。' },
+      { from: '钱谦益', to: '钱龙锡', type: '同党·族亲', value: 70, desc: '同属东林，同族同籍。' },
+      { from: '温体仁', to: '钱谦益', type: '将仇', value: -60, desc: '崇祯元年会推阁臣，温排斥钱引钩党案。' },
+      { from: '卢象升', to: '周延儒', type: '同籍宜兴·微交', value: 55, desc: '同为常州宜兴人。' },
+      { from: '孙传庭', to: '洪承畴', type: '同仇·将共剿贼', value: 65, desc: '日后同任陕西剿闯。' },
+      // ──── 后金内部 ────
+      { from: '多尔衮', to: '多铎', type: '同母兄弟', value: 95, desc: '同为阿巴亥所生；幼时丧母，相依为命。' },
+      { from: '多尔衮', to: '皇太极', type: '弟·暗仇', value: 45, desc: '母被逼殉葬之仇——日后摄政即复。' },
+      { from: '范文程', to: '皇太极', type: '主从·谋主', value: 90, desc: '深入赞画，皇太极大政必询。' },
+      { from: '代善', to: '莽古尔泰', type: '兄弟·离心', value: 35, desc: '莽古尔泰骄横，与代善不睦。' },
+      // ──── 家族/子嗣 ────
+      { from: '祖大寿', to: '吴襄', type: '姻亲·妹夫', value: 75, desc: '祖大寿妹嫁吴襄。吴襄子吴三桂（此时 15 岁）日后引清入关。' },
+      { from: '郑芝龙', to: '田川松', type: '夫妻', value: 80, desc: '平户日女，郑成功(3岁)之母。' },
+      { from: '郑芝龙', to: '郑成功', type: '父子', value: 85, desc: '日后冲突——郑芝龙降清，郑成功抗清。' },
+      // ──── 朝堂群像 ────
+      { from: '东林党', to: '阉党', type: '群体血仇', value: -95, desc: '杨涟左光斗等六君子死诏狱之仇不共戴天。' },
+      { from: '士大夫', to: '缙绅', type: '相倚', value: 70, desc: '士大夫退职即为缙绅。互为根基。' },
+      { from: '缙绅', to: '自耕农', type: '兼并·盘剥', value: -55, desc: '明末土地兼并急剧，缙绅以包揽粮税侵吞自耕农。' },
+      { from: '军户', to: '边将家丁', type: '被压榨', value: -40, desc: '总兵家丁为精锐，军户为炮灰，饷银层层被私扣。' },
+      // ──── 对玩家 ────
+      { from: '朱由检', to: '阉党', type: '君主vs群体·欲除', value: -80 },
+      { from: '朱由检', to: '东林党', type: '君主vs群体·欲用', value: 50 }
     ];
     relations.forEach(function (r) { r.sid = SID; r.id = _uid('rel_'); global.P.relations.push(r); });
 

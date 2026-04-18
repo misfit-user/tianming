@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v6-2026.04.19-factions';
+  var SCENARIO_VERSION = 'v7-2026.04.19-parties';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1213,13 +1213,125 @@
     // § 4. 党派
     // ═══════════════════════════════════════════════════════════════════
     var parties = [
-      { name: '阉党', desc: '魏忠贤党羽集团。崔呈秀为"五虎"文官，田尔耕、许显纯为"五彪"武官。占据内阁、六部、都察院。', influence: 85, satisfaction: 60, leader: '魏忠贤', ideology: '阉寺弄权·排除异己·罗织罪名' },
-      { name: '东林党', desc: '无锡东林书院讲学起家。主清议、重吏治、反矿税、抑宦官。天启朝被阉党诏狱几尽。', influence: 15, satisfaction: 20, leader: '韩爌', ideology: '正心诚意·清君侧·顾宪成"讽议朝政"遗风' },
-      { name: '浙党', desc: '浙江籍京官为核心的同乡派系。万历末与东林党抗衡。天启朝附阉党者多。', influence: 35, satisfaction: 50, leader: '施凤来', ideology: '同乡互助·中央维稳' },
-      { name: '楚党', desc: '湖广籍官员同乡派系。万历三十年前后称盛。今已分化归入阉党或中立。', influence: 15, satisfaction: 40, leader: '官应震', ideology: '同乡互助' },
-      { name: '齐党', desc: '山东籍官员。万历末与东林抗衡之一支。天启朝多附阉党。', influence: 20, satisfaction: 45, leader: '亓诗教(已罢)', ideology: '同乡' },
-      { name: '宣党', desc: '宣城（安徽宣州）籍官员，以汤宾尹为首。与东林夙怨。', influence: 10, satisfaction: 40, leader: '汤宾尹(已死)', ideology: '地域' },
-      { name: '昆党', desc: '昆山(苏州昆山)籍官员，顾天峻为首。与东林密切（顾宪成为昆山人）但自成一支。', influence: 8, satisfaction: 35, leader: '顾天峻', ideology: '地域' }
+      {
+        name: '阉党', leader: '魏忠贤', faction: '明朝廷', crossFaction: false,
+        influence: 92, satisfaction: 55, status: '活跃(将崩)', memberCount: 180, cohesion: 65,
+        ideology: '阉寺弄权·排除异己·罗织罪名·生祠遍天下',
+        desc: '魏忠贤党羽集团。崔呈秀等五虎为文官核心，田尔耕、许显纯为五彪武官。占据内阁、六部、都察院过半。号义子义孙"十狗""十孩儿""四十孙"。',
+        currentAgenda: '稳住阉党地位；加紧削东林；借皇陵工程敛财',
+        shortGoal: '阻止新帝清算',
+        socialBase: [{ class: '宗室', affinity: 0.3 }, { class: '士大夫', affinity: -0.4 }, { class: '胥吏', affinity: 0.5 }],
+        members: '魏忠贤·崔呈秀·田尔耕·许显纯·黄立极·施凤来·冯铨·阎鸣泰·王绍徽·李夔龙·潘汝桢·魏良卿',
+        leadership: { chief: '魏忠贤', deputy: '崔呈秀', spokesman: '黄立极', enforcer: '田尔耕·许显纯' },
+        history: '天启三年(1623)魏忠贤掌司礼监始成规模→天启四年诛六君子→天启六年广建生祠→天启七年熹宗崩→此时风雨飘摇',
+        enemies: ['东林党'], allies: ['浙党(部分)', '齐党(部分)'], neutrals: ['楚党'],
+        strengths: ['司礼监批红权', '东厂缇骑', '京营兵权(崔呈秀)', '锦衣卫诏狱(田尔耕许显纯)', '国库财源'],
+        weaknesses: ['一人存亡系党', '帝心已变', '士林痛恨', '声名扫地'],
+        strategy: '首先试图软化新帝；失败则伺机京营兵变；再失败则各人自谋出路',
+        foundYear: 1623, peakYear: 1626, declineYear: 1627
+      },
+      {
+        name: '东林党', leader: '韩爌', faction: '明朝廷', crossFaction: false,
+        influence: 12, satisfaction: 18, status: '式微(待起)', memberCount: 80, cohesion: 82,
+        ideology: '正心诚意·清君侧·顾宪成"讽议朝政"遗风·反矿税·抑宦官·重吏治',
+        desc: '万历三十二年(1604)顾宪成/顾允成兄弟创无锡东林书院讲学。一时东南士林纷赴。万历四十八年"三案"(梃击/红丸/移宫)辩立。天启四年杨涟弹魏忠贤二十四罪败被诏狱诛。现硕果仅存者多贬居乡里。',
+        currentAgenda: '等待新帝召还；书院复讲；追赃问责阉党',
+        shortGoal: '韩爌等老臣起复入阁',
+        socialBase: [{ class: '士大夫', affinity: 0.85 }, { class: '缙绅', affinity: 0.40 }, { class: '商人', affinity: 0.20 }],
+        members: '韩爌·钱龙锡·成基命·刘鸿训·李标·徐光启·孙元化·钱谦益·黄尊素·瞿式耜·张溥(复社承东林)',
+        leadership: { chief: '韩爌(蒲州)', deputy: '钱龙锡(松江)', spokesman: '成基命', scholar: '徐光启(实学)' },
+        history: '顾宪成 1604 创东林书院→万历末"三案"始党争→天启元年抗击阉党→天启四年"六君子"死诏狱(杨涟/左光斗/魏大中/袁化中/周朝瑞/顾大章)→天启五年高攀龙自沉→天启七年九月寂然',
+        enemies: ['阉党', '浙党(结阉党一段)', '齐党'], allies: [], neutrals: ['楚党', '昆党'],
+        strengths: ['士林舆论', '科举门生网络', '江南缙绅资助', '道德制高点', '清议传统'],
+        weaknesses: ['人才凋零', '内部理念分歧', '无兵权', '财源有限'],
+        strategy: '借新帝除阉党之势全面复起；清算阉党；重立吏治；然势必又遭浙党齐党反扑',
+        foundYear: 1604, peakYear: 1620, suppressedPeriod: '1624-1627'
+      },
+      {
+        name: '浙党', leader: '施凤来', faction: '明朝廷', crossFaction: false,
+        influence: 38, satisfaction: 52, status: '活跃·附阉', memberCount: 60, cohesion: 55,
+        ideology: '同乡互助·中央维稳·反东林',
+        desc: '浙江籍京官（嘉湖宁绍/杭州为主）为核心的同乡派系。万历末沈一贯、方从哲为首与东林抗衡。天启朝施凤来、冯铨等多附阉党。温体仁此时已露头角。',
+        currentAgenda: '伺阉党覆灭之机，以柔佞态度归附新帝',
+        shortGoal: '温体仁入阁',
+        socialBase: [{ class: '士大夫', affinity: 0.45 }, { class: '商人', affinity: 0.55 }, { class: '缙绅', affinity: 0.50 }],
+        members: '施凤来·冯铨·温体仁·潘汝桢·来宗道·周延儒(宜兴也属浙地)·王绍徽(附)',
+        leadership: { chief: '施凤来', deputy: '温体仁(将兴)', patron: '沈一贯(已死)' },
+        history: '万历二十九年沈一贯入阁为浙党首→万历三十三年"京察"党争→万历四十一年方从哲继起→天启朝倾向附阉→将入崇祯朝温体仁为首时代',
+        enemies: ['东林党'], allies: ['阉党(部分)', '齐党'], neutrals: ['楚党'],
+        strengths: ['江南财源', '阁臣席位', '温体仁的才能与柔佞'],
+        weaknesses: ['依附阉党包袱', '内部不统一'],
+        strategy: '眼见阉党倾覆即转舵；以温体仁为新盟主；专攻东林派门户之争',
+        foundYear: 1601
+      },
+      {
+        name: '楚党', leader: '官应震', faction: '明朝廷', crossFaction: false,
+        influence: 15, satisfaction: 42, status: '分化', memberCount: 30, cohesion: 35,
+        ideology: '同乡互助·湖广士气',
+        desc: '湖广（今湖北湖南）籍官员同乡派系。万历三十年前后官应震、吴亮嗣为首称盛。与东林对立而与浙党近。今已分化，多数归入阉党或退隐。',
+        currentAgenda: '维持残余势力，伺机重新凝聚',
+        shortGoal: '保存湖广子弟在京官职',
+        socialBase: [{ class: '士大夫', affinity: 0.40 }, { class: '缙绅', affinity: 0.35 }],
+        members: '官应震·吴亮嗣·熊廷弼(已死)·贺逢圣',
+        leadership: { chief: '官应震', former: '熊廷弼(1625 处死)' },
+        history: '万历末官应震、吴亮嗣称楚党→天启二年熊廷弼辽东经略被阉党诬陷→天启五年熊廷弼弃市传首九边→党势大衰',
+        enemies: ['东林党(早期)'], allies: ['浙党', '齐党'], neutrals: [],
+        strengths: ['湖广"粮仓"地缘'],
+        weaknesses: ['熊廷弼死后无雄才', '分裂严重'],
+        strategy: '附强自保；等待形势明朗',
+        foundYear: 1610
+      },
+      {
+        name: '齐党', leader: '亓诗教(已罢)', faction: '明朝廷', crossFaction: false,
+        influence: 20, satisfaction: 45, status: '式微·附阉', memberCount: 25, cohesion: 40,
+        ideology: '同乡·鲁地士气',
+        desc: '山东籍官员。万历末亓诗教、周永春为首与东林抗衡之一支。天启朝多附阉党。李精白(现山东巡抚)亦齐党。',
+        currentAgenda: '依附阉党转瞬覆灭后寻新主',
+        shortGoal: '保存齐党骨干',
+        socialBase: [{ class: '士大夫', affinity: 0.40 }, { class: '缙绅', affinity: 0.30 }],
+        members: '亓诗教·周永春·李精白·韩敬',
+        leadership: { chief: '亓诗教(罢)', field: '李精白(山东巡抚)' },
+        history: '万历末亓诗教首倡齐党→天启初结党附阉→此时首领多已贬斥',
+        enemies: ['东林党'], allies: ['阉党', '浙党'], neutrals: ['楚党'],
+        strengths: ['齐鲁儒学正统', '漕运山东段把控'],
+        weaknesses: ['领袖已去位', '齐鲁饥荒限制财源'],
+        strategy: '暗中保存力量',
+        foundYear: 1615
+      },
+      {
+        name: '宣党', leader: '汤宾尹(已殁)', faction: '明朝廷', crossFaction: false,
+        influence: 10, satisfaction: 38, status: '残余', memberCount: 15, cohesion: 30,
+        ideology: '地域乡党·反东林',
+        desc: '宣城（今安徽宣州）籍官员，以汤宾尹(万历三十八年京察被劾归卒)为首。与东林夙怨起于"三案"辩论。门人今多附阉党。',
+        currentAgenda: '寄居他党求存',
+        shortGoal: '门生再起',
+        socialBase: [{ class: '士大夫', affinity: 0.30 }],
+        members: '汤宾尹门生·韩敬·金维枋',
+        leadership: { chief: '(空缺)', legacy: '汤宾尹遗风' },
+        history: '万历二十三年汤宾尹中进士→万历三十八年京察被东林斥罢→党势一落千丈→天启朝门生有再起机会',
+        enemies: ['东林党'], allies: ['阉党'], neutrals: [],
+        strengths: ['科举师承(汤宾尹为会元)'],
+        weaknesses: ['领袖已死', '地缘小，人数少'],
+        strategy: '合并他党或归隐',
+        foundYear: 1595
+      },
+      {
+        name: '昆党', leader: '顾天峻', faction: '明朝廷', crossFaction: false,
+        influence: 8, satisfaction: 35, status: '弱小', memberCount: 12, cohesion: 45,
+        ideology: '乡党·与东林若即若离',
+        desc: '昆山（今江苏昆山）籍官员，顾天峻为首。顾宪成亦为昆山人（东林祖），故昆党与东林地缘相近，然自成一支，与东林间有门户之争。',
+        currentAgenda: '自保并借东林复起之势',
+        shortGoal: '保留地方势力',
+        socialBase: [{ class: '缙绅', affinity: 0.55 }],
+        members: '顾天峻·钱士升',
+        leadership: { chief: '顾天峻' },
+        history: '万历末顾宪成讲学东林，昆山同乡顾天峻等自立昆党→天启朝夹缝生存',
+        enemies: [], allies: ['东林党(有限)'], neutrals: ['浙党'],
+        strengths: ['江南昆山富裕', '与东林同乡'],
+        weaknesses: ['党员极少', '无重臣'],
+        strategy: '依附东林，借其光复起',
+        foundYear: 1610
+      }
     ];
     parties.forEach(function (p) { p.sid = SID; p.id = _uid('pty_'); global.P.parties.push(p); });
 

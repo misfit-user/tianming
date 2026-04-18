@@ -229,6 +229,152 @@ function _confirmMapMode(sid, useMap) {
   // 存储选择
   window._pendingUseMap = useMap;
 
+  // 进入存档命名 + 游戏模式选择
+  _showGameSetupModal(sid);
+}
+
+/**
+ * 存档命名 + 游戏模式选择弹窗（web 端）
+ */
+var _pendingGameMode = 'yanyi';
+function _showGameSetupModal(sid) {
+  var sc = findScenarioById(sid);
+  var defaultName = sc ? (sc.name || '新纪元') : '新纪元';
+  // 加日期戳以区分多次开局
+  var d = new Date();
+  var pad = function(n){return n<10?'0'+n:n;};
+  var stamp = d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes());
+  defaultName = defaultName + '·' + stamp;
+
+  _pendingGameMode = 'yanyi';
+
+  var h = '<div style="position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);animation:fi 0.2s ease;" id="_gameSetupModal">';
+  h += '<div class="scn-preview-modal" style="max-width:560px;" onclick="event.stopPropagation();">';
+
+  // 顶部金线
+  h += '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold-500),var(--gold-400),var(--gold-500),transparent);margin-bottom:var(--space-4);"></div>';
+
+  // 标题
+  h += '<div style="text-align:center;margin-bottom:var(--space-4);">';
+  h += '<div style="font-size:var(--text-lg);font-weight:var(--weight-bold);color:var(--color-primary);letter-spacing:0.2em;">〔 开 卷 立 册 〕</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-top:var(--space-1);">为此局推演命名，择定史笔之格</div>';
+  h += '</div>';
+
+  // 存档名输入
+  h += '<div style="margin-bottom:var(--space-4);">';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-bottom:var(--space-2);letter-spacing:0.1em;">'+tmIcon('scroll',12)+' 存档名</div>';
+  h += '<input id="_gs_saveName" type="text" value="'+escHtml(defaultName)+'" style="width:100%;padding:var(--space-3);background:var(--color-sunken);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);color:var(--color-foreground);font-family:var(--font-serif);font-size:var(--text-base);letter-spacing:0.05em;" placeholder="为此次推演起一个名字">';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-top:var(--space-1);">将用于存档、导出、史记标识</div>';
+  h += '</div>';
+
+  // 三模式选择
+  h += '<div style="margin-bottom:var(--space-3);">';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-bottom:var(--space-2);letter-spacing:0.1em;">'+tmIcon('chronicle',12)+' 史笔之格</div>';
+
+  // 演义（默认选中）
+  h += '<div id="_gm_yanyi" class="_gm-opt _gm-active" onclick="_selectGameMode(this,\'yanyi\')" style="border:2px solid var(--gold-500);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-2);cursor:pointer;background:rgba(184,154,83,0.08);transition:all 0.2s;">';
+  h += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:4px;">';
+  h += '<span>'+tmIcon('scroll',16)+'</span>';
+  h += '<span style="color:var(--gold-400);font-weight:var(--weight-bold);font-size:var(--text-base);">演义</span>';
+  h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">小说化 · 戏剧性</span>';
+  h += '</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">AI 可自由发挥，允许架空情节。历史名臣全时段可现，戏剧张力最大。</div>';
+  h += '</div>';
+
+  // 轻度史实
+  h += '<div id="_gm_light" class="_gm-opt" onclick="_selectGameMode(this,\'light_hist\')" style="border:2px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-2);cursor:pointer;transition:all 0.2s;">';
+  h += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:4px;">';
+  h += '<span>'+tmIcon('policy',16)+'</span>';
+  h += '<span style="color:var(--celadon-400);font-weight:var(--weight-bold);font-size:var(--text-base);">轻度史实</span>';
+  h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">大事遵史 · 细节可演</span>';
+  h += '</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">大事件（战争/朝代更替/重大改革）沿史脉发展，细节可因干预而变。名臣限开局前后二百年内。</div>';
+  h += '</div>';
+
+  // 严格史实
+  h += '<div id="_gm_strict" class="_gm-opt" onclick="_selectGameMode(this,\'strict_hist\')" style="border:2px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:var(--space-3);cursor:pointer;transition:all 0.2s;">';
+  h += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:4px;">';
+  h += '<span>'+tmIcon('history',16)+'</span>';
+  h += '<span style="color:var(--vermillion-400);font-weight:var(--weight-bold);font-size:var(--text-base);">严格史实</span>';
+  h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">资治通鉴级 · 客观克制</span>';
+  h += '</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">严格遵守史实，AI 参照史料与学术研究。数值渐变、信息不对称、政策延迟。名臣限开局前后百年。</div>';
+  h += '</div>';
+
+  // 严格史实参考文本
+  h += '<div id="_gs_strictRef" style="display:none;margin-top:var(--space-3);padding:var(--space-3);background:var(--color-sunken);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);">';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-bottom:var(--space-1);">'+tmIcon('memorial',12)+' 参考史料（选填）</div>';
+  h += '<textarea id="_gs_refText" placeholder="可粘贴正史记载、大事年表、学术研究等，AI 将严格参照此文本推演" style="width:100%;min-height:100px;padding:var(--space-2);background:var(--color-background);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);color:var(--color-foreground);font-family:var(--font-serif);font-size:var(--text-xs);line-height:var(--leading-normal);resize:vertical;"></textarea>';
+  h += '</div>';
+
+  h += '</div>';
+
+  // 分隔
+  h += '<hr class="ink-divider" style="margin:var(--space-3) 0;">';
+
+  // 按钮
+  h += '<div style="display:flex;gap:var(--space-3);">';
+  h += '<button class="bt bp" style="flex:2;padding:var(--space-3);font-size:var(--text-base);font-weight:var(--weight-bold);letter-spacing:0.1em;" onclick="_finalizeStartGame(\''+sid+'\')">'+tmIcon('scroll',16)+' 开卷推演</button>';
+  h += '<button class="bt bs" style="flex:1;padding:var(--space-3);" onclick="document.getElementById(\'_gameSetupModal\').remove();_startWithDifficulty(\''+sid+'\');">返回</button>';
+  h += '</div>';
+
+  h += '<div style="height:1px;background:linear-gradient(90deg,transparent,var(--gold-500),transparent);margin-top:var(--space-4);"></div>';
+
+  h += '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', h);
+
+  // 聚焦存档名
+  setTimeout(function(){var inp=document.getElementById('_gs_saveName');if(inp){inp.focus();inp.select();}},100);
+}
+
+/**
+ * 切换游戏模式选择
+ */
+function _selectGameMode(el, mode) {
+  _pendingGameMode = mode;
+  var ids = ['_gm_yanyi','_gm_light','_gm_strict'];
+  ids.forEach(function(id){
+    var d = document.getElementById(id);
+    if (d) {
+      d.style.borderColor = 'var(--color-border-subtle)';
+      d.style.background = '';
+      d.classList.remove('_gm-active');
+    }
+  });
+  el.style.borderColor = 'var(--gold-500)';
+  el.style.background = 'rgba(184,154,83,0.08)';
+  el.classList.add('_gm-active');
+  // 严格史实展开参考文本
+  var ref = document.getElementById('_gs_strictRef');
+  if (ref) ref.style.display = (mode==='strict_hist') ? 'block' : 'none';
+}
+
+/**
+ * 确认存档名与模式，进入游戏
+ */
+function _finalizeStartGame(sid) {
+  var nameEl = document.getElementById('_gs_saveName');
+  var name = nameEl ? (nameEl.value || '').trim() : '';
+  if (!name) { toast('请先为此局命名'); if(nameEl) nameEl.focus(); return; }
+
+  if (!P.conf) P.conf = {};
+  P.conf.gameMode = _pendingGameMode || 'yanyi';
+
+  // 严格史实的参考文本
+  if (P.conf.gameMode === 'strict_hist') {
+    var refEl = document.getElementById('_gs_refText');
+    P.conf.refText = refEl ? (refEl.value || '').trim() : '';
+  } else {
+    P.conf.refText = '';
+  }
+
+  // 预设存档名（startGame 会读取 _prevSaveName 继承）
+  if (typeof GM !== 'undefined') GM.saveName = name;
+  window._pendingSaveName = name;
+
+  var overlay = document.getElementById('_gameSetupModal');
+  if (overlay) overlay.remove();
+
   startGame(sid);
 }
 

@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v21-2026.04.19-goals-vassal-editor';
+  var SCENARIO_VERSION = 'v22-2026.04.19-fac-description-attitude-offend';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -2503,6 +2503,41 @@
         strategy: '此时仅求食。若民变燎原则走"流寇"战略——不据一城，流动求活。'
       }
     ];
+    // ═══ 势力·得罪阈值（对齐 classes offendThresholds 模式；势力级别得罪引发外交事件）═══
+    var _FAC_OFFEND = {
+      '明朝廷': [
+        { score: 20, description: '触怒明朝士林', consequences: ['科道弹章', '士气 -5'] },
+        { score: 50, description: '动摇国本', consequences: ['党争激化', '诸势力观望'] },
+        { score: 80, description: '天下离心', consequences: ['藩属叛离', '内乱外患同起'] }
+      ],
+      '后金': [
+        { score: 25, description: '战事激化', consequences: ['后金增兵辽东', '伪降'] },
+        { score: 55, description: '后金大举南犯', consequences: ['长城边堡压力 +20', '战争扩大'] },
+        { score: 85, description: '皇太极誓师', consequences: ['绕蒙古破塞(己巳之变)'] }
+      ],
+      '察哈尔': [
+        { score: 30, description: '林丹汗发怒', consequences: ['撤回使节', '骚扰边市'] },
+        { score: 60, description: '断盟后倒向后金', consequences: ['蒙古归金加速', '北疆全崩'] }
+      ],
+      '朝鲜': [
+        { score: 30, description: '朝鲜王廷不满', consequences: ['朝贡延迟'] },
+        { score: 60, description: '朝鲜被迫彻底事金', consequences: ['断朝鲜藩属', '东江镇断后勤'] }
+      ],
+      '播州土司·杨氏(余裔)': [
+        { score: 40, description: '西南土司哗然', consequences: ['水西再乱+永宁反响应'] },
+        { score: 70, description: '西南全面叛乱', consequences: ['改土归流大困'] }
+      ],
+      '郑氏海商': [
+        { score: 35, description: '郑氏退回海盗', consequences: ['福建沿海劫掠'] },
+        { score: 65, description: '郑氏投荷/倭', consequences: ['海贸断·红毛据台扩张'] }
+      ],
+      '陕北饥民(将起)': [
+        { score: 20, description: '饥民成军', consequences: ['民变燎原前提·不可逆'] },
+        { score: 50, description: '闯军/大西军形成', consequences: ['十年民变大循环'] },
+        { score: 80, description: '破京', consequences: ['1644 煤山结局'] }
+      ]
+    };
+
     facs.forEach(function (f) {
       f.sid = SID; f.id = _uid('fac_');
       // 编辑器 openFactionModal 完整字段合并
@@ -2516,6 +2551,29 @@
         Object.keys(_FAC_LAYER2[f.name]).forEach(function(k){
           if (f[k] === undefined || f[k] === null) f[k] = _FAC_LAYER2[f.name][k];
         });
+      }
+      // 字段名对齐编辑器：desc → description（编辑器用 description 保存并渲染）
+      if (f.desc && !f.description) f.description = f.desc;
+      // attitude：编辑器用简单字符串（友好/中立/敌对/附属/朝贡/联盟/和亲/互市/敌视），保留我的结构 object 至 attitudeDetail
+      if (typeof f.attitude === 'object') {
+        f.attitudeDetail = f.attitude;
+        // 按对玩家关系 playerRelation 推简单字符串
+        var pr = typeof f.playerRelation === 'number' ? f.playerRelation : 0;
+        if (pr >= 60) f.attitude = '友好';
+        else if (pr >= 30) f.attitude = '互市';
+        else if (pr >= -20) f.attitude = '中立';
+        else if (pr >= -50) f.attitude = '敌视';
+        else f.attitude = '敌对';
+        if (f.name === '朝鲜') f.attitude = '朝贡';
+        else if (f.name === '播州土司·杨氏(余裔)') f.attitude = '附属';
+        else if (f.name === '察哈尔') f.attitude = '互市';
+        else if (f.name === '后金') f.attitude = '敌对';
+        else if (f.name === '陕北饥民(将起)') f.attitude = '敌视';
+        else if (f.name === '郑氏海商') f.attitude = '中立';
+      }
+      // offendThresholds
+      if (_FAC_OFFEND[f.name] && (!Array.isArray(f.offendThresholds) || f.offendThresholds.length === 0)) {
+        f.offendThresholds = _FAC_OFFEND[f.name];
       }
       global.P.factions.push(f);
     });

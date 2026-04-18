@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v14-2026.04.19-items';
+  var SCENARIO_VERSION = 'v15-2026.04.19-items-fac2';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -1269,6 +1269,88 @@
     // ═══════════════════════════════════════════════════════════════════
     // § 3. 势力
     // ═══════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
+    //  _FAC_LAYER2 — 势力第二层深化（数值关系/科技文化等级/人口/战争/胜负条件）
+    // ═══════════════════════════════════════════════════════════════════
+    var _FAC_LAYER2 = {
+      '明朝廷': {
+        relations: { '后金': -85, '察哈尔': 20, '朝鲜': 70, '播州土司·杨氏(余裔)': -60, '郑氏海商': -30, '陕北饥民(将起)': -90 },
+        population: { registered: 60000000, actual: 150000000, hidden: 90000000, ethnicities: { '汉': 0.96, '回': 0.015, '藏': 0.008, '苗/壮/瑶': 0.012, '其他': 0.005 } },
+        techLevel: { overall: 72, agriculture: 75, military: 68, navigation: 70, medicine: 82, metallurgy: 65, printing: 90, astronomy: 68, mathematics: 50 },
+        cultureLevel: 88,
+        warState: { active: ['与后金持续战争'], pending: ['镇压陕北(未起)'], recent: ['万历三大征·辽东萨尔浒·奢安之乱'] },
+        economicPolicy: { taxation: 'heavy_from_land·加派辽饷', trade: 'restricted·矿税已罢·海禁松', currency: 'silver_standard·私铸盛行', labor: '一条鞭·折银代役' },
+        publicOpinion: { amongGentry: -20, amongPeasantry: -45, amongScholars: -55 },
+        victoryConditions: ['稳京师且除阉党', '辽东防线不失', '避免流民成军·控制陕北', '延续国祚至崇祯十七年后'],
+        defeatConditions: ['京师兵变失位', '山海关失', '流贼破京', '财政崩溃·朝纲溃散'],
+        longTermStrategy: '先清阉党稳朝堂 → 用能臣修边疆 → 救饥抑兼并 → 开源节流重建财政 → 整顿九边御后金',
+        knownSpies: { in_manchu: 8, in_mongol: 12, in_pirate: 3 }
+      },
+      '后金': {
+        relations: { '明朝廷': -85, '察哈尔': -70, '朝鲜': -30, '蒙古科尔沁': 85, '郑氏海商': 10, '明降将集团': 50 },
+        population: { registered: 200000, actual: 500000, ethnicities: { '女真': 0.65, '蒙古': 0.15, '汉': 0.18, '朝鲜': 0.02 } },
+        techLevel: { overall: 55, agriculture: 45, military: 75, navigation: 25, metallurgy: 60, printing: 40, astronomy: 50 },
+        cultureLevel: 55,
+        warState: { active: ['与明辽东对峙'], recent: ['伐朝鲜成·江都盟', '宁远·宁锦两败于袁崇焕'] },
+        economicPolicy: { taxation: 'tribute_conquest', trade: '以汉商为中介·马匹皮毛人参换银', currency: 'gold_silver·内部无铸币' },
+        publicOpinion: { amongNobles: 80, amongWarriors: 85, amongHanSubjects: 40 },
+        victoryConditions: ['削平察哈尔', '绕蒙古破长城', '入主中原'],
+        defeatConditions: ['大明中兴辽东复失', '蒙古联明反扑', '内部四大贝勒分裂'],
+        longTermStrategy: '收蒙古 → 迫朝鲜 → 绕袭华北(1629 己巳之变) → 松锦决战 → 入关',
+        knownSpies: { in_ming: 15, in_liaodong: 25, in_mongol: 8 }
+      },
+      '察哈尔': {
+        relations: { '明朝廷': 20, '后金': -70, '科尔沁蒙古': -45, '土默特蒙古': -30 },
+        population: { registered: 0, actual: 200000, ethnicities: { '蒙古': 0.95, '其他': 0.05 } },
+        techLevel: { overall: 35, agriculture: 25, military: 55, navigation: 0, metallurgy: 30 },
+        cultureLevel: 40,
+        warState: { active: ['与后金持续敌对·屡败西迁'], recent: ['1627 归化西迁'] },
+        economicPolicy: { taxation: '部族贡奉', trade: '与明边市·马匹毛皮换茶盐', currency: '银两+实物' },
+        publicOpinion: { amongTribes: 38 },
+        victoryConditions: ['复祖业统漠南蒙古', '抗住后金'],
+        defeatConditions: ['被后金击破', '诸部离散'],
+        longTermStrategy: '拉拢明朝 → 抗后金 → 图青海'
+      },
+      '朝鲜': {
+        relations: { '明朝廷': 70, '后金': -60, '日本幕府': -40 },
+        population: { registered: 4000000, actual: 7000000 },
+        techLevel: { overall: 58, agriculture: 65, military: 42, navigation: 55, metallurgy: 50 },
+        cultureLevel: 75,
+        warState: { recent: ['1627 被后金伐·江都兄弟盟'] },
+        economicPolicy: { taxation: 'light_land', trade: '与明大量·倭商有限', currency: '银·铜·无纸' },
+        publicOpinion: { twoBan: 50, commoners: 30 },
+        victoryConditions: ['对明事大得撤', '后金不再来'],
+        defeatConditions: ['汉城陷'],
+        longTermStrategy: '事大明·虚与后金'
+      },
+      '播州土司·杨氏(余裔)': {
+        relations: { '明朝廷': -50, '水西安氏': 80, '永宁奢氏': 80, '其他西南土司': 50 },
+        population: { actual: 50000 },
+        techLevel: { overall: 25, military: 45, agriculture: 35 },
+        warState: { active: ['奢安之乱参与中'] },
+        victoryConditions: ['明廷再乱时复播'],
+        defeatConditions: ['奢安之乱平定后族绝']
+      },
+      '郑氏海商': {
+        relations: { '明朝廷': -20, '荷兰东印度公司': -65, '西班牙马尼拉': 0, '日本平户': 70, '其他海盗': 30 },
+        population: { actual: 80000 },
+        techLevel: { overall: 62, navigation: 88, military: 55, trade: 92 },
+        warState: { active: ['与荷兰东印度竞台海'] },
+        economicPolicy: { taxation: '(无)·抽头分红', trade: '三角贸易·武装商船', currency: '银·万国通' },
+        victoryConditions: ['受明招抚为游击'],
+        defeatConditions: ['被明水师剿或荷兰击沉']
+      },
+      '陕北饥民(将起)': {
+        relations: { '明朝廷': -90, '缙绅': -70, '流民': 100 },
+        population: { actual: 900000 },
+        techLevel: { overall: 10, military: 25, agriculture: 10 },
+        warState: { active: ['此时尚为饥民·未成军'] },
+        victoryConditions: ['起事后生存到成军'],
+        defeatConditions: ['被朝廷剿抚'],
+        longTermStrategy: '由饥民变流寇·裹挟平民·流动作战·最终反明'
+      }
+    };
+
     var facs = [
       {
         name: '明朝廷', leader: '朱由检', color: '#c9a84c',
@@ -1405,7 +1487,16 @@
         strategy: '此时仅求食。若民变燎原则走"流寇"战略——不据一城，流动求活。'
       }
     ];
-    facs.forEach(function (f) { f.sid = SID; f.id = _uid('fac_'); global.P.factions.push(f); });
+    facs.forEach(function (f) {
+      f.sid = SID; f.id = _uid('fac_');
+      // 第二层深化合并（relations/techLevel/population/warState/胜负条件等）
+      if (_FAC_LAYER2[f.name]) {
+        Object.keys(_FAC_LAYER2[f.name]).forEach(function(k){
+          if (f[k] === undefined || f[k] === null) f[k] = _FAC_LAYER2[f.name][k];
+        });
+      }
+      global.P.factions.push(f);
+    });
 
     // ═══════════════════════════════════════════════════════════════════
     // § 4. 党派

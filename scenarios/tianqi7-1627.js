@@ -599,7 +599,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v11-2026.04.19-fiscal';
+  var SCENARIO_VERSION = 'v12-2026.04.19-divisions';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -2828,6 +2828,216 @@
   // ═══════════════════════════════════════════════════════════════════
   // § 行政区划
   // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  //  _PROVINCE_DEEP — 按省名提供地方文化/战略/灾害/乡绅/书院/商路深化
+  // ═══════════════════════════════════════════════════════════════════
+  var _PROVINCE_DEEP = {
+    '北直隶': {
+      prosperity: 62, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 656000, households: 130000 }, shi: { mouths: 410000, households: 82000 }, zhen: { mouths: 1230000, households: 250000 }, cun: { mouths: 5904000, households: 1180000 } },
+      specialCulture: '京畿重地·北戏昆曲·皇城文化。宫廷审美主导。',
+      strategicValue: '首善之区，天下中枢。宣府镇为防蒙古北门户。',
+      leadingGentry: ['保定李氏', '真定梁氏', '河间毛氏', '永平赵氏'],
+      academies: ['国子监(北)', '首善书院(被阉党毁)', '紫阳书院'],
+      tradeRoutes: ['漕运通州入京', '张家口茶马互市(延伸蒙古)', '山海关辽东商路'],
+      recentDisasters: ['天启三年(1623) 王恭厂大爆炸·死万余', '天启六年冬大雪冰冻', '天启七年夏旱'],
+      religiousSites: ['天坛', '地坛', '潭柘寺', '白云观', '东岳庙'],
+      threats: ['后金破宣府大同塞入塞', '宣府镇守将叛变', '京营兵变']
+    },
+    '南直隶': {
+      prosperity: 88, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 1650000, households: 330000 }, shi: { mouths: 990000, households: 198000 }, zhen: { mouths: 3300000, households: 660000 }, cun: { mouths: 10560000, households: 2120000 } },
+      specialCulture: '江南文采。昆曲鼎盛·东林遗风·市民小说《金瓶梅》《三言二拍》·董其昌书画。',
+      strategicValue: '天下财赋半出于此。留都应天府若再都则国脉不断。',
+      leadingGentry: ['华亭董氏(董其昌)', '常熟钱氏(钱谦益)', '宜兴周氏(周延儒)', '昆山顾氏', '苏州文氏(文震孟)', '无锡顾氏(东林)'],
+      academies: ['东林书院遗址(被毁)', '首善书院(北)', '南京国子监', '复社雏形(即将立)'],
+      tradeRoutes: ['京杭大运河-漕运', '海运登莱(已停)', '苏杭丝绸海外', '两淮盐引'],
+      recentDisasters: ['天启六年苏州五人墓事件(百姓护周顺昌抗阉)', '天启七年夏水'],
+      religiousSites: ['钟山孝陵', '灵谷寺', '栖霞寺', '寒山寺', '玄武山'],
+      threats: ['江南缙绅抗税', '漕运阻塞', '倭寇海盗(已衰)', '红毛(荷兰)登岸']
+    },
+    '浙江布政使司': {
+      prosperity: 84, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 780000 }, shi: { mouths: 468000 }, zhen: { mouths: 1560000 }, cun: { mouths: 4992000 } },
+      specialCulture: '浙学传承(王阳明故里)·永嘉永康学派·南戏·越剧·佛教胜地',
+      strategicValue: '鱼米之乡·丝瓷外销中枢·浙东沿海防倭',
+      leadingGentry: ['余姚王氏(王阳明后)', '海宁陈氏', '归安沈氏', '山阴张岱家族', '宁波全祖望祖', '嘉兴项氏'],
+      academies: ['万松书院(杭州)', '鳌江书院', '阳明祠·稽山书院(王学圣地)'],
+      tradeRoutes: ['宁波港日本贸易', '舟山岛日本-南洋中转', '运河北段', '苏杭丝路'],
+      recentDisasters: ['天启七年沿海台风', '天启六年钱塘潮溢'],
+      religiousSites: ['普陀山', '灵隐寺', '天台国清寺', '天童寺', '雪窦山'],
+      threats: ['沿海海盗(郑芝龙前期)', '倭寇复燃', '吴越王后裔非议']
+    },
+    '江西布政使司': {
+      prosperity: 68, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 544000 }, shi: { mouths: 340000 }, zhen: { mouths: 1088000 }, cun: { mouths: 4828000 } },
+      specialCulture: '理学故里(陆九渊-鹅湖)·戏曲(弋阳腔)·瓷都文化',
+      strategicValue: '瓷器出口主地·漕粮输京大省·长江中枢',
+      leadingGentry: ['吉水邹氏(东林)', '安福刘氏', '南昌熊氏(熊廷弼同乡)', '临川汤氏(汤显祖)', '铅山费氏'],
+      academies: ['鹅湖书院', '白鹿洞书院(理学圣地)', '象山书院', '东湖书院'],
+      tradeRoutes: ['景德镇瓷器-大运河-海运', '章水贡水漕运', '茶叶外销'],
+      recentDisasters: ['天启六年鄱阳水溢'],
+      religiousSites: ['庐山东林寺', '龙虎山(道教祖庭)', '西山万寿宫', '三清山'],
+      threats: ['土匪啸聚山区', '瓷工罢工']
+    },
+    '湖广布政使司': {
+      prosperity: 72, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 496000 }, shi: { mouths: 310000 }, zhen: { mouths: 992000 }, cun: { mouths: 4402000 } },
+      specialCulture: '楚学·汉水文化·公安派(袁宏道)·竟陵派(钟惺谭元春)',
+      strategicValue: '"湖广熟、天下足"——稻米天下粮仓。水道通南北。',
+      leadingGentry: ['湘潭(黄忠懋-黄道周祖)', '公安袁氏', '竟陵钟氏', '岳阳方氏'],
+      academies: ['岳麓书院(长沙)', '石鼓书院(衡阳)', '问津书院(黄冈)'],
+      tradeRoutes: ['长江主航道', '汉水北上', '湘水入湖南'],
+      recentDisasters: ['天启五年湖广大饥', '天启六年夏汉水决堤'],
+      religiousSites: ['武当山(道教圣地)', '黄龙寺', '归元寺'],
+      threats: ['苗乱', '流民南下']
+    },
+    '福建布政使司': {
+      prosperity: 64, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 384000 }, shi: { mouths: 240000 }, zhen: { mouths: 768000 }, cun: { mouths: 3408000 } },
+      specialCulture: '闽学(朱熹)·刻书业(建阳)·海洋文化·妈祖崇拜·天主教早期',
+      strategicValue: '海贸门户(月港-厦门-泉州)。台海要冲。红毛与郑氏争台。',
+      leadingGentry: ['漳州林氏', '泉州蔡氏', '福州陈氏', '莆田黄氏', '晋江郑氏(郑芝龙族)'],
+      academies: ['武夷精舍(朱熹)', '鳌峰书院', '福州紫阳书院'],
+      tradeRoutes: ['月港-马尼拉-澳门(三角贸易)', '厦门-台海-日本', '汀州入江西瓷'],
+      recentDisasters: ['天启五年泉州海啸', '天启七年福州台风'],
+      religiousSites: ['湄州妈祖庙', '开元寺(泉州)', '武夷山道教'],
+      threats: ['荷兰东印度公司(据台)', '西班牙马尼拉', '郑芝龙海盗']
+    },
+    '山东布政使司': {
+      prosperity: 56, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 432000 }, shi: { mouths: 270000 }, zhen: { mouths: 864000 }, cun: { mouths: 3834000 } },
+      specialCulture: '孔孟之乡·齐鲁儒学·济南历下文化·登州海商(与辽东关联)',
+      strategicValue: '拱卫京师东门户·漕运咽喉(临清-济宁)·登莱对辽前哨',
+      leadingGentry: ['曲阜孔氏(衍圣公)', '邹城孟氏', '济南陈氏', '章丘李氏(李开先)', '临清谢氏'],
+      academies: ['尼山书院', '尚书院', '泰山书院', '冶源书院'],
+      tradeRoutes: ['漕运临清段', '运盐道(河东盐池)', '登州-辽东海运'],
+      recentDisasters: ['天启六年胶东旱', '天启七年黄河决口'],
+      religiousSites: ['曲阜孔庙三孔', '泰山', '崂山(道教)', '灵岩寺'],
+      threats: ['白莲教(徐鸿儒 1622 之乱余烬)', '漕工罢工', '登州叛乱(1631 将起)']
+    },
+    '山西布政使司': {
+      prosperity: 48, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 416000 }, shi: { mouths: 260000 }, zhen: { mouths: 832000 }, cun: { mouths: 3692000 } },
+      specialCulture: '晋学·票号商业·解盐文化·北方武人传统',
+      strategicValue: '表里山河·九边大同/山西两镇·晋商控边贸',
+      leadingGentry: ['蒲州韩氏(韩爌)', '太原王氏', '平阳霍氏', '介休范氏(日后八大皇商)', '阳城张氏'],
+      academies: ['晋阳书院', '汾州书院'],
+      tradeRoutes: ['张家口-大同-归化(茶马互市)', '太原-平阳盐池', '潞泽煤铁'],
+      recentDisasters: ['天启五年晋中旱', '天启六年冬奇寒'],
+      religiousSites: ['五台山(佛教圣地)', '北岳恒山', '芮城永乐宫', '大同华严寺'],
+      threats: ['蒙古入寇', '晋商通敌(日后传闻通后金)', '饥民外逃']
+    },
+    '河南布政使司': {
+      prosperity: 44, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 448000 }, shi: { mouths: 280000 }, zhen: { mouths: 896000 }, cun: { mouths: 3976000 } },
+      specialCulture: '中原古学·儒道佛三教鼎立·牡丹文化(洛阳)',
+      strategicValue: '中州腹地·九边补给站·福王就国之所',
+      leadingGentry: ['商丘侯氏(侯方域家)', '大名成氏(成基命)', '开封方氏', '洛阳(福王田产侵占)', '怀庆孙氏'],
+      academies: ['睢阳书院(应天府书院旧址)', '嵩阳书院', '白沙书院'],
+      tradeRoutes: ['黄河漕运', '南北官道', '汴洛商路'],
+      recentDisasters: ['天启五年河南蝗', '天启六年黄河决口开封'],
+      religiousSites: ['少林寺', '白马寺', '相国寺', '中岳嵩山'],
+      threats: ['福王敛财民怨', '黄河水患', '流民南下']
+    },
+    '陕西布政使司': {
+      prosperity: 22, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 464000 }, shi: { mouths: 290000 }, zhen: { mouths: 928000 }, cun: { mouths: 4118000 } },
+      specialCulture: '秦学·汉唐故地·西北武风·回儒文化',
+      strategicValue: '三边重镇·九边延绥/宁夏/甘肃/固原四镇。然饥荒燎原即从此起。',
+      leadingGentry: ['三原王氏(王恕旧族)', '华阴杨氏', '韩城王氏', '朝邑阎氏'],
+      academies: ['横渠书院(张载故地)', '关中书院(冯从吾)'],
+      tradeRoutes: ['关中丝路(衰)', '茶马互市', '漕粮北运'],
+      recentDisasters: ['天启五年-七年连年三载大旱', '天启六年瘟疫', '天启七年秋田卒歉收'],
+      religiousSites: ['华山', '法门寺', '大雁塔', '楼观台(道教)'],
+      threats: ['流民起义（将燎原）', '后金经蒙古绕入', '藏族土司']
+    },
+    '四川布政使司': {
+      prosperity: 58, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 272000 }, shi: { mouths: 170000 }, zhen: { mouths: 544000 }, cun: { mouths: 2414000 } },
+      specialCulture: '蜀学·巴渝文化·川剧萌芽·茶马古道',
+      strategicValue: '天府之国·控滇缅藏·川粮入湘',
+      leadingGentry: ['成都杨氏(杨慎族)', '内江赵氏', '新都杨氏(杨廷和/杨慎)', '遂宁吕氏'],
+      academies: ['锦江书院', '墨池书院'],
+      tradeRoutes: ['茶马古道(川藏)', '蜀道入长安(衰)', '川江入楚'],
+      recentDisasters: ['奢安之乱中波及(1621-1629)'],
+      religiousSites: ['青城山', '峨眉山', '乐山大佛', '文殊院'],
+      threats: ['永宁奢崇明叛(将平)', '土司反叛', '张献忠日后入蜀屠杀']
+    },
+    '广东布政使司': {
+      prosperity: 66, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 256000 }, shi: { mouths: 160000 }, zhen: { mouths: 512000 }, cun: { mouths: 2272000 } },
+      specialCulture: '岭南文化·粤商·天主教广州教区·咸淡水交融',
+      strategicValue: '海贸门户·澳门葡人·琼州辖海南岛',
+      leadingGentry: ['南海庞氏(庞尚鹏族)', '顺德陈氏', '东莞袁氏(袁崇焕族)', '番禺陈氏', '海康莫氏'],
+      academies: ['白沙书院(陈白沙)', '端溪书院', '越秀书院'],
+      tradeRoutes: ['澳门-马六甲(葡属)', '广州-菲律宾-墨西哥(银流入)', '珠江水系'],
+      recentDisasters: ['天启六年琼州台风'],
+      religiousSites: ['六榕寺', '光孝寺', '澳门大三巴(葡)', '雷州天宁寺'],
+      threats: ['澳门葡萄牙商武装', '海南黎族反抗', '海盗(郑氏及其他)']
+    },
+    '广西布政使司': {
+      prosperity: 38, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 144000 }, shi: { mouths: 90000 }, zhen: { mouths: 288000 }, cun: { mouths: 1278000 } },
+      specialCulture: '僮(壮)汉瑶苗多元·桂学(石鼓书院)·伏波祭',
+      strategicValue: '西南门户·控交趾边境·僮兵(狼兵)强悍',
+      leadingGentry: ['桂林朱氏(靖江王)', '临桂陈氏', '博白王氏'],
+      academies: ['石鼓书院', '宣成书院'],
+      tradeRoutes: ['贡道广州', '西江水运', '边贸安南'],
+      recentDisasters: ['天启七年桂北旱'],
+      religiousSites: ['伏波庙', '阳朔普陀山', '靖江王陵'],
+      threats: ['瑶民起义', '壮人反叛', '安南越境']
+    },
+    '云南布政使司': {
+      prosperity: 40, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 112000 }, shi: { mouths: 70000 }, zhen: { mouths: 224000 }, cun: { mouths: 994000 } },
+      specialCulture: '汉彝白纳西傣多元·木氏土司文化·南丝绸之路',
+      strategicValue: '控滇缅·通缅甸金银矿·沐氏世镇',
+      leadingGentry: ['云南沐氏(黔国公·世镇云南)', '大理段氏(已废王)', '丽江木氏(土司·纳西)', '楚雄李氏'],
+      academies: ['五华书院', '三迤书院'],
+      tradeRoutes: ['滇缅古道', '茶马古道(滇藏)', '南丝绸之路'],
+      recentDisasters: ['天启五年滇东地震'],
+      religiousSites: ['鸡足山(佛教)', '石钟寺', '曼飞龙塔'],
+      threats: ['缅甸东吁王朝侵扰', '木邦孟养叛', '缅甸南掌(老挝)争边']
+    },
+    '贵州布政使司': {
+      prosperity: 28, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 72000 }, shi: { mouths: 45000 }, zhen: { mouths: 144000 }, cun: { mouths: 639000 } },
+      specialCulture: '苗布依侗汉多元·水西彝族传统·贵州四大土司余脉',
+      strategicValue: '西南咽喉·控湘桂滇·奢安之乱未平',
+      leadingGentry: ['(无大汉族乡绅·土司为主)', '水西安氏', '永宁奢氏(叛)', '播州杨氏(已平)'],
+      academies: ['阳明洞(王阳明贬谪悟道)', '文明书院', '龙冈书院'],
+      tradeRoutes: ['川黔-滇黔商路', '朱砂汞北运'],
+      recentDisasters: ['奢安之乱持续六年(1621-1629)·毁田数百万亩'],
+      religiousSites: ['阳明洞', '甲秀楼', '黔灵山'],
+      threats: ['水西安邦彦叛(将平)', '土司联军', '苗瑶不时啸聚']
+    },
+    '辽东都指挥使司': {
+      prosperity: 32, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 68000 }, shi: { mouths: 42500 }, zhen: { mouths: 136000 }, cun: { mouths: 603500 } },
+      specialCulture: '汉女真蒙古朝鲜混居·边疆武风·关宁铁骑',
+      strategicValue: '九边之首·关宁锦防线核心·东江镇扰后金后方',
+      leadingGentry: ['宁远祖氏(祖大寿祖家)', '广宁马氏(马世龙族)', '义州刘氏(刘兴祚,将降金)'],
+      academies: ['辽阳武学', '宁远文庙'],
+      tradeRoutes: ['海运登莱-辽东(已断)', '山海关官道', '女真马市(已停)'],
+      recentDisasters: ['天启元年广宁失守', '天启五年柳河之役败', '天启六年宁远大捷'],
+      religiousSites: ['千山(佛教)', '医巫闾山', '辽阳白塔'],
+      threats: ['后金围城', '朝鲜被迫纳贡于金', '毛文龙东江镇不受节制']
+    },
+    '乌思藏都指挥使司': {
+      prosperity: 25, dejureOwner: '明朝廷', capitalChildId: '',
+      bySettlement: { fang: { mouths: 40000 }, shi: { mouths: 25000 }, zhen: { mouths: 80000 }, cun: { mouths: 355000 } },
+      specialCulture: '藏传佛教·格鲁派黄教·寺院封建·赞普遗风·苯教残余',
+      strategicValue: '西陲羁縻·茶马互市·藏传佛教朝圣地',
+      leadingGentry: ['(无汉人乡绅·寺院集团为首)', '萨迦派法王', '噶举派帕木竹巴', '格鲁派宗喀巴传人', '蒙古土默特顾实汗(将介入)'],
+      academies: ['哲蚌寺', '色拉寺', '甘丹寺(格鲁三大寺)', '萨迦寺'],
+      tradeRoutes: ['茶马古道(川藏·滇藏)', '丝路南道', '青藏商路'],
+      recentDisasters: ['天启六年拉萨冰雹'],
+      religiousSites: ['大昭寺', '布达拉宫(早期)', '扎什伦布寺', '冈仁波齐'],
+      threats: ['格鲁派与噶举派冲突', '蒙古介入(1640 顾实汗将入藏)', '苯教复兴']
+    }
+  };
+
   function buildAdminHierarchy() {
     function division(opts) {
       var d = Object.assign({
@@ -2865,6 +3075,17 @@
         d.fiscalDetail.actualRevenue = Math.round(annual * 0.82);
         d.fiscalDetail.remittedToCenter = Math.round(annual * 0.55);
         d.fiscalDetail.retainedBudget = Math.round(annual * 0.27);
+      }
+      // 合并 _PROVINCE_DEEP（若有同名）
+      if (d.name && _PROVINCE_DEEP[d.name]) {
+        var deep = _PROVINCE_DEEP[d.name];
+        Object.keys(deep).forEach(function(k){
+          if (d[k] === undefined || d[k] === null || d[k] === '' ||
+              (Array.isArray(d[k]) && d[k].length === 0) ||
+              (typeof d[k] === 'object' && !Array.isArray(d[k]) && Object.keys(d[k]).length === 0)) {
+            d[k] = deep[k];
+          }
+        });
       }
       return d;
     }

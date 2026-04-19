@@ -3444,16 +3444,42 @@ async function _wdNpcInitiateSpeak(name) {
       if (_st2) { _st2.emotion = _eMap2[parsed.emotionState] || 3; _wdUpdateEmotionBar(name); }
     }
     // 建议——兼容新 {topic,content} object 与旧 string
+    var _wdSugs = [];
     if (parsed && parsed.suggestions && Array.isArray(parsed.suggestions)) {
       parsed.suggestions.forEach(function(sg) {
         if (!sg) return;
         if (!GM._edictSuggestions) GM._edictSuggestions = [];
         if (typeof sg === 'object' && sg.content) {
           GM._edictSuggestions.push({ source: '问对', from: name, topic: sg.topic||'', content: sg.content, turn: GM.turn, used: false });
+          _wdSugs.push(sg);
         } else if (typeof sg === 'string' && sg.length > 2) {
           GM._edictSuggestions.push({ source: '问对', from: name, content: sg, turn: GM.turn, used: false });
+          _wdSugs.push(sg);
         }
       });
+      // 刷新诸书建议库侧边栏
+      if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
+    }
+    // 在 NPC 气泡下方追加"进言要点"展示（对齐普通问对路径）
+    if (_wdSugs.length > 0) {
+      var _bubbleWrap = _$('wd-init-bubble');
+      if (_bubbleWrap && _bubbleWrap.parentNode) {
+        var _sugBox = document.createElement('div');
+        _sugBox.style.cssText = 'margin-top:4px;padding:4px 6px;background:rgba(184,154,83,0.1);border-radius:4px;font-size:0.72rem;';
+        var _sugInner = '<div style="color:var(--gold-400);font-weight:700;margin-bottom:2px;">\u8FDB\u8A00\u8981\u70B9\uFF1A</div>';
+        _wdSugs.forEach(function(sg) {
+          var _txt = (typeof sg === 'string') ? sg
+                   : (sg && sg.content) ? ((sg.topic ? '\u3014' + sg.topic + '\u3015 ' : '') + sg.content)
+                   : '';
+          if (!_txt) return;
+          _sugInner += '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;gap:6px;">';
+          _sugInner += '<span style="color:var(--color-foreground);flex:1;">\u2022 ' + escHtml(_txt) + '</span>';
+          _sugInner += '<span style="color:var(--celadon-400);font-size:0.65rem;opacity:0.7;white-space:nowrap;">\u2713\u5DF2\u5165\u5E93</span>';
+          _sugInner += '</div>';
+        });
+        _sugBox.innerHTML = _sugInner;
+        _bubbleWrap.parentNode.appendChild(_sugBox);
+      }
     }
     // 纪事
     GM.jishiRecords.push({ turn: GM.turn, char: name, playerSaid: '（NPC主动求见）', npcSaid: replyText, mode: 'formal' });
@@ -3984,6 +4010,7 @@ async function sendWendui(){
               GM._edictSuggestions.push({ source: '\u95EE\u5BF9', from: name, content: sg, turn: GM.turn, used: false });
             }
           });
+          if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
         }
         GM.wenduiHistory[name].push({role:'npc',content:replyText,loyaltyDelta:loyaltyDelta});
         // NPC记忆
@@ -4011,9 +4038,15 @@ async function sendWendui(){
             _sugHtml = '<div style="margin-top:4px;padding:4px 6px;background:var(--gold-500,rgba(184,154,83,0.1));border-radius:4px;font-size:0.72rem;">';
             _sugHtml += '<div style="color:var(--gold-400);font-weight:700;margin-bottom:2px;">\u8FDB\u8A00\u8981\u70B9\uFF1A</div>';
             _wdSuggestions.forEach(function(sg, si) {
-              _sugHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;">';
-              _sugHtml += '<span style="color:var(--color-foreground);">\u2022 ' + escHtml(sg) + '</span>';
-              _sugHtml += '<span style="color:var(--celadon-400);font-size:0.65rem;opacity:0.7;">\u2713\u5DF2\u5165\u5E93</span>';
+              // 兼容：sg 可能是字符串 或 {topic, content} 对象
+              var _sgText = (typeof sg === 'string') ? sg
+                          : (sg && sg.content) ? ((sg.topic ? '〔' + sg.topic + '〕 ' : '') + sg.content)
+                          : (sg && sg.text) ? sg.text
+                          : '';
+              if (!_sgText) return;
+              _sugHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;gap:6px;">';
+              _sugHtml += '<span style="color:var(--color-foreground);flex:1;">\u2022 ' + escHtml(_sgText) + '</span>';
+              _sugHtml += '<span style="color:var(--celadon-400);font-size:0.65rem;opacity:0.7;white-space:nowrap;">\u2713\u5DF2\u5165\u5E93</span>';
               _sugHtml += '</div>';
             });
             _sugHtml += '</div>';

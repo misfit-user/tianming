@@ -5155,8 +5155,11 @@ function renderGameState(){
   gc.appendChild(jsP);
 
   // 史记面板
-  var sjP=document.createElement("div");sjP.className="g-tab-panel";sjP.id="gt-shiji";sjP.style.cssText="flex:1;overflow-y:auto;padding:1rem;";
-  sjP.innerHTML="<div class=\"scroll-manager-header\" style=\"padding:var(--space-2);font-size:var(--text-md);\">〔 史 记 〕</div><div style=\"font-size:var(--text-xs);color:var(--color-foreground-muted);text-align:center;margin-bottom:var(--space-2);letter-spacing:0.08em;\">究天人之际，通古今之变</div><hr class=\"ink-divider\"><div id=\"shiji-list\"></div>";
+  var sjP=document.createElement("div");sjP.className="g-tab-panel";sjP.id="gt-shiji";sjP.style.cssText="flex:1;overflow-y:auto;padding:0;";
+  sjP.innerHTML='<div class="sj-panel-wrap"><div class="sj-inner">'
+    +'<div class="sj-title"><div class="seal">\u53F2<br>\u8BB0</div><div class="main">\u53F2 \u8BB0 \u672C \u7EAA</div><div class="sub">\u7A76 \u5929 \u4EBA \u4E4B \u9645\u3000\u901A \u53E4 \u4ECA \u4E4B \u53D8\u3000\u6210 \u4E00 \u5BB6 \u4E4B \u8A00</div></div>'
+    +'<div id="shiji-list"></div>'
+    +'</div></div>';
   gc.appendChild(sjP);
 
   // 科技树面板（条件显示）

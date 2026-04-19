@@ -949,7 +949,410 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
 // 格式：【分组】\n  指标（旧值 → 新值）：原因；
 // 来源：AccountingSystem.getLedger() + GM.turnChanges.* + CORE_METRIC_LABELS + GM.vars
 // ============================================================
+/** v2 helper：格式化大数值（显示万/亿） */
+function _rucFmtBig(v) {
+  v = Math.round(v||0);
+  if (Math.abs(v) >= 1e8) return (v/1e8).toFixed(2) + '\u4EBF';
+  if (Math.abs(v) >= 1e4) return (v/1e4).toFixed(v%1e4===0?0:1) + '\u4E07';
+  return v.toLocaleString();
+}
+/** v2 helper：生成 old→new+delta HTML */
+function _rucValHtml(oldV, newV, formatter, unit) {
+  var fmt = formatter || _rucFmtBig;
+  var d = (newV||0) - (oldV||0);
+  var delta;
+  if (d === 0) delta = '<span class="delta flat">\u2014</span>';
+  else if (d > 0) delta = '<span class="delta up">+' + fmt(d) + '</span>';
+  else delta = '<span class="delta dn">\u2212' + fmt(-d) + '</span>';
+  return '<span class="old">' + fmt(oldV||0) + (unit?'<span class="unit">'+unit+'</span>':'') + '</span><span class="arr">\u2192</span><span class="new">' + fmt(newV||0) + (unit?'<span class="unit">'+unit+'</span>':'') + '</span>' + delta;
+}
+/** v2 helper：把 reasons 数组转成 chip HTML */
+function _rucReasonChips(reasons, fallback) {
+  if (!Array.isArray(reasons) || reasons.length === 0) {
+    return fallback ? '<span class="tr-reason-txt">' + escHtml(fallback) + '</span>' : '';
+  }
+  var html = '';
+  reasons.slice(0,6).forEach(function(r){
+    var desc = r.desc || r.type || r.reason || '';
+    if (!desc) return;
+    var v = r.delta || r.amount || '';
+    var cls = 'neu';
+    if (typeof r.delta === 'number') cls = r.delta > 0 ? 'pos' : (r.delta < 0 ? 'neg' : 'neu');
+    else if (/\u635F|\u964D|\u8870|\u8D25|\u6076|\u6B7B|\u98DF|\u6D88|\u7075|\u8D25\u5317|\u51CF\u5C11|\u800D|\u6D41|\u8D25\u51D1|\u8D2C|\u88C1|\u70E7|\u77AC|\u633A/.test(desc)) cls = 'neg';
+    else if (/\u589E|\u5347|\u8865|\u6DFB|\u65B0|\u5B8C|\u6536|\u6210|\u9752|\u8BB8|\u793A|\u6B23|\u7834|\u6B63|\u6109|\u83B7/.test(desc)) cls = 'pos';
+    html += '<span class="tr-reason-chip ' + cls + '">' + escHtml(desc) + (v?'<span class="v">'+escHtml(String(v))+'</span>':'') + '</span>';
+  });
+  return html;
+}
+
 function _renderUnifiedChanges(oldVars) {
+  oldVars = oldVars || {};
+  // v2：新布局 · 10 分类卡块·每项带原因 chip
+  var html = '';
+
+  // ═══ ① 本回合要点 ═══
+  var highlights = [];
+  // 忠诚变动最大
+  if (GM.turnChanges && GM.turnChanges.characters) {
+    var _loyCand = [];
+    GM.turnChanges.characters.forEach(function(cc) {
+      (cc.changes||[]).forEach(function(ch) {
+        if (ch.field === 'loyalty' && Math.abs(ch.newValue - ch.oldValue) >= 5) {
+          _loyCand.push({ name: cc.name, d: ch.newValue - ch.oldValue, nv: ch.newValue, reason: ch.reason || '' });
+        }
+      });
+    });
+    _loyCand.sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);});
+    _loyCand.slice(0,2).forEach(function(c){
+      highlights.push({
+        name: escHtml(c.name), sub: '\u5FE0\u8BDA ' + (c.d>0?'+':'') + c.d + ' \u2192 ' + c.nv,
+        reason: c.reason || '', cls: c.d>=0?'':'warn'
+      });
+    });
+  }
+  // 势力实力变化最大
+  if (GM.turnChanges && GM.turnChanges.factions) {
+    var _strCand = [];
+    GM.turnChanges.factions.forEach(function(fc) {
+      (fc.changes||[]).forEach(function(ch) {
+        if (ch.field === 'strength' && Math.abs(ch.newValue - ch.oldValue) >= 3) {
+          _strCand.push({ name: fc.name, d: ch.newValue - ch.oldValue, reason: ch.reason || '' });
+        }
+      });
+    });
+    _strCand.sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);});
+    _strCand.slice(0,2).forEach(function(f){
+      highlights.push({
+        name: escHtml(f.name), sub: '\u5B9E\u529B ' + (f.d>0?'+':'') + f.d,
+        reason: f.reason || '', cls: f.d>=0?'':'danger'
+      });
+    });
+  }
+  // 新阴谋
+  if (Array.isArray(GM.activeSchemes)) {
+    GM.activeSchemes.filter(function(s){return s.startTurn === GM.turn - 1;}).slice(0,1).forEach(function(s){
+      highlights.push({name: escHtml(s.schemer||'?'), sub:'\u5BC6\u8C0B'+(s.target?'\u9488\u5BF9'+escHtml(s.target):''), reason: s.description||s.goal||'', cls:'danger'});
+    });
+  }
+  if (highlights.length > 0) {
+    html += '<div class="tr-cg-block tr-cg-highlight">';
+    html += '<div class="tr-cg-hdr"><div class="ic">\u8981</div><div class="lab">\u672C \u56DE \u5408 \u8981 \u70B9</div>';
+    html += '<div class="sub">\u6700\u7A81\u51FA\u7684 ' + highlights.length + ' \u9879\u53D8\u52A8</div>';
+    html += '<div class="count">' + highlights.length + ' \u9879</div></div>';
+    html += '<div class="tr-cg-items">';
+    highlights.forEach(function(h){
+      html += '<div class="tr-cg-item' + (h.cls?' '+h.cls:'') + '">';
+      html += '<div class="tr-cg-name">' + h.name + ' <span class="sub-lbl">' + escHtml(h.sub) + '</span></div>';
+      if (h.reason) html += '<div class="tr-cg-vals"><span class="tr-reason-txt">' + escHtml(h.reason) + '</span></div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // ═══ ② 财政·帑廪 ═══
+  if (GM.guoku) {
+    var og = GM._prevGuoku || {};
+    var ng = GM.guoku;
+    var gItems = [];
+    var _fExp = GM._lastFixedExpense || {};
+    var _sal = _fExp.salary && _fExp.salary.money || 0;
+    var _arm = _fExp.army && _fExp.army.money || 0;
+    var _imp = _fExp.imperial && _fExp.imperial.money || 0;
+    var turnIn = ng.turnIncome || 0;
+    var turnOut = ng.turnExpense || 0;
+    // 钱
+    if (typeof ng.money === 'number') {
+      var moneyReasons = [];
+      if (turnIn > 0) moneyReasons.push('<span class="tr-reason-chip pos">\u5C81\u5165<span class="v">+' + _rucFmtBig(turnIn) + '</span></span>');
+      if (_sal > 0) moneyReasons.push('<span class="tr-reason-chip neg">\u4FF8\u7984<span class="v">\u2212' + _rucFmtBig(_sal) + '</span></span>');
+      if (_arm > 0) moneyReasons.push('<span class="tr-reason-chip neg">\u519B\u9972<span class="v">\u2212' + _rucFmtBig(_arm) + '</span></span>');
+      if (_imp > 0) moneyReasons.push('<span class="tr-reason-chip neg">\u5BAB\u5EF7<span class="v">\u2212' + _rucFmtBig(_imp) + '</span></span>');
+      gItems.push({ic:'\u94B1', name:'\u94F6\u4E24', unit:'\u4E24', ov:og.money, nv:ng.money, reasonsHtml: moneyReasons.join('')});
+    }
+    if (typeof ng.grain === 'number') {
+      var grainR = [];
+      var turnGIn = ng.turnGrainIncome || 0;
+      var turnGOut = ng.turnGrainExpense || 0;
+      if (turnGIn > 0) grainR.push('<span class="tr-reason-chip pos">\u6F15\u7CAE<span class="v">+' + _rucFmtBig(turnGIn) + '</span></span>');
+      if (turnGOut > 0) grainR.push('<span class="tr-reason-chip neg">\u652F\u7528<span class="v">\u2212' + _rucFmtBig(turnGOut) + '</span></span>');
+      gItems.push({ic:'\u7CAE', name:'\u7CAE\u7C73', unit:'\u77F3', ov:og.grain, nv:ng.grain, reasonsHtml: grainR.join('')});
+    }
+    if (typeof ng.cloth === 'number') {
+      gItems.push({ic:'\u5E03', name:'\u5E03\u5339', unit:'\u5339', ov:og.cloth, nv:ng.cloth, reasonsHtml: '<span class="tr-reason-txt">\u7EC7\u67D3\u4E0A\u89E3\u00B7\u8D4F\u8D50\u6263\u51CF</span>'});
+    }
+    if (typeof ng.monthlyIncome === 'number') {
+      gItems.push({ic:'\u6708', name:'\u6708\u5165', sub:'\u4E24/\u6708', ov:og.monthlyIncome, nv:ng.monthlyIncome, reasonsHtml: '<span class="tr-reason-txt">\u7A0E\u6536\u7EA7\u8054\u4E0A\u89E3\u4E2D\u592E</span>'});
+    }
+    if (gItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-guoku">';
+      var netTxt = '';
+      if (turnIn > 0 || turnOut > 0) {
+        var net = turnIn - turnOut;
+        netTxt = '\u5C81\u5165 ' + _rucFmtBig(turnIn) + '\u4E24 / \u5C81\u51FA ' + _rucFmtBig(turnOut) + '\u4E24' + (net>=0?' \u00B7 \u7ED3\u4F59 ':' \u00B7 \u4E8F\u7A7A ') + _rucFmtBig(Math.abs(net)) + '\u4E24';
+      }
+      html += '<div class="tr-cg-hdr"><div class="ic">\u5E11</div><div class="lab">\u5E11 \u5EAA \u00B7 \u4E2D \u592E \u56FD \u5E93</div>';
+      if (netTxt) html += '<div class="sub">' + escHtml(netTxt) + '</div>';
+      html += '<div class="count">' + gItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      gItems.forEach(function(it){
+        html += '<div class="tr-cg-item">';
+        html += '<div class="tr-cg-name"><span class="mini-ic">' + it.ic + '</span>' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.sub || it.unit || '') + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, _rucFmtBig, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reasonsHtml||'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ③ 财政·内帑 ═══
+  if (GM.neitang) {
+    var on = GM._prevNeitang || {};
+    var nn = GM.neitang;
+    var nItems = [];
+    if (typeof nn.money === 'number') nItems.push({ic:'\u94B1', name:'\u94F6\u4E24', unit:'\u4E24', ov:on.money, nv:nn.money, reasonsHtml: '<span class="tr-reason-txt">\u5185\u5EF7\u6536\u652F\u00B7\u5F92\u5FA1\u8D4F\u8D50</span>'});
+    if (typeof nn.grain === 'number') nItems.push({ic:'\u7CAE', name:'\u7CAE\u7C73', unit:'\u77F3', ov:on.grain, nv:nn.grain, reasonsHtml: '<span class="tr-reason-txt">\u5F9D\u8180\u00B7\u5BAB\u7528\u6D88\u8017</span>'});
+    if (typeof nn.cloth === 'number') nItems.push({ic:'\u5E03', name:'\u5E03\u5339', unit:'\u5339', ov:on.cloth, nv:nn.cloth, reasonsHtml: '<span class="tr-reason-txt">\u5BAB\u4E2D\u8D50\u8D21</span>'});
+    if (typeof nn.huangzhuangAcres === 'number') nItems.push({ic:'\u5E84', name:'\u7687\u5E84', unit:'\u4EA9', ov:on.huangzhuangAcres, nv:nn.huangzhuangAcres, reasonsHtml: '<span class="tr-reason-txt">\u4ECA\u5C81\u65B0\u8F9F/\u5931\u7BA1</span>'});
+    if (nItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-neitang">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u5185</div><div class="lab">\u5185 \u5E11 \u00B7 \u7687 \u5BB6 \u79C1 \u5E93</div>';
+      html += '<div class="sub">\u9669\u5E1D\u79C1\u5E91\u00B7\u4E0E\u5916\u5E1C\u5206\u79FB</div>';
+      html += '<div class="count">' + nItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      nItems.forEach(function(it){
+        html += '<div class="tr-cg-item">';
+        html += '<div class="tr-cg-name"><span class="mini-ic">' + it.ic + '</span>' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.unit||'') + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, _rucFmtBig, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reasonsHtml||'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ④ 户口 ═══
+  if (GM.population && GM.population.national) {
+    var op = (GM._prevPopulation && GM._prevPopulation.national) || {};
+    var opAll = GM._prevPopulation || {};
+    var np = GM.population.national;
+    var npAll = GM.population;
+    var pItems = [];
+    if (typeof np.households === 'number') pItems.push({ic:'\u6237', name:'\u6237 \u6570', sub:'\u5728\u7C4D', ov:op.households, nv:np.households, reasonsHtml:'<span class="tr-reason-txt">\u65B0\u518C\u00B7\u9003\u6237\u00B7\u65B0\u5206\u6237</span>'});
+    if (typeof np.mouths === 'number') pItems.push({ic:'\u53E3', name:'\u53E3 \u6570', sub:'\u5728\u7C4D', ov:op.mouths, nv:np.mouths, reasonsHtml:'<span class="tr-reason-txt">\u65B0\u751F\u00B7\u6B7B\u4EA1\u00B7\u9003\u6563</span>'});
+    if (typeof np.ding === 'number') pItems.push({ic:'\u4E01', name:'\u4E01 \u53E3', sub:'\u53EF\u5F81\u5F79', ov:op.ding, nv:np.ding, reasonsHtml:'<span class="tr-reason-txt">\u62BD\u4E01\u00B7\u8015\u8FC1\u00B7\u4F24\u4EA1\u8017\u635F</span>'});
+    if (typeof npAll.fugitives === 'number') {
+      var fCls = (npAll.fugitives > (opAll.fugitives||0)) ? 'danger' : '';
+      pItems.push({ic:'\u9003', name:'\u9003 \u6237', sub:'\u5931\u7C4D', ov:opAll.fugitives, nv:npAll.fugitives, cls: fCls, reasonsHtml:'<span class="tr-reason-txt">\u65F1\u707E\u00B7\u6D2A\u707E\u00B7\u8D4B\u5F79\u52A0\u91CD\u00B7\u6C11\u9003\u6C5F\u6DEE</span>'});
+    }
+    if (typeof npAll.hiddenCount === 'number') pItems.push({ic:'\u9690', name:'\u9690 \u6237', sub:'\u8C6A\u7EC5\u836B\u5E87', ov:opAll.hiddenCount, nv:npAll.hiddenCount, cls: 'warn', reasonsHtml:'<span class="tr-reason-txt">\u5730\u65B9\u8C6A\u7EC5\u9690\u533F\u4F43\u6237\u8EB2\u4E01\u5DEE</span>'});
+    if (pItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-hukou">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u6237</div><div class="lab">\u6237 \u53E3 \u00B7 \u4E01 \u7C4D</div>';
+      html += '<div class="sub">\u6237\u90E8\u9EC4\u518C\u00B7\u5730\u65B9\u9047\u62A5</div>';
+      html += '<div class="count">' + pItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      pItems.forEach(function(it){
+        html += '<div class="tr-cg-item' + (it.cls?' '+it.cls:'') + '">';
+        html += '<div class="tr-cg-name"><span class="mini-ic">' + it.ic + '</span>' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.sub||'') + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, _rucFmtBig, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reasonsHtml||'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ⑤ 政治核心（七大变量/vars）═══
+  var politicItems = [];
+  if (GM.turnChanges && GM.turnChanges.variables) {
+    GM.turnChanges.variables.forEach(function(vc){
+      var ov = Math.round(vc.oldValue||0), nv = Math.round(vc.newValue||0);
+      if (ov === nv) return;
+      var name = vc.name || '';
+      // 只纳入政治类（非财政类：国库/内帑等已单独）
+      if (/\u56FD\u5E93|\u5185\u5E91|\u8D22\u4EA7/.test(name)) return;
+      var iconMap = {'\u7687\u6743':'\u6743','\u7687\u5A01':'\u5A01','\u6C11\u5FC3':'\u5FC3','\u541B\u81E3':'\u541B','\u515A\u4E89':'\u515A','\u5173\u5916\u4EA4':'\u5916','\u5927\u519B':'\u5175','\u540F\u6CBB':'\u540F','\u8150\u8D25':'\u8150','\u7A0E\u6536\u7387':'\u7A0E','\u540D\u671B':'\u540D','\u8D24\u80FD':'\u8D24'};
+      var ic = iconMap[name] || (name.charAt(0));
+      politicItems.push({ic:ic, name:name, ov:ov, nv:nv, reasons:vc.reasons||[]});
+    });
+  }
+  // 核心指标（CORE_METRIC_LABELS）
+  if (typeof CORE_METRIC_LABELS === 'object') {
+    Object.keys(CORE_METRIC_LABELS).forEach(function(k) {
+      if (typeof GM[k] !== 'number') return;
+      var nv = Math.round(GM[k]);
+      var prevKey = '_prev_' + k;
+      var ov = Math.round(GM[prevKey] !== undefined ? GM[prevKey] : nv);
+      if (nv === ov) return;
+      var label = CORE_METRIC_LABELS[k] || k;
+      if (/\u56FD\u5E93|\u5185\u5E91/.test(label)) return;
+      politicItems.push({ic:label.charAt(0), name:label, ov:ov, nv:nv, reasons:[]});
+    });
+  }
+  if (politicItems.length > 0) {
+    html += '<div class="tr-cg-block tr-cg-politic">';
+    html += '<div class="tr-cg-hdr"><div class="ic">\u653F</div><div class="lab">\u653F \u6CBB \u6838 \u5FC3</div>';
+    html += '<div class="sub">\u6838\u5FC3\u53D8\u91CF\u00B7\u541B\u5FC3\u6240\u7CFB</div>';
+    html += '<div class="count">' + politicItems.length + ' \u9879</div></div>';
+    html += '<div class="tr-cg-items">';
+    politicItems.forEach(function(it){
+      var deltaD = it.nv - it.ov;
+      var itCls = deltaD < -3 ? ' warn' : '';
+      html += '<div class="tr-cg-item' + itCls + '">';
+      html += '<div class="tr-cg-name"><span class="mini-ic">' + it.ic + '</span>' + escHtml(it.name) + '</div>';
+      html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return Math.round(v||0).toString();}, '') + '</div>';
+      html += '<div class="tr-cg-reasons">' + _rucReasonChips(it.reasons) + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // ═══ ⑥ 军事 ═══
+  if (GM.turnChanges && GM.turnChanges.military && GM.turnChanges.military.length > 0) {
+    var mItems = [];
+    GM.turnChanges.military.forEach(function(mc){
+      (mc.changes||[]).forEach(function(ch){
+        var fMap = {'soldiers':'\u5175\u529B','morale':'\u58EB\u6C14','training':'\u8BAD\u7EC3','supply':'\u8865\u7ED9'};
+        var fN = fMap[ch.field] || ch.field;
+        var icMap = {'soldiers':'\u5175','morale':'\u58EB','training':'\u8BAD','supply':'\u8865'};
+        mItems.push({name:mc.name, field:fN, ic:icMap[ch.field]||'\u519B', ov:ch.oldValue||0, nv:ch.newValue||0, reason:ch.reason||''});
+      });
+    });
+    if (mItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-military">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u519B</div><div class="lab">\u519B \u4E8B \u00B7 \u519B \u961F \u52A8 \u6001</div>';
+      html += '<div class="sub">\u5404\u519B\u56E2 \u5175/\u58EB/\u8BAD/\u8865</div>';
+      html += '<div class="count">' + mItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      mItems.forEach(function(it){
+        var d = (it.nv||0) - (it.ov||0);
+        var cls = d < -5 ? ' warn' : (d < -10 ? ' danger' : '');
+        html += '<div class="tr-cg-item' + cls + '">';
+        html += '<div class="tr-cg-name"><span class="mini-ic">' + it.ic + '</span>' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.field) + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return _rucFmtBig(v);}, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reason?'<span class="tr-reason-txt">'+escHtml(it.reason)+'</span>':'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ⑦ 势力 ═══
+  if (GM.turnChanges && GM.turnChanges.factions && GM.turnChanges.factions.length > 0) {
+    var fItems = [];
+    GM.turnChanges.factions.forEach(function(fc){
+      (fc.changes||[]).forEach(function(ch){
+        var fMap = {'strength':'\u5B9E\u529B','economy':'\u7ECF\u6D4E','playerRelation':'\u5BF9\u5DF1\u5173\u7CFB','attitude':'\u6001\u5EA6'};
+        var fN = fMap[ch.field] || ch.field;
+        fItems.push({name:fc.name, field:fN, ov:ch.oldValue||0, nv:ch.newValue||0, reason:ch.reason||''});
+      });
+    });
+    if (fItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-faction">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u52BF</div><div class="lab">\u5929 \u4E0B \u52BF \u529B \u52A8 \u6001</div>';
+      html += '<div class="count">' + fItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      fItems.forEach(function(it){
+        var d = (it.nv||0) - (it.ov||0);
+        var cls = (it.name && /\u540E\u91D1|\u53CD\u519B|\u8D3C\u5BC7|\u53DB\u519B/.test(it.name) && d > 0) ? ' danger' : '';
+        html += '<div class="tr-cg-item' + cls + '">';
+        html += '<div class="tr-cg-name">' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.field) + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return Math.round(v||0).toString();}, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reason?'<span class="tr-reason-txt">'+escHtml(it.reason)+'</span>':'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ⑧ 党派 ═══
+  if (GM.turnChanges && GM.turnChanges.parties && GM.turnChanges.parties.length > 0) {
+    var ptyItems = [];
+    GM.turnChanges.parties.forEach(function(pc){
+      (pc.changes||[]).forEach(function(ch){
+        var fMap = {'influence':'\u5F71\u54CD\u529B','satisfaction':'\u6EE1\u610F\u5EA6','cohesion':'\u51DD\u805A\u529B'};
+        ptyItems.push({name:pc.name, field:fMap[ch.field]||ch.field, ov:ch.oldValue||0, nv:ch.newValue||0, reason:ch.reason||''});
+      });
+    });
+    if (ptyItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-party">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u515A</div><div class="lab">\u671D \u4E2D \u515A \u6D3E</div>';
+      html += '<div class="count">' + ptyItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      ptyItems.forEach(function(it){
+        html += '<div class="tr-cg-item">';
+        html += '<div class="tr-cg-name">' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.field) + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return Math.round(v||0).toString();}, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reason?'<span class="tr-reason-txt">'+escHtml(it.reason)+'</span>':'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ⑨ 阶层 ═══
+  if (GM.turnChanges && GM.turnChanges.classes && GM.turnChanges.classes.length > 0) {
+    var clsItems = [];
+    GM.turnChanges.classes.forEach(function(cc){
+      (cc.changes||[]).forEach(function(ch){
+        var fMap = {'satisfaction':'\u6EE1\u610F\u5EA6','influence':'\u5F71\u54CD\u529B','population':'\u4EBA\u53E3'};
+        clsItems.push({name:cc.name, field:fMap[ch.field]||ch.field, ov:ch.oldValue||0, nv:ch.newValue||0, reason:ch.reason||''});
+      });
+    });
+    if (clsItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-class">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u9636</div><div class="lab">\u9636 \u5C42 \u52A8 \u6001</div>';
+      html += '<div class="count">' + clsItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      clsItems.forEach(function(it){
+        html += '<div class="tr-cg-item">';
+        html += '<div class="tr-cg-name">' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.field) + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return Math.round(v||0).toString();}, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reason?'<span class="tr-reason-txt">'+escHtml(it.reason)+'</span>':'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  // ═══ ⑩ 人物 ═══
+  if (GM.turnChanges && GM.turnChanges.characters && GM.turnChanges.characters.length > 0) {
+    var chItems = [];
+    GM.turnChanges.characters.forEach(function(cc){
+      (cc.changes||[]).forEach(function(ch){
+        var fMap = {'loyalty':'\u5FE0\u8BDA','ambition':'\u91CE\u5FC3','stress':'\u538B\u529B','influence':'\u5F71\u54CD\u529B','strength':'\u5B9E\u529B'};
+        if (!fMap[ch.field]) return;
+        chItems.push({name:cc.name, field:fMap[ch.field], ov:ch.oldValue||0, nv:ch.newValue||0, reason:ch.reason||''});
+      });
+    });
+    if (chItems.length > 0) {
+      html += '<div class="tr-cg-block tr-cg-char">';
+      html += '<div class="tr-cg-hdr"><div class="ic">\u4EBA</div><div class="lab">\u4EBA \u7269 \u52A8 \u6001</div>';
+      html += '<div class="sub">\u6838\u5FC3\u4EBA\u81E3 \u00B7 \u5FE0/\u91CE/\u538B/\u5F71</div>';
+      html += '<div class="count">' + chItems.length + ' \u9879</div></div>';
+      html += '<div class="tr-cg-items">';
+      chItems.slice(0, 12).forEach(function(it){
+        var d = (it.nv||0) - (it.ov||0);
+        var isDanger = (it.field === '\u5FE0\u8BDA' && d < -5) || (it.field === '\u538B\u529B' && d > 10);
+        var isWarn = (it.field === '\u5FE0\u8BDA' && d < 0) || (it.field === '\u538B\u529B' && d > 5);
+        var cls = isDanger ? ' danger' : (isWarn ? ' warn' : '');
+        html += '<div class="tr-cg-item' + cls + '">';
+        html += '<div class="tr-cg-name">' + escHtml(it.name) + ' <span class="sub-lbl">' + escHtml(it.field) + '</span></div>';
+        html += '<div class="tr-cg-vals">' + _rucValHtml(it.ov, it.nv, function(v){return Math.round(v||0).toString();}, '') + '</div>';
+        html += '<div class="tr-cg-reasons">' + (it.reason?'<span class="tr-reason-txt">'+escHtml(it.reason)+'</span>':'') + '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+
+  if (!html) return '';
+  return '<div class="turn-section unified-changes"><h3>\u6570 \u503C \u53D8 \u5316 \u00B7 \u5206 \u7C7B \u8BE6 \u6CE8</h3><div class="tr-changes-wrap">' + html + '</div></div>';
+}
+
+/** v1 保留（未用·若外部仍调则走 fallback 渲染） */
+function _renderUnifiedChangesLegacy(oldVars) {
   oldVars = oldVars || {};
   var groups = {
     '\u8981\u70B9': [],   // 本回合要点（最突出的几项变化）

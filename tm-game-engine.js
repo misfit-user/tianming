@@ -1523,57 +1523,173 @@ var _WENYUAN_CATS = {
   mood:   { label:'情感心境', color:'#607d8b' }
 };
 
+/** 诗稿卷轴式作者标签——姓只取首字/两字 */
+function _wyAuthorTab(name) {
+  if (!name) return '?';
+  // 保留最多3字，去空白
+  var nm = String(name).replace(/\s+/g,'').slice(0, 3);
+  return escHtml(nm);
+}
+
+/** 品鉴星 */
+function _wyQualityStars(q) {
+  var _n = Math.max(0, Math.min(100, q||0));
+  var _stars = Math.round(_n / 20);
+  if (_stars < 1) _stars = 1;
+  if (_stars > 5) _stars = 5;
+  var html = '<span class="wy-quality"><span class="lbl">\u54C1</span>';
+  for (var i=0; i<5; i++) html += '<span class="star' + (i<_stars?'':' d') + '">\u2605</span>';
+  html += '<span class="val">' + _n + '</span></span>';
+  return html;
+}
+
+/** 风险徽章 */
+function _wyRiskBadge(r) {
+  var _lvl = r || 'low';
+  var _lbl = _lvl === 'high' ? '\u653F\u9669 \u00B7 \u9AD8' : _lvl === 'medium' ? '\u653F\u9669 \u00B7 \u4E2D' : '\u653F\u9669 \u00B7 \u4F4E';
+  return '<span class="wy-risk ' + _lvl + '">' + _lbl + '</span>';
+}
+
 function renderWenyuan() {
   var list = _$('wenyuan-list'); if (!list) return;
+  var sbar = _$('wy-statbar'), leg = _$('wy-legend');
   var works = (GM.culturalWorks || []).slice();
+
+  // 统计
+  var curTurn = GM.turn || 1;
+  var _stat = { all: works.length, preserved: 0, forbidden: 0, risky: 0, recent: 0, authors: {} };
+  works.forEach(function(w) {
+    if (w.isPreserved) _stat.preserved++;
+    if (w.isForbidden) _stat.forbidden++;
+    if (w.politicalRisk === 'high' || w.politicalRisk === 'medium') _stat.risky++;
+    if ((w.turn||0) >= curTurn - 8) _stat.recent++;
+    if (w.author) _stat.authors[w.author] = (_stat.authors[w.author]||0) + 1;
+  });
+  var _authorCnt = Object.keys(_stat.authors).length;
+  if (sbar) {
+    sbar.innerHTML = ''
+      + '<div class="wy-stat-card s-all"><div class="wy-stat-lbl">\u603B \u5F55</div><div class="wy-stat-num">'+_stat.all+'</div><div class="wy-stat-sub">\u7BC7</div></div>'
+      + '<div class="wy-stat-card s-preserve"><div class="wy-stat-lbl">\u4F20 \u4E16</div><div class="wy-stat-num">'+_stat.preserved+'</div><div class="wy-stat-sub">\u540D\u4F5C</div></div>'
+      + '<div class="wy-stat-card s-forbid"><div class="wy-stat-lbl">\u67E5 \u7981</div><div class="wy-stat-num">'+_stat.forbidden+'</div><div class="wy-stat-sub">\u8BB3\u7981</div></div>'
+      + '<div class="wy-stat-card s-risk"><div class="wy-stat-lbl">\u653F \u9669</div><div class="wy-stat-num">'+_stat.risky+'</div><div class="wy-stat-sub">\u6D89\u8BBD</div></div>'
+      + '<div class="wy-stat-card s-era"><div class="wy-stat-lbl">\u672C \u671D</div><div class="wy-stat-num">'+_stat.recent+'</div><div class="wy-stat-sub">\u8FD1\u4F5C</div></div>'
+      + '<div class="wy-stat-card s-author"><div class="wy-stat-lbl">\u6587 \u9B41</div><div class="wy-stat-num">'+_authorCnt+'</div><div class="wy-stat-sub">\u540D\u5BB6</div></div>';
+  }
+
   if (!works.length) {
-    list.innerHTML = '<div style="color:var(--color-foreground-muted);padding:2rem;text-align:center;">暂无文事作品。士大夫因境遇、际遇、心境而作，随回合推演自然生成。</div>';
+    if (leg) leg.innerHTML = '';
+    list.innerHTML = '<div class="wy-empty">\u6682\u65E0\u6587\u4E8B\u4F5C\u54C1<div class="sub">\u58EB\u5927\u592B\u56E0\u5883\u9047\u00B7\u9645\u9047\u00B7\u5FC3\u5883\u800C\u4F5C\uFF0C\u968F\u56DE\u5408\u63A8\u6F14\u81EA\u7136\u751F\u6210</div></div>';
     return;
   }
+
   // 筛选
   var catFil = (_$('wy-cat-filter') || {value:'all'}).value;
   var genFil = (_$('wy-genre-filter') || {value:'all'}).value;
+  var sortKey = (_$('wy-sort') || {value:'recent'}).value;
+  var preservedOnly = !!(_$('wy-preserved-only') || {}).checked;
+  var hideForbidden = !!(_$('wy-hide-forbidden') || {}).checked;
   var kw = (_$('wy-search') || {value:''}).value.toLowerCase().trim();
+
   var filtered = works.filter(function(w) {
     if (catFil !== 'all' && w.triggerCategory !== catFil) return false;
     if (genFil !== 'all' && w.genre !== genFil) return false;
+    if (preservedOnly && !w.isPreserved) return false;
+    if (hideForbidden && w.isForbidden) return false;
     if (kw) {
-      var hay = ((w.author||'') + (w.title||'') + (w.content||'') + (w.trigger||'')).toLowerCase();
+      var hay = ((w.author||'') + (w.title||'') + (w.content||'') + (w.trigger||'') + (w.location||'')).toLowerCase();
       if (hay.indexOf(kw) < 0) return false;
     }
     return true;
-  }).sort(function(a, b) { return (b.turn || 0) - (a.turn || 0); });
-  if (!filtered.length) { list.innerHTML = '<div style="color:var(--color-foreground-muted);padding:1rem;">无匹配作品</div>'; return; }
-  var html = '<div style="font-size:0.78rem;color:var(--color-foreground-muted);margin-bottom:0.5rem;">共 ' + filtered.length + ' 篇 / 总 ' + works.length + '</div>';
-  filtered.forEach(function(w, i) {
+  });
+
+  filtered.sort(function(a, b) {
+    if (sortKey === 'quality') return (b.quality||0) - (a.quality||0);
+    if (sortKey === 'author') return String(a.author||'').localeCompare(String(b.author||''));
+    if (sortKey === 'date') return String(b.date||'').localeCompare(String(a.date||''));
+    return (b.turn || 0) - (a.turn || 0); // recent
+  });
+
+  // 触发类别 legend
+  if (leg) {
+    var _catKeyMap = { career:'c-career', adversity:'c-adversity', social:'c-social', duty:'c-duty', travel:'c-travel', private:'c-private', times:'c-times', mood:'c-mood' };
+    var _catCnt = {};
+    filtered.forEach(function(w) { var k = w.triggerCategory || 'other'; _catCnt[k] = (_catCnt[k]||0)+1; });
+    var _lhtml = '<span class="wy-legend-lbl">\u89E6 \u53D1</span>';
+    Object.keys(_WENYUAN_CATS).forEach(function(k) {
+      if (!_catCnt[k]) return;
+      var cls = _catKeyMap[k] || '';
+      _lhtml += '<span class="wy-legend-chip ' + cls + '">' + escHtml(_WENYUAN_CATS[k].label) + '<span class="num">\u00B7' + _catCnt[k] + '</span></span>';
+    });
+    leg.innerHTML = _lhtml;
+  }
+
+  if (!filtered.length) { list.innerHTML = '<div class="wy-empty">\u7BC7 \u673A \u5BC2 \u5BC2\u3000\u65E0 \u5339 \u914D \u4E4B \u4F5C<div class="sub">\u8BD5\u8C03\u62AB\u89C8\u6216\u653E\u5BBD\u7B5B\u9009</div></div>'; return; }
+
+  var _catKeyMap2 = { career:'c-career', adversity:'c-adversity', social:'c-social', duty:'c-duty', travel:'c-travel', private:'c-private', times:'c-times', mood:'c-mood' };
+  var html = '';
+  filtered.forEach(function(w) {
+    var _realIdx = works.indexOf(w);
     var cat = _WENYUAN_CATS[w.triggerCategory] || {label:'', color:'#888'};
     var genreLbl = _WENYUAN_GENRES[w.genre] || w.genre || '';
-    var _realIdx = works.indexOf(w);
-    var riskBadge = '';
-    if (w.politicalRisk === 'high') riskBadge = '<span style="font-size:0.6rem;color:var(--vermillion-400);padding:1px 4px;border:1px solid var(--vermillion-400);border-radius:3px;">政治风险</span>';
-    else if (w.politicalRisk === 'medium') riskBadge = '<span style="font-size:0.6rem;color:var(--amber-400);padding:1px 4px;border:1px solid var(--amber-400);border-radius:3px;">风险中</span>';
-    var preservedBadge = w.isPreserved ? '<span style="font-size:0.6rem;color:var(--gold-400);padding:1px 4px;border:1px solid var(--gold-400);border-radius:3px;">传世</span>' : '';
-    var forbiddenBadge = w.isForbidden ? '<span style="font-size:0.6rem;color:var(--vermillion-400);padding:1px 4px;background:rgba(192,57,43,0.2);border-radius:3px;">查禁</span>' : '';
+    var _catCls = _catKeyMap2[w.triggerCategory] || '';
+    var _cardCls = 'wy-card ' + _catCls;
+    if (w.isPreserved) _cardCls += ' preserved';
+    if (w.isForbidden) _cardCls += ' forbidden';
 
-    html += '<div class="wy-item" style="padding:0.6rem 0.8rem;margin-bottom:0.5rem;background:var(--color-surface);border-left:3px solid ' + cat.color + ';border-radius:var(--radius-sm);cursor:pointer;" onclick="_showWorkDetail(' + _realIdx + ')">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;flex-wrap:wrap;gap:4px;">';
-    html += '<div><b style="color:var(--gold);">' + escHtml(w.author || '?') + '</b> 《' + escHtml(w.title || '') + '》';
-    html += '<span style="font-size:0.62rem;color:' + cat.color + ';margin-left:6px;">' + cat.label + ' · ' + genreLbl + (w.subtype ? '·' + escHtml(w.subtype) : '') + '</span>';
+    // 节选：取前 4 行或 120 字
+    var _lines = (w.content || '').split('\n').filter(function(s){return s.trim();});
+    var _excerpt = _lines.slice(0, 4).join('\n');
+    if (_excerpt.length > 160) _excerpt = _excerpt.substring(0, 160) + '\u2026';
+    var _excerptCls = 'wy-excerpt';
+    if (w.genre === 'shi' || w.genre === 'ci' || w.genre === 'qu' || w.genre === 'ge') _excerptCls += ' elegant';
+    if (w.genre === 'fu') _excerptCls += ' fu';
+    if (w.genre === 'wen' || w.genre === 'ji' || w.genre === 'ritual' || w.genre === 'paratext') _excerptCls += ' wen';
+
+    html += '<div class="' + _cardCls + '" onclick="_showWorkDetail(' + _realIdx + ')">';
+    // 左：题签卷轴
+    html += '<div class="wy-tab-col">';
+    html += '<div class="wy-tab-scroll"><div class="wy-tab-author">' + _wyAuthorTab(w.author||'\u65E0\u540D') + '</div>';
+    if (w.date) html += '<div class="wy-tab-date">' + escHtml(String(w.date).slice(0, 10)) + '</div>';
+    else if (w.turn) html += '<div class="wy-tab-date">T' + w.turn + '</div>';
     html += '</div>';
-    html += '<div style="display:flex;gap:3px;align-items:center;">' + riskBadge + ' ' + preservedBadge + ' ' + forbiddenBadge + '<span style="font-size:0.62rem;color:var(--color-foreground-muted);">T' + (w.turn||0) + ' 品' + (w.quality||0) + '</span></div>';
+    if (w.isPreserved) html += '<div class="wy-tab-seal">\u5370</div>';
     html += '</div>';
-    // 摘录前两行
-    var preview = (w.content || '').split('\n').slice(0, 2).join('\n');
-    if (preview.length > 80) preview = preview.substring(0, 80) + '…';
-    html += '<div style="font-size:0.78rem;color:var(--color-foreground);line-height:1.6;white-space:pre-wrap;font-family:var(--font-serif,serif);">' + escHtml(preview) + '</div>';
-    // 触发信息
-    var metaLine = [];
-    if (w.date) metaLine.push(w.date);
-    if (w.location) metaLine.push('于 ' + w.location);
-    if (w.mood) metaLine.push(w.mood);
-    if (w.theme) metaLine.push(w.theme);
-    if (metaLine.length) html += '<div style="font-size:0.65rem;color:var(--color-foreground-muted);margin-top:0.2rem;">' + metaLine.join(' · ') + '</div>';
+    // 右：正文列
+    html += '<div class="wy-main-col">';
+    html += '<div class="wy-hdr-row"><span class="wy-title-w">' + escHtml(w.title||'\u65E0\u9898') + '</span>';
+    if (genreLbl) html += '<span class="wy-genre-chip">' + escHtml(genreLbl) + '</span>';
+    if (w.subtype) html += '<span class="wy-subtype">' + escHtml(w.subtype) + '</span>';
     html += '</div>';
+    // meta-row
+    var _metaParts = [];
+    if (cat.label) _metaParts.push('<span class="wy-cat-chip">' + escHtml(cat.label) + '</span>');
+    if (w.location) _metaParts.push('<span class="wy-loc">' + escHtml(w.location) + '</span>');
+    if (w.mood) _metaParts.push('<span class="wy-mood">' + escHtml(w.mood) + '</span>');
+    if (_metaParts.length) html += '<div class="wy-meta-row">' + _metaParts.join('') + '</div>';
+    // excerpt
+    if (_excerpt) html += '<div class="' + _excerptCls + '">' + escHtml(_excerpt) + '</div>';
+    // 品鉴行
+    var _tagsHtml = '';
+    if (w.theme) _tagsHtml += '<span class="wy-tag">' + escHtml(w.theme) + '</span>';
+    if (w.motivation && w.motivation !== 'spontaneous') {
+      var _motMap = {commissioned:'\u53D7\u547D',flattery:'\u5E72\u8C12',response:'\u916C\u7B54',mourning:'\u54C0\u60BC',critique:'\u8BBD\u8C15',celebration:'\u9882\u626C',farewell:'\u9001\u522B',memorial:'\u7EAA\u5FF5',ghostwrite:'\u4EE3\u7B14',duty:'\u5E94\u5236',self_express:'\u81EA\u6292'};
+      _tagsHtml += '<span class="wy-tag">' + (_motMap[w.motivation] || escHtml(w.motivation)) + '</span>';
+    }
+    html += '<div class="wy-assess">' + _wyQualityStars(w.quality) + _wyRiskBadge(w.politicalRisk) + _tagsHtml + '</div>';
+    // 创作背景
+    if (w.narrativeContext) html += '<div class="wy-ctx">' + escHtml(w.narrativeContext) + '</div>';
+    if (w.politicalImplication) html += '<div class="wy-implicit">' + escHtml(w.politicalImplication) + '</div>';
+    // 操作
+    html += '<div class="wy-actions">';
+    html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'appreciate\')">\u8D4F \u6790</button>';
+    html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'inscribe\')">\u9898 \u5E8F</button>';
+    html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'echo\')">\u8FFD \u548C</button>';
+    html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'circulate\')">\u4F20 \u6284</button>';
+    if (!w.isForbidden) html += '<button class="wy-btn danger" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'ban\')">\u67E5 \u7981</button>';
+    html += '<button class="wy-btn primary" onclick="event.stopPropagation();_showWorkDetail(' + _realIdx + ')">\u8BE6 \u60C5</button>';
+    html += '</div>';
+    html += '</div>'; // main-col
+    html += '</div>'; // card
   });
   list.innerHTML = html;
 }
@@ -5226,15 +5342,22 @@ function renderGameState(){
   gc.appendChild(offP);
 
   // 文苑面板（文事作品库）
-  var wyP=document.createElement("div");wyP.className="g-tab-panel";wyP.id="gt-wenyuan";wyP.style.cssText="flex:1;overflow-y:auto;padding:1rem;";
-  wyP.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);align-items:center;flex-wrap:wrap;gap:0.4rem;">'
-    +'<div class="scroll-manager-header" style="padding:0;font-size:var(--text-md);">\u3014 \u6587 \u82D1 \u3015</div>'
-    +'<div style="display:flex;gap:var(--space-1);flex-wrap:wrap;">'
-    +'<select id="wy-cat-filter" style="font-size:var(--text-xs);padding:2px 4px;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:var(--radius-sm);" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u89E6\u53D1</option><option value="career">\u79D1\u4E3E\u5B98\u9014</option><option value="adversity">\u9006\u5883\u8D2C\u8C2A</option><option value="social">\u793E\u4EA4\u916C\u9154</option><option value="duty">\u4EFB\u4E0A\u65BD\u653F</option><option value="travel">\u6E38\u5386\u5C71\u6C34</option><option value="private">\u5BB6\u4E8B\u79C1\u60C5</option><option value="times">\u65F6\u5C40\u5929\u4E0B</option><option value="mood">\u60C5\u611F\u5FC3\u5883</option></select>'
-    +'<select id="wy-genre-filter" style="font-size:var(--text-xs);padding:2px 4px;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:var(--radius-sm);" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u6587\u4F53</option><option value="shi">\u8BD7</option><option value="ci">\u8BCD</option><option value="fu">\u8D4B</option><option value="qu">\u66F2</option><option value="ge">\u6B4C\u884C</option><option value="wen">\u6563\u6587</option><option value="apply">\u5E94\u7528\u6587</option><option value="ji">\u8BB0\u53D9\u6587</option><option value="ritual">\u796D\u6587\u7891\u94ED</option><option value="paratext">\u5E8F\u8DCB</option></select>'
-    +'<input id="wy-search" placeholder="\u641C\u4F5C\u8005/\u6807\u9898/\u5185\u5BB9\u2026" style="flex:1;min-width:120px;padding:3px 6px;font-size:var(--text-xs);background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-foreground);font-family:inherit;" oninput="renderWenyuan()">'
-    +'</div></div>'
-    +'<div id="wenyuan-list"></div>';
+  var wyP=document.createElement("div");wyP.className="g-tab-panel";wyP.id="gt-wenyuan";wyP.style.cssText="flex:1;overflow-y:auto;padding:0;";
+  wyP.innerHTML='<div class="wy-panel-wrap"><div class="wy-inner">'
+    +'<div class="wy-title"><div class="seal">\u6587<br>\u82D1</div><div class="main">\u6587 \u82D1 \u00B7 \u8BD7 \u6587 \u603B \u96C6</div><div class="sub">\u8BD7 \u8BCD \u6B4C \u8D4B\u3000\u3000\u5E8F \u8DCB \u8BB0 \u94ED\u3000\u3000\u7ECF \u4E16 \u98CE \u96C5</div></div>'
+    +'<div id="wy-statbar" class="wy-statbar"></div>'
+    +'<div class="wy-tools">'
+    +'<span class="wy-tools-lbl">\u62AB \u89C8</span>'
+    +'<div class="wy-search-wrap"><input id="wy-search" class="wy-search" placeholder="\u641C\u7D22\u4F5C\u8005\u00B7\u6807\u9898\u00B7\u8BD7\u6587\u2026" oninput="renderWenyuan()"></div>'
+    +'<select id="wy-cat-filter" class="wy-filter" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u89E6\u53D1</option><option value="career">\u79D1\u4E3E\u5B98\u9014</option><option value="adversity">\u9006\u5883\u8D2C\u8C2A</option><option value="social">\u793E\u4EA4\u916C\u9154</option><option value="duty">\u4EFB\u4E0A\u65BD\u653F</option><option value="travel">\u6E38\u5386\u5C71\u6C34</option><option value="private">\u5BB6\u4E8B\u79C1\u60C5</option><option value="times">\u65F6\u5C40\u5929\u4E0B</option><option value="mood">\u60C5\u611F\u5FC3\u5883</option></select>'
+    +'<select id="wy-genre-filter" class="wy-filter" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u6587\u4F53</option><option value="shi">\u8BD7</option><option value="ci">\u8BCD</option><option value="fu">\u8D4B</option><option value="qu">\u66F2</option><option value="ge">\u6B4C\u884C</option><option value="wen">\u6563\u6587</option><option value="apply">\u5E94\u7528\u6587</option><option value="ji">\u8BB0\u53D9\u6587</option><option value="ritual">\u796D\u6587\u7891\u94ED</option><option value="paratext">\u5E8F\u8DCB</option></select>'
+    +'<select id="wy-sort" class="wy-filter" onchange="renderWenyuan()"><option value="recent">\u6392\uFF1A\u8FD1\u4F5C</option><option value="quality">\u6392\uFF1A\u54C1\u8BC4</option><option value="author">\u6392\uFF1A\u4F5C\u8005</option><option value="date">\u6392\uFF1A\u5E74\u4EE3</option></select>'
+    +'<label class="wy-chk"><input type="checkbox" id="wy-preserved-only" onchange="renderWenyuan()">\u4EC5\u4F20\u4E16</label>'
+    +'<label class="wy-chk"><input type="checkbox" id="wy-hide-forbidden" onchange="renderWenyuan()">\u9690\u67E5\u7981</label>'
+    +'</div>'
+    +'<div id="wy-legend" class="wy-legend"></div>'
+    +'<div id="wenyuan-list" class="wy-grid"></div>'
+    +'</div></div>';
   gc.appendChild(wyP);
 
   // 起居注面板

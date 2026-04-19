@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>地方标签页·美化预览</title>
+<style>
+:root {
+  --bg-1: #0f0d0a; --bg-2: #1a1510; --bg-paper: #241e18; --bg-sunken: #120f0a;
+  --ink-900: #f4eadd; --ink-700: #d9c9a9; --ink-500: #a69470; --ink-300: #6b5d47; --ink-100: #3d342a;
+  --gold-300: #c9a85f; --gold-400: #b89a53; --gold-500: #9d8244; --gold-d: #6b5a30;
+  --vermillion-300: #d15c47; --vermillion-400: #b84738; --vermillion-600: #8f3428;
+  --indigo-400: #5a6fa8; --indigo-600: #3e4e80;
+  --celadon-400: #6a9a7f; --celadon-600: #4a7a5f;
+  --amber-400: #c9a045; --amber-600: #8f6f28;
+  --purple-400: #8e6aa8; --purple-600: #5f3a7a;
+  --blue-400: #5a8fb8;
+  --border-subtle: rgba(184,154,83,0.15); --border-strong: rgba(184,154,83,0.35);
+  --shadow-scroll: 0 6px 18px rgba(0,0,0,0.45),0 0 0 1px rgba(184,154,83,0.08);
+  --font-serif: "STKaiti","KaiTi","楷体","Georgia",serif;
+  --font-song: "STSong","SimSun","宋体",serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f0d0a 70%),var(--bg-1);color:var(--ink-700);font-family:var(--font-song);font-size:14px;line-height:1.7;min-height:100vh;}
+.preview-frame{max-width:1420px;margin:32px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-scroll);}
+.preview-header{background:linear-gradient(to bottom,rgba(184,154,83,0.04),transparent);padding:12px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--ink-500);letter-spacing:0.1em;}
+.preview-header .dot{width:10px;height:10px;border-radius:50%;}
+.preview-header .dot.r{background:#d15c47;} .preview-header .dot.y{background:#c9a85f;} .preview-header .dot.g{background:#6a9a7f;}
+.preview-header .title{margin-left:auto;font-family:var(--font-serif);letter-spacing:0.3em;color:var(--ink-300);}
+.tab-bar{display:flex;gap:0;background:var(--bg-1);border-bottom:1px solid var(--border-subtle);overflow-x:auto;}
+.tab-btn{padding:10px 16px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:14px;letter-spacing:0.1em;cursor:pointer;border-bottom:2px solid transparent;position:relative;}
+.tab-btn:hover{color:var(--ink-700);}
+.tab-btn.active{color:var(--gold-400);border-bottom-color:var(--gold-400);}
+.tab-btn.active::before{content:"";position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--vermillion-400);border-radius:1px;transform:rotate(12deg);}
+
+/* ═══ 地方主区 ═══ */
+.df-panel{padding:24px 28px;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;min-height:900px;}
+.df-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
+.df-inner{position:relative;z-index:1;}
+.df-title{text-align:center;margin-bottom:20px;position:relative;padding:14px 0 18px;}
+.df-title::before,.df-title::after{content:"";position:absolute;left:50%;width:180px;height:1px;transform:translateX(-50%);background:linear-gradient(to right,transparent,var(--gold-d),transparent);}
+.df-title::before{top:0;} .df-title::after{bottom:0;}
+.df-title .main{font-family:var(--font-serif);font-size:24px;letter-spacing:0.5em;color:var(--ink-900);margin-bottom:6px;}
+.df-title .sub{font-size:12px;color:var(--ink-300);letter-spacing:0.3em;font-family:var(--font-serif);font-style:italic;}
+.df-title .seal{position:absolute;right:28px;top:10px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.85),rgba(140,40,30,0.75));display:flex;align-items:center;justify-content:center;color:#f4eadd;font-size:11px;font-family:var(--font-serif);letter-spacing:0.05em;font-weight:bold;transform:rotate(-6deg);box-shadow:0 2px 6px rgba(140,40,30,0.4);opacity:0.88;line-height:1.2;text-align:center;}
+
+/* 统计栏 */
+.df-statbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.df-stat-card{padding:10px 14px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--sc-c,var(--gold-d));border-radius:3px;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.025) 2.5em,rgba(107,93,71,0.025) calc(2.5em + 1px));}
+.df-stat-card.s-all{--sc-c:var(--gold-400);}
+.df-stat-card.s-zhi{--sc-c:var(--celadon-400);}
+.df-stat-card.s-fan{--sc-c:var(--indigo-400);}
+.df-stat-card.s-ji{--sc-c:var(--purple-400);}
+.df-stat-card.s-crisis{--sc-c:var(--vermillion-400);}
+.df-stat-lbl{font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.25em;margin-bottom:4px;}
+.df-stat-num{font-family:var(--font-serif);font-size:22px;color:var(--sc-c);letter-spacing:0.05em;font-weight:700;line-height:1;}
+.df-stat-sub{font-size:10.5px;color:var(--ink-300);margin-top:3px;font-style:italic;}
+
+/* 工具栏 */
+.df-tools{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(184,154,83,0.04);border:1px solid var(--border-subtle);border-radius:2px;margin-bottom:14px;flex-wrap:wrap;}
+.df-tools-lbl{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.2em;padding-right:6px;border-right:1px solid var(--border-subtle);flex-shrink:0;}
+.df-search-wrap{position:relative;flex:1;min-width:180px;max-width:260px;}
+.df-search-wrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-300);font-size:14px;pointer-events:none;}
+.df-search{width:100%;padding:5px 12px 5px 28px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-song);font-size:12px;border-radius:2px;outline:none;}
+.df-filter{padding:5px 12px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-serif);font-size:12px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.df-chk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-500);font-family:var(--font-serif);letter-spacing:0.1em;cursor:pointer;}
+.df-chk input{accent-color:var(--vermillion-400);}
+.df-export{padding:5px 14px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--ink-500);font-family:var(--font-serif);font-size:12px;letter-spacing:0.15em;border-radius:2px;cursor:pointer;}
+.df-export::before{content:"❖";margin-right:4px;opacity:0.7;font-size:10px;}
+
+/* 管辖类型图例 */
+.df-legend{display:flex;gap:8px 12px;padding:8px 14px;margin-bottom:14px;background:rgba(184,154,83,0.02);border:1px solid var(--border-subtle);border-radius:2px;font-size:11px;flex-wrap:wrap;align-items:center;}
+.df-legend-lbl{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.2em;margin-right:4px;padding-right:6px;border-right:1px solid var(--border-subtle);}
+.df-legend-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.08em;font-size:11px;border:1px solid var(--chip-c);color:var(--chip-c);background:rgba(var(--chip-rgb),0.06);}
+.df-legend-chip.zhi{--chip-c:var(--celadon-400);--chip-rgb:106,154,127;}
+.df-legend-chip.fan{--chip-c:var(--indigo-400);--chip-rgb:90,111,168;}
+.df-legend-chip.ji{--chip-c:var(--purple-400);--chip-rgb:142,106,168;}
+.df-legend-chip.tu{--chip-c:var(--amber-400);--chip-rgb:201,160,69;}
+.df-legend-chip.shu{--chip-c:var(--gold-400);--chip-rgb:184,154,83;}
+.df-legend-chip .num{color:var(--chip-c);font-weight:500;font-size:10px;opacity:0.85;}
+
+/* 预警条 */
+.df-alerts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.df-alert{flex:1;min-width:280px;padding:10px 14px;background:rgba(192,64,48,0.06);border:1px dashed var(--a-c,var(--vermillion-400));border-left:3px solid var(--a-c,var(--vermillion-400));border-radius:3px;display:flex;align-items:center;gap:10px;font-size:12px;}
+.df-alert.warn{--a-c:var(--amber-400);background:rgba(201,160,69,0.06);}
+.df-alert.info{--a-c:var(--celadon-400);background:rgba(106,154,127,0.06);}
+.df-alert .ic{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--a-c),var(--ink-100));color:#f4eadd;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:14px;font-weight:bold;flex-shrink:0;}
+.df-alert .lbl{color:var(--a-c);letter-spacing:0.1em;font-family:var(--font-serif);font-weight:500;margin-right:4px;}
+.df-alert .txt{flex:1;color:var(--ink-700);line-height:1.5;}
+
+/* ═══ 省份卡网格 ═══ */
+.df-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;}
+
+.df-card{
+  position:relative;
+  background:var(--bg-paper);
+  background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));
+  border:1px solid var(--border-subtle);
+  border-left:3px solid var(--auton-c,var(--gold-d));
+  border-radius:3px;
+  overflow:hidden;
+  transition:all 0.25s;
+  cursor:pointer;
+}
+.df-card:hover{border-color:var(--gold-400);box-shadow:0 3px 12px rgba(184,154,83,0.15),0 0 8px rgba(184,154,83,0.1);transform:translateY(-2px);}
+.df-card.crisis{border-left-color:var(--vermillion-400);background:linear-gradient(to right,rgba(192,64,48,0.04),var(--bg-paper) 30%);}
+.df-card.crisis::after{content:"⚠";position:absolute;top:6px;right:10px;color:var(--vermillion-400);font-size:16px;text-shadow:0 0 6px rgba(192,64,48,0.4);}
+
+/* 管辖类型 */
+.df-zhi{--auton-c:var(--celadon-400);--auton-rgb:106,154,127;}
+.df-fan{--auton-c:var(--indigo-400);--auton-rgb:90,111,168;}
+.df-ji{--auton-c:var(--purple-400);--auton-rgb:142,106,168;}
+.df-tu{--auton-c:var(--amber-400);--auton-rgb:201,160,69;}
+.df-shu{--auton-c:var(--gold-400);--auton-rgb:184,154,83;}
+
+/* 卡片头部 */
+.df-card-hdr{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px 8px;
+  background:linear-gradient(to right,rgba(var(--auton-rgb),0.12),transparent);
+  border-bottom:1px solid var(--border-subtle);
+}
+.df-card-name{
+  font-family:var(--font-serif);font-size:15px;
+  color:var(--ink-900);letter-spacing:0.2em;font-weight:500;
+  text-shadow:0 0 4px rgba(201,168,95,0.15);
+}
+.df-auton-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;padding:1px 7px;border-radius:2px;
+  background:rgba(var(--auton-rgb),0.15);color:var(--auton-c);
+  border:1px solid var(--auton-c);
+  font-family:var(--font-serif);letter-spacing:0.12em;font-weight:500;
+}
+.df-auton-chip::before{content:"●";font-size:8px;opacity:0.8;margin-right:1px;}
+.df-fac-tag{font-size:10px;color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.08em;font-style:italic;}
+.df-pop-main{margin-left:auto;font-family:var(--font-serif);font-size:13px;color:var(--gold-400);letter-spacing:0.05em;display:inline-flex;align-items:baseline;gap:3px;}
+.df-pop-main .n{font-size:15px;font-weight:700;color:var(--gold-300);}
+.df-pop-main .u{font-size:10px;color:var(--ink-300);}
+
+/* 内容 */
+.df-card-body{padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px;}
+
+/* 维度条组 */
+.df-bars{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;}
+.df-bar{display:flex;align-items:center;gap:6px;font-size:10.5px;font-family:var(--font-serif);letter-spacing:0.06em;}
+.df-bar-lbl{color:var(--ink-500);width:30px;flex-shrink:0;letter-spacing:0.15em;}
+.df-bar-track{flex:1;height:6px;background:rgba(107,93,71,0.22);border-radius:3px;overflow:hidden;position:relative;}
+.df-bar-fill{height:100%;background:var(--bar-c,var(--gold-400));border-radius:3px;transition:width 0.4s;}
+.df-bar-val{min-width:26px;text-align:right;color:var(--ink-900);font-weight:500;font-size:11px;}
+.df-bar.minxin .df-bar-fill{--bar-c:var(--celadon-400);}
+.df-bar.minxin.mid .df-bar-fill{--bar-c:var(--gold-400);}
+.df-bar.minxin.lo .df-bar-fill{--bar-c:var(--vermillion-400);}
+.df-bar.corruption.hi .df-bar-fill{--bar-c:var(--vermillion-400);}
+.df-bar.corruption.mid .df-bar-fill{--bar-c:var(--amber-400);}
+.df-bar.corruption .df-bar-fill{--bar-c:var(--celadon-400);}
+.df-bar.unrest.hi .df-bar-fill{--bar-c:var(--vermillion-400);}
+.df-bar.unrest.mid .df-bar-fill{--bar-c:var(--amber-400);}
+.df-bar.unrest .df-bar-fill{--bar-c:var(--celadon-400);}
+.df-bar.prosperity .df-bar-fill{--bar-c:var(--gold-400);}
+.df-bar.env.hi .df-bar-fill{--bar-c:var(--vermillion-400);}
+.df-bar.env.mid .df-bar-fill{--bar-c:var(--amber-400);}
+.df-bar.env .df-bar-fill{--bar-c:var(--celadon-400);}
+
+/* 户口详细 */
+.df-pop-detail{
+  display:flex;gap:4px;flex-wrap:wrap;
+  padding:6px 8px;
+  background:linear-gradient(to right,rgba(106,154,127,0.04),transparent);
+  border-left:2px solid var(--celadon-400);border-radius:0 2px 2px 0;
+  font-size:10.5px;
+}
+.df-pop-item{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-serif);color:var(--ink-700);letter-spacing:0.05em;}
+.df-pop-item .lbl{color:var(--ink-300);font-size:10px;}
+.df-pop-item .v{color:var(--ink-900);font-weight:500;}
+.df-pop-item.warn .v{color:var(--amber-400);}
+.df-pop-item.danger .v{color:var(--vermillion-400);}
+.df-pop-item + .df-pop-item::before{content:"·";color:var(--ink-300);opacity:0.5;margin:0 2px;}
+
+/* 财政行 */
+.df-fiscal{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;
+  padding:6px 8px;
+  background:linear-gradient(to right,rgba(201,160,69,0.04),transparent);
+  border-left:2px solid var(--amber-400);border-radius:0 2px 2px 0;
+  font-size:10.5px;
+}
+.df-fiscal-item{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-serif);color:var(--ink-700);}
+.df-fiscal-item .lbl{color:var(--ink-300);font-size:10px;letter-spacing:0.08em;}
+.df-fiscal-item .v{color:var(--gold-400);font-weight:500;letter-spacing:0.05em;}
+.df-fiscal-item.income .v{color:var(--celadon-400);}
+.df-fiscal-item.pubtr .v{color:var(--amber-400);}
+
+/* 公库三项·横条 */
+.df-treasury-row{
+  display:flex;gap:6px;font-size:10px;
+  padding:5px 8px;
+  background:rgba(184,154,83,0.04);border-radius:2px;
+  border-left:2px solid var(--gold-d);
+  align-items:center;flex-wrap:wrap;
+}
+.df-treasury-row .lbl{color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.1em;font-size:10px;}
+.df-treasury-row .item{display:inline-flex;align-items:center;gap:2px;font-family:var(--font-serif);}
+.df-treasury-row .item .k{color:var(--ink-500);font-size:9px;}
+.df-treasury-row .item.gold .v{color:var(--gold-400);}
+.df-treasury-row .item.grain .v{color:var(--celadon-400);}
+.df-treasury-row .item.cloth .v{color:var(--amber-400);}
+
+/* 事件徽章行 */
+.df-events{display:flex;gap:4px;flex-wrap:wrap;}
+.df-event-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.1em;border:1px solid var(--ev-c);color:var(--ev-c);background:rgba(var(--ev-rgb),0.06);}
+.df-event-chip.calamity{--ev-c:var(--amber-400);--ev-rgb:201,160,69;}
+.df-event-chip.rebellion{--ev-c:var(--vermillion-400);--ev-rgb:184,71,56;}
+.df-event-chip.plague{--ev-c:var(--purple-400);--ev-rgb:142,106,168;}
+.df-event-chip.war{--ev-c:var(--vermillion-400);--ev-rgb:184,71,56;}
+.df-event-chip.flood{--ev-c:var(--blue-400);--ev-rgb:90,143,184;}
+.df-event-chip.drought{--ev-c:var(--amber-400);--ev-rgb:201,160,69;}
+.df-event-chip.bumper{--ev-c:var(--celadon-400);--ev-rgb:106,154,127;}
+.df-event-chip::before{content:"◆";font-size:7px;opacity:0.7;}
+
+/* 长官 */
+.df-governor{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 8px;
+  background:rgba(184,154,83,0.03);border-radius:2px;
+  border-top:1px dashed var(--border-subtle);
+  margin-top:2px;
+}
+.df-gov-portrait{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--auton-c),var(--ink-100));border:1.5px solid var(--auton-c);display:flex;align-items:center;justify-content:center;color:#f4eadd;font-family:var(--font-serif);font-size:12px;flex-shrink:0;}
+.df-gov-info{flex:1;min-width:0;}
+.df-gov-title{font-size:9.5px;color:var(--ink-300);letter-spacing:0.1em;font-family:var(--font-serif);}
+.df-gov-name{font-size:12px;color:var(--ink-900);font-family:var(--font-serif);letter-spacing:0.08em;}
+.df-gov-name .loyalty{margin-left:6px;font-size:10px;color:var(--celadon-400);}
+.df-gov-name .loyalty.mid{color:var(--gold-400);}
+.df-gov-name .loyalty.lo{color:var(--vermillion-400);}
+.df-gov-actions{display:flex;gap:4px;flex-shrink:0;}
+.df-gov-btn{padding:3px 9px;font-size:10.5px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.df-gov-btn:hover{background:rgba(184,154,83,0.18);border-color:var(--gold-400);}
+
+/* 危机描述 */
+.df-crisis-note{font-size:10.5px;color:var(--vermillion-400);font-style:italic;padding:4px 8px;background:rgba(192,64,48,0.05);border-left:2px solid var(--vermillion-400);border-radius:0 2px 2px 0;font-family:var(--font-serif);letter-spacing:0.03em;}
+.df-crisis-note::before{content:"⚠ ";}
+
+.legend{padding:14px 20px;background:var(--bg-2);border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-500);text-align:center;letter-spacing:0.08em;line-height:1.9;}
+.legend .k{color:var(--gold-400);} .legend .m{color:var(--vermillion-400);}
+</style>
+</head>
+<body>
+
+<div class="preview-frame">
+
+  <div class="preview-header">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>tianming · 地方标签页美化预览</span>
+    <span class="title">〔 地 方 舆 情 〕</span>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn">朝政</button>
+    <button class="tab-btn">诏令</button>
+    <button class="tab-btn">奏疏</button>
+    <button class="tab-btn">问对</button>
+    <button class="tab-btn">鸿雁</button>
+    <button class="tab-btn">编年</button>
+    <button class="tab-btn">官制</button>
+    <button class="tab-btn active">地方</button>
+    <button class="tab-btn">文苑</button>
+    <button class="tab-btn">纪事</button>
+    <button class="tab-btn">史记</button>
+  </div>
+
+  <div class="df-panel">
+    <div class="df-inner">
+
+      <!-- 标题 -->
+      <div class="df-title">
+        <div class="seal">地<br>方</div>
+        <div class="main">地 方 舆 情</div>
+        <div class="sub">一 省 一 民 情　　一 道 一 律 令　　按 察 抚 民 · 安 民 为 本</div>
+      </div>
+
+      <!-- 统计栏 -->
+      <div class="df-statbar">
+        <div class="df-stat-card s-all">
+          <div class="df-stat-lbl">行 政 区 划</div>
+          <div class="df-stat-num">17</div>
+          <div class="df-stat-sub">两京·十三布政司·二羁縻</div>
+        </div>
+        <div class="df-stat-card s-zhi">
+          <div class="df-stat-lbl">直 辖</div>
+          <div class="df-stat-num">13</div>
+          <div class="df-stat-sub">北直·南直·山东·河南等</div>
+        </div>
+        <div class="df-stat-card s-fan">
+          <div class="df-stat-lbl">藩 镇</div>
+          <div class="df-stat-num">2</div>
+          <div class="df-stat-sub">辽东·延绥</div>
+        </div>
+        <div class="df-stat-card s-ji">
+          <div class="df-stat-lbl">羁 縻 · 土 司</div>
+          <div class="df-stat-num">2</div>
+          <div class="df-stat-sub">云贵·川西</div>
+        </div>
+        <div class="df-stat-card s-crisis">
+          <div class="df-stat-lbl">⚠ 危 机</div>
+          <div class="df-stat-num">3</div>
+          <div class="df-stat-sub">陕西大旱·辽东围城·巴蜀民乱</div>
+        </div>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="df-tools">
+        <span class="df-tools-lbl">按 察</span>
+        <div class="df-search-wrap"><input class="df-search" placeholder="搜索地名·官名·事由……"></div>
+        <select class="df-filter">
+          <option>排：名称</option>
+          <option>排：民变 ↑</option>
+          <option>排：腐败 ↑</option>
+          <option>排：人口 ↓</option>
+          <option>排：税收 ↓</option>
+        </select>
+        <select class="df-filter">
+          <option>全部管辖</option>
+          <option>● 直辖</option>
+          <option>● 藩镇</option>
+          <option>● 羁縻</option>
+          <option>● 土司</option>
+          <option>● 藩属</option>
+        </select>
+        <label class="df-chk"><input type="checkbox" checked>⚠ 仅危机</label>
+        <button class="df-export">导 出 舆 情</button>
+      </div>
+
+      <!-- 管辖图例 -->
+      <div class="df-legend">
+        <span class="df-legend-lbl">管 辖</span>
+        <span class="df-legend-chip zhi">直 辖 <span class="num">13</span></span>
+        <span class="df-legend-chip fan">藩 镇 <span class="num">2</span></span>
+        <span class="df-legend-chip ji">羁 縻 <span class="num">1</span></span>
+        <span class="df-legend-chip tu">土 司 <span class="num">1</span></span>
+        <span class="df-legend-chip shu">藩 属 <span class="num">0</span></span>
+      </div>
+
+      <!-- 危机预警 -->
+      <div class="df-alerts">
+        <div class="df-alert">
+          <div class="ic">旱</div>
+          <div><span class="lbl">陕西大旱：</span><span class="txt">关中九州久不雨·民食草根·流民渐生·户部议赈尚未决</span></div>
+        </div>
+        <div class="df-alert">
+          <div class="ic">战</div>
+          <div><span class="lbl">辽东围城：</span><span class="txt">后金围锦州逾月·袁督师请发内帑三十万·前线亟待</span></div>
+        </div>
+        <div class="df-alert warn">
+          <div class="ic">乱</div>
+          <div><span class="lbl">巴蜀民乱：</span><span class="txt">奢崇明部聚众五千·盘踞永宁卫·川兵征讨未果</span></div>
+        </div>
+      </div>
+
+      <!-- 省份卡网格 -->
+      <div class="df-grid">
+
+        <!-- 北直·京畿（满编直辖） -->
+        <div class="df-card df-zhi">
+          <div class="df-card-hdr">
+            <span class="df-card-name">北 直 隶</span>
+            <span class="df-auton-chip">直 辖</span>
+            <span class="df-fac-tag">京畿·顺天府</span>
+            <span class="df-pop-main"><span class="n">612</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin mid"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:58%;"></div></div><span class="df-bar-val">58</span></div>
+              <div class="df-bar corruption mid"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:45%;"></div></div><span class="df-bar-val">45</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:76%;"></div></div><span class="df-bar-val">76</span></div>
+              <div class="df-bar unrest"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:18%;"></div></div><span class="df-bar-val">18</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">125万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">612万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">158万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">逃</span><span class="v">1.8万</span></span>
+              <span class="df-pop-item"><span class="lbl">隐</span><span class="v">0.9万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">128万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">92万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">38万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">52万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">18万匹</span></span>
+            </div>
+            <div class="df-bar env mid"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:52%;"></div></div><span class="df-bar-val">52</span></div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">温</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">顺天府尹</div>
+                <div class="df-gov-name">温良辅<span class="loyalty">忠 72</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn">巡 按</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 陕西·危机直辖 -->
+        <div class="df-card df-zhi crisis">
+          <div class="df-card-hdr">
+            <span class="df-card-name">陕 西 布 政 司</span>
+            <span class="df-auton-chip">直 辖</span>
+            <span class="df-fac-tag">三边·延绥</span>
+            <span class="df-pop-main"><span class="n">485</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin lo"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:22%;"></div></div><span class="df-bar-val">22</span></div>
+              <div class="df-bar corruption hi"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:68%;"></div></div><span class="df-bar-val">68</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:24%;"></div></div><span class="df-bar-val">24</span></div>
+              <div class="df-bar unrest hi"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:72%;"></div></div><span class="df-bar-val">72</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">98万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">485万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">112万</span></span>
+              <span class="df-pop-item danger"><span class="lbl">逃</span><span class="v">24万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">隐</span><span class="v">6.2万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">42万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">18万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">6万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">4万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">2万匹</span></span>
+            </div>
+            <div class="df-bar env hi"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:88%;"></div></div><span class="df-bar-val">88</span></div>
+            <div class="df-events">
+              <span class="df-event-chip drought">大 旱 三 年</span>
+              <span class="df-event-chip rebellion">流 民 生 乱</span>
+              <span class="df-event-chip calamity">赋 役 沉 重</span>
+            </div>
+            <div class="df-crisis-note">民生艰难·三边告急·亟须拨粮赈济，否则秋后必有大乱</div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">杨</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">陕西巡抚</div>
+                <div class="df-gov-name">杨鹤<span class="loyalty mid">忠 65</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn" style="color:var(--vermillion-400);border-color:var(--vermillion-400);">赈 济</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 辽东·藩镇 -->
+        <div class="df-card df-fan crisis">
+          <div class="df-card-hdr">
+            <span class="df-card-name">辽 东 都 司</span>
+            <span class="df-auton-chip">藩 镇</span>
+            <span class="df-fac-tag">关宁锦·督师衙</span>
+            <span class="df-pop-main"><span class="n">152</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin mid"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:51%;"></div></div><span class="df-bar-val">51</span></div>
+              <div class="df-bar corruption mid"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:38%;"></div></div><span class="df-bar-val">38</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:32%;"></div></div><span class="df-bar-val">32</span></div>
+              <div class="df-bar unrest mid"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:42%;"></div></div><span class="df-bar-val">42</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">32万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">152万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">42万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">逃</span><span class="v">4.8万</span></span>
+              <span class="df-pop-item"><span class="lbl">隐</span><span class="v">1.2万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">18万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">4万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">14万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">28万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">3万匹</span></span>
+            </div>
+            <div class="df-bar env mid"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:54%;"></div></div><span class="df-bar-val">54</span></div>
+            <div class="df-events">
+              <span class="df-event-chip war">后 金 围 城</span>
+              <span class="df-event-chip">军 饷 短 缺</span>
+            </div>
+            <div class="df-crisis-note">锦州被围·军粮仅余三月·袁督师告急乞援·朝廷已议发饷三十万</div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">袁</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">辽东督师·兵部尚书衔</div>
+                <div class="df-gov-name">袁崇焕<span class="loyalty">忠 82</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn" style="color:var(--vermillion-400);border-color:var(--vermillion-400);">遣 使</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 南直·江南富庶 -->
+        <div class="df-card df-zhi">
+          <div class="df-card-hdr">
+            <span class="df-card-name">南 直 隶</span>
+            <span class="df-auton-chip">直 辖</span>
+            <span class="df-fac-tag">江南·应天府</span>
+            <span class="df-pop-main"><span class="n">1,240</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:72%;"></div></div><span class="df-bar-val">72</span></div>
+              <div class="df-bar corruption mid"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:55%;"></div></div><span class="df-bar-val">55</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:94%;"></div></div><span class="df-bar-val">94</span></div>
+              <div class="df-bar unrest"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:12%;"></div></div><span class="df-bar-val">12</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">238万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">1,240万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">310万</span></span>
+              <span class="df-pop-item"><span class="lbl">逃</span><span class="v">2.1万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">隐</span><span class="v">18万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">386万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">312万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">86万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">412万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">152万匹</span></span>
+            </div>
+            <div class="df-bar env mid"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:62%;"></div></div><span class="df-bar-val">62</span></div>
+            <div class="df-events">
+              <span class="df-event-chip bumper">秋 熟 丰 年</span>
+            </div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">周</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">南京兵部尚书·参赞机务</div>
+                <div class="df-gov-name">周延儒<span class="loyalty mid">忠 58</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn">巡 按</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 四川·土司 -->
+        <div class="df-card df-tu crisis">
+          <div class="df-card-hdr">
+            <span class="df-card-name">四 川 布 政 司</span>
+            <span class="df-auton-chip">土 司</span>
+            <span class="df-fac-tag">成都府·永宁</span>
+            <span class="df-pop-main"><span class="n">382</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin lo"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:35%;"></div></div><span class="df-bar-val">35</span></div>
+              <div class="df-bar corruption mid"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:52%;"></div></div><span class="df-bar-val">52</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:42%;"></div></div><span class="df-bar-val">42</span></div>
+              <div class="df-bar unrest hi"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:65%;"></div></div><span class="df-bar-val">65</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">78万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">382万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">85万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">逃</span><span class="v">6.5万</span></span>
+              <span class="df-pop-item danger"><span class="lbl">隐</span><span class="v">22万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">58万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">24万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">18万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">62万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">8万匹</span></span>
+            </div>
+            <div class="df-bar env mid"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:48%;"></div></div><span class="df-bar-val">48</span></div>
+            <div class="df-events">
+              <span class="df-event-chip rebellion">奢 崇 明 乱</span>
+              <span class="df-event-chip">土 司 不 靖</span>
+            </div>
+            <div class="df-crisis-note">永宁宣抚使奢崇明反·聚众五千据永宁卫·川兵征讨未果</div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">朱</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">四川巡抚</div>
+                <div class="df-gov-name">朱燮元<span class="loyalty">忠 85</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn" style="color:var(--vermillion-400);border-color:var(--vermillion-400);">征 讨</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 云贵·羁縻 -->
+        <div class="df-card df-ji">
+          <div class="df-card-hdr">
+            <span class="df-card-name">云 南 布 政 司</span>
+            <span class="df-auton-chip">羁 縻</span>
+            <span class="df-fac-tag">云贵·沐府</span>
+            <span class="df-pop-main"><span class="n">148</span><span class="u">万口</span></span>
+          </div>
+          <div class="df-card-body">
+            <div class="df-bars">
+              <div class="df-bar minxin mid"><span class="df-bar-lbl">民心</span><div class="df-bar-track"><div class="df-bar-fill" style="width:54%;"></div></div><span class="df-bar-val">54</span></div>
+              <div class="df-bar corruption mid"><span class="df-bar-lbl">腐败</span><div class="df-bar-track"><div class="df-bar-fill" style="width:48%;"></div></div><span class="df-bar-val">48</span></div>
+              <div class="df-bar prosperity"><span class="df-bar-lbl">繁荣</span><div class="df-bar-track"><div class="df-bar-fill" style="width:38%;"></div></div><span class="df-bar-val">38</span></div>
+              <div class="df-bar unrest"><span class="df-bar-lbl">叛乱</span><div class="df-bar-track"><div class="df-bar-fill" style="width:22%;"></div></div><span class="df-bar-val">22</span></div>
+            </div>
+            <div class="df-pop-detail">
+              <span class="df-pop-item"><span class="lbl">户</span><span class="v">28万</span></span>
+              <span class="df-pop-item"><span class="lbl">口</span><span class="v">148万</span></span>
+              <span class="df-pop-item"><span class="lbl">丁</span><span class="v">36万</span></span>
+              <span class="df-pop-item"><span class="lbl">逃</span><span class="v">1.2万</span></span>
+              <span class="df-pop-item warn"><span class="lbl">隐</span><span class="v">8万</span></span>
+            </div>
+            <div class="df-fiscal">
+              <span class="df-fiscal-item income"><span class="lbl">实 收</span><span class="v">14万两</span></span>
+              <span class="df-fiscal-item"><span class="lbl">上 解</span><span class="v">3万两</span></span>
+            </div>
+            <div class="df-treasury-row">
+              <span class="lbl">州 库</span>
+              <span class="item gold"><span class="k">钱</span><span class="v">6万两</span></span>
+              <span class="item grain"><span class="k">粮</span><span class="v">12万石</span></span>
+              <span class="item cloth"><span class="k">布</span><span class="v">2万匹</span></span>
+            </div>
+            <div class="df-bar env"><span class="df-bar-lbl">环负</span><div class="df-bar-track"><div class="df-bar-fill" style="width:28%;"></div></div><span class="df-bar-val">28</span></div>
+            <div class="df-governor">
+              <div class="df-gov-portrait">沐</div>
+              <div class="df-gov-info">
+                <div class="df-gov-title">黔国公·镇守云南</div>
+                <div class="df-gov-name">沐启元<span class="loyalty mid">忠 60</span></div>
+              </div>
+              <div class="df-gov-actions">
+                <button class="df-gov-btn">详 情</button>
+                <button class="df-gov-btn">遣 使</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="legend">
+    ★ 设计要点：<span class="k">宣纸纹+朱砂"地"印</span> · 头部"地方舆情·一省一民情"金线双框 · <span class="k">5 卡统计栏</span>（总/直辖/藩镇/羁縻土司/危机）· 工具栏含按察标签+搜索⌕+排序/管辖下拉+危机勾选+❖导出 · <span class="k">5 色管辖 chip 图例</span>（直辖青/藩镇靛/羁縻紫/土司琥/藩属金）· 预警条<span class="m">3 色</span>（旱/战/乱）<br>
+    ★ <span class="k">省份卡</span>（自适应 360px 网格）· 左色条按管辖色 · 卡顶：省名+管辖chip+势力标+人口口数大号金 · <span class="k">4 维条形图</span>（民心/腐败/繁荣/叛乱·按阈值 3 色切换）· 户口细项（户/口/丁/逃/隐·逃户超限朱色） · 财政（实收/上解青金） · <span class="k">公库钱粮布 3 项横条</span>（金/青/琥）· 环境负担条 · <span class="k">事件徽章</span>（旱/洪/瘟/战/乱/丰 6 色）· 危机红边+右上 ⚠ 脉冲+朱色 危机描述 · 长官头像+官衔+姓名+忠诚数+详情/巡按/赈济/遣使/征讨按钮<br>
+    <span style="color:var(--ink-300);margin-top:6px;display:inline-block;">这是纯预览页面。若满意将此样式应用到 _renderDifangPanel() 的渲染函数中。</span>
+  </div>
+
+</div>
+
+</body>
+</html>

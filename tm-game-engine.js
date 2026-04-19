@@ -5393,6 +5393,126 @@ function _applyPolishedEdict(mode) {
   _$('edict-polished').style.display = 'none';
 }
 
+// 官职公库初始化：walk officeTree，从 publicTreasuryInit 建立 live publicTreasury
+function _initOfficePublicTreasury(nodes) {
+  (nodes || []).forEach(function(n) {
+    if (!n) return;
+    (n.positions || []).forEach(function(p) {
+      if (!p) return;
+      // 若已有 live publicTreasury 则跳过（保存加载时不覆盖）
+      if (p.publicTreasury && p.publicTreasury.money && p.publicTreasury.money.stock != null) return;
+      var init = p.publicTreasuryInit || {};
+      p.publicTreasury = {
+        money: { stock: init.money || 0, quota: init.quotaMoney || 0, used: 0, available: init.money || 0, deficit: 0 },
+        grain: { stock: init.grain || 0, quota: init.quotaGrain || 0, used: 0, available: init.grain || 0, deficit: 0 },
+        cloth: { stock: init.cloth || 0, quota: init.quotaCloth || 0, used: 0, available: init.cloth || 0, deficit: 0 },
+        currentHead: p.holder || null,
+        previousHead: null,
+        handoverLog: []
+      };
+    });
+    if (n.subs) _initOfficePublicTreasury(n.subs);
+  });
+}
+
+// 按品级推算角色私产初始值（当剧本未给定 wealthInit 且 wealth 为字符串描述时）
+function _inferPrivateWealthByRank(ch) {
+  var r = ch.rank || 0;
+  // 品级越高私产越丰（明清历史参照·单位 两/亩）
+  var tiers = {
+    1:  { cash: 50000, land: 10000, treasure: 30000, slaves: 200, commerce: 20000 },  // 正一品
+    2:  { cash: 30000, land:  8000, treasure: 20000, slaves: 150, commerce: 15000 },  // 正二品
+    3:  { cash: 15000, land:  5000, treasure: 10000, slaves: 100, commerce:  8000 },  // 正三品
+    4:  { cash:  8000, land:  3000, treasure:  5000, slaves:  60, commerce:  4000 },  // 正四品
+    5:  { cash:  4000, land:  1500, treasure:  2500, slaves:  30, commerce:  2000 },  // 正五品
+    6:  { cash:  2000, land:   800, treasure:  1200, slaves:  15, commerce:  1000 },  // 正六品
+    7:  { cash:  1000, land:   400, treasure:   600, slaves:   8, commerce:   500 },  // 正七品
+    8:  { cash:   500, land:   200, treasure:   300, slaves:   4, commerce:   200 },  // 正八品
+    9:  { cash:   200, land:   100, treasure:   150, slaves:   2, commerce:   100 }   // 正九品
+  };
+  return tiers[Math.max(1, Math.min(9, r))] || { cash: 0, land: 0, treasure: 0, slaves: 0, commerce: 0 };
+}
+
+// 从 wealth 字符串中解析数字线索（如"田 4 万顷"→ land = 40000*100, "家丁 3000"→ slaves = 3000）
+function _parseWealthString(s) {
+  if (!s || typeof s !== 'string') return {};
+  var out = {};
+  // 田 N 万顷
+  var m1 = s.match(/田\s*(\d+(?:\.\d+)?)\s*万?顷/);
+  if (m1) {
+    var qing = parseFloat(m1[1]);
+    if (s.indexOf('万顷') >= 0) qing *= 10000;
+    out.land = Math.round(qing * 100);  // 1 顷 = 100 亩
+  } else {
+    var m2 = s.match(/田\s*(\d+(?:\.\d+)?)\s*万?亩/);
+    if (m2) {
+      var mu = parseFloat(m2[1]);
+      if (s.indexOf('万亩') >= 0) mu *= 10000;
+      out.land = Math.round(mu);
+    }
+  }
+  // 家丁 N
+  var m3 = s.match(/家丁\s*(\d+(?:\.\d+)?)\s*(千|万)?/);
+  if (m3) {
+    var n = parseFloat(m3[1]);
+    var mu2 = m3[2] === '万' ? 10000 : m3[2] === '千' ? 1000 : 1;
+    out.slaves = Math.round(n * mu2);
+  }
+  // 富甲天下 / 抄没 X 万两
+  var m4 = s.match(/(?:抄没估?|家?产)\s*(\d+)\s*万?两/);
+  if (m4) {
+    var v = parseInt(m4[1]);
+    if (s.indexOf('万两') >= 0 || s.indexOf('万') >= 0) v *= 10000;
+    out.cash = v;
+  }
+  // 富甲天下 / 豪富 关键词
+  if (/富甲天下|豪富|巨富/.test(s)) {
+    out._rich = true;  // rank-based * 5
+  } else if (/家境殷实|小有资产/.test(s)) {
+    out._rich = false;
+  } else if (/清贫|贫困|寒素/.test(s)) {
+    out._poor = true;  // rank-based * 0.3
+  }
+  return out;
+}
+
+// 初始化所有角色的 privateWealth
+function _initCharacterPrivateWealth(chars) {
+  (chars || []).forEach(function(ch) {
+    if (!ch || ch.alive === false) return;
+    if (!ch.resources) ch.resources = {};
+    // 若 resources.privateWealth 已有有效数据（存档加载）则跳过
+    if (ch.resources.privateWealth && (ch.resources.privateWealth.cash > 0 || ch.resources.privateWealth.land > 0)) return;
+    // 剧本可直接提供 wealthInit 覆盖全部
+    if (ch.wealthInit && typeof ch.wealthInit === 'object') {
+      ch.resources.privateWealth = {
+        cash: ch.wealthInit.cash || 0,
+        land: ch.wealthInit.land || 0,
+        treasure: ch.wealthInit.treasure || 0,
+        slaves: ch.wealthInit.slaves || 0,
+        commerce: ch.wealthInit.commerce || 0
+      };
+      if (ch.wealthInit.hidden != null) ch.hiddenWealth = ch.wealthInit.hidden;
+      return;
+    }
+    // 按品级推算基准
+    var base = _inferPrivateWealthByRank(ch);
+    // 从 wealth 字符串解析线索叠加
+    var parsed = _parseWealthString(ch.wealth || '');
+    if (parsed._rich) {
+      ['cash','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 5); });
+    }
+    if (parsed._poor) {
+      ['cash','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 0.3); });
+    }
+    // 具体数字线索覆盖
+    ['cash','land','treasure','slaves','commerce'].forEach(function(k){
+      if (parsed[k] != null && parsed[k] > 0) base[k] = parsed[k];
+    });
+    ch.resources.privateWealth = base;
+  });
+}
+
 // 进入游戏
 function enterGame(){
   _$("E").style.display="none";
@@ -5400,6 +5520,20 @@ function enterGame(){
 
   // 为所有实体添加响应式属性
   makeEntitiesReactive();
+
+  // 官职公库：从 publicTreasuryInit 初始化 live publicTreasury（首回合/存档加载）
+  try {
+    if (GM.officeTree) {
+      _initOfficePublicTreasury(GM.officeTree);
+      if (GM.turn === 1) console.log('[enterGame] 官职公库初始化完成');
+    }
+  } catch(_opE) { console.warn('[enterGame] 官职公库初始化失败', _opE); }
+
+  // 角色私产：按 wealth 字符串+品级推算填入 resources.privateWealth
+  try {
+    _initCharacterPrivateWealth(GM.chars || []);
+    if (GM.turn === 1) console.log('[enterGame] 角色私产初始化完成');
+  } catch(_pwE) { console.warn('[enterGame] 角色私产初始化失败', _pwE); }
 
   // 首次进入游戏（turn=1 且未初始化过腐败预设）→ 按朝代预设初始化腐败
   try {

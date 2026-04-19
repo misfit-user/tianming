@@ -932,7 +932,7 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .mem-empty::before{content:"❖";display:block;color:var(--gold-400);font-size:32px;margin-bottom:12px;opacity:0.5;}
 
 /* ═════════ 鸿雁标签页·美化版 v2（.hy-* ）═════════ */
-.hy-panel-wrap{background-color:var(--color-surface,#241e18);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;padding:var(--space-4) var(--space-5);}
+.hy-panel-wrap{background-color:var(--color-surface,#241e18);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;padding:var(--space-4) var(--space-5);width:100%;box-sizing:border-box;}
 .hy-panel-wrap::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
 .hy-inner{position:relative;z-index:1;}
 .hy-title{text-align:center;margin-bottom:20px;position:relative;padding:14px 0 18px;}
@@ -947,8 +947,8 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .hy-route-warn-lbl{color:var(--vermillion-400);letter-spacing:0.1em;font-family:var(--font-serif);margin-right:4px;}
 .hy-route-warn-item{display:inline-block;padding:2px 8px;background:rgba(192,64,48,0.1);border:1px solid var(--vermillion-400);border-radius:2px;color:var(--vermillion-300,#d15c47);font-size:11px;letter-spacing:0.05em;}
 /* 两栏 */
-.hy-main{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:stretch;}
-@media (min-width:1400px){.hy-main{grid-template-columns:280px 1fr;}}
+.hy-main{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:stretch;width:100%;}
+@media (min-width:1400px){.hy-main{grid-template-columns:240px minmax(0,1fr);}}
 @media (max-width:900px){.hy-main{grid-template-columns:1fr;}}
 /* 左侧：名帖夹 */
 .hy-left{display:flex;flex-direction:column;gap:10px;max-height:80vh;min-height:380px;padding:14px 10px 16px;background-color:#2a1e14;background-image:repeating-linear-gradient(90deg,rgba(107,60,40,0) 0,rgba(107,60,40,0) 3px,rgba(107,60,40,0.15) 3px,rgba(107,60,40,0.15) 4px,rgba(107,60,40,0) 4px,rgba(107,60,40,0) 12px,rgba(107,60,40,0.08) 12px,rgba(107,60,40,0.08) 13px),radial-gradient(ellipse at 30% 20%,rgba(184,154,83,0.08),transparent 60%),linear-gradient(to bottom,rgba(74,40,24,0.4),rgba(26,20,16,0.6));border:1px solid rgba(107,60,40,0.4);border-radius:3px;box-shadow:inset 0 0 20px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.3);}
@@ -992,7 +992,8 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .hy-c-scholar{--npc-clr:var(--celadon-400);}
 .hy-c-remote{--npc-clr:var(--amber-400,#c9a045);}
 /* 右侧中部 */
-.hy-center{display:flex;flex-direction:column;gap:14px;min-width:0;min-height:380px;}
+.hy-center{display:flex;flex-direction:column;gap:14px;min-width:0;min-height:380px;width:100%;}
+.hy-center > *{width:100%;box-sizing:border-box;}
 .hy-hist-head{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(184,154,83,0.04);border:1px solid var(--color-border-subtle);border-radius:3px;}
 .hy-hist-title-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
 .hy-hist-portrait{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--celadon-400),var(--ink-100,#3d342a));border:2px solid var(--celadon-400);display:flex;align-items:center;justify-content:center;color:#f4eadd;font-family:var(--font-serif);font-size:14px;flex-shrink:0;overflow:hidden;}

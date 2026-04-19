@@ -33,6 +33,25 @@
   --font-song: "STSong","SimSun","宋体",serif;
 }
 * { box-sizing: border-box; }
+
+/* ═══ 自定义滚动条·宣纸风格 ═══ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track {
+  background: rgba(26, 20, 16, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--gold-d), rgba(107, 90, 48, 0.6));
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--gold-400), var(--gold-500));
+}
+::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--gold-d) rgba(26,20,16,0.4); }
+
 body {
   margin: 0;
   background: radial-gradient(ellipse at top, #1a1510 0%, #0f0d0a 70%), var(--bg-1);
@@ -120,8 +139,15 @@ body {
   cursor:pointer;
   transition:all 0.2s;
   position:relative;
+  overflow:hidden;
 }
-.lt-npc-card:hover{border-color:var(--gold-400);background:linear-gradient(to right,rgba(184,154,83,0.05),var(--bg-paper));}
+.lt-npc-card::after{
+  content:"";position:absolute;top:0;right:0;
+  width:24px;height:24px;
+  background:radial-gradient(circle at top right,rgba(184,154,83,0.08),transparent 70%);
+  pointer-events:none;
+}
+.lt-npc-card:hover{border-color:var(--gold-400);background:linear-gradient(to right,rgba(184,154,83,0.05),var(--bg-paper));transform:translateX(1px);}
 .lt-npc-card.active{
   border-color:var(--gold-400);
   border-left-color:var(--vermillion-400);
@@ -174,10 +200,14 @@ body {
   min-height:380px;max-height:60vh;overflow-y:auto;
   padding:16px 12px;
   background-color:var(--bg-sunken);
-  background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));
+  background-image:
+    repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px)),
+    radial-gradient(circle at 20% 10%,rgba(184,154,83,0.04),transparent 40%),
+    radial-gradient(circle at 80% 90%,rgba(184,154,83,0.03),transparent 50%);
   border:1px solid var(--border-subtle);
   border-radius:3px;
-  display:flex;flex-direction:column;gap:12px;
+  display:flex;flex-direction:column;gap:14px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.3);
 }
 
 /* 日期分隔 */
@@ -204,6 +234,18 @@ body {
   line-height:1.9;
   position:relative;
 }
+/* 信件右下角折角效果 */
+.lt-letter::after{
+  content:"";
+  position:absolute;
+  bottom:0;right:0;
+  width:22px;height:22px;
+  background:linear-gradient(315deg,
+    rgba(139,90,50,0.3) 50%,
+    transparent 50%);
+  box-shadow:-2px -2px 3px rgba(139,90,50,0.15);
+  pointer-events:none;
+}
 .lt-letter .header{
   display:flex;align-items:center;gap:8px;
   padding-bottom:6px;margin-bottom:8px;
@@ -227,18 +269,25 @@ body {
 .lt-letter .reply-label{font-size:10px;color:#8f3428;letter-spacing:0.2em;margin-bottom:3px;font-family:var(--font-serif);font-style:normal;}
 .lt-letter .seal{
   position:absolute;top:12px;right:-10px;
-  width:32px;height:32px;border-radius:2px;
+  width:34px;height:34px;border-radius:3px;
   display:flex;align-items:center;justify-content:center;
-  color:#f4eadd;font-size:11px;font-family:var(--font-serif);
+  color:#f4eadd;font-size:12px;font-family:var(--font-serif);
   transform:rotate(-8deg);
-  box-shadow:0 2px 4px rgba(0,0,0,0.3);
   letter-spacing:0.05em;
   line-height:1;
   font-weight:bold;
+  box-shadow:
+    0 3px 6px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.15),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
+  /* 蜡印裂纹感 */
+  background-image:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,0.15),transparent 40%),
+    radial-gradient(circle at 70% 70%,rgba(0,0,0,0.2),transparent 50%);
 }
-.lt-letter .seal.secret{background:var(--vermillion-600);}
-.lt-letter .seal.military{background:linear-gradient(to br,#4a2818,#2a1410);color:var(--amber-400);}
-.lt-letter .seal.personal{background:var(--celadon-600);}
+.lt-letter .seal.secret{background-color:var(--vermillion-600);}
+.lt-letter .seal.military{background-color:#4a2818;color:var(--amber-400);}
+.lt-letter .seal.personal{background-color:var(--celadon-600);}
 
 /* 玩家发出（右对齐·金色信笺）*/
 .lt-msg-player{align-self:flex-end;}

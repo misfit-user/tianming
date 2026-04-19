@@ -1173,6 +1173,23 @@ function fullLoadGame(data){
     if (typeof autoAssignHaremResidences === 'function') {
       try { autoAssignHaremResidences(); } catch(_resE) { console.warn('[residence] 分配失败', _resE); }
     }
+    // 载入存档后：若 GM.adminHierarchy 缺失/为空（老存档），从剧本或 P 恢复
+    try {
+      var _ahEmpty = !GM.adminHierarchy ||
+                     typeof GM.adminHierarchy !== 'object' ||
+                     Object.keys(GM.adminHierarchy).length === 0;
+      if (_ahEmpty) {
+        var _scAh = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
+        if (_scAh && _scAh.adminHierarchy) {
+          GM.adminHierarchy = deepClone(_scAh.adminHierarchy);
+          console.log('[fullLoadGame] GM.adminHierarchy 从 scenario 恢复·keys=' + Object.keys(GM.adminHierarchy).join(','));
+        } else if (P.adminHierarchy) {
+          GM.adminHierarchy = deepClone(P.adminHierarchy);
+          console.log('[fullLoadGame] GM.adminHierarchy 从 P 恢复·keys=' + Object.keys(GM.adminHierarchy).join(','));
+        }
+      }
+    } catch(_ahLE) { console.warn('[fullLoadGame] adminHierarchy 恢复失败', _ahLE); }
+
     // 集成桥梁：老存档可能缺 divisions 深化字段，init 会补齐并建立 legacy proxy
     if (typeof IntegrationBridge !== 'undefined' && typeof IntegrationBridge.init === 'function') {
       try { IntegrationBridge.init(); } catch(_ibE) { console.warn('[bridge] init 失败', _ibE); }

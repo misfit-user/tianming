@@ -715,18 +715,23 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml;
 
   // 群臣动向→风闻录事（每条 NPC 事件写入 GM._fengwenRecord）
+  // ※ 奏疏类(奏/谏/弹劾/上书/疏/表)走正常奏疏系统·不入风闻
+  // ※ 只收录 4 类：密札(密谋)/耳报(私交)/军情(军事动向)/风议(舆论)
   try {
     if (GM.evtLog) {
-      var _npcEvtsFw = GM.evtLog.filter(function(e) { return e.type === 'NPC\u81EA\u4E3B' && e.turn === GM.turn - 1; });
+      var _npcEvtsFw = GM.evtLog.filter(function(e) { return e.type === 'NPC自主' && e.turn === GM.turn - 1; });
       if (_npcEvtsFw.length > 0) {
         if (!GM._fengwenRecord) GM._fengwenRecord = [];
         _npcEvtsFw.forEach(function(e) {
           var _t = e.text || '';
-          var _type = '耳报';
-          if (/奏|谏|弹劾|上书|请|议/.test(_t)) _type = '风议';
-          else if (/密|暗|谋|阴|贿|收买|拉拢/.test(_t)) _type = '密札';
-          else if (/结|交|拜|宴|盟|联|访/.test(_t)) _type = '耳报';
-          else if (/军|兵|战|攻|守|练|征|讨/.test(_t)) _type = '军情';
+          // 奏疏类完全跳过（已由奏疏系统处理）
+          if (/奏|谏|弹劾|上书|疏|表奏|上表|题奏|参劾/.test(_t)) return;
+          var _type = null;
+          if (/密|暗|谋|阴|贿|收买|拉拢|勾结|串/.test(_t)) _type = '密札';
+          else if (/结交|拜|宴|盟|联姻|访|攀交|门生|座师/.test(_t)) _type = '耳报';
+          else if (/军|兵|战|攻|守|练|征|讨|调兵|点卯|调遣/.test(_t)) _type = '军情';
+          else if (/私议|流言|传|说|闲谈|窃语/.test(_t)) _type = '风议';
+          if (!_type) return; // 不分类·不收录
           GM._fengwenRecord.push({
             type: _type, text: _t,
             credibility: 0.75, turn: GM.turn - 1, source: 'npc_action'

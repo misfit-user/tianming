@@ -5271,16 +5271,32 @@ function openKeyiSession() {
     playerSpeeches: []
   };
 
-  // 挑发言人：礼部尚书 + 高智高忠前 4 人
+  // 挑发言人（v4·立场均衡）：礼部尚书 + 支持/反对/观望各至少 1 人 + 高智填充
+  // 先预推每人立场
+  KEYI_STATE.attendees.forEach(function(a){ a._prevStance = _keyiInferStance(a); });
   var libuIdx = KEYI_STATE.attendees.findIndex(function(a){ return (a.title||'').indexOf('\u793C\u90E8\u5C1A\u4E66')>=0; });
   var speakers = [];
-  if (libuIdx >= 0) speakers.push(KEYI_STATE.attendees[libuIdx]);
-  var extras = KEYI_STATE.attendees.slice().sort(function(x,y){
-    var xs = ((x._ch && x._ch.intelligence)||0) + (x.loyalty||0)/2;
-    var ys = ((y._ch && y._ch.intelligence)||0) + (y.loyalty||0)/2;
-    return ys - xs;
-  }).filter(function(x){ return x !== (libuIdx>=0 ? KEYI_STATE.attendees[libuIdx] : null); }).slice(0, 4);
-  KEYI_STATE.speakers = speakers.concat(extras).slice(0, 5);
+  var picked = {};
+  if (libuIdx >= 0) { speakers.push(KEYI_STATE.attendees[libuIdx]); picked[KEYI_STATE.attendees[libuIdx].name] = true; }
+
+  function _scoreOf(a){ return ((a._ch && a._ch.intelligence)||0) + (a.loyalty||0)/2 + (a._ch && a._ch.ambition||0)/3; }
+  function _pickBestByStance(stance, max){
+    var cands = KEYI_STATE.attendees
+      .filter(function(a){ return !picked[a.name] && a._prevStance === stance; })
+      .sort(function(x,y){ return _scoreOf(y) - _scoreOf(x); });
+    var n = 0;
+    for (var i=0; i<cands.length && n<max; i++) { speakers.push(cands[i]); picked[cands[i].name] = true; n++; }
+  }
+  // 每种立场至少 1 人·反对至多 2 人·支持至多 2 人·观望 1 人
+  _pickBestByStance('oppose', 2);
+  _pickBestByStance('support', 2);
+  _pickBestByStance('abstain', 1);
+  // 不足 6 人·按综合分补齐
+  var remain = KEYI_STATE.attendees
+    .filter(function(a){ return !picked[a.name]; })
+    .sort(function(x,y){ return _scoreOf(y) - _scoreOf(x); });
+  for (var k=0; k<remain.length && speakers.length<6; k++) { speakers.push(remain[k]); picked[remain[k].name] = true; }
+  KEYI_STATE.speakers = speakers.slice(0, 6);
   KEYI_STATE.round = 1;
 
   _renderKeyiModal();

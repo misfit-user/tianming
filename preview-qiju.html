@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>起居注标签页·美化预览</title>
+<style>
+:root {
+  --bg-1: #0f0d0a; --bg-2: #1a1510; --bg-paper: #241e18; --bg-sunken: #120f0a;
+  --ink-900: #f4eadd; --ink-700: #d9c9a9; --ink-500: #a69470; --ink-300: #6b5d47; --ink-100: #3d342a;
+  --gold-300: #c9a85f; --gold-400: #b89a53; --gold-500: #9d8244; --gold-d: #6b5a30;
+  --vermillion-300: #d15c47; --vermillion-400: #b84738; --vermillion-600: #8f3428;
+  --indigo-400: #5a6fa8; --indigo-600: #3e4e80;
+  --celadon-400: #6a9a7f; --celadon-600: #4a7a5f;
+  --amber-400: #c9a045; --amber-600: #8f6f28;
+  --purple-400: #8e6aa8; --purple-600: #5f3a7a;
+  --blue-400: #5a8fb8;
+  --border-subtle: rgba(184,154,83,0.15); --border-strong: rgba(184,154,83,0.35);
+  --shadow-scroll: 0 6px 18px rgba(0,0,0,0.45),0 0 0 1px rgba(184,154,83,0.08);
+  --font-serif: "STKaiti","KaiTi","楷体","Georgia",serif;
+  --font-song: "STSong","SimSun","宋体",serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f0d0a 70%),var(--bg-1);color:var(--ink-700);font-family:var(--font-song);font-size:14px;line-height:1.7;min-height:100vh;}
+.preview-frame{max-width:1420px;margin:32px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-scroll);}
+.preview-header{background:linear-gradient(to bottom,rgba(184,154,83,0.04),transparent);padding:12px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--ink-500);letter-spacing:0.1em;}
+.preview-header .dot{width:10px;height:10px;border-radius:50%;}
+.preview-header .dot.r{background:#d15c47;} .preview-header .dot.y{background:#c9a85f;} .preview-header .dot.g{background:#6a9a7f;}
+.preview-header .title{margin-left:auto;font-family:var(--font-serif);letter-spacing:0.3em;color:var(--ink-300);}
+.tab-bar{display:flex;gap:0;background:var(--bg-1);border-bottom:1px solid var(--border-subtle);overflow-x:auto;}
+.tab-btn{padding:10px 16px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:14px;letter-spacing:0.1em;cursor:pointer;border-bottom:2px solid transparent;position:relative;}
+.tab-btn:hover{color:var(--ink-700);}
+.tab-btn.active{color:var(--gold-400);border-bottom-color:var(--gold-400);}
+.tab-btn.active::before{content:"";position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--vermillion-400);border-radius:1px;transform:rotate(12deg);}
+
+/* ═══ 起居注主区 ═══ */
+.qj-panel{padding:24px 28px;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;min-height:900px;}
+.qj-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
+.qj-inner{position:relative;z-index:1;}
+
+/* 标题 */
+.qj-title{text-align:center;margin-bottom:20px;position:relative;padding:14px 0 18px;}
+.qj-title::before,.qj-title::after{content:"";position:absolute;left:50%;width:180px;height:1px;transform:translateX(-50%);background:linear-gradient(to right,transparent,var(--gold-d),transparent);}
+.qj-title::before{top:0;} .qj-title::after{bottom:0;}
+.qj-title .main{font-family:var(--font-serif);font-size:24px;letter-spacing:0.5em;color:var(--ink-900);margin-bottom:6px;}
+.qj-title .sub{font-size:12px;color:var(--ink-300);letter-spacing:0.3em;font-family:var(--font-serif);font-style:italic;}
+.qj-title .seal{position:absolute;right:28px;top:10px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.85),rgba(140,40,30,0.75));display:flex;align-items:center;justify-content:center;color:#f4eadd;font-size:10.5px;font-family:var(--font-serif);letter-spacing:0.05em;font-weight:bold;transform:rotate(-6deg);box-shadow:0 2px 6px rgba(140,40,30,0.4);opacity:0.88;line-height:1.1;text-align:center;}
+
+/* 统计栏 */
+.qj-statbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.qj-stat-card{padding:10px 14px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--sc-c,var(--gold-d));border-radius:3px;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.025) 2.5em,rgba(107,93,71,0.025) calc(2.5em + 1px));}
+.qj-stat-card.s-all{--sc-c:var(--gold-400);}
+.qj-stat-card.s-month{--sc-c:var(--celadon-400);}
+.qj-stat-card.s-edict{--sc-c:var(--indigo-400);}
+.qj-stat-card.s-memo{--sc-c:var(--vermillion-400);}
+.qj-stat-card.s-chaoyi{--sc-c:var(--purple-400);}
+.qj-stat-card.s-annot{--sc-c:var(--vermillion-600);}
+.qj-stat-lbl{font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.25em;margin-bottom:4px;}
+.qj-stat-num{font-family:var(--font-serif);font-size:22px;color:var(--sc-c);letter-spacing:0.05em;font-weight:700;line-height:1;}
+.qj-stat-sub{font-size:10.5px;color:var(--ink-300);margin-top:3px;font-style:italic;}
+
+/* 工具栏 */
+.qj-tools{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(184,154,83,0.04);border:1px solid var(--border-subtle);border-radius:2px;margin-bottom:12px;flex-wrap:wrap;}
+.qj-tools-lbl{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.2em;padding-right:6px;border-right:1px solid var(--border-subtle);flex-shrink:0;}
+.qj-search-wrap{position:relative;flex:1;min-width:180px;max-width:260px;}
+.qj-search-wrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-300);font-size:14px;pointer-events:none;}
+.qj-search{width:100%;padding:5px 12px 5px 28px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-song);font-size:12px;border-radius:2px;outline:none;}
+.qj-filter{padding:5px 12px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-serif);font-size:12px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.qj-chk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-500);font-family:var(--font-serif);letter-spacing:0.1em;cursor:pointer;}
+.qj-chk input{accent-color:var(--vermillion-400);}
+.qj-export{padding:5px 14px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--ink-500);font-family:var(--font-serif);font-size:12px;letter-spacing:0.15em;border-radius:2px;cursor:pointer;}
+.qj-export::before{content:"❖";margin-right:4px;opacity:0.7;font-size:10px;}
+
+/* 类别图例 */
+.qj-legend{display:flex;gap:6px 10px;padding:8px 14px;margin-bottom:16px;background:rgba(184,154,83,0.02);border:1px solid var(--border-subtle);border-radius:2px;font-size:11px;flex-wrap:wrap;align-items:center;}
+.qj-legend-lbl{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.2em;margin-right:4px;padding-right:6px;border-right:1px solid var(--border-subtle);}
+.qj-legend-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.08em;font-size:11px;border:1px solid var(--chip-c);color:var(--chip-c);background:rgba(var(--chip-rgb),0.06);}
+.qj-legend-chip.c-edict{--chip-c:var(--indigo-400);--chip-rgb:90,111,168;}
+.qj-legend-chip.c-memo{--chip-c:var(--vermillion-400);--chip-rgb:184,71,56;}
+.qj-legend-chip.c-chaoyi{--chip-c:var(--purple-400);--chip-rgb:142,106,168;}
+.qj-legend-chip.c-letter{--chip-c:var(--amber-400);--chip-rgb:201,160,69;}
+.qj-legend-chip.c-person{--chip-c:var(--celadon-400);--chip-rgb:106,154,127;}
+.qj-legend-chip.c-xingzhi{--chip-c:var(--gold-400);--chip-rgb:184,154,83;}
+.qj-legend-chip.c-narrative{--chip-c:var(--ink-500);--chip-rgb:166,148,112;}
+.qj-legend-chip .num{color:var(--chip-c);font-weight:500;font-size:10px;opacity:0.85;}
+
+/* ═══ 日课册页（时间线）═══ */
+.qj-timeline{position:relative;padding-left:50px;}
+.qj-timeline::before{content:"";position:absolute;left:20px;top:10px;bottom:10px;width:2px;background:linear-gradient(to bottom,var(--gold-d),rgba(107,93,71,0.4));}
+
+/* 一回合 = 一日卷 */
+.qj-day{position:relative;margin-bottom:24px;}
+/* 时间节点·朱砂圆 */
+.qj-day::before{
+  content:attr(data-turn);
+  position:absolute;left:-42px;top:4px;
+  width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.85),rgba(140,40,30,0.75));
+  color:#f4eadd;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-size:12px;font-weight:bold;
+  letter-spacing:0.05em;
+  box-shadow:0 2px 6px rgba(140,40,30,0.4),0 0 0 3px var(--bg-paper);
+  transform:rotate(-4deg);
+  line-height:1;
+}
+.qj-day.first::before{background:radial-gradient(circle at 35% 35%,var(--gold-300),var(--gold-500));}
+
+/* 日卷头 */
+.qj-day-hdr{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 16px;
+  background:linear-gradient(to right,rgba(184,154,83,0.12),rgba(184,154,83,0.02) 70%);
+  border:1px solid var(--border-strong);
+  border-left:4px solid var(--gold-400);
+  border-radius:3px;
+  margin-bottom:8px;
+  position:relative;
+}
+.qj-day-hdr::before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;
+  width:4px;
+  background:linear-gradient(to bottom,var(--vermillion-400),var(--gold-400));
+}
+.qj-day-title{font-family:var(--font-serif);font-size:15px;color:var(--gold-300);letter-spacing:0.15em;}
+.qj-day-date{font-family:var(--font-serif);font-size:11.5px;color:var(--ink-500);letter-spacing:0.1em;font-style:italic;}
+.qj-day-tally{margin-left:auto;display:flex;gap:6px;}
+.qj-tally-dot{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-serif);font-size:10.5px;padding:1px 6px;border-radius:10px;border:1px solid var(--td-c);color:var(--td-c);background:rgba(var(--td-rgb),0.06);letter-spacing:0.08em;}
+.qj-tally-dot.edict{--td-c:var(--indigo-400);--td-rgb:90,111,168;}
+.qj-tally-dot.memo{--td-c:var(--vermillion-400);--td-rgb:184,71,56;}
+.qj-tally-dot.chaoyi{--td-c:var(--purple-400);--td-rgb:142,106,168;}
+.qj-tally-dot.letter{--td-c:var(--amber-400);--td-rgb:201,160,69;}
+.qj-tally-dot.person{--td-c:var(--celadon-400);--td-rgb:106,154,127;}
+.qj-tally-dot.xingzhi{--td-c:var(--gold-400);--td-rgb:184,154,83;}
+
+/* 日课条目 */
+.qj-day-body{padding-left:12px;border-left:1px dashed var(--border-subtle);margin-left:4px;}
+.qj-rec{
+  position:relative;
+  padding:8px 12px 8px 14px;
+  background:rgba(107,93,71,0.04);
+  border:1px solid var(--border-subtle);
+  border-left:3px solid var(--cat-c,var(--ink-300));
+  border-radius:0 3px 3px 0;
+  margin-bottom:6px;
+  transition:all 0.2s;
+}
+.qj-rec:hover{background:rgba(184,154,83,0.06);border-color:var(--border-strong);}
+.qj-rec.c-edict{--cat-c:var(--indigo-400);--cat-rgb:90,111,168;}
+.qj-rec.c-memo{--cat-c:var(--vermillion-400);--cat-rgb:184,71,56;}
+.qj-rec.c-chaoyi{--cat-c:var(--purple-400);--cat-rgb:142,106,168;}
+.qj-rec.c-letter{--cat-c:var(--amber-400);--cat-rgb:201,160,69;}
+.qj-rec.c-person{--cat-c:var(--celadon-400);--cat-rgb:106,154,127;}
+.qj-rec.c-xingzhi{--cat-c:var(--gold-400);--cat-rgb:184,154,83;}
+.qj-rec.c-narrative{--cat-c:var(--ink-500);--cat-rgb:166,148,112;}
+
+.qj-rec-hdr{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
+.qj-cat-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-serif);font-size:10.5px;padding:1px 7px;background:linear-gradient(to bottom,var(--cat-c),rgba(0,0,0,0.08));color:#1a1410;border-radius:2px;letter-spacing:0.12em;font-weight:500;line-height:14px;}
+.qj-cat-chip::before{content:"\3010";color:rgba(0,0,0,0.5);font-size:8px;margin-right:1px;}
+.qj-cat-chip::after{content:"\3011";color:rgba(0,0,0,0.5);font-size:8px;margin-left:1px;}
+.qj-rec-time{font-size:10.5px;color:var(--ink-300);font-family:var(--font-serif);font-style:italic;letter-spacing:0.08em;margin-left:auto;}
+.qj-rec-actions{display:flex;gap:3px;}
+.qj-rec-btn{background:transparent;border:1px solid transparent;color:var(--ink-300);font-family:var(--font-serif);font-size:10.5px;padding:1px 7px;border-radius:2px;cursor:pointer;letter-spacing:0.08em;}
+.qj-rec-btn:hover{color:var(--vermillion-400);border-color:var(--vermillion-400);background:rgba(192,64,48,0.06);}
+.qj-rec-btn.annot:hover{color:var(--vermillion-400);}
+.qj-rec-btn.zoom:hover{color:var(--gold-400);border-color:var(--gold-400);background:rgba(184,154,83,0.06);}
+
+.qj-rec-text{
+  font-family:var(--font-song);font-size:13.5px;
+  color:var(--ink-700);line-height:1.85;
+  letter-spacing:0.04em;
+}
+.qj-rec-text .hl{color:var(--ink-900);font-weight:500;}
+.qj-rec-text .name{color:var(--gold-300);font-family:var(--font-serif);letter-spacing:0.05em;}
+
+/* 御批（朱砂批注） */
+.qj-annot{
+  margin-top:6px;padding:6px 10px;
+  background:linear-gradient(to right,rgba(192,64,48,0.08),rgba(192,64,48,0.02) 60%);
+  border-left:2px solid var(--vermillion-400);
+  border-radius:0 2px 2px 0;
+  font-family:var(--font-serif);
+  font-size:12px;
+  color:var(--vermillion-400);
+  font-style:italic;
+  letter-spacing:0.05em;
+  line-height:1.7;
+  position:relative;
+  padding-left:44px;
+}
+.qj-annot::before{
+  content:"\5FA1\u00A0\u6279";
+  position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  font-size:10px;
+  color:#f4eadd;
+  background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.9),rgba(140,40,30,0.8));
+  padding:2px 5px;
+  border-radius:2px;
+  letter-spacing:0.1em;
+  font-weight:bold;
+  box-shadow:0 1px 2px rgba(140,40,30,0.4);
+  white-space:nowrap;
+}
+
+/* 引用内容框（诏令/奏疏正文） */
+.qj-quote{
+  margin:4px 0 2px 0;
+  padding:4px 8px;
+  background:rgba(107,93,71,0.06);
+  border-left:1px dashed var(--cat-c,var(--gold-d));
+  border-radius:0 2px 2px 0;
+  font-family:var(--font-song);font-size:12.5px;
+  color:var(--ink-700);
+  font-style:italic;
+  letter-spacing:0.03em;
+  line-height:1.7;
+}
+
+/* 分页 */
+.qj-paging{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;padding:10px;background:rgba(184,154,83,0.02);border:1px solid var(--border-subtle);border-radius:2px;}
+.qj-pg-btn{padding:4px 14px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);font-size:12px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.qj-pg-btn:hover:not(:disabled){background:rgba(184,154,83,0.18);}
+.qj-pg-btn:disabled{opacity:0.35;cursor:default;}
+.qj-pg-info{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.12em;}
+.qj-pg-info .cur{color:var(--gold-400);font-weight:700;}
+
+/* 空态 */
+.qj-empty{text-align:center;padding:64px 24px;font-family:var(--font-serif);font-size:15px;color:var(--ink-500);letter-spacing:0.2em;line-height:2.2;}
+.qj-empty::before{content:"\2756";display:block;color:var(--gold-400);font-size:34px;margin-bottom:12px;opacity:0.5;}
+
+.legend{padding:14px 20px;background:var(--bg-2);border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-500);text-align:center;letter-spacing:0.08em;line-height:1.9;}
+.legend .k{color:var(--gold-400);} .legend .m{color:var(--vermillion-400);} .legend .c{color:var(--celadon-400);}
+</style>
+</head>
+<body>
+<div class="preview-frame">
+
+<div class="preview-header">
+  <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  <span>起居注 · 美化预览</span>
+  <span class="title">一 日 一 录 · 金 匮 石 室</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn">朝 政</button>
+  <button class="tab-btn">诏 令</button>
+  <button class="tab-btn">奏 疏</button>
+  <button class="tab-btn">问 对</button>
+  <button class="tab-btn">鸿 雁</button>
+  <button class="tab-btn">编 年</button>
+  <button class="tab-btn">官 制</button>
+  <button class="tab-btn">文 苑</button>
+  <button class="tab-btn active">起 居 注</button>
+  <button class="tab-btn">纪 事</button>
+  <button class="tab-btn">史 记</button>
+  <button class="tab-btn">朝 议</button>
+  <button class="tab-btn">科 举</button>
+</div>
+
+<div class="qj-panel">
+<div class="qj-inner">
+
+<!-- 标题 -->
+<div class="qj-title">
+  <div class="seal">起<br>居<br>注</div>
+  <div class="main">起　居　注</div>
+  <div class="sub">一 日 一 录　　起 居 饮 食 言 动 必 书　　藏 之 金 匮 石 室</div>
+</div>
+
+<!-- 统计栏 -->
+<div class="qj-statbar">
+  <div class="qj-stat-card s-all">
+    <div class="qj-stat-lbl">总 录</div>
+    <div class="qj-stat-num">412</div>
+    <div class="qj-stat-sub">条</div>
+  </div>
+  <div class="qj-stat-card s-month">
+    <div class="qj-stat-lbl">本 月</div>
+    <div class="qj-stat-num">38</div>
+    <div class="qj-stat-sub">近记</div>
+  </div>
+  <div class="qj-stat-card s-edict">
+    <div class="qj-stat-lbl">诏 令</div>
+    <div class="qj-stat-num">87</div>
+    <div class="qj-stat-sub">道</div>
+  </div>
+  <div class="qj-stat-card s-memo">
+    <div class="qj-stat-lbl">奏 疏</div>
+    <div class="qj-stat-num">146</div>
+    <div class="qj-stat-sub">封</div>
+  </div>
+  <div class="qj-stat-card s-chaoyi">
+    <div class="qj-stat-lbl">朝 议</div>
+    <div class="qj-stat-num">24</div>
+    <div class="qj-stat-sub">次</div>
+  </div>
+  <div class="qj-stat-card s-annot">
+    <div class="qj-stat-lbl">御 批</div>
+    <div class="qj-stat-num">31</div>
+    <div class="qj-stat-sub">条</div>
+  </div>
+</div>
+
+<!-- 工具栏 -->
+<div class="qj-tools">
+  <span class="qj-tools-lbl">披 览</span>
+  <div class="qj-search-wrap"><input class="qj-search" placeholder="搜索起居注·日期·人名……"></div>
+  <select class="qj-filter">
+    <option>全部类别</option>
+    <option>诏令</option><option>奏疏</option><option>朝议</option>
+    <option>鸿雁</option><option>人事</option><option>行止</option><option>叙事</option>
+  </select>
+  <select class="qj-filter">
+    <option>排：近日 ↓</option>
+    <option>排：旧日 ↑</option>
+    <option>排：御批先</option>
+  </select>
+  <label class="qj-chk"><input type="checkbox"> 仅御批</label>
+  <label class="qj-chk"><input type="checkbox"> 折叠叙事</label>
+  <button class="qj-export">导 出 编 年</button>
+</div>
+
+<!-- 类别图例 -->
+<div class="qj-legend">
+  <span class="qj-legend-lbl">类 别</span>
+  <span class="qj-legend-chip c-edict">诏令 <span class="num">·87</span></span>
+  <span class="qj-legend-chip c-memo">奏疏 <span class="num">·146</span></span>
+  <span class="qj-legend-chip c-chaoyi">朝议 <span class="num">·24</span></span>
+  <span class="qj-legend-chip c-letter">鸿雁 <span class="num">·62</span></span>
+  <span class="qj-legend-chip c-person">人事 <span class="num">·45</span></span>
+  <span class="qj-legend-chip c-xingzhi">行止 <span class="num">·29</span></span>
+  <span class="qj-legend-chip c-narrative">叙事 <span class="num">·19</span></span>
+</div>
+
+<!-- 时间线 -->
+<div class="qj-timeline">
+
+  <!-- 第42回合 -->
+  <div class="qj-day first" data-turn="42">
+    <div class="qj-day-hdr">
+      <div class="qj-day-title">第 四 十 二 回 合</div>
+      <div class="qj-day-date">咸通八年丁亥 · 秋九月 壬子</div>
+      <div class="qj-day-tally">
+        <span class="qj-tally-dot edict">诏 2</span>
+        <span class="qj-tally-dot memo">疏 4</span>
+        <span class="qj-tally-dot chaoyi">议 1</span>
+        <span class="qj-tally-dot xingzhi">止 1</span>
+      </div>
+    </div>
+    <div class="qj-day-body">
+
+      <div class="qj-rec c-edict">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">诏令</span>
+          <span class="qj-rec-time">辰时 · 文华殿</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">帝下<span class="hl">《蠲免灾区岁赋诏》</span>，准户部尚书<span class="name">毕自严</span>所奏，山东河南两省今岁田赋减三分，秋粮缓征至冬十月。</div>
+        <div class="qj-quote">"朕念两省灾重，民困未苏。田赋蠲免三分，秋粮缓征一月，俾休养生息，毋致流亡……"</div>
+        <div class="qj-annot">可。此诏当速颁。户部会同都察院督行，不得推延。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">巳时 · 驿递到</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text"><span class="name">袁崇焕</span>自宁远上疏，奏报后金探马活动频繁，请增饷三万两，添置火器五百门以防不虞。</div>
+        <div class="qj-annot">准其半。饷银一万五千两即拨，火器从长计议。令兵部尚书议复。</div>
+      </div>
+
+      <div class="qj-rec c-chaoyi">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">朝议</span>
+          <span class="qj-rec-time">午时 · 皇极殿</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">廷议：关宁防务。议题"辽饷可否加征"。<span class="name">温体仁</span>主加征，<span class="name">钱谦益</span>主裁冗省。两议相持不下。帝曰：暂缓加征，先清查冗员再议。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">未时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">山西巡按<span class="name">倪元璐</span>上疏，劾晋商囤积居奇，致边关粮价翻番，请敕严查勒令售粮。</div>
+      </div>
+
+      <div class="qj-rec c-xingzhi">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">行止</span>
+          <span class="qj-rec-time">申时 · 乾清宫</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">帝召<span class="name">徐光启</span>至乾清宫问对，论红夷大炮铸造事宜。光启进《铸炮议》一册，帝览后颔首。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">酉时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">陕西巡抚<span class="name">孙传庭</span>奏：秦地大旱，流民蜂起。已就地开仓放粮，请朝廷发帑银十万以赈。</div>
+        <div class="qj-annot">速发。此事至急。户部毋得推诿。再命都察院遣御史分赴陕西各府核实。</div>
+      </div>
+
+      <div class="qj-rec c-edict">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">诏令</span>
+          <span class="qj-rec-time">戌时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">帝下<span class="hl">《发陕赈银诏》</span>，遣户部郎中<span class="name">王承恩</span>押解帑银十万两即日赴陕。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 第41回合 -->
+  <div class="qj-day" data-turn="41">
+    <div class="qj-day-hdr">
+      <div class="qj-day-title">第 四 十 一 回 合</div>
+      <div class="qj-day-date">咸通八年丁亥 · 秋九月 辛亥</div>
+      <div class="qj-day-tally">
+        <span class="qj-tally-dot edict">诏 1</span>
+        <span class="qj-tally-dot memo">疏 3</span>
+        <span class="qj-tally-dot letter">雁 2</span>
+        <span class="qj-tally-dot person">事 1</span>
+      </div>
+    </div>
+    <div class="qj-day-body">
+
+      <div class="qj-rec c-letter">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">鸿雁</span>
+          <span class="qj-rec-time">卯时 · 驿递发</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">【鸿雁传书】遣急递致<span class="name">卢象升</span>于宣府（密旨·实封）。内容：督师宣大，严防林丹汗部南犯，不得贻误。</div>
+      </div>
+
+      <div class="qj-rec c-letter">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">鸿雁</span>
+          <span class="qj-rec-time">辰时 · 驿递到</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">【鸿雁传书】<span class="name">袁崇焕</span>自宁远回函到达。回报：宁远防线整饬完毕，锦州后勤已到位，请陛下放心。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">巳时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">礼部尚书<span class="name">钱谦益</span>奏：江南文坛抗疏事，<span class="name">张岱</span>等联名请止不急之役。</div>
+        <div class="qj-annot">钱卿所奏，朕已知之。然军国大事，岂容书生妄议？可传旨申饬。</div>
+      </div>
+
+      <div class="qj-rec c-person">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">人事</span>
+          <span class="qj-rec-time">午时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">吏部奏除：升<span class="name">周延儒</span>为户部右侍郎，调<span class="name">杨嗣昌</span>补兵部员外郎。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">未时 · 风闻录事</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">都察院左都御史<span class="name">曹于汴</span>密奏：浙江巡抚潘曾与商贾往来过密，恐有瓜葛。请密敕东厂查访。</div>
+      </div>
+
+      <div class="qj-rec c-edict">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">诏令</span>
+          <span class="qj-rec-time">申时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">帝下<span class="hl">《申斥江南士子诏》</span>，谕礼部：江南书生妄议国事，当严加管束。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">酉时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">工部尚书奏：黄河张秋口决，已发河夫两万抢堵，请调京营兵三千协助。</div>
+        <div class="qj-annot">准。即发。另令漕运总督督办，不得迟误漕粮。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 第40回合 -->
+  <div class="qj-day" data-turn="40">
+    <div class="qj-day-hdr">
+      <div class="qj-day-title">第 四 十 回 合</div>
+      <div class="qj-day-date">咸通八年丁亥 · 秋九月 庚戌</div>
+      <div class="qj-day-tally">
+        <span class="qj-tally-dot memo">疏 2</span>
+        <span class="qj-tally-dot person">事 2</span>
+        <span class="qj-tally-dot xingzhi">止 1</span>
+      </div>
+    </div>
+    <div class="qj-day-body">
+
+      <div class="qj-rec c-xingzhi">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">行止</span>
+          <span class="qj-rec-time">卯时 · 奉先殿</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">帝晨起至奉先殿行礼，祭告太庙列圣。礼毕，赐<span class="name">周皇后</span>所缝玄色龙袍一袭。</div>
+      </div>
+
+      <div class="qj-rec c-person">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">人事</span>
+          <span class="qj-rec-time">巳时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">吏部奏：<span class="name">王公克</span>因病请告归乡，准致仕。赐白金二百两，绢二十疋。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">午时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">南京礼部尚书奏：江南士子请增南科举额三人，以收落魄之才。</div>
+      </div>
+
+      <div class="qj-rec c-person">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">人事</span>
+          <span class="qj-rec-time">未时</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">福建布政使<span class="name">郑芝龙</span>以海氛未清，遣使入贡贺。帝赐金绣袍一袭、玉带一条。</div>
+      </div>
+
+      <div class="qj-rec c-memo">
+        <div class="qj-rec-hdr">
+          <span class="qj-cat-chip">奏疏</span>
+          <span class="qj-rec-time">申时 · 密奏</span>
+          <div class="qj-rec-actions">
+            <button class="qj-rec-btn annot">御 批</button>
+            <button class="qj-rec-btn zoom">展 阅</button>
+          </div>
+        </div>
+        <div class="qj-rec-text">东厂提督<span class="name">曹化淳</span>密奏：近察京师谣传"龙种在外"，恐有宵小借此构衅。请严禁坊间议论。</div>
+        <div class="qj-annot">此等谣言，正当严禁。可密敕五城巡察，凡妄议者立拿。然不可张扬，以免坐实。</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- 分页 -->
+<div class="qj-paging">
+  <button class="qj-pg-btn" disabled>‹ 前 页</button>
+  <span class="qj-pg-info"><span class="cur">1</span> / 12　共 412 条 · 本页 3 日</span>
+  <button class="qj-pg-btn">后 页 ›</button>
+</div>
+
+</div>
+</div>
+
+<div class="legend">
+  纵向<span class="k">朱砂时间节点</span>标第几回合；<span class="k">日卷头</span>列回合+干支日+右侧<span class="k">数件盘</span>；其下日课条目按类别分色左边栏——<span class="k">诏令·靛</span>／<span class="m">奏疏·朱</span>／<span class="c">朝议·紫</span>／鸿雁·琥／人事·青／行止·金／叙事·墨。<br>
+  每条目含<span class="k">类别金徽</span>＋时刻＋正文＋（可选）<span class="k">引文框</span>＋（可选）<span class="m">朱砂"御批"</span>行＋「御批」「展阅」按钮。
+</div>
+
+</div>
+</body>
+</html>

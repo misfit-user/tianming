@@ -12008,21 +12008,39 @@ function _hidePostTurnCourtBanner() {
   if (_el) _el.remove();
 }
 
-// 朝会结束时调用——若 AI 已完成则触发史记；否则 AI 完成时会触发
-function _onPostTurnCourtEnd() {
-  GM._isPostTurnCourt = false;
-  if (!GM._pendingShijiModal) return;
-  GM._pendingShijiModal.courtDone = true;
+// 朝会结束时调用——顺序：先弹史记，其他模态（keju/事件等）排队其后
+async function _onPostTurnCourtEnd() {
+  if (!GM._pendingShijiModal) { GM._isPostTurnCourt = false; return; }
   _hidePostTurnCourtBanner();
-  if (GM._pendingShijiModal.aiReady && GM._pendingShijiModal.payload) {
-    var _payload = GM._pendingShijiModal.payload;
-    GM._pendingShijiModal.payload = null;
-    GM._pendingShijiModal.aiReady = false;
-    try { _endTurn_render.apply(null, _payload); } catch(_e){ console.error('[postTurnCourt] render:', _e); }
-  } else {
-    // AI 还没好——显示加载条
+  if (!(GM._pendingShijiModal.aiReady && GM._pendingShijiModal.payload)) {
+    // AI 还没好——关闭后朝标志让后续 AI 完成时直接 render
+    GM._isPostTurnCourt = false;
+    GM._pendingShijiModal.courtDone = true;
     showLoading('\u5019\u6709\u53F8\u63A8\u6F14\u2026\u2026', 50);
+    return;
   }
+  var _payload = GM._pendingShijiModal.payload;
+  var _deferredPhase5 = GM._pendingShijiModal.deferredPhase5;
+  GM._pendingShijiModal.payload = null;
+  GM._pendingShijiModal.aiReady = false;
+  GM._pendingShijiModal.deferredPhase5 = null;
+
+  // 1) 先弹史记（临时放开 courtDone，让 showTurnResult 直通）
+  GM._pendingShijiModal.courtDone = true;
+  try { _endTurn_render.apply(null, _payload); } catch(_e){ console.error('[postTurnCourt] render:', _e); }
+
+  // 2) 重新启用"队列模式"，让 phase5 产生的模态都进队列·不立即弹
+  GM._pendingShijiModal.courtDone = false; // 假装朝会还在
+  if (typeof _deferredPhase5 === 'function') {
+    try { await _deferredPhase5(); } catch(_ph5){ console.warn('[postTurnCourt] deferredPhase5:', _ph5); }
+  }
+
+  // 3) 收官：恢复正常状态 + 延迟 1s 后按队列依次弹出其他模态（给用户看史记的时间）
+  GM._isPostTurnCourt = false;
+  GM._pendingShijiModal.courtDone = true;
+  setTimeout(function(){
+    try { if (typeof _flushPostTurnModalQueue === 'function') _flushPostTurnModalQueue(); } catch(_fq){ console.warn('[postTurnCourt] flush:', _fq); }
+  }, 1000);
 }
 
 async function _endTurnInternal() {
@@ -12104,10 +12122,19 @@ async function _endTurnCore(){
   // Phase 4.5: 勤政 streak 结算
   try { if (typeof _settleCourtMeter === 'function') _settleCourtMeter(); } catch(_ccE) { console.warn('[endTurn] courtMeter', _ccE); }
 
-  // Phase 5: 后续钩子
-  await EndTurnHooks.execute('after');
-  if (P.keju && P.keju.enabled && !P.keju.currentExam) {
-    await checkKejuTrigger();
+  // Phase 5: 后续钩子——后朝进行中则全部延后（避免 keju 等弹窗覆盖朝会）
+  if (GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false) {
+    GM._pendingShijiModal.deferredPhase5 = async function() {
+      try { await EndTurnHooks.execute('after'); } catch(_ph5e){ console.warn('[postTurn] phase5 hooks', _ph5e); }
+      if (P.keju && P.keju.enabled && !P.keju.currentExam) {
+        try { await checkKejuTrigger(); } catch(_kj){ console.warn('[postTurn] keju', _kj); }
+      }
+    };
+  } else {
+    await EndTurnHooks.execute('after');
+    if (P.keju && P.keju.enabled && !P.keju.currentExam) {
+      await checkKejuTrigger();
+    }
   }
 
   // Phase 5.3: 跨回合记忆摘要（1.3）——每5回合压缩近期事件为200字摘要

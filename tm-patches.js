@@ -1713,6 +1713,11 @@ async function aiGenTech(){showLoading("生成科技中...",20);try{var ctx=P.sc
 function gv(id){var el=document.getElementById(id);return el?el.value.trim():"";}
 
 function openGenericModal(title,bodyHTML,onSave){
+  // 后朝进行中·排队延后（史记弹窗之后再依次弹出）
+  if (typeof _isPostTurnActive === 'function' && _isPostTurnActive()) {
+    _queuePostTurnModal(function(){ openGenericModal(title, bodyHTML, onSave); }, title);
+    return;
+  }
   var ov=document.createElement("div");ov.className="generic-modal-overlay";ov.id="gm-overlay";
   ov.innerHTML='<div class="generic-modal">'+
     '<div class="generic-modal-header"><h3>'+title+'</h3><button class="bt bs bsm" onclick="closeGenericModal()">\u2715</button></div>'+

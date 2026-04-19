@@ -623,7 +623,40 @@ function hideLoading(){
   _$("loading-fill").style.width="100%";
   setTimeout(function(){_$("loading").classList.remove("show");_$("loading-fill").style.width="0%";},250);
 }
+// ═══ 后朝并发期间·模态排队机制 ═══
+// 朝会进行中（_isPostTurnCourt && !courtDone）触发的非史记弹窗（事件/科举/大事记等），
+// 先暂存队列；朝会关闭并弹出史记后，按顺序依次 flush
+var _postTurnModalQueue = [];
+function _isPostTurnActive() {
+  return typeof GM !== 'undefined' && GM && GM._isPostTurnCourt === true
+      && GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false;
+}
+function _queuePostTurnModal(fn, label) {
+  if (typeof fn !== 'function') return;
+  _postTurnModalQueue.push({ fn: fn, label: label || '模态' });
+}
+function _flushPostTurnModalQueue() {
+  if (_postTurnModalQueue.length === 0) return;
+  // 依次弹出，每弹一个等待前一个被关闭（简化为 setTimeout 给 UI 时间）
+  var q = _postTurnModalQueue.slice();
+  _postTurnModalQueue.length = 0;
+  var i = 0;
+  function _next() {
+    if (i >= q.length) return;
+    try { q[i].fn(); } catch(_qe) { console.warn('[postTurnModal] ' + (q[i].label||'') + ':', _qe); }
+    i++;
+    // 300ms 后弹下一个·给用户时间看到上一个
+    if (i < q.length) setTimeout(_next, 300);
+  }
+  _next();
+}
+
 function showTurnResult(html){
+  // 后朝进行中·排队延后（朝会结束后再弹）
+  if (typeof _isPostTurnActive === 'function' && _isPostTurnActive()) {
+    _queuePostTurnModal(function(){ showTurnResult(html); }, '史记');
+    return;
+  }
   _$("turn-body").innerHTML=html;
   // 更新弹窗标题显示当前日期
   var titleEl=_$("turn-modal-title");

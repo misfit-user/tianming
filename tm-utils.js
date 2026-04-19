@@ -603,6 +603,10 @@ function gSid(s){var el=_$(s);return el?el.value:(P.scenarios[0]?P.scenarios[0].
 var _aiProgressTimer=null;
 var _LOADING_HINTS=['运筹帷幄之中','决胜千里之外','天下大势，分合有时','时来天地皆同力','万事俱备','风云际会','暗潮涌动','大势将至','变局已生','棋局已布'];
 function showLoading(msg,pct){
+  // 后朝进行中——推演全程静默，不弹加载条（避免覆盖朝会 UI）
+  if (typeof GM !== 'undefined' && GM && GM._isPostTurnCourt && (!GM._pendingShijiModal || GM._pendingShijiModal.courtDone === false)) {
+    return;
+  }
   _$("loading").classList.add("show");
   _$("loading-sub").textContent=msg||_LOADING_HINTS[Math.floor((typeof random==='function'?random():Math.random())*_LOADING_HINTS.length)];
   if(_aiProgressTimer){clearInterval(_aiProgressTimer);_aiProgressTimer=null;}

@@ -11951,11 +11951,29 @@ function _postTurnCourtChoose(openCourt) {
     GM._isPostTurnCourt = true;
     // 并发：启动 endTurn 主流程（不 await·让 AI 在后台跑）
     _endTurnInternal();
-    // 同时开朝——显示"朔朝筹备"弹窗
+    // 同时开朝——先打开 chaoyi-modal 再直跳常朝准备
     setTimeout(function(){
-      if (typeof _cc2_openPrepareDialog === 'function') _cc2_openPrepareDialog();
-      // 添加底栏进度 banner
-      if (typeof _showPostTurnCourtBanner === 'function') _showPostTurnCourtBanner();
+      try {
+        // 1) 初始化 CY 状态并创建 chaoyi-modal（不走 openChaoyi 的模式选择页·直接进常朝）
+        if (typeof openChaoyi === 'function') {
+          // 绕过 turn 频率限制（后朝是独立于 in-turn 限制的机会）
+          if (!GM._chaoyiCount) GM._chaoyiCount = {};
+          if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
+          // 临时拉低计数以绕开 openChaoyi 的频率闸（若已开 2 次暂存旧值）
+          var _origCnt = GM._chaoyiCount[GM.turn];
+          GM._chaoyiCount[GM.turn] = 0;
+          openChaoyi();
+          GM._chaoyiCount[GM.turn] = _origCnt; // 恢复，避免双计
+        }
+        // 2) CY 设置为常朝模式
+        if (typeof CY !== 'undefined') { CY.mode = 'changchao'; CY.topic = ''; }
+        // 3) 隐藏模式选择页·直跳筹备弹窗
+        var cyBody = _$('cy-body');
+        if (cyBody) cyBody.innerHTML = '<div style="text-align:center;color:var(--color-foreground-muted);padding:1rem;font-size:0.78rem;">\u3014\u6714\u671D\u00B7\u6B21\u6708\u521D\u671D\u3015\u7B79\u5907\u4E2D\u2026\u2026</div>';
+        if (typeof _cc2_openPrepareDialog === 'function') _cc2_openPrepareDialog();
+        // 4) 添加底栏进度 banner
+        if (typeof _showPostTurnCourtBanner === 'function') _showPostTurnCourtBanner();
+      } catch(_e) { console.error('[postTurnCourt] openFailed:', _e); }
     }, 200);
   } else {
     // 不开朝——直接跑 endTurn，显示加载条

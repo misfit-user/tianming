@@ -237,12 +237,34 @@
   function initializeFromLegacy() {
     var G = global.GM;
     if (!G) return;
-    // 取 scriptData.adminHierarchy（P 或 scriptData）
-    var adminHierarchy = (global.scriptData && global.scriptData.adminHierarchy) || G.adminHierarchy;
-    if (!adminHierarchy) {
-      // 如果没有区划，从旧 byRegion 构造一个简单的
+    // 优先级（2026-04 bug 修）：
+    //   1. GM.adminHierarchy（doActualStart 已从剧本 sc.adminHierarchy 深拷贝·运行时 live 数据）
+    //   2. P.adminHierarchy（剧本静态副本）
+    //   3. global.scriptData.adminHierarchy（编辑器模板·可能为空或遗留数据）
+    //   4. _bootstrapFromLegacy（8 大区保底）
+    // 原先把 scriptData.adminHierarchy 放最高优先级·编辑器模板会覆盖剧本真值
+    var _hasValidHierarchy = function(ah) {
+      if (!ah || typeof ah !== 'object') return false;
+      var keys = Object.keys(ah);
+      if (keys.length === 0) return false;
+      for (var i = 0; i < keys.length; i++) {
+        var fac = ah[keys[i]];
+        if (fac && Array.isArray(fac.divisions) && fac.divisions.length > 0) return true;
+      }
+      return false;
+    };
+    var adminHierarchy = null;
+    if (_hasValidHierarchy(G.adminHierarchy)) {
+      adminHierarchy = G.adminHierarchy;
+    } else if (global.P && _hasValidHierarchy(global.P.adminHierarchy)) {
+      adminHierarchy = global.P.adminHierarchy;
+      console.log('[bridge] GM.adminHierarchy \u7A7A·\u4ECE P.adminHierarchy \u6062\u590D');
+    } else if (global.scriptData && _hasValidHierarchy(global.scriptData.adminHierarchy)) {
+      adminHierarchy = global.scriptData.adminHierarchy;
+      console.log('[bridge] GM/P adminHierarchy \u7A7A·\u4ECE scriptData \u6062\u590D\uFF08\u7F16\u8F91\u5668\u6A21\u677F\uFF09');
+    } else {
+      console.warn('[bridge] adminHierarchy \u5168\u94FE\u7A7A·\u542F\u7528 8 \u5927\u533A\u4FDD\u5E95');
       adminHierarchy = _bootstrapFromLegacy(G);
-      G.adminHierarchy = adminHierarchy;
     }
     G.adminHierarchy = adminHierarchy;
 

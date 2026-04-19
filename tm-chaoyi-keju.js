@@ -5340,7 +5340,7 @@ function _keyiRenderDiscuss(body, footer) {
     : (KEYI_STATE._discussDone ? '\u5DF2\u7ECF\u8FC7 ' + KEYI_STATE.round + ' \u8F6E\u8BAE\u8BBA\u00B7\u53EF\u4ED8\u8868\u51B3\u6216\u518D\u8BAE' : '\u8BAE\u8BBA\u8FDB\u884C\u4E2D\u2026');
   var html = '<div style="margin-bottom:0.6rem;">'+
     '<div style="font-weight:700;color:var(--gold);">\u7B2C ' + KEYI_STATE.round + ' \u8F6E\u8BAE\u8BBA</div>'+
-    '<div style="font-size:0.72rem;color:var(--txt-d);">\u00B7 ' + KEYI_STATE.speakers.length + ' \u4EBA\u4E0A\u53F0\u8BAE\u4E8B\u00B7\u4E0A\u53F0\u8005\u8BA1\u7968\u00B7' + KEYI_STATE.attendees.length + ' \u4EBA\u5728\u573A\u542C\u8BAE\u00B7' + statusTxt + '</div>'+
+    '<div style="font-size:0.72rem;color:var(--txt-d);">\u00B7 ' + KEYI_STATE.speakers.length + ' \u4EBA\u4E0A\u53F0\u9648\u8BCD\u00B7' + KEYI_STATE.attendees.length + ' \u4EBA\u5728\u573A\u8BAE\u4E8B\u00B7' + statusTxt + '</div>'+
     '</div><div id="keyi-chat" style="min-height:220px;">';
   KEYI_STATE.speeches.forEach(function(sp){
     html += _keyiBubbleHtml(sp);
@@ -5636,23 +5636,45 @@ async function _keyiProceedToVote() {
 
 /** AI 一次性生成所有参议大臣的立场 */
 async function _keyiGenAllStances() {
-  // v5·核心不变量：表决只计议论中真实表态者·讨论无反对则表决无反对
+  // v6·单向不变量：讨论无反对 → 表决无反对；讨论无支持 → 表决无支持
+  // 所有 attendees 都计票·但立场只能在讨论中出现过的集合内取值
   if (!KEYI_STATE) return;
   KEYI_STATE.stances = {};
 
-  // 把所有 NPC 发言的最终立场直接作为表决结果
-  // 玩家圣谕不计票（陛下不投自己的票）
+  // Step 1: 从发言中统计出现过的立场集合
+  var speechStanceMap = {};
+  var seenStances = {}; // e.g., { support: true, oppose: true, abstain: true }
   KEYI_STATE.speeches.forEach(function(sp){
     if (sp._isPlayer) return;
     if (!sp.name) return;
-    // 若同一人多次发言·取最后一次立场
-    KEYI_STATE.stances[sp.name] = {
-      stance: sp.stance || 'abstain',
-      reason: (sp.line || '').slice(0, 60)
-    };
+    speechStanceMap[sp.name] = sp.stance || 'abstain';
+    seenStances[sp.stance || 'abstain'] = true;
+  });
+  // 若讨论完全空（极罕见），默认允许 abstain
+  if (Object.keys(seenStances).length === 0) seenStances['abstain'] = true;
+
+  // Step 2: 为所有 attendees 定立场
+  //   · 发过言 → 用其发言立场
+  //   · 未发言 → 算式推断·但若该立场未在讨论中出现·降级为 abstain（或 support，视情况）
+  KEYI_STATE.attendees.forEach(function(a){
+    if (speechStanceMap[a.name]) {
+      KEYI_STATE.stances[a.name] = { stance: speechStanceMap[a.name], reason: '\u5EAD\u8BAE\u6240\u8A00' };
+      return;
+    }
+    var inferred = _keyiInferStance(a);
+    if (!seenStances[inferred]) {
+      // 这个立场在讨论中没人说过·降级
+      if (seenStances['abstain']) inferred = 'abstain';
+      else {
+        // 讨论中连 abstain 都没有·只有 support 或 oppose — 取最接近的
+        var keys = Object.keys(seenStances);
+        inferred = keys[0];
+      }
+    }
+    KEYI_STATE.stances[a.name] = { stance: inferred, reason: '\u672A\u9648\u8F9E\u00B7\u79C1\u4E0B\u9644\u8BAE' };
   });
 
-  // 异步视觉反馈（保持原 UI 流·但不再调 AI 精修）
+  // 异步视觉反馈（计票动画）
   KEYI_STATE._busy = true;
   KEYI_STATE._busyText = '\u8BA1\u7968\u4E2D';
   _keyiRender();

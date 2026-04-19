@@ -6504,6 +6504,26 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp1c += '    \u00B7 \u65C5\u884C\u540C\u6E38\u00B7\u8BBF\u53E4\u5BFB\u80DC\u00B7\u5BFC\u6E38\u516C\u4E8B\n';
         tp1c += '    \u00B7 \u8D60\u7B54\u6587\u5B57\u00B7\u6B21\u97F5\u552F\u92F3\u7B54\u7B54\n\n';
 
+        tp1c += '  \u3010\u4EBA\u7269\u00B7\u4E3B\u52A8\u5EFA\u6784\u58F0\u671B\u8D24\u80FD\u884C\u4E3A\uFF08\u5FC3\u6709\u91CE\u671B/\u91CD\u89C6\u540D\u8282\u7684 NPC \u5E94\u4E3B\u52A8\u4E3A\u4E4B\uFF09\u3011\n';
+        tp1c += '    \u00B7 \u6551\u6D4E\u707E\u6C11\u00B7\u65BD\u7CA5\u6296\u8863\uFF08\u540D\u671B+ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u6350\u8D44\u5174\u5B66\u00B7\u5EFA\u4E66\u9662\u00B7\u7F62\u5B66\u8D4F\u4E8B\uFF08\u540D\u671B+\uFF09\n';
+        tp1c += '    \u00B7 \u8BB2\u5B66\u00B7\u7ACB\u8A00\u00B7\u8457\u4E66\u7ACB\u5B66\u6D3E\uFF08\u6587\u540D+\uFF09\n';
+        tp1c += '    \u00B7 \u5956\u638E\u540E\u8FDB\u00B7\u8350\u62D4\u8D24\u624D\u00B7\u63D0\u643A\u4E0B\u58EB\uFF08\u8D24\u80FD++\uFF09\n';
+        tp1c += '    \u00B7 \u4FEE\u5FD7\u7F16\u53F2\u00B7\u96C6\u8D24\u8BEF\u7279\u7AD9\uFF08\u6587\u5316\u8D21\u732E\u00B7\u540D\u671B+\uFF09\n';
+        tp1c += '    \u00B7 \u5174\u4FEE\u6C34\u5229\u00B7\u5EFA\u8DEF\u7B51\u6865\u00B7\u60E0\u6C11\u5DE5\u7A0B\uFF08\u540D\u671B+ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u6E05\u5EC9\u81EA\u5B88\u00B7\u62D2\u8D3F\u4E0D\u62DC\u00B7\u5404\u6D01\u8EAB\u4EE5\u98DF\uFF08\u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u629A\u6070\u5B64\u5BA1\u00B7\u65BD\u60E0\u8001\u5F31\u00B7\u89E3\u56F0\u5982\u4EB2\uFF08\u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u5E73\u53CD\u51A4\u72F1\u00B7\u56F4\u590D\u540D\u6D41\u00B7\u6B63\u6C89\u53D7\u5C48\uFF08\u540D\u671B++ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u4E3B\u6301\u4E61\u796D\u00B7\u8C03\u505C\u5B97\u65CF\u7EA0\u7EB7\uFF08\u5730\u65B9\u540D\u671B+\uFF09\n';
+        tp1c += '    \u00B7 \u66FF\u4EBA\u62C5\u4FDD\u00B7\u8DF5\u8BFA\u5B88\u4FE1\u00B7\u4E49\u8D48\u6025\u96BE\uFF08\u4FE1\u4E49+ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u00B7 \u4E3A\u56FD\u732E\u7B56\u00B7\u72AF\u9A6C\u76F4\u8C0F\u00B7\u62A5\u56FD\u5C4E\u8EAB\uFF08\u5FE0\u540D+\uFF09\n';
+        tp1c += '    \u00B7 \u6784\u7C50\u8BD7\u6587\u00B7\u9898\u8DCB\u540D\u54C1\u00B7\u9700\u987B\u96B6\u5B66\uFF08\u6587\u540D+\uFF09\n';
+        tp1c += '    \u00B7 \u7F6E\u4E49\u7530\u4E49\u58AE\u00B7\u4EA4\u4E8B\u5BD7\u65CF\u4EBA\uFF08\u65CF\u671B+ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    \u2605 \u9700\u6839\u636E NPC \u6027\u683C\u4E0E\u91CE\u5FC3\u9009\u62E9\uFF1A\u6E05\u6D41\u58EB\u5927\u592B\u504F\u5411\u6587\u5316\u00B7\u8BB2\u5B66\u00B7\u7F6E\u4E49\u7530\uFF0C\n';
+        tp1c += '      \u529F\u5229\u578B\u504F\u5411\u6350\u8D44\u5174\u6559\u00B7\u8350\u62D4\u00B7\u60E0\u6C11\u5DE5\u7A0B\uFF0C\u5FE0\u81EA\u578B\u504F\u5411\u76F4\u8C0F\u00B7\u5CD7\u8074\u00B7\u62A5\u56FD\uFF0C\u4EC1\u5FB7\u578B\u504F\u5411\u5E73\u51A4\u00B7\u5B88\u4FE1\u00B7\u629A\u6070\u3002\n';
+        tp1c += '    \u2605 \u4EE5\u4E0A\u884C\u4E3A\u53EF\u901A\u8FC7 npc_interactions \u8F93\u51FA\uFF08type \u53EF\u4EE3\u5165 mediate/recommend/guarantee/petition_jointly\u7B49\uFF09\uFF0C\n';
+        tp1c += '      \u6216\u901A\u8FC7 fengwen_snippets \u98CE\u95FB\u6761\u5230\u6620\u5728\u73A9\u5BB6\u76F8\u5173\u9762\u677F\u3002\n\n';
+
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u79C1\u4EBA\u751F\u6D3B\u65E5\u5E38\u3011\n';
         tp1c += '    \u00B7 \u5BB6\u4E8B\u5904\u7406\uFF08\u796D\u7956/\u5A5A\u5A36/\u4E27\u846C/\u8BAD\u5B50/\u5206\u5BB6\uFF09\n';
         tp1c += '    \u00B7 \u5B97\u6559\u4FE1\u4EF0\uFF08\u8FDB\u5E99/\u793C\u4F5B/\u6C42\u9053/\u9F4B\u6212/\u7167\u706B\u7586\u75AB\uFF09\n';
@@ -10547,6 +10567,36 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             if (ok) {
               var typeInfo = (typeof FACTION_INTERACTION_TYPES !== 'undefined' && FACTION_INTERACTION_TYPES[it.type]) ? FACTION_INTERACTION_TYPES[it.type].label : it.type;
               addEB('\u52BF\u529B', it.from + '→' + it.to + ' ' + typeInfo + (it.description ? '：' + it.description : ''));
+              // 公开势力互动 → 风闻录事（机密类除外）
+              try {
+                var _covertTypes = ['spy_infiltration','assassin_dispatch','incite_rebellion'];
+                var _isCovert = _covertTypes.indexOf(it.type) >= 0;
+                if (!_isCovert && typeof PhaseD !== 'undefined' && PhaseD.addFengwen) {
+                  var _fwType = it.type === 'declare_war' ? '\u6218\u62A5'
+                              : it.type === 'border_clash' ? '\u8FB9\u62A5'
+                              : it.type === 'royal_marriage' ? '\u548C\u4EB2'
+                              : it.type === 'send_hostage' ? '\u8D28\u5B50'
+                              : it.type === 'demand_tribute' || it.type === 'pay_tribute' ? '\u671D\u8D21'
+                              : it.type === 'open_market' || it.type === 'trade_embargo' ? '\u4E92\u5E02'
+                              : it.type === 'form_confederation' || it.type === 'break_confederation' ? '\u76DF\u7EA6'
+                              : it.type === 'send_envoy' ? '\u9063\u4F7F'
+                              : it.type === 'cultural_exchange' || it.type === 'religious_mission' ? '\u4F7F\u8282'
+                              : it.type === 'military_aid' || it.type === 'proxy_war' ? '\u519B\u60C5'
+                              : it.type === 'pay_indemnity' ? '\u8D54\u6B3E'
+                              : it.type === 'annex_vassal' || it.type === 'recognize_independence' ? '\u5916\u4EA4'
+                              : it.type === 'gift_treasure' ? '\u8D60\u8D22'
+                              : it.type === 'sue_for_peace' ? '\u8BF7\u548C'
+                              : '\u98CE\u8BAE';
+                  PhaseD.addFengwen({
+                    type: _fwType,
+                    text: it.from + '\u00B7' + typeInfo + '\u00B7' + it.to + (it.description ? '\u2014\u2014' + String(it.description).slice(0,60) : ''),
+                    credibility: 0.85,
+                    source: 'faction_public',
+                    actors: [it.from, it.to],
+                    turn: GM.turn
+                  });
+                }
+              } catch(_fwErr){}
               // 联姻细节——写入角色数据
               if (it.type === 'royal_marriage' && it.marriageDetails) {
                 addEB('\u548C\u4EB2', it.marriageDetails);
@@ -10756,6 +10806,29 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                 NpcMemorySystem.remember(scheme.schemer, '对' + scheme.target + '的' + scheme.typeName + '阴谋败露，身败名裂', '忧', 9, scheme.target);
                 NpcMemorySystem.remember(scheme.target, '识破了' + scheme.schemer + '的' + scheme.typeName + '阴谋', '怒', 8, scheme.schemer);
               }
+              // 暴露的阴谋 → 风闻录事（高可信度公告）
+              try {
+                if (typeof PhaseD !== 'undefined' && PhaseD.addFengwen) {
+                  PhaseD.addFengwen({
+                    type: '\u63ED\u79C1',
+                    text: scheme.schemer + '\u8C0B\u5BB3 ' + scheme.target + ' \u4E4B\u4E8B\u8D25\u9732\u2014\u2014' + String(sa.reason||'').slice(0,60),
+                    credibility: 0.9,
+                    source: 'scheme_exposed',
+                    actors: [scheme.schemer, scheme.target],
+                    turn: GM.turn
+                  });
+                }
+              } catch(_e){}
+              // 同步更新 ChronicleTracker 条目（阴谋暴露后对玩家可见）
+              try {
+                if (typeof ChronicleTracker !== 'undefined' && scheme.id) {
+                  var _ex = ChronicleTracker.findBySource('scheme', scheme.id);
+                  if (_ex) {
+                    ChronicleTracker.update(_ex.id, { hidden: false, currentStage: '\u5DF2\u66B4\u9732', result: sa.reason || '' });
+                    ChronicleTracker.abort(_ex.id, '\u5DF2\u66B4\u9732');
+                  }
+                }
+              } catch(_e){}
             }
           });
         }

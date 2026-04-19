@@ -317,8 +317,26 @@ function getNpcCognitionSnippet(name, opts) {
     if (cog.infoAsymmetry) bits.push('\u72EC\u77E5\uFF1A' + cog.infoAsymmetry);
     if (cog.recentMood) bits.push('\u5FC3\u7EEA\uFF1A' + cog.recentMood);
   }
+  // 自作文苑作品（文事系统·NPC 对自己的作品应了如指掌）
+  if (!short && window.GM && Array.isArray(window.GM.culturalWorks)) {
+    var _myW = window.GM.culturalWorks.filter(function(w){return w && w.author === name;});
+    if (_myW.length) {
+      var _recent = _myW.slice(-5).map(function(w){
+        var s = '\u300A' + (w.title||'\u65E0\u9898') + '\u300B';
+        if (w.subtype || w.genre) s += '(' + (w.subtype||w.genre) + ')';
+        if (w.mood) s += '\u00B7' + w.mood;
+        return s;
+      }).join('\u3001');
+      bits.push('\u81EA\u4F5C\u00B7\u8FD1 ' + _myW.length + ' \u7BC7\uFF1A' + _recent);
+    }
+    var _dedTo = window.GM.culturalWorks.filter(function(w){return w && Array.isArray(w.dedicatedTo) && w.dedicatedTo.indexOf(name) >= 0;}).slice(-3);
+    if (_dedTo.length) bits.push('\u88AB\u8D60\u4F5C\uFF1A' + _dedTo.map(function(w){return w.author+'\u300A'+w.title+'\u300B';}).join('\u3001'));
+    var _satire = window.GM.culturalWorks.filter(function(w){return w && w.satireTarget === name;}).slice(-2);
+    if (_satire.length) bits.push('\u8BBD\u6211\uFF1A' + _satire.map(function(w){return w.author+'\u300A'+w.title+'\u300B';}).join('\u3001'));
+  }
+
   if (bits.length === 0) return '';
-  return '\n\u3010\u8BE5\u81E3\u8BA4\u77E5\u00B7\u81EA\u6211\u753B\u50CF\u3011\n' + bits.join('\n') + '\n';
+  return '\n\u3010\u8BE5\u81E3\u8BA4\u77E5\u00B7\u81EA\u6211\u753B\u50CF\u00B7\u6587\u4E8B\u7C4D\u5F71\u3011\n' + bits.join('\n') + '\n';
 }
 if (typeof window !== 'undefined') window.getNpcCognitionSnippet = getNpcCognitionSnippet;
 

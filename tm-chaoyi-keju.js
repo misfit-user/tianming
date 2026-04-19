@@ -310,7 +310,16 @@ function openChaoyi(){
   showChaoyiSetup();
 }
 
-function closeChaoyi(){CY.open=false;CY.phase='setup';CY._pendingPlayerLine=null;CY._abortChaoyi=true;if(CY.abortCtrl){try{CY.abortCtrl.abort();}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}var m=_$("chaoyi-modal");if(m)m.remove();if(typeof renderLeftPanel==='function')renderLeftPanel();}
+function closeChaoyi(){
+  CY.open=false;CY.phase='setup';CY._pendingPlayerLine=null;CY._abortChaoyi=true;
+  if(CY.abortCtrl){try{CY.abortCtrl.abort();}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}
+  var m=_$("chaoyi-modal");if(m)m.remove();
+  if(typeof renderLeftPanel==='function')renderLeftPanel();
+  // 后朝结束钩子——触发史记弹窗或过渡到加载条
+  if (GM._isPostTurnCourt && typeof _onPostTurnCourtEnd === 'function') {
+    _onPostTurnCourtEnd();
+  }
+}
 
 /** 显示/隐藏玩家输入栏（朝议进入讨论后再显示） */
 function _cyShowInputRow(show){
@@ -1099,16 +1108,21 @@ function _ccEndCourt() {
   }).join('；');
   if (GM.qijuHistory && _summary) GM.qijuHistory.unshift({ turn: GM.turn, date: _date, content: '【常朝】裁决：' + _summary });
 
-  // 记录到courtRecords
+  // 记录到courtRecords · postTurn 则 targetTurn=GM.turn+1
   if (!GM._courtRecords) GM._courtRecords = [];
+  var _isPostTurnCC = !!GM._isPostTurnCourt;
   GM._courtRecords.push({
-    turn: GM.turn, topic: '常朝', mode: 'changchao',
+    turn: GM.turn, targetTurn: _isPostTurnCC ? (GM.turn + 1) : GM.turn,
+    topic: '常朝', mode: 'changchao',
+    phase: _isPostTurnCC ? 'post-turn' : 'in-turn',
     participants: (CY._ccAttendees||[]).map(function(a){return a.name;}),
     stances: {}, adopted: CY._ccDecisions.filter(function(d) { return d.action === 'approve'; }).map(function(d) { return { author: d.item.presenter, content: d.item.title }; }),
     _decisions: CY._ccDecisions,
     dismissed: false
   });
-  if (GM._courtRecords.length > 5) GM._courtRecords.shift();
+  if (GM._courtRecords.length > 8) GM._courtRecords.shift();
+  // 勤政计数
+  if (typeof recordCourtHeld === 'function') recordCourtHeld({ isPostTurn: _isPostTurnCC });
 
   // 保存常朝裁决到GM（供AI推演读取）
   GM._lastChangchaoDecisions = CY._ccDecisions.map(function(d) {
@@ -1842,8 +1856,11 @@ function _cySummonAfter() {
 
 function _persistCourtRecord(adopted) {
   if (!GM._courtRecords) GM._courtRecords = [];
+  var _isPostTurnCY = !!GM._isPostTurnCourt;
   var record = {
     turn: GM.turn,
+    targetTurn: _isPostTurnCY ? (GM.turn + 1) : GM.turn,
+    phase: _isPostTurnCY ? 'post-turn' : 'in-turn',
     topic: CY.topic,
     mode: CY.mode || 'tinyi',
     participants: CY.selected.slice(),
@@ -1858,7 +1875,8 @@ function _persistCourtRecord(adopted) {
   });
   GM._courtRecords.push(record);
   // 只保留最近5次朝议
-  if (GM._courtRecords.length > 5) GM._courtRecords.shift();
+  if (GM._courtRecords.length > 8) GM._courtRecords.shift();
+  if (typeof recordCourtHeld === 'function') recordCourtHeld({ isPostTurn: _isPostTurnCY });
 }
 
 /**
@@ -5935,8 +5953,12 @@ async function _ty2_decide(mode) {
 
   // 写入 courtRecords
   if (!GM._courtRecords) GM._courtRecords = [];
+  var _isPostTurnTy = !!GM._isPostTurnCourt;
   GM._courtRecords.push({
-    turn: GM.turn, topic: CY._ty2.topic, mode: 'tinyi',
+    turn: GM.turn,
+    targetTurn: _isPostTurnTy ? (GM.turn + 1) : GM.turn,
+    phase: _isPostTurnTy ? 'post-turn' : 'in-turn',
+    topic: CY._ty2.topic, mode: 'tinyi',
     topicType: CY._ty2.topicType, participants: CY._ty2.attendees,
     stances: CY._ty2.stances, decision: decision, stanceHistory: CY._ty2.stanceHistory
   });

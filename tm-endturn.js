@@ -3560,15 +3560,20 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     }
 
     // 朝议记录注入（让AI知道本回合谁在朝议中主张了什么——叙事必须保持一致）
+    //   targetTurn == GM.turn 的记录算"影响本回合"：
+    //   · phase='post-turn' 的是"月初朔朝"（上回合过回合时所开）
+    //   · phase='in-turn' 的是"月中常朝/廷议"（本回合内所开）
     if (GM._courtRecords && GM._courtRecords.length > 0) {
-      var _recentCourt = GM._courtRecords.filter(function(r) { return r.turn === GM.turn; });
+      var _recentCourt = GM._courtRecords.filter(function(r) { return (r.targetTurn || r.turn) === GM.turn; });
       if (_recentCourt.length > 0) {
         tp += '\n【本回合朝议记录——叙事中必须与此一致，NPC的观点不能自相矛盾】\n';
+        tp += '【双朝会时序】本月可能有"朔朝(月初)"+"常朝/廷议(月中)"两场——若月中决议覆盖/修改了朔朝决议，视为圣意调整，NPC 可记"朝纲反复"或"圣心独断"。\n';
         tp += '【退朝后余波——必须在npc_actions中体现】\n';
         tp += '  朝议结束后，持不同立场的官员会私下串联：支持者互相强化、反对者密谋对策、中间派观望。\n';
         tp += '  采纳方的提议者应积极推进落实，未被采纳方可能暗中抵制或转向求助皇帝（上奏疏）。\n';
         _recentCourt.forEach(function(cr) {
-          tp += '议题：' + cr.topic + '\n';
+          var _phaseLbl = cr.phase === 'post-turn' ? '【朔朝·月初】' : '【月中】';
+          tp += _phaseLbl + '议题：' + cr.topic + '\n';
           Object.keys(cr.stances).forEach(function(name) {
             var s = cr.stances[name];
             tp += '  ' + name + '：' + s.stance + '——' + s.brief + '\n';
@@ -3610,8 +3615,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       } else if (_recentCC >= 8) {
         tp += '\n【帝勤政——近5回合开朝' + _recentCC + '次】威望+，但可能被认为事必躬亲不放权。\n';
       }
-      // 上回合的朝议（如果有）
-      var _prevCourt = GM._courtRecords.filter(function(r) { return r.turn === GM.turn - 1; });
+      // 上回合的朝议（以 targetTurn 为准）
+      var _prevCourt = GM._courtRecords.filter(function(r) { return (r.targetTurn || r.turn) === GM.turn - 1; });
       if (_prevCourt.length > 0) {
         tp += '\n【上回合朝议（NPC应记得自己的立场）】\n';
         _prevCourt.forEach(function(cr) {
@@ -10907,7 +10912,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
       if (GM._courtRecords) {
-        var _thisCourt = GM._courtRecords.filter(function(r){return r.turn===GM.turn;});
+        var _thisCourt = GM._courtRecords.filter(function(r){return (r.targetTurn||r.turn)===GM.turn;});
         if (_thisCourt.length) {
           _basisBrief += '【本回合朝议/问对(作为场景展现)】\n';
           _thisCourt.slice(-3).forEach(function(r){ _basisBrief += '  '+(r.topic||r.mode||'议事')+'\n'; });
@@ -11848,7 +11853,172 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
 //  endTurn() — 主调度器，按阶段调用子函数
 // ============================================================
 /** 主回合推演入口（玩家点击"静待时变"触发） */
+// ═══ 勤政 / 怠政 累计 ═══
+//   每次开朝（in-turn 或 post-turn）调用此函数增量 thisTurnCount
+//   endTurn 时结算：count>=2 diligentStreak++/missedStreak=0, count==0 missedStreak++/diligentStreak=0
+function recordCourtHeld(opts) {
+  if (!GM._courtMeter) GM._courtMeter = { thisTurnCount: 0, missedStreak: 0, diligentStreak: 0, lastCourtTurn: 0 };
+  var m = GM._courtMeter;
+  // targetTurn 归属：post-turn 归下回合，in-turn 归本回合
+  var targetTurn = (opts && opts.isPostTurn) ? (GM.turn + 1) : GM.turn;
+  if (!m.byTurn) m.byTurn = {};
+  m.byTurn[targetTurn] = (m.byTurn[targetTurn] || 0) + 1;
+  m.lastCourtTurn = targetTurn;
+}
+
+// endTurn 末尾结算 streak
+function _settleCourtMeter() {
+  if (!GM._courtMeter) GM._courtMeter = { thisTurnCount: 0, missedStreak: 0, diligentStreak: 0, lastCourtTurn: 0, byTurn: {} };
+  var m = GM._courtMeter;
+  if (!m.byTurn) m.byTurn = {};
+  var curCount = m.byTurn[GM.turn] || 0;
+  m.thisTurnCount = curCount;
+  if (curCount === 0) {
+    m.missedStreak = (m.missedStreak || 0) + 1;
+    m.diligentStreak = 0;
+  } else if (curCount >= 2) {
+    m.diligentStreak = (m.diligentStreak || 0) + 1;
+    m.missedStreak = 0;
+  } else {
+    // 正好 1 次——中庸，两 streak 都不增
+    m.missedStreak = Math.max(0, (m.missedStreak || 0) - 0);
+    m.diligentStreak = Math.max(0, (m.diligentStreak || 0) - 0);
+  }
+  // 阈值触发（连续 3 回合）
+  if (m.missedStreak >= 3 && !m._missedAlerted) {
+    if (GM.vars) {
+      if (GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') GM.vars['皇威'].value = Math.max(0, GM.vars['皇威'].value - 5);
+    }
+    (GM.chars || []).forEach(function(c) {
+      if (c && c.alive !== false && (c.wuchang && (c.wuchang['义'] || 0) > 60)) {
+        c.loyalty = Math.max(0, (c.loyalty || 50) - 2);
+        if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(c.name, '陛下连三月不视朝·忧国臣子皆患之', '忧', 6);
+      }
+    });
+    if (typeof addEB === 'function') addEB('政局', '连三月不视朝·皇威-5·贤臣谏疏云集');
+    m._missedAlerted = true;
+    m._diligentAlerted = false;
+  } else if (m.diligentStreak >= 3 && !m._diligentAlerted) {
+    if (GM.vars) {
+      if (GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') GM.vars['皇威'].value = Math.min(100, GM.vars['皇威'].value + 3);
+    }
+    (GM.chars || []).forEach(function(c) {
+      if (c && c.alive !== false && (c.integrity || 50) > 60) {
+        c.loyalty = Math.min(100, (c.loyalty || 50) + 1);
+        if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(c.name, '陛下勤勉·连三月双朝议事·臣等感佩', '敬', 5);
+      }
+    });
+    if (typeof addEB === 'function') addEB('政局', '连三月勤政双朝·皇威+3·贤臣归心');
+    m._diligentAlerted = true;
+    m._missedAlerted = false;
+  }
+  // 清理过旧的 byTurn 记录
+  var cur = GM.turn;
+  Object.keys(m.byTurn).forEach(function(k) { if (+k < cur - 8) delete m.byTurn[k]; });
+}
+
+// ═══ 后朝并发机制 ═══
+//   · 过回合时弹 "是否例行朝会" → 选是：并发开后朝（targetTurn=GM.turn+1）+ AI 推演
+//   · AI 先完：暂存 payload，绿 banner 提示；朝会毕时弹史记
+//   · 朝会先完：若 AI 仍在跑，自然过渡到加载进度
+function _showPostTurnCourtPromptAndStartEndTurn() {
+  if (GM.busy) return;
+  var _bg = document.createElement('div');
+  _bg.className = 'modal-bg show';
+  _bg.id = 'post-turn-court-prompt';
+  _bg.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:5000;';
+  _bg.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:10px;padding:1.4rem 1.6rem;min-width:360px;max-width:460px;text-align:center;">'
+    + '<div style="font-size:1.05rem;color:var(--gold);font-weight:700;margin-bottom:0.7rem;">\u3014\u4ECA\u56DE\u5408\u5DF2\u7EC8\uFF0C\u6B32\u5F00\u4F8B\u884C\u671D\u4F1A\uFF1F\u3015</div>'
+    + '<div style="font-size:0.8rem;color:var(--txt-s);line-height:1.7;margin-bottom:1.1rem;text-align:left;padding:0 0.4rem;">'
+      + '\u00B7 \u9009\u5F00\u671D\uFF1A\u6709\u53F8\u540E\u53F0\u63A8\u6F14\u540C\u65F6\uFF0C\u5F00\u6B21\u6708\u6714\u671D\uFF1B\u672C\u671D\u4F1A\u7B97\u6B21\u56DE\u5408\u7684\u671D\u4F1A\uFF0C\u5F71\u54CD\u6B21\u56DE\u5408\u63A8\u6F14\n'
+      + '\u00B7 \u9009\u5426\uFF1A\u76F4\u63A5\u7B49\u5F85\u63A8\u6F14\u5B8C\u6BD5\uFF0C\u4E0D\u5F00\u671D\n'
+      + '\u00B7 \u52E4\u653F\u6807\u51C6\uFF1A\u6BCF\u56DE\u5408\u4EFB\u4E00\u6B21\u671D\u4F1A\uFF08\u6708\u521D\u6714\u671D\u6216\u6708\u4E2D\u5E38\u671D\uFF09\u5373\u8BA1\u52E4'
+    + '</div>'
+    + '<div style="display:flex;gap:0.6rem;justify-content:center;">'
+      + '<button class="bt bp" style="padding:8px 24px;" onclick="_postTurnCourtChoose(true)">\uD83D\uDCDC \u5F00\u6714\u671D</button>'
+      + '<button class="bt" style="padding:8px 24px;" onclick="_postTurnCourtChoose(false)">\u9759\u5019\u6709\u53F8</button>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(_bg);
+}
+
+function _postTurnCourtChoose(openCourt) {
+  var _bg = _$('post-turn-court-prompt');
+  if (_bg) _bg.remove();
+  if (openCourt) {
+    // 先标记 courtDone=false 并启动 AI 推演（后台）
+    GM._pendingShijiModal = { aiReady: false, courtDone: false, payload: null };
+    GM._isPostTurnCourt = true;
+    // 并发：启动 endTurn 主流程（不 await·让 AI 在后台跑）
+    _endTurnInternal();
+    // 同时开朝——显示"朔朝筹备"弹窗
+    setTimeout(function(){
+      if (typeof _cc2_openPrepareDialog === 'function') _cc2_openPrepareDialog();
+      // 添加底栏进度 banner
+      if (typeof _showPostTurnCourtBanner === 'function') _showPostTurnCourtBanner();
+    }, 200);
+  } else {
+    // 不开朝——直接跑 endTurn，显示加载条
+    GM._pendingShijiModal = { aiReady: false, courtDone: true, payload: null };
+    GM._isPostTurnCourt = false;
+    _endTurnInternal();
+  }
+}
+
+// 底栏进度 banner（朝会期间常驻）
+function _showPostTurnCourtBanner() {
+  var _existing = _$('post-turn-court-banner');
+  if (_existing) _existing.remove();
+  var el = document.createElement('div');
+  el.id = 'post-turn-court-banner';
+  el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4900;background:linear-gradient(90deg,rgba(184,154,83,0.18),rgba(184,154,83,0.08));border-top:2px solid var(--gold-d);padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:0.76rem;color:var(--gold);';
+  el.innerHTML = '<span style="font-weight:700;">\u3014\u5019\u6F14\u3015</span><span id="post-turn-court-banner-msg">\u6709\u53F8\u63A8\u6F14\u4E2D\u2026\u2026\u672C\u6714\u671D\u8BA1\u6B21\u56DE\u5408\u5E72\u7CFB</span><span style="margin-left:auto;font-size:0.68rem;color:var(--txt-d);">AI \u540E\u53F0\u63A8\u6F14</span>';
+  document.body.appendChild(el);
+}
+
+function _updatePostTurnCourtBanner(status) {
+  var msgEl = _$('post-turn-court-banner-msg');
+  if (!msgEl) return;
+  if (status === 'aiReady') {
+    msgEl.textContent = '\u2713 \u6709\u53F8\u63A8\u6F14\u5DF2\u6BD5\u00B7\u672C\u671D\u4F1A\u7ED3\u675F\u540E\u81EA\u52A8\u542F\u53F2\u8BB0';
+    msgEl.style.color = 'var(--green,#6aa88a)';
+  }
+}
+
+function _hidePostTurnCourtBanner() {
+  var _el = _$('post-turn-court-banner');
+  if (_el) _el.remove();
+}
+
+// 朝会结束时调用——若 AI 已完成则触发史记；否则 AI 完成时会触发
+function _onPostTurnCourtEnd() {
+  GM._isPostTurnCourt = false;
+  if (!GM._pendingShijiModal) return;
+  GM._pendingShijiModal.courtDone = true;
+  _hidePostTurnCourtBanner();
+  if (GM._pendingShijiModal.aiReady && GM._pendingShijiModal.payload) {
+    var _payload = GM._pendingShijiModal.payload;
+    GM._pendingShijiModal.payload = null;
+    GM._pendingShijiModal.aiReady = false;
+    try { _endTurn_render.apply(null, _payload); } catch(_e){ console.error('[postTurnCourt] render:', _e); }
+  } else {
+    // AI 还没好——显示加载条
+    showLoading('\u5019\u6709\u53F8\u63A8\u6F14\u2026\u2026', 50);
+  }
+}
+
+async function _endTurnInternal() {
+  // 原 endTurn 的完整内容移入此处，方便并发调用
+  return await _endTurnCore();
+}
+
 async function endTurn(){
+  // 入口：显示"是否例行朝会"弹窗
+  if (GM.busy) return;
+  _showPostTurnCourtPromptAndStartEndTurn();
+}
+
+async function _endTurnCore(){
   try{
   // 兼容新旧UI：老诏令面板按钮是btn-end，新UI右侧按钮是btn-end-turn
   var btn=_$("btn-end")||_$("btn-end-turn");
@@ -11856,7 +12026,10 @@ async function endTurn(){
   GM.busy=true;
   GM._endTurnBusy=true;
   if(btn){ btn.textContent="\u63A8\u6F14\u4E2D...";btn.style.opacity="0.6"; }
-  showLoading("\u65F6\u79FB\u4E8B\u53BB",10);
+  // 后朝中不用 showLoading（会遮挡朝会）
+  if (!(GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false)) {
+    showLoading("\u65F6\u79FB\u4E8B\u53BB",10);
+  }
 
   await EndTurnHooks.execute('before');
 
@@ -11897,8 +12070,21 @@ async function endTurn(){
   var changeReportHtml = generateChangeReport();
   var changes=[];Object.entries(GM.vars).forEach(function(e){var d=e[1].value-oldVars[e[0]];if(d!==0)changes.push({name:e[0],old:oldVars[e[0]],val:e[1].value,delta:d});});
 
-  // Phase 4: 渲染 + 存档（新版签名：增加 shiluText/szjTitle/szjSummary/personnelChanges/hourenXishuo）
-  _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts, xinglu, oldVars, changeReportHtml, queueResult, aiResult.suggestions, tyrantResult, turnSummary, shiluText, szjTitle, szjSummary, personnelChanges, hourenXishuo);
+  // Phase 4: 渲染 + 存档 —— 若后朝仍在进行则延后到朝会结束
+  var _renderArgs = [shizhengji, zhengwen, playerStatus, playerInner, edicts, xinglu, oldVars, changeReportHtml, queueResult, aiResult.suggestions, tyrantResult, turnSummary, shiluText, szjTitle, szjSummary, personnelChanges, hourenXishuo];
+  if (GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false) {
+    // 后朝进行中——暂存 payload，AI 完成但不弹史记；刷新底栏进度绿 banner
+    GM._pendingShijiModal.aiReady = true;
+    GM._pendingShijiModal.payload = _renderArgs;
+    if (typeof _updatePostTurnCourtBanner === 'function') _updatePostTurnCourtBanner('aiReady');
+    hideLoading();
+  } else {
+    _endTurn_render.apply(null, _renderArgs);
+    if (GM._pendingShijiModal) { GM._pendingShijiModal.aiReady = false; GM._pendingShijiModal.payload = null; }
+  }
+
+  // Phase 4.5: 勤政 streak 结算
+  try { if (typeof _settleCourtMeter === 'function') _settleCourtMeter(); } catch(_ccE) { console.warn('[endTurn] courtMeter', _ccE); }
 
   // Phase 5: 后续钩子
   await EndTurnHooks.execute('after');

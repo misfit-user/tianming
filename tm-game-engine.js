@@ -6010,6 +6010,10 @@ function startGame(sid){
   var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],culturalWorks:[],_forgottenWorks:[],factionRelationsMap:{}};if(_prevSaveName)GM.saveName=_prevSaveName;
 // 行政区划：从剧本/P 深拷贝到 GM，税收级联/bridge/aggregate 都读 GM.adminHierarchy
 GM.adminHierarchy = (sc && sc.adminHierarchy) ? deepClone(sc.adminHierarchy) : (P.adminHierarchy ? deepClone(P.adminHierarchy) : null);
+// 勤政计数（内朝+后朝协同）
+GM._courtMeter = { thisTurnCount: 0, missedStreak: 0, diligentStreak: 0, lastCourtTurn: 0 };
+GM._pendingShijiModal = { aiReady: false, courtDone: true, payload: null };  // courtDone 默认 true (没开后朝时直接可弹)
+GM._courtRecords = [];
 // 载入剧本预设关系——角色关系网
 if (sc.presetRelations && Array.isArray(sc.presetRelations.npc) && sc.presetRelations.npc.length > 0 && typeof ensureCharRelation === 'function') {
   sc.presetRelations.npc.forEach(function(rel) {

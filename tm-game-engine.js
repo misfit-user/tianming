@@ -5068,14 +5068,42 @@ function renderGameState(){
   gc.appendChild(bnP);
 
   // 官制面板
-  var offP=document.createElement("div");offP.className="g-tab-panel";offP.id="gt-office";offP.style.cssText="flex:1;overflow-y:auto;padding:1rem;";
-  offP.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);align-items:center;">'
-    +'<div class="scroll-manager-header" style="padding:0;font-size:var(--text-md);">\u3014 \u5B98 \u5236 \u3015</div>'
-    +'<div style="display:flex;gap:var(--space-1);">'
-    +'<button class="bt bp bsm" onclick="_offReformToEdict(\'add_dept\',\'\')">\uFF0B \u90E8\u95E8</button>'
-    +'</div></div>'
-    +'<div id="office-summary" style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap;"></div>'
-    +'<div id="office-tree"></div>';
+  var offP=document.createElement("div");offP.className="g-tab-panel";offP.id="gt-office";offP.style.cssText="flex:1;overflow-y:auto;padding:0;";
+  offP.innerHTML='<div class="og-panel-wrap"><div class="og-inner">'
+    +'<div class="og-title"><div class="seal">\u5B98<br>\u5236</div><div class="main">\u516D \u90E8 \u537F \u5BFA</div><div class="sub">\u8862\u3000\u95E8\u3000\u804C\u3000\u5B98\u3000\u3000\u3000\u3000\u73ED\u3000\u4F4D\u3000\u5404\u3000\u53F8\u3000\u5176\u3000\u804C</div></div>'
+
+    // 总览区
+    +'<div class="og-section-hdr">'
+    +'<span class="tag">\u8862 \u95E8 \u603B \u89C8</span>'
+    +'<span class="desc">\u2014\u2014 \u7F16\u5236\u00B7\u6743\u529B\u683C\u5C40\u00B7\u4FF8\u7984\u5F00\u652F</span>'
+    +'<span class="act">'
+    +'<button class="og-hdr-btn" onclick="_offReformToEdict(\'add_dept\',\'\')">\u589E \u8BBE \u90E8 \u95E8</button>'
+    +'<button class="og-hdr-btn primary" onclick="if(typeof _offOpenZhongtui===\'function\')_offOpenZhongtui();else toast(\'\u8350\u8D24\u5EF7\u63A8\u9700\u5148\u9009\u4E2D\u804C\u4F4D\')">\u8350 \u8D24 \u5EF7 \u63A8</button>'
+    +'</span>'
+    +'</div>'
+
+    // 预警 + 摘要
+    +'<div id="office-alerts" class="og-alerts"></div>'
+    +'<div id="office-summary" class="og-summary-grid"></div>'
+
+    // 树
+    +'<div class="og-section-hdr">'
+    +'<span class="tag">\u8862 \u95E8 \u5C42 \u7EA7</span>'
+    +'<span class="desc">\u2014\u2014 \u9F20\u8F6E\u7F29\u653E\u00B7\u62D6\u62FD\u5E73\u79FB\u00B7\u70B9\u51FB\u5361\u7247\u5C55\u5F00\u8BE6\u60C5</span>'
+    +'</div>'
+    +'<div class="og-tree-topbar">'
+    +'<span class="title-bar">\u56FE \u4F8B</span>'
+    +'<span style="font-size:11px;color:var(--ink-300);letter-spacing:0.05em;display:inline-flex;align-items:center;gap:8px;">'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:3px;height:14px;background:#e4c579;border-radius:1px;"></span>\u6B63\u4E00\u54C1</span>'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:3px;height:14px;background:var(--gold-400);border-radius:1px;"></span>\u4E8C\u4E09\u54C1</span>'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:3px;height:14px;background:var(--celadon-400);border-radius:1px;"></span>\u56DB\u4E94\u54C1</span>'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:3px;height:14px;background:var(--ink-500);border-radius:1px;"></span>\u516D\u54C1\u4EE5\u4E0B</span>'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber-400);"></span>\u4E45\u4EFB</span>'
+    +'<span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--vermillion-400);"></span>\u4E0D\u6EE1\u00B7\u7F3A\u5458</span>'
+    +'</span>'
+    +'</div>'
+    +'<div id="office-tree"></div>'
+    +'</div></div>';
   gc.appendChild(offP);
 
   // 文苑面板（文事作品库）

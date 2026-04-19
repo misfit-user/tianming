@@ -4721,16 +4721,317 @@ function renderOfficeTree(){
   }
 }
 
-/** SVG树状图渲染（游戏版——宽卡片·显著操作按钮·清晰层级） */
+/** v2 helper：每个节点的可视高度（部门 ~120，职位 ~196） */
+function _ogCardHeight(fi) {
+  if (fi.isPos) return 196;
+  if (fi.depth === 0) return 100;
+  return 110;
+}
+
+/** v2 helper：从 rank 字符串得品级档 CSS class */
+function _ogRankClass(rankStr) {
+  var lvl = typeof getRankLevel === 'function' ? getRankLevel(rankStr) : 18;
+  if (lvl <= 2) return 'og-rank-top';
+  if (lvl <= 6) return 'og-rank-high';
+  if (lvl <= 10) return 'og-rank-mid';
+  if (lvl <= 18) return 'og-rank-low';
+  return 'og-rank-base';
+}
+
+/** v2 helper：党派→CSS class */
+function _ogPartyClass(p) {
+  if (!p) return '';
+  var s = String(p);
+  if (/\u4E1C\u6797/.test(s)) return 'dongin';
+  if (/\u6D59/.test(s)) return 'zhe';
+  if (/\u9609|\u5BA6|\u5B98\u515A/.test(s)) return 'yan';
+  if (/\u6606/.test(s)) return 'kun';
+  if (/\u6E05\u6D41|\u5E03\u8863/.test(s)) return 'qing';
+  return '';
+}
+
+/** v2 helper：渲染部门卡 */
+function _ogRenderDeptCard(fi, idx, NW, cardH, pathStr) {
+  var nd = fi.node;
+  var isEmperor = fi.depth === 0;
+  var isRoot1 = fi.depth === 1;
+  var depthCls = isEmperor ? 'depth-0' : (isRoot1 ? 'depth-1' : '');
+
+  var psCount = (nd.positions || []).length;
+  var subCount = (nd.subs || []).length;
+  var vacCount = (nd.positions||[]).filter(function(p){return !p.holder;}).length;
+  var filledCount = psCount - vacCount;
+  var canCollapse = (psCount + subCount > 0) && !isEmperor;
+  var isColl = fi.collapsed;
+
+  // 实权指数
+  var _deptPower = 0;
+  if (!isEmperor && psCount > 0) {
+    (nd.positions||[]).forEach(function(p) {
+      if (p.holder) {
+        var _pc = findCharByName(p.holder);
+        var _rl = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 10;
+        _deptPower += (_pc ? ((_pc.intelligence||50)+(_pc.administration||50))/2 : 30) + Math.max(0, (18 - _rl)) * 3;
+      }
+    });
+    _deptPower = Math.round(_deptPower / Math.max(1, psCount));
+  } else if (isEmperor) {
+    _deptPower = Math.round(((GM.vars||{}).imperialAuthority || (GM.vars||{}).huangquan || 60));
+  }
+  var _pwCls = _deptPower > 70 ? 'hi' : _deptPower > 45 ? 'mid' : 'lo';
+  var _pwOff = 94.2 * (1 - Math.min(100, Math.max(0, _deptPower)) / 100);
+
+  var _safeDept = escHtml(nd.name||'').replace(/'/g,"\\'");
+  var html = '';
+  html += '<div class="og-dept-card ' + depthCls + '" style="left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + NW + 'px;height:' + cardH + 'px;">';
+  // 顶栏：名 + 实权环 + 折叠
+  html += '<div class="og-dept-hdr">';
+  html += '<span class="nm">' + escHtml(nd.name||'?') + '</span>';
+  if (!isEmperor || _deptPower > 0) {
+    html += '<div class="og-power-ring ' + _pwCls + '" title="\u5B9E\u6743\u6307\u6570 ' + _deptPower + '">';
+    html += '<svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15" fill="none" stroke-width="3"/>';
+    html += '<circle class="fg" cx="18" cy="18" r="15" fill="none" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="' + _pwOff.toFixed(1) + '"/></svg>';
+    html += '<div class="txt">' + _deptPower + '</div></div>';
+  }
+  if (canCollapse) {
+    html += '<button class="og-dept-collapse" onclick="event.stopPropagation();GM._officeCollapsed[JSON.stringify(' + pathStr + ')]=!GM._officeCollapsed[JSON.stringify(' + pathStr + ')];renderOfficeTree();" title="' + (isColl ? '\u5C55\u5F00' : '\u6298\u53E0') + '">' + (isColl ? '\u25BC' : '\u25B2') + '</button>';
+  }
+  html += '</div>';
+
+  // 主体
+  html += '<div class="og-dept-body">';
+  // 职能 chip
+  if (nd.functions && nd.functions.length > 0) {
+    html += '<div class="og-dept-func-row">';
+    nd.functions.slice(0,5).forEach(function(f){ html += '<span class="og-dept-func">' + escHtml(f) + '</span>'; });
+    html += '</div>';
+  } else if (isEmperor) {
+    var _playerChar = (GM.chars||[]).find(function(c){return c.isPlayer;});
+    if (_playerChar) {
+      html += '<div class="og-dept-func-row">';
+      html += '<span class="og-dept-func">' + escHtml(_playerChar.name || '') + '</span>';
+      if (_playerChar.age) html += '<span class="og-dept-func">\u5E74 ' + _playerChar.age + '</span>';
+      html += '</div>';
+    }
+  }
+  // 编制填充条
+  if (!isEmperor && psCount > 0) {
+    var fillPct = psCount > 0 ? Math.round(filledCount / psCount * 100) : 0;
+    var vacPct = 100 - fillPct;
+    html += '<div class="og-dept-fill">';
+    html += '<span class="num">\u7F16\u5236</span>';
+    html += '<div class="og-dept-fill-bar">';
+    html += '<div class="fg" style="width:' + fillPct + '%;"></div>';
+    if (vacPct > 0) html += '<div class="vac" style="width:' + vacPct + '%;"></div>';
+    html += '</div>';
+    html += '<span class="num">' + filledCount + ' / ' + psCount + '</span>';
+    if (vacCount === 0) html += '<span class="og-hc-chip full">\u6EE1</span>';
+    else if (fillPct >= 70) html += '<span class="og-hc-chip part">\u7F3A ' + vacCount + '</span>';
+    else html += '<span class="og-hc-chip vac">\u7F3A ' + vacCount + '</span>';
+    html += '</div>';
+  }
+  // 操作按钮行
+  if (!isEmperor) {
+    html += '<div class="og-dept-actions">';
+    html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'add_pos\',\'' + _safeDept + '\')" title="\u589E\u8BBE\u5B98\u804C">+\u5B98</button>';
+    html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'add_sub\',\'' + _safeDept + '\')" title="\u589E\u8BBE\u4E0B\u5C5E\u90E8\u95E8">+\u5C40</button>';
+    html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'rename\',\'' + _safeDept + '\')" title="\u6539\u540D">\u6539</button>';
+    html += '<button class="og-dept-btn danger" onclick="event.stopPropagation();_offReformToEdict(\'abolish\',\'' + _safeDept + '\')" title="\u88C1\u6492">\u88C1</button>';
+    html += '</div>';
+  }
+  html += '</div>'; // .og-dept-body
+  html += '</div>'; // .og-dept-card
+  return html;
+}
+
+/** v2 helper：渲染职位卡 */
+function _ogRenderPosCard(fi, idx, NW, cardH) {
+  var nd = fi.node;
+  if (typeof _offMigratePosition === 'function') _offMigratePosition(nd);
+
+  var _holder = nd.holder ? findCharByName(nd.holder) : null;
+  var _deptName = fi.parent && fi.parent.node ? (fi.parent.node.name||'') : '';
+  var _parentFunc = fi.parent && fi.parent.node && fi.parent.node.functions ? (fi.parent.node.functions[0]||'') : '';
+
+  var _rankCls = _ogRankClass(nd.rank);
+  var _rankInfo = nd.rank && typeof getRankInfo === 'function' ? getRankInfo(nd.rank) : null;
+
+  var _hc = nd.headCount || 1;
+  var _ac = nd.actualCount || 0;
+  var _mc = typeof _offMaterializedCount === 'function' ? _offMaterializedCount(nd) : (nd.holder ? 1 : 0);
+  var _vacant = (_hc||1) - (_ac||0);
+  var _unmat = (_ac||0) - _mc;
+
+  var _tenureKey = _deptName + (nd.name||'');
+  var _tenureVal = (_holder && _holder._tenure && _tenureKey) ? (_holder._tenure[_tenureKey]||0) : 0;
+  var _satisfaction = nd.holder && typeof calcOfficialSatisfaction === 'function' ? calcOfficialSatisfaction(nd.holder, nd.rank, _deptName) : null;
+  var _lastEval = (nd._evaluations && nd._evaluations.length > 0) ? nd._evaluations[nd._evaluations.length-1] : null;
+  var _evals = (nd._evaluations||[]).slice(-3);
+
+  // 主按钮
+  var _safeDept = escHtml(_deptName).replace(/'/g,"\\'");
+  var _safePos = escHtml(nd.name||'').replace(/'/g,"\\'");
+  var _safePath = JSON.stringify(fi.path).replace(/"/g,'&quot;');
+  var _mainBtn = '';
+  if (nd.holder) {
+    _mainBtn = '<button class="og-pos-action-btn change" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + escHtml(nd.holder||'').replace(/'/g,"\\'") + '\')" title="\u6539\u6362\u5728\u4EFB\u8005">\u6539 \u6362</button>';
+  } else if (_unmat > 0 && _ac > 0) {
+    _mainBtn = '<button class="og-pos-action-btn concretize" onclick="event.stopPropagation();if(typeof _offMaterialize===\'function\')_offMaterialize(\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u5177\u8C61\u5316">\u5177 \u8C61</button>';
+  } else {
+    _mainBtn = '<button class="og-pos-action-btn appoint" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'\')" title="\u4EFB\u547D">\u4EFB \u547D</button>';
+  }
+
+  // 在任者行 class
+  var _holderCls = 'vacant';
+  if (_holder) {
+    var _loy = _holder.loyalty||50;
+    _holderCls = _loy >= 70 ? 'loyal' : _loy < 35 ? 'danger' : 'mid';
+  }
+
+  var html = '';
+  html += '<div class="og-pos-card ' + _rankCls + '" style="left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + NW + 'px;height:' + cardH + 'px;">';
+  html += '<div class="og-rank-bar"></div>';
+
+  // 顶栏：官职 + 品级 + 主按钮
+  html += '<div class="og-pos-top">';
+  html += '<div class="og-pos-nm-wrap">';
+  html += '<div class="og-pos-nm">' + escHtml(nd.name||'?');
+  if (nd.rank) html += '<span class="og-pos-rank-badge">' + escHtml(nd.rank) + '</span>';
+  html += '</div>';
+  var subParts = [];
+  if (_deptName) subParts.push(escHtml(_deptName));
+  if (_parentFunc) subParts.push('<span class="sep">\u00B7</span><span>' + escHtml(_parentFunc) + '</span>');
+  if (subParts.length > 0) html += '<div class="og-pos-sub-line">' + subParts.join('') + '</div>';
+  html += '</div>';
+  html += _mainBtn;
+  html += '</div>';
+
+  // 在任者行
+  html += '<div class="og-pos-holder-row ' + _holderCls + '">';
+  if (_holder) {
+    var _portrait = _holder.portrait ? '<img src="' + escHtml(_holder.portrait) + '">' : escHtml(String(_holder.name||'?').charAt(0));
+    html += '<div class="og-pos-portrait">' + _portrait + '</div>';
+    html += '<div class="og-pos-holder-info">';
+    html += '<div class="og-pos-name-line">';
+    html += '<span class="nm" onclick="event.stopPropagation();if(typeof showCharPopup===\'function\')showCharPopup(\'' + escHtml(_holder.name||'').replace(/'/g,"\\'") + '\',event)">' + escHtml(_holder.name||'?') + '</span>';
+    // 党派徽章
+    var _pty = _holder.party || _holder.faction;
+    if (_pty && _pty !== '\u671D\u5EF7') {
+      var _ptyCls = _ogPartyClass(_pty);
+      html += '<span class="og-party-tag' + (_ptyCls?' '+_ptyCls:'') + '">' + escHtml(String(_pty).slice(0,4)) + '</span>';
+    }
+    if (_hc > 1) html += '<span class="og-hc-chip' + (_vacant===0?' full':_vacant>0?' part':'') + '">\u7F16' + _hc + '\u00B7\u5B9E' + _ac + '</span>';
+    html += '</div>';
+    // 年龄/任期/满意度
+    var subLine = [];
+    if (_holder.age) subLine.push('\u5E74 ' + _holder.age);
+    if (_tenureVal > 0) subLine.push('\u4EFB ' + _tenureVal + ' \u56DE\u5408');
+    if (_satisfaction && typeof _satisfaction.score === 'number') {
+      var _ssClr = _satisfaction.score >= 65 ? 'var(--celadon-400)' : _satisfaction.score >= 45 ? 'var(--amber-400,#c9a045)' : 'var(--vermillion-400)';
+      subLine.push('<span style="color:' + _ssClr + ';">\u6EE1\u610F ' + Math.round(_satisfaction.score) + '</span>');
+    }
+    if (subLine.length > 0) {
+      html += '<div class="og-pos-sub-line">' + subLine.map(function(p, i){ return (i>0?'<span class="sep">\u00B7</span>':'') + p; }).join('') + '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="og-pos-portrait vacant">?</div>';
+    html += '<div class="og-pos-holder-info">';
+    html += '<div class="og-pos-name-line"><span style="font-style:italic;">\u7A7A \u7F3A</span>';
+    if (_hc > 1) html += '<span class="og-hc-chip vac">\u7F16' + _hc + '\u00B7\u5B9E' + _ac + '</span>';
+    html += '</div>';
+    html += '<div class="og-pos-sub-line" style="color:var(--vermillion-400);">\u6B64\u804C\u65E0\u4EBA\u00B7\u5F85\u8865</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // 能力四维
+  if (_holder) {
+    var _loyVal = _holder.loyalty||50;
+    var _loyCls = _loyVal >= 70 ? 'hi' : _loyVal < 40 ? 'lo' : 'mid';
+    html += '<div class="og-stats-row">';
+    html += '<span class="og-stat-box"><span class="lbl">\u667A</span><span class="v">' + (_holder.intelligence||50) + '</span><span class="og-stat-bar-mini" style="--w:' + (_holder.intelligence||50) + '%;"></span></span>';
+    html += '<span class="og-stat-box"><span class="lbl">\u653F</span><span class="v">' + (_holder.administration||50) + '</span><span class="og-stat-bar-mini" style="--w:' + (_holder.administration||50) + '%;"></span></span>';
+    html += '<span class="og-stat-box"><span class="lbl">\u519B</span><span class="v">' + (_holder.military||50) + '</span><span class="og-stat-bar-mini" style="--w:' + (_holder.military||50) + '%;"></span></span>';
+    html += '<span class="og-stat-box loy ' + _loyCls + '"><span class="lbl">\u5FE0</span><span class="v">' + _loyVal + '</span><span class="og-stat-bar-mini" style="--w:' + _loyVal + '%;"></span></span>';
+    html += '</div>';
+  } else {
+    html += '<div class="og-empty-msg">\u6B64\u804C\u65E0\u4EBA\u00B7\u653F\u52A1\u505C\u6EDE</div>';
+  }
+
+  // 权限图标
+  if (nd.powers) {
+    var pw = nd.powers;
+    html += '<div class="og-powers">';
+    html += '<span class="og-powers-lbl">\u6743</span>';
+    html += '<span class="og-power-icon appoint' + (pw.appointment?'':' off') + '" title="\u8F9F\u4E3E\u6743">\u8F9F</span>';
+    html += '<span class="og-power-icon impeach' + (pw.impeach?'':' off') + '" title="\u5F39\u52BE\u6743">\u5F39</span>';
+    html += '<span class="og-power-icon tax' + (pw.taxCollect?'':' off') + '" title="\u7A0E\u6536\u6743">\u7A0E</span>';
+    html += '<span class="og-power-icon military' + (pw.militaryCommand?'':' off') + '" title="\u519B\u6743">\u5175</span>';
+    html += '<span class="og-power-icon supervise' + (pw.supervise?'':' off') + '" title="\u76D1\u5BDF\u6743">\u76D1</span>';
+    html += '</div>';
+  }
+
+  // 公库/陋规/任期/考评
+  var metaParts = [];
+  if (nd.publicTreasuryInit) {
+    var pti = nd.publicTreasuryInit;
+    if (pti.money) metaParts.push('<span class="og-meta-treasury">\u94F6 ' + Math.round(pti.money/10000) + ' \u4E07</span>');
+    if (pti.grain) metaParts.push('<span class="og-meta-grain">\u7C73 ' + Math.round(pti.grain/10000) + ' \u4E07</span>');
+  }
+  if (nd.privateIncome && nd.privateIncome.illicitRisk === 'high') {
+    metaParts.push('<span class="og-meta-illicit hot">\u80A5\u7F3A</span>');
+  } else if (nd.privateIncome && nd.privateIncome.illicitRisk === 'low') {
+    metaParts.push('<span class="og-meta-illicit cold">\u6E05\u8981</span>');
+  }
+  if (_tenureVal > 12) {
+    metaParts.push('<span class="og-meta-tenure warn">\u4E45\u7559 ' + _tenureVal + ' \u56DE</span>');
+  }
+  if (_evals.length > 0) {
+    var evalHtml = '<span class="og-eval-history"><span class="lbl">\u8003</span>';
+    _evals.forEach(function(ev){
+      var g = ev.grade||'';
+      var dotCls = /\u4E0A|\u4F18|\u7532/.test(g) ? 'up' : /\u4E0B|\u52A3|\u4E01/.test(g) ? 'dn' : 'mid';
+      evalHtml += '<span class="og-eval-dot ' + dotCls + '" title="' + escHtml(g) + '">' + escHtml(g.charAt(0)||'·') + '</span>';
+    });
+    evalHtml += '</span>';
+    metaParts.push(evalHtml);
+  }
+  if (metaParts.length > 0) {
+    html += '<div class="og-meta-row">';
+    html += metaParts.map(function(p, i){ return (i>0?'<span class="sep">\u00B7</span>':'') + p; }).join('');
+    html += '</div>';
+  }
+
+  // 历任链
+  if (nd._history && nd._history.length > 0) {
+    var _hist = nd._history.slice(-3);
+    html += '<div class="og-history-rail">';
+    html += '<span class="lbl">\u5386\u4EFB</span>';
+    _hist.forEach(function(h, hi){
+      if (hi > 0) html += '<span class="arr">\u2192</span>';
+      html += '<span class="name">' + escHtml(h.holder||'?') + '</span>';
+    });
+    if (nd.holder) {
+      html += '<span class="arr">\u2192</span>';
+      html += '<span class="name current">' + escHtml(nd.holder) + '</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>'; // .og-pos-card
+  return html;
+}
+
+/** SVG树状图渲染（游戏版 v2 — 大号信息密度卡 · .og-* 类） */
 function _renderOfficeTreeSVG(container) {
   if (!GM._officeCollapsed) GM._officeCollapsed = {};
-  // 临时将GM.officeTree赋给P.officeTree供布局算法读取
   var _origPTree = P.officeTree;
   P.officeTree = GM.officeTree;
   var _origCollapsed = P._officeCollapsed;
   P._officeCollapsed = GM._officeCollapsed;
-  // 游戏版·卡片更大·便于展示官职+在任者+操作按钮
-  var layout = _officeBuildTree(GM._officeCollapsed, { W: 210, H: 68, H_GAP: 22, V_GAP: 84 });
+  // v2：宽 230·高 210（可容纳大号职位卡 196px）
+  var layout = _officeBuildTree(GM._officeCollapsed, { W: 230, H: 210, H_GAP: 28, V_GAP: 50 });
   P.officeTree = _origPTree;
   P._officeCollapsed = _origCollapsed;
 
@@ -4745,201 +5046,28 @@ function _renderOfficeTreeSVG(container) {
     var fi = flat[i];
     if (!fi.parent) continue;
     var px = fi.parent.x + fi.parent.w / 2;
-    var py = fi.parent.y + fi.parent.h;
+    var py = fi.parent.y + _ogCardHeight(fi.parent);
     var cx = fi.x + fi.w / 2;
     var cy = fi.y;
     var my = py + (cy - py) * 0.5;
     var clr = fi.isPos ? 'var(--celadon-400)' : 'var(--gold-500)';
+    var swidth = fi.isPos ? '1.5' : '2';
     var dsh = fi.isPos ? ' stroke-dasharray="4,3"' : '';
-    svgLines += '<path d="M' + px + ',' + py + ' L' + px + ',' + my + ' L' + cx + ',' + my + ' L' + cx + ',' + cy + '" stroke="' + clr + '" stroke-width="1.5" fill="none" opacity="0.7"' + dsh + '/>';
+    svgLines += '<path d="M' + px + ',' + py + ' L' + px + ',' + my + ' L' + cx + ',' + my + ' L' + cx + ',' + cy + '" stroke="' + clr + '" stroke-width="' + swidth + '" fill="none" opacity="0.75"' + dsh + '/>';
   }
 
-  // Node cards（游戏版）
+  // 卡片渲染
   var nodesDivs = '';
   for (var i = 0; i < flat.length; i++) {
     var fi = flat[i];
     var nd = fi.node;
     var pathStr = JSON.stringify(fi.path);
+    var cardH = _ogCardHeight(fi);
 
     if (fi.isPos) {
-      // ── Position leaf card (v2·宽卡·清晰·单一主按钮) ──
-      var _holder = nd.holder ? findCharByName(nd.holder) : null;
-      var _holderClr = !nd.holder ? 'var(--vermillion-400)' : (_holder && (_holder.loyalty||50) > 70 ? 'var(--celadon-400)' : _holder && (_holder.loyalty||50) < 30 ? 'var(--vermillion-400)' : 'var(--color-foreground)');
-      var _holderName = nd.holder || '\u7A7A\u7F3A';
-      var _lastEval = (nd._evaluations && nd._evaluations.length > 0) ? nd._evaluations[nd._evaluations.length-1] : null;
-      var _tenureKey = '';
-      if (fi.parent && fi.parent.node) _tenureKey = (fi.parent.node.name||'') + nd.name;
-      var _tenureVal = (_holder && _holder._tenure && _tenureKey) ? (_holder._tenure[_tenureKey]||0) : 0;
-      var _deptName3 = fi.parent && fi.parent.node ? (fi.parent.node.name||'') : '';
-      var _satisfaction = nd.holder && typeof calcOfficialSatisfaction === 'function' ? calcOfficialSatisfaction(nd.holder, nd.rank, _deptName3) : null;
-      // 品级颜色
-      var _rankInfo = nd.rank && typeof getRankInfo === 'function' ? getRankInfo(nd.rank) : null;
-      var _rankClr = _rankInfo ? _rankInfo.color : 'var(--gold-400)';
-      // 编制/实有统计
-      if (typeof _offMigratePosition === 'function') _offMigratePosition(nd);
-      var _hc = nd.headCount || 1;
-      var _ac = nd.actualCount || 0;
-      var _mc = typeof _offMaterializedCount === 'function' ? _offMaterializedCount(nd) : (nd.holder ? 1 : 0);
-      var _vacant4 = (_hc||1) - (_ac||0);
-      var _unmat4 = (_ac||0) - _mc;
-
-      // 左侧品级色条
-      var _leftBar = '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:' + _rankClr + ';"></div>';
-
-      // 状态徽章群（tenure/eval/satisfaction 合并成小色点）
-      var _badges = '';
-      if (_tenureVal > 12) _badges += '<span title="任期' + _tenureVal + '回合·久居需调" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber-400);margin-left:3px;"></span>';
-      if (_lastEval) {
-        var _gClr = /上|优|甲/.test(_lastEval.grade||'') ? 'var(--celadon-400)' : /下|劣|丁/.test(_lastEval.grade||'') ? 'var(--vermillion-400)' : 'var(--gold-400)';
-        _badges += '<span title="考评：' + escHtml(_lastEval.grade||'') + '" style="display:inline-block;font-size:9px;padding:0 3px;border-radius:3px;background:rgba(184,154,83,0.15);color:' + _gClr + ';margin-left:3px;">' + escHtml(_lastEval.grade||'') + '</span>';
-      }
-      if (_satisfaction && _satisfaction.score < 35) _badges += '<span title="' + escHtml(_satisfaction.label) + '·不满" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--vermillion-400);margin-left:3px;"></span>';
-      else if (_satisfaction && _satisfaction.score < 55) _badges += '<span title="' + escHtml(_satisfaction.label) + '·略不满" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber-400);margin-left:3px;"></span>';
-      if (_vacant4 > 0 && _hc > 1) _badges += '<span title="缺员 ' + _vacant4 + '/' + _hc + '" style="display:inline-block;font-size:9px;padding:0 3px;border-radius:3px;background:rgba(192,64,48,0.15);color:var(--vermillion-400);margin-left:3px;">缺' + _vacant4 + '</span>';
-
-      // 能力速览
-      var _statLine = '';
-      if (_holder) {
-        var _loyClr = (_holder.loyalty||50) > 70 ? 'var(--celadon-400)' : (_holder.loyalty||50) < 40 ? 'var(--vermillion-400)' : 'var(--gold-400)';
-        _statLine = '<span style="font-size:9px;color:var(--ink-300);">\u667A' + (_holder.intelligence||50) + ' \u653F' + (_holder.administration||50) + ' \u519B' + (_holder.military||50) + ' </span><span style="font-size:9px;color:' + _loyClr + ';">\u5FE0' + (_holder.loyalty||50) + '</span>';
-      } else {
-        _statLine = '<span style="font-size:9px;color:var(--vermillion-400);font-style:italic;">\u6B64\u804C\u65E0\u4EBA\u00B7\u6076\u653F\u6709\u52E2</span>';
-      }
-
-      // 主操作按钮（任命/改换/具象）——单一大按钮·不再一排小字
-      var _safeDept = escHtml(_deptName3).replace(/'/g,"\\'");
-      var _safePos = escHtml(nd.name||'').replace(/'/g,"\\'");
-      var _safePath = JSON.stringify(fi.path).replace(/"/g,'&quot;');
-      var _mainBtn = '';
-      if (nd.holder) {
-        _mainBtn = '<button class="bt" style="font-size:10px;padding:2px 6px;line-height:16px;border-color:var(--amber-400);color:var(--amber-400);background:rgba(217,151,71,0.06);white-space:nowrap;" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + escHtml(nd.holder||'').replace(/'/g,"\\'") + '\')" title="\u6539\u6362\u5F53\u524D\u5728\u4EFB\u8005">\u6539\u6362</button>';
-      } else if (_unmat4 > 0 && _ac > 0) {
-        _mainBtn = '<button class="bt" style="font-size:10px;padding:2px 6px;line-height:16px;border-color:var(--celadon-400);color:var(--celadon-400);background:rgba(121,175,135,0.06);white-space:nowrap;" onclick="event.stopPropagation();if(typeof _offMaterialize===\'function\')_offMaterialize(\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u7531\u6709\u53F8\u9012\u8865\u540D\u5177\u8C61\u5316\u4E3A\u5177\u4F53\u4EBA\u7269">\u5177\u8C61</button>';
-      } else {
-        _mainBtn = '<button class="bt bp" style="font-size:10px;padding:2px 6px;line-height:16px;white-space:nowrap;" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'\')" title="\u4ECE\u672C\u52BF\u529B\u4EBA\u7269\u4E2D\u9009\u4EFB">\u4EFB\u547D</button>';
-      }
-
-      nodesDivs += '<div style="position:absolute;left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + NW + 'px;height:' + NH + 'px;box-sizing:border-box;border:1px solid var(--color-border-subtle);border-radius:6px;background:var(--color-surface);overflow:hidden;box-shadow:var(--shadow-xs);cursor:pointer;transition:box-shadow 0.15s ease,border-color 0.15s ease;" onmouseover="this.style.boxShadow=\'var(--shadow-md)\';this.style.borderColor=\'var(--gold-400)\';" onmouseout="this.style.boxShadow=\'var(--shadow-xs)\';this.style.borderColor=\'var(--color-border-subtle)\';" onclick="var d=_$(\'goff-' + i + '\');if(d)d.style.display=d.style.display===\'block\'?\'none\':\'block\';">';
-      nodesDivs += _leftBar;
-      // 上排：官职名 + 品级 + 操作按钮
-      nodesDivs += '<div style="display:flex;align-items:center;gap:4px;padding:5px 6px 2px 9px;">';
-      nodesDivs += '<div style="flex:1;min-width:0;">';
-      nodesDivs += '<div style="font-size:12px;font-weight:700;color:var(--color-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(nd.name||'?');
-      if (nd.rank) nodesDivs += '<span style="font-size:10px;font-weight:400;color:' + _rankClr + ';margin-left:4px;">' + escHtml(nd.rank) + '</span>';
-      nodesDivs += _badges + '</div></div>';
-      nodesDivs += _mainBtn;
-      nodesDivs += '</div>';
-      // 下排：在任者 + 能力/编制
-      nodesDivs += '<div style="padding:0 6px 4px 9px;">';
-      nodesDivs += '<div style="font-size:11px;color:' + _holderClr + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;">';
-      if (nd.holder) {
-        nodesDivs += '<span style="cursor:pointer;text-decoration:underline dotted var(--ink-300);" onclick="event.stopPropagation();if(typeof showCharPopup===\'function\')showCharPopup(\'' + escHtml(nd.holder).replace(/'/g,"\\'") + '\',event);else _offShowCareer(\'' + escHtml(nd.holder).replace(/'/g,"\\'") + '\')">' + escHtml(_holderName) + '</span>';
-      } else {
-        nodesDivs += '<span style="font-style:italic;">' + escHtml(_holderName) + '</span>';
-      }
-      if (_hc > 1) nodesDivs += '<span style="font-size:9px;color:var(--ink-300);margin-left:6px;">\u7F16' + _hc + '\u00B7\u5B9E' + _ac + '</span>';
-      nodesDivs += '</div>';
-      nodesDivs += '<div style="line-height:1.2;margin-top:1px;">' + _statLine + '</div>';
-      nodesDivs += '</div>';
-      nodesDivs += '</div>';
-      // 展开详情浮层
-      nodesDivs += '<div id="goff-' + i + '" style="display:none;position:absolute;left:' + fi.x + 'px;top:' + (fi.y + NH + 10) + 'px;width:' + (NW+40) + 'px;z-index:20;background:var(--color-elevated);border:1px solid var(--gold-500);border-radius:var(--radius-md);padding:var(--space-2);box-shadow:var(--shadow-lg);font-size:0.7rem;color:var(--color-foreground-secondary);">';
-      if (_holder) {
-        nodesDivs += '\u5FE0' + (_holder.loyalty||50) + ' \u667A' + (_holder.intelligence||50) + ' \u653F' + (_holder.administration||50) + ' \u519B' + (_holder.military||50) + '<br>';
-      }
-      // 官职深化字段（公库 / 权限 / 陋规）
-      if (nd.publicTreasuryInit || nd.powers || nd.privateIncome || nd.bindingHint) {
-        nodesDivs += '<div style="margin-top:2px;border-top:1px solid var(--color-border-subtle);padding-top:2px;">';
-        if (nd.bindingHint) {
-          var bhMap = {region:'地方公库',ministry:'中央部库',military:'军饷库',imperial:'内帑库'};
-          nodesDivs += '<span style="color:var(--gold-400);">\u7ED1\uFF1A</span>' + (bhMap[nd.bindingHint]||nd.bindingHint) + ' ';
-        }
-        if (nd.publicTreasuryInit) {
-          var pti = nd.publicTreasuryInit;
-          if (pti.money) nodesDivs += '\u94F6' + Math.round(pti.money/10000) + '\u4E07 ';
-          if (pti.grain) nodesDivs += '\u7C73' + Math.round(pti.grain/10000) + '\u4E07 ';
-        }
-        if (nd.powers) {
-          var pw = nd.powers, pwStr = [];
-          if (pw.appointment) pwStr.push('\u8F9F');
-          if (pw.impeach) pwStr.push('\u5F39');
-          if (pw.taxCollect) pwStr.push('\u7A0E');
-          if (pw.militaryCommand) pwStr.push('\u5175');
-          if (pw.supervise) pwStr.push('\u76D1');
-          if (pwStr.length) nodesDivs += '<span style="color:var(--celadon-400);">\u6743\uFF1A</span>' + pwStr.join('\u00B7') + ' ';
-        }
-        if (nd.privateIncome && nd.privateIncome.illicitRisk === 'high') {
-          nodesDivs += '<span style="color:var(--amber-400);">\u80A5\u7F3A</span>';
-        } else if (nd.privateIncome && nd.privateIncome.illicitRisk === 'low') {
-          nodesDivs += '<span style="color:var(--celadon-400);">\u6E05\u8981</span>';
-        }
-        nodesDivs += '</div>';
-      }
-      if (_lastEval) {
-        nodesDivs += '<div style="margin-top:2px;border-top:1px solid var(--color-border-subtle);padding-top:2px;">\u8003\u8BC4\uFF08' + escHtml(_lastEval.evaluator||'') + '\uFF09\uFF1A<span style="color:var(--gold-400);">' + escHtml(_lastEval.grade||'') + '</span> ' + escHtml(_lastEval.comment||'') + '</div>';
-      }
-      if (nd._history && nd._history.length > 0) {
-        nodesDivs += '<div style="margin-top:2px;border-top:1px solid var(--color-border-subtle);padding-top:2px;">\u5386\u4EFB\uFF1A' + nd._history.map(function(h){ return escHtml(h.holder||'?'); }).join(' → ') + '</div>';
-      }
-      if (nd.holder) {
-        nodesDivs += '<div style="margin-top:4px;text-align:right;"><button class="bt bsm" style="font-size:0.6rem;" onclick="event.stopPropagation();if(typeof showCharPopup===\'function\')showCharPopup(\'' + escHtml(nd.holder).replace(/'/g,"\\'") + '\',event)">\u67E5\u770B\u4EBA\u7269</button></div>';
-      }
-      nodesDivs += '</div>';
-
+      nodesDivs += _ogRenderPosCard(fi, i, NW, cardH);
     } else {
-      // ── Department card ──
-      var isEmperor = fi.depth === 0;
-      var isRoot1 = fi.depth === 1;
-      var borderC = isEmperor ? 'var(--gold-500)' : (isRoot1 ? 'var(--gold-400)' : 'var(--color-border-subtle)');
-      var headerBg = isEmperor ? 'rgba(184,154,83,0.1)' : (isRoot1 ? 'rgba(184,154,83,0.05)' : 'var(--color-surface)');
-      var nameClr = isEmperor ? 'var(--gold-400)' : (isRoot1 ? 'var(--color-primary)' : 'var(--color-foreground-secondary)');
-      var bw = isEmperor ? '2px' : '1px';
-
-      var psCount = (nd.positions || []).length;
-      var subCount = (nd.subs || []).length;
-      var vacCount = (nd.positions||[]).filter(function(p){return !p.holder;}).length;
-      var canCollapse = (psCount + subCount > 0) && !isEmperor;
-      var isCollapsed4 = fi.collapsed;
-      var colBtn = canCollapse
-        ? '<button class="bt" style="font-size:8px;padding:0 3px;line-height:15px;margin-left:2px;" onclick="GM._officeCollapsed[JSON.stringify(' + pathStr + ')]=!GM._officeCollapsed[JSON.stringify(' + pathStr + ')];renderOfficeTree();">' + (isCollapsed4 ? '\u25BC' : '\u25B2') + '</button>'
-        : '';
-
-      nodesDivs += '<div style="position:absolute;left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + NW + 'px;box-sizing:border-box;border:' + bw + ' solid ' + borderC + ';border-radius:6px;background:var(--color-surface);overflow:hidden;box-shadow:var(--shadow-sm);">';
-      nodesDivs += '<div style="display:flex;align-items:center;gap:2px;padding:3px 4px;background:' + headerBg + ';border-bottom:1px solid ' + borderC + ';">';
-      nodesDivs += '<span style="flex:1;font-size:11px;font-weight:bold;color:' + nameClr + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(nd.name||'?') + '</span>';
-      if (vacCount > 0 && !isEmperor) nodesDivs += '<span style="font-size:8px;color:var(--vermillion-400);">\u7F3A' + vacCount + '</span>';
-      // 部门实权指标（基于在任者能力+品级）
-      if (!isEmperor && psCount > 0) {
-        var _deptPower = 0;
-        (nd.positions||[]).forEach(function(p) {
-          if (p.holder) {
-            var _pc = findCharByName(p.holder);
-            var _rl = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 10;
-            _deptPower += (_pc ? ((_pc.intelligence||50)+(_pc.administration||50))/2 : 30) + (18 - _rl) * 3;
-          }
-        });
-        _deptPower = Math.round(_deptPower / Math.max(1, psCount));
-        var _pwClr = _deptPower > 70 ? 'var(--gold-400)' : _deptPower > 45 ? 'var(--celadon-400)' : 'var(--ink-300)';
-        nodesDivs += '<span style="font-size:7px;color:' + _pwClr + ';margin-left:2px;" title="\u90E8\u95E8\u5B9E\u6743\u6307\u6570">\u2B50' + _deptPower + '</span>';
-      }
-      nodesDivs += colBtn;
-      nodesDivs += '</div>';
-      // 职能标签 + 操作按钮行
-      if (!isEmperor) {
-        nodesDivs += '<div style="display:flex;align-items:center;gap:2px;padding:1px 4px;flex-wrap:wrap;">';
-        if (nd.functions && nd.functions.length > 0) {
-          nd.functions.forEach(function(f) { nodesDivs += '<span style="font-size:8px;color:var(--gold-400);">' + escHtml(f) + '</span>'; });
-        }
-        var _safeDeptName = escHtml(nd.name||'').replace(/'/g,"\\'");
-        nodesDivs += '<span style="margin-left:auto;display:flex;gap:1px;">';
-        nodesDivs += '<button class="bt" style="font-size:7px;padding:0 2px;line-height:13px;" onclick="event.stopPropagation();_offReformToEdict(\'add_pos\',\'' + _safeDeptName + '\')" title="\u589E\u8BBE\u5B98\u804C">+\u5B98</button>';
-        nodesDivs += '<button class="bt" style="font-size:7px;padding:0 2px;line-height:13px;" onclick="event.stopPropagation();_offReformToEdict(\'add_sub\',\'' + _safeDeptName + '\')" title="\u589E\u8BBE\u4E0B\u5C5E\u90E8\u95E8">+\u5C40</button>';
-        nodesDivs += '<button class="bt" style="font-size:7px;padding:0 2px;line-height:13px;color:var(--vermillion-400);" onclick="event.stopPropagation();_offReformToEdict(\'abolish\',\'' + _safeDeptName + '\')" title="\u88C1\u6492\u6B64\u90E8\u95E8">\u88C1</button>';
-        nodesDivs += '<button class="bt" style="font-size:7px;padding:0 2px;line-height:13px;" onclick="event.stopPropagation();_offReformToEdict(\'rename\',\'' + _safeDeptName + '\')" title="\u90E8\u95E8\u6539\u540D">\u6539</button>';
-        nodesDivs += '</span>';
-        nodesDivs += '</div>';
-      }
-      nodesDivs += '</div>';
+      nodesDivs += _ogRenderDeptCard(fi, i, NW, cardH, pathStr);
     }
   }
 
@@ -4947,8 +5075,9 @@ function _renderOfficeTreeSVG(container) {
   var canvasId = 'office-tree-canvas-game';
 
   container.innerHTML =
-    '<div id="' + wrapperId + '" style="overflow:hidden;border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);background:var(--color-sunken);position:relative;height:480px;cursor:grab;">'
-    + '<div id="' + canvasId + '" style="position:absolute;transform-origin:0 0;left:0;top:0;width:' + cw + 'px;height:' + ch + 'px;">'
+    '<div id="' + wrapperId + '" class="og-tree-frame" style="height:620px;">'
+    + '<div class="og-tree-hint">\u25C9 \u9F20 \u8F6E \u7F29 \u653E<span class="sep">\u00B7</span>\u957F \u6309 \u62D6 \u52A8<span class="sep">\u00B7</span>\u70B9 \u51FB \u5C55 \u5F00 \u8BE6 \u60C5</div>'
+    + '<div id="' + canvasId + '" class="og-tree-canvas" style="width:' + cw + 'px;height:' + ch + 'px;">'
     + '<svg style="position:absolute;top:0;left:0;pointer-events:none;" width="' + cw + '" height="' + ch + '">' + svgLines + '</svg>'
     + nodesDivs
     + '</div></div>';
@@ -4987,17 +5116,18 @@ function _renderOfficeTreeSVG(container) {
   })();
 }
 
-/** 部门效能摘要 */
+/** 部门效能摘要·v2 三栏 + 预警条 */
 function _renderOfficeSummary() {
   var el = _$('office-summary'); if (!el) return;
   var treeStats = typeof _offTreeStats === 'function' ? _offTreeStats(GM.officeTree) : { headCount:0, actualCount:0, materialized:0, depts:0 };
   var totalDepts = treeStats.depts;
-  var totalPos = treeStats.headCount;  // 编制总数
-  var actualCount = treeStats.actualCount; // 实有总数
-  var materialized = treeStats.materialized; // 具象总数
-  var vacantPos = totalPos - actualCount;  // 缺员
-  var unmaterialized = actualCount - materialized; // 未具象
-  // 俸禄按实有人数计算（不是按具象人数）
+  var totalPos = treeStats.headCount;
+  var actualCount = treeStats.actualCount;
+  var materialized = treeStats.materialized;
+  var vacantPos = totalPos - actualCount;
+  var unmaterialized = actualCount - materialized;
+
+  // 俸禄
   var theoryCost = 0, actualCost = 0;
   if (P.officeConfig && P.officeConfig.costVariables) {
     P.officeConfig.costVariables.forEach(function(cv) {
@@ -5005,16 +5135,18 @@ function _renderOfficeSummary() {
       actualCost += (totalDepts * (cv.perDept||0)) + (actualCount * (cv.perOfficial||0));
     });
   }
-  // 派系控制统计
+
+  // 派系控制
   var factionMap = {};
   (function _fcs(nodes) {
     nodes.forEach(function(n) {
       (n.positions||[]).forEach(function(p) {
         if (p.holder) {
           var _fc = findCharByName(p.holder);
-          if (_fc && _fc.faction) {
-            if (!factionMap[_fc.faction]) factionMap[_fc.faction] = 0;
-            factionMap[_fc.faction]++;
+          var _k = _fc && (_fc.party || _fc.faction);
+          if (_k && _k !== '\u671D\u5EF7') {
+            if (!factionMap[_k]) factionMap[_k] = 0;
+            factionMap[_k]++;
           }
         }
       });
@@ -5022,41 +5154,131 @@ function _renderOfficeSummary() {
     });
   })(GM.officeTree||[]);
   var facEntries = Object.keys(factionMap).sort(function(a,b){ return factionMap[b] - factionMap[a]; });
+  var _facColors = {};
+  (GM.facs||[]).forEach(function(f) { if (f.color) _facColors[f.name] = f.color; });
+  (GM.parties||[]).forEach(function(f) { if (f.color) _facColors[f.name] = f.color; });
+  var _defaultFac = ['#6a9a7f','#5a6fa8','#c9a045','#8e6aa8','#b89a53','#d15c47','#5a8fb8'];
+  var _totalFilled = facEntries.reduce(function(s,k){return s+factionMap[k];},0);
 
+  // ───── 三栏摘要 ─────
   var html = '';
-  // 基本统计
-  html += '<div style="font-size:0.7rem;padding:var(--space-2) var(--space-3);background:var(--color-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);flex:1;min-width:180px;">';
-  html += '<span style="color:var(--gold-400);">\u90E8\u95E8 ' + totalDepts + '</span>';
-  html += ' · <span style="color:var(--celadon-400);">\u7F16\u5236' + totalPos + ' \u5B9E\u6709' + actualCount + ' \u5177\u8C61' + materialized + '</span>';
-  if (vacantPos > 0) html += ' <span style="color:var(--vermillion-400);">(\u7F3A' + vacantPos + ')</span>';
-  if (unmaterialized > 0) html += ' <span style="color:var(--ink-300);">(\u672A\u5177\u8C61' + unmaterialized + ')</span>';
-  if (actualCost > 0) html += ' · <span style="color:var(--amber-400);">\u4FF8\u7984 ' + Math.round(actualCost) + '/' + Math.round(theoryCost) + '</span>';
+
+  // 卡1：编制·实有·具象·缺员
+  html += '<div class="og-summary-card c-count">';
+  html += '<div class="og-sc-label">\u7F16\u5236\u00B7\u5B9E\u6709\u00B7\u5177\u8C61</div>';
+  html += '<div class="og-cnt-row">';
+  html += '<div class="og-cnt-box"><div class="og-cnt-num good">' + totalDepts + '</div><div class="og-cnt-lbl">\u90E8\u95E8</div></div>';
+  html += '<div class="og-cnt-box"><div class="og-cnt-num mid">' + totalPos + '</div><div class="og-cnt-lbl">\u7F16\u5236</div></div>';
+  html += '<div class="og-cnt-box"><div class="og-cnt-num ' + (vacantPos===0?'good':'mid') + '">' + actualCount + '</div><div class="og-cnt-lbl">\u5B9E\u6709</div></div>';
+  html += '<div class="og-cnt-box"><div class="og-cnt-num">' + materialized + '</div><div class="og-cnt-lbl">\u5177\u8C61</div></div>';
+  if (vacantPos > 0) html += '<div class="og-cnt-box"><div class="og-cnt-num warn">' + vacantPos + '</div><div class="og-cnt-lbl">\u7F3A\u5458</div></div>';
   html += '</div>';
-  // 权力格局——派系控制分布
+  html += '</div>';
+
+  // 卡2：权力格局
+  html += '<div class="og-summary-card c-power">';
+  html += '<div class="og-sc-label">\u6743 \u529B \u683C \u5C40</div>';
   if (facEntries.length > 0) {
-    var _filled = totalPos - vacantPos;
-    html += '<div style="font-size:0.7rem;padding:var(--space-2) var(--space-3);background:var(--color-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);flex:1;min-width:220px;">';
-    html += '<div style="font-size:0.65rem;color:var(--gold-400);margin-bottom:3px;font-weight:var(--weight-bold);">\u6743\u529B\u683C\u5C40</div>';
-    // 条形图
-    html += '<div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">';
-    var _facColors = {};
-    (GM.facs||[]).forEach(function(f) { if (f.color) _facColors[f.name] = f.color; });
-    facEntries.forEach(function(fk) {
-      var pct = Math.round(factionMap[fk] / Math.max(1, _filled) * 100);
-      var clr = _facColors[fk] || 'var(--ink-300)';
-      html += '<div style="width:' + pct + '%;background:' + clr + ';min-width:3px;" title="' + escHtml(fk) + ' ' + factionMap[fk] + '\u4EBA(' + pct + '%)"></div>';
+    html += '<div class="og-fac-bar">';
+    facEntries.forEach(function(fk, i) {
+      var pct = Math.round(factionMap[fk] / Math.max(1, _totalFilled + vacantPos) * 100);
+      var clr = _facColors[fk] || _defaultFac[i % _defaultFac.length];
+      html += '<div style="width:' + pct + '%;background:' + clr + ';" title="' + escHtml(fk) + ' ' + factionMap[fk] + '\u4EBA"></div>';
     });
-    if (vacantPos > 0) html += '<div style="width:' + Math.round(vacantPos/totalPos*100) + '%;background:var(--color-border-subtle);" title="\u7A7A\u7F3A"></div>';
+    if (vacantPos > 0) {
+      var vpct = Math.round(vacantPos / Math.max(1, _totalFilled + vacantPos) * 100);
+      html += '<div style="width:' + vpct + '%;background:rgba(107,93,71,0.5);" title="\u7A7A\u7F3A ' + vacantPos + '\u4EBA"></div>';
+    }
     html += '</div>';
-    // 图例
-    html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
-    facEntries.forEach(function(fk) {
-      var clr = _facColors[fk] || 'var(--ink-300)';
-      html += '<span style="font-size:0.6rem;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + clr + ';vertical-align:middle;margin-right:2px;"></span>' + escHtml(fk) + ' ' + factionMap[fk] + '</span>';
+    html += '<div class="og-fac-legend">';
+    facEntries.forEach(function(fk, i) {
+      var clr = _facColors[fk] || _defaultFac[i % _defaultFac.length];
+      html += '<span class="og-fac-chip"><span class="sw" style="background:' + clr + ';"></span>' + escHtml(fk) + ' ' + factionMap[fk] + '</span>';
     });
-    html += '</div></div>';
+    if (vacantPos > 0) {
+      html += '<span class="og-fac-chip"><span class="sw" style="background:rgba(107,93,71,0.5);"></span>\u7A7A\u7F3A ' + vacantPos + '</span>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div style="color:var(--ink-300);font-size:11px;font-style:italic;padding:4px 0;">\u672A\u52BF\u4E4B\u5C40\u00B7\u767E\u5B98\u5404\u5C45\u5176\u4F4D</div>';
   }
+  html += '</div>';
+
+  // 卡3：岁俸
+  html += '<div class="og-summary-card c-cost">';
+  html += '<div class="og-sc-label">\u5C81 \u4FF8 \u5F00 \u652F</div>';
+  if (actualCost > 0 || theoryCost > 0) {
+    html += '<div class="og-cost-main">' + (Math.round(actualCost)).toLocaleString() + ' <span class="unit">\u4E24/\u5C81</span></div>';
+    if (theoryCost > actualCost) {
+      html += '<div class="og-cost-theory">\u7F16\u5236\u5168\u5458\u5E94\u652F <span class="v">' + (Math.round(theoryCost)).toLocaleString() + ' \u4E24</span> \u00B7 \u5DEE\u989D ' + (Math.round(theoryCost - actualCost)).toLocaleString() + ' \u4E24\uFF08\u7CFB\u7F3A\u5458\u8282\u4F59\uFF09</div>';
+    } else {
+      html += '<div class="og-cost-theory">\u4F9D\u7F16\u5236\u8DB3\u989D\u652F\u7ED9</div>';
+    }
+  } else {
+    html += '<div style="color:var(--ink-300);font-size:11px;font-style:italic;padding:4px 0;">\u672A\u914D\u7F6E\u4FF8\u7984\u89C4\u5219</div>';
+  }
+  html += '</div>';
+
   el.innerHTML = html;
+
+  // ───── 预警条 ─────
+  var alertEl = _$('office-alerts');
+  if (alertEl) {
+    var alerts = [];
+
+    // 权臣预警：内阁首辅/六部尚书之一，所辖派系 >= 30% 且忠诚 < 60
+    var _powerHolders = [];
+    (function _scan(nodes){
+      nodes.forEach(function(n){
+        (n.positions||[]).forEach(function(p){
+          if (!p.holder) return;
+          var _rl = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 99;
+          if (_rl > 3) return;
+          var _pc = findCharByName(p.holder);
+          if (!_pc) return;
+          var _pkey = _pc.party || _pc.faction;
+          var _samePartyCnt = _pkey ? (factionMap[_pkey]||0) : 0;
+          if (_samePartyCnt >= Math.max(4, _totalFilled * 0.25) && (_pc.loyalty||50) < 60) {
+            _powerHolders.push({name: p.holder, pos: p.name, dept: n.name, partyCnt: _samePartyCnt, power: Math.round(((_pc.intelligence||50)+(_pc.administration||50))/2 + 20)});
+          }
+        });
+        if (n.subs) _scan(n.subs);
+      });
+    })(GM.officeTree||[]);
+    if (_powerHolders.length > 0) {
+      _powerHolders.sort(function(a,b){return b.power - a.power;});
+      var ph = _powerHolders[0];
+      alerts.push({type:'danger', ic:'\u8B66', lbl:'\u6743\u81E3\u9884\u8B66\uFF1A', txt:escHtml(ph.name) + '\u00B7' + escHtml(ph.pos) + '\u00B7\u6240\u5C5E\u6D3E\u7CFB\u5C45<strong>' + ph.partyCnt + '</strong>\u804C\u00B7\u5B9E\u6743\u6307\u6570<strong>' + ph.power + '</strong>\u00B7\u6050\u6709\u4E13\u6743\u4E4B\u865E'});
+    }
+
+    // 职位空缺
+    if (vacantPos > 0) {
+      var _vacNames = [];
+      (function _vscan(nodes){
+        nodes.forEach(function(n){
+          (n.positions||[]).forEach(function(p){
+            if (!p.holder && _vacNames.length < 5) _vacNames.push(escHtml(n.name||'') + '\u00B7' + escHtml(p.name||''));
+          });
+          if (n.subs) _vscan(n.subs);
+        });
+      })(GM.officeTree||[]);
+      alerts.push({type:'warn', ic:'\u7F3A', lbl:'\u804C\u4F4D\u7A7A\u7F3A\uFF1A', txt:_vacNames.join('\u3001') + (vacantPos > 5 ? '\u7B49 ' : '\u00B7') + '\u5171 <strong>' + vacantPos + '</strong> \u804C\u5F85\u8865'});
+    }
+
+    // 未具象
+    if (unmaterialized > 0) {
+      alerts.push({type:'info', ic:'\u8865', lbl:'\u5177\u8C61\u5316\uFF1A', txt:'\u5C1A\u6709 <strong>' + unmaterialized + '</strong> \u804C\u4E3A\u540D\u5B57\u5360\u4F4D\u00B7\u9700\u4ECE\u6709\u53F8\u9012\u8865\u5177\u4F53\u4EBA\u7269'});
+    }
+
+    if (alerts.length > 0) {
+      alertEl.innerHTML = alerts.map(function(a){
+        var cls = a.type === 'warn' ? ' warn' : a.type === 'info' ? ' info' : '';
+        return '<div class="og-alert' + cls + '"><div class="ic">' + a.ic + '</div><div><span class="lbl">' + a.lbl + '</span><span class="txt">' + a.txt + '</span></div></div>';
+      }).join('');
+    } else {
+      alertEl.innerHTML = '';
+    }
+  }
 }
 
 /** 荐贤——显示候选人列表，选择后写入诏令建议库 */

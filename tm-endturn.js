@@ -13396,7 +13396,7 @@ function _sjlDownload(txt){
   var a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
   a.download='shiji_'+(GM.saveName||'export')+'.txt';a.click();toast('已导出');
 }
-var _qijuPage=0,_qijuKw='',_qijuCat='all',_qijuPageSize=15,_qijuAnnotOnly=false;
+var _qijuPage=0,_qijuKw='',_qijuCat='all',_qijuPageSize=15,_qijuAnnotOnly=false,_qijuSort='recent',_qijuCollapseNarr=false;
 
 /** 统一获取起居注条目的显示文本和类别 */
 function _qijuNormalize(r) {
@@ -13515,7 +13515,16 @@ function renderQiju(){
     var k = _qijuCatKey(n.cat);
     _byTurn[tk].tally[k] = (_byTurn[tk].tally[k]||0) + 1;
   });
-  var _turns = Object.keys(_byTurn).sort(function(a,b) { return b - a; });
+  var _turns = Object.keys(_byTurn).sort(function(a,b) {
+    if (_qijuSort === 'old') return a - b;
+    if (_qijuSort === 'annot') {
+      var annotA = _byTurn[a].items.some(function(i){return i.annotation;}) ? 1 : 0;
+      var annotB = _byTurn[b].items.some(function(i){return i.annotation;}) ? 1 : 0;
+      if (annotA !== annotB) return annotB - annotA;
+      return b - a;
+    }
+    return b - a;
+  });
 
   // 分页（按回合组）
   var total = _turns.length;
@@ -13532,7 +13541,7 @@ function renderQiju(){
     pageTurns.forEach(function(tk, idx) {
       var group = _byTurn[tk];
       var _firstCls = (idx === 0 && _qijuPage === 0) ? ' first' : '';
-      h += '<div class="qj-day'+_firstCls+'" data-turn="' + (tk ? '#'+tk : '?') + '">';
+      h += '<div class="qj-day'+_firstCls+'" data-turn="' + (tk || '?') + '">';
       // 日卷头
       h += '<div class="qj-day-hdr">';
       h += '<div class="qj-day-title">\u7B2C ' + escHtml(String(tk||'?')) + ' \u56DE\u5408</div>';
@@ -13558,9 +13567,17 @@ function renderQiju(){
         if (n.date) h += '<span class="qj-rec-time">' + escHtml(n.date) + '</span>';
         h += '<div class="qj-rec-actions">';
         h += '<button class="qj-rec-btn annot" onclick="_qijuAnnotate(' + _ridx + ')">\u5FA1 \u6279</button>';
+        h += '<button class="qj-rec-btn zoom" onclick="_qijuZoom(' + _ridx + ')">\u5C55 \u9605</button>';
         h += '</div>';
         h += '</div>';
-        h += '<div class="qj-rec-text wd-selectable">' + _qijuHighlight(n.text) + '</div>';
+        // 叙事折叠
+        var _isNarr = (n.cat === '\u53D9\u4E8B');
+        if (_qijuCollapseNarr && _isNarr) {
+          var _brief = (n.text||'').length > 60 ? n.text.substring(0, 60) + '\u2026' : n.text;
+          h += '<div class="qj-rec-text wd-selectable" style="opacity:0.75;">' + _qijuHighlight(_brief) + '</div>';
+        } else {
+          h += '<div class="qj-rec-text wd-selectable">' + _qijuHighlight(n.text) + '</div>';
+        }
         if (n.annotation) h += '<div class="qj-annot">' + escHtml(n.annotation) + '</div>';
         h += '</div>';
       });
@@ -13587,6 +13604,28 @@ function _qijuAnnotate(idx) {
     GM.qijuHistory[idx]._annotation = text;
     renderQiju();
   });
+}
+
+/** 展阅——完整展示条目 */
+function _qijuZoom(idx) {
+  if (idx < 0 || !GM.qijuHistory || !GM.qijuHistory[idx]) return;
+  var r = GM.qijuHistory[idx];
+  var n = _qijuNormalize(r);
+  var dt = r.time || r.date || (typeof getTSText==='function'?getTSText(r.turn):'T'+(r.turn||'?'));
+  var _cls = _qijuCatClass(n.cat);
+  var html = '<div class="modal-bg show" id="_qijuZoomModal" onclick="if(event.target===this)this.remove()">';
+  html += '<div class="modal-box" style="max-width:640px;">';
+  html += '<h3 style="color:var(--gold-300);margin:0 0 0.4rem;letter-spacing:0.12em;">\u3010' + escHtml(n.cat) + '\u3011\u7B2C' + (r.turn||'?') + '\u56DE\u5408</h3>';
+  html += '<div style="font-size:0.82rem;color:var(--ink-500,#a69470);font-style:italic;letter-spacing:0.08em;margin-bottom:0.8rem;">' + escHtml(dt) + '</div>';
+  html += '<div class="qj-rec ' + _cls + '" style="padding:10px 14px;">';
+  html += '<div class="qj-rec-text" style="font-size:14.5px;line-height:2;">' + _qijuHighlight(n.text) + '</div>';
+  if (r._annotation) html += '<div class="qj-annot">' + escHtml(r._annotation) + '</div>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:6px;margin-top:0.8rem;justify-content:flex-end;">';
+  html += '<button class="bt bsm" onclick="_qijuAnnotate(' + idx + ');var m=document.getElementById(\'_qijuZoomModal\');if(m)m.remove();">\u5FA1 \u6279</button>';
+  html += '<button class="bt bs" onclick="var m=document.getElementById(\'_qijuZoomModal\');if(m)m.remove();">\u5173 \u95ED</button>';
+  html += '</div></div></div>';
+  var tmp = document.createElement('div'); tmp.innerHTML = html; document.body.appendChild(tmp.firstChild);
 }
 
 function _qijuExport(){

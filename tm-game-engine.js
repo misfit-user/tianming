@@ -1684,8 +1684,9 @@ function renderWenyuan() {
     html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'appreciate\')">\u8D4F \u6790</button>';
     html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'inscribe\')">\u9898 \u5E8F</button>';
     html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'echo\')">\u8FFD \u548C</button>';
-    html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'circulate\')">\u4F20 \u6284</button>';
+    if (!w.isForbidden) html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'circulate\')">\u4F20 \u6284</button>';
     if (!w.isForbidden) html += '<button class="wy-btn danger" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'ban\')">\u67E5 \u7981</button>';
+    else html += '<button class="wy-btn" onclick="event.stopPropagation();_workAction(' + _realIdx + ',\'unban\')">\u89E3 \u7981</button>';
     html += '<button class="wy-btn primary" onclick="event.stopPropagation();_showWorkDetail(' + _realIdx + ')">\u8BE6 \u60C5</button>';
     html += '</div>';
     html += '</div>'; // main-col
@@ -1745,6 +1746,7 @@ function _workAction(idx, action) {
   else if (action === 'echo') content = '命 ' + w.author + ' 或朝中文臣追和《' + w.title + '》——再作一篇次韵酬答';
   else if (action === 'circulate') content = '将 ' + w.author + '《' + w.title + '》传抄行世，刻本广布';
   else if (action === 'ban') content = '查禁 ' + w.author + '《' + w.title + '》——此作' + (w.politicalImplication ? '有' + w.politicalImplication + '之嫌，' : '') + '不宜流布';
+  else if (action === 'unban') content = '解禁 ' + w.author + '《' + w.title + '》——准其重新流布，刊本发还';
   if (content) {
     GM._edictSuggestions.push({ source: '\u6587\u4E8B', from: w.author, content: content, turn: GM.turn, used: false });
     toast('已录入诏令建议库');
@@ -5370,7 +5372,9 @@ function renderGameState(){
     +'<div class="qj-search-wrap"><input id="qj-search" class="qj-search" placeholder="\u641C\u7D22\u8D77\u5C45\u6CE8\u00B7\u65E5\u671F\u00B7\u4EBA\u540D\u2026" oninput="_qijuKw=this.value;_qijuPage=0;renderQiju()"></div>'
     +'<select id="qj-cat-filter" class="qj-filter" onchange="_qijuCat=this.value;_qijuPage=0;renderQiju()">'
     +'<option value="all">\u5168\u90E8\u7C7B\u522B</option><option value="\u8BCF\u4EE4">\u8BCF\u4EE4</option><option value="\u594F\u758F">\u594F\u758F</option><option value="\u671D\u8BAE">\u671D\u8BAE</option><option value="\u9E3F\u96C1">\u9E3F\u96C1</option><option value="\u4EBA\u4E8B">\u4EBA\u4E8B</option><option value="\u884C\u6B62">\u884C\u6B62</option><option value="\u53D9\u4E8B">\u53D9\u4E8B</option></select>'
+    +'<select id="qj-sort" class="qj-filter" onchange="_qijuSort=this.value;_qijuPage=0;renderQiju()"><option value="recent">\u6392\uFF1A\u8FD1\u65E5 \u2193</option><option value="old">\u6392\uFF1A\u65E7\u65E5 \u2191</option><option value="annot">\u6392\uFF1A\u5FA1\u6279\u5148</option></select>'
     +'<label class="qj-chk"><input type="checkbox" id="qj-annot-only" onchange="_qijuAnnotOnly=this.checked;_qijuPage=0;renderQiju()">\u4EC5\u5FA1\u6279</label>'
+    +'<label class="qj-chk"><input type="checkbox" id="qj-collapse-narr" onchange="_qijuCollapseNarr=this.checked;renderQiju()">\u6298\u53E0\u53D9\u4E8B</label>'
     +'<button class="qj-export" onclick="_qijuExport()">\u5BFC \u51FA \u7F16 \u5E74</button>'
     +'</div>'
     +'<div id="qj-legend" class="qj-legend"></div>'

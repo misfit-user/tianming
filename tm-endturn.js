@@ -5552,6 +5552,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         {id:'sc05', name:'记忆回顾', minDepth:'standard', order:5},
         {id:'sc1', name:'结构化数据', minDepth:'lite', order:100},
         {id:'sc1b', name:'文事鸿雁人际', minDepth:'lite', order:110},
+        {id:'sc1c', name:'势力外交·NPC阴谋', minDepth:'lite', order:120},
         {id:'sc15', name:'NPC深度', minDepth:'standard', order:150},
         {id:'sc16', name:'势力推演', minDepth:'full', order:160},
         {id:'sc17', name:'经济财政', minDepth:'full', order:170},
@@ -6324,6 +6325,182 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       } catch(_sc1bErr) {
         console.warn('[sc1b] \u5931\u8D25\uFF08\u4E0D\u5F71\u54CD\u4E3B\u6D41\u7A0B\uFF09:', _sc1bErr.message || _sc1bErr);
+      }
+
+      // ═══ Sub-call 1c · 势力 & NPC 自主博弈专项（独立预算 8k，丰富势力外交+NPC 阴谋）═══
+      try {
+        var _sc1cStart = Date.now();
+        showLoading('\u52BF\u529B\u5916\u4EA4\u00B7NPC\u9634\u8C0B\u63A8\u6F14', 59);
+
+        var _facsBriefC = '';
+        try {
+          var _liveFacsC = (GM.facs||[]).filter(function(f){return f && !f.isPlayer;});
+          _facsBriefC = _liveFacsC.slice(0,14).map(function(f){
+            var _p = f.name + ' \u5B9E' + (f.strength||50);
+            if (f.leader) _p += ' \u9996:' + f.leader;
+            if (f.attitude) _p += ' \u6001:' + f.attitude;
+            if (f.goal) _p += ' \u76EE:' + String(f.goal).slice(0,30);
+            if (f.culture) _p += ' [' + f.culture + ']';
+            if (f.mainstream) _p += '\u00B7' + f.mainstream;
+            if (f.type) _p += '\u00B7' + f.type;
+            return _p;
+          }).join('\n');
+        } catch(_e){}
+
+        var _relsBriefC = '';
+        try {
+          if (Array.isArray(GM.factionRelations)) {
+            _relsBriefC = GM.factionRelations.slice(0,18).map(function(r){
+              var s = r.from + '\u2192' + r.to + ' ' + (r.type||'?');
+              if (r.value !== undefined) s += '(' + r.value + ')';
+              if (r.trust !== undefined) s += ' \u4FE1' + r.trust;
+              if (r.hostility !== undefined) s += ' \u654C' + r.hostility;
+              if (r.economicTies !== undefined) s += ' \u7ECF' + r.economicTies;
+              if (r.kinshipTies !== undefined) s += ' \u4EB2' + r.kinshipTies;
+              return s;
+            }).join('\n');
+          }
+        } catch(_e){}
+
+        var _npcsBriefC = '';
+        try {
+          var _liveNpcsC = (GM.chars||[]).filter(function(c){return c && c.alive!==false && !c.isPlayer;});
+          _liveNpcsC.sort(function(a,b){return (a.rank||99)-(b.rank||99);});
+          _npcsBriefC = _liveNpcsC.slice(0,20).map(function(c){
+            var _p = c.name;
+            if (c.officialTitle) _p += '\u00B7' + c.officialTitle;
+            if (c.faction) _p += '[' + c.faction + ']';
+            if (c.party) _p += '{' + c.party + '}';
+            _p += ' \u5FE0' + (c.loyalty||50) + '\u00B7\u5FD7' + (c.ambition||50) + '\u00B7\u5EC9' + (c.integrity||50);
+            if (Array.isArray(c.traits) && c.traits.length) _p += ' \u7279{' + c.traits.slice(0,2).join(',') + '}';
+            return _p;
+          }).join('\n');
+        } catch(_e){}
+
+        var _undercurrentsC = '';
+        if (Array.isArray(GM._factionUndercurrents) && GM._factionUndercurrents.length > 0) {
+          _undercurrentsC = GM._factionUndercurrents.slice(0,8).map(function(u){
+            return (u.faction||'?') + ': ' + (u.situation||'') + (u.nextMove?' (\u53EF\u80FD:'+u.nextMove+')':'');
+          }).join('\n');
+        }
+
+        var _activeSchemesC = '';
+        if (Array.isArray(GM.activeSchemes) && GM.activeSchemes.length > 0) {
+          _activeSchemesC = GM.activeSchemes.slice(-8).map(function(s){
+            return (s.schemer||'?') + ' \u9488\u5BF9 ' + (s.target||'?') + ': ' + String(s.plan||'').slice(0,40) + ' [' + (s.progress||'') + ']';
+          }).join('\n');
+        }
+
+        var _recentSZJC = (p1 && p1.shizhengji) ? String(p1.shizhengji).slice(0,1200) : '';
+        var _pNameC = (P.playerInfo && P.playerInfo.characterName) || '';
+
+        var tp1c = '\u3010\u52BF\u529B\u5916\u4EA4\u00B7NPC\u9634\u8C0B\u00B7\u4E13\u9879\u63A8\u6F14\u3011\n';
+        tp1c += '\u672C\u56DE\u5408\uFF1A' + (GM.turn||1) + ' \u00B7 ' + (typeof getTSText==='function'?getTSText(GM.turn):'') + '\n';
+        if (_recentSZJC) tp1c += '\n\u3010\u672C\u56DE\u5408\u65F6\u653F\u3011\n' + _recentSZJC + '\n';
+        if (_facsBriefC) tp1c += '\n\u3010\u975E\u73A9\u5BB6\u52BF\u529B\u3011\n' + _facsBriefC + '\n';
+        if (_relsBriefC) tp1c += '\n\u3010\u52BF\u529B\u5173\u7CFB\u5FEB\u7167\u3011\n' + _relsBriefC + '\n';
+        if (_undercurrentsC) tp1c += '\n\u3010\u4E0A\u56DE\u5408\u52BF\u529B\u6697\u6D41\uFF08\u5E94\u6709\u540E\u7EED\uFF09\u3011\n' + _undercurrentsC + '\n';
+        if (_activeSchemesC) tp1c += '\n\u3010\u8FDB\u884C\u4E2D\u9634\u8C0B\uFF08\u901A\u8FC7 scheme_actions \u63A8\u8FDB\uFF0C\u4E0D\u8981\u5728 npc_schemes \u91CD\u590D\uFF09\u3011\n' + _activeSchemesC + '\n';
+        if (_npcsBriefC) tp1c += '\n\u3010\u4E3B\u8981 NPC\uFF08\u542B\u5B98\u804C/\u6D3E\u7CFB/\u5FE0\u5FD7\u5EC9/\u7279\u8D28\uFF09\u3011\n' + _npcsBriefC + '\n';
+
+        tp1c += '\n\u3010\u4EFB\u52A1\u3011\u751F\u6210\u4EE5\u4E0B\u4E03\u7C7B\u5185\u5BB9\uFF0C\u8FD4\u56DE\u4E25\u683C JSON\uFF08\u4EC5\u5305\u542B\u8FD9\u4E9B\u5B57\u6BB5\uFF09\uFF1A\n\n';
+
+        tp1c += '\u25C6 faction_interactions_advanced\uFF08\u52BF\u529B\u6DF1\u5EA6\u4E92\u52A8\u00B7\u5E38\u6001 3-6 \u6761\uFF0C\u5916\u4EA4\u6D3B\u8DC3\u671F 6-10 \u6761\uFF09\u2014\u2014\n';
+        tp1c += '  23 \u79CD type\uFF1A\n';
+        tp1c += '    \u6218\u4E89\uFF1Adeclare_war\u5BA3\u6218/border_clash\u8FB9\u5883\u51B2\u7A81/sue_for_peace\u8BF7\u548C/annex_vassal\u5E76\u541E\n';
+        tp1c += '    \u548C\u5E73\uFF1Asend_envoy\u9063\u4F7F/form_confederation\u7ED3\u76DF/break_confederation\u6BC1\u7EA6/recognize_independence\u627F\u8BA4\u72EC\u7ACB\n';
+        tp1c += '    \u85E9\u5C5E\uFF1Ademand_tribute\u7D22\u8D21/pay_tribute\u732E\u8D21/royal_marriage\u548C\u4EB2/send_hostage\u8D28\u5B50/gift_treasure\u8D60\u5B9D\n';
+        tp1c += '    \u7ECF\u6D4E\uFF1Aopen_market\u4E92\u5E02/trade_embargo\u8D38\u6613\u7981\u8FD0/pay_indemnity\u8D54\u6B3E\n';
+        tp1c += '    \u6587\u5316\uFF1Acultural_exchange\u6587\u5316\u4EA4\u6D41/religious_mission\u5B97\u6559\u4F7F\u8282\n';
+        tp1c += '    \u519B\u4E8B\uFF1Amilitary_aid\u519B\u63F4/proxy_war\u4EE3\u7406\u6218\u4E89/incite_rebellion\u7172\u52A8\u53DB\u4E71\n';
+        tp1c += '    \u60C5\u62A5\uFF1Aspy_infiltration\u7EC6\u4F5C/assassin_dispatch\u523A\u5BA2\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{from, to, type, viaProxy?(proxy_war\u65F6), terms, tributeItems?(tribute\u65F6), marriageDetails?(marriage\u65F6\u2014\u2014"XX\u516C\u4E3B\u5AC1YY\u738B"), hostageDetails?(hostage\u65F6\u2014\u2014"XX\u5B50\u5165\u8D28"), treatyType?(\u76DF\u597D/\u79F0\u81E3/\u505C\u6218/\u4E92\u4E0D\u4FB5\u72AF), description, durationTurns, reason}\n';
+        tp1c += '  \u5386\u53F2\u53C2\u8003\uFF1A\u662D\u541B\u51FA\u585E/\u6587\u6210\u516C\u4E3B\u5165\u85CF(kinshipTies+/hostility-)\uFF1B\u6E05\u521D\u8D28\u5B50(trust+)\uFF1B\u695A\u6C49\u7528\u8BF8\u4FAF\u4EE3\u7406\u6218\u4E89(trust-)\uFF1B\u5BCB\u6E0A\u5C81\u5E01/\u660E\u518C\u5C01\u671D\u9C9C\u7434\u7409\u7403\uFF1B\u5B8B\u8FBD\u6982\u573A/\u660E\u8499\u9A6C\u5E02(economicTies+)\n';
+        tp1c += '  \u4E00\u81F4\u6027\u5F0F\uFF1A\u80CC\u76DF/\u6BC1\u7EA6/\u523A\u6740\u5F71\u54CD\u6DF1\u8FDC\u4E0D\u53EF\u8F7B\u6613"\u548C\u597D"\uFF1B\u548C\u4EB2/\u8D28\u5B50\u8981\u5177\u4F53\u4EBA\u540D\n\n';
+
+        tp1c += '\u25C6 faction_events\uFF08\u52BF\u529B\u95F4/\u5185\u90E8\u4E8B\u4EF6\u00B7\u5E38\u6001 3-6 \u6761\uFF09\u2014\u2014\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{actor, target?(\u5185\u653F\u4E8B\u4EF6\u53EF\u7701), action(30\u5B57), actionType:"\u5916\u4EA4/\u5185\u653F/\u519B\u4E8B/\u7ECF\u6D4E", result(30\u5B57), strength_effect:0, geoData?:{routeKm, terrainDifficulty:0.5, hasOfficialRoad, routeDescription("\u7ECF\u2026\u2026"), passesAndBarriers[], fortLevel, garrison}}\n';
+        tp1c += '  \u519B\u4E8B\u7C7B geoData \u5FC5\u586B\uFF0C\u5176\u4ED6\u7C7B\u53EF\u7701\n\n';
+
+        tp1c += '\u25C6 faction_relation_changes\uFF08\u52BF\u529B\u5173\u7CFB\u53D8\u5316\u00B72-5 \u6761\uFF09\u2014\u2014\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{from, to, type, delta, reason}\n';
+        tp1c += '  \u5173\u7CFB\u516D\u7EF4\uFF1Atrust\u4FE1\u4EFB/hostility\u654C\u610F/economicTies\u7ECF\u6D4E/culturalAffinity\u6587\u5316/kinshipTies\u59FB\u4EB2/territorialDispute\u9886\u571F\uFF1B\u6309\u4E92\u52A8\u5BFC\u81F4\u7684\u7EF4\u5EA6\u66F4\u65B0\n\n';
+
+        tp1c += '\u25C6 faction_succession\uFF08\u52BF\u529B\u7EE7\u627F\u00B7\u4EC5\u5F53\u9996\u9886\u6B7B\u4EA1/\u5931\u5FC3/\u6C11\u53D8\u65F6\u89E6\u53D1\uFF09\u2014\u2014\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{faction, oldLeader, newLeader, legitimacy:70, stability_delta:-10, disputeType:"\u6B63\u5E38\u7EE7\u627F/\u4E89\u4F4D/\u7BE1\u4F4D/\u5185\u6218/\u5916\u621A\u4E13\u653F/\u91CD\u81E3\u63A8\u8F7D", narrative(40\u5B57)}\n\n';
+
+        tp1c += '\u25C6 npc_schemes\uFF08NPC \u9634\u8C0B\u00B7\u65B0\u589E\u9634\u8C0B\u3002\u5E38\u6001 2-4 \u6761\uFF0C\u5F20\u529B\u671F 4-8 \u6761\uFF09\u2014\u2014\n';
+        tp1c += '  \u8DE8\u56DE\u5408\u9634\u8C0B\u2014\u2014\u6743\u81E3\u6392\u6324\u5BF9\u624B\u3001\u5C06\u519B\u6697\u8054\u5916\u90E8\u3001\u6536\u96C6\u53CD\u5BF9\u6D3E\u7F6A\u8BC1\u3001\u6B3E\u586B\u4E00\u8D1D\u3001\u4EA4\u5851\u540E\u5BAB\u3001\u6D41\u8A00\u9020\u52BF\u3001\u540E\u9752\u52FE\u7ED3\u7B49\u957F\u671F\u5E03\u5C40\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{schemer, target, plan(40\u5B57\u63CF\u8FF0), progress:"\u915D\u917F\u4E2D/\u5373\u5C06\u53D1\u52A8/\u957F\u671F\u5E03\u5C40", allies:"\u540C\u8C0B\u8005\uFF08\u4EBA\u540D\u9017\u53F7\u5206\u9694\uFF09"}\n\n';
+
+        tp1c += '\u25C6 scheme_actions\uFF08\u5DF2\u6709\u9634\u8C0B\u63A8\u8FDB\u00B71-3 \u6761\uFF0C\u5BF9\u5E94\u4E0A\u4E00\u56DE\u5408\u9634\u8C0B\uFF09\u2014\u2014\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{schemer, action:"advance\u63A8\u8FDB/disrupt\u7834\u574F/abort\u4E2D\u6B62/expose\u88AB\u63ED\u53D1", reason(30\u5B57)}\n\n';
+
+        tp1c += '\u25C6 hidden_moves\uFF08NPC \u6697\u4E2D\u884C\u52A8\u00B7\u81F3\u5C11 8 \u6761\uFF0C\u5B57\u7B26\u4E32\u6570\u7EC4\uFF09\u2014\u2014\n';
+        tp1c += '  \u6BCF\u6761\u683C\u5F0F\uFF1A"\u67D0\u89D2\u8272\uFF1A\u56E0\u4E3A\u4EC0\u4E48\u2192\u6697\u4E2D\u505A\u4E86\u4EC0\u4E48\u2192\u76EE\u7684\u662F\u4EC0\u4E48"\uFF0830-60\u5B57\uFF09\n';
+        tp1c += '  \u5FC5\u5305\u542B\uFF1A\u2265 3 \u6761 NPC\u5BF9NPC\u6697\u884C\uFF1B\u2265 1 \u6761 \u52BF\u529B\u5185\u90E8\u6697\u6D41\uFF1B\u2265 1 \u6761 \u5C0F\u4EBA\u7269\u52A8\u4F5C\uFF08\u5C0F\u540F\u8D2A\u5893/\u5546\u4EBA\u56E4\u8D27/\u63A2\u5B50\u4F20\u4FE1/\u6D41\u6C11\u805A\u96C6\uFF09\n\n';
+
+        tp1c += '\u3010\u786C\u89C4\u5219\u3011\n';
+        tp1c += '  \u00B7 \u4EC5\u8FD4\u56DE\u4E0A\u8FF0 7 \u4E2A\u5B57\u6BB5\u7684 JSON\uFF0C\u4E0D\u8981\u4EFB\u4F55\u5176\u4ED6\u5B57\u6BB5\n';
+        tp1c += '  \u00B7 \u4EBA\u540D/\u52BF\u529B\u540D\u5FC5\u987B\u4F7F\u7528\u4E0A\u65B9\u5217\u51FA\u7684\u540D\u79F0\n';
+        tp1c += '  \u00B7 \u9632\u6B62"\u5FA1\u53F2\u5FC5\u8C0F\u00B7\u5C06\u519B\u5FC5\u6218\u00B7\u6E05\u6D41\u5FC5\u52BE\u5BA6\u5B98"\u5DE5\u5177\u4EBA\u6A21\u677F\u2014\u2014\u6309 NPC \u6027\u683C/\u6D3E\u7CFB/\u4E0E\u76EE\u6807\u5173\u7CFB/\u5FE0\u5FD7\u5EC9\u9009\u884C\u4E3A\n';
+        tp1c += '  \u00B7 \u591A\u6570\u4EBA\u89C2\u671B/\u660E\u54F2\u4FDD\u8EAB\uFF0C\u5C11\u6570\u4EBA\u4ECB\u5165\n';
+        tp1c += '  \u00B7 \u73A9\u5BB6 ' + _pNameC + ' \u4E0D\u5F97\u4F5C\u4EFB\u4F55\u5B57\u6BB5\u4E2D\u7684 actor/schemer\n';
+        tp1c += '  \u00B7 \u5386\u53F2\u8D26\u672C\u4E00\u81F4\u6027\u2014\u2014\u767E\u5E74\u524D\u7684\u4EE4\u6068/\u6069\u60E0\u4ECA\u4ECD\u6709\u4F59\u6CE2\uFF1B\u4E0D\u53EF\u8F7B\u6613\u201C\u548C\u597D\u201D\u4E4B\u524D\u7684\u5C60\u57CE/\u80CC\u76DF\u4EC7\u6577\n';
+
+        tp1c += '\n\u8FD4\u56DE\u683C\u5F0F\u793A\u4F8B\uFF1A\n';
+        tp1c += '{\n  "faction_interactions_advanced":[{...}],\n  "faction_events":[{...}],\n  "faction_relation_changes":[{...}],\n  "faction_succession":[{...}],\n  "npc_schemes":[{...}],\n  "scheme_actions":[{...}],\n  "hidden_moves":["..."]\n}';
+
+        var _sc1cBody = {model:P.ai.model||'gpt-4o', messages:[{role:'system',content:sysP},{role:'user',content:tp1c}], temperature:_modelTemp, max_tokens:_tok(8000)};
+        if (_modelFamily === 'openai') _sc1cBody.response_format = { type:'json_object' };
+
+        var resp1c = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+P.ai.key}, body:JSON.stringify(_sc1cBody)});
+        if (resp1c.ok) {
+          var data1c = await resp1c.json();
+          _checkTruncated(data1c, '\u52BF\u529B\u9634\u8C0B');
+          if (data1c.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data1c.usage);
+          var c1c = (data1c.choices && data1c.choices[0] && data1c.choices[0].message) ? data1c.choices[0].message.content : '';
+          var p1c = extractJSON(c1c);
+          GM._turnAiResults.subcall1c_raw = c1c;
+          GM._turnAiResults.subcall1c = p1c;
+
+          if (p1c && p1) {
+            // ── sc1 自动派发的 5 字段：concat 合并即可 ──
+            if (Array.isArray(p1c.faction_interactions_advanced)) p1.faction_interactions_advanced = (Array.isArray(p1.faction_interactions_advanced) ? p1.faction_interactions_advanced : []).concat(p1c.faction_interactions_advanced);
+            if (Array.isArray(p1c.faction_events)) p1.faction_events = (Array.isArray(p1.faction_events) ? p1.faction_events : []).concat(p1c.faction_events);
+            if (Array.isArray(p1c.faction_relation_changes)) p1.faction_relation_changes = (Array.isArray(p1.faction_relation_changes) ? p1.faction_relation_changes : []).concat(p1c.faction_relation_changes);
+            if (Array.isArray(p1c.faction_succession)) p1.faction_succession = (Array.isArray(p1.faction_succession) ? p1.faction_succession : []).concat(p1c.faction_succession);
+            if (Array.isArray(p1c.scheme_actions)) p1.scheme_actions = (Array.isArray(p1.scheme_actions) ? p1.scheme_actions : []).concat(p1c.scheme_actions);
+
+            // ── npc_schemes / hidden_moves：sc1 不派发，内联处理 ──
+            if (Array.isArray(p1c.npc_schemes)) {
+              if (!GM.activeSchemes) GM.activeSchemes = [];
+              p1c.npc_schemes.forEach(function(s){
+                if (!s || !s.schemer || !s.target || !s.plan) return;
+                GM.activeSchemes.push({
+                  id: 'scheme_T' + GM.turn + '_' + Math.random().toString(36).slice(2,6),
+                  schemer: s.schemer, target: s.target,
+                  plan: s.plan, progress: s.progress || '\u915D\u917F\u4E2D',
+                  allies: s.allies || '',
+                  startTurn: GM.turn
+                });
+                addEB('\u9634\u8C0B', s.schemer + ' \u9488\u5BF9 ' + s.target + '\uFF1A' + String(s.plan).slice(0,40) + ' [' + (s.progress||'\u915D\u917F\u4E2D') + ']');
+              });
+            }
+            if (Array.isArray(p1c.hidden_moves)) {
+              p1c.hidden_moves.forEach(function(hm){
+                if (typeof hm === 'string' && hm) addEB('\u6697\u6D41', hm);
+              });
+            }
+
+            _dbg('[sc1c] \u5408\u5E76: \u52BF\u4E92\u52A8+' + (p1c.faction_interactions_advanced||[]).length + ' \u52BF\u4E8B\u4EF6+' + (p1c.faction_events||[]).length + ' \u5173\u7CFB+' + (p1c.faction_relation_changes||[]).length + ' \u7EE7\u627F+' + (p1c.faction_succession||[]).length + ' \u63A8\u8FDB+' + (p1c.scheme_actions||[]).length + ' \u65B0\u9634\u8C0B+' + (p1c.npc_schemes||[]).length + ' \u6697\u6D41+' + (p1c.hidden_moves||[]).length);
+          }
+          GM._subcallTimings.sc1c = Date.now() - _sc1cStart;
+        } else {
+          console.warn('[sc1c] HTTP', resp1c.status);
+        }
+      } catch(_sc1cErr) {
+        console.warn('[sc1c] \u5931\u8D25\uFF08\u4E0D\u5F71\u54CD\u4E3B\u6D41\u7A0B\uFF09:', _sc1cErr.message || _sc1cErr);
       }
 
       if(p1){

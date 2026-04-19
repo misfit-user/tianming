@@ -5266,16 +5266,21 @@ function renderGameState(){
   // 人物志面板
   var _rwBtn=document.createElement("button");_rwBtn.className="g-tab-btn";_rwBtn.innerHTML=_ti('person',13)+' \u4EBA\u7269\u5FD7';
   _rwBtn.onclick=function(){switchGTab(_rwBtn,"gt-renwu");};tabBar.appendChild(_rwBtn);
-  var _rwP=document.createElement("div");_rwP.className="g-tab-panel";_rwP.id="gt-renwu";_rwP.style.cssText="flex:1;overflow-y:auto;padding:1rem;";
-  _rwP.innerHTML='<div style="font-size:0.95rem;font-weight:700;color:var(--gold);margin-bottom:0.5rem;">\u4EBA\u7269\u5FD7 (<span id="rw-cnt">0</span>)</div>'
-    +'<div style="display:flex;gap:var(--space-1);align-items:center;margin-bottom:var(--space-2);flex-wrap:wrap;">'
-    +'<input id="rw-search" placeholder="\u641C\u7D22\u59D3\u540D/\u5B98\u804C\u2026" style="flex:1;min-width:80px;padding:3px 6px;font-size:var(--text-xs);background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-foreground);font-family:inherit;" oninput="_rwSearch=this.value;renderRenwu();">'
-    +'<select id="rw-faction" style="font-size:var(--text-xs);padding:2px 4px;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:var(--radius-sm);" onchange="_rwFaction=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u6D3E\u7CFB</option></select>'
-    +'<select id="rw-role" style="font-size:var(--text-xs);padding:2px 4px;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:var(--radius-sm);" onchange="_rwRole=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u8EAB\u4EFD</option><option value="civil">\u6587\u81E3</option><option value="military">\u6B66\u5C06</option><option value="harem">\u540E\u5BAB</option><option value="none">\u5E03\u8863</option></select>'
-    +'<select id="rw-sort" style="font-size:var(--text-xs);padding:2px 4px;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:var(--radius-sm);" onchange="_rwSort=this.value;renderRenwu();"><option value="loyalty">\u6392\uFF1A\u5FE0\u8BDA</option><option value="intelligence">\u6392\uFF1A\u667A\u529B</option><option value="administration">\u6392\uFF1A\u653F\u52A1</option><option value="military">\u6392\uFF1A\u519B\u4E8B</option><option value="ambition">\u6392\uFF1A\u91CE\u5FC3</option></select>'
-    +'<label style="font-size:var(--text-xs);color:var(--color-foreground-muted);display:flex;align-items:center;gap:2px;"><input type="checkbox" id="rw-dead" onchange="_rwShowDead=this.checked;renderRenwu();">\u5DF2\u6545</label>'
+  var _rwP=document.createElement("div");_rwP.className="g-tab-panel";_rwP.id="gt-renwu";_rwP.style.cssText="flex:1;overflow-y:auto;padding:0;";
+  _rwP.innerHTML='<div class="rw-panel-wrap"><div class="rw-inner">'
+    +'<div class="rw-title"><div class="seal">\u4EBA<br>\u7269</div><div class="main">\u4EBA \u7269 \u5FD7</div><div class="sub">\u82F1 \u6770 \u5217 \u4F20\u3000\u3000\u81E7 \u5426 \u54C1 \u8BC4</div></div>'
+    +'<div id="rw-statbar" class="rw-statbar"></div>'
+    +'<div class="rw-tools">'
+    +'<span class="rw-tools-lbl">\u62AB \u89C8</span>'
+    +'<input id="rw-search" placeholder="\u641C\u7D22\u59D3\u540D/\u5B98\u804C\u2026" style="flex:1;min-width:120px;padding:4px 8px;font-size:11.5px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);border-radius:2px;color:var(--color-foreground);font-family:var(--font-serif);letter-spacing:0.05em;" oninput="_rwSearch=this.value;renderRenwu();">'
+    +'<select id="rw-faction" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwFaction=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u6D3E\u7CFB</option></select>'
+    +'<select id="rw-role" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwRole=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u8EAB\u4EFD</option><option value="civil">\u6587\u81E3</option><option value="military">\u6B66\u5C06</option><option value="harem">\u540E\u5BAB</option><option value="none">\u5E03\u8863</option></select>'
+    +'<select id="rw-sort" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwSort=this.value;renderRenwu();"><option value="loyalty">\u6392\uFF1A\u5FE0\u8BDA</option><option value="intelligence">\u6392\uFF1A\u667A\u529B</option><option value="administration">\u6392\uFF1A\u653F\u52A1</option><option value="military">\u6392\uFF1A\u519B\u4E8B</option><option value="ambition">\u6392\uFF1A\u91CE\u5FC3</option></select>'
+    +'<label style="font-family:var(--font-serif);font-size:11.5px;color:var(--color-foreground-muted);display:flex;align-items:center;gap:4px;letter-spacing:0.1em;cursor:pointer;"><input type="checkbox" id="rw-dead" onchange="_rwShowDead=this.checked;renderRenwu();">\u663E \u5DF2 \u6B81</label>'
     +'</div>'
-    +'<div id="rw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.5rem;"></div>';
+    +'<div id="rw-legend" class="rw-legend"></div>'
+    +'<div id="rw-grid" class="rw-grid"></div>'
+    +'</div></div>';
   gc.appendChild(_rwP);
 
   // P3: 省份民情面板（地方舆情）

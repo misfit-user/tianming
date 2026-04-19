@@ -13596,6 +13596,7 @@ var _rwSearch='',_rwFaction='all',_rwRole='all',_rwSort='loyalty',_rwShowDead=fa
 
 function renderRenwu(){
   var el=_$("rw-grid");var cnt=_$("rw-cnt");if(!el)return;
+  var _sbar=_$("rw-statbar"), _leg=_$("rw-legend");
 
   // 填充派系下拉（首次）
   var _facSel = _$('rw-faction');
@@ -13607,19 +13608,37 @@ function renderRenwu(){
     });
   }
 
-  // 从GM.chars构建完整角色列表（不只是allCharacters）
   var _all = (GM.chars||[]).slice();
-  // 补充allCharacters中有但chars中没有的
   (GM.allCharacters||[]).forEach(function(ac) {
     if (!_all.find(function(c){return c.name===ac.name;})) _all.push(ac);
   });
-
-  // 规范化 alive 字段——未显式设为 false 的一律视为在世（修复老数据 alive=undefined 被误判为 dead 的 bug）
   _all.forEach(function(c) {
     if (c.alive !== false && c.alive !== true) c.alive = true;
   });
 
-  // 筛选
+  // 统计数据
+  var _stat = { all: 0, civil: 0, mili: 0, harem: 0, bu: 0, dead: 0 };
+  _all.forEach(function(c) {
+    if (c.alive === false) { _stat.dead++; return; }
+    if (c.spouse) _stat.harem++;
+    else if (c.officialTitle || c.title) {
+      _stat.all++;
+      if ((c.military||0) >= (c.administration||0) && (c.military||0) >= 40) _stat.mili++;
+      else _stat.civil++;
+    } else {
+      _stat.bu++;
+    }
+  });
+  if (_sbar) {
+    _sbar.innerHTML = ''
+      + '<div class="rw-stat-card s-all"><div class="rw-stat-lbl">\u5728 \u671D \u7FA4 \u81E3</div><div class="rw-stat-num">'+_stat.all+'</div><div class="rw-stat-sub">\u5458</div></div>'
+      + '<div class="rw-stat-card s-civil"><div class="rw-stat-lbl">\u6587 \u81E3</div><div class="rw-stat-num">'+_stat.civil+'</div><div class="rw-stat-sub">\u6587\u5B98</div></div>'
+      + '<div class="rw-stat-card s-mili"><div class="rw-stat-lbl">\u6B66 \u5C06</div><div class="rw-stat-num">'+_stat.mili+'</div><div class="rw-stat-sub">\u5C06\u9886</div></div>'
+      + '<div class="rw-stat-card s-harem"><div class="rw-stat-lbl">\u540E \u5BAB</div><div class="rw-stat-num">'+_stat.harem+'</div><div class="rw-stat-sub">\u5AD4\u59C3</div></div>'
+      + '<div class="rw-stat-card s-bu"><div class="rw-stat-lbl">\u5E03 \u8863</div><div class="rw-stat-num">'+_stat.bu+'</div><div class="rw-stat-sub">\u8349\u83BD</div></div>'
+      + '<div class="rw-stat-card s-dead"><div class="rw-stat-lbl">\u5DF2 \u6B81</div><div class="rw-stat-num">'+_stat.dead+'</div><div class="rw-stat-sub">\u5352</div></div>';
+  }
+
   var filtered = _all;
   if (!_rwShowDead) filtered = filtered.filter(function(c) { return c.alive !== false; });
   if (_rwSearch) {
@@ -13637,12 +13656,9 @@ function renderRenwu(){
     });
   }
 
-  // 排序
   filtered.sort(function(a,b) {
-    // 已故排最后
     if (a.alive === false && b.alive !== false) return 1;
     if (a.alive !== false && b.alive === false) return -1;
-    // 玩家角色排最前
     if (a.isPlayer && !b.isPlayer) return -1;
     if (!a.isPlayer && b.isPlayer) return 1;
     var va = (a[_rwSort]||50), vb = (b[_rwSort]||50);
@@ -13651,12 +13667,26 @@ function renderRenwu(){
 
   if(cnt)cnt.textContent=filtered.length + '/' + _all.length;
 
-  // 按派系分组（如有多个派系）
-  var _playerLoc = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'京城');
+  // 派系 Legend
+  if (_leg) {
+    var _facCounts = {};
+    filtered.forEach(function(c) {
+      var fk = c.faction || '\u65E0\u6D3E\u7CFB';
+      _facCounts[fk] = (_facCounts[fk]||0) + 1;
+    });
+    var _fkeys = Object.keys(_facCounts).sort(function(a,b){return _facCounts[b]-_facCounts[a];});
+    var _lhtml = '<span class="rw-legend-lbl">\u6D3E \u7CFB</span>';
+    _fkeys.slice(0,10).forEach(function(fk) {
+      var _st = _rwFacChipStyle(fk);
+      _lhtml += '<span class="rw-legend-chip" style="'+_st+'">'+escHtml(fk)+'<span class="num">\u00B7'+_facCounts[fk]+'</span></span>';
+    });
+    _leg.innerHTML = _lhtml;
+  }
+
+  // 按派系分组
   var _facGroups = {};
   filtered.forEach(function(c) { var fk = c.faction || '\u65E0\u6D3E\u7CFB'; if (!_facGroups[fk]) _facGroups[fk] = []; _facGroups[fk].push(c); });
   var _facKeys = Object.keys(_facGroups);
-  // 玩家派系排前
   var _playerFac = (P.playerInfo && P.playerInfo.factionName) || '';
   _facKeys.sort(function(a,b) { if (a === _playerFac) return -1; if (b === _playerFac) return 1; return _facGroups[b].length - _facGroups[a].length; });
 
@@ -13666,85 +13696,241 @@ function renderRenwu(){
   if (_useGroups) {
     _facKeys.forEach(function(fk) {
       var chars = _facGroups[fk];
-      var _facColor = 'var(--ink-300)';
-      if (GM.facs) { var _f = GM.facs.find(function(f){return f.name===fk;}); if (_f && _f.color) _facColor = _f.color; }
-      html += '<div style="grid-column:1/-1;font-size:var(--text-xs);color:' + _facColor + ';font-weight:var(--weight-bold);padding:var(--space-1) 0;border-bottom:1px solid var(--color-border-subtle);margin-top:var(--space-2);">' + escHtml(fk) + ' (' + chars.length + ')</div>';
+      var _st = _rwFacChipStyle(fk);
+      html += '<div class="rw-fac-group-hdr" style="'+_st+';--fac-c:var(--chip-c,var(--gold-400));">'+escHtml(fk)+' <span class="cnt">'+chars.length+' \u4EBA</span></div>';
       chars.forEach(function(c) { html += _rwRenderCard(c); });
     });
   } else {
     filtered.forEach(function(c) { html += _rwRenderCard(c); });
   }
 
-  el.innerHTML = html || '<div style="color:var(--txt-d);grid-column:1/-1;text-align:center;padding:2rem;">\u65E0\u5339\u914D\u89D2\u8272</div>';
+  el.innerHTML = html || '<div class="rw-empty">\u671D \u91CE \u5BC2 \u5BC2\u3000\u65E0 \u5339 \u914D \u4E4B \u4EBA<br>\u8BD5\u8C03\u62AB\u89C8\u6216\u653E\u5BBD\u7B5B\u9009</div>';
+}
+
+/** 派系→CSS 类 */
+function _rwFacClass(c) {
+  if (c.spouse) return 'rw-consort';
+  var fac = c.faction || '';
+  if (fac.indexOf('\u4E1C\u6797') >= 0 || fac.indexOf('\u590D\u793E') >= 0) return 'rw-dongin';
+  if (fac.indexOf('\u6D59') >= 0) return 'rw-zhe';
+  if (fac.indexOf('\u5BA6') >= 0 || fac.indexOf('\u9609') >= 0 || fac.indexOf('\u5185\u5EF7') >= 0) return 'rw-yan';
+  if (fac.indexOf('\u6606') >= 0 || fac.indexOf('\u9F50') >= 0 || fac.indexOf('\u695A') >= 0) return 'rw-kun';
+  if (fac.indexOf('\u6E05\u6D41') >= 0 || fac.indexOf('\u6B63\u5B66') >= 0) return 'rw-qing';
+  if (!c.officialTitle && !c.title && !c.spouse) return 'rw-bu';
+  if ((c.military || 0) >= 60 && (c.military || 0) >= (c.administration || 0)) return 'rw-mili';
+  return '';
+}
+
+/** 派系→chip style 变量 */
+function _rwFacChipStyle(fkName) {
+  if (fkName.indexOf('\u4E1C\u6797') >= 0 || fkName.indexOf('\u590D\u793E') >= 0) return '--chip-c:var(--celadon-400);--chip-rgb:106,154,127';
+  if (fkName.indexOf('\u6D59') >= 0) return '--chip-c:var(--indigo-400,#5a6fa8);--chip-rgb:90,111,168';
+  if (fkName.indexOf('\u5BA6') >= 0 || fkName.indexOf('\u9609') >= 0 || fkName.indexOf('\u5185\u5EF7') >= 0) return '--chip-c:var(--purple-400,#8e6aa8);--chip-rgb:142,106,168';
+  if (fkName.indexOf('\u6606') >= 0 || fkName.indexOf('\u9F50') >= 0 || fkName.indexOf('\u695A') >= 0) return '--chip-c:var(--amber-400,#c9a045);--chip-rgb:201,160,69';
+  if (fkName.indexOf('\u6E05\u6D41') >= 0 || fkName.indexOf('\u6B63\u5B66') >= 0) return '--chip-c:var(--gold-400);--chip-rgb:184,154,83';
+  if (fkName.indexOf('\u65E0') >= 0 || fkName.indexOf('\u5E03\u8863') >= 0) return '--chip-c:var(--ink-500);--chip-rgb:166,148,112';
+  return '';
+}
+
+/** 品级→徽章 */
+function _rwRankChip(c) {
+  var _level = 99, _lbl = '';
+  if (c.rank) {
+    _lbl = c.rank;
+    if (typeof getRankLevel === 'function') _level = getRankLevel(c.rank);
+  } else if (c.officialTitle || c.title) {
+    if (typeof getRankLevel === 'function') _level = getRankLevel(c.officialTitle||c.title);
+  }
+  if (!_lbl && _level < 99 && typeof RANK_HIERARCHY !== 'undefined' && RANK_HIERARCHY) {
+    for (var i = 0; i < RANK_HIERARCHY.length; i++) {
+      if (RANK_HIERARCHY[i].level === _level) { _lbl = RANK_HIERARCHY[i].label; break; }
+    }
+  }
+  if (!_lbl) return '';
+  var _cls = 'rw-rank-low';
+  if (_level <= 3) _cls = 'rw-rank-top';
+  else if (_level <= 8) _cls = 'rw-rank-high';
+  else if (_level <= 14) _cls = 'rw-rank-mid';
+  return '<span class="rw-rank-chip '+_cls+'">'+escHtml(_lbl)+'</span>';
+}
+
+/** 忠诚 SVG 环 */
+function _rwLoyRing(val) {
+  var _v = Math.max(0, Math.min(100, val));
+  var _c = 2 * Math.PI * 22;
+  var _off = _c * (1 - _v / 100);
+  var _cls = _v >= 70 ? 'rw-loy-hi' : _v >= 40 ? 'rw-loy-mid' : 'rw-loy-lo';
+  return '<div class="rw-loy-ring '+_cls+'"><svg viewBox="0 0 54 54">'
+    + '<circle class="bg" cx="27" cy="27" r="22" fill="none" stroke-width="3"/>'
+    + '<circle class="fg" cx="27" cy="27" r="22" fill="none" stroke-width="3" stroke-dasharray="'+_c.toFixed(2)+'" stroke-dashoffset="'+_off.toFixed(2)+'"/>'
+    + '</svg>'
+    + '<div class="val"><div class="n">'+Math.round(_v)+'</div><div class="k">\u5FE0</div></div>'
+    + '</div>';
+}
+
+/** 单条属性条 */
+function _rwStatRow(kk, cls, v) {
+  var _v = Math.max(0, Math.min(100, v||0));
+  return '<div class="rw-stat '+cls+'">'
+    + '<span class="rw-stat-k">'+kk+'</span>'
+    + '<span class="rw-stat-bar"><span class="rw-stat-fill" style="width:'+_v+'%"></span></span>'
+    + '<span class="rw-stat-v">'+Math.round(_v)+'</span>'
+    + '</div>';
+}
+
+/** 五常 dot */
+function _rwWcDot(k, v) {
+  var lv = 'none';
+  if (v != null) {
+    if (v >= 60) lv = 'hi';
+    else if (v >= 30) lv = 'mid';
+    else lv = 'lo';
+  }
+  return '<span class="rw-wc-dot '+lv+'" title="'+k+' '+(v!=null?Math.round(v):'?')+'">'+k+'</span>';
 }
 
 /** 渲染单个人物卡片 */
 function _rwRenderCard(c) {
   var _isDead = c.alive === false;
+  var _isPlayer = !!c.isPlayer;
   var _ch = (typeof findCharByName === 'function') ? findCharByName(c.name) : c;
   if (!_ch) _ch = c;
-  var _playerLoc = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'京城');
+  var _playerLoc = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'\u4EAC\u57CE');
 
-  // 官职徽章——fallback 顺序扩展：官职 → 头衔 → role → 后宫 → 布衣
-  var _offBadge = '';
-  if (_ch._mourning) _offBadge = '<div style="font-size:0.58rem;color:var(--ink-300);">\u4E01\u5FE7</div>';
-  else if (_ch._retired) _offBadge = '<div style="font-size:0.58rem;color:var(--ink-300);">\u81F4\u4ED5</div>';
-  else if (_ch.officialTitle) _offBadge = '<div style="font-size:0.58rem;color:var(--gold-400);">' + escHtml(_ch.officialTitle) + '</div>';
-  else if (_ch.title) _offBadge = '<div style="font-size:0.58rem;color:var(--gold-400);">' + escHtml(_ch.title) + '</div>';
-  else if (_ch.role) _offBadge = '<div style="font-size:0.58rem;color:var(--ink-300);">' + escHtml(_ch.role) + '</div>';
-  else if (_ch.occupation) _offBadge = '<div style="font-size:0.58rem;color:var(--ink-300);">' + escHtml(_ch.occupation) + '</div>';
-  else if (_ch.spouse) _offBadge = '<div style="font-size:0.58rem;color:var(--purple,#9b59b6);">\u540E\u5BAB</div>';
-  else _offBadge = '<div style="font-size:0.58rem;color:var(--ink-300);">\u5E03\u8863</div>';
+  var _facCls = _rwFacClass(_ch);
+  var _cardCls = 'rw-card' + (_facCls?' '+_facCls:'');
+  if (_isDead) _cardCls += ' dead';
+  if (_isPlayer) _cardCls += ' player';
 
-  // 忠诚条——显示保留 1 位小数
+  // 立轴头像 + 忠诚环
+  var _portraitInner = _ch.portrait ? '<img src="'+escHtml(_ch.portrait)+'" alt="">' : escHtml((c.name||'').charAt(0));
   var _loy = _ch.loyalty != null ? _ch.loyalty : 50;
-  var _loyClr = _loy > 70 ? 'var(--celadon-400)' : _loy < 30 ? 'var(--vermillion-400)' : 'var(--color-foreground-muted)';
-  var _loyDisp = (typeof _fmtNum1 === 'function') ? _fmtNum1(_loy) : Math.round(_loy);
-  var _loyBar = '<div style="font-size:0.55rem;color:' + _loyClr + ';">\u5FE0' + _loyDisp + '</div>'
-    + '<div style="height:3px;background:var(--color-border-subtle);border-radius:2px;margin-top:2px;"><div style="height:100%;width:' + Math.min(100, parseFloat(_loy)||0) + '%;background:' + _loyClr + ';border-radius:2px;"></div></div>';
+  var _loyRing = _rwLoyRing(_loy);
 
-  // 关键属性
-  var _topStat = '';
-  // 展示最高维度标签
-  var _topDims = [
-    { k:'military', v:_ch.military||0, lb:'\u6B66' },
-    { k:'administration', v:_ch.administration||0, lb:'\u653F' },
-    { k:'management', v:_ch.management||0, lb:'\u7BA1' },
-    { k:'intelligence', v:_ch.intelligence||0, lb:'\u667A' },
-    { k:'diplomacy', v:_ch.diplomacy||0, lb:'\u4EA4' }
-  ];
-  _topDims.sort(function(a,b){return b.v - a.v;});
-  var _f1 = (typeof _fmtNum1 === 'function') ? _fmtNum1 : function(v){ return Math.round(v); };
-  _topStat = _topDims[0].lb + _f1(_topDims[0].v);
-  _topStat = '\u667A' + _f1(_ch.intelligence != null ? _ch.intelligence : 50) + ' ' + _topStat;
+  // 姓名行
+  var _nameRow = '<span class="rw-name">'+escHtml(c.name||'')+'</span>';
+  if (_ch.zi) _nameRow += '<span class="rw-zi">\u5B57 '+escHtml(_ch.zi)+'</span>';
+  else if (_ch.courtesy) _nameRow += '<span class="rw-zi">\u5B57 '+escHtml(_ch.courtesy)+'</span>';
+  if (_ch.age) _nameRow += '<span class="rw-age">'+(_ch.age|0)+'\u5C81</span>';
 
-  // 位置
-  var _locTag = '';
-  if (_ch.location && _ch.location !== _playerLoc && !_isDead) {
-    _locTag = '<div style="font-size:0.55rem;color:var(--amber-400);">' + escHtml(_ch.location.slice(0,4)) + '</div>';
+  // 官职行
+  var _offRow = '';
+  if (_ch.officialTitle) _offRow += '<span class="rw-pos">'+escHtml(_ch.officialTitle)+'</span>';
+  else if (_ch.title) _offRow += '<span class="rw-pos">'+escHtml(_ch.title)+'</span>';
+  else if (_ch.role) _offRow += '<span class="rw-pos" style="color:var(--ink-500);">'+escHtml(_ch.role)+'</span>';
+  else if (_ch.occupation) _offRow += '<span class="rw-pos" style="color:var(--ink-500);">'+escHtml(_ch.occupation)+'</span>';
+  else if (_ch.spouse) _offRow += '<span class="rw-pos" style="color:var(--vermillion-300,#d15c47);">\u540E\u5BAB</span>';
+  else _offRow += '<span class="rw-pos" style="color:var(--ink-500);">\u5E03\u8863</span>';
+  _offRow += _rwRankChip(_ch);
+  if (_ch.faction) _offRow += '<span class="rw-fac-chip">'+escHtml(_ch.faction)+'</span>';
+
+  // 位置 + 状态
+  var _stateHtml = '';
+  if (_ch.location) {
+    var _awayCls = (_ch.location !== _playerLoc && !_isDead) ? ' away' : '';
+    var _locInner = escHtml(_ch.location);
+    if (_ch._travelTo && _ch._travelTo.toLocation) {
+      _locInner += '<span class="travel">\u2192</span>' + escHtml(_ch._travelTo.toLocation);
+    }
+    _stateHtml += '<span class="rw-loc'+_awayCls+'">'+_locInner+'</span>';
+  }
+  if (_ch._mourning) _stateHtml += '<span class="rw-state-chip mourn">\u4E01\u5FE7</span>';
+  if (_ch._retired) _stateHtml += '<span class="rw-state-chip retired">\u81F4\u4ED5</span>';
+  if ((_ch.stress||0) > 70) _stateHtml += '<span class="rw-state-chip stress">\u91CD\u538B</span>';
+  if (_ch._travelTo) _stateHtml += '<span class="rw-state-chip away">\u8D74\u4EFB</span>';
+  if (_ch._scheming) _stateHtml += '<span class="rw-state-chip scheme">\u5BC6\u8C0B</span>';
+  if (_ch.joinTurn && GM.turn && (GM.turn - _ch.joinTurn) < 5) _stateHtml += '<span class="rw-state-chip new">\u65B0\u664B</span>';
+  else if (_ch.age && _ch.age >= 60) _stateHtml += '<span class="rw-state-chip veteran">\u8001\u6210</span>';
+
+  // 属性 6 条
+  var _statsHtml = ''
+    + _rwStatRow('\u667A', 'zhi', _ch.intelligence)
+    + _rwStatRow('\u653F', 'zheng', _ch.administration)
+    + _rwStatRow('\u519B', 'jun', _ch.military)
+    + _rwStatRow('\u4EA4', 'jiao', _ch.diplomacy)
+    + _rwStatRow('\u62B1', 'ye', _ch.ambition)
+    + _rwStatRow('\u538B', 'ya', _ch.stress);
+
+  // 五常
+  var _wc = _ch.wuchang || {};
+  var _wcHtml = _rwWcDot('\u4EC1', _wc['\u4EC1'])
+    + _rwWcDot('\u4E49', _wc['\u4E49'])
+    + _rwWcDot('\u793C', _wc['\u793C'])
+    + _rwWcDot('\u667A', _wc['\u667A'])
+    + _rwWcDot('\u4FE1', _wc['\u4FE1']);
+
+  // 名望/贤能/廉
+  var _repHtml = '';
+  var _ming = _ch.mingwang != null ? _ch.mingwang : (_ch.reputation != null ? _ch.reputation : null);
+  var _xian = _ch.xianneng != null ? _ch.xianneng : null;
+  if (_ming != null) _repHtml += '<span class="rw-rep-item ming"><span class="k">\u540D\u671B</span><span class="v">'+Math.round(_ming)+'</span></span>';
+  if (_xian != null) _repHtml += '<span class="rw-rep-item xian"><span class="k">\u8D24\u80FD</span><span class="v">'+Math.round(_xian)+'</span></span>';
+  if (_ch.integrity != null) _repHtml += '<span class="rw-rep-item"><span class="k">\u5EC9</span><span class="v">'+Math.round(_ch.integrity)+'</span></span>';
+
+  // 特质
+  var _traitsHtml = '';
+  if (Array.isArray(_ch.traits) && _ch.traits.length) {
+    _ch.traits.slice(0, 4).forEach(function(t) {
+      var _tid = typeof t === 'string' ? t : (t && (t.id || t.name) || '');
+      var _tname = _tid, _tcls = 'neu';
+      if (typeof TRAIT_LIBRARY !== 'undefined' && TRAIT_LIBRARY[_tid]) {
+        var _t = TRAIT_LIBRARY[_tid];
+        _tname = _t.name || _tid;
+        var _sum = 0;
+        if (_t.effects) { Object.keys(_t.effects).forEach(function(k){ _sum += (_t.effects[k]||0); }); }
+        if (_sum >= 3) _tcls = 'pos';
+        else if (_sum <= -3) _tcls = 'neg';
+      }
+      _traitsHtml += '<span class="rw-trait-chip '+_tcls+'">'+escHtml(_tname)+'</span>';
+    });
   }
 
-  // 派系色
-  var _facClr = 'var(--gold-d)';
-  if (_ch.faction && GM.facs) { var _ff = GM.facs.find(function(f){return f.name===_ch.faction;}); if (_ff && _ff.color) _facClr = _ff.color; }
+  // 关系 (top 3)
+  var _relsHtml = '';
+  if (_ch._relationships) {
+    var _relList = [];
+    Object.keys(_ch._relationships).forEach(function(oname) {
+      var rels = _ch._relationships[oname];
+      if (!rels || !rels.length) return;
+      rels.forEach(function(r) {
+        _relList.push({ name: oname, type: r.type||'friend', strength: Math.abs(r.strength||0), raw: r.strength||0 });
+      });
+    });
+    _relList.sort(function(a,b){return b.strength-a.strength;});
+    _relList.slice(0, 3).forEach(function(r) {
+      var _rcls = 'friend';
+      if (r.type === 'foe' || r.type === 'rival' || r.type === 'enemy' || r.raw < -30) _rcls = 'foe';
+      else if (r.type === 'spouse' || r.type === 'lover') _rcls = 'spouse';
+      _relsHtml += '<span class="rw-rel-chip '+_rcls+'">'+escHtml(r.name.slice(0,4))+'</span>';
+    });
+  }
 
-  // 已故标识
-  var _deadStyle = _isDead ? 'opacity:0.45;filter:grayscale(0.8);' : '';
-  var _deadTag = _isDead ? '<div style="font-size:0.55rem;color:var(--vermillion-400);font-weight:700;">\u6545</div>' : '';
-
-  // 始终用姓名字符串——索引会读到 allCharacters 简表（缺能力值）
+  // 操作按钮
   var _nameArg = "'" + (c.name||'').replace(/'/g,"\\'") + "'";
-  // 人物志 tab 点击——打开"人物志完整页"（openCharRenwuPage），降级回 viewRenwu
+  var _actionsHtml = '';
+  if (!_isDead && !_isPlayer) {
+    if (typeof openWenduiPick === 'function') _actionsHtml += '<button class="rw-btn" onclick="event.stopPropagation();openWenduiPick('+_nameArg+');">\u95EE\u5BF9</button>';
+  }
+  _actionsHtml += '<button class="rw-btn primary" onclick="event.stopPropagation();(typeof openCharRenwuPage===\'function\'?openCharRenwuPage:viewRenwu)('+_nameArg+');">'+(_isDead?'\u9057\u4E8B':'\u8BE6\u60C5')+'</button>';
+
   var _clickCall = '(typeof openCharRenwuPage===\'function\'?openCharRenwuPage:viewRenwu)(' + _nameArg + ')';
 
-  return '<div class="cd" style="text-align:center;cursor:pointer;padding:0.5rem;' + _deadStyle + '" onclick="' + _clickCall + '">'
-    + '<div style="width:38px;height:38px;border-radius:50%;background:var(--bg-4);display:flex;align-items:center;justify-content:center;font-size:1rem;margin:0 auto 0.2rem;border:2px solid ' + _facClr + ';">'
-    + ((_ch.portrait)?'<img src="'+escHtml(_ch.portrait)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':'\uD83D\uDC64')
+  return '<div class="'+_cardCls+'" onclick="'+_clickCall+'">'
+    + '<div class="rw-portrait-col">'
+    + '<div class="rw-portrait">'+_portraitInner+'</div>'
+    + _loyRing
     + '</div>'
-    + '<div style="font-size:0.8rem;font-weight:700;color:var(--gold-l);">' + escHtml(c.name) + '</div>'
-    + _offBadge + _deadTag + _locTag
-    + '<div style="font-size:0.55rem;color:var(--color-foreground-muted);">' + _topStat + '</div>'
-    + _loyBar
+    + '<div class="rw-info-col">'
+    + '<div class="rw-name-row">'+_nameRow+'</div>'
+    + '<div class="rw-office-row">'+_offRow+'</div>'
+    + (_stateHtml ? '<div class="rw-states">'+_stateHtml+'</div>' : '')
+    + '<div class="rw-stats">'+_statsHtml+'</div>'
+    + '<div style="display:flex;gap:3px;align-items:center;margin-top:3px;"><span style="font-size:9px;color:var(--ink-300,#6b5d47);letter-spacing:0.2em;font-family:var(--font-serif);margin-right:2px;">\u4E94\u5E38</span>'+_wcHtml+'</div>'
+    + (_repHtml ? '<div class="rw-rep">'+_repHtml+'</div>' : '')
+    + (_traitsHtml ? '<div class="rw-traits">'+_traitsHtml+'</div>' : '')
+    + (_relsHtml ? '<div class="rw-rels">'+_relsHtml+'</div>' : '')
+    + '<div class="rw-actions">'+_actionsHtml+'</div>'
+    + '</div>'
     + '</div>';
 }
 function viewRenwu(i){

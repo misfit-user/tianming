@@ -13925,7 +13925,7 @@ function _rwRenderCard(c) {
     + '<div class="rw-office-row">'+_offRow+'</div>'
     + (_stateHtml ? '<div class="rw-states">'+_stateHtml+'</div>' : '')
     + '<div class="rw-stats">'+_statsHtml+'</div>'
-    + '<div style="display:flex;gap:3px;align-items:center;margin-top:3px;"><span style="font-size:9px;color:var(--ink-300,#6b5d47);letter-spacing:0.2em;font-family:var(--font-serif);margin-right:2px;">\u4E94\u5E38</span>'+_wcHtml+'</div>'
+    + '<div class="rw-wuchang"><span class="lbl">\u4E94\u5E38</span>'+_wcHtml+'</div>'
     + (_repHtml ? '<div class="rw-rep">'+_repHtml+'</div>' : '')
     + (_traitsHtml ? '<div class="rw-traits">'+_traitsHtml+'</div>' : '')
     + (_relsHtml ? '<div class="rw-rels">'+_relsHtml+'</div>' : '')

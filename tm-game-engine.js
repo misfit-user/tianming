@@ -1793,6 +1793,7 @@ function _renderDifangPanel() {
     if (_dfSort === 'unrest') return (b.unrest||0) - (a.unrest||0);
     if (_dfSort === 'corruption') return (b.corruption||0) - (a.corruption||0);
     if (_dfSort === 'population') return (b.pop||0) - (a.pop||0);
+    if (_dfSort === 'tax') return (b.taxRevenue||b.tax||0) - (a.taxRevenue||a.tax||0);
     return a.name.localeCompare(b.name);
   });
 
@@ -1968,7 +1969,40 @@ function _renderDifangPanel() {
       if (item.corruption > 60) notes.push('\u8150\u8D25\u6CDB\u6EE5');
       if ((item.fugitives||0) > (item.pop||1) * 0.04) notes.push('\u9003\u6237\u6D6A\u6F6E');
       if (item.envLoad > 0.85) notes.push('\u8F7D\u91CD\u8D85\u9650');
-      if (notes.length > 0) html += '<div class="df-crisis-note">' + notes.join(' \u00B7 ') + '\uFF0C\u4EB2\u987B\u65E9\u7B79\u5904\u7F6E</div>';
+      if (notes.length > 0) html += '<div class="df-crisis-note">' + notes.join(' \u00B7 ') + '\uFF0C\u4E9F\u987B\u65E9\u7B79\u5904\u7F6E</div>';
+    }
+
+    // 事件 chips (灾荒/战乱/瘟疫/丰收等)
+    var _evChips = [];
+    if ((item.unrest||0) > 70) _evChips.push({ cls:'rebellion', txt:'\u6C11\u53D8' });
+    if ((item.envLoad||0) > 0.9) _evChips.push({ cls:'calamity', txt:'\u8F7D\u91CD' });
+    if (Array.isArray(item.disasters)) {
+      item.disasters.forEach(function(d) {
+        var _dName = (typeof d === 'string') ? d : (d.type || d.name || '');
+        if (!_dName) return;
+        var _cls = 'calamity';
+        if (_dName.indexOf('\u65F1') >= 0 || _dName.indexOf('\u65F1\u707E') >= 0) _cls = 'drought';
+        else if (_dName.indexOf('\u6D2A') >= 0 || _dName.indexOf('\u6C34') >= 0) _cls = 'flood';
+        else if (_dName.indexOf('\u75AB') >= 0 || _dName.indexOf('\u75C5') >= 0) _cls = 'plague';
+        else if (_dName.indexOf('\u4E71') >= 0 || _dName.indexOf('\u53DB') >= 0) _cls = 'rebellion';
+        _evChips.push({ cls:_cls, txt:_dName });
+      });
+    }
+    if (Array.isArray(item.activeEvents)) {
+      item.activeEvents.forEach(function(ae) {
+        var _n = (typeof ae === 'string') ? ae : (ae.name || ae.title || '');
+        if (_n) _evChips.push({ cls:'calamity', txt:_n });
+      });
+    }
+    if (GM.activeWars && GM.activeWars.length) {
+      var _hasWar = GM.activeWars.some(function(w) { return (w.location||'').indexOf(item.name) >= 0 || (w.province||'') === item.name; });
+      if (_hasWar) _evChips.push({ cls:'war', txt:'\u6218\u4E8B' });
+    }
+    if ((item.yearOutput||1) > 1.2 && !isCrisis) _evChips.push({ cls:'bumper', txt:'\u4E30\u79BB' });
+    if (_evChips.length) {
+      html += '<div class="df-events">';
+      _evChips.slice(0, 5).forEach(function(e) { html += '<span class="df-event-chip ' + e.cls + '">' + escHtml(e.txt) + '</span>'; });
+      html += '</div>';
     }
 
     // 长官行
@@ -5272,11 +5306,11 @@ function renderGameState(){
     +'<div id="rw-statbar" class="rw-statbar"></div>'
     +'<div class="rw-tools">'
     +'<span class="rw-tools-lbl">\u62AB \u89C8</span>'
-    +'<input id="rw-search" placeholder="\u641C\u7D22\u59D3\u540D/\u5B98\u804C\u2026" style="flex:1;min-width:120px;padding:4px 8px;font-size:11.5px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);border-radius:2px;color:var(--color-foreground);font-family:var(--font-serif);letter-spacing:0.05em;" oninput="_rwSearch=this.value;renderRenwu();">'
-    +'<select id="rw-faction" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwFaction=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u6D3E\u7CFB</option></select>'
-    +'<select id="rw-role" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwRole=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u8EAB\u4EFD</option><option value="civil">\u6587\u81E3</option><option value="military">\u6B66\u5C06</option><option value="harem">\u540E\u5BAB</option><option value="none">\u5E03\u8863</option></select>'
-    +'<select id="rw-sort" style="font-family:var(--font-serif);font-size:11.5px;padding:4px 6px;background:rgba(26,20,16,0.5);border:1px solid var(--color-border-subtle);color:var(--color-foreground);border-radius:2px;letter-spacing:0.05em;" onchange="_rwSort=this.value;renderRenwu();"><option value="loyalty">\u6392\uFF1A\u5FE0\u8BDA</option><option value="intelligence">\u6392\uFF1A\u667A\u529B</option><option value="administration">\u6392\uFF1A\u653F\u52A1</option><option value="military">\u6392\uFF1A\u519B\u4E8B</option><option value="ambition">\u6392\uFF1A\u91CE\u5FC3</option></select>'
-    +'<label style="font-family:var(--font-serif);font-size:11.5px;color:var(--color-foreground-muted);display:flex;align-items:center;gap:4px;letter-spacing:0.1em;cursor:pointer;"><input type="checkbox" id="rw-dead" onchange="_rwShowDead=this.checked;renderRenwu();">\u663E \u5DF2 \u6B81</label>'
+    +'<div class="rw-search-wrap"><input id="rw-search" class="rw-search" placeholder="\u641C\u7D22\u59D3\u540D\u00B7\u5B57\u53F7\u00B7\u5B98\u804C\u2026" oninput="_rwSearch=this.value;renderRenwu();"></div>'
+    +'<select id="rw-faction" class="rw-filter" onchange="_rwFaction=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u6D3E\u7CFB</option></select>'
+    +'<select id="rw-role" class="rw-filter" onchange="_rwRole=this.value;renderRenwu();"><option value="all">\u5168\u90E8\u8EAB\u4EFD</option><option value="civil">\u6587\u81E3</option><option value="military">\u6B66\u5C06</option><option value="harem">\u540E\u5BAB</option><option value="none">\u5E03\u8863</option></select>'
+    +'<select id="rw-sort" class="rw-filter" onchange="_rwSort=this.value;renderRenwu();"><option value="loyalty">\u6392\uFF1A\u5FE0\u8BDA</option><option value="intelligence">\u6392\uFF1A\u667A\u529B</option><option value="administration">\u6392\uFF1A\u653F\u52A1</option><option value="military">\u6392\uFF1A\u519B\u4E8B</option><option value="ambition">\u6392\uFF1A\u91CE\u5FC3</option></select>'
+    +'<label class="rw-chk"><input type="checkbox" id="rw-dead" onchange="_rwShowDead=this.checked;renderRenwu();">\u663E \u5DF2 \u6B81</label>'
     +'</div>'
     +'<div id="rw-legend" class="rw-legend"></div>'
     +'<div id="rw-grid" class="rw-grid"></div>'

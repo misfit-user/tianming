@@ -6109,6 +6109,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           var _sceneCtx = buildNpcSceneContext();
           if (_sceneCtx) tp1 += '\n\n' + _sceneCtx;
         }
+        // 长期事势追踪·注入（含 hidden 条目，AI 全见，玩家不见 hidden）
+        if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
+          var _chronCtx = ChronicleTracker.getAIContextString();
+          if (_chronCtx) tp1 += '\n\n' + _chronCtx;
+        }
         if (typeof buildFullAIContext === 'function') {
           var _fCtx = buildFullAIContext();
           // ── 七变量 + 深化字段（详细）──
@@ -6402,6 +6407,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         if (_relsBriefC) tp1c += '\n\u3010\u52BF\u529B\u5173\u7CFB\u5FEB\u7167\u3011\n' + _relsBriefC + '\n';
         if (_undercurrentsC) tp1c += '\n\u3010\u4E0A\u56DE\u5408\u52BF\u529B\u6697\u6D41\uFF08\u5E94\u6709\u540E\u7EED\uFF09\u3011\n' + _undercurrentsC + '\n';
         if (_activeSchemesC) tp1c += '\n\u3010\u8FDB\u884C\u4E2D\u9634\u8C0B\uFF08\u901A\u8FC7 scheme_actions \u63A8\u8FDB\uFF0C\u4E0D\u8981\u5728 npc_schemes \u91CD\u590D\uFF09\u3011\n' + _activeSchemesC + '\n';
+        // 长期事势·含 hidden 条目（AI 全见，用于构思本回合该推进/完成哪些）
+        if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
+          var _chronCtxC = ChronicleTracker.getAIContextString();
+          if (_chronCtxC) tp1c += '\n' + _chronCtxC + '\n';
+        }
         if (_npcsBriefC) tp1c += '\n\u3010\u4E3B\u8981 NPC\uFF08\u542B\u5B98\u804C/\u6D3E\u7CFB/\u5FE0\u5FD7\u5EC9/\u7279\u8D28\uFF09\u3011\n' + _npcsBriefC + '\n';
 
         tp1c += '\n\u3010\u4EFB\u52A1\u3011\u751F\u6210\u4EE5\u4E0B\u4E03\u7C7B\u5185\u5BB9\uFF0C\u8FD4\u56DE\u4E25\u683C JSON\uFF08\u4EC5\u5305\u542B\u8FD9\u4E9B\u5B57\u6BB5\uFF09\uFF1A\n\n';

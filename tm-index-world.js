@@ -5596,15 +5596,71 @@ async function submitOfficeCh(){if(!GM.officeChanges)GM.officeChanges=[];if(GM.o
 //  编年
 // ============================================================
 function renderBiannian(){
-  // ── 上区：进行中事务 ──
+  // ── 上区：进行中事务 + 长期事势追踪 ──
   var activeEl = _$('bn-active');
   if (activeEl) {
+    var aHtml = '';
+
+    // A. 长期事势追踪器条目（科举/诏令/工程/积压奏疏/势力约期·含按类分组）
+    if (typeof ChronicleTracker !== 'undefined') {
+      var _tracks = ChronicleTracker.getVisible();
+      if (_tracks && _tracks.length > 0) {
+        // 按 type 分组
+        var _trackGroups = {};
+        _tracks.forEach(function(t){
+          var k = t.type || 'other';
+          if (!_trackGroups[k]) _trackGroups[k] = [];
+          _trackGroups[k].push(t);
+        });
+        var _typeLabels = {
+          keju: '\u79D1\u4E3E', edict: '\u8BCF\u4EE4', project: '\u5DE5\u7A0B\u5546\u961F',
+          pending_memorial: '\u79EF\u538B\u594F\u758F', faction_treaty: '\u52BF\u529B\u7EA6\u671F',
+          npc_action: 'NPC \u6301\u7EED\u884C\u52A8', tingyi_pending: '\u5EF7\u8BAE\u5F85\u843D\u5B9E',
+          chaoyi_pending: '\u671D\u8BAE\u5F85\u6267\u884C', dynasty_event: '\u671D\u4EE3\u4E8B\u4EF6',
+          other: '\u5176\u4ED6'
+        };
+        var _typeColors = {
+          keju: 'var(--gold-400)', edict: 'var(--vermillion-400)', project: 'var(--celadon-400)',
+          pending_memorial: 'var(--amber-400)', faction_treaty: 'var(--purple,#9b59b6)',
+          npc_action: 'var(--color-foreground-secondary)', tingyi_pending: 'var(--amber-400)',
+          chaoyi_pending: 'var(--amber-400)', dynasty_event: 'var(--gold-d)', other: 'var(--color-foreground-muted)'
+        };
+        aHtml += '<div style="font-size:var(--text-xs);color:var(--gold-400);font-weight:var(--weight-bold);margin-bottom:var(--space-1);letter-spacing:0.1em;">\u3010 \u957F \u671F \u4E8B \u52BF \u00B7 \u7F16 \u5E74 \u8FDB \u884C \u4E2D \u3011</div>';
+        Object.keys(_trackGroups).forEach(function(typeK){
+          var label = _typeLabels[typeK] || typeK;
+          var color = _typeColors[typeK] || 'var(--color-foreground-muted)';
+          aHtml += '<div style="font-size:0.66rem;color:'+color+';font-weight:var(--weight-bold);margin:var(--space-2) 0 var(--space-1) 0;padding-left:var(--space-1);border-left:2px solid '+color+';">' + escHtml(label) + ' <span style="color:var(--color-foreground-muted);">(' + _trackGroups[typeK].length + ')</span></div>';
+          _trackGroups[typeK].forEach(function(t){
+            var elapsed = (GM.turn||0) - (t.startTurn||0);
+            var pct = Math.min(100, Math.max(0, t.progress||0));
+            var _prioStyle = t.priority === 'high' ? ';box-shadow:0 0 0 1px var(--vermillion-400);' : '';
+            aHtml += '<div class="timeline-item" style="padding:var(--space-1) var(--space-2);border-left:2px solid '+color+';background:var(--color-surface);border-radius:var(--radius-sm);margin-bottom:var(--space-1);margin-left:var(--space-1);'+_prioStyle+'">';
+            aHtml += '<div style="flex:1;font-size:0.76rem;">';
+            aHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-1);">';
+            aHtml += '<span style="font-weight:600;color:var(--color-foreground);">' + escHtml(t.title||'\u65E0\u9898') + '</span>';
+            if (t.priority === 'high') aHtml += '<span style="font-size:0.58rem;color:var(--vermillion-400);">\u26A0 \u9AD8\u4F18\u5148</span>';
+            aHtml += '</div>';
+            aHtml += '<div style="font-size:0.65rem;color:var(--gold-d);margin-top:2px;">';
+            if (t.actor) aHtml += '\u4E3B\uFF1A' + escHtml(t.actor) + ' \u00B7 ';
+            aHtml += '\u9636\u6BB5\uFF1A' + escHtml(t.currentStage||'-') + ' \u00B7 ' + elapsed + ' \u56DE\u5408';
+            if (t.expectedEndTurn && t.expectedEndTurn > (GM.turn||0)) aHtml += ' \u00B7 \u9884\u4F59 ' + (t.expectedEndTurn - GM.turn) + ' \u56DE';
+            aHtml += '</div>';
+            if (t.narrative) aHtml += '<div style="font-size:0.68rem;color:var(--color-foreground-secondary);line-height:1.5;margin-top:2px;">' + escHtml(t.narrative) + '</div>';
+            if (Array.isArray(t.stakeholders) && t.stakeholders.length) aHtml += '<div style="font-size:0.62rem;color:var(--color-foreground-muted);margin-top:2px;">\u76F8\u5173\uFF1A' + escHtml(t.stakeholders.slice(0,4).join('\u3001')) + '</div>';
+            aHtml += '<div class="timeline-progress" style="margin-top:4px;"><div class="timeline-progress-fill" style="width:' + pct + '%;background:'+color+';"></div></div>';
+            aHtml += '</div></div>';
+          });
+        });
+      }
+    }
+
+    // B. 旧 biannianItems（保留兼容）
     var _activeItems = (GM.biannianItems||[]).filter(function(item) {
       var elapsed = GM.turn - (item.startTurn||item.turn||GM.turn);
       return elapsed < (item.duration||1);
     });
     if (_activeItems.length > 0) {
-      var aHtml = '<div style="font-size:var(--text-xs);color:var(--gold-400);font-weight:var(--weight-bold);margin-bottom:var(--space-1);">\u6B63\u5728\u8FDB\u884C</div>';
+      aHtml += '<div style="font-size:var(--text-xs);color:var(--gold-400);font-weight:var(--weight-bold);margin:var(--space-2) 0 var(--space-1) 0;">\u5176\u4ED6\u8FDB\u884C\u4E2D</div>';
       _activeItems.forEach(function(item) {
         var elapsed = GM.turn - (item.startTurn||item.turn||GM.turn);
         var total = item.duration||1;
@@ -5618,10 +5674,9 @@ function renderBiannian(){
         aHtml += '<div class="timeline-progress"><div class="timeline-progress-fill" style="width:' + pct + '%;"></div></div>';
         aHtml += '</div></div>';
       });
-      activeEl.innerHTML = aHtml;
-    } else {
-      activeEl.innerHTML = '';
     }
+
+    activeEl.innerHTML = aHtml || '<div style="color:var(--color-foreground-muted);text-align:center;padding:var(--space-2);font-size:0.7rem;">\u6682\u65E0\u8FDB\u884C\u4E2D\u7684\u957F\u671F\u4E8B\u52BF</div>';
   }
 
   // ── 下区：永久编年历史 ──
@@ -5680,6 +5735,10 @@ function renderBiannian(){
 
 function processBiannian(){
   if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
+  // 长期事势追踪器·每回合采集（科举/诏令/阴谋/工程/积压奏疏）
+  if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.tick) {
+    try { ChronicleTracker.tick(); } catch(_e){ console.warn('[Chronicle.tick]', _e); }
+  }
   var completed = [];
   GM.biannianItems = (GM.biannianItems||[]).filter(function(item) {
     var elapsed = GM.turn - (item.startTurn||item.turn||GM.turn);

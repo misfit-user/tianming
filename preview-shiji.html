@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>史记标签页·回合推演弹窗·美化预览</title>
+<style>
+:root {
+  --bg-1: #0f0d0a;
+  --bg-2: #1a1510;
+  --bg-paper: #241e18;
+  --bg-sunken: #120f0a;
+  --ink-900: #f4eadd;
+  --ink-700: #d9c9a9;
+  --ink-500: #a69470;
+  --ink-300: #6b5d47;
+  --ink-100: #3d342a;
+  --gold-300: #c9a85f;
+  --gold-400: #b89a53;
+  --gold-500: #9d8244;
+  --gold-d: #6b5a30;
+  --vermillion-300: #d15c47;
+  --vermillion-400: #b84738;
+  --vermillion-600: #8f3428;
+  --indigo-400: #5a6fa8;
+  --indigo-600: #3e4e80;
+  --celadon-400: #6a9a7f;
+  --celadon-600: #4a7a5f;
+  --amber-400: #c9a045;
+  --amber-600: #8f6f28;
+  --purple-400: #8e6aa8;
+  --blue-400: #5a8fb8;
+  --border-subtle: rgba(184,154,83,0.15);
+  --border-strong: rgba(184,154,83,0.35);
+  --shadow-scroll: 0 6px 18px rgba(0,0,0,0.45),0 0 0 1px rgba(184,154,83,0.08);
+  --font-serif: "STKaiti","KaiTi","楷体","Georgia",serif;
+  --font-song: "STSong","SimSun","宋体",serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f0d0a 70%),var(--bg-1);color:var(--ink-700);font-family:var(--font-song);font-size:14px;line-height:1.7;min-height:100vh;}
+.preview-frame{max-width:1380px;margin:32px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-scroll);}
+.preview-header{background:linear-gradient(to bottom,rgba(184,154,83,0.04),transparent);padding:12px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--ink-500);letter-spacing:0.1em;}
+.preview-header .dot{width:10px;height:10px;border-radius:50%;}
+.preview-header .dot.r{background:#d15c47;} .preview-header .dot.y{background:#c9a85f;} .preview-header .dot.g{background:#6a9a7f;}
+.preview-header .title{margin-left:auto;font-family:var(--font-serif);letter-spacing:0.3em;color:var(--ink-300);}
+.tab-bar{display:flex;gap:0;background:var(--bg-1);border-bottom:1px solid var(--border-subtle);overflow-x:auto;}
+.tab-btn{padding:10px 16px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:14px;letter-spacing:0.1em;cursor:pointer;border-bottom:2px solid transparent;position:relative;}
+.tab-btn:hover{color:var(--ink-700);}
+.tab-btn.active{color:var(--gold-400);border-bottom-color:var(--gold-400);}
+.tab-btn.active::before{content:"";position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--vermillion-400);border-radius:1px;transform:rotate(12deg);}
+
+/* 分区标题·预览用 */
+.preview-section-title{padding:14px 28px;background:var(--bg-1);border-bottom:1px solid var(--border-subtle);color:var(--gold-400);font-family:var(--font-serif);letter-spacing:0.3em;font-size:13px;display:flex;align-items:center;gap:10px;}
+.preview-section-title::before{content:"❖";color:var(--gold-300);}
+.preview-section-title .sub{color:var(--ink-300);font-size:11px;margin-left:auto;letter-spacing:0.15em;font-style:italic;}
+
+/* ═══ 史记主区 ═══ */
+.sj-panel{padding:24px 28px;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;min-height:600px;}
+.sj-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
+.sj-inner{position:relative;z-index:1;}
+.sj-title{text-align:center;margin-bottom:20px;position:relative;padding:14px 0 18px;}
+.sj-title::before,.sj-title::after{content:"";position:absolute;left:50%;width:180px;height:1px;transform:translateX(-50%);background:linear-gradient(to right,transparent,var(--gold-d),transparent);}
+.sj-title::before{top:0;} .sj-title::after{bottom:0;}
+.sj-title .main{font-family:var(--font-serif);font-size:24px;letter-spacing:0.5em;color:var(--ink-900);margin-bottom:6px;}
+.sj-title .sub{font-size:12px;color:var(--ink-300);letter-spacing:0.3em;font-family:var(--font-serif);font-style:italic;}
+.sj-title .seal{position:absolute;right:28px;top:10px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.85),rgba(140,40,30,0.75));display:flex;align-items:center;justify-content:center;color:#f4eadd;font-size:11px;font-family:var(--font-serif);letter-spacing:0.05em;font-weight:bold;transform:rotate(-6deg);box-shadow:0 2px 6px rgba(140,40,30,0.4);opacity:0.88;line-height:1.2;text-align:center;}
+
+/* 工具栏 */
+.sj-tools{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(184,154,83,0.04);border:1px solid var(--border-subtle);border-radius:2px;margin-bottom:14px;flex-wrap:wrap;}
+.sj-tools-lbl{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.2em;padding-right:6px;border-right:1px solid var(--border-subtle);}
+.sj-search-wrap{position:relative;flex:1;min-width:180px;max-width:300px;}
+.sj-search-wrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-300);font-size:14px;pointer-events:none;}
+.sj-search{width:100%;padding:5px 12px 5px 28px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-song);font-size:12px;border-radius:2px;outline:none;}
+.sj-filter{padding:5px 12px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-serif);font-size:12px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.sj-export{padding:5px 14px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--ink-500);font-family:var(--font-serif);font-size:12px;letter-spacing:0.15em;border-radius:2px;cursor:pointer;}
+.sj-export::before{content:"❖";margin-right:4px;opacity:0.7;font-size:10px;}
+.sj-stat{margin-left:auto;font-size:11px;color:var(--ink-300);letter-spacing:0.08em;font-family:var(--font-serif);}
+.sj-stat .n{color:var(--gold-400);}
+
+/* 年度分隔 */
+.sj-year-sep{display:flex;align-items:center;gap:12px;margin:16px 0 10px;font-family:var(--font-serif);font-size:14px;color:var(--gold-300);letter-spacing:0.35em;}
+.sj-year-sep::before,.sj-year-sep::after{content:"";flex:1;height:1px;background:linear-gradient(to right,transparent,var(--gold-d) 20%,var(--gold-d) 80%,transparent);}
+.sj-year-sep .y-count{font-size:10.5px;color:var(--ink-300);font-style:italic;letter-spacing:0.1em;}
+
+/* ═══ 史记卡片 ═══ */
+.sj-card{
+  position:relative;display:flex;align-items:stretch;gap:14px;
+  margin-bottom:10px;
+  padding:12px 16px 12px 14px;
+  background:var(--bg-paper);
+  background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));
+  border:1px solid var(--border-subtle);border-left:3px solid var(--gold-d);border-radius:3px;
+  cursor:pointer;transition:all 0.25s;
+}
+.sj-card:hover{border-color:var(--gold-400);box-shadow:0 3px 10px rgba(184,154,83,0.15),0 0 8px rgba(184,154,83,0.08);transform:translateX(2px);}
+.sj-card.has-war{border-left-color:var(--vermillion-400);background-image:repeating-linear-gradient(135deg,transparent 0,transparent 12px,rgba(192,64,48,0.025) 12px,rgba(192,64,48,0.025) 13px),repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));}
+.sj-card.has-death{border-left-color:var(--vermillion-600);}
+.sj-card.has-major{border-left-color:var(--gold-400);box-shadow:0 0 0 1px rgba(184,154,83,0.12);}
+
+/* 左·回合数+日期 */
+.sj-turn-col{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:92px;padding-right:12px;border-right:1px dashed var(--border-subtle);flex-shrink:0;}
+.sj-turn-no{font-family:var(--font-serif);font-size:11px;color:var(--gold-d);letter-spacing:0.2em;margin-bottom:4px;}
+.sj-turn-no .n{font-size:24px;color:var(--gold-300);font-weight:700;letter-spacing:0.05em;display:block;line-height:1;text-shadow:0 0 6px rgba(201,168,95,0.25);}
+.sj-turn-date{font-size:10.5px;color:var(--ink-500);font-family:var(--font-serif);letter-spacing:0.1em;text-align:center;font-style:italic;line-height:1.4;}
+.sj-turn-era{display:inline-block;margin-top:3px;font-size:9.5px;color:var(--amber-400);padding:1px 5px;background:rgba(201,160,69,0.08);border:1px solid var(--amber-400);border-radius:2px;letter-spacing:0.08em;}
+
+/* 中·摘要内容 */
+.sj-body-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;padding:2px 0;}
+.sj-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sj-szj-title{font-family:var(--font-serif);font-size:14px;color:var(--gold-400);letter-spacing:0.12em;font-weight:500;}
+.sj-szj-title::before{content:"——";color:var(--gold-d);margin-right:4px;opacity:0.7;}
+.sj-szj-title::after{content:"——";color:var(--gold-d);margin-left:4px;opacity:0.7;}
+
+.sj-sum{font-size:12.5px;color:var(--ink-900);line-height:1.75;font-family:var(--font-serif);letter-spacing:0.02em;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.sj-sum::first-letter{font-size:14px;color:var(--gold-400);}
+
+.sj-tags-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:2px;}
+.sj-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 7px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.1em;}
+.sj-tag.war{color:var(--vermillion-400);background:rgba(192,64,48,0.08);border:1px solid var(--vermillion-400);}
+.sj-tag.death{color:var(--vermillion-600);background:rgba(143,52,40,0.08);border:1px solid var(--vermillion-600);}
+.sj-tag.scheme{color:var(--indigo-400);background:rgba(90,111,168,0.08);border:1px solid var(--indigo-400);}
+.sj-tag.faction{color:var(--purple-400);background:rgba(142,106,168,0.08);border:1px solid var(--purple-400);}
+.sj-tag.event{color:var(--gold-400);background:rgba(184,154,83,0.06);border:1px solid var(--gold-d);}
+.sj-tag.calamity{color:var(--amber-400);background:rgba(201,160,69,0.08);border:1px solid var(--amber-400);}
+.sj-tag::before{content:"◆";font-size:8px;opacity:0.7;}
+
+/* 右·数值变化小徽 */
+.sj-delta-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0;min-width:110px;padding-left:8px;padding-top:4px;}
+.sj-delta-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.05em;}
+.sj-delta-badge .lbl{color:var(--ink-300);}
+.sj-delta-badge.up{color:var(--celadon-400);background:rgba(106,154,127,0.06);border:1px solid var(--celadon-400);}
+.sj-delta-badge.up::before{content:"▲ ";font-size:7px;}
+.sj-delta-badge.dn{color:var(--vermillion-400);background:rgba(192,64,48,0.06);border:1px solid var(--vermillion-400);}
+.sj-delta-badge.dn::before{content:"▼ ";font-size:7px;}
+
+/* 分页 */
+.sj-paging{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;padding:10px 0;}
+.sj-pg-btn{width:28px;height:28px;padding:0;background:transparent;border:1px solid var(--border-subtle);color:var(--ink-500);font-family:var(--font-serif);font-size:14px;border-radius:2px;cursor:pointer;line-height:26px;}
+.sj-pg-btn:hover:not(:disabled){color:var(--gold-400);border-color:var(--gold-400);}
+.sj-pg-info{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.08em;}
+.sj-pg-info .n{color:var(--gold-400);}
+
+/* ═══ 史记弹窗（回合推演结果） ═══ */
+.tr-backdrop{position:relative;padding:60px 40px;background:radial-gradient(ellipse at center,rgba(0,0,0,0.35) 0%,rgba(0,0,0,0.7) 100%);}
+.tr-backdrop::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 4em,rgba(139,90,50,0.02) 4em,rgba(139,90,50,0.02) calc(4em + 1px));pointer-events:none;}
+
+.tr-modal{
+  max-width:960px;margin:0 auto;
+  background-color:var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.035) 2.5em,rgba(107,93,71,0.035) calc(2.5em + 1px)),
+    repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),
+    linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 100px);
+  border:1px solid var(--gold-d);
+  border-radius:4px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.7),0 0 0 1px rgba(201,168,95,0.15),0 0 60px rgba(184,154,83,0.08);
+  position:relative;
+  overflow:hidden;
+}
+.tr-modal::before,.tr-modal::after{content:"";position:absolute;width:24px;height:24px;border:2px solid var(--gold-400);z-index:2;opacity:0.55;pointer-events:none;}
+.tr-modal::before{top:6px;left:6px;border-right:none;border-bottom:none;}
+.tr-modal::after{bottom:6px;right:6px;border-left:none;border-top:none;}
+
+/* 头部 */
+.tr-head{
+  position:relative;
+  padding:20px 32px 18px;
+  border-bottom:1px solid var(--gold-d);
+  background:linear-gradient(to bottom,rgba(184,154,83,0.07),transparent);
+}
+.tr-head::after{content:"";position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:120px;height:1px;background:linear-gradient(to right,transparent,var(--gold-400),transparent);}
+.tr-nav{display:flex;align-items:center;gap:12px;}
+.tr-nav-btn{width:26px;height:26px;padding:0;background:rgba(184,154,83,0.06);border:1px solid var(--gold-d);color:var(--ink-500);border-radius:2px;cursor:pointer;font-size:14px;line-height:22px;font-family:var(--font-serif);transition:all 0.2s;}
+.tr-nav-btn:hover:not(:disabled){color:var(--gold-400);border-color:var(--gold-400);background:rgba(184,154,83,0.15);}
+.tr-nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+.tr-title-wrap{flex:1;text-align:center;}
+.tr-turn-no{font-family:var(--font-serif);font-size:11px;color:var(--gold-d);letter-spacing:0.3em;margin-bottom:4px;}
+.tr-date{font-family:var(--font-serif);font-size:19px;color:var(--ink-900);letter-spacing:0.3em;font-weight:500;text-shadow:0 0 10px rgba(201,168,95,0.25);}
+.tr-era{font-size:11px;color:var(--amber-400);padding:1px 8px;background:rgba(201,160,69,0.08);border:1px solid var(--amber-400);border-radius:2px;margin-left:8px;letter-spacing:0.1em;vertical-align:middle;}
+
+.tr-seal{
+  position:absolute;top:12px;right:22px;width:50px;height:50px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.9),rgba(140,40,30,0.85));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#f4eadd;font-family:var(--font-serif);
+  transform:rotate(-8deg);
+  box-shadow:0 3px 8px rgba(140,40,30,0.5);
+  z-index:3;letter-spacing:0.05em;
+}
+.tr-seal .t{font-size:11px;font-weight:bold;letter-spacing:0.12em;}
+.tr-seal .b{font-size:9.5px;opacity:0.85;margin-top:1px;}
+
+.tr-close-x{
+  position:absolute;top:14px;left:22px;
+  width:28px;height:28px;padding:0;
+  background:rgba(192,64,48,0.08);
+  border:1px solid var(--vermillion-400);
+  color:var(--vermillion-400);
+  font-family:var(--font-serif);font-size:13px;
+  border-radius:50%;cursor:pointer;line-height:24px;transition:all 0.2s;
+  z-index:3;
+}
+.tr-close-x:hover{background:rgba(192,64,48,0.15);transform:scale(1.1);}
+
+/* 一句话总曰 */
+.tr-summary-bar{
+  padding:12px 22px;
+  background:linear-gradient(to right,transparent,rgba(184,154,83,0.06) 15%,rgba(184,154,83,0.06) 85%,transparent);
+  text-align:center;
+  font-family:var(--font-serif);font-size:15px;
+  color:var(--gold-300);letter-spacing:0.15em;
+  font-style:italic;
+  border-bottom:1px dashed var(--border-subtle);
+  position:relative;
+}
+.tr-summary-bar::before,.tr-summary-bar::after{
+  color:var(--gold-400);font-family:var(--font-serif);font-size:18px;
+  position:absolute;top:12px;opacity:0.55;
+}
+.tr-summary-bar::before{content:"\201C";left:18px;}
+.tr-summary-bar::after{content:"\201D";right:18px;}
+
+/* 关键事件标签行 */
+.tr-critical-bar{padding:9px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border-subtle);background:rgba(0,0,0,0.15);}
+.tr-critical-lbl{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.2em;margin-right:4px;}
+.tr-critical-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 10px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.15em;font-weight:500;border:1px solid var(--tag-color);color:var(--tag-color);background:rgba(var(--tag-rgb,184,154,83),0.1);}
+.tr-critical-tag.war{--tag-color:var(--vermillion-400);--tag-rgb:184,71,56;}
+.tr-critical-tag.death{--tag-color:var(--vermillion-600);--tag-rgb:143,52,40;}
+.tr-critical-tag.scheme{--tag-color:var(--indigo-400);--tag-rgb:90,111,168;}
+.tr-critical-tag.faction{--tag-color:var(--purple-400);--tag-rgb:142,106,168;}
+.tr-critical-tag.calamity{--tag-color:var(--amber-400);--tag-rgb:201,160,69;}
+.tr-critical-tag::before{content:"◆";font-size:9px;opacity:0.7;}
+
+/* 内容区 */
+.tr-body{padding:18px 28px 16px;max-height:64vh;overflow-y:auto;}
+
+/* 通用段落 header */
+.tr-section{margin-bottom:22px;}
+.tr-section:last-child{margin-bottom:0;}
+.tr-section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding-bottom:6px;}
+.tr-section-hdr .lab{font-family:var(--font-serif);font-size:15px;letter-spacing:0.25em;padding:4px 16px 5px;background:linear-gradient(to bottom,rgba(157,130,68,0.14),rgba(157,130,68,0.04));border-top:1px solid var(--sec-c,var(--gold-400));border-bottom:1px solid var(--sec-c,var(--gold-400));color:var(--sec-c,var(--gold-300));font-weight:500;}
+.tr-section-hdr .lab::before,.tr-section-hdr .lab::after{content:"❖";color:var(--sec-c,var(--gold-400));font-size:10px;margin:0 6px;opacity:0.65;}
+.tr-section-hdr .meta{font-size:11px;color:var(--ink-300);font-style:italic;letter-spacing:0.1em;}
+.tr-section.shilu{--sec-c:var(--gold-400);}
+.tr-section.szj{--sec-c:var(--celadon-400);}
+.tr-section.changes{--sec-c:var(--amber-400);}
+.tr-section.personnel{--sec-c:var(--indigo-400);}
+.tr-section.houren{--sec-c:var(--purple-400);}
+.tr-section.battle{--sec-c:var(--vermillion-400);}
+
+/* 实录·文言体卷轴 */
+.tr-shilu{
+  padding:18px 28px 22px;
+  background-color:#ebddc0;
+  background-image:
+    linear-gradient(to right,transparent 20px,rgba(192,64,48,0.18) 20px,rgba(192,64,48,0.18) 21px,transparent 22px,transparent 26px,rgba(192,64,48,0.1) 26px,rgba(192,64,48,0.1) 27px,transparent 28px),
+    repeating-linear-gradient(0deg,transparent 0,transparent 31px,rgba(139,90,50,0.1) 31px,rgba(139,90,50,0.1) 32px),
+    radial-gradient(ellipse at 30% 20%,rgba(184,154,83,0.08),transparent 50%),
+    radial-gradient(ellipse at 70% 80%,rgba(139,90,50,0.06),transparent 50%);
+  background-size:auto,100% 32px,100% 100%,100% 100%;
+  color:#2a1810;
+  font-family:var(--font-serif);font-size:14.5px;line-height:32px;
+  text-indent:2em;
+  border:1px solid rgba(107,60,40,0.35);border-radius:3px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.5);
+  padding-left:44px;
+  position:relative;
+}
+.tr-shilu::before{
+  content:"";position:absolute;top:8px;right:14px;
+  width:36px;height:36px;border-radius:3px;
+  background:linear-gradient(to bottom right,rgba(192,64,48,0.88),rgba(140,40,30,0.92));
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(244,234,221,0.95);font-family:var(--font-serif);font-size:11px;font-weight:bold;letter-spacing:0.1em;
+  box-shadow:0 1px 3px rgba(140,40,30,0.5);transform:rotate(-4deg);
+}
+.tr-shilu .after-seal{position:absolute;top:12px;right:18px;color:rgba(244,234,221,0.95);font-family:var(--font-serif);font-size:11px;font-weight:bold;letter-spacing:0.1em;z-index:2;transform:rotate(-4deg);}
+
+/* 时政记 */
+.tr-szj-title{text-align:center;font-family:var(--font-serif);font-size:14px;color:var(--gold-400);font-weight:700;letter-spacing:0.25em;padding:6px 0 10px;border-bottom:1px dashed var(--gold-d);margin-bottom:12px;}
+.tr-szj-title::before,.tr-szj-title::after{content:"——";color:var(--gold-d);margin:0 8px;opacity:0.7;}
+.tr-szj-content{line-height:1.95;color:var(--ink-700);font-family:var(--font-song);letter-spacing:0.02em;padding:0 6px;}
+.tr-szj-content p{margin:0 0 10px 0;text-indent:2em;}
+.tr-szj-summary{margin-top:12px;padding:8px 14px;background:linear-gradient(to right,rgba(184,154,83,0.08),rgba(184,154,83,0.02));border-left:3px solid var(--gold-400);border-radius:0 2px 2px 0;font-style:italic;color:var(--celadon-400);text-align:center;font-size:12.5px;letter-spacing:0.08em;font-family:var(--font-serif);}
+.tr-szj-summary::before{content:"【总曰】";color:var(--gold-400);margin-right:6px;font-weight:500;letter-spacing:0.15em;font-style:normal;}
+
+/* 展开详情切换 */
+.tr-detail-toggle{
+  margin:16px auto;padding:8px 28px;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(to right,transparent,rgba(184,154,83,0.12) 30%,rgba(184,154,83,0.12) 70%,transparent);
+  border-top:1px dashed var(--gold-d);border-bottom:1px dashed var(--gold-d);
+  cursor:pointer;color:var(--gold-300);font-family:var(--font-serif);font-size:13px;letter-spacing:0.3em;
+  transition:all 0.2s;
+}
+.tr-detail-toggle:hover{color:var(--gold-400);background:linear-gradient(to right,transparent,rgba(184,154,83,0.2) 30%,rgba(184,154,83,0.2) 70%,transparent);}
+.tr-detail-toggle .arrow{display:inline-block;transition:transform 0.25s;font-size:10px;}
+.tr-detail-toggle.open .arrow{transform:rotate(180deg);}
+
+/* 数值变化 - 七大变量 */
+.tr-vars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:10px;}
+.tr-var-card{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--vc,var(--gold-d));border-radius:3px;}
+.tr-var-card .ic{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--vc),var(--ink-100));color:#f4eadd;font-family:var(--font-serif);font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.3);}
+.tr-var-card .lab{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.1em;}
+.tr-var-card .row{display:flex;align-items:baseline;gap:4px;}
+.tr-var-card .val{font-family:var(--font-serif);font-size:16px;color:var(--ink-900);font-weight:700;letter-spacing:0.05em;}
+.tr-var-card .delta{font-size:10.5px;font-family:var(--font-serif);letter-spacing:0.05em;font-weight:500;}
+.tr-var-card .delta.up{color:var(--celadon-400);}
+.tr-var-card .delta.dn{color:var(--vermillion-400);}
+.tr-var-card .delta.up::before{content:"▲";font-size:8px;margin-right:2px;}
+.tr-var-card .delta.dn::before{content:"▼";font-size:8px;margin-right:2px;}
+.tr-var-card.v-huangquan{--vc:var(--gold-400);}
+.tr-var-card.v-huangwei{--vc:var(--vermillion-400);}
+.tr-var-card.v-minxin{--vc:var(--celadon-400);}
+.tr-var-card.v-tanglin{--vc:var(--amber-400);}
+.tr-var-card.v-neidang{--vc:var(--purple-400);}
+.tr-var-card.v-bingli{--vc:var(--vermillion-600);}
+.tr-var-card.v-lizhi{--vc:var(--indigo-400);}
+
+/* 变化条目·详情 */
+.tr-change-rows{display:flex;flex-direction:column;gap:5px;padding:6px 0;}
+.tr-change-row{display:flex;align-items:flex-start;gap:10px;padding:6px 10px;background:rgba(184,154,83,0.03);border:1px solid var(--border-subtle);border-radius:2px;font-size:12px;line-height:1.65;color:var(--ink-700);}
+.tr-change-row .cat{font-family:var(--font-serif);font-size:10.5px;color:var(--cr-c,var(--gold-400));letter-spacing:0.12em;padding:1px 6px;background:rgba(var(--cr-rgb,184,154,83),0.06);border:1px solid var(--cr-c,var(--gold-d));border-radius:2px;flex-shrink:0;white-space:nowrap;}
+.tr-change-row .text{flex:1;}
+.tr-change-row .sign{font-family:var(--font-serif);font-size:11px;letter-spacing:0.05em;font-weight:500;flex-shrink:0;}
+.tr-change-row .sign.up{color:var(--celadon-400);}
+.tr-change-row .sign.dn{color:var(--vermillion-400);}
+
+/* 人事变动 */
+.tr-personnel-list{display:flex;flex-direction:column;gap:6px;}
+.tr-person-row{display:flex;align-items:center;gap:10px;padding:6px 10px;background:rgba(184,154,83,0.03);border:1px solid var(--border-subtle);border-left:3px solid var(--pr-c,var(--gold-d));border-radius:2px;font-size:12px;}
+.tr-person-row .type{font-family:var(--font-serif);font-size:10.5px;padding:1px 6px;color:var(--pr-c);background:rgba(var(--pr-rgb),0.08);border:1px solid var(--pr-c);border-radius:2px;letter-spacing:0.12em;flex-shrink:0;white-space:nowrap;}
+.tr-person-row.promote{--pr-c:var(--celadon-400);--pr-rgb:106,154,127;}
+.tr-person-row.demote{--pr-c:var(--vermillion-400);--pr-rgb:184,71,56;}
+.tr-person-row.death{--pr-c:var(--vermillion-600);--pr-rgb:143,52,40;}
+.tr-person-row.birth{--pr-c:var(--celadon-400);--pr-rgb:106,154,127;}
+.tr-person-row.appoint{--pr-c:var(--gold-400);--pr-rgb:184,154,83;}
+.tr-person-row .who{font-family:var(--font-serif);color:var(--ink-900);letter-spacing:0.1em;font-weight:500;}
+.tr-person-row .from-to{flex:1;color:var(--ink-700);font-size:11.5px;}
+.tr-person-row .from-to .arrow{color:var(--gold-400);margin:0 6px;}
+
+/* 后人戏说·戏台风 */
+.tr-houren-box{
+  padding:14px 18px;
+  background:
+    linear-gradient(to bottom right,rgba(142,106,168,0.06),rgba(142,106,168,0.02) 50%,rgba(184,154,83,0.04)),
+    var(--bg-paper);
+  border:1px dashed var(--purple-400);
+  border-radius:3px;line-height:1.95;color:var(--ink-700);
+  font-family:var(--font-serif);letter-spacing:0.02em;
+  position:relative;
+  font-style:italic;
+}
+.tr-houren-box::before{
+  content:"\5F18";position:absolute;top:8px;left:-1px;
+  font-family:var(--font-serif);font-size:10px;
+  color:var(--purple-400);padding:1px 5px;
+  background:var(--bg-paper);border:1px solid var(--purple-400);border-radius:2px;
+  letter-spacing:0.15em;
+}
+.tr-houren-box::after{
+  content:"\540E\4EBA\620F\8BF4";position:absolute;bottom:8px;right:12px;
+  font-family:var(--font-serif);font-size:10px;color:var(--purple-400);opacity:0.7;letter-spacing:0.25em;
+}
+
+/* 战况可视化 */
+.tr-battle-vis{display:flex;flex-direction:column;gap:8px;}
+.tr-battle-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(192,64,48,0.04);border:1px solid var(--vermillion-400);border-left:3px solid var(--vermillion-400);border-radius:2px;font-size:12px;}
+.tr-battle-row .loc{font-family:var(--font-serif);font-size:13px;color:var(--ink-900);letter-spacing:0.1em;font-weight:500;min-width:90px;}
+.tr-battle-row .vs{display:flex;align-items:center;gap:8px;flex:1;}
+.tr-battle-row .vs-side{flex:1;text-align:center;font-family:var(--font-serif);color:var(--ink-700);letter-spacing:0.05em;}
+.tr-battle-row .vs-vs{font-family:var(--font-serif);color:var(--vermillion-400);font-size:11px;letter-spacing:0.2em;}
+.tr-battle-row .verdict{font-family:var(--font-serif);font-size:12px;padding:2px 10px;border-radius:2px;letter-spacing:0.15em;font-weight:500;}
+.tr-battle-row .verdict.win{color:#1a1410;background:linear-gradient(to bottom,var(--celadon-400),var(--celadon-600));border:1px solid var(--celadon-400);}
+.tr-battle-row .verdict.lose{color:#f4eadd;background:linear-gradient(to bottom,var(--vermillion-400),var(--vermillion-600));border:1px solid var(--vermillion-600);}
+.tr-battle-row .verdict.draw{color:#1a1410;background:linear-gradient(to bottom,var(--amber-400),var(--amber-600));border:1px solid var(--amber-400);}
+
+/* 底部 */
+.tr-footer{padding:14px 28px;border-top:1px solid var(--gold-d);display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(to top,rgba(184,154,83,0.05),transparent);}
+.tr-footer-hint{font-size:11px;color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.1em;font-style:italic;}
+.tr-footer-actions{display:flex;gap:10px;}
+.tr-btn{padding:8px 20px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);font-size:13px;letter-spacing:0.2em;border-radius:2px;cursor:pointer;transition:all 0.2s;}
+.tr-btn:hover{background:rgba(184,154,83,0.2);border-color:var(--gold-400);transform:translateY(-1px);}
+.tr-btn.primary{background:linear-gradient(to bottom,var(--vermillion-400),var(--vermillion-600));color:#f4eadd;border:1px solid var(--vermillion-600);padding:8px 28px;font-size:14px;letter-spacing:0.4em;box-shadow:0 1px 3px rgba(140,40,30,0.4),inset 0 1px 0 rgba(255,255,255,0.1);}
+.tr-btn.primary:hover{background:linear-gradient(to bottom,var(--vermillion-400),var(--vermillion-400));box-shadow:0 2px 6px rgba(140,40,30,0.5);}
+.tr-btn.primary::before{content:"❖";margin-right:6px;opacity:0.75;}
+
+.legend{padding:14px 20px;background:var(--bg-2);border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-500);text-align:center;letter-spacing:0.08em;line-height:1.9;}
+.legend .k{color:var(--gold-400);} .legend .m{color:var(--vermillion-400);}
+</style>
+</head>
+<body>
+
+<div class="preview-frame">
+
+  <div class="preview-header">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>tianming · 史记标签页 + 回合推演弹窗预览</span>
+    <span class="title">〔 究 天 人 之 际 · 通 古 今 之 变 〕</span>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn">朝政</button>
+    <button class="tab-btn">诏令</button>
+    <button class="tab-btn">奏疏</button>
+    <button class="tab-btn">问对</button>
+    <button class="tab-btn">鸿雁</button>
+    <button class="tab-btn">编年</button>
+    <button class="tab-btn">官制</button>
+    <button class="tab-btn">文苑</button>
+    <button class="tab-btn">起居注</button>
+    <button class="tab-btn">纪事</button>
+    <button class="tab-btn active">史记</button>
+  </div>
+
+  <!-- ═══ 上：史记标签页 ═══ -->
+  <div class="preview-section-title">一·史记标签页<span class="sub">past turns timeline list</span></div>
+
+  <div class="sj-panel">
+    <div class="sj-inner">
+
+      <div class="sj-title">
+        <div class="seal">史<br>记</div>
+        <div class="main">史 记 本 纪</div>
+        <div class="sub">究 天 人 之 际　通 古 今 之 变　成 一 家 之 言</div>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="sj-tools">
+        <span class="sj-tools-lbl">翻　阅</span>
+        <div class="sj-search-wrap"><input class="sj-search" placeholder="搜索回合·日期·要闻……"></div>
+        <select class="sj-filter">
+          <option>全部年份</option>
+          <option>崇祯元年 戊辰 (12条)</option>
+          <option>天启七年 丁卯 (6条)</option>
+        </select>
+        <select class="sj-filter">
+          <option>全部类型</option>
+          <option>大事</option>
+          <option>战事</option>
+          <option>人殁</option>
+          <option>灾异</option>
+        </select>
+        <button class="sj-export">导 出 全 史</button>
+        <span class="sj-stat">共 <span class="n">42</span> 回 · 显 <span class="n">18</span> 回</span>
+      </div>
+
+      <!-- 崇祯元年 -->
+      <div class="sj-year-sep">崇 祯 元 年 戊 辰 <span class="y-count">12 回</span></div>
+
+      <!-- T42 -->
+      <div class="sj-card has-war has-major">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">42</span>回</div>
+          <div class="sj-turn-date">八月初九</div>
+          <div class="sj-turn-era">戊辰·秋</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">辽东危局 · 内阁争饷</span>
+          </div>
+          <div class="sj-sum">户部辽饷议争三日始决 · 减内廷岁支二十万以发辽饷三十万。袁崇焕密奏后金异动 · 孙承宗请再增登莱水师 · 温体仁以"国用将竭"为由驳之。京师大风雨 · 太庙失火 · 钦天监占之为不吉。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag war">战事</span>
+            <span class="sj-tag scheme">密谋</span>
+            <span class="sj-tag calamity">灾异</span>
+            <span class="sj-tag event">廷议</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge dn"><span class="lbl">帑廪</span>-22万</span>
+          <span class="sj-delta-badge up"><span class="lbl">皇权</span>+3</span>
+          <span class="sj-delta-badge dn"><span class="lbl">民心</span>-2</span>
+          <span class="sj-delta-badge up"><span class="lbl">兵力</span>+1千</span>
+        </div>
+      </div>
+
+      <!-- T41 -->
+      <div class="sj-card">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">41</span>回</div>
+          <div class="sj-turn-date">八月初二</div>
+          <div class="sj-turn-era">戊辰·秋</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">刘宗周抗疏 · 徐光启督炮</span>
+          </div>
+          <div class="sj-sum">刘宗周论内廷浮费甚大 · 死谏裁冗 · 帝悚然准奏减员十之三。徐光启请设西局督造红夷大炮 · 工部核银八万两 · 钦准。钱谦益与浙籍同乡饮宴攻讦温相 · 东厂侦报入宫。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag event">抗疏</span>
+            <span class="sj-tag scheme">密谋</span>
+            <span class="sj-tag faction">党争</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge dn"><span class="lbl">内廷</span>-3</span>
+          <span class="sj-delta-badge up"><span class="lbl">清流声望</span>+3</span>
+          <span class="sj-delta-badge up"><span class="lbl">皇威</span>+2</span>
+        </div>
+      </div>
+
+      <!-- T40 -->
+      <div class="sj-card has-death">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">40</span>回</div>
+          <div class="sj-turn-date">七月廿五</div>
+          <div class="sj-turn-era">戊辰·秋</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">老臣病殁 · 科议开场</span>
+          </div>
+          <div class="sj-sum">吏部文选郎倪元璐丁忧在籍 · 礼部议开科举 · 推温体仁主持。原任工部侍郎王公克老病殁于京师私宅 · 年七十四。孙承宗进言袁崇焕忠勇可嘉 · 愿以项上保之。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag death">1人殁</span>
+            <span class="sj-tag event">科议</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge up"><span class="lbl">朝廷 · 孙承宗</span>+2</span>
+        </div>
+      </div>
+
+      <!-- T39 -->
+      <div class="sj-card">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">39</span>回</div>
+          <div class="sj-turn-date">七月十八</div>
+          <div class="sj-turn-era">戊辰·秋</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">漕粮初到 · 经筵讲学</span>
+          </div>
+          <div class="sj-sum">今岁秋漕首批三十万石到京 · 较去岁减三成。倪元璐为经筵讲官 · 讲《资治通鉴·唐纪》论"水能载舟"之义 · 帝颇动容。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag event">经筵</span>
+            <span class="sj-tag event">漕运</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge up"><span class="lbl">漕粮</span>+30万</span>
+          <span class="sj-delta-badge up"><span class="lbl">学问</span>+1</span>
+        </div>
+      </div>
+
+      <!-- 崇祯元年夏末 -->
+      <div class="sj-card has-war">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">38</span>回</div>
+          <div class="sj-turn-date">六月廿八</div>
+          <div class="sj-turn-era">戊辰·夏</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">宁远惊变 · 朝鲜来贡</span>
+          </div>
+          <div class="sj-sum">后金皇太极率万骑抵宁远 · 袁崇焕发红夷大炮拒之 · 斩首二千余 · 后金遁去。朝鲜使臣李元翼至京贡马百匹 · 帝赐宴于建极殿。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag war">宁远大捷</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge up"><span class="lbl">军威</span>+5</span>
+          <span class="sj-delta-badge up"><span class="lbl">袁崇焕·忠</span>+3</span>
+          <span class="sj-delta-badge up"><span class="lbl">朝鲜·藩属</span>+2</span>
+        </div>
+      </div>
+
+      <!-- 天启七年 -->
+      <div class="sj-year-sep">天 启 七 年 丁 卯 <span class="y-count">6 回</span></div>
+
+      <div class="sj-card has-death has-major">
+        <div class="sj-turn-col">
+          <div class="sj-turn-no"><span class="n">1</span>回</div>
+          <div class="sj-turn-date">八月廿四</div>
+          <div class="sj-turn-era">丁卯·秋</div>
+        </div>
+        <div class="sj-body-col">
+          <div class="sj-title-row">
+            <span class="sj-szj-title">信 王 即 位 · 魏珰伏诛</span>
+          </div>
+          <div class="sj-sum">熹宗崩于乾清宫 · 无子。信王朱由检即帝位 · 以明年为崇祯元年。旋即罢魏忠贤司礼监掌印 · 贬凤阳祖陵司香。天下喁喁 · 民心振奋。</div>
+          <div class="sj-tags-row">
+            <span class="sj-tag death">熹宗崩</span>
+            <span class="sj-tag event">即位</span>
+            <span class="sj-tag faction">大变</span>
+          </div>
+        </div>
+        <div class="sj-delta-col">
+          <span class="sj-delta-badge up"><span class="lbl">皇威</span>+10</span>
+          <span class="sj-delta-badge up"><span class="lbl">民心</span>+8</span>
+          <span class="sj-delta-badge dn"><span class="lbl">阉党</span>-50</span>
+        </div>
+      </div>
+
+      <!-- 分页 -->
+      <div class="sj-paging">
+        <button class="sj-pg-btn">‹</button>
+        <span class="sj-pg-info"><span class="n">1</span> / 4 · 共 <span class="n">42</span> 回</span>
+        <button class="sj-pg-btn">›</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ 下：回合推演弹窗 ═══ -->
+  <div class="preview-section-title">二·回合推演结果弹窗<span class="sub">turn-result modal · showTurnResult()</span></div>
+
+  <div class="tr-backdrop">
+
+    <div class="tr-modal">
+
+      <!-- 头部 -->
+      <div class="tr-head">
+        <div class="tr-close-x">✕</div>
+        <div class="tr-seal"><span class="t">纪年</span><span class="b">史宝</span></div>
+        <div class="tr-nav">
+          <button class="tr-nav-btn" title="前一回合">‹</button>
+          <div class="tr-title-wrap">
+            <div class="tr-turn-no">第 42 回合</div>
+            <div class="tr-date">崇 祯 元 年 八 月 初 九<span class="tr-era">戊辰·秋</span></div>
+          </div>
+          <button class="tr-nav-btn" disabled title="后一回合">›</button>
+        </div>
+      </div>
+
+      <!-- 一句话总曰 -->
+      <div class="tr-summary-bar">辽饷争议三日 · 户部力驳而兵部力请 · 帝减内廷以济军需</div>
+
+      <!-- 关键标签 -->
+      <div class="tr-critical-bar">
+        <span class="tr-critical-lbl">本 回 要 闻</span>
+        <span class="tr-critical-tag war">战事</span>
+        <span class="tr-critical-tag scheme">密谋</span>
+        <span class="tr-critical-tag faction">党争</span>
+        <span class="tr-critical-tag calamity">京师大风雨</span>
+      </div>
+
+      <!-- 内容 -->
+      <div class="tr-body">
+
+        <!-- 实录·文言 -->
+        <div class="tr-section shilu">
+          <div class="tr-section-hdr">
+            <span class="lab">实 录</span>
+            <span class="meta">起居注官实录 · 正史体</span>
+          </div>
+          <div class="tr-shilu">崇祯元年八月初九日，太庙夜为火所毁，钦天监占之曰：雷火克刚木，失辅弼之象。帝御文华殿召兵部尚书孙承宗、户部尚书毕自严、内阁首辅温体仁议辽事。孙请发饷三十万，温以"国用将竭"为辞。毕议：若减内廷岁支二十万，则两全之。帝从之。着户部即起解，驿递星驰。又密敕袁崇焕相机行事，守锦州为上。朝鲜使至京贡马，帝赐宴于建极殿。</div>
+        </div>
+
+        <!-- 一句话总曰（已在上方显示，这里可省） -->
+
+        <!-- 战况 -->
+        <div class="tr-section battle">
+          <div class="tr-section-hdr">
+            <span class="lab">战 况</span>
+            <span class="meta">宁远·辽东前线</span>
+          </div>
+          <div class="tr-battle-vis">
+            <div class="tr-battle-row">
+              <div class="loc">宁远外围</div>
+              <div class="vs">
+                <div class="vs-side">明军 · 袁崇焕 3千</div>
+                <div class="vs-vs">◆ VS ◆</div>
+                <div class="vs-side">后金 · 皇太极 2千</div>
+              </div>
+              <div class="verdict win">小胜</div>
+            </div>
+            <div class="tr-battle-row">
+              <div class="loc">锦州侧翼</div>
+              <div class="vs">
+                <div class="vs-side">明军 · 满桂 1.2千</div>
+                <div class="vs-vs">◆ VS ◆</div>
+                <div class="vs-side">后金游骑 · 5百</div>
+              </div>
+              <div class="verdict draw">僵持</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 展开详情切换 -->
+        <div class="tr-detail-toggle open">
+          <span class="arrow">▲</span>
+          <span>收 起 详 情</span>
+          <span class="arrow">▲</span>
+        </div>
+
+        <!-- 时政记 -->
+        <div class="tr-section szj">
+          <div class="tr-section-hdr">
+            <span class="lab">时 政 记</span>
+            <span class="meta">朝政纪要体</span>
+          </div>
+          <div class="tr-szj-title">辽饷三十万·减内廷以济军</div>
+          <div class="tr-szj-content">
+            <p>户部尚书毕自严上奏：今岁秋漕已到七百三十万石，较去岁减三成；辽饷已岁支百八十万。孙承宗力请再发三十万以济辽东。温体仁以"国用将竭"为辞驳之。</p>
+            <p>帝御文华殿召三臣议。毕自严陈中道之策——若减内廷岁支二十万，则辽饷可发。帝从之。又密敕袁崇焕相机行事。是夜，太庙为雷火所毁。</p>
+          </div>
+          <div class="tr-szj-summary">内修外攘·不可偏废·帝倚毕自严执中</div>
+        </div>
+
+        <!-- 数值变化 -->
+        <div class="tr-section changes">
+          <div class="tr-section-hdr">
+            <span class="lab">数 值 变 化</span>
+            <span class="meta">七大变量 + 细项</span>
+          </div>
+          <div class="tr-vars-grid">
+            <div class="tr-var-card v-huangquan">
+              <div class="ic">权</div>
+              <div><div class="lab">皇权</div><div class="row"><span class="val">63</span><span class="delta up">+3</span></div></div>
+            </div>
+            <div class="tr-var-card v-huangwei">
+              <div class="ic">威</div>
+              <div><div class="lab">皇威</div><div class="row"><span class="val">71</span><span class="delta up">+2</span></div></div>
+            </div>
+            <div class="tr-var-card v-minxin">
+              <div class="ic">民</div>
+              <div><div class="lab">民心</div><div class="row"><span class="val">54</span><span class="delta dn">−2</span></div></div>
+            </div>
+            <div class="tr-var-card v-tanglin">
+              <div class="ic">帑</div>
+              <div><div class="lab">帑廪</div><div class="row"><span class="val">312万</span><span class="delta dn">−22万</span></div></div>
+            </div>
+            <div class="tr-var-card v-neidang">
+              <div class="ic">内</div>
+              <div><div class="lab">内帑</div><div class="row"><span class="val">88万</span><span class="delta dn">−20万</span></div></div>
+            </div>
+            <div class="tr-var-card v-bingli">
+              <div class="ic">兵</div>
+              <div><div class="lab">兵力</div><div class="row"><span class="val">48万</span><span class="delta up">+1千</span></div></div>
+            </div>
+            <div class="tr-var-card v-lizhi">
+              <div class="ic">吏</div>
+              <div><div class="lab">吏治</div><div class="row"><span class="val">42</span><span class="delta up">+1</span></div></div>
+            </div>
+          </div>
+          <div class="tr-change-rows">
+            <div class="tr-change-row" style="--cr-c:var(--amber-400);--cr-rgb:201,160,69;"><span class="cat">灾异</span><span class="text">太庙雷火·占为"失辅弼之象"·钦天监上疏请修省</span><span class="sign dn">皇威 −3</span></div>
+            <div class="tr-change-row" style="--cr-c:var(--celadon-400);--cr-rgb:106,154,127;"><span class="cat">边事</span><span class="text">宁远外围小胜 · 后金退兵八十里 · 袁崇焕斩首二千余</span><span class="sign up">军威 +5</span></div>
+            <div class="tr-change-row" style="--cr-c:var(--vermillion-400);--cr-rgb:184,71,56;"><span class="cat">党争</span><span class="text">温体仁驳户部议 · 东林诸臣私下攻讦 · 浙党反唇</span><span class="sign dn">朝纲 −2</span></div>
+            <div class="tr-change-row" style="--cr-c:var(--indigo-400);--cr-rgb:90,111,168;"><span class="cat">外藩</span><span class="text">朝鲜使臣李元翼至 · 贡马百匹 · 帝赐宴建极殿</span><span class="sign up">藩属心 +2</span></div>
+          </div>
+        </div>
+
+        <!-- 人事变动 -->
+        <div class="tr-section personnel">
+          <div class="tr-section-hdr">
+            <span class="lab">人 事 变 动</span>
+            <span class="meta">迁·谪·殁·生·任 本回合 5 起</span>
+          </div>
+          <div class="tr-personnel-list">
+            <div class="tr-person-row appoint">
+              <span class="type">任 命</span>
+              <span class="who">徐光启</span>
+              <span class="from-to">礼部左侍郎 <span class="arrow">→</span> 兼督西局督造红夷大炮</span>
+            </div>
+            <div class="tr-person-row promote">
+              <span class="type">迁 擢</span>
+              <span class="who">刘宗周</span>
+              <span class="from-to">都察院左副都御史 <span class="arrow">→</span> 左都御史</span>
+            </div>
+            <div class="tr-person-row death">
+              <span class="type">殁 故</span>
+              <span class="who">王公克</span>
+              <span class="from-to">原任工部侍郎 · 病殁于京师私宅 · 年七十四 · 追赠工部尚书</span>
+            </div>
+            <div class="tr-person-row demote">
+              <span class="type">降 调</span>
+              <span class="who">曹化淳</span>
+              <span class="from-to">司礼监掌印 <span class="arrow">→</span> 削二级 · 仍掌印事(试守)</span>
+            </div>
+            <div class="tr-person-row birth">
+              <span class="type">添 丁</span>
+              <span class="who">周皇后</span>
+              <span class="from-to">产皇二子 · 帝命名"慈炯" · 群臣贺</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 后人戏说 -->
+        <div class="tr-section houren">
+          <div class="tr-section-hdr">
+            <span class="lab">后 人 戏 说</span>
+            <span class="meta">稗官野史 · 参考不可尽信</span>
+          </div>
+          <div class="tr-houren-box">传说是夜太庙雷火之时，有黑衣人翻墙而入，众皆大骇。曹化淳急报帝，帝遣番役搜索三日不得。或云此人乃魏忠贤旧部所差，为报废珰之仇；或云为后金细作窥探宫禁。众说纷纭，莫衷一是。惟毕自严秉烛夜读如常，见帝入则从容应对。帝叹曰："朕有此臣，如鲁有季子矣。"</div>
+        </div>
+
+      </div>
+
+      <!-- 底部 -->
+      <div class="tr-footer">
+        <span class="tr-footer-hint">※ 点击上方"收起详情"可折叠次要内容；翻阅历次可按前后箭头</span>
+        <div class="tr-footer-actions">
+          <button class="tr-btn">导 出 本 回</button>
+          <button class="tr-btn primary">朕 已 阅</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="legend">
+    ★ 设计要点：<span class="k">史记 tab</span> 含宣纸纹+朱砂"史"印+金线双框"史记本纪"+副标"究天人之际"，工具栏（翻阅标签+搜索⌕+年份/类型下拉+导出），年度金线分隔，卡片分三列：<span class="k">左列金号大字回合数+日期+季节 chip</span> · <span class="k">中列 时政记小标题+两行摘要+4 类事件 tag</span> · <span class="k">右列 4 个数值 delta 徽章</span>，卡片左侧带类型色条（战朱/殁深朱/大金）<br>
+    ★ <span class="k">史记弹窗</span> 金角双L框+朱砂"纪年·史宝"斜印+前后回合翻阅，<span class="m">一句话总曰</span>左右双引号金条，要闻标签横条，内容分 6 段：<span class="k">实录(丹界红线信笺+印章)</span> · 战况(朱框胜负徽章) · <span class="m">展开/收起详情</span> 金色中央切换 · 时政记(金双线标题+总曰块) · <span class="k">数值变化 七变量圆徽图标卡+细项分类 chip</span> · 人事变动(任命/迁擢/殁故/降调/添丁 5 色) · <span class="m">后人戏说 紫色戏台框+戏/后人戏说 落款</span>，底部"朕已阅"朱砂主按钮 + 导出 <br>
+    <span style="color:var(--ink-300);margin-top:6px;display:inline-block;">这是纯预览页面。若满意将此样式应用到 renderShijiList() + showTurnResult() + _renderUnifiedChanges() 等渲染函数。</span>
+  </div>
+
+</div>
+
+</body>
+</html>

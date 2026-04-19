@@ -2717,105 +2717,164 @@ async function genMemorialsAI(count){
 }
 function renderMemorials(){
   var el=_$("zouyi-list");if(!el)return;
-  // 在途奏疏提示
+  var _isYanyi = P.conf && P.conf.gameMode === 'yanyi';
+
+  // 在途奏疏提示（保留）
   var _transitMems = (GM._pendingMemorialDeliveries||[]).filter(function(m) { return m.status === 'in_transit'; });
-  var _interceptedMems = (GM._pendingMemorialDeliveries||[]).filter(function(m) { return m.status === 'intercepted'; });
   var _transitHtml = '';
   if (_transitMems.length > 0) {
-    _transitHtml = '<div style="text-align:center;font-size:var(--text-xs);color:var(--amber-400);padding:var(--space-2);margin-bottom:var(--space-2);background:rgba(184,154,83,0.08);border-radius:var(--radius-sm);border:1px dashed var(--amber-400);">\u9A7F\u7AD9\u6765\u62A5\uFF1A\u5C1A\u6709 ' + _transitMems.length + ' \u4EFD\u594F\u758F\u5728\u9014</div>';
+    _transitHtml = '<div class="mem-transit"><div class="mem-transit-icon">\u9A7F</div>'
+      + '<div><span class="lbl">\u9A7F \u7AD9 \u6765 \u62A5 \uFF1A</span>\u5C1A\u6709 <strong style="color:var(--amber-400);">' + _transitMems.length + '</strong> \u4EFD\u594F\u758F\u5728\u9014\u3002</div></div>';
   }
-  // 渲染本回合全部奏疏（已批复的也显示，允许改主意）
+
+  // 渲染本回合全部奏疏
   var visible=GM.memorials.filter(function(m){return m.turn===GM.turn || m.status==="pending" || m.status==="pending_review";});
   if(visible.length===0){
-    el.innerHTML=_transitHtml + '<div style="color:var(--txt-d);text-align:center;padding:2rem;font-size:0.85rem;line-height:1.8;">\u6848\u724D\u6E05\u51C0\uFF0C\u767E\u5B98\u65E0\u4E8B\u542F\u594F\u3002</div>';
+    el.innerHTML=_transitHtml + '<div class="mem-empty">\u6848\u724D\u6E05\u51C0\u3000\u767E\u5B98\u65E0\u4E8B\u542F\u594F</div>';
     return;
   }
-  // 演义模式检测
-  var _isYanyi = P.conf && P.conf.gameMode === 'yanyi';
-  // 演义模式按紧急程度排序
-  if (_isYanyi) {
-    visible.sort(function(a, b) {
-      var pa = a.priority === 'urgent' ? 0 : 1;
-      var pb = b.priority === 'urgent' ? 0 : 1;
-      if (pa !== pb) return pa - pb;
-      // 未处理的排在已处理前面
-      var sa = (a.status === 'pending' || a.status === 'pending_review') ? 0 : 1;
-      var sb = (b.status === 'pending' || b.status === 'pending_review') ? 0 : 1;
-      return sa - sb;
-    });
-  }
-  el.innerHTML=_transitHtml + visible.map(function(m){
-    var idx=GM.memorials.indexOf(m);
+
+  // 按组分类
+  var gUrgent = [], gPending = [], gHeld = [], gDone = [];
+  visible.forEach(function(m){
+    if (m.status === 'pending_review') gHeld.push(m);
+    else if (m.status === 'approved' || m.status === 'rejected' || m.status === 'annotated' || m.status === 'referred' || m.status === 'court_debate') gDone.push(m);
+    else if (m.priority === 'urgent') gUrgent.push(m);
+    else gPending.push(m);
+  });
+
+  // 渲染单张卡片
+  function _renderCard(m) {
+    var idx = GM.memorials.indexOf(m);
     var isHeld = m.status === 'pending_review';
     var isSystem = !m.from || m.from === '\u6709\u53F8';
     var _sender = isSystem ? null : findCharByName(m.from);
-    var _loyHint='', _senderInfo='';
-    if(_sender){
-      var _loy=_sender.loyalty||50;
-      var _amb=_sender.ambition||50;
-      if(_loy<25) _loyHint='border-left-color:rgba(192,57,43,0.5);';
-      else if(_loy<40) _loyHint='border-left-color:rgba(230,126,34,0.5);';
-      _senderInfo=' title="\u5FE0'+(typeof _fmtNum1==='function'?_fmtNum1(_loy):_loy)+' \u91CE\u5FC3'+(typeof _fmtNum1==='function'?_fmtNum1(_amb):_amb)+(_sender.faction?' '+_sender.faction:'')+'"';
+
+    // 卡片色条（按忠诚+可信度+紧急度）
+    var _mcCls = 'mem-c-normal';
+    if (m.priority === 'urgent') _mcCls = 'mem-c-danger';
+    else if (_isYanyi && m.reliability === 'low') _mcCls = 'mem-c-suspect';
+    else if (_sender) {
+      var _loy = _sender.loyalty || 50;
+      if (_loy < 25) _mcCls = 'mem-c-danger';
+      else if (_loy < 40) _mcCls = 'mem-c-suspect';
+      else if (_loy >= 75) _mcCls = 'mem-c-loyal';
     }
-    var subtypeLabel = m.subtype ? '<span style="font-size:0.7rem;color:var(--ink-300);margin-left:4px;">(' + escHtml(m.subtype) + ')</span>' : '';
-    var urgentBadge = (_isYanyi && m.priority === 'urgent') ? '<span style="font-size:0.65rem;background:rgba(192,57,43,0.2);color:var(--vermillion-400);padding:1px 4px;border-radius:3px;margin-left:4px;">\u6025</span>' : '';
-    // 演义模式可信度提示
-    var reliabilityHint = '';
-    if (_isYanyi && m.reliability && m.reliability !== 'high') {
-      var _rClr = m.reliability === 'low' ? 'var(--vermillion-400)' : 'var(--gold-400)';
-      var _rIcon = m.reliability === 'low' ? '\u26A0' : '\u2753';
-      reliabilityHint = '<span style="float:right;font-size:0.65rem;color:' + _rClr + ';" title="\u6B64\u594F\u758F\u53EF\u4FE1\u5EA6\u53EF\u7591">' + _rIcon + '</span>';
-    }
-    // 状态标记
-    var _statusBadges = {
-      'pending': '', 'pending_review': '<span style="font-size:0.65rem;background:rgba(41,128,185,0.2);color:var(--blue);padding:1px 5px;border-radius:3px;margin-left:4px;">\u7559\u4E2D</span>',
-      'approved': '<span style="font-size:0.65rem;background:rgba(80,160,80,0.2);color:var(--celadon-400);padding:1px 5px;border-radius:3px;margin-left:4px;">\u2705\u5DF2\u51C6\u594F</span>',
-      'rejected': '<span style="font-size:0.65rem;background:rgba(192,57,43,0.2);color:var(--vermillion-400);padding:1px 5px;border-radius:3px;margin-left:4px;">\u274C\u5DF2\u9A73\u56DE</span>',
-      'annotated': '<span style="font-size:0.65rem;background:rgba(184,154,83,0.2);color:var(--gold-400);padding:1px 5px;border-radius:3px;margin-left:4px;">\u270D\u5DF2\u6279\u793A</span>',
-      'referred': '<span style="font-size:0.65rem;background:rgba(100,160,100,0.2);color:var(--celadon-400);padding:1px 5px;border-radius:3px;margin-left:4px;">\u2192\u5DF2\u8F6C\u6709\u53F8</span>',
-      'court_debate': '<span style="font-size:0.65rem;background:rgba(180,100,200,0.2);color:var(--purple);padding:1px 5px;border-radius:3px;margin-left:4px;">\u2696\u5DF2\u53D1\u5EF7\u8BAE</span>'
-    };
-    var heldBadge = _statusBadges[m.status] || '';
-    // 远方奏疏标注
-    var _remoteBadge = '';
+
+    // 头像
+    var _initial = escHtml(String(m.from||'?').charAt(0));
+    var _portrait = (_sender && _sender.portrait) ? '<img src="'+escHtml(_sender.portrait)+'">' : _initial;
+
+    // 官衔（从 sender 官职 或 m.title）
+    var _subTitle = '';
+    if (_sender && _sender.officialTitle) _subTitle = _sender.officialTitle;
+    else if (_sender && _sender.title) _subTitle = _sender.title;
+    else if (m.title) _subTitle = m.title;
+
+    // 状态徽记
+    var _badges = '';
+    if (m.priority === 'urgent') _badges += '<span class="mem-badge mem-badge-urgent">\u6025</span>';
+    if (_isYanyi && m.reliability === 'low') _badges += '<span class="mem-badge mem-badge-reliab" title="\u6B64\u594F\u758F\u53EF\u4FE1\u5EA6\u53EF\u7591">\u26A0 \u5B58\u7591</span>';
+    if (_isYanyi && m.reliability === 'medium') _badges += '<span class="mem-badge" style="color:var(--gold-400);background:rgba(184,154,83,0.08);border-color:var(--gold-400);">? \u5F85\u8BC1</span>';
+    if (m.status === 'pending_review') _badges += '<span class="mem-badge mem-badge-held">\u7559\u4E2D</span>';
+    if (m.status === 'approved') _badges += '<span class="mem-badge mem-badge-approved">\u2713 \u5DF2\u51C6\u594F</span>';
+    if (m.status === 'rejected') _badges += '<span class="mem-badge mem-badge-rejected">\u2717 \u5DF2\u9A73\u56DE</span>';
+    if (m.status === 'annotated') _badges += '<span class="mem-badge mem-badge-annotated">\u270E \u5DF2\u6279\u793A</span>';
+    if (m.status === 'referred') _badges += '<span class="mem-badge mem-badge-referred">\u2192 \u5DF2\u8F6C</span>';
+    if (m.status === 'court_debate') _badges += '<span class="mem-badge mem-badge-court">\u2696 \u5EF7\u8BAE</span>';
     if (m._remoteFrom) {
-      _remoteBadge = '<span style="font-size:0.6rem;background:rgba(184,154,83,0.15);color:var(--amber-400);padding:1px 5px;border-radius:3px;margin-left:4px;" title="此折经驿站自' + escHtml(m._remoteFrom) + '递达">\u99FF\u9012\u81EA' + escHtml(m._remoteFrom) + '</span>';
+      _badges += '<span class="mem-badge mem-badge-remote" title="\u6B64\u6298\u7ECF\u9A7F\u7AD9\u81EA' + escHtml(m._remoteFrom) + '\u9012\u8FBE">\u9A7F\u9012\u81EA' + escHtml(m._remoteFrom) + '</span>';
       if (m._replyLetterSent) {
         var _replyArrived = m._replyDeliveryTurn && GM.turn >= m._replyDeliveryTurn;
-        _remoteBadge += _replyArrived
-          ? '<span style="font-size:0.6rem;color:var(--celadon-400);margin-left:2px;">\u6731\u6279\u5DF2\u9001\u8FBE</span>'
-          : '<span style="font-size:0.6rem;color:var(--ink-300);margin-left:2px;">\u6731\u6279\u56DE\u4F20\u4E2D\u2026</span>';
+        _badges += _replyArrived
+          ? '<span class="mem-badge" style="color:var(--celadon-400);background:rgba(106,154,127,0.1);border-color:var(--celadon-400);">\u6731\u6279\u5DF2\u9001\u8FBE</span>'
+          : '<span class="mem-badge" style="color:var(--ink-300);background:rgba(107,93,71,0.08);border-color:var(--ink-300);">\u6731\u6279\u56DE\u4F20\u4E2D\u2026</span>';
       }
     }
-    // 奏疏正文
-    var contentHtml = '';
-    var contentText = m.content || '';
-    if (contentText.length > 200) {
-      var memId = 'mem-body-' + idx;
-      contentHtml = '<div class="memorial-content wd-selectable" id="' + memId + '" style="max-height:120px;overflow:hidden;position:relative;">'
-        + escHtml(contentText)
-        + '<div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--color-surface));pointer-events:none;" id="mem-fade-' + idx + '"></div></div>'
-        + '<button class="bt bsm" style="font-size:0.72rem;margin-top:2px;color:var(--gold);" onclick="var b=_$(\''+memId+'\');var f=_$(\'mem-fade-'+idx+'\');if(b.style.maxHeight){b.style.maxHeight=\'\';b.style.overflow=\'\';if(f)f.style.display=\'none\';this.textContent=\'\u25B2 \u6536\u8D77\';}else{b.style.maxHeight=\'120px\';b.style.overflow=\'hidden\';if(f)f.style.display=\'\';this.textContent=\'\u25BC \u5C55\u5F00\u5168\u6587\';}">\u25BC \u5C55\u5F00\u5168\u6587</button>';
+
+    // 类型 pill
+    var _typeLabel = (m.type||'\u594F\u758F') + (m.subtype ? '\u00B7' + m.subtype : '');
+    var _typePill = '<span class="mem-type-pill">' + escHtml(_typeLabel) + '</span>';
+
+    // 正文
+    var _contentText = m.content || '';
+    var _contentHtml;
+    if (_contentText.length > 180) {
+      var memBodyId = 'mem-body-' + idx;
+      _contentHtml = '<div class="mem-body collapsed wd-selectable" id="' + memBodyId + '">' + escHtml(_contentText) + '</div>'
+        + '<button class="mem-toggle" onclick="var b=document.getElementById(\''+memBodyId+'\');var col=b.classList.toggle(\'collapsed\');this.textContent=col?\'\u25BC \u5C55\u5F00\u5168\u6587\':\'\u25B2 \u6536\u8D77\';">\u25BC \u5C55\u5F00\u5168\u6587</button>';
     } else {
-      contentHtml = '<div class="memorial-content wd-selectable">' + escHtml(contentText) + '</div>';
+      _contentHtml = '<div class="mem-body wd-selectable">' + escHtml(_contentText) + '</div>';
     }
-    return '<div class="memorial-card" style="'+_loyHint+(isHeld?'opacity:0.75;':'')+'">'+reliabilityHint
-    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-    +'<span class="memorial-from"'+_senderInfo+'>'+ (_sender&&_sender.portrait?'<img src="'+escHtml(_sender.portrait)+'" style="width:20px;height:20px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:4px;">':'') +escHtml(m.from||'\u6709\u53F8')+' '+escHtml(m.title||'')+heldBadge+_remoteBadge+'</span>'
-    +'<span class="tg">'+escHtml(m.type||'')+subtypeLabel+urgentBadge+'</span></div>'
-    +contentHtml
-    +(m._qiaozhiTarget?'<div style="margin-top:0.4rem;"><button class="bt bsm" style="background:var(--gold);color:#000;font-size:0.78rem;padding:0.3rem 0.8rem;" onclick="openQiaozhiPanel(\''+escHtml(m._qiaozhiTarget||'').replace(/'/g,'')+'\')">\u4FA8\u7F6E\u51B3\u7B56</button></div>':'')
-    +'<div style="margin-top:0.4rem;"><input id="mem-reply-'+idx+'" placeholder="\u6731\u7B14\u6279\u6CE8\uFF08\u53EF\u7559\u7A7A\uFF09" value="'+escHtml(m.reply||'')+'" style="width:100%;padding:0.3rem 0.5rem;background:var(--bg-3);border:1px solid var(--bdr);border-radius:4px;color:var(--vermillion-400);font-size:0.78rem;font-family:inherit;font-style:italic;" /></div>'
-    +'<div class="memorial-actions" style="margin-top:0.4rem;flex-wrap:wrap;">'
-    +'<button class="memorial-approve" onclick="_approveMemorial('+idx+')">\u2705 \u51C6\u594F</button>'
-    +'<button class="memorial-reject" onclick="_rejectMemorial('+idx+')">\u274C \u9A73\u56DE</button>'
-    +'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(184,154,83,0.15);color:var(--gold-400);cursor:pointer;font-size:0.75rem;font-family:inherit;" onclick="_annotateMemorial('+idx+')">\u270D \u6279\u793A\u610F\u89C1</button>'
-    +'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(100,160,100,0.15);color:var(--celadon-400);cursor:pointer;font-size:0.75rem;font-family:inherit;" onclick="_referMemorial('+idx+')">\u2192 \u8F6C\u4EA4\u6709\u53F8</button>'
-    +'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(180,100,200,0.15);color:var(--purple);cursor:pointer;font-size:0.75rem;font-family:inherit;" onclick="_courtDebateMemorial('+idx+')">\u2696 \u53D1\u5EF7\u8BAE</button>'
-    +(isHeld?'':'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(41,128,185,0.15);color:var(--blue);cursor:pointer;font-size:0.75rem;font-family:inherit;" onclick="_holdMemorial('+idx+')">\u23F8 \u7559\u4E2D</button>')
-    +'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(184,154,83,0.1);color:var(--gold-400);cursor:pointer;font-size:0.7rem;font-family:inherit;" onclick="_memExcerptToEdict('+idx+')" title="\u5212\u9009\u594F\u758F\u6587\u5B57\u6458\u5165\u5EFA\u8BAE\u5E93">\u6458\u5165</button>'
-    +(isSystem?'':'<button style="padding:0.25rem 0.6rem;border:none;border-radius:4px;background:rgba(142,68,173,0.12);color:var(--purple);cursor:pointer;font-size:0.75rem;font-family:inherit;margin-left:auto;" onclick="_summonForMemorial('+idx+')">\uD83D\uDDE3 \u4F20\u53EC\u95EE\u8BE2</button>')
-    +'</div></div>';}).join('');
+
+    // 侨置决策按钮（特殊场景）
+    var _qiaozhi = m._qiaozhiTarget
+      ? '<div style="margin-top:10px;"><button class="mem-btn" style="--ab:var(--gold-400);background:linear-gradient(to bottom,var(--gold-400),var(--gold-500));color:var(--bg-1);" onclick="openQiaozhiPanel(\''+escHtml(m._qiaozhiTarget||'').replace(/'/g,'')+'\')">\u4FA8\u7F6E\u51B3\u7B56</button></div>'
+      : '';
+
+    // 朱笔批注
+    var _reply = '<div class="mem-reply-wrap">'
+      + '<div class="mem-reply-label">\u6731 \u7B14 \u6279 \u6CE8</div>'
+      + '<textarea id="mem-reply-'+idx+'" class="mem-reply-input" rows="2" placeholder="\u5FA1\u7B14\u6731\u6279\uFF0C\u53EF\u76F4\u63A5\u4E0B\u8BCF\u6216\u9644\u8BED\u2026\u2026">'+escHtml(m.reply||'')+'</textarea>'
+      + '</div>';
+
+    // 操作按钮
+    var _acts = '<div class="mem-actions">'
+      + '<button class="mem-btn approve" onclick="_approveMemorial('+idx+')"><span class="ic">\u2713</span> \u51C6\u3000\u594F</button>'
+      + '<button class="mem-btn reject" onclick="_rejectMemorial('+idx+')"><span class="ic">\u2717</span> \u9A73\u3000\u56DE</button>'
+      + '<button class="mem-btn annotate" onclick="_annotateMemorial('+idx+')"><span class="ic">\u270E</span> \u6279\u793A\u610F\u89C1</button>'
+      + '<button class="mem-btn refer" onclick="_referMemorial('+idx+')"><span class="ic">\u2192</span> \u8F6C\u4EA4\u6709\u53F8</button>'
+      + '<button class="mem-btn court" onclick="_courtDebateMemorial('+idx+')"><span class="ic">\u2696</span> \u53D1\u5EF7\u8BAE</button>'
+      + (isHeld?'':'<button class="mem-btn hold" onclick="_holdMemorial('+idx+')"><span class="ic">\u23F8</span> \u7559\u3000\u4E2D</button>')
+      + '<button class="mem-btn excerpt" onclick="_memExcerptToEdict('+idx+')" title="\u5212\u9009\u594F\u758F\u6587\u5B57\u6458\u5165\u5EFA\u8BAE\u5E93"><span class="ic">\u2398</span> \u6458\u3000\u5165</button>'
+      + (isSystem?'':'<button class="mem-btn summon" onclick="_summonForMemorial('+idx+')"><span class="ic">\u2604</span> \u4F20\u53EC\u95EE\u8BAF</button>')
+      + '</div>';
+
+    return '<div class="mem-card ' + _mcCls + '"' + (isHeld?' style="opacity:0.82;"':'') + '>'
+      + '<div class="mem-card-hdr">'
+        + '<div class="mem-portrait">' + _portrait + '</div>'
+        + '<div class="mem-from-wrap">'
+          + '<div class="mem-from">' + escHtml(m.from||'\u6709\u53F8') + '</div>'
+          + '<div class="mem-from-title">' + escHtml(_subTitle) + '</div>'
+        + '</div>'
+        + '<div class="mem-badges">' + _badges + '</div>'
+        + _typePill
+      + '</div>'
+      + '<div class="mem-body-label">\u672C \u3000 \u594F</div>'
+      + _contentHtml
+      + _qiaozhi
+      + _reply
+      + _acts
+      + '</div>';
+  }
+
+  var html = _transitHtml;
+  if (gUrgent.length > 0) {
+    html += '<div class="mem-group mem-g-urgent">';
+    html += '<div class="mem-group-title"><span class="tag">\u6025 \u594F \u5F85 \u6279</span><span class="desc">\u52A0\u6025\u00B7\u544A\u53D8\u00B7\u8FB9\u4E8B\u6025\u62A5\uFF0C\u5B9C\u901F\u88C1\u51B3</span><span class="count">' + gUrgent.length + ' \u6298</span></div>';
+    gUrgent.forEach(function(m){ html += _renderCard(m); });
+    html += '</div>';
+  }
+  if (gPending.length > 0) {
+    html += '<div class="mem-group mem-g-pending">';
+    html += '<div class="mem-group-title"><span class="tag">\u767E \u5B98 \u542F \u594F</span><span class="desc">\u5F85\u6279\u00B7\u5F85\u6279\u793A\u00B7\u5F85\u8F6C\u4EA4</span><span class="count">' + gPending.length + ' \u6298</span></div>';
+    gPending.forEach(function(m){ html += _renderCard(m); });
+    html += '</div>';
+  }
+  if (gHeld.length > 0) {
+    html += '<div class="mem-group mem-g-held">';
+    html += '<div class="mem-group-title"><span class="tag">\u7559 \u4E2D \u4E4B \u6298</span><span class="desc">\u6682\u641C\u7F6E\u00B7\u5019\u65F6\u673A\u00B7\u6216\u89C2\u671B\u4E8B\u52BF</span><span class="count">' + gHeld.length + ' \u6298</span></div>';
+    gHeld.forEach(function(m){ html += _renderCard(m); });
+    html += '</div>';
+  }
+  if (gDone.length > 0) {
+    html += '<div class="mem-group mem-g-done">';
+    html += '<div class="mem-group-title"><span class="tag">\u5DF2 \u6279 \u6863 \u6848</span><span class="desc">\u672C\u56DE\u5408\u5DF2\u5904\u7406\u00B7\u53EF\u518D\u6B21\u4FEE\u8BA2</span><span class="count">' + gDone.length + ' \u6298</span></div>';
+    gDone.forEach(function(m){ html += _renderCard(m); });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
 }
 
 /** 奏疏划选摘入建议库（同问对流程） */

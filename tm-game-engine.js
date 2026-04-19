@@ -4919,8 +4919,11 @@ function renderGameState(){
   gc.appendChild(edictP);
 
   // 奏疏面板
-  var memP=document.createElement("div");memP.className="g-tab-panel";memP.id="gt-memorial";memP.style.cssText="flex:1;overflow-y:auto;padding:1rem;";
-  memP.innerHTML="<div class=\"scroll-manager-header\" style=\"padding:var(--space-2);font-size:var(--text-md);\">〔 奉疏待览 〕</div><hr class=\"ink-divider\"><div id=\"zouyi-list\"></div>";
+  var memP=document.createElement("div");memP.className="g-tab-panel";memP.id="gt-memorial";memP.style.cssText="flex:1;overflow-y:auto;padding:0;";
+  memP.innerHTML='<div class="mem-panel-wrap"><div class="mem-inner">'
+    +'<div class="mem-title"><div class="seal">\u5949<br>\u6731</div><div class="main">\u594F \u758F \u5F85 \u89C8</div><div class="sub">\u6848\u724D\u4E4B\u53F8\u3000\u3000\u767E\u5B98\u542F\u594F</div></div>'
+    +'<div id="zouyi-list"></div>'
+    +'</div></div>';
   gc.appendChild(memP);
 
   // 问对面板（仅角色选择网格，点击打开弹窗）

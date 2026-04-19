@@ -5636,49 +5636,95 @@ async function _keyiProceedToVote() {
 
 /** AI 一次性生成所有参议大臣的立场 */
 async function _keyiGenAllStances() {
-  // v6·单向不变量：讨论无反对 → 表决无反对；讨论无支持 → 表决无支持
-  // 所有 attendees 都计票·但立场只能在讨论中出现过的集合内取值
+  // v7·单向不变量：讨论中出现过的立场集合·才能作为最终表决立场
+  //   · 若讨论无反对 → AI 就算想给某人 oppose 也降级为 abstain
+  //   · AI 精修仍执行（给未发言者细腻立场 + 理由）
   if (!KEYI_STATE) return;
   KEYI_STATE.stances = {};
 
-  // Step 1: 从发言中统计出现过的立场集合
+  // Step 1: 收集 speeches 里的立场集合
   var speechStanceMap = {};
-  var seenStances = {}; // e.g., { support: true, oppose: true, abstain: true }
+  var seenStances = {};
   KEYI_STATE.speeches.forEach(function(sp){
     if (sp._isPlayer) return;
     if (!sp.name) return;
     speechStanceMap[sp.name] = sp.stance || 'abstain';
     seenStances[sp.stance || 'abstain'] = true;
   });
-  // 若讨论完全空（极罕见），默认允许 abstain
   if (Object.keys(seenStances).length === 0) seenStances['abstain'] = true;
 
-  // Step 2: 为所有 attendees 定立场
-  //   · 发过言 → 用其发言立场
-  //   · 未发言 → 算式推断·但若该立场未在讨论中出现·降级为 abstain（或 support，视情况）
+  // Step 2: 算式预置每人立场（供 AI 失败时兜底）
   KEYI_STATE.attendees.forEach(function(a){
     if (speechStanceMap[a.name]) {
       KEYI_STATE.stances[a.name] = { stance: speechStanceMap[a.name], reason: '\u5EAD\u8BAE\u6240\u8A00' };
-      return;
+    } else {
+      KEYI_STATE.stances[a.name] = { stance: _keyiInferStance(a), reason: '' };
     }
-    var inferred = _keyiInferStance(a);
-    if (!seenStances[inferred]) {
-      // 这个立场在讨论中没人说过·降级
-      if (seenStances['abstain']) inferred = 'abstain';
-      else {
-        // 讨论中连 abstain 都没有·只有 support 或 oppose — 取最接近的
-        var keys = Object.keys(seenStances);
-        inferred = keys[0];
-      }
-    }
-    KEYI_STATE.stances[a.name] = { stance: inferred, reason: '\u672A\u9648\u8F9E\u00B7\u79C1\u4E0B\u9644\u8BAE' };
   });
 
-  // 异步视觉反馈（计票动画）
-  KEYI_STATE._busy = true;
-  KEYI_STATE._busyText = '\u8BA1\u7968\u4E2D';
-  _keyiRender();
-  await new Promise(function(r){ setTimeout(r, 600); });
+  // Step 3: AI 精修（保留原设计——让 AI 给未发言者细腻立场）
+  if (P.ai && P.ai.key) {
+    KEYI_STATE._busy = true;
+    KEYI_STATE._busyText = '\u767E\u5B98\u8868\u51B3\u4E2D';
+    _keyiRender();
+    var ctx = '\u79D1\u8BAE\u5DF2\u5386 ' + KEYI_STATE.round + ' \u8F6E\u00B7\u4E3B\u8981\u53D1\u8A00\uFF1A\n' +
+      KEYI_STATE.speeches.slice(-12).map(function(sp){
+        var who = sp._isPlayer ? '\u9661\u4E0B(\u5723\u8C15)' : sp.name;
+        return who + '[' + sp.stance + ']\uFF1A' + (sp.line||'').slice(0, 60);
+      }).join('\n') + '\n\n';
+    // 约束给 AI 知晓
+    var _stanceKeys = Object.keys(seenStances);
+    var _stanceStr = _stanceKeys.map(function(s){
+      return s === 'support' ? '\u652F\u6301' : s === 'oppose' ? '\u53CD\u5BF9' : '\u89C2\u671B';
+    }).join('/');
+    var list = KEYI_STATE.attendees.map(function(a){
+      return a.name + '(' + (a.title||'') + '\u00B7\u515A:' + (a.party||'\u65E0') + '\u00B7\u5FE0' + (a.loyalty||50) + ')';
+    }).join('\u3001');
+    var playerStanceHint = '';
+    if (KEYI_STATE.playerStance) {
+      var lbl = KEYI_STATE.playerStance === 'support' ? '\u503E\u5411\u652F\u6301' : KEYI_STATE.playerStance === 'oppose' ? '\u503E\u5411\u53CD\u5BF9' : '\u7ACB\u573A\u4E2D\u7ACB';
+      playerStanceHint = '\u2605 \u9661\u4E0B\u5723\u8C15\u5DF2\u4E0B\uFF1A' + lbl + '\u3002\u8868\u51B3\u65F6\u5FC5\u987B\u5145\u5206\u8003\u8651\u5723\u610F\u3002\n';
+    }
+    var prompt = ctx + playerStanceHint +
+      '\u8BF7\u4E3A\u4EE5\u4E0B ' + KEYI_STATE.attendees.length + ' \u540D\u5927\u81E3\u5404\u81EA\u5224\u5B9A\u6700\u7EC8\u7ACB\u573A\u5E76\u7ED9\u51FA 10-30 \u5B57\u7406\u7531\uFF1A\n' +
+      list + '\n\n' +
+      '\u3010\u786C\u89C4\u5219\u3011\u672C\u6B21\u8BAE\u8BBA\u5DF2\u51FA\u73B0\u7684\u7ACB\u573A\uFF1A' + _stanceStr + '\u3002\u53EA\u53EF\u5728\u8FD9\u4E9B\u7ACB\u573A\u4E2D\u9009\u62E9\u2014\u2014\u8BAE\u8BBA\u4E2D\u6CA1\u4EBA\u8868\u6001\u7684\u7ACB\u573A\u4E0D\u53EF\u4F7F\u7528\u3002\n' +
+      '\u5DF2\u53D1\u8A00\u8005\u9700\u4F7F\u7ACB\u573A\u4E0E\u5176\u53D1\u8A00\u4E00\u81F4\u3002\u672A\u53D1\u8A00\u8005\u53EF\u5728\u5141\u8BB8\u7684\u7ACB\u573A\u96C6\u5185\u81EA\u7531\u5224\u5B9A\u3002\n' +
+      '\u8FD4\u56DE JSON: [{"name":"","stance":"support|oppose|abstain","reason":""}, ...]\u00B7\u53EA\u8F93\u51FA JSON\u3002';
+    try {
+      var _tokBudget = (P.conf && P.conf.maxOutputTokens) || (P.conf && P.conf._detectedMaxOutput) || 4000;
+      var raw = await callAISmart(prompt, _tokBudget, { maxRetries: 1 });
+      var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
+      if (!parsed) { var m = raw.match(/\[[\s\S]*\]/); if (m) try { parsed = JSON.parse(m[0]); } catch(_){} }
+      if (Array.isArray(parsed)) {
+        parsed.forEach(function(r){
+          if (r && r.name && KEYI_STATE.stances[r.name]) {
+            KEYI_STATE.stances[r.name] = {
+              stance: r.stance || KEYI_STATE.stances[r.name].stance,
+              reason: r.reason || KEYI_STATE.stances[r.name].reason
+            };
+          }
+        });
+      }
+    } catch(e) {
+      console.warn('[\u79D1\u8BAE] AI \u8868\u51B3\u7CBE\u4FEE\u5931\u8D25\u00B7\u7528\u9884\u7F6E\u7ACB\u573A', e);
+    }
+  }
+
+  // Step 4: 单向不变量后处理——降级任何未在讨论中出现的立场
+  var _demoted = 0;
+  Object.keys(KEYI_STATE.stances).forEach(function(name){
+    var v = KEYI_STATE.stances[name];
+    if (!seenStances[v.stance]) {
+      var newStance;
+      if (seenStances['abstain']) newStance = 'abstain';
+      else newStance = Object.keys(seenStances)[0];
+      v.stance = newStance;
+      v.reason = (v.reason || '') + '\uFF08\u5EAD\u8BAE\u65E0\u6B64\u58F0\u00B7\u6539\u89C2\u671B\uFF09';
+      _demoted++;
+    }
+  });
+  if (_demoted > 0) console.log('[\u79D1\u8BAE] \u5355\u5411\u4E0D\u53D8\u91CF\uFF1A' + _demoted + ' \u4EBA\u7ACB\u573A\u56E0\u5EAD\u8BAE\u672A\u89C1\u800C\u964D\u7EA7');
 
   _keyiComputeSupport();
   KEYI_STATE._busy = false;

@@ -1241,7 +1241,7 @@
   }
 
   // ※ 版本号——每次扩充须 bump，强制覆盖 localStorage 中的旧数据
-  var SCENARIO_VERSION = 'v41-2026.04.19-vars-slim+events-conditional';
+  var SCENARIO_VERSION = 'v42-2026.04.19-capital-prefix+total-troops';
 
   function register() {
     if (typeof global.P === 'undefined' || !global.P || !Array.isArray(global.P.scenarios)) {
@@ -4456,7 +4456,7 @@
     var facs = [
       {
         name: '明朝廷', leader: '朱由检', color: '#c9a84c',
-        strength: 70, militaryStrength: 62, economy: 55,
+        strength: 70, militaryStrength: 553500, economy: 55,   // 总兵力≈55万(常备38万+民兵10万+精锐6.5万+水师0.85万)
         courtInfluence: 100, popularInfluence: 85,
         territory: '两京十三省 + 辽东都司 + 乌思藏 + 各土司', capital: '北京·紫禁城',
         ideology: '礼法·儒教·天下共主',
@@ -4476,7 +4476,7 @@
       },
       {
         name: '后金', leader: '皇太极', color: '#6a4c93',
-        strength: 82, militaryStrength: 92, economy: 48,   // militaryStrength 72→92·strength 58→82(精锐力度实远超明战力)
+        strength: 82, militaryStrength: 280500, economy: 48,   // 总兵力≈28万(精锐3.5万+常备8.5万+民兵16万+水师0.05万)·精锐占比远超明
         courtInfluence: 15, popularInfluence: 28,
         territory: '辽东沈阳·赫图阿拉·辽阳·广宁以东·铁岭·开原·朝鲜西北·蒙古东部羁縻地', capital: '沈阳（盛京·1625 努尔哈赤自辽阳迁都）',
         ideology: '萨满·汗权·八旗共治·以汉治汉·军政合一',
@@ -4553,7 +4553,7 @@
       },
       {
         name: '察哈尔', leader: '林丹汗', color: '#8b4513',
-        strength: 30, militaryStrength: 40, economy: 18,
+        strength: 30, militaryStrength: 95000, economy: 18,   // 总兵力≈9.5万(常备3万+民兵6万+精锐0.5万)
         courtInfluence: 8, popularInfluence: 15,
         territory: '漠南蒙古·归化城·宣化塞外', capital: '归化城（呼和浩特）',
         ideology: '藏传佛教黄教·元裔蒙古正统',
@@ -4572,7 +4572,7 @@
       },
       {
         name: '朝鲜', leader: '仁祖·李倧', color: '#4a7c2c',
-        strength: 28, militaryStrength: 20, economy: 30,
+        strength: 28, militaryStrength: 70000, economy: 30,   // 总兵力≈7万(常备2.5万+民兵4万+精锐0.2万+水师0.3万)
         courtInfluence: 22, popularInfluence: 10,
         territory: '朝鲜八道（京畿/忠清/庆尚/全罗/江原/黄海/平安/咸镜）', capital: '汉城（今首尔）',
         ideology: '儒教·事大·小中华',
@@ -4591,7 +4591,7 @@
       },
       {
         name: '播州土司·杨氏(余裔)', leader: '杨朝栋', color: '#9c6633',
-        strength: 8, militaryStrength: 12, economy: 5,
+        strength: 8, militaryStrength: 10500, economy: 5,   // 总兵力≈1万(常备0.2万+民兵0.8万+精锐0.05万)·播州余裔残部
         courtInfluence: 3, popularInfluence: 8,
         territory: '贵州遵义府边地·原播州地', capital: '(已无)',
         ideology: '土司自治·彝汉混合',
@@ -4610,7 +4610,7 @@
       },
       {
         name: '郑氏海商', leader: '郑芝龙', color: '#2a6f9c',
-        strength: 18, militaryStrength: 26, economy: 42,
+        strength: 18, militaryStrength: 32000, economy: 42,   // 总兵力≈3.2万(常备0.5万+民兵1.2万+精锐0.3万+水师1.2万)·郑芝龙海上力量
         courtInfluence: 5, popularInfluence: 28,
         territory: '福建沿海·台湾海峡·厦门·金门·东番岛部分', capital: '厦门/日本平户',
         ideology: '海权·商贸·天主教(部分)',
@@ -4629,7 +4629,7 @@
       },
       {
         name: '陕北饥民(将起)', leader: '王嘉胤', color: '#7a4e3b',
-        strength: 6, militaryStrength: 4, economy: 1,
+        strength: 6, militaryStrength: 2200, economy: 1,   // 总兵力≈0.2万(尚未成军·民兵+少量精锐)·陕北饥民聚啸前夜
         courtInfluence: 0, popularInfluence: 35,
         territory: '陕西延安府·榆林·米脂·府谷', capital: '(无·流动)',
         ideology: '求活·均田免赋（后发展）·反明',
@@ -4649,7 +4649,7 @@
       {
         name: '葡萄牙·澳门', leader: 'Don Francisco Mascarenhas(澳门总督 1623-1626·继任 Dom Filipe Lobo da Silveira)', color: '#8b4513',
         type: '外国势力·欧洲', factionType: '海上殖民+贸易', territory: '澳门半岛(1557 起租借·月租 500 两)+圣保禄学院+议事亭',
-        prestige: 58, economy: 68, militaryStrength: 18,
+        prestige: 58, economy: 68, militaryStrength: 1205,   // 总兵力≈1200(正规驻军250+民兵800+精锐150+武装商船5艘)·澳门葡人社群
         description: '葡萄牙自嘉靖三十六年(1557)起租借澳门。月付租银 500 两(后改岁输 2 万)。以澳门为东亚中转港，对接卧亚(Goa)-果阿-马六甲-长崎(日本)航线。葡人与中国士大夫(徐光启/李之藻/孙元化)联系密切，红衣大炮即由葡人铸/引入。耶稣会利玛窦、罗明坚等传教先锋驻此。1580-1640 葡属西班牙哈布斯堡王朝(同君连合)。',
         attitude: '互市', playerRelation: 40,
         resources: '红衣大炮·铸炮匠(Bocarro 炮厂)·欧洲数学·天文·印欧商品·日本白银·生丝·瓷器中转',
@@ -4686,7 +4686,7 @@
         name: '荷兰·台海(东印度公司)', leader: 'Gerard Frederikszoon de With(大员台湾长官·1625-1627 在任·Pieter Nuyts 1627-1629 将继)', color: '#d2691e',
         type: '外国势力·欧洲', factionType: '特许公司+海上霸权',
         territory: '台湾大员热兰遮城(1624 起·Fort Zeelandia)+普罗文西亚城(赤崁·Fort Provintia 1625 起筑)+巴达维亚总部(1619 建于爪哇)',
-        prestige: 52, economy: 75, militaryStrength: 58,
+        prestige: 52, economy: 75, militaryStrength: 4118,   // 总兵力≈4100(VOC雇佣军1200+亚洲雇佣兵2500+精锐400+Galleon/Fluyt 18艘)
         description: '荷兰东印度公司(VOC)1624 年被明福建水师击退后退据台湾西南大员(今安平)，建热兰遮城。以台湾为东亚中转港对接日本长崎与巴达维亚。与明朝关系紧张——1625 料罗湾战役即与福建水师合作剿海盗。目前与明朝维持半合作半对抗。1602 建立的 VOC 为世界首家股份公司，拥有独立募兵铸币宣战权。',
         attitude: '敌视', playerRelation: -30,
         resources: '巨型武装商船 Fluyt/Galleon·铜炮 300 余门·日本白银(长崎独占)·东南亚香料(丁香胡椒)·台湾鹿皮糖·巴达维亚中转',
@@ -4724,7 +4724,7 @@
         name: '西班牙·马尼拉', leader: 'Juan Niño de Tabora(菲律宾总督·1626-1632 在任)', color: '#b8860b',
         type: '外国势力·欧洲', factionType: '美洲银贸易中介·殖民帝国远东省',
         territory: '菲律宾马尼拉(1571 建)+北吕宋基隆(1626 Santísima Trinidad)+宿务+棉兰老部分',
-        prestige: 54, economy: 76, militaryStrength: 42,
+        prestige: 54, economy: 76, militaryStrength: 8608,   // 总兵力≈8600(驻军2500+Tercio民兵5500+精锐600+大帆船8艘)
         description: '西班牙帝国治下菲律宾总督辖区。1571 年建马尼拉后以"马尼拉大帆船(Manila Galleon)"连结阿卡普尔科(墨西哥)—马尼拉，中介美洲银至东亚。1626 年建基隆城(Santísima Trinidad)抗荷。与月港(福建漳州)通过华商中介贸易，明末岁入白银数百万两自此流入。1580-1640 西葡同君连合。',
         attitude: '中立', playerRelation: 10,
         resources: '美洲白银(年输入 200-500 万两)·马尼拉大帆船(Manila Galleon)·华商据点 Parian·基隆据点·菲律宾土产',
@@ -4762,7 +4762,7 @@
         name: '奢安之乱联军', leader: '奢崇明(四川永宁)·安邦彦(贵州水西)', color: '#8b0000',
         type: '叛乱势力·土司', factionType: '西南土司叛乱联盟',
         territory: '四川永宁宣抚司(今叙永·落红)+贵州水西宣慰司(今大方黔西·48 目则溪)+水外六目+播州余部+乌撒乌蒙呼应',
-        prestige: 35, economy: 22, militaryStrength: 48,
+        prestige: 35, economy: 22, militaryStrength: 35000,   // 总兵力≈3.5万(罗罗精锐0.8万+土司常备1.5万+苗仡佬民兵1.2万)·1627残部
         description: '天启元年(1621 年)九月奢崇明于重庆起事(川事)，天启二年(1622 年)二月安邦彦起兵围贵阳(黔事)。合兵后称"奢安之乱"(贵州别称"安酋之乱")。彝族六祖罗甸旧部为核心，以"明廷加派辽饷激民"为由反叛，自称国号"大梁"(奢氏)+"罗甸"(安氏)。波及川黔云桂四省，死伤百余万。天启七年(1627)九月本开局时期处战争第七年，主力已退水西山区坚守，残部约 3-4 万。将于崇祯二年(1629)八月在永宁红崖大坝被朱燮元、秦良玉攻灭。',
         attitude: '敌对', playerRelation: -80,
         resources: '水西山地农(粟米·荞麦·马铃薯)·朱砂汞矿·山货药材·毕节金银矿·土兵弩箭·苗汉混合人力',
@@ -5650,7 +5650,7 @@
         ethnicity: '汉', faith: '儒', culture: '汉', learning: '皇子·经筵',
         appearance: '面目清癯，额高鼻直，目光锐利。十七岁身高已成，然身量偏瘦。',
         diction: '辞令凝重，出语果断，然时有迟疑。',
-        personality: '刚烈·多疑·勤政·急切·寡恩·自苦', location: '紫禁城·乾清宫',
+        personality: '刚烈·多疑·勤政·急切·寡恩·自苦', location: '京师·紫禁城·乾清宫',
         rankLevel: 0,
         loyalty: 100, ambition: 90, intelligence: 76, valor: 50,
         military: 40, administration: 60, management: 58, charisma: 62, diplomacy: 38, benevolence: 48,
@@ -5683,7 +5683,7 @@
       // ──── 后妃 ────
       {
         name: '周皇后', title: '皇后', officialTitle: '皇后', isRoyal: true, royalRelation: 'emperor_family', alive: true,
-        age: 16, gender: '女', personality: '贤淑·节俭·有胆识', spouse: '朱由检', location: '坤宁宫',
+        age: 16, gender: '女', personality: '贤淑·节俭·有胆识', spouse: '朱由检', location: '京师·紫禁城·坤宁宫',
         loyalty: 100, ambition: 20, intelligence: 72, benevolence: 85, morale: 75, integrity: 90,
         stance: '贤后', faction: '明朝廷', party: '', family: '周氏',
         traits: ['chaste', 'humble', 'compassionate', 'diligent'],
@@ -5692,7 +5692,7 @@
       },
       {
         name: '张懿安', title: '懿安皇后·皇嫂', officialTitle: '懿安皇后', isRoyal: true, royalRelation: 'former_empress', alive: true,
-        age: 22, gender: '女', personality: '端庄·刚正·反阉', spouse: '朱由校(殁)', location: '慈宁宫',
+        age: 22, gender: '女', personality: '端庄·刚正·反阉', spouse: '朱由校(殁)', location: '京师·紫禁城·慈宁宫',
         loyalty: 90, ambition: 30, intelligence: 80, benevolence: 80, morale: 65, integrity: 95,
         stance: '清流', faction: '明朝廷', party: '东林党', family: '张氏',
         traits: ['just', 'honest', 'stubborn', 'compassionate'],
@@ -5701,7 +5701,7 @@
       },
       {
         name: '袁贵妃', title: '贵妃', officialTitle: '贵妃', isRoyal: true, royalRelation: 'emperor_family', alive: true,
-        age: 18, gender: '女', personality: '温顺·识字·体弱', spouse: '朱由检', location: '东六宫',
+        age: 18, gender: '女', personality: '温顺·识字·体弱', spouse: '朱由检', location: '京师·紫禁城·东六宫',
         loyalty: 85, ambition: 15, intelligence: 65, benevolence: 75, integrity: 80,
         stance: '内廷', faction: '明朝廷', party: '', family: '袁氏',
         traits: ['shy', 'temperate'],
@@ -5709,7 +5709,7 @@
       },
       {
         name: '李选侍', title: '选侍·光宗遗妃·移宫案当事人', officialTitle: '先朝选侍', isRoyal: true, royalRelation: 'former_consort', alive: true,
-        age: 30, gender: '女', birthYear: 1597, personality: '贪利·好权·已败', location: '哕鸾宫',
+        age: 30, gender: '女', birthYear: 1597, personality: '贪利·好权·已败', location: '京师·紫禁城·哕鸾宫',
         loyalty: 40, ambition: 55, intelligence: 65, integrity: 30,
         stance: '失势', faction: '明朝廷', party: '', family: '李氏',
         bio: '万历末年选侍。与光宗有子。移宫案中被东林党逼出乾清宫。'
@@ -5724,7 +5724,7 @@
         learning: '白身·不识字', diction: '粗豪直率，然善察言观色',
         appearance: '身材短小，面白无须（阉人），瞳仁昏黄。常朝常戴珠冠。',
         personality: '阴狠·贪权·好谄·睚眦必报·精于笼络',
-        location: '紫禁城·司礼监',
+        location: '京师·紫禁城·司礼监',
         rankLevel: 7, // 正四品(阉官)但实权远超
         loyalty: 10, ambition: 98, intelligence: 72, valor: 40,
         military: 55, administration: 55, management: 85, charisma: 62, diplomacy: 45, benevolence: 5,
@@ -5765,7 +5765,7 @@
       },
       {
         name: '客氏', title: '奉圣夫人·前熹宗乳母', officialTitle: '奉圣夫人', alive: true,
-        age: 37, gender: '女', personality: '恶毒·放荡·贪酷', location: '出宫暂居私第',
+        age: 37, gender: '女', personality: '恶毒·放荡·贪酷', location: '京师·出宫暂居私第',
         loyalty: 20, ambition: 60, intelligence: 55, benevolence: 5, integrity: 5,
         stance: '失势', faction: '明朝廷', party: '阉党', family: '客氏',
         traits: ['deceitful', 'sadistic', 'lustful', 'vengeful'],
@@ -5784,7 +5784,7 @@
       },
       {
         name: '田尔耕', title: '锦衣卫指挥使·左都督', officialTitle: '锦衣卫指挥使', alive: true,
-        age: 48, gender: '男', personality: '残忍·狡黠·巴结', location: '锦衣卫·北镇抚司',
+        age: 48, gender: '男', personality: '残忍·狡黠·巴结', location: '京师·锦衣卫·北镇抚司',
         loyalty: 15, ambition: 70, intelligence: 60, valor: 55, benevolence: 5, integrity: 8,
         stance: '阉党五彪·武官', faction: '明朝廷', party: '阉党', family: '田氏',
         traits: ['deceitful', 'sadistic', 'callous'],
@@ -5792,7 +5792,7 @@
       },
       {
         name: '许显纯', title: '锦衣卫北镇抚使', officialTitle: '锦衣卫北镇抚使', alive: true,
-        age: 52, gender: '男', personality: '酷烈·阴险·擅刑', location: '北镇抚司诏狱',
+        age: 52, gender: '男', personality: '酷烈·阴险·擅刑', location: '京师·北镇抚司诏狱',
         loyalty: 10, ambition: 50, intelligence: 58, integrity: 5,
         stance: '阉党五彪', faction: '明朝廷', party: '阉党', family: '许氏',
         traits: ['sadistic', 'callous', 'deceitful'],
@@ -6027,7 +6027,7 @@
       // ──── 宦官 ────
       {
         name: '王承恩', title: '内侍太监', officialTitle: '乾清宫近侍', alive: true,
-        age: 42, gender: '男', personality: '忠贞·沉稳·识大体', location: '乾清宫',
+        age: 42, gender: '男', personality: '忠贞·沉稳·识大体', location: '京师·紫禁城·乾清宫',
         loyalty: 100, ambition: 15, intelligence: 68, benevolence: 70, integrity: 95,
         stance: '帝之心腹', faction: '明朝廷', party: '', family: '王氏',
         traits: ['honest', 'diligent', 'humble', 'zealous'],
@@ -6043,7 +6043,7 @@
       },
       {
         name: '方正化', title: '司礼监秉笔', officialTitle: '司礼监秉笔太监', alive: true,
-        age: 45, gender: '男', personality: '刚直·能战·不苟', location: '司礼监',
+        age: 45, gender: '男', personality: '刚直·能战·不苟', location: '京师·紫禁城·司礼监',
         loyalty: 90, ambition: 25, intelligence: 65, valor: 78, integrity: 85,
         stance: '忠宦', faction: '明朝廷', party: '', family: '方氏',
         traits: ['brave', 'honest', 'zealous'],

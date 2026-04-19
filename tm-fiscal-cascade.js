@@ -346,6 +346,7 @@
     });
 
     G._lastCascadeSummary = totals;
+    G._lastCascadeTurn = G.turn || 0;  // 记录结算回合（给 UI 显示"上次结算于 Tn"）
     return { ok: true, totals: totals };
   }
 

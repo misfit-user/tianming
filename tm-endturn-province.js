@@ -1015,12 +1015,43 @@ function _peBuiltContent() {
   html += '<div style="font-size:1.1rem;color:var(--gold);font-weight:700;">' + (adminTree && adminTree.divisions ? adminTree.divisions.length : 0) + '</div></div>';
   html += '</div>';
 
-  // 若 cascade 未跑过 —— 提示"首次开局，税收尚未结算"
-  if (totalRemit === 0 && totalPubMoney === 0 && typeof CascadeTax !== 'undefined') {
-    html += '<div style="padding:0.5rem 0.8rem;background:var(--bg-2);border-left:3px solid var(--amber-400);border-radius:4px;margin-bottom:0.8rem;font-size:0.72rem;color:var(--txt-d);">';
-    html += '\u203B \u672C\u56DE\u5408\u7A0E\u6536\u5C1A\u672A\u7ED3\u7B97\uFF08\u9700\u7B49\u672C\u56DE\u5408 endTurn \u540E\u5F00\u59CB\u7A0E\u6536\u7EA7\u8054\uFF09\u3002\u8FDB\u5165\u65B0\u5267\u672C\u65F6\u82E5\u521D\u503C\u4E3A 0\uFF0C\u53EF\u5728\u5267\u672C\u7F16\u8F91\u5668\u91CC\u914D\u6263 fiscalConfig.taxes\u3002';
-    html += '<button class="bt bp bsm" style="margin-left:10px;font-size:0.65rem;" onclick="_peTriggerCascadeNow()" title="立即执行一次税收级联结算">\u7ACB\u5373\u7ED3\u7B97</button>';
-    html += '</div>';
+  // 结算状态栏——仅在 CascadeTax 存在时显示
+  if (typeof CascadeTax !== 'undefined') {
+    var cascadeHasRun = !!GM._lastCascadeSummary;
+    var lastCascadeTurn = GM._lastCascadeTurn || 0;
+
+    if (!cascadeHasRun) {
+      // 未结算过（罕见——新游戏载入/endTurn 都会自动跑一次；若仍未跑说明 adminHierarchy 未就绪）
+      html += '<div style="padding:0.5rem 0.8rem;background:var(--bg-2);border-left:3px solid var(--amber-400);border-radius:4px;margin-bottom:0.8rem;font-size:0.72rem;color:var(--txt-d);">';
+      html += '\u203B \u7A0E\u6536\u5C1A\u672A\u7ED3\u7B97\u3002\u6BCF\u56DE\u5408 endTurn \u65F6\u4F1A\u81EA\u52A8\u7ED3\u7B97\uFF0C\u65B0\u6E38\u620F\u8F7D\u5165\u65F6\u4E5F\u4F1A\u5373\u523B\u7ED3\u7B97\u4E00\u6B21\u3002';
+      html += '<button class="bt bp bsm" style="margin-left:10px;font-size:0.65rem;" onclick="_peTriggerCascadeNow()" title="立即执行一次税收级联结算">\u7ACB\u5373\u7ED3\u7B97</button>';
+      html += '</div>';
+    } else {
+      // 已结算——显示状态行：上次结算回合 + 本回合累计数 + 手动再结算按钮
+      var lcs = GM._lastCascadeSummary || {};
+      var lcsC = lcs.central || { money:0, grain:0, cloth:0 };
+      var _lossPct = '';
+      if (lcs.lostTransit && (lcs.lostTransit.money||0) > 0) {
+        var _loss = lcs.lostTransit.money || 0;
+        var _total = (lcsC.money||0) + _loss;
+        if (_total > 0) _lossPct = ' 路途损耗' + Math.round(_loss/_total*100) + '%';
+      }
+      var _skimPct = '';
+      if (lcs.skimmed && (lcs.skimmed.money||0) > 0) {
+        var _skim = lcs.skimmed.money || 0;
+        var _t2 = (lcsC.money||0) + _skim + (lcs.lostTransit?lcs.lostTransit.money||0:0);
+        if (_t2 > 0) _skimPct = ' 贪墨' + Math.round(_skim/_t2*100) + '%';
+      }
+      html += '<div style="padding:0.5rem 0.8rem;background:var(--bg-2);border-left:3px solid var(--celadon-400);border-radius:4px;margin-bottom:0.8rem;font-size:0.72rem;color:var(--txt-d);display:flex;align-items:center;gap:0.5rem;">';
+      html += '<span style="color:var(--celadon-400);">\u2713</span>';
+      html += '<span>\u4E0A\u6B21\u7ED3\u7B97\uFF1AT' + lastCascadeTurn + '\u3002\u4E2D\u592E +' + formatNumber(lcsC.money||0) + _UU.money;
+      if ((lcsC.grain||0) > 0) html += ' +' + formatNumber(lcsC.grain) + _UU.grain;
+      if (_lossPct) html += '<span style="color:var(--amber-400);">' + _lossPct + '</span>';
+      if (_skimPct) html += '<span style="color:var(--vermillion-400);">' + _skimPct + '</span>';
+      html += '\u3002\u6BCF\u56DE\u5408 endTurn \u81EA\u52A8\u7ED3\u7B97\u3002</span>';
+      html += '<button class="bt bsm" style="margin-left:auto;font-size:0.65rem;" onclick="_peTriggerCascadeNow()" title="手动再结算一次（覆盖本回合）">\u91CD\u65B0\u7ED3\u7B97</button>';
+      html += '</div>';
+    }
   }
 
   if (adminTree && adminTree.divisions && adminTree.divisions.length > 0) {

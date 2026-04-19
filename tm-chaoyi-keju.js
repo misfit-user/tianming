@@ -521,8 +521,9 @@ function _buildChangchaoPrompt() {
     p += '在京官员：' + _inKy.slice(0, 15).map(function(c) { return c.name + '(' + (c.officialTitle||c.title||'') + ')'; }).join('、') + '\n';
   }
   p += '\n每条事务格式：\n';
-  p += '{"presenter":"奏报者姓名（优先用在京官员名，无则用"某部官员"）","dept":"所属部门","type":"routine/request/warning/emergency/personnel","title":"标题10字内","content":"内容50字内","recommendation":"approve/reject/discuss","urgency":"normal/urgent"}\n';
+  p += '{"presenter":"奏报者姓名（优先用在京官员名，无则用"某部官员"）","dept":"所属部门","type":"routine/request/warning/emergency/personnel","title":"标题10字内","announceLine":"启奏开场白15-30字（此为简短开场·将作为"启奏"阶段气泡）","content":"奏报正文（此为"奏报"阶段气泡·须遵朝议字数·见下）","recommendation":"approve/reject/discuss","urgency":"normal/urgent"}\n';
   p += '事务类型说明：routine=日常汇报 request=请求批准 warning=预警 emergency=紧急 personnel=人事\n';
+  p += '（content 字数必须遵守朝议字数设置——' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint('cy').replace(/^（|）$/g,'') : '约 150-300 字') + '）\n';
   // 上次搁置的事务——应再次出现
   if (GM._ccHeldItems && GM._ccHeldItems.length > 0) {
     p += '\n【上次搁置的事务——必须包含在议程中】\n';
@@ -4386,7 +4387,9 @@ async function _cc2_startCourtSession() {
   footer.innerHTML = '<div style="text-align:center;color:var(--color-foreground-muted);padding:0.6rem;font-size:0.78rem;">百官整理奏牍中……</div>';
   try {
     var agendaPrompt = _cc2_buildAgendaPrompt();
-    var raw = await callAI(agendaPrompt, 5000);
+    // token 预算按朝议字数 × 最多 9 条议程估算（约汉字数 × 2.5 + JSON wrapper），不低于 5000
+    var _agendaTok = (typeof _aiDialogueTok === 'function') ? Math.max(5000, _aiDialogueTok('cy', 9)) : 8000;
+    var raw = await callAI(agendaPrompt, _agendaTok);
     var items = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
     if (!Array.isArray(items)) items = [];
     items.forEach(function(it){ CY._cc2.queue.push(it); });
@@ -4424,12 +4427,12 @@ function _cc2_buildAgendaPrompt() {
   p += '  "type":"routine日常/request请旨/warning预警/emergency紧急/personnel人事/confrontation对质弹劾/joint_petition联名/personal_plea个人请旨",\n';
   p += '  "urgency":"normal/urgent(仅紧急/涉变事用)",\n';
   p += '  "title":"10字内标题",\n';
-  p += '  "content":"50字内半文言奏报内容",\n';
+  p += '  "announceLine":"启奏台词·15-30字·如\'臣户部尚书张某有贺表及岁贡呈奏\'——这一句可以简略",\n';
+  p += '  "content":"奏报正文·半文言·此为\\"奏报\\"阶段气泡内容·须达到朝议字数范围' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint('cy').replace(/^（|）$/g,'') : '约 150-300 字') + '·不得短于此下限",\n';
   p += '  "controversial":0-10(争议度——涉党争/既得利益冲突时高),\n';
   p += '  "importance":0-10(重要度——涉边防/财政危机时高),\n';
   p += '  "relatedDepts":["兵部","户部"](除奏报部门外，议题涉及的其他部门),\n';
-  p += '  "relatedPeople":["X","Y"](议题直接涉及的人名，如弹劾target/举荐人等),\n';
-  p += '  "announceLine":"启奏台词(20字内，如\'臣户部尚书张某有事启奏\')"\n';
+  p += '  "relatedPeople":["X","Y"](议题直接涉及的人名，如弹劾target/举荐人等)\n';
   p += '}\n';
   p += '要求：\n';
   p += '· 至少 1 条 urgent 紧急事务\n';
@@ -4437,6 +4440,7 @@ function _cc2_buildAgendaPrompt() {
   p += '· 议程类型多样，不要全是 routine\n';
   p += '· 高 controversial 的议题会引发 2-3 轮朝堂交锋\n';
   p += '· 关联本回合的 currentIssues\n';
+  p += '· content 字段必须遵守朝议字数（仅 announceLine 可简略），百官奏报须行文详尽\n';
   p += '返回 JSON 数组。';
   return p;
 }
@@ -4746,13 +4750,13 @@ async function _cc2_genRoundSpeeches(item, picks, roundNum) {
   prompt += '奏报者：' + (item.presenter||'') + '\n';
   prompt += '在场官员：' + attendeeList + '\n';
   prompt += (CY._cc2._spokenThisAgenda.length ? '本议程已发言者：' + CY._cc2._spokenThisAgenda.join('、') + '（须换人）\n' : '');
-  prompt += '请为以下 ' + picks.length + ' 位官员生成各 1 条发言（30-80 字，文言/半文言，符合身份立场）：\n';
+  prompt += '请为以下 ' + picks.length + ' 位官员生成各 1 条发言（文言/半文言，符合身份立场）：\n';
   picks.forEach(function(p) {
     var ch = findCharByName(p.a.name);
     prompt += '  ' + p.a.name + '（' + (p.a.title||'') + (p.a.party?'·'+p.a.party:'') + '，性格:' + (ch&&ch.personality?ch.personality.slice(0,14):'') + (ch&&ch.loyalty!=null?',忠'+Math.round(ch.loyalty):'') + '）\n';
   });
   prompt += '\n发言类型须各不相同，可选：附议/反驳/弹劾/劝谏/讽喻/请旨/折中/冷眼。\n';
-  prompt += (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() + '\n' : '');
+  prompt += (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint('cy') + '（line 字段必须达到此字数范围，不得短于下限）\n' : '（每条约 150-300 字）\n');
   prompt += '返回 JSON 数组：[{"name":"","type":"附议/反驳/弹劾/劝谏/讽喻/请旨/折中/冷眼","line":"内容"}]';
 
   try {

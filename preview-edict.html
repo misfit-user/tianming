@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>诏令标签页·美化预览</title>
+<style>
+:root {
+  --bg-1: #0f0d0a;
+  --bg-2: #1a1510;
+  --bg-paper: #241e18;
+  --ink-900: #f4eadd;
+  --ink-700: #d9c9a9;
+  --ink-500: #a69470;
+  --ink-300: #6b5d47;
+  --ink-100: #3d342a;
+  --gold-300: #c9a85f;
+  --gold-400: #b89a53;
+  --gold-500: #9d8244;
+  --gold-d: #6b5a30;
+  --vermillion-300: #d15c47;
+  --vermillion-400: #b84738;
+  --vermillion-600: #8f3428;
+  --indigo-400: #5a6fa8;
+  --indigo-600: #3e4e80;
+  --celadon-400: #6a9a7f;
+  --celadon-600: #4a7a5f;
+  --border-subtle: rgba(184,154,83,0.15);
+  --border-strong: rgba(184,154,83,0.35);
+  --shadow-scroll: 0 6px 18px rgba(0,0,0,0.45), 0 0 0 1px rgba(184,154,83,0.08);
+  --shadow-gold: 0 0 12px rgba(184,154,83,0.18);
+  --font-serif: "STKaiti", "KaiTi", "楷体", "Georgia", serif;
+  --font-song: "STSong", "SimSun", "宋体", serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --space-8: 40px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(ellipse at top, #1a1510 0%, #0f0d0a 70%),
+    var(--bg-1);
+  color: var(--ink-700);
+  font-family: var(--font-song);
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ═══ 宣纸纹理（CSS-only）═══ */
+.xuanzhi {
+  background-color: var(--bg-paper);
+  background-image:
+    /* 纤维纹 */
+    repeating-linear-gradient(90deg,
+      transparent 0,
+      transparent 2.5em,
+      rgba(107, 93, 71, 0.04) 2.5em,
+      rgba(107, 93, 71, 0.04) calc(2.5em + 1px)),
+    repeating-linear-gradient(0deg,
+      transparent 0,
+      transparent 3em,
+      rgba(107, 93, 71, 0.02) 3em,
+      rgba(107, 93, 71, 0.02) calc(3em + 1px)),
+    /* 顶部焦黄 */
+    linear-gradient(to bottom,
+      rgba(184, 154, 83, 0.05) 0%,
+      transparent 80px),
+    /* 顶部金红渐变 */
+    radial-gradient(ellipse at top left,
+      rgba(192, 64, 48, 0.04),
+      transparent 40%);
+  position: relative;
+}
+.xuanzhi::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(139, 90, 50, 0.025) 0.5px, transparent 1px),
+    radial-gradient(circle at 80% 60%, rgba(139, 90, 50, 0.03) 0.5px, transparent 1px),
+    radial-gradient(circle at 40% 85%, rgba(139, 90, 50, 0.02) 0.5px, transparent 1px);
+  background-size: 80px 80px, 120px 120px, 100px 100px;
+  background-position: 0 0, 40px 40px, 20px 60px;
+}
+
+/* ═══ 容器 ═══ */
+.preview-frame {
+  max-width: 1280px;
+  margin: 32px auto;
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-scroll);
+}
+
+.preview-header {
+  background: linear-gradient(to bottom, rgba(184,154,83,0.04), transparent);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--ink-500);
+  letter-spacing: 0.1em;
+}
+.preview-header .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.preview-header .dot.r { background: #d15c47; }
+.preview-header .dot.y { background: #c9a85f; }
+.preview-header .dot.g { background: #6a9a7f; }
+.preview-header .title {
+  margin-left: auto;
+  font-family: var(--font-serif);
+  letter-spacing: 0.3em;
+  color: var(--ink-300);
+}
+
+/* ═══ 标签栏 ═══ */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--ink-300);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+  position: relative;
+}
+.tab-btn:hover { color: var(--ink-700); }
+.tab-btn.active {
+  color: var(--gold-400);
+  border-bottom-color: var(--gold-400);
+}
+.tab-btn.active::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
+  background: var(--vermillion-400);
+  border-radius: 1px;
+  transform: rotate(12deg);
+  box-shadow: 0 0 3px rgba(192, 64, 48, 0.5);
+}
+
+/* ═══ 诏令主区 ═══ */
+.edict-panel {
+  padding: 24px 28px;
+  min-height: 900px;
+  background:
+    radial-gradient(ellipse at top, rgba(184,154,83,0.03) 0%, transparent 200px);
+  display: flex;
+  gap: 24px;
+}
+
+/* ═══ 左侧建议库 ═══ */
+.sug-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  position: sticky;
+  top: 20px;
+}
+.sug-title-wrap {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.sug-title {
+  display: inline-block;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  letter-spacing: 0.25em;
+  color: var(--ink-700);
+  padding: 4px 14px 6px;
+  background: linear-gradient(to bottom,
+    rgba(157, 130, 68, 0.12),
+    rgba(157, 130, 68, 0.03));
+  border-top: 1px solid var(--gold-d);
+  border-bottom: 1px solid var(--gold-d);
+  position: relative;
+}
+.sug-title::before,
+.sug-title::after {
+  content: "❖";
+  color: var(--gold-400);
+  font-size: 10px;
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+.sug-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.sug-list::-webkit-scrollbar {
+  width: 5px;
+}
+.sug-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+.sug-item {
+  border-left: 2px solid var(--gold-d);
+  background: var(--bg-paper);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.sug-item:hover {
+  border-left-color: var(--vermillion-400);
+  color: var(--ink-700);
+  background: linear-gradient(to right, rgba(192,64,48,0.08), var(--bg-paper));
+}
+.sug-item .src {
+  font-size: 10.5px;
+  color: var(--gold-400);
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+.sug-item .txt { color: inherit; }
+.sug-item .act {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 10px;
+  color: var(--ink-300);
+  padding: 1px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  background: var(--bg-2);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sug-item:hover .act { opacity: 1; }
+
+/* ═══ 右侧编辑区 ═══ */
+.edict-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ═══ 御笔标题 ═══ */
+.yubi-title {
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+  padding: 12px 0 18px;
+}
+.yubi-title::before,
+.yubi-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 180px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, transparent, var(--gold-d), transparent);
+}
+.yubi-title::before { top: 0; }
+.yubi-title::after { bottom: 0; }
+.yubi-title .main {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  letter-spacing: 0.5em;
+  color: var(--ink-900);
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.yubi-title .sub {
+  font-size: 12px;
+  color: var(--ink-300);
+  letter-spacing: 0.3em;
+  font-family: var(--font-serif);
+}
+.yubi-title .seal {
+  position: absolute;
+  right: 24px;
+  top: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 35%,
+      rgba(192, 64, 48, 0.85),
+      rgba(140, 40, 30, 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f4eadd;
+  font-size: 11px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.1em;
+  font-weight: bold;
+  transform: rotate(-6deg);
+  box-shadow: 0 2px 6px rgba(140, 40, 30, 0.4);
+  opacity: 0.88;
+}
+
+/* ═══ 诏令分类卡片 ═══ */
+.edict-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.edict-card {
+  background-color: var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 2.5em,
+      rgba(107, 93, 71, 0.025) 2.5em,
+      rgba(107, 93, 71, 0.025) calc(2.5em + 1px));
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--cat-color, var(--gold-400));
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.edict-card::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle at top right,
+    rgba(184, 154, 83, 0.08),
+    transparent 70%);
+  pointer-events: none;
+}
+.edict-card:hover {
+  box-shadow: var(--shadow-gold), 0 3px 8px rgba(0,0,0,0.3);
+  border-left-width: 4px;
+  transform: translateX(-1px);
+}
+
+.edict-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.edict-card-icon {
+  width: 24px; height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cat-color);
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.01));
+  border: 1px solid var(--cat-color);
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.edict-card-label {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--cat-color);
+  letter-spacing: 0.12em;
+  font-weight: 500;
+}
+.edict-card-hint {
+  font-size: 11px;
+  color: var(--ink-300);
+  margin-left: auto;
+  font-family: var(--font-song);
+  letter-spacing: 0.05em;
+}
+
+.edict-input {
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  background: rgba(244, 234, 221, 0.04);
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 2.5em,
+      rgba(107, 93, 71, 0.04) 2.5em,
+      rgba(107, 93, 71, 0.04) calc(2.5em + 1px));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.8;
+  resize: vertical;
+  transition: all 0.25s;
+}
+.edict-input::placeholder {
+  color: var(--ink-300);
+  font-family: var(--font-song);
+  font-style: italic;
+  font-size: 13px;
+}
+.edict-input:focus {
+  outline: none;
+  border-color: var(--cat-color);
+  background: rgba(244, 234, 221, 0.06);
+  box-shadow: 0 0 0 1px var(--cat-color), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.edict-forecast {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(184, 154, 83, 0.04);
+  border: 1px dashed var(--border-subtle);
+  border-left: 2px solid var(--cat-color);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  color: var(--ink-500);
+  line-height: 1.6;
+  font-family: var(--font-song);
+}
+.edict-forecast .tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  background: var(--cat-color);
+  color: var(--bg-1);
+  border-radius: 2px;
+  margin-right: 6px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+/* ═══ 分类颜色 ═══ */
+.cat-pol { --cat-color: var(--indigo-400); }
+.cat-mil { --cat-color: var(--vermillion-400); }
+.cat-dip { --cat-color: var(--celadon-400); }
+.cat-eco { --cat-color: var(--gold-400); }
+.cat-oth { --cat-color: var(--ink-500); }
+
+/* ═══ 润色控制行 ═══ */
+.polish-bar {
+  margin-top: 24px;
+  padding: 18px 16px;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(184,154,83,0.06),
+    transparent);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.polish-label {
+  font-family: var(--font-serif);
+  color: var(--ink-500);
+  letter-spacing: 0.1em;
+  font-size: 13px;
+}
+.polish-select {
+  background: var(--bg-2);
+  color: var(--ink-700);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  cursor: pointer;
+}
+.polish-btn {
+  background: linear-gradient(to bottom,
+    var(--vermillion-400),
+    var(--vermillion-600));
+  color: #f4eadd;
+  border: 1px solid var(--vermillion-600);
+  border-radius: var(--radius-sm);
+  padding: 8px 24px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  letter-spacing: 0.25em;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(140,40,30,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.polish-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(140,40,30,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.polish-btn::before {
+  content: "❖";
+  margin-right: 6px;
+  opacity: 0.7;
+}
+
+/* ═══ 润色结果·卷轴式 ═══ */
+.polished-scroll {
+  margin-top: 24px;
+  position: relative;
+  padding: 28px 40px 32px;
+  background-color: #f4eadd;
+  background-image:
+    /* 宣纸纤维 */
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 2.5em,
+      rgba(107, 93, 71, 0.08) 2.5em,
+      rgba(107, 93, 71, 0.08) calc(2.5em + 1px)),
+    /* 纸斑 */
+    radial-gradient(circle at 20% 30%, rgba(139, 90, 50, 0.05) 1px, transparent 2px),
+    radial-gradient(circle at 75% 60%, rgba(139, 90, 50, 0.04) 1px, transparent 2px),
+    radial-gradient(circle at 50% 85%, rgba(139, 90, 50, 0.03) 1px, transparent 2px);
+  background-size: auto, 130px 130px, 150px 150px, 110px 110px;
+  border-radius: 2px;
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.5),
+    inset 0 0 60px rgba(139, 90, 50, 0.08);
+  color: #1a1410;
+  font-family: var(--font-serif);
+  line-height: 2;
+  font-size: 15px;
+}
+/* 卷轴两端 */
+.polished-scroll::before,
+.polished-scroll::after {
+  content: "";
+  position: absolute;
+  left: -12px; right: -12px;
+  height: 16px;
+  background: linear-gradient(to bottom,
+    #6b5a30 0%,
+    #8d7640 40%,
+    #6b5a30 100%);
+  border: 1px solid #3d2e18;
+  border-radius: 8px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.polished-scroll::before { top: -8px; }
+.polished-scroll::after { bottom: -8px; }
+
+.polished-title {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 0.4em;
+  color: #4a2818;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(107, 60, 40, 0.2);
+  position: relative;
+}
+.polished-title::before {
+  content: "奉";
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  font-size: 14px;
+  color: rgba(192, 64, 48, 0.6);
+  letter-spacing: 0;
+}
+.polished-title::after {
+  content: "承";
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 14px;
+  color: rgba(192, 64, 48, 0.6);
+}
+
+.polished-text {
+  text-indent: 2em;
+  color: #2a1810;
+  white-space: pre-wrap;
+}
+
+.polished-seal {
+  position: absolute;
+  bottom: 22px;
+  right: 36px;
+  width: 56px;
+  height: 56px;
+  border-radius: 3px;
+  background:
+    linear-gradient(to bottom right,
+      rgba(192, 64, 48, 0.92),
+      rgba(140, 40, 30, 0.95));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #f4eadd;
+  font-size: 10px;
+  font-family: var(--font-serif);
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  transform: rotate(-4deg);
+  box-shadow: 0 2px 6px rgba(140,40,30,0.5);
+  text-align: center;
+  padding: 6px;
+}
+.polished-seal .top {
+  font-size: 8px;
+  opacity: 0.85;
+}
+.polished-seal .main {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 2px 0;
+}
+.polished-seal .bot {
+  font-size: 8px;
+  opacity: 0.85;
+}
+
+.polished-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.polished-btn {
+  background: rgba(244, 234, 221, 0.04);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-700);
+  padding: 6px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-serif);
+  letter-spacing: 0.15em;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.polished-btn:hover {
+  background: rgba(184,154,83,0.08);
+  border-color: var(--gold-400);
+  color: var(--gold-400);
+}
+.polished-btn.primary {
+  background: linear-gradient(to bottom, var(--gold-400), var(--gold-500));
+  color: var(--bg-1);
+  border-color: var(--gold-500);
+  font-weight: 500;
+}
+.polished-btn.primary:hover {
+  background: linear-gradient(to bottom, var(--gold-300), var(--gold-400));
+  color: var(--bg-1);
+}
+
+/* ═══ 主角行止 ═══ */
+.xinglu-section {
+  margin-top: 32px;
+}
+.section-divider {
+  text-align: center;
+  margin: 28px 0 20px;
+  position: relative;
+}
+.section-divider::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    var(--gold-d) 30%,
+    var(--gold-d) 70%,
+    transparent 100%);
+}
+.section-divider .label {
+  position: relative;
+  display: inline-block;
+  padding: 2px 20px;
+  background: var(--bg-2);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--gold-400);
+  letter-spacing: 0.3em;
+}
+
+.xinglu-card {
+  background-color: var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 2.5em,
+      rgba(107, 93, 71, 0.025) 2.5em,
+      rgba(107, 93, 71, 0.025) calc(2.5em + 1px));
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--gold-400);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  position: relative;
+}
+.xinglu-hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.xinglu-hdr .title {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--gold-400);
+  letter-spacing: 0.12em;
+}
+.xinglu-hdr .desc {
+  font-size: 11px;
+  color: var(--ink-300);
+}
+
+.xinglu-history {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-subtle);
+}
+.xinglu-history-title {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-500);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.1em;
+}
+.xinglu-history-title::before {
+  content: "▸";
+  transition: transform 0.2s;
+  color: var(--ink-300);
+}
+.xinglu-history-title:hover { color: var(--gold-400); }
+.xinglu-history-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.xinglu-history-item {
+  font-size: 11.5px;
+  padding: 6px 10px;
+  background: rgba(184,154,83,0.03);
+  border-left: 2px solid var(--ink-100);
+  color: var(--ink-500);
+  line-height: 1.6;
+  border-radius: var(--radius-sm);
+}
+.xinglu-history-item .turn {
+  color: var(--gold-400);
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em;
+  margin-right: 6px;
+}
+
+/* ═══ 暂停菜单·帝王私行 ═══ */
+.tyrant-block {
+  margin-top: 28px;
+  padding: 12px 16px;
+  background: linear-gradient(to right,
+    rgba(192, 64, 48, 0.06),
+    transparent);
+  border-left: 2px dashed var(--vermillion-400);
+  border-radius: var(--radius-sm);
+}
+.tyrant-toggle {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink-500);
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tyrant-toggle::before {
+  content: "▸";
+  color: var(--vermillion-400);
+}
+.tyrant-toggle .sub {
+  font-size: 11px;
+  color: var(--ink-300);
+  font-family: var(--font-song);
+  letter-spacing: 0;
+}
+
+/* ═══ Legend ═══ */
+.legend {
+  padding: 14px 20px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--ink-500);
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+.legend .k { color: var(--gold-400); }
+.legend .mark { color: var(--vermillion-400); }
+
+</style>
+</head>
+<body>
+
+<div class="preview-frame">
+
+  <!-- 顶部模拟浏览器栏 -->
+  <div class="preview-header">
+    <span class="dot r"></span>
+    <span class="dot y"></span>
+    <span class="dot g"></span>
+    <span>tianming · 诏令标签页美化预览</span>
+    <span class="title">〔 御 笔 朱 批 〕</span>
+  </div>
+
+  <!-- 标签栏 -->
+  <div class="tab-bar">
+    <button class="tab-btn">朝政</button>
+    <button class="tab-btn active">诏令</button>
+    <button class="tab-btn">奏疏</button>
+    <button class="tab-btn">问对</button>
+    <button class="tab-btn">鸿雁</button>
+    <button class="tab-btn">编年</button>
+    <button class="tab-btn">官制</button>
+    <button class="tab-btn">文苑</button>
+    <button class="tab-btn">起居注</button>
+    <button class="tab-btn">纪事</button>
+    <button class="tab-btn">史记</button>
+    <button class="tab-btn">朝议</button>
+    <button class="tab-btn">科举</button>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="edict-panel xuanzhi">
+
+    <!-- 左侧建议库 -->
+    <div class="sug-sidebar">
+      <div class="sug-title-wrap">
+        <span class="sug-title">议 事 清 册</span>
+      </div>
+      <div class="sug-list">
+
+        <div class="sug-item">
+          <div class="src">【问对·袁崇焕】</div>
+          <div class="txt">辽东饥卒数月未饷，将卒怨嗟，乞陛下垂察拨银补给。</div>
+          <div class="act">摘入</div>
+        </div>
+
+        <div class="sug-item">
+          <div class="src">【朝议·户部】</div>
+          <div class="txt">河南连岁饥荒，流民数万涌入京畿，请发太仓米十万石赈济。</div>
+          <div class="act">摘入</div>
+        </div>
+
+        <div class="sug-item">
+          <div class="src">【鸿雁·卢象升】</div>
+          <div class="txt">宣大兵马虽众，训习已久而军械疲朽，请敕工部补造火器。</div>
+          <div class="act">摘入</div>
+        </div>
+
+        <div class="sug-item">
+          <div class="src">【奏疏·温体仁】</div>
+          <div class="txt">东林党人操切言事，请陛下裁抑，以全朝纲。</div>
+          <div class="act">摘入</div>
+        </div>
+
+        <div class="sug-item">
+          <div class="src">【问对·徐光启】</div>
+          <div class="txt">西洋火器造法臣已得图样，请设西局于京师督造。</div>
+          <div class="act">摘入</div>
+        </div>
+
+        <div class="sug-item">
+          <div class="src">【风闻·坊间】</div>
+          <div class="txt">闽广海寇郑芝龙部愈发强盛，官军屡败，宜以招抚待之。</div>
+          <div class="act">摘入</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 右侧编辑区 -->
+    <div class="edict-main">
+
+      <!-- 御笔标题 -->
+      <div class="yubi-title">
+        <div class="seal">御笔</div>
+        <div class="main">天 子 御 笔</div>
+        <div class="sub">奉 天 承 运</div>
+      </div>
+
+      <!-- 5 类诏令卡片 -->
+      <div class="edict-cards">
+
+        <div class="edict-card cat-pol">
+          <div class="edict-card-hdr">
+            <span class="edict-card-icon">政</span>
+            <span class="edict-card-label">政 令</span>
+            <span class="edict-card-hint">改革官制·任免官员·降旨安抚</span>
+          </div>
+          <textarea class="edict-input" placeholder="诏谕天下，如：改革官制、降旨安抚、任免官员……">着内阁拟旨：罢阉党余孽魏忠贤余部，削职为民者二百一十二人，所涉田宅没入官。另擢升东林党人钱谦益为礼部尚书。</textarea>
+          <div class="edict-forecast">
+            <span class="tag">预判</span>东林系大悦但骄气日盛；阉党残余愤恨潜伏，恐有反扑之举。礼部新人资历或不足以震慑。
+          </div>
+        </div>
+
+        <div class="edict-card cat-mil">
+          <div class="edict-card-hdr">
+            <span class="edict-card-icon">军</span>
+            <span class="edict-card-label">军 令</span>
+            <span class="edict-card-hint">调兵遣将·加强边防·讨伐叛贼</span>
+          </div>
+          <textarea class="edict-input" placeholder="调兵遣将，如：调动军队、加强边防、讨伐叛贼……">命袁崇焕督师辽东，加衔兵部尚书衔，便宜行事。拨银三十万两补饷，另赐尚方剑一口。</textarea>
+          <div class="edict-forecast">
+            <span class="tag">预判</span>袁崇焕感恩激奋，辽东士气可回升。但此授权之重，恐引朝议非议；内帑吃紧，拨银会压财政。
+          </div>
+        </div>
+
+        <div class="edict-card cat-dip">
+          <div class="edict-card-hdr">
+            <span class="edict-card-icon">外</span>
+            <span class="edict-card-label">外 交</span>
+            <span class="edict-card-hint">遣使和亲·结盟讨伐·册封藩属</span>
+          </div>
+          <textarea class="edict-input" placeholder="纵横捭阖，如：遣使和亲、结盟讨伐、册封藩属……"></textarea>
+        </div>
+
+        <div class="edict-card cat-eco">
+          <div class="edict-card-hdr">
+            <span class="edict-card-icon">经</span>
+            <span class="edict-card-label">经 济</span>
+            <span class="edict-card-hint">减税轻赋·开仓放粮·兴修水利</span>
+          </div>
+          <textarea class="edict-input" placeholder="经纶民生，如：减税轻赋、开仓放粮、兴修水利……">诏减河南、山东两省今岁田赋三成，开太仓米十万石赈济饥民。</textarea>
+          <div class="edict-forecast">
+            <span class="tag">预判</span>两省民心大悦，流民复归。然国库本已空虚，此策使岁入骤降十万两，可能加剧辽饷欠饷。
+          </div>
+        </div>
+
+        <div class="edict-card cat-oth">
+          <div class="edict-card-hdr">
+            <span class="edict-card-icon">他</span>
+            <span class="edict-card-label">其 他</span>
+            <span class="edict-card-hint">大赦·科举·建造·礼仪</span>
+          </div>
+          <textarea class="edict-input" placeholder="其他旨意，如：大赦天下、科举取士、建造宫殿……"></textarea>
+        </div>
+
+      </div>
+
+      <!-- 润色控制行 -->
+      <div class="polish-bar">
+        <span class="polish-label">文 风 选 择</span>
+        <select class="polish-select">
+          <option>典雅骈文</option>
+          <option>简洁明快</option>
+          <option>华丽文藻</option>
+          <option>白话文言</option>
+        </select>
+        <button class="polish-btn">有 司 润 色</button>
+      </div>
+
+      <!-- 润色结果·卷轴 -->
+      <div class="polished-scroll">
+        <div class="polished-title">诏　书</div>
+        <div class="polished-text">奉天承运皇帝，诏曰：
+
+朕绍膺鸿绪，临御万方，夙夜惕厉，罔敢或怠。近览群工章奏，知阉党余孽魏忠贤党羽未尽，盘踞要津，摇惑朝纲，朕甚悯焉。兹着内阁拟旨，削职为民者二百一十二人，所涉田宅一律没入官府，以儆效尤。另擢东林钱谦益为礼部尚书，冀以正学匡时，安定纲常。
+
+又辽东饥卒日久，兵心思乱，着袁崇焕督师辽东，加兵部尚书衔，便宜行事，赐尚方剑一口，拨银三十万两补给军饷，务使将士知朕轸念之意。
+
+此外，河南、山东两省连岁饥馑，流民载道，着减今岁田赋三成，开太仓米十万石赈济。尔等有司上下，皆当悉心奉行，毋得玩忽。
+
+布告天下，咸使闻知。
+
+崇祯元年正月十有五日</div>
+
+        <div class="polished-seal">
+          <div class="top">皇 帝</div>
+          <div class="main">制宝</div>
+          <div class="bot">之 宝</div>
+        </div>
+
+        <div class="polished-actions">
+          <button class="polished-btn">重 新 润 色</button>
+          <button class="polished-btn">编 辑 修 订</button>
+          <button class="polished-btn primary">颁 行 天 下</button>
+        </div>
+      </div>
+
+      <!-- 主角行止 -->
+      <div class="xinglu-section">
+        <div class="section-divider">
+          <span class="label">主 角 行 止</span>
+        </div>
+
+        <div class="xinglu-card">
+          <div class="xinglu-hdr">
+            <span class="title">本 回 合 行 动</span>
+            <span class="desc">—— 你这段时间做了什么</span>
+          </div>
+          <textarea class="edict-input" style="border-color:var(--gold-d);" placeholder="如：召见某臣、校阅三军、微服私访、夜读史书、祖庙祭祀、宴请群臣……">与首辅温体仁于文华殿密议辽东方略，又召徐光启论西洋火器事，夜读《资治通鉴·唐纪》至三更。</textarea>
+
+          <div class="xinglu-history">
+            <div class="xinglu-history-title">近期行止记录 <span style="color:var(--ink-300);margin-left:auto;font-size:10px;">5 条</span></div>
+            <div class="xinglu-history-list">
+              <div class="xinglu-history-item"><span class="turn">T42</span>召见内阁大学士三人议辽事，又亲临京营校阅三千精锐。</div>
+              <div class="xinglu-history-item"><span class="turn">T41</span>夜梦太祖，醒而兴叹祖宗家法不可废，次日召礼部议礼。</div>
+              <div class="xinglu-history-item"><span class="turn">T40</span>微服至西市，见民困深重，归后罢晚膳食而独坐良久。</div>
+              <div class="xinglu-history-item"><span class="turn">T39</span>祭告太庙，祝祷六陵，祈求社稷永固，将士用命。</div>
+              <div class="xinglu-history-item"><span class="turn">T38</span>与皇后于坤宁宫叙家常，诉朝政之艰，皇后以祖训慰之。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 帝王私行（折叠） -->
+        <div class="tyrant-block">
+          <div class="tyrant-toggle">
+            帝 王 私 行
+            <span class="sub">—— 点击展开（后妃·游猎·丹药·密访）</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="legend">
+    ★ 设计要点：<span class="k">宣纸纹理</span> · <span class="k">朱砂御笔印</span> · 5 类诏令<span class="k">冷暖色谱</span>（政蓝/军朱/外绿/经金/他灰）· 润色结果<span class="mark">卷轴式展开</span>（上下木轴 · 朱砂御玺 · 奉承角饰）· 建议库<span class="k">议事清册</span>风 · 主角行止独立分割 · 帝王私行折叠入口 <br>
+    <span style="color:var(--ink-300);margin-top:6px;display:inline-block;">这是纯预览页面。若满意我将此样式应用到 tm-game-engine.js 的实际诏令 tab 中。</span>
+  </div>
+
+</div>
+
+</body>
+</html>

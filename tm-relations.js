@@ -53,29 +53,31 @@ var CONFLICT_LEVELS = {
 };
 
 // ── NPC 互动类型（20+种） ──
+//  fameActor/fameTarget: 名望 (-100..+100) 增减
+//  virtueActor/virtueTarget: 贤能（0+ 累积型）增减 · 仅加不减（或减一点）
 var NPC_INTERACTION_TYPES = {
-  recommend:         { label:'举荐', conflict:0, effect:{respect:+8, owesFavor:+1}, mood:'喜', important:6 },
-  impeach:           { label:'弹劾', conflict:+1, effect:{affinity:-15, hostility:+15}, mood:'恨', important:8 },
-  petition_jointly:  { label:'联名上书', conflict:0, effect:{affinity:+5, trust:+3}, mood:'平', important:4 },
-  form_clique:       { label:'结党', conflict:0, effect:{trust:+10}, label_add:['same_party'], mood:'平', important:5 },
-  private_visit:     { label:'私访', conflict:0, effect:{affinity:+5, trust:+5}, mood:'喜', important:4 },
-  invite_banquet:    { label:'宴请', conflict:0, effect:{affinity:+6}, mood:'喜', important:4 },
-  gift_present:      { label:'馈赠', conflict:0, effect:{affinity:+4, owesFavor:+1}, mood:'喜', important:3 },
-  correspond_secret: { label:'密信', conflict:0, effect:{trust:+8}, label_add:['co_conspirator'], mood:'平', important:5 },
-  confront:          { label:'对质', conflict:+1, effect:{affinity:-10}, mood:'恨', important:6 },
-  mediate:           { label:'调和', conflict:-1, effect:{respect:+5}, mood:'平', important:5 },
-  frame_up:          { label:'构陷', conflict:+2, effect:{affinity:-25, trust:-40, hostility:+30}, mood:'恨', important:10 },
-  expose_secret:     { label:'揭发', conflict:+2, effect:{affinity:-20, fear:+15}, mood:'恨', important:9 },
-  marriage_alliance: { label:'联姻', conflict:0, effect:{affinity:+15, trust:+10, kinshipTies:+1}, label_add:['in_law'], mood:'喜', important:8 },
-  master_disciple:   { label:'师徒缔结', conflict:0, effect:{respect:+20, affinity:+10}, label_add_actor:['master'], label_add_target:['disciple'], mood:'喜', important:9 },
-  duel_poetry:       { label:'诗文切磋', conflict:0, effect:{respect:+5, affinity:+3}, label_add:['poet_friend'], mood:'平', important:3 },
-  share_intelligence:{ label:'通风报信', conflict:0, effect:{trust:+8}, mood:'平', important:5 },
-  betray:            { label:'背叛', conflict:+3, effect:{trust:-50, affinity:-30, hostility:+25}, mood:'恨', important:10 },
-  reconcile:         { label:'和解', conflict:-2, effect:{affinity:+10, trust:+5}, mood:'喜', important:6 },
-  mourn_together:    { label:'共哀', conflict:-1, effect:{affinity:+8}, mood:'忧', important:5 },
-  rival_compete:     { label:'竞争', conflict:+1, effect:{affinity:-5, respect:+3}, mood:'平', important:4 },
-  guarantee:         { label:'担保', conflict:0, effect:{trust:+10, owesFavor:+1}, mood:'平', important:5 },
-  slander:           { label:'诽谤', conflict:+1, effect:{affinity:-12, hostility:+10}, mood:'恨', important:6 }
+  recommend:         { label:'举荐', conflict:0, effect:{respect:+8, owesFavor:+1}, mood:'喜', important:6, fameActor:+2, virtueActor:+4 },
+  impeach:           { label:'弹劾', conflict:+1, effect:{affinity:-15, hostility:+15}, mood:'恨', important:8, fameActor:+3, fameTarget:-4, virtueActor:+5 },
+  petition_jointly:  { label:'联名上书', conflict:0, effect:{affinity:+5, trust:+3}, mood:'平', important:4, fameActor:+1, virtueActor:+2 },
+  form_clique:       { label:'结党', conflict:0, effect:{trust:+10}, label_add:['same_party'], mood:'平', important:5, fameActor:-2, virtueActor:-3 },
+  private_visit:     { label:'私访', conflict:0, effect:{affinity:+5, trust:+5}, mood:'喜', important:4, fameActor:+1 },
+  invite_banquet:    { label:'宴请', conflict:0, effect:{affinity:+6}, mood:'喜', important:4, fameActor:+1 },
+  gift_present:      { label:'馈赠', conflict:0, effect:{affinity:+4, owesFavor:+1}, mood:'喜', important:3, fameActor:+1 },
+  correspond_secret: { label:'密信', conflict:0, effect:{trust:+8}, label_add:['co_conspirator'], mood:'平', important:5, fameActor:-1 },
+  confront:          { label:'对质', conflict:+1, effect:{affinity:-10}, mood:'恨', important:6, virtueActor:+2 },
+  mediate:           { label:'调和', conflict:-1, effect:{respect:+5}, mood:'平', important:5, fameActor:+3, virtueActor:+5 },
+  frame_up:          { label:'构陷', conflict:+2, effect:{affinity:-25, trust:-40, hostility:+30}, mood:'恨', important:10, fameActor:-8, virtueActor:-10 },
+  expose_secret:     { label:'揭发', conflict:+2, effect:{affinity:-20, fear:+15}, mood:'恨', important:9, fameActor:+2, fameTarget:-10, virtueActor:+1 },
+  marriage_alliance: { label:'联姻', conflict:0, effect:{affinity:+15, trust:+10, kinshipTies:+1}, label_add:['in_law'], mood:'喜', important:8, fameActor:+3 },
+  master_disciple:   { label:'师徒缔结', conflict:0, effect:{respect:+20, affinity:+10}, label_add_actor:['master'], label_add_target:['disciple'], mood:'喜', important:9, fameActor:+5, virtueActor:+8, virtueTarget:+5 },
+  duel_poetry:       { label:'诗文切磋', conflict:0, effect:{respect:+5, affinity:+3}, label_add:['poet_friend'], mood:'平', important:3, fameActor:+4, virtueActor:+3 },
+  share_intelligence:{ label:'通风报信', conflict:0, effect:{trust:+8}, mood:'平', important:5, fameActor:-1 },
+  betray:            { label:'背叛', conflict:+3, effect:{trust:-50, affinity:-30, hostility:+25}, mood:'恨', important:10, fameActor:-15, virtueActor:-20 },
+  reconcile:         { label:'和解', conflict:-2, effect:{affinity:+10, trust:+5}, mood:'喜', important:6, fameActor:+2, virtueActor:+3 },
+  mourn_together:    { label:'共哀', conflict:-1, effect:{affinity:+8}, mood:'忧', important:5, fameActor:+1, virtueActor:+2 },
+  rival_compete:     { label:'竞争', conflict:+1, effect:{affinity:-5, respect:+3}, mood:'平', important:4, fameActor:+1 },
+  guarantee:         { label:'担保', conflict:0, effect:{trust:+10, owesFavor:+1}, mood:'平', important:5, fameActor:+2, virtueActor:+4 },
+  slander:           { label:'诽谤', conflict:+1, effect:{affinity:-12, hostility:+10}, mood:'恨', important:6, fameActor:-4, fameTarget:-3, virtueActor:-3 }
 };
 
 // ── 势力互动类型 ──

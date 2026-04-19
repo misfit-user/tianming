@@ -641,6 +641,24 @@
           global.NpcMemorySystem.remember(_laGov, '我在 ' + (div.name||la.region) + ' 行 ' + _laTypeLbl + '（' + (la.amount||0) + '）——' + (la.reason||'').slice(0,30), _emo, _wt);
         } catch(e){}
       }
+      // 地方官名望/贤能涨跌
+      try {
+        var _govCh = (global.GM.chars || []).find(function(c){return c.name===_laGov;});
+        if (_govCh && global.CharEconEngine) {
+          var _fameDelta = {
+            disaster_relief: +4, public_works_water: +2, public_works_road: +1, education: +2,
+            granary_stockpile: +1, military_prep: +1, charity_local: +3,
+            supernatural_disaster_relief: +1, illicit: -6
+          }[la.type] || 0;
+          var _virDelta = {
+            disaster_relief: +6, public_works_water: +3, public_works_road: +2, education: +4,
+            granary_stockpile: +2, military_prep: +1, charity_local: +4,
+            supernatural_disaster_relief: +1, illicit: -8
+          }[la.type] || 0;
+          if (_fameDelta) global.CharEconEngine.adjustFame(_govCh, _fameDelta, _laTypeLbl);
+          if (_virDelta) global.CharEconEngine.adjustVirtueMerit(_govCh, _virDelta, _laTypeLbl);
+        }
+      } catch(_lafve){}
     });
 
     // 5. 事件（风闻）

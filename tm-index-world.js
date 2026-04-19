@@ -3076,8 +3076,8 @@ var _wenduiSending = false;
 function renderWenduiChars(){
   var el=_$("wendui-chars");if(!el)return;
   var capital = GM._capital || '\u4EAC\u57CE';
-  var atCap = (GM.chars||[]).filter(function(c){return c.alive!==false && _wdIsAtCapital(c);});
-  var away = (GM.chars||[]).filter(function(c){return c.alive!==false && !_wdIsAtCapital(c);});
+  var atCap = (GM.chars||[]).filter(function(c){return c.alive!==false && !c.isPlayer && _wdIsAtCapital(c);});
+  var away = (GM.chars||[]).filter(function(c){return c.alive!==false && !c.isPlayer && !_wdIsAtCapital(c);});
   var html = '';
 
   // AI 推送的"待接见"队列（NPC私访/宴请/切磋 + 外藩使节）

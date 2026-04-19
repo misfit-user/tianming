@@ -27,37 +27,133 @@
   // 资源模型保障
   // ═════════════════════════════════════════════════════════════
 
+  // 推算角色初始名望（-100 ~ +100）
+  //   依据：品级 + 廉洁 + 五常五(信礼义) + 传记光环 + 阵营
+  function _inferInitialFame(ch) {
+    if (!ch) return 0;
+    var f = 0;
+    // 官品越高，默认公众认知越广（但不一定正面）
+    var rank = 9 - (ch.rankLevel || 9);  // 1-9，越小越高
+    if (rank > 0) f += rank * 2;  // 正一品约 +18
+    // 廉洁度高 → 正向声望
+    if (ch.integrity != null) f += (ch.integrity - 50) * 0.4;  // +/- 20
+    // 五常之"信"影响名望
+    if (ch.wuchang && ch.wuchang['信']) f += (ch.wuchang['信'] - 50) * 0.25;  // +/- 12
+    // 五常之"义"也有贡献
+    if (ch.wuchang && ch.wuchang['义']) f += (ch.wuchang['义'] - 50) * 0.15;
+    // 皇族 / 勋贵底蕴
+    if (ch.familyTier === 'imperial' || ch.isRoyal) f += 20;
+    else if (ch.familyTier === 'noble' || /公|侯|伯/.test(ch.title || '')) f += 12;
+    // 历史光环：已有 clanPrestige → 直接加成
+    if (ch.clanPrestige != null) f += (ch.clanPrestige - 50) * 0.15;
+    // 朝派：阉党首恶/逆党等负面
+    if (/阉党|逆党/.test(ch.party || '')) f -= 15;
+    // 特殊 trait
+    var tr = ch.traits || [];
+    if (tr.indexOf('benevolent') >= 0 || tr.indexOf('honorable') >= 0) f += 10;
+    if (tr.indexOf('cruel') >= 0 || tr.indexOf('corrupt') >= 0 || tr.indexOf('wrathful') >= 0) f -= 8;
+    if (tr.indexOf('scholar') >= 0 || tr.indexOf('wise') >= 0) f += 8;
+    // 剧本传记光环：fameInit（如有）
+    if (ch.fameInit != null) return clamp(ch.fameInit, -100, 100);
+    // 限幅 -60..+85（初始不给极值）
+    return Math.round(clamp(f, -60, 85));
+  }
+
+  // 推算角色初始贤能（数值，按六阶阈值）
+  //   六阶阈值：0 / 50 / 150 / 300 / 500 / 800
+  function _inferInitialVirtue(ch) {
+    if (!ch) return 0;
+    var v = 0;
+    // 五常均值加成
+    if (ch.wuchang) {
+      var wsum = 0, wn = 0;
+      ['仁','义','礼','智','信'].forEach(function(k){
+        if (ch.wuchang[k] != null) { wsum += ch.wuchang[k]; wn++; }
+      });
+      if (wn > 0) {
+        var wavg = wsum / wn;
+        v += Math.max(0, (wavg - 50)) * 3;  // 50→0 · 80→90 · 90→120
+      }
+    }
+    // 政务/管理才能
+    if (ch.administration) v += Math.max(0, (ch.administration - 50)) * 1.2;
+    if (ch.management) v += Math.max(0, (ch.management - 50)) * 0.6;
+    // 整廉
+    if (ch.integrity > 70) v += 30;
+    else if (ch.integrity < 30) v -= 20;  // 贪墨→贤能低
+    // 官品
+    var rankN = 10 - (ch.rankLevel || 9);
+    if (rankN > 0 && rankN <= 9) v += rankN * 8;  // 正一品约 +72
+    // 学识/科举
+    if (ch.background && /进士/.test(ch.background)) v += 30;
+    else if (ch.background && /举人/.test(ch.background)) v += 12;
+    // 剧本直接指定
+    if (ch.virtueMeritInit != null) return Math.max(0, ch.virtueMeritInit);
+    return Math.max(0, Math.round(v));
+  }
+
+  function isEmperor(ch) {
+    if (!ch) return false;
+    if (ch.role === '皇帝' || ch.officialTitle === '皇帝') return true;
+    if (ch.isPlayer && ch.royalRelation === 'emperor_family' && ch.isRoyal) return true;
+    if (ch.title && /明思宗|崇祯帝|庄烈帝|皇帝/.test(ch.title)) return true;
+    return false;
+  }
+
   function ensureCharResources(ch) {
     if (!ch) return;
     if (!ch.resources) ch.resources = {};
     var r = ch.resources;
+    var emp = isEmperor(ch);
 
     // 1) 公库（机构绑定 · 只读镜像）—— 由地方/中央财政系统更新
+    //    皇帝特例：linkedPost='帑廪' · 镜像 GM.guoku 三列（money/grain/cloth）
     if (!r.publicTreasury) r.publicTreasury = {
-      linkedPost: null,    // 绑定岗位 id
+      linkedPost: emp ? '帑廪' : null,    // 绑定岗位 id（皇帝=帑廪）
       linkedRegion: null,  // 绑定区域
-      balance: 0,          // 镜像余额
+      balance: 0,          // 镜像余额（两）
+      grain: 0,            // 粮 stock（石）
+      cloth: 0,            // 布 stock（匹）
       isReadOnly: true,
+      isGuoku: !!emp,      // 标记：皇帝的公库=帑廪
       handoverLog: [],     // 前任移交记录
       lastHandoverDeficit: 0
     };
+    if (emp && !r.publicTreasury.isGuoku) {
+      r.publicTreasury.linkedPost = '帑廪';
+      r.publicTreasury.isGuoku = true;
+    }
 
-    // 2) 私产（五大类）
-    if (!r.privateWealth) r.privateWealth = {
-      cash: 0,         // 现金（两）
-      land: 0,         // 田亩（亩）
-      treasure: 0,     // 珍宝/古董（两估值）
-      slaves: 0,       // 奴婢/僮仆数
-      commerce: 0      // 商铺/作坊（两估值）
-    };
+    // 2) 私产
+    //    皇帝特例：isNeitang=true · 镜像 GM.neitang 三列（money/grain/cloth）
+    //    其他角色：五大类（cash/land/treasure/slaves/commerce）
+    if (!r.privateWealth) {
+      if (emp) {
+        r.privateWealth = {
+          isNeitang: true,
+          cash: 0, land: 0, treasure: 0, slaves: 0, commerce: 0,  // 保持 schema 以兼容抄家等
+          money: 0, grain: 0, cloth: 0  // 内帑三列
+        };
+      } else {
+        r.privateWealth = {
+          cash: 0, land: 0, treasure: 0, slaves: 0, commerce: 0
+        };
+      }
+    } else if (emp && !r.privateWealth.isNeitang) {
+      r.privateWealth.isNeitang = true;
+      if (r.privateWealth.money == null) r.privateWealth.money = 0;
+      if (r.privateWealth.grain == null) r.privateWealth.grain = 0;
+      if (r.privateWealth.cloth == null) r.privateWealth.cloth = 0;
+    }
     if (!r.hiddenWealth) r.hiddenWealth = 0;  // 隐匿藏款（抄家时可能挖出）
 
-    // 3) 名望（-100 ~ +100）
-    if (r.fame === undefined) r.fame = 0;
+    // 3) 名望（-100 ~ +100）—— 按品级/整廉/阵营/历史光环推算初值
+    if (r.fame === undefined) r.fame = _inferInitialFame(ch);
 
-    // 4) 贤能（六阶累积型）
-    if (r.virtueMerit === undefined) r.virtueMerit = 0;  // 数值
+    // 4) 贤能（六阶累积型）—— 按能力/品级推算初值
+    if (r.virtueMerit === undefined) r.virtueMerit = _inferInitialVirtue(ch);
     if (!r.virtueStage) r.virtueStage = 1;               // 1-6 阶
+    updateVirtueStage(ch);
 
     // 5) 健康（0-100）
     if (ch.health === undefined) ch.health = 70 + Math.floor(Math.random() * 20);
@@ -391,6 +487,30 @@
   function updatePublicTreasuryMirror(ch) {
     var pt = ch.resources.publicTreasury;
     if (!pt) return;
+    // 皇帝特例：公库镜像 = 帑廪（GM.guoku 三列）
+    if (pt.isGuoku || isEmperor(ch)) {
+      pt.isGuoku = true;
+      pt.linkedPost = '帑廪';
+      var gk = GM.guoku || {};
+      var gkLedgers = gk.ledgers || {};
+      pt.balance = (gkLedgers.money && gkLedgers.money.stock != null) ? gkLedgers.money.stock : (gk.balance || 0);
+      pt.grain = (gkLedgers.grain && gkLedgers.grain.stock != null) ? gkLedgers.grain.stock : 0;
+      pt.cloth = (gkLedgers.cloth && gkLedgers.cloth.stock != null) ? gkLedgers.cloth.stock : 0;
+      pt.deficit = 0;
+      // 同步私产=内帑
+      var pw = ch.resources.privateWealth;
+      if (pw) {
+        pw.isNeitang = true;
+        var nt = GM.neitang || {};
+        var ntLedgers = nt.ledgers || {};
+        pw.money = (ntLedgers.money && ntLedgers.money.stock != null) ? ntLedgers.money.stock : (nt.balance || 0);
+        pw.grain = (ntLedgers.grain && ntLedgers.grain.stock != null) ? ntLedgers.grain.stock : 0;
+        pw.cloth = (ntLedgers.cloth && ntLedgers.cloth.stock != null) ? ntLedgers.cloth.stock : 0;
+        // 同步到抄家字段（让现有逻辑不崩）
+        pw.cash = pw.money;
+      }
+      return;
+    }
     // 自动推断绑定：若未显式设置·按 officialTitle 查 officeTree 对应职位
     if (!pt.linkedPost && !pt.linkedRegion && ch.officialTitle && GM.officeTree) {
       var _foundPos = null;
@@ -734,6 +854,7 @@
 
   global.CharEconEngine = {
     tick: tick,
+    isEmperor: isEmperor,
     ensureCharResources: ensureCharResources,
     updatePublicTreasuryMirror: updatePublicTreasuryMirror,
     ensureCourtesyName: ensureCourtesyName,

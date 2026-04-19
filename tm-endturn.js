@@ -6085,7 +6085,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           tp1 += '\n  · institutions: [{action:"create|abolish", type, id, name, annualBudget}]';
           tp1 += '\n  · regions: [{action:"reclassify", id, newType, reason}]';
           tp1 += '\n  · events: [{category, text, credibility}]';
-          tp1 += '\n  · npc_interactions: [{actor, target, type:"impeach|slander|recommend|frame_up|betray|private_visit|correspond_secret|..", description, involvedOthers?, publicKnown?}] —— 系统自动路由到 奏疏/问对/鸿雁/起居注/风闻';
+          tp1 += '\n  · npc_interactions: [{actor, target, type:"impeach|slander|recommend|frame_up|betray|private_visit|correspond_secret|mediate|expose_secret|duel_poetry|master_disciple|reconcile|guarantee|..", description, involvedOthers?, publicKnown?}] —— 系统自动路由到 奏疏/问对/鸿雁/起居注/风闻，且按 type 自动涨/跌 actor 的 fame(名望 -100..+100)与 virtueMerit(贤能 累积)——譬如 recommend/mediate 提贤能，frame_up/betray/slander 损名望，expose_secret/impeach 对被揭者 fame 大跌。请按人物性格/立场/与目标关系选择合适的 type，避免机械化';
           tp1 += '\n  · localActions: [{region, type:"disaster_relief|public_works_water|public_works_road|education|granary_stockpile|military_prep|charity_local|illicit", amount, reason, proposer}] —— 地方官自主治理（按 region.fiscal 情况决定，amount < 3% 地方留存为常规，10-30% 为应急。illicit 为贪墨挪用，进入主官私产）';
           tp1 += '\n';
           tp1 += '\n【重要原则】';
@@ -9846,6 +9846,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             if (ok) {
               var typeInfo = (typeof NPC_INTERACTION_TYPES !== 'undefined' && NPC_INTERACTION_TYPES[it.type]) ? NPC_INTERACTION_TYPES[it.type].label : it.type;
               addEB('\u4EBA\u7269', it.actor + '→' + it.target + ' ' + typeInfo + (it.description ? '：' + it.description : ''));
+              // ── 名望/贤能涨跌（由行为定义查询）──
+              try {
+                var _typeDef = (typeof NPC_INTERACTION_TYPES !== 'undefined' && NPC_INTERACTION_TYPES[it.type]) ? NPC_INTERACTION_TYPES[it.type] : null;
+                var _cEng = (typeof CharEconEngine !== 'undefined') ? CharEconEngine : null;
+                if (_typeDef && _cEng) {
+                  var _actorCh = (typeof findCharByName==='function') ? findCharByName(it.actor) : null;
+                  var _targetCh = (typeof findCharByName==='function') ? findCharByName(it.target) : null;
+                  if (_actorCh && _typeDef.fameActor) _cEng.adjustFame(_actorCh, _typeDef.fameActor, typeInfo+'→'+it.target);
+                  if (_targetCh && _typeDef.fameTarget) _cEng.adjustFame(_targetCh, _typeDef.fameTarget, '被'+it.actor+typeInfo);
+                  if (_actorCh && _typeDef.virtueActor) _cEng.adjustVirtueMerit(_actorCh, _typeDef.virtueActor, typeInfo);
+                  if (_targetCh && _typeDef.virtueTarget) _cEng.adjustVirtueMerit(_targetCh, _typeDef.virtueTarget, '被'+typeInfo);
+                }
+              } catch(_fve){}
               // ── 当事人（actor、target）写入记忆 ──
               if (typeof NpcMemorySystem !== 'undefined') {
                 var _aggressive = ['impeach','slander','frame_up','betray','expose_secret'].indexOf(it.type) >= 0;
@@ -10860,6 +10873,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }
       // 附加：玩家本回合推演依据（让AI明白哪些要体现在场景中）
       var _basisBrief = '';
+      // 名望/贤能显著变动的 NPC（供后人戏说穿插议论）
+      try {
+        var _fvMovers = (GM.chars || []).filter(function(c){
+          return c && c.alive!==false && !c.isPlayer && c._fameHistory &&
+                 c._fameHistory.some(function(h){return h.turn === GM.turn;});
+        }).slice(0, 5);
+        if (_fvMovers.length > 0) {
+          _basisBrief += '【本回合名望/贤能显著变动的 NPC(可在后人戏说里穿插议论/清议/书院学子的评论)】\n';
+          _fvMovers.forEach(function(c){
+            var _thisTurn = (c._fameHistory||[]).filter(function(h){return h.turn===GM.turn;});
+            var _totalD = _thisTurn.reduce(function(s,h){return s+(h.delta||0);},0);
+            var _reasons = _thisTurn.map(function(h){return h.reason||'';}).filter(Boolean).slice(0,2).join('/');
+            _basisBrief += '  · ' + c.name + ' 名望' + (_totalD>0?'+':'') + _totalD.toFixed(0) + '（' + _reasons + '）\n';
+          });
+        }
+      } catch(_mvE){}
       if (edicts) {
         var _eL = [];
         if (edicts.political) _eL.push('政令:' + edicts.political.substring(0,60));

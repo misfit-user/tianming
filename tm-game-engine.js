@@ -5496,9 +5496,24 @@ function _parseWealthString(s) {
 
 // 初始化所有角色的 privateWealth
 function _initCharacterPrivateWealth(chars) {
+  var _isEmp = function(c){
+    if (!c) return false;
+    if (c.role === '皇帝' || c.officialTitle === '皇帝') return true;
+    if (c.isPlayer && c.royalRelation === 'emperor_family' && c.isRoyal) return true;
+    if (c.title && /明思宗|崇祯帝|庄烈帝|皇帝/.test(c.title)) return true;
+    return false;
+  };
   (chars || []).forEach(function(ch) {
     if (!ch || ch.alive === false) return;
     if (!ch.resources) ch.resources = {};
+    // 皇帝：跳过五大类赋值，其私产=内帑镜像（由 updatePublicTreasuryMirror 同步）
+    if (_isEmp(ch)) {
+      if (typeof CharEconEngine !== 'undefined') {
+        try { CharEconEngine.ensureCharResources(ch); } catch(_){}
+        try { CharEconEngine.updatePublicTreasuryMirror(ch); } catch(_){}
+      }
+      return;
+    }
     // 若 resources.privateWealth 已有有效数据（存档加载）则跳过
     if (ch.resources.privateWealth && (ch.resources.privateWealth.cash > 0 || ch.resources.privateWealth.land > 0)) return;
     // 剧本可直接提供 wealthInit 覆盖全部

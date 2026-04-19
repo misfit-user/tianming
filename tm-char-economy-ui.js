@@ -102,28 +102,32 @@
       '</div></div>';
   }
 
-  // ─── 私产 5 类图标展示 ───
+  // ─── 私产展示（皇帝=内帑三列 · 其他=五大类）───
   function renderPrivateWealth(pw, hiddenWealth, canSeeHidden) {
     if (!pw) return '';
-    var html = '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">';
-
-    // 铜钱（现金）
-    html += renderWealthItem('💰', '现金', fmtMoney(pw.cash || 0) + ' 两', 'var(--gold-400)',
-      pw.cash < 0 ? 'var(--vermillion-400)' : null);
-
-    // 禾穗（田亩）
-    html += renderWealthItem('🌾', '田亩', (pw.land||0).toLocaleString() + ' 亩', '#6aa88a');
-
-    // 珍宝
-    html += renderWealthItem('💎', '珍宝', fmtMoney(pw.treasure || 0) + ' 估值', '#a88a6a');
-
-    // 奴婢
-    html += renderWealthItem('👥', '僮仆', (pw.slaves || 0) + ' 人', '#8a7060');
-
-    // 商铺
-    html += renderWealthItem('🏪', '商铺', fmtMoney(pw.commerce || 0) + ' 估值', 'var(--gold-300)');
-
-    html += '</div>';
+    var html = '';
+    if (pw.isNeitang) {
+      // 皇帝：私库 = 内帑（money/grain/cloth 三列）
+      html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">';
+      html += renderWealthItem('💰', '内帑·银', fmtMoney(pw.money || 0) + ' 两', 'var(--gold-400)');
+      html += renderWealthItem('🌾', '内帑·粮', fmtMoney(pw.grain || 0) + ' 石', '#6aa88a');
+      html += renderWealthItem('🧵', '内帑·布', fmtMoney(pw.cloth || 0) + ' 匹', '#a88a6a');
+      html += '</div>';
+    } else {
+      html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">';
+      // 铜钱（现金）
+      html += renderWealthItem('💰', '现金', fmtMoney(pw.cash || 0) + ' 两', 'var(--gold-400)',
+        pw.cash < 0 ? 'var(--vermillion-400)' : null);
+      // 禾穗（田亩）
+      html += renderWealthItem('🌾', '田亩', (pw.land||0).toLocaleString() + ' 亩', '#6aa88a');
+      // 珍宝
+      html += renderWealthItem('💎', '珍宝', fmtMoney(pw.treasure || 0) + ' 估值', '#a88a6a');
+      // 奴婢
+      html += renderWealthItem('👥', '僮仆', (pw.slaves || 0) + ' 人', '#8a7060');
+      // 商铺
+      html += renderWealthItem('🏪', '商铺', fmtMoney(pw.commerce || 0) + ' 估值', 'var(--gold-300)');
+      html += '</div>';
+    }
 
     // 隐匿藏款（仅当玩家监察力度足够或为玩家自己的角色）
     if (canSeeHidden && hiddenWealth > 0) {
@@ -147,12 +151,36 @@
 
   // ─── 公库（只读镜像）───
   function renderPublicTreasury(pt) {
-    if (!pt || !pt.linkedRegion) return '';
+    if (!pt) return '';
+    // 皇帝：公库 = 帑廪（money/grain/cloth 三列）
+    if (pt.isGuoku) {
+      return '<div style="padding:8px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
+        '<div style="font-size:0.76rem;color:var(--gold);margin-bottom:6px;">公库（帑廪 · 国帑）</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">'+
+          renderWealthItem('💰', '帑廪·银', fmtMoney(pt.balance || 0) + ' 两', 'var(--gold-400)') +
+          renderWealthItem('🌾', '帑廪·粮', fmtMoney(pt.grain || 0) + ' 石', '#6aa88a') +
+          renderWealthItem('🧵', '帑廪·布', fmtMoney(pt.cloth || 0) + ' 匹', '#a88a6a') +
+        '</div>'+
+        '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:4px;">只读镜像 · 国库三账（GM.guoku）</div>'+
+        '</div>';
+    }
+    // 岗位公库
+    if (pt.linkedPost && !pt.linkedRegion) {
+      return '<div style="padding:6px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<span style="font-size:0.76rem;color:var(--gold);">官职公库（' + _escHtml(pt.linkedPost) + '）</span>'+
+          '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' 两</span>'+
+        '</div>'+
+        '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:2px;">只读镜像 · 岗位 publicTreasury</div>'+
+        '</div>';
+    }
+    // 区域公库
+    if (!pt.linkedRegion) return '';
     var deficitNote = pt.lastHandoverDeficit > 0 ?
       '<div style="font-size:0.66rem;color:var(--vermillion-400);margin-top:2px;">⚠ 前任留空 ' + fmtMoney(pt.lastHandoverDeficit) + ' 两</div>' : '';
     return '<div style="padding:6px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;">'+
-        '<span style="font-size:0.76rem;color:var(--gold);">公库（绑定：' + pt.linkedRegion + '）</span>'+
+        '<span style="font-size:0.76rem;color:var(--gold);">公库（绑定：' + _escHtml(pt.linkedRegion) + '）</span>'+
         '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' 两</span>'+
       '</div>'+
       '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:2px;">只读镜像 · 实际在地方 fiscal 中</div>'+
@@ -237,8 +265,10 @@
   // ═════════════════════════════════════════════════════════════
 
   function renderCharResourcesSection(ch) {
-    if (!ch || !ch.resources) {
-      if (typeof CharEconEngine !== 'undefined') CharEconEngine.ensureCharResources(ch);
+    if (!ch) return '';
+    if (typeof CharEconEngine !== 'undefined') {
+      try { CharEconEngine.ensureCharResources(ch); } catch(_){}
+      try { CharEconEngine.updatePublicTreasuryMirror(ch); } catch(_){}
     }
     if (!ch.resources) return '';
 
@@ -249,13 +279,14 @@
     var html = '<div class="char-detail-section">'+
       '<div class="char-detail-section-title">资源 · 六柄 ' + renderCourtesyName(ch) + '</div>';
 
-    // 公库
-    if (r.publicTreasury && r.publicTreasury.linkedRegion) {
+    // 公库（皇帝=帑廪3列 / 官员=岗位公库 / 地方官=区域公库）
+    if (r.publicTreasury && (r.publicTreasury.isGuoku || r.publicTreasury.linkedPost || r.publicTreasury.linkedRegion)) {
       html += renderPublicTreasury(r.publicTreasury);
     }
 
-    // 私产 5 类
-    html += '<div style="font-size:0.74rem;color:var(--txt-d);margin-bottom:4px;">私产</div>';
+    // 私产（皇帝=内帑3列 / 其他=五大类）
+    var pwLabel = (r.privateWealth && r.privateWealth.isNeitang) ? '私库（内帑）' : '私产';
+    html += '<div style="font-size:0.74rem;color:var(--txt-d);margin-bottom:4px;">' + pwLabel + '</div>';
     html += renderPrivateWealth(r.privateWealth, r.hiddenWealth, canSeeHidden);
 
     // 名望 + 贤能（两栏）

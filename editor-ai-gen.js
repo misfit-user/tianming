@@ -608,7 +608,11 @@
     else if (target === 'haremConfig') schemaHint = '\u8FD4\u56DEJSON\u5BF9\u8C61\uFF1A{rankSystem:[{id:"empress",name:"\u7687\u540E",level:0},...],succession:"eldest_legitimate"}\u3002rankSystem\u6309\u5C0A\u5351\u6392\u5E8F\uFF0Clevel=0\u6700\u5C0A\u3002\u6839\u636E\u8BE5\u671D\u4EE3\u5B9E\u9645\u540E\u5BAB\u5236\u5EA6\u751F\u6210\u3002';
     else schemaHint = '\u6BCF\u4E2A\u5143\u7D20\u5305\u542B name \u548C description \u5B57\u6BB5';
 
-    var maxTok = (target === 'government' || target === 'adminHierarchy') ? 6000 : 3000;
+    // 人物/势力 schema 极大（50+ 字段每个），需更大预算避免截断；AI 也需要更大空间生成
+    var maxTok;
+    if (target === 'government' || target === 'adminHierarchy') maxTok = 6000;
+    else if (target === 'characters' || target === 'factions') maxTok = 8000;
+    else maxTok = 3000;
     // Build existing-content summary to prevent duplicates
     var existingNames = [];
     var _playerChrName = (scriptData.playerChr && scriptData.playerChr.name) ? scriptData.playerChr.name : '';
@@ -900,7 +904,12 @@
       }
     }
 
-    var prompt = '你是天命游戏副本设计师。' + ctx + '\n' + existingFullContent + existingNote + '请生成「' + label + '」的新内容，5-10条，不得与已有内容重复。';
+    // 人物/势力 schema 极大，降低批量数避免 JSON 截断；其他保持 5-10 条
+    var _batchCount = (target === 'characters' || target === 'factions') ? '3-5' : '5-10';
+    var prompt = '你是天命游戏副本设计师。' + ctx + '\n' + existingFullContent + existingNote + '请生成「' + label + '」的新内容，' + _batchCount + '条，不得与已有内容重复。';
+    if (target === 'characters' || target === 'factions') {
+      prompt += '\n\u3010\u786C\u89C4\u5219\u3011\u5B81\u5C11\u52FF\u5197\u2014\u2014\u5B81\u53EF\u4EC5\u751F\u6210 3 \u6761\u5B8C\u6574 JSON\uFF0C\u4E5F\u4E0D\u8981\u751F\u6210 5 \u6761\u4F46\u4E2D\u9014\u622A\u65AD\u3002\u5FC5\u987B\u8FD4\u56DE\u4E25\u683C JSON \u6570\u7ec4\uFF0C\u4E0D\u5F97\u5305\u542B\u6CE8\u91CA(//)\u3001\u672B\u5C3E\u9017\u53F7\u3001\u6216\u4EFB\u4F55\u89E3\u91CA\u6587\u5B57\u3002';
+    }
 
     // Special handling for government: MULTI-PASS auto-deepening
     if (target === 'government') {
@@ -1141,12 +1150,27 @@
         var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
         var arr = null;
         var _rawParsed = null; // 保留原始解析结果（可能是包含多个字段的对象）
+        // 尝试0：优先用 robustParseJSON（已处理 尾逗号/中文引号/未转义换行符/深度截断恢复）
+        if (typeof robustParseJSON === 'function') {
+          try {
+            var _rp0 = robustParseJSON(cleaned);
+            if (Array.isArray(_rp0)) arr = _rp0;
+            else if (_rp0 && typeof _rp0 === 'object') {
+              _rawParsed = _rp0;
+              for (var _rk in _rp0) { if (Array.isArray(_rp0[_rk])) { arr = _rp0[_rk]; break; } }
+              if (!arr && _rp0.name) arr = [_rp0];
+            }
+          } catch(_e0){}
+        }
         // 尝试1：直接解析整个响应
-        try { var _p = JSON.parse(cleaned); if (Array.isArray(_p)) arr = _p; else if (typeof _p === 'object') { _rawParsed = _p; for (var _wk in _p) { if (Array.isArray(_p[_wk])) { arr = _p[_wk]; break; } } } } catch(e1) {}
+        if (!arr) try { var _p = JSON.parse(cleaned); if (Array.isArray(_p)) arr = _p; else if (typeof _p === 'object') { _rawParsed = _p; for (var _wk in _p) { if (Array.isArray(_p[_wk])) { arr = _p[_wk]; break; } } } } catch(e1) {}
         // 尝试2：匹配数组模式 [{...}]
         if (!arr) {
           var m = cleaned.match(/\[\s*\{[\s\S]*\]/);
-          if (m) try { arr = JSON.parse(m[0]); } catch(e2) {}
+          if (m) try { arr = JSON.parse(m[0]); } catch(e2) {
+            // 尝试修复尾逗号
+            try { arr = JSON.parse(m[0].replace(/,\s*([}\]])/g, '$1')); } catch(e2b){}
+          }
         }
         // 尝试3：匹配对象模式 {...}（包含子数组）
         if (!arr) {
@@ -1159,10 +1183,30 @@
               }
               // 如果对象本身就是有效数据（非包装），创建单元素数组
               if (!arr && obj.name) arr = [obj];
-            } catch(e3) {}
+            } catch(e3) {
+              // 尝试修复后再解析
+              try {
+                var _fx = objMatch[0].replace(/,\s*([}\]])/g, '$1').replace(/\u201c|\u201d/g, '"');
+                var obj2 = JSON.parse(_fx);
+                for (var wk2 in obj2) { if (Array.isArray(obj2[wk2])) { arr = obj2[wk2]; break; } }
+                if (!arr && obj2.name) arr = [obj2];
+              } catch(e3b){}
+            }
           }
         }
-        if (!arr || !Array.isArray(arr)) throw new Error('\u65E0\u6CD5\u89E3\u6790AI\u8FD4\u56DE\u7684JSON\u3002\u539F\u59CB\u54CD\u5E94\uFF1A' + cleaned.substring(0, 100));
+        // 尝试4：截断恢复——从最后一个 "}," 前截，重组为完整数组
+        if (!arr) {
+          var truncMatch = cleaned.match(/\[\s*\{[\s\S]*?\}(?:\s*,\s*\{[\s\S]*?\})*/);
+          if (truncMatch) {
+            var truncated = truncMatch[0];
+            var lastValid = truncated.lastIndexOf('}');
+            if (lastValid > 0) {
+              var candidate = truncated.substring(0, lastValid + 1) + ']';
+              try { arr = JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1')); } catch(e4){}
+            }
+          }
+        }
+        if (!arr || !Array.isArray(arr)) throw new Error('\u65E0\u6CD5\u89E3\u6790AI\u8FD4\u56DE\u7684JSON\u3002\u539F\u59CB\u54CD\u5E94\uFF1A' + cleaned.substring(0, 300));
         if (target === 'parties') {
           // 确保influence为数字
           arr.forEach(function(p) {

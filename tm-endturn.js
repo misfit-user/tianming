@@ -5551,6 +5551,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         {id:'sc0', name:'AI深度思考', minDepth:'standard', order:0},
         {id:'sc05', name:'记忆回顾', minDepth:'standard', order:5},
         {id:'sc1', name:'结构化数据', minDepth:'lite', order:100},
+        {id:'sc1b', name:'文事鸿雁人际', minDepth:'lite', order:110},
         {id:'sc15', name:'NPC深度', minDepth:'standard', order:150},
         {id:'sc16', name:'势力推演', minDepth:'full', order:160},
         {id:'sc17', name:'经济财政', minDepth:'full', order:170},
@@ -6219,6 +6220,111 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       p1=extractJSON(c1);
       GM._turnAiResults.subcall1_raw = c1;
       GM._turnAiResults.subcall1 = p1;
+
+      // ═══ Sub-call 1b · 文事鸿雁人际专项（独立预算 8k，避免文事/鸿雁/互动被 sc1 庞大 schema 挤出）═══
+      try {
+        var _sc1bStart = Date.now();
+        showLoading('\u6587\u4E8B\u9E3F\u96C1\u4EBA\u9645\u63A8\u6F14', 58);
+
+        var _charsBriefB = '';
+        try {
+          var _liveCharsB = (GM.chars||[]).filter(function(c){return c && c.alive!==false;});
+          _liveCharsB.sort(function(a,b){return (a.rank||99)-(b.rank||99);});
+          var _briefListB = _liveCharsB.slice(0,24).map(function(c){
+            var _p = c.name;
+            if (c.officialTitle) _p += '\u00B7' + c.officialTitle;
+            if (c.location) _p += '@' + c.location;
+            if (c.faction) _p += '[' + c.faction + ']';
+            _p += ' \u5FE0' + (c.loyalty||50) + '\u00B7\u667A' + (c.intelligence||50) + '\u00B7\u5B66' + (c.scholarship||c.intelligence||50);
+            if (Array.isArray(c.traits) && c.traits.length) _p += ' \u7279{' + c.traits.slice(0,3).join(',') + '}';
+            return _p;
+          });
+          _charsBriefB = _briefListB.join('\n');
+        } catch(_cbE){}
+
+        var _capB = (GM._capital) || (P.playerInfo && P.playerInfo.capital) || '\u4EAC\u57CE';
+        var _pNameB = (P.playerInfo && P.playerInfo.characterName) || '';
+        var _recentSZJ = (p1 && p1.shizhengji) ? String(p1.shizhengji).slice(0,1500) : '';
+
+        var tp1b = '\u3010\u6587\u4E8B\u00B7\u9E3F\u96C1\u00B7\u4EBA\u9645\u4E92\u52A8\u00B7\u4E13\u9879\u63A8\u6F14\u3011\n';
+        tp1b += '\u672C\u56DE\u5408\uFF1A' + (GM.turn||1) + ' \u00B7 ' + (typeof getTSText==='function'?getTSText(GM.turn):'') + ' \u00B7 \u9996\u90FD\uFF1A' + _capB + '\n';
+        if (_pNameB) tp1b += '\u73A9\u5BB6\u89D2\u8272\uFF1A' + _pNameB + '\uFF08\u4E0D\u5F97\u4F5C\u4E3A npc_interactions.actor\uFF0C\u4E0D\u5F97 autonomous \u4F5C cultural_works\uFF09\n';
+        if (_recentSZJ) tp1b += '\n\u3010\u672C\u56DE\u5408\u5DF2\u8BB0\u65F6\u653F\u3011\n' + _recentSZJ + '\n';
+        if (_charsBriefB) tp1b += '\n\u3010\u4E3B\u8981\u4EBA\u7269\uFF08\u542B\u4F4D\u7F6E/\u5B98\u804C/\u6D3E\u7CFB/\u7279\u8D28\uFF09\u3011\n' + _charsBriefB + '\n';
+
+        // 已有内容提示（避免重复）
+        var _existCW = (p1 && Array.isArray(p1.cultural_works)) ? p1.cultural_works.length : 0;
+        var _existNL = (p1 && Array.isArray(p1.npc_letters)) ? p1.npc_letters.length : 0;
+        var _existNC = (p1 && Array.isArray(p1.npc_correspondence)) ? p1.npc_correspondence.length : 0;
+        var _existNI = (p1 && Array.isArray(p1.npc_interactions)) ? p1.npc_interactions.length : 0;
+        if (_existCW || _existNL || _existNC || _existNI) {
+          tp1b += '\n\u3010\u4E0A\u4E00\u5B50\u8C03\u7528\u5DF2\u751F\u6210\u3011\u6587\u4E8B ' + _existCW + ' \u7BC7\uFF0C\u9E3F\u96C1 ' + _existNL + ' \u5C01\uFF0C\u5BC6\u4FE1 ' + _existNC + ' \u6761\uFF0C\u4E92\u52A8 ' + _existNI + ' \u6B21\u3002\u8BF7\u8865\u5145\u751F\u6210\u66F4\u591A\u4E0D\u540C\u5185\u5BB9\uFF0C\u4E0D\u8981\u91CD\u590D\u3002\n';
+        }
+
+        tp1b += '\n\u3010\u4EFB\u52A1\u3011\u751F\u6210\u4EE5\u4E0B\u56DB\u7C7B\u5185\u5BB9\uFF0C\u8FD4\u56DE\u4E25\u683C JSON\uFF08\u4EC5\u5305\u542B\u8FD9\u56DB\u4E2A\u5B57\u6BB5\uFF09\uFF1A\n\n';
+
+        tp1b += '\u25C6 cultural_works\uFF08\u6587\u82D1\u4F5C\u54C1\u00B7\u5E38\u6001 3-6 \u7BC7\uFF0C\u91CD\u5927\u4E8B\u4EF6\u65F6 5-10 \u7BC7\uFF09\u2014\u2014\n';
+        tp1b += '  \u6309\u89E6\u53D1\u6E90\uFF08A\u79D1\u4E3E\u5BA6\u9014/B\u9006\u5883\u8D2C\u8C2A/C\u793E\u4EA4\u916C\u9162/D\u4EFB\u4E0A\u65BD\u653F/E\u6E38\u5386\u5C71\u6C34/F\u5BB6\u4E8B\u79C1\u60C5/G\u65F6\u5C40\u5929\u4E0B/H\u60C5\u611F\u5FC3\u5883\uFF09\u9009\u6709\u8D44\u683C\u7684 NPC \u751F\u6210\u5176\u4F5C\u54C1\u3002\n';
+        tp1b += '  \u2605 content \u5FC5\u987B\u5168\u6587\u771F\u5B9E\u751F\u6210\uFF1A\u7EDD\u53E5 20/\u5F8B\u8BD7 40\u621656/\u8BCD\u6309\u8BCD\u724C\u5B57\u6570/\u8D4B 300-800/\u6587 200-600\uFF1B\u53E4\u6587\u5FCC\u73B0\u4EE3\u8BCD\u6C47\uFF1B\u683C\u5F8B\u8BD7\u5C3D\u529B\u8BB2\u5E73\u4EC4\u5BF9\u4ED7\u3002\u4E0D\u5F97\u5199\u5360\u4F4D\u7B26\u5982"(\u6B64\u5904\u8BD7)"\u3002\n';
+        tp1b += '  \u5B57\u6BB5\uFF1A{author, turn:' + (GM.turn||1) + ', date, location, triggerCategory, trigger, motivation, lifeStage, genre, subtype, title, content, mood, theme, elegance, dedicatedTo[], inspiredBy, commissionedBy, praiseTarget, satireTarget, quality, politicalImplication, politicalRisk, narrativeContext, preservationPotential}\n';
+        tp1b += '  motivation\uFF1Aspontaneous\u81EA\u53D1/commissioned\u53D7\u547D/flattery\u5E72\u8C12/response\u916C\u7B54/mourning\u54C0\u60BC/critique\u8BBD\u8C15/celebration\u9882\u626C/farewell\u9001\u522B/memorial\u7EAA\u5FF5/ghostwrite\u4EE3\u7B14/duty\u5E94\u5236/self_express\u81EA\u62D2\n';
+        tp1b += '  genre\uFF1Ashi\u8BD7/ci\u8BCD/fu\u8D4B/qu\u66F2/ge\u6B4C\u884C/wen\u6563\u6587/apply\u5E94\u7528\u6587/ji\u8BB0\u53D9\u6587/ritual\u796D\u6587\u7891\u94ED/paratext\u5E8F\u8DCB\n';
+        tp1b += '  politicalRisk\uFF1A\u8BBD\u8C15/critique \u7C7B\u9AD8\uFF0C\u5E73\u548C\u7C7B\u4F4E\u3002preservationPotential \u8D28\u91CF\u8D8A\u9AD8/\u9898\u6750\u8D8A\u91CD\u8D8A\u5BB9\u6613\u4F20\u4E16\u3002\n';
+        tp1b += '  \u89E6\u53D1\u6761\u4EF6\uFF1A\u667A\u529B\u226570 + scholar/theologian/eccentric/pensive/curious \u7279\u8D28 \u2192 \u9AD8\u6743\u91CD\uFF1B\u9047\u8D2C/\u4E01\u5FE7/\u81F4\u4ED5/\u6218\u80DC/\u593A\u804C/\u4E54\u8FC1/\u5BFF\u8FB0 \u2192 \u5F3A\u89E6\u53D1\uFF1Bstress>60 \u501F\u6587\u53D1\u6CC4\u3002lazy/craven \u964D\u6743\u3002\n\n';
+
+        tp1b += '\u25C6 npc_letters\uFF08\u9E3F\u96C1\u4F20\u4E66\u00B7\u6BCF\u56DE\u5408 2-5 \u5C01\uFF09\u2014\u2014\n';
+        tp1b += '  \u4E0D\u5728 ' + _capB + ' \u7684 NPC \u9047\u91CD\u5927\u4E8B\u4EF6\u4E3B\u52A8\u5199\u4FE1\u7ED9\u7687\u5E1D\u3002from \u5FC5\u987B\u662F\u4E0D\u5728\u9996\u90FD\u7684 NPC\u3002\n';
+        tp1b += '  \u5B57\u6BB5\uFF1A{from, type:"report\u5954\u544A/plea\u6C42\u63F4/warning\u8B66\u62A5/personal\u79C1\u60C5/intelligence\u60C5\u62A5", urgency:"normal/urgent/extreme", content(100-200\u5B57\u53E4\u5178\u4E2D\u6587), suggestion(1-2\u53E5\u53EF\u7701), replyExpected:true}\n';
+        tp1b += '  \u53C2\u8003\u4FE1\u4EF6\u6A21\u5F0F\uFF1A\u8FB9\u5C06\u544A\u6025\u00B7\u5730\u65B9\u5B98\u8BF7\u547D\u00B7\u6D41\u5B98\u8FF0\u60C5\u00B7\u51FA\u4F7F\u56DE\u62A5\u00B7\u79BB\u4EAC\u65E7\u81E3\u6000\u60F3\u00B7\u5BC6\u63A2\u5BC6\u62A5\u3002\n\n';
+
+        tp1b += '\u25C6 npc_correspondence\uFF08NPC \u4E4B\u95F4\u5BC6\u4FE1\u00B72-5 \u6761\uFF09\u2014\u2014\n';
+        tp1b += '  NPC \u95F4\u79D8\u5BC6\u4E66\u4FE1/\u7ED3\u76DF\u7EA6\u5B9A/\u60C5\u62A5\u4EA4\u6362/\u5BC6\u8C0B\u3002\n';
+        tp1b += '  \u5B57\u6BB5\uFF1A{from, to, content(50-150\u5B57), summary(\u4E00\u53E5\u8BDD), implication(\u5BF9\u5C40\u52BF\u6F5C\u5728\u5F71\u54CD), type:"secret/alliance/conspiracy/routine"}\n\n';
+
+        tp1b += '\u25C6 npc_interactions\uFF08NPC \u4E92\u52A8\u00B75-12 \u6761\uFF09\u2014\u2014\n';
+        tp1b += '  \u7CFB\u7EDF\u81EA\u52A8\u8DEF\u7531\uFF1Aimpeach/slander/expose_secret \u2192 \u594F\u758F\u5F39\u7AE0\uFF1Brecommend/guarantee/petition_jointly \u2192 \u8350\u8868\uFF1B\n';
+        tp1b += '  private_visit/invite_banquet/duel_poetry \u2192 \u95EE\u5BF9\u6C42\u89C1\uFF1Bgift_present \u2192 \u9E3F\u96C1\u9644\u793C\uFF1Bcorrespond_secret/share_intelligence \u2192 \u9E3F\u96C1\u5BC6\u4FE1\uFF1B\n';
+        tp1b += '  frame_up/betray/mediate/reconcile \u2192 \u98CE\u95FB\uFF1Bmaster_disciple \u2192 \u8D77\u5C45\u6CE8\u3002\n';
+        tp1b += '  \u5B57\u6BB5\uFF1A{actor, target, type, description(30-60\u5B57), involvedOthers?, publicKnown?(true/false)}\n';
+        tp1b += '  \u6309\u4EBA\u7269\u6027\u683C/\u6D3E\u7CFB/\u5173\u7CFB\u9009\u5408\u9002\u7684 type\uFF0C\u907F\u514D"\u5FA1\u53F2\u5FC5\u8C0F/\u5C06\u519B\u5FC5\u8BF7\u6218"\u5DE5\u5177\u4EBA\u6A21\u677F\u3002\n';
+        tp1b += '  \u7279\u522B\u6CE8\u610F\uFF1A\u5305\u542B\u5F39\u52BE/\u8350\u4E3E/\u5BC6\u5BFF/\u8FAD\u7E41/\u5F92\u5F92\u4F20\u9053\u7B49\u53E4\u5178\u653F\u6CBB\u884C\u4E3A\uFF0C\u4E00\u90E8\u5206 publicKnown=true \u8FDB\u98CE\u95FB\uFF0C\u4E00\u90E8\u5206 false \u79C1\u4E0B\u3002\n\n';
+
+        tp1b += '\u3010\u786C\u89C4\u5219\u3011\n';
+        tp1b += '  \u00B7 \u53EA\u8FD4\u56DE\u4E0A\u8FF0\u56DB\u4E2A\u5B57\u6BB5\u7684 JSON\uFF08\u65E0\u5176\u4ED6\u5B57\u6BB5\uFF09\n';
+        tp1b += '  \u00B7 \u4EBA\u540D\u5FC5\u987B\u662F\u73B0\u6709\u89D2\u8272\uFF08\u5DF2\u5217\u5728\u4E0A\u65B9\u4EBA\u7269\u8868\u4E2D\uFF09\n';
+        tp1b += '  \u00B7 \u5185\u5BB9\u8981\u4E30\u5BCC\u3001\u6709\u753B\u9762\u611F\u3001\u4E0D\u673A\u68B0\u5316\n';
+        tp1b += '  \u00B7 \u73A9\u5BB6 ' + _pNameB + ' \u4E0D\u5F97\u4F5C npc_interactions.actor\uFF1B\u4E0D\u5F97 autonomous \u4F5C cultural_works\n';
+        tp1b += '  \u00B7 \u9AD8\u8D28\u91CF\uFF1A\u8BD7\u8981\u6709\u5883\uFF0C\u6587\u8981\u6709\u56E0\uFF0C\u4FE1\u8981\u6709\u9690\uFF0C\u4E92\u52A8\u8981\u6709\u65B9\n';
+        tp1b += '\n\u8FD4\u56DE\u683C\u5F0F\uFF1A\n';
+        tp1b += '{\n  "cultural_works":[{...}],\n  "npc_letters":[{...}],\n  "npc_correspondence":[{...}],\n  "npc_interactions":[{...}]\n}';
+
+        var _sc1bBody = {model:P.ai.model||'gpt-4o', messages:[{role:'system',content:sysP},{role:'user',content:tp1b}], temperature:_modelTemp, max_tokens:_tok(8000)};
+        if (_modelFamily === 'openai') _sc1bBody.response_format = { type:'json_object' };
+
+        var resp1b = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+P.ai.key}, body:JSON.stringify(_sc1bBody)});
+        if (resp1b.ok) {
+          var data1b = await resp1b.json();
+          _checkTruncated(data1b, '\u6587\u4E8B\u9E3F\u96C1\u4EBA\u9645');
+          if (data1b.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data1b.usage);
+          var c1b = (data1b.choices && data1b.choices[0] && data1b.choices[0].message) ? data1b.choices[0].message.content : '';
+          var p1b = extractJSON(c1b);
+          GM._turnAiResults.subcall1b_raw = c1b;
+          GM._turnAiResults.subcall1b = p1b;
+
+          if (p1b && p1) {
+            if (Array.isArray(p1b.cultural_works)) p1.cultural_works = (Array.isArray(p1.cultural_works) ? p1.cultural_works : []).concat(p1b.cultural_works);
+            if (Array.isArray(p1b.npc_letters)) p1.npc_letters = (Array.isArray(p1.npc_letters) ? p1.npc_letters : []).concat(p1b.npc_letters);
+            if (Array.isArray(p1b.npc_correspondence)) p1.npc_correspondence = (Array.isArray(p1.npc_correspondence) ? p1.npc_correspondence : []).concat(p1b.npc_correspondence);
+            if (Array.isArray(p1b.npc_interactions)) p1.npc_interactions = (Array.isArray(p1.npc_interactions) ? p1.npc_interactions : []).concat(p1b.npc_interactions);
+            _dbg('[sc1b] \u5408\u5E76: \u6587\u4E8B+' + (p1b.cultural_works||[]).length + ' \u9E3F\u96C1+' + (p1b.npc_letters||[]).length + ' \u5BC6\u4FE1+' + (p1b.npc_correspondence||[]).length + ' \u4E92\u52A8+' + (p1b.npc_interactions||[]).length);
+          }
+          GM._subcallTimings.sc1b = Date.now() - _sc1bStart;
+        } else {
+          console.warn('[sc1b] HTTP', resp1b.status);
+        }
+      } catch(_sc1bErr) {
+        console.warn('[sc1b] \u5931\u8D25\uFF08\u4E0D\u5F71\u54CD\u4E3B\u6D41\u7A0B\uFF09:', _sc1bErr.message || _sc1bErr);
+      }
 
       if(p1){
         // 方案融入：AI 产出的通用变化/任免/机构/区划/事件/NPC行动/关系 → 统一应用

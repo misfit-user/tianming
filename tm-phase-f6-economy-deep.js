@@ -370,11 +370,21 @@
 
   function init() {
     // 注入纸币预设到 CurrencyEngine
+    // CurrencyEngine.PAPER_PRESETS 是对象（按 key 存），不是 Array —— 用对象合并
     if (typeof global.CurrencyEngine !== 'undefined' && global.CurrencyEngine.PAPER_PRESETS) {
       var existing = global.CurrencyEngine.PAPER_PRESETS;
-      PAPER_PRESETS_25.forEach(function(p) {
-        if (!existing.some(function(x){return x.id === p.id;})) existing.push(p);
-      });
+      if (Array.isArray(existing)) {
+        // 极少数分支：若运行时被改成 Array
+        PAPER_PRESETS_25.forEach(function(p) {
+          if (!existing.some(function(x){return x.id === p.id;})) existing.push(p);
+        });
+      } else if (typeof existing === 'object') {
+        // 正常分支：按 key 注入
+        PAPER_PRESETS_25.forEach(function(p) {
+          var key = p.id || p.key || (p.name || '').replace(/[^a-z0-9_]/gi, '_');
+          if (key && !existing[key]) existing[key] = p;
+        });
+      }
     }
   }
 

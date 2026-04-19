@@ -3075,88 +3075,141 @@ var _wenduiSending = false;
  */
 function renderWenduiChars(){
   var el=_$("wendui-chars");if(!el)return;
-  var capital = GM._capital || '\u4EAC\u57CE';
   var atCap = (GM.chars||[]).filter(function(c){return c.alive!==false && !c.isPlayer && _wdIsAtCapital(c);});
   var away = (GM.chars||[]).filter(function(c){return c.alive!==false && !c.isPlayer && !_wdIsAtCapital(c);});
   var html = '';
 
-  // AI 推送的"待接见"队列（NPC私访/宴请/切磋 + 外藩使节）
-  if (Array.isArray(GM._pendingAudiences) && GM._pendingAudiences.length > 0) {
-    html += '<div style="margin-bottom:var(--space-2);padding:var(--space-2);background:rgba(155,89,182,0.08);border:1px solid var(--indigo-400,#7986cb);border-radius:var(--radius-sm);">';
-    html += '<div style="font-size:var(--text-xs);color:var(--indigo-400);font-weight:var(--weight-bold);margin-bottom:var(--space-1);">【待接见队列】</div>';
-    GM._pendingAudiences.forEach(function(q, qi) {
-      var _safeName = (q.name || '').replace(/'/g, "\\'");
-      var _badge = q.isEnvoy ? '<span style="font-size:0.58rem;color:var(--amber-400);padding:0 4px;border:1px solid var(--amber-400);border-radius:3px;margin-right:4px;">使节</span>' : '';
-      html += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-1);">';
-      html += _badge + '<button class="wendui-char-btn" style="border-color:var(--indigo-400);flex-shrink:0;" onclick="_wdOpenAudienceQueue(' + qi + ')">' + escHtml(q.name || '?') + '</button>';
-      html += '<span style="font-size:0.65rem;color:var(--indigo-400);flex:1;">' + escHtml((q.reason || '').substring(0, 60)) + '</span>';
-      html += '<button class="bt bsm" style="font-size:0.6rem;" onclick="_wdDismissPending(' + qi + ')">\u4E0D\u89C1</button>';
-      html += '</div>';
-    });
-    html += '</div>';
+  // 工具：根据角色推断卡片左边色类
+  function _wdCardClass(ch) {
+    var t = (ch.title || '') + ' ' + (ch.officialTitle || '');
+    if (ch.spouse) return 'wdp-consort';
+    if (/\u4E1C\u5382|\u53F8\u793C|\u5B98|\u592A\u76D1/.test(t)) return 'wdp-eunuch'; // 宦官
+    if (/\u5C06\u519B|\u603B\u5175|\u603B\u7763|\u6307\u6325|\u6307\u6325\u4F7F/.test(t)) return 'wdp-mili'; // 武将
+    if (ch.party === '\u4E1C\u6797\u515A' || ch.faction === '\u4E1C\u6797') return 'wdp-dongin';
+    if (ch.party && /\u6D59/.test(ch.party)) return 'wdp-zhejian';
+    return 'wdp-civil';
+  }
+  // 工具：忠诚色
+  function _wdLoyClass(loy) {
+    var v = Number(loy) || 50;
+    if (v >= 75) return 'wdp-loy-hi';
+    if (v >= 45) return 'wdp-loy-mid';
+    return 'wdp-loy-lo';
+  }
+  // 工具：派系标签
+  function _wdFactionTag(ch) {
+    if (ch.spouse) return '<span class="wdp-tag" style="color:var(--vermillion-300);">\u5BAB\u773B</span>';
+    if (ch.party) return '<span class="wdp-tag" style="color:var(--celadon-400);">' + escHtml(String(ch.party).slice(0,4)) + '</span>';
+    if (ch.faction && ch.faction !== '\u671D\u5EF7') return '<span class="wdp-tag" style="color:var(--indigo-400);">' + escHtml(String(ch.faction).slice(0,4)) + '</span>';
+    if (/\u5C06\u519B|\u603B\u5175|\u603B\u7763/.test(ch.title||'')) return '<span class="wdp-tag" style="color:var(--vermillion-400);">\u6B66\u5C06</span>';
+    if (/\u53F8\u793C|\u592A\u76D1/.test(ch.title||'')) return '<span class="wdp-tag" style="color:var(--purple-400,#8e6aa8);">\u5BA6\u5B98</span>';
+    return '';
   }
 
-  // NPC主动求见（忠诚极高/有紧急事务/有诉求的NPC）
+  // 【阶下待见】使节/外藩/AI推送
+  if (Array.isArray(GM._pendingAudiences) && GM._pendingAudiences.length > 0) {
+    html += '<div class="wdp-group wdp-g-envoy">';
+    html += '<div class="wdp-group-title"><span class="tag">\u9636 \u4E0B \u5F85 \u89C1</span><span class="desc">\u4F7F\u8282\u00B7\u5916\u85E9\u00B7\u7279\u8BF7\u00B7\u7B49\u5F85\u9661\u4E0B\u51B3\u65AD</span><span class="count">' + GM._pendingAudiences.length + ' \u4EBA</span></div>';
+    html += '<div class="wdp-req-list">';
+    GM._pendingAudiences.forEach(function(q, qi) {
+      var _nm = escHtml(q.name || '?');
+      var _initial = escHtml(String(q.name||'?').charAt(0));
+      var _envoyB = q.isEnvoy ? '<span class="wdp-envoy-badge">\u4F7F\u8282</span>' : '';
+      html += '<div class="wdp-req-item">';
+      html += '<div class="wdp-req-portrait">' + _initial + _envoyB + '</div>';
+      html += '<div class="wdp-req-info"><div class="wdp-req-name">' + _nm + '</div><div class="wdp-req-reason">' + escHtml((q.reason || '').substring(0, 80)) + '</div></div>';
+      html += '<div class="wdp-req-actions">';
+      html += '<button class="wdp-req-btn" onclick="_wdOpenAudienceQueue(' + qi + ')">\u63A5\u89C1</button>';
+      html += '<button class="wdp-req-btn dismiss" onclick="_wdDismissPending(' + qi + ')">\u6682\u5374</button>';
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // 【有臣求见】朱砂高亮
   var _seekAudience = atCap.filter(function(c) {
     if (c.isPlayer) return false;
-    if (c._mourning) return false; // 丁忧不求见
-    // 本回合已接见 → 不再出现在求见列表
+    if (c._mourning) return false;
     if (c._lastMetTurn === GM.turn) return false;
     if ((c.loyalty || 50) > 90 && (c.stress || 0) > 30) return true;
     if ((c.ambition || 50) > 80 && (c.loyalty || 50) > 60) return true;
-    if ((c.stress || 0) > 60) return true; // 高压力者有话要说
-    // 检查是否有待回应的来函
+    if ((c.stress || 0) > 60) return true;
     if (GM.letters) {
-      var _hasUnanswered = GM.letters.some(function(l) { return l._npcInitiated && l.from === c.name && l._replyExpected && !l._playerReplied && l.status === 'returned'; });
-      if (_hasUnanswered) return true;
+      var _hasUn = GM.letters.some(function(l) { return l._npcInitiated && l.from === c.name && l._replyExpected && !l._playerReplied && l.status === 'returned'; });
+      if (_hasUn) return true;
     }
     return false;
   });
-  // 为每个求见者生成具体原因
   if (_seekAudience.length > 0) {
-    html += '<div style="margin-bottom:var(--space-2);padding:var(--space-2);background:rgba(184,154,83,0.1);border:1px solid var(--gold-500);border-radius:var(--radius-sm);">';
-    html += '<div style="font-size:var(--text-xs);color:var(--gold-400);font-weight:var(--weight-bold);margin-bottom:var(--space-1);">\u6709\u81E3\u5B50\u6C42\u89C1\uFF1A</div>';
+    html += '<div class="wdp-group wdp-g-seeking">';
+    html += '<div class="wdp-group-title"><span class="tag">\u6709 \u81E3 \u6C42 \u89C1</span><span class="desc">\u5FE0\u6781\u9AD8\u6216\u5FC3\u6709\u5FE7\u4E8B\u8005\u00B7\u53EF\u901F\u89C1\u4EE5\u5B89\u5176\u5FC3</span><span class="count">' + _seekAudience.length + ' \u4EBA</span></div>';
+    html += '<div class="wdp-req-list">';
     _seekAudience.forEach(function(ch) {
-      // 生成具体求见原因
       var reason = '';
-      if ((ch.stress||0) > 60) reason = '面带忧色，似有为难之事';
-      else if ((ch.loyalty||50) > 90 && (ch.stress||0) > 30) reason = '神色凝重，欲进忠言';
-      else if ((ch.ambition||50) > 80) reason = '精神抖擞，欲呈策论';
-      else reason = '候于殿外，请求面圣';
-      // 检查是否因来函未回
+      if ((ch.stress||0) > 60) reason = '\u9762\u5E26\u5FE7\u8272\uFF0C\u4F3C\u6709\u4E3A\u96BE\u4E4B\u4E8B';
+      else if ((ch.loyalty||50) > 90 && (ch.stress||0) > 30) reason = '\u795E\u8272\u51DD\u91CD\uFF0C\u6B32\u8FDB\u5FE0\u8A00';
+      else if ((ch.ambition||50) > 80) reason = '\u7CBE\u795E\u6296\u64DE\uFF0C\u6B32\u5448\u7B56\u8BBA';
+      else reason = '\u5019\u4E8E\u6BBF\u5916\uFF0C\u8BF7\u6C42\u9762\u5723';
       if (GM.letters && GM.letters.some(function(l) { return l._npcInitiated && l.from === ch.name && l._replyExpected && !l._playerReplied && l.status === 'returned'; })) {
-        reason = '前日来函未获回复，亲至求见';
+        reason = '\u524D\u65E5\u6765\u51FD\u672A\u83B7\u56DE\u590D\uFF0C\u4EB2\u81F3\u6C42\u89C1';
       }
       var _safeName = ch.name.replace(/'/g, "\\'");
-      html += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-1);">';
-      html += '<button class="wendui-char-btn" style="border-color:var(--gold-500);flex-shrink:0;" onclick="_wdOpenAudience(\'' + _safeName + '\')">';
-      html += (ch.portrait?'<img src="'+escHtml(ch.portrait)+'" style="width:18px;height:18px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:2px;">':'');
-      html += ch.name + '</button>';
-      html += '<span style="font-size:0.65rem;color:var(--gold-400);flex:1;">' + reason + '</span>';
-      html += '<button class="bt bsm" style="font-size:0.6rem;" onclick="_wdDenyAudience(\'' + _safeName + '\')">\u4E0D\u89C1</button>';
-      html += '</div>';
+      var _initial = escHtml(String(ch.name||'?').charAt(0));
+      var _portraitHtml = ch.portrait ? '<img src="'+escHtml(ch.portrait)+'">' : _initial;
+      html += '<div class="wdp-req-item">';
+      html += '<div class="wdp-req-portrait">' + _portraitHtml + '</div>';
+      html += '<div class="wdp-req-info"><div class="wdp-req-name">' + escHtml(ch.name) + '</div><div class="wdp-req-reason">' + reason + '</div></div>';
+      html += '<div class="wdp-req-actions">';
+      html += '<button class="wdp-req-btn" onclick="_wdOpenAudience(\'' + _safeName + '\')">\u63A5\u89C1</button>';
+      html += '<button class="wdp-req-btn dismiss" onclick="_wdDenyAudience(\'' + _safeName + '\')">\u4E0D\u89C1</button>';
+      html += '</div></div>';
     });
-    html += '</div>';
+    html += '</div></div>';
   }
 
-  html += atCap.map(function(ch){
-    var loyColor=ch.loyalty>70?'var(--green)':ch.loyalty<30?'var(--red)':'var(--txt-s)';
-    var _spIcon = ch.spouse ? ' \uD83D\uDC90' : '';
-    var hist = (GM.wenduiHistory && GM.wenduiHistory[ch.name] && GM.wenduiHistory[ch.name].length > 0);
-    var _loyDisp = typeof _fmtNum1==='function' ? _fmtNum1(ch.loyalty) : ch.loyalty;
-    return '<button class="wendui-char-btn' + (hist ? ' wd-has-history' : '') + '" onclick="openWenduiPick(\'' + ch.name.replace(/'/g,"") + '\')" title="' + escHtml(ch.title||'') + ' 忠' + _loyDisp + '">'
-      + (ch.portrait?'<img src="'+escHtml(ch.portrait)+'" style="width:20px;height:20px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:2px;">':'') + ch.name + _spIcon + '<span style="font-size:0.6rem;color:' + loyColor + ';margin-left:2px;">' + _loyDisp + '</span></button>';
-  }).join('');
+  // 【百官候旨】卡片网格
+  var _nonSeeking = atCap.filter(function(c) { return _seekAudience.indexOf(c) < 0; });
+  if (_nonSeeking.length > 0) {
+    html += '<div class="wdp-group wdp-g-incap">';
+    html += '<div class="wdp-group-title"><span class="tag">\u767E \u5B98 \u5019 \u65E8</span><span class="desc">\u73B0\u5728\u4EAC\u4E2D\u00B7\u53EF\u968F\u65F6\u53EC\u5BF9</span><span class="count">' + _nonSeeking.length + ' \u4EBA</span></div>';
+    html += '<div class="wdp-char-grid">';
+    _nonSeeking.forEach(function(ch) {
+      var _cardCls = _wdCardClass(ch);
+      var _loyCls = _wdLoyClass(ch.loyalty);
+      var _hasHist = (GM.wenduiHistory && GM.wenduiHistory[ch.name] && GM.wenduiHistory[ch.name].length > 0);
+      var _loyDisp = typeof _fmtNum1==='function' ? _fmtNum1(ch.loyalty) : (ch.loyalty||0);
+      var _initial = escHtml(String(ch.name||'?').charAt(0));
+      var _portraitHtml = ch.portrait ? '<img src="'+escHtml(ch.portrait)+'">' : _initial;
+      var _spouseMark = ch.spouse ? '<span class="spouse">\u2766</span>' : '';
+      html += '<div class="wdp-char-card ' + _cardCls + ' ' + _loyCls + (_hasHist?' has-hist':'') + '" onclick="openWenduiPick(\'' + ch.name.replace(/'/g,"") + '\')">';
+      html += '<div class="wdp-char-top">';
+      html += '<div class="wdp-portrait">' + _portraitHtml + '</div>';
+      html += '<div class="wdp-name-wrap">';
+      html += '<div class="wdp-name">' + escHtml(ch.name) + _spouseMark + '</div>';
+      html += '<div class="wdp-char-title">' + escHtml((ch.officialTitle || ch.title || '').slice(0,14)) + '</div>';
+      html += '</div></div>';
+      html += '<div class="wdp-char-bottom">';
+      html += '<span class="wdp-loyalty">\u5FE0 <span class="num">' + _loyDisp + '</span></span>';
+      html += _wdFactionTag(ch);
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // 【远方臣子】灰度
   if (away.length > 0) {
     var _playerLoc2 = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'京城');
-    html += '<div style="width:100%;font-size:var(--text-xs);color:var(--color-foreground-muted);margin-top:var(--space-2);text-align:center;">不在' + escHtml(_playerLoc2) + '：</div>';
-    html += away.map(function(ch){
-      var loc = ch.location || '远方';
-      var travel = ch._travelTo ? ' \u2192' + ch._travelTo : '';
-      return '<button class="wendui-char-btn" style="opacity:0.4;cursor:not-allowed;" disabled title="' + escHtml(loc + travel) + '">'
-        + ch.name + '<span style="font-size:0.55rem;color:var(--ink-300);margin-left:2px;">' + escHtml(loc.slice(0,3)) + '</span></button>';
-    }).join('');
+    html += '<div class="wdp-group wdp-g-away">';
+    html += '<div class="wdp-group-title"><span class="tag">\u8FDC \u65B9 \u81E3 \u5B50</span><span class="desc">\u4E0D\u5728' + escHtml(_playerLoc2) + '\u00B7\u9700\u53EC\u56DE\u6216\u9E3F\u96C1\u4F20\u4E66</span><span class="count">' + away.length + ' \u4EBA</span></div>';
+    html += '<div class="wdp-away-list">';
+    away.forEach(function(ch) {
+      var loc = ch.location || '\u8FDC\u65B9';
+      var travel = ch._travelTo ? '<span class="travel">\u2192' + escHtml(ch._travelTo) + '</span>' : '';
+      html += '<div class="wdp-away-item" title="' + escHtml(loc + (ch._travelTo?' \u2192'+ch._travelTo:'')) + '">' + escHtml(ch.name) + ' <span class="loc">' + escHtml(loc.slice(0,6)) + '</span>' + travel + '</div>';
+    });
+    html += '</div></div>';
   }
+
   el.innerHTML = html;
 }
 
@@ -3176,24 +3229,32 @@ function _wdIsAtCapital(ch) {
 function openWenduiPick(name) {
   var ch = findCharByName(name); if (!ch) return;
   var hist = GM.wenduiHistory && GM.wenduiHistory[name] && GM.wenduiHistory[name].length > 0;
+  var _initial = escHtml(String(name||'?').charAt(0));
+  var _portraitHtml = ch.portrait ? '<img src="'+escHtml(ch.portrait)+'">' : _initial;
+  var _subTitle = escHtml((ch.officialTitle || ch.title || '').slice(0,20)) + (ch.spouse ? ' \u00B7 \u540E\u59C3' : '');
   var modal = document.createElement('div');
   modal.className = 'modal-bg show';
   modal.id = 'wd-pick-modal';
-  modal.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:400px;padding:1.5rem;text-align:center;">'
-    + (ch.portrait ? '<img src="'+escHtml(ch.portrait)+'" style="width:64px;height:64px;object-fit:cover;border-radius:50%;margin-bottom:0.5rem;">' : '')
-    + '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:0.8rem;">召见 ' + escHtml(name) + '</div>'
-    + '<div style="font-size:0.82rem;color:var(--txt-d);margin-bottom:1rem;">' + escHtml(ch.title || '') + (ch.spouse ? ' · 后妃' : '') + '</div>'
-    + (hist ? '<div style="font-size:0.72rem;color:var(--txt-d);margin-bottom:0.8rem;background:var(--bg-2);padding:0.4rem;border-radius:4px;">此前有 ' + GM.wenduiHistory[name].length + ' 条对话记录</div>' : '')
-    + '<div style="display:flex;gap:0.8rem;justify-content:center;margin-bottom:1.2rem;">'
-    + '<label style="display:flex;align-items:center;gap:0.3rem;cursor:pointer;padding:0.5rem 1rem;border:1px solid var(--bdr);border-radius:8px;transition:all 0.2s;" id="wd-pick-formal" onclick="_wdPickMode(\'formal\')">'
-    + '<input type="radio" name="wd-mode-pick" value="formal" checked style="accent-color:var(--gold);"> 朝堂问对</label>'
-    + '<label style="display:flex;align-items:center;gap:0.3rem;cursor:pointer;padding:0.5rem 1rem;border:1px solid var(--bdr);border-radius:8px;transition:all 0.2s;" id="wd-pick-private" onclick="_wdPickMode(\'private\')">'
-    + '<input type="radio" name="wd-mode-pick" value="private" style="accent-color:var(--gold);"> 私下叙谈</label>'
+  modal.innerHTML = '<div class="wdp-pick-modal-inner">'
+    + '<div class="wdp-pick-portrait">' + _portraitHtml + '</div>'
+    + '<div class="wdp-pick-name">\u53EC \u89C1 \u00B7 ' + escHtml(name) + '</div>'
+    + '<div class="wdp-pick-title">' + _subTitle + '</div>'
+    + (hist ? '<div class="wdp-pick-hist">\u6B64\u524D\u6709 ' + GM.wenduiHistory[name].length + ' \u6761\u5BF9\u8BDD\u8BB0\u5F55</div>' : '')
+    + '<div class="wdp-pick-modes">'
+    + '<div class="wdp-mode-card sel" id="wd-pick-formal" onclick="_wdPickMode(\'formal\')">'
+    +   '<div class="icon">\u6BBF</div><div class="name">\u671D\u5802\u95EE\u5BF9</div>'
+    +   '<div class="desc">\u8D77\u5C45\u6CE8\u5B98\u5728\u573A\u00B7\u4E25\u8083\u6B63\u5F0F\u00B7\u8A00\u8F9E\u6709\u5EA6</div>'
     + '</div>'
-    + '<div style="display:flex;gap:0.6rem;justify-content:center;">'
-    + '<button class="bt bp" onclick="_wdConfirmPick(\'' + name.replace(/'/g,"") + '\')">召见</button>'
-    + '<button class="bt bs" onclick="document.getElementById(\'wd-pick-modal\').remove()">取消</button>'
-    + '</div></div>';
+    + '<div class="wdp-mode-card" id="wd-pick-private" onclick="_wdPickMode(\'private\')">'
+    +   '<div class="icon">\u5BC6</div><div class="name">\u79C1\u4E0B\u53D9\u8C08</div>'
+    +   '<div class="desc">\u5C4F\u9000\u5DE6\u53F3\u00B7\u66F4\u5766\u8BDA\u4EA6\u66F4\u7D6E\u53E8</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="wdp-pick-actions">'
+    +   '<button class="wdp-pick-btn primary" onclick="_wdConfirmPick(\'' + name.replace(/'/g,"") + '\')">\u53EC\u3000\u89C1</button>'
+    +   '<button class="wdp-pick-btn secondary" onclick="document.getElementById(\'wd-pick-modal\').remove()">\u53D6\u3000\u6D88</button>'
+    + '</div>'
+    + '</div>';
   document.body.appendChild(modal);
 }
 
@@ -3201,8 +3262,8 @@ var _wdPickedMode = 'formal';
 function _wdPickMode(mode) {
   _wdPickedMode = mode;
   var f = _$('wd-pick-formal'), p = _$('wd-pick-private');
-  if (f) f.style.borderColor = mode === 'formal' ? 'var(--gold)' : 'var(--bdr)';
-  if (p) p.style.borderColor = mode === 'private' ? 'var(--gold)' : 'var(--bdr)';
+  if (f) f.classList.toggle('sel', mode === 'formal');
+  if (p) p.classList.toggle('sel', mode === 'private');
 }
 
 function _wdConfirmPick(name) {

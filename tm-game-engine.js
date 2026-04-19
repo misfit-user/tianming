@@ -4924,10 +4924,11 @@ function renderGameState(){
   gc.appendChild(memP);
 
   // 问对面板（仅角色选择网格，点击打开弹窗）
-  var wdP=document.createElement("div");wdP.className="g-tab-panel";wdP.id="gt-wendui";wdP.style.cssText="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;";
-  wdP.innerHTML='<div class="scroll-manager-header" style="padding:var(--space-2);font-size:var(--text-md);">〔 御前问对 〕</div>'
-    +'<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-bottom:var(--space-3);text-align:center;letter-spacing:0.08em;">选择在京臣子，召其入内问对</div>'
-    +'<div id="wendui-chars" style="display:flex;gap:0.4rem;flex-wrap:wrap;justify-content:center;"></div>';
+  var wdP=document.createElement("div");wdP.className="g-tab-panel";wdP.id="gt-wendui";wdP.style.cssText="flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;";
+  wdP.innerHTML='<div class="wdp-panel-wrap"><div class="wdp-inner">'
+    +'<div class="wdp-title"><div class="seal">\u53EC\u89C1</div><div class="main">\u5FA1 \u524D \u95EE \u5BF9</div><div class="sub">\u541B\u81E3\u4E4B\u5BF9\u3000\u3000\u9762\u5723\u8BF7\u5BF9</div></div>'
+    +'<div id="wendui-chars"></div>'
+    +'</div></div>';
   gc.appendChild(wdP);
 
   // 鸿雁传书面板

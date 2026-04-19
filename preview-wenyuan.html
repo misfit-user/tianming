@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>文苑标签页·美化预览</title>
+<style>
+:root {
+  --bg-1: #0f0d0a; --bg-2: #1a1510; --bg-paper: #241e18; --bg-sunken: #120f0a;
+  --ink-900: #f4eadd; --ink-700: #d9c9a9; --ink-500: #a69470; --ink-300: #6b5d47; --ink-100: #3d342a;
+  --gold-300: #c9a85f; --gold-400: #b89a53; --gold-500: #9d8244; --gold-d: #6b5a30;
+  --vermillion-300: #d15c47; --vermillion-400: #b84738; --vermillion-600: #8f3428;
+  --indigo-400: #5a6fa8; --indigo-600: #3e4e80;
+  --celadon-400: #6a9a7f; --celadon-600: #4a7a5f;
+  --amber-400: #c9a045; --amber-600: #8f6f28;
+  --purple-400: #8e6aa8; --purple-600: #5f3a7a;
+  --blue-400: #5a8fb8; --blue-600: #3d6a8f;
+  --border-subtle: rgba(184,154,83,0.15); --border-strong: rgba(184,154,83,0.35);
+  --shadow-scroll: 0 6px 18px rgba(0,0,0,0.45),0 0 0 1px rgba(184,154,83,0.08);
+  --font-serif: "STKaiti","KaiTi","楷体","Georgia",serif;
+  --font-song: "STSong","SimSun","宋体",serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f0d0a 70%),var(--bg-1);color:var(--ink-700);font-family:var(--font-song);font-size:14px;line-height:1.7;min-height:100vh;}
+.preview-frame{max-width:1420px;margin:32px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-scroll);}
+.preview-header{background:linear-gradient(to bottom,rgba(184,154,83,0.04),transparent);padding:12px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--ink-500);letter-spacing:0.1em;}
+.preview-header .dot{width:10px;height:10px;border-radius:50%;}
+.preview-header .dot.r{background:#d15c47;} .preview-header .dot.y{background:#c9a85f;} .preview-header .dot.g{background:#6a9a7f;}
+.preview-header .title{margin-left:auto;font-family:var(--font-serif);letter-spacing:0.3em;color:var(--ink-300);}
+.tab-bar{display:flex;gap:0;background:var(--bg-1);border-bottom:1px solid var(--border-subtle);overflow-x:auto;}
+.tab-btn{padding:10px 16px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:14px;letter-spacing:0.1em;cursor:pointer;border-bottom:2px solid transparent;position:relative;}
+.tab-btn:hover{color:var(--ink-700);}
+.tab-btn.active{color:var(--gold-400);border-bottom-color:var(--gold-400);}
+.tab-btn.active::before{content:"";position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--vermillion-400);border-radius:1px;transform:rotate(12deg);}
+
+/* ═══ 文苑主区 ═══ */
+.wy-panel{padding:24px 28px;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),repeating-linear-gradient(0deg,transparent 0,transparent 3em,rgba(107,93,71,0.02) 3em,rgba(107,93,71,0.02) calc(3em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);position:relative;min-height:900px;}
+.wy-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
+.wy-inner{position:relative;z-index:1;}
+
+/* 标题 */
+.wy-title{text-align:center;margin-bottom:20px;position:relative;padding:14px 0 18px;}
+.wy-title::before,.wy-title::after{content:"";position:absolute;left:50%;width:180px;height:1px;transform:translateX(-50%);background:linear-gradient(to right,transparent,var(--gold-d),transparent);}
+.wy-title::before{top:0;} .wy-title::after{bottom:0;}
+.wy-title .main{font-family:var(--font-serif);font-size:24px;letter-spacing:0.5em;color:var(--ink-900);margin-bottom:6px;}
+.wy-title .sub{font-size:12px;color:var(--ink-300);letter-spacing:0.3em;font-family:var(--font-serif);font-style:italic;}
+.wy-title .seal{position:absolute;right:28px;top:10px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.85),rgba(140,40,30,0.75));display:flex;align-items:center;justify-content:center;color:#f4eadd;font-size:13px;font-family:var(--font-serif);letter-spacing:0.05em;font-weight:bold;transform:rotate(-6deg);box-shadow:0 2px 6px rgba(140,40,30,0.4);opacity:0.88;line-height:1.2;text-align:center;}
+
+/* 统计栏 */
+.wy-statbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.wy-stat-card{padding:10px 14px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--sc-c,var(--gold-d));border-radius:3px;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.025) 2.5em,rgba(107,93,71,0.025) calc(2.5em + 1px));}
+.wy-stat-card.s-all{--sc-c:var(--gold-400);}
+.wy-stat-card.s-preserve{--sc-c:var(--gold-300);}
+.wy-stat-card.s-forbid{--sc-c:var(--vermillion-600);}
+.wy-stat-card.s-risk{--sc-c:var(--vermillion-400);}
+.wy-stat-card.s-era{--sc-c:var(--celadon-400);}
+.wy-stat-card.s-author{--sc-c:var(--indigo-400);}
+.wy-stat-lbl{font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.25em;margin-bottom:4px;}
+.wy-stat-num{font-family:var(--font-serif);font-size:22px;color:var(--sc-c);letter-spacing:0.05em;font-weight:700;line-height:1;}
+.wy-stat-sub{font-size:10.5px;color:var(--ink-300);margin-top:3px;font-style:italic;}
+
+/* 工具栏 */
+.wy-tools{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(184,154,83,0.04);border:1px solid var(--border-subtle);border-radius:2px;margin-bottom:12px;flex-wrap:wrap;}
+.wy-tools-lbl{font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.2em;padding-right:6px;border-right:1px solid var(--border-subtle);flex-shrink:0;}
+.wy-search-wrap{position:relative;flex:1;min-width:180px;max-width:260px;}
+.wy-search-wrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-300);font-size:14px;pointer-events:none;}
+.wy-search{width:100%;padding:5px 12px 5px 28px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-song);font-size:12px;border-radius:2px;outline:none;}
+.wy-filter{padding:5px 12px;background:var(--bg-1);border:1px solid var(--border-subtle);color:var(--ink-700);font-family:var(--font-serif);font-size:12px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.wy-chk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-500);font-family:var(--font-serif);letter-spacing:0.1em;cursor:pointer;}
+.wy-chk input{accent-color:var(--gold-400);}
+
+/* 触发类别图例 */
+.wy-legend{display:flex;gap:6px 10px;padding:8px 14px;margin-bottom:14px;background:rgba(184,154,83,0.02);border:1px solid var(--border-subtle);border-radius:2px;font-size:11px;flex-wrap:wrap;align-items:center;}
+.wy-legend-lbl{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.2em;margin-right:4px;padding-right:6px;border-right:1px solid var(--border-subtle);}
+.wy-legend-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.08em;font-size:11px;border:1px solid var(--chip-c);color:var(--chip-c);background:rgba(var(--chip-rgb),0.06);}
+.wy-legend-chip.c-career{--chip-c:var(--indigo-400);--chip-rgb:90,111,168;}
+.wy-legend-chip.c-adversity{--chip-c:var(--vermillion-400);--chip-rgb:184,71,56;}
+.wy-legend-chip.c-social{--chip-c:var(--amber-400);--chip-rgb:201,160,69;}
+.wy-legend-chip.c-duty{--chip-c:var(--purple-400);--chip-rgb:142,106,168;}
+.wy-legend-chip.c-travel{--chip-c:var(--celadon-400);--chip-rgb:106,154,127;}
+.wy-legend-chip.c-private{--chip-c:var(--vermillion-300);--chip-rgb:209,92,71;}
+.wy-legend-chip.c-times{--chip-c:var(--gold-400);--chip-rgb:184,154,83;}
+.wy-legend-chip.c-mood{--chip-c:var(--blue-400);--chip-rgb:90,143,184;}
+.wy-legend-chip .num{color:var(--chip-c);font-weight:500;font-size:10px;opacity:0.85;}
+
+/* ═══ 作品卡网格 ═══ */
+.wy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;}
+
+/* 诗稿卷轴卡 */
+.wy-card{
+  position:relative;
+  display:flex;gap:12px;
+  padding:12px 14px 12px 12px;
+  background:var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px)),
+    linear-gradient(to bottom,rgba(184,154,83,0.04) 0%,transparent 40px);
+  border:1px solid var(--border-subtle);
+  border-left:3px solid var(--cat-c,var(--gold-d));
+  border-radius:3px;cursor:pointer;
+  transition:all 0.25s;overflow:hidden;
+}
+.wy-card:hover{border-color:var(--gold-400);box-shadow:0 3px 12px rgba(184,154,83,0.15);transform:translateY(-2px);}
+.wy-card.preserved{background:linear-gradient(to right,rgba(201,168,95,0.08),var(--bg-paper) 40%);box-shadow:0 0 0 1px rgba(201,168,95,0.2);}
+.wy-card.preserved::after{content:"\4F20\u00A0\u4E16";position:absolute;top:6px;right:8px;font-size:11px;color:var(--gold-300);font-family:var(--font-serif);font-weight:bold;padding:1px 6px;background:rgba(201,168,95,0.15);border:1px solid var(--gold-300);border-radius:2px;letter-spacing:0.1em;}
+.wy-card.forbidden{opacity:0.72;background:linear-gradient(to right,rgba(192,64,48,0.04),var(--bg-paper) 40%);}
+.wy-card.forbidden::before{content:"\67E5\u00A0\u7981";position:absolute;top:6px;right:8px;font-size:11px;color:var(--vermillion-400);font-family:var(--font-serif);font-weight:bold;padding:1px 6px;background:rgba(192,57,43,0.15);border:1px solid var(--vermillion-400);border-radius:2px;letter-spacing:0.1em;transform:rotate(-3deg);}
+
+/* 类别色 */
+.wy-card.c-career{--cat-c:var(--indigo-400);--cat-rgb:90,111,168;}
+.wy-card.c-adversity{--cat-c:var(--vermillion-400);--cat-rgb:184,71,56;}
+.wy-card.c-social{--cat-c:var(--amber-400);--cat-rgb:201,160,69;}
+.wy-card.c-duty{--cat-c:var(--purple-400);--cat-rgb:142,106,168;}
+.wy-card.c-travel{--cat-c:var(--celadon-400);--cat-rgb:106,154,127;}
+.wy-card.c-private{--cat-c:var(--vermillion-300);--cat-rgb:209,92,71;}
+.wy-card.c-times{--cat-c:var(--gold-400);--cat-rgb:184,154,83;}
+.wy-card.c-mood{--cat-c:var(--blue-400);--cat-rgb:90,143,184;}
+
+/* 左：题签卷轴 */
+.wy-tab-col{flex-shrink:0;width:54px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.wy-tab-scroll{
+  width:50px;min-height:120px;
+  background:linear-gradient(to right,rgba(184,154,83,0.2),rgba(184,154,83,0.08) 30%,rgba(184,154,83,0.08) 70%,rgba(184,154,83,0.2));
+  border:1px solid rgba(184,154,83,0.3);
+  border-radius:1px;
+  padding:8px 4px;
+  display:flex;flex-direction:column;align-items:center;
+  writing-mode:vertical-rl;
+  position:relative;
+  box-shadow:inset 0 0 6px rgba(139,90,50,0.1);
+}
+.wy-tab-scroll::before,.wy-tab-scroll::after{
+  content:"";position:absolute;left:-3px;right:-3px;height:6px;
+  background:linear-gradient(to bottom,#8d7640 0%,#6b5a30 60%,#5a4a28 100%);
+  border:0.5px solid #3d2e18;border-radius:1px;
+  box-shadow:0 1px 0 rgba(0,0,0,0.4);
+}
+.wy-tab-scroll::before{top:-4px;} .wy-tab-scroll::after{bottom:-4px;}
+.wy-tab-author{font-family:var(--font-serif);font-size:14px;color:var(--cat-c,var(--gold-400));letter-spacing:0.3em;font-weight:500;}
+.wy-tab-date{font-family:var(--font-serif);font-size:9px;color:var(--ink-300);letter-spacing:0.2em;margin-top:auto;}
+.wy-tab-seal{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.8),rgba(140,40,30,0.7));color:#f4eadd;font-size:10px;font-family:var(--font-serif);display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 1px 3px rgba(140,40,30,0.4);opacity:0.85;margin-top:4px;}
+
+/* 右：正文列 */
+.wy-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.wy-hdr-row{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;}
+.wy-title-w{font-family:var(--font-serif);font-size:16px;color:var(--ink-900);letter-spacing:0.14em;font-weight:500;}
+.wy-title-w::before{content:"\300A";color:var(--ink-300);} .wy-title-w::after{content:"\300B";color:var(--ink-300);}
+.wy-genre-chip{display:inline-flex;align-items:center;font-size:10.5px;padding:0 6px;background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));color:#1a1410;border-radius:2px;font-family:var(--font-serif);letter-spacing:0.05em;line-height:16px;font-weight:500;}
+.wy-subtype{font-size:10.5px;color:var(--ink-500);font-style:italic;font-family:var(--font-serif);letter-spacing:0.08em;}
+.wy-meta-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px;}
+.wy-cat-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:0 6px;border:1px solid var(--cat-c);color:var(--cat-c);background:rgba(var(--cat-rgb),0.08);border-radius:2px;font-family:var(--font-serif);letter-spacing:0.1em;line-height:15px;}
+.wy-cat-chip::before{content:"\25C6";font-size:7px;opacity:0.8;}
+.wy-loc{font-size:10.5px;color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.08em;font-style:italic;display:inline-flex;align-items:center;gap:3px;}
+.wy-loc::before{content:"\25C9";font-size:7px;color:var(--amber-400);opacity:0.7;}
+.wy-mood{font-size:10.5px;color:var(--celadon-400);font-family:var(--font-serif);letter-spacing:0.08em;}
+.wy-mood::before{content:"\2733\u00A0";font-size:7px;opacity:0.7;}
+
+/* 诗文节选 */
+.wy-excerpt{
+  margin-top:4px;
+  padding:8px 10px 8px 12px;
+  background:rgba(184,154,83,0.04);
+  border-left:2px solid var(--cat-c,var(--gold-d));
+  border-radius:0 2px 2px 0;
+  font-family:var(--font-song);font-size:13px;
+  color:var(--ink-700);line-height:1.9;
+  letter-spacing:0.08em;
+  white-space:pre-wrap;
+  position:relative;
+}
+.wy-excerpt::before{
+  content:"\201C";position:absolute;top:-2px;left:4px;
+  font-size:18px;color:var(--gold-d);opacity:0.4;
+  font-family:var(--font-song);line-height:1;
+}
+.wy-excerpt.elegant{font-family:var(--font-serif);font-style:italic;}
+.wy-excerpt.fu,.wy-excerpt.wen{font-size:12.5px;}
+
+/* 品鉴行 */
+.wy-assess{display:flex;align-items:center;gap:8px;margin-top:4px;padding-top:4px;border-top:1px dashed var(--border-subtle);font-size:10.5px;flex-wrap:wrap;}
+.wy-quality{display:inline-flex;align-items:center;gap:2px;font-family:var(--font-serif);color:var(--ink-500);letter-spacing:0.08em;}
+.wy-quality .lbl{font-size:9.5px;color:var(--ink-300);margin-right:2px;}
+.wy-quality .star{color:var(--gold-400);font-size:12px;letter-spacing:0;}
+.wy-quality .star.d{color:var(--ink-300);}
+.wy-quality .val{font-size:9.5px;color:var(--ink-300);font-style:italic;margin-left:2px;}
+.wy-risk{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-serif);letter-spacing:0.08em;font-size:10.5px;padding:1px 6px;border-radius:2px;border:1px solid var(--rk-c);color:var(--rk-c);background:rgba(var(--rk-rgb),0.06);}
+.wy-risk.low{--rk-c:var(--celadon-400);--rk-rgb:106,154,127;}
+.wy-risk.medium{--rk-c:var(--amber-400);--rk-rgb:201,160,69;}
+.wy-risk.high{--rk-c:var(--vermillion-400);--rk-rgb:184,71,56;}
+.wy-risk::before{font-size:8px;}
+.wy-risk.low::before{content:"\26AA";}
+.wy-risk.medium::before{content:"\26A0";}
+.wy-risk.high::before{content:"\26A1";}
+.wy-tag{display:inline-flex;align-items:center;font-family:var(--font-serif);font-size:10px;color:var(--ink-500);letter-spacing:0.08em;padding:0 5px;background:rgba(107,93,71,0.08);border:1px solid var(--ink-100);border-radius:2px;line-height:14px;}
+
+/* 背景注 */
+.wy-ctx{margin-top:3px;padding:4px 8px;font-size:10.5px;color:var(--ink-500);font-family:var(--font-serif);font-style:italic;letter-spacing:0.04em;line-height:1.6;background:rgba(107,93,71,0.04);border-radius:2px;border-left:1px dashed var(--cat-c,var(--gold-d));}
+.wy-ctx::before{content:"\25CB\u00A0";font-size:7px;color:var(--cat-c,var(--gold-400));opacity:0.8;}
+
+/* 政治暗讽 */
+.wy-implicit{margin-top:2px;padding:3px 8px;font-size:10.5px;color:var(--vermillion-400);font-family:var(--font-serif);letter-spacing:0.04em;line-height:1.6;background:rgba(192,64,48,0.05);border-radius:2px;border-left:1px solid var(--vermillion-400);}
+.wy-implicit::before{content:"\u26A0\u00A0";font-size:9px;opacity:0.8;}
+
+/* 操作按钮 */
+.wy-actions{display:flex;gap:4px;margin-top:6px;padding-top:5px;border-top:1px dashed var(--border-subtle);flex-wrap:wrap;}
+.wy-btn{padding:3px 9px;font-size:10.5px;background:linear-gradient(to bottom,rgba(184,154,83,0.1),rgba(184,154,83,0.02));border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
+.wy-btn:hover{background:rgba(184,154,83,0.18);border-color:var(--gold-400);}
+.wy-btn.primary{background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));color:#1a1410;border-color:var(--gold-d);font-weight:500;}
+.wy-btn.danger{color:var(--vermillion-400);border-color:var(--vermillion-400);}
+.wy-btn.danger:hover{background:rgba(192,64,48,0.1);}
+
+/* 空态 */
+.wy-empty{grid-column:1/-1;text-align:center;padding:64px 24px;font-family:var(--font-serif);font-size:15px;color:var(--ink-500);letter-spacing:0.2em;line-height:2.2;}
+.wy-empty::before{content:"\2756";display:block;color:var(--gold-400);font-size:34px;margin-bottom:12px;opacity:0.5;}
+.wy-empty .sub{font-size:11px;color:var(--ink-300);letter-spacing:0.15em;margin-top:10px;font-style:italic;}
+
+/* 分组标题 */
+.wy-grp-hdr{grid-column:1/-1;font-family:var(--font-serif);font-size:13px;color:var(--grp-c,var(--gold-400));letter-spacing:0.25em;padding:6px 0;margin-top:6px;border-bottom:1px dashed var(--border-subtle);display:flex;align-items:center;gap:10px;}
+.wy-grp-hdr .cnt{margin-left:auto;font-size:10.5px;color:var(--ink-500);font-style:italic;letter-spacing:0.1em;padding:1px 8px;background:rgba(184,154,83,0.06);border-radius:2px;}
+
+.legend{padding:14px 20px;background:var(--bg-2);border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-500);text-align:center;letter-spacing:0.08em;line-height:1.9;}
+.legend .k{color:var(--gold-400);} .legend .m{color:var(--vermillion-400);} .legend .c{color:var(--celadon-400);}
+</style>
+</head>
+<body>
+<div class="preview-frame">
+
+<div class="preview-header">
+  <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  <span>文苑 · 美化预览</span>
+  <span class="title">经 世 风 雅 · 诗 文 总 集</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn">朝 政</button>
+  <button class="tab-btn">诏 令</button>
+  <button class="tab-btn">奏 疏</button>
+  <button class="tab-btn">问 对</button>
+  <button class="tab-btn">鸿 雁</button>
+  <button class="tab-btn">编 年</button>
+  <button class="tab-btn">官 制</button>
+  <button class="tab-btn active">文 苑</button>
+  <button class="tab-btn">起 居 注</button>
+  <button class="tab-btn">纪 事</button>
+  <button class="tab-btn">史 记</button>
+  <button class="tab-btn">朝 议</button>
+  <button class="tab-btn">科 举</button>
+</div>
+
+<div class="wy-panel">
+<div class="wy-inner">
+
+<!-- 标题 -->
+<div class="wy-title">
+  <div class="seal">文<br>苑</div>
+  <div class="main">文　苑　·　诗　文　总　集</div>
+  <div class="sub">诗 词 歌 赋　　序 跋 记 铭　　经 世 风 雅</div>
+</div>
+
+<!-- 统计栏 -->
+<div class="wy-statbar">
+  <div class="wy-stat-card s-all">
+    <div class="wy-stat-lbl">总 录</div>
+    <div class="wy-stat-num">186</div>
+    <div class="wy-stat-sub">篇</div>
+  </div>
+  <div class="wy-stat-card s-preserve">
+    <div class="wy-stat-lbl">传 世</div>
+    <div class="wy-stat-num">23</div>
+    <div class="wy-stat-sub">名作</div>
+  </div>
+  <div class="wy-stat-card s-forbid">
+    <div class="wy-stat-lbl">查 禁</div>
+    <div class="wy-stat-num">7</div>
+    <div class="wy-stat-sub">讳禁</div>
+  </div>
+  <div class="wy-stat-card s-risk">
+    <div class="wy-stat-lbl">政 险</div>
+    <div class="wy-stat-num">14</div>
+    <div class="wy-stat-sub">涉讽</div>
+  </div>
+  <div class="wy-stat-card s-era">
+    <div class="wy-stat-lbl">本 朝</div>
+    <div class="wy-stat-num">48</div>
+    <div class="wy-stat-sub">近作</div>
+  </div>
+  <div class="wy-stat-card s-author">
+    <div class="wy-stat-lbl">文 魁</div>
+    <div class="wy-stat-num">32</div>
+    <div class="wy-stat-sub">名家</div>
+  </div>
+</div>
+
+<!-- 工具栏 -->
+<div class="wy-tools">
+  <span class="wy-tools-lbl">披 览</span>
+  <div class="wy-search-wrap"><input class="wy-search" placeholder="搜索作者·标题·诗文……"></div>
+  <select class="wy-filter">
+    <option>全部触发</option>
+    <option>科举宦途</option>
+    <option>逆境贬谪</option>
+    <option>社交酬酢</option>
+    <option>任上施政</option>
+    <option>游历山水</option>
+    <option>家事私情</option>
+    <option>时局天下</option>
+    <option>情感心境</option>
+  </select>
+  <select class="wy-filter">
+    <option>全部文体</option>
+    <option>诗</option><option>词</option><option>赋</option><option>曲</option>
+    <option>歌行</option><option>散文</option><option>应用文</option><option>记叙</option>
+    <option>祭文碑铭</option><option>序跋</option>
+  </select>
+  <select class="wy-filter">
+    <option>排：近作</option>
+    <option>排：品评</option>
+    <option>排：作者</option>
+    <option>排：年代</option>
+  </select>
+  <label class="wy-chk"><input type="checkbox"> 仅传世</label>
+  <label class="wy-chk"><input type="checkbox"> 隐查禁</label>
+</div>
+
+<!-- 触发类别图例 -->
+<div class="wy-legend">
+  <span class="wy-legend-lbl">触 发</span>
+  <span class="wy-legend-chip c-career">科举宦途 <span class="num">·28</span></span>
+  <span class="wy-legend-chip c-adversity">逆境贬谪 <span class="num">·15</span></span>
+  <span class="wy-legend-chip c-social">社交酬酢 <span class="num">·24</span></span>
+  <span class="wy-legend-chip c-duty">任上施政 <span class="num">·19</span></span>
+  <span class="wy-legend-chip c-travel">游历山水 <span class="num">·32</span></span>
+  <span class="wy-legend-chip c-private">家事私情 <span class="num">·14</span></span>
+  <span class="wy-legend-chip c-times">时局天下 <span class="num">·22</span></span>
+  <span class="wy-legend-chip c-mood">情感心境 <span class="num">·32</span></span>
+</div>
+
+<!-- 作品卡网格 -->
+<div class="wy-grid">
+
+  <!-- 作品 1: 传世逆境之作 -->
+  <div class="wy-card c-adversity preserved">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">钱谦益</div>
+        <div class="wy-tab-date">咸通八年 · 秋</div>
+      </div>
+      <div class="wy-tab-seal">朱</div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">谪居金陵感秋</span>
+        <span class="wy-genre-chip">七律</span>
+        <span class="wy-subtype">感怀</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">逆境贬谪</span>
+        <span class="wy-loc">金陵</span>
+        <span class="wy-mood">孤寂独居</span>
+      </div>
+      <div class="wy-excerpt elegant">秋来独坐江楼上，白发三千一夜生。
+万里长风吹不尽，故山松菊待归耕。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="val">92</span>
+        </span>
+        <span class="wy-risk medium">政险 · 中</span>
+        <span class="wy-tag">抒怀</span>
+        <span class="wy-tag">讽时</span>
+      </div>
+      <div class="wy-ctx">被贬金陵后感秋抒怀，以松菊自比寄托归隐之志。朝臣争相传抄，北地亦有刻本流出。</div>
+      <div class="wy-implicit">以"白发""故山"暗讽党争倾轧，时人解为借古抒愤。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn">传 抄</button>
+        <button class="wy-btn danger">查 禁</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 2: 科举登科 -->
+  <div class="wy-card c-career">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">倪元璐</div>
+        <div class="wy-tab-date">咸通七年 · 春</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">登第赋</span>
+        <span class="wy-genre-chip">赋</span>
+        <span class="wy-subtype">应制</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">科举宦途</span>
+        <span class="wy-loc">京师 · 贡院</span>
+        <span class="wy-mood">得意狂喜</span>
+      </div>
+      <div class="wy-excerpt fu">金榜题名兮，紫殿春风。
+御笔亲点兮，荣耀先宗。
+三年磨砺兮，一朝登庸。
+丹墀陈策兮，共沐皇恩。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star d">★</span>
+          <span class="val">76</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">颂圣</span>
+      </div>
+      <div class="wy-ctx">新科进士题名后奉旨撰赋，情辞恳切，颇得圣心。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn">传 抄</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 3: 游历山水 · 传世 -->
+  <div class="wy-card c-travel preserved">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">徐光启</div>
+        <div class="wy-tab-date">咸通六年 · 夏</div>
+      </div>
+      <div class="wy-tab-seal">印</div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">登太行山绝顶望</span>
+        <span class="wy-genre-chip">五古</span>
+        <span class="wy-subtype">纪游</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">游历山水</span>
+        <span class="wy-loc">太行 · 绝顶</span>
+        <span class="wy-mood">壮志难酬</span>
+      </div>
+      <div class="wy-excerpt elegant">绝顶望天下，山河一气连。
+风云足下起，日月胸中悬。
+万里天地阔，此身如鸿毛。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="val">88</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">山水</span>
+        <span class="wy-tag">雄浑</span>
+      </div>
+      <div class="wy-ctx">出使北边途经太行，登绝顶极目远望，感天地之大而志未酬，遂作此篇。后世辑入《山河吟草》。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn">传 抄</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 4: 时局天下 · 查禁 -->
+  <div class="wy-card c-times forbidden">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">张岱</div>
+        <div class="wy-tab-date">咸通八年 · 冬</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">哀民七章</span>
+        <span class="wy-genre-chip">歌行</span>
+        <span class="wy-subtype">讽谕</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">时局天下</span>
+        <span class="wy-loc">山阴</span>
+        <span class="wy-mood">壮志难酬</span>
+      </div>
+      <div class="wy-excerpt">田园空兮稼穑废，官租迫兮啼饥寒。
+朱门酒肉兮未曾断，白骨露野兮何人葬。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="val">85</span>
+        </span>
+        <span class="wy-risk high">政险 · 高</span>
+        <span class="wy-tag">讽谕</span>
+        <span class="wy-tag">针砭</span>
+      </div>
+      <div class="wy-ctx">江南大饥之年所作，七章叠唱，直陈民瘼。</div>
+      <div class="wy-implicit">以"朱门酒肉""白骨露野"暗讽当朝赋税苛峻，祸及生民。已下诏查禁，见者私藏。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn">解 禁</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 5: 情感心境 词 -->
+  <div class="wy-card c-mood">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">周后</div>
+        <div class="wy-tab-date">咸通八年 · 春</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">如梦令 · 春夜</span>
+        <span class="wy-genre-chip">词</span>
+        <span class="wy-subtype">闺怨</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">情感心境</span>
+        <span class="wy-loc">坤宁宫</span>
+        <span class="wy-mood">一时感触</span>
+      </div>
+      <div class="wy-excerpt elegant">昨夜春风细雨，
+梦里瑶台觐主。
+醒后已三更，
+孤月低窗未去。
+人去，人去，
+空锁一帘残絮。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star d">★</span>
+          <span class="val">72</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">婉约</span>
+      </div>
+      <div class="wy-ctx">后妃私作，偶得圣览，未广传。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 6: 任上施政 · 政声之作 -->
+  <div class="wy-card c-duty">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">卢象升</div>
+        <div class="wy-tab-date">咸通八年 · 秋</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">秋日阅武</span>
+        <span class="wy-genre-chip">七绝</span>
+        <span class="wy-subtype">纪实</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">任上施政</span>
+        <span class="wy-loc">宣府 · 校场</span>
+        <span class="wy-mood">神来之作</span>
+      </div>
+      <div class="wy-excerpt elegant">校场秋风猎旆明，
+鼓声动地起先声。
+九千健儿齐拜舞，
+万里长风尽振鞭。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star d">★</span>
+          <span class="val">78</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">边塞</span>
+        <span class="wy-tag">豪壮</span>
+      </div>
+      <div class="wy-ctx">督师宣府阅武后即兴所作，军中传诵。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn">传 抄</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分组：社交酬酢 -->
+  <div class="wy-grp-hdr" style="--grp-c:var(--amber-400);">
+    社 交 酬 酢　<span style="color:var(--ink-300);font-size:10.5px;font-style:italic;letter-spacing:0.1em;">— 酬唱赠答 · 送别饯行</span>
+    <span class="cnt">3 篇</span>
+  </div>
+
+  <!-- 作品 7: 社交酬酢 酬唱 -->
+  <div class="wy-card c-social">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">温体仁</div>
+        <div class="wy-tab-date">咸通七年 · 冬</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">次韵答尚书</span>
+        <span class="wy-genre-chip">七律</span>
+        <span class="wy-subtype">酬唱</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">社交酬酢</span>
+        <span class="wy-loc">京师 · 相府</span>
+        <span class="wy-mood">得意狂喜</span>
+      </div>
+      <div class="wy-excerpt elegant">朝罢归来月未低，
+相逢只说奉天恩。
+清风明月三秋意，
+白发青衫两地身。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star d">★</span><span class="star d">★</span>
+          <span class="val">62</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">酬赠</span>
+      </div>
+      <div class="wy-ctx">与户部尚书毕自严唱和，以酬其前日赠诗。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作品 8: 家事私情 -->
+  <div class="wy-card c-private">
+    <div class="wy-tab-col">
+      <div class="wy-tab-scroll">
+        <div class="wy-tab-author">袁崇焕</div>
+        <div class="wy-tab-date">咸通六年 · 冬</div>
+      </div>
+    </div>
+    <div class="wy-main-col">
+      <div class="wy-hdr-row">
+        <span class="wy-title-w">悼亡妻文</span>
+        <span class="wy-genre-chip">祭</span>
+        <span class="wy-subtype">哀祭</span>
+      </div>
+      <div class="wy-meta-row">
+        <span class="wy-cat-chip">家事私情</span>
+        <span class="wy-loc">宁远</span>
+        <span class="wy-mood">孤寂独居</span>
+      </div>
+      <div class="wy-excerpt wen">嗟呼！呜呼哀哉！十年夫妇，一夕永诀。
+灯前共读，镜里梳妆，音容宛在，笑貌犹存。
+独坐书斋，月上东窗，唯见孤影相吊。</div>
+      <div class="wy-assess">
+        <span class="wy-quality">
+          <span class="lbl">品</span>
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star d">★</span>
+          <span class="val">75</span>
+        </span>
+        <span class="wy-risk low">政险 · 低</span>
+        <span class="wy-tag">祭文</span>
+        <span class="wy-tag">真挚</span>
+      </div>
+      <div class="wy-ctx">镇守宁远时夫人病殁，闻讯悲恸，于书斋即挥笔成文。</div>
+      <div class="wy-actions">
+        <button class="wy-btn">赏 析</button>
+        <button class="wy-btn">题 序</button>
+        <button class="wy-btn">追 和</button>
+        <button class="wy-btn primary">详 情</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+</div>
+
+<div class="legend">
+  左侧<span class="k">题签卷轴</span>载作者与年时；主栏依次为<span class="k">标题</span>＋<span class="k">文体徽</span>＋<span class="k">触发类别</span>＋<span class="k">诗文节选</span>＋<span class="k">品鉴行</span>(星·政险·标签)＋<span class="k">创作背景</span>＋<span class="m">政治暗讽</span>＋操作。<br>
+  传世名作有<span class="k">金底"传 世"</span>徽记；<span class="m">"查 禁"</span>之作灰度并加朱印；政险按 <span class="c">低·青</span>／<span class="k">中·琥</span>／<span class="m">高·朱</span> 分色。
+</div>
+
+</div>
+</body>
+</html>

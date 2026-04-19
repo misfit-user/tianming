@@ -3921,92 +3921,93 @@ function _ltRenderLetterCard(l, target) {
   var sentDate = (typeof getTSText === 'function') ? getTSText(l.sentTurn) : '第' + l.sentTurn + '回合';
   var urgLabels = { normal:'驿递', urgent:'加急', extreme:'八百里加急' };
   var typeInfo = LETTER_TYPES[l.letterType] || LETTER_TYPES.personal;
-  var cardClass = 'letter-card';
-  if (isOutgoing) cardClass += ' letter-outgoing'; else cardClass += ' letter-incoming';
-  if (l.status === 'intercepted' || l.status === 'intercepted_forging') cardClass += ' letter-intercepted';
-  if (l._isForged) cardClass += ' letter-forged';
-  if ((GM._letterSuspects||[]).indexOf(l.id) >= 0) cardClass += ' letter-suspect';
-  if (l._starred) cardClass += ' letter-starred';
+  var _intercepted = (l.status === 'intercepted' || l.status === 'intercepted_forging');
+  var _inTransit = (l.status === 'traveling' || l.status === 'replying');
+  var _lost = (l.status === 'intercepted' || (l.status === 'traveling' && GM.turn > l.deliveryTurn + 1));
+
+  // 外层 msg 类
+  var msgCls = 'hy-msg ';
+  if (_lost) msgCls += 'hy-msg-lost';
+  else if (_intercepted) msgCls += 'hy-msg-intercept';
+  else if (_inTransit) msgCls += 'hy-msg-transit';
+  else if (isOutgoing) msgCls += 'hy-msg-player';
+  else msgCls += 'hy-msg-npc';
+
+  // 印章类
+  var sealCls = 'personal';
+  if (/secret|decree/.test(l.letterType||'')) sealCls = 'secret';
+  else if (/military|army|order/.test(l.letterType||'')) sealCls = 'military';
+  var sealChar = typeInfo.label ? String(typeInfo.label).charAt(0) : (isOutgoing ? '\u8C15' : '\u62A5');
+
   // 标记已读
   if (!isOutgoing && !l._playerRead) l._playerRead = true;
 
-  html += '<div class="' + cardClass + '">';
-  html += '<div class="letter-header">';
-  if (isOutgoing) {
-    html += '<div class="letter-direction dir-out">〔去函〕' + sentDate;
-    if (l._multiRecipients) html += ' · 群发' + l._multiRecipients + '人';
-    html += '</div>';
-  } else {
-    html += '<div class="letter-direction dir-in">〔来函〕' + sentDate + '</div>';
-  }
-  html += '<div class="letter-meta">';
-  html += '<span class="letter-type-tag ' + typeInfo.css + '">' + typeInfo.label + '</span>';
-  if (l._cipher && l._cipher !== 'none') html += '<span class="letter-type-tag lt-type-secret" style="margin-left:2px;">' + (LETTER_CIPHERS[l._cipher]||{}).label + '</span>';
-  if (l._tokenUsed) html += '<span class="letter-type-tag lt-type-military" style="margin-left:2px;">' + (LETTER_TOKENS[l._tokenUsed]||{}).label + '</span>';
-  html += '<br>' + (urgLabels[l.urgency]||'驿递');
-  if (l._sendMode === 'multi_courier') html += ' · 多路';
-  if (l._sendMode === 'secret_agent') html += ' · 密使' + (l._agentName ? '(' + escHtml(l._agentName) + ')' : '');
-  html += '</div></div>';
-  // 正文
-  html += '<div class="letter-body wd-selectable">' + escHtml(l.content) + '</div>';
-  // 底部
-  html += '<div class="letter-footer">';
-  var statusText = _ltGetStatusText(l);
-  html += '<div class="letter-status">' + statusText + '</div>';
-  html += '<div class="letter-actions">';
-  // 被中书阻止的信件：改用密旨绕过
-  if (l.status === 'blocked' && isOutgoing) {
-    html += '<button class="bt bp bsm" onclick="_ltBypassBlock(\'' + l.id + '\')" title="绕过中书门下，改用密旨直发">改用密旨</button>';
-  }
-  // 在途信件：追回按钮
-  if (l.status === 'traveling' && isOutgoing && !l._recallSent) {
-    html += '<button class="bt bsm" onclick="_ltRecall(\'' + l.id + '\')" title="派快马追回信使">追回</button>';
-  }
-  // 回信的操作按钮
-  if ((l.status === 'returned' || l.status === 'intercepted_forging') && l.reply && isOutgoing) {
-    if ((GM._letterSuspects||[]).indexOf(l.id) < 0) {
-      html += '<button class="bt bsm" onclick="_ltSuspect(\'' + l.id + '\')" title="标记此回信可疑">存疑</button>';
-    }
-    html += '<button class="bt bsm" onclick="_ltVerify(\'' + l.id + '\')" title="再遣信使核实">遣使核实</button>';
-  }
-  // NPC来函：回书 + 摘入建议库
-  if (!isOutgoing && l.status === 'returned' && l._npcInitiated) {
-    if (!l._playerReplied) {
-      html += '<button class="bt bp bsm" onclick="_ltReplyToNpc(\'' + l.id + '\')" title="回复此函">回书</button>';
-    }
-    html += '<button class="bt bsm" onclick="_ltExcerptToEdict(\'' + l.id + '\')" title="划选信中文字后点此，摘入诏书建议库">摘入建议库</button>';
-  }
-  // 标记重要
-  html += '<button class="bt bsm" onclick="_ltStar(\'' + l.id + '\')" style="font-size:0.6rem;">' + (l._starred ? '★' : '☆') + '</button>';
-  html += '</div></div>';
+  html += '<div class="' + msgCls + '"><span class="hy-msg-tag"></span>';
+  html += '<div class="hy-letter">';
+  html += '<div class="seal ' + sealCls + '">' + sealChar + '</div>';
+  html += '<div class="header">';
+  html += '<span class="type-pill">' + escHtml(typeInfo.label || '\u4E66\u51FD') + '</span>';
+  html += '<span>' + escHtml(urgLabels[l.urgency] || '\u9A7F\u9012') + '</span>';
+  if (l._cipher && l._cipher !== 'none') html += '<span>' + escHtml((LETTER_CIPHERS[l._cipher]||{}).label || l._cipher) + '</span>';
+  if (l._tokenUsed) html += '<span>' + escHtml((LETTER_TOKENS[l._tokenUsed]||{}).label || l._tokenUsed) + '</span>';
+  if (l._sendMode === 'multi_courier') html += '<span>\u591A\u8DEF</span>';
+  if (l._sendMode === 'secret_agent') html += '<span>\u5BC6\u4F7F' + (l._agentName ? '(' + escHtml(l._agentName) + ')' : '') + '</span>';
+  if (l._multiRecipients) html += '<span>\u7FA4\u53D1' + l._multiRecipients + '\u4EBA</span>';
+  html += '<span class="date">' + escHtml(sentDate) + '</span>';
   html += '</div>';
-
-  // 回信卡片
+  // 正文
+  html += '<div class="body wd-selectable">' + escHtml(l.content || '') + '</div>';
+  // 署名
+  var _sig = isOutgoing ? '\u6731\u624B\u4E66' : ('\u81E3 ' + escHtml(l.from||target) + ' \u987F\u9996');
+  html += '<div class="signature">' + escHtml(sentDate) + '\u00B7' + _sig + '</div>';
+  // 回信（朱笔批注/来回信内容）
   if (l.reply && (l.status === 'returned' || l.status === 'intercepted_forging') && isOutgoing) {
     var replyDate = (typeof getTSText === 'function') ? getTSText(l.replyTurn||GM.turn) : '';
-    var rc = 'letter-card letter-incoming';
-    if (l._isForged) rc += ' letter-forged';
-    if ((GM._letterSuspects||[]).indexOf(l.id) >= 0) rc += ' letter-suspect';
-    html += '<div class="' + rc + '">';
-    html += '<div class="letter-header"><div class="letter-direction dir-in">〔回函〕' + (replyDate||sentDate) + '</div>';
-    html += '<div class="letter-meta">' + escHtml(l.to||target) + '</div></div>';
-    html += '<div class="letter-body">' + escHtml(l.reply) + '</div>';
+    html += '<div class="reply">';
+    html += '<div class="reply-label">\u56DE \u4E66 \u00B7 ' + escHtml(l.to||target) + (replyDate ? '\u00B7' + escHtml(replyDate) : '') + '</div>';
+    html += escHtml(l.reply);
     if (l._isForged && (GM._letterSuspects||[]).indexOf(l.id) >= 0) {
-      html += '<div style="font-size:0.65rem;color:var(--amber-400);margin-top:var(--space-1);">⚠ 已标记存疑——此信内容真伪待核</div>';
+      html += '<div style="font-size:11px;color:var(--amber-400);margin-top:4px;font-style:normal;">\u26A0 \u5DF2\u6807\u8BB0\u5B58\u7591\u2014\u2014\u6B64\u4FE1\u5185\u5BB9\u771F\u4F2A\u5F85\u6838</div>';
     }
     if (l._forgedRevealed) {
-      html += '<div style="font-size:0.65rem;color:var(--vermillion-400);margin-top:var(--space-1);font-weight:var(--weight-bold);">⚠ 已证实为伪造！</div>';
+      html += '<div style="font-size:11px;color:var(--vermillion-400);margin-top:4px;font-weight:bold;font-style:normal;">\u26A0 \u5DF2\u8BC1\u5B9E\u4E3A\u4F2A\u9020\uFF01</div>';
     }
     html += '</div>';
+  }
+  html += '</div>'; // .hy-letter
+
+  // 操作按钮（信件动作）
+  var acts = '';
+  if (l.status === 'blocked' && isOutgoing) {
+    acts += '<button class="hy-filter-btn" style="color:var(--vermillion-400);border-color:var(--vermillion-400);" onclick="_ltBypassBlock(\'' + l.id + '\')" title="\u7ED5\u8FC7\u4E2D\u4E66\uFF0C\u6539\u7528\u5BC6\u65E8\u76F4\u53D1">\u6539\u7528\u5BC6\u65E8</button>';
+  }
+  if (l.status === 'traveling' && isOutgoing && !l._recallSent) {
+    acts += '<button class="hy-filter-btn" onclick="_ltRecall(\'' + l.id + '\')" title="\u6D3E\u5FEB\u9A6C\u8FFD\u56DE\u4FE1\u4F7F">\u8FFD\u3000\u56DE</button>';
+  }
+  if ((l.status === 'returned' || l.status === 'intercepted_forging') && l.reply && isOutgoing) {
+    if ((GM._letterSuspects||[]).indexOf(l.id) < 0) {
+      acts += '<button class="hy-filter-btn" onclick="_ltSuspect(\'' + l.id + '\')" title="\u6807\u8BB0\u6B64\u56DE\u4FE1\u53EF\u7591">\u5B58\u3000\u7591</button>';
+    }
+    acts += '<button class="hy-filter-btn" onclick="_ltVerify(\'' + l.id + '\')" title="\u518D\u9063\u4FE1\u4F7F\u6838\u5B9E">\u9063\u4F7F\u6838\u5B9E</button>';
+  }
+  if (!isOutgoing && l.status === 'returned' && l._npcInitiated) {
+    if (!l._playerReplied) {
+      acts += '<button class="hy-filter-btn active" onclick="_ltReplyToNpc(\'' + l.id + '\')" title="\u56DE\u590D\u6B64\u51FD">\u56DE\u3000\u4E66</button>';
+    }
+    acts += '<button class="hy-filter-btn" onclick="_ltExcerptToEdict(\'' + l.id + '\')" title="\u5212\u9009\u4FE1\u4E2D\u6587\u5B57\u540E\u70B9\u6B64\uFF0C\u6458\u5165\u8BCF\u4E66\u5EFA\u8BAE\u5E93">\u6458\u3000\u5165</button>';
+  }
+  acts += '<button class="hy-filter-btn' + (l._starred?' active':'') + '" onclick="_ltStar(\'' + l.id + '\')" title="\u6807\u8BB0\u91CD\u8981">' + (l._starred ? '\u2605' : '\u2606') + '</button>';
+
+  if (acts) {
+    html += '<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;' + (isOutgoing?'justify-content:flex-end;':'') + '">' + acts + '</div>';
   }
 
   // 信使状态条
-  if (l.status === 'traveling' || l.status === 'delivered' || l.status === 'replying') {
-    var _cTxt = l.status === 'traveling' ? '信使策马向' + escHtml(l.toLocation||'远方') + '……' :
-                l.status === 'delivered' ? escHtml(l.to||l.from) + '已收函，正在执笔回书……' : '回函信使在归途中……';
-    if (l._recallSent) _cTxt = '追回信使已派出……';
-    html += '<div class="lt-courier-status">' + _cTxt + '</div>';
+  if (l.status === 'traveling' || l.status === 'delivered' || l.status === 'replying' || l.status === 'blocked') {
+    var _cTxt = _ltGetStatusText(l);
+    html += '<div style="font-size:10.5px;color:var(--ink-300);margin-top:4px;font-style:italic;letter-spacing:0.08em;' + (isOutgoing?'text-align:right;':'') + '">\u21A3 ' + escHtml(_cTxt) + '</div>';
   }
+  html += '</div>'; // .hy-msg
   return html;
 }
 

@@ -4777,17 +4777,14 @@ async function startDianshi() {
   var maxRetries = 3;
   var lastErr = null;
   for (var attempt = 1; attempt <= maxRetries; attempt++) {
-    var basePct = (attempt - 1) * 30;
     try {
-      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u68C0\u7D22\u5386\u53F2\u540D\u81E3\u5019\u9009\u2026', basePct + 5);
-      // 分步进度（视觉反馈）——在 AI 调用前推一下条
-      await new Promise(function(r){ setTimeout(r, 200); });
-      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u751F\u6210 20 \u5377\u5B8C\u6574\u7B54\u5377 + \u8003\u5B98\u5EFA\u8BAE\u2026', basePct + 15);
+      // generateDianshiResults 内部自行推进进度条（5→95%）·此处仅标记尝试
+      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u542F\u52A8\u6BBE\u8BD5\u2026', 2);
       await generateDianshiResults();
       if (!exam.dianshiResults || exam.dianshiResults.length < 3) {
         throw new Error('\u6709\u6548\u7B54\u5377\u5C11\u4E8E 3 \u5377');
       }
-      _kejuUpdateDianshiProgress('\u2705 \u5171 ' + exam.dianshiResults.length + ' \u5377\u7B54\u5377\u5C31\u7EEA\u00B7\u7B49\u9661\u4E0B\u94A6\u5B9A\u4E09\u7532', 100);
+      _kejuUpdateDianshiProgress('\u2705 \u5171 ' + exam.dianshiResults.length + ' \u5377\u7B54\u5377\u00B7\u4E3B\u8003\u6279\u8BED\u5DF2\u62DF\u00B7\u8BF7\u94A6\u5B9A\u4E09\u7532', 100);
       await new Promise(function(r){ setTimeout(r, 700); });
       _kejuCloseDianshiProgress();
       exam.stage = 'finished';
@@ -4797,7 +4794,7 @@ async function startDianshi() {
       lastErr = e;
       console.error('[\u79D1\u4E3E\u00B7\u6BBE\u8BD5] \u7B2C' + attempt + '\u6B21\u5931\u8D25:', e);
       if (attempt < maxRetries) {
-        _kejuUpdateDianshiProgress('\u26A0 \u7B2C ' + attempt + ' \u6B21\u5931\u8D25\u00B7' + ((e && e.message) || '\u672A\u77E5\u9519\u8BEF') + '\u00B7 2 \u79D2\u540E\u91CD\u8BD5\u2026', basePct + 25);
+        _kejuUpdateDianshiProgress('\u26A0 \u7B2C ' + attempt + ' \u6B21\u5931\u8D25\u00B7' + ((e && e.message) || '\u672A\u77E5\u9519\u8BEF') + '\u00B7 2 \u79D2\u540E\u91CD\u8BD5\u2026', 50);
         await new Promise(function(r){ setTimeout(r, 2000); });
       } else {
         _kejuUpdateDianshiProgress('\u274C \u5DF2\u91CD\u8BD5 ' + maxRetries + ' \u6B21\u7686\u5931\u8D25\u00B7\u8BF7\u68C0\u67E5 AI \u914D\u7F6E\u6216\u91CD\u8BD5', 100);
@@ -4810,7 +4807,11 @@ async function startDianshi() {
 }
 
 /**
- * 生成殿试结果（AI生成前十名考生及答卷）
+ * 生成殿试结果（v6·多轮分批·每卷足额字数 + 主考官批语）
+ * 流程：
+ *   1) meta 调用：AI 生成 20 名考生的基本档案（无 fullAnswer），保证每人都有
+ *   2) 分批答卷：4 批 × 5 人 = 20 卷，每批单独 AI 调用，保证 fullAnswer 足额
+ *   3) 主考官批语：一次 AI 调用为 20 卷各批一则 30-80 字"批语"
  */
 async function generateDianshiResults() {
   var exam = P.keju.currentExam;
@@ -4823,7 +4824,8 @@ async function generateDianshiResults() {
   var _dyn = P.dynasty || P.era || (typeof scriptData !== 'undefined' && scriptData && scriptData.dynasty) || '';
   var _year = GM.year || (P.time && P.time.year) || 1600;
 
-  // v5·F2·先检索历史名臣
+  // ═══ F2·先检索历史名臣 ═══
+  if (typeof _kejuUpdateDianshiProgress === 'function') _kejuUpdateDianshiProgress('\u68C0\u7D22\u5386\u53F2\u540D\u81E3\u79CD\u5B50\u2026', 5);
   var historicalCands = await pickHistoricalCandidates(exam);
   var histNamesStr = historicalCands.length
     ? historicalCands.map(function(h){ return h.name + '(' + h.age + '\u5C81\u00B7' + h.class + '\u00B7' + (h.party||'\u65E0\u515A') + ')'; }).join('\u3001')
@@ -4834,54 +4836,34 @@ async function generateDianshiResults() {
     return c && c.alive !== false && (c.officialTitle || c.title || c.spouse || c.isPlayer);
   }).map(function(c){ return c.name; });
 
-  // v5·F3·全 20 卷 + 字数浮动 + 史料种子
-  var prompt = '\u4F60\u662F' + _dyn + '\u79D1\u4E3E\u6BBE\u8BD5 AI\u3002\u4E3A ' + _year + ' \u5E74\u6BBE\u8BD5\u751F\u6210\u524D ' + _topCount + ' \u540D\u8003\u751F\u7684\u5B8C\u6574\u6863\u6848+\u7B54\u5377\u3002\n\n' +
-    '\u3010\u786C\u89C4\u5219\u3011\u8003\u751F\u5FC5\u987B\u662F\u5E03\u8863/\u76D1\u751F/\u4E3E\u4EBA/\u672A\u51FA\u4ED5\u7684\u4E66\u751F\u00B7\u7EDD\u4E0D\u53EF\u4E3A\u5DF2\u4EFB\u5B98\u8005\uFF08\u90FD\u5FA1\u53F2/\u5C1A\u4E66/\u5927\u5B66\u58EB/\u90E8\u4F8D\u90CE/\u5C06\u519B/\u540E\u5983\u7B49\u5747\u4E0D\u53EF\uFF09\u3002\n' +
-    (_officialNames.length ? '\u3010\u7981\u6B62\u59D3\u540D\u3011\u4EE5\u4E0B\u5DF2\u4EFB\u5B98\u8005\u7EDD\u4E0D\u53EF\u51FA\u73B0\uFF1A' + _officialNames.slice(0, 60).join('\u3001') + (_officialNames.length>60?'\u7B49':'') + '\n' : '') +
-    '\u3010\u6BBE\u8BD5\u9898\u76EE\u3011\n' + (exam.playerQuestion || '(\u7A7A)') + '\n\n' +
-    (_subjects ? '\u3010\u8003\u8BD5\u79D1\u76EE\u3011' + _subjects + '\n' : '') +
-    (_rules ? '\u3010\u8003\u8BD5\u89C4\u5219\u3011' + _rules + '\n' : '') +
-    '\u3010\u5386\u53F2\u540D\u81E3\u79CD\u5B50\u3011' + histNamesStr + '\n' +
-    (historicalCands.length ? '\u5386\u53F2\u540D\u81E3\u5FC5\u987B\u51FA\u73B0\u5728\u524D 20 \u540D\u5185\u00B7\u4F7F\u7528\u5176\u771F\u5B9E\u53F2\u6599\u4E2D\u7684\u5B57\u53F7\u3001\u7C4D\u8D2F\u3001\u5E74\u9F84\u3001\u7ACB\u573A\u00B7\u7B54\u5377\u53CD\u6620\u5176\u771F\u5B9E\u6587\u98CE\uFF08\u5982\u500D\u5143\u7490\u521A\u76F4\u3001\u9EC4\u9053\u5468\u5B66\u8005\u6C14\uFF09\n' : '') +
-    '\n\u3010\u751F\u6210\u8981\u6C42\u3011\n' +
-    '1. \u5171 ' + _topCount + ' \u540D\u8003\u751F\u3002\u7B2C1=\u72B6\u5143\uFF0C2=\u699C\u773C\uFF0C3=\u63A2\u82B1\u3002\n' +
-    '2. \u6BCF\u540D\u5B57\u6BB5\uFF1Aname/age(20-55)/origin/ethnicity/class(\u58EB\u65CF|\u5BD2\u95E8|\u5546\u8D3E|\u8F7B\u8F66\u90FD\u5C09\u540E\u7B49)/party(\u53EF\u4E3A\u65E0\u515A)\n' +
-    '3. fullAnswer\uFF1A\u5B8C\u6574\u7B54\u5377\u4E3B\u4F53 800-1200 \u5B57\uFF08\u624D\u534E\u4F73\u8005 1200-1500\uFF0C\u5BD2\u95E8\u82E6\u8BFB 1000\uFF0C\u5E73\u5EB8 600-800\uFF0C\u504F\u79D1\u6781\u7AEF 500\u6216 1500\uFF09\n' +
-    '4. style: \u7B54\u5377\u98CE\u683C\uFF08\u7B56\u8BBA/\u8BE6\u7ECF/\u660E\u7406/\u5F53\u4EE3\uFF09\n' +
-    '5. personalityHint: \u4ECE\u7B54\u5377\u53EF\u63A8\u5BFC\u7684\u6027\u683C 20 \u5B57\n' +
-    '6. evaluation: \u8003\u5B98\u7EFC\u5408\u8BC4\u8BED 40-60 \u5B57\n' +
-    '7. score: 0-100 \u7EFC\u5408\u5206\uFF08\u4E09\u7532>90\uFF0C\u4E8C\u7532 80-90\uFF0C\u4E09\u7532\u540C\u8FDB\u58EB 65-80\uFF09\n' +
-    '8. \u82E5\u5C5E\u5386\u53F2\u540D\u81E3\uFF1AisHistorical=true\uFF0C\u5E76\u5305\u542B shiliao \u5B57\u6BB5\uFF08\u8BE5\u4EBA\u771F\u5B9E\u53F2\u4E66\u8BB0\u8F7D\u539F\u6587\u6458\u5F15 80-200 \u5B57\uFF09+ nativeEra + timeAnomaly(\u82E5\u8DE8\u671D\u4EE3)\n' +
-    '9. \u59D3\u540D\u3001\u7C4D\u8D2F\u3001\u5C0F\u4E60\u6027\u683C\u9700\u7B26\u5408\u8BE5\u671D\u4EE3\u65F6\u4EE3\u7279\u5F81\uFF08\u5982\u5510\u4EE3\u53D6\u540D\u4E0E\u660E\u6E05\u4E0D\u540C\uFF09\n\n' +
-    '\u8FD4\u56DE JSON \u6570\u7EC4\uFF1A[{"rank":1,"name":"...","age":25,"origin":"...","ethnicity":"\u6C49","class":"\u5BD2\u95E8","party":"","style":"\u7B56\u8BBA","personalityHint":"\u521A\u76F4\u5584\u8BBA","fullAnswer":"...","evaluation":"...","score":92,"isHistorical":false}, ...]\n\u53EA\u8F93\u51FA JSON \u6570\u7EC4\u3002';
+  var _ctxHeader =
+    '\u3010\u786C\u89C4\u5219\u3011\u8003\u751F\u5FC5\u987B\u662F\u5E03\u8863/\u76D1\u751F/\u4E3E\u4EBA/\u672A\u51FA\u4ED5\u7684\u4E66\u751F\u00B7\u7EDD\u4E0D\u53EF\u4E3A\u5DF2\u4EFB\u5B98\u8005\u3002\n'
+    + (_officialNames.length ? '\u3010\u7981\u6B62\u59D3\u540D\u3011' + _officialNames.slice(0, 60).join('\u3001') + (_officialNames.length>60?'\u7B49':'') + '\n' : '')
+    + '\u3010\u6BBE\u8BD5\u9898\u76EE\u3011' + (exam.playerQuestion || '(\u7A7A)') + '\n'
+    + (_subjects ? '\u3010\u8003\u8BD5\u79D1\u76EE\u3011' + _subjects + '\n' : '')
+    + (_rules ? '\u3010\u8003\u8BD5\u89C4\u5219\u3011' + _rules + '\n' : '')
+    + '\u3010\u5386\u53F2\u540D\u81E3\u79CD\u5B50\u3011' + histNamesStr + '\n'
+    + (historicalCands.length ? '\u5386\u53F2\u540D\u81E3\u5E94\u5206\u5E03\u524D 20 \u540D\u5185\u00B7\u4F7F\u7528\u5176\u771F\u5B9E\u5B57\u53F7\u7C4D\u8D2F\u5E74\u9F84\u7ACB\u573A\n' : '');
 
-  // token 上限：读取通用设置
-  var _tokBudget;
-  if (P.conf && P.conf.maxOutputTokens && P.conf.maxOutputTokens > 0) _tokBudget = P.conf.maxOutputTokens;
-  else if (P.conf && P.conf._detectedMaxOutput && P.conf._detectedMaxOutput > 0) _tokBudget = P.conf._detectedMaxOutput;
-  else _tokBudget = 40000;  // 20 卷 × 800-1200 字需要大 token
-
-  var result = await callAISmart(prompt, _tokBudget, { maxRetries: 2 });
-
-  var candidates = null;
-  try {
-    var parsed = (typeof extractJSON === 'function') ? extractJSON(result) : null;
-    if (Array.isArray(parsed)) candidates = parsed;
-    else if (parsed && Array.isArray(parsed.candidates)) candidates = parsed.candidates;
-    else if (parsed && Array.isArray(parsed.results)) candidates = parsed.results;
-  } catch(_e) {}
-  if (!candidates) {
-    var cleaned = result.replace(/```json|```/g, '').trim();
-    var jm = cleaned.match(/\[[\s\S]*\]/);
-    if (jm) {
-      try { candidates = JSON.parse(jm[0]); } catch(_je) {
-        console.warn('[科举·F3] JSON 解析失败:', _je.message, '原文前 400 字:', cleaned.slice(0, 400));
-      }
-    }
+  // ═══ Step 1: meta 调用 (20 人档案，无 fullAnswer) ═══
+  if (typeof _kejuUpdateDianshiProgress === 'function') _kejuUpdateDianshiProgress('\u751F\u6210 ' + _topCount + ' \u540D\u8003\u751F\u6863\u6848\u2026', 15);
+  var metaPrompt = '\u4F60\u662F' + _dyn + '\u79D1\u4E3E\u6BBE\u8BD5 AI\u3002\u4E3A ' + _year + ' \u5E74\u6BBE\u8BD5\u751F\u6210\u524D ' + _topCount + ' \u540D\u8003\u751F\u7684\u57FA\u672C\u6863\u6848\uFF08\u6682\u4E0D\u5199\u7B54\u5377\uFF09\u3002\n\n'
+    + _ctxHeader
+    + '\n\u3010\u8981\u6C42\u3011\n'
+    + '1. \u5171 ' + _topCount + ' \u540D\u8003\u751F\u3002\u7B2C1=\u72B6\u5143\uFF0C2=\u699C\u773C\uFF0C3=\u63A2\u82B1\u3002\n'
+    + '2. \u6BCF\u540D\uFF1Aname/age(20-55)/origin/ethnicity/class(\u58EB\u65CF|\u5BD2\u95E8|\u5546\u8D3E|\u5176\u4ED6)/party(\u53EF\u7A7A)/style(\u7B56\u8BBA/\u8BE6\u7ECF/\u660E\u7406/\u5F53\u4EE3)/personalityHint(20\u5B57)/score(0-100)/isHistorical/shiliao(\u5386\u53F2\u4EBA\u7269\u5FC5\u586B\u539F\u6587\u6458\u5F15)/nativeEra/timeAnomaly\n'
+    + '3. \u59D3\u540D\u7C4D\u8D2F\u9700\u7B26\u5408\u8BE5\u671D\u4EE3\u7279\u5F81\u3002\n\n'
+    + '\u8FD4\u56DE JSON \u6570\u7EC4\uFF0C\u6309 rank 1..' + _topCount + ' \u6392\u5E8F\uFF0C\u53EA\u8F93\u51FA JSON\u3002';
+  var _metaTok = (P.conf && P.conf.maxOutputTokens > 0) ? P.conf.maxOutputTokens : 6000;
+  var metaRaw = await callAISmart(metaPrompt, Math.min(_metaTok, 6000), { maxRetries: 2 });
+  var candidates = _parseJsonArr(metaRaw);
+  if (!Array.isArray(candidates) || candidates.length < 3) {
+    throw new Error('AI meta \u8FD4\u56DE\u65E0\u6548·\u8003\u751F\u6863\u6848\u751F\u6210\u5931\u8D25');
   }
-  if (!Array.isArray(candidates) || candidates.length === 0) {
-    throw new Error('AI 返回无法解析为考生数组');
-  }
+  // 保证 rank 字段
+  candidates.forEach(function(c, i){ if (!c.rank) c.rank = i + 1; });
+  candidates.sort(function(a,b){ return (a.rank||99) - (b.rank||99); });
+  candidates = candidates.slice(0, _topCount);
 
   // 后过滤·剔除已任官员/后妃/玩家
   var _offSet = {};
@@ -4901,11 +4883,121 @@ async function generateDianshiResults() {
   });
   if (candidates.length < 3) throw new Error('AI 返回有效考生不足 3 名（剔除已任官员后）');
 
+  // ═══ Step 2: 分批生成 fullAnswer（4 批 × 5 人 = 20） ═══
+  var BATCH_SIZE = 5;
+  var totalBatches = Math.ceil(candidates.length / BATCH_SIZE);
+  for (var b = 0; b < totalBatches; b++) {
+    var batch = candidates.slice(b*BATCH_SIZE, (b+1)*BATCH_SIZE);
+    var batchPct = 25 + Math.round(((b+0.5)/totalBatches) * 50);
+    if (typeof _kejuUpdateDianshiProgress === 'function') {
+      _kejuUpdateDianshiProgress('\u751F\u6210\u7B2C ' + (b+1) + '/' + totalBatches + ' \u6279\u7B54\u5377\uFF08\u7B2C ' + (b*BATCH_SIZE+1) + '-' + Math.min((b+1)*BATCH_SIZE, candidates.length) + ' \u540D\uFF09\u2026', batchPct);
+    }
+    var batchPrompt = '\u4F60\u662F' + _dyn + '\u6BBE\u8BD5\u7B54\u5377 AI\u3002\u4E3A\u4EE5\u4E0B ' + batch.length + ' \u540D\u8003\u751F\u751F\u6210\u5B8C\u6574\u7B54\u5377\u3002\n\n'
+      + '\u3010\u6BBE\u8BD5\u9898\u76EE\u3011\n' + (exam.playerQuestion || '(\u7A7A)') + '\n\n'
+      + '\u3010\u8003\u751F\u540D\u5355\u3011\n'
+      + batch.map(function(c){
+          var h = '';
+          if (c.isHistorical && c.shiliao) h = '\u2605\u5386\u53F2\u4EBA\u7269\u00B7\u53F2\u6599\uFF1A' + (c.shiliao||'').slice(0, 120);
+          return '\u7B2C' + c.rank + '\u540D\uFF1A' + c.name + '\uFF08' + (c.age||30) + '\u5C81\u00B7' + (c.origin||'') + '\u00B7' + (c.class||'\u5BD2\u95E8') + '\u00B7' + (c.party||'\u65E0\u515A') + '\u00B7\u98CE\u683C' + (c.style||'') + '\u00B7\u6027\u683C' + (c.personalityHint||'') + '\u00B7\u8BC4\u5206' + (c.score||75) + '\uFF09' + h;
+        }).join('\n') + '\n\n'
+      + '\u3010\u8981\u6C42\u3011\n'
+      + '1. \u4E3A\u6BCF\u540D\u751F\u6210 fullAnswer\uFF1A\u5B8C\u6574\u7B54\u5377 800-1500 \u5B57\uFF08\u624D\u534E\u4F73\u8005 1300-1500\uFF0C\u5BD2\u95E8\u82E6\u8BFB 1000-1200\uFF0C\u5E73\u5EB8 800-1000\uFF0C\u4F46\u4EFB\u4F55\u4EBA\u4E0D\u53EF\u77ED\u4E8E 600 \u5B57\uFF09\n'
+      + '2. \u4E3A\u6BCF\u540D\u751F\u6210 evaluation\uFF1A\u8003\u5B98\u7B80\u8BC4 40-80 \u5B57\n'
+      + '3. \u7B54\u5377\u987B\u53CD\u6620\u8003\u751F\u98CE\u683C/\u6027\u683C/\u7C4D\u8D2F/\u515A\u6D3E/\u8BC4\u5206\u7B49\u7EA7\n'
+      + '4. \u5386\u53F2\u4EBA\u7269\u6587\u98CE\u5FC5\u7B26\u5408\u53F2\u4E66\u8BB0\u8F7D\uFF08\u5982\u9752\u7490\u521A\u76F4\u3001\u9EC4\u9053\u5468\u5B66\u8005\u6C14\uFF09\n\n'
+      + '\u8FD4\u56DE JSON \u6570\u7EC4\uFF1A[{"rank":1,"name":"...","fullAnswer":"...","evaluation":"..."}, ...]\u00B7\u53EA\u8F93\u51FA JSON\u3002';
+    var _batchTok = (P.conf && P.conf.maxOutputTokens > 0) ? P.conf.maxOutputTokens : 16000;
+    _batchTok = Math.min(_batchTok, 16000);
+    try {
+      var batchRaw = await callAISmart(batchPrompt, _batchTok, { maxRetries: 2 });
+      var batchArr = _parseJsonArr(batchRaw);
+      if (Array.isArray(batchArr)) {
+        batchArr.forEach(function(r){
+          if (!r || !r.name) return;
+          var tgt = candidates.find(function(c){ return c.name === r.name || c.rank === r.rank; });
+          if (tgt) {
+            if (r.fullAnswer) tgt.fullAnswer = r.fullAnswer;
+            if (r.evaluation) tgt.evaluation = r.evaluation;
+          }
+        });
+      }
+    } catch(e) {
+      console.warn('[\u6BBE\u8BD5\u00B7F3] \u7B2C ' + (b+1) + ' \u6279\u7B54\u5377\u751F\u6210\u5931\u8D25\uFF0C\u7EE7\u7EED\u4E0B\u4E00\u6279:', e.message||e);
+    }
+  }
+
+  // ═══ Step 3: 主考官批语 ═══
+  if (typeof _kejuUpdateDianshiProgress === 'function') _kejuUpdateDianshiProgress('\u5F85\u4E3B\u8003\u5B98\u6279\u9605\u00B7\u62DF\u5199\u6279\u8BED\u2026', 78);
+  try {
+    await _kejuGenChiefExaminerComments(exam, candidates);
+  } catch(e) {
+    console.warn('[\u6BBE\u8BD5\u00B7\u4E3B\u8003\u6279\u8BED] \u751F\u6210\u5931\u8D25:', e);
+  }
+
+  // 若有考生 fullAnswer 仍缺（某批失败）·补上占位·避免 UI 显示 undefined
+  candidates.forEach(function(c){
+    if (!c.fullAnswer || c.fullAnswer.length < 200) {
+      c.fullAnswer = (c.fullAnswer || '') + '\n\n\uFF08\u672C\u5377\u56E0\u629E\u65E9\u6295\u5377\u0020\u6216\u7B54\u7B80\u8981\uFF0C\u539F\u6587\u4EC5\u5B58\u6458\u8981\uFF09';
+    }
+    if (!c.evaluation) c.evaluation = '\u6587\u8BEF\u6355\u4F7F\uFF0C\u51FA\u5165\u7ECF\u5178\u3002';
+    if (!c.chiefExaminerComment) c.chiefExaminerComment = '\u6279\u66F0\uFF1A\u5370\u8BC1\u6CA1\u5199\u3002';
+  });
+
   exam.dianshiResults = candidates;
   _dbg('[科举·F3] 生成', candidates.length, '卷答卷·历史名臣', historicalCands.length, '人');
 
-  // v5·F4·生成考官建议
+  // v5·F4·生成考官建议（合议推荐三甲）
+  if (typeof _kejuUpdateDianshiProgress === 'function') _kejuUpdateDianshiProgress('\u8BF8\u8003\u5B98\u5408\u8BAE\u63A8\u8350\u4E09\u7532\u2026', 92);
   try { await _kejuGenExaminerSuggestions(exam); } catch(e) { console.warn('[F4] 考官建议失败', e); }
+}
+
+/** 解析 AI 返回的 JSON 数组·多级降级 */
+function _parseJsonArr(raw) {
+  if (!raw) return null;
+  try {
+    var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.candidates)) return parsed.candidates;
+    if (parsed && Array.isArray(parsed.results)) return parsed.results;
+  } catch(_){}
+  var cleaned = raw.replace(/```json|```/g, '').trim();
+  var jm = cleaned.match(/\[[\s\S]*\]/);
+  if (jm) {
+    try { return JSON.parse(jm[0]); } catch(_){
+      try { return JSON.parse(jm[0].replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}')); } catch(_){}
+    }
+  }
+  return null;
+}
+
+/** 主考官逐卷批语（一次 AI 调用生成所有卷的批语） */
+async function _kejuGenChiefExaminerComments(exam, candidates) {
+  if (!exam.chiefExaminer || !P.ai || !P.ai.key) return;
+  var chief = (typeof findCharByName === 'function') ? findCharByName(exam.chiefExaminer) : null;
+  var chiefInfo = chief
+    ? (chief.name + '\uFF08' + (chief.officialTitle||chief.title||'') + '\u00B7\u515A' + (chief.party||'\u65E0\u515A') + '\u00B7\u6027\u683C' + (chief.personality||'').slice(0,20) + '\u00B7\u7ACB\u573A' + (chief.stance||'').slice(0,20) + '\uFF09')
+    : exam.chiefExaminer;
+  var listStr = candidates.map(function(c){
+    return '\u7B2C' + c.rank + '\u540D ' + c.name + '\u00B7\u98CE\u683C' + (c.style||'') + '\u00B7\u7B54\u5377\u5F00\u5934\uFF1A' + (c.fullAnswer||'').slice(0, 80).replace(/\n/g,' ');
+  }).join('\n');
+  var prompt = '\u4F60\u4EE5\u4E3B\u8003\u5B98 ' + chiefInfo + ' \u7684\u53E3\u543B\uFF0C\u4E3A\u4EE5\u4E0B ' + candidates.length + ' \u540D\u8003\u751F\u7684\u6BBF\u8BD5\u7B54\u5377\u5404\u5199\u4E00\u5219\u300C\u4E3B\u8003\u6279\u8BED\u300D\u3002\n\n'
+    + '\u6BBE\u8BD5\u9898\uFF1A' + (exam.playerQuestion||'').slice(0,150) + '\n\n'
+    + '\u5377\u4ECE\uFF1A\n' + listStr + '\n\n'
+    + '\u8981\u6C42\uFF1A\n'
+    + '1. \u6BCF\u5219\u6279\u8BED 40-100 \u5B57\uFF0C\u4EFF\u53E4\u4EE3\u4E3B\u8003\u5B98\u8BED\u6C14\uFF08\u201C\u7B56\u8BBA\u5BCF\u6377\u201D\u300C\u6587\u91CC\u6709\u675F\u300D\u300C\u8BED\u591A\u514F\u4E2D\u201D\u300C\u6C14\u6025\u672A\u7EAF\u201D\u7B49\uFF09\n'
+    + '2. \u6279\u8BED\u5FC5\u987B\u53CD\u6620\u4E3B\u8003\u672C\u4EBA\u7684\u515A\u6D3E\u4E0E\u6027\u683C\uFF08\u5982\u4E1C\u6797\u6E05\u6D41\u591A\u8D5E\u8BBA\u6587\u00B7\u9605\u515A\u8D2C\u6DF1\u6587\u00B7\u6B66\u5C06\u51FA\u8EAB\u4E0D\u61C2\u6587\u4F46\u79F0\u8D5E\u5FD7\u8282\uFF09\n'
+    + '3. \u6279\u8BED\u53EF\u5BBD\u53EF\u4E25\u00B7\u4F46\u5FC5\u987B\u5177\u4F53\u6307\u51FA\u4F18\u70B9\u6216\u7F3A\u5931\n'
+    + '\u8FD4\u56DE JSON\uFF1A[{"rank":1,"name":"...","chiefExaminerComment":"..."}, ...]\u00B7\u53EA\u8F93\u51FA JSON\u3002';
+  var _tokC = (P.conf && P.conf.maxOutputTokens > 0) ? P.conf.maxOutputTokens : 8000;
+  _tokC = Math.min(_tokC, 8000);
+  var rawC = await callAISmart(prompt, _tokC, { maxRetries: 2 });
+  var arr = _parseJsonArr(rawC);
+  if (!Array.isArray(arr)) return;
+  arr.forEach(function(r){
+    if (!r) return;
+    var tgt = candidates.find(function(c){ return (r.name && c.name === r.name) || (r.rank && c.rank === r.rank); });
+    if (tgt && r.chiefExaminerComment) tgt.chiefExaminerComment = r.chiefExaminerComment;
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -6021,24 +6113,52 @@ async function viewAnswer(index) {
  * 显示答卷弹窗
  */
 function showAnswerModal(candidate) {
+  var exam = P.keju.currentExam || {};
+  var chiefName = exam.chiefExaminer || '\u4E3B\u8003\u5B98';
   var modal = document.createElement('div');
   modal.className = 'modal-bg show';
-  modal.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:700px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">' +
-    '<div style="padding:0.8rem 1.2rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;">' +
-    '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);">📜 ' + candidate.name + ' 的答卷</div>' +
-    '<button class="bt bs bsm" onclick="this.closest(\'.modal-bg\').remove()">✕</button>' +
-    '</div>' +
-    '<div style="flex:1;overflow-y:auto;padding:1.5rem;">' +
-    '<div style="background:var(--bg-2);padding:1rem;border-radius:8px;margin-bottom:1rem;">' +
-    '<p><strong>考生：</strong>' + candidate.name + '（' + candidate.age + '岁，' + candidate.origin + '）</p>' +
-    '<p><strong>排名：</strong>第' + candidate.rank + '名</p>' +
-    '<p><strong>评分：</strong>' + candidate.score + '分</p>' +
-    '</div>' +
-    '<div style="background:var(--bg-2);padding:1.5rem;border-radius:8px;line-height:2;white-space:pre-wrap;">' +
-    candidate.fullAnswer +
-    '</div>' +
-    '</div>' +
-    '</div>';
+  var html = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:760px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;">'
+    + '<div style="padding:0.8rem 1.2rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;">'
+    +   '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);">\uD83D\uDCDC ' + escHtml(candidate.name) + ' \u7684\u7B54\u5377</div>'
+    +   '<button class="bt bs bsm" onclick="this.closest(\'.modal-bg\').remove()">\u2715</button>'
+    + '</div>'
+    + '<div style="flex:1;overflow-y:auto;padding:1.5rem;">'
+    // 考生信息
+    +   '<div style="background:var(--bg-2);padding:1rem;border-radius:8px;margin-bottom:1rem;">'
+    +     '<p><strong>\u8003\u751F\uFF1A</strong>' + escHtml(candidate.name) + '\uFF08' + (candidate.age||'?') + '\u5C81\uFF0C' + escHtml(candidate.origin||'') + '\uFF09</p>'
+    +     '<p><strong>\u6392\u540D\uFF1A</strong>\u7B2C' + candidate.rank + '\u540D'
+    +       (candidate.style ? '<span style="color:var(--txt-d);margin-left:10px;">\u98CE\u683C\uFF1A' + escHtml(candidate.style) + '</span>' : '')
+    +       (candidate.personalityHint ? '<span style="color:var(--txt-d);margin-left:10px;">\u6027\u60C5\uFF1A' + escHtml(candidate.personalityHint) + '</span>' : '')
+    +     '</p>'
+    +     '<p><strong>\u8BC4\u5206\uFF1A</strong>' + candidate.score + '\u5206</p>'
+    +   '</div>';
+  // 主考官批语（红色朱笔风·印象突出）
+  if (candidate.chiefExaminerComment) {
+    html += '<div style="background:linear-gradient(135deg,rgba(192,64,48,0.08),rgba(140,40,30,0.04));border:1px solid rgba(192,64,48,0.35);border-left:4px solid #C04030;padding:0.9rem 1.1rem;border-radius:6px;margin-bottom:1rem;position:relative;">'
+      + '<div style="font-size:0.72rem;color:#C04030;letter-spacing:0.15em;font-weight:700;margin-bottom:6px;">\u3014 \u4E3B\u8003\u6279\u8BED \u3015</div>'
+      + '<div style="font-size:0.9rem;line-height:1.9;color:#D9A99B;font-style:italic;">\u201C' + escHtml(candidate.chiefExaminerComment) + '\u201D</div>'
+      + '<div style="text-align:right;font-size:0.72rem;color:var(--txt-d);margin-top:6px;">\u2014\u2014 \u4E3B\u8003 ' + escHtml(chiefName) + ' \u5212\u5B9A</div>'
+      + '</div>';
+  }
+  // 考官综合评语（较低调）
+  if (candidate.evaluation) {
+    html += '<div style="background:rgba(138,109,27,0.06);border-left:3px solid var(--gold-d);padding:0.7rem 1rem;border-radius:4px;margin-bottom:1rem;font-size:0.84rem;line-height:1.7;color:var(--txt-s);">'
+      + '<strong style="color:var(--gold);">\u8003\u5B98\u7EFC\u8BC4\uFF1A</strong>' + escHtml(candidate.evaluation)
+      + '</div>';
+  }
+  // 答卷正文
+  html += '<div style="background:var(--bg-2);padding:1.5rem;border-radius:8px;line-height:2;white-space:pre-wrap;font-size:0.92rem;">'
+    + escHtml(candidate.fullAnswer || '\uFF08\u65E0\u6587\uFF09')
+    + '</div>';
+  // 史料（若历史人物）
+  if (candidate.isHistorical && candidate.shiliao) {
+    html += '<details style="background:var(--bg-2);padding:0.6rem 1rem;border-radius:4px;margin-top:1rem;">'
+      + '<summary style="color:var(--gold);cursor:pointer;font-size:0.85rem;">\u3014\u53F2\u6599\u539F\u6587\u3015</summary>'
+      + '<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--txt-s);line-height:1.7;">' + escHtml(candidate.shiliao) + '</div>'
+      + '</details>';
+  }
+  html += '</div></div>';
+  modal.innerHTML = html;
   document.body.appendChild(modal);
 }
 

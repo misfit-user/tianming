@@ -418,27 +418,89 @@
   }
 
   /** 点击具象化入口·玩家手动触发 */
+  /** 整理档案中进度弹窗（专为人物纳入而设） */
+  function _openCharGenProgress(name, stage) {
+    var existing = document.getElementById('chargen-progress-modal');
+    if (existing) existing.remove();
+    var m = document.createElement('div');
+    m.id = 'chargen-progress-modal';
+    m.className = 'modal-bg show';
+    m.style.zIndex = 2000;
+    m.innerHTML =
+      '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:460px;padding:1.3rem 1.6rem;">'
+      + '<div style="text-align:center;margin-bottom:0.9rem;">'
+      +   '<div style="font-size:2rem;margin-bottom:0.2rem;">\uD83D\uDCDA</div>'
+      +   '<div style="font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:0.1em;">\u3014 \u6574\u7406\u6863\u6848 \u3015</div>'
+      +   '<div style="font-size:0.82rem;color:var(--txt-d);margin-top:0.2rem;">\u94E8\u66F9\u4E3A\u300C' + _esc(name) + '\u300D\u7ACB\u4F20\u4E2D</div>'
+      + '</div>'
+      + '<div style="background:var(--bg-2);padding:0.8rem 1rem;border-radius:8px;">'
+      +   '<div style="background:var(--bg-3);border-radius:10px;height:12px;overflow:hidden;">'
+      +     '<div id="chargen-bar" style="width:5%;height:100%;background:linear-gradient(90deg,var(--celadon-400),var(--gold));transition:width 0.5s;"></div>'
+      +   '</div>'
+      +   '<div id="chargen-status" style="font-size:0.78rem;color:var(--txt-d);margin-top:0.5rem;text-align:center;">' + (stage || '\u68C0\u7D22\u53F2\u6599\u2026') + '</div>'
+      + '</div>'
+      + '</div>';
+    document.body.appendChild(m);
+  }
+
+  function _updateCharGenProgress(status, pct) {
+    var bar = document.getElementById('chargen-bar');
+    var st = document.getElementById('chargen-status');
+    if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (st) st.textContent = status || '';
+  }
+
+  function _closeCharGenProgress() {
+    var m = document.getElementById('chargen-progress-modal');
+    if (m) m.remove();
+  }
+
   async function crystallizePendingCharacter(name, extraOpts) {
     if (typeof findCharByName === 'function' && findCharByName(name)) {
       if (typeof toast === 'function') toast(name + ' \u5DF2\u5728\u4EBA\u7269\u5FD7');
       return findCharByName(name);
     }
     var pending = (GM._pendingCharacters||[]).find(function(p){ return p.name === name; });
-    if (typeof showLoading === 'function') showLoading('\u6B63\u5728\u8BB0\u8F7D ' + name + '\u00B7\u58EB\u6797\u6258\u6258\u2026\u2026', 50);
+    _openCharGenProgress(name, '\u68C0\u7D22\u53F2\u6599\u4E0E\u4E0A\u4E0B\u6587\u2026');
+    // 视觉推进·不等 AI
+    var progTimer = setInterval(function(){
+      var bar = document.getElementById('chargen-bar');
+      if (!bar) { clearInterval(progTimer); return; }
+      var cur = parseInt((bar.style.width || '0').replace('%',''), 10) || 0;
+      if (cur < 85) {
+        cur = Math.min(85, cur + 5 + Math.random()*3);
+        bar.style.width = cur + '%';
+        var st = document.getElementById('chargen-status');
+        if (st) {
+          if (cur < 25) st.textContent = '\u68C0\u7D22\u53F2\u6599\u4E0E\u4E0A\u4E0B\u6587\u2026';
+          else if (cur < 50) st.textContent = '\u9274\u522B\u771F\u5047\u00B7\u6838\u5408\u5E74\u9F84\u2026';
+          else if (cur < 70) st.textContent = '\u4EE4\u94E8\u66F9\u8BB0\u4E0B\u7C4D\u8D2F\u5BB6\u8C31\u4E0E\u751F\u5E73\u2026';
+          else st.textContent = '\u8BB0\u8F7D\u8EAB\u4EFD\u00B7\u54C1\u8BC4\u6027\u60C5\u2026';
+        }
+      }
+    }, 400);
     try {
       var opts = Object.assign({
         reason: '\u73A9\u5BB6\u70B9\u51FB\u7EB3\u5165\u4EBA\u7269\u5FD7',
         sourceContext: pending ? pending.snippet : ''
       }, extraOpts || {});
       var ch = await aiGenerateCompleteCharacter(name, opts);
+      clearInterval(progTimer);
+      _updateCharGenProgress('\u2705 ' + name + ' \u5DF2\u7EB3\u5165\u4EBA\u7269\u5FD7', 100);
       // 从 pending 移除
       if (GM._pendingCharacters) GM._pendingCharacters = GM._pendingCharacters.filter(function(p){ return p.name !== name; });
-      if (typeof hideLoading === 'function') hideLoading();
+      // 强制重建索引+刷新右侧人物列表
+      if (typeof buildIndices === 'function') { try { buildIndices(); } catch(_){} }
+      if (typeof renderRenwu === 'function') { try { renderRenwu(); } catch(_){} }
+      // 短停留后关闭
+      setTimeout(_closeCharGenProgress, 600);
       if (typeof toast === 'function') toast('\u2705 ' + name + ' \u5DF2\u7EB3\u5165\u4EBA\u7269\u5FD7');
       if (typeof _kejuWriteJishi === 'function') _kejuWriteJishi('\u7EB3\u5165\u4EBA\u7269\u5FD7', name, pending ? pending.snippet.slice(0,80) : '');
       return ch;
     } catch(e) {
-      if (typeof hideLoading === 'function') hideLoading();
+      clearInterval(progTimer);
+      _updateCharGenProgress('\u274C \u751F\u6210\u5931\u8D25\uFF1A' + ((e && e.message) || '\u672A\u77E5'), 100);
+      setTimeout(_closeCharGenProgress, 1400);
       if (typeof toast === 'function') toast('\u26A0 \u751F\u6210\u5931\u8D25: ' + (e.message || e));
       throw e;
     }

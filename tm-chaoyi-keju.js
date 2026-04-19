@@ -615,15 +615,25 @@ async function pickHistoricalCandidates(exam) {
   var mode = (P.conf && P.conf.gameMode) || 'yanyi';
 
   if (!P.keju._historicalFiguresUsed) P.keju._historicalFiguresUsed = [];
+  // 现任官员（含实职/散衔/后妃/武将皆不可参加科举）
+  var existingOfficialsSet = {};
+  (GM.chars || []).forEach(function(c){
+    if (!c || c.alive === false) return;
+    if (c.officialTitle || (c.title && c.title.length > 0) || c.spouse || c.isPlayer) existingOfficialsSet[c.name] = true;
+  });
+  var existingOfficials = Object.keys(existingOfficialsSet);
   var usedNames = P.keju._historicalFiguresUsed.concat(
-    (GM.chars || []).filter(function(c){ return c && c.isHistorical && c.source === '\u79D1\u4E3E'; }).map(function(c){ return c.name; })
+    (GM.chars || []).filter(function(c){ return c && c.isHistorical && c.source === '\u79D1\u4E3E'; }).map(function(c){ return c.name; }),
+    existingOfficials
   );
 
   var prompt = '\u4F60\u662F\u5386\u53F2\u8003\u636E AI\u3002\u4E3A' + (P.dynasty || P.era || '') + '\u671D ' + year +
     ' \u5E74\u7684\u79D1\u4E3E\u6BBE\u8BD5\u68C0\u7D22\u5F53\u65F6\u53EF\u80FD\u5165\u9009\u7684\u5386\u53F2\u540D\u81E3\u8003\u751F\u3002\n\n' +
+    '\u3010\u786C\u89C4\u5219\u3011\u6240\u9009\u4EBA\u9009\u5FC5\u987B\u4E3A\u5E03\u8863/\u76D1\u751F/\u4E3E\u4EBA/\u672A\u51FA\u4ED5\u7684\u4E66\u751F\u00B7\u7EDD\u4E0D\u80FD\u662F\u5DF2\u4EFB\u5B98\u804C\u8005\uFF08\u90FD\u5FA1\u53F2/\u5C1A\u4E66/\u5927\u5B66\u58EB/\u90E8\u4F8D\u90CE/\u5C06\u519B/\u6307\u6325\u4F7F/\u540E\u5983\u7B49\u5747\u4E0D\u53EF\uFF09\u3002\n' +
+    '\u3010\u786C\u89C4\u5219\u3011\u6240\u9009\u4EBA\u9009\u5728\u672C\u671D\u53F2\u4E66\u4E2D\u4E0D\u80FD\u5DF2\u7ECF\u767B\u79D1\u00B7\u5FC5\u987B\u662F ' + year + ' \u5E74\u524D\u540E\u624D\u4E2D\u79D1\u6216\u5C1A\u672A\u4E2D\u79D1\u4E4B\u4EBA\u3002\n' +
     '\u65F6\u95F4\u7EA6\u675F\uFF1A' + (window ? ('\u987B\u4E3A ' + (year - window) + '~' + (year + window) + ' \u5E74\u95F4\u5386\u53F2\u6D3B\u8DC3\u7684\u4EBA\u7269') : '\u4EFB\u610F\u671D\u4EE3\u5386\u53F2\u540D\u81E3\u7686\u53EF\uFF08\u6F14\u4E49\u6A21\u5F0F\uFF09') + '\n' +
     '\u5E74\u9F84\u7EA6\u675F\uFF1A\u6B64\u4EBA\u5728 ' + year + ' \u5E74\u987B\u4E3A\u5408\u9002\u5E94\u8BD5\u5E74\u9F84 (20-45 \u5C81\u4E3A\u4F73\uFF0C\u6700\u591A 55 \u5C81)\n' +
-    '\u5DF2\u7528\u8FC7\uFF08\u7981\u6B62\u91CD\u590D\uFF09\uFF1A' + (usedNames.length ? usedNames.join('\u3001') : '\u65E0') + '\n\n' +
+    '\u5DF2\u7528\u8FC7 / \u5DF2\u4EFB\u5B98\uFF08\u4E25\u7981\u8FD4\u56DE\u4EE5\u4E0B\u59D3\u540D\uFF09\uFF1A' + (usedNames.length ? usedNames.slice(0,80).join('\u3001') + (usedNames.length>80?'\u7B49':'') : '\u65E0') + '\n\n' +
     '\u8FD4\u56DE 5-8 \u540D\u5019\u9009\uFF0CJSON \u6570\u7EC4\uFF1A\n' +
     '[{"name":"\u5019\u9009\u540D","age":34,"class":"\u5BD2\u95E8/\u58EB\u65CF","origin":"\u6D59\u6C5F\u4E0A\u865E",\n' +
     '  "historicalYearMet":1622,"nativeEra":"\u660E","party":"\u4E1C\u6797/\u6D59\u515A/\u65E0",\n' +
@@ -645,6 +655,12 @@ async function pickHistoricalCandidates(exam) {
     var valid = parsed.filter(function(c){
       if (!c || !c.name) return false;
       if (usedNames.indexOf(c.name) >= 0) return false;
+      // 再次过滤：若此名已在 GM.chars 且有官职·强制剔除（AI 硬性违规）
+      var _existCh = (typeof findCharByName === 'function') ? findCharByName(c.name) : null;
+      if (_existCh && (_existCh.officialTitle || _existCh.title || _existCh.spouse || _existCh.isPlayer)) {
+        console.warn('[\u79D1\u4E3E\u00B7\u6EE4] \u4E22\u5F03\u5DF2\u4EFB\u5B98\u5019\u9009:', c.name, _existCh.officialTitle||_existCh.title);
+        return false;
+      }
       if (!c.age || c.age < 18 || c.age > 60) return false;
       return Math.random() < (c.probability || 0.7);
     });
@@ -4598,6 +4614,42 @@ async function generateDianshiQuestion() {
 /**
  * 开始殿试
  */
+/** 殿试进度弹窗·三次重试·实时刷新状态 */
+function _kejuOpenDianshiProgress() {
+  var existing = document.getElementById('dianshi-progress-modal');
+  if (existing) existing.remove();
+  var m = document.createElement('div');
+  m.id = 'dianshi-progress-modal';
+  m.className = 'modal-bg show';
+  m.innerHTML =
+    '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:560px;padding:1.5rem 1.8rem;">'
+    + '<div style="text-align:center;margin-bottom:1rem;">'
+    +   '<div style="font-size:2.2rem;margin-bottom:0.3rem;">\uD83D\uDCDC</div>'
+    +   '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;">\u3014 \u6BBE\u8BD5 \u3015</div>'
+    +   '<div id="dianshi-progress-subtitle" style="font-size:0.82rem;color:var(--txt-d);margin-top:0.3rem;">\u6574\u7406\u8003\u751F\u7B54\u5377\u4E2D\u2026</div>'
+    + '</div>'
+    + '<div style="background:var(--bg-2);padding:0.9rem 1rem;border-radius:8px;">'
+    +   '<div style="background:var(--bg-3);border-radius:10px;height:14px;overflow:hidden;">'
+    +     '<div id="dianshi-progress-bar" style="width:5%;height:100%;background:linear-gradient(90deg,var(--celadon-400),var(--gold));transition:width 0.4s;"></div>'
+    +   '</div>'
+    +   '<div id="dianshi-progress-status" style="font-size:0.8rem;color:var(--txt-d);margin-top:0.5rem;text-align:center;">\u2026</div>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(m);
+}
+
+function _kejuUpdateDianshiProgress(status, pct) {
+  var bar = document.getElementById('dianshi-progress-bar');
+  var st = document.getElementById('dianshi-progress-status');
+  if (bar) bar.style.width = Math.max(0, Math.min(100, pct || 0)) + '%';
+  if (st) st.textContent = status || '';
+}
+
+function _kejuCloseDianshiProgress() {
+  var m = document.getElementById('dianshi-progress-modal');
+  if (m) m.remove();
+}
+
 async function startDianshi() {
   var exam = P.keju.currentExam;
   var question = document.getElementById('dianshi-question').value.trim();
@@ -4608,21 +4660,40 @@ async function startDianshi() {
   }
 
   exam.playerQuestion = question;
-  showLoading('殿试进行中...', 50);
+  _kejuOpenDianshiProgress();
 
-  try {
-    await generateDianshiResults();
-    if (!exam.dianshiResults || exam.dianshiResults.length === 0) {
-      throw new Error('AI 未能生成考生名单');
+  var maxRetries = 3;
+  var lastErr = null;
+  for (var attempt = 1; attempt <= maxRetries; attempt++) {
+    var basePct = (attempt - 1) * 30;
+    try {
+      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u68C0\u7D22\u5386\u53F2\u540D\u81E3\u5019\u9009\u2026', basePct + 5);
+      // 分步进度（视觉反馈）——在 AI 调用前推一下条
+      await new Promise(function(r){ setTimeout(r, 200); });
+      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u751F\u6210 20 \u5377\u5B8C\u6574\u7B54\u5377 + \u8003\u5B98\u5EFA\u8BAE\u2026', basePct + 15);
+      await generateDianshiResults();
+      if (!exam.dianshiResults || exam.dianshiResults.length < 3) {
+        throw new Error('\u6709\u6548\u7B54\u5377\u5C11\u4E8E 3 \u5377');
+      }
+      _kejuUpdateDianshiProgress('\u2705 \u5171 ' + exam.dianshiResults.length + ' \u5377\u7B54\u5377\u5C31\u7EEA\u00B7\u7B49\u9661\u4E0B\u94A6\u5B9A\u4E09\u7532', 100);
+      await new Promise(function(r){ setTimeout(r, 700); });
+      _kejuCloseDianshiProgress();
+      exam.stage = 'finished';
+      renderKejuStage();
+      return;
+    } catch(e) {
+      lastErr = e;
+      console.error('[\u79D1\u4E3E\u00B7\u6BBE\u8BD5] \u7B2C' + attempt + '\u6B21\u5931\u8D25:', e);
+      if (attempt < maxRetries) {
+        _kejuUpdateDianshiProgress('\u26A0 \u7B2C ' + attempt + ' \u6B21\u5931\u8D25\u00B7' + ((e && e.message) || '\u672A\u77E5\u9519\u8BEF') + '\u00B7 2 \u79D2\u540E\u91CD\u8BD5\u2026', basePct + 25);
+        await new Promise(function(r){ setTimeout(r, 2000); });
+      } else {
+        _kejuUpdateDianshiProgress('\u274C \u5DF2\u91CD\u8BD5 ' + maxRetries + ' \u6B21\u7686\u5931\u8D25\u00B7\u8BF7\u68C0\u67E5 AI \u914D\u7F6E\u6216\u91CD\u8BD5', 100);
+        await new Promise(function(r){ setTimeout(r, 1600); });
+        _kejuCloseDianshiProgress();
+        toast('\u274C \u6BBE\u8BD5\u5931\u8D25\uFF08\u5DF2\u91CD\u8BD5 ' + maxRetries + ' \u6B21\uFF09\uFF1A' + ((lastErr && lastErr.message) || '\u672A\u77E5\u9519\u8BEF'));
+      }
     }
-    hideLoading();
-    exam.stage = 'finished';
-    renderKejuStage();
-  } catch(e) {
-    console.error('[科举] 殿试失败:', e);
-    hideLoading();
-    var _msg = (e && e.message) ? e.message : '未知错误';
-    toast('❌ 殿试失败：' + _msg);
   }
 }
 
@@ -4646,8 +4717,15 @@ async function generateDianshiResults() {
     ? historicalCands.map(function(h){ return h.name + '(' + h.age + '\u5C81\u00B7' + h.class + '\u00B7' + (h.party||'\u65E0\u515A') + ')'; }).join('\u3001')
     : '\u65E0';
 
+  // 已任官员名单（严禁作为考生出现）
+  var _officialNames = (GM.chars || []).filter(function(c){
+    return c && c.alive !== false && (c.officialTitle || c.title || c.spouse || c.isPlayer);
+  }).map(function(c){ return c.name; });
+
   // v5·F3·全 20 卷 + 字数浮动 + 史料种子
   var prompt = '\u4F60\u662F' + _dyn + '\u79D1\u4E3E\u6BBE\u8BD5 AI\u3002\u4E3A ' + _year + ' \u5E74\u6BBE\u8BD5\u751F\u6210\u524D ' + _topCount + ' \u540D\u8003\u751F\u7684\u5B8C\u6574\u6863\u6848+\u7B54\u5377\u3002\n\n' +
+    '\u3010\u786C\u89C4\u5219\u3011\u8003\u751F\u5FC5\u987B\u662F\u5E03\u8863/\u76D1\u751F/\u4E3E\u4EBA/\u672A\u51FA\u4ED5\u7684\u4E66\u751F\u00B7\u7EDD\u4E0D\u53EF\u4E3A\u5DF2\u4EFB\u5B98\u8005\uFF08\u90FD\u5FA1\u53F2/\u5C1A\u4E66/\u5927\u5B66\u58EB/\u90E8\u4F8D\u90CE/\u5C06\u519B/\u540E\u5983\u7B49\u5747\u4E0D\u53EF\uFF09\u3002\n' +
+    (_officialNames.length ? '\u3010\u7981\u6B62\u59D3\u540D\u3011\u4EE5\u4E0B\u5DF2\u4EFB\u5B98\u8005\u7EDD\u4E0D\u53EF\u51FA\u73B0\uFF1A' + _officialNames.slice(0, 60).join('\u3001') + (_officialNames.length>60?'\u7B49':'') + '\n' : '') +
     '\u3010\u6BBE\u8BD5\u9898\u76EE\u3011\n' + (exam.playerQuestion || '(\u7A7A)') + '\n\n' +
     (_subjects ? '\u3010\u8003\u8BD5\u79D1\u76EE\u3011' + _subjects + '\n' : '') +
     (_rules ? '\u3010\u8003\u8BD5\u89C4\u5219\u3011' + _rules + '\n' : '') +
@@ -4692,6 +4770,24 @@ async function generateDianshiResults() {
   if (!Array.isArray(candidates) || candidates.length === 0) {
     throw new Error('AI 返回无法解析为考生数组');
   }
+
+  // 后过滤·剔除已任官员/后妃/玩家
+  var _offSet = {};
+  _officialNames.forEach(function(n){ _offSet[n] = true; });
+  candidates = candidates.filter(function(c){
+    if (!c || !c.name) return false;
+    if (_offSet[c.name]) {
+      console.warn('[\u6BBE\u8BD5\u00B7\u6EE4] \u4E22\u5F03\u5DF2\u4EFB\u5B98\u5019\u9009:', c.name);
+      return false;
+    }
+    var _ech = (typeof findCharByName === 'function') ? findCharByName(c.name) : null;
+    if (_ech && (_ech.officialTitle || _ech.title || _ech.spouse || _ech.isPlayer)) {
+      console.warn('[\u6BBE\u8BD5\u00B7\u6EE4] \u4E22\u5F03\u5DF2\u4EFB\u5B98\u5019\u9009:', c.name);
+      return false;
+    }
+    return true;
+  });
+  if (candidates.length < 3) throw new Error('AI 返回有效考生不足 3 名（剔除已任官员后）');
 
   exam.dianshiResults = candidates;
   _dbg('[科举·F3] 生成', candidates.length, '卷答卷·历史名臣', historicalCands.length, '人');

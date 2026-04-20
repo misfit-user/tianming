@@ -4,6 +4,16 @@
     {
       "date": "2026-04-20",
       "module": "Bug 修复",
+      "title": "使节 prompt 真正挂钩势力深化数据",
+      "items": [
+        { "what": "原代码只读 leaderName/culture/faith/stance/relations·但剧本 facs 实际用 leader/ideology/attitude.self/attitude.enemies 等命名·造成整个势力深化信息根本没注入 prompt", "why": "使节从来都只看到 territory/capital/militaryStrength 三个碎片，其他字段全部被默认分支过滤掉，对话自然空洞或偏本朝味" },
+        { "what": "统一兼容：leader/leaderName/leadership.ruler、culture/ideology、stance/attitude.self/politicalStance、militaryStrength/totalTroops/strength+treasury+economy、relations/attitude.enemies/allies", "why": "各种命名都能成功读取·势力深化字段终于真的灌进 prompt" },
+        { "what": "新增注入：traits 特质 / history 国史 / strategy 战略 / currentAgenda 当下所图 / strengths 强项 / weaknesses 隐忧", "why": "使节说话带上本方文化色彩、底牌、软肋，谈判有血有肉" }
+      ]
+    },
+    {
+      "date": "2026-04-20",
+      "module": "Bug 修复",
       "title": "外藩使节问对不发言·真正根因终于找到",
       "items": [
         { "what": "_wdOpenAudienceQueue 为使节创建 ch 对象后 GM.chars.push(ch)，但 GM._indices.charByName 索引 Map 未同步更新", "why": "_wdNpcInitiateSpeak 开头 findCharByName(name) 返回 undefined，下一行 if(!ch) return 静默退出——所以使节气泡永远卡在 '…'" },

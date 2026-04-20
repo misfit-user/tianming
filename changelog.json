@@ -3,6 +3,18 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "设置·模型能力校验",
+      "title": "新增模型能力校验面板·防中转代理虚报/缩水",
+      "items": [
+        { "what": "新增 detectModelOutputLimit() 实测函数·请求 AI 生成 32K/16K/8K/4K 级别长文·检查 finish_reason=length 触发点·得出真实输出上限", "why": "有些中转代理声称支持 64K 输出但实际只给 4K·造成 SC1 主推演 JSON 被截断；实测后 P.conf._measuredMaxOutput 覆盖白名单值" },
+        { "what": "新增 probeModelSelfReport() 三问交叉验证·问上下文/输出/模型家族·与 _MODEL_CTX_MAP 白名单对比", "why": "AI 自报值 >2× 白名单=疑虚报；<1/2 白名单=疑缩水代理；声称家族与请求家族不匹配=疑代理替换（如请求 Claude 实际走 GPT-3.5）" },
+        { "what": "设置面板新增「模型能力校验」区块·表格对比 白名单/AI自报/API探测/实测 四种来源·冲突时朱砂框警告", "why": "玩家一眼看出中转代理是否欺骗·查出「声称 Claude-Opus 实际只有 4K 输出」等问题" },
+        { "what": "三个实测按钮：重新探测上下文 / 实测输出上限 / 模型自报校验 / 清除缓存", "why": "玩家可主动触发实测；首次配置 API 或换模型后推荐跑一次" },
+        { "what": "新增手动覆写字段：contextSizeK / maxOutputTokens·优先级高于一切探测值", "why": "探测结果不信任时·玩家可强制指定；输入 0 表示回到自动模式" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "修补·存档/结算/党派",
       "title": "存档导入兼容三种格式 + 党派 NaN 修 + 诏令跨回合去重 + maxTokens 动态化",
       "items": [

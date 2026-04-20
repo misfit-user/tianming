@@ -1159,6 +1159,23 @@ function openSettings(){
     "<div class=\"rw\"><div class=\"fd\"><label style=\"font-size:0.72rem;\">URL</label><input id=\"s-img-url\" value=\""+(_imgApiCfg.url||'')+"\" placeholder=\"https://api.openai.com/v1/images/generations\" style=\"font-size:0.8rem;\"></div><div class=\"fd\"><label style=\"font-size:0.72rem;\">\u6A21\u578B</label><input id=\"s-img-model\" value=\""+(_imgApiCfg.model||'dall-e-3')+"\" style=\"font-size:0.8rem;width:80px;\"></div></div>"+
     "<button class=\"bt bs bsm\" onclick=\"var ik=(_$('s-img-key')||{}).value||'',iu=(_$('s-img-url')||{}).value||'',im=(_$('s-img-model')||{}).value||'dall-e-3';if(ik||iu){localStorage.setItem('tm_api_image',JSON.stringify({key:ik.trim(),url:iu.trim(),model:im.trim()}));}else{localStorage.removeItem('tm_api_image');}toast('\u751F\u56FEAPI\u5DF2\u4FDD\u5B58');\">\u4FDD\u5B58\u751F\u56FE\u8BBE\u7F6E</button></div></div>"+
 
+    // 模型能力校验·防欺骗
+    "<div class=\"settings-section\"><h4>\u6A21\u578B\u80FD\u529B\u6821\u9A8C</h4>"+
+    "<div id=\"s-model-probe-body\">" + _renderModelProbePanel() + "</div>"+
+    "<div style=\"display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.6rem;\">"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext()\">\u91CD\u65B0\u63A2\u6D4B\u4E0A\u4E0B\u6587</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput()\">\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport()\">\u6A21\u578B\u81EA\u62A5\u6821\u9A8C</button>"+
+    "<button class=\"bt bs bsm\" onclick=\"_probeClearCache()\">\u6E05\u9664\u7F13\u5B58</button>"+
+    "</div>"+
+    "<div style=\"margin-top:0.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;\">"+
+    "<label style=\"font-size:0.72rem;color:var(--txt-d);\">\u624B\u52A8\u8986\u5199\u4E0A\u4E0B\u6587 K\uFF1A</label>"+
+    "<input id=\"s-ctx-override\" type=\"number\" min=\"0\" value=\""+(P.conf.contextSizeK||0)+"\" placeholder=\"0\u8868\u81EA\u52A8\" style=\"width:90px;font-size:0.78rem;\">"+
+    "<label style=\"font-size:0.72rem;color:var(--txt-d);\">\u8F93\u51FA\u4E0A\u9650 Tokens\uFF1A</label>"+
+    "<input id=\"s-out-override\" type=\"number\" min=\"0\" value=\""+(P.conf.maxOutputTokens||0)+"\" placeholder=\"0\u8868\u81EA\u52A8\" style=\"width:110px;font-size:0.78rem;\">"+
+    "<button class=\"bt bs bsm\" onclick=\"P.conf.contextSizeK=parseInt(_$('s-ctx-override').value)||0;P.conf.maxOutputTokens=parseInt(_$('s-out-override').value)||0;saveP();toast('\u2705 \u5DF2\u4FDD\u5B58\u624B\u52A8\u8986\u5199');_$('s-model-probe-body').innerHTML=_renderModelProbePanel();\">\u4FDD\u5B58</button>"+
+    "</div></div>"+
+
     "<div class=\"settings-section\"><h4>\u6587\u98CE</h4>"+
     "<div class=\"fd\"><label>\u5168\u5C40</label><select onchange=\"P.conf.style=this.value\"><option "+(P.conf.style==="\u6587\u5B66\u5316"?"selected":"")+">\u6587\u5B66\u5316</option><option "+(P.conf.style==="\u53F2\u4E66\u4F53"?"selected":"")+">\u53F2\u4E66\u4F53</option><option "+(P.conf.style==="\u622F\u5267\u5316"?"selected":"")+">\u622F\u5267\u5316</option></select></div></div>"+
 
@@ -1194,6 +1211,127 @@ function openSettings(){
   bg.classList.add("show");
 }
 function closeSettings(){_$("settings-bg").classList.remove("show");}
+
+// ============================================================
+// 模型能力校验面板·防欺骗
+// ============================================================
+function _renderModelProbePanel() {
+  var cfg = P.conf || {};
+  var model = P.ai.model || '(未配置)';
+  var wlCtxK = (typeof _matchModelCtx === 'function') ? _matchModelCtx(model) : 0;
+  var wlOutK = (typeof _matchModelOutput === 'function') ? _matchModelOutput(model) : 0;
+  var detCtx = cfg._detectedContextK || 0;
+  var detOut = cfg._detectedMaxOutput || 0;
+  var measOut = cfg._measuredMaxOutput || 0;
+  var layer = cfg._ctxDetectLayer || '未探测';
+  var probe = cfg._probeHistory || {};
+  var self = probe.selfReport;
+  var out = probe.outputLimit;
+
+  var h = '<div style="font-size:0.76rem;line-height:1.8;">';
+  h += '<div><b>\u5F53\u524D\u6A21\u578B\uFF1A</b><code style="color:var(--gold);">' + escHtml(model) + '</code></div>';
+  h += '<div style="margin-top:0.4rem;display:grid;grid-template-columns:auto auto auto auto;gap:0.3rem 0.8rem;padding:0.4rem;background:var(--color-elevated);border-radius:3px;">';
+  h += '<div style="color:var(--txt-d);">\u6765\u6E90</div><div style="color:var(--txt-d);">\u4E0A\u4E0B\u6587</div><div style="color:var(--txt-d);">\u8F93\u51FA\u4E0A\u9650</div><div style="color:var(--txt-d);">\u5907\u6CE8</div>';
+  h += '<div>\u767D\u540D\u5355</div><div>' + (wlCtxK ? wlCtxK+'K' : '-') + '</div><div>' + (wlOutK ? wlOutK+'K' : '-') + '</div><div style="color:var(--txt-d);font-size:0.7rem;">\u6570\u636E\u5E93\u58F0\u79F0</div>';
+  if (self) {
+    h += '<div>AI\u81EA\u62A5</div>';
+    h += '<div>' + (self.contextClaimedK ? self.contextClaimedK+'K' : '-') + '</div>';
+    h += '<div>' + (self.outputClaimedK ? self.outputClaimedK+'K' : '-') + '</div>';
+    h += '<div style="color:var(--txt-d);font-size:0.7rem;">' + escHtml((self.modelClaimedName||'').slice(0,20)) + '</div>';
+  }
+  if (detCtx || detOut) {
+    h += '<div>API\u63A2\u6D4B</div>';
+    h += '<div>' + (detCtx ? detCtx+'K' : '-') + '</div>';
+    h += '<div>' + (detOut ? Math.round(detOut/1024)+'K' : '-') + '</div>';
+    h += '<div style="color:var(--txt-d);font-size:0.7rem;">' + escHtml(layer) + '</div>';
+  }
+  if (out && out.realLimitTokens > 0) {
+    h += '<div style="color:var(--gold);">\u5B9E\u6D4B</div>';
+    h += '<div>-</div>';
+    h += '<div style="color:var(--gold);">' + Math.round(out.realLimitTokens/1024*10)/10 + 'K</div>';
+    h += '<div style="color:var(--txt-d);font-size:0.7rem;">\u771F\u5B9E\u4EA7\u51FA</div>';
+  }
+  h += '</div>';
+
+  // 冲突警告
+  var warns = [];
+  if (self && self.warnings && self.warnings.length) warns = warns.concat(self.warnings);
+  if (out && out.realLimitTokens > 0 && wlOutK > 0) {
+    var measK = Math.round(out.realLimitTokens/1024);
+    if (measK < wlOutK * 0.6) warns.push('\u5B9E\u6D4B\u8F93\u51FA ' + measK + 'K \u8FDC\u4F4E\u4E8E\u767D\u540D\u5355 ' + wlOutK + 'K\u00B7\u7591\u4EE3\u7406\u7F29\u6C34');
+  }
+  if (warns.length) {
+    h += '<div style="margin-top:0.5rem;padding:0.4rem;background:rgba(192,64,48,0.1);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.72rem;color:var(--vermillion-400);">';
+    h += '\u26A0 \u7591\u4F2A\u6216\u7F29\u6C34\u8B66\u544A\uFF1A';
+    warns.forEach(function(w){ h += '<div style="padding-left:0.6rem;">\u00B7 ' + escHtml(w) + '</div>'; });
+    h += '</div>';
+  }
+
+  // 当前生效值
+  var effCtxK = cfg.contextSizeK || detCtx || wlCtxK || 32;
+  var effOutTok = cfg.maxOutputTokens || cfg._measuredMaxOutput || cfg._detectedMaxOutput || (wlOutK * 1024) || 0;
+  h += '<div style="margin-top:0.5rem;padding:0.4rem;background:rgba(107,176,124,0.08);border-left:3px solid var(--celadon-400);border-radius:3px;font-size:0.72rem;">';
+  h += '\u2713 \u5F53\u524D\u751F\u6548\uFF1A\u4E0A\u4E0B\u6587 <b>' + effCtxK + 'K</b>\u00B7\u8F93\u51FA\u4E0A\u9650 <b>' + (effOutTok ? effOutTok+' tokens' : '\u6A21\u578B\u81EA\u7531') + '</b>';
+  if (cfg.contextSizeK || cfg.maxOutputTokens) h += ' <span style="color:var(--gold);">(\u624B\u52A8\u8986\u5199)</span>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
+async function _probeRunContext() {
+  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
+  toast('\u6B63\u5728\u63A2\u6D4B\u4E0A\u4E0B\u6587\u2026');
+  try {
+    if (typeof detectModelContextSize !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
+    await detectModelContextSize({ force: true, onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    if (typeof hideLoading === 'function') hideLoading();
+    toast('\u2705 \u4E0A\u4E0B\u6587\u63A2\u6D4B\u5B8C\u6210');
+    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+  } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u63A2\u6D4B\u5931\u8D25\uFF1A' + (e.message||e)); }
+}
+
+async function _probeRunOutput() {
+  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
+  if (!confirm('\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650\u4F1A\u8017 1-3 \u6B21\u957F\u7BC7\u8C03\u7528\u00B7\u6A21\u578B\u8017 tokens \u8F83\u591A\u00B7\u7EE7\u7EED\uFF1F')) return;
+  toast('\u6B63\u5728\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650\u2026');
+  try {
+    if (typeof detectModelOutputLimit !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
+    if (typeof showLoading === 'function') showLoading('\u5B9E\u6D4B\u8F93\u51FA\u4E2D\u2026', 20);
+    await detectModelOutputLimit({ onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof saveP === 'function') saveP();
+    toast('\u2705 \u8F93\u51FA\u4E0A\u9650\u5B9E\u6D4B\u5B8C\u6210');
+    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+  } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u5B9E\u6D4B\u5931\u8D25\uFF1A' + (e.message||e)); }
+}
+
+async function _probeRunSelfReport() {
+  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
+  toast('\u6B63\u5728\u8BE2\u95EE\u6A21\u578B\u81EA\u62A5\u2026');
+  try {
+    if (typeof probeModelSelfReport !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
+    if (typeof showLoading === 'function') showLoading('\u6A21\u578B\u81EA\u62A5\u4E2D\u2026', 30);
+    var r = await probeModelSelfReport({ onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof saveP === 'function') saveP();
+    var warnCt = (r && r.warnings && r.warnings.length) || 0;
+    toast(warnCt ? ('\u26A0 \u5B8C\u6210\u00B7 ' + warnCt + ' \u6761\u7591\u4F2A\u8B66\u544A') : '\u2705 \u81EA\u62A5\u6821\u9A8C\u5B8C\u6210');
+    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+  } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u81EA\u62A5\u5931\u8D25\uFF1A' + (e.message||e)); }
+}
+
+function _probeClearCache() {
+  if (!confirm('\u6E05\u9664\u6240\u6709\u63A2\u6D4B\u7F13\u5B58\uFF1F\u4E0B\u6B21\u5C06\u91CD\u65B0\u63A2\u6D4B\u3002')) return;
+  delete P.conf._detectedContextK;
+  delete P.conf._detectedMaxOutput;
+  delete P.conf._measuredMaxOutput;
+  delete P.conf._ctxCacheKey;
+  delete P.conf._ctxDetectLayer;
+  delete P.conf._probeHistory;
+  if (typeof saveP === 'function') saveP();
+  toast('\u5DF2\u6E05\u9664\u63A2\u6D4B\u7F13\u5B58');
+  var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+}
 
 // ============================================================
 //  ESC暂停菜单

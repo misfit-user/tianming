@@ -2990,6 +2990,179 @@ function _finishDetect(k, layer, cacheKey, maxOutputTok) {
   _ctxLog('最终结果: 上下文' + k + 'K, 输出上限' + (maxOutputTok||0) + ' tokens (' + layer + ')');
 }
 
+// ============================================================
+//  防欺骗·实测输出上限 (层5)
+//  做法：请求 AI 生成"正好 N 个汉字"的长文本·比较实际输出与要求
+//  连续二分：若 8K 请求只出 4K·说明真实上限在 4K 附近
+// ============================================================
+async function detectModelOutputLimit(opts) {
+  opts = opts || {};
+  var _prog = opts.onProgress || function(){};
+  var key = P.ai.key;
+  if (!key) return 0;
+  var chatUrl = _buildAIUrl();
+  if (!chatUrl) return 0;
+
+  // 测试梯度：请求这些 token 目标·看实际输出
+  var tests = opts.tests || [32768, 16384, 8192, 4096];
+  var results = [];
+  var realLimit = 0;
+
+  for (var ti = 0; ti < tests.length; ti++) {
+    var target = tests[ti];
+    _prog('实测输出 ' + Math.round(target/1024) + 'K tokens...');
+    try {
+      var resp = await fetch(chatUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: P.ai.model || '',
+          messages: [{ role: 'user', content:
+            'Generate a long continuous story of approximately ' + target + ' tokens. Keep writing narrative details without stopping. Do not ask clarifying questions.\n' +
+            '请连续生成约 ' + target + ' tokens 的长篇故事叙事·中途不要停顿不要反问·尽情铺陈细节。'
+          }],
+          temperature: 0.7,
+          max_tokens: target,
+          stream: false
+        }),
+        signal: AbortSignal.timeout ? AbortSignal.timeout(60000) : undefined
+      });
+      if (!resp.ok) {
+        var _errTxt = ''; try { _errTxt = (await resp.text()).slice(0,200); } catch(_){}
+        _ctxLog('[output测] 请求' + target + ' HTTP' + resp.status + ' ' + _errTxt);
+        results.push({ request: target, actual: 0, error: 'HTTP' + resp.status, finishReason: '' });
+        continue;
+      }
+      var data = await resp.json();
+      var actualTokens = 0;
+      var finishReason = '';
+      if (data.usage && data.usage.completion_tokens) actualTokens = data.usage.completion_tokens;
+      if (data.choices && data.choices[0]) {
+        finishReason = data.choices[0].finish_reason || data.choices[0].stop_reason || '';
+        if (!actualTokens && data.choices[0].message && data.choices[0].message.content) {
+          // 无 usage 时粗估：英文/中文混合约 2.5 字/token
+          actualTokens = Math.round(data.choices[0].message.content.length / 2.5);
+        }
+      }
+      _ctxLog('[output测] 请求' + target + ' → 实际' + actualTokens + ' (' + finishReason + ')');
+      results.push({ request: target, actual: actualTokens, error: '', finishReason: finishReason });
+      // 若 finish_reason=='length'·说明用满了·realLimit 至少是此数字
+      // 若 finish_reason=='stop'·说明是自然结束·realLimit ≥ actual
+      if (finishReason === 'length' || finishReason === 'max_tokens') {
+        realLimit = Math.max(realLimit, actualTokens);
+        // 被截断·跳过更大的请求（更大也只会到这里）
+        break;
+      } else {
+        realLimit = Math.max(realLimit, actualTokens);
+        // 自然结束·若没达到 target 的 50%·降一档继续测
+        if (actualTokens < target * 0.5) continue;
+        // 达到目标·不再测小的
+        break;
+      }
+    } catch(_e) {
+      _ctxLog('[output测] 请求' + target + ' 异常 ' + (_e.message||_e));
+      results.push({ request: target, actual: 0, error: String(_e.message||_e), finishReason: '' });
+    }
+  }
+
+  // 存入 P.conf
+  if (!P.conf._probeHistory) P.conf._probeHistory = {};
+  P.conf._probeHistory.outputLimit = {
+    tests: results,
+    realLimitTokens: realLimit,
+    timestamp: Date.now(),
+    model: P.ai.model || ''
+  };
+  if (realLimit > 0) P.conf._measuredMaxOutput = realLimit;
+  _ctxLog('[output测] 最终实测: ' + realLimit + ' tokens');
+  return realLimit;
+}
+
+// ============================================================
+//  防欺骗·AI 自报交叉验证 (增强层3)
+//  做法：同一问题问 3 次·与白名单交叉验证
+// ============================================================
+async function probeModelSelfReport(opts) {
+  opts = opts || {};
+  var _prog = opts.onProgress || function(){};
+  var key = P.ai.key; var chatUrl = _buildAIUrl();
+  if (!key || !chatUrl) return null;
+
+  var questions = [
+    { q: '你能处理的最大输入 token 数（上下文窗口）是多少？只答一个整数·例如 131072。', expect: 'ctx' },
+    { q: '你单次回复能生成的最大 token 数是多少？只答一个整数·例如 8192。', expect: 'out' },
+    { q: 'What is your exact model name/version as you understand it? Reply in 10 words.', expect: 'model' }
+  ];
+  var answers = [];
+  for (var qi = 0; qi < questions.length; qi++) {
+    _prog('询问模型 ' + (qi+1) + '/' + questions.length + '...');
+    try {
+      var resp = await fetch(chatUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: P.ai.model || '',
+          messages: [{ role:'user', content: questions[qi].q }],
+          temperature: 0, max_tokens: 50
+        }),
+        signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
+      });
+      if (!resp.ok) { answers.push({ q: questions[qi].q, a: '', err: 'HTTP'+resp.status }); continue; }
+      var j = await resp.json();
+      var a = (j.choices && j.choices[0] && j.choices[0].message) ? j.choices[0].message.content : '';
+      answers.push({ q: questions[qi].q, a: a, kind: questions[qi].expect });
+    } catch(_e) { answers.push({ q: questions[qi].q, a: '', err: _e.message||String(_e) }); }
+  }
+
+  // 解析数字
+  function _extractNum(str) {
+    if (!str) return 0;
+    var m = (str+'').match(/[\d,_.]+/g);
+    if (!m) return 0;
+    var cands = m.map(function(n){ return parseInt(n.replace(/[,_.]/g,''),10); }).filter(function(n){ return n>=1000; });
+    return cands.length ? Math.max.apply(null, cands) : 0;
+  }
+  var ctxClaimed = _extractNum(answers[0] && answers[0].a);
+  var outClaimed = _extractNum(answers[1] && answers[1].a);
+  var modelClaimed = (answers[2] && answers[2].a) || '';
+  // 白名单基准
+  var wlCtx = (typeof _matchModelCtx === 'function') ? _matchModelCtx(P.ai.model||'') : 0;
+  var wlOut = (typeof _matchModelOutput === 'function') ? _matchModelOutput(P.ai.model||'') : 0;
+  // 欺骗检测
+  var warnings = [];
+  if (wlCtx > 0 && ctxClaimed > 0) {
+    var ctxClaimedK = _normalizeToK(ctxClaimed);
+    if (ctxClaimedK > wlCtx * 2) warnings.push('上下文声称' + ctxClaimedK + 'K·白名单仅' + wlCtx + 'K·疑虚报');
+    else if (ctxClaimedK < wlCtx / 2) warnings.push('上下文声称' + ctxClaimedK + 'K·白名单为' + wlCtx + 'K·疑缩水代理');
+  }
+  if (wlOut > 0 && outClaimed > 0) {
+    var outClaimedK = _normalizeToK(outClaimed);
+    if (outClaimedK > wlOut * 2) warnings.push('输出声称' + outClaimedK + 'K·白名单仅' + wlOut + 'K·疑虚报');
+  }
+  if (modelClaimed && P.ai.model) {
+    var lowerC = modelClaimed.toLowerCase(), lowerR = (P.ai.model||'').toLowerCase();
+    // 截取前部的模型家族主词做粗匹（例如 "claude" / "gpt" / "gemini"）
+    var _fams = ['claude','gpt','deepseek','gemini','qwen','glm','llama','mistral','moonshot','kimi','yi','baichuan'];
+    var reqFam = _fams.find(function(f){ return lowerR.indexOf(f)>=0; });
+    var claimFam = _fams.find(function(f){ return lowerC.indexOf(f)>=0; });
+    if (reqFam && claimFam && reqFam !== claimFam) warnings.push('声称家族' + claimFam + ' 不匹配请求的 ' + reqFam + '·疑中转代理替换');
+  }
+
+  var report = {
+    answers: answers,
+    contextClaimedTokens: ctxClaimed, contextClaimedK: _normalizeToK(ctxClaimed),
+    outputClaimedTokens: outClaimed, outputClaimedK: _normalizeToK(outClaimed),
+    modelClaimedName: modelClaimed,
+    whitelistCtxK: wlCtx, whitelistOutK: wlOut,
+    warnings: warnings,
+    timestamp: Date.now(),
+    model: P.ai.model || ''
+  };
+  if (!P.conf._probeHistory) P.conf._probeHistory = {};
+  P.conf._probeHistory.selfReport = report;
+  return report;
+}
+
 /**
  * 获取当前模型的上下文窗口大小（同步版本，使用缓存）
  * 如果尚未探测，返回保守默认值32K

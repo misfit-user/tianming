@@ -659,25 +659,30 @@ function _dbg(){if(P&&P.conf&&P.conf.debugLog)console.log.apply(console,argument
 function gSid(s){var el=_$(s);return el?el.value:(P.scenarios[0]?P.scenarios[0].id:"");}
 var _aiProgressTimer=null;
 var _LOADING_HINTS=['运筹帷幄之中','决胜千里之外','天下大势，分合有时','时来天地皆同力','万事俱备','风云际会','暗潮涌动','大势将至','变局已生','棋局已布'];
+var _loadingMaxPct = 0;  // 单调递增的最大值·防止进度条倒退
 function showLoading(msg,pct){
-  // 后朝进行中——推演全程静默，不弹加载条（避免覆盖朝会 UI）
   if (typeof GM !== 'undefined' && GM && GM._isPostTurnCourt && (!GM._pendingShijiModal || GM._pendingShijiModal.courtDone === false)) {
     return;
   }
   _$("loading").classList.add("show");
   _$("loading-sub").textContent=msg||_LOADING_HINTS[Math.floor((typeof random==='function'?random():Math.random())*_LOADING_HINTS.length)];
   if(_aiProgressTimer){clearInterval(_aiProgressTimer);_aiProgressTimer=null;}
-  var cur=pct||5;
+  var requestedPct = pct || 5;
+  // 单调递增：新 pct 不得低于当前 max·避免不同 sub-call 传入乱序 pct 导致回退
+  var cur = Math.max(requestedPct, _loadingMaxPct);
+  _loadingMaxPct = cur;
   _$("loading-fill").style.width=cur+"%";
   _aiProgressTimer=setInterval(function(){
-    cur+=(Date.now()%7)*0.5+0.5;
-    if(cur>92)cur=92;
+    cur+=(Date.now()%7)*0.3+0.2;
+    if(cur>95)cur=95;
+    _loadingMaxPct = cur;
     _$("loading-fill").style.width=cur+"%";
   },400);
 }
 function hideLoading(){
   if(_aiProgressTimer){clearInterval(_aiProgressTimer);_aiProgressTimer=null;}
   _$("loading-fill").style.width="100%";
+  _loadingMaxPct = 0;  // 重置·下回合从 0 开始
   setTimeout(function(){_$("loading").classList.remove("show");_$("loading-fill").style.width="0%";},250);
 }
 // ═══ 后朝并发期间·模态排队机制 ═══

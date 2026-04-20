@@ -167,7 +167,7 @@
   //  自动路由补丁 — 扩展 EdictParser.tryExecute
   // ═══════════════════════════════════════════════════════════════════
 
-  function _enhancedTryExecute(text, params, ctx) {
+  function _enhancedTryExecute(text, params, ctx, origFn) {
     if (typeof global.EdictParser === 'undefined') return { ok: false, reason: 'EdictParser 未加载' };
     var P = global.EdictParser;
     // 先检测 P1 类型
@@ -179,15 +179,13 @@
       var exec = P1_EDICT_TYPES[p1Match].aiEntry(params || {});
       return { ok: exec, pathway: 'direct', typeKey: p1Match, isP1: true };
     }
-    // 原路径
-    var result = P.tryExecute(text, params, ctx);
+    // 原路径·必须用 origFn 而非 P.tryExecute（后者已被包装为 enhanced·会死循环）
+    var result = origFn ? origFn.call(P, text, params, ctx) : { ok: false, reason: 'orig unavailable' };
     if (result.ok) return result;
-    // 如果分类结果是 memorial，自动调 submitToMemorial
     if (result.classification && result.classification.pathway === 'memorial') {
       var memo = P.submitToMemorial(text, result.classification);
       return { ok: true, pathway: 'memorial', memo: memo };
     }
-    // 如果是 ask，自动调 askForClarification
     if (result.classification && result.classification.pathway === 'ask') {
       var clar = P.askForClarification(text, result.classification);
       return { ok: true, pathway: 'ask', clarification: clar };
@@ -201,7 +199,7 @@
     if (global.EdictParser._enhanced) return;
     var orig = global.EdictParser.tryExecute;
     global.EdictParser.tryExecute = function(text, params, ctx) {
-      return _enhancedTryExecute(text, params, ctx);
+      return _enhancedTryExecute(text, params, ctx, orig);
     };
     global.EdictParser._enhanced = true;
     global.EdictParser.P1_EDICT_TYPES = P1_EDICT_TYPES;

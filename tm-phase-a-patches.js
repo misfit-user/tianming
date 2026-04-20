@@ -259,7 +259,11 @@
 
   /** 家族两层（core / extended）继承 */
   function initFamilyStructure(character) {
-    if (!character.family) character.family = {};
+    // 兼容：某些剧本数据里 family 是字符串（家族名）·需升级为对象
+    if (typeof character.family === 'string') {
+      character.family = { name: character.family };
+    }
+    if (!character.family || typeof character.family !== 'object') character.family = {};
     if (!character.family.core) character.family.core = {};
     if (!('spouse' in character.family.core)) character.family.core.spouse = null;
     if (!Array.isArray(character.family.core.children)) character.family.core.children = [];

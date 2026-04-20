@@ -562,26 +562,69 @@
   var COMMON_SURNAMES = '\u8D75\u94B1\u5B59\u674E\u5468\u5434\u90D1\u738B\u51AF\u9648\u80CE\u536B\u848B\u6C88\u97E9\u6768\u6731\u79E6\u5C24\u8BB8\u4F55\u5415\u65BD\u5F20\u5B54\u66F9\u4E25\u534E\u91D1\u9B4F\u9676\u59DC\u621A\u8C22\u90B9\u55BB\u67CF\u6C34\u7AC7\u7AE0\u4E91\u82CF\u6F58\u845B\u595A\u8303\u5F6D\u90CE\u9C81\u97E6\u660C\u9A6C\u82D7\u51E4\u82B1\u65B9\u4FDE\u4EFB\u8881\u67F3\u9146\u9C8D\u53F2\u5510\u8D39\u5ED6\u5CD1\u859B\u96F7\u8D3A\u502A\u6C64\u6EE1\u4E8E\u5E24\u6BB7\u7F57\u74D5\u5176\u90DD\u4E4C\u5B89\u5E38\u4E50\u4E8E\u65F6\u5085\u76AE\u535E\u9F50\u5EB7\u4F0D\u4F59\u5143\u535C\u987E\u5B5F\u5E73\u9EC4\u548C\u7A46\u8427\u5C39\u59DA\u90B5\u6E5B\u6C6A\u7941\u6BDB\u79B9\u72C4\u7C73\u8D1D\u660E\u81E7\u8BA1\u4F0F\u6210\u6234\u8C08\u5B8B\u8305\u5E9E\u718A\u7EAA\u8212\u5C48\u9879\u795D\u8463\u6881\u675C\u962E\u84DD\u95F5\u5E2D\u5B63\u9EBB\u5F3A\u8D3E\u8DEF\u5A04\u5371\u6C5F\u7AE5\u989C\u90ED\u6885\u76DB\u6797\u5201\u953A\u5F90\u4E18\u9A86\u9AD8\u590F\u8521\u7530\u6A0A\u80E1\u51CC\u970D\u865E\u4E07\u652F\u67EF\u54B8\u7BA1\u5362\u83AB\u7ECF\u623F\u88D8\u7F2A\u5E72\u89E3\u5E94\u5B97\u4E01\u5BA3\u8D32\u9093\u90C1\u5355\u676D\u6D2A\u5305\u8BF8\u5DE6\u77F3\u5D14\u5409\u94AE\u9F9A\u7A0B\u5D47\u90A2\u6ED1\u88F4\u9646\u8363\u7FC1\u8340\u7F8A\u65BC\u60E0\u7504\u9E92\u5BB6\u5C01\u82EE\u7FF1\u5112\u65E7\u6B27\u67E5\u540E\u8346\u7EA2\u6E38\u7AFA\u6743\u9011\u76D6\u76CA\u6853\u516C\u4E07\u4FDF\u53F8\u9A6C\u4E0A\u5B98\u6B27\u9633\u590F\u4FAF\u8BF8\u845B\u95FB\u4EBA\u4E1C\u65B9\u8D6B\u8FDE\u7687\u7518\u7A7A\u53D4\u5B6B\u6155\u5BB9\u4EE4\u72D0\u949F\u79BB\u5B87\u6587\u4EBA\u957F\u5B59\u6155\u5BB9\u9C9C\u4E8E\u95FE\u4E18\u53F8\u5F92\u53F8\u7A7A\u4E38\u4E0A\u5B98\u6B27\u9633';
   var COMMON_TITLE_KEYWORDS = ['\u5927\u4EBA', '\u5B98', '\u5C06\u519B', '\u4E1E\u76F8', '\u5927\u5B66\u58EB', '\u4F8D\u90CE', '\u5C1A\u4E66', '\u90CE\u4E2D', '\u5F52\u8BDA'];
 
+  // 复姓白名单——只有开头命中复姓时才允许 3-4 字；否则姓只占 1 字
+  var COMPOUND_SURNAMES = ['\u53F8\u9A6C','\u6B27\u9633','\u590F\u4FAF','\u8BF8\u845B','\u4E0A\u5B98','\u4EE4\u72D0','\u8D6B\u8FDE','\u6155\u5BB9','\u5B87\u6587','\u4E07\u4FDF','\u7533\u5C60','\u95FB\u4EBA','\u4E1C\u65B9','\u65BC\u94B1','\u516C\u51B6','\u8F69\u8F95','\u7687\u752B','\u957F\u5B59','\u5B97\u653F','\u5BB0\u7236','\u4E1C\u90ED','\u5357\u95E8','\u897F\u95E8','\u4E1C\u95E8','\u516C\u5B59','\u4EF2\u5B59','\u590F\u8C37','\u76D6\u805B','\u6EE1\u5BB9','\u95FE\u4E18','\u6FEE\u9633','\u4E50\u6B63','\u8C37\u6881','\u5DE6\u4E18','\u4E1C\u91CC','\u5357\u5BAB','\u516C\u4E58','\u6E06\u53F0','\u7AEF\u6728','\u5DEB\u9A6C','\u5B50\u8F66','\u9885\u5B59','\u516C\u897F','\u7F8A\u820C','\u5FE0\u541B'];
+  // 人名后常接的动词/助词/语气词——若 3-4 字名以此结尾，说明误抓，须截短
+  var TRAIL_TRIM_CHARS = '\u63A5\u5165\u51FA\u767B\u5949\u594F\u8BF4\u8A00\u8BF7\u4EE4\u6D3E\u9063\u4F7F\u5E26\u9886\u7387\u547D\u4F20\u544A\u62A5\u53D7\u884C\u53BB\u8FD4\u8D70\u8FDB\u9000\u7559\u5C45\u7ACB\u5750\u6B7B\u6D3B\u751F\u4EA1\u901D\u85A8\u5D29\u9635\u65A9\u6740\u64DE\u4FD8\u8D25\u80DC\u6218\u5F81\u4F10\u653B\u5B88\u5F00\u95ED\u8BFB\u5199\u4E34\u5C65\u62DC\u8C22\u62D2\u7EB3\u8D50\u8D4F\u7F5A\u8D2C\u8FC1\u6388\u53EC\u8F9E\u8BBF\u63A2\u5F80\u5F52\u8FD8\u8DEA\u4E4B\u7684\u4E4E\u4E5F\u77E3\u7109\u54C9\u8033\u800C\u4E14\u6216\u65E2\u5C24\u4E0E\u548C\u540C\u5408\u5171\u8FDE\u504C\u5E76\u4EA6\u53C8\u518D\u590D\u6108\u8D8A\u66F4\u6B64\u662F\u5373\u4E43\u4FBF\u5C31\u5219\u76D6\u975E\u5C82\u4F55\u5974\u66F0\u80E1\u5B89\u59CB\u7EC8\u672B\u521D\u5728\u4ECE\u5411\u4EE5\u4E3A\u7531\u56E0\u4E8E\u6308\u52D1\u5374\u4E26\u53EA\u4EC5\u7686\u5C1A\u53CA\u90A3\u8FD9\u770B\u95EE\u7B54\u8BAE\u79FB\u5EF7\u9047\u5F17\u6302\u79BB\u5EFA\u8D77\u79F0\u964D\u5352\u6B81\u8D74\u8FCE\u643A\u903C\u56F4\u51FB\u7834\u7F1A\u541B\u5F13\u6EE1\u653E\u53D6\u6DF1\u5FE0\u4FE1\u660E\u5FAA\u6307\u62F1\u5F80\u8FD0\u81F3\u5230\u5012\u6258\u5347\u8F6C\u5DE1\u628A\u5EA7\u6B63\u4E1C\u897F\u5357\u5317\u4E2D\u4E0A\u4E0B\u547C\u53F7\u5E9C\u6BD2\u8D23\u8BAD\u7B97';
+
+  // 判定候选是否疑似只是人名+尾部动词/助词：若截短后前缀（含姓）仍成立则返回截短版
+  function _trimTrailing(cand) {
+    if (!cand || cand.length <= 2) return cand;
+    // 若末字是常见 trailing 动词/助词，尝试截短
+    var last = cand.charAt(cand.length - 1);
+    if (TRAIL_TRIM_CHARS.indexOf(last) >= 0) {
+      return cand.slice(0, -1);
+    }
+    return cand;
+  }
+
   function _extractNames(text) {
     if (!text) return [];
     var names = [];
     var nameSet = {};
-    // 2-4 字·首字必为姓氏·不含标点
-    var re = /([\u4e00-\u9fa5]{2,4})/g;
+    // 扫所有中文连续块·每块再分拆人名
+    var re = /[\u4e00-\u9fa5]+/g;
     var m;
     while ((m = re.exec(text)) !== null) {
-      var cand = m[1];
-      if (cand.length < 2) continue;
-      if (COMMON_SURNAMES.indexOf(cand.charAt(0)) < 0) continue;
-      // 简单过滤：排除已知官职/地名常用词
-      if (/[\u738B\u8D75\u674E\u5218]\u671D|[\u540E\u5FA1]|[\u4ED6\u6211\u4F60]/.test(cand)) continue;
-      // 排除全是常见虚词/国号
-      if (/^(\u7687\u5E1D|\u9661\u4E0B|\u6211\u5927|\u672C\u671D|\u671D\u5EF7|\u540E\u5BAB|\u592A\u76D1)$/.test(cand)) continue;
-      // 已在 GM.chars → 跳过
-      if (typeof findCharByName === 'function' && findCharByName(cand)) continue;
-      if (nameSet[cand]) continue;
-      nameSet[cand] = true;
-      names.push(cand);
+      var block = m[0];
+      // 在 block 中逐位置尝试匹配人名
+      for (var i = 0; i < block.length; i++) {
+        if (COMMON_SURNAMES.indexOf(block.charAt(i)) < 0) continue;
+        // 判定是否复姓开头：看两个字是否在 COMPOUND_SURNAMES
+        var two = block.substr(i, 2);
+        var isCompound = (i + 1 < block.length) && (COMPOUND_SURNAMES.indexOf(two) >= 0);
+        // 候选长度：复姓 3-4 字，单姓 2-3 字（不贪 4）
+        var maxLen = isCompound ? 4 : 3;
+        var minLen = isCompound ? 3 : 2;
+        var cand = null;
+        // 从长到短取候选，用 _trimTrailing 清尾
+        for (var len = maxLen; len >= minLen; len--) {
+          if (i + len > block.length) continue;
+          var raw = block.substr(i, len);
+          var trimmed = _trimTrailing(raw);
+          // trimmed 必须仍满足长度要求并以 surname 开头
+          if (trimmed.length < minLen) continue;
+          if (COMMON_SURNAMES.indexOf(trimmed.charAt(0)) < 0) continue;
+          cand = trimmed;
+          break;
+        }
+        if (!cand || cand.length < 2) continue;
+        // 过滤：官职/虚词/称呼
+        if (/[\u738B\u8D75\u674E\u5218]\u671D|[\u540E\u5FA1]|[\u4ED6\u6211\u4F60]/.test(cand)) continue;
+        if (/^(\u7687\u5E1D|\u9661\u4E0B|\u6211\u5927|\u672C\u671D|\u671D\u5EF7|\u540E\u5BAB|\u592A\u76D1)$/.test(cand)) continue;
+        // 已在 GM.chars → 跳过
+        if (typeof findCharByName === 'function' && findCharByName(cand)) {
+          // 跳过这一候选，但往前挪整段长度避免重复扫描同一 NPC
+          i += cand.length - 1;
+          continue;
+        }
+        if (!nameSet[cand]) {
+          nameSet[cand] = true;
+          names.push(cand);
+        }
+        // 已成功匹配到名字，跳过占用的字符
+        i += cand.length - 1;
+      }
     }
     return names;
   }

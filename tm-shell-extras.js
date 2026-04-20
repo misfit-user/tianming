@@ -408,23 +408,46 @@
     gl.appendChild(pal);
     } catch(e) { console.warn('[shell-extras] palace panel:', e); }
 
-    // 8. 界面主题
+    // 8. 界面主题（实装：主题/字号/字体）
     try {
     var tm = document.createElement('div');
     tm.className = 'gs-panel p-theme';
     tm.setAttribute('data-panel-key','theme');
+    // 读取已保存的设置
+    var _savedTheme = localStorage.getItem('tm.theme') || 'plain';
+    var _savedSize = localStorage.getItem('tm.fontSize') || 'md';
+    var _savedBody = localStorage.getItem('tm.fontBody') || 'STKaiti';
+    var _savedTitle = localStorage.getItem('tm.fontTitle') || 'STKaiti';
+    var _actCls = function(k, cur){ return k===cur?' active':''; };
     tm.innerHTML = '<div class="gs-panel-hdr"><div class="gs-panel-title">界 面 主 题</div><span class="gs-panel-cnt">4 色</span></div>'
       + '<div class="gs-theme-grid">'
-      + '<div class="gs-theme-card active"><div class="gs-theme-swatch"><span class="c" style="background:#b89a53;"></span><span class="c" style="background:#c9a85f;"></span><span class="c" style="background:#6a9a7f;"></span><span class="c" style="background:#b84738;"></span></div><div class="gs-theme-name">素 纸</div><div class="desc">宣纸金线·朱砂</div></div>'
-      + '<div class="gs-theme-card"><div class="gs-theme-swatch"><span class="c" style="background:#3d342a;"></span><span class="c" style="background:#6b5d47;"></span><span class="c" style="background:#a69470;"></span><span class="c" style="background:#d9c9a9;"></span></div><div class="gs-theme-name">水 墨</div><div class="desc">墨分五色·冷调</div></div>'
-      + '<div class="gs-theme-card"><div class="gs-theme-swatch"><span class="c" style="background:#8f3428;"></span><span class="c" style="background:#b84738;"></span><span class="c" style="background:#d15c47;"></span><span class="c" style="background:#c9a85f;"></span></div><div class="gs-theme-name">朱 砂</div><div class="desc">浓朱重赤·烈</div></div>'
-      + '<div class="gs-theme-card"><div class="gs-theme-swatch"><span class="c" style="background:#4a7a5f;"></span><span class="c" style="background:#6a9a7f;"></span><span class="c" style="background:#b89a53;"></span><span class="c" style="background:#d9c9a9;"></span></div><div class="gs-theme-name">青 绿</div><div class="desc">青绿山水·雅</div></div>'
+      + '<div class="gs-theme-card' + _actCls('plain', _savedTheme) + '" data-theme="plain" onclick="_tmApplyTheme(\'plain\', this)"><div class="gs-theme-swatch"><span class="c" style="background:#b89a53;"></span><span class="c" style="background:#c9a85f;"></span><span class="c" style="background:#6a9a7f;"></span><span class="c" style="background:#b84738;"></span></div><div class="gs-theme-name">素 纸</div><div class="desc">宣纸金线·朱砂</div></div>'
+      + '<div class="gs-theme-card' + _actCls('ink', _savedTheme) + '" data-theme="ink" onclick="_tmApplyTheme(\'ink\', this)"><div class="gs-theme-swatch"><span class="c" style="background:#3d342a;"></span><span class="c" style="background:#6b5d47;"></span><span class="c" style="background:#a69470;"></span><span class="c" style="background:#d9c9a9;"></span></div><div class="gs-theme-name">水 墨</div><div class="desc">墨分五色·冷调</div></div>'
+      + '<div class="gs-theme-card' + _actCls('vermillion', _savedTheme) + '" data-theme="vermillion" onclick="_tmApplyTheme(\'vermillion\', this)"><div class="gs-theme-swatch"><span class="c" style="background:#8f3428;"></span><span class="c" style="background:#b84738;"></span><span class="c" style="background:#d15c47;"></span><span class="c" style="background:#c9a85f;"></span></div><div class="gs-theme-name">朱 砂</div><div class="desc">浓朱重赤·烈</div></div>'
+      + '<div class="gs-theme-card' + _actCls('celadon', _savedTheme) + '" data-theme="celadon" onclick="_tmApplyTheme(\'celadon\', this)"><div class="gs-theme-swatch"><span class="c" style="background:#4a7a5f;"></span><span class="c" style="background:#6a9a7f;"></span><span class="c" style="background:#b89a53;"></span><span class="c" style="background:#d9c9a9;"></span></div><div class="gs-theme-name">青 绿</div><div class="desc">青绿山水·雅</div></div>'
       + '</div>'
       + '<div class="gs-font-row"><span class="lbl">字 号</span>'
-      + '<div class="gs-font-sizes"><button class="gs-sz-btn sm">小</button><button class="gs-sz-btn md active">中</button><button class="gs-sz-btn lg">大</button><button class="gs-sz-btn xl">特大</button></div>'
+      + '<div class="gs-font-sizes">'
+      +   '<button class="gs-sz-btn sm' + _actCls('sm', _savedSize) + '" onclick="_tmApplySize(\'sm\', this)">小</button>'
+      +   '<button class="gs-sz-btn md' + _actCls('md', _savedSize) + '" onclick="_tmApplySize(\'md\', this)">中</button>'
+      +   '<button class="gs-sz-btn lg' + _actCls('lg', _savedSize) + '" onclick="_tmApplySize(\'lg\', this)">大</button>'
+      +   '<button class="gs-sz-btn xl' + _actCls('xl', _savedSize) + '" onclick="_tmApplySize(\'xl\', this)">特大</button>'
       + '</div>'
-      + '<div class="gs-font-row"><span class="lbl">正 文</span><select class="gs-font-select"><option>宋体 SimSun</option><option>楷体 STKaiti</option><option>仿宋 FangSong</option><option>方正启体</option><option>思源宋体</option><option>霞鹜文楷</option></select></div>'
-      + '<div class="gs-font-row"><span class="lbl">标 题</span><select class="gs-font-select"><option>楷体 STKaiti</option><option>行楷</option><option>隶书</option><option>华文行楷</option></select></div>';
+      + '</div>'
+      + '<div class="gs-font-row"><span class="lbl">正 文</span><select class="gs-font-select" onchange="_tmApplyBodyFont(this.value)">'
+      +   '<option value="STKaiti"' + (_savedBody==='STKaiti'?' selected':'') + '>楷体 STKaiti</option>'
+      +   '<option value="SimSun"' + (_savedBody==='SimSun'?' selected':'') + '>宋体 SimSun</option>'
+      +   '<option value="FangSong"' + (_savedBody==='FangSong'?' selected':'') + '>仿宋 FangSong</option>'
+      +   '<option value="FZQiTi"' + (_savedBody==='FZQiTi'?' selected':'') + '>方正启体</option>'
+      +   '<option value="Noto Serif SC"' + (_savedBody==='Noto Serif SC'?' selected':'') + '>思源宋体</option>'
+      +   '<option value="LXGW WenKai"' + (_savedBody==='LXGW WenKai'?' selected':'') + '>霞鹜文楷</option>'
+      + '</select></div>'
+      + '<div class="gs-font-row"><span class="lbl">标 题</span><select class="gs-font-select" onchange="_tmApplyTitleFont(this.value)">'
+      +   '<option value="STKaiti"' + (_savedTitle==='STKaiti'?' selected':'') + '>楷体 STKaiti</option>'
+      +   '<option value="STXingkai"' + (_savedTitle==='STXingkai'?' selected':'') + '>行楷</option>'
+      +   '<option value="STLiti"' + (_savedTitle==='STLiti'?' selected':'') + '>隶书</option>'
+      +   '<option value="STXinghkaiti"' + (_savedTitle==='STXinghkaiti'?' selected':'') + '>华文行楷</option>'
+      + '</select></div>';
     gl.appendChild(tm);
     } catch(e) { console.warn('[shell-extras] theme panel:', e); }
 
@@ -780,4 +803,129 @@
       + '.gs-season-disc[data-season="冬"]::after{content:"冬";color:var(--indigo-400,#5a6fa8);}';
     document.head.appendChild(_style);
   } catch(e){}
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  界面主题 · 字号 · 字体 实装（暴露为 window 全局·给 onclick 调用）
+  // ═══════════════════════════════════════════════════════════════════
+
+  // 主题 → 覆盖 :root CSS 变量（通过 <style id="_tmThemeOverride">）
+  var THEME_PALETTES = {
+    plain: { // 素纸·默认金-朱
+      bg:'#1a1510', surface:'#2a2218', fg:'#f4eadd',
+      primary:'#c9a85f', accent:'#b84738', info:'#7eb8a7', warn:'#c9a045',
+      gold1:'#b89a53', gold2:'#c9a85f', gold3:'#d4be7a',
+      verm1:'#8f3428', verm2:'#b84738', verm3:'#d15c47',
+      cela:'#6a9a7f'
+    },
+    ink: { // 水墨·冷调
+      bg:'#1a1a22', surface:'#282834', fg:'#d9c9a9',
+      primary:'#a69470', accent:'#6b5d47', info:'#b0b8c4', warn:'#c9c4a8',
+      gold1:'#6b5d47', gold2:'#a69470', gold3:'#c2b596',
+      verm1:'#5a4038', verm2:'#7a5548', verm3:'#a07058',
+      cela:'#607080'
+    },
+    vermillion: { // 朱砂·浓朱
+      bg:'#1e0f0c', surface:'#2e1a14', fg:'#fce6d8',
+      primary:'#d15c47', accent:'#8f3428', info:'#c9a045', warn:'#e89078',
+      gold1:'#b89a53', gold2:'#c9a85f', gold3:'#e8c888',
+      verm1:'#8f3428', verm2:'#b84738', verm3:'#d15c47',
+      cela:'#8a7050'
+    },
+    celadon: { // 青绿·山水
+      bg:'#0f1814', surface:'#1a2420', fg:'#e8f0e0',
+      primary:'#6a9a7f', accent:'#4a7a5f', info:'#b89a53', warn:'#d9c9a9',
+      gold1:'#8a9060', gold2:'#b89a53', gold3:'#d9c9a9',
+      verm1:'#7a5548', verm2:'#a07058', verm3:'#c08878',
+      cela:'#6a9a7f'
+    }
+  };
+  window._tmApplyTheme = function(name, el) {
+    var pal = THEME_PALETTES[name] || THEME_PALETTES.plain;
+    var css = ':root{'
+      + '--color-background:' + pal.bg + ';'
+      + '--color-surface:' + pal.surface + ';'
+      + '--color-foreground:' + pal.fg + ';'
+      + '--color-primary:' + pal.primary + ';'
+      + '--color-accent:' + pal.accent + ';'
+      + '--color-info:' + pal.info + ';'
+      + '--color-warning:' + pal.warn + ';'
+      + '--gold-400:' + pal.gold2 + ';'
+      + '--gold-500:' + pal.gold1 + ';'
+      + '--gold-300:' + pal.gold3 + ';'
+      + '--vermillion-400:' + pal.verm2 + ';'
+      + '--vermillion-500:' + pal.verm1 + ';'
+      + '--vermillion-300:' + pal.verm3 + ';'
+      + '--celadon-400:' + pal.cela + ';'
+      + '--bg-2:' + pal.bg + ';'
+      + '--bg-3:' + pal.surface + ';'
+      + '}';
+    var st = document.getElementById('_tmThemeOverride');
+    if (!st) { st = document.createElement('style'); st.id = '_tmThemeOverride'; document.head.appendChild(st); }
+    st.textContent = css;
+    try { localStorage.setItem('tm.theme', name); } catch(_){}
+    // UI: 高亮当前卡
+    if (el) {
+      var parent = el.parentElement;
+      if (parent) {
+        parent.querySelectorAll('.gs-theme-card').forEach(function(c){ c.classList.remove('active'); });
+        el.classList.add('active');
+      }
+    }
+    if (typeof toast === 'function') toast('主题·' + (name==='plain'?'素纸':name==='ink'?'水墨':name==='vermillion'?'朱砂':'青绿'));
+  };
+
+  // 字号 → 覆盖 --text-* 比例
+  var SIZE_SCALES = { sm: 0.85, md: 1.0, lg: 1.15, xl: 1.32 };
+  var SIZE_BASE = { xs:0.95, sm:1.05, base:1.18, md:1.28, lg:1.42, xl:1.60, xl2:1.90, xl3:2.45 };
+  window._tmApplySize = function(size, el) {
+    var s = SIZE_SCALES[size] || 1.0;
+    var css = ':root{'
+      + '--text-xs:' + (SIZE_BASE.xs*s).toFixed(2) + 'rem;'
+      + '--text-sm:' + (SIZE_BASE.sm*s).toFixed(2) + 'rem;'
+      + '--text-base:' + (SIZE_BASE.base*s).toFixed(2) + 'rem;'
+      + '--text-md:' + (SIZE_BASE.md*s).toFixed(2) + 'rem;'
+      + '--text-lg:' + (SIZE_BASE.lg*s).toFixed(2) + 'rem;'
+      + '--text-xl:' + (SIZE_BASE.xl*s).toFixed(2) + 'rem;'
+      + '--text-2xl:' + (SIZE_BASE.xl2*s).toFixed(2) + 'rem;'
+      + '--text-3xl:' + (SIZE_BASE.xl3*s).toFixed(2) + 'rem;'
+      + '}';
+    var st = document.getElementById('_tmSizeOverride');
+    if (!st) { st = document.createElement('style'); st.id = '_tmSizeOverride'; document.head.appendChild(st); }
+    st.textContent = css;
+    try { localStorage.setItem('tm.fontSize', size); } catch(_){}
+    if (el) {
+      var parent = el.parentElement;
+      if (parent) {
+        parent.querySelectorAll('.gs-sz-btn').forEach(function(b){ b.classList.remove('active'); });
+        el.classList.add('active');
+      }
+    }
+    if (typeof toast === 'function') toast('字号·' + (size==='sm'?'小':size==='md'?'中':size==='lg'?'大':'特大'));
+  };
+
+  window._tmApplyBodyFont = function(font) {
+    var css = ':root{--font-serif:"' + font + '","STKaiti","KaiTi","楷体","Noto Serif SC","SimSun",serif;}';
+    var st = document.getElementById('_tmBodyFontOverride');
+    if (!st) { st = document.createElement('style'); st.id = '_tmBodyFontOverride'; document.head.appendChild(st); }
+    st.textContent = css;
+    try { localStorage.setItem('tm.fontBody', font); } catch(_){}
+    if (typeof toast === 'function') toast('正文字体·' + font);
+  };
+
+  window._tmApplyTitleFont = function(font) {
+    var css = '.home-title,.turn-summary-bar,.gs-panel-title,.gs-drawer-title,.mem-title,.wdp-title,.hy-title,.bn-title,h1,h2,h3,h4{font-family:"' + font + '","STKaiti","KaiTi","楷体",serif !important;}';
+    var st = document.getElementById('_tmTitleFontOverride');
+    if (!st) { st = document.createElement('style'); st.id = '_tmTitleFontOverride'; document.head.appendChild(st); }
+    st.textContent = css;
+    try { localStorage.setItem('tm.fontTitle', font); } catch(_){}
+    if (typeof toast === 'function') toast('标题字体·' + font);
+  };
+
+  // 启动时恢复已保存的设置
+  try {
+    var _sv = localStorage.getItem('tm.theme'); if (_sv && _sv !== 'plain') window._tmApplyTheme(_sv);
+    var _sz = localStorage.getItem('tm.fontSize'); if (_sz && _sz !== 'md') window._tmApplySize(_sz);
+    var _bf = localStorage.getItem('tm.fontBody'); if (_bf && _bf !== 'STKaiti') window._tmApplyBodyFont(_bf);
+    var _tf = localStorage.getItem('tm.fontTitle'); if (_tf && _tf !== 'STKaiti') window._tmApplyTitleFont(_tf);
+  } catch(_){}
 })();

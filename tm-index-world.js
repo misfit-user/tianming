@@ -4661,39 +4661,53 @@ function _wdBuildPrompt(ch, name) {
     var _facObj = (GM.factions||[]).find(function(f){return f.name===_facName;});
     p = '你扮演' + _facName + '派遣的使节' + ch.name + '，此次来朝的使命是：【' + _typeLabel + '】。\n';
     p += '【身份】你是外臣——' + _facName + '所派使节，不是本朝大臣。自称用"外臣/小臣/使臣"，不用"臣"独称；称对方"陛下/天朝"。\n';
-    // 势力背景注入
+    // 势力背景注入（兼容多种字段命名）
     if (_facObj) {
       p += '【本方势力】' + _facName;
       if (_facObj.territory) p += '，据' + _facObj.territory;
       if (_facObj.capital) p += '，都' + _facObj.capital;
-      if (_facObj.culture) p += '，' + _facObj.culture + '文化';
-      if (_facObj.faith) p += '，信' + _facObj.faith;
+      // 文化/信仰：从 ideology/culture/faith/traits 组合
+      var _culture = _facObj.culture || _facObj.ideology || '';
+      if (_culture) p += '，文化信仰：' + String(_culture).slice(0, 60);
+      if (_facObj.faith && _facObj.faith !== _culture) p += '，信' + _facObj.faith;
       p += '\n';
-      if (_facObj.leaderName) {
-        p += '【本方君主】' + _facObj.leaderName;
+      // 君主：leader / leaderName 都试
+      var _leaderName = _facObj.leader || _facObj.leaderName || (_facObj.leadership && _facObj.leadership.ruler);
+      if (_leaderName) {
+        p += '【本方君主】' + _leaderName;
         if (_facObj.leaderTitle) p += '（' + _facObj.leaderTitle + '）';
         p += '——你代表他出使，须以他之名义陈情\n';
       }
-      if (_facObj.militaryStrength || _facObj.totalTroops) {
-        p += '【本方实力】兵' + (_facObj.totalTroops||_facObj.militaryStrength||'?') + (_facObj.wealth?'、国库'+_facObj.wealth:'') + '——谈判筹码须与实力相称\n';
+      // 实力：militaryStrength / totalTroops / strength
+      var _mil = _facObj.militaryStrength || _facObj.totalTroops || _facObj.strength;
+      if (_mil) {
+        p += '【本方实力】兵 ' + _mil;
+        if (_facObj.economy) p += '、经济 ' + _facObj.economy;
+        var _treasury = _facObj.treasury && (_facObj.treasury.money || _facObj.treasury);
+        if (typeof _treasury === 'number') p += '、国库银 ' + _treasury + ' 两';
+        p += '——谈判筹码须与实力相称\n';
       }
-      if (_facObj.stance) p += '【本方立场】' + _facObj.stance + '\n';
-      // 两国关系
-      var _relations = _facObj.relations || _facObj.diplomacy;
-      if (_relations) {
-        if (typeof _relations === 'object') {
-          var _hostile = _relations.hostile || _relations.enemy;
-          var _ally = _relations.ally || _relations.friend;
-          if (_hostile && _hostile.length) p += '【世仇】' + (Array.isArray(_hostile)?_hostile.join('、'):_hostile) + '\n';
-          if (_ally && _ally.length) p += '【盟好】' + (Array.isArray(_ally)?_ally.join('、'):_ally) + '\n';
-        } else if (typeof _relations === 'string') {
-          p += '【邦交】' + _relations + '\n';
-        }
-      }
-      // 对主朝的历史
-      if (_facObj.historyWithMain || _facObj.tributaryHistory) {
-        p += '【旧事】' + (_facObj.historyWithMain||_facObj.tributaryHistory) + '\n';
-      }
+      // 立场：stance / attitude.self / politicalStance
+      var _stance = _facObj.stance || (_facObj.attitude && _facObj.attitude.self) || _facObj.politicalStance;
+      if (_stance) p += '【本方立场】' + _stance + '\n';
+      // 特征
+      if (_facObj.traits && _facObj.traits.length) p += '【本方特质】' + (Array.isArray(_facObj.traits)?_facObj.traits.join('、'):_facObj.traits) + '\n';
+      // 两国关系：relations / diplomacy / attitude.enemies/allies/neutrals
+      var _attitude = _facObj.attitude || {};
+      var _hostile = (_facObj.relations && (_facObj.relations.hostile||_facObj.relations.enemy)) || _attitude.enemies;
+      var _ally = (_facObj.relations && (_facObj.relations.ally||_facObj.relations.friend)) || _attitude.allies;
+      if (_hostile) p += '【世仇/敌对】' + (Array.isArray(_hostile)?_hostile.join('、'):_hostile) + '\n';
+      if (_ally) p += '【盟好】' + (Array.isArray(_ally)?_ally.join('、'):_ally) + '\n';
+      if (typeof _facObj.diplomacy === 'string') p += '【邦交】' + _facObj.diplomacy + '\n';
+      // 历史
+      var _history = _facObj.history || _facObj.historyWithMain || _facObj.tributaryHistory;
+      if (_history) p += '【本方国史】' + String(_history).slice(0, 200) + '\n';
+      // 当前 agenda/strategy
+      if (_facObj.strategy) p += '【本方战略】' + _facObj.strategy + '\n';
+      if (_facObj.currentAgenda) p += '【当下所图】' + _facObj.currentAgenda + '\n';
+      // 优劣势
+      if (_facObj.strengths && _facObj.strengths.length) p += '【己方强项】' + (Array.isArray(_facObj.strengths)?_facObj.strengths.slice(0,3).join('、'):_facObj.strengths) + '\n';
+      if (_facObj.weaknesses && _facObj.weaknesses.length) p += '【己方隐忧】' + (Array.isArray(_facObj.weaknesses)?_facObj.weaknesses.slice(0,3).join('、'):_facObj.weaknesses) + '\n';
     }
     if (ch.envoyMission) p += '【你所奉之命】' + ch.envoyMission + '\n';
     p += '【使命类型】' + _typeLabel + '——你必须就此事向皇帝直接提出具体诉求、条款或请求，不要说笼统套话。\n';

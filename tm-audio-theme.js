@@ -798,6 +798,24 @@ function _prepareGMForSave() {
   if (GM._epitaphs && GM._epitaphs.length > 0) GM._savedEpitaphs = _safeClone(GM._epitaphs);
   if (GM._fakeDeathHolding && Object.keys(GM._fakeDeathHolding).length > 0) GM._savedFakeDeathHolding = _safeClone(GM._fakeDeathHolding);
   if (GM._fiscalValidatorLog && GM._fiscalValidatorLog.length > 0) GM._savedFiscalValidatorLog = _safeClone(GM._fiscalValidatorLog);
+  // M1-M4 新增字段
+  if (GM._memoryArchiveFull && GM._memoryArchiveFull.length > 0) GM._savedMemoryArchiveFull = _safeClone(GM._memoryArchiveFull);
+  if (GM._causalGraph && (GM._causalGraph.nodes && GM._causalGraph.nodes.length || GM._causalGraph.edges && GM._causalGraph.edges.length)) GM._savedCausalGraph = _safeClone(GM._causalGraph);
+  if (GM._factionArcs && Object.keys(GM._factionArcs).length > 0) GM._savedFactionArcs = _safeClone(GM._factionArcs);
+  if (GM._aiReflections && GM._aiReflections.length > 0) GM._savedAiReflections = _safeClone(GM._aiReflections);
+  if (GM._lastTurnPredictions) GM._savedLastTurnPredictions = _safeClone(GM._lastTurnPredictions);
+  // per-char：arcs + relationHistory
+  if (GM.chars) {
+    var _charMemExt = {};
+    GM.chars.forEach(function(c) {
+      if (!c || !c.name) return;
+      var e = {};
+      if (Array.isArray(c._arcs) && c._arcs.length > 0) e.arcs = _safeClone(c._arcs);
+      if (c._relationHistory && Object.keys(c._relationHistory).length > 0) e.relationHistory = _safeClone(c._relationHistory);
+      if (Object.keys(e).length > 0) _charMemExt[c.name] = e;
+    });
+    if (Object.keys(_charMemExt).length > 0) GM._savedCharMemExt = _charMemExt;
+  }
   if (GM._chronicle && GM._chronicle.length > 0) GM._savedChronicle = _safeClone(GM._chronicle);
   if (GM._wdRewardPunish && GM._wdRewardPunish.length > 0) GM._savedWdRewardPunish = _safeClone(GM._wdRewardPunish);
   if (GM._lastEvalTurn) GM._savedLastEvalTurn = GM._lastEvalTurn;
@@ -1038,6 +1056,22 @@ function _restoreSavedFields() {
   if (GM._savedEpitaphs) { GM._epitaphs = GM._savedEpitaphs; delete GM._savedEpitaphs; }
   if (GM._savedFakeDeathHolding) { GM._fakeDeathHolding = GM._savedFakeDeathHolding; delete GM._savedFakeDeathHolding; }
   if (GM._savedFiscalValidatorLog) { GM._fiscalValidatorLog = GM._savedFiscalValidatorLog; delete GM._savedFiscalValidatorLog; }
+  // M1-M4 新增字段
+  if (GM._savedMemoryArchiveFull) { GM._memoryArchiveFull = GM._savedMemoryArchiveFull; delete GM._savedMemoryArchiveFull; }
+  if (GM._savedCausalGraph) { GM._causalGraph = GM._savedCausalGraph; delete GM._savedCausalGraph; }
+  if (GM._savedFactionArcs) { GM._factionArcs = GM._savedFactionArcs; delete GM._savedFactionArcs; }
+  if (GM._savedAiReflections) { GM._aiReflections = GM._savedAiReflections; delete GM._savedAiReflections; }
+  if (GM._savedLastTurnPredictions) { GM._lastTurnPredictions = GM._savedLastTurnPredictions; delete GM._savedLastTurnPredictions; }
+  if (GM._savedCharMemExt && GM.chars) {
+    GM.chars.forEach(function(c) {
+      if (!c || !c.name) return;
+      var e = GM._savedCharMemExt[c.name];
+      if (!e) return;
+      if (e.arcs) c._arcs = e.arcs;
+      if (e.relationHistory) c._relationHistory = e.relationHistory;
+    });
+    delete GM._savedCharMemExt;
+  }
   if (GM._savedChronicle) { GM._chronicle = GM._savedChronicle; delete GM._savedChronicle; }
   if (GM._savedWdRewardPunish) { GM._wdRewardPunish = GM._savedWdRewardPunish; delete GM._savedWdRewardPunish; }
   if (GM._savedLastEvalTurn) { GM._lastEvalTurn = GM._savedLastEvalTurn; delete GM._savedLastEvalTurn; }

@@ -1128,6 +1128,128 @@ var _aiQueue = (function() {
 })();
 
 // ============================================================
+//  1.7.46 Provider 检测 + 通用 API 缓存适配（S4）
+//  支持 8+ 家 API 的 prompt caching：Anthropic/OpenAI/DeepSeek/Qwen/Moonshot/GLM/Gemini/OpenRouter
+// ============================================================
+function _detectAIProvider() {
+  var url = ((typeof P !== 'undefined' && P.ai && P.ai.url) || '').toLowerCase();
+  var model = ((typeof P !== 'undefined' && P.ai && P.ai.model) || '').toLowerCase();
+  if (url.indexOf('anthropic') >= 0 || /claude/.test(model)) return 'anthropic';
+  if (url.indexOf('deepseek') >= 0) return 'deepseek';
+  if (url.indexOf('dashscope') >= 0 || url.indexOf('aliyuncs') >= 0 || /^qwen/.test(model)) return 'qwen';
+  if (url.indexOf('moonshot') >= 0 || /kimi|moonshot/.test(model)) return 'moonshot';
+  if (url.indexOf('bigmodel') >= 0 || url.indexOf('zhipu') >= 0 || /^glm/.test(model)) return 'glm';
+  if (url.indexOf('generativelanguage') >= 0 || url.indexOf('vertex') >= 0 || /gemini/.test(model)) return 'gemini';
+  if (url.indexOf('openrouter') >= 0) return 'openrouter';
+  if (url.indexOf('openai') >= 0 || /gpt-/.test(model)) return 'openai';
+  return 'openai_compat';
+}
+
+// 缓存命中统计
+var _aiCacheStats = { hits: 0, misses: 0, savedTokens: 0, writeTokens: 0 };
+function _recordCacheStats(usage) {
+  if (!usage) return;
+  var cached = usage.cache_read_input_tokens || (usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens) || usage.prompt_cache_hit_tokens || 0;
+  var written = usage.cache_creation_input_tokens || 0;
+  if (cached > 0) { _aiCacheStats.hits++; _aiCacheStats.savedTokens += cached; }
+  else _aiCacheStats.misses++;
+  _aiCacheStats.writeTokens += written;
+}
+function getAICacheStats() { return _aiCacheStats; }
+
+/**
+ * 构建缓存友好的 messages：字节级前缀稳定·变动内容在尾部
+ * @param {string} sysStable - 稳定的 system prompt（整局几乎不变·世界设定/官制等）
+ * @param {string} sysVariable - 本回合变动的 system prompt（日期/数值/directives）
+ * @param {string|Array} userContent - 用户消息
+ * @returns {Array} messages 数组
+ */
+function buildCachedMessages(sysStable, sysVariable, userContent) {
+  var provider = _detectAIProvider();
+  sysStable = sysStable || '';
+  sysVariable = sysVariable || '';
+  // Anthropic：显式 cache_control
+  if (provider === 'anthropic') {
+    var sysBlocks = [];
+    if (sysStable) sysBlocks.push({ type: 'text', text: sysStable, cache_control: { type: 'ephemeral' } });
+    if (sysVariable) sysBlocks.push({ type: 'text', text: sysVariable });
+    return [
+      { role: 'system', content: sysBlocks.length ? sysBlocks : '' },
+      { role: 'user', content: userContent }
+    ];
+  }
+  // 其他（OpenAI/DeepSeek/Qwen/Moonshot/GLM/OpenRouter）：自动前缀缓存·字节级一致即可
+  return [
+    { role: 'system', content: sysStable + (sysVariable ? '\n\n' + sysVariable : '') },
+    { role: 'user', content: userContent }
+  ];
+}
+
+// sysStable 字节稳定性保证：同回合所有 sub-call 共享相同实例
+var _cachedSysStableMap = { hash: '', content: '', turn: -1 };
+function getCachedSysStable(buildFn) {
+  var curTurn = (typeof GM !== 'undefined' && GM.turn) || 0;
+  // 同回合直接命中
+  if (_cachedSysStableMap.turn === curTurn && _cachedSysStableMap.content) return _cachedSysStableMap.content;
+  // 重建
+  var content = '';
+  try { content = buildFn ? buildFn() : ''; } catch(_e) { content = ''; }
+  _cachedSysStableMap = { hash: '', content: content, turn: curTurn };
+  return content;
+}
+
+// ============================================================
+//  1.7.47 XML Prompt 构建器（方向 14）
+//  结构化记忆/NPC心声/墓志铭等注入·AI 解析速度 3-5x
+// ============================================================
+function _escXML(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+/**
+ * XML 片段构建：<tag attr="v">content</tag>
+ * content 为数组时每项包成 <item>·对象时按 key 嵌套
+ */
+function xmlTag(name, attrs, content) {
+  var attrStr = '';
+  if (attrs && typeof attrs === 'object') {
+    for (var k in attrs) {
+      if (attrs[k] == null || attrs[k] === '') continue;
+      attrStr += ' ' + k + '="' + _escXML(attrs[k]) + '"';
+    }
+  }
+  if (content == null || content === '') return '<' + name + attrStr + '/>';
+  if (typeof content === 'string') return '<' + name + attrStr + '>' + content + '</' + name + attrStr.replace(/\s.*/, '') + '>';
+  if (Array.isArray(content)) {
+    return '<' + name + attrStr + '>\n' + content.join('\n') + '\n</' + name.split(' ')[0] + '>';
+  }
+  return '<' + name + attrStr + '>' + String(content) + '</' + name.split(' ')[0] + '>';
+}
+/** 快速构建 <tag>body</tag> */
+function xml(name, body) { return '<' + name + '>' + (body == null ? '' : body) + '</' + name + '>'; }
+
+// ============================================================
+//  1.7.48 时间三位一体（方向 15）
+//  所有记忆条目自动携带 turn + eraLabel + relativeToNow
+// ============================================================
+function buildTimeTriad(turn) {
+  if (turn == null) turn = (typeof GM !== 'undefined' && GM.turn) || 0;
+  var curT = (typeof GM !== 'undefined' && GM.turn) || turn;
+  var eraLabel = '';
+  try {
+    if (typeof getTSText === 'function') eraLabel = getTSText(turn) || '';
+  } catch(_e) {}
+  var delta = curT - turn;
+  var rel = '';
+  if (delta === 0) rel = '本回合';
+  else if (delta === 1) rel = '上回合';
+  else if (delta < 5) rel = delta + '回合前';
+  else if (delta < 15) rel = '近' + delta + '回合前';
+  else rel = '久远·' + delta + '回合前';
+  return { turn: turn, eraLabel: eraLabel, relativeToNow: rel };
+}
+
+// ============================================================
 //  1.7.45 Token 粗估计数（C3：中英文混合）
 //  中文字符 ≈ 1.3 token/字，英文/数字/符号 ≈ 0.25 token/字符
 //  Claude/GPT 的真实 tokenization 不同，此函数用于预警而非精确计量
@@ -1243,6 +1365,8 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       }
       var data = await resp.json();
       _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
+      // 记录缓存命中统计
+      if (data && data.usage && typeof _recordCacheStats === 'function') _recordCacheStats(data.usage);
       return data;
     } catch(e) {
       clearTimeout(timer);
@@ -1363,7 +1487,20 @@ async function callAIMessages(messages,maxTok,signal){
   var url=_buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok2 = Math.round((maxTok||500) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
-  var body = { model: P.ai.model||"gpt-4o", messages: messages, temperature: 0.8, max_tokens: _scaledTok2 };
+  // S4：Anthropic 自动 cache_control——若 system message 较大(>1500 字符)·加 ephemeral 缓存标记
+  var _provider = (typeof _detectAIProvider === 'function') ? _detectAIProvider() : 'openai_compat';
+  var _msgs = messages;
+  if (_provider === 'anthropic' && messages && messages.length > 0) {
+    var firstSys = messages[0];
+    if (firstSys && firstSys.role === 'system' && typeof firstSys.content === 'string' && firstSys.content.length > 1500) {
+      _msgs = messages.slice();
+      _msgs[0] = {
+        role: 'system',
+        content: [{ type: 'text', text: firstSys.content, cache_control: { type: 'ephemeral' } }]
+      };
+    }
+  }
+  var body = { model: P.ai.model||"gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
   var data = await _aiFetchWithRetry(url, body, signal);
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
   if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;

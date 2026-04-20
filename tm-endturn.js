@@ -1568,6 +1568,275 @@ function _ensureMemoryFreshness(G) {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  M3/M4/S2 后台任务函数（Post-turn jobs）
+//  在 SC27 完成后异步启动·下回合开始前 await 完成
+//  包含：SC_L2_AI / SC_L3_CONDENSE / SC_REFLECT / 更新势力弧 / 更新因果图元数据
+// ════════════════════════════════════════════════════════════════════════
+
+/** 方向 8：SC_L2_AI·每 5 回合 AI 语义化情景摘要 */
+async function _scL2AIGenerate() {
+  if (!GM || !P || !P.ai || !P.ai.key) return;
+  if ((GM.turn || 0) % 5 !== 0) return;
+  if (!GM._memoryLayers) GM._memoryLayers = { L1: [], L2: [], L3: [] };
+  // 检查本 bucket 是否已生成（防重复）
+  var existAI = (GM._memoryLayers.L2 || []).find(function(x){ return x.turnBucket === GM.turn && x.aiGenerated; });
+  if (existAI) return;
+  var bucketStart = GM.turn - 4;
+  // 收集数据
+  var bucketMems = (GM._aiMemory || []).filter(function(m){ return m && m.turn >= bucketStart && m.turn <= GM.turn; });
+  var bucketShiji = (GM.shijiHistory || []).filter(function(s){ return s.turn >= bucketStart && s.turn <= GM.turn; });
+  if (bucketMems.length === 0 && bucketShiji.length === 0) return;
+  var tpL2 = '【任务·将过去5回合的事件语义化压缩为情景摘要】\n';
+  tpL2 += '时间范围：T' + bucketStart + '-T' + GM.turn + '\n\n';
+  if (bucketShiji.length) {
+    tpL2 += '<shiji-history>\n';
+    bucketShiji.forEach(function(s){
+      tpL2 += '  <turn n="' + s.turn + '">' + ((s.shizhengji || s.shilu_text || '').substring(0, 500)) + '</turn>\n';
+    });
+    tpL2 += '</shiji-history>\n';
+  }
+  if (bucketMems.length) {
+    tpL2 += '<memories>\n';
+    bucketMems.forEach(function(m){
+      tpL2 += '  <mem turn="' + m.turn + '">' + ((m.text || m.content || '').substring(0, 150)) + '</mem>\n';
+    });
+    tpL2 += '</memories>\n';
+  }
+  tpL2 += '\n【输出 JSON】\n';
+  tpL2 += '{\n';
+  tpL2 += '  "summary": "情景摘要·200-300字·含主要事件+人物关系演变+情绪氛围",\n';
+  tpL2 += '  "mood": "本5回合的整体情感基调·30字内",\n';
+  tpL2 += '  "keyCharacters": [{"name":"角色名","role":"本期角色·30字"}],\n';
+  tpL2 += '  "themes": ["本期主题1","主题2"],\n';
+  tpL2 += '  "turning_points": ["关键转折点·30字内"]\n';
+  tpL2 += '}\n';
+  try {
+    var respL2 = await callAIMessages([
+      { role: 'system', content: '你是天命游戏的史官·专长将散乱事件压缩为精炼的情景纲要·保留因果与情绪而非堆砌细节。' },
+      { role: 'user', content: tpL2 }
+    ], 3000);
+    var parsedL2 = extractJSON(respL2);
+    if (parsedL2 && parsedL2.summary) {
+      // 替换或新增
+      GM._memoryLayers.L2 = (GM._memoryLayers.L2 || []).filter(function(x){ return x.turnBucket !== GM.turn || !x.aiGenerated; });
+      GM._memoryLayers.L2.push({
+        turnBucket: GM.turn,
+        turnRange: bucketStart + '-' + GM.turn,
+        summary: parsedL2.summary,
+        mood: parsedL2.mood || '',
+        keyCharacters: parsedL2.keyCharacters || [],
+        themes: parsedL2.themes || [],
+        turning_points: parsedL2.turning_points || [],
+        aiGenerated: true,
+        createdAt: GM.turn
+      });
+      if (GM._memoryLayers.L2.length > 12) GM._memoryLayers.L2 = GM._memoryLayers.L2.slice(-12);
+      _dbg('[SC_L2_AI] 生成 AI 情景摘要 T' + bucketStart + '-T' + GM.turn);
+    }
+  } catch(e) { _dbg('[SC_L2_AI] 失败:', e); }
+}
+
+/** 方向 9：SC_L3_CONDENSE·每 30 回合 AI 年代纲要 */
+async function _scL3Condense() {
+  if (!GM || !P || !P.ai || !P.ai.key) return;
+  if ((GM.turn || 0) % 30 !== 0) return;
+  if (!GM._memoryLayers) GM._memoryLayers = { L1: [], L2: [], L3: [] };
+  var existAI = (GM._memoryLayers.L3 || []).find(function(x){ return x.turnBucket === GM.turn && x.aiGenerated; });
+  if (existAI) return;
+  var l3Start = GM.turn - 29;
+  var bucketL2 = (GM._memoryLayers.L2 || []).filter(function(x){ return x.turnBucket >= l3Start && x.turnBucket <= GM.turn; });
+  if (bucketL2.length === 0) return;
+  var tpL3 = '【任务·将过去30回合压缩为年代纲要·史书级压缩】\n';
+  tpL3 += '时间范围：T' + l3Start + '-T' + GM.turn + '\n\n';
+  tpL3 += '<scene-summaries>\n';
+  bucketL2.forEach(function(x){
+    tpL3 += '  <scene range="' + x.turnRange + '" mood="' + (x.mood||'') + '">' + (x.summary||'').substring(0, 400) + '</scene>\n';
+  });
+  tpL3 += '</scene-summaries>\n';
+  tpL3 += '\n【输出 JSON】\n';
+  tpL3 += '{\n';
+  tpL3 += '  "theme": "本年代的核心主题·40字内·如「北境动荡·朝堂党争激化」",\n';
+  tpL3 += '  "atmosphere": "年代总体氛围·30字内",\n';
+  tpL3 += '  "highlights": ["高光时刻1（T?·30字）", "2", "3", "4", "5"],\n';
+  tpL3 += '  "mainThreads": "贯穿30回合的几条主线·80字内",\n';
+  tpL3 += '  "causalSummary": "主要事件间的因果链·100字内",\n';
+  tpL3 += '  "keyCharacters": [{"name":"角色","role":"角色弧","emotional_arc":"情感轨迹"}]\n';
+  tpL3 += '}\n';
+  try {
+    var respL3 = await callAIMessages([
+      { role: 'system', content: '你是天命游戏的编年史官·写年代纲要如《资治通鉴》综述·提炼主题与因果·非流水记事。' },
+      { role: 'user', content: tpL3 }
+    ], 4000);
+    var parsedL3 = extractJSON(respL3);
+    if (parsedL3 && parsedL3.theme) {
+      GM._memoryLayers.L3 = (GM._memoryLayers.L3 || []).filter(function(x){ return x.turnBucket !== GM.turn || !x.aiGenerated; });
+      GM._memoryLayers.L3.push({
+        turnBucket: GM.turn,
+        turnRange: l3Start + '-' + GM.turn,
+        theme: parsedL3.theme,
+        atmosphere: parsedL3.atmosphere || '',
+        highlights: parsedL3.highlights || [],
+        mainThreads: parsedL3.mainThreads || '',
+        causalSummary: parsedL3.causalSummary || '',
+        keyCharacters: parsedL3.keyCharacters || [],
+        summary: parsedL3.theme + '·' + (parsedL3.atmosphere || ''),  // 向后兼容字段
+        aiGenerated: true,
+        createdAt: GM.turn
+      });
+      _dbg('[SC_L3_CONDENSE] 生成 AI 年代纲要 T' + l3Start + '-T' + GM.turn);
+    }
+  } catch(e) { _dbg('[SC_L3_CONDENSE] 失败:', e); }
+}
+
+/** 方向 12：SC_REFLECT·对比上回合预测 vs 本回合实际·生成反省记录 */
+async function _scReflect() {
+  if (!GM || !P || !P.ai || !P.ai.key) return;
+  if (!GM._turnAiResults || !GM._turnAiResults.thinking) return;
+  // 需要上回合存下的 predictions（来自 SC25 的 predictions 字段·新增）
+  var lastPredictions = GM._lastTurnPredictions;
+  if (!lastPredictions) {
+    // 首次·保存本回合 thinking 为下次对比基准
+    GM._lastTurnPredictions = {
+      turn: GM.turn,
+      thinking: (GM._turnAiResults.thinking || '').substring(0, 1500)
+    };
+    return;
+  }
+  var tpR = '【任务·对比上回合预测与本回合实际·提炼经验教训】\n\n';
+  tpR += '<last-turn-predictions turn="' + lastPredictions.turn + '">\n' + lastPredictions.thinking + '\n</last-turn-predictions>\n\n';
+  tpR += '<this-turn-actual turn="' + GM.turn + '">\n';
+  tpR += ((GM._turnAiResults && GM._turnAiResults.subcall25 && GM._turnAiResults.subcall25.memory) || '').substring(0, 1500) + '\n';
+  tpR += '</this-turn-actual>\n\n';
+  tpR += '【输出 JSON】\n';
+  tpR += '{\n';
+  tpR += '  "predictedLast": "上回合我预测的主要走向·60字",\n';
+  tpR += '  "actualThis": "本回合实际发生的·60字",\n';
+  tpR += '  "divergence": "high/mid/low·偏离程度",\n';
+  tpR += '  "lesson": "下回合应如何修正思路·60字",\n';
+  tpR += '  "confidence_calibration": -1.0 到 1.0·负数代表我过于自信需降调\n';
+  tpR += '}\n';
+  try {
+    var respR = await callAIMessages([
+      { role: 'system', content: '你是一个自省的 AI·客观比较预测与实际·提炼教训·不避讳自己的错误。' },
+      { role: 'user', content: tpR }
+    ], 1500);
+    var parsedR = extractJSON(respR);
+    if (parsedR && parsedR.lesson) {
+      if (!GM._aiReflections) GM._aiReflections = [];
+      GM._aiReflections.push({
+        turn: GM.turn,
+        predictedLast: parsedR.predictedLast || '',
+        actualThis: parsedR.actualThis || '',
+        divergence: parsedR.divergence || 'mid',
+        lesson: parsedR.lesson,
+        confidence_calibration: parseFloat(parsedR.confidence_calibration) || 0
+      });
+      if (GM._aiReflections.length > 30) GM._aiReflections = GM._aiReflections.slice(-30);
+      _dbg('[SC_REFLECT] 反省：', parsedR.lesson.substring(0, 60));
+    }
+    // 保存本回合为下次对比基准
+    GM._lastTurnPredictions = {
+      turn: GM.turn,
+      thinking: (GM._turnAiResults.thinking || '').substring(0, 1500)
+    };
+  } catch(e) { _dbg('[SC_REFLECT] 失败:', e); }
+}
+
+/** 方向 10：_factionArcs·势力长期叙事线更新 */
+function _updateFactionArcs() {
+  if (!GM) return;
+  if (!GM._factionArcs) GM._factionArcs = {};
+  var p1 = (GM._turnAiResults && GM._turnAiResults.subcall1) || {};
+  // 从 faction_updates + faction_events 推断阶段
+  var factions = {};
+  (p1.faction_updates || []).forEach(function(fu) {
+    if (!fu || !fu.name) return;
+    if (!factions[fu.name]) factions[fu.name] = { events: [], deltas: {} };
+    if (fu.updates) Object.assign(factions[fu.name].deltas, fu.updates);
+  });
+  (p1.faction_events || []).forEach(function(fe) {
+    if (!fe || !fe.actor) return;
+    if (!factions[fe.actor]) factions[fe.actor] = { events: [], deltas: {} };
+    factions[fe.actor].events.push((fe.action || '') + (fe.result ? '→' + fe.result : ''));
+  });
+  Object.keys(factions).forEach(function(fn) {
+    if (!GM._factionArcs[fn]) {
+      GM._factionArcs[fn] = {
+        currentPhase: 'stable',
+        phaseHistory: [],
+        cumulativeInfluence: 50,
+        keyMoments: []
+      };
+    }
+    var arc = GM._factionArcs[fn];
+    var info = factions[fn];
+    // 推断阶段：按 deltas
+    var strengthDelta = (info.deltas.strength || info.deltas.strength_delta || 0);
+    var newPhase = arc.currentPhase;
+    if (strengthDelta > 10) newPhase = 'rising';
+    else if (strengthDelta > 3) newPhase = 'consolidating';
+    else if (strengthDelta < -10) newPhase = 'declining';
+    else if (strengthDelta < -3) newPhase = 'strained';
+    // 累积影响力
+    arc.cumulativeInfluence = Math.max(0, Math.min(100, arc.cumulativeInfluence + strengthDelta * 0.5));
+    // 阶段记录
+    if (info.events.length > 0 || newPhase !== arc.currentPhase) {
+      arc.phaseHistory.push({
+        turn: GM.turn,
+        phase: newPhase,
+        event: info.events.slice(0, 2).join('；').substring(0, 80),
+        strengthDelta: strengthDelta,
+        influence: arc.cumulativeInfluence
+      });
+      if (arc.phaseHistory.length > 40) arc.phaseHistory = arc.phaseHistory.slice(-40);
+    }
+    arc.currentPhase = newPhase;
+    // 关键时刻（绝对 delta 超 8 的事件）
+    if (Math.abs(strengthDelta) > 8) {
+      arc.keyMoments.push({
+        turn: GM.turn,
+        event: info.events[0] || '重大变动',
+        phase: newPhase
+      });
+      if (arc.keyMoments.length > 20) arc.keyMoments = arc.keyMoments.slice(-20);
+    }
+  });
+}
+
+/**
+ * 启动 post-turn 异步任务·不 await·玩家看结果时后台运行
+ * 下回合开始前由 _ensureMemoryFreshness 先 await 所有 pending
+ */
+function _launchPostTurnJobs() {
+  if (!GM) return;
+  GM._postTurnJobs = { pending: [], launchedAt: Date.now() };
+  var jobs = [];
+  // 同步任务（不涉及 AI 调用）
+  try { _updateFactionArcs(); } catch(e) { _dbg('[PostTurn] factionArcs:', e); }
+  // 异步 AI 任务
+  if ((GM.turn || 0) % 5 === 0) jobs.push({ id: 'l2_ai', fn: _scL2AIGenerate });
+  if ((GM.turn || 0) % 30 === 0) jobs.push({ id: 'l3_condense', fn: _scL3Condense });
+  jobs.push({ id: 'reflect', fn: _scReflect });
+  jobs.forEach(function(j) {
+    var p = Promise.resolve().then(j.fn).catch(function(e){ _dbg('[PostTurn]' + j.id + ' 失败:', e); });
+    GM._postTurnJobs.pending.push({ id: j.id, promise: p });
+  });
+  _dbg('[PostTurn] 启动', jobs.length, '个异步任务');
+}
+
+/** 等待所有 post-turn jobs 完成（下回合开始时调用） */
+async function _awaitPostTurnJobs() {
+  if (!GM || !GM._postTurnJobs || !GM._postTurnJobs.pending) return;
+  var pending = GM._postTurnJobs.pending;
+  if (pending.length === 0) return;
+  _dbg('[PostTurn] 等待', pending.length, '个任务·已运行', Math.round((Date.now() - GM._postTurnJobs.launchedAt)/1000), 's');
+  try {
+    await Promise.all(pending.map(function(p) { return p.promise; }));
+  } catch(_e) { /* 已被单任务 catch */ }
+  GM._postTurnJobs = null;
+}
+
 /** 压缩最旧的归档为一条综合总纲（超出上限时调用） */
 function _compressOldArchives(limit) {
   if (!GM.memoryArchive || GM.memoryArchive.length <= limit) return;
@@ -3780,7 +4049,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       tp += "\n\u3010\u5BB0\u8F85\u5EFA\u8A00\u3011\n";
       suggestions.forEach(function(s) { tp += '  ' + s.from + '(' + s.type + ')：' + s.text + '\n'; });
     }
-    // —— D1+D2：近期对话汇总注入（问对·问天·按模型缩放）——
+    // —— D1+D2+X14：近期对话汇总注入（XML 格式·问对·问天·按模型缩放）——
     (function _injectRecentDialogues() {
       var _dcp = (typeof getCompressionParams === 'function') ? getCompressionParams() : {};
       var totalCap = _dcp.dialogueTotalCap != null ? _dcp.dialogueTotalCap : 12;
@@ -3791,38 +4060,35 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         if (!c || c.alive === false || c._fakeDeath) return;
         onStageNames[c.name] = true;
       });
-      var lines = [];
-      // 问对（按角色键）
+      var xmlItems = [];
       if (GM.wenduiHistory) {
         Object.keys(GM.wenduiHistory).forEach(function(name) {
           if (!onStageNames[name]) return;
           var msgs = GM.wenduiHistory[name] || [];
           var recent = msgs.filter(function(m){ return (curTurn - (m.turn || curTurn)) <= recentTurns; }).slice(-4);
           if (recent.length > 0) {
-            var oneLine = recent.map(function(m){
+            var innerXml = recent.map(function(m){
               var who = (m.role === 'player' || m.role === 'user') ? '帝' : '臣';
-              return who + '"' + (m.content || '').substring(0, 40) + '"';
-            }).join('→');
-            lines.push('  T' + (recent[recent.length-1].turn||curTurn) + ' 问对·' + name + '：' + oneLine);
+              return '    <line from="' + who + '">' + (m.content || '').substring(0, 40).replace(/[<>&"']/g, '') + '</line>';
+            }).join('\n');
+            xmlItems.push('  <wendui turn="' + (recent[recent.length-1].turn||curTurn) + '" with="' + name + '">\n' + innerXml + '\n  </wendui>');
           }
         });
       }
-      // 问天（单列表·玩家直接指令）
       if (Array.isArray(GM._wentianHistory)) {
         var recentWT = GM._wentianHistory.filter(function(h){ return (curTurn - (h.turn || curTurn)) <= Math.max(2, recentTurns-1); }).slice(-Math.round(totalCap * 0.5));
         recentWT.forEach(function(h){
           if (h.role === 'system') return;
           var who = (h.role === 'player' || h.role === 'user') ? '帝' : '天';
-          lines.push('  T' + (h.turn||curTurn) + ' 问天：' + who + '"' + (h.content || '').substring(0, 50) + '"');
+          xmlItems.push('  <wentian turn="' + (h.turn||curTurn) + '" from="' + who + '">' + (h.content || '').substring(0, 50).replace(/[<>&"']/g, '') + '</wentian>');
         });
       }
-      if (lines.length > 0) {
-        tp += '\n【近期对话（问对·问天·模型' + ((_dcp.contextK||'?')+'K·共') + lines.length + '条，取' + Math.min(lines.length, totalCap) + '）】\n' + lines.slice(-totalCap).join('\n') + '\n';
+      if (xmlItems.length > 0) {
+        tp += '\n<recent-dialogues count="' + xmlItems.length + '" cap="' + totalCap + '">\n' + xmlItems.slice(-totalCap).join('\n') + '\n</recent-dialogues>\n';
       }
     })();
 
-    // —— A3：NPC 心声注入（参数随模型上下文动态缩放）——
-    //   heartsMaxChars 纳入人数上限·heartsPerChar 每人条数·heartsImportanceMin 最低重要度门槛·heartsTotalCap 总条数上限
+    // —— A3+M1+X14：NPC 心声 XML 注入（含 arcs/relations/sensory/credibility）——
     (function _injectNpcHearts() {
       var _hcp = (typeof getCompressionParams === 'function') ? getCompressionParams() : {};
       var maxChars = _hcp.heartsMaxChars != null ? _hcp.heartsMaxChars : 6;
@@ -3830,16 +4096,13 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       var impMin = _hcp.heartsImportanceMin != null ? _hcp.heartsImportanceMin : 6;
       var totalCap = _hcp.heartsTotalCap != null ? _hcp.heartsTotalCap : 12;
 
-      // 候选池：出场角色按"出场权重"排序（重要性+官位+最近互动）
       var candidates = [];
       (GM.chars || []).forEach(function(c){
         if (!c || c.alive === false || c._fakeDeath) return;
         if (!Array.isArray(c._memory) || c._memory.length === 0) return;
-        // 出场权重：官位加分·最近被玩家接触加分·historicalImportance
         var weight = (c.historicalImportance || 0);
         if (c.officialTitle) weight += 20;
         if (c.rank && c.rank <= 3) weight += 15;
-        // 最近3回合内在 wenduiHistory 中出现
         if (GM.wenduiHistory && GM.wenduiHistory[c.name]) {
           var lastT = 0;
           GM.wenduiHistory[c.name].forEach(function(h){ if (h.turn > lastT) lastT = h.turn; });
@@ -3850,19 +4113,56 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       candidates.sort(function(a,b){ return b.weight - a.weight; });
       candidates = candidates.slice(0, maxChars);
 
-      var hearts = [];
+      if (candidates.length === 0) return;
+
+      var xmlLines = ['<npc-hearts ctx="' + ((_hcp.contextK||'?')+'K') + '">'];
+      var heartCount = 0;
       candidates.forEach(function(cand){
+        if (heartCount >= totalCap) return;
         var c = cand.ch;
+        var mood = c._mood || '平';
+        var curTitle = c.officialTitle || c.title || '';
+        // 活跃 arc
+        var activeArcs = (c._arcs || []).filter(function(a){ return a.phase !== 'resolved'; });
+        var arcAttr = activeArcs.length ? ' active_arcs="' + activeArcs.slice(0,3).map(function(a){return a.title;}).join('·') + '"' : '';
+        xmlLines.push('  <heart char="' + (c.name||'') + '" mood="' + mood + '" title="' + curTitle + '"' + arcAttr + '>');
         var sorted = c._memory.slice().sort(function(a,b){ return (b.importance||0) - (a.importance||0); });
         var top = sorted.slice(0, perChar).filter(function(m){ return (m.importance||0) >= impMin; });
         top.forEach(function(m){
-          var hint = (m.emotion ? '['+m.emotion+'] ' : '') + (m.event || '').substring(0, 50) + ' (imp:' + Math.round(m.importance||5) + ')';
-          hearts.push('  ' + c.name + '心声：' + hint);
+          if (heartCount >= totalCap) return;
+          var attrs = [
+            'turn="' + (m.turn||0) + '"',
+            'emotion="' + (m.emotion||'平') + '"',
+            'importance="' + Math.round(m.importance||5) + '"'
+          ];
+          if (m.source && m.source !== 'witnessed') attrs.push('source="' + m.source + '"');
+          if (m.credibility != null && m.credibility < 80) attrs.push('credibility="' + m.credibility + '"');
+          if (m.location) attrs.push('location="' + m.location + '"');
+          if (m.arcId) attrs.push('arc="' + m.arcId + '"');
+          xmlLines.push('    <memory ' + attrs.join(' ') + '>' + (m.event || '').substring(0, 80) + '</memory>');
+          heartCount++;
         });
+        // 最重要的活跃 arc
+        activeArcs.slice(0, 2).forEach(function(a){
+          xmlLines.push('    <arc id="' + a.id + '" phase="' + a.phase + '" type="' + a.type + '">' + a.title + (a.emotionalTrajectory ? '·'+a.emotionalTrajectory : '') + (a.unresolved ? '｜悬而未决：'+a.unresolved : '') + '</arc>');
+        });
+        // 关系显著变化
+        if (c._relationHistory) {
+          Object.keys(c._relationHistory).slice(0, 2).forEach(function(otherName){
+            var rh = c._relationHistory[otherName];
+            if (!rh || rh.length === 0) return;
+            var recent = rh.slice(-3);
+            var firstFavor = recent[0].favor - recent[0].delta;
+            var lastFavor = recent[recent.length-1].favor;
+            if (Math.abs(lastFavor - firstFavor) >= 15) {
+              xmlLines.push('    <relation-shift other="' + otherName + '" from="' + firstFavor + '" to="' + lastFavor + '" reason="' + (recent[recent.length-1].reason||'').substring(0,30) + '"/>');
+            }
+          });
+        }
+        xmlLines.push('  </heart>');
       });
-      if (hearts.length > 0) {
-        tp += '\n【角色心声（内心最深记忆·左右其本回合选择·模型' + ((_hcp.contextK||'?')+'K') + '）】\n' + hearts.slice(0, totalCap).join('\n') + '\n';
-      }
+      xmlLines.push('</npc-hearts>');
+      tp += '\n' + xmlLines.join('\n') + '\n';
     })();
 
     // E4: 上回合全部已处理奏疏注入——AI必须体现因果延续
@@ -5925,9 +6225,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         {id:'sc1b', name:'文事鸿雁人际', minDepth:'lite', order:110},
         {id:'sc1c', name:'势力外交·NPC阴谋', minDepth:'lite', order:120},
         {id:'sc15', name:'NPC深度', minDepth:'standard', order:150},
+        {id:'sc_memwrite', name:'NPC记忆回写', minDepth:'lite', order:155},
         {id:'sc16', name:'势力推演', minDepth:'full', order:160},
         {id:'sc17', name:'经济财政', minDepth:'full', order:170},
         {id:'sc18', name:'军事态势', minDepth:'full', order:180},
+        {id:'sc_audit', name:'数据一致性审核', minDepth:'lite', order:185},
         {id:'sc2', name:'叙事正文', minDepth:'lite', order:200},
         {id:'sc25', name:'伏笔记忆', minDepth:'lite', order:250},
         {id:'sc27', name:'叙事审查', minDepth:'standard', order:270},
@@ -5975,8 +6277,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
 
-      // --- 预处理：同步本地记忆保鲜（避免 SC25 生成滞后导致的失忆） ---
+      // --- 预处理：等待上回合 post-turn 任务 + 同步本地记忆保鲜 ---
       try {
+        if (typeof _awaitPostTurnJobs === 'function') await _awaitPostTurnJobs();
         if (typeof _ensureMemoryFreshness === 'function') _ensureMemoryFreshness(GM);
       } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); }
 
@@ -5984,8 +6287,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       await _runSubcall('sc0', 'AI深度思考', 'standard', async function() {
       showLoading("AI\u6DF1\u5EA6\u601D\u8003",42);
       var tp0 = tp + '\n\u8BF7\u6781\u5176\u6DF1\u5165\u5730\u5206\u6790\u5F53\u524D\u5C40\u52BF\uFF0C\u8FD4\u56DEJSON\uFF1A\n' +
-        '{"tensions":"\u5F53\u524D5\u4E2A\u6700\u5927\u77DB\u76FE/\u5371\u673A\u53CA\u5176\u4E25\u91CD\u7A0B\u5EA6(150\u5B57)","consequences":"\u73A9\u5BB6\u672C\u56DE\u5408\u6BCF\u4E2A\u884C\u52A8\u7684\u8BE6\u7EC6\u540E\u679C\u5206\u6790(150\u5B57)","npc_spotlight":"\u672C\u56DE\u5408\u6700\u53EF\u80FD\u6709\u52A8\u4F5C\u76845\u4E2ANPC\u53CA\u5176\u52A8\u673A\u548C\u884C\u52A8\u65B9\u5F0F(200\u5B57)","faction_dynamics":"\u975E\u73A9\u5BB6\u52BF\u529B\u672C\u56DE\u5408\u7684\u81EA\u4E3B\u884C\u52A8\u8BE6\u7EC6\u63A8\u6F14(200\u5B57)","family_dynamics":"\u5BB6\u65CF/\u540E\u5BAB/\u5A5A\u59FB\u5C42\u9762\u7684\u6F5C\u5728\u53D8\u5316(100\u5B57)","class_unrest":"\u5404\u9636\u5C42\u7684\u4E0D\u6EE1\u60C5\u7EEA\u548C\u53EF\u80FD\u7684\u6C11\u53D8(100\u5B57)","economic_pressure":"\u8D22\u653F\u538B\u529B\u548C\u7ECF\u6D4E\u8D70\u5411(80\u5B57)","foreshadow":"\u5E94\u57CB\u4E0B\u76843\u4E2A\u4F0F\u7B14\u53CA\u5176\u5C06\u5728\u4F55\u65F6\u5F15\u7206(100\u5B57)","mood":"\u672C\u56DE\u5408\u53D9\u4E8B\u5E94\u8425\u9020\u7684\u60C5\u611F\u57FA\u8C03(50\u5B57)"}\n' +
-        '\u8FD9\u662F\u4F60\u7684\u6DF1\u5EA6\u601D\u8003\u8FC7\u7A0B\uFF0C\u4E0D\u663E\u793A\u7ED9\u73A9\u5BB6\u3002\u8BF7\u5145\u5206\u601D\u8003\uFF0C\u4E0D\u8981\u5401\u60DC\u5B57\u6570\u3002';
+        '{"tensions":"\u5F53\u524D5\u4E2A\u6700\u5927\u77DB\u76FE/\u5371\u673A\u53CA\u5176\u4E25\u91CD\u7A0B\u5EA6(150\u5B57)","consequences":"\u73A9\u5BB6\u672C\u56DE\u5408\u6BCF\u4E2A\u884C\u52A8\u7684\u8BE6\u7EC6\u540E\u679C\u5206\u6790(150\u5B57)","npc_spotlight":"\u672C\u56DE\u5408\u6700\u53EF\u80FD\u6709\u52A8\u4F5C\u76845\u4E2ANPC\u53CA\u5176\u52A8\u673A\u548C\u884C\u52A8\u65B9\u5F0F(200\u5B57)","faction_dynamics":"\u975E\u73A9\u5BB6\u52BF\u529B\u672C\u56DE\u5408\u7684\u81EA\u4E3B\u884C\u52A8\u8BE6\u7EC6\u63A8\u6F14(200\u5B57)","family_dynamics":"\u5BB6\u65CF/\u540E\u5BAB/\u5A5A\u59FB\u5C42\u9762\u7684\u6F5C\u5728\u53D8\u5316(100\u5B57)","class_unrest":"\u5404\u9636\u5C42\u7684\u4E0D\u6EE1\u60C5\u7EEA\u548C\u53EF\u80FD\u7684\u6C11\u53D8(100\u5B57)","economic_pressure":"\u8D22\u653F\u538B\u529B\u548C\u7ECF\u6D4E\u8D70\u5411(80\u5B57)","foreshadow":"\u5E94\u57CB\u4E0B\u76843\u4E2A\u4F0F\u7B14\u53CA\u5176\u5C06\u5728\u4F55\u65F6\u5F15\u7206(100\u5B57)","mood":"\u672C\u56DE\u5408\u53D9\u4E8B\u5E94\u8425\u9020\u7684\u60C5\u611F\u57FA\u8C03(50\u5B57)","memoryQueries":[{"keywords":["关键词1","关键词2"],"turnRange":[起始回合,结束回合],"participant":"相关人物名(可空)","minImportance":5,"purpose":"为何要检索"}]}\n' +
+        '\u8FD9\u662F\u4F60\u7684\u6DF1\u5EA6\u601D\u8003\u8FC7\u7A0B\uFF0C\u4E0D\u663E\u793A\u7ED9\u73A9\u5BB6\u3002\u8BF7\u5145\u5206\u601D\u8003\uFF0C\u4E0D\u8981\u5401\u60DC\u5B57\u6570\u3002\n' +
+        '【memoryQueries】如需要回忆更早的具体事件·在此列出 1-4 条检索查询·系统将从永久档案中检索并注入后续推演·否则留空数组。';
       var resp0 = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},
         body:JSON.stringify({model:P.ai.model||"gpt-4o", messages:[{role:"system",content:sysP},{role:"user",content:tp0}], temperature:0.6, max_tokens:_tok(12000)})});
       if (resp0.ok) {
@@ -5998,6 +6302,35 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
       }); // end Sub-call 0 _runSubcall
+
+      // --- SC_RECALL: 按 SC0 生成的 memoryQueries 从永久档检索·注入到后续 prompt ---
+      // 方向 6：RAG 式按需检索
+      var _recallResults = [];
+      try {
+        var _think = aiThinking || '';
+        var _thinkJson = extractJSON(_think);
+        if (_thinkJson && Array.isArray(_thinkJson.memoryQueries) && _thinkJson.memoryQueries.length > 0 && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.recallMemory) {
+          _thinkJson.memoryQueries.slice(0, 4).forEach(function(q) {
+            if (!q || typeof q !== 'object') return;
+            var res = NpcMemorySystem.recallMemory({
+              keywords: q.keywords,
+              turnRange: q.turnRange,
+              participant: q.participant,
+              minImportance: q.minImportance
+            }, { limit: 8 });
+            if (res && res.length > 0) {
+              _recallResults.push({
+                query: q,
+                hits: res
+              });
+            }
+          });
+          if (_recallResults.length > 0) {
+            GM._turnAiResults.recallResults = _recallResults;
+            _dbg('[SC_RECALL] 检索', _thinkJson.memoryQueries.length, '条查询·命中', _recallResults.reduce(function(s,r){return s+r.hits.length;},0), '条记忆');
+          }
+        }
+      } catch(_rcE) { _dbg('[SC_RECALL] 失败:', _rcE); }
 
       // --- Sub-call 0.5: 深度记忆回顾 ---
       await _runSubcall('sc05', '记忆回顾', 'standard', async function() {
@@ -6042,21 +6375,82 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           if (_compressedMem.length > 0) _recentHistory += _compressedMem.map(function(m){return m.content||m;}).join('\n') + '\n';
           _recentHistory += _recentMem.map(function(m){return 'T'+(m.turn||'?')+': '+(m.content||m.text||m);}).join('\n');
         }
-        // —— A1 三层记忆金字塔：L3 年代纲要 + L2 情景摘要 （永不丢失的历史根）——
+        // —— A1 三层记忆金字塔：L3 年代纲要 + L2 情景摘要（XML 结构化·永不丢失的历史根）——
         if (GM._memoryLayers) {
           var _ML = GM._memoryLayers;
           if (Array.isArray(_ML.L3) && _ML.L3.length > 0) {
-            _recentHistory += '\n【年代纲要·L3】\n';
+            _recentHistory += '\n<era-outline>\n';
             _ML.L3.slice(-4).forEach(function(x){
-              _recentHistory += 'T' + x.turnRange + '：' + x.summary + '\n';
+              if (x.aiGenerated) {
+                _recentHistory += '  <era range="' + x.turnRange + '" theme="' + (x.theme||'') + '" atmosphere="' + (x.atmosphere||'') + '">\n';
+                if (x.mainThreads) _recentHistory += '    <threads>' + x.mainThreads + '</threads>\n';
+                if (x.causalSummary) _recentHistory += '    <causal>' + x.causalSummary + '</causal>\n';
+                if (Array.isArray(x.highlights)) _recentHistory += '    <highlights>' + x.highlights.join('｜') + '</highlights>\n';
+                _recentHistory += '  </era>\n';
+              } else {
+                _recentHistory += '  <era range="' + x.turnRange + '">' + x.summary + '</era>\n';
+              }
             });
+            _recentHistory += '</era-outline>\n';
           }
           if (Array.isArray(_ML.L2) && _ML.L2.length > 0) {
-            _recentHistory += '\n【情景摘要·L2（近期每5回合）】\n';
+            _recentHistory += '\n<scene-summaries>\n';
             _ML.L2.slice(-6).forEach(function(x){
-              _recentHistory += 'T' + x.turnRange + '：' + x.summary + '\n';
+              if (x.aiGenerated) {
+                _recentHistory += '  <scene range="' + x.turnRange + '" mood="' + (x.mood||'') + '">' + x.summary + '</scene>\n';
+              } else {
+                _recentHistory += '  <scene range="' + x.turnRange + '">' + x.summary + '</scene>\n';
+              }
             });
+            _recentHistory += '</scene-summaries>\n';
           }
+        }
+        // —— SC_RECALL 检索结果注入（XML 格式）——
+        if (_recallResults && _recallResults.length > 0) {
+          _recentHistory += '\n<recalled-memories>\n';
+          _recallResults.forEach(function(rr) {
+            _recentHistory += '  <recall purpose="' + (rr.query.purpose||'').substring(0,40) + '">\n';
+            rr.hits.slice(0, 5).forEach(function(hit) {
+              _recentHistory += '    <hit char="' + (hit.char||'') + '" turn="' + (hit.turn||0) + '" importance="' + Math.round(hit.importance||5) + '">' + (hit.event||'').substring(0, 80) + '</hit>\n';
+            });
+            _recentHistory += '  </recall>\n';
+          });
+          _recentHistory += '</recalled-memories>\n';
+        }
+        // —— 因果图近期边·方向7 ——
+        if (GM._causalGraph && Array.isArray(GM._causalGraph.edges) && GM._causalGraph.edges.length > 0) {
+          var _recentEdges = GM._causalGraph.edges.slice(-15);
+          _recentHistory += '\n<causal-graph recent-edges="' + _recentEdges.length + '">\n';
+          _recentEdges.forEach(function(e) {
+            _recentHistory += '  <edge from="' + (e.from||'').substring(0,30) + '" to="' + (e.to||'').substring(0,30) + '" type="' + (e.type||'') + '" strength="' + (e.strength||0.5) + '">' + (e.explanation||'').substring(0,60) + '</edge>\n';
+          });
+          _recentHistory += '</causal-graph>\n';
+        }
+        // —— 势力弧·方向 10 ——
+        if (GM._factionArcs && Object.keys(GM._factionArcs).length > 0) {
+          _recentHistory += '\n<faction-arcs>\n';
+          Object.keys(GM._factionArcs).slice(0, 6).forEach(function(fn) {
+            var fa = GM._factionArcs[fn];
+            if (!fa || !fa.phaseHistory) return;
+            _recentHistory += '  <arc faction="' + fn + '" phase="' + (fa.currentPhase||'') + '" influence="' + (fa.cumulativeInfluence||0) + '">\n';
+            (fa.phaseHistory || []).slice(-4).forEach(function(ph) {
+              _recentHistory += '    <phase turn="' + ph.turn + '" stage="' + ph.phase + '">' + (ph.event||'').substring(0,50) + '</phase>\n';
+            });
+            _recentHistory += '  </arc>\n';
+          });
+          _recentHistory += '</faction-arcs>\n';
+        }
+        // —— 自我反省·方向 12 ——
+        if (GM._aiReflections && GM._aiReflections.length > 0) {
+          _recentHistory += '\n<self-reflections>\n';
+          GM._aiReflections.slice(-3).forEach(function(r) {
+            _recentHistory += '  <reflection turn="' + (r.turn||0) + '" divergence="' + (r.divergence||'') + '">\n';
+            _recentHistory += '    <predicted>' + (r.predictedLast||'').substring(0,80) + '</predicted>\n';
+            _recentHistory += '    <actual>' + (r.actualThis||'').substring(0,80) + '</actual>\n';
+            _recentHistory += '    <lesson>' + (r.lesson||'').substring(0,80) + '</lesson>\n';
+            _recentHistory += '  </reflection>\n';
+          });
+          _recentHistory += '</self-reflections>\n';
         }
         // 加入玩家决策记录
         if (GM.playerDecisions && GM.playerDecisions.length > 0) {
@@ -6747,15 +7141,38 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       } catch(_fctxErr) { console.warn('[endturn] fullCtx inject:', _fctxErr); }
 
-      // 1.2+1.8: 使用ModelAdapter温度 + OpenAI原生JSON模式
+      // 1.2+1.8+S1：ModelAdapter温度 + OpenAI原生JSON模式 + 流式感知进度
       var _sc1Body = {model:P.ai.model||"gpt-4o",messages:[{role:"system",content:sysP},{role:"user",content:tp1}],temperature:_modelTemp,max_tokens:_tok(16000)};
-      if (_modelFamily === 'openai') _sc1Body.response_format = { type: 'json_object' }; // 1.8: 原生JSON模式
-      var resp1=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},body:JSON.stringify(_sc1Body)});
-      if(!resp1.ok) throw new Error('HTTP ' + resp1.status);
-      var data1=await resp1.json();
+      if (_modelFamily === 'openai') _sc1Body.response_format = { type: 'json_object' };
+      var _streamSC1 = (P.ai && P.ai.stream_sc1 !== false);  // 默认开·可通过 P.ai.stream_sc1=false 关闭
+      var c1 = "";
+      var data1 = null;
+      if (_streamSC1) {
+        // 流式·边接收边更新进度条（不尝试 partial JSON parse·避免数据损坏）
+        _sc1Body.stream = true;
+        try {
+          c1 = await callAIMessagesStream(_sc1Body.messages, _sc1Body.max_tokens, {
+            onChunk: function(text) {
+              // 按字数大致估算进度：5K字约 55%·10K约 60%·15K约 65%
+              var _approx = 50 + Math.min(15, Math.floor(text.length / 1500));
+              showLoading('AI\u63A8\u6F14\u4E2D\u00B7\u5DF2\u751F\u6210' + Math.round(text.length/100)/10 + 'k\u5B57', _approx);
+            }
+          });
+          data1 = { choices: [{ message: { content: c1 } }] };
+          // 流式模式无 usage·不记 token
+        } catch(_se) {
+          _dbg('[SC1 stream] failed·fallback to fetch:', _se);
+          _streamSC1 = false;
+        }
+      }
+      if (!_streamSC1) {
+        var resp1=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},body:JSON.stringify(_sc1Body)});
+        if(!resp1.ok) throw new Error('HTTP ' + resp1.status);
+        data1=await resp1.json();
+        if(data1.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data1.usage);
+        if(data1.choices&&data1.choices[0]&&data1.choices[0].message) c1=data1.choices[0].message.content;
+      }
       _checkTruncated(data1, '结构化数据');
-      if(data1.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data1.usage);
-      var c1="";if(data1.choices&&data1.choices[0]&&data1.choices[0].message)c1=data1.choices[0].message.content;
       p1=null; // 赋值到外层声明的p1
       p1=extractJSON(c1);
       GM._turnAiResults.subcall1_raw = c1;
@@ -11767,6 +12184,167 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       } catch(e15) { _dbg('[NPC Deep] \u5931\u8D25:', e15); throw e15; }
       }); // end Sub-call 1.5 _runSubcall
 
+      // --- Sub-call SC_MEMWRITE: NPC 记忆自动回写（方向1/2/3/4/7/11/13）---
+      // 从 shizhengji/npc_actions/hidden_moves/hidden_schemes 中提取每个 NPC 涉及的事件
+      // 自动生成 memory_writes 数组·含 participants/source/credibility/location/arcId
+      // 同时生成 arc_updates（剧情弧）·causal_edges（因果图）·relation_snapshots（关系快照）
+      await _runSubcall('sc_memwrite', 'NPC记忆回写', 'lite', async function() {
+      showLoading("NPC\u8BB0\u5FC6\u56DE\u5199", 67);
+      try {
+        var _p15 = (GM._turnAiResults && GM._turnAiResults.subcall15) || {};
+        // 收集输入
+        var tpMW = '【任务·从本回合叙事中为每个涉事 NPC 提取结构化记忆条目】\n\n';
+        tpMW += '<shizhengji>' + ((p1 && p1.shizhengji) || '').substring(0, 3000) + '</shizhengji>\n';
+        tpMW += '<shilu>' + ((p1 && p1.shilu_text) || '').substring(0, 2000) + '</shilu>\n';
+        if (p1 && p1.npc_actions && p1.npc_actions.length) {
+          tpMW += '<npc-actions>\n';
+          p1.npc_actions.slice(0, 30).forEach(function(a) {
+            tpMW += '  <action char="' + (a.name||'') + '" target="' + (a.target||'') + '">' + (a.action||'') + ' → ' + (a.result||'') + '</action>\n';
+          });
+          tpMW += '</npc-actions>\n';
+        }
+        if (_p15.hidden_moves && _p15.hidden_moves.length) {
+          tpMW += '<hidden-moves>\n';
+          _p15.hidden_moves.slice(0, 20).forEach(function(h) {
+            tpMW += '  <move char="' + (h.char||'') + '">' + (h.action||'') + '</move>\n';
+          });
+          tpMW += '</hidden-moves>\n';
+        }
+        if (p1 && Array.isArray(p1.faction_events)) {
+          tpMW += '<faction-events>\n';
+          p1.faction_events.slice(0, 15).forEach(function(fe) {
+            tpMW += '  <event actor="' + (fe.actor||'') + '" target="' + (fe.target||'') + '">' + (fe.action||'') + '</event>\n';
+          });
+          tpMW += '</faction-events>\n';
+        }
+
+        tpMW += '\n【输出 JSON 严格 schema】\n';
+        tpMW += '{\n';
+        tpMW += '  "memory_writes": [\n';
+        tpMW += '    {\n';
+        tpMW += '      "char": "记忆归属的角色名（必须是 GM.chars 中存在的）",\n';
+        tpMW += '      "event": "第三人称叙事·20-60字·含具体动作/对象/结果",\n';
+        tpMW += '      "emotion": "喜/怒/忧/惧/恨/敬/平/察/警/强/谦 之一",\n';
+        tpMW += '      "importance": 1-10 数值·依事件对此角色的震撼度·日常琐事1-3·重大事件7-10,\n';
+        tpMW += '      "relatedPerson": "本事件中与 char 最相关的另一方（可空）",\n';
+        tpMW += '      "participants": ["在场所有参与者姓名·含 char 与 relatedPerson"],\n';
+        tpMW += '      "source": "witnessed（亲历）/reported（他人转述）/rumor（风闻）/intuition（直觉）",\n';
+        tpMW += '      "credibility": 0-100 整数·witnessed=90+·reported=60-80·rumor=30-50,\n';
+        tpMW += '      "location": "发生地点·如未提及则留空",\n';
+        tpMW += '      "witnesses": ["在场但非参与的目击者·如未提及则空数组"],\n';
+        tpMW += '      "type": "betrayal/kindness/humiliation/promotion/loss/marriage/military/dialogue/scheme/general",\n';
+        tpMW += '      "arcId": "归属 arc 的 id·若新创建则留空·由 arc_updates 决定"\n';
+        tpMW += '    }\n';
+        tpMW += '  ],\n';
+        tpMW += '  "arc_updates": [\n';
+        tpMW += '    {\n';
+        tpMW += '      "char": "arc 归属角色",\n';
+        tpMW += '      "id": "arc 现有id或留空",\n';
+        tpMW += '      "title": "剧情弧标题·如「北伐之议」",\n';
+        tpMW += '      "type": "political/military/personal/economic/succession/foreign/romance/revenge",\n';
+        tpMW += '      "phase": "brewing/rising/climax/resolving/resolved",\n';
+        tpMW += '      "participants": ["参与者"],\n';
+        tpMW += '      "emotionalTrajectory": "情感轨迹描述·如「期待→怀疑→失望」",\n';
+        tpMW += '      "unresolved": "尚未解决的核心问题"\n';
+        tpMW += '    }\n';
+        tpMW += '  ],\n';
+        tpMW += '  "causal_edges": [\n';
+        tpMW += '    {\n';
+        tpMW += '      "from": "原因事件id或描述",\n';
+        tpMW += '      "to": "结果事件id或描述",\n';
+        tpMW += '      "type": "triggered/enabled/prevented/accelerated",\n';
+        tpMW += '      "strength": 0-1 小数,\n';
+        tpMW += '      "explanation": "因果关系说明·30字内"\n';
+        tpMW += '    }\n';
+        tpMW += '  ]\n';
+        tpMW += '}\n\n';
+        tpMW += '【原则】\n';
+        tpMW += '· 宁多勿漏：叙事中每个有名有姓涉事者都应获得至少一条 memory_write\n';
+        tpMW += '· 镜像互感：A 羞辱 B·不需要写两条（B 那条由系统自动镜像）·但要为"在场的 C"也写一条 source=witnessed\n';
+        tpMW += '· 感官具体：能填 location/witnesses 就填·这是质感的关键\n';
+        tpMW += '· 可信度严谨：仅"在场目击"=witnessed；转述=reported；坊间=rumor\n';
+        tpMW += '· arc 延续：同一主题跨回合的事件·尽量关联到已有 arc_id（若 char._arcs 已有同主题）\n';
+        tpMW += '· 因果要节制：causal_edges 只写强逻辑关系·不追求多\n';
+
+        var _cpMW = (typeof getCompressionParams === 'function') ? getCompressionParams() : { scale: 1.0 };
+        var _mwBudget = Math.round(8000 * Math.max(1.0, _cpMW.scale));
+        var respMW = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + P.ai.key },
+          body: JSON.stringify({
+            model: P.ai.model || "gpt-4o",
+            messages: [{ role: "system", content: sysP }, { role: "user", content: tpMW }],
+            temperature: 0.5,
+            max_tokens: _mwBudget
+          })
+        });
+        if (respMW.ok) {
+          var dataMW = await respMW.json();
+          _checkTruncated(dataMW, 'NPC记忆回写');
+          var cMW = '';
+          if (dataMW.choices && dataMW.choices[0] && dataMW.choices[0].message) cMW = dataMW.choices[0].message.content;
+          var pMW = extractJSON(cMW);
+          if (pMW) {
+            GM._turnAiResults.subcallMemwrite = pMW;
+            // 应用 arc_updates（先做·让 memory_writes 能引用 arcId）
+            if (Array.isArray(pMW.arc_updates)) {
+              pMW.arc_updates.forEach(function(au) {
+                if (!au || !au.char || !au.title) return;
+                if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.upsertArc) {
+                  NpcMemorySystem.upsertArc(au.char, au);
+                }
+              });
+            }
+            // 应用 memory_writes
+            var _mwCount = 0;
+            if (Array.isArray(pMW.memory_writes)) {
+              pMW.memory_writes.forEach(function(mw) {
+                if (!mw || !mw.char || !mw.event) return;
+                if (typeof NpcMemorySystem === 'undefined' || !NpcMemorySystem.remember) return;
+                try {
+                  NpcMemorySystem.remember(
+                    mw.char,
+                    mw.event,
+                    mw.emotion || '平',
+                    mw.importance || 5,
+                    mw.relatedPerson || '',
+                    {
+                      type: mw.type,
+                      source: mw.source,
+                      credibility: mw.credibility,
+                      location: mw.location,
+                      witnesses: mw.witnesses,
+                      participants: mw.participants,
+                      arcId: mw.arcId
+                    }
+                  );
+                  _mwCount++;
+                } catch(_mwE) { _dbg('[MemWrite] remember failed for', mw.char, _mwE); }
+              });
+            }
+            // 应用 causal_edges
+            if (Array.isArray(pMW.causal_edges) && pMW.causal_edges.length > 0) {
+              if (!GM._causalGraph) GM._causalGraph = { nodes: [], edges: [] };
+              pMW.causal_edges.forEach(function(ce) {
+                if (!ce || !ce.from || !ce.to) return;
+                GM._causalGraph.edges.push({
+                  id: 'e_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,5),
+                  from: ce.from, to: ce.to,
+                  type: ce.type || 'triggered',
+                  strength: Math.max(0, Math.min(1, parseFloat(ce.strength) || 0.5)),
+                  explanation: (ce.explanation || '').substring(0, 80),
+                  turn: GM.turn || 0
+                });
+              });
+              // 限制总量（保留最近 300 条边）
+              if (GM._causalGraph.edges.length > 300) GM._causalGraph.edges = GM._causalGraph.edges.slice(-300);
+            }
+            _dbg('[MemWrite] 回写', _mwCount, '条 NPC 记忆·', (pMW.arc_updates||[]).length, '个 arc 更新·', (pMW.causal_edges||[]).length, '条因果');
+          }
+        }
+      } catch(eMW) { _dbg('[MemWrite] 失败:', eMW); throw eMW; }
+      }); // end SC_MEMWRITE
+
       // --- Sub-call 1.6: 势力自主推演 --- [full only]
       await _runSubcall('sc16', '势力推演', 'full', async function() {
       showLoading("\u52BF\u529B\u81EA\u4E3B\u63A8\u6F14",63);
@@ -11887,6 +12465,94 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       } catch(e18) { _dbg('[Military] fail:', e18); throw e18; }
       }); // end Sub-call 1.8 _runSubcall
+
+      // --- SC_CONSISTENCY_AUDIT: 深化数据一致性审核（方向7扩展·S3） ---
+      // 扫描 SC16/17/18 彼此的输出是否冲突·auto-patch 或 rerun
+      await _runSubcall('sc_audit', '数据一致性审核', 'lite', async function() {
+      showLoading("\u6570\u636E\u4E00\u81F4\u6027\u5BA1\u6838", 66);
+      try {
+        var _tres = GM._turnAiResults || {};
+        var tpAu = '【任务·跨 sub-call 数据一致性审核】\n\n';
+        tpAu += '<subcall-1-core>\n';
+        if (_tres.subcall1) {
+          tpAu += '  <faction-events>' + JSON.stringify((_tres.subcall1.faction_events||[]).slice(0,20)) + '</faction-events>\n';
+          tpAu += '  <fiscal>' + JSON.stringify((_tres.subcall1.fiscal_adjustments||[]).slice(0,20)) + '</fiscal>\n';
+          tpAu += '  <army>' + JSON.stringify((_tres.subcall1.army_changes||[]).slice(0,20)) + '</army>\n';
+        }
+        tpAu += '</subcall-1-core>\n';
+        tpAu += '<subcall-16-faction>' + JSON.stringify((_tres.subcall16||{})).substring(0,2000) + '</subcall-16-faction>\n';
+        tpAu += '<subcall-17-economy>' + JSON.stringify((_tres.subcall17||{})).substring(0,2000) + '</subcall-17-economy>\n';
+        tpAu += '<subcall-18-military>' + JSON.stringify((_tres.subcall18||{})).substring(0,2000) + '</subcall-18-military>\n\n';
+        tpAu += '【检查项】\n';
+        tpAu += '1. 势力 strength 变化 vs 兵力变化是否矛盾（大增兵却势力减·反之）\n';
+        tpAu += '2. fiscal_adjustments 金额 vs 军费/赈济/赏赐叙事是否一致\n';
+        tpAu += '3. 同一势力/角色在不同 sub-call 中状态是否矛盾\n';
+        tpAu += '4. 因果是否倒置（结果在原因之前）\n\n';
+        tpAu += '【输出 JSON】\n';
+        tpAu += '{\n';
+        tpAu += '  "conflicts": [\n';
+        tpAu += '    {\n';
+        tpAu += '      "field_a": "sc16.faction.东林党.strength:+5",\n';
+        tpAu += '      "field_b": "sc18.army_changes.东林党.soldiers:-2000",\n';
+        tpAu += '      "nature": "势力增强但兵力骤减·逻辑矛盾",\n';
+        tpAu += '      "severity": "high/mid/low",\n';
+        tpAu += '      "resolution": "以 sc18 为准·下调 sc16 strength_delta 到 -3"\n';
+        tpAu += '    }\n';
+        tpAu += '  ],\n';
+        tpAu += '  "auto_patches": [{"path":"subcall1.faction_events[0].strength_effect","op":"set","value":-3,"reason":"..."}],\n';
+        tpAu += '  "needs_rerun": ["sc16"]\n';
+        tpAu += '}\n';
+        tpAu += '如无冲突·全部字段返回空数组 []。';
+
+        var respAu = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + P.ai.key },
+          body: JSON.stringify({
+            model: P.ai.model || "gpt-4o",
+            messages: [{ role: "system", content: "你是严谨的数据一致性审核 AI·只报真实矛盾·不制造伪问题。" }, { role: "user", content: tpAu }],
+            temperature: 0.2,
+            max_tokens: _tok(3000)
+          })
+        });
+        if (respAu.ok) {
+          var dataAu = await respAu.json();
+          var cAu = '';
+          if (dataAu.choices && dataAu.choices[0] && dataAu.choices[0].message) cAu = dataAu.choices[0].message.content;
+          var pAu = extractJSON(cAu);
+          if (pAu) {
+            GM._turnAiResults.subcallAudit = pAu;
+            var conflictCount = (pAu.conflicts || []).length;
+            if (conflictCount > 0) {
+              _dbg('[Consistency Audit] 发现', conflictCount, '项冲突');
+              // 应用 auto_patches
+              if (Array.isArray(pAu.auto_patches)) {
+                pAu.auto_patches.forEach(function(ap) {
+                  if (!ap || !ap.path) return;
+                  try {
+                    // 简化：尝试通过点路径写入 GM._turnAiResults
+                    var parts = ap.path.split('.');
+                    var obj = GM._turnAiResults;
+                    for (var i = 0; i < parts.length - 1; i++) {
+                      if (!obj[parts[i]]) return;
+                      obj = obj[parts[i]];
+                    }
+                    if (ap.op === 'set') obj[parts[parts.length-1]] = ap.value;
+                    _dbg('[Audit] 自动修正:', ap.path, '=', ap.value);
+                  } catch(_ape) {}
+                });
+              }
+              // 严重冲突入 turnReport 让玩家看到
+              if (!GM._turnReport) GM._turnReport = [];
+              GM._turnReport.push({
+                type: 'consistency_audit',
+                conflicts: pAu.conflicts.slice(0, 10),
+                turn: GM.turn || 0
+              });
+            }
+          }
+        }
+      } catch(eAu) { _dbg('[Consistency Audit] fail:', eAu); }
+      }); // end SC_CONSISTENCY_AUDIT
 
       // --- Sub-call 1.9: 新实体丰化（复用编辑器 AI 级 schema，填充骨架） ---
       await _runSubcall('sc19', '新实体丰化', 'lite', async function() {
@@ -12858,6 +13524,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         });
         _dbg('[3.3 Pipeline] ' + _timingParts.join(' | '));
       }
+
+      // S2：启动 post-turn 异步任务（L2_AI/L3_CONDENSE/REFLECT/factionArcs）
+      //   不 await·让玩家看结果时后台运行·下回合开始前 _awaitPostTurnJobs 会等齐
+      try { if (typeof _launchPostTurnJobs === 'function') _launchPostTurnJobs(); } catch(_ptE) { _dbg('[PostTurn] launch failed:', _ptE); }
     }
     catch(err){shizhengji="\u5931\u8D25:"+err.message;zhengwen="\u9519\u8BEF";}
   }else{

@@ -1607,7 +1607,7 @@ var NpcMemorySystem = {
    * @param {number} [importance=5] - 1-10
    * @param {string} [relatedPerson] - 相关人物
    */
-  remember: function(charName, event, emotion, importance, relatedPerson) {
+  remember: function(charName, event, emotion, importance, relatedPerson, meta) {
     if (!GM.chars) return;
     var ch = GM.chars.find(function(c) { return c.name === charName; });
     if (!ch || ch.alive === false) return;
@@ -1615,37 +1615,74 @@ var NpcMemorySystem = {
     if (!ch._memArchive) ch._memArchive = [];
 
     // 4.4: 结构化记忆类型推断
-    var memType = 'general';
-    if (/背叛|叛|反|谋|阴谋/.test(event)) memType = 'betrayal';
-    else if (/恩|救|助|赏|赐|提拔|擢升/.test(event)) memType = 'kindness';
-    else if (/辱|羞|贬|斥|罢/.test(event)) memType = 'humiliation';
-    else if (/升|任|封|授|入仕|及第/.test(event)) memType = 'promotion';
-    else if (/亡|死|丧|失|败/.test(event)) memType = 'loss';
-    else if (/婚|嫁|娶|联姻/.test(event)) memType = 'marriage';
-    else if (/战|征|伐|胜|败/.test(event)) memType = 'military';
-    else if (/问对|谈|说|议/.test(event)) memType = 'dialogue';
+    var memType = (meta && meta.type) || 'general';
+    if (memType === 'general') {
+      if (/背叛|叛|反|谋|阴谋/.test(event)) memType = 'betrayal';
+      else if (/恩|救|助|赏|赐|提拔|擢升/.test(event)) memType = 'kindness';
+      else if (/辱|羞|贬|斥|罢/.test(event)) memType = 'humiliation';
+      else if (/升|任|封|授|入仕|及第/.test(event)) memType = 'promotion';
+      else if (/亡|死|丧|失|败/.test(event)) memType = 'loss';
+      else if (/婚|嫁|娶|联姻/.test(event)) memType = 'marriage';
+      else if (/战|征|伐|胜|败/.test(event)) memType = 'military';
+      else if (/问对|谈|说|议/.test(event)) memType = 'dialogue';
+    }
 
-    ch._memory.push({
+    var memEntry = {
       event: event,
       emotion: emotion || '平',
       importance: Math.max(0.1, Math.min(10, importance || 5)),
       turn: GM.turn,
       who: relatedPerson || '',
-      type: memType  // 4.4: 结构化类型
-    });
+      type: memType,
+      // === 方向4/13：感官+可信度扩展字段 ===
+      location: (meta && meta.location) || '',
+      witnesses: (meta && Array.isArray(meta.witnesses)) ? meta.witnesses.slice(0, 6) : [],
+      source: (meta && meta.source) || 'witnessed',  // witnessed/reported/rumor/intuition
+      credibility: (meta && meta.credibility != null) ? Math.max(0, Math.min(100, meta.credibility)) : 95,
+      arcId: (meta && meta.arcId) || '',
+      participants: (meta && Array.isArray(meta.participants)) ? meta.participants.slice(0, 10) : []
+    };
+    ch._memory.push(memEntry);
 
-    // 更新情绪状态（最近3条记忆的主导情绪）
+    // === 方向5：全量无损归档（永不压缩） ===
+    if (!GM._memoryArchiveFull) GM._memoryArchiveFull = [];
+    var archiveEntry = Object.assign({}, memEntry, { char: charName, archiveTurn: GM.turn });
+    GM._memoryArchiveFull.push(archiveEntry);
+
+    // === 方向11：关系历史快照（favor 变化 ≥5 时记录） ===
+    if (relatedPerson && relatedPerson !== charName) {
+      if (!ch._impressions) ch._impressions = {};
+      if (!ch._impressions[relatedPerson]) ch._impressions[relatedPerson] = { favor: 0, events: [] };
+      var imp = ch._impressions[relatedPerson];
+      var impWeight = Math.max(1, Math.min(importance || 5, 10)) / 5;
+      var baseDelta = emotion === '喜' || emotion === '敬' ? 3 : emotion === '怒' || emotion === '恨' ? -4 : emotion === '忧' || emotion === '惧' ? -1 : 0;
+      var delta = Math.round(baseDelta * impWeight);
+      var oldFavor = imp.favor;
+      imp.favor = Math.max(-100, Math.min(100, imp.favor + delta));
+      imp.events.push(event.slice(0, 25));
+      if (imp.events.length > 8) imp.events = imp.events.slice(-8);
+      // 关系变化快照
+      if (Math.abs(imp.favor - oldFavor) >= 5) {
+        if (!ch._relationHistory) ch._relationHistory = {};
+        if (!ch._relationHistory[relatedPerson]) ch._relationHistory[relatedPerson] = [];
+        ch._relationHistory[relatedPerson].push({
+          turn: GM.turn,
+          favor: imp.favor,
+          delta: imp.favor - oldFavor,
+          reason: event.slice(0, 40),
+          trigger: memType
+        });
+        if (ch._relationHistory[relatedPerson].length > 40) ch._relationHistory[relatedPerson] = ch._relationHistory[relatedPerson].slice(-40);
+      }
+    }
+
     NpcMemorySystem._updateMood(ch);
-    // 6.2: 写入后清除该角色的记忆缓存
     if (NpcMemorySystem._memCache && NpcMemorySystem._memCache[charName]) delete NpcMemorySystem._memCache[charName];
 
-    // 超过动态上限→压缩旧记忆
     var _cap = NpcMemorySystem.getCapacity(ch);
     if (ch._memory.length > _cap.active) {
-      // 4.4: 记忆衰减——每回合只衰减一次，衰减量按回合时间缩放
       if (ch._lastDecayTurn !== GM.turn) {
         ch._lastDecayTurn = GM.turn;
-        // 月基准衰减率 × 回合月数（1天≈0.033月，1季≈3月，1年≈12月）
         var _monthScale = (typeof getTimeRatio === 'function') ? getTimeRatio() * 12 : 1;
         ch._memory.forEach(function(m) {
           if (m.turn >= GM.turn) return;
@@ -1656,18 +1693,40 @@ var NpcMemorySystem = {
       NpcMemorySystem._compressMemory(ch, _cap);
     }
 
-    // 更新对相关人物的印象（importance加权——重大事件影响更深）
-    if (relatedPerson && relatedPerson !== charName) {
-      if (!ch._impressions) ch._impressions = {};
-      if (!ch._impressions[relatedPerson]) ch._impressions[relatedPerson] = { favor: 0, events: [] };
-      var imp = ch._impressions[relatedPerson];
-      var impWeight = Math.max(1, Math.min(importance || 5, 10)) / 5; // 1->0.2, 5->1.0, 10->2.0
-      var baseDelta = emotion === '喜' || emotion === '敬' ? 3 : emotion === '怒' || emotion === '恨' ? -4 : emotion === '忧' || emotion === '惧' ? -1 : 0;
-      var delta = Math.round(baseDelta * impWeight);
-      imp.favor = Math.max(-100, Math.min(100, imp.favor + delta));
-      imp.events.push(event.slice(0, 25));
-      if (imp.events.length > 8) imp.events = imp.events.slice(-8);
+    // === 方向2：互动镜像——为 relatedPerson 自动写入对应记忆 ===
+    if (!(meta && meta._noMirror) && relatedPerson && relatedPerson !== charName) {
+      NpcMemorySystem._mirrorToOther(charName, event, emotion, importance, relatedPerson, meta);
     }
+
+    // === 方向2扩展：为所有 participants 写入 ===
+    if (meta && Array.isArray(meta.participants) && meta.participants.length > 0) {
+      meta.participants.forEach(function(pName) {
+        if (!pName || pName === charName || pName === relatedPerson) return;
+        NpcMemorySystem._mirrorToOther(charName, event, emotion, importance, pName, Object.assign({}, meta, { _noMirror: true, _asParticipant: true }));
+      });
+    }
+  },
+
+  /** 方向2：把事件镜像到另一方·情绪自动翻转 */
+  _mirrorToOther: function(originName, event, emotion, importance, otherName, meta) {
+    if (!GM.chars) return;
+    var other = GM.chars.find(function(c) { return c.name === otherName; });
+    if (!other || other.alive === false) return;
+    if (other._fakeDeath) return;
+    // 情绪翻转映射
+    var flipMap = { '怒': '平', '恨': '警', '忧': '察', '惧': '强', '喜': '喜', '敬': '谦', '平': '平' };
+    var asParticipant = meta && meta._asParticipant;
+    var mirroredEmotion = asParticipant ? emotion : (flipMap[emotion] || '平');
+    // 构造镜像事件描述
+    var mirroredEvent;
+    if (asParticipant) mirroredEvent = '（在场）' + event;
+    else mirroredEvent = '（与' + originName + '）' + event;
+    // importance 稍衰减（非亲历者记忆稍浅）
+    var mirroredImp = Math.max(0.5, (importance || 5) - (asParticipant ? 0 : 1));
+    // 镜像 meta·标记 _noMirror 防止死循环
+    var mirroredMeta = Object.assign({}, meta || {}, { _noMirror: true });
+    // 递归调用 remember·但关闭 mirror
+    NpcMemorySystem.remember(otherName, mirroredEvent, mirroredEmotion, mirroredImp, originName, mirroredMeta);
   },
 
   /**
@@ -1948,6 +2007,145 @@ var NpcMemorySystem = {
       }
       NpcMemorySystem._updateMood(ch);
     });
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  方向 3：ch._arcs 个人剧情弧管理
+  // ═══════════════════════════════════════════════════════════════════
+  /**
+   * 将记忆关联到现有 arc 或创建新 arc
+   * @param {string} charName
+   * @param {Object} arcData - {id?, title, type, participants?, phase?}
+   */
+  upsertArc: function(charName, arcData) {
+    if (!GM.chars || !arcData || !arcData.title) return null;
+    var ch = GM.chars.find(function(c) { return c.name === charName; });
+    if (!ch) return null;
+    if (!ch._arcs) ch._arcs = [];
+    var arc = null;
+    if (arcData.id) arc = ch._arcs.find(function(a) { return a.id === arcData.id; });
+    if (!arc) arc = ch._arcs.find(function(a) { return a.title === arcData.title; });
+    if (!arc) {
+      arc = {
+        id: arcData.id || ('arc_' + (GM.turn || 0) + '_' + Math.random().toString(36).slice(2, 7)),
+        title: arcData.title,
+        type: arcData.type || 'political',
+        participants: arcData.participants || [charName],
+        phase: arcData.phase || 'brewing',
+        startTurn: GM.turn || 0,
+        lastUpdateTurn: GM.turn || 0,
+        events: [],
+        emotionalTrajectory: '',
+        unresolved: arcData.unresolved || ''
+      };
+      ch._arcs.push(arc);
+    }
+    // 更新字段
+    if (arcData.phase) arc.phase = arcData.phase;
+    if (arcData.emotionalTrajectory) arc.emotionalTrajectory = arcData.emotionalTrajectory;
+    if (arcData.unresolved) arc.unresolved = arcData.unresolved;
+    arc.lastUpdateTurn = GM.turn || 0;
+    // 限制：每人最多 15 个活跃 arc·resolved 超 10 回合删除
+    ch._arcs = ch._arcs.filter(function(a) {
+      if (a.phase === 'resolved' && (GM.turn - a.lastUpdateTurn) > 10) return false;
+      return true;
+    });
+    if (ch._arcs.length > 15) {
+      // 保留最近活跃的
+      ch._arcs.sort(function(a, b) { return b.lastUpdateTurn - a.lastUpdateTurn; });
+      ch._arcs = ch._arcs.slice(0, 15);
+    }
+    return arc;
+  },
+
+  /**
+   * 把一条 memory 关联到 arc
+   */
+  linkMemoryToArc: function(charName, memoryIdx, arcId) {
+    if (!GM.chars) return;
+    var ch = GM.chars.find(function(c) { return c.name === charName; });
+    if (!ch || !ch._memory || !ch._memory[memoryIdx]) return;
+    ch._memory[memoryIdx].arcId = arcId;
+    if (ch._arcs) {
+      var arc = ch._arcs.find(function(a) { return a.id === arcId; });
+      if (arc) {
+        arc.events.push({ turn: GM.turn || 0, memoryIdx: memoryIdx });
+        arc.lastUpdateTurn = GM.turn || 0;
+        if (arc.events.length > 30) arc.events = arc.events.slice(-30);
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  方向 6：recallMemory API（RAG 式按需检索）
+  //  支持 keywords/turnRange/participant/minImportance/arcId/type 过滤
+  //  从 GM._memoryArchiveFull（永久档）检索·返回匹配条目数组
+  // ═══════════════════════════════════════════════════════════════════
+  recallMemory: function(query, opts) {
+    query = query || {};
+    opts = opts || {};
+    var limit = opts.limit || 20;
+    var sortBy = opts.sortBy || 'importance';  // importance|turn|credibility
+    var archive = (typeof GM !== 'undefined' && GM._memoryArchiveFull) ? GM._memoryArchiveFull : [];
+    if (archive.length === 0) return [];
+
+    var results = archive.filter(function(m) {
+      if (!m) return false;
+      // 关键词匹配（全文扫）
+      if (query.keywords && Array.isArray(query.keywords) && query.keywords.length > 0) {
+        var text = (m.event || '') + ' ' + (m.who || '') + ' ' + (m.char || '') + ' ' + (m.location || '');
+        var anyMatch = query.keywords.some(function(kw) { return text.indexOf(kw) >= 0; });
+        if (!anyMatch) return false;
+      }
+      // 回合范围
+      if (query.turnRange && Array.isArray(query.turnRange)) {
+        if (m.turn < query.turnRange[0] || m.turn > query.turnRange[1]) return false;
+      }
+      // 参与者（who 或 participants[]）
+      if (query.participant) {
+        var isParticipant = m.who === query.participant ||
+                            m.char === query.participant ||
+                            (Array.isArray(m.participants) && m.participants.indexOf(query.participant) >= 0) ||
+                            (Array.isArray(m.witnesses) && m.witnesses.indexOf(query.participant) >= 0);
+        if (!isParticipant) return false;
+      }
+      // 最低重要度
+      if (query.minImportance && (m.importance || 0) < query.minImportance) return false;
+      // arcId
+      if (query.arcId && m.arcId !== query.arcId) return false;
+      // type
+      if (query.type && m.type !== query.type) return false;
+      // 最低可信度
+      if (query.minCredibility && (m.credibility || 0) < query.minCredibility) return false;
+      // source 过滤
+      if (query.source && m.source !== query.source) return false;
+      return true;
+    });
+
+    // 排序
+    results.sort(function(a, b) {
+      if (sortBy === 'turn') return (b.turn || 0) - (a.turn || 0);
+      if (sortBy === 'credibility') return (b.credibility || 0) - (a.credibility || 0);
+      return (b.importance || 0) - (a.importance || 0);
+    });
+
+    return results.slice(0, limit);
+  },
+
+  /** 获取 NPC 的所有活跃 arc（phase ≠ resolved） */
+  getActiveArcs: function(charName) {
+    if (!GM.chars) return [];
+    var ch = GM.chars.find(function(c) { return c.name === charName; });
+    if (!ch || !ch._arcs) return [];
+    return ch._arcs.filter(function(a) { return a.phase !== 'resolved'; });
+  },
+
+  /** 获取 NPC 对另一人的关系演变快照 */
+  getRelationHistory: function(charName, otherName) {
+    if (!GM.chars) return [];
+    var ch = GM.chars.find(function(c) { return c.name === charName; });
+    if (!ch || !ch._relationHistory || !ch._relationHistory[otherName]) return [];
+    return ch._relationHistory[otherName];
   }
 };
 

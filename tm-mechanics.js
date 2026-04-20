@@ -1628,7 +1628,7 @@ var NpcMemorySystem = {
     ch._memory.push({
       event: event,
       emotion: emotion || '平',
-      importance: importance || 5,
+      importance: Math.max(0.1, Math.min(10, importance || 5)),
       turn: GM.turn,
       who: relatedPerson || '',
       type: memType  // 4.4: 结构化类型
@@ -1650,7 +1650,7 @@ var NpcMemorySystem = {
         ch._memory.forEach(function(m) {
           if (m.turn >= GM.turn) return;
           var baseRate = (m.emotion === '\u6012' || m.emotion === '\u6068') ? 0.02 : 0.05;
-          m.importance = Math.max(1, (m.importance || 5) - baseRate * _monthScale);
+          m.importance = Math.max(0.1, Math.min(10, (m.importance || 5) - baseRate * _monthScale));
         });
       }
       NpcMemorySystem._compressMemory(ch, _cap);

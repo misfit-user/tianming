@@ -1067,6 +1067,203 @@ var PromptTemplate = {
   list: function() { return Object.keys(this._templates); }
 };
 
+// ============================================================
+//  1.7.4 AI 请求队列（C1/C2：并发控制 + 节流 + 优先级）
+// ============================================================
+//   同一时刻最多 maxConcurrent 个请求在途，相邻请求间至少间隔 minInterval ms
+//   优先级：critical > high > normal > low（数值越小越优先）
+//   外部通过 _aiQueue.enqueue(task, priority) 提交，返回 Promise
+var _aiQueue = (function() {
+  var queue = []; // [{task, priority, resolve, reject, seq}]
+  var inflight = 0;
+  var lastDispatch = 0;
+  var seqCounter = 0;
+  function getConf() {
+    var p = (typeof P !== 'undefined' && P.ai) ? P.ai : {};
+    return {
+      maxConcurrent: Math.max(1, parseInt(p.maxConcurrent) || 3),
+      minInterval: Math.max(0, parseInt(p.minInterval) || 300)
+    };
+  }
+  var priorityRank = { critical: 0, high: 1, normal: 2, low: 3 };
+  function pump() {
+    var conf = getConf();
+    while (queue.length > 0 && inflight < conf.maxConcurrent) {
+      var now = Date.now();
+      var wait = lastDispatch + conf.minInterval - now;
+      if (wait > 0) {
+        setTimeout(pump, wait + 10);
+        return;
+      }
+      // 按 priority 然后 seq 排序
+      queue.sort(function(a, b) {
+        var pa = priorityRank[a.priority] != null ? priorityRank[a.priority] : 2;
+        var pb = priorityRank[b.priority] != null ? priorityRank[b.priority] : 2;
+        if (pa !== pb) return pa - pb;
+        return a.seq - b.seq;
+      });
+      var item = queue.shift();
+      inflight++;
+      lastDispatch = Date.now();
+      Promise.resolve().then(item.task).then(function(res) {
+        inflight--;
+        item.resolve(res);
+        pump();
+      }).catch(function(err) {
+        inflight--;
+        item.reject(err);
+        pump();
+      });
+    }
+  }
+  return {
+    enqueue: function(task, priority) {
+      return new Promise(function(resolve, reject) {
+        queue.push({ task: task, priority: priority || 'normal', resolve: resolve, reject: reject, seq: seqCounter++ });
+        pump();
+      });
+    },
+    stats: function() { return { inflight: inflight, queued: queue.length, conf: getConf() }; }
+  };
+})();
+
+// ============================================================
+//  1.7.45 Token 粗估计数（C3：中英文混合）
+//  中文字符 ≈ 1.3 token/字，英文/数字/符号 ≈ 0.25 token/字符
+//  Claude/GPT 的真实 tokenization 不同，此函数用于预警而非精确计量
+// ============================================================
+function estimateTokens(text) {
+  if (!text) return 0;
+  var s = String(text);
+  var cjk = 0, other = 0;
+  for (var i = 0; i < s.length; i++) {
+    var code = s.charCodeAt(i);
+    if (code >= 0x4E00 && code <= 0x9FFF) cjk++;
+    else if (code >= 0x3040 && code <= 0x30FF) cjk++;
+    else other++;
+  }
+  return Math.ceil(cjk * 1.3 + other * 0.25);
+}
+/**
+ * 根据模型上下文窗口估算可用 prompt token 预算
+ * 返回 { contextK, budget, warn80, warn95 }
+ */
+function getPromptBudget() {
+  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 32 };
+  var contextK = cp.contextK || 32;
+  // 留 1/4 给响应+缓冲
+  var budget = Math.floor(contextK * 1024 * 0.75);
+  return { contextK: contextK, budget: budget, warn80: Math.floor(budget * 0.8), warn95: Math.floor(budget * 0.95) };
+}
+/**
+ * 检查 prompt 是否接近预算，超 80% 返回 'warn'，超 95% 返回 'critical'，否则返回 'ok'
+ * 可选的 onWarn 回调用于 UI 反馈
+ */
+function checkPromptTokenBudget(promptText, onWarn) {
+  var tokens = estimateTokens(promptText);
+  var bg = getPromptBudget();
+  var status = 'ok';
+  if (tokens > bg.warn95) status = 'critical';
+  else if (tokens > bg.warn80) status = 'warn';
+  if (status !== 'ok' && typeof onWarn === 'function') {
+    try { onWarn(status, tokens, bg); } catch(_e) {}
+  }
+  if (status !== 'ok' && typeof console !== 'undefined') {
+    console.warn('[TokenBudget] ' + status + ' estimated=' + tokens + ' budget=' + bg.budget + ' contextK=' + bg.contextK);
+  }
+  return { status: status, tokens: tokens, budget: bg };
+}
+
+// ============================================================
+//  1.7.5 AI 调用基础设施（重试 + 超时 + 429 处理 + raw 保留）
+// ============================================================
+var _aiLastRaw = { url: '', body: null, response: null, error: null, ts: 0 };
+/**
+ * 统一的 AI fetch 包装：3 次指数退避重试、180s 超时、429 读取 Retry-After、原始响应保留供 debug。
+ * 返回已解析的 JSON。抛出时 error.lastRaw 含现场信息。
+ */
+async function _aiFetchWithRetry(url, body, signal, opts) {
+  opts = opts || {};
+  var priority = opts.priority || 'normal';
+  // 所有 AI 调用走队列，受全局 maxConcurrent + minInterval 约束
+  return _aiQueue.enqueue(function() {
+    return _aiFetchWithRetryInner(url, body, signal, opts);
+  }, priority);
+}
+
+async function _aiFetchWithRetryInner(url, body, signal, opts) {
+  opts = opts || {};
+  var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
+  var timeoutMs = opts.timeoutMs || 180000;
+  var key = P.ai.key;
+  var lastError = null;
+  // 粗估 token 预算（仅警告，不截断：截断是调用方的职责）
+  try {
+    if (body && body.messages && typeof checkPromptTokenBudget === 'function') {
+      var _combined = body.messages.map(function(m) { return (m && m.content) || ''; }).join('\n');
+      checkPromptTokenBudget(_combined);
+    }
+  } catch(_tkE) {}
+  for (var attempt = 0; attempt <= maxRetries; attempt++) {
+    var ctrl = new AbortController();
+    var aborter = function() { ctrl.abort(); };
+    var timer = setTimeout(aborter, timeoutMs);
+    if (signal) {
+      if (signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); }
+      signal.addEventListener('abort', aborter);
+    }
+    try {
+      var resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify(body),
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      // 429 速率限制：读 Retry-After 延迟
+      if (resp.status === 429 && attempt < maxRetries) {
+        var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
+        var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
+        console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
+        await new Promise(function(r) { setTimeout(r, delay429); });
+        continue;
+      }
+      if (!resp.ok) {
+        var errText = '';
+        try { errText = await resp.text(); } catch(_e) {}
+        lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
+        lastError.status = resp.status;
+        _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
+        // 5xx 可重试；4xx（除 429）不重试
+        if (resp.status >= 500 && attempt < maxRetries) {
+          await new Promise(function(r) { setTimeout(r, 1000 * Math.pow(2, attempt)); });
+          continue;
+        }
+        throw lastError;
+      }
+      var data = await resp.json();
+      _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
+      return data;
+    } catch(e) {
+      clearTimeout(timer);
+      lastError = e;
+      // 外部 signal 主动中断——不重试
+      if (signal && signal.aborted) throw e;
+      // 超时或网络错误——重试
+      if (attempt < maxRetries) {
+        var delayRetry = 1000 * Math.pow(2, attempt);
+        console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
+        await new Promise(function(r) { setTimeout(r, delayRetry); });
+      } else {
+        // 挂载最后的原始响应
+        if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+        throw e;
+      }
+    }
+  }
+  throw lastError || new Error('_aiFetchWithRetry: 重试耗尽');
+}
+
 /**
  * 基础 AI 调用
  * @param {string} prompt - 提示词
@@ -1078,20 +1275,13 @@ async function callAI(prompt,maxTok,signal){
   var key=P.ai.key;if(!key)throw new Error("API\u672A\u914D\u7F6E");
   var url=_buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
-  var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort();},300000);
-  if(signal)signal.addEventListener("abort",function(){ctrl.abort();});
-  try{
-    var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
-    var resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model:P.ai.model||"gpt-4o",messages:[{role:"user",content:prompt}],temperature:P.ai.temp||0.8,max_tokens:_scaledTok}),signal:ctrl.signal});
-    if(!resp.ok)throw new Error("HTTP "+resp.status);
-    var data=await resp.json();
-    // 1.6: 追踪token消耗
-    if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
-    if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-    if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-    return "";
-  }finally{clearTimeout(timer);}
+  var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+  var body = { model: P.ai.model||"gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
+  var data = await _aiFetchWithRetry(url, body, signal);
+  if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
+  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
+  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
+  return "";
 }
 
 /**
@@ -1172,18 +1362,13 @@ async function callAIMessages(messages,maxTok,signal){
   var key=P.ai.key;if(!key)throw new Error("API\u672A\u914D\u7F6E");
   var url=_buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
-  var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort();},60000);
-  if(signal)signal.addEventListener("abort",function(){ctrl.abort();});
-  try{
-    var _scaledTok2 = Math.round((maxTok||500) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
-    var resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model:P.ai.model||"gpt-4o",messages:messages,temperature:0.8,max_tokens:_scaledTok2}),signal:ctrl.signal});
-    if(!resp.ok)throw new Error("HTTP "+resp.status);
-    var data=await resp.json();
-    if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
-    if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-    return "";
-  }finally{clearTimeout(timer);}
+  var _scaledTok2 = Math.round((maxTok||500) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+  var body = { model: P.ai.model||"gpt-4o", messages: messages, temperature: 0.8, max_tokens: _scaledTok2 };
+  var data = await _aiFetchWithRetry(url, body, signal);
+  if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
+  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
+  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
+  return "";
 }
 
 /**
@@ -1198,7 +1383,7 @@ async function callAIMessagesStream(messages, maxTok, opts) {
   var key = P.ai.key; if (!key) throw new Error('API未配置');
   var url = _buildAIUrl(); if (!url) throw new Error('API地址未配置');
   var ctrl = new AbortController();
-  var timer = setTimeout(function() { ctrl.abort(); }, 120000);
+  var timer = setTimeout(function() { ctrl.abort(); }, 180000);
   if (opts.signal) opts.signal.addEventListener('abort', function() { ctrl.abort(); });
   var _scaledTok = Math.round((maxTok || 500) * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
   try {
@@ -2768,7 +2953,17 @@ function getCompressionParams(ctxK) {
     memHardLimit: Math.round(100 * scale),
     foreHardLimit: Math.round(60 * scale),
     // buildAIContext的截断因子
-    contextTruncFactor: scale
+    contextTruncFactor: scale,
+    // A3 NPC 心声注入参数（模型越好·纳入越多角色·每角色更多条·门槛更低）
+    // 8K:3人/1条/阈8  32K:8人/2条/阈6  128K:13人/3条/阈5  256K:15人/3条/阈4  1M:15人/4条/阈3
+    heartsMaxChars: Math.max(3, Math.min(20, Math.round(8 * scale))),
+    heartsPerChar: Math.max(1, Math.min(4, Math.round(2 * scale))),
+    heartsImportanceMin: Math.max(3, Math.min(9, Math.round(8 - scale * 2))),
+    heartsTotalCap: Math.max(6, Math.min(80, Math.round(16 * scale))),
+    // D2 对话摘要注入参数
+    // 8K:8条  32K:16条  128K:25条  256K:30条  1M:40条
+    dialogueTotalCap: Math.max(6, Math.min(50, Math.round(16 * scale))),
+    dialogueRecentTurns: Math.max(2, Math.min(8, Math.round(3 * scale)))
   };
 }
 

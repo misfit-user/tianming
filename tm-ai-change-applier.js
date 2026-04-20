@@ -1324,7 +1324,224 @@
     // schema: directive_compliance:[{id,status:'followed|partial|ignored',reason,evidence}]
     try { _applyDirectiveCompliance(G, aiOutput); } catch(_dcE) { console.warn('[applier] directive compliance:', _dcE); }
 
+    // ── 14. 财务一致性校验：扫描叙事中的金额 vs fiscal_adjustments 总量 ──
+    try { _validateFiscalConsistency(G, aiOutput, applied); } catch(_fvE) { console.warn('[applier] fiscal validator:', _fvE); }
+
+    // ── 15. 死亡墓志铭 & 诈死holding ──
+    try { _processDeathEpitaphs(G, aiOutput); } catch(_deE) { console.warn('[applier] death epitaph:', _deE); }
+
     return { ok: true, applied: applied };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  财务一致性校验器
+  //  扫描 shilu_text/shizhengji/events 中提及金额，比对 fiscal_adjustments 总量
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateFiscalConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrativeText = '';
+    if (aiOutput.shilu_text) narrativeText += String(aiOutput.shilu_text) + '\n';
+    if (aiOutput.shizhengji) narrativeText += String(aiOutput.shizhengji) + '\n';
+    if (Array.isArray(aiOutput.events)) {
+      aiOutput.events.forEach(function(e){ if (e && e.desc) narrativeText += String(e.desc) + '\n'; });
+    }
+    if (aiOutput.event && aiOutput.event.desc) narrativeText += String(aiOutput.event.desc) + '\n';
+    if (!narrativeText) return;
+
+    // 中文/阿拉伯混合数字转阿拉伯数字
+    function _parseNum(numStr, mult) {
+      var cnMap = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'两':2,'壹':1,'贰':2,'叁':3,'肆':4,'伍':5,'陆':6,'柒':7,'捌':8,'玖':9};
+      var n = parseFloat(numStr);
+      if (!isNaN(n) && n > 0) {
+        // 阿拉伯前缀：检查尾部是否携带量级单位（如"30万"）
+        if (/万$/.test(numStr)) n *= 10000;
+        else if (/千$/.test(numStr)) n *= 1000;
+        else if (/百$/.test(numStr)) n *= 100;
+        else if (/十$/.test(numStr)) n *= 10;
+      } else {
+        // 纯中文数字解析
+        n = 0;
+        for (var i = 0; i < numStr.length; i++) {
+          var ch = numStr.charAt(i);
+          if (cnMap[ch] != null) n = n * 10 + cnMap[ch];
+          else if (ch === '十') n = (n || 1) * 10;
+          else if (ch === '百') n = (n || 1) * 100;
+          else if (ch === '千') n = (n || 1) * 1000;
+          else if (ch === '万') n = (n || 1) * 10000;
+        }
+      }
+      if (mult === '万') n *= 10000;
+      else if (mult === '千') n *= 1000;
+      else if (mult === '百') n *= 100;
+      else if (mult === '十') n *= 10;
+      return n;
+    }
+
+    var mentioned = [];
+    // 模式：动作动词 + 可选介词/量词 + 数字 + 量级 + 单位
+    var pat = /(赐|赏|发|拨|赈|征|抄|没收|缴获|贡|赔|罚没|献|输|筹|解)[^。；\s,，]{0,8}?([\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\s*(万|千|百|十)?\s*(两|石|匹|斛|贯|缗|斗)/g;
+    var m;
+    while ((m = pat.exec(narrativeText)) !== null) {
+      var action = m[1];
+      var numStr = m[2];
+      var mult = m[3] || '';
+      var unit = m[4];
+      var amt = _parseNum(numStr, mult);
+      if (!amt || amt < 100) continue; // 忽略小数目（礼物级别）
+      var resType = (unit === '石' || unit === '斛' || unit === '斗') ? 'grain'
+                  : (unit === '匹') ? 'cloth'
+                  : 'money';
+      mentioned.push({ action: action, amount: amt, resource: resType, raw: m[0] });
+    }
+    if (!mentioned.length) return;
+
+    // 比对 fiscal_adjustments 总量
+    var adjTotal = { money: 0, grain: 0, cloth: 0 };
+    (aiOutput.fiscal_adjustments || []).forEach(function(fa){
+      if (!fa) return;
+      var res = (fa.resource === 'grain' || fa.resource === 'cloth') ? fa.resource : 'money';
+      adjTotal[res] += Math.abs(parseFloat(fa.amount) || 0);
+    });
+    var mentTotal = { money: 0, grain: 0, cloth: 0 };
+    mentioned.forEach(function(x){ mentTotal[x.resource] += x.amount; });
+
+    var warnings = [];
+    ['money','grain','cloth'].forEach(function(res){
+      if (mentTotal[res] <= 0) return;
+      var ratio = adjTotal[res] / mentTotal[res];
+      // 允许fiscal_adjustments总量 >= 50% of mentioned，低于此阈值视为严重脱节
+      if (ratio < 0.5) {
+        warnings.push({
+          resource: res,
+          mentioned: mentTotal[res],
+          adjusted: adjTotal[res],
+          shortfall: Math.round(mentTotal[res] - adjTotal[res]),
+          ratio: Math.round(ratio * 100) / 100
+        });
+      }
+    });
+
+    if (!warnings.length) return;
+
+    if (!G._fiscalValidatorLog) G._fiscalValidatorLog = [];
+    G._fiscalValidatorLog.push({ turn: G.turn || 0, warnings: warnings, samples: mentioned.slice(0, 8) });
+    if (G._fiscalValidatorLog.length > 20) G._fiscalValidatorLog = G._fiscalValidatorLog.slice(-20);
+
+    G._turnReport.push({ type: 'fiscal_validation', warnings: warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
+    console.warn('[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:', warnings);
+
+    // 自动补录：对每个欠缺资源生成一条 fiscal_adjustment（target=guoku, kind=expense, 标注auto-patch）
+    warnings.forEach(function(w){
+      if (w.shortfall <= 0) return;
+      if (!G.guoku) G.guoku = {};
+      if (!G.guoku.extraExpense) G.guoku.extraExpense = [];
+      var patch = {
+        id: 'fa_autopatch_' + (G.turn||0) + '_' + Math.random().toString(36).slice(2,5),
+        name: '叙事脱节补录',
+        category: '校验补录',
+        resource: w.resource,
+        amount: w.shortfall,
+        reason: '财务校验器检出·叙事提及'+w.mentioned+'·fiscal_adjustments仅'+w.adjusted+'·自动补录差额',
+        recurring: false,
+        addedTurn: G.turn || 0,
+        stopAfterTurn: null,
+        _autoPatched: true
+      };
+      G.guoku.extraExpense.push(patch);
+      // 立即作用：从guoku扣减（但不突破0）
+      var cur = Number(G.guoku[w.resource]) || 0;
+      var actual = Math.min(cur, w.shortfall);
+      if (cur > 0) {
+        G.guoku[w.resource] = cur - actual;
+        if (w.resource === 'money') G.guoku.balance = G.guoku.money;
+      }
+      patch.applied = actual;
+      patch.shortfall = w.shortfall - actual;
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  死亡墓志铭 & 诈死holding
+  // ═══════════════════════════════════════════════════════════════════
+  function _processDeathEpitaphs(G, aiOutput) {
+    if (!G || !Array.isArray(G.chars)) return;
+    if (!G._epitaphs) G._epitaphs = [];
+    if (!G._fakeDeathHolding) G._fakeDeathHolding = {};
+
+    // 处理本回合 character_deaths
+    var deathList = Array.isArray(aiOutput.character_deaths) ? aiOutput.character_deaths : [];
+    deathList.forEach(function(d){
+      if (!d || !d.name) return;
+      var ch = _findEntity(G, 'char', d.name);
+      if (!ch) return;
+      var isFake = (d.type === 'fake' || d.type === '诈死' || /\u8BC8\u6B7B/.test(d.reason || ''));
+      if (isFake) {
+        ch._fakeDeath = true;
+        // holding：保留该角色过往 aiMemory/evtLog 引用·不摘要不清理
+        G._fakeDeathHolding[ch.name] = {
+          turn: G.turn || 0,
+          reason: d.reason || '',
+          _memorySnapshot: (ch._memory ? ch._memory.slice() : [])
+        };
+        G._turnReport.push({ type: 'fake_death', char: ch.name, reason: d.reason, turn: G.turn || 0 });
+        return;
+      }
+      // 真死：生成墓志铭
+      _generateEpitaph(G, ch, d.reason || '');
+    });
+
+    // 补扫：alive=false 但尚无墓志铭的角色（可能被 char_updates 间接赐死）
+    G.chars.forEach(function(ch){
+      if (!ch || ch.alive !== false || ch._fakeDeath) return;
+      if (ch._epitaphed) return;
+      _generateEpitaph(G, ch, ch._deathReason || '');
+    });
+  }
+
+  function _generateEpitaph(G, ch, reason) {
+    if (!ch || ch._epitaphed) return;
+    var name = ch.name || '';
+    // 摘要：取过去30回合内 aiMemory/evtLog 中涉及该角色的事件
+    var snippets = [];
+    var curTurn = G.turn || 0;
+    (G._aiMemory || []).forEach(function(mem){
+      if (!mem) return;
+      var mtxt = (mem.text || mem.content || '') + '';
+      if (!mtxt) return;
+      if ((curTurn - (mem.turn||0)) > 30) return;
+      if (mtxt.indexOf(name) >= 0) snippets.push('T'+mem.turn+' '+mtxt.substring(0,80));
+    });
+    var _evtLen = (G.evtLog || []).length;
+    (G.evtLog || []).forEach(function(ev, idx){
+      if (!ev) return;
+      var txt = (ev.desc || ev.text || '') + '';
+      if (!txt || txt.indexOf(name) < 0) return;
+      // 最近200条采样入墓志铭
+      if ((_evtLen - idx) <= 200) {
+        snippets.push('T'+(ev.turn||0)+' '+txt.substring(0,80));
+      }
+      // 打标：所有提及该死者的事件（不限200条）均标注，后续 prompt 过滤
+      ev._charDied = true;
+    });
+    var epitaph = {
+      char: name,
+      diedTurn: curTurn,
+      diedAt: ch.diedAt || (G.eraState && G.eraState.yearLabel) || '',
+      reason: reason || ch._deathReason || '',
+      positionAtDeath: ch.officialTitle || '',
+      summary: snippets.slice(0, 10).join(' | ') || ('T'+curTurn+' '+name+'薨'),
+      importance: (ch.historicalImportance || 0) + (ch._memory ? ch._memory.length : 0)
+    };
+    G._epitaphs.push(epitaph);
+    // 从 _aiMemory 移除该角色原始条目（保留墓志铭摘要）
+    if (Array.isArray(G._aiMemory)) {
+      G._aiMemory = G._aiMemory.filter(function(mem){
+        if (!mem || !mem.text) return true;
+        return mem.text.indexOf(name) < 0;
+      });
+    }
+    ch._epitaphed = true;
+    G._turnReport.push({ type: 'epitaph', char: name, reason: epitaph.reason, turn: curTurn });
   }
 
   function _applyDirectiveCompliance(G, aiOutput) {

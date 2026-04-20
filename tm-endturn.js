@@ -1468,6 +1468,106 @@ function archiveOldMemories() {
   _dbg('[Memory] 归档完成，保留' + keptAnchors.length + '条活跃锚点，' + GM.memoryArchive.length + '条归档');
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  三层记忆金字塔 + 同步保鲜（方案 A1 + A2）
+//  L1 最近 5 回合原始 · L2 每 5 回合情景摘要 · L3 每 30 回合年代纲要
+//  _ensureMemoryFreshness 在每回合 AI 开始前运行·同步·无 AI 调用
+// ════════════════════════════════════════════════════════════════════════
+function _ensureMemoryFreshness(G) {
+  if (!G) return;
+  if (!G._memoryLayers) G._memoryLayers = { L1: [], L2: [], L3: [] };
+  var ML = G._memoryLayers;
+  var curTurn = G.turn || 0;
+
+  // —— 步骤 1：L1 拷贝最近 5 回合的 _aiMemory 原始条目 ——
+  // L1 作为"热记忆"，每回合动态同步
+  if (Array.isArray(G._aiMemory)) {
+    ML.L1 = G._aiMemory.filter(function(m){
+      if (!m) return false;
+      var t = m.turn || 0;
+      return (curTurn - t) < 5 && m.type !== 'compressed';
+    }).slice(-20);
+  }
+
+  // —— 步骤 2：L2 每 5 回合生成一次情景摘要（同步本地，无 AI）——
+  if (curTurn > 0 && curTurn % 5 === 0) {
+    var l2Exists = (ML.L2 || []).some(function(x){ return x && x.turnBucket === curTurn; });
+    if (!l2Exists) {
+      var bucketStart = curTurn - 4;
+      var bucketMems = (G._aiMemory || []).filter(function(m){
+        if (!m) return false;
+        var t = m.turn || 0;
+        return t >= bucketStart && t <= curTurn && m.type !== 'compressed';
+      });
+      if (bucketMems.length > 0) {
+        var l2Summary = bucketMems.map(function(m){
+          return 'T' + (m.turn||0) + ':' + ((m.text || m.content || '') + '').substring(0, 60);
+        }).join('｜').substring(0, 400);
+        ML.L2.push({
+          turnBucket: curTurn,
+          turnRange: bucketStart + '-' + curTurn,
+          summary: l2Summary,
+          createdAt: curTurn
+        });
+        // L2 上限 12 条（保留约 60 回合的情景摘要）
+        if (ML.L2.length > 12) ML.L2 = ML.L2.slice(-12);
+      }
+    }
+  }
+
+  // —— 步骤 3：L3 每 30 回合生成年代纲要（同步本地）——
+  if (curTurn > 0 && curTurn % 30 === 0) {
+    var l3Exists = (ML.L3 || []).some(function(x){ return x && x.turnBucket === curTurn; });
+    if (!l3Exists) {
+      var l3BucketStart = curTurn - 29;
+      var l3Bucket = (ML.L2 || []).filter(function(x){
+        return x.turnBucket >= l3BucketStart && x.turnBucket <= curTurn;
+      });
+      if (l3Bucket.length > 0) {
+        var l3Summary = l3Bucket.map(function(x){
+          return x.turnRange + '｜' + x.summary.substring(0, 80);
+        }).join('‖').substring(0, 600);
+        ML.L3.push({
+          turnBucket: curTurn,
+          turnRange: l3BucketStart + '-' + curTurn,
+          summary: l3Summary,
+          createdAt: curTurn
+        });
+        // L3 无上限（年代纲要是历史根，不丢弃）
+      }
+    }
+  }
+
+  // —— 步骤 4：兜底同步压缩 ——
+  //   若 _aiMemory 条数超硬上限且最后一条 compressed 项过于陈旧·本地合并老条目
+  var _aCp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { memHardLimit: 100 };
+  var hardLim = _aCp.memHardLimit || 100;
+  if (Array.isArray(G._aiMemory) && G._aiMemory.length > hardLim) {
+    var lastCompressed = null;
+    for (var i = G._aiMemory.length - 1; i >= 0; i--) {
+      if (G._aiMemory[i] && G._aiMemory[i].type === 'compressed') { lastCompressed = G._aiMemory[i]; break; }
+    }
+    var needLocal = !lastCompressed || (curTurn - (lastCompressed.turn || 0)) > 10;
+    if (needLocal) {
+      var keepRecent = Math.round(hardLim * 0.5);
+      var toCompress = G._aiMemory.slice(0, G._aiMemory.length - keepRecent);
+      var recent = G._aiMemory.slice(-keepRecent);
+      var localSummary = toCompress.map(function(m){
+        if (!m) return '';
+        return 'T' + (m.turn||0) + ':' + ((m.text || m.content || '') + '').substring(0, 40);
+      }).filter(Boolean).join('｜').substring(0, 1200);
+      var fallbackEntry = {
+        turn: curTurn,
+        type: 'compressed',
+        content: '【本地兜底压缩·T' + ((toCompress[0] && toCompress[0].turn) || 0) + '~T' + ((toCompress[toCompress.length-1] && toCompress[toCompress.length-1].turn) || 0) + '】' + localSummary,
+        _localFallback: true
+      };
+      G._aiMemory = [fallbackEntry].concat(recent);
+      _dbg('[MemoryFresh] 本地兜底压缩', toCompress.length, '条→1条');
+    }
+  }
+}
+
 /** 压缩最旧的归档为一条综合总纲（超出上限时调用） */
 function _compressOldArchives(limit) {
   if (!GM.memoryArchive || GM.memoryArchive.length <= limit) return;
@@ -3680,26 +3780,90 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       tp += "\n\u3010\u5BB0\u8F85\u5EFA\u8A00\u3011\n";
       suggestions.forEach(function(s) { tp += '  ' + s.from + '(' + s.type + ')：' + s.text + '\n'; });
     }
-    // 问对摘要注入（让AI叙事能引用玩家与大臣的对话）
-    if (GM.wenduiHistory) {
-      var wdNames = Object.keys(GM.wenduiHistory);
-      if (wdNames.length > 0) {
-        var wdSummary = '';
-        wdNames.forEach(function(name) {
-          var msgs = GM.wenduiHistory[name];
-          if (msgs && msgs.length > 0) {
-            var recent = msgs.slice(-4); // 最近4条（2轮对话）
-            wdSummary += '  ' + name + '：' + recent.map(function(m) {
+    // —— D1+D2：近期对话汇总注入（问对·问天·按模型缩放）——
+    (function _injectRecentDialogues() {
+      var _dcp = (typeof getCompressionParams === 'function') ? getCompressionParams() : {};
+      var totalCap = _dcp.dialogueTotalCap != null ? _dcp.dialogueTotalCap : 12;
+      var recentTurns = _dcp.dialogueRecentTurns != null ? _dcp.dialogueRecentTurns : 3;
+      var curTurn = GM.turn || 0;
+      var onStageNames = {};
+      (GM.chars || []).forEach(function(c){
+        if (!c || c.alive === false || c._fakeDeath) return;
+        onStageNames[c.name] = true;
+      });
+      var lines = [];
+      // 问对（按角色键）
+      if (GM.wenduiHistory) {
+        Object.keys(GM.wenduiHistory).forEach(function(name) {
+          if (!onStageNames[name]) return;
+          var msgs = GM.wenduiHistory[name] || [];
+          var recent = msgs.filter(function(m){ return (curTurn - (m.turn || curTurn)) <= recentTurns; }).slice(-4);
+          if (recent.length > 0) {
+            var oneLine = recent.map(function(m){
               var who = (m.role === 'player' || m.role === 'user') ? '帝' : '臣';
-              return who + '曰"' + (m.content || '').substring(0, 60) + '"';
-            }).join(' → ') + '\n';
+              return who + '"' + (m.content || '').substring(0, 40) + '"';
+            }).join('→');
+            lines.push('  T' + (recent[recent.length-1].turn||curTurn) + ' 问对·' + name + '：' + oneLine);
           }
         });
-        if (wdSummary) {
-          tp += '\n【近期问对】\n' + wdSummary;
-        }
       }
-    }
+      // 问天（单列表·玩家直接指令）
+      if (Array.isArray(GM._wentianHistory)) {
+        var recentWT = GM._wentianHistory.filter(function(h){ return (curTurn - (h.turn || curTurn)) <= Math.max(2, recentTurns-1); }).slice(-Math.round(totalCap * 0.5));
+        recentWT.forEach(function(h){
+          if (h.role === 'system') return;
+          var who = (h.role === 'player' || h.role === 'user') ? '帝' : '天';
+          lines.push('  T' + (h.turn||curTurn) + ' 问天：' + who + '"' + (h.content || '').substring(0, 50) + '"');
+        });
+      }
+      if (lines.length > 0) {
+        tp += '\n【近期对话（问对·问天·模型' + ((_dcp.contextK||'?')+'K·共') + lines.length + '条，取' + Math.min(lines.length, totalCap) + '）】\n' + lines.slice(-totalCap).join('\n') + '\n';
+      }
+    })();
+
+    // —— A3：NPC 心声注入（参数随模型上下文动态缩放）——
+    //   heartsMaxChars 纳入人数上限·heartsPerChar 每人条数·heartsImportanceMin 最低重要度门槛·heartsTotalCap 总条数上限
+    (function _injectNpcHearts() {
+      var _hcp = (typeof getCompressionParams === 'function') ? getCompressionParams() : {};
+      var maxChars = _hcp.heartsMaxChars != null ? _hcp.heartsMaxChars : 6;
+      var perChar = _hcp.heartsPerChar != null ? _hcp.heartsPerChar : 2;
+      var impMin = _hcp.heartsImportanceMin != null ? _hcp.heartsImportanceMin : 6;
+      var totalCap = _hcp.heartsTotalCap != null ? _hcp.heartsTotalCap : 12;
+
+      // 候选池：出场角色按"出场权重"排序（重要性+官位+最近互动）
+      var candidates = [];
+      (GM.chars || []).forEach(function(c){
+        if (!c || c.alive === false || c._fakeDeath) return;
+        if (!Array.isArray(c._memory) || c._memory.length === 0) return;
+        // 出场权重：官位加分·最近被玩家接触加分·historicalImportance
+        var weight = (c.historicalImportance || 0);
+        if (c.officialTitle) weight += 20;
+        if (c.rank && c.rank <= 3) weight += 15;
+        // 最近3回合内在 wenduiHistory 中出现
+        if (GM.wenduiHistory && GM.wenduiHistory[c.name]) {
+          var lastT = 0;
+          GM.wenduiHistory[c.name].forEach(function(h){ if (h.turn > lastT) lastT = h.turn; });
+          if (((GM.turn||0) - lastT) <= 3) weight += 25;
+        }
+        candidates.push({ ch: c, weight: weight });
+      });
+      candidates.sort(function(a,b){ return b.weight - a.weight; });
+      candidates = candidates.slice(0, maxChars);
+
+      var hearts = [];
+      candidates.forEach(function(cand){
+        var c = cand.ch;
+        var sorted = c._memory.slice().sort(function(a,b){ return (b.importance||0) - (a.importance||0); });
+        var top = sorted.slice(0, perChar).filter(function(m){ return (m.importance||0) >= impMin; });
+        top.forEach(function(m){
+          var hint = (m.emotion ? '['+m.emotion+'] ' : '') + (m.event || '').substring(0, 50) + ' (imp:' + Math.round(m.importance||5) + ')';
+          hearts.push('  ' + c.name + '心声：' + hint);
+        });
+      });
+      if (hearts.length > 0) {
+        tp += '\n【角色心声（内心最深记忆·左右其本回合选择·模型' + ((_hcp.contextK||'?')+'K') + '）】\n' + hearts.slice(0, totalCap).join('\n') + '\n';
+      }
+    })();
 
     // E4: 上回合全部已处理奏疏注入——AI必须体现因果延续
     if (GM._approvedMemorials && GM._approvedMemorials.length > 0) {
@@ -5811,6 +5975,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
 
+      // --- 预处理：同步本地记忆保鲜（避免 SC25 生成滞后导致的失忆） ---
+      try {
+        if (typeof _ensureMemoryFreshness === 'function') _ensureMemoryFreshness(GM);
+      } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); }
+
       // --- Sub-call 0: AI深度思考（全面分析当前局势，不限字数）---
       await _runSubcall('sc0', 'AI深度思考', 'standard', async function() {
       showLoading("AI\u6DF1\u5EA6\u601D\u8003",42);
@@ -5842,8 +6011,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           });
         }
         if (GM.evtLog && GM.evtLog.length > 0) {
-          var _keyEvts = GM.evtLog.slice(-30).map(function(e) { return 'T' + e.turn + ' [' + e.type + '] ' + e.text; }).join('\n');
+          // B2：过滤已死角色的过往事件（epitaph 已摘要·避免死人复活）
+          var _keyEvts = GM.evtLog.slice(-30).filter(function(e){ return !e._charDied; }).map(function(e) { return 'T' + e.turn + ' [' + e.type + '] ' + e.text; }).join('\n');
           _recentHistory += '\n' + _keyEvts;
+        }
+        // B2：注入墓志铭（死者在本章节之外不得出现）
+        if (Array.isArray(GM._epitaphs) && GM._epitaphs.length > 0) {
+          var _epitaphSection = '\n【历代人物墓志铭（死者在当前回合推演中不得行动）】\n';
+          GM._epitaphs.slice(-8).forEach(function(ep){
+            _epitaphSection += '  · ' + ep.char + '（殁于T' + ep.diedTurn + (ep.diedAt?'·'+ep.diedAt:'') + '·' + (ep.reason||'') + '）' + (ep.positionAtDeath?'卒时任'+ep.positionAtDeath:'') + '\n';
+          });
+          _recentHistory += _epitaphSection;
         }
         // 加入伏笔和AI记忆
         if (GM._foreshadows && GM._foreshadows.length > 0) {
@@ -5863,6 +6041,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           _recentHistory += '\n【AI记忆】\n';
           if (_compressedMem.length > 0) _recentHistory += _compressedMem.map(function(m){return m.content||m;}).join('\n') + '\n';
           _recentHistory += _recentMem.map(function(m){return 'T'+(m.turn||'?')+': '+(m.content||m.text||m);}).join('\n');
+        }
+        // —— A1 三层记忆金字塔：L3 年代纲要 + L2 情景摘要 （永不丢失的历史根）——
+        if (GM._memoryLayers) {
+          var _ML = GM._memoryLayers;
+          if (Array.isArray(_ML.L3) && _ML.L3.length > 0) {
+            _recentHistory += '\n【年代纲要·L3】\n';
+            _ML.L3.slice(-4).forEach(function(x){
+              _recentHistory += 'T' + x.turnRange + '：' + x.summary + '\n';
+            });
+          }
+          if (Array.isArray(_ML.L2) && _ML.L2.length > 0) {
+            _recentHistory += '\n【情景摘要·L2（近期每5回合）】\n';
+            _ML.L2.slice(-6).forEach(function(x){
+              _recentHistory += 'T' + x.turnRange + '：' + x.summary + '\n';
+            });
+          }
         }
         // 加入玩家决策记录
         if (GM.playerDecisions && GM.playerDecisions.length > 0) {
@@ -5911,7 +6105,28 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       if (aiThinking) _preAnalysis += '\n\u3010AI\u5C40\u52BF\u5206\u6790\u3011\n' + aiThinking + '\n';
       if (memoryReview) _preAnalysis += '\u3010\u8DE8\u56DE\u5408\u56E0\u679C\u94FE\u3011\n' + memoryReview + '\n';
       if (_preAnalysis) _preAnalysis += '\u8BF7\u57FA\u4E8E\u4EE5\u4E0A\u5206\u6790\u63A8\u6F14\uFF0C\u786E\u4FDD\u524D\u56DE\u5408\u7684\u60AC\u5FF5\u5F97\u5230\u56DE\u5E94\uFF0C\u56E0\u679C\u94FE\u5F97\u5230\u5EF6\u7EED\u3002\n';
-      var tp1=tp+_preAnalysis + "\n请仅返回绝JSON，包含:\n"+
+      // —— 【硬约束】死亡角色名单 + 财务一致性 ——
+      var _hardConstraints = '';
+      try {
+        var _deadList = [];
+        var _fakeList = [];
+        (GM.chars || []).forEach(function(c){
+          if (!c) return;
+          if (c._fakeDeath) { _fakeList.push(c.name); return; }
+          if (c.alive === false) _deadList.push(c.name);
+        });
+        _hardConstraints += '\n═══【本回合硬约束·违反将被校验器标记并自动补录·影响 AI 评级】═══\n';
+        _hardConstraints += '① 金额一致性：shilu_text/shizhengji/events 中出现的任何"拨/赐/赈/征/抄/缴/赔/贡 N两/石/匹"等具体金额动作，必须在 fiscal_adjustments 中有对应条目（target/kind/resource/amount 一一对应）。缺失将被自动校验器补录标记。\n';
+        _hardConstraints += '② 死亡禁动：以下角色已死·不得在本回合有任何行动/对话/奏折/任命（出现在 personnel_changes / npc_actions / char_updates 等字段均为违规）：\n';
+        _hardConstraints += '    已死：' + (_deadList.length ? _deadList.join('、') : '（无）') + '\n';
+        if (_fakeList.length) {
+          _hardConstraints += '    诈死(明面死实则藏匿·仅允许极隐秘活动·需剧情合理)：' + _fakeList.join('、') + '\n';
+        }
+        _hardConstraints += '③ 死亡→墓志铭：若本回合新增 character_deaths·必须在 reason 中写清死因(病/诛/战/自尽/意外/诈死)·type:fake则系统会走holding不归档。\n';
+        _hardConstraints += '④ 数据与叙事不得互悖：宁可不写不可写而不改。所有"实际变化"必须落到对应结构化字段。\n';
+        _hardConstraints += '═════════════════════════════════════════════\n';
+      } catch(_hcE) { _dbg('[HardConstraints] build failed', _hcE); }
+      var tp1=tp+_preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
         "{\"turn_summary\":\"一句话概括本回合最重要的变化(30-50字，如:北境叛乱平定，国库因军费骤降三成)\","+
         // 实录：纯文言史官体，仿资治通鉴/历代实录
         "\"shilu_text\":\"实录"+_shiluMin+"-"+_shiluMax+"字——纯文言文(仿《资治通鉴》《明实录》)，以干支月份/日为单位，记事不评论。只记可验证事实：诏令、任免、战事、灾异、人事大变。句式仿实录：'某月某日，上诏……'/'是月，某地……'/'上命某官……'。禁止白话词汇，禁止主观评论。\","+

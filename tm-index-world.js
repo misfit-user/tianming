@@ -4264,13 +4264,21 @@ async function sendWendui(){
           if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
         }
         GM.wenduiHistory[name].push({role:'npc',content:replyText,loyaltyDelta:loyaltyDelta});
-        // NPC记忆
+        // NPC记忆——D3 优先使用 AI 返回的 memoryImpact，否则回退默认
         if (typeof NpcMemorySystem !== 'undefined') {
-          var _wdEmo = loyaltyDelta > 0 ? '敬' : loyaltyDelta < 0 ? '忧' : '平';
-          var _wdScene = _wenduiMode === 'private' ? '私下促膝长谈——' : '面圣问对——';
-          NpcMemorySystem.remember(name, _wdScene + msg.slice(0, 20), _wdEmo, _wenduiMode === 'private' ? 7 : 5, (P.playerInfo && P.playerInfo.characterName) || '陛下');
-          // 4.6: 将问对关键内容存入NPC结构化记忆（含NPC自身回复摘要）
-          NpcMemorySystem.remember(name, '\u4E0E\u541B\u4E3B\u79C1\u4E0B\u95EE\u5BF9\uFF1A' + (replyText||'').slice(0,30), '\u5E73', 5, (P.playerInfo && P.playerInfo.characterName) || '');
+          var _playerName = (P.playerInfo && P.playerInfo.characterName) || '陛下';
+          if (parsed && parsed.memoryImpact && typeof parsed.memoryImpact === 'object') {
+            var mi = parsed.memoryImpact;
+            var miEvent = mi.event || ('问对：' + (msg||'').slice(0, 25) + ' → ' + (replyText||'').slice(0, 25));
+            var miEmo = mi.emotion || (loyaltyDelta > 0 ? '敬' : loyaltyDelta < 0 ? '忧' : '平');
+            var miImp = Math.max(1, Math.min(10, parseFloat(mi.importance) || 5));
+            NpcMemorySystem.remember(name, miEvent, miEmo, miImp, _playerName);
+          } else {
+            var _wdEmo = loyaltyDelta > 0 ? '敬' : loyaltyDelta < 0 ? '忧' : '平';
+            var _wdScene = _wenduiMode === 'private' ? '私下促膝长谈——' : '面圣问对——';
+            NpcMemorySystem.remember(name, _wdScene + msg.slice(0, 20), _wdEmo, _wenduiMode === 'private' ? 7 : 5, _playerName);
+            NpcMemorySystem.remember(name, '\u4E0E\u541B\u4E3B\u79C1\u4E0B\u95EE\u5BF9\uFF1A' + (replyText||'').slice(0,30), '\u5E73', 5, _playerName);
+          }
         }
         // 更新气泡为最终版
         var sd = _$('wd-stream-active');
@@ -4738,7 +4746,8 @@ function _wdBuildPrompt(ch, name) {
     if (opinionVal < 30) p += '\u2022 \u597D\u611F\u4EC5' + opinionVal + (_isPrivateMode ? '\u2014\u2014\u79C1\u4E0B\u53EF\u80FD\u8A00\u8BED\u523A\u4EBA\n' : '\u2014\u2014\u53EF\u80FD\u6577\u884D\u9633\u5949\u9634\u8FDD\n');
     if ((ch.ambition || 50) > 70) p += '\u2022 \u91CE\u5FC3' + (ch.ambition||50) + '\u2014\u2014\u5584\u4E8E\u5BDF\u8A00\u89C2\u8272\uFF0C\u89C2\u70B9\u4E2D\u6697\u542B\u81EA\u5229\n';
     if ((ch.stress || 0) > 50) p += '\u2022 \u538B\u529B' + (ch.stress||0) + '\u2014\u2014\u53EF\u80FD\u5931\u6001\u6025\u8E81\u6D88\u6C89\n';
-    p += '请返回JSON：{"reply":"回复内容","loyaltyDelta":0,"suggestions":[{"topic":"针对什么问题/情境(10-25字)","content":"详尽可执行方案(80-200字，含执行者/手段/范围/时机，不要空话)"}],"toneEffect":"语气效果(直问时留空)"}\n';
+    p += '请返回JSON：{"reply":"回复内容","loyaltyDelta":0,"suggestions":[{"topic":"针对什么问题/情境(10-25字)","content":"详尽可执行方案(80-200字，含执行者/手段/范围/时机，不要空话)"}],"toneEffect":"语气效果(直问时留空)","memoryImpact":{"event":"本次对话在我心中留下的最深印象(20-40字，第三人称纪要)","emotion":"敬/喜/忧/怒/恨/惧/平 之一","importance":1-10}}\n';
+    p += '【memoryImpact·必填】此对话对我(NPC)的内心影响——event 用第三人称"我"视角纪要本次对话的核心感受，emotion 选一个最贴合的主情绪，importance 1-3=琐碎即忘 4-6=日常印象 7-8=深刻在意 9-10=终身难忘。\n';
     p += 'loyaltyDelta 范围' + (_isPrivateMode ? '-3 到 +3' : '-2 到 +2') + '。\n';
     p += '【suggestions 规则——只在你主动提出具体方案时才填】\n';
     p += '  · 每条必须是 object{topic, content}；没有具体方案则 []\n';

@@ -793,6 +793,11 @@ function _prepareGMForSave() {
   if (GM._playerDirectives && GM._playerDirectives.length > 0) GM._savedPlayerDirectives = _safeClone(GM._playerDirectives);
   if (GM._importedMemories && GM._importedMemories.length > 0) GM._savedImportedMemories = _safeClone(GM._importedMemories);
   if (GM._wentianHistory && GM._wentianHistory.length > 0) GM._savedWentianHistory = _safeClone(GM._wentianHistory);
+  // 新增：记忆系统持久化（A1 + B2 + B1 校验器日志）
+  if (GM._memoryLayers && (GM._memoryLayers.L2 && GM._memoryLayers.L2.length || GM._memoryLayers.L3 && GM._memoryLayers.L3.length)) GM._savedMemoryLayers = _safeClone(GM._memoryLayers);
+  if (GM._epitaphs && GM._epitaphs.length > 0) GM._savedEpitaphs = _safeClone(GM._epitaphs);
+  if (GM._fakeDeathHolding && Object.keys(GM._fakeDeathHolding).length > 0) GM._savedFakeDeathHolding = _safeClone(GM._fakeDeathHolding);
+  if (GM._fiscalValidatorLog && GM._fiscalValidatorLog.length > 0) GM._savedFiscalValidatorLog = _safeClone(GM._fiscalValidatorLog);
   if (GM._chronicle && GM._chronicle.length > 0) GM._savedChronicle = _safeClone(GM._chronicle);
   if (GM._wdRewardPunish && GM._wdRewardPunish.length > 0) GM._savedWdRewardPunish = _safeClone(GM._wdRewardPunish);
   if (GM._lastEvalTurn) GM._savedLastEvalTurn = GM._lastEvalTurn;
@@ -1028,6 +1033,11 @@ function _restoreSavedFields() {
   if (GM._savedPlayerDirectives) { GM._playerDirectives = GM._savedPlayerDirectives; delete GM._savedPlayerDirectives; }
   if (GM._savedImportedMemories) { GM._importedMemories = GM._savedImportedMemories; delete GM._savedImportedMemories; }
   if (GM._savedWentianHistory) { GM._wentianHistory = GM._savedWentianHistory; delete GM._savedWentianHistory; }
+  // 新增：记忆系统恢复
+  if (GM._savedMemoryLayers) { GM._memoryLayers = GM._savedMemoryLayers; delete GM._savedMemoryLayers; }
+  if (GM._savedEpitaphs) { GM._epitaphs = GM._savedEpitaphs; delete GM._savedEpitaphs; }
+  if (GM._savedFakeDeathHolding) { GM._fakeDeathHolding = GM._savedFakeDeathHolding; delete GM._savedFakeDeathHolding; }
+  if (GM._savedFiscalValidatorLog) { GM._fiscalValidatorLog = GM._savedFiscalValidatorLog; delete GM._savedFiscalValidatorLog; }
   if (GM._savedChronicle) { GM._chronicle = GM._savedChronicle; delete GM._savedChronicle; }
   if (GM._savedWdRewardPunish) { GM._wdRewardPunish = GM._savedWdRewardPunish; delete GM._savedWdRewardPunish; }
   if (GM._savedLastEvalTurn) { GM._lastEvalTurn = GM._savedLastEvalTurn; delete GM._savedLastEvalTurn; }

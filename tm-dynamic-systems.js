@@ -2508,6 +2508,8 @@ var OpinionSystem = {
    * 获取总好感 = 基础 + 事件累积
    */
   getTotal: function(charA, charB) {
+    // 防御：任一方为 undefined 直接返回 0（findCharByName 可能找不到已死/不存在的角色）
+    if (!charA || !charB || !charA.name || !charB.name) return 0;
     var base = OpinionSystem.calculateBase(charA, charB);
     var eventSum = 0;
     if (charA._eventOpinions) {

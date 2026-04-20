@@ -1120,9 +1120,11 @@ function buildNpcContext() {
     // 优先使用 OpinionSystem（基础+事件双轨）
     if (typeof OpinionSystem !== 'undefined') {
       var charObj = findCharByName(char.name);
+      if (!charObj) return;  // 找不到本人对应实体·跳过（可能是已死/已删除）
       context.characters.forEach(function(target) {
-        if (target.name === char.name) return;
+        if (!target || !target.name || target.name === char.name) return;
         var targetObj = findCharByName(target.name);
+        if (!targetObj) return;  // 防御：目标实体不存在
         context.cache.opinion[char.name][target.name] = OpinionSystem.getTotal(charObj, targetObj);
       });
     } else if (char.opinions) {

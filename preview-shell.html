@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>整体游戏界面·深化美化预览 v4</title>
+<title>整体游戏界面·深化美化预览 v5</title>
 <style>
 :root {
   --bg-1: #0f0d0a; --bg-2: #1a1510; --bg-paper: #241e18; --bg-sunken: #120f0a;
@@ -20,7 +20,15 @@
 }
 *{box-sizing:border-box;}
 body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f0d0a 70%),var(--bg-1);color:var(--ink-700);font-family:var(--font-song);font-size:14px;line-height:1.6;min-height:100vh;}
-.preview-frame{max-width:1760px;margin:24px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.55);position:relative;}
+
+/* 演示模式切换 */
+.mode-switcher{max-width:1760px;margin:20px auto 8px;display:flex;gap:8px;align-items:center;padding:0 12px;font-family:var(--font-serif);font-size:12px;color:var(--ink-500);letter-spacing:0.15em;}
+.mode-switcher .lbl{color:var(--gold-400);}
+.mode-btn{padding:5px 12px;background:transparent;border:1px solid var(--gold-d);color:var(--ink-500);font-family:var(--font-serif);font-size:11.5px;letter-spacing:0.15em;border-radius:3px;cursor:pointer;transition:all 0.15s;}
+.mode-btn:hover{color:var(--gold-400);border-color:var(--gold-400);}
+.mode-btn.active{background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));color:#1a1410;border-color:var(--gold-d);font-weight:500;}
+
+.preview-frame{max-width:1760px;margin:8px auto;background:var(--bg-2);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.55);position:relative;}
 .preview-frame::before,.preview-frame::after{content:"\2756";position:absolute;font-size:14px;color:var(--gold-d);opacity:0.35;z-index:1;pointer-events:none;}
 .preview-frame::before{top:6px;left:10px;}.preview-frame::after{bottom:6px;right:10px;}
 
@@ -72,84 +80,72 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-save-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(106,154,127,0.06);border:1px solid var(--celadon-400);border-radius:14px;font-family:var(--font-serif);font-size:10.5px;color:var(--celadon-400);letter-spacing:0.1em;}
 .gs-save-chip::before{content:"";width:6px;height:6px;background:var(--celadon-400);border-radius:50%;box-shadow:0 0 4px var(--celadon-400);}
 
-/* 主题切换 */
-.gs-theme-toggle{display:flex;gap:2px;padding:2px;background:var(--bg-1);border:1px solid var(--border-subtle);border-radius:14px;}
-.gs-theme-opt{padding:2px 8px;font-family:var(--font-serif);font-size:10px;color:var(--ink-300);border:none;background:transparent;border-radius:10px;cursor:pointer;letter-spacing:0.1em;}
-.gs-theme-opt.active{background:rgba(184,154,83,0.15);color:var(--gold-300);}
-
-/* ═══ 主体三栏 + 侧栏折叠控件 ═══ */
-.gs-body{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;min-height:1200px;position:relative;transition:grid-template-columns 0.3s ease;}
-.gs-body.left-collapsed{grid-template-columns:42px minmax(0,1fr) 340px;}
-.gs-body.right-collapsed{grid-template-columns:300px minmax(0,1fr) 42px;}
-.gs-body.both-collapsed{grid-template-columns:42px minmax(0,1fr) 42px;}
+/* ═══ 主体：默认双侧 rail，center 全宽 ═══ */
+.gs-body{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;min-height:1100px;position:relative;transition:grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1);}
+.gs-body.left-open{grid-template-columns:300px minmax(0,1fr) 44px;}
+.gs-body.right-open{grid-template-columns:44px minmax(0,1fr) 340px;}
+.gs-body.both-open{grid-template-columns:300px minmax(0,1fr) 340px;}
 
 /* 侧栏容器 */
-.gs-left,.gs-right{background:var(--bg-2);position:relative;transition:all 0.3s ease;overflow:hidden;}
+.gs-left,.gs-right{background:var(--bg-2);position:relative;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);overflow:hidden;display:flex;flex-direction:column;}
 .gs-left{border-right:1px solid var(--border-subtle);}
-.gs-right{border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;}
+.gs-right{border-left:1px solid var(--border-subtle);}
 
-/* 折叠按钮 */
-.gs-side-toggle{
-  position:absolute;top:14px;z-index:10;
-  width:22px;height:42px;
-  background:linear-gradient(to right,rgba(36,30,24,0.95),rgba(26,20,16,0.9));
-  border:1px solid var(--gold-d);color:var(--gold-400);
-  font-family:var(--font-serif);font-size:14px;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 6px rgba(0,0,0,0.35);
-  transition:all 0.2s;
-}
-.gs-side-toggle:hover{color:var(--gold-300);border-color:var(--gold-300);background:rgba(184,154,83,0.12);}
-.gs-side-toggle.left{right:-11px;border-radius:0 4px 4px 0;}
-.gs-side-toggle.right{left:-11px;border-radius:4px 0 0 4px;}
+/* 折叠态: 显示icon rail */
+.gs-rail{display:none;flex-direction:column;gap:4px;align-items:center;padding:44px 0 8px;overflow-y:auto;scrollbar-width:none;}
+.gs-rail::-webkit-scrollbar{display:none;}
+.gs-rail::before{content:attr(data-dir);position:absolute;top:12px;left:50%;transform:translateX(-50%);font-family:var(--font-serif);font-size:9.5px;color:var(--gold-d);letter-spacing:0.15em;white-space:nowrap;writing-mode:vertical-rl;display:none;}
 
-/* 滚动内容包装 */
-.gs-side-inner{
-  height:100%;
-  overflow-y:auto;
-  padding:12px 10px;
-  display:flex;flex-direction:column;gap:10px;
-  scrollbar-width:thin;
-  scrollbar-color:var(--gold-d) rgba(26,20,16,0.5);
-}
-.gs-side-inner::-webkit-scrollbar{width:8px;}
-.gs-side-inner::-webkit-scrollbar-track{background:rgba(26,20,16,0.5);border-radius:4px;border-left:1px solid var(--border-subtle);}
-.gs-side-inner::-webkit-scrollbar-thumb{background:linear-gradient(to bottom,var(--gold-d),rgba(107,93,71,0.6));border-radius:4px;border:1px solid var(--bg-2);}
-.gs-side-inner::-webkit-scrollbar-thumb:hover{background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));}
+.gs-body:not(.left-open) .gs-left .gs-rail{display:flex;}
+.gs-body:not(.right-open) .gs-right .gs-rail{display:flex;}
+.gs-body:not(.left-open) .gs-left .gs-drawer{display:none;}
+.gs-body:not(.right-open) .gs-right .gs-drawer{display:none;}
 
-.gs-right .gs-side-inner{padding-bottom:8px;}
+.gs-rail-btn{width:30px;height:32px;background:rgba(184,154,83,0.04);border:1px solid var(--m-c,var(--gold-d));color:var(--m-c,var(--gold-400));border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:11.5px;letter-spacing:0;transition:all 0.18s;position:relative;}
+.gs-rail-btn:hover{background:rgba(184,154,83,0.18);transform:scale(1.08);box-shadow:0 0 6px var(--m-c,var(--gold-400));}
+.gs-rail-btn .dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--vermillion-400);border:1px solid var(--bg-2);animation:rail-pulse 1.5s infinite;}
+@keyframes rail-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,64,48,0.6);}50%{box-shadow:0 0 0 3px rgba(192,64,48,0);}}
+.gs-rail-btn.c-fac{--m-c:var(--indigo-400);}
+.gs-rail-btn.c-party{--m-c:var(--purple-400);}
+.gs-rail-btn.c-class{--m-c:var(--celadon-400);}
+.gs-rail-btn.c-army{--m-c:var(--vermillion-400);}
+.gs-rail-btn.c-admin{--m-c:var(--indigo-400);}
+.gs-rail-btn.c-keju{--m-c:var(--celadon-400);}
+.gs-rail-btn.c-item{--m-c:var(--gold-300);}
+.gs-rail-btn.c-harem{--m-c:var(--vermillion-300);}
+.gs-rail-btn.c-map{--m-c:var(--celadon-400);}
+.gs-rail-btn.c-help{--m-c:var(--gold-300);}
+.gs-rail-btn.c-theme{--m-c:var(--purple-400);}
+.gs-rail-btn.c-audio{--m-c:var(--blue-400);}
+.gs-rail-btn.c-self{--m-c:var(--gold-300);}
+.gs-rail-btn.c-time{--m-c:var(--indigo-400);}
+.gs-rail-btn.c-issue{--m-c:var(--vermillion-400);}
+.gs-rail-btn.c-news{--m-c:var(--amber-400);}
+.gs-rail-btn.c-goal{--m-c:var(--purple-400);}
+.gs-rail-btn.c-rumor{--m-c:var(--purple-400);}
+.gs-rail-btn.c-fin{--m-c:var(--gold-400);}
+.gs-rail-btn.c-turn{--m-c:var(--vermillion-400);background:linear-gradient(to bottom,rgba(192,64,48,0.15),rgba(140,40,30,0.08));animation:turn-rail-pulse 2.5s infinite;}
+@keyframes turn-rail-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,64,48,0.4);}50%{box-shadow:0 0 0 4px rgba(192,64,48,0);}}
 
-/* 折叠态：显示 panel 图标纵列 */
-.gs-left.collapsed .gs-side-inner,.gs-right.collapsed .gs-side-inner{padding:14px 0 8px;gap:6px;align-items:center;}
-.gs-collapsed-hint{display:none;}
-.gs-left.collapsed .gs-panel{display:none;}
-.gs-left.collapsed .gs-mini-icons,.gs-right.collapsed .gs-mini-icons{display:flex;}
-.gs-mini-icons{display:none;flex-direction:column;gap:6px;align-items:center;}
-.gs-mini-icon-btn{
-  width:30px;height:30px;
-  background:rgba(184,154,83,0.04);
-  border:1px solid var(--m-c,var(--gold-d));
-  color:var(--m-c,var(--gold-400));
-  border-radius:3px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-serif);font-size:11px;letter-spacing:0;
-  transition:all 0.2s;
-  position:relative;
-}
-.gs-mini-icon-btn:hover{background:rgba(184,154,83,0.15);transform:translateX(-2px);}
-.gs-right .gs-mini-icon-btn:hover{transform:translateX(2px);}
-.gs-mini-icon-btn .dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--vermillion-400);border:1px solid var(--bg-2);}
-.gs-mini-icon-btn.c-fac{--m-c:var(--indigo-400);}
-.gs-mini-icon-btn.c-party{--m-c:var(--purple-400);}
-.gs-mini-icon-btn.c-class{--m-c:var(--celadon-400);}
-.gs-mini-icon-btn.c-army{--m-c:var(--vermillion-400);}
-.gs-mini-icon-btn.c-map{--m-c:var(--celadon-400);}
-.gs-mini-icon-btn.c-keju{--m-c:var(--celadon-400);}
-.gs-mini-icon-btn.c-admin{--m-c:var(--indigo-400);}
-.gs-mini-icon-btn.c-help{--m-c:var(--gold-300);}
+/* 侧栏顶部折叠按钮 */
+.gs-side-toggle{position:absolute;top:8px;right:6px;z-index:20;width:28px;height:28px;background:rgba(36,30,24,0.9);border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:all 0.2s;}
+.gs-right .gs-side-toggle{right:auto;left:6px;}
+.gs-side-toggle:hover{color:var(--gold-300);border-color:var(--gold-300);background:rgba(184,154,83,0.15);}
+.gs-body:not(.left-open) .gs-left .gs-side-toggle{display:none;}
+.gs-body:not(.right-open) .gs-right .gs-side-toggle{display:none;}
 
-/* 面板统一样式 */
+/* Drawer 滚动容器 */
+.gs-drawer{flex:1;overflow-y:auto;padding:44px 10px 12px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--gold-d) rgba(26,20,16,0.5);}
+.gs-drawer::-webkit-scrollbar{width:8px;}
+.gs-drawer::-webkit-scrollbar-track{background:rgba(26,20,16,0.5);border-radius:4px;border-left:1px solid var(--border-subtle);}
+.gs-drawer::-webkit-scrollbar-thumb{background:linear-gradient(to bottom,var(--gold-d),rgba(107,93,71,0.6));border-radius:4px;border:1px solid var(--bg-2);}
+.gs-drawer::-webkit-scrollbar-thumb:hover{background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));}
+
+/* 右栏 drawer 特殊：上滚动+下推演固定 */
+.gs-right .gs-drawer{padding-bottom:0;flex:1;}
+.gs-right.has-turn{display:flex;flex-direction:column;}
+
+/* 面板通用 */
 .gs-panel{background:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));border:1px solid var(--border-subtle);border-left:3px solid var(--panel-c,var(--gold-d));border-radius:3px;padding:10px 12px;position:relative;}
 .gs-panel.p-fac{--panel-c:var(--indigo-400);}
 .gs-panel.p-party{--panel-c:var(--purple-400);}
@@ -173,6 +169,9 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-panel.p-rel{--panel-c:var(--celadon-400);}
 .gs-panel.p-admin{--panel-c:var(--indigo-400);}
 .gs-panel.p-help{--panel-c:var(--gold-300);}
+.gs-panel.p-theme{--panel-c:var(--purple-400);}
+.gs-panel.p-audio{--panel-c:var(--blue-400);}
+.gs-panel.p-dyn{--panel-c:var(--gold-400);}
 
 .gs-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed var(--border-subtle);cursor:pointer;user-select:none;}
 .gs-panel-hdr:hover .gs-panel-title{color:var(--gold-300);}
@@ -182,12 +181,8 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-panel-tools{display:flex;gap:4px;align-items:center;}
 .gs-panel-tool-btn{background:transparent;border:1px solid var(--border-subtle);color:var(--ink-300);font-family:var(--font-serif);font-size:9.5px;padding:0 5px;border-radius:2px;cursor:pointer;letter-spacing:0.08em;line-height:14px;}
 .gs-panel-tool-btn:hover{color:var(--gold-400);border-color:var(--gold-d);}
-
-/* 面板展开/折叠 chevron */
 .gs-panel-chev{background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:11px;padding:0 4px;cursor:pointer;line-height:14px;transition:transform 0.2s;}
 .gs-panel.expanded .gs-panel-chev{transform:rotate(180deg);color:var(--gold-400);}
-
-/* 详情展开区 */
 .gs-panel-detail{display:none;margin-top:6px;padding-top:6px;border-top:1px dashed var(--border-subtle);}
 .gs-panel.expanded .gs-panel-detail{display:block;animation:detail-slide 0.25s ease;}
 @keyframes detail-slide{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
@@ -195,7 +190,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 /* 四时物候 */
 .gs-weather-panel{display:flex;align-items:center;gap:10px;}
 .gs-season-disc{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(201,160,69,0.2),transparent 60%),conic-gradient(from 0deg,var(--celadon-400) 0 25%,var(--amber-400) 25% 50%,var(--vermillion-300) 50% 75%,var(--indigo-400) 75% 100%);border:2px solid var(--amber-400);position:relative;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
-.gs-season-disc::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-paper);display:flex;align-items:center;justify-content:center;}
+.gs-season-disc::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-paper);}
 .gs-season-disc::after{content:"\79CB";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:18px;font-weight:bold;color:var(--amber-400);line-height:1;}
 .gs-season-info{flex:1;min-width:0;}
 .gs-season-row{display:flex;align-items:baseline;gap:4px;font-size:11.5px;color:var(--ink-500);font-family:var(--font-serif);letter-spacing:0.08em;padding:2px 0;}
@@ -204,8 +199,8 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-season-row .v.warn{color:var(--amber-400);}
 .gs-season-row .v.danger{color:var(--vermillion-400);}
 
-/* 势力 */
-.gs-fac-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed rgba(107,93,71,0.12);font-size:12px;cursor:pointer;transition:background 0.15s;border-radius:2px;}
+/* 势力/党派/阶层/军事 通用行 */
+.gs-fac-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed rgba(107,93,71,0.12);font-size:12px;cursor:pointer;transition:all 0.15s;border-radius:2px;}
 .gs-fac-row:hover{background:rgba(184,154,83,0.06);padding-left:4px;}
 .gs-fac-row:last-child{border-bottom:none;}
 .gs-fac-color{width:3px;height:22px;background:var(--f-c,var(--gold-d));border-radius:1px;flex-shrink:0;}
@@ -224,8 +219,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-fac-att.vassal{color:var(--indigo-400);background:rgba(90,111,168,0.08);border:1px solid var(--indigo-400);}
 .gs-fac-str{font-size:10px;color:var(--ink-300);font-family:var(--font-serif);min-width:28px;text-align:right;}
 
-/* 党派（含展开）*/
-.gs-party-row{display:flex;align-items:center;gap:5px;padding:4px 0;font-size:11.5px;cursor:pointer;transition:background 0.15s;border-radius:2px;}
+.gs-party-row{display:flex;align-items:center;gap:5px;padding:4px 0;font-size:11.5px;cursor:pointer;transition:all 0.15s;border-radius:2px;}
 .gs-party-row:hover{background:rgba(184,154,83,0.06);padding-left:4px;}
 .gs-party-name{flex:1;color:var(--ink-700);font-family:var(--font-serif);letter-spacing:0.06em;}
 .gs-party-infl{display:inline-flex;align-items:center;gap:3px;}
@@ -233,21 +227,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-party-fill{height:100%;background:var(--p-c,var(--gold-400));}
 .gs-party-val{font-size:10px;color:var(--ink-300);font-family:var(--font-serif);min-width:16px;text-align:right;}
 
-/* 党派详情（展开态） */
-.gs-party-detail-card{padding:6px 8px;background:rgba(142,106,168,0.04);border-left:2px solid var(--pp-c,var(--purple-400));border-radius:0 2px 2px 0;margin-bottom:4px;font-family:var(--font-serif);font-size:10.5px;line-height:1.7;}
-.gs-party-detail-card.dongin{--pp-c:var(--celadon-400);}
-.gs-party-detail-card.yan{--pp-c:var(--purple-400);}
-.gs-party-detail-name{color:var(--pp-c,var(--purple-400));font-size:11.5px;font-weight:500;letter-spacing:0.1em;margin-bottom:2px;}
-.gs-party-detail-row{display:flex;gap:4px;color:var(--ink-500);}
-.gs-party-detail-row .k{color:var(--ink-300);min-width:36px;}
-.gs-party-detail-row .v{color:var(--ink-700);flex:1;}
-.gs-party-detail-row .v .n{color:var(--gold-300);}
-.gs-party-detail-actions{display:flex;gap:4px;margin-top:4px;}
-.gs-party-detail-btn{padding:1px 6px;background:rgba(184,154,83,0.06);border:1px solid var(--gold-d);color:var(--gold-400);font-family:var(--font-serif);font-size:9.5px;letter-spacing:0.1em;border-radius:2px;cursor:pointer;}
-.gs-party-detail-btn:hover{background:rgba(184,154,83,0.15);}
-
-/* 阶层 */
-.gs-class-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11.5px;cursor:pointer;transition:background 0.15s;border-radius:2px;}
+.gs-class-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11.5px;cursor:pointer;transition:all 0.15s;border-radius:2px;}
 .gs-class-row:hover{background:rgba(184,154,83,0.06);padding-left:4px;}
 .gs-class-icon{width:20px;height:20px;border-radius:2px;background:linear-gradient(135deg,var(--c-c,var(--gold-400)),var(--ink-100));color:#1a1410;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:10px;font-weight:bold;}
 .gs-class-name{flex:1;color:var(--ink-700);font-family:var(--font-serif);letter-spacing:0.05em;}
@@ -257,18 +237,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-class-mood.unrest{color:var(--amber-400);background:rgba(201,160,69,0.08);}
 .gs-class-mood.angry{color:var(--vermillion-400);background:rgba(192,64,48,0.08);}
 
-/* 阶层详情 */
-.gs-class-detail-card{padding:6px 8px;background:rgba(106,154,127,0.04);border-left:2px solid var(--cc-c,var(--celadon-400));border-radius:0 2px 2px 0;margin-bottom:4px;font-family:var(--font-serif);font-size:10.5px;line-height:1.7;}
-.gs-class-detail-name{color:var(--cc-c,var(--celadon-400));font-size:11.5px;font-weight:500;letter-spacing:0.1em;margin-bottom:2px;}
-.gs-class-detail-bars{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;}
-.gs-class-detail-mini{display:flex;align-items:center;gap:3px;font-size:9.5px;}
-.gs-class-detail-mini .k{color:var(--ink-300);width:22px;letter-spacing:0.08em;}
-.gs-class-detail-mini .bar{flex:1;height:3px;background:rgba(107,93,71,0.22);border-radius:2px;overflow:hidden;}
-.gs-class-detail-mini .fill{height:100%;background:var(--cc-c,var(--celadon-400));border-radius:2px;}
-.gs-class-detail-mini .v{color:var(--ink-700);font-size:9.5px;min-width:20px;text-align:right;}
-
-/* 军事 */
-.gs-army-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11.5px;border-bottom:1px dashed rgba(107,93,71,0.12);cursor:pointer;transition:background 0.15s;border-radius:2px;}
+.gs-army-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11.5px;border-bottom:1px dashed rgba(107,93,71,0.12);cursor:pointer;transition:all 0.15s;border-radius:2px;}
 .gs-army-row:hover{background:rgba(184,154,83,0.06);padding-left:4px;}
 .gs-army-row:last-child{border-bottom:none;}
 .gs-army-icon{font-family:var(--font-serif);font-size:12px;color:var(--vermillion-400);width:14px;text-align:center;}
@@ -279,17 +248,8 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-army-morale{width:30px;height:3px;background:rgba(107,93,71,0.25);border-radius:2px;overflow:hidden;margin-top:2px;}
 .gs-army-morale-fill{height:100%;background:var(--am-c,var(--celadon-400));}
 
-/* 军事详情 */
-.gs-army-detail-card{padding:6px 8px;background:rgba(192,64,48,0.04);border-left:2px solid var(--vermillion-400);border-radius:0 2px 2px 0;margin-bottom:4px;font-family:var(--font-serif);font-size:10.5px;line-height:1.6;}
-.gs-army-detail-name{color:var(--vermillion-400);font-size:11.5px;font-weight:500;letter-spacing:0.08em;margin-bottom:3px;display:flex;justify-content:space-between;}
-.gs-army-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;margin-bottom:4px;}
-.gs-army-detail-mini{font-size:10px;display:flex;gap:3px;}
-.gs-army-detail-mini .k{color:var(--ink-300);letter-spacing:0.05em;}
-.gs-army-detail-mini .v{color:var(--ink-700);font-weight:500;}
-.gs-army-detail-actions{display:flex;gap:4px;}
-
 /* 行政区划 */
-.gs-admin-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;cursor:pointer;transition:background 0.15s;border-radius:2px;}
+.gs-admin-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;cursor:pointer;transition:all 0.15s;border-radius:2px;}
 .gs-admin-row:hover{background:rgba(184,154,83,0.06);padding-left:4px;}
 .gs-admin-dot{width:6px;height:6px;border-radius:50%;background:var(--a-c,var(--indigo-400));flex-shrink:0;}
 .gs-admin-row.crisis .gs-admin-dot{background:var(--vermillion-400);animation:admin-pulse 1.5s infinite;}
@@ -298,7 +258,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 @keyframes admin-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,64,48,0.5);}50%{box-shadow:0 0 0 3px rgba(192,64,48,0);}}
 .gs-admin-name{flex:1;color:var(--ink-700);font-family:var(--font-serif);letter-spacing:0.04em;}
 .gs-admin-type{font-size:9px;color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.1em;padding:0 4px;background:rgba(107,93,71,0.1);border-radius:2px;line-height:13px;}
-.gs-admin-unrest{font-size:9.5px;color:var(--a-uc,var(--ink-500));font-family:var(--font-serif);min-width:20px;text-align:right;}
+.gs-admin-unrest{font-size:9.5px;color:var(--ink-500);font-family:var(--font-serif);min-width:20px;text-align:right;}
 .gs-admin-row.crisis .gs-admin-unrest{color:var(--vermillion-400);}
 
 /* 家族 */
@@ -326,9 +286,9 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-keju-track{position:relative;height:2px;background:rgba(107,93,71,0.22);border-radius:1px;margin:0 8px;}
 .gs-keju-track-done{position:absolute;top:0;left:0;height:100%;background:linear-gradient(to right,var(--celadon-400),var(--gold-300));border-radius:1px;}
 .gs-keju-nodes{display:flex;justify-content:space-between;margin-top:-9px;padding:0 2px;}
-.gs-keju-node{width:14px;height:14px;border-radius:50%;background:var(--bg-paper);border:2px solid var(--ink-300);position:relative;}
+.gs-keju-node{width:14px;height:14px;border-radius:50%;background:var(--bg-paper);border:2px solid var(--ink-300);}
 .gs-keju-node.done{border-color:var(--celadon-400);background:var(--celadon-400);}
-.gs-keju-node.current{border-color:var(--gold-300);background:var(--bg-paper);animation:keju-pulse 2s infinite;}
+.gs-keju-node.current{border-color:var(--gold-300);animation:keju-pulse 2s infinite;}
 @keyframes keju-pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,95,0.5);}50%{box-shadow:0 0 0 5px rgba(201,168,95,0);}}
 .gs-keju-labels{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--font-serif);font-size:9.5px;color:var(--ink-300);letter-spacing:0.08em;}
 .gs-keju-labels span.done{color:var(--celadon-400);}
@@ -336,7 +296,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-keju-sub{margin-top:4px;padding:4px 6px;background:rgba(106,154,127,0.04);border-left:2px solid var(--celadon-400);border-radius:0 2px 2px 0;font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);font-style:italic;letter-spacing:0.04em;}
 .gs-keju-sub .h{color:var(--celadon-400);}
 
-/* 技术 */
+/* 制度 */
 .gs-tech-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;font-family:var(--font-serif);}
 .gs-tech-icon{font-size:11px;color:var(--indigo-400);width:14px;text-align:center;}
 .gs-tech-name{flex:1;color:var(--ink-700);letter-spacing:0.05em;}
@@ -367,12 +327,51 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-consort-name{font-family:var(--font-serif);font-size:9.5px;color:var(--co-c,var(--ink-500));letter-spacing:0.04em;}
 .gs-consort-rank{font-family:var(--font-serif);font-size:8.5px;color:var(--ink-300);letter-spacing:0.1em;}
 
-/* 帮助面板 */
+/* 帮助 */
 .gs-help-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;cursor:pointer;transition:color 0.15s;font-family:var(--font-serif);letter-spacing:0.06em;}
 .gs-help-item:hover{color:var(--gold-300);}
 .gs-help-item .ic{width:18px;height:18px;border-radius:50%;background:rgba(201,168,95,0.1);border:1px solid var(--gold-d);color:var(--gold-300);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
 .gs-help-item .t{flex:1;color:var(--ink-700);}
 .gs-help-item .arr{color:var(--ink-300);font-size:10px;}
+
+/* 主题切换（新）*/
+.gs-theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;}
+.gs-theme-card{
+  padding:6px;border:1px solid var(--border-subtle);
+  border-radius:3px;cursor:pointer;transition:all 0.2s;
+  background:var(--t-bg,rgba(36,30,24,0.6));
+  position:relative;overflow:hidden;
+}
+.gs-theme-card:hover{border-color:var(--gold-400);transform:translateY(-1px);}
+.gs-theme-card.active{border-color:var(--gold-300);box-shadow:0 0 0 1px var(--gold-300),0 2px 8px rgba(201,168,95,0.2);}
+.gs-theme-card.active::after{content:"\2713";position:absolute;top:3px;right:4px;color:var(--gold-300);font-size:11px;font-weight:bold;}
+.gs-theme-swatch{display:flex;height:22px;border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.gs-theme-swatch .c{flex:1;}
+.gs-theme-name{font-family:var(--font-serif);font-size:11px;color:var(--ink-700);letter-spacing:0.12em;text-align:center;}
+.gs-theme-card .desc{font-family:var(--font-serif);font-size:9px;color:var(--ink-300);letter-spacing:0.05em;text-align:center;margin-top:1px;font-style:italic;}
+.gs-theme-card.t-plain{--t-bg:linear-gradient(to br,rgba(241,234,221,0.04),rgba(36,30,24,0.8));}
+.gs-theme-card.t-ink{--t-bg:linear-gradient(to br,rgba(26,20,16,0.95),rgba(59,51,42,0.8));}
+.gs-theme-card.t-vermil{--t-bg:linear-gradient(to br,rgba(140,40,30,0.15),rgba(36,30,24,0.8));}
+.gs-theme-card.t-celadon{--t-bg:linear-gradient(to br,rgba(106,154,127,0.12),rgba(36,30,24,0.8));}
+
+/* 音频控制（新）*/
+.gs-audio-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;font-family:var(--font-serif);letter-spacing:0.04em;}
+.gs-audio-name{flex:1;color:var(--ink-700);}
+.gs-audio-ctrl{display:flex;align-items:center;gap:4px;}
+.gs-audio-slider{width:56px;height:3px;background:rgba(107,93,71,0.25);border-radius:2px;position:relative;cursor:pointer;}
+.gs-audio-slider::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p,70%);background:linear-gradient(to right,var(--blue-400),var(--celadon-400));border-radius:2px;}
+.gs-audio-slider::after{content:"";position:absolute;left:calc(var(--p,70%) - 4px);top:-3px;width:8px;height:8px;background:var(--gold-300);border-radius:50%;box-shadow:0 0 4px rgba(201,168,95,0.5);}
+.gs-audio-val{font-size:9.5px;color:var(--ink-300);min-width:18px;text-align:right;}
+.gs-audio-now{margin-top:5px;padding:4px 6px;background:rgba(90,143,184,0.05);border-left:2px solid var(--blue-400);border-radius:0 2px 2px 0;font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);font-style:italic;letter-spacing:0.04em;display:flex;align-items:center;gap:4px;}
+.gs-audio-now::before{content:"\266A";color:var(--blue-400);animation:note-bob 2s infinite;}
+@keyframes note-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+.gs-audio-now .h{color:var(--blue-400);}
+
+/* 朝代主题 */
+.gs-dyn-arc{padding:6px 8px;background:rgba(201,168,95,0.04);border:1px dashed var(--gold-d);border-radius:3px;font-family:var(--font-serif);font-size:11px;line-height:1.7;color:var(--ink-700);letter-spacing:0.03em;}
+.gs-dyn-arc .phase{display:inline-block;padding:0 6px;margin-right:4px;background:linear-gradient(to bottom,var(--vermillion-400),var(--vermillion-600));color:#f4eadd;font-size:10px;letter-spacing:0.15em;border-radius:2px;line-height:16px;}
+.gs-dyn-arc .em{color:var(--gold-300);font-weight:500;}
+.gs-dyn-arc .warn{color:var(--vermillion-400);}
 
 /* ═══ 中栏 ═══ */
 .gs-center{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-1);}
@@ -387,47 +386,85 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-tab-group{display:flex;align-items:stretch;position:relative;padding-right:6px;margin-right:2px;padding-top:8px;}
 .gs-tab-group:not(:last-child)::after{content:"";position:absolute;right:0;top:20%;bottom:20%;width:1px;background:linear-gradient(to bottom,transparent,var(--border-strong),transparent);}
 .gs-tab-group::before{content:attr(data-label);position:absolute;top:-2px;left:8px;font-family:var(--font-serif);font-size:8.5px;color:var(--gold-d);letter-spacing:0.2em;opacity:0.7;pointer-events:none;}
-.gs-tab-btn{padding:10px 14px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:13px;letter-spacing:0.08em;cursor:pointer;border-bottom:2px solid transparent;position:relative;display:flex;align-items:center;gap:4px;transition:color 0.15s;white-space:nowrap;}
+.gs-tab-btn{padding:10px 16px;background:transparent;border:none;color:var(--ink-300);font-family:var(--font-serif);font-size:13.5px;letter-spacing:0.08em;cursor:pointer;border-bottom:2px solid transparent;position:relative;display:flex;align-items:center;gap:4px;transition:color 0.15s;white-space:nowrap;}
 .gs-tab-btn .ic{font-size:10px;opacity:0.7;}
 .gs-tab-btn:hover{color:var(--ink-700);}
 .gs-tab-btn.active{color:var(--gold-400);border-bottom-color:var(--gold-400);background:rgba(184,154,83,0.04);}
 .gs-tab-btn.active::before{content:"";position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--vermillion-400);border-radius:1px;transform:rotate(12deg);}
 .gs-tab-btn.alert::after{content:attr(data-badge);position:absolute;top:4px;right:3px;background:var(--vermillion-400);color:#f4eadd;font-size:9px;font-family:var(--font-serif);padding:1px 4px;border-radius:6px;min-width:14px;line-height:1;text-align:center;font-weight:bold;}
 
-.gs-tab-content{flex:1;overflow-y:auto;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);padding:20px 24px;position:relative;}
+.gs-tab-content{flex:1;overflow-y:auto;background-color:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px)),linear-gradient(to bottom,rgba(184,154,83,0.05) 0%,transparent 80px);padding:20px 32px;position:relative;}
 .gs-tab-content::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 15% 25%,rgba(139,90,50,0.025) 0.5px,transparent 1px),radial-gradient(circle at 80% 60%,rgba(139,90,50,0.03) 0.5px,transparent 1px);background-size:80px 80px,120px 120px;}
-.gs-content-inner{position:relative;z-index:1;}
+.gs-content-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;}
 .gs-sample-title{text-align:center;margin-bottom:16px;position:relative;padding:10px 0 14px;}
 .gs-sample-title::before,.gs-sample-title::after{content:"";position:absolute;left:50%;width:160px;height:1px;transform:translateX(-50%);background:linear-gradient(to right,transparent,var(--gold-d),transparent);}
 .gs-sample-title::before{top:0;}.gs-sample-title::after{bottom:0;}
-.gs-sample-title .main{font-family:var(--font-serif);font-size:20px;letter-spacing:0.45em;color:var(--ink-900);margin-bottom:4px;}
+.gs-sample-title .main{font-family:var(--font-serif);font-size:22px;letter-spacing:0.45em;color:var(--ink-900);margin-bottom:4px;}
 .gs-sample-title .sub{font-size:11px;color:var(--ink-300);letter-spacing:0.3em;font-family:var(--font-serif);font-style:italic;}
-.gs-sample-demo{padding:14px;background:rgba(184,154,83,0.03);border:1px dashed var(--border-subtle);border-radius:3px;text-align:center;font-family:var(--font-serif);color:var(--ink-500);letter-spacing:0.1em;font-style:italic;line-height:2.2;margin-bottom:14px;}
-.gs-sample-demo .k{color:var(--gold-300);}.gs-sample-demo .m{color:var(--vermillion-400);}
-.gs-sample-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;}
-.gs-sample-card{padding:10px 12px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--c,var(--gold-400));border-radius:3px;}
-.gs-sample-card .lbl{font-family:var(--font-serif);font-size:10px;color:var(--ink-500);letter-spacing:0.25em;margin-bottom:4px;}
-.gs-sample-card .num{font-family:var(--font-serif);font-size:20px;color:var(--c,var(--gold-400));letter-spacing:0.05em;font-weight:700;}
+.gs-sample-demo{padding:16px;background:rgba(184,154,83,0.03);border:1px dashed var(--border-subtle);border-radius:3px;text-align:center;font-family:var(--font-serif);color:var(--ink-500);letter-spacing:0.1em;font-style:italic;line-height:2.2;margin-bottom:14px;}
+.gs-sample-demo .k{color:var(--gold-300);}.gs-sample-demo .m{color:var(--vermillion-400);}.gs-sample-demo .big{font-size:15px;color:var(--gold-300);letter-spacing:0.2em;}
+.gs-sample-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px;}
+.gs-sample-card{padding:12px 14px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--c,var(--gold-400));border-radius:3px;}
+.gs-sample-card .lbl{font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.25em;margin-bottom:4px;}
+.gs-sample-card .num{font-family:var(--font-serif);font-size:22px;color:var(--c,var(--gold-400));letter-spacing:0.05em;font-weight:700;}
 .gs-sample-card .sub{font-size:10px;color:var(--ink-300);font-style:italic;margin-top:2px;}
 
 .gs-toast{position:absolute;top:20px;right:20px;padding:8px 14px;background:rgba(36,30,24,0.95);border:1px solid var(--gold-300);border-left:3px solid var(--celadon-400);border-radius:3px;font-family:var(--font-serif);font-size:11.5px;color:var(--ink-700);letter-spacing:0.1em;box-shadow:0 4px 12px rgba(0,0,0,0.45);z-index:5;display:flex;align-items:center;gap:6px;}
 .gs-toast::before{content:"\2713";width:16px;height:16px;border-radius:50%;background:var(--celadon-400);color:#1a1410;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;}
-.gs-toast .k{color:var(--gold-300);}
+.gs-toast .k{content:"";color:var(--gold-300);}
 
-/* ═══ 右栏滚动内容 + 底部推演固定 ═══ */
-.gs-right-scroll{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--gold-d) rgba(26,20,16,0.5);}
-.gs-right-scroll::-webkit-scrollbar{width:8px;}
-.gs-right-scroll::-webkit-scrollbar-track{background:rgba(26,20,16,0.5);border-radius:4px;border-left:1px solid var(--border-subtle);}
-.gs-right-scroll::-webkit-scrollbar-thumb{background:linear-gradient(to bottom,var(--gold-d),rgba(107,93,71,0.6));border-radius:4px;border:1px solid var(--bg-2);}
-.gs-right-scroll::-webkit-scrollbar-thumb:hover{background:linear-gradient(to bottom,var(--gold-400),var(--gold-d));}
+/* Hint arrows pointing at rails (仅默认态示) */
+.gs-hint{position:absolute;top:80px;padding:6px 10px;background:rgba(36,30,24,0.92);border:1px dashed var(--gold-d);color:var(--gold-300);font-family:var(--font-serif);font-size:11px;letter-spacing:0.1em;border-radius:3px;pointer-events:none;animation:hint-bob 2.5s ease-in-out infinite;z-index:30;}
+.gs-hint.left{left:54px;}
+.gs-hint.right{right:54px;}
+.gs-hint.left::before,.gs-hint.right::before{content:"";position:absolute;top:50%;width:0;height:0;border:5px solid transparent;transform:translateY(-50%);}
+.gs-hint.left::before{left:-10px;border-right-color:var(--gold-d);}
+.gs-hint.right::before{right:-10px;border-left-color:var(--gold-d);}
+@keyframes hint-bob{0%,100%{transform:translateX(0);}50%{transform:translateX(4px);}}
+.gs-hint.right{animation-name:hint-bob-r;}
+@keyframes hint-bob-r{0%,100%{transform:translateX(0);}50%{transform:translateX(-4px);}}
 
-/* 朕亲 */
+/* ═══ 右栏 drawer 布局：上滚动 + 下推演 ═══ */
+.gs-right.has-turn .gs-drawer{flex:1;padding-bottom:0;}
+.gs-turn-zone{flex-shrink:0;padding:10px 10px 50px;background:linear-gradient(to bottom,rgba(36,30,24,0.9),var(--bg-2));border-top:2px solid var(--border-strong);position:relative;box-shadow:0 -4px 12px rgba(0,0,0,0.35);}
+.gs-turn-zone::before{content:"";position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(to right,transparent,var(--gold-500),transparent);}
+.gs-body:not(.right-open) .gs-right .gs-turn-zone{display:none;}
+
+.gs-turn-fab{display:flex;gap:5px;justify-content:center;margin-bottom:8px;flex-wrap:wrap;}
+.gs-fab-btn{width:34px;height:34px;border:1px solid var(--gold-d);background:rgba(184,154,83,0.06);color:var(--gold-400);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:13px;cursor:pointer;transition:all 0.2s;position:relative;}
+.gs-fab-btn:hover{background:rgba(184,154,83,0.2);border-color:var(--gold-300);transform:translateY(-2px);box-shadow:0 4px 10px rgba(184,154,83,0.3);}
+.gs-fab-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);font-family:var(--font-serif);font-size:10.5px;letter-spacing:0.1em;padding:3px 8px;background:rgba(26,20,16,0.95);color:var(--gold-300);border:1px solid var(--gold-d);border-radius:3px;white-space:nowrap;pointer-events:none;z-index:100;}
+.gs-turn-summary{padding:6px 10px;background:rgba(26,20,16,0.6);border:1px solid var(--border-strong);border-radius:3px;font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.08em;text-align:center;margin-bottom:8px;}
+.gs-turn-summary .hl{color:var(--gold-300);font-weight:500;}
+.gs-turn-summary .warn{color:var(--vermillion-400);}
+.gs-turn-big{width:100%;padding:14px 12px;background:linear-gradient(135deg,var(--vermillion-400),var(--vermillion-600));color:#f4eadd;font-family:var(--font-serif);font-size:19px;font-weight:bold;letter-spacing:0.45em;border:1px solid var(--vermillion-600);border-radius:4px;cursor:pointer;text-align:center;position:relative;box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12);transition:all 0.2s;animation:turn-glow 3s ease-in-out infinite;}
+@keyframes turn-glow{0%,100%{box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12),0 0 0 0 rgba(192,64,48,0.4);}50%{box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12),0 0 0 8px rgba(192,64,48,0);}}
+.gs-turn-big::before,.gs-turn-big::after{content:"";position:absolute;width:22px;height:2px;background:linear-gradient(to right,transparent,#f4eadd,transparent);top:50%;transform:translateY(-50%);opacity:0.6;}
+.gs-turn-big::before{left:12px;}.gs-turn-big::after{right:12px;}
+.gs-turn-big:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(140,40,30,0.55);animation:none;}
+.gs-turn-big .sub{display:block;font-size:10.5px;color:rgba(244,234,221,0.78);letter-spacing:0.22em;font-weight:400;margin-top:4px;font-style:italic;}
+
+/* 底部状态栏 */
+.gs-status-bar{position:absolute;bottom:0;left:0;right:0;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:14px;background:linear-gradient(180deg,rgba(18,16,14,0.95),var(--bg-paper));border-top:1px solid var(--border-subtle);font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.08em;z-index:40;backdrop-filter:blur(6px);}
+.gs-status-bar::before{content:"";position:absolute;top:0;left:5%;right:5%;height:1px;background:linear-gradient(to right,transparent,var(--gold-500),transparent);opacity:0.5;}
+.gs-status-left,.gs-status-right{display:flex;align-items:center;gap:12px;}
+.gs-status-item{display:flex;align-items:center;gap:4px;padding:0 6px;}
+.gs-status-item .dot{width:6px;height:6px;border-radius:50%;background:var(--d-c,var(--celadon-400));box-shadow:0 0 4px var(--d-c,var(--celadon-400));}
+.gs-status-item.busy .dot{--d-c:var(--amber-400);animation:busy-dot 1.5s infinite;}
+@keyframes busy-dot{0%,100%{opacity:0.4;}50%{opacity:1;}}
+.gs-status-item .k{color:var(--ink-300);}
+.gs-status-item .v{color:var(--ink-700);}
+.gs-status-tip{color:var(--gold-300);font-style:italic;}
+.gs-status-shortcut{color:var(--ink-500);font-size:10px;}
+.gs-status-shortcut kbd{background:rgba(184,154,83,0.08);border:1px solid var(--gold-d);color:var(--gold-400);padding:0 4px;border-radius:2px;font-size:9.5px;font-family:monospace;letter-spacing:0;margin:0 2px;}
+
+/* 右栏所有面板(省略版，沿用) */
 .gs-self-card{position:relative;padding:12px 14px;background:linear-gradient(to bottom right,rgba(201,168,95,0.12),var(--bg-paper) 40%);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.04) 2.5em,rgba(107,93,71,0.04) calc(2.5em + 1px));border:1px solid var(--gold-300);border-radius:3px;box-shadow:0 0 0 1px rgba(201,168,95,0.15),0 2px 8px rgba(201,168,95,0.08);}
 .gs-self-card::before{content:"\6715";position:absolute;top:8px;right:10px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(192,64,48,0.92),rgba(140,40,30,0.82));color:#f4eadd;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:14px;font-weight:bold;transform:rotate(-8deg);box-shadow:0 2px 5px rgba(140,40,30,0.5);}
 .gs-self-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
-.gs-self-portrait{width:64px;height:82px;flex-shrink:0;position:relative;background:linear-gradient(145deg,var(--gold-400) 0%,rgba(26,20,16,0.6) 100%),radial-gradient(ellipse at 50% 30%,rgba(244,234,221,0.2),transparent 60%);border:1.5px solid var(--gold-400);border-radius:2px;display:flex;align-items:center;justify-content:center;color:#f4eadd;font-family:var(--font-serif);font-size:28px;font-weight:500;box-shadow:0 2px 6px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);}
-.gs-self-portrait::before{content:"";position:absolute;inset:3px;border:0.5px solid rgba(184,154,83,0.35);border-radius:1px;pointer-events:none;}
-.gs-self-portrait::after{content:"";position:absolute;top:-5px;left:-4px;right:-4px;height:6px;background:linear-gradient(to bottom,#8d7640 0%,#6b5a30 60%,#5a4a28 100%);border:0.5px solid #3d2e18;border-radius:1px;box-shadow:0 1px 0 rgba(0,0,0,0.4);}
+.gs-self-portrait{width:64px;height:82px;flex-shrink:0;position:relative;background:linear-gradient(145deg,var(--gold-400) 0%,rgba(26,20,16,0.6) 100%);border:1.5px solid var(--gold-400);border-radius:2px;display:flex;align-items:center;justify-content:center;color:#f4eadd;font-family:var(--font-serif);font-size:28px;font-weight:500;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+.gs-self-portrait::before{content:"";position:absolute;inset:3px;border:0.5px solid rgba(184,154,83,0.35);border-radius:1px;}
+.gs-self-portrait::after{content:"";position:absolute;top:-5px;left:-4px;right:-4px;height:6px;background:linear-gradient(to bottom,#8d7640,#6b5a30,#5a4a28);border:0.5px solid #3d2e18;border-radius:1px;}
 .gs-self-info{flex:1;min-width:0;padding-right:30px;}
 .gs-self-name{font-family:var(--font-serif);font-size:16px;color:var(--gold-300);letter-spacing:0.14em;font-weight:500;}
 .gs-self-title{font-family:var(--font-serif);font-size:11px;color:var(--ink-500);letter-spacing:0.1em;margin-top:2px;font-style:italic;}
@@ -455,9 +492,9 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-wc-dot.mid{background:var(--gold-400);}
 .gs-wc-dot.lo{background:var(--vermillion-400);}
 
-/* 时辰 */
+/* (其余右栏面板样式同前) */
 .gs-time-dial{position:relative;width:120px;height:120px;margin:4px auto;flex-shrink:0;}
-.gs-time-dial::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(184,154,83,0.04) 0%,transparent 65%),conic-gradient(from 0deg,var(--ink-100) 0deg,var(--ink-100) 360deg);border:2px solid var(--gold-d);box-shadow:inset 0 0 8px rgba(184,154,83,0.1);}
+.gs-time-dial::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(184,154,83,0.04),transparent 65%),conic-gradient(from 0deg,var(--ink-100) 0deg,var(--ink-100) 360deg);border:2px solid var(--gold-d);box-shadow:inset 0 0 8px rgba(184,154,83,0.1);}
 .gs-time-dial::after{content:"";position:absolute;inset:12px;border-radius:50%;border:1px dashed rgba(184,154,83,0.2);}
 .gs-time-hand{position:absolute;top:50%;left:50%;width:2px;height:44px;background:linear-gradient(to top,transparent,var(--vermillion-400),#f4eadd);transform-origin:bottom center;transform:translate(-50%,-100%) rotate(210deg);box-shadow:0 0 4px rgba(192,64,48,0.5);border-radius:2px;}
 .gs-time-center{position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,var(--gold-300),var(--gold-d));transform:translate(-50%,-50%);box-shadow:0 0 4px rgba(201,168,95,0.5);}
@@ -467,33 +504,6 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-time-text .main{font-size:13px;color:var(--vermillion-400);letter-spacing:0.2em;font-weight:500;}
 .gs-time-text .sub{font-size:10px;color:var(--ink-300);letter-spacing:0.12em;font-style:italic;}
 
-/* 人物卡 */
-.gs-chars-grid{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
-.gs-char-card{display:flex;gap:8px;padding:6px 8px 6px 6px;background:var(--bg-paper);background-image:repeating-linear-gradient(90deg,transparent 0,transparent 2.5em,rgba(107,93,71,0.03) 2.5em,rgba(107,93,71,0.03) calc(2.5em + 1px));border:1px solid var(--border-subtle);border-left:3px solid var(--ch-c,var(--gold-d));border-radius:3px;cursor:pointer;transition:all 0.15s;}
-.gs-char-card:hover{border-color:var(--gold-400);box-shadow:0 2px 6px rgba(184,154,83,0.12);transform:translateX(1px);}
-.gs-char-card.f-dongin{--ch-c:var(--celadon-400);}
-.gs-char-card.f-mili{--ch-c:var(--vermillion-400);}
-.gs-char-card.f-eunuch{--ch-c:var(--purple-400);}
-.gs-char-card.f-consort{--ch-c:var(--vermillion-300);}
-.gs-char-card.f-kun{--ch-c:var(--amber-400);}
-.gs-char-port{width:36px;height:46px;flex-shrink:0;position:relative;background:linear-gradient(145deg,var(--ch-c,var(--gold-400)) 0%,rgba(26,20,16,0.6) 100%);border:1px solid var(--ch-c,var(--gold-400));border-radius:2px;display:flex;align-items:center;justify-content:center;color:#f4eadd;font-family:var(--font-serif);font-size:17px;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.4);}
-.gs-char-port::after{content:"";position:absolute;top:-3px;left:-2px;right:-2px;height:3px;background:linear-gradient(to bottom,#8d7640,#6b5a30);border-radius:1px;}
-.gs-char-info{flex:1;min-width:0;}
-.gs-char-name-row{display:flex;align-items:baseline;gap:5px;}
-.gs-char-name{font-family:var(--font-serif);font-size:13px;color:var(--ink-700);letter-spacing:0.06em;font-weight:500;}
-.gs-char-age{font-size:9.5px;color:var(--ink-300);font-family:var(--font-serif);}
-.gs-char-loy{font-size:9.5px;margin-left:auto;padding:0 5px;border-radius:8px;font-family:var(--font-serif);line-height:14px;letter-spacing:0.08em;}
-.gs-char-loy.hi{color:var(--celadon-400);background:rgba(106,154,127,0.1);border:1px solid var(--celadon-400);}
-.gs-char-loy.mid{color:var(--gold-400);background:rgba(184,154,83,0.08);border:1px solid var(--gold-d);}
-.gs-char-loy.lo{color:var(--vermillion-400);background:rgba(192,64,48,0.08);border:1px solid var(--vermillion-400);}
-.gs-char-office{font-size:10.5px;color:var(--ch-c,var(--gold-400));font-family:var(--font-serif);letter-spacing:0.05em;margin-top:1px;}
-.gs-char-ministat{display:flex;gap:4px;align-items:center;margin-top:3px;flex-wrap:wrap;}
-.gs-char-mini{font-family:var(--font-serif);font-size:9.5px;color:var(--ink-500);letter-spacing:0.05em;padding:0 3px;background:rgba(107,93,71,0.08);border-radius:2px;}
-.gs-char-mini .v{color:var(--ink-700);margin-left:1px;}
-.gs-char-state{font-size:9px;color:var(--amber-400);font-family:var(--font-serif);padding:0 3px;border:1px solid var(--amber-400);border-radius:2px;background:rgba(201,160,69,0.08);letter-spacing:0.08em;line-height:12px;}
-.gs-char-state.new{color:var(--celadon-400);border-color:var(--celadon-400);background:rgba(106,154,127,0.08);}
-
-/* 议题 */
 .gs-issue-item{display:flex;align-items:flex-start;gap:5px;padding:5px 6px;margin-bottom:4px;background:rgba(192,64,48,0.04);border-left:2px solid var(--i-c,var(--vermillion-400));border-radius:0 2px 2px 0;font-size:11px;line-height:1.5;}
 .gs-issue-item.urgent{--i-c:var(--vermillion-400);}
 .gs-issue-item.warn{--i-c:var(--amber-400);background:rgba(201,160,69,0.05);}
@@ -503,7 +513,6 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-issue-text .h{color:var(--i-c);}
 .gs-issue-time{font-size:9.5px;color:var(--ink-300);font-style:italic;font-family:var(--font-serif);flex-shrink:0;}
 
-/* 目标 */
 .gs-goal-item{padding:5px 8px;margin-bottom:5px;background:rgba(142,106,168,0.05);border:1px dashed var(--purple-400);border-radius:3px;}
 .gs-goal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
 .gs-goal-title{font-family:var(--font-serif);font-size:11.5px;color:var(--purple-400);letter-spacing:0.06em;font-weight:500;}
@@ -512,108 +521,34 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-goal-prog{height:3px;background:rgba(107,93,71,0.22);border-radius:2px;overflow:hidden;margin-top:4px;}
 .gs-goal-prog-fill{height:100%;background:linear-gradient(to right,var(--purple-400),var(--gold-300));border-radius:2px;}
 
-/* 财政 */
-.gs-fin-chart{position:relative;height:90px;padding:8px 4px 4px;}
-.gs-fin-bars{display:flex;align-items:flex-end;justify-content:space-around;height:70px;gap:3px;}
-.gs-fin-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.gs-fin-bar-stack{display:flex;flex-direction:column-reverse;width:100%;height:60px;}
-.gs-fin-bar{width:100%;opacity:0.85;}
-.gs-fin-bar.income{background:var(--celadon-400);}
-.gs-fin-bar.expense{background:var(--vermillion-400);}
-.gs-fin-lbl{font-family:var(--font-serif);font-size:9px;color:var(--ink-300);}
-.gs-fin-legend{display:flex;justify-content:center;gap:10px;font-family:var(--font-serif);font-size:9.5px;color:var(--ink-500);margin-top:2px;}
-.gs-fin-legend span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:3px;vertical-align:middle;border-radius:1px;}
-.gs-fin-legend .in::before{background:var(--celadon-400);}
-.gs-fin-legend .out::before{background:var(--vermillion-400);}
-
-/* 关系网 */
-.gs-rel-net{position:relative;height:140px;padding:4px;overflow:hidden;}
-.gs-rel-node{position:absolute;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:10px;color:#f4eadd;font-weight:bold;background:var(--rn-c,var(--gold-400));border:1px solid rgba(244,234,221,0.3);box-shadow:0 1px 3px rgba(0,0,0,0.4);cursor:pointer;transition:transform 0.2s;}
-.gs-rel-node:hover{transform:scale(1.2);}
-.gs-rel-node.center{width:28px;height:28px;background:var(--gold-300);color:#1a1410;z-index:3;box-shadow:0 0 8px rgba(201,168,95,0.5);}
-.gs-rel-node.friend{background:var(--celadon-400);}
-.gs-rel-node.foe{background:var(--vermillion-400);}
-.gs-rel-node.neutral{background:var(--ink-500);}
-.gs-rel-edge{position:absolute;height:1px;background:var(--e-c,var(--ink-300));transform-origin:left center;opacity:0.6;}
-.gs-rel-edge.friend{--e-c:var(--celadon-400);}
-.gs-rel-edge.foe{--e-c:var(--vermillion-400);}
-.gs-rel-edge.dashed{border-top:1px dashed var(--e-c,var(--ink-300));background:transparent;}
-
-/* 风闻 */
-.gs-rumor-item{padding:5px 8px;margin-bottom:4px;background:rgba(142,106,168,0.04);border-left:2px solid var(--purple-400);border-radius:0 2px 2px 0;font-family:var(--font-serif);font-size:11px;color:var(--ink-700);line-height:1.6;letter-spacing:0.03em;font-style:italic;}
-.gs-rumor-item::before{content:"\201C";color:var(--purple-400);font-size:14px;margin-right:2px;opacity:0.7;}
-.gs-rumor-item .cred{float:right;font-size:9px;color:var(--ink-300);font-style:normal;letter-spacing:0.1em;}
-
-/* 近事 */
-.gs-news-item{display:flex;align-items:flex-start;gap:5px;padding:5px 8px;background:rgba(184,154,83,0.03);border-left:2px solid var(--nw-c,var(--gold-d));margin-bottom:4px;font-size:11px;font-family:var(--font-serif);line-height:1.5;letter-spacing:0.04em;color:var(--ink-700);}
-.gs-news-item.edict{--nw-c:var(--indigo-400);}
-.gs-news-item.memo{--nw-c:var(--vermillion-400);}
-.gs-news-item.letter{--nw-c:var(--amber-400);}
-.gs-news-item.person{--nw-c:var(--celadon-400);}
-.gs-news-item.chaoyi{--nw-c:var(--purple-400);}
-.gs-news-item .t{font-size:9px;color:var(--ink-300);font-style:italic;margin-right:3px;flex-shrink:0;white-space:nowrap;}
-.gs-news-item .h{color:var(--gold-300);font-weight:500;}
-.gs-news-item .body{flex:1;min-width:0;}
-
-/* 精力 */
 .gs-energy{padding:10px 12px;background:var(--bg-paper);border:1px solid var(--border-subtle);border-left:3px solid var(--celadon-400);border-radius:3px;}
 .gs-energy-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
 .gs-energy-lbl{font-family:var(--font-serif);font-size:12px;color:var(--celadon-400);letter-spacing:0.2em;}
 .gs-energy-val{font-family:var(--font-serif);font-size:12.5px;color:var(--ink-700);font-weight:500;}
 .gs-energy-val .max{color:var(--ink-300);font-size:10px;}
 .gs-energy-bar{height:5px;background:rgba(107,93,71,0.25);border-radius:2px;overflow:hidden;}
-.gs-energy-fill{height:100%;background:linear-gradient(to right,var(--celadon-400),var(--gold-300));border-radius:2px;transition:width 0.3s;}
+.gs-energy-fill{height:100%;background:linear-gradient(to right,var(--celadon-400),var(--gold-300));border-radius:2px;}
 .gs-energy-tick{display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--ink-300);font-family:var(--font-serif);letter-spacing:0.04em;}
-
-/* ═══ 推演固定区（右栏底部）═══ */
-.gs-turn-zone{
-  flex-shrink:0;
-  padding:10px 10px 50px;
-  background:linear-gradient(to bottom,rgba(36,30,24,0.9) 0%,var(--bg-2) 100%);
-  border-top:2px solid var(--border-strong);
-  position:relative;
-  box-shadow:0 -4px 12px rgba(0,0,0,0.35);
-}
-.gs-turn-zone::before{content:"";position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(to right,transparent,var(--gold-500),transparent);}
-
-.gs-turn-fab{display:flex;gap:5px;justify-content:center;margin-bottom:8px;}
-.gs-fab-btn{width:36px;height:36px;border:1px solid var(--gold-d);background:rgba(184,154,83,0.06);color:var(--gold-400);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:13px;cursor:pointer;transition:all 0.2s;position:relative;}
-.gs-fab-btn:hover{background:rgba(184,154,83,0.2);border-color:var(--gold-300);transform:translateY(-2px);box-shadow:0 4px 10px rgba(184,154,83,0.3);}
-.gs-fab-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);font-family:var(--font-serif);font-size:10.5px;letter-spacing:0.1em;padding:3px 8px;background:rgba(26,20,16,0.95);color:var(--gold-300);border:1px solid var(--gold-d);border-radius:3px;white-space:nowrap;pointer-events:none;z-index:100;}
-
-.gs-turn-summary{padding:6px 10px;background:rgba(26,20,16,0.6);border:1px solid var(--border-strong);border-radius:3px;font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.08em;text-align:center;margin-bottom:8px;}
-.gs-turn-summary .hl{color:var(--gold-300);font-weight:500;}
-.gs-turn-summary .warn{color:var(--vermillion-400);}
-
-.gs-turn-big{width:100%;padding:14px 12px;background:linear-gradient(135deg,var(--vermillion-400) 0%,var(--vermillion-600) 100%);color:#f4eadd;font-family:var(--font-serif);font-size:19px;font-weight:bold;letter-spacing:0.45em;border:1px solid var(--vermillion-600);border-radius:4px;cursor:pointer;text-align:center;position:relative;box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12);transition:all 0.2s;animation:turn-glow 3s ease-in-out infinite;}
-@keyframes turn-glow{0%,100%{box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12),0 0 0 0 rgba(192,64,48,0.4);}50%{box-shadow:0 6px 20px rgba(140,40,30,0.5),inset 0 1px 0 rgba(255,255,255,0.12),0 0 0 8px rgba(192,64,48,0);}}
-.gs-turn-big::before,.gs-turn-big::after{content:"";position:absolute;width:22px;height:2px;background:linear-gradient(to right,transparent,#f4eadd,transparent);top:50%;transform:translateY(-50%);opacity:0.6;}
-.gs-turn-big::before{left:12px;}.gs-turn-big::after{right:12px;}
-.gs-turn-big:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(140,40,30,0.55);animation:none;}
-.gs-turn-big .sub{display:block;font-size:10.5px;color:rgba(244,234,221,0.78);letter-spacing:0.22em;font-weight:400;margin-top:4px;font-style:italic;}
-
-/* 底部状态栏 */
-.gs-status-bar{position:absolute;bottom:0;left:0;right:0;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:14px;background:linear-gradient(180deg,rgba(18,16,14,0.95),var(--bg-paper));border-top:1px solid var(--border-subtle);font-family:var(--font-serif);font-size:10.5px;color:var(--ink-500);letter-spacing:0.08em;z-index:40;backdrop-filter:blur(6px);}
-.gs-status-bar::before{content:"";position:absolute;top:0;left:5%;right:5%;height:1px;background:linear-gradient(to right,transparent,var(--gold-500),transparent);opacity:0.5;}
-.gs-status-left,.gs-status-right{display:flex;align-items:center;gap:12px;}
-.gs-status-item{display:flex;align-items:center;gap:4px;padding:0 6px;}
-.gs-status-item .dot{width:6px;height:6px;border-radius:50%;background:var(--d-c,var(--celadon-400));box-shadow:0 0 4px var(--d-c,var(--celadon-400));}
-.gs-status-item.busy .dot{--d-c:var(--amber-400);animation:busy-dot 1.5s infinite;}
-@keyframes busy-dot{0%,100%{opacity:0.4;}50%{opacity:1;}}
-.gs-status-item .k{color:var(--ink-300);}
-.gs-status-item .v{color:var(--ink-700);}
-.gs-status-tip{color:var(--gold-300);font-style:italic;}
-.gs-status-shortcut{color:var(--ink-500);font-size:10px;}
-.gs-status-shortcut kbd{background:rgba(184,154,83,0.08);border:1px solid var(--gold-d);color:var(--gold-400);padding:0 4px;border-radius:2px;font-size:9.5px;font-family:monospace;letter-spacing:0;margin:0 2px;}
 
 .legend{padding:20px 24px;background:var(--bg-1);border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-500);text-align:center;letter-spacing:0.08em;line-height:2.1;}
 .legend .k{color:var(--gold-400);}.legend .m{color:var(--vermillion-400);}.legend .c{color:var(--celadon-400);}.legend .p{color:var(--purple-400);}
 </style>
 </head>
 <body>
+
+<!-- 演示模式切换 -->
+<div class="mode-switcher">
+  <span class="lbl">◆ 布局：</span>
+  <button class="mode-btn active" onclick="document.getElementById('body').className='gs-body'">默 认 · 双 栏 均 闭</button>
+  <button class="mode-btn" onclick="document.getElementById('body').className='gs-body left-open'">仅 开 左 栏</button>
+  <button class="mode-btn" onclick="document.getElementById('body').className='gs-body right-open'">仅 开 右 栏</button>
+  <button class="mode-btn" onclick="document.getElementById('body').className='gs-body both-open'">两 栏 皆 开</button>
+  <span style="margin-left:auto;color:var(--ink-300);font-size:10.5px;">点 顶 上 按 钮 切 换 布 局</span>
+</div>
+
 <div class="preview-frame">
 
-<!-- ═══ 顶栏 ═══ -->
+<!-- 顶栏 -->
 <div class="gs-topbar">
   <div class="gs-logo"><div class="gs-seal">天<br>命</div><span class="gs-wentian">问　天</span></div>
   <div class="gs-era">
@@ -623,10 +558,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
   </div>
   <div class="gs-weather">
     <div class="gs-weather-seal">秋</div>
-    <div class="gs-weather-info">
-      <div class="gs-weather-name">秋分 · 丙申</div>
-      <div class="gs-weather-desc">北风起 · 寒气初降</div>
-    </div>
+    <div class="gs-weather-info"><div class="gs-weather-name">秋分 · 丙申</div><div class="gs-weather-desc">北风起 · 寒气初降</div></div>
   </div>
   <div class="gs-vars">
     <div class="gs-var v-guoku"><span class="name">帑 廪</span><span class="val">368<span class="trend up">↑</span></span></div>
@@ -639,541 +571,449 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
   </div>
   <div class="gs-topbar-right">
     <span class="gs-save-chip">已 存</span>
-    <div class="gs-theme-toggle">
-      <button class="gs-theme-opt active">素</button>
-      <button class="gs-theme-opt">墨</button>
-    </div>
     <button class="gs-icon-btn ai-live" title="AI 推演中">AI</button>
     <button class="gs-icon-btn badge" data-n="3" title="待办">办</button>
     <button class="gs-icon-btn badge" data-n="5" title="消息">讯</button>
-    <button class="gs-icon-btn" title="帮助">帮</button>
     <button class="gs-icon-btn" title="全部变量">全</button>
     <button class="gs-icon-btn" title="设置">设</button>
-    <button class="gs-icon-btn" title="存档">档</button>
     <button class="gs-icon-btn" title="暂停">暂</button>
   </div>
 </div>
 
-<!-- ═══ 主体三栏 ═══ -->
-<div class="gs-body">
+<!-- 主体（默认：双栏均闭，center 全宽）-->
+<div class="gs-body" id="body">
 
-<!-- 左栏 -->
-<aside class="gs-left">
-  <button class="gs-side-toggle left" title="折叠左栏">‹</button>
-
-  <!-- 折叠态：纵列图标 -->
-  <div class="gs-mini-icons">
-    <button class="gs-mini-icon-btn c-fac" title="势力">势</button>
-    <button class="gs-mini-icon-btn c-party" title="党派">党<span class="dot"></span></button>
-    <button class="gs-mini-icon-btn c-class" title="阶层">阶</button>
-    <button class="gs-mini-icon-btn c-army" title="军事">军</button>
-    <button class="gs-mini-icon-btn c-admin" title="行政区划">政</button>
-    <button class="gs-mini-icon-btn c-keju" title="科举">科</button>
-    <button class="gs-mini-icon-btn c-map" title="天下图">图</button>
-    <button class="gs-mini-icon-btn c-help" title="帮助">帮</button>
-  </div>
-
-  <div class="gs-side-inner">
-
-  <!-- 四时物候 -->
-  <div class="gs-panel p-weather">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">四 时 物 候</div>
-      <span class="gs-panel-cnt">秋分</span>
+  <!-- 左栏 -->
+  <aside class="gs-left">
+    <!-- 折叠态：icon rail -->
+    <div class="gs-rail">
+      <button class="gs-rail-btn c-fac" title="势力" onclick="document.getElementById('body').className='gs-body left-open'">势</button>
+      <button class="gs-rail-btn c-party" title="党派" onclick="document.getElementById('body').className='gs-body left-open'">党<span class="dot"></span></button>
+      <button class="gs-rail-btn c-class" title="阶层" onclick="document.getElementById('body').className='gs-body left-open'">阶</button>
+      <button class="gs-rail-btn c-army" title="军事" onclick="document.getElementById('body').className='gs-body left-open'">军</button>
+      <button class="gs-rail-btn c-admin" title="行政区划" onclick="document.getElementById('body').className='gs-body left-open'">政</button>
+      <button class="gs-rail-btn c-keju" title="科举进程" onclick="document.getElementById('body').className='gs-body left-open'">科</button>
+      <button class="gs-rail-btn c-item" title="文物奇珍" onclick="document.getElementById('body').className='gs-body left-open'">物</button>
+      <button class="gs-rail-btn c-harem" title="后宫" onclick="document.getElementById('body').className='gs-body left-open'">宫</button>
+      <button class="gs-rail-btn c-map" title="天下图" onclick="document.getElementById('body').className='gs-body left-open'">图</button>
+      <button class="gs-rail-btn c-theme" title="主题" onclick="document.getElementById('body').className='gs-body left-open'">题</button>
+      <button class="gs-rail-btn c-audio" title="音声" onclick="document.getElementById('body').className='gs-body left-open'">声</button>
+      <button class="gs-rail-btn c-help" title="帮助" onclick="document.getElementById('body').className='gs-body left-open'">帮</button>
     </div>
-    <div class="gs-weather-panel">
-      <div class="gs-season-disc"></div>
-      <div class="gs-season-info">
-        <div class="gs-season-row"><span class="k">天象</span><span class="v warn">秋旱</span></div>
-        <div class="gs-season-row"><span class="k">物候</span><span class="v">鸿雁南飞</span></div>
-        <div class="gs-season-row"><span class="k">农事</span><span class="v">收获 · 仓储</span></div>
-        <div class="gs-season-row"><span class="k">异象</span><span class="v danger">荧惑守心</span></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- 势力 -->
-  <div class="gs-panel p-fac">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">势 力 格 局</div>
-      <div class="gs-panel-tools"><span class="gs-panel-cnt">5</span><button class="gs-panel-chev">⌄</button></div>
-    </div>
-    <div class="gs-fac-row f-ming"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">大明</div><div class="gs-fac-leader">朱由检 · 京师</div></div><span class="gs-fac-att friend">宗主</span><span class="gs-fac-str">78</span></div>
-    <div class="gs-fac-row f-houjin"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">后金</div><div class="gs-fac-leader">皇太极 · 盛京</div></div><span class="gs-fac-att hostile">敌对</span><span class="gs-fac-str">62</span></div>
-    <div class="gs-fac-row f-mongolia"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">蒙古诸部</div><div class="gs-fac-leader">林丹汗 · 察哈尔</div></div><span class="gs-fac-att neutral">中立</span><span class="gs-fac-str">48</span></div>
-    <div class="gs-fac-row f-liao"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">辽东</div><div class="gs-fac-leader">袁崇焕 · 宁远</div></div><span class="gs-fac-att vassal">臣属</span><span class="gs-fac-str">54</span></div>
-    <div class="gs-fac-row f-nan"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">南明遗老</div><div class="gs-fac-leader">钱谦益 · 南京</div></div><span class="gs-fac-att friend">友好</span><span class="gs-fac-str">31</span></div>
-  </div>
+    <!-- 展开态：面板列 -->
+    <div class="gs-drawer">
+      <button class="gs-side-toggle" title="折叠" onclick="document.getElementById('body').className=document.getElementById('body').className.replace('left-open','').trim()||'gs-body'">‹</button>
 
-  <!-- 党派（带展开态示例） -->
-  <div class="gs-panel p-party expanded">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">党 派 纷 争</div>
-      <div class="gs-panel-tools"><span class="gs-panel-cnt">4</span><button class="gs-panel-chev">⌄</button></div>
-    </div>
-    <div class="gs-party-row"><span class="gs-party-name">东林党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:72%;background:var(--celadon-400);"></span></span><span class="gs-party-val">72</span></span></div>
-    <div class="gs-party-row"><span class="gs-party-name">宦党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:48%;background:var(--purple-400);"></span></span><span class="gs-party-val">48</span></span></div>
-    <div class="gs-party-row"><span class="gs-party-name">浙党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:35%;background:var(--indigo-400);"></span></span><span class="gs-party-val">35</span></span></div>
-    <div class="gs-party-row"><span class="gs-party-name">昆党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:22%;background:var(--amber-400);"></span></span><span class="gs-party-val">22</span></span></div>
-    <div class="gs-panel-detail">
-      <div class="gs-party-detail-card dongin">
-        <div class="gs-party-detail-name">东 林 党</div>
-        <div class="gs-party-detail-row"><span class="k">首领</span><span class="v"><span class="n">钱谦益</span>(礼部尚书)</span></div>
-        <div class="gs-party-detail-row"><span class="k">议程</span><span class="v">清议时政·抗击阉党·整饬吏治</span></div>
-        <div class="gs-party-detail-row"><span class="k">骨干</span><span class="v">黄道周·刘宗周·姚希孟 等 12 人</span></div>
-        <div class="gs-party-detail-row"><span class="k">影响</span><span class="v"><span class="n">士大夫 +32</span> · 商贾 +14</span></div>
-        <div class="gs-party-detail-actions">
-          <button class="gs-party-detail-btn">召对首领</button>
-          <button class="gs-party-detail-btn">察其动向</button>
+      <!-- 朝代主题（全新）-->
+      <div class="gs-panel p-dyn">
+        <div class="gs-panel-hdr">
+          <div class="gs-panel-title">朝 代 主 题</div>
+          <span class="gs-panel-cnt">明·衰期</span>
+        </div>
+        <div class="gs-dyn-arc">
+          <span class="phase">衰 期</span>新帝登基·<span class="em">魏阉初除</span>·党争未息<br>
+          外有强虏·内多流民·<span class="warn">天象示警</span><br>
+          <span class="em">关键决断</span>：中兴之基在今朝
         </div>
       </div>
-      <div class="gs-party-detail-card yan">
-        <div class="gs-party-detail-name">宦 党 (残余)</div>
-        <div class="gs-party-detail-row"><span class="k">首领</span><span class="v">王体乾(暗)·已失势</span></div>
-        <div class="gs-party-detail-row"><span class="k">议程</span><span class="v">恢复内廷势力·报魏忠贤之仇</span></div>
-        <div class="gs-party-detail-row"><span class="k">状态</span><span class="v" style="color:var(--amber-400);">式微·暗中联络</span></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- 阶层（带展开）-->
-  <div class="gs-panel p-class">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">阶 层 动 静</div>
-      <div class="gs-panel-tools"><span class="gs-panel-cnt">6</span><button class="gs-panel-chev">⌄</button></div>
-    </div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--gold-400);">士</span><span class="gs-class-name">士大夫</span><span class="gs-class-pop">8%</span><span class="gs-class-mood stable">安</span></div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--celadon-400);">农</span><span class="gs-class-name">农民</span><span class="gs-class-pop">71%</span><span class="gs-class-mood unrest">躁</span></div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--amber-400);">工</span><span class="gs-class-name">工匠</span><span class="gs-class-pop">7%</span><span class="gs-class-mood stable">安</span></div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--indigo-400);">商</span><span class="gs-class-name">商贾</span><span class="gs-class-pop">4%</span><span class="gs-class-mood stable">安</span></div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--vermillion-400);">军</span><span class="gs-class-name">军户</span><span class="gs-class-pop">8%</span><span class="gs-class-mood angry">怨</span></div>
-    <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--purple-400);">宗</span><span class="gs-class-name">宗室</span><span class="gs-class-pop">2%</span><span class="gs-class-mood stable">安</span></div>
-  </div>
-
-  <!-- 军事（带展开示例）-->
-  <div class="gs-panel p-army expanded">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">军 事 要 务</div>
-      <div class="gs-panel-tools"><span class="gs-panel-cnt">4</span><button class="gs-panel-chev">⌄</button></div>
-    </div>
-    <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">关宁铁骑</div><div class="gs-army-loc">宁远 · 袁崇焕督</div></div><div style="text-align:right;"><div class="gs-army-size">9800</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:85%;"></div></div></div></div>
-    <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">宣府重兵</div><div class="gs-army-loc">宣府 · 卢象升督</div></div><div style="text-align:right;"><div class="gs-army-size">6400</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:78%;"></div></div></div></div>
-    <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">京营</div><div class="gs-army-loc">京师</div></div><div style="text-align:right;"><div class="gs-army-size">4200</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:62%;background:var(--amber-400);"></div></div></div></div>
-    <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">秦军</div><div class="gs-army-loc">西安 · 孙传庭</div></div><div style="text-align:right;"><div class="gs-army-size">3100</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:45%;background:var(--vermillion-400);"></div></div></div></div>
-    <div class="gs-panel-detail">
-      <div class="gs-army-detail-card">
-        <div class="gs-army-detail-name"><span>关宁铁骑 · 关宁锦防线</span><span style="color:var(--ink-500);font-size:9.5px;">丁亥秋驻</span></div>
-        <div class="gs-army-detail-grid">
-          <div class="gs-army-detail-mini"><span class="k">兵制</span><span class="v">募兵</span></div>
-          <div class="gs-army-detail-mini"><span class="k">编制</span><span class="v">骑兵 9800</span></div>
-          <div class="gs-army-detail-mini"><span class="k">装备</span><span class="v">三眼铳·铁甲</span></div>
-          <div class="gs-army-detail-mini"><span class="k">月饷</span><span class="v">3 万两</span></div>
-          <div class="gs-army-detail-mini"><span class="k">训练</span><span class="v">精</span></div>
-          <div class="gs-army-detail-mini"><span class="k">战绩</span><span class="v">宁远·宁锦捷</span></div>
-        </div>
-        <div class="gs-army-detail-actions">
-          <button class="gs-party-detail-btn">调 动</button>
-          <button class="gs-party-detail-btn">拨 饷</button>
-          <button class="gs-party-detail-btn">详 情</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 行政区划（新增）-->
-  <div class="gs-panel p-admin">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">行 政 区 划</div>
-      <div class="gs-panel-tools"><span class="gs-panel-cnt">17 省</span><button class="gs-panel-chev">⌄</button></div>
-    </div>
-    <div class="gs-admin-row crisis"><span class="gs-admin-dot"></span><span class="gs-admin-name">陕西</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">81</span></div>
-    <div class="gs-admin-row war"><span class="gs-admin-dot"></span><span class="gs-admin-name">辽东</span><span class="gs-admin-type">藩镇</span><span class="gs-admin-unrest">55</span></div>
-    <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">北直隶</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">28</span></div>
-    <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">南直隶</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">22</span></div>
-    <div class="gs-admin-row stable"><span class="gs-admin-dot"></span><span class="gs-admin-name">浙江</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">15</span></div>
-    <div class="gs-admin-row stable"><span class="gs-admin-dot"></span><span class="gs-admin-name">福建</span><span class="gs-admin-type">羁縻</span><span class="gs-admin-unrest">18</span></div>
-    <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">山东</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">45</span></div>
-    <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">河南</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">52</span></div>
-    <div class="gs-admin-row stable"><span class="gs-admin-dot"></span><span class="gs-admin-name">四川</span><span class="gs-admin-type">羁縻</span><span class="gs-admin-unrest">20</span></div>
-    <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">云贵</span><span class="gs-admin-type">土司</span><span class="gs-admin-unrest">48</span></div>
-  </div>
-
-  <!-- 科举进程 -->
-  <div class="gs-panel p-keju">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">科 举 进 程</div>
-      <span class="gs-panel-cnt">会试期</span>
-    </div>
-    <div class="gs-keju-time">
-      <div class="gs-keju-track"><div class="gs-keju-track-done" style="width:60%;"></div></div>
-      <div class="gs-keju-nodes"><div class="gs-keju-node done"></div><div class="gs-keju-node done"></div><div class="gs-keju-node current"></div><div class="gs-keju-node"></div><div class="gs-keju-node"></div></div>
-    </div>
-    <div class="gs-keju-labels"><span class="done">童 试</span><span class="done">乡 试</span><span class="current">会 试</span><span>殿 试</span><span>授 官</span></div>
-    <div class="gs-keju-sub"><span class="h">主考官</span> 温体仁·<span class="h">应试</span> 380 人·预放 48 名</div>
-  </div>
-
-  <!-- 家族 -->
-  <div class="gs-panel p-family">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">家 族 门 第</div>
-      <span class="gs-panel-cnt">22</span>
-    </div>
-    <div class="gs-fam-row"><span class="gs-fam-name">朱氏(宗室)</span><span class="gs-fam-tier gaomen">甲</span><span class="gs-fam-renown">98</span></div>
-    <div class="gs-fam-row"><span class="gs-fam-name">钱氏(常熟)</span><span class="gs-fam-tier gaomen">甲</span><span class="gs-fam-renown">82</span></div>
-    <div class="gs-fam-row"><span class="gs-fam-name">徐氏(上海)</span><span class="gs-fam-tier shizu">乙</span><span class="gs-fam-renown">75</span></div>
-    <div class="gs-fam-row"><span class="gs-fam-name">袁氏(东莞)</span><span class="gs-fam-tier shizu">乙</span><span class="gs-fam-renown">68</span></div>
-    <div class="gs-fam-row"><span class="gs-fam-name">毕氏(淄川)</span><span class="gs-fam-tier hanmen">丙</span><span class="gs-fam-renown">52</span></div>
-  </div>
-
-  <!-- 制度演进 -->
-  <div class="gs-panel p-tech">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">制 度 演 进</div>
-      <span class="gs-panel-cnt">4</span>
-    </div>
-    <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">火器改良</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:78%;"></span></span><span class="gs-tech-val">78</span></div>
-    <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">漕运整饬</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:52%;"></span></span><span class="gs-tech-val">52</span></div>
-    <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">考成法</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:35%;"></span></span><span class="gs-tech-val">35</span></div>
-    <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">一条鞭法</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:22%;"></span></span><span class="gs-tech-val">22</span></div>
-  </div>
-
-  <!-- 文物奇珍 -->
-  <div class="gs-panel p-item">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">文 物 奇 珍</div>
-      <span class="gs-panel-cnt">12</span>
-    </div>
-    <div class="gs-item-grid">
-      <div class="gs-item-slot r-jing" title="传国玉玺">玺<div class="tag"></div></div>
-      <div class="gs-item-slot r-gui" title="青铜祭鼎">鼎<div class="tag"></div></div>
-      <div class="gs-item-slot r-bi" title="宣德青花瓷">瓶<div class="tag"></div></div>
-      <div class="gs-item-slot r-chang">剑</div>
-      <div class="gs-item-slot r-gui">卷</div>
-      <div class="gs-item-slot r-chang">弓</div>
-      <div class="gs-item-slot r-bi">印</div>
-      <div class="gs-item-slot empty">—</div>
-    </div>
-  </div>
-
-  <!-- 后宫嫔御 -->
-  <div class="gs-panel p-harem">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">后 宫 嫔 御</div>
-      <span class="gs-panel-cnt">4</span>
-    </div>
-    <div class="gs-harem-row">
-      <div class="gs-consort empress"><div class="gs-consort-port">周</div><div class="gs-consort-name">周</div><div class="gs-consort-rank">皇后</div></div>
-      <div class="gs-consort guifei"><div class="gs-consort-port">田</div><div class="gs-consort-name">田</div><div class="gs-consort-rank">贵妃</div></div>
-      <div class="gs-consort fei"><div class="gs-consort-port">袁</div><div class="gs-consort-name">袁</div><div class="gs-consort-rank">淑妃</div></div>
-      <div class="gs-consort pin"><div class="gs-consort-port">王</div><div class="gs-consort-name">王</div><div class="gs-consort-rank">嫔</div></div>
-    </div>
-  </div>
-
-  <!-- 小地图 -->
-  <div class="gs-panel p-map">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">天 下 之 图</div>
-      <div class="gs-panel-tools"><button class="gs-panel-tool-btn">放大</button></div>
-    </div>
-    <div class="gs-mini-map">
-      <span class="gs-map-pin self" style="top:32%;left:48%;"></span>
-      <span class="gs-map-label" style="top:36%;left:44%;">京师</span>
-      <span class="gs-map-pin crisis" style="top:58%;left:28%;"></span>
-      <span class="gs-map-label" style="top:62%;left:22%;">陕西(旱)</span>
-      <span class="gs-map-pin war" style="top:26%;left:72%;"></span>
-      <span class="gs-map-label" style="top:22%;left:68%;">宁远</span>
-      <span class="gs-map-pin war" style="top:18%;left:58%;"></span>
-      <span class="gs-map-pin crisis" style="top:68%;left:58%;"></span>
-      <span class="gs-map-label" style="top:72%;left:54%;">张秋口</span>
-      <span class="gs-map-pin stable" style="top:78%;left:64%;"></span>
-      <span class="gs-map-label" style="top:82%;left:60%;">南京</span>
-    </div>
-  </div>
-
-  <!-- 帮助 -->
-  <div class="gs-panel p-help">
-    <div class="gs-panel-hdr">
-      <div class="gs-panel-title">帮 助 · 典 范</div>
-      <span class="gs-panel-cnt">4</span>
-    </div>
-    <div class="gs-help-item"><span class="ic">?</span><span class="t">新手入门</span><span class="arr">›</span></div>
-    <div class="gs-help-item"><span class="ic">典</span><span class="t">历代典范</span><span class="arr">›</span></div>
-    <div class="gs-help-item"><span class="ic">AI</span><span class="t">AI 推演原理</span><span class="arr">›</span></div>
-    <div class="gs-help-item"><span class="ic">键</span><span class="t">键位速查</span><span class="arr">›</span></div>
-  </div>
-
-  </div>
-</aside>
-
-<!-- 中栏 -->
-<div class="gs-center">
-  <div class="gs-breadcrumb">
-    <span>朝野要务</span>
-    <span class="sep">›</span>
-    <span>本朝纪要</span>
-    <span class="sep">›</span>
-    <span class="cur">史 记</span>
-    <div class="gs-breadcrumb-right">
-      <button class="gs-bc-btn">搜 寻</button>
-      <button class="gs-bc-btn">帮 助</button>
-    </div>
-  </div>
-
-  <div class="gs-tab-bar">
-    <div class="gs-tab-group" data-label="政　务">
-      <button class="gs-tab-btn"><span class="ic">◇</span>朝 政</button>
-      <button class="gs-tab-btn alert" data-badge="5"><span class="ic">◇</span>诏 令</button>
-      <button class="gs-tab-btn alert" data-badge="12"><span class="ic">◇</span>奏 疏</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>朝 议</button>
-    </div>
-    <div class="gs-tab-group" data-label="问　答">
-      <button class="gs-tab-btn"><span class="ic">◇</span>问 对</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>鸿 雁</button>
-    </div>
-    <div class="gs-tab-group" data-label="纪　录">
-      <button class="gs-tab-btn"><span class="ic">◇</span>编 年</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>起居注</button>
-      <button class="gs-tab-btn alert" data-badge="3"><span class="ic">◇</span>纪 事</button>
-      <button class="gs-tab-btn active"><span class="ic">◇</span>史 记</button>
-    </div>
-    <div class="gs-tab-group" data-label="臣　子">
-      <button class="gs-tab-btn"><span class="ic">◇</span>官 制</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>人物志</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>地 方</button>
-    </div>
-    <div class="gs-tab-group" data-label="文　考">
-      <button class="gs-tab-btn"><span class="ic">◇</span>文 苑</button>
-      <button class="gs-tab-btn"><span class="ic">◇</span>科 举</button>
-    </div>
-  </div>
-
-  <div class="gs-tab-content">
-    <div class="gs-toast">已载入编年 <span class="k">· 第 42 回</span></div>
-    <div class="gs-content-inner">
-      <div class="gs-sample-title">
-        <div class="main">史　记</div>
-        <div class="sub">君 临 天 下 · 编 年 纪 传 · 春 秋 笔 法</div>
-      </div>
-      <div class="gs-sample-grid">
-        <div class="gs-sample-card" style="--c:var(--gold-400);"><div class="lbl">本 朝 纪 要</div><div class="num">42</div><div class="sub">回合</div></div>
-        <div class="gs-sample-card" style="--c:var(--celadon-400);"><div class="lbl">要 事 纪 录</div><div class="num">186</div><div class="sub">事</div></div>
-        <div class="gs-sample-card" style="--c:var(--vermillion-400);"><div class="lbl">大 政 议 决</div><div class="num">87</div><div class="sub">议</div></div>
-        <div class="gs-sample-card" style="--c:var(--indigo-400);"><div class="lbl">名 臣 列 传</div><div class="num">32</div><div class="sub">传</div></div>
-      </div>
-      <div class="gs-sample-demo">
-        〈<span class="k">Tab 内容区</span>〉<br>
-        宣纸纹 · 朱砂印 · 金线双框 · 统一美术语言<br>
-        <span class="k">Breadcrumb 面包屑</span> · <span class="k">5 组 Tab 分栏</span> · <span class="k">成功 toast</span><br><br>
-        <span class="m">诏令</span>·<span class="m">奏疏</span>·<span class="m">问对</span>·<span class="m">鸿雁</span>·<span class="m">编年</span>·<span class="m">官制</span>·<span class="m">文苑</span>·<span class="m">起居注</span><br>
-        <span class="m">纪事</span>·<span class="m">史记</span>·<span class="m">地方</span>·<span class="m">人物志</span>·<span class="m">朝议</span>·<span class="m">科举</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 右栏 -->
-<aside class="gs-right">
-  <button class="gs-side-toggle right" title="折叠右栏">›</button>
-
-  <div class="gs-mini-icons">
-    <button class="gs-mini-icon-btn c-fac" title="朕亲">朕</button>
-    <button class="gs-mini-icon-btn c-class" title="时辰">辰</button>
-    <button class="gs-mini-icon-btn c-party" title="紧要之臣">臣</button>
-    <button class="gs-mini-icon-btn c-army" title="议题">议<span class="dot"></span></button>
-    <button class="gs-mini-icon-btn c-keju" title="关系网">人</button>
-    <button class="gs-mini-icon-btn c-fac" title="大志">志</button>
-  </div>
-
-  <div class="gs-right-scroll">
-
-    <!-- 朕 -->
-    <div class="gs-self-card">
-      <div class="gs-self-row">
-        <div class="gs-self-portrait">朱</div>
-        <div class="gs-self-info">
-          <div class="gs-self-name">朱由检</div>
-          <div class="gs-self-title">大 明 皇 帝　字 德 约</div>
-          <div class="gs-self-meta">
-            <span class="gs-self-tag">18岁</span>
-            <span class="gs-self-tag trait-pos">勤政</span>
-            <span class="gs-self-tag trait-pos">节俭</span>
-            <span class="gs-self-tag trait-neg">多疑</span>
-            <span class="gs-self-tag trait-neu">急躁</span>
+      <!-- 四时物候 -->
+      <div class="gs-panel p-weather">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">四 时 物 候</div><span class="gs-panel-cnt">秋分</span></div>
+        <div class="gs-weather-panel">
+          <div class="gs-season-disc"></div>
+          <div class="gs-season-info">
+            <div class="gs-season-row"><span class="k">天象</span><span class="v warn">秋旱</span></div>
+            <div class="gs-season-row"><span class="k">物候</span><span class="v">鸿雁南飞</span></div>
+            <div class="gs-season-row"><span class="k">农事</span><span class="v">收获·仓储</span></div>
+            <div class="gs-season-row"><span class="k">异象</span><span class="v danger">荧惑守心</span></div>
           </div>
         </div>
       </div>
-      <div class="gs-self-stats">
-        <div class="gs-stat zhi"><span class="gs-stat-k">智</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:82%;"></span></span><span class="gs-stat-v">82</span></div>
-        <div class="gs-stat zheng"><span class="gs-stat-k">政</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:74%;"></span></span><span class="gs-stat-v">74</span></div>
-        <div class="gs-stat jun"><span class="gs-stat-k">军</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:48%;"></span></span><span class="gs-stat-v">48</span></div>
-        <div class="gs-stat jiao"><span class="gs-stat-k">交</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:55%;"></span></span><span class="gs-stat-v">55</span></div>
-        <div class="gs-stat ren"><span class="gs-stat-k">仁</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:68%;"></span></span><span class="gs-stat-v">68</span></div>
-        <div class="gs-stat wei"><span class="gs-stat-k">威</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:68%;"></span></span><span class="gs-stat-v">68</span></div>
-      </div>
-      <div class="gs-self-wuchang">
-        <span class="lbl">五常</span>
-        <span class="gs-wc-dot hi">仁</span><span class="gs-wc-dot mid">义</span><span class="gs-wc-dot hi">礼</span><span class="gs-wc-dot hi">智</span><span class="gs-wc-dot mid">信</span>
-      </div>
-    </div>
 
-    <!-- 时辰 -->
-    <div class="gs-panel p-time">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">十 二 时 辰</div>
-        <span class="gs-panel-cnt">申时</span>
+      <!-- 势力 -->
+      <div class="gs-panel p-fac">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">势 力 格 局</div><div class="gs-panel-tools"><span class="gs-panel-cnt">5</span><button class="gs-panel-chev">⌄</button></div></div>
+        <div class="gs-fac-row f-ming"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">大明</div><div class="gs-fac-leader">朱由检·京师</div></div><span class="gs-fac-att friend">宗主</span><span class="gs-fac-str">78</span></div>
+        <div class="gs-fac-row f-houjin"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">后金</div><div class="gs-fac-leader">皇太极·盛京</div></div><span class="gs-fac-att hostile">敌对</span><span class="gs-fac-str">62</span></div>
+        <div class="gs-fac-row f-mongolia"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">蒙古诸部</div><div class="gs-fac-leader">林丹汗·察哈尔</div></div><span class="gs-fac-att neutral">中立</span><span class="gs-fac-str">48</span></div>
+        <div class="gs-fac-row f-liao"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">辽东</div><div class="gs-fac-leader">袁崇焕·宁远</div></div><span class="gs-fac-att vassal">臣属</span><span class="gs-fac-str">54</span></div>
+        <div class="gs-fac-row f-nan"><span class="gs-fac-color"></span><div class="gs-fac-info"><div class="gs-fac-name">南明遗老</div><div class="gs-fac-leader">钱谦益·南京</div></div><span class="gs-fac-att friend">友好</span><span class="gs-fac-str">31</span></div>
       </div>
-      <div class="gs-time-dial">
-        <div class="gs-time-mark" style="top:10%;left:50%;">子</div>
-        <div class="gs-time-mark" style="top:23%;left:82%;">卯</div>
-        <div class="gs-time-mark cur" style="top:50%;left:90%;">午</div>
-        <div class="gs-time-mark cur" style="top:77%;left:82%;">申</div>
-        <div class="gs-time-mark" style="top:90%;left:50%;">酉</div>
-        <div class="gs-time-mark" style="top:77%;left:18%;">戌</div>
-        <div class="gs-time-mark" style="top:50%;left:10%;">卯</div>
-        <div class="gs-time-mark" style="top:23%;left:18%;">丑</div>
-        <div class="gs-time-hand"></div>
-        <div class="gs-time-center"></div>
-      </div>
-      <div class="gs-time-text">
-        <div class="main">申 时 · 三 刻</div>
-        <div class="sub">日 昳 · 未 至 酉 将 明</div>
-      </div>
-    </div>
 
-    <!-- 紧要之臣 -->
-    <div class="gs-panel p-quick">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">紧 要 之 臣</div>
-        <div class="gs-panel-tools"><span class="gs-panel-cnt">7</span><button class="gs-panel-tool-btn">全</button></div>
+      <!-- 党派 -->
+      <div class="gs-panel p-party">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">党 派 纷 争</div><div class="gs-panel-tools"><span class="gs-panel-cnt">4</span><button class="gs-panel-chev">⌄</button></div></div>
+        <div class="gs-party-row"><span class="gs-party-name">东林党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:72%;background:var(--celadon-400);"></span></span><span class="gs-party-val">72</span></span></div>
+        <div class="gs-party-row"><span class="gs-party-name">宦党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:48%;background:var(--purple-400);"></span></span><span class="gs-party-val">48</span></span></div>
+        <div class="gs-party-row"><span class="gs-party-name">浙党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:35%;background:var(--indigo-400);"></span></span><span class="gs-party-val">35</span></span></div>
+        <div class="gs-party-row"><span class="gs-party-name">昆党</span><span class="gs-party-infl"><span class="gs-party-bar"><span class="gs-party-fill" style="width:22%;background:var(--amber-400);"></span></span><span class="gs-party-val">22</span></span></div>
       </div>
-      <div class="gs-chars-grid">
-        <div class="gs-char-card f-mili"><div class="gs-char-port">袁</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">袁崇焕</span><span class="gs-char-age">45</span><span class="gs-char-loy hi">忠 78</span></div><div class="gs-char-office">兵部尚书 · 督师蓟辽</div><div class="gs-char-ministat"><span class="gs-char-mini">军<span class="v">92</span></span><span class="gs-char-mini">智<span class="v">85</span></span><span class="gs-char-state new">请饷</span></div></div></div>
-        <div class="gs-char-card f-dongin"><div class="gs-char-port">钱</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">钱谦益</span><span class="gs-char-age">46</span><span class="gs-char-loy mid">忠 62</span></div><div class="gs-char-office">礼部尚书</div><div class="gs-char-ministat"><span class="gs-char-mini">智<span class="v">88</span></span><span class="gs-char-mini">政<span class="v">72</span></span></div></div></div>
-        <div class="gs-char-card f-kun"><div class="gs-char-port">温</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">温体仁</span><span class="gs-char-age">55</span><span class="gs-char-loy mid">忠 58</span></div><div class="gs-char-office">礼部侍郎</div><div class="gs-char-ministat"><span class="gs-char-mini">政<span class="v">78</span></span><span class="gs-char-mini">智<span class="v">80</span></span><span class="gs-char-state">谋算</span></div></div></div>
-        <div class="gs-char-card f-dongin"><div class="gs-char-port">毕</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">毕自严</span><span class="gs-char-age">60</span><span class="gs-char-loy hi">忠 82</span></div><div class="gs-char-office">户部尚书</div><div class="gs-char-ministat"><span class="gs-char-mini">政<span class="v">85</span></span><span class="gs-char-mini">管<span class="v">88</span></span></div></div></div>
-        <div class="gs-char-card f-mili"><div class="gs-char-port">卢</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">卢象升</span><span class="gs-char-age">29</span><span class="gs-char-loy hi">忠 85</span></div><div class="gs-char-office">宣大总督</div><div class="gs-char-ministat"><span class="gs-char-mini">军<span class="v">88</span></span><span class="gs-char-mini">勇<span class="v">90</span></span></div></div></div>
-        <div class="gs-char-card f-eunuch"><div class="gs-char-port">曹</div><div class="gs-char-info"><div class="gs-char-name-row"><span class="gs-char-name">曹化淳</span><span class="gs-char-age">39</span><span class="gs-char-loy mid">忠 68</span></div><div class="gs-char-office">司礼监秉笔 · 东厂</div><div class="gs-char-ministat"><span class="gs-char-mini">智<span class="v">72</span></span><span class="gs-char-mini">交<span class="v">76</span></span></div></div></div>
-      </div>
-    </div>
 
-    <!-- 关系网 -->
-    <div class="gs-panel p-rel">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">人 脉 关 系</div>
-        <div class="gs-panel-tools"><button class="gs-panel-tool-btn">详图</button></div>
+      <!-- 阶层 -->
+      <div class="gs-panel p-class">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">阶 层 动 静</div><div class="gs-panel-tools"><span class="gs-panel-cnt">6</span><button class="gs-panel-chev">⌄</button></div></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--gold-400);">士</span><span class="gs-class-name">士大夫</span><span class="gs-class-pop">8%</span><span class="gs-class-mood stable">安</span></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--celadon-400);">农</span><span class="gs-class-name">农民</span><span class="gs-class-pop">71%</span><span class="gs-class-mood unrest">躁</span></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--amber-400);">工</span><span class="gs-class-name">工匠</span><span class="gs-class-pop">7%</span><span class="gs-class-mood stable">安</span></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--indigo-400);">商</span><span class="gs-class-name">商贾</span><span class="gs-class-pop">4%</span><span class="gs-class-mood stable">安</span></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--vermillion-400);">军</span><span class="gs-class-name">军户</span><span class="gs-class-pop">8%</span><span class="gs-class-mood angry">怨</span></div>
+        <div class="gs-class-row"><span class="gs-class-icon" style="--c-c:var(--purple-400);">宗</span><span class="gs-class-name">宗室</span><span class="gs-class-pop">2%</span><span class="gs-class-mood stable">安</span></div>
       </div>
-      <div class="gs-rel-net">
-        <div class="gs-rel-edge friend" style="top:50%;left:50%;width:64px;transform:rotate(-55deg);"></div>
-        <div class="gs-rel-edge friend" style="top:50%;left:50%;width:56px;transform:rotate(42deg);"></div>
-        <div class="gs-rel-edge foe" style="top:50%;left:50%;width:68px;transform:rotate(170deg);"></div>
-        <div class="gs-rel-edge dashed" style="top:50%;left:50%;width:54px;transform:rotate(130deg);"></div>
-        <div class="gs-rel-edge friend" style="top:50%;left:50%;width:48px;transform:rotate(-130deg);"></div>
-        <div class="gs-rel-edge dashed" style="top:50%;left:50%;width:50px;transform:rotate(90deg);"></div>
-        <div class="gs-rel-node center" style="top:calc(50% - 14px);left:calc(50% - 14px);">朕</div>
-        <div class="gs-rel-node friend" style="top:20%;left:76%;">袁</div>
-        <div class="gs-rel-node friend" style="top:82%;left:72%;">毕</div>
-        <div class="gs-rel-node foe" style="top:38%;left:6%;">温</div>
-        <div class="gs-rel-node neutral" style="top:72%;left:14%;">钱</div>
-        <div class="gs-rel-node friend" style="top:12%;left:28%;">周</div>
-        <div class="gs-rel-node neutral" style="top:82%;left:40%;">曹</div>
-      </div>
-    </div>
 
-    <!-- 当前议题 -->
-    <div class="gs-panel p-issue">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">当 前 议 题</div>
-        <span class="gs-panel-cnt">5 要</span>
+      <!-- 军事 -->
+      <div class="gs-panel p-army">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">军 事 要 务</div><div class="gs-panel-tools"><span class="gs-panel-cnt">4</span><button class="gs-panel-chev">⌄</button></div></div>
+        <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">关宁铁骑</div><div class="gs-army-loc">宁远·袁崇焕督</div></div><div style="text-align:right;"><div class="gs-army-size">9800</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:85%;"></div></div></div></div>
+        <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">宣府重兵</div><div class="gs-army-loc">宣府·卢象升督</div></div><div style="text-align:right;"><div class="gs-army-size">6400</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:78%;"></div></div></div></div>
+        <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">京营</div><div class="gs-army-loc">京师</div></div><div style="text-align:right;"><div class="gs-army-size">4200</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:62%;background:var(--amber-400);"></div></div></div></div>
+        <div class="gs-army-row"><span class="gs-army-icon">⚔</span><div class="gs-army-info"><div class="gs-army-name">秦军</div><div class="gs-army-loc">西安·孙传庭</div></div><div style="text-align:right;"><div class="gs-army-size">3100</div><div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:45%;background:var(--vermillion-400);"></div></div></div></div>
       </div>
-      <div class="gs-issue-item urgent"><span class="gs-issue-num">一</span><span class="gs-issue-text"><span class="h">陕西大旱</span>·流民蜂起·请速发赈银</span><span class="gs-issue-time">即刻</span></div>
-      <div class="gs-issue-item urgent"><span class="gs-issue-num">二</span><span class="gs-issue-text"><span class="h">辽饷</span>是否加征·廷议待决</span><span class="gs-issue-time">本回</span></div>
-      <div class="gs-issue-item warn"><span class="gs-issue-num">三</span><span class="gs-issue-text"><span class="h">黄河</span>张秋口决·请调京营</span><span class="gs-issue-time">本回</span></div>
-      <div class="gs-issue-item warn"><span class="gs-issue-num">四</span><span class="gs-issue-text">南科<span class="h">举额</span>增减·礼部请裁</span><span class="gs-issue-time">近日</span></div>
-      <div class="gs-issue-item info"><span class="gs-issue-num">五</span><span class="gs-issue-text">内阁<span class="h">值班</span>轮替·吏部拟</span><span class="gs-issue-time">待办</span></div>
-    </div>
 
-    <!-- 大志 -->
-    <div class="gs-panel p-goal">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">朕 之 大 志</div>
-        <span class="gs-panel-cnt">3 纲</span>
+      <!-- 行政区划 -->
+      <div class="gs-panel p-admin">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">行 政 区 划</div><div class="gs-panel-tools"><span class="gs-panel-cnt">17省</span><button class="gs-panel-chev">⌄</button></div></div>
+        <div class="gs-admin-row crisis"><span class="gs-admin-dot"></span><span class="gs-admin-name">陕西</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">81</span></div>
+        <div class="gs-admin-row war"><span class="gs-admin-dot"></span><span class="gs-admin-name">辽东</span><span class="gs-admin-type">藩镇</span><span class="gs-admin-unrest">55</span></div>
+        <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">北直隶</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">28</span></div>
+        <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">南直隶</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">22</span></div>
+        <div class="gs-admin-row stable"><span class="gs-admin-dot"></span><span class="gs-admin-name">浙江</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">15</span></div>
+        <div class="gs-admin-row stable"><span class="gs-admin-dot"></span><span class="gs-admin-name">福建</span><span class="gs-admin-type">羁縻</span><span class="gs-admin-unrest">18</span></div>
+        <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">山东</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">45</span></div>
+        <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">河南</span><span class="gs-admin-type">直辖</span><span class="gs-admin-unrest">52</span></div>
+        <div class="gs-admin-row"><span class="gs-admin-dot"></span><span class="gs-admin-name">云贵</span><span class="gs-admin-type">土司</span><span class="gs-admin-unrest">48</span></div>
       </div>
-      <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">中 兴 大 明</span><span class="gs-goal-prio">甲</span></div><div class="gs-goal-desc">内清党争·外御强虏·十载之内，使帑廪充盈、民心归附。</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:28%;"></div></div></div>
-      <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">平 辽 事</span><span class="gs-goal-prio" style="color:var(--vermillion-400);border-color:var(--vermillion-400);">急</span></div><div class="gs-goal-desc">收复锦州·辽阳·沈阳三镇，擒皇太极于盛京。</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:12%;"></div></div></div>
-      <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">清 理 阉 党</span><span class="gs-goal-prio">甲</span></div><div class="gs-goal-desc">魏忠贤已诛·余孽未尽·当使忠良复进。</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:62%;"></div></div></div>
-    </div>
 
-    <!-- 岁入岁出 -->
-    <div class="gs-panel p-finance">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">岁 入 岁 出</div>
-        <span class="gs-panel-cnt">近 6 月</span>
-      </div>
-      <div class="gs-fin-chart">
-        <div class="gs-fin-bars">
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar income" style="height:70%;"></div></div><div class="gs-fin-lbl">四</div></div>
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar expense" style="height:62%;"></div></div><div class="gs-fin-lbl">四</div></div>
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar income" style="height:82%;"></div></div><div class="gs-fin-lbl">五</div></div>
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar expense" style="height:88%;"></div></div><div class="gs-fin-lbl">五</div></div>
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar income" style="height:75%;"></div></div><div class="gs-fin-lbl">六</div></div>
-          <div class="gs-fin-group"><div class="gs-fin-bar-stack"><div class="gs-fin-bar expense" style="height:92%;"></div></div><div class="gs-fin-lbl">六</div></div>
+      <!-- 科举 -->
+      <div class="gs-panel p-keju">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">科 举 进 程</div><span class="gs-panel-cnt">会试期</span></div>
+        <div class="gs-keju-time">
+          <div class="gs-keju-track"><div class="gs-keju-track-done" style="width:60%;"></div></div>
+          <div class="gs-keju-nodes"><div class="gs-keju-node done"></div><div class="gs-keju-node done"></div><div class="gs-keju-node current"></div><div class="gs-keju-node"></div><div class="gs-keju-node"></div></div>
         </div>
-        <div class="gs-fin-legend"><span class="in">岁 入</span><span class="out">岁 出</span></div>
+        <div class="gs-keju-labels"><span class="done">童 试</span><span class="done">乡 试</span><span class="current">会 试</span><span>殿 试</span><span>授 官</span></div>
+        <div class="gs-keju-sub"><span class="h">主考官</span> 温体仁·<span class="h">应试</span> 380人</div>
+      </div>
+
+      <!-- 家族 -->
+      <div class="gs-panel p-family">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">家 族 门 第</div><span class="gs-panel-cnt">22</span></div>
+        <div class="gs-fam-row"><span class="gs-fam-name">朱氏(宗室)</span><span class="gs-fam-tier gaomen">甲</span><span class="gs-fam-renown">98</span></div>
+        <div class="gs-fam-row"><span class="gs-fam-name">钱氏(常熟)</span><span class="gs-fam-tier gaomen">甲</span><span class="gs-fam-renown">82</span></div>
+        <div class="gs-fam-row"><span class="gs-fam-name">徐氏(上海)</span><span class="gs-fam-tier shizu">乙</span><span class="gs-fam-renown">75</span></div>
+        <div class="gs-fam-row"><span class="gs-fam-name">袁氏(东莞)</span><span class="gs-fam-tier shizu">乙</span><span class="gs-fam-renown">68</span></div>
+        <div class="gs-fam-row"><span class="gs-fam-name">毕氏(淄川)</span><span class="gs-fam-tier hanmen">丙</span><span class="gs-fam-renown">52</span></div>
+      </div>
+
+      <!-- 制度 -->
+      <div class="gs-panel p-tech">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">制 度 演 进</div><span class="gs-panel-cnt">4</span></div>
+        <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">火器改良</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:78%;"></span></span><span class="gs-tech-val">78</span></div>
+        <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">漕运整饬</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:52%;"></span></span><span class="gs-tech-val">52</span></div>
+        <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">考成法</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:35%;"></span></span><span class="gs-tech-val">35</span></div>
+        <div class="gs-tech-row"><span class="gs-tech-icon">⚙</span><span class="gs-tech-name">一条鞭法</span><span class="gs-tech-prog"><span class="gs-tech-prog-fill" style="width:22%;"></span></span><span class="gs-tech-val">22</span></div>
+      </div>
+
+      <!-- 文物 -->
+      <div class="gs-panel p-item">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">文 物 奇 珍</div><span class="gs-panel-cnt">12</span></div>
+        <div class="gs-item-grid">
+          <div class="gs-item-slot r-jing" title="传国玉玺">玺<div class="tag"></div></div>
+          <div class="gs-item-slot r-gui" title="青铜祭鼎">鼎<div class="tag"></div></div>
+          <div class="gs-item-slot r-bi" title="宣德青花瓷">瓶<div class="tag"></div></div>
+          <div class="gs-item-slot r-chang">剑</div>
+          <div class="gs-item-slot r-gui">卷</div>
+          <div class="gs-item-slot r-chang">弓</div>
+          <div class="gs-item-slot r-bi">印</div>
+          <div class="gs-item-slot empty">—</div>
+        </div>
+      </div>
+
+      <!-- 后宫 -->
+      <div class="gs-panel p-harem">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">后 宫 嫔 御</div><span class="gs-panel-cnt">4</span></div>
+        <div class="gs-harem-row">
+          <div class="gs-consort empress"><div class="gs-consort-port">周</div><div class="gs-consort-name">周</div><div class="gs-consort-rank">皇后</div></div>
+          <div class="gs-consort guifei"><div class="gs-consort-port">田</div><div class="gs-consort-name">田</div><div class="gs-consort-rank">贵妃</div></div>
+          <div class="gs-consort fei"><div class="gs-consort-port">袁</div><div class="gs-consort-name">袁</div><div class="gs-consort-rank">淑妃</div></div>
+          <div class="gs-consort pin"><div class="gs-consort-port">王</div><div class="gs-consort-name">王</div><div class="gs-consort-rank">嫔</div></div>
+        </div>
+      </div>
+
+      <!-- 天下图 -->
+      <div class="gs-panel p-map">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">天 下 之 图</div><div class="gs-panel-tools"><button class="gs-panel-tool-btn">放大</button></div></div>
+        <div class="gs-mini-map">
+          <span class="gs-map-pin self" style="top:32%;left:48%;"></span><span class="gs-map-label" style="top:36%;left:44%;">京师</span>
+          <span class="gs-map-pin crisis" style="top:58%;left:28%;"></span><span class="gs-map-label" style="top:62%;left:22%;">陕西(旱)</span>
+          <span class="gs-map-pin war" style="top:26%;left:72%;"></span><span class="gs-map-label" style="top:22%;left:68%;">宁远</span>
+          <span class="gs-map-pin war" style="top:18%;left:58%;"></span>
+          <span class="gs-map-pin crisis" style="top:68%;left:58%;"></span><span class="gs-map-label" style="top:72%;left:54%;">张秋口</span>
+          <span class="gs-map-pin stable" style="top:78%;left:64%;"></span><span class="gs-map-label" style="top:82%;left:60%;">南京</span>
+        </div>
+      </div>
+
+      <!-- 主题（全新·swatch选色 + 视效）-->
+      <div class="gs-panel p-theme">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">界 面 主 题</div><span class="gs-panel-cnt">4 种</span></div>
+        <div class="gs-theme-grid">
+          <div class="gs-theme-card t-plain active">
+            <div class="gs-theme-swatch">
+              <span class="c" style="background:#b89a53;"></span>
+              <span class="c" style="background:#c9a85f;"></span>
+              <span class="c" style="background:#6a9a7f;"></span>
+              <span class="c" style="background:#b84738;"></span>
+            </div>
+            <div class="gs-theme-name">素 纸</div>
+            <div class="desc">宣纸金线 · 朱砂</div>
+          </div>
+          <div class="gs-theme-card t-ink">
+            <div class="gs-theme-swatch">
+              <span class="c" style="background:#3d342a;"></span>
+              <span class="c" style="background:#6b5d47;"></span>
+              <span class="c" style="background:#a69470;"></span>
+              <span class="c" style="background:#d9c9a9;"></span>
+            </div>
+            <div class="gs-theme-name">水 墨</div>
+            <div class="desc">墨分五色 · 冷调</div>
+          </div>
+          <div class="gs-theme-card t-vermil">
+            <div class="gs-theme-swatch">
+              <span class="c" style="background:#8f3428;"></span>
+              <span class="c" style="background:#b84738;"></span>
+              <span class="c" style="background:#d15c47;"></span>
+              <span class="c" style="background:#c9a85f;"></span>
+            </div>
+            <div class="gs-theme-name">朱 砂</div>
+            <div class="desc">浓朱重赤 · 烈</div>
+          </div>
+          <div class="gs-theme-card t-celadon">
+            <div class="gs-theme-swatch">
+              <span class="c" style="background:#4a7a5f;"></span>
+              <span class="c" style="background:#6a9a7f;"></span>
+              <span class="c" style="background:#b89a53;"></span>
+              <span class="c" style="background:#d9c9a9;"></span>
+            </div>
+            <div class="gs-theme-name">青 绿</div>
+            <div class="desc">青绿山水 · 雅</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 音声（全新）-->
+      <div class="gs-panel p-audio">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">音 声 调 度</div><span class="gs-panel-cnt">开</span></div>
+        <div class="gs-audio-row">
+          <span class="gs-audio-name">殿 乐</span>
+          <div class="gs-audio-ctrl">
+            <div class="gs-audio-slider" style="--p:70%;"></div>
+            <span class="gs-audio-val">70</span>
+          </div>
+        </div>
+        <div class="gs-audio-row">
+          <span class="gs-audio-name">朝 钟</span>
+          <div class="gs-audio-ctrl">
+            <div class="gs-audio-slider" style="--p:45%;"></div>
+            <span class="gs-audio-val">45</span>
+          </div>
+        </div>
+        <div class="gs-audio-row">
+          <span class="gs-audio-name">笔 墨</span>
+          <div class="gs-audio-ctrl">
+            <div class="gs-audio-slider" style="--p:60%;"></div>
+            <span class="gs-audio-val">60</span>
+          </div>
+        </div>
+        <div class="gs-audio-now">正 奏：<span class="h">《秋声赋》</span>·古琴独奏</div>
+      </div>
+
+      <!-- 帮助 -->
+      <div class="gs-panel p-help">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">帮 助 · 典 范</div><span class="gs-panel-cnt">4</span></div>
+        <div class="gs-help-item"><span class="ic">?</span><span class="t">新 手 入 门</span><span class="arr">›</span></div>
+        <div class="gs-help-item"><span class="ic">典</span><span class="t">历 代 典 范</span><span class="arr">›</span></div>
+        <div class="gs-help-item"><span class="ic">AI</span><span class="t">AI 推 演 原 理</span><span class="arr">›</span></div>
+        <div class="gs-help-item"><span class="ic">键</span><span class="t">键 位 速 查</span><span class="arr">›</span></div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- 中栏 -->
+  <div class="gs-center">
+    <div class="gs-breadcrumb">
+      <span>朝野要务</span><span class="sep">›</span><span>本朝纪要</span><span class="sep">›</span><span class="cur">史 记</span>
+      <div class="gs-breadcrumb-right">
+        <button class="gs-bc-btn">搜 寻</button>
+        <button class="gs-bc-btn">帮 助</button>
       </div>
     </div>
 
-    <!-- 近事 -->
-    <div class="gs-panel p-news">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">近 事 快 报</div>
-        <span class="gs-panel-cnt">本回 8</span>
+    <div class="gs-tab-bar">
+      <div class="gs-tab-group" data-label="政　务">
+        <button class="gs-tab-btn"><span class="ic">◇</span>朝 政</button>
+        <button class="gs-tab-btn alert" data-badge="5"><span class="ic">◇</span>诏 令</button>
+        <button class="gs-tab-btn alert" data-badge="12"><span class="ic">◇</span>奏 疏</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>朝 议</button>
       </div>
-      <div class="gs-news-item edict"><span class="t">辰时</span><span class="body"><span class="h">蠲免灾区诏</span>已颁</span></div>
-      <div class="gs-news-item memo"><span class="t">巳时</span><span class="body"><span class="h">袁崇焕</span>奏请增饷三万</span></div>
-      <div class="gs-news-item chaoyi"><span class="t">午时</span><span class="body">廷议辽饷·党争不决</span></div>
-      <div class="gs-news-item letter"><span class="t">未时</span><span class="body">致<span class="h">卢象升</span>密旨发</span></div>
-      <div class="gs-news-item person"><span class="t">申时</span><span class="body"><span class="h">周延儒</span>升户部侍郎</span></div>
+      <div class="gs-tab-group" data-label="问　答">
+        <button class="gs-tab-btn"><span class="ic">◇</span>问 对</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>鸿 雁</button>
+      </div>
+      <div class="gs-tab-group" data-label="纪　录">
+        <button class="gs-tab-btn"><span class="ic">◇</span>编 年</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>起居注</button>
+        <button class="gs-tab-btn alert" data-badge="3"><span class="ic">◇</span>纪 事</button>
+        <button class="gs-tab-btn active"><span class="ic">◇</span>史 记</button>
+      </div>
+      <div class="gs-tab-group" data-label="臣　子">
+        <button class="gs-tab-btn"><span class="ic">◇</span>官 制</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>人物志</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>地 方</button>
+      </div>
+      <div class="gs-tab-group" data-label="文　考">
+        <button class="gs-tab-btn"><span class="ic">◇</span>文 苑</button>
+        <button class="gs-tab-btn"><span class="ic">◇</span>科 举</button>
+      </div>
     </div>
 
-    <!-- 风闻 -->
-    <div class="gs-panel p-rumor">
-      <div class="gs-panel-hdr">
-        <div class="gs-panel-title">风 闻 坊 录</div>
-        <span class="gs-panel-cnt">4</span>
-      </div>
-      <div class="gs-rumor-item">近察京师谣传"龙种在外"，恐有宵小借此构衅。<span class="cred">·中</span></div>
-      <div class="gs-rumor-item">江南士子私议：辽饷加征，民力已竭。<span class="cred">·高</span></div>
-      <div class="gs-rumor-item">秦地流民据传已聚万人，渭南有异动。<span class="cred">·高</span></div>
-      <div class="gs-rumor-item">温阁老府中近来门客频集，恐有密谋。<span class="cred">·低</span></div>
-    </div>
+    <div class="gs-tab-content">
+      <div class="gs-toast">已载入编年 <span class="k">· 第 42 回</span></div>
+      <!-- 只在默认态显两个 hint -->
+      <div class="gs-hint left">◀ 势 · 党 · 阶 · 军 · 政</div>
+      <div class="gs-hint right">朕 · 臣 · 议 · 推 演 ▶</div>
 
-    <!-- 精力 -->
-    <div class="gs-energy">
-      <div class="gs-energy-hdr">
-        <span class="gs-energy-lbl">精 力 气 血</span>
-        <span class="gs-energy-val">68 <span class="max">/ 100</span></span>
+      <div class="gs-content-inner">
+        <div class="gs-sample-title">
+          <div class="main">史　记</div>
+          <div class="sub">君 临 天 下 · 编 年 纪 传 · 春 秋 笔 法</div>
+        </div>
+        <div class="gs-sample-grid">
+          <div class="gs-sample-card" style="--c:var(--gold-400);"><div class="lbl">本 朝 纪 要</div><div class="num">42</div><div class="sub">回合</div></div>
+          <div class="gs-sample-card" style="--c:var(--celadon-400);"><div class="lbl">要 事 纪 录</div><div class="num">186</div><div class="sub">事</div></div>
+          <div class="gs-sample-card" style="--c:var(--vermillion-400);"><div class="lbl">大 政 议 决</div><div class="num">87</div><div class="sub">议</div></div>
+          <div class="gs-sample-card" style="--c:var(--indigo-400);"><div class="lbl">名 臣 列 传</div><div class="num">32</div><div class="sub">传</div></div>
+        </div>
+        <div class="gs-sample-demo">
+          <span class="big">默 认 态 · 中 间 标 签 页 全 宽</span><br><br>
+          两 侧 仅 显 纵 列 <span class="k">小 印 按 钮 rail</span>（宽 44px）<br>
+          点 <span class="k">侧 印</span> 或 顶 角 小 箭 展 开 相 应 面 板 · 再 点 折 回<br>
+          <span class="k">默 认 最 小 化 · 聚 焦 中 栏 · 所 有 面 板 按 需 调 阅</span><br><br>
+          <span class="m">鸿雁</span>·<span class="m">编年</span>·<span class="m">官制</span>·<span class="m">文苑</span>·<span class="m">起居注</span>·<span class="m">纪事</span>·<span class="m">史记</span>·<span class="m">地方</span>·<span class="m">人物志</span>·<span class="m">朝议</span>·<span class="m">科举</span>
+        </div>
       </div>
-      <div class="gs-energy-bar"><div class="gs-energy-fill" style="width:68%;"></div></div>
-      <div class="gs-energy-tick"><span>疲</span><span>可议 3</span><span>充</span></div>
     </div>
-
   </div>
 
-  <!-- 右栏底部固定：推演 + 快速操作 -->
-  <div class="gs-turn-zone">
-    <div class="gs-turn-fab">
-      <button class="gs-fab-btn" data-tip="拟诏">✎</button>
-      <button class="gs-fab-btn" data-tip="发信">✉</button>
-      <button class="gs-fab-btn" data-tip="召对">❋</button>
-      <button class="gs-fab-btn" data-tip="朝议">☰</button>
-      <button class="gs-fab-btn" data-tip="赏赐">◆</button>
-      <button class="gs-fab-btn" data-tip="校阅">❖</button>
+  <!-- 右栏 -->
+  <aside class="gs-right has-turn">
+    <!-- 折叠态：icon rail + 推演红印常显 -->
+    <div class="gs-rail">
+      <button class="gs-rail-btn c-self" title="朕亲" onclick="document.getElementById('body').className='gs-body right-open'">朕</button>
+      <button class="gs-rail-btn c-time" title="时辰" onclick="document.getElementById('body').className='gs-body right-open'">辰</button>
+      <button class="gs-rail-btn c-class" title="紧要之臣" onclick="document.getElementById('body').className='gs-body right-open'">臣</button>
+      <button class="gs-rail-btn c-issue" title="当前议题" onclick="document.getElementById('body').className='gs-body right-open'">议<span class="dot"></span></button>
+      <button class="gs-rail-btn c-goal" title="大志" onclick="document.getElementById('body').className='gs-body right-open'">志</button>
+      <button class="gs-rail-btn c-fin" title="岁入岁出" onclick="document.getElementById('body').className='gs-body right-open'">帑</button>
+      <button class="gs-rail-btn c-news" title="近事" onclick="document.getElementById('body').className='gs-body right-open'">讯</button>
+      <button class="gs-rail-btn c-rumor" title="风闻" onclick="document.getElementById('body').className='gs-body right-open'">闻</button>
+      <div style="flex:1;min-height:16px;"></div>
+      <button class="gs-rail-btn c-turn" title="推演本回" style="width:36px;height:50px;border-radius:4px;font-size:10px;line-height:1.2;font-weight:bold;">推<br>演</button>
     </div>
-    <div class="gs-turn-summary">已下诏 <span class="hl">2</span>道 · 批奏 <span class="hl">4</span>封 · <span class="warn">3</span>件要务待办</div>
-    <button class="gs-turn-big">推　演　本　回<span class="sub">朕 意 已 决　可 休 憩 矣</span></button>
-  </div>
 
-</aside>
+    <!-- 展开态滚动区 + 底部推演 -->
+    <div class="gs-drawer">
+      <button class="gs-side-toggle" title="折叠" onclick="document.getElementById('body').className=document.getElementById('body').className.replace('right-open','').trim()||'gs-body'">›</button>
+
+      <div class="gs-self-card">
+        <div class="gs-self-row">
+          <div class="gs-self-portrait">朱</div>
+          <div class="gs-self-info">
+            <div class="gs-self-name">朱由检</div>
+            <div class="gs-self-title">大 明 皇 帝　字 德 约</div>
+            <div class="gs-self-meta">
+              <span class="gs-self-tag">18岁</span>
+              <span class="gs-self-tag trait-pos">勤政</span>
+              <span class="gs-self-tag trait-pos">节俭</span>
+              <span class="gs-self-tag trait-neg">多疑</span>
+              <span class="gs-self-tag trait-neu">急躁</span>
+            </div>
+          </div>
+        </div>
+        <div class="gs-self-stats">
+          <div class="gs-stat zhi"><span class="gs-stat-k">智</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:82%;"></span></span><span class="gs-stat-v">82</span></div>
+          <div class="gs-stat zheng"><span class="gs-stat-k">政</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:74%;"></span></span><span class="gs-stat-v">74</span></div>
+          <div class="gs-stat jun"><span class="gs-stat-k">军</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:48%;"></span></span><span class="gs-stat-v">48</span></div>
+          <div class="gs-stat jiao"><span class="gs-stat-k">交</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:55%;"></span></span><span class="gs-stat-v">55</span></div>
+          <div class="gs-stat ren"><span class="gs-stat-k">仁</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:68%;"></span></span><span class="gs-stat-v">68</span></div>
+          <div class="gs-stat wei"><span class="gs-stat-k">威</span><span class="gs-stat-bar"><span class="gs-stat-fill" style="width:68%;"></span></span><span class="gs-stat-v">68</span></div>
+        </div>
+        <div class="gs-self-wuchang">
+          <span class="lbl">五常</span>
+          <span class="gs-wc-dot hi">仁</span><span class="gs-wc-dot mid">义</span><span class="gs-wc-dot hi">礼</span><span class="gs-wc-dot hi">智</span><span class="gs-wc-dot mid">信</span>
+        </div>
+      </div>
+
+      <div class="gs-panel p-time">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">十 二 时 辰</div><span class="gs-panel-cnt">申时</span></div>
+        <div class="gs-time-dial">
+          <div class="gs-time-mark" style="top:10%;left:50%;">子</div>
+          <div class="gs-time-mark" style="top:23%;left:82%;">卯</div>
+          <div class="gs-time-mark cur" style="top:50%;left:90%;">午</div>
+          <div class="gs-time-mark cur" style="top:77%;left:82%;">申</div>
+          <div class="gs-time-mark" style="top:90%;left:50%;">酉</div>
+          <div class="gs-time-mark" style="top:77%;left:18%;">戌</div>
+          <div class="gs-time-mark" style="top:50%;left:10%;">卯</div>
+          <div class="gs-time-mark" style="top:23%;left:18%;">丑</div>
+          <div class="gs-time-hand"></div>
+          <div class="gs-time-center"></div>
+        </div>
+        <div class="gs-time-text">
+          <div class="main">申 时 · 三 刻</div>
+          <div class="sub">日 昳 · 未 至 酉 将 明</div>
+        </div>
+      </div>
+
+      <div class="gs-panel p-issue">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">当 前 议 题</div><span class="gs-panel-cnt">5 要</span></div>
+        <div class="gs-issue-item urgent"><span class="gs-issue-num">一</span><span class="gs-issue-text"><span class="h">陕西大旱</span>·流民蜂起</span><span class="gs-issue-time">即刻</span></div>
+        <div class="gs-issue-item urgent"><span class="gs-issue-num">二</span><span class="gs-issue-text"><span class="h">辽饷</span>加征·廷议</span><span class="gs-issue-time">本回</span></div>
+        <div class="gs-issue-item warn"><span class="gs-issue-num">三</span><span class="gs-issue-text"><span class="h">黄河</span>张秋口决</span><span class="gs-issue-time">本回</span></div>
+        <div class="gs-issue-item warn"><span class="gs-issue-num">四</span><span class="gs-issue-text">南科<span class="h">举额</span>增减</span><span class="gs-issue-time">近日</span></div>
+        <div class="gs-issue-item info"><span class="gs-issue-num">五</span><span class="gs-issue-text">内阁<span class="h">值班</span>轮替</span><span class="gs-issue-time">待办</span></div>
+      </div>
+
+      <div class="gs-panel p-goal">
+        <div class="gs-panel-hdr"><div class="gs-panel-title">朕 之 大 志</div><span class="gs-panel-cnt">3 纲</span></div>
+        <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">中 兴 大 明</span><span class="gs-goal-prio">甲</span></div><div class="gs-goal-desc">内清党争·外御强虏</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:28%;"></div></div></div>
+        <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">平 辽 事</span><span class="gs-goal-prio" style="color:var(--vermillion-400);border-color:var(--vermillion-400);">急</span></div><div class="gs-goal-desc">收复锦州·辽阳·沈阳</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:12%;"></div></div></div>
+        <div class="gs-goal-item"><div class="gs-goal-hdr"><span class="gs-goal-title">清 理 阉 党</span><span class="gs-goal-prio">甲</span></div><div class="gs-goal-desc">魏忠贤已诛·余孽未尽</div><div class="gs-goal-prog"><div class="gs-goal-prog-fill" style="width:62%;"></div></div></div>
+      </div>
+
+      <div class="gs-energy">
+        <div class="gs-energy-hdr"><span class="gs-energy-lbl">精 力 气 血</span><span class="gs-energy-val">68 <span class="max">/ 100</span></span></div>
+        <div class="gs-energy-bar"><div class="gs-energy-fill" style="width:68%;"></div></div>
+        <div class="gs-energy-tick"><span>疲</span><span>可议 3</span><span>充</span></div>
+      </div>
+
+    </div>
+
+    <!-- 右栏底部固定推演区 -->
+    <div class="gs-turn-zone">
+      <div class="gs-turn-fab">
+        <button class="gs-fab-btn" data-tip="拟诏">✎</button>
+        <button class="gs-fab-btn" data-tip="发信">✉</button>
+        <button class="gs-fab-btn" data-tip="召对">❋</button>
+        <button class="gs-fab-btn" data-tip="朝议">☰</button>
+        <button class="gs-fab-btn" data-tip="赏赐">◆</button>
+        <button class="gs-fab-btn" data-tip="校阅">❖</button>
+      </div>
+      <div class="gs-turn-summary">已下诏 <span class="hl">2</span>道 · 批奏 <span class="hl">4</span>封 · <span class="warn">3</span>要务待办</div>
+      <button class="gs-turn-big">推　演　本　回<span class="sub">朕 意 已 决　可 休 憩 矣</span></button>
+    </div>
+
+  </aside>
 
 </div>
 
@@ -1184,21 +1024,22 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
     <div class="gs-status-item"><span class="k">存档</span><span class="v">崇祯元年秋分</span></div>
     <div class="gs-status-item"><span class="k">回合</span><span class="v">42 · 秋 9 月</span></div>
   </div>
-  <div class="gs-status-tip">〘 提示 〙 长按<kbd>空格</kbd>预览朝臣立场；<kbd>Ctrl</kbd>+<kbd>S</kbd>速存</div>
+  <div class="gs-status-tip">〘 提示 〙 两 栏 默 认 最 小 化 · 点 侧 印 或 顶 角 箭 头 展 开</div>
   <div class="gs-status-right">
     <div class="gs-status-shortcut"><kbd>Ctrl</kbd>+<kbd>1..9</kbd> 切 tab</div>
-    <div class="gs-status-shortcut"><kbd>[</kbd>／<kbd>]</kbd> 折叠栏</div>
+    <div class="gs-status-shortcut"><kbd>[</kbd>／<kbd>]</kbd> 折叠 栏</div>
     <div class="gs-status-shortcut"><kbd>F1</kbd> 帮助</div>
     <div class="gs-status-shortcut"><kbd>Esc</kbd> 返回</div>
   </div>
 </div>
 
 <div class="legend">
-  <span class="k">顶栏</span> 天命印＋问天金字＋朝代干支＋秋分气候＋7 变量 chip（<span class="m">吏治警</span>）＋已存＋<span class="k">素／墨主题切换</span>＋AI 指示灯＋办/讯徽标＋帮按钮。<br>
-  <span class="k">左栏 300px·可折叠为 42px 纵列图标</span>：自定义滚动条（金渐变）；四时物候／势力／党派（<span class="k">chevron 可展开</span>显首领+议程+骨干+影响+召对动向按钮）／阶层／军事（<span class="k">可展开</span>显兵制+编制+装备+月饷+战绩+调动拨饷详情）／<span class="k">行政区划 17 省</span>（圆点色：危机朱脉冲／战事琥／安定青／普通；直辖/藩镇/羁縻/土司 tag；不安定度）／科举 timeline／家族／制度演进／文物／后宫／天下之图／<span class="k">帮助·典范</span>（新手入门·历代典范·AI 原理·键位速查）。<br>
-  <span class="k">中栏</span> 面包屑＋5 组 Tab 分栏＋内容＋toast。<br>
-  <span class="k">右栏 340px·可折叠</span>：上部滚动区（朕亲＋时辰＋紧要之臣＋关系网＋议题＋大志＋岁入岁出＋近事＋风闻＋精力）／<span class="k">下部固定推演区</span>——快速操作 6 圆＋摘要条＋<span class="m">"推演本回"朱砂大按钮全宽</span>（避让底部状态栏）。<br>
-  <span class="k">折叠态</span>：仅留纵列小印按钮（势党阶军政科图帮），红点提示未读；侧栏切换用 <kbd>[</kbd>／<kbd>]</kbd>。
+  <span class="k">默认布局 = 中栏全宽 + 两侧 44px icon rail</span>——<span class="m">点顶部模式按钮</span>切换四种布局态演示。<br>
+  <span class="k">Rail 小印按钮</span>：左 12 枚(势党阶军政科物宫图题声帮)+右 9 枚(朕辰臣议志帑讯闻+<span class="m">推演大印常显</span>)，悬停脉冲发光、红点提示紧急。<br>
+  <span class="k">展开态 drawer</span>：金渐变自定义滚动条；侧顶角标 ‹/› 折叠键。<br>
+  <span class="k">新增左栏面板</span>：<span class="p">朝代主题</span>（衰期 phase+narrative）、<span class="p">界面主题</span>（4 色板 swatch 卡片：素纸金/水墨冷/朱砂烈/青绿雅+勾选态）、<span class="p">音声调度</span>（殿乐/朝钟/笔墨 slider + "正奏《秋声赋》"行）、<span class="k">帮助·典范</span>。<br>
+  <span class="k">右栏底部推演区</span>固定：6 圆快速操作 + 摘要 + <span class="m">朱砂大按钮全宽</span>；<span class="m">折叠态下 rail 底常显"推演大印"</span>，一键直推。<br>
+  <span class="k">中栏 hint</span>：默认态显示左右引导箭头"◀ 势党阶军政" / "朕臣议推演 ▶"（实施时仅首次或新手教学显示）。
 </div>
 
 </div>

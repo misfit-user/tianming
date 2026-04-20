@@ -6270,7 +6270,7 @@
         traits: ['chaste', 'humble', 'compassionate', 'diligent'],
         _memory: [ { event: '自苏州寒门入信王府，十五岁册信王妃；朱由检即位，册立为皇后', emotion: '敬', weight: 9, turn: 0 } ],
         bio: '苏州人，出身寒微。贤明节俭，与夫君同甘共苦。亲操针黹，不涉外朝。',
-        resources: { privateWealth: { money: 35000, grain: 1800, cloth: 500 } },
+        resources: { privateWealth: { cash: 35000, grain: 1800, cloth: 500 } },
       },
       {
         name: '张懿安', title: '懿安皇后·皇嫂', officialTitle: '懿安皇后', isRoyal: true, royalRelation: 'former_empress', alive: true,
@@ -6280,7 +6280,7 @@
         traits: ['just', 'honest', 'stubborn', 'compassionate'],
         _memory: [ { event: '熹宗在世时屡劝除客氏魏忠贤；客氏诬后流产怀仇', emotion: '恨', weight: 9, turn: 0 } ],
         bio: '熹宗皇后。河南祥符人。素恶魏忠贤与客氏，多次劝熹宗除阉。新帝即位，可咨其计。',
-        resources: { privateWealth: { money: 85000, grain: 3000, cloth: 800 } },
+        resources: { privateWealth: { cash: 85000, grain: 3000, cloth: 800 } },
       },
       {
         name: '袁贵妃', title: '贵妃', officialTitle: '贵妃', isRoyal: true, royalRelation: 'emperor_family', alive: true,
@@ -6289,7 +6289,7 @@
         stance: '内廷', faction: '明朝廷', party: '', family: '袁氏',
         traits: ['shy', 'temperate'],
         bio: '天启末信王府选侍，新帝即位册贵妃。',
-        resources: { privateWealth: { money: 18000, grain: 700, cloth: 250 } },
+        resources: { privateWealth: { cash: 18000, grain: 700, cloth: 250 } },
       },
       {
         name: '李选侍', title: '选侍·光宗遗妃·移宫案当事人', officialTitle: '先朝选侍', isRoyal: true, royalRelation: 'former_consort', alive: true,
@@ -6297,7 +6297,7 @@
         loyalty: 40, ambition: 55, intelligence: 65, integrity: 30,
         stance: '失势', faction: '明朝廷', party: '', family: '李氏',
         bio: '万历末年选侍。与光宗有子。移宫案中被东林党逼出乾清宫。',
-        resources: { privateWealth: { money: 42000, grain: 900, cloth: 300 } },
+        resources: { privateWealth: { cash: 42000, grain: 900, cloth: 300 } },
       },
       // ──── 阉党核心 ────
       {
@@ -6323,7 +6323,7 @@
         innerThought: '客氏已出宫，是天变之前兆。杨涟六君子之骨犹在诏狱未冷，那个"杀尽东林党"的九千岁之名，日后将是朕之索命符。急流勇退乎？然九千岁岂有余地？或可献贵重礼宝以探帝意；或可借周道登、施凤来为盾。然朕最忧者，是朝中竟无一可托之人。义子义孙虽众，仓卒之变能恃者几？',
         personalGoal: '延续阉党之局，身后亦不许清算。',
         stressSources: ['新帝年少而刚猜', '客氏被逐', '东林党人将归', '田尔耕提督京营心思不齐', '地方督抚纷传异动'],
-        resources: { privateWealth: { money: 4800000, grain: 60000, cloth: 28000 }, publicPurse: { money: 3000000, grain: 100000, cloth: 50000 }, fame: -50, virtueMerit: -80, health: 68, stress: 92 },
+        resources: { privateWealth: { cash: 4800000, grain: 60000, cloth: 28000 }, publicPurse: { money: 3000000, grain: 100000, cloth: 50000 }, fame: -50, virtueMerit: -80, health: 68, stress: 92 },
         career: [
           { year: 1589, title: '入宫充饷', note: '二十一岁因赌博欠债入宫。' },
           { year: 1605, title: '入内膳监', note: '与魏朝对食客氏，得王安赏识。' },
@@ -6356,7 +6356,7 @@
         traits: ['deceitful', 'sadistic', 'lustful', 'vengeful'],
         _memory: [ { event: '即位数日被新帝遣出宫，居私第未被杖毙', emotion: '恐', weight: 10, turn: 0 } ],
         bio: '熹宗乳母。与魏忠贤"对食"（内廷情侣）。内廷多少宫人宫婢死于其手。日后或可元年初即被追究杖毙。',
-        resources: { privateWealth: { money: 95000, grain: 1500, cloth: 550 } },
+        resources: { privateWealth: { cash: 95000, grain: 1500, cloth: 550 } },
       },
       {
         name: '崔呈秀', title: '兵部尚书·总督京营戎政', officialTitle: '兵部尚书·总督京营戎政', alive: true,
@@ -6365,7 +6365,7 @@
         administration: 58, integrity: 10,
         stance: '阉党鹰犬', faction: '明朝廷', family: '崔氏',
         traits: ['deceitful', 'ambitious', 'greedy', 'callous'],
-        resources: { privateWealth: { money: 800000, grain: 10000, cloth: 5000 } },
+        resources: { privateWealth: { cash: 800000, grain: 10000, cloth: 5000 } },
         bio: '蓟州人。万历四十一年进士。魏忠贤义子，为阉党"五虎"之首，兵部尚书兼总督京营戎政。新帝即位，科道交劾，岌岌可危。'
       },
       {
@@ -6375,7 +6375,7 @@
         stance: '阉党五彪·武官', faction: '明朝廷', party: '阉党', family: '田氏',
         traits: ['deceitful', 'sadistic', 'callous'],
         bio: '世袭锦衣卫官，阉党"五彪"之首。天启中掌诏狱，诛东林无数。日后或可元年伏法。',
-        resources: { privateWealth: { money: 45000, grain: 2200, cloth: 450 } },
+        resources: { privateWealth: { cash: 45000, grain: 2200, cloth: 450 } },
       },
       {
         name: '许显纯', title: '锦衣卫北镇抚使', officialTitle: '锦衣卫北镇抚使', alive: true,
@@ -6384,7 +6384,7 @@
         stance: '阉党五彪', faction: '明朝廷', party: '阉党', family: '许氏',
         traits: ['sadistic', 'callous', 'deceitful'],
         bio: '辽东定辽人，武进士。阉党五彪之一。天启四年手刃杨涟、左光斗、袁化中、魏大中、顾大章、周朝瑞于诏狱。日后或可元年弃市。',
-        resources: { privateWealth: { money: 120000, grain: 2000, cloth: 800 } },
+        resources: { privateWealth: { cash: 120000, grain: 2000, cloth: 800 } },
       },
       {
         name: '黄立极', title: '内阁首辅·建极殿大学士', officialTitle: '内阁首辅·建极殿大学士', alive: true,
@@ -6394,7 +6394,7 @@
         stance: '阉党文臣', faction: '明朝廷', party: '阉党', family: '黄氏',
         traits: ['shy', 'deceitful', 'content'],
         bio: '河南元氏人。万历三十二年进士。天启六年入阁。票拟多秉魏忠贤意。日后或可元年罢归。',
-        resources: { privateWealth: { money: 85000, grain: 1800, cloth: 550 } },
+        resources: { privateWealth: { cash: 85000, grain: 1800, cloth: 550 } },
       },
       {
         name: '施凤来', title: '文华殿大学士', officialTitle: '文华殿大学士', alive: true,
@@ -6403,7 +6403,7 @@
         stance: '阉党文臣', faction: '明朝廷', family: '施氏', location: '京师',
         traits: ['deceitful', 'gregarious'],
         bio: '浙江平湖人。万历三十五年进士。天启六年入阁。阉党"外相"之一。',
-        resources: { privateWealth: { money: 85000, grain: 1800, cloth: 550 } },
+        resources: { privateWealth: { cash: 85000, grain: 1800, cloth: 550 } },
       },
       {
         name: '冯铨', title: '武英殿大学士', officialTitle: '武英殿大学士', alive: true,
@@ -6412,7 +6412,7 @@
         stance: '阉党文臣', faction: '明朝廷', family: '冯氏', location: '京师',
         traits: ['deceitful', 'ambitious', 'lustful'],
         bio: '北直隶涿州人。年少以献媚魏忠贤骤进。日后或可元年罢归。清入关后复出仕清。',
-        resources: { privateWealth: { money: 85000, grain: 1800, cloth: 550 } },
+        resources: { privateWealth: { cash: 85000, grain: 1800, cloth: 550 } },
       },
       {
         name: '阎鸣泰', title: '辽东经略(前任)·兵部侍郎', officialTitle: '兵部侍郎·原辽东经略', alive: true,
@@ -6421,7 +6421,7 @@
         stance: '阉党督抚', faction: '明朝廷', family: '阎氏', location: '京师',
         traits: ['craven', 'deceitful'],
         bio: '山西太原人。阉党督抚。为魏忠贤建生祠 25 处。日后或可元年戍边，后戍死。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       // ──── 东林党/中立老臣 ────
       {
@@ -6436,7 +6436,7 @@
           { event: '蒲州闻帝崩新帝立，沉吟未发', emotion: '疑', weight: 7, turn: 0 }
         ],
         bio: '山西蒲州人。万历二十年进士。万历末入阁，天启四年被阉党构陷罢归。日后或可元年召还为首辅，三年致仕。',
-        resources: { privateWealth: { money: 85000, grain: 1800, cloth: 550 } },
+        resources: { privateWealth: { cash: 85000, grain: 1800, cloth: 550 } },
       },
       {
         name: '钱龙锡', title: '前礼部右侍郎（罢归）', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6445,7 +6445,7 @@
         stance: '东林', faction: '明朝廷', party: '东林党', family: '钱氏',
         traits: ['honest', 'just', 'shy'],
         bio: '松江华亭人。万历三十五年进士。东林干将，天启五年被贬。日后或可元年入阁。三年因袁崇焕案连坐遣戍。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       {
         name: '成基命', title: '礼部右侍郎（罢归）', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6454,7 +6454,7 @@
         stance: '东林老成', faction: '明朝廷', party: '东林党', family: '成氏',
         traits: ['honest', 'patient', 'humble'],
         bio: '河南大名人。万历三十五年进士。东林之老成者。日后或可二年入阁。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       {
         name: '刘鸿训', title: '礼部右侍郎·告归', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6463,7 +6463,7 @@
         stance: '东林/中立', faction: '明朝廷', party: '东林党', family: '刘氏',
         traits: ['just', 'impatient', 'diligent'],
         bio: '山东长山人。万历四十一年进士。才学出众。日后或可元年入阁，二年因加藻饰被崇祯罢戍。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       {
         name: '李标', title: '礼部右侍郎', officialTitle: '礼部右侍郎', alive: true,
@@ -6472,7 +6472,7 @@
         stance: '中立', faction: '明朝廷', party: '', family: '李氏',
         traits: ['honest', 'patient'],
         bio: '北直隶高邑人。万历三十五年进士。日后或可元年入阁。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       {
         name: '郭允厚', title: '户部尚书', officialTitle: '户部尚书', alive: true,
@@ -6481,7 +6481,7 @@
         stance: '中立理财', faction: '明朝廷', party: '', family: '郭氏',
         traits: ['diligent', 'patient', 'stubborn'],
         bio: '山东福山人。万历二十六年进士。管钱粮八年，心力交瘁。日后或可元年罢。',
-        resources: { privateWealth: { money: 60000, grain: 1500, cloth: 450 } },
+        resources: { privateWealth: { cash: 60000, grain: 1500, cloth: 450 } },
       },
       {
         name: '毕自严', title: '南京户部尚书', officialTitle: '南京户部尚书', alive: true,
@@ -6491,7 +6491,7 @@
         traits: ['honest', 'diligent', 'just'],
         _memory: [ { event: '理南京户部数年，熟南漕北运，眼见天下财计日蹙', emotion: '忧', weight: 8, turn: -300 } ],
         bio: '山东淄川人。万历二十年进士。善度支。日后或可元年召入掌户部，支撑危局八年，病卒任上。',
-        resources: { privateWealth: { money: 60000, grain: 1500, cloth: 450 } },
+        resources: { privateWealth: { cash: 60000, grain: 1500, cloth: 450 } },
       },
       {
         name: '王在晋', title: '南京兵部尚书', officialTitle: '南京兵部尚书', alive: true,
@@ -6500,7 +6500,7 @@
         stance: '主守派', faction: '明朝廷', party: '', family: '王氏',
         traits: ['craven', 'patient'],
         bio: '江苏太仓人。万历二十年进士。主张"弃宁锦守山海"——与孙承宗主战派不合。',
-        resources: { privateWealth: { money: 60000, grain: 1500, cloth: 450 } },
+        resources: { privateWealth: { cash: 60000, grain: 1500, cloth: 450 } },
       },
       {
         name: '徐光启', title: '前礼部左侍郎·告归', officialTitle: '礼部左侍郎（告归养病）', alive: true,
@@ -6511,7 +6511,7 @@
         traits: ['honest', 'diligent', 'patient', 'humble'],
         _memory: [ { event: '受洗入天主教，与利玛窦合作译《几何原本》', emotion: '喜', weight: 9, turn: -7000 } ],
         bio: '松江上海人。万历三十二年进士。天主教徒。与利玛窦译《几何原本》《农政全书》。精通西学火器历法。日后或可元年礼部尚书，五年入阁，六年病卒。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       // ──── 将崛起者 ────
       {
@@ -6521,7 +6521,7 @@
         stance: '中立·将崛起', faction: '明朝廷', party: '浙党', family: '温氏',
         traits: ['deceitful', 'ambitious', 'patient', 'vengeful'],
         bio: '浙江乌程人。万历二十六年进士。柔佞机敏，以反东林之柄伺机而进。',
-        resources: { privateWealth: { money: 35000, grain: 1000, cloth: 300 } },
+        resources: { privateWealth: { cash: 35000, grain: 1000, cloth: 300 } },
       },
       {
         name: '周延儒', title: '翰林院侍读学士', officialTitle: '翰林院侍读学士', alive: true,
@@ -6530,7 +6530,7 @@
         stance: '清流·将崛起', faction: '明朝廷', party: '', family: '周氏',
         traits: ['arrogant', 'ambitious', 'deceitful'],
         bio: '南直隶宜兴人。万历四十一年状元。以才名。日后或可二年入阁，三年首辅，六年罢；十四年再首辅，十六年赐死。',
-        resources: { privateWealth: { money: 8500, grain: 280, cloth: 90 } },
+        resources: { privateWealth: { cash: 8500, grain: 280, cloth: 90 } },
       },
       // ──── 辽东/边关将帅 ────
       {
@@ -6574,7 +6574,7 @@
         stance: '蒙古裔骁将', faction: '明朝廷', party: '', family: '满氏',
         traits: ['brave', 'wrathful', 'stubborn'],
         bio: '蒙古人。行伍出身。宁远大战与袁崇焕同守城。与袁崇焕争功有隙。日后或可二年己巳之变战死永定门外。',
-        resources: { privateWealth: { money: 45000, grain: 2200, cloth: 450 } },
+        resources: { privateWealth: { cash: 45000, grain: 2200, cloth: 450 } },
       },
       {
         name: '赵率教', title: '山海关总兵·左都督', officialTitle: '山海关总兵·左都督', alive: true,
@@ -6583,7 +6583,7 @@
         stance: '关宁骁将', faction: '明朝廷', party: '', family: '赵氏',
         traits: ['brave', 'honest', 'just'],
         bio: '陕西靖虏卫人。袁崇焕旧部。日后或可二年战死遵化。',
-        resources: { privateWealth: { money: 45000, grain: 2200, cloth: 450 } },
+        resources: { privateWealth: { cash: 45000, grain: 2200, cloth: 450 } },
       },
       {
         name: '祖大寿', title: '宁远副总兵·后都督', officialTitle: '宁远副总兵', alive: true,
@@ -6592,7 +6592,7 @@
         stance: '辽东武将世家', faction: '明朝廷', party: '', family: '祖氏·辽东',
         traits: ['brave', 'paranoid', 'stubborn'],
         bio: '辽东宁远人。辽东世将。与袁崇焕关系紧密。性骁勇而善保家兵，宁远一线为其大本。',
-        resources: { privateWealth: { money: 45000, grain: 2200, cloth: 450 } },
+        resources: { privateWealth: { cash: 45000, grain: 2200, cloth: 450 } },
       },
       {
         name: '洪承畴', title: '陕西布政使司参政', officialTitle: '陕西参政', alive: true,
@@ -6602,7 +6602,7 @@
         stance: '待崛起', faction: '明朝廷', party: '', family: '洪氏',
         traits: ['ambitious', 'brave', 'patient', 'deceitful'],
         bio: '福建南安人。万历四十四年进士。日后或可二年迁延绥巡抚剿陕北民变，崛起为三边总督、蓟辽总督。十五年松锦战败降清。',
-        resources: { privateWealth: { money: 5000, grain: 200, cloth: 60 } },
+        resources: { privateWealth: { cash: 5000, grain: 200, cloth: 60 } },
       },
       {
         name: '卢象升', title: '大名府知府', officialTitle: '大名知府', alive: true,
@@ -6612,7 +6612,7 @@
         stance: '待崛起', faction: '明朝廷', party: '', family: '卢氏',
         traits: ['brave', 'honest', 'diligent', 'zealous'],
         bio: '南直隶宜兴人。天启二年进士。力能引八石弓。日后或可二年入卫京师崭露头角，后历任宣大总督、兵部尚书。十一年鹿庄战死。',
-        resources: { privateWealth: { money: 5000, grain: 200, cloth: 60 } },
+        resources: { privateWealth: { cash: 5000, grain: 200, cloth: 60 } },
       },
       {
         name: '孙传庭', title: '(削籍闲居)前吏部主事', officialTitle: '(天启五年削籍归乡)', alive: true,
@@ -6622,7 +6622,7 @@
         stance: '待崛起(阉党削籍)', faction: '明朝廷', party: '', family: '孙氏',
         traits: ['stubborn', 'honest', 'brave', 'just'],
         bio: '山西代州人。万历四十七年进士。天启中任吏部验封司主事时以不附魏忠贤被削籍归乡。日后或可八年起陕西巡抚，擒高迎祥。十六年潼关战死。"传庭死而明亡矣"。',
-        resources: { privateWealth: { money: 9500, grain: 320, cloth: 110 } },
+        resources: { privateWealth: { cash: 9500, grain: 320, cloth: 110 } },
       },
       {
         name: '孙元化', title: '兵部职方司主事', officialTitle: '兵部主事', alive: true,
@@ -6632,7 +6632,7 @@
         stance: '实学派', faction: '明朝廷', party: '东林党', family: '孙氏',
         traits: ['honest', 'diligent', 'humble'],
         bio: '南直隶嘉定人。徐光启门生。天主教徒。通红衣大炮铸造与操法。日后或可三年登莱巡抚，四年孔有德吴桥兵变被杀。',
-        resources: { privateWealth: { money: 9500, grain: 320, cloth: 110 } },
+        resources: { privateWealth: { cash: 9500, grain: 320, cloth: 110 } },
       },
       // ──── 宦官 ────
       {
@@ -6642,7 +6642,7 @@
         stance: '帝之心腹', faction: '明朝廷', party: '', family: '王氏',
         traits: ['honest', 'diligent', 'humble', 'zealous'],
         bio: '信邸旧侍。朱由检入继大统后倚为耳目。日后或可十七年随帝自缢煤山。',
-        resources: { privateWealth: { money: 35000, grain: 800, cloth: 250 } },
+        resources: { privateWealth: { cash: 35000, grain: 800, cloth: 250 } },
       },
       {
         name: '曹化淳', title: '(贬南京)前内廷太监', officialTitle: '(南京留守·待召还)', alive: true,
@@ -6651,7 +6651,7 @@
         stance: '待召还(王安旧徒)', faction: '明朝廷', party: '', family: '曹氏',
         traits: ['deceitful', 'gregarious'],
         bio: '天津武清人。王安旧徒。天启初因王安被魏忠贤诛被贬至南京。新帝即位有望召还。',
-        resources: { privateWealth: { money: 220000, grain: 3800, cloth: 1500 } },
+        resources: { privateWealth: { cash: 220000, grain: 3800, cloth: 1500 } },
       },
       {
         name: '方正化', title: '司礼监秉笔', officialTitle: '司礼监秉笔太监', alive: true,
@@ -6660,7 +6660,7 @@
         stance: '忠宦', faction: '明朝廷', party: '', family: '方氏',
         traits: ['brave', 'honest', 'zealous'],
         bio: '宦官少见武勇者。日后或可十七年监军保定，城破搏斗而死。',
-        resources: { privateWealth: { money: 150000, grain: 2500, cloth: 900 } },
+        resources: { privateWealth: { cash: 150000, grain: 2500, cloth: 900 } },
       },
       // ──── 后金 ────
       {
@@ -6684,7 +6684,7 @@
         stance: '后金宗室长兄', faction: '后金', party: '', family: '爱新觉罗',
         traits: ['patient', 'calm', 'honest'],
         bio: '努尔哈赤次子。四大贝勒之首，与皇太极并立。',
-        resources: { privateWealth: { money: 480000, grain: 12000, cloth: 3200 } },
+        resources: { privateWealth: { cash: 480000, grain: 12000, cloth: 3200 } },
       },
       {
         name: '多尔衮', title: '贝勒（此时未封）', officialTitle: '贝勒', alive: true,
@@ -6693,7 +6693,7 @@
         stance: '后金幼弟·潜龙', faction: '后金', party: '', family: '爱新觉罗',
         traits: ['ambitious', 'patient', 'just'],
         bio: '努尔哈赤第十四子。此时十五岁。正白旗主，少聪颖，与多铎齐名。',
-        resources: { privateWealth: { money: 180000, grain: 6500, cloth: 1400 } },
+        resources: { privateWealth: { cash: 180000, grain: 6500, cloth: 1400 } },
       },
       {
         name: '阿敏', title: '二大贝勒', officialTitle: '二大贝勒', alive: true,
@@ -6702,7 +6702,7 @@
         stance: '后金宗室·不睦', faction: '后金', party: '', family: '爱新觉罗',
         traits: ['wrathful', 'arrogant', 'ambitious'],
         bio: '努尔哈赤侄。镶蓝旗主，位列四大贝勒。与皇太极龃龉不断，自恃勋高不服。',
-        resources: { privateWealth: { money: 180000, grain: 6500, cloth: 1400 } },
+        resources: { privateWealth: { cash: 180000, grain: 6500, cloth: 1400 } },
       },
       {
         name: '范文程', title: '文馆大学士', officialTitle: '文馆大学士', alive: true,
@@ -6712,7 +6712,7 @@
         stance: '汉人谋主', faction: '后金', party: '', family: '范氏',
         traits: ['patient', 'just', 'calm'],
         bio: '沈阳降人，秀才出身。天命十年入仕后金。为皇太极赞画军政，谋主之才。',
-        resources: { privateWealth: { money: 85000, grain: 1800, cloth: 550 } },
+        resources: { privateWealth: { cash: 85000, grain: 1800, cloth: 550 } },
       },
       // ──── 蒙古 ────
       {
@@ -6762,7 +6762,7 @@
         stance: '将为闯王', faction: '陕北饥民', party: '', family: '高氏',
         traits: ['brave', 'gregarious'],
         bio: '陕西安塞人。以贩马为业。日后或可元年起事自号闯王。九年被孙传庭擒斩。',
-        resources: { privateWealth: { money: 200, grain: 18, cloth: 3 } },
+        resources: { privateWealth: { cash: 200, grain: 18, cloth: 3 } },
       },
       {
         name: '李自成', title: '银川驿驿卒', officialTitle: '驿卒', alive: true,
@@ -6771,7 +6771,7 @@
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '李氏',
         traits: ['brave', 'patient', 'ambitious'],
         bio: '陕西米脂人。此时二十一岁银川驿驿卒(一说为甘州驿，学界有争议)。性善骑射，多谋略，时日艰困。',
-        resources: { privateWealth: { money: 180, grain: 15, cloth: 2 } },
+        resources: { privateWealth: { cash: 180, grain: 15, cloth: 2 } },
       },
       {
         name: '张献忠', title: '延安卫军卒', officialTitle: '延安卫军卒', alive: true,
@@ -6780,7 +6780,7 @@
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '张氏',
         traits: ['brave', 'wrathful', 'callous'],
         bio: '陕西延安定边人。初为延安府捕快，后在延绥镇为军(此时约已当兵)。日后或可三年米脂十八寨起事。十六年据武昌建大西。',
-        resources: { privateWealth: { money: 180, grain: 15, cloth: 2 } },
+        resources: { privateWealth: { cash: 180, grain: 15, cloth: 2 } },
       },
       {
         name: '秦良玉', title: '石柱宣抚使·总兵官·忠义典范', officialTitle: '石柱宣抚使(正三品袭)·勤王总兵官', alive: true,
@@ -6789,7 +6789,7 @@
         stance: '忠义土司', faction: '明朝廷', party: '', family: '秦氏(石柱土司)',
         traits: ['brave', 'honest', 'just', 'diligent', 'zealous'],
         bio: '忠州土官马千乘妻(马氏世袭石柱宣抚使)。万历末万历三大征参战。天启元年奢安之乱随兄秦邦屏征永宁，邦屏战死。天启三年以奇功升石柱宣抚使。天启七年仍驻石柱，白杆兵六千雄据川东。明唯一列传女将。',
-        resources: { privateWealth: { money: 45000, grain: 2200, cloth: 450 } },
+        resources: { privateWealth: { cash: 45000, grain: 2200, cloth: 450 } },
       },
       // ═══ 幼年/少年历史人物（_dormant 标识 · 待时生长） ═══
       {
@@ -6798,7 +6798,7 @@
         loyalty: 50, ambition: 0, intelligence: 55, valor: 0, integrity: 60,
         stance: '襁褓·无自觉', faction: '郑氏海商', party: '', family: '郑氏·南安',
         traits: ['young'],
-        resources: { privateWealth: { money: 95000, grain: 3500, cloth: 700 } },
+        resources: { privateWealth: { cash: 95000, grain: 3500, cloth: 700 } },
         familyMembers: [ { name: '郑芝龙', relation: '父' }, { name: '田川松', relation: '母·日本平户人' } ],
         bio: '郑芝龙长子·乳名福松·本名郑森。生于日本肥前国平户·母为日本人。现年三岁随母居平户外祖家。',
         _dormant: true
@@ -6809,7 +6809,7 @@
         loyalty: 50, ambition: 0, intelligence: 50, valor: 0,
         stance: '蒙昧', faction: '陕北饥民', party: '', family: '李氏·榆林',
         traits: ['young'],
-        resources: { privateWealth: { money: 0, grain: 0, cloth: 0 } },
+        resources: { privateWealth: { cash: 0, grain: 0, cloth: 0 } },
         bio: '陕西延安府榆林卫人·贫苦农家生。现年六岁随父母乡居。',
         _dormant: true
       },
@@ -6819,7 +6819,7 @@
         loyalty: 60, ambition: 30, intelligence: 82, valor: 20, integrity: 88,
         stance: '苦读', faction: '明朝廷', party: '', family: '顾氏·昆山',
         traits: ['scholar', 'honest', 'diligent'],
-        resources: { privateWealth: { money: 800, grain: 80, cloth: 5 } },
+        resources: { privateWealth: { cash: 800, grain: 80, cloth: 5 } },
         familyMembers: [ { name: '王氏', relation: '嗣母', note: '苦节教子' }, { name: '顾同应', relation: '本生父' } ],
         bio: '顾氏子·本名绛·字宁人。江苏昆山人。过继母嗣·现年十四随嗣母王氏读经史·博闻强记。',
         _dormant: true
@@ -6830,7 +6830,7 @@
         loyalty: 65, ambition: 40, intelligence: 85, valor: 30, integrity: 92,
         stance: '孝子·志复父仇', faction: '明朝廷', party: '东林(未冠)', family: '黄氏·余姚',
         traits: ['scholar', 'honest', 'just', 'zealous'],
-        resources: { privateWealth: { money: 1500, grain: 150, cloth: 12 } },
+        resources: { privateWealth: { cash: 1500, grain: 150, cloth: 12 } },
         familyMembers: [ { name: '黄尊素', relation: '父(殁)', note: '东林名士·死阉党诏狱' }, { name: '姚氏', relation: '母' }, { name: '刘宗周', relation: '师' } ],
         bio: '父黄尊素为东林名士·天启六年(1626)死于阉党诏狱。现年十七·握锥怀匕志赴京师伸冤。母姚氏督其读书·师从刘宗周。',
         _dormant: true
@@ -6841,7 +6841,7 @@
         loyalty: 55, ambition: 20, intelligence: 85, valor: 10, integrity: 88,
         stance: '蒙学', faction: '明朝廷', party: '', family: '王氏·衡阳',
         traits: ['scholar', 'young'],
-        resources: { privateWealth: { money: 500, grain: 40, cloth: 3 } },
+        resources: { privateWealth: { cash: 500, grain: 40, cloth: 3 } },
         familyMembers: [ { name: '王朝聘', relation: '父·举人', note: '以经术教子' } ],
         bio: '湖广衡州府衡阳县人·字而农·号姜斋。父王朝聘举人·以经术教子。现年八岁入塾读经·早慧惊人。',
         _dormant: true
@@ -6852,7 +6852,7 @@
         loyalty: 92, ambition: 45, intelligence: 75, valor: 70, integrity: 95,
         stance: '士人·读书待仕', faction: '明朝廷', party: '东林', family: '史氏·祥符',
         traits: ['brave', 'honest', 'just', 'zealous', 'diligent'],
-        resources: { privateWealth: { money: 2500, grain: 200, cloth: 15 } },
+        resources: { privateWealth: { cash: 2500, grain: 200, cloth: 15 } },
         familyMembers: [ { name: '左光斗', relation: '师(殁)', note: '东林六君子之一·死阉党诏狱' }, { name: '史从质', relation: '父' } ],
         bio: '河南祥符(今开封)人·字宪之。师从左光斗(东林六君子之一·已死诏狱)。现年二十六在国子监读书待仕。心中刻恨阉党·志期复仇。'
       },
@@ -6863,7 +6863,7 @@
         loyalty: 75, ambition: 65, intelligence: 88, valor: 25, integrity: 85,
         stance: '士人·结社讲学', faction: '明朝廷', party: '东林(承)', family: '张氏·太仓',
         traits: ['scholar', 'honest', 'zealous', 'gregarious'],
-        resources: { privateWealth: { money: 8000, grain: 400, cloth: 120 } },
+        resources: { privateWealth: { cash: 8000, grain: 400, cloth: 120 } },
         bio: '太仓人·字天如·号西铭。幼颖敏·读书 100 遍。结应社于故乡·将衍为复社。今在家苦读+会友。'
       },
       {
@@ -6872,7 +6872,7 @@
         loyalty: 72, ambition: 55, intelligence: 85, valor: 35, integrity: 82,
         stance: '青年才俊·复社先声', faction: '明朝廷', party: '东林(承)', family: '陈氏·华亭',
         traits: ['scholar', 'gregarious', 'just'],
-        resources: { privateWealth: { money: 6500, grain: 300, cloth: 90 } },
+        resources: { privateWealth: { cash: 6500, grain: 300, cloth: 90 } },
         bio: '松江华亭人·字卧子·号大樽。19 岁·才华显露·与夏允彝等结几社。诗文雄奇。'
       },
       {
@@ -6881,7 +6881,7 @@
         loyalty: 80, ambition: 45, intelligence: 78, valor: 30, integrity: 88,
         stance: '东林外围·告归待起', faction: '明朝廷', party: '东林', family: '侯氏·商丘',
         traits: ['honest', 'just', 'stubborn'],
-        resources: { privateWealth: { money: 18000, grain: 900, cloth: 250 } },
+        resources: { privateWealth: { cash: 18000, grain: 900, cloth: 250 } },
         familyMembers: [ { name: '侯方域', relation: '子', note: '现年 9 岁' }, { name: '侯恪', relation: '弟·进士' } ],
         bio: '商丘人·字大真。万历四十四年进士。原户部主事·阉党兴后告归。与东林交游甚广。'
       },
@@ -6891,7 +6891,7 @@
         loyalty: 90, ambition: 30, intelligence: 92, valor: 45, integrity: 98,
         stance: '清峭·守经', faction: '明朝廷', party: '', family: '黄氏·漳浦',
         traits: ['scholar', 'honest', 'just', 'zealous', 'diligent'],
-        resources: { privateWealth: { money: 6500, grain: 280, cloth: 85 } },
+        resources: { privateWealth: { cash: 6500, grain: 280, cloth: 85 } },
         bio: '福建漳浦人·字幼玄·号石斋。天启二年进士·现翰林院编修。《易》学大家·正直刚烈·不畏权贵。'
       },
       {
@@ -6900,7 +6900,7 @@
         loyalty: 88, ambition: 35, intelligence: 90, valor: 25, integrity: 96,
         stance: '理学宗师·东林外围', faction: '明朝廷', party: '东林', family: '刘氏·山阴',
         traits: ['scholar', 'honest', 'just', 'stubborn'],
-        resources: { privateWealth: { money: 22000, grain: 900, cloth: 280 } },
+        resources: { privateWealth: { cash: 22000, grain: 900, cloth: 280 } },
         familyMembers: [ { name: '刘汋', relation: '子' }, { name: '黄宗羲', relation: '门生' }, { name: '刘杼', relation: '族弟' } ],
         bio: '浙江山阴人·字启东·号念台。万历二十九年进士·王阳明后学集大成者·蕺山学派宗师。任顺天府尹。'
       },
@@ -6910,7 +6910,7 @@
         loyalty: 85, ambition: 50, intelligence: 85, valor: 20, integrity: 90,
         stance: '清流·善书', faction: '明朝廷', party: '东林(外围)', family: '倪氏·上虞',
         traits: ['scholar', 'honest'],
-        resources: { privateWealth: { money: 9000, grain: 320, cloth: 110 } },
+        resources: { privateWealth: { cash: 9000, grain: 320, cloth: 110 } },
         bio: '浙江上虞人·字玉汝·号鸿宝。天启二年进士·翰林院编修。与黄道周同榜·齐名。书画双绝。'
       },
       {
@@ -6920,7 +6920,7 @@
         military: 82, administration: 82, management: 80,
         stance: '剿贼老帅', faction: '明朝廷', party: '', family: '朱氏·山阴',
         traits: ['brave', 'diligent', 'just', 'honest'],
-        resources: { privateWealth: { money: 85000, grain: 3200, cloth: 800 } },
+        resources: { privateWealth: { cash: 85000, grain: 3200, cloth: 800 } },
         bio: '浙江山阴人·字懋和·号恒岳。万历二十年进士。久任四川·善于边务。天启二年奢崇明起兵·即督剿至今六年。'
       },
       {
@@ -6929,7 +6929,7 @@
         loyalty: 72, ambition: 58, intelligence: 75, valor: 28, integrity: 70,
         stance: '言官·热衷改制', faction: '明朝廷', party: '东林(新进)', family: '毛氏·公安',
         traits: ['just', 'diligent', 'gregarious'],
-        resources: { privateWealth: { money: 7500, grain: 300, cloth: 90 } },
+        resources: { privateWealth: { cash: 7500, grain: 300, cloth: 90 } },
         bio: '湖广公安人·字芝田。天启二年进士·现刑科给事中。心系吏治·或将议裁驿。'
       },
       {
@@ -6938,7 +6938,7 @@
         loyalty: 55, ambition: 72, intelligence: 72, valor: 30, integrity: 40,
         stance: '阉党外围·善变', faction: '明朝廷', party: '', family: '马氏·贵阳',
         traits: ['deceitful', 'ambitious'],
-        resources: { privateWealth: { money: 65000, grain: 1500, cloth: 400 } },
+        resources: { privateWealth: { cash: 65000, grain: 1500, cloth: 400 } },
         bio: '贵州贵阳人·字瑶草。万历四十七年进士。历官多地·现浙江巡抚。外谦而内忮·善察时变。'
       },
       {
@@ -6948,7 +6948,7 @@
         military: 70, administration: 75,
         stance: '实务派·好兵法', faction: '明朝廷', party: '', family: '杨氏·武陵',
         traits: ['diligent', 'patient', 'ambitious'],
-        resources: { privateWealth: { money: 22000, grain: 1000, cloth: 280 } },
+        resources: { privateWealth: { cash: 22000, grain: 1000, cloth: 280 } },
         familyMembers: [ { name: '杨鹤', relation: '父·延绥巡抚' } ],
         bio: '湖广武陵人·字文弱。万历三十八年进士。父杨鹤任延绥巡抚。深通兵略·文采亦佳。'
       },
@@ -6958,7 +6958,7 @@
         loyalty: 40, ambition: 85, intelligence: 88, valor: 20, integrity: 15,
         stance: '阉党附庸·才子奸人', faction: '明朝廷', party: '阉党', family: '阮氏·怀宁',
         traits: ['deceitful', 'ambitious', 'wrathful'],
-        resources: { privateWealth: { money: 75000, grain: 1400, cloth: 420 } },
+        resources: { privateWealth: { cash: 75000, grain: 1400, cloth: 420 } },
         bio: '安徽怀宁人·字集之·号圆海。万历四十四年进士。以投靠魏忠贤升光禄寺少卿。文辞戏曲皆绝。'
       },
       {
@@ -6967,7 +6967,7 @@
         loyalty: 65, ambition: 70, intelligence: 90, valor: 15, integrity: 55,
         stance: '东林领袖·告归待召', faction: '明朝廷', party: '东林', family: '钱氏·常熟',
         traits: ['scholar', 'gregarious', 'ambitious'],
-        resources: { privateWealth: { money: 120000, grain: 3200, cloth: 1100 } },
+        resources: { privateWealth: { cash: 120000, grain: 3200, cloth: 1100 } },
         familyMembers: [ { name: '柳如是', relation: '妾(未定)', note: '秦淮名妓' } ],
         bio: '常熟虞山人·字受之·号牧斋。万历三十八年探花·翰林侍读学士·阉党兴后告归。江南文坛领袖·藏书冠天下(绛云楼)。'
       },
@@ -6977,7 +6977,7 @@
         loyalty: 70, ambition: 40, intelligence: 82, valor: 20, integrity: 80,
         stance: '士人·修史', faction: '明朝廷', party: '', family: '查氏·海宁',
         traits: ['scholar', 'diligent'],
-        resources: { privateWealth: { money: 6500, grain: 300, cloth: 80 } },
+        resources: { privateWealth: { cash: 6500, grain: 300, cloth: 80 } },
         bio: '浙江海宁人·字伊璜·号敬修。26 岁·苦读治史·将著《罪惟录》。'
       },
       {
@@ -6986,7 +6986,7 @@
         loyalty: 68, ambition: 55, intelligence: 90, valor: 25, integrity: 82,
         stance: '世家少年·博通诸学', faction: '明朝廷', party: '', family: '方氏·桐城',
         traits: ['scholar', 'young', 'gregarious'],
-        resources: { privateWealth: { money: 4500, grain: 200, cloth: 60 } },
+        resources: { privateWealth: { cash: 4500, grain: 200, cloth: 60 } },
         familyMembers: [ { name: '方孔炤', relation: '父·湖广巡抚' }, { name: '方大镇', relation: '祖·大理寺少卿' } ],
         bio: '桐城方氏子·字密之。祖父方大镇为大理寺少卿。年 16 通经史天文算学·少有才名。'
       },
@@ -6996,7 +6996,7 @@
         loyalty: 50, ambition: 10, intelligence: 60, valor: 20,
         stance: '饥民之子', faction: '陕北饥民', party: '', family: '孙氏·延安',
         traits: ['young'],
-        resources: { privateWealth: { money: 120, grain: 12, cloth: 1 } },
+        resources: { privateWealth: { cash: 120, grain: 12, cloth: 1 } },
         bio: '陕西延安·贫农家生。现年十一·随父母乡居。',
         _dormant: true
       },
@@ -7007,7 +7007,7 @@
         military: 62,
         stance: '将门之后', faction: '明朝廷', party: '', family: '吴氏·辽东',
         traits: ['brave', 'young', 'ambitious'],
-        resources: { privateWealth: { money: 15000, grain: 500, cloth: 120 } },
+        resources: { privateWealth: { cash: 15000, grain: 500, cloth: 120 } },
         familyMembers: [ { name: '吴襄', relation: '父·辽东副总兵' }, { name: '祖大寿', relation: '舅' } ],
         bio: '父吴襄为辽东副总兵。舅祖大寿为宁远守将。现年十五·武艺初成·随父军中历练。'
       },
@@ -7017,7 +7017,7 @@
         loyalty: 65, ambition: 0, intelligence: 75, valor: 0, integrity: 85,
         stance: '蒙学', faction: '明朝廷', party: '', family: '张氏·鄞县',
         traits: ['scholar', 'young'],
-        resources: { privateWealth: { money: 400, grain: 35, cloth: 5 } },
+        resources: { privateWealth: { cash: 400, grain: 35, cloth: 5 } },
         bio: '浙江鄞县人·字玄著·号苍水。现年七岁·随父读书。',
         _dormant: true
       },
@@ -7028,7 +7028,7 @@
         military: 65, administration: 68,
         stance: '边事实务', faction: '明朝廷', party: '', family: '陈氏·射洪',
         traits: ['diligent', 'ambitious'],
-        resources: { privateWealth: { money: 18000, grain: 700, cloth: 180 } },
+        resources: { privateWealth: { cash: 18000, grain: 700, cloth: 180 } },
         bio: '四川射洪人。万历三十六年举人(后由他途进)。现分巡宁前兵备道·主管宁远前线军政。'
       },
       {
@@ -7038,7 +7038,7 @@
         military: 60, administration: 70,
         stance: '主抚派', faction: '明朝廷', party: '', family: '熊氏·贵阳',
         traits: ['diligent', 'ambitious'],
-        resources: { privateWealth: { money: 52000, grain: 1200, cloth: 350 } },
+        resources: { privateWealth: { cash: 52000, grain: 1200, cloth: 350 } },
         bio: '贵州贵阳人·字大濩。万历三十五年进士。现福建巡抚·拟招抚郑芝龙。'
       }
     ];

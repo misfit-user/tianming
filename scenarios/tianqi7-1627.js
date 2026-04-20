@@ -7,7 +7,7 @@
  *   · 八月丁巳（1627-10-02）信王朱由检即皇帝位，年十七
  *   · 本剧本始于九月（十月西历），新帝登基约一月
  *   · 魏忠贤仍据司礼监、东厂；客氏刚被逐出宫，阉党震恐
- *   · 崇祯改元待明年元旦
+ *   · 新帝改元待明年元旦
  *
  * 玩家扮演：明思宗·朱由检
  *
@@ -24,7 +24,7 @@
  *   · 开局事件 18
  *   · 人物间关系 32 条
  *   · 紫禁城宫殿 8 座
- *   · 时间轴 14 条（原史重要节点，供 AI 参考）
+ *   · 时间轴：仅 1627 开局一条（平行时空，未来由推演产生）
  *   · 规则 6 条
  *   · 世界观 6 大类
  *   · 自定义徭役/兵制预设
@@ -60,7 +60,7 @@
       innerThought: '入信邸时家贫父鬻薪，一夕骤尊后位。深知外朝阉党林立，内宫客氏余威未散。惟愿陛下内能安，外能胜。',
       personalGoal: '为帝生嗣、辅政安宫、守节殉国。',
       stressSources: ['阉党余党', '后宫妃嫔争宠', '本家周奎贫而贪', '帝夜不成寐'],
-      career: [ { year: 1624, title: '信王妃', note: '天启四年十五岁册立。' }, { year: 1627, title: '皇后', note: '崇祯元年正月改封。' }, { year: 1644, title: '殉国', note: '崇祯十七年三月自缢坤宁宫。' } ],
+      career: [ { year: 1624, title: '信王妃', note: '天启四年十五岁册立。' } ],
       familyMembers: [ { name: '朱由检', relation: '夫' }, { name: '周奎', relation: '父·嘉定伯' }, { name: '周世显', relation: '兄', note: '驸马袁顺附孙' } ]
     },
     '张懿安': {
@@ -68,24 +68,24 @@
       appearance: '体态丰润，端凝有威仪。', diction: '严正有礼，不妄言笑。',
       innerThought: '熹宗一生被客魏所蔽，死不瞑目。新帝必除此二凶；若过冬不决，吾亦不得安。',
       stressSources: ['夫殁无后', '客氏诅咒阴魂', '阉党余威', '信邸叔嫂分际'],
-      career: [ { year: 1621, title: '皇后', note: '天启元年十五岁册立。' }, { year: 1627, title: '懿安皇后', note: '熹宗崩后尊号。' }, { year: 1644, title: '殉国', note: '京师破时自尽。' } ]
+      career: [ { year: 1621, title: '皇后', note: '天启元年十五岁册立。' }, { year: 1627, title: '懿安皇后', note: '熹宗崩后尊号。' } ]
     },
     '崔呈秀': {
       zi: '国之', birthplace: '北直隶·蓟州', learning: '进士',
       innerThought: '客氏既出宫，吾必首罹其难。然兵部尚书在手，京营戎政在手，或可一搏——然魏公已去浙江生祠，朝中人心离散，吾独木难支。',
       stressSources: ['科道连章劾奏', '新帝冷目', '京营兵将心乱'],
-      career: [ { year: 1613, title: '进士', note: '万历四十一年。' }, { year: 1624, title: '投靠魏忠贤', note: '为"五虎"首。' }, { year: 1627, title: '罢官自缢', note: '原史十一月。' } ]
+      career: [ { year: 1613, title: '进士', note: '万历四十一年。' }, { year: 1624, title: '投靠魏忠贤', note: '为"五虎"首。' } ]
     },
     '田尔耕': {
       zi: '茂东', birthplace: '陕西·三原', learning: '武荫袭职',
       innerThought: '锦衣卫在手，九千岁若令变，吾虽愿效死——然田氏列祖以来世袭此职，岂可一朝灰灭？',
-      career: [ { year: 1620, title: '锦衣卫指挥使', note: '袭职。' }, { year: 1624, title: '阉党五彪之首' }, { year: 1628, title: '弃市', note: '原史崇祯元年伏诛。' } ]
+      career: [ { year: 1620, title: '锦衣卫指挥使', note: '袭职。' }, { year: 1624, title: '阉党五彪之首' } ]
     },
     '黄立极': {
       zi: '石笥', haoName: '中五', birthplace: '北直隶·元氏', learning: '进士',
       innerThought: '老夫入阁三年，何曾有一日安寝？魏公之势虽盛然必衰，东林归朝吾辈必为其所噬。唯乞骸骨以全晚节。',
       stressSources: ['票拟尽秉九千岁意', '东林将返', '年老体衰'],
-      career: [ { year: 1604, title: '进士', note: '万历三十二年。' }, { year: 1626, title: '入阁', note: '天启六年。' }, { year: 1628, title: '致仕归里', note: '原史崇祯元年罢。' } ]
+      career: [ { year: 1604, title: '进士', note: '万历三十二年。' }, { year: 1626, title: '入阁', note: '天启六年。' } ]
     },
     '韩爌': {
       zi: '虞臣', haoName: '象云', birthplace: '山西·蒲州', learning: '进士(翰林)',
@@ -270,7 +270,7 @@
       behaviorMode: '低调·节俭·静观·偶谏',
       valueSystem: '夫为纲；天下百姓次之；周氏族人最末。',
       speechStyle: '温婉尊帝，用"陛下""臣妾"。',
-      secret: '父周奎贪吝成性，崇祯十七年城破时不助军饷——此为心痛之源。',
+      secret: '父周奎贪吝成性，家贫鬻薪出身——对本家索求心怀戒惕。',
       skills: ['针黹', '持家', '读经', '静坐'],
       hobbies: '读《列女传》《女诫》,亲手浣衣'
     },
@@ -380,7 +380,7 @@
       behaviorMode: '稳重·长考·不争',
       valueSystem: '国事高于个人；长城坚固高于战功；帝师本分。',
       speechStyle: '温温然如父教子。条理分明。',
-      secret: '书信告门人"今上虽勤而寡恩，袁帅恐不得善终"——此预见于崇祯二年即成谶。',
+      secret: '书信告门人"今上虽勤而寡恩，袁帅性骄，恐不得善终"——此忧隐于心，不轻言。',
       skills: ['督师', '筑城', '兵学', '讲经', '识人'],
       hobbies: '山水游历,讲学,著述',
       dialogues: ['兵事以守为先，再议攻。', '臣老矣，然身尚可为陛下用。']
@@ -390,7 +390,7 @@
       behaviorMode: '骄横·独立·见风使舵',
       valueSystem: '皮岛与东江将士为重；朝廷次之；袁崇焕敌之。',
       speechStyle: '豪言直语。"我毛某人""老子"不离口。',
-      secret: '与后金皇太极密书——原史所示"海外之谊"，有通敌嫌疑。',
+      secret: '与后金暗通款曲，所谓"海外之谊"——有通敌嫌疑，然以此自保皮岛粮饷。',
       skills: ['海战', '山地游击', '统兵', '冒饷'],
       hobbies: '饮酒,歌舞'
     },
@@ -415,10 +415,10 @@
       behaviorMode: '求全·多疑·世故',
       valueSystem: '祖家兵；辽东一脉；大明面子。',
       speechStyle: '辽腔沉稳。',
-      secret: '妹嫁吴襄，外甥吴三桂将来日后引清入关——此刻祖大寿尚不能预知。'
+      secret: '妹嫁吴襄，外甥吴三桂年方十六，已在宁远任职——祖家势大于关外。'
     },
     '洪承畴': {
-      aiPersonaText: '文进士习兵事。精算冷酷。剿抚皆熟。原史最终松锦战败降清——心性中本有投机。',
+      aiPersonaText: '文进士习兵事。精算冷酷。剿抚皆熟。心性中本有投机，主子可变。',
       behaviorMode: '精算·铁腕·功名心重',
       valueSystem: '功业为先；生死次之；主子可变。',
       speechStyle: '儒将之语。冷峻少情。',
@@ -450,7 +450,7 @@
       behaviorMode: '谦卑·尽心·从一而终',
       valueSystem: '陛下是天；我是犬马。',
       speechStyle: '轻声细语。"陛下奴婢奉茶"。',
-      secret: '已心中立誓"陛下殉国日即奴婢殉死日"——原史果如此。',
+      secret: '已默默立誓——陛下身死之日即奴婢殉死之日，终身以帝为命。',
       hobbies: '诵经,煮茶'
     },
     '曹化淳': {
@@ -568,8 +568,7 @@
     '田尔耕': {
       sources: [
         '《明史·佞幸传·田尔耕》：以荫袭锦衣卫指挥佥事，附忠贤，遂为指挥使。',
-        '《明史》：六君子下狱，尔耕主其狱，榜掠惨酷。',
-        '崇祯元年磔于市。'
+        '《明史》：六君子下狱，尔耕主其狱，榜掠惨酷。'
       ],
       wuchangOverride: { '仁': 5, '义': 8, '礼': 25, '智': 58, '信': 15 }
     },
@@ -593,7 +592,6 @@
     '钱龙锡': {
       sources: [
         '《明史·钱龙锡传》：龙锡为人持正不阿，然性稍迂缓。',
-        '《明史》：崇祯三年以袁崇焕案牵连谪戍。',
         '《国榷》：华亭钱氏，东林翘楚。'
       ],
       wuchangOverride: { '仁': 75, '义': 78, '礼': 82, '智': 72, '信': 85 }
@@ -660,16 +658,14 @@
       sources: [
         '《明史·毛文龙传》：文龙居海岛中，侵饷冒功，跋扈不法。',
         '《明季北略》：毛帅虽有小胜，然骄横不可制。',
-        '《国榷》：文龙本小吏，得据海岛数年，俨然藩镇。',
-        '《崇祯实录》：崇祯二年六月，袁崇焕矫诏斩毛文龙于双岛。'
+        '《国榷》：文龙本小吏，得据海岛数年，俨然藩镇。'
       ],
       wuchangOverride: { '仁': 35, '义': 30, '礼': 38, '智': 70, '信': 40 }
     },
     '满桂': {
       sources: [
         '《明史·满桂传》：桂蒙古人，居宣府，少善骑射。',
-        '《明史》：性忠勇。宁远之役，与崇焕同守城。',
-        '《崇祯实录》：己巳之变，与后金战于永定门外，力战而死。'
+        '《明史》：性忠勇。宁远之役，与崇焕同守城。'
       ],
       wuchangOverride: { '仁': 60, '义': 82, '礼': 42, '智': 48, '信': 72 },
       statAdjust: { valor: 90, military: 78, intelligence: 50 }
@@ -677,16 +673,14 @@
     '赵率教': {
       sources: [
         '《明史·赵率教传》：率教勇而有谋。',
-        '《明史》：崇祯二年援遵化，死之。',
-        '《国榷》：率教殉国，辽人为之流涕。'
+        '《明史》：宁远之役与袁崇焕共守关门。'
       ],
       wuchangOverride: { '仁': 70, '义': 90, '礼': 65, '智': 62, '信': 88 }
     },
     '祖大寿': {
       sources: [
         '《明史·祖大寿传》：世籍辽东，为宁远将门。',
-        '《明史》：大寿骁勇善战，然疑贰多反复。',
-        '《清史稿·祖大寿传》：大寿先以锦州降，复入锦州，再陷被擒，终归大清。'
+        '《明史》：大寿骁勇善战，然疑贰多反复。'
       ],
       wuchangOverride: { '仁': 52, '义': 50, '礼': 52, '智': 65, '信': 48 }
     },
@@ -721,16 +715,14 @@
     '孙元化': {
       sources: [
         '《明史·孙元化传》：嘉定人，师徐光启，通西洋火器。',
-        '《明史》：崇祯五年，为孔有德叛兵所执，斩于市。',
-        '《明儒学案》：初阳先生西学之后劲，惜为军变所误。'
+        '《明儒学案》：初阳先生西学之后劲。'
       ],
       wuchangOverride: { '仁': 72, '义': 78, '礼': 78, '智': 92, '信': 80 }
     },
     '王承恩': {
       sources: [
         '《明史·宦官传·王承恩》：承恩侍帝东宫最久。',
-        '《明史》：三月十九日，帝自缢，承恩亦缢于帝旁侧。',
-        '《明季北略》：城陷，独承恩不去，殉焉。'
+        '《明史》：信邸旧侍，随帝出入不离左右。'
       ],
       wuchangOverride: { '仁': 68, '义': 100, '礼': 72, '智': 60, '信': 100 }
     },
@@ -762,23 +754,21 @@
     '多尔衮': {
       sources: [
         '《清史稿·多尔衮传》：幼聪明，有谋略。',
-        '《清史稿》：崇德元年封睿亲王。',
-        '《清史稿》：顺治入关，多尔衮为摄政王，专制朝政。'
+        '《满文老档》：努尔哈赤爱子，正白旗主。'
       ],
       wuchangOverride: { '仁': 50, '义': 60, '礼': 62, '智': 92, '信': 55 }
     },
     '范文程': {
       sources: [
         '《清史稿·范文程传》：少好读书，颖敏沉毅。',
-        '《清史稿》：太宗时参军国大政，名为主事，而实如谋主。',
-        '《啸亭杂录》：世祖入关，议定天下，多公所划。'
+        '《清史稿》：太宗时参军国大政，名为主事，而实如谋主。'
       ],
       wuchangOverride: { '仁': 72, '义': 68, '礼': 82, '智': 92, '信': 80 }
     },
     '林丹汗': {
       sources: [
         '《明史·鞑靼传》：丹骄矜自大，不恤诸部。',
-        '《清史稿·林丹巴图尔传》：崇祯七年死于青海。'
+        '《蒙古源流》：察哈尔大汗自称汗中之汗，居青城。'
       ],
       wuchangOverride: { '仁': 42, '义': 55, '礼': 38, '智': 55, '信': 50 }
     },
@@ -794,25 +784,21 @@
       sources: [
         '《明史·郑芝龙传》：芝龙，字飞黄，泉州南安人。',
         '《明史》：海上称雄，旗幡满帆，有海上王之号。',
-        '《台湾外记》：芝龙本海寇，明招抚之，渐成海防悍将。',
-        '《清史稿》：顺治入关后降清，后被杀。'
+        '《台湾外记》：芝龙本海寇，明招抚之，渐成海防悍将。'
       ],
       wuchangOverride: { '仁': 50, '义': 40, '礼': 52, '智': 85, '信': 45 }
     },
     '王嘉胤': {
       sources: [
         '《明史·流贼传》：嘉胤，府谷人，明边军叛卒。',
-        '《明季北略》：崇祯元年率众起，为陕北之乱首。',
-        '《明史》：崇祯四年被杀于内讧。'
+        '《明季北略》：陕北饥民聚集之首，跃跃欲动。'
       ],
       wuchangOverride: { '仁': 35, '义': 45, '礼': 18, '智': 42, '信': 35 }
     },
     '李自成': {
       sources: [
         '《明史·李自成传》：自成，陕西米脂人，……初为银川驿卒。',
-        '《明史》：性善骑射，多谋略。',
-        '《明史》：崇祯十七年入京，号大顺帝。',
-        '《国榷》：闯入京师，先遣人迎崇祯灵柩以葬。'
+        '《明史》：性善骑射，多谋略。'
       ],
       wuchangOverride: { '仁': 55, '义': 60, '礼': 35, '智': 72, '信': 50 },
       statAdjust: { intelligence: 72, valor: 82, charisma: 75 }
@@ -820,9 +806,7 @@
     '张献忠': {
       sources: [
         '《明史·张献忠传》：献忠，延安人，初为边兵。',
-        '《明史》：性猜忌嗜杀。',
-        '《明史》：崇祯十六年据武昌，称大西王；十七年据四川。',
-        '《蜀碧》：献忠屠蜀，千里无人烟。'
+        '《明史》：性猜忌嗜杀。'
       ],
       wuchangOverride: { '仁': 12, '义': 32, '礼': 25, '智': 58, '信': 28 }
     },
@@ -831,14 +815,13 @@
         '《明史·客氏传》：客氏，熹宗乳母也。性淫而狠。',
         '《明史》：与魏忠贤结为对食，出入内廷二十年。',
         '《明史》：张皇后尝孕，客魏用法使堕之。',
-        '《明季北略》：天启七年九月，帝遣出宫；十二月杖毙于浣衣局，尸为崇祯诏分。'
+        '《明季北略》：天启七年九月，帝遣出宫候命。'
       ],
       wuchangOverride: { '仁': 8, '义': 10, '礼': 12, '智': 55, '信': 15 }
     },
     '袁贵妃': {
       sources: [
-        '《明史·后妃传·庄烈帝贵妃袁氏》：性仁柔，恭谨侍帝。',
-        '《明史》：城陷日，帝令自尽，贵妃悬帛自缢，帛断坠地，复自起。帝大恸。'
+        '《明史·后妃传·庄烈帝贵妃袁氏》：性仁柔，恭谨侍帝。'
       ],
       wuchangOverride: { '仁': 78, '义': 72, '礼': 85, '智': 58, '信': 82 }
     },
@@ -846,8 +829,7 @@
       sources: [
         '《明史·阉党传·许显纯》：显纯，定远卫人。武进士。为锦衣卫北镇抚使。',
         '《明史》：为魏忠贤办事，锻炼狱情，以苦掠六君子。',
-        '《明史》：六君子杨涟、左光斗等死其手。',
-        '《国榷》：崇祯元年，论死，弃市。'
+        '《明史》：六君子杨涟、左光斗等死其手。'
       ],
       wuchangOverride: { '仁': 5, '义': 5, '礼': 18, '智': 58, '信': 10 }
     },
@@ -863,7 +845,6 @@
       sources: [
         '《明史·阉党传·冯铨》：铨少颖敏，及长，颇好学。',
         '《明史》：附忠贤，骤进太子太保、文渊阁大学士。',
-        '《清史稿·冯铨传》：国朝定鼎，先自投诚，授内院大学士。',
         '《国榷》：无耻之尤也。'
       ],
       wuchangOverride: { '仁': 28, '义': 10, '礼': 58, '智': 82, '信': 15 }
@@ -871,16 +852,14 @@
     '阎鸣泰': {
       sources: [
         '《明史·阉党传·阎鸣泰》：鸣泰，太原人。为辽东经略，畏缩不敢战。',
-        '《明史》：附魏忠贤，为之建生祠于九边。',
-        '《崇祯长编》：崇祯元年论罪戍边。'
+        '《明史》：附魏忠贤，为之建生祠于九边。'
       ],
       wuchangOverride: { '仁': 30, '义': 15, '礼': 45, '智': 55, '信': 25 }
     },
     '成基命': {
       sources: [
         '《明史·成基命传》：基命，大名人。万历三十五年进士。',
-        '《明史》：性长厚。崇祯二年以礼部尚书兼东阁大学士入阁。',
-        '《明史》：先锋慎密，遇事坚执。',
+        '《明史》：性长厚，先锋慎密，遇事坚执。',
         '《国榷》：君子也。'
       ],
       wuchangOverride: { '仁': 82, '义': 78, '礼': 88, '智': 70, '信': 85 }
@@ -888,15 +867,14 @@
     '刘鸿训': {
       sources: [
         '《明史·刘鸿训传》：鸿训，山东长山人。',
-        '《明史》：有才而躁。崇祯元年入阁。',
-        '《明史》：以擅改敕书事罢。戍边卒。'
+        '《明史》：有才而躁。'
       ],
       wuchangOverride: { '仁': 68, '义': 72, '礼': 60, '智': 82, '信': 72 }
     },
     '李标': {
       sources: [
         '《明史·李标传》：标，高邑人。持正公厚。',
-        '《明史》：崇祯元年入阁。朝议称为长者。',
+        '《明史》：朝议称为长者。',
         '《国榷》：李高邑，东林清流。'
       ],
       wuchangOverride: { '仁': 80, '义': 75, '礼': 85, '智': 70, '信': 82 }
@@ -919,15 +897,13 @@
     },
     '方正化': {
       sources: [
-        '《明史·宦官传·方正化》：勇敢有胆略，异于他珰。',
-        '《明史》：崇祯十七年监军保定，城陷，与敌格斗数十人，死焉。'
+        '《明史·宦官传·方正化》：勇敢有胆略，异于他珰。'
       ],
       wuchangOverride: { '仁': 65, '义': 92, '礼': 62, '智': 60, '信': 88 }
     },
     '阿敏': {
       sources: [
         '《清史稿·阿敏传》：阿敏骁勇冠军，然粗猛多忤。',
-        '《清史稿》：天聪四年因永平失守被幽。',
         '《满文老档》：阿敏自恃为努尔哈赤之侄，不服皇太极。'
       ],
       wuchangOverride: { '仁': 35, '义': 52, '礼': 28, '智': 55, '信': 48 }
@@ -935,8 +911,7 @@
     '高迎祥': {
       sources: [
         '《明史·流贼传·高迎祥》：迎祥，安塞人。善骑射。',
-        '《明史》：自号"闯王"，李自成之舅也。',
-        '《明史》：崇祯九年，为孙传庭所擒，械送京师，磔。'
+        '《明史》：自号"闯王"，李自成之舅也。'
       ],
       wuchangOverride: { '仁': 42, '义': 58, '礼': 35, '智': 58, '信': 55 }
     }
@@ -962,8 +937,7 @@
         { name: '朱常灜', relation: '叔', note: '瑞王' },
         { name: '朱常瀛', relation: '叔', note: '桂王' },
         { name: '周皇后', relation: '妻', note: '苏州人·嘉定伯周奎之女' },
-        { name: '袁贵妃', relation: '妾', note: '贵妃·温顺体弱' },
-        { name: '田贵妃', relation: '妾', note: '扬州·崇祯元年入宫(尚未)' }
+        { name: '袁贵妃', relation: '妾', note: '贵妃·温顺体弱' }
       ],
       relations: {
         '魏忠贤': { affinity: 10, trust: 5, respect: 15, fear: 40, hostility: 75, labels: ['权阉','待除之奸'] },
@@ -985,11 +959,8 @@
     },
     '周皇后': {
       familyMembers: [
-        { name: '朱由检', relation: '夫', note: '崇祯帝' },
-        { name: '周奎', relation: '父', note: '嘉定伯·吝啬守财' },
-        { name: '朱慈烺', relation: '子', note: '皇太子(崇祯二年生)', note2: '尚未出生' },
-        { name: '朱慈炯', relation: '子', note: '定王' },
-        { name: '朱慈照', relation: '子', note: '永王' }
+        { name: '朱由检', relation: '夫', note: '今上' },
+        { name: '周奎', relation: '父', note: '嘉定伯·吝啬守财' }
       ],
       relations: {
         '朱由检': { affinity: 95, trust: 90, respect: 85, fear: 5, hostility: 0, labels: ['夫妻','同心'] },
@@ -1162,7 +1133,7 @@
     },
     '毕自严': {
       familyMembers: [
-        { name: '毕自肃', relation: '弟', note: '辽东巡抚·崇祯元年毕命山海关兵变' }
+        { name: '毕自肃', relation: '弟', note: '曾任辽东巡抚，现闲居' }
       ],
       relations: {
         '朱由检': { affinity: 75, trust: 75, respect: 85, fear: 10, hostility: 0, labels: ['财政倚重'] },
@@ -1320,15 +1291,13 @@
         { name: '多铎', relation: '异母弟', note: '十三岁·镶白旗' },
         { name: '阿济格', relation: '异母弟', note: '二十二岁' },
         { name: '哲哲', relation: '嫡妃', note: '孝端文皇后·科尔沁博尔济吉特氏' },
-        { name: '海兰珠', relation: '妃(未娶)', note: '宸妃·1634 入嫁' },
-        { name: '布木布泰', relation: '妃', note: '孝庄·1625 入嫁·顺治帝生母' },
-        { name: '豪格', relation: '长子', note: '十八岁·镶黄旗'},
-        { name: '福临', relation: '幼子', note: '1638 年生(尚未出生)·未来顺治帝' }
+        { name: '布木布泰', relation: '妃', note: '孝庄·天启五年入嫁' },
+        { name: '豪格', relation: '长子', note: '十八岁·镶黄旗'}
       ],
       relations: {
         '代善': { affinity: 55, trust: 45, respect: 70, fear: 10, hostility: 25, labels: ['兄','四大贝勒并坐'] },
-        '阿敏': { affinity: 25, trust: 15, respect: 40, fear: 10, hostility: 60, labels: ['权大妨己','日后囚之'] },
-        '莽古尔泰': { affinity: 20, trust: 10, respect: 35, fear: 5, hostility: 65, labels: ['日后暴死疑案'] },
+        '阿敏': { affinity: 25, trust: 15, respect: 40, fear: 10, hostility: 60, labels: ['权大妨己','待削'] },
+        '莽古尔泰': { affinity: 20, trust: 10, respect: 35, fear: 5, hostility: 65, labels: ['位尊性暴','防其作乱'] },
         '多尔衮': { affinity: 40, trust: 35, respect: 55, fear: 5, hostility: 35, labels: ['幼弟','母仇隐恨'] },
         '阿济格': { affinity: 35, trust: 30, respect: 40, fear: 0, hostility: 25, labels: ['多尔衮兄'] },
         '范文程': { affinity: 90, trust: 90, respect: 85, fear: 0, hostility: 0, labels: ['汉臣谋主','赞襄王业'] },
@@ -1388,7 +1357,7 @@
         { name: '布延彻辰汗', relation: '祖', note: '1604 崩(元裔)', dead: true },
         { name: '莽古斯', relation: '父(殁)', dead: true },
         { name: '苏泰大福晋', relation: '妻' },
-        { name: '额哲', relation: '子', note: '崇祯八年降清' }
+        { name: '额哲', relation: '子', note: '察哈尔部承继之望' }
       ],
       relations: {
         '皇太极': { affinity: 0, trust: 0, respect: 30, fear: 20, hostility: 95, labels: ['蒙古争主','死敌'] },
@@ -1400,8 +1369,8 @@
         { name: '光海君', relation: '叔·前王', note: '被己推翻' },
         { name: '定远大院君', relation: '父' },
         { name: '仁烈王后韩氏', relation: '妻' },
-        { name: '昭显世子', relation: '长子', note: '丙子胡乱后入清为质' },
-        { name: '孝宗', relation: '次子', note: '后继位·反清志士' }
+        { name: '昭显世子', relation: '长子' },
+        { name: '凤林大君', relation: '次子' }
       ],
       relations: {
         '朱由检': { affinity: 80, trust: 75, respect: 90, fear: 10, hostility: 0, labels: ['事大','藩属'] },
@@ -1415,14 +1384,14 @@
         { name: '黄氏', relation: '母' },
         { name: '田川松', relation: '妻', note: '日本平户妇人' },
         { name: '翁氏', relation: '中国妻' },
-        { name: '郑成功', relation: '长子', note: '1624 日本平户生·日后抗清复台' },
+        { name: '郑成功', relation: '长子', note: '日本平户生·现年 3 岁' },
         { name: '郑鸿逵', relation: '弟' },
         { name: '郑芝豹', relation: '弟' },
         { name: '郑彩', relation: '从子' }
       ],
       relations: {
         '朱由检': { affinity: 55, trust: 45, respect: 55, fear: 15, hostility: 10, labels: ['将受抚'] },
-        '郑成功': { affinity: 70, trust: 65, respect: 60, fear: 0, hostility: 15, labels: ['长子','日后背父降明之分歧'] },
+        '郑成功': { affinity: 70, trust: 65, respect: 60, fear: 0, hostility: 0, labels: ['长子','幼而聪慧'] },
         '田川松': { affinity: 85, trust: 80, respect: 55, fear: 0, hostility: 0, labels: ['日籍妻'] },
         '李旦': { affinity: 80, trust: 75, respect: 70, fear: 0, hostility: 0, labels: ['恩主前辈'], note: '已殁' },
         '颜思齐': { affinity: 75, trust: 70, respect: 65, fear: 0, hostility: 0, labels: ['海盗同盟·殁'] }
@@ -1434,23 +1403,23 @@
         { name: '吕氏', relation: '妻(早殁)', dead: true },
         { name: '高氏', relation: '妻', note: '高迎祥之女/侄女' },
         { name: '高一功', relation: '舅/妻舅' },
-        { name: '高迎祥', relation: '舅', note: '闯王·未来领军' }
+        { name: '高迎祥', relation: '舅', note: '闯王' }
       ],
       relations: {
         '高迎祥': { affinity: 80, trust: 75, respect: 70, fear: 5, hostility: 0, labels: ['舅甥','起事预备'] },
-        '张献忠': { affinity: 60, trust: 40, respect: 55, fear: 5, hostility: 30, labels: ['共起','后路分'] },
-        '朱由检': { affinity: 0, trust: 0, respect: 40, fear: 30, hostility: 95, labels: ['朝廷对敌','日后破京'] }
+        '张献忠': { affinity: 60, trust: 40, respect: 55, fear: 5, hostility: 30, labels: ['陕北同乡'] },
+        '朱由检': { affinity: 0, trust: 0, respect: 40, fear: 30, hostility: 95, labels: ['朝廷对敌'] }
       }
     },
     '张献忠': {
       familyMembers: [
         { name: '张英', relation: '父', note: '延安贫户' },
-        { name: '张可望', relation: '义子·孙可望', note: '后为大西四大将军之首' },
+        { name: '张可望', relation: '义子·孙可望' },
         { name: '张文秀', relation: '义子·刘文秀' },
-        { name: '张定国', relation: '义子·李定国', note: '后为南明大将' }
+        { name: '张定国', relation: '义子·李定国' }
       ],
       relations: {
-        '李自成': { affinity: 50, trust: 30, respect: 55, fear: 10, hostility: 40, labels: ['同起','路分'] },
+        '李自成': { affinity: 50, trust: 30, respect: 55, fear: 10, hostility: 40, labels: ['陕北同起'] },
         '朱由检': { affinity: 0, trust: 0, respect: 35, fear: 25, hostility: 95, labels: ['死敌'] }
       }
     },
@@ -1959,47 +1928,35 @@
         '3. 辽东大员(经略/总兵/东江)任免由玩家决——AI 不得自行召还袁崇焕/孙承宗，不得自行斩毛文龙。\n' +
         '4. 内阁阁臣进退由玩家"廷推/特简"——AI 可推荐名单但不得擅拟。\n' +
         '5. 宗藩禄米政策不可径改——涉及削禄/就藩/开宗籍须玩家诏旨。\n' +
-        '6. 后金不得径取山海关——皇太极至少先绕蒙古(己巳之变 1629 为历史锚点)；辽西走廊线只在关宁失守后方可松动。\n' +
-        '7. 陕北民变须有气候/加派/饥馑三要素累积触发——崇祯元年白水王二起义为历史锚点，不可早发。\n' +
+        '6. 后金不得径取山海关——须先绕蒙古或经长期围困；辽西走廊线只在关宁失守后方可松动。\n' +
+        '7. 陕北民变须有气候/加派/饥馑三要素累积触发——不可无因早发。\n' +
         '8. 东林党复起须依托玩家诏旨——韩爌/钱龙锡等起复不可自动。\n' +
         '9. 天象异变(彗/蚀/地震)可随机发生并由钦天监奏报——但须先报帝，由玩家决定是否下罪己诏。\n' +
         '10. 小冰河期气候持续恶化——北方旱涝每年至少 1-2 起，不可连续三年风调雨顺。',
       winCond:
-        '短期（1 年内）：妥善处置魏忠贤及阉党，不致京师兵变；起用韩爌、孙承宗、袁崇焕等贤能。\n' +
+        '短期（1 年内）：妥善处置魏忠贤及阉党，不致京师兵变；起用贤能。\n' +
         '中期（3 年内）：辽东防线稳固，关宁锦防线不失；陕北民变控制在局部。\n' +
-        '长期（10-17 年）：避免崇祯十七年（1644）之亡国——至少不重蹈原史覆辙。',
+        '长期（10 年+）：避免亡国——保社稷、保宗庙、保天下苍生。',
       loseCond:
         '① 处置阉党失当引发京师兵变，新帝被逼退位或弑君。\n' +
         '② 辽东山海关陷落。\n' +
-        '③ 闯军/大西军攻入京师。\n' +
+        '③ 内地大股民军攻入京师。\n' +
         '④ 内帑帑廪双绝、朝纲崩坏、党争致宰辅更替频繁失序。',
       refText:
-        '【天启末至崇祯初的关键史实，供 AI 严格史实校验参考】\n' +
+        '【天启末局势·开局史实参考·仅限 1627 年前及当下】\n' +
         '• 天启七年八月朱由校崩，朱由检以皇弟入继。\n' +
-        '• 九月客氏出宫；十月阉党崔呈秀首罢。\n' +
-        '• 十一月六日，魏忠贤贬凤阳守陵；六日夜闻讯于阜城，自缢死。\n' +
-        '• 十二月客氏杖毙浣衣局。\n' +
-        '• 崇祯元年（1628）七月袁崇焕召见平台，君臣"五年复辽"之约。\n' +
-        '• 崇祯元年陕北王嘉胤、高迎祥起事；二年后金皇太极绕道蒙古破塞；三年袁崇焕下狱磔死。\n' +
-        '• 崇祯末年（1644）李自成破京、帝自缢煤山。\n' +
-        '【关键角色命运原史】\n' +
-        '• 黄立极（阉党首辅）——崇祯元年罢归，卒于家。\n' +
-        '• 韩爌（东林老臣）——召还为首辅，崇祯三年致仕。\n' +
-        '• 毕自严——崇祯元年升户部尚书，理财八年有功，病卒。\n' +
-        '• 袁崇焕——崇祯元年督师蓟辽，二年入援，三年磔于市。\n' +
-        '• 孙承宗——崇祯二年再督蓟辽，守拱卫；清兵攻高阳，阖门殉国。\n' +
-        '• 毛文龙——崇祯二年被袁崇焕矫诏斩于双岛；旋东江镇变。\n' +
-        '• 温体仁——崇祯二年入阁，次年为首辅，结党八年，崇祯十年罢。\n' +
-        '• 周延儒——崇祯二年入阁首辅，三年罢；崇祯十四年再首辅，十六年赐死。\n' +
-        '• 洪承畴——崇祯十五年松锦之战降清，原史变节。\n' +
-        '• 卢象升——崇祯十一年鹿庄之战战死。\n' +
-        '• 孙传庭——崇祯十六年潼关战败死。\n' +
-        '• 徐光启——崇祯二年礼部尚书，六年病卒。\n' +
-        '• 魏忠贤——天启七年冬自缢；阉党次第追究。\n' +
-        '• 崔呈秀——天启七年罢，自缢。\n' +
-        '• 李自成——崇祯二年银川驿革驿而起事；崇祯十七年破京。\n' +
-        '• 张献忠——崇祯三年米脂十八寨起事；崇祯十六年据武昌建大西。\n' +
-        '• 周皇后——崇祯十七年三月自缢殉国。',
+        '• 九月客氏出宫候命；十月阉党崔呈秀首遭科道交劾。\n' +
+        '• 魏忠贤权势仍在，司礼监印柄未去，京师九门锦衣卫爪牙林立。\n' +
+        '• 辽东关宁防线由袁崇焕（已丁忧归乡）、赵率教、祖大寿等经营；毛文龙据皮岛自立门户。\n' +
+        '• 后金皇太极即位方一年，虎视辽西；察哈尔林丹汗西迁归化城与之对峙。\n' +
+        '• 陕北连年大旱，加派压苛，民流离者众——民变之火已在积薪。\n' +
+        '• 东林六君子血债未偿，韩爌、钱龙锡、孙承宗等贤臣散落林泉，朝中浙党楚党齐党纠结。\n' +
+        '• 小冰河期北方连年旱涝、江南倭寇海盗、西南奢安之乱未平。\n' +
+        '【注】本剧本为天启七年秋之平行时空——AI 不得以任何"原史后续"作预判或剧透；\n' +
+        '所有人物命运、战局走向、政局演变皆由玩家与 AI 推演现场决定。\n' +
+        '• 现任阁臣：黄立极(首辅·阉党)、施凤来、张瑞图、李国普、冯铨等。\n' +
+        '• 六部尚书：礼(来宗道)、吏(崔呈秀兼)、户(郭允厚)、兵(崔呈秀)、刑(薛贞)、工(李养德)。\n' +
+        '• 闲居待起：韩爌、钱龙锡、毕自严、孙承宗、徐光启、袁崇焕(丁忧)。',
       customPrompt:
         '本剧本严格以天启末崇祯初历史为依据。AI 推演应反映：\n' +
         '① 阉党倾覆的仓促与必然；\n' +
@@ -2061,7 +2018,7 @@
             dimension: 'economic',
             severity: 'critical',
             parties: '户部/九边军头 vs 江南缙绅/北方小民',
-            description: '太仓存银仅 80 万，辽饷岁需 500 万，仰加派于田亩(每亩加 9 厘始，后升 12 厘)。北方旱灾连年仍加派不减，西北陕北"食树皮观音土"(崇祯实录语)；江南缙绅以减免、包揽、荫户规避；南北税负严重失衡。加派一钱则民怨一分，停派则九边哗饷。若三年内不能开源(整盐/整矿/整海关)则必至剿饷练饷再加，酿民变。'
+            description: '太仓存银仅 80 万，辽饷岁需 500 万，仰加派于田亩(每亩加 9 厘)。北方旱灾连年仍加派不减，西北陕北"食树皮观音土"；江南缙绅以减免、包揽、荫户规避；南北税负严重失衡。加派一钱则民怨一分，停派则九边哗饷。若三年内不能开源(整盐/整矿/整海关)则必至剿饷练饷再加，酿民变。'
           },
           {
             title: '宗藩蠹国·岁禄之渊',
@@ -2082,21 +2039,21 @@
             dimension: 'political',
             severity: 'major',
             parties: '东林党(将起复) vs 阉党余孽+浙楚齐昆诸党',
-            description: '东林六君子死于天启四年，高攀龙自沉于天启六年，韩爌/钱龙锡/刘鸿训/成基命等散居乡里。新帝若尽召东林，浙楚齐昆必激烈反扑(温体仁/周延儒之所以兴起实为反东林之柄)。若调和用人则两面皆失。崇祯十七年间阁臣更替 50 余人、首辅更 17 次，党争空耗国力。此矛盾不解则任何经济军事改革皆无人可办。'
+            description: '东林六君子死于天启四年，高攀龙自沉于天启六年，韩爌/钱龙锡/刘鸿训/成基命等散居乡里。新帝若尽召东林，浙楚齐昆必激烈反扑(温体仁/周延儒之所以兴起实为反东林之柄)。若调和用人则两面皆失。党争空耗国力，阁臣更迭频仍，此矛盾不解则任何经济军事改革皆无人可办。'
           },
           {
             title: '陕北大饥·民变之薪',
             dimension: 'social',
             severity: 'major',
             parties: '陕西省府(胡廷宴) vs 延安/庆阳/榆林饥民',
-            description: '天启六-七年关中/陕北连续大旱(小冰河期谷底)，草木尽枯，人相食。陕西巡抚胡廷宴粉饰太平以免追责，赋役不减；三边总督武之望欠兵饷数月。王嘉胤将于崇祯元年白水起事，次年王二、高迎祥、李自成、张献忠相继举火。三年内必成"燎原之势"。此矛盾无法靠加派/剿饷解决——根在气候+宗藩侵田+胥吏浮收三重挤压。'
+            description: '天启六-七年关中/陕北连续大旱(小冰河期谷底)，草木尽枯，人相食。陕西巡抚胡廷宴粉饰太平以免追责，赋役不减；三边总督武之望欠兵饷数月。边军叛卒+饥民+流寇三股汇流，民变之火在积薪，朝夕之间将成燎原之势。此矛盾无法靠加派/剿饷解决——根在气候+宗藩侵田+胥吏浮收三重挤压。'
           },
           {
             title: '小冰河·气候不可抗',
             dimension: 'social',
             severity: 'major',
             parties: '天道/小冰河 vs 农耕帝国+九边军屯',
-            description: '万历中后期至崇祯末(1580-1680)全球小冰河期，北方无霜期缩短、旱灾频率骤增、蝗疫相继。长城沿线军屯粮产腰斩，辽东屯田难继。1627 年秋北方蝗灾正炽(《熹宗实录》载山东七月蝗)。此为"天意矛盾"，无帝王可直接对付——但其恶果(饥民/瘟疫/边饷)全部落于朝廷账上。不修水利+不开常平仓+不减北方租则积薪不可救。'
+            description: '全球小冰河期(约 1580-1680)肆虐，北方无霜期缩短、旱灾频率骤增、蝗疫相继。长城沿线军屯粮产腰斩，辽东屯田难继。1627 年秋北方蝗灾正炽(《熹宗实录》载山东七月蝗)。此为"天意矛盾"，无帝王可直接对付——但其恶果(饥民/瘟疫/边饷)全部落于朝廷账上。不修水利+不开常平仓+不减北方租则积薪不可救。'
           }
         ],
       },
@@ -2114,7 +2071,7 @@
         militaryProfessionalism: 0.35, // 军事专业化：九边军户虚额严重
         landSystemType: 'mixed',      // 田制：私田 + 官田 + 皇庄 + 藩田 混合
         dynastyPhase: 'decline',      // 王朝阶段：由盛转衰/末路前夜
-        contextDescription: '万历怠政、天启阉祸之后，崇祯即位。表面完整的大明帝国已是危房：北有后金虎视，西北有饥民啸聚，江南有缙绅抵税，朝堂有党争血仇。一代新君承百年积弊。'
+        contextDescription: '万历怠政、天启阉祸之后，新帝以皇弟入继。表面完整的大明帝国已是危房：北有后金虎视，西北有饥民啸聚，江南有缙绅抵税，朝堂有党争血仇。一代新君承百年积弊。'
       },
 
       // ──── 时间/年号 ────
@@ -2145,7 +2102,7 @@
           qita: true          // 其他（茶马/矿税已罢/竹木税）
         },
         customTaxes: [
-          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.009, description: '万历四十六年始征，每亩九厘银；崇祯四年升至一分二厘，崇祯十年每亩三分。原史至亡国时达 2200万两/年。' },
+          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.009, description: '万历四十六年始征，每亩九厘银。专供辽东军饷。田赋压苛之源。' },
           { id: 'chama', name: '茶马司', formulaType: 'flat', amount: 120000, description: '陕甘茶马司年入；为边军备马；万历末以降走私严重。' },
           { id: 'chaoguan', name: '钞关过货税', formulaType: 'flat', amount: 450000, description: '运河沿线八大钞关（临清/淮安等）岁入。' },
           { id: 'guanshui', name: '海关（月港）', formulaType: 'flat', amount: 30000, description: '福建漳州月港市舶司岁入。万历开海后设。' },
@@ -2321,20 +2278,20 @@
         quotaMoney: 8000000,       // 天下税银理论总额·两
         quotaGrain: 26000000,      // 天下税粮理论总额·石（《明会典》夏秋税粮共约 2600 万石）
         quotaCloth: 500000,
-        historicalContext: '《明史·食货志》《崇祯实录》: 天启末太仓银库存银约 80-120 万两（张居正积八百万已尽于三大征，另加派辽饷济之）；京通十三仓储粮 130-150 万石（供京师九边一年用度）；内外二库藏布 8-10 万匹（折俸+赐赉用）',
+        historicalContext: '《明史·食货志》: 天启末太仓银库存银约 80-120 万两（张居正积八百万已尽于三大征，另加派辽饷济之）；京通十三仓储粮 130-150 万石（供京师九边一年用度）；内外二库藏布 8-10 万匹（折俸+赐赉用）',
         source: '户部主管+十三清吏司分掌；太仓银库存通州；京通十三仓储粮；内外二库藏布'
       },
 
       // ──── 内帑初值（编辑器 top-level scriptData.neitang · 皇帝私藏）────
       neitang: {
-        initialMoney: 2500000,     // 内承运库存银·两（魏忠贤聚敛·崇祯元年清查约 200-300 万两）
+        initialMoney: 2500000,     // 内承运库存银·两（魏忠贤聚敛八年·约 200-300 万两）
         initialGrain: 120000,      // 内府粮储·石（宫廷御膳+赏赉之用。内库粮远少于太仓粮，供岁用宫廷所需）
         initialCloth: 280000,      // 绸缎匹数·匹（苏州/杭州/江宁三织造累积·宫廷绢缎服饰赏赐用；比太仓粗布多得多）
         huangzhuangAcres: 320000,  // 皇庄田亩
         huangzhuangRatePerAcre: 0.45,  // 每亩租银/年
         monthlyIncomeEstimate: { money: 55000, grain: 8000, cloth: 8000 },   // 月均入账（皇庄租+织造贡+盐引）
         monthlyExpenseEstimate: { money: 110000, grain: 12000, cloth: 10000 },  // 月均支出（宫廷俸米+大典+赏赉）
-        historicalContext: '魏忠贤掌内承运库八年聚敛无数。崇祯元年清查时实存约 250 万两+金宝数万两+三织造绸缎锦缎二十余万匹。万历末内帑原有 500-600 万两（矿税积累），三大征+宫中挥霍+阉党窃用后剩此数。粮储较少（约 10-15 万石，仅供宫廷御膳），绸缎较多（苏杭江三织造岁供 8-15 万匹累积）',
+        historicalContext: '魏忠贤掌内承运库八年聚敛无数，实存约 250 万两+金宝数万两+三织造绸缎锦缎二十余万匹。万历末内帑原有 500-600 万两（矿税积累），三大征+宫中挥霍+阉党窃用后剩此数。粮储较少（约 10-15 万石，仅供宫廷御膳），绸缎较多（苏杭江三织造岁供 8-15 万匹累积）',
         imperialBusinesses: ['苏州织造局', '杭州织造局', '江宁织造局', '内库盐引(两淮长芦)', '贡茶(武夷/阳羡)', '景德镇御器厂(宫廷窑)'],
         imperialBusinessRevenueAnnual: 650000,
         debtToGuoku: { amount: 1800000, interestFree: true, note: '边饷极急时户部借内帑形成的累计欠额（万历朝历次三大征调拨）' },
@@ -2426,7 +2383,7 @@
         notableExaminers: [
           { year: 1622, name: '天启二年会试主考官', holder: '朱国祯+焦竑', note: '录取有倪元璐/文震孟/陈奇瑜等' },
           { year: 1625, name: '天启五年会试主考官', holder: '丁绍轼+周道登', note: '正值阉党巅峰。东林党人几无录取' },
-          { year: 1628, name: '崇祯元年会试主考官(将)', holder: '(未定，将为韩爌/钱谦益等)', note: '东林复起后首科' }
+          { year: 1628, name: '明年戊辰科会试主考官', holder: '(未定)', note: '戊辰会试在即，朝议未定主考' }
         ],
         // 每科重要登科事件
         examIssues: {
@@ -2469,14 +2426,14 @@
               { id: 'zhaoren', name: '昭仁殿', role: 'attached', capacity: 6, occupants: [], rankRestriction: [] }
             ], isHistorical: true },
           { id: 'jiaotai', name: '交泰殿', type: 'ceremonial', function: '存二十五玺·册封命妇·皇后圣寿节庆贺', description: '乾清/坤宁之间。乾隆朝始定"交泰殿"名，明代已有。内藏皇帝之宝等二十五方宝玺。', location: '紫禁城中轴·后中', maintainCost: 800, builtYear: 1420, level: 3, status: 'intact', subHalls: [], isHistorical: true },
-          { id: 'kunning', name: '坤宁宫', type: 'residence', function: '皇后正寝', description: '内廷后殿。周皇后居此。明代皇后正位。崇祯十七年三月周皇后于此自缢殉国。', location: '紫禁城中轴·后', maintainCost: 2500, builtYear: 1420, level: 1, status: 'intact', subHalls: [
+          { id: 'kunning', name: '坤宁宫', type: 'residence', function: '皇后正寝', description: '内廷后殿。周皇后居此。明代皇后正位。', location: '紫禁城中轴·后', maintainCost: 2500, builtYear: 1420, level: 1, status: 'intact', subHalls: [
               { id: 'kunningZheng', name: '坤宁宫正殿', role: 'main', capacity: 8, occupants: ['周皇后'], rankRestriction: ['皇后'] }
             ], isHistorical: true },
           // ═══ 东六宫 (type=concubine) ═══
           { id: 'jingren', name: '景仁宫', type: 'concubine', function: '东六宫之一·妃嫔居所', description: '东六宫最北宫。清代后续人出生于此。此时为嫔妃合居之所。', location: '紫禁城内廷·东六宫最北', maintainCost: 1200, builtYear: 1420, level: 3, status: 'intact', subHalls: [
               { id: 'jingrenZheng', name: '景仁宫正殿', role: 'main', capacity: 4, occupants: [], rankRestriction: ['妃', '嫔'] }
             ], isHistorical: true },
-          { id: 'chengqian', name: '承乾宫', type: 'concubine', function: '东六宫·贵妃居所', description: '东六宫·袁贵妃居此。日后田贵妃(崇祯元年入宫后)亦居。', location: '紫禁城内廷·东六宫', maintainCost: 1500, builtYear: 1420, level: 2, status: 'intact', subHalls: [
+          { id: 'chengqian', name: '承乾宫', type: 'concubine', function: '东六宫·贵妃居所', description: '东六宫·袁贵妃居此。', location: '紫禁城内廷·东六宫', maintainCost: 1500, builtYear: 1420, level: 2, status: 'intact', subHalls: [
               { id: 'chengqianZheng', name: '承乾宫正殿', role: 'main', capacity: 4, occupants: ['袁贵妃'], rankRestriction: ['贵妃', '皇贵妃'] }
             ], isHistorical: true },
           { id: 'zhongcui', name: '钟粹宫', type: 'concubine', function: '东六宫·妃嫔居所', description: '东六宫中宫之一。明代为太子居所(如朱由校幼时居此)。', location: '紫禁城内廷·东六宫', maintainCost: 1200, builtYear: 1420, level: 3, status: 'intact', subHalls: [
@@ -2485,7 +2442,7 @@
           { id: 'yanxi', name: '延禧宫', type: 'concubine', function: '东六宫·妃嫔居所', description: '东六宫最东南。此时空闲。', location: '紫禁城内廷·东六宫', maintainCost: 1000, builtYear: 1420, level: 3, status: 'intact', subHalls: [
               { id: 'yanxiZheng', name: '延禧宫正殿', role: 'main', capacity: 4, occupants: [], rankRestriction: ['妃', '嫔'] }
             ], isHistorical: true },
-          { id: 'yonghe', name: '永和宫', type: 'concubine', function: '东六宫·妃嫔居所', description: '东六宫。崇祯田贵妃曾居此(崇祯元年初)。', location: '紫禁城内廷·东六宫', maintainCost: 1200, builtYear: 1420, level: 3, status: 'intact', subHalls: [
+          { id: 'yonghe', name: '永和宫', type: 'concubine', function: '东六宫·妃嫔居所', description: '东六宫。暂无妃嫔居之。', location: '紫禁城内廷·东六宫', maintainCost: 1200, builtYear: 1420, level: 3, status: 'intact', subHalls: [
               { id: 'yongheZheng', name: '永和宫正殿', role: 'main', capacity: 4, occupants: [], rankRestriction: ['妃', '嫔'] }
             ], isHistorical: true },
           { id: 'jingyang', name: '景阳宫', type: 'concubine', function: '东六宫·妃嫔居所', description: '东六宫最东北。此时空闲。', location: '紫禁城内廷·东六宫', maintainCost: 1000, builtYear: 1420, level: 3, status: 'intact', subHalls: [
@@ -2561,23 +2518,7 @@
           { turn: -1, date: '天启六年(1626)', title: '宁远大捷·生祠遍天下', note: '袁崇焕宁远败努尔哈赤(五月)。九月起魏忠贤生祠首建于浙江潘汝桢，一年余达数百处。', category: '辽东·阉党', isHistorical: true },
           { turn: 0, date: '天启七年八月(1627-9)', title: '熹宗崩·朱由检入继', note: '八月廿二朱由校崩于乾清宫。廿四张皇后召信王入继大统。九月魏忠贤送客氏出宫。', category: '剧本起点', isHistorical: true }
         ],
-        future: [
-          { turn: 2, date: '天启七年十月', title: '崔呈秀罢', note: '阉党五虎之首首罢官。魏忠贤震恐。', category: '阉党', isHistorical: true },
-          { turn: 3, date: '天启七年十一月', title: '魏忠贤贬凤阳守陵·自缢阜城', note: '钱嘉徵劾十大罪。魏忠贤贬后于阜城闻"五更曲骂九千岁"自缢。', category: '阉党', isHistorical: true },
-          { turn: 4, date: '天启七年十二月', title: '客氏杖毙', note: '客氏死于浣衣局。阉党清算全面展开。', category: '阉党', isHistorical: true },
-          { turn: 5, date: '崇祯元年正月', title: '改元崇祯', note: '年号自天启改崇祯。黄立极罢，钱龙锡/李标/刘鸿训/周道登等依次入阁。', category: '政治', isHistorical: true },
-          { turn: 11, date: '崇祯元年七月', title: '平台召对', note: '袁崇焕召见于平台，君臣"五年复辽"之约。授督师蓟辽。', category: '辽东', isHistorical: true },
-          { turn: 14, date: '崇祯元年十月', title: '陕北王嘉胤起事(白水王二同时)', note: '府谷饥民大起。民变时代启。', category: '民变', isHistorical: true },
-          { turn: 22, date: '崇祯二年六月', title: '袁崇焕斩毛文龙', note: '双岛矫诏。东江镇次第哗变，刘兴祚等降后金。', category: '辽东', isHistorical: true },
-          { turn: 26, date: '崇祯二年十月', title: '己巳之变', note: '皇太极绕蒙古破长城，围京师。袁崇焕入援勤王。', category: '辽东', isHistorical: true },
-          { turn: 29, date: '崇祯三年八月', title: '袁崇焕磔死', note: '诏狱论死。关宁军心涣散。', category: '辽东', isHistorical: true },
-          { turn: 35, date: '崇祯五年(1632)', title: '温体仁入阁·寻首辅', note: '奸相之局开。结党八年(至崇祯十年)。', category: '政治', isHistorical: true },
-          { turn: 50, date: '崇祯九年(1636)', title: '皇太极改国号清·称皇帝', note: '盛京登基。明失"后金"这个退让空间。', category: '后金·清', isHistorical: true },
-          { turn: 68, date: '崇祯十一年(1638)', title: '卢象升战死鹿庄', note: '杨嗣昌掣肘。内阁忌其功。', category: '军事', isHistorical: true },
-          { turn: 121, date: '崇祯十五年(1642)', title: '松锦之战', note: '洪承畴降清。明九边主力尽丧。', category: '军事', isHistorical: true },
-          { turn: 140, date: '崇祯十六年十月', title: '孙传庭战死潼关', note: '陕西总督最后的希望。"传庭死而明亡矣"。', category: '军事', isHistorical: true },
-          { turn: 146, date: '崇祯十七年三月(1644-4)', title: '煤山自缢·明亡', note: '李自成破京。帝自缢煤山。清兵入关。', category: '亡国', isHistorical: true }
-        ]
+        future: []
       },
 
       // ──── 规则（编辑器 scriptData.rules · 4 段 AI 推演约束文本） ────
@@ -2611,7 +2552,7 @@
           '1. 朝贡体系：朝鲜/安南/琉球/暹罗等"朝贡十国"，以"贡-赏"不等价交换为本。\n' +
           '2. 宗藩关系：朝鲜事明最恭(天启七年被后金迫定兄弟盟)、安南摇摆、琉球仅贡。\n' +
           '3. 对蒙古：察哈尔林丹汗西迁归化，欲联明抗金；土默特部/喀尔喀诸部皆叛附不定。\n' +
-          '4. 对后金：天启六-七年连战皆守势(宁远/宁锦)。后金尚未称帝国号(崇祯九年 1636 改清)。\n' +
+          '4. 对后金：天启六-七年连战皆守势(宁远/宁锦)。后金尚用国号"金"，皇太极称"汗"未称帝。\n' +
           '5. 对欧洲：葡人据澳门(嘉靖三十六年 1557 起)月租 500 两；荷人据台海(天启四年 1624 起)；西班牙据菲律宾与郑氏竞。\n' +
           '6. 土司体制：西南广西/云贵/四川边地土司百余家。"改土归流"为长期国策，奢安之乱仍在进行(第七年)。'
       },
@@ -2632,7 +2573,7 @@
           { name: '盐场·盐课提举司', category: 'economic', description: '两淮/两浙/山东/长芦/河东/四川等十一处盐场。盐引为大宗财源(年 250 万两)。', maxLevel: 5, baseCost: 10000, buildTime: 6 },
           { name: '钞关', category: 'economic', description: '漕运河道税关。临清/淮安/扬州/杭州等七大钞关。商税来源。', maxLevel: 4, baseCost: 8000, buildTime: 4 },
           { name: '漕仓·京通十三仓', category: 'economic', description: '通州京通十三仓储京师半年粮。年受江南漕米 400 万石。', maxLevel: 5, baseCost: 25000, buildTime: 10 },
-          { name: '驿站', category: 'economic', description: '明代驿递制度。每六十里一驿，十里一铺。塘马传递公文。崇祯元年裁驿为民变导火索。', maxLevel: 3, baseCost: 2000, buildTime: 3 },
+          { name: '驿站', category: 'economic', description: '明代驿递制度。每六十里一驿，十里一铺。塘马传递公文。驿卒多陕北穷汉，若裁则流民骤增。', maxLevel: 3, baseCost: 2000, buildTime: 3 },
           { name: '织造局', category: 'economic', description: '苏/杭/江宁三大织造局。皇家锦缎所需。由宦官提督。', maxLevel: 4, baseCost: 18000, buildTime: 8 },
           // ═══ 文化 ═══
           { name: '书院', category: 'cultural', description: '讲学论政之所。东林(无锡)/首善(北京)/紫阳(徽州)/石鼓(湘潭)四大书院。天启朝被毁。', maxLevel: 4, baseCost: 6000, buildTime: 6 },
@@ -2649,7 +2590,7 @@
           { name: '道观', category: 'religious', description: '道教宫观。武当山为皇家道场；北京白云观为全真祖庭。', maxLevel: 4, baseCost: 12000, buildTime: 10 },
           { name: '清真寺', category: 'religious', description: '回民礼拜之所。北京牛街、西安化觉巷、泉州艾苏哈卜皆明代著名。', maxLevel: 3, baseCost: 5000, buildTime: 6 },
           { name: '天主堂', category: 'religious', description: '明末利玛窦等耶稣会士所建。北京南堂(宣武门)为最早(万历三十三年)。', maxLevel: 3, baseCost: 6000, buildTime: 4 },
-          { name: '生祠', category: 'religious', description: '为活人立祠祀之。天启朝魏忠贤生祠遍天下（首建于浙江潘汝桢）。崇祯元年尽毁。', maxLevel: 3, baseCost: 20000, buildTime: 3 },
+          { name: '生祠', category: 'religious', description: '为活人立祠祀之。天启朝魏忠贤生祠遍天下（首建于浙江潘汝桢）。新帝若倒魏必废此制。', maxLevel: 3, baseCost: 20000, buildTime: 3 },
           // ═══ 基础设施 ═══
           { name: '水利·河工', category: 'infrastructure', description: '黄河治理+运河浚修。明代河漕总督常驻清江浦。河患频发。', maxLevel: 5, baseCost: 100000, buildTime: 24 },
           { name: '漕运码头', category: 'infrastructure', description: '运河沿线漕粮转运码头。临清/淮安/扬州为三大转运枢纽。', maxLevel: 4, baseCost: 12000, buildTime: 6 },
@@ -2933,7 +2874,7 @@
           { character: '朱常瀛', title: '亲王', titleName: '桂王', enfeoffYear: 1617, note: '衡州就国' },
           { character: '张维贤', title: '公', titleName: '英国公', enfeoffYear: '世袭', note: '左军都督·九代袭公' },
           { character: '徐光祚', title: '公', titleName: '定国公', enfeoffYear: '世袭', note: '徐达后裔' },
-          { character: '朱纯臣', title: '公', titleName: '成国公', enfeoffYear: '世袭', note: '朱能后裔·将于崇祯十七年降李自成后被杀' },
+          { character: '朱纯臣', title: '公', titleName: '成国公', enfeoffYear: '世袭', note: '朱能后裔·成国公府世袭' },
           { character: '徐弘基', title: '公', titleName: '魏国公', enfeoffYear: '世袭', note: '南京守备·徐达嫡裔' },
           { character: '魏良卿', title: '侯', titleName: '肃宁侯', enfeoffYear: 1626, note: '魏忠贤侄·明末特例·次年罢爵' },
           { character: '周奎', title: '伯', titleName: '嘉定伯', enfeoffYear: 1627, note: '周皇后之父' },
@@ -3022,7 +2963,7 @@
         campaigns: [
           { name: '宁远大捷', type: '过往胜仗', description: '天启六年袁崇焕以红衣大炮退努尔哈赤，破老奴不败神话。' },
           { name: '宁锦大捷', type: '过往胜仗', description: '天启七年五月袁崇焕据宁锦退皇太极。然阉党论功偏袒王之臣。' },
-          { name: '奢安之乱', type: '土司叛乱·进行中', description: '天启元年(1621)九月四川永宁宣抚使奢崇明于重庆起兵，天启二年(1622)二月贵州水西宣慰司同知安邦彦联反围贵阳。至天启七年(1627)已第七年——残部退水西 48 目山寨坚守。原史崇祯二年(1629)八月朱燮元秦良玉攻灭于永宁红崖大坝。波及川黔云桂四省。' },
+          { name: '奢安之乱', type: '土司叛乱·进行中', description: '天启元年(1621)九月四川永宁宣抚使奢崇明于重庆起兵，天启二年(1622)二月贵州水西宣慰司同知安邦彦联反围贵阳。至天启七年(1627)已第七年——残部退水西 48 目山寨坚守。朱燮元、秦良玉正督剿。波及川黔云桂四省。' },
           { name: '江都盟', type: '外敌条约', description: '天启七年春后金皇太极迫朝鲜仁祖定兄弟之盟。明失一东藩屏。' },
           { name: '宁夏哱拜之乱(1592)', type: '万历三大征·其一', description: '宁夏副总兵哱拜反叛。李如松统兵平之。半年而平。' },
           { name: '播州杨应龙之乱(1600)', type: '万历三大征·其二', description: '贵州播州宣慰使杨应龙叛。李化龙八路进剿，海龙囤覆。消耗二百余万两。' },
@@ -3030,7 +2971,7 @@
           { name: '抚顺陷落(1618)', type: '后金崛起', description: '努尔哈赤七大恨誓师。抚顺总兵李永芳降。广宁/开原/铁岭相继失守。' },
           { name: '萨尔浒之败(1619)', type: '辽东灾难', description: '杨镐四路进剿，三路败没。刘綎战死。明失辽东主动。' },
           { name: '广宁之变(1622)', type: '辽东再败', description: '王化贞弃广宁四十卫所退关内。熊廷弼受连累。' },
-          { name: '奢安之乱(1621-1629)', type: '土司叛乱·未竟', description: '永宁土司奢崇明+水西安邦彦联叛。川贵震动。耗千万两。将于崇祯二年平。' },
+          { name: '奢安之乱', type: '土司叛乱·未竟', description: '永宁土司奢崇明+水西安邦彦联叛。川贵震动。耗千万两。仍未完全平定。' },
           { name: '柳河之败(1625)', type: '辽东小败', description: '孙承宗部马世龙误渡柳河遇伏败。孙督师被阉党排挤下台。' },
           { name: '徐鸿儒白莲教叛(1622)', type: '民变·已平', description: '山东郓城徐鸿儒以白莲教名义聚众数万。不久被剿。' },
           { name: '江都盟(1627 春)', type: '外敌条约·新', description: '后金皇太极迫朝鲜仁祖定兄弟之盟。明失一东藩屏。' }
@@ -3252,7 +3193,7 @@
               { name: '长矛', count: 15000, condition: '一般' }
             ],
             description:
-              '《三朝辽事实录》《崇祯长编》载毛文龙"报十万，实不及三万"。账面 10 万，实发饷之员 3 万，真正战兵约 1-1.5 万。大量辽民/流民挂名食饷。驻皮岛(鹿岛/身弥岛/云从岛)，与朝鲜边境接壤。control 仅 30，桀骜独立。崇祯二年六月袁崇焕矫诏斩于双岛。'
+              '《三朝辽事实录》载毛文龙"报十万，实不及三万"。账面 10 万，实发饷之员 3 万，真正战兵约 1-1.5 万。大量辽民/流民挂名食饷。驻皮岛(鹿岛/身弥岛/云从岛)，与朝鲜边境接壤。control 仅 30，桀骜独立。'
           },
           {
             name: '东江水师', armyType: '水师', soldiers: 4000, garrison: '皮岛',
@@ -3390,7 +3331,7 @@
               { name: '棉甲', count: 12000, condition: '缺损' },
               { name: '战马', count: 10000, condition: '一般' }
             ],
-            description: '控河套。兵马多陕北之人。崇祯元年王二起义/王嘉胤起义即出本镇逃兵。欠饷数月。'
+            description: '控河套。兵马多陕北之人。欠饷数月，军心浮动，逃卒半夜串村。'
           },
           {
             name: '宁夏镇军', armyType: '边军', soldiers: 22000, garrison: '宁夏',
@@ -3565,7 +3506,7 @@
               { name: '鸟铳', count: 8000, condition: '一般' },
               { name: '佛朗机', count: 250, condition: '优良' }
             ],
-            description: '崇祯元年即将受抚为海防游击。战力远超福建官军水师。1624 助荷取澎湖逐退红夷·1627 击败许心素等诸海盗。忠诚仅 30——实为半独立海上军阀。'
+            description: '福建巡抚朱一冯正议招抚。战力远超福建官军水师。1624 助荷取澎湖逐退红夷·1627 击败许心素等诸海盗。忠诚仅 30——实为半独立海上军阀。'
           },
           // ═══ 边外羁縻 ═══
           {
@@ -3902,7 +3843,7 @@
             composition: [ { type: '步兵(军户)', count: 2100 }, { type: '辅兵', count: 400 } ],
             salary: [ { resource: '钱', amount: 20000, unit: '两' }, { resource: '粮食', amount: 7800, unit: '石' } ],
             equipment: [ { name: '长矛', count: 1900, condition: '缺损' }, { name: '鸟铳', count: 250, condition: '缺损' } ],
-            description: '湖广省会。长江中游水陆枢纽。崇祯十六年张献忠据武昌即由此地卫所投降。'
+            description: '湖广省会。长江中游水陆枢纽。卫所兵员参差不齐，承平久矣。'
           },
           {
             name: '成都卫(四川)', armyType: '地方守备', soldiers: 2300, garrison: '四川·成都',
@@ -4027,7 +3968,7 @@
         { name: '《永乐大典》副本', type: 'document', description: '22877 卷·11095 册。永乐修。存南京文渊阁，两副在皇史宬。', effect: '学识+15·文化遗产', rarity: '传说', owner: '南京文渊阁', value: 2000000, quantity: 1, era: '永乐' },
         { name: '《农政全书》稿本', type: 'document', description: '徐光启主编。60 卷论救荒/屯田/水利/甘薯。此时在编。', effect: '农业+20·救荒+15', rarity: '珍贵', owner: '徐光启', value: 50000, quantity: 1, provenance: '徐光启自著', era: '天启' },
         { name: '《本草纲目》', type: 'document', description: '李时珍著。16 部 52 卷。万历中刻成。天启朝流传。', effect: '医学+15', rarity: '精良', owner: '民间', value: 100, quantity: 150, era: '万历' },
-        { name: '《天工开物》初稿', type: 'document', description: '宋应星正撰。工艺百科。原史崇祯十年(1637)刊。', effect: '工艺+15', rarity: '珍贵', owner: '宋应星', value: 8000, quantity: 1, era: '天启' },
+        { name: '《天工开物》初稿', type: 'document', description: '宋应星正撰。工艺百科。', effect: '工艺+15', rarity: '珍贵', owner: '宋应星', value: 8000, quantity: 1, era: '天启' },
         { name: '《几何原本》前六卷', type: 'document', description: '利玛窦+徐光启合译(1607)。欧氏几何入华。', effect: '西学+20·数学启蒙', rarity: '珍贵', owner: '翰林院·徐光启·士林', value: 80, quantity: 200, provenance: '译自欧几里得原本', era: '万历' },
         { name: '《武备志》', type: 'document', description: '茅元仪著(1621)。240 卷。集古今兵法之大成。', effect: '军事+18', rarity: '精良', owner: '兵部/将领', value: 600, quantity: 80, era: '天启' },
         { name: '《明实录》天启朝编撰中', type: 'document', description: '官修国史。按日记录帝王言行军国大事。', effect: '史鉴+10', rarity: '精良', owner: '翰林院·史馆', value: 0, quantity: 1, era: '天启' },
@@ -4059,14 +4000,14 @@
           { name: '戚家军长短相制', desc: '戚继光鸳鸯阵·车营阵。', effect: '野战+12', era: '嘉靖以降', prereqs: [], unlocked: true }
         ],
         civil: [
-          { name: '《崇祯历书》编修', desc: '徐光启主持、邓玉函/汤若望/龙华民/罗雅谷参与。原史崇祯二年立局。', effect: '历法精度+40', era: '崇祯', prereqs: [], unlocked: false },
+          { name: '新历书编修', desc: '徐光启主持、邓玉函/汤若望/龙华民/罗雅谷参与。融中西历法。', effect: '历法精度+40', era: '待兴', prereqs: [], unlocked: false },
           { name: '甘薯北传', desc: '福建引进甘薯（1593 陈振龙）。徐光启力主北传。', effect: '救荒+30', era: '万历·崇祯', prereqs: [], unlocked: false },
           { name: '马铃薯试种', desc: '荷兰殖民者带入。徐光启倡试种北方。', effect: '救荒+20', era: '崇祯', prereqs: [], unlocked: false },
           { name: '红薯玉米推广', desc: '美洲作物引入。徐光启《农政全书》载录。', effect: '粮食+25', era: '崇祯', prereqs: [], unlocked: false },
           { name: '烟草传入', desc: '吕宋华侨传入。北方烟草自福建传入北京。', effect: '税源新增', era: '万历末', prereqs: [], unlocked: true },
           { name: '活字印刷普及', desc: '木活字、铜活字。', effect: '书籍成本-30%', era: '明代', prereqs: [], unlocked: true },
           { name: '《农政全书》', desc: '徐光启编。60 卷。救荒/屯田/水利/甘薯。', effect: '农业+20', era: '天启·崇祯', prereqs: [], unlocked: false },
-          { name: '《天工开物》', desc: '宋应星著。工艺百科。原史崇祯十年刊。', effect: '工艺+15', era: '崇祯', prereqs: [], unlocked: false }
+          { name: '《天工开物》', desc: '宋应星著。工艺百科，尚在撰写。', effect: '工艺+15', era: '待兴', prereqs: [], unlocked: false }
         ]
       },
 
@@ -4083,7 +4024,7 @@
           { name: '殿试廷推制', desc: '阁臣由廷推，尚书由会推。天启朝为阉党把持。', effect: '官员素质+10', era: '明代', prereqs: [], unlocked: true },
           { name: '考成法', desc: '张居正创，万历末废。考课严密。', effect: '吏治+20', era: '万历', prereqs: [], unlocked: false },
           { name: '一条鞭法', desc: '张居正推行。赋役归一，折银交纳。', effect: '税收+15·银荒+', era: '万历', prereqs: [], unlocked: true },
-          { name: '辽饷加派', desc: '万历四十六年起征。崇祯四年升至九厘银/亩。', effect: '国库+15·民心-10', era: '天启·崇祯', prereqs: [], unlocked: true },
+          { name: '辽饷加派', desc: '万历四十六年起征，每亩九厘银。', effect: '国库+15·民心-10', era: '天启', prereqs: [], unlocked: true },
           { name: '八股取士', desc: '明代科举定制。四书五经为本。', effect: '儒家正统+20·思想僵化+10', era: '明代', prereqs: [], unlocked: true },
           { name: '京察外察', desc: '文官六年一察。天启朝成党争工具。', effect: '吏治整饬±10', era: '明代', prereqs: [], unlocked: true },
           { name: '厂卫并立', desc: '东厂+锦衣卫监察百官。阉党利器。', effect: '皇权+15·清议-20', era: '明代', prereqs: [], unlocked: true }
@@ -4127,24 +4068,24 @@
           marriages: '与勋贵联姻(张氏·周氏·田氏·袁氏·王氏等)', feuds: '(为天下共主·无敌可言然内忧外患)',
           tradition: '祖制不可违·科举经筵·铨选任官',
           recentFortunes: '熹宗刚崩·新帝孤立入主·阉党盘踞',
-          note: '太祖朱元璋以来 259 年。宗室 20 余万，岁禄 600 万石压户部。原史崇祯十七年(1644)朱由检自缢煤山。'
+          note: '太祖朱元璋以来 259 年。宗室 20 余万，岁禄 600 万石压户部。新帝以皇弟入继，孤身入主。'
         },
         {
           name: '福王·朱常洵一系', tier: 'imperial', prestige: 85,
           ancestralSeat: '河南洛阳·福王府', founder: '朱常洵(神宗第三子·万历封福王)',
           currentHead: '朱常洵', heir: '朱由崧',
-          members: ['朱常洵', '朱由崧(日后弘光帝)', '朱由榘'],
+          members: ['朱常洵', '朱由崧', '朱由榘'],
           wealth: '田 4 万顷+盐引+内库·富甲天下', politicalStance: '藩王安分·侵吞民田',
           marriages: '与其他藩王联姻', feuds: '东林党(争国本之役)', prominence: 'stable',
           tradition: '神宗爱子·独占万历心血',
-          recentFortunes: '就国洛阳未至 1627·万历赐田 4 万顷',
-          note: '神宗爱子。原史崇祯十四年(1641) 李自成破洛阳烹之。次子朱由崧立南京为弘光帝。'
+          recentFortunes: '就国洛阳·万历赐田 4 万顷',
+          note: '神宗爱子。万历朝"争国本"始作俑者。洛阳据府邸侵吞民田甚巨。'
         },
         {
           name: '潞王·朱常淓一系', tier: 'imperial', prestige: 60,
           ancestralSeat: '河南卫辉', founder: '朱翊镠(潞简王·穆宗四子)',
           currentHead: '朱常淓', members: ['朱常淓'], wealth: '田万亩·内库银', politicalStance: '安分藩王',
-          prominence: 'stable', note: '万历胞弟潞简王之子。善琴棋书画。原史南都覆灭后降清被诛。'
+          prominence: 'stable', note: '万历胞弟潞简王之子。善琴棋书画，于卫辉安分。'
         },
         // ═══ 权阉 ═══
         {
@@ -4179,7 +4120,7 @@
           marriages: '与松江文艺世家联姻', feuds: '排斥西学的保守派',
           tradition: '农政西学·天主教(三代)',
           recentFortunes: '告归养病·将复职为礼部尚书',
-          note: '三代信天主教。徐光启译《几何原本》《农政全书》。原史崇祯六年卒于礼部尚书·文渊阁大学士任。'
+          note: '三代信天主教。徐光启译《几何原本》《农政全书》，致力推广西学救荒。'
         },
         {
           name: '钱氏·常熟', tier: 'gentry', prestige: 65,
@@ -4221,8 +4162,8 @@
           wealth: '父贡生·家道中等', politicalStance: '主战复辽', prominence: 'rising',
           marriages: '与岭南士子', feuds: '阉党',
           tradition: '贡生起家·袁崇焕自成一脉',
-          recentFortunes: '丁忧归乡·即将被诏起复督师蓟辽',
-          note: '袁崇焕一支孤立。原史崇祯三年磔死·孤子被流徙。'
+          recentFortunes: '丁忧归乡·宁锦大捷后被阉党逼走',
+          note: '袁崇焕一支孤立。岭南出身，宁远/宁锦两战成名，性刚毅自负。'
         },
         {
           name: '孙氏·高阳', tier: 'gentry', prestige: 78,
@@ -4231,8 +4172,8 @@
           wealth: '高阳田产+督师恩荫', politicalStance: '清正持正·师帝', prominence: 'stable',
           marriages: '与高阳同邑', feuds: '阉党',
           tradition: '进士世家·兵学+理学+帝师',
-          recentFortunes: '罢归乡·即将崇祯二年再起督辽',
-          note: '孙承宗帝师。原史崇祯十一年(1638)清军破高阳城，孙承宗阖门 40 口殉国。'
+          recentFortunes: '天启五年被阉党构陷罢归·赋闲高阳',
+          note: '孙承宗帝师。天启初督师辽东筑宁锦，熹宗师傅，六十五岁。'
         },
         {
           name: '祖氏·辽东宁远·世将', tier: 'gentry', prestige: 68,
@@ -4263,7 +4204,7 @@
           marriages: '夫马千乘(殁)',
           tradition: '白杆枪+土司武艺',
           recentFortunes: '征辽援沈于 1620·正参奢安之乱',
-          note: '明唯一列传女将。原史崇祯三年勤王入京·崇祯帝赋诗赠之。清兵入石柱 1648 不附。'
+          note: '明唯一列传女将。白杆兵远征辽东有功，今正参剿奢安之乱。'
         },
         {
           name: '戚氏·定远·戚继光后', tier: 'gentry', prestige: 38,
@@ -4283,8 +4224,8 @@
           wealth: '乌程田产+官位俸银', politicalStance: '柔佞·浙党', prominence: 'rising(rapid)',
           marriages: '与浙地土豪联姻', feuds: '东林党',
           tradition: '进士科举·柔言应对',
-          recentFortunes: '礼部左侍郎·即将入阁首辅(崇祯三年)',
-          note: '柔佞奸相。日后执政八年。崇祯十年罢归卒。'
+          recentFortunes: '礼部左侍郎·伺机而动',
+          note: '柔佞之流。以浙党身份反东林，善察上意。'
         },
         {
           name: '周氏·宜兴', tier: 'gentry', prestige: 65,
@@ -4293,8 +4234,8 @@
           wealth: '宜兴田+状元恩', politicalStance: '投机·才敏', prominence: 'rising',
           marriages: '与常州望族', feuds: '温体仁(同榜将仇)',
           tradition: '状元及第(万历四十一年)',
-          recentFortunes: '翰林院侍读学士·即将入阁(崇祯二年)',
-          note: '原史两度首辅·崇祯十六年赐死。'
+          recentFortunes: '翰林院侍读学士·欲搏大位',
+          note: '万历四十一年状元。投机才敏，善攀附。'
         },
         // ═══ 工艺·学术 ═══
         {
@@ -4323,7 +4264,7 @@
           wealth: '晋商富家·银号+边贸', politicalStance: '商利为先', prominence: 'rising',
           tradition: '票号+边贸+抄盐引',
           recentFortunes: '晋商在张家口-归化-沈阳 线崛起',
-          note: '日后清初"八大皇商"首家。原史为后金-清输粮运货立下功勋。'
+          note: '山西平阳府介休晋商。在张家口、归化、沈阳之间往来贩运，与后金多有私贸。'
         },
         // ═══ 后金 ═══
         {
@@ -4331,13 +4272,13 @@
           ancestralSeat: '辽东赫图阿拉·沈阳', founder: '努尔哈赤(1616 称汗·1626 殁)',
           notableAncestors: ['布库里雍顺(传说始祖)', '猛哥帖木儿(元末建州酋)', '努尔哈赤'],
           currentHead: '皇太极(35)', heir: '(尚未立)',
-          members: ['皇太极', '代善(兄·礼亲王)', '阿敏(堂兄·镶蓝旗)', '莽古尔泰(兄·正蓝旗)', '多尔衮(弟·15岁)', '多铎(弟·14岁)', '阿济格(弟)', '济尔哈朗(堂弟)', '豪格(皇太极子·19岁)', '福临(未生·1638 生)'],
+          members: ['皇太极', '代善(兄·礼亲王)', '阿敏(堂兄·镶蓝旗)', '莽古尔泰(兄·正蓝旗)', '多尔衮(弟·15岁)', '多铎(弟·14岁)', '阿济格(弟)', '济尔哈朗(堂弟)', '豪格(皇太极子·19岁)'],
           wealth: '八旗共有·皇太极私库尚浅', politicalStance: '汗业扩张', prominence: 'rising(rapid)',
           marriages: '与科尔沁蒙古联姻(哲哲/海兰珠/布木布泰)',
           tradition: '八旗制度·旗主议政·武勇尚骑射',
           feuds: '大明·察哈尔·朝鲜(已迫降)',
           recentFortunes: '皇太极继位一年·伐朝鲜成·宁锦败于袁崇焕',
-          note: '努尔哈赤所建。日后改姓，入主中原为清。'
+          note: '努尔哈赤所建。皇太极继位一年，八旗内部四大贝勒并尊制犹存。'
         },
         // ═══ 郑氏 ═══
         {
@@ -4349,7 +4290,7 @@
           marriages: '郑芝龙与日本田川氏·其他海商联姻',
           tradition: '海贸+武装保卫·多国混合',
           feuds: '荷兰东印度·其他海盗',
-          recentFortunes: '即将受抚为海防游击(崇祯元年)',
+          recentFortunes: '福建巡抚朱一冯议招抚·海上独占之势',
           note: '福建南安海商。郑成功母为日本平户人。日后福建海上霸主。'
         },
         // ═══ 贱籍/僧道 ═══
@@ -4374,8 +4315,8 @@
           '【位分制】明代后宫相对清代简朴。不设常在/答应等低位，以"皇后-皇贵妃-贵妃-妃-嫔-昭仪/婕妤/美人/才人-选侍-淑女/宫女子"为纲。皇贵妃乃永乐朝新设。嘉靖朝定"贵妃"冠字。神宗万历朝郑贵妃专宠以致"争国本"风波。\n' +
           '【六局一司】宫中女官系统(皆宫女任职·不用宦官)：尚宫局(宣令奏启)/尚仪局(礼仪乐舞)/尚服局(宝玺衣饰)/尚食局(膳食医药)/尚寝局(床帐车舆)/尚功局(衣工赏赐)，加宫正司(纠察罪罚)。七司正五品首官，下设四司八司辖女史百余。\n' +
           '【宦官十二监四司八局】司礼监(魏忠贤掌·批红)/御马监(涂文辅·四卫营)/内官监(营造)/司设/尚衣/尚膳/神宫/尚宝/印绶/直殿/都知/内承运库+四司+八局=二十四衙门。明末宦官约 9000(万历朝峰 2 万)。女官六局一司不受宦官辖。\n' +
-          '【当前后宫】周皇后居坤宁宫(16 岁·苏州人·贤淑节俭·母族周奎嘉定伯·崇祯十七年自缢殉国)。袁贵妃居承乾宫(17 岁·随信邸入宫·温顺体弱)。李选侍(光宗遗妃·30 岁·哕鸾宫·移宫案当事)。客氏(37 岁·出宫暂居私第·将于十一月杖毙)。\n' +
-          '【待入宫】田贵妃崇祯元年入宫(扬州人·精琴棋书画·父田弘遇·累进皇贵妃·崇祯十五年病卒)。张嫔崇祯二年入宫(生皇长子朱慈烺)。\n' +
+          '【当前后宫】周皇后居坤宁宫(16 岁·苏州人·贤淑节俭·母族周奎嘉定伯)。袁贵妃居承乾宫(17 岁·随信邸入宫·温顺体弱)。李选侍(光宗遗妃·30 岁·哕鸾宫·移宫案当事)。客氏(37 岁·出宫暂居私第)。\n' +
+          '【选秀】天启朝既崩，新帝尚未选秀。礼部已奏请明年采选。\n' +
           '【移宫案】天启元年东林党逼李选侍出乾清宫移哕鸾宫，三案之一。\n' +
           '【争国本】万历朝郑贵妃欲立子朱常洵(福王)为太子，东林党力保长子朱常洛(光宗)，前后 15 年政争。',
         motherClanSystem:
@@ -4402,7 +4343,7 @@
             residenceLevel: 'main', motherClanInfluence: 0.5,
             privileges: ['副后·摄六宫事', '仅次于皇后', '子女有继承权', '母族赐恩'],
             rituals: ['元旦朝贺', '册封时百官朝贺'],
-            note: '当前空缺。明代永乐朝首设。崇祯朝田妃后进至此位(崇祯八年晋皇贵妃)。'
+            note: '当前空缺。明代永乐朝首设。'
           },
           {
             id: 'guifei', name: '贵妃', level: 3, maxCount: 4, icon: '🌺',
@@ -4496,29 +4437,24 @@
           { name: '京杭大运河', from: '北京通州', to: '杭州', distance: 3200, stations: 70, urgentSpeed: '水驿每日 200 里', note: '漕运主线。' },
           { name: '京-云贵', from: '北京', to: '昆明', distance: 5000, stations: 100, urgentSpeed: '每日 200 里', note: '最远驿路。' }
         ],
-        _reformRisk: { description: '崇祯二年户部议裁驿卒。原史裁驿使李自成失业。削减驿站节银 60 万，代价 = 数万流民。', turn: 18, severity: 'high' }
+        _reformRisk: { description: '若议裁驿卒：削减驿站节银 60 万，代价 = 数万流民失业，其中多有可为流寇之才。', turn: 18, severity: 'high' }
       },
 
       // ──── 刚性触发器·天文异象 ────
       rigidTriggers: {
-        tianqi7_comet: { turn: 1, type: 'heavenSign', name: '彗星出于房心', narrative: '天启七年闰六月，彗星见于房心之间，光芒数尺。钦天监解"大凶"。', effect: { '皇威': -5, '小冰河凛冬指数': +3 } },
-        chongzhen1_lunar: { turn: 5, type: 'heavenSign', name: '月食', narrative: '崇祯元年正月戊寅朔，月食。', effect: { '皇威': -2 } },
-        chongzhen1_eclipse: { turn: 11, type: 'heavenSign', name: '日食', narrative: '崇祯元年六月甲午朔，日食。钦天监言"帝室之象，警戒在躬"。', effect: { '皇威': -5, '皇权': -3 } },
-        chongzhen2_earthquake: { turn: 19, type: 'heavenSign', name: '北京地震', narrative: '崇祯二年春，京师地震。', effect: { '民心': -3, '皇威': -3 } },
-        chongzhen3_locust: { turn: 32, type: 'disaster', name: '河南蝗灾', narrative: '崇祯三年夏，河南大蝗。', effect: { '民心': -5, '流民数量': +100000, '小冰河凛冬指数': +3 } },
-        chongzhen_great_plague: { turn: 120, type: 'disaster', name: '华北大疫', narrative: '崇祯十四年起华北大疫（推测为鼠疫），死亡不计其数。', effect: { '人口': -500000, '小冰河凛冬指数': +5 } }
+        tianqi7_comet: { turn: 1, type: 'heavenSign', name: '彗星出于房心', narrative: '天启七年闰六月，彗星见于房心之间，光芒数尺。钦天监解"大凶"。', effect: { '皇威': -5, '小冰河凛冬指数': +3 } }
       },
 
       // ──── 文苑作品（初始在世的著作） ────
       culturalWorks: [
         { title: '《几何原本》前六卷', author: '利玛窦/徐光启', year: 1607, type: '译著·西学', desc: '欧几里得几何学首次入华。', status: '刊行' },
-        { title: '《农政全书》', author: '徐光启', year: '编撰中', type: '农学', desc: '60 卷。论救荒、水利、屯田。崇祯十二年陈子龙整理刊行。', status: '稿本' },
+        { title: '《农政全书》', author: '徐光启', year: '编撰中', type: '农学', desc: '60 卷。论救荒、水利、屯田。尚在稿本。', status: '稿本' },
         { title: '《武备志》', author: '茅元仪', year: 1621, type: '兵书', desc: '240 卷。集古今兵书之大成。' },
         { title: '《本草纲目》', author: '李时珍', year: 1578, type: '医学', desc: '16 部 52 卷。医药巨典。万历末已刻。' },
         { title: '《金瓶梅》', author: '兰陵笑笑生', year: '万历末', type: '小说', desc: '中国第一部世情长篇小说。' },
         { title: '《三言二拍》', author: '冯梦龙/凌濛初', year: '天启末', type: '白话小说集', desc: '喻世明言/警世通言/醒世恒言；初刻二刻拍案惊奇。市民文学巅峰。' },
         { title: '《徐霞客游记》', author: '徐弘祖', year: '编撰中', type: '地理游记', desc: '此时徐霞客 42 岁，正周游云贵，尚未写成。' },
-        { title: '《天工开物》', author: '宋应星', year: '酝酿', type: '工艺百科', desc: '原史崇祯十年刊。宋应星此时 40 岁。' },
+        { title: '《天工开物》', author: '宋应星', year: '酝酿', type: '工艺百科', desc: '宋应星此时 40 岁，集成工艺百科之志在心中。' },
         { title: '《五人墓碑记》', author: '张溥', year: 1626, type: '文章', desc: '天启六年为苏州抗税五义士所作。东林遗志。' }
       ],
 
@@ -4591,7 +4527,7 @@
         { name: '与西班牙·马尼拉', value: 10, min: -100, max: 100, description: '隔月港贸易。美洲银主来源' },
         { name: '与日本·幕府', value: -5, min: -100, max: 100, description: '德川幕府 1635 始锁国。此时浙江福建沿海有日本漂民' },
         { name: '与西南土司', value: 40, min: -100, max: 100, description: '奢安之乱仍在进行(第七年)。改土归流为长期国策' },
-        { name: '与奢安之乱联军', value: -95, min: -100, max: 100, description: '土司叛乱第七年。奢崇明+安邦彦据水西 48 目。原史 1629 八月朱燮元秦良玉攻灭于红崖大坝' }
+        { name: '与奢安之乱联军', value: -95, min: -100, max: 100, description: '土司叛乱第七年。奢崇明+安邦彦据水西 48 目。朱燮元、秦良玉正督剿。' }
       ],
 
       // ──── 势力间关系矩阵（编辑器 scriptData.factionRelations） ────
@@ -4600,12 +4536,12 @@
         { from: '明朝廷', to: '察哈尔', type: 'alliance', value: 25, desc: '林丹汗欲联明抗金·互市时开时闭' },
         { from: '明朝廷', to: '朝鲜', type: 'suzerain', value: 75, desc: '朝鲜事明最恭·被迫兄弟盟于后金但仍名义事明' },
         { from: '明朝廷', to: '播州土司·杨氏(余裔)', type: 'vassal', value: 50, desc: '主支已平·余裔敬而远之' },
-        { from: '明朝廷', to: '郑氏海商', type: 'neutral', value: 30, desc: '即将招抚·崇祯元年郑芝龙拜海防游击' },
-        { from: '明朝廷', to: '陕北饥民(将起)', type: 'hostile', value: -15, desc: '崇祯元年即起事' },
+        { from: '明朝廷', to: '郑氏海商', type: 'neutral', value: 30, desc: '福建巡抚朱一冯议招抚·尚未定案' },
+        { from: '明朝廷', to: '陕北饥民(将起)', type: 'hostile', value: -15, desc: '饥民聚啸·民变在即' },
         { from: '明朝廷', to: '葡萄牙·澳门', type: 'friendly', value: 40, desc: '1557 起租借澳门·月租银·铸红衣炮·耶稣会合作' },
         { from: '明朝廷', to: '荷兰·台海(东印度公司)', type: 'hostile', value: -30, desc: '1624 被驱退台湾·1625 料罗湾有限合作' },
         { from: '明朝廷', to: '西班牙·马尼拉', type: 'neutral', value: 10, desc: '月港华商中介贸易·美洲银源自此' },
-        { from: '明朝廷', to: '奢安之乱联军', type: 'war', value: -95, desc: '土司叛乱第七年·已据水西山寨·原史 1629 八月平' },
+        { from: '明朝廷', to: '奢安之乱联军', type: 'war', value: -95, desc: '土司叛乱第七年·已据水西山寨·朱燮元秦良玉督剿' },
         { from: '后金', to: '朝鲜', type: 'conquered', value: -45, desc: '1627 春兄弟之盟·强迫臣属' },
         { from: '后金', to: '察哈尔', type: 'hostile', value: -50, desc: '蒙古争夺。天聪六年皇太极亲征察哈尔' },
         { from: '后金', to: '科尔沁蒙古', type: 'alliance', value: 85, desc: '联姻盟·铁杆盟友' },
@@ -4613,7 +4549,7 @@
         { from: '葡萄牙·澳门', to: '荷兰·台海(东印度公司)', type: 'war', value: -85, desc: '全球海上霸权战·1622 荷兰雷约兹攻澳门未下' },
         { from: '葡萄牙·澳门', to: '西班牙·马尼拉', type: 'alliance', value: 60, desc: '1580-1640 西葡同君连合·兄弟港关系' },
         { from: '荷兰·台海(东印度公司)', to: '西班牙·马尼拉', type: 'hostile', value: -75, desc: '基隆对峙·八十年战争延烧东亚' },
-        { from: '荷兰·台海(东印度公司)', to: '郑氏海商', type: 'rival', value: -65, desc: '台海贸易竞争·将于崇祯六年料罗湾决战' },
+        { from: '荷兰·台海(东印度公司)', to: '郑氏海商', type: 'rival', value: -65, desc: '台海贸易竞争·摩擦不断' },
         { from: '奢安之乱联军', to: '播州土司·杨氏(余裔)', type: 'alliance', value: 85, desc: '西南土司利益共同体·苗汉混合反抗改土归流' }
       ],
 
@@ -4678,7 +4614,7 @@
         {
           name: '避免 1644 之亡',
           type: 'win',
-          description: '17 年内避免李自成破京、帝自缢煤山的原史结局。关键里程碑: 国库不绝·辽东不失·陕北未破京师',
+          description: '长期避免亡国。关键里程碑: 国库不绝·辽东不失·陕北未破京师',
           conditions: [
             { type: 'variable_gte', variable: '国库资金', value: 500000 },
             { type: 'turn_before', value: 200 }
@@ -4726,7 +4662,7 @@
         { name: '山海关', type: '关隘重镇', population: 35000, walls: '天下第一关', note: '辽西走廊东端·关宁锦防线东段' },
         { name: '西安', type: '陕西省会', population: 200000, walls: '明代砖城周 40 里', note: '连年饥荒·饥民围城警报' },
         { name: '成都', type: '四川省会', population: 150000, walls: '周 22 里', note: '天府之国省会。奢安之乱时曾被围' },
-        { name: '洛阳', type: '古都', population: 180000, walls: '周 15 里', note: '福王朱常洵就国地·将于崇祯十四年(1641)陷李自成' },
+        { name: '洛阳', type: '古都', population: 180000, walls: '周 15 里', note: '福王朱常洵就国地·万历赐田 4 万顷' },
         { name: '盛京·沈阳', type: '后金都城', population: 50000, walls: '后金 1625 迁都', note: '努尔哈赤天命十年迁都·皇太极扩建。位于明辽东都司境内沦陷地' }
       ],
 
@@ -4743,8 +4679,8 @@
           { title: '《武备志》', author: '茅元仪', era: '天启元年(1621)成', type: '兵书' },
           { title: '《永乐大典》', author: '解缙等', era: '永乐六年(1408)', type: '类书', note: '22877 卷·今存南京文渊阁副本' },
           { title: '《本草纲目》', author: '李时珍', era: '万历中(1578 成 1596 刊)', type: '医典' },
-          { title: '《农政全书》', author: '徐光启', era: '编撰中', type: '农学', note: '崇祯十二年陈子龙刊' },
-          { title: '《天工开物》', author: '宋应星', era: '酝酿中', type: '工艺百科', note: '崇祯十年(1637)刊' },
+          { title: '《农政全书》', author: '徐光启', era: '编撰中', type: '农学', note: '尚在稿本' },
+          { title: '《天工开物》', author: '宋应星', era: '酝酿中', type: '工艺百科', note: '尚未成书' },
           { title: '《五人墓碑记》', author: '张溥', era: '天启六年(1626)', type: '散文', note: '苏州抗税五义士传' }
         ],
         poetryStyles: ['复古派(古文辞)', '公安派(性灵)', '竟陵派(幽深)', '东林诗派(议政)'],
@@ -4758,7 +4694,7 @@
         specialMechanics: [
           { id: 'yandangBalance', name: '阉党清算博弈', description: '处置魏忠贤的力度 × 时机 × 党羽连坐范围三维度判定京营兵变概率', relatedVars: ['阉党权势值', '皇威'] },
           { id: 'liaoxiangVicious', name: '辽饷恶性循环', description: '辽饷加派→民心降→流民+→剿饷加派→更多流民', relatedVars: ['辽饷积欠', '流民数量', '民心'] },
-          { id: 'smallIceAge', name: '小冰河递进', description: '凛冬指数每年+3-5，至崇祯十四年峰值(1641)。影响 agriculture_output × 0.65 × climate', relatedVars: ['小冰河凛冬指数', '农业产出', '人口'] },
+          { id: 'smallIceAge', name: '小冰河递进', description: '凛冬指数每年+3-5，影响 agriculture_output × 0.65 × climate', relatedVars: ['小冰河凛冬指数', '农业产出', '人口'] },
           { id: 'factionRotation', name: '党争三步循环', description: '阉党倒→东林起→温体仁反扑→东林再倒·每轮 2-3 年', relatedVars: ['党争烈度', '东林党复苏进度'] },
           { id: 'familyGeneralization', name: '将帅家丁化', description: '祖氏/毛文龙/吴三桂等部家丁化指数。会导致中央指挥失灵', relatedVars: ['辽东防线稳固度', '卫所虚额率'] },
           { id: 'zongFanPressure', name: '宗藩禄米压力', description: '宗室每年繁衍 +3%，岁禄压户部', relatedVars: ['宗禄拖欠'] }
@@ -4835,8 +4771,8 @@
         type: '主权国', leaderTitle: '皇帝', goal: '中兴大明·除阉党·守辽东·救饥',
         mainstream: '儒家', culture: '汉文化',
         resources: '漕粮·白银·盐·丝绸·瓷·茶·铁·铜',
-        leaderInfo: { name: '朱由检', personality: '刚烈·多疑·勤政·急切', age: '17', gender: '男', belief: '儒', learning: '皇子·经筵·博览', ethnicity: '汉', bio: '明熹宗之弟·信王入继大统·原史在位 17 年终亡国自缢煤山。' },
-        heirInfo: { name: '', personality: '', age: '', gender: '', belief: '', learning: '', ethnicity: '汉', bio: '周皇后尚未生嫡子。原史崇祯三年生太子朱慈烺。' },
+        leaderInfo: { name: '朱由检', personality: '刚烈·多疑·勤政·急切', age: '17', gender: '男', belief: '儒', learning: '皇子·经筵·博览', ethnicity: '汉', bio: '明熹宗之弟·信王入继大统，新登皇位。' },
+        heirInfo: { name: '', personality: '', age: '', gender: '', belief: '', learning: '', ethnicity: '汉', bio: '周皇后尚未生嫡子。日后或可三年生太子朱慈烺。' },
         cohesion: { political: 35, military: 48, economic: 40, cultural: 85, ethnic: 95, loyalty: 50 },
         militaryBreakdown: { standingArmy: 380000, militia: 100000, elite: 65000, fleet: 8500 },
         economicStructure: { agriculture: 72, trade: 14, handicraft: 9, tribute: 5 },
@@ -4975,7 +4911,7 @@
         warState: { active: ['与后金持续战争'], pending: ['镇压陕北(未起)'], recent: ['万历三大征·辽东萨尔浒·奢安之乱'] },
         economicPolicy: { taxation: 'heavy_from_land·加派辽饷', trade: 'restricted·矿税已罢·海禁松', currency: 'silver_standard·私铸盛行', labor: '一条鞭·折银代役' },
         publicOpinion: { amongGentry: -20, amongPeasantry: -45, amongScholars: -55 },
-        victoryConditions: ['稳京师且除阉党', '辽东防线不失', '避免流民成军·控制陕北', '延续国祚至崇祯十七年后'],
+        victoryConditions: ['稳京师且除阉党', '辽东防线不失', '避免流民成军·控制陕北', '延续国祚长治久安'],
         defeatConditions: ['京师兵变失位', '山海关失', '流贼破京', '财政崩溃·朝纲溃散'],
         longTermStrategy: '先清阉党稳朝堂 → 用能臣修边疆 → 救饥抑兼并 → 开源节流重建财政 → 整顿九边御后金',
         knownSpies: { in_manchu: 8, in_mongol: 12, in_pirate: 3 }
@@ -5092,7 +5028,7 @@
         economicPolicy: { taxation: 'tusi_tribute·土司贡赋+劫掠', trade: '山货换明盐铁·大半断绝', currency: '实物·银·铜·海贝(边缘)', labor: '土司人身依附+苗汉奴役' },
         publicOpinion: { amongLuoluo: 75, amongMiaoGelao: 45, amongHanMilitary: 20, amongLocalOfficials: -50 },
         victoryConditions: ['明廷承认水西 48 目自治+复永宁宣抚司', '据水西独立为大梁国/罗甸国', '明因陕西民变分兵不能进剿'],
-        defeatConditions: ['朱燮元再督川贵军务大举进剿', '水西粮尽', '彝族内部分裂', '秦良玉白杆兵破水西(原史 1629 八月红崖)'],
+        defeatConditions: ['朱燮元再督川贵军务大举进剿', '水西粮尽', '彝族内部分裂', '秦良玉白杆兵破水西山寨'],
         longTermStrategy: '据水西 48 目山寨坚守→伺明内乱(陕北民变/阉党倒/辽东失利)反扑→争"恢复永宁"为让步底线→若朱燮元再起则必死战',
         knownSpies: { in_ming_sichuan: 4, in_ming_guizhou: 6, in_bozhou_remnant: 3 }
       }
@@ -5286,7 +5222,7 @@
         mainResources: '劫掠所得',
         treasury: { money: 0, grain: 500, cloth: 0 },
         partyRelations: '此时尚无政治组织。内部散乱。',
-        history: '1625-1626 陕北持续大旱 → 1627 饥民聚啸 → 1628 崇祯元年秋王嘉胤起事 → 1629 李自成驿站被裁加入 → 1644 破京。',
+        history: '1625-1627 陕北持续大旱 → 饥民聚啸渐起 → 边军欠饷逃卒混入 → 燎原之势将起。',
         strengths: ['兵员无限补充(饥民)', '机动', '知地利'],
         weaknesses: ['无军纪', '无根据地', '首脑不稳', '补给难'],
         strategy: '此时仅求食。若民变燎原则走"流寇"战略——不据一城，流动求活。'
@@ -5408,7 +5344,7 @@
         type: '叛乱势力·土司', factionType: '西南土司叛乱联盟',
         territory: '四川永宁宣抚司(今叙永·落红)+贵州水西宣慰司(今大方黔西·48 目则溪)+水外六目+播州余部+乌撒乌蒙呼应',
         prestige: 35, economy: 22, militaryStrength: 35000,   // 总兵力≈3.5万(罗罗精锐0.8万+土司常备1.5万+苗仡佬民兵1.2万)·1627残部
-        description: '天启元年(1621 年)九月奢崇明于重庆起事(川事)，天启二年(1622 年)二月安邦彦起兵围贵阳(黔事)。合兵后称"奢安之乱"(贵州别称"安酋之乱")。彝族六祖罗甸旧部为核心，以"明廷加派辽饷激民"为由反叛，自称国号"大梁"(奢氏)+"罗甸"(安氏)。波及川黔云桂四省，死伤百余万。天启七年(1627)九月本开局时期处战争第七年，主力已退水西山区坚守，残部约 3-4 万。将于崇祯二年(1629)八月在永宁红崖大坝被朱燮元、秦良玉攻灭。',
+        description: '天启元年(1621)九月奢崇明于重庆起事(川事)，天启二年(1622)二月安邦彦起兵围贵阳(黔事)。合兵后称"奢安之乱"(贵州别称"安酋之乱")。彝族六祖罗甸旧部为核心，以"明廷加派辽饷激民"为由反叛，自称国号"大梁"(奢氏)+"罗甸"(安氏)。波及川黔云桂四省，死伤百余万。天启七年秋已是战争第七年，主力已退水西山区坚守，残部约 3-4 万。朱燮元、秦良玉正督剿。',
         attitude: '敌对', playerRelation: -80,
         resources: '水西山地农(粟米·荞麦·马铃薯)·朱砂汞矿·山货药材·毕节金银矿·土兵弩箭·苗汉混合人力',
         culture: '彝族罗罗文化·毕摩(祭司)信仰·土司等级(土官/头目/十把/百姓)·六祖分支(慕俄勾/慕齐齐等)',
@@ -6235,13 +6171,13 @@
       { from: '仁祖李倧', to: '朱由检', type: '藩臣', value: 80, desc: '事大至诚，又苦后金。' },
       // ──── 补充：师承·同榜·恩仇 ────
       { from: '徐光启', to: '利玛窦', type: '亡友·教父', value: 95, desc: '1600 年订交，1604 合译《几何原本》；利玛窦 1610 卒时徐执丧礼。' },
-      { from: '徐光启', to: '汤若望', type: '同道·天主教', value: 85, desc: '将于崇祯二年历局共事。' },
+      { from: '徐光启', to: '汤若望', type: '同道·天主教', value: 85, desc: '同为天主教徒，共议历法改革。' },
       { from: '孙承宗', to: '朱由校', type: '师生', value: 90, desc: '熹宗东宫讲官。讲学二十余次。' },
       { from: '孙承宗', to: '朱由检', type: '师(间接)', value: 72, desc: '新帝幼时亦闻孙师讲义。' },
-      { from: '毛文龙', to: '皇太极', type: '疑似通敌', value: -70, desc: '暗中书信往来，原史袁崇焕斩之口实。' },
+      { from: '毛文龙', to: '皇太极', type: '疑似通敌', value: -70, desc: '暗中书信往来，有通敌嫌疑。' },
       { from: '满桂', to: '祖大寿', type: '同袍·微隙', value: 40, desc: '宁远共守，宁锦分功时小有龃龉。' },
       { from: '钱谦益', to: '钱龙锡', type: '同党·族亲', value: 70, desc: '同属东林，同族同籍。' },
-      { from: '温体仁', to: '钱谦益', type: '将仇', value: -60, desc: '崇祯元年会推阁臣，温排斥钱引钩党案。' },
+      { from: '温体仁', to: '钱谦益', type: '将仇', value: -60, desc: '浙党与东林世仇，温伺机排挤钱。' },
       { from: '卢象升', to: '周延儒', type: '同籍宜兴·微交', value: 55, desc: '同为常州宜兴人。' },
       { from: '孙传庭', to: '洪承畴', type: '同仇·将共剿贼', value: 65, desc: '日后同任陕西剿闯。' },
       // ──── 后金内部 ────
@@ -6307,7 +6243,7 @@
         innerThought: '祖宗二百六十年江山，岂能毁于朕手？然九千岁爪牙满朝，朕孤身入此乾清宫——每夜辗转，思杨涟、左光斗在诏狱血骨，思三叔父福王肥居洛阳，思北疆辽卒索饷哗变。朕当以何自处？当以何自作？',
         personalGoal: '中兴大明，重整吏治，扫平虏寇；非我太祖、成祖之业，亦应保祖宗宗庙于不坠。',
         stressSources: ['阉党盘踞内外', '辽东军饷告急', '陕西饥民将起', '兄嫂未育血脉', '朕年少无根基'],
-        resources: { privateWealth: { money: 0, grain: 0, cloth: 0 }, publicPurse: { money: 0, grain: 0, cloth: 0 }, fame: 72, virtueMerit: 15, health: 78, stress: 62 },
+        resources: { privateWealth: { money: 180000, grain: 4000, cloth: 1200 }, publicPurse: { money: 0, grain: 0, cloth: 0 }, fame: 72, virtueMerit: 15, health: 78, stress: 62 },
         career: [
           { year: 1622, title: '信王', note: '天启二年五岁封信王。' },
           { year: 1627, title: '皇帝', note: '天启七年八月即位。' }
@@ -6323,7 +6259,7 @@
           { event: '即位次日，魏忠贤叩首请辞司礼监，朕温言慰留——实则观其党心', emotion: '惧', weight: 8, turn: 0 },
           { event: '读天启朝诏狱旧档，杨涟二十四罪疏血泪俱下', emotion: '怒', weight: 9, turn: 0 }
         ],
-        bio: '明熹宗朱由校之弟，封信王，就藩未果。天启七年八月即位，刚烈而猜忌，急于有为。原史在位十七年，励精图治而多疑寡恩，十七年中换辅臣五十人、尚书侍郎百余人。终亡国自缢于煤山寿皇亭古槐。'
+        bio: '明熹宗朱由校之弟，封信王，就藩未果。天启七年八月即位，刚烈而猜忌，急于有为。励精图治而多疑寡恩，常一夕换数人以试其能。承国危之秋，仰天问计而孑然孤影。'
       },
       // ──── 后妃 ────
       {
@@ -6333,7 +6269,7 @@
         stance: '贤后', faction: '明朝廷', party: '', family: '周氏',
         traits: ['chaste', 'humble', 'compassionate', 'diligent'],
         _memory: [ { event: '自苏州寒门入信王府，十五岁册信王妃；朱由检即位，册立为皇后', emotion: '敬', weight: 9, turn: 0 } ],
-        bio: '苏州人，出身寒微。贤明节俭，与崇祯同甘共苦。原史崇祯十七年三月自缢殉国。'
+        bio: '苏州人，出身寒微。贤明节俭，与夫君同甘共苦。亲操针黹，不涉外朝。'
       },
       {
         name: '张懿安', title: '懿安皇后·皇嫂', officialTitle: '懿安皇后', isRoyal: true, royalRelation: 'former_empress', alive: true,
@@ -6342,7 +6278,7 @@
         stance: '清流', faction: '明朝廷', party: '东林党', family: '张氏',
         traits: ['just', 'honest', 'stubborn', 'compassionate'],
         _memory: [ { event: '熹宗在世时屡劝除客氏魏忠贤；客氏诬后流产怀仇', emotion: '恨', weight: 9, turn: 0 } ],
-        bio: '熹宗皇后。河南祥符人。素恶魏忠贤与客氏，多次劝熹宗除阉。新帝即位，可咨其计。原史活至崇祯十七年，京师陷落时自缢。'
+        bio: '熹宗皇后。河南祥符人。素恶魏忠贤与客氏，多次劝熹宗除阉。新帝即位，可咨其计。'
       },
       {
         name: '袁贵妃', title: '贵妃', officialTitle: '贵妃', isRoyal: true, royalRelation: 'emperor_family', alive: true,
@@ -6390,7 +6326,7 @@
           { year: 1620, title: '司礼监秉笔', note: '光宗泰昌元年熹宗即位后逐王安，秉笔太监。' },
           { year: 1623, title: '司礼监掌印·提督东厂', note: '罢王安，掌印握权。' },
           { year: 1625, title: '上公', note: '赐"顾命元臣"印，立生祠始于浙江。' },
-          { year: 1627, title: '贬凤阳守陵(原史十一月)', note: '魏自缢于阜城。' }
+          { year: 1627, title: '天启七年秋·权柄仍在', note: '司礼监印未去，京师九门爪牙林立，但科道交劾已起。' }
         ],
         familyMembers: [
           { name: '客氏', relation: '对食', note: '内廷情侣二十年' },
@@ -6406,7 +6342,7 @@
           { event: '天启七年七月熹宗薨，信王入继——心知大变', emotion: '惧', weight: 10, turn: -30 },
           { event: '新帝即位数日，客氏被逐出宫', emotion: '恐', weight: 10, turn: 0 }
         ],
-        bio: '直隶肃宁人。少无赖，赌博欠债自阉入宫充饷。历二十五年攀附魏朝、王安、客氏而起。天启三年（1623）罢王安掌司礼监，兼提督东厂。以恢复矿税、诛杀东林党称"九千岁"，义子义孙遍六部。所积金帛据崇祯朝清算达数百万两。原史天启七年十一月六日贬凤阳守陵途中，夜宿阜城旅店，闻邻房乡人歌小曲骂"九千岁"，遂于当夜自缢。'
+        bio: '直隶肃宁人。少无赖，赌博欠债自阉入宫充饷。历二十五年攀附魏朝、王安、客氏而起。天启三年（1623）罢王安掌司礼监，兼提督东厂。以恢复矿税、诛杀东林党称"九千岁"，义子义孙遍六部。所积金帛数百万两。新帝即位，客氏出宫，大势已摇——然司礼监印未去，诸党爪牙仍盘踞朝堂。'
       },
       {
         name: '客氏', title: '奉圣夫人·前熹宗乳母', officialTitle: '奉圣夫人', alive: true,
@@ -6415,7 +6351,7 @@
         stance: '失势', faction: '明朝廷', party: '阉党', family: '客氏',
         traits: ['deceitful', 'sadistic', 'lustful', 'vengeful'],
         _memory: [ { event: '即位数日被新帝遣出宫，居私第未被杖毙', emotion: '恐', weight: 10, turn: 0 } ],
-        bio: '熹宗乳母。与魏忠贤"对食"（内廷情侣）。内廷多少宫人宫婢死于其手。原史崇祯元年初即被追究杖毙。'
+        bio: '熹宗乳母。与魏忠贤"对食"（内廷情侣）。内廷多少宫人宫婢死于其手。日后或可元年初即被追究杖毙。'
       },
       {
         name: '崔呈秀', title: '兵部尚书·总督京营戎政', officialTitle: '兵部尚书·总督京营戎政', alive: true,
@@ -6424,8 +6360,8 @@
         administration: 58, integrity: 10,
         stance: '阉党鹰犬', faction: '明朝廷', family: '崔氏',
         traits: ['deceitful', 'ambitious', 'greedy', 'callous'],
-        resources: { privateWealth: { cash: 800000, grain: 10000, cloth: 5000 } },
-        bio: '蓟州人。万历四十一年进士。魏忠贤义子，为阉党"五虎"之首。原史天启七年十月罢官，十一月自缢。'
+        resources: { privateWealth: { money: 800000, grain: 10000, cloth: 5000 } },
+        bio: '蓟州人。万历四十一年进士。魏忠贤义子，为阉党"五虎"之首，兵部尚书兼总督京营戎政。新帝即位，科道交劾，岌岌可危。'
       },
       {
         name: '田尔耕', title: '锦衣卫指挥使·左都督', officialTitle: '锦衣卫指挥使', alive: true,
@@ -6433,7 +6369,7 @@
         loyalty: 15, ambition: 70, intelligence: 60, valor: 55, benevolence: 5, integrity: 8,
         stance: '阉党五彪·武官', faction: '明朝廷', party: '阉党', family: '田氏',
         traits: ['deceitful', 'sadistic', 'callous'],
-        bio: '世袭锦衣卫官，阉党"五彪"之首。天启中掌诏狱，诛东林无数。原史崇祯元年伏法。'
+        bio: '世袭锦衣卫官，阉党"五彪"之首。天启中掌诏狱，诛东林无数。日后或可元年伏法。'
       },
       {
         name: '许显纯', title: '锦衣卫北镇抚使', officialTitle: '锦衣卫北镇抚使', alive: true,
@@ -6441,7 +6377,7 @@
         loyalty: 10, ambition: 50, intelligence: 58, integrity: 5,
         stance: '阉党五彪', faction: '明朝廷', party: '阉党', family: '许氏',
         traits: ['sadistic', 'callous', 'deceitful'],
-        bio: '辽东定辽人，武进士。阉党五彪之一。天启四年手刃杨涟、左光斗、袁化中、魏大中、顾大章、周朝瑞于诏狱。原史崇祯元年弃市。'
+        bio: '辽东定辽人，武进士。阉党五彪之一。天启四年手刃杨涟、左光斗、袁化中、魏大中、顾大章、周朝瑞于诏狱。日后或可元年弃市。'
       },
       {
         name: '黄立极', title: '内阁首辅·建极殿大学士', officialTitle: '内阁首辅·建极殿大学士', alive: true,
@@ -6450,7 +6386,7 @@
         administration: 55, integrity: 20,
         stance: '阉党文臣', faction: '明朝廷', party: '阉党', family: '黄氏',
         traits: ['shy', 'deceitful', 'content'],
-        bio: '河南元氏人。万历三十二年进士。天启六年入阁。票拟多秉魏忠贤意。原史崇祯元年罢归。'
+        bio: '河南元氏人。万历三十二年进士。天启六年入阁。票拟多秉魏忠贤意。日后或可元年罢归。'
       },
       {
         name: '施凤来', title: '文华殿大学士', officialTitle: '文华殿大学士', alive: true,
@@ -6466,7 +6402,7 @@
         loyalty: 30, ambition: 70, intelligence: 78, integrity: 15,
         stance: '阉党文臣', faction: '明朝廷', family: '冯氏', location: '京师',
         traits: ['deceitful', 'ambitious', 'lustful'],
-        bio: '北直隶涿州人。年少以献媚魏忠贤骤进。原史崇祯元年罢归。清入关后复出仕清。'
+        bio: '北直隶涿州人。年少以献媚魏忠贤骤进。日后或可元年罢归。清入关后复出仕清。'
       },
       {
         name: '阎鸣泰', title: '辽东经略(前任)·兵部侍郎', officialTitle: '兵部侍郎·原辽东经略', alive: true,
@@ -6474,7 +6410,7 @@
         loyalty: 30, ambition: 45, intelligence: 55, valor: 20, integrity: 20,
         stance: '阉党督抚', faction: '明朝廷', family: '阎氏', location: '京师',
         traits: ['craven', 'deceitful'],
-        bio: '山西太原人。阉党督抚。为魏忠贤建生祠 25 处。原史崇祯元年戍边，后戍死。'
+        bio: '山西太原人。阉党督抚。为魏忠贤建生祠 25 处。日后或可元年戍边，后戍死。'
       },
       // ──── 东林党/中立老臣 ────
       {
@@ -6488,7 +6424,7 @@
           { event: '天启四年杨涟、左光斗等六君子死于诏狱；遭阉党构陷罢归乡', emotion: '恨', weight: 10, turn: -1100 },
           { event: '蒲州闻帝崩新帝立，沉吟未发', emotion: '疑', weight: 7, turn: 0 }
         ],
-        bio: '山西蒲州人。万历二十年进士。万历末入阁，天启四年被阉党构陷罢归。原史崇祯元年召还为首辅，三年致仕。'
+        bio: '山西蒲州人。万历二十年进士。万历末入阁，天启四年被阉党构陷罢归。日后或可元年召还为首辅，三年致仕。'
       },
       {
         name: '钱龙锡', title: '前礼部右侍郎（罢归）', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6496,7 +6432,7 @@
         loyalty: 80, ambition: 35, intelligence: 75, integrity: 82,
         stance: '东林', faction: '明朝廷', party: '东林党', family: '钱氏',
         traits: ['honest', 'just', 'shy'],
-        bio: '松江华亭人。万历三十五年进士。东林干将，天启五年被贬。原史崇祯元年入阁。三年因袁崇焕案连坐遣戍。'
+        bio: '松江华亭人。万历三十五年进士。东林干将，天启五年被贬。日后或可元年入阁。三年因袁崇焕案连坐遣戍。'
       },
       {
         name: '成基命', title: '礼部右侍郎（罢归）', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6504,7 +6440,7 @@
         loyalty: 85, ambition: 25, intelligence: 72, integrity: 88,
         stance: '东林老成', faction: '明朝廷', party: '东林党', family: '成氏',
         traits: ['honest', 'patient', 'humble'],
-        bio: '河南大名人。万历三十五年进士。东林之老成者。原史崇祯二年入阁。'
+        bio: '河南大名人。万历三十五年进士。东林之老成者。日后或可二年入阁。'
       },
       {
         name: '刘鸿训', title: '礼部右侍郎·告归', officialTitle: '礼部右侍郎（已罢）', alive: true,
@@ -6512,7 +6448,7 @@
         loyalty: 82, ambition: 45, intelligence: 82, integrity: 78,
         stance: '东林/中立', faction: '明朝廷', party: '东林党', family: '刘氏',
         traits: ['just', 'impatient', 'diligent'],
-        bio: '山东长山人。万历四十一年进士。才学出众。原史崇祯元年入阁，二年因加藻饰被崇祯罢戍。'
+        bio: '山东长山人。万历四十一年进士。才学出众。日后或可元年入阁，二年因加藻饰被崇祯罢戍。'
       },
       {
         name: '李标', title: '礼部右侍郎', officialTitle: '礼部右侍郎', alive: true,
@@ -6520,7 +6456,7 @@
         loyalty: 80, ambition: 30, intelligence: 72, integrity: 85,
         stance: '中立', faction: '明朝廷', party: '', family: '李氏',
         traits: ['honest', 'patient'],
-        bio: '北直隶高邑人。万历三十五年进士。原史崇祯元年入阁。'
+        bio: '北直隶高邑人。万历三十五年进士。日后或可元年入阁。'
       },
       {
         name: '郭允厚', title: '户部尚书', officialTitle: '户部尚书', alive: true,
@@ -6528,7 +6464,7 @@
         loyalty: 70, ambition: 40, intelligence: 82, administration: 85, integrity: 75,
         stance: '中立理财', faction: '明朝廷', party: '', family: '郭氏',
         traits: ['diligent', 'patient', 'stubborn'],
-        bio: '山东福山人。万历二十六年进士。管钱粮八年，心力交瘁。原史崇祯元年罢。'
+        bio: '山东福山人。万历二十六年进士。管钱粮八年，心力交瘁。日后或可元年罢。'
       },
       {
         name: '毕自严', title: '南京户部尚书', officialTitle: '南京户部尚书', alive: true,
@@ -6537,7 +6473,7 @@
         stance: '能吏', faction: '明朝廷', party: '', family: '毕氏',
         traits: ['honest', 'diligent', 'just'],
         _memory: [ { event: '理南京户部数年，熟南漕北运，眼见天下财计日蹙', emotion: '忧', weight: 8, turn: -300 } ],
-        bio: '山东淄川人。万历二十年进士。善度支。原史崇祯元年召入掌户部，支撑危局八年，病卒任上。'
+        bio: '山东淄川人。万历二十年进士。善度支。日后或可元年召入掌户部，支撑危局八年，病卒任上。'
       },
       {
         name: '王在晋', title: '南京兵部尚书', officialTitle: '南京兵部尚书', alive: true,
@@ -6555,7 +6491,7 @@
         stance: '东林实学', faction: '明朝廷', party: '东林党', family: '徐氏',
         traits: ['honest', 'diligent', 'patient', 'humble'],
         _memory: [ { event: '受洗入天主教，与利玛窦合作译《几何原本》', emotion: '喜', weight: 9, turn: -7000 } ],
-        bio: '松江上海人。万历三十二年进士。天主教徒。与利玛窦译《几何原本》《农政全书》。精通西学火器历法。原史崇祯元年礼部尚书，五年入阁，六年病卒。'
+        bio: '松江上海人。万历三十二年进士。天主教徒。与利玛窦译《几何原本》《农政全书》。精通西学火器历法。日后或可元年礼部尚书，五年入阁，六年病卒。'
       },
       // ──── 将崛起者 ────
       {
@@ -6564,7 +6500,7 @@
         loyalty: 60, ambition: 88, intelligence: 85, integrity: 20,
         stance: '中立·将崛起', faction: '明朝廷', party: '浙党', family: '温氏',
         traits: ['deceitful', 'ambitious', 'patient', 'vengeful'],
-        bio: '浙江乌程人。万历二十六年进士。以柔佞得崇祯宠信。原史崇祯二年入阁，三年首辅，结党八年，十年罢。'
+        bio: '浙江乌程人。万历二十六年进士。柔佞机敏，以反东林之柄伺机而进。'
       },
       {
         name: '周延儒', title: '翰林院侍读学士', officialTitle: '翰林院侍读学士', alive: true,
@@ -6572,7 +6508,7 @@
         loyalty: 65, ambition: 85, intelligence: 88, integrity: 30,
         stance: '清流·将崛起', faction: '明朝廷', party: '', family: '周氏',
         traits: ['arrogant', 'ambitious', 'deceitful'],
-        bio: '南直隶宜兴人。万历四十一年状元。以才名。原史崇祯二年入阁，三年首辅，六年罢；十四年再首辅，十六年赐死。'
+        bio: '南直隶宜兴人。万历四十一年状元。以才名。日后或可二年入阁，三年首辅，六年罢；十四年再首辅，十六年赐死。'
       },
       // ──── 辽东/边关将帅 ────
       {
@@ -6587,7 +6523,7 @@
           { event: '宁远一役，红衣大炮退努尔哈赤，不数月汗死', emotion: '骄', weight: 10, turn: -800 },
           { event: '宁锦战后功不录赏，因与魏忠贤不合愤而告归', emotion: '愤', weight: 9, turn: -200 }
         ],
-        bio: '广东东莞人。万历四十七年进士。天启六年宁远大捷。天启七年宁锦战功不录，愤而告归。原史崇祯元年平台召见，五年复辽之约；三年下狱磔死。'
+        bio: '广东东莞人。万历四十七年进士。天启六年宁远大捷。天启七年宁锦战功不录，愤而告归。日后或可元年平台召见，五年复辽之约；三年下狱磔死。'
       },
       {
         name: '孙承宗', title: '前辽东督师（闲居）', officialTitle: '辽东督师（已罢归）', alive: true,
@@ -6597,7 +6533,7 @@
         stance: '主战稳守', faction: '明朝廷', party: '', family: '孙氏',
         traits: ['honest', 'patient', 'calm', 'just'],
         resources: { privateWealth: { cash: 50000, grain: 10000, cloth: 1000 } },
-        bio: '北直隶高阳人。万历三十二年进士。天启二年督师蓟辽，筑关宁防线（宁远/锦州/杏山/塔山/松山/大凌河）。被阉党排挤，天启五年罢。原史崇祯二年再督蓟辽；十一年清兵攻高阳，阖门殉国。'
+        bio: '北直隶高阳人。万历三十二年进士。天启二年督师蓟辽，筑关宁防线（宁远/锦州/杏山/塔山/松山/大凌河）。被阉党排挤，天启五年罢。日后或可二年再督蓟辽；十一年清兵攻高阳，阖门殉国。'
       },
       {
         name: '毛文龙', title: '东江总兵·左都督·太子太保', officialTitle: '左都督·东江总兵', alive: true,
@@ -6607,7 +6543,7 @@
         stance: '东江镇军头', faction: '明朝廷', party: '', family: '毛氏',
         traits: ['arrogant', 'ambitious', 'deceitful', 'greedy'],
         resources: { privateWealth: { cash: 300000, grain: 50000, cloth: 8000 } },
-        bio: '浙江仁和人。天启元年袭据镇江，开东江镇于皮岛，屡扰后金后方。跋扈自雄，开销无度。原史崇祯二年被袁崇焕矫诏斩于双岛，旋东江镇次第哗变。'
+        bio: '浙江仁和人。天启元年袭据镇江，开东江镇于皮岛，屡扰后金后方。跋扈自雄，开销无度。日后或可二年被袁崇焕矫诏斩于双岛，旋东江镇次第哗变。'
       },
       {
         name: '满桂', title: '宁远总兵·右都督', officialTitle: '宁远总兵·右都督', alive: true,
@@ -6615,7 +6551,7 @@
         loyalty: 80, ambition: 50, intelligence: 55, valor: 88, benevolence: 50, integrity: 70,
         stance: '蒙古裔骁将', faction: '明朝廷', party: '', family: '满氏',
         traits: ['brave', 'wrathful', 'stubborn'],
-        bio: '蒙古人。行伍出身。宁远大战与袁崇焕同守城。与袁崇焕争功有隙。原史崇祯二年己巳之变战死永定门外。'
+        bio: '蒙古人。行伍出身。宁远大战与袁崇焕同守城。与袁崇焕争功有隙。日后或可二年己巳之变战死永定门外。'
       },
       {
         name: '赵率教', title: '山海关总兵·左都督', officialTitle: '山海关总兵·左都督', alive: true,
@@ -6623,7 +6559,7 @@
         loyalty: 88, ambition: 40, intelligence: 65, valor: 82, benevolence: 68, integrity: 80,
         stance: '关宁骁将', faction: '明朝廷', party: '', family: '赵氏',
         traits: ['brave', 'honest', 'just'],
-        bio: '陕西靖虏卫人。袁崇焕旧部。原史崇祯二年战死遵化。'
+        bio: '陕西靖虏卫人。袁崇焕旧部。日后或可二年战死遵化。'
       },
       {
         name: '祖大寿', title: '宁远副总兵·后都督', officialTitle: '宁远副总兵', alive: true,
@@ -6631,7 +6567,7 @@
         loyalty: 70, ambition: 55, intelligence: 62, valor: 82, integrity: 58,
         stance: '辽东武将世家', faction: '明朝廷', party: '', family: '祖氏·辽东',
         traits: ['brave', 'paranoid', 'stubborn'],
-        bio: '辽东宁远人。辽东世将。与袁崇焕关系紧密。原史己巳之变随袁崇焕入卫；袁下狱后率军出走。松锦战后降清。'
+        bio: '辽东宁远人。辽东世将。与袁崇焕关系紧密。性骁勇而善保家兵，宁远一线为其大本。'
       },
       {
         name: '洪承畴', title: '陕西布政使司参政', officialTitle: '陕西参政', alive: true,
@@ -6640,7 +6576,7 @@
         administration: 82, management: 78, integrity: 65,
         stance: '待崛起', faction: '明朝廷', party: '', family: '洪氏',
         traits: ['ambitious', 'brave', 'patient', 'deceitful'],
-        bio: '福建南安人。万历四十四年进士。原史崇祯二年迁延绥巡抚剿陕北民变，崛起为三边总督、蓟辽总督。十五年松锦战败降清。'
+        bio: '福建南安人。万历四十四年进士。日后或可二年迁延绥巡抚剿陕北民变，崛起为三边总督、蓟辽总督。十五年松锦战败降清。'
       },
       {
         name: '卢象升', title: '大名府知府', officialTitle: '大名知府', alive: true,
@@ -6649,7 +6585,7 @@
         administration: 75, integrity: 92,
         stance: '待崛起', faction: '明朝廷', party: '', family: '卢氏',
         traits: ['brave', 'honest', 'diligent', 'zealous'],
-        bio: '南直隶宜兴人。天启二年进士。力能引八石弓。原史崇祯二年入卫京师崭露头角，后历任宣大总督、兵部尚书。十一年鹿庄战死。'
+        bio: '南直隶宜兴人。天启二年进士。力能引八石弓。日后或可二年入卫京师崭露头角，后历任宣大总督、兵部尚书。十一年鹿庄战死。'
       },
       {
         name: '孙传庭', title: '(削籍闲居)前吏部主事', officialTitle: '(天启五年削籍归乡)', alive: true,
@@ -6658,7 +6594,7 @@
         administration: 78, integrity: 88,
         stance: '待崛起(阉党削籍)', faction: '明朝廷', party: '', family: '孙氏',
         traits: ['stubborn', 'honest', 'brave', 'just'],
-        bio: '山西代州人。万历四十七年进士。天启中任吏部验封司主事时以不附魏忠贤被削籍归乡。原史崇祯八年起陕西巡抚，擒高迎祥。十六年潼关战死。"传庭死而明亡矣"。'
+        bio: '山西代州人。万历四十七年进士。天启中任吏部验封司主事时以不附魏忠贤被削籍归乡。日后或可八年起陕西巡抚，擒高迎祥。十六年潼关战死。"传庭死而明亡矣"。'
       },
       {
         name: '孙元化', title: '兵部职方司主事', officialTitle: '兵部主事', alive: true,
@@ -6667,7 +6603,7 @@
         administration: 75, learning: 92, integrity: 85,
         stance: '实学派', faction: '明朝廷', party: '东林党', family: '孙氏',
         traits: ['honest', 'diligent', 'humble'],
-        bio: '南直隶嘉定人。徐光启门生。天主教徒。通红衣大炮铸造与操法。原史崇祯三年登莱巡抚，四年孔有德吴桥兵变被杀。'
+        bio: '南直隶嘉定人。徐光启门生。天主教徒。通红衣大炮铸造与操法。日后或可三年登莱巡抚，四年孔有德吴桥兵变被杀。'
       },
       // ──── 宦官 ────
       {
@@ -6676,7 +6612,7 @@
         loyalty: 100, ambition: 15, intelligence: 68, benevolence: 70, integrity: 95,
         stance: '帝之心腹', faction: '明朝廷', party: '', family: '王氏',
         traits: ['honest', 'diligent', 'humble', 'zealous'],
-        bio: '信邸旧侍。朱由检入继大统后倚为耳目。原史崇祯十七年随帝自缢煤山。'
+        bio: '信邸旧侍。朱由检入继大统后倚为耳目。日后或可十七年随帝自缢煤山。'
       },
       {
         name: '曹化淳', title: '(贬南京)前内廷太监', officialTitle: '(南京留守·待召还)', alive: true,
@@ -6684,7 +6620,7 @@
         loyalty: 55, ambition: 55, intelligence: 75, benevolence: 50, integrity: 40,
         stance: '待召还(王安旧徒)', faction: '明朝廷', party: '', family: '曹氏',
         traits: ['deceitful', 'gregarious'],
-        bio: '天津武清人。王安旧徒。天启初因王安被魏忠贤诛被贬至南京。崇祯元年召还，后司礼监秉笔/提督东厂。'
+        bio: '天津武清人。王安旧徒。天启初因王安被魏忠贤诛被贬至南京。新帝即位有望召还。'
       },
       {
         name: '方正化', title: '司礼监秉笔', officialTitle: '司礼监秉笔太监', alive: true,
@@ -6692,7 +6628,7 @@
         loyalty: 90, ambition: 25, intelligence: 65, valor: 78, integrity: 85,
         stance: '忠宦', faction: '明朝廷', party: '', family: '方氏',
         traits: ['brave', 'honest', 'zealous'],
-        bio: '宦官少见武勇者。原史崇祯十七年监军保定，城破搏斗而死。'
+        bio: '宦官少见武勇者。日后或可十七年监军保定，城破搏斗而死。'
       },
       // ──── 后金 ────
       {
@@ -6706,7 +6642,7 @@
           { event: '天命十一年父汗努尔哈赤崩，与三兄共议继位，终以智谋夺之', emotion: '喜', weight: 10, turn: -400 },
           { event: '天聪元年春伐朝鲜，江都兄弟之盟成', emotion: '喜', weight: 9, turn: -200 }
         ],
-        bio: '努尔哈赤第八子。天命十一年（1626）继位。天聪元年（1627）伐朝鲜，定江都盟。原史 1636 改元崇德，国号清。1643 病逝，子福临即位。'
+        bio: '努尔哈赤第八子。天命十一年（1626）继位。天聪元年（1627）伐朝鲜，定江都盟。正图谋南下，志在中原。'
       },
       {
         name: '代善', title: '礼亲王·大贝勒', officialTitle: '礼亲王', alive: true,
@@ -6722,7 +6658,7 @@
         loyalty: 80, ambition: 90, intelligence: 88, valor: 75,
         stance: '后金幼弟·潜龙', faction: '后金', party: '', family: '爱新觉罗',
         traits: ['ambitious', 'patient', 'just'],
-        bio: '努尔哈赤第十四子。此时十五岁。原史崇德元年封睿亲王，入主中原之元勋，顺治摄政王。'
+        bio: '努尔哈赤第十四子。此时十五岁。正白旗主，少聪颖，与多铎齐名。'
       },
       {
         name: '阿敏', title: '二大贝勒', officialTitle: '二大贝勒', alive: true,
@@ -6730,7 +6666,7 @@
         loyalty: 50, ambition: 75, intelligence: 65, valor: 82,
         stance: '后金宗室·不睦', faction: '后金', party: '', family: '爱新觉罗',
         traits: ['wrathful', 'arrogant', 'ambitious'],
-        bio: '努尔哈赤侄。与皇太极龃龉。原史天聪四年因永平失守被幽禁。'
+        bio: '努尔哈赤侄。镶蓝旗主，位列四大贝勒。与皇太极龃龉不断，自恃勋高不服。'
       },
       {
         name: '范文程', title: '文馆大学士', officialTitle: '文馆大学士', alive: true,
@@ -6739,7 +6675,7 @@
         administration: 85, management: 80, integrity: 70,
         stance: '汉人谋主', faction: '后金', party: '', family: '范氏',
         traits: ['patient', 'just', 'calm'],
-        bio: '沈阳降人，秀才出身。天命十年入仕后金。为皇太极赞画军政。后助清入关。原史顺治十三年致仕。'
+        bio: '沈阳降人，秀才出身。天命十年入仕后金。为皇太极赞画军政，谋主之才。'
       },
       // ──── 蒙古 ────
       {
@@ -6748,7 +6684,7 @@
         loyalty: 100, ambition: 80, intelligence: 65, valor: 70, benevolence: 40,
         stance: '蒙古共主(名存实亡)', faction: '察哈尔', party: '', family: '孛儿只斤',
         traits: ['arrogant', 'wrathful', 'zealous'],
-        bio: '元裔。欲统合漠南蒙古对抗后金。天启七年西迁归化。原史崇祯五年败于皇太极走青海，明年病死。'
+        bio: '元裔。欲统合漠南蒙古对抗后金。天启七年西迁归化。日后或可五年败于皇太极走青海，明年病死。'
       },
       // ──── 朝鲜 ────
       {
@@ -6757,7 +6693,7 @@
         loyalty: 80, ambition: 30, intelligence: 60, valor: 40, integrity: 65,
         stance: '明藩·夹缝', faction: '朝鲜', party: '', family: '李氏·朝鲜',
         traits: ['craven', 'honest'],
-        bio: '李氏朝鲜第十六代国王。1623 反正废光海君。1627 被后金所伐，被迫定兄弟之盟。原史 1637 丙子胡乱后再被迫兄称后金为君。'
+        bio: '李氏朝鲜第十六代国王。1623 反正废光海君。1627 被后金所伐，被迫定兄弟之盟。事大明以诚，被后金所迫，两面为难。'
       },
       // ──── 海商 ────
       {
@@ -6767,7 +6703,7 @@
         administration: 60, integrity: 45,
         stance: '海商·游走', faction: '郑氏海商', party: '', family: '郑氏',
         traits: ['ambitious', 'gregarious', 'brave', 'deceitful'],
-        bio: '福建南安人。天启六年据台湾，大战荷兰。原史崇祯元年受招抚为海防游击。日后福建海上霸主，清入关降清。子郑成功复起抗清。'
+        bio: '福建南安人。天启六年据台湾，大战荷兰。日后或可元年受招抚为海防游击。日后福建海上霸主，清入关降清。子郑成功复起抗清。'
       },
       // ──── 逆雄（此时未起） ────
       {
@@ -6776,7 +6712,7 @@
         loyalty: 10, ambition: 72, intelligence: 45, valor: 78, benevolence: 50,
         stance: '流民首', faction: '陕北饥民', party: '', family: '王氏',
         traits: ['brave', 'wrathful', 'gregarious'],
-        bio: '陕西府谷人。明边军逃兵。原史崇祯元年起事，为陕北民变第一把火；四年被招抚而杀于内讧。'
+        bio: '陕西府谷人。明边军逃兵。日后或可元年起事，为陕北民变第一把火；四年被招抚而杀于内讧。'
       },
       {
         name: '高迎祥', title: '贩马贩子', officialTitle: '', alive: true,
@@ -6784,7 +6720,7 @@
         loyalty: 30, ambition: 60, intelligence: 55, valor: 82,
         stance: '将为闯王', faction: '陕北饥民', party: '', family: '高氏',
         traits: ['brave', 'gregarious'],
-        bio: '陕西安塞人。以贩马为业。原史崇祯元年起事自号闯王。九年被孙传庭擒斩。'
+        bio: '陕西安塞人。以贩马为业。日后或可元年起事自号闯王。九年被孙传庭擒斩。'
       },
       {
         name: '李自成', title: '银川驿驿卒', officialTitle: '驿卒', alive: true,
@@ -6792,7 +6728,7 @@
         loyalty: 25, ambition: 75, intelligence: 70, valor: 82, integrity: 50,
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '李氏',
         traits: ['brave', 'patient', 'ambitious'],
-        bio: '陕西米脂人。此时二十一岁银川驿驿卒(一说为甘州驿，学界有争议)。原史崇祯二年驿站被裁，随众起事。崇祯十七年破京称大顺帝。'
+        bio: '陕西米脂人。此时二十一岁银川驿驿卒(一说为甘州驿，学界有争议)。性善骑射，多谋略，时日艰困。'
       },
       {
         name: '张献忠', title: '延安卫军卒', officialTitle: '延安卫军卒', alive: true,
@@ -6800,7 +6736,7 @@
         loyalty: 20, ambition: 72, intelligence: 62, valor: 85,
         stance: '蛰伏·未起', faction: '陕北饥民', party: '', family: '张氏',
         traits: ['brave', 'wrathful', 'callous'],
-        bio: '陕西延安定边人。初为延安府捕快，后在延绥镇为军(此时约已当兵)。原史崇祯三年米脂十八寨起事。十六年据武昌建大西。'
+        bio: '陕西延安定边人。初为延安府捕快，后在延绥镇为军(此时约已当兵)。日后或可三年米脂十八寨起事。十六年据武昌建大西。'
       },
       {
         name: '秦良玉', title: '石柱宣抚使·总兵官·忠义典范', officialTitle: '石柱宣抚使(正三品袭)·勤王总兵官', alive: true,
@@ -6808,7 +6744,7 @@
         loyalty: 95, ambition: 30, intelligence: 75, valor: 88, military: 85, benevolence: 82, administration: 70, integrity: 92,
         stance: '忠义土司', faction: '明朝廷', party: '', family: '秦氏(石柱土司)',
         traits: ['brave', 'honest', 'just', 'diligent', 'zealous'],
-        bio: '忠州土官马千乘妻(马氏世袭石柱宣抚使)。万历末万历三大征参战。天启元年奢安之乱随兄秦邦屏征永宁，邦屏战死。天启三年以奇功升石柱宣抚使。天启七年仍驻石柱。原史崇祯二年率白杆兵入卫京师。崇祯十七年坚守石柱不降清。南明隆武帝封"忠贞侯"。清顺治五年卒，年七十五。'
+        bio: '忠州土官马千乘妻(马氏世袭石柱宣抚使)。万历末万历三大征参战。天启元年奢安之乱随兄秦邦屏征永宁，邦屏战死。天启三年以奇功升石柱宣抚使。天启七年仍驻石柱，白杆兵六千雄据川东。明唯一列传女将。'
       }
     ];
   }
@@ -7406,7 +7342,7 @@
           name: '阉党覆灭·第三环·清算逆案', type: 'chain', importance: '关键',
           trigger: '魏忠贤已死 且 东林党复苏进度 > 30',
           effect: '钦定逆案 260 余人·士林复苏',
-          description: '崇祯二年钦定"逆案"——魏党崔呈秀磔尸·田尔耕许显纯磔死·阎鸣泰阮大铖等充军·附阉者 260 余人依等定罪。',
+          description: '新帝若兴"逆案"清算魏党——崔呈秀/田尔耕/许显纯等阉党核心依律定罪，附阉者可数百人牵连。',
           linkedChars: ['崔呈秀', '田尔耕', '许显纯', '阮大铖'], linkedFactions: ['明朝廷']
         },
         {
@@ -7535,7 +7471,7 @@
         positions: [
           { name: '兵部尚书', rank: '正二品', holder: '崔呈秀', establishedCount: 1, vacancyCount: 0, authority: 'decision', duties: '总督京营戎政·掌武选武职边防。阉党之鹰犬。本衙门经费有限，兵器甲胄粮饷分储各镇武库。', publicTreasuryInit: { money: 50000, grain: 30000, cloth: 10000, quotaMoney: 300000 }, bindingHint: 'military', privateIncome: { illicitRisk: 'high' }, powers: { militaryCommand: true } },
           { name: '左侍郎', rank: '正三品', holder: '', establishedCount: 1, vacancyCount: 1 },
-          { name: '武选司主事', rank: '正六品', holder: '孙传庭', establishedCount: 10, vacancyCount: 0, duties: '（原史此时在吏部，此处归兵部备战场需要）' },
+          { name: '武选司主事', rank: '正六品', holder: '孙传庭', establishedCount: 10, vacancyCount: 0, duties: '武官铨选·备战场之需' },
           { name: '职方司主事', rank: '正六品', holder: '孙元化', establishedCount: 4, vacancyCount: 0, duties: '掌地图军机，火器。' }
         ],
         subs: []
@@ -7580,7 +7516,7 @@
       {
         id: _uid('off_'), name: '司礼监', desc: '内廷宦官首衙。掌御前批红+宝玺+内府事务',
         positions: [
-          { name: '司礼监掌印太监', rank: '正四品', holder: '王体乾', establishedCount: 1, vacancyCount: 0, authority: 'decision', succession: 'appointment', duties: '内廷首宦·掌御宝盖印。王体乾自天启元年任至崇祯元年。虽位在魏忠贤之上，实听命于魏忠贤。', publicTreasuryInit: { money: 50000, grain: 0, cloth: 0 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'high', bonusNote: '盖印费·礼金' }, powers: { appointment: true, supervise: true } },
+          { name: '司礼监掌印太监', rank: '正四品', holder: '王体乾', establishedCount: 1, vacancyCount: 0, authority: 'decision', succession: 'appointment', duties: '内廷首宦·掌御宝盖印。王体乾自天启元年起任。虽位在魏忠贤之上，实听命于魏忠贤。', publicTreasuryInit: { money: 50000, grain: 0, cloth: 0 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'high', bonusNote: '盖印费·礼金' }, powers: { appointment: true, supervise: true } },
           { name: '秉笔太监·提督东厂·上公', rank: '正四品', holder: '魏忠贤', establishedCount: 1, vacancyCount: 0, authority: 'decision', succession: 'appointment', duties: '代帝批红+兼提督东厂。魏忠贤虽本位秉笔（与掌印同为正四品），实以"上公"尊号凌掌印，号"九千九百岁"。按《明会典》司礼监秉笔 正四品。', publicTreasuryInit: { money: 200000, grain: 50000, cloth: 20000 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'high', bonusNote: '生祠贡献·官员奉承·抄没所得' }, powers: { appointment: true, impeach: true, supervise: true } },
           { name: '秉笔太监·东厂掌刑', rank: '从四品', holder: '李永贞', establishedCount: 4, vacancyCount: 0, authority: 'execution', duties: '代帝批红奏疏+掌东厂刑狱。李永贞为魏忠贤第一心腹，《三朝要典》即其主持修撰。', privateIncome: { illicitRisk: 'high' } },
           { name: '秉笔太监', rank: '从四品', holder: '涂文辅', establishedCount: 1, vacancyCount: 0, authority: 'execution', duties: '魏党亲信，提督御马监兼管司礼监事。' },
@@ -7750,7 +7686,7 @@
           { name: '神宫监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '掌太庙洒扫/陵寝。', publicTreasuryInit: { money: 30000, grain: 5000, cloth: 2000 }, bindingHint: 'imperial' },
           { name: '尚衣监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, publicTreasuryInit: { money: 40000, grain: 0, cloth: 50000 }, bindingHint: 'imperial' },
           { name: '尚膳监掌印', rank: '正四品', holder: '', establishedCount: 1, vacancyCount: 0, publicTreasuryInit: { money: 60000, grain: 80000, cloth: 2000 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'medium' } },
-          { name: '内承运库掌库', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '内帑金银仓·皇帝私库。天启末魏忠贤聚敛加派解京，现存银约250万两+金数万两+苏杭江三织造绸缎锦缎 28 万匹（崇祯元年清查时因魏忠贤挥霍已大减）。粮储约 12 万石仅供宫廷御膳。', publicTreasuryInit: { money: 2500000, grain: 120000, cloth: 280000, quotaMoney: 3000000 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'high', bonusNote: '库盗·贡私分·冒领' } }
+          { name: '内承运库掌库', rank: '正五品', holder: '', establishedCount: 1, vacancyCount: 0, duties: '内帑金银仓·皇帝私库。天启末魏忠贤聚敛加派解京，现存银约250万两+金数万两+苏杭江三织造绸缎锦缎 28 万匹。粮储约 12 万石仅供宫廷御膳。', publicTreasuryInit: { money: 2500000, grain: 120000, cloth: 280000, quotaMoney: 3000000 }, bindingHint: 'imperial', privateIncome: { illicitRisk: 'high', bonusNote: '库盗·贡私分·冒领' } }
         ],
         subs: []
       },
@@ -7799,7 +7735,7 @@
           { name: '宣府总兵', rank: '从一品', holder: '侯世禄', establishedCount: 1, vacancyCount: 0, bindingHint: 'military', duties: '节制宣府镇。九边之首（京师西北第一道屏障）。', publicTreasuryInit: { money: 70000, grain: 160000, cloth: 12000 } },
           { name: '大同总兵', rank: '从一品', holder: '渠家祯', establishedCount: 1, vacancyCount: 0, bindingHint: 'military', duties: '节制大同镇。与察哈尔林丹汗隔长城对峙。满桂新去，渠家祯继任。', publicTreasuryInit: { money: 70000, grain: 160000, cloth: 12000 } },
           { name: '山西总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military', duties: '节制山西镇。驻宁武。', publicTreasuryInit: { money: 40000, grain: 100000, cloth: 8000 } },
-          { name: '延绥总兵', rank: '从一品', holder: '杜文焕', establishedCount: 1, vacancyCount: 0, bindingHint: 'military', duties: '节制延安/榆林诸卫。杜文焕此时仍在任（吴自勉为崇祯三年继任者）。', publicTreasuryInit: { money: 40000, grain: 80000, cloth: 8000 } },
+          { name: '延绥总兵', rank: '从一品', holder: '杜文焕', establishedCount: 1, vacancyCount: 0, bindingHint: 'military', duties: '节制延安/榆林诸卫。杜文焕在任。', publicTreasuryInit: { money: 40000, grain: 80000, cloth: 8000 } },
           { name: '宁夏总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military', duties: '节制宁夏镇。', publicTreasuryInit: { money: 30000, grain: 60000, cloth: 6000 } },
           { name: '甘肃总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military', duties: '节制甘肃镇。河西走廊。与诸番、吐鲁番对峙。', publicTreasuryInit: { money: 30000, grain: 50000, cloth: 5000 } },
           { name: '固原总兵', rank: '从一品', holder: '', establishedCount: 1, vacancyCount: 1, bindingHint: 'military', duties: '节制固原镇。陕西腹地军备。', publicTreasuryInit: { money: 25000, grain: 40000, cloth: 4000 } }
@@ -8171,7 +8107,7 @@
           }),
           division({
             name: '陕西布政使司', level: 'province', officialPosition: '陕西巡抚', governor: '胡廷宴',
-            description: '秦地饥馑之乡。下辖西安/凤翔/汉中/平凉/巩昌/临洮六府 + 延安/庆阳/榆林镇 + 宁夏/甘肃/固原/延绥四镇。三边总督武之望节制。连年大旱(天启六-七年)，西北大饥，民变之薪已积；崇祯元年白水王二将起民变，即为序曲。',
+            description: '秦地饥馑之乡。下辖西安/凤翔/汉中/平凉/巩昌/临洮六府 + 延安/庆阳/榆林镇 + 宁夏/甘肃/固原/延绥四镇。三边总督武之望节制。连年大旱(天启六-七年)，西北大饥，民变之薪已积。',
             populationDetail: { mouths: 5800000, fugitives: 420000, hiddenCount: 220000 },
             terrain: '山地', specialResources: '棉·盐·铁·马·边塞', taxLevel: '重',
             publicTreasuryInit: { money: 25000, grain: 35000, cloth: 4000 },

@@ -745,6 +745,8 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
 
   // shijiHistory存完整HTML + 所有结构化字段（供史记回顾和后续兼容）
   var _fullHtml = layer1Html + layer2Html;
+  // 收集本回合玩家下的诏令（edicts 参数存的是按分类的原文）
+  var _thisTurnEdicts = edicts || {};
   GM.shijiHistory.push({
     turn: GM.turn-1, time: getTSText(GM.turn-1),
     shizhengji: shizhengji, zhengwen: zhengwen,
@@ -753,6 +755,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     // 新增字段
     shilu: shiluText, szjTitle: szjTitle, szjSummary: szjSummary,
     personnel: personnelChanges, houren: hourenXishuo,
+    edicts: _thisTurnEdicts,  // 保留玩家诏令全文以便史记回顾+下回合 AI 上下文
     html: _fullHtml
   });
   // 6.5: 每回合一句话摘要存入年度素材

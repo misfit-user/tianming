@@ -2767,37 +2767,129 @@ function extractEdictActions(edictText) {
   return actions;
 }
 
+/** 在 officeTree 中按职位名（模糊/后缀）找到第一个 position 对象（并返回其父节点路径用于记录）*/
+function _findPositionInOfficeTree(posName) {
+  if (!posName || !GM.officeTree) return null;
+  var found = null;
+  function walk(nodes, deptPath) {
+    (nodes || []).forEach(function(n) {
+      if (found) return;
+      if (!n) return;
+      var dp = (deptPath ? deptPath + '·' : '') + (n.name || '');
+      (n.positions || []).forEach(function(p) {
+        if (found || !p || !p.name) return;
+        // 精确匹配
+        if (p.name === posName) { found = { pos: p, deptPath: dp }; return; }
+      });
+      // 再做一次模糊匹配（包含关系）
+      if (!found) {
+        (n.positions || []).forEach(function(p) {
+          if (found || !p || !p.name) return;
+          if (p.name.indexOf(posName) >= 0 || posName.indexOf(p.name) >= 0) {
+            found = { pos: p, deptPath: dp };
+          }
+        });
+      }
+      if (!found && n.subs) walk(n.subs, dp);
+    });
+  }
+  walk(GM.officeTree, '');
+  return found;
+}
+
 /** 执行从诏令中提取的操作（在AI推演前执行，确保状态一致） */
 function applyEdictActions(actions) {
   if (!actions) return;
-  // 任命
+  // 任命——双路径查找：postSystem.posts（动态岗位）+ officeTree（静态官制）
   actions.appointments.forEach(function(a) {
     var char = findCharByName(a.character);
-    if (!char) return;
-    // 尝试在官制树中找到对应职位并任命
-    if (typeof PostTransfer !== 'undefined' && GM.postSystem) {
+    if (!char) {
+      addEB('人事', '诏欲任' + a.character + '为' + a.position + '·然朝无此人（待甄进）');
+      return;
+    }
+    var done = false;
+    // Path 1: postSystem 动态岗位（地方封疆大员等）
+    if (typeof PostTransfer !== 'undefined' && GM.postSystem && GM.postSystem.posts && GM.postSystem.posts.length) {
       var post = null;
-      (GM.postSystem.posts || []).forEach(function(p) { if (p.name === a.position) post = p; });
+      GM.postSystem.posts.forEach(function(p) { if (!post && p.name === a.position) post = p; });
       if (post) {
         PostTransfer.seat(post.id, a.character, '玩家诏令');
         if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'appointment', '奉诏就任' + a.position);
         if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) {
-          var _newCh = (GM.chars || []).find(function(c){ return c.name === a.character; });
-          if (_newCh) CorruptionEngine.markAsRecentAppointment(_newCh);
+          if (char) CorruptionEngine.markAsRecentAppointment(char);
         }
-        addEB('人事', a.character + '奉诏就任' + a.position);
+        addEB('人事', a.character + '奉诏就任' + a.position, { credibility: 'high' });
         if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
+        done = true;
       }
     }
-  });
-  // 免职
-  actions.dismissals.forEach(function(a) {
-    if (typeof PostTransfer !== 'undefined') {
-      PostTransfer.cascadeVacate(a.character);
-      if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'dismissal', '奉诏免职');
-      addEB('人事', a.character + '被免职');
-        if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', -10, '被免职');
+    // Path 2: 主路径 — officeTree 中找 position.name 并直接改 holder（这是游戏内官制的真正来源）
+    if (!done) {
+      var hit = _findPositionInOfficeTree(a.position);
+      if (hit) {
+        var prevHolder = hit.pos.holder || '';
+        hit.pos.holder = a.character;
+        // 更新 char 元数据
+        char.officialTitle = a.position;
+        char.position = a.position;
+        if (!char.careerHistory) char.careerHistory = [];
+        char.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + a.position + '（' + hit.deptPath + '）' });
+        // 前任记录
+        if (prevHolder && prevHolder !== a.character) {
+          var prevCh = findCharByName(prevHolder);
+          if (prevCh) {
+            prevCh._displaced = { from: a.position, by: a.character, turn: GM.turn };
+            if (prevCh.officialTitle === a.position) prevCh.officialTitle = '';
+          }
+        }
+        // 官职公库 currentHead 跟着换
+        if (hit.pos.publicTreasury) hit.pos.publicTreasury.currentHead = a.character;
+        if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'appointment', '奉诏就任' + a.position);
+        if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) CorruptionEngine.markAsRecentAppointment(char);
+        addEB('人事', a.character + '奉诏就任' + a.position + '（' + hit.deptPath + '）', { credibility: 'high' });
+        if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
+        done = true;
+      }
     }
+    // Path 3: 即使都找不到·也要更新角色字段 + 记录（让 AI 至少知道玩家意图已生效）
+    if (!done) {
+      char.officialTitle = a.position;
+      char.position = a.position;
+      if (!char.careerHistory) char.careerHistory = [];
+      char.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + a.position + '（官制中暂未立此衙门·视同特设）' });
+      addEB('人事', a.character + '奉诏就任' + a.position + '（特设）', { credibility: 'medium' });
+      if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
+    }
+  });
+  // 免职——双路径：postSystem + officeTree
+  actions.dismissals.forEach(function(a) {
+    var char = findCharByName(a.character);
+    var didAny = false;
+    if (typeof PostTransfer !== 'undefined' && GM.postSystem && GM.postSystem.posts && GM.postSystem.posts.length) {
+      try { PostTransfer.cascadeVacate(a.character); didAny = true; } catch(_){}
+    }
+    // 同时扫 officeTree 把所有 holder===name 的 position 清空
+    if (GM.officeTree) {
+      function walkD(nodes) {
+        (nodes||[]).forEach(function(n) {
+          if (!n) return;
+          (n.positions||[]).forEach(function(p) {
+            if (p && p.holder === a.character) { p.holder = ''; didAny = true; }
+          });
+          if (n.subs) walkD(n.subs);
+        });
+      }
+      walkD(GM.officeTree);
+    }
+    if (char) {
+      char.officialTitle = '';
+      char.position = '';
+      if (!char.careerHistory) char.careerHistory = [];
+      char.careerHistory.push({ turn: GM.turn, event: '奉诏免职' });
+    }
+    if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'dismissal', '奉诏免职');
+    addEB('人事', a.character + '被免职', { credibility: didAny ? 'high' : 'medium' });
+    if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', -10, '被免职');
   });
   // 赐死
   actions.deaths.forEach(function(a) {

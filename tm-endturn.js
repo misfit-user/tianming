@@ -12463,12 +12463,33 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       showLoading("\u519B\u4E8B\u6001\u52BF\u63A8\u6F14",67);
       try {
         var tp18 = '\u672C\u56DE\u5408\u519B\u4E8B\u6001\u52BF\uFF1A\n';
+        // 找出玩家势力
+        var _playerFac = '';
+        try { var _pcM = (GM.chars||[]).find(function(c){return c&&c.isPlayer;}); if (_pcM) _playerFac = _pcM.faction || ''; } catch(_){}
+        // 按势力分组列兵·清晰显示"我方/敌方/中立"
+        var _armyByFac = {};
         (GM.armies||[]).forEach(function(a) {
           if (a.destroyed) return;
-          tp18 += '  ' + a.name + ' \u5175' + (a.soldiers||0) + ' \u58EB\u6C14' + (a.morale||50) + ' \u8BAD' + (a.training||50) + (a.commander?' \u5E05:'+a.commander:'') + (a.faction?' \u5C5E:'+a.faction:'') + (a.garrison?' \u9A7B:'+a.garrison:'') + '\n';
+          var fac = a.faction || '无势力';
+          if (!_armyByFac[fac]) _armyByFac[fac] = [];
+          _armyByFac[fac].push(a);
+        });
+        Object.keys(_armyByFac).forEach(function(fac) {
+          var marker = fac === _playerFac ? '【我方·'+fac+'】' : ('【'+fac+'·敌/中】');
+          tp18 += '\n' + marker + '\n';
+          _armyByFac[fac].forEach(function(a) {
+            tp18 += '  ' + a.name + ' 兵' + (a.soldiers||0) + ' 士气' + (a.morale||50) + ' 训' + (a.training||50) + (a.commander?' 帅:'+a.commander:'') + (a.garrison?' 驻:'+a.garrison:'') + '\n';
+          });
         });
         if (p1 && p1.army_changes && p1.army_changes.length > 0) tp18 += '\u672C\u56DE\u5408\u519B\u4E8B\u53D8\u52A8\uFF1A' + p1.army_changes.map(function(a){return a.name+' \u5175'+a.soldiers_delta;}).join('\uFF1B') + '\n';
-        tp18 += '\n\u8BF7\u8FD4\u56DEJSON\uFF1A{"military_situation":"\u5168\u5C40\u519B\u4E8B\u6001\u52BF\u5206\u6790(200\u5B57)","border_threats":"\u8FB9\u5883\u5A01\u80C1\u8BC4\u4F30(150\u5B57)","army_morale_analysis":"\u5404\u519B\u58EB\u6C14\u5206\u6790\u548C\u98CE\u9669(100\u5B57)","supplementary_army_changes":[{"name":"\u90E8\u961F","soldiers_delta":0,"morale_delta":0,"reason":""}],"war_probability":"\u4E0B\u56DE\u5408\u7206\u53D1\u6218\u4E89\u7684\u6982\u7387\u548C\u65B9\u5411(80\u5B57)"}';
+
+        tp18 += '\n【铁律·势力军事自主】\n';
+        tp18 += '· 非玩家势力（后金/察哈尔/朝鲜/郑氏/流民/外族等）的军队·由你自主推演其军事行动：扩张/掠袭/征服/防御/内争/联盟/背叛\n';
+        tp18 += '· 各势力按其性格+战略+资源自主决策——后金必图辽西·皇太极可能绕蒙古入塞；察哈尔被后金逼西迁；朝鲜夹缝求存；郑氏海商谋台海\n';
+        tp18 += '· 敌方势力兵力·玩家不可直接调动·但可通过外交/册封/招抚/挑衅影响其行动\n';
+        tp18 += '· 两势力交锋·按双方兵力/士气/装备/补给/训练/统帅能力综合推演·给出具体伤亡与结果\n';
+        tp18 += '· 每个非玩家势力本回合应至少 1 条 faction_military_actions 条目（兵力调动/作战/备战/征募等）\n';
+        tp18 += '\n请返回JSON：{"military_situation":"全局军事态势分析(200字)","border_threats":"边境威胁评估(150字)","army_morale_analysis":"各军士气分析和风险(100字)","supplementary_army_changes":[{"name":"部队","faction":"所属","soldiers_delta":0,"morale_delta":0,"reason":""}],"faction_military_actions":[{"faction":"势力名","action":"军事行动30字","targetFaction":"目标势力可空","casualties":0,"outcome":"结果30字","rationale":"动机30字"}],"war_probability":"下回合爆发战争的概率和方向(80字)"}';
         var resp18 = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},
           body:JSON.stringify({model:P.ai.model||"gpt-4o", messages:[{role:"system",content:sysP},{role:"user",content:tp18}], temperature:0.7, max_tokens:_tok(12000)})});
         if (resp18.ok) {
@@ -12480,11 +12501,36 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                 if (!ac.name) return;
                 var army = (GM.armies||[]).find(function(a){return a.name===ac.name;});
                 if (army) {
-                  if (ac.soldiers_delta) army.soldiers = Math.max(0, (army.soldiers||0) + clamp(parseInt(ac.soldiers_delta)||0, -500, 500));
-                  if (ac.morale_delta) army.morale = clamp((army.morale||50) + clamp(parseInt(ac.morale_delta)||0, -10, 10), 0, 100);
+                  if (ac.soldiers_delta) army.soldiers = Math.max(0, (army.soldiers||0) + clamp(parseInt(ac.soldiers_delta)||0, -2000, 2000));
+                  if (ac.morale_delta) army.morale = clamp((army.morale||50) + clamp(parseInt(ac.morale_delta)||0, -15, 15), 0, 100);
                   if (ac.reason) addEB('\u519B\u4E8B', army.name + '：' + ac.reason);
                 }
               });
+            }
+            // 各势力军事行动
+            if (Array.isArray(p18.faction_military_actions) && p18.faction_military_actions.length > 0) {
+              if (!GM._factionMilitaryLog) GM._factionMilitaryLog = [];
+              p18.faction_military_actions.forEach(function(fa) {
+                if (!fa || !fa.faction) return;
+                GM._factionMilitaryLog.push({
+                  turn: GM.turn, faction: fa.faction, target: fa.targetFaction||'',
+                  action: (fa.action||'').substring(0, 60),
+                  casualties: parseInt(fa.casualties)||0,
+                  outcome: (fa.outcome||'').substring(0, 60),
+                  rationale: (fa.rationale||'').substring(0, 60)
+                });
+                if (typeof addEB==='function') addEB('势力军事', fa.faction + (fa.targetFaction?'→'+fa.targetFaction:'') + '：' + (fa.action||'').substring(0,40) + (fa.casualties?'·伤亡'+fa.casualties:''));
+                // 若伤亡·自动给该势力所属军兵力扣减
+                if (fa.casualties > 0) {
+                  var facArmies = (GM.armies||[]).filter(function(a){return a && a.faction===fa.faction;});
+                  if (facArmies.length > 0) {
+                    var perArmy = Math.floor(fa.casualties / facArmies.length);
+                    facArmies.forEach(function(aa){ aa.soldiers = Math.max(0, (aa.soldiers||0) - perArmy); });
+                  }
+                }
+              });
+              // 上限保持最近 200 条
+              if (GM._factionMilitaryLog.length > 200) GM._factionMilitaryLog = GM._factionMilitaryLog.slice(-200);
             }
             p1Summary = (p1Summary||'') + '\u3010\u519B\u4E8B\u3011' + (p18.military_situation||'').substring(0,100) + '\n';
             GM._turnAiResults.subcall18 = p18;

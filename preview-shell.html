@@ -58,6 +58,16 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
 .gs-var.alert{border-color:var(--vermillion-400);background:rgba(192,64,48,0.1);animation:var-pulse 2.5s infinite;}
 @keyframes var-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,64,48,0.3);}50%{box-shadow:0 0 0 4px rgba(192,64,48,0);}}
 .gs-var.alert::after{content:"\26A0";position:absolute;top:-2px;right:-2px;font-size:10px;color:var(--vermillion-400);}
+.gs-var.wide{min-width:106px;padding:3px 9px;align-items:stretch;}
+.gs-var.wide .name{text-align:center;}
+.gs-var-sub{display:flex;flex-direction:column;gap:1px;width:100%;margin-top:1px;}
+.gs-var-sub-item{display:flex;align-items:baseline;justify-content:space-between;gap:4px;font-family:var(--font-serif);font-size:10px;line-height:1.15;}
+.gs-var-sub-item .sk{color:var(--ink-300);letter-spacing:0.1em;font-size:9.5px;}
+.gs-var-sub-item .sv{color:var(--v-c,var(--gold-400));font-weight:600;font-variant-numeric:tabular-nums;}
+.gs-var-sub-item .sd{font-size:8.5px;font-weight:400;font-variant-numeric:tabular-nums;margin-left:2px;min-width:24px;text-align:right;}
+.gs-var-sub-item .sd.up{color:var(--celadon-400);}
+.gs-var-sub-item .sd.down{color:var(--vermillion-400);}
+.gs-var-sub-item .sd.flat{color:var(--ink-300);opacity:0.7;}
 .gs-topbar-right{display:flex;gap:6px;align-items:center;padding-left:10px;border-left:1px solid var(--border-subtle);flex-shrink:0;}
 .gs-icon-btn{width:32px;height:32px;background:transparent;border:1px solid var(--border-subtle);border-radius:3px;color:var(--ink-500);font-family:var(--font-serif);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;position:relative;}
 .gs-icon-btn:hover{color:var(--gold-400);border-color:var(--gold-d);background:rgba(184,154,83,0.08);}
@@ -755,8 +765,8 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
     <div class="gs-weather-info"><div class="gs-weather-name">秋分 · 丙申</div><div class="gs-weather-desc">北风起 · 寒气初降</div></div>
   </div>
   <div class="gs-vars">
-    <div class="gs-var v-guoku"><span class="name">帑 廪</span><span class="val">368<span class="trend up">↑</span></span></div>
-    <div class="gs-var v-neitang"><span class="name">内 帑</span><span class="val">142<span class="trend down">↓</span></span></div>
+    <div class="gs-var v-guoku wide"><span class="name">帑 廪</span><div class="gs-var-sub"><div class="gs-var-sub-item"><span class="sk">银</span><span class="sv">368</span><span class="sd up">+12</span></div><div class="gs-var-sub-item"><span class="sk">粮</span><span class="sv">2.5万</span><span class="sd down">-80</span></div><div class="gs-var-sub-item"><span class="sk">布</span><span class="sv">320</span><span class="sd flat">±0</span></div></div></div>
+    <div class="gs-var v-neitang wide"><span class="name">内 帑</span><div class="gs-var-sub"><div class="gs-var-sub-item"><span class="sk">银</span><span class="sv">142</span><span class="sd down">-8</span></div><div class="gs-var-sub-item"><span class="sk">粮</span><span class="sv">8千</span><span class="sd down">-20</span></div><div class="gs-var-sub-item"><span class="sk">布</span><span class="sv">120</span><span class="sd flat">±0</span></div></div></div>
     <div class="gs-var v-hukou"><span class="name">户 口</span><span class="val">6213<span class="trend down">↓</span></span></div>
     <div class="gs-var v-lizhi alert"><span class="name">吏 治</span><span class="val">43<span class="trend down">↓</span></span></div>
     <div class="gs-var v-minxin"><span class="name">民 心</span><span class="val">54<span class="trend">·</span></span></div>
@@ -1482,7 +1492,7 @@ body{margin:0;padding:0;background:radial-gradient(ellipse at top,#1a1510 0%,#0f
     <button class="gs-fab-btn" data-tip="校阅">❖</button>
   </div>
   <div class="gs-turn-summary">已下诏 <span class="hl">2</span>道 · 批奏 <span class="hl">4</span>封 · <span class="warn">3</span>要务待办</div>
-  <button class="gs-turn-big">推　演　本　回<span class="sub">朕 意 已 决　可 休 憩 矣</span></button>
+  <button class="gs-turn-big">诏　付　有　司<span class="sub">朕 意 已 决　付 之 百 司</span></button>
 </div>
 
 <!-- 底部状态栏 -->

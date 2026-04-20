@@ -131,13 +131,27 @@
       mp2.className='gs-panel p-army';
       mp2.setAttribute('data-panel-key','army');
       var _mHtml = '<div class="gs-panel-hdr"><div class="gs-panel-title">军 事 要 务</div><span class="gs-panel-cnt">'+GM.armies.length+'</span></div>';
+      // 找出玩家势力名（用于 chip 着色）
+      var _myFac = '';
+      try {
+        var _pc = (GM.chars||[]).find(function(c){return c&&c.isPlayer;});
+        if (_pc) _myFac = _pc.faction || '';
+      } catch(_){}
       GM.armies.slice(0,6).forEach(function(a){
-        var size = a.size || a.troops || a.initialTroops || 0;
+        var size = a.size || a.troops || a.soldiers || a.strength || a.initialTroops || 0;
         var morale = a.morale || 70;
         var mColor = morale>75 ? 'var(--celadon-400,#7eb8a7)' : morale>55 ? 'var(--amber-400,#c9a045)' : 'var(--vermillion-400)';
+        // 势力 chip·本朝 / 敌对 / 中立 三色
+        var _fac = a.faction || '';
+        var _facChip = '';
+        if (_fac) {
+          var _isOurs = _myFac && _fac === _myFac;
+          var _chipColor = _isOurs ? 'rgba(184,154,83,0.25);color:#e8d49a' : 'rgba(184,71,56,0.25);color:#e8b8a8';
+          _facChip = '<span style="background:'+_chipColor+';padding:0 5px;border-radius:3px;font-size:0.72rem;margin-left:4px;">'+esc(_fac)+(_isOurs?'·我':'·外')+'</span>';
+        }
         _mHtml += '<div class="gs-army-row" onclick="if(typeof openMilitaryDetailPanel===\'function\')openMilitaryDetailPanel();">'
           + '<span class="gs-army-icon">⚔</span>'
-          + '<div class="gs-army-info"><div class="gs-army-name">'+esc(a.name||'军')+'</div>'
+          + '<div class="gs-army-info"><div class="gs-army-name">'+esc(a.name||'军')+_facChip+'</div>'
           + '<div class="gs-army-loc">'+esc((a.location||a.stationed||'')+(a.commander?' · '+a.commander:''))+'</div></div>'
           + '<div style="text-align:right;"><div class="gs-army-size">'+num(size)+'</div>'
           + '<div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:'+Math.min(100,morale)+'%;background:'+mColor+';"></div></div></div></div>';

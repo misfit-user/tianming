@@ -1964,13 +1964,27 @@ function addArmy(){
 }
 function editArmy(i){
   var a=P.military.armies[i];
+  // 势力下拉·含所有 P.factions / P.facs
+  var _facList = (P.factions || P.facs || []).filter(function(f){return f && f.name;});
+  var _facOpts = '<option value="">（未指定）</option>' + _facList.map(function(f){
+    var sel = (a.faction === f.name) ? ' selected' : '';
+    return '<option value="' + f.name.replace(/"/g,'&quot;') + '"' + sel + '>' + f.name + (f.isPlayer?' ★本朝':'') + '</option>';
+  }).join('');
   var body='<div class="form-group"><label>\u90E8\u961F\u540D</label><input type="text" id="gm_name" value="'+(a.name||"").replace(/"/g,'&quot;')+'"></div>'+
+    '<div class="form-group"><label>所属势力</label><select id="gm_faction">'+_facOpts+'</select>'+
+    '<div style="font-size:0.75rem;color:var(--ink-300);margin-top:2px;">★ 决定部队敌我·跨势力不能任命本朝官员为统帅</div></div>'+
     '<div class="form-group"><label>\u7EDF\u5E05</label><input type="text" id="gm_cmdr" value="'+(a.commander||"").replace(/"/g,'&quot;')+'"></div>'+
+    '<div class="form-group"><label>兵种</label><input type="text" id="gm_type" value="'+(a.type||"").replace(/"/g,'&quot;')+'" placeholder="步兵/骑兵/水军/禁军..."></div>'+
+    '<div class="form-group"><label>兵力</label><input type="number" id="gm_size" value="'+(a.size||a.soldiers||a.strength||0)+'" min="0"></div>'+
     '<div class="form-group"><label>\u9A7B\u5730</label><input type="text" id="gm_loc" value="'+(a.location||"").replace(/"/g,'&quot;')+'"></div>'+
     '<div class="form-group"><label>\u58EB\u6C14</label><input type="number" id="gm_morale" value="'+(a.morale!=null?a.morale:70)+'" min="0" max="100"></div>'+
     '<div class="form-group"><label>\u8865\u7ED9</label><input type="number" id="gm_supply" value="'+(a.supply!=null?a.supply:80)+'" min="0" max="100"></div>';
   openGenericModal("\u7F16\u8F91\u90E8\u961F",body,function(){
     a.name=gv("gm_name");a.commander=gv("gm_cmdr");a.location=gv("gm_loc");
+    a.faction=gv("gm_faction")||"";
+    a.type=gv("gm_type")||a.type||"";
+    var _sz = +(document.getElementById("gm_size").value)||0;
+    if (_sz > 0) { a.size = _sz; a.soldiers = _sz; }
     a.morale=+(document.getElementById("gm_morale").value)||70;
     a.supply=+(document.getElementById("gm_supply").value)||80;
     closeGenericModal();renderEdTab("t-mil");toast("\u5DF2\u4FDD\u5B58");
@@ -1993,8 +2007,11 @@ renderMilTab=function(em,sid){
   }
   var armies=P.military.armies.filter(function(a){return a.sid===sid;});
   h+="<div class=\"cd\"><h4>\u90E8\u961F ("+armies.length+")</h4><button class=\"bt bp bsm\" onclick=\"addArmy()\">\uFF0B</button>";
-  h+=armies.map(function(a){var i=P.military.armies.indexOf(a);return "<div style=\"background:var(--bg-3);border-radius:4px;padding:0.4rem;margin-top:0.3rem;display:flex;justify-content:space-between;align-items:center;\">"+
-    "<div><strong>"+a.name+"</strong> \u7EDF\u5E05:"+(a.commander||"\u65E0")+" \u58EB\u6C14:"+a.morale+"</div>"+
+  h+=armies.map(function(a){var i=P.military.armies.indexOf(a);
+    var _facChip = a.faction ? '<span style="background:rgba(90,111,168,0.3);color:#c9c0e6;padding:1px 6px;border-radius:3px;font-size:0.72rem;margin-left:4px;">'+a.faction+'</span>' : '<span style="color:#9e8862;font-size:0.72rem;margin-left:4px;">无势力</span>';
+    var _szTxt = (a.size||a.soldiers||a.strength) ? ' 兵'+(a.size||a.soldiers||a.strength) : '';
+    return "<div style=\"background:var(--bg-3);border-radius:4px;padding:0.4rem;margin-top:0.3rem;display:flex;justify-content:space-between;align-items:center;\">"+
+    "<div><strong>"+a.name+"</strong>"+_facChip+" \u7EDF\u5E05:"+(a.commander||"\u65E0")+_szTxt+" \u58EB\u6C14:"+a.morale+"</div>"+
     "<div style=\"display:flex;gap:0.3rem;\"><button class=\"bt bs bsm\" onclick=\"editArmy("+i+")\">\u270E</button><button class=\"bd bsm\" onclick=\"P.military.armies.splice("+i+",1);renderEdTab('t-mil');\">\u2715</button></div></div>";}).join("")+"</div>";
   em.innerHTML=h;
 };

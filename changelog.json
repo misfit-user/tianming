@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-04-20",
+      "module": "姓名抓取",
+      "title": "姓名抓取逻辑三处深化",
+      "items": [
+        { "what": "_trimTrailing 改为迭代截短（原来只截 1 个尾字）", "why": "如\"张惟贤言曰\"现在能连续砍掉末尾的\"曰\"和\"言\"还原为\"张惟贤\"·不再保留假尾" },
+        { "what": "引入 _buildKnownNameSet：遍历 GM.chars 收集主名+字+号+乳名+aliases+formerNames", "why": "findCharByName 只索引主名·若文本以徐光启的字\"玄扈\"提及·旧版会误抓为新候选；现在按别名命中即正确跳过" },
+        { "what": "启用原本定义却未用的 COMMON_TITLE_KEYWORDS 过滤", "why": "候选里含\"大人/官/将军/丞相/大学士/侍郎/尚书/郎中\"等任一即过滤·剔除\"王大人\"/\"官X\"等假阳性" }
+      ]
+    },
+    {
+      "date": "2026-04-20",
       "module": "Bug 修复",
       "title": "使节 prompt 真正挂钩势力深化数据",
       "items": [

@@ -13097,7 +13097,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       await _runSubcall('sc27', '叙事审查', 'standard', async function() {
       showLoading("\u53D9\u4E8B\u8D28\u91CF\u5BA1\u67E5",85);
       try {
-        var tp27 = '\u8BF7\u5BA1\u67E5\u4EE5\u4E0B\u53D9\u4E8B\u6B63\u6587\u7684\u8D28\u91CF\uFF1A\n' + (zhengwen||'') + '\n\n';
+        var tp27 = '请审查以下叙事正文的质量：\n' + (zhengwen||'') + '\n\n';
+        tp27 += '【铁律】玩家诏令引起的任何字面执行描述（即使荒唐/时代错乱）·你都不得改写。若玩家在唐代诏"赏银"/令"刑部管科举"等·相关叙事必须原样保留。你只能增补环境/情绪/感官细节·或重写"纯 AI 虚构的、与玩家无关的段落"。\n';
         // 注入史料知识供审查参考
         if (GM._aiScenarioDigest) {
           if (GM._aiScenarioDigest.periodVocabulary) tp27 += '\u65F6\u4EE3\u7528\u8BED\uFF1A' + GM._aiScenarioDigest.periodVocabulary.substring(0,200) + '\n';
@@ -13469,23 +13470,36 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }
 
       // 历史检查环节（轻度和严格史实模式）
+      //   ★ 核心原则：此检查只"标注"AI 自生的时代错乱（如唐代 shizhengji 中出现"火枪"）
+      //   ★ 绝对不触碰玩家诏令引发的任何字面执行（玩家诏"赏银万两"在唐代·按原文记录·不修正）
+      //   ★ 只能追加"史官按"注释·不得重写 shizhengji/zhengwen 原文
       if(P.conf.gameMode === 'light_hist' || P.conf.gameMode === 'strict_hist') {
         showLoading("历史检查",85);
         try {
-          var histCheckPrompt = "你是历史顾问AI。剧本背景：" + (sc ? sc.dynasty : "") + "，" + (sc ? sc.emperor : "") + "皇帝时期。\n";
-          histCheckPrompt += "请检查以下推演内容是否存在明显的史实错误（如时代错乱、人物错位、技术超前等）：\n\n";
+          var _edictText = '';
+          try {
+            // 收集本回合玩家诏令原文·让历史审查者知道哪些不可动
+            var _eVals = [edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other].filter(Boolean);
+            _edictText = _eVals.join('\n · ');
+          } catch(_eE) {}
+
+          var histCheckPrompt = "你是历史顾问 AI。剧本背景：" + (sc ? sc.dynasty : "") + "，" + (sc ? sc.emperor : "") + "皇帝时期。\n\n";
+          histCheckPrompt += "【不可改的部分】玩家本回合诏令原文：\n · " + (_edictText || '（无明确诏令）') + "\n";
+          histCheckPrompt += '【铁律】玩家诏令字面执行是最高原则。即使诏令本身时代错乱（如唐代用白银、刑部管科举等），历史检查者也绝不得将其「修正」回「历史正确版本」——那是玩家的选择·后果由玩家承担·推演中以混乱/阻力形式体现。你只负责检查 AI 自己产出的、与玩家诏令无关的内容是否错乱。\n\n';
+          histCheckPrompt += "【只检查·不重写】下方时政记/正文·只查 AI 自生的与玩家诏令无关的时代错乱（如 AI 自行虚构了 火枪/蒸汽船/拿破仑/共和国 等超时代元素）：\n\n";
           histCheckPrompt += "时政记：" + shizhengji + "\n";
           histCheckPrompt += "正文：" + zhengwen.substring(0, 500) + "\n\n";
-          histCheckPrompt += "如发现明显错误，请返回JSON：{\"has_error\":true,\"errors\":[\"错误描述1\",\"错误描述2\"],\"corrected_shizhengji\":\"修正后的时政记\",\"corrected_zhengwen\":\"修正后的正文\"}。\n";
-          histCheckPrompt += "如无明显错误，返回：{\"has_error\":false}";
+          histCheckPrompt += "返回 JSON：\n";
+          histCheckPrompt += '{"has_ai_hallucination": true/false, "ai_errors":["AI 自虚构的错误描述"], "note": "若 has_ai_hallucination=true·给一段 30-80 字的"史官按"注释·以文言体·用于追加在时政记末尾"}\n';
+          histCheckPrompt += "如全部都是玩家诏令所导致（即便荒唐）·一律返回 has_ai_hallucination:false。";
 
           var histResp = await fetch(url,{
             method:"POST",
             headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},
             body:JSON.stringify({
               model:P.ai.model||"gpt-4o",
-              messages:[{role:"system",content:"你是历史顾问，负责检查史实准确性。"},{role:"user",content:histCheckPrompt}],
-              temperature:0.3,
+              messages:[{role:"system",content:"你是历史顾问·仅检查 AI 幻觉·不得修改玩家诏令引发的任何字面执行。"},{role:"user",content:histCheckPrompt}],
+              temperature:0.2,
               max_tokens:_tok(1500)
             })
           });
@@ -13496,20 +13510,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             histContent = histData.choices[0].message.content;
           }
 
-          // 解析历史检查结果
           try {
             var histJson = extractJSON(histContent);
-
-            if(histJson && histJson.has_error) {
-              _dbg('[历史检查] 发现史实错误:', histJson.errors);
-              if(histJson.corrected_shizhengji) shizhengji = histJson.corrected_shizhengji;
-              if(histJson.corrected_zhengwen) zhengwen = histJson.corrected_zhengwen;
-              // 可选：向玩家显示警告
-              if(histJson.errors && histJson.errors.length > 0) {
-                console.warn('[历史检查] 已修正以下错误:', histJson.errors.join('; '));
+            if(histJson && histJson.has_ai_hallucination) {
+              _dbg('[历史检查] AI 幻觉:', histJson.ai_errors);
+              // 仅追加史官按注释·不改原文
+              if (histJson.note) {
+                shizhengji = (shizhengji || '') + '\n\n【史官按】' + histJson.note;
+              }
+              if(histJson.ai_errors && histJson.ai_errors.length > 0) {
+                console.warn('[历史检查] AI 幻觉已标注:', histJson.ai_errors.join('; '));
               }
             } else {
-              _dbg('[历史检查] 未发现明显史实错误');
+              _dbg('[历史检查] 未发现 AI 幻觉');
             }
           } catch(histParseErr) {
             console.warn('[历史检查] 解析结果失败:', histParseErr);

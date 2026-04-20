@@ -40,7 +40,23 @@
       if (existing) return existing;
     }
 
+    // 并发锁：若同名正在生成中，等待其完成（避免重复 API 调用）
+    if (!GM._generatingChars) GM._generatingChars = {};
+    if (GM._generatingChars[name]) {
+      // 等待最多 30 秒·每 500ms 检查一次
+      for (var _w = 0; _w < 60; _w++) {
+        await new Promise(function(r){ setTimeout(r, 500); });
+        if (typeof findCharByName === 'function') {
+          var _done = findCharByName(name);
+          if (_done) return _done;
+        }
+        if (!GM._generatingChars[name]) break;
+      }
+    }
+    GM._generatingChars[name] = true;
+
     if (!P.ai || !P.ai.key) {
+      delete GM._generatingChars[name];
       return _fallbackTemplate(name, opts);
     }
 
@@ -49,14 +65,36 @@
     var reason = opts.reason || '\u63A8\u6F14\u6D8C\u73B0';
     var sourceContext = opts.sourceContext || '';
 
+    // 势力清单+已有代表人物——注入 prompt 供 AI 定位
+    var _facList = (GM.factions || GM.facs || []).map(function(f){
+      var lead = f.leader || f.leaderName || '';
+      var terr = f.territory ? f.territory.slice(0, 20) : '';
+      return f.name + (lead ? '(' + lead + ')' : '') + (terr ? '·' + terr : '');
+    }).slice(0, 10).join('；');
+    var _partyList = (GM.parties || []).map(function(p){ return p.name + '(' + (p.leader || '') + ')'; }).slice(0, 8).join('、');
+    var _existingChars = (GM.chars || [])
+      .filter(function(c){ return c && c.alive !== false && c.isHistorical; })
+      .slice(0, 15)
+      .map(function(c){ return c.name + (c.officialTitle ? '(' + c.officialTitle.slice(0, 15) + ')' : '') + (c.faction ? '@' + c.faction : ''); })
+      .join('、');
+    var _sceneInfo = '';
+    if (GM.date) _sceneInfo += '时节：' + GM.date + '；';
+    if (GM.eraState && GM.eraState.dynastyPhase) _sceneInfo += '朝代阶段：' + GM.eraState.dynastyPhase + '；';
+    if (GM.prestige !== undefined) _sceneInfo += '皇威：' + GM.prestige + '；';
+
     var prompt = '\u4F60\u662F' + era + '\u5386\u53F2\u8003\u636E\u4E0E\u4EBA\u7269\u6863\u6848 AI\u3002\u4E3A\u4EE5\u4E0B\u4EBA\u7269\u751F\u6210\u5B8C\u6574\u4EBA\u7269\u5361\u3002\n\n' +
       '\u3010\u5F53\u524D\u65F6\u4EE3\u3011' + era + ' ' + year + ' \u5E74\n' +
+      (_sceneInfo ? '\u3010\u65F6\u5C40\u3011' + _sceneInfo + '\n' : '') +
+      (_facList ? '\u3010\u5F53\u524D\u52BF\u529B\u3011' + _facList + '\n' : '') +
+      (_partyList ? '\u3010\u5F53\u524D\u515A\u6D3E\u3011' + _partyList + '\n' : '') +
+      (_existingChars ? '\u3010\u5DF2\u6709\u91CD\u8981\u4EBA\u7269\u3011' + _existingChars + '\n' : '') +
       '\u3010\u59D3\u540D\u3011' + name + '\n' +
       '\u3010\u7EB3\u5165\u7F18\u7531\u3011' + reason + '\n' +
       (opts.age ? '\u3010\u5DF2\u77E5\u5E74\u9F84\u3011' + opts.age + '\n' : '') +
       (opts.party ? '\u3010\u5DF2\u77E5\u515A\u6D3E\u3011' + opts.party + '\n' : '') +
+      (opts.faction ? '\u3010\u5DF2\u77E5\u52BF\u529B\u3011' + opts.faction + '\n' : '') +
       (opts.assignPost ? '\u3010\u7686\u5C06\u88AB\u4EFB\u547D\u3011' + opts.assignPost + '\n' : '') +
-      (sourceContext ? '\u3010\u6765\u6E90\u4E0A\u4E0B\u6587\u3011' + sourceContext.slice(0, 500) + '\n' : '') +
+      (sourceContext ? '\u3010\u6765\u6E90\u4E0A\u4E0B\u6587\u3011' + sourceContext.slice(0, 700) + '\n' : '') +
       '\n\u3010\u6838\u5B9E\u8981\u6C42\u3011\n' +
       '1. \u9996\u5148\u5224\u65AD\u6B64\u4EBA\u662F\u5426\u4E3A\u771F\u5B9E\u5386\u53F2\u4EBA\u7269\u3002\u82E5\u662F\u00B7\u4E25\u683C\u6309\u53F2\u6599\u51C6\u786E\u751F\u6210\u3002\n' +
       '2. \u82E5\u6B64\u4EBA\u4E8E ' + year + ' \u5E74\u5DF2\u4EE1\u6216\u5C1A\u672A\u51FA\u751F\u00B7\u8FD4\u56DE {"error":"\u53F2\u5B9E\u4E0D\u53EF\u73B0"}\n' +
@@ -70,6 +108,8 @@
       '  "ethnicity": "\u6C49/\u6EE1/\u8499/\u7B49",\n' +
       '  "origin": "\u7C4D\u8D2F\u5982\u798F\u5EFA\u5357\u5B89",\n' +
       '  "birthplace": "\u51FA\u751F\u5730",\n' +
+      '  "location": "\u5F53\u524D\u6240\u5728\u5730(\u5982\u5728\u4EFB\u4EC5\u586B\u4EFB\u6240\uFF1B\u5F85\u5B85\u5219\u586B\u5BB6\u4E61)",\n' +
+      '  "faction": "' + (opts.faction || '') + '(\u5FC5\u987B\u4ECE\u4E0A\u8FF0\u3010\u5F53\u524D\u52BF\u529B\u3011\u4E2D\u9009\u4E00\u4E2A\u00B7\u82E5\u6B64\u4EBA\u4E3A\u672C\u671D\u58EB\u5927\u592B\u5219\u9009\u4E3B\u671D\u3001\u82E5\u4E3A\u5916\u85E9\u5219\u9009\u5BF9\u5E94\u52BF\u529B)",\n' +
       '  "class": "\u58EB\u65CF/\u5BD2\u95E8/\u5546\u8D3E/\u5B97\u5BA4/\u7B49",\n' +
       '  "title": "\u5F53\u524D\u5B98\u804C\u6216\u8EAB\u4EFD",\n' +
       '  "appearance": "\u5916\u8C8C 40-80 \u5B57",\n' +
@@ -95,7 +135,9 @@
       '  "faith": "\u5112/\u91CA/\u9053/\u7B49",\n' +
       '  "culture": "\u6587\u5316\u80CC\u666F 10-30 \u5B57",\n' +
       '  "hobbies": ["\u68CB","\u4E66"],\n' +
-      '  "party": "' + (opts.party || '') + '",\n' +
+      '  "party": "' + (opts.party || '') + '(\u82E5\u672C\u671D\u58EB\u5927\u592B\u4ECE\u3010\u5F53\u524D\u515A\u6D3E\u3011\u9009\u4E00\u4E2A\u00B7\u6216\u586B\u7A7A)",\n' +
+      '  "relations": {"\u5DF2\u6709\u67D0\u4EBA":{"affinity":0-100,"trust":0-100,"respect":0-100,"fear":0-100,"hostility":0-100,"labels":["\u540C\u4E61","\u5E08\u751F"]}},\n' +
+      '  "privateWealthHint": "\u6309\u8EAB\u4EFD\u4F30\u8BA1\u6D41\u52A8\u8D22\u4EA7\u00B7\u6570\u5B57\u5355\u4F4D\u4E24(\u767D\u9298\u5B98\u5219\u6570\u5343-\u6570\u4E07\u00B7\u8FB9\u5C06 2-10 \u4E07\u00B7\u8D2A\u5B98 20+ \u4E07\u00B7\u5E73\u6C11 <1000)",\n' +
       '  "timeAnomaly": false\n' +
       '}\n\u53EA\u8F93\u51FA JSON\u3002';
 
@@ -128,6 +170,36 @@
           bio += '\n\n\u3010\u5F02\u4E16\u5947\u7F18\u3011\u6B64\u4EBA\u672C\u4E3A\u5176\u672C\u671D\u4E4B\u4EBA\u00B7\u4E0D\u77E5\u56E0\u4F55\u7F18\u4EFD\u5728\u6B64\u4E16\u4E3A\u58EB\u3002';
         }
 
+        // 解析 AI 返回的私产提示：如 "5万"、"3500" 等
+        var _parsedCash = 0;
+        if (data.privateWealthHint) {
+          var _ws = String(data.privateWealthHint);
+          var _wm = _ws.match(/(\d+)\s*万/);
+          if (_wm) _parsedCash = parseInt(_wm[1], 10) * 10000;
+          else {
+            var _wn = _ws.match(/(\d{3,})/);
+            if (_wn) _parsedCash = parseInt(_wn[1], 10);
+          }
+        }
+        // 按身份估值兜底
+        if (!_parsedCash) {
+          var _t = (data.title || opts.assignPost || '');
+          if (/大学士|首辅|尚书/.test(_t)) _parsedCash = 60000;
+          else if (/侍郎|巡抚|总督/.test(_t)) _parsedCash = 35000;
+          else if (/总兵|都督/.test(_t)) _parsedCash = 45000;
+          else if (/主事|给事中|御史/.test(_t)) _parsedCash = 12000;
+          else if (/进士|翰林/.test(_t)) _parsedCash = 8000;
+          else _parsedCash = 3000;
+        }
+
+        // 势力确定：按 opts → AI → 默认推断
+        var _faction = opts.faction || data.faction || '';
+        if (!_faction) {
+          // 若当前场景是本朝·默认归本朝
+          var _mainFac = (GM.factions || GM.facs || [])[0];
+          if (_mainFac) _faction = _mainFac.name;
+        }
+
         var newChar = {
           id: 'autogen_' + Date.now() + '_' + name,
           name: name,
@@ -136,6 +208,7 @@
           ethnicity: data.ethnicity || '\u6C49',
           origin: data.origin || '',
           birthplace: data.birthplace || data.origin || '',
+          location: data.location || opts.location || (opts.assignPost ? '\u4EAC\u5E08' : (data.birthplace || data.origin || '')),
           class: data.class || '\u5BD2\u95E8',
           title: data.title || '',
           officialTitle: opts.assignPost || data.title || '',
@@ -169,10 +242,13 @@
           culture: data.culture || '',
           hobbies: Array.isArray(data.hobbies) ? data.hobbies : [],
           party: opts.party || data.party || '',
-          // 资源
+          faction: _faction,
+          // NPC 关系（AI 给的话）
+          relations: (data.relations && typeof data.relations === 'object') ? data.relations : {},
+          // 资源（按身份估值初始化 cash）
           resources: {
             fame: 20, virtue: 10, health: 80, stress: 0,
-            privateWealth: { money: 0, grain: 0, cloth: 0 },
+            privateWealth: { cash: _parsedCash, grain: Math.round(_parsedCash / 30), cloth: Math.round(_parsedCash / 150) },
             publicPurse: { money: 0, grain: 0, cloth: 0 }
           },
           // 元数据
@@ -191,6 +267,13 @@
         if (!GM.chars) GM.chars = [];
         GM.chars.push(newChar);
 
+        // 直接注册索引·O(1) 而非 O(N) 重建（previous envoy 场景的同类修）
+        if (GM._indices && GM._indices.charByName) {
+          GM._indices.charByName.set(name, newChar);
+        } else if (typeof buildIndices === 'function') {
+          try { buildIndices(); } catch(_){}
+        }
+
         // 好感加成
         if (opts.affinityBonus && typeof AffinityMap !== 'undefined' && AffinityMap.add) {
           var playerName = (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B';
@@ -207,18 +290,26 @@
           _tryAssignPost(name, opts.assignPost);
         }
 
-        // buildIndices 确保可索引
-        if (typeof buildIndices === 'function') { try { buildIndices(); } catch(_){} }
+        // 触发 UI 刷新（诏令征召/接见等场景·否则玩家直到下回合才看到人物）
+        if (!opts.skipUiRefresh) {
+          if (typeof renderRenwu === 'function') { try { renderRenwu(); } catch(_){} }
+          if (typeof renderGameState === 'function') { try { renderGameState(); } catch(_){} }
+        }
 
-        _dbg('[\u89D2\u8272\u81EA\u751F\u6210] \u5B8C\u6210\uFF1A' + name + '\u00B7' + (data.isHistorical ? '\u5386\u53F2\u4EBA\u7269' : '\u867A\u6784\u4EBA\u7269'));
+        delete GM._generatingChars[name];
+        _dbg('[\u89D2\u8272\u81EA\u751F\u6210] \u5B8C\u6210\uFF1A' + name + '\u00B7' + (data.isHistorical ? '\u5386\u53F2\u4EBA\u7269' : '\u867A\u6784\u4EBA\u7269') + '\u00B7' + _faction + '\u00B7\u79C1\u4EA7' + _parsedCash);
         return newChar;
       } catch(e) {
         lastErr = e;
         console.warn('[\u89D2\u8272\u81EA\u751F\u6210] \u7B2C' + attempt + '\u6B21\u5931\u8D25', e.message || e);
-        if (/\u53F2\u5B9E\u4E0D\u53EF\u73B0/.test(e.message || '')) throw e;  // 史实否决·不重试
+        if (/\u53F2\u5B9E\u4E0D\u53EF\u73B0/.test(e.message || '')) {
+          delete GM._generatingChars[name];
+          throw e;  // 史实否决·不重试
+        }
       }
     }
     // 3 次失败·模板兜底
+    delete GM._generatingChars[name];
     console.warn('[\u89D2\u8272\u81EA\u751F\u6210] \u6700\u7EC8\u5931\u8D25\u00B7\u6A21\u677F\u515C\u5E95', name);
     return _fallbackTemplate(name, opts, lastErr);
   }

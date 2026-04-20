@@ -6382,17 +6382,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         // —— A1 三层记忆金字塔：L3 年代纲要 + L2 情景摘要（XML 结构化·永不丢失的历史根）——
         if (GM._memoryLayers) {
           var _ML = GM._memoryLayers;
+          // XML 转义辅助（统一防注入）
+          var _xE2 = (typeof _escXML === 'function') ? _escXML : function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); };
           if (Array.isArray(_ML.L3) && _ML.L3.length > 0) {
             _recentHistory += '\n<era-outline>\n';
             _ML.L3.slice(-4).forEach(function(x){
               if (x.aiGenerated) {
-                _recentHistory += '  <era range="' + x.turnRange + '" theme="' + (x.theme||'') + '" atmosphere="' + (x.atmosphere||'') + '">\n';
-                if (x.mainThreads) _recentHistory += '    <threads>' + x.mainThreads + '</threads>\n';
-                if (x.causalSummary) _recentHistory += '    <causal>' + x.causalSummary + '</causal>\n';
-                if (Array.isArray(x.highlights)) _recentHistory += '    <highlights>' + x.highlights.join('｜') + '</highlights>\n';
+                _recentHistory += '  <era range="' + _xE2(x.turnRange) + '" theme="' + _xE2(x.theme||'') + '" atmosphere="' + _xE2(x.atmosphere||'') + '">\n';
+                if (x.mainThreads) _recentHistory += '    <threads>' + _xE2(x.mainThreads) + '</threads>\n';
+                if (x.causalSummary) _recentHistory += '    <causal>' + _xE2(x.causalSummary) + '</causal>\n';
+                if (Array.isArray(x.highlights)) _recentHistory += '    <highlights>' + _xE2(x.highlights.join('｜')) + '</highlights>\n';
                 _recentHistory += '  </era>\n';
               } else {
-                _recentHistory += '  <era range="' + x.turnRange + '">' + x.summary + '</era>\n';
+                _recentHistory += '  <era range="' + _xE2(x.turnRange) + '">' + _xE2(x.summary) + '</era>\n';
               }
             });
             _recentHistory += '</era-outline>\n';
@@ -6401,57 +6403,61 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             _recentHistory += '\n<scene-summaries>\n';
             _ML.L2.slice(-6).forEach(function(x){
               if (x.aiGenerated) {
-                _recentHistory += '  <scene range="' + x.turnRange + '" mood="' + (x.mood||'') + '">' + x.summary + '</scene>\n';
+                _recentHistory += '  <scene range="' + _xE2(x.turnRange) + '" mood="' + _xE2(x.mood||'') + '">' + _xE2(x.summary) + '</scene>\n';
               } else {
-                _recentHistory += '  <scene range="' + x.turnRange + '">' + x.summary + '</scene>\n';
+                _recentHistory += '  <scene range="' + _xE2(x.turnRange) + '">' + _xE2(x.summary) + '</scene>\n';
               }
             });
             _recentHistory += '</scene-summaries>\n';
           }
         }
-        // —— SC_RECALL 检索结果注入（XML 格式）——
+        // —— SC_RECALL 检索结果注入（XML 格式·转义）——
         if (_recallResults && _recallResults.length > 0) {
+          var _xE3 = (typeof _escXML === 'function') ? _escXML : function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); };
           _recentHistory += '\n<recalled-memories>\n';
           _recallResults.forEach(function(rr) {
-            _recentHistory += '  <recall purpose="' + (rr.query.purpose||'').substring(0,40) + '">\n';
+            _recentHistory += '  <recall purpose="' + _xE3((rr.query.purpose||'').substring(0,40)) + '">\n';
             rr.hits.slice(0, 5).forEach(function(hit) {
-              _recentHistory += '    <hit char="' + (hit.char||'') + '" turn="' + (hit.turn||0) + '" importance="' + Math.round(hit.importance||5) + '">' + (hit.event||'').substring(0, 80) + '</hit>\n';
+              _recentHistory += '    <hit char="' + _xE3(hit.char||'') + '" turn="' + (hit.turn||0) + '" importance="' + Math.round(hit.importance||5) + '">' + _xE3((hit.event||'').substring(0, 80)) + '</hit>\n';
             });
             _recentHistory += '  </recall>\n';
           });
           _recentHistory += '</recalled-memories>\n';
         }
-        // —— 因果图近期边·方向7 ——
+        // —— 因果图近期边（转义）——
         if (GM._causalGraph && Array.isArray(GM._causalGraph.edges) && GM._causalGraph.edges.length > 0) {
+          var _xE4 = (typeof _escXML === 'function') ? _escXML : function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); };
           var _recentEdges = GM._causalGraph.edges.slice(-15);
           _recentHistory += '\n<causal-graph recent-edges="' + _recentEdges.length + '">\n';
           _recentEdges.forEach(function(e) {
-            _recentHistory += '  <edge from="' + (e.from||'').substring(0,30) + '" to="' + (e.to||'').substring(0,30) + '" type="' + (e.type||'') + '" strength="' + (e.strength||0.5) + '">' + (e.explanation||'').substring(0,60) + '</edge>\n';
+            _recentHistory += '  <edge from="' + _xE4((e.from||'').substring(0,30)) + '" to="' + _xE4((e.to||'').substring(0,30)) + '" type="' + _xE4(e.type||'') + '" strength="' + (e.strength||0.5) + '">' + _xE4((e.explanation||'').substring(0,60)) + '</edge>\n';
           });
           _recentHistory += '</causal-graph>\n';
         }
-        // —— 势力弧·方向 10 ——
+        // —— 势力弧（转义）——
         if (GM._factionArcs && Object.keys(GM._factionArcs).length > 0) {
+          var _xE5 = (typeof _escXML === 'function') ? _escXML : function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); };
           _recentHistory += '\n<faction-arcs>\n';
           Object.keys(GM._factionArcs).slice(0, 6).forEach(function(fn) {
             var fa = GM._factionArcs[fn];
             if (!fa || !fa.phaseHistory) return;
-            _recentHistory += '  <arc faction="' + fn + '" phase="' + (fa.currentPhase||'') + '" influence="' + (fa.cumulativeInfluence||0) + '">\n';
+            _recentHistory += '  <arc faction="' + _xE5(fn) + '" phase="' + _xE5(fa.currentPhase||'') + '" influence="' + (fa.cumulativeInfluence||0) + '">\n';
             (fa.phaseHistory || []).slice(-4).forEach(function(ph) {
-              _recentHistory += '    <phase turn="' + ph.turn + '" stage="' + ph.phase + '">' + (ph.event||'').substring(0,50) + '</phase>\n';
+              _recentHistory += '    <phase turn="' + (ph.turn||0) + '" stage="' + _xE5(ph.phase||'') + '">' + _xE5((ph.event||'').substring(0,50)) + '</phase>\n';
             });
             _recentHistory += '  </arc>\n';
           });
           _recentHistory += '</faction-arcs>\n';
         }
-        // —— 自我反省·方向 12 ——
+        // —— 自我反省（转义）——
         if (GM._aiReflections && GM._aiReflections.length > 0) {
+          var _xE6 = (typeof _escXML === 'function') ? _escXML : function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); };
           _recentHistory += '\n<self-reflections>\n';
           GM._aiReflections.slice(-3).forEach(function(r) {
-            _recentHistory += '  <reflection turn="' + (r.turn||0) + '" divergence="' + (r.divergence||'') + '">\n';
-            _recentHistory += '    <predicted>' + (r.predictedLast||'').substring(0,80) + '</predicted>\n';
-            _recentHistory += '    <actual>' + (r.actualThis||'').substring(0,80) + '</actual>\n';
-            _recentHistory += '    <lesson>' + (r.lesson||'').substring(0,80) + '</lesson>\n';
+            _recentHistory += '  <reflection turn="' + (r.turn||0) + '" divergence="' + _xE6(r.divergence||'') + '">\n';
+            _recentHistory += '    <predicted>' + _xE6((r.predictedLast||'').substring(0,80)) + '</predicted>\n';
+            _recentHistory += '    <actual>' + _xE6((r.actualThis||'').substring(0,80)) + '</actual>\n';
+            _recentHistory += '    <lesson>' + _xE6((r.lesson||'').substring(0,80)) + '</lesson>\n';
             _recentHistory += '  </reflection>\n';
           });
           _recentHistory += '</self-reflections>\n';
@@ -12238,7 +12244,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tpMW += '      "location": "发生地点·如未提及则留空",\n';
         tpMW += '      "witnesses": ["在场但非参与的目击者·如未提及则空数组"],\n';
         tpMW += '      "type": "betrayal/kindness/humiliation/promotion/loss/marriage/military/dialogue/scheme/general",\n';
-        tpMW += '      "arcId": "归属 arc 的 id·若新创建则留空·由 arc_updates 决定"\n';
+        tpMW += '      "arcId": "归属 arc 的 id·格式「arc_{turn}_{slug}」·若为新 arc·须与 arc_updates 中同 arc 的 id 字段完全一致（同一 id 出现两处：arc_updates.id 和 memory_writes.arcId）"\n';
         tpMW += '    }\n';
         tpMW += '  ],\n';
         tpMW += '  "arc_updates": [\n';
@@ -12529,21 +12535,34 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             var conflictCount = (pAu.conflicts || []).length;
             if (conflictCount > 0) {
               _dbg('[Consistency Audit] 发现', conflictCount, '项冲突');
-              // 应用 auto_patches
+              // 应用 auto_patches（支持数组索引 foo[0].bar 路径）
               if (Array.isArray(pAu.auto_patches)) {
                 pAu.auto_patches.forEach(function(ap) {
                   if (!ap || !ap.path) return;
                   try {
-                    // 简化：尝试通过点路径写入 GM._turnAiResults
-                    var parts = ap.path.split('.');
+                    // 拆分路径 · 处理形如 subcall1.faction_events[0].strength_effect
+                    var tokens = [];
+                    ap.path.split('.').forEach(function(seg) {
+                      var m = /^([^\[]+)((?:\[\d+\])+)?$/.exec(seg);
+                      if (!m) { tokens.push(seg); return; }
+                      tokens.push(m[1]);
+                      var rest = m[2] || '';
+                      var idxM;
+                      var idxRe = /\[(\d+)\]/g;
+                      while ((idxM = idxRe.exec(rest)) !== null) {
+                        tokens.push(parseInt(idxM[1], 10));
+                      }
+                    });
                     var obj = GM._turnAiResults;
-                    for (var i = 0; i < parts.length - 1; i++) {
-                      if (!obj[parts[i]]) return;
-                      obj = obj[parts[i]];
+                    for (var i = 0; i < tokens.length - 1; i++) {
+                      if (obj == null) return;
+                      obj = obj[tokens[i]];
                     }
-                    if (ap.op === 'set') obj[parts[parts.length-1]] = ap.value;
+                    if (obj == null) return;
+                    if (ap.op === 'set') obj[tokens[tokens.length-1]] = ap.value;
+                    else if (ap.op === 'delta' && typeof obj[tokens[tokens.length-1]] === 'number') obj[tokens[tokens.length-1]] += (parseFloat(ap.value) || 0);
                     _dbg('[Audit] 自动修正:', ap.path, '=', ap.value);
-                  } catch(_ape) {}
+                  } catch(_ape) { _dbg('[Audit] 修正失败:', ap.path, _ape); }
                 });
               }
               // 严重冲突入 turnReport 让玩家看到

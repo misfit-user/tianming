@@ -3190,6 +3190,24 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       GM._playerDirectives.forEach(function(d){
         if (d && !d.id) d.id = 'dir_' + (d.turn||0) + '_' + Math.random().toString(36).slice(2,7);
       });
+      // 分离 absolute / 普通
+      var _absolutes = GM._playerDirectives.filter(function(d){return d && d._absolute;});
+      // 天意·至高意志块 ★★★ 置于最前
+      if (_absolutes.length > 0) {
+        tp += '\n█████████████████████████████████████████████████████████████\n';
+        tp += '★ 天 意 · 至 高 意 志 ★ 世 界 法 则 直 接 生 效 · 无 推 辞 空 间\n';
+        tp += '█████████████████████████████████████████████████████████████\n';
+        tp += '※ 以下条目为世界设定层法则，非 AI 推演产物\n';
+        tp += '※ 绝对字面发生·不得给出"违反因果/阻力/冲突"等任何推辞\n';
+        tp += '※ 若看似违反物理/历史常理·也须在叙事中让其合理发生（天意如此·异数·奇迹·神启等修辞）\n';
+        tp += '※ directive_compliance 中 status 必须 "followed"·evidence 必须明确体现\n';
+        _absolutes.forEach(function(a){
+          tp += '  ◆ [id=' + a.id + '] ' + a.content + '\n';
+          if (a.interpretation) tp += '      解读：' + a.interpretation + '\n';
+          if (a.plan) tp += '      落实方向：' + a.plan + '\n';
+        });
+        tp += '█████████████████████████████████████████████████████████████\n\n';
+      }
       tp += '\n═══════════════════════════════════════════════════════════\n';
       tp += '★★★【问天·玩家对推演AI的直接指令（最高优先级·必须遵守）】★★★\n';
       tp += '═══════════════════════════════════════════════════════════\n';
@@ -3198,10 +3216,12 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       tp += '    status = "followed"(已遵守) | "partial"(部分遵守) | "ignored"(未遵守/不适用)\n';
       tp += '    evidence = 具体引用 zhengwen/events/npc_actions 等体现遵守的片段（30-80字）\n';
       tp += '    reason = 若 partial/ignored·说明原因（冲突/无机会/不适用）\n';
+      tp += '※ 标 ◆ 的 absolute 条目已在顶部列出·此处省略·但 compliance 仍需 followed\n';
       tp += '\n';
-      var _rules = GM._playerDirectives.filter(function(d) { return d.type === 'rule'; });
-      var _corrections = GM._playerDirectives.filter(function(d) { return d.type === 'correction'; });
-      var _others = GM._playerDirectives.filter(function(d) { return d.type !== 'rule' && d.type !== 'correction'; });
+      // 排除 absolute（已在顶部独立列出）
+      var _rules = GM._playerDirectives.filter(function(d) { return d.type === 'rule' && !d._absolute; });
+      var _corrections = GM._playerDirectives.filter(function(d) { return d.type === 'correction' && !d._absolute; });
+      var _others = GM._playerDirectives.filter(function(d) { return d.type !== 'rule' && d.type !== 'correction' && !d._absolute; });
       if (_rules.length > 0) {
         tp += '【持久规则·每回合必须遵守】\n';
         _rules.forEach(function(r) {

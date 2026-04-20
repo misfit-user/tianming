@@ -7384,12 +7384,52 @@ function openWentian() {
     + '<button class="bt bsm" style="color:var(--vermillion-400);" onclick="_wtClearDirectives()" title="\u6E05\u9664\u6240\u6709\u73A9\u5BB6\u6307\u4EE4">\u6E05\u9664\u6307\u4EE4</button>'
     + '<span style="margin-left:auto;font-size:0.6rem;color:var(--ink-300);">\u6307\u4EE4' + GM._playerDirectives.length + ' \u8BB0\u5FC6' + GM._importedMemories.length + '</span>'
     + '</div>'
+    // 类别选择器（6 按钮·单选·默认自动）
+    + '<div id="wt-cat-bar" style="display:flex;gap:4px;margin-bottom:var(--space-1);flex-wrap:wrap;">'
+    + '<span style="font-size:0.6rem;color:var(--ink-300);align-self:center;margin-right:2px;">\u5206\u7C7B\uFF1A</span>'
+    + '<button class="wt-cat-btn" data-cat="" onclick="_wtPickCat(\'\')" title="\u9ED8\u8BA4\u7531 AI \u81EA\u52A8\u5224\u5B9A">\u81EA\u52A8</button>'
+    + '<button class="wt-cat-btn" data-cat="narrative" onclick="_wtPickCat(\'narrative\')" title="\u53D9\u4E8B\u63A7\u5236\uFF1A\u4FDD\u62A4\u67D0\u4EBA\u00B7\u4FC3\u67D0\u4E8B\u00B7AI \u884C\u4E3A\u7EA6\u675F">\u53D9\u4E8B</button>'
+    + '<button class="wt-cat-btn" data-cat="setting" onclick="_wtPickCat(\'setting\')" title="\u80CC\u666F\u8BBE\u5B9A\uFF1A\u6CE8\u5165\u5267\u672C\u80CC\u666F\u6216\u72B6\u6001">\u8BBE\u5B9A</button>'
+    + '<button class="wt-cat-btn" data-cat="hardChange" onclick="_wtPickCat(\'hardChange\')" title="\u76F4\u6539\u6570\u503C\uFF1A\u7ACB\u5373\u5199\u5165 GM/P \u5177\u4F53\u5B57\u6BB5">\u2696\ufe0e\u76F4\u6539</button>'
+    + '<button class="wt-cat-btn" data-cat="edictSubstitute" onclick="_wtPickCat(\'edictSubstitute\')" title="\u8BE5\u8D70\u8BCF\u4EE4\uFF1A\u81EA\u52A8\u6539\u5199\u5E76\u586B\u5165\u8BCF\u4EE4\u6846">\u2709\ufe0e\u8BCF\u4EE4</button>'
+    + '<button class="wt-cat-btn" data-cat="absolute" onclick="_wtPickCat(\'absolute\')" title="\u5929\u610F/\u81F3\u9AD8\uFF1A\u4E16\u754C\u6CD5\u5219\u5F3A\u5236\u751F\u6548\u00B7\u65E0\u63A8\u8FAD">\u2605\u5929\u610F</button>'
+    + '</div>'
     + '<div style="display:flex;gap:var(--space-2);">'
     + '<textarea id="wt-input" placeholder="\u5BF9\u63A8\u6F14AI\u8BF4\u2026\u2026\uFF08\u7EA0\u6B63\u63A8\u6F14/\u52A0\u5165\u89C4\u5219/\u52A0\u5165\u5185\u5BB9\uFF09" rows="3" style="flex:1;resize:none;padding:0.4rem;font-size:var(--text-sm);font-family:inherit;background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-foreground);"></textarea>'
     + '<button class="bt bp" onclick="_wtSend()" style="padding:0.4rem 1rem;align-self:flex-end;">\u95EE\u5929</button>'
     + '</div></div></div>';
   document.body.appendChild(modal);
+  // 给分类按钮加样式（若无 CSS 也能显示）
+  var _cStyle = document.getElementById('_wtCatStyle');
+  if (!_cStyle) {
+    _cStyle = document.createElement('style');
+    _cStyle.id = '_wtCatStyle';
+    _cStyle.textContent = '.wt-cat-btn{padding:2px 8px;font-size:0.62rem;background:rgba(184,154,83,0.06);border:1px solid rgba(184,154,83,0.25);color:var(--ink-300);border-radius:3px;cursor:pointer;font-family:inherit;letter-spacing:0.05em;transition:all 0.15s;}'
+      + '.wt-cat-btn:hover{border-color:var(--gold-400);color:var(--gold-300);}'
+      + '.wt-cat-btn.sel{background:linear-gradient(135deg,rgba(184,154,83,0.22),rgba(140,109,43,0.12));border-color:var(--gold-400);color:var(--gold-300);box-shadow:inset 0 0 6px rgba(184,154,83,0.15);}'
+      + '.wt-cat-btn[data-cat="absolute"].sel{background:linear-gradient(135deg,#8e6aa8,#b08bc8);border-color:#b08bc8;color:#fff;}'
+      + '.wt-cat-btn[data-cat="hardChange"].sel{background:linear-gradient(135deg,rgba(192,64,48,0.4),rgba(140,40,30,0.25));border-color:var(--vermillion-400);color:#fef4e8;}'
+      + '.wt-cat-btn[data-cat="edictSubstitute"].sel{background:linear-gradient(135deg,rgba(201,168,76,0.35),rgba(160,130,40,0.2));border-color:var(--amber-400);color:#fef4e8;}'
+      + '.wt-cat-btn[data-cat="setting"].sel{background:linear-gradient(135deg,rgba(126,184,167,0.3),rgba(90,143,127,0.18));border-color:var(--celadon-400);color:#eef5f1;}'
+      + '.wt-cat-btn[data-cat="narrative"].sel{background:linear-gradient(135deg,rgba(212,190,122,0.3),rgba(184,154,83,0.2));border-color:var(--gold-300);color:#fff4d8;}';
+    document.head.appendChild(_cStyle);
+  }
+  // 默认选中"自动"
+  _wtForceCategory = '';
+  setTimeout(function(){
+    var autoBtn = document.querySelector('#wt-cat-bar .wt-cat-btn[data-cat=""]');
+    if (autoBtn) autoBtn.classList.add('sel');
+  }, 0);
   _wtRenderHistory();
+}
+
+/** 选择强制分类（为空=自动·AI 判定） */
+var _wtForceCategory = '';
+function _wtPickCat(cat) {
+  _wtForceCategory = cat || '';
+  document.querySelectorAll('#wt-cat-bar .wt-cat-btn').forEach(function(b){
+    b.classList.toggle('sel', (b.dataset.cat||'') === _wtForceCategory);
+  });
 }
 
 /** 渲染问天对话历史 */
@@ -7408,10 +7448,11 @@ function _wtRenderHistory() {
       else if (d._lastStatus === 'ignored') statusChip = '<span style="display:inline-block;padding:1px 5px;background:rgba(192,64,48,0.25);color:#fef4e8;border-radius:2px;font-size:0.55rem;margin-left:4px;" title="' + escHtml(d._lastReason||'') + '">\u2757\u5FFD\u7565\u00D7' + (d._ignoredCount||1) + '</span>';
       else if (d._lastStatus === 'unchecked') statusChip = '<span style="display:inline-block;padding:1px 5px;background:rgba(157,145,125,0.15);color:var(--ink-300);border-radius:2px;font-size:0.55rem;margin-left:4px;">\u672A\u6838</span>';
       else statusChip = '<span style="display:inline-block;padding:1px 5px;background:rgba(184,154,83,0.12);color:var(--gold-300);border-radius:2px;font-size:0.55rem;margin-left:4px;">\u65B0\u5F55</span>';
-      var borderCol = d._lastStatus === 'ignored' ? 'var(--vermillion-400)' : d._lastStatus === 'partial' ? 'var(--amber-400)' : d._lastStatus === 'followed' ? 'var(--celadon-400)' : 'var(--gold-400)';
+      var borderCol = d._absolute ? '#b08bc8' : d._lastStatus === 'ignored' ? 'var(--vermillion-400)' : d._lastStatus === 'partial' ? 'var(--amber-400)' : d._lastStatus === 'followed' ? 'var(--celadon-400)' : 'var(--gold-400)';
+      var absChip = d._absolute ? '<span style="display:inline-block;padding:1px 6px;background:linear-gradient(135deg,#8e6aa8,#b08bc8);color:#fff;border-radius:2px;font-size:0.55rem;margin-left:4px;font-weight:700;">\u2605\u5929\u610F</span>' : '';
       html += '<div style="display:flex;justify-content:flex-end;margin-bottom:0.4rem;">';
       html += '<div style="max-width:85%;background:var(--color-accent-subtle);border-right:3px solid ' + borderCol + ';border-radius:var(--radius-md) 2px 2px var(--radius-md);padding:0.4rem 0.6rem;font-size:var(--text-xs);">';
-      html += '<div style="font-size:0.6rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + statusChip + '</div>';
+      html += '<div style="font-size:0.6rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + absChip + statusChip + '</div>';
       html += escHtml(d.content);
       if (d.structured) {
         var sParts = [];
@@ -7492,15 +7533,29 @@ async function _wtSend() {
   var pastRules = (GM._playerDirectives||[]).filter(function(d){return d.type==='rule';}).slice(-6).map(function(d){return '- ' + d.content;}).join('\n');
   var ctx = '剧本背景：' + ((typeof findScenarioById==='function'&&GM.sid) ? ((findScenarioById(GM.sid)||{}).name||'') : '') + '\n当前第 ' + (GM.turn||0) + ' 回合\n';
   if (pastRules) ctx += '已有规则:\n' + pastRules + '\n';
+  // 玩家强制分类——告知 AI 必须按此类输出对应字段
+  var forceHint = '';
+  if (_wtForceCategory) {
+    forceHint = '\n★ 玩家已手动强制分类为：' + _wtForceCategory + '——你必须按此分类输出相应必需字段';
+    if (_wtForceCategory === 'hardChange') forceHint += '（必填 hardChange:{path,op,value}·尽力从玩家文本推断具体字段路径）';
+    if (_wtForceCategory === 'edictSubstitute') forceHint += '（必填 edictText 和 edictChannel·将玩家意图改写为正式诏令措辞）';
+  }
+  ctx += forceHint;
   var prompt = '你是天命AI推演系统的元指令解析器。玩家刚对你说了一条指令，请：\n'
     + '1. 判断类型 type: rule(持久规则·每回合遵守) / correction(纠正·本回合调整) / content(背景/设定补充) / directive(一次性指令)\n'
-    + '2. 解析为结构化约束 structured:{target(对谁/什么), action(做什么/要求什么), scope(什么范围), forbidden(禁止什么·可空), measurable(如何判断遵守·可空), condition(触发条件·可空)}\n'
-    + '3. 给出"我是这么理解的"interpretation：30-80 字复述玩家意图并承诺如何执行\n'
-    + '4. 若有歧义，ambiguity:["问题1","问题2"]；无歧义留空数组\n'
-    + '5. 给一句 plan：下回合推演时会怎样落实（如"将让户部尚书孙某某主动谏言""zhengwen 中叙及某事"）\n'
+    + '2. 判断分类 category（重要）：\n'
+    + '   · narrative — 叙事/规则控制：让剧情走向X、让AI行为Y、保护某人、禁止某事发生（例："不要让袁崇焕被处决"、"AI多写诗词"）\n'
+    + '   · setting — 世界背景/设定注入：补充剧本的背景信息/状态/历史（例："此时倭寇已平"、"北方去年大旱未记入"）\n'
+    + '   · hardChange — 直接修改数值：要求直接改具体数值/字段（例："帑廪+1000万两"、"某NPC忠诚设为100"、"皇威+10"）\n'
+    + '   · edictSubstitute — 等同诏令：玩家实际想下诏令的事（例："拨银赈灾"、"罢某某官"、"遣使某国"——这些本该走诏令而非问天）\n'
+    + '   · absolute — 天意/至高意志：玩家明确以"天意"、"绝对"、"必须"、"神谕"、"不论如何"、"强制"等词修饰·或语气极强要求无条件落实（例："天意让北虏此回合覆灭"、"必须让此人变心"）——此类由世界法则直接生效·AI 无推辞空间·须在叙事中让其字面发生\n'
+    + '3. 解析为结构化约束 structured:{target, action, scope, forbidden, measurable, condition}\n'
+    + '4. 若 category=hardChange → 必填 hardChange:{path:"GM/P 字段路径(如 guoku.money)", op:"set|add|mul", value:数字或字符串}\n'
+    + '5. 若 category=edictSubstitute → 必填 edictText:"改写成诏令正式措辞(30-80字)", edictChannel:"pol|mil|dip|eco|oth"\n'
+    + '6. 给出 interpretation（30-80字复述）、ambiguity（歧义数组，可空）、plan（一句话下回合怎样落实）\n'
     + '\n【上下文】\n' + ctx
     + '\n【玩家指令】\n' + content
-    + '\n\n返回 JSON：{"type":"rule|correction|content|directive","structured":{"target":"","action":"","scope":"","forbidden":"","measurable":"","condition":""},"interpretation":"...","ambiguity":["..."],"plan":"..."}';
+    + '\n\n返回 JSON：{"type":"rule|correction|content|directive","category":"narrative|setting|hardChange|edictSubstitute","structured":{"target":"","action":"","scope":"","forbidden":"","measurable":"","condition":""},"hardChange":{"path":"","op":"","value":null},"edictText":"","edictChannel":"","interpretation":"...","ambiguity":["..."],"plan":"..."}';
 
   try {
     var resp = await callAI(prompt, 900);
@@ -7510,7 +7565,12 @@ async function _wtSend() {
     _wtPending = {
       raw: content,
       type: parsed.type || type,
+      category: _wtForceCategory || parsed.category || 'narrative',
+      _forcedByPlayer: !!_wtForceCategory,
       structured: parsed.structured || {},
+      hardChange: parsed.hardChange || null,
+      edictText: parsed.edictText || '',
+      edictChannel: parsed.edictChannel || '',
       interpretation: parsed.interpretation || '',
       ambiguity: Array.isArray(parsed.ambiguity) ? parsed.ambiguity : [],
       plan: parsed.plan || '',
@@ -7536,11 +7596,21 @@ function _wtShowPendingConfirmation() {
   var old = _$('wt-confirm-box'); if (old) old.remove();
   var p = _wtPending;
   var typeLabel = {rule:'\u6301\u4E45\u89C4\u5219',correction:'\u7EA0\u6B63',content:'\u80CC\u666F\u8865\u5145',directive:'\u4E00\u6B21\u6027\u6307\u4EE4'}[p.type] || p.type;
+  var catMeta = {
+    'narrative':   { label:'\u53D9\u4E8B\u63A7\u5236', color:'var(--gold-300)', hint:'\u5C06\u6CE8\u5165\u4E0B\u56DE\u5408 prompt \u00B7\u8BA9 AI \u53D9\u4E8B\u65F6\u9075\u4ECE' },
+    'setting':     { label:'\u4E16\u754C\u8BBE\u5B9A', color:'var(--celadon-400)', hint:'\u5C06\u4F5C\u4E3A\u5267\u672C\u80CC\u666F\u6CE8\u5165' },
+    'hardChange':  { label:'\u2696\ufe0e\u76F4\u6539\u6570\u503C', color:'var(--vermillion-400)', hint:'\u5C06\u7ACB\u5373\u5199\u5165 GM/P \u5177\u4F53\u5B57\u6BB5' },
+    'edictSubstitute': { label:'\u8BE5\u8D70\u8BCF\u4EE4', color:'var(--amber-400)', hint:'AI \u5DF2\u6539\u5199\u4E3A\u8BCF\u4EE4\u8349\u7A3F\u00B7\u70B9\u786E\u8BA4\u5373\u586B\u5165\u8BCF\u4EE4\u8F93\u5165\u6846' },
+    'absolute':    { label:'\u2605 \u5929 \u610F \u00B7 \u81F3 \u9AD8 \u2605', color:'#b08bc8', hint:'\u4E16\u754C\u6CD5\u5219\u76F4\u63A5\u751F\u6548\u00B7AI \u65E0\u63A8\u8FAD\u00B7\u5FC5\u5B57\u9762\u8001\u5B9E\u843D\u5B9E' }
+  };
+  var cat = catMeta[p.category] || catMeta['narrative'];
   var box = document.createElement('div');
   box.id = 'wt-confirm-box';
   box.style.cssText = 'display:flex;margin-bottom:0.5rem;';
-  var h = '<div style="max-width:90%;background:linear-gradient(135deg,rgba(184,154,83,0.08),var(--color-elevated));border-left:3px solid var(--gold-400);border-radius:2px var(--radius-md) var(--radius-md) 2px;padding:0.5rem 0.7rem;font-size:var(--text-xs);">';
-  h += '<div style="color:var(--gold-400);font-size:0.6rem;margin-bottom:4px;">AI \u89E3\u8BFB \u00B7 \u7C7B\u578B\uFF1A' + escHtml(typeLabel) + '</div>';
+  var h = '<div style="max-width:90%;background:linear-gradient(135deg,rgba(184,154,83,0.08),var(--color-elevated));border-left:3px solid ' + cat.color + ';border-radius:2px var(--radius-md) var(--radius-md) 2px;padding:0.5rem 0.7rem;font-size:var(--text-xs);">';
+  var origin = p._forcedByPlayer ? '\u73A9\u5BB6\u6307\u5B9A' : 'AI\u81EA\u52A8';
+  h += '<div style="font-size:0.6rem;margin-bottom:4px;"><span style="color:var(--gold-400);">AI \u89E3\u8BFB \u00B7 </span><span style="color:' + cat.color + ';font-weight:700;">' + escHtml(cat.label) + '</span><span style="color:var(--ink-300);"> \u00B7 ' + escHtml(typeLabel) + ' \u00B7 ' + origin + '</span></div>';
+  h += '<div style="font-size:0.58rem;color:var(--ink-300);margin-bottom:4px;font-style:italic;">' + cat.hint + '</div>';
   h += '<div style="color:var(--color-foreground);margin-bottom:6px;">' + escHtml(p.interpretation) + '</div>';
   // 结构化
   var sParts = [];
@@ -7553,6 +7623,16 @@ function _wtShowPendingConfirmation() {
     if (p.structured.condition) sParts.push('<b>\u6761\u4EF6</b>\uFF1A' + escHtml(p.structured.condition));
   }
   if (sParts.length > 0) h += '<div style="font-size:0.62rem;color:var(--ink-200);padding:4px 6px;background:rgba(10,9,8,0.35);border-radius:3px;margin-bottom:4px;">' + sParts.join('\u3000') + '</div>';
+  // hardChange 预览
+  if (p.category === 'hardChange' && p.hardChange && p.hardChange.path) {
+    var hc = p.hardChange;
+    h += '<div style="font-size:0.62rem;color:var(--vermillion-300);padding:4px 6px;background:rgba(192,64,48,0.1);border:1px solid rgba(192,64,48,0.3);border-radius:3px;margin-bottom:4px;font-family:monospace;">\u2696\ufe0e <b>' + escHtml(hc.path) + '</b> <span style="color:var(--ink-200);">' + escHtml(hc.op||'set') + '</span> <b>' + escHtml(String(hc.value)) + '</b></div>';
+  }
+  // edictText 预览
+  if (p.category === 'edictSubstitute' && p.edictText) {
+    var chLabel = {pol:'\u653F\u4E8B',mil:'\u519B\u4E8B',dip:'\u5916\u4EA4',eco:'\u7ECF\u6D4E',oth:'\u5176\u4ED6'}[p.edictChannel] || '\u653F\u4E8B';
+    h += '<div style="font-size:0.62rem;color:var(--amber-400);padding:4px 6px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:3px;margin-bottom:4px;">\u8BCF\u4EE4\u8349\u7A3F\u00B7' + escHtml(chLabel) + '\uFF1A<span style="color:var(--color-foreground);">\u300C' + escHtml(p.edictText) + '\u300D</span></div>';
+  }
   // 歧义
   if (p.ambiguity && p.ambiguity.length > 0) {
     h += '<div style="font-size:0.62rem;color:var(--amber-400);margin-bottom:4px;">\u26A0 \u6709\u6B67\u4E49\uFF1A';
@@ -7562,7 +7642,12 @@ function _wtShowPendingConfirmation() {
   if (p.plan) h += '<div style="font-size:0.62rem;color:var(--celadon-400);margin-bottom:6px;font-style:italic;">\u2192 ' + escHtml(p.plan) + '</div>';
   // 按钮
   h += '<div style="display:flex;gap:6px;">';
-  h += '<button class="bt bp bsm" onclick="_wtConfirmPending()" style="font-size:0.65rem;">\u786E \u8BA4 \u5165 \u5E93</button>';
+  var confirmLbl = p.category === 'absolute' ? '\u964D \u4E0B \u5929 \u610F' : p.category === 'hardChange' ? '\u7ACB \u5373 \u5199 \u5165' : p.category === 'edictSubstitute' ? '\u586B \u5165 \u8BCF \u4EE4' : '\u786E \u8BA4 \u5165 \u5E93';
+  h += '<button class="bt bp bsm" onclick="_wtConfirmPending()" style="font-size:0.65rem;' + (p.category==='absolute'?'background:linear-gradient(135deg,#8e6aa8,#b08bc8);color:#fff;':'') + '">' + confirmLbl + '</button>';
+  // 手动升级到"至高"的开关（只在非 absolute 时显示）
+  if (p.category !== 'absolute') {
+    h += '<button class="bt bsm" onclick="_wtPromoteAbsolute()" style="font-size:0.6rem;color:#b08bc8;border-color:#8e6aa8;" title="\u6807\u4E3A\u5929\u610F\u00B7\u4E16\u754C\u6CD5\u5219\u5F3A\u5236\u751F\u6548">\u2605\u6807\u4E3A\u81F3\u9AD8</button>';
+  }
   h += '<button class="bt bs bsm" onclick="_wtReviseFromPending()" style="font-size:0.65rem;">\u518D \u8BAE</button>';
   h += '<button class="bt bs bsm" onclick="_wtCancelPending()" style="font-size:0.65rem;color:var(--vermillion-400);">\u53D6 \u6D88</button>';
   h += '</div></div>';
@@ -7571,20 +7656,117 @@ function _wtShowPendingConfirmation() {
   chat.scrollTop = chat.scrollHeight;
 }
 
+/** 手动把待确认的 directive 升级为 absolute */
+function _wtPromoteAbsolute() {
+  if (!_wtPending) return;
+  _wtPending.category = 'absolute';
+  var cb = _$('wt-confirm-box'); if (cb) cb.remove();
+  _wtShowPendingConfirmation();
+}
+
 function _wtConfirmPending() {
   var p = _wtPending; if (!p) return;
   if (!GM._playerDirectives) GM._playerDirectives = [];
-  var did = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
-  GM._playerDirectives.push({
-    id: did, content: p.raw, type: p.type, turn: p.turn,
-    structured: p.structured, interpretation: p.interpretation, plan: p.plan
-  });
   if (!GM._wentianHistory) GM._wentianHistory = [];
-  GM._wentianHistory.push({ role: 'system', content: '\u2705 \u5DF2\u5165\u5E93 [id=' + did + ']\u00B7\u4E0B\u56DE\u5408\u63A8\u6F14\u5C06\u5F3A\u5236\u53C2\u7167\u00B7\u56DE\u62A5\u6267\u884C\u72B6\u51B5' });
+  var did = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
+  var dir = {
+    id: did, content: p.raw, type: p.type, turn: p.turn,
+    category: p.category,
+    structured: p.structured, interpretation: p.interpretation, plan: p.plan
+  };
+  var sysMsg = '';
+
+  if (p.category === 'absolute') {
+    // 天意·至高意志：标记为 absolute, rule 性质（每回合生效至玩家移除）, 永不 ignore
+    dir.type = 'rule';
+    dir._absolute = true;
+    GM._playerDirectives.push(dir);
+    sysMsg = '\u2605 \u5929 \u610F \u5DF2 \u5929 \u5B9A [id=' + did + ']\u00B7\u4E16\u754C\u6CD5\u5219\u76F4\u63A5\u751F\u6548\u00B7AI \u65E0\u63A8\u8FAD';
+    GM._wentianHistory.push({ role: 'system', content: sysMsg });
+    toast('\u2605 \u5929\u610F\u5DF2\u964D');
+  } else if (p.category === 'hardChange' && p.hardChange && p.hardChange.path) {
+    // 立即写入 GM/P 数值
+    var hc = p.hardChange;
+    var ok = _wtApplyHardChange(hc.path, hc.op || 'set', hc.value);
+    dir.hardChange = hc;
+    dir._immediatelyApplied = !!ok;
+    dir._lastStatus = ok ? 'followed' : 'ignored';
+    dir._lastReason = ok ? '问天直改即时生效' : '路径未找到/无法修改';
+    dir._lastCheckTurn = GM.turn;
+    sysMsg = ok
+      ? ('\u2696\ufe0e \u5DF2\u5199\u5165\uFF1A' + hc.path + ' ' + (hc.op||'set') + ' ' + hc.value + ' [id=' + did + ']')
+      : ('\u26A0 \u8DEF\u5F84\u672A\u627E\u5230\uFF1A' + hc.path);
+    GM._playerDirectives.push(dir);
+    GM._wentianHistory.push({ role: 'system', content: sysMsg });
+    toast(ok ? '\u6570\u503C\u5DF2\u76F4\u6539' : '\u76F4\u6539\u5931\u8D25');
+    // 刷新顶栏等
+    if (ok && typeof renderLeftPanel === 'function') { try { renderLeftPanel(); } catch(_){} }
+  } else if (p.category === 'edictSubstitute' && p.edictText) {
+    // 填入诏令输入框
+    var ch = p.edictChannel || 'pol';
+    var ta = _$('edict-' + ch);
+    if (!ta) ta = _$('edict-pol');
+    if (ta) {
+      var cur = (ta.value || '').trim();
+      ta.value = cur ? (cur + '\n' + p.edictText) : p.edictText;
+      sysMsg = '\u8BCF \u4EE4 \u5DF2 \u586B \u5165 ' + ({pol:'\u653F\u4E8B',mil:'\u519B\u4E8B',dip:'\u5916\u4EA4',eco:'\u7ECF\u6D4E',oth:'\u5176\u4ED6'}[ch]||'\u653F\u4E8B') + ' \u680F';
+      toast('\u8BCF\u4EE4\u8349\u7A3F\u5DF2\u586B\u5165');
+      // 不入 _playerDirectives（诏令会走 edict 系统自行记录）
+      GM._wentianHistory.push({ role: 'system', content: '\u2709\ufe0e ' + sysMsg + '\uFF1A\u300C' + p.edictText + '\u300D' });
+    } else {
+      // 回落：当普通 directive 入库
+      GM._playerDirectives.push(dir);
+      GM._wentianHistory.push({ role: 'system', content: '\u26A0 \u8BCF\u4EE4\u8F93\u5165\u6846\u4E0D\u5728\u89C6\u91CC\u00B7\u5DF2\u8F6C\u4E3A\u5E38\u89C4 directive\u5165\u5E93' });
+    }
+  } else {
+    // narrative / setting → 正常 directive 入库
+    GM._playerDirectives.push(dir);
+    sysMsg = '\u2705 \u5DF2\u5165\u5E93 [id=' + did + ']\u00B7' + (p.category==='setting'?'\u4E0B\u56DE\u5408\u4F5C\u80CC\u666F\u6CE8\u5165':'\u4E0B\u56DE\u5408\u63A8\u6F14\u5F3A\u5236\u53C2\u7167\u00B7\u56DE\u62A5\u6267\u884C\u72B6\u51B5');
+    GM._wentianHistory.push({ role: 'system', content: sysMsg });
+    toast('\u6307\u4EE4\u5DF2\u5165\u5E93');
+  }
   _wtPending = null;
   var cb = _$('wt-confirm-box'); if (cb) cb.remove();
   _wtRenderHistory();
-  toast('\u6307\u4EE4\u5DF2\u5165\u5E93\u00B7\u4E0B\u56DE\u5408\u751F\u6548');
+}
+
+/** 直接修改 GM/P 字段 */
+function _wtApplyHardChange(path, op, value) {
+  if (!path) return false;
+  // 根据路径前缀决定 root
+  var parts = String(path).split('.');
+  var root;
+  if (parts[0] === 'GM' || parts[0] === 'gm') { parts.shift(); root = GM; }
+  else if (parts[0] === 'P' || parts[0] === 'p') { parts.shift(); root = P; }
+  else root = GM;  // 默认 GM
+  if (parts.length === 0) return false;
+  // 导航到父对象
+  var cur = root;
+  for (var i = 0; i < parts.length - 1; i++) {
+    var k = parts[i];
+    if (cur[k] == null || typeof cur[k] !== 'object') cur[k] = {};
+    cur = cur[k];
+  }
+  var lastKey = parts[parts.length - 1];
+  var oldVal = cur[lastKey];
+  if (op === 'add') {
+    var delta = parseFloat(value);
+    if (isNaN(delta)) return false;
+    cur[lastKey] = (Number(oldVal)||0) + delta;
+  } else if (op === 'mul') {
+    var m = parseFloat(value);
+    if (isNaN(m)) return false;
+    cur[lastKey] = (Number(oldVal)||0) * m;
+  } else {
+    // set
+    cur[lastKey] = value;
+  }
+  // 同步 guoku.balance
+  if (root === GM && parts[0] === 'guoku' && parts[1] === 'money') {
+    if (GM.guoku) GM.guoku.balance = GM.guoku.money;
+  }
+  if (typeof addEB === 'function') addEB('\u95EE\u5929', '\u76F4\u6539 ' + path + ' \u00B7 ' + oldVal + '\u2192' + cur[lastKey]);
+  return true;
 }
 
 function _wtReviseFromPending() {

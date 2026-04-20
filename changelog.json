@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-20",
+      "module": "Bug 修复",
+      "title": "外藩使节问对不发言·真正根因终于找到",
+      "items": [
+        { "what": "_wdOpenAudienceQueue 为使节创建 ch 对象后 GM.chars.push(ch)，但 GM._indices.charByName 索引 Map 未同步更新", "why": "_wdNpcInitiateSpeak 开头 findCharByName(name) 返回 undefined，下一行 if(!ch) return 静默退出——所以使节气泡永远卡在 '…'" },
+        { "what": "修：新 push 后立即 GM._indices.charByName.set(name, ch)", "why": "索引同步·findCharByName 能找到新使节·对话流程继续" },
+        { "what": "附带：_wdNpcInitiateSpeak 按 ch._envoy 分支 prompt", "why": "原本对所有角色都加\"臣有事启奏——\"的本朝辞令不适用外臣；现按女真/朝鲜/海商/西洋四种身份风格分别开场" },
+        { "what": "cache 版本：tm-index-world.js v20260420q → v20260420x", "why": "强制浏览器拉新版" }
+      ]
+    },
+    {
+      "date": "2026-04-20",
       "module": "剧本深化",
       "title": "家谱+关系网扩展至 81 人（+38）",
       "items": [

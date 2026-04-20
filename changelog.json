@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-20",
+      "module": "格式对齐",
+      "title": "私产/公库/俸禄 数据格式审计并对齐引擎",
+      "items": [
+        { "what": "67 位非领袖角色 privateWealth key 从 money → cash（领袖保留 money 镜像 neitang）", "why": "修正关键 bug：引擎 tm-char-economy-engine.js 对普通角色期望 cash 键·非领袖的私产数值本来被引擎忽略·现在抄家/贿赂/私产面板读数正确" },
+        { "what": "157 职位俸禄格式：perPersonSalary '1044石' → '月俸 87 石 · 岁俸 1044 石' + 新增 salary: 87 月俸数值", "why": "引擎直接取 salary 月俸数（不再依赖回落），UI 显示月/年双标清晰" },
+        { "what": "验证：publicTreasuryInit {money,grain,cloth,quotaMoney} 游戏初始化为 publicTreasury {stock,quota,used,available,deficit}", "why": "官职公库格式一致，被 tm-game-engine.js._initOfficePublicTreasury 正确加载" },
+        { "what": "验证：俸禄每回合结算到帑廪", "why": "endTurn 前 FixedExpense.collect() 走 officeTree 所有 holder ≠ 空 职位，按月俸扣 GM.guoku.money，记 _lastFixedExpense.salary；史记显示「本回合岁出 X：俸禄 Y·军饷 Z·宫廷 W」" }
+      ]
+    },
+    {
+      "date": "2026-04-20",
       "module": "剧本深化",
       "title": "新增 19 位地方士人官员（13+ 地区）",
       "items": [

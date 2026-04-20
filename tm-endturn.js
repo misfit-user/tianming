@@ -3392,7 +3392,12 @@ function _endTurn_collectInput() {
     }
   });
   // 清理超过10回合的旧追踪记录
-  GM._edictTracker = GM._edictTracker.filter(function(e) { return GM.turn - e.turn < 10; });
+  // 保留：本回合全部 + 未完成诏令（跨回合追踪·无年限）+ 已完成/受阻者 24 回合
+  GM._edictTracker = GM._edictTracker.filter(function(e) {
+    if (e.turn === GM.turn) return true;  // 本回合全部保留
+    if (e.status === 'executing' || e.status === 'pending' || e.status === 'partial' || e.status === 'obstructed' || e.status === 'pending_delivery') return true;
+    return GM.turn - e.turn < 24;  // 已完成/失败·保留两年
+  });
 
   // 1.2: 诏令分流——检测涉及远方NPC的诏令，自动转为信件传递
   var _capital = GM._capital || '京城';
@@ -6980,6 +6985,32 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             }
             tp1 += '\n';
           });
+        }
+        // ═══ 长期诏令连带·跨回合·AI 须交代进展 ═══
+        // 包括：前回合未完成(executing/partial/obstructed)、本回合刚下延续(pending_delivery)的诏令
+        // 要求 AI 在 edict_feedback 中对这些"旧诏"也给出进展或连锁效应
+        var _longLivingEdicts = GM._edictTracker.filter(function(e) {
+          if (e.turn >= GM.turn) return false;
+          if (!e.status) return true;
+          return e.status === 'executing' || e.status === 'partial' || e.status === 'obstructed' || e.status === 'pending_delivery';
+        });
+        if (_longLivingEdicts.length > 0) {
+          tp1 += '\n【跨回合持续诏令——前回合下的诏令尚未收束，本回合必须在 edict_feedback 中追报进展+连锁效应】\n';
+          _longLivingEdicts.slice(0, 12).forEach(function(e) {
+            var age = GM.turn - e.turn;
+            tp1 += '  #id=' + e.id + ' 【' + e.category + ' · ' + age + '回合前】' + e.content.slice(0, 80);
+            tp1 += ' / 上次状态:' + (e.status || 'pending');
+            if (e.assignee) tp1 += ' / 执行者:' + e.assignee;
+            if (e.progressPercent) tp1 += ' / 进度:' + e.progressPercent + '%';
+            if (e.feedback) tp1 += '\n     上回反馈：' + e.feedback.slice(0, 120);
+            if (e._chainEffects && e._chainEffects.length) {
+              tp1 += '\n     已记连锁：' + e._chainEffects.slice(-3).map(function(ce){return ce.effect;}).join('；');
+            }
+            tp1 += '\n';
+          });
+          tp1 += '  ※ edict_feedback 里对旧诏令须给出：当下进展 / 新增连锁效应（NPC 反应 / 财政余波 / 民心涟漪）/ 下一步动向\n';
+          tp1 += '  ※ 连锁效应示例："辽饷加派"三回合后——民心持续下降·陕北流民骤增·边军哗饷已歇；"免除江南赋税"——地方士绅感恩·中央税入骤降·其他州县请援\n';
+          tp1 += '  ※ 连锁效应必须同步反映到 数值变化（fiscal_adjustments/class_updates/region_updates 等）·不能只是文字\n';
         }
         // 往期在途诏令——信使已送达的，提醒AI该NPC现在知道了
         var _priorRemote = (GM._edictTracker||[]).filter(function(e) {
@@ -12119,16 +12150,30 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             });
           }
         }
-        // 1.1: 处理诏令执行反馈
+        // 1.1: 处理诏令执行反馈——支持跨回合长期诏令的追报+连锁效应累积
         if (p1.edict_feedback && Array.isArray(p1.edict_feedback) && GM._edictTracker) {
           p1.edict_feedback.forEach(function(ef) {
-            if (!ef.content) return;
-            // 模糊匹配到对应的tracker条目
-            var tracker = GM._edictTracker.find(function(t) {
-              return t.turn === GM.turn && t.status === 'pending' && t.content.indexOf(ef.content.slice(0, 10)) >= 0;
-            });
+            if (!ef.content && !ef.edictId) return;
+            var tracker = null;
+            // Path 1: 按 edictId 精确匹配（AI 若遵循指示会填 edictId）
+            if (ef.edictId) {
+              tracker = GM._edictTracker.find(function(t) { return t.id === ef.edictId; });
+            }
+            // Path 2: 按 content 模糊匹配本回合 pending
+            if (!tracker && ef.content) {
+              tracker = GM._edictTracker.find(function(t) {
+                return t.turn === GM.turn && t.status === 'pending' && t.content.indexOf(ef.content.slice(0, 10)) >= 0;
+              });
+            }
+            // Path 3: 跨回合匹配·对前回合未收束诏令追报
+            if (!tracker && ef.content) {
+              tracker = GM._edictTracker.find(function(t) {
+                return t.turn < GM.turn && (t.status==='executing'||t.status==='partial'||t.status==='obstructed'||t.status==='pending_delivery')
+                  && t.content.indexOf(ef.content.slice(0, 10)) >= 0;
+              });
+            }
+            // Path 4: 按类别匹配本回合 pending
             if (!tracker) {
-              // 尝试按类别匹配
               tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
             }
             if (tracker) {
@@ -12142,16 +12187,38 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                   tracker.status = 'pending_delivery';
                   tracker.feedback = ef.feedback || '信使尚在途中，目标NPC未收到诏令';
                   tracker.progressPercent = 0;
-                  // 忽略AI的执行反馈——NPC还没收到命令不可能执行
                   return;
                 }
               }
-              tracker.status = ef.status || 'executing';
-              tracker.assignee = ef.assignee || '';
-              tracker.feedback = ef.feedback || '';
-              tracker.progressPercent = parseInt(ef.progressPercent) || (ef.status === 'completed' ? 100 : 50);
+              // 旧回合追报·连锁效应累积（不覆盖·累加）
+              if (tracker.turn < GM.turn) {
+                if (!tracker._chainEffects) tracker._chainEffects = [];
+                tracker._chainEffects.push({
+                  turn: GM.turn, status: ef.status || 'executing',
+                  effect: ef.feedback || ef.content || '',
+                  progress: parseInt(ef.progressPercent) || tracker.progressPercent || 0
+                });
+                // 累积进度·不倒退
+                var newProg = parseInt(ef.progressPercent) || 0;
+                if (newProg > (tracker.progressPercent || 0)) tracker.progressPercent = newProg;
+                tracker.status = ef.status || tracker.status;
+                tracker.feedback = ef.feedback || tracker.feedback;
+              } else {
+                // 本回合新诏令·初次设置
+                tracker.status = ef.status || 'executing';
+                tracker.assignee = ef.assignee || tracker.assignee || '';
+                tracker.feedback = ef.feedback || '';
+                tracker.progressPercent = parseInt(ef.progressPercent) || (ef.status === 'completed' ? 100 : 50);
+              }
+              // 受阻/完成推送到 eventBus 供 数值变化说明立即展示
               if (ef.status === 'obstructed') {
-                addEB('\u8BCF\u4EE4\u53D7\u963B', tracker.category + '\uFF1A' + tracker.content + ' \u2014 ' + (ef.feedback || '\u6267\u884C\u53D7\u963B'));
+                addEB('\u8BCF\u4EE4\u53D7\u963B', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u6267\u884C\u53D7\u963B'));
+              } else if (ef.status === 'completed') {
+                addEB('\u8BCF\u4EE4\u529F\u6210', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u5DF2\u8F7D\u65BD\u884C'));
+              } else if (ef.status === 'partial') {
+                addEB('\u8BCF\u4EE4\u90E8\u884C', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u90E8\u5206\u6267\u884C'));
+              } else if (tracker.turn < GM.turn) {
+                addEB('\u8BCF\u4EE4\u8FDB\u5C55', tracker.category + '\uFF1A' + tracker.content.slice(0,30) + ' \u8FDB\u5C55 ' + (tracker.progressPercent||0) + '% \u2014 ' + (ef.feedback || ''));
               }
             }
           });

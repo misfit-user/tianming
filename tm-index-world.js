@@ -6234,21 +6234,97 @@ function _offPickerRowHtml(c) {
 }
 
 function _offPickerConfirm(charName, deptName, posName, oldHolder) {
-  if (!GM._edictSuggestions) GM._edictSuggestions = [];
-  if (oldHolder) {
-    GM._edictSuggestions.push({
-      source: '\u5B98\u5236', from: '\u94E8\u66F9',
-      content: '\u514D ' + oldHolder + ' ' + deptName + posName + '\u4E4B\u804C',
-      turn: GM.turn, used: false
+  // ═══ 三位一体·即时生效 ═══
+  // 1. 直接改 officeTree holder（UI 立即刷新）
+  // 2. 同步更新 char.officialTitle + careerHistory + 官职公库 currentHead
+  // 3. 自动 append 到 edict-pol textarea（交 AI 本回合推演·会引发叙事+后续影响）
+  // 4. 同时记入 edictSuggestions 供参考
+  var newChar = (GM.chars || []).find(function(c){ return c.name === charName; });
+  var oldChar = oldHolder ? (GM.chars || []).find(function(c){ return c.name === oldHolder; }) : null;
+  var _seatDone = false;
+
+  // Step 1: officeTree 直接查找并改 holder
+  function _applyHolder(nodes) {
+    if (_seatDone) return;
+    (nodes || []).forEach(function(n) {
+      if (_seatDone || !n) return;
+      if (n.name === deptName) {
+        (n.positions || []).forEach(function(p) {
+          if (_seatDone || !p) return;
+          if (p.name === posName) {
+            p.holder = charName;
+            if (p.publicTreasury) p.publicTreasury.currentHead = charName;
+            if (!p._history) p._history = [];
+            p._history.push({ holder: oldHolder || '(空)', endTurn: GM.turn, reason: '玩家诏令改任' });
+            _seatDone = true;
+          }
+        });
+      }
+      if (!_seatDone && n.subs) _applyHolder(n.subs);
     });
   }
+  _applyHolder(GM.officeTree || []);
+
+  // Step 2: 更新 char 字段
+  if (newChar) {
+    newChar.officialTitle = posName;
+    newChar.position = posName;
+    if (!newChar.careerHistory) newChar.careerHistory = [];
+    newChar.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + deptName + posName });
+    if (!newChar._memorySeeds) newChar._memorySeeds = [];
+    newChar._memorySeeds.push({ turn: GM.turn, event: '蒙陛下简拔·授' + deptName + posName, emotion: '敬感' });
+    // 好感 +5·被委以重任
+    if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
+      AffinityMap.add(charName, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 5, '被委以重任');
+    }
+    if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
+      NpcMemorySystem.remember(charName, '蒙简擢为 ' + deptName + posName, '\u559C', 7, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B');
+    }
+  }
+  if (oldChar) {
+    if (oldChar.officialTitle === posName) oldChar.officialTitle = '';
+    if (oldChar.position === posName) oldChar.position = '';
+    oldChar._displaced = { from: posName, by: charName, turn: GM.turn };
+    if (!oldChar.careerHistory) oldChar.careerHistory = [];
+    oldChar.careerHistory.push({ turn: GM.turn, event: '奉诏免 ' + deptName + posName + '·由 ' + charName + ' 代' });
+    if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
+      AffinityMap.add(oldHolder, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', -10, '被免职');
+    }
+  }
+
+  // Step 3: append 到 edict-pol textarea·AI 会在本回合推演看到
+  var edictLine = oldHolder
+    ? ('命 ' + charName + ' 为 ' + deptName + posName + '·原任 ' + oldHolder + ' 着免。')
+    : ('命 ' + charName + ' 为 ' + deptName + posName + '。');
+  var polEl = document.getElementById('edict-pol');
+  if (polEl) {
+    var cur = (polEl.value || '').trim();
+    polEl.value = cur ? (cur + '\n' + edictLine) : edictLine;
+  }
+
+  // Step 4: 建议库记录（供参考）
+  if (!GM._edictSuggestions) GM._edictSuggestions = [];
   GM._edictSuggestions.push({
-    source: '\u5B98\u5236', from: '\u94E8\u66F9',
-    content: (oldHolder ? '\u6539\u6362\uFF1A' : '\u4EFB\u547D\uFF1A') + charName + ' \u4E3A ' + deptName + posName,
-    turn: GM.turn, used: false
+    source: '\u5B98\u5236·\u4EFB\u547D\u6309\u94AE', from: '\u94E8\u66F9',
+    content: edictLine, turn: GM.turn, used: true
   });
-  toast((oldHolder ? '\u5DF2\u5F55\u5165\u8BCF\u4E66\u5EFA\u8BAE\u5E93\uFF08\u514D\u65E7\u4EFB+\u4EFB\u65B0\u4EBA\uFF09' : '\u5DF2\u5F55\u5165\u8BCF\u4E66\u5EFA\u8BAE\u5E93'));
+
+  // Step 5: edictTracker 记入本回合诏令（确保 AI prompt 能看到）
+  if (!GM._edictTracker) GM._edictTracker = [];
+  GM._edictTracker.push({
+    id: 'appoint_' + Date.now() + '_' + charName,
+    content: edictLine, category: '政令',
+    turn: GM.turn, status: 'pending',
+    assignee: charName, feedback: '',
+    progressPercent: 0,
+    _appointmentAction: { character: charName, position: posName, dept: deptName, oldHolder: oldHolder },
+    _chainEffects: []  // 后续回合连带效应记录
+  });
+
+  toast((oldHolder ? ('改换·' + oldHolder + '→' + charName) : ('任命·' + charName)) + ' 已即时生效并写入本回合诏令');
   _offClosePicker();
+  if (typeof renderOfficeTree === 'function') { try { renderOfficeTree(); } catch(_){} }
+  if (typeof renderRenwu === 'function') { try { renderRenwu(); } catch(_){} }
   if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
 }
 

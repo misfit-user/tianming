@@ -3,6 +3,18 @@
   "entries": [
     {
       "date": "2026-04-20",
+      "module": "Bug 修复",
+      "title": "诏令不生效 / 官职任免无效 / 时政记漏录三连根因",
+      "items": [
+        { "what": "真正根因：applyEdictActions 只查 GM.postSystem.posts（官方剧本默认空数组·由 postRules 按需生成），完全无视 GM.officeTree（剧本的实际官制来源）", "why": "所有任命/免职诏令都静默失败——AI 看到诏令却没实际执行·玩家觉得\"圣旨就像没发过一样\"" },
+        { "what": "修：新增 _findPositionInOfficeTree 遍历官制树·applyEdictActions 走三条路径找职位（postSystem / officeTree 精确+模糊 / 特设兜底）", "why": "不论剧本用哪种方式定义官职·诏令总能找到位置并更新 holder·前任自动标记 _displaced" },
+        { "what": "修：同步更新 char.officialTitle / char.position / careerHistory / 官职公库 currentHead", "why": "任命一击多面生效·人物志、史记、公库绑定都对上" },
+        { "what": "修：免职路径同样扫 officeTree 清 holder", "why": "免职不再只是 AffinityMap-10，实际撤出职位" },
+        { "what": "修：GM.shijiHistory push 包含 edicts 全文（原本这字段被丢弃）", "why": "时政记能看到玩家下的诏·下回合 AI 可从历史回看·不再\"没发过一样\"" }
+      ]
+    },
+    {
+      "date": "2026-04-20",
       "module": "AI 角色生成",
       "title": "aiGenerateCompleteCharacter 六处深化",
       "items": [

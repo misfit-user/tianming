@@ -5291,6 +5291,7 @@ function _generateLetterReply(letter) {
     var memCtx = (typeof NpcMemorySystem !== 'undefined') ? NpcMemorySystem.getMemoryContext(ch.name) : '';
     var prompt = '你是' + ch.name + '，' + (ch.title||'') + '，当前在' + (ch.location||'远方') + '。\n性格：' + brief;
     if (memCtx) prompt += '\n近期心绪：' + memCtx;
+    if (typeof _buildTemporalConstraint === 'function') { try { prompt += _buildTemporalConstraint(ch); } catch(_){} }
     prompt += '\n收到来自京城天子的' + typeLabel + '：\n「' + letter.content + '」\n\n请以该角色的口吻、身份、性格、当前心绪写一封回信（100-200字），用古典中文，称谓恰当（臣/末将等）。回信应反映你的真实情感和立场。直接输出回信内容。';
     callAI(prompt, 500).then(function(reply) {
       letter.reply = reply || '臣叩首拜读，容臣三思后详禀。';

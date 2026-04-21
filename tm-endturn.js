@@ -1512,6 +1512,50 @@ async function aiPlanFirstTurnEvents() {
 }
 
 // ============================================================
+// 长期行动摘要 aiDigestLongTermActions
+// endturn 前读取所有长期诏书+进行中编年+在途旅程+长期政策
+// 输出简洁摘要·注入推演 sysP·避免 AI 遗漏跨回合长期项
+// 每回合重新跑·不复用（信息随回合变化）
+// ============================================================
+async function aiDigestLongTermActions() {
+  if (!P.ai || !P.ai.key) return;
+  if (typeof _buildLongTermActionsDigest !== 'function') return;
+  var rawDigest = _buildLongTermActionsDigest();
+  if (!rawDigest || rawDigest.length < 30) {
+    GM._longTermDigest = { text: '（本回合无长期进行项）', generatedAt: GM.turn, turn: GM.turn };
+    return;
+  }
+  // 若长期项不多·可直接存原文·省 AI 调用
+  if (rawDigest.length < 500) {
+    GM._longTermDigest = { text: rawDigest, generatedAt: GM.turn, turn: GM.turn, _fromRaw: true };
+    return;
+  }
+  // 长期项多·让 AI 总结为要点+效果预测
+  var prompt = '你是' + ((typeof findScenarioById==='function' && GM.sid) ? ((findScenarioById(GM.sid)||{}).era||'') : '') + '政务参谋。' +
+    '请将以下皇帝历次诏书+进行中大事+在途旅程，整理为本回合 AI 推演所需的简明摘要。\n\n' +
+    rawDigest + '\n\n' +
+    '要求：\n' +
+    '1. 按类分组（政令/军事/民生/外交/吏治/人事旅程/编年大事）\n' +
+    '2. 每项标注：已持续几回合/当前进度/本回合预期效果(正面+负面两面)\n' +
+    '3. 尤其关注效果曲线——是否该出现"前期好后期坏"或"初阵痛后收益"的拐点\n' +
+    '4. 总字数 400-700 字·半文言·简洁凝练\n\n' +
+    '直接输出摘要·不要 JSON 不要前言。';
+  try {
+    var raw = await callAISmart(prompt, 1500, { maxRetries: 2, minLength: 300 });
+    if (raw && raw.length > 100) {
+      GM._longTermDigest = { text: raw.trim(), generatedAt: GM.turn, turn: GM.turn, _fromAI: true };
+      console.log('[longTerm] 摘要生成 · ' + raw.length + ' 字 @ T' + GM.turn);
+    } else {
+      // AI 失败·降级为原文
+      GM._longTermDigest = { text: rawDigest, generatedAt: GM.turn, turn: GM.turn, _fromRaw: true };
+    }
+  } catch(e) {
+    console.warn('[longTerm] AI 摘要失败·降原文:', e && e.message);
+    GM._longTermDigest = { text: rawDigest, generatedAt: GM.turn, turn: GM.turn, _fromRaw: true };
+  }
+}
+
+// ============================================================
 // 记忆锚点系统 - 借鉴 HistorySimAI
 // ============================================================
 
@@ -5598,6 +5642,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       var _styleNames = {biannian:'编年体(仿《资治通鉴》)',shilu:'实录体(仿各朝实录)',jizhuan:'纪传体(仿《史记》)',jishi:'纪事本末体(仿《通鉴纪事本末》)',biji:'笔记体(仿《世说新语》)',custom:P.chronicleConfig.customStyleDesc||'自定义'};
       sysP += '\n叙事笔法：' + (_styleNames[P.chronicleConfig.style] || P.chronicleConfig.style);
     }
+    // ★ 时空约束（防 AI 用未来史实知识·防 NPC 说还活着的人已死）
+    if (typeof _buildTemporalConstraint === 'function') {
+      try { sysP += _buildTemporalConstraint(null); } catch(_tcE){}
+    }
+
+    // ★ 长期行动摘要（aiDigestLongTermActions 生成·完整长期诏书+编年+旅程）
+    if (GM._longTermDigest && GM._longTermDigest.text) {
+      sysP += '\n\n【长期行动与诏书·持续效果·AI 必读必用】\n' + GM._longTermDigest.text;
+      sysP += '\n★ 规则：所有长期诏书每回合都必须体现效果·不可忘记。效果可正可负·可前好后坏或反之。在 shizhengji/zhengwen 中体现·在 var_changes 中实化。';
+    }
+
     // 注入·启动预演规划（aiPlanScenarioForInference 生成·轻量版·提升推演稳定性）
     if (GM._aiInferencePlan && GM._aiInferencePlan.generatedAt) {
       var _pl = GM._aiInferencePlan;
@@ -15178,6 +15233,13 @@ async function _endTurnCore(){
 
   // 暂存昏君活动供 AI 推演使用
   GM._turnTyrantActivities = input.tyrantActivities || [];
+
+  // Phase 1.8·长期行动摘要 AI 调用（过回合前读取全部长期诏书+编年·防长期项被推演遗忘）
+  try {
+    if (typeof aiDigestLongTermActions === 'function' && P.ai && P.ai.key) {
+      await aiDigestLongTermActions();
+    }
+  } catch(_ltdE) { console.warn('[endTurn] 长期摘要失败', _ltdE); }
 
   // Phase 2: AI 推演
   var aiResult = await _endTurn_aiInfer(edicts, xinglu, memRes, oldVars);

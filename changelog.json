@@ -3,6 +3,22 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "三大推演保障·时空约束+长期效果+长期摘要",
+      "title": "NPC 不得跨时空说话·诏书有短长期效果·推演读编年长期行动全文",
+      "items": [
+        { "what": "新增 _buildTemporalConstraint(tm-utils.js)·返回当前回合时间+在世名单+已故名单+禁令文本(不得用未来史实·不得误判生死·许预感/占卜/引古)+本 NPC 记忆 5 条", "why": "防 AI 说'某人已死'但其在游戏时间中还活着·或讨论游戏时间之后才发生的史实为既成事实" },
+        { "what": "注入·推演主 sysP (tm-endturn.js:5447 之前)·所有 AI 推演都带时空约束", "why": "全局推演级别约束" },
+        { "what": "注入·问对 _wdBuildPrompt (tm-index-world.js)·NPC 对话前加时空表+本 NPC 记忆", "why": "问对场景最易发生跨时空错言" },
+        { "what": "注入·letter reply (tm-game-engine.js:5294)·NPC 回信前加约束", "why": "信件回复也是 NPC 说话·同样约束" },
+        { "what": "新增 _buildLongTermActionsDigest(tm-utils.js)·聚合 GM._edictTracker(跨回合诏书)+biannianItems(进行中大事)+chars._travelTo(旅程)·含效果曲线 _chainEffects", "why": "提供完整长期状态·不截断" },
+        { "what": "新增 aiDigestLongTermActions(tm-endturn.js)·endturn 主推演前·1 次 AI 调用摘要长期项+按类分组+效果曲线拐点预测(长 500+ 字触发 AI·短于 500 用原文·无项跳过)·存 GM._longTermDigest", "why": "用户明确要求：玩家操作时过回合前就读取·推演时随长期项增多·摘要变得必要" },
+        { "what": "注入·主推演 sysP·__longTermDigest.text 随时空约束一起·加强制规则'所有长期诏书每回合都必须体现效果·可正可负·可前好后坏或反之·在 shizhengji/zhengwen 中体现·var_changes 实化'", "why": "用户要求：诏书决策有实际结果·长期诏书每回合有当下效果+长期效果·可能先好后坏或反过来" },
+        { "what": "现有 _chainEffects 字段（tm-endturn.js:12858 已实现）每回合累加·为效果曲线提供数据基础·_buildLongTermActionsDigest 读其最近 3 条展示趋势", "why": "用户要求的效果曲线数据已具备·仅缺摘要+注入" },
+        { "what": "缓存 tm-utils v=g→20260422a·tm-game-engine v=j→20260422a·tm-endturn v=c→d·tm-index-world v=b→c", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "势力关系矩阵+首回合候选事件·2 次新 AI 调用",
       "title": "aiPlanFactionMatrix+aiPlanFirstTurnEvents·并行发射·推演稳定性三位一体",
       "items": [

@@ -2550,6 +2550,82 @@ function getTSText(turn){
   return main;
 }
 function getSE(turn){var si=(P.time.startS+(turn-1))%(P.time.seasons||[]).length;return(P.time.sEffects||[])[si]||"";}
+
+/** 构建 NPC 时空约束提示词·注入任意 NPC 对话/奏疏/书信 prompt 前
+ * 防 AI 使用未来史实知识（如 NPC 说"某人已死"但在游戏时间中此人还活着） */
+function _buildTemporalConstraint(ch) {
+  var t = (typeof getTSText === 'function') ? getTSText(GM.turn || 1) : ('T' + (GM.turn || 1));
+  var y = (GM.year || (P.time && P.time.year) || '?');
+  var lines = ['\n\n【★ 时空约束·AI 严格遵守 ★】'];
+  lines.push('当前游戏时间：' + t + '（公元 ' + y + ' 年）·第 ' + (GM.turn || 1) + ' 回合');
+  // 活人名单（防 AI 说还活着的人已死）
+  var aliveSample = (GM.chars || []).filter(function(c){ return c && c.alive !== false; }).slice(0, 30).map(function(c){ return c.name; }).join('、');
+  if (aliveSample) lines.push('当前在世人物（节选）：' + aliveSample + (GM.chars && GM.chars.length > 30 ? '…等' : ''));
+  // 已故名单
+  var deadList = (GM.chars || []).filter(function(c){ return c && (c.alive === false || c.dead); }).slice(0, 12).map(function(c){
+    return c.name + (c.deathTurn ? '(T' + c.deathTurn + ')' : '');
+  }).join('、');
+  if (deadList) lines.push('已故人物：' + deadList);
+  lines.push('★ 绝对禁止：');
+  lines.push('  · 讨论游戏当前时间之后才发生的史实事件（如游戏在天启七年·不得提及崇祯朝将发生之事为既成事实）');
+  lines.push('  · 说在世人物已死·或说已故人物仍活·生死以上述名单+GM 数据为准·非历史上的卒年');
+  lines.push('  · 以"历史上某年某人做了 X"作为此时此事的既成根据');
+  lines.push('★ 允许：隐约预感/占卜不祥/担忧未来/引前朝/古事为训');
+  // 若 ch 有 _memory·注入关键记忆
+  if (ch && Array.isArray(ch._memory) && ch._memory.length > 0) {
+    var memLines = ch._memory.slice(-5).map(function(m) {
+      return '  · T' + (m.turn || 0) + '·' + (m.event || '') + (m.emotion ? '(' + m.emotion + ')' : '');
+    }).join('\n');
+    lines.push('本 NPC 关键记忆（时序）：\n' + memLines);
+  }
+  return lines.join('\n');
+}
+
+/** 构建长期行动/长期诏书/长期政策摘要·注入推演 sysP
+ * 读 GM._edictTracker 长期条目 + GM.biannianItems 进行中项 + 今日起居注标 长期 tag */
+function _buildLongTermActionsDigest() {
+  var lines = [];
+  // 1. 长期诏书（已颁布但持续影响·或跨回合诏书）
+  var longLivingEdicts = (GM._edictTracker || []).filter(function(e) {
+    if (!e) return false;
+    // 跨回合存活 or 长期影响标记
+    if (e._longTerm || e.status === 'executing' || e.status === 'partial') return true;
+    // 超过 1 回合未结
+    if (e.turn && GM.turn && (GM.turn - e.turn) >= 1 && e.status !== 'completed' && e.status !== 'withdrawn') return true;
+    return false;
+  });
+  if (longLivingEdicts.length > 0) {
+    lines.push('【长期诏书·仍在生效】（AI 每回合须重估其此刻效果·不可遗忘）');
+    longLivingEdicts.slice(0, 20).forEach(function(e) {
+      var dur = GM.turn - e.turn;
+      lines.push('  · T' + e.turn + '(已 ' + dur + ' 回合)·' + (e.category || '政令') + '·' + String(e.content || '').slice(0, 100) + (e.feedback ? '·上回合反馈：' + e.feedback.slice(0, 60) : '') + (e.progressPercent != null ? '·进度 ' + e.progressPercent + '%' : ''));
+      // 效果曲线（如有记录）
+      if (e.effectCurve && Array.isArray(e.effectCurve) && e.effectCurve.length > 0) {
+        var recent = e.effectCurve.slice(-3);
+        lines.push('    近期效应：' + recent.map(function(pt) { return 'T' + pt.turn + (pt.note ? '=' + String(pt.note).slice(0, 40) : ''); }).join(' → '));
+      }
+    });
+  }
+  // 2. 进行中编年项（biannianItems·未 _resolved）
+  var activeBN = (GM.biannianItems || []).filter(function(b) { return b && !b._resolved; });
+  if (activeBN.length > 0) {
+    lines.push('\n【进行中大事·编年长期项】');
+    activeBN.slice(0, 12).forEach(function(b) {
+      var startT = b.startTurn || b.turn || 0;
+      var dur = startT ? (GM.turn - startT) : '?';
+      lines.push('  · T' + startT + '(已 ' + dur + ' 回合)·' + (b.title || b.name || '') + '·' + String(b.content || b.desc || '').slice(0, 120));
+    });
+  }
+  // 3. 旅程在途（远地 NPC 未到）
+  var travelers = (GM.chars || []).filter(function(c) { return c && c._travelTo; }).slice(0, 8);
+  if (travelers.length > 0) {
+    lines.push('\n【旅程在途】');
+    travelers.forEach(function(c) {
+      lines.push('  · ' + c.name + '·自' + (c._travelFrom || '?') + '→' + c._travelTo + '·' + (c._travelReason || '') + (c._travelArrival ? '·预计 T' + c._travelArrival + ' 抵' : ''));
+    });
+  }
+  return lines.length > 0 ? lines.join('\n') : '';
+}
 function renderEraNamesList(){var t=P.time;var el=_$("t-era-list");if(!el)return;var eraList=(t.eraNames||[]);if(!eraList.length){el.innerHTML="<div style=\"color:var(--txt-d);font-size:12px;\">\u6682\u65E0</div>";return;}el.innerHTML=eraList.map(function(e,i){return "<div style=\"display:flex;gap:6px;align-items:center;margin-bottom:3px;\">"+"<input id=\"t-era-n-"+i+"\" value=\""+((e&&e.name)||"")+"\" placeholder=\"\u5E74\u53F7\u540D\" style=\"width:80px\">"+"<input type=\"number\" id=\"t-era-y-"+i+"\" value=\""+((e&&e.startYear)||0)+"\" placeholder=\"\u5E74\" style=\"width:60px\">"+"<input type=\"number\" id=\"t-era-m-"+i+"\" value=\""+((e&&e.startMonth)||1)+"\" placeholder=\"\u6708\" style=\"width:44px\">"+"<input type=\"number\" id=\"t-era-d-"+i+"\" value=\""+((e&&e.startDay)||1)+"\" placeholder=\"\u65e5\" style=\"width:44px\">"+"<button class=\"bd bsm\" onclick=\"_eraUpd("+i+")\">\u4FDD</button>"+"<button class=\"bd bsm\" onclick=\"_eraDel("+i+")\">\u5220</button>"+"</div>";}).join("");}window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderEraNamesList();};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderEraNamesList();};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;var d=document.getElementById("t-era-d-"+i);if(d)e.startDay=+d.value||1;saveT();};function saveT(){var t=P.time;var ids=["t-year","t-prefix","t-suffix","t-per-turn","t-seasons","t-start-s","t-reign","t-reign-y","t-display","t-template","t-start-month","t-start-day"];ids.forEach(function(id){var el=_$(id);if(!el)return;var v=el.value;if(id==="t-year")t.year=+v;else if(id==="t-prefix")t.prefix=v;else if(id==="t-suffix")t.suffix=v;else if(id==="t-per-turn")t.perTurn=v;else if(id==="t-seasons")t.seasons=v.split(",").map(function(s){return s.trim();});else if(id==="t-start-s")t.startS=+v;else if(id==="t-reign")t.reign=v;else if(id==="t-reign-y")t.reignY=+v;else if(id==="t-display")t.display=v;else if(id==="t-template")t.template=v;else if(id==="t-start-month")t.startMonth=+v||1;else if(id==="t-start-day")t.startDay=+v||1;});var egz=_$("t-enable-ganzhi");if(egz)t.enableGanzhi=egz.checked;var egzd=_$("t-enable-ganzhi-day");if(egzd)t.enableGanzhiDay=egzd.checked;var een=_$("t-enable-era-name");if(een)t.enableEraName=een.checked;toast("\u5DF2\u4FDD\u5B58");}
 function loadT(){var t=P.time;var map={"t-year":t.year,"t-prefix":t.prefix||"","t-suffix":t.suffix||"","t-per-turn":t.perTurn||"1s","t-seasons":(t.seasons||[]).join(","),"t-start-s":t.startS||0,"t-reign":t.reign||"","t-reign-y":t.reignY||1,"t-display":t.display||"year_season","t-template":t.template||"","t-start-month":t.startMonth||1,"t-start-day":t.startDay||1};Object.keys(map).forEach(function(id){var el=_$(id);if(el)el.value=map[id];});var egz=_$("t-enable-ganzhi");if(egz)egz.checked=!!t.enableGanzhi;var egzd=_$("t-enable-ganzhi-day");if(egzd)egzd.checked=!!t.enableGanzhiDay;var een=_$("t-enable-era-name");if(een)een.checked=!!t.enableEraName;renderEraNamesList();}
 

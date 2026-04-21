@@ -4927,6 +4927,10 @@ function _wdBuildPrompt(ch, name) {
       p += '  \u00B7 \u6F54\u566A\u4EE3\u7D26 \u2192 \u65E2\u4E0D\u8010\u7194\u4E5F\u4E0D\u4E01\u7075\u96A2\u5BB9\u7B80\u4E3A\u201C\u975E\u81E3\u6240\u638C\uFF0C\u4E0D\u654C\u5984\u8A00\u201D\n';
     }
   }
+  // ★ 时空约束·防 NPC 说还活着的人已死/用未来史实
+  if (typeof _buildTemporalConstraint === 'function') {
+    try { p += _buildTemporalConstraint(ch); } catch(_){}
+  }
   return p;
 }
 

@@ -536,6 +536,11 @@ function renderScnTab(em,sc){
 // ============================================================
 async function _logicAuditOnStart(sc) {
   if (!P.ai.key || !GM.chars || GM.chars.length === 0) return;
+  // 剧本已人工深化·跳过 AI 逻辑审查（角色 location/矛盾已手工填妥）
+  if (sc && (sc.aiAutoEnrich === false || sc.isFullyDetailed === true)) {
+    console.log('[LogicAudit] 剧本已深化·跳过 AI 审查');
+    return;
+  }
   var capital = GM._capital || '京城';
   var era = (sc && sc.era) || P.era || '';
   var bg = (sc && sc.background) || '';

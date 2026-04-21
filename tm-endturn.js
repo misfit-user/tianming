@@ -31,6 +31,42 @@ async function aiDeepReadScenario() {
 
   var sc = findScenarioById(GM.sid);
   if (!sc) return;
+
+  // 剧本已人工深化·跳过 28 次 AI 深读·用剧本原文本直接兜底 _aiScenarioDigest
+  if (sc.aiAutoEnrich === false || sc.isFullyDetailed === true) {
+    var pi0 = P.playerInfo || {};
+    var overviewText = (sc.overview || '') + '\n' + (sc.openingText || '');
+    var rulesText = sc.globalRules || '';
+    var playerBgText = [pi0.characterBio, pi0.characterPersonality, pi0.factionGoal].filter(Boolean).join('·');
+    // 矛盾列表
+    var contradictText = '';
+    if (pi0.coreContradictions && pi0.coreContradictions.length > 0) {
+      contradictText = pi0.coreContradictions.map(function(c) { return '[' + c.dimension + ']' + c.title + (c.description ? '：' + c.description : ''); }).join('；');
+    }
+    GM._aiScenarioDigest = {
+      masterDigest: (overviewText + '\n' + contradictText).slice(0, 1200),
+      worldAtmosphere: (sc.overview || '').slice(0, 400),
+      narrativeStyle: (sc.openingText || '').slice(0, 400),
+      worldRules: rulesText,
+      characterWeb: playerBgText,
+      factionBalance: '剧本势力格局见 GM.facs',
+      powerNetwork: '见官制树',
+      contradictionAnalysis: contradictText,
+      playerDilemma: pi0.characterBio || '',
+      // 字段兜底·避免 undefined
+      characterProfiles: '', dangerousFigures: '', betrayalRisks: '',
+      emotionalTriggers: '', narrativeArcs: '',
+      periodVocabulary: '', etiquetteNorms: '', sensoryDetails: '',
+      firstTurnFocus: pi0.factionGoal || '',
+      scenarioDigest: (sc.overview || '').slice(0, 800),
+      generatedAt: GM.turn,
+      _fromScenarioText: true  // 标记·非 AI 生成
+    };
+    // 记录初始官制哈希（检测后续改革）
+    try { GM._officeTreeHash = _computeOfficeHash(); } catch(_){}
+    _dbg && _dbg('[AI DeepRead] 剧本已深化·跳过 28 次 AI·用原文本兜底');
+    return;
+  }
   var url = P.ai.url; if (url.indexOf('/chat/completions') < 0) url = url.replace(/\/+$/, '') + '/chat/completions';
   var model = P.ai.model || 'gpt-4o';
   var pi = P.playerInfo || {};

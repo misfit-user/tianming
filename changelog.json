@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "跳过 DeepRead+LogicAudit·奏疏增量",
+      "title": "官方剧本启动 API 从 30 次降至 1 次·奏疏首回合 6-10 份",
+      "items": [
+        { "what": "aiDeepReadScenario(tm-endturn.js:27)·剧本 aiAutoEnrich===false 或 isFullyDetailed===true 时跳过 28 次 AI 深读·直接用剧本 overview/openingText/globalRules/playerInfo/coreContradictions 等人工撰写的文本填 _aiScenarioDigest 各字段作兜底·字段含 _fromScenarioText:true 标识来源", "why": "剧本已人工深化·再让 AI 深读等同让 AI 把已有文本用自己话再说一遍·80+字段生成仅 15 被实际消费·纯浪费" },
+        { "what": "_logicAuditOnStart(tm-patches.js:537)·同开关·剧本深化后角色 location/矛盾已手工填妥·AI 审查返回空·跳过节省 1 次 callAI", "why": "完整剧本 AI 审查无修正可做" },
+        { "what": "generateMemorials(tm-index-world.js:2339)·首回合奏疏默认数量从 2-4 提升到 6-10·16000 tokens 预算充分利用·单 AI 调用产出 ~3倍内容", "why": "用户要求 tokens 不变生成更多奏疏·之前 16000 tokens 仅生成 2-4 份明显不足" },
+        { "what": "tianqi7-1627 已标 aiAutoEnrich:false·isFullyDetailed:true·此次修复自动适用", "why": "官方剧本享 0-1 次 API 启动" },
+        { "what": "总账·官方 tianqi7 启动：从 30 次/60000 tokens → 1 次/16000 tokens·时间从几分钟缩到 10 秒内", "why": "保留真正有价值的奏疏生成·砍除对深化剧本无用的深读/审查" },
+        { "what": "缓存版本·tm-index-world v=x→20260422a·tm-endturn v=f→20260422a·tm-patches v=j→20260422a", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "修新游戏加载 API 浪费+3钩子串行+剧本开关",
       "title": "enterGame 三处 AI 自动调用整改·官方剧本标记 aiAutoEnrich:false 全跳过",
       "items": [

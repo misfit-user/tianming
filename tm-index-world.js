@@ -2337,8 +2337,10 @@ function buildAIContext(deepMode) {
 }
 
 function generateMemorials(){
-  var minCount = P.conf.memorialMin || 2;
-  var maxCount = P.conf.memorialMax || 4;
+  // tokens 预算 16000·原 2-4 份奏疏利用不足·按 tokens 量力而为生成更多
+  // 默认提高到 6-10 份·玩家在编辑器可通过 memorialMin/memorialMax 覆盖
+  var minCount = P.conf.memorialMin || 6;
+  var maxCount = P.conf.memorialMax || 10;
   var count = minCount + Math.floor(random() * (maxCount - minCount + 1));
   if(!GM.chars || GM.chars.length === 0){ GM.memorials = []; renderMemorials(); return; }
   if(P.ai.key){ genMemorialsAI(count); return; }

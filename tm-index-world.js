@@ -6501,6 +6501,7 @@ function _ogRenderPosCardV10(fi, courtKey) {
   var cls = 'og-v10-pos ' + _rankCls;
   if (_state) cls += ' state-' + _state;
   if (_concurrentWith) cls += ' state-concurrent';
+  if (_hasPending) cls += ' has-pending'; // 拟任态·边框+光晕
 
   var style = 'left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + fi.w + 'px;height:' + fi.h + 'px;';
   var _safePath = JSON.stringify(fi.path).replace(/"/g,'&quot;');
@@ -6518,6 +6519,8 @@ function _ogRenderPosCardV10(fi, courtKey) {
   if (_concurrentWith) html += '<span class="og-v10-concurrent-stack">+\u517C</span>';
   if (_state === 'acting') html += '<span class="og-v10-acting-stamp">\u7F72</span>';
   if (_state === 'demoted') html += '<span class="og-v10-demoted-tag">\u8D2C \u8C2A</span>';
+  // 拟任印章·右上角大字醒目
+  if (_hasPending) html += '<span class="og-v10-draft-stamp">\u62DF</span>';
 
   // 头部
   html += '<div class="og-v10-pos-header">';
@@ -6530,6 +6533,18 @@ function _ogRenderPosCardV10(fi, courtKey) {
   else if (_state === 'acting') btnLabel = '\u6B63 \u6388';
   else if (_state === 'mourning') { btnLabel = '\u6743 \u7F72'; btnCls = ' appoint'; }
   html += '<button class="og-v10-pos-btn' + btnCls + '" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + _safeHolder + '\')">' + btnLabel + '</button>';
+  // 弹劾按钮：仅针对 NPC 派系 + 非玩家角色（异己党派或异势力高官）
+  if (!_isVacant && _holder) {
+    var _playerFacN = '';
+    var _playerFac = (GM.facs||[]).find(function(f){ return f.isPlayer; });
+    if (_playerFac) _playerFacN = _playerFac.name;
+    if (!_playerFacN) _playerFacN = (P.playerInfo && P.playerInfo.factionName) || '';
+    var _isForeign = _playerFacN && _holder.faction && _holder.faction !== _playerFacN;
+    var _isHostile = _holder.loyalty != null && _holder.loyalty < 40;
+    if (_isForeign || _isHostile) {
+      html += '<button class="og-v10-pos-btn impeach" style="background:rgba(192,64,48,0.14);border-color:rgba(192,64,48,0.5);color:var(--vermillion-300,#d97b6b);margin-left:4px;" onclick="event.stopPropagation();_offImpeach(\'' + _safeHolder + '\',\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u5F39\u52BE">\u5F39 \u52BE</button>';
+    }
+  }
   html += '</div>';
 
   if (_isVacant) {
@@ -6546,7 +6561,9 @@ function _ogRenderPosCardV10(fi, courtKey) {
     if (_tenureVal > 0) html += '<span class="og-v10-tenure-ring">' + _tenureVal + '</span>';
     html += '</div>';
     html += '<div class="og-v10-pos-holder-info">';
-    html += '<div class="og-v10-pos-holder-name">' + escHtml(nd.holder);
+    html += '<div class="og-v10-pos-holder-name' + (_hasPending ? ' draft-name' : '') + '">'
+      + (_hasPending ? '<span class="og-v10-draft-prefix">\u62DF \u00B7 </span>' : '')
+      + escHtml(nd.holder);
     if (_holder.courtesyName) html += '<span class="courtesy">' + escHtml(_holder.courtesyName) + '</span>';
     if (_holder.age) html += '<span class="age">\u00B7' + _holder.age + '\u5C81</span>';
     html += '</div>';
@@ -7043,17 +7060,21 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
   req.primaryLabel = statLabel[req.primary] || req.primary;
   req.secondaryLabel = statLabel[req.secondary] || req.secondary;
 
-  // 玩家所在势力领袖
+  // 玩家所在势力领袖·多重兜底：GM.facs.isPlayer → P.playerInfo.factionName → GM.playerFaction
   var playerFac = (GM.facs||[]).find(function(f){ return f.isPlayer; });
   var playerFacName = playerFac ? playerFac.name : '';
+  if (!playerFacName) {
+    playerFacName = (P.playerInfo && P.playerInfo.factionName) || GM.playerFaction || '';
+  }
   var playerParty = playerFac && playerFac.leaderParty ? playerFac.leaderParty : '';
 
-  // 候选池：本势力活人·非玩家·非已在此职
+  // 候选池：活人·非玩家·非已在此职；派系过滤仅在玩家有明确势力时生效（中立/无派系角色始终可用）
   var cands = (GM.chars || []).filter(function(c) {
     if (!c || c.alive === false || c.isPlayer) return false;
     if (c.name === currentHolder) return false; // 现任不是候选
-    // 本势力判定：无 faction 字段视为中立可用；有 faction 须匹配玩家势力
-    if (c.faction && playerFacName && c.faction !== playerFacName) return false;
+    // 派系锁：仅当玩家有明确势力且角色也有明确且不匹配的派系时才排除
+    // 中立角色（c.faction 空）一律允许；玩家无明确势力时不做派系过滤
+    if (playerFacName && c.faction && c.faction !== playerFacName) return false;
     return true;
   });
 
@@ -7253,7 +7274,27 @@ function _offRenderPickerList() {
   if (cnt) cnt.textContent = '\u7B5B\u9009\u51FA ' + list.length + ' / ' + _OFF_PICKER.cands.length + ' \u4EBA';
 
   if (list.length === 0) {
-    root.innerHTML = '<div style="text-align:center;color:var(--ink-300);padding:3rem 1rem;font-size:0.82rem;">\u65E0\u5339\u914D\u4EBA\u9009\u00B7\u8BF7\u8C03\u6574\u8FC7\u6EE4\u6216\u6DFB\u8350\u65B0\u4EBA</div>';
+    var _totalCands = (_OFF_PICKER && _OFF_PICKER.cands) ? _OFF_PICKER.cands.length : 0;
+    if (_totalCands === 0) {
+      // 候选池全空——完全无可任用之人·提供征召入口
+      root.innerHTML = ''
+        + '<div style="text-align:center;padding:2.4rem 1rem;">'
+        +   '<div style="font-size:1.6rem;color:var(--ink-400);margin-bottom:0.3rem;">\u5C3D</div>'
+        +   '<div style="font-size:0.86rem;color:var(--ink-300);letter-spacing:0.15em;margin-bottom:0.2rem;">\u65E0\u53EF\u4EFB\u7528\u4E4B\u4EBA</div>'
+        +   '<div style="font-size:0.72rem;color:var(--ink-400);line-height:1.7;margin-bottom:1rem;max-width:360px;margin-left:auto;margin-right:auto;">'
+        +     '\u5E9C\u5E93\u4EBA\u624D\u65B9\u4E1A\u4E4F\u7ED9\uFF0C\u7329\u529B\u5FE0\u8BDA\u4E4B\u58EB\u96BE\u8FC5\u5C31\u9644\u3002<br>\u53EF\u4E0B\u8BCF\u5FB4\u53EC\u65B0\u4EBA\uFF0C\u53D7\u547D\u4E4B\u540E\u518D\u884C\u6388\u804C\u3002'
+        +   '</div>'
+        +   '<button onclick="_offRecruitNewForPost()" class="bt" style="padding:8px 20px;background:linear-gradient(180deg,rgba(184,154,83,0.25),rgba(184,154,83,0.1));border:1px solid var(--gold-400);color:var(--gold-300);font-size:0.82rem;letter-spacing:0.15em;border-radius:var(--radius-sm);cursor:pointer;">\u2767 \u4E0B\u8BCF\u5FB4\u53EC \u2767</button>'
+        +   '<div style="font-size:0.66rem;color:var(--ink-400);margin-top:0.6rem;">AI \u5C06\u6839\u636E\u6B64\u804C\u9700\u6C42\u751F\u6210\u5019\u9009\u4EBA\u7269</div>'
+        + '</div>';
+    } else {
+      // 筛选后空·但池非空——提示调整过滤
+      root.innerHTML = ''
+        + '<div style="text-align:center;color:var(--ink-300);padding:3rem 1rem;font-size:0.82rem;">'
+        +   '\u65E0\u5339\u914D\u7ED3\u679C<br>'
+        +   '<span style="font-size:0.72rem;color:var(--ink-400);">\u5171 ' + _totalCands + ' \u4EBA\u53EF\u9009\u00B7\u8BF7\u8C03\u6574\u641C\u7D22\u6216\u8FC7\u6EE4</span>'
+        + '</div>';
+    }
     return;
   }
 
@@ -7333,7 +7374,7 @@ function _offPickerRowHtml(c) {
     + '<div style="position:relative;padding:10px 12px;margin-bottom:6px;background:' + (medalBg || 'var(--color-elevated)') + ',var(--color-elevated);border:1px solid var(--color-border-subtle);border-radius:6px;cursor:pointer;transition:all 0.12s ease;" '
     +   'onmouseover="this.style.borderColor=\'var(--gold-400)\';this.style.transform=\'translateX(2px)\';" '
     +   'onmouseout="this.style.borderColor=\'var(--color-border-subtle)\';this.style.transform=\'translateX(0)\';" '
-    +   'onclick="_offPickerConfirm(\'' + nameSafe + '\',\'' + deptSafe + '\',\'' + posSafe + '\',\'' + oldSafe + '\')">'
+    +   'onclick="_offPickerConfirmPre(\'' + nameSafe + '\',\'' + deptSafe + '\',\'' + posSafe + '\',\'' + oldSafe + '\')">'
     +   recommendRibbon
     +   '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.8rem;">'
     +     '<div style="flex:1;min-width:0;">'
@@ -7358,7 +7399,69 @@ function _offPickerRowHtml(c) {
     + '</div>';
 }
 
-function _offPickerConfirm(charName, deptName, posName, oldHolder) {
+// 幂等锁·防止重复点击导致双重任命
+var _OFF_APPOINT_LOCKS = {};
+
+// 预检：检测候选人是否已有主官职·若有则弹"辞旧/兼任/取消"三选一
+function _offPickerConfirmPre(charName, deptName, posName, oldHolder) {
+  // 幂等锁
+  var lockKey = charName + '@' + deptName + '|' + posName + '@t' + (GM.turn||0);
+  var now = Date.now();
+  if (_OFF_APPOINT_LOCKS[lockKey] && (now - _OFF_APPOINT_LOCKS[lockKey]) < 1500) {
+    if (typeof toast === 'function') toast('\u521A\u64CD\u4F5C\u8FC7\u00B7\u8BF7\u52FF\u8FDE\u70B9');
+    return;
+  }
+  _OFF_APPOINT_LOCKS[lockKey] = now;
+
+  var newChar = (GM.chars || []).find(function(c){ return c.name === charName; });
+  if (!newChar) { _offPickerConfirm(charName, deptName, posName, oldHolder, 'resign'); return; }
+  var existingPost = newChar.officialTitle || '';
+  // 若现任即目标职位·视为冗余·直接走老路径
+  if (!existingPost || existingPost === posName) {
+    _offPickerConfirm(charName, deptName, posName, oldHolder, 'resign');
+    return;
+  }
+
+  // 弹二次确认 modal
+  var bg = document.createElement('div');
+  bg.id = 'off-concurrent-modal';
+  bg.style.cssText = 'position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;';
+  bg.onclick = function(e){ if (e.target === bg) bg.remove(); };
+  var _nameS = escHtml(charName).replace(/'/g,"\\'");
+  var _deptS = escHtml(deptName).replace(/'/g,"\\'");
+  var _posS = escHtml(posName).replace(/'/g,"\\'");
+  var _oldS = escHtml(oldHolder||'').replace(/'/g,"\\'");
+  bg.innerHTML = ''
+    + '<div style="background:var(--color-surface);border:1px solid var(--amber-400);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;width:min(440px,92vw);">'
+    +   '<div style="font-size:0.74rem;color:var(--ink-300);letter-spacing:0.2em;margin-bottom:0.3rem;">\u3014 \u4E00 \u8EAB \u4E24 \u804C \u3015</div>'
+    +   '<div style="font-size:0.96rem;font-weight:700;color:var(--color-foreground);margin-bottom:0.3rem;">' + escHtml(charName) + ' \u73B0\u4EFB <span style="color:var(--gold-400);">' + escHtml(existingPost) + '</span></div>'
+    +   '<div style="font-size:0.78rem;color:var(--ink-300);line-height:1.7;margin-bottom:0.8rem;">'
+    +     '\u65B0\u6388\uFF1A<b style="color:var(--celadon-400);">' + escHtml(deptName) + '\u00B7' + escHtml(posName) + '</b><br>'
+    +     '\u8BF7\u6BBF\u4E0B\u660E\u65A8\uFF1A'
+    +   '</div>'
+    +   '<div style="display:flex;flex-direction:column;gap:0.4rem;">'
+    +     '<button class="bt" style="padding:8px 12px;text-align:left;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);" '
+    +         'onclick="this.closest(\'div[style*=fixed]\').remove();_offPickerConfirm(\'' + _nameS + '\',\'' + _deptS + '\',\'' + _posS + '\',\'' + _oldS + '\',\'resign\')">'
+    +       '<div style="font-size:0.84rem;font-weight:700;color:var(--gold-400);">\u8F9E\u65E7\u5C31\u65B0</div>'
+    +       '<div style="font-size:0.7rem;color:var(--ink-300);margin-top:2px;">\u5151\u53BB\u539F\u804C <b>' + escHtml(existingPost) + '</b>\u00B7\u5168\u529B\u8D74\u4EFB\u65B0\u804C</div>'
+    +     '</button>'
+    +     '<button class="bt" style="padding:8px 12px;text-align:left;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);" '
+    +         'onclick="this.closest(\'div[style*=fixed]\').remove();_offPickerConfirm(\'' + _nameS + '\',\'' + _deptS + '\',\'' + _posS + '\',\'' + _oldS + '\',\'concurrent\')">'
+    +       '<div style="font-size:0.84rem;font-weight:700;color:var(--celadon-400);">\u517C\u4EFB\u4E24\u804C</div>'
+    +       '<div style="font-size:0.7rem;color:var(--ink-300);margin-top:2px;">\u539F\u804C\u4F9D\u65E7\u00B7\u65B0\u804C\u517C\u7BA1\u00B7\u4EE3\u4EF7\uFF1A\u7CBE\u529B\u5206\u6563\u00B7\u6548\u7387\u6253\u6298</div>'
+    +     '</button>'
+    +     '<button class="bt" style="padding:6px 12px;text-align:center;background:transparent;border:1px solid var(--color-border-subtle);color:var(--ink-300);" '
+    +         'onclick="this.closest(\'div[style*=fixed]\').remove();">'
+    +       '\u64A4\u56DE\u6210\u547D'
+    +     '</button>'
+    +   '</div>'
+    + '</div>';
+  document.body.appendChild(bg);
+}
+
+function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
+  // mode: 'resign'(默认·辞旧就新) | 'concurrent'(兼任)
+  mode = mode || 'resign';
   // ═══ 三位一体·即时生效·回合内可撤销 ═══
   // 1. 直接改 officeTree holder（UI 立即刷新）
   // 2. 同步更新 char.officialTitle + careerHistory + 官职公库 currentHead
@@ -7367,11 +7470,41 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
   // 5. 往位置对象写 _pendingEdict 快照·供回合内撤销使用
   var newChar = (GM.chars || []).find(function(c){ return c.name === charName; });
   var oldChar = oldHolder ? (GM.chars || []).find(function(c){ return c.name === oldHolder; }) : null;
+
+  // 兼任模式·先记录 newChar 原有主职·供 _pendingEdict 快照
+  var _snapPrevMainTitle = '';
+  if (newChar) _snapPrevMainTitle = newChar.officialTitle || '';
+  // 辞旧模式·若 newChar 已有主职且不是此职·级联清其原 holder 登记
+  // 并存快照·供撤销时把原职还给他
+  var _snapResignVacated = [];
+  if (mode === 'resign' && newChar && newChar.officialTitle && newChar.officialTitle !== posName) {
+    // 先扫一遍·找 newChar 在其他位置的 holder·存快照
+    (function _scanResign(nodes) {
+      (nodes||[]).forEach(function(n) {
+        if (!n) return;
+        (n.positions||[]).forEach(function(p) {
+          if (!p) return;
+          if (p.holder === charName && !(p.name === posName && n.name === deptName)) {
+            _snapResignVacated.push({
+              dept: n.name, pos: p.name, holder: charName,
+              holderSinceTurn: p.holderSinceTurn || 0,
+              pubHead: (p.publicTreasury && p.publicTreasury.currentHead) || null
+            });
+          }
+        });
+        if (n.subs) _scanResign(n.subs);
+      });
+    })(GM.officeTree||[]);
+    if (typeof _offVacateByCharName === 'function') {
+      try { _offVacateByCharName(charName, 'resign-for-new'); } catch(_){}
+    }
+  }
   var _seatDone = false;
   var _posRef = null; // 保存被修改的 position 引用·供末尾挂 _pendingEdict
   var _snapPrevPubHead = undefined;
 
-  // Step 1: officeTree 直接查找并改 holder
+  // Step 1: officeTree 直接查找并改 holder·用 _offAppointPerson 助手确保 actualHolders 同步
+  // 避免 _offMigratePosition 下次调用时把 holder 从 actualHolders 重建回原值
   function _applyHolder(nodes) {
     if (_seatDone) return;
     (nodes || []).forEach(function(n) {
@@ -7381,7 +7514,16 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
           if (_seatDone || !p) return;
           if (p.name === posName) {
             _snapPrevPubHead = (p.publicTreasury && p.publicTreasury.currentHead) || undefined;
-            p.holder = charName;
+            // 先把旧任从 actualHolders 剥除（若有）
+            if (oldHolder && typeof _offDismissPerson === 'function') {
+              try { _offDismissPerson(p, oldHolder); } catch(_){}
+            }
+            // 再把新任推入 actualHolders 并同步 holder 字段
+            if (typeof _offAppointPerson === 'function') {
+              try { _offAppointPerson(p, charName); } catch(_){}
+            } else {
+              p.holder = charName;
+            }
             if (p.publicTreasury) p.publicTreasury.currentHead = charName;
             if (!p._history) p._history = [];
             p._history.push({ holder: oldHolder || '(空)', endTurn: GM.turn, reason: '玩家诏令改任' });
@@ -7397,12 +7539,24 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
 
   // Step 2: 更新 char 字段
   if (newChar) {
-    newChar.officialTitle = posName;
-    newChar.position = posName;
+    if (mode === 'concurrent' && _snapPrevMainTitle && _snapPrevMainTitle !== posName) {
+      // 兼任·原主职保留·新职入 concurrentTitles
+      if (!Array.isArray(newChar.concurrentTitles)) newChar.concurrentTitles = [];
+      if (newChar.concurrentTitles.indexOf(posName) < 0) newChar.concurrentTitles.push(posName);
+    } else {
+      // 辞旧就新·正常改主职
+      newChar.officialTitle = posName;
+      newChar.position = posName;
+      // 若原是兼任名单中的一员·从 concurrentTitles 移除
+      if (Array.isArray(newChar.concurrentTitles)) {
+        var _ci = newChar.concurrentTitles.indexOf(posName);
+        if (_ci >= 0) newChar.concurrentTitles.splice(_ci, 1);
+      }
+    }
     if (!newChar.careerHistory) newChar.careerHistory = [];
-    newChar.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + deptName + posName });
+    newChar.careerHistory.push({ turn: GM.turn, event: (mode==='concurrent' ? '奉诏加兼 ' : '奉诏就任 ') + deptName + posName });
     if (!newChar._memorySeeds) newChar._memorySeeds = [];
-    newChar._memorySeeds.push({ turn: GM.turn, event: '蒙陛下简拔·授' + deptName + posName, emotion: '敬感' });
+    newChar._memorySeeds.push({ turn: GM.turn, event: '蒙陛下简拔·授' + deptName + posName + (mode==='concurrent'?'（兼）':''), emotion: '敬感' });
     // 好感 +5·被委以重任
     if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
       AffinityMap.add(charName, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 5, '被委以重任');
@@ -7423,9 +7577,12 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
   }
 
   // Step 3: append 到 edict-pol textarea·AI 会在本回合推演看到
+  var _actionVerb = (mode === 'concurrent') ? '加兼' : '为';
   var edictLine = oldHolder
-    ? ('命 ' + charName + ' 为 ' + deptName + posName + '·原任 ' + oldHolder + ' 着免。')
-    : ('命 ' + charName + ' 为 ' + deptName + posName + '。');
+    ? ('命 ' + charName + ' ' + _actionVerb + ' ' + deptName + posName + '·原任 ' + oldHolder + ' 着免。')
+    : (mode === 'concurrent' && _snapPrevMainTitle
+        ? ('命 ' + charName + ' 以 ' + _snapPrevMainTitle + ' 加兼 ' + deptName + posName + '。')
+        : ('命 ' + charName + ' 为 ' + deptName + posName + '。'));
   var polEl = document.getElementById('edict-pol');
   if (polEl) {
     var cur = (polEl.value || '').trim();
@@ -7469,7 +7626,10 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
       posName: posName,
       edictLine: edictLine,
       trackerId: _trackerId,
+      mode: mode,
+      _snapPrevMainTitle: _snapPrevMainTitle,
       _snapPrevPubHead: _snapPrevPubHead,
+      _snapResignVacated: _snapResignVacated, // 辞旧模式·被清空的原职快照·供撤销复原
       _snapNewCharCareerPushed: !!newChar,
       _snapNewCharSeedPushed: !!newChar,
       _snapOldCharCareerPushed: !!oldChar,
@@ -7479,7 +7639,8 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder) {
     };
   }
 
-  toast((oldHolder ? ('改换·' + oldHolder + '→' + charName) : ('任命·' + charName)) + (_dupT ? ' 已即时生效（同内容诏令已在跟踪）' : ' 已即时生效并写入本回合诏令'));
+  var _modeLabel = (mode === 'concurrent') ? '兼任' : (oldHolder ? '改换' : '任命');
+  toast(_modeLabel + '\u00B7' + (oldHolder ? (oldHolder + '→' + charName) : charName) + (_dupT ? ' 已即时生效（同内容诏令已在跟踪）' : ' 已即时生效并写入本回合诏令'));
   _offClosePicker();
   if (typeof renderOfficeTree === 'function') { try { renderOfficeTree(); } catch(_){} }
   if (typeof renderRenwu === 'function') { try { renderRenwu(); } catch(_){} }
@@ -7490,6 +7651,251 @@ function _offClosePicker() {
   _OFF_PICKER = null;
   var m = document.getElementById('off-picker-modal');
   if (m) m.remove();
+}
+
+// 空候选池·下诏征召新人（调 aiGenerateCompleteCharacter）
+function _offRecruitNewForPost() {
+  if (!_OFF_PICKER) return;
+  var deptName = _OFF_PICKER.deptName || '';
+  var posName = _OFF_PICKER.posName || '';
+  var pos = _OFF_PICKER.pos || {};
+  // 简单的姓名输入 modal
+  var bg = document.createElement('div');
+  bg.style.cssText = 'position:fixed;inset:0;z-index:1250;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;';
+  bg.onclick = function(e){ if (e.target === bg) bg.remove(); };
+  bg.innerHTML = ''
+    + '<div style="background:var(--color-surface);border:1px solid var(--gold-500);border-radius:var(--radius-lg);padding:1.2rem 1.5rem;width:min(420px,92vw);">'
+    +   '<div style="font-size:0.76rem;color:var(--ink-300);letter-spacing:0.2em;margin-bottom:0.3rem;">\u3014 \u5FB4 \u53EC \u3015</div>'
+    +   '<div style="font-size:0.96rem;font-weight:700;color:var(--gold-400);margin-bottom:0.2rem;">' + escHtml(deptName) + '\u00B7' + escHtml(posName) + '</div>'
+    +   (pos.rank ? '<div style="font-size:0.72rem;color:var(--ink-300);margin-bottom:0.6rem;">\u54C1\u7EA7\uFF1A' + escHtml(pos.rank) + '</div>' : '<div style="margin-bottom:0.6rem;"></div>')
+    +   '<label style="display:block;font-size:0.72rem;color:var(--ink-300);margin-bottom:0.2rem;">\u53EC\u964D\u4E4B\u4EBA\u59D3\u540D</label>'
+    +   '<input id="recruit-name-input" type="text" placeholder="\u4F8B\uFF1A\u8881\u5D07\u7115\u00B7\u6216\u7559\u7A7A\u8BA9 AI \u81EA\u751F" maxlength="20" '
+    +     'style="width:100%;padding:6px 10px;font-size:0.88rem;background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-foreground);margin-bottom:0.3rem;"/>'
+    +   '<div style="font-size:0.66rem;color:var(--ink-400);line-height:1.5;margin-bottom:0.8rem;">\u00B7 \u8F93\u5165\u5386\u53F2\u540D\u81E3\u5C06 AI \u751F\u6210\u5B9E\u5386\u5B66\u5BD8\u00B7 \u7559\u7A7A\u5219 AI \u81EA\u62DF\u540D</div>'
+    +   '<div style="display:flex;gap:0.6rem;justify-content:flex-end;">'
+    +     '<button class="bt bsm" onclick="this.closest(\'div[style*=fixed]\').remove();">\u53D6\u6D88</button>'
+    +     '<button class="bt bsm" style="background:var(--gold-500);color:#1a1510;border-color:var(--gold-500);" onclick="_offRecruitSubmit()">\u4E0B \u8BCF</button>'
+    +   '</div>'
+    + '</div>';
+  document.body.appendChild(bg);
+  setTimeout(function(){ var _i = document.getElementById('recruit-name-input'); if (_i) _i.focus(); }, 60);
+}
+
+function _offRecruitSubmit() {
+  if (!_OFF_PICKER) return;
+  var inp = document.getElementById('recruit-name-input');
+  var name = (inp && inp.value || '').trim();
+  var deptName = _OFF_PICKER.deptName || '';
+  var posName = _OFF_PICKER.posName || '';
+  var _rmBg = inp && inp.closest('div[style*=fixed]');
+  if (_rmBg) _rmBg.remove();
+
+  if (!name) {
+    // 让 AI 自拟一个合适人选名·基于职位推
+    if (typeof toast === 'function') toast('\u8BF7\u8F93\u5165\u59D3\u540D\u6216\u5148\u5173\u95ED\u518D\u8BD5\u00B7\u672A\u6765\u652F\u6301 AI \u81EA\u62DF');
+    return;
+  }
+  if (typeof edictRecruitCharacter !== 'function') {
+    if (typeof toast === 'function') toast('\u5FB4\u53EC\u6A21\u5757\u672A\u52A0\u8F7D');
+    return;
+  }
+
+  if (typeof toast === 'function') toast('\u6B63\u5728\u5FB4\u53EC ' + name + '\u2026AI \u751F\u6210\u4E2D');
+  var _capName = name;
+  Promise.resolve().then(function(){
+    return edictRecruitCharacter(_capName, deptName + posName, '\u56E0 ' + deptName + posName + ' \u7F3A\u5458\u8D2B\u8352\u00B7\u7279\u4E0B\u8BCF\u5FB4\u53EC');
+  }).then(function(ch){
+    if (!ch) {
+      if (typeof toast === 'function') toast('\u5FB4\u53EC\u5931\u8D25\u00B7\u8BF7\u91CD\u8BD5');
+      return;
+    }
+    // 生成成功·重开 picker（新人已在候选池中）
+    if (typeof toast === 'function') toast(_capName + ' \u5E94\u8BCF\u800C\u81F3\u00B7\u8BF7\u9009\u4EFB');
+    var _path = _OFF_PICKER.pathArr;
+    var _dept = _OFF_PICKER.deptName;
+    var _pos = _OFF_PICKER.posName;
+    var _cur = _OFF_PICKER.currentHolder;
+    _offClosePicker();
+    setTimeout(function(){ _offOpenPicker(_path, _dept, _pos, _cur); }, 50);
+  }).catch(function(err){
+    console.error('[_offRecruitSubmit] err:', err);
+    if (typeof toast === 'function') toast('\u5FB4\u53EC\u51FA\u9519\u00B7' + (err && err.message || ''));
+  });
+}
+
+// 弹劾·生成"请弹劾 X"诏令交 AI 推演判定
+function _offImpeach(charName, deptName, posName) {
+  if (!charName) return;
+  var ch = findCharByName(charName);
+  if (!ch) { toast('\u672A\u627E\u5230\u6B64\u4EBA'); return; }
+  var loy = ch.loyalty != null ? ch.loyalty : 50;
+  var adm = ch.administration || 50;
+
+  // 确认 modal
+  var bg = document.createElement('div');
+  bg.style.cssText = 'position:fixed;inset:0;z-index:1280;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;';
+  bg.onclick = function(e){ if (e.target === bg) bg.remove(); };
+  var _sN = escHtml(charName).replace(/'/g,"\\'");
+  var _sD = escHtml(deptName).replace(/'/g,"\\'");
+  var _sP = escHtml(posName).replace(/'/g,"\\'");
+  // 预估成功率·简化公式：低忠诚+低政事=易倒；高敌意(faction mismatch)额外加成
+  var _playerFac2 = (GM.facs||[]).find(function(f){ return f.isPlayer; });
+  var _playerFacN2 = _playerFac2 ? _playerFac2.name : ((P.playerInfo && P.playerInfo.factionName) || '');
+  var _isForeign2 = _playerFacN2 && ch.faction && ch.faction !== _playerFacN2;
+  var _baseSucc = Math.max(10, Math.min(85, 100 - loy - Math.floor(adm/3)));
+  if (_isForeign2) _baseSucc += 15;
+  _baseSucc = Math.max(10, Math.min(90, _baseSucc));
+  var _succClr = _baseSucc >= 60 ? 'var(--celadon-400)' : _baseSucc >= 35 ? 'var(--gold-400)' : 'var(--vermillion-400)';
+  var _succLbl = _baseSucc >= 60 ? '\u6613\u4E0B' : _baseSucc >= 35 ? '\u53EF\u8BD5' : '\u5197\u56FE';
+
+  bg.innerHTML = ''
+    + '<div style="background:var(--color-surface);border:1px solid var(--vermillion-400);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;width:min(460px,92vw);">'
+    +   '<div style="font-size:0.76rem;color:var(--vermillion-300);letter-spacing:0.2em;margin-bottom:0.3rem;">\u3014 \u5F39 \u52BE \u3015</div>'
+    +   '<div style="font-size:1rem;font-weight:700;color:var(--color-foreground);margin-bottom:0.2rem;">\u6B32\u5F39\u52BE <span style="color:var(--vermillion-400);">' + escHtml(charName) + '</span></div>'
+    +   '<div style="font-size:0.74rem;color:var(--ink-300);margin-bottom:0.7rem;">' + escHtml(deptName) + '\u00B7' + escHtml(posName) + '</div>'
+    +   '<div style="padding:0.6rem 0.8rem;background:rgba(192,64,48,0.06);border-left:3px solid var(--vermillion-400);border-radius:2px;margin-bottom:0.6rem;">'
+    +     '<div style="font-size:0.72rem;color:var(--ink-300);line-height:1.7;">'
+    +       '\u5FE0\uFF1A<b style="color:' + (loy<40?'var(--vermillion-400)':loy<60?'var(--gold-400)':'var(--celadon-400)') + ';">' + loy + '</b>\u00B7'
+    +       '\u653F\uFF1A<b>' + adm + '</b>\u00B7'
+    +       (_isForeign2 ? '\u5F02\u5DF1\u6D3E' : '\u540C\u52BF') + '<br>'
+    +       '\u9884\u8BA1\u5F39\u52BE\u6210\u7B97\uFF1A<b style="color:' + _succClr + ';font-size:1rem;">' + _baseSucc + '%</b> <span style="color:' + _succClr + ';">(' + _succLbl + ')</span>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div style="font-size:0.7rem;color:var(--ink-300);line-height:1.6;margin-bottom:0.8rem;">'
+    +     '\u2022 AI \u5C06\u5728\u672C\u56DE\u5408\u63A8\u6F14\u4E2D\u5224\u5B9A\u5F39\u52BE\u6210\u8D25<br>'
+    +     '\u2022 \u5F39\u52BE\u5931\u8D25\u00B7\u7687\u5A01\u964D\u00B7\u88AB\u5F39\u8005\u5BF9\u966A\u4E1A\u7A7A<br>'
+    +     '\u2022 \u5F39\u52BE\u6210\u529F\u00B7\u7A7A\u51FA\u804C\u4F4D\u5F85\u8865\u4EFB'
+    +   '</div>'
+    +   '<div style="display:flex;gap:0.6rem;justify-content:flex-end;">'
+    +     '<button class="bt bsm" onclick="this.closest(\'div[style*=fixed]\').remove();">\u53D6\u6D88</button>'
+    +     '<button class="bt bsm" style="background:var(--vermillion-400);color:#fff;border-color:var(--vermillion-400);" onclick="this.closest(\'div[style*=fixed]\').remove();_offImpeachSubmit(\'' + _sN + '\',\'' + _sD + '\',\'' + _sP + '\',' + _baseSucc + ')">\u4E0A\u5F39\u6587</button>'
+    +   '</div>'
+    + '</div>';
+  document.body.appendChild(bg);
+}
+
+function _offImpeachSubmit(charName, deptName, posName, estSucc) {
+  var edictLine = '\u5F39\u52BE ' + charName + '\u00B7\u8BF7\u514D ' + deptName + posName + '\u3002';
+  var polEl = document.getElementById('edict-pol');
+  if (polEl) {
+    var cur = (polEl.value || '').trim();
+    polEl.value = cur ? (cur + '\n' + edictLine) : edictLine;
+  }
+  if (!GM._edictTracker) GM._edictTracker = [];
+  GM._edictTracker.push({
+    id: 'impeach_' + Date.now() + '_' + charName,
+    content: edictLine, category: '弹劾',
+    turn: GM.turn || 0, status: 'pending',
+    assignee: '',
+    feedback: '',
+    progressPercent: 0,
+    _impeach: { target: charName, dept: deptName, pos: posName, estSucc: estSucc }
+  });
+  if (!GM._edictSuggestions) GM._edictSuggestions = [];
+  GM._edictSuggestions.push({ source: '\u5F39\u52BE\u6309\u94AE', from: '\u94E8\u66F9', content: edictLine, turn: GM.turn, used: true });
+  toast('\u5F39\u52BE\u6587\u5DF2\u7EB3\u8BCF\u00B7\u672C\u56DE\u5408 AI \u5BA1\u5B9A');
+  if (typeof renderOfficeTree === 'function') { try { renderOfficeTree(); } catch(_){} }
+  if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
+}
+
+// NPC 势力自动补任·endturn Phase 0-0c 调用
+// 扫 officeTree 找 NPC 势力控制的空缺职位·按 (同派系+能力+历史名望) 择候选·自动写 holder
+function _npcAutoAppointVacancies() {
+  if (!GM.officeTree) return { appointed: [] };
+  var playerFac = (GM.facs||[]).find(function(f){ return f.isPlayer; });
+  var playerFacName = playerFac ? playerFac.name : ((P.playerInfo && P.playerInfo.factionName) || '');
+  var appointed = [];
+
+  // 识别职位归属派系：通过 currentHolder→faction，或 deptName 中的势力特征
+  function _inferPosFaction(pos, deptName, parentChain) {
+    // 若有 oldHolder 且 faction 明确·取之
+    if (Array.isArray(pos.holderHistory) && pos.holderHistory.length > 0) {
+      for (var i = pos.holderHistory.length-1; i >= 0; i--) {
+        var h = pos.holderHistory[i];
+        if (h && h.name) {
+          var ch = findCharByName(h.name);
+          if (ch && ch.faction) return ch.faction;
+        }
+      }
+    }
+    // 依据 deptName/parentChain 从势力领土关键词推
+    var haystack = (deptName||'') + '|' + (parentChain||'');
+    var facs = GM.facs || [];
+    for (var j = 0; j < facs.length; j++) {
+      var f = facs[j];
+      if (!f || f.isPlayer) continue;
+      if (f.name && haystack.indexOf(f.name) >= 0) return f.name;
+      // 领土匹配
+      if (Array.isArray(f.territory)) {
+        for (var k = 0; k < f.territory.length; k++) {
+          if (haystack.indexOf(f.territory[k]) >= 0) return f.name;
+        }
+      }
+    }
+    return ''; // 无法推·视为中央朝廷（玩家管辖）
+  }
+
+  // 候选打分·相似于 _offPickerConfirm 的打分·但简化
+  function _scoreCandidate(c, pos, deptName, facName) {
+    var s = 0;
+    var dutyText = (pos.duties||'') + (pos.desc||'') + deptName + (pos.name||'');
+    var isMil = /\u5175|\u519B|\u536B|\u6B66|\u90FD\u7763|\u5C06|\u603B\u5175/.test(dutyText);
+    var isAdm = /\u540F|\u94E8|\u8003|\u793C|\u6237|\u5EA6\u652F|\u5DE5|\u5211|\u5FA1\u53F2/.test(dutyText);
+    if (isMil) s += (c.military||50) * 1.6 + (c.valor||50) * 0.6;
+    else if (isAdm) s += (c.administration||50) * 1.6 + (c.intelligence||50) * 0.6;
+    else s += (c.intelligence||50) + (c.administration||50);
+    s += (c.loyalty||50) * 0.4;
+    // 同派系加成
+    if (facName && c.faction === facName) s += 50;
+    // 历史人物加成
+    if (c.isHistorical) s += 30;
+    // 重要性加成
+    if (c.importance) s += Math.min(20, c.importance * 0.25);
+    // 已有高官减分·避免反复调任同一人
+    if (c.officialTitle) s -= 15;
+    // 年龄超 70 减分
+    if (c.age && c.age >= 70) s -= 8;
+    return s;
+  }
+
+  (function _scan(nodes, parentChain) {
+    (nodes||[]).forEach(function(n) {
+      if (!n) return;
+      var chain = parentChain ? (parentChain + '·' + n.name) : n.name;
+      (n.positions||[]).forEach(function(p) {
+        if (!p || p.holder) return; // 已有 holder 跳过
+        if (p._pendingEdict) return; // 玩家本回合诏令跳过
+        var facName = _inferPosFaction(p, n.name, chain);
+        // 仅补 NPC 派系职位·玩家势力不自动补
+        if (!facName || facName === playerFacName) return;
+        // 候选池：同派系活人·非玩家
+        var cands = (GM.chars||[]).filter(function(c){
+          if (!c || c.alive === false || c.isPlayer) return false;
+          if (c.faction !== facName) return false;
+          return true;
+        });
+        if (cands.length === 0) return; // 无候选跳过
+        cands.forEach(function(c){ c._npcScore = _scoreCandidate(c, p, n.name, facName); });
+        cands.sort(function(a,b){ return b._npcScore - a._npcScore; });
+        var best = cands[0];
+        if (!best || best._npcScore <= 0) return;
+        // 就任
+        p.holder = best.name;
+        p.holderSinceTurn = GM.turn || 0;
+        if (!Array.isArray(p._history)) p._history = [];
+        p._history.push({ holder: '(空)', endTurn: GM.turn||0, reason: 'NPC内定补任' });
+        if (p.publicTreasury) p.publicTreasury.currentHead = best.name;
+        best.officialTitle = p.name;
+        best.position = p.name;
+        if (!best.careerHistory) best.careerHistory = [];
+        best.careerHistory.push({ turn: GM.turn||0, event: facName + '\u5185\u5B9A\u5C31\u4EFB ' + n.name + p.name });
+        appointed.push({ faction: facName, charName: best.name, dept: n.name, pos: p.name, rank: p.rank||'', score: best._npcScore });
+      });
+      if (n.subs) _scan(n.subs, chain);
+    });
+  })(GM.officeTree, '');
+
+  return { appointed: appointed };
 }
 
 // 撤销本回合任命·反向操作 _offPickerConfirm 的所有副作用
@@ -7515,17 +7921,60 @@ function _offUndoAppointment(deptName, posName) {
   var newChar = (GM.chars||[]).find(function(c){ return c.name === pe.newHolder; });
   var oldChar = pe.prevHolder ? (GM.chars||[]).find(function(c){ return c.name === pe.prevHolder; }) : null;
 
-  // 1. 回滚 holder + publicTreasury
-  target.holder = pe.prevHolder || undefined;
-  if (!pe.prevHolder) { try { delete target.holder; } catch(_){} }
+  // 1. 回滚 holder + publicTreasury·用助手确保 actualHolders 同步
+  // 先把新任从 actualHolders 剥除
+  if (pe.newHolder && typeof _offDismissPerson === 'function') {
+    try { _offDismissPerson(target, pe.newHolder); } catch(_){}
+  }
+  // 若原有旧任·把其推回 actualHolders
+  if (pe.prevHolder && typeof _offAppointPerson === 'function') {
+    try { _offAppointPerson(target, pe.prevHolder); } catch(_){}
+  } else {
+    target.holder = pe.prevHolder || undefined;
+    if (!pe.prevHolder) { try { delete target.holder; } catch(_){} }
+  }
   if (target.publicTreasury) target.publicTreasury.currentHead = pe._snapPrevPubHead;
   // 回滚 _history 最末一条（就是刚才写的那条）
   if (Array.isArray(target._history) && target._history.length > 0) target._history.pop();
 
+  // 1b. 回滚 resign 模式清空的原职·把 newChar 推回他原本的其他位置
+  if (pe._snapResignVacated && pe._snapResignVacated.length > 0) {
+    pe._snapResignVacated.forEach(function(rv) {
+      (function _findRestore(nodes) {
+        (nodes||[]).forEach(function(n) {
+          if (!n) return;
+          if (n.name === rv.dept) {
+            (n.positions||[]).forEach(function(p) {
+              if (p && p.name === rv.pos) {
+                if (typeof _offAppointPerson === 'function') {
+                  try { _offAppointPerson(p, rv.holder); } catch(_){}
+                } else {
+                  p.holder = rv.holder;
+                }
+                if (rv.holderSinceTurn) p.holderSinceTurn = rv.holderSinceTurn;
+                if (p.publicTreasury && rv.pubHead) p.publicTreasury.currentHead = rv.pubHead;
+              }
+            });
+          }
+          if (n.subs) _findRestore(n.subs);
+        });
+      })(GM.officeTree||[]);
+    });
+  }
+
   // 2. 回滚 newChar 字段
   if (newChar) {
-    if (newChar.officialTitle === pe.posName) newChar.officialTitle = '';
-    if (newChar.position === pe.posName) newChar.position = '';
+    if (pe.mode === 'concurrent') {
+      // 兼任撤销·从 concurrentTitles 移除
+      if (Array.isArray(newChar.concurrentTitles)) {
+        var _ci2 = newChar.concurrentTitles.indexOf(pe.posName);
+        if (_ci2 >= 0) newChar.concurrentTitles.splice(_ci2, 1);
+      }
+    } else {
+      // 辞旧就新撤销·恢复原主职
+      if (newChar.officialTitle === pe.posName) newChar.officialTitle = pe._snapPrevMainTitle || '';
+      if (newChar.position === pe.posName) newChar.position = pe._snapPrevMainTitle || '';
+    }
     if (pe._snapNewCharCareerPushed && Array.isArray(newChar.careerHistory) && newChar.careerHistory.length > 0) {
       newChar.careerHistory.pop();
     }

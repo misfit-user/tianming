@@ -14718,6 +14718,43 @@ async function _endTurnCore(){
     })(GM.officeTree||[]);
   } catch(_peE) { console.warn('[endTurn] clear _pendingEdict', _peE); }
 
+  // Phase 0-0b·兜底 sweep：清死亡/消失角色遗留 holder（防 character:death 事件漏发）
+  try {
+    if (typeof _offSweepGhostHolders === 'function') {
+      var _swR = _offSweepGhostHolders();
+      if (_swR && _swR.swept && _swR.swept.length > 0) {
+        console.log('[endTurn] ghost holder sweep:', _swR.swept.length, '条');
+        if (!GM._edictTracker) GM._edictTracker = [];
+        _swR.swept.forEach(function(g){
+          GM._edictTracker.push({
+            id: 'vacancy_sweep_' + Date.now() + '_' + g.name + '_' + g.pos,
+            content: g.dept + '\u00B7' + g.pos + '\u00B7' + g.name + ' \u5DF2\u975E\u5728\u4E16\u00B7\u804C\u4F4D\u81EA\u52A8\u7F3A\u5458\u3002',
+            category: '官缺', turn: GM.turn || 0, status: 'pending',
+            _vacancyFromSweep: g
+          });
+        });
+      }
+    }
+  } catch(_swE) { console.warn('[endTurn] ghost sweep', _swE); }
+
+  // Phase 0-0c·NPC 势力自动补任·扫外部派系控制的空缺官职·AI 代替 NPC 提名
+  try {
+    if (typeof _npcAutoAppointVacancies === 'function') {
+      var _napR = _npcAutoAppointVacancies();
+      if (_napR && _napR.appointed && _napR.appointed.length > 0) {
+        if (!GM._chronicle) GM._chronicle = [];
+        _napR.appointed.forEach(function(a){
+          GM._chronicle.push({
+            turn: GM.turn || 0, date: GM._gameDate || '',
+            type: 'NPC\u4EFB\u547D',
+            text: a.faction + ' \u5185\u90E8\u4EFB\u547D\uFF1A' + a.dept + '\u00B7' + a.pos + ' \u4EE5 ' + a.charName + ' \u5145\u3002',
+            tags: ['官职','NPC','任命']
+          });
+        });
+      }
+    }
+  } catch(_napE) { console.warn('[endTurn] npc auto-appoint', _napE); }
+
   // Phase 0-0: 提交本回合所有奏疏决定的副作用（NPC 记忆 + 朱批回传）
   try { if (typeof _commitMemorialDecisions === 'function') _commitMemorialDecisions(); } catch(_cmE) { console.warn('[endTurn] _commitMemorialDecisions', _cmE); }
 

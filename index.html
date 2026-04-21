@@ -2136,6 +2136,8 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .og-v10-pos-btn:hover{background:linear-gradient(135deg,#d4b870,#c9a85f);box-shadow:0 2px 6px rgba(201,168,95,0.3);}
 .og-v10-pos-btn.appoint{background:linear-gradient(135deg,#6ba97f,#5a8f6e);color:#0f0b07;}
 .og-v10-pos-btn.appoint:hover{background:linear-gradient(135deg,#7ebd92,#6ba97f);}
+.og-v10-pos-btn.impeach{background:linear-gradient(135deg,rgba(192,64,48,0.2),rgba(140,40,30,0.15))!important;border:1px solid rgba(192,64,48,0.55)!important;color:#d97b6b!important;padding:3px 8px;font-size:9.5px;}
+.og-v10-pos-btn.impeach:hover{background:linear-gradient(135deg,rgba(217,123,107,0.3),rgba(192,64,48,0.2))!important;box-shadow:0 2px 6px rgba(192,64,48,0.3);}
 
 /* 在任者行 */
 .og-v10-pos-holder{padding:7px 10px;display:flex;gap:8px;align-items:center;}
@@ -2225,6 +2227,11 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .og-v10-retire-note::before{content:"\u2698";color:var(--amber-300,#e0b560);font-size:11px;}
 
 /* 待下诏书条 */
+.og-v10-pos.has-pending{border-color:rgba(201,168,95,0.7)!important;box-shadow:0 0 0 1px rgba(201,168,95,0.35),0 2px 12px rgba(201,168,95,0.25)!important;animation:og-v10-draft-pulse 2.4s ease-in-out infinite;}
+@keyframes og-v10-draft-pulse{0%,100%{box-shadow:0 0 0 1px rgba(201,168,95,0.35),0 2px 12px rgba(201,168,95,0.25);}50%{box-shadow:0 0 0 1px rgba(201,168,95,0.55),0 2px 18px rgba(201,168,95,0.4);}}
+.og-v10-draft-stamp{position:absolute;top:6px;right:6px;width:26px;height:26px;line-height:24px;text-align:center;border:2px solid var(--gold-400,#c9a85f);border-radius:3px;color:var(--gold-400,#c9a85f);font-size:14px;font-weight:700;font-family:var(--font-serif);background:rgba(201,168,95,0.12);transform:rotate(-8deg);letter-spacing:0;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
+.og-v10-pos-holder-name.draft-name{color:var(--gold-300,#d4b870)!important;font-style:italic;}
+.og-v10-draft-prefix{color:var(--gold-400,#c9a85f);font-weight:700;font-style:normal;letter-spacing:0.2em;}
 .og-v10-pending-strip{padding:6px 10px;background:linear-gradient(to right,rgba(192,64,48,0.16),rgba(192,64,48,0.05));border-top:1px dashed rgba(192,64,48,0.4);display:flex;align-items:center;gap:6px;font-size:9px;position:relative;}
 .og-v10-pending-strip::before{content:"";position:absolute;left:6px;top:-4px;width:8px;height:8px;background:var(--vermillion-400,#c04030);border-radius:50%;box-shadow:0 0 0 2px #2e261d;}
 .og-v10-pending-lbl{color:var(--vermillion-300,#d97b6b);font-weight:700;letter-spacing:0.1em;white-space:nowrap;}
@@ -4858,7 +4865,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-lifecycle.js"></script>
 <script src="tm-mechanics.js?v=20260420q"></script>
 <script src="tm-change-queue.js"></script>
-<script src="tm-index-world.js?v=20260421u"></script>
+<script src="tm-index-world.js?v=20260421w"></script>
 <script src="tm-npc-engine.js?v=20260420q"></script>
 <script src="tm-game-engine.js?v=20260421i"></script>
 <script src="tm-map-system.js"></script>

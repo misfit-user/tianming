@@ -720,6 +720,49 @@ if (typeof GameEventBus !== 'undefined') {
     } else if (typeof notifyPersist === 'function') {
       notifyPersist(data.name + ' \u6B83\uFF1A' + (data.reason || ''), '\u2620');
     }
+    // 级联：清 officeTree 所有 holder 登记·让职位空缺可见·生成空缺事件
+    try {
+      if (typeof _offVacateByCharName === 'function') {
+        var _vr = _offVacateByCharName(data.name, 'death');
+        if (_vr && _vr.vacated && _vr.vacated.length > 0) {
+          // 起居注登记每个空缺
+          if (!GM._chronicle) GM._chronicle = [];
+          _vr.vacated.forEach(function(v){
+            GM._chronicle.push({
+              turn: GM.turn || 0, date: GM._gameDate || '',
+              type: '官缺',
+              text: v.chain + '·' + v.pos + '\u00B7\u56E0 ' + data.name + ' \u6B83\u800C\u7F3A\u5458',
+              tags: ['官职','身故','缺员']
+            });
+          });
+          // 诏令跟踪器·登记待补空缺（AI 推演可见）
+          if (!GM._edictTracker) GM._edictTracker = [];
+          var _summary = _vr.vacated.map(function(v){ return v.pos; }).slice(0,3).join('、') + (_vr.vacated.length>3?'等':'');
+          GM._edictTracker.push({
+            id: 'vacancy_death_' + Date.now() + '_' + data.name,
+            content: data.name + ' \u8EAB\u6545\u00B7\u6240\u4EFB ' + _summary + ' \u7B49\u5DF2\u7F3A\u5458\u00B7\u5F85\u8BCF\u8865\u4EFB\u3002',
+            category: '官缺',
+            turn: GM.turn || 0, status: 'pending',
+            assignee: '', feedback: '',
+            progressPercent: 0,
+            _vacancyFromDeath: { name: data.name, positions: _vr.vacated }
+          });
+          // UI 刷新（若官制面板当前在显示）
+          if (typeof renderOfficeTree === 'function') { try { renderOfficeTree(); } catch(_){} }
+        }
+      }
+    } catch(e) { console.error('[character:death vacate cascade]', e); }
+  });
+
+  // 角色贬谪/免职也应级联清 officeTree（某些流程只改 officialTitle 不清 tree）
+  GameEventBus.on('character:demote', function(data) {
+    if (!data || !data.name) return;
+    try {
+      if (typeof _offVacateByCharName === 'function') {
+        _offVacateByCharName(data.name, data.reason || 'demote');
+        if (typeof renderOfficeTree === 'function') { try { renderOfficeTree(); } catch(_){} }
+      }
+    } catch(e) {}
   });
 
   // 2.6: 战争爆发→紧急警告

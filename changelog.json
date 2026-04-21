@@ -3,6 +3,38 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "任命·拟态修复+剧本幽灵 holder 补 22 角色",
+      "title": "官员任命·根本修复 holder 抹除+拟任醒目视觉+天启剧本补齐 22 历史人物",
+      "items": [
+        { "what": "根因修复·_offPickerConfirm 改用 _offDismissPerson(p, oldHolder)+_offAppointPerson(p, newName) 助手替代直接 p.holder=charName·确保 actualHolders 同步·防 _offMigratePosition 下次从 actualHolders 反推把 holder 抹回", "why": "v10 卡 _ogRenderPosCardV10 首行调 _offMigratePosition·该函数从 actualHolders 重建 holder·原空缺位任命后 actualHolders 未同步·渲染时 holder 被清回空·导致任命「生效一瞬即消失」+拟任/撤销条不显示" },
+        { "what": "_offUndoAppointment 同步改用 _offDismissPerson/_offAppointPerson·确保撤销可靠反向", "why": "同一 bug·撤销路径也要走助手·否则撤销后下次渲染又被抹" },
+        { "what": "辞旧快照·_offPickerConfirm 在 resign 模式 _offVacateByCharName 前扫 newChar 其他持位记 _snapResignVacated[]·撤销时把 newChar 推回原位置", "why": "原撤销丢失候选人原有其他官职·造成官位幽灵消失" },
+        { "what": "拟任态视觉强化·og-v10-pos 加 has-pending class·金色脉冲光晕 2.4s 循环·右上 26×26 金方印「拟」(rotate -8°)·持有人名加「拟·」前缀 + 金色斜体", "why": "原待下诏书条仅底部朱砂细条·玩家看不出任命是待结算态·新增大印+脉冲边框一眼可辨" },
+        { "what": "剧本幽灵 holder 补齐·tianqi7-1627 扫出 23 个官职引用但未定义的角色·补 22 个完整档案（魏忠贤+_memory 4 条/薛贞+六君子记忆/毛一鹭+五人墓记忆/胡廷宴+王二起事记忆）·辽东总兵 holder '(袁崇焕去后尚未定)' 修为空串+vacancyCount=1", "why": "官职卡显示幽灵 holder·findCharByName 返回 null·Undo/公库联动崩·AI 推演角色不存在" },
+        { "what": "角色档案分档·阉党核心 12(魏忠贤/王体乾/张瑞图/周应秋/来宗道/薛贞/薛凤翔/李养正/杨所修/涂文辅/李永贞/潘汝桢)·督抚 3(毛一鹭/刘诏/胡廷宴)·中立 2(李国普/武之望)·耆旧 1(林尧俞)·边将 4(朱梅/侯世禄/渠家祯/杜文焕)·全员 name/title/officialTitle/age/gender/personality/party/loyalty/ambition/智政军忠/stance/faction/family/location/traits/isHistorical/bio/privateWealth 完整", "why": "史实角色深度·AI 推演可调度·NPC 互动可产生党争" },
+        { "what": "缓存版本 tm-index-world.js v=v→w", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
+      "module": "官员任命·三阶段修复·派系/级联/兼任/NPC并行",
+      "title": "官员任命系统·根本修复+兼任规则+NPC并行任命",
+      "items": [
+        { "what": "阶段1a·修派系过滤·tm-index-world.js:7047 playerFacName 三重兜底（GM.facs.isPlayer→P.playerInfo.factionName→GM.playerFaction）·7056 过滤条件调整为仅当玩家有明确势力且角色也有明确且不匹配的派系时才排除·中立角色始终可用", "why": "原逻辑在玩家无派系时误杀或在边缘情况下过度限制" },
+        { "what": "阶段1a·空候选池 UX·_offRenderPickerList 空分支区分'筛选为空'与'池本身空'·池本身空时显示【下诏征召】按钮·调 edictRecruitCharacter AI 生成新人·7 秒 loading 提示", "why": "原空池 modal 为单行说明·玩家不知下一步" },
+        { "what": "阶段1b·死亡级联清 holder·tm-game-engine.js 新增 _offVacateByCharName(charName, reason) 扫树清所有相关 holder+actualHolders·_offSweepGhostHolders() 全局 ghost 扫描", "why": "角色死亡后 officeTree 遗留 holder='X' 但 findCharByName('X')=null·导致 UI 幽灵显示+撤销逻辑崩" },
+        { "what": "阶段1b·character:death 事件级联·tm-endturn-helpers.js 监听器补 _offVacateByCharName 调用+起居注记录+edictTracker 添加 pending 空缺事件", "why": "死亡事件已发但无监听清官制树" },
+        { "what": "阶段1b·endturn 兜底 sweep·tm-endturn.js Phase 0-0b 插入 _offSweepGhostHolders·捕获未发 character:death 事件但实际已死的角色遗留", "why": "多处 alive=false 赋值未 emit 事件·兜底扫确保一致" },
+        { "what": "阶段2·兼任规则·_offPickerConfirmPre 预检 newChar.officialTitle·已有主职时弹【辞旧就新/兼任两职/撤回】三选一·兼任模式下 newChar.concurrentTitles[] 累加·原 officialTitle 保留", "why": "原行为：任命第二职会静默覆盖 officialTitle·数据不一致" },
+        { "what": "阶段2·幂等锁·_OFF_APPOINT_LOCKS[charName@dept|pos@turn]·1500ms 内重复点击被拒绝", "why": "快速双击导致双任命+双记 careerHistory" },
+        { "what": "阶段2·撤销兼任·_offUndoAppointment 识别 pe.mode='concurrent' 从 concurrentTitles 移除而非清 officialTitle·pe._snapPrevMainTitle 用于辞旧就新模式的主职恢复", "why": "兼任与辞旧就新撤销行为不同" },
+        { "what": "阶段3·NPC 并行任命·_npcAutoAppointVacancies 在 endturn Phase 0-0c 调用·推断职位归属派系（holderHistory→deptName 关键词→territory 匹配）·同派系活人按 (军/文/综合+忠诚+历史+重要性) 打分·自动补任+起居注登记", "why": "玩家势力以外派系无法自动补缺·死亡产生的权力真空无人填·历史进程不前进" },
+        { "what": "阶段3·弹劾 UI·_ogRenderPosCardV10 检测 _holder.faction 异于 playerFacName 或 loyalty<40 时显示【弹】按钮·_offImpeach 弹窗显示预估成功率（忠诚/政事/异己加成）·_offImpeachSubmit 生成诏令入 tracker 交 AI 审定", "why": "玩家对异派系高官无政治手段·仅能等死·引入和平换人渠道" },
+        { "what": "缓存版本 tm-index-world.js v=u→v", "why": "强制加载新版" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "官制 v10·三朝 tab+二级古制分类+嵌套群组四层树+默认全折叠+自动居中",
       "title": "官制 UI 全面重构·v10 混合方案落地主游戏",
       "items": [

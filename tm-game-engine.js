@@ -4217,6 +4217,88 @@ function _offDismissPerson(pos, person) {
   pos.additionalHolders = named.slice(1);
 }
 
+/** 扫遍官制树·清除指定姓名的所有 holder 登记（死亡/贬谪/退隐级联）
+ * 返回 { vacated: [{dept, pos, rank}...] } 供事件日志使用
+ * reason: 'death' | 'demote' | 'retire' | 'exile' | 'execute'
+ */
+function _offVacateByCharName(charName, reason, tree) {
+  if (!charName) return { vacated: [] };
+  tree = tree || (typeof GM !== 'undefined' && GM.officeTree) || [];
+  var vacated = [];
+  (function _walk(nodes, deptChain) {
+    (nodes || []).forEach(function(n) {
+      if (!n) return;
+      var curChain = deptChain ? (deptChain + '·' + n.name) : n.name;
+      (n.positions || []).forEach(function(p) {
+        if (!p) return;
+        // 新模型 actualHolders
+        if (Array.isArray(p.actualHolders)) {
+          var hitNew = p.actualHolders.some(function(h){ return h && h.name === charName && h.generated !== false; });
+          if (hitNew) {
+            _offDismissPerson(p, charName);
+            vacated.push({ dept: n.name, pos: p.name, rank: p.rank || '', chain: curChain, reason: reason || '' });
+          }
+        }
+        // 老模型 holder 直接匹配（即使已做 dismiss 也做兜底）
+        if (p.holder === charName) {
+          if (!Array.isArray(p.holderHistory)) p.holderHistory = [];
+          p.holderHistory.push({ name: charName, until: (typeof GM !== 'undefined' && GM.turn) || 0, reason: reason || '身故级联' });
+          p.holder = '';
+          p.holderSinceTurn = 0;
+          // 公库头衔同步
+          if (p.publicTreasury && p.publicTreasury.currentHead === charName) {
+            p.publicTreasury.previousHead = charName;
+            p.publicTreasury.currentHead = null;
+          }
+          vacated.push({ dept: n.name, pos: p.name, rank: p.rank || '', chain: curChain, reason: reason || '' });
+        }
+        // additionalHolders 兼容
+        if (Array.isArray(p.additionalHolders)) {
+          var ai = p.additionalHolders.indexOf(charName);
+          if (ai >= 0) p.additionalHolders.splice(ai, 1);
+        }
+      });
+      if (n.subs) _walk(n.subs, curChain);
+    });
+  })(tree, '');
+  return { vacated: vacated };
+}
+
+/** 扫全局·清除所有 alive===false 或找不到的 holder（endturn 兜底 sweep）
+ * 用于捕获未发 character:death 事件但实际已死的角色遗留
+ */
+function _offSweepGhostHolders() {
+  if (typeof GM === 'undefined' || !GM.officeTree) return { swept: [] };
+  var swept = [];
+  var _findCh = (typeof findCharByName === 'function') ? findCharByName : function(n){
+    return (GM.chars||[]).find(function(c){ return c && c.name === n; });
+  };
+  (function _walk(nodes) {
+    (nodes || []).forEach(function(n) {
+      if (!n) return;
+      (n.positions || []).forEach(function(p) {
+        if (!p) return;
+        var names = [];
+        if (p.holder) names.push(p.holder);
+        if (Array.isArray(p.actualHolders)) {
+          p.actualHolders.forEach(function(h){ if (h && h.name && h.generated !== false) names.push(h.name); });
+        }
+        var seen = {};
+        names.forEach(function(nm){
+          if (seen[nm]) return; seen[nm] = 1;
+          var ch = _findCh(nm);
+          if (!ch || ch.alive === false || ch.dead) {
+            _offVacateByCharName(nm, 'ghost-sweep');
+            swept.push({ name: nm, dept: n.name, pos: p.name });
+          }
+        });
+      });
+      if (n.subs) _walk(n.subs);
+    });
+  })(GM.officeTree);
+  return { swept: swept };
+}
+
 /** 获取部门的聚合统计 */
 function _offDeptStats(dept) {
   var stats = { headCount: 0, actualCount: 0, materialized: 0, vacant: 0, unmaterialized: 0, holders: [] };

@@ -2575,6 +2575,171 @@ function _officeBuildTree(collapsed, opts) {
           nodeW: W, nodeH: H};
 }
 
+// v10·嵌套群组四层树 Emperor → Group → Dept → Pos（群组纵叠）
+// opts: { courtKey, subTab, collapsed, W_DEPT, W_POS, H_DEPT, H_POS, H_GROUP, H_EMP }
+function _officeBuildTreeV10(opts) {
+  opts = opts || {};
+  var courtKey = opts.courtKey || 'central';
+  var subTab = opts.subTab || 'all';
+  var collapsed = opts.collapsed || {};
+
+  var EMP_W = opts.EMP_W || 240;
+  var EMP_H = opts.EMP_H || 90;
+  var GROUP_H = opts.GROUP_H || 60;
+  var DEPT_W = opts.DEPT_W || 220;
+  var DEPT_H = opts.DEPT_H || 110;
+  var POS_W = opts.POS_W || 240;
+  var POS_H = opts.POS_H || 210;
+  var H_GAP = opts.H_GAP || 22;
+  var DEPT_GAP = opts.DEPT_GAP || 16;
+  var V_GAP = opts.V_GAP || 46;
+  var V_GAP_GROUP = opts.V_GAP_GROUP || 32;
+
+  var depts = P.officeTree || [];
+  // 分类（不在 tm-audio-theme.js 中硬编 map·依赖 window._officeClassifyDept）
+  var classify = (typeof _officeClassifyDept === 'function') ? _officeClassifyDept : function(){ return { court:'central', group:'sijian' }; };
+
+  // 过滤属于本 court 的部门·并进一步按 subTab
+  var courtDepts = [];
+  depts.forEach(function(d, idx){
+    var cls = classify(d);
+    if (cls.court !== courtKey) return;
+    if (subTab !== 'all' && cls.group !== subTab) return;
+    courtDepts.push({ dept:d, idx:idx, group:cls.group });
+  });
+
+  // 群组分桶·保持 subTab 顺序
+  var GROUP_ORDER = (typeof OFFICE_SUBTABS !== 'undefined' && OFFICE_SUBTABS[courtKey])
+    ? OFFICE_SUBTABS[courtKey].filter(function(g){ return g.key !== 'all'; })
+    : [];
+  var groupBuckets = {};
+  GROUP_ORDER.forEach(function(g){ groupBuckets[g.key] = []; });
+  courtDepts.forEach(function(cd){
+    if (!groupBuckets[cd.group]) groupBuckets[cd.group] = [];
+    groupBuckets[cd.group].push(cd);
+  });
+
+  // Emperor 虚根
+  var emperor = { type:'emperor', node:null, children:[], parent:null, w:EMP_W, h:EMP_H, depth:0, path:[] };
+
+  // 构造群组子树
+  var groupNodes = [];
+  GROUP_ORDER.forEach(function(g){
+    var bucket = groupBuckets[g.key] || [];
+    if (bucket.length === 0) return;
+    var gNode = {
+      type:'group', node:null, groupCfg:g, groupKey:g.key, courtKey:courtKey,
+      children:[], parent:emperor, w:0, h:GROUP_H, depth:1
+    };
+    bucket.forEach(function(cd){
+      var key = JSON.stringify([cd.idx]);
+      var isCollapsed = !!collapsed[key];
+      var deptNode = {
+        type:'dept', node:cd.dept, path:[cd.idx], deptIdx:cd.idx,
+        collapsed:isCollapsed, children:[], parent:gNode,
+        w:DEPT_W, h:DEPT_H, depth:2
+      };
+      if (!isCollapsed) {
+        (cd.dept.positions || []).forEach(function(p, pi){
+          deptNode.children.push({
+            type:'pos', node:p, deptName:cd.dept.name, deptIdx:cd.idx, posIdx:pi,
+            path:[cd.idx, 'p', pi], children:[], parent:deptNode,
+            w:POS_W, h:POS_H, depth:3
+          });
+        });
+      }
+      gNode.children.push(deptNode);
+    });
+    groupNodes.push(gNode);
+  });
+  emperor.children = groupNodes;
+
+  // leafCount 递归
+  function countLeaves(n) {
+    if (!n.children.length) { n.leafCount = 1; return 1; }
+    var t = 0;
+    for (var i = 0; i < n.children.length; i++) t += countLeaves(n.children[i]);
+    n.leafCount = Math.max(t, 1);
+    return n.leafCount;
+  }
+  groupNodes.forEach(countLeaves);
+
+  // 每群组独立布局·按行纵叠
+  var yCursor = EMP_H + V_GAP;
+  groupNodes.forEach(function(gNode) {
+    var groupY = yCursor;
+    var deptY = groupY + GROUP_H + V_GAP_GROUP;
+    var posY = deptY + DEPT_H + V_GAP;
+    var hasExp = gNode.children.some(function(d){ return d.children.length > 0; });
+
+    function assignXY(n, leftX) {
+      if (n.type === 'group') n.y = groupY;
+      else if (n.type === 'dept') n.y = deptY;
+      else if (n.type === 'pos') n.y = posY;
+
+      if (!n.children.length) {
+        var slotW = (n.type === 'pos') ? (POS_W + H_GAP) : (DEPT_W + DEPT_GAP);
+        n.x = leftX + (slotW - n.w) / 2;
+        n.slotW = slotW;
+      } else {
+        var cursor = leftX;
+        n.children.forEach(function(c){ assignXY(c, cursor); cursor += c.slotW; });
+        var fc = n.children[0], lc = n.children[n.children.length-1];
+        if (n.type === 'group') {
+          n.w = (lc.x + lc.w) - fc.x + 40;
+          n.x = fc.x - 20;
+          n.slotW = cursor - leftX;
+        } else {
+          var centerX = (fc.x + fc.w/2 + lc.x + lc.w/2) / 2;
+          n.x = centerX - n.w/2;
+          n.slotW = cursor - leftX;
+        }
+      }
+    }
+    assignXY(gNode, 0);
+
+    if (hasExp) yCursor = posY + POS_H + V_GAP * 1.4;
+    else yCursor = deptY + DEPT_H + V_GAP * 1.4;
+  });
+
+  // 水平居中所有群组到同一 cx（等于皇帝 cx）
+  var maxGroupW = EMP_W;
+  groupNodes.forEach(function(g){ if (g.w > maxGroupW) maxGroupW = g.w; });
+  var leftPad = 50;
+  var emperorCx = leftPad + maxGroupW / 2;
+
+  groupNodes.forEach(function(gNode){
+    var delta = emperorCx - (gNode.x + gNode.w / 2);
+    function shift(n){ n.x += delta; n.children.forEach(shift); }
+    shift(gNode);
+  });
+
+  emperor.x = emperorCx - EMP_W / 2;
+  emperor.y = 0;
+
+  var canvasWidth = 2 * leftPad + maxGroupW;
+  var canvasHeight = groupNodes.length > 0 ? yCursor : (EMP_H + V_GAP * 2);
+
+  var flat = [emperor];
+  groupNodes.forEach(function(gNode){
+    flat.push(gNode);
+    gNode.children.forEach(function(d){
+      flat.push(d);
+      d.children.forEach(function(p){ flat.push(p); });
+    });
+  });
+
+  return {
+    flat: flat,
+    root: emperor,
+    groupNodes: groupNodes,
+    emperorCx: emperorCx,
+    width: canvasWidth,
+    height: canvasHeight,
+    isEmpty: groupNodes.length === 0
+  };
+}
+
 function renderOfficeTab(em) {
   if (!P.officeTree) P.officeTree = [];
   if (!P._officeCollapsed) P._officeCollapsed = {};

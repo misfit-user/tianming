@@ -3,6 +3,56 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "官制 v10·三朝 tab+二级古制分类+嵌套群组四层树+默认全折叠+自动居中",
+      "title": "官制 UI 全面重构·v10 混合方案落地主游戏",
+      "items": [
+        { "what": "一级 tab：中央百司/内廷宫禁/地方督抚·顶栏 og-court-tabs·每 tab 显示 pos/缺徽标·点击 setOfficeCourtKey(k)", "why": "22 部门一屏塞满无视觉分区·三朝拆分后每次只看一朝" },
+        { "what": "二级 subtab 通用古制命名：枢机辅政/六曹百司/台谏风宪/寺监九卿/勋戚加衔·中朝机要/缇骑耳目/宿卫禁军/供御宫务·封疆督抚/藩臬三司/郡县牧守/边镇节帅·秦汉→唐宋→明清皆适用", "why": "部门内部再分·古制名称跨朝代通用" },
+        { "what": "_officeClassifyDept 正则命名分类器·13 组模式按先后匹配·剧本显式 dept.court+dept.group 优先·缓存 dept._classified", "why": "剧本不需改动即可分类·显式字段覆盖兜底" },
+        { "what": "_officeBuildTreeV10·Emperor→群组横幅→部门→职位 四层·群组纵叠（每群组独占一行）·群组 cx 对齐 emperorCx 形成竖直主干·折叠态 DEPT_GAP=18", "why": "横排 22 部门 scale 压到 0.26 不可读·纵叠后 scale~0.5 部门 108px 清晰" },
+        { "what": "SVG 连线重绘·主干：皇帝底中竖贯所有群组·Group→Dept elbow（主题色金/紫/蓝）·Dept→Pos 虚线青色 elbow", "why": "多群组向皇帝发射多条 elbow 会混乱·单主干+分支清晰" },
+        { "what": "默认折叠·_officeInitDefaults 首次渲染时 collapsedMap=true·切换 subtab 时同步折叠当前 court", "why": "玩家先看部门再点开看职位·默认展开信息过载" },
+        { "what": "自动居中·首次渲染按画布尺寸 fit-to-frame·横向绝对居中·纵向能装下则居中否则顶 30px·scale 限 [0.28, 1.1]", "why": "中间位置且一屏见全部门" },
+        { "what": "群组横幅 og-node-group·渐变背景+金/紫/蓝主题+4 corner 装饰+group-name+desc+dept/pos/vac 统计+脉冲阴影", "why": "群组作为显式层级节点" },
+        { "what": "群组包围框 og-group-wrapper·虚线边界+主题色半透明覆盖 subtree", "why": "归属关系视觉化·减少看连线负担" },
+        { "what": "列表视图同步按 court+subTab 过滤·court tabs + subtabs 条一致渲染", "why": "两种视图筛选状态共享" },
+        { "what": "先迭代预览 preview-guanzhi-v10.html（1436 行）视觉规范·主游戏样式对齐·CSS 新增 ~90 行·JS 新增 ~350 行", "why": "独立预览收敛 5 轮后落地" },
+        { "what": "缓存版本 tm-index-world.js v=o→p·tm-audio-theme.js v=q→20260421a", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
+      "module": "官制·状态文本内容+部门整卡点击+宣纸颗粒+入场动画",
+      "title": "补完预览 v2 剩余 4 项·落地文本渲染+交互完善",
+      "items": [
+        { "what": "状态文本底条·_ogRenderPosCard 增加分支：_mourning（依制守孝·N 回合期满）·_sickLeave（⚕告病·病因·天数）·_actingPos（以 X 摄 Y 事·俟简拔）·_demoted（被贬·回任希望渺茫）·_retirePending（N 岁·N 度请辞·陛下未允）·_concurrentWith（兼·他职名）", "why": "原只有 CSS 骨架·无文本内容·预览有完整叙述·此处补齐 6 处文本渲染" },
+        { "what": "宣纸颗粒·body::before 固定定位 overlay·opacity 0.05·mix-blend-mode overlay·三层 radial-gradient 仿粒·低侵入全局微纹", "why": "给整个游戏界面加仿古质感·提升沉浸" },
+        { "what": "官制卡入场动画·@keyframes og-fade-in-up + .og-pos-card/.og-dept-card 0.3s 淡入上升", "why": "每次切换 tab 或展开部门·卡片有丝滑上升·不再生硬弹出" },
+        { "what": "部门卡整块点击折叠·_ogRenderDeptCard 增加 onclick 到卡片本体·点击任意非按钮区域即切换 _officeCollapsed·chevron ▾/▸ 指示器自动旋转·collapsed 态 opacity 0.85", "why": "原先只有右上小按钮可折叠·点击区域极小·现在整个卡片都是热区·一目了然" },
+        { "what": "CSS 新增 .og-state-note 三态（mourn/retire/demoted/acting）·部门 clickable hover/collapsed 态", "why": "状态文本与交互态都有统一样式类" },
+        { "what": "tm-index-world.js v=j→k·CSS 新增 ~30 行·JS 约 40 行", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
+      "module": "官制·视觉升级全链+选任器 v2",
+      "title": "朱砂品级印+玉纹肖像+任期年轮+十二态 CSS+选任器四象雷达+首荐红缎+键盘提示",
+      "items": [
+        { "what": "品级徽章从纯文本 .og-pos-rank-badge 换为 .og-rank-seal 朱砂印章·按品级分三档：≤6 朱砂、≤12 金色、≥13 墨色", "why": "原本只是灰字·现在是立体朱印·官诰气质拉满·一眼可辨品级" },
+        { "what": "正一品/正二品肖像加 .og-portrait-imperial 玉纹金边框（双层金色 shadow + 45° 玉纹暗纹）", "why": "视觉上区分「顶级官员」与普通官员·阶级语言立刻显形" },
+        { "what": "肖像右上角加 .og-tenure-ring 任期年轮·显示任 N 回（_tenure 大于 0 时）", "why": "原来任期在卡底小字里·玩家常忽略；年轮直接贴在脸上·扫一眼就看到" },
+        { "what": "状态识别逻辑·_mourning 数据已存在 → og-state-mourning + 丁忧 badge；_sickLeave/_actingPos/_demoted/_retirePending/_concurrentWith 对应五态 CSS 预留·有数据即挂", "why": "丁忧是现有真实状态·过去卡片无区分；其余 5 态 CSS 就位等数据层接入" },
+        { "what": "选任器头部·现任琥珀条升级为 .off-pk-replacing 正式类·视觉跟主 API 设置面板一致", "why": "原来用 inline style·与系统其他部位不统一" },
+        { "what": "选任器筛选 chip 全部带 _offCountTag 计数·全部/文官/武官/忠诚/布衣 各显数字", "why": "原来点开才发现「武官 0」·浪费时间；计数前置一目了然" },
+        { "what": "选任器底部加 .off-pk-footer 含键盘提示：↑↓ 选人·⏎ 确认·/ 搜索·Esc 取消", "why": "支持玩家纯键盘操作·离鼠标手更爽" },
+        { "what": "每个候选卡左侧加 64x64 SVG 雷达图·四轴（智政军忠·上右下左）·轮廓色按胜任度联动（绿/金/朱）", "why": "比 4 个数字更直观「此人长什么样」·视觉化属性形状" },
+        { "what": "冠位候选右上加 .off-pk-recommend-ribbon 朱红「首荐」布条·剪角剪影", "why": "强化 #1 的视觉权威·玩家大多场景点首荐即可" },
+        { "what": "十二态 CSS 全套·包括 .og-mourn-badge/.og-concurrent-stack/.og-sick-banner/.og-acting-stamp/.og-demoted-tag/.og-retire-glow 等·全局可复用", "why": "未来特殊状态添加数据即可·视觉已就位" },
+        { "what": "tm-index-world.js v=i→j·CSS 新增 ~90 行·JS 改动约 100 行", "why": "强制刷新" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "修·官制筛选与待下诏书条冲突",
       "title": "筛选「空缺」模式下刚任命的位置会被隐藏导致看不到撤销条·修复为保留",
       "items": [

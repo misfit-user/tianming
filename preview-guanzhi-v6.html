@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>官制树 · 层级分明 · v6</title>
+<style>
+:root {
+  --bg-deep: #0d0906;
+  --bg-base: #17120d;
+  --bg-surface: #221c16;
+  --bg-elevated: #2a241c;
+  --bg-paper: #2e261d;
+
+  --fg-primary: #e8dcc4;
+  --fg-secondary: #cfbfa3;
+  --fg-muted: #9f9279;
+  --fg-subtle: #6d624c;
+  --fg-ghost: #40392b;
+
+  --gold-100: #f4e8c5;
+  --gold-200: #e8d69a;
+  --gold-300: #d4be7a;
+  --gold-400: #c9a85f;
+  --gold-500: #b89a53;
+  --gold-700: #5d4e38;
+
+  --celadon-300: #94c4a3;
+  --celadon-400: #6ba97f;
+  --celadon-500: #5a8f6e;
+
+  --vermillion-300: #d97b6b;
+  --vermillion-400: #c04030;
+  --vermillion-500: #9c2f25;
+
+  --indigo-300: #8a9bcc;
+  --indigo-400: #5a6fa8;
+
+  --amber-400: #c9a045;
+  --purple-300: #b498cf;
+  --purple-400: #9b7eb8;
+
+  --ink-bd: rgba(184, 154, 83, 0.22);
+  --ink-bd-strong: rgba(184, 154, 83, 0.42);
+
+  --font-serif: "Noto Serif SC", "Source Han Serif CN", "Songti SC", serif;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+*:focus-visible { outline: 2px solid var(--gold-400); outline-offset: 3px; border-radius: 3px; }
+button { font: inherit; color: inherit; cursor: pointer; font-family: var(--font-serif); }
+
+body {
+  font-family: var(--font-serif);
+  background: var(--bg-deep);
+  color: var(--fg-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+  background-image:
+    radial-gradient(ellipse 1400px 900px at 50% -200px, rgba(184,154,83,0.05), transparent),
+    repeating-linear-gradient(90deg, transparent 0, transparent 80px, rgba(107,93,71,0.025) 80px, rgba(107,93,71,0.025) 81px);
+  padding-bottom: 120px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background:
+    radial-gradient(circle at 23% 40%, rgba(255,240,200,0.15) 0.5px, transparent 1px),
+    radial-gradient(circle at 67% 72%, rgba(255,240,200,0.1) 0.5px, transparent 1px),
+    radial-gradient(circle at 41% 18%, rgba(140,80,20,0.08) 1px, transparent 2px);
+  background-size: 20px 20px, 27px 27px, 33px 33px;
+}
+
+.showcase { max-width: 1760px; margin: 0 auto; padding: 36px 32px 0; }
+
+/* ═══════ 页眉 ═══════ */
+.showcase-header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--ink-bd);
+  position: relative;
+}
+.showcase-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 200px; height: 2px;
+  background: linear-gradient(to right, var(--gold-400), transparent);
+}
+.showcase-title {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--gold-300);
+  margin-bottom: 6px;
+}
+.showcase-subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  letter-spacing: 0.15em;
+}
+
+/* ═══════ 总控条 ═══════ */
+.master-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-paper));
+  border: 1px solid var(--ink-bd);
+  border-radius: 4px;
+  position: relative;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-card);
+}
+.master-bar::before, .master-bar::after { content: ""; position: absolute; width: 12px; height: 12px; border: 1.5px solid var(--gold-400); opacity: 0.45; }
+.master-bar::before { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+.master-bar::after { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+.mb-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--gold-300); letter-spacing: 0.25em;
+  padding-right: 16px; border-right: 1px solid var(--ink-bd);
+  white-space: nowrap;
+}
+.mb-tabs { display: flex; gap: 4px; }
+.mb-tab {
+  padding: 6px 13px; font-size: 12px;
+  color: var(--fg-muted); letter-spacing: 0.15em;
+  background: transparent; border: 1px solid transparent;
+  border-radius: 2px;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.mb-tab:hover { color: var(--gold-300); background: rgba(184,154,83,0.06); }
+.mb-tab[aria-pressed="true"] { color: var(--gold-300); background: rgba(184,154,83,0.1); border-color: rgba(184,154,83,0.3); }
+.mb-tab.empty[aria-pressed="true"] { color: var(--vermillion-300); background: rgba(192,64,48,0.08); border-color: rgba(192,64,48,0.3); }
+.mb-tab.filled[aria-pressed="true"] { color: var(--celadon-300); background: rgba(107,176,124,0.08); border-color: rgba(107,176,124,0.3); }
+.mb-n {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  min-width: 18px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mb-search {
+  flex: 1; min-width: 180px; max-width: 220px;
+  padding: 6px 12px; font-size: 12px;
+  background: var(--bg-deep); border: 1px solid var(--ink-bd);
+  border-radius: 2px;
+  color: var(--fg-primary); font-family: var(--font-serif);
+}
+.mb-search:focus { outline: none; border-color: var(--gold-400); box-shadow: 0 0 0 2px rgba(184,154,83,0.18); }
+.mb-sep { display: inline-block; width: 1px; height: 16px; background: var(--ink-bd); }
+.mb-action {
+  padding: 5px 11px; font-size: 11px; color: var(--fg-muted);
+  background: transparent; border: 1px solid var(--ink-bd); border-radius: 2px;
+  letter-spacing: 0.15em; transition: all 0.15s;
+}
+.mb-action:hover { color: var(--gold-300); border-color: var(--gold-500); background: rgba(184,154,83,0.04); }
+.mb-stats {
+  font-size: 11px; color: var(--fg-subtle);
+  letter-spacing: 0.15em; margin-left: auto; white-space: nowrap;
+}
+.mb-warn {
+  font-size: 11px; color: var(--vermillion-300);
+  padding: 3px 10px;
+  background: rgba(192,64,48,0.1);
+  border: 1px solid rgba(192,64,48,0.3);
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.mb-warn::before { content: "⚠"; font-size: 12px; }
+
+/* ═══════ 主画布：左侧 tier gutter + 右侧内容 ═══════ */
+.tree-canvas {
+  position: relative;
+  padding: 28px 28px 56px;
+  background:
+    linear-gradient(to bottom, rgba(184,154,83,0.02), transparent 100px),
+    radial-gradient(ellipse at 50% 20%, rgba(184,154,83,0.04) 0%, transparent 60%),
+    var(--bg-base);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0, transparent 40px, rgba(107,93,71,0.02) 40px, rgba(107,93,71,0.02) 41px, transparent 41px, transparent 80px);
+  border: 1px solid var(--ink-bd);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 14px rgba(0,0,0,0.4);
+}
+.tree-canvas::before, .tree-canvas::after {
+  content: ""; position: absolute;
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--gold-400);
+  opacity: 0.5; pointer-events: none;
+  z-index: 5;
+}
+.tree-canvas::before { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+.tree-canvas::after { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+/* 连线 SVG 覆盖层 */
+.tree-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.tree-svg path.conn {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-width 0.2s, opacity 0.2s;
+}
+.tree-svg path.conn.p1 { stroke: var(--gold-400); stroke-width: 2.2; opacity: 0.68; }
+.tree-svg path.conn.p2 { stroke: var(--celadon-400); stroke-width: 1.8; opacity: 0.6; stroke-dasharray: 5 3; }
+.tree-svg path.conn.p3 { stroke: var(--vermillion-400); stroke-width: 1.8; opacity: 0.6; }
+.tree-svg path.conn.p4 { stroke: var(--purple-400); stroke-width: 1.8; opacity: 0.55; stroke-dasharray: 4 4; }
+.tree-svg path.conn.p5 { stroke: var(--indigo-400); stroke-width: 1.8; opacity: 0.55; stroke-dasharray: 3 5; }
+.tree-svg path.conn.highlighted {
+  stroke-width: 3 !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+/* ═══════ Tier 布局 ═══════ */
+.tier {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  margin-bottom: 14px;
+  position: relative;
+  padding: 12px 0;
+}
+.tier + .tier-sep {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--ink-bd) 15%, var(--ink-bd) 85%, transparent);
+  margin: 0 0 6px;
+  position: relative;
+  opacity: 0.5;
+}
+.tier-gutter {
+  padding: 6px 0 6px 8px;
+  border-left: 3px solid var(--gold-500);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+  position: relative;
+}
+.tier-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gold-300);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(184,154,83,0.3);
+  font-family: var(--font-serif);
+  opacity: 0.9;
+}
+.tier-name {
+  font-size: 12px;
+  color: var(--gold-200);
+  letter-spacing: 0.35em;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.tier-stats {
+  font-size: 10px;
+  color: var(--fg-subtle);
+  letter-spacing: 0.15em;
+  line-height: 1.6;
+}
+.tier-stats b { color: var(--fg-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+.tier-stats .vac {
+  color: var(--vermillion-300);
+  font-weight: 700;
+}
+
+/* 主题色 tier gutter */
+.tier[data-theme="liubu"] .tier-gutter { border-left-color: var(--celadon-400); }
+.tier[data-theme="liubu"] .tier-num { color: var(--celadon-300); text-shadow: 0 0 12px rgba(107,176,124,0.3); }
+.tier[data-theme="liubu"] .tier-name { color: var(--celadon-300); }
+.tier[data-theme="sijian"] .tier-gutter { border-left-color: var(--gold-700); }
+.tier[data-theme="sijian"] .tier-num { color: #d4c49c; }
+.tier[data-theme="sijian"] .tier-name { color: #d4c49c; }
+.tier[data-theme="difang"] .tier-gutter { border-left-color: var(--indigo-400); }
+.tier[data-theme="difang"] .tier-num { color: var(--indigo-300); text-shadow: 0 0 12px rgba(90,111,168,0.3); }
+.tier[data-theme="difang"] .tier-name { color: var(--indigo-300); }
+
+.tier-body {
+  min-width: 0;
+  position: relative;
+}
+.tier-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.tier-row.centered { justify-content: center; }
+
+/* ═══════ 皇帝卡 ═══════ */
+.emperor-card {
+  width: 280px;
+  text-align: center;
+  padding: 20px 28px;
+  background: radial-gradient(ellipse at center, rgba(201,168,95,0.14), transparent 70%),
+    linear-gradient(135deg, rgba(201,168,95,0.14), rgba(140,80,20,0.08)),
+    var(--bg-elevated);
+  border: 2px solid var(--gold-400);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(184,154,83,0.15), 0 10px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+  position: relative;
+  z-index: 1;
+}
+.emperor-card::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px dashed rgba(201,168,95,0.32);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.emperor-eyebrow { font-size: 11px; letter-spacing: 0.5em; color: var(--gold-400); margin-bottom: 7px; }
+.emperor-name {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gold-100);
+  letter-spacing: 0.35em;
+  text-shadow: 0 0 16px rgba(201,168,95,0.38);
+  line-height: 1.1;
+}
+.emperor-reign { font-size: 12px; color: var(--fg-muted); margin-top: 6px; letter-spacing: 0.25em; }
+
+/* ═══════ 部门卡 ═══════ */
+.dept {
+  background: var(--bg-surface);
+  border: 1px solid rgba(184,154,83,0.28);
+  border-radius: 4px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.22s var(--ease-out), box-shadow 0.22s, border-color 0.22s, background 0.22s;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  font-family: var(--font-serif);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+.dept::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold-500);
+}
+.dept:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(184,154,83,0.22); z-index: 2; }
+.dept.highlight-path {
+  border-color: var(--gold-300);
+  box-shadow: 0 0 0 2px rgba(212,190,122,0.35), 0 6px 20px rgba(184,154,83,0.3);
+}
+.dept[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(184,154,83,0.14), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(184,154,83,0.35), 0 4px 16px rgba(184,154,83,0.22);
+  border-color: var(--gold-300);
+}
+.dept[aria-expanded="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 8px;
+  background: var(--gold-400);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.dept .chev {
+  position: absolute; top: 10px; right: 11px;
+  font-size: 10px; color: var(--fg-muted); opacity: 0.62;
+  transition: transform 0.22s var(--ease-out);
+}
+.dept[aria-expanded="true"] .chev { transform: rotate(180deg); opacity: 1; color: var(--gold-300); }
+.dept .seal {
+  position: absolute; top: 7px; right: 32px;
+  font-size: 22px; opacity: 0.15;
+  font-weight: 700;
+  color: var(--gold-400); pointer-events: none;
+}
+.dept .name {
+  font-size: 14px; font-weight: 700;
+  color: var(--fg-primary);
+  letter-spacing: 0.18em;
+  margin-bottom: 5px;
+  padding: 12px 14px 0 15px;
+}
+.dept .desc {
+  font-size: 10px;
+  color: var(--fg-subtle);
+  padding: 0 14px 4px 15px;
+  letter-spacing: 0.05em;
+  font-style: italic;
+}
+.dept .meta {
+  padding: 0 14px 12px 15px;
+  font-size: 11px; color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  display: flex; align-items: center; gap: 8px;
+}
+.dept .meta b { color: var(--gold-300); font-weight: 700; font-variant-numeric: tabular-nums; }
+.dept .vac-pip {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--vermillion-400);
+  animation: vac-pulse 2s ease-in-out infinite;
+}
+@keyframes vac-pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; box-shadow: 0 0 6px rgba(192,64,48,0.6); } }
+
+/* 大号·顶层部门（皇帝下 L2） */
+.dept.size-top { min-width: 178px; }
+.dept.size-top .name { font-size: 16px; color: var(--gold-200); letter-spacing: 0.2em; }
+.dept.size-top .seal { font-size: 26px; }
+.dept.size-top::before { background: linear-gradient(to bottom, var(--gold-400), var(--gold-500)); }
+
+/* 中号·六部 */
+.dept.size-mid { min-width: 156px; }
+.dept.size-mid .name { color: var(--celadon-300); font-size: 14px; }
+.dept.size-mid::before { background: linear-gradient(to bottom, var(--celadon-400), var(--celadon-500)); }
+.dept.size-mid { border-color: rgba(107,176,124,0.32); }
+.dept.size-mid:hover { border-color: var(--celadon-300); }
+.dept.size-mid[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(107,176,124,0.13), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(107,176,124,0.32), 0 4px 16px rgba(107,176,124,0.22);
+  border-color: var(--celadon-300);
+}
+.dept.size-mid[aria-expanded="true"]::after { background: var(--celadon-400); }
+.dept.size-mid .seal { color: var(--celadon-400); }
+
+/* 小号·寺监 */
+.dept.size-small { min-width: 138px; }
+.dept.size-small .name { font-size: 13px; color: #d4c49c; letter-spacing: 0.15em; }
+.dept.size-small::before { background: linear-gradient(to bottom, var(--gold-700), #4a4031); }
+.dept.size-small { border-color: rgba(107,93,71,0.35); }
+.dept.size-small:hover { border-color: #d4c49c; }
+.dept.size-small .seal { color: #d4c49c; font-size: 20px; }
+
+/* 军政·朱 */
+.dept.theme-junzheng::before { background: linear-gradient(to bottom, var(--vermillion-400), var(--vermillion-500)) !important; }
+.dept.theme-junzheng { border-color: rgba(192,64,48,0.3); }
+.dept.theme-junzheng:hover { border-color: var(--vermillion-400); }
+.dept.theme-junzheng[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(192,64,48,0.12), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(192,64,48,0.32), 0 4px 16px rgba(192,64,48,0.22);
+  border-color: var(--vermillion-400);
+}
+.dept.theme-junzheng[aria-expanded="true"]::after { background: var(--vermillion-400); }
+.dept.theme-junzheng .name { color: var(--vermillion-300); }
+.dept.theme-junzheng .seal { color: var(--vermillion-400); }
+
+/* 监察·紫 */
+.dept.theme-jiancha::before { background: linear-gradient(to bottom, var(--purple-400), #6a5080) !important; }
+.dept.theme-jiancha { border-color: rgba(155,126,184,0.3); }
+.dept.theme-jiancha:hover { border-color: var(--purple-300); }
+.dept.theme-jiancha[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(155,126,184,0.12), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(155,126,184,0.32), 0 4px 16px rgba(155,126,184,0.22);
+  border-color: var(--purple-300);
+}
+.dept.theme-jiancha[aria-expanded="true"]::after { background: var(--purple-400); }
+.dept.theme-jiancha .name { color: var(--purple-300); }
+.dept.theme-jiancha .seal { color: var(--purple-400); }
+
+/* 地方·蓝 */
+.dept.theme-difang::before { background: linear-gradient(to bottom, var(--indigo-400), #3e4e77) !important; }
+.dept.theme-difang { border-color: rgba(90,111,168,0.3); }
+.dept.theme-difang:hover { border-color: var(--indigo-300); }
+.dept.theme-difang[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(90,111,168,0.14), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(90,111,168,0.32), 0 4px 16px rgba(90,111,168,0.22);
+  border-color: var(--indigo-300);
+}
+.dept.theme-difang[aria-expanded="true"]::after { background: var(--indigo-400); }
+.dept.theme-difang .name { color: var(--indigo-300); }
+.dept.theme-difang .seal { color: var(--indigo-400); }
+
+/* ═══════ 面板 ═══════ */
+.panel-wrap {
+  grid-column: 2 / -1;
+  margin: -2px 0 10px;
+}
+.panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s var(--ease-out), opacity 0.32s, padding 0.3s, margin 0.3s;
+  padding: 0 22px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0, transparent 40px, rgba(107,93,71,0.025) 40px, rgba(107,93,71,0.025) 41px),
+    linear-gradient(to bottom, rgba(184,154,83,0.06), transparent 200px),
+    var(--bg-base);
+  border: 1px solid rgba(184,154,83,0.22);
+  border-radius: 4px;
+  position: relative;
+}
+.panel.open {
+  max-height: 2400px;
+  opacity: 1;
+  padding: 18px 22px 20px;
+}
+.panel-title {
+  font-size: 12px;
+  color: var(--gold-300);
+  letter-spacing: 0.25em;
+  margin-bottom: 14px;
+  padding-bottom: 9px;
+  border-bottom: 1px dashed var(--ink-bd);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.panel-title .path {
+  color: var(--fg-subtle);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+.panel-title .path .sep { color: var(--fg-ghost); margin: 0 4px; }
+.panel-title .path .cur { color: var(--fg-primary); font-weight: 700; font-size: 14px; letter-spacing: 0.18em; }
+.panel-title .desc { color: var(--fg-muted); font-size: 11px; letter-spacing: 0.15em; }
+.panel-close {
+  margin-left: auto;
+  padding: 3px 11px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--ink-bd);
+  border-radius: 2px;
+  letter-spacing: 0.15em;
+  transition: all 0.15s;
+}
+.panel-close:hover { color: var(--vermillion-300); border-color: var(--vermillion-400); }
+.positions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
+  gap: 12px;
+}
+
+/* ═══════ 位置卡 ═══════ */
+.pos {
+  background: linear-gradient(to bottom, var(--bg-surface), var(--bg-paper));
+  border: 1px solid var(--ink-bd);
+  border-radius: 4px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s;
+  overflow: hidden;
+  position: relative;
+}
+.pos:hover { border-color: var(--gold-400); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,154,83,0.22); }
+.pos::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.pos.rank-top::before { background: linear-gradient(to bottom, #c04030, #8b2a1f); }
+.pos.rank-high::before { background: linear-gradient(to bottom, #c9a045, #9a7632); }
+.pos.rank-mid::before { background: linear-gradient(to bottom, #6ba97f, #4a7658); }
+.pos-head { padding: 12px 14px 8px 18px; border-bottom: 1px solid rgba(107,93,71,0.15); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.pos-title { font-size: 15px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rank-seal { display: inline-block; padding: 2px 8px; background: linear-gradient(135deg, rgba(192,64,48,0.82), rgba(140,40,30,0.92)); color: #fce8e1; font-size: 10px; letter-spacing: 0.1em; border-radius: 2px; font-weight: 600; box-shadow: 0 1px 2px rgba(140,40,30,0.3); }
+.rank-seal.mid-lvl { background: linear-gradient(135deg, rgba(184,154,83,0.85), rgba(140,120,65,0.92)); color: #fff7e0; }
+.pos-sub { font-size: 10px; color: var(--fg-subtle); letter-spacing: 0.1em; }
+.pos-btn { padding: 4px 12px; font-size: 11px; background: linear-gradient(135deg, #c9a85f, #b89a53); color: #1a1510; border: none; border-radius: 2px; font-weight: 700; letter-spacing: 0.15em; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: all 0.15s; }
+.pos-btn.appoint { background: linear-gradient(135deg, #6ba97f, #5a8f6e); color: #0f0b07; }
+.pos-btn:hover { filter: brightness(1.08); }
+.pos-holder { padding: 10px 14px; display: flex; gap: 10px; align-items: center; }
+.pos-portrait { width: 40px; height: 40px; border-radius: 2px; background: linear-gradient(135deg, #4a3e2e, #2e261d); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--gold-300); border: 1px solid rgba(184,154,83,0.22); flex-shrink: 0; font-weight: 700; position: relative; }
+.pos-portrait.imperial { border: 1.5px solid var(--gold-400); box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 3px var(--gold-400), 0 0 10px rgba(184,154,83,0.4); }
+.pos-holder-info { flex: 1; min-width: 0; }
+.pos-name-line { font-size: 14px; font-weight: 700; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.pos-name-line .age { font-size: 10px; color: var(--fg-subtle); font-weight: 400; }
+.pos-holder-sub { font-size: 10px; color: var(--fg-muted); margin-top: 1px; }
+.loyalty-mark { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 6px; border-radius: 2px; margin-left: auto; font-weight: 600; }
+.loyalty-mark.loyal { background: rgba(107,176,124,0.14); color: var(--celadon-300); }
+.loyalty-mark.mid { background: rgba(201,160,69,0.14); color: var(--amber-400); }
+.loyalty-mark.danger { background: rgba(192,64,48,0.14); color: var(--vermillion-300); }
+.pos-stats { padding: 0 14px 10px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+.stat-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.stat-lbl { font-size: 9px; color: var(--fg-subtle); letter-spacing: 0.2em; }
+.stat-val { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.stat-val.good { color: var(--celadon-300); }
+.stat-val.warn { color: var(--amber-400); }
+.stat-val.bad { color: var(--vermillion-300); }
+.stat-bar { width: 100%; height: 2px; background: rgba(107,93,71,0.2); border-radius: 1px; overflow: hidden; }
+.stat-bar > div { height: 100%; }
+.bg-good { background: var(--celadon-400); }
+.bg-warn { background: var(--amber-400); }
+.bg-bad { background: var(--vermillion-400); }
+
+.pos.vacant { background: repeating-linear-gradient(45deg, var(--bg-surface) 0, var(--bg-surface) 10px, rgba(107,93,71,0.05) 10px, rgba(107,93,71,0.05) 20px); border-style: dashed; border-color: rgba(107,93,71,0.35); }
+.pos.vacant .pos-title { color: var(--fg-muted); }
+.pos.vacant .pos-holder { padding: 18px 14px; justify-content: center; color: var(--fg-subtle); font-style: italic; font-size: 12px; letter-spacing: 0.3em; }
+.pos.vacant .pos-holder::before { content: "〔 空 缺 · 待 补 〕"; opacity: 0.7; }
+.vacant-dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--vermillion-400); animation: vac-pulse 2s ease-in-out infinite; z-index: 1; }
+
+/* 面包屑 */
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  letter-spacing: 0.1em;
+}
+.breadcrumb .crumb { color: var(--fg-subtle); }
+.breadcrumb .crumb.active { color: var(--gold-300); font-weight: 700; }
+.breadcrumb .sep { color: var(--fg-ghost); }
+
+/* 提示 */
+.tip-bar {
+  margin-top: 24px;
+  padding: 14px 18px;
+  background: rgba(184,154,83,0.04);
+  border-left: 2px solid var(--gold-500);
+  border-radius: 0 2px 2px 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.75;
+}
+.tip-bar b { color: var(--gold-300); }
+.tip-bar kbd { display: inline-block; padding: 1px 5px; font-size: 10px; background: var(--bg-deep); border: 1px solid var(--ink-bd); border-bottom-width: 2px; border-radius: 2px; color: var(--fg-primary); font-family: monospace; margin: 0 1px; }
+
+/* 入场 */
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.tier { animation: fade-up 0.4s var(--ease-out) both; }
+.tier:nth-child(1) { animation-delay: 0s; }
+.tier:nth-child(2) { animation-delay: 0.05s; }
+.tier:nth-child(3) { animation-delay: 0.1s; }
+.tier:nth-child(4) { animation-delay: 0.15s; }
+.tier:nth-child(5) { animation-delay: 0.2s; }
+.tier:nth-child(6) { animation-delay: 0.25s; }
+
+/* 焦点路径高亮 */
+.dept.hover-ancestor {
+  border-color: var(--gold-300);
+  box-shadow: 0 0 0 1px var(--gold-400), 0 0 12px rgba(184,154,83,0.25);
+  z-index: 3;
+}
+</style>
+</head>
+<body>
+
+<div class="showcase">
+  <header class="showcase-header">
+    <div class="showcase-title">官 制 树 · 层 级 分 明 · v 6</div>
+    <div class="showcase-subtitle">左侧 tier 序号 · 同层并排 · 层间 SVG 连线 · 悬停亮血脉</div>
+  </header>
+
+  <!-- 总控条 -->
+  <div class="master-bar">
+    <span class="mb-title">〔 六 部 百 司 〕</span>
+    <div class="mb-tabs">
+      <button class="mb-tab" data-filter="all" aria-pressed="true">全 部 <span class="mb-n">52</span></button>
+      <button class="mb-tab empty" data-filter="empty" aria-pressed="false">空 缺 <span class="mb-n">15</span></button>
+      <button class="mb-tab filled" data-filter="filled" aria-pressed="false">在 任 <span class="mb-n">37</span></button>
+    </div>
+    <input class="mb-search" placeholder="搜 姓 名 · 官 职…" />
+    <span class="mb-sep"></span>
+    <button class="mb-action" data-action="expand-all">展 开 全 部</button>
+    <button class="mb-action" data-action="collapse-all">收 起 全 部</button>
+    <span class="mb-warn">3 要 职 空 缺</span>
+    <div class="mb-stats">咸通八年丁亥秋 · 安史之乱</div>
+  </div>
+
+  <div class="tree-canvas" id="canvas">
+    <svg class="tree-svg" id="svg" aria-hidden="true"></svg>
+
+    <!-- ═════ 一·皇帝 ═════ -->
+    <div class="tier" data-tier="1">
+      <div class="tier-gutter">
+        <div class="tier-num">壹</div>
+        <div class="tier-name">皇 帝</div>
+        <div class="tier-stats">天 命<br><b>1</b> 位</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-row centered">
+          <div class="emperor-card" data-id="emperor" data-tn="1">
+            <div class="emperor-eyebrow">天 命 所 归</div>
+            <div class="emperor-name">思 宗</div>
+            <div class="emperor-reign">崇 祯 元 年 · 戊 辰</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tier-sep"></div>
+
+    <!-- ═════ 二·中央一级 ═════ -->
+    <div class="tier" data-tier="2">
+      <div class="tier-gutter">
+        <div class="tier-num">贰</div>
+        <div class="tier-name">中 央 · 省 台 院</div>
+        <div class="tier-stats">三 省 两 台 一 院<br>编 <b>30</b> 实 <b>22</b> 空 <span class="vac">8</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-row centered">
+          <button class="dept size-top" data-id="zhongshu" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">中</span>
+            <div class="name">中 书 省</div>
+            <div class="desc">掌诏敕机要</div>
+            <div class="meta">编 <b>6</b> · 实 <b>4</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top" data-id="menxia" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">门</span>
+            <div class="name">门 下 省</div>
+            <div class="desc">掌审议封驳</div>
+            <div class="meta">编 <b>6</b> · 实 <b>5</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top" data-id="shangshu" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">尚</span>
+            <div class="name">尚 书 省</div>
+            <div class="desc">掌执行六部</div>
+            <div class="meta">编 <b>6</b> · 实 <b>5</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top theme-jiancha" data-id="yushi" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">御</span>
+            <div class="name">御 史 台</div>
+            <div class="desc">掌监察弹劾</div>
+            <div class="meta">编 <b>4</b> · 实 <b>3</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top theme-jiancha" data-id="hanlin" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">翰</span>
+            <div class="name">翰 林 院</div>
+            <div class="desc">掌诏诰文书</div>
+            <div class="meta">编 <b>4</b> · 实 <b>3</b></div>
+          </button>
+          <button class="dept size-top theme-junzheng" data-id="shumi" data-parent="emperor" data-tn="2">
+            <span class="chev">▼</span><span class="seal">枢</span>
+            <div class="name">枢 密 院</div>
+            <div class="desc">掌军国机要</div>
+            <div class="meta">编 <b>4</b> · 实 <b>2</b> <span class="vac-pip"></span></div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="tier-sep"></div>
+
+    <!-- ═════ 三·六部/神策军 ═════ -->
+    <div class="tier" data-tier="3" data-theme="liubu">
+      <div class="tier-gutter">
+        <div class="tier-num">叁</div>
+        <div class="tier-name">六 部 · 军 卫</div>
+        <div class="tier-stats">平 行 诸 部<br>编 <b>14</b> 实 <b>11</b> 空 <span class="vac">3</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-row centered">
+          <button class="dept size-mid" data-id="libu" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">吏</span>
+            <div class="name">吏 部</div>
+            <div class="desc">掌官员铨选</div>
+            <div class="meta">编 <b>2</b> · 实 <b>2</b></div>
+          </button>
+          <button class="dept size-mid" data-id="hubu" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">户</span>
+            <div class="name">户 部</div>
+            <div class="desc">掌天下户口</div>
+            <div class="meta">编 <b>2</b> · 实 <b>2</b></div>
+          </button>
+          <button class="dept size-mid" data-id="libu2" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">礼</span>
+            <div class="name">礼 部</div>
+            <div class="desc">掌礼仪祭祀</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-mid" data-id="bingbu" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">兵</span>
+            <div class="name">兵 部</div>
+            <div class="desc">掌天下戎政</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-mid" data-id="xingbu" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">刑</span>
+            <div class="name">刑 部</div>
+            <div class="desc">掌刑律</div>
+            <div class="meta">编 <b>2</b> · 实 <b>2</b></div>
+          </button>
+          <button class="dept size-mid" data-id="gongbu" data-parent="shangshu" data-tn="3">
+            <span class="chev">▼</span><span class="seal">工</span>
+            <div class="name">工 部</div>
+            <div class="desc">掌营缮水利</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-mid theme-junzheng" data-id="shence" data-parent="shumi" data-tn="3">
+            <span class="chev">▼</span><span class="seal">神</span>
+            <div class="name">神 策 军</div>
+            <div class="desc">禁军中枢</div>
+            <div class="meta">编 <b>2</b> · 实 <b>2</b></div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="tier-sep"></div>
+
+    <!-- ═════ 四·寺监 ═════ -->
+    <div class="tier" data-tier="4" data-theme="sijian">
+      <div class="tier-gutter">
+        <div class="tier-num">肆</div>
+        <div class="tier-name">九 寺 五 监</div>
+        <div class="tier-stats">独立衙署<br>编 <b>7</b> 实 <b>5</b> 空 <span class="vac">2</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-row">
+          <button class="dept size-small" data-id="taichang" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">太</span>
+            <div class="name">太 常 寺</div>
+            <div class="desc">礼乐祭祀</div>
+            <div class="meta">编 <b>1</b> · 实 <b>1</b></div>
+          </button>
+          <button class="dept size-small" data-id="dali" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">大</span>
+            <div class="name">大 理 寺</div>
+            <div class="desc">刑狱审理</div>
+            <div class="meta">编 <b>1</b> · 实 <b>1</b></div>
+          </button>
+          <button class="dept size-small" data-id="mishu" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">秘</span>
+            <div class="name">秘 书 省</div>
+            <div class="desc">图书典籍</div>
+            <div class="meta">编 <b>1</b> · 实 <b>0</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-small" data-id="zongzheng" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">宗</span>
+            <div class="name">宗 正 寺</div>
+            <div class="desc">宗室谱牒</div>
+            <div class="meta">编 <b>1</b> · 实 <b>1</b></div>
+          </button>
+          <button class="dept size-small" data-id="guozi" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">国</span>
+            <div class="name">国 子 监</div>
+            <div class="desc">儒学教育</div>
+            <div class="meta">编 <b>1</b> · 实 <b>1</b></div>
+          </button>
+          <button class="dept size-small" data-id="honglu" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">鸿</span>
+            <div class="name">鸿 胪 寺</div>
+            <div class="desc">外邦朝贡</div>
+            <div class="meta">编 <b>1</b> · 实 <b>1</b></div>
+          </button>
+          <button class="dept size-small" data-id="sinong" data-parent="emperor" data-tn="4">
+            <span class="chev">▼</span><span class="seal">司</span>
+            <div class="name">司 农 寺</div>
+            <div class="desc">粮仓屯田</div>
+            <div class="meta">编 <b>1</b> · 实 <b>0</b> <span class="vac-pip"></span></div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="tier-sep"></div>
+
+    <!-- ═════ 五·地方 ═════ -->
+    <div class="tier" data-tier="5" data-theme="difang">
+      <div class="tier-gutter">
+        <div class="tier-num">伍</div>
+        <div class="tier-name">地 方 · 使 职</div>
+        <div class="tier-stats">道 州 使 司<br>编 <b>6</b> 实 <b>3</b> 空 <span class="vac">3</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-row">
+          <button class="dept size-top theme-difang" data-id="yantie" data-parent="emperor" data-tn="5">
+            <span class="chev">▼</span><span class="seal">盐</span>
+            <div class="name">盐 铁 转 运 使 司</div>
+            <div class="desc">盐铁专卖·漕运</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top theme-difang" data-id="guancha" data-parent="emperor" data-tn="5">
+            <span class="chev">▼</span><span class="seal">观</span>
+            <div class="name">观 察 使 司</div>
+            <div class="desc">道级监察</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+          <button class="dept size-top theme-difang" data-id="jiedu" data-parent="emperor" data-tn="5">
+            <span class="chev">▼</span><span class="seal">节</span>
+            <div class="name">节 度 使 司</div>
+            <div class="desc">边镇军政</div>
+            <div class="meta">编 <b>2</b> · 实 <b>1</b> <span class="vac-pip"></span></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-bar">
+    <b>操作</b>：点<b>部门卡</b>展开职位·悬停<b>部门</b>高亮至皇帝的隶属血脉·
+    <kbd>/</kbd> 搜索·<kbd>Esc</kbd> 关闭全部·
+    <b>连线</b>色：金=皇威至省台·青虚=尚书→六部·朱=枢密→神策军。
+  </div>
+</div>
+
+<script>
+// ═════════ 数据 ═════════
+const POSITIONS = {
+  zhongshu: [
+    { name: '中书令', rank: '正二品', rankLvl: 2, holder: { name: '杜鸿渐', age: 61, sub: '京兆杜陵', loy: 88, int: 88, adm: 92, mil: 64 }, imperial: true },
+    { name: '中书侍郎', rank: '正三品', rankLvl: 3, holder: null },
+    { name: '中书舍人', rank: '正五品', rankLvl: 5, holder: { name: '韦执谊', age: 39, sub: '京兆', loy: 68, int: 78, adm: 70, mil: 46 } },
+    { name: '起居舍人', rank: '从六品', rankLvl: 6, holder: { name: '裴垍', age: 44, sub: '河东', loy: 82, int: 85, adm: 78, mil: 50 } },
+    { name: '通事舍人', rank: '正七品', rankLvl: 7, holder: null },
+    { name: '主书', rank: '从八品', rankLvl: 8, holder: { name: '牛僧孺', age: 36, sub: '陇西', loy: 78, int: 80, adm: 65, mil: 40 } },
+  ],
+  menxia: [
+    { name: '侍中', rank: '正二品', rankLvl: 2, holder: { name: '郭子仪', age: 72, sub: '华州', loy: 95, int: 76, adm: 72, mil: 94 }, imperial: true },
+    { name: '门下侍郎', rank: '正三品', rankLvl: 3, holder: { name: '李泌', age: 60, sub: '京兆', loy: 90, int: 96, adm: 82, mil: 65 } },
+    { name: '给事中', rank: '正五品', rankLvl: 5, holder: null },
+    { name: '散骑常侍', rank: '正三品', rankLvl: 3, holder: { name: '李勉', age: 60, sub: '郑州', loy: 80, int: 75, adm: 82, mil: 52 } },
+    { name: '谏议大夫', rank: '正五品', rankLvl: 5, holder: { name: '崔群', age: 45, sub: '清河', loy: 84, int: 86, adm: 72, mil: 42 } },
+    { name: '起居郎', rank: '从六品', rankLvl: 6, holder: { name: '柳公权', age: 50, sub: '京兆华原', loy: 88, int: 90, adm: 68, mil: 38 } },
+  ],
+  shangshu: [
+    { name: '尚书令', rank: '正二品', rankLvl: 2, holder: null, imperial: true },
+    { name: '左仆射', rank: '从二品', rankLvl: 3, holder: { name: '裴冕', age: 58, sub: '河东', loy: 84, int: 80, adm: 86, mil: 55 } },
+    { name: '右仆射', rank: '从二品', rankLvl: 3, holder: { name: '王缙', age: 56, sub: '太原', loy: 70, int: 78, adm: 82, mil: 48 } },
+    { name: '左丞', rank: '正四品', rankLvl: 4, holder: { name: '裴度', age: 54, sub: '河东', loy: 92, int: 88, adm: 90, mil: 72 } },
+    { name: '右丞', rank: '正四品', rankLvl: 4, holder: { name: '李吉甫', age: 52, sub: '赵郡', loy: 85, int: 92, adm: 86, mil: 55 } },
+    { name: '都事', rank: '从七品', rankLvl: 7, holder: null },
+  ],
+  yushi: [
+    { name: '御史大夫', rank: '正三品', rankLvl: 3, holder: { name: '颜杲卿', age: 65, sub: '琅邪', loy: 96, int: 82, adm: 78, mil: 68 } },
+    { name: '御史中丞', rank: '正四品', rankLvl: 4, holder: null },
+    { name: '侍御史', rank: '从六品', rankLvl: 6, holder: { name: '吕温', age: 42, sub: '河中', loy: 86, int: 85, adm: 70, mil: 40 } },
+    { name: '监察御史', rank: '正八品', rankLvl: 8, holder: { name: '韩愈', age: 48, sub: '河阳', loy: 90, int: 95, adm: 72, mil: 42 } },
+  ],
+  hanlin: [
+    { name: '翰林学士承旨', rank: '正三品', rankLvl: 3, holder: { name: '陆贽', age: 46, sub: '苏州嘉兴', loy: 92, int: 95, adm: 82, mil: 40 } },
+    { name: '翰林学士', rank: '正五品', rankLvl: 5, holder: { name: '权德舆', age: 42, sub: '秦州天水', loy: 85, int: 88, adm: 74, mil: 38 } },
+    { name: '翰林侍讲', rank: '从六品', rankLvl: 6, holder: { name: '白居易', age: 54, sub: '太原', loy: 86, int: 92, adm: 70, mil: 35 } },
+    { name: '翰林待诏', rank: '正七品', rankLvl: 7, holder: null },
+  ],
+  shumi: [
+    { name: '枢密使', rank: '从二品', rankLvl: 3, holder: { name: '鱼朝恩', age: 48, sub: '泸州', loy: 42, int: 70, adm: 62, mil: 68 } },
+    { name: '枢密副使', rank: '正三品', rankLvl: 3, holder: null },
+    { name: '承旨', rank: '正五品', rankLvl: 5, holder: { name: '仇士良', age: 55, sub: '岭南', loy: 35, int: 68, adm: 58, mil: 62 } },
+    { name: '检详官', rank: '正六品', rankLvl: 6, holder: null },
+  ],
+  libu: [
+    { name: '吏部尚书', rank: '正三品', rankLvl: 3, holder: { name: '颜真卿', age: 70, sub: '琅邪', loy: 95, int: 82, adm: 88, mil: 55 } },
+    { name: '吏部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '崔祐甫', age: 55, sub: '博陵', loy: 88, int: 85, adm: 80, mil: 45 } },
+  ],
+  hubu: [
+    { name: '户部尚书', rank: '正三品', rankLvl: 3, holder: { name: '刘晏', age: 62, sub: '曹州', loy: 86, int: 92, adm: 95, mil: 42 } },
+    { name: '户部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '杨炎', age: 54, sub: '凤翔', loy: 62, int: 88, adm: 82, mil: 40 } },
+  ],
+  libu2: [
+    { name: '礼部尚书', rank: '正三品', rankLvl: 3, holder: { name: '韩滉', age: 58, sub: '长安', loy: 85, int: 82, adm: 78, mil: 62 } },
+    { name: '礼部侍郎', rank: '正四品', rankLvl: 4, holder: null },
+  ],
+  bingbu: [
+    { name: '兵部尚书', rank: '正三品', rankLvl: 3, holder: { name: '李晟', age: 54, sub: '陇右临潭', loy: 92, int: 78, adm: 66, mil: 95 } },
+    { name: '兵部侍郎', rank: '正四品', rankLvl: 4, holder: null },
+  ],
+  xingbu: [
+    { name: '刑部尚书', rank: '正三品', rankLvl: 3, holder: { name: '柳宗元', age: 44, sub: '河东解', loy: 88, int: 90, adm: 82, mil: 42 } },
+    { name: '刑部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '徐申', age: 48, sub: '东海', loy: 75, int: 78, adm: 76, mil: 45 } },
+  ],
+  gongbu: [
+    { name: '工部尚书', rank: '正三品', rankLvl: 3, holder: null },
+    { name: '工部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '苏震', age: 52, sub: '京兆', loy: 72, int: 70, adm: 75, mil: 38 } },
+  ],
+  shence: [
+    { name: '神策军中尉', rank: '正二品', rankLvl: 2, holder: { name: '李辅国', age: 56, sub: '京师', loy: 38, int: 74, adm: 56, mil: 82 } },
+    { name: '神策军将军', rank: '正三品', rankLvl: 3, holder: { name: '浑瑊', age: 58, sub: '铁勒', loy: 85, int: 70, adm: 65, mil: 90 } },
+  ],
+  taichang: [{ name: '太常卿', rank: '正三品', rankLvl: 3, holder: { name: '王难得', age: 58, sub: '京兆', loy: 78, int: 72, adm: 70, mil: 45 } }],
+  dali: [{ name: '大理卿', rank: '从三品', rankLvl: 4, holder: { name: '于邵', age: 50, sub: '雍州', loy: 76, int: 80, adm: 74, mil: 40 } }],
+  mishu: [{ name: '秘书监', rank: '从三品', rankLvl: 4, holder: null }],
+  zongzheng: [{ name: '宗正卿', rank: '从三品', rankLvl: 4, holder: { name: '李遵', age: 62, sub: '宗室', loy: 85, int: 68, adm: 65, mil: 40 } }],
+  guozi: [{ name: '国子祭酒', rank: '从三品', rankLvl: 4, holder: { name: '韦绚', age: 55, sub: '京兆杜陵', loy: 78, int: 84, adm: 70, mil: 35 } }],
+  honglu: [{ name: '鸿胪卿', rank: '从三品', rankLvl: 4, holder: { name: '严震', age: 57, sub: '梓州', loy: 80, int: 72, adm: 68, mil: 52 } }],
+  sinong: [{ name: '司农卿', rank: '从三品', rankLvl: 4, holder: null }],
+  yantie: [
+    { name: '盐铁转运使', rank: '从二品', rankLvl: 3, holder: { name: '第五琦', age: 52, sub: '京兆', loy: 82, int: 84, adm: 90, mil: 42 } },
+    { name: '转运副使', rank: '正四品', rankLvl: 4, holder: null },
+  ],
+  guancha: [
+    { name: '观察使', rank: '正三品', rankLvl: 3, holder: { name: '韦皋', age: 54, sub: '京兆万年', loy: 88, int: 80, adm: 78, mil: 85 } },
+    { name: '观察副使', rank: '正四品', rankLvl: 4, holder: null },
+  ],
+  jiedu: [
+    { name: '节度使', rank: '从二品', rankLvl: 3, holder: { name: '田承嗣', age: 60, sub: '平州', loy: 28, int: 70, adm: 60, mil: 88 } },
+    { name: '节度副使', rank: '正四品', rankLvl: 4, holder: null },
+  ],
+};
+
+// ═════════ 渲染·位置卡 ═════════
+function renderPosCard(p, deptName) {
+  const h = p.holder;
+  const vacant = !h;
+  const rankCls = p.rankLvl <= 2 ? 'rank-top' : p.rankLvl <= 4 ? 'rank-high' : 'rank-mid';
+  const sealCls = p.rankLvl <= 6 ? '' : ' mid-lvl';
+  const btn = vacant ? '<button class="pos-btn appoint">任 命</button>' : '<button class="pos-btn">改 换</button>';
+  if (vacant) {
+    return `<div class="pos ${rankCls} vacant">
+      <div class="vacant-dot"></div>
+      <div class="pos-head">
+        <div>
+          <div class="pos-title">${p.name} <span class="rank-seal${sealCls}">${p.rank}</span></div>
+          <div class="pos-sub">${deptName}</div>
+        </div>${btn}
+      </div>
+      <div class="pos-holder"></div>
+    </div>`;
+  }
+  const loy = h.loy || 50;
+  const loyCls = loy >= 70 ? 'loyal' : loy < 40 ? 'danger' : 'mid';
+  const sc = v => v >= 75 ? 'good' : v < 40 ? 'bad' : 'warn';
+  const sb = v => v >= 75 ? 'bg-good' : v < 40 ? 'bg-bad' : 'bg-warn';
+  return `<div class="pos ${rankCls}">
+    <div class="pos-head">
+      <div>
+        <div class="pos-title">${p.name} <span class="rank-seal${sealCls}">${p.rank}</span></div>
+        <div class="pos-sub">${deptName}</div>
+      </div>${btn}
+    </div>
+    <div class="pos-holder">
+      <div class="pos-portrait${p.imperial ? ' imperial' : ''}">${h.name.charAt(0)}</div>
+      <div class="pos-holder-info">
+        <div class="pos-name-line">${h.name} <span class="age">·${h.age}岁</span></div>
+        ${h.sub ? `<div class="pos-holder-sub">${h.sub}</div>` : ''}
+      </div>
+      <span class="loyalty-mark ${loyCls}">忠 ${loy}</span>
+    </div>
+    <div class="pos-stats">
+      <div class="stat-cell"><span class="stat-lbl">智</span><span class="stat-val ${sc(h.int)}">${h.int}</span><div class="stat-bar"><div class="${sb(h.int)}" style="width:${h.int}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">政</span><span class="stat-val ${sc(h.adm)}">${h.adm}</span><div class="stat-bar"><div class="${sb(h.adm)}" style="width:${h.adm}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">军</span><span class="stat-val ${sc(h.mil)}">${h.mil}</span><div class="stat-bar"><div class="${sb(h.mil)}" style="width:${h.mil}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">忠</span><span class="stat-val ${sc(loy)}">${loy}</span><div class="stat-bar"><div class="${sb(loy)}" style="width:${loy}%"></div></div></div>
+    </div>
+  </div>`;
+}
+
+// ═════════ 连线 ═════════
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('svg');
+
+function getConnClass(parent, child) {
+  const pid = parent.getAttribute('data-id');
+  if (pid === 'emperor') return 'p1';
+  if (pid === 'shangshu') return 'p2';
+  if (pid === 'shumi') return 'p3';
+  return 'p1';
+}
+
+function drawConnectors() {
+  const cRect = canvas.getBoundingClientRect();
+  svg.setAttribute('width', cRect.width);
+  svg.setAttribute('height', cRect.height);
+  svg.setAttribute('viewBox', `0 0 ${cRect.width} ${cRect.height}`);
+  const paths = [];
+  document.querySelectorAll('[data-parent]').forEach(node => {
+    const pid = node.getAttribute('data-parent');
+    const parent = document.querySelector(`[data-id="${pid}"]`);
+    if (!parent) return;
+    const pr = parent.getBoundingClientRect();
+    const nr = node.getBoundingClientRect();
+    const x1 = pr.left + pr.width / 2 - cRect.left;
+    const y1 = pr.bottom - cRect.top;
+    const x2 = nr.left + nr.width / 2 - cRect.left;
+    const y2 = nr.top - cRect.top;
+    const midY = y1 + (y2 - y1) * 0.55;
+    const d = `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+    paths.push({
+      d,
+      cls: getConnClass(parent, node),
+      parentId: pid,
+      childId: node.getAttribute('data-id'),
+    });
+  });
+  svg.innerHTML = paths.map(p =>
+    `<path class="conn ${p.cls}" data-parent="${p.parentId}" data-child="${p.childId}" d="${p.d}"/>`
+  ).join('');
+}
+
+// ═════════ 展开面板 ═════════
+function renderPanel(deptId, deptEl) {
+  const positions = POSITIONS[deptId] || [];
+  const deptName = deptEl.querySelector('.name').textContent.trim();
+  const desc = (deptEl.querySelector('.desc') || {}).textContent || '';
+  const total = positions.length;
+  const filled = positions.filter(p => p.holder).length;
+  const vac = total - filled;
+  // 面包屑
+  const path = [];
+  let cur = deptEl;
+  while (cur && cur.getAttribute('data-parent')) {
+    const pid = cur.getAttribute('data-parent');
+    const p = document.querySelector(`[data-id="${pid}"]`);
+    if (p) {
+      const pName = p.classList.contains('emperor-card')
+        ? p.querySelector('.emperor-name').textContent.trim()
+        : p.querySelector('.name').textContent.trim();
+      path.unshift(pName);
+    }
+    cur = p;
+  }
+  const breadcrumb = path.map(n => `<span class="crumb">${n}</span><span class="sep">›</span>`).join('')
+    + `<span class="crumb active">${deptName}</span>`;
+
+  return `<div class="panel-wrap" data-dept-panel="${deptId}">
+    <div class="panel">
+      <div class="panel-title">
+        <div class="breadcrumb">${breadcrumb}</div>
+        <span class="desc">· ${desc} · 编 ${total} · 实 ${filled}${vac > 0 ? ' · 空 ' + vac : ''}</span>
+        <button class="panel-close" data-close="${deptId}">收 起</button>
+      </div>
+      <div class="positions">${positions.map(p => renderPosCard(p, deptName)).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function toggleDept(deptEl) {
+  const id = deptEl.getAttribute('data-id');
+  const open = deptEl.getAttribute('aria-expanded') === 'true';
+  if (open) {
+    deptEl.setAttribute('aria-expanded', 'false');
+    const existing = document.querySelector(`[data-dept-panel="${id}"]`);
+    if (existing) {
+      existing.querySelector('.panel').classList.remove('open');
+      setTimeout(() => existing.remove(), 380);
+    }
+    return;
+  }
+  deptEl.setAttribute('aria-expanded', 'true');
+  const tier = deptEl.closest('.tier');
+  const panelHtml = renderPanel(id, deptEl);
+  tier.insertAdjacentHTML('beforeend', panelHtml);
+  requestAnimationFrame(() => {
+    const newPanel = document.querySelector(`[data-dept-panel="${id}"] .panel`);
+    newPanel.classList.add('open');
+    setTimeout(drawConnectors, 400);
+  });
+}
+
+// 事件
+canvas.addEventListener('click', e => {
+  const closeBtn = e.target.closest('[data-close]');
+  if (closeBtn) {
+    const id = closeBtn.getAttribute('data-close');
+    const d = document.querySelector(`[data-id="${id}"]`);
+    if (d) toggleDept(d);
+    return;
+  }
+  const dept = e.target.closest('.dept');
+  if (dept) toggleDept(dept);
+});
+
+// 悬停高亮血脉
+canvas.addEventListener('mouseover', e => {
+  const dept = e.target.closest('.dept');
+  if (!dept) return;
+  let cur = dept;
+  const ancestors = new Set();
+  while (cur) {
+    ancestors.add(cur.getAttribute('data-id'));
+    const pid = cur.getAttribute('data-parent');
+    cur = pid ? document.querySelector(`[data-id="${pid}"]`) : null;
+  }
+  ancestors.forEach(id => {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (el && el !== dept) el.classList.add('hover-ancestor');
+  });
+  // 高亮 SVG 路径
+  document.querySelectorAll(`.conn`).forEach(p => {
+    const cid = p.getAttribute('data-child');
+    if (ancestors.has(cid)) p.classList.add('highlighted');
+  });
+});
+canvas.addEventListener('mouseout', e => {
+  document.querySelectorAll('.hover-ancestor').forEach(el => el.classList.remove('hover-ancestor'));
+  document.querySelectorAll('.conn.highlighted').forEach(p => p.classList.remove('highlighted'));
+});
+
+// 快捷
+document.querySelectorAll('[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const act = btn.getAttribute('data-action');
+    if (act === 'expand-all') {
+      document.querySelectorAll('.dept').forEach(d => { if (d.getAttribute('aria-expanded') !== 'true') toggleDept(d); });
+    } else if (act === 'collapse-all') {
+      document.querySelectorAll('.dept[aria-expanded="true"]').forEach(d => toggleDept(d));
+    }
+  });
+});
+
+// 筛选
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    const mode = btn.getAttribute('data-filter');
+    document.querySelectorAll('.pos').forEach(card => {
+      const v = card.classList.contains('vacant');
+      const show = mode === 'all' || (mode === 'empty' && v) || (mode === 'filled' && !v);
+      card.style.display = show ? '' : 'none';
+    });
+  });
+});
+
+// 搜索
+const searchInput = document.querySelector('.mb-search');
+let searchTimer = null;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const kw = searchInput.value.trim().toLowerCase();
+    if (!kw) {
+      document.querySelectorAll('.pos').forEach(c => c.style.display = '');
+      return;
+    }
+    document.querySelectorAll('.dept').forEach(d => { if (d.getAttribute('aria-expanded') !== 'true') toggleDept(d); });
+    setTimeout(() => {
+      document.querySelectorAll('.pos').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(kw) ? '' : 'none';
+      });
+    }, 100);
+  }, 250);
+});
+
+// 键盘
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') e.target.blur(); return; }
+  if (e.key === '/') { e.preventDefault(); searchInput.focus(); return; }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.dept[aria-expanded="true"]').forEach(d => toggleDept(d));
+  }
+});
+
+// 连线初始化
+window.addEventListener('load', () => setTimeout(drawConnectors, 50));
+window.addEventListener('resize', drawConnectors);
+const mo = new MutationObserver(() => drawConnectors());
+mo.observe(canvas, { childList: true, subtree: true });
+</script>
+
+</body>
+</html>

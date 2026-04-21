@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>官制 · 分组可展开 · v4</title>
+<style>
+:root {
+  --bg-deep: #0d0906;
+  --bg-base: #17120d;
+  --bg-surface: #221c16;
+  --bg-elevated: #2a241c;
+  --bg-paper: #2e261d;
+
+  --fg-primary: #e8dcc4;
+  --fg-secondary: #cfbfa3;
+  --fg-muted: #9f9279;
+  --fg-subtle: #6d624c;
+  --fg-ghost: #40392b;
+
+  --gold-100: #f4e8c5;
+  --gold-200: #e8d69a;
+  --gold-300: #d4be7a;
+  --gold-400: #c9a85f;
+  --gold-500: #b89a53;
+  --gold-600: #8c7440;
+  --gold-700: #5d4e38;
+
+  --celadon-200: #c6e0d0;
+  --celadon-300: #94c4a3;
+  --celadon-400: #6ba97f;
+  --celadon-500: #5a8f6e;
+
+  --vermillion-200: #e6a59a;
+  --vermillion-300: #d97b6b;
+  --vermillion-400: #c04030;
+  --vermillion-500: #9c2f25;
+
+  --indigo-300: #8a9bcc;
+  --indigo-400: #5a6fa8;
+  --indigo-500: #3e4e77;
+
+  --amber-300: #e0b560;
+  --amber-400: #c9a045;
+
+  --purple-300: #b498cf;
+  --purple-400: #9b7eb8;
+  --purple-500: #7a5fa2;
+
+  --ink-bd: rgba(184, 154, 83, 0.22);
+  --ink-bd-strong: rgba(184, 154, 83, 0.4);
+
+  --font-serif: "Noto Serif SC", "Source Han Serif CN", "Songti SC", serif;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.4, 0, 0.2, 1.2);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+*:focus-visible { outline: 2px solid var(--gold-400); outline-offset: 2px; border-radius: 2px; }
+
+body {
+  font-family: var(--font-serif);
+  background: var(--bg-deep);
+  color: var(--fg-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+  background-image:
+    radial-gradient(ellipse 1400px 900px at 50% -200px, rgba(184,154,83,0.05), transparent),
+    repeating-linear-gradient(90deg, transparent 0, transparent 80px, rgba(107,93,71,0.025) 80px, rgba(107,93,71,0.025) 81px);
+  padding: 0 0 120px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background:
+    radial-gradient(circle at 23% 40%, rgba(255,240,200,0.15) 0.5px, transparent 1px),
+    radial-gradient(circle at 67% 72%, rgba(255,240,200,0.1) 0.5px, transparent 1px),
+    radial-gradient(circle at 41% 18%, rgba(140,80,20,0.08) 1px, transparent 2px);
+  background-size: 20px 20px, 27px 27px, 33px 33px;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.showcase { max-width: 1600px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══════ 页眉 ═══════ */
+.showcase-header {
+  padding: 40px 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(to bottom, var(--bg-deep) 70%, transparent);
+  backdrop-filter: blur(8px);
+}
+.showcase-header-inner {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ink-bd);
+  position: relative;
+}
+.showcase-header-inner::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 180px; height: 2px;
+  background: linear-gradient(to right, var(--gold-400), transparent);
+}
+.showcase-title {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--gold-300);
+  margin-bottom: 6px;
+}
+.showcase-subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  letter-spacing: 0.15em;
+}
+
+/* ═══════ 筛选栏 ═══════ */
+.filterbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-paper));
+  border: 1px solid var(--ink-bd);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  margin: 20px 0 28px;
+  flex-wrap: wrap;
+}
+.filterbar::before, .filterbar::after {
+  content: "";
+  position: absolute;
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--gold-400);
+  opacity: 0.45;
+}
+.filterbar::before { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+.filterbar::after { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+.fb-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-300);
+  letter-spacing: 0.25em;
+  padding-right: 18px;
+  border-right: 1px solid var(--ink-bd);
+  white-space: nowrap;
+}
+.fb-tabs { display: flex; gap: 4px; }
+.fb-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  letter-spacing: 0.15em;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-family: var(--font-serif);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.fb-tab:hover {
+  color: var(--gold-300);
+  background: rgba(184,154,83,0.06);
+}
+.fb-tab[aria-pressed="true"] {
+  color: var(--gold-300);
+  background: rgba(184,154,83,0.1);
+  border-color: rgba(184,154,83,0.3);
+}
+.fb-tab.empty[aria-pressed="true"] { color: var(--vermillion-300); background: rgba(192,64,48,0.08); border-color: rgba(192,64,48,0.3); }
+.fb-tab.filled[aria-pressed="true"] { color: var(--celadon-300); background: rgba(107,176,124,0.08); border-color: rgba(107,176,124,0.3); }
+.fb-n {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  min-width: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.fb-search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 240px;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--ink-bd);
+  border-radius: 2px;
+  color: var(--fg-primary);
+  font-family: var(--font-serif);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fb-search:focus { outline: none; border-color: var(--gold-400); box-shadow: 0 0 0 2px rgba(184,154,83,0.18); }
+.fb-sep { display: inline-block; width: 1px; height: 18px; background: var(--ink-bd); }
+.fb-action {
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--ink-bd);
+  border-radius: 2px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.15em;
+  transition: all 0.15s;
+}
+.fb-action:hover { color: var(--gold-300); border-color: var(--gold-500); background: rgba(184,154,83,0.04); }
+.fb-stats {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  letter-spacing: 0.15em;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ═══════ 皇帝舞台 ═══════ */
+.emperor-stage {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 44px;
+  position: relative;
+}
+.emperor-stage::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 340px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-500), transparent);
+}
+.emperor-stage::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 2px; height: 32px;
+  background: linear-gradient(to bottom, var(--gold-400), transparent);
+  transform: translateX(-50%);
+}
+.emperor-card {
+  width: 340px;
+  text-align: center;
+  padding: 24px 32px;
+  background:
+    radial-gradient(ellipse at center, rgba(201,168,95,0.14), transparent 70%),
+    linear-gradient(135deg, rgba(201,168,95,0.14), rgba(140,80,20,0.08)),
+    var(--bg-elevated);
+  border: 2px solid var(--gold-400);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(184,154,83,0.15),
+    0 10px 48px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  position: relative;
+}
+.emperor-card::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed rgba(201,168,95,0.32);
+  pointer-events: none;
+  border-radius: 2px;
+}
+.emperor-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  color: var(--gold-400);
+  margin-bottom: 8px;
+}
+.emperor-name {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold-100);
+  letter-spacing: 0.35em;
+  text-shadow: 0 0 18px rgba(201,168,95,0.38);
+  line-height: 1.08;
+}
+.emperor-reign {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 8px;
+  letter-spacing: 0.25em;
+}
+
+/* ═══════ 分组 ═══════ */
+.og-group {
+  margin-bottom: 12px;
+  padding: 0 0 4px;
+}
+.og-group-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.og-group-header:hover { opacity: 0.88; }
+.og-group-header .line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent 4%, var(--ink-bd) 30%, var(--ink-bd) 70%, transparent 96%);
+}
+.og-group-header .label-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  border: 1px solid;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, rgba(184,154,83,0.08), rgba(184,154,83,0.02));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.22s var(--ease-out);
+}
+.og-group-header .chev {
+  font-size: 10px;
+  transition: transform 0.22s var(--ease-out);
+  opacity: 0.65;
+}
+.og-group[data-collapsed="true"] .og-group-header .chev { transform: rotate(-90deg); }
+.og-group-header .label-wrap::before {
+  content: "";
+  position: absolute;
+  left: -4px; top: 50%;
+  width: 3px;
+  height: calc(100% - 8px);
+  background: var(--gold-400);
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+.og-group-header .count {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--fg-subtle);
+  padding-left: 8px;
+  border-left: 1px solid var(--fg-ghost);
+}
+.og-group-header .count b { color: var(--gold-300); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* 组主题色 */
+.og-group.theme-zhongshu  .label-wrap { color: var(--gold-200); border-color: var(--gold-400); }
+.og-group.theme-zhongshu  .label-wrap::before { background: var(--gold-400); }
+.og-group.theme-liubu     .label-wrap { color: var(--celadon-300); border-color: var(--celadon-500); background: linear-gradient(to bottom, rgba(107,176,124,0.1), rgba(107,176,124,0.02)); }
+.og-group.theme-liubu     .label-wrap::before { background: var(--celadon-400); }
+.og-group.theme-sijian    .label-wrap { color: #d4c49c; border-color: var(--gold-700); background: linear-gradient(to bottom, rgba(107,93,71,0.14), rgba(107,93,71,0.04)); }
+.og-group.theme-sijian    .label-wrap::before { background: var(--gold-700); }
+.og-group.theme-junzheng  .label-wrap { color: var(--vermillion-300); border-color: var(--vermillion-500); background: linear-gradient(to bottom, rgba(192,64,48,0.1), rgba(192,64,48,0.02)); }
+.og-group.theme-junzheng  .label-wrap::before { background: var(--vermillion-400); }
+.og-group.theme-jiancha   .label-wrap { color: var(--purple-300); border-color: var(--purple-400); background: linear-gradient(to bottom, rgba(155,126,184,0.1), rgba(155,126,184,0.02)); }
+.og-group.theme-jiancha   .label-wrap::before { background: var(--purple-400); }
+.og-group.theme-difang    .label-wrap { color: var(--indigo-300); border-color: var(--indigo-500); background: linear-gradient(to bottom, rgba(90,111,168,0.12), rgba(90,111,168,0.03)); }
+.og-group.theme-difang    .label-wrap::before { background: var(--indigo-400); }
+
+/* 组 body 收起动画 */
+.og-group-body {
+  max-height: 3000px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease-out), opacity 0.3s, padding 0.3s;
+  padding: 0 0 20px;
+}
+.og-group[data-collapsed="true"] .og-group-body {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+}
+
+.og-dept-row {
+  display: grid;
+  gap: 12px;
+}
+.og-group.theme-zhongshu  .og-dept-row { grid-template-columns: repeat(auto-fill, 248px); justify-content: start; }
+.og-group.theme-liubu     .og-dept-row { grid-template-columns: repeat(auto-fill, 184px); justify-content: start; }
+.og-group.theme-sijian    .og-dept-row { grid-template-columns: repeat(auto-fill, 168px); justify-content: start; }
+.og-group.theme-junzheng  .og-dept-row { grid-template-columns: repeat(auto-fill, 208px); justify-content: start; }
+.og-group.theme-jiancha   .og-dept-row { grid-template-columns: repeat(auto-fill, 208px); justify-content: start; }
+.og-group.theme-difang    .og-dept-row { grid-template-columns: repeat(auto-fill, 248px); justify-content: start; }
+
+/* 部门卡 */
+.og-dept {
+  padding: 13px 15px 11px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(184,154,83,0.25);
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.22s var(--ease-out), box-shadow 0.22s, border-color 0.22s, background 0.22s;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-serif);
+}
+.og-dept::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold-500);
+}
+.og-dept:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184,154,83,0.18);
+}
+.og-dept[aria-expanded="true"] {
+  background: linear-gradient(to bottom, rgba(184,154,83,0.1), var(--bg-surface) 60%);
+  box-shadow: 0 0 0 1px rgba(184,154,83,0.25), 0 2px 8px rgba(0,0,0,0.4);
+}
+.og-dept[aria-expanded="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 8px;
+  background: var(--gold-400);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  opacity: 0.85;
+}
+
+/* 主题着色 */
+.og-group.theme-liubu     .og-dept::before { background: linear-gradient(to bottom, var(--celadon-400), var(--celadon-500)); }
+.og-group.theme-liubu     .og-dept { border-color: rgba(107,176,124,0.3); }
+.og-group.theme-liubu     .og-dept:hover { border-color: var(--celadon-300); }
+.og-group.theme-liubu     .og-dept[aria-expanded="true"] { background: linear-gradient(to bottom, rgba(107,176,124,0.1), var(--bg-surface) 60%); box-shadow: 0 0 0 1px rgba(107,176,124,0.25), 0 2px 8px rgba(0,0,0,0.4); }
+.og-group.theme-liubu     .og-dept[aria-expanded="true"]::after { background: var(--celadon-400); }
+.og-group.theme-sijian    .og-dept::before { background: linear-gradient(to bottom, var(--gold-700), var(--fg-ghost)); }
+.og-group.theme-sijian    .og-dept { border-color: rgba(107,93,71,0.35); }
+.og-group.theme-junzheng  .og-dept::before { background: linear-gradient(to bottom, var(--vermillion-400), var(--vermillion-500)); }
+.og-group.theme-junzheng  .og-dept { border-color: rgba(192,64,48,0.3); }
+.og-group.theme-junzheng  .og-dept:hover { border-color: var(--vermillion-400); }
+.og-group.theme-junzheng  .og-dept[aria-expanded="true"] { background: linear-gradient(to bottom, rgba(192,64,48,0.1), var(--bg-surface) 60%); box-shadow: 0 0 0 1px rgba(192,64,48,0.25), 0 2px 8px rgba(0,0,0,0.4); }
+.og-group.theme-junzheng  .og-dept[aria-expanded="true"]::after { background: var(--vermillion-400); }
+.og-group.theme-jiancha   .og-dept::before { background: linear-gradient(to bottom, var(--purple-400), var(--purple-500)); }
+.og-group.theme-jiancha   .og-dept { border-color: rgba(155,126,184,0.3); }
+.og-group.theme-jiancha   .og-dept:hover { border-color: var(--purple-300); }
+.og-group.theme-jiancha   .og-dept[aria-expanded="true"] { background: linear-gradient(to bottom, rgba(155,126,184,0.1), var(--bg-surface) 60%); box-shadow: 0 0 0 1px rgba(155,126,184,0.25), 0 2px 8px rgba(0,0,0,0.4); }
+.og-group.theme-jiancha   .og-dept[aria-expanded="true"]::after { background: var(--purple-400); }
+.og-group.theme-difang    .og-dept::before { background: linear-gradient(to bottom, var(--indigo-400), var(--indigo-500)); }
+.og-group.theme-difang    .og-dept { border-color: rgba(90,111,168,0.3); }
+.og-group.theme-difang    .og-dept:hover { border-color: var(--indigo-300); }
+.og-group.theme-difang    .og-dept[aria-expanded="true"] { background: linear-gradient(to bottom, rgba(90,111,168,0.12), var(--bg-surface) 60%); box-shadow: 0 0 0 1px rgba(90,111,168,0.25), 0 2px 8px rgba(0,0,0,0.4); }
+.og-group.theme-difang    .og-dept[aria-expanded="true"]::after { background: var(--indigo-400); }
+
+.og-dept .chev {
+  position: absolute;
+  top: 11px; right: 12px;
+  font-size: 10px;
+  color: var(--fg-muted);
+  opacity: 0.65;
+  transition: transform 0.22s var(--ease-out);
+}
+.og-dept[aria-expanded="true"] .chev {
+  transform: rotate(180deg);
+  opacity: 1;
+  color: var(--gold-300);
+}
+.og-dept .seal {
+  position: absolute;
+  top: 9px; right: 36px;
+  font-size: 24px;
+  opacity: 0.15;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--gold-400);
+  pointer-events: none;
+}
+.og-group.theme-liubu    .og-dept .seal { color: var(--celadon-400); }
+.og-group.theme-sijian   .og-dept .seal { color: #d4c49c; }
+.og-group.theme-junzheng .og-dept .seal { color: var(--vermillion-400); }
+.og-group.theme-jiancha  .og-dept .seal { color: var(--purple-400); }
+.og-group.theme-difang   .og-dept .seal { color: var(--indigo-400); }
+
+.og-dept .name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  letter-spacing: 0.18em;
+  margin-bottom: 5px;
+  padding-left: 4px;
+}
+.og-group.theme-zhongshu .og-dept .name { font-size: 17px; color: var(--gold-200); }
+.og-group.theme-liubu    .og-dept .name { color: var(--celadon-300); font-size: 16px; }
+.og-group.theme-junzheng .og-dept .name { color: var(--vermillion-300); }
+.og-group.theme-jiancha  .og-dept .name { color: var(--purple-300); }
+.og-group.theme-difang   .og-dept .name { color: var(--indigo-300); }
+.og-group.theme-sijian   .og-dept .name { font-size: 14px; }
+
+.og-dept .meta {
+  display: flex;
+  gap: 10px;
+  padding-left: 4px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  align-items: center;
+}
+.og-dept .meta b { color: var(--gold-300); font-weight: 700; font-variant-numeric: tabular-nums; }
+.og-dept .vac-pip {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--vermillion-400);
+  animation: vac-pulse 2s ease-in-out infinite;
+}
+@keyframes vac-pulse {
+  0%,100% { opacity: 0.6; box-shadow: 0 0 0 0 rgba(192,64,48,0); }
+  50% { opacity: 1; box-shadow: 0 0 8px rgba(192,64,48,0.6); }
+}
+
+/* 展开面板 */
+.og-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.38s var(--ease-out), opacity 0.3s, padding 0.3s, margin 0.3s;
+  padding: 0 20px;
+  margin: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0, transparent 40px, rgba(107,93,71,0.025) 40px, rgba(107,93,71,0.025) 41px),
+    linear-gradient(to bottom, rgba(184,154,83,0.05), transparent 200px),
+    var(--bg-base);
+  border: 1px solid rgba(184,154,83,0.2);
+  border-radius: 4px;
+  position: relative;
+  grid-column: 1 / -1;
+}
+.og-panel.open {
+  max-height: 2400px;
+  opacity: 1;
+  padding: 18px 22px 22px;
+  margin: 6px 0 16px;
+}
+.og-panel::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 8px;
+  background: var(--gold-400);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity 0.25s 0.15s;
+}
+.og-panel.open::before { opacity: 0.85; }
+.og-panel-title {
+  font-size: 12px;
+  color: var(--gold-300);
+  letter-spacing: 0.25em;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--ink-bd);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.og-panel-title b {
+  color: var(--fg-primary);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.18em;
+}
+.og-panel-title small {
+  color: var(--fg-subtle);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+}
+.og-panel-close {
+  margin-left: auto;
+  padding: 3px 12px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--ink-bd);
+  border-radius: 2px;
+  letter-spacing: 0.15em;
+  font-family: var(--font-serif);
+  transition: all 0.15s;
+}
+.og-panel-close:hover { color: var(--vermillion-300); border-color: var(--vermillion-400); }
+
+.og-positions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
+  gap: 14px;
+}
+
+/* ═══════ 位置卡 ═══════ */
+.og-pos {
+  background: linear-gradient(to bottom, var(--bg-surface), var(--bg-paper));
+  border: 1px solid var(--ink-bd);
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  overflow: hidden;
+  position: relative;
+}
+.og-pos:hover { border-color: var(--gold-400); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,154,83,0.18); }
+.og-pos::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.og-pos.rank-top::before  { background: linear-gradient(to bottom, #c04030, #8b2a1f); }
+.og-pos.rank-high::before { background: linear-gradient(to bottom, #c9a045, #9a7632); }
+.og-pos.rank-mid::before  { background: linear-gradient(to bottom, #6ba97f, #4a7658); }
+.og-pos.rank-low::before  { background: linear-gradient(to bottom, #5a6fa8, #3e4e77); }
+.og-pos-head {
+  padding: 12px 14px 8px 18px;
+  border-bottom: 1px solid rgba(107,93,71,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.og-pos-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--fg-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+.rank-seal {
+  display: inline-block;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, rgba(192,64,48,0.82), rgba(140,40,30,0.92));
+  color: #fce8e1;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(140,40,30,0.3);
+  margin-left: 4px;
+}
+.rank-seal.mid-lvl { background: linear-gradient(135deg, rgba(184,154,83,0.85), rgba(140,120,65,0.92)); color: #fff7e0; }
+.rank-seal.low-lvl { background: linear-gradient(135deg, rgba(107,93,71,0.9), rgba(75,65,50,0.95)); color: #d4c49c; }
+.og-pos-sub { font-size: 10px; color: var(--fg-subtle); letter-spacing: 0.1em; }
+.og-pos-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  background: linear-gradient(135deg, #c9a85f, #b89a53);
+  color: #1a1510;
+  border: none;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.og-pos-btn:hover { filter: brightness(1.08); box-shadow: 0 2px 6px rgba(201,168,95,0.3); }
+.og-pos-btn.appoint { background: linear-gradient(135deg, #6ba97f, #5a8f6e); color: #0f0b07; }
+.og-pos-holder { padding: 10px 14px; display: flex; gap: 10px; align-items: center; }
+.og-pos-portrait {
+  width: 40px; height: 40px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #4a3e2e, #2e261d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--gold-300);
+  border: 1px solid rgba(184,154,83,0.22);
+  flex-shrink: 0;
+  font-weight: 700;
+  position: relative;
+}
+.og-pos-portrait.imperial {
+  border: 1.5px solid var(--gold-400);
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 3px var(--gold-400), 0 0 12px rgba(184,154,83,0.4);
+}
+.og-pos-holder-info { flex: 1; min-width: 0; }
+.og-pos-name-line { font-size: 14px; font-weight: 700; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.og-pos-name-line .age { font-size: 10px; color: var(--fg-subtle); font-weight: 400; }
+.og-pos-holder-sub { font-size: 10px; color: var(--fg-muted); margin-top: 1px; letter-spacing: 0.05em; }
+.loyalty-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-left: auto;
+  font-weight: 600;
+}
+.loyalty-mark.loyal  { background: rgba(107,176,124,0.14); color: var(--celadon-300); }
+.loyalty-mark.mid    { background: rgba(201,160,69,0.14); color: var(--amber-400); }
+.loyalty-mark.danger { background: rgba(192,64,48,0.14); color: var(--vermillion-300); }
+.og-pos-stats {
+  padding: 0 14px 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 6px;
+}
+.stat-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.stat-lbl { font-size: 9px; color: var(--fg-subtle); letter-spacing: 0.2em; }
+.stat-val {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--fg-primary);
+}
+.stat-val.good { color: var(--celadon-300); }
+.stat-val.warn { color: var(--amber-400); }
+.stat-val.bad  { color: var(--vermillion-300); }
+.stat-bar { width: 100%; height: 2px; background: rgba(107,93,71,0.2); border-radius: 1px; overflow: hidden; }
+.stat-bar > div { height: 100%; }
+.bg-good { background: var(--celadon-400); }
+.bg-warn { background: var(--amber-400); }
+.bg-bad  { background: var(--vermillion-400); }
+
+.og-pos.vacant {
+  background: repeating-linear-gradient(45deg, var(--bg-surface) 0, var(--bg-surface) 10px, rgba(107,93,71,0.05) 10px, rgba(107,93,71,0.05) 20px);
+  border-style: dashed;
+  border-color: rgba(107,93,71,0.35);
+}
+.og-pos.vacant .og-pos-title { color: var(--fg-muted); }
+.og-pos.vacant .og-pos-holder { padding: 18px 14px; justify-content: center; color: var(--fg-subtle); font-style: italic; font-size: 12px; letter-spacing: 0.3em; }
+.og-pos.vacant .og-pos-holder::before { content: "〔 空 缺 · 待 补 〕"; opacity: 0.75; }
+.og-vacant-dot {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--vermillion-400);
+  animation: vac-pulse 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* 提示 */
+.tip-bar {
+  margin-top: 32px;
+  padding: 14px 18px;
+  background: rgba(184,154,83,0.04);
+  border-left: 2px solid var(--gold-500);
+  border-radius: 0 2px 2px 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+.tip-bar b { color: var(--gold-300); font-weight: 700; letter-spacing: 0.1em; }
+.tip-bar kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--ink-bd);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  color: var(--fg-primary);
+  font-family: monospace;
+  letter-spacing: 0;
+  margin: 0 2px;
+}
+
+/* 入场动画 */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.og-group { animation: fade-up 0.4s var(--ease-out) both; }
+.og-group:nth-child(2) { animation-delay: 0.05s; }
+.og-group:nth-child(3) { animation-delay: 0.1s; }
+.og-group:nth-child(4) { animation-delay: 0.15s; }
+.og-group:nth-child(5) { animation-delay: 0.2s; }
+.og-group:nth-child(6) { animation-delay: 0.25s; }
+
+</style>
+</head>
+<body>
+
+<div class="showcase">
+  <header class="showcase-header">
+    <div class="showcase-header-inner">
+      <div class="showcase-title">官 制 · 分 组 可 展 开 · v 4</div>
+      <div class="showcase-subtitle">职能分组 · 展开面板 · 全键盘可达 · 组级折叠 · 快捷操作</div>
+    </div>
+  </header>
+
+  <!-- 筛选栏 -->
+  <div class="filterbar">
+    <span class="fb-title">〔 六 部 百 司 〕</span>
+    <div class="fb-tabs">
+      <button class="fb-tab" data-filter="all" aria-pressed="true">全 部 <span class="fb-n">48</span></button>
+      <button class="fb-tab empty" data-filter="empty" aria-pressed="false">空 缺 <span class="fb-n">14</span></button>
+      <button class="fb-tab filled" data-filter="filled" aria-pressed="false">在 任 <span class="fb-n">34</span></button>
+    </div>
+    <input class="fb-search" placeholder="搜 姓 名 · 官 职 · 籍 贯…" />
+    <span class="fb-sep"></span>
+    <button class="fb-action" data-action="expand-all">展 开 全 部</button>
+    <button class="fb-action" data-action="collapse-all">收 起 全 部</button>
+    <div class="fb-stats">咸通八年丁亥秋 · 安史之乱</div>
+  </div>
+
+  <!-- 皇帝舞台 -->
+  <div class="emperor-stage">
+    <div class="emperor-card">
+      <div class="emperor-eyebrow">天 命 所 归</div>
+      <div class="emperor-name">思 宗</div>
+      <div class="emperor-reign">崇 祯 元 年 · 戊 辰</div>
+    </div>
+  </div>
+
+  <!-- 分组树 -->
+  <main id="ogRoot"></main>
+
+  <div class="tip-bar">
+    <b>操作</b>：点击<b>部门卡</b>展开/收起其职位 · 点击<b>组标题条</b>折叠整组 · <kbd>Enter</kbd> 激活聚焦项 · <kbd>Esc</kbd> 关闭展开 · <kbd>/</kbd> 聚焦搜索。
+  </div>
+
+</div>
+
+<script>
+// ════════ 数据 ════════
+const DATA = {
+  emperor: { name: '思宗', reign: '崇祯元年·戊辰' },
+  groups: [
+    {
+      id: 'zhongshu', label: '中 央 · 中 枢', theme: 'zhongshu',
+      depts: [
+        { name: '中书省', seal: '中', desc: '掌诏敕机要', positions: [
+          { name: '中书令', rank: '正二品', rankLvl: 2, holder: { name: '杜鸿渐', age: 61, sub: '京兆杜陵', loy: 88, int: 88, adm: 92, mil: 64 }, imperial: true },
+          { name: '中书侍郎', rank: '正三品', rankLvl: 3, holder: null },
+          { name: '中书舍人', rank: '正五品', rankLvl: 5, holder: { name: '韦执谊', age: 39, sub: '京兆', loy: 68, int: 78, adm: 70, mil: 46 } },
+          { name: '起居舍人', rank: '从六品', rankLvl: 6, holder: { name: '裴垍', age: 44, sub: '河东闻喜', loy: 82, int: 85, adm: 78, mil: 50 } },
+        ]},
+        { name: '门下省', seal: '门', desc: '掌审议封驳', positions: [
+          { name: '侍中', rank: '正二品', rankLvl: 2, holder: { name: '郭子仪', age: 72, sub: '华州郑县', loy: 95, int: 76, adm: 72, mil: 94 }, imperial: true },
+          { name: '门下侍郎', rank: '正三品', rankLvl: 3, holder: { name: '李泌', age: 60, sub: '京兆', loy: 90, int: 96, adm: 82, mil: 65 } },
+          { name: '给事中', rank: '正五品', rankLvl: 5, holder: null },
+        ]},
+        { name: '尚书省', seal: '尚', desc: '掌执行六部', positions: [
+          { name: '尚书令', rank: '正二品', rankLvl: 2, holder: null, imperial: true },
+          { name: '左仆射', rank: '从二品', rankLvl: 3, holder: { name: '裴冕', age: 58, sub: '河东', loy: 84, int: 80, adm: 86, mil: 55 } },
+          { name: '右仆射', rank: '从二品', rankLvl: 3, holder: { name: '王缙', age: 56, sub: '太原', loy: 70, int: 78, adm: 82, mil: 48 } },
+        ]},
+      ],
+    },
+    {
+      id: 'liubu', label: '中 央 · 六 部', theme: 'liubu',
+      depts: [
+        { name: '吏部', seal: '吏', desc: '掌官员铨选', positions: [
+          { name: '吏部尚书', rank: '正三品', rankLvl: 3, holder: { name: '颜真卿', age: 70, sub: '琅邪临沂', loy: 95, int: 82, adm: 88, mil: 55 } },
+          { name: '吏部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '崔祐甫', age: 55, sub: '博陵', loy: 88, int: 85, adm: 80, mil: 45 } },
+        ]},
+        { name: '户部', seal: '户', desc: '掌天下户口田赋', positions: [
+          { name: '户部尚书', rank: '正三品', rankLvl: 3, holder: { name: '刘晏', age: 62, sub: '曹州', loy: 86, int: 92, adm: 95, mil: 42 } },
+          { name: '户部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '杨炎', age: 54, sub: '凤翔', loy: 62, int: 88, adm: 82, mil: 40 } },
+        ]},
+        { name: '礼部', seal: '礼', desc: '掌礼仪祭祀', positions: [
+          { name: '礼部尚书', rank: '正三品', rankLvl: 3, holder: { name: '韩滉', age: 58, sub: '长安', loy: 85, int: 82, adm: 78, mil: 62 } },
+          { name: '礼部侍郎', rank: '正四品', rankLvl: 4, holder: null },
+        ]},
+        { name: '兵部', seal: '兵', desc: '掌天下戎政', positions: [
+          { name: '兵部尚书', rank: '正三品', rankLvl: 3, holder: { name: '李晟', age: 54, sub: '陇右临潭', loy: 92, int: 78, adm: 66, mil: 95 } },
+          { name: '兵部侍郎', rank: '正四品', rankLvl: 4, holder: null },
+        ]},
+        { name: '刑部', seal: '刑', desc: '掌刑律', positions: [
+          { name: '刑部尚书', rank: '正三品', rankLvl: 3, holder: { name: '李勉', age: 60, sub: '郑州', loy: 80, int: 75, adm: 82, mil: 52 } },
+          { name: '刑部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '徐申', age: 48, sub: '东海', loy: 75, int: 78, adm: 76, mil: 45 } },
+        ]},
+        { name: '工部', seal: '工', desc: '掌营缮水利', positions: [
+          { name: '工部尚书', rank: '正三品', rankLvl: 3, holder: null },
+          { name: '工部侍郎', rank: '正四品', rankLvl: 4, holder: { name: '苏震', age: 52, sub: '京兆', loy: 72, int: 70, adm: 75, mil: 38 } },
+        ]},
+      ],
+    },
+    {
+      id: 'sijian', label: '中 央 · 寺 监', theme: 'sijian',
+      depts: [
+        { name: '太常寺', seal: '太', desc: '掌礼乐祭祀', positions: [
+          { name: '太常卿', rank: '正三品', rankLvl: 3, holder: { name: '王难得', age: 58, sub: '京兆', loy: 78, int: 72, adm: 70, mil: 45 } },
+        ]},
+        { name: '大理寺', seal: '大', desc: '掌刑狱', positions: [
+          { name: '大理卿', rank: '从三品', rankLvl: 4, holder: { name: '于邵', age: 50, sub: '雍州', loy: 76, int: 80, adm: 74, mil: 40 } },
+        ]},
+        { name: '秘书省', seal: '秘', desc: '掌图书典籍', positions: [
+          { name: '秘书监', rank: '从三品', rankLvl: 4, holder: null },
+        ]},
+        { name: '宗正寺', seal: '宗', desc: '掌宗室谱牒', positions: [
+          { name: '宗正卿', rank: '从三品', rankLvl: 4, holder: { name: '李遵', age: 62, sub: '宗室', loy: 85, int: 68, adm: 65, mil: 40 } },
+        ]},
+        { name: '国子监', seal: '国', desc: '掌儒学教育', positions: [
+          { name: '国子祭酒', rank: '从三品', rankLvl: 4, holder: { name: '韦绚', age: 55, sub: '京兆杜陵', loy: 78, int: 84, adm: 70, mil: 35 } },
+        ]},
+      ],
+    },
+    {
+      id: 'junzheng', label: '中 央 · 军 政', theme: 'junzheng',
+      depts: [
+        { name: '枢密院', seal: '枢', desc: '掌军国机要', positions: [
+          { name: '枢密使', rank: '从二品', rankLvl: 3, holder: { name: '鱼朝恩', age: 48, sub: '泸州', loy: 42, int: 70, adm: 62, mil: 68 } },
+          { name: '枢密副使', rank: '正三品', rankLvl: 3, holder: null },
+        ]},
+        { name: '神策军', seal: '神', desc: '禁军中枢', positions: [
+          { name: '神策军中尉', rank: '正二品', rankLvl: 2, holder: { name: '李辅国', age: 56, sub: '京师', loy: 38, int: 74, adm: 56, mil: 82 } },
+          { name: '神策军将军', rank: '正三品', rankLvl: 3, holder: null },
+        ]},
+      ],
+    },
+    {
+      id: 'jiancha', label: '中 央 · 监 察', theme: 'jiancha',
+      depts: [
+        { name: '御史台', seal: '御', desc: '掌监察弹劾', positions: [
+          { name: '御史大夫', rank: '正三品', rankLvl: 3, holder: { name: '颜杲卿', age: 65, sub: '琅邪', loy: 96, int: 82, adm: 78, mil: 68 } },
+          { name: '御史中丞', rank: '正四品', rankLvl: 4, holder: null },
+        ]},
+        { name: '翰林院', seal: '翰', desc: '掌诏诰文书', positions: [
+          { name: '翰林学士承旨', rank: '正三品', rankLvl: 3, holder: { name: '陆贽', age: 46, sub: '苏州嘉兴', loy: 92, int: 95, adm: 82, mil: 40 } },
+          { name: '翰林学士', rank: '正五品', rankLvl: 5, holder: { name: '权德舆', age: 42, sub: '秦州天水', loy: 85, int: 88, adm: 74, mil: 38 } },
+        ]},
+      ],
+    },
+    {
+      id: 'difang', label: '地 方 · 使 职', theme: 'difang',
+      depts: [
+        { name: '盐铁转运使司', seal: '盐', desc: '掌盐铁专卖·漕运', positions: [
+          { name: '盐铁转运使', rank: '从二品', rankLvl: 3, holder: { name: '第五琦', age: 52, sub: '京兆', loy: 82, int: 84, adm: 90, mil: 42 } },
+          { name: '转运副使', rank: '正四品', rankLvl: 4, holder: null },
+        ]},
+        { name: '观察使司', seal: '观', desc: '掌道级监察', positions: [
+          { name: '观察使', rank: '正三品', rankLvl: 3, holder: { name: '韦皋', age: 54, sub: '京兆万年', loy: 88, int: 80, adm: 78, mil: 85 } },
+          { name: '观察副使', rank: '正四品', rankLvl: 4, holder: null },
+        ]},
+      ],
+    },
+  ],
+};
+
+// ════════ 渲染 ════════
+const root = document.getElementById('ogRoot');
+
+function renderPosCard(p, deptName) {
+  const h = p.holder;
+  const vacant = !h;
+  const rankCls = p.rankLvl <= 2 ? 'rank-top' : p.rankLvl <= 4 ? 'rank-high' : p.rankLvl <= 6 ? 'rank-mid' : 'rank-low';
+  const sealCls = p.rankLvl <= 6 ? '' : p.rankLvl <= 12 ? ' mid-lvl' : ' low-lvl';
+  const btn = vacant
+    ? '<button class="og-pos-btn appoint">任 命</button>'
+    : '<button class="og-pos-btn">改 换</button>';
+
+  if (vacant) {
+    return `<div class="og-pos ${rankCls} vacant">
+      <div class="og-vacant-dot"></div>
+      <div class="og-pos-head">
+        <div>
+          <div class="og-pos-title">${p.name} <span class="rank-seal${sealCls}">${p.rank}</span></div>
+          <div class="og-pos-sub">${deptName}</div>
+        </div>
+        ${btn}
+      </div>
+      <div class="og-pos-holder"></div>
+    </div>`;
+  }
+
+  const loy = h.loy || 50;
+  const loyCls = loy >= 70 ? 'loyal' : loy < 40 ? 'danger' : 'mid';
+  const sc = v => v >= 75 ? 'good' : v < 40 ? 'bad' : 'warn';
+  const sb = v => v >= 75 ? 'bg-good' : v < 40 ? 'bg-bad' : 'bg-warn';
+
+  return `<div class="og-pos ${rankCls}">
+    <div class="og-pos-head">
+      <div>
+        <div class="og-pos-title">${p.name} <span class="rank-seal${sealCls}">${p.rank}</span></div>
+        <div class="og-pos-sub">${deptName}</div>
+      </div>
+      ${btn}
+    </div>
+    <div class="og-pos-holder">
+      <div class="og-pos-portrait${p.imperial ? ' imperial' : ''}">${h.name.charAt(0)}</div>
+      <div class="og-pos-holder-info">
+        <div class="og-pos-name-line">${h.name} <span class="age">·${h.age}岁</span></div>
+        ${h.sub ? `<div class="og-pos-holder-sub">${h.sub}</div>` : ''}
+      </div>
+      <span class="loyalty-mark ${loyCls}">忠 ${loy}</span>
+    </div>
+    <div class="og-pos-stats">
+      <div class="stat-cell"><span class="stat-lbl">智</span><span class="stat-val ${sc(h.int)}">${h.int}</span><div class="stat-bar"><div class="${sb(h.int)}" style="width:${h.int}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">政</span><span class="stat-val ${sc(h.adm)}">${h.adm}</span><div class="stat-bar"><div class="${sb(h.adm)}" style="width:${h.adm}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">军</span><span class="stat-val ${sc(h.mil)}">${h.mil}</span><div class="stat-bar"><div class="${sb(h.mil)}" style="width:${h.mil}%"></div></div></div>
+      <div class="stat-cell"><span class="stat-lbl">忠</span><span class="stat-val ${sc(loy)}">${loy}</span><div class="stat-bar"><div class="${sb(loy)}" style="width:${loy}%"></div></div></div>
+    </div>
+  </div>`;
+}
+
+function renderDept(d, gid, dIdx) {
+  const total = d.positions.length;
+  const filled = d.positions.filter(p => p.holder).length;
+  const vac = total - filled;
+  const deptKey = `${gid}-${dIdx}`;
+
+  const positionsHtml = d.positions.map(p => renderPosCard(p, d.name)).join('');
+
+  return `
+    <button class="og-dept" data-dept-key="${deptKey}" aria-expanded="false" aria-controls="panel-${deptKey}">
+      <span class="chev">▼</span>
+      <span class="seal">${d.seal}</span>
+      <div class="name">${d.name}</div>
+      <div class="meta">编<b>${total}</b>·实<b>${filled}</b>${vac > 0 ? ' <span class="vac-pip"></span>' : ''}</div>
+    </button>
+    <div class="og-panel" id="panel-${deptKey}" role="region" aria-label="${d.name}·职位">
+      <div class="og-panel-title">
+        〔<b>${d.name}</b>〕
+        <small>${d.desc} · 编 ${total} · 实 ${filled}${vac > 0 ? ' · 空 ' + vac : ''}</small>
+        <button class="og-panel-close" data-dept-close="${deptKey}" aria-label="收起">收 起</button>
+      </div>
+      <div class="og-positions">${positionsHtml}</div>
+    </div>
+  `;
+}
+
+function renderGroup(g) {
+  const total = g.depts.reduce((a, d) => a + d.positions.length, 0);
+  const filled = g.depts.reduce((a, d) => a + d.positions.filter(p => p.holder).length, 0);
+  const deptHtml = g.depts.map((d, i) => renderDept(d, g.id, i)).join('');
+
+  return `
+    <section class="og-group theme-${g.theme}" data-group="${g.id}" data-collapsed="false">
+      <button class="og-group-header" aria-expanded="true" aria-controls="body-${g.id}">
+        <span class="line"></span>
+        <span class="label-wrap">
+          <span class="chev">▼</span>
+          ${g.label}
+          <span class="count">编 <b>${total}</b> · 实 <b>${filled}</b></span>
+        </span>
+        <span class="line"></span>
+      </button>
+      <div class="og-group-body" id="body-${g.id}">
+        <div class="og-dept-row">${deptHtml}</div>
+      </div>
+    </section>
+  `;
+}
+
+root.innerHTML = DATA.groups.map(renderGroup).join('');
+
+// ════════ 交互 ════════
+// 点击部门→展开/收起其面板（可多个并存）
+root.addEventListener('click', e => {
+  const closeBtn = e.target.closest('[data-dept-close]');
+  if (closeBtn) {
+    e.stopPropagation();
+    const key = closeBtn.getAttribute('data-dept-close');
+    const btn = root.querySelector(`[data-dept-key="${key}"]`);
+    if (btn) { btn.setAttribute('aria-expanded', 'false'); root.querySelector(`#panel-${key}`).classList.remove('open'); }
+    return;
+  }
+
+  const dept = e.target.closest('.og-dept');
+  if (dept) {
+    const key = dept.getAttribute('data-dept-key');
+    const open = dept.getAttribute('aria-expanded') === 'true';
+    const panel = document.getElementById(`panel-${key}`);
+    dept.setAttribute('aria-expanded', String(!open));
+    if (!open) {
+      panel.classList.add('open');
+      // 将 panel 移到当前 dept 后面（已在 DOM 中相邻）
+    } else {
+      panel.classList.remove('open');
+    }
+    return;
+  }
+
+  const header = e.target.closest('.og-group-header');
+  if (header) {
+    const group = header.closest('.og-group');
+    const collapsed = group.getAttribute('data-collapsed') === 'true';
+    group.setAttribute('data-collapsed', String(!collapsed));
+    header.setAttribute('aria-expanded', String(collapsed));
+    // 若收起整组·同时关闭组内所有已展开的 dept 面板
+    if (!collapsed) {
+      group.querySelectorAll('.og-dept[aria-expanded="true"]').forEach(d => {
+        d.setAttribute('aria-expanded', 'false');
+      });
+      group.querySelectorAll('.og-panel.open').forEach(p => p.classList.remove('open'));
+    }
+  }
+});
+
+// 快捷操作·展开/收起全部
+document.querySelectorAll('[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const act = btn.getAttribute('data-action');
+    if (act === 'expand-all') {
+      root.querySelectorAll('.og-group').forEach(g => {
+        g.setAttribute('data-collapsed', 'false');
+        g.querySelector('.og-group-header').setAttribute('aria-expanded', 'true');
+      });
+      root.querySelectorAll('.og-dept').forEach(d => d.setAttribute('aria-expanded', 'true'));
+      root.querySelectorAll('.og-panel').forEach(p => p.classList.add('open'));
+    } else if (act === 'collapse-all') {
+      root.querySelectorAll('.og-dept').forEach(d => d.setAttribute('aria-expanded', 'false'));
+      root.querySelectorAll('.og-panel').forEach(p => p.classList.remove('open'));
+    }
+  });
+});
+
+// 筛选 chip
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    const filter = btn.getAttribute('data-filter');
+    applyFilter(filter);
+  });
+});
+
+function applyFilter(mode) {
+  root.querySelectorAll('.og-pos').forEach(card => {
+    const isVacant = card.classList.contains('vacant');
+    const show = mode === 'all' || (mode === 'empty' && isVacant) || (mode === 'filled' && !isVacant);
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// 搜索
+const searchInput = document.querySelector('.fb-search');
+let searchTimer = null;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const kw = searchInput.value.trim().toLowerCase();
+    root.querySelectorAll('.og-pos').forEach(card => {
+      if (!kw) { card.style.display = ''; return; }
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(kw) ? '' : 'none';
+    });
+    // Auto-expand depts with matches
+    if (kw) {
+      root.querySelectorAll('.og-dept').forEach(d => {
+        const key = d.getAttribute('data-dept-key');
+        const panel = document.getElementById(`panel-${key}`);
+        const hasMatch = Array.from(panel.querySelectorAll('.og-pos')).some(c => c.style.display !== 'none');
+        if (hasMatch) {
+          d.setAttribute('aria-expanded', 'true');
+          panel.classList.add('open');
+        }
+      });
+    }
+  }, 200);
+});
+
+// 键盘快捷
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    if (e.key === 'Escape') { e.target.blur(); }
+    return;
+  }
+  if (e.key === '/') { e.preventDefault(); searchInput.focus(); return; }
+  if (e.key === 'Escape') {
+    // 关闭所有展开
+    root.querySelectorAll('.og-dept[aria-expanded="true"]').forEach(d => d.setAttribute('aria-expanded', 'false'));
+    root.querySelectorAll('.og-panel.open').forEach(p => p.classList.remove('open'));
+  }
+});
+</script>
+
+</body>
+</html>

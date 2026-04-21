@@ -1254,9 +1254,19 @@ var SaveManager = {
           };
           console.log('[importSave] 规范化完成·slot=' + slotId + '·turn=' + meta.turn + '·gameState keys:', Object.keys(normalized));
 
+          console.log('[importSave] 准备写入 IDB·slotKey=' + slotKey + '·normalized.GM.turn=' + (normalized.GM && normalized.GM.turn));
           TM_SaveDB.save(slotKey, normalized, meta).then(function(ok) {
+            console.log('[importSave] TM_SaveDB.save 返回·ok=' + ok);
             if (ok) {
               _updateSaveIndex(slotId, meta);
+              // 验证·再次 list 确认条目在 IDB
+              setTimeout(function(){
+                TM_SaveDB.list().then(function(list){
+                  var found = list.filter(function(r){return r.id===slotKey;});
+                  console.log('[importSave] 写后验证·IDB 共 ' + list.length + ' 条·目标槽位找到: ' + (found.length>0));
+                  if (found.length === 0) toast('\u26A0 \u5199\u5165\u540E\u672A\u5728 IDB \u627E\u5230\u00B7\u53EF\u80FD\u7F13\u5B58\u95EE\u9898');
+                });
+              }, 100);
               toast('\u2705 \u5B58\u6863\u5DF2\u5F52\u6863\u5230\u5361\u4F4D ' + (slotId + 1));
               resolve(true);
             } else {
@@ -1668,14 +1678,21 @@ function importSaveFileToSlot() {
   var slotId = parseInt(slotSelect.value);
   if (isNaN(slotId) || slotId < 0) { toast('❌ 槽位无效'); return; }
 
-  // 等待 Promise 完成后再刷新·避免 setTimeout 500ms 竞态
+  // 等待 Promise 完成后再刷新·避免 setTimeout 500ms 竞态·无条件 reopen 以展示结果
   var _ret = SaveManager.importSave(file, slotId);
   if (_ret && typeof _ret.then === 'function') {
     _ret.then(function(ok) {
-      if (ok) {
+      console.log('[importSaveFileToSlot] importSave 返回·ok=', ok);
+      // 无论 ok 还是 false 都 reopen·让玩家看到最新状态
+      setTimeout(function() {
         closeSaveManager();
         openSaveManager();
-      }
+        if (!ok) toast('\u26A0 \u5BFC\u5165\u672A\u6210\u529F\u00B7\u8BF7\u67E5\u63A7\u5236\u53F0');
+      }, 200);  // 200ms 等 IDB commit
+    }).catch(function(e) {
+      console.error('[importSaveFileToSlot] Promise 异常:', e);
+      toast('\u274C \u5BFC\u5165\u5F02\u5E38\uFF1A' + (e.message||e));
+      setTimeout(function(){ closeSaveManager(); openSaveManager(); }, 200);
     });
   } else {
     // 兜底（旧版本同步返回）

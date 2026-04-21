@@ -2157,6 +2157,10 @@
       role: '明思宗·朱由检',
       tags: ['明末', '天启', '崇祯即位', '魏忠贤', '阉党', '皇帝视角', '官方'],
       active: true,
+      // 剧本已人工深化全字段·禁用 enterGame 时的 AI 自动补齐(家族郡望/后宫等级/变量映射)
+      // 避免 AI 重写覆盖剧本注解如"魏氏(义子义孙满朝)"
+      aiAutoEnrich: false,
+      isFullyDetailed: true,
       // M1·模型推荐·用于 startGame 时警告玩家当前模型能力可能不足
       modelRequirements: {
         minOutputK: 8,           // 单次输出≥8K tokens（本剧本 46 角色+17 省+复杂 schema）

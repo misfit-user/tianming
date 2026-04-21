@@ -2,6 +2,19 @@
   "_comment": "天命·更新日志——新条目 unshift 到数组最前（由近及远）。格式：{date, module, title, items[]}；items 元素可为字符串或 {what, why}。",
   "entries": [
     {
+      "date": "2026-04-22",
+      "module": "修新游戏加载 API 浪费+3钩子串行+剧本开关",
+      "title": "enterGame 三处 AI 自动调用整改·官方剧本标记 aiAutoEnrich:false 全跳过",
+      "items": [
+        { "what": "_aiEnrichFamilyNames Guard 收紧·原 `c.family.length <= 3` 误筛'魏氏/薛氏/冯氏'等 2 字族名·被 AI 重写覆盖剧本注解'魏氏(义子义孙满朝)'·改为只处理 `!c.family || c.family.length <= 1 || c.family === '氏'` 即真·空壳", "why": "保护剧本已精心撰写的家族详细注解不被 AI 覆写" },
+        { "what": "三函数加剧本级开关·sc.aiAutoEnrich === false 或 sc.isFullyDetailed === true 时各自 skip+退回启发式(varMapping 有 sc.varMapping 则直接取用)", "why": "人工深化剧本无需 AI 补齐·避免无意义调用" },
+        { "what": "新增 _runEnterGameAIFillups(tm-mechanics.js)·串行 await 三步·带 toast『正在补齐角色细节…』·每步失败 console.warn 不阻塞后续·完成 initFamilyRegistry·总耗时记录", "why": "原 3 独立钩子并发·失败静默·玩家不知 API 在跑" },
+        { "what": "删除 2883/3297 两处 _aiGenerateHaremRanks 和 _aiConfirmVarMapping 独立 GameHooks.on('enterGame:after')·合并到单一入口", "why": "避免重复注册+并发" },
+        { "what": "tianqi7-1627 剧本加 aiAutoEnrich:false 与 isFullyDetailed:true 标记", "why": "官方剧本已 97 真角色全字段深化+harem.rankSystem 已配+22 补齐角色全部 family/党派/仕途·无需 AI 补任何细节" },
+        { "what": "总节省：新游戏加载时从 3 次 AI 调用(~1600 tokens)降至 0·启发式/预设兜底·体验即开即玩", "why": "API 节省 + 速度提升 + 数据保护三合一" }
+      ]
+    },
+    {
       "date": "2026-04-21",
       "module": "修性别中英错配·周皇后等女性被渲染为♂",
       "title": "根因：UI 用英文 'female' 判断·剧本数据用中文 '女'·所有女性显示♂",

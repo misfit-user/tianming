@@ -2477,9 +2477,24 @@ function getFamilyTierName(tier) {
  */
 async function _aiEnrichFamilyNames() {
   if (!P.ai || !P.ai.key || !GM.chars) return;
-  // 如果角色家族名已经包含郡望（超过2个字），跳过
+  // 剧本级开关：若剧本标记已全人工深化，跳过全部 AI 补齐
+  var sc0 = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
+  if (sc0 && (sc0.aiAutoEnrich === false || sc0.isFullyDetailed === true)) {
+    _dbg && _dbg('[Family] 剧本标记 aiAutoEnrich=false·跳过家族 AI 补齐');
+    return;
+  }
+  // 只处理"真·空壳"家族：无 family 字段或单字(如"李")·不碰 2+ 字已注的("魏氏(义子)""莆田林氏")
+  // 原 Guard `length <= 3` 会误杀"冯氏""薛氏"等 2 字族名·被 AI 重写覆盖剧本注解
   var needEnrich = GM.chars.filter(function(c) {
-    return c.alive !== false && c.family && c.family.length <= 3 && !c._familyEnriched;
+    if (c.alive === false) return false;
+    if (c._familyEnriched) return false;
+    // 真空字段
+    if (!c.family) return true;
+    // 单字或"氏"独字·视为模板未填
+    if (c.family.length <= 1) return true;
+    if (c.family === '氏') return true;
+    // 2+ 字且含"氏"或具体注解·视为已完备·不再 AI 补
+    return false;
   });
   if (needEnrich.length === 0) return;
 
@@ -2520,8 +2535,58 @@ async function _aiEnrichFamilyNames() {
   }
 }
 
+// ============================================================
+// 新游戏加载·AI 补齐任务串行化（3 个原独立钩子合并）
+// 剧本 aiAutoEnrich===false 时整体跳过·否则依次执行：
+//   1. _aiEnrichFamilyNames (家族郡望)
+//   2. _aiGenerateHaremRanks (后宫等级)
+//   3. _aiConfirmVarMapping  (变量映射)
+// 每步带 toast 提示·失败不阻塞下一步·完成后 initFamilyRegistry
+// ============================================================
+async function _runEnterGameAIFillups() {
+  var sc = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
+  // 剧本标记已深化·全部跳过+启发式兜底
+  if (sc && (sc.aiAutoEnrich === false || sc.isFullyDetailed === true)) {
+    if (typeof _heuristicVarMapping === 'function') {
+      try { _heuristicVarMapping(); } catch(_){}
+    }
+    try { initFamilyRegistry(); } catch(_){}
+    _dbg && _dbg('[enterGameAI] 剧本深化·全 AI 补齐跳过');
+    return;
+  }
+  // 无 AI 配置·仅本地处理
+  if (!P.ai || !P.ai.key) {
+    if (typeof _heuristicVarMapping === 'function') { try { _heuristicVarMapping(); } catch(_){} }
+    try { initFamilyRegistry(); } catch(_){}
+    return;
+  }
+
+  var startMs = Date.now();
+  if (typeof toast === 'function') {
+    try { toast('\u6B63\u5728\u8865\u9F50\u89D2\u8272\u7EC6\u8282\u2026', 'info'); } catch(_){}
+  }
+
+  // 1. 家族名
+  try { await _aiEnrichFamilyNames(); }
+  catch(e) { console.warn('[enterGameAI] 家族补齐失败:', e && e.message || e); }
+
+  // 2. 后宫等级
+  try { await _aiGenerateHaremRanks(); }
+  catch(e) { console.warn('[enterGameAI] 后宫等级生成失败:', e && e.message || e); }
+
+  // 3. 变量映射
+  try { await _aiConfirmVarMapping(); }
+  catch(e) { console.warn('[enterGameAI] 变量映射失败:', e && e.message || e); }
+
+  // 家族注册表
+  try { initFamilyRegistry(); } catch(_){}
+
+  var elapsed = Math.round((Date.now() - startMs) / 1000);
+  _dbg && _dbg('[enterGameAI] 全部补齐耗时 ' + elapsed + 's');
+}
+
 GameHooks.on('enterGame:after', function() {
-  _aiEnrichFamilyNames().then(function() { initFamilyRegistry(); }).catch(function() { initFamilyRegistry(); });
+  _runEnterGameAIFillups();
 });
 
 // ============================================================
@@ -2860,6 +2925,11 @@ async function _aiGenerateHaremRanks() {
   if (!P.ai || !P.ai.key) return;
   var sc = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
   if (!sc) return;
+  // 剧本级开关
+  if (sc.aiAutoEnrich === false || sc.isFullyDetailed === true) {
+    _dbg && _dbg('[Harem] 剧本标记 aiAutoEnrich=false·跳过后宫等级 AI 生成');
+    return;
+  }
   var era = sc.era || sc.dynasty || '';
   if (!era) return;
 
@@ -2880,7 +2950,7 @@ async function _aiGenerateHaremRanks() {
   }
 }
 
-GameHooks.on('enterGame:after', function() { _aiGenerateHaremRanks(); });
+// 已合并到 _runEnterGameAIFillups·此处不再独立注册（避免重复调用）
 
 // ============================================================
 // 外戚系统 — 后宫母族与前朝势力联动
@@ -3250,6 +3320,18 @@ async function _aiConfirmVarMapping() {
     _heuristicVarMapping();
     return;
   }
+  // 剧本级开关·若有 varMapping 直接取用
+  var sc0 = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
+  if (sc0 && sc0.varMapping && typeof sc0.varMapping === 'object') {
+    GM._varMapping = Object.assign({}, sc0.varMapping);
+    _dbg && _dbg('[VarMapping] 剧本预设映射直接取用');
+    return;
+  }
+  if (sc0 && (sc0.aiAutoEnrich === false || sc0.isFullyDetailed === true)) {
+    // 剧本标记禁用·退回启发式
+    _heuristicVarMapping();
+    return;
+  }
   var keys = Object.keys(GM.vars || {});
   if (keys.length === 0) return;
 
@@ -3293,10 +3375,7 @@ function _heuristicVarMapping() {
   _dbg('[VarMapping] Heuristic:', GM._varMapping);
 }
 
-// 注册到enterGame钩子（异步，不阻塞进入游戏）
-GameHooks.on('enterGame:after', function() {
-  _aiConfirmVarMapping();
-});
+// 已合并到 _runEnterGameAIFillups·此处不再独立注册（避免重复调用）
 
 // 将百分比消耗解析为实际数值
 function _resolveTyrantCost(act) {

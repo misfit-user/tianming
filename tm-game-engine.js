@@ -1148,8 +1148,48 @@ function openSettings(){
   bg.innerHTML="<div class=\"settings-box\"><div style=\"padding:0.8rem 1.2rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;\"><div style=\"font-size:1.1rem;font-weight:700;color:var(--gold);\">\u2699 \u8BBE\u7F6E</div><button class=\"bt bs bsm\" onclick=\"closeSettings()\">\u2715</button></div><div class=\"settings-body\" id=\"settings-body\"></div></div>";
 
   var _imgApiCfg = {}; try { _imgApiCfg = JSON.parse(localStorage.getItem('tm_api_image') || '{}'); } catch(e) {}
+
+  // M3·次要 API section·预先构造 HTML 字符串·避免 IIFE 异常打断 innerHTML 拼接
+  var _secApiHtml = '';
+  try {
+    var _sec = (P.ai && P.ai.secondary) || {};
+    var _hasKey = !!(_sec.key && _sec.url);
+    var _enabled = !(P.conf && P.conf.secondaryEnabled === false); // 默认启用
+    var _active = _hasKey && _enabled;
+    var _esc = (typeof escHtml === 'function') ? escHtml : function(s){ return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+    var _badge;
+    if (_active) _badge = '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(107,176,124,0.15);color:var(--celadon-400);font-size:0.68rem;font-weight:700;letter-spacing:0.05em;">\u25CF \u5DF2\u6FC0\u6D3B</span>';
+    else if (_hasKey) _badge = '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(184,154,83,0.15);color:var(--gold);font-size:0.68rem;font-weight:700;letter-spacing:0.05em;">\u25CB \u5DF2\u914D\u00B7\u672A\u542F\u7528</span>';
+    else _badge = '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(120,120,120,0.15);color:var(--txt-d);font-size:0.68rem;letter-spacing:0.05em;">\u25CB \u672A\u914D\u7F6E\u00B7\u5168\u8D70\u4E3B API</span>';
+    var _desc = '\u7528\u4E8E\u95EE\u5BF9\u00B7\u4E09\u79CD\u671D\u8BAE\u00B7\u6587\u4E8B\u52BF\u529B\u5B50\u8C03\u7528\u7B49\u6B21\u8981\u573A\u666F\u3002\u4E3B\u63A8\u6F14\u59CB\u7EC8\u8D70\u4E3B API\u3002\u914D\u4E00\u4E2A\u5FEB\u800C\u4FBF\u5B9C\u7684\u6A21\u578B\u53EF\u5927\u5E45\u52A0\u901F\u00B7\u51CF\u5C11\u6210\u672C\u3002';
+    var _disabledAttr = _hasKey ? '' : 'disabled ';
+    var _disabledStyle = _hasKey ? '' : 'style="opacity:0.5;cursor:not-allowed;" ';
+    _secApiHtml = '<div class="settings-section" style="border-left:3px solid #8a5cf5;background:rgba(138,92,245,0.03);">'+
+      '<h4 style="display:flex;align-items:center;gap:0.5rem;color:#a585ff;"><span>\u6B21\u8981 API \u00B7 \u5FEB\u6A21\u578B\u8DEF\u7531</span>' + _badge + '</h4>'+
+      '<div style="font-size:0.72rem;color:var(--ink-300);margin:-0.3rem 0 0.6rem;line-height:1.55;">' + _desc + '</div>'+
+      '<div class="rw"><div class="fd"><label style="font-size:0.72rem;">Key</label><input type="password" id="s-sec-key" value="' + _esc(_sec.key||'') + '" placeholder="\u7559\u7A7A\u5219\u56DE\u9000\u4E3B API" style="font-size:0.8rem;"></div></div>'+
+      '<div class="rw"><div class="fd"><label style="font-size:0.72rem;">URL</label><input id="s-sec-url" value="' + _esc(_sec.url||'') + '" placeholder="https://api.openai.com/v1" style="font-size:0.8rem;"></div><div class="fd"><label style="font-size:0.72rem;">\u6A21\u578B</label><input id="s-sec-model" value="' + _esc(_sec.model||'') + '" placeholder="gpt-4o-mini / haiku" style="font-size:0.8rem;"></div></div>'+
+      '<div style="font-size:0.68rem;color:var(--ink-300);margin-bottom:0.5rem;">\u63A8\u8350\u5FEB\u6A21\u578B\uFF1Agpt-4o-mini \u00B7 claude-haiku-4-5 \u00B7 deepseek-chat \u00B7 gemini-2.5-flash</div>'+
+      '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">'+
+        '<button class="bt bp bsm" onclick="_saveSecondaryAPI()">\u4FDD\u5B58\u6B21 API</button>'+
+        '<button class="bt bs bsm" ' + _disabledStyle + _disabledAttr + 'onclick="_testSecondaryAPI()">\u2713 \u6D4B\u8BD5\u8FDE\u63A5</button>'+
+        '<button class="bt bs bsm" ' + _disabledStyle + _disabledAttr + 'onclick="_showAvailableModels(\'secondary\')">\u5217\u6A21\u578B</button>'+
+        '<label style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--txt-d);margin-left:auto;">'+
+          '<input type="checkbox" id="s-sec-enabled" ' + (_enabled?'checked ':'') + _disabledAttr + 'onchange="_toggleSecondaryEnabled(this.checked)"> \u542F\u7528</label>'+
+        (_hasKey ? '<button class="bt bd bsm" onclick="if(confirm(\'\u786E\u5B9A\u6E05\u9664\u6B21 API \u914D\u7F6E\uFF1F\')){delete P.ai.secondary;saveP();toast(\'\u5DF2\u6E05\u9664\');closeSettings();openSettings();}">\u6E05\u9664</button>' : '') +
+      '</div>'+
+      (_hasKey ? ('<div style="margin-top:0.5rem;padding:0.4rem 0.5rem;background:rgba(138,92,245,0.06);border-left:2px solid #8a5cf5;border-radius:2px;font-size:0.7rem;color:var(--txt-d);line-height:1.6;">'+
+        '<div><b style="color:#a585ff;">\u6FC0\u6D3B\u8DEF\u7531\uFF1A</b>\u95EE\u5BF9 \u00B7 \u5EF7\u8BAE \u00B7 \u5FA1\u524D \u00B7 \u5E38\u671D \u00B7 \u6587\u4E8B\u52BF\u529B\u00B7\u8FD9\u4E94\u7C7B\u9AD8\u9891\u5B50\u8C03\u7528\u5728\u542F\u7528\u65F6\u8D70\u6B21 API</div>'+
+        '<div style="margin-top:0.2rem;"><b>\u4E3B API \u8D1F\u8D23\uFF1A</b>\u56DE\u5408\u4E3B\u63A8\u6F14(SC1/SC1b/SC1c) \u00B7 \u8BE2\u5929 \u00B7 \u8BE1\u5199\u6DF1\u5EA6\u6587\u672C</div>'+
+      '</div>') : '')+
+    '</div>';
+  } catch(_secErr) {
+    console.error('[openSettings] 次 API section 渲染异常:', _secErr);
+    _secApiHtml = '<div class="settings-section" style="border-left:3px solid #8a5cf5;"><h4 style="color:#a585ff;">\u6B21\u8981 API\uFF08\u6E32\u67D3\u5F02\u5E38\uFF09</h4><div style="color:var(--vermillion-400);font-size:0.78rem;">' + (_secErr.message||_secErr) + '\u3002\u8BF7\u67E5\u63A7\u5236\u53F0\u3002</div></div>';
+  }
+
   _$("settings-body").innerHTML=
-    "<div class=\"settings-section\"><h4>API</h4>"+
+    "<div class=\"settings-section\"><h4>\u4E3B API</h4>"+
     "<div class=\"rw\"><div class=\"fd\"><label>Key</label><input type=\"password\" id=\"s-key\" value=\""+(P.ai.key||"")+"\"></div></div>"+
     "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740</label><input id=\"s-url\" value=\""+(P.ai.url||"")+"\" placeholder=\"https://api.openai.com/v1 \u6216\u4E2D\u8F6C\u7AD9URL\"></div><div class=\"fd\"><label>\u6A21\u578B</label><input id=\"s-model\" value=\""+(P.ai.model||"")+"\"></div></div>"+
     "<div style=\"font-size:0.75rem;color:var(--txt-d);margin:-0.3rem 0 0.5rem;\">\u652F\u6301\u4EFB\u610F OpenAI \u517C\u5BB9\u4E2D\u8F6C\u7AD9\uFF0C\u5730\u5740\u586B\u5199 base URL \u5373\u53EF\u3002</div>"+
@@ -1157,38 +1197,7 @@ function openSettings(){
     "<button class=\"bt bs bsm\" onclick=\"P.ai.key=_$('s-key').value;P.ai.url=_$('s-url').value;P.ai.model=_$('s-model').value;try{localStorage.setItem('tm_api',JSON.stringify(P.ai));}catch(e){}if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).catch(function(){});}saveP();toast('\u2705 \u5DF2\u4FDD\u5B58')\">\u4EC5\u4FDD\u5B58</button>"+
     "</div>"+
 
-    // M3·次要 API·独立 section·明显可见·带状态徽标
-    (function(){
-      var sec = (P.ai && P.ai.secondary) || {};
-      var hasKey = !!(sec.key && sec.url);
-      var enabled = !!P.conf && P.conf.secondaryEnabled !== false; // 默认启用（若配了）
-      var active = hasKey && enabled;
-      var badgeHtml = active
-        ? '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(107,176,124,0.15);color:var(--celadon-400);font-size:0.68rem;font-weight:700;letter-spacing:0.05em;">\u25CF \u5DF2\u6FC0\u6D3B</span>'
-        : hasKey
-          ? '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(184,154,83,0.15);color:var(--gold);font-size:0.68rem;font-weight:700;letter-spacing:0.05em;">\u25CB \u5DF2\u914D\u00B7\u672A\u542F\u7528</span>'
-          : '<span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(120,120,120,0.15);color:var(--txt-d);font-size:0.68rem;letter-spacing:0.05em;">\u25CB \u672A\u914D\u7F6E\u00B7\u5168\u8D70\u4E3B API</span>';
-      var desc = '\u7528\u4E8E\u95EE\u5BF9/\u4E09\u79CD\u671D\u8BAE/\u6587\u4E8B\u52BF\u529B\u5B50\u8C03\u7528\u7B49\u6B21\u8981\u573A\u666F\u00B7\u4E3B\u63A8\u6F14\u59CB\u7EC8\u8D70\u4E3B API\u3002\u914D\u4E00\u4E2A\u5FEB\u800C\u4FBF\u5B9C\u7684\u6A21\u578B\u53EF\u5927\u5E45\u52A0\u901F\u00B7\u51CF\u5C11\u6210\u672C\u3002';
-      return '<div class="settings-section" style="border-left:3px solid var(--purple,#8a5cf5);">'+
-        '<h4 style="display:flex;align-items:center;gap:0.5rem;"><span>\u6B21\u8981 API\u00B7\u5FEB\u6A21\u578B\u8DEF\u7531</span>' + badgeHtml + '</h4>'+
-        '<div style="font-size:0.72rem;color:var(--ink-300);margin:-0.3rem 0 0.5rem;line-height:1.55;">' + desc + '</div>'+
-        '<div class="rw"><div class="fd"><label style="font-size:0.72rem;">Key</label><input type="password" id="s-sec-key" value="' + escHtml(sec.key||'') + '" placeholder="\u7559\u7A7A\u5219\u56DE\u9000\u4E3B API" style="font-size:0.8rem;"></div></div>'+
-        '<div class="rw"><div class="fd"><label style="font-size:0.72rem;">URL</label><input id="s-sec-url" value="' + escHtml(sec.url||'') + '" placeholder="https://api.openai.com/v1" style="font-size:0.8rem;"></div><div class="fd"><label style="font-size:0.72rem;">\u6A21\u578B</label><input id="s-sec-model" value="' + escHtml(sec.model||'') + '" placeholder="gpt-4o-mini/haiku" style="font-size:0.8rem;"></div></div>'+
-        '<div style="font-size:0.68rem;color:var(--ink-300);margin-bottom:0.4rem;">\u63A8\u8350\u00B7\u5FEB\u6A21\u578B\uFF1Agpt-4o-mini \u00B7 claude-haiku-4-5 \u00B7 deepseek-chat \u00B7 gemini-2.5-flash</div>'+
-        '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">'+
-          '<button class="bt bp bsm" onclick="_saveSecondaryAPI()">\u4FDD\u5B58\u6B21 API</button>'+
-          '<button class="bt bs bsm" onclick="_testSecondaryAPI()" ' + (hasKey?'':'disabled style="opacity:0.5;cursor:not-allowed;"') + '>\u2713 \u6D4B\u8BD5\u8FDE\u63A5</button>'+
-          '<button class="bt bs bsm" onclick="_showAvailableModels(\'secondary\')" ' + (hasKey?'':'disabled style="opacity:0.5;cursor:not-allowed;"') + '>\u5217\u6A21\u578B</button>'+
-          '<label style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--txt-d);margin-left:auto;cursor:' + (hasKey?'pointer':'not-allowed') + ';">'+
-            '<input type="checkbox" id="s-sec-enabled" ' + (enabled?'checked':'') + ' ' + (hasKey?'':'disabled') + ' onchange="_toggleSecondaryEnabled(this.checked)"> \u542F\u7528\u6B21 API</label>'+
-          (hasKey ? '<button class="bt bd bsm" onclick="if(confirm(\'\u786E\u5B9A\u6E05\u9664\u6B21 API \u914D\u7F6E\uFF1F\')){delete P.ai.secondary;saveP();toast(\'\u5DF2\u6E05\u9664\');closeSettings();openSettings();}">\u6E05\u9664</button>' : '') +
-        '</div>'+
-        (hasKey ? ('<div style="margin-top:0.5rem;padding:0.4rem 0.5rem;background:rgba(138,92,245,0.06);border-left:2px solid var(--purple,#8a5cf5);border-radius:2px;font-size:0.7rem;color:var(--txt-d);line-height:1.6;">'+
-          '<div><b style="color:var(--purple,#8a5cf5);">\u6FC0\u6D3B\u8DEF\u7531\uFF1A</b>\u95EE\u5BF9 \u00B7 \u5EF7\u8BAE \u00B7 \u5FA1\u524D \u00B7 \u5E38\u671D \u00B7 \u6587\u4E8B\u52BF\u529B\u00B7\u8FD9\u4E94\u7C7B\u9AD8\u9891\u5B50\u8C03\u7528\u5728\u542F\u7528\u65F6\u5168\u90E8\u8D70\u6B21 API</div>'+
-          '<div style="margin-top:0.2rem;"><b>\u4E3B API \u8D1F\u8D23\uFF1A</b>\u56DE\u5408\u4E3B\u63A8\u6F14(SC1/SC1b/SC1c) \u00B7 \u8BE2\u5929 \u00B7 \u8BE1\u5199\u6DF1\u5EA6\u6587\u672C</div>'+
-        '</div>') : '')+
-      '</div>';
-    })()+
+    _secApiHtml +
 
     // 智能生图 API·独立 section
     "<div class=\"settings-section\"><h4>\u667A\u80FD\u751F\u56FE API\uFF08\u53EF\u9009\uFF09</h4>"+

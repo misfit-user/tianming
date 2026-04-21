@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "次 API 设置 UI 加固·预构造+try/catch+内联色",
+      "title": "玩家反映看不到次 API section·重构为预构造 HTML 字符串防 IIFE 异常吞屏",
+      "items": [
+        { "what": "次 API section 从 innerHTML 链中的 IIFE 改为 openSettings 入口预构造的 _secApiHtml 变量·用 try/catch 兜底·异常时显示降级提示不影响其他 section", "why": "原先 IIFE 内任何未捕获异常（如 escHtml 未定义、P.conf 结构异常）都会让整个 innerHTML 赋值失败·用户看到的可能是完全空白的设置面板或只有主 API" },
+        { "what": "escHtml 加本地 _esc 兜底函数·CSS var --purple 改为内联 #8a5cf5·celadon/gold 色值保留 var 但加 fallback", "why": "避免 CSS 变量未加载时紫色徽章不可见·排除「section 渲染了但视觉上隐形」的可能" },
+        { "what": "主 API section H4 从「API」改为「主 API」·与次 API 对称·视觉层级更清晰", "why": "用户分不清两个 section 时·统一命名能降低认知负担" },
+        { "what": "tm-game-engine.js v=h→i", "why": "强制加载新逻辑·排除浏览器缓存嫌疑" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "次 API 设置·独立 section + 状态徽标 + 测试连接",
       "title": "次要 API 从 API 区尾巴独立·加开关+徽标+测试·探测面板常驻",
       "items": [

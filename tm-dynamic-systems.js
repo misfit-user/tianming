@@ -1448,15 +1448,22 @@ function _renderSaveManagerUI(ov, saves) {
       html += '</div>';
       html += '</div>';
     } else {
-      // 空卷
+      // 空卷·增本卡位直接「调入外卷」按钮
       html += '<div class="scroll-save-card" style="--ribbon-h:0%;--ribbon-c:transparent;" onclick="event.stopPropagation();">';
       html += '<div class="scroll-empty">';
       html += '<div class="scroll-archive-id">' + archiveId + '</div>';
       html += '<div style="font-size:var(--text-sm);color:var(--color-foreground-muted);">此卷暂缺</div>';
       html += '<div class="scroll-empty-hint">轻触归档</div>';
-      if (GM.running) {
-        html += '<button class="bt bp bsm" style="margin-top:var(--space-2);" onclick="saveToSlot('+i+')">玉玺封卷</button>';
+      html += '<div style="display:flex;flex-direction:column;gap:var(--space-1);margin-top:var(--space-2);">';
+      if (GM.running && !isAuto) {
+        html += '<button class="bt bp bsm" onclick="saveToSlot('+i+')">玉玺封卷</button>';
       }
+      if (!isAuto) {
+        html += '<label class="bt bs bsm" style="cursor:pointer;">' + _ic('load',12) + ' 调入外卷';
+        html += '<input type="file" accept=".json" style="display:none;" onchange="_importToSpecificSlot('+i+', this)">';
+        html += '</label>';
+      }
+      html += '</div>';
       html += '</div></div>';
     }
   }
@@ -1662,6 +1669,28 @@ function deleteSaveSlot(slotId) {
 
 function exportSaveSlot(slotId) {
   SaveManager.exportSave(slotId);
+}
+
+// 从空卡位直接触发导入·省去选槽位步骤
+function _importToSpecificSlot(slotId, fileInput) {
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
+  if (isNaN(slotId) || slotId < 0) { toast('\u274C \u69FD\u4F4D\u65E0\u6548'); return; }
+  var file = fileInput.files[0];
+  var _ret = SaveManager.importSave(file, slotId);
+  if (_ret && typeof _ret.then === 'function') {
+    _ret.then(function(ok) {
+      console.log('[_importToSpecificSlot] slot=' + slotId + '·ok=' + ok);
+      setTimeout(function() {
+        closeSaveManager();
+        openSaveManager();
+        if (!ok) toast('\u26A0 \u5BFC\u5165\u672A\u6210\u529F\u00B7\u8BF7\u67E5\u63A7\u5236\u53F0');
+      }, 200);
+    }).catch(function(e) {
+      console.error('[_importToSpecificSlot] 异常:', e);
+      toast('\u274C \u5BFC\u5165\u5F02\u5E38\uFF1A' + (e.message||e));
+      setTimeout(function(){ closeSaveManager(); openSaveManager(); }, 200);
+    });
+  }
 }
 
 function importSaveFileToSlot() {

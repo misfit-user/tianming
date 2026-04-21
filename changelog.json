@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "M3·次要 API + 可用模型列表",
+      "title": "次要 API 配置·问对/朝议走快模型·列出 API 可用模型",
+      "items": [
+        { "what": "新增次要 API 配置 P.ai.secondary = {key, url, model}·设置面板 API 区块下新增三字段+保存按钮", "why": "主推演用强模型·次要对话（问对/朝议/文事）用便宜快模型·省 50%+ 成本并提速；未配时自动回退主 API" },
+        { "what": "callAI / callAIMessages / callAIMessagesStream 都加 opts.tier 支持·_getAITier(tier) 路由返回正确的 key/url/model·_aiFetchWithRetry 接受 opts.apiKey", "why": "一行 opts: {tier:'secondary'} 即切换·零侵入现有调用点" },
+        { "what": "调用点标 tier='secondary': 问对（NPC 初次发言+玩家回复）· 廷议 _ty2_genOneSpeech · 御前 _yq2_oneAdvisorSpeak · 常朝 _cc2_genRoundSpeeches · 朝议通用 _streamCYSpeech", "why": "这 5 个高频次要调用点切到快模型后·回合成本和延迟显著下降·主推演不受影响" },
+        { "what": "模型能力校验 + 输出实测 + 模型自报全部支持 opts.tier·P.conf 字段用 _secondary 后缀分离（_detectedContextK_secondary / _detectedMaxOutput_secondary / _measuredMaxOutput_secondary 等）", "why": "主/次 API 能力独立探测·不互相污染；用户配置次 API 后可单独跑一遍"},
+        { "what": "新增 listAvailableModels(tier)·调 GET /models 列出当前 API 可用的全部模型·与白名单交叉对比（★ 标签=已知能力）·按钮放在设置面板「列出可用模型」", "why": "玩家不知道自己 key 能用哪些模型·或代理提供的模型池是哪些；点按钮出列表·点选即可填入模型名" },
+        { "what": "设置面板「模型能力校验」展示双 tier·分「主 API」「次 API」两份能力表·各自按钮独立（上下文探测/输出实测/自报校验/列出模型）", "why": "两套 API 各自一套探测数据·清晰可视；次 API 未配时按钮仍可点·会提示「请先配置」" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "AI 模型双向适配·8 项",
       "title": "M4 Anthropic cache + G3 温度 + G2 降级链 + M1 剧本推荐 + G1 schema 裁剪 + G4 预算 + M2 首次向导 + G5 档位",
       "items": [

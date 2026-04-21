@@ -908,6 +908,33 @@ function _buildAIUrl(base){
   if(u.indexOf("/chat/completions")>=0||u.indexOf("/messages")>=0)return u;
   return u+"/chat/completions";
 }
+
+// M3·按 tier 获取 AI 配置·secondary 未配时回退 primary
+// tier: 'primary'|'secondary'·默认 primary
+function _getAITier(tier) {
+  var _s = P.ai && P.ai.secondary;
+  if (tier === 'secondary' && _s && _s.key && _s.url) {
+    return {
+      key: _s.key,
+      url: _s.url,
+      model: _s.model || P.ai.model || 'gpt-4o-mini',
+      tier: 'secondary'
+    };
+  }
+  return {
+    key: (P.ai && P.ai.key) || '',
+    url: (P.ai && P.ai.url) || '',
+    model: (P.ai && P.ai.model) || 'gpt-4o',
+    tier: 'primary'
+  };
+}
+function _buildAIUrlForTier(tier) {
+  var cfg = _getAITier(tier);
+  var u = (cfg.url || '').replace(/\/+$/, '');
+  if (!u) return u;
+  if (u.indexOf('/chat/completions') >= 0 || u.indexOf('/messages') >= 0) return u;
+  return u + '/chat/completions';
+}
 // ============================================================
 //  1.1 Prompt分层压缩系统
 //  固定层（朝代设定/官制/规则）缓存 + 缓变层差异描述 + 速变层限500字
@@ -1322,7 +1349,8 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
   opts = opts || {};
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
   var timeoutMs = opts.timeoutMs || 180000;
-  var key = P.ai.key;
+  // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
+  var key = opts.apiKey || P.ai.key;
   var lastError = null;
   // 粗估 token 预算（仅警告，不截断：截断是调用方的职责）
   try {
@@ -1400,13 +1428,17 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
  * @param {AbortSignal} [signal] - 中断信号
  * @returns {Promise<string>} AI 响应文本
  */
-async function callAI(prompt,maxTok,signal){
-  var key=P.ai.key;if(!key)throw new Error("API\u672A\u914D\u7F6E");
-  var url=_buildAIUrl();
+async function callAI(prompt,maxTok,signal,tier){
+  // M3·按 tier 取配置·secondary 未配回退 primary·防御 _getAITier 未定义
+  var _aiCfg = null;
+  try { if (typeof _getAITier === 'function') _aiCfg = _getAITier(tier); } catch(_){}
+  if (!_aiCfg) _aiCfg = { key: (P.ai&&P.ai.key)||'', url: (P.ai&&P.ai.url)||'', model: (P.ai&&P.ai.model)||'gpt-4o' };
+  var key=_aiCfg.key || (P.ai&&P.ai.key) || '';if(!key)throw new Error("API\u672A\u914D\u7F6E");
+  var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
-  var body = { model: P.ai.model||"gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
-  var data = await _aiFetchWithRetry(url, body, signal);
+  var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
+  var data = await _aiFetchWithRetry(url, body, signal, { apiKey: key });
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
   if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
   if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
@@ -1487,9 +1519,13 @@ async function callAISmart(prompt, maxTok, options) {
  * @param {AbortSignal} [signal]
  * @returns {Promise<string>}
  */
-async function callAIMessages(messages,maxTok,signal){
-  var key=P.ai.key;if(!key)throw new Error("API\u672A\u914D\u7F6E");
-  var url=_buildAIUrl();
+async function callAIMessages(messages,maxTok,signal,tier){
+  // M3·按 tier 取配置·secondary 未配回退 primary·防御 _getAITier 未定义
+  var _aiCfgM = null;
+  try { if (typeof _getAITier === 'function') _aiCfgM = _getAITier(tier); } catch(_){}
+  if (!_aiCfgM) _aiCfgM = { key: (P.ai&&P.ai.key)||'', url: (P.ai&&P.ai.url)||'', model: (P.ai&&P.ai.model)||'gpt-4o' };
+  var key=_aiCfgM.key || (P.ai&&P.ai.key) || '';if(!key)throw new Error("API\u672A\u914D\u7F6E");
+  var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok2 = Math.round((maxTok||500) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
   // S4：Anthropic 自动 cache_control——仅对"原生 Anthropic API"应用数组 content
@@ -1508,8 +1544,8 @@ async function callAIMessages(messages,maxTok,signal){
       };
     }
   }
-  var body = { model: P.ai.model||"gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
-  var data = await _aiFetchWithRetry(url, body, signal);
+  var body = { model: _aiCfgM.model || (P.ai&&P.ai.model) || "gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
+  var data = await _aiFetchWithRetry(url, body, signal, { apiKey: key });
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
   if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
   if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
@@ -1525,8 +1561,13 @@ async function callAIMessages(messages,maxTok,signal){
  */
 async function callAIMessagesStream(messages, maxTok, opts) {
   opts = opts || {};
-  var key = P.ai.key; if (!key) throw new Error('API未配置');
-  var url = _buildAIUrl(); if (!url) throw new Error('API地址未配置');
+  // M3·按 tier 取 API 配置·默认 primary·secondary 未配自动回退（带 try 兜底以防万一）
+  var _aiCfg = null;
+  try { if (typeof _getAITier === 'function') _aiCfg = _getAITier(opts.tier); } catch(_){}
+  if (!_aiCfg) _aiCfg = { key: (P.ai&&P.ai.key)||'', url: (P.ai&&P.ai.url)||'', model: (P.ai&&P.ai.model)||'gpt-4o', tier: 'primary' };
+  var key = _aiCfg.key || (P.ai && P.ai.key) || ''; if (!key) throw new Error('API未配置');
+  var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(opts.tier) : _buildAIUrl();
+  if (!url) throw new Error('API地址未配置');
   var ctrl = new AbortController();
   var timer = setTimeout(function() { ctrl.abort(); }, 180000);
   if (opts.signal) opts.signal.addEventListener('abort', function() { ctrl.abort(); });
@@ -1546,7 +1587,7 @@ async function callAIMessagesStream(messages, maxTok, opts) {
       }
     } catch(_cE) {}
     var _bodyCore = {
-      model: P.ai.model || 'gpt-4o', messages: _msgsStream,
+      model: (_aiCfg && _aiCfg.model) || (P.ai && P.ai.model) || 'gpt-4o', messages: _msgsStream,
       temperature: (opts.temperature !== undefined) ? opts.temperature : (P.ai.temp || 0.8),
       max_tokens: _scaledTok, stream: true
     };
@@ -2726,29 +2767,34 @@ function _extractMaxOutputFromJson(obj) {
 async function detectModelContextSize(opts) {
   opts = opts || {};
   var _prog = opts.onProgress || function(){};
+  var _tier = opts.tier || 'primary';
+  var _sfx = _tier === 'secondary' ? '_secondary' : '';
+  var _aiCfgDet = _getAITier(_tier);
 
   // 用户手动设置优先
-  if (!opts.force && P.conf.contextSizeK && P.conf.contextSizeK > 0) {
-    _ctxLog('使用用户手动设置: ' + P.conf.contextSizeK + 'K');
-    return P.conf.contextSizeK;
+  var _manualCtx = P.conf['contextSizeK' + _sfx];
+  if (!opts.force && _manualCtx && _manualCtx > 0) {
+    _ctxLog('[' + _tier + '] 使用用户手动设置: ' + _manualCtx + 'K');
+    return _manualCtx;
   }
 
-  var model = (P.ai.model || '').trim();
-  if (!model) { _ctxLog('无模型名，默认32K'); return 32; }
+  var model = (_aiCfgDet.model || '').trim();
+  if (!model) { _ctxLog('[' + _tier + '] 无模型名，默认32K'); return 32; }
 
   // 缓存检查
-  var _cacheKey = model + '@' + (P.ai.url || '');
-  if (!opts.force && P.conf._detectedContextK && P.conf._ctxCacheKey === _cacheKey) {
-    _ctxLog('命中缓存: ' + model + ' = ' + P.conf._detectedContextK + 'K (层' + (P.conf._ctxDetectLayer||'?') + ')');
-    return P.conf._detectedContextK;
+  var _cacheKey = model + '@' + (_aiCfgDet.url || '');
+  var _cachedK = P.conf['_detectedContextK' + _sfx];
+  if (!opts.force && _cachedK && P.conf['_ctxCacheKey' + _sfx] === _cacheKey) {
+    _ctxLog('[' + _tier + '] 命中缓存: ' + model + ' = ' + _cachedK + 'K');
+    return _cachedK;
   }
 
   _ctxDetectLog = []; // 清空日志
   var detectedK = 0;
   var detectedLayer = '';
   var detectedOutputTok = 0;  // 单次最大输出token（0=未知，将由白名单回退）
-  var key = P.ai.key;
-  var baseUrl = (P.ai.url || '').replace(/\/+$/, '');
+  var key = _aiCfgDet.key;
+  var baseUrl = (_aiCfgDet.url || '').replace(/\/+$/, '');
 
   // ═══ 层0：白名单匹配 ═══
   _prog('白名单匹配...');
@@ -2758,7 +2804,7 @@ async function detectModelContextSize(opts) {
   if (!key || !baseUrl) {
     detectedK = whitelistK || 32;
     detectedLayer = whitelistK ? 'L0白名单' : '默认';
-    _finishDetect(detectedK, detectedLayer, _cacheKey);
+    _finishDetect(detectedK, detectedLayer, _cacheKey, 0, _tier);
     return detectedK;
   }
 
@@ -2992,16 +3038,18 @@ async function detectModelContextSize(opts) {
     }
   }
 
-  _finishDetect(detectedK, detectedLayer, _cacheKey, detectedOutputTok);
+  _finishDetect(detectedK, detectedLayer, _cacheKey, detectedOutputTok, _tier);
   return detectedK;
 }
 
-function _finishDetect(k, layer, cacheKey, maxOutputTok) {
-  P.conf._detectedContextK = k;
-  P.conf._ctxCacheKey = cacheKey;
-  P.conf._ctxDetectLayer = layer;
-  if (maxOutputTok && maxOutputTok > 0) P.conf._detectedMaxOutput = maxOutputTok;
-  _ctxLog('最终结果: 上下文' + k + 'K, 输出上限' + (maxOutputTok||0) + ' tokens (' + layer + ')');
+function _finishDetect(k, layer, cacheKey, maxOutputTok, tier) {
+  // M3·tier 特化·次 API 用 _secondary 后缀字段·不污染主
+  var _sfx = (tier === 'secondary') ? '_secondary' : '';
+  P.conf['_detectedContextK' + _sfx] = k;
+  P.conf['_ctxCacheKey' + _sfx] = cacheKey;
+  P.conf['_ctxDetectLayer' + _sfx] = layer;
+  if (maxOutputTok && maxOutputTok > 0) P.conf['_detectedMaxOutput' + _sfx] = maxOutputTok;
+  _ctxLog('最终结果[' + (tier||'primary') + ']: 上下文' + k + 'K, 输出上限' + (maxOutputTok||0) + ' tokens (' + layer + ')');
 }
 
 // ============================================================
@@ -3012,9 +3060,12 @@ function _finishDetect(k, layer, cacheKey, maxOutputTok) {
 async function detectModelOutputLimit(opts) {
   opts = opts || {};
   var _prog = opts.onProgress || function(){};
-  var key = P.ai.key;
+  var _tier = opts.tier || 'primary';
+  var _sfx = _tier === 'secondary' ? '_secondary' : '';
+  var _aiCfgO = _getAITier(_tier);
+  var key = _aiCfgO.key;
   if (!key) return 0;
-  var chatUrl = _buildAIUrl();
+  var chatUrl = _buildAIUrlForTier(_tier);
   if (!chatUrl) return 0;
 
   // 测试梯度：请求这些 token 目标·看实际输出
@@ -3030,7 +3081,7 @@ async function detectModelOutputLimit(opts) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({
-          model: P.ai.model || '',
+          model: _aiCfgO.model || '',
           messages: [{ role: 'user', content:
             'Generate a long continuous story of approximately ' + target + ' tokens. Keep writing narrative details without stopping. Do not ask clarifying questions.\n' +
             '请连续生成约 ' + target + ' tokens 的长篇故事叙事·中途不要停顿不要反问·尽情铺陈细节。'
@@ -3079,16 +3130,18 @@ async function detectModelOutputLimit(opts) {
     }
   }
 
-  // 存入 P.conf
+  // 存入 P.conf·tier 特化
   if (!P.conf._probeHistory) P.conf._probeHistory = {};
-  P.conf._probeHistory.outputLimit = {
+  var _phKey = _tier === 'secondary' ? 'outputLimit_secondary' : 'outputLimit';
+  P.conf._probeHistory[_phKey] = {
     tests: results,
     realLimitTokens: realLimit,
     timestamp: Date.now(),
-    model: P.ai.model || ''
+    model: _aiCfgO.model || '',
+    tier: _tier
   };
-  if (realLimit > 0) P.conf._measuredMaxOutput = realLimit;
-  _ctxLog('[output测] 最终实测: ' + realLimit + ' tokens');
+  if (realLimit > 0) P.conf['_measuredMaxOutput' + _sfx] = realLimit;
+  _ctxLog('[output测·' + _tier + '] 最终实测: ' + realLimit + ' tokens');
   return realLimit;
 }
 
@@ -3099,7 +3152,10 @@ async function detectModelOutputLimit(opts) {
 async function probeModelSelfReport(opts) {
   opts = opts || {};
   var _prog = opts.onProgress || function(){};
-  var key = P.ai.key; var chatUrl = _buildAIUrl();
+  var _tierP = opts.tier || 'primary';
+  var _sfxP = _tierP === 'secondary' ? '_secondary' : '';
+  var _aiCfgP = _getAITier(_tierP);
+  var key = _aiCfgP.key; var chatUrl = _buildAIUrlForTier(_tierP);
   if (!key || !chatUrl) return null;
 
   var questions = [
@@ -3115,7 +3171,7 @@ async function probeModelSelfReport(opts) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({
-          model: P.ai.model || '',
+          model: _aiCfgP.model || '',
           messages: [{ role:'user', content: questions[qi].q }],
           temperature: 0, max_tokens: 50
         }),
@@ -3140,8 +3196,8 @@ async function probeModelSelfReport(opts) {
   var outClaimed = _extractNum(answers[1] && answers[1].a);
   var modelClaimed = (answers[2] && answers[2].a) || '';
   // 白名单基准
-  var wlCtx = (typeof _matchModelCtx === 'function') ? _matchModelCtx(P.ai.model||'') : 0;
-  var wlOut = (typeof _matchModelOutput === 'function') ? _matchModelOutput(P.ai.model||'') : 0;
+  var wlCtx = (typeof _matchModelCtx === 'function') ? _matchModelCtx(_aiCfgP.model||'') : 0;
+  var wlOut = (typeof _matchModelOutput === 'function') ? _matchModelOutput(_aiCfgP.model||'') : 0;
   // 欺骗检测
   var warnings = [];
   if (wlCtx > 0 && ctxClaimed > 0) {
@@ -3153,8 +3209,8 @@ async function probeModelSelfReport(opts) {
     var outClaimedK = _normalizeToK(outClaimed);
     if (outClaimedK > wlOut * 2) warnings.push('输出声称' + outClaimedK + 'K·白名单仅' + wlOut + 'K·疑虚报');
   }
-  if (modelClaimed && P.ai.model) {
-    var lowerC = modelClaimed.toLowerCase(), lowerR = (P.ai.model||'').toLowerCase();
+  if (modelClaimed && _aiCfgP.model) {
+    var lowerC = modelClaimed.toLowerCase(), lowerR = (_aiCfgP.model||'').toLowerCase();
     // 截取前部的模型家族主词做粗匹（例如 "claude" / "gpt" / "gemini"）
     var _fams = ['claude','gpt','deepseek','gemini','qwen','glm','llama','mistral','moonshot','kimi','yi','baichuan'];
     var reqFam = _fams.find(function(f){ return lowerR.indexOf(f)>=0; });
@@ -3170,11 +3226,61 @@ async function probeModelSelfReport(opts) {
     whitelistCtxK: wlCtx, whitelistOutK: wlOut,
     warnings: warnings,
     timestamp: Date.now(),
-    model: P.ai.model || ''
+    model: _aiCfgP.model || '',
+    tier: _tierP
   };
   if (!P.conf._probeHistory) P.conf._probeHistory = {};
-  P.conf._probeHistory.selfReport = report;
+  var _srKey = _tierP === 'secondary' ? 'selfReport_secondary' : 'selfReport';
+  P.conf._probeHistory[_srKey] = report;
   return report;
+}
+
+// ============================================================
+//  新·列出 API 可用模型（GET /models）
+// ============================================================
+async function listAvailableModels(opts) {
+  opts = opts || {};
+  var _tier = opts.tier || 'primary';
+  var _aiCfgL = _getAITier(_tier);
+  var key = _aiCfgL.key;
+  if (!key) throw new Error('未配置 API key');
+  var baseUrl = (_aiCfgL.url || '').replace(/\/+$/, '').replace(/\/chat\/completions\/?$/,'').replace(/\/messages\/?$/,'');
+  var vm = baseUrl.match(/(.*\/v\d+)/);
+  if (vm) baseUrl = vm[1];
+  var listUrl = baseUrl + '/models';
+  try {
+    var resp = await fetch(listUrl, {
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer ' + key, 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var models = [];
+    if (Array.isArray(data)) models = data;
+    else if (Array.isArray(data.data)) models = data.data;
+    else if (Array.isArray(data.models)) models = data.models;
+    // 归一化：每条 {id, ctx, out, matched}
+    return models.map(function(m){
+      var id = (m.id || m.name || m.model || '') + '';
+      var wlCtx = (typeof _matchModelCtx === 'function') ? _matchModelCtx(id) : 0;
+      var wlOut = (typeof _matchModelOutput === 'function') ? _matchModelOutput(id) : 0;
+      return {
+        id: id,
+        contextK: wlCtx,
+        outputK: wlOut,
+        matched: wlCtx > 0,
+        ownedBy: m.owned_by || m.organization || '',
+        created: m.created || 0
+      };
+    }).filter(function(m){ return m.id; }).sort(function(a,b){
+      // 有白名单匹配的在前·按 contextK 降序
+      if (a.matched !== b.matched) return a.matched ? -1 : 1;
+      return (b.contextK||0) - (a.contextK||0);
+    });
+  } catch(e) {
+    throw new Error('列出模型失败：' + (e.message||e));
+  }
 }
 
 /**

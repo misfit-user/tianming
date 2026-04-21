@@ -1155,6 +1155,14 @@ function openSettings(){
     "<div style=\"font-size:0.75rem;color:var(--txt-d);margin:-0.3rem 0 0.5rem;\">\u652F\u6301\u4EFB\u610F OpenAI \u517C\u5BB9\u4E2D\u8F6C\u7AD9\uFF0C\u5730\u5740\u586B\u5199 base URL \u5373\u53EF\u3002</div>"+
     "<button class=\"bt bp bsm\" onclick=\"_saveAPIAndAutoProbe()\">\u4FDD\u5B58\u5E76\u81EA\u52A8\u6821\u9A8C</button>"+
     "<button class=\"bt bs bsm\" onclick=\"P.ai.key=_$('s-key').value;P.ai.url=_$('s-url').value;P.ai.model=_$('s-model').value;try{localStorage.setItem('tm_api',JSON.stringify(P.ai));}catch(e){}if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).catch(function(){});}saveP();toast('\u2705 \u5DF2\u4FDD\u5B58')\">\u4EC5\u4FDD\u5B58</button>"+
+    // M3·次要 API 配置·用于问对/朝议/文事势力子调用等次要调用·省成本+提速
+    "<div style=\"margin-top:0.6rem;padding-top:0.5rem;border-top:1px solid var(--bdr);\"><div style=\"font-size:0.75rem;color:var(--gold-d);margin-bottom:0.3rem;\">\u6B21\u8981 API\uFF08\u7528\u4E8E\u95EE\u5BF9/\u671D\u8BAE/\u6587\u4E8B\u52BF\u529B\u5B50\u8C03\u7528\u00B7\u7559\u7A7A\u5219\u5168\u8D70\u4E3B API\uFF09</div>"+
+    "<div class=\"rw\"><div class=\"fd\"><label style=\"font-size:0.72rem;\">Key</label><input type=\"password\" id=\"s-sec-key\" value=\""+((P.ai.secondary&&P.ai.secondary.key)||'')+"\" placeholder=\"\u7559\u7A7A\u56DE\u9000\u4E3B API\" style=\"font-size:0.8rem;\"></div></div>"+
+    "<div class=\"rw\"><div class=\"fd\"><label style=\"font-size:0.72rem;\">URL</label><input id=\"s-sec-url\" value=\""+((P.ai.secondary&&P.ai.secondary.url)||'')+"\" placeholder=\"\u5FEB\u6A21\u578B base URL\" style=\"font-size:0.8rem;\"></div><div class=\"fd\"><label style=\"font-size:0.72rem;\">\u6A21\u578B</label><input id=\"s-sec-model\" value=\""+((P.ai.secondary&&P.ai.secondary.model)||'')+"\" placeholder=\"gpt-4o-mini/haiku\" style=\"font-size:0.8rem;\"></div></div>"+
+    "<div style=\"font-size:0.68rem;color:var(--ink-300);margin-bottom:0.4rem;\">\u63A8\u8350\u00B7\u5FEB\u800C\u4FBF\u5B9C\u7684\u6A21\u578B\uFF1A gpt-4o-mini / claude-haiku-4-5 / deepseek-chat / gemini-2.5-flash</div>"+
+    "<button class=\"bt bs bsm\" onclick=\"_saveSecondaryAPI()\">\u4FDD\u5B58\u6B21\u8981 API</button>"+
+    "</div>"+
+
     "<div style=\"margin-top:0.6rem;padding-top:0.5rem;border-top:1px solid var(--bdr);\"><div style=\"font-size:0.75rem;color:var(--gold-d);margin-bottom:0.3rem;\">\u667A\u80FD\u751F\u56FE API\uFF08\u72EC\u7ACB\u914D\u7F6E\uFF0C\u7528\u4E8E\u7ACB\u7ED8\u7B49\u56FE\u7247\u751F\u6210\uFF09</div>"+
     "<div class=\"rw\"><div class=\"fd\"><label style=\"font-size:0.72rem;\">Key</label><input type=\"password\" id=\"s-img-key\" value=\""+(_imgApiCfg.key||'')+"\" placeholder=\"\u7559\u7A7A\u5219\u590D\u7528\u4E3BAPI\" style=\"font-size:0.8rem;\"></div></div>"+
     "<div class=\"rw\"><div class=\"fd\"><label style=\"font-size:0.72rem;\">URL</label><input id=\"s-img-url\" value=\""+(_imgApiCfg.url||'')+"\" placeholder=\"https://api.openai.com/v1/images/generations\" style=\"font-size:0.8rem;\"></div><div class=\"fd\"><label style=\"font-size:0.72rem;\">\u6A21\u578B</label><input id=\"s-img-model\" value=\""+(_imgApiCfg.model||'dall-e-3')+"\" style=\"font-size:0.8rem;width:80px;\"></div></div>"+
@@ -1162,13 +1170,26 @@ function openSettings(){
 
     // 模型能力校验·防欺骗
     "<div class=\"settings-section\"><h4>\u6A21\u578B\u80FD\u529B\u6821\u9A8C</h4>"+
-    "<div id=\"s-model-probe-body\">" + _renderModelProbePanel() + "</div>"+
-    "<div style=\"display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.6rem;\">"+
-    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext()\">\u91CD\u65B0\u63A2\u6D4B\u4E0A\u4E0B\u6587</button>"+
-    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput()\">\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650</button>"+
-    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport()\">\u6A21\u578B\u81EA\u62A5\u6821\u9A8C</button>"+
-    "<button class=\"bt bs bsm\" onclick=\"_probeClearCache()\">\u6E05\u9664\u7F13\u5B58</button>"+
-    "</div>"+
+    "<div id=\"s-model-probe-body\">" + _renderModelProbePanel('primary') + ((P.ai&&P.ai.secondary&&P.ai.secondary.key)?('<div style=\"margin-top:0.4rem;\"></div>'+_renderModelProbePanel('secondary')):'') + "</div>"+
+    // 主 API 操作
+    "<div style=\"margin-top:0.6rem;padding:0.4rem;background:rgba(184,154,83,0.04);border-radius:3px;\">"+
+    "<div style=\"font-size:0.7rem;color:var(--gold-d);margin-bottom:0.3rem;\">\u4E3B API \u64CD\u4F5C</div>"+
+    "<div style=\"display:flex;gap:0.3rem;flex-wrap:wrap;\">"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext('primary')\">\u4E0A\u4E0B\u6587</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput('primary')\">\u8F93\u51FA\u5B9E\u6D4B</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport('primary')\">\u6A21\u578B\u81EA\u62A5</button>"+
+    "<button class=\"bt bs bsm\" onclick=\"_showAvailableModels('primary')\">\u5217\u51FA\u53EF\u7528\u6A21\u578B</button>"+
+    "</div></div>"+
+    // 次 API 操作（若已配）
+    "<div style=\"margin-top:0.4rem;padding:0.4rem;background:rgba(138,92,245,0.04);border-radius:3px;\">"+
+    "<div style=\"font-size:0.7rem;color:var(--purple,#8a5cf5);margin-bottom:0.3rem;\">\u6B21 API \u64CD\u4F5C\uFF08\u672A\u914D\u5219\u6309\u94AE\u63D0\u9192\uFF09</div>"+
+    "<div style=\"display:flex;gap:0.3rem;flex-wrap:wrap;\">"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext('secondary')\">\u4E0A\u4E0B\u6587</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput('secondary')\">\u8F93\u51FA\u5B9E\u6D4B</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport('secondary')\">\u6A21\u578B\u81EA\u62A5</button>"+
+    "<button class=\"bt bs bsm\" onclick=\"_showAvailableModels('secondary')\">\u5217\u51FA\u53EF\u7528\u6A21\u578B</button>"+
+    "</div></div>"+
+    "<div style=\"margin-top:0.4rem;\"><button class=\"bt bs bsm\" onclick=\"_probeClearCache()\">\u6E05\u9664\u63A2\u6D4B\u7F13\u5B58</button></div>"+
     "<div style=\"margin-top:0.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;\">"+
     "<label style=\"font-size:0.72rem;color:var(--txt-d);\">\u624B\u52A8\u8986\u5199\u4E0A\u4E0B\u6587 K\uFF1A</label>"+
     "<input id=\"s-ctx-override\" type=\"number\" min=\"0\" value=\""+(P.conf.contextSizeK||0)+"\" placeholder=\"0\u8868\u81EA\u52A8\" style=\"width:90px;font-size:0.78rem;\">"+
@@ -1232,23 +1253,29 @@ function openSettings(){
 function closeSettings(){_$("settings-bg").classList.remove("show");}
 
 // ============================================================
-// 模型能力校验面板·防欺骗
+// 模型能力校验面板·防欺骗·M3 支持双 tier
 // ============================================================
-function _renderModelProbePanel() {
+function _renderModelProbePanel(tier) {
+  tier = tier || 'primary';
+  var _sfx = tier === 'secondary' ? '_secondary' : '';
   var cfg = P.conf || {};
-  var model = P.ai.model || '(未配置)';
+  var isSec = tier === 'secondary';
+  var model = '(未配置)';
+  if (isSec && P.ai.secondary && P.ai.secondary.model) model = P.ai.secondary.model;
+  else if (!isSec) model = P.ai.model || '(未配置)';
   var wlCtxK = (typeof _matchModelCtx === 'function') ? _matchModelCtx(model) : 0;
   var wlOutK = (typeof _matchModelOutput === 'function') ? _matchModelOutput(model) : 0;
-  var detCtx = cfg._detectedContextK || 0;
-  var detOut = cfg._detectedMaxOutput || 0;
-  var measOut = cfg._measuredMaxOutput || 0;
-  var layer = cfg._ctxDetectLayer || '未探测';
+  var detCtx = cfg['_detectedContextK' + _sfx] || 0;
+  var detOut = cfg['_detectedMaxOutput' + _sfx] || 0;
+  var measOut = cfg['_measuredMaxOutput' + _sfx] || 0;
+  var layer = cfg['_ctxDetectLayer' + _sfx] || '未探测';
   var probe = cfg._probeHistory || {};
-  var self = probe.selfReport;
-  var out = probe.outputLimit;
+  var self = isSec ? probe.selfReport_secondary : probe.selfReport;
+  var out = isSec ? probe.outputLimit_secondary : probe.outputLimit;
 
-  var h = '<div style="font-size:0.76rem;line-height:1.8;">';
-  h += '<div><b>\u5F53\u524D\u6A21\u578B\uFF1A</b><code style="color:var(--gold);">' + escHtml(model) + '</code></div>';
+  var _tierLbl = isSec ? '【次 API】' : '【主 API】';
+  var h = '<div style="font-size:0.76rem;line-height:1.8;padding:0.4rem;background:' + (isSec?'rgba(138,92,245,0.04)':'rgba(184,154,83,0.04)') + ';border-left:3px solid ' + (isSec?'var(--purple,#8a5cf5)':'var(--gold-d)') + ';border-radius:2px;">';
+  h += '<div><b>' + _tierLbl + ' \u5F53\u524D\u6A21\u578B\uFF1A</b><code style="color:var(--gold);">' + escHtml(model) + '</code></div>';
   h += '<div style="margin-top:0.4rem;display:grid;grid-template-columns:auto auto auto auto;gap:0.3rem 0.8rem;padding:0.4rem;background:var(--color-elevated);border-radius:3px;">';
   h += '<div style="color:var(--txt-d);">\u6765\u6E90</div><div style="color:var(--txt-d);">\u4E0A\u4E0B\u6587</div><div style="color:var(--txt-d);">\u8F93\u51FA\u4E0A\u9650</div><div style="color:var(--txt-d);">\u5907\u6CE8</div>';
   h += '<div>\u767D\u540D\u5355</div><div>' + (wlCtxK ? wlCtxK+'K' : '-') + '</div><div>' + (wlOutK ? wlOutK+'K' : '-') + '</div><div style="color:var(--txt-d);font-size:0.7rem;">\u6570\u636E\u5E93\u58F0\u79F0</div>';
@@ -1286,57 +1313,134 @@ function _renderModelProbePanel() {
     h += '</div>';
   }
 
-  // 当前生效值
-  var effCtxK = cfg.contextSizeK || detCtx || wlCtxK || 32;
-  var effOutTok = cfg.maxOutputTokens || cfg._measuredMaxOutput || cfg._detectedMaxOutput || (wlOutK * 1024) || 0;
+  // 当前生效值·按 tier 读
+  var manualCtx = cfg['contextSizeK' + _sfx] || 0;
+  var manualOut = cfg['maxOutputTokens' + _sfx] || 0;
+  var effCtxK = manualCtx || detCtx || wlCtxK || 32;
+  var effOutTok = manualOut || measOut || detOut || (wlOutK * 1024) || 0;
   h += '<div style="margin-top:0.5rem;padding:0.4rem;background:rgba(107,176,124,0.08);border-left:3px solid var(--celadon-400);border-radius:3px;font-size:0.72rem;">';
   h += '\u2713 \u5F53\u524D\u751F\u6548\uFF1A\u4E0A\u4E0B\u6587 <b>' + effCtxK + 'K</b>\u00B7\u8F93\u51FA\u4E0A\u9650 <b>' + (effOutTok ? effOutTok+' tokens' : '\u6A21\u578B\u81EA\u7531') + '</b>';
-  if (cfg.contextSizeK || cfg.maxOutputTokens) h += ' <span style="color:var(--gold);">(\u624B\u52A8\u8986\u5199)</span>';
+  if (manualCtx || manualOut) h += ' <span style="color:var(--gold);">(\u624B\u52A8\u8986\u5199)</span>';
   h += '</div>';
   h += '</div>';
   return h;
 }
 
-async function _probeRunContext() {
-  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
-  toast('\u6B63\u5728\u63A2\u6D4B\u4E0A\u4E0B\u6587\u2026');
+function _refreshBothProbePanels() {
+  var el = _$('s-model-probe-body');
+  if (!el) return;
+  var h = _renderModelProbePanel('primary');
+  if (P.ai && P.ai.secondary && P.ai.secondary.key) h += '<div style="margin-top:0.4rem;"></div>' + _renderModelProbePanel('secondary');
+  el.innerHTML = h;
+}
+
+function _tierHasKey(tier) {
+  if (tier === 'secondary') return !!(P.ai && P.ai.secondary && P.ai.secondary.key);
+  return !!(P.ai && P.ai.key);
+}
+
+async function _probeRunContext(tier) {
+  tier = tier || 'primary';
+  if (!_tierHasKey(tier)) { toast('\u8BF7\u5148\u914D\u7F6E' + (tier==='secondary'?'\u6B21\u8981':'\u4E3B') + ' API'); return; }
+  toast('\u6B63\u5728\u63A2\u6D4B\u4E0A\u4E0B\u6587\u00B7' + (tier==='secondary'?'\u6B21 API':'\u4E3B API') + '\u2026');
   try {
     if (typeof detectModelContextSize !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
-    await detectModelContextSize({ force: true, onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    await detectModelContextSize({ force: true, tier: tier, onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
     if (typeof hideLoading === 'function') hideLoading();
+    if (typeof saveP === 'function') saveP();
     toast('\u2705 \u4E0A\u4E0B\u6587\u63A2\u6D4B\u5B8C\u6210');
-    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+    _refreshBothProbePanels();
   } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u63A2\u6D4B\u5931\u8D25\uFF1A' + (e.message||e)); }
 }
 
-async function _probeRunOutput() {
-  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
-  if (!confirm('\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650\u4F1A\u8017 1-3 \u6B21\u957F\u7BC7\u8C03\u7528\u00B7\u6A21\u578B\u8017 tokens \u8F83\u591A\u00B7\u7EE7\u7EED\uFF1F')) return;
+async function _probeRunOutput(tier) {
+  tier = tier || 'primary';
+  if (!_tierHasKey(tier)) { toast('\u8BF7\u5148\u914D\u7F6E ' + (tier==='secondary'?'\u6B21\u8981':'\u4E3B') + ' API'); return; }
+  if (!confirm('\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650\u4F1A\u8017 1-3 \u6B21\u957F\u7BC7\u8C03\u7528\u00B7\u7EE7\u7EED\uFF1F')) return;
   toast('\u6B63\u5728\u5B9E\u6D4B\u8F93\u51FA\u4E0A\u9650\u2026');
   try {
     if (typeof detectModelOutputLimit !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
     if (typeof showLoading === 'function') showLoading('\u5B9E\u6D4B\u8F93\u51FA\u4E2D\u2026', 20);
-    await detectModelOutputLimit({ onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    await detectModelOutputLimit({ tier: tier, onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
     if (typeof hideLoading === 'function') hideLoading();
     if (typeof saveP === 'function') saveP();
     toast('\u2705 \u8F93\u51FA\u4E0A\u9650\u5B9E\u6D4B\u5B8C\u6210');
-    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+    _refreshBothProbePanels();
   } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u5B9E\u6D4B\u5931\u8D25\uFF1A' + (e.message||e)); }
 }
 
-async function _probeRunSelfReport() {
-  if (!P.ai.key) { toast('\u8BF7\u5148\u914D\u7F6E API key'); return; }
+async function _probeRunSelfReport(tier) {
+  tier = tier || 'primary';
+  if (!_tierHasKey(tier)) { toast('\u8BF7\u5148\u914D\u7F6E ' + (tier==='secondary'?'\u6B21\u8981':'\u4E3B') + ' API'); return; }
   toast('\u6B63\u5728\u8BE2\u95EE\u6A21\u578B\u81EA\u62A5\u2026');
   try {
     if (typeof probeModelSelfReport !== 'function') { toast('\u63A2\u6D4B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
     if (typeof showLoading === 'function') showLoading('\u6A21\u578B\u81EA\u62A5\u4E2D\u2026', 30);
-    var r = await probeModelSelfReport({ onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
+    var r = await probeModelSelfReport({ tier: tier, onProgress: function(msg){ if (typeof showLoading === 'function') showLoading(msg, 50); } });
     if (typeof hideLoading === 'function') hideLoading();
     if (typeof saveP === 'function') saveP();
     var warnCt = (r && r.warnings && r.warnings.length) || 0;
     toast(warnCt ? ('\u26A0 \u5B8C\u6210\u00B7 ' + warnCt + ' \u6761\u7591\u4F2A\u8B66\u544A') : '\u2705 \u81EA\u62A5\u6821\u9A8C\u5B8C\u6210');
-    var el = _$('s-model-probe-body'); if (el) el.innerHTML = _renderModelProbePanel();
+    _refreshBothProbePanels();
   } catch(e) { if (typeof hideLoading === 'function') hideLoading(); toast('\u81EA\u62A5\u5931\u8D25\uFF1A' + (e.message||e)); }
+}
+
+// 新·列出 API 可用模型·弹窗展示
+async function _showAvailableModels(tier) {
+  tier = tier || 'primary';
+  if (!_tierHasKey(tier)) { toast('\u8BF7\u5148\u914D\u7F6E ' + (tier==='secondary'?'\u6B21':'\u4E3B') + ' API'); return; }
+  if (typeof listAvailableModels !== 'function') { toast('\u5217\u6A21\u578B\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
+  if (typeof showLoading === 'function') showLoading('\u6B63\u5728\u62C9\u53D6\u6A21\u578B\u5217\u8868\u2026', 30);
+  try {
+    var models = await listAvailableModels({ tier: tier });
+    if (typeof hideLoading === 'function') hideLoading();
+    if (!models || !models.length) { toast('\u672A\u80FD\u83B7\u53D6\u6A21\u578B\u5217\u8868'); return; }
+    // 弹窗展示
+    var html = '<div class="modal-bg show" id="_modelListModal" onclick="if(event.target===this)this.remove()" style="z-index:9999;">';
+    html += '<div class="modal-box" style="max-width:780px;max-height:80vh;overflow-y:auto;background:var(--color-surface);border:1px solid var(--gold-500);border-radius:var(--radius-lg);padding:1.5rem;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">';
+    html += '<div style="font-size:1rem;font-weight:700;color:var(--gold);">' + (tier==='secondary'?'\u6B21':'\u4E3B') + ' API \u53EF\u7528\u6A21\u578B\uFF08\u5171 ' + models.length + ' \u4E2A\uFF09</div>';
+    html += '<button class="bt bs bsm" onclick="document.getElementById(\'_modelListModal\').remove()">\u2715</button></div>';
+    html += '<div style="font-size:0.7rem;color:var(--ink-300);margin-bottom:0.5rem;">\u2605 \u6807\u7B7E=\u5728\u767D\u540D\u5355\u00B7\u5DF2\u77E5\u80FD\u529B\uFF1B\u70B9\u51FB\u6A21\u578B ID \u5373\u53EF\u586B\u5165</div>';
+    html += '<table style="width:100%;font-size:0.76rem;border-collapse:collapse;">';
+    html += '<tr style="color:var(--txt-d);border-bottom:1px solid var(--bdr);"><td>\u6A21\u578B ID</td><td style="text-align:right;">\u4E0A\u4E0B\u6587</td><td style="text-align:right;">\u8F93\u51FA</td><td style="text-align:right;">\u64CD\u4F5C</td></tr>';
+    models.forEach(function(m){
+      var star = m.matched ? '<span style="color:var(--gold);">\u2605</span> ' : '';
+      html += '<tr style="border-bottom:1px solid rgba(107,93,79,0.1);">';
+      html += '<td style="padding:4px 0;"><code style="color:' + (m.matched?'var(--gold)':'var(--txt-s)') + ';">' + star + escHtml(m.id) + '</code>';
+      if (m.ownedBy) html += '<span style="color:var(--ink-300);font-size:0.64rem;"> · ' + escHtml(m.ownedBy) + '</span>';
+      html += '</td>';
+      html += '<td style="text-align:right;padding:4px 0;">' + (m.contextK ? m.contextK+'K' : '-') + '</td>';
+      html += '<td style="text-align:right;padding:4px 0;">' + (m.outputK ? m.outputK+'K' : '-') + '</td>';
+      html += '<td style="text-align:right;padding:4px 0;">';
+      var inputId = tier==='secondary' ? 's-sec-model' : 's-model';
+      html += '<button class="bt bs bsm" onclick="var i=document.getElementById(\'' + inputId + '\');if(i){i.value=' + JSON.stringify(m.id).replace(/"/g,'&quot;') + ';toast(\'\u5DF2\u586B\u5165\u00B7\u8BF7\u70B9\u4FDD\u5B58\');}">\u9009\u6B64</button>';
+      html += '</td></tr>';
+    });
+    html += '</table></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  } catch(e) {
+    if (typeof hideLoading === 'function') hideLoading();
+    toast('\u83B7\u53D6\u6A21\u578B\u5217\u8868\u5931\u8D25\uFF1A' + (e.message||e));
+  }
+}
+
+// M3·保存次要 API 配置
+function _saveSecondaryAPI() {
+  var sk = (_$('s-sec-key')||{}).value || '';
+  var su = (_$('s-sec-url')||{}).value || '';
+  var sm = (_$('s-sec-model')||{}).value || '';
+  if (sk || su || sm) {
+    if (!P.ai) P.ai = {};
+    P.ai.secondary = { key: sk.trim(), url: su.trim(), model: sm.trim() };
+  } else {
+    if (P.ai) delete P.ai.secondary;
+  }
+  try { localStorage.setItem('tm_api', JSON.stringify(P.ai)); } catch(_) {}
+  if (typeof saveP === 'function') saveP();
+  if (window.tianming && window.tianming.isDesktop) { try { window.tianming.autoSave(P).catch(function(){}); } catch(_){} }
+  if (sk && su) toast('\u2705 \u6B21\u8981 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E');
+  else toast('\u2705 \u5DF2\u6E05\u7A7A\u6B21\u8981 API\u00B7\u6240\u6709\u8C03\u7528\u56DE\u9000\u4E3B API');
 }
 
 // M2·保存 API 配置后自动跑一次上下文探测（轻量层 0-3·不跑实测以免烧钱）

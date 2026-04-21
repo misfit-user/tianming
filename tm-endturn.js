@@ -1239,6 +1239,124 @@ async function aiDeepReadScenario() {
 }
 
 // ============================================================
+// 启动预演规划 aiPlanScenarioForInference
+// 在剧本加载时做 1 次 AI 调用·生成推演稳定性关键字段：
+//   · npcHiddenAgenda   每个关键 NPC 的真正目标（防 AI 角色动机漂移）
+//   · crisisBranches    未来 5-10 回合分岔路线（防 AI 一次演完所有好戏）
+//   · tippingPoints     关键时间锚·不可逆临界
+//   · npcFirstTurnReaction  首回合每关键 NPC 的候选反应（指导奏疏+议程生成）
+//   · narrativeTone     行文风格锚点（保证每回合笔法一致）
+// 即使剧本 isFullyDetailed=true 也运行（替代 aiDeepReadScenario 后的价值补偿）
+// 除非剧本显式 skipInferencePlanning:true
+// ============================================================
+async function aiPlanScenarioForInference() {
+  if (!P.ai || !P.ai.key) return;
+  if (GM._aiInferencePlan && GM._aiInferencePlan.generatedAt) return; // 已规划过
+  if (GM.turn > 1) return;
+
+  var sc = findScenarioById(GM.sid);
+  if (!sc) return;
+  if (sc.skipInferencePlanning === true) return;
+
+  var pi = P.playerInfo || {};
+  var keyChars = (GM.chars || []).filter(function(c) {
+    if (!c || c.alive === false || c.isPlayer) return false;
+    // 关键角色判定：有官职/重要度/isHistorical/忠诚极端/野心极端
+    if (c.officialTitle || c.isHistorical || c.importance >= 60) return true;
+    if (c.loyalty != null && (c.loyalty < 30 || c.loyalty > 85)) return true;
+    if (c.ambition != null && c.ambition > 75) return true;
+    return false;
+  }).slice(0, 24); // 上限 24·控 prompt 尺寸
+
+  var charList = keyChars.map(function(c) {
+    var parts = [];
+    parts.push(c.name);
+    if (c.officialTitle) parts.push(c.officialTitle);
+    if (c.party) parts.push(c.party);
+    if (c.loyalty != null) parts.push('忠' + c.loyalty);
+    if (c.ambition != null) parts.push('野' + c.ambition);
+    return parts.join('·');
+  }).join('\n  · ');
+
+  var contradictText = '';
+  if (pi.coreContradictions && pi.coreContradictions.length > 0) {
+    contradictText = pi.coreContradictions.map(function(c) {
+      return '[' + c.dimension + ']' + c.title + (c.parties ? '(' + c.parties + ')' : '') + (c.description ? '：' + c.description.slice(0, 60) : '');
+    }).join('；');
+  }
+
+  var overviewText = (sc.overview || '').slice(0, 600);
+  var openingText = (sc.openingText || '').slice(0, 400);
+  var rulesText = (sc.globalRules || '').slice(0, 400);
+
+  var prompt = '你是' + (sc.era || sc.dynasty || '中国古代') + '历史沙盘推演专家。请基于剧本完成推演稳定性规划。\n\n';
+  prompt += '【剧本总述】\n' + overviewText + '\n';
+  if (openingText) prompt += '【开场白】\n' + openingText + '\n';
+  if (rulesText) prompt += '【全局规则】\n' + rulesText + '\n';
+  if (pi.characterName) prompt += '\n【玩家】' + pi.characterName + (pi.characterTitle ? '·' + pi.characterTitle : '') + '\n';
+  if (pi.factionGoal) prompt += '玩家目标：' + pi.factionGoal + '\n';
+  if (contradictText) prompt += '【显著矛盾】' + contradictText + '\n';
+  prompt += '\n【关键 NPC · ' + keyChars.length + ' 人】\n  · ' + charList + '\n';
+
+  prompt += '\n\n请返回 JSON：\n';
+  prompt += '{\n';
+  prompt += '  "npcHiddenAgenda": {"NPC姓名": "1-2 句话的真实目标/隐藏意图(而非表面官职职责)", ...},\n';
+  prompt += '  "crisisBranches": [\n';
+  prompt += '    "A. 方向一·特征·可能结局(30-50字)",\n';
+  prompt += '    "B. 方向二·...",\n';
+  prompt += '    "C. 方向三·..."\n';
+  prompt += '  ],\n';
+  prompt += '  "tippingPoints": [\n';
+  prompt += '    "T3-5·某事件·不可逆临界点(30字)",\n';
+  prompt += '    "T8-12·...",\n';
+  prompt += '    "T15+·..."\n';
+  prompt += '  ],\n';
+  prompt += '  "npcFirstTurnReaction": {"NPC姓名": "第一回合最可能的言行(20-40字·体现其隐藏议程)", ...关键 NPC 8-15 人即可},\n';
+  prompt += '  "narrativeTone": {\n';
+  prompt += '    "sentenceStyle": "句式风格特征(20字)",\n';
+  prompt += '    "vocabulary": ["典型词1", "典型词2", ...5-8 个],\n';
+  prompt += '    "pacing": "叙事节奏建议(20字)"\n';
+  prompt += '  }\n';
+  prompt += '}\n';
+  prompt += '只输出 JSON。npcHiddenAgenda 和 npcFirstTurnReaction 覆盖主要 NPC 即可·不必全覆盖。';
+
+  try {
+    if (typeof showLoading === 'function') showLoading('规划推演锚点·NPC 动机与危机分岔…', 50);
+    var raw = await callAISmart(prompt, 4000, { maxRetries: 2, minLength: 400 });
+    var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
+    if (!parsed || typeof parsed !== 'object') {
+      console.warn('[aiPlan] 解析失败·跳过');
+      return;
+    }
+    GM._aiInferencePlan = {
+      npcHiddenAgenda: parsed.npcHiddenAgenda || {},
+      crisisBranches: Array.isArray(parsed.crisisBranches) ? parsed.crisisBranches : [],
+      tippingPoints: Array.isArray(parsed.tippingPoints) ? parsed.tippingPoints : [],
+      npcFirstTurnReaction: parsed.npcFirstTurnReaction || {},
+      narrativeTone: parsed.narrativeTone || {},
+      generatedAt: GM.turn || 1
+    };
+    // 同步关键字段到 _aiScenarioDigest·供老推演路径复用
+    if (!GM._aiScenarioDigest) GM._aiScenarioDigest = {};
+    if (parsed.npcHiddenAgenda) {
+      var ag = Object.keys(parsed.npcHiddenAgenda).map(function(k) { return k + '：' + parsed.npcHiddenAgenda[k]; }).join('；');
+      GM._aiScenarioDigest.secretAgendas = ag.slice(0, 1500);
+    }
+    if (Array.isArray(parsed.crisisBranches)) {
+      GM._aiScenarioDigest.crisisTriggers = parsed.crisisBranches.join(' | ').slice(0, 800);
+    }
+    if (Array.isArray(parsed.tippingPoints)) {
+      GM._aiScenarioDigest.tippingPoints = parsed.tippingPoints.join(' | ').slice(0, 600);
+    }
+    console.log('[aiPlan] 推演规划完成·NPC 议程 ' + Object.keys(parsed.npcHiddenAgenda||{}).length + ' 条·分岔 ' + ((parsed.crisisBranches||[]).length) + ' 条');
+  } catch(e) {
+    console.warn('[aiPlan] 失败:', e && e.message);
+  } finally {
+    if (typeof hideLoading === 'function') hideLoading();
+  }
+}
+
+// ============================================================
 // 记忆锚点系统 - 借鉴 HistorySimAI
 // ============================================================
 
@@ -5324,6 +5442,37 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     if (P.chronicleConfig && P.chronicleConfig.style) {
       var _styleNames = {biannian:'编年体(仿《资治通鉴》)',shilu:'实录体(仿各朝实录)',jizhuan:'纪传体(仿《史记》)',jishi:'纪事本末体(仿《通鉴纪事本末》)',biji:'笔记体(仿《世说新语》)',custom:P.chronicleConfig.customStyleDesc||'自定义'};
       sysP += '\n叙事笔法：' + (_styleNames[P.chronicleConfig.style] || P.chronicleConfig.style);
+    }
+    // 注入·启动预演规划（aiPlanScenarioForInference 生成·轻量版·提升推演稳定性）
+    if (GM._aiInferencePlan && GM._aiInferencePlan.generatedAt) {
+      var _pl = GM._aiInferencePlan;
+      if (_pl.npcHiddenAgenda && Object.keys(_pl.npcHiddenAgenda).length > 0) {
+        sysP += '\n\n【NPC 隐藏议程】（AI 推演 NPC 行为时必须参考·而非按官职教条推理）';
+        Object.keys(_pl.npcHiddenAgenda).forEach(function(n) {
+          sysP += '\n  · ' + n + '：' + String(_pl.npcHiddenAgenda[n]).slice(0, 120);
+        });
+      }
+      if (Array.isArray(_pl.crisisBranches) && _pl.crisisBranches.length) {
+        sysP += '\n\n【危机分岔 · 剧本可能走向】（勿一次演完所有·按玩家实际诏令择路展开）';
+        _pl.crisisBranches.forEach(function(b) { sysP += '\n  · ' + String(b).slice(0, 150); });
+      }
+      if (Array.isArray(_pl.tippingPoints) && _pl.tippingPoints.length) {
+        sysP += '\n\n【不可逆临界点】';
+        _pl.tippingPoints.forEach(function(t) { sysP += '\n  · ' + String(t).slice(0, 120); });
+      }
+      if (_pl.narrativeTone) {
+        var _nt = _pl.narrativeTone;
+        if (_nt.sentenceStyle) sysP += '\n\n【行文指纹·句式】' + String(_nt.sentenceStyle).slice(0, 80);
+        if (Array.isArray(_nt.vocabulary) && _nt.vocabulary.length) sysP += '\n【典型词汇】' + _nt.vocabulary.slice(0, 8).join('·');
+        if (_nt.pacing) sysP += '\n【节奏】' + String(_nt.pacing).slice(0, 80);
+      }
+      // 首回合·注入 NPC 首回合候选反应（仅 Turn 1-2 时用·之后信息过时）
+      if (GM.turn <= 2 && _pl.npcFirstTurnReaction && Object.keys(_pl.npcFirstTurnReaction).length > 0) {
+        sysP += '\n\n【首回合 NPC 候选反应·参考】';
+        Object.keys(_pl.npcFirstTurnReaction).slice(0, 15).forEach(function(n) {
+          sysP += '\n  · ' + n + '：' + String(_pl.npcFirstTurnReaction[n]).slice(0, 80);
+        });
+      }
     }
     // 注入AI深度阅读摘要（10轮预热结果——极高密度剧本理解）
     if (GM._aiScenarioDigest && GM._aiScenarioDigest.masterDigest) {

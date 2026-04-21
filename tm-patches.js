@@ -1636,11 +1636,17 @@ function doActualStart(sid){
         await _logicAuditOnStart(sc);
       } catch(e) { console.warn('[LogicAudit] error:', e); }
 
-      // AI深度预热
+      // AI深度预热（剧本标 isFullyDetailed 时内部跳过·用剧本文本兜底）
       if (typeof aiDeepReadScenario === 'function') {
         try {
           await aiDeepReadScenario();
         } catch(e) { console.warn('[DeepRead in doActualStart] error:', e); }
+      }
+      // 推演稳定性规划·1 次 AI 调用·所有剧本都跑（提升 NPC 动机/危机节奏/行文风格稳定性）
+      if (typeof aiPlanScenarioForInference === 'function') {
+        try {
+          await aiPlanScenarioForInference();
+        } catch(e) { console.warn('[aiPlan in doActualStart] error:', e); }
       }
       showLoading('\u751F\u6210\u521D\u59CB\u594F\u758F...', 98);
       generateMemorials();

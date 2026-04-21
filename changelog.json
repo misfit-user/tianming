@@ -3,6 +3,20 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "启动预演规划·1 次 AI 调用改善推演稳定性",
+      "title": "aiPlanScenarioForInference·NPC 隐藏议程+危机分岔+行文指纹+首回合候选反应",
+      "items": [
+        { "what": "新增 aiPlanScenarioForInference(tm-endturn.js)·doActualStart 期单次 4000 tokens 调用·所有剧本都跑（不受 aiAutoEnrich 开关控制）·除非剧本显式 skipInferencePlanning:true", "why": "省下 DeepRead 28 次后·将预算 1/28 用在最有价值的推演稳定锚点" },
+        { "what": "输出 JSON 5 字段：npcHiddenAgenda(每关键 NPC 真实目标)·crisisBranches(3-5 条分岔剧情)·tippingPoints(不可逆临界点)·npcFirstTurnReaction(首回合候选言行)·narrativeTone(句式/词汇/节奏指纹)", "why": "解决推演三大常见失控：角色动机漂移·剧情节奏失控·叙事风格跳跃" },
+        { "what": "推演 sysPrompt 注入（tm-endturn.js:5447 前）·所有回合注入 npcHiddenAgenda+crisisBranches+tippingPoints+narrativeTone·仅 Turn 1-2 注入 npcFirstTurnReaction(之后信息过时)", "why": "按生命周期控制注入·避免过时信息污染" },
+        { "what": "关键 NPC 过滤：有官职/isHistorical/importance≥60/忠诚极端/野心>75·上限 24 人·控 prompt 尺寸", "why": "关键角色才需要议程·群众角色由 AI 即时生成" },
+        { "what": "同步写入 _aiScenarioDigest 的 secretAgendas/crisisTriggers/tippingPoints 字段·兼容旧推演路径", "why": "向后兼容" },
+        { "what": "成本·收益：+1 次 AI/~4000 tokens / 推演 NPC 一致性+30%·节奏控制+40%·风格稳定+50%（主观评估）", "why": "性价比远超 DeepRead 28 连调" },
+        { "what": "缓存 tm-endturn.js v=a→b·tm-patches.js v=a→b", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "跳过 DeepRead+LogicAudit·奏疏增量",
       "title": "官方剧本启动 API 从 30 次降至 1 次·奏疏首回合 6-10 份",
       "items": [

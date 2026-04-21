@@ -29,6 +29,31 @@ openSettings=function(){
     "<div style=\"display:flex;gap:0.3rem;margin-top:0.3rem;\"><button class=\"bt bs bsm\" onclick=\"_sTestImgConn()\">\u6D4B\u8BD5\u8FDE\u63A5</button><button class=\"bt bs bsm\" onclick=\"_sDetectImgCap()\">\u68C0\u6D4B\u751F\u56FE\u529F\u80FD</button><button class=\"bt bp bsm\" onclick=\"_sSaveImgAPI()\">\u4FDD\u5B58</button></div>"+
     "<div id=\"s-img-status\" style=\"font-size:0.72rem;color:var(--txt-d);margin-top:0.3rem;\"></div></div></div>"+
 
+    // 次要 API（M3·快模型路由）——与主 API UI 一致·仅数据对象区别
+    (function(){
+      var sec = (P.ai && P.ai.secondary) || {};
+      var hasKey = !!(sec.key && sec.url);
+      var enabled = !(P.conf && P.conf.secondaryEnabled === false);
+      var active = hasKey && enabled;
+      var badge;
+      if (active) badge = ' <span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(107,176,124,0.18);color:var(--celadon-400,#6bb07c);font-size:0.64rem;font-weight:700;">\u25CF \u5DF2\u6FC0\u6D3B</span>';
+      else if (hasKey) badge = ' <span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(184,154,83,0.18);color:var(--gold);font-size:0.64rem;font-weight:700;">\u25CB \u5DF2\u914D\u00B7\u672A\u542F\u7528</span>';
+      else badge = ' <span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;background:rgba(120,120,120,0.2);color:var(--txt-d);font-size:0.64rem;">\u25CB \u672A\u914D\u7F6E</span>';
+      return "<div class=\"settings-section\" style=\"border-left:3px solid #8a5cf5;\"><h4 style=\"color:#a585ff;\">\u6B21\u8981 API\u00B7\u5FEB\u6A21\u578B\u8DEF\u7531" + badge + "</h4>"+
+        "<div style=\"font-size:0.72rem;color:var(--txt-d);margin:-0.3rem 0 0.5rem;line-height:1.55;\">\u7528\u4E8E\u95EE\u5BF9\u00B7\u4E09\u79CD\u671D\u8BAE\u00B7\u6587\u4E8B\u52BF\u529B\u5B50\u8C03\u7528\u7B49\u6B21\u8981\u573A\u666F\u3002\u4E3B\u63A8\u6F14\u59CB\u7EC8\u8D70\u4E3B API\u3002</div>"+
+        "<div class=\"rw\"><div class=\"fd\"><label>\u670D\u52A1\u5546</label><select id=\"s-sec-prov\"><option value=\"openai\">OpenAI</option><option value=\"deepseek\">DeepSeek</option><option value=\"anthropic\">Claude</option><option value=\"custom\">\u81EA\u5B9A\u4E49</option></select></div><div class=\"fd\"><label>Key</label><input type=\"password\" id=\"s-sec-key\" value=\""+(sec.key||"")+"\" placeholder=\"\u7559\u7A7A\u5219\u56DE\u9000\u4E3B API\"></div></div>"+
+        "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740</label><input id=\"s-sec-url\" value=\""+(sec.url||"")+"\" placeholder=\"https://api.openai.com/v1\"></div><div class=\"fd\"><label>\u6A21\u578B</label><input id=\"s-sec-model\" value=\""+(sec.model||"")+"\" placeholder=\"gpt-4o-mini / haiku\"></div></div>"+
+        "<div style=\"font-size:0.7rem;color:var(--txt-d);margin:-0.2rem 0 0.3rem;\">\u63A8\u8350\uFF1Agpt-4o-mini \u00B7 claude-haiku-4-5 \u00B7 deepseek-chat \u00B7 gemini-2.5-flash</div>"+
+        "<div style=\"display:flex;gap:0.3rem;margin-top:0.4rem;flex-wrap:wrap;\"><button class=\"bai\" onclick=\"sDetectSecondaryModels()\">\u68C0\u6D4B\u6A21\u578B</button><button class=\"bt bs bsm\" onclick=\"sTestSecondaryConn()\">\u6D4B\u8BD5\u8FDE\u63A5</button><button class=\"bt bp bsm\" onclick=\"sSaveSecondaryAPI()\">\u4FDD\u5B58</button>"+
+        (hasKey ? "<button class=\"bt bd bsm\" onclick=\"sClearSecondaryAPI()\">\u6E05\u9664</button>" : "") +
+        "<label style=\"display:inline-flex;align-items:center;gap:0.3rem;font-size:0.78rem;color:var(--txt-d);margin-left:auto;"+(hasKey?"":"opacity:0.5;cursor:not-allowed;")+"\"><input type=\"checkbox\" id=\"s-sec-enabled\" "+(enabled?"checked ":"")+(hasKey?"":"disabled ")+"onchange=\"sToggleSecondaryEnabled(this.checked)\"> \u542F\u7528\u6B21 API</label>"+
+        "</div>"+
+        "<div id=\"s-sec-status\" style=\"font-size:0.78rem;color:var(--txt-d);margin-top:0.3rem;\"></div>"+
+        "<div id=\"s-sec-models\" class=\"model-list\" style=\"display:none;margin-top:0.4rem;\"></div>"+
+        (hasKey ? "<div style=\"margin-top:0.5rem;padding:0.4rem 0.5rem;background:rgba(138,92,245,0.06);border-left:2px solid #8a5cf5;border-radius:2px;font-size:0.7rem;color:var(--txt-d);line-height:1.55;\"><div><b style=\"color:#a585ff;\">\u6FC0\u6D3B\u65F6\u8DEF\u7531\uFF1A</b>\u95EE\u5BF9 \u00B7 \u5EF7\u8BAE \u00B7 \u5FA1\u524D \u00B7 \u5E38\u671D \u00B7 \u6587\u4E8B\u52BF\u529B\uFF08\u4E94\u7C7B\u9AD8\u9891\u5B50\u8C03\u7528\uFF09</div><div style=\"margin-top:0.2rem;\"><b>\u4E3B API \u59CB\u7EC8\u8D1F\u8D23\uFF1A</b>\u56DE\u5408\u63A8\u6F14(SC1/SC1b/SC1c) \u00B7 \u8BE2\u5929 \u00B7 \u8BE1\u5199\u6DF1\u5EA6\u6587\u672C</div></div>" : "") +
+        "</div>";
+    })()+
+
     // 回合读取
     "<div class=\"settings-section\"><h4>\u56DE\u5408\u8BFB\u53D6</h4>"+
     "<div class=\"rw\"><div class=\"fd\"><label>\u8D77\u5C45\u6CE8\u8BFB\u53D6</label><input type=\"number\" id=\"s-qlb\" value=\""+(P.conf.qijuLookback||5)+"\"></div><div class=\"fd\"><label>\u53F2\u8BB0\u8BFB\u53D6</label><input type=\"number\" id=\"s-slb\" value=\""+(P.conf.shijiLookback||5)+"\"></div><div class=\"fd\"><label>\u6BCF N \u56DE\u5408\u5B58\u6863</label><input type=\"number\" id=\"s-as-turns\" value=\""+(P.conf.autoSaveTurns||5)+"\" min=\"0\" style=\"width:60px\"></div></div>"+
@@ -105,6 +130,9 @@ openSettings=function(){
 
   setTimeout(function(){
     var p=_$("s-prov");if(p&&P.ai.provider)p.value=P.ai.provider;
+    // 次 API 服务商下拉·按已保存值回显
+    var sp=_$("s-sec-prov"); var _secCfg=(P.ai&&P.ai.secondary)||{};
+    if(sp&&_secCfg.provider)sp.value=_secCfg.provider;
     // 字数档位交互初始化
     _sVerbUpdatePreview();
     document.querySelectorAll('input[name="s-verbosity"]').forEach(function(r){
@@ -239,6 +267,16 @@ function sSaveAPI(){
 }
 function sSaveAll(){
   sSaveAPI();
+  // M3·次 API 字段同步保存（若面板上有填）
+  if(_$("s-sec-key")||_$("s-sec-url")||_$("s-sec-model")){
+    var _sk=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
+    var _su=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
+    var _sm=_$("s-sec-model")?_$("s-sec-model").value.trim():"";
+    var _sp=_$("s-sec-prov")?_$("s-sec-prov").value:"openai";
+    if(!P.ai)P.ai={};
+    if(_sk||_su||_sm) P.ai.secondary={key:_sk,url:_su,model:_sm,provider:_sp};
+    else if(P.ai) delete P.ai.secondary;
+  }
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
   // AI 记忆容量设置
   P.conf.memoryAnchorKeep=parseInt(_$("s-mem-anchor")?_$("s-mem-anchor").value:"40")||40;
@@ -294,6 +332,102 @@ async function sDetectModels(){
   }catch(err){if(st)st.textContent="\u5931\u8D25: "+err.message;_$("s-models").style.display="flex";_$("s-models").innerHTML="<span class=\"model-chip\" onclick=\"sPickModel('gpt-4o',this)\">gpt-4o</span><span class=\"model-chip\" onclick=\"sPickModel('deepseek-chat',this)\">deepseek-chat</span>";}
 }
 function sPickModel(m,el){var inp=_$("s-model");if(inp)inp.value=m;document.querySelectorAll("#s-models .model-chip").forEach(function(c){c.classList.remove("active");});if(el)el.classList.add("active");}
+
+// ══ 次要 API·M3 快模型路由 ══════════════════════════════════════
+function sSaveSecondaryAPI(){
+  var sk=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
+  var su=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
+  var sm=_$("s-sec-model")?_$("s-sec-model").value.trim():"";
+  var sp=_$("s-sec-prov")?_$("s-sec-prov").value:"openai";
+  if(!P.ai)P.ai={};
+  if(sk||su||sm){
+    P.ai.secondary={key:sk,url:su,model:sm,provider:sp};
+    toast("\u2705 \u6B21 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E");
+  } else {
+    delete P.ai.secondary;
+    toast("\u2705 \u5DF2\u6E05\u7A7A\u6B21 API\u00B7\u56DE\u9000\u4E3B API");
+  }
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  if(window.tianming&&window.tianming.isDesktop){try{window.tianming.autoSave(P).catch(function(){});}catch(e){}}
+  saveP();
+  // 刷新面板以更新徽标和清除按钮可见性
+  try{closeSettings();openSettings();}catch(_){}
+}
+
+function sClearSecondaryAPI(){
+  if(!confirm("\u786E\u5B9A\u6E05\u9664\u6B21 API \u914D\u7F6E\uFF1F"))return;
+  if(P.ai)delete P.ai.secondary;
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  saveP();
+  toast("\u5DF2\u6E05\u9664\u6B21 API");
+  try{closeSettings();openSettings();}catch(_){}
+}
+
+function sToggleSecondaryEnabled(on){
+  if(!P.conf)P.conf={};
+  P.conf.secondaryEnabled=!!on;
+  saveP();
+  toast(on?"\u2705 \u5DF2\u542F\u7528\u6B21 API":"\u5DF2\u5173\u95ED\u6B21 API\u00B7\u56DE\u9000\u4E3B API");
+  try{closeSettings();openSettings();}catch(_){}
+}
+
+async function sDetectSecondaryModels(){
+  var key=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
+  var baseUrl=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
+  if(!key||!baseUrl){toast("\u586B\u5199\u6B21 API Key \u548C\u5730\u5740");return;}
+  var st=_$("s-sec-status");if(st)st.textContent="\u68C0\u6D4B\u4E2D\u2026";
+  var modelsUrl=baseUrl.replace(/\/+$/,"");
+  if(modelsUrl.indexOf("/chat/completions")>=0)modelsUrl=modelsUrl.replace("/chat/completions","/models");
+  else{var vm=modelsUrl.match(/(.*\/v\d+)/);modelsUrl=vm?vm[1]+"/models":modelsUrl+"/models";}
+  try{
+    var resp=await fetch(modelsUrl,{method:"GET",headers:{"Authorization":"Bearer "+key}});
+    if(!resp.ok){
+      var ml=_$("s-sec-models");
+      if(ml){ml.style.display="flex";ml.innerHTML="<span class=\"model-chip\" onclick=\"sPickSecModel('gpt-4o-mini',this)\">gpt-4o-mini</span><span class=\"model-chip\" onclick=\"sPickSecModel('claude-haiku-4-5',this)\">claude-haiku-4-5</span><span class=\"model-chip\" onclick=\"sPickSecModel('deepseek-chat',this)\">deepseek-chat</span>";}
+      if(st)st.textContent="\u63A5\u53E3\u4E0D\u53EF\u7528\u00B7\u5DF2\u663E\u793A\u5E38\u7528\u5FEB\u6A21\u578B";
+      return;
+    }
+    var data=await resp.json();var models=[];
+    if(data.data&&Array.isArray(data.data))models=data.data.map(function(m){return m.id||"";}).filter(Boolean).sort();
+    if(models.length>0){
+      var ml2=_$("s-sec-models");
+      if(ml2){ml2.style.display="flex";var cur=_$("s-sec-model")?_$("s-sec-model").value:"";ml2.innerHTML=models.map(function(m){return "<span class=\"model-chip"+(m===cur?" active":"")+"\" onclick=\"sPickSecModel('"+m+"',this)\">"+m+"</span>";}).join("");}
+      if(st)st.innerHTML="<span style=\"color:var(--green);\">\u2705 "+models.length+" \u4E2A\u6A21\u578B</span>";
+    }
+  }catch(err){
+    if(st)st.textContent="\u5931\u8D25\uFF1A"+err.message;
+    var ml3=_$("s-sec-models");
+    if(ml3){ml3.style.display="flex";ml3.innerHTML="<span class=\"model-chip\" onclick=\"sPickSecModel('gpt-4o-mini',this)\">gpt-4o-mini</span><span class=\"model-chip\" onclick=\"sPickSecModel('claude-haiku-4-5',this)\">claude-haiku-4-5</span>";}
+  }
+}
+
+function sPickSecModel(m,el){
+  var inp=_$("s-sec-model");if(inp)inp.value=m;
+  document.querySelectorAll("#s-sec-models .model-chip").forEach(function(c){c.classList.remove("active");});
+  if(el)el.classList.add("active");
+}
+
+async function sTestSecondaryConn(){
+  var key=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
+  var url=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
+  var model=_$("s-sec-model")?_$("s-sec-model").value.trim():"gpt-4o-mini";
+  if(!key||!url){toast("\u586B\u5199\u6B21 API Key \u548C\u5730\u5740");return;}
+  var st=_$("s-sec-status");if(st)st.textContent="\u8FDE\u63A5\u4E2D\u2026";
+  try{
+    var testUrl=url;
+    if(testUrl.indexOf("/chat/completions")<0)testUrl=testUrl.replace(/\/+$/,"")+"/chat/completions";
+    var t0=Date.now();
+    var resp=await fetch(testUrl,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model:model,messages:[{role:"user",content:"Hi"}],max_tokens:5})});
+    var dt=Date.now()-t0;
+    if(resp.ok){
+      if(st)st.innerHTML="<span style=\"color:var(--green);\">\u2705 \u8FDE\u63A5\u6210\u529F\u00B7"+dt+"ms</span>";
+    }else{
+      if(st)st.innerHTML="<span style=\"color:var(--red);\">\u274C HTTP "+resp.status+"</span>";
+    }
+  }catch(err){
+    if(st)st.innerHTML="<span style=\"color:var(--red);\">\u274C "+err.message+"</span>";
+  }
+}
 async function sTestConn(){
   var key=_$("s-key")?_$("s-key").value:"";var url=_$("s-url")?_$("s-url").value:"";
   if(!key||!url){toast("\u586B\u5199");return;}var st=_$("s-status");if(st)st.textContent="\u8FDE\u63A5\u4E2D...";

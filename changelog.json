@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "修·次 API 加到 tm-patches 真正的 openSettings",
+      "title": "发现真正生效的是 tm-patches.js:9 的 openSettings 覆盖版·此前改的是 tm-game-engine 被覆盖版本",
+      "items": [
+        { "what": "根因定位：tm-patches.js:9 `openSettings=function()` 在脚本加载时覆盖了 tm-game-engine.js 里的 openSettings·所以之前两次在 tm-game-engine 里加次 API section 玩家都看不到", "why": "tm-patches 是老的 UI 重做覆盖层·加了「服务商下拉+Temp+记忆+上下文K+检测模型+重新探测窗口」等更完整的 UI·但次 API 功能从未集成过去" },
+        { "what": "在 tm-patches 的 openSettings 主 API section 之后·回合读取 section 之前·插入「次要 API·快模型路由」独立 section·UI 结构完全对齐主 API：服务商下拉+Key+地址+模型·检测模型/测试连接/保存 三按钮·启用开关·清除按钮·状态行·模型 chip 列表·激活路由说明", "why": "用户明确要求「和主 api 在 ui 显示上一样·只是使用对象功能区别」——结构镜像才直观" },
+        { "what": "新增 5 个处理函数：sSaveSecondaryAPI / sClearSecondaryAPI / sToggleSecondaryEnabled / sDetectSecondaryModels / sTestSecondaryConn / sPickSecModel·与主 API 的 sSaveAPI/sTestConn/sDetectModels/sPickModel 一一对应·只是目标路径换成 P.ai.secondary", "why": "每个按钮有对称的处理函数·用户预期行为一致" },
+        { "what": "sSaveAll 底部「保存所有设置」按钮增加次 API 字段同步保存", "why": "用户预期点最底下的「保存所有」应覆盖全部 section·不能只保存主 API" },
+        { "what": "setTimeout 初始化块增加 s-sec-prov 回显·从 P.ai.secondary.provider 读取", "why": "服务商下拉与主 API 一致·重开设置后要能看到上次选的" },
+        { "what": "tm-patches.js v=w→j·强制刷新", "why": "排除缓存" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "次 API 设置 UI 加固·预构造+try/catch+内联色",
       "title": "玩家反映看不到次 API section·重构为预构造 HTML 字符串防 IIFE 异常吞屏",
       "items": [

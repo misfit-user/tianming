@@ -2951,6 +2951,37 @@ function applyEdictActions(actions) {
         if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) CorruptionEngine.markAsRecentAppointment(char);
         addEB('人事', a.character + '奉诏就任' + a.position + '（' + hit.deptPath + '）', { credibility: 'high' });
         if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
+        // ★ 远地角色启动赴任行程
+        if (char.location) {
+          var _capE = GM._capital || '京师';
+          var _destE = _capE;
+          var _regE = (hit.deptPath + a.position).match(/([\u4e00-\u9fa5]{2,4})(?:\u5DE1\u629A|\u603B\u5175|\u603B\u7763|\u5E03\u653F\u4F7F|\u6309\u5BDF\u4F7F|\u7ECF\u7565|\u8282\u5EA6)/);
+          if (_regE && _regE[1]) _destE = _regE[1];
+          if (char.location !== _destE && !char._travelTo) {
+            var _daysE = 20;
+            try { if (typeof calcLetterDays === 'function') _daysE = calcLetterDays(char.location, _destE, 'normal') || 20; } catch(_){}
+            var _dpvE = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
+            char._travelFrom = char.location;
+            char._travelTo = _destE;
+            char._travelStartTurn = GM.turn;
+            char._travelRemainingDays = _daysE;
+            char._travelArrival = GM.turn + Math.max(1, Math.ceil(_daysE / _dpvE));
+            char._travelReason = '奉诏赴任 ' + a.position;
+            char._travelAssignPost = (hit.deptPath || '') + '/' + a.position;
+            if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
+            GM._chronicle.unshift({
+              turn: GM.turn, date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
+              type: '赴任启程', title: a.character + ' 赴 ' + _destE,
+              content: a.character + ' 自' + char.location + ' 启程赴' + _destE + '·就任 ' + a.position + '·预计 ' + _daysE + ' 日抵任。',
+              category: '人事', tags: ['人事', '赴任', '启程', a.character]
+            });
+            if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
+            GM.qijuHistory.unshift({
+              turn: GM.turn, date: GM._gameDate || '',
+              content: '【启程】' + a.character + ' 自' + char.location + ' 赴 ' + _destE + ' 就任 ' + a.position
+            });
+          }
+        }
         done = true;
       }
     }

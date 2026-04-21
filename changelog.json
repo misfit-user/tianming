@@ -3,6 +3,22 @@
   "entries": [
     {
       "date": "2026-04-21",
+      "module": "修·玩家任命旅程+编年",
+      "title": "玩家任命远地角色时·启动赴任旅程·编年/起居注同步",
+      "items": [
+        { "what": "_offPickerConfirm(tm-index-world.js)·在 Step 4b 插入旅程启动逻辑·candidate.location ≠ 目的地(京师或地方职的地名)时设 _travelTo/_travelFrom/_travelStartTurn/_travelRemainingDays/_travelArrival/_travelReason/_travelAssignPost·并 unshift 编年+起居注启程条·addEB 报话筒", "why": "原代码只设 p.holder 立即就任·不发起旅程·char.location 不变迁·编年不记·行程不在途" },
+        { "what": "目的地推断正则 `([\\u4e00-\\u9fa5]{2,4})(?:巡抚|总兵|总督|布政使|按察使|经略|节度)`·地方职取前缀地名·中央职用 GM._capital||'京师'", "why": "辽东总兵→辽东·而非全部赴京" },
+        { "what": "v10 pos card(_ogRenderPosCardV10)·_transitTo/_transitDays/_transitFrom 识别新模型 _travelTo/_travelRemainingDays/_travelFrom 及旧模型 _enRouteToOffice 兼容并存", "why": "卡片原只读 _enRouteToOffice·新旧模型分裂·v10 显不出赴任态" },
+        { "what": "applyEdictActions(tm-endturn.js) Path 2 appointment·同样在 findPositionInOfficeTree 命中后插入旅程启动块·char.location ≠ 目的地时设 _travel* 字段+编年+起居注", "why": "AI 抽取诏令/玩家在诏令 textarea 手写的任命·也应触发旅程" },
+        { "what": "advanceCharTravelByDays(tm-ai-change-applier.js) 抵达分支·在 qijuHistory 后补 G._chronicle.unshift 抵达条·type='赴任抵达'", "why": "原仅写 qijuHistory 和 addEB·编年 tab 读 GM._chronicle 不显" },
+        { "what": "char_updates.travelTo 处理(968+)·写 qiju 后补编年 启程条", "why": "AI-驱动旅程也要进编年" },
+        { "what": "office_assignments needTravel 分支(1012+)·同样补编年赴任启程条", "why": "同上" },
+        { "what": "_summonRecall(3133·召回某官面圣)·除 letters 外·补编年+起居注+_travelTo/_travelRemainingDays/_travelArrival·v10 卡片可见", "why": "原只发信·无旅程字段·卡片不显示赴京" },
+        { "what": "缓存版本 tm-index-world.js v=w→x", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-21",
       "module": "21 补齐角色深化·党派家谱仕途+师门故旧·截至天启七年秋",
       "title": "王体乾/张瑞图/李国普/周应秋/来宗道/薛贞/薛凤翔/李养正/杨所修/涂文辅/李永贞/毛一鹭/潘汝桢/刘诏/武之望/胡廷宴/林尧俞/朱梅/侯世禄/渠家祯/杜文焕 深化",
       "items": [

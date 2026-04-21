@@ -984,6 +984,16 @@
             content: '\u3010\u542F\u7A0B\u3011' + ch.name + ' \u81EA' + (ch._travelFrom || '\u672C\u5904') + ' \u8D74 ' + ch._travelTo + '\uFF0C\u9884\u8BA1 ' + days + ' \u65E5\u62B5\u8FBE' + (ch._travelReason ? '\u3002\u7F18\u7531\uFF1A' + ch._travelReason : '') + '\u3002'
           });
         }
+        // ★ 编年·启程条
+        if (!Array.isArray(G._chronicle)) G._chronicle = [];
+        G._chronicle.unshift({
+          turn: G.turn || 0,
+          date: (typeof global.getTSText === 'function') ? global.getTSText(G.turn || 0) : ('T' + (G.turn || 0)),
+          type: '\u542F\u7A0B',
+          title: ch.name + ' \u8D74 ' + ch._travelTo,
+          content: ch.name + ' \u81EA' + (ch._travelFrom || '\u672C\u5904') + ' \u542F\u7A0B\u8D74 ' + ch._travelTo + '\u00B7\u9884\u8BA1 ' + days + ' \u65E5\u62B5\u8FBE' + (ch._travelReason ? '\u00B7' + ch._travelReason : '') + '\u3002',
+          category: '\u4EBA\u4E8B', tags: ['人事', '启程', ch.name]
+        });
       }
     });
     if (charUpdCount > 0) applied.semantic.char_updates = charUpdCount;
@@ -1017,6 +1027,16 @@
             content: '\u3010\u8D74\u4EFB\u3011' + ch.name + ' \u81EA' + (ch._travelFrom || '\u672C\u5904') + ' \u8D74 ' + oa.toLocation + '\uFF0C\u5F85\u5230\u5373\u5C31 ' + (oa.post || '') + '\u4E4B\u4EFB\uFF0C\u9884\u8BA1 ' + days + ' \u65E5\u3002'
           });
         }
+        // ★ 编年·赴任启程条
+        if (!Array.isArray(G._chronicle)) G._chronicle = [];
+        G._chronicle.unshift({
+          turn: G.turn || 0,
+          date: (typeof global.getTSText === 'function') ? global.getTSText(G.turn || 0) : ('T' + (G.turn || 0)),
+          type: '\u8D74\u4EFB\u542F\u7A0B',
+          title: ch.name + ' \u8D74 ' + oa.toLocation,
+          content: ch.name + ' \u81EA' + (ch._travelFrom || '\u672C\u5904') + ' \u542F\u7A0B\u8D74 ' + oa.toLocation + '\u00B7\u5F85\u5230\u5373\u5C31 ' + (oa.post || '') + '\u4E4B\u4EFB\u00B7\u9884\u8BA1 ' + days + ' \u65E5\u3002',
+          category: '\u4EBA\u4E8B', tags: ['人事', '赴任', '启程', ch.name]
+        });
       } else {
         // 无需走位·直接就任·沿用原 onAppointment
         // 若 post 为复合名（如"中书侍郎、同平章事"）拆分多个分别任命
@@ -2003,6 +2023,16 @@
                  + (assignPost ? '\uFF0C\u5373\u65E5\u5C31\u4EFB ' + assignPost.replace('/', ' ') : '') + '\u3002'
         });
       }
+      // ★ 编年·抵达条
+      if (!Array.isArray(G._chronicle)) G._chronicle = [];
+      G._chronicle.unshift({
+        turn: G.turn || 0,
+        date: dateText,
+        type: '\u8D74\u4EFB\u62B5\u8FBE',
+        title: ch.name + ' \u62B5 ' + toLoc,
+        content: ch.name + ' \u81EA' + (fromLoc || '\u8FDC\u65B9') + ' \u62B5 ' + toLoc + (assignPost ? '\u00B7\u5373\u65E5\u5C31\u4EFB ' + assignPost.replace('/', ' ') : '') + '\u3002',
+        category: '\u4EBA\u4E8B', tags: ['人事', '赴任', '抵达', ch.name]
+      });
       if (typeof global.toast === 'function') {
         global.toast(ch.name + ' 抵达 ' + toLoc + (assignPost ? '·就任' + assignPost.replace('/', ' ') : ''), 'info');
       }

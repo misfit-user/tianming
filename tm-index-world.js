@@ -3153,6 +3153,28 @@ function _summonRecall(name) {
   };
   if (!GM.letters) GM.letters = [];
   GM.letters.push(letter);
+  // 编年·召回启程
+  if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
+  GM._chronicle.unshift({
+    turn: GM.turn,
+    date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
+    type: '\u5FB4\u53EC\u56DE\u4EAC',
+    title: name + ' \u5956\u65E8\u56DE\u4EAC',
+    content: name + ' \u81EA' + ch.location + ' \u5956\u65E8\u8D77\u7A0B\u56DE\u4EAC\u9762\u5723\u00B7\u9884\u8BA1 ' + Math.ceil(travelTurns * dpv) + ' \u65E5\uFF08' + travelTurns + ' \u56DE\u5408\uFF09\u62B5\u4EAC\u3002',
+    category: '\u4EBA\u4E8B', tags: ['人事', '召回', '启程', name]
+  });
+  if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
+  GM.qijuHistory.unshift({
+    turn: GM.turn, date: GM._gameDate || '',
+    content: '\u3010\u5FB4\u53EC\u3011' + name + ' \u5956\u65E8\u81EA' + ch.location + ' \u56DE\u4EAC\u00B7\u9884\u8BA1 ' + Math.ceil(travelTurns * dpv) + ' \u65E5\u62B5\u8FBE\u3002'
+  });
+  // 也设新字段以便 v10 pos card 显示
+  ch._travelTo = capital;
+  ch._travelFrom = ch.location;
+  ch._travelStartTurn = GM.turn;
+  ch._travelRemainingDays = days;
+  ch._travelArrival = GM.turn + travelTurns;
+  ch._travelReason = '奉诏召回面圣';
   toast(name + '已奉旨启程回京，约' + Math.ceil(travelTurns * dpv) + '日后抵达');
 }
 
@@ -6482,9 +6504,10 @@ function _ogRenderPosCardV10(fi, courtKey) {
   else if (_holder._retirePending) _state = 'retire';
   var _hasPending = nd._pendingEdict && nd._pendingEdict.turn === GM.turn;
   var _concurrentWith = _holder && _holder._concurrentWith;
-  var _transitTo = _holder && _holder._enRouteToOffice; // 赴任
-  var _transitDays = _holder && (_holder._enRouteDaysLeft||_holder._enRouteDays);
-  var _transitFrom = _holder && (_holder._enRouteFrom || _holder.location);
+  // 赴任态·识别新模型 _travelTo 与旧模型 _enRouteToOffice
+  var _transitTo = _holder && (_holder._travelTo || _holder._enRouteToOffice);
+  var _transitDays = _holder && (_holder._travelRemainingDays || _holder._enRouteDaysLeft || _holder._enRouteDays);
+  var _transitFrom = _holder && (_holder._travelFrom || _holder._enRouteFrom || _holder.location);
 
   // 党派
   var _partyCls = '';
@@ -7595,6 +7618,61 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     source: '\u5B98\u5236·\u4EFB\u547D\u6309\u94AE', from: '\u94E8\u66F9',
     content: edictLine, turn: GM.turn, used: true
   });
+
+  // Step 4b·【旅程启动】若新任所在地非京师·发起赴任行程+编年+起居注
+  // 不改 char.location（保持原处·由 advanceCharTravelByDays 抵达时更新）
+  // holder 立即设上（UI 即时反映任命意图）·但显示为 "赴任在途"
+  if (newChar && mode !== 'concurrent') {
+    var _capitalTravel = GM._capital || '京师';
+    // 推断目的地：地方职位如 XX巡抚·XX总兵·XX总督·使用职名中的地名；中央职位用首都
+    var _travelDestination = _capitalTravel;
+    var _regionalMatch = (deptName + posName).match(/([\u4e00-\u9fa5]{2,4})(?:巡抚|总兵|总督|布政使|按察使|经略|节度)/);
+    if (_regionalMatch && _regionalMatch[1]) {
+      _travelDestination = _regionalMatch[1];
+    }
+    if (newChar.location && newChar.location !== _travelDestination) {
+      var _trvDays = 20;
+      try {
+        if (typeof calcLetterDays === 'function') {
+          _trvDays = calcLetterDays(newChar.location, _travelDestination, 'normal') || 20;
+        }
+      } catch(_){}
+      var _dpvT = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
+      var _arrivalTurn = GM.turn + Math.max(1, Math.ceil(_trvDays / _dpvT));
+      newChar._travelFrom = newChar.location;
+      newChar._travelTo = _travelDestination;
+      newChar._travelStartTurn = GM.turn;
+      newChar._travelRemainingDays = _trvDays;
+      newChar._travelArrival = _arrivalTurn;
+      newChar._travelReason = '奉诏赴任 ' + deptName + posName;
+      newChar._travelAssignPost = deptName + '/' + posName;
+
+      // 编年·启程条
+      if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
+      GM._chronicle.unshift({
+        turn: GM.turn,
+        date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
+        type: '赴任启程',
+        title: charName + ' 赴 ' + _travelDestination,
+        content: charName + ' 自' + newChar.location + ' 启程赴' + _travelDestination + '·奉诏就任 ' + deptName + posName + '·预计 ' + _trvDays + ' 日（约 ' + Math.max(1, Math.ceil(_trvDays / _dpvT)) + ' 回合）抵任。',
+        category: '人事',
+        tags: ['人事', '赴任', '启程', charName]
+      });
+
+      // 起居注·启程条
+      if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
+      GM.qijuHistory.unshift({
+        turn: GM.turn,
+        date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
+        content: '【启程】' + charName + ' 自' + newChar.location + ' 赴 ' + _travelDestination + '·就任 ' + deptName + posName + '·预计 ' + _trvDays + ' 日'
+      });
+
+      // 报话筒
+      if (typeof addEB === 'function') {
+        try { addEB('人事', charName + ' 奉诏赴' + _travelDestination + '·预计 ' + _trvDays + ' 日抵任'); } catch(_){}
+      }
+    }
+  }
 
   // Step 5: edictTracker 记入本回合诏令（确保 AI prompt 能看到）·跨回合去重·防止重复任命累积
   if (!GM._edictTracker) GM._edictTracker = [];

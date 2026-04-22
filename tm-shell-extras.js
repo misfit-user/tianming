@@ -610,14 +610,30 @@
       // 配偶/脸面
       var spouseBadge = c.spouse ? '<span class="gs-cd-spouse">🌸</span>' : '';
       var faceBadge = (c._faceLost || c._humiliated) ? '<span class="gs-cd-face-badge">颜面尽失</span>' : '';
-      // 特质 tags (最多 3 个)
+      // 特质 tags (最多 3 个)·优先 traitIds(英文 id→中文 name)·后 traits 数组
       var tagsHtml = '';
-      if (Array.isArray(c.traits) && c.traits.length) {
-        c.traits.slice(0, 3).forEach(function(tr){
-          var tCls = /忠|仁|爱民|温/.test(tr)?'heart':/勇|武|权|狡/.test(tr)?'valor':/智|谋|深|慎/.test(tr)?'mind':/清|简|廉/.test(tr)?'gold':'gold';
-          tagsHtml += '<span class="gs-cd-tag '+tCls+'">'+esc(tr.slice(0,4))+'</span>';
-        });
+      function _resolveTraitName(t) {
+        if (!t) return '';
+        if (typeof t === 'object') return t.name || t.label || t.id || '';
+        var s = String(t);
+        // 若疑似英文 id(全 ASCII)·查 P.traitDefinitions 取中文 name
+        if (/^[a-z_][a-z0-9_]*$/i.test(s) && typeof P !== 'undefined' && Array.isArray(P.traitDefinitions)) {
+          var d = P.traitDefinitions.find(function(x){ return x && x.id === s; });
+          if (d && d.name) return d.name;
+          // 二级兜底·TraitDefinitions map
+          if (typeof TraitDefinitions !== 'undefined' && TraitDefinitions[s] && TraitDefinitions[s].name) return TraitDefinitions[s].name;
+        }
+        return s;
       }
+      var _rawTraits = [];
+      if (Array.isArray(c.traitIds) && c.traitIds.length) _rawTraits = c.traitIds.slice(0, 3);
+      else if (Array.isArray(c.traits) && c.traits.length) _rawTraits = c.traits.slice(0, 3);
+      _rawTraits.forEach(function(tr){
+        var nm = _resolveTraitName(tr);
+        if (!nm) return;
+        var tCls = /忠|仁|爱民|温|恕|慈/.test(nm)?'heart':/勇|武|权|狡|悍|烈|凶/.test(nm)?'valor':/智|谋|深|慎|敏/.test(nm)?'mind':/清|简|廉|直|正/.test(nm)?'gold':'gold';
+        tagsHtml += '<span class="gs-cd-tag '+tCls+'">'+esc(nm.slice(0,4))+'</span>';
+      });
       if (c.party) tagsHtml += '<span class="gs-cd-tag party">'+esc(c.party.slice(0,4))+'</span>';
       // 五常 (若有)
       var wuchang = '';

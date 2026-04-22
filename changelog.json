@@ -3,6 +3,18 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "修紧要之臣特质显示英文(hone/just/shy)",
+      "title": "traits 英文 id 未翻译·钱龙锡卡片显示 hone/just/shy·查 P.traitDefinitions 转中文 name",
+      "items": [
+        { "what": "修 bug·tm-shell-extras.js 紧要之臣渲染·原 c.traits.slice(0,3).forEach 直接 tr.slice(0,4)·若 tr 为英文 id(honest/just/shy) 截成 hone/just/shy 乱码", "why": "剧本中角色可能 traits 字段是英文 id 数组(P.traitDefinitions 用英文 id+中文 name 双字段·部分剧本只存了 id)" },
+        { "what": "新增 _resolveTraitName helper·对纯 ASCII 候选查 P.traitDefinitions 取中文 name·二级兜底 TraitDefinitions map·非 ASCII 直返原值(剧本中文 trait 不受影响)", "why": "一次修兼容两种数据形态" },
+        { "what": "改用 traitIds 优先·traits 兜底·与 openCharDetail/openCharRenwuPage 的 traitIds 解析一致", "why": "行为统一" },
+        { "what": "tCls 关键字扩展·忠仁爱民温恕慈/勇武权狡悍烈凶/智谋深慎敏/清简廉直正·更准确归色", "why": "更丰富的 trait 自动归类" },
+        { "what": "缓存·tm-shell-extras v=b→c", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "紧要之臣·卡片重做+点击唤出快速详情面板",
       "title": "侧栏人物卡片采用 preview-char-full.html 三·右侧栏样式·点击调 openCharDetail 唤 440px 快速详情面板",
       "items": [

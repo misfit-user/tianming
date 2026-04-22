@@ -705,10 +705,57 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
   // ※ 本回合要点/数值变化（delta/overview/highlight）全部合并到 layer2 的【数值变化说明】，layer1 只保留叙事和标签
   var layer1Html = shiluHtml + summaryHtml + criticalHtml + battleVisHtml;
 
+  // 御批回听·对玩家本回合诏令的执行问责(aiEdictEfficacyAudit 生成)
+  var efficacyHtml = '';
+  try {
+    var ef = GM._edictEfficacyReport;
+    if (ef && !ef.skipped && Array.isArray(ef.reports) && ef.reports.length > 0) {
+      var efColor = ef.overallEfficacy >= 75 ? 'var(--green,#4a9a4a)' : ef.overallEfficacy >= 50 ? 'var(--gold,#c9a84c)' : 'var(--red-s,#b04030)';
+      efficacyHtml = '<div class="tr-efficacy-box" style="margin-top:1.2rem;padding:0.9rem 1rem;background:rgba(201,168,76,0.06);border-left:3px solid var(--gold,#c9a84c);border-radius:4px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">'
+        + '<div style="font-weight:700;color:var(--gold,#c9a84c);font-size:0.95rem;">〔御批回听〕</div>'
+        + '<div style="font-size:0.78rem;color:'+efColor+';">代理强度 ' + (ef.overallEfficacy || 0) + '%·共 ' + ef.total + ' 条</div>'
+        + '</div>';
+      ef.reports.forEach(function(r) {
+        var stCfg = {
+          executed: { lbl: '✓ 执行', clr: 'var(--green,#4a9a4a)' },
+          partial: { lbl: '◐ 部分', clr: 'var(--gold,#c9a84c)' },
+          delayed: { lbl: '⏳ 延宕', clr: 'var(--amber,#e0a040)' },
+          ignored: { lbl: '✗ 忽略', clr: 'var(--red-s,#b04030)' }
+        };
+        var s = stCfg[r.status] || { lbl: r.status || '?', clr: 'var(--txt-d)' };
+        efficacyHtml += '<div style="margin-bottom:0.6rem;padding:0.5rem 0.7rem;background:rgba(0,0,0,0.12);border-radius:3px;border-left:2px solid '+s.clr+';font-size:0.8rem;">'
+          + '<div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;">'
+          + '<span style="color:'+s.clr+';font-weight:600;">' + s.lbl + '</span>'
+          + '<span style="color:var(--txt-d);font-size:0.72rem;">执行度 ' + (r.executionLevel || 0) + '%</span>'
+          + '</div>'
+          + '<div style="color:var(--txt-s);margin-bottom:0.3rem;">' + escHtml(r.content || '') + '</div>';
+        if (r.evidence) efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-d);line-height:1.5;">依据：' + escHtml(r.evidence) + '</div>';
+        if (r.missed) efficacyHtml += '<div style="font-size:0.74rem;color:'+s.clr+';margin-top:0.2rem;">未落实：' + escHtml(r.missed) + '</div>';
+        if (r.reason && r.status !== 'executed') efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-d);margin-top:0.2rem;">缘由：' + escHtml(r.reason) + '</div>';
+        if (r.nextAdvice) efficacyHtml += '<div style="font-size:0.74rem;color:var(--gold,#c9a84c);margin-top:0.3rem;">⇒ 下回合建议：' + escHtml(r.nextAdvice) + '</div>';
+        efficacyHtml += '</div>';
+      });
+      if (Array.isArray(ef.unexpectedEvents) && ef.unexpectedEvents.length > 0) {
+        efficacyHtml += '<div style="margin-top:0.5rem;font-size:0.76rem;color:var(--txt-s);border-top:1px dashed rgba(255,255,255,0.12);padding-top:0.5rem;">'
+          + '<span style="color:var(--gold-d,#8c7030);">【AI 自发事件】</span>';
+        ef.unexpectedEvents.forEach(function(u) {
+          efficacyHtml += '<div style="margin-top:0.2rem;">· ' + escHtml(String(u)) + '</div>';
+        });
+        efficacyHtml += '</div>';
+      }
+      if (ef.topPriority) {
+        efficacyHtml += '<div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:rgba(201,168,76,0.15);border-radius:3px;font-size:0.78rem;color:var(--gold,#c9a84c);">'
+          + '⚡ 下回合首要：' + escHtml(ef.topPriority) + '</div>';
+      }
+      efficacyHtml += '</div>';
+    }
+  } catch(_efHE) { console.warn('[shiji] 御批回听渲染失败', _efHE); efficacyHtml = ''; }
+
   // 第二层（默认折叠）：时政记 + 数值变化（含要点/财政/军事/势力/党派/阶层/人物）+ 人事变动 + 后人戏说 + 兼容附件
   // ※ changeReportHtml 已并入 _renderUnifiedChanges，此处不再重复
   // ※ 2026-04 用户调整：群臣动向(npcActHtml) 移入风闻录事·密报与奏闻(intelHtml) 删除
-  var layer2Html = szjSectionHtml + unifiedChangesHtml + personnelHtml + hourenHtml
+  var layer2Html = szjSectionHtml + unifiedChangesHtml + efficacyHtml + personnelHtml + hourenHtml
     + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml;
 
   // 群臣动向→风闻录事（每条 NPC 事件写入 GM._fengwenRecord）

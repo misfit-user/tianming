@@ -3952,6 +3952,24 @@ function openCharRenwuPage(charName) {
     h += '<div class="rwp-inner-thought">'+escHtml(ch.innerThought)+'</div></div>';
   }
   h += '</div>';
+  // 情节弧·若有(后台调用 CharArcs 生成)
+  try {
+    var _arc = (GM._charArcs && GM._charArcs[ch.name]) ? GM._charArcs[ch.name] : null;
+    if (_arc && (_arc.arcStage || _arc.motivation)) {
+      h += '<div class="rwp-sec"><div class="rwp-sec-title">情 节 弧 <span style="font-size:0.7rem;color:var(--txt-d);font-weight:400;letter-spacing:0;">T'+(_arc.turn||'?')+' 起</span></div>';
+      h += '<div style="padding:10px 14px;background:rgba(142,106,168,0.06);border:1px solid rgba(142,106,168,0.2);border-radius:5px;">';
+      if (_arc.arcStage) h += '<div style="font-size:12px;color:var(--purple-300,#b89ec8);letter-spacing:0.2em;margin-bottom:6px;">当 前 境 · '+escHtml(_arc.arcStage)+'</div>';
+      if (_arc.emotionalState) h += '<div style="font-size:11px;color:var(--txt-s);margin-bottom:4px;">情绪：'+escHtml(_arc.emotionalState)+'</div>';
+      if (_arc.motivation) h += '<div style="font-size:11px;color:var(--txt-s);margin-bottom:4px;line-height:1.6;">动机：'+escHtml(_arc.motivation)+'</div>';
+      if (_arc.nextCue) h += '<div style="font-size:11px;color:var(--gold-d,#8c7030);line-height:1.6;">潜动向：'+escHtml(_arc.nextCue)+'</div>';
+      if (typeof _arc.arcProgress === 'number') {
+        var _ap = Math.max(0, Math.min(100, _arc.arcProgress));
+        h += '<div style="margin-top:6px;height:4px;background:rgba(0,0,0,0.2);border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+_ap+'%;background:var(--purple-400,#8e6aa8);"></div></div>';
+        h += '<div style="font-size:10px;color:var(--txt-d);margin-top:2px;letter-spacing:0.1em;">弧线进度 '+_ap+'%</div>';
+      }
+      h += '</div></div>';
+    }
+  } catch(_arcUiE) {}
   // 压力详情
   if (stress > 30) {
     var sL = stress>=80?'将 崩':stress>=60?'负 重':'承 重';

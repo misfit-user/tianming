@@ -3,6 +3,24 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "御批回听·情节弧后台化·两项新 AI 能力",
+      "title": "endturn 新增 1 次 post-inference 诏令问责·后台 idle 新增 1 次人物心路推进",
+      "items": [
+        { "what": "新函数 aiEdictEfficacyAudit(tm-endturn.js)·Phase 3.5·post-inference 2000 tokens·输入玩家本回合分类诏令+主推演 shizhengji/zhengwen/var_changes/personnelChanges·输出 JSON {reports[],unexpectedEvents[],overallEfficacy,topPriority}·每条诏令含 executionLevel/status(executed/partial/delayed/ignored)/evidence/missed/reason/nextAdvice", "why": "补完'玩家→AI→玩家'反馈闭环·玩家立即知道 N 条诏令哪条被听/哪条被阁挡/为什么" },
+        { "what": "存 GM._edictEfficacyReport·统计被忽略/延宕条目存 ignoredOrDelayed 供下回合 sysP 注入·写编年 '本回合 N 条·完全 X·部分 Y·延宕 Z·忽略 W·效能 E%'", "why": "结构化报告·可追溯·可注入 AI 继续推进" },
+        { "what": "buildEdictEfficacyFollowUp·下回合主推演 sysP 注入·规则『必须对上回合未落实条目交代——要么继续推进·要么明确说明阻力·不允许再次无故缺席』", "why": "强制 AI 对历史诏令负责·闭环强化" },
+        { "what": "史记弹窗 layer2 新增【御批回听】section(tm-endturn-render.js)·每条诏令彩色标记+执行度条+依据+未落实+缘由+下回合建议·底部 AI 自发事件+效能总评+下回合首要", "why": "玩家一眼看清诏令执行情况·调整策略" },
+        { "what": "新文件 tm-char-arcs.js·250+行·每 2 回合后台推进 8-12 位 importance>=65 的 NPC 情节弧·2500 tokens·输出 {arcStage,motivation,emotionalState,arcProgress,nextCue,innerChange}·同步微修订 char.innerThought", "why": "解决 NPC'金鱼脑·每回合重新想'·让 NPC 有长时段心路弧线" },
+        { "what": "三层触发保险·Layer1 enterGame:after+10s requestIdleCallback·Layer2 玩家点击人物相关按钮时预热(2s 延迟)·Layer3 endturn Phase 0-A 兜底(gap>=4 回合静默触发)·AbortController 可取消", "why": "不占 endturn 时间·预热面板·弱一致性 OK·玩家无感知" },
+        { "what": "主推演 sysP 注入 buildCharArcsForSysP·每位 NPC 一行展示 arcStage+emotionalState+motivation+nextCue·规则『NPC 行为/发言必须契合 arcStage 不得矛盾 motivation』", "why": "让推演 AI 按弧线演 NPC·保持连续性" },
+        { "what": "人物详情面板新增【情节弧】section(tm-game-engine.js:3954 之后)·紫色区块显示当前境+情绪+动机+潜动向+弧线进度条", "why": "玩家可见 NPC 心路·加强代入" },
+        { "what": "endturn Phase 0-A 调用 ensureCharArcsBeforeEndturn(非阻塞)·若>=4 回合未更新则后台补·不等待", "why": "兜底·保证主推演有弧线可注" },
+        { "what": "缓存·tm-endturn v=e→f·tm-endturn-render v=20260421b→20260422a·tm-game-engine v=a→b·tm-char-arcs v=20260422a(新)", "why": "强制加载" },
+        { "what": "tokens 成本·御批回听每回合+2000·情节弧每 2 回合+2500(均摊每回合+1250)·总每回合+3250·约占主推演 20%", "why": "代价可控·代理感提升显著" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "三系统升级·Bug 修复轮 1",
       "title": "修跨系统钩子重复注册 / UI onclick JS 转义 / callAISmart 无效 options / emit 缺失事件 / territory 单数兼容",
       "items": [

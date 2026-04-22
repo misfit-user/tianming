@@ -1556,6 +1556,152 @@ async function aiDigestLongTermActions() {
 }
 
 // ============================================================
+// 御批回听·post-inference·对玩家诏令的执行问责
+// ============================================================
+async function aiEdictEfficacyAudit(aiResult, edicts) {
+  if (!P.ai || !P.ai.key) return;
+  if (!aiResult || typeof aiResult !== 'object') return;
+
+  // 收集本回合玩家诏令(按分类汇总)
+  var edictLines = [];
+  if (edicts && typeof edicts === 'object') {
+    Object.keys(edicts).forEach(function(cat) {
+      var v = edicts[cat];
+      if (typeof v === 'string' && v.trim()) {
+        v.split(/[\n；;]+/).map(function(s){return s.trim();}).filter(Boolean).forEach(function(line, i) {
+          edictLines.push({ id: cat + '-' + (i+1), category: cat, content: line });
+        });
+      } else if (Array.isArray(v)) {
+        v.forEach(function(line, i) {
+          var s = typeof line === 'string' ? line : (line.content || JSON.stringify(line));
+          if (s.trim()) edictLines.push({ id: cat + '-' + (i+1), category: cat, content: s.trim() });
+        });
+      }
+    });
+  }
+  if (edictLines.length === 0) {
+    // 玩家本回合无诏令·跳过审查
+    GM._edictEfficacyReport = { turn: GM.turn - 1, total: 0, skipped: true };
+    return;
+  }
+
+  // 准备审查输入·只取关键字段
+  var varChangesSummary = [];
+  if (Array.isArray(aiResult.var_changes)) {
+    varChangesSummary = aiResult.var_changes.slice(0, 20).map(function(v) {
+      return (v.name || v.path || '?') + ': ' + (v.delta !== undefined ? (v.delta > 0 ? '+' : '') + v.delta : (v.set !== undefined ? '=' + v.set : ''));
+    });
+  }
+  var personnelSummary = [];
+  if (Array.isArray(aiResult.personnelChanges)) {
+    personnelSummary = aiResult.personnelChanges.slice(0, 15).map(function(p) {
+      return (p.name || p.char || '?') + ' · ' + (p.action || p.change || '') + (p.target ? ' → ' + p.target : '');
+    });
+  }
+
+  var input = {
+    edicts: edictLines,
+    mainNarrative: (aiResult.shizhengji || '').slice(0, 1200),
+    supplementaryNarrative: (aiResult.zhengwen || '').slice(0, 600),
+    varChanges: varChangesSummary,
+    personnelChanges: personnelSummary
+  };
+
+  var prompt = '你是御前侍读·职责是代陛下核查本回合所下诏令是否被AI推演真实执行。\n\n' +
+    '【本回合玩家诏令·按条列出】\n' + JSON.stringify(input.edicts, null, 2) +
+    '\n\n【主推演叙事·时政记】\n' + input.mainNarrative +
+    (input.supplementaryNarrative ? '\n\n【辅助叙事·政文】\n' + input.supplementaryNarrative : '') +
+    '\n\n【数值变化】\n' + (input.varChanges.length ? input.varChanges.join('\n') : '（无）') +
+    '\n\n【人事变动】\n' + (input.personnelSummary && input.personnelSummary.length ? input.personnelChanges.join('\n') : (input.personnelChanges.length ? input.personnelChanges.join('\n') : '（无）')) +
+    '\n\n【任务】对每条诏令·核查在上述推演中是否有对应体现。输出 JSON：\n' +
+    '{\n' +
+    '  "reports": [\n' +
+    '    {\n' +
+    '      "id": "诏令 id",\n' +
+    '      "content": "诏令原文简述",\n' +
+    '      "executionLevel": 0-100 (整数·执行度百分比),\n' +
+    '      "status": "executed/partial/delayed/ignored (完全执行/部分/延宕/被忽略)",\n' +
+    '      "evidence": "引用推演叙事/var_changes/personnelChanges 的具体证据",\n' +
+    '      "missed": "未落实的部分·若 status=executed 则空",\n' +
+    '      "reason": "AI 推演中为何这样处理(阁臣阻挠/时机不成熟/前提未备/等)",\n' +
+    '      "nextAdvice": "下回合玩家应如何催办或调整"\n' +
+    '    }\n' +
+    '  ],\n' +
+    '  "unexpectedEvents": ["AI 推演中自发但玩家未诏令的重要事件"],\n' +
+    '  "overallEfficacy": 0-100 (整数·本回合玩家代理强度),\n' +
+    '  "topPriority": "下回合最应优先催办的 1-2 件事"\n' +
+    '}\n\n' +
+    '【核查准则】\n' +
+    '1. 若 var_changes/personnelChanges/叙事中有对应动作·即使只是小成·也 status=executed 或 partial\n' +
+    '2. 若完全无痕迹·status=ignored·reason 必须说明 AI 为何没演(不合时宜/与其它诏令冲突/信息不足)\n' +
+    '3. 若叙事说"拟议中""阁议未决""旨延宕"·status=delayed\n' +
+    '4. evidence 要精准引用·不要凭空编\n' +
+    '5. nextAdvice 给具体动作·不要空话\n' +
+    '6. 只输出 JSON·无其他文字';
+
+  try {
+    var raw = await callAISmart(prompt, 2000, { maxRetries: 2 });
+    if (!raw) return;
+    var parsed;
+    try {
+      var m = raw.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : JSON.parse(raw);
+    } catch(e) {
+      console.warn('[御批回听] JSON 解析失败', e);
+      return;
+    }
+    if (!parsed || !Array.isArray(parsed.reports)) return;
+
+    GM._edictEfficacyReport = {
+      turn: GM.turn - 1,
+      total: edictLines.length,
+      reports: parsed.reports.slice(0, 20),
+      unexpectedEvents: Array.isArray(parsed.unexpectedEvents) ? parsed.unexpectedEvents.slice(0, 5) : [],
+      overallEfficacy: typeof parsed.overallEfficacy === 'number' ? parsed.overallEfficacy : 50,
+      topPriority: parsed.topPriority || '',
+      generatedAt: Date.now()
+    };
+
+    // 统计·为下回合 sysP 注入被忽略/延宕的诏令
+    var ignoredList = parsed.reports.filter(function(r){ return r.status === 'ignored' || r.status === 'delayed'; });
+    if (ignoredList.length > 0) {
+      GM._edictEfficacyReport.ignoredOrDelayed = ignoredList.map(function(r) {
+        return { id: r.id, content: r.content, status: r.status, reason: r.reason, nextAdvice: r.nextAdvice };
+      });
+    }
+
+    // 写编年
+    if (!GM._chronicle) GM._chronicle = [];
+    var ex = parsed.reports.filter(function(r){return r.status==='executed';}).length;
+    var pa = parsed.reports.filter(function(r){return r.status==='partial';}).length;
+    var dl = parsed.reports.filter(function(r){return r.status==='delayed';}).length;
+    var ig = parsed.reports.filter(function(r){return r.status==='ignored';}).length;
+    GM._chronicle.push({
+      turn: GM.turn - 1, date: GM._gameDate || '',
+      type: '御批回听',
+      text: '本回合 ' + edictLines.length + ' 条诏令·完全执行 ' + ex + '·部分 ' + pa + '·延宕 ' + dl + '·忽略 ' + ig + '·效能 ' + (parsed.overallEfficacy || 0) + '%',
+      tags: ['御批', '诏令', '问责']
+    });
+    console.log('[御批回听] 已生成·' + edictLines.length + ' 条诏令审查·效能 ' + parsed.overallEfficacy + '%');
+  } catch(e) {
+    console.warn('[御批回听] 失败', e);
+  }
+}
+
+// 构建下回合 sysP 注入·让 AI 看到上回合被忽略/延宕的诏令并补偿
+function buildEdictEfficacyFollowUp() {
+  if (!GM._edictEfficacyReport || !Array.isArray(GM._edictEfficacyReport.ignoredOrDelayed)) return '';
+  var list = GM._edictEfficacyReport.ignoredOrDelayed;
+  if (list.length === 0) return '';
+  var out = '\n\n【上回合诏令未落实清单·AI 推演需补偿或明确拒绝】';
+  list.forEach(function(r) {
+    out += '\n  · [' + (r.status === 'ignored' ? '被忽略' : '延宕中') + '] ' + (r.content || '').slice(0, 80) + '·缘由:' + (r.reason || '').slice(0, 60);
+  });
+  out += '\n★ 规则：推演时必须在 shizhengji 中对上述条目给出交代——要么继续推进·要么明确说明阻力来源。不允许再次无故缺席。';
+  return out;
+}
+
+// ============================================================
 // 记忆锚点系统 - 借鉴 HistorySimAI
 // ============================================================
 
@@ -5696,6 +5842,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
     } catch(_npcIE) { console.warn('[sysP] NPC 决策注入失败', _npcIE); }
+
+    // ★ 御批回听·上回合未落实诏令注入·AI 必须补偿或明确拒绝
+    try {
+      if (typeof buildEdictEfficacyFollowUp === 'function') {
+        var _efBlock = buildEdictEfficacyFollowUp();
+        if (_efBlock) sysP += _efBlock;
+      }
+    } catch(_efIE) { console.warn('[sysP] 御批回听注入失败', _efIE); }
+
+    // ★ 人物情节弧·后台推进的 NPC 心路·让 AI 按弧线演 NPC
+    try {
+      if (typeof buildCharArcsForSysP === 'function') {
+        var _arcBlock = buildCharArcsForSysP();
+        if (_arcBlock) sysP += _arcBlock;
+      }
+    } catch(_arcIE) { console.warn('[sysP] 情节弧注入失败', _arcIE); }
 
     // 注入·启动预演规划（aiPlanScenarioForInference 生成·轻量版·提升推演稳定性）
     if (GM._aiInferencePlan && GM._aiInferencePlan.generatedAt) {
@@ -15220,6 +15382,13 @@ async function _endTurnCore(){
 
   await EndTurnHooks.execute('before');
 
+  // Phase 0-A·情节弧兜底·若 >=4 回合未更新则触发后台推进(不等待·不阻塞)
+  try {
+    if (typeof ensureCharArcsBeforeEndturn === 'function') {
+      ensureCharArcsBeforeEndturn();
+    }
+  } catch(_arcBE) { console.warn('[endTurn] 情节弧兜底失败', _arcBE); }
+
   // Phase 0-0·清理本回合待下诏书快照（任免已正式颁布·不再可撤销）
   try {
     (function _clearPE(nodes){
@@ -15320,6 +15489,13 @@ async function _endTurnCore(){
 
   // Phase 3: 系统更新
   var queueResult = await _endTurn_updateSystems(timeRatio, zhengwen);
+
+  // Phase 3.5·御批回听·对玩家诏令执行情况问责(post-inference·2000 tokens)
+  try {
+    if (typeof aiEdictEfficacyAudit === 'function' && P.ai && P.ai.key) {
+      await aiEdictEfficacyAudit(aiResult, edicts);
+    }
+  } catch(_efE) { console.warn('[endTurn] 御批回听失败', _efE); }
 
   // 生成变化报告
   var changeReportHtml = generateChangeReport();

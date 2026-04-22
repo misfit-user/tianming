@@ -9309,6 +9309,15 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               suggestion: nl.suggestion || '',
               replyExpected: nl.replyExpected !== false
             });
+            // NPC 记一笔·"我写过这封信"·以备日后推演时保持一致
+            try {
+              if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
+                var emoMap = { warning: '忧', plea: '忧', report: '敬', intelligence: '惧', thanks: '敬', impeach: '怒', condolence: '哀', personal: '平', recommend: '敬', greeting: '平' };
+                var emo = emoMap[nl.type] || '平';
+                var memTxt = '自' + (_nlCh.location || '远方') + '上书天子：' + (nl.subjectLine ? '《'+nl.subjectLine.slice(0,20)+'》' : '') + String(nl.content).slice(0, 60);
+                NpcMemorySystem.remember(nl.from, memTxt, emo, nl.urgency === 'extreme' ? 9 : nl.urgency === 'urgent' ? 7 : 5, '天子');
+              }
+            } catch(_memE) {}
             _dbg('[npc_letters] ' + nl.from + ' 主动来书（' + (nl.type||'report') + '）');
           });
         }
@@ -18251,6 +18260,82 @@ EndTurnHooks.register('after', function() {
     delete GM._origPrompt2;
   }
 }, '恢复prompt-起居注');
+
+// 钩子 6.5: AI 上下文注入 - 史记 N 回合(shijiLookback 唤醒)
+EndTurnHooks.register('before', function() {
+  if (P.ai && P.ai.key && GM.shijiHistory && GM.shijiHistory.length > 0) {
+    var shijiLb = (P.conf && P.conf.shijiLookback) || 5;
+    var recentS = GM.shijiHistory.slice(-shijiLb);
+    if (recentS.length > 0) {
+      var shijiText = "\n\n=== 近" + shijiLb + "回合史记·时政记/正文摘要 ===\n";
+      recentS.forEach(function(s) {
+        shijiText += "T" + (s.turn || '?') + "·" + (s.time || '') + "\n";
+        if (s.szjTitle) shijiText += "  题：" + s.szjTitle + "\n";
+        if (s.shizhengji) shijiText += "  政：" + String(s.shizhengji).replace(/\s+/g, ' ').slice(0, 280) + "\n";
+        if (s.turnSummary) shijiText += "  要：" + String(s.turnSummary).slice(0, 120) + "\n";
+      });
+      if (!GM._origPromptShiji) GM._origPromptShiji = P.ai.prompt;
+      P.ai.prompt = (P.ai.prompt || "") + shijiText;
+    }
+  }
+}, 'AI上下文-史记');
+
+EndTurnHooks.register('after', function() {
+  if (GM._origPromptShiji !== undefined) {
+    P.ai.prompt = GM._origPromptShiji;
+    delete GM._origPromptShiji;
+  }
+}, '恢复prompt-史记');
+
+// 钩子 6.6: AI 上下文注入 - 玩家总结规则(summaryRule 唤醒)
+EndTurnHooks.register('before', function() {
+  if (P.ai && P.ai.key && P.conf && P.conf.summaryRule && String(P.conf.summaryRule).trim()) {
+    if (!GM._origPromptSumRule) GM._origPromptSumRule = P.ai.prompt;
+    P.ai.prompt = (P.ai.prompt || "") + "\n\n=== 玩家总结风格与特殊指令（优先级高） ===\n" + P.conf.summaryRule.trim() + "\n——按此风格/指令总结本回合shizhengji/zhengwen·不得违背。";
+  }
+}, 'AI上下文-玩家总结规则');
+
+EndTurnHooks.register('after', function() {
+  if (GM._origPromptSumRule !== undefined) {
+    P.ai.prompt = GM._origPromptSumRule;
+    delete GM._origPromptSumRule;
+  }
+}, '恢复prompt-总结规则');
+
+// 钩子 6.7: AI 上下文注入 - 近期鸿雁传书摘要(letter 内容影响推演)
+EndTurnHooks.register('before', function() {
+  if (P.ai && P.ai.key && Array.isArray(GM.letters) && GM.letters.length > 0) {
+    var curT = GM.turn || 1;
+    // 近 3 回合往来信件·含玩家去信+NPC 来信
+    var recentLs = GM.letters.filter(function(l) {
+      return l && (curT - (l.sentTurn || l.deliveryTurn || 0)) <= 3;
+    }).slice(-10);
+    if (recentLs.length > 0) {
+      var lettersText = "\n\n=== 近期鸿雁传书摘要（推演需延续其情·不可忘）===\n";
+      recentLs.forEach(function(l) {
+        var dir = l._npcInitiated ? (l.from + '→皇帝') : ('皇帝→' + l.to);
+        var typeL = (l.letterType || 'personal');
+        var urg = l.urgency === 'extreme' ? '(八百里加急)' : l.urgency === 'urgent' ? '(加急)' : '';
+        var sentAt = 'T' + (l.sentTurn || '?');
+        lettersText += '[' + sentAt + '·' + dir + '·' + typeL + urg + '] ';
+        if (l.subjectLine) lettersText += '《' + l.subjectLine.slice(0, 26) + '》';
+        lettersText += ' 内容摘：' + String(l.content || '').replace(/\s+/g, ' ').slice(0, 140);
+        if (l.reply && !l._npcInitiated) lettersText += '·[回：' + String(l.reply).slice(0, 80) + ']';
+        if (l.suggestion) lettersText += '·建：' + String(l.suggestion).slice(0, 60);
+        lettersText += '\n';
+      });
+      if (!GM._origPromptLtr) GM._origPromptLtr = P.ai.prompt;
+      P.ai.prompt = (P.ai.prompt || "") + lettersText;
+    }
+  }
+}, 'AI上下文-鸿雁传书摘要');
+
+EndTurnHooks.register('after', function() {
+  if (GM._origPromptLtr !== undefined) {
+    P.ai.prompt = GM._origPromptLtr;
+    delete GM._origPromptLtr;
+  }
+}, '恢复prompt-鸿雁');
 
 // 钩子 7: AI上下文注入 - 规则（原 _origEndTurn6）
 EndTurnHooks.register('before', function() {

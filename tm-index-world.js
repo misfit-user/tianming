@@ -3436,6 +3436,41 @@ function _wdConfirmPick(name) {
  * @param {string} [prefillMsg] - 预填消息（如从奏疏传召）
  */
 function openWenduiModal(name, mode, prefillMsg) {
+  // 位置/状态 gate·不在京师/下狱/流放/死亡者不得召对·改导向鸿雁传书
+  var _gCh = (typeof findCharByName === 'function') ? findCharByName(name) : null;
+  if (_gCh) {
+    var _reasons = [];
+    if (_gCh.alive === false || _gCh.dead) _reasons.push('已薨');
+    if (_gCh._imprisoned || _gCh.imprisoned) _reasons.push('下狱');
+    if (_gCh._exiled || _gCh.exiled) _reasons.push('流放');
+    if (_gCh._retired) _reasons.push('致仕');
+    if (_gCh._mourning) _reasons.push('丁忧');
+    if (_gCh._fled) _reasons.push('逃亡');
+    if (_gCh._missing) _reasons.push('失踪');
+    if (typeof _gCh.health === 'number' && _gCh.health <= 10) _reasons.push('病重');
+    // 位置判定·不在京师且无其他 reasons 则 reasons 加"在远方"
+    if (_reasons.length === 0) {
+      var _capC = GM._capital || '京师';
+      var _loc = (_gCh.location || '').replace(/\s/g,'');
+      var _isAtCap = !_loc || _loc === _capC || _loc.indexOf(_capC) >= 0 || /京|京城|京师|北京/.test(_loc);
+      // 也考虑在途·若正赴京则仍不在京
+      if (!_isAtCap || _gCh._travelTo || _gCh._enRouteToOffice) {
+        _reasons.push('远在' + (_loc || '外地') + (_gCh._travelTo ? ('·正赴 '+_gCh._travelTo) : ''));
+      }
+    }
+    if (_reasons.length > 0) {
+      var _msg = name + ' 目下 '+_reasons.join('·')+'·不能召见。';
+      if (!/已薨|下狱|流放/.test(_reasons.join(''))) _msg += '\n\n可改遣鸿雁传书。';
+      if (typeof toast === 'function') toast(_msg.split('\n')[0]);
+      // 对远方者·直接跳传书
+      if (!/已薨|下狱|流放|病重/.test(_reasons.join(''))) {
+        if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
+        if (typeof GM !== 'undefined') GM._pendingLetterTo = name;
+        setTimeout(function(){ if (typeof renderLetterPanel === 'function') renderLetterPanel(); }, 50);
+      }
+      return;
+    }
+  }
   // N4: 问对消耗精力
   if (typeof _spendEnergy === 'function' && !_spendEnergy(5, '问对·' + name)) return;
   _wenduiMode = mode || 'formal';

@@ -3,6 +3,22 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "三审·问对位置 gate+僵尸字段唤醒+鸿雁纳入推演与记忆",
+      "title": "人物志问对加位置过滤·shijiLookback/summaryRule 唤醒·letter 内容注入推演+NPC 主动来信写记忆",
+      "items": [
+        { "what": "诊断·问对对所有人都能开(bug)·openWenduiModal 在 tm-index-world.js:3438 无位置/状态 gate·点击任何角色都直开弹窗·人物志按钮和问对 tab 都走这里·同系统·已纳入记忆(4399 行 NpcMemorySystem.remember 问对内容)但入口无控制", "why": "用户要求核实" },
+        { "what": "修 bug·openWenduiModal 加位置/状态 gate·8 种阻止召见情况(已薨/下狱/流放/致仕/丁忧/逃亡/失踪/病重<=10)·加位置判定(非京师+在途)·阻挡时 toast+可导向鸿雁传书·下狱等不导向·远方者 switchGTab gt-letter+设 _pendingLetterTo+renderLetterPanel", "why": "人物志按钮和问对 tab 入口统一受控·同系统·位置物理限制" },
+        { "what": "诊断·编辑器设置字段真伪·10 项中 8 项实际使用·2 项僵尸(shijiLookback/summaryRule)·qijuLookback✓/autoSaveTurns✓/memoryAnchorKeep✓/memoryArchiveKeep✓/characterArcKeep✓/playerDecisionKeep✓/chronicleKeep✓/convKeep✓·shijiLookback❌/summaryRule❌", "why": "用户要求核实实际作用" },
+        { "what": "唤醒 shijiLookback(史记读取回合数)·tm-endturn.js 新增 EndTurnHooks 6.5·推演 before 注入近 N 回合 shijiHistory 摘要(szjTitle/shizhengji 前 280 字/turnSummary 前 120 字)·after 恢复 prompt", "why": "原定义但无 consumer·现让其真实作用于 AI 推演" },
+        { "what": "唤醒 summaryRule(玩家总结规则)·tm-endturn.js 新增 EndTurnHooks 6.6·非空时注入'玩家总结风格与特殊指令(优先级高)'·推演 AI 按此风格/指令总结本回合·after 恢复", "why": "玩家可定制叙事风格/重点·原字段失灵" },
+        { "what": "新增鸿雁传书纳入推演·tm-endturn.js EndTurnHooks 6.7·近 3 回合 GM.letters 摘要·含方向(皇帝↔NPC)/type/urgency/subjectLine/content 前 140 字/reply/suggestion·注入主 prompt 供 AI 读取·'推演需延续其情·不可忘'", "why": "letter 内容原未进推演 sysP·只有元数据" },
+        { "what": "NPC 主动来信纳入 NPC 记忆·tm-endturn.js:9298 处理 npc_letters 时·调 NpcMemorySystem.remember·'自远方上书天子：《主题》摘要'·emotion 按 type 映射(warning/plea→忧·report/thanks→敬·impeach→怒·condolence→哀)·weight 按 urgency(extreme 9·urgent 7·normal 5)", "why": "确保 NPC 记得自己上过什么奏疏·推演保持一致" },
+        { "what": "玩家致 NPC 信·NPC 收信已记忆(_generateLetterReply tm-game-engine.js:5562 已有·天子亲笔来函→敬 6)·现配合双向完整·letter 为双向历史事件", "why": "已有·确认" },
+        { "what": "缓存·tm-endturn v=i→j·tm-index-world v=d→e", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "四修·廷议滤下狱+两兵尚+人名 trim+杨鹤完善",
       "title": "廷议过滤下狱/流放/致仕/丁忧·官员任免铁则+HTML 清洗·_trimTrailing 先查 known·杨鹤 5 代家谱+19 位人际关系",
       "items": [

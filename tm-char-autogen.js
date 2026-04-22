@@ -873,6 +873,12 @@
         for (var len = maxLen; len >= minLen; len--) {
           if (i + len > block.length) continue;
           var raw = block.substr(i, len);
+          // ★ 先查已知人名字典·完全匹配则直接用 raw 不 trim
+          // (修 bug·卢象升末字"升"被 TRAIL_TRIM_CHARS 误剪成"卢象")
+          if (known[raw]) {
+            cand = raw;
+            break;
+          }
           var trimmed = _trimTrailing(raw);
           if (trimmed.length < minLen) continue;
           if (COMMON_SURNAMES.indexOf(trimmed.charAt(0)) < 0) continue;

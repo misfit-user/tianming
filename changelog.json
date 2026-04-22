@@ -3,6 +3,23 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "四修·廷议滤下狱+两兵尚+人名 trim+杨鹤完善",
+      "title": "廷议过滤下狱/流放/致仕/丁忧·官员任免铁则+HTML 清洗·_trimTrailing 先查 known·杨鹤 5 代家谱+19 位人际关系",
+      "items": [
+        { "what": "修 bug·廷议仍出现下狱官员(tm-chaoyi-keju.js:_ty2_openSetup)·加 _cannotAttend 过滤函数·排除 alive===false/imprisoned/exiled/_status(fled/retired/mourning/sick_grave)/_retired/_fled/_mourning/_missing/health<=10/health='dead'·三品-五品两档均应用", "why": "下狱/流放/致仕官员不应出现在廷议与议者列表" },
+        { "what": "修 bug·两个兵部尚书+HTML 残片污染(tm-endturn.js)·加【官员任免铁则】5 条到主推演 sysP·要求任免必经 personnelChanges·同一官职仅一 holder·玩家未诏令不得自行任命。加【输出纯文本铁则】禁止 <标签>/onclick/event/markdown 链接/javascript:·再在 _endTurn_aiInfer 结束处加 _stripHtmlResidue 后处理·剥 HTML/event/markdown/js 协议", "why": "AI 自作主张命卢象升为兵部尚书未同步官制·且叙事中含 onclick 残片" },
+        { "what": "修 bug·人名抓取·卢象升→卢象(tm-char-autogen.js _extractNames Pass 1)·先查 known[raw] 若全匹配则直接 cand=raw 不过 _trimTrailing·'升'虽在 TRAIL_TRIM_CHARS 但全名已在 GM.chars 中·优先保留", "why": "TRAIL_TRIM_CHARS 中的'升'误剪历史名末字·须让已知全名优先" },
+        { "what": "任务 4·杨鹤完善·确保无开局后内容·所有 career/_memory/_impressions 限于 1627 及以前", "why": "用户要求检查时间·无超期" },
+        { "what": "任务 4·家谱扩至 12 位(原 2 位)·5 代完整·祖父杨溥/祖母谭氏/父杨时泰(1620 卒)/母黄氏(82 岁尚在)/弟鸾/鹄/妻张氏/子嗣昌 39 岁/次子嗣圣/长女/长孙铉/次孙霆·每人含生卒/职业/年龄", "why": "原仅 2 人太单薄" },
+        { "what": "任务 4·开局前人际关系·新增 _impressions 19 位 NPC·对朱由检(+25)/魏忠贤(-60)/崔呈秀(-55)/韩爌(+50)/邹元标(+75 座师)/杨涟(+60 死友)/左光斗/高攀龙/孙承宗/袁崇焕/徐光启/胡廷宴(-35)/武之望(同科)/洪承畴/钱谦益/刘宗周/杨嗣昌(+90 子)等·含 favor+note", "why": "人际关系网完备·推演 AI 可利用" },
+        { "what": "任务 4·私产详化·cash 8500/grain 600/cloth 180/land 240 亩/house 1/books 3200 册/servants 12·候起无公库", "why": "详细真实的士绅资产画像" },
+        { "what": "任务 4·补 traits ids 双写·traitIds 同步 traits·补 stressSources 5 源·补 _memory 10 条·bio 末句注'开局前之人生至此·往后事迹待推演'", "why": "全字段完备·防未来剧透" },
+        { "what": "任务 4·location:'湖广·武陵(候起·暂居家中)'·开局不在京师·开局灾情奏疏在 sc.openingLetters[0] fromLocation 武陵 to 京师·T1 自动送达(前 commit 已实施)", "why": "用户提醒·确认开局位置+来信在鸿雁传书部分" },
+        { "what": "缓存·tianqi7 v=48→49·chaoyi v=a→b·char-autogen v=a→b·endturn v=h→i", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "四修·廷议打断+势力响应玩家+杨鹤陕疏+要务 choices 可见",
       "title": "修廷议末句截断·势力 NPC 响应玩家诏令·新增杨鹤人物+官职+开局《请恤陕民疏》·currentIssues UI 显示 choices 可点击",
       "items": [

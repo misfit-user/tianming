@@ -5975,6 +5975,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }
     } catch(_npcIE) { console.warn('[sysP] NPC 决策注入失败', _npcIE); }
 
+    // ★ 官员任免铁则+纯文本输出铁则(防两兵尚/HTML 残片污染)
+    sysP += '\n\n【★ 官员任免铁则·AI 必遵】';
+    sysP += '\n  1. 推演中任何官员升迁/免职/任新职/夺职/调任·必须且只能通过 personnelChanges 数组输出·含 {name, change, fromPost, toPost}';
+    sysP += '\n  2. 不得在 shizhengji/zhengwen 中擅自称呼某人为"XX尚书/巡抚/总督/都督"·若该职位在 officeTree 仍由其他 holder 占据(详见 blockD 官制)';
+    sysP += '\n  3. 同一官职仅能有一位正职 holder·描述新任时必须同步记录前任离任(换旧+任新·personnelChanges 两条)';
+    sysP += '\n  4. 若玩家未颁任免诏令·AI 不得自行创造新任命(除非有明确前置条件如空缺/死亡)';
+    sysP += '\n  5. 若擅自任命而未通过 personnelChanges 同步·视为推演谬误';
+
+    sysP += '\n\n【★ 输出纯文本铁则】';
+    sysP += '\n  · 所有输出字段(shizhengji/zhengwen/narrative/content)必须为纯中文·不得含 <HTML 标签>、"onclick"、"javascript:"、\'"\', event)"\'、URL 等任何代码/标记';
+    sysP += '\n  · 遇到本提示中的参考字符串含 HTML·原样输出时必须剥除 HTML 只保留中文';
+    sysP += '\n  · 不允许在叙事中使用 Markdown 链接 [text](url)';
+
     // ★ 御批回听·上回合未落实诏令注入·AI 必须补偿或明确拒绝
     try {
       if (typeof buildEdictEfficacyFollowUp === 'function') {
@@ -14931,6 +14944,27 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     shizhengji = _tsF + '，天下暂无大事。（AI推演未返回有效数据）';
   }
   if (!zhengwen) zhengwen = '时移事去，朝堂内外一切如故。';
+
+  // 清洗·剥除 HTML 残片/onclick/event 引号序列/markdown 链接·防 AI 污染
+  function _stripHtmlResidue(s) {
+    if (!s || typeof s !== 'string') return s;
+    // 1. 剥除 HTML 标签 <tag>...</tag> 或 <tag />
+    s = s.replace(/<[^>]+>/g, '');
+    // 2. 剥除 onclick/onmouseover 等事件属性残片·如 `', event)">`  `, event)>` 等
+    s = s.replace(/['"]?\s*,?\s*event\s*\)['"]?\s*>?/g, '');
+    s = s.replace(/onclick\s*=\s*['"][^'"]*['"]/g, '');
+    // 3. 剥除 markdown 链接 [text](url)·保留 text
+    s = s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+    // 4. 剥除可疑 JS 协议
+    s = s.replace(/javascript:[^\s,·]*/g, '');
+    // 5. 规范化多余空白
+    s = s.replace(/\s+,/g, '，').replace(/\s*>+\s*/g, '').replace(/\s{3,}/g, ' ');
+    return s;
+  }
+  shizhengji = _stripHtmlResidue(shizhengji);
+  zhengwen = _stripHtmlResidue(zhengwen);
+  if (shiluText) shiluText = _stripHtmlResidue(shiluText);
+  if (hourenXishuo) hourenXishuo = _stripHtmlResidue(hourenXishuo);
 
   return {
     shizhengji:shizhengji, zhengwen:zhengwen,

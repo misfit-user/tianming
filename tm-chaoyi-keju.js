@@ -8247,16 +8247,34 @@ function _ty2_openSetup() {
   bg.id = 'ty2-setup-bg';
   bg.style.cssText = 'position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;';
   var capital = GM._capital || '京城';
-  // 廷议仅限同势力 & 在玩家所在地（首都或行在）
+  // 过滤·不得与议者：已死/下狱/流放/病重/致仕/逃亡/丁忧/失踪
+  function _cannotAttend(c) {
+    if (!c) return true;
+    if (c.alive === false || c.dead) return true;
+    if (c.isPlayer) return true;
+    if (c._imprisoned || c.imprisoned || c._inPrison) return true;
+    if (c._exiled || c.exiled || c._banished) return true;
+    if (c._status === 'imprisoned' || c._status === 'exiled' || c._status === 'fled' || c._status === 'retired' || c._status === 'mourning' || c._status === 'sick_grave') return true;
+    if (c._retired || c.retired) return true;  // 致仕
+    if (c._fled || c.fled) return true;          // 逃亡
+    if (c._mourning) return true;                // 丁忧
+    if (c._missing) return true;                 // 失踪
+    if (c._graveIll || (typeof c.health === 'number' && c.health <= 10)) return true;  // 病危
+    if (c.health === 'dead' || c.health === 'imprisoned') return true;
+    return false;
+  }
+  // 廷议仅限同势力 & 在玩家所在地（首都或行在）· 且非下狱/流放等
   var defaultAttendees = (GM.chars||[]).filter(function(c){
-    if (c.alive === false || c.isPlayer || !_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
+    if (_cannotAttend(c)) return false;
+    if (!_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
     var rankLv = typeof getRankLevel === 'function' ? getRankLevel(_cyGetRank(c)) : 99;
     return rankLv <= 12; // 从三品以上（18 级制，12 = 正五品, 6 = 从三品）
   });
   // 若三品以上人数不足——放宽到五品
   if (defaultAttendees.length < 5) {
     defaultAttendees = (GM.chars||[]).filter(function(c){
-      if (c.alive === false || c.isPlayer || !_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
+      if (_cannotAttend(c)) return false;
+      if (!_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
       var rankLv = typeof getRankLevel === 'function' ? getRankLevel(_cyGetRank(c)) : 99;
       return rankLv <= 14;
     });

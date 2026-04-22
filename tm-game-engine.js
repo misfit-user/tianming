@@ -3193,6 +3193,14 @@ function renderBarResources() {
 // ============================================================
 // 角色详情——人物志完整页（6-tab 布局，匹配 preview-char-full.html）
 // ============================================================
+// 人物志面板 → 官制入口(关闭人物志+切官制 tab·高亮目标官职)
+function _rwpOpenOffice(name) {
+  if (!name) return;
+  try { document.getElementById('_renwuPageOv') && document.getElementById('_renwuPageOv').classList.remove('open'); } catch(e){}
+  if (typeof switchGTab === 'function') switchGTab(null, 'gt-office');
+  if (typeof renderOfficeTree === 'function') setTimeout(function(){ try { renderOfficeTree(); } catch(e){} }, 50);
+  if (typeof toast === 'function') toast('已切至官制·查看 '+name+' 职位');
+}
 // 人物志面板 → 问对入口(关闭人物志+打开问对弹窗)
 function _rwpOpenWendui(name) {
   if (!name) return;
@@ -3693,6 +3701,9 @@ function openCharRenwuPage(charName) {
   if (GM.running) {
     h += '<button class="rwp-act-btn" onclick="_rwpOpenWendui(\''+safeName+'\')">问 对</button>';
     h += '<button class="rwp-act-btn" onclick="_rwpOpenLetter(\''+safeName+'\')">传 书</button>';
+    if (ch.officialTitle || ch.title) {
+      h += '<button class="rwp-act-btn" onclick="_rwpOpenOffice(\''+safeName+'\')">官 制</button>';
+    }
   }
   h += '<button class="rwp-act-btn close" onclick="document.getElementById(\'_renwuPageOv\').classList.remove(\'open\')">×</button>';
   h += '</div>';
@@ -3917,6 +3928,59 @@ function openCharRenwuPage(charName) {
     h += '<div class="rwp-ft-clan-item"><div class="rwp-ft-clan-lb">族 丁 总 数</div><div class="rwp-ft-clan-v-big">'+clanSize+'</div></div>';
     h += '</div></div>';
   }
+  // 姻亲四族·从 familyMembers 中筛 inLaw 或关系为姻亲的·按 family 聚合
+  try {
+    var _inlaws = {};
+    (ch.familyMembers || []).forEach(function(m) {
+      if (!m) return;
+      var rel = (m.relation || m.role || '');
+      var isInLaw = m.inLaw === true || /妻|嫂|媳|姻|岳|丈人|舅|姑/.test(rel);
+      if (!isInLaw) return;
+      var fam = m.family || (m.name && m.name.length >= 2 ? m.name.charAt(0)+'氏' : '');
+      if (!fam) return;
+      if (!_inlaws[fam]) _inlaws[fam] = { family: fam, members: [], relations: [] };
+      _inlaws[fam].members.push(m.name || '');
+      if (rel) _inlaws[fam].relations.push(rel);
+    });
+    // 从 ch.family (本家) 反推母族/妻族·用 spouseClan / motherClan 字段
+    if (ch.motherClan && !_inlaws[ch.motherClan]) _inlaws[ch.motherClan] = { family: ch.motherClan, members: [], relations: ['母族'] };
+    if (ch.spouseClan && !_inlaws[ch.spouseClan]) _inlaws[ch.spouseClan] = { family: ch.spouseClan, members: [], relations: ['妻族'] };
+    var _inlawList = Object.keys(_inlaws).map(function(k){ return _inlaws[k]; });
+    if (_inlawList.length > 0) {
+      h += '<div class="rwp-sec"><div class="rwp-sec-title">姻 亲 诸 族</div>';
+      h += '<div style="padding:10px 14px;background:rgba(0,0,0,0.22);border-radius:5px;">';
+      _inlawList.slice(0, 8).forEach(function(inl) {
+        var relText = inl.relations.length ? ('（'+inl.relations.slice(0,2).join('·')+'）') : '';
+        h += '<div style="font-size:12px;color:var(--ink-200);margin:3px 0;line-height:1.9;">· <span style="color:var(--celadon-300);">'+escHtml(inl.family)+'</span>'+relText;
+        if (inl.members.length) h += '<span style="color:var(--ink-400);font-size:11px;margin-left:6px;">'+inl.members.slice(0,3).map(escHtml).join('·')+'</span>';
+        h += '</div>';
+      });
+      h += '</div></div>';
+    }
+  } catch(_inlawE) { console.warn('[人物志] 姻亲段', _inlawE); }
+  // 在朝者·从 GM.chars 筛同 family 且有官职者
+  try {
+    if (ch.family) {
+      var _inCourt = (GM.chars || []).filter(function(cc) {
+        if (!cc || cc.dead) return false;
+        if (cc.family !== ch.family) return false;
+        return !!(cc.officialTitle || cc.title);
+      }).slice(0, 10);
+      if (_inCourt.length > 0) {
+        h += '<div class="rwp-sec"><div class="rwp-sec-title">在 朝 者</div>';
+        h += '<div style="padding:10px 14px;background:rgba(184,154,83,0.06);border:1px solid rgba(184,154,83,0.2);border-radius:3px;">';
+        _inCourt.forEach(function(cc) {
+          var isSelf = cc.name === ch.name;
+          var nmCls = isSelf ? 'var(--gold-300)' : (cc.party && cc.party === ch.party ? 'var(--celadon-300)' : 'var(--ink-50)');
+          var roleTxt = cc.name === ch.name ? '（本人）' : '';
+          var rkTxt = cc.rankLevel ? ('·'+(typeof rankLevelToText==='function'?rankLevelToText(cc.rankLevel):'品'+cc.rankLevel)) : '';
+          h += '<div style="font-size:12px;line-height:1.8;">· <b style="color:'+nmCls+';">'+escHtml(cc.name)+'</b>'+roleTxt
+             + '（'+escHtml(cc.officialTitle||cc.title||'')+rkTxt+'）</div>';
+        });
+        h += '</div></div>';
+      }
+    }
+  } catch(_incE) { console.warn('[人物志] 在朝者段', _incE); }
   h += '</div>'; // tab3
 
   // ═══ Tab 4: 仕途 ═══
@@ -3937,6 +4001,64 @@ function openCharRenwuPage(charName) {
     h += '<div style="padding:12px;text-align:center;color:#d4be7a;font-style:italic;">仕 途 尚 浅 · 事 迹 未 录</div>';
   }
   h += '</div>';
+  // 经历·大事纪·从 ch._scars milestone 或 ch._experience 构建
+  try {
+    var _bigEvents = [];
+    if (Array.isArray(ch._scars)) {
+      ch._scars.forEach(function(s) {
+        if (s && (s.milestone || s.bigEvent || s.emotion === '敬' || s.emotion === '恨')) {
+          _bigEvents.push({ date: s.turn?('T'+s.turn):'', title: s.event||'', desc: s.who?('与 '+s.who):'', milestone: !!s.milestone });
+        }
+      });
+    }
+    if (Array.isArray(ch._chronicle)) {
+      ch._chronicle.slice(-8).forEach(function(c) {
+        _bigEvents.push({ date: c.turn?('T'+c.turn):'', title: c.title||c.event||'', desc: c.desc||'', milestone: !!c.milestone });
+      });
+    }
+    if (_bigEvents.length > 0) {
+      h += '<div class="rwp-sec"><div class="rwp-sec-title">经 历 · 大 事 纪<small>近 8 条</small></div>';
+      h += '<div class="rwp-timeline">';
+      _bigEvents.slice(-8).forEach(function(e) {
+        var ms = e.milestone ? ' milestone' : '';
+        h += '<div class="rwp-timeline-item'+ms+'"><div class="rwp-timeline-date">'+escHtml(e.date)+'</div>';
+        h += '<div class="rwp-timeline-title">'+escHtml(e.title)+'</div>';
+        if (e.desc) h += '<div class="rwp-timeline-desc">'+escHtml(e.desc)+'</div>';
+        h += '</div>';
+      });
+      h += '</div></div>';
+    }
+  } catch(_beE) { console.warn('[人物志] 大事纪段', _beE); }
+  // 文事作品集·从 ch.works / ch.culturalWorks 读
+  try {
+    var _works = [];
+    if (Array.isArray(ch.works)) _works = _works.concat(ch.works);
+    if (Array.isArray(ch.culturalWorks)) _works = _works.concat(ch.culturalWorks);
+    // 也扫 GM.culturalWorks 中 author === ch.name
+    if (Array.isArray(GM.culturalWorks)) {
+      GM.culturalWorks.forEach(function(w) {
+        if (w && w.author === ch.name) _works.push(w);
+      });
+    }
+    if (_works.length > 0) {
+      h += '<div class="rwp-sec"><div class="rwp-sec-title">文 事 作 品 集<small>近 '+Math.min(_works.length, 8)+' 件</small></div>';
+      _works.slice(-8).forEach(function(w) {
+        var title = w.title || w.name || '无题';
+        var meta = [];
+        if (w.date || w.turn) meta.push(w.date || ('T'+w.turn));
+        if (w.genre || w.type) meta.push(w.genre || w.type);
+        if (w.distribution || w.circulated) meta.push(w.distribution || '流传');
+        h += '<div class="rwp-work-card"><div class="rwp-work-title">《 '+escHtml(title)+' 》</div>';
+        if (meta.length) h += '<div class="rwp-work-meta">'+escHtml(meta.join(' · '))+'</div>';
+        if (w.extract || w.excerpt || w.content) {
+          var ext = (w.extract || w.excerpt || w.content).slice(0, 90);
+          h += '<div class="rwp-work-extract">"'+escHtml(ext)+(ext.length>=90?'……':'')+'"</div>';
+        }
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+  } catch(_wkE) { console.warn('[人物志] 作品集段', _wkE); }
   // 颜面+志向
   h += '<div class="rwp-grid-2">';
   if (typeof FaceSystem !== 'undefined' && ch._face !== undefined) {
@@ -4008,8 +4130,59 @@ function openCharRenwuPage(charName) {
       h += '<div style="font-size:10px;color:var(--vermillion-400);letter-spacing:0.15em;margin-bottom:4px;">当 下 压 源</div>';
       ch.stressSources.forEach(function(s) { h += '<div style="font-size:11px;padding:2px 0 2px 10px;border-left:1px dashed rgba(255,255,255,0.1);">· '+escHtml(s)+'</div>'; });
     }
+    // 释压之法·从 hobbies/stressOff/stressRelief 读
+    var _reliefs = [];
+    if (Array.isArray(ch.stressRelief)) _reliefs = ch.stressRelief.slice(0, 4);
+    else if (Array.isArray(ch.stressOff)) _reliefs = ch.stressOff.slice(0, 4);
+    else if (ch.hobbies) _reliefs = (Array.isArray(ch.hobbies) ? ch.hobbies : String(ch.hobbies).split(/[·、，,\/]/)).filter(Boolean).slice(0, 4);
+    if (_reliefs.length > 0) {
+      h += '<div style="font-size:10px;color:var(--celadon-400);letter-spacing:0.15em;margin:8px 0 4px;">释 压 之 法</div>';
+      _reliefs.forEach(function(s) { h += '<div style="font-size:11px;padding:2px 0 2px 10px;border-left:1px dashed rgba(126,184,167,0.2);color:var(--celadon-300);">· '+escHtml(s)+'</div>'; });
+    }
     h += '</div></div>';
   }
+  // 人生历练·分域累计·从 ch._experience 或 ch.exp 读
+  try {
+    var _exp = ch._experience || ch.exp || null;
+    if (_exp && typeof _exp === 'object') {
+      var _domains = [
+        { k: '治理', lbs: ['governance','administration','治理','rule'] },
+        { k: '民生', lbs: ['livelihood','民生','people'] },
+        { k: '文事', lbs: ['literary','文事','culture'] },
+        { k: '党议', lbs: ['faction','党议','politics'] },
+        { k: '军机', lbs: ['military','军事','军机','war'] },
+        { k: '刑名', lbs: ['justice','刑名','law'] }
+      ];
+      var _domainStats = [];
+      _domains.forEach(function(d) {
+        var cnt = 0;
+        d.lbs.forEach(function(l) { if (typeof _exp[l] === 'number') cnt += _exp[l]; });
+        if (cnt > 0) _domainStats.push({ k: d.k, cnt: cnt });
+      });
+      var _recentExp = Array.isArray(ch._experienceLog) ? ch._experienceLog.slice(-4) :
+        Array.isArray(_exp.recent) ? _exp.recent.slice(-4) : [];
+      if (_domainStats.length > 0 || _recentExp.length > 0) {
+        h += '<div class="rwp-sec"><div class="rwp-sec-title">人 生 历 练<small>分域累计</small></div>';
+        if (_domainStats.length > 0) {
+          h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding:10px 14px;background:rgba(0,0,0,0.22);border-radius:5px;">';
+          _domainStats.forEach(function(d) {
+            h += '<div style="flex:1;min-width:80px;text-align:center;padding:6px;background:rgba(184,154,83,0.06);border:1px solid rgba(184,154,83,0.18);border-radius:3px;">'
+              + '<div style="font-size:11px;color:var(--gold-400);letter-spacing:0.2em;">'+d.k+'</div>'
+              + '<div style="font-size:18px;color:var(--gold-300);font-weight:600;margin-top:2px;">'+d.cnt+'</div></div>';
+          });
+          h += '</div>';
+        }
+        if (_recentExp.length > 0) {
+          h += '<div style="font-size:11px;color:var(--ink-300);letter-spacing:0.1em;margin-bottom:4px;">近 期</div>';
+          _recentExp.forEach(function(e) {
+            var txt = typeof e === 'string' ? e : (e.text || e.desc || ('〔'+(e.domain||'?')+'〕'+(e.event||'')));
+            h += '<div style="font-size:11px;padding:3px 0 3px 10px;color:var(--ink-200);line-height:1.6;">· '+escHtml(txt)+'</div>';
+          });
+        }
+        h += '</div>';
+      }
+    }
+  } catch(_expE) { console.warn('[人物志] 历练段', _expE); }
   // 近期记忆
   if (ch._memory && ch._memory.length > 0) {
     h += '<div class="rwp-sec"><div class="rwp-sec-title">此 人 记 忆<small>近 5 条</small></div><div>';
@@ -4089,11 +4262,70 @@ function openCharRenwuPage(charName) {
       h += '</div></div>';
     }
   }
-  // 门生
+  // 血缘关系 + 门生故吏 · 2 列并排
+  try {
+    var _bloods = [];
+    if (Array.isArray(ch.familyMembers)) {
+      ch.familyMembers.forEach(function(m) {
+        if (!m || !m.name) return;
+        var rel = m.relation || m.role || '';
+        var isInLaw = m.inLaw === true || /妻|嫂|媳|岳|丈人|舅/.test(rel);
+        if (isInLaw && !/妻/.test(rel)) return;  // 姻亲不算血缘(妻子特殊·列入)
+        var close = m.dead ? '已故' : (m.name === ch.name ? '本人' : '亲');
+        _bloods.push({ name: m.name, rel: rel, close: close, dead: !!m.dead });
+      });
+    }
+    var _students = [];
+    if (Array.isArray(ch.studentsIds)) {
+      ch.studentsIds.slice(0, 10).forEach(function(sn) {
+        var sc = GM.chars && GM.chars.find(function(cc){ return cc.name === sn; });
+        _students.push({ name: sn, rel: sc ? (sc.officialTitle||sc.title||'') : '门生', tag: '门生' });
+      });
+    }
+    // 亦扫 GM.chars 中 mentor 含本人
+    if (Array.isArray(GM.chars)) {
+      GM.chars.forEach(function(cc) {
+        if (!cc || !cc.mentor) return;
+        if (String(cc.mentor).indexOf(ch.name) < 0) return;
+        if (_students.some(function(s){ return s.name === cc.name; })) return;
+        _students.push({ name: cc.name, rel: cc.officialTitle||cc.title||'门生', tag: '门生' });
+      });
+    }
+    // 故吏·从 ch._formerSubordinates 或扫 GM.chars 曾为下属者
+    if (Array.isArray(ch._formerSubordinates)) {
+      ch._formerSubordinates.slice(0, 8).forEach(function(sub) {
+        _students.push({ name: typeof sub === 'string' ? sub : sub.name, rel: (typeof sub === 'object' ? sub.post||'故吏' : '故吏'), tag: '故吏' });
+      });
+    }
+    if (_bloods.length > 0 || _students.length > 0) {
+      h += '<div class="rwp-grid-2">';
+      if (_bloods.length > 0) {
+        h += '<div class="rwp-sec" style="margin-bottom:0;"><div class="rwp-sec-title">血 缘 关 系</div><div class="rwp-aff-list">';
+        _bloods.slice(0, 10).forEach(function(b) {
+          var cls = b.dead ? 'neu' : 'pos';
+          h += '<div class="rwp-aff-item '+cls+'"><span class="rwp-aff-name">'+escHtml(b.name)+'</span>';
+          h += '<span class="rwp-aff-rel">'+escHtml(b.rel||'—')+'</span>';
+          h += '<span class="rwp-aff-value">'+b.close+'</span></div>';
+        });
+        h += '</div></div>';
+      }
+      if (_students.length > 0) {
+        h += '<div class="rwp-sec" style="margin-bottom:0;"><div class="rwp-sec-title">门 生 故 吏</div><div class="rwp-aff-list">';
+        _students.slice(0, 10).forEach(function(s) {
+          h += '<div class="rwp-aff-item pos"><span class="rwp-aff-name">'+escHtml(s.name)+'</span>';
+          h += '<span class="rwp-aff-rel">'+escHtml(s.rel)+'</span>';
+          h += '<span class="rwp-aff-value">'+s.tag+'</span></div>';
+        });
+        h += '</div></div>';
+      }
+      h += '</div>';
+    }
+  } catch(_relE) { console.warn('[人物志] 血缘/门生段', _relE); }
+  // 降级文本·PatronNetwork(若存在·作为补充)
   if (typeof PatronNetwork !== 'undefined') {
     var pnt = PatronNetwork.getTextForChar(ch.name);
     if (pnt) {
-      h += '<div class="rwp-sec"><div class="rwp-sec-title">门 生 故 吏</div><div class="rwp-prose" style="font-size:11px;">'+escHtml(pnt)+'</div></div>';
+      h += '<div class="rwp-sec"><div class="rwp-sec-title">恩 怨 · 因 果</div><div class="rwp-prose" style="font-size:11px;">'+escHtml(pnt)+'</div></div>';
     }
   }
   h += '</div>'; // tab6

@@ -3,6 +3,25 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "人物志完整页补齐 9 子模块+修书札发送键遮挡",
+      "title": "对比 preview-char-full.html 一·人物志完整页·补全 9 缺失模块·并修 gs-turn-float 浮层遮挡 hy-send-btn",
+      "items": [
+        { "what": "修 bug·书札拟稿「遣使」发送键被右下 gs-turn-float(诏付有司浮层 240×170px) 遮挡·只能缩放才点中·index.html .hy-compose-bot 加 margin-bottom:180px·button 上移至浮层之上", "why": "浮层 position:fixed bottom:56px 覆盖了 letter panel 右下发送区" },
+        { "what": "补 1·顶部操作按钮加「官制」(参考 preview 有 4 按钮)·新增 _rwpOpenOffice(name)·关人物志+switchGTab gt-office+renderOfficeTree·仅任职者显示该按钮", "why": "参考文件 rwp-actions 是 问对/传书/官制/×" },
+        { "what": "补 2·Tab3 家谱·加「姻亲诸族」段·从 familyMembers inLaw/motherClan/spouseClan 聚合·按 family 分组展示·附主要成员名", "why": "preview 显示 4 族·如沈氏(妻族)/陆氏(母族)/冯氏(亲家)/赵氏(姑族)" },
+        { "what": "补 3·Tab3 家谱·加「在朝者」段·从 GM.chars 筛同 family 且有官职者·同党着绿色·本人着金色·附官职+品级", "why": "preview 显示家族在朝成员网络" },
+        { "what": "补 4·Tab4 仕途·加「经历·大事纪」段·从 ch._scars milestone/ch._chronicle 构建·近 8 条 timeline 展示", "why": "preview 有经历·大事纪独立段·与仕途履历并列" },
+        { "what": "补 5·Tab4 仕途·加「文事作品集」段·从 ch.works/ch.culturalWorks/GM.culturalWorks 读·每作品 title/meta/extract 卡片·近 8 件", "why": "preview 显示作品集如《东堤记》/《上漕运策》" },
+        { "what": "补 6·Tab5 心绪·压力详情内加「释压之法」·从 ch.stressRelief/stressOff/hobbies 读·翠绿色左条区分压源(朱红)", "why": "preview 双栏显示 压源/释压" },
+        { "what": "补 7·Tab5 心绪·加「人生历练·分域累计」段·从 ch._experience(治理/民生/文事/党议/军机/刑名 6 域) + ch._experienceLog/_exp.recent 近 4 条", "why": "preview 有分域累计+近期事件" },
+        { "what": "补 8·Tab6 关系·加「血缘关系」独立段(rwp-aff-list)·从 familyMembers 筛非姻亲+妻·按 dead 标灰·区别于 impressions 的人际关系网", "why": "preview 血缘独立·非融合在 impressions" },
+        { "what": "补 9·Tab6 关系·加「门生故吏」独立段(rwp-aff-list)·从 ch.studentsIds + 扫 GM.chars mentor 含本人 + ch._formerSubordinates·不再用 PatronNetwork 纯文本", "why": "preview 门生故吏为结构化列表·含官职" },
+        { "what": "改 PatronNetwork 原文本·若存在则降为恩怨因果补充段·避免与新的结构化门生故吏重复", "why": "兼容既有系统同时提升展示质量" },
+        { "what": "缓存·tm-game-engine v=c→d", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "修紧要之臣特质显示英文(hone/just/shy)",
       "title": "traits 英文 id 未翻译·钱龙锡卡片显示 hone/just/shy·查 P.traitDefinitions 转中文 name",
       "items": [

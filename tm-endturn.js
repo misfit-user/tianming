@@ -1599,45 +1599,83 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     });
   }
 
+  // 上回合效能趋势对比基线
+  var prevEfficacy = (GM._edictEfficacyHistory && GM._edictEfficacyHistory.length > 0)
+    ? GM._edictEfficacyHistory[GM._edictEfficacyHistory.length - 1]
+    : null;
+
   var input = {
     edicts: edictLines,
     mainNarrative: (aiResult.shizhengji || '').slice(0, 1200),
     supplementaryNarrative: (aiResult.zhengwen || '').slice(0, 600),
     varChanges: varChangesSummary,
-    personnelChanges: personnelSummary
+    personnelChanges: personnelSummary,
+    prevOverallEfficacy: prevEfficacy ? prevEfficacy.overallEfficacy : null
   };
 
-  var prompt = '你是御前侍读·职责是代陛下核查本回合所下诏令是否被AI推演真实执行。\n\n' +
+  var prompt = '你是御前侍读·职责是代陛下核查本回合所下诏令是否被 AI 推演真实执行·并对朝局做多维度体检。\n\n' +
     '【本回合玩家诏令·按条列出】\n' + JSON.stringify(input.edicts, null, 2) +
     '\n\n【主推演叙事·时政记】\n' + input.mainNarrative +
     (input.supplementaryNarrative ? '\n\n【辅助叙事·政文】\n' + input.supplementaryNarrative : '') +
     '\n\n【数值变化】\n' + (input.varChanges.length ? input.varChanges.join('\n') : '（无）') +
-    '\n\n【人事变动】\n' + (input.personnelSummary && input.personnelSummary.length ? input.personnelChanges.join('\n') : (input.personnelChanges.length ? input.personnelChanges.join('\n') : '（无）')) +
-    '\n\n【任务】对每条诏令·核查在上述推演中是否有对应体现。输出 JSON：\n' +
+    '\n\n【人事变动】\n' + (input.personnelChanges.length ? input.personnelChanges.join('\n') : '（无）') +
+    (input.prevOverallEfficacy !== null ? '\n\n【上回合代理强度】' + input.prevOverallEfficacy + '% (供趋势对比)' : '') +
+    '\n\n【任务】输出 JSON：\n' +
     '{\n' +
     '  "reports": [\n' +
     '    {\n' +
     '      "id": "诏令 id",\n' +
     '      "content": "诏令原文简述",\n' +
-    '      "executionLevel": 0-100 (整数·执行度百分比),\n' +
-    '      "status": "executed/partial/delayed/ignored (完全执行/部分/延宕/被忽略)",\n' +
-    '      "evidence": "引用推演叙事/var_changes/personnelChanges 的具体证据",\n' +
-    '      "missed": "未落实的部分·若 status=executed 则空",\n' +
-    '      "reason": "AI 推演中为何这样处理(阁臣阻挠/时机不成熟/前提未备/等)",\n' +
-    '      "nextAdvice": "下回合玩家应如何催办或调整"\n' +
+    '      "executionLevel": 0-100,\n' +
+    '      "status": "executed/partial/delayed/ignored",\n' +
+    '      "evidence": "引用推演具体证据",\n' +
+    '      "missed": "未落实部分(若全部执行则空)",\n' +
+    '      "reason": "AI 为何这样处理(阁阻/时机/前提/冲突 等)",\n' +
+    '      "outcomeShortTerm": "本回合立刻看到的效果(含正负)",\n' +
+    '      "outcomeLongTerm": "预期未来 3-5 回合的延伸效应",\n' +
+    '      "affectedEntities": ["具体影响到的角色/势力/党派/省份名"],\n' +
+    '      "costPaid": "付出的代价(国库/民心/合法性/威望)",\n' +
+    '      "oppositionFaced": "遇到的阻力来源(某阁臣/某党派/某势力)",\n' +
+    '      "linkedEdicts": ["与本回合其他诏令协同 id 或冲突 id"],\n' +
+    '      "nextAdvice": "下回合玩家应如何催办/调整"\n' +
     '    }\n' +
     '  ],\n' +
-    '  "unexpectedEvents": ["AI 推演中自发但玩家未诏令的重要事件"],\n' +
-    '  "overallEfficacy": 0-100 (整数·本回合玩家代理强度),\n' +
-    '  "topPriority": "下回合最应优先催办的 1-2 件事"\n' +
+    '  "unexpectedEvents": [\n' +
+    '    {\n' +
+    '      "title": "事件短题",\n' +
+    '      "category": "天灾/人祸/边报/党争/朝议/民变/异象/外交/经济",\n' +
+    '      "severity": "轻/中/重/危",\n' +
+    '      "triggeredBy": "玩家某诏令副作用 / 长期诏书累积 / NPC 自主 / 外部势力",\n' +
+    '      "detail": "40 字内细节",\n' +
+    '      "playerCouldHavePrevented": "可否预防+如何预防·若不可预防则为空"\n' +
+    '    }\n' +
+    '  ],\n' +
+    '  "efficacyByDimension": {\n' +
+    '    "military": 0-100, "fiscal": 0-100, "personnel": 0-100,\n' +
+    '    "diplomatic": 0-100, "popular": 0-100, "authority": 0-100\n' +
+    '  },\n' +
+    '  "efficacyTrend": "+N / -N (相比上回合·若无上回合则 0)",\n' +
+    '  "courtReaction": {\n' +
+    '    "clearFaction": "清流/东林的评价(30字)",\n' +
+    '    "eunuchFaction": "阉党/当权派的评价(30字)",\n' +
+    '    "neutralFaction": "中立/观望派的评价(30字)"\n' +
+    '  },\n' +
+    '  "popularReaction": "民间/士林/市井的回响(40字)",\n' +
+    '  "strategicInsight": "站在皇帝长期战略角度的洞见+提醒(60字·可带隐忧/机会)",\n' +
+    '  "overallEfficacy": 0-100,\n' +
+    '  "topPriority": "下回合优先催办的 1-2 件事"\n' +
     '}\n\n' +
     '【核查准则】\n' +
-    '1. 若 var_changes/personnelChanges/叙事中有对应动作·即使只是小成·也 status=executed 或 partial\n' +
-    '2. 若完全无痕迹·status=ignored·reason 必须说明 AI 为何没演(不合时宜/与其它诏令冲突/信息不足)\n' +
-    '3. 若叙事说"拟议中""阁议未决""旨延宕"·status=delayed\n' +
-    '4. evidence 要精准引用·不要凭空编\n' +
-    '5. nextAdvice 给具体动作·不要空话\n' +
-    '6. 只输出 JSON·无其他文字';
+    '1. status: 有对应动作即 executed/partial·"阁议未决/旨延宕"为 delayed·完全无痕为 ignored\n' +
+    '2. evidence 必须精确引用叙事/var_changes/personnelChanges·不得凭空\n' +
+    '3. affectedEntities 列具体名字·不要笼统"朝廷"\n' +
+    '4. oppositionFaced 指出阻力的具体主体·而非"有人反对"\n' +
+    '5. linkedEdicts 分析协同/冲突·id 必须来自本回合诏令 id 列表\n' +
+    '6. unexpectedEvents 只列本回合推演中自发(非玩家诏令直接触发)的重要事件·不赘述诏令结果\n' +
+    '7. efficacyByDimension 按维度 0-100·各维度独立评估·不平均化\n' +
+    '8. courtReaction 各派评价要体现派系真实立场(清流偏恤民·阉党偏敛财·浙齐偏观望)\n' +
+    '9. strategicInsight 指出隐忧或机会·带具体建议\n' +
+    '10. 只输出 JSON·无其他文字';
 
   try {
     var raw = await callAISmart(prompt, 2000, { maxRetries: 2 });
@@ -1652,23 +1690,68 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     }
     if (!parsed || !Array.isArray(parsed.reports)) return;
 
+    // 规范化 unexpectedEvents·兼容旧字符串格式与新对象格式
+    var normalizedUnexpected = [];
+    if (Array.isArray(parsed.unexpectedEvents)) {
+      parsed.unexpectedEvents.slice(0, 6).forEach(function(u) {
+        if (typeof u === 'string') {
+          normalizedUnexpected.push({ title: u.slice(0, 40), detail: u, category: '', severity: '', triggeredBy: '', playerCouldHavePrevented: '' });
+        } else if (u && typeof u === 'object') {
+          normalizedUnexpected.push({
+            title: (u.title || '').slice(0, 50),
+            category: u.category || '',
+            severity: u.severity || '',
+            triggeredBy: u.triggeredBy || '',
+            detail: (u.detail || '').slice(0, 150),
+            playerCouldHavePrevented: u.playerCouldHavePrevented || ''
+          });
+        }
+      });
+    }
+
     GM._edictEfficacyReport = {
       turn: GM.turn - 1,
       total: edictLines.length,
       reports: parsed.reports.slice(0, 20),
-      unexpectedEvents: Array.isArray(parsed.unexpectedEvents) ? parsed.unexpectedEvents.slice(0, 5) : [],
+      unexpectedEvents: normalizedUnexpected,
       overallEfficacy: typeof parsed.overallEfficacy === 'number' ? parsed.overallEfficacy : 50,
+      efficacyByDimension: (parsed.efficacyByDimension && typeof parsed.efficacyByDimension === 'object') ? parsed.efficacyByDimension : null,
+      efficacyTrend: parsed.efficacyTrend || '',
+      courtReaction: (parsed.courtReaction && typeof parsed.courtReaction === 'object') ? parsed.courtReaction : null,
+      popularReaction: parsed.popularReaction || '',
+      strategicInsight: parsed.strategicInsight || '',
       topPriority: parsed.topPriority || '',
       generatedAt: Date.now()
     };
 
-    // 统计·为下回合 sysP 注入被忽略/延宕的诏令
+    // 历史快照·供趋势对比(最多存 20 回合)
+    if (!GM._edictEfficacyHistory) GM._edictEfficacyHistory = [];
+    GM._edictEfficacyHistory.push({
+      turn: GM.turn - 1,
+      overallEfficacy: GM._edictEfficacyReport.overallEfficacy,
+      efficacyByDimension: GM._edictEfficacyReport.efficacyByDimension,
+      total: edictLines.length
+    });
+    if (GM._edictEfficacyHistory.length > 20) GM._edictEfficacyHistory = GM._edictEfficacyHistory.slice(-20);
+
+    // 统计·为下回合 sysP 注入被忽略/延宕的诏令+各派反应+战略洞见
     var ignoredList = parsed.reports.filter(function(r){ return r.status === 'ignored' || r.status === 'delayed'; });
     if (ignoredList.length > 0) {
       GM._edictEfficacyReport.ignoredOrDelayed = ignoredList.map(function(r) {
         return { id: r.id, content: r.content, status: r.status, reason: r.reason, nextAdvice: r.nextAdvice };
       });
     }
+    // 收集所有诏令的 oppositionFaced·去重汇总
+    var oppositionSet = {};
+    parsed.reports.forEach(function(r) {
+      if (r.oppositionFaced && typeof r.oppositionFaced === 'string') {
+        var key = r.oppositionFaced.trim();
+        if (key && key !== '无') oppositionSet[key] = (oppositionSet[key] || 0) + 1;
+      }
+    });
+    GM._edictEfficacyReport.oppositionSummary = Object.keys(oppositionSet)
+      .sort(function(a,b){return oppositionSet[b]-oppositionSet[a];})
+      .slice(0, 5);
 
     // 写编年
     if (!GM._chronicle) GM._chronicle = [];
@@ -1688,16 +1771,65 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
   }
 }
 
-// 构建下回合 sysP 注入·让 AI 看到上回合被忽略/延宕的诏令并补偿
+// 构建下回合 sysP 注入·让 AI 读取上回合御批回听的完整内容并持续推进
 function buildEdictEfficacyFollowUp() {
-  if (!GM._edictEfficacyReport || !Array.isArray(GM._edictEfficacyReport.ignoredOrDelayed)) return '';
-  var list = GM._edictEfficacyReport.ignoredOrDelayed;
-  if (list.length === 0) return '';
-  var out = '\n\n【上回合诏令未落实清单·AI 推演需补偿或明确拒绝】';
-  list.forEach(function(r) {
-    out += '\n  · [' + (r.status === 'ignored' ? '被忽略' : '延宕中') + '] ' + (r.content || '').slice(0, 80) + '·缘由:' + (r.reason || '').slice(0, 60);
-  });
-  out += '\n★ 规则：推演时必须在 shizhengji 中对上述条目给出交代——要么继续推进·要么明确说明阻力来源。不允许再次无故缺席。';
+  if (!GM._edictEfficacyReport || GM._edictEfficacyReport.skipped) return '';
+  var ef = GM._edictEfficacyReport;
+  var out = '';
+
+  // 1. 上回合效能概览·AI 需感知朝政大势
+  out += '\n\n【上回合御批回听·本朝局势概览(AI 必读并延续)】';
+  if (typeof ef.overallEfficacy === 'number') {
+    out += '\n总代理强度：' + ef.overallEfficacy + '%';
+    if (ef.efficacyTrend) out += '·趋势 ' + ef.efficacyTrend;
+  }
+  if (ef.efficacyByDimension) {
+    var dimLabels = { military: '军事', fiscal: '财政', personnel: '人事', diplomatic: '外交', popular: '民心', authority: '皇权' };
+    var dimLine = [];
+    Object.keys(dimLabels).forEach(function(k) {
+      if (typeof ef.efficacyByDimension[k] === 'number') {
+        dimLine.push(dimLabels[k] + ' ' + ef.efficacyByDimension[k]);
+      }
+    });
+    if (dimLine.length) out += '\n六维：' + dimLine.join('·');
+  }
+
+  // 2. 朝野反应·AI 应让 NPC 延续情绪
+  if (ef.courtReaction) {
+    var cr = ef.courtReaction;
+    var crLines = [];
+    if (cr.clearFaction) crLines.push('清流:' + cr.clearFaction);
+    if (cr.eunuchFaction) crLines.push('阉党:' + cr.eunuchFaction);
+    if (cr.neutralFaction) crLines.push('中立:' + cr.neutralFaction);
+    if (crLines.length) out += '\n朝野反响·' + crLines.join('·').slice(0, 200);
+  }
+  if (ef.popularReaction) out += '\n民间回响:' + String(ef.popularReaction).slice(0, 100);
+
+  // 3. 持续阻力·AI 推演时须体现这些力量继续作梗
+  if (Array.isArray(ef.oppositionSummary) && ef.oppositionSummary.length > 0) {
+    out += '\n持续阻力：' + ef.oppositionSummary.slice(0, 5).join('·');
+  }
+
+  // 4. 战略洞见·给 AI 推演大方向提示
+  if (ef.strategicInsight) out += '\n御前战略提示：' + String(ef.strategicInsight).slice(0, 150);
+
+  // 5. 未落实诏令·必须给交代
+  if (Array.isArray(ef.ignoredOrDelayed) && ef.ignoredOrDelayed.length > 0) {
+    out += '\n\n【上回合未落实诏令·AI 推演需补偿或明确拒绝】';
+    ef.ignoredOrDelayed.forEach(function(r) {
+      out += '\n  · [' + (r.status === 'ignored' ? '被忽略' : '延宕中') + '] ' + (r.content || '').slice(0, 80) + '·缘由:' + (r.reason || '').slice(0, 60);
+    });
+  }
+
+  // 6. 下回合首要
+  if (ef.topPriority) out += '\n\n【玩家御前首要关切】' + String(ef.topPriority).slice(0, 100);
+
+  // 7. 推演规则
+  out += '\n\n★ 御批回听规则(AI 推演必遵):';
+  out += '\n  1. 上回合未落实的诏令必须在本回合 shizhengji 中给出交代·继续推进或说明阻力';
+  out += '\n  2. 持续阻力方(上述)本回合应继续发挥影响·非突然消失';
+  out += '\n  3. 朝野反响的情绪延续到本回合 NPC 发言/行动基调';
+  out += '\n  4. 若玩家本回合有应对战略提示的诏令·优先展开其效果';
   return out;
 }
 

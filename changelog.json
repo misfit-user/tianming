@@ -3,6 +3,21 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "御批回听·全面扩展·七维呈现+AI 持续推演",
+      "title": "修 input.personnelSummary 笔误·诏令 11 字段·自发事件结构化·六维效能+朝野反响+战略洞见·下回合 sysP 完整注入",
+      "items": [
+        { "what": "修 bug·input.personnelSummary 笔误(实际字段 personnelChanges)·prompt 三元条件永远走错误分支·现直接 input.personnelChanges.join·简化", "why": "原代码 ternary 逻辑绕·虽然不崩溃但混乱" },
+        { "what": "每条诏令 reports 扩展 6 新字段·outcomeShortTerm(近效/立即效果)·outcomeLongTerm(远效/3-5回合延伸)·affectedEntities[](具体波及角色/势力/党派/省份)·costPaid(代价·国库/民心/合法性/威望)·oppositionFaced(阻力来源·具体主体)·linkedEdicts[](与其他诏令协同/冲突)", "why": "原诏令反馈只有 evidence/reason 两维·无因果链条·现 11 字段呈现完整执行画像" },
+        { "what": "自发事件 unexpectedEvents 从字符串升级为对象·含 title/category(天灾/人祸/边报/党争/朝议/民变/异象/外交/经济)/severity(轻/中/重/危)/triggeredBy(诏令副作用/长期累积/NPC 自主/外部势力)/detail/playerCouldHavePrevented", "why": "原自发事件仅一行文本·现分类+严重度+诱因+可否预防·帮玩家学习" },
+        { "what": "新顶级字段·efficacyByDimension(军事/财政/人事/外交/民心/皇权 六维 0-100)·efficacyTrend(相比上回合 +N/-N)·courtReaction{clearFaction/eunuchFaction/neutralFaction}·popularReaction(民间回响)·strategicInsight(长期战略洞见+隐忧机会)·oppositionSummary(所有诏令阻力去重汇总)", "why": "单一 overallEfficacy 不够·六维拆分+派系反应+民心+战略视角·让玩家读到完整朝局" },
+        { "what": "GM._edictEfficacyHistory·最多 20 回合快照·含每回合 overallEfficacy/efficacyByDimension·AI 推演时可参考 prevOverallEfficacy 计算 trend", "why": "支持趋势对比·identify 长期下滑" },
+        { "what": "buildEdictEfficacyFollowUp 全面扩展·注入下回合主推演 sysP·包括：六维数值/朝野反响/民间回响/持续阻力/战略洞见/未落实诏令/下回合首要·附 4 条推演规则(未落实必须交代/阻力方持续影响/反响情绪延续/响应战略提示)", "why": "AI 每回合推演必读上回合御批回听完整内容·不断延续朝局" },
+        { "what": "史记弹窗 layer2 御批回听 section 全面重做·六维雷达条·每条诏令 11 字段分层显示(近效紫/远效琥珀/代价/阻力红/联动)·自发事件按 severity/category/triggeredBy/playerCouldHavePrevented 分栏·朝野反响按派系着色·持续阻力红框·战略洞见绿框·下回合首要金框", "why": "信息密度提升但分层清晰·玩家一眼看清朝局" },
+        { "what": "缓存·tm-endturn v=f→g·tm-endturn-render v=a→b", "why": "强制加载" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "御批回听·情节弧后台化·两项新 AI 能力",
       "title": "endturn 新增 1 次 post-inference 诏令问责·后台 idle 新增 1 次人物心路推进",
       "items": [

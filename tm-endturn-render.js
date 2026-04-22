@@ -710,12 +710,34 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
   try {
     var ef = GM._edictEfficacyReport;
     if (ef && !ef.skipped && Array.isArray(ef.reports) && ef.reports.length > 0) {
-      var efColor = ef.overallEfficacy >= 75 ? 'var(--green,#4a9a4a)' : ef.overallEfficacy >= 50 ? 'var(--gold,#c9a84c)' : 'var(--red-s,#b04030)';
+      var efVal = ef.overallEfficacy || 0;
+      var efColor = efVal >= 75 ? 'var(--green,#4a9a4a)' : efVal >= 50 ? 'var(--gold,#c9a84c)' : 'var(--red-s,#b04030)';
       efficacyHtml = '<div class="tr-efficacy-box" style="margin-top:1.2rem;padding:0.9rem 1rem;background:rgba(201,168,76,0.06);border-left:3px solid var(--gold,#c9a84c);border-radius:4px;">'
         + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">'
-        + '<div style="font-weight:700;color:var(--gold,#c9a84c);font-size:0.95rem;">〔御批回听〕</div>'
-        + '<div style="font-size:0.78rem;color:'+efColor+';">代理强度 ' + (ef.overallEfficacy || 0) + '%·共 ' + ef.total + ' 条</div>'
+        + '<div style="font-weight:700;color:var(--gold,#c9a84c);font-size:0.95rem;">〔御 批 回 听〕</div>'
+        + '<div style="font-size:0.78rem;color:'+efColor+';">代理强度 ' + efVal + '%'
+        + (ef.efficacyTrend ? ' <span style="color:var(--txt-d);">('+escHtml(ef.efficacyTrend)+')</span>' : '')
+        + '·共 ' + ef.total + ' 条</div>'
         + '</div>';
+
+      // 六维评分·雷达条显示
+      if (ef.efficacyByDimension) {
+        var dimLabels = { military: '军事', fiscal: '财政', personnel: '人事', diplomatic: '外交', popular: '民心', authority: '皇权' };
+        var dimBars = '';
+        Object.keys(dimLabels).forEach(function(k) {
+          var v = ef.efficacyByDimension[k];
+          if (typeof v !== 'number') return;
+          var bc = v >= 70 ? 'var(--green,#4a9a4a)' : v >= 40 ? 'var(--gold,#c9a84c)' : 'var(--red-s,#b04030)';
+          dimBars += '<div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;">'
+            + '<span style="width:2.6em;color:var(--txt-d);">' + dimLabels[k] + '</span>'
+            + '<div style="flex:1;height:4px;background:rgba(0,0,0,0.2);border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+Math.min(100,Math.max(0,v))+'%;background:'+bc+';"></div></div>'
+            + '<span style="width:2em;text-align:right;color:'+bc+';">' + v + '</span>'
+            + '</div>';
+        });
+        if (dimBars) efficacyHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem 0.8rem;margin-bottom:0.6rem;padding:0.4rem 0.6rem;background:rgba(0,0,0,0.12);border-radius:3px;">' + dimBars + '</div>';
+      }
+
+      // 每条诏令
       ef.reports.forEach(function(r) {
         var stCfg = {
           executed: { lbl: '✓ 执行', clr: 'var(--green,#4a9a4a)' },
@@ -731,21 +753,76 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
           + '</div>'
           + '<div style="color:var(--txt-s);margin-bottom:0.3rem;">' + escHtml(r.content || '') + '</div>';
         if (r.evidence) efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-d);line-height:1.5;">依据：' + escHtml(r.evidence) + '</div>';
+        if (r.outcomeShortTerm) efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-s);margin-top:0.2rem;">近效：' + escHtml(r.outcomeShortTerm) + '</div>';
+        if (r.outcomeLongTerm) efficacyHtml += '<div style="font-size:0.74rem;color:var(--purple-300,#b89ec8);margin-top:0.2rem;">远效：' + escHtml(r.outcomeLongTerm) + '</div>';
+        if (Array.isArray(r.affectedEntities) && r.affectedEntities.length) {
+          efficacyHtml += '<div style="font-size:0.72rem;color:var(--txt-d);margin-top:0.2rem;">波及：' + r.affectedEntities.slice(0,6).map(escHtml).join('·') + '</div>';
+        }
+        if (r.costPaid) efficacyHtml += '<div style="font-size:0.72rem;color:var(--amber,#e0a040);margin-top:0.2rem;">代价：' + escHtml(r.costPaid) + '</div>';
+        if (r.oppositionFaced) efficacyHtml += '<div style="font-size:0.72rem;color:var(--red-s,#b04030);margin-top:0.2rem;">阻力：' + escHtml(r.oppositionFaced) + '</div>';
+        if (Array.isArray(r.linkedEdicts) && r.linkedEdicts.length) {
+          efficacyHtml += '<div style="font-size:0.72rem;color:var(--txt-d);margin-top:0.2rem;">联动：' + r.linkedEdicts.slice(0,3).map(escHtml).join(' + ') + '</div>';
+        }
         if (r.missed) efficacyHtml += '<div style="font-size:0.74rem;color:'+s.clr+';margin-top:0.2rem;">未落实：' + escHtml(r.missed) + '</div>';
         if (r.reason && r.status !== 'executed') efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-d);margin-top:0.2rem;">缘由：' + escHtml(r.reason) + '</div>';
         if (r.nextAdvice) efficacyHtml += '<div style="font-size:0.74rem;color:var(--gold,#c9a84c);margin-top:0.3rem;">⇒ 下回合建议：' + escHtml(r.nextAdvice) + '</div>';
         efficacyHtml += '</div>';
       });
+
+      // AI 自发事件·扩展展示
       if (Array.isArray(ef.unexpectedEvents) && ef.unexpectedEvents.length > 0) {
-        efficacyHtml += '<div style="margin-top:0.5rem;font-size:0.76rem;color:var(--txt-s);border-top:1px dashed rgba(255,255,255,0.12);padding-top:0.5rem;">'
-          + '<span style="color:var(--gold-d,#8c7030);">【AI 自发事件】</span>';
+        efficacyHtml += '<div style="margin-top:0.6rem;border-top:1px dashed rgba(255,255,255,0.12);padding-top:0.5rem;">'
+          + '<div style="font-size:0.78rem;color:var(--gold-d,#8c7030);margin-bottom:0.4rem;">【AI 自发事件】</div>';
         ef.unexpectedEvents.forEach(function(u) {
-          efficacyHtml += '<div style="margin-top:0.2rem;">· ' + escHtml(String(u)) + '</div>';
+          if (typeof u === 'string') {
+            efficacyHtml += '<div style="font-size:0.74rem;color:var(--txt-s);margin-top:0.25rem;padding-left:0.5rem;">· ' + escHtml(u) + '</div>';
+          } else if (u && typeof u === 'object') {
+            var sevColor = u.severity === '危' ? 'var(--red,#c03030)' : u.severity === '重' ? 'var(--red-s,#b04030)' : u.severity === '中' ? 'var(--amber,#e0a040)' : 'var(--txt-s)';
+            efficacyHtml += '<div style="margin-top:0.3rem;padding:0.35rem 0.5rem;background:rgba(0,0,0,0.1);border-radius:3px;font-size:0.74rem;">'
+              + '<div style="display:flex;gap:6px;align-items:center;margin-bottom:0.15rem;">'
+              + (u.severity ? '<span style="color:'+sevColor+';font-weight:600;">['+escHtml(u.severity)+']</span>' : '')
+              + (u.category ? '<span style="color:var(--txt-d);font-size:0.7rem;">'+escHtml(u.category)+'</span>' : '')
+              + '<span style="color:var(--txt-s);font-weight:500;">' + escHtml(u.title || '') + '</span>'
+              + '</div>';
+            if (u.detail) efficacyHtml += '<div style="color:var(--txt-s);font-size:0.72rem;">' + escHtml(u.detail) + '</div>';
+            if (u.triggeredBy) efficacyHtml += '<div style="color:var(--txt-d);font-size:0.7rem;margin-top:0.15rem;">诱因：' + escHtml(u.triggeredBy) + '</div>';
+            if (u.playerCouldHavePrevented) efficacyHtml += '<div style="color:var(--gold,#c9a84c);font-size:0.7rem;margin-top:0.15rem;">可避免：' + escHtml(u.playerCouldHavePrevented) + '</div>';
+            efficacyHtml += '</div>';
+          }
         });
         efficacyHtml += '</div>';
       }
+
+      // 朝野反响
+      if (ef.courtReaction || ef.popularReaction) {
+        efficacyHtml += '<div style="margin-top:0.6rem;padding:0.4rem 0.6rem;background:rgba(142,106,168,0.08);border-radius:3px;font-size:0.74rem;">';
+        efficacyHtml += '<div style="font-size:0.76rem;color:var(--purple-300,#b89ec8);margin-bottom:0.3rem;font-weight:600;">【朝野反响】</div>';
+        if (ef.courtReaction) {
+          var cr = ef.courtReaction;
+          if (cr.clearFaction) efficacyHtml += '<div style="margin-top:0.2rem;">· <span style="color:var(--green,#4a9a4a);">清流</span>：' + escHtml(cr.clearFaction) + '</div>';
+          if (cr.eunuchFaction) efficacyHtml += '<div style="margin-top:0.2rem;">· <span style="color:var(--red-s,#b04030);">当权/阉党</span>：' + escHtml(cr.eunuchFaction) + '</div>';
+          if (cr.neutralFaction) efficacyHtml += '<div style="margin-top:0.2rem;">· <span style="color:var(--txt-s);">中立</span>：' + escHtml(cr.neutralFaction) + '</div>';
+        }
+        if (ef.popularReaction) efficacyHtml += '<div style="margin-top:0.3rem;color:var(--amber,#e0a040);">· 民间/市井：' + escHtml(ef.popularReaction) + '</div>';
+        efficacyHtml += '</div>';
+      }
+
+      // 持续阻力汇总
+      if (Array.isArray(ef.oppositionSummary) && ef.oppositionSummary.length > 0) {
+        efficacyHtml += '<div style="margin-top:0.4rem;padding:0.3rem 0.6rem;background:rgba(176,64,48,0.08);border-left:2px solid var(--red-s,#b04030);border-radius:2px;font-size:0.74rem;color:var(--red-s,#b04030);">'
+          + '本回合主要阻力：' + ef.oppositionSummary.slice(0,5).map(escHtml).join('·')
+          + '</div>';
+      }
+
+      // 战略洞见
+      if (ef.strategicInsight) {
+        efficacyHtml += '<div style="margin-top:0.4rem;padding:0.4rem 0.6rem;background:rgba(74,154,74,0.08);border-left:2px solid var(--green,#4a9a4a);border-radius:2px;font-size:0.76rem;color:var(--green,#4a9a4a);">'
+          + '📜 御前战略：' + escHtml(ef.strategicInsight) + '</div>';
+      }
+
+      // 下回合首要
       if (ef.topPriority) {
-        efficacyHtml += '<div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:rgba(201,168,76,0.15);border-radius:3px;font-size:0.78rem;color:var(--gold,#c9a84c);">'
+        efficacyHtml += '<div style="margin-top:0.4rem;padding:0.4rem 0.6rem;background:rgba(201,168,76,0.15);border-radius:3px;font-size:0.78rem;color:var(--gold,#c9a84c);">'
           + '⚡ 下回合首要：' + escHtml(ef.topPriority) + '</div>';
       }
       efficacyHtml += '</div>';

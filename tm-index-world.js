@@ -278,10 +278,38 @@ function updateScenarioIndex(oldId, newId, scenario) {
 // 快速查询函数（O(1) 复杂度）
 /** @param {string} name @returns {Object|undefined} 角色对象 */
 function findCharByName(name) {
+  if (!name) return undefined;
   if (!GM._indices || !GM._indices.charByName) {
     buildIndices();
   }
-  return GM._indices.charByName.get(name);
+  var hit = GM._indices.charByName.get(name);
+  if (hit) return hit;
+  // Fallback·线性扫 GM.chars·捕获未注册到索引的新生成角色(多站点 push 漏 index.set)
+  // 命中后顺手 patch 索引·下次直接 O(1)
+  if (Array.isArray(GM.chars)) {
+    for (var i = 0; i < GM.chars.length; i++) {
+      var c = GM.chars[i];
+      if (!c) continue;
+      if (c.name === name) {
+        try { GM._indices.charByName.set(name, c); } catch(e) {}
+        return c;
+      }
+      // 别名/字/号/乳名/曾用名兜底匹配
+      if (c.zi === name || c.haoName === name || c.milkName === name) {
+        try { GM._indices.charByName.set(name, c); } catch(e) {}
+        return c;
+      }
+      if (Array.isArray(c.aliases) && c.aliases.indexOf(name) >= 0) {
+        try { GM._indices.charByName.set(name, c); } catch(e) {}
+        return c;
+      }
+      if (Array.isArray(c.formerNames) && c.formerNames.indexOf(name) >= 0) {
+        try { GM._indices.charByName.set(name, c); } catch(e) {}
+        return c;
+      }
+    }
+  }
+  return undefined;
 }
 
 /** @param {string} name @returns {Object|undefined} 势力对象 */

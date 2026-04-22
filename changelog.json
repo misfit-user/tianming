@@ -3,6 +3,18 @@
   "entries": [
     {
       "date": "2026-04-22",
+      "module": "四 bug 修复·人名抓取/新 NPC 问对/人物志按钮/紧要之臣滚动",
+      "title": "findCharByName 索引 fallback·_extractNames 语境锚点·人物志问对传书按钮·侧栏滚动条",
+      "items": [
+        { "what": "修 P0·findCharByName(tm-index-world.js:280)·原仅依赖 GM._indices.charByName Map·新生成 NPC 多站点 push 到 GM.chars 时未注册索引·导致问对时 findCharByName 返回 undefined·sendWendui 走 if(P.ai.key&&ch) 分支不执行 AI·NPC 不发言·现加 fallback·索引 miss 时线性扫 GM.chars+别名(zi/haoName/milkName/aliases/formerNames)·命中后 patch 索引下次 O(1)", "why": "tm-endturn.js:10276 官制实体化 push char 未 set 索引·此类漏洞还有其他站点·统一兜底修复胜过逐个修 push" },
+        { "what": "修 P1·人物志面板的问对/传书按钮(tm-game-engine.js:3666-3667)·原 onclick 调 openWendui/openLetterCompose·二者均不存在函数·按钮点击无响应·新增 _rwpOpenWendui(关闭人物志+openWenduiModal)·_rwpOpenLetter(关闭人物志+switchGTab gt-letter+预填 letter-to+renderLetterPanel)", "why": "函数名错位导致 typeof 判断为 undefined·按钮静默无反应" },
+        { "what": "修 P1·紧要之臣侧栏(tm-shell-extras.js:579)·原 chars.slice(0,6) 硬截只显 6 位·超额角色无法查看·现删 slice·全部 alive 非玩家 chars 按 importance+loyalty 排序展示·外加 .gs-char2-scroll 480px 内滚容器(overflow-y:auto·细滚动条)·panel 不被撑开", "why": "明代关键 NPC 50+位·只显 6 位遗漏大量信息" },
+        { "what": "扩 P2·_extractNames(tm-char-autogen.js:828)·Pass 1 保留汉姓氏扫描·新增 Pass 2 语境锚点 4 种模式·2a 奏曰/疏云/上表(捕获非汉姓领袖如 皇太极/努尔哈赤/林丹汗 等)·2b 遣使/起兵/叛明(军政主体)·2c 授/拜/擢 X 为(任免中的人名)·2d X曰:/X云:(对话者)·_validateCandidate 校验 2-5 字+非称谓/地名/虚词·命中后查 known/findCharByName 去重", "why": "原仅汉姓名扫描·非汉族 NPC(满蒙藏回)全部漏网·推演提及大量后金/蒙古人物却无法触发具象化" },
+        { "what": "缓存·tm-index-world v=c→d·tm-game-engine v=b→c·tm-char-autogen v=20260420a2→20260422a·tm-shell-extras v=20260420w→20260422a", "why": "强制加载修复版" }
+      ]
+    },
+    {
+      "date": "2026-04-22",
       "module": "御批回听·全面扩展·七维呈现+AI 持续推演",
       "title": "修 input.personnelSummary 笔误·诏令 11 字段·自发事件结构化·六维效能+朝野反响+战略洞见·下回合 sysP 完整注入",
       "items": [

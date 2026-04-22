@@ -573,14 +573,16 @@
       + '<div class="gs-time-text"><div class="main">'+_shiName+' 时</div><div class="sub">日 昳 · 未 至 酉</div></div>';
     wrap.appendChild(tm);
 
-    // 3. 紧要之臣 (gs-char2 v2)
+    // 3. 紧要之臣 (gs-char2 v2)·全部非玩家可显示角色·滚动展示
     var chars = (GM.chars||[]).filter(function(c){ return c && c.alive !== false && !c.isPlayer; });
     chars.sort(function(a,b){ var ia=(a.importance||0)+(a.loyalty||0)*0.3; var ib=(b.importance||0)+(b.loyalty||0)*0.3; return ib-ia; });
-    chars = chars.slice(0, 6);
+    // 不再 slice(0,6)·全部展示·列表容器滚动
     var cp = document.createElement('div');
     cp.className = 'gs-panel p-quick';
     cp.setAttribute('data-panel-key','char');
-    var _cHtml = '<div class="gs-panel-hdr"><div class="gs-panel-title">紧 要 之 臣</div><span class="gs-panel-cnt">'+chars.length+'</span></div>';
+    var _cHtml = '<div class="gs-panel-hdr"><div class="gs-panel-title">紧 要 之 臣</div><span class="gs-panel-cnt">'+chars.length+'</span></div>'
+      // 内部滚动容器·480px 高·外层 panel 不被撑开
+      + '<div class="gs-char2-scroll" style="max-height:480px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(201,168,76,0.4) transparent;">';
     chars.forEach(function(c){
       var fac = c.faction || '';
       var fClass = 'f-dongin';
@@ -614,6 +616,7 @@
         + '<div class="gs-char2-verdict '+overall.cls+'">'+overall.t+'</div>'
         + '</div></div></div>';
     });
+    _cHtml += '</div>';  // close .gs-char2-scroll
     cp.innerHTML = _cHtml;
     wrap.appendChild(cp);
 

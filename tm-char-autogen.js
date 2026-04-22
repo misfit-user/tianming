@@ -825,6 +825,12 @@
     return known;
   }
 
+  // 语境锚点：姓名后常紧跟这些动词/虚词·是抓非汉姓名(皇太极/努尔哈赤/林丹汗等)的关键
+  // 匹配"[2-5字实体] + 动作词"·如"皇太极奏曰/努尔哈赤遣使/林丹汗叛"
+  var CONTEXT_VERB_PATTERNS = '\u594F\u66F0|\u594F\u79F0|\u594F\u4E8E|\u8868\u594F|\u4E0A\u8868|\u4E0A\u7591|\u4E0A\u8A00|\u4E0A\u4E66|\u8C0F\u66F0|\u8C0F\u8BF7|\u5F39\u52BE|\u5BC6\u594F|\u6539\u594F|\u884C\u6587|\u8868\u8BF7|\u4EA7\u661F|\u8A00\u4E8E|\u544A\u7262|\u544A\u78AA|\u4E0A\u8FD0|\u7591\u66F0|\u8C0F\u4E91|\u613F\u8FD0|\u76F4\u9648|\u884C\u6587|\u6C42\u89C1|\u6267\u4E8C|\u5165\u66F0|\u5165\u8003|\u4E0A\u79C9|\u8C0F\u79C1|\u4E0A\u4EE3|\u7591\u9648|\u8C0F\u8BDE|\u4EE3\u594F|\u53CC\u594F|\u66F0|\u4E91|\u7ADF|\u91CA|\u590D\u594F|\u793B\u594F';
+  var CONTEXT_ACTION_PATTERNS = '\u9063\u4F7F|\u8D77\u5175|\u53CD\u53DB|\u6295\u8BDA|\u964D\u660E|\u53DB\u660E|\u6295\u660E|\u8BE0\u6B7B|\u5F52\u9644|\u7387\u90E8|\u4F39\u5175|\u6311\u8845|\u72EF\u8FB9|\u5BC7\u8FB9|\u5165\u8FB9|\u8FDB\u8D21|\u4F20\u6A9C|\u6253\u5192\u8FEB\u8FD1|\u519B\u4F7F|\u7EB3\u522B|\u8FD4\u4EAC|\u8FDB\u4EAC|\u628A\u8FD4';
+  var CONTEXT_APPOINT_PATTERNS = '\u6388|\u62DC|\u8865|\u8C03|\u5347|\u4EFB|\u7F58|\u8FC1|\u51FA\u4EFB|\u89D2|\u8FDB|\u64E2|\u547D|\u5982|\u8D70\u8865|\u5F52\u4E8E|\u6388\u4E88';
+
   function _extractNames(text) {
     if (!text) return [];
     var names = [];
@@ -835,7 +841,24 @@
     // 2. 避免 findCharByName 因只索引主名而漏过别名
     var known = _buildKnownNameSet();
 
-    // ═══ 汉人姓氏模式扫描（仅处理未知新名字） ═══
+    // 辅助：验证候选是否可能为人名(非汉姓场景用)·2-5 字·非空·非黑名单·非称谓
+    function _validateCandidate(cand) {
+      if (!cand || cand.length < 2 || cand.length > 5) return false;
+      if (NAME_BLACKLIST[cand]) return false;
+      // 过滤明显的称谓/官职/地名/时间短语
+      if (/[\u5E1D\u541B\u81E3\u540E\u5983\u5B5F\u7956\u7687\u54C1\u8FB9\u4EAC\u90E1\u53BF\u5E9C\u8857\u5FB7]/.test(cand)) {
+        // 含这些字且纯粹为地名/称谓的 reject
+        if (/^(皇帝|陛下|圣上|朕躬|本朝|朝廷|朝中|朝野|后宫|太监|东厂|西厂|锦衣|六部|内阁|都察|兵部|吏部|户部|礼部|刑部|工部|鸿胪|大理|翰林)$/.test(cand)) return false;
+      }
+      // 过滤明显的虚词组合
+      if (/^(于是|于此|如此|因此|此后|此前|其时|其实|其中|其间|其后|其上|然而|然则|但是|故而)$/.test(cand)) return false;
+      if (/[\u7684\u4E86\u4EE5\u4E3A\u4E5F\u6216|那|这|什|怎]/.test(cand.charAt(0))) return false;
+      // 尾字过滤
+      if (TRAIL_TRIM_CHARS.indexOf(cand.charAt(cand.length - 1)) >= 0) return false;
+      return true;
+    }
+
+    // ═══ Pass 1·汉人姓氏模式扫描 ═══
     var re = /[\u4e00-\u9fa5]+/g;
     var m;
     while ((m = re.exec(text)) !== null) {
@@ -860,15 +883,12 @@
         // 过滤：官职/虚词/称呼
         if (/[\u738B\u8D75\u674E\u5218]\u671D|[\u540E\u5FA1]|[\u4ED6\u6211\u4F60]/.test(cand)) continue;
         if (/^(\u7687\u5E1D|\u9661\u4E0B|\u6211\u5927|\u672C\u671D|\u671D\u5EF7|\u540E\u5BAB|\u592A\u76D1)$/.test(cand)) continue;
-        // 官职/称谓关键词过滤（原本定义未用）
         var _hitTitle = false;
         for (var _tk = 0; _tk < COMMON_TITLE_KEYWORDS.length; _tk++) {
           if (cand.indexOf(COMMON_TITLE_KEYWORDS[_tk]) >= 0) { _hitTitle = true; break; }
         }
         if (_hitTitle) continue;
-        // 黑名单
         if (NAME_BLACKLIST[cand]) continue;
-        // 已在 GM.chars → 跳过（包括别名字典命中）
         if (known[cand] || (typeof findCharByName === 'function' && findCharByName(cand))) {
           i += cand.length - 1;
           continue;
@@ -880,6 +900,66 @@
         i += cand.length - 1;
       }
     }
+
+    // ═══ Pass 2·语境锚点·捕获非汉姓名(皇太极/努尔哈赤/林丹汗/阿敏 等) ═══
+    // 2a·"X奏曰/X疏云/X上疏" → 前置 2-5 字实体
+    try {
+      var ctxRe = new RegExp('([\\u4e00-\\u9fa5]{2,5})(?:' + CONTEXT_VERB_PATTERNS + ')', 'g');
+      var mc;
+      while ((mc = ctxRe.exec(text)) !== null) {
+        var cand2 = _trimTrailing(mc[1]);
+        if (!_validateCandidate(cand2)) continue;
+        if (known[cand2] || (typeof findCharByName === 'function' && findCharByName(cand2))) continue;
+        if (nameSet[cand2]) continue;
+        nameSet[cand2] = true;
+        names.push(cand2);
+      }
+    } catch(e) {}
+
+    // 2b·"X遣使/X起兵/X降明" → 前置 2-5 字军政主体
+    try {
+      var actRe = new RegExp('([\\u4e00-\\u9fa5]{2,5})(?:' + CONTEXT_ACTION_PATTERNS + ')', 'g');
+      var ma;
+      while ((ma = actRe.exec(text)) !== null) {
+        var cand3 = _trimTrailing(ma[1]);
+        if (!_validateCandidate(cand3)) continue;
+        if (known[cand3] || (typeof findCharByName === 'function' && findCharByName(cand3))) continue;
+        if (nameSet[cand3]) continue;
+        // 过滤典型非人名的前置词
+        if (/^(本朝|大明|后金|蒙古|鞑靼|满洲|建州|察哈尔|林丹|朝鲜|流寇|流民|饥民|贼寇|海寇|倭寇|白莲|闻香)$/.test(cand3)) continue;
+        nameSet[cand3] = true;
+        names.push(cand3);
+      }
+    } catch(e) {}
+
+    // 2c·"授/拜/擢/升X为" → 人名在中间
+    try {
+      var apRe = new RegExp('(?:' + CONTEXT_APPOINT_PATTERNS + ')([\\u4e00-\\u9fa5]{2,5})\\u4E3A', 'g');
+      var map2;
+      while ((map2 = apRe.exec(text)) !== null) {
+        var cand4 = _trimTrailing(map2[1]);
+        if (!_validateCandidate(cand4)) continue;
+        if (known[cand4] || (typeof findCharByName === 'function' && findCharByName(cand4))) continue;
+        if (nameSet[cand4]) continue;
+        nameSet[cand4] = true;
+        names.push(cand4);
+      }
+    } catch(e) {}
+
+    // 2d·"X曰:" "X云:" "X言:" 中文冒号/引号前的短实体(常为对话者)
+    try {
+      var spRe = /([\u4e00-\u9fa5]{2,4})(?:[\u66F0\u4E91\u8A00\u8BF4\u9053])[\uFF1A:]/g;
+      var ms;
+      while ((ms = spRe.exec(text)) !== null) {
+        var cand5 = _trimTrailing(ms[1]);
+        if (!_validateCandidate(cand5)) continue;
+        if (known[cand5] || (typeof findCharByName === 'function' && findCharByName(cand5))) continue;
+        if (nameSet[cand5]) continue;
+        nameSet[cand5] = true;
+        names.push(cand5);
+      }
+    } catch(e) {}
+
     return names;
   }
 

@@ -3193,6 +3193,34 @@ function renderBarResources() {
 // ============================================================
 // 角色详情——人物志完整页（6-tab 布局，匹配 preview-char-full.html）
 // ============================================================
+// 人物志面板 → 问对入口(关闭人物志+打开问对弹窗)
+function _rwpOpenWendui(name) {
+  if (!name) return;
+  try { document.getElementById('_renwuPageOv') && document.getElementById('_renwuPageOv').classList.remove('open'); } catch(e){}
+  if (typeof openWenduiModal === 'function') {
+    openWenduiModal(name, 'private');
+  } else {
+    // 降级：切到问对 tab + 设置 target
+    try { GM.wenduiTarget = name; } catch(e){}
+    if (typeof switchGTab === 'function') switchGTab(null, 'gt-wendui');
+    if (typeof toast === 'function') toast('已切至问对·' + name);
+  }
+}
+// 人物志面板 → 传书入口(关闭人物志+切传书 tab·预填收信人)
+function _rwpOpenLetter(name) {
+  if (!name) return;
+  try { document.getElementById('_renwuPageOv') && document.getElementById('_renwuPageOv').classList.remove('open'); } catch(e){}
+  if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
+  // 预填目标
+  setTimeout(function(){
+    try {
+      var toInp = document.getElementById('letter-to') || document.querySelector('[data-role="letter-to"]');
+      if (toInp) { toInp.value = name; if (typeof toInp.dispatchEvent === 'function') toInp.dispatchEvent(new Event('input', { bubbles: true })); }
+    } catch(e){}
+    if (typeof renderLetterPanel === 'function') renderLetterPanel();
+  }, 50);
+  if (typeof toast === 'function') toast('可传书予·' + name);
+}
 function _rwpFameSeal(fame) {
   var v = typeof fame === 'number' ? fame : (fame && fame.value) || 0;
   if (v >= 80) return { cls: 'radiant', label: '+' + Math.round(v) + ' 朝宗' };
@@ -3663,8 +3691,8 @@ function openCharRenwuPage(charName) {
   h += '<div class="rwp-actions">';
   var safeName = (ch.name||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
   if (GM.running) {
-    h += '<button class="rwp-act-btn" onclick="(typeof openWendui===\'function\')&&openWendui(\''+safeName+'\')">问 对</button>';
-    h += '<button class="rwp-act-btn" onclick="(typeof openLetterCompose===\'function\')&&openLetterCompose(\''+safeName+'\')">传 书</button>';
+    h += '<button class="rwp-act-btn" onclick="_rwpOpenWendui(\''+safeName+'\')">问 对</button>';
+    h += '<button class="rwp-act-btn" onclick="_rwpOpenLetter(\''+safeName+'\')">传 书</button>';
   }
   h += '<button class="rwp-act-btn close" onclick="document.getElementById(\'_renwuPageOv\').classList.remove(\'open\')">×</button>';
   h += '</div>';

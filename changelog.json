@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-24",
+      "module": "R107 补 R106 遗漏·AI 地理志模式兜底",
+      "title": "R106 忽略了 AI 地理志模式·点地图弹空白·补 openMapViewer 和 showMapInGame 双兜底",
+      "items": [
+        { "what": "R106 问题 5 地图系统统一时·没考虑 AI 地理志模式。用户新游戏时可选'剧本地图' vs 'AI 地理志'·后者禁用 P.map 让 AI 推算距离/地形/关隘。但 AI 地理志模式下玩家仍可点诏书'查看地图'按钮·openMapViewer() 会弹出空白地图弹窗(renderMap 有 !GM.mapData return 兜底·但 UI 已打开)", "why": "审计清 18 问题时我没追到地图模式的这条旁路·用户指出后核查 tm-game-engine.js:7921 startGame 分支·P.map.enabled=false+GM._useAIGeo=true 时不初始化 GM.mapData" },
+        { "what": "tm-map-system.js:1703 openMapViewer() 入口检测 isAIGeo = (P.map.enabled===false) OR (GM._useAIGeo===true) OR (!GM.mapData) · 为 true 时弹出 'AI 地理志模式·无地形图数据·距离/地形/关隘/城防由 AI 推算' 的占位·不再弹空白地图", "why": "三重条件兜底·任一满足都视为 AI 模式·占位提示指引用户·要看地图应新游戏时选剧本地图" },
+        { "what": "map-display.js:262 showMapInGame() 已有 hasMapData 判断但只看 P.map.regions.length·加 isAIGeo 判断(P.map.enabled===false 或 GM._useAIGeo) · hasMapData = !isAIGeo && regions.length>0 · AI 模式直接走占位路径·不再走渲染路径", "why": "虽然 P.map.regions=[] 的话 length=0 已经走占位·但显式加 isAIGeo 让逻辑更清晰·也覆盖 P.map.regions 没被重置的边界情况" },
+        { "what": "确认 R106 地图 JSON 归档 data/maps/ 对 AI 地理志零影响。AI 地理志模式完全不 fetch 地图 JSON·只有'剧本地图'模式走 editor.html loadDefaultMap → fetch('data/maps/default-map.json')·R106 路径改动安全", "why": "用户提醒让我重新核查旁路·确认 R106 改动没伤到 AI 地理志用户" },
+        { "what": "可选文案区分(已尝试·Unicode 转义匹配问题未完成)·目前 AI 地理志模式在 showMapInGame 走的是通用'地图尚未绘制'占位文案。openMapViewer 走专用 AI 地理志文案。两个入口体验略有差异·但都不崩溃", "why": "文案细节·核心是不崩·剩余统一文案留后续" },
+        { "what": "验证 · 新游戏时选'AI 地理志'进入·点诏书'查看地图'应弹 AI 地理志说明(不是空白地图)·点军事菜单'地图总览'应弹'地图尚未绘制'占位(不是 alert)·TM.MapSystem.open('terrain') 控制台应弹 AI 地理志说明·TM.MapSystem.open('regions') 应弹占位", "why": "三个入口都要测·任一崩溃说明兜底不全" }
+      ]
+    },
+    {
+      "date": "2026-04-24",
       "module": "R106 清余下·问题 4/5/10/11/14 一次性处理",
       "title": "18 问题审计·未处理/部分解决清零·地图归档+类型扩展+package 元数据+编辑器分工+地图统一入口",
       "items": [

@@ -1699,8 +1699,32 @@ function findCityByName(name) {
 
 /**
  * 打开地图查看器
+ * R107·AI 地理志模式兜底：若玩家选了 AI 地理志（P.map.enabled=false 或 GM._useAIGeo=true），
+ *      则不显示空白地图弹窗·改为展示"AI 地理志"说明
  */
 function openMapViewer() {
+  // AI 地理志模式·没有地形图数据
+  var isAIGeo = (typeof P !== 'undefined' && P.map && P.map.enabled === false)
+             || (typeof GM !== 'undefined' && GM._useAIGeo === true)
+             || (typeof GM === 'undefined' || !GM.mapData);
+  if (isAIGeo) {
+    var placeholder = document.createElement('div');
+    placeholder.id = 'map-viewer-overlay';
+    placeholder.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    placeholder.innerHTML =
+      '<div style="background:var(--color-surface,#241e18);border:1px solid var(--gold-500,#c9a849);border-radius:12px;padding:2.5rem;max-width:480px;text-align:center;">' +
+        '<div style="font-size:2.5rem;margin-bottom:1rem;opacity:0.5;">📜</div>' +
+        '<div style="font-size:1.15rem;color:var(--gold-400,#c9a849);margin-bottom:0.8rem;font-weight:600;">AI 地理志模式</div>' +
+        '<div style="font-size:0.9rem;color:var(--color-foreground-muted,#999);line-height:1.8;margin-bottom:1.5rem;">' +
+          '本局无地形图数据。<br>距离、地形、关隘、城防由 AI 根据真实历史知识推算。<br>' +
+          '<span style="opacity:0.7;font-size:0.85rem;">若需查看地图·请新建游戏时选择"剧本地图模式"。</span>' +
+        '</div>' +
+        '<button class="bt" onclick="document.getElementById(\'map-viewer-overlay\').remove();" style="padding:0.5rem 2rem;">知道了</button>' +
+      '</div>';
+    document.body.appendChild(placeholder);
+    return;
+  }
+
   var overlay = document.createElement('div');
   overlay.id = 'map-viewer-overlay';
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;';

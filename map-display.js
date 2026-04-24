@@ -258,7 +258,9 @@ function showProvinceDetails(region) {
  * 在游戏主界面显示地图
  */
 function showMapInGame() {
-    var hasMapData = P.map && P.map.regions && P.map.regions.length > 0;
+    // R107·AI 地理志模式 P.map.enabled===false 时直接归为无数据·占位提示
+    var isAIGeo = (P.map && P.map.enabled === false) || (typeof GM !== 'undefined' && GM._useAIGeo === true);
+    var hasMapData = !isAIGeo && P.map && P.map.regions && P.map.regions.length > 0;
 
     // 2.4方案B：无数据时显示占位提示而非alert
     if (!hasMapData) {

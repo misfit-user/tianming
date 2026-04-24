@@ -3933,7 +3933,7 @@
     async function loadDefaultMap() {
       try {
         console.log('正在加载默认地图...');
-        const response = await fetch('default-map.json');
+        const response = await fetch('data/maps/default-map.json');
         if (!response.ok) {
           console.log('默认地图不存在，跳过加载');
           return;

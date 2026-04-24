@@ -1,3 +1,5 @@
+// @ts-check
+/// <reference path="types.d.ts" />
 /* ============================================================
  * tm-namespaces.js — 命名空间门面（真实版·R87 重建）
  *
@@ -130,6 +132,21 @@
     'addCity', 'setNeighbors', 'updateCityOwner'
   ];
   TM.MapSystem = _buildFacade('MapSystem', MAP_FNS);
+
+  // R106·统一地图入口·解决审计问题 5（双套地图系统）
+  // 实际数据源不同·不能合并·但可统一编程接口
+  //   mode='terrain'  → 地形/势力图（GM.mapData）·诏书决策时看局势
+  //   mode='regions'  → 行政区+势力色（P.map.regions）·军事菜单/快捷面板概览
+  // 未来若统一数据模型·只需在此函数内合并·调用点不变
+  TM.MapSystem.open = function(mode) {
+    mode = mode || 'terrain';
+    if (mode === 'regions' && typeof window.showMapInGame === 'function') {
+      return window.showMapInGame();
+    }
+    if (typeof window.openMapViewer === 'function') return window.openMapViewer();
+    console.warn('[TM.MapSystem.open] 两套地图函数都不可用');
+    return null;
+  };
 
   // ─── TM.Lizhi（tm-lizhi-panel.js · 22 个真实函数） ───
   var LIZHI_FNS = [

@@ -1,0 +1,31 @@
+{
+  "name": "tianming",
+  "version": "1.0.0",
+  "description": "天命 · AI 驱动的中国古代历史模拟游戏（Electron + Vanilla JS + GitHub Pages）",
+  "main": "index.html",
+  "homepage": "https://misfit-user.github.io/tianming/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/misfit-user/tianming"
+  },
+  "keywords": [
+    "electron",
+    "history-simulation",
+    "ai",
+    "vanilla-js",
+    "game",
+    "chinese-history"
+  ],
+  "author": "misfit-user",
+  "license": "UNLICENSED",
+  "private": true,
+  "_comment": "本项目刻意不引入 npm 依赖与构建流程·package.json 仅作元数据声明。详见 ARCHITECTURE.md §1。",
+  "_architecture": "Electron + Vanilla JS（零编译·源文件即运行时）",
+  "_no_build": true,
+  "_no_dependencies": true,
+  "_load_order": "见 index.html·131 个 <script> 按特定顺序加载·由 tm-env-detect.js 最先加载·TM.env 可查运行环境",
+  "_deploy_targets": [
+    "Electron 桌面应用（.exe/.dmg/.AppImage）",
+    "GitHub Pages（static hosting·无服务端 AI 代理·用户自带 API key）"
+  ]
+}

@@ -1,3 +1,5 @@
+// @ts-check
+/// <reference path="types.d.ts" />
 /* ============================================================
  * tm-hooks-tracker.js — GameHooks 查询/追踪工具
  *

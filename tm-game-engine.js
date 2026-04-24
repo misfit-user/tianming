@@ -6184,7 +6184,7 @@ function renderGameState(){
   // 结束回合按钮
   edictHTML += '<div class="ed-action-bar">';
   edictHTML += '<button class="bt bp" id="btn-end" onclick="confirmEndTurn()" style="padding:var(--space-3) var(--space-8);font-size:var(--text-md);letter-spacing:0.15em;border:2px solid var(--gold-400);box-shadow:0 2px 12px rgba(184,154,83,0.2);">'+_ei('end-turn',16)+' 诏付有司</button>';
-  edictHTML += '<button class="bt" onclick="openMapViewer()" style="padding:var(--space-3) var(--space-6);font-size:var(--text-md);">'+_ei('map',16)+' 查看地图</button>';
+  edictHTML += '<button class="bt" title="地形图·山川城池分布（决策辅助）·与【军事·地图总览】数据源不同" onclick="openMapViewer()" style="padding:var(--space-3) var(--space-6);font-size:var(--text-md);">'+_ei('map',16)+' 查看地图</button>';
   edictHTML += '</div>';
   edictHTML += '</div>'; // 关闭右侧诏书编辑区
   edictHTML += '</div>'; // 关闭左右并排 flex 容器

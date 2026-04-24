@@ -1,3 +1,5 @@
+// @ts-check
+/// <reference path="types.d.ts" />
 /* ============================================================
  * tm-perf.js — 性能采样器（Profiler Lite）
  *

@@ -3,6 +3,21 @@
   "entries": [
     {
       "date": "2026-04-24",
+      "module": "R106 清余下·问题 4/5/10/11/14 一次性处理",
+      "title": "18 问题审计·未处理/部分解决清零·地图归档+类型扩展+package 元数据+编辑器分工+地图统一入口",
+      "items": [
+        { "what": "问题 4 · 7 个 map JSON 移到 data/maps/·根目录 0 个 map*.json·只需改 editor.html:3936 一处 fetch 路径从 'default-map.json' 改为 'data/maps/default-map.json'·其余 6 个 json 是地图编辑器历史产物无代码引用·直接跟随搬家", "why": "审计说根目录脏乱·核查后只有 1 处代码真引用·移动零风险·让 data/ 成为数据目录入口·未来其他数据也可归入" },
+        { "what": "问题 11 · @ts-check 从 15 个扩到 23 个文件·新加 tm-invariants/tm-pollution-guard/tm-perf/tm-state/tm-diff/tm-namespaces/tm-hooks-tracker/tm-error-collector 共 8 个小型基础设施文件·每个 100-450 行·类型干净·opt-in 不破坏运行时", "why": "这 8 个都是 R36/R40/R60/R61/R63/R71/R73/R84 建立的工具文件·全是新代码·类型推断能通过·给 IDE 提示最有价值" },
+        { "what": "问题 14 · 新增 package.json 元数据文件·name=tianming·homepage=GitHub Pages URL·repository=misfit-user/tianming·_no_build/_no_dependencies 明确说明本项目刻意不引入 npm/Webpack·_architecture 注明 Electron+Vanilla JS·_load_order 指向 index.html+TM.env", "why": "审计说缺 package.json·现在有了但不引入依赖·满足名义+保留架构·同时给 GitHub 展示仓库元数据·让 '私有仓库但公开部署' 的结构自明" },
+        { "what": "问题 10 · 编辑器首页 btn-editor 加 title='打开剧本编辑器（editor.html）: 修改剧本结构、人物初始配置、势力关系等。此处开的是外部编辑器；游戏内的临时修改走开局后的设置面板'·用户悬停即知双套分工", "why": "ARCHITECTURE.md 已写设计如此·但启动页无提示·用户容易误以为两套冲突·加 title 零成本解惑·不改架构" },
+        { "what": "问题 5 · 加 TM.MapSystem.open(mode) 统一编程入口·mode='terrain' 调 openMapViewer(GM.mapData)·mode='regions' 调 showMapInGame(P.map.regions)·诏书按钮 title 改为'地形图·山川城池分布·与【军事·地图总览】数据源不同'·调用点和现有两函数保留不动（破坏风险）", "why": "两套数据源确实不同(GM.mapData 地形 vs P.map.regions 行政区)·合并数据模型需产品决策·先统一 API 门面·未来若合并数据·只需改 TM.MapSystem.open 内部·调用点无需改动" },
+        { "what": "不做的 · 问题 8(引 Webpack 违反架构) · 问题 12(tm-endturn-* R88-R100 刚拆完·观察期·再拆有风险)", "why": "两项已明确拒绝·有足够理由·不反复投入" },
+        { "what": "18 问题审计最终状态 · 完全解决 11 项(1/3/6/7/9/13/14/15/16/17/18)·部分解决/架构选择 4 项(5/8/10/11·均有明确边界)·不做 2 项(8/12)·误判 1 项(5)", "why": "审计报告的 18 问题已逐条做到能做的·结构清晰" },
+        { "what": "验证 · Ctrl+R·TM.MapSystem.open('regions') 应打开势力分布图·open('terrain') 应打开地形图·悬停启动页的'著卷'按钮应显示编辑器说明·data/maps/ 存在 7 个 json·根目录无 map json·editor 加载地图应正常(路径已更新)·@ts-check 23 文件刷新无红线", "why": "五项独立·任一失败单独排查" }
+      ]
+    },
+    {
+      "date": "2026-04-24",
       "module": "R105 类型化深化·补齐 TM.* 全栈签名",
       "title": "types.d.ts 1759→1999·GM._convArchive + TM.env/errors/perf/state/diff/hooks/guard 全补 + tm-env-detect @ts-check",
       "items": [

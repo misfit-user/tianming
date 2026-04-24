@@ -2,7 +2,56 @@
   "_comment": "天命·更新日志——新条目 unshift 到数组最前（由近及远）。格式：{date, module, title, items[]}；items 元素可为字符串或 {what, why}。",
   "entries": [
     {
-      "date": "2026-04-24",
+      "date": "2026-04-25",
+      "module": "R136-R141 深度清理二期·工具链+孤岛+编辑器拆分",
+      "title": "ref-check/find-orphans 两工具补齐·发现并修 R122 遗漏的 editor.html 404·删 801 行死代码·editor.js 拆 2 分 editor-ai-gen 拆 2 分",
+      "items": [
+        { "what": "R136 修真 bug·editor.html:2771 还引用已删除的 tm-economy-military.js (R122 拆了但漏改 editor.html)·打开编辑器会 404。补上 tm-economy+tm-military+tm-feudal+tm-mechanics-world 四个对应引用", "why": "这是我自己重构引入的 bug·说明只用 syntax-check 和 headless-smoke 不够·这两个工具只看 index.html·不知道 editor.html 的引用状态" },
+        { "what": "R136 新增 scripts/ref-check.js 零依赖跨文件引用校验器·扫所有 HTML <script src> 和 fetch() 本地引用·验证目标文件存在。首跑即发现 editor.html 的 R136 断链", "why": "syntax-check 只看单文件语法·headless-smoke 只加载 index.html·这两者都无法发现跨文件引用断链。ref-check 填补此盲区·防止未来拆分再漏" },
+        { "what": "R137 拆 tm-shell-extras.js (2039) → shell-extras (1087·抽屉 UI 注入) + shizheng-panel (952·御案时政+独召密问)。切点 L1087·IIFE 边界干净", "why": "shell-extras 名字意味着抽屉面板注入·但尾部 952 行是御案时政+独召密问面板·属于玩家操作而非 shell UI·归位" },
+        { "what": "R138 再拆 tm-endturn-prep.js (2190·R110 刚拆出来的) → ai-planning (1698) + endturn-prep (492)。ai-planning 含启动 AI 规划 aiDeepReadScenario/aiPlanScenarioForInference/aiPlanFactionMatrix/endTurn 事件钩子·endturn-prep 是纯每回合前置 _endTurn_init/_reactToEdicts/_endTurn_collectInput", "why": "R110 留给 endturn-prep 的内容太杂·其实启动 AI 规划 (每次新游戏才运行) 和回合前置 (每回合运行) 是不同生命周期·强行合并" },
+        { "what": "R139 新增 scripts/find-orphans.js·扫描 HTML <script src> + JS importScripts/require/import/new Worker/SharedWorker·自动过滤 .gitignore 中 dev-only 的脚本。首跑发现 2 个真孤岛·从未被引用·直接删除·共 801 行死代码：new-game-ui.js (403·早期 EU4 风格 UI 草案从未连通) + map-recognition-voronoi.js (398·早期地图识别实验被 eu4/final 替代)", "why": "孤岛本身无害但定时炸弹·new-game-ui.js 里还引用 showMapInGame 这种 R115 迁移过的符号·若某日被激活会立即坏·删掉最安全" },
+        { "what": "R140 拆 editor.js (4568·编辑器域最大单文件) → editor (2379·系统 CRUD) + editor-fullgen (2189·AI 一键生成+杂项)。切点 openFullGenModal 函数前", "why": "editor.js 是 editor.html 独立域·R122 漏改的 bug 暴露了也要分拆让下次易于维护·系统 CRUD 和 AI 全量生成是两种不同的编辑模式" },
+        { "what": "R141 拆 editor-ai-gen.js (2817) → ai-gen (1848·通用单次 AI 生成 doAIGenerate+playerGen) + ai-multipass (969·官制/行政区划多轮深化+9 个字段专用 aiGen)。切点 _multiPassGovernmentGen 函数前", "why": "单次 AI 生成和多轮深化生成有截然不同的实现复杂度·前者是 prompt+parse 直输·后者是多轮对话+增量合并·分开让维护更聚焦" },
+        { "what": "验证·所有 4 项检查 R141 终态全绿：syntax-check (180 个 .js 全通过)·ref-check (179 个引用全有效)·find-orphans (0 真孤岛)·headless-smoke (207 pass / 4 fail 已知 headless 限制)。累计 R126~R141 11 次拆分·R110~R141 累计 22 次大拆·最大非单函数文件 4568→3197", "why": "基础设施三道防线 (语法·引用·孤岛) + 运行时 smoke 都绿·才敢说 34 个新文件没出错" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "R122-R135 大拆分二期·系统文件粒度化",
+      "title": "游戏运行时 9 个 5000+ 行文件 → 28 个 <3200 行文件·最大非单函数文件从 13476 降到 3197",
+      "items": [
+        { "what": "R122 拆 tm-economy-military.js (5586) → tm-economy (722) + tm-military (4864)。切点 L722/L723 经济+继承 vs 战斗+建筑+封建·后续 R130 再拆军事", "why": "文件名已明示两大系统·但 R130 发现军事侧其实又分战斗和封建·大文件通常是未解耦的领域合并" },
+        { "what": "R123 拆 tm-index-world.js (8874) → tm-indices (863·索引+WorldHelper DAL) + tm-world (8011·世界特性层)。切点 L863·WorldHelper 对象末尾", "why": "文件名 index-world 已示 DAL+Feature 二层·R123 完成第一步。tm-world 仍过大·R124 继续拆" },
+        { "what": "R124 再拆 tm-world.js (8017) → world (1568·特质+AI 上下文) + memorials (4994·奏疏) + office-panel (1474·官制+编年+confirmEndTurn)。切点 generateMemorials/officePickerFilter/renderBiannian 三个函数", "why": "拆到这层后维护者能按'AI 上下文 / 奏疏 / 官制编辑'三个独立系统定位代码·8000 行大杂烩变三文件" },
+        { "what": "R125 深拆 tm-chaoyi.js (8500·R112 产物) → chaoyi (1663·真·朝议) + chaoyi-misc (1131·杂务) + keju-runtime (5726·科举运行时)。发现 R112 切点以后的 5700 行实为科举考试系统·历史漂移：tm-audio-theme→tm-chaoyi-keju→tm-chaoyi→R125 归位", "why": "顺手发现 R112 的副作用·误把科举塞进朝议·R125 归位" },
+        { "what": "R126 剥离 tm-electron.js (603 行) 出 chaoyi-misc·独立领域仅桌面 Electron 环境激活", "why": "601 行 Electron 存档集成本应独立·放 chaoyi-misc 是历史包袱" },
+        { "what": "R127 三分 tm-player-actions.js (5881·R111 产物) → settings (500·API 配置) + core (2803·ESC+文苑+人物志) + hongyan-office (2578·鸿雁+官制)。切点 L500 L3303", "why": "R111 只做 3 分第一步·实际玩家操作还能按'设置/游戏控制/鸿雁官制'三领域细分" },
+        { "what": "R128 拆 tm-mechanics.js (4145) → mechanics (2378·NPC 反馈机制) + mechanics-world (1767·变量/家族/后宫/暴君/事件白名单)", "why": "NPC 自身反馈机制 (SoftFloor/Offend/Rebound/Vacant) 和世界演化 (家族/后宫/暴君) 是不同抽象层" },
+        { "what": "R129 纠正 R125 遗漏·从 tm-keju-runtime 拆出 tm-chaoyi-v2 (2529·_cc2_*/_ty2_*/_yq2_* 三会议 v2)。经历 4 次文件漂移后正式归位", "why": "科举运行时 3197 行纯了·常朝/廷议/御前 v2 独立给朝议系统加强版" },
+        { "what": "R130 拆 tm-military.js (R122 产物·4864) → military (2285·战斗+补给+建筑) + feudal (2586·封建+头衔+爵位+铨选+战争)。切点 L2286 封建管辖系统起点", "why": "军事实体操作和封建制度设计是两个系统·按 KingOfIreland/CK3 的设计源头也是两个不同子系统" },
+        { "what": "R131 三分 tm-audio-theme.js (3492·作者标'命名误导') → audio-theme (557·真·音频主题) + save-lifecycle (937·存档读档管道) + office-editor (1990·官制 AI 生成+编辑器)。三领域三文件", "why": "文件头作者自白'内容远超音频和主题'·纠正命名误导·让维护者按名找文件" },
+        { "what": "R132 三分 tm-memorials.js (4994·R124 产物) → memorials (866·真·奏疏) + wendui (2191·问对) + office-runtime (1937·游戏内官员表 UI)。纠正 R124 过度合并", "why": "R124 把奏疏/问对/官员表一股脑归入 memorials·实际三者是独立子系统·各自有 open/render/action 生命周期" },
+        { "what": "R133 拆 tm-npc-engine.js (3457) → engine (2017·NPC 核心) + decision (1440·CK3 权重+双层决策 AI)。切点 L2017·原注释'以下从 tm-economy-military.js 移入'", "why": "文件自注历史·原本就是两部分合并·按注释归位" },
+        { "what": "R134 三分 tm-dynamic-systems.js (3029) → dynamic (1037·动态数据+时代状态) + save-manager (751·SaveManager UI) + help-social (1241·教程+关系+面子+迁移)", "why": "SaveManager UI (与 R113 TM.Storage+tm-storage.js 三层协作) 应独立·教程和社交系统与动态数据无关" },
+        { "what": "R135 拆 tm-utils.js (3742) → utils (954·基础工具层 RNG+时间+通知) + ai-infra (2795·AI 调用基础设施)。切点 L954 _fmtAIUrl 函数结束", "why": "基础工具 (通用) 和 AI 调用基础设施 (Prompt 压缩/重试/队列/模板引擎/XML Prompt/Token 粗估) 属于两个不同抽象层" },
+        { "what": "Top 10 最大文件总结 (非单函数)·R135 后：tm-keju-runtime (3197·纯科举) / tm-player-core (2814) / tm-ai-infra (2801) / tm-feudal (2595) / tm-hongyan-office (2586) / tm-chaoyi-v2 (2540) / editor.js (2379) / tm-mechanics (2378) / tm-military (2285) / editor-game-systems (2236)", "why": "14 次拆分累计·游戏运行时已无 5000+ 非单函数文件·编辑器域的 editor.js 仍待 R140 拆分" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "R110-R112 P0 三大巨兽拆分·原 9 个 5000+ 行单文件开刀",
+      "title": "tm-endturn (13476) + tm-game-engine (9116) + tm-chaoyi-keju (9543) 三座 5-13k 大山·总计 32135 行拆为 8 个文件",
+      "items": [
+        { "what": "R110 拆 tm-endturn.js (13476·项目最大单文件) → prep (2192) + ai-infer (10526·_endTurn_aiInfer 单函数) + core (772·endTurn/endTurnCore 入口)。切点 L2186+L12712 两刀。_endTurn_aiInfer 单函数 10500 行已隔离到独立文件·内部按 AI schema 字段族进一步细分 (char_updates/offices/fiscal/harem 等) 留 R142+ 迭代", "why": "项目最核心+最大的单文件·回合推演主函数。isolated 到独立文件是第一步胜利·文件级解耦完成·函数级重构需 AI schema 行为快照测试先行" },
+        { "what": "R111 拆 tm-game-engine.js (9116) → tm-launch (1143·启动+剧本+编辑器入口) + tm-player-actions (5881·设置+玩家操作+结算管道) + tm-game-loop (2109·enterGame+startGame+登基+外交+问天+诏政)。切点 L1140/L7013", "why": "引擎由三大段清晰分：启动期 (新游戏) / 运行期 (玩家操作) / 生命周期 (加载/存档/剧本切换)·完美符合 MVC 式划分" },
+        { "what": "R112 拆 tm-chaoyi-keju.js (9543) → tm-keju (1053·科举) + tm-chaoyi (8490·朝议·实际混入 science exam runtime·R125 再拆)。切点 L1053", "why": "文件名已示两大系统·R112 做首切·后续 R125 发现 chaoyi 一侧还混入朝议 v2 和科举运行时·分多轮拆分才彻底" },
+        { "what": "R109 E2E smoke chain 测试·TM.test.describe 新增 5 条用例：启动+存档+读档+3 回合+退出。基于 R23/R24/R28/R30 单点 smoke 拼成链·作为 P0 拆分的回归护航", "why": "单点 smoke 只能发现单步 bug·链式 smoke 能发现'启动成功但回合推进失败'这类跨步问题·是大拆分的先决条件" },
+        { "what": "R113-R121 一批小型重构·TM.Storage 存档门面统一 (SaveManager UI + TM_SaveDB IDB 三层)·TM.errors 错误收集门面 + ErrorMonitor 降 shim (顺带发现并修 var TM={...} 整体覆盖 bug) · TM.MapSystem.open 地图统一入口·TM.register 命名空间闸门·11 个非关键脚本加 defer·磁盘清 29MB 旧备份·6 个废地图 JSON 删除", "why": "拆分前先消除重复系统·避免越拆越乱。var TM={...} 覆盖 bug 原来就存在·但因加载顺序不同而隐藏·R114 调整顺序后立即暴露·headless-smoke 抓到" },
+        { "what": "R121 零依赖 headless 测试基础设施·scripts/syntax-check.js 跑所有 .js 的 node --check (178 个文件全通过)·scripts/headless-smoke.js Node vm 沙箱+极简 DOM/window/localStorage/indexedDB stub 加载 index.html 全量脚本·跑 TM.test 套件·R108 基线 207 pass / 4 fail 稳定 (4 个均为 headless 环境限制非真 bug)", "why": "严格遵守项目 _no_dependencies 原则·纯 Node 内置 vm+fs+child_process·不引入 Puppeteer 或 npm·符合'刻意不引入 npm'的设计文档。headless-smoke 发现 3 个真 bug：tm-utils:var TM={}、tm-chaoyi-keju:_keyiStartDiscuss、tm-keju:advanceKejuByDays 交叉引用" }
+      ]
+    },
+    {
       "module": "R107 补 R106 遗漏·AI 地理志模式兜底",
       "title": "R106 忽略了 AI 地理志模式·点地图弹空白·补 openMapViewer 和 showMapInGame 双兜底",
       "items": [

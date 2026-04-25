@@ -275,7 +275,7 @@ async function _multiPassGovernmentGen(ctx, existingContent, existingNote, maxTo
     }
 
     showToast('官制生成完成！' + nodes.length + '个部门，' + totalPos + '个官职，' + (vacantSecondary.length + Math.max(0,vacantMain.length)) + '个占位');
-  } catch(e) { showToast('官制生成失败: ' + e.message); console.error('[GovGen]', e); }
+  } catch(e) { showToast('官制生成失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'GovGen') : console.error('[GovGen]', e); }
 }
 
 // ============================================================
@@ -467,7 +467,7 @@ async function _multiPassAdminGen(ctx, existingContent, existingNote, maxTok) {
     autoSave();
     var tc = 0; (function cnt(l) { l.forEach(function(d) { tc++; if (d.children) cnt(d.children); }); })(divs);
     showToast('行政区划多轮生成完成！共' + tc + '个行政单位');
-  } catch(e) { showToast('\u884C\u653F\u533A\u5212\u751F\u6210\u5931\u8D25: ' + e.message); console.error('[AdminGen]', e); }
+  } catch(e) { showToast('\u884C\u653F\u533A\u5212\u751F\u6210\u5931\u8D25: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AdminGen') : console.error('[AdminGen]', e); }
 }
 
 // ============================================================
@@ -744,7 +744,7 @@ async function aiGenFiscalConfig() {
     if (parsed.currencyRules) scriptData.fiscalConfig.currencyRules = parsed.currencyRules;
     autoSave();
     showToast('财政配置已生成');
-  } catch(e) { showToast('失败: ' + e.message); console.error('[aiGenFiscal]', e); }
+  } catch(e) { showToast('失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiGenFiscal') : console.error('[aiGenFiscal]', e); }
   hideLoading();
 }
 
@@ -781,7 +781,7 @@ async function aiGenPopulationConfig() {
     Object.assign(scriptData.populationConfig, parsed);
     autoSave();
     showToast('户口配置已生成');
-  } catch(e) { showToast('失败: ' + e.message); console.error('[aiGenPop]', e); }
+  } catch(e) { showToast('失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiGenPop') : console.error('[aiGenPop]', e); }
   hideLoading();
 }
 
@@ -816,7 +816,7 @@ async function aiGenEnvironmentConfig() {
     Object.assign(scriptData.environmentConfig, parsed);
     autoSave();
     showToast('环境配置已生成');
-  } catch(e) { showToast('失败: ' + e.message); console.error('[aiGenEnv]', e); }
+  } catch(e) { showToast('失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiGenEnv') : console.error('[aiGenEnv]', e); }
   hideLoading();
 }
 
@@ -858,7 +858,7 @@ async function aiGenAuthorityConfig() {
     });
     autoSave();
     showToast('权力初值已生成');
-  } catch(e) { showToast('失败: ' + e.message); console.error('[aiGenAuth]', e); }
+  } catch(e) { showToast('失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiGenAuth') : console.error('[aiGenAuth]', e); }
   hideLoading();
 }
 
@@ -903,7 +903,7 @@ async function aiPolishStructuredField(fieldPath, description, context) {
     target[parts[parts.length - 1]] = parsed;
     autoSave();
     showToast('已润色 ' + (description || fieldPath));
-  } catch(e) { showToast('润色失败: ' + e.message); console.error('[aiPolish]', e); }
+  } catch(e) { showToast('润色失败: ' + e.message); (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiPolish') : console.error('[aiPolish]', e); }
   hideLoading();
 }
 

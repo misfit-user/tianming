@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R156 类2 catch (toast+console) 迁移·保留 toast 仅迁 console",
+      "title": "新增 scripts/migrate-catch-toast-console.js·7 处编辑器 AI 多步生成的 catch 迁移·toast UI 反馈不变·console 走 TM.errors",
+      "items": [
+        { "what": "R156 新增 scripts/migrate-catch-toast-console.js·处理类2 双语句 `} catch(e) { showToast('failed: '+e.message); console.X('[Mod]', e); }`。保留 toast 调用 (UI 反馈玩家·不可少)·只把 console.X 部分换成 TM.errors.capture 三元 (capture 拿全 stack·console fallback 保留原行为)", "why": "类2 之前一直留人工因为多语句变化大。但编辑器 AI 多步生成的失败提示是固定模式 (toast '失败: '+msg + console.error)·可批量。其他 toast+console 形态太杂仍留人工" },
+        { "what": "改写 7 处 / 1 文件 (editor-ai-multipass)：aiGenGov / aiGenAdmin / aiGenFiscal / aiGenPop / aiGenEnv / aiGenItems / aiGenBuildings。这些是编辑器 AI 一键生成各模块的 catch·之前调用方看不到 stack·只看到 toast", "why": "编辑器 AI 调用是高 bug 风险面·一旦生成出错没 stack 玩家无法报修·R155+R156 让所有 AI 调用都进 TM.errors" },
+        { "what": "审计指标·待迁 catch console 41 → 34 (-17%)。TM.errors 累计覆盖率 357 → 364/398 (91.5%)·五次连续 R145/151/155/156 累计从 R143 前的 0% 推到 91.5%", "why": "TM.errors 覆盖率超 90% 后·玩家 Ctrl+Shift+E 错误面板基本能看到所有热路径异常" },
+        { "what": "验证·verify-all 全绿 (180/180·179 ref·0 orphans·207/4 smoke 维持)·git diff 确认 7 个 showToast 全部保留", "why": "regex 严格匹配 `toast(...)` 在 console 之前·只换 console·toast 字符串原样保留" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R155 catch console 三代迁移·支持 e.message 变体",
       "title": "新增 scripts/migrate-catch-console-v3.js 处理 console.X('label', e.message) 模式·9 处自动迁移·待迁 50→41",
       "items": [

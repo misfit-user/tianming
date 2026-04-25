@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R155 catch console 三代迁移·支持 e.message 变体",
+      "title": "新增 scripts/migrate-catch-console-v3.js 处理 console.X('label', e.message) 模式·9 处自动迁移·待迁 50→41",
+      "items": [
+        { "what": "R155 新增 scripts/migrate-catch-console-v3.js·R145 v1 + R151 v2 的第三代版·处理把 e 拆成 e.message 的写法 (`console.warn('[Mod]', e.message)`)。TM.errors.capture 仍传完整 e 对象 (含 stack)·console fallback 保留原 .message 写法不变", "why": "R145/v2 要求 var 直传 (e 而非 e.message) 因为 TM.errors 需要 Error 对象拿 stack。但项目里有 9 处刻意只 log message 节省日志篇幅·这些之前漏迁。v3 既给 TM.errors 全 stack·又保留 fallback 行为不变" },
+        { "what": "改写 9 处 / 5 文件：tm-chronicle-tracker (5·_collectFromKeju/Edicts/Schemes/...) / editor-ai-gen (1·callAIEditor API 配置解析) / editor-fullgen (1·同上 editor 域) / tm-office-editor (1) / tm-onboard-tools (1)。tm-chronicle-tracker 那 5 处是编年史采集器·任一 collector 抛错以前只去 console·现在能在 TM.errors 看到 stack", "why": "tm-chronicle-tracker 异常会丢失编年记录·静默错对玩家是隐形 bug" },
+        { "what": "审计指标·待迁 catch console 50 → 41 (-18%)。TM.errors 累计覆盖率 348/398 → 357/398 (89.7%)。剩余 15 类1 (多为 console.log 而非 warn/error·调试用) + 26 类2 (console + toast/showLoading 混合·人工)", "why": "剩 15 类1 多为开发用调试 log·非异常路径·迁移 vs 保留差别小。26 类2 需逐个判断 toast 是否仍要保留" },
+        { "what": "验证·verify-all 全绿 (180/180·179 ref·0 orphans·207/4 smoke 维持)。git diff 确认零 toast/showLoading 误删", "why": "regex 仅匹配单语句 console·不动多语句" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R154 setInterval 泄漏审计·确认零真泄漏",
       "title": "新增 scripts/lint-timer-leaks.js·14 处 setInterval 全审计 (10 已配对 clearInterval + 4 顶层一次性·标 timer-leak-ok)·零真泄漏",
       "items": [

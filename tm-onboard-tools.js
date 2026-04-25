@@ -36,7 +36,7 @@
         var color = iv.ok ? 'color:#7a7' : 'color:#c66';
         console.log('  %cstats: ' + iv.stats.passed + '/' + iv.stats.checked + ' passed', color);
         if (!iv.ok) iv.violations.slice(0, 3).forEach(function(v){ console.log('    ✗', v); });
-      } catch(e) { console.log('  (异常)', e.message); }
+      } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '异常') : console.log('  (异常)', e.message); }
 
       console.log('\n%c第 3 步·查错误（TM.errors）', 'color:#9ac870;font-weight:bold');
       try {

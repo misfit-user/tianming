@@ -1793,7 +1793,7 @@
 
   function callAIEditor(prompt, maxTok) {
     var cfg = {};
-    try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(e) { console.warn('[editor] API配置解析失败:', e.message); }
+    try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'editor') : console.warn('[editor] API配置解析失败:', e.message); }
     var key = cfg.key || '';
     var url = (cfg.url || '').replace(/\/+$/, '');
     var model = cfg.model || 'gpt-4o';

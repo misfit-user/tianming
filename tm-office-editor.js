@@ -101,7 +101,7 @@ function openEditorHtml(scnId){
   }
   try {
     localStorage.setItem('tianming_editor_meta', JSON.stringify(_edMeta));
-  } catch(e) { console.warn('[openEditorHtml] meta写入失败:', e.message); }
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'openEditorHtml') : console.warn('[openEditorHtml] meta写入失败:', e.message); }
   console.log('[openEditorHtml] 准备跳转到 editor.html, scnId=' + scnId);
   window.location.href='editor.html';
 }

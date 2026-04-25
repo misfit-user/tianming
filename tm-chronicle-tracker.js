@@ -179,11 +179,11 @@
 
     /** 每回合调用·从各子系统自动采集 */
     tick: function() {
-      try { _collectFromKeju(); } catch(e){ console.warn('[Chronicle] keju:', e.message); }
-      try { _collectFromEdicts(); } catch(e){ console.warn('[Chronicle] edict:', e.message); }
-      try { _collectFromSchemes(); } catch(e){ console.warn('[Chronicle] scheme:', e.message); }
-      try { _collectFromProjects(); } catch(e){ console.warn('[Chronicle] project:', e.message); }
-      try { _collectFromPendingMemorials(); } catch(e){ console.warn('[Chronicle] memorial:', e.message); }
+      try { _collectFromKeju(); } catch(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] keju:', e.message); }
+      try { _collectFromEdicts(); } catch(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] edict:', e.message); }
+      try { _collectFromSchemes(); } catch(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] scheme:', e.message); }
+      try { _collectFromProjects(); } catch(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] project:', e.message); }
+      try { _collectFromPendingMemorials(); } catch(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] memorial:', e.message); }
       try { _cleanupStale(); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chronicle-tracker');}catch(_){}}
     }
   };

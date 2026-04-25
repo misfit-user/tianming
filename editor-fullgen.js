@@ -1965,7 +1965,7 @@
 
   function loadAPISettings() {
     var cfg = {};
-    try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(e) { console.warn('[editor] API\u914D\u7F6E\u89E3\u6790\u5931\u8D25:', e.message); }
+    try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'editor') : console.warn('[editor] API\u914D\u7F6E\u89E3\u6790\u5931\u8D25:', e.message); }
     if (document.getElementById('apiKey')) document.getElementById('apiKey').value = cfg.key || '';
     if (document.getElementById('apiUrl')) document.getElementById('apiUrl').value = cfg.url || '';
     if (document.getElementById('apiModel')) document.getElementById('apiModel').value = cfg.model || '';

@@ -1,7 +1,7 @@
 # 天命 · 文档索引
 
-> 所有技术文档的一页纸入口。2026-04-24 R79 整合 · R102 路径重组。
-> 目录：`ARCHITECTURE.md`/`INDEX.md` 在根；其余 38 份文档归入 `docs/{design,dev,maps,external,misc}/`。
+> 所有技术文档的一页纸入口。2026-04-24 R79 整合 · R102 路径重组 · 2026-04-25 R150 加 scripts/ 工具链。
+> 目录：`ARCHITECTURE.md`/`INDEX.md` 在根；其余 38 份文档归入 `docs/{design,dev,maps,external,misc}/`；零依赖工具链在 `scripts/`。
 
 ---
 
@@ -70,13 +70,15 @@
 
 | 文件 | 行数 | 导航轮次 |
 |------|------|---------|
-| `tm-endturn.js` | 18,600+ | R41 |
+| `tm-endturn-ai-infer.js` | 10,565 | **R147**（5 段：sysP/Sub-call/sc1主推/写回/sc15-27） |
 | `tm-game-engine.js` | 9,043 | R53 |
 | `tm-chaoyi-keju.js` | 9,454 | R54 |
 | `tm-index-world.js` | 8,820 | R78 |
 | `tm-audio-theme.js` | 3,430 | R78 |
 | `tm-dynamic-systems.js` | 2,976 | R78 |
 | `tm-patches.js` | 2,186 | R58（含 6 段切分清单） |
+| `tm-ai-change-applier.js` | 2,091 | **R150**（8 段：路径/白名单/实体/绑定/钩子/机构/applyAITurnChanges/v2 通道） |
+| `tm-endturn.js` | 已拆 | R110 拆为 prep+core+ai-infer 三 |
 
 ---
 
@@ -89,6 +91,37 @@ Ctrl+Shift+P    性能采样面板
 Ctrl+Shift+/    速查卡浮层
 ?test=1         启动时自动跑 smoke test（URL 加）
 ```
+
+---
+
+## ⚙️ 测试与重构工具链（scripts/ · R121 起 · 零依赖）
+
+**一键全检**：
+```bash
+node scripts/verify-all.js   # syntax→ref→orphans→smoke 4 项 18s · smoke 用 baseline 不退步判定
+```
+
+**4 道防线**：
+
+| 工具 | 引入 | 作用 |
+|------|------|------|
+| `syntax-check.js` | R121 | node --check 全扫 180 个 .js |
+| `headless-smoke.js` | R121 | vm 加载 + TM.test 套件 (baseline ≥207 pass / ≤4 fail) |
+| `ref-check.js` | R136 | 跨 HTML 引用断链 |
+| `find-orphans.js` | R139 | 真孤岛识别 (R139 删 2 个共 801 行死代码) |
+
+**审计 + 改写**：
+
+| 工具 | 引入 | 作用 |
+|------|------|------|
+| `lint-empty-catch.js` | R144 | R86 豁免规则审计·确认全部合规 |
+| `lint-catch-console.js` | R145 | catch 内 console 分型 (类1/2/3) |
+| `migrate-catch-console.js` | R145 | try-catch console → TM.errors (301 处) |
+| `migrate-promise-catch.js` | R148 | Promise.catch console → TM.errors (22 处) |
+| `bump-cache-bust.js` | R142 | HTML ?v= 版本统一 |
+| `add-ts-check.js` | R146 | 批量加 @ts-check 头 (24% → 100%) |
+
+详见 `scripts/README.md`。
 
 ---
 
@@ -134,6 +167,9 @@ Ctrl+Shift+/    速查卡浮层
 | 12 | 状态可观测性 | state 快照 · diff 对比 · hooks 追踪 |
 | 13 | 工作流整合 | Ctrl+Shift+D 仪表板 · checklist · 速查卡浮层 |
 | 14 | 文档整合 | INDEX.md（本文件） · onboarding · scenarios schema · version 查询 |
+| R109-R141 | 大拆分 | 28 次文件拆分·游戏运行时无 5000+ 非单函数文件·建立 syntax/ref/orphans/smoke 4 道防线 |
+| R143-R148 | 深度清理 | escHtml 单一化·394 空 catch+ 301 catch console+ 22 Promise.catch 迁 TM.errors·115 文件加 @ts-check·巨函数 5 段 banner |
+| R149-R150 | 工具链/文档完整化 | scripts/verify-all 一键 + scripts/README 全量 + INDEX.md 补 scripts/ 工具链 + tm-ai-change-applier 顶部 8 段导航 |
 
 ---
 

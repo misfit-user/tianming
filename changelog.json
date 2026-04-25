@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R150 文档完整化·INDEX.md 补 scripts 工具链 + tm-ai-change-applier 8 段导航",
+      "title": "INDEX.md 补全 scripts/ 工具链章节·重构历程延到 R150·tm-ai-change-applier.js (2091行) 加 R147 风格的 8 段导航 TOC",
+      "items": [
+        { "what": "R150a 改 INDEX.md·新增「测试与重构工具链 (scripts/ · R121 起 · 零依赖)」章节·把 verify-all 一键命令置顶·按 4 道防线 + 审计/改写两组列出 10 个工具表格·每个标 R 序号引入历史。重构历程表延到 R150 (R109-R141 拆分·R143-R148 清理·R149-R150 工具链/文档)。文件顶部导航表更新：tm-endturn-ai-infer R147 标注 + tm-ai-change-applier R150 新增", "why": "R79 引入 INDEX.md 后只更新到 R85·R110-R149 期间的拆分+工具链全没入索引。新维护者打开 INDEX 看不到 verify-all·必然继续手工拷 4 条命令。索引/目录是工具发现的入口·没有就等于不存在 (与 R149 README 同理·但 INDEX 是更高一层的入口)" },
+        { "what": "R150b 给 tm-ai-change-applier.js (2091 行·项目第二大文件没有顶部 TOC) 加 R147 风格的 8 段章节导航：§1 路径解析 / §2 AI 编辑路径白名单 / §3 按名找实体 / §4 公库绑定解析 / §5 NPC 任免钩子 / §6 动态机构区划 / §7 ★主入口 applyAITurnChanges / §8 v2 至高权力扩展通道。文件原本已有 ═══ 段落分隔但缺统一索引", "why": "applyAITurnChanges 是 AI 推演变化落地 GM 的统一入口·维护者改 AI 字段必经此处。2091 行没 TOC 等于浏览成本×N·R147 给最大文件加了·这次给第二大也加" },
+        { "what": "验证·verify-all 全绿 (180/180 syntax·179 ref·0 orphans·207/4 smoke)·所有改动仅 INDEX.md + tm-ai-change-applier.js 头部·零 runtime 影响·零回归风险", "why": "纯文档·不动逻辑" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R149 工具链完整化·verify-all 一键 + README 全量更新",
       "title": "新增 scripts/verify-all.js 一键跑 4 项检查 + scripts/README.md 从 3 个工具补足到 10 个工具的完整文档",
       "items": [

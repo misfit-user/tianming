@@ -12,6 +12,16 @@
  *   3. _resolveBinding() 公库绑定统一解析
  *   4. onAppointment / onDismissal 钩子融入任免流程
  *   5. _applyPathDelta / _applyPathSet 按 path 改 GM
+ *
+ * R150 章节导航 (2091 行)：
+ *   §1 [L19]   路径解析工具 (_resolvePath / _applyPathSet / _applyPathDelta)
+ *   §2 [L285]  AI 编辑路径保护白名单
+ *   §3 [L314]  按名字找实体 (跨 chars/facs/parties/classes/armies/items/regions)
+ *   §4 [L398]  公库绑定解析 _resolveBinding 统一入口
+ *   §5 [L462]  NPC 任免钩子 (onAppointment / onDismissal)
+ *   §6 [L703]  动态机构 / 区划 注册
+ *   §7 [L750]  ★ 主应用函数 applyAITurnChanges（入口）
+ *   §8 [L948]  v2·AI 至高权力扩展通道（全域语义化快捷+兜底 anyPathChanges）
  */
 (function(global) {
   'use strict';

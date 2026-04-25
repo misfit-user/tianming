@@ -1668,6 +1668,14 @@ function _rwpOpenOffice(name) {
 // 人物志面板 → 问对入口(关闭人物志+打开问对弹窗)
 function _rwpOpenWendui(name) {
   if (!name) return;
+  // 自检·不得对自己发起问对
+  try {
+    var _selfNm = (P.playerInfo && P.playerInfo.characterName) || '';
+    if (_selfNm && _selfNm === name) {
+      if (typeof toast === 'function') toast('不能召见自己');
+      return;
+    }
+  } catch(_){}
   try { document.getElementById('_renwuPageOv') && document.getElementById('_renwuPageOv').classList.remove('open'); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-game-engine');}catch(_){}}
   if (typeof openWenduiModal === 'function') {
     openWenduiModal(name, 'private');
@@ -1681,7 +1689,17 @@ function _rwpOpenWendui(name) {
 // 人物志面板 → 传书入口(关闭人物志+切传书 tab·预填收信人)
 function _rwpOpenLetter(name) {
   if (!name) return;
+  // 自检·不得给自己写信
+  try {
+    var _selfNm = (P.playerInfo && P.playerInfo.characterName) || '';
+    if (_selfNm && _selfNm === name) {
+      if (typeof toast === 'function') toast('不能自寄信函');
+      return;
+    }
+  } catch(_){}
   try { document.getElementById('_renwuPageOv') && document.getElementById('_renwuPageOv').classList.remove('open'); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-game-engine');}catch(_){}}
+  // 设定传书目标·让 renderLetterPanel 能识别接收人
+  try { GM._pendingLetterTo = name; } catch(e){}
   if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
   // 预填目标
   setTimeout(function(){
@@ -1690,6 +1708,8 @@ function _rwpOpenLetter(name) {
       if (toInp) { toInp.value = name; if (typeof toInp.dispatchEvent === 'function') toInp.dispatchEvent(new Event('input', { bubbles: true })); }
     } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-game-engine');}catch(_){}}
     if (typeof renderLetterPanel === 'function') renderLetterPanel();
+    var _ta = document.getElementById('letter-textarea');
+    if (_ta) try { _ta.focus(); } catch(_){}
   }, 50);
   if (typeof toast === 'function') toast('可传书予·' + name);
 }

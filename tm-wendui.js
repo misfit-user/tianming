@@ -169,6 +169,14 @@ function _wdIsAtCapital(ch) {
  * 点击角色 → 弹出模式选择对话框
  */
 function openWenduiPick(name) {
+  // 自检·不得对自己发起问对
+  try {
+    var _slfPk = (P.playerInfo && P.playerInfo.characterName) || '';
+    if (_slfPk && _slfPk === name) {
+      if (typeof toast === 'function') toast('不能召见自己');
+      return;
+    }
+  } catch(_){}
   var ch = findCharByName(name); if (!ch) return;
   var hist = GM.wenduiHistory && GM.wenduiHistory[name] && GM.wenduiHistory[name].length > 0;
   var _initial = escHtml(String(name||'?').charAt(0));
@@ -220,6 +228,14 @@ function _wdConfirmPick(name) {
  * @param {string} [prefillMsg] - 预填消息（如从奏疏传召）
  */
 function openWenduiModal(name, mode, prefillMsg) {
+  // 自检·不得对自己发起问对
+  try {
+    var _slfNm = (P.playerInfo && P.playerInfo.characterName) || '';
+    if (_slfNm && _slfNm === name) {
+      if (typeof toast === 'function') toast('不能召见自己');
+      return;
+    }
+  } catch(_){}
   // 位置/状态 gate·不在京师/下狱/流放/死亡者不得召对·改导向鸿雁传书
   var _gCh = (typeof findCharByName === 'function') ? findCharByName(name) : null;
   if (_gCh) {

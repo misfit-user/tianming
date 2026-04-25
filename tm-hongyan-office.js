@@ -842,6 +842,24 @@ function sendLetter() {
     targets = [GM._pendingLetterTo];
   }
   if (targets.length === 0) { toast('请先选择收信人'); return; }
+  // 自检·剔除自己 + 在京者
+  try {
+    var _selfNm2 = (P.playerInfo && P.playerInfo.characterName) || '';
+    var _capSelf = GM._capital || '京师';
+    var _drop = [];
+    targets = targets.filter(function(tn) {
+      if (_selfNm2 && tn === _selfNm2) { _drop.push(tn + '(自己)'); return false; }
+      var _ch = (typeof findCharByName === 'function') ? findCharByName(tn) : null;
+      if (_ch) {
+        var _loc = (_ch.location || '').replace(/\s/g,'');
+        var _atCap = !_loc || _loc === _capSelf || _loc.indexOf(_capSelf) >= 0 || /京|京城|京师|北京/.test(_loc);
+        if (_atCap && !_ch._travelTo) { _drop.push(tn + '(在京)'); return false; }
+      }
+      return true;
+    });
+    if (_drop.length > 0) toast('已剔除：' + _drop.join('·') + '·宜面陈或召对');
+    if (targets.length === 0) return;
+  } catch(_){}
 
   var capital = GM._capital || '京城';
   var urgLabels = { normal:'驿递', urgent:'加急', extreme:'八百里加急' };

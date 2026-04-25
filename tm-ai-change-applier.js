@@ -1040,9 +1040,9 @@
       var ch = _findEntity(G, 'char', oa.name);
       if (!ch) { applied.failed.push({office_assignment: oa, reason: 'char not found'}); return; }
       var action = oa.action || 'appoint';
-      // 是否需要先走位
+      // 是否需要先走位（任命/调任至他处皆走位）
       var needTravel = oa.toLocation && ch.location && oa.toLocation !== ch.location;
-      if (needTravel && action === 'appoint') {
+      if (needTravel && (action === 'appoint' || action === 'transfer')) {
         // 启动走位·到达后再就任（由 travel tick 完成）
         var days = oa.estimatedDays || _estimateTravelDays(ch.location, oa.toLocation);
         ch._travelTo = oa.toLocation;

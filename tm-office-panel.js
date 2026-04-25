@@ -362,7 +362,7 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     var _capitalTravel = GM._capital || '京师';
     // 推断目的地：地方职位如 XX巡抚·XX总兵·XX总督·使用职名中的地名；中央职位用首都
     var _travelDestination = _capitalTravel;
-    var _regionalMatch = (deptName + posName).match(/([\u4e00-\u9fa5]{2,4})(?:巡抚|总兵|总督|布政使|按察使|经略|节度)/);
+    var _regionalMatch = (deptName + posName).match(/([\u4e00-\u9fa5]{2,4})(?:巡抚|总兵|总督|提督|布政使|按察使|经略|节度|镇守|戍守|宣慰|宣抚|安抚|知府|知州|知县|道员|同知|通判|推官|提刑|学政|提学|盐运|参政|参议|府尹|州牧|刺史|太守|节使|总管|都指挥|副将|参将|游击|守备|千总|把总|卫所)/);
     if (_regionalMatch && _regionalMatch[1]) {
       _travelDestination = _regionalMatch[1];
     }

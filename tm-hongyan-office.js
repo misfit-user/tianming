@@ -1223,18 +1223,10 @@ function _settleLettersAndTravel() {
     if (_arrivedMems.length > 0 && typeof renderMemorials === 'function') renderMemorials();
   }
 
-  // 6. 推进角色赶路
-  (GM.chars||[]).forEach(function(c) {
-    if (c._travelTo && GM.turn >= c._travelArrival) {
-      var arrDate = (typeof getTSText === 'function') ? getTSText(GM.turn) : '';
-      c.location = c._travelTo;
-      if (typeof addEB === 'function') addEB('人事', c.name + '已抵达' + c.location);
-      if (GM.qijuHistory) GM.qijuHistory.unshift({ turn: GM.turn, date: arrDate, content: '【入京】' + c.name + '从' + c._travelFrom + '抵达' + c.location + '。' });
-      c._travelTo = null;
-      c._travelArrival = 0;
-      c._travelFrom = '';
-    }
-  });
+  // 6. 角色赶路统一交 advanceCharTravelByDays 处理
+  // (R: 此处旧实现会先清 _travelTo·导致 advanceCharTravelByDays 跳过·自动就任丢失·
+  //  且未清 _travelAssignPost/_travelRemainingDays·留下脏字段·
+  //  统一由 tm-endturn-core.js Phase 4.6 advanceCharTravelByDays 处理)
 }
 
 /** AI生成回信 */

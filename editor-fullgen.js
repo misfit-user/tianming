@@ -925,7 +925,7 @@
         }
         runStep(idx + 1);
       }).catch(function(e) {
-        console.error('步骤', s.label, '调用失败:', e);
+        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '步骤') : console.error('步骤', s.label, '调用失败:', e);
         showToast('步骤 ' + s.label + ' AI调用失败，已跳过');
         runStep(idx + 1);
       });
@@ -1234,8 +1234,7 @@
             console.log('[Load] 已从磁盘恢复剧本: ' + scriptData.name);
           }
         }).catch(function(e) {
-          console.warn('[Load] 磁盘加载失败:', e);
-        });
+          (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Load') : console.warn('[Load] 磁盘加载失败:', e); });
       } else {
         // 没有meta信息，尝试加载最近的剧本文件
         window.tianming.listScenarios().then(function(list) {
@@ -1252,8 +1251,7 @@
             });
           }
         }).catch(function(e) {
-          console.warn('[Load] 剧本列表加载失败:', e);
-        });
+          (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Load') : console.warn('[Load] 剧本列表加载失败:', e); });
       }
     }
     loadAPISettings();

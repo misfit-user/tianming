@@ -175,8 +175,7 @@ var ChronicleSystem = {
         if (typeof addEB === 'function') addEB('正史', year + '年编年史已完成');
       }
     }).catch(function(e) {
-      console.warn('[Chronicle] 年度正史生成失败:', e);
-    });
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Chronicle') : console.warn('[Chronicle] 年度正史生成失败:', e); });
   },
 
   /** 获取年度正史（UI 用） */

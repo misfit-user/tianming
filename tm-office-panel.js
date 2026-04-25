@@ -532,7 +532,7 @@ function _offRecruitSubmit() {
     _offClosePicker();
     setTimeout(function(){ _offOpenPicker(_path, _dept, _pos, _cur); }, 50);
   }).catch(function(err){
-    console.error('[_offRecruitSubmit] err:', err);
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(err, '_offRecruitSubmit') : console.error('[_offRecruitSubmit] err:', err);
     if (typeof toast === 'function') toast('\u5FB4\u53EC\u51FA\u9519\u00B7' + (err && err.message || ''));
   });
 }

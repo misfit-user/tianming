@@ -760,7 +760,7 @@ function _mzSpeakMinister(ch, blockId, roundNum) {
     return callAIMessagesStream([{role:'user', content: sysP}], maxTok, apiOpts).then(function(finalTxt){
       _finish(finalTxt);
     }).catch(function(err){
-      console.warn('[独召] stream 失败·回退 callAI', err);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(err, '独召-stream') : console.warn('[独召] stream 失败·回退 callAI', err);
       if (typeof callAI === 'function') {
         return callAI(sysP, maxTok, null, _tier).then(function(reply){ _finish(reply); }).catch(function(){
           if (target) target.textContent = '臣' + ch.name + '叩首·API 异常·请容臣三思后奏。';

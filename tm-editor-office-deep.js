@@ -275,7 +275,7 @@
         if (btn) { btn.disabled = false; btn.textContent = '★ AI 一键生成（按官职名+朝代）'; }
       }
     }).catch(function(err) {
-      console.error('[pd_aiGen] error', err);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(err, 'pd_aiGen') : console.error('[pd_aiGen] error', err);
       if (global.showToast) global.showToast('AI 请求失败');
       if (btn) { btn.disabled = false; btn.textContent = '★ AI 一键生成（按官职名+朝代）'; }
     });

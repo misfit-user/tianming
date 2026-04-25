@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R160 Promise.catch 全清·17→0 (-100%)",
+      "title": "新 2 工具 (multi-line + multiline) + 3 处人工·把所有 Promise.catch console 全部迁到 TM.errors",
+      "items": [
+        { "what": "R160 新增 scripts/migrate-promise-catch-v2.js (多行单语句版) 和 scripts/migrate-promise-catch-multiline.js (多行多语句版·状态机扫描·只换 console 行不动其他业务语句)。两轮自动 14 处 + 人工 3 处·共 17 处全迁", "why": "R148 v1 仅匹配单行 .catch(function(e){console.X(...);}) 漏 17 个多行变体。重新审计发现 debt-report 的 17 是真实数·非 false positive。所有 .catch console 现在 100% 经过 TM.errors" },
+        { "what": "迁移分布：editor-fullgen 3 / tm-save-manager 6 / map-converter 1 / tm-chronicle-system 1 / tm-editor-office-deep 1 / tm-keju-runtime 1 / tm-launch 1 / tm-office-panel 1 / tm-shizheng-panel 1 / tm-utils 1。tm-save-manager 6 处含主存档 saveToSlot/loadFromSlot/exportSave/importSave·之前异常只 console·现在 Ctrl+Shift+E 能看到完整 stack", "why": "存档管理器是玩家最依赖的稳定性面·任何异常都该可见·R160 之前长期半盲" },
+        { "what": "审计指标·Promise.catch 未迁 17→0 (-100%)。TM.errors 总覆盖率 91.5%→92.0% (类3 364→366)。debt-report 工具链 18→20 (新增 v2/multiline migrators)", "why": "Promise.catch 这条线终于全清·剩 32 处 try-catch console (15 类1 + 17 类2) 多为 console.log 调试或多语句·递减回报区" },
+        { "what": "验证·verify-all 全绿 (180/180·179 ref·0 orphans·207/4 smoke 维持)·git diff 验证 toast/showToast/setTimeout 等业务语句全部保留", "why": "状态机+精准行替换·只动 console.X 那一行·其他原样保留" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R158-R159 debt-report 一屏总报表 + 5 大文件 TOC 补完",
       "title": "R158 新 scripts/debt-report.js 聚合所有审计指标·R159 给 5 个 2500-3200 行核心文件加章节导航",
       "items": [

@@ -229,7 +229,7 @@ function loadMapFromURL(url, callback) {
             }
         })
         .catch(function(error) {
-            console.error('\u52a0\u8f7d\u5730\u56fe\u5931\u8d25:', error);
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(error, 'u52a0u8f7du5730u56feu5931u8d25') : console.error('\u52a0\u8f7d\u5730\u56fe\u5931\u8d25:', error);
             alert('\u52a0\u8f7d\u5730\u56fe\u5931\u8d25: ' + error.message);
         });
 }

@@ -543,7 +543,7 @@ function enterEditor(sid){
 }
 
 function saveAndBack(){
-  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).then(function(){toast("\u2705 \u5DF2\u4FDD\u5B58");}).catch(function(e){console.warn('[saveAndBack]',e);toast("\u2705 \u5DF2\u4FDD\u5B58");});}else{toast("\u2705 \u5DF2\u4FDD\u5B58");}
+  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).then(function(){toast("\u2705 \u5DF2\u4FDD\u5B58");}).catch(function(e){(window.TM&&TM.errors&&TM.errors.capture)?TM.errors.capture(e,'saveAndBack'):console.warn('[saveAndBack]',e);toast("\u2705 \u5DF2\u4FDD\u5B58");});}else{toast("\u2705 \u5DF2\u4FDD\u5B58");}
   setTimeout(backToLaunch,300);
 }
 

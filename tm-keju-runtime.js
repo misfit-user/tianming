@@ -2832,7 +2832,7 @@ function _kejuFinalize(exam) {
     if (!r) return;
     // 异步生成完整人物数据（不 await·让它在后台完成）
     _aiGenerateFullCharacter(r, idx === 0 ? 'zhuangyuan' : idx === 1 ? 'bangyan' : 'tanhua').catch(function(e){
-      console.warn('[科举·G2] 三甲人物生成失败·使用模板兜底', e);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '科举·G2') : console.warn('[科举·G2] 三甲人物生成失败·使用模板兜底', e);
       _kejuBasicRecruit(r, idx === 0 ? '\u72B6\u5143' : idx === 1 ? '\u699C\u773C' : '\u63A2\u82B1');
     });
   });

@@ -90,7 +90,7 @@ var SaveManager = {
       } else {
         toast('\u274C \u4FDD\u5B58\u5931\u8D25');
       }
-    }).catch(function(e) { console.error('[saveToSlot] 存档异常:', e); toast('\u274C \u5B58\u6863\u5F02\u5E38'); });
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveToSlot') : console.error('[saveToSlot] 存档异常:', e); toast('\u274C \u5B58\u6863\u5F02\u5E38'); });
     return true;
   },
 
@@ -222,7 +222,7 @@ var SaveManager = {
       setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
       toast('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB');
     }).catch(function(e) {
-      console.error('[exportSave] 异常:', e);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'exportSave') : console.error('[exportSave] 异常:', e);
       toast('❌ 导出失败: ' + (e.message || e));
     });
   },
@@ -304,7 +304,7 @@ var SaveManager = {
               resolve(false);
             }
           }).catch(function(_wE) {
-            console.error('[importSave] TM_SaveDB.save 异常:', _wE);
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_wE, 'importSave') : console.error('[importSave] TM_SaveDB.save 异常:', _wE);
             toast('\u274C \u5199\u5165\u5F02\u5E38\uFF1A' + (_wE.message || _wE));
             resolve(false);
           });
@@ -411,7 +411,7 @@ function openSaveManager() {
 
     _renderSaveManagerUI(ov, saves);
   }).catch(function(e) {
-    console.error('[openSaveManager] 加载失败:', e);
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'openSaveManager') : console.error('[openSaveManager] 加载失败:', e);
     // 降级：从 localStorage 索引读
     var saves = SaveManager.getAllSaves();
     _renderSaveManagerUI(ov, saves);
@@ -716,7 +716,7 @@ function _importToSpecificSlot(slotId, fileInput) {
         if (!ok) toast('\u26A0 \u5BFC\u5165\u672A\u6210\u529F\u00B7\u8BF7\u67E5\u63A7\u5236\u53F0');
       }, 200);
     }).catch(function(e) {
-      console.error('[_importToSpecificSlot] 异常:', e);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '_importToSpecificSlot') : console.error('[_importToSpecificSlot] 异常:', e);
       toast('\u274C \u5BFC\u5165\u5F02\u5E38\uFF1A' + (e.message||e));
       setTimeout(function(){ closeSaveManager(); openSaveManager(); }, 200);
     });
@@ -749,7 +749,7 @@ function importSaveFileToSlot() {
         if (!ok) toast('\u26A0 \u5BFC\u5165\u672A\u6210\u529F\u00B7\u8BF7\u67E5\u63A7\u5236\u53F0');
       }, 200);  // 200ms 等 IDB commit
     }).catch(function(e) {
-      console.error('[importSaveFileToSlot] Promise 异常:', e);
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'importSaveFileToSlot') : console.error('[importSaveFileToSlot] Promise 异常:', e);
       toast('\u274C \u5BFC\u5165\u5F02\u5E38\uFF1A' + (e.message||e));
       setTimeout(function(){ closeSaveManager(); openSaveManager(); }, 200);
     });

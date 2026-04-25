@@ -830,8 +830,7 @@ function saveP(){
   // 1. 写入 IndexedDB（主存储，无容量限制）
   if (typeof TM_SaveDB !== 'undefined') {
     TM_SaveDB.saveProject(deepClone(P)).catch(function(e) {
-      console.warn('[saveP] IndexedDB写入失败:', e);
-    });
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP') : console.warn('[saveP] IndexedDB写入失败:', e); });
   }
   // 2. 写入 localStorage 骨架（轻量，<10KB，用于快速启动）
   try {

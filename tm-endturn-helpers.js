@@ -685,7 +685,7 @@ function _showEndgameScreen(type, failGoal) {
     callAI(prompt, 600).then(function(r) {
       var el = document.getElementById('_taishigong');
       if (el) el.innerHTML = '\u592A\u53F2\u516C\u66F0\uFF1A<br>' + escHtml(r).replace(/\u3010/g, '<br><b style="color:' + accentColor + ';">\u3010').replace(/\u3011/g, '\u3011</b>');
-    }).catch(function(e) { console.warn('[\u592A\u53F2\u516C] \u751F\u6210\u5931\u8D25:', e); });
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u592A\u53F2\u516C] \u751F\u6210\u5931\u8D25:') : console.warn('[\u592A\u53F2\u516C] \u751F\u6210\u5931\u8D25:', e); });
   }
 }
 

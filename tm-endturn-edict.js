@@ -457,7 +457,7 @@ function processEdictEffects(allEdictText, edictCategory) {
   // v5·人物生成 A：诏令征召识别（异步 fire-and-forget）
   try {
     if (typeof handleEdictTextForRecruit === 'function') {
-      handleEdictTextForRecruit(allEdictText).catch(function(e){ console.warn('[\u8BCF\u4EE4\u5F81\u8BCF] \u5F02\u5E38', e); });
+      handleEdictTextForRecruit(allEdictText).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u8BCF\u4EE4\u5F81\u8BCF] \u5F02\u5E38') : console.warn('[\u8BCF\u4EE4\u5F81\u8BCF] \u5F02\u5E38', e); });
     }
   } catch(_rE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rE, '\u8BCF\u4EE4\u5F81\u8BCF') : console.warn('[\u8BCF\u4EE4\u5F81\u8BCF]', _rE); }
 

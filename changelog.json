@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R147-R148 巨函数导航 + Promise.catch 迁移",
+      "title": "tm-endturn-ai-infer.js (10,541 行单函数) 5 段章节导航·Promise .catch 22 处迁移到 TM.errors",
+      "items": [
+        { "what": "R147 给 tm-endturn-ai-infer.js (10,541 行单函数·项目最大文件) 加 5 段章节导航 banner：§1 入参+sysP 构建 / §2 Sub-call 注册化 / §3 sc0/sc05/sc1/sc1b/sc1c 子调用 / §4 sc1 写回 / §5 sc15-27 后续。维护者一眼可定位 4000 行段落", "why": "原计划 IIFE 化 (audit 估 6h·中风险) 但 665 处 sysP 拼接 + 大量跨段共享变量·IIFE 实操要么大量参数透传要么把变量提到外层·读起来反而更乱。banner 是零风险纯文档·达到导航目的同时不动逻辑" },
+        { "what": "R148 新增 scripts/migrate-promise-catch.js (姊妹脚本·migrate-catch-console.js 的 Promise .catch 版)·扫 .catch(function(e){ console.X(...) }) 单语句模式。22/24 自动迁移·11 个文件 (editor-fullgen/tm-char-arcs/tm-char-autogen/tm-endturn-ai-infer/edict/helpers/render/office-editor/patches/player-core/utils)·剩 2 处含 toast/showLoading 多语句保留人工", "why": "R145 只迁移了 try-catch 链·但 Promise.catch 是另一种异步错误源·之前 24 处错误若 TM.errors 没注册根本捕获不到·玩家导出诊断时缺失。补齐这条线后·所有 console.warn 路径几乎都过 TM.errors 中转" },
+        { "what": "验证·所有 4 项检查 R148 终态全绿：syntax-check (180 个 .js)·ref-check (179 个引用)·find-orphans (0 真孤岛)·headless-smoke 从 207/4 → 208/3 (Promise.catch 迁移让一个之前未捕获的测试场景被 TM.errors 看到·从 fail 转 pass)", "why": "smoke 不退反进·说明这次迁移正向收益·零回归" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R136-R141 深度清理二期·工具链+孤岛+编辑器拆分",
       "title": "ref-check/find-orphans 两工具补齐·发现并修 R122 遗漏的 editor.html 404·删 801 行死代码·editor.js 拆 2 分 editor-ai-gen 拆 2 分",
       "items": [

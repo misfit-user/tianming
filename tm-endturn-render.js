@@ -983,7 +983,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       eraName: GM.eraName || ''
     };
     // 写入 autosave（页面刷新恢复用）+ slot_0（案卷目录显示用）
-    TM_SaveDB.save('autosave', _autoState, _autoMeta).catch(function(e) { console.warn('[AutoSave] autosave写入失败:', e); });
+    TM_SaveDB.save('autosave', _autoState, _autoMeta).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e); });
     TM_SaveDB.save('slot_0', _autoState, _autoMeta).then(function() {
       if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
       // 同时写轻量标记到localStorage（用于页面刷新检测）
@@ -994,7 +994,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
           eraName: GM.eraName || ''
         }));
       } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-render');}catch(_){}}
-    }).catch(function(e) { console.warn('[AutoSave] slot_0写入失败:', e); });
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] slot_0写入失败:') : console.warn('[AutoSave] slot_0写入失败:', e); });
   }
 
   // 13b. 写入每回合完整数据（多文件结构）
@@ -1029,7 +1029,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       var turnData={context:turnCtx,playerInput:playerInput,aiResults:aiResults,varChanges:varChanges};
       if(scenarioData) turnData.scenario=scenarioData;
       if(refTextData) turnData.refText=refTextData;
-      window.tianming.writeTurnData(GM.saveName,GM.turn-1,turnData).catch(function(e){ console.warn("[catch] async:", e); });
+      window.tianming.writeTurnData(GM.saveName,GM.turn-1,turnData).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });
     }catch(e){ console.warn("[catch] \u9759\u9ED8\u5F02\u5E38:", e.message || e); }
     // 自动存档
     var _asTurns=(P.conf&&P.conf.autoSaveTurns)||5;
@@ -1039,7 +1039,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
         var _asd=deepClone(P);
         _asd.gameState=deepClone(GM);
         _asd._saveMeta={turn:GM.turn,gameMode:(P.conf&&P.conf.gameMode)||'',saveName:GM.saveName};
-        window.tianming.autoSave(_asd).catch(function(e){ console.warn("[catch] async:", e); });
+        window.tianming.autoSave(_asd).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });
       }catch(e){ console.warn("[catch] \u9759\u9ED8\u5F02\u5E38:", e.message || e); }
     }
   }

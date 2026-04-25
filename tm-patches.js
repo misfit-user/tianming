@@ -342,7 +342,7 @@ var DEFAULT_RULES="1.\u6570\u503C\u5408\u7406 2.\u89D2\u8272\u72EC\u7ACB 3.\u621
 
 function sSaveAPI(){
   P.ai.key=_$("s-key")?_$("s-key").value:"";P.ai.url=_$("s-url")?_$("s-url").value:"";P.ai.model=_$("s-model")?_$("s-model").value:"";P.ai.temp=parseFloat(_$("s-temp")?_$("s-temp").value:"0.8");P.ai.mem=parseInt(_$("s-mem")?_$("s-mem").value:"20");P.ai.provider=_$("s-prov")?_$("s-prov").value:"openai";
-  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).catch(function(e){ console.warn("[catch] async:", e); });}else{try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}
+  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(P).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });}else{try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}
   toast("\u2705 API\u5DF2\u4FDD\u5B58");
 }
 function sSaveAll(){
@@ -1729,9 +1729,9 @@ function doActualStart(sid){
       showLoading('\u89C4\u5212\u63A8\u6F14\u9519\u70B9\u00B7\u5E76\u884C 3 \u9879\u2026', 92);
       try {
         await Promise.all([
-          (typeof aiPlanScenarioForInference === 'function') ? aiPlanScenarioForInference().catch(function(e){ console.warn('[aiPlan]', e); }) : Promise.resolve(),
-          (typeof aiPlanFactionMatrix === 'function') ? aiPlanFactionMatrix().catch(function(e){ console.warn('[aiFacMatrix]', e); }) : Promise.resolve(),
-          (typeof aiPlanFirstTurnEvents === 'function') ? aiPlanFirstTurnEvents().catch(function(e){ console.warn('[aiFTE]', e); }) : Promise.resolve()
+          (typeof aiPlanScenarioForInference === 'function') ? aiPlanScenarioForInference().catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiPlan') : console.warn('[aiPlan]', e); }) : Promise.resolve(),
+          (typeof aiPlanFactionMatrix === 'function') ? aiPlanFactionMatrix().catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiFacMatrix') : console.warn('[aiFacMatrix]', e); }) : Promise.resolve(),
+          (typeof aiPlanFirstTurnEvents === 'function') ? aiPlanFirstTurnEvents().catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'aiFTE') : console.warn('[aiFTE]', e); }) : Promise.resolve()
         ]);
       } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '3 plans parallel') : console.warn('[3 plans parallel]', e); }
       showLoading('\u751F\u6210\u521D\u59CB\u594F\u758F...', 98);

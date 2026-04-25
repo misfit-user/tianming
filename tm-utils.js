@@ -844,7 +844,7 @@ function saveP(){
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] localStorage骨架写入失败:') : console.warn('[saveP] localStorage骨架写入失败:', e); }
   // 3. 桌面端额外保存
   if (window.tianming && window.tianming.isDesktop) {
-    window.tianming.autoSave(P).catch(function(e) { console.warn('[saveP] desktop failed:', e); });
+    window.tianming.autoSave(P).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] desktop failed:') : console.warn('[saveP] desktop failed:', e); });
   }
 }
 
@@ -891,7 +891,7 @@ function saveP(){
           showScnManage();
         }
       }
-    }).catch(function(e) { console.warn('[restoreP] IndexedDB恢复失败:', e); });
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e); });
   }
 
   // 层3: 桌面端 autoSave
@@ -905,7 +905,7 @@ function saveP(){
         }
         console.log('[restoreP] 从desktop autoSave补充恢复');
       }
-    }).catch(function(e) { console.warn('[restoreP] desktop恢复失败:', e); });
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] desktop恢复失败:') : console.warn('[restoreP] desktop恢复失败:', e); });
   }
 })();
 

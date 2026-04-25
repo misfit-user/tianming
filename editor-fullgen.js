@@ -1100,7 +1100,7 @@
         type: 'editor',
         turn: 0,
         scenarioName: scriptData.name || ''
-      }).catch(function(e) { console.warn('[autoSave] IndexedDB写入失败:', e); });
+      }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'autoSave] IndexedDB写入失败:') : console.warn('[autoSave] IndexedDB写入失败:', e); });
     }
     // 2. localStorage 兜底（剥离portrait等大数据，只存轻量骨架）
     try {
@@ -1218,7 +1218,7 @@
           console.log('[Load] 从IndexedDB加载完成, name=' + (idbData.name||'') + ', 刷新全部面板');
           _mergeAndRenderScriptData(idbData);
         }
-      }).catch(function(e) { console.warn('[Load] IndexedDB加载失败:', e); });
+      }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Load] IndexedDB加载失败:') : console.warn('[Load] IndexedDB加载失败:', e); });
     }
     if (!saved && window.tianming && window.tianming.isDesktop) {
       // localStorage为空时，尝试从Electron磁盘加载最近编辑的剧本

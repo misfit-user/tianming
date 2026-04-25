@@ -637,7 +637,7 @@
   /** 全局 onclick 处理 */
   global._tmClickPendingChar = function(name) {
     if (!confirm('\u662F\u5426\u5C06 ' + name + ' \u7EB3\u5165\u4EBA\u7269\u5FD7\uFF1F\n(AI \u4F1A\u751F\u6210\u5B8C\u6574\u89D2\u8272\u6863\u6848\u00B7\u7EA6 3-5 \u79D2)')) return;
-    crystallizePendingCharacter(name).catch(function(e){ console.warn(e); });
+    crystallizePendingCharacter(name).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'promise-catch') : console.warn(e); });
   };
 
   // ═══════════════════════════════════════════════════════════════════

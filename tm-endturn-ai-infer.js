@@ -11,9 +11,19 @@
 //   需先为每个字段族写 pre/post 行为快照·现阶段先做文件级隔离·内部不动
 //
 // 姊妹: tm-endturn-prep.js (L1-2185·前置) + tm-endturn-core.js (L12712-end·入口)
+//
+// R147 章节导航（10,541 行单函数·切勿移除）：
+//   §1 [L17-3050]   入参初始化 + sysP prompt 构建（655+ 处 sysP 拼接）
+//   §2 [L3051-3128] Sub-call 注册化基础设施（_runSubcall + 共享变量声明）
+//   §3 [L3130-4671] sc0/sc05/sc1/sc1b/sc1c 子调用（深度思考/记忆/主推演/文事/势力）
+//   §4 [L4673-8795] sc1 写回（applyAITurnChanges + 各字段族 GM 落地）
+//   §5 [L8797-end]  sc15-sc27 后续子调用 + 收尾（NPC/势力/财政/军事/审计/丰化/叙事）
 // ============================================================
 
 async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
+  // ═══════════════════════════════════════════════════════════
+  // §1 入参初始化 + sysP prompt 构建
+  // ═══════════════════════════════════════════════════════════
   var shizhengji="",zhengwen="",playerStatus="",playerInner="",turnSummary="";
   // 新增字段：实录、时政记标题/总结、人事变动、后人戏说
   var shiluText="",szjTitle="",szjSummary="",personnelChanges=[],hourenXishuo="";
@@ -3050,6 +3060,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       sysP = sysP.substring(0, _sysPMaxChars) + '\n...(系统提示过长，部分参考信息已截断)';
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // §2 Sub-call 注册化基础设施（_runSubcall + 共享变量声明）
+    // ═══════════════════════════════════════════════════════════
     try{
       // 3.3: Sub-call注册化——共享变量前置声明 + 管线描述 + 执行包装器
       var _aiDepth = (P.conf && P.conf.aiCallDepth) || 'full';
@@ -3126,6 +3139,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         if (typeof _awaitPostTurnJobs === 'function') await _awaitPostTurnJobs();
         if (typeof _ensureMemoryFreshness === 'function') _ensureMemoryFreshness(GM);
       } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); }
+
+      // ═══════════════════════════════════════════════════════════
+      // §3 Sub-calls sc0/sc05/sc1/sc1b/sc1c（深度思考·记忆·主推演·文事·势力）
+      // ═══════════════════════════════════════════════════════════
 
       // --- Sub-call 0: AI深度思考（全面分析当前局势，不限字数）---
       await _runSubcall('sc0', 'AI深度思考', 'standard', async function() {
@@ -4670,6 +4687,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
 
+      // ═══════════════════════════════════════════════════════════
+      // §4 sc1 写回（applyAITurnChanges + 各字段族 GM 落地·~4000 行）
+      // ═══════════════════════════════════════════════════════════
       if(p1){
         // 方案融入：AI 产出的通用变化/任免/机构/区划/事件/NPC行动/关系 → 统一应用
         try {
@@ -4716,7 +4736,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               if (res.pending && res.pending.length) {
                 _dbg('[人物扫描] 入 pending', res.pending.length, '人：', res.pending);
               }
-            }).catch(function(e){ console.warn('[\u4EBA\u7269\u626B\u63CF]', e); });
+            }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u4EBA\u7269\u626B\u63CF') : console.warn('[\u4EBA\u7269\u626B\u63CF]', e); });
           }
         } catch(_scE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_scE, '\u4EBA\u7269\u626B\u63CF] \u5F02\u5E38') : console.warn('[\u4EBA\u7269\u626B\u63CF] \u5F02\u5E38', _scE); }
 
@@ -8793,6 +8813,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         p1.npc_actions = p1.npc_actions.filter(function(a) { return !a._hallucinated; });
       }
       }); // end Sub-call 1 _runSubcall
+
+      // ═══════════════════════════════════════════════════════════
+      // §5 sc15-sc27 后续子调用 + 收尾（NPC 深度·势力·财政·军事·审计·丰化·叙事）
+      // ═══════════════════════════════════════════════════════════
 
       // --- Sub-call 1.5: NPC全面深度推演 --- [standard+full]
       await _runSubcall('sc15', 'NPC深度推演', 'standard', async function() {

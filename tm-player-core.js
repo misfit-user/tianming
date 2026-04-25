@@ -227,7 +227,7 @@ function _shijiDownload(txt){
   if(window.tianming&&window.tianming.isDesktop){
     window.tianming.loadAutoSave().then(function(res){
       if(res&&res.success&&res.data&&res.data.ai) _applyAiCfg(res.data.ai);
-    }).catch(function(e){ console.warn("[catch] async:", e); });
+    }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });
     return;
   }
   try{var s=localStorage.getItem("tm_api");if(s){_applyAiCfg(JSON.parse(s));}}

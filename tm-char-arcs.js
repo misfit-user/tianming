@@ -219,7 +219,7 @@
       if (!_shouldAdvance()) return;
       var run = function() {
         if (!GM.running || !_shouldAdvance()) return;
-        advanceCharArcs({ showToast: false }).catch(function(e){ console.warn('[情节弧·idle]', e); });
+        advanceCharArcs({ showToast: false }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '情节弧·idle') : console.warn('[情节弧·idle]', e); });
       };
       if (typeof requestIdleCallback === 'function') {
         requestIdleCallback(run, { timeout: 5000 });
@@ -235,7 +235,7 @@
     // 延迟 2 秒·让面板先渲染
     setTimeout(function() {
       if (_shouldAdvance()) {
-        advanceCharArcs({ showToast: false }).catch(function(e){ console.warn('[情节弧·warm]', e); });
+        advanceCharArcs({ showToast: false }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '情节弧·warm') : console.warn('[情节弧·warm]', e); });
       }
     }, 2000);
   }
@@ -248,7 +248,7 @@
     var gap = (GM.turn || 0) - lastTurn;
     if (gap >= 4 && !_inProgress) {
       // 触发但不等待
-      advanceCharArcs({ showToast: false }).catch(function(e){ console.warn('[情节弧·endturn兜底]', e); });
+      advanceCharArcs({ showToast: false }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '情节弧·endturn兜底') : console.warn('[情节弧·endturn兜底]', e); });
     }
   }
 

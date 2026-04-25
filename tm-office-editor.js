@@ -242,7 +242,7 @@ function openEditorHtml(scnId){
       if (sd.role && !sd.emperor) sd.emperor = sd.role;
       if (sd.overview && !sd.background) sd.background = sd.overview;
       if (sd.background && !sd.overview) sd.overview = sd.background;
-      window.tianming.saveScenario(saveFname, sd).catch(function(e){ console.warn("[catch] async:", e); });
+      window.tianming.saveScenario(saveFname, sd).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });
     }
     // 返回剧本管理界面
     _dbg('[syncFromEditor] 同步完成，准备显示剧本管理界面');

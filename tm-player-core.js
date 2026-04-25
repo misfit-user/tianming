@@ -7,6 +7,16 @@
 // 包含: ESC 暂停菜单+启动 API 加载+Electron·文苑·全局资源栏·人物志完整页 6-tab
 //       openPause/openAbdication/openShiji/_shijiShowDetail/switchGTab/
 //       addEB/_fmtEvt/_wyQualityStars/renderGameState/renwu* 系列
+//
+// R159 章节导航 (2815 行)：
+//   §1 [L15]   ESC 暂停菜单 openPause + 子项分发
+//   §2 [L300]  openAbdication 退位/归去来兮入口
+//   §3 [L500]  openShiji 史记弹窗 + _shijiShowDetail 详情
+//   §4 [L900]  switchGTab 主 tab 切换 + 文苑入口
+//   §5 [L1100] addEB 事件流 + _fmtEvt 渲染
+//   §6 [L1400] 全局资源栏 renderGameState 顶栏 + 起居注
+//   §7 [L1900] 人物志完整页 6-tab (renwuMain/renwuArc/renwuRel/...)
+//   §8 [L2400] _wyQualityStars 文苑评分 + 紧要之臣卡片
 // ============================================================
 
 // ============================================================

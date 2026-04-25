@@ -5,6 +5,16 @@
 // 历史：此部分原在 tm-audio-theme.js·后迁入 tm-chaoyi-keju.js·R112 拆时错误留在 chaoyi 侧
 // 姊妹：tm-keju.js (UI/启动) + tm-chaoyi.js (朝议)
 // 包含：initKejuSystem/advanceKejuByDays/阶段切换/考官/20 答卷 AI 生成等
+//
+// R159 章节导航 (3200 行)：
+//   §1 [L10]   initKejuSystem 入口 + 字段初始化
+//   §2 [L100]  advanceKejuByDays 推进器 + 阶段切换 _finalizeStageAndAdvance
+//   §3 [L500]  payKejuLocalCost / payKejuCentralCost 经费回落
+//   §4 [L800]  会试题奏疏生成 (主考官 AI)
+//   §5 [L1200] 殿试主持选任 + pickHistoricalCandidates AI 检索
+//   §6 [L1700] 20 卷答卷 AI 生成 + 考官建议
+//   §7 [L2400] 钦定三甲 UI + 进士池填缺
+//   §8 [L2800] 懒加载具象化 + 阶层党派影响
 // ============================================================
 
 // ============================================================

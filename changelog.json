@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R158-R159 debt-report 一屏总报表 + 5 大文件 TOC 补完",
+      "title": "R158 新 scripts/debt-report.js 聚合所有审计指标·R159 给 5 个 2500-3200 行核心文件加章节导航",
+      "items": [
+        { "what": "R158 新增 scripts/debt-report.js·一次跑齐复用 4 个 lint 工具的输出·按 7 大类汇总打印 (代码量分布·错误捕获·安全防御·代码质量·工具链)。当前指标快照：180 文件·165k 行·TM.errors 91.5%·localStorage 0 不安全·setInterval 0 泄漏·@ts-check 100%·1500+ TOC 28%→更高(R159后)·18 零依赖工具", "why": "之前要审计要跑 5 个工具看 5 段输出。debt-report 一屏汇总·支持决策'还要不要继续'。复用 lint 工具输出避免重复实现规则" },
+        { "what": "R159 给 5 个 2500-3200 行核心文件加 TOC (R147 风格·按 § 编号映射行号)：tm-keju-runtime 3200 行 (8 段·init/推进器/经费/会试题/殿试/答卷/三甲/具象化) · tm-player-core 2815 行 (8 段·暂停菜单/退位/史记/Tab/EB/资源栏/人物志/文苑) · tm-ai-infra 2802 行 (8 段·章节号与文件内 1.X.Y 注释对应) · tm-feudal 2596 行 (8 段·封臣/头衔/铨选/CB/盟约/阴谋/称王) · tm-hongyan-office 2587 行 (7 段·鸿雁/品级/官制/工具/钩子/UI/AI 回信)", "why": "这 5 个全是 ≥2500 行核心域文件·维护者最常打开。R157 处理了 1500-2100 这层·R159 把更大的 2500+ 也覆盖。debt-report 显示 TOC 覆盖率从 9/32 → 14/32 (44%·剩 18 个偏小或拆分边缘文件)" },
+        { "what": "验证·verify-all 全绿 (180/180·179 ref·0 orphans·207/4 smoke)·所有改动仅注释·零运行时影响", "why": "纯文档" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R157 中型文件章节导航·6 个 1500-2100 行文件加 TOC",
       "title": "tm-npc-engine·tm-map-system·editor-ai-gen·tm-endturn-render·tm-chaoyi·tm-endturn-helpers 各加顶部章节导航·维护者一眼定位",
       "items": [

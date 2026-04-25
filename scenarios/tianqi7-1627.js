@@ -2161,6 +2161,29 @@
       // 避免 AI 重写覆盖剧本注解如"魏氏(义子义孙满朝)"
       aiAutoEnrich: false,
       isFullyDetailed: true,
+      // 常朝 v3 朝代配置·明制（御门听政·六部+都察院·东林/阉党党争）
+      chaoyi: {
+        enabled: true,
+        audienceHall: '奉天门',
+        chaoName: '早朝',
+        shuoChaoName: '朔朝',
+        openingRites: ['mingbian', 'shanhu', 'imperialEnter'],
+        strictThreshold: { prestige: 75, power: 75 },
+        directSpeakRank: 2,        // 阁臣线·明制一二品（首辅+尚书）不待旨而言
+        deptOptions: ['户部', '吏部', '礼部', '兵部', '刑部', '工部', '都察院'],
+        factionMap: {
+          '东林':       { tone: 'support', allyClass: 'kdao' },
+          '阉党':       { tone: 'oppose', allyClass: 'eunuch' },
+          '阉党残余':   { tone: 'oppose', allyClass: 'eunuch' },
+          '楚党':       { tone: 'mediate', allyClass: 'east' },
+          '浙党':       { tone: 'mediate', allyClass: 'east' },
+          '清流':       { tone: 'support', allyClass: 'kdao' },
+          '军方':       { tone: 'neutral', allyClass: 'wu' },
+          '中立':       { tone: 'neutral', allyClass: 'east' }
+        },
+        enabledTypes: ['routine', 'request', 'warning', 'emergency', 'personnel', 'confrontation', 'joint_petition', 'personal_plea'],
+        fixedAgenda: []
+      },
       // M1·模型推荐·用于 startGame 时警告玩家当前模型能力可能不足
       modelRequirements: {
         minOutputK: 8,           // 单次输出≥8K tokens（本剧本 46 角色+17 省+复杂 schema）

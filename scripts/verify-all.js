@@ -20,10 +20,11 @@ const SCRIPTS = path.resolve(__dirname);
 const SMOKE_BASELINE = { minPass: 207, maxFail: 4 };
 
 const checks = [
-  { name: 'syntax-check', file: 'syntax-check.js',   estSec: 17, expectExit: 0 },
-  { name: 'ref-check',    file: 'ref-check.js',      estSec: 1,  expectExit: 0 },
-  { name: 'find-orphans', file: 'find-orphans.js',   estSec: 1,  expectExit: 0 },
-  { name: 'smoke',        file: 'headless-smoke.js', estSec: 30, expectExit: null }  // 用 baseline 判断
+  { name: 'syntax-check', file: 'syntax-check.js',     estSec: 17, expectExit: 0 },
+  { name: 'ref-check',    file: 'ref-check.js',        estSec: 1,  expectExit: 0 },
+  { name: 'find-orphans', file: 'find-orphans.js',     estSec: 1,  expectExit: 0 },
+  { name: 'smoke',        file: 'headless-smoke.js',   estSec: 30, expectExit: null },   // 用 baseline 判断
+  { name: 'cc3-smoke',    file: 'smoke-chaoyi-v3.js',  estSec: 1,  expectExit: 0 }       // 常朝 v3 纯逻辑 smoke
 ];
 
 let totalSec = 0;
@@ -63,7 +64,7 @@ for (const c of checks) {
 }
 
 // 汇总末尾 baseline 行
-console.log('\n[verify-all] 全部 4 项通过 · 总耗时 ' + totalSec.toFixed(1) + 's\n');
+console.log('\n[verify-all] 全部 5 项通过 · 总耗时 ' + totalSec.toFixed(1) + 's\n');
 for (const r of results) {
   // 抽 stdout 里关键 1 行
   const lines = (r.stdout || '').split('\n').filter(Boolean);

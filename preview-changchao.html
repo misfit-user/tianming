@@ -1,0 +1,3257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>常朝预览·早朝/朔朝原型</title>
+<style>
+:root {
+  --bg-1: #0a0907;
+  --bg-2: #16110c;
+  --bg-paper: #221c15;
+  --bg-elev: #2d251c;
+  --bg-paper-warm: #2a2118;
+  --ink-900: #f4eadd;
+  --ink-700: #d9c9a9;
+  --ink-500: #a69470;
+  --ink-300: #6b5d47;
+  --ink-200: #4d4234;
+  --ink-100: #3d342a;
+  --gold-300: #c9a85f;
+  --gold-400: #b89a53;
+  --gold-500: #9d8244;
+  --gold-600: #7e6735;
+  --gold-d: #6b5a30;
+  --vermillion-200: #e07a66;
+  --vermillion-300: #d15c47;
+  --vermillion-400: #b84738;
+  --vermillion-500: #962c1f;
+  --celadon-300: #82b099;
+  --celadon-400: #6a9a7f;
+  --celadon-600: #4a7a5f;
+  --indigo-400: #5a6fa8;
+  --indigo-600: #3e4e80;
+  --amber-300: #e0b865;
+  --amber-400: #d4a544;
+  --plum-400: #9b6694;
+  --plum-300: #b78fb1;
+  --border-subtle: rgba(184,154,83,0.15);
+  --border-strong: rgba(184,154,83,0.35);
+  --border-gold: rgba(184,154,83,0.6);
+  --shadow-gold: 0 0 12px rgba(184,154,83,0.18);
+  --shadow-vermillion: 0 0 14px rgba(184,71,56,0.25);
+  --shadow-deep: 0 8px 28px rgba(0,0,0,0.5);
+  --grad-throne: linear-gradient(180deg, rgba(184,71,56,0.18), rgba(184,71,56,0.04));
+  --grad-gold: linear-gradient(135deg, var(--gold-400), var(--gold-d));
+  --font-serif: "STKaiti", "KaiTi", "楷体", "Georgia", serif;
+  --font-song: "STSong", "SimSun", "宋体", serif;
+
+  /* 议程类型配色（v2 借鉴）*/
+  --type-routine: var(--ink-500);
+  --type-request: var(--amber-400);
+  --type-warning: var(--vermillion-300);
+  --type-emergency: var(--vermillion-400);
+  --type-personnel: var(--indigo-400);
+  --type-confrontation: var(--vermillion-500);
+  --type-joint_petition: var(--gold-300);
+  --type-personal_plea: var(--plum-400);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  background: radial-gradient(ellipse at top, #1a1510 0%, #0f0d0a 70%), var(--bg-1);
+  color: var(--ink-700);
+  font-family: var(--font-song);
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ═══ 顶部预览说明条 ═══ */
+.preview-info {
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 20px;
+  font-size: 12px;
+  color: var(--ink-500);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.preview-info b { color: var(--gold-400); }
+.preview-info .pill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  font-size: 11px;
+}
+.preview-info input[type="range"] { width: 80px; vertical-align: middle; }
+.preview-info label { color: var(--ink-700); }
+.preview-info .ctl-grp { display: inline-flex; align-items: center; gap: 4px; }
+.preview-info .toggle-btn {
+  background: var(--bg-elev);
+  color: var(--gold-400);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-song);
+}
+.preview-info .toggle-btn:hover { border-color: var(--gold-400); }
+.preview-info .toggle-btn.active { background: var(--gold-d); color: var(--ink-900); }
+
+/* ═══ 朝堂 modal ═══ */
+.cy-stage {
+  width: 92vw;
+  max-width: 1080px;
+  height: 88vh;
+  margin: 16px auto;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), var(--shadow-gold);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ═══ 标题栏 ═══ */
+.cy-titlebar {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, var(--bg-elev), var(--bg-paper));
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-serif);
+}
+.cy-titlebar .ttl {
+  font-size: 16px;
+  color: var(--gold-300);
+  letter-spacing: 0.08em;
+}
+.cy-titlebar .meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.cy-titlebar .meta .tag {
+  padding: 2px 8px;
+  background: rgba(184,154,83,0.08);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+}
+.cy-titlebar .meta button {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--ink-500);
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-song);
+  font-size: 12px;
+}
+.cy-titlebar .meta button:hover { color: var(--vermillion-300); border-color: var(--vermillion-400); }
+
+/* ═══ 班次区 ═══ */
+.cy-bench {
+  flex: 0 0 auto;
+  background: rgba(15,13,10,0.4);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: max-height 0.25s ease;
+  overflow: hidden;
+  max-height: 36px;
+}
+.cy-bench.expanded { max-height: 280px; }
+.cy-bench-header {
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.cy-bench-header:hover { color: var(--gold-400); }
+.cy-bench-header .arrow { transition: transform 0.25s; }
+.cy-bench.expanded .cy-bench-header .arrow { transform: rotate(180deg); }
+.cy-bench-body {
+  padding: 8px 16px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+}
+.cy-bench-col {
+  font-size: 11px;
+}
+.cy-bench-col-title {
+  font-family: var(--font-serif);
+  color: var(--gold-400);
+  font-size: 12px;
+  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+}
+.cy-bench-col-east .cy-bench-col-title { text-align: right; }
+.cy-bench-col-throne {
+  text-align: center;
+  font-family: var(--font-serif);
+  color: var(--vermillion-300);
+  padding: 8px 16px;
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  writing-mode: vertical-rl;
+}
+.cy-bench-officials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.cy-bench-col-east .cy-bench-officials { justify-content: flex-end; }
+.cy-bench-col-west .cy-bench-officials { justify-content: flex-start; }
+.bench-avatar {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 44px;
+}
+.bench-avatar:hover .bench-avatar-circle { border-color: var(--gold-300); }
+.bench-avatar-circle {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ink-300), var(--ink-200));
+  border: 1.5px solid var(--gold-d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--ink-900);
+  font-family: var(--font-serif);
+}
+.bench-avatar-circle.absent { opacity: 0.4; filter: grayscale(80%); }
+.bench-avatar-circle.koudao { background: linear-gradient(135deg, var(--celadon-400), var(--celadon-600, #4a7a5f)); }
+.bench-avatar-circle.wu { background: linear-gradient(135deg, var(--indigo-400), var(--indigo-600, #3e4e80)); }
+.bench-avatar-name {
+  font-size: 9px;
+  color: var(--ink-500);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.bench-avatar.absent .bench-avatar-name { color: var(--ink-300); text-decoration: line-through; }
+.kdao-row {
+  grid-column: 1 / 4;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.kdao-row .cy-bench-col-title { text-align: center; }
+.kdao-row .cy-bench-officials { justify-content: center; }
+
+/* ═══ 阶段标签 ═══ */
+.cy-phase-tag {
+  flex: 0 0 auto;
+  padding: 6px 16px;
+  background: rgba(184,154,83,0.06);
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  color: var(--gold-400);
+  letter-spacing: 0.15em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cy-phase-tag .progress {
+  font-size: 11px;
+  color: var(--ink-500);
+  font-family: var(--font-song);
+  letter-spacing: normal;
+}
+
+/* ═══ 主舞台 ═══ */
+.cy-stage-main {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 24px;
+  background: var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0, transparent 2.5em,
+      rgba(107, 93, 71, 0.04) 2.5em, rgba(107, 93, 71, 0.04) calc(2.5em + 1px));
+}
+.cy-stage-main::-webkit-scrollbar { width: 6px; }
+.cy-stage-main::-webkit-scrollbar-track { background: transparent; }
+.cy-stage-main::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 3px; }
+
+/* ═══ 气泡 ═══ */
+.cy-bubble-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  animation: bubbleFadeIn 0.35s ease;
+}
+@keyframes bubbleFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.cy-bubble-row.system {
+  justify-content: center;
+}
+.cy-bubble-row.player {
+  justify-content: flex-end;
+}
+.cy-bubble-avatar {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ink-300), var(--ink-200));
+  border: 1.5px solid var(--gold-d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: var(--ink-900);
+  font-family: var(--font-serif);
+}
+.cy-bubble-avatar.koudao { background: linear-gradient(135deg, var(--celadon-400), var(--celadon-600, #4a7a5f)); }
+.cy-bubble-avatar.wu { background: linear-gradient(135deg, var(--indigo-400), var(--indigo-600, #3e4e80)); }
+.cy-bubble-content {
+  flex: 1;
+  min-width: 0;
+  max-width: 78%;
+}
+.cy-bubble-meta {
+  font-size: 11px;
+  color: var(--gold-400);
+  margin-bottom: 3px;
+  font-family: var(--font-serif);
+}
+.cy-bubble-meta .stance {
+  display: inline-block;
+  font-size: 10px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-family: var(--font-song);
+}
+.stance-support { background: rgba(106,154,127,0.18); color: var(--celadon-400); }
+.stance-oppose { background: rgba(184,71,56,0.18); color: var(--vermillion-300); }
+.stance-neutral { background: rgba(184,154,83,0.18); color: var(--gold-400); }
+.stance-mediate { background: rgba(212,165,68,0.18); color: var(--amber-400); }
+.cy-bubble-text {
+  background: var(--bg-elev);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px 10px 10px 10px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-700);
+  font-family: var(--font-song);
+}
+.cy-bubble-text.detail {
+  background: linear-gradient(180deg, rgba(184,154,83,0.06), var(--bg-elev));
+  font-family: var(--font-serif);
+  text-indent: 2em;
+}
+.cy-bubble-text.urgent {
+  border-left: 3px solid var(--vermillion-400);
+}
+.cy-bubble-text .urg-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  background: rgba(231,76,60,0.18);
+  color: var(--vermillion-300);
+  font-size: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.cy-bubble-row.system .cy-bubble-text {
+  background: transparent;
+  border: none;
+  color: var(--ink-500);
+  font-style: italic;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 0;
+  padding: 4px 10px;
+}
+.cy-bubble-row.player .cy-bubble-text {
+  background: rgba(184,154,83,0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--gold-300);
+  border-radius: 10px 3px 3px 10px;
+}
+.cy-bubble-row.player .cy-bubble-meta {
+  text-align: right;
+  color: var(--vermillion-300);
+}
+
+/* ═══ 决断按钮区 ═══ */
+.cy-action-bar {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  position: relative;
+}
+.cy-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-700);
+  padding: 6px 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  transition: all 0.15s;
+}
+.cy-btn:hover {
+  border-color: var(--gold-400);
+  color: var(--gold-300);
+  box-shadow: 0 0 8px rgba(184,154,83,0.15);
+}
+.cy-btn.primary {
+  background: linear-gradient(180deg, var(--gold-d), var(--gold-500));
+  color: var(--ink-900);
+  border-color: var(--gold-400);
+}
+.cy-btn.primary:hover { background: linear-gradient(180deg, var(--gold-500), var(--gold-400)); }
+.cy-btn.danger {
+  border-color: var(--vermillion-400);
+  color: var(--vermillion-300);
+}
+.cy-btn.danger:hover { background: rgba(184,71,56,0.15); box-shadow: 0 0 8px rgba(184,71,56,0.2); }
+.cy-btn.muted {
+  border-color: var(--ink-300);
+  color: var(--ink-500);
+}
+.cy-btn.muted:hover { color: var(--ink-700); border-color: var(--ink-200); }
+.cy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.cy-btn:disabled:hover {
+  border-color: var(--border-strong);
+  color: var(--ink-700);
+  box-shadow: none;
+}
+
+/* ═══ 输入条 ═══ */
+.cy-input-row {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cy-input {
+  flex: 1;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 6px 10px;
+  color: var(--ink-700);
+  font-size: 13px;
+  font-family: var(--font-song);
+}
+.cy-input:focus { outline: none; border-color: var(--gold-400); }
+
+/* ═══ 弹层（更多/金口） ═══ */
+.cy-popover {
+  position: absolute;
+  bottom: 60px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  padding: 6px;
+  z-index: 10;
+  min-width: 220px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+.cy-popover.show { display: flex; }
+.cy-popover-item {
+  background: transparent;
+  border: none;
+  color: var(--ink-700);
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-song);
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.cy-popover-item:hover { background: rgba(184,154,83,0.12); color: var(--gold-300); }
+.cy-popover-item .hint {
+  font-size: 10px;
+  color: var(--ink-500);
+}
+.cy-popover-item .stance-mediate { font-size: 10px; padding: 0 5px; }
+.cy-popover-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+
+/* ═══ 朝会总结面板 ═══ */
+.cy-summary-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,13,10,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: maskIn 0.3s ease;
+}
+@keyframes maskIn { from { opacity: 0; } to { opacity: 1; } }
+.cy-summary-card {
+  width: min(560px, 86vw);
+  background: var(--bg-paper);
+  border: 1px solid var(--gold-400);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.6), 0 0 24px rgba(184,154,83,0.2);
+  border-radius: 6px;
+  padding: 24px 28px;
+  font-family: var(--font-serif);
+  text-align: center;
+}
+.cy-summary-card h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: var(--gold-300);
+  letter-spacing: 0.2em;
+  font-weight: normal;
+}
+.cy-summary-tally {
+  font-size: 13px;
+  color: var(--ink-700);
+  line-height: 2;
+  text-align: left;
+  background: rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  border-radius: 3px;
+  margin: 12px 0;
+  font-family: var(--font-song);
+}
+.cy-summary-tally strong { color: var(--gold-400); margin-right: 6px; }
+.cy-summary-card .skip-row {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin: 12px 0 16px;
+  text-align: left;
+  font-family: var(--font-song);
+}
+.cy-summary-card .skip-row input { vertical-align: middle; margin-right: 4px; }
+.cy-summary-card .actions { display: flex; justify-content: center; gap: 12px; }
+
+/* ═══ 开场仪式遮罩 ═══ */
+.cy-ceremony {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,13,10,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 30;
+  font-family: var(--font-serif);
+}
+.cy-ceremony h1 {
+  font-size: 36px;
+  color: var(--gold-300);
+  letter-spacing: 0.4em;
+  margin: 0 0 20px;
+  opacity: 0;
+  animation: cTitleIn 1.5s ease forwards;
+}
+@keyframes cTitleIn {
+  0% { opacity: 0; letter-spacing: 0.6em; }
+  100% { opacity: 1; letter-spacing: 0.4em; }
+}
+.cy-ceremony .sub {
+  font-size: 14px;
+  color: var(--ink-500);
+  letter-spacing: 0.2em;
+  opacity: 0;
+  animation: cSubIn 1s ease 0.5s forwards;
+}
+@keyframes cSubIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+.cy-ceremony .bell {
+  margin-top: 28px;
+  font-size: 24px;
+  color: var(--vermillion-300);
+  letter-spacing: 0.6em;
+  opacity: 0;
+  animation: cBellIn 1.5s ease 1.2s forwards;
+}
+@keyframes cBellIn {
+  0% { opacity: 0; transform: scale(1.5); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* 档位预测样式 */
+.tier-preview {
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  margin: 4px 0;
+  background: rgba(184,154,83,0.08);
+  border-left: 3px solid var(--gold-400);
+  color: var(--ink-700);
+  line-height: 1.6;
+}
+.tier-preview.tier-S { border-left-color: var(--celadon-400); }
+.tier-preview.tier-A { border-left-color: var(--gold-400); }
+.tier-preview.tier-B { border-left-color: var(--amber-400); }
+.tier-preview.tier-C { border-left-color: var(--vermillion-300); }
+.tier-preview.tier-D { border-left-color: var(--vermillion-400); background: rgba(184,71,56,0.12); }
+
+/* 输入框模态弹层（改批 / 追问 / 训问 等） */
+.cy-input-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,13,10,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+}
+.cy-input-modal-card {
+  width: min(420px, 80vw);
+  background: var(--bg-elev);
+  border: 1px solid var(--gold-400);
+  border-radius: 4px;
+  padding: 16px 20px;
+  font-family: var(--font-song);
+}
+.cy-input-modal-card h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--gold-300);
+  font-family: var(--font-serif);
+  letter-spacing: 0.1em;
+}
+.cy-input-modal-card .hint {
+  font-size: 11px;
+  color: var(--ink-500);
+  margin-bottom: 8px;
+}
+.cy-input-modal-card textarea, .cy-input-modal-card input, .cy-input-modal-card select {
+  width: 100%;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 6px 8px;
+  color: var(--ink-700);
+  font-family: var(--font-song);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.cy-input-modal-card textarea { resize: vertical; min-height: 70px; }
+.cy-input-modal-card .row { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ═══════════════════════════════════════════════
+ * 视觉升级层 · v2 借鉴 + 场景丰富
+ * ═══════════════════════════════════════════════ */
+
+/* 朝堂 modal·更深的纹理感 */
+.cy-stage {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(184,71,56,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(184,154,83,0.04) 0%, transparent 60%),
+    var(--bg-paper);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0, transparent 32px,
+      rgba(107,93,71,0.018) 32px, rgba(107,93,71,0.018) calc(32px + 1px));
+}
+
+/* 标题栏·御座暖光 */
+.cy-titlebar {
+  background:
+    linear-gradient(180deg, rgba(184,71,56,0.06), transparent 50%),
+    linear-gradient(180deg, var(--bg-elev), var(--bg-paper));
+  border-bottom: 1px solid var(--border-gold);
+  position: relative;
+}
+.cy-titlebar::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-400) 20%, var(--vermillion-300) 50%, var(--gold-400) 80%, transparent);
+  opacity: 0.4;
+}
+.cy-titlebar .ttl {
+  text-shadow: 0 0 18px rgba(201,168,95,0.2);
+}
+
+/* 班次区·更精致的分区 */
+.cy-bench {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.32));
+}
+.cy-bench-col-throne {
+  background: var(--grad-throne);
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(184,71,56,0.4);
+  border-radius: 0;
+}
+.bench-avatar-circle {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: all 0.18s ease;
+}
+.bench-avatar:hover .bench-avatar-circle {
+  transform: translateY(-1px) scale(1.08);
+  box-shadow: 0 2px 8px rgba(184,154,83,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+/* 阶段标签·肃朝时换青色 */
+.cy-phase-tag {
+  background:
+    linear-gradient(180deg, rgba(184,154,83,0.1), rgba(184,154,83,0.04));
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 18px;
+  font-weight: bold;
+}
+.cy-phase-tag.strict {
+  background:
+    linear-gradient(180deg, rgba(106,154,127,0.12), rgba(106,154,127,0.04));
+  border-bottom-color: rgba(106,154,127,0.3);
+}
+.cy-phase-tag.strict #cy-phase-label { color: var(--celadon-300); }
+.cy-phase-tag.urgent {
+  background:
+    linear-gradient(180deg, rgba(184,71,56,0.15), rgba(184,71,56,0.04));
+  border-bottom-color: rgba(184,71,56,0.35);
+  animation: urgentPulse 2.4s ease-in-out infinite;
+}
+.cy-phase-tag.urgent #cy-phase-label { color: var(--vermillion-200); }
+@keyframes urgentPulse {
+  0%, 100% { box-shadow: inset 0 -1px 0 0 rgba(184,71,56,0.2); }
+  50% { box-shadow: inset 0 -1px 0 0 rgba(184,71,56,0.5); }
+}
+
+/* 主舞台纹理升级·宣纸更厚重 */
+.cy-stage-main {
+  background:
+    radial-gradient(ellipse at top, rgba(184,154,83,0.025) 0%, transparent 60%),
+    var(--bg-paper-warm);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0, transparent 2.5em,
+      rgba(107,93,71,0.04) 2.5em, rgba(107,93,71,0.04) calc(2.5em + 1px)),
+    repeating-linear-gradient(0deg, transparent 0, transparent 3em,
+      rgba(107,93,71,0.025) 3em, rgba(107,93,71,0.025) calc(3em + 1px));
+}
+
+/* 议程类型色条 - 详述气泡左侧条 */
+.cy-bubble-text.detail.type-routine    { border-left: 3px solid var(--type-routine); }
+.cy-bubble-text.detail.type-request    { border-left: 3px solid var(--type-request); }
+.cy-bubble-text.detail.type-warning    { border-left: 3px solid var(--type-warning); }
+.cy-bubble-text.detail.type-emergency  { border-left: 3px solid var(--type-emergency); box-shadow: -2px 0 8px rgba(184,71,56,0.2); }
+.cy-bubble-text.detail.type-personnel  { border-left: 3px solid var(--type-personnel); }
+.cy-bubble-text.detail.type-confrontation { border-left: 3px solid var(--type-confrontation); box-shadow: -2px 0 6px rgba(150,44,31,0.18); }
+.cy-bubble-text.detail.type-joint_petition { border-left: 3px solid var(--type-joint_petition); }
+.cy-bubble-text.detail.type-personal_plea  { border-left: 3px solid var(--type-personal_plea); }
+
+/* type 标签 - 启奏阶段显示在名牌旁 */
+.type-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 9px;
+  margin-left: 6px;
+  letter-spacing: 0.05em;
+  font-family: var(--font-song);
+  border: 1px solid currentColor;
+  vertical-align: middle;
+}
+.type-badge.t-routine    { color: var(--type-routine); }
+.type-badge.t-request    { color: var(--type-request); }
+.type-badge.t-warning    { color: var(--type-warning); }
+.type-badge.t-emergency  { color: var(--type-emergency); background: rgba(184,71,56,0.12); animation: tBadgeBlink 1.5s ease-in-out infinite; }
+.type-badge.t-personnel  { color: var(--type-personnel); }
+.type-badge.t-confrontation { color: var(--type-confrontation); background: rgba(150,44,31,0.1); }
+.type-badge.t-joint_petition { color: var(--type-joint_petition); }
+.type-badge.t-personal_plea  { color: var(--type-personal_plea); }
+@keyframes tBadgeBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* 殿中喧哗 - 整 modal 红雾 */
+.cy-stage.chaos::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(184,71,56,0.08), transparent 70%);
+  pointer-events: none;
+  animation: chaosFlicker 2.2s ease-in-out infinite;
+}
+@keyframes chaosFlicker {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* 系统气泡按种类细分 */
+.cy-bubble-row.system .cy-bubble-text.ceremony {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--gold-300);
+  letter-spacing: 0.15em;
+  font-style: normal;
+  text-shadow: 0 0 8px rgba(201,168,95,0.2);
+  padding: 6px 12px;
+}
+.cy-bubble-row.system .cy-bubble-text.warn {
+  color: var(--vermillion-300);
+  font-style: normal;
+  font-weight: bold;
+}
+.cy-bubble-row.system .cy-bubble-text.success {
+  color: var(--celadon-400);
+  font-style: normal;
+}
+
+/* 鸣鞭三响视觉化 */
+.bell-ring {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 28px;
+  color: var(--vermillion-300);
+  letter-spacing: 0.4em;
+  margin: 14px 0;
+}
+.bell-ring span {
+  display: inline-block;
+  opacity: 0;
+  animation: bellRing 0.7s ease forwards;
+}
+.bell-ring span:nth-child(1) { animation-delay: 0s; }
+.bell-ring span:nth-child(2) { animation-delay: 0.25s; }
+.bell-ring span:nth-child(3) { animation-delay: 0.5s; }
+@keyframes bellRing {
+  0%   { opacity: 0; transform: scale(2.5) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(1) rotate(0deg); text-shadow: 0 0 24px var(--vermillion-300); }
+  100% { opacity: 0.7; transform: scale(1) rotate(0deg); text-shadow: 0 0 0 transparent; }
+}
+
+/* 山呼万岁的震动 */
+.cheer-line {
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  letter-spacing: 0.3em;
+  color: var(--gold-400);
+  padding: 8px;
+  animation: cheerShake 0.6s ease;
+  text-shadow: 0 0 12px rgba(184,154,83,0.4);
+}
+@keyframes cheerShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+/* 缺朝名册 */
+.absent-roster {
+  background: linear-gradient(180deg, rgba(0,0,0,0.2), transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 6px auto 10px;
+  max-width: 78%;
+  font-size: 12px;
+  color: var(--ink-500);
+  font-style: italic;
+  line-height: 1.7;
+}
+.absent-roster .lbl {
+  color: var(--ink-300);
+  font-style: normal;
+  margin-right: 6px;
+}
+.absent-roster .name {
+  color: var(--ink-700);
+  font-style: normal;
+  font-family: var(--font-serif);
+  margin: 0 4px;
+}
+
+/* 急奏卡片 */
+.urgent-card {
+  background: linear-gradient(180deg, rgba(184,71,56,0.18), rgba(184,71,56,0.06));
+  border: 1px solid var(--vermillion-400);
+  border-left: 4px solid var(--vermillion-300);
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin: 8px 4px 12px;
+  animation: urgentSlide 0.4s ease;
+  box-shadow: var(--shadow-vermillion);
+}
+@keyframes urgentSlide {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: none; }
+}
+.urgent-card .urgent-mark {
+  display: inline-block;
+  background: var(--vermillion-400);
+  color: var(--ink-900);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 8px;
+  letter-spacing: 0.1em;
+  animation: urgentBlink 1.2s ease infinite;
+}
+@keyframes urgentBlink {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,71,56,0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(184,71,56,0); }
+}
+.urgent-card .urgent-text {
+  color: var(--vermillion-200);
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* 严斥结局视觉差异 */
+.reprimand-outcome {
+  margin: 6px auto;
+  max-width: 78%;
+  padding: 8px 12px;
+  border-left: 3px solid;
+  border-radius: 0 3px 3px 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+  font-family: var(--font-serif);
+  background: linear-gradient(90deg, rgba(0,0,0,0.18), transparent);
+}
+.reprimand-outcome.public_submit  { border-color: var(--celadon-400); color: var(--celadon-300); }
+.reprimand-outcome.secret_resent  { border-color: var(--ink-300); color: var(--ink-500); font-style: italic; }
+.reprimand-outcome.resign_request { border-color: var(--gold-400); color: var(--gold-300); }
+.reprimand-outcome.secret_plot    { border-color: var(--vermillion-400); color: var(--vermillion-300); font-style: italic; }
+.reprimand-outcome.public_refute  { border-color: var(--vermillion-500); color: var(--vermillion-200); font-weight: bold; }
+
+/* 抗辩面板 */
+.dissent-panel {
+  background: linear-gradient(180deg, rgba(184,71,56,0.06), transparent);
+  border-top: 2px dashed var(--vermillion-400);
+  border-bottom: 2px dashed var(--vermillion-400);
+  margin: 14px 0;
+  padding: 10px 0;
+}
+.dissent-panel-title {
+  text-align: center;
+  font-family: var(--font-serif);
+  color: var(--vermillion-300);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+}
+
+/* 决断按钮区·肃朝/众言不同 */
+.cy-action-bar {
+  background:
+    linear-gradient(180deg, var(--bg-2) 0%, rgba(0,0,0,0.2) 100%);
+  border-top: 1px solid var(--border-strong);
+}
+
+.cy-btn {
+  font-family: var(--font-serif);
+  letter-spacing: 0.1em;
+  position: relative;
+  overflow: hidden;
+}
+.cy-btn:hover {
+  transform: translateY(-1px);
+}
+.cy-btn:active {
+  transform: translateY(0);
+}
+.cy-btn.primary {
+  background:
+    linear-gradient(180deg, var(--gold-400), var(--gold-d) 60%, var(--gold-600));
+  color: #1a1410;
+  font-weight: bold;
+  text-shadow: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.cy-btn.primary:hover {
+  background:
+    linear-gradient(180deg, var(--gold-300), var(--gold-400) 60%, var(--gold-500));
+  box-shadow: 0 2px 8px rgba(184,154,83,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+/* 退朝总结面板 */
+.cy-summary-card {
+  border: 1px solid var(--gold-400);
+  background:
+    radial-gradient(ellipse at top, rgba(184,154,83,0.06), transparent 70%),
+    var(--bg-paper);
+  box-shadow: var(--shadow-deep), 0 0 32px rgba(184,154,83,0.12);
+}
+.cy-summary-card h2 {
+  position: relative;
+  padding-bottom: 12px;
+}
+.cy-summary-card h2::after {
+  content: ''; position: absolute; left: 30%; right: 30%; bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-400), transparent);
+}
+.cy-summary-tally {
+  background:
+    linear-gradient(180deg, rgba(184,154,83,0.04), rgba(0,0,0,0.18));
+  border: 1px solid var(--border-subtle);
+}
+.tally-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 8px;
+  margin: 0 4px;
+  font-size: 12px;
+  font-family: var(--font-song);
+  border: 1px solid currentColor;
+}
+.tally-approve { color: var(--celadon-400); }
+.tally-reject  { color: var(--vermillion-300); }
+.tally-hold    { color: var(--gold-400); }
+.tally-other   { color: var(--ink-500); }
+
+/* 朝威标签更明显 */
+#court-mode-tag {
+  font-family: var(--font-serif);
+  letter-spacing: 0.15em;
+  font-weight: bold;
+  border: 1px solid currentColor;
+}
+
+/* 时辰指示 */
+.time-of-day {
+  position: absolute;
+  top: 50%; right: 18px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--ink-300);
+  font-style: italic;
+  pointer-events: none;
+  font-family: var(--font-song);
+}
+
+/* 议论第 N 轮分隔线·更精致 */
+.round-divider {
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  color: var(--gold-400);
+  letter-spacing: 0.3em;
+  margin: 16px 0 10px;
+  position: relative;
+}
+.round-divider::before, .round-divider::after {
+  content: ''; position: absolute; top: 50%; width: 28%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+.round-divider::before { left: 8%; }
+.round-divider::after  { right: 8%; }
+
+/* 玩家气泡更突出 */
+.cy-bubble-row.player .cy-bubble-text {
+  background: linear-gradient(135deg, rgba(184,154,83,0.18), rgba(184,154,83,0.08));
+  box-shadow: 0 1px 6px rgba(184,154,83,0.18);
+  font-family: var(--font-serif);
+}
+.cy-bubble-row.player .cy-bubble-meta {
+  font-family: var(--font-serif);
+  letter-spacing: 0.2em;
+  font-size: 12px;
+}
+
+/* NPC 详述气泡更书卷气 */
+.cy-bubble-text.detail {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(184,154,83,0.08), rgba(184,154,83,0.02)),
+    var(--bg-elev);
+  font-family: var(--font-serif);
+  text-indent: 2em;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-deep);
+}
+
+</style>
+</head>
+<body>
+
+<div class="preview-info">
+  <span><b>常朝预览·原型</b> · NPC 回应玩家自由话语可接真 AI（OpenAI 兼容协议）</span>
+  <span class="ctl-grp">
+    模式
+    <button class="toggle-btn active" id="mode-changchao">早朝</button>
+    <button class="toggle-btn" id="mode-shuochao">朔朝</button>
+  </span>
+  <span class="ctl-grp">
+    皇威 <input type="range" id="prestige-slider" min="0" max="100" value="55" />
+    <span id="prestige-val">55</span>
+  </span>
+  <span class="ctl-grp">
+    皇权 <input type="range" id="power-slider" min="0" max="100" value="60" />
+    <span id="power-val">60</span>
+  </span>
+  <span class="ctl-grp">
+    <span id="court-mode-tag" style="font-size:11px;padding:2px 8px;background:rgba(184,154,83,0.12);color:var(--gold-400);border-radius:10px;">众言</span>
+  </span>
+  <span class="ctl-grp">
+    <label style="cursor:pointer;"><input type="checkbox" id="ai-enabled-cb" /> ✨ AI 增强</label>
+    <button class="toggle-btn" id="ai-config-btn">🔑 配置</button>
+    <span id="ai-status" style="font-size:11px;color:var(--ink-300);"></span>
+  </span>
+  <button class="toggle-btn" id="restart-btn">↻ 重启</button>
+</div>
+
+<div class="cy-stage" id="cy-stage">
+
+  <!-- 开场仪式遮罩 -->
+  <div class="cy-ceremony" id="cy-ceremony">
+    <h1 id="cy-ceremony-title">〔 早 朝 〕</h1>
+    <div class="sub">奉天门 · 五更三点 · 戊辰年三月十二</div>
+    <div class="bell">铮 ── 铮 ── 铮 ──</div>
+  </div>
+
+  <!-- 标题栏 -->
+  <div class="cy-titlebar">
+    <div class="ttl" id="cy-title">〔 早 朝 〕奉天门 · 五更三点</div>
+    <div class="meta">
+      <span class="tag" id="cy-progress-tag">已议 0</span>
+      <span class="tag" id="cy-attend-tag">殿中 31</span>
+      <button id="cy-interrupt-btn">⏸ 打断</button>
+      <button id="cy-exit-btn">✕ 退朝</button>
+    </div>
+  </div>
+
+  <!-- 班次区 -->
+  <div class="cy-bench" id="cy-bench">
+    <div class="cy-bench-header" id="cy-bench-header">
+      <span id="cy-bench-status">朝堂全景 · 31 员到 · 6 缺</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="cy-bench-body">
+      <div class="cy-bench-col cy-bench-col-east">
+        <div class="cy-bench-col-title">文 东 班</div>
+        <div class="cy-bench-officials" id="bench-east"></div>
+      </div>
+      <div class="cy-bench-col-throne">御 座</div>
+      <div class="cy-bench-col cy-bench-col-west">
+        <div class="cy-bench-col-title">武 西 班</div>
+        <div class="cy-bench-officials" id="bench-west"></div>
+      </div>
+      <div class="kdao-row">
+        <div class="cy-bench-col-title">科 道 言 官</div>
+        <div class="cy-bench-officials" id="bench-kdao"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 阶段标签 -->
+  <div class="cy-phase-tag">
+    <span id="cy-phase-label">【鸣 鞭】</span>
+    <span class="progress" id="cy-phase-hint">百官入班候旨</span>
+  </div>
+
+  <!-- 主舞台 -->
+  <div class="cy-stage-main" id="cy-stage-main"></div>
+
+  <!-- 决断按钮区 -->
+  <div class="cy-action-bar" id="cy-action-bar"></div>
+
+  <!-- 输入条·主控通道 -->
+  <div class="cy-input-row">
+    <input type="text" class="cy-input" id="cy-player-input" placeholder="陛下欲言…… 直接打字按 Enter 即可（准/驳/留/廷议 等关键词自动触发）" />
+    <button class="cy-btn muted" id="cy-jinkou-btn">▼ 金口</button>
+    <button class="cy-btn danger" id="cy-interrupt-input">⏸ 噤声</button>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════
+// 数据·朝堂角色（mock·明末崇祯朝实在臣）
+// ═══════════════════════════════════════════════
+const CHARS = {
+  '韩爌':     { title: '内阁首辅',     rank: 1, faction: '东林', class: 'east', initial: '韩' },
+  '毕自严':   { title: '户部尚书',     rank: 2, faction: '中立', class: 'east', initial: '毕' },
+  '王永光':   { title: '吏部尚书',     rank: 2, faction: '阉党残余', class: 'east', initial: '王' },
+  '王在晋':   { title: '兵部尚书',     rank: 2, faction: '中立', class: 'east', initial: '在' },
+  '钱龙锡':   { title: '礼部尚书',     rank: 2, faction: '东林', class: 'east', initial: '钱' },
+  '温体仁':   { title: '礼部侍郎',     rank: 3, faction: '阉党残余', class: 'east', initial: '温' },
+  '朱国祚':   { title: '工部尚书',     rank: 2, faction: '中立', class: 'east', initial: '朱' },
+  '黄宗周':   { title: '都察院御史',   rank: 4, faction: '东林', class: 'kdao', initial: '宗' },
+  '黄景昉':   { title: '都察院御史',   rank: 5, faction: '东林', class: 'kdao', initial: '景' },
+  '倪元璐':   { title: '吏科给事中',   rank: 6, faction: '东林', class: 'kdao', initial: '倪' },
+  '满桂':     { title: '前军都督',     rank: 2, faction: '军方', class: 'wu',   initial: '满' },
+  '李辅明':   { title: '副将',         rank: 3, faction: '军方', class: 'wu',   initial: '辅' },
+  '袁崇焕':   { title: '辽东督师',     rank: 2, faction: '中立', class: 'east', initial: '袁', absent: '远赴辽东' },
+  '卢象升':   { title: '大名知府',     rank: 4, faction: '清流', class: 'east', initial: '卢', absent: '远赴大名' }
+};
+
+// ═══════════════════════════════════════════════
+// 数据·议程（mock·7 条·涵盖各类型）
+// ═══════════════════════════════════════════════
+const AGENDA = [
+  {
+    id: 'a1',
+    presenter: '毕自严',
+    dept: '户部',
+    type: 'request',
+    urgency: 'normal',
+    title: '陕西大旱赈灾银',
+    announceLine: '臣户部尚书有西北赈灾事启奏。',
+    detail: '臣谨奏：今岁陕西大旱，秋收无望，宁夏卫秋粮欠三十八万石，延绥镇缺饷十二万两。陕境已有饥民流徙之报，恐成大患。恳请陛下圣裁——或动太仓加发，或令地方加征，臣部不敢专擅。伏惟圣意。',
+    controversial: 7,
+    importance: 8,
+    relatedDepts: ['兵部', '工部'],
+    selfReact: [
+      { name: '王在晋', stance: 'neutral',  line: '户部之难臣亦知之，然兵部已苦三月，望陛下统筹。' },
+      { name: '倪元璐', stance: 'support',  line: '陕西饥情甚重，臣以言官身份附议救济，刻不容缓。' },
+      { name: '朱国祚', stance: 'neutral',  line: '工部今春黄河防汛亦需款，望陛下统筹支度。' }
+    ],
+    debate: [
+      { name: '王永光', stance: 'oppose',  line: '太仓存银已紧，边饷在即，赈灾银若发数十万，则九边之饷何所出？臣以为不可轻动。' },
+      { name: '温体仁', stance: 'support', line: '陕西饥民已动，若不赈则民变在即。宁夏延绥更要紧，边镇兵粮一日不可缺。' },
+      { name: '韩爌',   stance: 'mediate', line: '臣以为可两全：太仓发二十万救陕急，令河南山西就近调粮济边，或可解一时。' },
+      { name: '黄宗周', stance: 'oppose',  line: '近闻陕西多有官吏侵渔赈款，若不严查，恐难惠民，徒费国帑。' },
+      { name: '黄景昉', stance: 'support', line: '臣愿往陕西督赈，誓使每一两银皆到饥民之口。' },
+      { name: '满桂',   stance: 'neutral', line: '末将身在边镇，军中难支，然民为根本，此事诚两难。' }
+    ],
+    debate2: [
+      { name: '韩爌',   stance: 'mediate', line: '臣再思之，或可发太仓十五，令晋豫各借十二，共四十万分摊，三省同担其难。' },
+      { name: '王永光', stance: 'oppose',  line: '如此分摊仍占边饷半数，若不严令地方不可挪用，恐再生空饷之弊。' },
+      { name: '黄宗周', stance: 'oppose',  line: '臣坚持——不查贪官，赈款必空。臣愿请缇骑往陕西密查，与赈银同行。' },
+      { name: '温体仁', stance: 'support', line: '诸臣议而不决，民已饥死。陛下当机立断，非常之时行非常之事。' }
+    ]
+  },
+  {
+    id: 'a2',
+    presenter: '王在晋',
+    dept: '兵部',
+    type: 'emergency',
+    urgency: 'urgent',
+    title: '辽东蓟饷急奏',
+    announceLine: '臣兵部尚书有辽东军饷急奏，事关边镇生死。',
+    detail: '臣闻辽东、蓟镇粮草已罄，袁崇焕飞章告急曰「再无饷十日，将士哗变」。恳请陛下即拨太仓五十万两运送辽东，迟则恐生变。臣部不敢隐瞒，伏乞速断。',
+    controversial: 4,
+    importance: 9,
+    selfReact: [
+      { name: '毕自严', stance: 'oppose',  line: '太仓存银仅余八十万，若一次发五十万，恐难支半年。' },
+      { name: '倪元璐', stance: 'support', line: '边镇兵粮一日不可缺，袁督师飞章必有实情。' }
+    ],
+    debate: [
+      { name: '韩爌',   stance: 'mediate', line: '急递可发，然太仓五十万恐难筹，或可分批：二十万先发，余者按月续解。' },
+      { name: '满桂',   stance: 'support', line: '辽东确实难支，若饷不至，将士哗变。臣愿亲领赍银前往，以安军心。' },
+      { name: '毕自严', stance: 'oppose',  line: '陛下，五十万确为急，然不可一次发尽。臣建议二十发，二十借户工二部，十留以备。' },
+      { name: '黄景昉', stance: 'support', line: '边镇生死，岂可吝惜？请陛下毅然决断。' }
+    ],
+    debate2: [
+      { name: '王永光', stance: 'oppose',  line: '既要统筹，当与西北赈灾事一并定，不可单议辽东。' },
+      { name: '满桂',   stance: 'support', line: '前线再迟一日，则人心散一日。臣以微臣愚见，当下罚先，后议数额。' },
+      { name: '韩爌',   stance: 'mediate', line: '陛下若准，当先批二十万，并令袁督师入京一询，确知缺额而后续解。' }
+    ]
+  },
+  {
+    id: 'a3',
+    presenter: '钱龙锡',
+    dept: '礼部',
+    type: 'routine',
+    urgency: 'normal',
+    title: '会试主考人选',
+    announceLine: '臣礼部尚书有会试主考事请旨。',
+    detail: '今春会试，按例当议定主考。臣部拟请韩首辅或王侍郎主之，副主考二人在阁臣中遴选。考试之期定于三月二十，伏候圣裁。',
+    controversial: 3,
+    importance: 5,
+    selfReact: [
+      { name: '韩爌',   stance: 'mediate', line: '臣老朽，不敢再当此重任，宜在阁臣中遴选稍年富者主之。' },
+      { name: '王永光', stance: 'support', line: '按例当首辅主之，韩相不必谦辞。' },
+      { name: '温体仁', stance: 'support', line: '臣举荐李侍郎，其人公正稳健，足堪此任。' },
+      { name: '黄宗周', stance: 'oppose',  line: '温侍郎所举又是其门生故吏，乞陛下察。' }
+    ]
+  },
+  {
+    id: 'a4',
+    presenter: '黄景昉',
+    dept: '都察院',
+    type: 'confrontation',
+    urgency: 'normal',
+    title: '弹劾礼部侍郎温体仁',
+    target: '温体仁',
+    announceLine: '臣御史黄景昉有弹劾事启奏，请陛下察纳。',
+    detail: '臣劾礼部侍郎温体仁结党营私：近年凡其所举荐入礼部、翰林院者，皆其门生故吏。又近闻其与魏阉余党有书信往来，乞陛下察奸佞，明正典刑。臣具有名册一卷，伏望陛下御览。',
+    controversial: 9,
+    importance: 7,
+    selfReact: [
+      { name: '倪元璐', stance: 'support', line: '臣科道一员，亦有所闻，确有此情，附议黄御史。' },
+      { name: '韩爌',   stance: 'mediate', line: '事关大臣，宜慎重而行，下三法司密勘，不宜当庭决断。' },
+      { name: '王永光', stance: 'support', line: '礼部新进多其门生，确不寻常，臣附议彻查。' }
+    ],
+    debate: [
+      { name: '温体仁', stance: 'oppose',  line: '黄御史所言全为子虚乌有！臣自入仕以来，惟知奉公，岂有结党？乞陛下明察，臣愿与黄御史当庭对质。' },
+      { name: '韩爌',   stance: 'mediate', line: '此事重大，若骤然处分恐伤大体。臣以为宜下廷议，三法司勘问，方可服众。' },
+      { name: '黄景昉', stance: 'oppose',  line: '臣有名册可证，决非妄言！若非陛下明察，奸佞何日可除？' },
+      { name: '王永光', stance: 'support', line: '礼部近年举荐确多温侍郎门生，若属实，当严查。臣附议。' },
+      { name: '倪元璐', stance: 'oppose',  line: '温侍郎与魏阉余党往来事，臣亦有书证，乞陛下察。' },
+      { name: '毕自严', stance: 'mediate', line: '若属实，情节恐非小可。先令温侍郎自陈，再议处分。' }
+    ],
+    debate2: [
+      { name: '温体仁', stance: 'oppose',  line: '臣愿先自请罢礼部侍郎，以避嫌闲住，待勘问明白再复职。如此可不致中伤臣节。' },
+      { name: '黄景昉', stance: 'oppose',  line: '温侍郎此举恰证有鬼！请陛下勿为巧言所惑。' },
+      { name: '韩爌',   stance: 'mediate', line: '臣以为温侍郎自陈避嫌可纳，勘问期间令其闲住，三月后视情决断。' },
+      { name: '黄宗周', stance: 'support', line: '臣愿与黄景昉同任查办，誓除奸佞，以谢天下。' }
+    ]
+  },
+  {
+    id: 'a5',
+    presenter: '朱国祚',
+    dept: '工部',
+    type: 'warning',
+    urgency: 'normal',
+    title: '黄河春汛预警',
+    announceLine: '臣工部尚书有黄河春汛事启奏。',
+    detail: '今岁春融早至，黄河水势暴涨，开封府堤防告急。臣部已饬地方加固堤工，恳请陛下加拨工料三万两、徭役五千人，以备万一。若堤决，则河南半省漂没。',
+    controversial: 4,
+    importance: 7,
+    selfReact: [
+      { name: '毕自严', stance: 'oppose',  line: '工部所议三万两，当从工部本预算调度，不当再加请。' },
+      { name: '满桂',   stance: 'neutral', line: '河南若漂没，黄淮一带防御亦受波及，臣以兵家言，可虑。' },
+      { name: '倪元璐', stance: 'support', line: '民为根本，堤防钱不可省，三万两实为小数。' }
+    ],
+    debate: [
+      { name: '韩爌',   stance: 'mediate', line: '工部既已饬地方加固，三万两并非大数，准之可也。' },
+      { name: '王永光', stance: 'oppose',  line: '工部本年请款已超原定，若再加，当核实必要。' },
+      { name: '朱国祚', stance: 'support', line: '陛下，堤防一旦溃，开封府城几为洪水所包，三万两不可吝。' },
+      { name: '黄宗周', stance: 'support', line: '臣附议工部尚书。河决之后再请百万亦无及矣。' }
+    ]
+  },
+  {
+    id: 'a6',
+    presenter: '王永光',
+    dept: '吏部',
+    type: 'personnel',
+    urgency: 'normal',
+    title: '南京户部右侍郎铨选',
+    announceLine: '臣吏部尚书有南京缺官铨选事请旨。',
+    detail: '南京户部右侍郎缺已三月，吏部按例拟出三人钦选：陈奇瑜、毛羽健、王化贞。三人履历臣部已附呈御览，伏请陛下钦点。',
+    controversial: 3,
+    importance: 4,
+    selfReact: [
+      { name: '韩爌',   stance: 'neutral', line: '陈奇瑜与王化贞均可，毛羽健资历稍浅。' },
+      { name: '倪元璐', stance: 'oppose',  line: '王化贞昔在辽东失事，致广宁陷落，不当复任要津。' },
+      { name: '黄宗周', stance: 'support', line: '陈奇瑜清正勤勉，臣以为可用。' }
+    ]
+  },
+  {
+    id: 'a7',
+    presenter: '钱龙锡',
+    dept: '礼部',
+    type: 'personal_plea',
+    urgency: 'normal',
+    title: '钱龙锡乞骸骨',
+    announceLine: '臣礼部尚书钱龙锡有去职乞骸骨事启奏。',
+    detail: '臣年老多病，近来视力模糊，每议政令辄错失，难以视事。恳请陛下准臣致仕回乡颐养，以全君臣之始终。臣不敢久占要津，伏乞圣慈。',
+    controversial: 2,
+    importance: 4,
+    selfReact: [
+      { name: '韩爌',   stance: 'oppose',  line: '钱兄精力尚旺，岁齿未高，朝廷正需老臣，不宜放归。' },
+      { name: '黄宗周', stance: 'oppose',  line: '钱尚书清正爱民，若去职，礼部少一柱石，臣等惜之。' },
+      { name: '温体仁', stance: 'neutral', line: '既然钱尚书自请，陛下宜成全，或慰留以示恩。' }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// 状态机
+// ═══════════════════════════════════════════════
+const state = {
+  mode: 'changchao',           // 'changchao' | 'shuochao'
+  phase: 'opening',
+  currentIdx: 0,
+  decisions: [],               // {idx, action, item, label, extra?}
+  pendingPlayerInput: null,
+  benchExpanded: false,
+  debateRound: 0,
+  prestige: 55,                // 皇威
+  power: 60,                   // 皇权
+  attendees: [],               // present chars
+  absents: [],                 // absent chars
+  done: false
+};
+
+// ═══════════════════════════════════════════════
+// 工具
+// ═══════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+function escHtml(s) { return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":"&#39;"}[c])); }
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function avatarHtml(name, opts = {}) {
+  const ch = CHARS[name] || { initial: name.slice(0, 1), class: 'east' };
+  const cls = ch.class === 'wu' ? 'wu' : ch.class === 'kdao' ? 'koudao' : '';
+  return `<div class="cy-bubble-avatar ${cls}">${escHtml(ch.initial || name.slice(0, 1))}</div>`;
+}
+
+function addBubble(opts) {
+  const main = $('cy-stage-main');
+  const row = document.createElement('div');
+  row.className = 'cy-bubble-row ' + (opts.kind || 'npc');
+  let inner = '';
+  if (opts.kind === 'system') {
+    const sysCls = opts.sysKind ? (' ' + opts.sysKind) : '';
+    inner = `<div class="cy-bubble-content"><div class="cy-bubble-text${sysCls}">${opts.text}</div></div>`;
+  } else if (opts.kind === 'player') {
+    inner = `<div class="cy-bubble-content"><div class="cy-bubble-meta">陛下</div><div class="cy-bubble-text">${escHtml(opts.text)}</div></div>`;
+  } else {
+    const ch = CHARS[opts.name] || {};
+    const stance = opts.stance ? `<span class="stance stance-${opts.stance}">${stanceLbl(opts.stance)}</span>` : '';
+    const itemType = opts.itemType ? `<span class="type-badge t-${opts.itemType}">${typeLbl(opts.itemType)}</span>` : '';
+    const meta = `${escHtml(opts.name)} · ${escHtml(ch.title || '')}${itemType}${stance}`;
+    const urgTag = opts.urgent ? '<span class="urg-tag">⚡ 急</span>' : '';
+    const detailCls = opts.detail ? (' detail' + (opts.itemType ? ' type-' + opts.itemType : '')) : '';
+    const urgCls = opts.urgent ? ' urgent' : '';
+    inner = `${avatarHtml(opts.name)}<div class="cy-bubble-content"><div class="cy-bubble-meta">${meta}</div><div class="cy-bubble-text${detailCls}${urgCls}">${urgTag}${escHtml(opts.text)}</div></div>`;
+  }
+  row.innerHTML = inner;
+  main.appendChild(row);
+  main.scrollTop = main.scrollHeight;
+  return row;
+}
+
+function typeLbl(t) {
+  return { routine: '日常', request: '请旨', warning: '预警', emergency: '紧急', personnel: '人事', confrontation: '弹劾', joint_petition: '联名', personal_plea: '请旨' }[t] || t;
+}
+
+function stanceLbl(s) {
+  return { support: '支持', oppose: '反对', neutral: '中立', mediate: '折中' }[s] || s;
+}
+
+// ═══════════════════════════════════════════════
+// 玩家说话主入口·按阶段分发 + 关键词解析 + NPC 回应
+// ═══════════════════════════════════════════════
+async function onPlayerSpeak(text) {
+  if (!text) return;
+  // 弹层关闭
+  document.querySelectorAll('.cy-popover.show').forEach(p => p.classList.remove('show'));
+  const jp = document.querySelector('.cy-popover.jinkou'); if (jp) jp.remove();
+
+  if (state.done) {
+    addBubble({ kind: 'player', text });
+    addBubble({ kind: 'system', text: '（朝会已散 · 陛下回乾清宫。）' });
+    return;
+  }
+  if (state.phase === 'opening' || state.phase === 'closing') {
+    addBubble({ kind: 'player', text });
+    addBubble({ kind: 'system', text: '（朝礼未及奏对 · 百官无应。）' });
+    return;
+  }
+  if (state.phase === 'announce') return onSpeakAnnounce(text);
+  if (state.phase === 'detail') return onSpeakDetail(text);
+  if (state.phase === 'debate') return onSpeakDebateLive(text);
+}
+
+async function onSpeakAnnounce(text) {
+  const t = text.replace(/[。·，。，！？\s]/g, '');
+  if (/^奏来$|奏闻|讲|说|何事|讲来|奏明/.test(t)) {
+    addBubble({ kind: 'player', text });
+    await delay(280);
+    return onAnnounceChoice('proceed');
+  }
+  if (/免议|不议|不必|算了|不必再奏|此事不议/.test(t)) {
+    addBubble({ kind: 'player', text });
+    await delay(280);
+    return onAnnounceChoice('skip');
+  }
+  if (/再奏|改日|稍后|留中/.test(t)) {
+    addBubble({ kind: 'player', text });
+    await delay(280);
+    return onAnnounceChoice('hold');
+  }
+  // 自由话语·让奏报者重新启奏
+  addBubble({ kind: 'player', text });
+  await delay(320);
+  const item = AGENDA[state.currentIdx];
+  addBubble({ name: item.presenter, text: '陛下圣意未明 · 容臣再启：' + item.announceLine });
+}
+
+async function onSpeakDetail(text) {
+  addBubble({ kind: 'player', text });
+  await delay(320);
+  const action = parseDetailKeyword(text);
+  if (action) return doAction(action);
+  // 自由话语 → 主奏者回应 + 一名 NPC 跟话
+  await npcRespondToPlayer(text, 2);
+}
+
+async function onSpeakDebateLive(text) {
+  // 议论中玩家直接说·插入到队列·主流程（runDebate 循环里）会下一拍消费
+  // 但若玩家在按钮已显示后说的话·直接走 npcRespondToPlayer
+  if (document.querySelector('.cy-action-bar .cy-btn')) {
+    addBubble({ kind: 'player', text });
+    await delay(320);
+    const action = parseDetailKeyword(text);
+    if (action) return doAction(action);
+    await npcRespondToPlayer(text, 2);
+    return;
+  }
+  // 否则·入队列·让 runDebate 循环消化
+  state.pendingPlayerInput = text;
+  addBubble({ kind: 'system', text: '（陛下举笏 · 待此官言毕即接陛下之意。）' });
+}
+
+function parseDetailKeyword(text) {
+  const t = text.replace(/[。·，。，！？\s]/g, '');
+  if (/^准奏$|^准$|^可$|准了|可办|从之|奏可/.test(t)) return 'approve';
+  if (/^驳$|^驳奏$|不准|不可|否|不行|不允/.test(t)) return 'reject';
+  if (/留中|从长计议|容朕|缓议|且听/.test(t)) return 'hold';
+  if (/下廷议|集议|付廷议/.test(t)) return 'escalate';
+  if (/部议|发部|交部/.test(t)) {
+    // 简化：默认转户部·真实场景应弹下拉
+    return null; // 仍走自由话语·以免失误
+  }
+  return null;
+}
+
+async function npcRespondToPlayer(playerText, count) {
+  const item = AGENDA[state.currentIdx];
+  const intent = inferPlayerIntent(playerText);
+  const mentioned = findMentionedChars(playerText);
+
+  const seen = new Set();
+  const candidates = [];
+
+  // 1) 被玩家点名的人优先（任何在场 NPC 都识别·不止 item.target）
+  mentioned.forEach(n => {
+    if (CHARS[n] && !CHARS[n].absent && !seen.has(n)) {
+      candidates.push(n); seen.add(n);
+    }
+  });
+
+  // 2) intent 触发的特殊抢答（被针对者/言官/折中派）
+  if (intent === 'punish') {
+    if (item.target && CHARS[item.target] && !CHARS[item.target].absent && !seen.has(item.target)) {
+      // 被批者抢辩
+      candidates.unshift(item.target); seen.add(item.target);
+    }
+    // 言官响应
+    ['黄宗周', '黄景昉', '倪元璐'].forEach(n => {
+      if (CHARS[n] && !CHARS[n].absent && !seen.has(n) && candidates.length < count + 1) {
+        candidates.push(n); seen.add(n);
+      }
+    });
+  }
+  if ((intent === 'mediate' || intent === 'doubt') && CHARS['韩爌'] && !seen.has('韩爌')) {
+    // 折中疑虑·首辅出来调和
+    candidates.unshift('韩爌'); seen.add('韩爌');
+  }
+
+  // 3) 主奏者
+  if (!seen.has(item.presenter)) {
+    candidates.push(item.presenter); seen.add(item.presenter);
+  }
+
+  // 4) debate / selfReact 中已有立场者
+  (item.debate || []).forEach(d => {
+    if (!seen.has(d.name) && CHARS[d.name] && !CHARS[d.name].absent) {
+      candidates.push(d.name); seen.add(d.name);
+    }
+  });
+  (item.selfReact || []).forEach(d => {
+    if (!seen.has(d.name) && CHARS[d.name] && !CHARS[d.name].absent) {
+      candidates.push(d.name); seen.add(d.name);
+    }
+  });
+
+  // 5) 闲人兜底
+  ['韩爌', '王永光', '黄宗周', '倪元璐'].forEach(n => {
+    if (CHARS[n] && !CHARS[n].absent && !seen.has(n)) {
+      candidates.push(n); seen.add(n);
+    }
+  });
+
+  // 点名时·让回应数 +1（点名的不挤主奏者位）
+  const respondN = mentioned.length > 0 ? Math.min(count + 1, candidates.length) : Math.min(count, candidates.length);
+  const picked = candidates.slice(0, respondN);
+
+  for (let i = 0; i < picked.length; i++) {
+    const name = picked[i];
+    // 被点名的人立场偏向"自辩"·intent 也影响立场
+    const stance = inferStanceForResponder(name, item, playerText, intent, mentioned.indexOf(name) >= 0);
+    const line = await generateNpcReply(name, item, playerText, stance, intent, mentioned.indexOf(name) >= 0);
+    addBubble({ name, stance, text: line });
+    await delay(440);
+  }
+}
+
+// ─── 玩家话意图识别 ───
+function inferPlayerIntent(text) {
+  const t = text || '';
+  if (/[!！]{2,}/.test(t) || /必须|即办|速行|不容|严办|刻不容缓|不得有违|断不可/.test(t)) return 'aggressive';
+  if (/严办|惩之|治罪|不察|可斩|罢黜|查办|严斥|拿下/.test(t)) return 'punish';
+  if (/民苦|忧|痛|哀|怜|可怜|惜民|百姓苦/.test(t)) return 'sympathetic';
+  if (/善|嘉许|勤勉|可嘉|有功|忠勇|赏之/.test(t)) return 'praise';
+  if (/恐有|未必|疑|或非|姑妄|存疑|不可不察/.test(t)) return 'doubt';
+  if (/两全|折中|分发|分批|可缓|商榷|或可|稍议/.test(t)) return 'mediate';
+  if (/何如|如何|可乎|几何|详言|细言|奈何|怎样|何意|何谓|可言之|讲来/.test(t)) return 'inquire';
+  return 'neutral';
+}
+
+// ─── 在场 NPC 名识别 ───
+function findMentionedChars(text) {
+  if (!text) return [];
+  const found = [];
+  Object.keys(CHARS).forEach(name => {
+    if (text.indexOf(name) >= 0) found.push(name);
+  });
+  return found;
+}
+
+function inferStanceForResponder(name, item, playerText, intent, isMentioned) {
+  // 若被玩家点名 + 是 target → 自辩为 oppose
+  if (isMentioned && item.target === name) return 'oppose';
+  // 若被点名（非 target）→ 倾向附和陛下·support
+  if (isMentioned && !item.target) return 'support';
+
+  // 已有 debate 立场·尊重之（但 intent 偏激进时立场更鲜明）
+  const inDebate = (item.debate || []).find(d => d.name === name);
+  if (inDebate) return inDebate.stance;
+
+  // intent 影响立场偏移
+  const ch = CHARS[name] || {};
+  if (intent === 'punish' && name === item.target) return 'oppose';
+  if (intent === 'punish' && (ch.class === 'kdao' || ch.faction === '东林')) return 'support';
+  if (intent === 'sympathetic' && ch.faction === '东林') return 'support';
+  if (intent === 'sympathetic' && ch.faction === '阉党残余') return 'mediate';
+  if (intent === 'aggressive' && ch.rank && ch.rank <= 2) return Math.random() < 0.7 ? 'support' : 'mediate';
+  if (intent === 'doubt' && ch.rank === 1) return 'mediate';
+  if (intent === 'mediate') return 'mediate';
+  if (intent === 'inquire') return 'neutral';
+
+  if (ch.faction === '东林') return Math.random() < 0.55 ? 'support' : 'mediate';
+  if (ch.faction === '阉党残余') return Math.random() < 0.55 ? 'oppose' : 'neutral';
+  if (ch.faction === '军方') return Math.random() < 0.6 ? 'support' : 'neutral';
+  return ['support', 'oppose', 'mediate', 'neutral'][Math.floor(Math.random() * 4)];
+}
+
+// 入口·先试 AI 再回退 mock
+async function generateNpcReply(name, item, playerText, stance, intent, isMentioned) {
+  if (aiEnabled()) {
+    try {
+      const aiLine = await callAIPreview(buildNpcPrompt(name, item, playerText, stance, intent, isMentioned));
+      const cleaned = (aiLine || '').trim().replace(/^["「『]|["」』]$/g, '');
+      if (cleaned.length >= 6) return cleaned;
+    } catch (e) {
+      setAiStatus('AI 失败 · 退 mock：' + (e.message || e), true);
+    }
+  }
+  return generateNpcReplyMock(name, item, playerText, stance, intent, isMentioned);
+}
+
+function generateNpcReplyMock(name, item, playerText, stance, intent, isMentioned) {
+  const ch = CHARS[name] || {};
+  const isPresenter = (name === item.presenter);
+  const isTarget = (name === item.target);
+  const pBrief = (playerText || '').slice(0, 16).replace(/[。，！？·]/g, '');
+
+  // ── intent 专属模板（覆盖通用模板）──
+  if (isMentioned && isTarget) {
+    return '臣 ' + name + ' 闻陛下点名 · 不敢隐避：陛下方才所言「' + pBrief + '」 · 实有未察 · 容臣再陈本末！';
+  }
+  if (isMentioned && !isTarget) {
+    return '臣 ' + name + ' 蒙陛下点问 · 不敢不直陈：陛下方才之意「' + pBrief + '」 · 臣以为' + (stance === 'support' ? '正合时宜 · 陛下圣明。' : stance === 'oppose' ? '尚有可商榷之处 · 容臣具陈。' : '可参酌而行之。');
+  }
+  if (intent === 'inquire') {
+    if (isPresenter) return '臣谨答陛下：' + (item.detail.split('，')[1] || item.detail).slice(0, 60) + '。陛下若再有疑 · 臣无所避。';
+    return '陛下既问 · 臣 ' + name + ' 所知如此：' + (stance === 'support' ? '此事确有可行之处 · 臣愿副办。' : stance === 'oppose' ? '此事尚有未备 · 望陛下慎之。' : '此事进退两难 · 伏听圣裁。');
+  }
+  if (intent === 'punish') {
+    if (isTarget) return '陛下！臣 ' + name + ' 不敢承此重责 · 臣自任职以来 · 实未尝有违 · 望陛下察臣本心 · 容臣分辩！';
+    if (ch.class === 'kdao') return '臣 ' + name + ' 以言官身份附议陛下 · 此辈奸佞 · 当严办以正朝纲！';
+    return stance === 'support' ? '陛下圣裁 · 臣等附议严办 · 以正朝纲。' : '陛下三思 · 严办之前 · 是否先令其自陈？';
+  }
+  if (intent === 'aggressive') {
+    return stance === 'support' ? '陛下圣意刚断 · 臣 ' + name + ' 即办去 · 不敢有半日延误！' : '陛下三思！此举关乎大体 · 若骤然行之 · 恐有未周······';
+  }
+  if (intent === 'sympathetic') {
+    return stance === 'support' ? '陛下念及百姓苦难 · 实为社稷之福。臣 ' + name + ' 愿为陛下分忧。' : '陛下圣怀仁厚 · 然此事处置不可全凭恻隐 · 须并察事理。';
+  }
+  if (intent === 'praise') {
+    if (item.target) return '陛下嘉许之意 · 臣 ' + name + ' 代' + item.target + '谢恩。然亦望陛下慎察其行 · 方为公允。';
+    return '陛下赞许 · 实为' + (isPresenter ? '臣' : (item.presenter || '某员')) + '之幸 · 当益自勉励 · 不负圣望。';
+  }
+  if (intent === 'doubt') {
+    return '陛下既有疑 · 不可不察。臣 ' + name + ' 以为：' + (stance === 'support' ? '可先准之 · 后续再察。' : stance === 'oppose' ? '不如暂缓 · 待详查。' : '宜下廷议·三日回奏。');
+  }
+
+  // ── 通用立场化模板（与之前一致） ──
+  const tplSupport = [
+    '陛下圣明 · 臣' + (isPresenter ? '所奏' : '附议') + '。' + (pBrief ? '陛下既言「' + pBrief + '」 · 臣愈坚此见。' : ''),
+    '臣谨遵圣意 · 此事可即办。',
+    '陛下所言极是 · ' + item.title + ' 事可如是断。',
+    '臣 ' + name + ' 愿为陛下督办此事。'
+  ];
+  const tplOppose = [
+    '陛下三思 · 此事尚需斟酌。' + item.title + ' 牵涉甚多 · 恐有未及。',
+    '臣不敢苟同 · ' + (pBrief ? '陛下言「' + pBrief + '」 · ' : '') + '然此事另有难处 · 容臣具陈。',
+    '陛下所虑虽是 · 然事关大体 · 不宜轻断。',
+    '臣以言官身份谨陈 · 此举或致他患。'
+  ];
+  const tplMediate = [
+    '陛下与诸臣所论各有理据 · 臣愿陈一折中：' + item.title + ' 可分而行之。',
+    '臣以为可两全其美 · ' + (pBrief ? '即遵陛下「' + pBrief + '」之意 · 兼顾他议。' : '请陛下听臣再陈。'),
+    '兹事体大 · 不可独断 · 亦不可空议。臣请下廷议或部议 · 三日后回奏。'
+  ];
+  const tplNeutral = [
+    '臣愚钝 · 不敢独断 · 伏听陛下圣裁。',
+    '此事进退两难 · 臣随圣意。',
+    '臣随班附议 · 不敢专擅。'
+  ];
+  const map = { support: tplSupport, oppose: tplOppose, mediate: tplMediate, neutral: tplNeutral };
+  const arr = map[stance] || tplNeutral;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// 旧的通用模板部分被新版生成模板覆盖·下面这段已并入·保留空函数体作 stub
+// (legacy 通用模板段已并入 generateNpcReplyMock 主体)
+
+// ═══════════════════════════════════════════════
+// AI 接入·OpenAI 兼容协议·复用主项目 localStorage.tm_api
+// ═══════════════════════════════════════════════
+function getAIConfig() {
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(_){}
+  return { key: cfg.key || '', url: cfg.url || '', model: cfg.model || '' };
+}
+function saveAIConfig(cfg) {
+  try { localStorage.setItem('tm_api', JSON.stringify(cfg)); } catch(_){}
+}
+function aiEnabled() {
+  if (!$('ai-enabled-cb') || !$('ai-enabled-cb').checked) return false;
+  const c = getAIConfig();
+  return !!(c.key && c.url);
+}
+function setAiStatus(text, isErr) {
+  const el = $('ai-status'); if (!el) return;
+  el.textContent = text || '';
+  el.style.color = isErr ? 'var(--vermillion-300)' : 'var(--celadon-400)';
+}
+
+async function callAIPreview(prompt) {
+  const cfg = getAIConfig();
+  if (!cfg.key || !cfg.url) throw new Error('未配 API');
+  setAiStatus('AI 调用中…');
+  // OpenAI 兼容协议：/v1/chat/completions
+  let url = cfg.url.replace(/\/+$/, '');
+  if (url.indexOf('/chat/completions') < 0) url = url + '/chat/completions';
+  const body = {
+    model: cfg.model || 'gpt-4o-mini',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.85,
+    max_tokens: 220
+  };
+  const ctrl = new AbortController();
+  const tmo = setTimeout(() => ctrl.abort(), 30000);
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+      body: JSON.stringify(body),
+      signal: ctrl.signal
+    });
+    clearTimeout(tmo);
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error('HTTP ' + resp.status + ' ' + t.slice(0, 80));
+    }
+    const data = await resp.json();
+    let txt = '';
+    if (data.choices && data.choices[0] && data.choices[0].message) txt = data.choices[0].message.content || '';
+    else if (data.content && Array.isArray(data.content)) txt = data.content.map(b => b.text || '').join('');
+    setAiStatus('AI ✓');
+    return txt;
+  } catch (e) {
+    clearTimeout(tmo);
+    throw e;
+  }
+}
+
+// 构造朝堂 NPC 立场化回应 prompt
+function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
+  const ch = CHARS[name] || {};
+  const stanceLabels = { support: '支持', oppose: '反对', mediate: '折中', neutral: '中立' };
+  const intentLabels = {
+    inquire: '询问情况·想了解细节',
+    aggressive: '言辞激进·有强行推进/严办之意',
+    mediate: '倾向折中调和·或要求分批办理',
+    sympathetic: '表达对百姓/受害者的同情忧虑',
+    punish: '意欲惩治某人或追究失职',
+    praise: '嘉许某人某事',
+    doubt: '心存疑虑·需臣劝导或申辩',
+    neutral: '随意发问·态度中性'
+  };
+  let p = '你是明末崇祯朝大臣 ' + name + '·身份「' + (ch.title || '') + '」·派系「' + (ch.faction || '中立') + '」·品级' + (ch.rank || '?') + '。\n';
+  p += '今日早朝·正议题「' + item.title + '」（' + (item.dept || '') + '上奏）。\n';
+  p += '议题原文：' + item.detail + '\n\n';
+  if (item.selfReact && item.selfReact.length) {
+    p += '殿中已有臣表态：\n';
+    item.selfReact.forEach(r => { p += '  ' + r.name + '：' + r.line + '\n'; });
+  }
+  if (item.debate && item.debate.length) {
+    p += '议论中诸臣：\n';
+    item.debate.slice(0, 4).forEach(d => { p += '  ' + d.name + '（' + (stanceLabels[d.stance] || '') + '）：' + d.line + '\n'; });
+  }
+  p += '\n陛下方才说：「' + playerText + '」\n';
+  if (intent && intent !== 'neutral') {
+    p += '【陛下话语意图分析】' + (intentLabels[intent] || '') + '。请以此为基调回应。\n';
+  }
+  if (isMentioned) {
+    if (item.target === name) {
+      p += '【重要】陛下点名提及你（' + name + '·正是被指弹劾对象）·你须自辩。语气惶恐而坚定·不可空泛附和·须具体反驳。\n';
+    } else {
+      p += '【重要】陛下点名提及你（' + name + '）·你须直接领旨·或谨慎进言·不可不应。\n';
+    }
+  }
+  p += '\n请以 ' + name + ' 的口吻·立场为「' + (stanceLabels[stance] || '中立') + '」·针对陛下的话作回应。\n';
+  p += '要求：\n';
+  p += '· 半文言·明末朝堂奏对体·「臣……」开头\n';
+  p += '· 50-120 字·一句话足矣·不超过两句\n';
+  p += '· 立场鲜明·体现派系倾向与品级口吻\n';
+  p += '· 紧扣陛下话的具体内容（不要空泛附和"陛下圣明"）\n';
+  p += '· 不重复 selfReact / debate 中的话·要有新内容\n';
+  p += '· 直接输出回应文·不要任何前后缀（如「回应：」「" "」）。';
+  return p;
+}
+
+function showAIConfigModal() {
+  const cfg = getAIConfig();
+  const m = document.createElement('div');
+  m.className = 'cy-input-modal';
+  m.innerHTML = `
+    <div class="cy-input-modal-card" style="width:min(520px,90vw);">
+      <h3>AI 配置 · OpenAI 兼容协议（与主游戏共享）</h3>
+      <div class="hint">配置存于 localStorage.tm_api · 主游戏配过此处自动读出 · 改动也会回写</div>
+      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API URL（如 https://api.openai.com/v1·或自定义代理）</div>
+      <input id="ai-cfg-url" type="text" value="${escHtml(cfg.url)}" placeholder="https://api.openai.com/v1" />
+      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API Key</div>
+      <input id="ai-cfg-key" type="password" value="${escHtml(cfg.key)}" placeholder="sk-..." />
+      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">模型名（如 gpt-4o-mini / claude-sonnet-4-5 / deepseek-chat 等）</div>
+      <input id="ai-cfg-model" type="text" value="${escHtml(cfg.model || 'gpt-4o-mini')}" placeholder="gpt-4o-mini" />
+      <div style="font-size:11px;color:var(--ink-300);margin:8px 0;">注：CORS 限制下·部分官方端点（含 Anthropic）需经代理。已知可直连：兼容 OpenAI 协议的国产 API（DeepSeek/智谱/月之暗面等）和大多数代理端点。</div>
+      <div class="row">
+        <button class="cy-btn muted" id="ai-cfg-cancel">取消</button>
+        <button class="cy-btn" id="ai-cfg-test">⚡ 测试调用</button>
+        <button class="cy-btn primary" id="ai-cfg-save">保存</button>
+      </div>
+      <div id="ai-cfg-result" style="font-size:12px;color:var(--ink-500);margin-top:8px;min-height:18px;"></div>
+    </div>
+  `;
+  $('cy-stage').appendChild(m);
+  $('ai-cfg-cancel').onclick = () => m.remove();
+  $('ai-cfg-save').onclick = () => {
+    saveAIConfig({
+      url: $('ai-cfg-url').value.trim(),
+      key: $('ai-cfg-key').value.trim(),
+      model: $('ai-cfg-model').value.trim() || 'gpt-4o-mini'
+    });
+    setAiStatus('已保存');
+    m.remove();
+  };
+  $('ai-cfg-test').onclick = async () => {
+    const tmpCfg = {
+      url: $('ai-cfg-url').value.trim(),
+      key: $('ai-cfg-key').value.trim(),
+      model: $('ai-cfg-model').value.trim() || 'gpt-4o-mini'
+    };
+    saveAIConfig(tmpCfg);
+    $('ai-cfg-result').textContent = '调用中…';
+    $('ai-cfg-result').style.color = 'var(--ink-500)';
+    try {
+      const r = await callAIPreview('请用半文言一句话（不超过 30 字）回答：「君何以治国？」');
+      $('ai-cfg-result').style.color = 'var(--celadon-400)';
+      $('ai-cfg-result').textContent = '✓ 调用成功：' + (r || '').slice(0, 100);
+    } catch (e) {
+      $('ai-cfg-result').style.color = 'var(--vermillion-300)';
+      $('ai-cfg-result').textContent = '✗ 失败：' + (e.message || e).slice(0, 200);
+    }
+  };
+}
+
+function pickResponder(item, exclude) {
+  const debaters = (item.debate || []).map(d => d.name);
+  const candidates = ['韩爌', '黄宗周', '倪元璐', ...debaters];
+  return candidates.find(n => n !== exclude && CHARS[n] && !CHARS[n].absent) || '韩爌';
+}
+
+// 朝堂氛围气泡·不影响逻辑·仅渲染殿中活力
+const AMBIENT_LINES = [
+  '（殿中有低声议论。）',
+  '（黄宗周与王在晋目光交触。）',
+  '（满桂凝视前方 · 面无表情。）',
+  '（韩爌捻须 · 略有沉思。）',
+  '（殿中有人微微叹息。）',
+  '（温体仁扶笏 · 目光低垂。）',
+  '（毕自严捏紧手中奏疏。）',
+  '（科道几员低声相商。）',
+  '（远处似有内官传旨之声。）'
+];
+function maybeAmbient(prob) {
+  if (Math.random() > (prob == null ? 0.2 : prob)) return;
+  const line = AMBIENT_LINES[Math.floor(Math.random() * AMBIENT_LINES.length)];
+  addBubble({ kind: 'system', text: line });
+}
+
+function setActions(html) {
+  $('cy-action-bar').innerHTML = html;
+}
+
+function setPhase(label, hint) {
+  $('cy-phase-label').textContent = label;
+  $('cy-phase-hint').textContent = hint || '';
+}
+
+function updateProgress() {
+  $('cy-progress-tag').textContent = '已议 ' + state.decisions.length;
+}
+
+function refreshTitle() {
+  const isShuo = state.mode === 'shuochao';
+  const ttl = isShuo ? '〔 朔 朝 〕奉天门 · 戊辰年三月初一' : '〔 早 朝 〕奉天门 · 戊辰年三月十二';
+  $('cy-title').textContent = ttl;
+  $('cy-ceremony-title').textContent = isShuo ? '〔 朔 朝 〕' : '〔 早 朝 〕';
+  $('cy-ceremony').querySelector('.sub').textContent = isShuo
+    ? '奉天门 · 朔月初一 · 戊辰年三月初一'
+    : '奉天门 · 五更三点 · 戊辰年三月十二';
+}
+
+// 时辰流动·议程推进时辰
+const TIME_FLOW = ['五更三点', '寅时初刻', '寅时正', '寅时三刻', '卯时初', '卯时二刻', '卯时正', '卯时四刻', '辰时初'];
+function getTimeStr() {
+  // currentIdx 为 0 时（开场）= 五更三点·之后每议程推 1 个刻度
+  const idx = Math.min(state.currentIdx, TIME_FLOW.length - 1);
+  return TIME_FLOW[idx];
+}
+function updateTimeOfDay() {
+  let el = $('time-of-day');
+  if (!el) {
+    const bar = document.querySelector('.cy-titlebar');
+    if (!bar) return;
+    el = document.createElement('div');
+    el.id = 'time-of-day';
+    el.className = 'time-of-day';
+    bar.appendChild(el);
+  }
+  el.textContent = '🕒 ' + getTimeStr();
+}
+
+// ═══════════════════════════════════════════════
+// 班次区渲染
+// ═══════════════════════════════════════════════
+function renderBench() {
+  const east = [], west = [], kdao = [];
+  Object.entries(CHARS).forEach(([name, ch]) => {
+    const html = `<div class="bench-avatar${ch.absent ? ' absent' : ''}" title="${escHtml(name)}·${escHtml(ch.title)}${ch.absent ? ' ('+escHtml(ch.absent)+')' : ''}" data-name="${escHtml(name)}">
+      <div class="bench-avatar-circle ${ch.class === 'wu' ? 'wu' : ch.class === 'kdao' ? 'koudao' : ''}${ch.absent ? ' absent' : ''}">${escHtml(ch.initial)}</div>
+      <div class="bench-avatar-name">${escHtml(name)}</div>
+    </div>`;
+    if (ch.class === 'kdao') kdao.push(html);
+    else if (ch.class === 'wu') west.push(html);
+    else east.push(html);
+  });
+  // sort by rank
+  const byRank = (a, b) => {
+    const m1 = a.match(/data-name="([^"]+)"/), m2 = b.match(/data-name="([^"]+)"/);
+    return (CHARS[m1[1]].rank || 99) - (CHARS[m2[1]].rank || 99);
+  };
+  east.sort(byRank); west.sort(byRank); kdao.sort(byRank);
+  $('bench-east').innerHTML = east.join('');
+  $('bench-west').innerHTML = west.join('');
+  $('bench-kdao').innerHTML = kdao.join('');
+
+  // attendance count
+  state.attendees = []; state.absents = [];
+  Object.entries(CHARS).forEach(([name, ch]) => {
+    if (ch.absent) state.absents.push({ name, reason: ch.absent });
+    else state.attendees.push(name);
+  });
+  $('cy-attend-tag').textContent = '殿中 ' + state.attendees.length;
+  $('cy-bench-status').textContent = '朝堂全景 · ' + state.attendees.length + ' 员到 · ' + state.absents.length + ' 缺';
+}
+
+// ═══════════════════════════════════════════════
+// 朝会主流程
+// ═══════════════════════════════════════════════
+async function runOpening() {
+  state.phase = 'opening';
+  setPhase('【鸣 鞭】', '百官入班候旨');
+  setActions('<span style="color:var(--ink-500);font-size:12px;">入殿仪礼中……</span>');
+  await delay(1300);
+  $('cy-ceremony').style.display = 'none';
+
+  // ── 鸣鞭三响（视觉化·CSS 动画总时长 ~1.2s） ──
+  const main = $('cy-stage-main');
+  const bellRow = document.createElement('div');
+  bellRow.className = 'bell-ring';
+  bellRow.innerHTML = '<span>铮</span><span>铮</span><span>铮</span>';
+  main.appendChild(bellRow);
+  await delay(1100);
+
+  addBubble({ kind: 'system', sysKind: 'ceremony', text: '〔 鸣 鞭 三 响 · 百 官 列 班 〕' });
+  await delay(380);
+
+  // ── 山呼万岁（震动动画） ──
+  const cheerEl = document.createElement('div');
+  cheerEl.className = 'cheer-line';
+  cheerEl.textContent = '吾 皇 万 岁 万 岁 万 万 岁';
+  main.appendChild(cheerEl);
+  main.scrollTop = main.scrollHeight;
+  await delay(550);
+
+  // ── 缺朝名册（视觉化） ──
+  if (state.absents.length > 0) {
+    const roster = document.createElement('div');
+    roster.className = 'absent-roster';
+    let html = '<span class="lbl">〔 缺 朝 〕</span>';
+    state.absents.forEach(a => {
+      html += '<span class="name">' + escHtml(a.name) + '</span><span style="color:var(--ink-300);font-size:11px;">（' + escHtml(a.reason) + '）</span>';
+    });
+    roster.innerHTML = html;
+    main.appendChild(roster);
+    main.scrollTop = main.scrollHeight;
+    await delay(500);
+  }
+
+  addBubble({ kind: 'system', sysKind: 'ceremony', text: '〔 陛 下 御 殿 · 百 官 奏 事 〕' });
+  await delay(450);
+  await runNextItem();
+}
+
+async function runNextItem() {
+  if (state.currentIdx >= AGENDA.length) {
+    return runClosing();
+  }
+  // Half-way nudge
+  if (state.currentIdx === Math.floor(AGENDA.length / 2)) {
+    addBubble({ kind: 'system', text: '百官奏事已半。' });
+    await delay(500);
+  }
+  // Near-end nudge
+  if (state.currentIdx === AGENDA.length - 2) {
+    addBubble({ kind: 'system', text: '百官奏事已多 · 陛下是否退朝？（仍可继续）' });
+    await delay(600);
+  }
+  await runAnnounce();
+}
+
+async function runAnnounce() {
+  const item = AGENDA[state.currentIdx];
+  state.phase = 'announce';
+  state._chaosFired = false;
+  updateTimeOfDay();
+  // 阶段标签按 urgency 着色
+  const tag = $('cy-phase-tag');
+  tag.classList.remove('strict', 'urgent');
+  if (item.urgency === 'urgent') tag.classList.add('urgent');
+  setPhase('【启 奏】' + (item.urgency === 'urgent' ? ' · 急 奏' : ''), '官员请奏 · 陛下定夺');
+  await delay(400);
+
+  // ── 急奏特殊处理：先弹"此为急奏 陛下是否先听？"卡片 ──
+  if (item.urgency === 'urgent') {
+    const main = $('cy-stage-main');
+    const card = document.createElement('div');
+    card.className = 'urgent-card';
+    card.innerHTML = `<span class="urgent-mark">⚡ 急 奏</span><span class="urgent-text">${escHtml(item.presenter)} · ${escHtml(item.dept || '')} · 「${escHtml(item.title)}」 · 须陛下即决</span>`;
+    main.appendChild(card);
+    main.scrollTop = main.scrollHeight;
+    await delay(700);
+  }
+
+  addBubble({
+    name: item.presenter,
+    text: item.announceLine,
+    urgent: item.urgency === 'urgent',
+    itemType: item.type
+  });
+  await delay(300);
+  setActions(`
+    <button class="cy-btn primary" onclick="onAnnounceChoice('proceed')">奏来</button>
+    <button class="cy-btn muted" onclick="onAnnounceChoice('skip')">此事免议</button>
+    <button class="cy-btn" onclick="onAnnounceChoice('hold')">改日再奏</button>
+  `);
+}
+
+async function onAnnounceChoice(choice) {
+  const item = AGENDA[state.currentIdx];
+  if (choice === 'proceed') {
+    addBubble({ kind: 'player', text: '奏来。' });
+    await delay(300);
+    return runDetail();
+  }
+  if (choice === 'skip') {
+    addBubble({ kind: 'player', text: '此事免议。' });
+    await delay(200);
+    addBubble({ kind: 'system', text: '（' + item.presenter + ' 退入班列。此事压一回合。）' });
+    state.decisions.push({ idx: state.currentIdx, action: 'skip', item, label: '免议' });
+    state.currentIdx++;
+    updateProgress();
+    await delay(400);
+    return runNextItem();
+  }
+  if (choice === 'hold') {
+    addBubble({ kind: 'player', text: '此事改日再奏。' });
+    await delay(200);
+    addBubble({ kind: 'system', text: '（' + item.presenter + ' 退归班列。议程留中。）' });
+    state.decisions.push({ idx: state.currentIdx, action: 'hold', item, label: '改日再奏（留中）' });
+    state.currentIdx++;
+    updateProgress();
+    await delay(400);
+    return runNextItem();
+  }
+}
+
+// ═══ 肃朝判定·请奏队列 ═══
+function isStrictCourt() { return state.prestige >= 75 && state.power >= 75; }
+function classifyForStrict(reactor) {
+  // 低朝威·全直接发言（现状）
+  if (!isStrictCourt()) return 'speak';
+  // 高朝威·rank 1-2 阁臣仍可不待旨而言·余等需举笏请奏
+  const ch = CHARS[reactor.name] || {};
+  if (ch.rank && ch.rank <= 2) return 'speak';
+  return 'request';
+}
+
+async function runDetail() {
+  const item = AGENDA[state.currentIdx];
+  state.phase = 'detail';
+  state._strictQueue = null;  // 每条议程开始重置
+  const strict = isStrictCourt();
+  // 阶段标签状态
+  const tag = $('cy-phase-tag');
+  tag.classList.remove('strict', 'urgent');
+  if (strict) tag.classList.add('strict');
+  if (item.urgency === 'urgent') tag.classList.add('urgent');
+  setPhase('【详 述】' + (strict ? ' · 肃朝' : '') + (item.urgency === 'urgent' ? ' · 急' : ''), '正文奏报 · ' + (strict ? '诸臣肃然待旨' : '殿中自发表态') + ' · 陛下处分');
+  await delay(300);
+  addBubble({
+    name: item.presenter,
+    text: item.detail,
+    detail: true,
+    urgent: item.urgency === 'urgent',
+    itemType: item.type
+  });
+  await delay(500);
+
+  // ── 详述后·按朝威分流 ──
+  if (item.selfReact && item.selfReact.length) {
+    const directs = [];
+    const requests = [];
+    item.selfReact.forEach(r => {
+      if (classifyForStrict(r) === 'speak') directs.push(r);
+      else requests.push(r);
+    });
+
+    // 高朝威：先入请奏队列（举笏请言）
+    if (strict && requests.length > 0) {
+      state._strictQueue = requests.map(r => ({ name: r.name, stance: r.stance, line: r.line, used: false }));
+      addBubble({ kind: 'system', text: '（殿中肃静 · 诸臣俯首待旨。）' });
+      await delay(420);
+      for (const q of state._strictQueue) {
+        addBubble({ kind: 'system', text: '（' + q.name + ' 举笏请言。）' });
+        await delay(280);
+      }
+    }
+
+    // 直接发言者（低朝威全部·高朝威仅 rank 1-2）
+    if (directs.length > 0) {
+      addBubble({ kind: 'system', text: strict ? '（一二阁臣不待旨而言。）' : '（殿中有臣自发表态。）' });
+      await delay(380);
+      for (const r of directs) {
+        addBubble({ name: r.name, stance: r.stance, text: r.line });
+        await delay(520);
+        if (state.pendingPlayerInput) {
+          const t = state.pendingPlayerInput; state.pendingPlayerInput = null;
+          addBubble({ kind: 'player', text: t });
+          await delay(360);
+        }
+        maybeAmbient(0.18);
+      }
+      await delay(200);
+    }
+  }
+  showDetailActions();
+}
+
+// 请奏队列：让 X 单独发言
+async function letStrictSpeaker(idx) {
+  document.querySelectorAll('.cy-popover.show').forEach(p => p.classList.remove('show'));
+  const queue = state._strictQueue || [];
+  const q = queue[idx];
+  if (!q || q.used) return;
+  q.used = true;
+  addBubble({ kind: 'system', text: '（陛下示意 ' + q.name + ' 言之。）' });
+  await delay(280);
+  addBubble({ name: q.name, stance: q.stance, text: q.line });
+  await delay(450);
+  // 玩家在 NPC 发言后可能即说·若已说则消化
+  if (state.pendingPlayerInput) {
+    const t = state.pendingPlayerInput; state.pendingPlayerInput = null;
+    addBubble({ kind: 'player', text: t });
+    await delay(360);
+  }
+  maybeAmbient(0.2);
+  showDetailActions();
+}
+
+// 请奏队列：一并准予全数
+async function letAllStrictSpeakers() {
+  document.querySelectorAll('.cy-popover.show').forEach(p => p.classList.remove('show'));
+  const queue = state._strictQueue || [];
+  if (queue.filter(q => !q.used).length === 0) return;
+  addBubble({ kind: 'system', text: '（陛下挥袖：诸卿但言之。）' });
+  await delay(320);
+  for (const q of queue) {
+    if (q.used) continue;
+    q.used = true;
+    addBubble({ name: q.name, stance: q.stance, text: q.line });
+    await delay(480);
+    maybeAmbient(0.18);
+  }
+  showDetailActions();
+}
+
+// 请奏队列：免诸卿之言（直接进入决断·剩余 NPC 不再说）
+function dismissStrictQueue() {
+  document.querySelectorAll('.cy-popover.show').forEach(p => p.classList.remove('show'));
+  const queue = state._strictQueue || [];
+  queue.forEach(q => q.used = true);
+  addBubble({ kind: 'system', text: '（陛下挥袖：诸卿之言可免。）' });
+  showDetailActions();
+}
+
+function toggleStrictQueuePopover() {
+  document.querySelectorAll('.cy-popover.show').forEach(p => p.classList.remove('show'));
+  const pop = $('strict-queue-popover');
+  if (pop) pop.classList.add('show');
+}
+
+function showDetailActions() {
+  // 请奏队列按钮（仅肃朝有内容时显示）
+  const queue = state._strictQueue || [];
+  const liveQueue = queue.filter(q => !q.used);
+  let queueBtnHtml = '';
+  if (liveQueue.length > 0) {
+    queueBtnHtml = `
+      <button class="cy-btn" style="border-color:var(--celadon-400);color:var(--celadon-400);" onclick="toggleStrictQueuePopover()">📋 请奏 ${liveQueue.length} 人 ▼</button>
+      <div class="cy-popover" id="strict-queue-popover">
+        ${liveQueue.map((q, idx) => `<button class="cy-popover-item" onclick="letStrictSpeaker(${queue.indexOf(q)})">${escHtml(q.name)} <span class="hint">${stanceLbl(q.stance)}</span></button>`).join('')}
+        <div class="cy-popover-divider"></div>
+        <button class="cy-popover-item" onclick="letAllStrictSpeakers()">一并准予 <span class="hint">${liveQueue.length} 人续奏</span></button>
+        <button class="cy-popover-item" onclick="dismissStrictQueue()">免诸卿之言 <span class="hint">直入决断</span></button>
+      </div>
+    `;
+  }
+  setActions(`
+    <button class="cy-btn primary" onclick="doAction('approve')">准 奏</button>
+    <button class="cy-btn danger" onclick="doAction('reject')">驳 奏</button>
+    <button class="cy-btn" onclick="doAction('hold')">留 中</button>
+    <button class="cy-btn muted" onclick="toggleMorePopover()">⋯ 更多</button>
+    ${queueBtnHtml}
+    <div class="cy-popover" id="more-popover">
+      <button class="cy-popover-item" onclick="doMore('refer')">发部议 → <span class="hint">转某衙门详议</span></button>
+      <button class="cy-popover-item" onclick="doMore('escalate')">下廷议 <span class="hint">转正式廷议</span></button>
+      <button class="cy-popover-item" onclick="doMore('modify')">改批 → <span class="hint">玩家口述新方案</span></button>
+      <button class="cy-popover-item" onclick="doMore('probe')">追问 → <span class="hint">问奏报者细节</span></button>
+      <div class="cy-popover-divider"></div>
+      <button class="cy-popover-item" onclick="doMore('summon')">传召 → <span class="hint">召不在场者</span></button>
+      <button class="cy-popover-item" onclick="doMore('admonish')">训诫 → <span class="hint">当庭训某官</span></button>
+      <button class="cy-popover-item" onclick="doMore('praise')">嘉奖 → <span class="hint">当庭赏某官</span></button>
+    </div>
+  `);
+}
+
+function toggleMorePopover() {
+  const pop = $('more-popover');
+  pop.classList.toggle('show');
+}
+
+async function doAction(action, extra) {
+  const item = AGENDA[state.currentIdx];
+  // 如有议论高争议 + 玩家直接决断（非议论后），则进议论
+  if ((action === 'approve' || action === 'reject') && item.controversial > 5 && state.phase !== 'debate' && item.debate && item.debate.length > 0) {
+    return runDebate();
+  }
+  return finalizeAction(action, extra);
+}
+
+async function finalizeAction(action, extra) {
+  const item = AGENDA[state.currentIdx];
+  const labels = {
+    approve: '准奏', reject: '驳奏', hold: '留中',
+    refer: '发部议', escalate: '下廷议', modify: '改批',
+    probe: '追问', summon: '传召', admonish: '训诫', praise: '嘉奖',
+    'decree': '当庭口述诏令'
+  };
+  const label = labels[action] || action;
+  // 玩家说话
+  let pTxt = '';
+  if (action === 'approve') pTxt = '准奏。' + (extra ? '（' + extra + '）' : '');
+  else if (action === 'reject') pTxt = '驳。';
+  else if (action === 'hold') pTxt = '此事留中。';
+  else if (action === 'refer') pTxt = '此事发 ' + (extra || '某部') + ' 详议。';
+  else if (action === 'escalate') pTxt = '此事兹事体大 · 下廷议。';
+  else if (action === 'modify') pTxt = '朕意如此：' + (extra || '〔玩家口述方案〕');
+  else if (action === 'probe') pTxt = (extra || '细言之。');
+  else if (action === 'summon') pTxt = '传召 ' + (extra || '某员') + ' 入殿。';
+  else if (action === 'admonish') pTxt = (extra ? extra + '，' : '') + '尔等所为 · 朕已知之 · 须自警。';
+  else if (action === 'praise') pTxt = (extra ? extra + '，' : '') + '卿勤勉可嘉 · 着户部加赐。';
+  else if (action === 'decree') pTxt = (extra && extra.text) ? ('（当庭宣旨）' + extra.text) : '（当庭宣旨）';
+  addBubble({ kind: 'player', text: pTxt });
+  await delay(300);
+
+  // ─── NPC 连锁反应（按动作 + 立场层级触发） ───
+  await runActionReactions(action, item, extra);
+  await delay(400);
+
+  // ─── 抗辩触发判定（高争议·准/驳 后 30%）───
+  if ((action === 'approve' || action === 'reject') && item.controversial >= 7 && Math.random() < 0.45) {
+    const handled = await runDissentFlow(action, item);
+    if (handled === 'wait') return; // 抗辩流程接管·稍后由 resolveDissent 推进
+  }
+
+  state.decisions.push({ idx: state.currentIdx, action, item, label, extra });
+  state.currentIdx++;
+  updateProgress();
+  await delay(300);
+  return runNextItem();
+}
+
+// 议论阶段
+async function runDebate() {
+  const item = AGENDA[state.currentIdx];
+  state.phase = 'debate';
+  state.debateRound = 1;
+  setPhase('【议 论】 第 1 轮', '百官辩难 · 陛下可即说');
+  // 阶段标签状态
+  const tag1 = $('cy-phase-tag'); tag1.classList.remove('strict', 'urgent');
+  // 议论分隔（精致版）
+  const main1 = $('cy-stage-main');
+  const div1 = document.createElement('div');
+  div1.className = 'round-divider';
+  div1.textContent = '殿 中 议 论 · 第 一 轮';
+  main1.appendChild(div1);
+  main1.scrollTop = main1.scrollHeight;
+  await delay(400);
+  for (const npc of (item.debate || [])) {
+    addBubble({ name: npc.name, stance: npc.stance, text: npc.line });
+    await delay(520);
+    // 玩家若已在间隙说过·让一名 NPC 立场化回应玩家
+    if (state.pendingPlayerInput) {
+      const t = state.pendingPlayerInput; state.pendingPlayerInput = null;
+      addBubble({ kind: 'player', text: t });
+      await delay(380);
+      const respName = pickResponder(item, npc.name);
+      const respStance = inferStanceForResponder(respName, item);
+      addBubble({ name: respName, stance: respStance, text: generateNpcReply(respName, item, t, respStance) });
+      await delay(440);
+    }
+    maybeAmbient(0.16);
+  }
+  showDebateActions();
+}
+
+function showDebateActions() {
+  const calmBtn = state._chaosFired
+    ? '<button class="cy-btn danger" onclick="calmChaos()">🔔 鸣磬肃静</button>'
+    : '';
+  setActions(`
+    ${calmBtn}
+    <button class="cy-btn primary" onclick="doAction('approve')">准 奏</button>
+    <button class="cy-btn danger" onclick="doAction('reject')">驳 奏</button>
+    <button class="cy-btn" onclick="doAction('hold')">留 中</button>
+    <button class="cy-btn muted" onclick="toggleMorePopover()">⋯ 更多</button>
+    <button class="cy-btn" onclick="anotherDebateRound()">▶ 续议一轮</button>
+    <div class="cy-popover" id="more-popover">
+      <button class="cy-popover-item" onclick="doMore('refer')">发部议 →</button>
+      <button class="cy-popover-item" onclick="doMore('escalate')">下廷议</button>
+      <button class="cy-popover-item" onclick="doMore('modify')">改批 →</button>
+      <button class="cy-popover-item" onclick="doMore('probe')">追问 →</button>
+      <div class="cy-popover-divider"></div>
+      <button class="cy-popover-item" onclick="doMore('summon')">传召 →</button>
+      <button class="cy-popover-item" onclick="doMore('admonish')">训诫 →</button>
+      <button class="cy-popover-item" onclick="doMore('praise')">嘉奖 →</button>
+    </div>
+  `);
+}
+
+// ═══ 抗辩面板 ═══
+async function runDissentFlow(action, item) {
+  // 选定抗辩者：决断的反方
+  const targetStance = (action === 'approve') ? 'oppose' : 'support';
+  const candidates = collectByStance(item, targetStance, 1, item.presenter);
+  if (candidates.length === 0) return false;
+  const dissenter = candidates[0];
+
+  const main = $('cy-stage-main');
+  const panel = document.createElement('div');
+  panel.className = 'dissent-panel';
+  panel.innerHTML = '<div class="dissent-panel-title">━━ ' + escHtml(dissenter) + ' 出 列 严 辞 抗 辩 ━━</div>';
+  main.appendChild(panel);
+  main.scrollTop = main.scrollHeight;
+  await delay(420);
+
+  const argLines = action === 'approve' ? [
+    '陛下！臣 ' + dissenter + ' 不敢苟同 · 此事关乎大体 · 若如此行 · 后必致祸 · 望陛下三思！',
+    '陛下圣意虽明 · 然臣以为此举有未周之处 · 容臣冒死再陈！',
+    '陛下三思！此议若行 · 则祖制有伤 · 民生有困 · 臣愿以死谏！'
+  ] : [
+    '陛下何以驳之？此事确为臣等再三斟酌 · 望陛下听臣等申辩！',
+    '陛下！此驳臣实不敢领旨 · 容臣再陈一二！',
+    '陛下！臣等所奏 · 实非妄言 · 望陛下听臣抗辩！'
+  ];
+  addBubble({ name: dissenter, stance: targetStance, text: argLines[Math.floor(Math.random() * argLines.length)] });
+  await delay(500);
+
+  state._dissentItem = item;
+  state._dissentAction = action;
+  state._dissentTarget = dissenter;
+  setActions(`
+    <button class="cy-btn" onclick="resolveDissent('listen')">🎤 听其抗辩</button>
+    <button class="cy-btn primary" onclick="resolveDissent('override')">🛡️ 朕意已决</button>
+    <button class="cy-btn danger" onclick="resolveDissent('reprimand')">⚡ 严斥</button>
+  `);
+  return 'wait';
+}
+
+window.resolveDissent = async function(choice) {
+  const dissenter = state._dissentTarget;
+  const item = state._dissentItem;
+  const action = state._dissentAction;
+
+  if (choice === 'listen') {
+    addBubble({ kind: 'player', text: '卿但言之 · 朕听。' });
+    await delay(380);
+    addBubble({ name: dissenter, stance: 'oppose', text: '臣以为：此举不合祖制 · 又伤民生。「' + (item.title) + '」一事 · 若不慎议 · 后必有祸。臣愿以言官身份冒死再请陛下察之。' });
+    await delay(600);
+    setActions(`
+      <button class="cy-btn primary" onclick="resolveDissentFinal('accept')">📝 从其议</button>
+      <button class="cy-btn" onclick="resolveDissentFinal('hold_orig')">🛡️ 朕意已决</button>
+    `);
+    return;
+  }
+  if (choice === 'override') {
+    addBubble({ kind: 'player', text: '朕意已决 · 卿不必再言。' });
+    await delay(380);
+    addBubble({ name: dissenter, stance: 'oppose', text: '臣······谨遵旨。（眼神低垂 · 退入班列。）' });
+    addBubble({ kind: 'system', sysKind: 'warn', text: '（' + dissenter + ' 暗中怀恨 · loyalty -5 · 派系反弹 +2）' });
+    await finishDissent();
+    return;
+  }
+  if (choice === 'reprimand') {
+    // 走严斥 5 outcome 流程
+    await runActionReactions('admonish', item, dissenter);
+    await finishDissent();
+    return;
+  }
+};
+
+window.resolveDissentFinal = async function(choice) {
+  const dissenter = state._dissentTarget;
+  const item = state._dissentItem;
+  const action = state._dissentAction;
+
+  if (choice === 'accept') {
+    addBubble({ kind: 'player', text: '卿言有理 · 朕从之。' });
+    await delay(380);
+    addBubble({ name: dissenter, stance: 'support', text: '陛下纳谏从善 · 实为社稷之福！臣等敬服！' });
+    addBubble({ kind: 'system', sysKind: 'success', text: '（陛下从谏如流 · 民心 +1 · 百官信服 +2 · 原决议改为「' + (action === 'approve' ? '驳' : '准') + '」。）' });
+  } else {
+    addBubble({ kind: 'player', text: '卿之言朕已闻 · 然朕意已决。' });
+    await delay(380);
+    addBubble({ name: dissenter, stance: 'oppose', text: '陛下······臣无言。（伏首良久 · 泪下沾襟。）' });
+    addBubble({ kind: 'system', sysKind: 'warn', text: '（' + dissenter + ' 心灰意冷 · loyalty -3 · 言路阻塞 -1）' });
+  }
+  await finishDissent();
+};
+
+async function finishDissent() {
+  // 完成抗辩·继续主流程到下一议程
+  state._dissentItem = null;
+  state._dissentTarget = null;
+  state._dissentAction = null;
+  await delay(380);
+  state.decisions.push({ idx: state.currentIdx, action: 'approve', item: AGENDA[state.currentIdx], label: '准奏（含抗辩）' });
+  state.currentIdx++;
+  updateProgress();
+  await delay(300);
+  return runNextItem();
+}
+
+// ═══ 喧哗 / 鸣磬肃静 ═══
+async function maybeFireChaos(item) {
+  if (state._chaosFired) return false;
+  if (state.debateRound < 2) return false;
+  if (item.controversial < 8) return false;
+  state._chaosFired = true;
+  $('cy-stage').classList.add('chaos');
+  addBubble({ kind: 'system', sysKind: 'warn', text: '（殿中喧哗 · 几人同声相应！声浪未歇。）' });
+  await delay(450);
+  addBubble({ kind: 'system', sysKind: 'warn', text: '（' + (item.target ? item.target + ' 与' : '') + '数员争辩不休 · 班次为之微乱。）' });
+  await delay(380);
+  return true;
+}
+
+window.calmChaos = async function() {
+  if (!state._chaosFired) return;
+  $('cy-stage').classList.remove('chaos');
+  state._chaosFired = false;
+  addBubble({ kind: 'system', sysKind: 'success', text: '（鸣磬肃静 · 百官噤声 · 朝堂复仪。）' });
+  await delay(360);
+  showDebateActions();
+};
+
+async function anotherDebateRound() {
+  state.debateRound++;
+  setPhase('【议 论】 第 ' + state.debateRound + ' 轮', '百官辩难继续 · 陛下可即说');
+  // 议论分隔
+  const mainR = $('cy-stage-main');
+  const divR = document.createElement('div');
+  divR.className = 'round-divider';
+  const cnLabels = ['壹', '贰', '叁', '肆', '伍'];
+  divR.textContent = '殿 中 议 论 · 第 ' + (cnLabels[state.debateRound - 1] || state.debateRound) + ' 轮';
+  mainR.appendChild(divR);
+  mainR.scrollTop = mainR.scrollHeight;
+  const item = AGENDA[state.currentIdx];
+  // 优先用预写 debate2（真新内容）·没有就回退到原数组首尾互换
+  const round = item.debate2 || (item.debate || []).slice().reverse().slice(0, 3).map(d => ({
+    name: d.name, stance: d.stance,
+    line: '臣之意已具于前 · 伏惟圣裁。' + (d.stance === 'oppose' ? '不可不察。' : '不必再争。')
+  }));
+  for (const npc of round) {
+    addBubble({ name: npc.name, stance: npc.stance, text: npc.line });
+    await delay(500);
+    if (state.pendingPlayerInput) {
+      const t = state.pendingPlayerInput; state.pendingPlayerInput = null;
+      addBubble({ kind: 'player', text: t });
+      await delay(380);
+      const respName = pickResponder(item, npc.name);
+      const respStance = inferStanceForResponder(respName, item);
+      addBubble({ name: respName, stance: respStance, text: generateNpcReply(respName, item, t, respStance) });
+      await delay(420);
+    }
+    maybeAmbient(0.18);
+  }
+  // 二轮议论后·高争议议程触发喧哗
+  await maybeFireChaos(item);
+  showDebateActions();
+}
+
+// 收尾
+async function runClosing() {
+  state.phase = 'closing';
+  // 清阶段标签状态
+  const tag = $('cy-phase-tag'); tag.classList.remove('strict', 'urgent');
+  setPhase('【退 朝】', '卷帘退朝 · 鸣鞭');
+  setActions('<span style="color:var(--ink-500);font-size:12px;">朝会即散……</span>');
+  await delay(400);
+  addBubble({ kind: 'system', sysKind: 'ceremony', text: '〔 百 官 奏 事 已 毕 〕' });
+  await delay(600);
+  addBubble({ kind: 'system', text: '（陛下整衣 · 起身。百官伏首恭送。）' });
+  await delay(700);
+  // 退朝鸣鞭（视觉化）
+  const main = $('cy-stage-main');
+  const bell = document.createElement('div');
+  bell.className = 'bell-ring';
+  bell.innerHTML = '<span style="font-size:22px;">铮</span><span style="font-size:22px;">铮</span>';
+  main.appendChild(bell);
+  main.scrollTop = main.scrollHeight;
+  await delay(1400);
+  addBubble({ kind: 'system', sysKind: 'ceremony', text: '〔 鸣 鞭 · 卷 帘 退 朝 〕' });
+  await delay(700);
+  state.done = true;
+  showSummary();
+}
+
+function showSummary() {
+  const skipPref = (function(){ try { return localStorage.getItem('tm.chaoyi.skipSummary') === '1'; } catch(_) { return false; } })();
+  if (skipPref) {
+    // 直接关闭朝会·不弹总结
+    addBubble({ kind: 'system', text: '（朝会已散 · 总结已隐 · 可在设置中重新启用。）' });
+    return;
+  }
+  // 按 action 分类·v2 借鉴的 tally 形式
+  const counts = { approve: 0, reject: 0, hold: 0, skip: 0, refer: 0, escalate: 0, modify: 0, probe: 0, summon: 0, admonish: 0, praise: 0, decree: 0 };
+  state.decisions.forEach(d => { if (counts[d.action] != null) counts[d.action]++; });
+  // 议程内容简表
+  let agendaList = '';
+  state.decisions.forEach((d, i) => {
+    const labelMap = { approve: '准', reject: '驳', hold: '留', skip: '免', refer: '部议', escalate: '廷议', modify: '改', probe: '问', summon: '召', admonish: '诫', praise: '奖', decree: '诏' };
+    const colorMap = { approve: 'celadon-400', reject: 'vermillion-300', hold: 'gold-400', skip: 'ink-500', escalate: 'amber-400', refer: 'amber-400', modify: 'gold-300', probe: 'ink-500', summon: 'celadon-400', admonish: 'vermillion-300', praise: 'celadon-400', decree: 'gold-300' };
+    const lbl = labelMap[d.action] || d.action;
+    const col = colorMap[d.action] || 'ink-500';
+    agendaList += `<div style="display:flex;justify-content:space-between;font-size:12px;line-height:1.9;padding:2px 0;border-bottom:1px dashed var(--border-subtle);">
+      <span style="color:var(--ink-500);">${i + 1}. ${escHtml(d.item.title || '?')}</span>
+      <span style="color:var(--${col});font-family:var(--font-serif);">${lbl}</span>
+    </div>`;
+  });
+
+  // 主 tally line（v2 风格：准N 驳N 议N 留N）
+  const tallyLine = `
+    <div style="text-align:center;font-family:var(--font-serif);letter-spacing:0.18em;font-size:14px;margin-bottom:10px;">
+      <span class="tally-pill tally-approve">准 ${counts.approve}</span>
+      <span class="tally-pill tally-reject">驳 ${counts.reject}</span>
+      <span class="tally-pill tally-hold">留 ${counts.hold}</span>
+      ${counts.escalate ? `<span class="tally-pill tally-other">廷议 ${counts.escalate}</span>` : ''}
+      ${counts.refer ? `<span class="tally-pill tally-other">部议 ${counts.refer}</span>` : ''}
+      ${counts.skip ? `<span class="tally-pill tally-other">免 ${counts.skip}</span>` : ''}
+    </div>
+    ${(counts.admonish || counts.praise || counts.decree || counts.modify) ? `
+    <div style="text-align:center;font-size:11px;color:var(--ink-500);margin:8px 0;letter-spacing:0.15em;">
+      ${counts.modify ? `改批 ${counts.modify} · ` : ''}
+      ${counts.admonish ? `训诫 ${counts.admonish} · ` : ''}
+      ${counts.praise ? `嘉奖 ${counts.praise} · ` : ''}
+      ${counts.decree ? `亲诏 ${counts.decree}` : ''}
+    </div>` : ''}
+  `;
+
+  if (state.decisions.length === 0) {
+    agendaList = '<div style="color:var(--ink-500);text-align:center;padding:14px;">本朝未议任何议程。</div>';
+  }
+
+  const card = document.createElement('div');
+  card.className = 'cy-summary-mask';
+  card.innerHTML = `
+    <div class="cy-summary-card">
+      <h2>〔 朝 会 已 散 〕</h2>
+      <div class="cy-summary-tally">
+        ${tallyLine}
+        <div style="margin-top:6px;">${agendaList}</div>
+      </div>
+      <div class="skip-row"><label><input type="checkbox" id="skip-summary-cb"> 下次不再弹此总结（可在设置改回）</label></div>
+      <div class="actions">
+        <button class="cy-btn" onclick="closeSummary(false)">关闭</button>
+        <button class="cy-btn primary" onclick="closeSummary(true)">详记入起居注</button>
+      </div>
+    </div>
+  `;
+  $('cy-stage').appendChild(card);
+}
+
+window.closeSummary = function(detailed) {
+  const cb = $('skip-summary-cb');
+  if (cb && cb.checked) {
+    try { localStorage.setItem('tm.chaoyi.skipSummary', '1'); } catch(_){}
+  }
+  const m = document.querySelector('.cy-summary-mask');
+  if (m) m.remove();
+  if (detailed) addBubble({ kind: 'system', text: '（详记入起居注。）' });
+};
+
+// ═══════════════════════════════════════════════
+// 更多菜单·二级输入
+// ═══════════════════════════════════════════════
+function doMore(action) {
+  const pop = $('more-popover'); if (pop) pop.classList.remove('show');
+  const item = AGENDA[state.currentIdx];
+  if (action === 'refer') {
+    showInputModal({
+      title: '发部议',
+      hint: '选定承议衙门 · N 回合后该部主官回奏',
+      kind: 'select',
+      options: ['户部', '吏部', '兵部', '礼部', '刑部', '工部', '都察院'],
+      submit: (v) => finalizeAction('refer', v)
+    });
+  } else if (action === 'escalate') {
+    finalizeAction('escalate');
+  } else if (action === 'modify') {
+    showInputModal({
+      title: '改批 · 玩家口述方案',
+      hint: '陛下口述新方案 · 替代原奏 · 进诏令追踪',
+      kind: 'textarea',
+      placeholder: '朕意如此：……',
+      submit: (v) => finalizeAction('modify', v || '〔玩家口述方案〕')
+    });
+  } else if (action === 'probe') {
+    showInputModal({
+      title: '追问 · 问奏报者细节',
+      hint: '陛下追问 · 奏报者将详陈一段',
+      kind: 'textarea',
+      placeholder: '细言之 / 此款几何 / ……',
+      submit: (v) => finalizeAction('probe', v || '细言之。')
+    });
+  } else if (action === 'summon') {
+    const opts = state.absents.map(a => a.name);
+    if (opts.length === 0) { alert('当前无远臣可传召。'); return; }
+    showInputModal({
+      title: '传召不在场者',
+      hint: '选定召入者 · 路程视距离决定',
+      kind: 'select',
+      options: opts,
+      submit: (v) => finalizeAction('summon', v)
+    });
+  } else if (action === 'admonish' || action === 'praise') {
+    showInputModal({
+      title: action === 'admonish' ? '训诫 · 当庭训某官' : '嘉奖 · 当庭赏某官',
+      hint: action === 'admonish' ? 'loyalty -2 · 派系记仇 +1' : 'loyalty +3 · 名望 +1',
+      kind: 'select',
+      options: state.attendees,
+      submit: (v) => finalizeAction(action, v)
+    });
+  }
+}
+
+function showInputModal(opts) {
+  const m = document.createElement('div');
+  m.className = 'cy-input-modal';
+  let inputHtml = '';
+  if (opts.kind === 'textarea') {
+    inputHtml = `<textarea id="modal-input" placeholder="${escHtml(opts.placeholder||'')}" rows="3"></textarea>`;
+  } else if (opts.kind === 'select') {
+    inputHtml = `<select id="modal-input">${(opts.options||[]).map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('')}</select>`;
+  } else {
+    inputHtml = `<input id="modal-input" type="text" placeholder="${escHtml(opts.placeholder||'')}" />`;
+  }
+  m.innerHTML = `
+    <div class="cy-input-modal-card">
+      <h3>${escHtml(opts.title)}</h3>
+      <div class="hint">${escHtml(opts.hint||'')}</div>
+      ${inputHtml}
+      <div class="row">
+        <button class="cy-btn muted" id="modal-cancel">取消</button>
+        <button class="cy-btn primary" id="modal-ok">确定</button>
+      </div>
+    </div>
+  `;
+  $('cy-stage').appendChild(m);
+  setTimeout(() => $('modal-input').focus(), 50);
+  $('modal-cancel').onclick = () => m.remove();
+  $('modal-ok').onclick = () => {
+    const v = $('modal-input').value;
+    m.remove();
+    if (opts.submit) opts.submit(v);
+  };
+}
+
+// ═══════════════════════════════════════════════
+// 金口·四项工具
+// ═══════════════════════════════════════════════
+function showJinkouPopover() {
+  const existing = document.querySelector('.cy-popover.jinkou');
+  if (existing) { existing.remove(); return; }
+  const tier = computeDecreeTier();
+  const pop = document.createElement('div');
+  pop.className = 'cy-popover show jinkou';
+  pop.style.bottom = '60px';
+  pop.style.right = '12px';
+  pop.style.left = 'auto';
+  pop.innerHTML = `
+    <button class="cy-popover-item" onclick="doJinkou('inquire')">🗣 训问 X 卿 <span class="hint">问任意在场官员立场</span></button>
+    <button class="cy-popover-item" onclick="doJinkou('reassign')">👤 指 Y 主奏 <span class="hint">绕开本部尚书</span></button>
+    <button class="cy-popover-item" onclick="doJinkou('private')">🤫 私下示意 Z <span class="hint">朝散后入御前问对队列</span></button>
+    <div class="cy-popover-divider"></div>
+    <button class="cy-popover-item" onclick="doJinkou('decree')">📜 当庭口述诏令 <span class="hint">按皇威皇权效果不同</span></button>
+    <div class="tier-preview tier-${tier.code}">
+      <div><strong>当前预测 · ${tier.name}</strong></div>
+      <div>皇威 ${state.prestige} · 皇权 ${state.power}</div>
+      <div style="margin-top:3px;">${tier.desc}</div>
+    </div>
+  `;
+  $('cy-stage').appendChild(pop);
+}
+
+function computeDecreeTier() {
+  const w = state.prestige, p = state.power;
+  if (w >= 70 && p >= 70) return {
+    code: 'S', name: '圣旨煌煌',
+    desc: '百官山呼遵旨·诏令全效。皇威+1 名望+1。'
+  };
+  if (w < 30 || p < 30) return {
+    code: 'D', name: '危诏激变',
+    desc: '当庭抗议跪谏·诏令 blocked。皇威-3 权威-2 派系叛意+。'
+  };
+  if (w < 50 && p < 50) return {
+    code: 'D', name: '诏不下殿',
+    desc: '言官即奏封驳·诏令打 50% 折或转廷议。皇权-1。'
+  };
+  if (w < 50 && p >= 50) return {
+    code: 'C', name: '众议汹汹',
+    desc: '派系联合抗辩·诏令全效但民心-2·暴名+1。'
+  };
+  if (w >= 70 || p >= 70) return {
+    code: 'A', name: '凛然奉旨',
+    desc: '百官面色凝重·默奉旨。诏令全效。反对派 loyalty -1。'
+  };
+  return {
+    code: 'B', name: '勉强尊行',
+    desc: '诏令奉行·派系内部记仇·loyalty 略降。'
+  };
+}
+
+function doJinkou(kind) {
+  const pop = document.querySelector('.cy-popover.jinkou');
+  if (pop) pop.remove();
+  if (kind === 'inquire') {
+    showInputModal({
+      title: '训问 · X 卿以为如何',
+      hint: '选定在场官员 · 该官将立场化回应',
+      kind: 'select',
+      options: state.attendees,
+      submit: (v) => addBubble({ kind: 'player', text: '卿 ' + v + ' · 以为如何？' }) || setTimeout(() => {
+        addBubble({ name: v, stance: 'neutral', text: '臣愚见……（按其性格立场化回应·此处省略）' });
+      }, 500)
+    });
+  } else if (kind === 'reassign') {
+    showInputModal({
+      title: '指定主奏 · 绕开本部尚书',
+      hint: '选定本部其他官员重述',
+      kind: 'select',
+      options: state.attendees,
+      submit: (v) => addBubble({ kind: 'system', text: '（' + v + ' 出班 · 替代主奏。）' })
+    });
+  } else if (kind === 'private') {
+    showInputModal({
+      title: '私下示意 Z · 朝散后入御前',
+      hint: '不当庭奏对·朝散后 Z 单独入御前问对队列',
+      kind: 'select',
+      options: state.attendees,
+      submit: (v) => addBubble({ kind: 'system', text: '（陛下以目示意 ' + v + ' · ' + v + ' 微微颔首。朝散后入御前问对队列。）' })
+    });
+  } else if (kind === 'decree') {
+    const tier = computeDecreeTier();
+    showInputModal({
+      title: '当庭口述诏令 · ' + tier.name,
+      hint: '档位预测：' + tier.desc + ' (后果由 AI 推演定 · 此为提示)',
+      kind: 'textarea',
+      placeholder: '制曰：……',
+      submit: (v) => finalizeAction('decree', { text: v || '〔陛下口述诏令〕', tier: tier.code })
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 动作连锁反应·按 action + 立场层级触发多 NPC 反应
+// ═══════════════════════════════════════════════
+function collectByStance(item, targetStance, maxCount, exclude) {
+  const result = []; const seen = new Set();
+  if (exclude) seen.add(exclude);
+  // 优先取 debate（有显式立场）
+  (item.debate || []).forEach(d => {
+    if (d.stance === targetStance && !seen.has(d.name) && CHARS[d.name] && !CHARS[d.name].absent) {
+      result.push(d.name); seen.add(d.name);
+    }
+  });
+  // 次选 selfReact
+  (item.selfReact || []).forEach(d => {
+    if (d.stance === targetStance && !seen.has(d.name) && CHARS[d.name] && !CHARS[d.name].absent) {
+      result.push(d.name); seen.add(d.name);
+    }
+  });
+  return result.slice(0, maxCount);
+}
+function pickLine(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const PRESENTER_AFTER_APPROVE = [
+  '臣谢陛下圣裁！臣即办去 · 三日内回奏进展。',
+  '陛下圣明 · 臣谨领旨。臣不敢有负圣望。',
+  '臣叩首谢恩 · 必竭股肱之力。',
+  '陛下既准 · 臣即下文督办 · 不日即见效。'
+];
+const SUPPORTER_AFTER_APPROVE = [
+  '陛下圣明！臣等附议·此乃国之大幸。',
+  '陛下睿断·此举固本固民·臣等敬服。',
+  '陛下高瞻远瞩·臣愿副 {presenter} 督办。',
+  '陛下既决·臣亦愿献绵薄之力。'
+];
+const OPPOSER_AFTER_APPROVE = [
+  '陛下既决·臣谨遵旨·然望陛下后续监察。',
+  '臣······虽有未尽之言·谨奉圣意。',
+  '陛下圣明·臣不敢再争·然望陛下慎之又慎。',
+  '臣以言官身份谨陈：望陛下察其行 · 不徒受其文。'
+];
+
+const PRESENTER_AFTER_REJECT = [
+  '臣······谨遵圣意·然此事容臣再思一二。',
+  '陛下既不准·臣······退而再议。',
+  '臣愚见难合圣意·谨退·心中不安。',
+  '臣······惶恐 · 谨遵陛下圣意。'
+];
+const OPPOSER_AFTER_REJECT = [  // 反对原议者·驳奏正合心意
+  '陛下圣裁！臣谓此事正不可行·陛下明察。',
+  '陛下明察秋毫·臣等敬服。',
+  '此驳得当·实乃国之幸·臣 {who} 喜出望外。',
+  '陛下既驳·诸臣可释虑矣。'
+];
+const SUPPORTER_AFTER_REJECT = [  // 支持原议者·驳奏失望
+  '陛下三思！此事关乎黎庶·若不行·恐有后患。',
+  '臣 {who} 以言官身份谨陈·此驳恐有未察。',
+  '陛下既驳·然臣······终是不安。',
+  '陛下圣意如此·臣等无言·然心中······',
+  '陛下！臣愿伏阙再请·此事实不可缓！'
+];
+const NEUTRAL_AFTER_HOLD = [
+  '陛下既留·臣等且候。',
+  '臣随圣意·不敢催促。',
+  '此事兹事体大·留议亦是稳重之策。'
+];
+const URGENT_AFTER_HOLD = [
+  '陛下！此事不可久延·望陛下早决。',
+  '陛下三思·此事压一日·则民苦一日。',
+  '臣······惶恐·然此事确不可缓。'
+];
+
+async function runActionReactions(action, item, extra) {
+  const presenter = item.presenter;
+  // ─── 准奏 ───
+  if (action === 'approve') {
+    addBubble({ name: presenter, text: pickLine(PRESENTER_AFTER_APPROVE) });
+    await delay(420);
+    const supporters = collectByStance(item, 'support', 2, presenter);
+    for (const s of supporters) {
+      addBubble({ name: s, stance: 'support', text: pickLine(SUPPORTER_AFTER_APPROVE).replace('{presenter}', presenter) });
+      await delay(380);
+    }
+    maybeAmbient(0.35);
+    const opposers = collectByStance(item, 'oppose', 1, presenter);
+    for (const o of opposers) {
+      addBubble({ name: o, stance: 'oppose', text: pickLine(OPPOSER_AFTER_APPROVE) });
+      await delay(380);
+    }
+    addBubble({ kind: 'system', text: '（议题进诏令追踪表 · ' + presenter + ' 限 ' + (item.urgency === 'urgent' ? '3' : '7') + ' 日内回报。' + (item.controversial > 6 ? ' 反对派记一笔。' : '') + '）' });
+    return;
+  }
+  // ─── 驳奏 ───
+  if (action === 'reject') {
+    addBubble({ name: presenter, text: pickLine(PRESENTER_AFTER_REJECT) });
+    await delay(420);
+    // 反对原议者振奋（但若主奏者本身就是关键反对·此处可能为空）
+    const opposers = collectByStance(item, 'oppose', 1, presenter);
+    for (const o of opposers) {
+      addBubble({ name: o, stance: 'oppose', text: pickLine(OPPOSER_AFTER_REJECT).replace('{who}', o) });
+      await delay(380);
+    }
+    maybeAmbient(0.4);
+    // 支持原议者失望/再谏
+    const supporters = collectByStance(item, 'support', 2, presenter);
+    for (const s of supporters) {
+      addBubble({ name: s, stance: 'support', text: pickLine(SUPPORTER_AFTER_REJECT).replace('{who}', s) });
+      await delay(420);
+    }
+    addBubble({ kind: 'system', text: '（' + presenter + ' loyalty -1 · 记入此次心意未达。' + (item.controversial > 6 ? ' 派系反弹未息。' : '') + '）' });
+    return;
+  }
+  // ─── 留中 ───
+  if (action === 'hold') {
+    const isUrgent = item.urgency === 'urgent' || item.importance >= 8;
+    addBubble({ name: presenter, text: isUrgent ? pickLine(URGENT_AFTER_HOLD) : pickLine(NEUTRAL_AFTER_HOLD) });
+    await delay(380);
+    // 殿中各派各表态（取 1 支持 + 1 反对·或 2 中立）
+    const supporters = collectByStance(item, 'support', 1, presenter);
+    const opposers = collectByStance(item, 'oppose', 1, presenter);
+    for (const s of supporters) {
+      addBubble({ name: s, stance: 'support', text: '陛下久不决·恐误时机。臣愿再陈······' });
+      await delay(360);
+    }
+    for (const o of opposers) {
+      addBubble({ name: o, stance: 'oppose', text: '陛下从容圣裁·臣谓此事正可缓议。' });
+      await delay(360);
+    }
+    maybeAmbient(0.4);
+    addBubble({ kind: 'system', text: '（此事入留中册·下次朝议或再现。' + (isUrgent ? '紧急事项不可久延·朝堂记一笔焦虑。' : '') + '）' });
+    return;
+  }
+  // ─── 发部议 ───
+  if (action === 'refer') {
+    addBubble({ name: presenter, text: '臣谨遵旨·将本案移交 ' + (extra || '某部') + ' 详议·伏候回奏。' });
+    await delay(380);
+    // 该部主官发声（如是别部则附议·本部则受命）
+    addBubble({ kind: 'system', text: '（' + (extra || '某部') + ' 主官出班受命：「臣即召集本部议覆 · 三日内回奏。」）' });
+    await delay(380);
+    addBubble({ kind: 'system', text: '（事下 ' + (extra || '某部') + ' · 限期回奏 · GM.deptTasks +1）' });
+    return;
+  }
+  // ─── 下廷议 ───
+  if (action === 'escalate') {
+    addBubble({ name: presenter, text: '陛下圣裁·此事确兹事体大·宜下廷议。' });
+    await delay(380);
+    addBubble({ name: '韩爌', stance: 'mediate', text: '陛下圣明·下廷议方可服众。臣即拟召集名单。' });
+    await delay(380);
+    maybeAmbient(0.3);
+    addBubble({ kind: 'system', text: '（议题转入廷议待议册·下次廷议菜单可见。）' });
+    return;
+  }
+  // ─── 改批 ───
+  if (action === 'modify') {
+    addBubble({ name: presenter, text: '陛下圣裁所改·臣即遵旨改办。' });
+    await delay(380);
+    // 立场支持者评价改批
+    const supporters = collectByStance(item, 'support', 1, presenter);
+    for (const s of supporters) {
+      addBubble({ name: s, stance: 'support', text: '陛下亲为改批·圣裁高于原奏·臣等敬服。' });
+      await delay(380);
+    }
+    addBubble({ kind: 'system', text: '（原奏被替换为陛下口述方案·进诏令追踪标"亲改"·皇威 +1）' });
+    return;
+  }
+  // ─── 追问 ───
+  if (action === 'probe') {
+    const probeText = item.detail.split('。')[1] || '其情甚明 · 不敢隐瞒。';
+    addBubble({ name: presenter, text: '臣详陈：' + probeText.slice(0, 80) + '。陛下若再有疑·臣无所避。' });
+    await delay(380);
+    return;
+  }
+  // ─── 传召 ───
+  if (action === 'summon') {
+    const tgt = extra || '某员';
+    addBubble({ kind: 'system', text: '（已传召 ' + tgt + ' · 路程 N 日 · 来朝可奏。）' });
+    await delay(300);
+    // 殿中议论
+    addBubble({ kind: 'system', text: '（殿中有臣低声道："陛下亲召 ' + tgt + ' · 必有深意。"）' });
+    return;
+  }
+  // ─── 训诫（5 种 outcome·v2 借鉴）───
+  if (action === 'admonish') {
+    const tgt = extra || item.target || presenter;
+    const tgtCh = CHARS[tgt] || {};
+    // 厉声开场
+    addBubble({ kind: 'system', sysKind: 'warn', text: '（陛下厉声）' + tgt + '，你好大胆！' });
+    await delay(450);
+    // 5 种结局按权重随机·loyalty + 性格简化判定
+    const dice = Math.random();
+    const main = $('cy-stage-main');
+    const outDiv = document.createElement('div');
+    outDiv.className = 'reprimand-outcome';
+    let line = '';
+    let outClass = '';
+    if (dice < 0.25) {
+      outClass = 'public_submit';
+      line = '【当庭叩首】「臣 ' + tgt + ' 万死罪 · 谨遵陛下训示 · 此后必竭忠诚 · 不敢再有违失。」';
+      addBubble({ name: tgt, stance: 'support', text: '臣······万死！万死！臣即遵旨改过。' });
+    } else if (dice < 0.50) {
+      outClass = 'secret_resent';
+      line = '【面服心怨】' + tgt + ' 唯唯而退·然眼神微沉·暗中怀恨。loyalty -8 · 记仇 +5。';
+      addBubble({ name: tgt, stance: 'oppose', text: '臣······谨遵旨。（俯首良久·目光低垂。）' });
+    } else if (dice < 0.70) {
+      outClass = 'resign_request';
+      line = '【伏阙请辞】' + tgt + ' 当庭请辞 · 乞骸骨。已记入待批告退册。';
+      addBubble({ name: tgt, stance: 'oppose', text: '臣无能 · 致陛下震怒 · 臣愿乞骸骨归乡 · 不敢复居要津！（伏地不起）' });
+      addBubble({ kind: 'system', text: '（' + tgt + ' 伏阙请辞 · 待陛下后批。）' });
+    } else if (dice < 0.88) {
+      outClass = 'secret_plot';
+      line = '【表面请罪 · 暗结同党】' + tgt + ' 似服而不服 · 暗中已起密谋之意。loyalty -12 · 派系反弹 +3。';
+      addBubble({ name: tgt, stance: 'oppose', text: '臣······有罪 · 谨听陛下训示。（退入班列时与某员目光相接。）' });
+    } else {
+      outClass = 'public_refute';
+      line = '【当庭抗辩】' + tgt + ' 不服 · 当庭据理抗辩。皇威 -3 · 局面尴尬。';
+      addBubble({ name: tgt, stance: 'oppose', text: '陛下！臣 ' + tgt + ' 不敢苟同！臣自任职以来 · 未尝有违职守 · 陛下今日训臣 · 实有未察！请陛下听臣分辩！' });
+    }
+    outDiv.className = 'reprimand-outcome ' + outClass;
+    outDiv.innerHTML = line;
+    main.appendChild(outDiv);
+    main.scrollTop = main.scrollHeight;
+    await delay(380);
+    return;
+  }
+  // ─── 嘉奖 ───
+  if (action === 'praise') {
+    const tgt = extra || presenter;
+    addBubble({ name: tgt, text: '臣 ' + tgt + ' 谢陛下隆恩！必竭忠诚·不负圣望。' });
+    await delay(380);
+    // 殿中羡慕
+    addBubble({ kind: 'system', text: '（殿中有臣低语："陛下亲赏 ' + tgt + ' · 殊荣也。"）' });
+    addBubble({ kind: 'system', text: '（' + tgt + ' loyalty +3 · 名望 +1）' });
+    return;
+  }
+  // ─── 当庭口述诏令 ───
+  if (action === 'decree') {
+    await runDecreeFlow(extra);
+    return;
+  }
+}
+
+async function runDecreeFlow(extra) {
+  const tier = (extra && extra.tier) || 'B';
+  const t = computeDecreeTier();
+  await delay(300);
+  if (tier === 'S') {
+    addBubble({ kind: 'system', text: '（殿中山呼）陛下圣明！' });
+    addBubble({ kind: 'system', text: '（诏令全效·进诏令追踪·标"亲诏"。皇威 +1 名望 +1。）' });
+  } else if (tier === 'A') {
+    addBubble({ kind: 'system', text: '（百官面色凝重 · 默然奉旨。）' });
+    addBubble({ kind: 'system', text: '（诏令全效。在场反对派 loyalty -1。）' });
+  } else if (tier === 'B') {
+    addBubble({ kind: 'system', text: '（百官有低声议论 · 终是奉旨。）' });
+    addBubble({ kind: 'system', text: '（诏令奉行·派系记仇。loyalty 略降。）' });
+  } else if (tier === 'C') {
+    addBubble({ name: '韩爌', stance: 'oppose', text: '陛下！此事关乎民心 · 臣等以为可议而行 · 不宜独断！' });
+    addBubble({ kind: 'system', text: '（诏令全效但民心 -2 · 暴名 +1 · 该回合后续奏报激进度↑）' });
+  } else if (tier === 'D') {
+    if (t.code === 'D' && t.name === '危诏激变') {
+      addBubble({ name: '黄景昉', stance: 'oppose', text: '陛下不可！臣愿以死谏！（伏地不起）' });
+      addBubble({ kind: 'system', text: '（殿中数员跪谏 · 诏令 blocked · 皇威 -3 · 权威 -2 · 派系叛意 +。）' });
+    } else {
+      addBubble({ name: '黄景昉', stance: 'oppose', text: '陛下 · 此诏诚有未当 · 臣谨封驳。' });
+      addBubble({ kind: 'system', text: '（诏令打 50% 折 · 进诏令追踪标"半行" · AI 推演时部门怠工。皇权 -1。）' });
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 玩家说话·主控通道（按 Enter → onPlayerSpeak）
+// ═══════════════════════════════════════════════
+$('cy-player-input').onkeydown = function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    var v = (this.value || '').trim();
+    if (!v) return;
+    this.value = '';
+    onPlayerSpeak(v);
+  }
+};
+$('cy-interrupt-input').onclick = function() {
+  addBubble({ kind: 'system', text: '（陛下拊案 · 群臣噤声。）' });
+};
+$('cy-interrupt-btn').onclick = function() {
+  addBubble({ kind: 'system', text: '（陛下拊案 · 群臣噤声。）' });
+};
+$('cy-exit-btn').onclick = function() {
+  if (state.done) {
+    location.reload();
+    return;
+  }
+  if (state.currentIdx < AGENDA.length) {
+    const remain = AGENDA.length - state.currentIdx;
+    if (!confirm('尚有 ' + remain + ' 件未议 · 将留中或转下次。确定退朝？')) return;
+    // 把剩余全部 hold
+    while (state.currentIdx < AGENDA.length) {
+      state.decisions.push({ idx: state.currentIdx, action: 'hold', item: AGENDA[state.currentIdx], label: '退朝留中' });
+      state.currentIdx++;
+    }
+    updateProgress();
+  }
+  runClosing();
+};
+
+$('cy-jinkou-btn').onclick = showJinkouPopover;
+
+// ═══════════════════════════════════════════════
+// 班次区折叠
+// ═══════════════════════════════════════════════
+$('cy-bench-header').onclick = function() {
+  state.benchExpanded = !state.benchExpanded;
+  $('cy-bench').classList.toggle('expanded', state.benchExpanded);
+};
+
+// ═══════════════════════════════════════════════
+// 顶部控制
+// ═══════════════════════════════════════════════
+$('mode-changchao').onclick = function() {
+  state.mode = 'changchao';
+  this.classList.add('active');
+  $('mode-shuochao').classList.remove('active');
+  refreshTitle();
+};
+$('mode-shuochao').onclick = function() {
+  state.mode = 'shuochao';
+  this.classList.add('active');
+  $('mode-changchao').classList.remove('active');
+  refreshTitle();
+};
+function refreshCourtModeTag() {
+  const tag = $('court-mode-tag'); if (!tag) return;
+  if (isStrictCourt()) {
+    tag.textContent = '肃朝';
+    tag.style.background = 'rgba(106,154,127,0.18)';
+    tag.style.color = 'var(--celadon-400)';
+    tag.title = '皇威 ≥ 75 且 皇权 ≥ 75 · 三品以下需举笏请奏 · 一二品阁臣可不待旨';
+  } else {
+    tag.textContent = '众言';
+    tag.style.background = 'rgba(184,154,83,0.12)';
+    tag.style.color = 'var(--gold-400)';
+    tag.title = '皇权皇威不足 · 百官自发表态 · 不必请奏';
+  }
+}
+$('prestige-slider').oninput = function() {
+  state.prestige = parseInt(this.value);
+  $('prestige-val').textContent = this.value;
+  refreshCourtModeTag();
+};
+$('power-slider').oninput = function() {
+  state.power = parseInt(this.value);
+  $('power-val').textContent = this.value;
+  refreshCourtModeTag();
+};
+refreshCourtModeTag();
+$('restart-btn').onclick = function() { location.reload(); };
+
+// AI 配置按钮 + 启用状态显示
+$('ai-config-btn').onclick = showAIConfigModal;
+$('ai-enabled-cb').onchange = function() {
+  if (this.checked) {
+    const c = getAIConfig();
+    if (!c.key || !c.url) {
+      this.checked = false;
+      setAiStatus('请先配置 API', true);
+      showAIConfigModal();
+    } else {
+      setAiStatus('AI 已启用 · ' + (c.model || 'gpt-4o-mini'));
+    }
+  } else {
+    setAiStatus('mock');
+  }
+};
+// 初始状态显示
+(function initAiStatus() {
+  const c = getAIConfig();
+  if (c.key && c.url) setAiStatus('已配置 · 勾选启用');
+  else setAiStatus('未配置 · mock 模式');
+})();
+
+// 点击空白关闭弹层
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cy-btn') && !e.target.closest('.cy-popover')) {
+    document.querySelectorAll('.cy-popover.show').forEach(p => {
+      if (!p.classList.contains('jinkou')) p.classList.remove('show');
+    });
+  }
+  if (!e.target.closest('#cy-jinkou-btn') && !e.target.closest('.cy-popover.jinkou')) {
+    const jp = document.querySelector('.cy-popover.jinkou');
+    if (jp) jp.remove();
+  }
+});
+
+// 启动
+renderBench();
+refreshTitle();
+runOpening();
+
+</script>
+</body>
+</html>

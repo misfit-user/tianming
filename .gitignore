@@ -29,6 +29,7 @@ secrets.json
 .bak-r*/
 *.backup-r*
 *.bak-r*
+*.bak
 
 # 本地调试脚本（非生产）
 analyze_globals.py

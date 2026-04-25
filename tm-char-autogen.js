@@ -68,11 +68,14 @@
     var sourceContext = opts.sourceContext || '';
 
     // 势力清单+已有代表人物——注入 prompt 供 AI 定位
-    var _facList = (GM.factions || GM.facs || []).map(function(f){
+    // 关键：保留两份·一份带 leader 给 AI 看上下文·一份纯净 name 让 AI 严格选择
+    var _facObjs = (GM.factions || GM.facs || []).slice(0, 10);
+    var _facNamesOnly = _facObjs.map(function(f){ return f.name; }).filter(Boolean);
+    var _facList = _facObjs.map(function(f){
       var lead = f.leader || f.leaderName || '';
       var terr = f.territory ? f.territory.slice(0, 20) : '';
-      return f.name + (lead ? '(' + lead + ')' : '') + (terr ? '·' + terr : '');
-    }).slice(0, 10).join('；');
+      return f.name + (lead ? '(领袖' + lead + ')' : '') + (terr ? '·' + terr : '');
+    }).join('；');
     var _partyList = (GM.parties || []).map(function(p){ return p.name + '(' + (p.leader || '') + ')'; }).slice(0, 8).join('、');
     var _existingChars = (GM.chars || [])
       .filter(function(c){ return c && c.alive !== false && c.isHistorical; })
@@ -134,35 +137,66 @@
       '3. \u5E74\u9F84\u5FC5\u987B\u5408 ' + year + ' \u5E74\u53F2\u5B9E\uFF08\u82E5\u6B64\u4EBA\u751F\u4E8E 1600 \u5E74\u00B7' + year + '=1627 \u5219\u5E74 27\uFF09\n' +
       '4. \u771F\u5B9E\u5386\u53F2\u4EBA\u7269\u5FC5\u9700 shiliao \u5B57\u6BB5\u00B7\u53F2\u4E66\u539F\u6587\u6458\u5F15 80-200 \u5B57\n' +
       '5. \u867A\u6784\u4EBA\u7269\u59D3\u540D/\u7C4D\u8D2F/\u6027\u683C\u987B\u7B26\u5408\u8BE5\u671D\u4EE3\u5730\u57DF\u7279\u5F81\n\n' +
-      '【角色定型→五常→能力】（先后顺序·性格鲜明·勿平均化）\n' +
-      '步骤一·先决定此人属于哪一类：corrupt(巨贪)|regent(权臣)|military(名将)|clean(清官)|scholar(文宗)|loyal(忠臣)|reformer(改革家)|usurper(篡臣)|eunuch(宦权)|normal(普通士人)\n' +
-      '步骤二·按角色类型分布【五常 wuchang】（仁义礼智信 0-100·必有强弱差异·勿一律 60）\n' +
+      '【★ 史实优先原则 ★】真实历史人物·能力数值与五常须严格按其史书记载推导·下表只是兜底参考·与史册冲突时一律以史册为准。\n' +
+      '步骤零·先列史评关键词（仅历史人物·虚构跳过）：\n' +
+      '  · 在内心列出 3-5 个史书评价此人的关键词（如黄道周："硕儒/义士/礼学/刚直/不屈"·张居正："权相/能吏/苛察/改革/夺情"）\n' +
+      '  · 据这些关键词反向推导每项数值——例如\n' +
+      '    "硕儒/礼学" → wuchang.礼>=85·intelligence>=88·valor 不超过 35\n' +
+      '    "义士/不屈/直谏" → wuchang.义>=88·loyalty>=85·integrity>=85·valor 一般低\n' +
+      '    "权相/苛察" → ambition>=80·integrity 中低·administration>=90·intelligence>=88\n' +
+      '    "能吏/改革" → administration>=88·intelligence>=85·valor 中低\n' +
+      '    "名将/督师" → valor>=85·loyalty>=80·administration 中等\n' +
+      '    "酷吏/巨贪" → integrity<=25·ambition>=80·benevolence<=40\n' +
+      '    "学究/迂腐" → intelligence>=80 但 administration<=55·处事不灵\n' +
+      '  · bio 字段须在末段明示这些史评关键词及对应史料·让玩家可校验\n' +
+      '\n' +
+      '【角色定型→五常→能力】（虚构人物或无明确史评时·按下表兜底）\n' +
+      '步骤一·先决定此人属于哪一类：corrupt(巨贪)|regent(权臣)|military(名将)|clean(清官)|scholar(文宗)|loyal(忠臣)|reformer(改革家)|usurper(篡臣)|eunuch(宦权)|admin(干吏·州府部院主官)|normal(普通士人)\n' +
+      '\n' +
+      '步骤二·按角色类型分布【五常 wuchang】（仁义礼智信 0-100·必有强弱差异·禁止平均化60）\n' +
       '  仁(关怀体恤)·义(公道气节)·礼(规矩恭敬)·智(谋略机敏)·信(诚信守诺)\n' +
-      '  · 巨贪/篡臣：仁20-40 义15-35 礼50-65(伪) 智75-90 信15-35\n' +
-      '  · 宦权：    仁25-45 义25-40 礼50-65 智75-90 信25-40\n' +
-      '  · 权臣：    仁50-70 义50-70 礼60-75 智80-95 信55-70\n' +
-      '  · 名将：    仁55-75 义80-95 礼55-70 智65-80 信80-95\n' +
-      '  · 清官：    仁80-95 义85-100 礼75-90 智65-80 信85-100\n' +
-      '  · 忠臣：    仁75-90 义90-100 礼75-90 智60-75 信90-100\n' +
-      '  · 改革家：  仁65-80 义75-90 礼55-70 智85-95 信70-85\n' +
-      '  · 文宗：    仁70-85 义70-85 礼80-95 智85-95 信75-90\n' +
-      '  · 普通士人：四维50-70·按个性±10\n' +
-      '步骤三·按角色类型分布【能力】（结合五常·勿矛盾）\n' +
-      '  · 巨贪：     ambition80-95 integrity5-25 loyalty30-55 valor20-50 intelligence70-85 administration60-80\n' +
-      '  · 篡臣：     ambition90-100 integrity25-50 loyalty10-30 valor75-90 intelligence80-95 administration70-90\n' +
-      '  · 宦权：     ambition80-95 integrity10-30 loyalty50-75 valor20-45 intelligence70-85 administration55-75\n' +
-      '  · 权臣：     ambition70-90 integrity50-75 loyalty60-80 valor50-75 intelligence80-95 administration85-95\n' +
-      '  · 名将：     ambition60-80 integrity75-90 loyalty80-95 valor85-100 intelligence65-85 administration60-80\n' +
-      '  · 清官：     ambition35-55 integrity90-100 loyalty85-95 valor30-55 intelligence70-85 administration80-95 benevolence85-95\n' +
-      '  · 忠臣：     ambition50-70 integrity85-100 loyalty90-100 valor60-85 intelligence65-80 administration70-85\n' +
-      '  · 改革家：   ambition75-90 integrity70-90 loyalty75-90 valor40-65 intelligence85-95 administration90-100\n' +
-      '  · 文宗：     ambition40-65 integrity80-95 loyalty70-85 valor25-50 intelligence88-98 administration65-85 charisma75-90\n' +
-      '  · 普通士人：各维50-75·必有1-2项偏低\n' +
+      '  · 巨贪/篡臣：仁15-35 义10-30 礼45-60(虚伪礼貌·非真) 智75-92 信10-30  ★强约束:仁<40·义<35·信<35\n' +
+      '  · 宦权：    仁20-40 义20-40 礼45-60 智75-90 信20-40             ★强约束:义<45·信<45\n' +
+      '  · 权臣：    仁45-65 义45-65 礼55-72 智80-95 信50-68             ★强约束:智>=78\n' +
+      '  · 名将：    仁55-75 义80-95 礼55-72 智65-80 信80-95             ★强约束:义>=75·信>=75\n' +
+      '  · 清官：    仁82-95 义88-100 礼75-90 智65-80 信88-100           ★强约束:仁>=78·义>=80·信>=85\n' +
+      '  · 忠臣：    仁75-90 义92-100 礼75-90 智60-75 信92-100           ★强约束:义>=88·信>=88\n' +
+      '  · 改革家：  仁60-78 义75-90 礼50-65(惯破规) 智85-95 信68-82\n' +
+      '  · 文宗：    仁70-85 义70-85 礼82-96 智85-95 信75-90             ★强约束:礼>=78·智>=80\n' +
+      '  · 干吏：    仁60-78 义68-82 礼60-75 智70-85 信72-88\n' +
+      '  · 普通士人：四维50-70·必至少 1 项 <55 1 项 >70(突显个性)·禁止全 60\n' +
+      '\n' +
+      '步骤三·按角色类型分布【能力】(0-100)\n' +
+      '  ★ 关键规则：除"名将"valor 高·除"权臣/清官/改革家/干吏"administration 高外·\n' +
+      '     文宗/普通士人/清官(无戍边)/巨贪(无戍边)/言官 valor 一律 ≤45\n' +
+      '     文宗/普通士人/言官(无州府主官经历) administration 一律 ≤55\n' +
+      '\n' +
+      '  · 巨贪：     ambition80-95 integrity5-25 loyalty30-55 valor25-40(若无戍边经历) intelligence70-85 administration55-72\n' +
+      '  · 篡臣：     ambition90-100 integrity25-50 loyalty10-30 valor70-90(篡臣多有军权) intelligence80-95 administration70-88\n' +
+      '  · 宦权：     ambition80-95 integrity10-30 loyalty50-75 valor20-35 intelligence70-85 administration50-70\n' +
+      '  · 权臣：     ambition70-90 integrity50-75 loyalty60-80 valor40-55(权臣不出征) intelligence80-95 administration85-95\n' +
+      '  · 名将：     ambition55-78 integrity75-90 loyalty80-95 valor85-100 intelligence65-85 administration55-75\n' +
+      '  · 清官：     ambition35-55 integrity90-100 loyalty85-95 valor25-40(无戍边) intelligence70-85 administration70-90 benevolence85-95\n' +
+      '  · 忠臣：     ambition50-70 integrity85-100 loyalty90-100 valor40-65 intelligence65-80 administration60-80\n' +
+      '  · 改革家：   ambition75-90 integrity70-90 loyalty75-90 valor35-55 intelligence85-95 administration88-100\n' +
+      '  · 文宗：     ambition40-65 integrity80-95 loyalty70-85 valor20-40 intelligence88-98 administration50-65 charisma75-90\n' +
+      '  · 干吏：     ambition55-75 integrity70-88 loyalty70-88 valor40-58 intelligence75-88 administration82-95\n' +
+      '  · 普通士人：ambition40-65 integrity55-80 loyalty60-80 valor25-50 intelligence55-78 administration45-65·必有1-2项偏低\n' +
+      '\n' +
+      '【硬性禁止 — 违反则视为生成失败】\n' +
+      '  · 文宗/普通士人/巨贪(无bio戍边记载) valor > 50 ❌\n' +
+      '  · 文宗/普通士人/言官(无bio州府主官记载) administration > 65 ❌\n' +
+      '  · 清官 wuchang.信 < 85 ❌\n' +
+      '  · 巨贪/篡臣 wuchang.仁 > 40 或 wuchang.信 > 40 ❌\n' +
+      '  · 名将 wuchang.义 < 75 或 wuchang.信 < 75 ❌\n' +
+      '  · 五常五项不可全 ±5 内（必须有强弱差异·至少 1 项 ≥75·1 项 ≤45）\n' +
+      '\n' +
       '步骤四·一致性强约束\n' +
-      '  · personality/stance/traits/bio 必须与 wuchang+ability 呼应（巨贪 bio 不可写勤政为民·清官 wuchang.信 不可低于80）\n' +
-      '  · ambition高+loyalty低 → 篡臣相·必反映在 stance\n' +
-      '  · integrity高+benevolence高 → 清官相·必反映在 personality\n\n' +
-     
+      '  · personality/stance/traits/bio 必须与 wuchang+ability 呼应\n' +
+      '  · 巨贪 bio 不可写"勤政为民"·清官 wuchang.信 不可低于 85\n' +
+      '  · ambition 高+loyalty 低 → 篡臣相·必反映在 stance\n' +
+      '  · integrity 高+benevolence 高 → 清官相·必反映在 personality\n\n' +
+
       '\u8FD4\u56DE JSON\u5305\u542B\uFF1A\n{\n' +
       '  "isHistorical": true/false,\n' +
       '  "age": number,\n' +
@@ -171,7 +205,7 @@
       '  "origin": "\u7C4D\u8D2F\u5982\u798F\u5EFA\u5357\u5B89",\n' +
       '  "birthplace": "\u51FA\u751F\u5730",\n' +
       '  "location": "\u5F53\u524D\u6240\u5728\u5730(\u5982\u5728\u4EFB\u4EC5\u586B\u4EFB\u6240\uFF1B\u5F85\u5B85\u5219\u586B\u5BB6\u4E61)",\n' +
-      '  "faction": "' + (opts.faction || '') + '(\u5FC5\u987B\u4ECE\u4E0A\u8FF0\u3010\u5F53\u524D\u52BF\u529B\u3011\u4E2D\u9009\u4E00\u4E2A\u00B7\u82E5\u6B64\u4EBA\u4E3A\u672C\u671D\u58EB\u5927\u592B\u5219\u9009\u4E3B\u671D\u3001\u82E5\u4E3A\u5916\u85E9\u5219\u9009\u5BF9\u5E94\u52BF\u529B)",\n' +
+      '  "faction": "★必须严格等于下列纯势力名之一·禁止括号/领袖/地域装饰·只填纯名字: [' + (_facNamesOnly.length ? _facNamesOnly.join(' | ') : '中立') + ']",\n' +
       '  "class": "\u58EB\u65CF/\u5BD2\u95E8/\u5546\u8D3E/\u5B97\u5BA4/\u7B49",\n' +
       '  "title": "\u5F53\u524D\u5B98\u804C\u6216\u8EAB\u4EFD",\n' +
       '  "appearance": "\u5916\u8C8C 40-80 \u5B57",\n' +
@@ -255,7 +289,7 @@
         if (!data || typeof data !== 'object') throw new Error('\u89E3\u6790\u5931\u8D25');
         if (data.error) {
           // AI 拒绝生成（如史实已故）
-          throw new Error('\u5386\u53F2\u4E0D\u53EF\u73B0: ' + data.error);
+          var _errMsg=data.error||'';var _help='';if(/\u53F2\u5B9E\u4E0D\u53EF\u73B0|\u5DF2\u4ED9|\u672A\u751F|\u8FC7\u4E16|\u53BB\u4E16|\u672A\u51FA\u751F|\u5C1A\u672A/.test(_errMsg)){var _stat=(birthY&&year<birthY)?'\u5C1A\u672A\u51FA\u751F':((deathY&&year>deathY)?'\u5DF2\u4ED9\u901D':'\u4E0D\u5728\u4E16');var _bi=(birthY?'\u00B7\u751F '+birthY:'')+(deathY?'\u00B7\u5352 '+deathY:'');_help='\uFF1A\u6B64\u4EBA\u4E8E '+year+' \u5E74'+_stat+_bi+'\u3002\u5EFA\u8BAE\uFF1A\u20460\u6362\u540C\u671D\u4EBA\u7269\u00B7\u20461\u8BBE\u7F6E\u4E2D\u5207\u201C\u6F14\u4E49\u6A21\u5F0F\u201D';}else{_help='\uFF1A'+_errMsg;}throw new Error('\u5386\u53F2\u4E0D\u53EF\u73B0'+_help);
         }
 
         // 拼装 char 对象
@@ -313,12 +347,61 @@
           else _parsedCash = 3000;
         }
 
-        // 势力确定：按 opts → AI → 默认推断
+        // ─── 能力数值后处理 clamp·防 AI 偷给文宗高 valor / 言官高 administration ───
+        var _bioStr = String(data.bio || '') + ' ' + String(opts.assignPost || '') + ' ' + String(data.title || '');
+        var _hasMilitary = /将|总兵|提督|参将|副将|游击|戍边|督师|经略|镇守|出征|从征|平叛|武|戎|军|兵|卫|关|塞|疆/.test(_bioStr);
+        var _hasAdmin    = /巡抚|总督|布政|按察|尚书|侍郎|府尹|知府|同知|州牧|刺史|郡守|都督|经略|参政|参议|学政|提学|盐运|主考|尚书|大学士|首辅|阁老/.test(_bioStr);
+        // 文宗/言官/普通士人·valor 强制低
+        if (typeof data.valor === 'number' && data.valor > 50 && !_hasMilitary) {
+          try { console.warn('[char-autogen] valor clamp ' + data.valor + ' → 35 (无军旅履历·' + name + ')'); } catch(_){}
+          data.valor = 35 + Math.floor(Math.random() * 10);
+        }
+        // 普通文官·administration 强制中等
+        if (typeof data.administration === 'number' && data.administration > 65 && !_hasAdmin && !_hasMilitary) {
+          try { console.warn('[char-autogen] admin clamp ' + data.administration + ' → 55 (无州府部院履历·' + name + ')'); } catch(_){}
+          data.administration = 50 + Math.floor(Math.random() * 12);
+        }
+        // 五常防"全 60 平均化"·检查极差
+        if (data.wuchang && typeof data.wuchang === 'object') {
+          var _wcVals = ['ren','yi','li','zhi','xin'].map(function(k) { return typeof data.wuchang[k] === 'number' ? data.wuchang[k] : 60; });
+          var _wcMin = Math.min.apply(null, _wcVals), _wcMax = Math.max.apply(null, _wcVals);
+          if (_wcMax - _wcMin < 15) {
+            try { console.warn('[char-autogen] 五常过于平均(' + _wcMin + '-' + _wcMax + ')·人为放大差异 ' + name); } catch(_){}
+            // 给最大的项 +10·最小的项 -10·避免完全平均
+            var _maxIdx = _wcVals.indexOf(_wcMax), _minIdx = _wcVals.indexOf(_wcMin);
+            var _keys = ['ren','yi','li','zhi','xin'];
+            data.wuchang[_keys[_maxIdx]] = Math.min(95, _wcMax + 10);
+            data.wuchang[_keys[_minIdx]] = Math.max(15, _wcMin - 10);
+          }
+        }
+
+        // 势力确定：按 opts → AI → 清洗装饰 → 模糊匹配 GM.factions
         var _faction = opts.faction || data.faction || '';
-        if (!_faction) {
-          // 若当前场景是本朝·默认归本朝
-          var _mainFac = (GM.factions || GM.facs || [])[0];
-          if (_mainFac) _faction = _mainFac.name;
+        var _existFacs2 = (GM.factions || GM.facs || []);
+        var _existFacNames = _existFacs2.map(function(f){ return f.name; }).filter(Boolean);
+        // 1) 剥装饰："大明朝堂(朱由检)·京师" → "大明朝堂"
+        if (_faction) {
+          var _stripped = String(_faction).replace(/[（(].*?[)）]/g, '').replace(/[·,，][^·,，]*$/, '').trim();
+          if (_stripped) _faction = _stripped;
+        }
+        // 2) 模糊匹配现有势力
+        if (_faction && _existFacNames.indexOf(_faction) < 0) {
+          var _best = '';
+          _existFacNames.forEach(function(n) {
+            if (!n) return;
+            if (n.indexOf(_faction) >= 0 || _faction.indexOf(n) >= 0) {
+              if (n.length > _best.length) _best = n;
+            }
+          });
+          if (_best) {
+            try { console.warn('[char-autogen] faction 重定向 "' + _faction + '" → "' + _best + '"'); } catch(_) {}
+            _faction = _best;
+          }
+        }
+        // 3) 仍未命中 → 回退第一个势力（玩家本朝）
+        if (!_faction || _existFacNames.indexOf(_faction) < 0) {
+          if (_existFacNames.length > 0) _faction = _existFacNames[0];
+          else _faction = '中立';
         }
 
         var newChar = {

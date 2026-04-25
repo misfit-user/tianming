@@ -116,23 +116,26 @@ function _postTurnCourtChoose(openCourt) {
     // 同时开朝——先打开 chaoyi-modal 再直跳常朝准备
     setTimeout(function(){
       try {
-        // 1) 初始化 CY 状态并创建 chaoyi-modal（不走 openChaoyi 的模式选择页·直接进常朝）
-        if (typeof openChaoyi === 'function') {
-          // 绕过 turn 频率限制（后朝是独立于 in-turn 限制的机会）
-          if (!GM._chaoyiCount) GM._chaoyiCount = {};
-          if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
-          // 临时拉低计数以绕开 openChaoyi 的频率闸（若已开 2 次暂存旧值）
-          var _origCnt = GM._chaoyiCount[GM.turn];
-          GM._chaoyiCount[GM.turn] = 0;
+        // 朔朝·直接走 v3 _cc3_open（与早朝完全一致流程·区别仅在 GM._isPostTurnCourt 标志触发的标题/时间/system prompt）
+        // 频次记录（post-turn 不受 in-turn 限制·_cc3_open 内有 _isPostTurnCourt 判定跳过频率闸）
+        if (!GM._chaoyiCount) GM._chaoyiCount = {};
+        if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
+        if (typeof _cc3_open === 'function') {
+          _cc3_open();
+        } else if (typeof openChaoyi === 'function') {
+          // 兜底·v3 未加载时退到 v1 模式选择页
           openChaoyi();
-          GM._chaoyiCount[GM.turn] = _origCnt; // 恢复，避免双计
         }
-        // 2) CY 设置为常朝模式
+        if (false && typeof openChaoyi === 'function') {
+          // 旧路径已废·v2 _cc2_openPrepareDialog 已物理删除·跳过
+          if (false) {} // sentinel·保留旧代码块结构
+        }
+        // 2) CY 设置为常朝模式（兼容兜底路径）
         if (typeof CY !== 'undefined') { CY.mode = 'changchao'; CY.topic = ''; }
-        // 3) 隐藏模式选择页·直跳筹备弹窗
-        var cyBody = _$('cy-body');
+        // 3) 不再覆盖 cy-body·v3 自有 modal
+        var cyBody = null;
         if (cyBody) cyBody.innerHTML = '<div style="text-align:center;color:var(--color-foreground-muted);padding:1rem;font-size:0.78rem;">\u3014\u6714\u671D\u00B7\u6B21\u6708\u521D\u671D\u3015\u7B79\u5907\u4E2D\u2026\u2026</div>';
-        if (typeof _cc2_openPrepareDialog === 'function') _cc2_openPrepareDialog();
+        // _cc2_openPrepareDialog 已物理删除·此调用永不执行
         // 4) 添加底栏进度 banner
         if (typeof _showPostTurnCourtBanner === 'function') _showPostTurnCourtBanner();
       } catch(_e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_e, 'postTurnCourt] openFailed:') : console.error('[postTurnCourt] openFailed:', _e); }

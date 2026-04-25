@@ -350,6 +350,12 @@ var ThemeSystem = {
     // 从本地存储加载主题 (R153 包 try)
     var savedTheme = null;
     try { savedTheme = localStorage.getItem('tianming_theme'); } catch(_){}
+    // 历史残留清理：旧版本允许 light/paper·CSS 是白底·与游戏深色基调冲突·一律强制回 dark
+    if (savedTheme === 'light' || savedTheme === 'paper') {
+      savedTheme = 'dark';
+      try { localStorage.setItem('tianming_theme', 'dark'); } catch(_){}
+      try { document.documentElement.removeAttribute('data-theme'); } catch(_){}
+    }
     if (savedTheme && this.themes[savedTheme]) {
       this.currentTheme = savedTheme;
     }
@@ -368,6 +374,11 @@ var ThemeSystem = {
 
   // 切换主题
   setTheme: function(themeName) {
+    // 拒绝 light/paper（白底主题）·会与游戏深色基调冲突
+    if (themeName === 'light' || themeName === 'paper') {
+      if (typeof toast === 'function') toast('白底主题已停用·避免与游戏配色冲突');
+      return;
+    }
     if (this.themes[themeName]) {
       this.currentTheme = themeName;
       this.apply();

@@ -1004,6 +1004,37 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           } else {
             tp += '  结果：搁置，未采纳任何提议——各方可能继续私下串联推动自己的方案\n';
           }
+          // ── 完整对话转录（v3 新增）·按 agendaIdx 分组·让 AI 看清每条议题的具体讨论 ──
+          if (Array.isArray(cr.transcript) && cr.transcript.length > 0) {
+            tp += '  【朝堂对话原文】（按议题分组·NPC 行动须与之连贯·若有"君臣修改方案/探讨他法/同意部分驳回部分"须在叙事中体现）\n';
+            // 按 agendaIdx 分组
+            var byIdx = {};
+            cr.transcript.forEach(function(t) {
+              var k = (t.agendaIdx != null && t.agendaIdx >= 0) ? t.agendaIdx : -1;
+              if (!byIdx[k]) byIdx[k] = [];
+              byIdx[k].push(t);
+            });
+            // 依 idx 递增输出
+            Object.keys(byIdx).map(Number).sort(function(a,b){return a-b;}).forEach(function(k) {
+              var d = (cr.decisions || [])[k];
+              var head = (k >= 0 && d) ? '    ── 议 [' + (k+1) + '] ' + d.title + (d.dept ? '·' + d.dept : '') + ' → ' + (d.label || d.action) + (d.extra ? '·' + d.extra : '') + ' ──'
+                       : '    ── 朝中其他对话 ──';
+              tp += head + '\n';
+              byIdx[k].slice(-12).forEach(function(t) {
+                var sp = (t.role === 'player') ? '陛下' : (t.speaker || '某员');
+                tp += '      ' + sp + (t.stance ? '(' + t.stance + ')' : '') + '：' + String(t.text || '').slice(0, 130) + '\n';
+              });
+            });
+          }
+          // ── 玩家具体决策动作详情（含改批/口诏/追问内容·与对话原文互补）──
+          if (Array.isArray(cr.decisions) && cr.decisions.length > 0) {
+            tp += '  【陛下逐条裁决·结构化】\n';
+            cr.decisions.forEach(function(d, i) {
+              tp += '    [' + (i+1) + '] ' + (d.title || '') + (d.dept ? '(' + d.dept + ')' : '') + ' → ' + (d.label || d.action) + '\n';
+              if (d.extra) tp += '         陛下具体表示：' + String(d.extra).slice(0, 200) + '\n';
+            });
+            tp += '  ※ NPC 推演时·须严格按"陛下具体表示"中的修改/补充执行·不可按原奏报版本\n';
+          }
           // 科议特殊说明
           if (cr.mode === 'keyi' && cr._keyiMeta) {
             var km = cr._keyiMeta;
@@ -1032,11 +1063,27 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       // 常朝快速裁决（如果有）
       if (GM._lastChangchaoDecisions && GM._lastChangchaoDecisions.length > 0) {
         tp += '\n【常朝裁决——本回合快速决策，必须在edict_feedback/npc_actions中体现执行】\n';
+        tp += '【裁决类型语义·AI 严格区分】\n';
+        tp += '  · 准奏：等同诏令·应即落实·edict_feedback 报告执行进度\n';
+        tp += '  · 驳奏：明确否决·原议不得执行·提议者可能不满\n';
+        tp += '  · 留中：搁置不批·原议悬置·提议者可能再上疏\n';
+        tp += '  · 改批(modify)：陛下亲改方案·原奏报作废·按陛下口述新方案执行（extra 字段含具体改动·需细读）\n';
+        tp += '  · 当庭口诏(decree)：陛下另发诏令·与议题相关或扩展·按 extra 描述执行\n';
+        tp += '  · 发部议(refer)：转某部进一步详议·非定案·该部下次须有回奏\n';
+        tp += '  · 下廷议(escalate)：兹事体大转正式廷议·下回合可能开廷议\n';
+        tp += '  · 追问(probe)：陛下要求详陈·主奏者下次须更详细回奏（extra 含玩家具体追问内容）\n';
+        tp += '  · 训诫(admonish)·嘉奖(praise)·传召(summon)：人事性即时动作·影响 NPC 关系/行为\n';
         GM._lastChangchaoDecisions.forEach(function(d) {
-          var _lbl = { approve: '准', reject: '驳', discuss: '转廷议', hold: '留', ask: '追问' };
-          tp += '  ' + (_lbl[d.action]||d.action) + '：' + (d.dept||'') + '所奏' + (d.title||'') + '\n';
+          var _lbl = { approve: '准奏', reject: '驳奏', discuss: '转廷议', hold: '留中', ask: '追问',
+                       modify: '改批', decree: '当庭口诏', refer: '发部议', escalate: '下廷议',
+                       probe: '追问', admonish: '训诫', praise: '嘉奖', summon: '传召', skip: '免议' };
+          var line = '  · ' + (_lbl[d.action]||d.action) + '：' + (d.dept||'') + '所奏「' + (d.title||'') + '」';
+          // extra 含玩家改批/口诏/追问的具体内容·必须传给 AI（最重要的 nuance）
+          if (d.extra) line += '\n      ★详情：' + String(d.extra).slice(0, 200);
+          tp += line + '\n';
         });
-        tp += '  ※ "准"的事务等同诏令，应在edict_feedback中报告执行情况。"驳"的事务不得执行。\n';
+        tp += '  ※ "改批"和"当庭口诏"的 extra 字段是陛下的具体修改/补充内容·NPC 行为须严格按修改后版本执行·不可按原奏报\n';
+        tp += '  ※ 朝堂对话原文（在上方【朝堂对话原文】段·已注入）反映了 君臣是否对原议作了"同意一部分·修改一部分·增加/减少一部分"等细节调整·NPC 须感知\n';
       }
       // 常朝频率对政治的影响
       var _ccCount = GM._chaoyiCount || {};

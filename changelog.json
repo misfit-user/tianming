@@ -3,6 +3,97 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "邸报·常朝迁移完整收官·v2 §1 物理删除 + 1628 剧本朝制配置",
+      "title": "tm-chaoyi-v2.js §1 物理删除 1283 行 UI/动作死代码·tianqi7-1627 剧本注入 chaoyi schema(明制·奉天门·六部+都察院·东林/阉党 8 派系)·常朝唯一入口走 v3",
+      "items": [
+        { "what": "tm-chaoyi-v2.js §1 物理删除·从 2598 行 → 1314 行(净删 1283 行)。删除范围：L18-219(_cc2_openPrepareDialog/_cc2_cancelPrepare/_cc2_openExtraSummons/_cc2_confirmExtraSummons/_cc2_startCourtSession 5 函数)·L300-1384(_cc2_advance/_cc2_phaseAnnounce/_cc2_phaseReport/_cc2_phaseDebate/_cc2_genRoundSpeeches/_cc2_phaseReact/_cc2_doReprimand/_cc2_judgeSummonReaction 等 50+ 函数·覆盖整个 v2 常朝 UI/动作流)。保留：L220-296 _cc2_buildAgendaPrompt + _cc2_fallbackAgenda(v3 _cc3_buildAgendaFromGM 复用)·L1385+ §2 廷议 v2 + §3 御前 v2(独立功能·不受影响)", "why": "v3 经全 P0-P4 实现 + smoke 56/0 验证·替代 v2 §1 完全可行。v2 §1 留着是 1283 行死代码·物理删除让文件维护负担减半·单一真理来源(SSOT)" },
+        { "what": "tm-chaoyi.js _cy_pickMode 简化：移除 USE_CC3 fallback 路径·常朝唯一走 _cc3_open。USE_CC3=false 回退已无效(v2 §1 入口删了)·若需回退须从 .bak 恢复。增加 toast 兜底·若 _cc3_open 未加载则提示刷新页面", "why": "v2 §1 物理删除后路由必须更新·避免引用空函数。USE_CC3 开关从此不再用·_cc3_open 是常朝唯一入口" },
+        { "what": "scenarios/tianqi7-1627.js 注入 chaoyi 配置(scenario.chaoyi schema)：奉天门 / 早朝-朔朝命名 / 鸣鞭山呼御殿三礼仪 / 75-75 肃朝阈值 / 二品阁臣线 / 户部吏部礼部兵部刑部工部都察院 7 部下拉 / 8 派系 factionMap(东林=support+kdao·阉党=oppose+eunuch·楚浙=mediate+east·清流=support+kdao·军方=neutral+wu·中立=neutral+east) / 全 8 议程类型启用", "why": "MIGRATION §H 编辑器 deferred·剧本侧此次先落地。v3 跑 1628 剧本·题图自动用'奉天门 戊辰年正月'·发部议下拉显示 7 部·派系颜色按 factionMap 归类。其他朝代剧本可仿照写自己的 scenario.chaoyi" },
+        { "what": "清理 scripts 目录·删除 _clean-cc2-section1.js + _build-chaoyi-v3.js 两个一次性补丁脚本(R120 磁盘清理原则)。tm-chaoyi-v2.js.bak 保留至 v3 经实测稳定后再清", "why": "迁移工具已用完即删·按项目惯例" },
+        { "what": "迁移最终状态(完整版)：tm-chaoyi-v2.js 2598→1314(-1283)·tm-chaoyi-v3.js 2586·tm-chaoyi.js 154 + tm-chaoyi-v3.css 1100·smoke-chaoyi-v3.js 412 行 56/0·verify-all 5/5 全过(syntax 183 / ref-check / orphans / smoke 207-4 baseline / cc3-smoke 56-0)·零回归。MIGRATION_MAP 全 task A/B/C/D/E/G/I 通关", "why": "常朝重置升级正式 100% 完成·从 5500+ 行 v2 mock+UI → 1314 行 v2 prompt only + 2586 行 v3 真实接入·总代码量持平但语义清晰可维护" },
+        { "what": "下一步建议：(1) 玩家按 V3_TEST_GUIDE 实测 v3 完整流程·收集 bug (2) 长期稳定后清 tm-chaoyi-v2.js.bak (3) 编辑器面板补 scenario.chaoyi 配置 UI 让剧本作者直接填写", "why": "迁移工程结束·剩实测+清理+编辑器扩展为后续维护项" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·常朝迁移收官·季节天气注入 prompt + 文档总览",
+      "title": "P4+ 季节天气注入议程 prompt 与 NPC 发言 prompt·MIGRATION_MAP 加实施状态总表·迁移完成度 95%",
+      "items": [
+        { "what": "P4+·季节天气 prompt 注入：_cc3_buildAgendaFromGM 在 _cc2_buildAgendaPrompt 末尾追加「【今日时令】春·细雨·奉天门·戊辰年正月。议程可酌情反映时令(春汛/夏旱/秋粮/冬饷·或寒朝百官冒雪/暑朝苦热等氛围)」·让 AI 生成的议程能反映时令(开春多农事·秋季多粮饷·冬日多边饷)。buildNpcPrompt 加「【时令】春·细雨·可酌情融入回应措辞」·NPC 回应可带时令气氛", "why": "P4 视觉气泡只是装饰·真正让朝议有时令感需 AI prompt 知道。冬日寒朝百官措辞会更克制·夏暑则可托病·春汛季节议题自然偏河防" },
+        { "what": "MIGRATION_MAP.md 加实施状态总表·标记 A/B/C/D/G/I 完成度·E 物理删除 deferred。一目了然看哪些 task 通关哪些 pending", "why": "波 3 收官·清楚记录迁移完成度·避免后续混淆" },
+        { "what": "smoke baseline 改善：207/4 → 208/3。零回归且新通过 1 项", "why": "headless-smoke 自然 pickup 了 v3 改动·原本失败的某 case 现在通过" },
+        { "what": "迁移最终状态：A 11/11 / B 5/5 / C 11/11 / D 9/9 / G ✅ / I ✅ / E deferred·v3 行数 2586·文档 245+235+~250 行三份地图·smoke 56/0·verify-all 5/5 全过·USE_CC3 默认 true 已激活", "why": "常朝重置升级正式收官·v3 已是生产版本·USE_CC3=false 仅作 console 回退" },
+        { "what": "下一阶段建议：(1) 玩家按 V3_TEST_GUIDE 实测 v3 完整流程并反馈 bug (2) 长期稳定后再做 E 物理清理(v2 §1 ~1330 行) (3) 朝代配置 schema 落地到剧本(scenario.chaoyi 字段在 1628 崇祯/未来唐宋等剧本里填充)", "why": "三步路径明确·按时序推进" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·常朝迁移波 3·全 P0-P4 + 默认切 v3·v2 §1 deprecated",
+      "title": "v3 决议真写入 GM 状态(诏令追踪/廷议待议/留中册/部议任务/记忆/关系)·5 类缺席识别+衙门效率惩罚·季节天气真实性·清 218 行 mock 死代码·USE_CC3 默认 true·v2 §1 标 deprecated",
+      "items": [
+        { "what": "P0·v3 决议真写入 GM 状态(C3-C8)：新增 _cc3_writeActionToGM (~110 行)·覆盖 7 种动作的 GM 写入。准奏/改批/口述诏令 → GM._edictTracker.push(进诏令追踪表·decreeMark 标档位)·下廷议 → GM._pendingTinyiTopics.push·留中 → GM._ccHeldItems.push·发部议 → GM.deptTasks.push·训诫 → NpcMemorySystem.remember(愤·7权重)+OpinionSystem(-8)+ch.loyalty -5·嘉奖 → 喜+8+loyalty +4 fame +1·驳奏 → presenter 忧记忆。新增 _cc3_persistCourtRecord 朝会快照写入 GM._courtRecords(targetTurn 后朝时 +1)+_lastChangchaoDecisions(学习记忆)+recordCourtHeld(勤政度)。_cc3_open 加 _isPostTurnCourt 检测+频次计数+2/turn 限制(post-turn 不受限)·runClosing 末尾调 _onPostTurnCourtEnd hook", "why": "之前 v3 所有动作只是浮气泡·决议不真写 GM·切 v3 后下回合 AI 推演看不到上次圣意。此波让 v3 真「治国」·与 v2 后端对齐·包括后朝并发兼容" },
+        { "what": "P3·v3 mock 死代码清理 (-218 行)：const CHARS = {} 清空(原 14 个明末角色 mock)·const AGENDA = [] 清空(原 7 条议程 mock)·_cc3_DEAD_callAIPreview 函数体(36 行 fetch 实现)删除。_cc3_open 时由 _cc3_overrideMockWithGM 从 GM.chars 真填充·smoke runV3 末尾自动调 _cc3_overrideMockWithGM 测试 5 mock chars 也能 pass", "why": "v3 文件从 2673 行 → 2455 行·语义更干净。preview 风格 mock 在主项目里是噪音" },
+        { "what": "P2·5 类缺席识别(G 类)+衙门连续缺席惩罚：新增 _cc3_classifyAbsent(ch) 按 char 字段分类(远赴 / 奉旨外出 / 丁忧守制 / 称病请假 / 致仕归乡 / 闭门思过 / 贬谪外地 / 称病在家(实斗气·loyalty<25 ambition>70 触发) / 远离京师 9 类) ·_cc3_buildCharsFromGM 调用让缺朝名册有具体原因。新增 _cc3_recordDeptAbsence + _cc3_checkDeptAbsenceMalus·朝议结束记录各部主官缺席状态·连续 2 次 -15% 效率·连续 3 次 -30%·写入 GM._deptAbsenceTracker", "why": "MIGRATION §A G 类·v3 之前只'远赴/缺朝'二态。现按 char 字段细分·渲染缺朝名册显示具体原因·后续推演可读 _deptAbsenceTracker 触发该部效率惩罚" },
+        { "what": "P4·季节天气真实性(I 类)：新增 _cc3_getSeasonAndWeather 从 scenario.startYear+GM.turn 推月份+季节(春夏秋冬)·按季节随机天气(春:细雨/微雨/春雷·夏:骤雨/酷热/雷暴·秋:秋雨/微寒/霜露·冬:雪/寒风/冰封)。_cc3_getSeasonalAmbientLine 给每季节 5 种天气专属意境句(共 20 句)·runOpening 御殿前插入。state._currentSeason/_currentWeather 存供后续 prompt 注入", "why": "MIGRATION §I·让朝议有时令感·夏日炎炎/朔风凛冽与玩法节奏匹配。AI 推演若读 state.season 也能体现农时影响" },
+        { "what": "P1·USE_CC3 默认切 v3·v2 §1 标 deprecated：tm-chaoyi.js _cy_pickMode 改 `useV3 = (window.USE_CC3 !== false)`·常朝默认走 v3·console 跑 window.USE_CC3=false 才回 v2。tm-chaoyi-v2.js _cc2_openPrepareDialog 加 ⚠️ DEPRECATED 注释·标「v3 长期稳定后单独 wave 清理」·_cc2_buildAgendaPrompt 因 v3 仍调用故必须保留", "why": "v3 经 56/0 smoke + 全部 P0-P4 实现后已具备生产能力·切默认。v2 §1 1330 行不能直接删因 v3 复用议程 prompt·留 fallback 等长期验证" },
+        { "what": "验证·verify-all 全 5 项通过(syntax 183 / ref-check / find-orphans / smoke 207-4 baseline / cc3-smoke 56-0)。tm-chaoyi-v3.js 2586 行·tm-chaoyi-v2.js.bak 备份保留至下一 wave 完全清理 v2 §1", "why": "迁移完成度 95%+·剩 v2 §1 物理删除留待 v3 在生产中长期验证后再做" },
+        { "what": "迁移完整状态：A 类 11/11 ✅·B 类 5/5 ✅·C 类 11/11 ✅(P0 补完)·D 类 9/9 ✅·G 缺席 ✅·I 真实性 部分(无 prompt 注入·有视觉)·E v2 §1 物理清理 deferred", "why": "MIGRATION_MAP 完整 task 列已基本通关·剩 E 物理清理是非紧急维护项" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·常朝 v3 smoke 测试集 + verify-all 集成",
+      "title": "scripts/smoke-chaoyi-v3.js 56 项纯逻辑测试·覆盖意图/点名/关键词/朝威/诏令档位/朝代配置/干支/议程增强/派系立场/rank 分流·verify-all 加 cc3-smoke step",
+      "items": [
+        { "what": "新建 scripts/smoke-chaoyi-v3.js 412 行·vm 沙盒加载 tm-chaoyi-v3.js·mock GM/P/DOM/callAI 等。10 个 test suite·56 个 assertion：T1 inferPlayerIntent 8 类(惩处优先于激进·严办温体仁→punish) / T2 findMentionedChars 4 case / T3 parseDetailKeyword 7 case / T4 isStrictCourt 4 case(含剧本阈值覆盖) / T5 computeDecreeTier 8 档位 / T6 _cc3_getScenarioConfig 兜底+唐剧本覆盖 / T7 _cc3_buildDateLabel 干支(1628戊辰/1629己巳/624甲申) / T8 _cc3_enhanceAgendaItem(routine/confrontation/已有不覆盖) / T9 _cc3_pickStanceByFaction(target必反/idx偏中和/派系倾向) / T10 classifyForStrict(肃朝阁臣直发vs请奏)", "why": "v3 在 vm 中的纯逻辑可在 Node 跑·不依赖浏览器·CI/迁移过程随时验证。56/0 全过" },
+        { "what": "tm-chaoyi-v3.js inferPlayerIntent 顺序修正：punish(严办/治罪/查办)优先于 aggressive(必须/即办/!!)。从 aggressive 关键词中移除「严办」(原本同时在两边·aggressive 优先匹配走 wrong intent)。「严办温体仁」now → punish 而非 aggressive·语义更准", "why": "smoke T1 暴露的 bug·preview 时已存在·此次随 smoke 顺手修。preview 也将同步" },
+        { "what": "verify-all.js 加 cc3-smoke step(checks 数组从 4 项扩到 5 项)·summary 文案 4→5。常朝 v3 纯逻辑测试集成进 verify-all 默认流程·每次跑都校验·防止 v3 改动破坏纯逻辑", "why": "以后 v3 任何改动·verify-all 立即报错·不需要单独跑 smoke" },
+        { "what": "vm 沙盒技术细节：document.getElementById/querySelector 返回安全 mock element(可任意 property 赋值如 onkeydown=fn)·避免 v3 顶部 DOM binding 抛错。const state 不暴露在 sandbox 属性·用 vm.runInContext('state.prestige=80; isStrictCourt()') 间接访问", "why": "v3 加载时执行了 preview 的 DOM 绑定语句·若 getElementById 返回 null 会崩。const 声明的变量在 vm context 中是 lexical-scoped·只能通过表达式 evalIn 访问而非 sandbox 属性" },
+        { "what": "verify-all 输出·全 5 项通过(syntax 183 文件 / ref-check / find-orphans / smoke 207-4 baseline / cc3-smoke 56-0)·17.9s 总耗时。零回归", "why": "迁移至此·v3 的纯逻辑层完全自动化测试覆盖" },
+        { "what": "波 3 计划：(E) v3 console 实测稳定后切 USE_CC3 默认 true·清理 v2 §1 ~1330 行死码·完成迁移收官", "why": "smoke 已覆盖纯逻辑·剩 UI 实测+v2 死码清理" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·常朝重置波 2·prompt 融合 + 议程增强 + 朝代配置化",
+      "title": "v3 NPC 发言 prompt 接 v2 character/personality/loyalty/NpcMemorySystem 上下文·议程本地合成 selfReact/debate/debate2·scenario.chaoyi schema 全朝代支持",
+      "items": [
+        { "what": "B1 prompt 融合·v3 buildNpcPrompt 重写：从 findCharByName 读真 GM 角色·注入 personality/能力数值(忠诚/清廉/野心)/家世/对陛下立场·调 NpcMemorySystem.recall 取最近 3 条记忆·调 OpinionSystem.getEventOpinion 取与陛下关系·朝威标识强约束·字数走 _aiDialogueWordHint cy。要求 NPC 回应「体现你的性格」·「若有近期记忆且相关·可隐约带出」——AI 真能演角色而非空泛附和", "why": "preview 的 buildNpcPrompt 只读 mock CHARS 的 title/rank/faction·v3 必须接 v2 完整角色上下文·让 NPC 回应有性格记忆派系·而非「陛下圣明」模板话" },
+        { "what": "B1 议程本地增强·_cc3_enhanceAgendaItem 给 AI 议程补 selfReact(1-3 条) / debate(高 controversial >5 时 4-6 条) / debate2(>7 时 3-4 条)。从在京 NPC 池随机抽·按派系推立场(东林偏支持·阉党残余偏反对·军方偏支持中立)·target(弹劾对象) 必反对且抢辩。模板生成短 line (生成纯框架·真实演绎走 AI 流式)", "why": "v2 _cc2_buildAgendaPrompt 不生成 selfReact/debate2 字段·v3 详述阶段需要它们驱动自发表态/议论。本地合成保流程不冷场·成本零(无额外 AI 调用)" },
+        { "what": "C 朝代配置化·_cc3_getScenarioConfig() 从 P.scenario.chaoyi 读：audienceHall(殿名·默认正殿)·chaoName/shuoChaoName(早朝/朔朝命名)·strictThreshold(肃朝阈值默认 75/75)·directSpeakRank(阁臣线默认 2 品)·deptOptions(发部议下拉默认六部+都察院)·factionMap·enabledTypes·fixedAgenda。干支日期 _cc3_buildDateLabel 从 scenario.startYear+GM.turn 推算(甲子年正月)", "why": "preview 写死奉天门/六部/品级 1-2·上线必须配置化。明剧本默认用上述值·唐剧本可改 audienceHall='紫宸殿' deptOptions=三省六部·秦元剧本可 enabled=false 关闭朝议系统" },
+        { "what": "isStrictCourt / classifyForStrict / refreshTitle / doMore('refer') 接 _cc3_getScenarioConfig·阈值/品级线/殿名/部议下拉全部从配置读·preview 默认值仅作 fallback", "why": "全朝代复用机制层零改动·剧本作者只需填 scenario.chaoyi 即可适配自己的朝代" },
+        { "what": "v3 行数 2301→2511·新增 ~210 行(prompt 融合段+议程增强段+scenario 配置段·删旧默认硬编)。CC-A1/A2/A3/B1/C 全部 task 完成", "why": "波 2 的核心都落地·v3 已是「GM 数据真接入·性格记忆真注入·朝代配置真适配」的完整版" },
+        { "what": "验证·verify-all 全绿(183 syntax·207/4 smoke baseline 不变·零回归)。tm-chaoyi-v2.js v2 路径完全不动·USE_CC3 开关默认 off·上线零风险", "why": "渐进迁移持续·v3 console 测试稳后切 default true·最后清 v2 §1" },
+        { "what": "波 3 计划：(D) smoke-chaoyi.js 自动测试集 (5 项核心场景：朝威分流·抗辩·严斥·退朝 tally·朝代切换) (E) v3 console 实测稳定后改 USE_CC3 默认 true·清理 v2 §1 ~1330 行死代码", "why": "测试覆盖 + 死代码清理是迁移收官" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·常朝重置波 1·preview 移植为 tm-chaoyi-v3.js + GM Adapter",
+      "title": "常朝预览（preview-changchao.html）UI 移植到主项目独立模块·CSS 抽出·GM 数据桥接·路由切换开关待激活·v2 不破坏",
+      "items": [
+        { "what": "新建 tm-chaoyi-v3.js (2301 行) · 从 preview-changchao.html 移植完整 JS 1900+ 行 + GM Adapter prelude 80 行·包含：朝威分流(请奏队列·strict≥75)/启奏-详述两段制/抗辩三选+严斥 5 outcomes/喧哗-鸣磬肃静/时辰流动/退朝 tally 圆胶囊/玩家自由话语意图识别 7 类+点名识别/NPC 立场化回应玩家/朝堂氛围气泡。CSS 抽出独立文件 tm-chaoyi-v3.css 1100 行", "why": "把 preview UX 全套带进主项目·UI 与 v2 不冲突(独立 modal·独立 CSS class)·可与 v2 并行存在" },
+        { "what": "GM Adapter 层 _cc3_buildCharsFromGM/_cc3_getPrestige/_cc3_getPower/_cc3_buildAgendaFromGM/_cc3_callAI/_cc3_aiEnabled·替代 preview 的 mock CHARS/AGENDA/state.prestige/state.power/callAIPreview 数据源。CHARS 从 GM.chars 派生(class 按官职推断 east/wu/kdao·rank 走 _cyGetRank·absent 走 _isAtCapital)·AGENDA 走 v2 _cc2_buildAgendaPrompt + callAI tier 系统·callAIPreview 委托给 _cc3_callAI 走 v2 callAI('secondary')", "why": "保留 preview 全部 UI 代码(2057 行不动)·只在 _cc3_open() 时用 Object.assign 覆盖 mock 对象·避免大规模 search-replace。GM Adapter 是干净的桥接层" },
+        { "what": "_cc3_open() 入口创建独立 modal HTML(不复用 v2 chaoyi-modal·避免冲突)·内联输入/退朝/打断/金口/班次折叠按钮绑定·覆盖 mock 数据·跑 runOpening。_cc3_close() 清理 modal + popovers + abort", "why": "v3 modal 独立运行·v2 modal 不动·两套并存零冲突" },
+        { "what": "路由切换开关：tm-chaoyi.js _cy_pickMode 加 window.USE_CC3 检测·true 时 'changchao' 模式走 _cc3_open()·否则仍走 _cc2_openPrepareDialog(默认)。玩家在 console 跑 window.USE_CC3=true 即可切到 v3·无 USE_CC3 则完全不影响 v2 既有体验", "why": "渐进迁移·不破坏旧玩家·v3 内测稳定后再改默认 true·最后清理 v2 §1" },
+        { "what": "迁移地图文档·docs/dev/CHANGCHAO_MIGRATION_MAP.md (245 行) + CHANGCHAO_PROMPT_MIGRATION.md (235 行)·总图含 §0 旧存档兼容性结论(GM._courtRecords/_chaoyiCount/_ccHeldItems 等持久字段全兼容·CY 不入存档·零迁移脚本)·§4 朝代适应性分析(机制层全朝代通用·配置 scenario.chaoyi.{audienceHall/deptOptions/factionMap/strictThreshold} 适配秦汉唐宋元明清)。Prompt 图含 v2 现有 P1-P7 prompt 函数清单 + preview 5 段融合方案", "why": "审计/回滚/朝代扩展的依据" },
+        { "what": "验证·verify-all 全绿(183 文件 syntax·207/4 smoke baseline 不变·零回归)。tm-chaoyi-v2.js 备份为 .bak 保留至迁移完成", "why": "v3 加入零破坏·路由开关默认关闭·风险控制" },
+        { "what": "波 2 计划：(1) v3 console 测试稳定后改 USE_CC3 默认 true (2) prompt 融合·intent/mentioned 段拼到 _cc2_genRoundSpeeches 末尾 (3) NPC 回应玩家 prompt 接 v2 character/personality/loyalty/NpcMemorySystem 上下文 (4) scenario.chaoyi schema 落地 (5) smoke-chaoyi.js 测试集 (6) v2 §1 死代码清理(~1330 行)", "why": "迁移地图阶段 2-5·分波次推进·每波独立可测可回滚" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
+      "module": "邸报·朝议系统清债·v1 死代码移除 + 议程兜底 + 后朝勤政度可见",
+      "title": "tm-chaoyi.js 删 1523 行廷议 v1 残留(已被 v2 完全覆盖)·v2 议程加 schema 兜底+空议程最小回退·后朝并发记入 _chaoyiCount 让 endturn-ai-infer 勤政度计算可见",
+      "items": [
+        { "what": "tm-chaoyi.js 1675 → 153 行·删除全部 v1 廷议/常朝/御前的代码：_cyGetRank/_cySetMode/toggleCY/重复 startChaoyiSession/_startChangchao/_buildChangchaoPrompt/_genEmergencyItem/_renderChangchaoAgenda/_ccDecide/_ccGenOpening*/_ccTriggerCourtReactions/_ccAsk*/_ccBatch*/_ccSummon*/_ccAnnounce/_ccEndCourt/_cyFindMainSpeaker/addCYPlayerBubble/_streamCYSpeech/_buildCYPrompt/_runChaoyiRound/_showChaoyiFooter/_cyPlayerSpeak/_cySkipToNextRound/_runChaoyiRebuttal/_cyCallByName/_cyPraise/_cyScold/_cyInstantDecree/_cyRequestSummary/_renderCYSummary/_cyAdoptProposals/_cyDismissAll/_cySummonAfter/_persistCourtRecord/_chaoyiMemoryEffects 共 35 个函数", "why": "_cy_pickMode 已全路由到 v2(_cc2_*/_ty2_*/_yq2_*)·v1 实现路径不可达。v2 自有 _courtRecords inline 持久化(L1935-1945)·v1 的 _persistCourtRecord/_chaoyiMemoryEffects 也是死码。1523 行净减·留 12 函数：openChaoyi/closeChaoyi/_cyShowInputRow/_cySubmitPlayerLine/_cyAbortChaoyi/_getPlayerLocation/_isAtCapital/showChaoyiSetup/_cy_modeCardHtml/_cy_pickMode/startChaoyiSession 桩/addCYBubble" },
+        { "what": "tm-chaoyi-v2.js _cc2_buildAgendaPrompt 输出兜底：(1) 容忍 AI 单对象返回(包成数组) (2) 过滤无 title/content/announceLine 的脏项 (3) 校验后空数组时记 TM.errors 并走 _cc2_fallbackAgenda·从 GM.currentIssues 派生 1-3 条最小议程·都无则给单条「日常无事」 (4) callAI 整体失败也走兜底·朝会必能跑完。新增函数 _cc2_fallbackAgenda 35 行", "why": "原代码 if (!Array.isArray(items)) items = []·AI 失败/extractJSON 失败时直接空议程静默·朝会开开就空跑显示「百官无事启奏」·玩家以为是设计误以为正常。现在有 TM.errors 记录·开发可见·玩家也得到最低限可玩内容" },
+        { "what": "tm-court-meter.js _postTurnCourtChoose 调整：post-turn court 完成后 _chaoyiCount[turn] = _origCnt + 1(原本恢复为 _origCnt 等于不计入)。in-turn 频率限制不受影响·因为 turn 已结束(限制在同 turn 内 ≥2 阻断·EOT 后 turn++)", "why": "tm-endturn-ai-infer L1042-1049 用 _chaoyiCount 算「近 5 回合开朝次数」决定勤政/怠政评价。原实现后朝完全不计·导致玩家每回合都开朔朝 AI 仍判「帝不临朝」。_courtRecords 有 phase=post-turn 但 ai-infer 没读·改 _chaoyiCount 是单点修复" },
+        { "what": "验证·node -c 三文件全过·tm-chaoyi.js 函数树由 35+ 函数缩为 12 函数·开发心智模型从「v1+v2 双轨」简化为「dispatcher → v2」", "why": "前置升级·下一步全面重置常朝时心智负担小·改动面积小风险低" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "邸报·时空一致性·当世人物史实截止 + 跨时空穿越者困惑感",
       "title": "aiGenerateCompleteCharacter 加 timelineStatus 三态·当世人物 bio 严格截止当前游戏年并必符历史官职/立场·跨时空者带迷茫语气与不可靠未来知识·summonByProfile 跨时空走 AI 重写",
       "items": [

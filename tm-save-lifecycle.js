@@ -647,6 +647,12 @@ function _restoreSavedFields() {
 }
 
 function fullLoadGame(data){
+  // 跨档保留 API 设置：localStorage 的 tm_api 是用户的"机器"配置·不应被存档覆盖
+  var _preservedAi = null;
+  try {
+    var _stored = localStorage.getItem('tm_api');
+    if (_stored) _preservedAi = JSON.parse(_stored);
+  } catch(_) {}
   // 兼容两种存档格式：
   // 格式A (desktopDoSave/doSaveGame): data = P, data.gameState = GM
   // 格式B (SaveManager): data.gameState = {GM, P}
@@ -660,6 +666,14 @@ function fullLoadGame(data){
     if (data.gameState) {
       GM = data.gameState;
     }
+  }
+  // 恢复被存档冲掉的 API 配置（key/url/model 等都从 localStorage 拉回）
+  if (_preservedAi && typeof _preservedAi === 'object' && (_preservedAi.key || _preservedAi.url)) {
+    if (!P.ai) P.ai = {};
+    Object.keys(_preservedAi).forEach(function(k) {
+      // 只回填存档里没有或为空的字段·让用户最近的配置永远生效
+      if (_preservedAi[k] != null && _preservedAi[k] !== '') P.ai[k] = _preservedAi[k];
+    });
   }
 
   if(GM){

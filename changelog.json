@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R149 工具链完整化·verify-all 一键 + README 全量更新",
+      "title": "新增 scripts/verify-all.js 一键跑 4 项检查 + scripts/README.md 从 3 个工具补足到 10 个工具的完整文档",
+      "items": [
+        { "what": "R149a 新增 scripts/verify-all.js·一键依次跑 syntax-check → ref-check → find-orphans → headless-smoke·任一失败立即停。smoke 退出码用 baseline (≥207 pass / ≤4 fail) 判断·允许改善但不允许退步·避免误把已知 4 个 headless 限制当回归。完整跑一遍 ~18 秒", "why": "之前手工拷 4 条命令·容易漏跑·特别是 ref-check 和 find-orphans 这两个新工具刚加进来还没养成习惯。一键化是降低重构摩擦最有效的杠杆·每多一秒摩擦就少跑一次·少跑一次就多一个未被发现的回归" },
+        { "what": "R149b scripts/README.md 大改·从仅文档化 3 个工具 (syntax-check/headless-smoke/ref-check) 补完到 10 个工具的完整说明。新增 verify-all 头条+建议工作流+10 工具表格·每个标 R 序号引入历史。同时更新 baseline 数字 (207/4 当前·非 R121 的 208/3)", "why": "R136-R148 期间陆续加了 7 个新工具但 README 没跟·谁打开都不知道有这些·必然导致重新发明轮子。索引/目录是工具发现的入口·没有就等于不存在" },
+        { "what": "验证·verify-all 自跑全绿 (4 项 18s)·smoke 207/4 维持·所有改动仅 scripts/ 目录内·零 runtime 影响", "why": "纯文档+纯工具·不动游戏代码·零回归风险" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R147-R148 巨函数导航 + Promise.catch 迁移",
       "title": "tm-endturn-ai-infer.js (10,541 行单函数) 5 段章节导航·Promise .catch 22 处迁移到 TM.errors",
       "items": [

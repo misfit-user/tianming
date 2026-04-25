@@ -118,6 +118,24 @@ function _offAppointPerson(pos, person) {
   if (!pos || !person) return;
   _offMigratePosition(pos);
   if (!Array.isArray(pos.actualHolders)) pos.actualHolders = [];
+  // ── 幽灵 holder 净化 ── 老剧本/老存档 holder 字段写了名字但 GM.chars 无此人·
+  // 这种 ghost 占据 primary 位·新任会被挤为次席·导致 UI 渲染仍显「空缺」。
+  // 任命前一律将 ghost 名转为占位·让新任能登 primary。
+  try {
+    if (typeof GM !== 'undefined' && Array.isArray(GM.chars)) {
+      var charSet = {};
+      GM.chars.forEach(function(c) { if (c && c.name) charSet[c.name] = true; });
+      pos.actualHolders.forEach(function(h) {
+        if (h && h.name && h.generated !== false && !charSet[h.name]) {
+          // 名字存在但 chars 无此人 → ghost·转为空占位
+          h._ghostPurged = h.name;
+          h.name = '';
+          h.generated = false;
+          if (!h.placeholderId) h.placeholderId = 'ph_' + Math.random().toString(36).slice(2,8);
+        }
+      });
+    }
+  } catch(_){}
   // 若已有同名条目，跳过
   if (pos.actualHolders.some(function(h){return h && h.name === person && h.generated!==false;})) return;
   // 找第一个 generated:false 占位
@@ -138,6 +156,10 @@ function _offAppointPerson(pos, person) {
   pos.holder = named[0] || '';
   pos.additionalHolders = named.slice(1);
   pos.actualCount = named.length + pos.actualHolders.filter(function(h){return h && h.generated===false;}).length;
+  // vacancyCount 同步：编制 - 已任 (而非旧值)
+  if (typeof pos.establishedCount === 'number') {
+    pos.vacancyCount = Math.max(0, pos.establishedCount - named.length);
+  }
 }
 
 /** 罢免：从 actualHolders 中移除 person，留下 generated:false 占位（不变更编制） */

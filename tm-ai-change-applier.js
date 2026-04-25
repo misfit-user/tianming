@@ -672,6 +672,28 @@
     if (reason === 'execute' || reason === '诛' || reason === '抄家') {
       ch.alive = false;
     }
+    // 抄家·触发真实财产清算（私产→内帑·含隐匿挖掘+亲族株连）
+    var _confKey = String(reason || '');
+    if (_confKey === '抄家' || /抄|籍没|没官|抄没|查抄|抄家/.test(_confKey)) {
+      try {
+        if (global.EconomyLinkage && typeof global.EconomyLinkage.triggerConfiscationByName === 'function' && !ch._confiscated) {
+          // 默认入内帑·intensity 0.6（中度挖掘+轻度株连）·若 reason 含「重抄」「严抄」则提级
+          var _intense = /重抄|严抄|彻查|连坐|株连/.test(_confKey) ? 0.85 : 0.6;
+          var _confR = global.EconomyLinkage.triggerConfiscationByName(charName, 'neitang', _intense);
+          if (_confR && _confR.success) {
+            ch._confiscated = true;
+            if (global.addEB) {
+              var _wan = Math.round((_confR.total||0)/10000);
+              global.addEB('惩罚', '抄' + charName + '家·明 ' + Math.round((_confR.visible||0)/10000) + ' 万 + 暗 ' + Math.round((_confR.hidden||0)/10000) + ' 万 = 共 ' + _wan + ' 万两入内帑');
+            }
+            if (global.GM && global.GM.qijuHistory) {
+              var _qd = (typeof getTSText === 'function') ? getTSText(global.GM.turn) : '';
+              global.GM.qijuHistory.unshift({ turn: global.GM.turn, date: _qd, content: '【抄家】抄' + charName + '家产·得银 ' + Math.round((_confR.total||0)/10000) + ' 万两·解内帑。' });
+            }
+          }
+        }
+      } catch(_confE) { try { window.TM&&TM.errors&&TM.errors.captureSilent&&TM.errors.captureSilent(_confE,'confiscate'); } catch(__){} }
+    }
     // ★ 清 officeTree 里所有此人 holder + actualHolders
     (function _clearAll(nodes){
       (nodes||[]).forEach(function(n){

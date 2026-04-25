@@ -74,6 +74,11 @@ function _cc3_buildSummonablePool() {
     if (!ch || !ch.name || ch.alive === false) return;
     if (ch.isPlayer || (playerName && ch.name === playerName)) return;
     if (!_cc3_isOwnFaction(ch, playerFaction)) return;
+    // 法律/身体不在自由身·不可召
+    if (ch._imprisoned || ch.imprisoned || ch._inJail || ch._jailed) return;
+    if (ch._exiled || ch._banished) return;
+    if (ch._fled || ch._missing) return;
+    if (typeof ch.health === 'number' && ch.health <= 10) return;
     // 已在朝且无缺席状态·跳过（不需召）
     if (CHARS[ch.name] && !CHARS[ch.name].absent) return;
 
@@ -177,15 +182,20 @@ function _cc3_buildCharsFromGM() {
 function _cc3_classifyAbsent(ch) {
   if (!ch) return null;
   if (ch.alive === false) return null;
+  // 状态闸·身体/法律不在朝堂者·无论是否在京·一律算缺席
+  if (ch._imprisoned || ch.imprisoned || ch._inJail || ch._jailed) return "下狱待决";
+  if (ch._exiled || ch._banished) return "贬谪外地";
+  if (ch._retired || ch._zhi_shi) return "致仕归乡";
+  if (ch._mourning || ch._inMourning) return "丁忧守制";
+  if (ch._fled || ch._missing) return "逃亡失踪";
+  if (typeof ch.health === 'number' && ch.health <= 10) return "病重不能起";
+  if (ch._sickLeave || ch._sick) return "称病请假";
+  if (ch._punished || ch._restricted || ch._reflecting) return "闭门思过";
+  // 位置闸
   const inCapital = (typeof _isAtCapital === "function") ? _isAtCapital(ch) : true;
   if (inCapital) return null;
   if (ch._travelTo) return "远赴 " + ch._travelTo;
   if (ch._dispatched || ch._onMission) return "奉旨外出";
-  if (ch._mourning || ch._inMourning) return "丁忧守制";
-  if (ch._sickLeave || ch._sick) return "称病请假";
-  if (ch._retired || ch._zhi_shi) return "致仕归乡";
-  if (ch._punished || ch._restricted || ch._reflecting) return "闭门思过";
-  if (ch._exiled || ch._banished) return "贬谪外地";
   if ((ch.loyalty || 50) < 25 && (ch.ambition || 50) > 70) return "称病在家（实斗气）";
   return "远离京师";
 }

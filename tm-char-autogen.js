@@ -84,6 +84,37 @@
     if (GM.eraState && GM.eraState.dynastyPhase) _sceneInfo += '朝代阶段：' + GM.eraState.dynastyPhase + '；';
     if (GM.prestige !== undefined) _sceneInfo += '皇威：' + GM.prestige + '；';
 
+    // ─── 时空状态判定（决定 prompt 用哪套指令） ───
+    var birthY = (opts.birthYear != null) ? opts.birthYear : null;
+    var deathY = (opts.deathYear != null) ? opts.deathYear : null;
+    var scnStart = opts.scenarioStartYear ||
+                   (typeof P !== 'undefined' && P.scenario && P.scenario.startYear) ||
+                   (typeof P !== 'undefined' && P.time && P.time.startYear) || year;
+    var timelineStatus = 'unknown';
+    var displacementYears = 0;
+    var isCrossTime = false;
+    if (birthY != null && deathY != null) {
+      if (year >= birthY && year <= deathY) timelineStatus = 'alive';
+      else if (year > deathY) { timelineStatus = 'past_visitor'; displacementYears = year - deathY; isCrossTime = true; }
+      else { timelineStatus = 'future_visitor'; displacementYears = birthY - year; isCrossTime = true; }
+    }
+    var ageCalc = (birthY != null && timelineStatus === 'alive') ? (year - birthY) : (opts.age || null);
+    var deltaSinceScn = year - scnStart;
+    // 玩家世界近况摘要（取 shizhengji 末 N 段·剧本起至今）
+    var playerTimelineSummary = '';
+    try {
+      var sjArr = (typeof GM !== 'undefined' && Array.isArray(GM.shizhengji)) ? GM.shizhengji : [];
+      if (sjArr.length > 0 && deltaSinceScn > 0) {
+        var lastN = sjArr.slice(-Math.min(8, sjArr.length));
+        playerTimelineSummary = lastN.map(function(s){
+          if (typeof s === 'string') return s.slice(0, 200);
+          if (s && s.text) return String(s.text).slice(0, 200);
+          if (s && s.summary) return String(s.summary).slice(0, 200);
+          return '';
+        }).filter(function(t){ return t; }).join('\n---\n');
+      }
+    } catch(_){}
+
     var prompt = '\u4F60\u662F' + era + '\u5386\u53F2\u8003\u636E\u4E0E\u4EBA\u7269\u6863\u6848 AI\u3002\u4E3A\u4EE5\u4E0B\u4EBA\u7269\u751F\u6210\u5B8C\u6574\u4EBA\u7269\u5361\u3002\n\n' +
       '\u3010\u5F53\u524D\u65F6\u4EE3\u3011' + era + ' ' + year + ' \u5E74\n' +
       (_sceneInfo ? '\u3010\u65F6\u5C40\u3011' + _sceneInfo + '\n' : '') +
@@ -172,6 +203,41 @@
       '  "timeAnomaly": false\n' +
       '}\n\u53EA\u8F93\u51FA JSON\u3002';
 
+    // ─── 时空锁定·按 status 动态拼 ───
+    if (timelineStatus !== 'unknown') {
+      prompt += '\n\n【时间线绝对锁定】当前游戏 ' + year + ' 年·剧本起 ' + scnStart + ' 年。\n';
+      if (timelineStatus === 'alive') {
+        prompt += '此人当世(' + birthY + '-' + deathY + '·当前 ' + ageCalc + ' 岁)。\n';
+        prompt += '1. bio/shiliao 严格截止 ' + year + ' 年·之后事(此人卒于 ' + deathY + ')一律不写·禁预言式如"后来于X年""晚年""其子后..."。\n';
+        prompt += '2. 此人 ' + year + ' 年时的真实历史身份必须严格匹配:官职/驻地/政治立场/已发生事迹。若不知则按生平合理推断·不可写为闲居草野若实任要职·亦不可写为白衣若已仕。\n';
+        prompt += '3. 必须在 bio 中明确指出此人 ' + year + ' 年的具体身份(如"' + year + '年方任兵部尚书督师辽东")·与历史一致。\n';
+        if (deltaSinceScn > 0 && playerTimelineSummary) {
+          prompt += '4. 【玩家时间线·' + scnStart + '-' + year + ' 间为玩家世界·非真实历史】\n';
+          prompt += playerTimelineSummary.slice(0, 1500) + '\n';
+          prompt += '此人这' + deltaSinceScn + '年的近期记忆/经历应与玩家世界呼应·而非按真实历史。\n';
+        }
+      } else if (timelineStatus === 'past_visitor') {
+        prompt += '【时空错位·过去穿越者】此人本属 ' + birthY + '-' + deathY + ' 间·已殁 ' + displacementYears + ' 年·因玩家逆天征召破时空之障·至 ' + year + ' 年。\n';
+        prompt += '1. 拥有死前(' + deathY + '年止)全部记忆·对其后 ' + displacementYears + ' 年世事一无所知(后续朝代/人物/技术变革皆陌生)。\n';
+        prompt += '2. bio 应以原时代生平为主·末段必有【时空裂痕】展现"此为何朝？此为何地？我何故至此？"·风物服饰皆陌生。\n';
+        prompt += '3. mood 设 confused_past·性格保留·但加入迷惘茫然之态。\n';
+        prompt += '4. 给玩家提供原时代之智慧·但对死后世事需问玩家·不可虚言。\n';
+      } else if (timelineStatus === 'future_visitor') {
+        prompt += '【时空错位·未来穿越者】此人本应 ' + birthY + ' 年才出生·当前 ' + year + ' 年作为未来人穿越来此(领先 ' + displacementYears + ' 年·原本生于 ' + birthY + ' 卒于 ' + deathY + ')。\n';
+        prompt += '1. 拥有完整 ' + birthY + '-' + deathY + ' 间记忆·含他读过的"' + year + '年史"。\n';
+        prompt += '2. 关键不可靠性·三层叠加：\n';
+        prompt += '   (a) 玩家已改时间线·眼前 ' + year + ' 年史 ≠ 他读到的 ' + year + ' 年史·两者必有差异。\n';
+        prompt += '   (b) 玩家在玩"逆天改命"——按原史·此国本应败亡(如明 1644 亡)·玩家正欲扭转。\n';
+        prompt += '   (c) 故他读到的"史"既非眼前现实·也未必是真相·因玩家国本就是历史失败者·胜利方书写的史未必公允。\n';
+        prompt += '3. 主动透露未来(可帮玩家)·但必须明示"按吾所知""原本应""或可改之"·避免给定数语气。\n';
+        prompt += '4. mood 设 confused_future·语气"先知 + 迷茫"——既知未来·又不解眼前。\n';
+        prompt += '5. 玩家时间线 ' + scnStart + '-' + year + ' 间·应说"史载此几年应是 X·然眼前似有不同"——突出史与现实之差。\n';
+        if (playerTimelineSummary) {
+          prompt += '【玩家世界近况·此即"现实"·与他读到的史不同】\n' + playerTimelineSummary.slice(0, 1500) + '\n';
+        }
+      }
+    }
+
     var attempt = 0;
     var lastErr = null;
     while (attempt < 3) {
@@ -194,6 +260,30 @@
 
         // 拼装 char 对象
         var bio = data.bio || '';
+        // 时空裂痕段·跨时空时硬补充(防 AI 漏写)
+        if (isCrossTime && bio.indexOf('【时空裂痕】') < 0) {
+          var _crackText = '\n\n【时空裂痕】此人本属 ' + birthY + '-' + deathY + ' 间·';
+          _crackText += (timelineStatus === 'past_visitor') ? ('已殁 ' + displacementYears + ' 年') : ('尚需 ' + displacementYears + ' 年方生');
+          _crackText += '·因玩家在演义模式下逆天征召·破时空之障·至 ' + year + ' 年。';
+          if (timelineStatus === 'past_visitor') {
+            _crackText += '\n醒来不知今夕何夕·眼前山河风物皆陌生·风俗朝制陌生异样。';
+          } else {
+            _crackText += '\n所识之史与眼前不符——或玩家已逆天改命·原历史已成虚妄。其知识似可参考·然不可全信。';
+          }
+          bio += _crackText;
+        }
+        // 当世人物 bio 校验·不应含未来年份(年份范围检测)
+        if (timelineStatus === 'alive') {
+          var _futureYrs = bio.match(/(1[6-9]\d{2}|20\d{2})/g);
+          if (_futureYrs) {
+            _futureYrs.forEach(function(yStr){
+              var _y = parseInt(yStr, 10);
+              if (_y > year && _y <= year + 100) {
+                try { console.warn('[人物生成] bio 含未来年份 ' + yStr + '·人物 ' + name + '·当前 ' + year); } catch(_){}
+              }
+            });
+          }
+        }
         if (data.isHistorical && data.shiliao && bio.indexOf('\u3010\u53F2\u6599\u51FA\u5904\u3011') < 0) {
           bio += '\n\n\u3010\u53F2\u6599\u51FA\u5904\u3011\n' + data.shiliao;
         }
@@ -288,6 +378,12 @@
           recruitTurn: GM.turn,
           isHistorical: !!data.isHistorical,
           _timeAnomaly: !!data.timeAnomaly,
+          // 时空状态(策名等跨时代场景)
+          timelineStatus: timelineStatus,
+          originTime: (birthY != null && deathY != null) ? { birth: birthY, death: deathY } : null,
+          timelineMood: (timelineStatus === 'past_visitor') ? 'confused_past' : (timelineStatus === 'future_visitor') ? 'confused_future' : 'normal',
+          displacement: isCrossTime,
+          knowledgeReliability: isCrossTime ? 'unreliable_crosstime' : (timelineStatus === 'alive' ? 'verified' : 'unknown'),
           _memorySeeds: [{
             turn: GM.turn,
             event: reason + '\u00B7\u5165\u671D\u4E3A\u58EB',

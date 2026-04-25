@@ -113,14 +113,56 @@
       if (existing) return { existed: true, char: existing };
     }
 
-    // 走现有 createCharFromProfile + 加策名标记
+    // 计算时空状态：跨时空(演义模式·非当世)走 AI 重写·让 bio 带困惑语气；当世走本地秒返
+    var curYear = (typeof GM !== 'undefined' && GM.year) || 0;
+    var timelineStatus = 'alive';
+    if (profile.birthYear != null && profile.deathYear != null && curYear) {
+      if (curYear < profile.birthYear) timelineStatus = 'future_visitor';
+      else if (curYear > profile.deathYear) timelineStatus = 'past_visitor';
+    }
+    var isCrossTime = (timelineStatus !== 'alive');
+
+    if (isCrossTime && typeof global.aiGenerateCompleteCharacter === 'function' &&
+        typeof P !== 'undefined' && P.ai && P.ai.key) {
+      // 跨时空走 AI 重写·档案当 sourceContext·按时空困惑指令重生成 bio/personality/mood
+      var sc = '【档案库参考·原历史身份】\n' +
+        '姓名：' + profile.name + (profile.zi ? '·字 ' + profile.zi : '') + '\n' +
+        '朝代：' + (profile.dynasty || '') + (profile.era ? '·' + profile.era : '') + '\n' +
+        '生卒：' + profile.birthYear + '-' + profile.deathYear + '\n' +
+        '官至：' + (profile.officialTitle || profile.title || '') + '\n' +
+        '类型：' + (profile.role || '') + '\n' +
+        '原历史背景：' + (profile.background || '') + '\n' +
+        (profile.famousQuote ? '代表言论：' + profile.famousQuote + '\n' : '') +
+        (profile.historicalFate ? '原历史结局：' + profile.historicalFate + '\n' : '');
+      var scnStart = (typeof P !== 'undefined' && P.scenario && P.scenario.startYear) ||
+                     (typeof P !== 'undefined' && P.time && P.time.startYear) || curYear;
+      var newChar = await global.aiGenerateCompleteCharacter(profile.name, {
+        reason: '玩家策名·跨时空',
+        sourceContext: sc,
+        isHistoricalHint: true,
+        birthYear: profile.birthYear,
+        deathYear: profile.deathYear,
+        scenarioStartYear: scnStart,
+        tier: 'secondary'
+      });
+      if (newChar) {
+        newChar.source = 'ceming';
+        newChar.cemingByPlayer = true;
+        newChar.cemingTurn = (typeof GM !== 'undefined' && GM.turn) || 1;
+        newChar.cemingMode = check.mode || 'yanyi';
+        newChar.alternateNames = profile.alternateNames ? profile.alternateNames.slice() : (newChar.alternateNames || []);
+        newChar._fromProfile = profileId;
+      }
+      return { existed: false, char: newChar };
+    }
+
+    // 当世·走本地 createCharFromProfile + 加策名标记（秒返·零 API）
     if (typeof global.createCharFromProfile !== 'function') {
       throw new Error('createCharFromProfile 不可用');
     }
     var ch = global.createCharFromProfile(profileId);
     if (!ch) throw new Error('创建失败');
 
-    // 策名标记（关键·历史检查豁免依赖此字段）
     ch.source = 'ceming';
     ch.cemingTurn = (typeof GM !== 'undefined' && GM.turn) || 1;
     ch.cemingByPlayer = true;
@@ -129,8 +171,13 @@
     ch.deathYear = profile.deathYear || ch.deathYear;
     ch.alternateNames = profile.alternateNames ? profile.alternateNames.slice() : [];
     ch.alive = true;
+    // 当世人物·标 timelineStatus=alive·让推演/对话 AI 知道
+    ch.timelineStatus = 'alive';
+    ch.originTime = (profile.birthYear && profile.deathYear) ? { birth: profile.birthYear, death: profile.deathYear } : null;
+    ch.timelineMood = 'normal';
+    ch.displacement = false;
+    ch.knowledgeReliability = 'verified';
 
-    // push 到 GM.chars · 自此 TA 进入推演 / 通信 / 任免 / 记忆 等所有现有引擎
     if (typeof GM !== 'undefined') {
       if (!GM.chars) GM.chars = [];
       GM.chars.push(ch);
@@ -346,11 +393,16 @@
     var curYear = (typeof GM !== 'undefined' && GM.year) || 0;
     var age = (card.birthYear && curYear) ? (curYear - card.birthYear) : null;
 
+    var scnStart2 = (typeof P !== 'undefined' && P.scenario && P.scenario.startYear) ||
+                    (typeof P !== 'undefined' && P.time && P.time.startYear) || curYear;
     var newChar = await global.aiGenerateCompleteCharacter(card.name, {
       reason: '玩家策名·' + (card.dynasty || '') + (card.era || ''),
       sourceContext: sourceContext,
       isHistoricalHint: true,
       age: age,
+      birthYear: card.birthYear,
+      deathYear: card.deathYear,
+      scenarioStartYear: scnStart2,
       tier: 'secondary'  // 策名默认次要 API·_getAITier 自动回退 primary
     });
 

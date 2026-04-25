@@ -3,6 +3,21 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "邸报·时空一致性·当世人物史实截止 + 跨时空穿越者困惑感",
+      "title": "aiGenerateCompleteCharacter 加 timelineStatus 三态·当世人物 bio 严格截止当前游戏年并必符历史官职/立场·跨时空者带迷茫语气与不可靠未来知识·summonByProfile 跨时空走 AI 重写",
+      "items": [
+        { "what": "tm-char-autogen.js aiGenerateCompleteCharacter 加 4 处时空逻辑：(1) 头部计算 timelineStatus(alive/past_visitor/future_visitor)+displacementYears+ageCalc·读 P.scenario.startYear/P.time.startYear 取剧本起年·从 GM.shizhengji 末 8 段提取玩家时间线摘要(每段截 200 字) (2) prompt 末按 status 动态拼时空锁定段(三套指令) (3) char 创建处加新字段 timelineStatus/originTime/timelineMood/displacement/knowledgeReliability (4) bio 末尾跨时空硬补充【时空裂痕】段·防 AI 漏写·alive 状态加未来年份 console.warn 校验", "why": "玩家在 1627 剧本玩到 1629 时召唤 1584-1638 的孙承宗(当世)·要求 bio 截止 1629 不写'1638 高阳殉国'未来事·且必符 1629 年实际身份(辽东督师)·1627-1629 这段读玩家世界 shizhengji 而非真史。召诸葛亮(已逝 1395 年·past_visitor)要带'此为何朝何地'迷茫。召林则徐(尚未生 156 年·future_visitor)既知未来又对当下不熟" },
+        { "what": "alive 状态 prompt 三铁律：(1) bio/shiliao 严格截止当前年·之后事(此人卒于 deathYear)一律不写·禁'后来于X年/晚年/其子后...'预言式 (2) 此人当前年的真实历史身份必须严格匹配——官职/驻地/政治立场/已发生事迹·若不知则按生平合理推断·不可写为闲居草野若实任要职 (3) bio 中明确指出当前年具体身份 (4) 玩家时间线(剧本起→当前)的 N 年间 shizhengji 摘要注入·此人这段记忆/经历应与玩家世界呼应而非真史", "why": "用户明确要求当世人物'考虑到玩家操作为平行历史线·这几年读玩家时间线'·并补充'此人可能历史上任官或某地某立场·都要考虑'。所以 alive 路径必须双重锁定：截止+身份匹配+玩家世界注入" },
+        { "what": "past_visitor(过去穿越者) prompt 四指令：(1) 拥有死前(deathYear止)全部记忆·对其后 displacementYears 年世事一无所知·后续朝代/人物/技术变革皆陌生 (2) bio 应以原时代生平为主·末段必有【时空裂痕】展现'此为何朝？此为何地？我何故至此？'·风物服饰皆陌生 (3) mood 设 confused_past·性格保留+迷惘茫然之态 (4) 给玩家提供原时代智慧·但对死后世事需问玩家不可虚言", "why": "诸葛亮(234 卒)被召至 1629·他知道汉末三国但完全不知唐宋元明·迷茫感是设计核心" },
+        { "what": "future_visitor(未来穿越者) prompt 五指令·三层不可靠性：(1) 拥有完整生卒间记忆·含他读过的'当前年史' (2) 三层叠加不可靠：(a) 玩家已改时间线·眼前 ≠ 他读到的史 (b) 玩家在玩'逆天改命'·按原史此国本应败亡(明1644亡)·玩家正欲扭转 (c) 故他读到的'史'既非眼前现实也未必是真相·因玩家国本就是历史失败者·胜利方书写的史未必公允 (3) 主动透露未来(可帮玩家)但必须明示'按吾所知/原本应/或可改之'避免给定数语气 (4) mood confused_future·语气'先知+迷茫' (5) 玩家时间线段应说'史载此几年应是 X·然眼前似有不同'", "why": "用户特别强调 future_visitor 知识不可靠的两层原因：玩家改时间线 + 玩家国本就是历史失败者(明末)。这第二层很重要——林则徐读到的'明末史'是清朝胜利方的书写·未必真公允·玩家是要逆天扭转。所以他的'未来知识'本就不是定数" },
+        { "what": "tm-ceming.js summonByCard 透传 birthYear/deathYear/scenarioStartYear 给 aiGenerateCompleteCharacter·让库外 AI 检索后的完整生成走时空锁定路径。summonByProfile 改：跨时空(timelineStatus !== alive)走 aiGenerateCompleteCharacter(用档案当 sourceContext + 时空锁定指令重生成 bio)·当世走原本地 createCharFromProfile 秒返。当世库内策名仍 0 API·但跨时空(演义模式跨时代)调 secondary tier AI", "why": "档案库 bio 是按'原历史完整生平'手写·诸葛亮 bio 含'出师未捷身先死'·穿越到崇祯朝时不合时宜·应让 AI 重写为带困惑语气版本(B 选项·用户选)。当世库内策名仍秒返·性能不退化" },
+        { "what": "char schema 新字段·人物志 UI/对话 AI/推演 sc1 都可读：timelineStatus(alive/past_visitor/future_visitor/unknown)·originTime({birth, death})·timelineMood(normal/confused_past/confused_future)·displacement(bool)·knowledgeReliability(verified/unreliable_crosstime/unknown)。当世库内策名也明确标 alive·区分'真历史人物'与'AI 自生'", "why": "字段为后续 sc1 推演 prompt 注入【时空异客名单】+ 对话 NPC AI 识别迷茫角色铺路" },
+        { "what": "代码层硬约束·alive 状态 bio 校验：扫描 bio 中 1600-2099 范围年份·若 > 当前年且 ≤ 当前年+100 则 console.warn(不阻断·避免误伤'明 1368 建国'这种历史回溯)。F12 控制台见 [人物生成] bio 含未来年份 X·人物 Y", "why": "AI 即使被 prompt 强约束·仍可能 hallucinate'后于 1640 年...'。warn 给开发者排查线索·正常运行不阻断" },
+        { "what": "验证·verify-all 全绿(182 syntax·181 ref·0 orphans·207/4 smoke baseline)·smoke-ceming 23/23·smoke-name 13/13。改动 2 文件 tm-char-autogen.js + tm-ceming.js·零回归", "why": "改动均为 prompt 注入 + 字段添加·不破坏既有逻辑" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "邸报·人物生成 prompt 完善·五常+能力按 role 分布鲜明",
       "title": "tm-char-autogen.js prompt 注入 4 步指导·让 AI 按 corrupt/clean/military/scholar 等 10 类角色定型再分发数值·策名/科举/征召等所有 AI 角色生成统一受益",
       "items": [

@@ -38,7 +38,7 @@
     var prev = currentSuite;
     currentSuite = suite;
     try { fn(); }
-    catch(e) { console.error('[test] describe `' + name + '` 注册失败:', e); }
+    catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'test') : console.error('[test] describe `' + name + '` 注册失败:', e); }
     finally { currentSuite = prev; }
   }
 

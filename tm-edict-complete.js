@@ -68,7 +68,7 @@
         };
         G._pendingMemorials.push(memo);
         if (global.addEB) global.addEB('反奏', '【反触】' + t.drafter + '急奏：' + t.name);
-      } catch(e) { console.error('[trigger]', t.id, e); }
+      } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'trigger') : console.error('[trigger]', t.id, e); }
     });
   }
 

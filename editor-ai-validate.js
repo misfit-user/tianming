@@ -1239,7 +1239,7 @@
           try {
             await _genMap[d.module]();
             applied++;
-          } catch(e) { console.warn('[Polish gen ' + d.module + ']', e); }
+          } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'unknown') : console.warn('[Polish gen ' + d.module + ']', e); }
         }
       }
 

@@ -1177,7 +1177,7 @@ document.addEventListener('keydown', function(e) {
       // 7 主变量走 _handleBarVarClick
       var MAIN_KEYS = { guoku:1, neitang:1, hukou:1, lizhi:1, minxin:1, huangquan:1, huangwei:1 };
       if (MAIN_KEYS[key]) {
-        try { _handleBarVarClick(key); } catch(err) { console.error('[topbar click]', key, err); }
+        try { _handleBarVarClick(key); } catch(err) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(err, 'topbarclick') : console.error('[topbar click]', key, err); }
         return;
       }
       // 新徽标

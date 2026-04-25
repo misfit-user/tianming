@@ -188,7 +188,7 @@
           _applyAwakening(G, ts, hw, eff, trig);
           return trig;
         }
-      } catch(e) { console.error('[awaken]', trig.id, e); }
+      } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'awaken') : console.error('[awaken]', trig.id, e); }
     }
   }
 

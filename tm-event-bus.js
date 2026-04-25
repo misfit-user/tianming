@@ -23,7 +23,7 @@
     emit: function(eventName, payload) {
       var listeners = this.listeners[eventName] || [];
       listeners.forEach(function(fn) {
-        try { fn(payload); } catch(e) { console.error('[eventBus]', eventName, e); }
+        try { fn(payload); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'eventBus') : console.error('[eventBus]', eventName, e); }
       });
     },
     on: function(eventName, fn) {
@@ -77,7 +77,7 @@
           // 防重复：发事件后打标
           _markEventFired(G, def.id);
         }
-      } catch(e) { console.error('[eventDef]', def.id, e); }
+      } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'eventDef') : console.error('[eventDef]', def.id, e); }
     });
   }
 

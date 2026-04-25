@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-04-25",
+      "module": "R151 catch console 二代迁移·支持动态拼接标签",
+      "title": "新增 scripts/migrate-catch-console-v2.js 处理 R145 strict regex 漏掉的同行复合 try-catch + 动态拼接标签场景·14 处自动迁移到 TM.errors·待迁移从 64 降到 50",
+      "items": [
+        { "what": "R151 新增 scripts/migrate-catch-console-v2.js·R145 的扩展版·处理两种新场景：(1) 同行复合 `try{...} catch(e) { console.X(...); }` 无前导 `}` (R145 漏)；(2) 动态拼接标签 `console.error('[GameHooks] ' + event + ' 钩子异常:', e)` (R145 只匹配纯字符串字面量)。从动态参数中智能抽取方括号 `[xxx]` 内的模块名作为 TM.errors.capture 的 hint", "why": "R145 跑完后剩 64 个 catch console·一半是 strict regex 漏的合法迁移目标。手工逐个改 14 处即使每个 5 分钟也要 1 小时·写 100 行扩展脚本可一次性扫光·还能复用给未来新增代码" },
+        { "what": "改写 14 处·12 个文件 (editor-ai-validate / tm-ai-infra GameHooks+EventBus / tm-economy-gap-fill / tm-economy-linkage / tm-edict-complete / tm-event-bus / tm-keju-runtime / tm-prophecy / tm-test-harness / tm-topbar-vars / tm-utils / tm-var-drawers)。GameHooks/EventBus 是热路径事件总线·之前异常只去 console·现在玩家 Ctrl+Shift+E 错误面板能看到", "why": "事件总线和 GameHooks 是被业务大量调用的回调点·任何一个 handler 抛错都该让玩家看到诊断" },
+        { "what": "审计指标·待迁移 catch console 从 64 → 50 (-22%)。剩余 23 类1 + 27 类2：类1 多为 `console.X('label', e.message)` 把 e.message 拆出来 (regex 要求 var 直传)·类2 多为 `console + toast` 混合需人工判断 toast 是否保留", "why": "继续 strict regex 匹配剩余的类1 收益递减·类2 必须人工。R143-R151 一系列扫荡后·TM.errors 已捕获所有热路径异常的 ~93% (348/375)" },
+        { "what": "验证·verify-all 全绿 (180/180·179 ref·0 orphans·207/4 smoke 维持)。无回归·零 toast/showToast 被误删 (git diff -U0 confirm)", "why": "审计 + 形式化通过两次：脚本只匹配纯 console 单语句·git diff 验证未删任何 UI 反馈调用" }
+      ]
+    },
+    {
+      "date": "2026-04-25",
       "module": "R150 文档完整化·INDEX.md 补 scripts 工具链 + tm-ai-change-applier 8 段导航",
       "title": "INDEX.md 补全 scripts/ 工具链章节·重构历程延到 R150·tm-ai-change-applier.js (2091行) 加 R147 风格的 8 段导航 TOC",
       "items": [

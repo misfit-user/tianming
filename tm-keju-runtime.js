@@ -1357,7 +1357,7 @@ async function _kejuGenExaminerSuggestions(exam) {
       if (Array.isArray(parsed)) {
         suggestions[ex.name + '(' + (ex.party||'\u65E0\u515A') + ')'] = parsed;
       }
-    } catch(e) { console.warn('[F4] 考官 ' + ex.name + ' 意见失败', e); }
+    } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'F4') : console.warn('[F4] 考官 ' + ex.name + ' 意见失败', e); }
   }
 
   // 礼部综合分排序

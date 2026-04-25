@@ -331,7 +331,7 @@
     G.fiscal.feudalHoldings.forEach(function(holding) {
       var type = FEUDAL_TYPES[holding.type];
       if (!type || !type.tick) return;
-      try { type.tick(holding, mr); } catch(e) { console.error('[feudal]', holding.type, e); }
+      try { type.tick(holding, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'feudal') : console.error('[feudal]', holding.type, e); }
     });
   }
 

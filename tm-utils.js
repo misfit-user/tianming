@@ -713,7 +713,7 @@ function _flushPostTurnModalQueue() {
   var i = 0;
   function _next() {
     if (i >= q.length) return;
-    try { q[i].fn(); } catch(_qe) { console.warn('[postTurnModal] ' + (q[i].label||'') + ':', _qe); }
+    try { q[i].fn(); } catch(_qe) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_qe, 'postTurnModal') : console.warn('[postTurnModal] ' + (q[i].label||'') + ':', _qe); }
     i++;
     // 300ms 后弹下一个·给用户时间看到上一个
     if (i < q.length) setTimeout(_next, 300);

@@ -362,7 +362,7 @@
     },
     emit: function(type, data) {
       (this._listeners[type] || []).forEach(function(h) {
-        try { h(data); } catch(e) { console.error('[EventBus]', type, e); }
+        try { h(data); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'EventBus') : console.error('[EventBus]', type, e); }
       });
     }
   };

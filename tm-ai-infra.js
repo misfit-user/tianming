@@ -747,7 +747,7 @@ var GameHooks = (function() {
       if (!list) return;
       for (var i = 0; i < list.length; i++) {
         try { list[i].fn.apply(null, args); }
-        catch(e) { console.error('[GameHooks] ' + event + ' 钩子异常:', e); }
+        catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'GameHooks') : console.error('[GameHooks] ' + event + ' 钩子异常:', e); }
       }
     },
     clear: function(event) { if (event) delete hooks[event]; else hooks = {}; },
@@ -948,7 +948,7 @@ var GameEventBus = (function() {
       if (!list || !list.length) return;
       var keep = [];
       for (var i = 0; i < list.length; i++) {
-        try { list[i].fn(data); } catch(e) { console.error('[EventBus] ' + event + ' handler error:', e); }
+        try { list[i].fn(data); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'EventBus') : console.error('[EventBus] ' + event + ' handler error:', e); }
         if (!list[i].once) keep.push(list[i]);
       }
       handlers[event] = keep;

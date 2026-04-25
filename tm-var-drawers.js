@@ -1801,7 +1801,7 @@
     if (typeof orig !== 'function') return;
     global[fnName] = function() {
       orig.apply(this, arguments);
-      try { extraFn(); } catch(e) { console.error('[drawer-final]', fnName, e); }
+      try { extraFn(); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'drawer-final') : console.error('[drawer-final]', fnName, e); }
     };
   }
 

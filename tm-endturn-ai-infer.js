@@ -5080,12 +5080,30 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         // 处理 NPC 主动来书（AI推演的远方NPC写信给皇帝）
         if (p1.npc_letters && Array.isArray(p1.npc_letters)) {
           if (!GM._pendingNpcLetters) GM._pendingNpcLetters = [];
+          var _nlAccepted = 0, _nlSkipNoChar = 0, _nlSkipCapital = 0, _nlSkipMissing = 0;
           p1.npc_letters.forEach(function(nl) {
-            if (!nl.from || !nl.content) return;
+            if (!nl.from || !nl.content) { _nlSkipMissing++; return; }
             // 验证from是远方NPC
             var _nlCh = findCharByName(nl.from);
             var _cap = GM._capital || '京城';
-            if (!_nlCh || _nlCh.location === _cap || _nlCh.isPlayer) return;
+            if (!_nlCh) { _nlSkipNoChar++; _dbg('[npc_letters] 找不到角色: ' + nl.from + '·跳过'); return; }
+            if (_nlCh.isPlayer) { _nlSkipMissing++; return; }
+            if (_nlCh.location === _cap) {
+              // 在京 NPC 不应走鸿雁——但 AI 已生成内容·改投奏疏避免内容浪费
+              _nlSkipCapital++;
+              _dbg('[npc_letters] 在京NPC ' + nl.from + ' 写信·改投奏疏');
+              if (!GM.memorials) GM.memorials = [];
+              GM.memorials.push({
+                id: uid(), from: nl.from, title: _nlCh.officialTitle||_nlCh.title||'',
+                type: nl.type === 'impeach' ? '人事' : (nl.type === 'warning' ? '军务' : '政务'),
+                subtype: nl.type === 'intelligence' ? '密折' : '题本',
+                content: nl.content, status: 'pending', turn: GM.turn, reply: '',
+                reliability: 'medium', bias: 'none', priority: nl.urgency === 'extreme' ? 'urgent' : 'normal',
+                _convertedFromLetter: true
+              });
+              return;
+            }
+            _nlAccepted++;
             GM._pendingNpcLetters.push({
               from: nl.from,
               type: nl.type || 'report',
@@ -5105,6 +5123,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             } catch(_memE) {}
             _dbg('[npc_letters] ' + nl.from + ' 主动来书（' + (nl.type||'report') + '）');
           });
+          _dbg('[npc_letters] 入队 ' + _nlAccepted + ' 封·跳过(无角色 ' + _nlSkipNoChar + '·在京改奏疏 ' + _nlSkipCapital + '·缺字段 ' + _nlSkipMissing + ')');
         }
 
         // 处理 NPC 间通信（密谋/结盟/情报交换）

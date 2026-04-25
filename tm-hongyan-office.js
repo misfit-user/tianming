@@ -1030,6 +1030,25 @@ function _settleLettersAndTravel() {
       var _replyNpc = findCharByName(l.to);
       var _dem = _replyNpc ? (_replyNpc.loyalty > 80 ? '恭敬拜读' : _replyNpc.loyalty < 30 ? '面色凝重' : _replyNpc.stress > 70 ? '神色疲惫' : '速具回书') : '已收函';
       GM._courierStatus[l.id] = '信使回报：' + (l.to||'') + _dem + '。';
+      // 兜底：AI 异步未返回时·按 NPC 性格态度合成简短回信·避免空白回信
+      if (!l.reply || !String(l.reply).trim()) {
+        var _toneTxt = '臣' + (l.to||'') + '叩首拜读圣函。';
+        if (_replyNpc) {
+          var _favorR = 0;
+          try { if (_replyNpc._impressions && _replyNpc._impressions['玩家']) _favorR = _replyNpc._impressions['玩家'].favor || 0; } catch(_){}
+          if ((_replyNpc.loyalty||50) >= 75 && _favorR >= 0) {
+            _toneTxt = '臣' + _replyNpc.name + '谨奉圣函·披沥肝胆·当尽心承命。容臣详察具复·必不负圣意。';
+          } else if ((_replyNpc.loyalty||50) < 35 || _favorR <= -10) {
+            _toneTxt = '臣' + _replyNpc.name + '已得圣函·容臣三思后再行回奏。圣意所指·臣自当揣度·然事有缓急·不敢轻断。';
+          } else if ((_replyNpc.stress||0) > 70) {
+            _toneTxt = '臣' + _replyNpc.name + '俯读圣函·近日忧劳形于心·容臣定神后详禀。';
+          } else {
+            _toneTxt = '臣' + _replyNpc.name + '拜领圣函·谨当详察·不日具复。';
+          }
+        }
+        l.reply = _toneTxt;
+        l._fallbackReply = true;
+      }
       // 核实信处理
       if (l._verifyTarget) {
         var _orig = (GM.letters||[]).find(function(x){ return x.id === l._verifyTarget; });
@@ -1095,9 +1114,11 @@ function _settleLettersAndTravel() {
   }
 
   // 3. NPC来信到达 → 自动推入诏书建议库
+  var _npcArrived = 0;
   (GM.letters||[]).forEach(function(l) {
     if (l._npcInitiated && l.status === 'traveling' && GM.turn >= l.deliveryTurn) {
       l.status = 'returned';
+      _npcArrived++;
       var ad = (typeof getTSText === 'function') ? getTSText(GM.turn) : '';
       if (typeof addEB === 'function') addEB('传书', l.from + '的来函已送达');
       if (GM.qijuHistory) GM.qijuHistory.unshift({ turn: GM.turn, date: ad, content: '【鸿雁传书】收到' + l.from + '自' + (l.fromLocation||'远方') + '来函。' });
@@ -1115,6 +1136,10 @@ function _settleLettersAndTravel() {
       }
     }
   });
+  if (_npcArrived > 0) {
+    try { if (typeof toast === 'function') toast('鸿雁：' + _npcArrived + ' 封新来函已抵达'); } catch(_){}
+    try { if (typeof renderLetterPanel === 'function' && document.getElementById('letter-history')) renderLetterPanel(); } catch(_){}
+  }
 
   // 4. NPC间通信（由AI推演，暂存在GM._pendingNpcCorrespondence）
   if (GM._pendingNpcCorrespondence && GM._pendingNpcCorrespondence.length > 0) {
@@ -1323,9 +1348,22 @@ function _generateLetterReply(letter) {
     callAI(prompt, 600).then(function(reply) {
       letter.reply = (reply || '').trim() || '臣叩首拜读·容臣三思后详禀。';
       letter.status = 'returned';
-    }).catch(function() {
-      letter.reply = '臣已拜读圣函·容臣三思。';
+      letter._fallbackReply = false;
+      try { if (typeof renderLetterPanel === 'function' && document.getElementById('letter-history')) renderLetterPanel(); } catch(_){}
+      try { if (typeof addEB === 'function') addEB('传书', (letter.to||'') + '的回函已落笔'); } catch(_){}
+    }).catch(function(err) {
+      // AI 失败兜底：按性格写一条简短回信·而非千篇一律的"已拜读"
+      var _ch2 = findCharByName(letter.to);
+      var _t = '臣已拜读圣函·容臣三思。';
+      if (_ch2) {
+        if ((_ch2.loyalty||50) >= 75) _t = '臣' + _ch2.name + '谨遵圣谕·当竭股肱以效犬马·待详察后再行具奏。';
+        else if ((_ch2.loyalty||50) < 35) _t = '臣' + _ch2.name + '已得来函·此事干系甚大·容臣再三斟酌后回奏。';
+        else _t = '臣' + _ch2.name + '叩首拜读圣函·谨当详察·不日具复。';
+      }
+      letter.reply = _t;
       letter.status = 'returned';
+      letter._fallbackReply = true;
+      try { if (typeof renderLetterPanel === 'function' && document.getElementById('letter-history')) renderLetterPanel(); } catch(_){}
     });
   } else {
     letter.reply = '臣' + ch.name + '叩首·拜读圣函。容臣细思·当速具回奏。';

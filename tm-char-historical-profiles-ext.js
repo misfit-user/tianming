@@ -43,7 +43,7 @@
       loyalty: 95, ambition: 70,
       traits: ['scholarly','patient','heroic','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 50000, treasure: 200000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 100000, land: 50000, treasure: 200000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 92,
@@ -65,7 +65,7 @@
       loyalty: 100, ambition: 50,
       traits: ['loyal','scholarly','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 80000, land: 30000, treasure: 150000, slaves: 80, commerce: 0 },
+        privateWealth: { money: 80000, land: 30000, treasure: 150000, slaves: 80, commerce: 0 },
         hiddenWealth: 0, fame: 98, virtueMerit: 1000, virtueStage: 6
       },
       integrity: 100,
@@ -87,7 +87,7 @@
       loyalty: 90, ambition: 75,
       traits: ['reformist','pragmatic','brilliant','scholarly'],
       resources: {
-        privateWealth: { cash: 500000, land: 30000, treasure: 800000, slaves: 500, commerce: 200000 },
+        privateWealth: { money: 500000, land: 30000, treasure: 800000, slaves: 500, commerce: 200000 },
         hiddenWealth: 100000, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 80,
@@ -109,7 +109,7 @@
       loyalty: 95, ambition: 50,
       traits: ['upright','clever','frugal','witty'],
       resources: {
-        privateWealth: { cash: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -131,7 +131,7 @@
       loyalty: 80, ambition: 65,
       traits: ['brilliant','patient','merchant','scholarly'],
       resources: {
-        privateWealth: { cash: 5000000, land: 50000, treasure: 10000000, slaves: 1000, commerce: 30000000 },
+        privateWealth: { money: 5000000, land: 50000, treasure: 10000000, slaves: 1000, commerce: 30000000 },
         hiddenWealth: 1000000, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -153,7 +153,7 @@
       loyalty: 90, ambition: 70,
       traits: ['scholarly','sage','benevolent','upright'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6
       },
       integrity: 100,
@@ -175,7 +175,7 @@
       loyalty: 70, ambition: 30,
       traits: ['sage','scholarly','ascetic','reclusive'],
       resources: {
-        privateWealth: { cash: 10000, land: 100, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 100, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -197,7 +197,7 @@
       loyalty: 80, ambition: 60,
       traits: ['brilliant','rigorous','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 300000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 300000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -219,7 +219,7 @@
       loyalty: 65, ambition: 90,
       traits: ['brilliant','ruthless','reformist','ambitious'],
       resources: {
-        privateWealth: { cash: 500000, land: 20000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 20000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 500, virtueStage: 4
       },
       integrity: 60,
@@ -241,7 +241,7 @@
       loyalty: 100, ambition: 60,
       traits: ['loyal','literary','idealist','ascetic'],
       resources: {
-        privateWealth: { cash: 50000, land: 2000, treasure: 30000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 50000, land: 2000, treasure: 30000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 900, virtueStage: 6
       },
       integrity: 100,
@@ -263,7 +263,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brave','proud','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 30000, treasure: 1000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 30000, treasure: 1000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -285,7 +285,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','clever','upright','patient'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 300000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 300000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5
       },
       integrity: 90,
@@ -307,7 +307,7 @@
       loyalty: 75, ambition: 70,
       traits: ['brilliant','ruthless','brave','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 50000, treasure: 2000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1000000, land: 50000, treasure: 2000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 300, virtueStage: 3
       },
       integrity: 65,
@@ -329,7 +329,7 @@
       loyalty: 88, ambition: 60,
       traits: ['brilliant','patient','brave','clever'],
       resources: {
-        privateWealth: { cash: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 650, virtueStage: 5
       },
       integrity: 80,
@@ -354,7 +354,7 @@
       loyalty: 90, ambition: 50,
       traits: ['brilliant','patient','clever','sage'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 500000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 90,
@@ -376,7 +376,7 @@
       loyalty: 85, ambition: 70,
       traits: ['brilliant','clever','scheming','patient'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 200000, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 65,
@@ -398,7 +398,7 @@
       loyalty: 95, ambition: 75,
       traits: ['scholarly','reformist','idealist','literary'],
       resources: {
-        privateWealth: { cash: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 92,
@@ -420,7 +420,7 @@
       loyalty: 95, ambition: 60,
       traits: ['scholarly','rigorous','idealist','sage'],
       resources: {
-        privateWealth: { cash: 80000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 80000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -442,7 +442,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','humble_origin','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -464,7 +464,7 @@
       loyalty: 95, ambition: 75,
       traits: ['brilliant','brave','heroic','proud'],
       resources: {
-        privateWealth: { cash: 3000000, land: 100000, treasure: 8000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 3000000, land: 100000, treasure: 8000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -486,7 +486,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brave','patient','heroic','scholarly'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 90,
@@ -508,7 +508,7 @@
       loyalty: 30, ambition: 100,
       traits: ['scheming','reformist','idealist','ambitious'],
       resources: {
-        privateWealth: { cash: 10000000, land: 500000, treasure: 50000000, slaves: 5000, commerce: 1000000 },
+        privateWealth: { money: 10000000, land: 500000, treasure: 50000000, slaves: 5000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -40, virtueMerit: 100, virtueStage: 2
       },
       integrity: 45,
@@ -530,7 +530,7 @@
       loyalty: 70, ambition: 95,
       traits: ['brilliant','benevolent','patient','heroic'],
       resources: {
-        privateWealth: { cash: 50000000, land: 2000000, treasure: 100000000, slaves: 50000, commerce: 5000000 },
+        privateWealth: { money: 50000000, land: 2000000, treasure: 100000000, slaves: 50000, commerce: 5000000 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 90,
@@ -552,7 +552,7 @@
       loyalty: 95, ambition: 75,
       traits: ['brilliant','brave','heroic','clever'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 500000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 90,
@@ -574,7 +574,7 @@
       loyalty: 80, ambition: 50,
       traits: ['scholarly','literary','idealist','reclusive'],
       resources: {
-        privateWealth: { cash: 80000, land: 2000, treasure: 50000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 80000, land: 2000, treasure: 50000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -599,7 +599,7 @@
       loyalty: 70, ambition: 95,
       traits: ['benevolent','patient','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 30000000, land: 800000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 30000000, land: 800000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 80,
@@ -621,7 +621,7 @@
       loyalty: 100, ambition: 70,
       traits: ['brave','loyal','proud','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6
       },
       integrity: 95,
@@ -643,7 +643,7 @@
       loyalty: 100, ambition: 50,
       traits: ['brave','loyal','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 300000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 300000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -665,7 +665,7 @@
       loyalty: 95, ambition: 80,
       traits: ['brilliant','brave','literary','heroic'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -687,7 +687,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','loyal','rigorous','scholarly'],
       resources: {
-        privateWealth: { cash: 600000, land: 20000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 20000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -709,7 +709,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brilliant','clever','luxurious','reclusive'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 300000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 300000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 600, virtueStage: 5
       },
       integrity: 70,
@@ -734,7 +734,7 @@
       loyalty: 92, ambition: 60,
       traits: ['brilliant','patient','sage','literary'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -756,7 +756,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','rigorous','reformist','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -778,7 +778,7 @@
       loyalty: 80, ambition: 20,
       traits: ['scholarly','reclusive','literary','ascetic'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -803,7 +803,7 @@
       loyalty: 95, ambition: 60,
       traits: ['upright','loyal','rigorous','scholarly'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 100,
@@ -825,7 +825,7 @@
       loyalty: 90, ambition: 80,
       traits: ['brilliant','patient','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 3000000, land: 100000, treasure: 5000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 3000000, land: 100000, treasure: 5000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 500000, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 78,
@@ -847,7 +847,7 @@
       loyalty: 88, ambition: 60,
       traits: ['brilliant','upright','clever','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -869,7 +869,7 @@
       loyalty: 65, ambition: 85,
       traits: ['literary','clever','scheming','vain'],
       resources: {
-        privateWealth: { cash: 500000, land: 5000, treasure: 1000000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 500000, land: 5000, treasure: 1000000, slaves: 100, commerce: 0 },
         hiddenWealth: 200000, fame: 70, virtueMerit: 500, virtueStage: 4
       },
       integrity: 65,
@@ -891,7 +891,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','loyal','heroic','patient'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 92,
@@ -913,7 +913,7 @@
       loyalty: 90, ambition: 50,
       traits: ['brilliant','sage','reclusive','scholarly'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -935,7 +935,7 @@
       loyalty: 90, ambition: 70,
       traits: ['scholarly','literary','upright','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -957,7 +957,7 @@
       loyalty: 88, ambition: 50,
       traits: ['literary','benevolent','reclusive','scholarly'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 880, virtueStage: 6
       },
       integrity: 88,
@@ -979,7 +979,7 @@
       loyalty: 92, ambition: 65,
       traits: ['reformist','rigorous','scholarly','patient'],
       resources: {
-        privateWealth: { cash: 150000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 150000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -1004,7 +1004,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brilliant','patient','scheming','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 200000, fame: 70, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -1026,7 +1026,7 @@
       loyalty: 92, ambition: 65,
       traits: ['scholarly','literary','upright','reformist'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 90,
@@ -1048,7 +1048,7 @@
       loyalty: 90, ambition: 50,
       traits: ['literary','benevolent','luxurious','scholarly'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6
       },
       integrity: 92,
@@ -1070,7 +1070,7 @@
       loyalty: 92, ambition: 50,
       traits: ['scholarly','rigorous','sage','ascetic'],
       resources: {
-        privateWealth: { cash: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 98,
@@ -1092,7 +1092,7 @@
       loyalty: 88, ambition: 65,
       traits: ['brilliant','scholarly','reformist','rigorous'],
       resources: {
-        privateWealth: { cash: 150000, land: 3000, treasure: 150000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 150000, land: 3000, treasure: 150000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 80,
@@ -1117,7 +1117,7 @@
       loyalty: 90, ambition: 60,
       traits: ['brilliant','scholarly','clever','scheming'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 300000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 300000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -1139,7 +1139,7 @@
       loyalty: 100, ambition: 70,
       traits: ['loyal','heroic','upright','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -1161,7 +1161,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','scholarly','sage','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 95,
@@ -1183,7 +1183,7 @@
       loyalty: 90, ambition: 70,
       traits: ['brilliant','rigorous','brave','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 85,
@@ -1205,7 +1205,7 @@
       loyalty: 80, ambition: 80,
       traits: ['brilliant','literary','proud','ambitious'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 70,
@@ -1227,7 +1227,7 @@
       loyalty: 92, ambition: 65,
       traits: ['rigorous','scholarly','patient','clever'],
       resources: {
-        privateWealth: { cash: 300000, land: 8000, treasure: 300000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 300000, land: 8000, treasure: 300000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 82, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -1252,7 +1252,7 @@
       loyalty: 70, ambition: 95,
       traits: ['brilliant','ruthless','brave','ambitious'],
       resources: {
-        privateWealth: { cash: 10000000, land: 500000, treasure: 30000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 10000000, land: 500000, treasure: 30000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 5000000, fame: 30, virtueMerit: 400, virtueStage: 4
       },
       integrity: 65,
@@ -1274,7 +1274,7 @@
       loyalty: 25, ambition: 95,
       traits: ['brave','scheming','ambitious','ruthless'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 20000000, slaves: 5000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 20000000, slaves: 5000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -50, virtueMerit: 200, virtueStage: 2
       },
       integrity: 30,
@@ -1296,7 +1296,7 @@
       loyalty: 95, ambition: 65,
       traits: ['rigorous','patient','scholarly','loyal'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -1318,7 +1318,7 @@
       loyalty: 100, ambition: 70,
       traits: ['upright','rigorous','heroic','loyal'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 98, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -1340,7 +1340,7 @@
       loyalty: 95, ambition: 75,
       traits: ['rigorous','scholarly','patient','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 90,
@@ -1362,7 +1362,7 @@
       loyalty: 95, ambition: 78,
       traits: ['brilliant','heroic','rigorous','proud'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 88,
@@ -1388,7 +1388,7 @@
       loyalty: 70, ambition: 90,
       traits: ['brilliant','clever','literary','ambitious'],
       resources: {
-        privateWealth: { cash: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
         hiddenWealth: 200000, fame: 75, virtueMerit: 500, virtueStage: 4
       },
       integrity: 60,
@@ -1410,7 +1410,7 @@
       loyalty: 80, ambition: 85,
       traits: ['brilliant','scheming','clever','literary'],
       resources: {
-        privateWealth: { cash: 1000000, land: 10000, treasure: 2000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 1000000, land: 10000, treasure: 2000000, slaves: 300, commerce: 0 },
         hiddenWealth: 200000, fame: 70, virtueMerit: 450, virtueStage: 4
       },
       integrity: 55,
@@ -1432,7 +1432,7 @@
       loyalty: 95, ambition: 70,
       traits: ['benevolent','heroic','brave','scholarly'],
       resources: {
-        privateWealth: { cash: 2000000, land: 50000, treasure: 5000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 50000, treasure: 5000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 90,
@@ -1454,7 +1454,7 @@
       loyalty: 100, ambition: 75,
       traits: ['brave','loyal','heroic','literary'],
       resources: {
-        privateWealth: { cash: 50000, land: 0, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 50000, land: 0, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5
       },
       integrity: 95,
@@ -1476,7 +1476,7 @@
       loyalty: 60, ambition: 100,
       traits: ['brave','heroic','proud','ruthless'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -1498,7 +1498,7 @@
       loyalty: 50, ambition: 100,
       traits: ['brilliant','clever','humble_origin','patient'],
       resources: {
-        privateWealth: { cash: 100000000, land: 5000000, treasure: 500000000, slaves: 100000, commerce: 0 },
+        privateWealth: { money: 100000000, land: 5000000, treasure: 500000000, slaves: 100000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 70,
@@ -1520,7 +1520,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','loyal','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -1542,7 +1542,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','loyal','rigorous','humble_origin'],
       resources: {
-        privateWealth: { cash: 500000, land: 15000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 15000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 85,
@@ -1564,7 +1564,7 @@
       loyalty: 95, ambition: 75,
       traits: ['rigorous','reformist','idealist','scholarly'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 650, virtueStage: 5
       },
       integrity: 90,
@@ -1586,7 +1586,7 @@
       loyalty: 88, ambition: 70,
       traits: ['scholarly','literary','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 95,
@@ -1608,7 +1608,7 @@
       loyalty: 100, ambition: 50,
       traits: ['loyal','heroic','patient','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -1630,7 +1630,7 @@
       loyalty: 80, ambition: 40,
       traits: ['scholarly','benevolent','sage','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -1652,7 +1652,7 @@
       loyalty: 70, ambition: 30,
       traits: ['scholarly','benevolent','sage','reclusive'],
       resources: {
-        privateWealth: { cash: 10000, land: 200, treasure: 3000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 200, treasure: 3000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 90,
@@ -1674,7 +1674,7 @@
       loyalty: 75, ambition: 90,
       traits: ['brilliant','patient','clever','heroic'],
       resources: {
-        privateWealth: { cash: 50000000, land: 1500000, treasure: 100000000, slaves: 50000, commerce: 5000000 },
+        privateWealth: { money: 50000000, land: 1500000, treasure: 100000000, slaves: 50000, commerce: 5000000 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 78,
@@ -1696,7 +1696,7 @@
       loyalty: 20, ambition: 90,
       traits: ['brave','greedy','ruthless','arrogant'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 65, virtueMerit: 200, virtueStage: 2
       },
       integrity: 25,
@@ -1718,7 +1718,7 @@
       loyalty: 20, ambition: 95,
       traits: ['ruthless','greedy','brave','vain'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 5000000, fame: -85, virtueMerit: 50, virtueStage: 1
       },
       integrity: 15,
@@ -1740,7 +1740,7 @@
       loyalty: 95, ambition: 75,
       traits: ['brilliant','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 100000, land: 1000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -1762,7 +1762,7 @@
       loyalty: 80, ambition: 40,
       traits: ['scholarly','literary','sage','luxurious'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6
       },
       integrity: 90,
@@ -1784,7 +1784,7 @@
       loyalty: 60, ambition: 100,
       traits: ['brilliant','brave','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 700, virtueStage: 5
       },
       integrity: 78,
@@ -1806,7 +1806,7 @@
       loyalty: 92, ambition: 65,
       traits: ['brilliant','patient','sage','clever'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 3000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 3000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 88,
@@ -1828,7 +1828,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brilliant','brave','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 920, virtueStage: 6
       },
       integrity: 92,
@@ -1850,7 +1850,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -1872,7 +1872,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','proud'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -1894,7 +1894,7 @@
       loyalty: 90, ambition: 65,
       traits: ['brave','heroic','rigorous','humble_origin'],
       resources: {
-        privateWealth: { cash: 400000, land: 8000, treasure: 600000, slaves: 150, commerce: 0 },
+        privateWealth: { money: 400000, land: 8000, treasure: 600000, slaves: 150, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -1916,7 +1916,7 @@
       loyalty: 30, ambition: 100,
       traits: ['brilliant','ruthless','scheming','ambitious'],
       resources: {
-        privateWealth: { cash: 80000000, land: 3000000, treasure: 200000000, slaves: 80000, commerce: 0 },
+        privateWealth: { money: 80000000, land: 3000000, treasure: 200000000, slaves: 80000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 600, virtueStage: 5
       },
       integrity: 55,
@@ -1938,7 +1938,7 @@
       loyalty: 15, ambition: 100,
       traits: ['scheming','greedy','ruthless','clever'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 30000000, slaves: 8000, commerce: 1000000 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 30000000, slaves: 8000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -90, virtueMerit: 50, virtueStage: 1
       },
       integrity: 25,
@@ -1960,7 +1960,7 @@
       loyalty: 92, ambition: 60,
       traits: ['scholarly','literary','upright','reformist'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -1982,7 +1982,7 @@
       loyalty: 70, ambition: 75,
       traits: ['literary','luxurious','heroic','reclusive'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 900, virtueStage: 6
       },
       integrity: 88,
@@ -2004,7 +2004,7 @@
       loyalty: 95, ambition: 60,
       traits: ['literary','benevolent','idealist','scholarly'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6
       },
       integrity: 98,
@@ -2026,7 +2026,7 @@
       loyalty: 50, ambition: 30,
       traits: ['literary','luxurious','idealist','reclusive'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 80,
@@ -2048,7 +2048,7 @@
       loyalty: 30, ambition: 95,
       traits: ['scheming','flatterer','greedy','literary'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -85, virtueMerit: 100, virtueStage: 2
       },
       integrity: 18,
@@ -2070,7 +2070,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -2092,7 +2092,7 @@
       loyalty: 95, ambition: 78,
       traits: ['literary','heroic','brave','reformist'],
       resources: {
-        privateWealth: { cash: 300000, land: 8000, treasure: 300000, slaves: 80, commerce: 0 },
+        privateWealth: { money: 300000, land: 8000, treasure: 300000, slaves: 80, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 900, virtueStage: 6
       },
       integrity: 90,
@@ -2114,7 +2114,7 @@
       loyalty: 95, ambition: 60,
       traits: ['literary','idealist','heroic','scholarly'],
       resources: {
-        privateWealth: { cash: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -2136,7 +2136,7 @@
       loyalty: 88, ambition: 65,
       traits: ['scholarly','benevolent','reformist','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -2158,7 +2158,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brilliant','loyal','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 95,
@@ -2180,7 +2180,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brave','heroic','ruthless','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -2202,7 +2202,7 @@
       loyalty: 30, ambition: 95,
       traits: ['scheming','ambitious','flatterer','ruthless'],
       resources: {
-        privateWealth: { cash: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 },
+        privateWealth: { money: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 },
         hiddenWealth: 2000000, fame: -70, virtueMerit: 200, virtueStage: 2
       },
       integrity: 30,
@@ -2224,7 +2224,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brilliant','scheming','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 50000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 70,
@@ -2246,7 +2246,7 @@
       loyalty: 100, ambition: 60,
       traits: ['loyal','scholarly','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -2268,7 +2268,7 @@
       loyalty: 70, ambition: 50,
       traits: ['literary','luxurious','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -2290,7 +2290,7 @@
       loyalty: 95, ambition: 80,
       traits: ['brave','heroic','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 30000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 30000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -2312,7 +2312,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brilliant','rigorous','loyal','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -2334,7 +2334,7 @@
       loyalty: 88, ambition: 70,
       traits: ['brilliant','patient','scholarly','reformist'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 60, virtueMerit: 600, virtueStage: 5
       },
       integrity: 78,
@@ -2356,7 +2356,7 @@
       loyalty: 40, ambition: 80,
       traits: ['brilliant','patient','scheming','clever'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: -30, virtueMerit: 300, virtueStage: 3
       },
       integrity: 50,
@@ -2378,7 +2378,7 @@
       loyalty: 80, ambition: 78,
       traits: ['brave','rigorous','heroic','ruthless'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -2404,7 +2404,7 @@
       loyalty: 95, ambition: 75,
       traits: ['heroic','rigorous','loyal','brave'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -2426,7 +2426,7 @@
       loyalty: 85, ambition: 70,
       traits: ['brilliant','clever','patient','scheming'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5
       },
       integrity: 80,
@@ -2448,7 +2448,7 @@
       loyalty: 75, ambition: 95,
       traits: ['brave','scheming','jealous','ruthless'],
       resources: {
-        privateWealth: { cash: 300000, land: 8000, treasure: 500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 300000, land: 8000, treasure: 500000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 200, virtueStage: 2
       },
       integrity: 35,
@@ -2470,7 +2470,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 30000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 30000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -2492,7 +2492,7 @@
       loyalty: 100, ambition: 60,
       traits: ['benevolent','loyal','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 1000000, land: 50000, treasure: 5000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 1000000, land: 50000, treasure: 5000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -2514,7 +2514,7 @@
       loyalty: 5, ambition: 100,
       traits: ['scheming','ruthless','greedy','flatterer'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 30000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 30000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 5000000, fame: -100, virtueMerit: 0, virtueStage: 1
       },
       integrity: 5,
@@ -2536,7 +2536,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -2558,7 +2558,7 @@
       loyalty: 90, ambition: 50,
       traits: ['scholarly','literary','sage','rigorous'],
       resources: {
-        privateWealth: { cash: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -2580,7 +2580,7 @@
       loyalty: 88, ambition: 50,
       traits: ['brilliant','scholarly','literary','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 92,
@@ -2602,7 +2602,7 @@
       loyalty: 85, ambition: 60,
       traits: ['brilliant','rigorous','scholarly','clever'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6
       },
       integrity: 78,
@@ -2624,7 +2624,7 @@
       loyalty: 85, ambition: 65,
       traits: ['scholarly','literary','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 82,
@@ -2646,7 +2646,7 @@
       loyalty: 75, ambition: 85,
       traits: ['brave','heroic','ambitious','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 78,
@@ -2668,7 +2668,7 @@
       loyalty: 80, ambition: 95,
       traits: ['brave','heroic','ambitious','proud'],
       resources: {
-        privateWealth: { cash: 800000, land: 30000, treasure: 1500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 800000, land: 30000, treasure: 1500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5
       },
       integrity: 78,
@@ -2690,7 +2690,7 @@
       loyalty: 90, ambition: 60,
       traits: ['rigorous','scholarly','upright','patient'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -2712,7 +2712,7 @@
       loyalty: 92, ambition: 65,
       traits: ['brilliant','benevolent','patient','sage'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -2734,7 +2734,7 @@
       loyalty: 92, ambition: 65,
       traits: ['brilliant','patient','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 90,
@@ -2756,7 +2756,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brilliant','brave','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 90,
@@ -2778,7 +2778,7 @@
       loyalty: 50, ambition: 95,
       traits: ['brilliant','scheming','ambitious','proud'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 200000, fame: 50, virtueMerit: 400, virtueStage: 4
       },
       integrity: 55,
@@ -2800,7 +2800,7 @@
       loyalty: 80, ambition: 60,
       traits: ['brilliant','patient','scheming','reclusive'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 65,
@@ -2822,7 +2822,7 @@
       loyalty: 75, ambition: 80,
       traits: ['brave','heroic','proud','ambitious'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 700, virtueStage: 5
       },
       integrity: 78,
@@ -2844,7 +2844,7 @@
       loyalty: 100, ambition: 80,
       traits: ['brave','heroic','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -2866,7 +2866,7 @@
       loyalty: 80, ambition: 70,
       traits: ['literary','idealist','heroic','reclusive'],
       resources: {
-        privateWealth: { cash: 20000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 20000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -2888,7 +2888,7 @@
       loyalty: 85, ambition: 75,
       traits: ['brave','heroic','rigorous','proud'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -2910,7 +2910,7 @@
       loyalty: 75, ambition: 75,
       traits: ['brave','heroic','luxurious','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 500, virtueStage: 4
       },
       integrity: 70,
@@ -2932,7 +2932,7 @@
       loyalty: 30, ambition: 95,
       traits: ['scheming','flatterer','ruthless','vain'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 30000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 30000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 5000000, fame: -75, virtueMerit: 100, virtueStage: 2
       },
       integrity: 20,
@@ -2954,7 +2954,7 @@
       loyalty: 95, ambition: 60,
       traits: ['upright','rigorous','scholarly','reformist'],
       resources: {
-        privateWealth: { cash: 200000, land: 4000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 4000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -2976,7 +2976,7 @@
       loyalty: 90, ambition: 60,
       traits: ['scholarly','literary','upright','patient'],
       resources: {
-        privateWealth: { cash: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 80000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -2998,7 +2998,7 @@
       loyalty: 88, ambition: 70,
       traits: ['scholarly','literary','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 92,
@@ -3020,7 +3020,7 @@
       loyalty: 75, ambition: 50,
       traits: ['literary','luxurious','reclusive','vain'],
       resources: {
-        privateWealth: { cash: 500000, land: 5000, treasure: 1000000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 500000, land: 5000, treasure: 1000000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5
       },
       integrity: 80,
@@ -3042,7 +3042,7 @@
       loyalty: 95, ambition: 65,
       traits: ['rigorous','patient','sage','heroic'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 900, virtueStage: 6
       },
       integrity: 92,
@@ -3064,7 +3064,7 @@
       loyalty: 95, ambition: 65,
       traits: ['scholarly','rigorous','patient','sage'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 900, virtueStage: 6
       },
       integrity: 92,
@@ -3086,7 +3086,7 @@
       loyalty: 92, ambition: 65,
       traits: ['rigorous','patient','sage','clever'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 90,
@@ -3108,7 +3108,7 @@
       loyalty: 70, ambition: 50,
       traits: ['literary','idealist','reclusive','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -3130,7 +3130,7 @@
       loyalty: 95, ambition: 50,
       traits: ['scholarly','literary','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -3152,7 +3152,7 @@
       loyalty: 92, ambition: 65,
       traits: ['rigorous','reformist','patient','scholarly'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -3174,7 +3174,7 @@
       loyalty: 95, ambition: 50,
       traits: ['upright','rigorous','benevolent','humble_origin'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 100,
@@ -3196,7 +3196,7 @@
       loyalty: 88, ambition: 80,
       traits: ['brilliant','patient','scheming','clever'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 1000000, fame: 60, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -3218,7 +3218,7 @@
       loyalty: 90, ambition: 88,
       traits: ['brilliant','rigorous','reformist','proud'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 200000, fame: 68, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -3240,7 +3240,7 @@
       loyalty: 65, ambition: 60,
       traits: ['literary','idealist','reclusive','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 600, virtueStage: 5
       },
       integrity: 88,
@@ -3262,7 +3262,7 @@
       loyalty: 75, ambition: 55,
       traits: ['literary','idealist','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -3284,7 +3284,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','rigorous','heroic','scholarly'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -3306,7 +3306,7 @@
       loyalty: 88, ambition: 80,
       traits: ['brilliant','patient','reformist','clever'],
       resources: {
-        privateWealth: { cash: 30000000, land: 200000, treasure: 50000000, slaves: 2000, commerce: 5000000 },
+        privateWealth: { money: 30000000, land: 200000, treasure: 50000000, slaves: 2000, commerce: 5000000 },
         hiddenWealth: 5000000, fame: -10, virtueMerit: 600, virtueStage: 5
       },
       integrity: 65,
@@ -3328,7 +3328,7 @@
       loyalty: 92, ambition: 75,
       traits: ['brilliant','reformist','scholarly','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 20000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 20000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 88,
@@ -3350,7 +3350,7 @@
       loyalty: 20, ambition: 100,
       traits: ['scheming','ruthless','ambitious','clever'],
       resources: {
-        privateWealth: { cash: 20000000, land: 300000, treasure: 50000000, slaves: 3000, commerce: 5000000 },
+        privateWealth: { money: 20000000, land: 300000, treasure: 50000000, slaves: 3000, commerce: 5000000 },
         hiddenWealth: 5000000, fame: -50, virtueMerit: 200, virtueStage: 2
       },
       integrity: 35,
@@ -3376,7 +3376,7 @@
       loyalty: 95, ambition: 60,
       traits: ['rigorous','reformist','sage','scholarly'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -3398,7 +3398,7 @@
       loyalty: 100, ambition: 30,
       traits: ['loyal','reclusive','heroic','ascetic'],
       resources: {
-        privateWealth: { cash: 5000, land: 0, treasure: 0, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 0, treasure: 0, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 100,
@@ -3420,7 +3420,7 @@
       loyalty: 50, ambition: 20,
       traits: ['sage','reclusive','literary','scholarly'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 900, virtueStage: 6
       },
       integrity: 100,
@@ -3442,7 +3442,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','rigorous','scholarly','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -3464,7 +3464,7 @@
       loyalty: 70, ambition: 80,
       traits: ['benevolent','clever','luxurious','heroic'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -3486,7 +3486,7 @@
       loyalty: 88, ambition: 70,
       traits: ['brilliant','heroic','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -3508,7 +3508,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','clever','heroic','patient'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -3530,7 +3530,7 @@
       loyalty: 75, ambition: 80,
       traits: ['brilliant','clever','luxurious','scheming'],
       resources: {
-        privateWealth: { cash: 8000000, land: 200000, treasure: 20000000, slaves: 8000, commerce: 0 },
+        privateWealth: { money: 8000000, land: 200000, treasure: 20000000, slaves: 8000, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 600, virtueStage: 5
       },
       integrity: 72,
@@ -3552,7 +3552,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','rigorous','patient','heroic'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -3574,7 +3574,7 @@
       loyalty: 90, ambition: 65,
       traits: ['brave','rigorous','heroic','proud'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 92,
@@ -3596,7 +3596,7 @@
       loyalty: 100, ambition: 80,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -3618,7 +3618,7 @@
       loyalty: 80, ambition: 80,
       traits: ['rigorous','reformist','scholarly','clever'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 1000000 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 1000000 },
         hiddenWealth: 200000, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 75,
@@ -3640,7 +3640,7 @@
       loyalty: 100, ambition: 60,
       traits: ['scholarly','loyal','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -3662,7 +3662,7 @@
       loyalty: 100, ambition: 70,
       traits: ['loyal','heroic','scheming','idealist'],
       resources: {
-        privateWealth: { cash: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 92,
@@ -3684,7 +3684,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -3706,7 +3706,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -3728,7 +3728,7 @@
       loyalty: 88, ambition: 65,
       traits: ['brilliant','brave','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -3750,7 +3750,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -3772,7 +3772,7 @@
       loyalty: 90, ambition: 80,
       traits: ['brilliant','clever','scholarly','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -3794,7 +3794,7 @@
       loyalty: 95, ambition: 60,
       traits: ['rigorous','patient','loyal','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 82, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -3816,7 +3816,7 @@
       loyalty: 30, ambition: 95,
       traits: ['brilliant','scheming','ruthless','patient'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 1000000, fame: 30, virtueMerit: 400, virtueStage: 4
       },
       integrity: 55,
@@ -3838,7 +3838,7 @@
       loyalty: 25, ambition: 100,
       traits: ['scheming','brilliant','ruthless','patient'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 20000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 20000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 2000000, fame: -10, virtueMerit: 350, virtueStage: 3
       },
       integrity: 50,
@@ -3860,7 +3860,7 @@
       loyalty: 60, ambition: 100,
       traits: ['brilliant','heroic','patient','benevolent'],
       resources: {
-        privateWealth: { cash: 100000000, land: 5000000, treasure: 200000000, slaves: 100000, commerce: 0 },
+        privateWealth: { money: 100000000, land: 5000000, treasure: 200000000, slaves: 100000, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 88,
@@ -3882,7 +3882,7 @@
       loyalty: 80, ambition: 90,
       traits: ['brilliant','reformist','rigorous','ruthless'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 200000, fame: -20, virtueMerit: 400, virtueStage: 4
       },
       integrity: 70,
@@ -3904,7 +3904,7 @@
       loyalty: 92, ambition: 60,
       traits: ['scholarly','literary','upright','rigorous'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -3926,7 +3926,7 @@
       loyalty: 100, ambition: 75,
       traits: ['loyal','heroic','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -3948,7 +3948,7 @@
       loyalty: 100, ambition: 75,
       traits: ['heroic','loyal','brave','rigorous'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 900, virtueStage: 6
       },
       integrity: 100,
@@ -3970,7 +3970,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -3992,7 +3992,7 @@
       loyalty: 80, ambition: 50,
       traits: ['literary','idealist','reclusive','heroic'],
       resources: {
-        privateWealth: { cash: 100000, land: 1000, treasure: 200000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1000, treasure: 200000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -4014,7 +4014,7 @@
       loyalty: 88, ambition: 50,
       traits: ['scholarly','sage','benevolent','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -4036,7 +4036,7 @@
       loyalty: 90, ambition: 55,
       traits: ['scholarly','sage','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -4058,7 +4058,7 @@
       loyalty: 50, ambition: 100,
       traits: ['brilliant','ruthless','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 200000000, land: 10000000, treasure: 500000000, slaves: 200000, commerce: 0 },
+        privateWealth: { money: 200000000, land: 10000000, treasure: 500000000, slaves: 200000, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 78,
@@ -4080,7 +4080,7 @@
       loyalty: 30, ambition: 100,
       traits: ['brilliant','ruthless','heroic','ambitious'],
       resources: {
-        privateWealth: { cash: 250000000, land: 12000000, treasure: 600000000, slaves: 250000, commerce: 0 },
+        privateWealth: { money: 250000000, land: 12000000, treasure: 600000000, slaves: 250000, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 65,
@@ -4102,7 +4102,7 @@
       loyalty: 70, ambition: 90,
       traits: ['brave','heroic','arrogant','ruthless'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 55,
@@ -4124,7 +4124,7 @@
       loyalty: 75, ambition: 80,
       traits: ['brilliant','patient','rigorous','clever'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 70,
@@ -4146,7 +4146,7 @@
       loyalty: 100, ambition: 65,
       traits: ['heroic','rigorous','loyal','patient'],
       resources: {
-        privateWealth: { cash: 500000, land: 5000, treasure: 1000000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 5000, treasure: 1000000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -4168,7 +4168,7 @@
       loyalty: 100, ambition: 70,
       traits: ['loyal','heroic','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -4190,7 +4190,7 @@
       loyalty: 100, ambition: 75,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 100,
@@ -4212,7 +4212,7 @@
       loyalty: 100, ambition: 60,
       traits: ['scholarly','idealist','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -4234,7 +4234,7 @@
       loyalty: 100, ambition: 50,
       traits: ['scholarly','idealist','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 20000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 20000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -4260,7 +4260,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brilliant','rigorous','patient','sage'],
       resources: {
-        privateWealth: { cash: 300000, land: 8000, treasure: 300000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 300000, land: 8000, treasure: 300000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -4282,7 +4282,7 @@
       loyalty: 100, ambition: 70,
       traits: ['loyal','heroic','literary','rigorous'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 920, virtueStage: 6
       },
       integrity: 100,
@@ -4304,7 +4304,7 @@
       loyalty: 100, ambition: 70,
       traits: ['heroic','loyal','brave','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6
       },
       integrity: 100,
@@ -4326,7 +4326,7 @@
       loyalty: 80, ambition: 75,
       traits: ['literary','luxurious','idealist','clever'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -4348,7 +4348,7 @@
       loyalty: 95, ambition: 70,
       traits: ['literary','idealist','reformist','scholarly'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -4370,7 +4370,7 @@
       loyalty: 80, ambition: 65,
       traits: ['literary','luxurious','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 100000, land: 1500, treasure: 80000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1500, treasure: 80000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 82,
@@ -4392,7 +4392,7 @@
       loyalty: 75, ambition: 60,
       traits: ['literary','idealist','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -4414,7 +4414,7 @@
       loyalty: 92, ambition: 75,
       traits: ['literary','heroic','brave','idealist'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -4436,7 +4436,7 @@
       loyalty: 92, ambition: 50,
       traits: ['scholarly','sage','rigorous','ascetic'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 98,
@@ -4458,7 +4458,7 @@
       loyalty: 90, ambition: 50,
       traits: ['scholarly','sage','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -4480,7 +4480,7 @@
       loyalty: 65, ambition: 55,
       traits: ['literary','luxurious','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -4502,7 +4502,7 @@
       loyalty: 92, ambition: 60,
       traits: ['literary','rigorous','patient','sage'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -4524,7 +4524,7 @@
       loyalty: 25, ambition: 95,
       traits: ['scheming','greedy','flatterer','vain'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -85, virtueMerit: 50, virtueStage: 1
       },
       integrity: 18,
@@ -4546,7 +4546,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 92,
@@ -4568,7 +4568,7 @@
       loyalty: 80, ambition: 90,
       traits: ['brave','heroic','proud','ambitious'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 500, virtueStage: 4
       },
       integrity: 75,
@@ -4590,7 +4590,7 @@
       loyalty: 95, ambition: 75,
       traits: ['brilliant','brave','clever','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -4612,7 +4612,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -4634,7 +4634,7 @@
       loyalty: 100, ambition: 50,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 95,
@@ -4656,7 +4656,7 @@
       loyalty: 100, ambition: 50,
       traits: ['brave','loyal','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 100000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 100000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 100,
@@ -4678,7 +4678,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','brave','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -4700,7 +4700,7 @@
       loyalty: 70, ambition: 70,
       traits: ['brave','rigorous','heroic','patient'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 65, virtueMerit: 500, virtueStage: 4
       },
       integrity: 75,
@@ -4722,7 +4722,7 @@
       loyalty: 75, ambition: 95,
       traits: ['brilliant','scheming','ambitious','ruthless'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 400, virtueStage: 4
       },
       integrity: 50,
@@ -4744,7 +4744,7 @@
       loyalty: 80, ambition: 60,
       traits: ['clever','literary','luxurious','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 700, virtueStage: 5
       },
       integrity: 82,
@@ -4766,7 +4766,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','heroic','rigorous','patient'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -4788,7 +4788,7 @@
       loyalty: 100, ambition: 65,
       traits: ['scholarly','idealist','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 98,
@@ -4810,7 +4810,7 @@
       loyalty: 95, ambition: 50,
       traits: ['literary','scholarly','idealist','sage'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -4832,7 +4832,7 @@
       loyalty: 88, ambition: 70,
       traits: ['patient','clever','scheming','sage'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 200000, fame: 50, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -4854,7 +4854,7 @@
       loyalty: 100, ambition: 70,
       traits: ['upright','loyal','heroic','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -4876,7 +4876,7 @@
       loyalty: 92, ambition: 75,
       traits: ['rigorous','reformist','patient','scholarly'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -4898,7 +4898,7 @@
       loyalty: 95, ambition: 70,
       traits: ['rigorous','heroic','humble_origin','clever'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -4920,7 +4920,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brave','rigorous','heroic','loyal'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 88,
@@ -4942,7 +4942,7 @@
       loyalty: 88, ambition: 65,
       traits: ['literary','clever','scholarly','luxurious'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 78,
@@ -4964,7 +4964,7 @@
       loyalty: 92, ambition: 60,
       traits: ['upright','scholarly','literary','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -4986,7 +4986,7 @@
       loyalty: 88, ambition: 55,
       traits: ['literary','heroic','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -5008,7 +5008,7 @@
       loyalty: 92, ambition: 65,
       traits: ['literary','rigorous','heroic','scholarly'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -5030,7 +5030,7 @@
       loyalty: 95, ambition: 60,
       traits: ['literary','idealist','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -5052,7 +5052,7 @@
       loyalty: 50, ambition: 90,
       traits: ['flatterer','greedy','luxurious','vain'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 1000000, fame: -75, virtueMerit: 100, virtueStage: 2
       },
       integrity: 25,
@@ -5078,7 +5078,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -5100,7 +5100,7 @@
       loyalty: 88, ambition: 80,
       traits: ['scholarly','patient','clever','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 700, virtueStage: 5
       },
       integrity: 78,
@@ -5122,7 +5122,7 @@
       loyalty: 75, ambition: 70,
       traits: ['literary','luxurious','clever','idealist'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 75,
@@ -5144,7 +5144,7 @@
       loyalty: 80, ambition: 50,
       traits: ['literary','idealist','heroic','luxurious'],
       resources: {
-        privateWealth: { cash: 1000000, land: 20000, treasure: 2000000, slaves: 500, commerce: 500000 },
+        privateWealth: { money: 1000000, land: 20000, treasure: 2000000, slaves: 500, commerce: 500000 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -5166,7 +5166,7 @@
       loyalty: 80, ambition: 88,
       traits: ['scholarly','humble_origin','heroic','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -5188,7 +5188,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','rigorous','benevolent','heroic'],
       resources: {
-        privateWealth: { cash: 400000, land: 10000, treasure: 600000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 400000, land: 10000, treasure: 600000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -5210,7 +5210,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','brave','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 12000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -5232,7 +5232,7 @@
       loyalty: 80, ambition: 90,
       traits: ['brilliant','brave','heroic','clever'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 600, virtueStage: 5
       },
       integrity: 65,
@@ -5254,7 +5254,7 @@
       loyalty: 80, ambition: 30,
       traits: ['heroic','reclusive','clever','sage'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 100,
@@ -5276,7 +5276,7 @@
       loyalty: 92, ambition: 65,
       traits: ['brilliant','rigorous','heroic','brave'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -5298,7 +5298,7 @@
       loyalty: 95, ambition: 65,
       traits: ['heroic','brave','clever','rigorous'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 80000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 90,
@@ -5320,7 +5320,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 88,
@@ -5342,7 +5342,7 @@
       loyalty: 90, ambition: 70,
       traits: ['literary','heroic','idealist','reformist'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -5364,7 +5364,7 @@
       loyalty: 88, ambition: 65,
       traits: ['literary','heroic','idealist','brave'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -5386,7 +5386,7 @@
       loyalty: 70, ambition: 35,
       traits: ['literary','reclusive','idealist','sage'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -5408,7 +5408,7 @@
       loyalty: 85, ambition: 35,
       traits: ['scholarly','sage','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -5430,7 +5430,7 @@
       loyalty: 90, ambition: 50,
       traits: ['scholarly','sage','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -5452,7 +5452,7 @@
       loyalty: 92, ambition: 55,
       traits: ['scholarly','literary','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 50000, land: 800, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 800, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -5474,7 +5474,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','brave','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -5496,7 +5496,7 @@
       loyalty: 92, ambition: 75,
       traits: ['brave','heroic','rigorous','clever'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 80,
@@ -5518,7 +5518,7 @@
       loyalty: 92, ambition: 65,
       traits: ['scholarly','reformist','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -5540,7 +5540,7 @@
       loyalty: 100, ambition: 92,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 8000000, land: 100000, treasure: 20000000, slaves: 5000, commerce: 5000000 },
+        privateWealth: { money: 8000000, land: 100000, treasure: 20000000, slaves: 5000, commerce: 5000000 },
         hiddenWealth: 0, fame: 95, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -5562,7 +5562,7 @@
       loyalty: 100, ambition: 75,
       traits: ['loyal','heroic','idealist','literary'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -5584,7 +5584,7 @@
       loyalty: 100, ambition: 70,
       traits: ['literary','heroic','idealist','loyal'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -5606,7 +5606,7 @@
       loyalty: 90, ambition: 80,
       traits: ['brave','heroic','ruthless','luxurious'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: -50, virtueMerit: 300, virtueStage: 3
       },
       integrity: 55,
@@ -5628,7 +5628,7 @@
       loyalty: 95, ambition: 60,
       traits: ['upright','rigorous','benevolent','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 100,
@@ -5650,7 +5650,7 @@
       loyalty: 50, ambition: 95,
       traits: ['scheming','greedy','clever','luxurious'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 2000000, fame: -30, virtueMerit: 300, virtueStage: 3
       },
       integrity: 40,
@@ -5672,7 +5672,7 @@
       loyalty: 70, ambition: 92,
       traits: ['scheming','clever','flatterer','luxurious'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 1500000, fame: -20, virtueMerit: 350, virtueStage: 3
       },
       integrity: 45,
@@ -5694,7 +5694,7 @@
       loyalty: 90, ambition: 85,
       traits: ['brave','heroic','luxurious','rigorous'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -5716,7 +5716,7 @@
       loyalty: 60, ambition: 95,
       traits: ['scheming','ambitious','clever','proud'],
       resources: {
-        privateWealth: { cash: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 },
+        privateWealth: { money: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 },
         hiddenWealth: 1000000, fame: -10, virtueMerit: 300, virtueStage: 3
       },
       integrity: 55,
@@ -5738,7 +5738,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','loyal','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -5760,7 +5760,7 @@
       loyalty: 100, ambition: 88,
       traits: ['heroic','idealist','literary','reformist'],
       resources: {
-        privateWealth: { cash: 200000, land: 2000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 2000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -5782,7 +5782,7 @@
       loyalty: 60, ambition: 100,
       traits: ['scholarly','idealist','reformist','vain'],
       resources: {
-        privateWealth: { cash: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 65,
@@ -5804,7 +5804,7 @@
       loyalty: 80, ambition: 88,
       traits: ['literary','scholarly','reformist','idealist'],
       resources: {
-        privateWealth: { cash: 800000, land: 5000, treasure: 1500000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 800000, land: 5000, treasure: 1500000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 880, virtueStage: 6
       },
       integrity: 85,
@@ -5826,7 +5826,7 @@
       loyalty: 80, ambition: 65,
       traits: ['scholarly','reformist','idealist','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 2000, treasure: 100000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 200000, land: 2000, treasure: 100000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 88,
@@ -5848,7 +5848,7 @@
       loyalty: 35, ambition: 80,
       traits: ['literary','scholarly','flatterer','luxurious'],
       resources: {
-        privateWealth: { cash: 1000000, land: 10000, treasure: 2000000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 1000000, land: 10000, treasure: 2000000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: -30, virtueMerit: 200, virtueStage: 2
       },
       integrity: 40,
@@ -5874,7 +5874,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','clever','literary','sage'],
       resources: {
-        privateWealth: { cash: 5000000, land: 50000, treasure: 10000000, slaves: 1000, commerce: 30000000 },
+        privateWealth: { money: 5000000, land: 50000, treasure: 10000000, slaves: 1000, commerce: 30000000 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -5896,7 +5896,7 @@
       loyalty: 70, ambition: 60,
       traits: ['scholarly','sage','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -5918,7 +5918,7 @@
       loyalty: 80, ambition: 70,
       traits: ['scholarly','sage','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6
       },
       integrity: 100,
@@ -5940,7 +5940,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brilliant','patient','scheming','heroic'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -5962,7 +5962,7 @@
       loyalty: 50, ambition: 95,
       traits: ['ambitious','vain','luxurious','proud'],
       resources: {
-        privateWealth: { cash: 10000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
+        privateWealth: { money: 10000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
         hiddenWealth: 0, fame: 50, virtueMerit: 400, virtueStage: 4
       },
       integrity: 60,
@@ -5984,7 +5984,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 850, virtueStage: 6
       },
       integrity: 100,
@@ -6006,7 +6006,7 @@
       loyalty: 60, ambition: 95,
       traits: ['brilliant','ruthless','heroic','ambitious'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 400, virtueStage: 4
       },
       integrity: 55,
@@ -6028,7 +6028,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brilliant','rigorous','sage','heroic'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -6050,7 +6050,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','brave','clever','heroic'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -6072,7 +6072,7 @@
       loyalty: 90, ambition: 70,
       traits: ['brave','heroic','rigorous','proud'],
       resources: {
-        privateWealth: { cash: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 15000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 85,
@@ -6094,7 +6094,7 @@
       loyalty: 92, ambition: 88,
       traits: ['brilliant','rigorous','reformist','ambitious'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 85,
@@ -6116,7 +6116,7 @@
       loyalty: 88, ambition: 75,
       traits: ['scholarly','patient','clever','rigorous'],
       resources: {
-        privateWealth: { cash: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 65, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -6138,7 +6138,7 @@
       loyalty: 80, ambition: 88,
       traits: ['reformist','rigorous','scheming','clever'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -6160,7 +6160,7 @@
       loyalty: 95, ambition: 60,
       traits: ['scholarly','rigorous','upright','sage'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -6182,7 +6182,7 @@
       loyalty: 50, ambition: 75,
       traits: ['scholarly','patient','clever','sage'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: -10, virtueMerit: 400, virtueStage: 4
       },
       integrity: 65,
@@ -6204,7 +6204,7 @@
       loyalty: 60, ambition: 90,
       traits: ['scheming','flatterer','clever','luxurious'],
       resources: {
-        privateWealth: { cash: 2000000, land: 50000, treasure: 5000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 50000, treasure: 5000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 500000, fame: -50, virtueMerit: 200, virtueStage: 2
       },
       integrity: 35,
@@ -6226,7 +6226,7 @@
       loyalty: 88, ambition: 60,
       traits: ['literary','scholarly','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -6248,7 +6248,7 @@
       loyalty: 70, ambition: 70,
       traits: ['literary','scholarly','luxurious','idealist'],
       resources: {
-        privateWealth: { cash: 800000, land: 10000, treasure: 1500000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 800000, land: 10000, treasure: 1500000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -6270,7 +6270,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 80000, treasure: 5000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -6292,7 +6292,7 @@
       loyalty: 100, ambition: 60,
       traits: ['benevolent','loyal','idealist','sage'],
       resources: {
-        privateWealth: { cash: 50000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 50000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -6314,7 +6314,7 @@
       loyalty: 88, ambition: 88,
       traits: ['brilliant','rigorous','idealist','scheming'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 400, virtueStage: 4
       },
       integrity: 75,
@@ -6336,7 +6336,7 @@
       loyalty: 100, ambition: 75,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 92,
@@ -6358,7 +6358,7 @@
       loyalty: 100, ambition: 65,
       traits: ['upright','loyal','heroic','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6380,7 +6380,7 @@
       loyalty: 100, ambition: 65,
       traits: ['literary','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6402,7 +6402,7 @@
       loyalty: 100, ambition: 70,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6424,7 +6424,7 @@
       loyalty: 100, ambition: 80,
       traits: ['literary','heroic','idealist','reformist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6446,7 +6446,7 @@
       loyalty: 100, ambition: 75,
       traits: ['upright','heroic','idealist','reformist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6468,7 +6468,7 @@
       loyalty: 100, ambition: 75,
       traits: ['upright','heroic','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6490,7 +6490,7 @@
       loyalty: 100, ambition: 70,
       traits: ['heroic','idealist','reformist','reclusive'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6516,7 +6516,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 100,
@@ -6538,7 +6538,7 @@
       loyalty: 90, ambition: 30,
       traits: ['scholarly','sage','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -6560,7 +6560,7 @@
       loyalty: 90, ambition: 75,
       traits: ['brilliant','rigorous','reformist','scheming'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -6582,7 +6582,7 @@
       loyalty: 70, ambition: 60,
       traits: ['scholarly','sage','literary','clever'],
       resources: {
-        privateWealth: { cash: 100000, land: 1000, treasure: 50000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 100000, land: 1000, treasure: 50000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 80,
@@ -6604,7 +6604,7 @@
       loyalty: 70, ambition: 90,
       traits: ['brilliant','heroic','ambitious','patient'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -6626,7 +6626,7 @@
       loyalty: 75, ambition: 85,
       traits: ['brave','heroic','ambitious','rigorous'],
       resources: {
-        privateWealth: { cash: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -6648,7 +6648,7 @@
       loyalty: 50, ambition: 90,
       traits: ['brave','heroic','ruthless','ambitious'],
       resources: {
-        privateWealth: { cash: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 60, virtueMerit: 400, virtueStage: 4
       },
       integrity: 65,
@@ -6670,7 +6670,7 @@
       loyalty: 88, ambition: 88,
       traits: ['rigorous','ruthless','scheming','clever'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 350, virtueStage: 3
       },
       integrity: 60,
@@ -6692,7 +6692,7 @@
       loyalty: 95, ambition: 60,
       traits: ['benevolent','rigorous','sage','patient'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -6714,7 +6714,7 @@
       loyalty: 75, ambition: 50,
       traits: ['scholarly','sage','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -6736,7 +6736,7 @@
       loyalty: 100, ambition: 65,
       traits: ['scholarly','heroic','upright','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 100,
@@ -6758,7 +6758,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brave','rigorous','heroic','loyal'],
       resources: {
-        privateWealth: { cash: 400000, land: 8000, treasure: 600000, slaves: 150, commerce: 0 },
+        privateWealth: { money: 400000, land: 8000, treasure: 600000, slaves: 150, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -6780,7 +6780,7 @@
       loyalty: 78, ambition: 65,
       traits: ['rigorous','brave','heroic','clever'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 70,
@@ -6802,7 +6802,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 82, virtueMerit: 750, virtueStage: 5
       },
       integrity: 88,
@@ -6824,7 +6824,7 @@
       loyalty: 90, ambition: 80,
       traits: ['brilliant','clever','scheming','heroic'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 650, virtueStage: 5
       },
       integrity: 72,
@@ -6846,7 +6846,7 @@
       loyalty: 40, ambition: 100,
       traits: ['brilliant','heroic','ambitious','proud'],
       resources: {
-        privateWealth: { cash: 8000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 },
+        privateWealth: { money: 8000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 500, virtueStage: 4
       },
       integrity: 65,
@@ -6868,7 +6868,7 @@
       loyalty: 100, ambition: 80,
       traits: ['heroic','loyal','literary','idealist'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -6890,7 +6890,7 @@
       loyalty: 60, ambition: 95,
       traits: ['benevolent','heroic','idealist','sage'],
       resources: {
-        privateWealth: { cash: 80000000, land: 3000000, treasure: 200000000, slaves: 100000, commerce: 0 },
+        privateWealth: { money: 80000000, land: 3000000, treasure: 200000000, slaves: 100000, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -6912,7 +6912,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','sage'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -6934,7 +6934,7 @@
       loyalty: 80, ambition: 75,
       traits: ['scholarly','rigorous','patient','reformist'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -6956,7 +6956,7 @@
       loyalty: 80, ambition: 88,
       traits: ['brave','heroic','proud','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 78,
@@ -6978,7 +6978,7 @@
       loyalty: 90, ambition: 80,
       traits: ['brilliant','literary','reformist','clever'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 78,
@@ -7000,7 +7000,7 @@
       loyalty: 30, ambition: 100,
       traits: ['scheming','greedy','flatterer','vain'],
       resources: {
-        privateWealth: { cash: 8000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 300000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -85, virtueMerit: 50, virtueStage: 1
       },
       integrity: 15,
@@ -7022,7 +7022,7 @@
       loyalty: 15, ambition: 100,
       traits: ['ruthless','scheming','ambitious','brave'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 30000000, slaves: 8000, commerce: 1000000 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 30000000, slaves: 8000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -90, virtueMerit: 50, virtueStage: 1
       },
       integrity: 20,
@@ -7044,7 +7044,7 @@
       loyalty: 50, ambition: 95,
       traits: ['scheming','flatterer','clever','ambitious'],
       resources: {
-        privateWealth: { cash: 2000000, land: 50000, treasure: 5000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 2000000, land: 50000, treasure: 5000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 500000, fame: -65, virtueMerit: 200, virtueStage: 2
       },
       integrity: 30,
@@ -7066,7 +7066,7 @@
       loyalty: 70, ambition: 92,
       traits: ['brilliant','scheming','reformist','ambitious'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 200000, fame: -30, virtueMerit: 350, virtueStage: 3
       },
       integrity: 55,
@@ -7088,7 +7088,7 @@
       loyalty: 95, ambition: 60,
       traits: ['rigorous','sage','patient','benevolent'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -7110,7 +7110,7 @@
       loyalty: 70, ambition: 30,
       traits: ['literary','reclusive','sage','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -7132,7 +7132,7 @@
       loyalty: 65, ambition: 25,
       traits: ['literary','reclusive','vain','luxurious'],
       resources: {
-        privateWealth: { cash: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
+        privateWealth: { money: 800000, land: 5000, treasure: 1500000, slaves: 100, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -7154,7 +7154,7 @@
       loyalty: 92, ambition: 88,
       traits: ['brilliant','reformist','rigorous','ambitious'],
       resources: {
-        privateWealth: { cash: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 60, virtueMerit: 600, virtueStage: 5
       },
       integrity: 78,
@@ -7176,7 +7176,7 @@
       loyalty: 95, ambition: 85,
       traits: ['brilliant','heroic','rigorous','proud'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -7198,7 +7198,7 @@
       loyalty: 95, ambition: 75,
       traits: ['brilliant','scholarly','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -7220,7 +7220,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','clever','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 82,
@@ -7242,7 +7242,7 @@
       loyalty: 95, ambition: 65,
       traits: ['rigorous','scholarly','patient','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -7264,7 +7264,7 @@
       loyalty: 95, ambition: 80,
       traits: ['brave','heroic','rigorous','proud'],
       resources: {
-        privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -7286,7 +7286,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brilliant','patient','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 750, virtueStage: 5
       },
       integrity: 92,
@@ -7308,7 +7308,7 @@
       loyalty: 100, ambition: 80,
       traits: ['rigorous','reformist','heroic','ruthless'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 60, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -7330,7 +7330,7 @@
       loyalty: 100, ambition: 70,
       traits: ['brilliant','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -7356,7 +7356,7 @@
       loyalty: 70, ambition: 50,
       traits: ['scholarly','sage','clever','reclusive'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5
       },
       integrity: 80,
@@ -7378,7 +7378,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','clever','reformist','sage'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -7400,7 +7400,7 @@
       loyalty: 80, ambition: 80,
       traits: ['scholarly','proud','idealist','vain'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: -30, virtueMerit: 200, virtueStage: 2
       },
       integrity: 78,
@@ -7422,7 +7422,7 @@
       loyalty: 92, ambition: 60,
       traits: ['rigorous','reformist','benevolent','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 98,
@@ -7444,7 +7444,7 @@
       loyalty: 75, ambition: 70,
       traits: ['scholarly','clever','patient','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -7466,7 +7466,7 @@
       loyalty: 95, ambition: 70,
       traits: ['scholarly','upright','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -7488,7 +7488,7 @@
       loyalty: 85, ambition: 80,
       traits: ['scholarly','clever','humble_origin','idealist'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 70,
@@ -7510,7 +7510,7 @@
       loyalty: 95, ambition: 65,
       traits: ['upright','scholarly','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 100,
@@ -7532,7 +7532,7 @@
       loyalty: 100, ambition: 75,
       traits: ['upright','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -7554,7 +7554,7 @@
       loyalty: 92, ambition: 65,
       traits: ['scholarly','literary','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 88,
@@ -7576,7 +7576,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brilliant','scholarly','rigorous','reformist'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -7598,7 +7598,7 @@
       loyalty: 75, ambition: 80,
       traits: ['literary','clever','idealist','vain'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 600, virtueStage: 5
       },
       integrity: 78,
@@ -7620,7 +7620,7 @@
       loyalty: 100, ambition: 65,
       traits: ['literary','heroic','idealist','proud'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -7642,7 +7642,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brilliant','rigorous','heroic','proud'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 95,
@@ -7664,7 +7664,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brilliant','scholarly','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 88,
@@ -7686,7 +7686,7 @@
       loyalty: 95, ambition: 65,
       traits: ['benevolent','heroic','sage','rigorous'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 98,
@@ -7708,7 +7708,7 @@
       loyalty: 88, ambition: 35,
       traits: ['literary','sage','reclusive','heroic'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 920, virtueStage: 6
       },
       integrity: 100,
@@ -7730,7 +7730,7 @@
       loyalty: 78, ambition: 35,
       traits: ['literary','sage','reclusive','luxurious'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -7752,7 +7752,7 @@
       loyalty: 75, ambition: 40,
       traits: ['scholarly','sage','reclusive','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -7774,7 +7774,7 @@
       loyalty: 92, ambition: 88,
       traits: ['brilliant','scholarly','reformist','proud'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 80,
@@ -7796,7 +7796,7 @@
       loyalty: 78, ambition: 40,
       traits: ['literary','reclusive','vain','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 2000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 2000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 80,
@@ -7818,7 +7818,7 @@
       loyalty: 65, ambition: 80,
       traits: ['literary','luxurious','proud','reclusive'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -7840,7 +7840,7 @@
       loyalty: 100, ambition: 70,
       traits: ['heroic','loyal','brave','rigorous'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -7862,7 +7862,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','brave','clever','heroic'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -7884,7 +7884,7 @@
       loyalty: 88, ambition: 55,
       traits: ['literary','scholarly','idealist','luxurious'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -7906,7 +7906,7 @@
       loyalty: 80, ambition: 60,
       traits: ['literary','idealist','reclusive','luxurious'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5
       },
       integrity: 85,
@@ -7928,7 +7928,7 @@
       loyalty: 35, ambition: 95,
       traits: ['scheming','luxurious','flatterer','ruthless'],
       resources: {
-        privateWealth: { cash: 8000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -90, virtueMerit: 50, virtueStage: 1
       },
       integrity: 20,
@@ -7950,7 +7950,7 @@
       loyalty: 75, ambition: 30,
       traits: ['literary','reclusive','sage','benevolent'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -7972,7 +7972,7 @@
       loyalty: 85, ambition: 40,
       traits: ['literary','scholarly','sage','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -7994,7 +7994,7 @@
       loyalty: 92, ambition: 80,
       traits: ['scholarly','literary','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -8020,7 +8020,7 @@
       loyalty: 85, ambition: 75,
       traits: ['benevolent','clever','luxurious','heroic'],
       resources: {
-        privateWealth: { cash: 3000000, land: 80000, treasure: 8000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 3000000, land: 80000, treasure: 8000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 80,
@@ -8042,7 +8042,7 @@
       loyalty: 88, ambition: 65,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
+        privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 400, virtueStage: 4
       },
       integrity: 78,
@@ -8064,7 +8064,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','heroic','loyal','proud'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 65, virtueMerit: 500, virtueStage: 4
       },
       integrity: 88,
@@ -8086,7 +8086,7 @@
       loyalty: 100, ambition: 60,
       traits: ['upright','loyal','rigorous','heroic'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 750, virtueStage: 5
       },
       integrity: 95,
@@ -8108,7 +8108,7 @@
       loyalty: 75, ambition: 88,
       traits: ['heroic','clever','patient','ambitious'],
       resources: {
-        privateWealth: { cash: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
+        privateWealth: { money: 1500000, land: 50000, treasure: 3000000, slaves: 1000, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -8130,7 +8130,7 @@
       loyalty: 80, ambition: 80,
       traits: ['scholarly','literary','clever','idealist'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 60, virtueMerit: 500, virtueStage: 4
       },
       integrity: 75,
@@ -8152,7 +8152,7 @@
       loyalty: 95, ambition: 70,
       traits: ['flatterer','luxurious','clever','vain'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 100000000, slaves: 30000, commerce: 5000000 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 100000000, slaves: 30000, commerce: 5000000 },
         hiddenWealth: 0, fame: -30, virtueMerit: 200, virtueStage: 2
       },
       integrity: 60,
@@ -8174,7 +8174,7 @@
       loyalty: 92, ambition: 60,
       traits: ['scholarly','rigorous','sage','idealist'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -8196,7 +8196,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','rigorous','loyal'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -8218,7 +8218,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brilliant','rigorous','heroic','loyal'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6
       },
       integrity: 100,
@@ -8240,7 +8240,7 @@
       loyalty: 88, ambition: 60,
       traits: ['literary','scholarly','idealist','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 1500, treasure: 80000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1500, treasure: 80000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -8262,7 +8262,7 @@
       loyalty: 80, ambition: 35,
       traits: ['literary','heroic','sage','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -8284,7 +8284,7 @@
       loyalty: 92, ambition: 70,
       traits: ['brave','heroic','luxurious','rigorous'],
       resources: {
-        privateWealth: { cash: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 300000, land: 5000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5
       },
       integrity: 75,
@@ -8306,7 +8306,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -8328,7 +8328,7 @@
       loyalty: 50, ambition: 100,
       traits: ['brilliant','brave','heroic','patient'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 80,
@@ -8350,7 +8350,7 @@
       loyalty: 30, ambition: 100,
       traits: ['brilliant','brave','heroic','clever'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: 70, virtueMerit: 600, virtueStage: 5
       },
       integrity: 75,
@@ -8372,7 +8372,7 @@
       loyalty: 40, ambition: 100,
       traits: ['brilliant','heroic','reformist','rigorous'],
       resources: {
-        privateWealth: { cash: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 },
+        privateWealth: { money: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5
       },
       integrity: 85,
@@ -8394,7 +8394,7 @@
       loyalty: 80, ambition: 65,
       traits: ['literary','idealist','heroic','reclusive'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5
       },
       integrity: 85,
@@ -8416,7 +8416,7 @@
       loyalty: 88, ambition: 60,
       traits: ['scholarly','idealist','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -8438,7 +8438,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5
       },
       integrity: 92,
@@ -8460,7 +8460,7 @@
       loyalty: 100, ambition: 60,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
+        privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -8482,7 +8482,7 @@
       loyalty: 100, ambition: 60,
       traits: ['benevolent','sage','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 20000000, land: 500000, treasure: 50000000, slaves: 10000, commerce: 0 },
+        privateWealth: { money: 20000000, land: 500000, treasure: 50000000, slaves: 10000, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6
       },
       integrity: 100,
@@ -8504,7 +8504,7 @@
       loyalty: 88, ambition: 85,
       traits: ['brilliant','brave','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 85, virtueMerit: 800, virtueStage: 6
       },
       integrity: 82,
@@ -8526,7 +8526,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brave','heroic','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -8548,7 +8548,7 @@
       loyalty: 95, ambition: 65,
       traits: ['scholarly','rigorous','sage','patient'],
       resources: {
-        privateWealth: { cash: 300000, land: 6000, treasure: 200000, slaves: 80, commerce: 0 },
+        privateWealth: { money: 300000, land: 6000, treasure: 200000, slaves: 80, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -8570,7 +8570,7 @@
       loyalty: 60, ambition: 95,
       traits: ['scheming','ambitious','luxurious','proud'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 1000000 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 1000000 },
         hiddenWealth: 1000000, fame: -50, virtueMerit: 250, virtueStage: 2
       },
       integrity: 45,
@@ -8592,7 +8592,7 @@
       loyalty: 92, ambition: 65,
       traits: ['literary','upright','idealist','scholarly'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -8614,7 +8614,7 @@
       loyalty: 92, ambition: 60,
       traits: ['brilliant','scholarly','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -8636,7 +8636,7 @@
       loyalty: 88, ambition: 60,
       traits: ['scholarly','sage','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
@@ -8658,7 +8658,7 @@
       loyalty: 70, ambition: 30,
       traits: ['literary','reclusive','sage','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -8680,7 +8680,7 @@
       loyalty: 50, ambition: 100,
       traits: ['flatterer','greedy','vain','ruthless'],
       resources: {
-        privateWealth: { cash: 8000000, land: 200000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
+        privateWealth: { money: 8000000, land: 200000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -90, virtueMerit: 50, virtueStage: 1
       },
       integrity: 18,
@@ -8702,7 +8702,7 @@
       loyalty: 50, ambition: 100,
       traits: ['scheming','greedy','ruthless','vain'],
       resources: {
-        privateWealth: { cash: 10000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
+        privateWealth: { money: 10000000, land: 300000, treasure: 30000000, slaves: 3000, commerce: 1000000 },
         hiddenWealth: 5000000, fame: -95, virtueMerit: 0, virtueStage: 1
       },
       integrity: 5,
@@ -8724,7 +8724,7 @@
       loyalty: 70, ambition: 35,
       traits: ['literary','reclusive','idealist','sage'],
       resources: {
-        privateWealth: { cash: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -8746,7 +8746,7 @@
       loyalty: 65, ambition: 35,
       traits: ['literary','luxurious','reclusive','sage'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 100, virtueMerit: 800, virtueStage: 6
       },
       integrity: 85,
@@ -8768,7 +8768,7 @@
       loyalty: 60, ambition: 80,
       traits: ['scholarly','idealist','reformist','heroic'],
       resources: {
-        privateWealth: { cash: 200000, land: 2000, treasure: 100000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 200000, land: 2000, treasure: 100000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -8790,7 +8790,7 @@
       loyalty: 100, ambition: 92,
       traits: ['heroic','idealist','clever','brave'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -8816,7 +8816,7 @@
       loyalty: 50, ambition: 30,
       traits: ['sage','reclusive','scholarly','clever'],
       resources: {
-        privateWealth: { cash: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 5000, land: 50, treasure: 1000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 90,
@@ -8838,7 +8838,7 @@
       loyalty: 75, ambition: 40,
       traits: ['brilliant','sage','rigorous','reclusive'],
       resources: {
-        privateWealth: { cash: 100000, land: 1000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 1000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6
       },
       integrity: 90,
@@ -8860,7 +8860,7 @@
       loyalty: 50, ambition: 100,
       traits: ['brave','heroic','proud','vain'],
       resources: {
-        privateWealth: { cash: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 200000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 30, virtueMerit: 300, virtueStage: 3
       },
       integrity: 50,
@@ -8882,7 +8882,7 @@
       loyalty: 80, ambition: 40,
       traits: ['scholarly','rigorous','sage','idealist'],
       resources: {
-        privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 95,
@@ -8904,7 +8904,7 @@
       loyalty: 92, ambition: 60,
       traits: ['scholarly','rigorous','patient','sage'],
       resources: {
-        privateWealth: { cash: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 1000000, land: 30000, treasure: 2000000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 85,
@@ -8926,7 +8926,7 @@
       loyalty: 90, ambition: 60,
       traits: ['heroic','loyal','rigorous','brave'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -8948,7 +8948,7 @@
       loyalty: 92, ambition: 78,
       traits: ['heroic','rigorous','loyal','proud'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -8970,7 +8970,7 @@
       loyalty: 100, ambition: 50,
       traits: ['benevolent','sage','loyal','rigorous'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 100,
@@ -8992,7 +8992,7 @@
       loyalty: 20, ambition: 100,
       traits: ['ruthless','greedy','vain','luxurious'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 100000000, slaves: 30000, commerce: 5000000 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 100000000, slaves: 30000, commerce: 5000000 },
         hiddenWealth: 10000000, fame: -100, virtueMerit: 0, virtueStage: 1
       },
       integrity: 5,
@@ -9014,7 +9014,7 @@
       loyalty: 80, ambition: 80,
       traits: ['humble_origin','vain','proud','idealist'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 400, virtueStage: 4
       },
       integrity: 65,
@@ -9036,7 +9036,7 @@
       loyalty: 95, ambition: 60,
       traits: ['brilliant','clever','loyal','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -9058,7 +9058,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brave','rigorous','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 75, virtueMerit: 750, virtueStage: 5
       },
       integrity: 95,
@@ -9080,7 +9080,7 @@
       loyalty: 100, ambition: 55,
       traits: ['brave','loyal','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 800, virtueStage: 6
       },
       integrity: 95,
@@ -9102,7 +9102,7 @@
       loyalty: 95, ambition: 65,
       traits: ['rigorous','brave','heroic','humble_origin'],
       resources: {
-        privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
+        privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 98,
@@ -9124,7 +9124,7 @@
       loyalty: 95, ambition: 70,
       traits: ['brilliant','brave','rigorous','clever'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -9146,7 +9146,7 @@
       loyalty: 100, ambition: 65,
       traits: ['brilliant','brave','heroic','rigorous'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -9168,7 +9168,7 @@
       loyalty: 92, ambition: 65,
       traits: ['scholarly','rigorous','sage','patient'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 200000, slaves: 50, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 95,
@@ -9190,7 +9190,7 @@
       loyalty: 75, ambition: 60,
       traits: ['literary','idealist','reclusive','heroic'],
       resources: {
-        privateWealth: { cash: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -9212,7 +9212,7 @@
       loyalty: 75, ambition: 50,
       traits: ['literary','reclusive','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 10000, land: 100, treasure: 3000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 800, virtueStage: 6
       },
       integrity: 88,
@@ -9234,7 +9234,7 @@
       loyalty: 70, ambition: 60,
       traits: ['literary','luxurious','idealist','vain'],
       resources: {
-        privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 700, virtueStage: 5
       },
       integrity: 70,
@@ -9256,7 +9256,7 @@
       loyalty: 15, ambition: 100,
       traits: ['ruthless','brave','scheming','ambitious'],
       resources: {
-        privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
+        privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 },
         hiddenWealth: 0, fame: -60, virtueMerit: 200, virtueStage: 2
       },
       integrity: 25,
@@ -9278,7 +9278,7 @@
       loyalty: 50, ambition: 100,
       traits: ['brave','heroic','vain','luxurious'],
       resources: {
-        privateWealth: { cash: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 },
+        privateWealth: { money: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 },
         hiddenWealth: 0, fame: 50, virtueMerit: 400, virtueStage: 4
       },
       integrity: 65,
@@ -9300,7 +9300,7 @@
       loyalty: 95, ambition: 65,
       traits: ['rigorous','sage','patient','benevolent'],
       resources: {
-        privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
+        privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -9322,7 +9322,7 @@
       loyalty: 88, ambition: 65,
       traits: ['literary','scholarly','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 50000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 50000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5
       },
       integrity: 88,
@@ -9344,7 +9344,7 @@
       loyalty: 100, ambition: 70,
       traits: ['brilliant','brave','heroic','loyal'],
       resources: {
-        privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 3000, commerce: 0 },
+        privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 3000, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -9366,7 +9366,7 @@
       loyalty: 90, ambition: 65,
       traits: ['scholarly','literary','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
+        privateWealth: { money: 100000, land: 2000, treasure: 50000, slaves: 20, commerce: 0 },
         hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -9388,7 +9388,7 @@
       loyalty: 95, ambition: 60,
       traits: ['rigorous','patient','sage','loyal'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -9410,7 +9410,7 @@
       loyalty: 95, ambition: 65,
       traits: ['brilliant','scholarly','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
+        privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6
       },
       integrity: 95,
@@ -9432,7 +9432,7 @@
       loyalty: 80, ambition: 60,
       traits: ['scholarly','sage','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
@@ -9454,7 +9454,7 @@
       loyalty: 85, ambition: 80,
       traits: ['literary','idealist','heroic','reformist'],
       resources: {
-        privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 850, virtueStage: 6
       },
       integrity: 92,
@@ -9476,7 +9476,7 @@
       loyalty: 85, ambition: 80,
       traits: ['scholarly','reformist','idealist','heroic'],
       resources: {
-        privateWealth: { cash: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
+        privateWealth: { money: 80000, land: 1000, treasure: 30000, slaves: 10, commerce: 0 },
         hiddenWealth: 0, fame: 90, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -9498,7 +9498,7 @@
       loyalty: 92, ambition: 75,
       traits: ['scholarly','rigorous','sage','reformist'],
       resources: {
-        privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
+        privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 },
         hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 92,
@@ -9520,7 +9520,7 @@
       loyalty: 95, ambition: 80,
       traits: ['brilliant','heroic','rigorous','idealist'],
       resources: {
-        privateWealth: { cash: 200000, land: 1000, treasure: 100000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 200000, land: 1000, treasure: 100000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 95,
@@ -9542,7 +9542,7 @@
       loyalty: 88, ambition: 75,
       traits: ['scholarly','sage','idealist','benevolent'],
       resources: {
-        privateWealth: { cash: 200000, land: 500, treasure: 50000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 200000, land: 500, treasure: 50000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6
       },
       integrity: 98,
@@ -9564,7 +9564,7 @@
       loyalty: 88, ambition: 80,
       traits: ['heroic','brave','idealist','rigorous'],
       resources: {
-        privateWealth: { cash: 200000, land: 500, treasure: 50000, slaves: 0, commerce: 0 },
+        privateWealth: { money: 200000, land: 500, treasure: 50000, slaves: 0, commerce: 0 },
         hiddenWealth: 0, fame: 95, virtueMerit: 920, virtueStage: 6
       },
       integrity: 92,
@@ -9586,7 +9586,7 @@
       loyalty: 70, ambition: 30,
       traits: ['literary','reclusive','rigorous','sage'],
       resources: {
-        privateWealth: { cash: 100000, land: 500, treasure: 80000, slaves: 5, commerce: 0 },
+        privateWealth: { money: 100000, land: 500, treasure: 80000, slaves: 5, commerce: 0 },
         hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6
       },
       integrity: 92,
@@ -9608,7 +9608,7 @@
       rankLevel: 25, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 85, military: 30, intelligence: 88, charisma: 78, integrity: 100, benevolence: 88, diplomacy: 70, scholarship: 88, finance: 75, cunning: 60 },
       loyalty: 92, ambition: 50, traits: ['upright','rigorous','sage','idealist'],
-      resources: { privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 85, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 85, virtueMerit: 850, virtueStage: 6 },
       integrity: 100,
       background: '鲁国博士·拒嗜鱼之贿·拔家中葵·去家中织·为相而亲不与民争利。',
       famousQuote: '夫唯嗜鱼·故不受也。',
@@ -9623,7 +9623,7 @@
       rankLevel: 26, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 60, military: 88, intelligence: 80, charisma: 75, integrity: 88, benevolence: 70, diplomacy: 50, scholarship: 50, finance: 55, cunning: 70 },
       loyalty: 95, ambition: 65, traits: ['brave','heroic','rigorous','loyal'],
-      resources: { privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5 },
+      resources: { privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 700, virtueStage: 5 },
       integrity: 90,
       background: '齐人入秦·蒙武父·蒙恬祖·三朝大将·破赵韩魏·夺三十余城·秦统一大业奠基者。',
       famousQuote: '', historicalFate: '秦王政七年病殁', fateHint: 'peacefulDeath'
@@ -9637,7 +9637,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'central',
       abilities: { governance: 65, military: 35, intelligence: 78, charisma: 75, integrity: 30, benevolence: 40, diplomacy: 70, scholarship: 75, finance: 75, cunning: 92 },
       loyalty: 60, ambition: 95, traits: ['scheming','greedy','flatterer','vain'],
-      resources: { privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 1000000, fame: -50, virtueMerit: 200, virtueStage: 2 },
+      resources: { privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 1000000, fame: -50, virtueMerit: 200, virtueStage: 2 },
       integrity: 35,
       background: '王太后异父弟·武帝舅·与窦婴争·构陷致灌夫族·田蚡得疾梦窦灌索命惊死。',
       famousQuote: '', historicalFate: '元光四年发狂而亡·疑梦窦婴灌夫索命', fateHint: 'forcedDeath'
@@ -9651,7 +9651,7 @@
       rankLevel: 22, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 55, military: 88, intelligence: 70, charisma: 78, integrity: 78, benevolence: 65, diplomacy: 45, scholarship: 50, finance: 60, cunning: 60 },
       loyalty: 90, ambition: 75, traits: ['brave','heroic','proud','luxurious'],
-      resources: { privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 70, virtueMerit: 500, virtueStage: 4 },
+      resources: { privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 70, virtueMerit: 500, virtueStage: 4 },
       integrity: 78,
       background: '颍阴人·七国之乱杀身陷阵立功·使酒骂座·与窦婴交厚·田蚡构陷·族灭。',
       famousQuote: '骂座·岂为我哉。', historicalFate: '元光四年遭田蚡构陷·夷三族', fateHint: 'executionByClanDestruction'
@@ -9665,7 +9665,7 @@
       rankLevel: 22, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 92, military: 50, intelligence: 92, charisma: 85, integrity: 88, benevolence: 80, diplomacy: 70, scholarship: 88, finance: 75, cunning: 88 },
       loyalty: 92, ambition: 70, traits: ['rigorous','clever','heroic','luxurious'],
-      resources: { privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 750, virtueStage: 5 },
       integrity: 85,
       background: '河东平阳人·宣帝朝京兆尹·治长安·破豪强·画眉故事·与赵广汉并称汉名守。',
       famousQuote: '画眉之乐·有甚于画眉者。', historicalFate: '元帝初病殁', fateHint: 'peacefulDeath'
@@ -9679,7 +9679,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 92, military: 60, intelligence: 95, charisma: 92, integrity: 92, benevolence: 92, diplomacy: 88, scholarship: 92, finance: 85, cunning: 88 },
       loyalty: 90, ambition: 75, traits: ['brilliant','benevolent','sage','rigorous'],
-      resources: { privateWealth: { cash: 50000000, land: 1500000, treasure: 100000000, slaves: 50000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
+      resources: { privateWealth: { money: 50000000, land: 1500000, treasure: 100000000, slaves: 50000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
       integrity: 92,
       background: '南阳新野人·邓禹孙女·和帝皇后·临朝称制十六年·节俭抚民·震西羌定西北·东汉贤后。',
       famousQuote: '吾不敢以世有忽国家之事。', historicalFate: '永宁二年病殁', fateHint: 'peacefulDeath'
@@ -9693,7 +9693,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 92, military: 50, intelligence: 92, charisma: 80, integrity: 92, benevolence: 85, diplomacy: 80, scholarship: 95, finance: 80, cunning: 78 },
       loyalty: 95, ambition: 60, traits: ['brilliant','rigorous','sage','patient'],
-      resources: { privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6 },
+      resources: { privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6 },
       integrity: 92,
       background: '吴郡吴县人·蔡邕弟子·东吴第二任丞相·任内十九年·拜相而不语·孙权敬之。',
       famousQuote: '居敬而行简·临政而不烦。', historicalFate: '赤乌六年寿终', fateHint: 'peacefulDeath'
@@ -9707,7 +9707,7 @@
       rankLevel: 28, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 85, military: 95, intelligence: 92, charisma: 88, integrity: 92, benevolence: 80, diplomacy: 80, scholarship: 88, finance: 70, cunning: 88 },
       loyalty: 95, ambition: 65, traits: ['brilliant','heroic','rigorous','sage'],
-      resources: { privateWealth: { cash: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6 },
+      resources: { privateWealth: { money: 800000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6 },
       integrity: 92,
       background: '吴郡吴县人·陆逊子·东吴末柱国·与羊祜对峙互敬·西陵之战大破晋军·东吴最后名将。',
       famousQuote: '彼专力守·我专力攻·斯不亦可忧乎。', historicalFate: '凤凰三年病殁', fateHint: 'peacefulDeath'
@@ -9721,7 +9721,7 @@
       rankLevel: 26, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 60, military: 88, intelligence: 75, charisma: 80, integrity: 65, benevolence: 50, diplomacy: 55, scholarship: 65, finance: 60, cunning: 70 },
       loyalty: 50, ambition: 90, traits: ['brave','heroic','proud','ruthless'],
-      resources: { privateWealth: { cash: 3000000, land: 80000, treasure: 8000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 60, virtueMerit: 400, virtueStage: 4 },
+      resources: { privateWealth: { money: 3000000, land: 80000, treasure: 8000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 60, virtueMerit: 400, virtueStage: 4 },
       integrity: 65,
       background: '辽西令支人·白马义从·镇幽州·破乌桓·界桥之战败于袁绍·易京困死·焚妻子自尽。',
       famousQuote: '', historicalFate: '建安四年易京自焚而死', fateHint: 'martyrdom'
@@ -9735,7 +9735,7 @@
       rankLevel: 27, socialClass: 'noble', department: 'local',
       abilities: { governance: 80, military: 60, intelligence: 80, charisma: 88, integrity: 80, benevolence: 85, diplomacy: 75, scholarship: 88, finance: 75, cunning: 65 },
       loyalty: 60, ambition: 70, traits: ['scholarly','benevolent','patient','vain'],
-      resources: { privateWealth: { cash: 8000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 }, hiddenWealth: 0, fame: 65, virtueMerit: 500, virtueStage: 4 },
+      resources: { privateWealth: { money: 8000000, land: 200000, treasure: 20000000, slaves: 5000, commerce: 0 }, hiddenWealth: 0, fame: 65, virtueMerit: 500, virtueStage: 4 },
       integrity: 78,
       background: '山阳高平人·汉末八俊·单骑入荆州·治民有方·拥兵自保·不能用武·死后子琮降曹。',
       famousQuote: '', historicalFate: '建安十三年病殁·子刘琮降曹', fateHint: 'peacefulDeath'
@@ -9749,7 +9749,7 @@
       rankLevel: 27, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 60, military: 95, intelligence: 78, charisma: 88, integrity: 88, benevolence: 65, diplomacy: 50, scholarship: 50, finance: 55, cunning: 75 },
       loyalty: 100, ambition: 65, traits: ['brave','heroic','loyal','ruthless'],
-      resources: { privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 850, virtueStage: 6 },
       integrity: 88,
       background: '涿郡涿县人·桃园结义·当阳桥喝退曹军·义释严颜·虎牢战吕布·伐吴前夜被部下范疆张达所杀。',
       famousQuote: '燕人张翼德在此·谁敢决一死战。', historicalFate: '章武元年阆中军中被部下所杀', fateHint: 'execution'
@@ -9763,7 +9763,7 @@
       rankLevel: 24, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 80, military: 75, intelligence: 88, charisma: 88, integrity: 92, benevolence: 80, diplomacy: 95, scholarship: 80, finance: 65, cunning: 80 },
       loyalty: 95, ambition: 65, traits: ['rigorous','heroic','loyal','clever'],
-      resources: { privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
       integrity: 92,
       background: '义阳新野人·使吴重修盟好·孙权重之·镇江州二十余年·不治生·身后无余财。',
       famousQuote: '蜀有重险·吴有三江·合二国之优·并力制魏。', historicalFate: '延熙十四年病殁', fateHint: 'peacefulDeath'
@@ -9777,7 +9777,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 88, military: 70, intelligence: 88, charisma: 80, integrity: 92, benevolence: 80, diplomacy: 88, scholarship: 88, finance: 70, cunning: 75 },
       loyalty: 95, ambition: 60, traits: ['rigorous','sage','patient','heroic'],
-      resources: { privateWealth: { cash: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 500000, land: 10000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
       integrity: 92,
       background: '临淮淮阴人·孙权佐吏·镇交州二十余年·定南海·继顾雍为丞相·终于任所。',
       famousQuote: '为政之要·先得人心。', historicalFate: '赤乌十年丞相任上殁', fateHint: 'peacefulDeath'
@@ -9791,7 +9791,7 @@
       rankLevel: 22, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 78, military: 50, intelligence: 92, charisma: 78, integrity: 92, benevolence: 80, diplomacy: 80, scholarship: 100, finance: 65, cunning: 78 },
       loyalty: 92, ambition: 55, traits: ['scholarly','sage','rigorous','idealist'],
-      resources: { privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 800, virtueStage: 6 },
       integrity: 92,
       background: '会稽山阴人·寒门博学·赤壁前替黄盖献诈降书·孙权重其学问·东吴文教首任。',
       famousQuote: '泽愿与天地同其无穷。', historicalFate: '赤乌六年病殁', fateHint: 'peacefulDeath'
@@ -9805,7 +9805,7 @@
       rankLevel: 16, socialClass: 'civilOfficial', department: 'military',
       abilities: { governance: 75, military: 75, intelligence: 92, charisma: 78, integrity: 92, benevolence: 75, diplomacy: 60, scholarship: 88, finance: 60, cunning: 90 },
       loyalty: 92, ambition: 70, traits: ['brilliant','heroic','idealist','rigorous'],
-      resources: { privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5 },
+      resources: { privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 700, virtueStage: 5 },
       integrity: 95,
       background: '东郡人·原曹操心腹·捉放曹·因吕伯奢事弃曹·辅吕布·下邳被擒·拒降被斩。',
       famousQuote: '请出就戮·以明军法。', historicalFate: '建安三年下邳被曹操所斩', fateHint: 'martyrdom'
@@ -9819,7 +9819,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'central',
       abilities: { governance: 92, military: 95, intelligence: 92, charisma: 92, integrity: 95, benevolence: 88, diplomacy: 80, scholarship: 80, finance: 75, cunning: 88 },
       loyalty: 100, ambition: 65, traits: ['brilliant','brave','heroic','sage'],
-      resources: { privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
       integrity: 98,
       background: '前燕慕容皝四子·破冉闵·辅幼主慕容暐·一代名将兼贤相·五胡十六国第一英才。',
       famousQuote: '为政之道·宽严相济。', historicalFate: '建熙八年病殁', fateHint: 'peacefulDeath'
@@ -9833,7 +9833,7 @@
       rankLevel: 28, socialClass: 'civilOfficial', department: 'military',
       abilities: { governance: 80, military: 65, intelligence: 88, charisma: 88, integrity: 78, benevolence: 75, diplomacy: 70, scholarship: 88, finance: 65, cunning: 75 },
       loyalty: 90, ambition: 80, traits: ['scholarly','heroic','proud','vain'],
-      resources: { privateWealth: { cash: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 }, hiddenWealth: 0, fame: 65, virtueMerit: 600, virtueStage: 5 },
+      resources: { privateWealth: { money: 1500000, land: 30000, treasure: 2500000, slaves: 800, commerce: 0 }, hiddenWealth: 0, fame: 65, virtueMerit: 600, virtueStage: 5 },
       integrity: 80,
       background: '颍川鄢陵人·明帝皇后兄·辅成帝·苏峻之乱·避镇芜湖·庾氏门阀代表·名士风流。',
       famousQuote: '风月不殊·举目有山河之异。', historicalFate: '咸康六年病殁', fateHint: 'peacefulDeath'
@@ -9847,7 +9847,7 @@
       rankLevel: 25, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 75, military: 88, intelligence: 88, charisma: 92, integrity: 92, benevolence: 80, diplomacy: 70, scholarship: 95, finance: 65, cunning: 75 },
       loyalty: 95, ambition: 60, traits: ['literary','brave','heroic','sage'],
-      resources: { privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 850, virtueStage: 6 },
       integrity: 92,
       background: '谯国铚人·淝水之战副将·吹笛绝伦·一曲解谢安孝武君臣猜忌·江左第一笛。',
       famousQuote: '笛声三弄·胜过雄辩。', historicalFate: '太元十六年病殁', fateHint: 'peacefulDeath'
@@ -9861,7 +9861,7 @@
       rankLevel: 27, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 78, military: 25, intelligence: 92, charisma: 80, integrity: 78, benevolence: 75, diplomacy: 70, scholarship: 100, finance: 65, cunning: 75 },
       loyalty: 85, ambition: 70, traits: ['literary','scholarly','rigorous','sage'],
-      resources: { privateWealth: { cash: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 800, virtueStage: 6 },
       integrity: 80,
       background: '吴兴武康人·助萧衍代齐建梁·首倡四声八病说·撰《宋书》·永明体诗派代表。',
       famousQuote: '梁尚四声·永明定律。', historicalFate: '天监十二年病殁', fateHint: 'peacefulDeath'
@@ -9875,7 +9875,7 @@
       rankLevel: 22, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 70, military: 25, intelligence: 88, charisma: 78, integrity: 80, benevolence: 70, diplomacy: 60, scholarship: 100, finance: 60, cunning: 60 },
       loyalty: 80, ambition: 65, traits: ['literary','idealist','reclusive','sage'],
-      resources: { privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 750, virtueStage: 5 },
       integrity: 80,
       background: '济阳考城人·历仕宋齐梁三朝·别赋恨赋传世·江郎才尽之典·晚年不复有佳作。',
       famousQuote: '黯然销魂者·唯别而已矣。', historicalFate: '天监四年病殁', fateHint: 'peacefulDeath'
@@ -9889,7 +9889,7 @@
       rankLevel: 25, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 70, military: 30, intelligence: 92, charisma: 80, integrity: 75, benevolence: 75, diplomacy: 60, scholarship: 100, finance: 60, cunning: 60 },
       loyalty: 65, ambition: 60, traits: ['literary','idealist','sage','reclusive'],
-      resources: { privateWealth: { cash: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 750, virtueStage: 5 },
       integrity: 75,
       background: '南阳新野人·梁朝南来名士·留北周不归·哀江南赋·北朝文宗·南北文学合流之代表。',
       famousQuote: '哀江南赋·凄怆千古。', historicalFate: '大象三年病殁北周', fateHint: 'exileDeath'
@@ -9903,7 +9903,7 @@
       rankLevel: 25, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 95, military: 35, intelligence: 95, charisma: 80, integrity: 92, benevolence: 80, diplomacy: 70, scholarship: 100, finance: 88, cunning: 78 },
       loyalty: 95, ambition: 65, traits: ['brilliant','reformist','sage','rigorous'],
-      resources: { privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 850, virtueStage: 6 },
       integrity: 95,
       background: '武功人·宇文泰股肱·六条诏书·均田制·府兵制·关陇集团制度奠基者·隋唐渊源。',
       famousQuote: '使百官·清廉自守。', historicalFate: '大统十二年积劳病殁', fateHint: 'peacefulDeath'
@@ -9917,7 +9917,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 92, military: 30, intelligence: 95, charisma: 88, integrity: 92, benevolence: 85, diplomacy: 88, scholarship: 95, finance: 80, cunning: 85 },
       loyalty: 95, ambition: 70, traits: ['brilliant','rigorous','sage','heroic'],
-      resources: { privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
       integrity: 92,
       background: '弘农华阴人·北齐文宣帝重臣·辅幼主·与高演高湛宫廷之乱·被高演杀于殿前。',
       famousQuote: '吾位极人臣·敢忘报国。', historicalFate: '乾明元年宫变被害', fateHint: 'martyrdom'
@@ -9931,7 +9931,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 75, military: 50, intelligence: 92, charisma: 92, integrity: 50, benevolence: 65, diplomacy: 88, scholarship: 80, finance: 80, cunning: 95 },
       loyalty: 30, ambition: 100, traits: ['scheming','ambitious','luxurious','vain'],
-      resources: { privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 }, hiddenWealth: 0, fame: 30, virtueMerit: 300, virtueStage: 3 },
+      resources: { privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 }, hiddenWealth: 0, fame: 30, virtueMerit: 300, virtueStage: 3 },
       integrity: 50,
       background: '武则天女·参与神龙政变·诛韦后·拥李隆基即位·后与玄宗争权·开元元年赐死。',
       famousQuote: '', historicalFate: '开元元年与玄宗争权失败赐死', fateHint: 'forcedDeath'
@@ -9945,7 +9945,7 @@
       rankLevel: 28, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 50, military: 25, intelligence: 80, charisma: 100, integrity: 65, benevolence: 70, diplomacy: 70, scholarship: 88, finance: 75, cunning: 75 },
       loyalty: 70, ambition: 60, traits: ['literary','luxurious','vain','idealist'],
-      resources: { privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 500, virtueStage: 4 },
+      resources: { privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 500, virtueStage: 4 },
       integrity: 70,
       background: '蒲州永乐人·原寿王妃·玄宗夺为己有·三千宠爱在一身·安史之乱马嵬被赐死。',
       famousQuote: '春寒赐浴华清池·温泉水滑洗凝脂。', historicalFate: '至德元载马嵬驿被赐缢死', fateHint: 'forcedDeath'
@@ -9959,7 +9959,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'central',
       abilities: { governance: 65, military: 30, intelligence: 80, charisma: 70, integrity: 20, benevolence: 25, diplomacy: 65, scholarship: 70, finance: 75, cunning: 92 },
       loyalty: 30, ambition: 100, traits: ['scheming','flatterer','greedy','vain'],
-      resources: { privateWealth: { cash: 8000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 1000000 }, hiddenWealth: 0, fame: -85, virtueMerit: 50, virtueStage: 1 },
+      resources: { privateWealth: { money: 8000000, land: 200000, treasure: 30000000, slaves: 5000, commerce: 1000000 }, hiddenWealth: 0, fame: -85, virtueMerit: 50, virtueStage: 1 },
       integrity: 20,
       background: '武则天侄·中宗朝构陷张柬之等五王·与韦后秽乱·被太子重俊兵变所杀。',
       famousQuote: '我不知代间何者谓之善人·何者谓之恶人。', historicalFate: '景龙元年重俊兵变被杀', fateHint: 'execution'
@@ -9973,7 +9973,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 88, military: 70, intelligence: 92, charisma: 85, integrity: 95, benevolence: 80, diplomacy: 80, scholarship: 92, finance: 75, cunning: 88 },
       loyalty: 95, ambition: 80, traits: ['brilliant','heroic','rigorous','idealist'],
-      resources: { privateWealth: { cash: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
+      resources: { privateWealth: { money: 200000, land: 3000, treasure: 100000, slaves: 30, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
       integrity: 95,
       background: '襄州襄阳人·狄仁杰荐·神龙政变诛二张迎中宗复唐·五王之首·后被武三思流泷州。',
       famousQuote: '复唐之业·吾等所为。', historicalFate: '神龙二年贬泷州·途中忧愤而殁', fateHint: 'exileDeath'
@@ -9987,7 +9987,7 @@
       rankLevel: 18, socialClass: 'civilOfficial', department: 'local',
       abilities: { governance: 78, military: 50, intelligence: 88, charisma: 80, integrity: 92, benevolence: 88, diplomacy: 60, scholarship: 100, finance: 65, cunning: 65 },
       loyalty: 88, ambition: 55, traits: ['literary','sage','rigorous','reclusive'],
-      resources: { privateWealth: { cash: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 }, hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 50000, land: 500, treasure: 30000, slaves: 10, commerce: 0 }, hiddenWealth: 0, fame: 90, virtueMerit: 850, virtueStage: 6 },
       integrity: 92,
       background: '京兆万年人·世为关中望族·原玄宗近卫·安史乱后改业读书·中唐田园诗人。',
       famousQuote: '春潮带雨晚来急·野渡无人舟自横。', historicalFate: '贞元七年苏州任所殁', fateHint: 'peacefulDeath'
@@ -10001,7 +10001,7 @@
       rankLevel: 16, socialClass: 'commoner', department: '',
       abilities: { governance: 60, military: 30, intelligence: 95, charisma: 92, integrity: 100, benevolence: 95, diplomacy: 92, scholarship: 100, finance: 60, cunning: 75 },
       loyalty: 88, ambition: 70, traits: ['scholarly','sage','heroic','rigorous'],
-      resources: { privateWealth: { cash: 80000, land: 0, treasure: 30000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6 },
+      resources: { privateWealth: { money: 80000, land: 0, treasure: 30000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 1000, virtueStage: 6 },
       integrity: 100,
       background: '洛州缑氏人·西行十七年取经·撰《大唐西域记》·译经七十五部·中国佛教史第一人。',
       famousQuote: '宁向西而死·不向东而生。', historicalFate: '麟德元年圆寂玉华宫', fateHint: 'peacefulDeath'
@@ -10015,7 +10015,7 @@
       rankLevel: 14, socialClass: 'commoner', department: '',
       abilities: { governance: 50, military: 25, intelligence: 88, charisma: 92, integrity: 100, benevolence: 95, diplomacy: 92, scholarship: 100, finance: 60, cunning: 70 },
       loyalty: 80, ambition: 65, traits: ['heroic','sage','rigorous','idealist'],
-      resources: { privateWealth: { cash: 30000, land: 0, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000, land: 0, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6 },
       integrity: 100,
       background: '扬州江阳人·律宗高僧·六次东渡日本·失明仍至·传戒律建唐招提寺·中日文化使者。',
       famousQuote: '为是法事·何惜身命。', historicalFate: '广德元年圆寂日本唐招提寺', fateHint: 'peacefulDeath'
@@ -10029,7 +10029,7 @@
       rankLevel: 14, socialClass: 'commoner', department: '',
       abilities: { governance: 50, military: 25, intelligence: 100, charisma: 80, integrity: 95, benevolence: 80, diplomacy: 50, scholarship: 100, finance: 60, cunning: 78 },
       loyalty: 88, ambition: 50, traits: ['scholarly','sage','rigorous','reclusive'],
-      resources: { privateWealth: { cash: 30000, land: 0, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
+      resources: { privateWealth: { money: 30000, land: 0, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 900, virtueStage: 6
       },
       integrity: 98,
       background: '魏州昌乐人·张柬之孙·密宗高僧·制大衍历·测子午线·世界最早的天文学家之一。',
@@ -10044,7 +10044,7 @@
       rankLevel: 30, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 70, military: 95, intelligence: 80, charisma: 92, integrity: 75, benevolence: 70, diplomacy: 75, scholarship: 60, finance: 65, cunning: 80 },
       loyalty: 65, ambition: 95, traits: ['brave','heroic','proud','luxurious'],
-      resources: { privateWealth: { cash: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5 },
+      resources: { privateWealth: { money: 25000000, land: 800000, treasure: 60000000, slaves: 25000, commerce: 0 }, hiddenWealth: 0, fame: 75, virtueMerit: 600, virtueStage: 5 },
       integrity: 75,
       background: '沙陀部·独眼龙·讨黄巢·破朱温·晋王·临终遗子三矢·后唐基业奠定。',
       famousQuote: '此三矢·汝其复仇。', historicalFate: '开平二年病殁太原', fateHint: 'peacefulDeath'
@@ -10058,7 +10058,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'central',
       abilities: { governance: 88, military: 88, intelligence: 92, charisma: 92, integrity: 88, benevolence: 88, diplomacy: 92, scholarship: 80, finance: 92, cunning: 88 },
       loyalty: 80, ambition: 90, traits: ['brilliant','heroic','benevolent','clever'],
-      resources: { privateWealth: { cash: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 5000000 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000000, land: 1000000, treasure: 80000000, slaves: 30000, commerce: 5000000 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
       integrity: 92,
       background: '杭州临安人·私盐贩出身·建吴越国·治钱塘·修海塘·保境安民·遗训子孙降宋免战。',
       famousQuote: '陌上花开·可缓缓归矣。', historicalFate: '长兴三年寿终', fateHint: 'peacefulDeath'
@@ -10072,7 +10072,7 @@
       rankLevel: 28, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 60, military: 25, intelligence: 88, charisma: 88, integrity: 60, benevolence: 70, diplomacy: 70, scholarship: 100, finance: 60, cunning: 75 },
       loyalty: 75, ambition: 75, traits: ['literary','flatterer','luxurious','scheming'],
-      resources: { privateWealth: { cash: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 600, virtueStage: 5 },
+      resources: { privateWealth: { money: 1000000, land: 20000, treasure: 1500000, slaves: 500, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 600, virtueStage: 5 },
       integrity: 60,
       background: '广陵人·南唐三度拜相·与中主李璟交厚·五鬼之首·词风婉丽·阳春集·开北宋婉约词风。',
       famousQuote: '风乍起·吹皱一池春水。', historicalFate: '建隆元年病殁', fateHint: 'peacefulDeath'
@@ -10086,7 +10086,7 @@
       rankLevel: 18, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 65, military: 25, intelligence: 88, charisma: 78, integrity: 88, benevolence: 80, diplomacy: 50, scholarship: 100, finance: 55, cunning: 60 },
       loyalty: 88, ambition: 60, traits: ['literary','scholarly','idealist','reclusive'],
-      resources: { privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5 },
       integrity: 88,
       background: '楚州淮阴人·苏门四学士之一·元祐党案累贬·黄州团练副使·诗文学风格平易近人。',
       famousQuote: '前贤多苦节·后辈遥钦慕。', historicalFate: '政和四年陈州病殁', fateHint: 'exileDeath'
@@ -10100,7 +10100,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 88, military: 50, intelligence: 92, charisma: 88, integrity: 92, benevolence: 88, diplomacy: 80, scholarship: 100, finance: 80, cunning: 78 },
       loyalty: 95, ambition: 65, traits: ['rigorous','sage','scholarly','patient'],
-      resources: { privateWealth: { cash: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6 },
+      resources: { privateWealth: { money: 600000, land: 12000, treasure: 1000000, slaves: 300, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6 },
       integrity: 92,
       background: '吉州庐陵人·绍兴进士·孝宗朝左丞相·主修国史·与朱熹陆游友·南宋朝中调和派。',
       famousQuote: '为相·宜温恭克让。', historicalFate: '嘉泰四年寿终', fateHint: 'peacefulDeath'
@@ -10114,7 +10114,7 @@
       rankLevel: 25, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 92, military: 30, intelligence: 92, charisma: 88, integrity: 100, benevolence: 95, diplomacy: 70, scholarship: 100, finance: 78, cunning: 70 },
       loyalty: 92, ambition: 70, traits: ['upright','heroic','benevolent','rigorous'],
-      resources: { privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
       integrity: 100,
       background: '济南人·辞官归隐·关中大旱奉诏赈灾·散家财·过华山感而作潼关怀古·积劳殁任所。',
       famousQuote: '兴·百姓苦·亡·百姓苦。', historicalFate: '天历二年关中赈灾积劳殁', fateHint: 'martyrdom'
@@ -10128,7 +10128,7 @@
       rankLevel: 30, socialClass: 'imperial', department: 'central',
       abilities: { governance: 78, military: 80, intelligence: 92, charisma: 85, integrity: 78, benevolence: 75, diplomacy: 75, scholarship: 100, finance: 70, cunning: 80 },
       loyalty: 60, ambition: 75, traits: ['brilliant','literary','reclusive','heroic'],
-      resources: { privateWealth: { cash: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 5000000, land: 100000, treasure: 10000000, slaves: 2000, commerce: 0 }, hiddenWealth: 0, fame: 85, virtueMerit: 750, virtueStage: 5 },
       integrity: 80,
       background: '朱元璋十七子·初封大宁·朵颜三卫·靖难被胁迫·后封南昌·研道琴学·撰太和正音谱。',
       famousQuote: '事来则应·物去则定。', historicalFate: '正统十三年寿终', fateHint: 'retirement'
@@ -10142,7 +10142,7 @@
       rankLevel: 0, socialClass: 'imperial', department: '',
       abilities: { governance: 30, military: 25, intelligence: 95, charisma: 80, integrity: 95, benevolence: 75, diplomacy: 45, scholarship: 100, finance: 50, cunning: 75 },
       loyalty: 100, ambition: 30, traits: ['literary','reclusive','idealist','sage'],
-      resources: { privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 900, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 900, virtueStage: 6 },
       integrity: 100,
       background: '宁王朱权后裔·明亡为僧·后还俗·癫狂作画·画风奇崛冷艳·清初四大画僧之首。',
       famousQuote: '墨点无多泪点多·山河仍是旧山河。', historicalFate: '康熙四十四年病殁南昌', fateHint: 'retirement'
@@ -10156,7 +10156,7 @@
       rankLevel: 14, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 75, military: 80, intelligence: 92, charisma: 88, integrity: 100, benevolence: 80, diplomacy: 60, scholarship: 100, finance: 60, cunning: 75 },
       loyalty: 100, ambition: 75, traits: ['literary','heroic','idealist','loyal'],
-      resources: { privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
       integrity: 100,
       background: '松江华亭人·几社领袖·夏完淳师·崇祯进士·明亡奉鲁王图复·被俘投水殉国。',
       famousQuote: '东风不负秋日恨·江花长伴白头吟。', historicalFate: '永历元年被俘投水殉国', fateHint: 'martyrdom'
@@ -10170,7 +10170,7 @@
       rankLevel: 0, socialClass: 'civilOfficial', department: '',
       abilities: { governance: 65, military: 70, intelligence: 88, charisma: 95, integrity: 100, benevolence: 80, diplomacy: 65, scholarship: 92, finance: 55, cunning: 70 },
       loyalty: 92, ambition: 88, traits: ['heroic','literary','idealist','brave'],
-      resources: { privateWealth: { cash: 50000, land: 500, treasure: 20000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 50000, land: 500, treasure: 20000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 100, virtueMerit: 950, virtueStage: 6 },
       integrity: 100,
       background: '绍兴人·留日革命·光复会·女子近代革命第一人·徐锡麟事败被捕·绍兴轩亭口就义。',
       famousQuote: '秋风秋雨愁煞人。', historicalFate: '光绪三十三年绍兴轩亭口就义·年三十三', fateHint: 'martyrdom'
@@ -10184,7 +10184,7 @@
       rankLevel: 0, socialClass: 'civilOfficial', department: '',
       abilities: { governance: 60, military: 30, intelligence: 88, charisma: 88, integrity: 100, benevolence: 80, diplomacy: 50, scholarship: 92, finance: 50, cunning: 60 },
       loyalty: 88, ambition: 80, traits: ['literary','heroic','idealist','reformist'],
-      resources: { privateWealth: { cash: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000, land: 200, treasure: 5000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 950, virtueStage: 6 },
       integrity: 100,
       background: '巴县人·留日·撰《革命军》宣传共和·苏报案下狱·二十一岁瘐死狱中·辛亥革命之先声。',
       famousQuote: '革命!革命!得之则生·不得则死。', historicalFate: '光绪三十一年瘐死上海狱中·年仅二十一', fateHint: 'martyrdom'
@@ -10198,7 +10198,7 @@
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 85, military: 50, intelligence: 88, charisma: 80, integrity: 92, benevolence: 80, diplomacy: 75, scholarship: 92, finance: 75, cunning: 70 },
       loyalty: 92, ambition: 65, traits: ['rigorous','sage','patient','loyal'],
-      resources: { privateWealth: { cash: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
+      resources: { privateWealth: { money: 800000, land: 15000, treasure: 1500000, slaves: 400, commerce: 0 }, hiddenWealth: 0, fame: 78, virtueMerit: 800, virtueStage: 6 },
       integrity: 92,
       background: '泉州永春人·光宗朝相·力挽光宗与孝宗矛盾·绍熙内禅·后被韩侂胄排挤罢相。',
       famousQuote: '天下不可一日无君。', historicalFate: '开禧二年寿终', fateHint: 'peacefulDeath'
@@ -10212,7 +10212,7 @@
       rankLevel: 14, socialClass: 'civilOfficial', department: 'local',
       abilities: { governance: 65, military: 25, intelligence: 88, charisma: 78, integrity: 88, benevolence: 75, diplomacy: 50, scholarship: 100, finance: 55, cunning: 60 },
       loyalty: 85, ambition: 60, traits: ['literary','scholarly','idealist','reclusive'],
-      resources: { privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5 },
+      resources: { privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 750, virtueStage: 5 },
       integrity: 88,
       background: '济州巨野人·苏门四学士之一·元祐党案累贬·诗词文章兼擅·与张耒齐名晁张。',
       famousQuote: '何处合成愁·离人心上秋。', historicalFate: '大观四年泗州任所殁', fateHint: 'exileDeath'
@@ -10226,7 +10226,7 @@
       rankLevel: 26, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 70, military: 80, intelligence: 80, charisma: 78, integrity: 70, benevolence: 60, diplomacy: 70, scholarship: 65, finance: 75, cunning: 88 },
       loyalty: 85, ambition: 80, traits: ['brave','heroic','clever','rigorous'],
-      resources: { privateWealth: { cash: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 }, hiddenWealth: 0, fame: 30, virtueMerit: 500, virtueStage: 4 },
+      resources: { privateWealth: { money: 3000000, land: 80000, treasure: 8000000, slaves: 1500, commerce: 0 }, hiddenWealth: 0, fame: 30, virtueMerit: 500, virtueStage: 4 },
       integrity: 70,
       background: '保定新城人·正德八虎之一·平宁王朱宸濠之乱·与王阳明合作·诛杀刘瑾·宦官中之能将。',
       famousQuote: '', historicalFate: '嘉靖八年寿终', fateHint: 'peacefulDeath'
@@ -10240,7 +10240,7 @@
       rankLevel: 0, socialClass: 'commoner', department: '',
       abilities: { governance: 60, military: 50, intelligence: 92, charisma: 92, integrity: 95, benevolence: 88, diplomacy: 70, scholarship: 100, finance: 60, cunning: 75 },
       loyalty: 70, ambition: 50, traits: ['sage','reclusive','heroic','idealist'],
-      resources: { privateWealth: { cash: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6 },
+      resources: { privateWealth: { money: 30000, land: 200, treasure: 10000, slaves: 0, commerce: 0 }, hiddenWealth: 0, fame: 95, virtueMerit: 950, virtueStage: 6 },
       integrity: 98,
       background: '咸阳人·金朝武进士·中年悟道·全真派开山·授全真七子·北方道教中兴之主。',
       famousQuote: '人之为道·不在远求。', historicalFate: '金大定十年羽化', fateHint: 'retirement'
@@ -10254,7 +10254,7 @@
       rankLevel: 20, socialClass: 'civilOfficial', department: 'local',
       abilities: { governance: 85, military: 35, intelligence: 95, charisma: 80, integrity: 95, benevolence: 92, diplomacy: 60, scholarship: 100, finance: 70, cunning: 88 },
       loyalty: 92, ambition: 65, traits: ['scholarly','rigorous','heroic','sage'],
-      resources: { privateWealth: { cash: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
+      resources: { privateWealth: { money: 100000, land: 1500, treasure: 50000, slaves: 20, commerce: 0 }, hiddenWealth: 0, fame: 92, virtueMerit: 920, virtueStage: 6 },
       integrity: 95,
       background: '建阳人·撰《洗冤集录》·世界法医学第一书·主理刑狱二十余年·沉冤千古昭雪。',
       famousQuote: '狱事莫重于大辟·大辟莫重于初情。', historicalFate: '淳祐九年广州任上殁', fateHint: 'peacefulDeath'
@@ -10268,7 +10268,7 @@
       rankLevel: 12, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 65, military: 25, intelligence: 95, charisma: 78, integrity: 95, benevolence: 80, diplomacy: 50, scholarship: 100, finance: 50, cunning: 60 },
       loyalty: 88, ambition: 55, traits: ['scholarly','idealist','rigorous','reclusive'],
-      resources: { privateWealth: { cash: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
+      resources: { privateWealth: { money: 30000, land: 300, treasure: 10000, slaves: 5, commerce: 0 }, hiddenWealth: 0, fame: 88, virtueMerit: 880, virtueStage: 6
       },
       integrity: 95,
       background: '鄞县人·补黄宗羲《宋元学案》·撰《鲒埼亭集》·考据学浙东学派代表·明遗民学问续脉者。',
@@ -10283,7 +10283,7 @@
       rankLevel: 27, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 88, military: 30, intelligence: 92, charisma: 80, integrity: 92, benevolence: 80, diplomacy: 88, scholarship: 92, finance: 80, cunning: 75 },
       loyalty: 92, ambition: 75, traits: ['reformist','scholarly','rigorous','heroic'],
-      resources: { privateWealth: { cash: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6 },
+      resources: { privateWealth: { money: 500000, land: 8000, treasure: 800000, slaves: 200, commerce: 0 }, hiddenWealth: 0, fame: 80, virtueMerit: 850, virtueStage: 6 },
       integrity: 92,
       background: '广东南海人·清末出洋考察五大臣之一·考察十五国宪政·清末预备立宪推动者·法部尚书。',
       famousQuote: '宪政不立·国无以立。', historicalFate: '宣统二年病殁', fateHint: 'peacefulDeath'

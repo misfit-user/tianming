@@ -2283,3 +2283,63 @@ function autoAssignHaremResidences() {
     }
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// 军事双 schema 同步：GM.armies[] (权威·startGame 写) ↔ GM.population.military.types{} (派生·军费/军粮/军事消耗用)
+// 之前仅 startGame 同步一次·后续 endturn 任免/调动会脱节
+// 调用：endturn 末尾·tm-ai-change-applier 应用 army_updates 后·任何修改 GM.armies 的地方调用
+// ═══════════════════════════════════════════════════════════════════
+function syncMilitarySources(GM) {
+  if (!GM || !Array.isArray(GM.armies)) return;
+  if (!GM.population) GM.population = {};
+  if (!GM.population.military) GM.population.military = { types: {} };
+  if (!GM.population.military.types) GM.population.military.types = {};
+  // 按军种(branch/type)聚合
+  var typesMap = {};
+  GM.armies.forEach(function(a) {
+    if (!a || a.destroyed) return;
+    var soldiers = a.soldiers || a.size || a.strength || 0;
+    if (soldiers <= 0) return;
+    var key = a.branch || a.type || a.kind || 'infantry';
+    if (!typesMap[key]) {
+      typesMap[key] = {
+        enabled: true, strength: 0, paymentModel: 'wage',
+        morale: 0, supply: 0, training: 0, _count: 0
+      };
+    }
+    var t = typesMap[key];
+    t.strength += soldiers;
+    t.morale  += (a.morale || 50) * soldiers;
+    t.supply  += (a.supply || 50) * soldiers;
+    t.training += (a.training || 50) * soldiers;
+    t._count += soldiers;
+    // paymentModel 从首支军种继承（兼容 _tickMilitarySupply）
+    if (a.paymentModel) t.paymentModel = a.paymentModel;
+  });
+  // 平均化质量字段（按兵力加权）
+  Object.keys(typesMap).forEach(function(key) {
+    var t = typesMap[key];
+    if (t._count > 0) {
+      t.morale = Math.round(t.morale / t._count);
+      t.supply = Math.round(t.supply / t._count);
+      t.training = Math.round(t.training / t._count);
+    }
+    delete t._count;
+  });
+  // 写入·保留 population.military.types 已有的非数值字段(如 historicalNote)
+  Object.keys(typesMap).forEach(function(key) {
+    var existing = GM.population.military.types[key] || {};
+    GM.population.military.types[key] = Object.assign(existing, typesMap[key]);
+  });
+  // 派生类型不再有任何 army·设 enabled=false 但保留(供历史回看)
+  Object.keys(GM.population.military.types).forEach(function(key) {
+    if (!typesMap[key]) {
+      GM.population.military.types[key].enabled = false;
+      GM.population.military.types[key].strength = 0;
+    }
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.syncMilitarySources = syncMilitarySources;
+}

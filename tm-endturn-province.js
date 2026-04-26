@@ -559,9 +559,10 @@ function _peStatCard(title, main, sub, color) {
 }
 
 function _peSection(icon, title, bodyHtml) {
-  return '<div style="margin-top:10px;">' +
-    '<div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--gold-400);letter-spacing:0.08em;padding-bottom:4px;border-bottom:1px solid rgba(184,154,83,0.15);margin-bottom:6px;">' +
-    '<span>' + icon + '</span><span>' + title + '</span></div>' +
+  return '<div class="tm-div-section">' +
+    '<div class="tm-div-section-title">' +
+    '<span class="tm-div-section-icon">' + icon + '</span>' +
+    '<span class="tm-div-section-name">' + title + '</span></div>' +
     bodyHtml + '</div>';
 }
 
@@ -610,8 +611,14 @@ function _renderDivisionNode(div, depth) {
   var _levelClr = depth === 0 ? 'var(--gold-400)' : depth === 1 ? 'var(--celadon-400)' : 'var(--ink-300)';
 
   // ── 卡片 header ──
+  var _safeNodeId = String(nodeId).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  var _cardClick = 'event.stopPropagation();if(typeof openDivisionDetail===\'function\')openDivisionDetail(\'' + _safeNodeId + '\')';
   var html = '<div style="margin-bottom:0.5rem;margin-left:' + indent + 'rem;">';
-  html += '<div style="background:var(--color-surface);border:1px solid rgba(184,154,83,0.2);border-left:3px solid ' + _levelClr + ';border-radius:6px;padding:10px 12px;position:relative;">';
+  html += '<div style="background:var(--color-surface);border:1px solid rgba(184,154,83,0.2);border-left:3px solid ' + _levelClr + ';border-radius:6px;padding:10px 12px;position:relative;cursor:pointer;transition:background 0.15s;" '
+       + 'onmouseover="this.style.background=\'rgba(184,154,83,0.05)\'" '
+       + 'onmouseout="this.style.background=\'var(--color-surface)\'" '
+       + 'onclick="' + _cardClick + '" '
+       + 'title="点击查看完整地区详情">';
 
   // 标题栏（名称 · 级别 · 主官 · 区划类型 · 承载警示）
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">';
@@ -908,8 +915,13 @@ function _renderDivisionNode(div, depth) {
     _detailHtml += _peSection('\u{1F468}', '\u9A7B\u5730\u5B98\u5458 (' + _inRegion.length + ')', _ob);
   }
 
-  // 详情折叠
-  if (_detailHtml) {
+  // ★ 详情体存到 div 临时字段·供 modal 读取（卡片不再嵌入展示·UI 改造）
+  div._cachedDetailBody = _detailHtml;
+  // 卡片底部·提示点击查看详情
+  html += '<div style="text-align:center;font-size:0.6rem;color:var(--gold-d);letter-spacing:0.15em;padding-top:6px;margin-top:4px;border-top:1px dashed rgba(184,154,83,0.15);">点 击 卡 片 查 看 详 情 ▸</div>';
+
+  // 旧详情折叠（保留作 fallback·display:none）
+  if (_detailHtml && false) {
     html += '<details style="margin-top:4px;">';
     html += '<summary style="cursor:pointer;font-size:0.68rem;color:var(--gold-400);letter-spacing:0.08em;padding:4px 0;list-style:none;">\u25BE \u5C55\u5F00\u5168\u8C8C</summary>';
     html += '<div style="padding:6px 2px;">' + _detailHtml + '</div>';
@@ -929,6 +941,1047 @@ function _renderDivisionNode(div, depth) {
 
   html += '</div>'; // outer
   return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  地区详情弹窗·人物志风格·点击卡片 → 弹出此 modal
+// ═══════════════════════════════════════════════════════════════════
+
+/** 立绘存储 key（按 div.id，回退 div.name） */
+function _peLijuanKey(div) {
+  return 'tm:divLijuan:' + (div.id || div.name || '_');
+}
+/** 读取立绘 dataURL（无则 null） */
+function _peLijuanLoad(div) {
+  try { return localStorage.getItem(_peLijuanKey(div)) || null; }
+  catch (e) { return null; }
+}
+/** 保存立绘 dataURL（500KB 上限） */
+function _peLijuanSave(div, dataUrl) {
+  try {
+    if (dataUrl && dataUrl.length > 500 * 1024 * 1.4) { // base64 ~ +33%
+      if (typeof toast === 'function') toast('立绘过大（>500KB），请压缩后再导入');
+      return false;
+    }
+    localStorage.setItem(_peLijuanKey(div), dataUrl);
+    return true;
+  } catch (e) {
+    if (typeof toast === 'function') toast('立绘保存失败：' + (e && e.message || '存储已满'));
+    return false;
+  }
+}
+/** 移除立绘 */
+function _peLijuanRemove(div) {
+  try { localStorage.removeItem(_peLijuanKey(div)); } catch (e) {}
+}
+/** 触发立绘文件选择（全局调用） */
+function _peLijuanPick(idOrName) {
+  var div = _peFindDivision(idOrName);
+  if (!div) return;
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg,image/webp,image/gif';
+  input.style.display = 'none';
+  input.onchange = function(ev) {
+    var f = ev.target.files && ev.target.files[0]; if (!f) return;
+    if (f.size > 800 * 1024) {
+      if (typeof toast === 'function') toast('原图 > 800KB，建议压缩；将尝试保存…');
+    }
+    var rd = new FileReader();
+    rd.onload = function(e) {
+      if (_peLijuanSave(div, e.target.result)) {
+        if (typeof toast === 'function') toast('立绘已导入');
+        // 刷新弹窗
+        if (typeof window.openDivisionDetail === 'function') window.openDivisionDetail(div.id || div.name);
+      }
+    };
+    rd.readAsDataURL(f);
+  };
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(function(){ if (input.parentNode) input.parentNode.removeChild(input); }, 60000);
+}
+/** 移除立绘（确认后） */
+function _peLijuanClear(idOrName) {
+  var div = _peFindDivision(idOrName);
+  if (!div) return;
+  if (!confirm('确定移除此区划的立绘？')) return;
+  _peLijuanRemove(div);
+  if (typeof toast === 'function') toast('立绘已移除');
+  if (typeof window.openDivisionDetail === 'function') window.openDivisionDetail(div.id || div.name);
+}
+
+/** 按 ID 或名称查找 division */
+function _peFindDivision(idOrName) {
+  if (!GM.adminHierarchy) return null;
+  var found = null;
+  Object.keys(GM.adminHierarchy).forEach(function(fk) {
+    if (found) return;
+    var tree = GM.adminHierarchy[fk];
+    function walk(divs) {
+      if (!Array.isArray(divs) || found) return;
+      for (var i = 0; i < divs.length; i++) {
+        var d = divs[i]; if (!d) continue;
+        if (d.id === idOrName || d.name === idOrName) { found = d; return; }
+        if (d.children) walk(d.children);
+        if (d.divisions) walk(d.divisions);
+      }
+    }
+    walk((tree && tree.divisions) || []);
+  });
+  return found;
+}
+
+/** 渲染区域属性 tag 徽章（hasPort / saltRegion / mineralRegion / horseRegion / fishingRegion / imperialDomain） */
+function _peRenderTagBadges(div) {
+  var tags = div.tags || {};
+  var TAG_INFO = {
+    hasPort:        { label: '沿海港', color: '#5e9bd4', icon: '⚓' },
+    saltRegion:     { label: '产盐', color: '#e0d098', icon: '▲' },
+    mineralRegion:  { label: '产矿', color: '#a88a6a', icon: '◈' },
+    horseRegion:    { label: '草场', color: '#9bc28e', icon: '○' },
+    fishingRegion:  { label: '渔区', color: '#5dadcb', icon: '◇' },
+    imperialDomain: { label: '皇室直辖', color: '#c04030', icon: '☆' }
+  };
+  var html = '';
+  var any = false;
+  Object.keys(TAG_INFO).forEach(function(k) {
+    if (!tags[k]) return;
+    any = true;
+    var info = TAG_INFO[k];
+    html += '<span class="tm-div-tag" style="border-color:' + info.color + ';color:' + info.color + ';">'
+         + '<span class="tm-div-tag-icon">' + info.icon + '</span>'
+         + '<span>' + info.label + '</span></span>';
+  });
+  if (!any) html = '<span style="font-size:0.7rem;color:var(--color-foreground-muted);font-style:italic;">普通州县（无特殊属性）</span>';
+  return html;
+}
+
+/** 渲染经济基础区·8 字段（farmland/commerce/maritime/salt/mineral/horse/fishing） */
+function _peRenderEconomyBase(div) {
+  var eb = div.economyBase || {};
+  var tags = div.tags || {};
+  var rows = [
+    { id: 'farmland', label: '在编田亩', value: eb.farmland || 0, color: 'var(--celadon-400)', visible: true },
+    { id: 'commerce', label: '商业繁荣度', value: eb.commerceVolume || 0, color: 'var(--gold-400)', sub: '系数 ' + (eb.commerceCoefficient != null ? eb.commerceCoefficient : 1.0).toFixed(1), visible: true },
+    { id: 'maritime', label: '海贸量', value: eb.maritimeTradeVolume || 0, color: '#5e9bd4', visible: tags.hasPort },
+    { id: 'salt', label: '盐产(斤/年)', value: eb.saltProduction || 0, color: '#e0d098', visible: tags.saltRegion },
+    { id: 'mineral', label: '矿产(两/年)', value: eb.mineralProduction || 0, color: '#a88a6a', visible: tags.mineralRegion },
+    { id: 'horse', label: '年产马匹', value: eb.horseProduction || 0, color: '#9bc28e', visible: tags.horseRegion },
+    { id: 'fishing', label: '渔产(两/年)', value: eb.fishingProduction || 0, color: '#5dadcb', visible: tags.fishingRegion }
+  ];
+  var visibleRows = rows.filter(function(r) { return r.visible; });
+  if (visibleRows.length === 0) {
+    return '<div style="font-size:0.7rem;color:var(--color-foreground-muted);font-style:italic;padding:8px;">本区无特殊经济基础（仅田/商）</div>';
+  }
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">';
+  visibleRows.forEach(function(r) {
+    html += '<div style="padding:6px 9px;background:rgba(255,255,255,0.03);border-left:2px solid ' + r.color + ';border-radius:3px;">';
+    html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">' + r.label + '</div>';
+    html += '<div style="font-size:0.85rem;color:' + r.color + ';font-weight:600;">' + _peN(r.value) + '</div>';
+    if (r.sub) html += '<div style="font-size:0.58rem;color:var(--color-foreground-muted);margin-top:2px;">' + r.sub + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** 渲染皇室直辖资产区·仅 imperialDomain=true 显示 */
+function _peRenderImperialAssets(div) {
+  var tags = div.tags || {};
+  if (!tags.imperialDomain) return '';
+  var eb = div.economyBase || {};
+  var ia = eb.imperialAssets || {};
+  var html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">';
+  html += '<div style="padding:6px 9px;background:rgba(192,64,48,0.06);border-left:2px solid var(--vermillion-400);border-radius:3px;">';
+  html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">皇庄亩数</div>';
+  html += '<div style="font-size:0.85rem;color:var(--vermillion-400);font-weight:600;">' + _peN(eb.imperialFarmland || 0) + '</div>';
+  html += '</div>';
+  ['zhizao', 'kuangchang', 'yuyao'].forEach(function(k) {
+    var labelMap = { zhizao: '织造局', kuangchang: '矿场', yuyao: '御窑' };
+    html += '<div style="padding:6px 9px;background:rgba(192,64,48,0.06);border-left:2px solid var(--vermillion-400);border-radius:3px;">';
+    html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">' + labelMap[k] + '</div>';
+    html += '<div style="font-size:0.85rem;color:var(--vermillion-400);font-weight:600;">' + (ia[k] || 0) + ' 处</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** 渲染基础设施区·驿站 + 科举解额 */
+function _peRenderInfrastructure(div) {
+  var eb = div.economyBase || {};
+  var rq = (typeof eb.roadQuality === 'number') ? eb.roadQuality : 50;
+  var rqClr = rq >= 60 ? '#6aa88a' : rq >= 35 ? 'var(--gold-400)' : 'var(--vermillion-400)';
+  var rqLabel = rq >= 70 ? '驿道·良' : rq >= 50 ? '驿道·中' : rq >= 30 ? '驿道·差' : '崎岖';
+  var html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
+  // 驿站数
+  html += '<div style="padding:7px 10px;background:rgba(255,255,255,0.03);border-left:2px solid var(--indigo-400,#7986cb);border-radius:3px;">';
+  html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">驿站数</div>';
+  html += '<div style="font-size:0.95rem;color:var(--indigo-400,#7986cb);font-weight:700;">' + _peN(eb.postRelays || 0) + ' <span style="font-size:0.55rem;font-weight:400;">驿</span></div>';
+  html += '<div style="font-size:0.55rem;color:var(--ink-400);margin-top:2px;">驿递站银</div>';
+  html += '</div>';
+  // 道路质量·新
+  html += '<div style="padding:7px 10px;background:rgba(255,255,255,0.03);border-left:2px solid ' + rqClr + ';border-radius:3px;">';
+  html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">道路质量 · ' + rqLabel + '</div>';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">';
+  html += '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="width:' + Math.min(100, rq) + '%;height:100%;background:' + rqClr + ';"></div></div>';
+  html += '<div style="font-size:0.85rem;color:' + rqClr + ';font-weight:700;font-variant-numeric:tabular-nums;">' + Math.round(rq) + '</div>';
+  html += '</div>';
+  html += '<div style="font-size:0.55rem;color:var(--ink-400);margin-top:3px;">商旅/军调/驿递成本</div>';
+  html += '</div>';
+  // 科举解额
+  html += '<div style="padding:7px 10px;background:rgba(255,255,255,0.03);border-left:2px solid var(--gold-400);border-radius:3px;">';
+  html += '<div style="font-size:0.6rem;color:var(--color-foreground-muted);">科举解额</div>';
+  html += '<div style="font-size:0.95rem;color:var(--gold-400);font-weight:700;">' + _peN(eb.kejuQuota || 0) + ' <span style="font-size:0.55rem;font-weight:400;">名</span></div>';
+  html += '<div style="font-size:0.55rem;color:var(--ink-400);margin-top:2px;">教育/科举费</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+/** Hero 段·立绘 + 名号识别条 */
+function _peRenderHero(div) {
+  var safeId = String(div.id || div.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var lijuanUrl = _peLijuanLoad(div);
+  var firstChar = (div.name || '').charAt(0) || '·';
+  var subName = (div.name || '').slice(1, 6);
+
+  // 立绘区
+  var lijuanHtml = '<div class="tm-div-lijuan" onclick="_peLijuanPick(\'' + safeId + '\')" title="点击导入/更换立绘">';
+  if (lijuanUrl) {
+    lijuanHtml += '<img class="tm-div-lijuan-img" src="' + lijuanUrl + '" alt="' + escHtml(div.name) + '立绘"/>';
+    lijuanHtml += '<div class="tm-div-lijuan-overlay"><div class="tm-div-lijuan-overlay-row">';
+    lijuanHtml += '<span class="tm-div-lj-btn" onclick="event.stopPropagation();_peLijuanPick(\'' + safeId + '\')">更换</span>';
+    lijuanHtml += '<span class="tm-div-lj-btn danger" onclick="event.stopPropagation();_peLijuanClear(\'' + safeId + '\')">移除</span>';
+    lijuanHtml += '</div></div>';
+  } else {
+    lijuanHtml += '<div class="tm-div-lijuan-empty">';
+    lijuanHtml += '<div class="tm-div-lj-char">' + escHtml(firstChar) + '</div>';
+    if (subName) lijuanHtml += '<div class="tm-div-lj-sub">' + escHtml(subName) + '</div>';
+    lijuanHtml += '<div class="tm-div-lj-hint">📜 点击导入立绘</div>';
+    lijuanHtml += '</div>';
+  }
+  lijuanHtml += '</div>';
+
+  // 名号识别条
+  var idHtml = '<div class="tm-div-id">';
+  idHtml += '<div class="tm-div-id-name">' + escHtml(div.name) + '</div>';
+
+  // meta pills 行
+  var pills = '<div class="tm-div-id-meta">';
+  if (div.level) pills += '<span class="pill">' + escHtml(div.level) + '</span>';
+  if (div.regionType && div.regionType !== 'normal') {
+    var rtMap = { jimi:'羁縻', tusi:'土司', fanbang:'藩属', imperial_clan:'宗藩王封' };
+    pills += '<span class="pill cool">' + escHtml(rtMap[div.regionType] || div.regionType) + '</span>';
+  }
+  if (div.terrain) pills += '<span class="pill muted">' + escHtml(div.terrain) + '</span>';
+  if (div.taxLevel) {
+    var tlClr = div.taxLevel === '重' ? 'danger' : div.taxLevel === '轻' ? 'cool' : 'warn';
+    pills += '<span class="pill ' + tlClr + '">税额·' + escHtml(div.taxLevel) + '</span>';
+  }
+  if (div.officialPosition) pills += '<span class="pill muted">' + escHtml(div.officialPosition) + '</span>';
+  if (div.governor) {
+    var govSafe = String(div.governor).replace(/'/g,"\\'");
+    pills += '<span class="gov-link" onclick="if(typeof showCharPopup===\'function\')showCharPopup(\'' + govSafe + '\',event)">主官·' + escHtml(div.governor) + '</span>';
+  }
+  pills += '</div>';
+  idHtml += pills;
+
+  // 描述
+  if (div.description) {
+    var desc = String(div.description);
+    idHtml += '<div class="tm-div-id-desc" onclick="this.classList.toggle(\'expanded\')">' + escHtml(desc) + '</div>';
+  }
+
+  // 特产
+  if (div.specialResources) {
+    idHtml += '<div style="font-size:0.66rem;color:var(--gold-400);letter-spacing:0.05em;">▣ 特产 · ' + escHtml(div.specialResources) + '</div>';
+  }
+
+  // tags 徽章
+  var tagsBody = _peRenderTagBadges(div);
+  if (tagsBody && tagsBody.indexOf('普通州县') === -1) {
+    idHtml += '<div class="tm-div-id-tags">' + tagsBody + '</div>';
+  }
+
+  idHtml += '</div>';
+
+  return '<div class="tm-div-hero">' + lijuanHtml + idHtml + '</div>';
+}
+
+/** 6 格快览 */
+function _peRenderQuickStats(div) {
+  var _U = _peU();
+  var eb = div.economyBase || {};
+  var fis = div.fiscal || {};
+  var pop = div.population || {};
+  var mouths = (typeof div.population === 'number') ? div.population : (pop.mouths || 0);
+  var households = pop.households || 0;
+  var farmland = eb.farmland || 0;
+  var commerce = eb.commerceVolume || 0;
+  var coef = eb.commerceCoefficient != null ? eb.commerceCoefficient : 1.0;
+  var actualRev = fis.actualRevenue || 0;
+  var minxin = (typeof div.minxin === 'number') ? div.minxin : (typeof div.minxinLocal === 'number' ? div.minxinLocal : null);
+  var corr = (typeof div.corruption === 'number') ? div.corruption : (typeof div.corruptionLocal === 'number' ? div.corruptionLocal : null);
+  var mxClr = minxin == null ? 'var(--color-foreground-muted)' : (minxin >= 60 ? '#6aa88a' : minxin >= 40 ? 'var(--gold-400)' : 'var(--vermillion-400)');
+  var crClr = corr == null ? 'var(--color-foreground-muted)' : (corr <= 30 ? '#6aa88a' : corr <= 60 ? 'var(--gold-400)' : 'var(--vermillion-400)');
+
+  var html = '<div class="tm-div-quickstats">';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">在编户口</div>'
+       + '<div class="tm-div-qs-val" style="color:var(--celadon-400);">' + _peN(mouths) + '</div>'
+       + '<div class="tm-div-qs-sub">' + _peN(households) + '户</div></div>';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">在编田亩</div>'
+       + '<div class="tm-div-qs-val" style="color:#9bc28e;">' + _peN(farmland) + '</div>'
+       + '<div class="tm-div-qs-sub">亩</div></div>';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">商业</div>'
+       + '<div class="tm-div-qs-val" style="color:var(--gold-400);">' + _peN(commerce) + '</div>'
+       + '<div class="tm-div-qs-sub">系数 ' + coef.toFixed(1) + '</div></div>';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">实征</div>'
+       + '<div class="tm-div-qs-val" style="color:var(--gold-300);">' + _peN(actualRev) + '</div>'
+       + '<div class="tm-div-qs-sub">' + _U.money + '</div></div>';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">民心</div>'
+       + '<div class="tm-div-qs-val" style="color:' + mxClr + ';">' + (minxin == null ? '—' : minxin) + '</div>'
+       + '<div class="tm-div-qs-sub">/100</div></div>';
+  html += '<div class="tm-div-qs"><div class="tm-div-qs-label">腐败</div>'
+       + '<div class="tm-div-qs-val" style="color:' + crClr + ';">' + (corr == null ? '—' : corr) + '</div>'
+       + '<div class="tm-div-qs-sub">/100</div></div>';
+  html += '</div>';
+  return html;
+}
+
+/** 升级版 section 容器（支持 aside） */
+function _peSectionV2(icon, title, bodyHtml, aside) {
+  var h = '<div class="tm-div-section">';
+  h += '<div class="tm-div-section-title">';
+  h += '<span class="tm-div-section-icon">' + icon + '</span>';
+  h += '<span class="tm-div-section-name">' + title + '</span>';
+  if (aside) h += '<span class="tm-div-section-aside">' + aside + '</span>';
+  h += '</div>';
+  h += bodyHtml;
+  h += '</div>';
+  return h;
+}
+
+/** 渲染单条核算行（name | formula | amount） */
+function _peLineItem(name, formula, amount, unit, color) {
+  var html = '<div class="tm-div-line-row">';
+  html += '<div class="tm-div-line-name" style="color:' + (color || 'var(--color-foreground)') + ';">' + escHtml(name) + '</div>';
+  html += '<div class="tm-div-line-formula">' + (formula ? escHtml(formula) : '') + '</div>';
+  html += '<div class="tm-div-line-amount" style="color:' + (color || 'var(--color-foreground)') + ';">' + _peN(amount) + ' <span class="tm-div-line-unit">' + (unit || '') + '</span></div>';
+  html += '</div>';
+  return html;
+}
+
+/** 应输上解·赋税核算细目（按 division.economyBase 实时算 7-9 项） */
+function _peRenderRevenueBreakdown(div) {
+  var eb = div.economyBase || {};
+  var tags = div.tags || {};
+  var pop = div.population || {};
+  var ding = pop.ding || (typeof div.population === 'number' ? Math.floor(div.population * 0.25) : 0);
+  var households = pop.households || 0;
+  var policies = (typeof GM !== 'undefined' && GM && GM.policies) || {};
+  var landRate = policies.landTaxRate != null ? policies.landTaxRate : 0.04;
+  var pollTax = policies.pollTaxPerCapita != null ? policies.pollTaxPerCapita : 0.03;
+  var saltPrice = policies.saltPrice != null ? policies.saltPrice : 0.05;
+  var saltRate = policies.saltTaxRate != null ? policies.saltTaxRate : 0.40;
+  var maritimeRate = policies.maritimeTaxRate != null ? policies.maritimeTaxRate : 0.08;
+  var commerceRate = policies.commerceTaxRate != null ? policies.commerceTaxRate : 0.03;
+  var mineralRate = policies.mineralTaxRate != null ? policies.mineralTaxRate : 0.20;
+  var actualRate = (typeof GM !== 'undefined' && GM && GM.guoku && GM.guoku.actualTaxRate != null) ? GM.guoku.actualTaxRate : 1;
+  var grainPrice = (typeof GM !== 'undefined' && GM && GM.currency && GM.currency.market && GM.currency.market.grainPrice) || 100;
+  var _U = _peU();
+
+  var rows = [];
+  var subtotal = 0;
+
+  // 田赋
+  var farmland = eb.farmland || 0;
+  if (farmland > 0) {
+    var tianfu = farmland * landRate * actualRate;
+    rows.push({ name: '田赋·正赋', formula: '田 ' + _peN(farmland) + '亩 × ' + (landRate*100).toFixed(1) + '%', amount: tianfu * 0.9, c: 'var(--celadon-400)' });
+    rows.push({ name: '田赋·附加(漕水)', formula: '正赋 × 10%', amount: tianfu * 0.1, c: 'var(--celadon-400)' });
+    subtotal += tianfu;
+  }
+
+  // 丁银
+  if (ding > 0) {
+    var dingTax = ding * pollTax * actualRate;
+    rows.push({ name: '丁银', formula: '丁 ' + _peN(ding) + ' × ' + pollTax.toFixed(2), amount: dingTax, c: '#9bc28e' });
+    subtotal += dingTax;
+  }
+
+  // 漕粮（折银）
+  if (households > 0) {
+    var grainAmount = households * 5 * 0.005;  // ~ 户均口数 × 比例
+    if (typeof div.population === 'number') grainAmount = div.population * 0.005;
+    else if (pop.mouths) grainAmount = pop.mouths * 0.005;
+    var caoliang = grainAmount * grainPrice / 100;
+    if (caoliang > 0) {
+      rows.push({ name: '漕粮(折银)', formula: _peN(grainAmount) + ' 石 × 价 ' + grainPrice/100 + ' 两/石', amount: caoliang, c: 'var(--gold-400)' });
+      subtotal += caoliang;
+    }
+  }
+
+  // 盐课
+  if (tags.saltRegion && eb.saltProduction > 0) {
+    var saltTax = eb.saltProduction * saltPrice * saltRate;
+    rows.push({ name: '盐课', formula: _peN(eb.saltProduction) + ' 斤 × ' + saltPrice + ' × ' + (saltRate*100) + '%', amount: saltTax, c: '#e0d098' });
+    subtotal += saltTax;
+  }
+
+  // 矿税
+  if (tags.mineralRegion && eb.mineralProduction > 0) {
+    var miningTax = eb.mineralProduction * mineralRate;
+    rows.push({ name: '矿税', formula: _peN(eb.mineralProduction) + ' 两产 × ' + (mineralRate*100) + '%', amount: miningTax, c: '#a88a6a' });
+    subtotal += miningTax;
+  }
+
+  // 关津商税
+  if (eb.commerceVolume > 0) {
+    var coef = eb.commerceCoefficient != null ? eb.commerceCoefficient : 1.0;
+    var commerceTax = eb.commerceVolume * coef * commerceRate;
+    rows.push({ name: '关津税', formula: '商 ' + _peN(eb.commerceVolume) + ' × 系 ' + coef.toFixed(1) + ' × ' + (commerceRate*100) + '% ÷ 2', amount: commerceTax * 0.5, c: 'var(--gold-400)' });
+    rows.push({ name: '城商税', formula: '同上 ÷ 2', amount: commerceTax * 0.5, c: 'var(--gold-400)' });
+    subtotal += commerceTax;
+  }
+
+  // 市舶
+  if (tags.hasPort && eb.maritimeTradeVolume > 0) {
+    var shibo = eb.maritimeTradeVolume * maritimeRate;
+    rows.push({ name: '市舶税', formula: '海 ' + _peN(eb.maritimeTradeVolume) + ' × ' + (maritimeRate*100) + '%', amount: shibo, c: '#5e9bd4' });
+    subtotal += shibo;
+  }
+
+  // 渔课
+  if (tags.fishingRegion && eb.fishingProduction > 0) {
+    var yu = eb.fishingProduction * 0.10;
+    rows.push({ name: '渔课', formula: _peN(eb.fishingProduction) + ' × 10%', amount: yu, c: '#5dadcb' });
+    subtotal += yu;
+  }
+
+  // 马征(折银)·抵扣性质
+  if (tags.horseRegion && eb.horseProduction > 0) {
+    var ma = eb.horseProduction * 50;
+    rows.push({ name: '马征(折银抵扣)', formula: _peN(eb.horseProduction) + ' 匹 × 50/匹', amount: ma, c: '#9bc28e' });
+    subtotal += ma;
+  }
+
+  if (rows.length === 0) {
+    return '<div class="tm-div-empty">本区无可核算赋税项目（建议在编辑器配置 economyBase）</div>';
+  }
+
+  var html = '<div class="tm-div-line-list">';
+  rows.forEach(function(r){ html += _peLineItem(r.name, r.formula, r.amount, _U.money, r.c); });
+  html += '</div>';
+  html += '<div class="tm-div-line-total"><span class="tm-div-line-total-label">合 计 · 年估</span><span class="tm-div-line-total-val">' + _peN(subtotal) + ' ' + _U.money + '</span></div>';
+  // 与实际比对·双向警示（漏征 OR 加派均偏离健康区间）
+  if (div.fiscal && div.fiscal.claimedRevenue) {
+    var ratio = subtotal > 0 ? (div.fiscal.claimedRevenue / subtotal * 100) : 0;
+    var ratioClr, ratioNote;
+    if (ratio >= 85 && ratio <= 120) { ratioClr = '#6aa88a'; ratioNote = ''; }            // 健康
+    else if (ratio >= 60 && ratio <= 160) { ratioClr = 'var(--gold-400)'; ratioNote = ''; } // 偏离
+    else { ratioClr = 'var(--vermillion-400)'; ratioNote = ratio > 160 ? ' · 加派重压' : ' · 漏征严重'; }
+    html += '<div class="tm-div-compare">名义已征 ' + _peN(div.fiscal.claimedRevenue) + ' ' + _U.money + ' · 占核算 <span style="color:' + ratioClr + ';">' + ratio.toFixed(0) + '%</span>' + ratioNote + '</div>';
+  }
+  return html;
+}
+
+/** 应负岁出·经费核算（仅可归属本区的项） */
+function _peRenderExpenseBreakdown(div) {
+  var eb = div.economyBase || {};
+  var pop = div.population || {};
+  var households = pop.households || 0;
+  var _U = _peU();
+
+  var rows = [];
+  var subtotal = 0;
+
+  // 驿递站银
+  if (eb.postRelays > 0) {
+    var post = eb.postRelays * 200;
+    rows.push({ name: '驿递站银', formula: '驿 ' + eb.postRelays + ' × 200/驿', amount: post, c: 'var(--indigo-400,#7986cb)' });
+    subtotal += post;
+  }
+
+  // 教育/科举经费
+  if (eb.kejuQuota > 0) {
+    var keju = eb.kejuQuota * 50;
+    rows.push({ name: '教育常费', formula: '解额 ' + eb.kejuQuota + ' × 50/名', amount: keju, c: 'var(--gold-400)' });
+    subtotal += keju;
+  }
+
+  // 在地俸禄（按驻地角色 salary 之和粗估）
+  var localSalary = 0, localCount = 0;
+  if (typeof GM !== 'undefined' && GM && Array.isArray(GM.chars) && div.name) {
+    GM.chars.forEach(function(c) {
+      if (c.alive === false) return;
+      if (c.location !== div.name) return;
+      var sal = (typeof c.salary === 'number') ? c.salary : 0;
+      if (sal > 0) { localSalary += sal * 12; localCount++; }
+    });
+  }
+  if (localSalary > 0) {
+    rows.push({ name: '在地俸禄', formula: '驻官 ' + localCount + ' 人 · 月俸 × 12', amount: localSalary, c: 'var(--amber-400)', note: '官品制' });
+    subtotal += localSalary;
+  }
+
+  // 在地灾赈(本回合)
+  var disasterRelief = 0;
+  if (div.fiscal && div.fiscal.expenditures && div.fiscal.expenditures.discretionary) {
+    div.fiscal.expenditures.discretionary.forEach(function(act) {
+      if (act.type === 'disaster_relief' || act.type === 'public_works_water') disasterRelief += (act.amount || 0);
+    });
+  }
+  if (disasterRelief > 0) {
+    rows.push({ name: '本回合·赈灾水利', formula: 'div.fiscal.expenditures', amount: disasterRelief, c: 'var(--celadon-400)' });
+    subtotal += disasterRelief;
+  }
+
+  // 在地军饷（如有 GM.armies 驻在此地）
+  var localGarrison = 0, garrisonName = '';
+  if (typeof GM !== 'undefined' && GM && Array.isArray(GM.armies) && div.name) {
+    GM.armies.forEach(function(a) {
+      if (a.location === div.name || a.station === div.name) {
+        var troops = a.troops || a.initialTroops || a.size || 0;
+        var pay = (a.payPerSoldier || 1.5) * troops * 12;
+        localGarrison += pay;
+        if (!garrisonName && a.name) garrisonName = a.name;
+      }
+    });
+  }
+  if (localGarrison > 0) {
+    rows.push({ name: '在地军饷', formula: '驻军 × ' + (garrisonName || '部队') + ' × 12月', amount: localGarrison, c: 'var(--vermillion-400)' });
+    subtotal += localGarrison;
+  }
+
+  if (rows.length === 0) {
+    return '<div class="tm-div-empty">本区无可归属本区的中央经费支出（可在编辑器配置 postRelays/kejuQuota）</div>';
+  }
+
+  var html = '<div class="tm-div-line-list">';
+  rows.forEach(function(r){ html += _peLineItem(r.name, r.formula, r.amount, _U.money, r.c); });
+  html += '</div>';
+  html += '<div class="tm-div-line-total"><span class="tm-div-line-total-label">合 计 · 年估</span><span class="tm-div-line-total-val">' + _peN(subtotal) + ' ' + _U.money + '</span></div>';
+  return html;
+}
+
+/** 在灾实录·disasterRecord */
+function _peRenderDisasters(div) {
+  var eb = div.economyBase || {};
+  var dr = eb.disasterRecord || [];
+  if (!Array.isArray(dr) || dr.length === 0) {
+    if (div.environment && div.environment.ecoScars && Object.keys(div.environment.ecoScars).length) {
+      return '<div class="tm-div-empty">无在灾·但留 <span style="color:var(--amber-400);">生态痤疮</span>：' + Object.keys(div.environment.ecoScars).join('、') + '</div>';
+    }
+    return '';
+  }
+  var TYPE_INFO = {
+    drought:    { label: '旱', icon: '☀', color: '#d4a838' },
+    flood:      { label: '水', icon: '~',  color: '#5e9bd4' },
+    plague:     { label: '瘟', icon: '⊙', color: '#a55ad4' },
+    locust:     { label: '蝗', icon: '※', color: '#9bc28e' },
+    earthquake: { label: '震', icon: '☷', color: '#a88a6a' },
+    cold:       { label: '寒', icon: '❄', color: '#7eb8a7' }
+  };
+  var html = '<div class="tm-div-disaster-list">';
+  dr.forEach(function(rec) {
+    var info = TYPE_INFO[rec.type] || { label: rec.type || '?', icon: '!', color: 'var(--vermillion-400)' };
+    var sev = rec.severity || 1;
+    var sevLabel = sev >= 3 ? '重' : sev >= 2 ? '中' : '轻';
+    html += '<div class="tm-div-disaster-row" style="border-left-color:' + info.color + ';">';
+    html += '<span class="tm-div-disaster-icon" style="color:' + info.color + ';">' + info.icon + '</span>';
+    html += '<span class="tm-div-disaster-name" style="color:' + info.color + ';">' + info.label + '</span>';
+    html += '<span class="tm-div-disaster-sev">' + sevLabel + '</span>';
+    if (rec.startTurn) html += '<span class="tm-div-disaster-time">起 第 ' + rec.startTurn + ' 回合</span>';
+    if (rec.note) html += '<span class="tm-div-disaster-note">' + escHtml(String(rec.note)) + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** 公库完整账·扩展（quota/deficit/handover/inflowOutflow） */
+function _peRenderTreasuryFull(div) {
+  var pt = div.publicTreasury;
+  if (!pt) return '';
+  var _U = _peU();
+  var html = '<div class="tm-div-treasury-grid">';
+  ['money','grain','cloth'].forEach(function(k){
+    var led = pt[k]; if (!led) return;
+    var unit = _U[k];
+    var labelMap = { money:'银 账', grain:'粮 账', cloth:'布 账' };
+    var clrMap = { money:'var(--gold-400)', grain:'var(--celadon-400)', cloth:'var(--amber-400)' };
+    var clr = clrMap[k];
+    var stock = led.stock || 0;
+    var quota = led.quota || 0;
+    var deficit = led.deficit || 0;
+    var inflow = led.inflowThisTurn || led.inflow || 0;
+    var outflow = led.outflowThisTurn || led.outflow || 0;
+    var fillPct = quota > 0 ? Math.min(100, stock / quota * 100) : 0;
+    html += '<div class="tm-div-treasury-card" style="border-left-color:' + clr + ';">';
+    html += '<div class="tm-div-treasury-head"><span class="tm-div-treasury-label">' + labelMap[k] + '</span>';
+    if (deficit > 0) html += '<span class="tm-div-treasury-deficit">亏 ' + _peN(deficit) + '</span>';
+    html += '</div>';
+    html += '<div class="tm-div-treasury-stock" style="color:' + clr + ';">' + _peN(stock) + ' <span class="tm-div-treasury-unit">' + unit + '</span></div>';
+    if (quota > 0) {
+      html += '<div class="tm-div-treasury-bar"><div style="width:' + fillPct + '%;background:' + clr + ';"></div></div>';
+      html += '<div class="tm-div-treasury-quota">额 ' + _peN(quota) + ' · 实占 ' + fillPct.toFixed(0) + '%</div>';
+    }
+    if (inflow || outflow) {
+      html += '<div class="tm-div-treasury-flow">';
+      if (inflow) html += '<span style="color:#6aa88a;">↑ 入 ' + _peN(inflow) + '</span> ';
+      if (outflow) html += '<span style="color:var(--vermillion-400);">↓ 出 ' + _peN(outflow) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  // 经手人 + 交接
+  if (pt.currentHead || pt.previousHead || (pt.handoverLog && pt.handoverLog.length)) {
+    html += '<div class="tm-div-treasury-meta">';
+    if (pt.currentHead) html += '现掌库：<span style="color:var(--gold-400);">' + escHtml(pt.currentHead) + '</span>';
+    if (pt.previousHead) html += ' · 前任：' + escHtml(pt.previousHead);
+    if (pt.handoverLog && pt.handoverLog.length) html += ' · 交接案卷 ' + pt.handoverLog.length + ' 条';
+    html += '</div>';
+  }
+  return html;
+}
+
+/** 承载力·完整账（环境系统的承载力田亩，独立于税基 economyBase.farmland） */
+function _peRenderCarryingCapacityFull(div) {
+  var cc = div.carryingCapacity || (div.environment && div.environment.carryingCapacity) || null;
+  if (!cc && div.environment) cc = {
+    arable: div.environment.arableLand || 0,
+    water: div.environment.waterCapacity || 0,
+    climate: div.environment.climate || 1.0,
+    historicalCap: div.environment.historicalCap || 0,
+    currentLoad: div.environment.currentLoad || 0,
+    carryingRegime: div.environment.carryingRegime || ''
+  };
+  if (!cc) return '<div class="tm-div-empty">承载力数据未配置</div>';
+
+  var loadPct = (cc.currentLoad || 0) * 100;
+  var loadClr = loadPct > 90 ? 'var(--vermillion-400)' : loadPct > 75 ? 'var(--amber-400)' : '#6aa88a';
+  var REGIME_INFO = {
+    abundant:    { label: '丰饶', color: '#6aa88a' },
+    sustainable: { label: '可持续', color: '#6aa88a' },
+    strained:    { label: '紧张', color: 'var(--amber-400)' },
+    overload:    { label: '超载', color: 'var(--vermillion-400)' },
+    collapse:    { label: '崩塌', color: 'var(--vermillion-400)' }
+  };
+  var regimeInfo = REGIME_INFO[cc.carryingRegime] || { label: cc.carryingRegime || '未评定', color: 'var(--color-foreground-muted)' };
+
+  var html = '<div class="tm-div-cc-grid">';
+  // 承载力田亩
+  html += '<div class="tm-div-cc-card" style="border-left-color:#9bc28e;">'
+       + '<div class="tm-div-cc-label">承载力·耕地</div>'
+       + '<div class="tm-div-cc-val" style="color:#9bc28e;">' + _peN(cc.arable || 0) + ' 亩</div>'
+       + '<div class="tm-div-cc-sub">环境最大承载</div>'
+       + '</div>';
+  // 水容量
+  html += '<div class="tm-div-cc-card" style="border-left-color:#5e9bd4;">'
+       + '<div class="tm-div-cc-label">水容量</div>'
+       + '<div class="tm-div-cc-val" style="color:#5e9bd4;">' + _peN(cc.water || 0) + '</div>'
+       + '<div class="tm-div-cc-sub">饮水/灌溉</div>'
+       + '</div>';
+  // 气候
+  html += '<div class="tm-div-cc-card" style="border-left-color:var(--celadon-400);">'
+       + '<div class="tm-div-cc-label">气候系数</div>'
+       + '<div class="tm-div-cc-val" style="color:var(--celadon-400);">' + (cc.climate != null ? cc.climate.toFixed(2) : '1.00') + '</div>'
+       + '<div class="tm-div-cc-sub">1.0=常年</div>'
+       + '</div>';
+  // 历史峰值
+  html += '<div class="tm-div-cc-card" style="border-left-color:var(--gold-400);">'
+       + '<div class="tm-div-cc-label">历史峰值</div>'
+       + '<div class="tm-div-cc-val" style="color:var(--gold-400);">' + _peN(cc.historicalCap || 0) + '</div>'
+       + '<div class="tm-div-cc-sub">最大可承载</div>'
+       + '</div>';
+  html += '</div>';
+
+  // 载率 + 体制
+  html += '<div class="tm-div-cc-load">';
+  html += '<div class="tm-div-cc-load-label">当前载率</div>';
+  html += '<div class="tm-div-cc-load-bar"><div style="width:' + Math.min(100, loadPct) + '%;background:' + loadClr + ';"></div>'
+       + (loadPct > 100 ? '<div class="overflow" style="width:' + (loadPct - 100) + '%;background:var(--vermillion-400);"></div>' : '')
+       + '</div>';
+  html += '<div class="tm-div-cc-load-val" style="color:' + loadClr + ';">' + loadPct.toFixed(0) + '%</div>';
+  html += '<div class="tm-div-cc-regime" style="color:' + regimeInfo.color + ';border-color:' + regimeInfo.color + ';">' + regimeInfo.label + '</div>';
+  html += '</div>';
+
+  // 生态痤疮
+  var scars = (div.environment && div.environment.ecoScars) || cc.ecoScars;
+  if (scars && Object.keys(scars).length > 0) {
+    var SCAR_INFO = {
+      deforestation: { label: '伐木', color: '#a88a6a' },
+      desertification: { label: '荒漠化', color: '#d4a838' },
+      salinization: { label: '盐碱', color: '#e0d098' },
+      siltation: { label: '淤积', color: '#7eb8a7' },
+      flooding: { label: '水患', color: '#5e9bd4' }
+    };
+    html += '<div class="tm-div-scars">';
+    html += '<div class="tm-div-scars-label">生态痤疮</div>';
+    html += '<div class="tm-div-scars-list">';
+    Object.keys(scars).forEach(function(k) {
+      var info = SCAR_INFO[k] || { label: k, color: 'var(--amber-400)' };
+      var sev = scars[k];
+      var sevLabel = sev > 0.7 ? '深' : sev > 0.4 ? '中' : '轻';
+      html += '<span class="tm-div-scar-badge" style="border-color:' + info.color + ';color:' + info.color + ';">'
+           + info.label + ' · ' + sevLabel + '</span>';
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+/** 田亩流转·展示当前册数 + 累计兼并/开垦/清丈 + 本回合 delta */
+function _peRenderLandFlow(div) {
+  var eb = div.economyBase || {};
+  var farmland = eb.farmland || 0;
+  var imperialFarmland = eb.imperialFarmland || 0;
+  var landsAnnexed = eb.landsAnnexed || 0;
+  var landsReclaimed = eb.landsReclaimed || 0;
+  var landsSurveyed = eb.landsSurveyed || 0;
+  var ccArable = (div.carryingCapacity && div.carryingCapacity.arable) || 0;
+  var thisTurn = div._thisTurnLandFlow || null;
+
+  // 第一行·四态 stock 显示（在编/承载/皇庄/累计兼并）
+  var html = '<div class="tm-div-landflow-grid">';
+  html += '<div class="tm-div-landflow-card" style="border-left-color:#9bc28e;">';
+  html += '<div class="tm-div-landflow-label">在编田亩 <span class="tm-div-landflow-tag">税基</span></div>';
+  html += '<div class="tm-div-landflow-val" style="color:#9bc28e;">' + _peN(farmland) + ' 亩</div>';
+  html += '<div class="tm-div-landflow-sub">economyBase.farmland · 田赋核算</div>';
+  html += '</div>';
+  html += '<div class="tm-div-landflow-card" style="border-left-color:var(--celadon-400);">';
+  html += '<div class="tm-div-landflow-label">承载耕地 <span class="tm-div-landflow-tag">环境</span></div>';
+  html += '<div class="tm-div-landflow-val" style="color:var(--celadon-400);">' + _peN(ccArable) + ' 亩</div>';
+  html += '<div class="tm-div-landflow-sub">carryingCapacity.arable · 环境承载</div>';
+  html += '</div>';
+  if (imperialFarmland > 0) {
+    html += '<div class="tm-div-landflow-card" style="border-left-color:var(--vermillion-400);">';
+    html += '<div class="tm-div-landflow-label">皇庄亩数 <span class="tm-div-landflow-tag">直辖</span></div>';
+    html += '<div class="tm-div-landflow-val" style="color:var(--vermillion-400);">' + _peN(imperialFarmland) + ' 亩</div>';
+    html += '<div class="tm-div-landflow-sub">imperialFarmland · 内帑收</div>';
+    html += '</div>';
+  }
+  if (landsAnnexed > 0) {
+    html += '<div class="tm-div-landflow-card" style="border-left-color:var(--amber-400);">';
+    html += '<div class="tm-div-landflow-label">累计兼并 <span class="tm-div-landflow-tag">流失</span></div>';
+    html += '<div class="tm-div-landflow-val" style="color:var(--amber-400);">' + _peN(landsAnnexed) + ' 亩</div>';
+    html += '<div class="tm-div-landflow-sub">豪强吞并·清丈可回</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // 第二行·本回合 delta（如已结算过）
+  if (thisTurn && (thisTurn.annexed || thisTurn.reclaimed || thisTurn.surveyed)) {
+    html += '<div class="tm-div-landflow-delta">';
+    html += '<div class="tm-div-landflow-delta-label">本回合流转</div>';
+    html += '<div class="tm-div-landflow-delta-rows">';
+    if (thisTurn.annexed > 0) {
+      html += '<span class="tm-div-landflow-delta-item" style="color:var(--amber-400);">⊖ 兼并 ' + _peN(thisTurn.annexed) + ' 亩</span>';
+    }
+    if (thisTurn.reclaimed > 0) {
+      html += '<span class="tm-div-landflow-delta-item" style="color:#6aa88a;">⊕ 开垦 ' + _peN(thisTurn.reclaimed) + ' 亩</span>';
+    }
+    if (thisTurn.surveyed > 0) {
+      html += '<span class="tm-div-landflow-delta-item" style="color:var(--gold-300);">⊙ 清丈回归 ' + _peN(thisTurn.surveyed) + ' 亩</span>';
+    }
+    var netClr = thisTurn.net > 0 ? '#6aa88a' : thisTurn.net < 0 ? 'var(--vermillion-400)' : 'var(--color-foreground-muted)';
+    var netSign = thisTurn.net > 0 ? '+' : '';
+    html += '<span class="tm-div-landflow-delta-net" style="color:' + netClr + ';">净 ' + netSign + _peN(thisTurn.net) + ' 亩</span>';
+    html += '</div></div>';
+  }
+
+  // 第三行·累计·开垦/清丈
+  if (landsReclaimed > 0 || landsSurveyed > 0) {
+    html += '<div class="tm-div-landflow-cumul">';
+    if (landsReclaimed > 0) html += '<span class="tm-div-landflow-cumul-item" style="color:#6aa88a;">⊕ 累计开垦 ' + _peN(landsReclaimed) + ' 亩</span>';
+    if (landsSurveyed > 0) html += '<span class="tm-div-landflow-cumul-item" style="color:var(--gold-300);">⊙ 累计清丈回归 ' + _peN(landsSurveyed) + ' 亩</span>';
+    html += '</div>';
+  }
+
+  // 注·机制说明
+  html += '<div class="tm-div-landflow-note">'
+       + '<span style="color:var(--vermillion-400);">兼并</span> · 腐败 > 50 时按 (corr-50)/100×4%/年 流失到豪强 ｜ '
+       + '<span style="color:#6aa88a;">开垦</span> · 载率 < 0.7 时按 (1-load)×1.5%/年 增加（劝农政策×2.5）｜ '
+       + '<span style="color:var(--gold-300);">清丈</span> · 诏令触发·按 30-60% 比例从兼并回归（民心高 → 比例高）'
+       + '</div>';
+  return html;
+}
+
+/** 地方实绩·展示本回合财政与田亩相对上回合的变化 */
+function _peRenderLocalAchievements(div) {
+  var fis = div.fiscal || {};
+  var lt = div._lastTurnFiscal || null;
+  var eb = div.economyBase || {};
+  var thisTurnLand = div._thisTurnLandFlow || null;
+  var _U = _peU();
+
+  if (!lt && !thisTurnLand) {
+    return '<div class="tm-div-empty">尚无上回合数据可比对·首回合或新近设立</div>';
+  }
+
+  var rows = [];
+
+  // 田亩变化
+  if (thisTurnLand && (thisTurnLand.before !== thisTurnLand.after)) {
+    var delta = thisTurnLand.after - thisTurnLand.before;
+    rows.push({
+      label: '在编田亩',
+      before: thisTurnLand.before,
+      after: thisTurnLand.after,
+      delta: delta,
+      unit: '亩',
+      narrative: thisTurnLand.surveyed > 0 ? '清丈复田' : (delta > 0 ? '开垦增田' : '兼并失田')
+    });
+  }
+
+  // 名义已征
+  if (lt && fis.claimedRevenue != null) {
+    var d = (fis.claimedRevenue || 0) - (lt.claimedRevenue || 0);
+    if (d !== 0) rows.push({
+      label: '名义已征',
+      before: lt.claimedRevenue,
+      after: fis.claimedRevenue,
+      delta: d,
+      unit: _U.money,
+      narrative: ''
+    });
+  }
+  // 实征
+  if (lt && fis.actualRevenue != null) {
+    var d2 = (fis.actualRevenue || 0) - (lt.actualRevenue || 0);
+    if (d2 !== 0) rows.push({
+      label: '实征到账',
+      before: lt.actualRevenue,
+      after: fis.actualRevenue,
+      delta: d2,
+      unit: _U.money,
+      narrative: ''
+    });
+  }
+  // 上解中央
+  if (lt && fis.remittedToCenter != null) {
+    var d3 = (fis.remittedToCenter || 0) - (lt.remittedToCenter || 0);
+    if (d3 !== 0) rows.push({
+      label: '上解中央',
+      before: lt.remittedToCenter,
+      after: fis.remittedToCenter,
+      delta: d3,
+      unit: _U.money,
+      narrative: ''
+    });
+  }
+
+  if (rows.length === 0) {
+    return '<div class="tm-div-empty">本回合无数据变化</div>';
+  }
+
+  var html = '<div class="tm-div-achieve-list">';
+  rows.forEach(function(r) {
+    var deltaClr = r.delta > 0 ? '#6aa88a' : 'var(--vermillion-400)';
+    var deltaSign = r.delta > 0 ? '+' : '';
+    var pct = r.before > 0 ? (r.delta / r.before * 100) : 0;
+    html += '<div class="tm-div-achieve-row">';
+    html += '<div class="tm-div-achieve-label">' + r.label + '</div>';
+    html += '<div class="tm-div-achieve-flow"><span class="tm-div-achieve-prev">' + _peN(r.before) + '</span>';
+    html += '<span class="tm-div-achieve-arrow" style="color:' + deltaClr + ';">→</span>';
+    html += '<span class="tm-div-achieve-now" style="color:' + deltaClr + ';">' + _peN(r.after) + '</span>';
+    html += '<span class="tm-div-achieve-unit">' + r.unit + '</span></div>';
+    html += '<div class="tm-div-achieve-delta" style="color:' + deltaClr + ';">' + deltaSign + _peN(r.delta);
+    if (Math.abs(pct) > 0.1) html += ' <span class="tm-div-achieve-pct">(' + deltaSign + pct.toFixed(1) + '%)</span>';
+    html += '</div>';
+    if (r.narrative) html += '<div class="tm-div-achieve-narr">' + r.narrative + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** 辖区·子区清单（仅 children.length > 0 时） */
+function _peRenderChildrenList(div) {
+  if (!div.children || !div.children.length) return '';
+  var html = '<div class="tm-div-children-grid">';
+  div.children.forEach(function(c) {
+    if (!c) return;
+    var safeId = String(c.id || c.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var pop = (c.populationDetail && c.populationDetail.mouths) || (typeof c.population === 'number' ? c.population : 0);
+    var grandCount = 0;
+    if (c.children) c.children.forEach(function(){ grandCount++; });
+    html += '<div class="tm-div-child-card" onclick="if(typeof openDivisionDetail===\'function\')openDivisionDetail(\'' + safeId + '\')">';
+    html += '<div class="tm-div-child-name">' + escHtml(c.name) + '</div>';
+    if (c.level) html += '<div class="tm-div-child-level">' + escHtml(c.level) + '</div>';
+    var subInfo = [];
+    if (pop > 0) subInfo.push(_peN(pop) + '口');
+    if (grandCount > 0) subInfo.push('辖 ' + grandCount);
+    if (c.governor) subInfo.push(escHtml(c.governor));
+    if (subInfo.length) html += '<div class="tm-div-child-sub">' + subInfo.join(' · ') + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** byAge 详细·补 counts（旧版只有 ratios） */
+function _peRenderAgeDetail(div) {
+  var ba = div.byAge; if (!ba) return '';
+  var pop = div.population || {};
+  var mouths = (typeof div.population === 'number') ? div.population : (pop.mouths || 0);
+  var young = (ba.young && ba.young.count) || Math.round(mouths * (ba.young && ba.young.ratio || 0.35));
+  var ding = (ba.ding && ba.ding.count) || Math.round(mouths * (ba.ding && ba.ding.ratio || 0.55));
+  var old = (ba.old && ba.old.count) || Math.round(mouths * (ba.old && ba.old.ratio || 0.10));
+  var html = '<div class="tm-div-age-grid">';
+  html += '<div class="tm-div-age-card" style="border-left-color:var(--celadon-400);"><div class="tm-div-age-label">幼 (15以下)</div><div class="tm-div-age-val" style="color:var(--celadon-400);">' + _peN(young) + ' 口</div><div class="tm-div-age-sub">' + ((young/mouths)*100).toFixed(1) + '%</div></div>';
+  html += '<div class="tm-div-age-card" style="border-left-color:var(--gold-400);"><div class="tm-div-age-label">丁 (15-60·赋役)</div><div class="tm-div-age-val" style="color:var(--gold-400);">' + _peN(ding) + ' 口</div><div class="tm-div-age-sub">' + ((ding/mouths)*100).toFixed(1) + '% · 主要纳税基</div></div>';
+  html += '<div class="tm-div-age-card" style="border-left-color:var(--ink-300);"><div class="tm-div-age-label">老 (60以上)</div><div class="tm-div-age-val" style="color:var(--ink-300);">' + _peN(old) + ' 口</div><div class="tm-div-age-sub">' + ((old/mouths)*100).toFixed(1) + '%</div></div>';
+  html += '</div>';
+  return html;
+}
+
+/** 弹出区划详情·复用 openGenericModal */
+function openDivisionDetail(idOrName) {
+  if (typeof openGenericModal !== 'function') {
+    if (typeof toast === 'function') toast('详情弹窗框架未加载');
+    return;
+  }
+  var div = _peFindDivision(idOrName);
+  if (!div) {
+    if (typeof toast === 'function') toast('未找到区划：' + idOrName);
+    return;
+  }
+  // 触发一次 _renderDivisionNode 缓存详情体（供下方使用）
+  if (!div._cachedDetailBody) {
+    try { _renderDivisionNode(div, 0); } catch (e) {}
+  }
+  var detailBody = div._cachedDetailBody || '';
+
+  // 子区数（对非叶子节点）
+  var subCount = 0;
+  if (div.children && div.children.length) {
+    function _cnt(arr) { if (!arr) return; arr.forEach(function(c){ subCount++; if (c.children) _cnt(c.children); }); }
+    _cnt(div.children);
+  }
+  var aside = subCount ? ('辖 ' + subCount + ' 区') : (div.id ? ('id·' + div.id.slice(0,8)) : '');
+
+  // 完整分区·按主题分组（经济金/民政青/财政朱/灾害琥珀/治理紫）
+  var newSectionsHtml = '';
+  // — 概况组 —
+  newSectionsHtml += '<div class="tm-div-group-header" data-group="overview">概 况</div>';
+  newSectionsHtml += _peSectionV2Cls('\u{1F33E}', '经济基础', _peRenderEconomyBase(div), null, 'econ');
+  if (div.tags && div.tags.imperialDomain) {
+    newSectionsHtml += _peSectionV2Cls('\u{1F3DB}', '皇室直辖资产', _peRenderImperialAssets(div), null, 'imperial');
+  }
+  newSectionsHtml += _peSectionV2Cls('\u{1F689}', '基础设施', _peRenderInfrastructure(div), null, 'infra');
+  newSectionsHtml += _peSectionV2Cls('\u{1F33E}', '田亩流转·诚实账', _peRenderLandFlow(div), '在编册 vs 承载力·分轨', 'land');
+
+  // — 财政组 —
+  newSectionsHtml += '<div class="tm-div-group-header" data-group="fiscal">赋 税 与 经 费</div>';
+  newSectionsHtml += _peSectionV2Cls('\u{1F4B0}', '应输上解·赋税核算', _peRenderRevenueBreakdown(div), '依 economyBase × policies', 'revenue');
+  newSectionsHtml += _peSectionV2Cls('\u{1F4DC}', '应负岁出·经费核算', _peRenderExpenseBreakdown(div), '可归属本区', 'expense');
+  if (div.publicTreasury) {
+    newSectionsHtml += _peSectionV2Cls('\u{1F4B5}', '公库三账·细目', _peRenderTreasuryFull(div), null, 'treasury');
+  }
+
+  // — 民政组 —
+  newSectionsHtml += '<div class="tm-div-group-header" data-group="people">民 政 与 承 载</div>';
+  var ageHtml = _peRenderAgeDetail(div);
+  if (ageHtml) newSectionsHtml += _peSectionV2Cls('\u{1F465}', '户龄结构', ageHtml, null, 'people');
+  newSectionsHtml += _peSectionV2Cls('\u{1F33F}', '承载力·完整账', _peRenderCarryingCapacityFull(div), null, 'env');
+  // 灾害（仅在有数据或 ecoScars 时出 section）
+  var disasterHtml = _peRenderDisasters(div);
+  if (disasterHtml) {
+    newSectionsHtml += _peSectionV2Cls('⚡', '在灾实录', disasterHtml, null, 'disaster');
+  }
+
+  // — 治理组（旧 detailBody 含户口图景/财政/承载力/治理/建筑/驻地官员） —
+  newSectionsHtml += '<div class="tm-div-group-header" data-group="govern">治 理 与 人 事</div>';
+
+  // 地方实绩（仅有上回合或本回合数据时出）
+  var achieveHtml = _peRenderLocalAchievements(div);
+  if (achieveHtml.indexOf('tm-div-empty') === -1) {
+    newSectionsHtml += _peSectionV2Cls('\u{1F4C8}', '地方实绩·本回合', achieveHtml, '↑变化 vs 上回合', 'achievement');
+  }
+
+  // 子区清单（如有 children）
+  var childrenHtml = _peRenderChildrenList(div);
+  if (childrenHtml) {
+    newSectionsHtml += _peSectionV2Cls('\u{1F5FA}', '辖区·子区', childrenHtml, '点击进入', 'children');
+  }
+
+  // 旧 detail 把已被覆盖的段落剔除（公库三账·细目 已新版替代；承载力 已新版替代）
+  // 用「锚定在 section-name 标签之后」的精确正则·避免吞掉前面的兄弟 section
+  var trimmedDetail = detailBody;
+  // 删旧公库三账·anchor 在 <span class="tm-div-section-name">公库三账</span> 处反查回该 section 起点
+  function _stripSectionByName(html, sectName) {
+    var anchor = '<span class="tm-div-section-name">' + sectName + '</span>';
+    var anchorIdx = html.indexOf(anchor);
+    if (anchorIdx < 0) return html;
+    // 反向找该 section 的起始 <div class="tm-div-section"> tag
+    var startMarker = '<div class="tm-div-section">';
+    var startIdx = html.lastIndexOf(startMarker, anchorIdx);
+    if (startIdx < 0) return html;
+    // 正向找该 section 的结束 — 用计数法找匹配的 </div>
+    var depth = 0;
+    var i = startIdx;
+    var endIdx = -1;
+    while (i < html.length) {
+      var openTag = html.indexOf('<div', i);
+      var closeTag = html.indexOf('</div>', i);
+      if (closeTag < 0) break;
+      if (openTag >= 0 && openTag < closeTag) {
+        depth++; i = openTag + 4;
+      } else {
+        depth--; i = closeTag + 6;
+        if (depth === 0) { endIdx = i; break; }
+      }
+    }
+    if (endIdx < 0) return html;
+    return html.slice(0, startIdx) + html.slice(endIdx);
+  }
+  trimmedDetail = _stripSectionByName(trimmedDetail, '公库三账');
+  trimmedDetail = _stripSectionByName(trimmedDetail, '承载力');
+
+  // 完整内容
+  var fullHtml = '<div class="tm-div-detail" id="tm-div-detail-root">';
+  fullHtml += _peRenderHero(div);
+  fullHtml += _peRenderQuickStats(div);
+  fullHtml += newSectionsHtml;
+  fullHtml += trimmedDetail;
+  fullHtml += '</div>';
+
+  openGenericModal('卷·' + escHtml(div.name) + (aside ? '（' + aside + '）' : ''), fullHtml);
+
+  // DOM 级修宽度·:has() 不可靠时兜底
+  setTimeout(function() {
+    var modal = document.querySelector('.generic-modal');
+    if (modal && document.getElementById('tm-div-detail-root')) {
+      modal.style.maxWidth = '820px';
+      modal.style.width = '95%';
+    }
+  }, 16);
+}
+
+/** 升级版 section 容器·带 domain class 用于色域分类 */
+function _peSectionV2Cls(icon, title, bodyHtml, aside, domainCls) {
+  var cls = 'tm-div-section' + (domainCls ? ' tm-div-section-' + domainCls : '');
+  var h = '<div class="' + cls + '">';
+  h += '<div class="tm-div-section-title">';
+  h += '<span class="tm-div-section-icon">' + icon + '</span>';
+  h += '<span class="tm-div-section-name">' + title + '</span>';
+  if (aside) h += '<span class="tm-div-section-aside">' + aside + '</span>';
+  h += '</div>';
+  h += bodyHtml;
+  h += '</div>';
+  return h;
+}
+
+// 暴露到 window·让卡片 onclick 能 call
+if (typeof window !== 'undefined') {
+  window.openDivisionDetail = openDivisionDetail;
+  window._peLijuanPick = _peLijuanPick;
+  window._peLijuanClear = _peLijuanClear;
 }
 
 /** 构建面板内容HTML（不含modal外壳） */

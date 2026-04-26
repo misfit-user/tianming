@@ -79,6 +79,28 @@ function enterGame(){
     }
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'enterGame] 内帑朝代预设失败:') : console.error('[enterGame] 内帑朝代预设失败:', e); }
 
+  // 经济基础项初始化（行政区划上 economyBase 7 字段 + 5 boolean tag）
+  try {
+    if (GM.adminHierarchy && typeof CascadeTax !== 'undefined' && typeof CascadeTax._ensureEconomyBase === 'function') {
+      var _ebCount = 0;
+      Object.keys(GM.adminHierarchy).forEach(function(fk) {
+        var tree = GM.adminHierarchy[fk];
+        function _walkEB(divs) {
+          if (!Array.isArray(divs)) return;
+          divs.forEach(function(d) {
+            if (!d) return;
+            CascadeTax._ensureEconomyBase(d);
+            _ebCount++;
+            if (d.children) _walkEB(d.children);
+            if (d.divisions) _walkEB(d.divisions);
+          });
+        }
+        _walkEB((tree && tree.divisions) || []);
+      });
+      if (GM.turn === 1) console.log('[enterGame] economyBase 初始化 ' + _ebCount + ' 个 division');
+    }
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'enterGame] economyBase 初始化失败:') : console.error('[enterGame] economyBase 初始化失败:', e); }
+
   // 剧本历史人物加载（若剧本指定了 historicalChars）
   try {
     if (GM.turn === 1 && !GM._historicalCharsLoaded && typeof loadHistoricalCharsFromScenario === 'function') {

@@ -238,8 +238,8 @@
     var newSources = [];
     // 债务
     if (ch.resources && ch.resources.privateWealth) {
-      var cash = ch.resources.privateWealth.cash || ch.resources.privateWealth.money || 0;
-      if (cash < 0) newSources.push('家中负债 ' + _fmtNum(Math.abs(cash)) + ' 贯');
+      var money = ch.resources.privateWealth.money || 0;
+      if (money < 0) newSources.push('家中负债 ' + _fmtNum(Math.abs(money)) + ' 贯');
     }
     // 公库亏空
     if (ch.resources && ch.resources.publicTreasury && ch.resources.publicTreasury.balance < 0) {

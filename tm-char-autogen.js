@@ -452,7 +452,7 @@
           // 资源（按身份估值初始化 cash）
           resources: {
             fame: 20, virtue: 10, health: 80, stress: 0,
-            privateWealth: { cash: _parsedCash, grain: Math.round(_parsedCash / 30), cloth: Math.round(_parsedCash / 150) },
+            privateWealth: { money: _parsedCash, grain: Math.round(_parsedCash / 30), cloth: Math.round(_parsedCash / 150) },
             publicPurse: { money: 0, grain: 0, cloth: 0 }
           },
           // 元数据

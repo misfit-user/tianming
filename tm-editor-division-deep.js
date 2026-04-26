@@ -198,6 +198,51 @@
     h += '<div><label style="font-size:11px;">准确度</label><input type="number" step="0.05" min="0" max="1" id="dd-regAcc" value="' + (node.baojia.registerAccuracy || 0.75) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
     h += '</div>';
 
+    // ★ 经济基础（嵌套折叠）·7 字段 + 5 boolean tag
+    var eb = node.economyBase || {};
+    var tg = node.tags || {};
+    h += '<details style="margin-top:12px;padding:8px;background:#1d1d1d;border-left:3px solid #6aa88a;border-radius:4px;">';
+    h += '<summary style="cursor:pointer;color:#6aa88a;font-weight:600;font-size:13px;">经济基础（田/商/矿/盐/马/渔/海贸·7 字段 + 5 区域标签）</summary>';
+    // 5 boolean tags
+    h += '<div style="margin-top:10px;color:#bbb;font-size:12px;">区域属性标签</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;">';
+    [['hasPort','沿海港(开市舶)'],['saltRegion','产盐区'],['mineralRegion','产矿区'],['horseRegion','草场马政'],['fishingRegion','渔区'],['imperialDomain','皇室直辖(皇庄/皇产)']].forEach(function(p) {
+      h += '<label style="color:#bbb;display:flex;align-items:center;gap:4px;padding:3px;"><input type="checkbox" id="dd-tag-' + p[0] + '"' + (tg[p[0]] ? ' checked' : '') + '> ' + p[1] + '</label>';
+    });
+    h += '</div>';
+    // 7 数值字段（commerceCoefficient 算第 8 个，但归商业组）
+    h += '<div style="margin-top:10px;color:#bbb;font-size:12px;">耕地·商业</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">';
+    h += '<div><label style="font-size:11px;">耕地(亩)</label><input type="number" id="dd-eb-farmland" value="' + _fmtNum(eb.farmland) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">商业繁荣度</label><input type="number" id="dd-eb-commerce" value="' + _fmtNum(eb.commerceVolume) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">商业系数</label><input type="number" step="0.1" min="0.2" max="6" id="dd-eb-commCoef" value="' + (eb.commerceCoefficient != null ? eb.commerceCoefficient : 1.0) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;" title="0.3=边远·1.0=一般·3.0=大商埠·5.0=京师"></div>';
+    h += '</div>';
+    h += '<div style="margin-top:8px;color:#bbb;font-size:12px;">资源产能（仅当对应 tag 启用时计入）</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    h += '<div><label style="font-size:11px;">海贸活动量</label><input type="number" id="dd-eb-maritime" value="' + _fmtNum(eb.maritimeTradeVolume) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">盐产(斤/年)</label><input type="number" id="dd-eb-salt" value="' + _fmtNum(eb.saltProduction) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;">';
+    h += '<div><label style="font-size:11px;">矿产(两/年)</label><input type="number" id="dd-eb-mineral" value="' + _fmtNum(eb.mineralProduction) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">年产马匹</label><input type="number" id="dd-eb-horse" value="' + _fmtNum(eb.horseProduction) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">渔产(两/年)</label><input type="number" id="dd-eb-fishing" value="' + _fmtNum(eb.fishingProduction) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '</div>';
+    // 皇室直辖资产（imperialDomain tag 触发）
+    h += '<div style="margin-top:10px;color:#bbb;font-size:12px;">皇室直辖（仅 imperialDomain 启用时计入内帑）</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">';
+    h += '<div><label style="font-size:11px;">皇庄亩数</label><input type="number" id="dd-eb-impFarm" value="' + _fmtNum(eb.imperialFarmland) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    var ia = eb.imperialAssets || {};
+    h += '<div><label style="font-size:11px;">织造局数</label><input type="number" id="dd-eb-impZhizao" min="0" value="' + _fmtNum(ia.zhizao) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">矿场数</label><input type="number" id="dd-eb-impKuang" min="0" value="' + _fmtNum(ia.kuangchang) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">御窑数</label><input type="number" id="dd-eb-impYao" min="0" value="' + _fmtNum(ia.yuyao) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '</div>';
+    // 驿递·科举解额
+    h += '<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    h += '<div><label style="font-size:11px;">驿站数</label><input type="number" id="dd-eb-postRelays" min="0" value="' + _fmtNum(eb.postRelays) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '<div><label style="font-size:11px;">科举解额</label><input type="number" id="dd-eb-kejuQuota" min="0" value="' + _fmtNum(eb.kejuQuota) + '" style="width:100%;padding:4px;background:#1a1a1a;border:1px solid #444;color:#e0e0e0;"></div>';
+    h += '</div>';
+    h += '</details>';
+
     h += '</details>';
     return h;
   }
@@ -246,6 +291,29 @@
     var jc = num('dd-jia'); if (jc !== null) node.baojia.jiaCount = jc;
     var pac = num('dd-pai'); if (pac !== null) node.baojia.paiCount = pac;
     var ra = num('dd-regAcc'); if (ra !== null) node.baojia.registerAccuracy = ra;
+    // ★ 经济基础·5 boolean tag + 7 数值
+    if (!node.tags) node.tags = {};
+    if (!node.economyBase) node.economyBase = {};
+    function chk(id) { var el = document.getElementById(id); return el ? !!el.checked : null; }
+    ['hasPort','saltRegion','mineralRegion','horseRegion','fishingRegion','imperialDomain'].forEach(function(k) {
+      var v = chk('dd-tag-' + k); if (v !== null) node.tags[k] = v;
+    });
+    var ebF = num('dd-eb-farmland'); if (ebF !== null) node.economyBase.farmland = ebF;
+    var ebC = num('dd-eb-commerce'); if (ebC !== null) node.economyBase.commerceVolume = ebC;
+    var ebCc = num('dd-eb-commCoef'); if (ebCc !== null) node.economyBase.commerceCoefficient = ebCc;
+    var ebM = num('dd-eb-maritime'); if (ebM !== null) node.economyBase.maritimeTradeVolume = ebM;
+    var ebS = num('dd-eb-salt'); if (ebS !== null) node.economyBase.saltProduction = ebS;
+    var ebMin = num('dd-eb-mineral'); if (ebMin !== null) node.economyBase.mineralProduction = ebMin;
+    var ebH = num('dd-eb-horse'); if (ebH !== null) node.economyBase.horseProduction = ebH;
+    var ebFsh = num('dd-eb-fishing'); if (ebFsh !== null) node.economyBase.fishingProduction = ebFsh;
+    // 皇室直辖资产 / 驿递 / 科举
+    var ebIF = num('dd-eb-impFarm'); if (ebIF !== null) node.economyBase.imperialFarmland = ebIF;
+    if (!node.economyBase.imperialAssets) node.economyBase.imperialAssets = {};
+    var ebIz = num('dd-eb-impZhizao'); if (ebIz !== null) node.economyBase.imperialAssets.zhizao = ebIz;
+    var ebIk = num('dd-eb-impKuang'); if (ebIk !== null) node.economyBase.imperialAssets.kuangchang = ebIk;
+    var ebIy = num('dd-eb-impYao'); if (ebIy !== null) node.economyBase.imperialAssets.yuyao = ebIy;
+    var ebPr = num('dd-eb-postRelays'); if (ebPr !== null) node.economyBase.postRelays = ebPr;
+    var ebKq = num('dd-eb-kejuQuota'); if (ebKq !== null) node.economyBase.kejuQuota = ebKq;
   }
 
   // AI 智能填充（按剧本朝代/区划名/地形 推断合理值）
@@ -278,8 +346,10 @@
         '  "byEthnicity": {"汉":比例,"其他":比例},\n' +
         '  "byFaith": {"儒":比例,"佛":比例,"道":比例,"民间":比例},\n' +
         '  "byGender": {"male":数字,"female":数字,"sexRatio":1.0-1.1},\n' +
-        '  "baojia": {"baoCount":数字,"jiaCount":数字,"paiCount":数字,"registerAccuracy":0.5-0.95}\n' +
-        '}\n\n必须符合历史：朝代族群（如唐西域有胡人羌人，宋江南以汉人为主，元有四等人，明清有满蒙回等）；宗教（唐佛道并盛，宋新儒学兴，元藏传佛教；外族地有伊斯兰/萨满）；边疆自治度高；繁荣地合规高；只输出 JSON。';
+        '  "baojia": {"baoCount":数字,"jiaCount":数字,"paiCount":数字,"registerAccuracy":0.5-0.95},\n' +
+        '  "tags": {"hasPort":是否沿海港,"saltRegion":是否产盐,"mineralRegion":是否产矿,"horseRegion":是否草场,"fishingRegion":是否渔区,"imperialDomain":是否皇室直辖},\n' +
+        '  "economyBase": {"farmland":亩数,"commerceVolume":商业绝对量,"commerceCoefficient":0.3边远~5.0京师,"maritimeTradeVolume":海贸量(无港=0),"saltProduction":年产盐斤(非产盐=0),"mineralProduction":两/年(非产矿=0),"horseProduction":年产马匹(非草场=0),"fishingProduction":两/年(非渔区=0),"imperialFarmland":皇庄亩数(非皇室直辖=0),"imperialAssets":{"zhizao":织造局数,"kuangchang":矿场数,"yuyao":御窑数},"postRelays":驿站数,"kejuQuota":解额数}\n' +
+        '}\n\n必须符合历史：朝代族群（如唐西域有胡人羌人，宋江南以汉人为主，元有四等人，明清有满蒙回等）；宗教（唐佛道并盛，宋新儒学兴，元藏传佛教；外族地有伊斯兰/萨满）；边疆自治度高；繁荣地合规高；经济基础按地理特征（淮南/长芦/河东产盐；甘陕青草场；闽粤江浙渔区+沿海港；云贵川铜矿银矿）；commerceCoefficient 京师 4-5/江南苏扬 3-4/普通 1.0/边远 0.4-0.7。只输出 JSON。';
 
       var resp = await global.callAI(prompt, 1800);
       var jm = resp.match(/\{[\s\S]*\}/);
@@ -325,6 +395,30 @@
         setVal('dd-jia', data.baojia.jiaCount);
         setVal('dd-pai', data.baojia.paiCount);
         setVal('dd-regAcc', data.baojia.registerAccuracy);
+      }
+      if (data.tags) {
+        ['hasPort','saltRegion','mineralRegion','horseRegion','fishingRegion','imperialDomain'].forEach(function(k) {
+          var el = document.getElementById('dd-tag-' + k);
+          if (el) el.checked = !!data.tags[k];
+        });
+      }
+      if (data.economyBase) {
+        setVal('dd-eb-farmland', data.economyBase.farmland);
+        setVal('dd-eb-commerce', data.economyBase.commerceVolume);
+        setVal('dd-eb-commCoef', data.economyBase.commerceCoefficient);
+        setVal('dd-eb-maritime', data.economyBase.maritimeTradeVolume);
+        setVal('dd-eb-salt', data.economyBase.saltProduction);
+        setVal('dd-eb-mineral', data.economyBase.mineralProduction);
+        setVal('dd-eb-horse', data.economyBase.horseProduction);
+        setVal('dd-eb-fishing', data.economyBase.fishingProduction);
+        setVal('dd-eb-impFarm', data.economyBase.imperialFarmland);
+        if (data.economyBase.imperialAssets) {
+          setVal('dd-eb-impZhizao', data.economyBase.imperialAssets.zhizao);
+          setVal('dd-eb-impKuang', data.economyBase.imperialAssets.kuangchang);
+          setVal('dd-eb-impYao', data.economyBase.imperialAssets.yuyao);
+        }
+        setVal('dd-eb-postRelays', data.economyBase.postRelays);
+        setVal('dd-eb-kejuQuota', data.economyBase.kejuQuota);
       }
       if (global.toast) global.toast('✓ 已智能填充');
     } catch(e) {

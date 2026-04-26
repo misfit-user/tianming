@@ -134,6 +134,39 @@
 
   function updateRegionalAccounts(mr, totalMonthlyIncome, totalMonthlyExpense) {
     if (!GM.guoku.byRegion) GM.guoku.byRegion = {};
+
+    // ★ 优先：从 adminHierarchy 顶级 division 的 fiscal.ledgers 真实聚合（cascade 已写入实际值）
+    //   旧法按人口均分 monthlyIncome → 同等人口区域显示完全相同数字（5 区 -4w/-6w 一模一样 bug）
+    if (GM.adminHierarchy && GM._lastCascadeTurn === GM.turn) {
+      var seen = {};
+      Object.keys(GM.adminHierarchy).forEach(function(fkey) {
+        var tree = GM.adminHierarchy[fkey];
+        ((tree && tree.divisions) || []).forEach(function(div) {
+          if (!div || !div.fiscal || !div.fiscal.ledgers || !div.fiscal.ledgers.money) return;
+          var led = div.fiscal.ledgers.money;
+          var key = div.id || div.name;
+          if (!key) return;
+          seen[key] = true;
+          if (!GM.guoku.byRegion[key]) {
+            GM.guoku.byRegion[key] = { name: div.name || key, stock: 0, lastIn: 0, lastOut: 0, cumIn: 0, cumOut: 0 };
+          }
+          var acc = GM.guoku.byRegion[key];
+          acc.name = div.name || key;
+          acc.stock = led.stock || 0;
+          acc.lastIn = led.thisTurnIn || 0;
+          acc.lastOut = led.thisTurnOut || 0;
+          acc.cumIn = (acc.cumIn || 0) + (led.thisTurnIn || 0);
+          acc.cumOut = (acc.cumOut || 0) + (led.thisTurnOut || 0);
+        });
+      });
+      // 移除老的（mapData.cities-based）旧条目，避免春秋诸城残留
+      Object.keys(GM.guoku.byRegion).forEach(function(k) {
+        if (!seen[k] && k !== 'national') delete GM.guoku.byRegion[k];
+      });
+      return;
+    }
+
+    // ─── Legacy fallback：cascade 未跑·按人口均分 ───
     var regions = getRegions();
     var totalPop = 0;
     regions.forEach(function(r) { totalPop += r.population || 1; });
@@ -176,6 +209,26 @@
     var g = GM.guoku;
     if (!g.ledgers) return;
 
+    // ★ 若 cascade 已为本回合写入 grain/cloth 真实流水（FixedExpense 已扣俸禄/军饷），跳过 legacy 近似覆盖
+    //   旧代码会用 (junxiang*0.6/10) 这类 approximation 全量覆盖 grain.sinks/cloth.sinks，
+    //   把 FixedExpense 写好的 俸禄/军饷 detail 抹掉，只剩零头·导致面板"军粮 2万"远远小于 thisTurnOut 181万
+    if (GM._lastCascadeTurn === GM.turn) {
+      // 仍写历史快照（基于已正确的 lastTurn 字段）
+      var grainL = g.ledgers.grain, clothL = g.ledgers.cloth;
+      if (grainL) {
+        grainL.history = grainL.history || [];
+        grainL.history.push({ turn: GM.turn, in: grainL.lastTurnIn || grainL.thisTurnIn || 0, out: grainL.lastTurnOut || grainL.thisTurnOut || 0, stock: grainL.stock });
+        if (grainL.history.length > 40) grainL.history = grainL.history.slice(-40);
+      }
+      if (clothL) {
+        clothL.history = clothL.history || [];
+        clothL.history.push({ turn: GM.turn, in: clothL.lastTurnIn || clothL.thisTurnIn || 0, out: clothL.lastTurnOut || clothL.thisTurnOut || 0, stock: clothL.stock });
+        if (clothL.history.length > 40) clothL.history = clothL.history.slice(-40);
+      }
+      return;
+    }
+
+    // ─── Legacy fallback：cascade 未跑·走老 approximation ───
     // ─ 粮 ─
     var grain = g.ledgers.grain;
     // 田赋部分以粮征（约 30%）

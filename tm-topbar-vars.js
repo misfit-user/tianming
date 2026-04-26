@@ -52,8 +52,8 @@ function _renderGuoku() {
   var phase = money < -(g.annualIncome || 1) * 0.5 ? 'bankrupt' : '';
   var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
   var turnDays = g.turnDays || 30;
-  var incomeLabel = turnDays === 30 ? '月入' : ('每' + turnDays + '日入');
-  var expenseLabel = turnDays === 30 ? '月支' : ('每' + turnDays + '日支');
+  var incomeLabel = turnDays === 30 ? '月入' : '回合入';
+  var expenseLabel = turnDays === 30 ? '月支' : '回合支';
   // 三账本回预估变化
   var moneyDelta = (g.turnIncome || g.monthlyIncome || 0) - (g.turnExpense || g.monthlyExpense || 0);
   var grainDelta = (g.ledgers && g.ledgers.grain && g.ledgers.grain.turnDelta != null)
@@ -62,6 +62,23 @@ function _renderGuoku() {
   var clothDelta = (g.ledgers && g.ledgers.cloth && g.ledgers.cloth.turnDelta != null)
     ? g.ledgers.cloth.turnDelta
     : ((g.turnClothIncome || 0) - (g.turnClothExpense || 0));
+  // 状态药丸
+  var stateGk = { kind:'ok', label:'充裕' };
+  if (g.bankruptcy && g.bankruptcy.active) {
+    stateGk = { kind:'bad', label:'⚠ 破产 · ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月' };
+  } else if (money < 0) stateGk = { kind:'bad', label:'亏空' };
+  else if (money < (g.annualIncome || 1) * 0.2) stateGk = { kind:'warn', label:'紧 · 不足两成' };
+  else if (money < (g.annualIncome || 1) * 0.5) stateGk = { kind:'gold', label:'尚可' };
+  // 趋势箭头给金钱流水
+  var moneyTrend = moneyDelta > 0 ? 'up' : moneyDelta < 0 ? 'down' : 'stable';
+  // 警示标签（精简，只示最严重 1-2 条）
+  var alertHints = [];
+  if (g.emergency && g.emergency.loan && g.emergency.loan.active) {
+    alertHints.push({ kind:'warn', text:'借贷余 ' + Math.ceil(g.emergency.loan.monthsLeft || 0) + ' 月' });
+  }
+  if (GM.currency && GM.currency.inflationPressure > 0.3) {
+    alertHints.push({ kind:'bad', text:'通胀 ' + GM.currency.inflationPressure.toFixed(2) });
+  }
   return {
     value: _barFmtNum(money),
     trend: g.trend || 'stable',
@@ -72,17 +89,23 @@ function _renderGuoku() {
       { k:'布', v:_barFmtNum(cloth), d:clothDelta }
     ],
     tip: {
-      title: '帑廪（国库·三账）',
-      phase: phase === 'bankrupt' ? '⚠ 财政破产' : '正常',
-      rows: [
-        ['银',   _barFmtNum(money) + ' ' + U.money],
-        ['粮',   _barFmtNum(grain) + ' ' + U.grain],
-        ['布',   _barFmtNum(cloth) + ' ' + U.cloth],
-        [incomeLabel, _barFmtNum(g.turnIncome || g.monthlyIncome || 0) + ' ' + U.money],
-        [expenseLabel, _barFmtNum(g.turnExpense || g.monthlyExpense || 0) + ' ' + U.money],
-        ['年入', _barFmtNum(g.annualIncome || 0) + ' ' + U.money]
+      title: '帑廪',
+      subtitle: '国库 · 三账',
+      glyph: '帑',
+      themeMode: 'public',
+      state: stateGk,
+      stocks: [
+        { name:'银', val:_barFmtNum(money), unit:U.money, color:'gold' },
+        { name:'粮', val:_barFmtNum(grain), unit:U.grain, color:'celadon', warn: grain < 1000 },
+        { name:'布', val:_barFmtNum(cloth), unit:U.cloth, color:'amber' }
       ],
-      note: '点击查看帑廪详情'
+      flows: [
+        { label:incomeLabel, val:_barFmtNum(g.turnIncome || g.monthlyIncome || 0), unit:U.money, trend:moneyTrend },
+        { label:expenseLabel, val:_barFmtNum(g.turnExpense || g.monthlyExpense || 0), unit:U.money, neg:true },
+        { label:'年入',     val:_barFmtNum(g.annualIncome || 0), unit:U.money }
+      ],
+      alerts: alertHints,
+      note: '点击查看帑廪详情 →'
     }
   };
 }
@@ -100,8 +123,8 @@ function _renderNeitang() {
     : (n.cloth || 0);
   var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
   var turnDays = (GM.guoku && GM.guoku.turnDays) || n.turnDays || 30;
-  var incomeLabel = turnDays === 30 ? '月入' : ('每' + turnDays + '日入');
-  var expenseLabel = turnDays === 30 ? '月支' : ('每' + turnDays + '日支');
+  var incomeLabel = turnDays === 30 ? '月入' : '回合入';
+  var expenseLabel = turnDays === 30 ? '月支' : '回合支';
   var moneyDelta = (n.turnIncome || n.monthlyIncome || 0) - (n.turnExpense || n.monthlyExpense || 0);
   var grainDelta = (n.ledgers && n.ledgers.grain && n.ledgers.grain.turnDelta != null)
     ? n.ledgers.grain.turnDelta
@@ -109,6 +132,27 @@ function _renderNeitang() {
   var clothDelta = (n.ledgers && n.ledgers.cloth && n.ledgers.cloth.turnDelta != null)
     ? n.ledgers.cloth.turnDelta
     : ((n.turnClothIncome || 0) - (n.turnClothExpense || 0));
+  // 状态
+  var stateNt;
+  if (n.crisis && n.crisis.active) {
+    stateNt = { kind:'bad', label:'⚠ 空竭 · ' + Math.round(n.crisis.consecutiveMonths || 0) + ' 月' };
+  } else if (money < 0) stateNt = { kind:'bad', label:'亏空' };
+  else if (money < (n.monthlyExpense || 1) * 3) stateNt = { kind:'warn', label:'紧' };
+  else if ((n.monthlyExpense || 0) > 0) {
+    var months = money / Math.max(1, n.monthlyExpense);
+    stateNt = { kind:'ok', label:'充裕 · ' + Math.round(months) + ' 月' };
+  } else {
+    stateNt = { kind:'ok', label:'充裕' };
+  }
+  var moneyTrendN = moneyDelta > 0 ? 'up' : moneyDelta < 0 ? 'down' : 'stable';
+  // 内廷侵吞
+  var alertN = [];
+  if (GM.corruption && GM.corruption.subDepts && GM.corruption.subDepts.imperial) {
+    var ic = GM.corruption.subDepts.imperial.true || 0;
+    if (ic > 30) alertN.push({ kind:'bad', text:'内廷侵吞 ' + Math.round(ic / 100 * 0.5 * 100) + '%' });
+  }
+  if (n._royalClan && n._royalClan.population > 10000) alertN.push({ kind:'warn', text:'宗室禄米压库' });
+  if (n.specialTaxActive) alertN.push({ kind:'warn', text:'特别税·' + (n.specialTaxType || '已开') });
   return {
     value: _barFmtNum(money),
     trend: n.trend || 'stable',
@@ -119,16 +163,22 @@ function _renderNeitang() {
       { k:'布', v:_barFmtNum(cloth), d:clothDelta }
     ],
     tip: {
-      title: '内帑（皇室私库·三账）',
-      phase: '皇室私产',
-      rows: [
-        ['银',   _barFmtNum(money) + ' ' + U.money],
-        ['粮',   _barFmtNum(grain) + ' ' + U.grain],
-        ['布',   _barFmtNum(cloth) + ' ' + U.cloth],
-        [incomeLabel, _barFmtNum(n.turnIncome || n.monthlyIncome || 0) + ' ' + U.money],
-        [expenseLabel, _barFmtNum(n.turnExpense || n.monthlyExpense || 0) + ' ' + U.money]
+      title: '内帑',
+      subtitle: '皇室私库 · 三账',
+      glyph: '内',
+      themeMode: 'imperial',
+      state: stateNt,
+      stocks: [
+        { name:'银', val:_barFmtNum(money), unit:U.money, color:'gold' },
+        { name:'粮', val:_barFmtNum(grain), unit:U.grain, color:'celadon' },
+        { name:'布', val:_barFmtNum(cloth), unit:U.cloth, color:'amber' }
       ],
-      note: '点击查看内帑详情'
+      flows: [
+        { label:incomeLabel, val:_barFmtNum(n.turnIncome || n.monthlyIncome || 0), unit:U.money, trend:moneyTrendN },
+        { label:expenseLabel, val:_barFmtNum(n.turnExpense || n.monthlyExpense || 0), unit:U.money, neg:true }
+      ],
+      alerts: alertN,
+      note: '点击查看内帑详情 →'
     }
   };
 }
@@ -706,18 +756,77 @@ function _showBarVarTip(e, idx) {
   if (!renderer) return;
   var r = renderer();
   var tip = r.tip;
-
-  var html = '<div class="bar-var-tip-title">' + tip.title + '</div>';
-  if (tip.phase) html += '<div class="bar-var-tip-phase">' + tip.phase + '</div>';
-  for (var i = 0; i < tip.rows.length; i++) {
-    var row = tip.rows[i];
-    html += '<div class="bar-var-tip-row"><span class="lbl">' + row[0] + '</span>'+
-            '<span class="val">' + row[1] + '</span></div>';
-  }
-  if (tip.note) html += '<div class="bar-var-tip-note">' + tip.note + '</div>';
-
   var el = _getBarVarTipEl();
-  el.innerHTML = html;
+
+  // ─── 富版（带 glyph + state pill + stocks 三格 + flows + alerts） ───
+  if (tip.glyph || tip.stocks || tip.state) {
+    el.className = 'bar-var-tip rich' + (tip.themeMode === 'imperial' ? ' imperial' : '');
+    var html = '';
+    // Header: glyph + title + state pill
+    html += '<div class="bvt-head">';
+    if (tip.glyph) html += '<div class="bvt-glyph">' + tip.glyph + '</div>';
+    html +=   '<div class="bvt-htxt">';
+    html +=     '<div class="bvt-title">' + tip.title + '</div>';
+    if (tip.subtitle) html += '<div class="bvt-sub">' + tip.subtitle + '</div>';
+    html +=   '</div>';
+    if (tip.state) {
+      html += '<div class="bvt-pill ' + (tip.state.kind || 'gold') + '">' + tip.state.label + '</div>';
+    }
+    html += '</div>';
+    // Stocks 三格
+    if (tip.stocks && tip.stocks.length) {
+      html += '<div class="bvt-stocks">';
+      tip.stocks.forEach(function(s) {
+        html += '<div class="bvt-stock ' + (s.color || 'gold') + (s.warn ? ' warn' : '') + '">';
+        html +=   '<div class="bvt-s-name">' + s.name + '</div>';
+        html +=   '<div class="bvt-s-val">' + s.val + '</div>';
+        html +=   '<div class="bvt-s-unit">' + s.unit + '</div>';
+        if (s.warn) html += '<div class="bvt-s-warn">⚠</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    // Flows
+    if (tip.flows && tip.flows.length) {
+      html += '<div class="bvt-flows">';
+      tip.flows.forEach(function(f) {
+        var trendArrow = '';
+        if (f.trend === 'up') trendArrow = '<span class="bvt-arr up">▲</span>';
+        else if (f.trend === 'down') trendArrow = '<span class="bvt-arr down">▼</span>';
+        var valCls = f.neg ? 'bvt-f-val neg' : 'bvt-f-val';
+        html += '<div class="bvt-flow"><span class="bvt-f-lbl">' + f.label + '</span>' +
+                '<span class="' + valCls + '">' + f.val + ' <span class="u">' + (f.unit || '') + '</span>' + trendArrow + '</span></div>';
+      });
+      html += '</div>';
+    }
+    // Alerts
+    if (tip.alerts && tip.alerts.length) {
+      html += '<div class="bvt-alerts">';
+      tip.alerts.forEach(function(a) {
+        html += '<span class="bvt-alert ' + (a.kind || 'gold') + '">' + a.text + '</span>';
+      });
+      html += '</div>';
+    }
+    if (tip.note) html += '<div class="bvt-note">' + tip.note + '</div>';
+
+    el.innerHTML = html;
+    el.classList.add('visible');
+    _moveBarVarTip(e);
+    return;
+  }
+
+  // ─── Legacy（rows 模式，其他变量仍用） ───
+  el.className = 'bar-var-tip';
+  var html2 = '<div class="bar-var-tip-title">' + tip.title + '</div>';
+  if (tip.phase) html2 += '<div class="bar-var-tip-phase">' + tip.phase + '</div>';
+  for (var i = 0; i < (tip.rows || []).length; i++) {
+    var row = tip.rows[i];
+    html2 += '<div class="bar-var-tip-row"><span class="lbl">' + row[0] + '</span>'+
+             '<span class="val">' + row[1] + '</span></div>';
+  }
+  if (tip.note) html2 += '<div class="bar-var-tip-note">' + tip.note + '</div>';
+
+  el.innerHTML = html2;
   el.classList.add('visible');
   _moveBarVarTip(e);
 }

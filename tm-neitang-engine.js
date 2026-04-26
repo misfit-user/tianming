@@ -51,8 +51,58 @@
     if (!n.expenses) n.expenses = {
       gongting:0, dadian:0, shangci:0, houGongLingQin:0, guokuRescue:0
     };
+    if (!n.sourcesDetail) n.sourcesDetail = {};   // ★ 大类下挂 subItems
+    if (!n.expensesDetail) n.expensesDetail = {}; // ★
     if (!n.crisis) n.crisis = { active:false, consecutiveMonths:0, severity:0 };
     if (!n.history) n.history = { monthly:[], yearly:[], events:[] };
+  }
+
+  // 取全国 economyBase 字段汇总（CascadeTax 提供）·退化 0
+  function _sumEB(field, fallback) {
+    if (typeof CascadeTax !== 'undefined' && CascadeTax.sumEconomyBase) {
+      var v = CascadeTax.sumEconomyBase(field);
+      if (v > 0) return v;
+    }
+    return fallback || 0;
+  }
+  function _setSubsN(category, subItems) {
+    if (!GM.neitang) return;
+    if (!GM.neitang.sourcesDetail) GM.neitang.sourcesDetail = {};
+    GM.neitang.sourcesDetail[category] = subItems;
+  }
+  function _setSubsExpN(category, subItems) {
+    if (!GM.neitang) return;
+    if (!GM.neitang.expensesDetail) GM.neitang.expensesDetail = {};
+    GM.neitang.expensesDetail[category] = subItems;
+  }
+
+  // 全国皇庄汇总（imperialFarmland）·退化兜底用 GM.neitang.huangzhuangAcres
+  function _imperialFarmlandTotal() {
+    var v = _sumEB('imperialFarmland', 0);
+    if (v > 0) return v;
+    return safe((GM.neitang || {}).huangzhuangAcres, 100000);
+  }
+  // 全国皇产汇总（zhizao/kuangchang/yuyao）·遍历 adminHierarchy 累加
+  function _imperialAssetsTotal() {
+    var ret = { zhizao: 0, kuangchang: 0, yuyao: 0 };
+    if (!GM.adminHierarchy) return ret;
+    Object.keys(GM.adminHierarchy).forEach(function(fk) {
+      var tree = GM.adminHierarchy[fk];
+      function walk(divs) {
+        if (!Array.isArray(divs)) return;
+        divs.forEach(function(d) {
+          if (!d) return;
+          var ia = (d.economyBase && d.economyBase.imperialAssets) || {};
+          ret.zhizao += (ia.zhizao || 0);
+          ret.kuangchang += (ia.kuangchang || 0);
+          ret.yuyao += (ia.yuyao || 0);
+          if (d.children) walk(d.children);
+          if (d.divisions) walk(d.divisions);
+        });
+      }
+      walk((tree && tree.divisions) || []);
+    });
+    return ret;
   }
 
   // ═════════════════════════════════════════════════════════════
@@ -60,34 +110,77 @@
   // ═════════════════════════════════════════════════════════════
 
   var Sources = {
-    // 皇庄田租（直属皇家田地）
+    // 皇庄租·按 division.imperialFarmland 求和（粮租 60% / 银租 40%）
     huangzhuang: function() {
-      var acres = safe((GM.neitang || {}).huangzhuangAcres, 100000);  // 默认 10 万亩
-      return acres * 0.5;  // 每亩 0.5 两/年
+      var acres = _imperialFarmlandTotal();
+      var ratePerAcre = 0.5;  // 两/亩·年
+      var grainRent = acres * ratePerAcre * 0.6;
+      var silverRent = acres * ratePerAcre * 0.4;
+      var total = grainRent + silverRent;
+      _setSubsN('huangzhuang', [
+        { id: 'huangzhuang_grain', name: '皇庄粮租', amount: Math.round(grainRent), note: acres + ' 亩' },
+        { id: 'huangzhuang_silver', name: '皇庄银租', amount: Math.round(silverRent) }
+      ]);
+      return total;
     },
-    // 皇产经营（矿山/盐场/瓷窑/织造局）
+    // 皇产经营·按 division.imperialAssets 求和（织造/矿场/御窑各一类）
     huangchan: function() {
-      return safe((GM.neitang || {}).huangchanMonthly, 8000) * 12;  // 月 0.8 万
+      var assets = _imperialAssetsTotal();
+      var zhizaoYield = assets.zhizao * 80000;       // 单局年息 8 万
+      var kuangYield = assets.kuangchang * 50000;    // 单矿场年息 5 万
+      var yaoYield = assets.yuyao * 30000;           // 单御窑年息 3 万
+      var total = zhizaoYield + kuangYield + yaoYield;
+      // 退化兜底·若 division 完全没配·读旧字段
+      if (total === 0) total = safe((GM.neitang || {}).huangchanMonthly, 8000) * 12;
+      _setSubsN('huangchan', [
+        { id: 'huangchan_zhi', name: '织造盈余', amount: Math.round(zhizaoYield), note: assets.zhizao + ' 局' },
+        { id: 'huangchan_kuang', name: '矿场银息', amount: Math.round(kuangYield), note: assets.kuangchang + ' 场' },
+        { id: 'huangchan_yao', name: '御窑息', amount: Math.round(yaoYield), note: assets.yuyao + ' 窑' }
+      ]);
+      return total;
     },
-    // 特别税（矿税/市舶部分 / 织造等——帝王专属）
+    // 特别税·矿监税监等（仅 specialTaxActive）
     specialTax: function() {
-      if (!GM.neitang || !GM.neitang.specialTaxActive) return 0;
-      return safe((GM.neitang.specialTaxMonthly), 5000) * 12;
+      if (!GM.neitang || !GM.neitang.specialTaxActive) { _setSubsN('specialTax', []); return 0; }
+      var amt = safe(GM.neitang.specialTaxMonthly, 5000) * 12;
+      _setSubsN('specialTax', [
+        { id: 'special_kuang', name: '矿监税监', amount: Math.round(amt) }
+      ]);
+      return amt;
     },
-    // 抄家入帑（腐败/叛乱后抄没）
+    // 抄家·事件触发型
     confiscation: function() {
-      // 由 events 推入，这里读取近期累计
-      return safe((GM.neitang || {})._recentConfiscation, 0);
+      var amt = safe((GM.neitang || {})._recentConfiscation, 0);
+      _setSubsN('confiscation', amt > 0 ? [
+        { id: 'confiscation_in', name: '籍没入内帑', amount: Math.round(amt) }
+      ] : []);
+      return amt;
     },
-    // 朝贡（各国使节进献）
+    // 朝贡·拆 正贡 + 附礼
     tribute: function() {
-      var count = ((GM.activeTributes || []).length) || 1;
-      return count * 20000;
+      var count = ((GM.activeTributes || []).length) || 0;
+      if (count === 0) { _setSubsN('tribute', []); return 0; }
+      var main = count * 12000;
+      var extra = count * 8000;
+      _setSubsN('tribute', [
+        { id: 'tribute_main', name: '朝贡正贡', amount: main, note: count + ' 国' },
+        { id: 'tribute_extra', name: '朝贡附礼', amount: extra }
+      ]);
+      return main + extra;
     },
-    // 帑廪转运（常规补贴）
+    // 帑廪转运·拆三本色（读 guoku.expenses.neiting 总额按 70/15/15 拆）
     guokuTransfer: function() {
-      // 读取 GM.guoku.expenses.neiting（帑廪已计算的转运）
-      return safe((GM.guoku && GM.guoku.expenses && GM.guoku.expenses.neiting), 0);
+      var total = safe((GM.guoku && GM.guoku.expenses && GM.guoku.expenses.neiting), 0);
+      if (total === 0) { _setSubsN('guokuTransfer', []); return 0; }
+      var s = Math.round(total * 0.7);
+      var g = Math.round(total * 0.15);
+      var c = total - s - g;
+      _setSubsN('guokuTransfer', [
+        { id: 'transfer_in_money', name: '解入银', amount: s },
+        { id: 'transfer_in_grain', name: '解入粮(折)', amount: g },
+        { id: 'transfer_in_cloth', name: '解入布(折)', amount: c }
+      ]);
+      return total;
     }
   };
 
@@ -96,31 +189,98 @@
   // ═════════════════════════════════════════════════════════════
 
   var Expenses = {
-    // 宫廷用度（日常饮食/衣着/供应）
+    // 宫廷·6 项（御膳/服饰/器用/御药房/御马苑/文房宫籍）
     gongting: function() {
-      var baseMonthly = 3000;
-      // 嫔妃数、宦官数影响
       var concubines = safe((GM.harem || {}).count, 30);
       var eunuchs = safe((GM.eunuchs || {}).count, 100);
-      return (baseMonthly + concubines * 100 + eunuchs * 50) * 12;
+      var meal = (concubines * 50 + eunuchs * 30 + 1500) * 12;
+      var clothes = (concubines * 30 + 1000) * 12;
+      var utility = (concubines * 20 + 500) * 12;
+      // 御药房·太医院进药用药
+      var medicine = 18000 + concubines * 60;
+      // 御马苑·御用马匹饲料训练（与 junxiang 战马军器不同·此为皇帝专属仪仗马）
+      var royalHorse = 12000;
+      // 文房宫籍·内书房+实录修撰+经筵讲章
+      var library = 8000;
+      var total = meal + clothes + utility + medicine + royalHorse + library;
+      _setSubsExpN('gongting', [
+        { id: 'gongting_meal', name: '御膳', amount: Math.round(meal), note: concubines + ' 嫔妃·' + eunuchs + ' 宦官' },
+        { id: 'gongting_clothes', name: '服饰', amount: Math.round(clothes), note: '内织染局' },
+        { id: 'gongting_utility', name: '器用', amount: Math.round(utility), note: '银作/瓷器/玉作' },
+        { id: 'gongting_medicine', name: '御药房', amount: Math.round(medicine), note: '太医院/进药' },
+        { id: 'gongting_horse', name: '御马苑', amount: royalHorse, note: '皇帝仪仗马' },
+        { id: 'gongting_library', name: '文房宫籍', amount: library, note: '内书房/经筵' }
+      ]);
+      return total;
     },
-    // 大典（按当年举办的大典累计）
+    // 大典·拆 三大节(元旦/冬至/万寿) / 朝会大典 / 巡幸 / 籍田亲蚕
     dadian: function() {
-      return safe((GM.neitang || {})._thisYearCeremonyBudget, 0);
+      var thisYear = safe((GM.neitang || {})._thisYearCeremonyBudget, 0);
+      // 三大节·年常项
+      var threeFest = 60000;  // 元旦+冬至+万寿三节·内廷年支
+      // 朝会大典·常项（大朝会/经筵/起居注）
+      var court = 20000;
+      // 巡幸·若皇帝出巡（由 GM.emperor.tourActive 触发）
+      var tour = (GM.emperor && GM.emperor.tourActive) ? 150000 : 0;
+      // 籍田亲蚕·年常礼·春耕亲蚕
+      var jitian = 8000;
+      var total = thisYear + threeFest + court + tour + jitian;
+      _setSubsExpN('dadian', [
+        { id: 'dadian_main', name: '本年大典', amount: Math.round(thisYear), note: thisYear > 0 ? '专项' : '无' },
+        { id: 'dadian_threefest', name: '三大节', amount: threeFest, note: '元旦/冬至/万寿' },
+        { id: 'dadian_court', name: '朝会大典', amount: court, note: '大朝/经筵' },
+        { id: 'dadian_tour', name: '巡幸', amount: tour, note: tour > 0 ? '出巡中' : '无' },
+        { id: 'dadian_jitian', name: '籍田亲蚕', amount: jitian, note: '春耕礼·年常' }
+      ]);
+      return total;
     },
-    // 赏赐
+    // 赏赐·拆 节庆赐宴 / 宦官打赏 / 嫔妃赏 / 内臣慰劳
     shangci: function() {
-      return safe((GM.neitang || {})._recentRewards, 20000);
+      var base = safe((GM.neitang || {})._recentRewards, 20000);
+      var concubines = safe((GM.harem || {}).count, 30);
+      var eunuchs = safe((GM.eunuchs || {}).count, 100);
+      var festBanq = Math.round(base * 0.40);
+      var eunuchBonus = eunuchs * 80;  // 太监额外打赏
+      var concubineBonus = concubines * 200; // 嫔妃赏
+      var officerComfort = Math.round(base * 0.20);  // 内臣慰劳
+      var total = festBanq + eunuchBonus + concubineBonus + officerComfort;
+      _setSubsExpN('shangci', [
+        { id: 'shangci_fest', name: '节庆赐宴', amount: festBanq, note: '内廷宴会' },
+        { id: 'shangci_eunuch', name: '宦官打赏', amount: eunuchBonus, note: eunuchs + ' 监' },
+        { id: 'shangci_concubine', name: '嫔妃恩赏', amount: concubineBonus, note: concubines + ' 妃' },
+        { id: 'shangci_comfort', name: '内臣慰劳', amount: officerComfort, note: '近侍/亲信' }
+      ]);
+      return total;
     },
-    // 后宫/陵寝
+    // 后宫陵寝·5 项（嫔妃份例/太监月钱/陵寝/太子俸/公主嫁妆）
     houGongLingQin: function() {
-      var base = 40000;
-      if (GM.emperor && GM.emperor.buildingTomb) base += 200000;
-      return base;
+      var concubines = safe((GM.harem || {}).count, 30);
+      var eunuchs = safe((GM.eunuchs || {}).count, 100);
+      var pinfei = concubines * 200 * 12;
+      var taijian = eunuchs * 60 * 12;
+      var lingqin = (GM.emperor && GM.emperor.buildingTomb) ? 200000 : 40000;
+      // 太子皇子俸·若有储君
+      var heirCount = (GM.imperialClan && GM.imperialClan.heirCount) || 0;
+      var heir = heirCount * 30000;  // 单皇子年俸 3 万
+      // 公主仪仗·按已成年公主数（mock 默认 0）
+      var princess = (GM.imperialClan && GM.imperialClan.princessCount) ? GM.imperialClan.princessCount * 8000 : 0;
+      var total = pinfei + taijian + lingqin + heir + princess;
+      _setSubsExpN('houGongLingQin', [
+        { id: 'pinfei', name: '嫔妃份例', amount: Math.round(pinfei), note: concubines + ' 妃' },
+        { id: 'taijian', name: '太监宫女月钱', amount: Math.round(taijian), note: eunuchs + ' 监' },
+        { id: 'lingqin', name: '陵寝营建', amount: lingqin, note: (GM.emperor && GM.emperor.buildingTomb) ? '建陵中' : '常修' },
+        { id: 'heir_stipend', name: '太子皇子俸', amount: heir, note: heirCount + ' 储君' },
+        { id: 'princess', name: '公主仪仗嫁妆', amount: princess, note: princess > 0 ? '婚嫁/仪仗' : '无' }
+      ]);
+      return total;
     },
-    // 接济帑廪（内帑赈国）
+    // 接济帑廪·事件触发型
     guokuRescue: function() {
-      return safe((GM.neitang || {})._annualRescueAmount, 0);
+      var amt = safe((GM.neitang || {})._annualRescueAmount, 0);
+      _setSubsExpN('guokuRescue', amt > 0 ? [
+        { id: 'guokuRescue_main', name: '援助户部', amount: Math.round(amt), note: '内帑→帑廪' }
+      ] : []);
+      return amt;
     }
   };
 
@@ -157,12 +317,51 @@
     n.monthlyExpense = Math.round(totalExpense / 12);
     n.expenses = expBreakdown;
 
-    // 入账
-    var periodIn = n.monthlyIncome * mr;
-    var periodOut = n.monthlyExpense * mr;
+    // ★ 央地正确衔接（同 GuokuEngine 修复）
+    var fixedRanThisTurn = (GM._lastFixedExpenseTurn === GM.turn);
     var oldBalance = n.balance;
-    n.balance = oldBalance + periodIn - periodOut;
-    n.lastDelta = periodIn - periodOut;
+    var periodIn, periodOut;
+    if (fixedRanThisTurn && n.ledgers && n.ledgers.money) {
+      // ✓ FixedExpense 已扣宫廷·monthlySettle 只补 4 项 residual(大典/赏赐/后宫陵寝/接济帑廪)
+      periodIn = n.monthlyIncome * mr;  // 内帑 income 不走 cascade·仍由本身 Sources 计算
+      var residualExpenseAnnual = (expBreakdown.dadian || 0) + (expBreakdown.shangci || 0)
+                                + (expBreakdown.houGongLingQin || 0) + (expBreakdown.guokuRescue || 0);
+      periodOut = (residualExpenseAnnual / 12) * mr;
+      // 累加到 ledger（不覆盖）
+      n.ledgers.money.stock = (n.ledgers.money.stock || 0) + periodIn - periodOut;
+      n.balance = n.ledgers.money.stock;
+    } else {
+      // ✗ Fallback·FixedExpense 未跑·走老逻辑
+      periodIn = n.monthlyIncome * mr;
+      periodOut = n.monthlyExpense * mr;
+      n.balance = oldBalance + periodIn - periodOut;
+    }
+    // ★ lastDelta 用 ledger 真实净变·避免漏算 FixedExpense 已扣的宫廷
+    if (fixedRanThisTurn && n.ledgers && n.ledgers.money) {
+      n.lastDelta = (n.ledgers.money.thisTurnIn || 0) - (n.ledgers.money.thisTurnOut || 0);
+    } else {
+      n.lastDelta = periodIn - periodOut;
+    }
+
+    // ★ 写入 turnIncome / turnExpense 供 widget 显示真实回合数字（之前只有 monthlyIncome 是年/12 固定值·widget 退而读它·导致显示永远不变）
+    n.turnIncome = Math.round(periodIn);
+    n.turnExpense = Math.round(periodOut);
+    // 若 FixedExpense 已扣·turnExpense 用真实 ledger.thisTurnOut（含宫廷）
+    if (fixedRanThisTurn && n.ledgers && n.ledgers.money) {
+      n.turnExpense = Math.round(n.ledgers.money.thisTurnOut || periodOut);
+    }
+    n.turnDays = (GM.guoku && GM.guoku.turnDays) || (mr * 30);
+
+    // 内帑接济帑廪：把 guokuRescue 实际加给国库（之前只算数字未入账）
+    var rescueAnnual = safe(expBreakdown.guokuRescue, 0);
+    var rescueThisPeriod = (rescueAnnual / 12) * mr;
+    if (rescueThisPeriod > 0 && GM.guoku) {
+      GM.guoku.balance = (GM.guoku.balance || 0) + rescueThisPeriod;
+      if (GM.guoku.ledgers && GM.guoku.ledgers.money) {
+        GM.guoku.ledgers.money.stock = (GM.guoku.ledgers.money.stock || 0) + rescueThisPeriod;
+      }
+      n._annualRescueAmount = 0;  // 重置一次性接济额
+    }
 
     // 趋势
     var threshold = (totalIncome / 12) * 0.1;
@@ -172,8 +371,8 @@
     // 腐败侵吞（§3.7 calcInnerTreasuryLeak）——已在 corruption 中扣，这里确保同步
     // (由 corruption engine 直接修改 n.balance)
 
-    // 同步 ledger
-    n.ledgers.money.stock = n.balance;
+    // 同步 ledger·新逻辑下 stock 已在上方累加·此处仅 lastTurnIn/Out 显示用
+    if (!fixedRanThisTurn) n.ledgers.money.stock = n.balance;
     n.ledgers.money.lastTurnIn = periodIn;
     n.ledgers.money.lastTurnOut = periodOut;
     n.ledgers.money.sources = {
@@ -212,6 +411,9 @@
     var grainOut = (n.expenses.gongting * 0.3 + n.expenses.shangci * 0.2) / 10 * mr / 12;
     grain.lastTurnIn = Math.round(grainIn);
     grain.lastTurnOut = Math.round(grainOut);
+    grain.thisTurnIn = Math.round(grainIn);
+    grain.thisTurnOut = Math.round(grainOut);
+    grain.turnDelta = Math.round(grainIn - grainOut);
     grain.stock = Math.max(0, (grain.stock || 0) + grainIn - grainOut);
 
     // 内帑布：织造局、朝贡布帛
@@ -220,7 +422,16 @@
     var clothOut = (n.expenses.shangci * 0.4 + n.expenses.gongting * 0.1) / 5 * mr / 12;
     cloth.lastTurnIn = Math.round(clothIn);
     cloth.lastTurnOut = Math.round(clothOut);
+    cloth.thisTurnIn = Math.round(clothIn);
+    cloth.thisTurnOut = Math.round(clothOut);
+    cloth.turnDelta = Math.round(clothIn - clothOut);
     cloth.stock = Math.max(0, (cloth.stock || 0) + clothIn - clothOut);
+
+    // 同步给 widget 用的标量（subItems 显示 d 值）
+    n.turnGrainIncome = Math.round(grainIn);
+    n.turnGrainExpense = Math.round(grainOut);
+    n.turnClothIncome = Math.round(clothIn);
+    n.turnClothExpense = Math.round(clothOut);
   }
 
   function checkCrisis(mr) {

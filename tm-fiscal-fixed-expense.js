@@ -250,6 +250,30 @@
     ntGrain.stock = (ntGrain.stock != null ? ntGrain.stock : (G.neitang.grain || 0));
     ntCloth.stock = (ntCloth.stock != null ? ntCloth.stock : (G.neitang.cloth || 0));
 
+    // ★ 内帑 reconciliation·吸收 tm-authority/tm-authority-engines/tm-corruption/tm-char-economy-engine
+    // 等对 G.neitang.{money,grain,cloth,balance} 的旁路写入·money/balance 取偏离更大者
+    function _reconNtScalar(led, scalarVal, balanceVal) {
+      if (!led) return;
+      if (!led.sinks) led.sinks = {};
+      if (!led.sources) led.sources = {};
+      var stock = led.stock || 0;
+      var sd = (scalarVal != null) ? scalarVal - stock : 0;
+      var bd = (balanceVal != null) ? balanceVal - stock : 0;
+      var diff = Math.abs(sd) >= Math.abs(bd) ? sd : bd;
+      if (Math.abs(diff) < 0.5) return;
+      led.stock = stock + diff;
+      if (diff < 0) {
+        led.sinks['外部调整'] = (led.sinks['外部调整'] || 0) + (-diff);
+        led.thisTurnOut = (led.thisTurnOut || 0) + (-diff);
+      } else {
+        led.sources['外部调整'] = (led.sources['外部调整'] || 0) + diff;
+        led.thisTurnIn = (led.thisTurnIn || 0) + diff;
+      }
+    }
+    _reconNtScalar(ntMoney, G.neitang.money, G.neitang.balance);
+    _reconNtScalar(ntGrain, G.neitang.grain, null);
+    _reconNtScalar(ntCloth, G.neitang.cloth, null);
+
     // 1. 俸禄
     var salary = _calcSalary(ctx);
     var salaryDed = {
@@ -318,6 +342,9 @@
     var turnFrac30 = Math.max(1, _getTurnDays(ctx)) / 30;
     G.guoku.monthlyExpense = Math.round(turnExpense.totalMoney / turnFrac30);
     G.guoku.annualExpense = Math.round(turnExpense.totalMoney * (365 / Math.max(1, _getTurnDays(ctx))));
+
+    // ★ 标记本回合已走固定支出·下游 GuokuEngine.monthlySettle 以此判断是否需要避开 fenglu/junxiang/neiting 项
+    G._lastFixedExpenseTurn = G.turn || 0;
 
     if (global.addEB) {
       try {

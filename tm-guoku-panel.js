@@ -70,138 +70,212 @@ function renderGuokuPanel() {
   if (!body) return;
 
   var g = GM.guoku || {};
-  var subtLbl = '月入 ' + _guokuFmt(g.monthlyIncome || 0) + ' / 月支 ' + _guokuFmt(g.monthlyExpense || 0);
+  var turnDays = g.turnDays || 30;
+  var periodLbl = turnDays === 30 ? '月' : '回合';
+  var subtLbl = periodLbl + '入 ' + _guokuFmt(g.turnIncome || g.monthlyIncome || 0) +
+                ' / ' + periodLbl + '支 ' + _guokuFmt(g.turnExpense || g.monthlyExpense || 0);
   if (g.bankruptcy && g.bankruptcy.active) subtLbl = '⚠ 破产 · ' + subtLbl;
   if (subt) subt.textContent = subtLbl;
 
   var html = '';
+  var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
+  var ledgers = g.ledgers || {};
+  var moneyLed = ledgers.money || { stock:0 };
+  var grainLed = ledgers.grain || { stock:0 };
+  var clothLed = ledgers.cloth || { stock:0 };
 
-  // ─── § 总览（balance + 月度流水 + 趋势） ───
-  html += '<section class="vd-section">';
-  html += '<div class="vd-overview">';
-  var balColor = g.balance < 0 ? 'var(--vermillion-400)' :
-                 g.balance < (g.annualIncome || 1) * 0.1 ? 'var(--amber-400)' : 'var(--gold)';
-  html += '<div class="vd-ov-row">'+
-          '<span class="vd-ov-label">现余</span>'+
-          '<span class="vd-ov-value" style="color:' + balColor + ';">' +
-          _guokuFmt(g.balance) + ' ' + ((g.unit||{}).money || '两') + '</span></div>';
-  html += '<div class="vd-ov-row">'+
-          '<span class="vd-ov-label">月入 / 月支</span>'+
-          '<span class="vd-ov-value">' + _guokuFmt(g.monthlyIncome || 0) + ' / ' +
-          _guokuFmt(g.monthlyExpense || 0) + '</span></div>';
-  var deltaColor = (g.lastDelta || 0) >= 0 ? '#6aa88a' : 'var(--vermillion-400)';
-  html += '<div class="vd-ov-row">'+
-          '<span class="vd-ov-label">本回合增减</span>'+
-          '<span class="vd-ov-value" style="color:' + deltaColor + ';">' +
-          ((g.lastDelta || 0) > 0 ? '+' : '') + _guokuFmt(g.lastDelta || 0) + '</span></div>';
-  html += '<div class="vd-ov-row">'+
-          '<span class="vd-ov-label">年入</span>'+
-          '<span class="vd-ov-value">' + _guokuFmt(g.annualIncome || 0) + '</span></div>';
-  if (g.actualTaxRate !== undefined && g.actualTaxRate < 1) {
-    var leakPct = Math.round((1 - g.actualTaxRate) * 100);
-    html += '<div class="vd-ov-row">'+
-            '<span class="vd-ov-label">实征率</span>'+
-            '<span class="vd-ov-value" style="color:var(--vermillion-400);">' +
-            Math.round(g.actualTaxRate * 100) + '% （漏损 ' + leakPct + '%）</span></div>';
+  // ─── Hero · 国库纪要 ───
+  var stockMoney = (moneyLed.stock != null ? moneyLed.stock : (g.balance || 0));
+  var stockGrain = grainLed.stock || 0;
+  var stockCloth = clothLed.stock || 0;
+  var balanceClass = stockMoney < 0 ? 'bad' :
+                     stockMoney < (g.annualIncome || 1) * 0.2 ? 'warn' : '';
+  // 状态标签
+  var statePillHtml = '';
+  if (g.bankruptcy && g.bankruptcy.active) {
+    statePillHtml = '<span class="tr-pill bad">⚠ 破产 · ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月</span>';
+  } else if (stockMoney < 0) {
+    statePillHtml = '<span class="tr-pill bad">亏空</span>';
+  } else if (stockMoney < (g.annualIncome || 1) * 0.2) {
+    statePillHtml = '<span class="tr-pill warn">紧 · 不足年入两成</span>';
+  } else if (stockMoney < (g.annualIncome || 1) * 0.5) {
+    statePillHtml = '<span class="tr-pill gold">尚可</span>';
+  } else {
+    statePillHtml = '<span class="tr-pill ok">充裕</span>';
   }
-  // 民心顺从度（§21.2）
-  if (GM.minxin && GM.minxin.trueIndex !== undefined) {
-    var compl = Math.max(0.3, GM.minxin.trueIndex / 100 * 0.7 + 0.3);
-    var colorC = compl > 0.9 ? '#6aa88a' : compl > 0.6 ? 'var(--gold)' : 'var(--vermillion-400)';
-    html += '<div class="vd-ov-row">'+
-            '<span class="vd-ov-label">民心顺从</span>'+
-            '<span class="vd-ov-value" style="color:' + colorC + ';">' +
-            Math.round(compl * 100) + '%</span></div>';
+  // tags
+  var tagsHtml = '';
+  if (GM.currency && GM.currency.inflationPressure > 0.3) {
+    tagsHtml += '<span class="tr-pill bad">通胀压力 ' + GM.currency.inflationPressure.toFixed(2) + '</span>';
   }
-  // 皇权可支配性（§21.3）
-  if (GM.huangquan) {
-    var h = GM.huangquan.index;
-    var hqLabel = h < 35 ? '权臣段（地方截留 50%）' :
-                  h < 60 ? '制衡段（可支配 85%）' :
-                  h > 80 ? '专制段（压榨 +5%）' : '常态';
-    var hqColor = h < 35 ? 'var(--vermillion-400)' :
-                  h < 60 ? 'var(--gold)' : '#6aa88a';
-    html += '<div class="vd-ov-row">'+
-            '<span class="vd-ov-label">皇权可调</span>'+
-            '<span class="vd-ov-value" style="font-size:0.76rem;color:' + hqColor + ';">' +
-            hqLabel + '</span></div>';
+  if (g.emergency && g.emergency.loan && g.emergency.loan.active) {
+    tagsHtml += '<span class="tr-pill warn">借贷在册 · 余 ' + Math.ceil(g.emergency.loan.monthsLeft || 0) + ' 月</span>';
   }
-  // 物价指数（粮价）
-  if (GM.prices && GM.prices.grain) {
-    var gp = GM.prices.grain;
-    var gpColor = gp > 1.8 ? 'var(--vermillion-400)' :
-                  gp > 1.3 ? 'var(--amber-400)' :
-                  gp < 0.85 ? '#6aa88a' : 'var(--gold)';
-    var gpLabel = gp > 2.0 ? '（粮荒）' :
-                  gp > 1.5 ? '（粮贵）' :
-                  gp < 0.9 ? '（谷贱）' : '';
-    html += '<div class="vd-ov-row">'+
-            '<span class="vd-ov-label">粮价指数</span>'+
-            '<span class="vd-ov-value" style="color:' + gpColor + ';">' +
-            gp.toFixed(2) + ' ×' + gpLabel + '</span></div>';
+  if (GM.currency && GM.currency.privateCastBanned) {
+    tagsHtml += '<span class="tr-pill ok">私铸已禁</span>';
   }
-  // 皇威虚账警示
+  if (GM.currency && GM.currency.latestCoin) {
+    tagsHtml += '<span class="tr-pill gold">' + _escHtml(GM.currency.latestCoin) + '</span>';
+  }
   if (GM.huangwei && GM.huangwei.index >= 90) {
     var bubble = (GM.huangwei.tyrantSyndrome && GM.huangwei.tyrantSyndrome.hiddenDamage && GM.huangwei.tyrantSyndrome.hiddenDamage.fiscalBubble) || 0;
-    html += '<div class="vd-ov-row">'+
-            '<span class="vd-ov-label" style="color:var(--vermillion-400);">⚠ 暴君虚账</span>'+
-            '<span class="vd-ov-value" style="color:var(--vermillion-400);font-size:0.76rem;">' +
-            '累计 ' + _guokuFmt(bubble) + ' 两</span></div>';
+    tagsHtml += '<span class="tr-pill bad">⚠ 暴君虚账 ' + _guokuFmt(bubble) + '</span>';
   }
+
+  var deltaVal = g.lastDelta || 0;
+  html += '<div class="tr-hero">';
+  html +=   '<div class="tr-hero-row">';
+  html +=     '<div class="tr-hero-glyph">帑</div>';
+  html +=     '<div class="tr-hero-main">';
+  html +=       '<div class="tr-hero-stock-row">';
+  html +=         '<span class="tr-hero-amount' + (balanceClass ? ' ' + balanceClass : '') + '">' + _guokuFmt(stockMoney) + '</span>';
+  html +=         '<span class="tr-hero-unit">' + U.money + '</span>';
+  html +=         statePillHtml;
+  html +=       '</div>';
+  html +=       '<div class="tr-hero-mini">';
+  html +=         '<span><b>粮</b>' + _guokuFmt(stockGrain) + '<span class="mu">' + U.grain + '</span></span>';
+  html +=         '<span><b>布</b>' + _guokuFmt(stockCloth) + '<span class="mu">' + U.cloth + '</span></span>';
+  html +=         '<span><b>本回合</b>' + (deltaVal >= 0 ? '+' : '') + _guokuFmt(deltaVal) + '</span>';
+  html +=         '<span><b>年入</b>' + _guokuFmt(g.annualIncome || 0) + '</span>';
+  html +=       '</div>';
+  if (tagsHtml) html += '<div class="tr-hero-tags">' + tagsHtml + '</div>';
+  html +=     '</div>';
+  html +=   '</div>';
   html += '</div>';
+
+  // ─── 6 格快览 ───
+  html += '<section class="tr-section">';
+  html +=   '<div class="tr-section-head"><span class="tr-section-name">回合速察</span><span class="tr-section-badge">钱·官收 / 名义</span></div>';
+  html +=   '<div class="tr-quickstats">';
+  // 回合入
+  var turnIn = g.turnIncome || g.monthlyIncome || 0;
+  html +=     '<div class="tr-qs"><div class="tr-qs-label">' + periodLbl + '入</div><div class="tr-qs-val up">' + _guokuFmt(turnIn) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
+  // 回合支
+  var turnOut = g.turnExpense || g.monthlyExpense || 0;
+  html +=     '<div class="tr-qs"><div class="tr-qs-label">' + periodLbl + '支</div><div class="tr-qs-val down">' + _guokuFmt(turnOut) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
+  // 增减
+  var deltaCls = deltaVal >= 0 ? 'up' : 'down';
+  var deltaCntStr = (g.bankruptcy && g.bankruptcy.consecutiveMonths > 0) ?
+    ('连续赤字 ' + Math.round(g.bankruptcy.consecutiveMonths) + ' 月') : '';
+  html +=     '<div class="tr-qs"><div class="tr-qs-label">回合增减</div><div class="tr-qs-val ' + deltaCls + '">' + (deltaVal >= 0 ? '+' : '') + _guokuFmt(deltaVal) + '</div><div class="tr-qs-sub">' + (deltaCntStr || (U.money)) + '</div></div>';
+  // 实征率
+  if (g.actualTaxRate !== undefined && g.actualTaxRate < 1) {
+    var leakPct = Math.round((1 - g.actualTaxRate) * 100);
+    var taxRateCls = g.actualTaxRate < 0.5 ? 'down' : g.actualTaxRate < 0.75 ? 'warn' : 'up';
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">实征率</div><div class="tr-qs-val ' + taxRateCls + '">' + Math.round(g.actualTaxRate * 100) + '%</div><div class="tr-qs-sub">漏损 ' + leakPct + '%</div></div>';
+  } else {
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">实征率</div><div class="tr-qs-val">—</div><div class="tr-qs-sub">未结算</div></div>';
+  }
+  // 民心顺从
+  if (GM.minxin && GM.minxin.trueIndex !== undefined) {
+    var compl = Math.max(0.3, GM.minxin.trueIndex / 100 * 0.7 + 0.3);
+    var complCls = compl > 0.9 ? 'up' : compl > 0.6 ? 'warn' : 'down';
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">民心顺从</div><div class="tr-qs-val ' + complCls + '">' + Math.round(compl * 100) + '%</div><div class="tr-qs-sub">民心 ' + Math.round(GM.minxin.trueIndex) + '</div></div>';
+  } else {
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">民心顺从</div><div class="tr-qs-val">—</div><div class="tr-qs-sub">未测</div></div>';
+  }
+  // 皇权可调
+  if (GM.huangquan) {
+    var hq = GM.huangquan.index || 50;
+    var hqLabel = hq < 35 ? '权臣段' : hq < 60 ? '制衡段' : hq > 80 ? '专制段' : '常态';
+    var hqSub = hq < 35 ? '地方截留 50%' : hq < 60 ? '可支配 85%' : hq > 80 ? '压榨 +5%' : '可支配 95%';
+    var hqCls = hq < 35 ? 'down' : hq > 80 ? 'warn' : '';
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">皇权可调</div><div class="tr-qs-val ' + hqCls + '" style="font-size:0.85rem;">' + hqLabel + '</div><div class="tr-qs-sub">' + hqSub + '</div></div>';
+  } else {
+    html +=   '<div class="tr-qs"><div class="tr-qs-label">皇权可调</div><div class="tr-qs-val">—</div><div class="tr-qs-sub">未测</div></div>';
+  }
+  html +=   '</div>';
   html += '</section>';
 
-  // ─── § 三数对照 ───
+  // ─── 三账库存（钱/粮/布） ───
+  html += '<section class="tr-section">';
+  html +=   '<div class="tr-section-head"><span class="tr-section-name">三账库存</span><span class="tr-section-badge">钱 · 粮 · 布</span></div>';
+  html +=   '<div class="tr-3led">';
+  var _3meta = [
+    { key:'money', cls:'money', name:'钱', unit:U.money },
+    { key:'grain', cls:'grain', name:'粮', unit:U.grain },
+    { key:'cloth', cls:'cloth', name:'布', unit:U.cloth }
+  ];
+  _3meta.forEach(function(m) {
+    var led = ledgers[m.key] || { stock:0 };
+    var ti = (led.thisTurnIn || 0) || (led.lastTurnIn || 0);
+    var to = (led.thisTurnOut || 0) || (led.lastTurnOut || 0);
+    var net = ti - to;
+    var netCls = net >= 0 ? 'delta-up' : 'delta-down';
+    var lowWarn = (m.key === 'grain' && (led.stock || 0) < 1000) ||
+                  (m.key === 'money' && (led.stock || 0) < (g.annualIncome || 1) * 0.05);
+    html += '<div class="tr-led ' + m.cls + '">';
+    html +=   '<div class="tr-led-name">' + m.name + '</div>';
+    html +=   '<div class="tr-led-stock">' + _guokuFmt(led.stock || 0) + '</div>';
+    html +=   '<div class="tr-led-unit">' + m.unit + '</div>';
+    if (ti || to) {
+      html += '<div class="tr-led-flow"><span>入 ' + _guokuFmt(ti) + '</span><span class="' + netCls + '">Δ' + (net >= 0 ? '+' : '') + _guokuFmt(net) + '</span></div>';
+    }
+    if (lowWarn) html += '<div class="tr-led-warn">⚠ 见底</div>';
+    html += '</div>';
+  });
+  html +=   '</div>';
+  html += '</section>';
+
+  // ─── 税赋三数（沿用 renderTaxThreeNumberBlock）───
   if (typeof renderTaxThreeNumberBlock === 'function' && g.monthlyIncome > 0) {
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title">税赋三数 <span class="vd-badge">名义/官收/民缴</span></div>';
-    html += renderTaxThreeNumberBlock(g.monthlyIncome, { label:'正赋钱粮 · 月入', unit:'两' });
+    html += '<section class="tr-section">';
+    html +=   '<div class="tr-section-head"><span class="tr-section-name">税赋三数</span><span class="tr-section-badge">名义 / 官收 / 民缴 · 月入</span></div>';
+    html +=   renderTaxThreeNumberBlock(g.monthlyIncome, { label:'正赋钱粮 · 月入', unit:U.money });
     html += '</section>';
   }
 
-  // ─── § 三账岁入（钱/粮/布 按税种分解 · 本回合 CascadeTax 结算） ───
-  var ledgers = g.ledgers || {};
-  var _U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
-  var _threeKinds = [
-    { key:'money', label:'钱账（' + _U.money + '）' },
-    { key:'grain', label:'粮账（' + _U.grain + '）' },
-    { key:'cloth', label:'布账（' + _U.cloth + '）' }
-  ];
+  // ─── § 岁入分项·三账·本回合 ───
   var _tagNameMap = {
     tianfu:'田赋', dingshui:'丁税', yongBu:'庸役折布', shangShui:'商税',
     yanlizhuan:'盐铁专卖', caoliang:'漕粮', shipaiShui:'市舶', quanShui:'榷税',
-    juanNa:'捐纳', qita:'其他'
+    juanNa:'捐纳', qita:'其他', mining:'矿冶', fishingTax:'渔课'
   };
-  html += '<section class="vd-section">';
-  html += '<div class="vd-section-title">岁入分项 <span class="vd-badge">三账·本月</span></div>';
+  var _kindMeta = [
+    { key:'money', name:'钱账', unit:U.money },
+    { key:'grain', name:'粮账', unit:U.grain },
+    { key:'cloth', name:'布账', unit:U.cloth }
+  ];
+  html += '<section class="tr-section">';
+  html +=   '<div class="tr-section-head"><span class="tr-section-name">岁入分项</span><span class="tr-section-badge">三账 · 本' + (turnDays === 30 ? '月' : '回合') + '</span></div>';
   var _anyIncome = false;
-  _threeKinds.forEach(function(kind) {
-    var led = ledgers[kind.key];
+  _kindMeta.forEach(function(km) {
+    var led = ledgers[km.key];
     if (!led) return;
     var srcMap = led.sources || {};
     var monthTotal = led.thisTurnIn || 0;
     var _sumSrc = 0;
-    Object.keys(srcMap).forEach(function(tag){ _sumSrc += srcMap[tag] || 0; });
-    var displayTotal = monthTotal || _sumSrc;
-    if (displayTotal === 0) return;
+    Object.keys(srcMap).forEach(function(t){ _sumSrc += srcMap[t] || 0; });
+    var dispTotal = monthTotal || _sumSrc;
+    if (dispTotal === 0) return;
     _anyIncome = true;
-    html += '<div style="font-size:0.76rem;color:var(--gold-400);margin-top:6px;margin-bottom:3px;">' + kind.label + ' <span style="color:var(--txt-d);font-size:0.7rem;">本月 ' + _guokuFmt(displayTotal) + '</span></div>';
+    html += '<div class="tr-flow-group income">';
+    html +=   '<div class="tr-flow-head"><span>' + km.name + '（' + km.unit + '）</span><span class="total">本' + (turnDays === 30 ? '月' : '回') + ' ' + _guokuFmt(dispTotal) + '</span></div>';
     Object.keys(srcMap).forEach(function(tag){
       var val = srcMap[tag];
       if (!val) return;
-      var pct = displayTotal > 0 ? (val / displayTotal * 100).toFixed(1) : 0;
-      var barW = displayTotal > 0 ? Math.min(100, val / displayTotal * 100) : 0;
-      html += '<div style="display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center;padding:2px 0 2px 10px;font-size:0.74rem;">'+
-        '<span style="color:var(--txt-d);">' + (_tagNameMap[tag] || tag) + '</span>'+
-        '<div style="height:5px;background:var(--bg-3);border-radius:3px;overflow:hidden;">'+
-          '<div style="height:100%;width:' + barW + '%;background:var(--gold-400);"></div>'+
-        '</div>'+
-        '<span style="color:var(--txt);font-size:0.72rem;">' + _guokuFmt(val) + ' <span style="color:var(--txt-d);">' + pct + '%</span></span>'+
-        '</div>';
+      var pct = dispTotal > 0 ? (val / dispTotal * 100).toFixed(1) : 0;
+      var barW = dispTotal > 0 ? Math.min(100, val / dispTotal * 100) : 0;
+      html += '<div class="tr-flow-row income">';
+      html +=   '<span class="lbl">' + (_tagNameMap[tag] || tag) + '</span>';
+      html +=   '<div class="bar"><span style="width:' + barW + '%;"></span></div>';
+      html +=   '<span class="v">' + _guokuFmt(val) + '<span class="pct">' + pct + '%</span></span>';
+      html += '</div>';
+      // 地方贡献 top
+      if (typeof CascadeTax !== 'undefined' && typeof CascadeTax.getTopContributors === 'function' && km.key === 'money') {
+        var tops = CascadeTax.getTopContributors(tag, 3);
+        if (tops && tops.length > 0) {
+          var topsStr = tops.map(function(t){
+            var safeName = String(t.name).replace(/'/g, '\\\'');
+            return '<span class="top" onclick="if(typeof openDivisionDetail===\'function\')openDivisionDetail(\'' + safeName + '\')">' + _escHtml(t.name) + ' ' + t.pct.toFixed(0) + '%</span>';
+          }).join('');
+          html += '<div class="tr-flow-tops"><span class="arrow">↳ 贡献</span>' + topsStr + '</div>';
+        }
+      }
     });
+    html += '</div>';
   });
   if (!_anyIncome) {
-    // fallback to legacy display
     var srcLabels = {
       tianfu:'田赋', dingshui:'丁税', caoliang:'漕粮', yanlizhuan:'盐铁专卖',
       shipaiShui:'市舶', quanShui:'榷税', juanNa:'捐纳', qita:'其他'
@@ -210,279 +284,181 @@ function renderGuokuPanel() {
     var sourceTotal = 0;
     for (var k in sources) sourceTotal += (sources[k] || 0);
     if (sourceTotal > 0) {
+      html += '<div class="tr-flow-group income">';
+      html +=   '<div class="tr-flow-head"><span>钱账（年）</span><span class="total">岁入 ' + _guokuFmt(sourceTotal) + '</span></div>';
       Object.keys(srcLabels).forEach(function(key) {
         var val = sources[key] || 0;
         if (!val && (key === 'shipaiShui' || key === 'juanNa' || key === 'qita')) return;
         var pct = (val / sourceTotal * 100).toFixed(1);
         var barW = Math.min(100, val / sourceTotal * 100);
-        html += '<div style="display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;padding:3px 0;font-size:0.78rem;">'+
-          '<span style="color:var(--txt-d);">' + srcLabels[key] + '</span>'+
-          '<div style="height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden;">'+
-            '<div style="height:100%;width:' + barW + '%;background:var(--gold-400);"></div>'+
-          '</div>'+
-          '<span style="color:var(--txt);font-size:0.72rem;">' + _guokuFmt(val) + ' <span style="color:var(--txt-d);">' + pct + '%</span></span>'+
-          '</div>';
+        html += '<div class="tr-flow-row income"><span class="lbl">' + srcLabels[key] + '</span><div class="bar"><span style="width:' + barW + '%;"></span></div><span class="v">' + _guokuFmt(val) + '<span class="pct">' + pct + '%</span></span></div>';
       });
+      html += '</div>';
     } else {
       html += '<div class="vd-empty">岁入尚未结算（等首次 endTurn 或配置税制）</div>';
     }
-  }
-
-  // 下回合预览（dry-run CascadeTax）——玩家推演前能预估
-  if (typeof CascadeTax !== 'undefined' && typeof CascadeTax.collect === 'function' && GM.adminHierarchy && GM._lastCascadeSummary) {
-    var last = GM._lastCascadeSummary;
-    var _lbl = (g.turnDays && g.turnDays !== 30) ? ('每' + g.turnDays + '日') : '本回合';
-    html += '<div style="margin-top:8px;padding:5px 8px;background:var(--bg-2);border-left:3px solid var(--celadon-400);border-radius:3px;font-size:0.7rem;color:var(--txt-d);">';
-    html += _lbl + '结算：中央 ' + _guokuFmt(last.central.money) + _U.money + '·' + _guokuFmt(last.central.grain) + _U.grain + '·' + _guokuFmt(last.central.cloth) + _U.cloth;
-    html += '；地方留存 ' + _guokuFmt(last.localRetain.money) + _U.money + '/' + _guokuFmt(last.localRetain.grain) + _U.grain;
-    html += '；被贪 ' + _guokuFmt(last.skimmed.money) + _U.money + '；路耗 ' + _guokuFmt(last.lostTransit.money) + _U.money;
-    html += '</div>';
   }
   // 自定义税种
   var customTaxes = g._customTaxStats || {};
   var customKeys = Object.keys(customTaxes);
   if (customKeys.length > 0) {
-    html += '<div style="font-size:0.72rem;color:var(--gold);margin-top:6px;margin-bottom:4px;">自定义税种</div>';
-    customKeys.forEach(function(key) {
-      var ct = customTaxes[key];
-      if (!ct.amount) return;
-      html += '<div style="display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;padding:3px 0;font-size:0.78rem;">'+
-        '<span style="color:var(--txt-d);">' + _escHtml(ct.name) + '</span>'+
-        '<div style="height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden;">'+
-          '<div style="height:100%;width:' + Math.min(100, ct.amount / sourceTotal * 100) + '%;background:var(--gold-300);"></div>'+
-        '</div>'+
-        '<span style="color:var(--txt);font-size:0.72rem;">' + _guokuFmt(ct.amount) + '</span>'+
-        '</div>';
-    });
+    var _ctTotal = 0;
+    customKeys.forEach(function(k){ _ctTotal += (customTaxes[k].amount || 0); });
+    if (_ctTotal > 0) {
+      html += '<div class="tr-flow-group income">';
+      html +=   '<div class="tr-flow-head"><span>自定义税种</span><span class="total">' + _guokuFmt(_ctTotal) + '</span></div>';
+      customKeys.forEach(function(key) {
+        var ct = customTaxes[key];
+        if (!ct.amount) return;
+        var w = Math.min(100, ct.amount / _ctTotal * 100);
+        html += '<div class="tr-flow-row income"><span class="lbl">' + _escHtml(ct.name) + '</span><div class="bar"><span style="width:' + w + '%;"></span></div><span class="v">' + _guokuFmt(ct.amount) + '</span></div>';
+      });
+      html += '</div>';
+    }
+  }
+  // 下回合 cascade 预览
+  if (typeof CascadeTax !== 'undefined' && GM.adminHierarchy && GM._lastCascadeSummary) {
+    var last = GM._lastCascadeSummary;
+    html += '<div class="tr-alert ok" style="margin-top:6px;"><span class="ttl">本回合级联结算</span><span class="ds">中央 ' + _guokuFmt(last.central.money) + U.money + ' / ' + _guokuFmt(last.central.grain) + U.grain + ' / ' + _guokuFmt(last.central.cloth) + U.cloth + ' · 地方留存 ' + _guokuFmt(last.localRetain.money) + ' · 被贪 ' + _guokuFmt(last.skimmed.money) + ' · 路耗 ' + _guokuFmt(last.lostTransit.money) + '</span></div>';
   }
   html += '</section>';
 
-  // ─── § 八类支出 ───
-  html += '<section class="vd-section">';
-  html += '<div class="vd-section-title">岁出分项 <span class="vd-badge">年度</span></div>';
-  var expLabels = {
+  // ─── § 岁出分项·三账·本回合 ───
+  var _expLabels = {
     fenglu:'俸禄', junxiang:'军饷', zhenzi:'赈济', gongcheng:'工程',
     jisi:'祭祀', shangci:'赏赐', neiting:'内廷转运', qita:'其他'
   };
-  // 优先展示三账 sinks；否则 fallback 老 expenses
+  html += '<section class="tr-section">';
+  html +=   '<div class="tr-section-head"><span class="tr-section-name">岁出分项</span><span class="tr-section-badge">三账 · 本' + (turnDays === 30 ? '月' : '回合') + '</span></div>';
   var _anyExpense = false;
-  _threeKinds.forEach(function(kind) {
-    var led = ledgers[kind.key];
+  _kindMeta.forEach(function(km) {
+    var led = ledgers[km.key];
     if (!led) return;
     var sinkMap = led.sinks || {};
-    var monthTotalOut = led.thisTurnOut || 0;
+    var dispTotal = led.thisTurnOut || 0;
     var _sumSink = 0;
-    Object.keys(sinkMap).forEach(function(tag){ _sumSink += sinkMap[tag] || 0; });
-    var displayTotalOut = monthTotalOut || _sumSink;
-    if (displayTotalOut === 0) return;
+    Object.keys(sinkMap).forEach(function(t){ _sumSink += sinkMap[t] || 0; });
+    if (!dispTotal) dispTotal = _sumSink;
+    if (dispTotal === 0) return;
     _anyExpense = true;
-    html += '<div style="font-size:0.76rem;color:var(--vermillion-400);margin-top:6px;margin-bottom:3px;">' + kind.label + ' <span style="color:var(--txt-d);font-size:0.7rem;">本月出 ' + _guokuFmt(displayTotalOut) + '</span></div>';
+    html += '<div class="tr-flow-group expense">';
+    html +=   '<div class="tr-flow-head"><span>' + km.name + '（' + km.unit + '）</span><span class="total">本' + (turnDays === 30 ? '月' : '回') + '出 ' + _guokuFmt(dispTotal) + '</span></div>';
     Object.keys(sinkMap).forEach(function(tag){
       var val = sinkMap[tag];
       if (!val) return;
-      var pct = displayTotalOut > 0 ? (val / displayTotalOut * 100).toFixed(1) : 0;
-      var barW = displayTotalOut > 0 ? Math.min(100, val / displayTotalOut * 100) : 0;
-      html += '<div style="display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center;padding:2px 0 2px 10px;font-size:0.74rem;">'+
-        '<span style="color:var(--txt-d);">' + (expLabels[tag] || tag) + '</span>'+
-        '<div style="height:5px;background:var(--bg-3);border-radius:3px;overflow:hidden;">'+
-          '<div style="height:100%;width:' + barW + '%;background:var(--vermillion-400);"></div>'+
-        '</div>'+
-        '<span style="color:var(--txt);font-size:0.72rem;">' + _guokuFmt(val) + ' <span style="color:var(--txt-d);">' + pct + '%</span></span>'+
-        '</div>';
+      var pct = dispTotal > 0 ? (val / dispTotal * 100).toFixed(1) : 0;
+      var barW = dispTotal > 0 ? Math.min(100, val / dispTotal * 100) : 0;
+      html += '<div class="tr-flow-row expense"><span class="lbl">' + (_expLabels[tag] || tag) + '</span><div class="bar"><span style="width:' + barW + '%;"></span></div><span class="v">' + _guokuFmt(val) + '<span class="pct">' + pct + '%</span></span></div>';
     });
+    html += '</div>';
   });
   if (!_anyExpense) {
     var expenses = g.expenses || {};
     var expTotal = 0;
     for (var e in expenses) expTotal += (expenses[e] || 0);
     if (expTotal > 0) {
-      Object.keys(expLabels).forEach(function(key) {
+      html += '<div class="tr-flow-group expense">';
+      html +=   '<div class="tr-flow-head"><span>钱账（年）</span><span class="total">岁出 ' + _guokuFmt(expTotal) + '</span></div>';
+      Object.keys(_expLabels).forEach(function(key) {
         var val = expenses[key] || 0;
         if (!val && (key === 'zhenzi' || key === 'gongcheng' || key === 'qita')) return;
         var pct = (val / expTotal * 100).toFixed(1);
         var barW = Math.min(100, val / expTotal * 100);
-        html += '<div style="display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;padding:3px 0;font-size:0.78rem;">'+
-          '<span style="color:var(--txt-d);">' + expLabels[key] + '</span>'+
-          '<div style="height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden;">'+
-            '<div style="height:100%;width:' + barW + '%;background:var(--vermillion-400);"></div>'+
-          '</div>'+
-          '<span style="color:var(--txt);font-size:0.72rem;">' + _guokuFmt(val) + ' <span style="color:var(--txt-d);">' + pct + '%</span></span>'+
-          '</div>';
+        html += '<div class="tr-flow-row expense"><span class="lbl">' + _expLabels[key] + '</span><div class="bar"><span style="width:' + barW + '%;"></span></div><span class="v">' + _guokuFmt(val) + '<span class="pct">' + pct + '%</span></span></div>';
       });
+      html += '</div>';
     } else {
       html += '<div class="vd-empty">岁出尚未结算（俸禄/军饷/赈济 等在推演中叠加）</div>';
     }
   }
   html += '</section>';
 
-  // ─── § 三账库存（钱/粮/布 + 本月流水） ───
-  html += '<section class="vd-section">';
-  html += '<div class="vd-section-title">三账库存 <span class="vd-badge">钱·粮·布</span></div>';
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">';
-  var ledgers = g.ledgers || {};
-  var ledgerMeta = [
-    ['money','钱', (g.unit||{}).money || '两', 'var(--gold-400)'],
-    ['grain','粮', (g.unit||{}).grain || '石', '#6aa88a'],
-    ['cloth','布', (g.unit||{}).cloth || '匹', '#a88a6a']
-  ];
-  ledgerMeta.forEach(function(m) {
-    var led = ledgers[m[0]] || { stock:0 };
-    var netLedger = (led.lastTurnIn || 0) - (led.lastTurnOut || 0);
-    var netColor = netLedger >= 0 ? '#6aa88a' : 'var(--vermillion-400)';
-    html += '<div style="padding:0.6rem;background:var(--bg-2);border-left:3px solid ' + m[3] + ';border-radius:4px;">'+
-      '<div style="font-size:0.72rem;color:var(--txt-d);margin-bottom:2px;">' + m[1] + '</div>'+
-      '<div style="font-size:0.95rem;color:' + m[3] + ';font-weight:600;">' + _guokuFmt(led.stock || 0) + '</div>'+
-      '<div style="font-size:0.64rem;color:var(--txt-d);">' + m[2] + '</div>'+
-      (m[0] !== 'money' && (led.lastTurnIn || led.lastTurnOut) ?
-        '<div style="font-size:0.62rem;margin-top:3px;padding-top:3px;border-top:1px dashed var(--color-border-subtle);">'+
-        '<span style="color:var(--txt-d);">入 ' + _guokuFmt(led.lastTurnIn || 0) + '</span> '+
-        '<span style="color:' + netColor + ';">Δ' + (netLedger >= 0 ? '+' : '') + _guokuFmt(netLedger) + '</span>'+
-        '</div>' : '') +
-      '</div>';
-  });
-  html += '</div>';
-  html += '</section>';
-
-  // ─── § 漕运详情（若 caoliang 启用） ───
+  // ─── § 漕运详情 ───
   if (g._caoyunStats && g._caoyunStats.nominal > 0) {
     var cs = g._caoyunStats;
     var lossPct = Math.round(cs.lossRate * 100);
-    var lossColor = lossPct > 30 ? 'var(--vermillion-400)' : lossPct > 15 ? 'var(--amber-400)' : 'var(--gold)';
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title">漕运详情 <span class="vd-badge" style="color:' + lossColor + ';">损 ' + lossPct + '%</span></div>';
-    html += '<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;padding:0.6rem 0.8rem;background:var(--bg-2);border-radius:3px;font-size:0.78rem;">';
-    html += '<span style="color:var(--txt-d);">名义岁漕</span><span>' + _guokuFmt(cs.nominal) + ' 两</span>';
-    html += '<span style="color:var(--txt-d);">损耗</span><span style="color:' + lossColor + ';">-' + _guokuFmt(cs.lossAmount) + ' 两</span>';
-    html += '<span style="color:var(--txt-d);">入仓</span><span style="color:#6aa88a;">' + _guokuFmt(cs.actual) + ' 两</span>';
-    html += '</div>';
+    var lossBadge = lossPct > 30 ? 'bad' : lossPct > 15 ? 'warn' : 'ok';
+    html += '<section class="tr-section">';
+    html +=   '<div class="tr-section-head"><span class="tr-section-name">漕运详情</span><span class="tr-section-badge ' + lossBadge + '">损 ' + lossPct + '%</span></div>';
+    html +=   '<div class="tr-cao-grid">';
+    html +=     '<span>名义岁漕</span><span style="color:var(--gold-l);">' + _guokuFmt(cs.nominal) + ' ' + U.money + '</span>';
+    html +=     '<span>损耗</span><span style="color:var(--vermillion-300);">−' + _guokuFmt(cs.lossAmount) + ' ' + U.money + '</span>';
+    html +=     '<span>入仓</span><span style="color:var(--celadon-300);">' + _guokuFmt(cs.actual) + ' ' + U.money + '</span>';
+    html +=   '</div>';
     if (lossPct > 25) {
-      html += '<div style="font-size:0.72rem;color:var(--vermillion-400);margin-top:4px;">⚠ 漕运损耗过重，漕弊随时可发</div>';
+      html += '<div class="tr-alert warn" style="margin-top:6px;"><span class="ttl">⚠ 漕运损耗过重</span><span class="ds">逼近 30% 阈值，漕弊随时可发。建议查 山东 / 直隶 漕规。</span></div>';
     }
     html += '</section>';
   }
 
-  // ─── § 地域分账（决策 G） ───
+  // ─── § 地域分账（cards grid） ───
   var byRegion = g.byRegion || {};
   var regionIds = Object.keys(byRegion);
   if (regionIds.length > 0 && !(regionIds.length === 1 && regionIds[0] === 'national')) {
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title">地域分账 <span class="vd-badge">' + regionIds.length + ' 区</span></div>';
-    // 按 stock 排序，取前 10
+    html += '<section class="tr-section">';
+    html +=   '<div class="tr-section-head"><span class="tr-section-name">地域分账</span><span class="tr-section-badge">' + regionIds.length + ' 区 · 按钱本回合</span></div>';
     var sorted = regionIds.map(function(id) { return { id: id, data: byRegion[id] }; })
       .sort(function(a, b) { return (b.data.stock || 0) - (a.data.stock || 0); })
       .slice(0, 10);
+    html +=   '<div class="tr-region-grid">';
     sorted.forEach(function(r) {
       var d = r.data;
-      var netColor = (d.lastIn || 0) - (d.lastOut || 0) >= 0 ? '#6aa88a' : 'var(--vermillion-400)';
-      html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:4px 8px;background:var(--bg-2);border-radius:3px;margin-bottom:2px;font-size:0.76rem;">'+
-        '<span style="color:var(--txt);">' + _escHtml(d.name || r.id) + '</span>'+
-        '<span style="color:var(--txt-d);">库存 ' + _guokuFmt(d.stock || 0) + '</span>'+
-        '<span style="color:' + netColor + ';">Δ' +
-          (((d.lastIn || 0) - (d.lastOut || 0)) >= 0 ? '+' : '') +
-          _guokuFmt((d.lastIn || 0) - (d.lastOut || 0)) + '</span>'+
-        '</div>';
+      var deltaR = (d.lastIn || 0) - (d.lastOut || 0);
+      var deltaCls = deltaR >= 0 ? 'delta-up' : 'delta-down';
+      var safeName = String(d.name || r.id).replace(/'/g, '\\\'');
+      html += '<div class="tr-region-card" onclick="if(typeof openDivisionDetail===\'function\')openDivisionDetail(\'' + safeName + '\')">';
+      html +=   '<span class="nm">' + _escHtml(d.name || r.id) + '</span>';
+      html +=   '<span class="meta"><span>库 ' + _guokuFmt(d.stock || 0) + '</span><span class="' + deltaCls + '">Δ' + (deltaR >= 0 ? '+' : '') + _guokuFmt(deltaR) + '</span></span>';
+      html += '</div>';
     });
+    html +=   '</div>';
     if (regionIds.length > 10) {
-      html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-top:3px;text-align:center;">… 另 ' + (regionIds.length - 10) + ' 区</div>';
+      html += '<div class="tr-region-more">… 另 ' + (regionIds.length - 10) + ' 区</div>';
     }
     html += '</section>';
   }
 
-  // ─── § 历史趋势（SVG） ───
+  // ─── § 历史趋势 ───
   html += _guoku_renderTrendSection();
 
-  // ─── § 破产预警（若接近） ───
-  if (g.bankruptcy && g.bankruptcy.active) {
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title" style="color:var(--vermillion-400);">⚠ 财政危机 <span class="vd-badge">已破产 ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月</span></div>';
-    html += '<div style="padding:0.8rem;background:rgba(192,64,48,0.1);border-left:3px solid var(--vermillion-400);border-radius:4px;">';
-    html += '<div style="font-size:0.82rem;color:var(--txt);line-height:1.7;">';
-    html += '帑廪亏空超 ' + Math.round(g.bankruptcy.severity * 100) + '% 年入。';
-    if (g.bankruptcy.consecutiveMonths > 6) html += '持续 6+ 月，恐生兵变/民变。';
-    html += '<br>已连锁：皇权 -10 · 皇威 -15 · 俸薄腐败源 +15';
-    html += '</div></div></section>';
-  } else if (g.balance < (g.annualIncome || 1) * 0.2) {
-    html += '<section class="vd-section">';
-    html += '<div style="padding:0.6rem;background:rgba(184,140,60,0.1);border-left:3px solid var(--amber-400);border-radius:4px;font-size:0.78rem;color:var(--txt);">';
-    html += '⚠ 帑廪不足年入 20%，建议备急';
-    html += '</div></section>';
-  }
-
-  // ─── § 状态摘要 + 跳转提示（原操作按钮已改走 13 中间标签页） ───
-  html += '<section class="vd-section">';
-  var emergency = g.emergency || {};
-  var loans = (emergency.loans || []);
-  if (loans.length > 0) {
-    html += '<div style="font-size:0.76rem;color:var(--amber-400);padding:5px 8px;background:rgba(184,140,60,0.08);border-left:3px solid var(--amber-400);border-radius:3px;margin-bottom:4px;">⊕ 借贷在册 ' + loans.length + ' 笔</div>';
-  }
-  if (GM.currency && GM.currency.inflationPressure > 0.3) {
-    html += '<div style="font-size:0.76rem;color:var(--vermillion-400);padding:5px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin-bottom:4px;">⚠ 通胀压力 ' + (GM.currency.inflationPressure).toFixed(2) + '，市面疑虑</div>';
-  } else if (GM.currency && GM.currency.latestCoin) {
-    html += '<div style="font-size:0.76rem;color:#6aa88a;padding:5px 8px;background:rgba(106,168,138,0.08);border-left:3px solid #6aa88a;border-radius:3px;margin-bottom:4px;">✓ 当朝新钱：' + GM.currency.latestCoin + '</div>';
-  }
-  var privateBanned = GM.currency && GM.currency.privateCastBanned;
-  if (privateBanned) {
-    html += '<div style="font-size:0.76rem;color:#6aa88a;padding:5px 8px;background:rgba(106,168,138,0.08);border-radius:3px;margin-bottom:4px;">✓ 私铸已禁，钱法肃然</div>';
-  }
-  html += '<div class="vd-section-title" style="margin-top:6px;">如何措置</div>';
-  html += _guokuTabJump('写诏（加派/赈济/减赋/铸币/改革/禁私铸 皆由诏令发起）', 'gt-edict');
-  html += _guokuTabJump('看奏疏（户部/漕运/铸币 主管大臣的奏报与建言）', 'gt-memorial');
-  html += _guokuTabJump('问对户部尚书/户部侍郎 请教财政之弊', 'gt-wendui');
-  html += _guokuTabJump('朝议（发行纸钞/重大改革 等争议事）', 'gt-chaoyi');
-  html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-top:6px;">※ 陛下只需写诏令（自然语言可），AI 按当前帑廪/民心/皇威 局势推演结果。</div>';
-  html += '</section>';
-
-  // ─── § 财政改革（4 大历史改革） ───
+  // ─── § 财政改革 ───
   if (typeof GuokuEngine !== 'undefined' && GuokuEngine.FISCAL_REFORMS) {
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title">财政改革 <span class="vd-badge">千古变法</span></div>';
+    html += '<section class="tr-section">';
+    html +=   '<div class="tr-section-head"><span class="tr-section-name">财政改革</span><span class="tr-section-badge">千古变法</span></div>';
     var ongoing = (g.ongoingReforms || []);
     var completed = (g.completedReforms || []);
-    // 施行中
     if (ongoing.length > 0) {
-      html += '<div style="font-size:0.72rem;color:var(--gold-l);margin-bottom:4px;">施行中</div>';
+      html += '<div class="tr-reform-stage s-on">施行中</div>';
       ongoing.forEach(function(o) {
         var r = GuokuEngine.FISCAL_REFORMS[o.id];
         if (!r) return;
         var leftTurn = Math.max(0, o.endTurn - GM.turn);
-        html += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px solid var(--gold);border-radius:3px;margin-bottom:3px;font-size:0.76rem;">'+
-          '<span style="color:var(--gold);">' + r.name + '</span>' +
-          '<span style="color:var(--txt-d);margin-left:8px;">余 ' + leftTurn + ' 回合</span>' +
-          '</div>';
+        html += '<div class="tr-reform-row ongoing"><span class="name">' + _escHtml(r.name) + '</span><span class="h-note">余 ' + leftTurn + ' 回合</span></div>';
       });
     }
-    // 已完成
     if (completed.length > 0) {
-      html += '<div style="font-size:0.72rem;color:#6aa88a;margin:4px 0;">已完成</div>';
+      html += '<div class="tr-reform-stage s-done">已完成</div>';
       completed.forEach(function(id) {
         var r = GuokuEngine.FISCAL_REFORMS[id];
         if (!r) return;
-        html += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px solid #6aa88a;border-radius:3px;margin-bottom:3px;font-size:0.76rem;color:var(--txt-d);">'+
-          '<span style="color:#6aa88a;">✓ ' + r.name + '</span>' +
-          '</div>';
+        html += '<div class="tr-reform-row completed"><span class="name">✓ ' + _escHtml(r.name) + '</span><span class="h-note">已收成效</span></div>';
       });
     }
-    // 可选
     var available = [];
     Object.keys(GuokuEngine.FISCAL_REFORMS).forEach(function(id) {
       var check = GuokuEngine.canEnactReform(id);
       if (check.can) available.push(id);
     });
-    // 可行改革只作参考列表（不再提供点击施行按钮，玩家通过诏令/朝议发起）
-    html += '<div style="font-size:0.72rem;color:var(--txt-d);margin:4px 0;">可行参考</div>';
+    html += '<div class="tr-reform-stage s-avail">可行参考</div>';
     if (available.length > 0) {
       available.forEach(function(id) {
         var r = GuokuEngine.FISCAL_REFORMS[id];
-        html += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:3px;font-size:0.76rem;">'+
-          '<span style="color:var(--gold);">' + r.name + '</span>' +
-          '<span style="color:var(--txt-d);margin-left:8px;">' + r.historical + ' · ' + r.durationMonths + ' 月</span>' +
-          '</div>';
+        html += '<div class="tr-reform-row"><span class="name">' + _escHtml(r.name) + '</span><span class="h-note">' + _escHtml(r.historical) + ' · ' + r.durationMonths + ' 月</span></div>';
       });
-      html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-top:4px;">※ 欲施行改革请在【诏令】写诏，如"推行一条鞭法…"</div>';
+      html += '<div class="tr-reform-tip">※ 欲施行改革请在【诏令】写诏，如"推行一条鞭法…"</div>';
     } else {
       html += '<div class="vd-empty" style="padding:6px;">暂无改革可行（需皇权/皇威/民心达标）</div>';
     }
-    // 不可行（简要列出条件）
     var blocked = [];
     Object.keys(GuokuEngine.FISCAL_REFORMS).forEach(function(id) {
       if (available.indexOf(id) === -1 &&
@@ -492,55 +468,109 @@ function renderGuokuPanel() {
       }
     });
     if (blocked.length > 0) {
-      html += '<details style="margin-top:4px;font-size:0.7rem;color:var(--txt-d);">' +
-        '<summary style="cursor:pointer;">未达条件 (' + blocked.length + ')</summary>';
+      html += '<details style="margin-top:4px;font-size:0.66rem;color:var(--ink-300);">' +
+        '<summary style="cursor:pointer;letter-spacing:0.05em;">未达条件 (' + blocked.length + ')</summary>';
       blocked.forEach(function(b) {
         var r = GuokuEngine.FISCAL_REFORMS[b.id];
-        html += '<div style="padding:3px 6px;margin-top:2px;">' +
-          '<b>' + r.name + '</b>：' + b.reason + '</div>';
+        html += '<div style="padding:3px 6px;margin-top:2px;color:var(--ink-200);"><b style="color:var(--gold-l);">' + _escHtml(r.name) + '</b>：' + _escHtml(b.reason || '') + '</div>';
       });
       html += '</details>';
     }
     html += '</section>';
   }
 
+  // ─── § 告警 ───
+  var anyAlert = false;
+  var alertHtml = '';
+  if (g.bankruptcy && g.bankruptcy.active) {
+    anyAlert = true;
+    alertHtml += '<div class="tr-alert bad">';
+    alertHtml +=   '<span class="ttl">⚠ 财政破产 · 已 ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月</span>';
+    alertHtml +=   '<span class="ds">帑廪亏空超 ' + Math.round(g.bankruptcy.severity * 100) + '% 年入。' + ((g.bankruptcy.consecutiveMonths || 0) > 6 ? '持续 6+ 月，恐生兵变 / 民变。' : '') + '</span>';
+    alertHtml +=   '<span class="chain">已连锁：皇权 −10 · 皇威 −15 · 俸薄腐败源 +15</span>';
+    alertHtml += '</div>';
+  } else if (stockMoney < (g.annualIncome || 1) * 0.2) {
+    anyAlert = true;
+    alertHtml += '<div class="tr-alert warn"><span class="ttl">⚠ 帑廪不足年入两成</span><span class="ds">现余 ' + _guokuFmt(stockMoney) + ' < 年入 ' + _guokuFmt(g.annualIncome || 0) + ' × 20% = ' + _guokuFmt((g.annualIncome || 0) * 0.2) + ' · 已逼近危境。</span></div>';
+  }
+  if (GM.currency && GM.currency.inflationPressure > 0.3) {
+    anyAlert = true;
+    alertHtml += '<div class="tr-alert bad"><span class="ttl">⚠ 通胀压力高企 · ' + GM.currency.inflationPressure.toFixed(2) + '</span><span class="ds">市面对' + (GM.currency.latestCoin || '当朝钱') + '信心动摇。</span></div>';
+  } else if (GM.currency && GM.currency.latestCoin) {
+    anyAlert = true;
+    alertHtml += '<div class="tr-alert ok"><span class="ttl">✓ 当朝新钱：' + _escHtml(GM.currency.latestCoin) + '</span><span class="ds">钱法通行。</span></div>';
+  }
+  if (GM.currency && GM.currency.privateCastBanned) {
+    anyAlert = true;
+    alertHtml += '<div class="tr-alert ok"><span class="ttl">✓ 私铸已禁</span><span class="ds">钱法肃然，盗铸者受惩。</span></div>';
+  }
+  if (GM.fiscal && GM.fiscal.regions) {
+    var _regs = Object.values(GM.fiscal.regions);
+    if (_regs.length) {
+      var _avgComp = _regs.reduce(function(s, r){ return s + (r.compliance || 1); }, 0) / _regs.length;
+      var _skim = (1 - _avgComp) * 100;
+      if (_skim > 5) {
+        anyAlert = true;
+        alertHtml += '<div class="tr-alert warn"><span class="ttl">⚠ 地方贪污率 ' + _skim.toFixed(0) + '%</span><span class="ds">' + _regs.length + ' 区均值，钱粮上解漏损严重。</span></div>';
+      }
+    }
+  }
+  if (GM.prices && GM.prices.grain) {
+    var gp = GM.prices.grain;
+    if (gp > 1.8) {
+      anyAlert = true;
+      alertHtml += '<div class="tr-alert bad"><span class="ttl">⚠ 粮价指数 ' + gp.toFixed(2) + '×</span><span class="ds">' + (gp > 2.0 ? '粮荒在即' : '粮贵市疑') + '，赈济急须。</span></div>';
+    }
+  }
+  if (anyAlert) {
+    html += '<section class="tr-section"><div class="tr-section-head"><span class="tr-section-name">告警</span></div>' + alertHtml + '</section>';
+  }
+
+  // ─── § 措置入口 ───
+  html += '<section class="tr-section">';
+  html +=   '<div class="tr-section-head"><span class="tr-section-name">如何措置</span><span class="tr-section-badge">陛下行止 4 道</span></div>';
+  html +=   '<div class="tr-action-grid">';
+  html +=     _guokuActionBtn('⊕ 写诏', '加派 / 赈济 / 减赋 / 改革 / 铸币 / 禁私铸', 'gt-edict');
+  html +=     _guokuActionBtn('⊕ 看奏疏', '户部 / 漕运 / 铸币 主管的奏报', 'gt-memorial');
+  html +=     _guokuActionBtn('⊕ 问对', '户部尚书 / 户部侍郎 请教', 'gt-wendui');
+  html +=     _guokuActionBtn('⊕ 朝议', '发行纸钞 / 重大改革 等争议事', 'gt-chaoyi');
+  html +=   '</div>';
+  html +=   '<div class="tr-action-tip">※ 陛下只需写诏令（自然语言可），AI 按当前局势推演。</div>';
+  html += '</section>';
+
   // ─── § 年度决算（含 byRegion） ───
   var yearly = (g.history && g.history.yearly) || [];
   if (yearly.length > 0) {
-    html += '<section class="vd-section">';
-    html += '<div class="vd-section-title">年度决算 <span class="vd-badge">' + yearly.length + ' 年</span></div>';
+    html += '<section class="tr-section">';
+    html +=   '<div class="tr-section-head"><span class="tr-section-name">年度决算</span><span class="tr-section-badge">' + yearly.length + ' 年</span></div>';
     yearly.slice(-5).reverse().forEach(function(y, idx) {
-      var netColor = y.netChange >= 0 ? '#6aa88a' : 'var(--vermillion-400)';
+      var netCls = y.netChange >= 0 ? 'up' : 'down';
       var yId = 'ny-' + y.year + '-' + idx;
-      html += '<div style="background:var(--bg-2);border-radius:3px;margin-bottom:3px;">';
-      html += '<div style="display:flex;justify-content:space-between;padding:5px 8px;font-size:0.78rem;cursor:pointer;" '+
-        'onclick="document.getElementById(\'' + yId + '\').style.display=document.getElementById(\'' + yId + '\').style.display===\'none\'?\'block\':\'none\';">'+
-        '<span style="color:var(--txt);">' + y.year + '年</span>'+
-        '<span style="color:var(--txt-d);">入 ' + _guokuFmt(y.totalIncome) + ' · 出 ' + _guokuFmt(y.totalExpense) + '</span>'+
-        '<span style="color:' + netColor + ';">' + (y.netChange >= 0 ? '+' : '') + _guokuFmt(y.netChange) + '</span>'+
-        '</div>';
-      // 按 region 明细（折叠）
+      html += '<div class="tr-yearly-row" onclick="document.getElementById(\'' + yId + '\').style.display=document.getElementById(\'' + yId + '\').style.display===\'none\'?\'block\':\'none\';">';
+      html +=   '<span class="yr">' + y.year + '年</span>';
+      html +=   '<span class="meta">入 ' + _guokuFmt(y.totalIncome) + ' · 出 ' + _guokuFmt(y.totalExpense) + '</span>';
+      html +=   '<span class="net ' + netCls + '">' + (y.netChange >= 0 ? '+' : '') + _guokuFmt(y.netChange) + '</span>';
+      html += '</div>';
       if (y.byRegion && Object.keys(y.byRegion).length > 0) {
-        html += '<div id="' + yId + '" style="display:none;padding:0 10px 8px;border-top:1px dashed var(--color-border-subtle);">';
-        html += '<div style="font-size:0.7rem;color:var(--txt-d);padding:4px 0;">地域分账（按本年累计）</div>';
+        html += '<div id="' + yId + '" style="display:none;padding:4px 10px 8px;background:rgba(0,0,0,0.12);border-radius:0 0 4px 4px;margin-top:-4px;margin-bottom:4px;">';
+        html += '<div style="font-size:0.66rem;color:var(--ink-300);padding:3px 0;letter-spacing:0.05em;">地域分账（本年累计）</div>';
         var regionList = Object.keys(y.byRegion).map(function(rid) {
           return { id: rid, data: y.byRegion[rid] };
         }).sort(function(a, b) { return (b.data.net || 0) - (a.data.net || 0); });
         regionList.slice(0, 8).forEach(function(r) {
           var d = r.data;
-          var rNetColor = d.net >= 0 ? '#6aa88a' : 'var(--vermillion-400)';
-          html += '<div style="display:flex;justify-content:space-between;font-size:0.72rem;padding:2px 4px;">'+
-            '<span style="color:var(--txt);">' + _escHtml(d.name || r.id) + '</span>'+
-            '<span style="color:var(--txt-d);">入 ' + _guokuFmt(d.cumIn) + ' · 出 ' + _guokuFmt(d.cumOut) + '</span>'+
-            '<span style="color:' + rNetColor + ';">' + (d.net >= 0 ? '+' : '') + _guokuFmt(d.net) + '</span>'+
+          var rNetCls = d.net >= 0 ? 'delta-up' : 'delta-down';
+          html += '<div style="display:flex;justify-content:space-between;font-size:0.66rem;padding:2px 4px;color:var(--ink-200);">'+
+            '<span>' + _escHtml(d.name || r.id) + '</span>'+
+            '<span style="color:var(--ink-300);">入 ' + _guokuFmt(d.cumIn) + ' · 出 ' + _guokuFmt(d.cumOut) + '</span>'+
+            '<span class="' + rNetCls + '">' + (d.net >= 0 ? '+' : '') + _guokuFmt(d.net) + '</span>'+
             '</div>';
         });
         if (regionList.length > 8) {
-          html += '<div style="font-size:0.66rem;color:var(--txt-d);text-align:center;margin-top:2px;">… 另 ' + (regionList.length - 8) + ' 区</div>';
+          html += '<div style="font-size:0.6rem;color:var(--ink-400);text-align:center;margin-top:2px;">… 另 ' + (regionList.length - 8) + ' 区</div>';
         }
         html += '</div>';
       }
-      html += '</div>';
     });
     html += '</section>';
   }
@@ -548,12 +578,23 @@ function renderGuokuPanel() {
   body.innerHTML = html;
 }
 
+// ─── 措置按钮 helper ───
+function _guokuActionBtn(name, hint, tabId) {
+  var safeName = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  var safeHint = String(hint).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  return '<button class="tr-action-btn" onclick="if(typeof switchGTab===\'function\')switchGTab(null,\'' + tabId + '\');' +
+    'document.querySelectorAll(\'.var-drawer-overlay\').forEach(function(o){o.classList.remove(\'open\');});">' +
+    '<span class="ac-name">' + safeName + '</span>' +
+    '<span class="ac-hint">' + safeHint + '</span>' +
+  '</button>';
+}
+
 // ─── 趋势图（SVG）───
 function _guoku_renderTrendSection() {
   var snapshots = ((GM.guoku && GM.guoku.history && GM.guoku.history.monthly) || []);
   if (snapshots.length < 2) {
-    return '<section class="vd-section">'+
-      '<div class="vd-section-title">历史趋势 <span class="vd-badge">待累积</span></div>'+
+    return '<section class="tr-section">'+
+      '<div class="tr-section-head"><span class="tr-section-name">帑廪趋势</span><span class="tr-section-badge">待累积</span></div>'+
       '<div class="vd-empty">需至少 2 回合数据方可展示</div>'+
     '</section>';
   }

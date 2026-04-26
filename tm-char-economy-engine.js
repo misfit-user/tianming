@@ -109,12 +109,21 @@
     if (!ch) return { type: null };
     if (isEmperor(ch)) return { type: 'emperor' };
     // 在 GM.facs 中查 leader === ch.name
+    // leadership 5 字段 schema:{ruler/regent/general/chancellor/spy}·当前 ruler 是公库主·
+    // regent(摄政)在 ruler 缺/幼弱时也算 factionLeader·其余 3 字段(general/chancellor/spy)
+    // 走专属 contextRole 标记·不让其私产=领袖私库·避免普通将领被误识别
     var factions = (global.GM && global.GM.facs) || [];
     for (var i = 0; i < factions.length; i++) {
       var f = factions[i];
       if (!f) continue;
-      if (f.leader === ch.name || (f.leadership && f.leadership.ruler === ch.name)) {
-        return { type: 'factionLeader', faction: f };
+      var lh = f.leadership || {};
+      // 主人/摄政 → factionLeader
+      if (f.leader === ch.name || lh.ruler === ch.name || lh.regent === ch.name) {
+        return { type: 'factionLeader', faction: f, role: lh.ruler === ch.name ? 'ruler' : (lh.regent === ch.name ? 'regent' : 'leader') };
+      }
+      // 重臣 → factionMinister(non-leader 但有标识) — 留作未来扩展
+      if (lh.chancellor === ch.name || lh.general === ch.name || lh.spy === ch.name) {
+        return { type: 'factionMinister', faction: f, role: lh.chancellor === ch.name ? 'chancellor' : (lh.general === ch.name ? 'general' : 'spy') };
       }
     }
     return { type: null };
@@ -169,19 +178,19 @@
 
     // 2) 私产
     //    领袖特例：isNeitang=true · 镜像 GM.neitang / faction.leaderPrivate 三列
-    //    其他角色：五大类（cash/land/treasure/slaves/commerce）
+    //    其他角色：五大类（money/land/treasure/slaves/commerce）
     if (!r.privateWealth) {
       if (isLeader) {
         r.privateWealth = {
           isNeitang: true,
           leaderScope: ctx.type,
           factionName: (ctx.faction && ctx.faction.name) || null,
-          cash: 0, land: 0, treasure: 0, slaves: 0, commerce: 0,  // 保持 schema 以兼容抄家等
-          money: 0, grain: 0, cloth: 0  // 内帑三列
+          money: 0, grain: 0, cloth: 0,           // 内帑三列
+          land: 0, treasure: 0, slaves: 0, commerce: 0  // 保持 schema 以兼容抄家等
         };
       } else {
         r.privateWealth = {
-          cash: 0, land: 0, treasure: 0, slaves: 0, commerce: 0
+          money: 0, land: 0, treasure: 0, slaves: 0, commerce: 0
         };
       }
     } else if (isLeader && !r.privateWealth.isNeitang) {
@@ -392,7 +401,7 @@
     },
     // 8. 香火供奉（宗教）
     religiousOffering: function(ch) {
-      return ch.resources.privateWealth.cash > 10000 ? 20 : 5;
+      return ch.resources.privateWealth.money > 10000 ? 20 : 5;
     },
     // 9. 教育子弟
     education: function(ch) {
@@ -413,8 +422,8 @@
     },
     // 13. 借款利息
     debtInterest: function(ch) {
-      if (!ch.resources.privateWealth.cash || ch.resources.privateWealth.cash >= 0) return 0;
-      return Math.abs(ch.resources.privateWealth.cash) * 0.02;  // 2%/月
+      if (!ch.resources.privateWealth.money || ch.resources.privateWealth.money >= 0) return 0;
+      return Math.abs(ch.resources.privateWealth.money) * 0.02;  // 2%/月
     },
     // 14. 赌博挥霍
     gambling: function(ch) {
@@ -474,7 +483,7 @@
 
     // 贿赂/挪用→增加 integrity 下降 + 贪腐贡献
     if (incomeDetail.bribes) {
-      r.privateWealth.cash += incomeDetail.bribes;
+      r.privateWealth.money += incomeDetail.bribes;
       r.hiddenWealth += incomeDetail.bribes * 0.4;  // 部分隐匿
       ch.integrity = Math.max(0, ch.integrity - 0.2 * mr);
       if (ch.department && GM.corruption && GM.corruption.subDepts[ch.department]) {
@@ -484,14 +493,14 @@
     }
     if (incomeDetail.embezzle && r.publicTreasury) {
       r.publicTreasury.balance = Math.max(0, r.publicTreasury.balance - incomeDetail.embezzle);
-      r.privateWealth.cash += incomeDetail.embezzle;
+      r.privateWealth.money += incomeDetail.embezzle;
       r.hiddenWealth += incomeDetail.embezzle * 0.5;
       ch.integrity = Math.max(0, ch.integrity - 0.3 * mr);
     }
-    // 正当收入入 cash
+    // 正当收入入 money
     ['salary','imperialReward','commerce','rent','inheritance','tributeShare',
      'examReward','templeDonation','militaryReward','personalTribute','extortion'].forEach(function(k) {
-      if (incomeDetail[k]) r.privateWealth.cash += incomeDetail[k];
+      if (incomeDetail[k]) r.privateWealth.money += incomeDetail[k];
     });
 
     // ─ 支出 ─
@@ -503,7 +512,7 @@
       if (v2 !== 0) expenseDetail[e] = v2 * mr;
       totalExpense += v2 * mr;
     }
-    r.privateWealth.cash -= totalExpense;
+    r.privateWealth.money -= totalExpense;
 
     // 清除本回合临时字段
     delete ch._inheritanceThisTurn;
@@ -531,6 +540,15 @@
     ch._lastTickNet = totalIncome - totalExpense;
   }
 
+  // 同步 publicPurse 三列(紧要之臣卡片/UI 显示用)·与 publicTreasury 镜像保持一致
+  function _syncPublicPurse(ch, money, grain, cloth) {
+    if (!ch.resources) ch.resources = {};
+    if (!ch.resources.publicPurse) ch.resources.publicPurse = { money: 0, grain: 0, cloth: 0 };
+    ch.resources.publicPurse.money = money || 0;
+    ch.resources.publicPurse.grain = grain || 0;
+    ch.resources.publicPurse.cloth = cloth || 0;
+  }
+
   function updatePublicTreasuryMirror(ch) {
     var pt = ch.resources.publicTreasury;
     if (!pt) return;
@@ -546,6 +564,7 @@
       pt.grain = (gkLedgers.grain && gkLedgers.grain.stock != null) ? gkLedgers.grain.stock : 0;
       pt.cloth = (gkLedgers.cloth && gkLedgers.cloth.stock != null) ? gkLedgers.cloth.stock : 0;
       pt.deficit = 0;
+      _syncPublicPurse(ch, pt.balance, pt.grain, pt.cloth);
       // 同步私产=内帑
       var pw = ch.resources.privateWealth;
       if (pw) {
@@ -556,7 +575,6 @@
         pw.money = (ntLedgers.money && ntLedgers.money.stock != null) ? ntLedgers.money.stock : (nt.balance || 0);
         pw.grain = (ntLedgers.grain && ntLedgers.grain.stock != null) ? ntLedgers.grain.stock : 0;
         pw.cloth = (ntLedgers.cloth && ntLedgers.cloth.stock != null) ? ntLedgers.cloth.stock : 0;
-        pw.cash = pw.money;
       }
       return;
     }
@@ -572,6 +590,7 @@
       pt.grain = t.grain || 0;
       pt.cloth = t.cloth || 0;
       pt.deficit = 0;
+      _syncPublicPurse(ch, pt.balance, pt.grain, pt.cloth);
       // 同步私产=领袖私库
       var pw2 = ch.resources.privateWealth;
       if (pw2) {
@@ -582,7 +601,6 @@
         pw2.money = lp.money || 0;
         pw2.grain = lp.grain || 0;
         pw2.cloth = lp.cloth || 0;
-        pw2.cash = pw2.money;
       }
       return;
     }
@@ -627,12 +645,16 @@
       pt.grain = postPos.publicTreasury.grain && postPos.publicTreasury.grain.stock || 0;
       pt.cloth = postPos.publicTreasury.cloth && postPos.publicTreasury.cloth.stock || 0;
       pt.deficit = postPos.publicTreasury.money.deficit || 0;
+      _syncPublicPurse(ch, pt.balance, pt.grain, pt.cloth);
       return;
     }
     // 2) 区域公库镜像（兜底）
     if (pt.linkedRegion) {
       var regionPT = (GM.regions && GM.regions[pt.linkedRegion] && GM.regions[pt.linkedRegion].publicTreasury) || null;
-      if (regionPT) pt.balance = regionPT.balance;
+      if (regionPT) {
+        pt.balance = regionPT.balance;
+        _syncPublicPurse(ch, pt.balance, pt.grain || 0, pt.cloth || 0);
+      }
     }
   }
 
@@ -652,7 +674,7 @@
     if (ch.age > 60) healthDelta -= 0.2;
     if (ch.age > 70) healthDelta -= 0.3;
     if (ch.stress > 70) healthDelta -= 0.3;
-    if (ch.resources.privateWealth.cash > 5000) healthDelta += 0.1;  // 富贵可养身
+    if (ch.resources.privateWealth.money > 5000) healthDelta += 0.1;  // 富贵可养身
     ch.health = clamp((ch.health || 70) + healthDelta * mr, 0, 100);
 
     // 健康 = 0 → 死亡
@@ -693,7 +715,7 @@
 
     var r = ch.resources;
     var pw = r.privateWealth;
-    var visible = (pw.cash || 0) + (pw.land || 0) * 5 + (pw.treasure || 0) + (pw.commerce || 0);
+    var visible = (pw.money || 0) + (pw.land || 0) * 5 + (pw.treasure || 0) + (pw.commerce || 0);
     var hiddenFound = 0;
 
     // 隐匿挖掘（按 opts.intensity）
@@ -712,14 +734,14 @@
     var total = visible + hiddenFound + clanLoss;
 
     // 现金清零；田产没官；slaves/treasure/commerce 估值记账
-    pw.cash = 0;
+    pw.money = 0;
     pw.land = 0;
     pw.treasure = 0;
     pw.commerce = 0;
     pw.slaves = 0;
 
-    // 按 destination 分账（默认入内帑）
-    var dest = opts.destination || 'neitang';
+    // 按 destination 分账（默认入帑廪·"籍没入官"传统）
+    var dest = opts.destination || 'guoku';
     if (dest === 'neitang' && GM.neitang) {
       GM.neitang.balance += total;
       GM.neitang._recentConfiscation = (GM.neitang._recentConfiscation || 0) + total;
@@ -757,7 +779,7 @@
 
   function distributeInheritance(ch) {
     if (!ch.family || !ch.family.children) return;
-    var total = (ch.resources.privateWealth.cash || 0) +
+    var total = (ch.resources.privateWealth.money || 0) +
                 (ch.resources.privateWealth.treasure || 0);
     var heirs = ch.family.children || [];
     if (heirs.length === 0) {
@@ -863,9 +885,9 @@
       var contribution = 0;
       clan.members.forEach(function(mId) {
         var m = (GM.chars || []).find(function(c) { return c.id === mId; });
-        if (m && m.resources && m.resources.privateWealth && m.resources.privateWealth.cash > 100) {
-          var t = m.resources.privateWealth.cash * 0.03 * mr;
-          m.resources.privateWealth.cash -= t;
+        if (m && m.resources && m.resources.privateWealth && m.resources.privateWealth.money > 100) {
+          var t = m.resources.privateWealth.money * 0.03 * mr;
+          m.resources.privateWealth.money -= t;
           contribution += t;
         }
       });
@@ -877,12 +899,12 @@
         return m;
       }).filter(function(m) { return m && m.resources; })
         .sort(function(a, b) {
-          return (a.resources.privateWealth.cash || 0) - (b.resources.privateWealth.cash || 0);
+          return (a.resources.privateWealth.money || 0) - (b.resources.privateWealth.money || 0);
         });
       var poorCount = Math.max(1, Math.floor(sorted.length * 0.2));
       var perPoorSupport = Math.min(clan.sharedWealth * 0.1, poorCount * 100) / poorCount;
       sorted.slice(0, poorCount).forEach(function(m) {
-        m.resources.privateWealth.cash += perPoorSupport;
+        m.resources.privateWealth.money += perPoorSupport;
         clan.sharedWealth -= perPoorSupport;
       });
     });
@@ -895,14 +917,14 @@
   // 供财政系统：发俸
   function paySalary(ch, amount) {
     ensureCharResources(ch);
-    ch.resources.privateWealth.cash += amount;
+    ch.resources.privateWealth.money += amount;
   }
 
   // 供腐败系统：贪腐入账
   function addBribeIncome(ch, amount, hiddenRatio) {
     ensureCharResources(ch);
     hiddenRatio = hiddenRatio || 0.4;
-    ch.resources.privateWealth.cash += amount * (1 - hiddenRatio);
+    ch.resources.privateWealth.money += amount * (1 - hiddenRatio);
     ch.resources.hiddenWealth = (ch.resources.hiddenWealth || 0) + amount * hiddenRatio;
     ch.integrity = Math.max(0, (ch.integrity || 50) - amount / 10000 * 2);
   }

@@ -3971,6 +3971,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         if (typeof FixedExpense !== 'undefined' && typeof FixedExpense.collect === 'function') {
           try { FixedExpense.collect(); } catch(_feE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_feE, 'endTurn] FixedExpense.collect') : console.warn('[endTurn] FixedExpense.collect', _feE); }
         }
+        // ①.6 军事双 schema 同步·GM.armies → GM.population.military.types(派生)·防止后续 _tickMilitarySupply 用陈旧数据
+        if (typeof syncMilitarySources === 'function') {
+          try { syncMilitarySources(GM); } catch(_smE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_smE, 'endTurn] syncMilitarySources') : console.warn('[endTurn] syncMilitarySources', _smE); }
+        }
         // ②区划 → 七变量聚合（户口/民心/腐败/财政 等）
         if (typeof IntegrationBridge !== 'undefined' && typeof IntegrationBridge.aggregateRegionsToVariables === 'function') {
           try { IntegrationBridge.aggregateRegionsToVariables(); } catch(_aggE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_aggE, 'endTurn] aggregate pre-AI') : console.warn('[endTurn] aggregate pre-AI', _aggE); }
@@ -4129,6 +4133,97 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               tp1 += '；地方留存 钱 ' + Math.round(cs.localRetain.money/10000) + '万/粮 ' + Math.round(cs.localRetain.grain/10000) + '万';
               tp1 += '；被贪 钱 ' + Math.round(cs.skimmed.money/10000) + '万/粮 ' + Math.round(cs.skimmed.grain/10000) + '万；路途损耗 钱 ' + Math.round(cs.lostTransit.money/10000) + '万';
             }
+
+            // ★ 帑廪 收源 subItems · 让 AI 看 8 大类下细目（如田赋·正赋 X 万 + 附加 Y 万）
+            try {
+              if (GM.guoku && GM.guoku.sourcesDetail) {
+                var _gkSrcCats = ['tianfu','dingshui','caoliang','yanlizhuan','shipaiShui','quanShui','mining','fishingTax','juanNa','qita'];
+                var _gkSrcCatNames = {tianfu:'田赋',dingshui:'丁税',caoliang:'漕粮',yanlizhuan:'盐铁茶',shipaiShui:'市舶',quanShui:'榷税',mining:'矿冶',fishingTax:'渔课',juanNa:'捐纳',qita:'其他'};
+                var _gkSrcArr = [];
+                _gkSrcCats.forEach(function(cat) {
+                  var items = GM.guoku.sourcesDetail[cat] || [];
+                  if (!Array.isArray(items) || items.length === 0) return;
+                  var _sum = items.reduce(function(s, it){ return s + (it.amount||0); }, 0);
+                  if (_sum < 1000) return; // 过滤 < 0.1 万的零碎
+                  var parts = items.slice(0, 3).map(function(it){
+                    return (it.name||it.id||'?') + Math.round((it.amount||0)/10000) + '万';
+                  });
+                  _gkSrcArr.push((_gkSrcCatNames[cat]||cat) + '[' + parts.join('+') + ']');
+                });
+                if (_gkSrcArr.length > 0) tp1 += '\n  帑廪·收源细目：' + _gkSrcArr.join('；');
+              }
+            } catch(_e){}
+
+            // ★ 帑廪 支用 subItems · 让 AI 看 8 大类下细目
+            try {
+              if (GM.guoku && GM.guoku.expensesDetail) {
+                var _gkExpCats = ['fenglu','junxiang','zhenzi','gongcheng','jisi','shangci','neiting','qita'];
+                var _gkExpCatNames = {fenglu:'俸禄',junxiang:'军饷',zhenzi:'赈济',gongcheng:'工程',jisi:'祭祀',shangci:'赏赐',neiting:'内廷转运',qita:'其他'};
+                var _gkExpArr = [];
+                _gkExpCats.forEach(function(cat) {
+                  var items = GM.guoku.expensesDetail[cat] || [];
+                  if (!Array.isArray(items) || items.length === 0) return;
+                  var _sum = items.reduce(function(s, it){ return s + (it.amount||0); }, 0);
+                  if (_sum < 1000) return;
+                  var parts = items.slice(0, 3).map(function(it){
+                    return (it.name||it.id||'?') + Math.round((it.amount||0)/10000) + '万';
+                  });
+                  _gkExpArr.push((_gkExpCatNames[cat]||cat) + '[' + parts.join('+') + ']');
+                });
+                if (_gkExpArr.length > 0) tp1 += '\n  帑廪·支用细目：' + _gkExpArr.join('；');
+              }
+            } catch(_e){}
+
+            // ★ 内帑 收/支 subItems
+            try {
+              if (GM.neitang && GM.neitang.sourcesDetail) {
+                var _ntSrcCats = ['huangzhuang','huangchan','specialTax','confiscation','tribute','guokuTransfer'];
+                var _ntSrcNames = {huangzhuang:'皇庄',huangchan:'皇产',specialTax:'特税',confiscation:'抄家',tribute:'朝贡',guokuTransfer:'帑廪转运'};
+                var _ntSrcArr = [];
+                _ntSrcCats.forEach(function(cat) {
+                  var items = GM.neitang.sourcesDetail[cat] || [];
+                  if (!Array.isArray(items) || items.length === 0) return;
+                  var _sum = items.reduce(function(s, it){ return s + (it.amount||0); }, 0);
+                  if (_sum < 500) return;
+                  var parts = items.slice(0, 2).map(function(it){
+                    return (it.name||it.id||'?') + Math.round((it.amount||0)/10000) + '万';
+                  });
+                  _ntSrcArr.push((_ntSrcNames[cat]||cat) + '[' + parts.join('+') + ']');
+                });
+                if (_ntSrcArr.length > 0) tp1 += '\n  内帑·收源细目：' + _ntSrcArr.join('；');
+              }
+              if (GM.neitang && GM.neitang.expensesDetail) {
+                var _ntExpCats = ['gongting','dadian','shangci','houGongLingQin','guokuRescue'];
+                var _ntExpNames = {gongting:'宫廷',dadian:'大典',shangci:'赏赐',houGongLingQin:'后宫陵寝',guokuRescue:'援帑廪'};
+                var _ntExpArr = [];
+                _ntExpCats.forEach(function(cat) {
+                  var items = GM.neitang.expensesDetail[cat] || [];
+                  if (!Array.isArray(items) || items.length === 0) return;
+                  var _sum = items.reduce(function(s, it){ return s + (it.amount||0); }, 0);
+                  if (_sum < 500) return;
+                  var parts = items.slice(0, 2).map(function(it){
+                    return (it.name||it.id||'?') + Math.round((it.amount||0)/10000) + '万';
+                  });
+                  _ntExpArr.push((_ntExpNames[cat]||cat) + '[' + parts.join('+') + ']');
+                });
+                if (_ntExpArr.length > 0) tp1 += '\n  内帑·支用细目：' + _ntExpArr.join('；');
+              }
+            } catch(_e){}
+
+            // ★ 各税种地方贡献 top·央地财政透明溯源
+            try {
+              if (typeof CascadeTax !== 'undefined' && typeof CascadeTax.getTopContributors === 'function' && GM.guoku && GM.guoku._sourceContributors) {
+                var _topRows = [];
+                var _topNameMap = {tianfu:'田赋',dingshui:'丁',caoliang:'漕',yanke:'盐',yanlizhuan:'盐铁',shipo:'市舶',shipaiShui:'市舶',mining:'矿',quanShui:'榷',fishingTax:'渔',juanNa:'捐'};
+                Object.keys(GM.guoku._sourceContributors).slice(0, 6).forEach(function(cat) {
+                  var tops = CascadeTax.getTopContributors(cat, 3);
+                  if (!tops || tops.length === 0) return;
+                  var topStr = tops.map(function(t){ return t.name + t.pct.toFixed(0) + '%'; }).join('|');
+                  _topRows.push((_topNameMap[cat]||cat) + '⊳' + topStr);
+                });
+                if (_topRows.length > 0) tp1 += '\n  地方贡献占比·主税种：' + _topRows.join('；');
+              }
+            } catch(_e){}
             if (_v.population && _v.population.national) tp1 += '\n  户口：户 ' + Math.round((_v.population.national.households||0)/10000) + ' 万 · 口 ' + Math.round((_v.population.national.mouths||0)/10000) + ' 万 · 丁 ' + Math.round((_v.population.national.ding||0)/10000) + ' 万 · 逃户 ' + (_v.population.fugitives||0) + ' · 隐户 ' + (_v.population.hiddenCount||0);
           }
           // ── 民心分阶层/分区域 ──
@@ -4180,10 +4275,47 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                   }
                   if (typeof d.minxin === 'number') line += ' 民心' + Math.round(d.minxin);
                   if (typeof d.corruption === 'number') line += ' 腐' + Math.round(d.corruption);
-                  if (d.fiscal && d.fiscal.actualRevenue) line += ' 赋' + Math.round(d.fiscal.actualRevenue/10000) + '万';
+                  if (d.fiscal && d.fiscal.actualRevenue) {
+                    line += ' 赋' + Math.round(d.fiscal.actualRevenue/10000) + '万';
+                    // ★ 各税种贡献细目（top 3）
+                    if (d.fiscal.contributionsByCategory) {
+                      var _catKeys = Object.keys(d.fiscal.contributionsByCategory)
+                        .filter(function(c){ return d.fiscal.contributionsByCategory[c] > 1000; })
+                        .sort(function(a,b){ return d.fiscal.contributionsByCategory[b] - d.fiscal.contributionsByCategory[a]; })
+                        .slice(0, 3);
+                      if (_catKeys.length > 0) {
+                        var _catNameMap = {tianfu:'田',dingshui:'丁',caoliang:'漕',yanke:'盐',yanlizhuan:'盐',shipo:'舶',shipaiShui:'舶',mining:'矿',quanShui:'榷',fishingTax:'渔',juanNa:'捐'};
+                        line += '[' + _catKeys.map(function(c){ return (_catNameMap[c]||c) + Math.round(d.fiscal.contributionsByCategory[c]/10000) + 'w'; }).join(',') + ']';
+                      }
+                    }
+                  }
                   if (d.publicTreasury && d.publicTreasury.money && d.publicTreasury.money.deficit>0) line += ' 亏' + Math.round(d.publicTreasury.money.deficit/10000) + '万';
                   if (d.regionType && d.regionType !== 'normal') line += ' [' + d.regionType + ']';
                   if (d.environment && d.environment.currentLoad > 0.9) line += ' 过载';
+                  // ★ 田亩流转·本回合
+                  if (d._thisTurnLandFlow) {
+                    var _lf = d._thisTurnLandFlow;
+                    var _lfP = [];
+                    if (_lf.annexed > 0) _lfP.push('兼并' + Math.round(_lf.annexed/10000) + 'w');
+                    if (_lf.reclaimed > 0) _lfP.push('开垦' + Math.round(_lf.reclaimed/10000) + 'w');
+                    if (_lf.surveyed > 0) _lfP.push('清丈' + Math.round(_lf.surveyed/10000) + 'w');
+                    if (_lfP.length) line += ' 田流(' + _lfP.join('|') + ')';
+                  }
+                  // ★ 经济基础 tags（让 AI 知道此区有何特殊属性·从而推演策略）
+                  if (d.tags) {
+                    var _tagP = [];
+                    if (d.tags.hasPort) _tagP.push('港');
+                    if (d.tags.saltRegion) _tagP.push('盐');
+                    if (d.tags.mineralRegion) _tagP.push('矿');
+                    if (d.tags.horseRegion) _tagP.push('马');
+                    if (d.tags.fishingRegion) _tagP.push('渔');
+                    if (d.tags.imperialDomain) _tagP.push('辖');
+                    if (_tagP.length) line += ' [' + _tagP.join('') + ']';
+                  }
+                  // ★ 累计兼并 — 提示 AI 是否需要清丈
+                  if (d.economyBase && d.economyBase.landsAnnexed > 100000) {
+                    line += ' 兼并累' + Math.round(d.economyBase.landsAnnexed/10000) + 'w';
+                  }
                   divTxt.push(line);
                 });
               });
@@ -4201,6 +4333,14 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           tp1 += '\n  · events: [{category, text, credibility}]';
           tp1 += '\n  · npc_interactions: [{actor, target, type:"impeach|slander|recommend|frame_up|betray|private_visit|correspond_secret|mediate|expose_secret|duel_poetry|master_disciple|reconcile|guarantee|..", description, involvedOthers?, publicKnown?}] —— 系统自动路由到 奏疏/问对/鸿雁/起居注/风闻，且按 type 自动涨/跌 actor 的 fame(名望 -100..+100)与 virtueMerit(贤能 累积)——譬如 recommend/mediate 提贤能，frame_up/betray/slander 损名望，expose_secret/impeach 对被揭者 fame 大跌。请按人物性格/立场/与目标关系选择合适的 type，避免机械化';
           tp1 += '\n  · localActions: [{region, type:"disaster_relief|public_works_water|public_works_road|education|granary_stockpile|military_prep|charity_local|illicit", amount, reason, proposer}] —— 地方官自主治理（按 region.fiscal 情况决定，amount < 3% 地方留存为常规，10-30% 为应急。illicit 为贪墨挪用，进入主官私产）';
+          tp1 += '\n';
+          tp1 += '\n【财政与田亩流转·新机制·可用 path】';
+          tp1 += '\n  · 各 division.economyBase 字段可读·田赋/盐课/矿/海贸 = farmland × landTaxRate / saltProduction × saltTaxRate / mineralProduction × mineralTaxRate / maritimeTradeVolume × maritimeRate';
+          tp1 += '\n  · 兼并自动结算：corruption > 50 时按 (corr-50)/100×4%/年 farmland 流入 landsAnnexed（豪强吞并）';
+          tp1 += '\n  · 开垦自动结算：currentLoad < 0.7 时按 (1-load)×1.5%/年 增 farmland，劝农政策×2.5（path: "policies.encourageFarming" = true 启动）';
+          tp1 += '\n  · 清丈触发：path "adminHierarchy.{fac}.divisions.{name}._surveyTrigger" = true 单次触发·下回合按 30-60% 从 landsAnnexed 回 farmland（民心高 → 比例高）';
+          tp1 += '\n  · 道路质量 economyBase.roadQuality 影响驿递成本与商旅·可由地方治理「修路」localAction 缓慢提升';
+          tp1 += '\n  · 帑廪/内帑 subItems 已展示·推演时引用具体细目（如「田赋·正赋下降 X 万因兼并」）而非空洞「岁入下降」';
           tp1 += '\n';
           tp1 += '\n【重要原则】';
           tp1 += '\n · 必读以上七变量+深化字段，推演要体现数据（而非空洞叙事）';
@@ -4237,6 +4377,94 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       } catch(_g1E) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_g1E, 'G1 schema prune') : console.warn('[G1 schema prune]', _g1E); }
       // G3·温度按子调用类型分：SC1 主推演叙事·保持 _modelTemp（常 0.8）
       var _sc1Temp = _modelTemp;
+      // ★ Token 预算监控·SC1 prompt 接近 / 超出 context window 时报警 + 自动裁剪
+      try {
+        if (typeof checkPromptTokenBudget === 'function') {
+          var _sc1FullPrompt = (sysP || '') + '\n' + (tp1 || '');
+          var _sc1TokRes = checkPromptTokenBudget(_sc1FullPrompt, function(status, tokens, bg) {
+            var msg = '[SC1] prompt ' + status + '·estimated ' + tokens + ' tokens·budget ' + bg.budget + ' (' + bg.contextK + 'K context)';
+            if (typeof toast === 'function') toast(msg);
+            if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(new Error(msg), 'SC1.tokenBudget');
+          });
+          if (typeof window !== 'undefined') {
+            window.TM = window.TM || {}; window.TM.lastPromptTokens = window.TM.lastPromptTokens || {};
+            window.TM.lastPromptTokens.sc1 = { tokens: _sc1TokRes.tokens, status: _sc1TokRes.status, budget: _sc1TokRes.budget.budget, trimmed: false, ts: Date.now() };
+          }
+          // critical → 双调用策略：Call A 压缩长段·Call B(SC1) 用压缩结果·保证质量不截断
+          if (_sc1TokRes.status === 'critical' && tp1.length > 8000) {
+            var _longSections = [
+              { rx: /\n  帑廪·收源细目：[\s\S]*?(?=\n  帑廪·支用|\n  内帑·|\n  地方贡献|\n  户口|\n  民心|\n\n【|$)/, label: '帑廪收源' },
+              { rx: /\n  帑廪·支用细目：[\s\S]*?(?=\n  内帑·|\n  地方贡献|\n  户口|\n  民心|\n\n【|$)/, label: '帑廪支用' },
+              { rx: /\n  内帑·收源细目：[\s\S]*?(?=\n  内帑·支用|\n  地方贡献|\n  户口|\n  民心|\n\n【|$)/, label: '内帑收源' },
+              { rx: /\n  内帑·支用细目：[\s\S]*?(?=\n  地方贡献|\n  户口|\n  民心|\n\n【|$)/, label: '内帑支用' },
+              { rx: /\n  地方贡献占比·主税种：[\s\S]*?(?=\n  户口|\n  民心|\n\n【|$)/, label: '地方贡献' },
+              { rx: /\n  民心·主要驱动：[\s\S]*?(?=\n\n【|$)/, label: '民心 14 源' },
+              { rx: /\n  腐败·6部门：[\s\S]*?(?=\n  民心·|\n  14|\n\n【|$)/, label: '腐败 6 部门' },
+              { rx: /\n  民心·分阶层：[\s\S]*?(?=\n  腐败·|\n\n【|$)/, label: '民心分阶层' }
+            ];
+            var _extracted = '';
+            var _extractedLabels = [];
+            _longSections.forEach(function(sect) {
+              var match = tp1.match(sect.rx);
+              if (match) {
+                _extracted += '\n[' + sect.label + ']' + match[0];
+                _extractedLabels.push(sect.label);
+                tp1 = tp1.replace(sect.rx, '');
+              }
+            });
+            // 仅当抽取出 > 1.5KB 内容时启动 Call A 压缩
+            if (_extracted.length > 1500 && typeof callAIMessages === 'function') {
+              var _callASys = '你是天命游戏的「财政民心摘要史官」·阅读以下原始数据·压缩为 ≤ 700 字的「关键观察清单」·要求：(1) 保留具体数字（如「田赋88万·盐课168万」）(2) 标注异常（如「四川田赋仅 6 万远低预期」）(3) 标注 top 1-2 个支柱地区 (4) 用 · 分隔条目·不写解释性废话';
+              var _callAUser = _extracted;
+              try {
+                if (typeof toast === 'function') toast('[SC1] critical·启动 Call A 压缩长段...');
+                var _callABody = {
+                  model: P.ai.model || 'gpt-4o',
+                  messages: [{ role: 'system', content: _callASys }, { role: 'user', content: _callAUser }],
+                  temperature: 0.3,
+                  max_tokens: _tok(1200)
+                };
+                var _callARaw = await callAIMessages(_callABody.messages, _callABody.max_tokens, undefined, 'tier-low');
+                var _summary = (_callARaw && _callARaw.choices && _callARaw.choices[0] && _callARaw.choices[0].message && _callARaw.choices[0].message.content) || '';
+                if (_summary.length > 100) {
+                  // 把压缩结果嵌回 tp1 — 紧接七变量段后
+                  var _injection = '\n\n【财政民心·压缩观察(原数据 ' + _extractedLabels.length + ' 段·共 ' + _extracted.length + ' 字 → 压缩 ' + _summary.length + ' 字)】\n' + _summary.trim() + '\n';
+                  // 找一个合适注入点：「【行政区划·深化】」之前·或在 tp1 末尾增量
+                  if (tp1.indexOf('\n\n【行政区划') >= 0) {
+                    tp1 = tp1.replace(/\n\n【行政区划/, _injection + '\n\n【行政区划');
+                  } else {
+                    tp1 += _injection;
+                  }
+                  // 记录
+                  window.TM.lastPromptTokens.sc1.compressed = {
+                    sections: _extractedLabels,
+                    rawChars: _extracted.length,
+                    summaryChars: _summary.length,
+                    callAModel: _callABody.model
+                  };
+                  if (typeof toast === 'function') toast('[SC1] Call A 压缩成功·' + _extracted.length + '字 → ' + _summary.length + '字');
+                  // 重新检测 SC1 token
+                  var _retok = checkPromptTokenBudget((sysP||'') + '\n' + tp1);
+                  window.TM.lastPromptTokens.sc1.tokensAfter = _retok.tokens;
+                  window.TM.lastPromptTokens.sc1.statusAfter = _retok.status;
+                } else {
+                  // Call A 失败·把抽取的内容贴回去（保证不丢）
+                  tp1 += _extracted;
+                  if (typeof toast === 'function') toast('[SC1] Call A 返回为空·已贴回原内容');
+                }
+              } catch(_callAErr) {
+                // Call A 抛错·把抽取内容贴回去
+                tp1 += _extracted;
+                if (typeof toast === 'function') toast('[SC1] Call A 失败·已贴回原内容: ' + (_callAErr && _callAErr.message || ''));
+                if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(_callAErr, 'SC1.callA');
+              }
+            } else if (_extracted.length > 0) {
+              // 抽取到内容但太少·或 callAIMessages 不可用·贴回去
+              tp1 += _extracted;
+            }
+          }
+        }
+      } catch(_tokE) {}
       var _sc1Body = {model:P.ai.model||"gpt-4o",messages:[{role:"system",content:sysP},{role:"user",content:tp1}],temperature:_sc1Temp,max_tokens:_tok(_sc1BaseTok)};
       if (_modelFamily === 'openai') _sc1Body.response_format = { type: 'json_object' };
       var _streamSC1 = (P.ai && P.ai.stream_sc1 !== false);  // 默认开·可通过 P.ai.stream_sc1=false 关闭
@@ -4383,6 +4611,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             _sc1bMsgs = [{role:'system', content:[{type:'text', text:sysP, cache_control:{type:'ephemeral'}}]}, {role:'user',content:tp1b}];
           }
         } catch(_){}
+        // ★ Token 预算监控·SC1b
+        try {
+          if (typeof checkPromptTokenBudget === 'function') {
+            var _sc1bFullPrompt = (sysP || '') + '\n' + (tp1b || '');
+            var _sc1bTokRes = checkPromptTokenBudget(_sc1bFullPrompt, function(status, tokens, bg) {
+              if (typeof toast === 'function') toast('[SC1b] prompt ' + status + '·' + tokens + ' tokens');
+            });
+            if (typeof window !== 'undefined') {
+              window.TM = window.TM || {}; window.TM.lastPromptTokens = window.TM.lastPromptTokens || {};
+              window.TM.lastPromptTokens.sc1b = { tokens: _sc1bTokRes.tokens, status: _sc1bTokRes.status, ts: Date.now() };
+            }
+          }
+        } catch(_tokE) {}
         var _sc1bBody = {model:P.ai.model||'gpt-4o', messages:_sc1bMsgs, temperature:_sc1bTemp, max_tokens:_tok(_sc1bBaseTok)};
         if (_modelFamily === 'openai') _sc1bBody.response_format = { type:'json_object' };
 
@@ -4727,6 +4968,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             _sc1cMsgs = [{role:'system', content:[{type:'text', text:sysP, cache_control:{type:'ephemeral'}}]}, {role:'user',content:tp1c}];
           }
         } catch(_){}
+        // ★ Token 预算监控·SC1c
+        try {
+          if (typeof checkPromptTokenBudget === 'function') {
+            var _sc1cFullPrompt = (sysP || '') + '\n' + (tp1c || '');
+            var _sc1cTokRes = checkPromptTokenBudget(_sc1cFullPrompt, function(status, tokens, bg) {
+              if (typeof toast === 'function') toast('[SC1c] prompt ' + status + '·' + tokens + ' tokens');
+            });
+            if (typeof window !== 'undefined') {
+              window.TM = window.TM || {}; window.TM.lastPromptTokens = window.TM.lastPromptTokens || {};
+              window.TM.lastPromptTokens.sc1c = { tokens: _sc1cTokRes.tokens, status: _sc1cTokRes.status, ts: Date.now() };
+            }
+          }
+        } catch(_tokE) {}
         var _sc1cBody = {model:P.ai.model||'gpt-4o', messages:_sc1cMsgs, temperature:_sc1cTemp, max_tokens:_tok(_sc1cBaseTok)};
         if (_modelFamily === 'openai') _sc1cBody.response_format = { type:'json_object' };
 

@@ -119,8 +119,8 @@
     } else {
       html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">';
       // 铜钱（现金）
-      html += renderWealthItem('💰', '现金', fmtMoney(pw.cash || 0) + ' 两', 'var(--gold-400)',
-        pw.cash < 0 ? 'var(--vermillion-400)' : null);
+      html += renderWealthItem('💰', '现银', fmtMoney(pw.money || 0) + ' 两', 'var(--gold-400)',
+        pw.money < 0 ? 'var(--vermillion-400)' : null);
       // 禾穗（田亩）
       html += renderWealthItem('🌾', '田亩', (pw.land||0).toLocaleString() + ' 亩', '#6aa88a');
       // 珍宝
@@ -373,7 +373,7 @@
     if (typeof CharEconEngine === 'undefined') return;
     var ch = (GM.chars || []).find(function(c) { return c.name === charName; });
     if (!ch) return;
-    var visible = (ch.resources.privateWealth.cash || 0) +
+    var visible = (ch.resources.privateWealth.money || 0) +
                   (ch.resources.privateWealth.land || 0) * 5 +
                   (ch.resources.privateWealth.treasure || 0) +
                   (ch.resources.privateWealth.commerce || 0);

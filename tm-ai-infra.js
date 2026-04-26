@@ -415,6 +415,38 @@ function checkPromptTokenBudget(promptText, onWarn) {
 }
 
 // ============================================================
+//  TM.tokens·诊断/查看接口·控制台与 UI 用
+//  TM.tokens.last() / TM.tokens.estimate(text) / TM.tokens.budget()
+// ============================================================
+(function(g) {
+  if (typeof g === 'undefined') return;
+  g.TM = g.TM || {};
+  g.TM.tokens = g.TM.tokens || {
+    /** 估算任意字符串 token 数·中英混合启发式 */
+    estimate: function(text) { return estimateTokens(text); },
+    /** 查询当前 prompt 预算 */
+    budget: function() { return getPromptBudget(); },
+    /** 查看上次推演各 sub-call 的 token 估算 */
+    last: function() {
+      var L = (g.TM && g.TM.lastPromptTokens) || {};
+      var keys = Object.keys(L);
+      if (!keys.length) return { _empty: '尚未运行推演·先 endTurn 一次' };
+      var out = {};
+      keys.forEach(function(k) {
+        var r = L[k] || {};
+        var pct = r.budget > 0 ? (r.tokens / r.budget * 100).toFixed(1) : '?';
+        out[k] = r.tokens + ' tokens·' + pct + '%·' + (r.status || 'ok') + (r.ts ? '·' + new Date(r.ts).toLocaleTimeString() : '');
+      });
+      return out;
+    },
+    /** 直接 check 一段文本是否超预算 */
+    check: function(text) { return checkPromptTokenBudget(text); },
+    /** 注册 toast 之外的额外通知 sink·自动接管 onWarn 回调 */
+    onWarn: null
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+// ============================================================
 //  1.7.5 AI 调用基础设施（重试 + 超时 + 429 处理 + raw 保留）
 // ============================================================
 var _aiLastRaw = { url: '', body: null, response: null, error: null, ts: 0 };

@@ -2211,7 +2211,20 @@
             imperial:   85  // 宗室大权·新帝对宗藩节制力强
           },
           huangwei: 70,     // 熹宗崩新帝继·朝野观望·威信待立
+          huangweiSubDims: {
+            court:      62, // 朝堂阉党把持·新帝威信待立
+            provincial: 58, // 地方督抚多阉党·号令未行
+            military:   55, // 关宁军头独立·毛文龙桀骜
+            foreign:    48  // 后金强势·察哈尔疏离·朝贡萎缩
+          },
           minxin: 55,       // 天启末政糜烂·民心摇摆
+          minxinByClass: {  // 五阶级民心初值（明末 1627 民怨实情·士大夫党争压抑·农工凋敝·商抗税）
+            shidafu: 35,     // 士大夫·东林死六君子·阉党专权·心怀怨愤
+            shang:   50,     // 商贾·江南抗税网络已成·矿税未除·将信将疑
+            nong:    30,     // 农民·陕西大旱第三年·辽饷加派·苦难深重
+            gongjiang: 45,   // 工匠·织造太重·宫廷采办克扣·尚能糊口
+            youmin:  20      // 游民·流民已现·树皮观音土·将沸而未沸
+          },
           powerMinister: { name: '魏忠贤', controlLevel: 0.55 }, // 新帝欲除·已标记但未执行
           tyrant: { level: 0, risk: 'moderate' }  // 新帝尚未暴虐·但倾向独断
         }
@@ -7847,7 +7860,7 @@
         administration: 76, management: 75, integrity: 80,
         stance: '主战复辽', faction: '明朝廷', party: '', family: '袁氏',
         traits: ['ambitious', 'brave', 'arrogant', 'impatient', 'stubborn'],
-        resources: { privateWealth: { cash: 20000, grain: 5000, cloth: 500 } },
+        resources: { privateWealth: { cash: 20000, grain: 5000, cloth: 500, land: 800, treasure: 3000, slaves: 30, commerce: 5000 } },
         _memory: [
           { event: '宁远一役，红衣大炮退努尔哈赤，不数月汗死', emotion: '骄', weight: 10, turn: -800 },
           { event: '宁锦战后功不录赏，因与魏忠贤不合愤而告归', emotion: '愤', weight: 9, turn: -200 }
@@ -9906,7 +9919,26 @@
             terrain: '平原', specialResources: '漕运·煤·铁·海盐(长芦)', taxLevel: '重',
             publicTreasuryInit: { money: 400000, grain: 800000, cloth: 60000 },
             minxinLocal: 46, corruptionLocal: 74,
-            byFaith: { '儒': 0.40, '佛': 0.18, '道': 0.14, '民间': 0.25, '伊斯兰': 0.03 }
+            byFaith: { '儒': 0.40, '佛': 0.18, '道': 0.14, '民间': 0.25, '伊斯兰': 0.03 },
+            // 经济基础·1627 史实（万历会计录+长芦盐法+宣府边备）
+            tags: { hasPort: true, saltRegion: true, mineralRegion: true, horseRegion: false, fishingRegion: true, imperialDomain: true },
+            economyBase: {
+              farmland: 58000000,                  // 在编田亩 5800 万亩(顺天/保定/河间等八府+宣府)
+              commerceCoefficient: 1.4,            // 京畿商业繁盛
+              commerceVolume: 12300000,            // 商业体量
+              maritimeTradeVolume: 800000,         // 天津港·登州海贸有限
+              saltProduction: 800000000,           // 长芦盐场年产 8 亿斤
+              mineralProduction: 3800000,          // 燕山铁/煤
+              horseProduction: 0,
+              fishingProduction: 350000,           // 渤海湾
+              imperialFarmland: 2900000,           // 皇庄 290 万亩(占田 5%·京畿宗藩侵占多)
+              imperialAssets: { zhizao: 1, kuangchang: 2, yuyao: 0 },  // 京织造 1·矿场 2·无御窑
+              postRelays: 95,                      // 京畿驿密
+              kejuQuota: 95,                       // 北直隶顺天解额冠绝
+              roadQuality: 60,                     // 平原+京畿驰道
+              landsAnnexed: 580000, landsReclaimed: 0, landsSurveyed: 0,  // 福王/勋戚兼并 ~1%
+              disasterRecord: []
+            }
           }),
           division({
             name: '南直隶', level: 'province', officialPosition: '应天巡抚', governor: '毛一鹭',
@@ -9915,7 +9947,26 @@
             terrain: '平原', specialResources: '丝绸·棉布·茶·漕米·盐(两淮)', taxLevel: '重',
             publicTreasuryInit: { money: 800000, grain: 1500000, cloth: 200000 },
             minxinLocal: 55, corruptionLocal: 66,
-            byFaith: { '儒': 0.45, '佛': 0.22, '道': 0.15, '民间': 0.14, '天主教': 0.02, '伊斯兰': 0.02 }
+            byFaith: { '儒': 0.45, '佛': 0.22, '道': 0.15, '民间': 0.14, '天主教': 0.02, '伊斯兰': 0.02 },
+            // 经济基础·两淮盐+江南织造+苏松赋甲天下
+            tags: { hasPort: true, saltRegion: true, mineralRegion: false, horseRegion: false, fishingRegion: true, imperialDomain: true },
+            economyBase: {
+              farmland: 95000000,                  // 实田 9500 万亩(苏松常嘉湖+扬州+应天 14 府)
+              commerceCoefficient: 1.8,            // 江南最盛
+              commerceVolume: 24000000,
+              maritimeTradeVolume: 3200000,        // 苏松/扬州/上海港
+              saltProduction: 2200000000,          // 两淮盐场 22 亿斤·明代盐课最大宗
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 1500000,          // 苏松吴淞江+太湖
+              imperialFarmland: 4750000,           // 江南皇庄+勋戚田 ~5%
+              imperialAssets: { zhizao: 3, kuangchang: 0, yuyao: 0 },  // 江宁/苏州/松江 三织造局
+              postRelays: 130,
+              kejuQuota: 135,                      // 解额最高
+              roadQuality: 60,
+              landsAnnexed: 950000, landsReclaimed: 0, landsSurveyed: 0,  // 江南豪强兼并素重
+              disasterRecord: []
+            }
           }),
           // ═══ 十三布政使司 ═══
           division({
@@ -9925,7 +9976,26 @@
             terrain: '丘陵', specialResources: '丝绸·茶·纸·瓷·海贸', taxLevel: '重',
             publicTreasuryInit: { money: 500000, grain: 900000, cloth: 180000 },
             minxinLocal: 58, corruptionLocal: 68,
-            byFaith: { '儒': 0.42, '佛': 0.26, '道': 0.18, '民间': 0.13, '天主教': 0.01 }
+            byFaith: { '儒': 0.42, '佛': 0.26, '道': 0.18, '民间': 0.13, '天主教': 0.01 },
+            // 经济基础·东南海贸+丝绸+渔
+            tags: { hasPort: true, saltRegion: false, mineralRegion: false, horseRegion: false, fishingRegion: true, imperialDomain: true },
+            economyBase: {
+              farmland: 46300000,                  // 实田 4633 万亩
+              commerceCoefficient: 1.8,
+              commerceVolume: 21500000,
+              maritimeTradeVolume: 3400000,        // 宁波-日本/朝鲜·杭州内贸
+              saltProduction: 0,
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 850000,           // 沿海渔区
+              imperialFarmland: 2300000,           // 杭嘉湖皇庄
+              imperialAssets: { zhizao: 1, kuangchang: 0, yuyao: 0 },  // 杭州织造局
+              postRelays: 110,
+              kejuQuota: 90,
+              roadQuality: 42,                     // 丘陵
+              landsAnnexed: 460000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '江西布政使司', level: 'province', officialPosition: '江西巡抚', governor: '谢元珧',
@@ -9934,7 +10004,26 @@
             terrain: '丘陵', specialResources: '瓷(景德镇)·纸·米·茶', taxLevel: '中',
             publicTreasuryInit: { money: 260000, grain: 620000, cloth: 90000 },
             minxinLocal: 52, corruptionLocal: 62,
-            byFaith: { '儒': 0.48, '佛': 0.22, '道': 0.20, '民间': 0.10 }
+            byFaith: { '儒': 0.48, '佛': 0.22, '道': 0.20, '民间': 0.10 },
+            // 经济基础·景德镇御窑+赣州矿冶
+            tags: { hasPort: false, saltRegion: false, mineralRegion: true, horseRegion: false, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 40120000,                  // 实田 4012 万亩
+              commerceCoefficient: 1.0,
+              commerceVolume: 6500000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 1000000,          // 信州铅锡/赣州铁
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 2, yuyao: 1 },  // 景德镇御窑·赣州矿场
+              postRelays: 80,
+              kejuQuota: 95,                       // 江西文风盛
+              roadQuality: 42,
+              landsAnnexed: 200000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '湖广布政使司', level: 'province', officialPosition: '湖广巡抚', governor: '钱希言',
@@ -9943,7 +10032,26 @@
             terrain: '平原', specialResources: '稻米·茶·桐油·湘水军器', taxLevel: '中',
             publicTreasuryInit: { money: 200000, grain: 720000, cloth: 65000 },
             minxinLocal: 50, corruptionLocal: 60,
-            byFaith: { '儒': 0.40, '佛': 0.22, '道': 0.25, '民间': 0.13 }
+            byFaith: { '儒': 0.40, '佛': 0.22, '道': 0.25, '民间': 0.13 },
+            // 经济基础·楚地粮仓
+            tags: { hasPort: false, saltRegion: false, mineralRegion: false, horseRegion: false, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 58170000,                  // 实田 5817 万亩(湖广熟天下足)
+              commerceCoefficient: 1.0,
+              commerceVolume: 8300000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 90,
+              kejuQuota: 80,
+              roadQuality: 60,                     // 平原
+              landsAnnexed: 290000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '福建布政使司', level: 'province', officialPosition: '福建巡抚', governor: '朱一冯',
@@ -9952,7 +10060,26 @@
             terrain: '沿海', specialResources: '海贸·茶·糖·木材·海船', taxLevel: '中',
             publicTreasuryInit: { money: 180000, grain: 340000, cloth: 45000 },
             minxinLocal: 54, corruptionLocal: 63,
-            byFaith: { '儒': 0.40, '佛': 0.28, '道': 0.18, '民间': 0.13, '天主教': 0.01 }
+            byFaith: { '儒': 0.40, '佛': 0.28, '道': 0.18, '民间': 0.13, '天主教': 0.01 },
+            // 经济基础·闽粤海贸+渔
+            tags: { hasPort: true, saltRegion: false, mineralRegion: false, horseRegion: false, fishingRegion: true, imperialDomain: false },
+            economyBase: {
+              farmland: 13690000,                  // 实田 1369 万亩(山多田少)
+              commerceCoefficient: 1.5,            // 海贸繁盛
+              commerceVolume: 14500000,
+              maritimeTradeVolume: 2800000,        // 月港(漳州)海贸·郑芝龙
+              saltProduction: 400000000,           // 闽盐
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 660000,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 60,
+              kejuQuota: 90,                       // 福建文风
+              roadQuality: 16,                     // 沿海+山地
+              landsAnnexed: 100000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '山东布政使司', level: 'province', officialPosition: '山东巡抚', governor: '李精白',
@@ -9961,7 +10088,26 @@
             terrain: '平原', specialResources: '盐(长芦下延)·麦·棉·铁·海鲜', taxLevel: '中',
             publicTreasuryInit: { money: 240000, grain: 580000, cloth: 70000 },
             minxinLocal: 44, corruptionLocal: 65,
-            byFaith: { '儒': 0.52, '佛': 0.16, '道': 0.16, '民间': 0.14, '伊斯兰': 0.02 }
+            byFaith: { '儒': 0.52, '佛': 0.16, '道': 0.16, '民间': 0.14, '伊斯兰': 0.02 },
+            // 经济基础·孔孟之乡+登州前哨+山东盐
+            tags: { hasPort: true, saltRegion: true, mineralRegion: false, horseRegion: false, fishingRegion: true, imperialDomain: false },
+            economyBase: {
+              farmland: 61250000,                  // 实田 6125 万亩
+              commerceCoefficient: 1.0,
+              commerceVolume: 8000000,
+              maritimeTradeVolume: 600000,         // 登州·胶州
+              saltProduction: 600000000,           // 山东盐场
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 700000,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 90,
+              kejuQuota: 75,
+              roadQuality: 60,
+              landsAnnexed: 310000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '山西布政使司', level: 'province', officialPosition: '山西巡抚', governor: '牟志夔',
@@ -9971,7 +10117,26 @@
             publicTreasuryInit: { money: 220000, grain: 480000, cloth: 40000 },
             minxinLocal: 40, corruptionLocal: 68,
             byFaith: { '儒': 0.42, '佛': 0.20, '道': 0.22, '民间': 0.15, '伊斯兰': 0.01 },
-            carryingCapacity: { arable: 4800000, water: 4200000, climate: 0.82, historicalCap: 5500000, currentLoad: 0.98, carryingRegime: 'strained' }
+            carryingCapacity: { arable: 4800000, water: 4200000, climate: 0.82, historicalCap: 5500000, currentLoad: 0.98, carryingRegime: 'strained' },
+            // 经济基础·晋盐+煤铁+大同九边
+            tags: { hasPort: false, saltRegion: true, mineralRegion: true, horseRegion: true, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 36620000,                  // 实田 3662 万亩
+              commerceCoefficient: 1.0,            // 晋商基础但已凋敝
+              commerceVolume: 5500000,
+              maritimeTradeVolume: 0,
+              saltProduction: 100000000,           // 河东运城池盐 1 亿斤
+              mineralProduction: 2200000,          // 阳泉煤+平定铁
+              horseProduction: 8000,               // 大同马
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 4, yuyao: 0 },  // 4 大矿场
+              postRelays: 70,
+              kejuQuota: 65,
+              roadQuality: 22,                     // 山地险阻
+              landsAnnexed: 180000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '河南布政使司', level: 'province', officialPosition: '河南巡抚', governor: '郭增光',
@@ -9980,7 +10145,26 @@
             terrain: '平原', specialResources: '麦·棉·豆·药材', taxLevel: '重',
             publicTreasuryInit: { money: 180000, grain: 520000, cloth: 55000 },
             minxinLocal: 38, corruptionLocal: 72,
-            carryingCapacity: { arable: 5200000, water: 4600000, climate: 0.78, historicalCap: 6000000, currentLoad: 1.05, carryingRegime: 'strained' }
+            carryingCapacity: { arable: 5200000, water: 4600000, climate: 0.78, historicalCap: 6000000, currentLoad: 1.05, carryingRegime: 'strained' },
+            // 经济基础·中州古地+宗藩(福王)侵田严重
+            tags: { hasPort: false, saltRegion: false, mineralRegion: false, horseRegion: false, fishingRegion: false, imperialDomain: true },
+            economyBase: {
+              farmland: 74240000,                  // 实田 7424 万亩
+              commerceCoefficient: 0.8,            // 中州凋敝
+              commerceVolume: 5400000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 4000000,           // 福王田 4 万顷·宗藩侵田严重
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 100,
+              kejuQuota: 70,
+              roadQuality: 60,
+              landsAnnexed: 1500000, landsReclaimed: 0, landsSurveyed: 0,  // 福王/伊王/周王兼并
+              disasterRecord: []
+            }
           }),
           division({
             name: '陕西布政使司', level: 'province', officialPosition: '陕西巡抚', governor: '胡廷宴',
@@ -10005,7 +10189,31 @@
               willSpawnIfUnanswered: '王嘉胤(1628 起事)·王二(1628 澄城杀令)·高迎祥·李自成·张献忠(1630 前后加入)',
               mitigations: ['开仓赈济需银百万石万', '免派(辽饷+九厘)需中央财政缓冲', '调漕粮入陕需漕运改道', '抚民需选清廉疆臣如杨鹤']
             },
-            regionType: 'disaster_zone'
+            regionType: 'disaster_zone',
+            // 经济基础·三边重镇+饥荒中(在灾)
+            tags: { hasPort: false, saltRegion: true, mineralRegion: false, horseRegion: true, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 29420000,                  // 实田 2942 万亩
+              commerceCoefficient: 0.55,           // 饥荒+边塞·商业极度凋敝
+              commerceVolume: 1800000,
+              maritimeTradeVolume: 0,
+              saltProduction: 50000000,            // 花马池盐(陕北)
+              mineralProduction: 500000,
+              horseProduction: 12000,              // 河西马
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 1, yuyao: 0 },
+              postRelays: 90,                      // 边塞驿密但失修
+              kejuQuota: 65,
+              roadQuality: 14,                     // 高原+饥荒道路败坏
+              landsAnnexed: 500000, landsReclaimed: 0, landsSurveyed: 0,
+              // 已在灾·开局即标记三种灾害进行中
+              disasterRecord: [
+                { type: 'drought', severity: 3, startTurn: 1, note: '连年大旱·延绥/榆林/西安重灾' },
+                { type: 'locust', severity: 2, startTurn: 1, note: '蝗起延绥·吃尽草木' },
+                { type: 'plague', severity: 2, startTurn: 1, note: '饥饿引发疫·关中蔓延' }
+              ]
+            }
           }),
           division({
             name: '四川布政使司', level: 'province', officialPosition: '四川巡抚', governor: '尹同皋',
@@ -10015,7 +10223,26 @@
             publicTreasuryInit: { money: 120000, grain: 380000, cloth: 50000 },
             minxinLocal: 48, corruptionLocal: 58,
             byEthnicity: { '汉': 0.82, '藏': 0.08, '彝': 0.05, '其他': 0.05 },
-            byFaith: { '儒': 0.36, '佛': 0.22, '道': 0.24, '民间': 0.14, '藏传佛教': 0.04 }
+            byFaith: { '儒': 0.36, '佛': 0.22, '道': 0.24, '民间': 0.14, '藏传佛教': 0.04 },
+            // 经济基础·盆地井盐+蜀锦+山地土司
+            tags: { hasPort: false, saltRegion: true, mineralRegion: true, horseRegion: false, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 13420000,                  // 实田 1342 万亩(山多·黄册偏低)
+              commerceCoefficient: 0.85,           // 蜀锦但封闭
+              commerceVolume: 2900000,
+              maritimeTradeVolume: 0,
+              saltProduction: 100000000,           // 自贡井盐 1 亿斤
+              mineralProduction: 800000,
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 1, yuyao: 0 },
+              postRelays: 70,
+              kejuQuota: 60,
+              roadQuality: 9,                      // 蜀道难
+              landsAnnexed: 50000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '广东布政使司', level: 'province', officialPosition: '广东巡抚', governor: '李待问',
@@ -10025,7 +10252,26 @@
             publicTreasuryInit: { money: 240000, grain: 280000, cloth: 60000 },
             minxinLocal: 56, corruptionLocal: 60,
             byEthnicity: { '汉': 0.86, '壮': 0.05, '黎': 0.04, '瑶': 0.03, '疍': 0.01, '其他': 0.01 },
-            byFaith: { '儒': 0.42, '佛': 0.22, '道': 0.18, '民间': 0.16, '天主教': 0.01, '伊斯兰': 0.01 }
+            byFaith: { '儒': 0.42, '佛': 0.22, '道': 0.18, '民间': 0.16, '天主教': 0.01, '伊斯兰': 0.01 },
+            // 经济基础·岭海+广州海贸+琼州珠
+            tags: { hasPort: true, saltRegion: true, mineralRegion: false, horseRegion: false, fishingRegion: true, imperialDomain: false },
+            economyBase: {
+              farmland: 25700000,                  // 实田 2570 万亩
+              commerceCoefficient: 1.6,            // 广州为海贸枢纽
+              commerceVolume: 12000000,
+              maritimeTradeVolume: 4000000,        // 广州+澳门(葡萄牙)
+              saltProduction: 400000000,           // 广盐
+              mineralProduction: 0,
+              horseProduction: 0,
+              fishingProduction: 900000,           // 沿海+合浦珠
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 70,
+              kejuQuota: 75,
+              roadQuality: 16,                     // 沿海+山地
+              landsAnnexed: 150000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '广西布政使司', level: 'province', officialPosition: '广西巡抚', governor: '毛堪',
@@ -10035,7 +10281,26 @@
             publicTreasuryInit: { money: 60000, grain: 160000, cloth: 18000 },
             minxinLocal: 44, corruptionLocal: 58,
             byEthnicity: { '汉': 0.45, '壮': 0.35, '瑶': 0.10, '苗': 0.06, '其他': 0.04 },
-            regionType: 'normal'
+            regionType: 'normal',
+            // 经济基础·土司林立+银矿
+            tags: { hasPort: false, saltRegion: false, mineralRegion: true, horseRegion: false, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 10240000,                  // 实田 1024 万亩
+              commerceCoefficient: 0.6,
+              commerceVolume: 1100000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 600000,           // 银矿(梧州/南丹)
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 2, yuyao: 0 },
+              postRelays: 50,
+              kejuQuota: 55,
+              roadQuality: 9,                      // 山地土司多
+              landsAnnexed: 30000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '云南布政使司', level: 'province', officialPosition: '云南巡抚', governor: '闵洪学',
@@ -10046,7 +10311,26 @@
             minxinLocal: 50, corruptionLocal: 55,
             byEthnicity: { '汉': 0.42, '彝': 0.18, '白': 0.12, '纳西': 0.08, '苗': 0.06, '傣': 0.05, '其他': 0.09 },
             byFaith: { '儒': 0.25, '佛': 0.30, '道': 0.10, '藏传佛教': 0.10, '民间': 0.22, '伊斯兰': 0.03 },
-            regionType: 'normal'
+            regionType: 'normal',
+            // 经济基础·西南银铜锡矿·土司多
+            tags: { hasPort: false, saltRegion: false, mineralRegion: true, horseRegion: true, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 1750000,                   // 实田 175 万亩(山多田少·梯田多未册)
+              commerceCoefficient: 0.6,
+              commerceVolume: 700000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 2000000,          // 银铜锡(楚雄/曲靖)
+              horseProduction: 5000,               // 滇马
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 6, yuyao: 0 },  // 6 大矿场·云南矿业重地
+              postRelays: 40,
+              kejuQuota: 47,
+              roadQuality: 9,                      // 高山深谷
+              landsAnnexed: 10000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           division({
             name: '贵州布政使司', level: 'province', officialPosition: '贵州巡抚', governor: '王瑊',
@@ -10057,7 +10341,26 @@
             minxinLocal: 38, corruptionLocal: 65,
             byEthnicity: { '汉': 0.28, '苗': 0.28, '布依': 0.16, '侗': 0.10, '彝': 0.08, '其他': 0.10 },
             byFaith: { '儒': 0.18, '佛': 0.20, '道': 0.12, '民间': 0.45, '伊斯兰': 0.05 },
-            regionType: 'tusi'
+            regionType: 'tusi',
+            // 经济基础·黔中山地+朱砂(铜仁)
+            tags: { hasPort: false, saltRegion: false, mineralRegion: true, horseRegion: false, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 510000,                    // 实田 51 万亩(黄册偏低)
+              commerceCoefficient: 0.5,
+              commerceVolume: 350000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 300000,           // 朱砂(铜仁)·汞
+              horseProduction: 0,
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 2, yuyao: 0 },
+              postRelays: 30,
+              kejuQuota: 35,
+              roadQuality: 9,                      // 黔中险阻
+              landsAnnexed: 5000, landsReclaimed: 0, landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           // ═══ 都司卫所 ═══
           division({
@@ -10068,7 +10371,28 @@
             publicTreasuryInit: { money: 150000, grain: 300000, cloth: 20000 },
             regionType: 'normal', minxinLocal: 38, corruptionLocal: 58,
             byEthnicity: { '汉': 0.92, '蒙古': 0.04, '女真': 0.02, '朝鲜': 0.02 },
-            carryingCapacity: { arable: 600000, water: 700000, climate: 0.74, historicalCap: 1000000, currentLoad: 0.85, carryingRegime: 'strained' }
+            carryingCapacity: { arable: 600000, water: 700000, climate: 0.74, historicalCap: 1000000, currentLoad: 0.85, carryingRegime: 'strained' },
+            // 经济基础·辽西走廊+山海关·军马为主·农业凋敝
+            tags: { hasPort: false, saltRegion: false, mineralRegion: false, horseRegion: true, fishingRegion: false, imperialDomain: false },
+            economyBase: {
+              farmland: 2200000,                   // 实田 220 万亩(辽东屯田大半已陷)
+              commerceCoefficient: 0.7,
+              commerceVolume: 750000,
+              maritimeTradeVolume: 0,
+              saltProduction: 0,
+              mineralProduction: 0,
+              horseProduction: 8000,               // 辽东马·军用为主
+              fishingProduction: 0,
+              imperialFarmland: 0,
+              imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
+              postRelays: 50,
+              kejuQuota: 50,
+              roadQuality: 30,                     // 辽西走廊·军调要道
+              landsAnnexed: 0,                     // 失地非兼并
+              landsReclaimed: 0,
+              landsSurveyed: 0,
+              disasterRecord: []
+            }
           }),
           // ═══ 羁縻 ═══
           division({

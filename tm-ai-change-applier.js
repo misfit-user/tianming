@@ -896,8 +896,8 @@
         var ch = G.chars ? G.chars.find(function(c){return c.name===div.governor;}) : null;
         if (ch) {
           if (!ch.resources) ch.resources = {};
-          if (!ch.resources.privateWealth) ch.resources.privateWealth = { cash:0, grain:0, cloth:0 };
-          ch.resources.privateWealth.cash = (ch.resources.privateWealth.cash||0) + Math.round((la.amount||0) * 0.6);
+          if (!ch.resources.privateWealth) ch.resources.privateWealth = { money:0, grain:0, cloth:0 };
+          ch.resources.privateWealth.money = (ch.resources.privateWealth.money||0) + Math.round((la.amount||0) * 0.6);
         }
       }
       if (global.addEB) global.addEB('地方', (div.name||la.region) + '·' + (div.governor||'地方官') + ' ' + la.type + ' ' + (la.amount||0) + (la.reason?' (' + la.reason + ')':''));
@@ -1456,47 +1456,59 @@
     }
 
     var mentioned = [];
-    // 模式：动作动词 + 可选介词/量词 + 数字 + 量级 + 单位
-    var pat = /(赐|赏|发|拨|赈|征|抄|没收|缴获|贡|赔|罚没|献|输|筹|解)[^。；\s,，]{0,8}?([\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\s*(万|千|百|十)?\s*(两|石|匹|斛|贯|缗|斗)/g;
-    var m;
-    while ((m = pat.exec(narrativeText)) !== null) {
-      var action = m[1];
-      var numStr = m[2];
-      var mult = m[3] || '';
-      var unit = m[4];
-      var amt = _parseNum(numStr, mult);
-      if (!amt || amt < 100) continue; // 忽略小数目（礼物级别）
-      var resType = (unit === '石' || unit === '斛' || unit === '斗') ? 'grain'
-                  : (unit === '匹') ? 'cloth'
-                  : 'money';
-      mentioned.push({ action: action, amount: amt, resource: resType, raw: m[0] });
+    // ★ 双向匹配：支出动词(outflow) + 收入动词(inflow)·分别标记 kind
+    // 之前正则只识别支出动词·导致 AI 叙述『获得三百万两白银』时校验器抓不到·数值不对账
+    var outflowVerbs = '赐|赏|发|拨|赈|征|抄|没收|缴获|贡|赔|罚没|献|输|筹|解|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费';
+    var inflowVerbs = '获得|获|收|入|进|得|得到|收到|进项|进帐|进账|收入|入账|入库|入帑|入内帑|纳入|抄获|抄到|没入|缴入|追缴|追讨|追回|罚入|查封充公|抄没入|没收入';
+    var patOut = new RegExp('(' + outflowVerbs + ')[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)', 'g');
+    var patIn  = new RegExp('(' + inflowVerbs + ')[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)', 'g');
+    function _scanPattern(pat, kind) {
+      var m;
+      while ((m = pat.exec(narrativeText)) !== null) {
+        var action = m[1];
+        var numStr = m[2];
+        var mult = m[3] || '';
+        var unit = m[4];
+        var amt = _parseNum(numStr, mult);
+        if (!amt || amt < 100) continue;
+        var resType = (unit === '石' || unit === '斛' || unit === '斗') ? 'grain'
+                    : (unit === '匹') ? 'cloth'
+                    : 'money';
+        mentioned.push({ action: action, amount: amt, resource: resType, kind: kind, raw: m[0] });
+      }
     }
+    _scanPattern(patOut, 'expense');
+    _scanPattern(patIn,  'income');
     if (!mentioned.length) return;
 
-    // 比对 fiscal_adjustments 总量
-    var adjTotal = { money: 0, grain: 0, cloth: 0 };
+    // 比对 fiscal_adjustments 总量·分 income/expense 两边
+    var adjTotal = { income: { money:0, grain:0, cloth:0 }, expense: { money:0, grain:0, cloth:0 } };
     (aiOutput.fiscal_adjustments || []).forEach(function(fa){
       if (!fa) return;
       var res = (fa.resource === 'grain' || fa.resource === 'cloth') ? fa.resource : 'money';
-      adjTotal[res] += Math.abs(parseFloat(fa.amount) || 0);
+      var k = (fa.kind === 'income') ? 'income' : 'expense';
+      adjTotal[k][res] += Math.abs(parseFloat(fa.amount) || 0);
     });
-    var mentTotal = { money: 0, grain: 0, cloth: 0 };
-    mentioned.forEach(function(x){ mentTotal[x.resource] += x.amount; });
+    var mentTotal = { income: { money:0, grain:0, cloth:0 }, expense: { money:0, grain:0, cloth:0 } };
+    mentioned.forEach(function(x){ mentTotal[x.kind][x.resource] += x.amount; });
 
     var warnings = [];
-    ['money','grain','cloth'].forEach(function(res){
-      if (mentTotal[res] <= 0) return;
-      var ratio = adjTotal[res] / mentTotal[res];
-      // 允许fiscal_adjustments总量 >= 50% of mentioned，低于此阈值视为严重脱节
-      if (ratio < 0.5) {
-        warnings.push({
-          resource: res,
-          mentioned: mentTotal[res],
-          adjusted: adjTotal[res],
-          shortfall: Math.round(mentTotal[res] - adjTotal[res]),
-          ratio: Math.round(ratio * 100) / 100
-        });
-      }
+    ['income','expense'].forEach(function(kind) {
+      ['money','grain','cloth'].forEach(function(res){
+        if (mentTotal[kind][res] <= 0) return;
+        var ratio = adjTotal[kind][res] / mentTotal[kind][res];
+        // 允许fiscal_adjustments总量 >= 50% of mentioned，低于此阈值视为严重脱节
+        if (ratio < 0.5) {
+          warnings.push({
+            kind: kind,
+            resource: res,
+            mentioned: mentTotal[kind][res],
+            adjusted: adjTotal[kind][res],
+            shortfall: Math.round(mentTotal[kind][res] - adjTotal[kind][res]),
+            ratio: Math.round(ratio * 100) / 100
+          });
+        }
+      });
     });
 
     if (!warnings.length) return;
@@ -1508,33 +1520,50 @@
     G._turnReport.push({ type: 'fiscal_validation', warnings: warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
     console.warn('[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:', warnings);
 
-    // 自动补录：对每个欠缺资源生成一条 fiscal_adjustment（target=guoku, kind=expense, 标注auto-patch）
+    // 自动补录·分 income/expense 两边·按 kind 真正补录
     warnings.forEach(function(w){
       if (w.shortfall <= 0) return;
       if (!G.guoku) G.guoku = {};
-      if (!G.guoku.extraExpense) G.guoku.extraExpense = [];
+      var containerKey = (w.kind === 'income') ? 'extraIncome' : 'extraExpense';
+      if (!G.guoku[containerKey]) G.guoku[containerKey] = [];
       var patch = {
         id: 'fa_autopatch_' + (G.turn||0) + '_' + Math.random().toString(36).slice(2,5),
-        name: '叙事脱节补录',
+        name: '叙事脱节补录·' + (w.kind === 'income' ? '入' : '出'),
         category: '校验补录',
         resource: w.resource,
         amount: w.shortfall,
-        reason: '财务校验器检出·叙事提及'+w.mentioned+'·fiscal_adjustments仅'+w.adjusted+'·自动补录差额',
+        kind: w.kind,
+        reason: '财务校验器·叙事提及' + w.kind + (w.resource==='grain'?'粮':w.resource==='cloth'?'布':'银') + w.mentioned + '·fiscal_adjustments 仅 ' + w.adjusted + '·自动补录差额',
         recurring: false,
         addedTurn: G.turn || 0,
         stopAfterTurn: null,
         _autoPatched: true
       };
-      G.guoku.extraExpense.push(patch);
-      // 立即作用：从guoku扣减（但不突破0）
+      G.guoku[containerKey].push(patch);
+      // 立即作用：income 加库 / expense 扣库（不突破 0）
       var cur = Number(G.guoku[w.resource]) || 0;
-      var actual = Math.min(cur, w.shortfall);
-      if (cur > 0) {
-        G.guoku[w.resource] = cur - actual;
-        if (w.resource === 'money') G.guoku.balance = G.guoku.money;
+      var actual;
+      if (w.kind === 'income') {
+        // 入：直接加（可抹平负债）
+        G.guoku[w.resource] = cur + w.shortfall;
+        if (G.guoku.ledgers && G.guoku.ledgers[w.resource]) {
+          G.guoku.ledgers[w.resource].stock = (Number(G.guoku.ledgers[w.resource].stock)||0) + w.shortfall;
+        }
+        actual = w.shortfall;
+        patch.shortfall = 0;
+      } else {
+        // 出：拨到见底
+        actual = Math.min(cur, w.shortfall);
+        if (cur > 0) {
+          G.guoku[w.resource] = cur - actual;
+          if (G.guoku.ledgers && G.guoku.ledgers[w.resource]) {
+            G.guoku.ledgers[w.resource].stock = Math.max(0, (Number(G.guoku.ledgers[w.resource].stock)||0) - actual);
+          }
+        }
+        patch.shortfall = w.shortfall - actual;
       }
+      if (w.resource === 'money') G.guoku.balance = G.guoku.money;
       patch.applied = actual;
-      patch.shortfall = w.shortfall - actual;
     });
   }
 

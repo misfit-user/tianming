@@ -2547,18 +2547,18 @@ function _inferPrivateWealthByRank(ch) {
   var r = _parseRankNumber(ch);
   // 品级越高私产越丰（明清历史参照·单位 两/亩）
   var tiers = {
-    1:  { cash: 50000, land: 10000, treasure: 30000, slaves: 200, commerce: 20000 },  // 正一品
-    2:  { cash: 30000, land:  8000, treasure: 20000, slaves: 150, commerce: 15000 },  // 正二品
-    3:  { cash: 15000, land:  5000, treasure: 10000, slaves: 100, commerce:  8000 },  // 正三品
-    4:  { cash:  8000, land:  3000, treasure:  5000, slaves:  60, commerce:  4000 },  // 正四品
-    5:  { cash:  4000, land:  1500, treasure:  2500, slaves:  30, commerce:  2000 },  // 正五品
-    6:  { cash:  2000, land:   800, treasure:  1200, slaves:  15, commerce:  1000 },  // 正六品
-    7:  { cash:  1000, land:   400, treasure:   600, slaves:   8, commerce:   500 },  // 正七品
-    8:  { cash:   500, land:   200, treasure:   300, slaves:   4, commerce:   200 },  // 正八品
-    9:  { cash:   200, land:   100, treasure:   150, slaves:   2, commerce:   100 }   // 正九品
+    1:  { money: 50000, land: 10000, treasure: 30000, slaves: 200, commerce: 20000 },  // 正一品
+    2:  { money: 30000, land:  8000, treasure: 20000, slaves: 150, commerce: 15000 },  // 正二品
+    3:  { money: 15000, land:  5000, treasure: 10000, slaves: 100, commerce:  8000 },  // 正三品
+    4:  { money:  8000, land:  3000, treasure:  5000, slaves:  60, commerce:  4000 },  // 正四品
+    5:  { money:  4000, land:  1500, treasure:  2500, slaves:  30, commerce:  2000 },  // 正五品
+    6:  { money:  2000, land:   800, treasure:  1200, slaves:  15, commerce:  1000 },  // 正六品
+    7:  { money:  1000, land:   400, treasure:   600, slaves:   8, commerce:   500 },  // 正七品
+    8:  { money:   500, land:   200, treasure:   300, slaves:   4, commerce:   200 },  // 正八品
+    9:  { money:   200, land:   100, treasure:   150, slaves:   2, commerce:   100 }   // 正九品
   };
   // 无品级 → 平民/未入仕基准（很低）
-  if (!r || r < 1) return { cash: 100, land: 50, treasure: 50, slaves: 0, commerce: 50 };
+  if (!r || r < 1) return { money: 100, land: 50, treasure: 50, slaves: 0, commerce: 50 };
   return tiers[Math.min(9, r)] || tiers[9];
 }
 
@@ -2592,7 +2592,7 @@ function _parseWealthString(s) {
   if (m4) {
     var v = parseInt(m4[1]);
     if (s.indexOf('万两') >= 0 || s.indexOf('万') >= 0) v *= 10000;
-    out.cash = v;
+    out.money = v;
   }
   // 富甲天下 / 豪富 关键词
   if (/富甲天下|豪富|巨富/.test(s)) {
@@ -2634,11 +2634,11 @@ function _initCharacterPrivateWealth(chars) {
       return;
     }
     // 若 resources.privateWealth 已有有效数据（存档加载）则跳过
-    if (ch.resources.privateWealth && (ch.resources.privateWealth.cash > 0 || ch.resources.privateWealth.land > 0)) return;
+    if (ch.resources.privateWealth && (ch.resources.privateWealth.money > 0 || ch.resources.privateWealth.land > 0)) return;
     // 剧本可直接提供 wealthInit 覆盖全部
     if (ch.wealthInit && typeof ch.wealthInit === 'object') {
       ch.resources.privateWealth = {
-        cash: ch.wealthInit.cash || 0,
+        money: ch.wealthInit.money || 0,
         land: ch.wealthInit.land || 0,
         treasure: ch.wealthInit.treasure || 0,
         slaves: ch.wealthInit.slaves || 0,
@@ -2652,15 +2652,86 @@ function _initCharacterPrivateWealth(chars) {
     // 从 wealth 字符串解析线索叠加
     var parsed = _parseWealthString(ch.wealth || '');
     if (parsed._rich) {
-      ['cash','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 5); });
+      ['money','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 5); });
     }
     if (parsed._poor) {
-      ['cash','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 0.3); });
+      ['money','land','treasure','slaves','commerce'].forEach(function(k){ base[k] = Math.round(base[k] * 0.3); });
     }
     // 具体数字线索覆盖
-    ['cash','land','treasure','slaves','commerce'].forEach(function(k){
+    ['money','land','treasure','slaves','commerce'].forEach(function(k){
       if (parsed[k] != null && parsed[k] > 0) base[k] = parsed[k];
     });
     ch.resources.privateWealth = base;
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// B.6 · 官制最小权限判定 · canPerformAction
+// 让 scenario position.powers 配置(appointment/impeach/taxCollect/militaryCommand/supervise/yinBu)
+// 真正参与运行时权限判定·不再仅作 prompt 描述
+// ═══════════════════════════════════════════════════════════════════
+function _findPositionByCharName(charName) {
+  if (!charName || !GM.officeTree) return null;
+  var found = null;
+  function _walk(nodes) {
+    if (!Array.isArray(nodes) || found) return;
+    nodes.forEach(function(n) {
+      if (!n || found) return;
+      (n.positions || []).forEach(function(p) {
+        if (found) return;
+        if (p && p.holder === charName) {
+          found = { pos: p, dept: n.name };
+        }
+      });
+      if (!found && n.subs) _walk(n.subs);
+    });
+  }
+  _walk(GM.officeTree);
+  return found;
+}
+
+/**
+ * 检查 charName 是否有 action 权限·返回 {can:bool, reason:string}
+ * action ∈ 'appointment'(辟署/任免) | 'impeach'(弹劾) | 'taxCollect'(征税/加派) |
+ *         'militaryCommand'(调兵) | 'supervise'(监察) | 'yinBu'(荫补)
+ * 皇帝/势力领袖/未在职者特例处理
+ */
+function canPerformAction(charName, action) {
+  // 皇帝绝对权
+  var ch = (GM.chars || []).find(function(c) { return c.name === charName; });
+  if (!ch) return { can: false, reason: '人不存' };
+  if (ch.role === '皇帝' || ch.officialTitle === '皇帝' ||
+      (ch.title && /明思宗|崇祯帝|庄烈帝|皇帝/.test(ch.title))) {
+    return { can: true, reason: '帝王至尊' };
+  }
+  // 势力领袖在自境内有权
+  var facs = (GM && GM.facs) || [];
+  for (var i = 0; i < facs.length; i++) {
+    var f = facs[i]; if (!f) continue;
+    if (f.leader === charName || (f.leadership && f.leadership.ruler === charName)) {
+      return { can: true, reason: '势力领袖' };
+    }
+  }
+  // 普通官员·查 officeTree 找其在职位置
+  var hit = _findPositionByCharName(charName);
+  if (!hit) return { can: false, reason: charName + ' 未在职' };
+  var p = hit.pos;
+  var powers = p.powers || {};
+  if (powers[action] === true) {
+    return { can: true, reason: hit.dept + '·' + p.name + ' 有 ' + action + ' 之权' };
+  }
+  // 内阁辅臣特例：首辅次辅有 appointment/impeach/supervise
+  if (/首辅|次辅|大学士|阁臣/.test(p.name) && /appointment|impeach|supervise/.test(action)) {
+    return { can: true, reason: '阁臣辅政' };
+  }
+  // 都察院特例：御史有 impeach/supervise
+  if (/御史|都察|按察/.test(p.name) && /impeach|supervise/.test(action)) {
+    return { can: true, reason: hit.dept + '·风宪之臣' };
+  }
+  return { can: false, reason: hit.dept + '·' + p.name + ' 无 ' + action + ' 之权' };
+}
+
+if (typeof window !== 'undefined') {
+  window.canPerformAction = canPerformAction;
+  window._findPositionByCharName = _findPositionByCharName;
 }

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>帑廪 · 内帑 抽屉重构预览（明天启七年 · 1627）</title>
+<style>
+:root{
+  --ink-50:#f8f3e8;--ink-100:#ede5d0;--ink-200:#d4c9b0;--ink-300:#9d917d;--ink-400:#6b5d4f;--ink-500:#3a3530;--ink-600:#2a2520;--ink-700:#1c1914;--ink-800:#12100e;--ink-900:#0a0908;
+  --gold-300:#d4be7a;--gold-400:#b89a53;--gold-500:#8a6d2b;--gold-600:#6b5010;
+  --vermillion-300:#d4706a;--vermillion-400:#c04030;--vermillion-500:#8b2e25;
+  --celadon-300:#a3d4c7;--celadon-400:#7eb8a7;--celadon-500:#5a8f7f;
+  --indigo-400:#7986cb;--amber-400:#d4a838;--amber-500:#a07922;
+  --color-background:var(--ink-800);--color-surface:var(--ink-700);--color-elevated:var(--ink-600);
+  --color-foreground:var(--ink-50);--color-foreground-muted:var(--gold-300);
+  --color-border:var(--ink-500);--color-border-subtle:var(--ink-600);
+  --gold-d:var(--gold-500);--gold:var(--gold-400);--gold-l:var(--gold-300);
+  --bdr:var(--ink-500);--bg-1:var(--ink-700);--bg-2:var(--ink-700);--bg-3:var(--ink-600);
+  --txt:var(--color-foreground);--txt-s:var(--ink-200);--txt-d:var(--gold-300);
+  --font-serif:"STKaiti","KaiTi","楷体","Noto Serif SC","SimSun",serif;
+  --shadow-lg:0 8px 24px rgba(10,9,8,0.55);
+  --ease:cubic-bezier(0.0,0,0.2,1);
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:24px;background:var(--ink-900);font-family:var(--font-serif);color:var(--color-foreground);min-height:100vh;background-image:radial-gradient(ellipse at top,rgba(184,154,83,0.04),transparent 60%);}
+.preview-bar{display:flex;justify-content:space-between;align-items:center;padding:0 0 14px 0;border-bottom:1px solid var(--gold-500);margin-bottom:18px;}
+.preview-bar h1{font-size:1.4rem;color:var(--gold-300);margin:0;letter-spacing:0.2em;}
+.preview-bar .sub{font-size:0.78rem;color:var(--ink-300);letter-spacing:0.05em;}
+.tab-row{display:flex;gap:8px;margin-bottom:18px;}
+.tab-row button{padding:6px 18px;background:var(--ink-700);border:1px solid var(--gold-500);color:var(--gold-300);font-family:var(--font-serif);font-size:0.85rem;letter-spacing:0.1em;cursor:pointer;border-radius:4px;transition:all 0.15s;}
+.tab-row button:hover{background:rgba(184,154,83,0.1);}
+.tab-row button.active{background:var(--gold-500);color:var(--ink-900);font-weight:700;}
+.row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
+
+/* === 抽屉外壳 (模拟 480px 右侧抽屉) === */
+.tr-drawer{width:520px;flex:0 0 520px;background:var(--color-surface);border:1px solid var(--gold-d);border-radius:8px;box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column;max-height:90vh;}
+.tr-drawer-head{padding:14px 18px 12px;background:linear-gradient(180deg,var(--ink-600),var(--ink-700));border-bottom:1px solid var(--gold-d);display:flex;align-items:center;justify-content:space-between;position:relative;}
+.tr-drawer-head::before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-400),transparent);opacity:0.6;}
+.tr-drawer-head .h-title{font-size:1.05rem;color:var(--gold-300);letter-spacing:0.18em;font-weight:700;}
+.tr-drawer-head .h-sub{font-size:0.7rem;color:var(--ink-300);letter-spacing:0.05em;margin-top:2px;}
+.tr-drawer-head .h-x{background:transparent;border:1px solid var(--bdr);color:var(--ink-300);width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:1rem;}
+.tr-drawer-body{flex:1;overflow-y:auto;padding:14px 18px 28px;background:linear-gradient(180deg,rgba(184,154,83,0.018) 0%,transparent 25%),repeating-linear-gradient(90deg,transparent 0,transparent 30px,rgba(107,93,79,0.02) 30px,rgba(107,93,79,0.02) 31px);}
+
+/* === Hero === */
+.tr-hero{position:relative;padding:14px 16px;background:linear-gradient(135deg,rgba(184,154,83,0.08),rgba(184,154,83,0.02) 65%,transparent);border:1px solid var(--gold-d);border-radius:8px;margin-bottom:14px;}
+.tr-hero::before,.tr-hero::after{content:"";position:absolute;width:14px;height:14px;border:1px solid var(--gold-400);opacity:0.55;}
+.tr-hero::before{top:6px;left:6px;border-right:0;border-bottom:0;}
+.tr-hero::after{bottom:6px;right:6px;border-left:0;border-top:0;}
+.tr-hero.imperial{background:linear-gradient(135deg,rgba(192,64,48,0.10),rgba(184,154,83,0.04) 60%,transparent);border-color:var(--vermillion-500);}
+.tr-hero.imperial::before,.tr-hero.imperial::after{border-color:var(--vermillion-300);}
+.tr-hero-row{display:flex;align-items:flex-start;gap:14px;}
+.tr-hero-glyph{flex:0 0 64px;width:64px;height:64px;border:2px solid var(--gold-400);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.85rem;font-weight:700;color:var(--gold-300);background:radial-gradient(circle at 35% 30%,rgba(212,190,122,0.18),rgba(0,0,0,0.4) 70%);text-shadow:0 0 8px rgba(184,154,83,0.4);position:relative;}
+.tr-hero-glyph.imperial{border-color:var(--vermillion-300);color:var(--vermillion-300);background:radial-gradient(circle at 35% 30%,rgba(212,112,106,0.22),rgba(0,0,0,0.4) 70%);text-shadow:0 0 8px rgba(192,64,48,0.45);}
+.tr-hero-main{flex:1;min-width:0;}
+.tr-hero-stock-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.tr-hero-amount{font-size:2.05rem;font-weight:700;color:var(--gold-300);letter-spacing:0.04em;line-height:1;text-shadow:0 0 8px rgba(184,154,83,0.18);}
+.tr-hero-amount.warn{color:var(--amber-400);text-shadow:0 0 8px rgba(212,168,56,0.18);}
+.tr-hero-amount.bad{color:var(--vermillion-300);text-shadow:0 0 8px rgba(192,64,48,0.22);}
+.tr-hero-unit{font-size:0.82rem;color:var(--gold-d);letter-spacing:0.1em;}
+.tr-hero-mini{display:flex;gap:14px;margin-top:8px;font-size:0.72rem;color:var(--txt-s);}
+.tr-hero-mini b{color:var(--celadon-300);font-weight:600;letter-spacing:0.04em;margin-right:3px;}
+.tr-hero-mini .mu{color:var(--ink-400);font-size:0.62rem;margin-left:2px;}
+.tr-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tr-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:11px;font-size:0.64rem;letter-spacing:0.06em;border:1px solid;background:rgba(255,255,255,0.03);}
+.tr-pill.ok{border-color:var(--celadon-400);color:var(--celadon-300);background:rgba(126,184,167,0.07);}
+.tr-pill.warn{border-color:var(--amber-400);color:var(--amber-400);background:rgba(212,168,56,0.07);}
+.tr-pill.bad{border-color:var(--vermillion-400);color:var(--vermillion-300);background:rgba(192,64,48,0.07);}
+.tr-pill.gold{border-color:var(--gold-400);color:var(--gold-300);background:rgba(184,154,83,0.07);}
+.tr-pill.muted{border-color:var(--ink-500);color:var(--ink-300);}
+
+/* === Section 框架 === */
+.tr-section{margin-bottom:14px;}
+.tr-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed rgba(184,154,83,0.25);}
+.tr-section-name{font-size:0.78rem;color:var(--gold-300);letter-spacing:0.16em;font-weight:600;}
+.tr-section-name::before{content:"〔";color:var(--gold-d);margin-right:1px;}
+.tr-section-name::after{content:"〕";color:var(--gold-d);margin-left:1px;}
+.tr-section-badge{font-size:0.62rem;color:var(--ink-300);letter-spacing:0.08em;}
+.tr-section-badge.ok{color:var(--celadon-400);}
+.tr-section-badge.warn{color:var(--amber-400);}
+.tr-section-badge.bad{color:var(--vermillion-300);}
+
+/* === 6 格快览 === */
+.tr-quickstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.tr-qs{padding:8px 9px;background:rgba(255,255,255,0.025);border:1px solid rgba(184,154,83,0.12);border-radius:5px;transition:all 0.15s var(--ease);}
+.tr-qs:hover{border-color:var(--gold-500);transform:translateY(-1px);background:rgba(255,255,255,0.04);}
+.tr-qs-label{font-size:0.6rem;color:var(--gold-300);letter-spacing:0.1em;opacity:0.85;}
+.tr-qs-val{font-size:1.02rem;font-weight:700;color:var(--gold-300);letter-spacing:0.02em;margin-top:3px;line-height:1.05;}
+.tr-qs-val.up{color:var(--celadon-300);}
+.tr-qs-val.down{color:var(--vermillion-300);}
+.tr-qs-val.warn{color:var(--amber-400);}
+.tr-qs-sub{font-size:0.6rem;color:var(--ink-300);margin-top:2px;}
+
+/* === 三账库存 大卡 === */
+.tr-3led{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tr-led{position:relative;padding:11px;background:linear-gradient(165deg,rgba(255,255,255,0.04),rgba(0,0,0,0.18));border:1px solid var(--gold-d);border-left-width:3px;border-radius:5px;}
+.tr-led.money{border-left-color:var(--gold-400);}
+.tr-led.grain{border-left-color:var(--celadon-400);}
+.tr-led.cloth{border-left-color:#a88a6a;}
+.tr-led-name{font-size:0.7rem;color:var(--ink-300);letter-spacing:0.16em;}
+.tr-led-stock{font-size:1.25rem;font-weight:700;letter-spacing:0.02em;line-height:1.1;margin-top:4px;}
+.tr-led.money .tr-led-stock{color:var(--gold-300);}
+.tr-led.grain .tr-led-stock{color:var(--celadon-300);}
+.tr-led.cloth .tr-led-stock{color:#c4a878;}
+.tr-led-unit{font-size:0.6rem;color:var(--ink-400);letter-spacing:0.06em;margin-top:1px;}
+.tr-led-flow{margin-top:6px;padding-top:6px;border-top:1px dashed rgba(184,154,83,0.18);font-size:0.66rem;display:flex;justify-content:space-between;color:var(--ink-300);}
+.tr-led-flow .delta-up{color:var(--celadon-300);}
+.tr-led-flow .delta-down{color:var(--vermillion-300);}
+.tr-led-warn{position:absolute;top:6px;right:8px;font-size:0.58rem;color:var(--vermillion-300);}
+
+/* === 税赋三数 === */
+.tr-tax3{padding:10px 11px;background:rgba(0,0,0,0.18);border:1px solid var(--bdr);border-radius:5px;}
+.tr-tax3-title{font-size:0.7rem;color:var(--gold-l);margin-bottom:6px;letter-spacing:0.06em;}
+.tr-tax3-row{display:grid;grid-template-columns:80px 1fr auto;gap:10px;align-items:center;padding:3px 0;font-size:0.74rem;}
+.tr-tax3-row .lbl{color:var(--ink-300);letter-spacing:0.06em;}
+.tr-tax3-row .bar{height:6px;background:rgba(0,0,0,0.35);border-radius:3px;overflow:hidden;border:1px solid rgba(184,154,83,0.1);}
+.tr-tax3-row .bar > span{display:block;height:100%;border-radius:2px;}
+.tr-tax3-row.nominal .bar > span{background:linear-gradient(90deg,var(--gold-400),var(--gold-500));}
+.tr-tax3-row.actual .bar > span{background:linear-gradient(90deg,var(--vermillion-400),var(--vermillion-500));}
+.tr-tax3-row.peasant .bar > span{background:linear-gradient(90deg,var(--amber-400),var(--amber-500));}
+.tr-tax3-row .val{color:var(--txt);font-weight:600;font-size:0.74rem;}
+.tr-tax3-row .delta{margin-left:5px;font-size:0.64rem;color:var(--ink-400);}
+.tr-tax3-gap{margin-top:8px;padding:6px 8px;background:rgba(192,64,48,0.07);border-left:2px solid var(--vermillion-400);border-radius:0 3px 3px 0;font-size:0.66rem;}
+.tr-tax3-gap-title{color:var(--vermillion-300);letter-spacing:0.05em;margin-bottom:3px;}
+.tr-tax3-gap-line{display:flex;justify-content:space-between;color:var(--ink-200);padding:2px 0;}
+.tr-tax3-gap-line .gap-val{color:var(--vermillion-300);}
+
+/* === 流水分项 (sources / sinks) === */
+.tr-flow-group{padding:8px 9px;background:rgba(0,0,0,0.15);border:1px solid var(--bdr);border-radius:5px;margin-bottom:7px;}
+.tr-flow-group.income{border-left:3px solid var(--celadon-500);}
+.tr-flow-group.expense{border-left:3px solid var(--vermillion-500);}
+.tr-flow-head{display:flex;justify-content:space-between;align-items:baseline;font-size:0.7rem;color:var(--gold-l);margin-bottom:5px;letter-spacing:0.04em;}
+.tr-flow-head .total{color:var(--ink-200);font-size:0.66rem;}
+.tr-flow-row{display:grid;grid-template-columns:74px 1fr auto;gap:8px;align-items:center;padding:2px 0 2px 6px;font-size:0.7rem;}
+.tr-flow-row .lbl{color:var(--ink-300);}
+.tr-flow-row .bar{height:5px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;}
+.tr-flow-row.income .bar > span{background:linear-gradient(90deg,var(--celadon-400),var(--celadon-500));display:block;height:100%;}
+.tr-flow-row.expense .bar > span{background:linear-gradient(90deg,var(--vermillion-400),var(--vermillion-500));display:block;height:100%;}
+.tr-flow-row .v{color:var(--txt);font-size:0.68rem;font-weight:600;}
+.tr-flow-row .v .pct{color:var(--ink-300);font-weight:400;font-size:0.62rem;margin-left:3px;}
+.tr-flow-tops{padding:1px 0 4px 22px;font-size:0.6rem;color:var(--ink-300);letter-spacing:0.02em;}
+.tr-flow-tops .arrow{color:var(--gold-400);margin-right:4px;}
+.tr-flow-tops .top{color:var(--gold-300);cursor:pointer;text-decoration:underline dotted rgba(184,154,83,0.35);text-underline-offset:2px;margin-right:6px;}
+.tr-flow-tops .top:hover{color:var(--gold-l);}
+
+/* === 地域分账 卡片 === */
+.tr-region-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.tr-region-card{padding:6px 9px;background:rgba(255,255,255,0.025);border:1px solid rgba(184,154,83,0.15);border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem;cursor:pointer;transition:all 0.15s;}
+.tr-region-card:hover{border-color:var(--gold-400);background:rgba(184,154,83,0.06);}
+.tr-region-card .nm{color:var(--txt);font-weight:600;letter-spacing:0.04em;}
+.tr-region-card .meta{display:flex;gap:7px;align-items:center;font-size:0.62rem;color:var(--ink-300);}
+.tr-region-card .meta .delta-up{color:var(--celadon-300);}
+.tr-region-card .meta .delta-down{color:var(--vermillion-300);}
+.tr-region-more{text-align:center;font-size:0.64rem;color:var(--ink-400);padding:4px 0;letter-spacing:0.05em;}
+
+/* === 趋势图 === */
+.tr-trend-wrap{padding:6px 8px;background:rgba(0,0,0,0.2);border:1px solid var(--bdr);border-radius:5px;}
+.tr-trend-wrap svg{width:100%;height:auto;display:block;}
+
+/* === 改革 === */
+.tr-reform-row{padding:6px 9px;background:rgba(255,255,255,0.025);border-left:3px solid var(--gold-d);border-radius:0 4px 4px 0;margin-bottom:4px;font-size:0.74rem;display:flex;justify-content:space-between;align-items:center;}
+.tr-reform-row.ongoing{border-left-color:var(--gold-400);background:rgba(184,154,83,0.08);}
+.tr-reform-row.completed{border-left-color:var(--celadon-400);}
+.tr-reform-row .name{color:var(--gold-300);}
+.tr-reform-row .h-note{color:var(--ink-300);font-size:0.62rem;letter-spacing:0.04em;}
+.tr-reform-row.completed .name{color:var(--celadon-300);}
+
+/* === 警示带 === */
+.tr-alert{padding:7px 10px;border-left:3px solid;border-radius:0 4px 4px 0;font-size:0.72rem;line-height:1.5;margin-bottom:6px;}
+.tr-alert.bad{background:rgba(192,64,48,0.08);border-left-color:var(--vermillion-400);color:var(--ink-100);}
+.tr-alert.bad .ttl{color:var(--vermillion-300);font-weight:600;letter-spacing:0.06em;}
+.tr-alert.warn{background:rgba(212,168,56,0.07);border-left-color:var(--amber-400);color:var(--ink-100);}
+.tr-alert.warn .ttl{color:var(--amber-400);font-weight:600;letter-spacing:0.06em;}
+.tr-alert.ok{background:rgba(126,184,167,0.07);border-left-color:var(--celadon-400);color:var(--ink-100);}
+.tr-alert.ok .ttl{color:var(--celadon-300);font-weight:600;letter-spacing:0.06em;}
+.tr-alert .ttl{display:block;margin-bottom:2px;font-size:0.7rem;}
+.tr-alert .ds{font-size:0.66rem;color:var(--ink-200);}
+.tr-alert .chain{font-size:0.62rem;color:var(--ink-300);margin-top:3px;font-style:italic;}
+
+/* === 措置入口 === */
+.tr-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.tr-action-btn{padding:8px 11px;background:linear-gradient(135deg,rgba(184,154,83,0.05),rgba(0,0,0,0.18));border:1px solid var(--gold-d);border-left:3px solid var(--gold-400);border-radius:4px;font-size:0.74rem;cursor:pointer;transition:all 0.15s;text-align:left;}
+.tr-action-btn:hover{background:rgba(184,154,83,0.1);border-color:var(--gold-300);transform:translateX(1px);}
+.tr-action-btn .ac-name{color:var(--gold-300);font-weight:600;display:block;margin-bottom:2px;letter-spacing:0.04em;}
+.tr-action-btn .ac-hint{color:var(--ink-300);font-size:0.62rem;letter-spacing:0.04em;}
+.tr-action-tip{font-size:0.66rem;color:var(--ink-400);font-style:italic;text-align:center;margin-top:6px;letter-spacing:0.04em;}
+
+/* === 年度决算 === */
+.tr-yearly-row{display:flex;justify-content:space-between;padding:6px 10px;background:rgba(255,255,255,0.025);border:1px solid rgba(184,154,83,0.1);border-radius:4px;margin-bottom:3px;font-size:0.74rem;cursor:pointer;}
+.tr-yearly-row:hover{background:rgba(184,154,83,0.05);}
+.tr-yearly-row .yr{color:var(--gold-l);letter-spacing:0.04em;}
+.tr-yearly-row .meta{color:var(--ink-300);font-size:0.66rem;}
+.tr-yearly-row .net.up{color:var(--celadon-300);}
+.tr-yearly-row .net.down{color:var(--vermillion-300);}
+
+.tabs{display:none;}
+.tabs.active{display:block;}
+</style>
+</head>
+<body>
+
+<div class="preview-bar">
+  <h1>帑廪 · 内帑 抽屉重构预览</h1>
+  <div class="sub">数据：天启七年丁卯（1627） · 第 6 回合（90日 / 回合）</div>
+</div>
+
+<div class="tab-row">
+  <button class="active" onclick="sw('a')">A · 帑廪（国库）</button>
+  <button onclick="sw('b')">B · 内帑（皇室私库）</button>
+  <button onclick="sw('c')">C · 双库并陈</button>
+</div>
+
+<!-- ─────────── 帑廪 ─────────── -->
+<div class="tabs active" id="tab-a">
+<div class="tr-drawer">
+
+  <div class="tr-drawer-head">
+    <div>
+      <div class="h-title">帑廪之察 · 国库三账</div>
+      <div class="h-sub">天启七年八月壬午 · 第 6 回合 · 90日结算</div>
+    </div>
+    <button class="h-x">×</button>
+  </div>
+
+  <div class="tr-drawer-body">
+
+    <!-- Hero -->
+    <div class="tr-hero">
+      <div class="tr-hero-row">
+        <div class="tr-hero-glyph">帑</div>
+        <div class="tr-hero-main">
+          <div class="tr-hero-stock-row">
+            <span class="tr-hero-amount warn">84万</span>
+            <span class="tr-hero-unit">两</span>
+            <span class="tr-pill warn">紧 · 不足年入两成</span>
+          </div>
+          <div class="tr-hero-mini">
+            <span><b>粮</b>0<span class="mu">石</span></span>
+            <span><b>布</b>31万<span class="mu">匹</span></span>
+            <span><b>本回合</b>0</span>
+            <span><b>年入</b>181万</span>
+          </div>
+          <div class="tr-hero-tags">
+            <span class="tr-pill bad">通胀压力 0.42</span>
+            <span class="tr-pill warn">借贷在册 1 笔</span>
+            <span class="tr-pill ok">私铸已禁</span>
+            <span class="tr-pill gold">天启通宝</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 格快览 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">回合速察</span><span class="tr-section-badge">钱·官收 / 名义</span></div>
+      <div class="tr-quickstats">
+        <div class="tr-qs"><div class="tr-qs-label">回合入</div><div class="tr-qs-val up">45万</div><div class="tr-qs-sub">两 · 漕5+辽12+南直9…</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合支</div><div class="tr-qs-val down">106万</div><div class="tr-qs-sub">两 · 军饷主导</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合增减</div><div class="tr-qs-val down">−61万</div><div class="tr-qs-sub">连续 3 回合赤字</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">实征率</div><div class="tr-qs-val warn">49%</div><div class="tr-qs-sub">漏损 51% · 偏高</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">民心顺从</div><div class="tr-qs-val warn">64%</div><div class="tr-qs-sub">民心 53 · 抵触增</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">皇权可调</div><div class="tr-qs-val">常态</div><div class="tr-qs-sub">85% 可支配</div></div>
+      </div>
+    </div>
+
+    <!-- 三账库存 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">三账库存</span><span class="tr-section-badge">钱 · 粮 · 布</span></div>
+      <div class="tr-3led">
+        <div class="tr-led money">
+          <div class="tr-led-name">钱</div>
+          <div class="tr-led-stock">84万</div>
+          <div class="tr-led-unit">两</div>
+          <div class="tr-led-flow"><span>入 45万</span><span class="delta-down">Δ−61万</span></div>
+        </div>
+        <div class="tr-led grain">
+          <div class="tr-led-name">粮</div>
+          <div class="tr-led-stock">0</div>
+          <div class="tr-led-unit">石</div>
+          <div class="tr-led-flow"><span>入 88万</span><span class="delta-down">Δ−93万</span></div>
+          <div class="tr-led-warn">⚠ 见底</div>
+        </div>
+        <div class="tr-led cloth">
+          <div class="tr-led-name">布</div>
+          <div class="tr-led-stock">31万</div>
+          <div class="tr-led-unit">匹</div>
+          <div class="tr-led-flow"><span>入 6.7千</span><span class="delta-up">Δ+5.2千</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 税赋三数 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">税赋三数</span><span class="tr-section-badge">名义 / 官收 / 民缴 · 月入</span></div>
+      <div class="tr-tax3">
+        <div class="tr-tax3-title">正赋钱粮 · 月入</div>
+        <div class="tr-tax3-row nominal">
+          <span class="lbl">应征 · 名义</span>
+          <div class="bar"><span style="width:55%;"></span></div>
+          <span class="val">14.8万 两 <span class="delta">基准</span></span>
+        </div>
+        <div class="tr-tax3-row actual">
+          <span class="lbl">官府实收</span>
+          <div class="bar"><span style="width:27%;"></span></div>
+          <span class="val">7.3万 两 <span class="delta" style="color:var(--vermillion-300);">−51%</span></span>
+        </div>
+        <div class="tr-tax3-row peasant">
+          <span class="lbl">民间实缴</span>
+          <div class="bar"><span style="width:78%;"></span></div>
+          <span class="val">21.0万 两 <span class="delta" style="color:var(--amber-400);">+41%</span></span>
+        </div>
+        <div class="tr-tax3-gap">
+          <div class="tr-tax3-gap-title">差额去向 · 13.7万 两</div>
+          <div class="tr-tax3-gap-line"><span>州县吏胥</span><span class="gap-val">5.3万 · 39%</span></div>
+          <div class="tr-tax3-gap-line"><span>各级私分</span><span class="gap-val">5.5万 · 40%</span></div>
+          <div class="tr-tax3-gap-line"><span>豪强抵偿</span><span class="gap-val">2.9万 · 21%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 岁入分项 三账 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">岁入分项</span><span class="tr-section-badge">三账 · 本回合</span></div>
+      <div class="tr-flow-group income">
+        <div class="tr-flow-head"><span>钱账（两）</span><span class="total">本月 22万</span></div>
+        <div class="tr-flow-row income"><span class="lbl">田赋</span><div class="bar"><span style="width:64%;"></span></div><span class="v">14万<span class="pct">63.6%</span></span></div>
+        <div class="tr-flow-tops"><span class="arrow">↳ 贡献</span><span class="top">南直隶 38%</span><span class="top">北直隶 22%</span><span class="top">河南 15%</span></div>
+        <div class="tr-flow-row income"><span class="lbl">盐铁专卖</span><div class="bar"><span style="width:25%;"></span></div><span class="v">5.5万<span class="pct">25%</span></span></div>
+        <div class="tr-flow-tops"><span class="arrow">↳ 贡献</span><span class="top">山东 41%</span><span class="top">两淮 35%</span></div>
+        <div class="tr-flow-row income"><span class="lbl">市舶</span><div class="bar"><span style="width:9%;"></span></div><span class="v">2万<span class="pct">9%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">榷税</span><div class="bar"><span style="width:2%;"></span></div><span class="v">5千<span class="pct">2.4%</span></span></div>
+      </div>
+      <div class="tr-flow-group income">
+        <div class="tr-flow-head"><span>粮账（石）</span><span class="total">本月 88万</span></div>
+        <div class="tr-flow-row income"><span class="lbl">漕粮</span><div class="bar"><span style="width:78%;"></span></div><span class="v">68万<span class="pct">77%</span></span></div>
+        <div class="tr-flow-tops"><span class="arrow">↳ 贡献</span><span class="top">南直 28%</span><span class="top">浙江 22%</span><span class="top">湖广 18%</span></div>
+        <div class="tr-flow-row income"><span class="lbl">田赋折粮</span><div class="bar"><span style="width:23%;"></span></div><span class="v">20万<span class="pct">23%</span></span></div>
+      </div>
+      <div class="tr-flow-group income">
+        <div class="tr-flow-head"><span>布账（匹）</span><span class="total">本月 6.7千</span></div>
+        <div class="tr-flow-row income"><span class="lbl">田赋折布</span><div class="bar"><span style="width:60%;"></span></div><span class="v">4千<span class="pct">60%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">丁税折布</span><div class="bar"><span style="width:40%;"></span></div><span class="v">2.7千<span class="pct">40%</span></span></div>
+      </div>
+    </div>
+
+    <!-- 岁出分项 三账 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">岁出分项</span><span class="tr-section-badge">三账 · 本回合</span></div>
+      <div class="tr-flow-group expense">
+        <div class="tr-flow-head"><span>钱账（两）</span><span class="total">本月 35万</span></div>
+        <div class="tr-flow-row expense"><span class="lbl">军饷</span><div class="bar"><span style="width:62%;"></span></div><span class="v">22万<span class="pct">62%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">俸禄</span><div class="bar"><span style="width:20%;"></span></div><span class="v">7万<span class="pct">20%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">工程</span><div class="bar"><span style="width:8%;"></span></div><span class="v">2.8万<span class="pct">8%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">赈济</span><div class="bar"><span style="width:6%;"></span></div><span class="v">2万<span class="pct">5.7%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">祭祀</span><div class="bar"><span style="width:3%;"></span></div><span class="v">1万<span class="pct">2.9%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">其他</span><div class="bar"><span style="width:1%;"></span></div><span class="v">2千<span class="pct">0.6%</span></span></div>
+      </div>
+      <div class="tr-flow-group expense">
+        <div class="tr-flow-head"><span>粮账（石）</span><span class="total">本月 60万</span></div>
+        <div class="tr-flow-row expense"><span class="lbl">军粮</span><div class="bar"><span style="width:88%;"></span></div><span class="v">53万<span class="pct">88%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">俸粮</span><div class="bar"><span style="width:8%;"></span></div><span class="v">5万<span class="pct">8%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">赈济粮</span><div class="bar"><span style="width:4%;"></span></div><span class="v">2万<span class="pct">4%</span></span></div>
+      </div>
+      <div class="tr-flow-group expense">
+        <div class="tr-flow-head"><span>布账（匹）</span><span class="total">本月 1.5千</span></div>
+        <div class="tr-flow-row expense"><span class="lbl">赏赐</span><div class="bar"><span style="width:50%;"></span></div><span class="v">750<span class="pct">50%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">俸布</span><div class="bar"><span style="width:50%;"></span></div><span class="v">742<span class="pct">50%</span></span></div>
+      </div>
+    </div>
+
+    <!-- 漕运详情 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">漕运详情</span><span class="tr-section-badge bad">损 27%</span></div>
+      <div style="padding:9px 10px;background:rgba(0,0,0,0.18);border:1px solid var(--bdr);border-radius:5px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:0.74rem;">
+        <span style="color:var(--ink-300);">名义岁漕</span><span style="color:var(--gold-l);">400万 石</span>
+        <span style="color:var(--ink-300);">损耗</span><span style="color:var(--vermillion-300);">−108万 石</span>
+        <span style="color:var(--ink-300);">入仓</span><span style="color:var(--celadon-300);">292万 石</span>
+      </div>
+      <div class="tr-alert warn" style="margin-top:6px;"><span class="ttl">⚠ 漕运损耗过重</span><span class="ds">逼近 30% 阈值，漕弊随时可发。建议查 山东 / 直隶 漕规。</span></div>
+    </div>
+
+    <!-- 地域分账 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">地域分账</span><span class="tr-section-badge">17 区 · 按钱本回合</span></div>
+      <div class="tr-region-grid">
+        <div class="tr-region-card"><span class="nm">南直隶</span><span class="meta"><span>库 14万</span><span class="delta-up">Δ+8万</span></span></div>
+        <div class="tr-region-card"><span class="nm">北直隶</span><span class="meta"><span>库 9.5万</span><span class="delta-up">Δ+5.2万</span></span></div>
+        <div class="tr-region-card"><span class="nm">浙江</span><span class="meta"><span>库 7万</span><span class="delta-up">Δ+3.4万</span></span></div>
+        <div class="tr-region-card"><span class="nm">河南</span><span class="meta"><span>库 6万</span><span class="delta-up">Δ+2.6万</span></span></div>
+        <div class="tr-region-card"><span class="nm">山东</span><span class="meta"><span>库 5.4万</span><span class="delta-up">Δ+2.1万</span></span></div>
+        <div class="tr-region-card"><span class="nm">陕西</span><span class="meta"><span>库 1.2万</span><span class="delta-down">Δ−2.8万</span></span></div>
+        <div class="tr-region-card"><span class="nm">辽东</span><span class="meta"><span>库 0</span><span class="delta-down">Δ−12万</span></span></div>
+        <div class="tr-region-card"><span class="nm">湖广</span><span class="meta"><span>库 4.8万</span><span class="delta-up">Δ+1.6万</span></span></div>
+      </div>
+      <div class="tr-region-more">… 另 9 区（点击展开）</div>
+    </div>
+
+    <!-- 趋势 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">帑廪趋势</span><span class="tr-section-badge">近 12 月</span></div>
+      <div class="tr-trend-wrap">
+        <svg viewBox="0 0 400 110">
+          <line x1="40" y1="78" x2="392" y2="78" stroke="var(--vermillion-400)" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>
+          <text x="2" y="14" font-size="9" fill="var(--ink-300)">220万</text>
+          <text x="2" y="98" font-size="9" fill="var(--ink-300)">−30万</text>
+          <path d="M40,18 L70,28 L100,38 L130,42 L160,52 L190,46 L220,58 L250,68 L280,72 L310,82 L340,84 L370,76" fill="none" stroke="var(--gold-400)" stroke-width="2"/>
+          <path d="M40,18 L70,28 L100,38 L130,42 L160,52 L190,46 L220,58 L250,68 L280,72 L310,82 L340,84 L370,76 L370,88 L40,88 Z" fill="rgba(184,154,83,0.15)"/>
+          <text x="40" y="106" font-size="9" fill="var(--ink-300)">T 1</text>
+          <text x="370" y="106" text-anchor="end" font-size="9" fill="var(--ink-300)">T 6</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 财政改革 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">财政改革</span><span class="tr-section-badge">千古变法</span></div>
+      <div style="font-size:0.66rem;color:var(--gold-l);margin-bottom:3px;letter-spacing:0.06em;">施行中</div>
+      <div class="tr-reform-row ongoing"><span class="name">一条鞭法</span><span class="h-note">明 张居正 · 余 8 回合</span></div>
+      <div style="font-size:0.66rem;color:var(--celadon-400);margin:6px 0 3px;letter-spacing:0.06em;">已完成</div>
+      <div class="tr-reform-row completed"><span class="name">✓ 考成法</span><span class="h-note">已收成效</span></div>
+      <div style="font-size:0.66rem;color:var(--ink-300);margin:6px 0 3px;letter-spacing:0.06em;">可行参考</div>
+      <div class="tr-reform-row"><span class="name">摊丁入亩</span><span class="h-note">清 雍正 · 18 月</span></div>
+      <div class="tr-reform-row"><span class="name">王安石青苗法</span><span class="h-note">宋 神宗 · 12 月</span></div>
+      <div style="font-size:0.62rem;color:var(--ink-400);margin-top:5px;font-style:italic;">※ 欲施行改革请在【诏令】写诏。</div>
+    </div>
+
+    <!-- 警示 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">告警</span></div>
+      <div class="tr-alert warn"><span class="ttl">⚠ 帑廪不足年入两成</span><span class="ds">现余 84万 < 年入 181万 × 20% = 36万 · 已逼近危境，连续赤字 3 回合。</span></div>
+      <div class="tr-alert bad"><span class="ttl">⚠ 通胀压力高企 · 0.42</span><span class="ds">市面对天启通宝信心动摇，物价六月涨 9%。</span></div>
+      <div class="tr-alert ok"><span class="ttl">✓ 私铸已禁</span><span class="ds">钱法肃然，盗铸者三月斩首二人为戒。</span></div>
+    </div>
+
+    <!-- 措置入口 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">如何措置</span><span class="tr-section-badge">陛下行止 4 道</span></div>
+      <div class="tr-action-grid">
+        <button class="tr-action-btn"><span class="ac-name">⊕ 写诏</span><span class="ac-hint">加派 / 赈济 / 减赋 / 改革 / 铸币 / 禁私铸</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 看奏疏</span><span class="ac-hint">户部 / 漕运 / 铸币 主管的奏报</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 问对</span><span class="ac-hint">户部尚书 / 户部侍郎 请教</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 朝议</span><span class="ac-hint">发行纸钞 / 重大改革 等争议事</span></button>
+      </div>
+      <div class="tr-action-tip">※ 陛下只需写诏令（自然语言可），AI 按当前局势推演。</div>
+    </div>
+
+    <!-- 年度决算 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">年度决算</span><span class="tr-section-badge">3 年</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启七年</span><span class="meta">入 181万 · 出 424万</span><span class="net down">−243万</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启六年</span><span class="meta">入 256万 · 出 388万</span><span class="net down">−132万</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启五年</span><span class="meta">入 312万 · 出 350万</span><span class="net down">−38万</span></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ─────────── 内帑 ─────────── -->
+<div class="tabs" id="tab-b">
+<div class="tr-drawer">
+
+  <div class="tr-drawer-head">
+    <div>
+      <div class="h-title">内帑之察 · 皇室私库</div>
+      <div class="h-sub">天启七年八月壬午 · 第 6 回合 · 90日结算</div>
+    </div>
+    <button class="h-x">×</button>
+  </div>
+
+  <div class="tr-drawer-body">
+
+    <!-- Hero·朱红玺 -->
+    <div class="tr-hero imperial">
+      <div class="tr-hero-row">
+        <div class="tr-hero-glyph imperial">内</div>
+        <div class="tr-hero-main">
+          <div class="tr-hero-stock-row">
+            <span class="tr-hero-amount">246万</span>
+            <span class="tr-hero-unit">两</span>
+            <span class="tr-pill ok">充裕 · 可济国 8 月</span>
+          </div>
+          <div class="tr-hero-mini">
+            <span><b>粮</b>11万<span class="mu">石</span></span>
+            <span><b>布</b>28万<span class="mu">匹</span></span>
+            <span><b>本回合</b>+0.5万</span>
+            <span><b>月入</b>2万</span>
+          </div>
+          <div class="tr-hero-tags">
+            <span class="tr-pill bad">⚠ 内廷侵吞 18%</span>
+            <span class="tr-pill warn">宗室俸禄重</span>
+            <span class="tr-pill gold">明熹宗一朝</span>
+            <span class="tr-pill muted">无特别税</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史预设备注 -->
+    <div class="tr-section">
+      <div style="padding:8px 11px;background:rgba(184,154,83,0.04);border-left:3px solid var(--gold-d);border-radius:0 4px 4px 0;font-size:0.74rem;">
+        <div style="color:var(--gold);font-weight:600;margin-bottom:4px;letter-spacing:0.06em;">明熹宗皇室私库</div>
+        <div style="color:var(--ink-300);font-style:italic;font-size:0.68rem;line-height:1.55;">皇庄遍京畿（北直隶 4 万顷 / 河南福王 4 万顷），织造局岁解江南 14 万匹，光禄岁支宫廷用度。万历内库藏银 700 万于天启朝渐耗。</div>
+      </div>
+    </div>
+
+    <!-- 6 格快览 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">回合速察</span><span class="tr-section-badge">私库</span></div>
+      <div class="tr-quickstats">
+        <div class="tr-qs"><div class="tr-qs-label">回合入</div><div class="tr-qs-val up">2万</div><div class="tr-qs-sub">两 · 皇庄主导</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合支</div><div class="tr-qs-val">2万</div><div class="tr-qs-sub">两 · 宫廷主导</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合增减</div><div class="tr-qs-val up">+5千</div><div class="tr-qs-sub">略盈余</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">内廷侵吞</div><div class="tr-qs-val warn">18%</div><div class="tr-qs-sub">腐败 36 · 偏高</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">宗室口数</div><div class="tr-qs-val warn">23万</div><div class="tr-qs-sub">明末压库之累</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">调拨阻力</div><div class="tr-qs-val">中</div><div class="tr-qs-sub">外济 70% / 内入 50%</div></div>
+      </div>
+    </div>
+
+    <!-- 三账库存 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">三账库存</span><span class="tr-section-badge">钱 · 粮 · 布</span></div>
+      <div class="tr-3led">
+        <div class="tr-led money">
+          <div class="tr-led-name">钱</div>
+          <div class="tr-led-stock">246万</div>
+          <div class="tr-led-unit">两</div>
+          <div class="tr-led-flow"><span>入 2万</span><span class="delta-up">Δ+0.5万</span></div>
+        </div>
+        <div class="tr-led grain">
+          <div class="tr-led-name">粮</div>
+          <div class="tr-led-stock">11万</div>
+          <div class="tr-led-unit">石</div>
+          <div class="tr-led-flow"><span>入 2.4千</span><span class="delta-up">Δ+1.6千</span></div>
+        </div>
+        <div class="tr-led cloth">
+          <div class="tr-led-name">布</div>
+          <div class="tr-led-stock">28万</div>
+          <div class="tr-led-unit">匹</div>
+          <div class="tr-led-flow"><span>入 5.6千</span><span class="delta-up">Δ+3.8千</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 岁入分项 6 类 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">岁入分项</span><span class="tr-section-badge">六源 · 年度</span></div>
+      <div class="tr-flow-group income">
+        <div class="tr-flow-head"><span>钱（年）</span><span class="total">岁入 24万</span></div>
+        <div class="tr-flow-row income"><span class="lbl">皇庄</span><div class="bar"><span style="width:42%;"></span></div><span class="v">10万<span class="pct">42%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">皇产</span><div class="bar"><span style="width:25%;"></span></div><span class="v">6万<span class="pct">25%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">朝贡</span><div class="bar"><span style="width:13%;"></span></div><span class="v">3万<span class="pct">13%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">特别税</span><div class="bar"><span style="width:0%;"></span></div><span class="v">0<span class="pct">未开</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">抄没</span><div class="bar"><span style="width:14%;"></span></div><span class="v">3.4万<span class="pct">14%</span></span></div>
+        <div class="tr-flow-row income"><span class="lbl">帑廪转运</span><div class="bar"><span style="width:6%;"></span></div><span class="v">1.4万<span class="pct">6%</span></span></div>
+      </div>
+    </div>
+
+    <!-- 岁出分项 5 类 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">岁出分项</span><span class="tr-section-badge">五目 · 年度</span></div>
+      <div class="tr-flow-group expense">
+        <div class="tr-flow-head"><span>钱（年）</span><span class="total">岁出 24万</span></div>
+        <div class="tr-flow-row expense"><span class="lbl">宫廷</span><div class="bar"><span style="width:55%;"></span></div><span class="v">13.2万<span class="pct">55%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">大典</span><div class="bar"><span style="width:18%;"></span></div><span class="v">4.3万<span class="pct">18%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">赏赐</span><div class="bar"><span style="width:14%;"></span></div><span class="v">3.4万<span class="pct">14%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">后宫陵寝</span><div class="bar"><span style="width:9%;"></span></div><span class="v">2.2万<span class="pct">9%</span></span></div>
+        <div class="tr-flow-row expense"><span class="lbl">接济帑廪</span><div class="bar"><span style="width:4%;"></span></div><span class="v">1万<span class="pct">4%</span></span></div>
+      </div>
+    </div>
+
+    <!-- 宗室俸禄压力 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name bad" style="color:var(--vermillion-300);">宗室俸禄压力</span><span class="tr-section-badge bad">亲王 56 · 郡王 168</span></div>
+      <div class="tr-alert bad">
+        <span class="ttl">⚠ 宗室人口 23 万</span>
+        <div class="ds" style="display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:0.66rem;margin-top:4px;">
+          <span style="color:var(--ink-300);">月俸成本</span><span style="color:var(--vermillion-300);">12.8万 两</span>
+          <span style="color:var(--ink-300);">压库占年支</span><span style="color:var(--vermillion-300);">52%</span>
+          <span style="color:var(--ink-300);">福王田</span><span>河南 4 万顷</span>
+        </div>
+        <div class="chain">明末宗室禄米压库的悲剧 —— 弘治时 28 王，万历末 86 王，崇祯朝郡王 168。</div>
+      </div>
+    </div>
+
+    <!-- 非常规收入 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">非常规收入</span><span class="tr-section-badge">进奉 / 议罪银 / 贡物</span></div>
+      <div style="padding:6px 9px;background:rgba(212,168,56,0.05);border-left:3px solid var(--amber-400);border-radius:0 4px 4px 0;margin-bottom:4px;font-size:0.72rem;">
+        <div style="color:var(--gold);font-weight:500;letter-spacing:0.04em;">织造贡</div>
+        <div style="color:var(--ink-300);font-size:0.62rem;margin-top:2px;letter-spacing:0.02em;">江南三织造（江宁/苏州/杭州）岁解 14万匹。</div>
+      </div>
+      <div style="padding:6px 9px;background:rgba(212,168,56,0.05);border-left:3px solid var(--amber-400);border-radius:0 4px 4px 0;margin-bottom:4px;font-size:0.72rem;">
+        <div style="color:var(--gold);font-weight:500;letter-spacing:0.04em;">市舶抽分</div>
+        <div style="color:var(--ink-300);font-size:0.62rem;margin-top:2px;letter-spacing:0.02em;">广东月港抽分十取其一，岁入约 6 万两。</div>
+      </div>
+      <div style="padding:6px 9px;background:rgba(212,168,56,0.05);border-left:3px solid var(--amber-400);border-radius:0 4px 4px 0;font-size:0.72rem;">
+        <div style="color:var(--gold);font-weight:500;letter-spacing:0.04em;">议罪银</div>
+        <div style="color:var(--ink-300);font-size:0.62rem;margin-top:2px;letter-spacing:0.02em;">大臣过失以银赎罪 —— 清乾隆和珅之策，明朝罕用。</div>
+      </div>
+    </div>
+
+    <!-- 调拨阻力 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">调拨阻力</span><span class="tr-section-badge">廷议 / 近臣</span></div>
+      <div style="padding:8px 10px;background:rgba(0,0,0,0.18);border:1px solid var(--bdr);border-radius:5px;font-size:0.72rem;line-height:1.7;">
+        <div style="display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;">
+          <span style="color:var(--ink-300);">帑廪 → 内帑</span>
+          <div style="height:6px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;"><span style="display:block;width:50%;height:100%;background:linear-gradient(90deg,var(--amber-400),var(--amber-500));"></span></div>
+          <span style="color:var(--amber-400);">50% · 受质疑</span>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;margin-top:4px;">
+          <span style="color:var(--ink-300);">内帑 → 帑廪</span>
+          <div style="height:6px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;"><span style="display:block;width:70%;height:100%;background:linear-gradient(90deg,var(--vermillion-400),var(--vermillion-500));"></span></div>
+          <span style="color:var(--vermillion-300);">70% · 近臣阻</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 趋势 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">内帑趋势</span><span class="tr-section-badge">近 12 月</span></div>
+      <div class="tr-trend-wrap">
+        <svg viewBox="0 0 400 100">
+          <text x="2" y="14" font-size="9" fill="var(--ink-300)">280万</text>
+          <text x="2" y="92" font-size="9" fill="var(--ink-300)">220万</text>
+          <path d="M40,18 L70,22 L100,30 L130,32 L160,28 L190,36 L220,40 L250,42 L280,46 L310,52 L340,54 L370,52" fill="none" stroke="var(--gold-300)" stroke-width="2"/>
+          <text x="40" y="98" font-size="9" fill="var(--ink-300)">T 1</text>
+          <text x="370" y="98" text-anchor="end" font-size="9" fill="var(--ink-300)">T 6</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 措置入口 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">如何措置</span><span class="tr-section-badge">陛下行止 3 道</span></div>
+      <div class="tr-action-grid">
+        <button class="tr-action-btn"><span class="ac-name">⊕ 写诏</span><span class="ac-hint">帑廪⇄内帑互转 / 开特别税 / 大典</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 看奏疏</span><span class="ac-hint">内廷近臣 / 户部 奏报</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 问对</span><span class="ac-hint">内廷近臣 商议敏感财政</span></button>
+        <button class="tr-action-btn"><span class="ac-name">⊕ 罄帑济国</span><span class="ac-hint">皇威 +3 · 民心 +2 · 群臣感泣</span></button>
+      </div>
+      <div class="tr-action-tip">※ 开矿税 / 织造贡 / 市舶抽分 / 大典 等举措，请在【诏令】写诏。</div>
+    </div>
+
+    <!-- 年度决算 -->
+    <div class="tr-section">
+      <div class="tr-section-head"><span class="tr-section-name">年度决算</span><span class="tr-section-badge">3 年</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启七年</span><span class="meta">入 24万 · 出 24万</span><span class="net up">+0</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启六年</span><span class="meta">入 28万 · 出 26万</span><span class="net up">+2万</span></div>
+      <div class="tr-yearly-row"><span class="yr">天启五年</span><span class="meta">入 32万 · 出 28万</span><span class="net up">+4万</span></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ─────────── 双库并陈 ─────────── -->
+<div class="tabs" id="tab-c">
+<div class="row">
+  <div class="tr-drawer" style="max-height:75vh;">
+    <div class="tr-drawer-head">
+      <div><div class="h-title">帑廪</div><div class="h-sub">国库三账 · 朝廷公帑</div></div>
+      <button class="h-x">×</button>
+    </div>
+    <div class="tr-drawer-body" style="padding:14px 14px 24px;">
+      <div class="tr-hero" style="margin-bottom:12px;">
+        <div class="tr-hero-row">
+          <div class="tr-hero-glyph">帑</div>
+          <div class="tr-hero-main">
+            <div class="tr-hero-stock-row"><span class="tr-hero-amount warn">84万</span><span class="tr-hero-unit">两</span></div>
+            <div class="tr-hero-mini"><span><b>粮</b>0</span><span><b>布</b>31万</span><span><b>年入</b>181万</span></div>
+            <div class="tr-hero-tags"><span class="tr-pill warn">紧</span><span class="tr-pill bad">通胀 0.42</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tr-quickstats">
+        <div class="tr-qs"><div class="tr-qs-label">回合入</div><div class="tr-qs-val up">45万</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合支</div><div class="tr-qs-val down">106万</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">实征率</div><div class="tr-qs-val warn">49%</div></div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:rgba(192,64,48,0.07);border-left:3px solid var(--vermillion-400);border-radius:0 4px 4px 0;font-size:0.7rem;line-height:1.5;">
+        <span style="color:var(--vermillion-300);font-weight:600;">⚠ 帑廪 ≪ 内帑</span><br>
+        <span style="color:var(--ink-200);">国库 84万 vs 私库 246万 = 1:2.9 倒挂 · 万历末 / 天启朝 典型相</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tr-drawer" style="max-height:75vh;">
+    <div class="tr-drawer-head">
+      <div><div class="h-title">内帑</div><div class="h-sub">皇室私库 · 帝王私帑</div></div>
+      <button class="h-x">×</button>
+    </div>
+    <div class="tr-drawer-body" style="padding:14px 14px 24px;">
+      <div class="tr-hero imperial" style="margin-bottom:12px;">
+        <div class="tr-hero-row">
+          <div class="tr-hero-glyph imperial">内</div>
+          <div class="tr-hero-main">
+            <div class="tr-hero-stock-row"><span class="tr-hero-amount">246万</span><span class="tr-hero-unit">两</span></div>
+            <div class="tr-hero-mini"><span><b>粮</b>11万</span><span><b>布</b>28万</span><span><b>月入</b>2万</span></div>
+            <div class="tr-hero-tags"><span class="tr-pill ok">充裕</span><span class="tr-pill bad">侵吞 18%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tr-quickstats">
+        <div class="tr-qs"><div class="tr-qs-label">回合入</div><div class="tr-qs-val up">2万</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">回合支</div><div class="tr-qs-val">2万</div></div>
+        <div class="tr-qs"><div class="tr-qs-label">宗室口</div><div class="tr-qs-val warn">23万</div></div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:rgba(126,184,167,0.07);border-left:3px solid var(--celadon-400);border-radius:0 4px 4px 0;font-size:0.7rem;line-height:1.5;">
+        <span style="color:var(--celadon-300);font-weight:600;">⊕ 罄帑济国之机</span><br>
+        <span style="color:var(--ink-200);">私库可拨 100万 救急 · 群臣感泣 · 皇威 +3 民心 +2</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function sw(t){
+  ['a','b','c'].forEach(function(k){
+    var el = document.getElementById('tab-' + k);
+    if (el) el.classList[k===t?'add':'remove']('active');
+  });
+  document.querySelectorAll('.tab-row button').forEach(function(b){b.classList.remove('active');});
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

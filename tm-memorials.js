@@ -188,7 +188,59 @@ async function genMemorialsAI(count){
       } else {
         _locInfo = ' [在京]';
       }
-      prompt += (idx + 1) + '. ' + ch.name + '(' + (ch.title || '') + ')' + _locInfo + spouseInfo + ' \u5FE0' + (ch.loyalty || 50) + ' \u667A' + (ch.intelligence||50) + ' \u6B66\u52C7' + (ch.valor||50) + ' \u519B\u4E8B' + (ch.military||50) + ' \u653F' + (ch.administration||50) + ' ' + traits + ' ' + goal + ' ' + arc + ' ' + aff + memCtx + '\n';
+      // 完善·官职(officialTitle 优先于 title)
+      var _officeStr = ch.officialTitle || ch.title || '';
+      if (ch.officialTitle && ch.title && ch.officialTitle !== ch.title) {
+        _officeStr = ch.officialTitle + '·' + ch.title;
+      }
+      // 完善·党派 + 势力
+      var _partyStr = '';
+      if (ch.party || ch.faction) {
+        _partyStr = ' 党:' + (ch.party || '无') + (ch.faction ? '·势:' + ch.faction : '');
+      }
+      // 完善·学识 + 家族 + 出身
+      var _bgStr = '';
+      if (ch.learning) _bgStr += ' 学:' + String(ch.learning).slice(0, 30);
+      if (ch.family) _bgStr += ' 家:' + String(ch.family).slice(0, 16);
+      if (ch.educationBg || ch.background) _bgStr += ' 出身:' + String(ch.educationBg || ch.background).slice(0, 16);
+      // 完善·十维补齐(已有 loyalty/intelligence/valor/military/administration)
+      var _moreAbi = '';
+      if (typeof ch.ambition === 'number') _moreAbi += ' 野' + ch.ambition;
+      if (typeof ch.benevolence === 'number') _moreAbi += ' 仁' + ch.benevolence;
+      if (typeof ch.management === 'number') _moreAbi += ' 管' + ch.management;
+      if (typeof ch.charisma === 'number') _moreAbi += ' 魅' + ch.charisma;
+      if (typeof ch.diplomacy === 'number') _moreAbi += ' 外' + ch.diplomacy;
+      // 完善·五常(wuchangOverride 仁义礼智信)
+      var _wcStr = '';
+      var _wc = ch.wuchangOverride || ch.wuchang;
+      if (_wc && typeof _wc === 'object') {
+        var _wcParts = [];
+        ['仁','义','礼','智','信'].forEach(function(k){
+          if (typeof _wc[k] === 'number') _wcParts.push(k + _wc[k]);
+        });
+        if (_wcParts.length > 0) _wcStr = ' 五常[' + _wcParts.join('·') + ']';
+      }
+      // 完善·名望/恩眷/压力
+      var _statStr = '';
+      if (typeof ch.prestige === 'number') _statStr += ' 名' + ch.prestige;
+      if (typeof ch.favor === 'number') _statStr += ' 恩' + ch.favor;
+      if (typeof ch.stress === 'number' && ch.stress > 20) _statStr += ' 压' + ch.stress;
+      // 完善·近期记忆(直接列 3 条·补 NpcMemorySystem 心绪)
+      var _memList = '';
+      if (Array.isArray(ch._memory) && ch._memory.length > 0) {
+        var _ms = ch._memory.slice(-3).map(function(m){
+          return (m.event || m.text || '').slice(0, 24);
+        }).filter(Boolean);
+        if (_ms.length > 0) _memList = ' 忆:[' + _ms.join('；') + ']';
+      }
+      prompt += (idx + 1) + '. ' + ch.name + '(' + _officeStr + ')' + _locInfo + spouseInfo
+        + ' 忠' + (ch.loyalty || 50)
+        + ' 智' + (ch.intelligence||50)
+        + ' 武勇' + (ch.valor||50)
+        + ' 军事' + (ch.military||50)
+        + ' 政' + (ch.administration||50)
+        + _moreAbi + _wcStr + _statStr + _partyStr + _bgStr
+        + ' ' + traits + ' ' + goal + ' ' + arc + ' ' + aff + memCtx + _memList + '\n';
     });
 
     // 帝王荒淫背景（影响奏疏内容——忠臣可能谏阻，佞臣可能献媚）
@@ -255,12 +307,32 @@ async function genMemorialsAI(count){
     prompt += '  地方官夸大政绩/隐瞒灾情；武将虚报战功/隐瞒损失；\n';
     prompt += '  忠臣直言但视野有限；野心者编造信息陷害对手；\n';
     prompt += '  派系对立者描述同一事件互相矛盾。请自然体现偏差，不要标注。\n\n';
-    prompt += '【字数与格式】\n';
-    prompt += '  ※ 忠臣/谏官奏疏：' + _charRangeText('memLoyal') + '，越忠诚越长（让玩家体验"又臭又长"的忠言）\n';
-    prompt += '  ※ 佞臣/普通奏疏：' + _charRangeText('memNormal') + '，简洁得体\n';
-    prompt += '  ※ 密折：' + _charRangeText('memSecret') + '，言简意赅但暗含深意\n';
-    prompt += '  ※ 全部使用文言（半文言亦可），善用四六骈句、对偶排比\n';
-    prompt += '  ※ 奏疏正文中适当分段（每段一个论点），便于阅读\n';
+    prompt += '【字数与格式·硬约束】\n';
+    prompt += '  ※ 忠臣/谏官奏疏：' + _charRangeText('memLoyal') + '·必须达到下限·越忠诚越长(让玩家体验"又臭又长"的忠言)\n';
+    prompt += '  ※ 佞臣/普通奏疏：' + _charRangeText('memNormal') + '·必须达到下限·简洁得体\n';
+    prompt += '  ※ 密折：' + _charRangeText('memSecret') + '·必须达到下限·言简意赅但暗含深意\n';
+    prompt += '  ※ 全部使用文言(半文言亦可)·善用四六骈句、对偶排比\n';
+    prompt += '  ※ 奏疏正文中适当分段(每段一个论点)·便于阅读\n';
+    prompt += '  ※※ 字数硬性要求·不可仅以套话凑字·须有实质内容(论点+论据+对策)\n';
+    prompt += '  ※※ 字数严重不足者视为废稿·将被驳回重写\n';
+    // 完善·按官职/性格的文体差异化
+    prompt += '\n【文体随官职/性格差异化——必须体现】\n';
+    prompt += '  · 言官(都察院/六科给事中/监察御史)：直言敢谏·"伏请陛下""臣窃以为""此非臣一人之言"·引经据典+道德绑架\n';
+    prompt += '  · 阁臣/首辅次辅：婉转老成·先褒后规·"伏惟圣明""陛下虑及""微臣愚见"·绝不直冲圣意\n';
+    prompt += '  · 武将/总兵/参将：粗犷直白·军情务实·"末将""战机稍纵即逝""请赐援兵"·少用骈偶\n';
+    prompt += '  · 翰林/侍读侍讲/学士：词藻华丽·四六骈句·引经史·文学侍从本色\n';
+    prompt += '  · 户部/工部技术官：陈述账目数字·"今岁""米X石""银Y两""请下部计议"\n';
+    prompt += '  · 礼部官员：典章礼仪·"祖制""典故""体统"满篇\n';
+    prompt += '  · 刑部/大理寺：律例条文·"律有明文""罪应""依律"\n';
+    prompt += '  · 宦官/司礼监：低声下气·自称"奴婢"或"臣"·语简而情切\n';
+    prompt += '  · 外戚后宫：题表式·谢恩贺·关切家事而不及国是\n';
+    prompt += '  · 性格佞媚者：奉承得体·主动替帝分忧·内容空洞但读来舒服\n';
+    prompt += '  · 性格刚直者：直言不讳·甚至以死谏·语带激切\n';
+    prompt += '  · 性格阴险者：表面恭顺·暗含自荐或排挤·字字有机锋\n';
+    prompt += '  · 性格庸懦者：套话堆砌·无实质主张·或顺势附和\n';
+    prompt += '  · 智力低者(<40)：用词陈旧·引用错乱·逻辑跳跃·或文不对题\n';
+    prompt += '  · 智力高者(>70)：条分缕析·引证精准·方案具体可行\n';
+    prompt += '  · 学识"经学"者：引《尚书》《春秋》《孟子》多·学识"兵法"者引《孙子》《六韬》多·学识"律法"者引律例多\n';
     prompt += '\n【奏疏风格层叠差异化——5层依次叠加】\n';
     prompt += '  为每个上奏者，按以下5层依次计算其奏疏风格：\n';
     prompt += '  层1·能力基底：智力+政务决定分析深度和条理性。武勇(个人武力)≠军事(统兵指挥)≠文笔差\n';
@@ -359,16 +431,44 @@ async function genMemorialsAI(count){
 
     prompt += '\u8FD4\u56DEJSON: [{"from":"\u89D2\u8272\u540D","title":"\u5B98\u804C","type":"\u653F\u52A1|\u519B\u52A1|\u6C11\u751F|\u7ECF\u6D4E|\u4EBA\u4E8B|\u5BC6\u594F","subtype":"\u9898\u672C|\u4E0A\u758F|\u5BC6\u6298|\u8868","content":"\u594F\u758F\u5168\u6587","reliability":"high|medium|low","bias":"none|self_serving|factional|ignorance|deception","relatedTo":"\u5173\u8054\u7684\u53E6\u4E00\u4EFD\u594F\u758F\u7684from(\u53EF\u9009)","priority":"urgent|normal(\u6F14\u4E49\u6A21\u5F0F\u65F6\u586B)"}]';
 
-    var c = await callAISmart(prompt, 16000, {
-      minLength: 600,
+    // 完善·动态 max_tokens·按 count × 最长档位估算·中文 1 字 ≈ 1.5 token
+    var _loyalRange = _getCharRange('memLoyal');
+    var _normalRange = _getCharRange('memNormal');
+    var _secretRange = _getCharRange('memSecret');
+    var _maxPerMem = Math.max(_loyalRange[1], _normalRange[1], _secretRange[1]);
+    var _dynamicMaxTok = Math.max(8000, Math.min(32000, count * _maxPerMem * 2 + 2000));
+    // 完善·下限阈值用 memNormal 而非 memSecret(更严)·容差 0.7
+    var _strictMin = Math.round(_normalRange[0] * 0.7);
+    var c = await callAISmart(prompt, _dynamicMaxTok, {
+      minLength: count * _strictMin,
       maxRetries: 3,
       validator: function(content) {
         var parsed = extractJSON(content);
-        if (!Array.isArray(parsed) || parsed.length < Math.min(count, 2)) return false;
-        // 检查奏疏内容长度——至少150字（短奏疏）
-        var tooShort = parsed.filter(function(m) { return !m.content || m.content.length < 150; });
-        var _memMinThreshold = _getCharRange('memSecret')[0]; // 用密折最低值做下限
-        if (tooShort.length > parsed.length / 2) return { valid: false, reason: '奏疏字数不足，最低' + _memMinThreshold + '字' };
+        if (!Array.isArray(parsed) || parsed.length < Math.min(count, 2)) return { valid: false, reason: '奏疏数量不足' };
+        // 完善·按奏疏 subtype 分别检查字数
+        var failed = [];
+        parsed.forEach(function(m, i) {
+          if (!m || !m.content) { failed.push((i+1) + '·空奏疏'); return; }
+          var len = m.content.length;
+          // subtype 决定字数下限·密折/表 用 memSecret·题本/上疏 用 memNormal 或 memLoyal(若忠臣)
+          var subt = m.subtype || '题本';
+          var minRequired;
+          if (subt === '密折' || subt === '密揭' || subt === '密报') {
+            minRequired = Math.round(_secretRange[0] * 0.85);
+          } else if (subt === '表' || subt === '笺') {
+            minRequired = Math.round(_secretRange[0] * 0.85);
+          } else {
+            // 题本/上疏：取 memNormal 下限·容差 0.85
+            minRequired = Math.round(_normalRange[0] * 0.85);
+          }
+          if (len < minRequired) {
+            failed.push((i+1) + '·' + (m.from||'?') + '·' + len + '/' + minRequired + '字');
+          }
+        });
+        // 容许少数(≤1/3) 偏短·超过则视为废稿
+        if (failed.length > Math.ceil(parsed.length / 3)) {
+          return { valid: false, reason: '奏疏字数不足·失败列：' + failed.join('；') + '·须达对应 subtype 字数下限·有论点+论据+对策' };
+        }
         return true;
       }
     });

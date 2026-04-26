@@ -494,7 +494,8 @@ function _cc3_fallbackAgenda() {
     }
     return { name: '某部官员', dept: deptHint || '六部' };
   }
-  const pending = ((GM.currentIssues || []).filter(i => i.status === "pending")).slice(0, 3);
+  // 去重：排除已分配给廷议的 issue·廷议会单独处理这些
+  const pending = ((GM.currentIssues || []).filter(i => i.status === "pending" && i.allocatedTo !== 'tinyi')).slice(0, 3);
   pending.forEach(function(iss) {
     const p = pickPresenter(iss.dept);
     items.push({
@@ -618,8 +619,8 @@ function _cc3_buildSystemPromptVariable() {
     });
     if (parts.length) s += '【国势】' + parts.join('·') + '\n';
   }
-  // 顶层时政（御案·最多 6 条·带描述）
-  const issues = ((typeof GM !== 'undefined' && GM.currentIssues) || []).filter(i => i && i.status === 'pending').slice(0, 6);
+  // 顶层时政（御案·最多 6 条·带描述·排除已分配给廷议的）
+  const issues = ((typeof GM !== 'undefined' && GM.currentIssues) || []).filter(i => i && i.status === 'pending' && i.allocatedTo !== 'tinyi').slice(0, 6);
   if (issues.length) {
     s += '【御案时政·待处理】\n';
     issues.forEach(i => {
@@ -2833,6 +2834,66 @@ function _cc3_persistCourtRecord() {
       });
     });
   }
+
+  // ── 长期落实型决议·挂入 ChronicleTracker·进"纪事"标签页 + AI 推演每回合可见 ──
+  // 与廷议同一机制·但只针对 approve/modify/decree 三类被实际推行的决议
+  // 关键词覆盖常朝可能涉及的长期工程：
+  try {
+    const _CC_LONG_KW = /清查|屯田|开海|变法|赈|修河|河漕|塞外|边备|科举|盐法|盐课|盐运|茶法|茶马|钱法|榷|督师|经略|募兵|裁汰|察吏|京察|大计|封贡|和亲|筑城|营造|开矿|铸钱|抚|平定|教化|兴学|兴修|疏浚|徭役|垦荒|镇抚|征讨|经营|工程|赈灾|修缮|减赋|蠲免/;
+    if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.upsert) {
+      const chaoLbl = isPostTurn ? '朔朝' : '常朝';
+      state.decisions.forEach(d => {
+        // 仅 approve/modify/decree 推行类·驳回/留中/转部议不挂
+        if (!['approve', 'modify', 'decree'].includes(d.action)) return;
+        const ttl = d.item && d.item.title || '';
+        const ctn = d.item && (d.item.content || d.item.detail) || '';
+        const extraText = d.extra ? (typeof d.extra === 'object' ? (d.extra.text || '') : String(d.extra)) : '';
+        const combined = ttl + '·' + ctn + '·' + extraText;
+        if (!_CC_LONG_KW.test(combined)) return;
+        const trackTitle = ttl.length > 24 ? ttl.slice(0, 22) + '…' : ttl;
+        const trackId = 'cc_' + chaoLbl + '_' + turn + '_' + ttl.slice(0, 6).replace(/\s/g, '');
+        // 估完工回合·调用 ChronicleTracker.estimateExpectedTurns 按 daysPerTurn 自动换算
+        let subkindCC = '默认';
+        if (/变法/.test(combined)) subkindCC = '变法';
+        else if (/边事|塞外|经略|督师/.test(combined)) subkindCC = '边事';
+        else if (/工程|筑城|营造|河漕|修河/.test(combined)) subkindCC = '工程';
+        else if (/赈|抚|蠲免|减赋/.test(combined)) subkindCC = '赈抚';
+        let expectedTurns = (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.estimateExpectedTurns)
+          ? ChronicleTracker.estimateExpectedTurns({ kind: '常朝', subkind: subkindCC, difficulty: d.action === 'modify' ? 'high' : 'medium' })
+          : 8;
+        let _profileC = (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.estimateEffectProfile)
+          ? ChronicleTracker.estimateEffectProfile({ kind: '常朝', subkind: subkindCC })
+          : null;
+        const stakeholders = [];
+        if (d.item && d.item.presenter) stakeholders.push(d.item.presenter);
+        if (d.item && d.item.dept) stakeholders.push(d.item.dept);
+        ChronicleTracker.upsert({
+          id: trackId,
+          type: 'changchao_pending',
+          category: chaoLbl + '待落实',
+          title: trackTitle,
+          narrative: '〔' + chaoLbl + '·' + (d.label || d.action) + '〕' + (ctn || ttl).slice(0, 80) + (extraText ? '\n〔朱批〕' + extraText.slice(0, 80) : ''),
+          actor: (d.item && d.item.presenter) || '',
+          stakeholders: stakeholders,
+          startTurn: turn,
+          expectedEndTurn: turn + expectedTurns,
+          currentStage: '颁诏起手',
+          progress: 5,
+          priority: d.action === 'modify' ? 'high' : (d.item && d.item.importance >= 7 ? 'high' : 'medium'),
+          sourceType: 'changchao',
+          sourceId: trackId,
+          status: 'active',
+          // 效果模型·短期 vs 长期张力 + 玩家可终结
+          perTurnEffect: _profileC && _profileC.perTurnEffect,
+          finalEffect: _profileC && _profileC.finalEffect,
+          shortTermBalance: _profileC && _profileC.shortTermBalance,
+          longTermBalance: _profileC && _profileC.longTermBalance,
+          terminable: _profileC ? _profileC.terminable : true,
+          terminationCost: _profileC && _profileC.terminationCost
+        });
+      });
+    }
+  } catch(_ccTrackE) { try{ window.TM&&TM.errors&&TM.errors.captureSilent(_ccTrackE,'cc3·ChronicleTrack'); }catch(_){} }
 
   // 后朝勤政度
   if (typeof recordCourtHeld === 'function') {

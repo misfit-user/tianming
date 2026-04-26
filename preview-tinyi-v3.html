@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>廷议 V3·七阶段·沉浸式预览</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+ *  廷议 V3·沉浸式 UI 预览
+ *  设计语言：紫檀案台·宣纸朱印·墨色山河
+ *  · Analog Meditation (paper grain, ink bleeds, breathing room)
+ *  · Concrete Poetry (monumental seal stamps, sculptural typography)
+ *  · Chromatic Language (color zones for 派系)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* 案台底色 */
+  --night: #0a0807;
+  --wood-dark: #1a130c;
+  --wood-mid: #251c11;
+  --wood-warm: #2e2418;
+  --room-glow: #382b1a;
+
+  /* 宣纸/绢帛 */
+  --paper-white: #ead7b3;
+  --paper-warm: #dcc591;
+  --paper-aged: #c0a87a;
+  --paper-edge: #8c7654;
+  --paper-shadow: rgba(60,40,15,0.4);
+
+  /* 墨色 */
+  --ink-darkest: #14090b;
+  --ink-deep: #2a1a10;
+  --ink-mid: #4a3520;
+  --ink-light: #6d5a3e;
+  --ink-faded: #8a7656;
+
+  /* 金 */
+  --gold-pale: #c9a85f;
+  --gold-bright: #e8c876;
+  --gold-deep: #8a7339;
+  --gold-glow: rgba(232,200,118,0.4);
+
+  /* 朱砂 */
+  --verm: #b8392c;
+  --verm-bright: #d4533e;
+  --verm-deep: #7a2418;
+  --verm-glow: rgba(216,83,62,0.5);
+
+  /* 玉/翠 */
+  --jade: #5a8c70;
+  --jade-bright: #7ab096;
+  --jade-deep: #3d6450;
+
+  /* 琥珀/警戒 */
+  --amber: #c89438;
+  --amber-bright: #e0b660;
+
+  /* 阴影 */
+  --shadow-card: 0 6px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(232,200,118,0.08);
+  --shadow-paper: 0 4px 20px rgba(0,0,0,0.5);
+  --shadow-seal: 0 3px 10px rgba(184,57,44,0.45);
+  --shadow-deep: 0 12px 40px rgba(0,0,0,0.7);
+  --shadow-gold-glow: 0 0 24px rgba(232,200,118,0.18);
+
+  /* 字体 */
+  --f-kai: "STKaiti", "KaiTi", "楷体", "Noto Serif SC", serif;
+  --f-song: "STSong", "SimSun", "宋体", "Noto Serif SC", serif;
+  --f-zhongsong: "STZhongsong", "FangSong", "仿宋", serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--f-song);
+  font-size: 14px;
+  color: var(--paper-white);
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--room-glow) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(184,57,44,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(232,200,118,0.04) 0%, transparent 50%),
+    linear-gradient(180deg, var(--wood-dark) 0%, var(--night) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+/* 木纹覆盖 */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0px,
+      transparent 80px,
+      rgba(60,40,20,0.05) 81px,
+      rgba(60,40,20,0.05) 82px,
+      transparent 83px,
+      transparent 200px,
+      rgba(60,40,20,0.03) 201px,
+      rgba(60,40,20,0.03) 203px),
+    repeating-linear-gradient(90deg,
+      transparent 0px,
+      transparent 320px,
+      rgba(40,25,12,0.04) 321px,
+      rgba(40,25,12,0.04) 322px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 烛光晕染 */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(circle at 50% 30%, transparent 30%, rgba(0,0,0,0.4) 90%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  通用·宣纸卡 / 朱印 / 卷轴
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.paper {
+  background:
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+  color: var(--ink-deep);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: var(--shadow-paper);
+  /* 宣纸纹理 */
+  background-image:
+    repeating-linear-gradient(0deg,
+      rgba(60,40,15,0.02) 0px,
+      rgba(60,40,15,0.02) 1px,
+      transparent 1px,
+      transparent 3px),
+    repeating-linear-gradient(90deg,
+      rgba(60,40,15,0.025) 0px,
+      rgba(60,40,15,0.025) 1px,
+      transparent 1px,
+      transparent 4px),
+    radial-gradient(ellipse at 30% 20%, rgba(184,57,44,0.04) 0%, transparent 30%),
+    radial-gradient(ellipse at 70% 80%, rgba(60,40,15,0.06) 0%, transparent 40%),
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+}
+
+.paper::before {
+  content: '';
+  position: absolute; inset: 0;
+  border: 1px solid rgba(60,40,15,0.15);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* 朱印·圆形 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%,
+      var(--verm-bright) 0%,
+      var(--verm) 50%,
+      var(--verm-deep) 100%);
+  color: var(--paper-white);
+  font-family: var(--f-kai);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  box-shadow: var(--shadow-seal);
+  transform: rotate(-6deg);
+  position: relative;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.seal::before {
+  content: '';
+  position: absolute; inset: 3px;
+  border: 1.5px solid rgba(255,220,200,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.seal.sq {
+  border-radius: 4px;
+  width: 44px; height: 44px;
+}
+
+.seal.sq::before {
+  border-radius: 2px;
+}
+
+/* 玉印·小型 */
+.jade-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 30% 25%,
+      var(--jade-bright) 0%,
+      var(--jade) 60%,
+      var(--jade-deep) 100%);
+  color: var(--paper-white);
+  font-family: var(--f-kai);
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* 章节标题 */
+.section-title {
+  text-align: center;
+  font-family: var(--f-kai);
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  font-size: 1.4rem;
+  color: var(--gold-bright);
+  margin: 3.5rem 0 0.5rem;
+  position: relative;
+  text-shadow: 0 0 20px var(--gold-glow);
+}
+
+.section-title::before,
+.section-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-pale), transparent);
+}
+.section-title::before { left: calc(50% - 200px); }
+.section-title::after { right: calc(50% - 200px); }
+
+.section-stage {
+  text-align: center;
+  font-family: var(--f-zhongsong);
+  font-size: 0.78rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.3em;
+  margin-bottom: 2.5rem;
+}
+
+/* 水墨分隔 */
+.ink-divider {
+  height: 1px;
+  margin: 2rem auto;
+  width: 70%;
+  background: linear-gradient(90deg, transparent, var(--gold-pale), var(--gold-bright), var(--gold-pale), transparent);
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  Hero·卷首
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative;
+  z-index: 2;
+  padding: 6rem 2rem 4rem;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  font-family: var(--f-zhongsong);
+  font-size: 0.74rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.5em;
+  margin-bottom: 1rem;
+}
+
+.hero-title {
+  font-family: var(--f-kai);
+  font-size: 4.5rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  letter-spacing: 0.4em;
+  margin-bottom: 1.5rem;
+  text-shadow:
+    0 0 40px var(--gold-glow),
+    0 2px 8px rgba(0,0,0,0.6);
+  padding-left: 0.4em;
+}
+
+.hero-subtitle {
+  font-family: var(--f-zhongsong);
+  color: var(--ink-faded);
+  font-size: 0.95rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 2rem;
+}
+
+.hero-meta {
+  display: inline-flex;
+  gap: 2rem;
+  padding: 1rem 2.5rem;
+  background: rgba(20,9,11,0.5);
+  border: 1px solid rgba(232,200,118,0.2);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.hero-meta-label {
+  font-size: 0.66rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.2em;
+}
+
+.hero-meta-value {
+  font-family: var(--f-kai);
+  font-size: 1.4rem;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+.hero-meta-value.state {
+  font-size: 1.05rem;
+  letter-spacing: 0.15em;
+}
+
+.hero-meta-flavor {
+  font-size: 0.66rem;
+  color: var(--ink-faded);
+  font-family: var(--f-zhongsong);
+  margin-top: 0.2rem;
+  letter-spacing: 0.1em;
+}
+
+.hero-meta-item.alert .hero-meta-value { color: var(--verm-bright); }
+.hero-meta-item.good .hero-meta-value { color: var(--jade-bright); }
+
+/* 卷轴主轴 */
+.wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 0·议前预审
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.preaudit {
+  background:
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+  border: 1px solid var(--paper-edge);
+  border-radius: 6px;
+  padding: 2.2rem 2.5rem;
+  position: relative;
+  box-shadow: var(--shadow-deep);
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0px,
+      transparent 38px,
+      rgba(60,40,15,0.04) 39px,
+      rgba(60,40,15,0.04) 40px),
+    radial-gradient(circle at 80% 20%, rgba(184,57,44,0.08) 0%, transparent 30%),
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+}
+
+/* 卷首装饰角 */
+.preaudit::before,
+.preaudit::after {
+  content: '';
+  position: absolute;
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--gold-pale) 50%, transparent 51%);
+  opacity: 0.3;
+}
+.preaudit::before { top: 0; left: 0; }
+.preaudit::after { bottom: 0; right: 0; transform: rotate(180deg); }
+
+.pa-title {
+  text-align: center;
+  font-family: var(--f-kai);
+  font-size: 1.4rem;
+  color: var(--ink-deep);
+  letter-spacing: 0.4em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px dashed rgba(60,40,15,0.3);
+}
+
+.pa-subtitle {
+  text-align: center;
+  font-family: var(--f-zhongsong);
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  letter-spacing: 0.2em;
+  margin-bottom: 1.4rem;
+}
+
+.pa-topic {
+  background: rgba(184,57,44,0.06);
+  border-left: 3px solid var(--verm);
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.2rem;
+  font-family: var(--f-kai);
+  font-size: 1.05rem;
+  color: var(--ink-deep);
+}
+
+.pa-topic-label {
+  font-size: 0.7rem;
+  color: var(--ink-light);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.15em;
+}
+
+.pa-topic-text {
+  font-weight: 600;
+}
+
+/* 党派形势预估 */
+.pa-forecast {
+  background: rgba(20,9,11,0.05);
+  border: 1px solid rgba(60,40,15,0.2);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.4rem;
+}
+
+.pa-forecast-title {
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.6rem;
+}
+
+.pa-forecast-bar {
+  height: 22px;
+  display: flex;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(60,40,15,0.2);
+  margin-bottom: 0.5rem;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.bar-sup {
+  background: linear-gradient(90deg, var(--jade-deep), var(--jade));
+  color: var(--paper-white);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.05em;
+}
+.bar-mid {
+  background: linear-gradient(90deg, var(--ink-mid), var(--ink-light));
+  color: var(--paper-warm);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bar-opp {
+  background: linear-gradient(90deg, var(--verm), var(--verm-deep));
+  color: var(--paper-white);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pa-forecast-tip {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--verm-deep);
+  letter-spacing: 0.1em;
+  font-family: var(--f-kai);
+  margin-bottom: 0.5rem;
+}
+
+.pa-faction-list {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.66rem;
+  color: var(--ink-light);
+  flex-wrap: wrap;
+}
+
+.pa-faction-list .sup { color: var(--jade-deep); }
+.pa-faction-list .opp { color: var(--verm-deep); }
+
+/* 四种处置 */
+.pa-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+}
+
+.pa-opt {
+  background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(220,197,145,0.4));
+  border: 1px solid rgba(60,40,15,0.25);
+  border-radius: 5px;
+  padding: 1rem 0.7rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pa-opt::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--ink-light);
+  transition: background 0.2s;
+}
+
+.pa-opt:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(60,40,15,0.25);
+}
+
+.pa-opt-name {
+  font-family: var(--f-kai);
+  font-size: 1rem;
+  color: var(--ink-deep);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.1em;
+}
+
+.pa-opt-cost {
+  font-size: 0.64rem;
+  color: var(--verm-deep);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+  font-family: var(--f-zhongsong);
+}
+
+.pa-opt-desc {
+  font-size: 0.66rem;
+  color: var(--ink-light);
+  line-height: 1.5;
+}
+
+.pa-opt.hold::after { background: var(--ink-light); }
+.pa-opt.private::after { background: var(--verm); }
+.pa-opt.private .pa-opt-name { color: var(--verm-deep); }
+.pa-opt.small::after { background: var(--jade); }
+.pa-opt.small .pa-opt-name { color: var(--jade-deep); }
+.pa-opt.public::after { background: var(--gold-deep); }
+.pa-opt.public .pa-opt-name { color: var(--gold-deep); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 1·起议站班 (朝堂俯视)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.seating {
+  background: linear-gradient(180deg, #1a1006 0%, #0e0703 100%);
+  border: 1px solid rgba(232,200,118,0.2);
+  border-radius: 6px;
+  padding: 2rem 2.5rem 2.5rem;
+  position: relative;
+  box-shadow: var(--shadow-deep);
+  /* 殿砖纹 */
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(184,154,83,0.02) 0px,
+      rgba(184,154,83,0.02) 1px,
+      transparent 1px,
+      transparent 30px),
+    repeating-linear-gradient(-45deg,
+      rgba(184,154,83,0.02) 0px,
+      rgba(184,154,83,0.02) 1px,
+      transparent 1px,
+      transparent 30px),
+    linear-gradient(180deg, #1a1006 0%, #0e0703 100%);
+}
+
+.seating-throne {
+  text-align: center;
+  margin-bottom: 1.6rem;
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+.seating-throne::before {
+  content: '';
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 4px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+}
+
+.seating-throne-glyph {
+  font-family: var(--f-kai);
+  font-size: 2.6rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 30px var(--gold-glow);
+  padding-left: 0.2em;
+}
+
+.seating-throne-sub {
+  font-size: 0.74rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.3em;
+  margin-top: 0.3rem;
+}
+
+/* 潮汐条 */
+.tide {
+  margin: 1.2rem 0 1.6rem;
+  position: relative;
+}
+
+.tide-label {
+  font-size: 0.7rem;
+  color: var(--gold-pale);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.tide-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(232,200,118,0.3);
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.5),
+    0 0 12px rgba(232,200,118,0.1);
+}
+
+.tide-bar > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  font-family: var(--f-kai);
+  font-weight: 600;
+}
+
+.tide-l {
+  background: linear-gradient(90deg, var(--jade-deep), var(--jade-bright));
+  color: var(--paper-white);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.tide-c {
+  background: linear-gradient(90deg, var(--ink-mid), var(--ink-light));
+  color: var(--paper-warm);
+}
+
+.tide-r {
+  background: linear-gradient(90deg, var(--verm-deep), var(--verm-bright));
+  color: var(--paper-white);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.tide-tip {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--verm-bright);
+  margin-top: 0.5rem;
+  letter-spacing: 0.1em;
+  font-family: var(--f-kai);
+}
+
+/* 三班 */
+.benches {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr 1fr;
+  gap: 0.9rem;
+  position: relative;
+}
+
+/* 殿中央纵线·象征御座 */
+.benches::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(232,200,118,0.3), transparent);
+  z-index: 0;
+}
+
+.bench {
+  background:
+    linear-gradient(180deg, rgba(45,33,21,0.8), rgba(30,22,14,0.6));
+  border: 1px solid rgba(232,200,118,0.15);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bench-l { border-left: 3px solid var(--jade); }
+.bench-c { border-left: 3px solid var(--ink-faded); }
+.bench-r { border-left: 3px solid var(--verm); }
+
+.bench-head {
+  font-family: var(--f-kai);
+  font-size: 0.86rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed rgba(232,200,118,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bench-count {
+  font-size: 0.62rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.05em;
+  font-family: var(--f-zhongsong);
+}
+
+.party-block {
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(232,200,118,0.04);
+  border-radius: 3px;
+  border-left: 2px solid rgba(232,200,118,0.2);
+}
+
+.party-name {
+  font-family: var(--f-kai);
+  font-size: 0.75rem;
+  color: var(--gold-pale);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.party-meta {
+  font-size: 0.6rem;
+  color: var(--ink-faded);
+  font-family: var(--f-zhongsong);
+}
+
+.party-mems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mem-chip {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  background: rgba(232,200,118,0.08);
+  color: var(--paper-warm);
+  border: 1px solid rgba(232,200,118,0.18);
+  border-radius: 3px;
+  font-family: var(--f-zhongsong);
+}
+
+.mem-chip.leader {
+  background: rgba(232,200,118,0.18);
+  color: var(--gold-bright);
+  border-color: var(--gold-pale);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 2·分轮辩议 (对话流)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.debate {
+  background: linear-gradient(180deg, #16100a 0%, #0a0705 100%);
+  border: 1px solid rgba(232,200,118,0.18);
+  border-radius: 6px;
+  padding: 2rem 2.2rem;
+  box-shadow: var(--shadow-deep);
+}
+
+.round-banner {
+  text-align: center;
+  font-family: var(--f-kai);
+  font-size: 0.92rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.5em;
+  padding: 0.6rem 0;
+  margin: 1.4rem 0 1rem;
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(232,200,118,0.12) 50%, transparent 100%);
+  border-top: 1px dashed rgba(232,200,118,0.2);
+  border-bottom: 1px dashed rgba(232,200,118,0.2);
+}
+
+.round-banner:first-child { margin-top: 0; }
+
+.system-line {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-faded);
+  font-style: italic;
+  margin: 0.6rem 0;
+  letter-spacing: 0.05em;
+}
+
+/* 立场板 sticky */
+.stance-board {
+  background: rgba(20,15,8,0.85);
+  border: 1px solid rgba(232,200,118,0.2);
+  border-radius: 4px;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(6px);
+}
+
+.stance-title {
+  font-size: 0.7rem;
+  color: var(--gold-pale);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.4rem;
+}
+
+.stance-counts {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.stance-counts .sup { color: var(--jade-bright); }
+.stance-counts .opp { color: var(--verm-bright); }
+.stance-counts .neu { color: var(--ink-faded); }
+.stance-counts .med { color: var(--amber-bright); }
+
+.stance-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.stance-pill {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--f-zhongsong);
+  background: rgba(255,255,255,0.04);
+  border-left: 2px solid var(--ink-faded);
+}
+
+.stance-pill.support { border-color: var(--jade-bright); color: var(--jade-bright); }
+.stance-pill.oppose { border-color: var(--verm-bright); color: var(--verm-bright); }
+.stance-pill.mediate { border-color: var(--amber-bright); color: var(--amber-bright); }
+
+/* 对话气泡 */
+.bubble-row {
+  display: flex;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 30%, var(--paper-warm), var(--paper-edge));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--gold-pale);
+  font-family: var(--f-kai);
+  color: var(--ink-deep);
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.avatar.left { border-color: var(--jade-bright); }
+.avatar.right { border-color: var(--verm-bright); }
+.avatar.mid { border-color: var(--ink-faded); }
+.avatar.king {
+  background: radial-gradient(circle at 30% 30%, var(--gold-bright), var(--gold-deep));
+  border-color: var(--gold-bright);
+  color: var(--ink-darkest);
+}
+
+.bubble-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bubble-name {
+  font-size: 0.72rem;
+  color: var(--gold-pale);
+  margin-bottom: 0.25rem;
+  font-family: var(--f-zhongsong);
+  letter-spacing: 0.05em;
+}
+
+.bubble-name .role {
+  color: var(--ink-faded);
+  font-size: 0.66rem;
+  margin-left: 0.4em;
+}
+
+.bubble {
+  background: rgba(234,215,179,0.08);
+  border: 1px solid rgba(232,200,118,0.18);
+  border-radius: 3px 12px 12px 12px;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--f-song);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: var(--paper-warm);
+  position: relative;
+}
+
+.bubble.king {
+  background: linear-gradient(135deg, rgba(232,200,118,0.12), rgba(232,200,118,0.04));
+  border-color: var(--gold-pale);
+  color: var(--gold-bright);
+  border-radius: 12px 3px 12px 12px;
+}
+
+.bubble.support { border-left: 2px solid var(--jade-bright); }
+.bubble.oppose { border-left: 2px solid var(--verm-bright); }
+.bubble.mediate { border-left: 2px solid var(--amber-bright); }
+
+.stance-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-right: 0.4em;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  font-family: var(--f-zhongsong);
+}
+
+.stance-tag.support { background: var(--jade-deep); color: var(--paper-white); }
+.stance-tag.oppose { background: var(--verm-deep); color: var(--paper-white); }
+.stance-tag.mediate { background: var(--amber); color: var(--ink-darkest); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 4·钦定档位 (S 档·玉玺压印)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.archon-stage {
+  background: linear-gradient(180deg, #1a1308 0%, #0c0805 100%);
+  border: 1px solid rgba(232,200,118,0.25);
+  border-radius: 6px;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: var(--shadow-deep), inset 0 0 80px rgba(232,200,118,0.04);
+  text-align: center;
+  overflow: hidden;
+}
+
+/* 御座光晕 */
+.archon-stage::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,200,118,0.1), transparent 60%);
+  pointer-events: none;
+}
+
+.archon-grade-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px; height: 180px;
+  margin: 0 auto 1.5rem;
+}
+
+.archon-grade-letter {
+  font-family: var(--f-kai);
+  font-size: 8rem;
+  font-weight: 900;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px var(--gold-glow));
+  line-height: 1;
+}
+
+.archon-grade-letter.s { color: gold; }
+.archon-grade-letter.d {
+  background: linear-gradient(180deg, var(--verm-bright), var(--verm-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px var(--verm-glow));
+}
+
+/* 八角玉玺纹 */
+.archon-grade-display::before {
+  content: '';
+  position: absolute; inset: 0;
+  border: 2px solid var(--gold-pale);
+  transform: rotate(45deg);
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.archon-grade-display::after {
+  content: '';
+  position: absolute; inset: 8px;
+  border: 1px solid var(--gold-pale);
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.archon-name {
+  font-family: var(--f-kai);
+  font-size: 2.2rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.6em;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 0 30px var(--gold-glow);
+  padding-left: 0.5em;
+}
+
+.archon-meta {
+  font-size: 0.86rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+}
+
+.archon-meta strong {
+  color: var(--gold-pale);
+  font-weight: normal;
+  font-family: var(--f-kai);
+}
+
+.archon-perks {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.2rem 2rem;
+  background: rgba(232,200,118,0.04);
+  border: 1px dashed var(--gold-pale);
+  border-radius: 4px;
+  text-align: left;
+  font-family: var(--f-song);
+  font-size: 0.9rem;
+  color: var(--paper-warm);
+  line-height: 1.7;
+}
+
+.archon-perks .check { color: var(--jade-bright); margin-right: 0.5em; }
+.archon-perks .key { color: var(--gold-bright); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 5·草诏 picker
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.draft {
+  background:
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+  border: 1px solid var(--paper-edge);
+  border-radius: 6px;
+  padding: 2rem;
+  box-shadow: var(--shadow-deep);
+  background-image:
+    repeating-linear-gradient(0deg,
+      rgba(60,40,15,0.02) 0px,
+      rgba(60,40,15,0.02) 1px,
+      transparent 1px,
+      transparent 4px),
+    radial-gradient(circle at 80% 20%, rgba(184,57,44,0.04) 0%, transparent 30%),
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-warm) 100%);
+}
+
+.draft-title {
+  text-align: center;
+  font-family: var(--f-kai);
+  font-size: 1.3rem;
+  color: var(--ink-deep);
+  letter-spacing: 0.4em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(60,40,15,0.3);
+}
+
+.draft-sub {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  margin-bottom: 1.4rem;
+  letter-spacing: 0.15em;
+}
+
+.draft-section {
+  background: rgba(60,40,15,0.04);
+  border-left: 3px solid var(--ink-mid);
+  border-radius: 3px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.draft-section.s-priv {
+  background: linear-gradient(135deg, rgba(232,200,118,0.15) 0%, rgba(60,40,15,0.04) 100%);
+  border-color: var(--gold-deep);
+}
+
+.draft-sec-label {
+  font-family: var(--f-kai);
+  font-size: 0.85rem;
+  color: var(--ink-deep);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.7rem;
+}
+
+.draft-sec-label .star { color: var(--gold-deep); margin-right: 0.3em; }
+
+.draft-cands {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.draft-cand {
+  padding: 0.6rem 0.8rem;
+  background: var(--paper-white);
+  border: 1px solid rgba(60,40,15,0.2);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.draft-cand:hover {
+  border-color: var(--verm);
+  background: linear-gradient(135deg, var(--paper-white), rgba(184,57,44,0.06));
+  transform: translateX(3px);
+}
+
+.draft-cand-name {
+  font-family: var(--f-kai);
+  font-size: 0.95rem;
+  color: var(--ink-deep);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.draft-cand-meta {
+  font-size: 0.66rem;
+  color: var(--ink-light);
+  font-family: var(--f-zhongsong);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 6·用印颁行 (朝代差异)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.sealing {
+  background: linear-gradient(180deg, #14100a 0%, #0a0705 100%);
+  border: 1px solid rgba(232,200,118,0.25);
+  border-radius: 6px;
+  padding: 2.2rem 2.5rem;
+  box-shadow: var(--shadow-deep);
+  position: relative;
+}
+
+.sealing-title {
+  text-align: center;
+  font-family: var(--f-kai);
+  font-size: 1.3rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.4em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(232,200,118,0.2);
+}
+
+.sealing-flow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.flow-step {
+  background: rgba(232,200,118,0.08);
+  border: 1px solid rgba(232,200,118,0.25);
+  border-radius: 4px;
+  padding: 0.7rem 1.1rem;
+  font-family: var(--f-kai);
+  color: var(--paper-warm);
+  font-size: 0.92rem;
+  letter-spacing: 0.1em;
+}
+
+.flow-arrow {
+  color: var(--gold-pale);
+  font-size: 1.3rem;
+}
+
+.sealing-warn {
+  background: linear-gradient(135deg, rgba(184,57,44,0.18), rgba(184,57,44,0.06));
+  border: 1px solid var(--verm);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  color: var(--paper-warm);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.sealing-warn .key { color: var(--verm-bright); font-weight: 700; }
+
+.seal-stamp {
+  display: inline-block;
+  width: 80px; height: 80px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 30% 30%,
+      var(--verm-bright) 0%,
+      var(--verm) 50%,
+      var(--verm-deep) 100%);
+  position: relative;
+  margin: 1rem auto;
+  box-shadow:
+    0 0 30px var(--verm-glow),
+    0 4px 12px rgba(0,0,0,0.4);
+  transform: rotate(-4deg);
+}
+
+.seal-stamp::before {
+  content: '勅';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-kai);
+  font-size: 3rem;
+  color: var(--paper-white);
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.seal-stamp::after {
+  content: '';
+  position: absolute; inset: 6px;
+  border: 2px solid rgba(255,220,200,0.3);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  阶段 7·追责回响 (4 outcome ribbons)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.review {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.review-card {
+  background: linear-gradient(135deg, rgba(45,33,21,0.6), rgba(20,15,8,0.4));
+  border: 1px solid rgba(232,200,118,0.15);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.review-card.fulfilled { border-left: 4px solid var(--jade-bright); }
+.review-card.partial { border-left: 4px solid var(--ink-faded); }
+.review-card.unfulfilled { border-left: 4px solid var(--amber-bright); }
+.review-card.backfire {
+  border-left: 4px solid var(--verm-bright);
+  background: linear-gradient(135deg, rgba(184,57,44,0.18), rgba(45,33,21,0.6));
+}
+
+.review-card-head {
+  font-family: var(--f-kai);
+  font-size: 1rem;
+  color: var(--gold-bright);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.15em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-card.fulfilled .review-card-head { color: var(--jade-bright); }
+.review-card.unfulfilled .review-card-head { color: var(--amber-bright); }
+.review-card.backfire .review-card-head { color: var(--verm-bright); }
+
+.review-card-glyph {
+  font-size: 1.4rem;
+}
+
+.review-card-detail {
+  font-size: 0.78rem;
+  color: var(--paper-warm);
+  line-height: 1.7;
+}
+
+.review-card-detail .delta {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 0 4px 4px 0;
+  background: rgba(232,200,118,0.1);
+  border-radius: 2px;
+  font-size: 0.7rem;
+  color: var(--gold-pale);
+  font-family: var(--f-zhongsong);
+}
+
+.review-card-detail .delta.up { color: var(--jade-bright); border-left: 2px solid var(--jade-bright); }
+.review-card-detail .delta.down { color: var(--verm-bright); border-left: 2px solid var(--verm-bright); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  弹劾结党 (示例·改正后)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.accusation {
+  background:
+    linear-gradient(180deg, var(--paper-white) 0%, var(--paper-aged) 100%);
+  border: 2px solid var(--verm-deep);
+  border-radius: 6px;
+  padding: 1.8rem 2rem;
+  box-shadow:
+    var(--shadow-deep),
+    0 0 0 4px rgba(184,57,44,0.08);
+  position: relative;
+}
+
+.accusation::before {
+  content: '密';
+  position: absolute;
+  top: -16px; right: 30px;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 30%, var(--verm-bright), var(--verm-deep));
+  color: var(--paper-white);
+  font-family: var(--f-kai);
+  font-size: 1.4rem;
+  font-weight: 900;
+  border-radius: 50%;
+  box-shadow: var(--shadow-seal);
+  transform: rotate(8deg);
+}
+
+.acc-title {
+  font-family: var(--f-kai);
+  font-size: 1.2rem;
+  color: var(--verm-deep);
+  letter-spacing: 0.3em;
+  margin-bottom: 0.4rem;
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--verm-deep);
+}
+
+.acc-meta {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  margin-bottom: 0.9rem;
+}
+
+.acc-text {
+  font-family: var(--f-song);
+  font-size: 0.92rem;
+  color: var(--ink-deep);
+  line-height: 1.9;
+  text-indent: 2em;
+  margin-bottom: 1rem;
+}
+
+.acc-tags {
+  display: flex;
+  gap: 0.7rem;
+  font-size: 0.74rem;
+  color: var(--ink-light);
+  flex-wrap: wrap;
+}
+
+.acc-tag {
+  background: rgba(184,57,44,0.08);
+  border: 1px solid rgba(184,57,44,0.3);
+  padding: 2px 9px;
+  border-radius: 2px;
+  color: var(--verm-deep);
+  font-family: var(--f-kai);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  威权阶梯·永业解锁
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.regalia-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+
+.regalia-card {
+  background: linear-gradient(135deg, rgba(45,33,21,0.6), rgba(20,15,8,0.4));
+  border: 1px solid rgba(232,200,118,0.15);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.regalia-card.unlocked {
+  background: linear-gradient(135deg, rgba(232,200,118,0.15), rgba(232,200,118,0.04));
+  border-color: var(--gold-pale);
+  box-shadow: var(--shadow-gold-glow);
+}
+
+.regalia-card.unlocked::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.regalia-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-kai);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.regalia-card.unlocked .regalia-icon {
+  background: radial-gradient(circle at 30% 30%, var(--gold-bright), var(--gold-deep));
+  color: var(--ink-darkest);
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+
+.regalia-card.locked .regalia-icon {
+  background: linear-gradient(135deg, var(--ink-mid), var(--ink-deep));
+  color: var(--ink-faded);
+  border: 1px solid rgba(232,200,118,0.1);
+}
+
+.regalia-info { flex: 1; min-width: 0; }
+
+.regalia-name {
+  font-family: var(--f-kai);
+  font-size: 1rem;
+  color: var(--gold-pale);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.1em;
+}
+
+.regalia-card.unlocked .regalia-name { color: var(--gold-bright); }
+.regalia-card.locked .regalia-name { color: var(--ink-faded); }
+
+.regalia-name .progress {
+  font-size: 0.7rem;
+  color: var(--ink-faded);
+  font-family: var(--f-zhongsong);
+  margin-left: 0.6em;
+}
+
+.regalia-desc {
+  font-size: 0.74rem;
+  color: var(--ink-faded);
+  line-height: 1.5;
+}
+
+.regalia-card.unlocked .regalia-desc { color: var(--paper-warm); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  实时插言·浮章按钮
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.interject-mock {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 2rem;
+  background: rgba(20,15,8,0.4);
+  border: 1px dashed rgba(232,200,118,0.2);
+  border-radius: 6px;
+}
+
+.interject-btn {
+  position: relative;
+  padding: 0.8rem 1.5rem 0.8rem 1.8rem;
+  background:
+    linear-gradient(135deg, var(--verm-bright) 0%, var(--verm) 50%, var(--verm-deep) 100%);
+  color: var(--paper-white);
+  font-family: var(--f-kai);
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  letter-spacing: 0.2em;
+  padding-left: 2.5rem;
+  box-shadow: var(--shadow-seal), 0 0 0 2px rgba(232,200,118,0.3);
+  transition: transform 0.15s;
+}
+
+.interject-btn:hover { transform: translateY(-2px); }
+
+.interject-btn::before {
+  content: '朕';
+  position: absolute;
+  left: 8px; top: 50%;
+  transform: translateY(-50%);
+  width: 32px; height: 32px;
+  background: radial-gradient(circle at 30% 30%, var(--paper-white), var(--paper-aged));
+  color: var(--verm-deep);
+  font-family: var(--f-kai);
+  font-size: 1.1rem;
+  font-weight: 900;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.interject-panel {
+  background: linear-gradient(180deg, rgba(45,33,21,0.95), rgba(20,15,8,0.95));
+  border: 1.5px solid var(--gold-pale);
+  border-radius: 8px;
+  padding: 1rem 0.8rem;
+  box-shadow: var(--shadow-deep);
+  width: 320px;
+}
+
+.ij-title {
+  text-align: center;
+  font-family: var(--f-kai);
+  font-size: 0.92rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.4em;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(232,200,118,0.2);
+}
+
+.ij-row {
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 4px;
+  background: rgba(232,200,118,0.05);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.86rem;
+  color: var(--paper-warm);
+  cursor: pointer;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ij-row:hover {
+  border-color: var(--gold-pale);
+  background: rgba(232,200,118,0.12);
+  color: var(--paper-white);
+}
+
+.ij-row .glyph { font-size: 1rem; }
+.ij-hint {
+  font-size: 0.62rem;
+  color: var(--ink-faded);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  D 档危诏激变·朱砂溅墨
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.d-grade {
+  background: linear-gradient(180deg, #1f0a06 0%, #0e0503 100%);
+  border: 2px solid var(--verm);
+  border-radius: 6px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(184,57,44,0.25), var(--shadow-deep);
+}
+
+/* 朱砂飞溅 */
+.d-grade::before,
+.d-grade::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: var(--verm);
+  filter: blur(20px);
+  opacity: 0.3;
+}
+.d-grade::before {
+  top: -50px; right: -50px;
+  width: 200px; height: 200px;
+}
+.d-grade::after {
+  bottom: -80px; left: -50px;
+  width: 250px; height: 250px;
+  opacity: 0.2;
+}
+
+.d-grade > * { position: relative; z-index: 1; }
+
+.d-grade-title {
+  font-family: var(--f-kai);
+  font-size: 1.4rem;
+  color: var(--verm-bright);
+  letter-spacing: 0.5em;
+  margin-bottom: 0.4rem;
+  padding-left: 0.5em;
+  text-shadow: 0 0 20px var(--verm-glow);
+}
+
+.d-grade-warning {
+  font-size: 0.86rem;
+  color: var(--paper-warm);
+  letter-spacing: 0.15em;
+  margin-bottom: 1.2rem;
+}
+
+.d-grade-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.d-opt {
+  background: linear-gradient(180deg, rgba(45,20,15,0.8), rgba(20,9,11,0.7));
+  border: 1.5px solid;
+  border-radius: 5px;
+  padding: 1rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.d-opt.force { border-color: var(--verm-bright); }
+.d-opt.force:hover {
+  background: rgba(184,57,44,0.18);
+  transform: translateY(-2px);
+}
+
+.d-opt.yield { border-color: var(--jade-bright); }
+.d-opt.yield:hover {
+  background: rgba(74,122,95,0.18);
+  transform: translateY(-2px);
+}
+
+.d-opt-name {
+  font-family: var(--f-kai);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.2em;
+}
+.d-opt.force .d-opt-name { color: var(--verm-bright); }
+.d-opt.yield .d-opt-name { color: var(--jade-bright); }
+
+.d-opt-cost {
+  font-size: 0.7rem;
+  color: var(--ink-faded);
+  margin-bottom: 0.4rem;
+  font-family: var(--f-zhongsong);
+}
+
+.d-opt-desc {
+  font-size: 0.74rem;
+  color: var(--paper-warm);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  动效·入场
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes unfurl {
+  from { opacity: 0; transform: scaleY(0.85) translateY(20px); }
+  to { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+
+@keyframes ink-bleed {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+@keyframes seal-press {
+  0% { transform: rotate(-12deg) scale(1.5); opacity: 0; }
+  50% { transform: rotate(-6deg) scale(0.92); opacity: 0.95; }
+  100% { transform: rotate(-6deg) scale(1); opacity: 1; }
+}
+
+@keyframes candle-flicker {
+  0%, 100% { box-shadow: 0 0 24px rgba(232,200,118,0.18); }
+  50% { box-shadow: 0 0 32px rgba(232,200,118,0.28); }
+}
+
+.fade-up {
+  animation: unfurl 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ink-fade {
+  animation: ink-bleed 0.9s ease-out;
+}
+
+.seal-press {
+  animation: seal-press 0.6s cubic-bezier(0.4, 1.5, 0.6, 1);
+}
+
+.archon-name { animation: candle-flicker 4s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  Footer·跋
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.footer {
+  text-align: center;
+  padding: 4rem 2rem 3rem;
+  color: var(--ink-faded);
+  font-family: var(--f-zhongsong);
+  font-size: 0.74rem;
+  letter-spacing: 0.3em;
+  border-top: 1px solid rgba(232,200,118,0.1);
+  margin-top: 4rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .pa-options { grid-template-columns: 1fr 1fr; }
+  .benches { grid-template-columns: 1fr; }
+  .review { grid-template-columns: 1fr; }
+  .draft-cands { grid-template-columns: 1fr; }
+  .regalia-grid { grid-template-columns: 1fr; }
+  .d-grade-options { grid-template-columns: 1fr; }
+  .hero-title { font-size: 3rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Hero
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">天命·廷议 V3 七阶段·沉浸式预览</div>
+  <h1 class="hero-title">廷议</h1>
+  <div class="hero-subtitle">咸通八年戊辰岁·二月朔朝·奉天门</div>
+  <div class="hero-meta ink-fade">
+    <div class="hero-meta-item good">
+      <div class="hero-meta-label">皇 威</div>
+      <div class="hero-meta-value">72</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">皇 权</div>
+      <div class="hero-meta-value">65</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">朝 局</div>
+      <div class="hero-meta-value state">朝局稳健</div>
+      <div class="hero-meta-flavor">小有龃龉</div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 0·议前预审
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">议 前 预 审</h2>
+<div class="section-stage">阶 段 〇·裁 处 之 前</div>
+
+<div class="preaudit fade-up">
+  <div class="pa-title">议 前 预 审</div>
+  <div class="pa-subtitle">陛下决断之前·先察议题之轻重缓急·从容择处</div>
+
+  <div class="pa-topic">
+    <div class="pa-topic-label">议  题</div>
+    <div class="pa-topic-text">弹劾魏忠贤二十四大罪</div>
+    <div style="font-size:0.72rem;color:var(--ink-light);margin-top:0.4rem;font-family:var(--f-zhongsong);">主奏者：杨涟（东林党 · 影响力 12）</div>
+  </div>
+
+  <div class="pa-forecast">
+    <div class="pa-forecast-title">党 派 形 势 预 估</div>
+    <div class="pa-forecast-bar">
+      <div class="bar-sup" style="width:18%">支 18%</div>
+      <div class="bar-mid" style="width:8%">中 8%</div>
+      <div class="bar-opp" style="width:74%">反 74%</div>
+    </div>
+    <div class="pa-forecast-tip">⚠ 反对势众·明发恐危诏激变(D 档)</div>
+    <div class="pa-faction-list">
+      <span class="sup">支：东林党(12) · 昆党(8)</span>
+      <span class="opp">反：阉党(92) · 浙党(38) · 齐党(20)</span>
+    </div>
+  </div>
+
+  <div class="pa-options">
+    <div class="pa-opt hold">
+      <div class="pa-opt-name">📥 留 中</div>
+      <div class="pa-opt-cost">皇权 -1</div>
+      <div class="pa-opt-desc">搁置一回合·奏者 prestige-2·世人议怠政</div>
+    </div>
+    <div class="pa-opt private">
+      <div class="pa-opt-name">🤐 私 决</div>
+      <div class="pa-opt-cost">皇威 +1</div>
+      <div class="pa-opt-desc">走御前奏对·与心腹密议·不公开</div>
+    </div>
+    <div class="pa-opt small">
+      <div class="pa-opt-name">🤝 下 议</div>
+      <div class="pa-opt-cost">朝堂渐和</div>
+      <div class="pa-opt-desc">召三品以上 5 员·小范围闭门</div>
+    </div>
+    <div class="pa-opt public">
+      <div class="pa-opt-name">📜 明 发</div>
+      <div class="pa-opt-cost">完整七阶段</div>
+      <div class="pa-opt-desc">召百官·四轮辩议·公开裁决</div>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 1·起议站班
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">起 议 站 班</h2>
+<div class="section-stage">阶 段 一·三 班 拱 立</div>
+
+<div class="seating fade-up">
+  <div class="seating-throne">
+    <div class="seating-throne-glyph">朕</div>
+    <div class="seating-throne-sub">─── 御 座 ───</div>
+  </div>
+
+  <div class="tide">
+    <div class="tide-label">朝 堂 潮 汐 · 风 向</div>
+    <div class="tide-bar">
+      <div class="tide-l" style="flex:18">同 18%</div>
+      <div class="tide-c" style="flex:8">中 8%</div>
+      <div class="tide-r" style="flex:74">反 74%</div>
+    </div>
+    <div class="tide-tip">⚠ 反对势众 倾斜 56%</div>
+  </div>
+
+  <div class="benches">
+    <div class="bench bench-l">
+      <div class="bench-head">左 班·同 (东林+盟)<span class="bench-count">3 人 · 影 20</span></div>
+      <div class="party-block">
+        <div class="party-name">东 林 党 <span class="party-meta">影 12 · 凝 82</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">韩爌★</span>
+          <span class="mem-chip">杨涟</span>
+          <span class="mem-chip">左光斗</span>
+        </div>
+      </div>
+      <div class="party-block">
+        <div class="party-name">昆 党 <span class="party-meta">影 8 · 凝 45</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">顾天峻★</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bench bench-c">
+      <div class="bench-head">中 班·中立<span class="bench-count">2 人 · 影 25</span></div>
+      <div class="party-block">
+        <div class="party-name">楚 党 <span class="party-meta">影 15 · 凝 35</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">官应震★</span>
+        </div>
+      </div>
+      <div class="party-block">
+        <div class="party-name">无 党 <span class="party-meta">名 70+</span></div>
+        <div class="party-mems">
+          <span class="mem-chip">王铎</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bench bench-r">
+      <div class="bench-head">右 班·异 (阉党+附)<span class="bench-count">5 人 · 影 150</span></div>
+      <div class="party-block">
+        <div class="party-name">阉 党 <span class="party-meta">影 92 · 凝 65</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">魏忠贤★</span>
+          <span class="mem-chip">崔呈秀</span>
+          <span class="mem-chip">田尔耕</span>
+        </div>
+      </div>
+      <div class="party-block">
+        <div class="party-name">浙 党 <span class="party-meta">影 38 · 附阉</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">施凤来★</span>
+        </div>
+      </div>
+      <div class="party-block">
+        <div class="party-name">齐 党 <span class="party-meta">影 20 · 附阉</span></div>
+        <div class="party-mems">
+          <span class="mem-chip leader">亓诗教★</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 2·分轮辩议
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">分 轮 辩 议</h2>
+<div class="section-stage">阶 段 二·四 轮 唇 枪</div>
+
+<div class="debate fade-up">
+  <div class="stance-board">
+    <div class="stance-title">〔 立 场 板 · 第 三 轮 〕</div>
+    <div class="stance-counts">
+      <span class="sup">支持 3</span>
+      <span class="opp">反对 5</span>
+      <span class="med">折中 1</span>
+      <span class="neu">中立 1</span>
+    </div>
+    <div class="stance-pills">
+      <span class="stance-pill support">韩爌·支</span>
+      <span class="stance-pill support">杨涟·极支</span>
+      <span class="stance-pill support">左光斗·支</span>
+      <span class="stance-pill mediate">官应震·折</span>
+      <span class="stance-pill oppose">魏忠贤·极反</span>
+      <span class="stance-pill oppose">崔呈秀·反</span>
+      <span class="stance-pill oppose">田尔耕·反</span>
+      <span class="stance-pill oppose">施凤来·反</span>
+      <span class="stance-pill oppose">亓诗教·反</span>
+    </div>
+  </div>
+
+  <div class="round-banner">第 一 轮 · 主 奏 陈 情</div>
+  <div class="bubble-row ink-fade">
+    <div class="avatar left">杨</div>
+    <div class="bubble-body">
+      <div class="bubble-name">杨涟<span class="role">·都察院左副都御史·东林党</span></div>
+      <div class="bubble support">
+        <span class="stance-tag support">极力支持</span>
+        臣涟谨奏：今阉竖魏忠贤者，本一市井无赖，借后宫之宠，窃柄三载，二十四大罪罄竹难书。其一曰擅权乱政、其二曰矫旨陷忠、其三曰苛剥百官……伏望陛下明察典刑，斩此妖孽以谢天下！
+      </div>
+    </div>
+  </div>
+
+  <div class="round-banner">第 二 轮 · 同 党 附 议</div>
+  <div class="bubble-row ink-fade">
+    <div class="avatar left">韩</div>
+    <div class="bubble-body">
+      <div class="bubble-name">韩爌<span class="role">·内阁次辅·东林党魁</span></div>
+      <div class="bubble support">
+        <span class="stance-tag support">支持</span>
+        老臣附议杨涟之奏。阉党之祸，非杨君一人之言，乃社稷千夫之痛。陛下若不察，恐贻臣下之疑、贻天下之忧。
+      </div>
+    </div>
+  </div>
+
+  <div class="round-banner">第 三 轮 · 敌 党 驳 议</div>
+  <div class="bubble-row ink-fade">
+    <div class="avatar right">魏</div>
+    <div class="bubble-body">
+      <div class="bubble-name">魏忠贤<span class="role">·司礼监掌印太监·阉党魁</span></div>
+      <div class="bubble oppose">
+        <span class="stance-tag oppose">极力反对</span>
+        奴婢冤枉。臣事陛下三十余年，朝乾夕惕，未敢有半点私心。东林之党素来党同伐异，今诬奴婢以二十四罪，皆莫须有耳。陛下若听信谗言，恐忠良齿冷，奸佞得志……
+      </div>
+    </div>
+  </div>
+
+  <div class="round-banner">第 四 轮 · 中 立 权 衡</div>
+  <div class="bubble-row ink-fade">
+    <div class="avatar mid">官</div>
+    <div class="bubble-body">
+      <div class="bubble-name">官应震<span class="role">·礼部尚书·楚党党首</span></div>
+      <div class="bubble mediate">
+        <span class="stance-tag mediate">折 中</span>
+        臣窃以为，二十四罪当付三法司勘验。罪有实证则置之极法，罪有虚浮则正其谤毁。先勘后议，方为持平之道。
+      </div>
+    </div>
+  </div>
+
+  <div class="bubble-row ink-fade">
+    <div class="avatar king">朕</div>
+    <div class="bubble-body">
+      <div class="bubble-name">皇 帝<span class="role">·御 言</span></div>
+      <div class="bubble king">
+        ——准三法司勘验·限十日具奏。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     实时插言·浮章按钮
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">朕 意·实 时 插 言</h2>
+<div class="section-stage">跨 阶 段·浮 章 御 笔</div>
+
+<div class="interject-mock">
+  <div style="display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:0.74rem;color:var(--ink-faded);margin-bottom:0.7rem;letter-spacing:0.2em;">悬浮按钮 (页面右下)</div>
+      <button class="interject-btn">朕 意</button>
+    </div>
+    <div>
+      <div style="font-size:0.74rem;color:var(--ink-faded);margin-bottom:0.7rem;letter-spacing:0.2em;">五 选 浮 层</div>
+      <div class="interject-panel">
+        <div class="ij-title">朕 欲 发 言</div>
+        <div class="ij-row"><span><span class="glyph">📜</span> 朕 来 训 示</span><span class="ij-hint">直接键入</span></div>
+        <div class="ij-row"><span><span class="glyph">👁</span> 朕 欲 让 某 人 起 对</span><span class="ij-hint">指定一员</span></div>
+        <div class="ij-row"><span><span class="glyph">🪄</span> 朕 请 某 党 党 首 论 之</span><span class="ij-hint">党魁表态</span></div>
+        <div class="ij-row"><span><span class="glyph">🔇</span> 卿 且 退 下</span><span class="ij-hint">favor-3</span></div>
+        <div class="ij-row"><span><span class="glyph">⚡</span> 朕 另 有 要 事</span><span class="ij-hint">中止</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 4·钦定档位 (S 档示例)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">钦 定 档 位</h2>
+<div class="section-stage">阶 段 四·S 档·圣 旨 煌 煌</div>
+
+<div class="archon-stage fade-up">
+  <div class="archon-grade-display">
+    <div class="archon-grade-letter s seal-press">S</div>
+  </div>
+  <div class="archon-name">圣 旨 煌 煌</div>
+  <div class="archon-meta">皇威 <strong>72</strong> · 皇权 <strong>65</strong> · 双 70+ 触发</div>
+  <div class="archon-perks">
+    <div><span class="check">✓</span> 跳过<span class="key">用印颁行</span>·诏命直颁</div>
+    <div><span class="check">✓</span> 草诏者<span class="key">随选</span>·可越品级钦点亲信</div>
+    <div><span class="check">✓</span> 反对党 <span class="key">凝聚 -10</span>·散沙效应</div>
+    <div><span class="check">✓</span> 主奏党 <span class="key">凝聚 +3</span></div>
+    <div><span class="check">✓</span> 朝堂渐和·相伐稍息</div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     D 档·危诏激变 (示例)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">危 诏 激 变</h2>
+<div class="section-stage">阶 段 四·D 档·替 代 路 径</div>
+
+<div class="d-grade fade-up">
+  <div class="d-grade-title">⚠ 危 诏 激 变</div>
+  <div class="d-grade-warning">皇威皇权双低·百官跪谏·诏令几近被阻。陛下何以处之？</div>
+  <div class="d-grade-options">
+    <div class="d-opt force">
+      <div class="d-opt-name">⚔ 硬 推</div>
+      <div class="d-opt-cost">皇权 -8 · 朝堂愈裂</div>
+      <div class="d-opt-desc">独断推行·百官记恨·或生反复</div>
+    </div>
+    <div class="d-opt yield">
+      <div class="d-opt-name">🤝 妥 协</div>
+      <div class="d-opt-cost">议题留中·待再议</div>
+      <div class="d-opt-desc">退一步·诏令重拟·保全颜面</div>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 5·草诏拟旨
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">草 诏 拟 旨</h2>
+<div class="section-stage">阶 段 五·钦 点 草 诏 官</div>
+
+<div class="draft fade-up">
+  <div class="draft-title">草 诏 拟 旨</div>
+  <div class="draft-sub">议题「弹劾魏忠贤」议毕·钦点草诏官</div>
+
+  <div class="draft-section">
+    <div class="draft-sec-label">按 惯 例·中 书 翰 林</div>
+    <div class="draft-cands">
+      <div class="draft-cand">
+        <div class="draft-cand-name">王 铎</div>
+        <div class="draft-cand-meta">翰林院侍读 · 名望 65 · 楚党(分化)</div>
+      </div>
+      <div class="draft-cand">
+        <div class="draft-cand-name">钱 谦 益</div>
+        <div class="draft-cand-meta">翰林院编修 · 名望 70 · 东林党</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="draft-section">
+    <div class="draft-sec-label">主 奏 方·东 林 党</div>
+    <div class="draft-cands">
+      <div class="draft-cand">
+        <div class="draft-cand-name">杨 涟</div>
+        <div class="draft-cand-meta">都察院左副都御史 · 名望 70 · 主奏</div>
+      </div>
+      <div class="draft-cand">
+        <div class="draft-cand-name">左 光 斗</div>
+        <div class="draft-cand-meta">大理寺少卿 · 名望 68 · 东林党</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="draft-section s-priv">
+    <div class="draft-sec-label"><span class="star">★</span> S 档 特 权·钦 点 任 意 官 员</div>
+    <div style="font-size:0.78rem;color:var(--ink-light);font-family:var(--f-zhongsong);letter-spacing:0.05em;line-height:1.7;">
+      圣旨煌煌之时·陛下可越品级钦点任何在朝官员·不限品级、不限党派·此为 S 档专属之权。
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 6·用印颁行
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">用 印 颁 行</h2>
+<div class="section-stage">阶 段 六·明 制·内 阁 票 拟 + 司 礼 监 批 红</div>
+
+<div class="sealing fade-up">
+  <div class="sealing-title">用 印 颁 行</div>
+  <div class="sealing-flow">
+    <div class="flow-step">内 阁 票 拟</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">司 礼 监 批 红</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">玉 玺 钤 印</div>
+  </div>
+
+  <div class="sealing-warn">
+    ⚠ <span class="key">阉党</span> 影响力 <span class="key">92</span>·控制 <span class="key">司礼监掌印</span><br>
+    有 <span class="key">84%</span> 概率「留中不发」 — 诏命受阻
+  </div>
+
+  <div style="text-align:center;margin-top:1.5rem;">
+    <div class="seal-stamp seal-press"></div>
+    <div style="font-size:0.74rem;color:var(--gold-pale);letter-spacing:0.2em;margin-top:0.5rem;">朱 砂 钤 印·诏 命 颁 行</div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     阶段 7·追责回响
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">追 责 回 响</h2>
+<div class="section-stage">阶 段 七·三 回 合 后 复 盘</div>
+
+<div class="review">
+  <div class="review-card fulfilled fade-up">
+    <div class="review-card-head"><span class="review-card-glyph">★</span> 充 分 落 实</div>
+    <div class="review-card-detail">
+      诏令落地·阉党气势骤挫<br>
+      <span class="delta up">东林党 凝聚 +5</span>
+      <span class="delta up">东林党 影响 +3</span>
+      <span class="delta up">韩爌 名望 +5</span>
+      <span class="delta up">民心 +1</span><br>
+      <span style="color:var(--ink-light);font-style:italic;">触发：「颂德」剧情</span>
+    </div>
+  </div>
+  <div class="review-card partial fade-up">
+    <div class="review-card-head"><span class="review-card-glyph">○</span> 部 分 落 实</div>
+    <div class="review-card-detail">
+      仅查抄了次要党羽·主犯逃脱<br>
+      <span class="delta">中性·无显著反馈</span><br>
+      <span style="color:var(--ink-light);font-style:italic;">不进起居注·仅录诏令追踪</span>
+    </div>
+  </div>
+  <div class="review-card unfulfilled fade-up">
+    <div class="review-card-head"><span class="review-card-glyph">⚠</span> 未 落 实</div>
+    <div class="review-card-detail">
+      阉党反扑·三法司搁置案件<br>
+      <span class="delta down">东林党 凝聚 -8</span>
+      <span class="delta down">韩爌 名望 -5</span>
+      <span class="delta down">朝堂愈裂</span><br>
+      <span style="color:var(--ink-light);font-style:italic;">主奏者背锅·或被弹劾</span>
+    </div>
+  </div>
+  <div class="review-card backfire fade-up">
+    <div class="review-card-head"><span class="review-card-glyph">✗</span> 反 效 果</div>
+    <div class="review-card-detail">
+      阉党借机大兴党狱·东林被诬「逆党」<br>
+      <span class="delta down">东林党 凝聚 -15</span>
+      <span class="delta down">党魁 名望 -12</span>
+      <span class="delta down">党祸大兴</span><br>
+      <span style="color:var(--ink-light);font-style:italic;">触发：「党派分化」事件</span>
+    </div>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     弹劾结党 (改正后·非册立)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">弹 劾 结 党</h2>
+<div class="section-stage">推 演 spawn·言 官 疑 党</div>
+
+<div class="accusation fade-up">
+  <div class="acc-title">弹 劾 疏</div>
+  <div class="acc-meta">奏者：左光斗 · 都察院左佥都御史 · 东林党<br>被劾：钱谦益(名望 82·恩眷 75)</div>
+  <div class="acc-text">
+    臣光斗诚惶诚恐，谨奏为劾朝中结党事——伏察翰林院编修钱谦益，名望素著、清议所归，然结纳同年门生数十人于京师私第，互通声气、品评时政、相约进退，俨然有党羽之状。陛下若不察，恐其党日大、其势日炽，他日必为社稷之患。臣窃以《禁党律》请旨严惩……
+  </div>
+  <div class="acc-tags">
+    <span class="acc-tag">弹劾</span>
+    <span class="acc-tag">结党</span>
+    <span class="acc-tag">推演 spawn</span>
+    <span style="color:var(--ink-light);">★ 准奏 → 自动 spawn 党(status='被劾'·钱谦益党)·钱谦益 prestige -8</span>
+  </div>
+</div>
+
+<div class="ink-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     威权阶梯·永业解锁
+     ═══════════════════════════════════════════════════════════════════════ -->
+<h2 class="section-title">威 权 阶 梯</h2>
+<div class="section-stage">永 业 解 锁·跨 场 保 留</div>
+
+<div class="regalia-grid">
+  <div class="regalia-card unlocked fade-up">
+    <div class="regalia-icon">★</div>
+    <div class="regalia-info">
+      <div class="regalia-name">金 口 玉 言</div>
+      <div class="regalia-desc">累计 5 场 S 档·廷议玩家发言自动 +10 说服力</div>
+    </div>
+  </div>
+  <div class="regalia-card unlocked fade-up">
+    <div class="regalia-icon">★</div>
+    <div class="regalia-info">
+      <div class="regalia-name">纳 谏 明 君</div>
+      <div class="regalia-desc">累计 3 场化解 D 档·D 档新增「廷议续议」三选</div>
+    </div>
+  </div>
+  <div class="regalia-card locked fade-up">
+    <div class="regalia-icon">○</div>
+    <div class="regalia-info">
+      <div class="regalia-name">天 威 浩 荡 <span class="progress">(3/5)</span></div>
+      <div class="regalia-desc">皇威≥80 持续 5 回合·驳议党派 cohesion-2/回合</div>
+    </div>
+  </div>
+  <div class="regalia-card locked fade-up">
+    <div class="regalia-icon">○</div>
+    <div class="regalia-info">
+      <div class="regalia-name">乾 纲 独 运 <span class="progress">(1/5)</span></div>
+      <div class="regalia-desc">皇权≥80 持续 5 回合·议前预审多一选项「密发」</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.wrap -->
+
+<footer class="footer">
+  天 命 · 廷 议 V3 · 沉 浸 式 预 览 · 案 头 一 卷
+</footer>
+
+</body>
+</html>

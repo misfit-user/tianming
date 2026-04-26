@@ -488,7 +488,24 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       var col = (c.faction === _playerFac) ? 'var(--gold-400)' : (_facColorMap[c.faction] || '#888');
       var safeN = c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       var _safeName = c.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      escaped = escaped.replace(new RegExp(safeN, 'g'), '<span class="char-link" style="color:' + col + ';" onclick="event.stopPropagation();showCharPopup(\'' + _safeName + '\',event)">' + c.name + '</span>');
+      var _replacement = '<span class="char-link" style="color:' + col + ';" onclick="event.stopPropagation();showCharPopup(\'' + _safeName + '\',event)">' + c.name + '</span>';
+      // 2 字短名做边界检查·前后均为汉字时极可能是子串误抓("周连"在"连日"中)·跳过
+      if (c.name.length === 2) {
+        var _segs = escaped.split(/(<[^>]*>)/);
+        for (var _si = 0; _si < _segs.length; _si++) {
+          if (_segs[_si].charAt(0) === '<') continue;
+          _segs[_si] = _segs[_si].replace(new RegExp(safeN, 'g'), function(_m, _off, _whole) {
+            var prev = _off > 0 ? _whole.charAt(_off - 1) : '';
+            var next = (_off + _m.length < _whole.length) ? _whole.charAt(_off + _m.length) : '';
+            // 前后均为汉字 → 子串误抓·跳过
+            if (/[一-龥]/.test(prev) && /[一-龥]/.test(next)) return _m;
+            return _replacement;
+          });
+        }
+        escaped = _segs.join('');
+      } else {
+        escaped = escaped.replace(new RegExp(safeN, 'g'), _replacement);
+      }
     });
     if (topic) {
       return '<div style="margin-bottom:0.6rem;padding-left:0.5rem;border-left:2px solid var(--gold-d);"><span style="font-size:0.7rem;color:var(--txt-d);margin-right:0.3rem;">' + topic.icon + topic.label + '</span><br>' + escaped + '</div>';
@@ -840,10 +857,58 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     }
   } catch(_efHE) { console.warn('[shiji] 御批回听渲染失败', _efHE); efficacyHtml = ''; }
 
+  // 廷议追责回响·前议(3 回合前)到期议决之复盘·与御批回听同性质·紧随其后
+  var tinyiReviewHtml = '';
+  try {
+    var _ty3Reviews = (GM._turnReport || []).filter(function(r){
+      return r && r.type === 'tinyi_review' && r.turn === (GM.turn - 1);
+    });
+    if (_ty3Reviews.length > 0) {
+      tinyiReviewHtml = '<div class="tr-tinyi-review-box" style="margin-top:1.2rem;padding:0.9rem 1rem;background:rgba(176,90,40,0.06);border-left:3px solid var(--gold-d,#8c7030);border-radius:4px;">'
+        + '<div style="font-weight:700;color:var(--gold,#c9a84c);font-size:0.95rem;margin-bottom:0.6rem;">〔前 议 追 责·三 回 前 诏 命 回 响〕<span style="font-size:0.72rem;color:var(--txt-d);font-weight:400;margin-left:0.5em;">廷议/常朝/御前·' + _ty3Reviews.length + ' 案</span></div>';
+      var _glyphMap = { fulfilled: '★', partial: '○', unfulfilled: '⚠', backfire: '✗' };
+      var _colorMap = {
+        fulfilled: 'var(--green,#4a9a4a)',
+        partial: 'var(--txt-d)',
+        unfulfilled: 'var(--amber,#e0a040)',
+        backfire: 'var(--red-s,#b04030)'
+      };
+      var _venueColor = {
+        '廷议': 'var(--gold,#c9a84c)',
+        '常朝': 'var(--txt-s)',
+        '亲诏': 'var(--red-s,#b04030)',
+        '御前': 'var(--purple-300,#b89ec8)'
+      };
+      _ty3Reviews.forEach(function(rv) {
+        var g = _glyphMap[rv.outcome] || '○';
+        var c = _colorMap[rv.outcome] || 'var(--txt-d)';
+        var venueClr = _venueColor[rv.venueType] || 'var(--txt-d)';
+        tinyiReviewHtml += '<div style="margin-bottom:0.5rem;padding:0.5rem 0.7rem;background:rgba(0,0,0,0.12);border-radius:3px;border-left:2px solid '+c+';font-size:0.8rem;">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">'
+          + '<span><span style="color:'+c+';font-weight:600;">' + g + ' ' + escHtml(rv.histLabel || rv.label || '') + '</span>'
+          + (rv.venueType ? '<span style="margin-left:0.4em;padding:1px 6px;background:rgba(0,0,0,0.18);border-radius:2px;font-size:0.66rem;color:'+venueClr+';">'+escHtml(rv.venueType)+'</span>' : '')
+          + '</span>'
+          + (rv.delayTurns ? '<span style="color:var(--txt-d);font-size:0.72rem;">' + rv.delayTurns + ' 回合前议</span>' : '')
+          + '</div>'
+          + '<div style="color:var(--txt-s);margin-bottom:0.3rem;">「' + escHtml(rv.edictContent || '') + '」</div>';
+        var actors = [];
+        if (rv.proposerParty) actors.push('主奏方·<span style="color:var(--gold,#c9a84c);">' + escHtml(rv.proposerParty) + '</span>');
+        if (rv.leaderName) actors.push('党首·' + escHtml(rv.leaderName));
+        if (rv.assigneeName) actors.push('承办·' + escHtml(rv.assigneeName));
+        if (actors.length) {
+          tinyiReviewHtml += '<div style="font-size:0.74rem;color:var(--txt-d);">' + actors.join(' · ') + '</div>';
+        }
+        tinyiReviewHtml += '</div>';
+      });
+      tinyiReviewHtml += '</div>';
+    }
+  } catch(_tyRvE) { (window.TM && TM.errors && TM.errors.captureSilent) ? TM.errors.captureSilent(_tyRvE, 'shiji·tinyi_review') : null; }
+
   // 第二层（默认折叠）：时政记 + 数值变化（含要点/财政/军事/势力/党派/阶层/人物）+ 人事变动 + 后人戏说 + 兼容附件
   // ※ changeReportHtml 已并入 _renderUnifiedChanges，此处不再重复
   // ※ 2026-04 用户调整：群臣动向(npcActHtml) 移入风闻录事·密报与奏闻(intelHtml) 删除
-  var layer2Html = szjSectionHtml + unifiedChangesHtml + efficacyHtml + personnelHtml + hourenHtml
+  // ※ 2026-04+ 廷议追责段(tinyiReviewHtml) 紧随御批回听·概念一致(诏令执行反馈)
+  var layer2Html = szjSectionHtml + unifiedChangesHtml + efficacyHtml + tinyiReviewHtml + personnelHtml + hourenHtml
     + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml;
 
   // 群臣动向→风闻录事（每条 NPC 事件写入 GM._fengwenRecord）

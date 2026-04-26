@@ -1106,6 +1106,66 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }
     }
 
+    // 廷议 V3 · 近期廷议倾向(GM.recentChaoyi[]·至多 5 条·让 AI 把握玩家政治模式)
+    if (Array.isArray(GM.recentChaoyi) && GM.recentChaoyi.length > 0) {
+      tp += '\n【近期廷议倾向（廷议V3·跨回合）】\n';
+      tp += '· 玩家最近 ' + Math.min(5, GM.recentChaoyi.length) + ' 场廷议表现·NPC 可据此判定圣心走向：\n';
+      GM.recentChaoyi.slice(0, 5).forEach(function(rc) {
+        var pieces = [];
+        pieces.push('回合 ' + rc.turn);
+        pieces.push('议「' + (rc.topic||'').slice(0, 18) + '」');
+        if (rc.archonGrade) pieces.push(rc.archonGrade + '档');
+        if (rc.proposer) pieces.push('主奏:' + rc.proposer + (rc.proposerParty ? '(' + rc.proposerParty + ')' : ''));
+        if (rc.opposingParties && rc.opposingParties.length > 0) pieces.push('对:' + rc.opposingParties.slice(0,2).join('/'));
+        pieces.push('裁:' + (rc.decision||'?'));
+        tp += '  · ' + pieces.join(' · ') + '\n';
+        // 议题原议(原始诉求)
+        if (rc.originalGist) tp += '    原议：' + rc.originalGist.slice(0, 80) + '\n';
+        // 关键发言摘要(各党立场+一句精华)
+        if (rc.keyMoments && rc.keyMoments.length > 0) {
+          tp += '    殿议：';
+          tp += rc.keyMoments.slice(0, 4).map(function(km){
+            return km.name + '【' + (km.stance || '') + '】「' + (km.gist || '').slice(0, 30) + '」';
+          }).join('；') + '\n';
+        }
+        // 玩家朕意插言(若有)
+        if (rc.playerInterjects && rc.playerInterjects.length > 0) {
+          tp += '    朕训：' + rc.playerInterjects.slice(0, 2).map(function(p){ return '「' + (p.text || '').slice(0, 40) + '」'; }).join('·') + '\n';
+        }
+        // 玩家圣意补述(若有·关键)
+        if (rc.playerVerdictNote) {
+          tp += '    ★圣意：' + rc.playerVerdictNote.slice(0, 100) + '\n';
+        }
+        // 最终颁布的诏书(若有)
+        if (rc.sealedEdict) {
+          tp += '    诏书：' + rc.sealedEdict.slice(0, 80) + '\n';
+        }
+        // 裁决与原议的关系标记(★关键·让 AI 知道玩家是部分采纳/换角度/全采/驳回)
+        if (rc.alignment) {
+          var alignLbl = {
+            'full': '完全采纳原议',
+            'partial': '只采一部·余者搁置',
+            'angle-shift': '换角度裁·实非原议',
+            'reject': '议而不行·留待再议',
+            'unsealed': '议毕未颁明诏'
+          }[rc.alignment] || rc.alignment;
+          tp += '    [裁断关系] ' + alignLbl + ' — NPC 当据此理解圣意之实·而非死守原议执行\n';
+        }
+      });
+      // 党派偏向归纳
+      var partyTilt = {};
+      GM.recentChaoyi.slice(0, 5).forEach(function(rc) {
+        if (rc.proposerParty && (rc.archonGrade==='S' || rc.archonGrade==='A' || rc.decision==='majority')) {
+          partyTilt[rc.proposerParty] = (partyTilt[rc.proposerParty]||0) + 1;
+        }
+        (rc.opposingParties||[]).forEach(function(en){
+          partyTilt[en] = (partyTilt[en]||0) - 1;
+        });
+      });
+      var tiltStr = Object.keys(partyTilt).map(function(k){return k+'('+(partyTilt[k]>0?'+':'')+partyTilt[k]+')';}).join('·');
+      if (tiltStr) tp += '· 圣心倾向：' + tiltStr + '\n';
+    }
+
     // 国策上下文
     var policyCtx = getCustomPolicyContext();
     if (policyCtx) tp += '\n' + policyCtx;
@@ -3693,6 +3753,37 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               tp1 += '\n';
             });
           }
+          // 前议追责·涵盖常朝/廷议/御前所有玩家正式裁决·三回合后到期复盘
+          // 让 AI 据 outcome + venue 自主演绎(narrative + NPC actions + 角色/党派 deltas)
+          if (Array.isArray(GM._ty3_pendingReviewForPrompt) && GM._ty3_pendingReviewForPrompt.length > 0) {
+            tp1 += '\n\n【前议追责·三回合前诏命到期——必须在 narrative + npc_actions 中演绎·并自主裁量数值反馈·不写死】\n';
+            tp1 += '  ※ 涵盖范围：\n';
+            tp1 += '    廷议诏令 → 朝野公开议论·派系格局变动·政敌/同党反应明显\n';
+            tp1 += '    常朝诏令 → 寻常政务回响·有司奉行/抵制·言官跟疏\n';
+            tp1 += '    亲诏(常朝玩家口述) → 比常朝更显君威·失败时损耗皇权更大\n';
+            tp1 += '    御前密议 → 反响隐晦·走密室路线·泄密则成大案\n';
+            tp1 += '  ※ 此为叙事种子·outcome 已系统判定·朝野反响与具体数值变化由你(AI)裁量：\n';
+            tp1 += '    1·narrative 中铺陈反响：颂德/弹劾/民议/党狱/异象 等·依 outcome 烈度而定\n';
+            tp1 += '    2·char_updates 给 主奏者/党首/承办者 发 prestige/loyalty/stress/favor 增减(必须有合理 reason)\n';
+            tp1 += '    3·party_* 给 主奏党 发 cohesion/influence 调整(若 fulfilled 可+·若 backfire 可大-)\n';
+            tp1 += '    4·event 段可补「颂德立祠」「言官追疏」「民间立碑」「党狱兴起」等\n';
+            tp1 += '    5·npc_actions 中相关党派党首/政敌/承办者应有反应行动\n';
+            tp1 += '  ※ 量级参考(可上下浮动·按党派 influence/角色 prestige 体量)：\n';
+            tp1 += '    准奏果验(fulfilled) → 主奏者+5~8 prestige·主奏党 cohesion+3~6·政敌党 cohesion-2~5\n';
+            tp1 += '    行而未尽(partial) → 中性·或 ±1~2 微调·可不动\n';
+            tp1 += '    奉行不力(unfulfilled) → 主奏者-5~10 prestige·主奏党 cohesion-5~10·言官追疏\n';
+            tp1 += '    适得其反(backfire) → 主奏者-10~20 prestige·-5~15 favor·主奏党 cohesion-10~20 影响-3~8·民心-·可能下狱/贬谪\n';
+            tp1 += '  ※ 不可仅写 narrative 而无 deltas·亦不可硬套量级·须按当事人能力/党派强弱酌情\n';
+            GM._ty3_pendingReviewForPrompt.forEach(function(rv) {
+              var line = '  · ' + (rv.venueType ? '['+rv.venueType+']' : '') + '「' + (rv.content||'').slice(0, 50) + '」·';
+              if (rv.proposerParty) line += rv.proposerParty + '所主·';
+              if (rv.assigneeName) line += '承办：' + rv.assigneeName + '·';
+              if (rv.leaderName) line += '党首：' + rv.leaderName + '·';
+              line += '此回合议结：【' + (rv.histLabel || rv.label) + '】(' + rv.outcome + ')';
+              tp1 += line + '\n';
+            });
+            tp1 += '\n';
+          }
           if (_diplomaticEdicts.length > 0) {
             tp1 += '\n\n【本回合外交文书·对他势力——此非内政诏令·对方非本朝臣属·未必奉诏】\n';
             tp1 += '  ※ 对方势力有独立的君主/国策/宗教/敌友关系·可能：(1) 接受但变通执行 (2) 敷衍推诿 (3) 明确拒绝 (4) 反唇相讥甚至兴兵 (5) 暂缓答复以观望\n';
@@ -3892,7 +3983,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         // 长期事势追踪·注入（含 hidden 条目，AI 全见，玩家不见 hidden）
         if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
           var _chronCtx = ChronicleTracker.getAIContextString();
-          if (_chronCtx) tp1 += '\n\n' + _chronCtx;
+          if (_chronCtx) {
+            tp1 += '\n\n' + _chronCtx;
+            // 硬约束·让长期工程穿透到所有输出通道
+            tp1 += '\n\n【★ 长期工程穿透指令·必须遵守】\n';
+            tp1 += '  · shizhengji/zhengwen(时政记)：凡涉以上「长期事势」的回合·必须在叙事中点出"陛下 X 月前所颁某诏·至今进展 Y%·主奏者某某奏报近况"·不可只写本回合孤立事件。\n';
+            tp1 += '  · resource_changes(数值变化)：进度 ≥70% 时·相关方向数值应显著正向(如治河工程进 70% → 该地 unrest -3·prosperity +2)·≥95% 接近完成时·应大幅正向(unrest -5·prestige +5)·主奏者 prestige/favor +5~10。逾期或滞涩(<20% 历 3 回合+) 时·相关方向数值负向(主奏者 prestige -3·相关 region 民心 -2)。\n';
+            tp1 += '  · events(事件)：进度满 95% 应 spawn"X 工竣报"事件·含主奏者奏报、地方反响、朝堂庆贺。逾期应 spawn"X 督查不力"事件·含言官弹劾。\n';
+            tp1 += '  · char_updates(人物变动)：主奏者随工程推进/失败·prestige/loyalty/favor 自然变化。stakeholder NPC(关联部门长官、相关 region 大员)亦同。\n';
+            tp1 += '  · npc_actions(NPC 行动)：相关 NPC 应有奏报本工程进展的奏疏 OR 私下行动(如盐法将成则盐商党首派人贿赂；治河将竣则河漕总督奏请封赏)。\n';
+            tp1 += '  · 不可只字不提进行中的长期工程·这是史官最严苛的考核·真朝廷绝无可能 N 年大工程在某月一字未提的情况。\n';
+          }
         }
         // 后妃请见生成器——每回合按冷落/性格/宫心决定概率
         try { _generateConsortAudiences(); } catch(_caE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_caE, 'consortAudience') : console.warn('[consortAudience]', _caE); }
@@ -4210,6 +4311,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         if (_pNameB) tp1b += '\u73A9\u5BB6\u89D2\u8272\uFF1A' + _pNameB + '\uFF08\u4E0D\u5F97\u4F5C\u4E3A npc_interactions.actor\uFF0C\u4E0D\u5F97 autonomous \u4F5C cultural_works\uFF09\n';
         if (_recentSZJ) tp1b += '\n\u3010\u672C\u56DE\u5408\u5DF2\u8BB0\u65F6\u653F\u3011\n' + _recentSZJ + '\n';
         if (_charsBriefB) tp1b += '\n\u3010\u4E3B\u8981\u4EBA\u7269\uFF08\u542B\u4F4D\u7F6E/\u5B98\u804C/\u6D3E\u7CFB/\u7279\u8D28\uFF09\u3011\n' + _charsBriefB + '\n';
+        // 长期事势注入·让后人戏说/鸿雁/密信能涉及多年未竣的工程
+        if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
+          var _chronCtxB = ChronicleTracker.getAIContextString();
+          if (_chronCtxB) {
+            tp1b += '\n' + _chronCtxB + '\n';
+            tp1b += '\n\u3010\u2605 \u957F\u671F\u4E8B\u52BF\u7A7F\u900F\u5230\u6587\u4E8B/\u9E3F\u96C1/\u5BC6\u4FE1\u3011\n';
+            tp1b += '  \u00B7 cultural_works(\u540E\u4EBA\u620F\u8BF4/\u6587\u82D1\u4F5C\u54C1)\uFF1A\u8FDB\u5EA6 \u226570% \u5DE5\u7A0B\u00B7\u76F8\u5173 NPC \u5F53\u4F5C\u300C\u9882\u529F\u8BD7\u8D4B/\u54CF\u53F9\u5DE5\u827A\u300D\u00B7\u8FDB\u5EA6 <20% \u5386\u591A\u56DE\u5408\u00B7\u5F53\u4F5C\u300C\u8BBD\u523A\u8BD7/\u5F39\u52BE\u6587/\u6C11\u8C23\u8BAF\u4E4B\u300D\u3002\n';
+            tp1b += '  \u00B7 npc_letters(\u9E3F\u96C1\u4F20\u4E66)\uFF1A\u53C2\u4E0E\u8BE5\u5DE5\u7A0B\u7684\u5730\u65B9\u5B98\u5E94\u6709\u594F\u62A5\u672C\u5DE5\u7A0B\u8FDB\u5C55\u7684\u4E66\u4FE1(\u5982\u6CBB\u6CB3 60% \u2192 \u6CB3\u9053\u603B\u7763\u594F\u300C\u6CB3\u5DE5\u73B0\u72B6\u00B7\u5824\u5DF2\u6210\u516B\u4E5D\u00B7\u5C1A\u9700\u2026\u2026\u300D)\u3002\n';
+            tp1b += '  \u00B7 npc_correspondence(\u5BC6\u4FE1)\uFF1A\u957F\u671F\u5DE5\u7A0B\u4E2D\u5931\u610F/\u53CD\u5BF9\u65B9 NPC \u5E94\u6709\u79C1\u4E0B\u62B1\u6028/\u4E32\u8054(\u5982\u53D8\u6CD5\u5C06\u6210 \u2192 \u53CD\u5BF9\u515A\u515A\u9B41\u4E0E\u95E8\u751F\u5BC6\u8BAE\u300C\u6B64\u6CD5\u96BE\u4E45\u00B7\u5F53\u5F85\u65F6\u7FFB\u6848\u300D)\u3002\n';
+            tp1b += '  \u00B7 npc_interactions(NPC \u4E92\u52A8)\uFF1A\u957F\u671F\u5DE5\u7A0B\u4E3B\u594F\u8005\u4E0E stakeholder \u4E4B\u95F4\u5E94\u6709\u534F\u8C03\u4E92\u52A8\u3002\n';
+            tp1b += '  \u00B7 \u8FD9\u4E9B\u5185\u5BB9\u987B\u5207\u5B9E\u547C\u5E94\u300C\u957F\u671F\u4E8B\u52BF\u300D\u4E2D\u7684\u5177\u4F53\u6761\u76EE\u00B7\u4E0D\u53EF\u53EA\u5199\u672C\u56DE\u5408\u5B64\u7ACB\u4E8B\u00B7\u8BA9\u73A9\u5BB6\u611F\u5230\u300C\u6709\u51E0\u4E2A\u4E09\u4E94\u5E74\u5927\u4E8B\u5728\u80CC\u666F\u6301\u7EED\u63A8\u8FDB\u300D\u3002\n';
+          }
+        }
 
         // 已有内容提示（避免重复）
         var _existCW = (p1 && Array.isArray(p1.cultural_works)) ? p1.cultural_works.length : 0;
@@ -4764,28 +4878,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         } catch(_applyErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr); }
 
-        // v5·人物生成 B · 推演扫描+自动生成/pending
-        try {
-          if (typeof scanMentionedCharacters === 'function') {
-            // 合并 aiResult·提供扫描所需字段
-            var _scanInput = {
-              zhengwen: p1.shizhengji || p1.zhengwen || '',
-              xinglu: p1.xinglu || '',
-              events: Array.isArray(p1.events) ? p1.events : [],
-              npc_actions: Array.isArray(p1.npc_actions) ? p1.npc_actions : []
-            };
-            showLoading('\u8BB0\u8F7D\u65B0\u4EBA\u7269\u2026\u2026', 90);
-            scanMentionedCharacters(_scanInput).then(function(res){
-              if (res.generated && res.generated.length) {
-                if (typeof addEB === 'function') addEB('\u8BB0\u4E8B', '\u63A8\u6F14\u6D8C\u73B0\u65B0\u4EBA\u7269\uFF1A' + res.generated.join('\u3001'));
-                _dbg('[人物扫描] 自动生成', res.generated.length, '人：', res.generated);
-              }
-              if (res.pending && res.pending.length) {
-                _dbg('[人物扫描] 入 pending', res.pending.length, '人：', res.pending);
-              }
-            }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u4EBA\u7269\u626B\u63CF') : console.warn('[\u4EBA\u7269\u626B\u63CF]', e); });
-          }
-        } catch(_scE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_scE, '\u4EBA\u7269\u626B\u63CF] \u5F02\u5E38') : console.warn('[\u4EBA\u7269\u626B\u63CF] \u5F02\u5E38', _scE); }
+        // v5·人物生成 B · 取消每回合 API 调用·改为玩家在史记弹窗手动点击 pending 名时按需生成
+        // (原 scanMentionedCharacters 调用已废弃·扫描+自动 AI 生成会产生误抓且耗 token)
+        // pending 名仍由 char-link 的 onclick 触发 _tmClickPendingChar → crystallizePendingCharacter
 
         shizhengji=p1.shizhengji||"";
         turnSummary=p1.turn_summary||"";
@@ -9783,8 +9878,42 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           _thisCourt.slice(-3).forEach(function(r){ _basisBrief += '  '+(r.topic||r.mode||'议事')+'\n'; });
         }
       }
+      // 前议追责回响·涵盖常朝/廷议/御前·三回合到期·让后人戏说自然引及朝野余响(非数值修改·叙事种子)
+      if (Array.isArray(GM._ty3_pendingReviewForPrompt) && GM._ty3_pendingReviewForPrompt.length > 0) {
+        _basisBrief += '【前议追责·三回合前诏命到期(后人戏说应自然嵌入·非主线但可作议论/茶肆传闻/书院清议/家书提及)】\n';
+        _basisBrief += '  ※ 按场所性质演绎反响位置：\n';
+        _basisBrief += '    [廷议] → 茶肆/书院/官员私第议论·士论翕然或汹汹\n';
+        _basisBrief += '    [常朝] → 衙门内外回响·部曹奉行或推诿\n';
+        _basisBrief += '    [亲诏] → 民间惊议·近臣窃语·有司战兢\n';
+        _basisBrief += '    [御前] → 不可明言·只能借密报/侍从私下流露·若泄则成大事\n';
+        _basisBrief += '  ※ 据 outcome 体现：\n';
+        _basisBrief += '    准奏果验 → 民间立祠/士子赋诗/茶肆称颂/政敌暗议\n';
+        _basisBrief += '    行而未尽 → 朝野观望/书院叹息/老臣摇头/言路疑议\n';
+        _basisBrief += '    奉行不力 → 言官追疏/政敌得势/承办者低首/家书诉冤\n';
+        _basisBrief += '    适得其反 → 民间嗟叹/异象传闻/党狱兴起/旧友远遁\n';
+        GM._ty3_pendingReviewForPrompt.forEach(function(rv) {
+          _basisBrief += '  · ' + (rv.venueType ? '['+rv.venueType+']' : '') + '「' + (rv.content||'').slice(0, 40) + '」·' +
+            (rv.proposerParty ? rv.proposerParty + '所主·' : '') +
+            '此回合议结：【' + (rv.histLabel || rv.label) + '】\n';
+        });
+      }
 
-      var tp2 = p1Summary + _basisBrief
+      // 长期事势注入·sub-call 2 后人戏说·让多年工程在场景中折射
+      var _chronCtx2 = '';
+      if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
+        var _cc2raw = ChronicleTracker.getAIContextString();
+        if (_cc2raw) {
+          _chronCtx2 = '\n' + _cc2raw + '\n';
+          _chronCtx2 += '【★ 长期事势穿透到《后人戏说》场景叙事】\n';
+          _chronCtx2 += '  · 进度 ≥70% 工程·相关大臣应在某时辰汇报近况(如治河近成→河漕总督来朝奏报；盐法将就→盐运使呈报新法收效)。\n';
+          _chronCtx2 += '  · 进度 <20% 历多回合·应有人在场景中提及搁置(如"那道清查户口的诏，已两年余了，至今……")。\n';
+          _chronCtx2 += '  · 100% 接近完成·主角应有内心独白回想当年颁诏情景·或与近侍提起。\n';
+          _chronCtx2 += '  · 工程涉及的地方·若主角"巡视"或"接见"该地官员·必须自然引及其进展。\n';
+          _chronCtx2 += '  · 这些不是主线·但要让玩家感到"陛下治国数年·真有几桩大事在背景持续推进"。\n';
+        }
+      }
+
+      var tp2 = p1Summary + _basisBrief + _chronCtx2
         + (aiThinking ? '【AI分析】' + aiThinking.substring(0, 200) + '\n' : '')
         + "\n基于上述全部资料，撰写《后人戏说》——这是玩家角色本回合的完整生活进程，核心目的是**完整、立体地呈现玩家角色的日常生活**，让玩家看见自己的角色如何度过这一段时光。\n"
         + "【核心要义——叙事性第一】\n"

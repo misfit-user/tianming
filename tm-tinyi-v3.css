@@ -1,0 +1,1170 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ *  tm-tinyi-v3.css — 廷议 V3·七阶段 modal 样式
+ *  ═══════════════════════════════════════════════════════════════════════
+ *
+ *  设计语言：紫檀案台·宣纸朱印·墨色山河
+ *    · Analog Meditation (paper grain, ink bleeds, breathing room)
+ *    · Concrete Poetry (monumental seal stamps, sculptural typography)
+ *    · Chromatic Language (color zones for 派系)
+ *  与 tm-chaoyi-v3.css 共享 CSS 变量·此处补足 paper/wood/seal token
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* §0·廷议 V3 设计 token (作用域 .ty3-* 各 modal·不影响其它模块) */
+.ty3-pa-modal,
+.ty3-seat-modal,
+.ty3-debate-modal,
+.ty3-grade-modal,
+.ty3-draft-modal,
+.ty3-seal-modal,
+.ty3-accuse-modal,
+#ty3-interject-panel,
+.ty3-rv-modal_DEPRECATED {
+  --ty3-night: #0a0807;
+  --ty3-wood-dark: #1a130c;
+  --ty3-wood-mid: #251c11;
+  --ty3-wood-warm: #2e2418;
+  --ty3-room-glow: #382b1a;
+  --ty3-paper-white: #ead7b3;
+  --ty3-paper-warm: #dcc591;
+  --ty3-paper-aged: #c0a87a;
+  --ty3-paper-edge: #8c7654;
+  --ty3-ink-darkest: #14090b;
+  --ty3-ink-deep: #2a1a10;
+  --ty3-ink-mid: #4a3520;
+  --ty3-ink-light: #6d5a3e;
+  --ty3-ink-faded: #8a7656;
+  --ty3-gold-pale: #c9a85f;
+  --ty3-gold-bright: #e8c876;
+  --ty3-gold-deep: #8a7339;
+  --ty3-gold-glow: rgba(232,200,118,0.4);
+  --ty3-verm: #b8392c;
+  --ty3-verm-bright: #d4533e;
+  --ty3-verm-deep: #7a2418;
+  --ty3-verm-glow: rgba(216,83,62,0.5);
+  --ty3-jade: #5a8c70;
+  --ty3-jade-bright: #7ab096;
+  --ty3-jade-deep: #3d6450;
+  --ty3-amber: #c89438;
+  --ty3-amber-bright: #e0b660;
+  --ty3-shadow-card: 0 6px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(232,200,118,0.08);
+  --ty3-shadow-paper: 0 4px 20px rgba(0,0,0,0.5);
+  --ty3-shadow-seal: 0 3px 10px rgba(184,57,44,0.45);
+  --ty3-shadow-deep: 0 12px 40px rgba(0,0,0,0.7);
+  --ty3-shadow-gold: 0 0 24px rgba(232,200,118,0.18);
+  --ty3-f-kai: "STKaiti", "KaiTi", "楷体", "Noto Serif SC", serif;
+  --ty3-f-song: "STSong", "SimSun", "宋体", "Noto Serif SC", serif;
+  --ty3-f-zhongsong: "STZhongsong", "FangSong", "仿宋", serif;
+}
+
+/* §2·实时插言浮动按钮 */
+#ty3-interject-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 80px;
+  z-index: 6500;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #2a1a10 0%, #3d2818 100%);
+  border: 1.5px solid var(--gold-400, #b89a53);
+  border-radius: 22px;
+  color: var(--gold-300, #c9a85f);
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 0 1px rgba(184,154,83,0.18);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  letter-spacing: 0.08em;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+#ty3-interject-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.7), 0 0 0 1.5px var(--gold-300, #c9a85f);
+}
+#ty3-interject-btn .ty3-ij-icon { font-size: 1.05rem; }
+
+/* §2·实时插言面板 */
+#ty3-interject-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 130px;
+  z-index: 6500;
+  width: 320px;
+  background: var(--bg-paper, #221c15);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 8px;
+  padding: 12px 10px 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+  animation: ty3IjFi 0.16s ease;
+}
+@keyframes ty3IjFi {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ty3-ij-title {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--gold-400, #b89a53);
+  letter-spacing: 0.14em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-ij-row {
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  background: rgba(184,154,83,0.05);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--ink-700, #d9c9a9);
+  cursor: pointer;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ty3-ij-row:hover {
+  border-color: var(--gold-500, #9d8244);
+  background: rgba(184,154,83,0.12);
+  color: var(--ink-900, #f4eadd);
+}
+.ty3-ij-hint {
+  font-size: 0.62rem;
+  color: var(--ink-300, #6b5d47);
+  font-weight: normal;
+}
+.ty3-ij-foot {
+  margin-top: 8px;
+  text-align: center;
+}
+.ty3-ij-foot button {
+  padding: 3px 14px;
+  background: transparent;
+  border: 1px solid var(--ink-200, #4d4234);
+  color: var(--ink-300, #6b5d47);
+  border-radius: 3px;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+/* §3·议前预审·主奏者横幅 */
+.ty3-pa-proposer {
+  margin: 0 0 1.1rem;
+  padding: 0.7rem 0.9rem;
+  background: linear-gradient(180deg, rgba(184,57,44,0.08) 0%, rgba(140,118,84,0.06) 100%);
+  border-left: 3px solid var(--ty3-verm);
+  border-radius: 0 2px 2px 0;
+  position: relative;
+  z-index: 1;
+}
+.ty3-pa-prop-head {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.7rem;
+  color: var(--ty3-verm-deep);
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+}
+.ty3-pa-prop-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  font-family: var(--ty3-f-kai);
+}
+.ty3-pa-prop-name {
+  font-size: 1.15rem;
+  color: var(--ty3-ink-darkest);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.ty3-pa-prop-title {
+  font-size: 0.78rem;
+  color: var(--ty3-ink-mid);
+  font-family: var(--ty3-f-zhongsong);
+  letter-spacing: 0.06em;
+}
+.ty3-pa-prop-party {
+  font-size: 0.74rem;
+  color: var(--ty3-jade-deep);
+  font-family: var(--ty3-f-zhongsong);
+  background: rgba(90,140,112,0.12);
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+}
+.ty3-pa-prop-noparty {
+  font-size: 0.7rem;
+  color: var(--ty3-ink-faded);
+  font-style: italic;
+  font-family: var(--ty3-f-zhongsong);
+}
+.ty3-pa-prop-infl {
+  font-size: 0.72rem;
+  color: var(--ty3-ink-mid);
+  font-family: var(--ty3-f-zhongsong);
+}
+.ty3-pa-prop-reason {
+  font-family: var(--ty3-f-kai);
+  font-size: 0.88rem;
+  color: var(--ty3-ink-deep);
+  line-height: 1.6;
+  margin-top: 0.45rem;
+  padding-left: 0.6em;
+  border-left: 2px solid rgba(184,57,44,0.25);
+  font-style: italic;
+}
+.ty3-pa-prop-from {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.66rem;
+  color: var(--ty3-ink-faded);
+  margin-top: 0.4rem;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+/* §3·议前预审 modal·宣纸案卷 */
+.ty3-pa-modal {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232,200,118,0.08) 0%, transparent 50%),
+    linear-gradient(180deg, var(--ty3-paper-white) 0%, var(--ty3-paper-warm) 60%, var(--ty3-paper-aged) 100%);
+  border: 1px solid var(--ty3-paper-edge);
+  border-radius: 4px;
+  padding: 2rem 2.2rem 1.6rem;
+  max-width: 640px;
+  width: 92%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--ty3-shadow-deep), inset 0 0 80px rgba(140,118,84,0.18);
+  position: relative;
+  color: var(--ty3-ink-deep);
+  font-family: var(--ty3-f-song);
+}
+/* 宣纸纤维纹理叠加 */
+.ty3-pa-modal::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(127deg, transparent 0px, transparent 2px, rgba(60,40,15,0.03) 3px, rgba(60,40,15,0.03) 4px),
+    repeating-linear-gradient(37deg, transparent 0px, transparent 5px, rgba(140,118,84,0.04) 6px, rgba(140,118,84,0.04) 7px);
+  border-radius: 4px;
+}
+/* 四角金钉装饰 */
+.ty3-pa-modal::before {
+  content: '';
+  position: absolute; inset: 6px;
+  pointer-events: none;
+  border: 1px solid rgba(140,118,84,0.35);
+  border-radius: 2px;
+  box-shadow:
+    inset 6px 6px 0 -5px var(--ty3-gold-deep),
+    inset -6px 6px 0 -5px var(--ty3-gold-deep),
+    inset 6px -6px 0 -5px var(--ty3-gold-deep),
+    inset -6px -6px 0 -5px var(--ty3-gold-deep);
+}
+.ty3-pa-modal > * { position: relative; z-index: 1; }
+.ty3-pa-title {
+  text-align: center;
+  font-family: var(--ty3-f-kai);
+  font-size: 1.45rem;
+  color: var(--ty3-ink-darkest);
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px double var(--ty3-paper-edge);
+  font-weight: normal;
+}
+.ty3-pa-sub {
+  text-align: center;
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.78rem;
+  color: var(--ty3-ink-light);
+  letter-spacing: 0.25em;
+  padding-left: 0.25em;
+  margin-bottom: 1.4rem;
+}
+.ty3-pa-section {
+  margin-bottom: 1.1rem;
+}
+.ty3-pa-label {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.75rem;
+  color: var(--ty3-ink-mid);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ty3-pa-section input,
+.ty3-pa-section select {
+  width: 100%;
+  padding: 8px 11px;
+  background: rgba(255,255,255,0.42);
+  border: 1px solid rgba(140,118,84,0.45);
+  border-radius: 2px;
+  color: var(--ty3-ink-deep);
+  font-family: var(--ty3-f-kai);
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+.ty3-pa-section input::placeholder { color: var(--ty3-ink-faded); font-style: italic; }
+.ty3-pa-section input:focus,
+.ty3-pa-section select:focus {
+  outline: none;
+  border-color: var(--ty3-verm);
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 2px rgba(184,57,44,0.12);
+}
+
+/* §3·党派形势预估 */
+.ty3-pa-forecast {
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(140,118,84,0.4);
+  border-radius: 2px;
+  padding: 10px 12px;
+}
+.ty3-pa-forecast-empty {
+  color: var(--ty3-ink-faded);
+  font-family: var(--ty3-f-kai);
+  font-size: 0.78rem;
+  font-style: italic;
+  padding: 4px 0;
+}
+.ty3-pa-forecast-title {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.74rem;
+  color: var(--ty3-verm-deep);
+  margin-bottom: 8px;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ty3-pa-forecast-bar {
+  display: flex;
+  height: 18px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+  border: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-pa-bar-sup {
+  background: linear-gradient(90deg, var(--ty3-jade-deep) 0%, var(--ty3-jade) 100%);
+  color: #fff;
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s;
+}
+.ty3-pa-bar-n {
+  background: linear-gradient(90deg, rgba(140,118,84,0.4) 0%, rgba(140,118,84,0.55) 100%);
+  color: var(--ty3-ink-darkest);
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s;
+}
+.ty3-pa-bar-opp {
+  background: linear-gradient(90deg, var(--ty3-verm-deep) 0%, var(--ty3-verm) 100%);
+  color: #fff;
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s;
+}
+.ty3-pa-forecast-tip {
+  font-family: var(--ty3-f-kai);
+  font-size: 0.78rem;
+  color: var(--ty3-ink-deep);
+  margin-bottom: 4px;
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+.ty3-pa-faction-list {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.7rem;
+  color: var(--ty3-ink-light);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+.ty3-pa-faction-sup { color: var(--ty3-jade-deep); }
+.ty3-pa-faction-opp { color: var(--ty3-verm-deep); }
+
+/* §3·四种处置选项卡·宣纸帖样 */
+.ty3-pa-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.7rem;
+}
+.ty3-pa-opt {
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(140,118,84,0.4);
+  border-radius: 2px;
+  padding: 0.95rem 0.7rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+  position: relative;
+  font-family: var(--ty3-f-song);
+  box-shadow: 0 1px 3px rgba(60,40,15,0.08);
+}
+.ty3-pa-opt::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(140,118,84,0.5) 50%, transparent 100%);
+}
+.ty3-pa-opt:hover {
+  border-color: var(--ty3-verm);
+  background: rgba(255,255,255,0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(60,40,15,0.18);
+}
+.ty3-pa-opt-name {
+  font-family: var(--ty3-f-kai);
+  font-size: 1.1rem;
+  color: var(--ty3-ink-darkest);
+  font-weight: normal;
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.15em;
+  padding-left: 0.12em;
+}
+.ty3-pa-opt-cost {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.7rem;
+  color: var(--ty3-verm-deep);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.08em;
+}
+.ty3-pa-opt-desc {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.74rem;
+  color: var(--ty3-ink-light);
+  line-height: 1.55;
+}
+.ty3-pa-hold .ty3-pa-opt-name { color: var(--ty3-ink-light); }
+.ty3-pa-private .ty3-pa-opt-name { color: var(--ty3-verm-deep); }
+.ty3-pa-private .ty3-pa-opt-cost { color: var(--ty3-jade-deep); }
+.ty3-pa-small .ty3-pa-opt-name { color: var(--ty3-jade-deep); }
+.ty3-pa-small .ty3-pa-opt-cost { color: var(--ty3-jade-deep); }
+.ty3-pa-public .ty3-pa-opt-name { color: var(--ty3-ink-darkest); font-weight: 600; }
+.ty3-pa-public .ty3-pa-opt-cost { color: var(--ty3-verm); }
+
+.ty3-pa-foot {
+  text-align: center;
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px double var(--ty3-paper-edge);
+}
+.ty3-pa-foot button {
+  padding: 7px 24px;
+  background: transparent;
+  border: 1px solid var(--ty3-paper-edge);
+  color: var(--ty3-ink-mid);
+  border-radius: 2px;
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  padding-left: calc(24px + 0.18em);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ty3-pa-foot button:hover {
+  border-color: var(--ty3-ink-deep);
+  background: rgba(140,118,84,0.15);
+  color: var(--ty3-ink-darkest);
+}
+
+/* §13·追责回响 modal CSS·已撤·改入史记弹窗(tm-ai-change-applier.js renderTurnReport)
+   保留下方旧选择器·若旧存档残留 _ty3PendingReviewShow 不再触发渲染·安全 */
+.ty3-rv-modal_DEPRECATED {
+  background: linear-gradient(180deg, var(--bg-paper, #221c15) 0%, var(--bg-elev, #2d251c) 100%);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 8px;
+  padding: 1.4rem 1.7rem 1.2rem;
+  max-width: 720px;
+  width: 94%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 24px rgba(232,200,118,0.12);
+}
+.ty3-rv-title {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.4em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.4em;
+  border-bottom: 1px dashed rgba(232,200,118,0.2);
+  font-family: var(--font-serif, "STKaiti", serif);
+  text-shadow: 0 0 16px rgba(232,200,118,0.18);
+}
+.ty3-rv-sub {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-300, #6b5d47);
+  letter-spacing: 0.2em;
+  margin-bottom: 1.2rem;
+}
+.ty3-rv-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+.ty3-rv-card {
+  background: linear-gradient(135deg, rgba(45,33,21,0.6), rgba(20,15,8,0.4));
+  border: 1px solid rgba(232,200,118,0.15);
+  border-radius: 5px;
+  padding: 0.85rem 1rem;
+  position: relative;
+}
+.ty3-rv-fulfilled { border-left: 3px solid var(--celadon-400, #6a9a7f); }
+.ty3-rv-partial { border-left: 3px solid var(--ink-300, #6b5d47); }
+.ty3-rv-unfulfilled { border-left: 3px solid var(--amber-400, #d4a544); }
+.ty3-rv-backfire {
+  border-left: 3px solid var(--vermillion-400, #b84738);
+  background: linear-gradient(135deg, rgba(184,71,56,0.16), rgba(45,33,21,0.6));
+}
+.ty3-rv-head {
+  font-family: var(--font-serif, "STKaiti", serif);
+  font-size: 0.92rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.ty3-rv-fulfilled .ty3-rv-head { color: var(--celadon-300, #82b099); }
+.ty3-rv-unfulfilled .ty3-rv-head { color: var(--amber-300, #e0b865); }
+.ty3-rv-backfire .ty3-rv-head { color: var(--vermillion-200, #e07a66); }
+.ty3-rv-glyph { font-size: 1.1rem; }
+.ty3-rv-meta {
+  font-size: 0.62rem;
+  color: var(--ink-300, #6b5d47);
+  margin-left: auto;
+  font-weight: normal;
+}
+.ty3-rv-edict {
+  font-family: var(--font-song, "STSong", serif);
+  font-size: 0.78rem;
+  color: var(--ink-700, #d9c9a9);
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(232,200,118,0.04);
+  border-radius: 3px;
+  border-left: 2px solid rgba(232,200,118,0.15);
+}
+.ty3-rv-actors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0.4rem;
+}
+.ty3-rv-actor {
+  font-size: 0.62rem;
+  padding: 1px 6px;
+  background: rgba(232,200,118,0.08);
+  color: var(--ink-500, #a69470);
+  border-radius: 2px;
+  font-family: var(--font-song, "STSong", serif);
+}
+.ty3-rv-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.3rem;
+}
+.ty3-rv-note {
+  font-size: 0.66rem;
+  padding: 1px 7px;
+  background: rgba(232,200,118,0.06);
+  color: var(--gold-300, #c9a85f);
+  border-left: 2px solid var(--gold-pale, #c9a85f);
+  border-radius: 2px;
+}
+.ty3-rv-fulfilled .ty3-rv-note {
+  color: var(--celadon-300, #82b099);
+  border-left-color: var(--celadon-400, #6a9a7f);
+}
+.ty3-rv-backfire .ty3-rv-note,
+.ty3-rv-unfulfilled .ty3-rv-note {
+  color: var(--vermillion-200, #e07a66);
+  border-left-color: var(--vermillion-300, #d15c47);
+}
+.ty3-rv-foot {
+  text-align: center;
+  padding-top: 0.7rem;
+  border-top: 1px dashed rgba(232,200,118,0.15);
+}
+
+/* §3·议前预审·弹劾疏正文展开 */
+.ty3-pa-memo {
+  background: linear-gradient(180deg, rgba(234,215,179,0.6) 0%, rgba(220,197,145,0.45) 100%);
+  border: 1px solid rgba(184,57,44,0.45);
+  border-left: 3px solid var(--ty3-verm);
+  border-radius: 2px;
+  padding: 1rem 1.2rem 0.9rem;
+  position: relative;
+  box-shadow: inset 0 0 30px rgba(140,118,84,0.1);
+}
+.ty3-pa-memo-head {
+  font-family: var(--ty3-f-zhongsong);
+  font-size: 0.75rem;
+  color: var(--ty3-verm-deep);
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+  border-bottom: 1px dotted rgba(184,57,44,0.35);
+  padding-bottom: 0.4rem;
+}
+.ty3-pa-memo-body {
+  font-family: var(--ty3-f-kai);
+  font-size: 0.92rem;
+  color: var(--ty3-ink-darkest);
+  line-height: 1.95;
+  text-indent: 2em;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 8px 4px 0;
+}
+.ty3-pa-memo-body::-webkit-scrollbar { width: 6px; }
+.ty3-pa-memo-body::-webkit-scrollbar-thumb { background: var(--ty3-paper-edge); border-radius: 3px; }
+
+/* §4·D 档·危诏激变 二选 modal */
+.ty3-dg-modal {
+  background: var(--bg-paper, #221c15);
+  border: 2px solid var(--vermillion-400, #b84738);
+  border-radius: 10px;
+  padding: 1.4rem 1.5rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 12px 40px rgba(150,40,30,0.45);
+}
+.ty3-dg-title {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--vermillion-300, #d15c47);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.4rem;
+}
+.ty3-dg-sub {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--ink-500, #a69470);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.ty3-dg-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.7rem;
+}
+.ty3-dg-opt {
+  background: var(--bg-elev, #2d251c);
+  border: 1.5px solid var(--ink-200, #4d4234);
+  border-radius: 5px;
+  padding: 0.9rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.14s;
+  text-align: center;
+}
+.ty3-dg-opt:hover { transform: translateY(-1px); }
+.ty3-dg-force:hover { border-color: var(--vermillion-400, #b84738); background: rgba(150,40,30,0.1); }
+.ty3-dg-yield:hover { border-color: var(--celadon-400, #6a9a7f); background: rgba(74,122,95,0.1); }
+.ty3-dg-opt-name { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+.ty3-dg-force .ty3-dg-opt-name { color: var(--vermillion-300, #d15c47); }
+.ty3-dg-yield .ty3-dg-opt-name { color: var(--celadon-400, #6a9a7f); }
+.ty3-dg-opt-cost {
+  font-size: 0.68rem;
+  color: var(--ink-500, #a69470);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+}
+.ty3-dg-opt-desc {
+  font-size: 0.7rem;
+  color: var(--ink-500, #a69470);
+  line-height: 1.45;
+}
+
+/* §5·威权阶梯永业列表 */
+.ty3-rg-list {
+  background: var(--bg-paper, #221c15);
+  border: 1px solid var(--gold-500, #9d8244);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+}
+.ty3-rg-title {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.14em;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-rg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--ink-100, #3d342a);
+}
+.ty3-rg-item:last-child { border-bottom: none; }
+.ty3-rg-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.ty3-rg-item.unlocked .ty3-rg-icon {
+  background: var(--gold-500, #9d8244);
+  color: var(--bg-paper, #221c15);
+}
+.ty3-rg-item.locked .ty3-rg-icon {
+  background: var(--ink-100, #3d342a);
+  color: var(--ink-300, #6b5d47);
+}
+.ty3-rg-info { flex: 1; min-width: 0; }
+.ty3-rg-name {
+  font-size: 0.84rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 2px;
+}
+.ty3-rg-item.locked .ty3-rg-name { color: var(--ink-500, #a69470); }
+.ty3-rg-desc {
+  font-size: 0.68rem;
+  color: var(--ink-500, #a69470);
+  line-height: 1.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  波 2·§7·起议站班 modal·三班布局 + 潮汐条
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ty3-st-modal {
+  background: var(--bg-paper, #221c15);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  max-width: 720px;
+  width: 94%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+.ty3-st-title {
+  text-align: center;
+  font-size: 1.15rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-st-topic {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--ink-700, #d9c9a9);
+  margin-bottom: 0.4rem;
+}
+.ty3-st-proposer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 0.7rem;
+}
+.ty3-st-tide {
+  margin-bottom: 0.9rem;
+  background: rgba(20,16,10,0.5);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 4px;
+  padding: 7px 10px;
+}
+.ty3-st-tide-label {
+  font-size: 0.7rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 5px;
+  letter-spacing: 0.06em;
+}
+.ty3-st-tide-bar {
+  display: flex;
+  height: 16px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-st-tide-l {
+  background: linear-gradient(90deg, #4a7a5f 0%, #6a9a7f 100%);
+  color: var(--ink-900, #f4eadd);
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s;
+}
+.ty3-st-tide-c {
+  background: linear-gradient(90deg, #3d342a 0%, #4d4234 100%);
+  color: var(--ink-500, #a69470);
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ty3-st-tide-r {
+  background: linear-gradient(90deg, #d15c47 0%, #b84738 100%);
+  color: var(--ink-900, #f4eadd);
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 三班 */
+.ty3-st-benches {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr 1fr;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.ty3-st-bench {
+  background: var(--bg-elev, #2d251c);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 5px;
+  padding: 8px 10px;
+  min-height: 140px;
+}
+.ty3-st-bench-left { border-left: 3px solid var(--celadon-400, #6a9a7f); }
+.ty3-st-bench-center { border-left: 3px solid var(--ink-300, #6b5d47); }
+.ty3-st-bench-right { border-left: 3px solid var(--vermillion-400, #b84738); }
+.ty3-st-bench-head {
+  font-size: 0.78rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--ink-200, #4d4234);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ty3-st-bench-count {
+  font-size: 0.62rem;
+  color: var(--ink-300, #6b5d47);
+}
+.ty3-st-bench-empty {
+  font-size: 0.68rem;
+  color: var(--ink-300, #6b5d47);
+  text-align: center;
+  padding: 1rem 0;
+  font-style: italic;
+}
+.ty3-st-party {
+  margin-bottom: 6px;
+  padding: 4px 6px;
+  background: rgba(184,154,83,0.05);
+  border-radius: 3px;
+}
+.ty3-st-party-head {
+  font-size: 0.7rem;
+  color: var(--gold-300, #c9a85f);
+  margin-bottom: 3px;
+  letter-spacing: 0.04em;
+}
+.ty3-st-party-meta {
+  font-size: 0.6rem;
+  color: var(--ink-500, #a69470);
+}
+.ty3-st-party-mems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.ty3-st-mem {
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  background: var(--bg-paper, #221c15);
+  color: var(--ink-700, #d9c9a9);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 2px;
+}
+.ty3-st-foot {
+  text-align: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--ink-200, #4d4234);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  波 2·§9·草诏 picker modal
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ty3-dr-modal {
+  background: var(--bg-paper, #221c15);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  max-width: 540px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+.ty3-dr-title {
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-dr-sub {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--ink-300, #6b5d47);
+  margin-bottom: 1rem;
+}
+.ty3-dr-section {
+  margin-bottom: 0.9rem;
+  background: var(--bg-elev, #2d251c);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.ty3-dr-sec-label {
+  font-size: 0.72rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.ty3-dr-cands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.ty3-dr-cand {
+  padding: 5px 8px;
+  background: var(--bg-paper, #221c15);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ty3-dr-cand:hover {
+  border-color: var(--gold-500, #9d8244);
+  background: rgba(184,154,83,0.08);
+  transform: translateY(-1px);
+}
+.ty3-dr-cand-name {
+  font-size: 0.85rem;
+  color: var(--gold-400, #b89a53);
+}
+.ty3-dr-cand-meta {
+  font-size: 0.62rem;
+  color: var(--ink-500, #a69470);
+}
+.ty3-dr-s-priv {
+  border-color: var(--gold-500, #9d8244);
+  background: linear-gradient(135deg, rgba(201,168,95,0.1) 0%, var(--bg-elev, #2d251c) 100%);
+}
+.ty3-dr-free-input {
+  width: 100%;
+  padding: 6px 9px;
+  background: var(--bg-paper, #221c15);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 3px;
+  color: var(--ink-900, #f4eadd);
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+.ty3-dr-free-input:focus {
+  outline: none;
+  border-color: var(--gold-500, #9d8244);
+}
+.ty3-dr-free-btn {
+  width: 100%;
+}
+.ty3-dr-foot {
+  text-align: center;
+  margin-top: 0.7rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ink-200, #4d4234);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  波 3·§10·廷推 modal
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ty3-tj-modal {
+  background: var(--bg-paper, #221c15);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  max-width: 600px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+.ty3-tj-title {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-tj-target {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 0.8rem;
+}
+.ty3-tj-cands {
+  margin-bottom: 0.8rem;
+}
+.ty3-tj-party-block {
+  background: var(--bg-elev, #2d251c);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.ty3-tj-party-head {
+  font-size: 0.78rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ty3-tj-party-meta {
+  font-size: 0.62rem;
+  color: var(--ink-500, #a69470);
+}
+.ty3-tj-cand {
+  padding: 5px 8px;
+  background: var(--bg-paper, #221c15);
+  border: 1px solid var(--ink-200, #4d4234);
+  border-radius: 3px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: all 0.12s;
+}
+.ty3-tj-cand:hover {
+  border-color: var(--gold-500, #9d8244);
+  background: rgba(184,154,83,0.08);
+  transform: translateX(2px);
+}
+.ty3-tj-cand-name {
+  font-size: 0.86rem;
+  color: var(--gold-400, #b89a53);
+  margin-bottom: 2px;
+}
+.ty3-tj-cand-meta {
+  font-size: 0.66rem;
+  color: var(--ink-500, #a69470);
+}
+.ty3-tj-foot {
+  text-align: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--ink-200, #4d4234);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  波 3·§11·用印颁行 modal
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ty3-sl-modal {
+  background: var(--bg-paper, #221c15);
+  border: 1.5px solid var(--gold-500, #9d8244);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  max-width: 540px;
+  width: 92%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+.ty3-sl-title {
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--gold-300, #c9a85f);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--ink-200, #4d4234);
+}
+.ty3-sl-flow {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink-700, #d9c9a9);
+  margin-bottom: 1rem;
+  padding: 8px;
+  background: var(--bg-elev, #2d251c);
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.ty3-sl-warn {
+  background: rgba(180,71,56,0.1);
+  border: 1px solid var(--vermillion-400, #b84738);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: var(--ink-700, #d9c9a9);
+  line-height: 1.6;
+}
+.ty3-sl-warn b { color: var(--vermillion-300, #d15c47); }
+.ty3-sl-ok {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--celadon-400, #6a9a7f);
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+}
+.ty3-sl-foot {
+  text-align: center;
+  padding-top: 0.4rem;
+}
+
+/* 注：原 §12 册封新党 modal 样式已删除·史制无此礼·改走弹劾结党(_ty3_phase12_onAccusationApproved) */
+
+/* 移动端友好 */
+@media (max-width: 600px) {
+  .ty3-pa-options { grid-template-columns: 1fr; }
+  .ty3-dg-options { grid-template-columns: 1fr; }
+  .ty3-st-benches { grid-template-columns: 1fr; }
+  .ty3-dr-cands { grid-template-columns: 1fr; }
+  #ty3-interject-btn {
+    right: 12px;
+    bottom: 60px;
+    padding: 8px 11px;
+    font-size: 0.78rem;
+  }
+  #ty3-interject-panel {
+    right: 12px;
+    width: calc(100vw - 24px);
+    bottom: 110px;
+  }
+}

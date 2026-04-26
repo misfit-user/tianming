@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>史记弹窗·结构预览·按真实代码 layer1+layer2 渲染</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg-1: #0a0907;
+  --bg-2: #15110b;
+  --bg-3: #221c14;
+  --bg-4: #2c241a;
+  --bdr: #3a3023;
+  --gold: #c9a84c;
+  --gold-l: #e0c876;
+  --gold-d: #8c7030;
+  --txt: #e8dcc4;
+  --txt-s: #c9b890;
+  --txt-d: #8a7a5a;
+  --green: #4a9a4a;
+  --red: #c03030;
+  --red-s: #b04030;
+  --amber: #e0a040;
+  --purple-300: #b89ec8;
+  --f-kai: "STKaiti","KaiTi","楷体",serif;
+  --f-song: "STSong","SimSun","宋体",serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--f-song);
+  background: radial-gradient(ellipse at top, #1a1510 0%, #0f0d0a 70%), var(--bg-1);
+  color: var(--txt);
+  font-size: 14px;
+  padding: 2rem;
+  min-height: 100vh;
+}
+.note {
+  max-width: 880px;
+  margin: 0 auto 1.5rem;
+  padding: 1rem 1.4rem;
+  background: rgba(201,168,76,0.06);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: var(--txt-s);
+}
+.note strong { color: var(--gold); font-family: var(--f-kai); }
+
+/* ─── 史记弹窗外框（模拟 showTurnResult 容器）─── */
+.shiji-modal-frame {
+  max-width: 880px;
+  margin: 0 auto;
+  background: var(--bg-2);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+.shiji-header {
+  padding: 0.9rem 1.2rem;
+  background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg-2) 100%);
+  border-bottom: 1px solid var(--bdr);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.shiji-title {
+  font-family: var(--f-kai);
+  color: var(--gold-l);
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+}
+.shiji-meta {
+  font-size: 0.78rem;
+  color: var(--txt-d);
+}
+.shiji-body {
+  padding: 1.2rem 1.4rem;
+  max-height: 78vh;
+  overflow-y: auto;
+}
+
+/* ─── 通用 section ─── */
+.tr-section {
+  margin-bottom: 1.2rem;
+}
+.tr-section-hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px dashed rgba(201,168,76,0.25);
+}
+.tr-section-hdr .lab {
+  font-family: var(--f-kai);
+  color: var(--gold);
+  font-size: 0.96rem;
+  letter-spacing: 0.18em;
+}
+.tr-section-hdr .meta {
+  font-size: 0.7rem;
+  color: var(--txt-d);
+}
+
+/* ─── layer 1·实录 ─── */
+.tr-shilu-box {
+  background: rgba(201,168,76,0.04);
+  border-left: 3px solid var(--gold-d);
+  border-radius: 3px;
+  padding: 0.8rem 1rem;
+  font-family: var(--f-song);
+  font-size: 0.9rem;
+  line-height: 1.95;
+  color: var(--txt);
+}
+.tr-shilu-box::first-line {
+  color: var(--gold-l);
+  font-weight: 600;
+}
+
+/* ─── layer 1·总曰一句 ─── */
+.tr-summary-box {
+  margin-top: 0.7rem;
+  padding: 0.6rem 0.9rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02));
+  border-left: 2px solid var(--gold);
+  border-radius: 3px;
+  font-size: 0.84rem;
+  color: var(--gold-l);
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+/* ─── layer 1·关键标签 ─── */
+.tr-critical-tags {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.crit-tag {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--f-kai);
+  letter-spacing: 0.05em;
+}
+.crit-tag.warn { background: rgba(176,64,48,0.18); color: var(--red-s); border: 1px solid var(--red-s); }
+.crit-tag.notice { background: rgba(224,160,64,0.18); color: var(--amber); border: 1px solid var(--amber); }
+.crit-tag.good { background: rgba(74,154,74,0.16); color: var(--green); border: 1px solid var(--green); }
+
+/* ─── layer 2 折叠条 ─── */
+.tr-detail-toggle {
+  margin: 1.2rem 0 0.7rem;
+  padding: 0.5rem;
+  background: var(--bg-3);
+  border: 1px dashed var(--bdr);
+  border-radius: 3px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--gold-d);
+  letter-spacing: 0.3em;
+  user-select: none;
+}
+.tr-detail-toggle .arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.tr-detail-toggle.open .arrow { transform: rotate(180deg); }
+.tr-detail-content {
+  display: block;
+  padding-top: 0.5rem;
+}
+
+/* ─── layer 2·时政记 ─── */
+.szj-section {
+  background: var(--bg-3);
+  border: 1px solid var(--bdr);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+}
+.szj-title {
+  font-family: var(--f-kai);
+  color: var(--gold-l);
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+}
+.szj-summary {
+  font-size: 0.78rem;
+  color: var(--gold-d);
+  text-align: center;
+  margin-bottom: 0.7rem;
+  letter-spacing: 0.05em;
+}
+.szj-body {
+  font-family: var(--f-song);
+  font-size: 0.86rem;
+  line-height: 1.95;
+  color: var(--txt);
+  text-indent: 2em;
+}
+.szj-body p { margin-bottom: 0.7rem; }
+.szj-body strong {
+  color: var(--gold-l);
+  font-family: var(--f-kai);
+  font-weight: normal;
+}
+.szj-tag {
+  display: inline-block;
+  font-family: var(--f-kai);
+  color: var(--gold);
+  font-weight: bold;
+  margin-right: 0.4em;
+}
+
+/* ─── layer 2·数值变化（unifiedChanges）─── */
+.tr-unified-changes {
+  background: var(--bg-3);
+  border: 1px solid var(--bdr);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+}
+.uc-cat {
+  margin-bottom: 0.8rem;
+}
+.uc-cat-hdr {
+  font-family: var(--f-kai);
+  color: var(--gold);
+  font-size: 0.86rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.1em;
+}
+.uc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  font-size: 0.78rem;
+  padding: 3px 6px;
+  border-bottom: 1px dotted rgba(60,40,15,0.15);
+}
+.uc-row .target { color: var(--txt); min-width: 6em; }
+.uc-row .delta-up { color: var(--green); font-family: var(--f-kai); font-weight: bold; }
+.uc-row .delta-down { color: var(--red-s); font-family: var(--f-kai); font-weight: bold; }
+.uc-row .reason { color: var(--txt-d); font-size: 0.72rem; flex: 1; text-align: right; }
+
+/* ─── layer 2·御批回听 ─── */
+.tr-efficacy-box {
+  margin-top: 1.2rem;
+  padding: 0.9rem 1rem;
+  background: rgba(201,168,76,0.06);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+}
+.tr-efficacy-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.tr-efficacy-title {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.95rem;
+  font-family: var(--f-kai);
+  letter-spacing: 0.1em;
+}
+.tr-efficacy-meta {
+  font-size: 0.78rem;
+  color: var(--green);
+}
+.eff-dimensions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem 0.8rem;
+  margin-bottom: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+}
+.eff-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+}
+.eff-dim-row .lab { width: 2.6em; color: var(--txt-d); }
+.eff-dim-row .bar { flex: 1; height: 4px; background: rgba(0,0,0,0.2); border-radius: 2px; overflow: hidden; }
+.eff-dim-row .fill { height: 100%; background: var(--gold); }
+.eff-dim-row .val { width: 2em; text-align: right; }
+.eff-edict {
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+  border-left: 2px solid var(--green);
+  font-size: 0.8rem;
+}
+.eff-edict.exec { border-left-color: var(--green); }
+.eff-edict.partial { border-left-color: var(--gold); }
+.eff-edict.delayed { border-left-color: var(--amber); }
+.eff-edict.ignored { border-left-color: var(--red-s); }
+.eff-edict-hdr {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+.eff-edict-status {
+  font-weight: 600;
+}
+.eff-edict.exec .eff-edict-status { color: var(--green); }
+.eff-edict.partial .eff-edict-status { color: var(--gold); }
+.eff-edict.delayed .eff-edict-status { color: var(--amber); }
+.eff-edict.ignored .eff-edict-status { color: var(--red-s); }
+.eff-edict-content { color: var(--txt-s); margin-bottom: 0.3rem; }
+.eff-edict-detail {
+  font-size: 0.74rem;
+  color: var(--txt-d);
+  line-height: 1.5;
+  margin-top: 0.2rem;
+}
+
+/* ─── layer 2·廷议追责回响 ★ 我加的段 ─── */
+.tr-tinyi-review-box {
+  margin-top: 1.2rem;
+  padding: 0.9rem 1rem;
+  background: rgba(176,90,40,0.06);
+  border-left: 3px solid var(--gold-d);
+  border-radius: 4px;
+}
+.tr-tinyi-review-hdr {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.95rem;
+  margin-bottom: 0.6rem;
+  font-family: var(--f-kai);
+  letter-spacing: 0.1em;
+}
+.tr-tinyi-review-hdr .meta {
+  font-size: 0.72rem;
+  color: var(--txt-d);
+  font-weight: 400;
+  margin-left: 0.5em;
+  font-family: var(--f-song);
+}
+.tinyi-rv-card {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+.tinyi-rv-fulfilled { border-left: 2px solid var(--green); }
+.tinyi-rv-partial { border-left: 2px solid var(--txt-d); }
+.tinyi-rv-unfulfilled { border-left: 2px solid var(--amber); }
+.tinyi-rv-backfire { border-left: 2px solid var(--red-s); }
+.tinyi-rv-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.tinyi-rv-status {
+  font-weight: 600;
+  font-family: var(--f-kai);
+}
+.tinyi-rv-fulfilled .tinyi-rv-status { color: var(--green); }
+.tinyi-rv-partial .tinyi-rv-status { color: var(--txt-d); }
+.tinyi-rv-unfulfilled .tinyi-rv-status { color: var(--amber); }
+.tinyi-rv-backfire .tinyi-rv-status { color: var(--red-s); }
+.tinyi-rv-venue {
+  margin-left: 0.4em;
+  padding: 1px 6px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 2px;
+  font-size: 0.66rem;
+  font-family: var(--f-kai);
+}
+.venue-廷议 { color: var(--gold); }
+.venue-常朝 { color: var(--txt-s); }
+.venue-亲诏 { color: var(--red-s); }
+.venue-御前 { color: var(--purple-300); }
+.tinyi-rv-delay {
+  color: var(--txt-d);
+  font-size: 0.72rem;
+}
+.tinyi-rv-edict {
+  color: var(--txt-s);
+  margin-bottom: 0.3rem;
+}
+.tinyi-rv-actors {
+  font-size: 0.74rem;
+  color: var(--txt-d);
+}
+.tinyi-rv-actors .gold { color: var(--gold); }
+
+/* ─── layer 2·人事变动 ─── */
+.tr-personnel {
+  background: var(--bg-3);
+  border: 1px solid var(--bdr);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+}
+.personnel-row {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-bottom: 1px dotted rgba(60,40,15,0.15);
+}
+.personnel-row:last-child { border-bottom: none; }
+.personnel-row .verb {
+  font-family: var(--f-kai);
+  font-weight: bold;
+  color: var(--gold);
+  margin-right: 0.4em;
+}
+
+/* ─── layer 2·后人戏说 ─── */
+.tr-houren-box {
+  background: linear-gradient(180deg, #261c10 0%, #1a130a 100%);
+  border: 1px solid var(--bdr);
+  border-left: 3px solid var(--purple-300);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  font-family: var(--f-song);
+  font-size: 0.86rem;
+  line-height: 2.0;
+  color: var(--txt);
+}
+.tr-houren-box p { margin-bottom: 0.7rem; text-indent: 2em; }
+.tr-houren-box em {
+  color: var(--purple-300);
+  font-style: normal;
+  font-family: var(--f-kai);
+}
+.tr-houren-box .timetag {
+  color: var(--gold-d);
+  font-family: var(--f-kai);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  margin-right: 0.4em;
+}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <strong>说明</strong>：此预览按 <code>tm-endturn-render.js</code> 实际构造的 <code>layer1Html + layer2Html</code> 结构生成·<strong>非新模块</strong>。所有 section 已在现有代码中：实录 / 总曰 / 关键标签 / 时政记 / 数值变化 (unifiedChanges) / 御批回听 / <strong>廷议追责</strong>(★新插入) / 人事变动 / 后人戏说 等。每条 review 携带 <code>venueType</code>·按场所配色（廷议/常朝/亲诏/御前）。<br>
+  <strong>样本场景</strong>：崇祯元年(1628)正月·朱由检·三回合前廷议「弹劾魏忠贤」准奏·三回合前常朝「整饬辽东边备」准奏·三回合前亲诏「兵部即日发饷」·此回合到期·四案复盘。
+</div>
+
+<div class="shiji-modal-frame">
+
+  <!-- 标题栏 -->
+  <div class="shiji-header">
+    <div class="shiji-title">史 记 · T42 · 戊辰年正月</div>
+    <div class="shiji-meta">回合纪要 · 1628 春</div>
+  </div>
+
+  <div class="shiji-body">
+
+    <!-- ╔══════════════════ layer1Html ══════════════════╗ -->
+
+    <!-- shiluHtml -->
+    <div class="tr-section shilu">
+      <div class="tr-section-hdr">
+        <span class="lab">实  录</span>
+        <span class="meta">崇祯元年正月乙巳·三日所记</span>
+      </div>
+      <div class="tr-shilu-box">
+        正月戊申朔。上视朝奉天门。前议弹劾魏忠贤之事，三法司勘验毕，奏入。上览之色厉，谓阁臣曰：「祖制具在，岂容奸竖弄柄？」遂下诏籍其家产，革其党羽崔呈秀、田尔耕官。东林大快，士论翕然。然内阁首辅黄立极犹疑，浙党施凤来缄默不语。时辽东塘报至，言宁远军饷未发，士气不振；上前所亲诏「兵部即日发饷」者，户部以无银可拨为辞，户部尚书毕自严上疏自劾。九边震动，朝议汹汹。
+      </div>
+    </div>
+
+    <!-- summaryHtml -->
+    <div class="tr-summary-box">
+      ※ 阉党气焰渐挫，然辽东军饷一案，反致户部困窘、九边躁动。
+    </div>
+
+    <!-- criticalHtml -->
+    <div class="tr-critical-tags">
+      <span class="crit-tag good">阉党议罢</span>
+      <span class="crit-tag notice">辽东缺饷</span>
+      <span class="crit-tag warn">毕自严自劾</span>
+      <span class="crit-tag notice">东林复起</span>
+    </div>
+
+    <!-- ╚══════════════════ layer1Html ══════════════════╝ -->
+
+
+    <!-- layer 2 折叠条 -->
+    <div class="tr-detail-toggle open">
+      <span class="arrow">▼</span> <span class="toggle-text">收 起 详 情</span> <span class="arrow">▼</span>
+    </div>
+
+    <!-- ╔══════════════════ layer2Html ══════════════════╗ -->
+    <div class="tr-detail-content">
+
+      <!-- szjSectionHtml·时政记 -->
+      <div class="tr-section">
+        <div class="szj-section">
+          <div class="szj-title">〔 雷 霆 除 阉 平 朝 局 ， 户 部 涸 竭 困 边 防 〕</div>
+          <div class="szj-summary">本回合纪要副标题</div>
+          <div class="szj-body">
+            <p>陛下本回合颁布数道谕旨：<strong>其一</strong>·三法司勘验阉党准奏；<strong>其二</strong>·亲诏兵部即日发宁远饷；<strong>其三</strong>·常朝准奏整饬辽东边备。</p>
+            <p><span class="szj-tag">【朝政】</span>三法司奉前议·勘魏忠贤二十四罪。已查验十六款属实·上诏籍家·革其党羽崔呈秀、田尔耕官。然魏忠贤既倒·浙党、齐党犹观望·黄立极虽阁臣首席·态度暧昧。东林党魁韩爌密上谢恩疏·门生立东林祠于无锡。</p>
+            <p><span class="szj-tag">【军事】</span>辽东宁远塘报言：因前议「整饬辽东边备」诏命·袁崇焕奉行有阻·修缮城防之银未到·练兵亦稍懈。盖兵部、户部互相推诿·都察院复疏请究办。</p>
+            <p><span class="szj-tag">【经济】</span>陛下亲诏兵部「即日发宁远饷」·然户部尚书毕自严以无银可拨为辞·上疏自劾。据户部呈报·内帑岁出已超岁入·三十万两饷银之议·实难措措。坊间已传京中拖欠京营兵饷月余·部分卫所士兵聚于通政司外·言谈躁动。</p>
+            <p><span class="szj-tag">【吏治】</span>因阉党革罢·内阁缺员·吏部上疏请补。东林党拟推韩爌入阁·浙党反推黄立极继任首辅。两派暗争·尚未公决。</p>
+            <p><span class="szj-tag">【外交】</span>后金皇太极遣使至宁远·言议和事·然辽东军饷既不发·袁崇焕所部士气低迷·和谈无利可图·使节遣返。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- unifiedChangesHtml·数值变化 (含 AI 自主裁量的追责 deltas) -->
+      <div class="tr-section">
+        <div class="tr-section-hdr">
+          <span class="lab">数 值 变 化 说 明</span>
+          <span class="meta">本回合 AI 推演自主裁量</span>
+        </div>
+        <div class="tr-unified-changes">
+
+          <div class="uc-cat">
+            <div class="uc-cat-hdr">【七大变量】</div>
+            <div class="uc-row"><span class="target">皇 威</span><span class="delta-up">+4</span><span class="reason">阉党议罢·朝纲粗振</span></div>
+            <div class="uc-row"><span class="target">皇 权</span><span class="delta-down">-3</span><span class="reason">户部抗诏·亲诏受挫</span></div>
+            <div class="uc-row"><span class="target">朝 局</span><span class="delta-up">朝局稳健 → 党争寻常</span><span class="reason">东林浙党暗争·渐有龃龉</span></div>
+            <div class="uc-row"><span class="target">民 心</span><span class="delta-up">+1</span><span class="reason">阉党气焰受挫·士民称颂</span></div>
+            <div class="uc-row"><span class="target">国 库</span><span class="delta-down">-12 万两</span><span class="reason">辽饷未发·内帑暂支三万</span></div>
+          </div>
+
+          <div class="uc-cat">
+            <div class="uc-cat-hdr">【角色变动】(AI 据追责回响裁量)</div>
+            <div class="uc-row"><span class="target">韩 爌</span><span class="delta-up">名望 +6</span><span class="reason">前议主奏·准奏果验</span></div>
+            <div class="uc-row"><span class="target">杨 涟</span><span class="delta-up">名望 +5 · 恩眷 +3</span><span class="reason">前议承办·清流领袖</span></div>
+            <div class="uc-row"><span class="target">魏忠贤</span><span class="delta-down">名望 -25</span><span class="reason">阉党魁·势力崩</span></div>
+            <div class="uc-row"><span class="target">袁崇焕</span><span class="delta-down">名望 -3 · 压力 +12</span><span class="reason">前常朝议奉行不力·辽饷不至</span></div>
+            <div class="uc-row"><span class="target">毕自严</span><span class="delta-down">恩眷 -8 · 压力 +20</span><span class="reason">前亲诏适得其反·上疏自劾</span></div>
+          </div>
+
+          <div class="uc-cat">
+            <div class="uc-cat-hdr">【党派变动】(AI 据追责回响裁量)</div>
+            <div class="uc-row"><span class="target">东 林 党</span><span class="delta-up">凝聚 +7 · 影响 +5</span><span class="reason">前议准奏果验·士论翕然</span></div>
+            <div class="uc-row"><span class="target">阉   党</span><span class="delta-down">凝聚 -12 · 影响 -10</span><span class="reason">党魁罢·骨干革</span></div>
+            <div class="uc-row"><span class="target">浙   党</span><span class="delta-down">凝聚 -3</span><span class="reason">阉党倒台·依附无所</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- efficacyHtml·御批回听·当回合诏令问责 -->
+      <div class="tr-efficacy-box">
+        <div class="tr-efficacy-hdr">
+          <div class="tr-efficacy-title">〔 御 批 回 听 〕</div>
+          <div class="tr-efficacy-meta">代理强度 78% (上行) · 共 3 条</div>
+        </div>
+        <div class="eff-dimensions">
+          <div class="eff-dim-row"><span class="lab">军事</span><span class="bar"><span class="fill" style="width:35%;background:var(--red-s);"></span></span><span class="val" style="color:var(--red-s);">35</span></div>
+          <div class="eff-dim-row"><span class="lab">财政</span><span class="bar"><span class="fill" style="width:42%;background:var(--gold);"></span></span><span class="val" style="color:var(--gold);">42</span></div>
+          <div class="eff-dim-row"><span class="lab">人事</span><span class="bar"><span class="fill" style="width:88%;background:var(--green);"></span></span><span class="val" style="color:var(--green);">88</span></div>
+          <div class="eff-dim-row"><span class="lab">外交</span><span class="bar"><span class="fill" style="width:60%;background:var(--gold);"></span></span><span class="val" style="color:var(--gold);">60</span></div>
+          <div class="eff-dim-row"><span class="lab">民心</span><span class="bar"><span class="fill" style="width:75%;background:var(--green);"></span></span><span class="val" style="color:var(--green);">75</span></div>
+          <div class="eff-dim-row"><span class="lab">皇权</span><span class="bar"><span class="fill" style="width:65%;background:var(--gold);"></span></span><span class="val" style="color:var(--gold);">65</span></div>
+        </div>
+
+        <div class="eff-edict exec">
+          <div class="eff-edict-hdr">
+            <span class="eff-edict-status">✓ 执行</span>
+            <span style="color:var(--txt-d);font-size:0.72rem;">执行度 95%</span>
+          </div>
+          <div class="eff-edict-content">议籍没魏忠贤家产·革阉党要员·三法司勘验</div>
+          <div class="eff-edict-detail">依据：吏部、刑部、都察院联名核实十六款罪状·诏付司礼监监视家产清册</div>
+        </div>
+
+        <div class="eff-edict partial">
+          <div class="eff-edict-hdr">
+            <span class="eff-edict-status">◐ 部分</span>
+            <span style="color:var(--txt-d);font-size:0.72rem;">执行度 45%</span>
+          </div>
+          <div class="eff-edict-content">命户部即日筹银三十万两·解宁远军饷</div>
+          <div class="eff-edict-detail">依据：户部尚书毕自严上疏言无银可拨·暂筹三万先解·余款待槽运南来</div>
+        </div>
+      </div>
+
+      <!-- ★ tinyiReviewHtml·廷议追责·前议回响（新加段·样本含 4 案：廷议/常朝/亲诏/御前）-->
+      <div class="tr-tinyi-review-box">
+        <div class="tr-tinyi-review-hdr">〔 前 议 追 责 · 三 回 前 诏 命 回 响 〕<span class="meta">廷议/常朝/御前·4 案</span></div>
+
+        <div class="tinyi-rv-card tinyi-rv-fulfilled">
+          <div class="tinyi-rv-row1">
+            <span class="tinyi-rv-status">★ 准奏果验 <span class="tinyi-rv-venue venue-廷议">廷议</span></span>
+            <span class="tinyi-rv-delay">3 回合前议</span>
+          </div>
+          <div class="tinyi-rv-edict">「弹劾魏忠贤二十四大罪·议籍没革党羽」</div>
+          <div class="tinyi-rv-actors">主奏方·<span class="gold">东林党</span> · 党首·韩爌 · 承办·杨涟</div>
+        </div>
+
+        <div class="tinyi-rv-card tinyi-rv-unfulfilled">
+          <div class="tinyi-rv-row1">
+            <span class="tinyi-rv-status">⚠ 奉行不力 <span class="tinyi-rv-venue venue-常朝">常朝</span></span>
+            <span class="tinyi-rv-delay">3 回合前议</span>
+          </div>
+          <div class="tinyi-rv-edict">「准奏整饬辽东边备·修城练兵」</div>
+          <div class="tinyi-rv-actors">主奏方·<span class="gold">户部</span> · 承办·袁崇焕</div>
+        </div>
+
+        <div class="tinyi-rv-card tinyi-rv-backfire">
+          <div class="tinyi-rv-row1">
+            <span class="tinyi-rv-status">✗ 适得其反 <span class="tinyi-rv-venue venue-亲诏">亲诏</span></span>
+            <span class="tinyi-rv-delay">3 回合前议</span>
+          </div>
+          <div class="tinyi-rv-edict">「朕命兵部即日筹三十万两·发宁远饷」</div>
+          <div class="tinyi-rv-actors">承办·毕自严</div>
+        </div>
+
+        <div class="tinyi-rv-card tinyi-rv-partial">
+          <div class="tinyi-rv-row1">
+            <span class="tinyi-rv-status">○ 行而未尽 <span class="tinyi-rv-venue venue-御前">御前</span></span>
+            <span class="tinyi-rv-delay">3 回合前议</span>
+          </div>
+          <div class="tinyi-rv-edict">「密议清君侧·徐图后金和议」</div>
+          <div class="tinyi-rv-actors">主奏方·<span class="gold">中立·无党</span> · 承办·王铎</div>
+        </div>
+      </div>
+
+      <!-- personnelHtml·人事变动 -->
+      <div class="tr-section">
+        <div class="tr-section-hdr">
+          <span class="lab">人 事 变 动</span>
+        </div>
+        <div class="tr-personnel">
+          <div class="personnel-row"><span class="verb">罢</span><b>魏忠贤</b>·司礼监掌印·下狱待决</div>
+          <div class="personnel-row"><span class="verb">革</span><b>崔呈秀</b>·内阁次辅·议刑·待三法司</div>
+          <div class="personnel-row"><span class="verb">革</span><b>田尔耕</b>·东厂提督·下诏狱</div>
+          <div class="personnel-row"><span class="verb">起</span><b>韩  爌</b>·入阁议政·拟首辅</div>
+          <div class="personnel-row"><span class="verb">擢</span><b>杨  涟</b>·都察院左副都御史</div>
+          <div class="personnel-row"><span class="verb">议</span><b>毕自严</b>·户部尚书·上疏自劾·暂留</div>
+        </div>
+      </div>
+
+      <!-- hourenHtml·后人戏说（含 AI 据追责回响演绎的朝野余响）-->
+      <div class="tr-section houren">
+        <div class="tr-section-hdr">
+          <span class="lab">后 人 戏 说</span>
+          <span class="meta">稗官野史 · 参考不可尽信</span>
+        </div>
+        <div class="tr-houren-box">
+          <p><span class="timetag">卯时</span>正月戊申朔，朱由检自晨钟始即起，盥洗已毕，自御书房取昨夜未阅奏疏数本，于灯下细看。司礼监值更内侍奉茶至，言："今早三法司有奏入。"上颔之，搁下奏本，移步奉天门。</p>
+
+          <p><span class="timetag">辰时</span>奉天门外，韩爌、杨涟率东林诸卿先至。韩爌以老臣之礼恭立，<em>密示门生立东林祠于无锡之事</em>——昨日江南士子已寄来碑铭，谓"此次清议之胜，乃我朝百年未有之盛事"。杨涟则面有忧色，谓韩爌曰："魏阉虽除，然其党羽根深·浙楚齐党尚未拔除，恐反扑也。"<em>此乃前议「弹劾魏忠贤」准奏果验之余响，士论翕然；然政敌侧目，未敢遽息</em>。</p>
+
+          <p><span class="timetag">巳时</span>三法司奏入，详陈魏忠贤二十四罪验证情况。上览毕，色厉而下诏：「籍其家产，革其党羽。」内阁众臣俯首称善，唯黄立极、施凤来缄默——前者因身在内阁恐被波及，后者乃浙党魁，<em>以阉党倾覆为殷鉴</em>。</p>
+
+          <p><span class="timetag">午后未时</span>辽东塘报至，宁远军饷未发，士气不振。袁崇焕以塘报为辞，言"将士因饷迟而怠"。<em>此乃前常朝「整饬辽东边备」之议，奉行不力之实——盖前因户部无银可拨，袁崇焕修缮城防之事，受银两羁绊，进展不彰</em>。上览之色滞。</p>
+
+          <p><span class="timetag">申时</span>户部尚书毕自严趋前自劾，言"<em>陛下亲诏发饷三十万两，臣愧无以应</em>"。<em>此乃前亲诏「兵部即日发饷」适得其反之余响——毕自严以户部空虚，无可调度，遂当殿请罪</em>。上之色益沉，而不忍责毕自严，谓"姑且暂支三万先解，余款待秋粮南来。"毕自严叩首泣谢。</p>
+
+          <p><span class="timetag">傍晚酉时</span>退朝。上独坐养心殿，思王铎前所密议「徐图后金和议」之策——<em>御前所议本不可宣，然今日朝堂闻"皇太极遣使至宁远议和"，已有臣下私下议论，疑御前所议早有风声漏出</em>。上心忡忡。司礼监新人侍立，上良久不语。</p>
+
+          <p><span class="timetag">戌时</span>夜深，皇后周氏遣宫女问膳，上方进半碗米粥，搁箸叹曰："朕欲振朝纲，然才除一阉党，又涸户部……治国之难，朕始知矣。"</p>
+        </div>
+      </div>
+
+    </div>
+    <!-- ╚══════════════════ layer2Html ══════════════════╝ -->
+
+  </div>
+</div>
+
+<div style="max-width:880px;margin:1.5rem auto 0;padding:0.8rem 1.2rem;background:rgba(60,40,15,0.3);border-radius:4px;font-size:0.78rem;color:var(--txt-d);line-height:1.7;">
+  <strong style="color:var(--gold);">结构对照</strong>·按 <code style="color:var(--gold-l);">tm-endturn-render.js L717 / L846</code> 实际拼接顺序：
+  <ul style="margin-top:0.4rem;padding-left:1.5em;list-style:'·  ';">
+    <li><code>layer1Html</code> = shiluHtml + summaryHtml + criticalHtml + battleVisHtml</li>
+    <li><code>layer2Html</code> = szjSectionHtml + unifiedChangesHtml + efficacyHtml <strong style="color:var(--gold);">+ tinyiReviewHtml(★新加)</strong> + personnelHtml + hourenHtml + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml</li>
+    <li>追责回响入口：<code>GM._turnReport.filter(r → r.type === 'tinyi_review' && r.turn === GM.turn-1)</code> · 在 layer2 拼接前构造</li>
+    <li>影响 AI 推演：<code>tp1</code> (sub-call 1·时政记) + <code>tp2 _basisBrief</code> (sub-call 2·后人戏说) 双注入</li>
+    <li>数值变化：AI 据 prompt 自由裁量·走 <code>char_updates / party_updates / var_changes</code> 既有通道·展示在 unifiedChanges 段</li>
+  </ul>
+</div>
+
+</body>
+</html>

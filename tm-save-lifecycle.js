@@ -694,6 +694,16 @@ function fullLoadGame(data){
     // 恢复所有_saved*字段
     _restoreSavedFields();
 
+    // 一次性清理·扫除存档里历史误抓人物(强烈/连日/乌纱/平静等命中 NAME_BLACKLIST 词组)
+    try {
+      if (typeof purgeBlacklistedCharacters === 'function') {
+        var _purged = purgeBlacklistedCharacters();
+        if (_purged && (_purged.chars.length || _purged.pending.length)) {
+          if (typeof addEB === 'function') addEB('清理', '清扫历史误抓人物·chars: ' + _purged.chars.length + '·pending: ' + _purged.pending.length);
+        }
+      }
+    } catch(_purgeE) { try{ window.TM&&TM.errors&&TM.errors.captureSilent(_purgeE,'fullLoadGame·purge'); }catch(_){} }
+
     // 迁移官制树到双层模型
     if (typeof _offMigrateTree === 'function' && GM.officeTree) _offMigrateTree(GM.officeTree);
     // 官制officialTitle同步——确保ch.officialTitle与GM.officeTree一致

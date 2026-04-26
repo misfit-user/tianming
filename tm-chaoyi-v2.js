@@ -337,6 +337,9 @@ async function _ty2_phaseInitialRound() {
   addCYBubble('内侍', '（百官按品级次第发言。）', true);
 
   var _prevSpeeches = [];
+  // 收集本场廷议全部发言+玩家插言·待 phase14 写入 recentChaoyi 注入推演
+  if (!Array.isArray(CY._ty2._allSpeeches)) CY._ty2._allSpeeches = [];
+  if (!Array.isArray(CY._ty2._playerInterjects)) CY._ty2._playerInterjects = [];
   for (var _rd = 1; _rd <= 2; _rd++) {
     CY._ty2.roundNum = _rd;
     _ty2_render();
@@ -348,12 +351,15 @@ async function _ty2_phaseInitialRound() {
         var _pl = CY._pendingPlayerLine; CY._pendingPlayerLine = null;
         addCYBubble('皇帝', _pl, false);
         _cy_jishiAdd('tinyi', CY._ty2.topic, '皇帝', _pl, { round: _rd, playerInterject: true });
+        CY._ty2._playerInterjects.push({ round: _rd, text: _pl });
         try { await _ty2_playerTriggeredResponse(_pl); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
       }
       var nm = CY._ty2.attendees[i];
       var res = await _ty2_genOneSpeech(nm, _rd, _prevSpeeches);
       if (res) {
         _prevSpeeches.push({ name: nm, stance: res.stance, line: res.line });
+        // 镜像收集到 CY._ty2._allSpeeches·后续 phase14 取用
+        CY._ty2._allSpeeches.push({ round: _rd, name: nm, stance: res.stance, line: (res.line || '').slice(0, 80) });
         if (_rd === 1 && res.stance) CY._ty2.stances[nm].initial = res.stance;
         if (res.stance) CY._ty2.stances[nm].current = res.stance;
         if (res.confidence != null) CY._ty2.stances[nm].confidence = res.confidence;
@@ -381,8 +387,41 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
   if (CY._ty2.topicCustom) prompt += '说明：' + CY._ty2.topicCustom + '\n';
   prompt += '你扮演' + name + '（' + (ch && ch.officialTitle || '') + '，' + (ch && _cyGetRank(ch) || '') + '）：\n';
   prompt += '  性格：' + (ch && ch.personality || '') + '\n';
-  prompt += '  党派：' + (ch && ch.party || '无') + '｜家族：' + (ch && ch.family || '?') + '｜忠' + ((ch && ch.loyalty)||50) + '｜野' + ((ch && ch.ambition)||40) + '\n';
-  prompt += '  学识：' + (ch && ch.learning || '') + '｜近期记忆：' + ((ch && ch._memory || []).slice(-3).map(function(m){return (m.event||'').slice(0,30);}).join('；') || '无') + '\n';
+  prompt += '  党派：' + (ch && ch.party || '无') + '｜势力：' + (ch && ch.faction || '?') + '｜家族：' + (ch && ch.family || '?') + '\n';
+  prompt += '  数值：忠' + ((ch && ch.loyalty)||50) + '｜野' + ((ch && ch.ambition)||40) + '｜名望' + ((ch && ch.prestige)||50) + '｜恩眷' + ((ch && ch.favor)||0) + '\n';
+  prompt += '  学识：' + (ch && ch.learning || '') + '\n';
+  // 出身/经历(背景信息)
+  if (ch && ch.background) prompt += '  生平：' + String(ch.background).slice(0, 120) + '\n';
+  // 情节弧·若有当前 arc
+  if (ch && ch.arc && ch.arc.title) prompt += '  当下处境：' + ch.arc.title + (ch.arc.stage ? '·阶段「' + ch.arc.stage + '」' : '') + '\n';
+  // 近期记忆(扩到 5 条)
+  var _memList = (ch && ch._memory || []).slice(-5).map(function(m){return (m.event||'').slice(0,40);});
+  prompt += '  近期记忆：' + (_memList.join('；') || '无') + '\n';
+  // 党派立场+焦点争议·让 NPC 发言契合其党派纲领
+  if (ch && ch.party) {
+    var _partyObj = (typeof GM !== 'undefined' && Array.isArray(GM.parties))
+      ? GM.parties.find(function(p){return p && p.name === ch.party;}) : null;
+    if (_partyObj) {
+      var _ps = (_partyObj.policyStance || []).slice(0, 5).join('·');
+      if (_ps) prompt += '  本党(' + ch.party + ')立场：' + _ps + '\n';
+      var _fd = (_partyObj.focal_disputes || []).filter(function(d){return d && d.topic;}).slice(0, 3);
+      if (_fd.length) {
+        prompt += '  本党焦点争议：' + _fd.map(function(d){
+          return d.topic + (d.rival ? '(与'+d.rival+'相争)' : '') + (d.stake || d.stakes ? '·' + (d.stake||d.stakes) : '');
+        }).join('；') + '\n';
+      }
+    }
+  }
+  // 跨对话上下文·近 3 条对话历史
+  try {
+    var _dh = (typeof GM !== 'undefined' && GM.dialogueHistory && GM.dialogueHistory[name]) || [];
+    if (_dh.length) {
+      var _last = _dh.slice(-3).map(function(d){
+        return '【' + (d.scene || d.context || '?') + '】' + (d.summary || (d.line||'').slice(0, 30));
+      }).join('；');
+      prompt += '  近期言行：' + _last + '\n';
+    }
+  } catch(_dhE){}
   // 其它与议者当前立场
   var otherStances = Object.keys(CY._ty2.stances).filter(function(n){return n!==name;}).map(function(n) {
     return n + ':' + CY._ty2.stances[n].current;

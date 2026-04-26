@@ -36,8 +36,15 @@
     {
       id: 'land_grain',    name: '田赋（粮）',
       base: 'arableLand',  baseFallback: 'mouths',
-      baseFactor: 0.3,     rate: 0.04,            // 亩产 * 30% * 4% ≈ 0.012 石/亩·年
+      baseFactor: 0.3,     rate: 0.05,            // 亩产 * 30% * 5% ≈ 0.015 石/亩·年（明代田赋折征水平）
       storeAs: 'grain',    sourceTag: 'tianfu',
+      annual: true
+    },
+    {
+      id: 'land_silver',   name: '田赋折银',
+      base: 'arableLand',  baseFallback: 'mouths',
+      baseFactor: 1,       rate: 0.005,           // 每亩 0.005 两/年（条编/金花银）
+      storeAs: 'money',    sourceTag: 'tianfu_silver',
       annual: true
     },
     {
@@ -56,15 +63,15 @@
     },
     {
       id: 'commerce',      name: '商税',
-      base: 'prosperity',  baseFallback: null,
-      baseFactor: 10,      rate: 0.03,            // 繁荣 *10 两 * 3%（省级每年约几千两）
+      base: 'commerceVolume', baseFallback: 'prosperity',
+      baseFactor: 1,       rate: 0.015,           // 商业体量 * 1.5%（实征率·明代商税平均水平）
       storeAs: 'money',    sourceTag: 'shangShui',
       annual: true
     },
     {
       id: 'salt_iron',     name: '盐铁专卖',
       base: 'mouths',      baseFallback: null,
-      baseFactor: 0.05,    rate: 0.8,             // 人均盐铁税约 0.04 两/年
+      baseFactor: 0.025,   rate: 0.6,             // 人均盐铁税约 0.015 两/年（明代盐课实征 ~250万两/全国 1.6亿口）
       storeAs: 'money',    sourceTag: 'yanlizhuan',
       annual: true
     }
@@ -75,6 +82,7 @@
     mode: 'qiyun_cunliu',
     perTax: {
       'land_grain':   { qiyun: 0.6,  cunliu: 0.4 },
+      'land_silver':  { qiyun: 0.7,  cunliu: 0.3 },
       'head_tax':     { qiyun: 0.8,  cunliu: 0.2 },
       'corvee_cloth': { qiyun: 0.5,  cunliu: 0.5 },
       'commerce':     { qiyun: 0.5,  cunliu: 0.5 },
@@ -334,9 +342,9 @@
     if (!ch.resources) ch.resources = {};
     if (!ch.resources.privateWealth) ch.resources.privateWealth = {};
     var w = ch.resources.privateWealth;
-    // 兼容老字段 cash
-    if (w.cash === undefined && w.money !== undefined) w.cash = w.money;
-    if (w.cash === undefined) w.cash = 0;
+    // 兼容老字段 cash → money
+    if (w.money === undefined && w.cash !== undefined) w.money = w.cash;
+    if (w.money === undefined) w.money = 0;
     if (w.grain === undefined) w.grain = 0;
     if (w.cloth === undefined) w.cloth = 0;
     if (w.land === undefined) w.land = 0;
@@ -364,7 +372,9 @@
     }
     var effectiveMouths = pop.mouths || popNum || 0;
     if (tax.base === 'arableLand') {
-      var arable = (div.environment && div.environment.arableLand)
+      // 优先 economyBase.farmland（剧本主字段·真实田亩）→ environment.arableLand → carryingCapacity.arable
+      var arable = (div.economyBase && div.economyBase.farmland)
+                 || (div.environment && div.environment.arableLand)
                  || (div.carryingCapacity && div.carryingCapacity.arable)
                  || 0;
       if (arable <= 0 && tax.baseFallback === 'mouths') arable = effectiveMouths * 0.3;
@@ -374,6 +384,11 @@
     if (tax.base === 'ding')   return pop.ding   || Math.floor(effectiveMouths * 0.25);
     if (tax.base === 'households') return pop.households || Math.floor(effectiveMouths / 5);
     if (tax.base === 'prosperity') return (div.prosperity || 50);
+    if (tax.base === 'commerceVolume') {
+      // 商税以经济基础.商业体量为准·缺则用 prosperity * 10000 兜底
+      return (div.economyBase && div.economyBase.commerceVolume)
+          || (div.prosperity || 50) * 10000;
+    }
     return 0;
   }
 
@@ -781,7 +796,7 @@
         var w = _ensureCharWealth(govChar);
         var kShare = 0.5;  // 挪用的一半入主官私产，另一半"消失"（幕僚/胥吏瓜分等）
         var hit = Math.round(split.skimmed * kShare);
-        if (storeAs === 'money') w.cash = (w.cash||0) + hit;
+        if (storeAs === 'money') w.money = (w.money||0) + hit;
         else if (storeAs === 'grain') w.grain = (w.grain||0) + hit;
         else if (storeAs === 'cloth') w.cloth = (w.cloth||0) + hit;
       }

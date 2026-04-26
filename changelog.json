@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-27",
+      "module": "邸报·1627 财政数额校准 + 私产/公库 单位与帑廪同步",
+      "title": "用户反馈两事：(1) 1627 官方剧本『收入开支数额都很不史实』·诊断后定位 cascade._taxBase 只读 division.environment.arableLand|carryingCapacity.arable·完全忽略 economyBase.farmland(scenario 主字段·16 处·北直 5800 万亩 / 南直 9500 万亩 / 全国 6-7 亿亩) — 田赋直接按 mouths*1.3 假亩数(北直只 ~1066 万亩)算·5.4× 偏低·全国年化银仅 ~180 万 vs 史实 540-1000 万。(2) 私产/公库 UI 硬编码『两/石/匹』·与帑廪 CurrencyUnit.getUnit() 朝代自适应字段不同步·非明清剧本(秦汉钱·唐宋元贯)显示错位",
+      "items": [
+        { "what": "tm-fiscal-cascade.js _taxBase 加优先级·arableLand 取值改为 economyBase.farmland → environment.arableLand → carryingCapacity.arable·剧本主字段优先·新增 commerceVolume base 类型(以 economyBase.commerceVolume 为基·缺则 prosperity*10000 兜底)", "why": "scenario 经济基础全配在 economyBase.{farmland,commerceVolume}·cascade 反而读 environment / carryingCapacity 这两个由 mouths*1.3 / 1.1 派生的伪字段·真田亩数据完全旁路。修正后北直田基数 1066 万 → 5800 万·5.4× 提升" },
+        { "what": "tm-fiscal-cascade.js DEFAULT_TAXES 校准 6 项税种(原 5)·新增 land_silver(田赋折银/亩 0.005 两/年·条编金花银)·land_grain rate 0.04→0.05(亩产30%×5%)·commerce 改用 commerceVolume base 1.5%·salt_iron baseFactor 0.05/rate 0.8 → 0.025/0.6(0.04→0.015 两/口·明史盐课实征 ~250 万/全国)·DEFAULT_ALLOCATION 同步加 land_silver 7/3 分账", "why": "原参数年化全国仅 ~180 万两·校准后 ~1000 万两 + ~600 万石·与崇祯元年史实(中央上解 540 万 + 田赋粮 1100 万 + 辽饷 450 万)级别相符。新增 land_silver 拆分粮/银两栏·更贴明代『一条鞭法』并行格局" },
+        { "what": "tm-fiscal-cascade.js _ensureCharWealth 修 cash↔money schema 冲突回归·之前 ensureCharWealth 还在写 w.cash·但全 codebase 已用 w.money(canonical)·导致 cascade skimmed 挪用主官私产时·钱钻进了被废弃的 cash 字段·UI 永远看不见。改为 w.money + 兼容 cash→money 迁移", "why": "Phase A 修过 char-economy-engine/UI/historical-profiles 的 cash→money·但 cascade 这一处遗漏·让贪官污吏挪用看似有结算实际数据丢失" },
+        { "what": "tm-char-economy-ui.js renderPrivateWealth/renderPublicTreasury/renderTickSummary 全部改用 _getUnit() 走 CurrencyUnit.getUnit()·『两/石/匹』改为 U.money/U.grain/U.cloth·私库内帑三列(领袖)·五大类(普通)·岗位/区域公库余额行·隐匿藏款·本月净余 — 全部跟随朝代单位", "why": "帑廪/内帑/顶栏 早已用 CurrencyUnit·私产公库 UI 顽固硬编『两』·秦汉(钱)/唐宋元(贯) 剧本显示『现银 0 两』而帑廪显示『xx 万贯』·单位错乱让玩家困惑" },
+        { "what": "tm-char-economy-engine.js confiscate 抄家通知文案『万两』改为『万 + U.money』·CurrencyUnit 兜底·与帑廪/抄家入库同单位", "why": "邸报『抄没 xx 家产 X 万两』在贯/钱朝代显示错位·改为动态" },
+        { "what": "verify-all 5/5 全过(syntax/ref-check/find-orphans/smoke/cc3-smoke)·改动 3 文件(tm-fiscal-cascade.js / tm-char-economy-ui.js / tm-char-economy-engine.js)·sample 验算北直 30 日单回合：粮 7.1 万石 / 银 11.8 万两 / 辽饷 4.3 万两 / 全国年化估算 ~1000 万银 + ~600 万粮 — 与崇祯元年史实级别契合", "why": "局部 cascade 参数 + UI 单位字段调整·零字段迁移·零数据破坏·重启即生效" }
+      ]
+    },
+    {
+      "date": "2026-04-27",
       "module": "邸报·官职公库默认覆盖 + 角色私产 4 字段补齐",
       "title": "用户反馈『公库和私产很多官职没有/显示不正常』。审计 1627 剧本：183 官职只 97 有 publicTreasuryInit(53% 覆盖) → 47% 显示 0；98 chars 几乎全用 3 字段{money,grain,cloth}·缺 land/treasure/slaves/commerce 4 字段(0.99% = 仅 1 chars 用 7 字段)。修：runtime 层兜底·所有官职公库按品级+部门自动推算·所有 chars 的 privateWealth 4 字段缺则按品级补齐·不需要补完 1627 剧本数据",
       "items": [

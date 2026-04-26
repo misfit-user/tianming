@@ -23,6 +23,13 @@
     return v.toLocaleString();
   }
 
+  // 与帑廪/内帑面板共享单位（明=两石匹·唐宋=贯石匹·秦汉=钱石匹）
+  function _getUnit() {
+    return (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.getUnit)
+      ? CurrencyUnit.getUnit()
+      : { money:'两', grain:'石', cloth:'匹' };
+  }
+
   // ─── 名望 印章 ───
   function renderFameSeal(fame) {
     fame = fame || 0;
@@ -108,27 +115,30 @@
   function renderPrivateWealth(pw, hiddenWealth, canSeeHidden) {
     if (!pw) return '';
     var html = '';
+    var U = _getUnit();
     if (pw.isNeitang) {
-      // 领袖：私库 = 内帑（money/grain/cloth 三列）
+      // 领袖：私库 = 内帑（money/grain/cloth 三列·与帑廪同单位）
       var _prefix = (pw.leaderScope === 'emperor') ? '内帑·' : '私库·';
+      var _moneyLbl = (U.money === '两') ? '银' : U.money;
       html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">';
-      html += renderWealthItem('💰', _prefix + '银', fmtMoney(pw.money || 0) + ' 两', 'var(--gold-400)');
-      html += renderWealthItem('🌾', _prefix + '粮', fmtMoney(pw.grain || 0) + ' 石', '#6aa88a');
-      html += renderWealthItem('🧵', _prefix + '布', fmtMoney(pw.cloth || 0) + ' 匹', '#a88a6a');
+      html += renderWealthItem('💰', _prefix + _moneyLbl, fmtMoney(pw.money || 0) + ' ' + U.money, 'var(--gold-400)');
+      html += renderWealthItem('🌾', _prefix + '粮', fmtMoney(pw.grain || 0) + ' ' + U.grain, '#6aa88a');
+      html += renderWealthItem('🧵', _prefix + '布', fmtMoney(pw.cloth || 0) + ' ' + U.cloth, '#a88a6a');
       html += '</div>';
     } else {
+      var _moneyLbl2 = (U.money === '两') ? '现银' : ('现' + U.money);
       html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">';
-      // 铜钱（现金）
-      html += renderWealthItem('💰', '现银', fmtMoney(pw.money || 0) + ' 两', 'var(--gold-400)',
+      // 现金（朝代单位）
+      html += renderWealthItem('💰', _moneyLbl2, fmtMoney(pw.money || 0) + ' ' + U.money, 'var(--gold-400)',
         pw.money < 0 ? 'var(--vermillion-400)' : null);
       // 禾穗（田亩）
       html += renderWealthItem('🌾', '田亩', (pw.land||0).toLocaleString() + ' 亩', '#6aa88a');
-      // 珍宝
-      html += renderWealthItem('💎', '珍宝', fmtMoney(pw.treasure || 0) + ' 估值', '#a88a6a');
+      // 珍宝（估值用 money 单位）
+      html += renderWealthItem('💎', '珍宝', fmtMoney(pw.treasure || 0) + ' ' + U.money, '#a88a6a');
       // 奴婢
       html += renderWealthItem('👥', '僮仆', (pw.slaves || 0) + ' 人', '#8a7060');
-      // 商铺
-      html += renderWealthItem('🏪', '商铺', fmtMoney(pw.commerce || 0) + ' 估值', 'var(--gold-300)');
+      // 商铺（估值用 money 单位）
+      html += renderWealthItem('🏪', '商铺', fmtMoney(pw.commerce || 0) + ' ' + U.money, 'var(--gold-300)');
       html += '</div>';
     }
 
@@ -136,7 +146,7 @@
     if (canSeeHidden && hiddenWealth > 0) {
       html += '<div style="margin-top:6px;padding:6px 10px;background:rgba(139,46,37,0.1);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.74rem;">'+
         '<span style="color:var(--vermillion-400);">⚠ 隐匿藏款</span> '+
-        '<span style="color:var(--txt);">约 ' + fmtMoney(hiddenWealth) + ' 两</span>'+
+        '<span style="color:var(--txt);">约 ' + fmtMoney(hiddenWealth) + ' ' + U.money + '</span>'+
         '<span style="color:var(--txt-d);font-size:0.64rem;margin-left:4px;">（监察已察觉）</span>'+
         '</div>';
     }
@@ -155,7 +165,8 @@
   // ─── 公库（只读镜像）───
   function renderPublicTreasury(pt) {
     if (!pt) return '';
-    // 领袖公库 = 帑廪/国库（money/grain/cloth 三列）
+    var U = _getUnit();
+    // 领袖公库 = 帑廪/国库（money/grain/cloth 三列·与帑廪同单位）
     if (pt.isGuoku) {
       var _isEmp = (pt.leaderScope === 'emperor');
       var _title = _isEmp ? '公库（帑廪 · 国帑）'
@@ -163,12 +174,13 @@
       var _lblPrefix = _isEmp ? '帑廪·' : '国库·';
       var _src = _isEmp ? '只读镜像 · 国库三账（GM.guoku）'
                         : '只读镜像 · ' + (pt.factionName || '') + '.treasury';
+      var _mLbl = (U.money === '两') ? '银' : U.money;
       return '<div style="padding:8px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
         '<div style="font-size:0.76rem;color:var(--gold);margin-bottom:6px;">' + _escHtml(_title) + '</div>'+
         '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">'+
-          renderWealthItem('💰', _lblPrefix + '银', fmtMoney(pt.balance || 0) + ' 两', 'var(--gold-400)') +
-          renderWealthItem('🌾', _lblPrefix + '粮', fmtMoney(pt.grain || 0) + ' 石', '#6aa88a') +
-          renderWealthItem('🧵', _lblPrefix + '布', fmtMoney(pt.cloth || 0) + ' 匹', '#a88a6a') +
+          renderWealthItem('💰', _lblPrefix + _mLbl, fmtMoney(pt.balance || 0) + ' ' + U.money, 'var(--gold-400)') +
+          renderWealthItem('🌾', _lblPrefix + '粮', fmtMoney(pt.grain || 0) + ' ' + U.grain, '#6aa88a') +
+          renderWealthItem('🧵', _lblPrefix + '布', fmtMoney(pt.cloth || 0) + ' ' + U.cloth, '#a88a6a') +
         '</div>'+
         '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:4px;">' + _escHtml(_src) + '</div>'+
         '</div>';
@@ -178,7 +190,7 @@
       return '<div style="padding:6px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;">'+
           '<span style="font-size:0.76rem;color:var(--gold);">官职公库（' + _escHtml(pt.linkedPost) + '）</span>'+
-          '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' 两</span>'+
+          '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' ' + U.money + '</span>'+
         '</div>'+
         '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:2px;">只读镜像 · 岗位 publicTreasury</div>'+
         '</div>';
@@ -186,11 +198,11 @@
     // 区域公库
     if (!pt.linkedRegion) return '';
     var deficitNote = pt.lastHandoverDeficit > 0 ?
-      '<div style="font-size:0.66rem;color:var(--vermillion-400);margin-top:2px;">⚠ 前任留空 ' + fmtMoney(pt.lastHandoverDeficit) + ' 两</div>' : '';
+      '<div style="font-size:0.66rem;color:var(--vermillion-400);margin-top:2px;">⚠ 前任留空 ' + fmtMoney(pt.lastHandoverDeficit) + ' ' + U.money + '</div>' : '';
     return '<div style="padding:6px 10px;background:rgba(184,154,83,0.08);border-left:3px solid var(--gold-d);border-radius:3px;margin-bottom:8px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;">'+
         '<span style="font-size:0.76rem;color:var(--gold);">公库（绑定：' + _escHtml(pt.linkedRegion) + '）</span>'+
-        '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' 两</span>'+
+        '<span style="font-size:0.8rem;color:var(--txt);font-weight:500;">' + fmtMoney(pt.balance || 0) + ' ' + U.money + '</span>'+
       '</div>'+
       '<div style="font-size:0.66rem;color:var(--txt-d);margin-top:2px;">只读镜像 · 实际在地方 fiscal 中</div>'+
       deficitNote +
@@ -256,9 +268,10 @@
     html += '</div>';
 
     // 净值
+    var _U = _getUnit();
     html += '<div style="margin-top:4px;padding:3px 8px;background:var(--bg-2);border-radius:3px;font-size:0.74rem;display:flex;justify-content:space-between;">'+
       '<span style="color:var(--txt-d);">本月净余</span>'+
-      '<span style="color:' + netColor + ';font-weight:600;">' + (net > 0 ? '+' : '') + fmtMoney(net) + ' 两</span>'+
+      '<span style="color:' + netColor + ';font-weight:600;">' + (net > 0 ? '+' : '') + fmtMoney(net) + ' ' + _U.money + '</span>'+
       '</div>';
     return html;
   }

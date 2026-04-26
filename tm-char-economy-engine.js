@@ -755,7 +755,9 @@
 
     // 风闻
     if (typeof addEB === 'function') {
-      addEB('惩罚', '抄没' + ch.name + '家产 ' + Math.round(total / 10000) + ' 万两（明 ' +
+      var _U = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.getUnit)
+        ? CurrencyUnit.getUnit() : { money:'两' };
+      addEB('惩罚', '抄没' + ch.name + '家产 ' + Math.round(total / 10000) + ' 万' + _U.money + '（明 ' +
         Math.round(visible / 10000) + ' 万 · 暗 ' + Math.round(hiddenFound / 10000) + ' 万）',
         { credibility: 'high', subject: ch.id });
     }

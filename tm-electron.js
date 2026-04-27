@@ -15,16 +15,20 @@
 if(window.tianming&&window.tianming.isDesktop){
 
   // --- 主菜单显示/隐藏辅助 ---
+  // launch 改版后 lt-menu 已重命名为 .home-menu (class)·这里两路兼容
+  function _getHomeMenu(){
+    return document.getElementById('lt-menu') || document.querySelector('.home-menu');
+  }
   function showMain(){
-    _$('lt-menu').style.display='';
-    _$('main-view').style.display='none';
-    _$('main-view').innerHTML='';
+    var hm = _getHomeMenu(); if (hm) hm.style.display='';
+    var mv = document.getElementById('main-view');
+    if (mv) { mv.style.display='none'; mv.innerHTML=''; }
   }
   function showPanel(html){
-    _$('lt-menu').style.display='none';
-    _$('main-view').style.display='block';
-    _$('main-view').innerHTML=html;
-    _$('launch').style.display='flex';
+    var hm = _getHomeMenu(); if (hm) hm.style.display='none';
+    var mv = document.getElementById('main-view');
+    if (mv) { mv.style.display='block'; mv.innerHTML=html; }
+    var lc = document.getElementById('launch'); if (lc) lc.style.display='flex';
   }
 
   // --- 剧本管理页（桌面端）---

@@ -2445,11 +2445,12 @@
           qita: true          // 其他（茶马/矿税已罢/竹木税）
         },
         customTaxes: [
-          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.009, description: '万历四十六年始征，每亩九厘银。专供辽东军饷。田赋压苛之源。' },
-          { id: 'chama', name: '茶马司', formulaType: 'flat', amount: 120000, description: '陕甘茶马司年入；为边军备马；万历末以降走私严重。' },
-          { id: 'chaoguan', name: '钞关过货税', formulaType: 'flat', amount: 450000, description: '运河沿线八大钞关（临清/淮安等）岁入。' },
-          { id: 'guanshui', name: '海关（月港）', formulaType: 'flat', amount: 30000, description: '福建漳州月港市舶司岁入。万历开海后设。' },
-          { id: 'junhu', name: '军户屯田', formulaType: 'perMu', rate: 0.02, description: '九边军屯。实际已大半被侵占。' }
+          // amount 为名义额(史实记录)·cascade 会乘 ~0.4-0.5 retention 才到中央。perMu 速率为亩税法定。
+          { id: 'liaoxiang', name: '辽饷加派', formulaType: 'perMu', rate: 0.018, description: '万历四十六年始征·每亩九厘银实折后约 0.018 两(扣损耗反算)。专供辽东军饷。田赋压苛之源。' },
+          { id: 'chama', name: '茶马司', formulaType: 'flat', amount: 300000, description: '陕甘茶马司年额定 30 万两·实征约 12 万到中央(扣损耗约 60%)。备边军马。' },
+          { id: 'chaoguan', name: '钞关过货税', formulaType: 'flat', amount: 1200000, description: '运河沿线八大钞关名义 120 万两·实征中央约 50-60 万。临清/淮安/扬州/河西务等。' },
+          { id: 'guanshui', name: '海关（月港）', formulaType: 'flat', amount: 80000, description: '福建漳州月港市舶司名义 8 万两·实征 3-5 万。万历开海后设。' },
+          { id: 'junhu', name: '军户屯田', formulaType: 'perMu', rate: 0.04, description: '九边军屯亩税 4 分(法定·实际已大半侵占·cascade 自动按 compliance 折扣)。' }
         ],
         // ──── 央地分账（对齐 editor-fiscal centralLocalRules preset）────
         centralLocalRules: {
@@ -9861,7 +9862,7 @@
         baojia: { baoCount: 0, jiaCount: 0, paiCount: 0, registerAccuracy: 0.62 },
         carryingCapacity: { arable: 0, water: 0, climate: 1.0, historicalCap: 0, currentLoad: 0.85, carryingRegime: 'strained' },
         minxinLocal: 45, corruptionLocal: 60,
-        fiscalDetail: { claimedRevenue: 0, actualRevenue: 0, remittedToCenter: 0, retainedBudget: 0, compliance: 0.58, skimmingRate: 0.18, autonomyLevel: 0.2 },
+        fiscalDetail: { claimedRevenue: 0, actualRevenue: 0, remittedToCenter: 0, retainedBudget: 0, compliance: 0.72, skimmingRate: 0.18, autonomyLevel: 0.2 },
         publicTreasuryInit: { money: 50000, grain: 100000, cloth: 10000 },
         children: []
       }, opts);

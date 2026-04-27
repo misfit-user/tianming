@@ -32,46 +32,49 @@
   // 默认税率（**年**化标准，按朝代史实调小；运行时按 turnDays/365 缩放）
   // 唐宋元 1 丁年入租：粟二石（约 1.5 两银折色）；明万历岁入约 4000 万两/2 亿口 ≈ 0.2 两/口
   // 综合下默认每丁年税约 0.2 两 + 田赋 0.8 石
+  // 速率为名义(税法)率·cascade 会再乘 (1-corrPenalty)*(1-disaster)*(1-exemption)*(1-disruption)*(1-autonomy*0.8)
+  // 然后 split qiyun*compliance*(1-transit)·全链路保留率约 0.4-0.5(良好朝代)/0.2(末明)
+  // 速率参考史实"应征额"反推·使良好朝代中央实收≈史实
   var DEFAULT_TAXES = [
     {
       id: 'land_grain',    name: '田赋（粮）',
       base: 'arableLand',  baseFallback: 'mouths',
-      baseFactor: 0.3,     rate: 0.05,            // 亩产 * 30% * 5% ≈ 0.015 石/亩·年（明代田赋折征水平）
+      baseFactor: 0.3,     rate: 0.08,            // 亩产 * 30% * 8% ≈ 0.024 石/亩·年(对应史实人均岁纳粮约 0.5 石)
       storeAs: 'grain',    sourceTag: 'tianfu',
       annual: true
     },
     {
       id: 'land_silver',   name: '田赋折银',
       base: 'arableLand',  baseFallback: 'mouths',
-      baseFactor: 1,       rate: 0.005,           // 每亩 0.005 两/年（条编/金花银）
+      baseFactor: 1,       rate: 0.012,           // 每亩 0.012 两/年(对应额定金花银 + 条编后 480-600 万两/年额，名义)
       storeAs: 'money',    sourceTag: 'tianfu_silver',
       annual: true
     },
     {
       id: 'head_tax',      name: '丁税',
       base: 'ding',        baseFallback: 'mouths',
-      baseFactor: 1,       rate: 0.15,            // 每丁 0.15 两/年
+      baseFactor: 1,       rate: 0.3,             // 每丁 0.3 两/年(条编后丁银额)
       storeAs: 'money',    sourceTag: 'dingshui',
       annual: true
     },
     {
       id: 'corvee_cloth',  name: '庸役折布',
       base: 'ding',        baseFallback: 'mouths',
-      baseFactor: 1,       rate: 0.1,             // 每丁 0.1 匹/年
+      baseFactor: 1,       rate: 0.15,            // 每丁 0.15 匹/年
       storeAs: 'cloth',    sourceTag: 'yongBu',
       annual: true
     },
     {
       id: 'commerce',      name: '商税',
       base: 'commerceVolume', baseFallback: 'prosperity',
-      baseFactor: 1,       rate: 0.015,           // 商业体量 * 1.5%（实征率·明代商税平均水平）
+      baseFactor: 1,       rate: 0.03,            // 商业体量 * 3%(明代商税法定 3.3%·三十取一)
       storeAs: 'money',    sourceTag: 'shangShui',
       annual: true
     },
     {
       id: 'salt_iron',     name: '盐铁专卖',
       base: 'mouths',      baseFallback: null,
-      baseFactor: 0.025,   rate: 0.6,             // 人均盐铁税约 0.015 两/年（明代盐课实征 ~250万两/全国 1.6亿口）
+      baseFactor: 0.05,    rate: 1.0,             // 人均盐课 0.05 两/年(明代盐课额定 250-280万/全国 1.5-1.6亿口)
       storeAs: 'money',    sourceTag: 'yanlizhuan',
       annual: true
     }

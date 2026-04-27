@@ -815,7 +815,16 @@
 
     var applied = {
       changes: 0, appointments: 0, institutions: 0, regions: 0,
-      events: 0, npcActions: 0, relations: 0, failed: []
+      events: 0, npcActions: 0, relations: 0, failed: [],
+      // 保守版 validator 用·记录调用 applier 前的数组长度·用于"数量是否增加"判定
+      _warsBefore: Array.isArray(G.activeWars) ? G.activeWars.length : 0,
+      _revoltsBefore: (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.length : 0,
+      _disastersBefore: Array.isArray(G.activeDisasters) ? G.activeDisasters.length : 0,
+      // 激进版 validator 用
+      _partiesBefore: Array.isArray(G.parties) ? G.parties.length : 0,
+      _edictsBefore: Array.isArray(G.activeEdicts) ? G.activeEdicts.length : 0,
+      _omensBefore: Array.isArray(G.omens) ? G.omens.length : ((G.events||[]).filter(function(e){return e&&(e.type==='omen'||e.category==='omen');}).length),
+      _religionsBefore: Array.isArray(G.religions) ? G.religions.length : 0
     };
 
     // 叙事
@@ -1451,15 +1460,90 @@
     // ── 14e. 官职任免一致性校验·扫描『拜 X 为 Y/擢 X 为 Y/迁』vs office_assignments ──
     try { _validateOfficeConsistency(G, aiOutput, applied); } catch(_ovE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ovE, 'applier] office validator:') : console.warn('[applier] office validator:', _ovE); }
 
-    // ── 14f. 二次 AI 自审·若多个 validator 报警·调一次 AI 让其自查 narrative-vs-structured ──
+    // ── 14f-1. 战争一致性校验·扫描『起兵/北伐/议和/陷落』vs GM.activeWars ──
+    try { _validateWarConsistency(G, aiOutput, applied); } catch(_wvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_wvE, 'applier] war validator:') : console.warn('[applier] war validator:', _wvE); }
+
+    // ── 14f-2. 民变一致性校验·扫描『起事/聚众/平定/招抚』vs GM.minxin.revolts ──
+    try { _validateRevoltConsistency(G, aiOutput, applied); } catch(_rvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rvE, 'applier] revolt validator:') : console.warn('[applier] revolt validator:', _rvE); }
+
+    // ── 14f-3. 天灾一致性校验·扫描『大旱/洪/蝗/瘟疫/地震』vs GM.activeDisasters ──
+    try { _validateDisasterConsistency(G, aiOutput, applied); } catch(_dvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dvE, 'applier] disaster validator:') : console.warn('[applier] disaster validator:', _dvE); }
+
+    // ── 14f-4. 外交一致性校验·扫『通使/朝贡/绝交/羁縻』 vs GM.facs[].relations ──
+    try { _validateDiplomacyConsistency(G, aiOutput, applied); } catch(_diE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_diE, 'applier] diplomacy validator:') : console.warn('[applier] diplomacy validator:', _diE); }
+
+    // ── 14f-5. 科举一致性校验·扫『开科/会试/殿试/放榜/赐进士』 vs P.keju ──
+    try { _validateKejuConsistency(G, aiOutput, applied); } catch(_kjE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_kjE, 'applier] keju validator:') : console.warn('[applier] keju validator:', _kjE); }
+
+    // ── 14f-6. 党派一致性校验·扫『结社/立党/解散/瓦解』 vs GM.parties ──
+    try { _validatePartyConsistency(G, aiOutput, applied); } catch(_pyE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pyE, 'applier] party validator:') : console.warn('[applier] party validator:', _pyE); }
+
+    // ── 14f-7. 法令效力一致性校验·扫『颁诏/降旨/敕谕/废制』 vs GM.activeEdicts ──
+    try { _validateEdictEffectConsistency(G, aiOutput, applied); } catch(_edE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_edE, 'applier] edictEffect validator:') : console.warn('[applier] edictEffect validator:', _edE); }
+
+    // ── 14f-8. 朝廷礼仪一致性校验·扫『迁都/晋爵/谥/册立/废后』 vs char_updates 内 title/posthumous/spouse ──
+    try { _validateCourtCeremonyConsistency(G, aiOutput, applied); } catch(_ccE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ccE, 'applier] courtCeremony validator:') : console.warn('[applier] courtCeremony validator:', _ccE); }
+
+    // ── 14f-9. 工程·物品·建筑一致性校验·扫『兴工/督造/烧毁/铸器』 vs changes 路径 ──
+    try { _validateConstructionConsistency(G, aiOutput, applied); } catch(_csE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_csE, 'applier] construction validator:') : console.warn('[applier] construction validator:', _csE); }
+
+    // ── 14f-10. 异象·谶语一致性校验·扫『彗见/日蚀/瑞兽/谶/谣』 vs GM.omens ──
+    try { _validateOmenConsistency(G, aiOutput, applied); } catch(_omE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_omE, 'applier] omen validator:') : console.warn('[applier] omen validator:', _omE); }
+
+    // ── 14f-11. 婚姻·生育·继承一致性校验·扫『嫁/娶/诞生/夭折/即位/承嗣』 ──
+    try { _validateMarriageBirthConsistency(G, aiOutput, applied); } catch(_mbE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_mbE, 'applier] marriageBirth validator:') : console.warn('[applier] marriageBirth validator:', _mbE); }
+
+    // ── 14f-12. 谋反·政变·弑君一致性校验·扫『谋反/弑君/宫变/篡位』 ──
+    try { _validateConspiracyConsistency(G, aiOutput, applied); } catch(_cyE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_cyE, 'applier] conspiracy validator:') : console.warn('[applier] conspiracy validator:', _cyE); }
+
+    // ── 14f-13. 货币·币值·银荒一致性校验·扫『银荒/钱荒/通胀/币改』 ──
+    try { _validateCurrencyConsistency(G, aiOutput, applied); } catch(_cuE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_cuE, 'applier] currency validator:') : console.warn('[applier] currency validator:', _cuE); }
+
+    // ── 14f-14. 宗教·教派一致性校验·扫『立教/灭佛/白莲/天主/邪教』 ──
+    try { _validateReligionConsistency(G, aiOutput, applied); } catch(_rgE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rgE, 'applier] religion validator:') : console.warn('[applier] religion validator:', _rgE); }
+
+    // ── 14g. 二次 AI 自审·若多个 validator 报警·调一次 AI 让其自查 narrative-vs-structured ──
     // 仅当本回合校验器累计补录 > 5 条时触发·避免每回合都额外烧 token
     try { _maybeReconcileWithAI(G, aiOutput, applied); } catch(_rvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rvE, 'applier] ai reconcile:') : console.warn('[applier] ai reconcile:', _rvE); }
 
     // ── 15. 死亡墓志铭 & 诈死holding ──
     try { _processDeathEpitaphs(G, aiOutput); } catch(_deE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_deE, 'applier] death epitaph:') : console.warn('[applier] death epitaph:', _deE); }
 
+    // ── 16. 财政三字段强制同步·防 money/balance/ledgers.stock 跑偏 ──
+    // 多个引擎(applier/FixedExpense/AuthorityComplete/AuthorityEngines/Keju)各自写不同字段·此处兜底对齐
+    try { if (typeof _syncFiscalScalars === 'function') _syncFiscalScalars(G); } catch(_syE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_syE, 'applier] fiscal sync:') : console.warn('[applier] fiscal sync:', _syE); }
+
     return { ok: true, applied: applied };
   }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  财政三字段同步守卫·确保 GM.guoku/neitang 的 money/balance/ledgers.stock 三字段一致
+  //  策略：以 ledgers.stock 为权威源（applier 内 fiscal_adjustments 同时更新它和 .money）·向后写 .money 和 .balance
+  //  若 ledger 不存在则以 .money 为准·补全 .balance
+  // ═══════════════════════════════════════════════════════════════════
+  function _syncFiscalScalars(G) {
+    if (!G) return;
+    ['guoku', 'neitang'].forEach(function(target) {
+      var t = G[target];
+      if (!t) return;
+      ['money','grain','cloth'].forEach(function(res) {
+        var ledStock = (t.ledgers && t.ledgers[res] && typeof t.ledgers[res].stock === 'number') ? t.ledgers[res].stock : null;
+        var scalar = (typeof t[res] === 'number') ? t[res] : null;
+        // 取权威值：ledger 优先·否则 scalar·否则 0
+        var canon = (ledStock != null) ? ledStock : (scalar != null ? scalar : 0);
+        // 写回三处
+        t[res] = canon;
+        if (t.ledgers && t.ledgers[res]) t.ledgers[res].stock = canon;
+        if (res === 'money') t.balance = canon;  // balance 仅对 money 有意义
+      });
+      // 若有 ledger 但 .money 与 stock 之前就不一致·留一条警告
+      if (t.ledgers && t.ledgers.money && typeof t.ledgers.money.stock === 'number' && typeof t.money === 'number') {
+        // 此时已对齐·不再需要警告
+      }
+    });
+  }
+  // 暴露给 window·让 endTurn / renderGameState 可调用兜底
+  if (typeof window !== 'undefined') window._syncFiscalScalars = _syncFiscalScalars;
 
   // ═══════════════════════════════════════════════════════════════════
   //  财务一致性校验器
@@ -1867,6 +1951,439 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  //  保守版·14f-1·战争一致性校验
+  //  扫描 narrative 中『起兵/北伐/讨伐/议和/罢兵/大败/陷落』·对照 GM.activeWars
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateWarConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput);
+    if (!narrative) return;
+
+    // 开战/扩战动词
+    var warStartVerbs = ['起兵','兴师','讨伐','征伐','北伐','南征','东征','西征','进犯','入寇','犯境','寇边','兵临','出兵','开战','起衅','启衅','南下','北上'];
+    // 议和/结束动词
+    var warEndVerbs = ['议和','和谈','罢兵','讲和','纳贡','约和','盟约','停战','受降','献降','纳款','奉表','称臣'];
+    // 战役结果动词
+    var battleVerbs = ['大败','大捷','克复','陷落','失守','收复','破','突围','会战','激战','溃败','全军覆没','戍御','解围'];
+
+    function _hit(arr) {
+      for (var i = 0; i < arr.length; i++) if (narrative.indexOf(arr[i]) >= 0) return arr[i];
+      return null;
+    }
+    var startKw = _hit(warStartVerbs);
+    var endKw = _hit(warEndVerbs);
+    var battleKw = _hit(battleVerbs);
+    if (!startKw && !endKw && !battleKw) return;
+
+    var warnings = [];
+    var existingWars = Array.isArray(G.activeWars) ? G.activeWars : [];
+    var beforeCount = (applied && typeof applied._warsBefore === 'number') ? applied._warsBefore : existingWars.length;
+    // narrative 提到开战·但 activeWars 数量未增加
+    if (startKw && existingWars.length <= beforeCount) {
+      warnings.push({ kind: 'war_start_missing', keyword: startKw, snippet: _snippetAround(narrative, startKw, 30) });
+    }
+    // narrative 提到议和·但没有 war.status 变 ended/peaced
+    if (endKw) {
+      var hasPeaced = existingWars.some(function(w) { return w && (w.status === 'ended' || w.status === 'peace' || w.status === 'truce' || w.endedTurn); });
+      if (!hasPeaced) warnings.push({ kind: 'war_end_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+    }
+    // narrative 提到具体战役·但 war.battles 都为空
+    if (battleKw) {
+      var hasBattle = existingWars.some(function(w) { return w && Array.isArray(w.battles) && w.battles.length > 0; });
+      if (!hasBattle && existingWars.length > 0) {
+        warnings.push({ kind: 'battle_missing', keyword: battleKw, snippet: _snippetAround(narrative, battleKw, 30) });
+      }
+    }
+    if (!warnings.length) return;
+
+    if (!G._warValidatorLog) G._warValidatorLog = [];
+    G._warValidatorLog.push({ turn: G.turn || 0, warnings: warnings });
+    if (G._warValidatorLog.length > 20) G._warValidatorLog = G._warValidatorLog.slice(-20);
+    if (G._turnReport) G._turnReport.push({ type: 'war_validation', warnings: warnings, turn: G.turn || 0 });
+    console.warn('[WarValidator] 战争一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  保守版·14f-2·民变一致性校验
+  //  扫描 narrative 中『起事/聚众/作乱/平定/招抚』·对照 G.minxin.revolts
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateRevoltConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput);
+    if (!narrative) return;
+
+    var revoltStartVerbs = ['起事','起义','造反','反叛','暴动','聚众','啸聚','揭竿','作乱','民变','匪乱','盗起','贼起','倡乱','倡反','倡叛','流寇'];
+    var revoltEndVerbs = ['镇压','平定','剿','扑灭','招抚','宣抚','讨平','戡定','平息','靖','勘平'];
+
+    function _hit(arr) {
+      for (var i = 0; i < arr.length; i++) if (narrative.indexOf(arr[i]) >= 0) return arr[i];
+      return null;
+    }
+    var startKw = _hit(revoltStartVerbs);
+    var endKw = _hit(revoltEndVerbs);
+    if (!startKw && !endKw) return;
+
+    var warnings = [];
+    var existingRevolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts : [];
+    var beforeCount = (applied && typeof applied._revoltsBefore === 'number') ? applied._revoltsBefore : existingRevolts.length;
+    if (startKw && existingRevolts.length <= beforeCount) {
+      warnings.push({ kind: 'revolt_start_missing', keyword: startKw, snippet: _snippetAround(narrative, startKw, 30) });
+    }
+    if (endKw) {
+      var hasEnded = existingRevolts.some(function(r) {
+        return r && (r.status === 'suppressed' || r.status === 'appeased' || r.status === 'ended' || r.endedTurn);
+      });
+      var hasOngoingBefore = existingRevolts.some(function(r) { return r && r.status === 'ongoing'; });
+      if (!hasEnded && hasOngoingBefore) {
+        warnings.push({ kind: 'revolt_end_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+      }
+    }
+    if (!warnings.length) return;
+
+    if (!G._revoltValidatorLog) G._revoltValidatorLog = [];
+    G._revoltValidatorLog.push({ turn: G.turn || 0, warnings: warnings });
+    if (G._revoltValidatorLog.length > 20) G._revoltValidatorLog = G._revoltValidatorLog.slice(-20);
+    if (G._turnReport) G._turnReport.push({ type: 'revolt_validation', warnings: warnings, turn: G.turn || 0 });
+    console.warn('[RevoltValidator] 民变一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  保守版·14f-3·天灾一致性校验
+  //  扫描 narrative 中『大旱/洪/蝗/瘟疫/地震』·对照 G.activeDisasters
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateDisasterConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput);
+    if (!narrative) return;
+
+    var disasterCategories = {
+      drought: ['大旱','亢旱','赤地','久旱','久不雨','焦土','草木枯','禾稼焦'],
+      flood: ['大水','洪水','决堤','江溢','河溢','暴雨','水患','溃决','汎滥','泛滥'],
+      locust: ['蝗','飞蝗','蝻'],
+      plague: ['大疫','瘟疫','疠疫','染疫','疫死','瘟','时疫','痘疹'],
+      quake: ['地动','地震','地陷','山崩','山摇']
+    };
+
+    function _hitCat() {
+      var hits = [];
+      Object.keys(disasterCategories).forEach(function(cat) {
+        for (var i = 0; i < disasterCategories[cat].length; i++) {
+          if (narrative.indexOf(disasterCategories[cat][i]) >= 0) {
+            hits.push({ category: cat, keyword: disasterCategories[cat][i] });
+            break;
+          }
+        }
+      });
+      return hits;
+    }
+    var hitList = _hitCat();
+    if (!hitList.length) return;
+
+    var warnings = [];
+    var existingDisasters = Array.isArray(G.activeDisasters) ? G.activeDisasters : [];
+    var beforeCount = (applied && typeof applied._disastersBefore === 'number') ? applied._disastersBefore : existingDisasters.length;
+    // 若 narrative 命中灾害关键词·但 activeDisasters 数量未增加·按命中类别报警
+    if (existingDisasters.length <= beforeCount) {
+      hitList.forEach(function(h) {
+        warnings.push({ kind: 'disaster_missing', category: h.category, keyword: h.keyword, snippet: _snippetAround(narrative, h.keyword, 30) });
+      });
+    } else {
+      // 数量增加了·但要核对类别匹配
+      var existingCats = {};
+      existingDisasters.forEach(function(d) {
+        if (d && (d.type || d.category)) existingCats[d.type || d.category] = true;
+      });
+      hitList.forEach(function(h) {
+        if (!existingCats[h.category] && !existingCats[h.keyword]) {
+          warnings.push({ kind: 'disaster_category_mismatch', category: h.category, keyword: h.keyword, snippet: _snippetAround(narrative, h.keyword, 30) });
+        }
+      });
+    }
+    if (!warnings.length) return;
+
+    if (!G._disasterValidatorLog) G._disasterValidatorLog = [];
+    G._disasterValidatorLog.push({ turn: G.turn || 0, warnings: warnings });
+    if (G._disasterValidatorLog.length > 20) G._disasterValidatorLog = G._disasterValidatorLog.slice(-20);
+    if (G._turnReport) G._turnReport.push({ type: 'disaster_validation', warnings: warnings, turn: G.turn || 0 });
+    console.warn('[DisasterValidator] 天灾一致性警告:', warnings);
+  }
+
+  // 辅助·取关键词附近文本
+  function _snippetAround(text, keyword, span) {
+    var idx = text.indexOf(keyword);
+    if (idx < 0) return '';
+    var start = Math.max(0, idx - span);
+    var end = Math.min(text.length, idx + keyword.length + span);
+    return text.substring(start, end);
+  }
+  // 辅助·命中关键词数组中的任一项
+  function _firstHit(text, arr) {
+    for (var i = 0; i < arr.length; i++) if (text.indexOf(arr[i]) >= 0) return arr[i];
+    return null;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-4·外交一致性校验
+  //  扫『通使/朝贡/绝交/羁縻/抚夷』·对照 G.facs[].relations / attitude
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateDiplomacyConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var startKw = _firstHit(narrative, ['通使','缔盟','和好','朝贡','纳款','纳贡','遣使','称臣','羁縻','抚夷','封贡']);
+    var endKw = _firstHit(narrative, ['绝交','逐使','断绝','宣战','犯界','寇边','弃约','背盟']);
+    if (!startKw && !endKw) return;
+    // facs.attitude / relations 是否本回合有 update
+    var fuArr = aiOutput.faction_updates || [];
+    var hasFactionUpdate = fuArr.length > 0 || (G.turnChanges && (G.turnChanges.factions||[]).length > 0);
+    if (hasFactionUpdate) return;
+    var warnings = [];
+    if (startKw) warnings.push({ kind: 'diplomacy_friendly_missing', keyword: startKw, snippet: _snippetAround(narrative, startKw, 30) });
+    if (endKw) warnings.push({ kind: 'diplomacy_hostile_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+    if (!warnings.length) return;
+    if (!G._diplomacyValidatorLog) G._diplomacyValidatorLog = [];
+    G._diplomacyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._diplomacyValidatorLog.length > 20) G._diplomacyValidatorLog = G._diplomacyValidatorLog.slice(-20);
+    console.warn('[DiplomacyValidator] 外交一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-5·科举一致性校验
+  //  扫『开科/会试/殿试/放榜/赐进士』·对照 P.keju
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateKejuConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var kw = _firstHit(narrative, ['开科','会试','殿试','放榜','赐进士','钦点状元','钦定三甲','一甲及第','二甲赐进士','金榜','龙虎榜','春闱','秋闱','恩科','乡试','贡士']);
+    if (!kw) return;
+    var Pref = (typeof P !== 'undefined') ? P : null;
+    var kejuActive = (Pref && Pref.keju && (Pref.keju.currentExam || (Pref.keju.history && Pref.keju.history.length)));
+    if (kejuActive) return;
+    var warnings = [{ kind: 'keju_missing', keyword: kw, snippet: _snippetAround(narrative, kw, 30) }];
+    if (!G._kejuValidatorLog) G._kejuValidatorLog = [];
+    G._kejuValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._kejuValidatorLog.length > 20) G._kejuValidatorLog = G._kejuValidatorLog.slice(-20);
+    console.warn('[KejuValidator] 科举一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-6·党派一致性校验
+  //  扫『结党/立党/盟誓/解散/瓦解/弹劾』·对照 GM.parties[]
+  // ═══════════════════════════════════════════════════════════════════
+  function _validatePartyConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var formKw = _firstHit(narrative, ['结社','立党','结党','盟誓','倡党','倡议设','门户','朋党','立社']);
+    var endKw = _firstHit(narrative, ['解散','瓦解','分裂','分崩','倾覆','清党','除党','禁社']);
+    if (!formKw && !endKw) return;
+    var existing = Array.isArray(G.parties) ? G.parties : [];
+    var beforeCount = (applied && typeof applied._partiesBefore === 'number') ? applied._partiesBefore : existing.length;
+    var hasUpdate = (aiOutput.party_updates || []).length > 0;
+    if (hasUpdate) return;
+    var warnings = [];
+    if (formKw && existing.length <= beforeCount) warnings.push({ kind: 'party_form_missing', keyword: formKw, snippet: _snippetAround(narrative, formKw, 30) });
+    if (endKw && existing.length >= beforeCount && existing.some(function(p){return p && p.status==='active';})) warnings.push({ kind: 'party_end_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+    if (!warnings.length) return;
+    if (!G._partyValidatorLog) G._partyValidatorLog = [];
+    G._partyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._partyValidatorLog.length > 20) G._partyValidatorLog = G._partyValidatorLog.slice(-20);
+    console.warn('[PartyValidator] 党派一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-7·法令效力一致性校验
+  //  扫『颁诏/降旨/敕谕/废制/施行新政/罢...诏』·对照 GM.activeEdicts
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateEdictEffectConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var promulgateKw = _firstHit(narrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
+    var revokeKw = _firstHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
+    if (!promulgateKw && !revokeKw) return;
+    var existingEdicts = Array.isArray(G.activeEdicts) ? G.activeEdicts : [];
+    var beforeCount = (applied && typeof applied._edictsBefore === 'number') ? applied._edictsBefore : existingEdicts.length;
+    var warnings = [];
+    if (promulgateKw && existingEdicts.length <= beforeCount) warnings.push({ kind: 'edict_promulgate_missing', keyword: promulgateKw, snippet: _snippetAround(narrative, promulgateKw, 30) });
+    if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: 'edict_revoke_missing', keyword: revokeKw, snippet: _snippetAround(narrative, revokeKw, 30) });
+    if (!warnings.length) return;
+    if (!G._edictEffectValidatorLog) G._edictEffectValidatorLog = [];
+    G._edictEffectValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._edictEffectValidatorLog.length > 20) G._edictEffectValidatorLog = G._edictEffectValidatorLog.slice(-20);
+    console.warn('[EdictEffectValidator] 法令效力一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-8·朝廷礼仪一致性校验（含后宫）
+  //  扫『迁都/晋爵/赠官/谥/追封/赐姓/册立...为后/晋...为妃/废后/出宫』
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateCourtCeremonyConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var moveCapKw = _firstHit(narrative, ['迁都','移都','改都']);
+    var titleKw = _firstHit(narrative, ['晋爵','晋封','加封','进爵','赐爵','削爵','夺爵','除爵','赠','追赠','追封','谥','赐姓','赐婚']);
+    var haremKw = _firstHit(narrative, ['册立','册封','晋为妃','晋为贵妃','立为皇后','废后','废妃','降为','贬为','出宫','选秀','纳妃']);
+    if (!moveCapKw && !titleKw && !haremKw) return;
+    var charUpdates = aiOutput.char_updates || [];
+    // 简单粗略：char_updates 中是否含 title/posthumous/spouse 修改
+    var hasRelevantUpdate = charUpdates.some(function(c){
+      if (!c || !c.changes) return false;
+      var chKeys = Object.keys(c.changes||{});
+      return chKeys.some(function(k){return /title|posthumous|spouse|wife|consort/i.test(k);});
+    });
+    var warnings = [];
+    if (moveCapKw) warnings.push({ kind: 'capital_move_missing', keyword: moveCapKw, snippet: _snippetAround(narrative, moveCapKw, 30) });
+    if (titleKw && !hasRelevantUpdate) warnings.push({ kind: 'title_change_missing', keyword: titleKw, snippet: _snippetAround(narrative, titleKw, 30) });
+    if (haremKw && !hasRelevantUpdate) warnings.push({ kind: 'harem_change_missing', keyword: haremKw, snippet: _snippetAround(narrative, haremKw, 30) });
+    if (!warnings.length) return;
+    if (!G._courtCeremonyValidatorLog) G._courtCeremonyValidatorLog = [];
+    G._courtCeremonyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._courtCeremonyValidatorLog.length > 20) G._courtCeremonyValidatorLog = G._courtCeremonyValidatorLog.slice(-20);
+    console.warn('[CourtCeremonyValidator] 朝廷礼仪一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-9·工程·物品·建筑一致性校验
+  //  扫『兴工/督造/敕造/竣工/烧毁/重建/铸钱/铸器/重修/...毁』
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateConstructionConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var buildKw = _firstHit(narrative, ['兴工','督造','敕造','竣工','落成','营建','营造','重建','修缮','整修','修陵','治水','河工','堰塞','筑城','筑堡','铸钱','铸器','造船','试制']);
+    var destroyKw = _firstHit(narrative, ['烧毁','毁','摧','颓','坍','圮','废墟','焚毁']);
+    if (!buildKw && !destroyKw) return;
+    // 检查 changes 中是否含 building / project / item 路径
+    var hasRelevant = (aiOutput.changes || []).some(function(c){
+      var p = (c && c.path) || '';
+      return /building|project|construction|item|works|edifice/i.test(p);
+    });
+    var warnings = [];
+    if (buildKw && !hasRelevant) warnings.push({ kind: 'construction_build_missing', keyword: buildKw, snippet: _snippetAround(narrative, buildKw, 30) });
+    if (destroyKw && !hasRelevant) warnings.push({ kind: 'construction_destroy_missing', keyword: destroyKw, snippet: _snippetAround(narrative, destroyKw, 30) });
+    if (!warnings.length) return;
+    if (!G._constructionValidatorLog) G._constructionValidatorLog = [];
+    G._constructionValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._constructionValidatorLog.length > 20) G._constructionValidatorLog = G._constructionValidatorLog.slice(-20);
+    console.warn('[ConstructionValidator] 工程·物品一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  极致版·14f-11·婚姻·生育·继承一致性校验
+  //  扫『嫁/娶/聘/纳/有娠/诞生/分娩/夭折/绝嗣/承嗣/即位』·对照 GM.harem / chars
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateMarriageBirthConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var marryKw = _firstHit(narrative, ['嫁','娶','聘','纳采','纳征','成婚','结亲','缔婚','和亲','联姻','大婚']);
+    var birthKw = _firstHit(narrative, ['有娠','怀孕','身娠','诞生','分娩','降生','弄璋','弄瓦','长公主','皇子','皇女','龙胎']);
+    var deathHeirKw = _firstHit(narrative, ['夭折','早殇','薨于稚龄','婴卒','绝嗣','无嗣','断后']);
+    var succKw = _firstHit(narrative, ['即位','登基','嗣位','继统','承祧','承嗣','袭爵','袭封','袭位']);
+    if (!marryKw && !birthKw && !deathHeirKw && !succKw) return;
+    var charUpdates = aiOutput.char_updates || [];
+    var newChars = aiOutput.new_characters || [];
+    var charDeaths = aiOutput.character_deaths || [];
+    var hasUpdate = charUpdates.some(function(c){return c && c.changes && Object.keys(c.changes).some(function(k){return /spouse|wife|consort|children|heir|inherited|succeeded/i.test(k);});});
+    var warnings = [];
+    if (marryKw && !hasUpdate) warnings.push({ kind: 'marriage_missing', keyword: marryKw, snippet: _snippetAround(narrative, marryKw, 30) });
+    if (birthKw && newChars.length === 0) warnings.push({ kind: 'birth_missing', keyword: birthKw, snippet: _snippetAround(narrative, birthKw, 30) });
+    if (deathHeirKw && charDeaths.length === 0) warnings.push({ kind: 'heir_death_missing', keyword: deathHeirKw, snippet: _snippetAround(narrative, deathHeirKw, 30) });
+    if (succKw && !hasUpdate) warnings.push({ kind: 'succession_missing', keyword: succKw, snippet: _snippetAround(narrative, succKw, 30) });
+    if (!warnings.length) return;
+    if (!G._marriageBirthValidatorLog) G._marriageBirthValidatorLog = [];
+    G._marriageBirthValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._marriageBirthValidatorLog.length > 20) G._marriageBirthValidatorLog = G._marriageBirthValidatorLog.slice(-20);
+    console.warn('[MarriageBirthValidator] 婚姻·生育·继承一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  极致版·14f-12·谋反·政变·弑君一致性校验
+  //  扫『谋反/谋逆/弑君/宫变/篡位/兵谏/逼宫/犯阙/兵围』·对照 GM._conspiracies
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateConspiracyConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var plotKw = _firstHit(narrative, ['谋反','谋逆','谋叛','造逆','阴谋','蓄志','潜谋','怀异','私通','密议','结连','潜图']);
+    var coupKw = _firstHit(narrative, ['弑君','宫变','政变','兵变','篡位','兵谏','逼宫','犯阙','兵围禁中','闯宫','劫驾']);
+    if (!plotKw && !coupKw) return;
+    // 检查 personnel_changes 是否有 reason 含『反/逆/篡』
+    var pcArr = aiOutput.personnel_changes || [];
+    var hasReason = pcArr.some(function(p){return p && p.reason && /反|逆|篡|谋|变|党/.test(p.reason);});
+    var charDeaths = (aiOutput.character_deaths || []).some(function(d){return d && d.cause && /反|逆|弑|篡|刺|杀/.test(d.cause||d.reason||'');});
+    var warnings = [];
+    if (plotKw && !hasReason && !charDeaths) warnings.push({ kind: 'plot_missing', keyword: plotKw, snippet: _snippetAround(narrative, plotKw, 30) });
+    if (coupKw && !hasReason && !charDeaths) warnings.push({ kind: 'coup_missing', keyword: coupKw, snippet: _snippetAround(narrative, coupKw, 30) });
+    if (!warnings.length) return;
+    if (!G._conspiracyValidatorLog) G._conspiracyValidatorLog = [];
+    G._conspiracyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._conspiracyValidatorLog.length > 20) G._conspiracyValidatorLog = G._conspiracyValidatorLog.slice(-20);
+    console.warn('[ConspiracyValidator] 谋反·政变一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  极致版·14f-13·货币·币值·银荒一致性校验
+  //  扫『银荒/钱荒/钞贱/通胀/铜贵/银贵/币改/换钞/铸大钱』·对照 GM.currency
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateCurrencyConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var crisisKw = _firstHit(narrative, ['银荒','钱荒','钞贱','通胀','铜贵','银贵','物价腾贵','米价踊贵','货贵','钱贱']);
+    var reformKw = _firstHit(narrative, ['币改','换钞','行钞','行银','铸大钱','改铸','禁银','禁铜','解禁','弛禁']);
+    if (!crisisKw && !reformKw) return;
+    // 检查 changes / fiscal_adjustments / global_state_delta 是否含 currency/silver/copper/inflation
+    var hasUpdate = (aiOutput.changes || []).some(function(c){var p=(c&&c.path)||'';return /currenc|silver|copper|inflation|银价|物价/i.test(p);})
+      || (aiOutput.global_state_delta && Object.keys(aiOutput.global_state_delta||{}).some(function(k){return /inflation|currency|priceIndex/i.test(k);}));
+    var warnings = [];
+    if (crisisKw && !hasUpdate) warnings.push({ kind: 'currency_crisis_missing', keyword: crisisKw, snippet: _snippetAround(narrative, crisisKw, 30) });
+    if (reformKw && !hasUpdate) warnings.push({ kind: 'currency_reform_missing', keyword: reformKw, snippet: _snippetAround(narrative, reformKw, 30) });
+    if (!warnings.length) return;
+    if (!G._currencyValidatorLog) G._currencyValidatorLog = [];
+    G._currencyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._currencyValidatorLog.length > 20) G._currencyValidatorLog = G._currencyValidatorLog.slice(-20);
+    console.warn('[CurrencyValidator] 货币·币值一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  极致版·14f-14·宗教·教派一致性校验
+  //  扫『立教/兴佛/灭佛/传教/邪教/白莲/天主/教门/兴道/灭道/僧伽』·对照 GM.religions
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateReligionConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var riseKw = _firstHit(narrative, ['立教','兴佛','兴道','传教','弘法','弘道','立寺','建观','开堂']);
+    var fallKw = _firstHit(narrative, ['灭佛','灭道','禁教','毁寺','毁观','焚经','沙汰','逐僧','逐道']);
+    var sectKw = _firstHit(narrative, ['白莲','弥勒','无生老母','闻香','天主','耶稣会','回回','袄教','摩尼','邪教','妖教','妖人']);
+    if (!riseKw && !fallKw && !sectKw) return;
+    var existingRel = Array.isArray(G.religions) ? G.religions : [];
+    var beforeCount = (applied && typeof applied._religionsBefore === 'number') ? applied._religionsBefore : existingRel.length;
+    var hasUpdate = (aiOutput.changes||[]).some(function(c){var p=(c&&c.path)||'';return /religion|sect|temple|monastic/i.test(p);});
+    var warnings = [];
+    if ((riseKw || fallKw) && !hasUpdate && existingRel.length === beforeCount) warnings.push({ kind: 'religion_change_missing', keyword: riseKw || fallKw, snippet: _snippetAround(narrative, riseKw || fallKw, 30) });
+    if (sectKw && !hasUpdate) warnings.push({ kind: 'sect_event_missing', keyword: sectKw, snippet: _snippetAround(narrative, sectKw, 30) });
+    if (!warnings.length) return;
+    if (!G._religionValidatorLog) G._religionValidatorLog = [];
+    G._religionValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._religionValidatorLog.length > 20) G._religionValidatorLog = G._religionValidatorLog.slice(-20);
+    console.warn('[ReligionValidator] 宗教·教派一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  激进版·14f-10·异象·谶语一致性校验
+  //  扫『彗见/星孛/日蚀/月蚀/血雨/虹贯/瑞兽/麒麟/凤凰/白虎/谶/谣/天象』
+  // ═══════════════════════════════════════════════════════════════════
+  function _validateOmenConsistency(G, aiOutput, applied) {
+    if (!G || !aiOutput) return;
+    var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
+    var omenKw = _firstHit(narrative, ['彗见','彗星','星孛','日蚀','日食','月蚀','月食','血雨','虹贯','虹气','白虹','瑞兽','麒麟','凤凰','白虎','五星连珠','陨石','地龙','童谣','谶','妖言','灾异','祥瑞']);
+    if (!omenKw) return;
+    var existingOmens = Array.isArray(G.omens) ? G.omens : (G.events||[]).filter(function(e){return e && (e.type==='omen'||e.category==='omen');});
+    var beforeCount = (applied && typeof applied._omensBefore === 'number') ? applied._omensBefore : existingOmens.length;
+    if (existingOmens.length > beforeCount) return;
+    var warnings = [{ kind: 'omen_missing', keyword: omenKw, snippet: _snippetAround(narrative, omenKw, 30) }];
+    if (!G._omenValidatorLog) G._omenValidatorLog = [];
+    G._omenValidatorLog.push({ turn: G.turn||0, warnings: warnings });
+    if (G._omenValidatorLog.length > 20) G._omenValidatorLog = G._omenValidatorLog.slice(-20);
+    console.warn('[OmenValidator] 异象一致性警告:', warnings);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   //  二次 AI 自审 reconciliation·Wave 1c
   //  仅当本回合 5 个 validator 累计警告 >= 3 时触发·让 AI 看自己的 narrative+JSON·查矛盾·返回补录
   //  返回的 reconciliation_patch 自动 apply 到 GM·token 成本约 +20%
@@ -1880,23 +2397,46 @@
     var sentW = (G._sentimentValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
     var popW = (G._populationValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
     var officeW = (G._officeValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.missing||[]).length;},0);
-    var totalW = fiscalW + personW + militaryW + sentW + popW + officeW;
+    // 保守版·三类新 validator
+    var warW = (G._warValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var revoltW = (G._revoltValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var disasterW = (G._disasterValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    // 激进版·七类新 validator
+    var diplomacyW = (G._diplomacyValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var kejuW = (G._kejuValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var partyW = (G._partyValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var edictEffectW = (G._edictEffectValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var courtCeremonyW = (G._courtCeremonyValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var constructionW = (G._constructionValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var omenW = (G._omenValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    // 极致版·末四类
+    var marriageBirthW = (G._marriageBirthValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var conspiracyW = (G._conspiracyValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var currencyW = (G._currencyValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var religionW = (G._religionValidatorLog||[]).filter(function(x){return x.turn===G.turn;}).reduce(function(s,x){return s+(x.warnings||[]).length;},0);
+    var totalW = fiscalW + personW + militaryW + sentW + popW + officeW + warW + revoltW + disasterW + diplomacyW + kejuW + partyW + edictEffectW + courtCeremonyW + constructionW + omenW + marriageBirthW + conspiracyW + currencyW + religionW;
 
     if (!G._reconcileLog) G._reconcileLog = [];
-    G._reconcileLog.push({ turn: G.turn || 0, fiscalW: fiscalW, personW: personW, militaryW: militaryW, sentW: sentW, popW: popW, officeW: officeW, total: totalW });
+    G._reconcileLog.push({ turn: G.turn || 0, fiscalW: fiscalW, personW: personW, militaryW: militaryW, sentW: sentW, popW: popW, officeW: officeW, warW: warW, revoltW: revoltW, disasterW: disasterW, diplomacyW: diplomacyW, kejuW: kejuW, partyW: partyW, edictEffectW: edictEffectW, courtCeremonyW: courtCeremonyW, constructionW: constructionW, omenW: omenW, marriageBirthW: marriageBirthW, conspiracyW: conspiracyW, currencyW: currencyW, religionW: religionW, total: totalW });
     if (G._reconcileLog.length > 20) G._reconcileLog = G._reconcileLog.slice(-20);
 
     if (totalW < 3) return;  // 未达阈值
     // ★ 不在 applier 同步触发 AI(applier 是同步函数)·标记需要 reconcile·让 endturn-ai-infer 异步处理
     G._needsReconcile = {
       turn: G.turn || 0,
-      warnings: { fiscal: fiscalW, personnel: personW, military: militaryW, sentiment: sentW, population: popW, office: officeW },
+      warnings: { fiscal: fiscalW, personnel: personW, military: militaryW, sentiment: sentW, population: popW, office: officeW, war: warW, revolt: revoltW, disaster: disasterW, diplomacy: diplomacyW, keju: kejuW, party: partyW, edictEffect: edictEffectW, courtCeremony: courtCeremonyW, construction: constructionW, omen: omenW, marriageBirth: marriageBirthW, conspiracy: conspiracyW, currency: currencyW, religion: religionW },
       narrativeSnapshot: _getNarrativeText(aiOutput).slice(0, 2000),  // 截断防止 prompt 过长
       structuredSnapshot: {
         personnel_changes: aiOutput.personnel_changes || [],
         office_assignments: aiOutput.office_assignments || [],
         fiscal_adjustments: aiOutput.fiscal_adjustments || [],
-        military_changes: aiOutput.military_changes || []
+        military_changes: aiOutput.military_changes || [],
+        activeWars: G.activeWars || [],
+        revolts: (G.minxin && G.minxin.revolts) || [],
+        activeDisasters: G.activeDisasters || [],
+        facs: (G.facs||[]).slice(0,5),
+        parties: G.parties || [],
+        activeEdicts: G.activeEdicts || []
       }
     };
     console.warn('[ReconcileAI] 本回合校验器累计警告 ' + totalW + ' 条 >= 阈值·标记 GM._needsReconcile·待异步 AI 自审');
@@ -1946,8 +2486,15 @@
     var mentioned = [];
     // ★ 双向匹配：支出动词(outflow) + 收入动词(inflow)·分别标记 kind
     // 之前正则只识别支出动词·导致 AI 叙述『获得三百万两白银』时校验器抓不到·数值不对账
-    var outflowVerbs = '赐|赏|发|拨|赈|征|抄|没收|缴获|贡|赔|罚没|献|输|筹|解|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费';
-    var inflowVerbs = '获得|获|收|入|进|得|得到|收到|进项|进帐|进账|收入|入账|入库|入帑|入内帑|纳入|抄获|抄到|没入|缴入|追缴|追讨|追回|罚入|查封充公|抄没入|没收入';
+    // 2026-04 扩充：补『籍没/抄没/查抄/划拨/支给/支应/赏银/赈银/拨款/专款』等诏令式动词
+    var outflowVerbs = '赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费' +
+      '|拨付|拨给|拨入|拨内帑|拨内库|划拨|调拨|发付|发给|发支|出库|起解|起运|解送|解部|解到|报销|发还|分给|拨与|赏给|犒赏|犒军|赈济|赈灾|赈给|安抚|抚恤|抚慰' +
+      '|支应|支给|支用|支放|支发|支领|动支|动用|提取|提用|划支|划归|经费|靡费|开支|开销|耗用';
+    var inflowVerbs = '获得|获|收|入|进|得|得到|收到|进项|进帐|进账|收入|入账|入库|入帑|入内帑|纳入|抄获|抄到|没入|缴入|追缴|追讨|追回|罚入|查封充公|抄没入|没收入' +
+      '|籍没|籍家|籍没家产|抄家|抄籍|抄没|查抄|抄入|查封|充公|没官|没充|没户' +
+      '|入私库|入御府|入库银|起运入|解送至|划入|转入|调入|拨归|归入|纳款|捐输|报效' +
+      '|追比|追征|追缴|追赔|籍录|籍其家|罚银|罚没';
+    // 单位匹配（带单位）— 高置信度
     var patOut = new RegExp('(' + outflowVerbs + ')[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)', 'g');
     var patIn  = new RegExp('(' + inflowVerbs + ')[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)', 'g');
     function _scanPattern(pat, kind) {
@@ -1967,6 +2514,30 @@
     }
     _scanPattern(patOut, 'expense');
     _scanPattern(patIn,  'income');
+
+    // ★ 兜底：无单位裸数额"N 万"——必须 narrative 段落含金钱语境关键词才视为 money
+    // 这套补丁专杀玩家原档的"籍没X家产 +150万 / 京营赏银 -10万 / X查抄 +450万"等诏令式表达
+    var moneyContextKw = /银|帑|库|帑廪|内帑|私库|内库|国库|库银|赏银|赈银|饷银|饷|赏|赈|犒|拨款|专款|经费|赔款|银两|帑库|公库/;
+    var hasMoneyContext = moneyContextKw.test(narrativeText);
+    if (hasMoneyContext) {
+      // 模式：动词 + (人名/地名/事由)? + 数字 + 万 (无两/石/匹后缀)·宽松匹配
+      // 允许空格·允许小数点（如 139.2万）·允许 +/- 前缀符号（modal 常用 "+150万"）
+      var patOutLoose = new RegExp('(' + outflowVerbs + ')[^。；,，]{0,16}?([+\\-]?[\\d一二三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖]+(?:\\.\\d+)?)\\s*万(?!两|石|匹|斛|贯|缗|斗|文|众|户|口|人|亩|顷|名)', 'g');
+      var patInLoose  = new RegExp('(' + inflowVerbs + ')[^。；,，]{0,16}?([+\\-]?[\\d一二三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖]+(?:\\.\\d+)?)\\s*万(?!两|石|匹|斛|贯|缗|斗|文|众|户|口|人|亩|顷|名)', 'g');
+      function _scanLoose(pat, kind) {
+        var m;
+        while ((m = pat.exec(narrativeText)) !== null) {
+          var raw = m[0];
+          // 排重·已在严格匹配里命中过的整段不再 push
+          if (mentioned.some(function(x){return x.raw === raw;})) continue;
+          var amt = _parseNum(m[2], '万');
+          if (!amt || amt < 1000) continue;  // 兜底匹配·阈值更高(1000+ 单位=两)·避免误抓"X 万人/X 万亩"
+          mentioned.push({ action: m[1], amount: amt, resource: 'money', kind: kind, raw: raw, _loose: true });
+        }
+      }
+      _scanLoose(patOutLoose, 'expense');
+      _scanLoose(patInLoose, 'income');
+    }
     if (!mentioned.length) return;
 
     // 比对 fiscal_adjustments 总量·分 income/expense 两边

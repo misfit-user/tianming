@@ -564,6 +564,228 @@ async function callAI(prompt,maxTok,signal,tier){
 }
 
 /**
+ * Wave 2 · tool_use 强约束调用·全 API 兼容
+ * 让 AI 必须以结构化 tool_call 输出·消除"narrative 与 JSON 不一致"根因
+ *
+ * 兼容策略 (3 路径)：
+ *   1. Anthropic 原生 (api.anthropic.com)            → tools[].input_schema + tool_choice
+ *   2. Gemini 原生 (generativelanguage·非 OpenAI 兼容) → tools[].functionDeclarations
+ *   3. OpenAI 兼容 (其他全部·含 OpenAI/DeepSeek/Qwen/Moonshot/GLM/OpenRouter/Gemini-OAI 兼容路径)
+ *      → tools[{type:'function',function:{name,description,parameters}}] + tool_choice
+ *   X. 任意路径失败 → 自动 fallback：将 schema 注入 prompt·让 AI 直接返回 JSON·解析后映射回 toolCalls
+ *
+ * @param {string} prompt - 提示词
+ * @param {Array<{name:string, description:string, parameters:object}>} tools - 工具定义（JSON Schema parameters）
+ * @param {{maxTok?:number, signal?:AbortSignal, tier?:string, forceTool?:string, allowText?:boolean}} [opts]
+ * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean}>}
+ *   - text: AI 文本输出（如有）
+ *   - toolCalls: 解析后的工具调用列表·每项 {name, input(parsed object)}
+ *   - fallback: true 表示走了文本→JSON 解析路径
+ */
+async function callAIWithTools(prompt, tools, opts) {
+  opts = opts || {};
+  if (!Array.isArray(tools) || tools.length === 0) {
+    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier);
+    return { text: _t0 || '', toolCalls: [] };
+  }
+  // 取 tier 配置
+  var _aiCfg = null;
+  try { if (typeof _getAITier === 'function') _aiCfg = _getAITier(opts.tier); } catch(_){}
+  if (!_aiCfg) _aiCfg = { key: (P.ai&&P.ai.key)||'', url: (P.ai&&P.ai.url)||'', model: (P.ai&&P.ai.model)||'gpt-4o' };
+  var key = _aiCfg.key || (P.ai&&P.ai.key) || '';
+  if (!key) throw new Error('API未配置');
+  var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(opts.tier) : _buildAIUrl();
+  if (!url) throw new Error('API地址未配置');
+  var provider = (typeof _detectAIProvider === 'function') ? _detectAIProvider() : 'openai_compat';
+  var userUrl = (P.ai && P.ai.url) || '';
+  var isAnthropicNative = provider === 'anthropic' && /api\.anthropic\.com/i.test(userUrl);
+  // Gemini 原生：用 generateContent 接口（非 /v1beta/openai/）
+  var isGeminiNative = provider === 'gemini' && /generativelanguage\.googleapis\.com/i.test(userUrl) && !/\/v1beta\/openai\//i.test(userUrl);
+  var maxTok = opts.maxTok || 2000;
+  var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+
+  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+  function _fallbackPromptWithSchema() {
+    var schemaDesc = '【工具定义】API 不支持 tool_use·请按以下 JSON Schema 直接返回纯 JSON·必须包含 tool_call 字段:\n';
+    schemaDesc += '可用工具:\n';
+    tools.forEach(function(t) {
+      schemaDesc += '- ' + t.name + ': ' + (t.description || '') + '\n';
+      schemaDesc += '  参数: ' + JSON.stringify(t.parameters || {}) + '\n';
+    });
+    schemaDesc += '\n返回格式（必须是纯 JSON·不要 markdown 包裹）:\n';
+    schemaDesc += '{"tool_calls":[{"name":"<工具名>","input":{<符合 schema 的参数>}}]}\n';
+    if (opts.forceTool) schemaDesc += '\n本次必须使用工具: ' + opts.forceTool + '\n';
+    return prompt + '\n\n' + schemaDesc;
+  }
+  async function _runFallback() {
+    try {
+      var raw = await callAI(_fallbackPromptWithSchema(), maxTok, opts.signal, opts.tier);
+      var parsed = null;
+      try {
+        if (typeof robustParseJSON === 'function') parsed = robustParseJSON(raw);
+        else { var m = String(raw||'').match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); }
+      } catch(_pe) { console.warn('[callAIWithTools/fallback] JSON 解析失败:', _pe); }
+      var calls = [];
+      if (parsed && Array.isArray(parsed.tool_calls)) {
+        parsed.tool_calls.forEach(function(c) {
+          if (c && c.name) calls.push({ name: c.name, input: c.input || c.arguments || {} });
+        });
+      } else if (parsed && parsed.name && parsed.input) {
+        // 兼容单调用形式
+        calls.push({ name: parsed.name, input: parsed.input });
+      }
+      return { text: String(raw||''), toolCalls: calls, fallback: true };
+    } catch(_fe) {
+      console.warn('[callAIWithTools] fallback 也失败:', _fe);
+      return { text: '', toolCalls: [], fallback: true };
+    }
+  }
+
+  // ─── 构建请求体 + headers·三路径分支 ───
+  var body, headers, parseMode;
+  if (isAnthropicNative) {
+    body = {
+      model: _aiCfg.model || (P.ai && P.ai.model) || 'claude-3-5-sonnet-latest',
+      max_tokens: _scaledTok,
+      messages: [{ role: 'user', content: prompt }],
+      tools: tools.map(function(t) {
+        return { name: t.name, description: t.description || '', input_schema: t.parameters || { type: 'object', properties: {} } };
+      }),
+      temperature: (P.ai && P.ai.temp) || 0.7
+    };
+    body.tool_choice = opts.forceTool ? { type: 'tool', name: opts.forceTool } : { type: 'any' };
+    headers = { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' };
+    parseMode = 'anthropic';
+  } else if (isGeminiNative) {
+    // Gemini 原生：URL 通常已带 :generateContent·key 在 query 串
+    body = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      tools: [{ functionDeclarations: tools.map(function(t) {
+        return { name: t.name, description: t.description || '', parameters: t.parameters || { type: 'object', properties: {} } };
+      })}],
+      generationConfig: { temperature: (P.ai && P.ai.temp) || 0.7, maxOutputTokens: _scaledTok }
+    };
+    if (opts.forceTool) {
+      body.toolConfig = { functionCallingConfig: { mode: 'ANY', allowedFunctionNames: [opts.forceTool] } };
+    } else {
+      body.toolConfig = { functionCallingConfig: { mode: 'ANY' } };
+    }
+    headers = { 'Content-Type': 'application/json' };
+    // Gemini key 通常在 URL ?key=···否则用 x-goog-api-key header
+    if (!/[?&]key=/i.test(url)) headers['x-goog-api-key'] = key;
+    parseMode = 'gemini';
+  } else {
+    // OpenAI 兼容（含 OpenRouter / DeepSeek / Qwen / Moonshot / GLM / Gemini-OAI 兼容路径）
+    body = {
+      model: _aiCfg.model || (P.ai && P.ai.model) || 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: (P.ai && P.ai.temp) || 0.7,
+      max_tokens: _scaledTok,
+      tools: tools.map(function(t) {
+        return {
+          type: 'function',
+          function: {
+            name: t.name,
+            description: t.description || '',
+            parameters: t.parameters || { type: 'object', properties: {} }
+          }
+        };
+      })
+    };
+    if (opts.forceTool) body.tool_choice = { type: 'function', function: { name: opts.forceTool } };
+    else body.tool_choice = 'auto';  // 多数兼容 API 不识别 'required'·用 auto + 内 prompt 强调
+    headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
+    parseMode = 'openai';
+  }
+  // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
+  var ctrl = new AbortController();
+  var timer = setTimeout(function() { ctrl.abort(); }, 180000);
+  if (opts.signal) opts.signal.addEventListener('abort', function() { ctrl.abort(); });
+  var data;
+  try {
+    var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      var errT = '';
+      try { errT = await resp.text(); } catch(_){ }
+      console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + '): ' + errT.substring(0, 200));
+      // 4xx 多数是不支持 tools 字段·走 fallback；5xx/网络异常也 fallback 而非抛错·避免破坏 endturn
+      return await _runFallback();
+    }
+    data = await resp.json();
+  } catch(e) {
+    clearTimeout(timer);
+    console.warn('[callAIWithTools] fetch 异常·走 fallback:', e && e.message || e);
+    return await _runFallback();
+  }
+  if (data && data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage);
+  // ─── 解析响应·三路径分支 ───
+  var text = '';
+  var toolCalls = [];
+  try {
+    if (parseMode === 'anthropic') {
+      if (Array.isArray(data.content)) {
+        data.content.forEach(function(b) {
+          if (b.type === 'text' && b.text) text += b.text;
+          else if (b.type === 'tool_use' && b.name) toolCalls.push({ name: b.name, input: b.input || {} });
+        });
+      }
+    } else if (parseMode === 'gemini') {
+      // data.candidates[0].content.parts = [{text}, {functionCall:{name,args}}]
+      if (data.candidates && data.candidates[0] && data.candidates[0].content && Array.isArray(data.candidates[0].content.parts)) {
+        data.candidates[0].content.parts.forEach(function(p) {
+          if (p.text) text += p.text;
+          if (p.functionCall && p.functionCall.name) toolCalls.push({ name: p.functionCall.name, input: p.functionCall.args || {} });
+        });
+      }
+    } else {
+      // OpenAI 兼容
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        var msg = data.choices[0].message;
+        if (msg.content) text = msg.content;
+        if (Array.isArray(msg.tool_calls)) {
+          msg.tool_calls.forEach(function(tc) {
+            var fn = tc.function || {};
+            var input = {};
+            try { input = JSON.parse(fn.arguments || '{}'); }
+            catch(_pe) { console.warn('[callAIWithTools] tool_call arguments JSON 解析失败:', fn.arguments); }
+            if (fn.name) toolCalls.push({ name: fn.name, input: input });
+          });
+        }
+        // 兼容某些代理把 function_call (单数·OpenAI 旧字段) 当作 tool_use 返回
+        if (toolCalls.length === 0 && msg.function_call && msg.function_call.name) {
+          var _inp = {};
+          try { _inp = JSON.parse(msg.function_call.arguments || '{}'); } catch(_pe2) {}
+          toolCalls.push({ name: msg.function_call.name, input: _inp });
+        }
+      }
+      // 兼容某些代理直接返回 anthropic 风格 content[]·尝试解析
+      if (toolCalls.length === 0 && Array.isArray(data.content)) {
+        data.content.forEach(function(b) {
+          if (b.type === 'text' && b.text) text += b.text;
+          else if (b.type === 'tool_use' && b.name) toolCalls.push({ name: b.name, input: b.input || {} });
+        });
+      }
+    }
+  } catch(_parseE) {
+    console.warn('[callAIWithTools] 响应解析异常·走 fallback:', _parseE);
+    return await _runFallback();
+  }
+  // 如果完全没有 toolCalls 且有 text·尝试从 text 抽取 JSON 作为兜底
+  if (toolCalls.length === 0 && text) {
+    try {
+      var maybeJson = null;
+      if (typeof robustParseJSON === 'function') maybeJson = robustParseJSON(text);
+      else { var mm = String(text).match(/\{[\s\S]*\}/); if (mm) maybeJson = JSON.parse(mm[0]); }
+      if (maybeJson && Array.isArray(maybeJson.tool_calls)) {
+        maybeJson.tool_calls.forEach(function(c) { if (c && c.name) toolCalls.push({ name: c.name, input: c.input || {} }); });
+      }
+    } catch(_textParseE) {}
+  }
+  return { text: text, toolCalls: toolCalls };
+}
+
+/**
  * 智能 AI 调用（自动重试 + 验证）
  * @param {string} prompt
  * @param {number} [maxTok]

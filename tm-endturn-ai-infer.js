@@ -5139,15 +5139,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         } catch(_applyErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr); }
 
         // ═══════════════════════════════════════════════════════════════════
-        // Wave 1c · 二次 AI 自审 reconciliation·处理 _maybeReconcileWithAI 标记的 _needsReconcile
+        // Wave 1c+2 · 二次 AI 自审 reconciliation·tool_use 强约束
         // 6 个 validator 累计警告 >= 3 时·_maybeReconcileWithAI 设 GM._needsReconcile·此处取走并调 AI 二审
+        // Wave 2 改造：用 callAIWithTools·让 AI 必须以结构化 tool_call 输出·彻底消灭 narrative/JSON 不一致
+        // 兼容所有 API（Anthropic 原生/Gemini 原生/OpenAI 兼容/失败 fallback 到 schema-注入 prompt）
         // ═══════════════════════════════════════════════════════════════════
         if (GM && GM._needsReconcile) {
           var _rec = GM._needsReconcile;
           GM._needsReconcile = null;  // 立即取走·避免下回合重复
           try {
-            var _reconcilePrompt = '【一致性自审任务】\n你刚才输出的 narrative 与结构化 JSON 之间·校验器检测到 ' +
-              (Object.values(_rec.warnings).reduce(function(a,b){return a+b;},0)) + ' 处不一致·按领域分布:\n' +
+            var _totalW = Object.values(_rec.warnings).reduce(function(a,b){return a+b;},0);
+            var _reconcilePrompt = '【一致性自审任务】\n你刚才输出的 narrative 与结构化 JSON 之间·校验器检测到 ' + _totalW + ' 处不一致·按领域分布:\n' +
               JSON.stringify(_rec.warnings) + '\n\n' +
               '【你的 narrative 节选(2KB)】\n' + _rec.narrativeSnapshot + '\n\n' +
               '【你已写的结构化数据(摘要)】\n' +
@@ -5155,47 +5157,379 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               'office_assignments: ' + JSON.stringify((_rec.structuredSnapshot.office_assignments||[]).slice(0,5)) + '\n' +
               'fiscal_adjustments: ' + JSON.stringify((_rec.structuredSnapshot.fiscal_adjustments||[]).slice(0,5)) + '\n' +
               'military_changes: ' + JSON.stringify((_rec.structuredSnapshot.military_changes||[]).slice(0,5)) + '\n\n' +
-              '请检查 narrative 中提到但未在结构化数据里体现的状态变化·只补遗漏的·不要重复已写过的·返回纯 JSON:\n' +
-              '{"reconciliation_patch":{' +
-              '"personnel_changes":[{"name":"X","change":"下狱/赐死/抄家/流放/致仕/逃亡","reason":"..."}],' +
-              '"office_assignments":[{"name":"Y","action":"appoint|dismiss","post":"...","reason":"..."}],' +
-              '"fiscal_adjustments":[{"target":"guoku|neitang","kind":"income|expense","resource":"money|grain|cloth","amount":N,"name":"...","reason":"..."}],' +
-              '"military_changes":[{"armyName":"...","delta":N,"reason":"..."}]' +
-              '}}\n' +
-              '若 narrative 与结构化已一致·返回 {"reconciliation_patch":{}} 空对象。';
-            var _recRaw = await callAI(_reconcilePrompt, 1500, undefined, 'secondary');
-            var _recParsed = null;
-            try {
-              var _jm = String(_recRaw).match(/\{[\s\S]*\}/);
-              if (_jm) _recParsed = JSON.parse(_jm[0]);
-            } catch(_pe) { console.warn('[Reconcile] AI 返回 JSON 解析失败:', _pe); }
-            if (_recParsed && _recParsed.reconciliation_patch) {
-              var _patch = _recParsed.reconciliation_patch;
-              // 应用 patch·复用 applyAITurnChanges 但只传 patch 字段
-              if (typeof applyAITurnChanges === 'function' && (
-                (_patch.personnel_changes||[]).length || (_patch.office_assignments||[]).length ||
-                (_patch.fiscal_adjustments||[]).length  || (_patch.military_changes||[]).length
-              )) {
-                applyAITurnChanges({
-                  personnel_changes: _patch.personnel_changes || [],
-                  office_assignments: _patch.office_assignments || [],
-                  fiscal_adjustments: _patch.fiscal_adjustments || [],
-                  military_changes: _patch.military_changes || [],
-                  // 不传 narrative·避免触发 validator 死循环
-                  shilu_text: '',
-                  shizhengji: ''
+              '请检查 narrative 中提到但未在结构化数据里体现的状态变化·只补遗漏的·不要重复已写过的。\n' +
+              '使用提供的 5 个工具之一记录补录·若完全无需补录请调用 record_no_changes。\n' +
+              '注意：每个工具可调用多次·按领域分别调用（人事/任命/财政/军事各自独立）。';
+
+            // 取 reconcile 工具集
+            var _reconcileTools = (window.TM_AI_SCHEMA && TM_AI_SCHEMA.reconcileTools) || [];
+            var _toolResp = null;
+            if (typeof callAIWithTools === 'function' && _reconcileTools.length > 0) {
+              _toolResp = await callAIWithTools(_reconcilePrompt, _reconcileTools, { maxTok: 1500, tier: 'secondary' });
+            } else {
+              // 极端兜底（不该发生·callAIWithTools 应已加载）
+              var _raw = await callAI(_reconcilePrompt, 1500, undefined, 'secondary');
+              _toolResp = { text: _raw||'', toolCalls: [] };
+            }
+
+            // 把 toolCalls 聚合为 patch 字段
+            var _patch = { personnel_changes: [], office_assignments: [], fiscal_adjustments: [], military_changes: [], sentiment_changes: [], population_changes: [], war_events: [], revolt_events: [], disaster_events: [], diplomacy_events: [], keju_events: [], party_events: [], edict_events: [], court_ceremony_events: [], construction_events: [], omen_events: [], marriage_birth_events: [], conspiracy_events: [], currency_events: [], religion_events: [] };
+            (_toolResp.toolCalls || []).forEach(function(tc) {
+              if (!tc || !tc.name || !tc.input) return;
+              if (tc.name === 'record_personnel_changes' && Array.isArray(tc.input.changes)) {
+                tc.input.changes.forEach(function(c) {
+                  if (c && c.name) _patch.personnel_changes.push({ name: c.name, change: c.change||'罢免', reason: c.reason||'' });
                 });
-                if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
-                GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, timestamp: Date.now() });
-                if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);
-                console.log('[Reconcile] AI 二审完成·补录:', _patch);
-                if (typeof addEB === 'function') {
-                  var _patched = (_patch.personnel_changes||[]).length + (_patch.office_assignments||[]).length + (_patch.fiscal_adjustments||[]).length + (_patch.military_changes||[]).length;
-                  if (_patched > 0) addEB('校验补录', 'AI 二审一致性·补录 ' + _patched + ' 条结构化数据');
-                }
-              } else {
-                console.log('[Reconcile] AI 二审完成·无需补录');
+              } else if (tc.name === 'record_office_assignments' && Array.isArray(tc.input.assignments)) {
+                tc.input.assignments.forEach(function(a) {
+                  if (a && a.name) _patch.office_assignments.push({ name: a.name, action: a.action||'dismiss', post: a.post||'', reason: a.reason||'' });
+                });
+              } else if (tc.name === 'record_fiscal_adjustments' && Array.isArray(tc.input.adjustments)) {
+                tc.input.adjustments.forEach(function(f) {
+                  if (f && f.target && f.amount) _patch.fiscal_adjustments.push({ target: f.target, kind: f.kind||'expense', resource: f.resource||'money', amount: Number(f.amount)||0, name: f.name||'', reason: f.reason||'' });
+                });
+              } else if (tc.name === 'record_military_changes' && Array.isArray(tc.input.changes)) {
+                tc.input.changes.forEach(function(m) {
+                  if (m && m.armyName) _patch.military_changes.push({ armyName: m.armyName, delta: Number(m.delta)||0, reason: m.reason||'' });
+                });
+              } else if (tc.name === 'record_sentiment_changes' && Array.isArray(tc.input.changes)) {
+                tc.input.changes.forEach(function(s) {
+                  if (s && s.target && typeof s.delta === 'number') _patch.sentiment_changes.push({ target: s.target, delta: Number(s.delta)||0, reason: s.reason||'' });
+                });
+              } else if (tc.name === 'record_population_changes' && Array.isArray(tc.input.changes)) {
+                tc.input.changes.forEach(function(p) {
+                  if (p && p.region && p.amount) _patch.population_changes.push({ region: p.region, kind: p.kind||'death', amount: Number(p.amount)||0, reason: p.reason||'' });
+                });
+              } else if (tc.name === 'record_war_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(w) {
+                  if (w && w.action) _patch.war_events.push({ action: w.action, enemy: w.enemy||'', region: w.region||'', outcome: w.outcome||'', casualties: Number(w.casualties)||0, reason: w.reason||'' });
+                });
+              } else if (tc.name === 'record_revolt_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(r) {
+                  if (r && r.action && r.region) _patch.revolt_events.push({ action: r.action, region: r.region, leader: r.leader||'', scale: Number(r.scale)||0, reason: r.reason||'' });
+                });
+              } else if (tc.name === 'record_disaster_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(d) {
+                  if (d && d.category && d.region) _patch.disaster_events.push({ category: d.category, region: d.region, severity: d.severity||'moderate', casualties: Number(d.casualties)||0, reason: d.reason||'' });
+                });
+              } else if (tc.name === 'record_diplomacy_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.faction) _patch.diplomacy_events.push({ action: e.action, faction: e.faction, attitude: e.attitude||'', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_keju_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.stage) _patch.keju_events.push({ stage: e.stage, year: e.year||'', topThree: Array.isArray(e.topThree)?e.topThree:[], reason: e.reason||'' }); });
+              } else if (tc.name === 'record_party_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.partyName) _patch.party_events.push({ action: e.action, partyName: e.partyName, leader: e.leader||'', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_edict_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.edictName) _patch.edict_events.push({ action: e.action, edictName: e.edictName, category: e.category||'other', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_court_ceremony_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.target) _patch.court_ceremony_events.push({ action: e.action, target: e.target, newTitle: e.newTitle||'', newCapital: e.newCapital||'', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_construction_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.kind && e.name) _patch.construction_events.push({ action: e.action, kind: e.kind, name: e.name, region: e.region||'', cost: Number(e.cost)||0, reason: e.reason||'' }); });
+              } else if (tc.name === 'record_omen_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.category && e.tone) _patch.omen_events.push({ category: e.category, tone: e.tone, description: e.description||'', region: e.region||'' }); });
+              } else if (tc.name === 'record_marriage_birth_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.target) _patch.marriage_birth_events.push({ action: e.action, target: e.target, partner: e.partner||'', heirName: e.heirName||'', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_conspiracy_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.instigator) _patch.conspiracy_events.push({ action: e.action, instigator: e.instigator, target: e.target||'', outcome: e.outcome||'suppressed', conspirators: Array.isArray(e.conspirators)?e.conspirators:[], reason: e.reason||'' }); });
+              } else if (tc.name === 'record_currency_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action) _patch.currency_events.push({ action: e.action, severity: e.severity||'moderate', priceIndexDelta: Number(e.priceIndexDelta)||0, region: e.region||'', reason: e.reason||'' }); });
+              } else if (tc.name === 'record_religion_events' && Array.isArray(tc.input.events)) {
+                tc.input.events.forEach(function(e) { if (e && e.action && e.religion) _patch.religion_events.push({ action: e.action, religion: e.religion, region: e.region||'', followers: Number(e.followers)||0, reason: e.reason||'' }); });
+              } else if (tc.name === 'record_no_changes') {
+                // 显式声明无需补录·略
               }
+            });
+
+            // ─ 直接施加 sentiment/population 补丁（不走 applyAITurnChanges 因为它没这俩字段） ─
+            try {
+              _patch.sentiment_changes.forEach(function(s) {
+                var pathMap = { minxin: 'minxin', huangwei: 'huangwei', huangquan: 'huangquan' };
+                var key = pathMap[s.target]; if (!key || !GM[key]) return;
+                if (typeof GM[key] === 'object' && typeof GM[key].index === 'number') {
+                  GM[key].index = Math.max(0, Math.min(100, GM[key].index + s.delta));
+                } else if (typeof GM[key] === 'number') {
+                  GM[key] = Math.max(0, Math.min(100, GM[key] + s.delta));
+                }
+                // 登记 turnChanges 供史记显示
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: key + '.index', label: ({minxin:'民心',huangwei:'皇威',huangquan:'皇权'})[s.target], delta: s.delta, reason: s.reason || '一致性补录' });
+              });
+              _patch.population_changes.forEach(function(p) {
+                if (!GM.adminHierarchy || !Array.isArray(GM.adminHierarchy.nodes)) return;
+                var node = GM.adminHierarchy.nodes.find(function(n){return n.name === p.region;});
+                if (!node || !node.populationDetail) return;
+                var amt = Math.max(0, Math.min(p.amount, node.populationDetail.mouths || 0));
+                if (p.kind === 'death') {
+                  node.populationDetail.mouths = Math.max(0, (node.populationDetail.mouths||0) - amt);
+                } else if (p.kind === 'flee') {
+                  node.populationDetail.fugitives = (node.populationDetail.fugitives||0) + amt;
+                  node.populationDetail.mouths = Math.max(0, (node.populationDetail.mouths||0) - amt);
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'admin.' + p.region + '.mouths', label: p.region + (p.kind==='flee'?'·逃亡':'·伤亡'), delta: -amt, reason: p.reason || '一致性补录' });
+              });
+              // 战争补录
+              _patch.war_events.forEach(function(w) {
+                if (!Array.isArray(GM.activeWars)) GM.activeWars = [];
+                if (w.action === 'start') {
+                  GM.activeWars.push({
+                    name: (w.enemy||'?') + '之役',
+                    enemy: w.enemy || '',
+                    region: w.region || '',
+                    startedTurn: GM.turn || 0,
+                    status: 'ongoing',
+                    battles: [],
+                    _autoFromReconcile: true
+                  });
+                } else if (w.action === 'end') {
+                  // 取最早一场未结束的战争·标 ended
+                  var openWar = GM.activeWars.find(function(x){return x && (x.status==='ongoing' || !x.endedTurn);});
+                  if (openWar) {
+                    openWar.status = (w.outcome === 'peace' || w.outcome === 'surrender') ? 'peace' : 'ended';
+                    openWar.endedTurn = GM.turn || 0;
+                    openWar.outcome = w.outcome || 'stalemate';
+                  }
+                } else if (w.action === 'battle') {
+                  var ongoingWar = GM.activeWars.find(function(x){return x && x.status==='ongoing';});
+                  if (ongoingWar) {
+                    if (!Array.isArray(ongoingWar.battles)) ongoingWar.battles = [];
+                    ongoingWar.battles.push({ turn: GM.turn||0, region: w.region||'', outcome: w.outcome||'stalemate', casualties: w.casualties||0, reason: w.reason||'' });
+                  }
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'activeWars', label: '战事·' + (w.enemy||w.action), delta: w.action==='start'?1:(w.action==='end'?-1:0), reason: w.reason || '一致性补录' });
+              });
+              // 民变补录
+              _patch.revolt_events.forEach(function(r) {
+                if (!GM.minxin) GM.minxin = {};
+                if (!Array.isArray(GM.minxin.revolts)) GM.minxin.revolts = [];
+                if (r.action === 'start') {
+                  GM.minxin.revolts.push({
+                    region: r.region,
+                    leader: r.leader || '',
+                    scale: r.scale || 1000,
+                    startedTurn: GM.turn || 0,
+                    status: 'ongoing',
+                    _autoFromReconcile: true
+                  });
+                } else if (r.action === 'suppress' || r.action === 'appease') {
+                  var openR = GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
+                  if (openR) {
+                    openR.status = (r.action === 'suppress') ? 'suppressed' : 'appeased';
+                    openR.endedTurn = GM.turn || 0;
+                  }
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'minxin.revolts', label: r.region + '·民变·' + r.action, delta: r.action==='start'?1:-1, reason: r.reason || '一致性补录' });
+              });
+              // 天灾补录
+              _patch.disaster_events.forEach(function(d) {
+                if (!Array.isArray(GM.activeDisasters)) GM.activeDisasters = [];
+                GM.activeDisasters.push({
+                  type: d.category,
+                  category: d.category,
+                  region: d.region,
+                  severity: d.severity || 'moderate',
+                  casualties: d.casualties || 0,
+                  startedTurn: GM.turn || 0,
+                  reason: d.reason || '',
+                  _autoFromReconcile: true
+                });
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'activeDisasters', label: d.region + '·' + ({drought:'旱',flood:'涝',locust:'蝗',plague:'疫',quake:'震'})[d.category], delta: 1, reason: d.reason || '一致性补录' });
+              });
+              // 外交补录
+              _patch.diplomacy_events.forEach(function(e) {
+                if (!Array.isArray(GM.facs)) GM.facs = [];
+                var fac = GM.facs.find(function(f){return f && f.name === e.faction;});
+                if (fac) {
+                  if (e.attitude) fac.attitude = e.attitude;
+                  if (!fac._diplomaticHistory) fac._diplomaticHistory = [];
+                  fac._diplomaticHistory.push({ turn: GM.turn||0, action: e.action, reason: e.reason||'', _autoFromReconcile: true });
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'facs.' + e.faction, label: '外交·' + e.faction + '·' + e.action, delta: 0, reason: e.reason || '一致性补录' });
+              });
+              // 科举补录
+              _patch.keju_events.forEach(function(e) {
+                if (typeof P !== 'undefined') {
+                  if (!P.keju) P.keju = {};
+                  if (!P.keju.history) P.keju.history = [];
+                  P.keju.history.push({ turn: GM.turn||0, stage: e.stage, year: e.year||'', topThree: e.topThree||[], reason: e.reason||'', _autoFromReconcile: true });
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'keju.history', label: '科举·' + e.stage + (e.year?'·'+e.year:''), delta: 1, reason: e.reason || '一致性补录' });
+              });
+              // 党派补录
+              _patch.party_events.forEach(function(e) {
+                if (!Array.isArray(GM.parties)) GM.parties = [];
+                if (e.action === 'form') {
+                  GM.parties.push({ name: e.partyName, leader: e.leader||'', members: e.leader?[e.leader]:[], formedTurn: GM.turn||0, status: 'active', reason: e.reason||'', _autoFromReconcile: true });
+                } else if (e.action === 'dissolve') {
+                  var p = GM.parties.find(function(x){return x && x.name === e.partyName && x.status === 'active';});
+                  if (p) { p.status = 'dissolved'; p.dissolvedTurn = GM.turn||0; }
+                } else if (e.action === 'split' || e.action === 'impeach') {
+                  var p2 = GM.parties.find(function(x){return x && x.name === e.partyName;});
+                  if (p2) { if (!p2._events) p2._events = []; p2._events.push({ turn: GM.turn||0, action: e.action, reason: e.reason||'' }); }
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'parties.' + e.partyName, label: '党派·' + e.partyName + '·' + e.action, delta: e.action==='form'?1:(e.action==='dissolve'?-1:0), reason: e.reason || '一致性补录' });
+              });
+              // 法令补录
+              _patch.edict_events.forEach(function(e) {
+                if (!Array.isArray(GM.activeEdicts)) GM.activeEdicts = [];
+                if (e.action === 'promulgate' || e.action === 'renew') {
+                  GM.activeEdicts.push({ name: e.edictName, category: e.category||'other', startedTurn: GM.turn||0, status: 'active', reason: e.reason||'', _autoFromReconcile: true });
+                } else if (e.action === 'revoke') {
+                  var ed = GM.activeEdicts.find(function(x){return x && x.name === e.edictName && x.status === 'active';});
+                  if (ed) { ed.status = 'revoked'; ed.revokedTurn = GM.turn||0; }
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'activeEdicts.' + e.edictName, label: '法令·' + e.edictName + '·' + e.action, delta: e.action==='promulgate'?1:(e.action==='revoke'?-1:0), reason: e.reason || '一致性补录' });
+              });
+              // 朝廷礼仪 / 后宫补录
+              _patch.court_ceremony_events.forEach(function(e) {
+                if (e.action === 'move_capital' && e.newCapital) {
+                  GM._capitalHistory = GM._capitalHistory || [];
+                  GM._capitalHistory.push({ turn: GM.turn||0, from: GM.capital||'', to: e.newCapital, reason: e.reason||'', _autoFromReconcile: true });
+                  GM.capital = e.newCapital;
+                } else {
+                  // 角色相关：找 char 并加 title/posthumous/spouse
+                  var ch = (GM.chars||[]).find(function(c){return c && c.name === e.target;});
+                  if (ch) {
+                    if (e.action === 'grant_title' || e.action === 'enthrone_consort') ch.title = e.newTitle || ch.title;
+                    else if (e.action === 'strip_title' || e.action === 'depose_consort') ch.titleStripped = true;
+                    else if (e.action === 'posthumous_title') ch.posthumousName = e.newTitle || ch.posthumousName;
+                    else if (e.action === 'grant_marriage') ch.recentMarriage = { partner: e.newTitle||'', turn: GM.turn||0 };
+                    else if (e.action === 'grant_surname') ch.bestowedSurname = e.newTitle || '';
+                    if (!ch._titleHistory) ch._titleHistory = [];
+                    ch._titleHistory.push({ turn: GM.turn||0, action: e.action, value: e.newTitle||'', reason: e.reason||'', _autoFromReconcile: true });
+                  }
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'court.' + e.target, label: '朝仪·' + e.target + '·' + e.action, delta: 0, reason: e.reason || '一致性补录' });
+              });
+              // 工程·物品·建筑补录
+              _patch.construction_events.forEach(function(e) {
+                if (!Array.isArray(GM.activeProjects)) GM.activeProjects = [];
+                if (e.action === 'build' || e.action === 'restore' || e.action === 'cast') {
+                  GM.activeProjects.push({ kind: e.kind, name: e.name, region: e.region||'', cost: e.cost||0, action: e.action, status: 'in_progress', startedTurn: GM.turn||0, reason: e.reason||'', _autoFromReconcile: true });
+                } else if (e.action === 'complete') {
+                  var prj = GM.activeProjects.find(function(x){return x && x.name === e.name && x.status === 'in_progress';});
+                  if (prj) { prj.status = 'complete'; prj.completedTurn = GM.turn||0; }
+                  else GM.activeProjects.push({ kind: e.kind, name: e.name, region: e.region||'', status: 'complete', completedTurn: GM.turn||0, reason: e.reason||'', _autoFromReconcile: true });
+                } else if (e.action === 'destroy') {
+                  GM.activeProjects.push({ kind: e.kind, name: e.name, region: e.region||'', status: 'destroyed', destroyedTurn: GM.turn||0, reason: e.reason||'', _autoFromReconcile: true });
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'projects.' + e.name, label: e.kind + '·' + e.name + '·' + e.action, delta: e.action==='destroy'?-1:1, reason: e.reason || '一致性补录' });
+              });
+              // 异象补录
+              _patch.omen_events.forEach(function(e) {
+                if (!Array.isArray(GM.omens)) GM.omens = [];
+                GM.omens.push({ category: e.category, tone: e.tone, description: e.description||'', region: e.region||'', turn: GM.turn||0, _autoFromReconcile: true });
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'omens', label: '异象·' + e.category + '·' + e.tone, delta: 1, reason: e.description || '一致性补录' });
+              });
+              // 婚姻·生育·继承 补录
+              _patch.marriage_birth_events.forEach(function(e) {
+                var ch = (GM.chars||[]).find(function(c){return c && c.name === e.target;});
+                if (!GM._marriageBirthHistory) GM._marriageBirthHistory = [];
+                GM._marriageBirthHistory.push({ turn: GM.turn||0, action: e.action, target: e.target, partner: e.partner||'', heirName: e.heirName||'', reason: e.reason||'', _autoFromReconcile: true });
+                if (ch) {
+                  if (e.action === 'marriage') ch.spouse = e.partner || ch.spouse;
+                  else if (e.action === 'birth' && e.heirName) {
+                    if (!ch.children) ch.children = [];
+                    ch.children.push(e.heirName);
+                  } else if (e.action === 'succession') ch.inheritedTitle = true;
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'family.' + e.target, label: '家事·' + e.target + '·' + e.action, delta: 0, reason: e.reason || '一致性补录' });
+              });
+              // 谋反·政变 补录
+              _patch.conspiracy_events.forEach(function(e) {
+                if (!GM._conspiracies) GM._conspiracies = [];
+                GM._conspiracies.push({ turn: GM.turn||0, action: e.action, instigator: e.instigator, target: e.target||'', outcome: e.outcome||'suppressed', conspirators: e.conspirators||[], reason: e.reason||'', _autoFromReconcile: true });
+                // 主谋通常应受惩·登记 NPC 状态
+                var inst = (GM.chars||[]).find(function(c){return c && c.name === e.instigator;});
+                if (inst && (e.outcome === 'suppressed' || e.action === 'plot_failed' || e.action === 'coup_failed')) {
+                  inst._imprisoned = true;
+                  inst._conspiracyConvicted = true;
+                  inst._imprisonedTurn = GM.turn||0;
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: '_conspiracies', label: '谋反·' + e.instigator + '·' + e.action + '/' + (e.outcome||''), delta: 1, reason: e.reason || '一致性补录' });
+              });
+              // 货币·币值 补录
+              _patch.currency_events.forEach(function(e) {
+                if (!GM.currency) GM.currency = {};
+                if (!GM.currency.events) GM.currency.events = [];
+                GM.currency.events.push({ turn: GM.turn||0, action: e.action, severity: e.severity||'moderate', region: e.region||'', reason: e.reason||'', _autoFromReconcile: true });
+                if (e.priceIndexDelta) {
+                  var prev = (typeof GM.currency.priceIndex === 'number') ? GM.currency.priceIndex : 100;
+                  GM.currency.priceIndex = Math.max(20, Math.min(800, prev + e.priceIndexDelta));
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'currency.' + e.action, label: '币政·' + e.action + (e.region?'@'+e.region:''), delta: e.priceIndexDelta||0, reason: e.reason || '一致性补录' });
+              });
+              // 宗教·教派 补录
+              _patch.religion_events.forEach(function(e) {
+                if (!Array.isArray(GM.religions)) GM.religions = [];
+                if (e.action === 'sect_rise' || e.action === 'foreign_arrival' || e.action === 'promote') {
+                  var existRel = GM.religions.find(function(r){return r && r.name === e.religion;});
+                  if (existRel) {
+                    existRel.followers = (existRel.followers||0) + (e.followers||0);
+                    existRel.status = 'active';
+                  } else {
+                    GM.religions.push({ name: e.religion, status: 'active', followers: e.followers||0, foundedTurn: GM.turn||0, region: e.region||'', _autoFromReconcile: true });
+                  }
+                } else if (e.action === 'suppress' || e.action === 'sect_ban' || e.action === 'heresy_purge') {
+                  var existRel2 = GM.religions.find(function(r){return r && r.name === e.religion;});
+                  if (existRel2) { existRel2.status = 'suppressed'; existRel2.suppressedTurn = GM.turn||0; }
+                  else GM.religions.push({ name: e.religion, status: 'suppressed', suppressedTurn: GM.turn||0, region: e.region||'', _autoFromReconcile: true });
+                }
+                if (!GM.turnChanges) GM.turnChanges = {};
+                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                GM.turnChanges.variables.push({ path: 'religions.' + e.religion, label: '宗教·' + e.religion + '·' + e.action, delta: e.action.indexOf('rise')>=0||e.action==='promote'?1:-1, reason: e.reason || '一致性补录' });
+              });
+            } catch(_apE) {
+              (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_apE, 'reconcile sentiment/population:') : console.warn('[Reconcile] sentiment/population apply failed:', _apE);
+            }
+
+            var _patched = _patch.personnel_changes.length + _patch.office_assignments.length + _patch.fiscal_adjustments.length + _patch.military_changes.length + _patch.sentiment_changes.length + _patch.population_changes.length + _patch.war_events.length + _patch.revolt_events.length + _patch.disaster_events.length + _patch.diplomacy_events.length + _patch.keju_events.length + _patch.party_events.length + _patch.edict_events.length + _patch.court_ceremony_events.length + _patch.construction_events.length + _patch.omen_events.length + _patch.marriage_birth_events.length + _patch.conspiracy_events.length + _patch.currency_events.length + _patch.religion_events.length;
+            if ((_patch.personnel_changes.length + _patch.office_assignments.length + _patch.fiscal_adjustments.length + _patch.military_changes.length) > 0 && typeof applyAITurnChanges === 'function') {
+              applyAITurnChanges({
+                personnel_changes: _patch.personnel_changes,
+                office_assignments: _patch.office_assignments,
+                fiscal_adjustments: _patch.fiscal_adjustments,
+                military_changes: _patch.military_changes,
+                // 不传 narrative·避免触发 validator 死循环
+                shilu_text: '',
+                shizhengji: ''
+              });
+              if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
+              GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });
+              if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);
+              console.log('[Reconcile] AI 二审完成·补录 ' + _patched + ' 条·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
+              if (typeof addEB === 'function') {
+                addEB('校验补录', 'AI 二审一致性·补录 ' + _patched + ' 条结构化数据' + (_toolResp.fallback?'（兜底）':''));
+              }
+            } else {
+              console.log('[Reconcile] AI 二审完成·无需补录·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
             }
           } catch(_recE) {
             (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_recE, 'endturn] reconcile AI:') : console.warn('[endturn] reconcile AI failed:', _recE);

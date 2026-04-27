@@ -277,9 +277,518 @@
     });
   }
 
+  // ──────────────────────────────────────────────
+  // Wave 2 · Reconcile tool_use schemas
+  // 用于 callAIWithTools 二次自审 reconciliation·让 AI 必须以结构化 tool 输出
+  // ──────────────────────────────────────────────
+  var RECONCILE_TOOLS = [
+    {
+      name: 'record_personnel_changes',
+      description: '记录角色身份/状态变化（罢免/下狱/赐死/抄家/流放/致仕/逃亡/任命）。仅当 narrative 提到但 personnel_changes 中漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          changes: {
+            type: 'array',
+            description: '角色变化列表',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: '角色姓名' },
+                change: { type: 'string', enum: ['罢免','下狱','赐死','抄家','流放','致仕','逃亡','任命','贬谪','削籍'], description: '变化类型' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['name', 'change']
+            }
+          }
+        },
+        required: ['changes']
+      }
+    },
+    {
+      name: 'record_office_assignments',
+      description: '记录官职任命/罢免（appoint=拜/擢/迁/命，dismiss=罢/免/革）。仅当 narrative 提到但 office_assignments 中漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          assignments: {
+            type: 'array',
+            description: '任命列表',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: '人物姓名' },
+                action: { type: 'string', enum: ['appoint','dismiss'], description: '动作' },
+                post: { type: 'string', description: '官职名（appoint 必填）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['name', 'action']
+            }
+          }
+        },
+        required: ['assignments']
+      }
+    },
+    {
+      name: 'record_fiscal_adjustments',
+      description: '记录财政增减（target=guoku/neitang，kind=income/expense，resource=money/grain/cloth）。仅当 narrative 提到具体银两/粮石变动但 fiscal_adjustments 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          adjustments: {
+            type: 'array',
+            description: '财政变动列表',
+            items: {
+              type: 'object',
+              properties: {
+                target: { type: 'string', enum: ['guoku','neitang'], description: '目标：帑廪 guoku 或内帑 neitang' },
+                kind: { type: 'string', enum: ['income','expense'], description: '收入或支出' },
+                resource: { type: 'string', enum: ['money','grain','cloth'], description: '资源类型' },
+                amount: { type: 'number', description: '数额（正数·单位与 G.guoku 一致：money=两，grain=石，cloth=匹）' },
+                name: { type: 'string', description: '名目（如 辽饷加派、赈灾发放）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['target','kind','resource','amount','name']
+            }
+          }
+        },
+        required: ['adjustments']
+      }
+    },
+    {
+      name: 'record_military_changes',
+      description: '记录军队人数变化（delta 正=补充/募兵·负=战损/逃散）。仅当 narrative 提到但 military_changes 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          changes: {
+            type: 'array',
+            description: '军队变动列表',
+            items: {
+              type: 'object',
+              properties: {
+                armyName: { type: 'string', description: '部队名（与 GM.armies[].name 对齐）' },
+                delta: { type: 'number', description: '人数变化（正补充·负战损）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['armyName','delta']
+            }
+          }
+        },
+        required: ['changes']
+      }
+    },
+    {
+      name: 'record_sentiment_changes',
+      description: '记录民心/皇威/皇权变化（用于 narrative 提到但 turn_changes 漏录的情况）。',
+      parameters: {
+        type: 'object',
+        properties: {
+          changes: {
+            type: 'array',
+            description: '民意/权威变动列表',
+            items: {
+              type: 'object',
+              properties: {
+                target: { type: 'string', enum: ['minxin','huangwei','huangquan'], description: '目标变量：民心/皇威/皇权' },
+                delta: { type: 'number', description: '变化值（-30~+30，正升负降）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['target','delta']
+            }
+          }
+        },
+        required: ['changes']
+      }
+    },
+    {
+      name: 'record_population_changes',
+      description: '记录人口减少（死亡/逃亡/逃役）。仅当 narrative 明确提到伤亡或大规模流亡但 population_changes 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          changes: {
+            type: 'array',
+            description: '人口变动列表',
+            items: {
+              type: 'object',
+              properties: {
+                region: { type: 'string', description: '行政区划名（如 陕西、京师）' },
+                kind: { type: 'string', enum: ['death','flee','migrate'], description: '类型：死亡/逃亡/迁徙' },
+                amount: { type: 'number', description: '人数（口·正数）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['region','kind','amount']
+            }
+          }
+        },
+        required: ['changes']
+      }
+    },
+    {
+      name: 'record_war_events',
+      description: '记录战争事件（开战/议和/战役）。仅当 narrative 提到但 GM.activeWars 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '战争事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['start','end','battle'], description: '动作：开战/议和/战役' },
+                enemy: { type: 'string', description: '敌方势力名（开战必填）' },
+                region: { type: 'string', description: '战场区域' },
+                outcome: { type: 'string', enum: ['victory','defeat','stalemate','peace','surrender'], description: '结果（end/battle 必填）' },
+                casualties: { type: 'number', description: '伤亡人数（可选）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_revolt_events',
+      description: '记录民变事件（起事/平定/招抚）。仅当 narrative 提到但 G.minxin.revolts 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '民变事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['start','suppress','appease'], description: '动作：起事/镇压/招抚' },
+                region: { type: 'string', description: '发生地（如 陕西、山东）' },
+                leader: { type: 'string', description: '首领姓名（可选）' },
+                scale: { type: 'number', description: '规模（人数）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','region']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_disaster_events',
+      description: '记录天灾事件（旱/涝/蝗/疫/震）。仅当 narrative 提到但 GM.activeDisasters 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '天灾事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                category: { type: 'string', enum: ['drought','flood','locust','plague','quake'], description: '类型：旱/涝/蝗/疫/震' },
+                region: { type: 'string', description: '发生地' },
+                severity: { type: 'string', enum: ['light','moderate','severe','catastrophic'], description: '烈度' },
+                casualties: { type: 'number', description: '伤亡人数（可选）' },
+                reason: { type: 'string', description: '简述（不超过30字）' }
+              },
+              required: ['category','region']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_diplomacy_events',
+      description: '记录外交事件（通使/朝贡/缔盟/绝交/宣战）。仅当 narrative 提到但 GM.facs 关系/态度漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '外交事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['envoy','tribute','alliance','sever','declare_war','vassalize'], description: '动作：通使/朝贡/缔盟/绝交/宣战/羁縻' },
+                faction: { type: 'string', description: '势力名（与 G.facs[].name 对齐）' },
+                attitude: { type: 'string', enum: ['friendly','neutral','hostile','vassal'], description: '新态度' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','faction']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_keju_events',
+      description: '记录科举事件（开科/会试/殿试/放榜）。仅当 narrative 提到但 P.keju 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '科举事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                stage: { type: 'string', enum: ['open','xiangshi','huishi','dianshi','release'], description: '阶段：开科/乡试/会试/殿试/放榜' },
+                year: { type: 'string', description: '科年（如 戊辰、己巳）' },
+                topThree: { type: 'array', items: { type: 'string' }, description: '前三甲姓名（放榜时填）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['stage']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_party_events',
+      description: '记录党派事件（结党/解散/分裂/弹劾）。仅当 narrative 提到但 GM.parties 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '党派事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['form','dissolve','split','impeach'], description: '动作：结党/解散/分裂/弹劾' },
+                partyName: { type: 'string', description: '党派名' },
+                leader: { type: 'string', description: '党首（form 必填）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','partyName']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_edict_events',
+      description: '记录法令颁布/废止事件。仅当 narrative 提到但 GM.activeEdicts 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '法令事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['promulgate','revoke','renew'], description: '动作：颁布/废止/续行' },
+                edictName: { type: 'string', description: '法令名（如 一条鞭法、辽饷加派）' },
+                category: { type: 'string', enum: ['fiscal','military','administrative','ritual','agricultural','other'], description: '类别' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','edictName']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_court_ceremony_events',
+      description: '记录朝廷礼仪/后宫事件（迁都/晋爵/谥号/册立/废后/赐婚）。仅当 narrative 提到但 char title/spouse 等漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '礼仪事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['move_capital','grant_title','strip_title','posthumous_title','enthrone_consort','depose_consort','grant_marriage','grant_surname'], description: '动作' },
+                target: { type: 'string', description: '人物姓名或地名' },
+                newTitle: { type: 'string', description: '新爵位/谥号/封号' },
+                newCapital: { type: 'string', description: '新都城（move_capital 必填）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','target']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_construction_events',
+      description: '记录工程·建筑·物品事件（兴建/竣工/烧毁/铸造）。仅当 narrative 提到但 GM 项目/建筑/物品漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '工程事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['build','complete','destroy','restore','cast'], description: '动作：兴建/竣工/损毁/重修/铸造' },
+                kind: { type: 'string', enum: ['palace','temple','wall','canal','bridge','arsenal','treasury','tomb','academy','warehouse','currency','weapon','ritual_object','other'], description: '类别' },
+                name: { type: 'string', description: '项目/物品名' },
+                region: { type: 'string', description: '所在地' },
+                cost: { type: 'number', description: '耗资（两·可选）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','kind','name']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_omen_events',
+      description: '记录天象异象事件（彗星/日蚀/瑞兽/谶语/陨石）。仅当 narrative 提到但 GM.omens 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '异象事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                category: { type: 'string', enum: ['comet','eclipse','meteor','strange_creature','strange_weather','prophecy','rumor','earthquake_omen','five_planets','other'], description: '类别' },
+                tone: { type: 'string', enum: ['auspicious','ominous','neutral'], description: '吉凶：祥/凶/中性' },
+                description: { type: 'string', description: '简述（不超过50字）' },
+                region: { type: 'string', description: '观测地（可选）' }
+              },
+              required: ['category','tone']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_marriage_birth_events',
+      description: '记录婚姻/生育/继承事件（嫁娶/诞生/夭折/即位/承嗣）。仅当 narrative 提到但 char_updates / new_characters / character_deaths 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '婚姻生育继承事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['marriage','birth','heir_death','succession','inherit_title'], description: '动作：嫁娶/诞生/夭折/即位/承袭' },
+                target: { type: 'string', description: '主角姓名' },
+                partner: { type: 'string', description: '配偶/父母（marriage 必填，birth 可填父母）' },
+                heirName: { type: 'string', description: '新生儿/继承人姓名' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','target']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_conspiracy_events',
+      description: '记录谋反/政变/弑君事件（谋反/兵变/篡位/逼宫/弑君）。仅当 narrative 提到但 personnel_changes/character_deaths 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '阴谋·政变事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['plot_uncovered','plot_failed','coup_failed','coup_succeeded','regicide','palace_coup'], description: '动作：阴谋败露/谋反失败/政变失败/政变成功/弑君/宫变' },
+                instigator: { type: 'string', description: '主谋姓名' },
+                target: { type: 'string', description: '目标人物（被刺者）' },
+                outcome: { type: 'string', enum: ['suppressed','partial','succeeded'], description: '结果' },
+                conspirators: { type: 'array', items: { type: 'string' }, description: '同谋者姓名' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','instigator']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_currency_events',
+      description: '记录货币/币值/银荒事件（银荒/钞贱/铸大钱/币改）。仅当 narrative 提到但 changes/global_state_delta 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '货币事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['silver_shortage','copper_shortage','inflation','deflation','currency_reform','recoinage','ban_silver','unban_silver'], description: '动作' },
+                severity: { type: 'string', enum: ['light','moderate','severe'], description: '烈度' },
+                priceIndexDelta: { type: 'number', description: '物价指数变动（-100~+200）' },
+                region: { type: 'string', description: '影响范围（可选·全国留空）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_religion_events',
+      description: '记录宗教/教派事件（立教/灭佛/邪教兴起/沙汰僧道）。仅当 narrative 提到但 GM.religions 漏录时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          events: {
+            type: 'array',
+            description: '宗教事件列表',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string', enum: ['promote','suppress','sect_rise','sect_ban','heresy_purge','foreign_arrival'], description: '动作：兴佛兴道/灭佛灭道/教派兴起/禁教/清剿邪教/夷教传入' },
+                religion: { type: 'string', description: '教派名（如 白莲教、天主教、佛门、道门）' },
+                region: { type: 'string', description: '影响地区' },
+                followers: { type: 'number', description: '信众规模（人）' },
+                reason: { type: 'string', description: '原因（不超过30字）' }
+              },
+              required: ['action','religion']
+            }
+          }
+        },
+        required: ['events']
+      }
+    },
+    {
+      name: 'record_no_changes',
+      description: '若 narrative 与已写结构化数据完全一致·无需补录·调用此工具表示空补录。',
+      parameters: {
+        type: 'object',
+        properties: {
+          reason: { type: 'string', description: '简述为何无需补录' }
+        }
+      }
+    }
+  ];
+
   window.TM_AI_SCHEMA = {
     raw: S,
     dialogue: DIALOGUE,
+    reconcileTools: RECONCILE_TOOLS,
     toKnownFields: toKnownFields,
     toDeprecatedFields: toDeprecatedFields,
     toRequiredSubfields: toRequiredSubfields,

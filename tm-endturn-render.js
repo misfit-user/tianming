@@ -904,12 +904,134 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     }
   } catch(_tyRvE) { (window.TM && TM.errors && TM.errors.captureSilent) ? TM.errors.captureSilent(_tyRvE, 'shiji·tinyi_review') : null; }
 
+  // ─────────────────────────────────────
+  // 一致性补录·邸报附录（Wave 2/3 加固）
+  // 读 GM._reconcileLog 取本回合 validator 计数·读 GM._reconcilePatchLog 取本回合 AI 二审 patch
+  // 仅当本回合存在补录或警告时显示·空则隐藏
+  // ─────────────────────────────────────
+  var consistencyHtml = '';
+  try {
+    var _curT = (GM.turn - 1);  // shiji 是上一回合的纪要
+    var _recLog = (GM._reconcileLog || []).filter(function(x){return x && (x.turn === _curT || x.turn === GM.turn);});
+    var _patchLog = (GM._reconcilePatchLog || []).filter(function(x){return x && (x.turn === _curT || x.turn === GM.turn);});
+    var _hasWarn = _recLog.some(function(x){return (x.total||0) > 0;});
+    var _hasPatch = _patchLog.length > 0;
+    if (_hasWarn || _hasPatch) {
+      var _r = _recLog[_recLog.length - 1] || {};
+      var _p = _patchLog[_patchLog.length - 1] || {};
+      var _domLabels = { fiscalW:'财政', personW:'人事', militaryW:'军事', sentW:'民意', popW:'人口', officeW:'官职', warW:'战事', revoltW:'民变', disasterW:'天灾', diplomacyW:'外交', kejuW:'科举', partyW:'党派', edictEffectW:'法令', courtCeremonyW:'朝仪', constructionW:'工程', omenW:'异象', marriageBirthW:'家事', conspiracyW:'谋反', currencyW:'币政', religionW:'宗教' };
+      var _warnPills = [];
+      Object.keys(_domLabels).forEach(function(k) {
+        var n = _r[k] || 0;
+        if (n > 0) _warnPills.push('<span style="display:inline-block;padding:2px 8px;margin:2px;background:rgba(192,64,48,0.12);border:1px solid rgba(192,64,48,0.3);border-radius:10px;font-size:0.72rem;color:var(--vermillion-400,#c04030);">' + _domLabels[k] + ' <b>' + n + '</b></span>');
+      });
+      var _totalW = _r.total || 0;
+      var _patchedCount = 0;
+      var _patchRows = '';
+      if (_p && _p.patch) {
+        var _pp = _p.patch;
+        var _domains = [
+          { key: 'personnel_changes', label: '人事变动', icon: '👤' },
+          { key: 'office_assignments', label: '官职任免', icon: '🎖️' },
+          { key: 'fiscal_adjustments', label: '财政变化', icon: '💰' },
+          { key: 'military_changes', label: '军事变化', icon: '⚔️' },
+          { key: 'sentiment_changes', label: '民意补录', icon: '📊' },
+          { key: 'population_changes', label: '户口补录', icon: '👥' },
+          { key: 'war_events', label: '战事补录', icon: '🏹' },
+          { key: 'revolt_events', label: '民变补录', icon: '🔥' },
+          { key: 'disaster_events', label: '天灾补录', icon: '🌪️' },
+          { key: 'diplomacy_events', label: '外交补录', icon: '🕊️' },
+          { key: 'keju_events', label: '科举补录', icon: '📜' },
+          { key: 'party_events', label: '党派补录', icon: '⚖️' },
+          { key: 'edict_events', label: '法令补录', icon: '📋' },
+          { key: 'court_ceremony_events', label: '朝仪补录', icon: '👑' },
+          { key: 'construction_events', label: '工程补录', icon: '🏛️' },
+          { key: 'omen_events', label: '异象补录', icon: '✨' },
+          { key: 'marriage_birth_events', label: '家事补录', icon: '💑' },
+          { key: 'conspiracy_events', label: '谋反补录', icon: '🗡️' },
+          { key: 'currency_events', label: '币政补录', icon: '🪙' },
+          { key: 'religion_events', label: '宗教补录', icon: '⛩️' }
+        ];
+        _domains.forEach(function(d) {
+          var arr = _pp[d.key];
+          if (!Array.isArray(arr) || arr.length === 0) return;
+          _patchedCount += arr.length;
+          _patchRows += '<div style="margin:6px 0;padding:6px 10px;background:rgba(184,154,83,0.05);border-left:2px solid var(--gold-400,#c9a84c);font-size:0.78rem;">';
+          _patchRows += '<div style="color:var(--gold-400,#c9a84c);font-weight:bold;margin-bottom:3px;">' + d.icon + ' ' + d.label + ' · ' + arr.length + ' 条</div>';
+          arr.slice(0, 5).forEach(function(item) {
+            var line = '';
+            if (d.key === 'personnel_changes') line = (item.name||'?') + '·' + (item.change||'?') + (item.reason ? '（' + item.reason + '）' : '');
+            else if (d.key === 'office_assignments') line = (item.name||'?') + '·' + (item.action||'?') + ' ' + (item.post||'') + (item.reason ? '（' + item.reason + '）' : '');
+            else if (d.key === 'fiscal_adjustments') line = (item.target||'?') + '·' + (item.kind||'?') + ' ' + (item.amount||0) + ' ' + (item.resource||'') + '·' + (item.name||'') + (item.reason ? '（' + item.reason + '）' : '');
+            else if (d.key === 'military_changes') line = (item.armyName||'?') + '·' + (item.delta>0?'+':'') + (item.delta||0) + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'sentiment_changes') line = (item.target||'?') + '·' + (item.delta>0?'+':'') + (item.delta||0) + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'population_changes') line = (item.region||'?') + '·' + (item.kind||'?') + ' ' + (item.amount||0) + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'war_events') line = (item.action||'?') + '·' + (item.enemy||'') + (item.region ? '@' + item.region : '') + (item.outcome ? '·' + item.outcome : '');
+            else if (d.key === 'revolt_events') line = (item.action||'?') + '·' + (item.region||'') + (item.leader ? '·' + item.leader : '') + (item.scale ? '·' + item.scale + '人' : '');
+            else if (d.key === 'disaster_events') line = (item.region||'?') + '·' + (item.category||'?') + '·' + (item.severity||'') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'diplomacy_events') line = (item.action||'?') + '·' + (item.faction||'') + (item.attitude ? '→' + item.attitude : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'keju_events') line = (item.stage||'?') + (item.year ? '·' + item.year : '') + ((item.topThree||[]).length ? '·三甲: ' + item.topThree.join('/') : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'party_events') line = (item.action||'?') + '·' + (item.partyName||'') + (item.leader ? '·' + item.leader : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'edict_events') line = (item.action||'?') + '·' + (item.edictName||'') + (item.category ? '·' + item.category : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'court_ceremony_events') line = (item.action||'?') + '·' + (item.target||'') + (item.newTitle ? '→' + item.newTitle : '') + (item.newCapital ? '→' + item.newCapital : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'construction_events') line = (item.action||'?') + '·' + (item.kind||'') + '·' + (item.name||'') + (item.region ? '@' + item.region : '') + (item.cost ? '·' + item.cost + '两' : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'omen_events') line = (item.category||'?') + '·' + (item.tone||'') + (item.description ? '·' + item.description : '') + (item.region ? '@' + item.region : '');
+            else if (d.key === 'marriage_birth_events') line = (item.action||'?') + '·' + (item.target||'') + (item.partner ? '·' + item.partner : '') + (item.heirName ? '·' + item.heirName : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'conspiracy_events') line = (item.action||'?') + '·' + (item.instigator||'') + (item.target ? '→' + item.target : '') + '·' + (item.outcome||'') + ((item.conspirators||[]).length ? '·同谋:' + item.conspirators.slice(0,3).join('/') : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'currency_events') line = (item.action||'?') + '·' + (item.severity||'') + (item.priceIndexDelta ? '·物价' + (item.priceIndexDelta>0?'+':'') + item.priceIndexDelta : '') + (item.region ? '@' + item.region : '') + (item.reason ? '·' + item.reason : '');
+            else if (d.key === 'religion_events') line = (item.action||'?') + '·' + (item.religion||'') + (item.followers ? '·' + item.followers + '众' : '') + (item.region ? '@' + item.region : '') + (item.reason ? '·' + item.reason : '');
+            _patchRows += '<div style="color:var(--txt-2,#bcb097);padding:2px 0;">▸ ' + escHtml(line) + '</div>';
+          });
+          if (arr.length > 5) _patchRows += '<div style="color:var(--txt-d,#7a7062);font-size:0.72rem;padding:2px 0;">…另 ' + (arr.length - 5) + ' 条·见 GM._reconcilePatchLog</div>';
+          _patchRows += '</div>';
+        });
+      }
+      var _modeBadge = _p.mode === 'tool_use'
+        ? '<span style="background:rgba(80,160,80,0.15);color:#7ab07a;padding:2px 8px;border-radius:10px;font-size:0.72rem;">tool_use 严格</span>'
+        : (_p.mode === 'fallback' ? '<span style="background:rgba(184,154,83,0.15);color:var(--gold-400,#c9a84c);padding:2px 8px;border-radius:10px;font-size:0.72rem;">fallback 兜底</span>' : '');
+
+      consistencyHtml = '<div style="margin-top:1.2rem;border:1px solid rgba(192,64,48,0.25);border-radius:6px;background:linear-gradient(to bottom, rgba(192,64,48,0.04), rgba(20,15,10,0.02));overflow:hidden;">' +
+        '<div onclick="var c=this.nextElementSibling;var open=c.style.display!==\'none\';c.style.display=open?\'none\':\'block\';this.querySelector(\'.cnst-arrow\').textContent=open?\'▶\':\'▼\';" ' +
+        '  style="cursor:pointer;padding:8px 14px;display:flex;align-items:center;gap:10px;background:rgba(192,64,48,0.08);user-select:none;">' +
+        '  <span class="cnst-arrow" style="font-size:0.7rem;color:var(--vermillion-400,#c04030);">▶</span>' +
+        '  <span style="color:var(--vermillion-400,#c04030);font-weight:bold;font-size:0.85rem;">⚙ 一致性校验·邸报附录</span>' +
+        '  <span style="color:var(--txt-2,#bcb097);font-size:0.75rem;">' +
+            (_totalW > 0 ? '检测 ' + _totalW + ' 处不一致' : '') +
+            (_patchedCount > 0 ? '·补录 ' + _patchedCount + ' 条' : '') +
+            (_modeBadge ? '·' + _modeBadge : '') +
+        '  </span>' +
+        '</div>' +
+        '<div style="display:none;padding:12px 16px;font-size:0.78rem;color:var(--txt-1,#dcd2bc);">';
+
+      if (_warnPills.length > 0) {
+        consistencyHtml += '<div style="margin-bottom:10px;">' +
+          '<div style="color:var(--txt-2,#bcb097);margin-bottom:4px;font-size:0.75rem;">本回合 9 域 validator 警告分布：</div>' +
+          _warnPills.join('') +
+          '</div>';
+      }
+      if (_patchRows) {
+        consistencyHtml += '<div style="margin-top:8px;">' +
+          '<div style="color:var(--txt-2,#bcb097);margin-bottom:4px;font-size:0.75rem;">AI 二审补录明细：</div>' +
+          _patchRows +
+          '</div>';
+      } else if (_totalW > 0) {
+        consistencyHtml += '<div style="color:var(--txt-d,#7a7062);font-style:italic;">（本回合警告未达阈值 3·或 AI 自审认定无需补录）</div>';
+      }
+      consistencyHtml += '<div style="margin-top:10px;padding-top:8px;border-top:1px dashed rgba(184,154,83,0.2);color:var(--txt-d,#7a7062);font-size:0.72rem;line-height:1.6;">' +
+        '本附录由 9 域校验器（财政/人事/军事/民意/人口/官职/战事/民变/天灾）扫描叙事·与结构化数据比对·' +
+        '差异 ≥3 处时由 AI 走 tool_use 二审补录·全程留痕于 console·完整审计链见 <code style="color:var(--gold-400,#c9a84c);">GM._reconcilePatchLog</code>。' +
+        '</div>';
+      consistencyHtml += '</div></div>';
+    }
+  } catch(_cnstE) { (window.TM && TM.errors && TM.errors.captureSilent) ? TM.errors.captureSilent(_cnstE, 'shiji·consistency') : null; }
+
   // 第二层（默认折叠）：时政记 + 数值变化（含要点/财政/军事/势力/党派/阶层/人物）+ 人事变动 + 后人戏说 + 兼容附件
   // ※ changeReportHtml 已并入 _renderUnifiedChanges，此处不再重复
   // ※ 2026-04 用户调整：群臣动向(npcActHtml) 移入风闻录事·密报与奏闻(intelHtml) 删除
   // ※ 2026-04+ 廷议追责段(tinyiReviewHtml) 紧随御批回听·概念一致(诏令执行反馈)
+  // ※ 2026-04+ 一致性补录(consistencyHtml) 末尾·让玩家看到系统帮 AI 修补了什么
   var layer2Html = szjSectionHtml + unifiedChangesHtml + efficacyHtml + tinyiReviewHtml + personnelHtml + hourenHtml
-    + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml;
+    + statusHtml + tyrantHtml + factionEvtHtml + financeReportHtml + consistencyHtml;
 
   // 群臣动向→风闻录事（每条 NPC 事件写入 GM._fengwenRecord）
   // ※ 奏疏类(奏/谏/弹劾/上书/疏/表)走正常奏疏系统·不入风闻

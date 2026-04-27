@@ -15,17 +15,20 @@
 if(window.tianming&&window.tianming.isDesktop){
 
   // --- 主菜单显示/隐藏辅助 ---
-  // launch 改版后 lt-menu 已重命名为 .home-menu (class)·这里两路兼容
-  function _getHomeMenu(){
-    return document.getElementById('lt-menu') || document.querySelector('.home-menu');
+  // launch 改版后 #lt-menu → .home-stage 整个 hero 区(menu + title + 楹联等)·main-view 是其后兄弟
+  // 旧版直接 toggle lt-menu·新版必须 toggle 整个 home-stage·不然 main-view 被 home-stage(100vh) 推到屏外
+  function _getLaunchHero(){
+    return document.getElementById('lt-menu')          // 旧版兼容
+        || document.querySelector('.home-stage')       // 新版 launch hero
+        || document.querySelector('.home-menu');       // 兜底
   }
   function showMain(){
-    var hm = _getHomeMenu(); if (hm) hm.style.display='';
+    var hero = _getLaunchHero(); if (hero) hero.style.display='';
     var mv = document.getElementById('main-view');
     if (mv) { mv.style.display='none'; mv.innerHTML=''; }
   }
   function showPanel(html){
-    var hm = _getHomeMenu(); if (hm) hm.style.display='none';
+    var hero = _getLaunchHero(); if (hero) hero.style.display='none';
     var mv = document.getElementById('main-view');
     if (mv) { mv.style.display='block'; mv.innerHTML=html; }
     var lc = document.getElementById('launch'); if (lc) lc.style.display='flex';

@@ -119,11 +119,27 @@
   //  1. 俸禄 —— 遍历 officeTree 所有有 holder 的 position
   // ═══════════════════════════════════════════════════════════════════
 
+  // 单位侦测：剧本 salary 字段历史上多按"月米石"配置(明清惯例)·需转折银+本色双扣
+  // salaryNote 含「石」/「米」 → 数字按 石/月 解读·按朝代折色比例(默认本色 30% / 折银 70%·1 石 ≈ 0.6 两)拆分
+  function _detectSalaryUnit(cfg) {
+    var note = (cfg && cfg.salaryNote) || '';
+    if (/[石米]\b|月米石|米石/.test(note)) return 'grain_stone';   // 单位石(米)·按本色:折银 3:7 拆
+    if (/[贯文]/.test(note)) return 'coin';
+    return 'silver';   // 默认银
+  }
+  // 默认折色比例(明代天启末)·剧本可在 fiscalConfig.salaryStoneToSilver 覆盖
+  var DEFAULT_GRAIN_RATIO = 0.3;          // 30% 本色米发放
+  var DEFAULT_STONE_TO_SILVER = 0.6;      // 1 石折银 0.6 两(明末市价)
+
   function _calcSalary(ctx) {
     var G = global.GM;
     var cfg = _getConfig();
     var salaryTable = _getSalaryTable(cfg);
     var turnFracMonth = _getTurnDays(ctx) / 30;
+
+    var unit = _detectSalaryUnit(cfg);
+    var grainRatio = (cfg.salaryGrainRatio != null) ? cfg.salaryGrainRatio : DEFAULT_GRAIN_RATIO;
+    var stoneToSilver = (cfg.salaryStoneToSilver != null) ? cfg.salaryStoneToSilver : DEFAULT_STONE_TO_SILVER;
 
     var total = { money: 0, grain: 0, cloth: 0 };
     var byDept = {};
@@ -145,9 +161,18 @@
           else monthly = salaryTable[p.rank] != null ? salaryTable[p.rank] : DEFAULT_UNRANKED_SALARY;
 
           var thisTurn = monthly * turnFracMonth;
-          // 俸禄默认全为钱；若 position.salaryKind 指定则走对应账
-          var kind = p.salaryKind || 'money';
-          total[kind] += thisTurn;
+          // 单位分流：明清『石』单位 → 本色米 + 折银双扣；其他单位走 salaryKind/money
+          var posKind = p.salaryKind;
+          if (posKind) {
+            // 显式 kind 优先(剧本作者明确指定)
+            total[posKind] += thisTurn;
+          } else if (unit === 'grain_stone') {
+            // 石(米)单位·本色 grainRatio 比例发米·折色 (1-grainRatio) 比例 × stoneToSilver 折银
+            total.grain += thisTurn * grainRatio;
+            total.money += thisTurn * (1 - grainRatio) * stoneToSilver;
+          } else {
+            total.money += thisTurn;
+          }
           byDept[dp] = (byDept[dp] || 0) + thisTurn;
         });
         if (n.subs && n.subs.length) _walk(n.subs, dp);
@@ -155,7 +180,37 @@
     }
 
     _walk(G.officeTree || [], '');
-    return { total: total, byDept: byDept };
+    return { total: total, byDept: byDept, unit: unit };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  1.5 宗禄 —— 明清宗藩岁禄(郡王/将军/中尉等十级)·占俸禄大宗·剧本 neicangRules 配
+  // ═══════════════════════════════════════════════════════════════════
+
+  function _calcRoyalStipend(ctx) {
+    var G = global.GM;
+    var sd = global.scriptData || {};
+    var rcp = (sd.fiscalConfig && sd.fiscalConfig.neicangRules && sd.fiscalConfig.neicangRules.royalClanPressure)
+           || (G.fiscal && G.fiscal.royalClanPressure)
+           || null;
+    if (!rcp || !rcp.enabled) return { total: { money: 0, grain: 0, cloth: 0 } };
+    // annualStipendPaid 单位通常是『万石』·剧本备注
+    var annualStone = (rcp.annualStipendPaid || 0) * 10000;  // 万石 → 石
+    if (annualStone <= 0) return { total: { money: 0, grain: 0, cloth: 0 } };
+    var turnFracYear = _getTurnDays(ctx) / 365;
+    var stoneThis = annualStone * turnFracYear;
+    var cfg = _getConfig();
+    var grainRatio = (cfg.royalGrainRatio != null) ? cfg.royalGrainRatio : 0.5;  // 宗禄本色比例略高·禄米传统
+    var stoneToSilver = (cfg.salaryStoneToSilver != null) ? cfg.salaryStoneToSilver : DEFAULT_STONE_TO_SILVER;
+    return {
+      total: {
+        money: stoneThis * (1 - grainRatio) * stoneToSilver,
+        grain: stoneThis * grainRatio,
+        cloth: 0
+      },
+      members: rcp.totalClanMembers || 0,
+      arrears: rcp.cumulativeArrears || 0
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -282,6 +337,14 @@
       cloth: _deductFromLedger(gkCloth, salary.total.cloth, '俸禄')
     };
 
+    // 1.5 宗禄 (royal clan stipend·明清庞大宗藩岁禄)·单独 sinkTag 便于识别
+    var royal = _calcRoyalStipend(ctx);
+    var royalDed = {
+      money: _deductFromLedger(gkMoney, royal.total.money, '宗禄'),
+      grain: _deductFromLedger(gkGrain, royal.total.grain, '宗禄'),
+      cloth: _deductFromLedger(gkCloth, royal.total.cloth, '宗禄')
+    };
+
     // 2. 军饷
     var army = _calcArmyPay(ctx);
     var armyDed = {
@@ -326,11 +389,12 @@
     // 记录本回合总支出
     var turnExpense = {
       salary: salary.total,
+      royal: royal.total,
       army: army.total,
       imperial: imp.total,
-      totalMoney: salary.total.money + army.total.money + imp.total.money,
-      totalGrain: salary.total.grain + army.total.grain + imp.total.grain,
-      totalCloth: salary.total.cloth + army.total.cloth + imp.total.cloth,
+      totalMoney: salary.total.money + royal.total.money + army.total.money + imp.total.money,
+      totalGrain: salary.total.grain + royal.total.grain + army.total.grain + imp.total.grain,
+      totalCloth: salary.total.cloth + royal.total.cloth + army.total.cloth + imp.total.cloth,
       turnDays: _getTurnDays(ctx)
     };
     G.guoku.turnExpense = turnExpense.totalMoney;

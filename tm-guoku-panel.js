@@ -227,10 +227,26 @@ function renderGuokuPanel() {
 
   // ─── § 岁入分项·三账·本回合 ───
   var _tagNameMap = {
-    tianfu:'田赋', dingshui:'丁税', yongBu:'庸役折布', shangShui:'商税',
-    yanlizhuan:'盐铁专卖', caoliang:'漕粮', shipaiShui:'市舶', quanShui:'榷税',
-    juanNa:'捐纳', qita:'其他', mining:'矿冶', fishingTax:'渔课'
+    tianfu:'田赋', tianfu_silver:'田赋折银', dingshui:'丁税',
+    yongBu:'庸役折布', shangShui:'商税', yanlizhuan:'盐铁专卖',
+    caoliang:'漕粮', shipaiShui:'市舶', quanShui:'榷税',
+    juanNa:'捐纳', qita:'其他', mining:'矿冶', fishingTax:'渔课',
+    // 自定义税种(剧本 fiscalConfig.customTaxes)·与 cascade _convertCustomTax 的 sourceTag 一致
+    liaoxiang:'辽饷加派', chama:'茶马司', chaoguan:'钞关税',
+    guanshui:'关税(月港)', junhu:'军户屯田'
   };
+  // 兜底·若 sourceTag 不在 map 中·尝试从 scenario.fiscalConfig.customTaxes 找 name
+  function _resolveTagName(tag) {
+    if (_tagNameMap[tag]) return _tagNameMap[tag];
+    try {
+      var sc = (typeof findScenarioById === 'function' && GM && GM.sid) ? findScenarioById(GM.sid) : null;
+      var cts = (sc && sc.fiscalConfig && sc.fiscalConfig.customTaxes) || [];
+      for (var i = 0; i < cts.length; i++) {
+        if (cts[i].id === tag || cts[i].sourceTag === tag) return cts[i].name || tag;
+      }
+    } catch(_){}
+    return tag;
+  }
   var _kindMeta = [
     { key:'money', name:'钱账', unit:U.money },
     { key:'grain', name:'粮账', unit:U.grain },
@@ -257,7 +273,7 @@ function renderGuokuPanel() {
       var pct = dispTotal > 0 ? (val / dispTotal * 100).toFixed(1) : 0;
       var barW = dispTotal > 0 ? Math.min(100, val / dispTotal * 100) : 0;
       html += '<div class="tr-flow-row income">';
-      html +=   '<span class="lbl">' + (_tagNameMap[tag] || tag) + '</span>';
+      html +=   '<span class="lbl">' + _resolveTagName(tag) + '</span>';
       html +=   '<div class="bar"><span style="width:' + barW + '%;"></span></div>';
       html +=   '<span class="v">' + _guokuFmt(val) + '<span class="pct">' + pct + '%</span></span>';
       html += '</div>';

@@ -669,11 +669,33 @@
       }
     }
     if (ch.resources && ch.resources.publicTreasury) ch.resources.publicTreasury.binding = null;
-    if (reason === 'execute' || reason === '诛' || reason === '抄家') {
+    var _reasonStr = String(reason || '');
+    // ★ 状态分级·根据 reason 关键字设置精确状态字段·让 chaoyi/wendui/shizheng UI 自动过滤
+    // 死刑/处决 → alive=false; 下狱 → _imprisoned=true; 流放 → _exiled=true; 致仕 → _retired=true; 逃亡 → _fled=true
+    if (/处决|斩|诛|赐死|execute|凌迟|绞|死刑/.test(_reasonStr)) {
       ch.alive = false;
+      ch._deathCause = _reasonStr;
+      ch._deathTurn = G.turn || 0;
+    } else if (/下狱|捉拿|逮捕|押|拘|入狱|系狱|imprison|jail/.test(_reasonStr)) {
+      ch._imprisoned = true;
+      ch._imprisonedTurn = G.turn || 0;
+      ch._imprisonReason = _reasonStr;
+      // 同步官职状态：兵部尚书·下狱待决（不清官职·只标状态）
+      if (ch.officialTitle && !/下狱/.test(ch.officialTitle)) ch._origOfficialTitle = ch.officialTitle;
+    } else if (/流放|发配|戍边|exile|banish/.test(_reasonStr)) {
+      ch._exiled = true;
+      ch._exileTurn = G.turn || 0;
+      ch._exileReason = _reasonStr;
+    } else if (/致仕|乞骸|归田|退休|retire/.test(_reasonStr)) {
+      ch._retired = true;
+      ch.retired = true;  // 兼容老字段
+    } else if (/逃|遁|匿|逃亡|失踪|flee|missing/.test(_reasonStr)) {
+      ch._fled = true;
+      ch._missing = true;
     }
+    // 抄家通常与下狱/处决并发·独立 if (不互斥·一个动作可同时下狱+抄家)
     // 抄家·触发真实财产清算（私产→内帑·含隐匿挖掘+亲族株连）
-    var _confKey = String(reason || '');
+    var _confKey = _reasonStr;
     if (_confKey === '抄家' || /抄|籍没|没官|抄没|查抄|抄家/.test(_confKey)) {
       try {
         if (global.EconomyLinkage && typeof global.EconomyLinkage.triggerConfiscationByName === 'function' && !ch._confiscated) {
@@ -1118,7 +1140,16 @@
       // 动作识别
       var action = null, post = '', reason = pc.reason || changeText;
       // 免/罢/贬/黜/斩/诛/免职/罢官/致仕
-      if (/(\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
+      // \u4E0B\u72F1/\u5165\u72F1/\u7CFB\u72F1/\u6349\u62FF/\u902E\u6355 -> imprison
+      if (/\u4E0B\u72F1|\u5165\u72F1|\u7CFB\u72F1|\u6349\u62FF|\u902E\u6355|\u6293\u6355|\u7F09\u62FF/.test(changeText)) {
+        action = 'dismiss'; reason = changeText;
+      // \u62C4\u5BB6/\u62C4\u6CA1/\u7C4D\u6CA1/\u67E5\u62C4/\u6CA1\u5B98 -> confiscate
+      } else if (/\u62C4\u5BB6|\u62C4\u6CA1|\u7C4D\u6CA1|\u67E5\u62C4|\u6CA1\u5B98/.test(changeText)) {
+        action = 'dismiss'; reason = changeText;
+      // \u6D41\u653E/\u53D1\u914D/\u620D\u8FB9 -> exile
+      } else if (/\u6D41\u653E|\u53D1\u914D|\u620D\u8FB9/.test(changeText)) {
+        action = 'dismiss'; reason = changeText;
+      } else if (/(\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
         action = 'dismiss';
       } else if (/(\u65A9|\u8BDB|\u66B4\u6BD9|\u8D50\u6B7B|\u6B3B|\u8BDB\u6740|\u8BDB\u4E5D\u65CF|\u62C4\u5BB6)/.test(changeText)) {
         action = 'dismiss'; reason = 'execute';

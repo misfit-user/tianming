@@ -912,7 +912,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     tp += '    ★ 映射：玩家诏令"命 X 为 Y" → office_assignments:[{name:"X",post:"Y",action:"appoint"}]·且 personnel_changes 里同步写一条供展示\n';
     tp += '    ★ 玩家罢某人 → office_assignments action:"dismiss" + personnel_changes 同写·两处必配套\n';
     tp += '  · 封爵/赐号/追谥 → char_updates.updates 里更新 title/爵位/封号·并 careerEvent 记录\n';
-    tp += '  · 赐死/诛戮/抄家 → char_updates.updates.alive:false 或 onDismissal reason:"execute"\n';
+    tp += '  · 赐死/诛戮 → char_updates.updates.alive:false 或 personnel_changes change:"赐死"\n';
+    tp += '  · 下狱/捉拿/逮捕 → personnel_changes change 含『下狱/捉拿/逮捕』·将设 char._imprisoned=true·使其不参朝议\n';
+    tp += '  · 抄家/抄没/籍没 → personnel_changes change 含『抄家』·将自动 EconomyLinkage.confiscate·私产入内帑+追隐匿·禁直接 fiscal_adjustments 写抄家收入(会双计)\n';
+    tp += '  · 流放/发配/戍边 → personnel_changes change 含『流放/发配』·设 _exiled\n';
+    tp += '  · 致仕/退休/乞骸 → personnel_changes change 含『致仕/退休』·设 _retired\n';
     tp += '  · 新设/裁撤衙门 → anyPathChanges 改 P.officeTree；同时建立/解除对应 publicTreasury 绑定\n';
     tp += '  · 财政调整（赐金/征发/专款/缴获/贡品/赔款/罚没/赈济）→ fiscal_adjustments:[{target:"guoku|neitang|province:X",kind:"income|expense",resource:"money|grain|cloth",amount,name,reason,recurring:false}]\n';
     tp += '    ★【强制·核心 bug 历史教训】任何钱/粮/布流动——无论是玩家诏令所引（赏银万两·赈粮千石·修宫殿·发军饷）·还是推演中的 NPC 行为（贪污·贡纳·缴获·赔款·走私入库）·必须一条一条写入 fiscal_adjustments·绝不可只在叙事/戏说/实录里提及数字而不落账\n';

@@ -141,6 +141,23 @@
     var grainRatio = (cfg.salaryGrainRatio != null) ? cfg.salaryGrainRatio : DEFAULT_GRAIN_RATIO;
     var stoneToSilver = (cfg.salaryStoneToSilver != null) ? cfg.salaryStoneToSilver : DEFAULT_STONE_TO_SILVER;
 
+    // ★ 史实 override·剧本可填 salaryAnnualOverride: { money:n, grain:n, cloth:n } 直接绕开 officeTree 累加
+    // 用途·officeTree 编制不全(只填京官)时·剧本作者用此字段配史实总额·避免数据薄导致俸禄虚低
+    if (cfg.salaryAnnualOverride && typeof cfg.salaryAnnualOverride === 'object') {
+      var ann = cfg.salaryAnnualOverride;
+      var turnFrac = _getTurnDays(ctx) / 365;
+      return {
+        total: {
+          money: (ann.money || 0) * turnFrac,
+          grain: (ann.grain || 0) * turnFrac,
+          cloth: (ann.cloth || 0) * turnFrac
+        },
+        byDept: { '俸禄·剧本史实总额': (ann.money || 0) * turnFrac },
+        unit: unit,
+        _override: true
+      };
+    }
+
     var total = { money: 0, grain: 0, cloth: 0 };
     var byDept = {};
 
@@ -233,6 +250,22 @@
     var cfg = _getConfig();
     var pay = Object.assign({}, DEFAULT_ARMY_PAY, cfg.armyMonthlyPay || {});
     var turnFracMonth = _getTurnDays(ctx) / 30;
+
+    // ★ 史实 override·剧本 armyAnnualOverride: { money, grain, cloth } 直接配年额
+    // 用途·initialTroops 含全势力部队但 GM.armies 没 faction filter·或剧本只想配总军饷
+    if (cfg.armyAnnualOverride && typeof cfg.armyAnnualOverride === 'object') {
+      var ann = cfg.armyAnnualOverride;
+      var turnFrac = _getTurnDays(ctx) / 365;
+      return {
+        total: {
+          money: (ann.money || 0) * turnFrac,
+          grain: (ann.grain || 0) * turnFrac,
+          cloth: (ann.cloth || 0) * turnFrac
+        },
+        byArmy: { '军饷·剧本史实总额': { money: (ann.money || 0) * turnFrac, grain: (ann.grain || 0) * turnFrac, cloth: (ann.cloth || 0) * turnFrac, soldiers: ann.soldiers || 0 } },
+        _override: true
+      };
+    }
 
     var total = { money: 0, grain: 0, cloth: 0 };
     var byArmy = {};

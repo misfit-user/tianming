@@ -2444,6 +2444,29 @@
           juanNa: false,      // 捐纳（正途以外；天启朝谨慎开）
           qita: true          // 其他（茶马/矿税已罢/竹木税）
         },
+        // ──── 税种定义（显式覆盖 cascade DEFAULT_TAXES）────
+        // 一条鞭法(万历九年起)：田粮+丁银+力役统一折银。故仅留田赋折银+漕粮本色+盐课，
+        // 不再独立计丁税(并入田赋折银)、庸役折布(已废)、商税(由 customTaxes 钞关替代)。
+        taxes: [
+          { id: 'land_silver', name: '田赋折银（条编）',
+            base: 'arableLand', baseFallback: 'mouths',
+            baseFactor: 1, rate: 0.014,
+            storeAs: 'money', sourceTag: 'tianfu',
+            annual: true,
+            description: '万历九年张居正条编法：田粮+丁银+力役统一折银。明末额征约 800 万两/年。' },
+          { id: 'caoliang', name: '漕粮（本色）',
+            base: 'arableLand', baseFallback: 'mouths',
+            baseFactor: 0.3, rate: 0.024,
+            storeAs: 'grain', sourceTag: 'caoliang',
+            annual: true,
+            description: '南粮北运·定额 400 万石。江南苏松常嘉湖+江北扬州凤阳承担起运大头。' },
+          { id: 'salt_iron', name: '盐课',
+            base: 'mouths', baseFallback: null,
+            baseFactor: 0.04, rate: 1.0,
+            storeAs: 'money', sourceTag: 'yanlizhuan',
+            annual: true,
+            description: '两淮/长芦/河东/山东/福建等盐运司岁课·人均 0.04 两·全国约 240 万两/年。' }
+        ],
         customTaxes: [
           // ★ 透明化：nominalRate/Amount 为法定额(史实记录) · occupationRate 为侵占/损耗比例(0-1)
           // 实收 = 法定 × (1 - 侵占率)·侵占率可被『清丈』『反贪』诏令降低·UI 三段显示『法定/侵占/实收』
@@ -2451,7 +2474,7 @@
           { id: 'chama',     name: '茶马司',   formulaType: 'flat',  amount: 300000, occupationRate: 0.6,  description: '陕甘茶马司年法定 30 万两·万历末走私严重·胥吏侵蚀 60%·实收 12 万。备边军马。' },
           { id: 'chaoguan',  name: '钞关过货税', formulaType: 'flat',  amount: 1200000, occupationRate: 0.5,  description: '运河沿线八大钞关法定 120 万两·胥吏勾结商贾侵 50%·实征 60 万。临清/淮安/扬州/河西务等。' },
           { id: 'guanshui',  name: '海关（月港）', formulaType: 'flat',  amount: 80000,  occupationRate: 0.5, description: '福建漳州月港市舶司法定 8 万两·走私漏报 50%·实收 4 万。万历开海后设。' },
-          { id: 'junhu',     name: '军户屯田', formulaType: 'perMu', nominalRate: 0.04, occupationRate: 0.875, description: '九边军屯法定亩税 4 分·明末 87.5% 被勋戚卫所将官侵占·剩 12.5% 实收·清丈军屯诏可降侵占率。' }
+          { id: 'junhu',     name: '军户屯田', formulaType: 'flat',  amount: 350000, occupationRate: 0,    description: '九边军屯实收银。法定 280 万两(7000 万亩×4分)·明末 87.5% 被勋戚卫所将官侵占·实收 35 万两/年。清丈军屯诏可上调实收。' }
         ],
         // ──── 央地分账（对齐 editor-fiscal centralLocalRules preset）────
         centralLocalRules: {
@@ -2503,7 +2526,14 @@
             '天启末': '户部匮乏，京官多欠俸；宗藩岁禄亦欠。魏忠贤赏赐亲信超俸十倍以上'
           },
           armyMonthlyPay: { money: 1.5, grain: 0.6, cloth: 0.05 },
-          imperialMonthly: { money: 95000, grain: 18000, cloth: 4500 }
+          imperialMonthly: { money: 95000, grain: 18000, cloth: 4500 },
+          // ★ 史实 override·绕开 officeTree/armies 累加(剧本数据不全·officeTree 编制 606 vs 史实 25000+；initialTroops 含全 11 势力)
+          // 让 FixedExpense 直接读这两个字段·与崇祯元年史实对齐
+          // 史实参考：俸禄(京外杂职折后) ~100 万两 + 150 万石/年；军饷(明军 60-70 万实兵·含辽饷) ~1200 万两 + 400 万石 + 5 万匹/年
+          salaryAnnualOverride: { money: 1000000, grain: 1500000, cloth: 0,
+            note: '京外文武杂职折色后岁给银约 100 万两+本色米约 150 万石。户部实发率 0.82(欠俸常见)' },
+          armyAnnualOverride: { money: 12000000, grain: 4000000, cloth: 50000, soldiers: 700000,
+            note: '明军实兵约 60-70 万(京营 8 万+九边 35-40 万+南京/地方 15 万)。月饷 1.5 两·年 1200 万两·含辽饷 500 万' }
         },
         // ──── 内帑规则（对齐 editor-fiscal neicangRules + NeitangEngine 15 历史预设）────
         neicangRules: {
@@ -2614,16 +2644,16 @@
       // 说明: 编辑器新版不再手填库存，由 行政区划 publicTreasuryInit + 官制 publicTreasuryInit + 税收级联 自然聚合
       // 此处填 top-level 供旧流程兼容 + 运行时初始化之用
       guoku: {
-        initialMoney: 2000000,     // 太仓银库存·两（玩家指示开局二百万两·新帝勤政为先）
-        initialGrain: 1500000,     // 京通十三仓储粮·石（《明史·食货志》京通仓储约 130-150 万石，1500 万占全国漕粮一年）
-        initialCloth: 80000,       // 布匹·匹（内外二库合约 8-10 万匹）
-        monthlyIncomeEstimate: { money: 500000, grain: 500000, cloth: 15000 },   // 月均入账·银/石/匹
-        monthlyExpenseEstimate: { money: 820000, grain: 620000, cloth: 20000 },  // 月均支出·含辽饷俸禄宗禄
-        deficitNote: '月赤字约 32 万两+12 万石粮。辽饷岁需 500 万靠加派（年田赋每亩 9 厘）。三大征耗尽张居正八百万积',
+        initialMoney: 850000,      // 太仓银实可调·两（《明史·食货志》天启末太仓见银 80-120 万两·张居正积八百万已尽于三大征）
+        initialGrain: 13000000,    // 京通十三仓储粮·石（《明史·食货志》京通仓储 1100-1500 万石·供京师九边一年用度·取中位 1300 万）
+        initialCloth: 500000,      // 布匹·匹（内外二库藏布约 50-80 万匹·折俸+赐赉用）
+        monthlyIncomeEstimate: { money: 1380000, grain: 340000, cloth: 0 },     // 月均入账=cascade 年化÷12 (银 1654 万/年 / 漕粮 408 万石/年)
+        monthlyExpenseEstimate: { money: 1500000, grain: 380000, cloth: 8000 }, // 月均支出·辽饷俸禄宗禄·赤字结构
+        deficitNote: '月赤字约 12 万两+4 万石粮。辽饷岁需 500 万由田赋每亩 9 厘加派（已计入 customTaxes.liaoxiang）。三大征耗尽张居正八百万积',
         quotaMoney: 8000000,       // 天下税银理论总额·两
         quotaGrain: 26000000,      // 天下税粮理论总额·石（《明会典》夏秋税粮共约 2600 万石）
         quotaCloth: 500000,
-        historicalContext: '《明史·食货志》: 天启末太仓银库存银约 80-120 万两（张居正积八百万已尽于三大征，另加派辽饷济之）；京通十三仓储粮 130-150 万石（供京师九边一年用度）；内外二库藏布 8-10 万匹（折俸+赐赉用）',
+        historicalContext: '《明史·食货志》: 天启末太仓银库存银约 80-120 万两（张居正积八百万已尽于三大征，另加派辽饷济之）；京通十三仓储粮 1100-1500 万石（供京师九边一年用度）；内外二库藏布 50-80 万匹（折俸+赐赉用）',
         source: '户部主管+十三清吏司分掌；太仓银库存通州；京通十三仓储粮；内外二库藏布'
       },
 
@@ -5392,7 +5422,7 @@
         leadership: { ruler: '朱由检', regent: '', general: '王之臣/袁崇焕(候)', chancellor: '黄立极(将罢)', spy: '魏忠贤(东厂)' },
         attitude: { self: '正统天朝', enemies: '后金/土司叛乱/流民', allies: '朝鲜', neutrals: '察哈尔/琉球/安南' },
         mainResources: '漕粮·银·盐·茶·丝绸·瓷器·棉布·兵器',
-        treasury: { money: 2000000, grain: 5000000, cloth: 500000, note: '太仓见银 200 万两（实可调 85 万）；京通仓粮 130 万石' },
+        treasury: { money: 850000, grain: 13000000, cloth: 500000, note: '太仓见银实可调 85 万两(账面 200 万含杂项不可挪)；京通仓粮 1300 万石(漕运历年存储+京运)' },
         partyRelations: '阉党vs东林党为主要矛盾；浙党/齐党/楚党/昆党/宣党环绕。朱由校遗命"弟当为尧舜"。',
         history: '太祖洪武立国 1368 → 成祖迁都 1421 → 仁宣之治 → 土木之变 1449 → 弘治中兴 → 嘉靖议礼 → 张居正改革 → 万历三大征+怠政 → 天启阉祸。凡 259 年。',
         strengths: ['正统合法性', '庞大人口', '成熟官僚', '江南财赋', '长城防线', '天朝朝贡体系'],

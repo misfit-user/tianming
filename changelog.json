@@ -3,6 +3,41 @@
   "entries": [
     {
       "date": "2026-04-28",
+      "module": "邸报·帑廪 UI 央地口径分线·『中央年入』vs『全国官收』分立显示",
+      "title": "用户审计三数与岁入关系·指出『岁入与回合收入应该是官府实收之中的』·要求二者关系在 UI 中清晰可见。审计后定位语义错配：(1) 帑廪 hero 显示的『年入』= GM.guoku.annualIncome = cascade central.money / turnFracOfYear · 仅含中央上解·不含地方留存；(2) 下方三数面板『官府实收』= central + localRetain · 包含地方留存。两数同名『实收』但口径不一(中央 vs 央+地)·玩家无法对账。修法：分立标签让从属关系直观",
+      "items": [
+        { "what": "tm-guoku-panel.js Hero 区第二行加双标·原『年入 X』改为『中央年入 X』+ 新增『全国官收(年) Y』(Y=央+地年化)·title 提示『仅中央上解·不含地方留存·下方三数中的官府实收=中央+地方留存』", "why": "玩家点开帑廪一眼能看到 中央年入 749 万 ⊂ 全国官收 1098 万·从属关系直观。无须切到三数面板对账·两数同 hero 区可比" },
+        { "what": "tm-guoku-panel.js 6 格快览首格『回合入』改为『中央回合入』· sub 显示『两 · 地留 N』(N=本回合 localRetain.money)·section badge 从『钱·官收 / 名义』改为『钱·中央实入·下方三数为全国口径』", "why": "玩家不再误以为『月入』就是全国官收·快览数(中央)和三数(全国)分线·不再产生『为什么三数官收 91 但月入 62』的对账困惑" },
+        { "what": "tm-guoku-panel.js 用 GM._lastCascadeSummary.localRetain.money 重算全国官收年额·(central+localRetain)/turnFracOfYear·turnFracOfYear 从 g.turnDays 兜底 30 天", "why": "数据同源·与三数面板的 computeTaxThreeNumber 走同一份 _lastCascadeSummary·确保 UI 不同位置的同一概念数值一致" },
+        { "what": "index.html cache-bust → tm-guoku-panel.js v=2026042823", "why": "玩家重启后立即看到新双标 hero·零字段迁移·零数据破坏" }
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "module": "邸报·1627 岁出史实化+三数顺序验证",
+      "title": "用户审计岁出·指出『俸禄只有几千两·岁出不真实』+『民缴应大于官收和应收(苛捐杂税层层盘剥)』。审计后定位：(1) FixedExpense._calcSalary 走 officeTree 累加·而剧本编制总额仅 606 vs 史实明朝 25000+ 文官·40 倍差距·导致俸禄年额 1 万两 vs 史实 100-120 万；(2) FixedExpense._calcArmyPay 走 GM.armies 累加·而 GM.armies 含全 11 势力的 197 万兵(initialTroops 没 faction 字段)·军饷年额 3557 万 vs 史实 1000-1500 万；(3) 三数顺序 民缴 > 应收 > 官收 已通过 _calcOverCollectRate (基于 corruption 60%+floatingCollectionRate 28%+苛捐底色 5%+tax 重税加权) 正确实现·验证通过",
+      "items": [
+        { "what": "tm-fiscal-fixed-expense.js _calcSalary 加 cfg.salaryAnnualOverride 短路·若剧本配 {money:n, grain:n, cloth:n} 则按 turnDays/365 缩放直接返回·绕开 officeTree 累加。byDept 标记『俸禄·剧本史实总额』·_override:true 便于 panel 区分", "why": "officeTree 编制 606 vs 史实 25000+ 是数据厚度天然限制·让剧本作者用 override 直配史实总额是最小侵入。其他剧本(唐宋等)若 officeTree 数据厚则不填 override·走原累加路径·兼容零破坏" },
+        { "what": "tm-fiscal-fixed-expense.js _calcArmyPay 加 cfg.armyAnnualOverride 短路·同样若剧本配 {money,grain,cloth,soldiers} 则直接缩放返回。byArmy 标记『军饷·剧本史实总额』", "why": "initialTroops 含全 11 势力部队·GM.armies 没 faction filter(scn 内所有 sid 相同)·导致军饷扣全部 197 万兵。直配大明 70 万兵的史实饷额是最稳的修法·避免改 game-loop 的 startGame faction 路由" },
+        { "what": "scenarios/tianqi7-1627.js fiscalConfig.fixedExpense 加 salaryAnnualOverride: { money:100万, grain:150万, cloth:0 } + armyAnnualOverride: { money:1200万, grain:400万, cloth:5万, soldiers:70万 }·都附 note 字段标史实出处", "why": "崇祯元年实际数：京外文武杂职折色后银 100 万+米 150 万；明军实兵 60-70 万(京营 8 万+九边 35-40 万+南京/地方 15 万)·月饷 1.5 两·年 1200 万两(含辽饷 500 万)。这两数与史实区间[50万,300万]/[600万,2500万]完美对齐" },
+        { "what": "tools/smoke-1627-runtime.js 扩展到岁出三数+22 项验证：俸禄/宗禄/军饷/宫廷/合计 5 项区间·三数 民缴 175 万/月 > 应收 115 万 > 官收 91 万 验证。岁出年总 1505 万 ∈ 史实区间 1500-2000 万", "why": "回归点锁定：未来若 FixedExpense 改路径或剧本被 AI 一键覆盖·smoke 立刻黄牌。22 项端到端跑全国 cascade + FixedExpense·真实数值与史实吻合" },
+        { "what": "index.html cache-bust → tm-fiscal-fixed-expense.js v=2026042822 + tianqi7-1627.js v=2026042821 · 两文件 node -c 通过 · 零字段迁移 · 零数据破坏 · 重启即生效", "why": "玩家进入游戏后帑廪面板 Hero 区即看到正确岁入岁出数·月入约 138 万 / 月支约 125 万 (含俸 8.3 万 + 宗禄 7 万 + 军饷 100 万 + 宫廷 11 万)·月赤字 ~14 万·与史实崇祯元年财政紧张吻合" }
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "module": "邸报·1627 官方剧本财政三处史实修正",
+      "title": "用户审计 1627 剧本岁入岁出·要求列出年额与回合额并对照史实。审计后定位三处偏离：(1) cascade DEFAULT_TAXES 同时跑 land_grain+land_silver+head_tax 三项·一条鞭法已把田粮+丁银+力役统一折银·游戏算成三笔账·田赋类年化虚增到 3430 万两等价(史实 ~600 万两);(2) customTaxes.junhu 用 perMu 0.04 × 全国 5.67亿亩 = 名义 2268 万两·军屯实际仅 7000-8000 万亩(全国 1/8)·扣 87.5% 侵占后仍剩 283 万两 vs 史实 ~50 万两;(3) treasury 银 200 万 vs 备注『实可调 85 万』、粮 500 万 vs 备注『京通仓 130 万』数字与备注自相矛盾。修法限定在 1627 剧本(不动 cascade DEFAULT·避免影响其他朝代剧本)",
+      "items": [
+        { "what": "scenarios/tianqi7-1627.js fiscalConfig 加 taxes 数组显式覆盖 cascade DEFAULT_TAXES。三项：(1) land_silver 田赋折银·rate 0.014·5.67亿亩 → 794 万两/年；(2) caoliang 漕粮本色·baseFactor 0.3 rate 0.024 → 408 万石/年；(3) salt_iron 盐课·mouths × 0.04 → 240 万两/年。不含 head_tax(已折入田赋)、不含 corvee_cloth(鞭法后废布)、不含 commerce(由 customTaxes.chaoguan 钞关替代)", "why": "cascade tm-fiscal-cascade.js:481 看到 fc.taxes.length>0 即不用 DEFAULT_TAXES。一条鞭法是明代税制核心特征·田粮+丁银+力役统一折银是同一笔账·算三笔违背史实。仅改剧本数据·不动 cascade 默认值·唐宋等其他朝代剧本如未自定义 fc.taxes 仍走 DEFAULT 路径" },
+        { "what": "scenarios/tianqi7-1627.js customTaxes.junhu formulaType 从 perMu 改 flat·amount 350000·occupationRate 0(已扣)。description 注明『法定 280 万两(7000 万亩×4分)·实收 35 万两/年』·清丈军屯诏可上调实收的语义保留", "why": "九边军屯 7000-8000 万亩 ≠ 全国 5.67 亿亩·perMu 公式必然乘以全国 farmland 是数学错误。改 flat 后年额锁定 35 万两·与史实军屯实银吻合·占总银额 2% 量级合理" },
+        { "what": "scenarios/tianqi7-1627.js 大明 treasury 银 200 万 → 85 万、粮 500 万 → 1300 万·与备注对齐·note 补充『太仓见银实可调 85 万两(账面 200 万含杂项不可挪)』『京通仓粮 1300 万石(漕运历年存储+京运)』", "why": "崇祯元年初太仓见银实历史值 60-80 万·剧本 200 万显著偏高且自相矛盾。京通仓粮明末实存 1100-1500 万石·剧本 500 万 + 备注 130 万自相矛盾·修后数字与备注一致·更接近史实" },
+        { "what": "tools/smoke-1627-fiscal.js 新增 12 项 smoke：T1 fc.taxes 含三项+无 head_tax/corvee+cascade 路径(4)·T2 junhu flat amount=350000 + 无 perMu(2)·T3 treasury 数值(2)·T4 年化数学(白银 1654 万 ∈ [1200,1900]·漕粮 408 万 ∈ [350,450])·T5 其他 customTaxes 未误改(1)。全过", "why": "回归点锁定：未来若 cascade 改路径·或剧本被 AI 一键生成覆盖·smoke 立刻黄牌。年化数学验证用 16 省合计 5.67 亿亩 + 6000 万口 + 1800 万丁 推算·与史实白银 1500-1800 万两 / 漕粮 ~400 万石区间对照" },
+        { "what": "其他剧本(唐/宋/清等)若未在 fiscalConfig 显式定义 fc.taxes·仍走 cascade DEFAULT_TAXES 原 6 项路径·本次修复零影响。后续各朝代剧本应各自审计是否需要写自己的 fc.taxes 来匹配该朝代税制特征(如唐代租庸调三分、清代摊丁入亩等)", "why": "守住『只改 1627·不动 cascade 默认值·不影响其他剧本』的范围·避免引擎级修改造成跨剧本回归" }
+      ]
+    },
+    {
+      "date": "2026-04-28",
       "module": "邸报·修手动存档两 bug：1次写入即生效 + 玩家自取名生效",
       "title": "用户反馈两 bug：(1) 手动存档需点两次才在案卷目录显示；(2) 玩家在『为此卷命名』输入的名字不生效·依然显示自动生成的『〔崇祯 国事纪要〕』。审计后定位：(1) 异步竞态·SaveManager.saveToSlot 把 IDB 写入 fire-and-forget·UI 调 closeSaveManager+openSaveManager 时 IDB 还没 commit·所以读不到刚存的卷；(2) 渲染逻辑 `(title || save.name)` 中 `_scrollTitle()` 永远返回非空(默认『〔X 国事纪要〕』)·导致 save.name 被 short-circuit 跳过永不显示",
       "items": [

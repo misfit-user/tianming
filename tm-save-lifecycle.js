@@ -779,6 +779,20 @@ function fullLoadGame(data){
       }
     } catch(_ahLE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ahLE, 'fullLoadGame] adminHierarchy 恢复失败') : console.warn('[fullLoadGame] adminHierarchy 恢复失败', _ahLE); }
 
+    // 老存档兼容：GM.fiscal.{royalClanPressure,huangzhuangIncome,imperialBusinesses} 缺失时从 P.fiscalConfig.neicangRules 镜像
+    // tm-fiscal-fixed-expense.js:_calcRoyalStipend 等读 G.fiscal.royalClanPressure·缺则宗禄岁出 = 0
+    try {
+      var _scFC = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
+      var _fcSrc = (P.fiscalConfig && P.fiscalConfig.neicangRules)
+                || (_scFC && _scFC.fiscalConfig && _scFC.fiscalConfig.neicangRules);
+      if (_fcSrc) {
+        GM.fiscal = GM.fiscal || {};
+        if (_fcSrc.royalClanPressure && !GM.fiscal.royalClanPressure) GM.fiscal.royalClanPressure = deepClone(_fcSrc.royalClanPressure);
+        if (_fcSrc.huangzhuangIncome && !GM.fiscal.huangzhuangIncome) GM.fiscal.huangzhuangIncome = deepClone(_fcSrc.huangzhuangIncome);
+        if (_fcSrc.imperialBusinesses && !GM.fiscal.imperialBusinesses) GM.fiscal.imperialBusinesses = deepClone(_fcSrc.imperialBusinesses);
+      }
+    } catch(_fcLE) { try{window.TM&&TM.errors&&TM.errors.captureSilent(_fcLE,'fullLoadGame·fiscalConfig→GM.fiscal');}catch(_){} }
+
     // 集成桥梁：老存档可能缺 divisions 深化字段，init 会补齐并建立 legacy proxy
     if (typeof IntegrationBridge !== 'undefined' && typeof IntegrationBridge.init === 'function') {
       try { IntegrationBridge.init(); } catch(_ibE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ibE, 'bridge] init 失败') : console.warn('[bridge] init 失败', _ibE); }

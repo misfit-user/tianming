@@ -703,6 +703,17 @@ if (sc.culturalConfig && sc.culturalConfig.enabled && Array.isArray(sc.culturalC
     }
   } catch(_cpE) {}
   if(sc.fiscalConfig) P.fiscalConfig = deepClone(sc.fiscalConfig);
+  // 把 neicangRules 关键子结构镜像到 GM.fiscal·让 runtime/AI applier 可读可改
+  // （tm-fiscal-fixed-expense.js:_calcRoyalStipend 等读 G.fiscal.royalClanPressure）
+  try {
+    if (P.fiscalConfig && P.fiscalConfig.neicangRules) {
+      GM.fiscal = GM.fiscal || {};
+      var _nr = P.fiscalConfig.neicangRules;
+      if (_nr.royalClanPressure) GM.fiscal.royalClanPressure = deepClone(_nr.royalClanPressure);
+      if (_nr.huangzhuangIncome) GM.fiscal.huangzhuangIncome = deepClone(_nr.huangzhuangIncome);
+      if (_nr.imperialBusinesses) GM.fiscal.imperialBusinesses = deepClone(_nr.imperialBusinesses);
+    }
+  } catch(_fcE) { try{window.TM&&TM.errors&&TM.errors.captureSilent(_fcE,'game-loop·fiscalConfig→GM.fiscal');}catch(_){} }
   // 如果officeTree为空但government.nodes有数据，从government.nodes同步
   if((!P.officeTree || P.officeTree.length === 0) && P.government && P.government.nodes && P.government.nodes.length > 0) {
     P.officeTree = deepClone(P.government.nodes);

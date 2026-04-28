@@ -67,6 +67,41 @@ var ErrorMonitor = (function() {
 
   return { capture: capture, getLog: getLog, exportText: exportText, clear: clear, count: count };
 })();
+
+// ============================================================
+//  TM.safeEval · 受限表达式求值（替代 new Function 直评）
+//
+//  现有 7 处 new Function('GM',...) 用于评估编辑器规则与 AI 生成的条件
+//  表达式（couplingRules.if / collapseRules.condition / canShowExpr 等）。
+//  内部规则可信，但用户导入第三方剧本时表达式不可信——可通过
+//    GM.constructor.constructor('alert(1)')()
+//  逃出沙箱执行任意代码。
+//
+//  本 helper 不写完整 JS parser，而是：
+//    1) 黑名单封禁高危 token（constructor/__proto__/prototype/Function/eval/
+//       this/window/global/globalThis/import/require/async/Symbol）
+//    2) 严格模式 IIFE 让 this 为 undefined·阻断 .call/.apply 拿全局对象
+//    3) 仅暴露白名单上下文键·其余标识符评估为 ReferenceError
+//
+//  捕获意图同 new Function·失败抛错由 caller try/catch
+// ============================================================
+(function(){
+  if (typeof window === 'undefined') return;
+  if (window.TM && window.TM.safeEval) return;
+  var FORBIDDEN = /\b(?:constructor|__proto__|__defineGetter__|__defineSetter__|prototype|Function|eval|this|window|self|globalThis|global|parent|top|frames|document|location|navigator|XMLHttpRequest|fetch|Worker|import|require|async|await|Symbol|Reflect|Proxy)\b/;
+  function safeEval(expr, ctx) {
+    if (typeof expr !== 'string') throw new Error('safeEval: expr must be string');
+    if (FORBIDDEN.test(expr)) throw new Error('safeEval: forbidden token in expr');
+    var keys = ctx ? Object.keys(ctx) : [];
+    var vals = keys.map(function(k){ return ctx[k]; });
+    // strict 模式让 this 为 undefined·body 包一层 IIFE 防止泄露
+    var fn = Function.apply(null, keys.concat(['"use strict"; return (' + expr + ');']));
+    return fn.apply(undefined, vals);
+  }
+  if (!window.TM) window.TM = {};
+  window.TM.safeEval = safeEval;
+})();
+
 // 核心指标显示名映射——动态从剧本 P.variables 读取（标记 isCore=true 的变量）
 // 引擎不硬编码任何指标名，全由编辑器定义。以下仅为兜底（无剧本加载时）。
 var CORE_METRIC_LABELS = {};

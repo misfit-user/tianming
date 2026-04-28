@@ -1641,7 +1641,7 @@ var DecisionRegistry = (function() {
     canShow: function(decisionId, char) {
       var d = decisions.find(function(x) { return x.id === decisionId; });
       if (!d || !d.canShowExpr) return true; // 无条件则默认可见
-      try { return new Function('char', 'GM', 'P', 'return (' + d.canShowExpr + ')')(char, GM, P); }
+      try { return TM.safeEval(d.canShowExpr, { char: char, GM: GM, P: P }); }
       catch(e) { return false; }
     },
     /** 检查某个决策对某个角色是否可执行——返回 {ok, reason} */
@@ -1650,7 +1650,7 @@ var DecisionRegistry = (function() {
       if (!d) return { ok: false, reason: '决策不存在' };
       if (!d.canExecuteExpr) return { ok: true };
       try {
-        var result = new Function('char', 'GM', 'P', 'return (' + d.canExecuteExpr + ')')(char, GM, P);
+        var result = TM.safeEval(d.canExecuteExpr, { char: char, GM: GM, P: P });
         return { ok: !!result, reason: result ? '' : '条件不满足' };
       } catch(e) { return { ok: false, reason: '条件评估失败: ' + e.message }; }
     },

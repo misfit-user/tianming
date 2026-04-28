@@ -483,7 +483,7 @@ function _evalGoalCondition(cond) {
     if (t === 'faction_destroyed') return !GM.facs || !GM.facs.some(function(f) { return f.name === cond.faction && (f.strength || 0) > 0; });
     if (t === 'era_state') return GM.eraState && GM.eraState[cond.field] !== undefined && (cond.op === 'gte' ? GM.eraState[cond.field] >= cond.value : GM.eraState[cond.field] <= cond.value);
     if (t === 'contradiction_resolved') return GM._contradictions && GM._contradictions.some(function(c) { return c.title === cond.title && c.phase === 'resolved'; });
-    if (t === 'custom' && cond.condition) return !!(new Function('GM', 'P', 'return ' + cond.condition))(GM, P);
+    if (t === 'custom' && cond.condition) return !!TM.safeEval(cond.condition, { GM: GM, P: P });
   } catch(e) { _dbg('[Goal] 条件评估失败:', t, e); }
   return false;
 }
@@ -812,7 +812,7 @@ SettlementPipeline.register('eraProgress', '时代进度', function() {
   // 评估衰退条件（不修改数值，仅收集）
   (ep.collapseRules || []).forEach(function(rule) {
     try {
-      if (new Function('GM', 'return ' + rule.condition)(GM)) {
+      if (TM.safeEval(rule.condition, { GM: GM })) {
         collapseFactors.push(rule.label || rule.condition);
       }
     } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-helpers');}catch(_){}}
@@ -820,7 +820,7 @@ SettlementPipeline.register('eraProgress', '时代进度', function() {
   // 评估中兴条件
   (ep.restorationRules || []).forEach(function(rule) {
     try {
-      if (new Function('GM', 'return ' + rule.condition)(GM)) {
+      if (TM.safeEval(rule.condition, { GM: GM })) {
         restorationFactors.push(rule.label || rule.condition);
       }
     } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-helpers');}catch(_){}}
@@ -888,11 +888,13 @@ SettlementPipeline.register('stateCoupling', '状态耦合', function() {
     var rule = rules[i];
     if (!rule.if || !rule.target || !rule.perMonth) continue;
     try {
-      var condResult = new Function('GM',
-        'var taxPressure=GM.taxPressure||0,' +
-        'corruption=(GM.corruption||{}).trueIndex||0,borderThreat=GM.borderThreat||0,' +
-        'eraState=GM.eraState||{};' +
-        'return (' + rule.if + ')')(GM);
+      var condResult = TM.safeEval(rule.if, {
+        GM: GM,
+        taxPressure: GM.taxPressure || 0,
+        corruption: (GM.corruption || {}).trueIndex || 0,
+        borderThreat: GM.borderThreat || 0,
+        eraState: GM.eraState || {}
+      });
       if (!condResult) continue;
     } catch(e) {
       DebugLog.log('coupling', '\u89C4\u5219\u6761\u4EF6\u8BC4\u4F30\u5931\u8D25:', rule.if, e.message);

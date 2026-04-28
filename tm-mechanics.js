@@ -1237,7 +1237,7 @@ var LegitimacySystem = {
       var factors = [];
       rules.forEach(function(rule) {
         try {
-          if (new Function('char','GM','return ' + rule.condition)(ch, GM)) {
+          if (TM.safeEval(rule.condition, { char: ch, GM: GM })) {
             factors.push(rule.label || rule.condition);
           }
         } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}

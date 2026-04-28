@@ -53,7 +53,7 @@
 
 ## 3. 文件加载顺序（重要！全局 window.* 靠顺序）
 
-index.html 按依赖顺序加载 **92 个 JS 文件**。关键分层：
+index.html 按依赖顺序加载 **161 个 JS 文件**（截至 2026-04-28，含拆分后的 tm-* 模块 ~157 个 + 编辑器/工具 4 个）。关键分层：
 
 ```
 第 1 层 · 基础数据 & 工具
@@ -310,7 +310,7 @@ tm-var-drawers / -ext / -final · 变量抽屉的 3 代版本
 
 ## 9. 新维护者 15 分钟上手路径
 
-1. 打开 `index.html` 看 `<script src=...>` 列表（92 行），建立文件分层心智（见 §3）
+1. 打开 `index.html` 看 `<script src=...>` 列表（~161 行），建立文件分层心智（见 §3）
 2. 读 `tm-data-model.js` 了解 GM/P 字段大致形状
 3. 读 `tm-game-engine.js` 的 `startGame/enterGame/fullLoadGame`（生命周期入口）
 4. 打开 `?test=1` 跑 smoke test，看 DA / Schema / Validator 都正常

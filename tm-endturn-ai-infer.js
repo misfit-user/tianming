@@ -4,7 +4,7 @@
 // tm-endturn-ai-infer.js — 回合 AI 推演巨函数 (R110 从 tm-endturn.js L2186-12711 拆出)
 //
 // ⚠ 此文件仅有一个函数：async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars)
-//   长 10,525 行·是项目最大的单函数·包含 sysP prompt 构建 + sc1/sc1b/sc1c 三次 AI 子调用
+//   长约 11,330 行（更新于 2026-04-28）·是项目最大的单函数·包含 sysP prompt 构建 + sc1/sc1b/sc1c 三次 AI 子调用
 //   + 所有 AI 返回字段的写回逻辑 (char_updates/factions/offices/fiscal/admin/events/harem 等)
 //
 // 后续工作：按 AI schema 字段族进一步拆成 tm-ai-apply-chars/factions/offices/fiscal/admin/events/harem.js
@@ -12,12 +12,12 @@
 //
 // 姊妹: tm-endturn-prep.js (L1-2185·前置) + tm-endturn-core.js (L12712-end·入口)
 //
-// R147 章节导航（10,541 行单函数·切勿移除）：
-//   §1 [L17-3050]   入参初始化 + sysP prompt 构建（655+ 处 sysP 拼接）
-//   §2 [L3051-3128] Sub-call 注册化基础设施（_runSubcall + 共享变量声明）
-//   §3 [L3130-4671] sc0/sc05/sc1/sc1b/sc1c 子调用（深度思考/记忆/主推演/文事/势力）
-//   §4 [L4673-8795] sc1 写回（applyAITurnChanges + 各字段族 GM 落地）
-//   §5 [L8797-end]  sc15-sc27 后续子调用 + 收尾（NPC/势力/财政/军事/审计/丰化/叙事）
+// R147 章节导航（更新于 2026-04-28·替代死代码为数据驱动 lifecycle 块约 80 行）：
+//   §1 [L17-3120]   入参初始化 + sysP prompt 构建（包含 lifecycle 块 L54-130）
+//   §2 [L3121-3200] Sub-call 注册化基础设施（_runSubcall + 共享变量声明）
+//   §3 [L3201-5055] sc0/sc05/sc1/sc1b/sc1c 子调用（深度思考/记忆/主推演/文事/势力）
+//   §4 [L5056-9580] sc1 写回（applyAITurnChanges + 各字段族 GM 落地）
+//   §5 [L9581-end]  sc15-sc27 后续子调用 + 收尾（NPC/势力/财政/军事/审计/丰化/叙事）
 // ============================================================
 
 async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
@@ -51,143 +51,83 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     // → 层4: 辅助信息 → 层5: 输出指令
     // ================================================================
 
-    // —— 诏令生命周期规则（中国施政真实模型，按本剧本的回合时长自适应） ——
-  var _elRules = '';
-  // 当前剧本每回合天数（玩家在编辑器设置）
-  var _dpt = (P.time && P.time.daysPerTurn) || 30;
-  var _turnDesc = _dpt <= 1 ? '日' : _dpt <= 7 ? ('周(约'+_dpt+'日)') : _dpt <= 31 ? ('月(约'+_dpt+'日)') : _dpt <= 95 ? ('季(约'+_dpt+'日)') : _dpt <= 200 ? ('半年(约'+_dpt+'日)') : _dpt <= 366 ? ('年('+_dpt+'日)') : ('约'+_dpt+'日');
+    // —— 诏令生命周期推演纲要（数据驱动·零硬编码地名/官名/朝代）——
+    // 引用规范数据：tm-edict-lifecycle.js 的 EDICT_TYPES/EDICT_STAGES/REFORM_PHASES/RESISTANCE_SOURCES
+    // 替代了 2026-04-28 删除的 135 行硬编码死代码（var 提升导致从未生效）
+    var tp = '';
+    try {
+      var _dpv0 = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
+      tp += '【诏令推演纲要——9 阶段生命周期·诏令颁布≠政策见效】\n';
+      tp += '  ※ 诏令从下达到见效有 9 个阶段·不可压扁为"已颁布·已执行"二元\n';
+      tp += '  ※ drafting草拟 → review审议 → promulgation颁布 → transmission传达 → interpretation地方解读 → execution执行 → feedback反馈 → adjustment调整 → sedimentation沉淀\n';
+      tp += '  ※ 即便玩家本回合下诏·多数诏令本回合也只走到 transmission/interpretation 之前·currentEffects 应仅反映已实现的部分而非诏令面值\n';
+      tp += '  ※ edict_lifecycle_update 必须填 stage·stageProgress(0-1)·nextStageETA(回合数)\n';
+      // 各类诏令在本剧本下的真实推演时长（已按 daysPerTurn 自动换算）
+      if (typeof EDICT_TYPES !== 'undefined' && typeof getEdictLifecycleTurns === 'function') {
+        tp += '  ※ 本剧本(1 回合=' + _dpv0 + '天)下各类诏令真实推演时长：';
+        var _ekeys = Object.keys(EDICT_TYPES);
+        var _eparts = [];
+        _ekeys.forEach(function(k) {
+          var t = EDICT_TYPES[k];
+          var tn = getEdictLifecycleTurns(k);
+          _eparts.push((t.label||k) + '(' + k + ')≈' + tn + '回合' + (t.immediate ? '·可即时' : ''));
+        });
+        tp += _eparts.join('·') + '\n';
+      }
+      // 改革 5 阶段
+      if (typeof REFORM_PHASES !== 'undefined') {
+        tp += '  ※ 改革类(admin_reform/economic_reform)reformPhase 5 阶段：';
+        var _rparts = [];
+        Object.keys(REFORM_PHASES).forEach(function(k) {
+          var p = REFORM_PHASES[k];
+          var tn = Math.max(1, Math.ceil((p.days||365) / _dpv0));
+          _rparts.push(p.label + '(' + k + ')·' + tn + '回合');
+        });
+        tp += _rparts.join(' → ') + '\n';
+      }
+      // 注入实际驿路距离（让 AI 据此判断诏令传达时滞，零硬编码）
+      var _routes = (typeof sc !== 'undefined' && sc && sc.postSystem && sc.postSystem.mainRoutes) ? sc.postSystem.mainRoutes : null;
+      if (_routes && _routes.length) {
+        tp += '  ※ 本剧本驿路（用于推算诏令传达时滞）：\n';
+        _routes.slice(0, 8).forEach(function(r) {
+          tp += '    · ' + (r.name||'') + '：' + (r.from||'') + '→' + (r.to||'') + ' ' + (r.distance||'?') + '里·' + (r.urgentSpeed||'') + (r.note ? '·'+r.note : '') + '\n';
+        });
+        tp += '    AI 据此推算诏令送达天数·远地诏令本回合可能仍 stage=transmission\n';
+      } else {
+        tp += '  ※ 距离判定：诏令从 ' + (GM._capital || '京城') + ' 出发·按"驿马 N 日可达"判时滞·剧本未配置驿路则 AI 自估\n';
+      }
+      // 阻力来源（14 项 RESISTANCE_SOURCES 默认强度）
+      if (typeof RESISTANCE_SOURCES !== 'undefined') {
+        var _rkeys = Object.keys(RESISTANCE_SOURCES);
+        tp += '  ※ 阻力默认强度（resistanceDescription 须具体到角色/地区/胥吏层）：';
+        tp += _rkeys.map(function(k) { return k + RESISTANCE_SOURCES[k].defaultStr; }).join('·') + '\n';
+      }
+      // 执行力公式
+      tp += '  ※ executorEffectiveness 推演公式：能力×0.25 + 忠诚×0.15 + 吏治×0.15 + 诏书清晰度×0.15 - 阻力×0.25 + 时代加成×0.05（结果 0-1）\n';
+      tp += '    阻力越大、能力/忠诚越低 → currentEffects 须小于诏令面值·unintendedConsequences 体现折扣（如"户部对账库银实入仅七成·余被胥吏截留"）\n';
 
-  _elRules += '\n【诏令生命周期规则——中国施政真实模型（核心）】\n';
-  _elRules += '  ※ 本剧本 1 回合 ≈ ' + _dpt + ' 日（' + _turnDesc + '）——推演必须按此真实时间跨度进行\n';
-  _elRules += '  每条玩家诏令必须通过 edict_lifecycle_update 追踪 9 阶段生命周期：\n';
-  _elRules += '    草拟→审议(门下封驳?)→颁布→传达(驿道时滞)→地方解读→执行→反馈→调整→沉淀\n';
-  _elRules += '\n';
-  _elRules += '  【诏令按真实时间（天）分类——自动换算为回合数】\n';
-  _elRules += '    大赦恩诏 ≈ 7日；封赏 ≈ 10日；刑狱敕命 ≈ 14日——通常 1 回合内完成\n';
-  _elRules += '    人事任免 ≈ 60日(赴任磨合)；对外战和谈判 ≈ 90日\n';
-  _elRules += '    巡幸祭祀 ≈ 120日；减免/加征赋税 ≈ 180日(一征期)；军事动员征伐 ≈ 180日\n';
-  _elRules += '    文教诏(兴学/修书) ≈ 730日(约2年)\n';
-  _elRules += '    行政改革 ≈ 1095日(约3年)\n';
-  _elRules += '    经济改革(变法) ≈ 3650日(约10年，分试点365日→推广730日→全国1095日→反扑730日→定局365日)\n';
-  _elRules += '\n';
-  _elRules += '  【回合适配原则——关键】\n';
-  _elRules += '    · 若 1 回合 ≥ 诏令真实时长(如 1 回合 1 年对一道大赦) → 1 回合内推演完成整个生命周期\n';
-  _elRules += '    · 若 1 回合 << 诏令真实时长(如 1 回合 1 天对改革) → 需跨多回合分阶段推演\n';
-  _elRules += '    · 经济/行政改革在任何回合时长下都须表现为多阶段过程（至少区分推动期/反扑期）\n';
-  _elRules += '    · 时间跨度大的回合(如 1 回合 1 年)仍应在单回合内体现阻力/变形/意外，但可一回合走完全部 9 阶段\n';
-  _elRules += '    · 时间跨度小的回合(如 1 回合 1 月)要让生命周期自然铺开，不得仓促完结\n';
-  _elRules += '\n';
-  _elRules += '  【绝不"诏令下即全效"——必须有时滞、损耗、变形】\n';
-  _elRules += '    例错：减赋颁布 → 当回合国库-X%、民心+Y\n';
-  _elRules += '    例对：第1回合只是颁布；第2回合传达地方吏；第3回合实际执行，\n';
-  _elRules += '           但发现地方胥吏截留三成，民间仅感受到减半；第4回合国库真正减少量比预期多，\n';
-  _elRules += '           因为中饱私囊的吏员上下其手；第5回合部分地区才完成执行\n';
-  _elRules += '\n';
-  _elRules += '  【效果结构化公式】诏令实际效果 = 诏令意图 × 执行乘数，其中：\n';
-  _elRules += '    执行乘数 = 执行者能力×0.25 + 执行者忠诚×0.15 + 吏治×0.15 + 诏令清晰度×0.15 - 阻力×0.25 + 时代相性×0.05\n';
-  _elRules += '    能力按诏令类型选维度：经济类→management，军事类→military，人事/行政→administration，文教→intelligence\n';
-  _elRules += '\n';
-  _elRules += '  【利益集团阻力模型——必须考虑，不得忽视】\n';
-  _elRules += '    减免赋税 → 阻力：地方胥吏30(截留) + 征税官20；副作用：中间盘剥使惠政打折\n';
-  _elRules += '    加征加派 → 阻力：农民60 + 士绅40；副作用：民变酝酿(可能引发起义)\n';
-  _elRules += '    清丈田亩 → 阻力：士绅85 + 豪强95 + 胥吏70；副作用：士绅联名抗争，官员辞官\n';
-  _elRules += '    裁冗官 → 阻力：官僚70 + 被裁者90；副作用：士林不满，可能影响铨选\n';
-  _elRules += '    削藩 → 阻力：宗室90、藩王80；副作用：可能引发靖难/七国之乱\n';
-  _elRules += '    改土归流 → 阻力：土司75；副作用：土司起义\n';
-  _elRules += '    开科取士 → 阻力：世家大族20；副作用：世家逐渐被寒门取代\n';
-  _elRules += '\n';
-  _elRules += '  【改革类 5 阶段生命周期】(reformPhase 字段)\n';
-  _elRules += '    pilot 试点 → 选 1-2 州县先行；成功率高；样本数据可用\n';
-  _elRules += '    expand 局部推广 → 扩到 3-5 省；各地执行参差；既得利益集团开始反应\n';
-  _elRules += '    national 全国推广 → 全面铺开；阻力峰值；地方胥吏/豪强全面抵抗；可能出现执行变形\n';
-  _elRules += '    backlash 反扑 → 推动者去位/党争中被翻案；玩家决策：坚持/妥协/废止\n';
-  _elRules += '    outcome 定局 → 延续(成法)/废止/折中\n';
-  _elRules += '\n';
-  _elRules += '  【经济政策叙事范式——必须具体、真实】\n';
-  _elRules += '    减免赋税：叙述"多少落到百姓头上、多少被胥吏截留、国库损失是否超出预期"\n';
-  _elRules += '    兴修工程：叙述"工期进度、民力征集、贪腐情况、是否按期竣工或豆腐渣"\n';
-  _elRules += '    征讨军事：叙述"粮草筹集、将帅任命、军心士气、是否应期开战、胜败经过"\n';
-  _elRules += '    改革推行：叙述"试点何处、阻力何来、执行者是否称职、朝议反对声如何"\n';
-  _elRules += '\n';
-  _elRules += '  【阶层 satisfaction 联动】每回合通过 classesAffected 体现阶层情绪\n';
-  _elRules += '    不得让某阶层情绪无因变化——必须由具体诏令/事件驱动\n';
-  _elRules += '    阶层极度不满(<20) → 可能发生 peasant_revolt/elite_backlash/mutiny\n';
-  _elRules += '\n';
-  _elRules += '  【玩家介入窗口】每阶段结束给出 interventionOptions，玩家可：\n';
-  _elRules += '    "加派干吏督办" "暂缓一州" "放弃" "更严苛执行"——通过下回合诏令体现\n';
-  _elRules += '\n';
-  _elRules += '  【诏令三轴反馈——必须填写】\n';
-  _elRules += '    · classesAffected：影响的阶层及满意度变化（已有）\n';
-  _elRules += '    · factionsAffected：外部势力对本诏令的反应（关系变化/态度转变）——如减轻赋税→周边势力可能轻视你；备战诏令→敌对势力警戒\n';
-  _elRules += '    · partiesAffected：朝内党派对本诏令的态度（influence_delta + agenda_impact）——对立党派反对则其 influence 可能下降但 cohesion 强化\n';
-  _elRules += '\n';
-  _elRules += '  【反向反馈——执行效果受三系统制约】\n';
-  _elRules += '    · 阶层严重不满(satisfaction<30 或 unrestLevels.strike<30) → 执行乘数 ×(1 - unrest/150)\n';
-  _elRules += '    · 对立党派掌权(rival influence>60) → resistance 自动加 20-30；执行阶段易变形\n';
-  _elRules += '    · 敌对势力敌视(attitude=敌视/敌对) → 外交/军事诏令可能被拒或激化\n';
-  _elRules += '    · 执行者的 class/party 与诏令对象冲突 → 自动消极怠工\n';
+      // 民变 7 阶段（lifecycle.js 未定义·此处教 AI）
+      tp += '【民变/起义 7 阶段（revolt_update.phase 必填·阶段不可跳跃）】\n';
+      tp += '  brewing酝酿（饥馑+加派+流民聚集）→ uprising举旗（杀官称号）→ expansion扩张（攻略州县）→ stalemate相持（官军围剿/义军固守）→ turning转折（破围/受招安/分裂）→ decline衰亡 OR establishment建政 → ending收束（剿灭/招抚/改朝）\n';
+      tp += '  ※ 必填字段：ideology（救世/复古/改朝/族群/教派）·organizationType（流寇/根据地/会党/教团）·slogan口号·historicalArchetype（黄巾/赤眉/黄巢/红巾/白莲等参照）\n';
+      tp += '  ※ 民变非随机·须有 brewing 阶段铺垫·brewing 之前不得直接进入 uprising\n';
 
-  // ── 起义系统（长周期历史模拟） ──
-  _elRules += '\n【起义系统——长周期历史模拟】\n';
-  _elRules += '  起义不是一次性事件，而是 7 阶段生命周期：brewing酝酿 → uprising首义 → expansion扩张 → stalemate相持 → turning转折 → decline/establishment衰落或建政 → ending结局\n';
-  _elRules += '  每回合 AI 必须通过 revolt_update 推进现有起义的阶段——不得让起义"静默"不进展；若无事发生写入 narrative 说明原因（如"困守某山，无力南下"）\n';
-  _elRules += '\n  【起义必备字段——必须真实可考】\n';
-  _elRules += '    · ideology(意识形态)：religious(宗教:黄巾道/白莲教) / dynastic(光复某朝) / ethnic(反清复明等) / populist(均田免粮) / nobleClaim(宗室分支) / warlord(军阀) / tributary(边疆民族)\n';
-  _elRules += '    · organizationType(组织)：flowingBandit(流寇李自成式) / baseArea(根据地红巾式) / builtState(建制太平天国式) / secretSociety(教门白莲式) / militaryMutiny(军变安史式)\n';
-  _elRules += '    · slogan 必有——真实起义都有口号：如"苍天已死黄天当立"、"均田免粮"、"驱逐鞑虏恢复中华"、"无处不均匀"\n';
-  _elRules += '    · historicalArchetype(历史原型)——写出本起义最贴近的历史参照：黄巾/黄巢/红巾/白莲/太平天国/义和团/安史/三藩/靖难/八王\n';
-  _elRules += '\n  【前兆-爆发-演进规律——AI 必须遵守】\n';
-  _elRules += '    · 严重起义前须有 2-4 回合 revolt_precursor 前兆：famine饥荒/landConcentration兼并/heavyTax苛税/corvee繁役/officialCorruption贪腐/propheticOmen谶纬/secretSociety教门密谋\n';
-  _elRules += '    · 前兆 severity=critical 且阶层 unrestLevels.revolt<20 → 下回合可 class_revolt\n';
-  _elRules += '    · 无任何前兆直接爆发巨乱 → AI 行为异常，除非是军变/宗室叛乱(militaryMutiny/nobleClaim 可突发)\n';
-  _elRules += '\n  【阶段推进原则（按 organizationType 决定节奏）】\n';
-  _elRules += '    · flowingBandit：uprising→expansion 快，但无根据地则 stalemate/decline 也快（补给枯竭）\n';
-  _elRules += '    · baseArea：expansion 慢但稳；进入 stalemate 后可据守多回合，考验朝廷耐心\n';
-  _elRules += '    · builtState：若 territoryControl>3 城 + 存续>5 回合 → 必须 revolt_transform toFaction（独立建国）\n';
-  _elRules += '    · secretSociety：扩张靠传教渗透，军事薄弱但社会基础广；易被分化\n';
-  _elRules += '    · militaryMutiny：起势最猛，但政治基础薄弱，易 turning\n';
-  _elRules += '\n  【镇压 vs 招安——朝廷选择】\n';
-  _elRules += '    · 起义规模小(scale=小) + 粮草不足(supplyStatus<30) → 宜 revolt_suppress 剿灭\n';
-  _elRules += '    · 起义规模大 + 占领多城 → 宜 revolt_amnesty 招安分化（宋江故事）\n';
-  _elRules += '    · 宗教性起义 → 很难招安（黄巾、白莲教），须坚决剿\n';
-  _elRules += '    · 军阀/藩镇 → 多次招安反复（如唐代藩镇）\n';
-  _elRules += '\n  【建政触发——重要】\n';
-  _elRules += '    · 当 revolt.phase=establishment 且 _needTransform=true → AI 下回合必须 revolt_transform type=toFaction，自动创建新势力\n';
-  _elRules += '    · 当 revolt 摧毁京城、俘虏/杀死玩家角色、控制全国→可 type=dynastyReplaced（玩家GAMEOVER）\n';
-  _elRules += '\n  【领袖处理】\n';
-  _elRules += '    · 起义领袖能力由 ideology 决定：religious 高 charisma+intelligence；warlord 高 military+valor；populist 高 benevolence；nobleClaim 高 administration\n';
-  _elRules += '    · 副将(secondaryLeaders)常有 2-4 人：如黄巢之秦彦、李自成之刘宗敏、洪秀全之杨秀清\n';
-  _elRules += '    · 领袖阵亡大概率导致 decline（除非已建立完整政权）\n';
-  _elRules += '\n  【诏令反馈起义】\n';
-  _elRules += '    · 减赋/赈灾诏令 → 对应 precursor 的 famine/heavyTax 缓解，起义 supplyStatus 不升（百姓不投奔）\n';
-  _elRules += '    · 加征/募兵诏令在起义区 → 反令起义 militaryStrength+（逼反更多人）\n';
-  _elRules += '    · 招安诏令→ 生成 revolt_amnesty 动作\n';
-  _elRules += '    · 剿匪诏令→ 生成 revolt_suppress 动作\n';
-  // 剧本作者预设的诏令风格与样本（让AI以本朝代之体裁推演）
-  if (P.edictConfig && P.edictConfig.enabled !== false) {
-    if (P.edictConfig.styleNote) {
-      _elRules += '\n  【本朝代诏令风格】' + P.edictConfig.styleNote + '\n';
-    }
-    if (Array.isArray(P.edictConfig.examples) && P.edictConfig.examples.length > 0) {
-      _elRules += '  【本剧本典型诏令参考】——推演时可借鉴以下阻力生态\n';
-      P.edictConfig.examples.slice(0, 6).forEach(function(ex) {
-        if (!ex) return;
-        var line = '    · ';
-        if (ex.category) line += '[' + ex.category + ']';
-        if (ex.content) line += ex.content.slice(0, 40);
-        if (ex.expectedResistance) line += '；预期阻力：' + ex.expectedResistance;
-        if (ex.typicalOpposition) line += '；典型反对：' + ex.typicalOpposition;
-        if (ex.typicalSupporter) line += '；典型支持：' + ex.typicalSupporter;
-        if (ex.historicalOutcome) line += '；史例结局：' + ex.historicalOutcome;
-        _elRules += line + '\n';
-      });
-    }
-  }
+      // 朝代特化（中立·AI 自判）
+      tp += '【朝代特化字段——按本剧本朝代由 AI 自行判断·不预设地名/官名】\n';
+      tp += '  · 中下层执行者称谓：汉魏=刀笔吏 / 唐宋=主簿录事 / 明清=胥吏书办 / 等\n';
+      tp += '  · 诏书复核机构：本朝若有给事中/门下省/封驳司/通政司·命名按朝代实情\n';
+      tp += '  · 巡幸传统：本朝代有何封禅/南巡/谒陵/北狩传统\n';
+      tp += '  · 流放分级：朔漠/岭表/海岛/西陲（按本朝实际边远地按本朝名实）\n';
 
-  tp += _elRules;
+      // 反向反馈约束
+      tp += '【反向反馈约束——避免"准而无效"】\n';
+      tp += '  ※ classesAffected/factionsAffected/partiesAffected 中 impact/reaction 必须有"为何此阶层这样反应"的内在逻辑·不得套话\n';
+      tp += '  ※ 简单诏令（颁恤词/赐物/口谕）可一行带过·不必走全 9 阶段\n';
+      tp += '  ※ 若 AI 判断诏令受阻·必须在 currentEffects 反映折扣（数值变化要小于诏令面值）\n';
+      tp += '\n';
+    } catch(_lE) { try { window.TM && TM.errors && TM.errors.captureSilent(_lE, 'ai-infer·lifecycle-prompt'); } catch(_){} }
 
   // —— 推演依据分层说明（告诉AI如何解读输入数据） ——
-    var tp = '';
     tp += '【推演依据——本回合推演基于以下五层数据，请综合推演】\n';
     tp += '  A. 玩家国家行动：下方【诏令】段是君主本回合颁布的正式政令，其执行效果取决于执行者能力、忠诚、局势阻力\n';
     tp += '  B. 玩家私人行动：下方【主角行止】段是君主的个人举止(微服/读书/饮宴/私见等)，影响情绪与人物关系\n';
@@ -935,7 +875,27 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     tp += '  · 工程/运动/战役启动 → project_updates 保存进度；相应 fiscal_adjustments 记支出\n';
     tp += '  · 任何其他深层字段（人物属性、忠诚、好感、记忆、派系关系、异象、科举阶段等）→ anyPathChanges op:"set/delta/push/merge"\n';
     tp += '※ 叙事与数据一一对应·宁可不写·不可写而不改·也不可改而不叙。zhengwen/events 里出现的"实际变化"在本回合结束时必须真的落到 GM 状态。\n';
-    tp += '※ 连锁义务：授某人为某官 → 该官 officialTitle 必新；给官职改名 → 所有持此官者同步改名；移驻某地 → location+_travelTo；仕途 careerHistory 必须追加（appoint/transfer/dismiss 类动作自动写入·但 AI 若写了"赐进太师衔"之类额外身份也要手动 careerEvent）。\n\n';
+    tp += '※ 连锁义务：授某人为某官 → 该官 officialTitle 必新；给官职改名 → 所有持此官者同步改名；移驻某地 → location+_travelTo；仕途 careerHistory 必须追加（appoint/transfer/dismiss 类动作自动写入·但 AI 若写了"赐进太师衔"之类额外身份也要手动 careerEvent）。\n';
+    // ═══ 走位/赴任·强制约束（避免"启程拖到下回合"和"重置剩余天数"两大 bug）═══
+    tp += '【走位/赴任·必须当回合输出·不可拖延】\n';
+    tp += '  ※ 玩家诏令含赴某地/调某地/外放/召还/出使/迁徙/巡幸 → AI 必须在【本回合】char_updates.travelTo 或 office_assignments.toLocation 中输出·不可仅在 zhengwen/events 中叙事。\n';
+    tp += '    · 错：仅写"令袁崇焕赴宁远"·不返 travelTo → 走位不会启动·下回合 AI 才补返·导致玩家感觉"诏令晚一回合才生效"\n';
+    tp += '    · 对：本回合 char_updates:[{name:"袁崇焕",travelTo:{toLocation:"宁远",estimatedDays:5,reason:"督师辽东"}}] + zhengwen 叙事"领命启程"\n';
+    tp += '  ※ estimatedDays = 从下旨当日起算的【总】天数（参考剧本驿路·急递 400 里/日·常驿 200 里/日）。系统会在本回合 endTurn 自动扣 ' + (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30) + ' 天·不要 AI 自己扣·照实写总天数。\n';
+    tp += '  ※ 已在【旅程在途】列出的角色·不得再次输出 travelTo（会被 applier 幂等保护拒绝并记"复诏催程"）·若需改目的地·先写 reason 说明并直接给新 travelTo·applier 会按新终点重启。\n';
+    tp += '  ※ 在途角色不得在 zhengwen/events/npc_actions 中被叙事为"在京视事/出席朝议/参与议政"——他人在路上。可叙事其旅途见闻、地方迎送、信使追及。\n';
+    // ═══ 通用启动约束·防"叙事而无 schema entry"导致下回合才启动 ═══
+    tp += '【启动型动作·必须本回合产生 schema entry·不得仅 zhengwen 叙事】\n';
+    tp += '  ※ 玩家本回合行动若属【启动型】，必须在对应 schema 字段输出至少一条新 entry，配合"起步"值表现刚启动·不可只在 zhengwen/shilu 叙事而无对应字段：\n';
+    tp += '    · 颁政令/诏书 → edict_lifecycle_update[{edictId, stage:"drafting"或"promulgation", stageProgress:0.05~0.2, ...}]\n';
+    tp += '    · 营造工程/商队/学堂/造船/水利 → project_updates[{name, type, status:"planning"或"active", progress:5~15, leader, ...}]\n';
+    tp += '    · 剿抚民变/介入既有起义 → revolt_update[{revoltId, phase, ...}]（新起义用 class_revolt 创建）\n';
+    tp += '    · 募兵/调兵/出征 → military_changes 或 fiscal_adjustments 含征调记录\n';
+    tp += '    · 派遣使节/出使 → char_updates.travelTo + edict_lifecycle_update 双写（人走+诏走）\n';
+    tp += '    · 改革变法 → edict_lifecycle_update 含 reformPhase:"pilot"·配 pilotRegion\n';
+    tp += '  ※ 错误模式：zhengwen 写"上命修黄河堤·拨银十万"·但 project_updates/fiscal_adjustments 无对应 entry → 下回合系统看着没工程·AI 又"重新启动"·相当于诏令晚一回合生效。\n';
+    tp += '  ※ 正确模式：zhengwen 叙事 + 对应 schema 字段同回合输出·新 entry 用"起步"值（progress 5-15·stage drafting/promulgation·phase brewing/uprising 等）\n';
+    tp += '  ※ 续推已有 entry：用同 id（edictId/revoltId）或同 name（project）匹配·progress/stage/phase 必须前进或保持·不得倒退（applier 会拒绝倒退·除非传 progressReason 说明意外停工）\n\n';
 
     // ═══════════════════════════════════════════════════════════════════
     // 【执行阻力·代价约束·非机械原则】
@@ -5768,7 +5728,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             // NPC行为导致的位置移动（通用处理——flee/retire/travel已内部处理，此处兜底其他情况）
             if (act.new_location && !mechanicallyExecuted) {
               var _nlCh = findCharByName(act.name);
-              if (_nlCh && _nlCh.location !== act.new_location) {
+              if (_nlCh && !_isSameLocation(_nlCh.location, act.new_location)) {
                 _nlCh.location = act.new_location;
                 _nlCh._locationExplicit = false;
               }
@@ -5841,7 +5801,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             var _cap = GM._capital || '京城';
             if (!_nlCh) { _nlSkipNoChar++; _dbg('[npc_letters] 找不到角色: ' + nl.from + '·跳过'); return; }
             if (_nlCh.isPlayer) { _nlSkipMissing++; return; }
-            if (_nlCh.location === _cap) {
+            if (_isSameLocation(_nlCh.location, _cap)) {
               // 在京 NPC 不应走鸿雁——但 AI 已生成内容·改投奏疏避免内容浪费
               _nlSkipCapital++;
               _dbg('[npc_letters] 在京NPC ' + nl.from + ' 写信·改投奏疏');

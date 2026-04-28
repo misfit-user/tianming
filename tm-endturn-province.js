@@ -897,7 +897,7 @@ function _renderDivisionNode(div, depth) {
   }
 
   // G. 驻地官员
-  var _inRegion = (GM.chars || []).filter(function(c) { return c.alive !== false && c.location === territory; });
+  var _inRegion = (GM.chars || []).filter(function(c) { return c.alive !== false && _isSameLocation(c.location, territory); });
   if (_inRegion.length > 0) {
     var _ob = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">';
     _inRegion.slice(0,12).forEach(function(c) {
@@ -1416,7 +1416,7 @@ function _peRenderExpenseBreakdown(div) {
   if (typeof GM !== 'undefined' && GM && Array.isArray(GM.chars) && div.name) {
     GM.chars.forEach(function(c) {
       if (c.alive === false) return;
-      if (c.location !== div.name) return;
+      if (!_isSameLocation(c.location, div.name)) return;
       var sal = (typeof c.salary === 'number') ? c.salary : 0;
       if (sal > 0) { localSalary += sal * 12; localCount++; }
     });
@@ -1442,7 +1442,7 @@ function _peRenderExpenseBreakdown(div) {
   var localGarrison = 0, garrisonName = '';
   if (typeof GM !== 'undefined' && GM && Array.isArray(GM.armies) && div.name) {
     GM.armies.forEach(function(a) {
-      if (a.location === div.name || a.station === div.name) {
+      if (_isSameLocation(a.location, div.name) || _isSameLocation(a.station, div.name)) {
         var troops = a.troops || a.initialTroops || a.size || 0;
         var pay = (a.payPerSoldier || 1.5) * troops * 12;
         localGarrison += pay;

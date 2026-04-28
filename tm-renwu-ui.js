@@ -255,7 +255,7 @@ function _rwRenderCard(c) {
   // 位置 + 状态
   var _stateHtml = '';
   if (_ch.location) {
-    var _awayCls = (_ch.location !== _playerLoc && !_isDead) ? ' away' : '';
+    var _awayCls = (!_isSameLocation(_ch.location, _playerLoc) && !_isDead) ? ' away' : '';
     var _locInner = escHtml(_ch.location);
     if (_ch._travelTo && _ch._travelTo.toLocation) {
       _locInner += '<span class="travel">\u2192</span>' + escHtml(_ch._travelTo.toLocation);

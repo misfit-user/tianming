@@ -1950,10 +1950,32 @@ function _buildLongTermActionsDigest() {
   // 3. 旅程在途（远地 NPC 未到）
   var travelers = (GM.chars || []).filter(function(c) { return c && c._travelTo; }).slice(0, 8);
   if (travelers.length > 0) {
-    lines.push('\n【旅程在途】');
+    lines.push('\n【旅程在途·此处所列角色不可被推演为在京任事·已在路上】');
     travelers.forEach(function(c) {
-      lines.push('  · ' + c.name + '·自' + (c._travelFrom || '?') + '→' + c._travelTo + '·' + (c._travelReason || '') + (c._travelArrival ? '·预计 T' + c._travelArrival + ' 抵' : ''));
+      // 优先显示剩余天数（新版天数制·_travelRemainingDays）·回退到 _travelArrival（旧版回合制）
+      var etaText = '';
+      if (typeof c._travelRemainingDays === 'number' && c._travelRemainingDays >= 0) {
+        etaText = '·剩 ' + c._travelRemainingDays + ' 日抵';
+      } else if (c._travelArrival) {
+        etaText = '·预计 T' + c._travelArrival + ' 抵';
+      }
+      var postText = c._travelAssignPost ? '·待就任 ' + c._travelAssignPost.replace('/', ' ') : '';
+      lines.push('  · ' + c.name + '·自' + (c._travelFrom || '?') + '→' + c._travelTo + '·' + (c._travelReason || '') + etaText + postText);
     });
+    lines.push('  ※ 已在途者·不得在 char_updates 重复 travelTo（会重置剩余天数）·若需调整目的地请用 reason 说明');
+  }
+  // 4. 进行中工程/商队/学堂（GM.activeProjects·status=active|planning）
+  var activeProjs = (GM.activeProjects || []).filter(function(p){
+    return p && (p.status === 'active' || p.status === 'planning');
+  }).slice(0, 10);
+  if (activeProjs.length > 0) {
+    lines.push('\n【进行中工程/项目·必须在 project_updates 中续推 progress·不可重复 status=planning 卡死】');
+    activeProjs.forEach(function(p) {
+      var elapsed = (p.startTurn ? (GM.turn - p.startTurn) : '?');
+      var etaText = (p.endTurn && p.endTurn > GM.turn) ? '·目标 T' + p.endTurn + ' 完工' : '';
+      lines.push('  · 【' + (p.type || '工程') + '】' + p.name + '·' + p.status + '·进度 ' + (p.progress || 0) + '%·已 ' + elapsed + ' 回合' + (p.leader ? '·' + p.leader + '督办' : '') + etaText);
+    });
+    lines.push('  ※ 续推须给新 progress（高于上次）·或写 status=completed/abandoned·不写则系统判为停滞');
   }
   return lines.length > 0 ? lines.join('\n') : '';
 }

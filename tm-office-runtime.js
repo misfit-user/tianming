@@ -1686,7 +1686,7 @@ function _offRecommend(pathArr, deptName, posName) {
     if (pos.rank && c._tenure) score += Object.keys(c._tenure).length * 5;
     // 回避标注
     c._avoidance = '';
-    if (c.location && c.location !== capital && c.location === deptName) c._avoidance = '\u672C\u7C4D\u56DE\u907F';
+    if (c.location && !_isSameLocation(c.location, capital) && _isSameLocation(c.location, deptName)) c._avoidance = '\u672C\u7C4D\u56DE\u907F';
     c._hasRecommender = c._recommendedBy || '';
     c._recommendScore = score;
   });
@@ -1860,7 +1860,7 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
     else score += (c.intelligence||50) + (c.administration||50) + (c.diplomacy||50);
     score += (c.loyalty||50) * 0.6;
     if (c.officialTitle) score -= 15;
-    if (c.location && c.location !== capital) score -= 10;
+    if (c.location && !_isSameLocation(c.location, capital)) score -= 10;
     if (pos.rank && c._tenure) score += Math.min(30, Object.keys(c._tenure).length * 4);
     c._pickerScore = score;
 
@@ -1874,7 +1874,7 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
 
     // 赴任天数（外地才算·粗估 20 日保底·实际以 AI 推演为准）
     c._pickerTravelDays = 0;
-    if (c.location && c.location !== capital) c._pickerTravelDays = 20;
+    if (c.location && !_isSameLocation(c.location, capital)) c._pickerTravelDays = 20;
 
     // 分类标签
     c._pickerTags = [];
@@ -1882,7 +1882,7 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
     if ((c.administration||50) >= 65) c._pickerTags.push('civil');
     if ((c.military||50) >= 65) c._pickerTags.push('military');
     if ((c.loyalty||50) >= 75) c._pickerTags.push('loyal');
-    if (c.location && c.location !== capital) c._pickerTags.push('remote');
+    if (c.location && !_isSameLocation(c.location, capital)) c._pickerTags.push('remote');
 
     // 警示标志
     c._pickerWarnings = [];

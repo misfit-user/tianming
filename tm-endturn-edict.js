@@ -233,7 +233,7 @@ function applyEdictActions(actions) {
           var _destE = _capE;
           var _regE = (hit.deptPath + a.position).match(/([\u4e00-\u9fa5]{2,4})(?:\u5DE1\u629A|\u603B\u5175|\u603B\u7763|\u5E03\u653F\u4F7F|\u6309\u5BDF\u4F7F|\u7ECF\u7565|\u8282\u5EA6)/);
           if (_regE && _regE[1]) _destE = _regE[1];
-          if (char.location !== _destE && !char._travelTo) {
+          if (!_isSameLocation(char.location, _destE) && !char._travelTo) {
             var _daysE = 20;
             try { if (typeof calcLetterDays === 'function') _daysE = calcLetterDays(char.location, _destE, 'normal') || 20; } catch(_){}
             var _dpvE = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;

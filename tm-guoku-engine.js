@@ -122,7 +122,8 @@
       var regTotal = safe((GM.hukou || {}).registeredTotal, 10000000);
       var grainPrice = ((GM.currency || {}).market && GM.currency.market.grainPrice) || 100;
       var grainAmount = regTotal * 0.005;  // 漕粮石数 ~人口×0.5%
-      var total = grainAmount * grainPrice / 100;  // 折银
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      var total = grainAmount * grainPrice / 100 * actualRate;  // 折银 × 实征率
       _setSubs('caoliang', [
         { id: 'caoliang_grain', name: '漕粮(本色)', amount: Math.round(total * 0.6), note: grainAmount.toFixed(0) + ' 石' },
         { id: 'caoliang_zhe', name: '漕粮折银', amount: Math.round(total * 0.4) }
@@ -145,6 +146,8 @@
       // 茶酒铁·人口估算
       var teaWine = regTotal * 0.005;
       var ironTax = regTotal * 0.005;
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      saltTax *= actualRate; teaWine *= actualRate; ironTax *= actualRate;
       var total = saltTax + teaWine + ironTax;
       _setSubs('yanlizhuan', [
         { id: 'yan_ke', name: '盐课', amount: Math.round(saltTax), note: saltProd > 0 ? saltProd.toFixed(0) + ' 斤产' : '人口估' },
@@ -162,7 +165,8 @@
         maritimeTotal = safe(GM.maritimeTradeVolume, 0);
       }
       var maritimeRate = (GM.policies && GM.policies.maritimeTaxRate) || 0.08;
-      var total = maritimeTotal * maritimeRate;
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      var total = maritimeTotal * maritimeRate * actualRate;
       _setSubs('shipaiShui', [
         { id: 'shi_bo', name: '市舶税', amount: Math.round(total), note: maritimeTotal.toFixed(0) + ' 海贸量' }
       ]);
@@ -176,7 +180,8 @@
       // 退化：若 division 没配·按户口估
       if (commerceTotal <= 0) commerceTotal = regTotal * 0.05;
       var commerceRate = (GM.policies && GM.policies.commerceTaxRate) || 0.03;
-      var total = commerceTotal * commerceRate;
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      var total = commerceTotal * commerceRate * actualRate;
       _setSubs('quanShui', [
         { id: 'guan_jin', name: '关津税', amount: Math.round(total * 0.5), note: commerceTotal.toFixed(0) + ' 商业量' },
         { id: 'cheng_shang', name: '城商税', amount: Math.round(total * 0.5) }
@@ -202,6 +207,8 @@
       if (GM.currency && GM.currency.mintAgency && GM.currency.mintAgency.active) {
         mintBonus = mineralTotal * 0.05;  // 5% 铸钱息
       }
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      miningTax *= actualRate; mintBonus *= actualRate;
       var total = miningTax + mintBonus;
       _setSubs('mining', [
         { id: 'kuang_shui', name: '矿税', amount: Math.round(miningTax), note: mineralTotal.toFixed(0) + ' 两产' },
@@ -213,7 +220,8 @@
     fishingTax: function() {
       var fishingTotal = _sumEB('fishingProduction', 0);
       var fishingRate = (GM.policies && GM.policies.fishingTaxRate) || 0.10;
-      var total = fishingTotal * fishingRate;
+      var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
+      var total = fishingTotal * fishingRate * actualRate;
       _setSubs('fishingTax', [
         { id: 'yu_ke', name: '渔课', amount: Math.round(total), note: fishingTotal.toFixed(0) + ' 两产' }
       ]);
@@ -282,6 +290,15 @@
       var costFrontier = frontier * 15;   // 边军
       var costGarrison = garrison * 10;   // 守备
       var costNavy = navy * 16;           // 水师
+      // 空额吃饷：在册兵=实兵+空额，朝廷按在册发饷·腐败越高空额越多
+      var ghostRate = 0;
+      try {
+        if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.Consequences) {
+          ghostRate = CorruptionEngine.Consequences.calcMilitaryGhostRate() || 0;
+        }
+      } catch(_){}
+      var ghostBase = costCentral + costFrontier + costGarrison + costNavy;
+      var ghostExtra = ghostBase * ghostRate;
       // 战马军器·扣减国产马（horseProduction 抵扣 20 两/匹）
       var armsBase = totalSoldiers * 5;   // 单兵年均 5 两
       var horseDomestic = _sumEB('horseProduction', 0) * 20;
@@ -297,12 +314,13 @@
       var wuxue = totalSoldiers * 0.5;  // 0.5两/兵·年
       // 营葬犒赏·按近期阵亡数（兜底小额）
       var battleBonus = (GM.guoku && GM.guoku._battleCasualtyBonus) || 0;
-      var total = costCentral + costFrontier + costGarrison + costNavy + costArms + threeFees + wuxue + battleBonus;
+      var total = costCentral + costFrontier + costGarrison + costNavy + ghostExtra + costArms + threeFees + wuxue + battleBonus;
       _setSubsExp('junxiang', [
         { id: 'army_central', name: '京营月粮', amount: Math.round(costCentral), note: central + ' 兵' },
         { id: 'army_frontier', name: '边军协济', amount: Math.round(costFrontier), note: frontier + ' 兵' },
         { id: 'army_garrison', name: '地方守备', amount: Math.round(costGarrison), note: garrison + ' 兵' },
         { id: 'army_navy', name: '水师', amount: Math.round(costNavy), note: navy + ' 兵' },
+        { id: 'army_ghost', name: '空额吃饷', amount: Math.round(ghostExtra), note: ghostRate > 0 ? '兵部腐 ' + Math.round(ghostRate*100) + '% 虚冒' : '无' },
         { id: 'army_arms_horse', name: '战马军器', amount: Math.round(costArms), note: horseDomestic > 0 ? '国产抵 ' + Math.round(horseDomestic) : '' },
         { id: 'army_threefee', name: '三饷加派', amount: Math.round(threeFees), note: threeFees > 0 ? threeFeesNote.join('/') : '未派' },
         { id: 'army_wuxue', name: '武学训练', amount: Math.round(wuxue) },
@@ -362,14 +380,27 @@
       var palace = 30000;
       // 长城边墙修补·若激活边备
       var greatWall = (GM.policies && GM.policies.frontierFortify) ? 80000 : 20000;
-      var total = subs.river + subs.city + subs.grand + caoQu + palace + greatWall;
+      // 工程质量折扣 → 同效益需多花钱（豆腐渣 → 重修/返工）
+      var quality = 1, qualityMult = 1;
+      try {
+        if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.Consequences) {
+          quality = CorruptionEngine.Consequences.calcConstructionQuality() || 1;
+          qualityMult = quality > 0.5 ? (1 / quality) : 2;  // cap at 2x
+        }
+      } catch(_){}
+      var qualityBase = subs.river + subs.city + subs.grand + caoQu + palace + greatWall;
+      var qualityExtra = qualityBase * (qualityMult - 1);  // 多花的部分
+      var total = qualityBase + qualityExtra;
+      // 记录到 GM.guoku 供下游消费（城防有效率/河工抗洪率等）
+      if (GM.guoku) GM.guoku._constructionQuality = quality;
       _setSubsExp('gongcheng', [
         { id: 'work_river', name: '河工漕渠', amount: Math.round(subs.river), note: '黄/淮水患' },
         { id: 'work_city', name: '城防工程', amount: Math.round(subs.city) },
         { id: 'work_grand', name: '大工陵寝', amount: Math.round(subs.grand), note: '陵殿/敕建' },
         { id: 'work_caoqu', name: '漕渠维护', amount: Math.round(caoQu), note: '岁修常项' },
         { id: 'work_palace', name: '宫殿太庙修缮', amount: palace },
-        { id: 'work_greatwall', name: '长城边墙', amount: greatWall, note: greatWall > 50000 ? '强化边备' : '维持' }
+        { id: 'work_greatwall', name: '长城边墙', amount: greatWall, note: greatWall > 50000 ? '强化边备' : '维持' },
+        { id: 'work_quality', name: '豆腐渣返工', amount: Math.round(qualityExtra), note: quality < 1 ? '工部腐·质 ' + Math.round(quality*100) + '%' : '无' }
       ]);
       return total;
     },

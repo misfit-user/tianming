@@ -403,7 +403,7 @@
     var capital = G._capital || '京城';
     // 1. 官职吸力（大京官多 → 吸士人）
     var officialCount = (G.chars || []).filter(function(c) {
-      return c.alive !== false && c.officialTitle && c.location === capital;
+      return c.alive !== false && c.officialTitle && _isSameLocation(c.location, capital);
     }).length;
     var officialF = officialCount / 200;
     // 2. 商业吸力（都商税多 → 吸商人）

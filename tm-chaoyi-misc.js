@@ -77,7 +77,7 @@ function renderOfficeDeptV2(dept,path){
         }
         holderDetail = '<div style="font-size:0.7rem;color:var(--color-foreground-muted);margin-top:var(--space-1);padding:var(--space-1) 0;">';
         holderDetail += '\u80FD\u529B\uFF1A\u667A' + (_hch0.intelligence||50) + ' \u653F' + (_hch0.administration||50) + ' \u519B' + (_hch0.military||50);
-        if (_hch0.location && _hch0.location !== (GM._capital||'\u4EAC\u57CE')) holderDetail += ' <span style="color:var(--amber-400);">[\u8FDC\u65B9:' + escHtml(_hch0.location) + ']</span>';
+        if (_hch0.location && !_isSameLocation(_hch0.location, GM._capital||'\u4EAC\u57CE')) holderDetail += ' <span style="color:var(--amber-400);">[\u8FDC\u65B9:' + escHtml(_hch0.location) + ']</span>';
         holderDetail += '</div>';
         if (_lastEval) {
           holderDetail += '<div style="font-size:0.65rem;color:var(--color-foreground-muted);padding:2px 0;border-top:1px solid var(--color-border-subtle);">';

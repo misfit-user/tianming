@@ -225,7 +225,7 @@ function showProvinceDetails(region) {
     // 驻地角色
     var _localChars = '';
     if (typeof GM !== 'undefined' && GM.chars) {
-        var _lc = GM.chars.filter(function(c){return c.alive!==false && c.location===region.name;});
+        var _lc = GM.chars.filter(function(c){return c.alive!==false && _isSameLocation(c.location, region.name);});
         if (_lc.length > 0) {
             _localChars = '<div style="margin-top:4px;"><strong>\u9A7B\u5730\u4EBA\u7269\uFF1A</strong>' + _lc.map(function(c){return c.name;}).join('\u3001') + '</div>';
         }

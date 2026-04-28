@@ -231,7 +231,7 @@ async function aiDeepReadScenario() {
       if (c.officialTitle && c.officialTitle !== '无') _brief += ' ' + c.officialTitle;
       else if (c.title) _brief += ' ' + c.title;
       _brief += ' 忠' + (c.loyalty||50);
-      if (c.location && c.location !== (GM._capital||'京城')) _brief += ' 在' + c.location;
+      if (c.location && !_isSameLocation(c.location, GM._capital||'京城')) _brief += ' 在' + c.location;
       blockB += '  ' + _brief + '\n';
       return;
     }
@@ -290,7 +290,7 @@ async function aiDeepReadScenario() {
     if (c.ethnicity) line += ' 民族:' + c.ethnicity;
     if (c.birthplace) line += ' 籍贯:' + c.birthplace;
     if (c.partyRank) line += '(' + c.partyRank + ')';
-    if (c.location && c.location !== (GM._capital||'京城')) line += ' 在:' + c.location;
+    if (c.location && !_isSameLocation(c.location, GM._capital||'京城')) line += ' 在:' + c.location;
     if (c.bio) line += ' 简介:' + c.bio;
     if (c.personalGoal) line += ' 目标:' + c.personalGoal;
     if (c._goalSatisfaction !== undefined) line += '(满足' + Math.round(c._goalSatisfaction) + '%)';

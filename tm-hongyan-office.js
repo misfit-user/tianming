@@ -467,7 +467,7 @@ function renderLetterPanel() {
   // ── NPC 卡片列表 ──
   var el = _$('letter-chars');
   if (el) {
-    var remote = (GM.chars||[]).filter(function(c) { return c.alive !== false && c.location && c.location !== capital && !c.isPlayer; });
+    var remote = (GM.chars||[]).filter(function(c) { return c.alive !== false && c.location && !_isSameLocation(c.location, capital) && !c.isPlayer; });
     if (remote.length === 0) {
       el.innerHTML = '<div style="color:var(--color-foreground-muted);font-size:12px;padding:20px 14px;text-align:center;font-family:var(--font-serif);letter-spacing:0.12em;line-height:1.8;">\u767E\u5B98\u5747\u5728\u4EAC\u57CE\u00B7\u65E0\u9700\u4F20\u4E66</div>';
     } else {
@@ -1406,7 +1406,7 @@ function _generateLetterReply(letter) {
 /** AI prompt注入：角色位置+传书完整态势 */
 function getLocationPromptInjection() {
   var capital = GM._capital || '京城';
-  var remote = (GM.chars||[]).filter(function(c) { return c.alive !== false && c.location && c.location !== capital; });
+  var remote = (GM.chars||[]).filter(function(c) { return c.alive !== false && c.location && !_isSameLocation(c.location, capital); });
   var allLetters = GM.letters || [];
   var pendingLetters = allLetters.filter(function(l) { return l.status !== 'returned' && l.status !== 'intercepted'; });
   var suspectedIds = GM._letterSuspects || [];
@@ -1906,7 +1906,7 @@ function renderGameState(){
       var agSel = _$('letter-agent');
       if (agSel) {
         var _cap2 = GM._capital || '京城';
-        var _inKy = (GM.chars||[]).filter(function(c){ return c.alive !== false && c.location === _cap2 && !c.isPlayer; });
+        var _inKy = (GM.chars||[]).filter(function(c){ return c.alive !== false && (!c.location || _isSameLocation(c.location, _cap2)) && !c.isPlayer; });
         agSel.innerHTML = _inKy.map(function(c){ return '<option value="' + escHtml(c.name) + '">' + escHtml(c.name) + '（' + escHtml(c.title||'') + '）</option>'; }).join('');
       }
     } else { if (agRow) agRow.style.display = 'none'; }
@@ -2140,7 +2140,7 @@ function renderGameState(){
         if(ch._travelTo){
           var _rd5=(typeof ch._travelRemainingDays==='number'&&ch._travelRemainingDays>0)?ch._travelRemainingDays:0;
           locTag='<span style="font-size:0.55rem;padding:0 3px;border-radius:2px;background:rgba(184,154,83,0.18);color:var(--gold-400);margin-left:2px;" title="\u5728\u9014">'+escHtml(ch._travelFrom||ch.location||'')+'\u2192'+escHtml(ch._travelTo)+(_rd5?'\u00B7'+_rd5+'\u65E5':'')+'</span>';
-        } else if(ch.location&&ch.location!==_cap) locTag='<span style="font-size:0.55rem;padding:0 3px;border-radius:2px;background:rgba(184,154,83,0.1);color:var(--gold-400);margin-left:2px;">'+ch.location+'</span>';
+        } else if(ch.location&&!_isSameLocation(ch.location,_cap)) locTag='<span style="font-size:0.55rem;padding:0 3px;border-radius:2px;background:rgba(184,154,83,0.1);color:var(--gold-400);margin-left:2px;">'+ch.location+'</span>';
         // 性格特质缩写
         var traitBrief='';
         if(ch.traitIds&&ch.traitIds.length>0&&P.traitDefinitions){

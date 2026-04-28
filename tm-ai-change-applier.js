@@ -1031,6 +1031,13 @@
       }
       // travelTo：启动走位
       if (cu.travelTo && cu.travelTo.toLocation) {
+        // —— 幂等保护·若已在赴同一终点·不重写剩余天数（避免 AI 重复 issue 重置走位） ——
+        if (ch._travelTo && ch._travelTo === cu.travelTo.toLocation) {
+          if (typeof global.addEB === 'function') {
+            global.addEB('人事', ch.name + ' 复诏催程赴 ' + ch._travelTo + '（已在路·留剩 ' + (typeof ch._travelRemainingDays === 'number' ? ch._travelRemainingDays + ' 日' : '未抵') + '）');
+          }
+          return; // 跳过重启走位
+        }
         var days = cu.travelTo.estimatedDays || _estimateTravelDays(ch.location, cu.travelTo.toLocation);
         ch._travelTo = cu.travelTo.toLocation;
         ch._travelFrom = ch.location || '';
@@ -1074,6 +1081,17 @@
       // 是否需要先走位（任命/调任至他处皆走位）
       var needTravel = oa.toLocation && ch.location && oa.toLocation !== ch.location;
       if (needTravel && (action === 'appoint' || action === 'transfer')) {
+        // —— 幂等保护·若已在赴同一终点·不重写剩余天数（避免 AI 重复 issue 重置走位） ——
+        if (ch._travelTo && ch._travelTo === oa.toLocation) {
+          if (typeof global.addEB === 'function') {
+            global.addEB('任命', ch.name + ' 复诏催赴 ' + ch._travelTo + ' 任 ' + (oa.post||'') + '（已在路·留剩 ' + (typeof ch._travelRemainingDays === 'number' ? ch._travelRemainingDays + ' 日' : '未抵') + '）');
+          }
+          // 若新诏含官职·补到 _travelAssignPost（原 travelTo 可能是 char_updates 设的·没 assignPost）
+          if (oa.post && !ch._travelAssignPost) {
+            ch._travelAssignPost = (oa.dept ? oa.dept + '/' : '') + oa.post;
+          }
+          return;
+        }
         // 启动走位·到达后再就任（由 travel tick 完成）
         var days = oa.estimatedDays || _estimateTravelDays(ch.location, oa.toLocation);
         ch._travelTo = oa.toLocation;
@@ -1382,6 +1400,17 @@
       if (!pu || !pu.name) return;
       var existing = G.activeProjects.find(function(p){ return p.name === pu.name; });
       if (existing) {
+        // —— 防进度倒退·防卡死保护 ——
+        // 已 completed/abandoned 的不再被覆盖（除非 AI 明确传 reactivate=true）
+        if ((existing.status === 'completed' || existing.status === 'abandoned') && !pu.reactivate) {
+          if (typeof global.addEB === 'function') global.addEB('工程', existing.name + '·已结案·拒绝重写（如需重启请加 reactivate=true）');
+          return;
+        }
+        // 进度不可倒退（除非 AI 明确传 progressReason 说明意外·如停工/被破坏）
+        if (typeof pu.progress === 'number' && typeof existing.progress === 'number' && pu.progress < existing.progress && !pu.progressReason) {
+          if (typeof global.addEB === 'function') global.addEB('工程', existing.name + '·进度倒退被拒（旧 ' + existing.progress + '%→新 ' + pu.progress + '%·缺 progressReason）');
+          delete pu.progress; // 保留旧 progress·其他字段照写
+        }
         Object.keys(pu).forEach(function(k){
           if (/^_/.test(k)) return;
           existing[k] = pu[k];

@@ -171,7 +171,7 @@ async function genMemorialsAI(count){
       // 位置与信息边界
       var _locInfo = '';
       var _capital2 = GM._capital || '京城';
-      if (ch.location && ch.location !== _capital2) {
+      if (ch.location && !_isSameLocation(ch.location, _capital2)) {
         _locInfo = ' [远方:' + ch.location + ']';
         // 计算此NPC最后收到京城信息的时间
         var _lastInfo = 0;
@@ -480,7 +480,7 @@ async function genMemorialsAI(count){
         var mem = { id: uid(), from: m.from || '', title: m.title || '', type: m.type || '\u653F\u52A1', subtype: m.subtype || '\u9898\u672C', content: m.content || '', status: 'pending', turn: GM.turn, reply: '', reliability: m.reliability || 'medium', bias: m.bias || 'none', relatedTo: m.relatedTo || '', priority: m.priority || 'normal' };
         // 检查上奏者是否在京城
         var ch = findCharByName(mem.from);
-        var isRemote = ch && ch.alive !== false && ch.location && ch.location !== capital;
+        var isRemote = ch && ch.alive !== false && ch.location && !_isSameLocation(ch.location, capital);
         if (isRemote) {
           // 远方NPC奏疏——进入驿递队列
           mem._remoteFrom = ch.location;
@@ -718,7 +718,7 @@ function _memorialSendReply(m, actionLabel) {
   var ch = findCharByName(m.from);
   if (!ch || !ch.location) return;
   var capital = GM._capital || '京城';
-  if (ch.location === capital) return; // 在京无需传书
+  if (_isSameLocation(ch.location, capital)) return; // 在京无需传书
   var days = (typeof calcLetterDays === 'function') ? calcLetterDays(capital, ch.location, 'urgent') : 3;
   var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
   var deliveryTurns = Math.max(1, Math.ceil(days / dpv));
@@ -794,7 +794,7 @@ function _referMemorial(idx) {
   // 弹窗选择批转对象
   var _playerLoc = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'京城');
   var _candidates = (GM.chars||[]).filter(function(c) {
-    return c.alive !== false && !c.isPlayer && c.name !== m.from && (c.location === _playerLoc || !c.location);
+    return c.alive !== false && !c.isPlayer && c.name !== m.from && (!c.location || _isSameLocation(c.location, _playerLoc));
   });
   // 按品级排序
   _candidates.sort(function(a,b) {
@@ -900,7 +900,7 @@ function _summonForMemorial(memIdx){
   var ch=findCharByName(m.from);
   if(!ch){toast('找不到此人');return;}
   var capital = GM._capital || '京城';
-  if (ch.location && ch.location !== capital) {
+  if (ch.location && !_isSameLocation(ch.location, capital)) {
     // 远方NPC——无法面询，提供三个选项
     var bg = document.createElement('div');
     bg.style.cssText = 'position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';

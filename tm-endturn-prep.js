@@ -331,7 +331,7 @@ function _endTurn_collectInput() {
     var _remoteTargets = [];
     (GM.chars||[]).forEach(function(c) {
       if (c.alive === false || c.isPlayer) return;
-      if (c.location && c.location !== _capital && et.content.indexOf(c.name) >= 0) {
+      if (c.location && !_isSameLocation(c.location, _capital) && et.content.indexOf(c.name) >= 0) {
         _remoteTargets.push(c);
       }
     });

@@ -118,7 +118,7 @@ function _offPickerRowHtml(c) {
   var tags = [];
   if (c.officialTitle) tags.push('<span style="font-size:0.68rem;padding:1px 6px;border-radius:3px;background:rgba(184,154,83,0.12);color:var(--gold-400);">\u73B0\u4EFB ' + escHtml(c.officialTitle) + '</span>');
   else tags.push('<span style="font-size:0.68rem;padding:1px 6px;border-radius:3px;background:rgba(121,175,135,0.12);color:var(--celadon-400);">\u5E03\u8863</span>');
-  if (c.location && c.location !== (GM._capital||'京城')) {
+  if (c.location && !_isSameLocation(c.location, GM._capital||'京城')) {
     var _td = c._pickerTravelDays > 0 ? ('\u00B7\u8D74\u4EFB ' + c._pickerTravelDays + ' \u65E5') : '';
     tags.push('<span style="font-size:0.68rem;padding:1px 6px;border-radius:3px;background:rgba(192,64,48,0.1);color:var(--vermillion-400);">\u5728 ' + escHtml(c.location) + _td + '</span>');
   }
@@ -366,7 +366,7 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     if (_regionalMatch && _regionalMatch[1]) {
       _travelDestination = _regionalMatch[1];
     }
-    if (newChar.location && newChar.location !== _travelDestination) {
+    if (newChar.location && !_isSameLocation(newChar.location, _travelDestination)) {
       var _trvDays = 20;
       try {
         if (typeof calcLetterDays === 'function') {
@@ -857,7 +857,7 @@ function _offTingTui(pathArr, deptName, posName, pos) {
           var _rl2 = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 99;
           if (_rl2 <= 8) { // 从四品以上有资格参与廷推
             var _ch2 = findCharByName(p.holder);
-            if (_ch2 && _ch2.alive !== false && (_ch2.location === capital || !_ch2.location)) {
+            if (_ch2 && _ch2.alive !== false && (!_ch2.location || _isSameLocation(_ch2.location, capital))) {
               _recommenders.push({ name: p.holder, dept: n.name, pos: p.name, rank: p.rank, ch: _ch2 });
             }
           }

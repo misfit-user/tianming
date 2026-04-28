@@ -711,7 +711,7 @@ function _renderDifangPanel() {
     if (item.minxin != null) {
       item.stability = item.minxin;
     } else {
-      var localChars = (GM.chars || []).filter(function(c) { return c.alive !== false && c.location === d.name; });
+      var localChars = (GM.chars || []).filter(function(c) { return c.alive !== false && _isSameLocation(c.location, d.name); });
       var avgLoy = localChars.length > 0 ? Math.round(localChars.reduce(function(s,c){ return s+(c.loyalty||50); },0)/localChars.length) : 50;
       item.stability = Math.max(0, Math.min(100, avgLoy - item.unrest * 0.5));
     }

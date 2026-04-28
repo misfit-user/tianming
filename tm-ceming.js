@@ -143,6 +143,7 @@
         birthYear: profile.birthYear,
         deathYear: profile.deathYear,
         scenarioStartYear: scnStart,
+        historicalFactionHint: profile.historicalFaction || '',
         tier: 'secondary'
       });
       if (newChar) {
@@ -264,6 +265,7 @@
     prompt += '  "deathYear": 700,\n';
     prompt += '  "officialTitle": "最高官至",\n';
     prompt += '  "role": "corrupt|regent|military|clean|scholar|loyal|reformer|usurper|eunuch",\n';
+    prompt += '  "historicalFaction": "★史实势力·此人原属哪个朝廷/政权(如范文程→后金·岳飞→南宋·诸葛亮→蜀汉·吴三桂晚年→清朝廷)",\n';
     prompt += '  "background": "60-100字背景",\n';
     prompt += '  "famousQuote": "代表性言论",\n';
     prompt += '  "historicalFate": "20-40字历史结局",\n';
@@ -386,6 +388,7 @@
       '生卒：' + (card.birthYear || '?') + '-' + (card.deathYear || '?') + '\n' +
       '官至：' + (card.officialTitle || '') + '\n' +
       '类型：' + (card.role || '') + '\n' +
+      '史实势力：' + (card.historicalFaction || '') + '\n' +
       '背景：' + (card.background || '') + '\n' +
       '历史结局：' + (card.historicalFate || '') + '\n' +
       (card.famousQuote ? '代表言论：' + card.famousQuote + '\n' : '');
@@ -403,6 +406,7 @@
       birthYear: card.birthYear,
       deathYear: card.deathYear,
       scenarioStartYear: scnStart2,
+      historicalFactionHint: card.historicalFaction || '',
       tier: 'secondary'  // 策名默认次要 API·_getAITier 自动回退 primary
     });
 

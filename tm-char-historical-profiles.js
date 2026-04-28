@@ -30,7 +30,7 @@
     heshen: {
       id: 'heshen', name: '和珅', zi: '致斋',
       birthYear: 1750, deathYear: 1799, alternateNames: ['和致斋'],
-      era: '乾嘉', dynasty: '清', role: 'corrupt',
+      era: '乾嘉', dynasty: '清', role: 'corrupt', historicalFaction: '清朝廷',
       title: '文华殿大学士', officialTitle: '领班军机大臣',
       rankLevel: 29, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 85, military: 40, intelligence: 92,
@@ -54,7 +54,7 @@
     yansong: {
       id: 'yansong', name: '严嵩', zi: '惟中',
       birthYear: 1480, deathYear: 1567, alternateNames: ['介溪','勉庵'],
-      era: '嘉靖', dynasty: '明', role: 'corrupt',
+      era: '嘉靖', dynasty: '明', role: 'corrupt', historicalFaction: '明朝廷',
       title: '武英殿大学士', officialTitle: '首辅',
       rankLevel: 29, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 75, military: 45, intelligence: 88,
@@ -77,7 +77,7 @@
 
     lubuwei: {
       id: 'lubuwei', name: '吕不韦', zi: '文信',
-      birthYear: -291, deathYear: -235, alternateNames: ['文信侯'],
+      birthYear: -291, deathYear: -235, alternateNames: ['文信侯'], historicalFaction: '秦',
       era: '战国末', dynasty: '秦', role: 'regent',
       title: '文信侯', officialTitle: '相国',
       rankLevel: 30, socialClass: 'noble', department: 'central',
@@ -102,7 +102,7 @@
     weizhongxian: {
       id: 'weizhongxian', name: '魏忠贤', zi: '完吾',
       birthYear: 1568, deathYear: 1627, alternateNames: ['李进忠'],
-      era: '天启', dynasty: '明', role: 'eunuch',
+      era: '天启', dynasty: '明', role: 'eunuch', historicalFaction: '明朝廷',
       title: '九千岁', officialTitle: '司礼秉笔太监·东厂提督',
       rankLevel: 28, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 60, military: 30, intelligence: 75,
@@ -127,7 +127,7 @@
     zhangjuzheng: {
       id: 'zhangjuzheng', name: '张居正', zi: '叔大',
       birthYear: 1525, deathYear: 1582, alternateNames: ['张白圭','文忠'],
-      era: '万历', dynasty: '明', role: 'reformer',
+      era: '万历', dynasty: '明', role: 'reformer', historicalFaction: '明朝廷',
       title: '太师', officialTitle: '内阁首辅',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 98, military: 70, intelligence: 95,
@@ -151,7 +151,7 @@
     wanganshi: {
       id: 'wanganshi', name: '王安石', zi: '介甫',
       birthYear: 1021, deathYear: 1086, alternateNames: ['王半山','文公','临川先生'],
-      era: '熙宁', dynasty: '北宋', role: 'reformer',
+      era: '熙宁', dynasty: '北宋', role: 'reformer', historicalFaction: '宋朝廷',
       title: '司空', officialTitle: '同中书门下平章事',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 90, military: 55, intelligence: 95,
@@ -175,7 +175,7 @@
     shangyang: {
       id: 'shangyang', name: '商鞅', zi: '公孙',
       birthYear: -390, deathYear: -338, alternateNames: ['卫鞅','公孙鞅'],
-      era: '战国', dynasty: '秦孝公', role: 'reformer',
+      era: '战国', dynasty: '秦孝公', role: 'reformer', historicalFaction: '秦',
       title: '商君', officialTitle: '大良造',
       rankLevel: 28, socialClass: 'noble', department: 'central',
       abilities: { governance: 98, military: 85, intelligence: 95,
@@ -200,7 +200,7 @@
     caocao: {
       id: 'caocao', name: '曹操', zi: '孟德',
       birthYear: 155, deathYear: 220, alternateNames: ['阿瞒','吉利','魏武帝'],
-      era: '汉末', dynasty: '东汉', role: 'usurper',
+      era: '汉末', dynasty: '东汉', role: 'usurper', historicalFaction: '曹魏',
       title: '魏王', officialTitle: '丞相',
       rankLevel: 30, socialClass: 'noble', department: 'central',
       abilities: { governance: 92, military: 95, intelligence: 95,
@@ -224,7 +224,7 @@
     simayi: {
       id: 'simayi', name: '司马懿', zi: '仲达',
       birthYear: 179, deathYear: 251, alternateNames: ['宣帝','晋宣帝'],
-      era: '三国末', dynasty: '曹魏', role: 'usurper',
+      era: '三国末', dynasty: '曹魏', role: 'usurper', historicalFaction: '曹魏',
       title: '舞阳侯', officialTitle: '太尉',
       rankLevel: 30, socialClass: 'noble', department: 'military',
       abilities: { governance: 88, military: 92, intelligence: 98,
@@ -248,7 +248,7 @@
     huoguang: {
       id: 'huoguang', name: '霍光', zi: '子孟',
       birthYear: -135, deathYear: -68, alternateNames: ['霍子孟','宣成侯'],
-      era: '昭宣', dynasty: '西汉', role: 'regent',
+      era: '昭宣', dynasty: '西汉', role: 'regent', historicalFaction: '汉朝廷',
       title: '大司马大将军', officialTitle: '博陆侯',
       rankLevel: 30, socialClass: 'noble', department: 'central',
       abilities: { governance: 90, military: 80, intelligence: 88,
@@ -272,7 +272,7 @@
     aobai: {
       id: 'aobai', name: '鳌拜', zi: '',
       birthYear: 1610, deathYear: 1669, alternateNames: [],
-      era: '康熙初', dynasty: '清', role: 'regent',
+      era: '康熙初', dynasty: '清', role: 'regent', historicalFaction: '清朝廷',
       title: '太师', officialTitle: '辅政大臣',
       rankLevel: 30, socialClass: 'noble', department: 'military',
       abilities: { governance: 55, military: 95, intelligence: 65,
@@ -297,7 +297,7 @@
     baozheng: {
       id: 'baozheng', name: '包拯', zi: '希仁',
       birthYear: 999, deathYear: 1062, alternateNames: ['包青天','包公','孝肃'],
-      era: '仁宗朝', dynasty: '北宋', role: 'clean',
+      era: '仁宗朝', dynasty: '北宋', role: 'clean', historicalFaction: '宋朝廷',
       title: '枢密副使', officialTitle: '权知开封府',
       rankLevel: 25, socialClass: 'civilOfficial', department: 'judicial',
       abilities: { governance: 85, military: 40, intelligence: 85,
@@ -321,7 +321,7 @@
     hairui: {
       id: 'hairui', name: '海瑞', zi: '汝贤',
       birthYear: 1514, deathYear: 1587, alternateNames: ['刚峰','忠介'],
-      era: '嘉靖-万历', dynasty: '明', role: 'clean',
+      era: '嘉靖-万历', dynasty: '明', role: 'clean', historicalFaction: '明朝廷',
       title: '南京右都御史', officialTitle: '右佥都御史巡抚应天',
       rankLevel: 26, socialClass: 'civilOfficial', department: 'judicial',
       abilities: { governance: 75, military: 30, intelligence: 75,
@@ -346,7 +346,7 @@
     wentianxiang: {
       id: 'wentianxiang', name: '文天祥', zi: '宋瑞',
       birthYear: 1236, deathYear: 1283, alternateNames: ['履善','文山','信国'],
-      era: '宋末', dynasty: '南宋', role: 'loyal',
+      era: '宋末', dynasty: '南宋', role: 'loyal', historicalFaction: '宋朝廷',
       title: '少保·信国公', officialTitle: '右丞相',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 75, military: 65, intelligence: 90,
@@ -370,7 +370,7 @@
     fanzhongyan: {
       id: 'fanzhongyan', name: '范仲淹', zi: '希文',
       birthYear: 989, deathYear: 1052, alternateNames: ['朱说','文正'],
-      era: '仁宗朝', dynasty: '北宋', role: 'scholar',
+      era: '仁宗朝', dynasty: '北宋', role: 'scholar', historicalFaction: '宋朝廷',
       title: '资政殿学士', officialTitle: '参知政事',
       rankLevel: 27, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 90, military: 75, intelligence: 92,
@@ -394,7 +394,7 @@
     simaguang: {
       id: 'simaguang', name: '司马光', zi: '君实',
       birthYear: 1019, deathYear: 1086, alternateNames: ['迂叟','文正','涑水先生'],
-      era: '哲宗朝', dynasty: '北宋', role: 'scholar',
+      era: '哲宗朝', dynasty: '北宋', role: 'scholar', historicalFaction: '宋朝廷',
       title: '温国公', officialTitle: '同中书门下平章事',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 85, military: 30, intelligence: 95,
@@ -419,7 +419,7 @@
     yuefei: {
       id: 'yuefei', name: '岳飞', zi: '鹏举',
       birthYear: 1103, deathYear: 1142, alternateNames: ['岳武穆','武穆王','忠武'],
-      era: '南宋初', dynasty: '南宋', role: 'military',
+      era: '南宋初', dynasty: '南宋', role: 'military', historicalFaction: '宋朝廷',
       title: '鄂王', officialTitle: '枢密副使',
       rankLevel: 28, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 75, military: 98, intelligence: 85,
@@ -443,7 +443,7 @@
     hanxin: {
       id: 'hanxin', name: '韩信', zi: '',
       birthYear: -231, deathYear: -196, alternateNames: ['淮阴侯','齐王','楚王'],
-      era: '楚汉之际', dynasty: '西汉', role: 'military',
+      era: '楚汉之际', dynasty: '西汉', role: 'military', historicalFaction: '汉朝廷',
       title: '淮阴侯', officialTitle: '大将军·楚王',
       rankLevel: 30, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 65, military: 100, intelligence: 92,
@@ -468,7 +468,7 @@
     nianGengyao: {
       id: 'nianGengyao', name: '年羹尧', zi: '亮工',
       birthYear: 1679, deathYear: 1726, alternateNames: ['双峰'],
-      era: '雍正初', dynasty: '清', role: 'military',
+      era: '雍正初', dynasty: '清', role: 'military', historicalFaction: '清朝廷',
       title: '一等公', officialTitle: '川陕总督·抚远大将军',
       rankLevel: 29, socialClass: 'militaryOfficial', department: 'military',
       abilities: { governance: 75, military: 92, intelligence: 80,
@@ -493,7 +493,7 @@
     liusi: {
       id: 'liusi', name: '李斯', zi: '通古',
       birthYear: -284, deathYear: -208, alternateNames: [],
-      era: '秦', dynasty: '秦', role: 'regent',
+      era: '秦', dynasty: '秦', role: 'regent', historicalFaction: '秦',
       title: '廷尉·丞相', officialTitle: '左丞相',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 95, military: 55, intelligence: 95,
@@ -517,7 +517,7 @@
     zhugeLiang: {
       id: 'zhugeLiang', name: '诸葛亮', zi: '孔明',
       birthYear: 181, deathYear: 234, alternateNames: ['卧龙','武乡侯','忠武侯'],
-      era: '三国初', dynasty: '蜀汉', role: 'scholar',
+      era: '三国初', dynasty: '蜀汉', role: 'scholar', historicalFaction: '蜀汉',
       title: '武乡侯', officialTitle: '丞相',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 100, military: 90, intelligence: 100,
@@ -541,7 +541,7 @@
     xiaohe: {
       id: 'xiaohe', name: '萧何', zi: '',
       birthYear: -257, deathYear: -193, alternateNames: ['酂文终侯'],
-      era: '秦末汉初', dynasty: '西汉', role: 'regent',
+      era: '秦末汉初', dynasty: '西汉', role: 'regent', historicalFaction: '汉朝廷',
       title: '酂侯', officialTitle: '相国',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 98, military: 55, intelligence: 90,
@@ -565,7 +565,7 @@
     fangxuanling: {
       id: 'fangxuanling', name: '房玄龄', zi: '乔',
       birthYear: 579, deathYear: 648, alternateNames: ['房乔','文昭'],
-      era: '贞观', dynasty: '唐', role: 'scholar',
+      era: '贞观', dynasty: '唐', role: 'scholar', historicalFaction: '唐朝廷',
       title: '梁国公', officialTitle: '尚书左仆射',
       rankLevel: 29, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 95, military: 50, intelligence: 92,
@@ -589,7 +589,7 @@
     qinhui: {
       id: 'qinhui', name: '秦桧', zi: '会之',
       birthYear: 1090, deathYear: 1155, alternateNames: ['秦会之','缪丑'],
-      era: '南宋初', dynasty: '南宋', role: 'corrupt',
+      era: '南宋初', dynasty: '南宋', role: 'corrupt', historicalFaction: '宋朝廷',
       title: '申王', officialTitle: '右仆射同中书门下平章事',
       rankLevel: 30, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 70, military: 20, intelligence: 85,
@@ -613,7 +613,7 @@
     kouzhun: {
       id: 'kouzhun', name: '寇准', zi: '平仲',
       birthYear: 961, deathYear: 1023, alternateNames: ['莱国忠愍'],
-      era: '真宗朝', dynasty: '北宋', role: 'loyal',
+      era: '真宗朝', dynasty: '北宋', role: 'loyal', historicalFaction: '宋朝廷',
       title: '莱国公', officialTitle: '同中书门下平章事',
       rankLevel: 29, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 85, military: 70, intelligence: 88,
@@ -637,7 +637,7 @@
     yaoChong: {
       id: 'yaoChong', name: '姚崇', zi: '元之',
       birthYear: 651, deathYear: 721, alternateNames: ['姚元崇','文献','救时宰相'],
-      era: '开元', dynasty: '唐', role: 'reformer',
+      era: '开元', dynasty: '唐', role: 'reformer', historicalFaction: '唐朝廷',
       title: '梁国公', officialTitle: '紫微令',
       rankLevel: 29, socialClass: 'civilOfficial', department: 'central',
       abilities: { governance: 95, military: 55, intelligence: 92,
@@ -661,7 +661,7 @@
     liuji: {
       id: 'liuji', name: '刘瑾', zi: '',
       birthYear: 1451, deathYear: 1510, alternateNames: ['立皇帝','八虎之首'],
-      era: '正德', dynasty: '明', role: 'eunuch',
+      era: '正德', dynasty: '明', role: 'eunuch', historicalFaction: '明朝廷',
       title: '立皇帝', officialTitle: '司礼监掌印',
       rankLevel: 28, socialClass: 'imperial', department: 'imperial',
       abilities: { governance: 60, military: 35, intelligence: 80,
@@ -731,6 +731,14 @@
       fateHint: p.fateHint,
       era: p.era,
       dynasty: p.dynasty,
+      historicalFaction: p.historicalFaction || '',
+      faction: (typeof global._resolveFactionForChar === 'function')
+        ? global._resolveFactionForChar({
+            profile: p,
+            location: opts.location || p.location,
+            timelineStatus: 'alive'
+          })
+        : '',
       _fromProfile: profileId
     };
     return ch;

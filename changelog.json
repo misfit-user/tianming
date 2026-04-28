@@ -2,6 +2,22 @@
   "_comment": "天命·更新日志——新条目 unshift 到数组最前（由近及远）。格式：{date, module, title, items[]}；items 元素可为字符串或 {what, why}。",
   "entries": [
     {
+      "date": "2026-04-28",
+      "module": "邸报·策名/征召/推演 人物归属修·消灭『无势力』",
+      "title": "用户反馈：策名生成的人物全被纳入『无势力』。审计发现『无势力』不是真势力名·而是 UI 兜底字符串(char.faction 空时显示)。三条路径会落空：(1) 库内当世人物 createCharFromProfile() 完全不写 faction 字段·秒返路径漏；(2) _fallbackTemplate(API 缺失/AI 失败) 也不写 faction；(3) AI 兜底链原本最后落到 GM.factions[0]·偶尔模糊匹配落空也会出 '中立'。修：抽统一 helper _resolveFactionForChar(opts) 走 7 步兜底链·三处全走 helper·新增 historicalFaction 字段表达『范文程史实属后金』『岳飞史实属南宋』这类无法从 dynasty 推断的归属。永不再出现『无势力』",
+      "items": [
+        { "what": "tm-char-autogen.js 顶部新增 _resolveFactionForChar(opts) helper · 7 步兜底链：1) 显式 explicitFaction → 模糊匹配 GM.factions·2) profile.historicalFaction(库内·人工标注)·3) aiData.historicalFaction(AI 答的史实势力)·4) aiData.faction(AI 答的当前势力·兼容旧路径)·5) timelineStatus 已知(alive/past_visitor/future_visitor)→ 玩家朝廷·6) location 落 faction.territory 自由文本内 → 该势力·7) 终极兜底 → 玩家朝廷(GM.factions[0])。永不返回 '中立'/'无势力'。导出到 global._resolveFactionForChar 让其他文件可调", "why": "原 AI 路径 28 行兜底逻辑混在 aiGenerateCompleteCharacter 中间·两个非 AI 路径(createCharFromProfile / _fallbackTemplate) 完全无 faction 写入·三处行为不一致。抽 helper 统一·一处实现·三处调用·并扩展 historicalFaction 维度让史实势力(范文程→后金等)能正确表达" },
+        { "what": "tm-char-autogen.js aiGenerateCompleteCharacter L378-405 兜底替换为 _resolveFactionForChar 调用·入参 explicitFaction/aiData/location/timelineStatus/year·新增 opts.historicalFactionHint 透传(让 summonByCard / 跨时空 summonByProfile 把 card/profile 的史实势力填进 data.historicalFaction 再走 helper)", "why": "原代码模糊匹配是裸正则·剥装饰再 indexOf·与 helper 重复。统一后 prompt 里 AI 必答 historicalFaction 字段·这条字段优先级排在 faction 之前·让范文程在崇祯剧本能正确归 '后金'(史实) 而非 '明朝廷'(prompt 候选清单)" },
+        { "what": "tm-char-autogen.js _fallbackTemplate(L528) 加 faction 字段·调 _resolveFactionForChar({explicitFaction,location,timelineStatus:'alive'})·原本完全不写 faction·UI 全显『无势力』", "why": "API 缺失/AI 失败时降级模板·之前直接绕过所有 faction 处理·跳过失败兜底就是『无势力』根源之一" },
+        { "what": "tm-char-autogen.js JSON schema(L208 area) 新增 historicalFaction 字段提示·『★史实中此人原属势力名称·即使该势力不在当前清单也照实填(如范文程→后金·岳飞→南宋·诸葛亮→蜀汉·秦桧→南宋)·虚构人物或平民隐士留空』·与 faction 字段并行(faction=当前游戏当前清单·historicalFaction=史实)", "why": "之前 prompt 只让 AI 选当前 faction 清单中一个·跨势力效忠(范文程仕清)的历史人物会被强行塞进史实不属的势力·或落空。新字段让 AI 可表达真实归属" },
+        { "what": "tm-char-historical-profiles.js createCharFromProfile() 加 historicalFaction:p.historicalFaction||'' 透传 + faction 字段·调 global._resolveFactionForChar 兜底(profile/location/timelineStatus:'alive')·原本完全不写 faction·导致库内当世人物全『无势力』", "why": "summonByProfile 当世路径(秒返·零 API)走 createCharFromProfile·原代码 ch 对象没有 faction 字段·UI 兜底显『无势力』。这是策名最常用路径的根源 bug" },
+        { "what": "tm-char-historical-profiles.js 27 条 profile 全部补 historicalFaction 字段：和珅/年羹尧/鳌拜→清朝廷·严嵩/魏忠贤/张居正/海瑞/刘瑾→明朝廷·王安石/包拯/范仲淹/司马光/岳飞/秦桧/寇准/文天祥→宋朝廷·房玄龄/姚崇→唐朝廷·霍光/韩信/萧何→汉朝廷·诸葛亮→蜀汉·曹操/司马懿→曹魏·吕不韦/商鞅/李斯→秦", "why": "明确性 > dynasty 推断。比如『曹操 dynasty=东汉·role=usurper·historicalFaction=曹魏』·不是看 dynasty 字段然后猜。三国时代『dynasty=汉』太多歧义(蜀汉/曹魏自称汉相/孙吴) — 显式字段一锤定音" },
+        { "what": "tm-ceming.js aiSearchCard 检索身份卡 schema 加 historicalFaction 字段·prompt 让 AI 答『此人原属哪个朝廷/政权(如范文程→后金·吴三桂晚年→清朝廷)』·summonByCard 把 card.historicalFaction 透传到 sourceContext + opts.historicalFactionHint", "why": "档案库外的人物(玩家手输姓名)走 AI 两步检索·第一步本来就在查史料·让 AI 多答一个字段几乎零成本·避免再补档案库" },
+        { "what": "tm-ceming.js summonByProfile 跨时空(演义模式·穿越者)路径加 historicalFactionHint:profile.historicalFaction 透传给 aiGenerateCompleteCharacter·让跨时空人物的史实归属保留", "why": "跨时空走 AI 重写 bio·之前 historicalFaction 没有透传·穿越者只能落到玩家朝廷兜底" },
+        { "what": "改动 3 个 JS 文件全过 node -c 校验。index.html cache-bust 三处 → v=2026042817(tm-char-autogen / tm-char-historical-profiles / tm-ceming)。零字段迁移·零数据破坏·重启即生效", "why": "局部 runtime 兜底加固·老存档无影响(老 char 对象无 faction 字段·下次任何写入即被填补)" }
+      ]
+    },
+    {
       "date": "2026-04-27",
       "module": "邸报·1627 财政数额校准 + 私产/公库 单位与帑廪同步",
       "title": "用户反馈两事：(1) 1627 官方剧本『收入开支数额都很不史实』·诊断后定位 cascade._taxBase 只读 division.environment.arableLand|carryingCapacity.arable·完全忽略 economyBase.farmland(scenario 主字段·16 处·北直 5800 万亩 / 南直 9500 万亩 / 全国 6-7 亿亩) — 田赋直接按 mouths*1.3 假亩数(北直只 ~1066 万亩)算·5.4× 偏低·全国年化银仅 ~180 万 vs 史实 540-1000 万。(2) 私产/公库 UI 硬编码『两/石/匹』·与帑廪 CurrencyUnit.getUnit() 朝代自适应字段不同步·非明清剧本(秦汉钱·唐宋元贯)显示错位",

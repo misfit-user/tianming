@@ -15,6 +15,89 @@
   'use strict';
 
   // ═══════════════════════════════════════════════════════════════════
+  // 势力归属解析 helper（统一 7 步兜底链）
+  //   1. 显式 explicitFaction → 模糊匹配
+  //   2. profile.historicalFaction（库内·人工标注）
+  //   3. aiData.historicalFaction（AI 答的史实势力）
+  //   4. aiData.faction（AI 答的当前势力·兼容旧路径）
+  //   5. timelineStatus 已知（alive/past_visitor/future_visitor）→ 玩家朝廷
+  //   6. location 落在某 faction.territory 内 → 该势力
+  //   7. 终极兜底 → 玩家朝廷（GM.factions[0]）
+  // 永不返回 '中立'/'无势力'·只要存在势力就给一个明确归宿
+  // ═══════════════════════════════════════════════════════════════════
+  function _resolveFactionForChar(opts) {
+    opts = opts || {};
+    var existFacs = (typeof GM !== 'undefined' && (GM.factions || GM.facs)) || [];
+    var existNames = [];
+    for (var i = 0; i < existFacs.length; i++) {
+      if (existFacs[i] && existFacs[i].name) existNames.push(existFacs[i].name);
+    }
+    if (existNames.length === 0) return '';
+    var playerFac = existNames[0];
+
+    function _match(target) {
+      if (!target) return '';
+      var clean = String(target).replace(/[（(].*?[)）]/g, '').replace(/[·,，][^·,，]*$/, '').trim();
+      if (!clean) return '';
+      if (existNames.indexOf(clean) >= 0) return clean;
+      var best = '';
+      for (var j = 0; j < existNames.length; j++) {
+        var n = existNames[j];
+        if (!n) continue;
+        if (n.indexOf(clean) >= 0 || clean.indexOf(n) >= 0) {
+          if (n.length > best.length) best = n;
+        }
+      }
+      return best;
+    }
+
+    var hit;
+    // 1. 显式
+    hit = _match(opts.explicitFaction);
+    if (hit) return hit;
+    // 2. profile.historicalFaction
+    if (opts.profile && opts.profile.historicalFaction) {
+      hit = _match(opts.profile.historicalFaction);
+      if (hit) return hit;
+    }
+    // 3. AI 答的 historicalFaction
+    if (opts.aiData && opts.aiData.historicalFaction) {
+      hit = _match(opts.aiData.historicalFaction);
+      if (hit) return hit;
+    }
+    // 4. AI 答的 faction（兼容老 prompt）
+    if (opts.aiData && opts.aiData.faction) {
+      hit = _match(opts.aiData.faction);
+      if (hit) return hit;
+    }
+    // 5. 时空状态明确（剧本年代内 / 玩家逆天召来）→ 玩家朝廷
+    var ts = opts.timelineStatus;
+    if (ts === 'alive' || ts === 'past_visitor' || ts === 'future_visitor') {
+      return playerFac;
+    }
+    // 6. 按 location 在 territory 自由文本里找
+    if (opts.location) {
+      var loc = String(opts.location).trim();
+      if (loc) {
+        var locBest = '';
+        for (var k = 0; k < existFacs.length; k++) {
+          var f = existFacs[k];
+          if (!f || !f.name) continue;
+          var terr = f.territory || f.capital || '';
+          if (!terr) continue;
+          if (String(terr).indexOf(loc) >= 0 || loc.indexOf(String(f.capital || '___none___')) >= 0) {
+            if (f.name.length > locBest.length) locBest = f.name;
+          }
+        }
+        if (locBest) return locBest;
+      }
+    }
+    // 7. 终极兜底
+    return playerFac;
+  }
+  global._resolveFactionForChar = _resolveFactionForChar;
+
+  // ═══════════════════════════════════════════════════════════════════
   // 核心：统一角色生成接口
   // ═══════════════════════════════════════════════════════════════════
 
@@ -206,6 +289,7 @@
       '  "birthplace": "\u51FA\u751F\u5730",\n' +
       '  "location": "\u5F53\u524D\u6240\u5728\u5730(\u5982\u5728\u4EFB\u4EC5\u586B\u4EFB\u6240\uFF1B\u5F85\u5B85\u5219\u586B\u5BB6\u4E61)",\n' +
       '  "faction": "★必须严格等于下列纯势力名之一·禁止括号/领袖/地域装饰·只填纯名字: [' + (_facNamesOnly.length ? _facNamesOnly.join(' | ') : '中立') + ']",\n' +
+      '  "historicalFaction": "★史实中此人原属势力名称·即使该势力不在当前清单也照实填(如范文程→后金·岳飞→南宋·诸葛亮→蜀汉·秦桧→南宋)·虚构人物或平民隐士留空",\n' +
       '  "class": "\u58EB\u65CF/\u5BD2\u95E8/\u5546\u8D3E/\u5B97\u5BA4/\u7B49",\n' +
       '  "title": "\u5F53\u524D\u5B98\u804C\u6216\u8EAB\u4EFD",\n' +
       '  "appearance": "\u5916\u8C8C 40-80 \u5B57",\n' +
@@ -375,34 +459,19 @@
           }
         }
 
-        // 势力确定：按 opts → AI → 清洗装饰 → 模糊匹配 GM.factions
-        var _faction = opts.faction || data.faction || '';
-        var _existFacs2 = (GM.factions || GM.facs || []);
-        var _existFacNames = _existFacs2.map(function(f){ return f.name; }).filter(Boolean);
-        // 1) 剥装饰："大明朝堂(朱由检)·京师" → "大明朝堂"
-        if (_faction) {
-          var _stripped = String(_faction).replace(/[（(].*?[)）]/g, '').replace(/[·,，][^·,，]*$/, '').trim();
-          if (_stripped) _faction = _stripped;
+        // 势力确定：统一兜底 helper（含 historicalFaction / location / timelineStatus）
+        // opts.historicalFactionHint 兜底·让 summonByCard/库内人物能透传 card/profile 的史实势力
+        if (!data.historicalFaction && opts.historicalFactionHint) {
+          data.historicalFaction = opts.historicalFactionHint;
         }
-        // 2) 模糊匹配现有势力
-        if (_faction && _existFacNames.indexOf(_faction) < 0) {
-          var _best = '';
-          _existFacNames.forEach(function(n) {
-            if (!n) return;
-            if (n.indexOf(_faction) >= 0 || _faction.indexOf(n) >= 0) {
-              if (n.length > _best.length) _best = n;
-            }
-          });
-          if (_best) {
-            try { console.warn('[char-autogen] faction 重定向 "' + _faction + '" → "' + _best + '"'); } catch(_) {}
-            _faction = _best;
-          }
-        }
-        // 3) 仍未命中 → 回退第一个势力（玩家本朝）
-        if (!_faction || _existFacNames.indexOf(_faction) < 0) {
-          if (_existFacNames.length > 0) _faction = _existFacNames[0];
-          else _faction = '中立';
-        }
+        var _faction = _resolveFactionForChar({
+          explicitFaction: opts.faction,
+          aiData: data,
+          location: data.location || opts.location,
+          timelineStatus: timelineStatus,
+          year: year
+        });
+        if (!_faction) _faction = '中立';
 
         var newChar = {
           id: 'autogen_' + Date.now() + '_' + name,
@@ -554,6 +623,11 @@
       recruitTurn: GM.turn,
       isHistorical: false,
       _autoTemplateFallback: true,
+      faction: _resolveFactionForChar({
+        explicitFaction: opts.faction,
+        location: opts.location,
+        timelineStatus: 'alive'
+      }),
       _memorySeeds: [{ turn: GM.turn, event: (opts.reason||'\u5165\u671D') + '\u00B7\u6A21\u677F\u751F\u6210', emotion: '\u5E73' }]
     };
     if (!GM.chars) GM.chars = [];

@@ -728,7 +728,7 @@ function _ltGetStatusText(l) {
                 : (typeof l.deliveryTurn === 'number') ? (l.deliveryTurn-1)*dpv : null;
     var arrDate = (typeof getTSText === 'function' && typeof l.deliveryTurn === 'number') ? getTSText(l.deliveryTurn) : '';
     if (l._recallSent) return '追回信使已派出';
-    if (arrDay !== null && nowDay > arrDay + 30) return '⚠ 信使逾期未归（已超 ' + Math.round(nowDay - arrDay) + ' 天）';
+    if (arrDay !== null && nowDay > arrDay + 15) return '⚠ 信使逾期未归（已超 ' + Math.round(nowDay - arrDay) + ' 天）';
     if (arrDay !== null) {
       var _rem = arrDay - nowDay;
       if (_rem <= 0) return '信使在途…… 即将抵达';
@@ -1135,19 +1135,19 @@ function _settleLettersAndTravel() {
     return null;
   }
 
-  // 0a·重度逾期自愈——超过到达日 60 天仍 traveling 视为驿递事故·强制送达
-  // （日制·跨剧本一致：dpv=7 的剧本里也是 60 天而非"5 回合 = 35 天"）
-  // intercepted 久未消化阈值：120 天
+  // 0a·重度逾期自愈——超过到达日 30 天仍 traveling 视为驿递事故·强制送达
+  // （日制·跨剧本一致：dpv=7 的剧本里也是 30 天而非"4 回合 = 28 天"）
+  // intercepted 久未消化阈值：60 天
   GM.letters.forEach(function(l) {
     if (!l) return;
     var _arr = _ltArrivalDay(l);
-    if (l.status === 'traveling' && nowDay > _arr + 60) {
+    if (l.status === 'traveling' && nowDay > _arr + 30) {
       l._autoHealed = true;
       l._deliveryDay = nowDay; // 触发本轮 Section 1/Section 3 处理
       l.deliveryTurn = GM.turn; // 同步保留兼容字段
       if (typeof addEB === 'function') addEB('传书', '逾期信件自愈：致' + (l.to||l.from) + '的信件强制送达（驿递晚到）');
     }
-    if (l.status === 'intercepted' && nowDay > _arr + 120) {
+    if (l.status === 'intercepted' && nowDay > _arr + 60) {
       l._autoHealed = true;
       l.status = 'returned';
       if (!l.reply) l.reply = '（信使遗失多日·辗转送达·原文已部分残缺）';
@@ -1331,10 +1331,10 @@ function _settleLettersAndTravel() {
     GM._pendingNpcLetters = [];
   }
 
-  // 2b. NPC 焦虑续问：被截"皇帝→NPC"信件·30 天后 NPC 主动来函询问
+  // 2b. NPC 焦虑续问：被截"皇帝→NPC"信件·15 天后 NPC 主动来函询问
   // 设计意图：让"截获"成为真正的双向事件——NPC 等不到旨意会焦虑·会续问
-  // 触发条件：letter._npcInitiated=false（皇帝→NPC）+ status=intercepted + 截获已 30 天 + 未触发过续问
-  // 日制·跨剧本一致（dpv=7 的剧本里也是 30 天而非"3 回合 = 21 天"）
+  // 触发条件：letter._npcInitiated=false（皇帝→NPC）+ status=intercepted + 截获已 15 天 + 未触发过续问
+  // 日制·跨剧本一致（dpv=7 的剧本里也是 15 天而非"2 回合 = 14 天"）
   (GM.letters||[]).forEach(function(l) {
     if (!l || l._npcInitiated) return;
     var _icpDay = _ltInterceptDay(l);
@@ -1342,7 +1342,7 @@ function _settleLettersAndTravel() {
     if (l.status !== 'intercepted' && l.status !== 'intercepted_forging') return;
     if (l._followupSent) return;
     var _waited = nowDay - _icpDay;
-    if (_waited < 30) return;
+    if (_waited < 15) return;
     // 该 NPC 是否已收到玩家其他指令（同期送达的别的信）·是则不续问
     var _hasOtherDelivered = (GM.letters||[]).some(function(o) {
       return o && o !== l && o.from === '玩家' && o.to === l.to
@@ -1479,15 +1479,49 @@ function _ltIsSafePath(l) {
   return true;
 }
 
+/** 读取国势四象（皇权/皇威/民心/吏治·均 0-100）·多源回退·缺省 50 */
+function _ltReadStateMetric(zhKey, enKey) {
+  if (typeof GM === 'undefined' || !GM) return 50;
+  var x = GM[enKey];
+  if (x != null) {
+    if (typeof x === 'number') return x;
+    if (typeof x === 'object') {
+      if (typeof x.index === 'number') return x.index;
+      if (typeof x.value === 'number') return x.value;
+    }
+  }
+  if (GM.vars && GM.vars[zhKey] && typeof GM.vars[zhKey].value === 'number') return GM.vars[zhKey].value;
+  return 50;
+}
+
+/** 国势四象对截获率的乘数：
+ *  四项均高（≥80）·驿政清明·盗匪不敢劫·乘数低至 0.4；
+ *  四项均低（≤20）·吏治崩坏·盗匪横行·乘数高至 2.0；
+ *  中位 50 → 1.0。设计上以"吏治+皇威"为主轴（直接影响驿政），"皇权+民心"为辅（间接威慑）
+ */
+function _ltStateMultiplier() {
+  var _hq = _ltReadStateMetric('皇权', 'huangquan');
+  var _hw = _ltReadStateMetric('皇威', 'huangwei');
+  var _mx = _ltReadStateMetric('民心', 'minxin');
+  var _lz = _ltReadStateMetric('吏治', 'lizhi');
+  // 加权平均：吏治40% + 皇威30% + 皇权15% + 民心15%
+  var _w = (_lz * 0.40) + (_hw * 0.30) + (_hq * 0.15) + (_mx * 0.15);
+  // 50 → 1.0；80 → 0.55；100 → 0.4；20 → 1.55；0 → 2.0
+  // 公式：(1 - (w-50)/50 × 0.6) ·下限 0.4 上限 2.0
+  var _mul = 1 - ((_w - 50) / 50) * 0.6;
+  return Math.max(0.4, Math.min(2.0, _mul));
+}
+
 /** 计算截获概率（基于地理、势力范围、驿路、加密、信件类型）
- *  R: 时间制 + 安全路径双重重构
+ *  R: 时间制 + 安全路径 + 国势调节 三重重构
  *  设计原则：
  *    1. 同省内/同地→零截获（在自家驿站网覆盖范围）
- *    2. 安全路径（无敌占区·无路阻·无围城）→ 上限 5%（仅模拟民间偶发劫掠）
- *    3. light_hist 整体 ×0.3·strict_hist 维持基础值
- *    4. formal_edict / military_order 走官方驿递·×0.6 朝廷招牌保护
- *    5. 默认 multi_courier 模式·×0.15·真实模拟"派多路信使"
- *    6. 仅在真正穿越敌占区或被围困时才有可观察的截获率（最高 50%）
+ *    2. 安全路径（无敌占区·无路阻·无围城）→ 上限 3%（仅模拟民间偶发劫掠）
+ *    3. 国势四象（皇权/皇威/民心/吏治）综合调节·清明朝政可降至 0.4 倍·崩坏朝政升至 2.0 倍
+ *    4. light_hist 整体 ×0.3·strict_hist 维持基础值
+ *    5. formal_edict / military_order 走官方驿递·×0.6 朝廷招牌保护
+ *    6. 默认 multi_courier 模式·×0.15·真实模拟"派多路信使"
+ *    7. 仅在真正穿越敌占区或被围困时才有可观察的截获率（最高 30%）
  */
 function _ltCalcInterceptRate(l, hostileFacs) {
   if (l.letterType === 'proclamation') return 0; // 檄文公开
@@ -1499,12 +1533,12 @@ function _ltCalcInterceptRate(l, hostileFacs) {
   var _safe = _ltIsSafePath(l);
 
   // 基础概率（降低基线·让远方信件默认能到）
-  var rate = l.urgency === 'extreme' ? 0.01 : l.urgency === 'urgent' ? 0.03 : 0.05;
+  var rate = l.urgency === 'extreme' ? 0.01 : l.urgency === 'urgent' ? 0.02 : 0.03;
   // 信件类型权重
   var tw = (LETTER_TYPES[l.letterType]||{}).interceptWeight;
   if (tw !== undefined) rate *= (tw || 0.1);
   // 敌对势力存在·安全路径不加成；不安全路径才加
-  if (!_safe && hostileFacs && hostileFacs.length > 0) rate += 0.03;
+  if (!_safe && hostileFacs && hostileFacs.length > 0) rate += 0.02;
   // 地理因素：目标地/起点是否在敌方实控区（已在 _safe 中检测·这里再加权）
   var _inHostile = !_safe && (function(){
     var _loc = _to || _from;
@@ -1515,12 +1549,12 @@ function _ltCalcInterceptRate(l, hostileFacs) {
       return _fTerr.indexOf(_loc) >= 0;
     });
   })();
-  if (_inHostile) rate += 0.15;
+  if (_inHostile) rate += 0.10;
   // 围城（沟死）
   var _besieged = (GM._sieges||[]).some(function(s) { return s.target === _from || s.target === _to; });
-  if (_besieged) rate += 0.25;
+  if (_besieged) rate += 0.15;
   // 驿路阻断
-  if (_ltIsRouteBlocked(_from, _to)) rate += 0.10;
+  if (_ltIsRouteBlocked(_from, _to)) rate += 0.06;
   // 加密降低截获内容可读性（但不降低截获率——只降低情报价值）
   // 密使模式·走暗线·截获率显著降低
   if (l._sendMode === 'secret_agent') rate *= 0.3;
@@ -1531,12 +1565,15 @@ function _ltCalcInterceptRate(l, hostileFacs) {
   // formal/military_order 是国家公文·走官方驿递保护
   if (l.letterType === 'formal_edict' || l.letterType === 'military_order') rate *= 0.6;
 
+  // 国势四象调节·吏治/皇威/皇权/民心 加权·清明 0.4× / 崩坏 2.0×
+  rate *= _ltStateMultiplier();
+
   // 模式调节：light_hist 总体*0.3·strict_hist 维持基础值
   var _gMode = (P.conf && P.conf.gameMode) || '';
   if (_gMode === 'light_hist') rate *= 0.3;
 
-  // 上限：安全路径 5%·有路阻/敌占区/围城 50%
-  var _cap = _safe ? 0.05 : 0.5;
+  // 上限：安全路径 3%·有路阻/敌占区/围城 30%
+  var _cap = _safe ? 0.03 : 0.30;
   return Math.min(_cap, Math.max(0, rate));
 }
 
@@ -3200,8 +3237,8 @@ function letterDoctor() {
     if (l._npcInitiated && (l.status === 'traveling' || l.status === 'delivered') && nowDay >= _arr) {
       l.status = 'returned'; fixed.npcArrived++;
     }
-    // intercepted 已久 → returned 并附备注·同步清 _undeliveredLetters（90 天阈值）
-    if (l.status === 'intercepted' && nowDay > _arr + 90) {
+    // intercepted 已久 → returned 并附备注·同步清 _undeliveredLetters（45 天阈值）
+    if (l.status === 'intercepted' && nowDay > _arr + 45) {
       l.status = 'returned'; fixed.interceptedHealed++;
       if (!l.reply) l.reply = '（信使遗失·辗转送达·原文已部分残缺）';
       GM._courierStatus[l.id] = '信使辗转归来';
@@ -3211,8 +3248,8 @@ function letterDoctor() {
         });
       }
     }
-    // intercepted_forging 久未触发回信 → 强制 returned 并标记伪造（60 天阈值）
-    if (l.status === 'intercepted_forging' && nowDay > _arr + 60) {
+    // intercepted_forging 久未触发回信 → 强制 returned 并标记伪造（30 天阈值）
+    if (l.status === 'intercepted_forging' && nowDay > _arr + 30) {
       l.status = 'returned'; l._isForged = true; fixed.interceptedHealed++;
       if (!l.reply) l.reply = '（伪造回函·内容可疑）';
       GM._courierStatus[l.id] = '伪造回函·疑窦';

@@ -3,6 +3,20 @@
   "entries": [
     {
       "date": "2026-04-29",
+      "module": "邸报·鸿雁传书第二轮调参：截获率上限收紧·国势四象调节·日制阈值大幅缩短",
+      "title": "用户审计第一轮(同日早些)的截获率与时间阈值·明确反馈：(1)『安全路径上限应为 3%·且受玩家皇权/皇威/民心/吏治影响可能更低』；(2)『非安全 30%·受吏治、皇威和别的影响』；(3)『日制的时间太长·应该缩短』。修法：把 cap 从 5%/50% 收紧到 3%/30%·新加 _ltStateMultiplier 国势四象加权·所有日制阈值减半",
+      "items": [
+        { "what": "tm-hongyan-office.js _ltCalcInterceptRate 上限：安全路径 5% → 3%·非安全 50% → 30%。基础概率 normal 0.05/urgent 0.03/extreme 0.01 → normal 0.03/urgent 0.02/extreme 0.01；敌对加成 0.03→0.02；_inHostile 加成 0.15→0.10；围城加成 0.25→0.15；驿路阻断加成 0.10→0.06。整体加成系数等比例下调", "why": "用户『安全路径 3% / 非安全 30%』是上限语义·常态下应远低于上限。所有 multipliers/additions 等比例下调·让基础值保持 cap 内合理空间·避免常态信件都贴 cap 走" },
+        { "what": "新增 _ltStateMultiplier()·读取国势四象(皇权/皇威/民心/吏治·均 0-100)·加权 吏治40% + 皇威30% + 皇权15% + 民心15%·公式 1-((w-50)/50)*0.6·下限 0.4 上限 2.0。50 中位 → 1.0；80 → 0.64；100 → 0.4；20 → 1.36；0 → 1.6。在 _ltCalcInterceptRate 末尾乘上·然后再走 cap·所以清明朝政下截获率最低可至默认的 40%·崩坏朝政下最高 2 倍但仍受 cap 限制", "why": "用户『可能更低』『受吏治、皇威和别的影响』·吏治/皇威是直接影响驿政的(驿吏徇私/驿站维护)·权重最高 40%/30%；皇权/民心是间接威慑(乱党敢不敢劫驿使)·权重 15%/15%。多源回退读 GM[en]/GM.vars[zh].value·与 chaoyi-v3 / 既有读取路径一致" },
+        { "what": "新增 _ltReadStateMetric(zh, en) helper·支持四象多源回退读取：GM.huangwei/GM.huangquan/GM.minxin/GM.lizhi 主路径(authority-engines·对象 .index 或 number)·GM.vars[zh].value 次路径·缺省 50。这条 helper 与 tm-chaoyi-v3.js _cc3_getPrestige/_cc3_getPower 行为一致·确保不同子系统读到同一值", "why": "国势变量在不同子系统有不同存储位置·写一份多源回退 helper 才能保证 letter 系统跟随真实国势·不会因为读不到主路径而总是 50 默认" },
+        { "what": "tm-hongyan-office.js 0a 自愈段：traveling 60 天 → 30 天·intercepted 120 天 → 60 天。2b NPC 焦虑续问：30 天 → 15 天。_ltGetStatusText 逾期警告：30 天 → 15 天。letterDoctor() 内 intercepted 久滞：90 天 → 45 天·intercepted_forging 久滞：60 天 → 30 天", "why": "用户『日制时间太长·应该缩短』。原 30/60/120 阈值在月制下感觉合理·但放在季制(dpv=90)下『一回合 = 一个阈值』太松弛·季制玩家整整一回合才看到 NPC 续问·体感拖沓。统一减半后·NPC 反应在『1-2 回合内』触发·跨剧本节奏一致" },
+        { "what": "scripts/smoke-letter-intercept-react.js 反应链 5 改为直接覆盖 _interceptedDay/_deliveryDay·目标 _waited=20 天且 _arr=nowDay-30·稳定在『续问 15 ✓·自愈 60 ✗ 不触发』窗口内·不再依赖 turn 跨度。配合阈值变化的测试再次稳定", "why": "阈值缩短后 dpv=90 季制下『跨 2 回合 = 180 天』超过 60 天自愈·原测试又被自愈段吃掉。直接覆盖日字段·测试与 dpv 解耦·任何剧本配置都稳" },
+        { "what": "smoke 全过验证：(1) 截获率新值：默认 3.0%/官方驿递 1.4%/边关 1.4%/加急 1.0%/light_hist 0.4% (vs 旧 5.0%/2.4%/2.4%/1.4%/0.7%)；(2) 国势调节验证：全 50 → mul=1.0·全 90 → mul=0.52·全 10 → mul=1.48·吏治皇威崩坏皇权民心高 → mul=1.19；(3) 反应链 1-8 全过；(4) 严重逾期自愈/letterDoctor/letterDiag 工作正常；(5) Path A/B 全链路过", "why": "回归点锁定：所有 4 套 smoke 一跑就知道哪一项调参被破坏。截获率数字直接固化到测试输出·未来若有人改 cap/multiplier·smoke 立刻黄牌" },
+        { "what": "index.html cache-bust → tm-hongyan-office.js v=2026042902·node -c 通过·零字段迁移·零数据破坏·重启即生效。阈值变化对老存档无侵入(老存档若有 stuck 信件·新短阈值会更快自愈·这是改进不是回归)", "why": "兼容性：调参不破坏数据结构·只改 readonly 比较运算的常量·任何已有存档加载后立即用新阈值·体感是『变快了』而非『坏了』" }
+      ]
+    },
+    {
+      "date": "2026-04-29",
       "module": "邸报·鸿雁传书系统大改：日制时间·安全路径截获率重构·多路驿递·截获反应链",
       "title": "用户连发四条审计：(1)『模拟时间不应以回合判定·而应以时间(天)判定·每个剧本回合流逝时间不同会出严重问题』；(2)『驿路未被破坏·未经敌占区的截获概率应大大减小(玩家和NPC都如此)·是否经敌占区可由AI推演判定』；(3)『默认派多次信使(玩家给NPC、NPC给玩家都派多路)·更真实』；(4)『实行后检测bug并继续检查·修复可能导致玩家收不到信或NPC收不到信的情况』。审计后定位四类问题：(a) _settleLettersAndTravel 用 deliveryTurn / _interceptedTurn 判定·dpv=7 周制下『3 回合 = 21 天』·dpv=90 季制下『3 回合 = 270 天』·跨剧本完全不可比；(b) _ltCalcInterceptRate 默认 30% 过于激进·两端无敌占区/无围城/无路阻的安全路径仍 30% 截获·NPC 给玩家的回信第一封即丢；(c) sendLetter 默认 sendMode='single'·只派一路·任何路阻即彻底丢失；(d) 截获后只是从 letters 列表删除·NPC 没反应·玩家没渠道知道更没法重发",
       "items": [

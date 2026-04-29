@@ -107,10 +107,14 @@ setTimeout(() => {
 
     console.log('\n========== 反应链 5：N 天后 NPC 自动续问 ==========');
     var _dpvSC = sandbox._getDaysPerTurn();
-    console.log('  截获 turn=5 (day=' + interceptedLetter._interceptedDay + ')·dpv=' + _dpvSC + '·推到 turn=7 (跨 ' + (2*_dpvSC) + ' 天·处于 30<x<120 窗口)');
-    GM.turn = 7;
+    // 阈值缩短后：续问 15 天 / 自愈 60 天·窗口 [15,60]·跨剧本统一
+    // 不论 dpv 多少·直接改 letter 日字段让 _waited=20 天·_arr 在 nowDay-30 处（不被自愈）
+    var _nowD = (sandbox.getCurrentGameDay && sandbox.getCurrentGameDay()) || 0;
+    interceptedLetter._interceptedDay = _nowD - 20; // 已截获 20 天 ≥ 15 ✓
+    interceptedLetter._deliveryDay = _nowD - 30;    // 距 nowDay 30 天·< 60 自愈阈值 ✓
+    console.log('  覆盖 _interceptedDay=' + interceptedLetter._interceptedDay + '·_deliveryDay=' + interceptedLetter._deliveryDay + '·dpv=' + _dpvSC + '·_waited=20 天');
     console.log('  letter pre-settle: status=' + interceptedLetter.status + ' _interceptedTurn=' + interceptedLetter._interceptedTurn + ' _npcInitiated=' + interceptedLetter._npcInitiated + ' _followupSent=' + interceptedLetter._followupSent + ' _interceptedDay=' + interceptedLetter._interceptedDay);
-    console.log('  letters 总数:', GM.letters.length, '·nowDay:', sandbox.getCurrentGameDay && sandbox.getCurrentGameDay());
+    console.log('  letters 总数:', GM.letters.length, '·nowDay:', _nowD);
     // 直接调 _settleLettersAndTravel·避免 SubTickRunner 中其他步骤干扰
     try { sandbox._settleLettersAndTravel(); console.log('  settle 跑完无异常'); }
     catch(e) { console.log('  settle 异常:', e.message); }

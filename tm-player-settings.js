@@ -143,6 +143,45 @@ function openSettings(){
 
     _secApiHtml +
 
+    // P15: 性能·成本控制 section
+    (function(){
+      var _gateOn = !!(P.conf && P.conf.recallGateEnabled === true); // 默认 false
+      var _consolOn = !(P.conf && P.conf.consolidationEnabled === false); // 默认 true
+      var _semOn = !(P.conf && P.conf.semanticRecallAutoload === false); // 默认 true
+      return '<div class="settings-section" style="border-left:3px solid #6b9eff;background:rgba(107,158,255,0.03);">' +
+        '<h4 style="color:#9bbfff;">⚡ 性能·成本控制</h4>' +
+        '<div style="font-size:0.72rem;color:var(--ink-300);margin:-0.3rem 0 0.6rem;line-height:1.55;">这些选项控制 AI 调用频率与资源使用·默认保守为质量优先。</div>' +
+
+        // 召回节流开关（P14.5/P14.6 决策）
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+          '<input type="checkbox" id="s-recall-gate" ' + (_gateOn?'checked ':'') + 'onchange="_togglePConf(\'recallGateEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">启用召回节流（省 API）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后·平常回合如未触发关键词（前朝/旧诏/卣宗）·未下诏·上回合无重大事件·且未到 6 回合刷新点·则跳过 SC_RECALL 5 源召回·节省 40-60% API 成本。关闭时（默认）每回合都跑全量召回·AI 记忆富度最高。</div>' +
+          '</div>' +
+        '</label>' +
+
+        // 后台记忆固化开关
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+          '<input type="checkbox" id="s-consol" ' + (_consolOn?'checked ':'') + 'onchange="_togglePConf(\'consolidationEnabled\',this.checked,true)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">后台记忆固化 sc_consolidate（默认启用）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">每回合后台追加一次记忆整合调用（优先走次要 API）·不阻塞玩家·但会增加 ~20% API 成本。关闭后 AI 记忆连贯性限于原有 12 表 + sc_consolidated 会减低。</div>' +
+          '</div>' +
+        '</label>' +
+
+        // 语义检索自动加载开关
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
+          '<input type="checkbox" id="s-sem" ' + (_semOn?'checked ':'') + 'onchange="_togglePConf(\'semanticRecallAutoload\',this.checked,true)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">本地语义检索自动加载（默认启用）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">进游戏 5 秒后后台加载 bge-small-zh 模型（23 MB）·提供 SC_RECALL 第 5 源语义同义召回。Electron 预打包后秒开·网页端首次需联网从 hf-mirror 缓存。关闭可节省 23 MB 下载·但会损失语义检索能力（“叛变”无法匹配“举旗/起兵）。</div>' +
+          '</div>' +
+        '</label>' +
+
+      '</div>';
+    })() +
+
     // 智能生图 API·独立 section
     "<div class=\"settings-section\"><h4>\u667A\u80FD\u751F\u56FE API\uFF08\u53EF\u9009\uFF09</h4>"+
     "<div style=\"font-size:0.7rem;color:var(--ink-300);margin:-0.3rem 0 0.5rem;\">\u7528\u4E8E\u4EBA\u7269\u7ACB\u7ED8\u7B49\u56FE\u7247\u751F\u6210\u00B7\u7559\u7A7A\u5219\u590D\u7528\u4E3B API</div>"+
@@ -440,6 +479,20 @@ function _toggleSecondaryEnabled(on) {
   // 刷新设置面板以更新徽标
   try { closeSettings(); openSettings(); } catch(_){}
 }
+// P15: 通用 P.conf 字段开关·切换 boolean 值并保存
+function _togglePConf(confKey, on) {
+  if (!P.conf) P.conf = {};
+  P.conf[confKey] = !!on;
+  if (typeof saveP === 'function') saveP();
+  var labels = {
+    recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
+    consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
+    semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' }
+  };
+  var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
+  if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));
+}
+
 
 // 测试次 API 连接·发一条极短请求验证 key/url/model 可达
 async function _testSecondaryAPI() {

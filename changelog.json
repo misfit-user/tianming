@@ -3,6 +3,29 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·P15 设置面板加性能开关·玩家可自行切换",
+      "title": "用户决定：\"节流开关在游戏的设置中增加个开关吧·默认关闭\"。在玩家设置面板（⚙ 按钮）新增\"⚡ 性能·成本控制\"段·提供 3 个开关：召回节流（默认关）/后台记忆固化（默认开）/本地语义检索自动加载（默认开）。配套通用 _togglePConf(confKey, on) 工具函数·适用于任意 P.conf 字段。",
+      "items": [
+        {
+          "what": "【设置面板·性能控制段】tm-player-settings.js openSettings() 在次要 API section 之后插入新 section \"⚡ 性能·成本控制\"·蓝色边框 (#6b9eff)。三个 checkbox：(1) 启用召回节流（s-recall-gate·绑 P.conf.recallGateEnabled·默认 false） (2) 后台记忆固化 sc_consolidate（s-consol·绑 P.conf.consolidationEnabled·默认 true） (3) 本地语义检索自动加载（s-sem·绑 P.conf.semanticRecallAutoload·默认 true）。每个开关下方有详细说明文字·告知玩家启用/关闭的具体影响（如召回节流\"节省 40-60% API 成本\"、关闭语义检索\"失去同义匹配\"等）。",
+          "why": "把 P.conf 三个性能字段从隐藏配置变成可视化开关·玩家无需改 console 即可调整成本/质量平衡点。"
+        },
+        {
+          "what": "【_togglePConf 工具函数】新增通用切换函数：if(!P.conf) P.conf={}; P.conf[confKey]=!!on; saveP(); 弹 toast 显示具体效果。三个字段各有定制化的 on/off 提示文案（如开启召回节流：\"已启用召回节流·常规回合跳过 SC_RECALL 节省 API\"·关闭：\"已关闭召回节流·每回合都全跑 5 源召回\"）。",
+          "why": "替代多个 _toggleXXX 函数的重复代码·一个工具函数处理所有 boolean 字段切换。"
+        },
+        {
+          "what": "【默认值】recallGateEnabled 默认 false·只有玩家明确勾选才启用节流（与 P14.5 决策一致——API 不要省的好）。consolidationEnabled / semanticRecallAutoload 默认 true·新游戏开箱即用·玩家在意成本可手动关闭。",
+          "why": "默认配置面向\"质量优先\"用户·成本优先用户可一键切换。"
+        },
+        {
+          "what": "验证：node --check tm-player-settings.js 通过。性能段渲染走 IIFE·异常自动捕获不影响其他段。",
+          "why": "增强中间件不能阻断主流程·UI 异常不应崩主菜单。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 14 用户校准：RecallGate 节流默认关闭 + 诏令字数判定取消",
       "title": "用户反馈两点：(1) \"api 调用还是不要省的好\"——RecallGate 节流默认行为反转·从\"默认开启节流·显式关闭\" 改为 \"默认全跑·仅显式启用才节流\"。(2) \"玩家重大诏令的字数判定取消·玩家每个诏令都重要\"——RecallGate 触发条件 #4 取消 200 字总长 + 100 字单条阈值·改为\"任何非空诏令\"必触发。",
       "items": [
@@ -35,11 +58,11 @@
     {
       "date": "2026-04-30",
       "module": "🎯 测试版 1.1.6 总结·KokoroMemo 全套借鉴 + 完整记忆系统升级",
-      "title": "本批连续推送 8 个 commit·从 KokoroMemo 9 项评估中借鉴 6 项·结合天命已有 12 表系统·完成 AI 记忆系统全面升级。玩家关心的核心改善——AI 不再\"健忘\"·不再把推测当事实·不再描述已废政策·朝堂氛围/未解线索/玩家承诺一目了然。同时性能优化：API 调用降 40-60%·召回相关性 +30%·玩家手动审批工作量降 80%。",
+      "title": "本批连续推送 8 个 commit·从 KokoroMemo 9 项评估中借鉴 6 项·结合天命已有 12 表系统·完成 AI 记忆系统全面升级。玩家关心的核心改善——AI 不再\"健忘\"·不再把推测当事实·不再描述已废政策·朝堂氛围/未解线索/玩家承诺一目了然。Phase 14 后默认质量优先全召回；若玩家显式启用 RecallGate，才进入可选节流模式。",
       "items": [
         {
-          "what": "🔍 召回门控（RecallGate）：每回合不再机械跑 5 源历史搜索。新游戏首回合 / AI 主动查档（提到\"前朝/旧诏/卷宗\"）/ 重大事件后 / 每 6 回合周期刷新 / 上回合低置信事件——这些情形才触发深度召回。常规平淡回合直接跳过·节省 40-60% API 成本与 CPU 时间。",
-          "why": "KokoroMemo retrieval_gate 范式·关键回合触发反而更精准。"
+          "what": "🔍 可选召回门控（RecallGate）：Phase 14 后默认每回合都跑 5 源历史搜索，质量优先，不默认省 API。玩家若显式设置 P.conf.recallGateEnabled=true，则启用门控：新游戏首回合 / AI 主动查档（提到\"前朝/旧诏/卷宗\"）/ 任意非空诏令 / 重大事件后 / 每 6 回合周期刷新 / 上回合低置信事件才触发深度召回，常规平淡回合跳过。",
+          "why": "KokoroMemo retrieval_gate 范式保留为省钱开关；默认路径按用户校准改为全量召回，避免极端情况下漏掉关键溯源。"
         },
         {
           "what": "⚖️ 5 维加权打分：原本召回的命中按时间倒序简单截断·现在按\"语义相似 + 重要度 + 时近 + 来源优先级 + 维度加权\"五维总分排序·top-12 命中精准度 +30%。皇命/天机条目永远排前·朝廷长期事势次之·向量同义召回再次。",
@@ -74,7 +97,7 @@
           "why": "记录边界·避免后续维护误改。"
         },
         {
-          "what": "✅ 综合数字：API 调用降 40-60%·SC_RECALL 相关性 +30%·幻觉传播降 ~50%·玩家手动审批降 80%·AI 失忆症修复率 ~95%。所有质量保证零损失。",
+          "what": "✅ 综合数字：默认模式不再节省 API，优先保证每回合全量召回；仅在玩家显式启用 RecallGate 时，SC_RECALL 相关 API/CPU 开销预计可降 40-60%。其余收益保留：SC_RECALL 相关性 +30%·幻觉传播降 ~50%·玩家手动审批降 80%·AI 失忆症修复率 ~95%。",
           "why": "本批是天命 AI 记忆系统从\"够用\"到\"强壮\"的最后一里。"
         }
       ]
@@ -223,7 +246,7 @@
         },
         {
           "what": "【P10.4A Retrieval Gate 节流】新建 tm-recall-gate.js（约 130 行）：shouldRecall(ctx) 返回是否触发 5 源 SC_RECALL。触发条件 OR：(1) 新游戏首回合 (2) AI 思考含 23 个触发词（前朝/旧诏/先帝/上回/卷宗/史载/曾经/此前/驾崩/政变 等）(3) 每 6 回合周期刷新 (4) 玩家本回合下重大诏令（>200 字 或某条 >100 字）(5) 上回合 importance>=7 或含死亡/政变/即位/退位/弑等重大事件词。其他回合跳过整段 SC_RECALL·节省 5 路查询（NPC/Chronicle/Shiji/Foreshadow/Vector）·尤其 Vector 推理 50-100ms × 5 ≈ 250-500ms 节省显著。",
-          "why": "KokoroMemo 整个项目最值钱的观念：\"不要每轮都搜向量库\"。预期 API/CPU 成本降 40-60%·零功能损失（重要回合仍触发·常规回合靠 sc05 现有 _recentHistory + sc_consolidate 摘要也够用）。玩家可通过 P.conf.recallGateEnabled=false 强制每回合都跑。"
+          "why": "KokoroMemo 整个项目最值钱的观念：\"不要每轮都搜向量库\"。P10 初版默认启用节流；Phase 14 按用户校准改为默认全量召回，只有玩家显式设置 P.conf.recallGateEnabled=true 时才启用该省钱模式。"
         },
         {
           "what": "【P10.4A wiring】sc05 SC_RECALL 入口·先调 RecallGate.shouldRecall({aiThinking, currentEdicts})·若返回 false 抛 __SKIP_RECALL__ 标记·外层 catch 识别为非错误静默跳过。RecallGate.record 统计 skipped/triggered 计数 + lastTriggerReason·便于诊断。index.html 注册 tm-recall-gate.js cache-bust v=2026043004。",

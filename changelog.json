@@ -3,6 +3,41 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 12 KokoroMemo 二轮借鉴落地：state_board 4 字段 + 5 维加权打分",
+      "title": "二轮 KokoroMemo 调研 agent 完成·识别 Top 5 借鉴清单·本批先实施 #1（最高 ROI）+ #3：(P12.1) state_board 4 字段补天命缺失的轻量会话状态——朝堂氛围/未解线索/近期摘要/未兑现承诺。(P12.3) SC_RECALL 5 维加权打分替代简单 slice·按 vector*0.45 + importance*0.20 + recency*0.15 + source_priority*0.15 + dim_weight*0.05 综合排序。剩余三项（诏令 graph 边表 + auto_review imperialEdict + confidence 阈值改 RecallGate）下批落地。",
+      "items": [
+        {
+          "what": "【P12.1 state_board 4 字段·sc25 输出】sc25 schema 加 state_board:{ mood, open_loops[], recent_summary, unfulfilled_promises[] }。mood 是朝堂氛围基调一句话(40字)·open_loops 是悬而未决线索（区别于 _foreshadows 具体伏笔）·recent_summary 是 150 字最压缩摘要·unfulfilled_promises 是玩家未兑现承诺/拟议但未颁的诏令。sc25 后台调用·消费端写到 GM._stateBoard·带 turn/ts 时戳。",
+          "why": "KokoroMemo 14 类 state_categories 对照·天命 12 表是实体表·缺会话级状态。这 4 类是高 ROI 子集——朝堂氛围决定 NPC 行为基调·未兑现承诺让 AI 持续推进·未解线索防忘·近期摘要是 sc1 一眼读完的故事流入口。"
+        },
+        {
+          "what": "【P12.1 注入端 sc1 prompt】tp1 顶部加 _stateBoard 段·按优先级排序：mood（最即时） → unfulfilled_promises（玩家责任） → open_loops（待推进） → recent_summary（背景）。仅当 GM._stateBoard.turn === GM.turn-1 时注入（防穿越/老存档读老条目）。tp1 = _stateBoard + _consolidated + _timeRef + _futureC + _wsSnap + _memTblInj + ...",
+          "why": "KokoroMemo state_renderer.py 范式——按 priority+预算注入·~1200 字内能覆盖 4 类核心状态·下回合 sc1 顶部读完即进入故事流。位置最前·密度极高。"
+        },
+        {
+          "what": "【P12.3 SC_RECALL 5 维加权打分·KokoroMemo card_retriever 范式】每个命中 hit 计算 _score = vector*0.45 + importance*0.20 + recency*0.15 + source_priority*0.15 + dim_weight*0.05。具体：(1) vector·已归一化 0-1·非 vector 源 0.6 默认 (2) importance·NPC/Chronicle 自带 0-10 归一·shiji/foreshadow 默认 0.5 (3) recency·turn 距分段 ≤1=1.0/≤5=0.85/≤15=0.65/≤50=0.45/远=0.30 (4) source_priority·imperialEdict/pinned=1.0 / chronicle=0.8 / shiji=0.7 / foreshadow=0.65 / vector=0.6 / npc=0.5 / unknown=0.4 (5) dim_weight·affects_future=true → 1.0 / vector → 0.7 / 默认 0.5。allHits 按 _score 降序排序·取 top-12。",
+          "why": "KokoroMemo 范式直接抄。原本 SC_RECALL 是简单 slice·5 源各取若干条·没有质量排序。现在按总分排序·让\"近期 + 高重要度 + 高优先源 + 语义相似\"的 hit 排前·相关性预计 +30%。"
+        },
+        {
+          "what": "【P12.3 注入透明度】sc05 _recallResults 注入 XML 时·若 hit._score 存在·加 score=\"0.78\" 属性·让 AI 知道哪些 hit 更可信·辅助决策。",
+          "why": "不只是排序·还让 AI 看到分数·便于 AI 在写作时优先引用高分命中。"
+        },
+        {
+          "what": "【二轮调研 Top 5 清单·本批已落地 2 项】(1) ✅ state_board 4 类（最高 ROI·1 周估算·实际 30 分钟） (3) ✅ 5 维加权打分（3 天估算·实际 30 分钟）。剩余 3 项下批：(2) graph 边表 + expand_one_hop（已部分实施 P11.2B edict_relations·二轮版加双向广搜+supersedes 抑制） (4) review_policy.auto_review 自动审核 imperialEdict 候选 (5) 置信度 0.65 阈值改 RecallGate 触发。",
+          "why": "本批选最高 ROI + 实施成本可控的两项·避免单批改动过深。"
+        },
+        {
+          "what": "【明确不抄·KokoroMemo 范式·天命已强】(a) 字段锁定——天命 _editorLocks 三级粒度（行/列/单元格）+ actor 追溯 + cellHistory·KokoroMemo 仅字段级布尔 (b) JSON 鲁棒解析——天命 robustParseJSON 4 层（剥 markdown / stack 平衡 / 子层修复 / 字段提取 / 文本回退）·KokoroMemo 仅 4 步简单切片 (c) IANA 时区——天命 tm-time-utils 用回合制干支·IANA 不适用。",
+          "why": "记录跳过原因·避免后续维护误改。天命在这三处比 KokoroMemo 强·不需借鉴。"
+        },
+        {
+          "what": "验证：node --check 通过。state_board 注入端有 try-catch·_stateBoard 未生成时静默跳过·tp1 拼接保持原有顺序·下游消费不受影响。5 维打分对老格式 hit（无 importance/sim）用默认值兜底·不引入 NaN。",
+          "why": "增强中间件不能阻断主流程。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 11 KokoroMemo 二期借鉴：诏令冲突链 + 完整审核收件箱 + 文档纠正",
       "title": "用户反馈三件事：(1) 模型实测 23.4MB 而非估算 110MB·全文档要纠正 (2) KokoroMemo B/C 全部实施 (3) 二轮 KokoroMemo 调研找剩余借鉴。本批已落地 4 项：P11.0 调度 1 周后回归测试·P11.1 7 文件 110/96MB 批量改 23MB·P11.2B 诏令冲突链(supersedes/contradicts/continues/elaborates 4 边类型)·P11.2C-full 完整审核收件箱(pending → approved/rejected 双相状态机)。P11.3 二轮调研后台跑·结果下批落地。",
       "items": [

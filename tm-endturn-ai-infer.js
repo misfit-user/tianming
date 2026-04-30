@@ -3438,9 +3438,34 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             }
 
             if (allHits.length > 0) {
+              // P12.3 5 维加权打分（KokoroMemo card_retriever.py:163-169 范式·本地化为天命语境）
+              // score = vector*0.45 + importance*0.20 + recency*0.15 + source_priority*0.15 + dim_weight*0.05
+              var _curT = (typeof GM !== 'undefined' && GM && GM.turn) || 1;
+              var _sourcePriority = { 'imperialEdict': 1.0, 'pinned': 1.0, 'chronicle': 0.8, 'shiji': 0.7, 'foreshadow': 0.65, 'vector': 0.6, 'npc': 0.5, 'unknown': 0.4 };
+              var _scoreHit = function(h) {
+                // (1) vector 相似度·已归一化 0-1·非 vector 源用 0.6 默认（关键词匹配视为中等相似）
+                var vs = (typeof h.sim === 'number') ? h.sim : 0.6;
+                // (2) importance·NPC 记忆/Chronicle 自带 0-10 → 归一·shiji/foreshadow 默认 0.5
+                var imp = 0.5;
+                if (typeof h.importance === 'number') imp = Math.max(0, Math.min(1, h.importance / 10));
+                // (3) recency·按 turn 距动态衰减（≤1 = 1.0·≤5 = 0.85·≤15 = 0.65·≤50 = 0.45·更远 = 0.30）
+                var dt = _curT - (h.turn || 0);
+                var rec = (dt <= 1) ? 1.0 : (dt <= 5) ? 0.85 : (dt <= 15) ? 0.65 : (dt <= 50) ? 0.45 : 0.30;
+                // (4) source_priority·按源类型固定权重
+                var sp = _sourcePriority[h.source] || _sourcePriority.unknown;
+                // (5) dim_weight·若是 vector 或 eventHistory 命中且带 affects_future·加分
+                var dw = 0.5;
+                if (h.affects_future === true || h.affects_future === 'true') dw = 1.0;
+                else if (h.source === 'vector') dw = 0.7;
+                // 加权总分
+                return vs * 0.45 + imp * 0.20 + rec * 0.15 + sp * 0.15 + dw * 0.05;
+              };
+              allHits.forEach(function(h) { h._score = _scoreHit(h); });
+              allHits.sort(function(a, b) { return (b._score||0) - (a._score||0); });
               _recallResults.push({
                 query: q,
-                hits: allHits.slice(0, 12)  // 单查询命中上限 12 条（防 prompt 爆炸）
+                hits: allHits.slice(0, 12),  // 单查询 top-12 命中（按加权总分降序·KokoroMemo 范式）
+                _scoring: '5dim-weighted'
               });
             }
           }
@@ -3613,6 +3638,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               if (_hitChar) _recentHistory += ' char="' + _xE3(_hitChar) + '"';
               _recentHistory += ' turn="' + (hit.turn||0) + '" importance="' + _hitImportance + '"';
               if (_hitStatus) _recentHistory += ' status="' + _xE3(_hitStatus) + '"';
+              // P12.3 显示 5 维加权总分（如有）·让 AI 知道哪些命中更可信
+              if (typeof hit._score === 'number') _recentHistory += ' score="' + Math.round(hit._score * 100) / 100 + '"';
               _recentHistory += '>' + _xE3(String(_hitText).substring(0, 100)) + '</hit>\n';
             });
             _recentHistory += '  </recall>\n';
@@ -3747,6 +3774,29 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       // ★ 长期约束（Phase 4.2 ReNovel-AI affects_future 范式）
       var _futureC = '';
       try { if (typeof _mtBuildFuture === 'function') _futureC = _mtBuildFuture() || ''; } catch(_fc){}
+      // ★ P12.1 state_board 注入（KokoroMemo state_renderer 范式·按 priority 排序·~1200 字预算）
+      // 4 类轻量会话状态——朝堂氛围/未解线索/近期摘要/未兑现承诺
+      // 优先级：mood（最即时） > unfulfilled_promises（玩家责任） > open_loops（待推进） > recent_summary（背景）
+      var _stateBoard = '';
+      try {
+        if (GM._stateBoard && typeof GM._stateBoard === 'object' && GM._stateBoard.turn === (GM.turn || 1) - 1) {
+          var sb = GM._stateBoard;
+          var sbLines = [];
+          sbLines.push('=== 上回合 state_board（朝堂状态板·下回合主推演必读·按重要度排序） ===');
+          if (sb.mood) sbLines.push('【朝堂氛围】' + sb.mood);
+          if (Array.isArray(sb.unfulfilled_promises) && sb.unfulfilled_promises.length > 0) {
+            sbLines.push('【玩家未兑现承诺/拟议未颁诏令·下回合应推进】');
+            sb.unfulfilled_promises.forEach(function(p) { sbLines.push('  · ' + p); });
+          }
+          if (Array.isArray(sb.open_loops) && sb.open_loops.length > 0) {
+            sbLines.push('【悬而未决线索·应在叙事中推进或回收】');
+            sb.open_loops.forEach(function(l) { sbLines.push('  · ' + l); });
+          }
+          if (sb.recent_summary) sbLines.push('【近期摘要】' + sb.recent_summary);
+          sbLines.push('=== state_board 结束 ===\n');
+          _stateBoard = sbLines.join('\n') + '\n';
+        }
+      } catch(_sbE){ _dbg('[StateBoard inject] fail:', _sbE); }
       // ★ 上回合记忆固化（Phase 7 sc_consolidate 后台输出·密度最高·应排在最前）
       var _consolidated = '';
       try {
@@ -3815,7 +3865,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
       } catch(_consE){ _dbg('[sc1 consolidate inject] fail:', _consE); }
-      var tp1 = _consolidated + _timeRef + _futureC + _wsSnap + _memTblInj + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
+      var tp1 = _stateBoard + _consolidated + _timeRef + _futureC + _wsSnap + _memTblInj + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
         "{\"turn_summary\":\"一句话概括本回合最重要的变化(30-50字，如:北境叛乱平定，国库因军费骤降三成)\","+
         // 实录：纯文言史官体，仿资治通鉴/历代实录
         "\"shilu_text\":\"实录"+_shiluMin+"-"+_shiluMax+"字——纯文言文(仿《资治通鉴》《明实录》)，以干支月份/日为单位，记事不评论。只记可验证事实：诏令、任免、战事、灾异、人事大变。句式仿实录：'某月某日，上诏……'/'是月，某地……'/'上命某官……'。禁止白话词汇，禁止主观评论。\","+
@@ -11272,6 +11322,13 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp25 += '"decision_echoes":[{"content":"\u54EA\u6761\u8BCF\u4EE4/\u51B3\u7B56","echoType":"positive/negative/mixed","echoDesc":"\u5EF6\u65F6\u540E\u679C\u63CF\u8FF0(30\u5B57)","delayTurns":0}],';
         tp25 += '"faction_narrative":{"\u52BF\u529B\u540D":"\u8FD1\u671F\u53D1\u5C55\u4E00\u53E5\u8BDD\u603B\u7ED3(30\u5B57)"},';
         tp25 += '"memory":"\u672C\u56DE\u5408\u7684\u9AD8\u5BC6\u5EA6\u538B\u7F29\u8BB0\u5F55\u2014\u2014\u5305\u542B\u6240\u6709\u5173\u952E\u4EBA\u540D\u3001\u4E8B\u4EF6\u3001\u53D8\u5316\u3001\u73A9\u5BB6\u51B3\u7B56\u53CA\u5176\u540E\u679C(200\u5B57)","trend":"\u5F53\u524D\u5927\u52BF\u8D70\u5411\u548C\u52A0\u901F\u65B9\u5411(50\u5B57)","npc_mood_snapshot":"\u5404\u4E3B\u8981NPC\u672C\u56DE\u5408\u540E\u7684\u60C5\u7EEA\u72B6\u6001(100\u5B57)","contradiction_evolution":"\u5404\u77DB\u76FE\u672C\u56DE\u5408\u7684\u6F14\u5316\u65B9\u5411\u2014\u2014\u52A0\u5267/\u7F13\u548C/\u8F6C\u5316(80\u5B57)",';
+        // P12.1 state_board 4 \u5B57\u6BB5\uFF08KokoroMemo state_schema 14 \u7C7B\u5BF9\u7167\u00B7\u8865\u5929\u547D\u7F3A\u5931\u7684\u8F7B\u91CF\u4F1A\u8BDD\u72B6\u6001\uFF09
+        tp25 += '"state_board":{';
+        tp25 += '"mood":"\u671D\u5802\u5F53\u524D\u6C1B\u56F4\u57FA\u8C03\u4E00\u53E5\u8BDD(40\u5B57\u00B7\u5982"\u767E\u5B98\u89C2\u671B\u00B7\u7687\u5E1D\u5A01\u91CD\u00B7\u6050\u60E7\u5927\u4E8E\u5E0C\u671B")",';
+        tp25 += '"open_loops":["\u60AC\u800C\u672A\u51B3\u4F46\u5E94\u63A8\u8FDB\u7684\u5267\u60C5\u7EBF 1(35\u5B57)","\u7EBF 2","\u7EBF 3"],';
+        tp25 += '"recent_summary":"\u672C\u56DE\u5408\u6700\u538B\u7F29\u7684\u6458\u8981(150\u5B57\u00B7\u8986\u76D6\u6240\u6709\u5173\u952E\u53D8\u52A8\u00B7\u4E0B\u56DE\u5408 sc1 \u4F18\u5148\u8BFB)",';
+        tp25 += '"unfulfilled_promises":["\u73A9\u5BB6\u672A\u5151\u73B0\u7684\u627F\u8BFA/\u62DF\u8BAE\u4F46\u672A\u9881\u7684\u8BCF\u4EE4 1(35\u5B57)","2","3"]';
+        tp25 += '},';
         // 10 \u7EF4\u4E8B\u4EF6\u8BC4\u5206\uFF08\u53C2\u8003\u5168\u81EA\u52A8\u603B\u7ED3 v4 \u51DB\u503E\u534F\u8BAE\u00B7\u672C\u5730\u5316\u4E3A\u5929\u547D\u8BED\u5883\uFF09+ affects_future \u4E8C\u5143\u6807\u8BB0\uFF08Phase 4.2 ReNovel-AI \u8303\u5F0F\uFF09
         tp25 += '"event_weights":[{"event":"\u4E8B\u4EF6\u63CF\u8FF050\u5B57\u4EE5\u5185","weight":0.65,"dims":["d1","d3"],"affects_future":true}]}\n';
         tp25 += '\n\u3010event_weights \u8BC4\u5206\u89C4\u5219\u3011\u5BF9\u672C\u56DE\u5408\u4E0A\u62A5 5-10 \u4EF6\u4E8B\u4EF6\u00B7\u9010\u4EF6\u6309 10 \u4E2A\u7EF4\u5EA6\u5404\u6253 0.05-0.15 \u7D2F\u52A0\u5C01\u9876 1.0\uFF1A\n';
@@ -11318,6 +11375,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             }
             // 存储趋势
             if (p25.trend) GM._currentTrend = p25.trend;
+            // P12.1 state_board 4 字段
+            if (p25.state_board && typeof p25.state_board === 'object') {
+              GM._stateBoard = {
+                turn: _ptTurn25,
+                ts: Date.now(),
+                mood: String(p25.state_board.mood || '').slice(0, 80),
+                open_loops: Array.isArray(p25.state_board.open_loops) ? p25.state_board.open_loops.slice(0, 5).map(function(s){ return String(s).slice(0, 60); }) : [],
+                recent_summary: String(p25.state_board.recent_summary || '').slice(0, 250),
+                unfulfilled_promises: Array.isArray(p25.state_board.unfulfilled_promises) ? p25.state_board.unfulfilled_promises.slice(0, 5).map(function(s){ return String(s).slice(0, 60); }) : []
+              };
+            }
 
             // 2.1: 处理剧情线更新
             if (p25.plot_updates && Array.isArray(p25.plot_updates)) {

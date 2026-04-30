@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·12 表记忆系统收尾：transformers.js 离线打包 + 剧本侧初始皇命",
+      "title": "Phase 1-3 实施完成后的两项收尾——(1) 把 @xenova/transformers 2.17.2 + 3 个依赖（@huggingface/jinja 0.2.2 / onnxruntime-web 1.14.0 / onnxruntime-common 1.14.0）的 +esm bundle 全部下载到 web/vendor/transformers/·并把 jsdelivr 硬编码 URL 改为相对路径·tm-semantic-recall.js 加载顺序改为本地→jsdelivr→esm.sh 三级 fallback。Electron 离线情境下首次运行后即可断网（模型 96MB 由 transformers.js 自动缓存到 IndexedDB）。(2) 编辑器加『初始皇命（钉子条目）』面板·剧本作者预设的 imperialEdicts 数组在 doActualStart 新游戏时自动写入 GM._memTables.imperialEdict（走 editorWrite 硬接口绕过 readonly 限制）·开局即有的『祖训不可改』『先帝遗诏』之类条目从 T1 起即被 sc1/sc15 prompt 注入。",
+      "items": [
+        { "what": "新建 web/vendor/transformers/ 目录·包含 transformers.esm.js (227KB) + jinja.esm.js (25KB) + onnxruntime-web.esm.js (550KB) + onnxruntime-common.esm.js + README.md。所有 +esm bundle 通过 curl 从 jsdelivr 下载·用 Node 脚本把硬编码的 /npm/X/+esm URL 替换为相对路径 ./X.esm.js。", "why": "Electron 离线场景下需要避免 CDN 依赖。transformers.js 的 ESM bundle 是 Rollup 打包的·只在两处 import 外部 dep（jinja + onnxruntime-web）·把这两处改本地后整条加载链脱离 CDN。模型文件 96MB 仍由 transformers.js 自动缓存到 IndexedDB·首次启用需在线一次。" },
+        { "what": "tm-semantic-recall.js ensureModel() 加载顺序改为三级 fallback：(1) await import('./vendor/transformers/transformers.esm.js') (2) jsdelivr CDN (3) esm.sh CDN。三级全失败才抛错。错误信息附三个 message 便于诊断。", "why": "本地优先确保 Electron 离线可用·CDN 兜底确保 GitHub Pages 部署也能跑·两个 CDN 互为备份避免单点故障。" },
+        { "what": "vendor/transformers/README.md 写明完整离线指南：模型文件应放到 web/vendor/models/Xenova/bge-small-zh-v1.5/·设置 transformers.env.localModelPath + allowRemoteModels=false 即彻底离线。WASM 文件（ort-wasm.wasm 等）由 onnxruntime-web 按需下载·完全离线还需手动 vendor。", "why": "把『未完工的离线路径』文档化·让后续维护者一眼看出仍需补完哪些。" },
+        { "what": "editor.html 在『目标/胜负条件』面板之后插入新面板 #panel-imperialEdicts·包含说明 + 列表 + 添加按钮。editor-game-systems.js 加 4 个函数：renderImperialEdictsList / addImperialEdictEntry / editImperialEdictEntry / deleteImperialEdictEntry。schema：{priority:1-10, content:皇命内容, condition:生效条件, startTurn:颁布回合}。", "why": "12 表里的 imperialEdict 是 readonly·AI 永远不能写·只能玩家在游戏内 Ctrl+M 面板加。但游戏内编辑要每次开局重设·剧本作者无法预制『太祖遗诏』。剧本侧加 imperialEdicts 数组后·所有玩家开局即继承这些钉子条目·zero 游戏内操作就能锁住关键设定。" },
+        { "what": "tm-patches.js doActualStart() 在 sc.goals/sc.offendGroups/sc.keju 加载之后·检查 sc.imperialEdicts 数组·遍历调 MemTables.editorWrite('imperialEdict', 'insert', ...)（走 editor 硬接口绕过 readonly 限制）。同时 try-catch 兜底·MemTables 模块未加载或单条插入失败都不阻断 startGame。", "why": "新游戏路径的标准位置是 doActualStart·与目标/科举配置加载并列。editorWrite 是 Phase 1.2 已经准备好的 escape hatch（editor_force_delete 同款 opts.editorOverride=true 通道）·正好用来对应『编辑器/剧本作者拥有特权·AI 受限』的设计哲学。" },
+        { "what": "验证：node --check tm-patches.js + editor-game-systems.js + tm-semantic-recall.js 全部通过。剧本 schema 向下兼容·老剧本无 imperialEdicts 字段时该步骤无操作。", "why": "向下兼容是底线·任何老剧本都应能继续工作。" }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·12 表结构化记忆 + Swipe 快照 + 本地语义检索 + 10 维事件评分 + 可视化面板",
       "title": "综合参考五种酒馆插件（LSR 表格预设/全自动总结 v4 凛倾协议/蚀心入魔 CoAT/ST-Prompt-Template/memos）建立完整记忆架构。Phase 1：12 表 schema + 软对齐编码 T<turn>-<seq> + AI tableEdit 输出协议解析 + sc1/sc15 prompt 注入 + 后置强调（depth=0 等价物）+ 一致性哨兵。Phase 2：endTurn 自动 swipe 快照（IndexedDB·LRU 200 回合）+ GM.timeTravel 任意回合穿越 + bge-small-zh-v1.5 本地语义检索（玩家可启用·首次 96MB·SC_RECALL 第 5 源）+ sc25 10 维事件评分（君主行动/三公九卿/重大决策/冲突进展/信息揭露/制度阐释/新势力/NPC变动/情感峰值/主线推进各打 0.05-0.15 累加封顶 1.0）。Phase 3：12 表可视化面板（Ctrl+M 切换·导航条+表格卡片+diff 高亮+待删除印章）+ 细粒度锁（行/列/单格）+ 软删除二次确认 + 皇命专用表（玩家钉子条目·AI 永读不写）。",
       "items": [

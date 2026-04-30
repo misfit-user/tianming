@@ -83,6 +83,20 @@
   function disable() {
     STATE.enabled = false;
   }
+
+  // P6.4 修：游戏开始后自动启用 + 后台加载模型
+  // 不在脚本加载时立即启用·避免菜单/启动屏被 96MB 下载拖慢
+  // 改为：等到 GM.running=true（即玩家选剧本进入游戏）后再启动·此时可在游戏过程中静默下载
+  function autoEnableAfterGameStart() {
+    if (STATE.enabled) return;
+    if (typeof GM !== 'undefined' && GM && GM.running) {
+      // 玩家配置开关·默认开·若显式禁用则不自动启用
+      if (typeof P !== 'undefined' && P && P.conf && P.conf.semanticRecallAutoload === false) return;
+      STATE.enabled = true;
+      // 延迟 5 秒再加载·让游戏 UI 先稳定
+      setTimeout(function() { ensureModel().catch(function(){}); }, 5000);
+    }
+  }
   function status() {
     return {
       enabled: STATE.enabled,
@@ -264,6 +278,20 @@
     if (typeof window !== 'undefined') {
       window.addEventListener('DOMContentLoaded', _registerHook);
     }
+  }
+
+  // P6.4：游戏开始后自动启用·首次 96MB 模型静默缓存到 IndexedDB·之后秒开
+  // 不在脚本加载时立即启用·避免菜单/启动屏被 96MB 下载拖慢
+  if (typeof window !== 'undefined') {
+    var _autoTriesLeft = 90; // 90 秒窗口（玩家从开剧本到第一回合通常 30-60 秒）
+    var _autoTimer = setInterval(function() {
+      _autoTriesLeft--;
+      if (_autoTriesLeft <= 0) { clearInterval(_autoTimer); return; }
+      if (typeof GM !== 'undefined' && GM && GM.running) {
+        autoEnableAfterGameStart();
+        clearInterval(_autoTimer);
+      }
+    }, 1000);
   }
 
   // ────── 持久化（IndexedDB） ──────

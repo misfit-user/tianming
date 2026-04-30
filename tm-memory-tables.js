@@ -732,6 +732,30 @@
     if (GM._memTables._sentinelLog.length > 200) {
       GM._memTables._sentinelLog = GM._memTables._sentinelLog.slice(-200);
     }
+    // P6.5 修：高严重度 toast 弹·中等记入 evtLog 给玩家看·低仅控制台
+    // 频率限制：本回合至多 3 条 toast
+    var nowTurn = (typeof GM !== 'undefined' && GM && GM.turn) || 0;
+    if (!GM._memTables._toastBudget || GM._memTables._toastBudget.turn !== nowTurn) {
+      GM._memTables._toastBudget = { turn: nowTurn, count: 0 };
+    }
+    var budget = GM._memTables._toastBudget;
+    var maxToastsPerTurn = 3;
+    warnings.forEach(function(w) {
+      if (w.level === 'error') {
+        if (budget.count < maxToastsPerTurn && typeof toast === 'function') {
+          try { toast('🚨 哨兵: ' + w.msg); } catch(_t){}
+          budget.count++;
+        }
+        if (typeof addEB === 'function') {
+          try { addEB('哨兵', w.msg); } catch(_e){}
+        }
+      } else if (w.level === 'warn') {
+        if (typeof addEB === 'function') {
+          try { addEB('哨兵', w.msg); } catch(_e){}
+        }
+      }
+      // info 级仅控制台·不打扰玩家
+    });
     return warnings;
   }
 

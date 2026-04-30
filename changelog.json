@@ -3,6 +3,57 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 6 关键审计：存档/读档兼容性 + AI 历史读取深度·6 项修复",
+      "title": "用户提出 4 项关键审计请求：(1) 新存档/读档·12 表能否被正确序列化与恢复？(2) 老存档兼容性·缺 _memTables 字段如何处理？(3) AI 推演读取的历史深度——时政记/实录/回合数据/御批回听/编年长期行动各能读几回合？(4) 隐藏不给玩家看的 NPC 阴谋与势力非公开活动·下回合 sc1 能否看到？另外补充两点：(5) 语义检索改为自动加载·(6) 哨兵警告改为 toast 弹窗。审计后发现 6 项缺口·全部修复。",
+      "items": [
+        {
+          "what": "审计 1·存档：saveToSlot 用 deepClone(GM) 整体序列化·_memTables 与所有新字段（cellHistory/sentinelLog/pendingDeletes/editorLocks）自动入档·新存档完全兼容。",
+          "why": "不需要单独写 _savedMemTables 镜像·因为 deepClone 通吃。"
+        },
+        {
+          "what": "审计 2·老存档：fullLoadGame 整体替换 GM·老存档无 _memTables 时·MemTables.ensureInit() 在首次调用时 lazy-init 空表。但只是空表·历史事件不会自动回填。",
+          "why": "需要自动重建·否则老存档玩家用 12 表系统体验为零。"
+        },
+        {
+          "what": "【缺口修复 1】tm-save-lifecycle.js fullLoadGame 末尾·检测 (a) GM._memTables 缺失或 (b) GM.turn>1 但 eventHistory 表为空且 GM.evtLog 非空 → 自动调 MemTables.rebuildFromHistory({clear:true})·从 shijiHistory + evtLog + ChronicleTracker 反向重建 curStatus/eventHistory/majorEventsBrief 三张表。toast 提示玩家。",
+          "why": "老存档加载即获完整 12 表·无需玩家手动点 Ctrl+M 重建按钮。"
+        },
+        {
+          "what": "审计 3·御批回听 (_edictEfficacyHistory)：每回合 aiEdictEfficacyAudit 生成详细诏令兑现报告·overallEfficacy/byDimension/ignoredOrDelayed·存到 _edictEfficacyHistory（最近 20 回合）。但 grep 全代码库·tm-endturn-ai-infer.js 完全不读它——只有 tm-endturn-render.js 给玩家看。下回合 AI 完全不知本回合诏令成败！这是严重的\"AI 失忆症\"——刚下的诏没落实·AI 还在按理想推演。",
+          "why": "是用户问的核心。AI 必须知道上一回诏书有没有真的落地·才能调整本回合策略。"
+        },
+        {
+          "what": "【缺口修复 2】sc1 prompt 加 3 段注入：(a) 御批回听·过去 5 回合诏令落实情况·overallEfficacy + efficacyByDimension·让 AI 看趋势 (b) 上回合未落实/搁置/失败诏令逐条·status + reason·让 AI 决定本回合是继续/废止/换臣推动/认错改弦 (c) NPC 阴谋（activeSchemes 中 source!=yuqian2）slice(-10)·让主 sc1 看到朝中暗流（不只是御前密议）·叙事中应自然呈现端倪 (d) 势力暗流（_factionUndercurrents）slice(0,8)·延续上回合 sc15 的 trend 与 nextMove。",
+          "why": "主 sc1 之前只看御前密议·NPC 阴谋只在 sc1c 里见·势力暗流也只在 sc1c 里见。导致主推演叙事与暗流不接·玩家会看到\"明明上回合写了某派要造反·这回合时政记完全没提到\"。"
+        },
+        {
+          "what": "审计 4·编年长期行动：ChronicleTracker.getAIContextString 返回所有 active tracks·无 slicing·包括 hidden 标记条目（玩家不可见但 AI 可见）。sc1c/sc2 都注入·sc15 不注入。已是全见状态·无需修。",
+          "why": "这是 9 维矩阵中唯一已经做对的——AI 看得到所有长期行动·包括天机层。"
+        },
+        {
+          "what": "【缺口修复 3】sc05 历史段扩容：shijiHistory.slice(-10) 从 200 字扩到 400 字·并附 shilu 前 150 字·并自动列出每回合玩家诏令摘要（_eSum）。",
+          "why": "sc05 是深度回顾子调用·输出 aiThinking 喂 sc1。原来 200 字截断把\"本回合发生了什么\"说不清楚·现在 400 字 + 实录文言 + 玩家诏令摘要·让 AI 进入故事流更稳。"
+        },
+        {
+          "what": "【P6.4 修·语义检索自动加载】tm-semantic-recall.js 加 autoEnableAfterGameStart() + 1 秒轮询 90 次窗口（90 秒）·一旦 GM.running=true 即自动 STATE.enabled=true 并 setTimeout 5 秒后 ensureModel()。玩家可通过 P.conf.semanticRecallAutoload=false 关闭。不在脚本加载时立即跑·避免菜单/启动屏被 96MB 下载拖慢。",
+          "why": "用户问可否改为自动下载。不能在 index.html 加载时下载（home 页会拖 96MB）·但游戏开始后玩家正在配置/读剧本·此时静默下载是最佳时机。首次缓存到 IndexedDB 后·后续秒开。"
+        },
+        {
+          "what": "【P6.5 修·哨兵 toast】runConsistencySentinel 末尾消费警告：error 级 toast 弹（每回合至多 3 条节流·防屏霸）+ addEB 入事件流·warn 级 addEB 入事件流·info 级仅控制台。GM._memTables._toastBudget 节流计数·跨回合自动清零。",
+          "why": "原本警告只写到 _sentinelLog 没人看。现在 error 级（编码重复/跨表对齐失败）会主动告知玩家·warn 级（编码缺失）入 evtLog 让玩家在事件面板看·info 级（长字段超限）只在控制台。"
+        },
+        {
+          "what": "【AI 历史读取深度审计·9 维矩阵】(1) 时政记/实录·sc05 读 slice(-10) 间接喂 sc1 ✅ (2) 事件流·sc05 读 slice(-30) ✅ (3) 御批回听·原本不读 → 修复后 sc1 直接读 5 回合 + 上回合 ignoredOrDelayed 详单 ✅ (4) 编年长期行动·sc1/sc1c/sc2 全部读·全部 active 无限制·含 hidden ✅ (5) NPC 阴谋·原本仅 sc1c 读 slice(-8) → 修复后主 sc1 也读 slice(-10) ✅ (6) 势力暗流·原本仅 sc1c 读 → 修复后主 sc1 也读 slice(0,8) ✅ (7) Chronicle hidden 条目·AI 全见玩家不见 ✅ (8) 12 表事件历史·sc1 含·sc15/sc2 hideSecret 过滤天机 ✅ (9) 老存档自动重建 ✅",
+          "why": "把所有\"AI 应该知道但实际没看到\"的盲点全填上·才不是空中楼阁。"
+        },
+        {
+          "what": "验证：node --check 全部通过——tm-endturn-ai-infer / tm-save-lifecycle / tm-semantic-recall / tm-memory-tables。所有路径 silent fallback——MemTables.rebuildFromHistory 失败 try-catch 兜底·toast 在 typeof toast===\"function\" 守卫·哨兵预算单回合超限静默跳过。",
+          "why": "增强中间件不能阻断主流程。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 5 关键审计 + 致命 bug 修复 + 三模型解耦 + 事件溯源重建",
       "title": "用户提出关键审计请求：检查记忆系统是否真在影响推演而非空中楼阁。审计发现致命 bug——sc1 用了 OpenAI response_format=json_object·这强制 AI 只输出纯 JSON·导致我之前设计的 <tableEdit>...</tableEdit> 标签输出永远被屏蔽——OpenAI 用户的 12 表系统等于只能初始化一次再也不更新。立即修复：sc1 JSON schema 加 table_updates 字段·走结构化 JSON 通道而非 XML 标签。同时完成两个剩余设计：(P5.1) 三模型解耦·sc_audit + sc25 优先用次要 API 配置·没配则回退主要——使用了已存在的 _useSecondaryTier/_getAITier/_buildAIUrlForTier 助手。(P5.2) Horae 轻版 chat[0] 事件溯源·MemTables.rebuildFromHistory() 从 shijiHistory + evtLog + ChronicleTracker 反向重建 curStatus/eventHistory/majorEventsBrief 三张表·UI 加重建按钮·用于损坏修复或老存档迁移。",
       "items": [

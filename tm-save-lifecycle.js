@@ -750,6 +750,25 @@ function fullLoadGame(data){
     // 重建索引
     if (typeof buildIndices === 'function') buildIndices();
 
+    // P6.3 修：老存档加载后·若 _memTables 缺失或仅有空 schema·自动反向重建以保留历史
+    try {
+      if (window.MemTables && MemTables.ensureInit) {
+        MemTables.ensureInit();
+        var _eh = MemTables.getSheet('eventHistory');
+        var _curS = MemTables.getSheet('curStatus');
+        // 判断是否需要重建：(a) 完全无表 (b) 表存在但回合 > 1 而事件历史为空
+        var _needRebuild = !GM._memTables ||
+                           (GM.turn > 1 && _eh && _eh.rows.length === 0 && Array.isArray(GM.evtLog) && GM.evtLog.length > 0);
+        if (_needRebuild && MemTables.rebuildFromHistory) {
+          var _rb = MemTables.rebuildFromHistory({ clear: true });
+          if (_rb.ok && _rb.totalRows > 0) {
+            console.log('[fullLoadGame] 12 表自动反向重建：当前局势 ' + _rb.stats.curStatus + ' 行·事件历史 ' + _rb.stats.eventHistory + ' 行·大事记 ' + _rb.stats.majorEventsBrief + ' 行');
+            if (typeof toast === 'function') toast('记忆表已从历史反向重建·' + _rb.totalRows + ' 行');
+          }
+        }
+      }
+    } catch(_mtRebuildE) { console.warn('[fullLoadGame] 12 表自动重建失败:', _mtRebuildE); }
+
     _$("launch").style.display="none";
     _$("bar").style.display="flex";
     _$("bar-btns").innerHTML="";

@@ -3433,8 +3433,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         // 收集最近10回合的关键事件（扩大回溯范围）
         var _recentHistory = '';
         if (GM.shijiHistory && GM.shijiHistory.length > 0) {
+          // P6.3：从 200 字扩到 400 字·并附 shilu 前 150 字（实录是史官体·更稳）
           GM.shijiHistory.slice(-10).forEach(function(sh) {
-            _recentHistory += 'T' + sh.turn + ': ' + (sh.shizhengji || '').substring(0, 200) + '\n';
+            _recentHistory += 'T' + sh.turn + ' [时政] ' + (sh.shizhengji || '').substring(0, 400) + '\n';
+            if (sh.shilu) _recentHistory += '       [实录] ' + (sh.shilu || '').substring(0, 150) + '\n';
+            // 玩家本回合诏令摘要（让 AI 知道历回玩家做了什么）
+            if (sh.edicts && typeof sh.edicts === 'object') {
+              var _eSum = [];
+              Object.keys(sh.edicts).forEach(function(cat) {
+                var v = sh.edicts[cat];
+                if (typeof v === 'string' && v.trim()) _eSum.push('[' + cat + ']' + v.split(/[\n；;]/)[0].slice(0, 40));
+              });
+              if (_eSum.length > 0) _recentHistory += '       [玩家诏] ' + _eSum.join(' · ') + '\n';
+            }
           });
         }
         if (GM.evtLog && GM.evtLog.length > 0) {
@@ -4117,6 +4128,44 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             tp1 += '  T' + s.startTurn + '·' + (s.schemer||'皇帝') + '：' + (s.plan||'').slice(0, 80) + '（进度:' + (s.progress||'酝酿') + '，同谋:' + (s.allies||'') + '）\n';
           });
           tp1 += '  ※ 密谋推进应合乎逻辑——需行动者、需时机、需风险；可能暴露或成败\n';
+        }
+        // P6.3 修：注入 NPC 阴谋（非御前密议·sc1c 之外的全部）·主 sc1 应知朝中暗流
+        var _npcSchemes = GM.activeSchemes.filter(function(s){ return s.source !== 'yuqian2' && (!s.progress || s.progress !== '完成'); });
+        if (_npcSchemes.length > 0) {
+          tp1 += '\n\n【朝中阴谋·非公开（仅 AI 知晓·影响 hidden_moves 演绎）】\n';
+          _npcSchemes.slice(-10).forEach(function(s) {
+            tp1 += '  T' + (s.startTurn||'?') + '·' + (s.schemer||'?') + '→' + (s.target||'?') + '：' + String(s.plan||'').slice(0, 60) + '（' + (s.progress||'酝酿中') + '·同谋' + (s.allies||'独行') + '）\n';
+          });
+          tp1 += '  ※ 这些阴谋当前对玩家不公开·但 NPC/势力会按此推进。叙事中应自然呈现端倪而非直白·让玩家从风闻/暗示中察觉\n';
+        }
+      }
+      // P6.3 修：注入势力暗流（_factionUndercurrents·上回合 sc15 输出）
+      if (Array.isArray(GM._factionUndercurrents) && GM._factionUndercurrents.length > 0) {
+        tp1 += '\n\n【势力内部暗流·上回合 NPC 推演结论·本回合应延续】\n';
+        GM._factionUndercurrents.slice(0, 8).forEach(function(u) {
+          tp1 += '  ' + (u.faction||'?') + '：' + (u.situation||'') + '（趋势 ' + (u.trend||'稳定') + '·' + (u.nextMove||'') + '）\n';
+        });
+      }
+      // P6.3 修：注入御批回听（_edictEfficacyHistory·上 5 回合诏令成败结果·让 AI 不重蹈覆辙）
+      if (Array.isArray(GM._edictEfficacyHistory) && GM._edictEfficacyHistory.length > 0) {
+        var _recentEfficacy = GM._edictEfficacyHistory.slice(-5);
+        tp1 += '\n\n【御批回听·过去 5 回合诏令落实情况（AI 应据此调整本回合诏令兑现节奏）】\n';
+        _recentEfficacy.forEach(function(eh) {
+          var efficacy = (eh.overallEfficacy != null ? eh.overallEfficacy + '%' : '?');
+          tp1 += '  T' + (eh.turn||'?') + ' 整体兑现率 ' + efficacy;
+          if (eh.efficacyByDimension) {
+            var dims = Object.keys(eh.efficacyByDimension).map(function(k){ return k + ':' + eh.efficacyByDimension[k] + '%'; }).join('·');
+            if (dims) tp1 += '（' + dims + '）';
+          }
+          tp1 += '\n';
+        });
+        // 当前回合 _edictEfficacyReport 的具体未落实条目（更细粒度·上回合产生）
+        var _lastEf = GM._edictEfficacyReport;
+        if (_lastEf && Array.isArray(_lastEf.ignoredOrDelayed) && _lastEf.ignoredOrDelayed.length > 0) {
+          tp1 += '【上回合未落实/搁置/失败诏令·下回合应明确处理（继续/废止/换臣推动/认错改弦）】\n';
+          _lastEf.ignoredOrDelayed.slice(0, 10).forEach(function(r) {
+            tp1 += '  · 「' + String(r.content || '').slice(0, 50) + '」 status:' + (r.status||'?') + '·原因:' + String(r.reason||'').slice(0, 40) + '\n';
+          });
         }
       }
       // 方案融入：推演前先①税收级联自然结算 ②区划→七变量聚合 ③注入深化上下文

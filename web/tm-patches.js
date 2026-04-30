@@ -1129,7 +1129,7 @@ function doActualStart(sid){
   if (sc.keju) P.keju = deepClone(sc.keju);
   if (sc.playerInfo) P.playerInfo = deepClone(sc.playerInfo);
 
-  // 初始皇命（钉子条目）写入 12 表系统的 imperialEdict（玩家锁·AI 永读不写）
+  // 初始皇命（钉子条目 + 隐藏天机）写入 12 表系统的 imperialEdict（玩家锁·AI 永读不写）
   if (sc.imperialEdicts && sc.imperialEdicts.length > 0 && window.MemTables) {
     try {
       MemTables.ensureInit();
@@ -1139,7 +1139,8 @@ function doActualStart(sid){
             0: String(e.priority || 5),
             1: String(e.content || ''),
             2: String(e.condition || '永久生效'),
-            3: String(e.startTurn || 1)
+            3: String(e.startTurn || 1),
+            4: e.secret ? 'true' : ''
           }
         });
       });

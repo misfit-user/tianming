@@ -182,6 +182,7 @@
       });
       html += '<td>' +
         '<button class="mem-lock-row" data-row="' + ri + '" title="锁定本行">🔒</button>' +
+        '<button class="mem-row-history" data-row="' + ri + '" title="查看本行修改历史">史</button>' +
         '<button class="mem-soft-del" data-row="' + ri + '" title="标记软删除">🗑</button>' +
         '</td>';
       html += '</tr>';
@@ -199,21 +200,37 @@
     body.querySelectorAll('.mem-soft-del').forEach(function(btn) {
       btn.addEventListener('click', function() { _softDelete(def.key, parseInt(btn.dataset.row, 10)); });
     });
+    body.querySelectorAll('.mem-row-history').forEach(function(btn) {
+      btn.addEventListener('click', function() { _showRowHistory(def, parseInt(btn.dataset.row, 10)); });
+    });
+  }
+
+  function _showRowHistory(def, ri) {
+    if (!MemTables.getCellHistory) { alert('cellHistory 不可用'); return; }
+    var hist = MemTables.getCellHistory(def.key, ri);
+    if (!hist || hist.length === 0) { alert('该行无修改历史（仍为原始值或未变更）'); return; }
+    var lines = hist.slice().reverse().map(function(h) {
+      var col = def.columns[h.col] || ('列' + h.col);
+      return 'T' + h.turn + ' [' + (h.actor || 'ai') + '] ' + col + ': "' + (h.oldVal || '∅') + '" → "' + (h.newVal || '∅') + '"';
+    });
+    alert('[' + def.name + '] 行 ' + ri + ' 修改历史（最近在前·共 ' + hist.length + ' 条）：\n\n' + lines.join('\n'));
   }
 
   // 皇命表专用渲染
   function _renderImperialEditor(def, t) {
     var html = '<div class="imperial-editor">';
     html += '<div style="margin-bottom:8px;color:#d4a85a;font-weight:bold;">📜 皇命专用 · AI 永读不写·每回合必投</div>';
-    html += '<div style="font-size:11px;color:#a89878;margin-bottom:8px;">玩家在此处添加的钉子条目（如"祖训不可改""礼部尚书必由王某担任"）会被注入到每回合 sc1 prompt 顶部·AI 严格遵循。</div>';
-    html += '<table class="mem-tbl"><thead><tr><th>#</th><th>优先级</th><th>皇命内容</th><th>生效条件</th><th>颁布回合</th><th>操作</th></tr></thead><tbody>';
+    html += '<div style="font-size:11px;color:#a89878;margin-bottom:8px;">玩家在此处添加的钉子条目（如"祖训不可改""礼部尚书必由王某担任"）会被注入到每回合 sc1 prompt 顶部·AI 严格遵循。<b>勾选"天机"</b>则为隐藏伏笔·仅 sc1 可见 sc15/sc2 不见。</div>';
+    html += '<table class="mem-tbl"><thead><tr><th>#</th><th>优先级</th><th>皇命内容</th><th>生效条件</th><th>颁布回合</th><th>天机</th><th>操作</th></tr></thead><tbody>';
     t.rows.forEach(function(r, i) {
-      html += '<tr>';
+      var isSecret = (r[4] === 'true' || r[4] === true || r[4] === '是' || r[4] === '1');
+      html += '<tr' + (isSecret ? ' style="background:#2a1a3a;"' : '') + '>';
       html += '<td>' + i + '</td>';
       html += '<td><input type="number" min="1" max="10" value="' + (r[0] || '5') + '" data-row="' + i + '" data-col="0" class="imp-edit"></td>';
       html += '<td><textarea rows="2" data-row="' + i + '" data-col="1" class="imp-edit">' + (r[1] || '') + '</textarea></td>';
       html += '<td><input type="text" value="' + (r[2] || '') + '" data-row="' + i + '" data-col="2" class="imp-edit"></td>';
       html += '<td><input type="text" value="' + (r[3] || '') + '" data-row="' + i + '" data-col="3" class="imp-edit"></td>';
+      html += '<td style="text-align:center;"><input type="checkbox"' + (isSecret ? ' checked' : '') + ' data-row="' + i + '" data-col="4" class="imp-edit-secret" title="勾选=隐藏天机·仅 sc1 可见"></td>';
       html += '<td><button class="imp-del" data-row="' + i + '">删</button></td>';
       html += '</tr>';
     });
@@ -236,6 +253,15 @@
         MemTables.editorWrite('imperialEdict', 'update', { rowIdx: ri, values: values });
       });
     });
+    body.querySelectorAll('.imp-edit-secret').forEach(function(el) {
+      el.addEventListener('change', function() {
+        var ri = parseInt(el.dataset.row, 10);
+        var ci = parseInt(el.dataset.col, 10);
+        var values = {}; values[ci] = el.checked ? 'true' : '';
+        MemTables.editorWrite('imperialEdict', 'update', { rowIdx: ri, values: values });
+        _renderBody();
+      });
+    });
     body.querySelectorAll('.imp-del').forEach(function(btn) {
       btn.addEventListener('click', function() {
         if (!confirm('删除此条皇命？')) return;
@@ -246,7 +272,7 @@
     var addBtn = body.querySelector('#imp-add-btn');
     if (addBtn) addBtn.addEventListener('click', function() {
       MemTables.editorWrite('imperialEdict', 'insert', {
-        values: { 0: '5', 1: '（在此输入皇命内容）', 2: '永久生效', 3: String((typeof GM !== 'undefined' && GM && GM.turn) || 1) }
+        values: { 0: '5', 1: '（在此输入皇命内容·勾选天机列即变伏笔）', 2: '永久生效', 3: String((typeof GM !== 'undefined' && GM && GM.turn) || 1), 4: '' }
       });
       _renderBody();
     });

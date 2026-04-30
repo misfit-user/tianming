@@ -3,6 +3,75 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·9 插件横向对比 + Phase 4 综合借鉴：时间一等公民 / 未来约束 / 隐藏天机 / cellHistory / 标准适配器",
+      "title": "继 Phase 1-3 后并行研究 SillyTavern-Horae（时间感知）/ ReNovel-AI（未来约束）/ muyoou/st-memory-enhancement（hash-based 历史 + 外部适配器）三个新插件·结合之前 5 个综合 9 维矩阵对比·提取 5 项尚未抄的高 ROI 设计落地：(P4.1) tm-time-utils.js Horae 风格时间工具（干支/12 地支时辰/季节/相对时间口语化）·sc1/sc15/sc2 prompt 顶部注入时间参考段防 AI 把三天前说成昨天。(P4.2) eventHistory 加未来约束列·sc25 评分时 AI 二元标记 affects_future·sc1 prompt 提取构成长期约束段。(P4.3) imperialEdict 加隐藏列·勾选后仅 sc1 可见·配编辑器/UI 双勾选·剧本作者可埋定时炸弹。(P4.4) updateRow 改为不可变历史·UI 加史按钮看修改时间线。(P4.5) tm-memory-adapter.js 暴露 TianmingMemoryAdapter 标准外部入口。(P4.8) 扫描确认无越狱串污染。",
+      "items": [
+        {
+          "what": "新建 tm-time-utils.js（约 200 行）：干支地支生肖季节常量 + turnToDate(turn) 转 {year/month/day/gan/zhi/ganzhi/zodiac/season} + formatRelativeTime 按天数差返口语化（今日/昨日/前日/三日前/上旬/下旬/X月前/X年Y月前）+ getShichen 24小时转十二地支 + describeCurrentTurn 返回 T15·皇明·1611年五月·辛酉年·夏 + buildTimeReferenceBlock 列出当前+上回合+三回合前+一年前+三年前+五年前的具体年月日干支。",
+          "why": "Horae 的核心洞察——AI 把三天前说成昨天是因为它看不到3天=跨周/跨月/前回合的语义。注入时间参考让 AI 看到上回合 T14 = 1611年四月辛酉春·一年前 T2 = 1610年五月庚申夏·此后任何引用都用相对时间括号·防漂移。"
+        },
+        {
+          "what": "tm-endturn-ai-infer.js sc1/sc15/sc2 prompt 顶部全部注入 _buildTimeRef()。三处都加了 try-catch silent fallback·任何错误不阻断主推演。tp1=_timeRef+_futureC+_wsSnap+_memTblInj+...·tp15=_tr15+_ws15+_mt15+...·tp2=_tr2+_ws2+_mt2+...",
+          "why": "三处推演均需时间参考·sc1 主推演引用历史事件·sc15 NPC 心理基于历史关系·sc2 后人戏说讲当年某某。一处缺失即漂移。"
+        },
+        {
+          "what": "tm-memory-tables.js eventHistory 表 columns 加未来约束(7 列)·schema note 更新说明 affects_future=true 的事件会进入长期约束段。新增 buildFutureConstraints() 函数·过滤 r[6]==true 的最近 15 行·拼成长期约束段（affects_future·禁止违反）。",
+          "why": "ReNovel-AI 的核心独到设计——把未来还要发生的事作为 negative constraint 反喂给 AI（不能让 X 提前死/不能让 Y 的秘密泄露）。天命的伏笔/天机机制完美对应。"
+        },
+        {
+          "what": "tm-endturn-ai-infer.js sc25 event_weights schema 加 affects_future:true 字段·prompt 详述二元标记规则——true=5+回合后仍有约束力（重臣获兵权/条约/改革落地/关键人物身份变化/失守）·false=本回合一次性细节（召对/小骚乱/恩赏）。sc25 weight 回写消费端同步把 r[6]=aff 写到 eventHistory 表的未来约束列。",
+          "why": "光加列没意义·必须让 sc25 后台评分时 AI 决定哪些事件值得长期约束。10 维评分 + 二元标记是廉价但极有效的重要性信号。"
+        },
+        {
+          "what": "tm-memory-tables.js imperialEdict 表加隐藏列(5 列)·_serializeSheet 的 hideSecret opt 在 def.key=imperialEdict 时过滤隐藏=true 的行。sc15/sc2 调 buildTablesInjection 时传 hideSecret:true·sc1 不传保持全见。",
+          "why": "ReNovel-AI 的 is_reveal 隐藏关系机制——朝廷尚未察觉的边境异动·对玩家可见但 AI NPC 心理不可见。这正是天命的伏笔/天机层——剧本作者埋的定时炸弹（如安史之乱将于T30爆发）·AI 主推演会按时间逐步引爆·但不能在 NPC 内心独白和后人戏说中提前剧透。"
+        },
+        {
+          "what": "editor-game-systems.js editImperialEdictEntry 加 ie-secret checkbox·勾选则 e.secret=true·渲染时显示紫色边框 + 天机前缀 + 提示文字。tm-memory-ui.js 皇命表渲染加天机列 checkbox·实时勾选实时写库。tm-patches.js doActualStart 同步剧本 sc.imperialEdicts 到表时第 5 列写 e.secret 转 true 字符串或空。",
+          "why": "三处编辑入口（剧本作者/玩家手动/UI 实时勾选）必须保持一致·才能让埋天机是可玩的功能而非纸面设计。"
+        },
+        {
+          "what": "tm-memory-tables.js updateRow 改为不可变历史：每次写入前 oldVal !== newVal 时 push 到 t._meta.cellHistory[]·结构 {row, col, oldVal, newVal, turn, ts, actor}。LRU 截断 500 条 → 保留最近 400 条。新增 getCellHistory(sheetKey, rowIdx, colIdx?) 查询 API。",
+          "why": "muyoou/st-memory-enhancement 的 hash-based 不可变历史范式·让撤回到第 N 次编辑变成 O(1) 查询。天命行政区划/角色档案最该抄——AI 把忠臣误改成奸臣·能精确回溯到哪回合改的。"
+        },
+        {
+          "what": "tm-memory-ui.js 行操作按钮加史·点击调 _showRowHistory(def, ri)·alert 弹窗展示该行所有 cell 的修改时间线（最近在前）：T15 [ai] 忠诚:80→60·T20 [editor] 党派:空→东林。",
+          "why": "UI 必须让玩家直观感受到每一笔改动都被记录·否则不可变历史只是后台属性·价值不可见。"
+        },
+        {
+          "what": "新建 tm-memory-adapter.js（约 150 行）：window.TianmingMemoryAdapter 暴露 processJsonData/processXmlData/processData(自动检测)/getState(返回所有表概览)/getSheet(取单表全数据)/setDebugMode/getLastError。所有写入走 MemTables.applyAIOps·actor 标记为 external。",
+          "why": "muyoou/st-memory-enhancement 的 externalDataAdapter 范式·让未来的 MCP 工具/Lua 插件/外部脚本通过统一管线写表·而不是各自 GM._memTables.X.rows.push(...)。schema 校验+权限控制（actor 进 cellHistory 可追溯）。"
+        },
+        {
+          "what": "P4.8 越狱串清理扫描：grep 全代码库·仅 changelog.json 历史引用·tm-*.js 与 editor-*.js 全部无污染。",
+          "why": "muyoou/st-memory-enhancement 的默认 prompt 内嵌了越狱串·与正经语境冲突。检查天命已无此类污染·避免后续抄过来的代码不慎引入。"
+        },
+        {
+          "what": "index.html 注册 tm-time-utils.js + tm-memory-adapter.js（cache-bust v=2026043004）。所有新增模块 node --check 验证通过。",
+          "why": "依赖链：time-utils → memory-tables（保留 fallback typeof check）→ memory-adapter → memory-ui。"
+        },
+        {
+          "what": "9 插件横向对比矩阵：LSR / 全自动总结 / 蚀心入魔 / ST-Prompt-Template / memos / Horae / ReNovel-AI / SME 引擎 / 1830488003-memos（重复）。本批 P4 抄了三个独到设计·剩下两类未来可探索——(a) Horae 的 chat[0] 全局聚合 event-sourcing（与现有 _stateSnapshots 冗余·边际价值低）(b) ReNovel-AI 的 Writer/Reviewer/Analyzer 三模型解耦（需 API 配置改造·留作 Phase 5 探索）。",
+          "why": "记录边际收益梯度·让后续维护者直接看到这条没抄的原因不是错过而是评估过收益不够。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
+      "module": "邸报·记忆系统 Phase 4.5：隐藏天机 + 长期约束 + 外部记忆适配器",
+      "title": "在 12 表结构化记忆之上补齐三项长期推演能力：剧本作者可设置『隐藏天机』，只让 sc1 主推演看见而不让 NPC 心理/后人戏说提前剧透；sc25 事件评分新增 affects_future 标记，把会影响 5 回合以上的大事抽成『长期约束』注入下一轮 sc1；新增 TianmingMemoryAdapter，给未来插件/MCP/外部脚本提供统一 XML/JSON/DSL 记忆读写入口。",
+      "items": [
+        { "what": "imperialEdict 表新增『隐藏』列；剧本编辑器的初始皇命支持勾选『隐藏天机』，游戏内 Ctrl+M 皇命面板也可勾选。doActualStart 开局同步时会把 e.secret 写入第 4 列。", "why": "剧本作者可以埋『第 30 回合爆发安史之乱』这类伏笔。主推演知道并逐步铺垫，但 sc15 NPC 心理和 sc2 后人戏说不会提前把谜底告诉玩家。" },
+        { "what": "MemTables.buildTablesInjection({ hideSecret:true }) 会过滤 imperialEdict 隐藏列为 true/是/1 的条目；sc15 与 sc2 均改为公开皇命注入，sc1 仍看完整表。", "why": "信息分层：主线裁判掌握全部设定，角色内心和叙事展示只掌握公开事实，减少剧透和人物超视角。" },
+        { "what": "eventHistory 表新增『未来约束』列；sc25 event_weights schema 扩展 affects_future，并在回写权重/dims 时把长期事件写入第 6 列。", "why": "把『这件事以后不能忘』从普通记忆里提出来，下一回合不会因为滑动窗口或随机叙事而把关键人、关键地、关键制度变动抹掉。" },
+        { "what": "新增 MemTables.buildFutureConstraints()，sc1 prompt 顶部注入最近 15 条 affects_future=true 的长期约束，并带相对时间提示。", "why": "让长期后果进入主推演的最高优先级上下文，不增加 API 调用次数，只提升每轮主推演的一致性。" },
+        { "what": "MemTables.updateRow 增加 cellHistory，每表最多保留 500 条单元格变更记录；Ctrl+M 普通表每行新增『史』按钮查看最近修改来源、回合、旧值与新值。", "why": "玩家或调试者可以追查『这个字段是谁改的、什么时候改的』，后续排查 AI 乱改表格更直接。" },
+        { "what": "新增 tm-memory-adapter.js 并在 index.html 注册，暴露 TianmingMemoryAdapter.processJsonData / processXmlData / processData / getState / getSheet。", "why": "以后外部工具不需要直接写 GM._memTables.X.rows，可以统一走 MemTables.applyAIOps 的权限和 schema 校验，降低插件接入时破坏存档结构的风险。" },
+        { "what": "兼容迁移：MemTables.ensureInit 会给旧存档的已有表补 _meta，并把旧行补齐到当前 schema 列数；eventHistory 新同步行默认补空『未来约束』列。修复 adapter DSL 分支 return 被注释吞掉的问题。", "why": "新增列不应破坏老存档，也不应让外部 DSL 入口看似存在但实际落到错误分支。" }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·12 表记忆系统收尾：transformers.js 离线打包 + 剧本侧初始皇命",
       "title": "Phase 1-3 实施完成后的两项收尾——(1) 把 @xenova/transformers 2.17.2 + 3 个依赖（@huggingface/jinja 0.2.2 / onnxruntime-web 1.14.0 / onnxruntime-common 1.14.0）的 +esm bundle 全部下载到 web/vendor/transformers/·并把 jsdelivr 硬编码 URL 改为相对路径·tm-semantic-recall.js 加载顺序改为本地→jsdelivr→esm.sh 三级 fallback。Electron 离线情境下首次运行后即可断网（模型 96MB 由 transformers.js 自动缓存到 IndexedDB）。(2) 编辑器加『初始皇命（钉子条目）』面板·剧本作者预设的 imperialEdicts 数组在 doActualStart 新游戏时自动写入 GM._memTables.imperialEdict（走 editorWrite 硬接口绕过 readonly 限制）·开局即有的『祖训不可改』『先帝遗诏』之类条目从 T1 起即被 sc1/sc15 prompt 注入。",
       "items": [

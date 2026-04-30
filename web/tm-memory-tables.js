@@ -144,12 +144,12 @@
     },
     {
       idx: 9, key: 'eventHistory', name: '事件历史(加权)',
-      columns: ['编码', '回合', '事件描述', '权重', '维度标签', '关联人物'],
+      columns: ['编码', '回合', '事件描述', '权重', '维度标签', '关联人物', '未来约束'],
       keyCol: 0, freq: 'high', appendOnly: true,
-      note: '本回合事件流·权重由 sc25 10维评分写入(0.0-1.0)·驱动滑动窗口选择',
+      note: '本回合事件流·权重由 sc25 10维评分写入(0.0-1.0)·未来约束=true 的事件会进入"长期约束"段·AI 必须遵循',
       initNode: '游戏开始时初始为空',
       insertNode: '每回合 sc1 完成后由系统从 evtLog 自动转写·AI 也可显式插入重要事件',
-      updateNode: '禁止更新（append-only）·权重由后台异步打分覆盖',
+      updateNode: '禁止更新（append-only）·权重与"未来约束"由后台异步打分覆盖',
       deleteNode: '禁止删除（append-only）',
       maxLen: { '事件描述': 80 },
       coded: true,
@@ -168,9 +168,9 @@
     },
     {
       idx: 11, key: 'imperialEdict', name: '皇命专用',
-      columns: ['优先级', '皇命内容', '生效条件', '颁布回合'],
+      columns: ['优先级', '皇命内容', '生效条件', '颁布回合', '隐藏'],
       keyCol: 1, freq: 'readonly', appendOnly: false,
-      note: '玩家在编辑器锁定的钉子条目·AI 永读不写·每回合必投到 sc1 prompt 顶部',
+      note: '玩家在编辑器锁定的钉子条目·AI 永读不写·每回合必投到 sc1 prompt 顶部·"隐藏"列填 true 的为天机条目仅 sc1 见 sc15/sc2 不见',
       initNode: '玩家手动添加·初始为空',
       insertNode: '禁止 AI 操作·仅编辑器 UI 添加',
       updateNode: '禁止 AI 操作·仅编辑器 UI 修改',
@@ -204,6 +204,14 @@
     SHEET_DEFS.forEach(function(d) {
       if (!GM._memTables[d.key]) {
         GM._memTables[d.key] = { rows: [], _meta: { lastWriteTurn: 0 } };
+      } else {
+        var t = GM._memTables[d.key];
+        if (!Array.isArray(t.rows)) t.rows = [];
+        if (!t._meta) t._meta = { lastWriteTurn: 0 };
+        t.rows.forEach(function(r) {
+          if (!Array.isArray(r)) return;
+          while (r.length < d.columns.length) r.push('');
+        });
       }
     });
     if (!GM._memTables._sentinelLog) GM._memTables._sentinelLog = [];
@@ -333,15 +341,39 @@
       return { ok: false, reason: 'row index out of range: ' + rowIdx };
     }
     var row = t.rows[rowIdx];
+    var nowTurn = (typeof GM !== 'undefined' && GM && GM.turn) || 0;
+    var actor = opts.editorOverride ? 'editor' : (opts.actor || 'ai');
+    if (!t._meta.cellHistory) t._meta.cellHistory = [];
     Object.keys(valueObj || {}).forEach(function(k) {
       var ci = (typeof k === 'string' && /^\d+$/.test(k)) ? parseInt(k, 10) : def.columns.indexOf(k);
       if (ci < 0 || ci >= def.columns.length) return;
       if (_isLocked(def.key, rowIdx, ci) && !opts.editorOverride) return;
       var v = valueObj[k];
-      row[ci] = (v == null) ? '' : String(v);
+      var newVal = (v == null) ? '' : String(v);
+      var oldVal = row[ci] == null ? '' : String(row[ci]);
+      if (oldVal !== newVal) {
+        t._meta.cellHistory.push({
+          row: rowIdx, col: ci, oldVal: oldVal, newVal: newVal,
+          turn: nowTurn, ts: Date.now(), actor: actor
+        });
+      }
+      row[ci] = newVal;
     });
-    t._meta.lastWriteTurn = (GM && GM.turn) || 0;
+    // 历史长度上限·LRU 截断（每表 500 条）
+    if (t._meta.cellHistory.length > 500) {
+      t._meta.cellHistory = t._meta.cellHistory.slice(-400);
+    }
+    t._meta.lastWriteTurn = nowTurn;
     return { ok: true, idx: rowIdx };
+  }
+
+  // 查询某 cell 的修改历史
+  function getCellHistory(sheetKey, rowIdx, colIdx) {
+    var t = _t(sheetKey);
+    if (!t || !t._meta.cellHistory) return [];
+    return t._meta.cellHistory.filter(function(h) {
+      return h.row === rowIdx && (colIdx == null || h.col === colIdx);
+    });
   }
 
   function deleteRow(idxOrKey, rowIdx, opts) {
@@ -550,11 +582,45 @@
       var cap = (def.key === 'eventHistory') ? 30 : 12;
       rows = rows.slice(-cap);
     }
+    // P4.3 隐藏天机：hideSecret=true 时·过滤 imperialEdict 表内"隐藏"列=true 的行
+    if (opts.hideSecret && def.key === 'imperialEdict') {
+      var secretCol = def.columns.indexOf('隐藏');
+      if (secretCol >= 0) {
+        rows = rows.filter(function(r) {
+          var v = r[secretCol];
+          return !(v === 'true' || v === true || v === '是' || v === '1');
+        });
+      }
+    }
     rows.forEach(function(r, i) {
       var realIdx = def.appendOnly ? (t.rows.length - rows.length + i) : i;
       lines.push('  [' + realIdx + '] ' + r.map(function(v) { return (v == null) ? '' : String(v); }).join(' | '));
     });
     return lines.join('\n');
+  }
+
+  // 单独提取 affects_future=true 事件作为"长期约束"段（Phase 4.2 ReNovel-AI 范式）
+  function buildFutureConstraints() {
+    if (!_ensureInit()) return '';
+    var t = _t('eventHistory');
+    if (!t || !t.rows.length) return '';
+    var def = SHEET_BY_KEY.eventHistory;
+    var futureColIdx = def.columns.indexOf('未来约束');
+    if (futureColIdx < 0) return '';
+    var hits = t.rows.filter(function(r) {
+      var v = r[futureColIdx];
+      return v === 'true' || v === true || v === '1' || v === '是';
+    });
+    if (!hits.length) return '';
+    var nowTurn = (typeof GM !== 'undefined' && GM && GM.turn) || 1;
+    var lines = ['=== 长期约束（affects_future·禁止违反） ==='];
+    hits.slice(-15).forEach(function(r) {
+      var rTurn = parseInt(r[1], 10) || 0;
+      var rel = (typeof _formatRelativeTime === 'function') ? _formatRelativeTime(rTurn, nowTurn) : '';
+      lines.push('· [' + r[0] + (rel ? '·' + rel : '') + '] ' + r[2] + (r[5] ? ' (涉:' + r[5] + ')' : ''));
+    });
+    lines.push('=== 此后推演不得违反·人物不得提前死/被遗忘·事件不得被改写 ===');
+    return lines.join('\n') + '\n';
   }
 
   // 主注入入口·分级开关
@@ -770,7 +836,8 @@
           (e.text || e.event || '').substring(0, 80),
           '0.5', // 默认权重·待 sc25 后台打分覆盖
           e.tag || '',
-          (e.actor || e.target || '')
+          (e.actor || e.target || ''),
+          ''
         ]);
         stats.rows++;
       });
@@ -798,6 +865,7 @@
     applyAIOps: applyAIOps,
     buildTablesInjection: buildTablesInjection,
     buildTableRulePostscript: buildTableRulePostscript,
+    buildFutureConstraints: buildFutureConstraints,
     runConsistencySentinel: runConsistencySentinel,
     syncFromGM: syncFromGM,
     findRowByKey: function(sheetKey, keyValue) {
@@ -806,7 +874,8 @@
       if (!def || !t) return -1;
       return _findRowByKey(t, def, keyValue);
     },
-    getSheet: function(sheetKey) { return _t(sheetKey); }
+    getSheet: function(sheetKey) { return _t(sheetKey); },
+    getCellHistory: getCellHistory
   };
 
   // 兼容裸函数调用
@@ -817,6 +886,7 @@
   global._mtApply = applyAIOps;
   global._mtBuildInjection = buildTablesInjection;
   global._mtBuildRule = buildTableRulePostscript;
+  global._mtBuildFuture = buildFutureConstraints;
   global._mtSentinel = runConsistencySentinel;
   global._mtSync = syncFromGM;
 

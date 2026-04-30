@@ -10,6 +10,8 @@
 // ============================================================
 
 // ============================================================
+// ⚠️⚠️⚠️ 警告：本函数被 tm-save-lifecycle.js (line 865) importSaveFile=function... 覆盖
+//   要修改本函数行为·请去 tm-save-lifecycle.js 改·此处仅占位·实际运行版在 save-lifecycle
 function importSaveFile(){
   if(window.tianming&&window.tianming.isDesktop){
     window.tianming.dialogImport().then(function(res){
@@ -34,6 +36,8 @@ function importSaveFile(){
     };r.readAsText(f);
   };inp.click();
 }
+// ⚠️⚠️⚠️ 警告：本函数被 tm-save-lifecycle.js (line 410) doSaveGame=function... 覆盖
+//   要修改本函数行为·请去 tm-save-lifecycle.js 改·此处仅占位·实际运行版在 save-lifecycle
 function doSaveGame(){
   if(!GM.running){toast("\u8BF7\u5148\u5F00\u59CB\u6E38\u620F");return;}
   var saveData=deepClone(P);saveData.gameState=deepClone(GM);

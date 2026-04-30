@@ -236,6 +236,33 @@ openSettings=function(){
     "<div class=\"rw\"><div class=\"fd q\"><label>\u592A\u53F2\u516C\u66F0</label><div style=\"display:flex;gap:2px;\"><input type=\"number\" id=\"s-cmt1\" value=\""+(P.conf.commentMin||80)+"\" style=\"width:50px;\">~<input type=\"number\" id=\"s-cmt2\" value=\""+(P.conf.commentMax||200)+"\" style=\"width:50px;\"></div></div></div>"+
     "</div></div>"+
 
+    // P18.1: Token 预算 + 模型档位（修复 dead player-settings 的 G4/G5·代码在读 UI 缺失）
+    "<div class=\"settings-section\" style=\"border-left:3px solid #c0a060;background:rgba(192,160,96,0.04);\"><h4 style=\"color:#d4b878;\">高级·预算与档位</h4>"+
+    "<div style=\"font-size:0.7rem;color:var(--txt-d);margin:-0.3rem 0 0.5rem;line-height:1.55;\">控制 token 总预算与模型能力档位·这些字段已被运行时代码读取·之前 UI 丢失·本升级补齐。</div>"+
+    "<div class=\"rw\" style=\"align-items:center;\">"+
+    "<div class=\"fd\"><label>每回合 Token 预算</label>"+
+    "<div style=\"display:flex;gap:0.4rem;align-items:center;\">"+
+    "<input type=\"number\" id=\"s-turn-budget\" min=\"0\" step=\"5000\" value=\""+(P.conf.turnTokenBudget||0)+"\" placeholder=\"0=无上限\" style=\"width:140px;\">"+
+    "<span style=\"font-size:0.7rem;color:var(--txt-d);\">超支 toast 预警·不阻断游戏</span>"+
+    "</div></div>"+
+    "</div>"+
+    "<div class=\"rw\" style=\"margin-top:0.4rem;\">"+
+    "<div class=\"fd\"><label>模型档位</label>"+
+    "<select id=\"s-model-tier\" style=\"width:220px;\">"+
+    "<option value=\"auto\""+((P.conf.modelTier||'auto')==='auto'?' selected':'')+">自动（按模型能力探测）</option>"+
+    "<option value=\"high\""+((P.conf.modelTier||'auto')==='high'?' selected':'')+">高级（gpt-4o/claude-opus/sonnet 4.x）</option>"+
+    "<option value=\"medium\""+((P.conf.modelTier||'auto')==='medium'?' selected':'')+">中级（gpt-4o-mini/haiku）</option>"+
+    "<option value=\"low\""+((P.conf.modelTier||'auto')==='low'?' selected':'')+">初级（小型开源·裁 schema）</option>"+
+    "</select>"+
+    "<span style=\"font-size:0.68rem;color:var(--txt-d);margin-left:0.5rem;\">手动覆写 schema 裁剪策略</span>"+
+    "</div></div>"+
+    "<div class=\"rw\" style=\"margin-top:0.4rem;\">"+
+    "<div class=\"fd q\"><label>上下文覆写 K</label><input type=\"number\" id=\"s-ctx-override\" min=\"0\" value=\""+(P.conf.contextSizeK||0)+"\" placeholder=\"0=自动\" style=\"width:90px;\"></div>"+
+    "<div class=\"fd q\"><label>max_tokens 覆写</label><input type=\"number\" id=\"s-out-override\" min=\"0\" value=\""+(P.conf.maxOutputTokens||0)+"\" placeholder=\"0=自动\" style=\"width:110px;\"></div>"+
+    "</div>"+
+    "<div style=\"font-size:0.68rem;color:var(--txt-d);margin-top:0.3rem;line-height:1.5;\">均留空或 0 = 走自动探测。下方【保存所有设置】按钮一并生效。</div>"+
+    "</div>"+
+
     // 文风
     "<div class=\"settings-section\"><h4>\u6587\u98CE</h4>"+
     "<div class=\"rw\"><div class=\"fd\"><label>\u5168\u5C40</label><select id=\"s-style\"><option value=\"\u6587\u5B66\u5316\" "+((P.conf.style||"")=="\u6587\u5B66\u5316"?"selected":"")+">\u6587\u5B66\u5316</option><option value=\"\u53F2\u4E66\u4F53\" "+((P.conf.style||"")=="\u53F2\u4E66\u4F53"?"selected":"")+">\u53F2\u4E66\u4F53</option><option value=\"\u622F\u5267\u5316\" "+((P.conf.style||"")=="\u622F\u5267\u5316"?"selected":"")+">\u622F\u5267\u5316</option><option value=\"\u7AE0\u56DE\u4F53\" "+((P.conf.style||"")=="\u7AE0\u56DE\u4F53"?"selected":"")+">\u7AE0\u56DE\u4F53</option><option value=\"\u7EAA\u4F20\u4F53\" "+((P.conf.style||"")=="\u7EAA\u4F20\u4F53"?"selected":"")+">\u7EAA\u4F20\u4F53</option><option value=\"\u767D\u8BDD\u6587\" "+((P.conf.style||"")=="\u767D\u8BDD\u6587"?"selected":"")+">\u767D\u8BDD\u6587</option></select></div><div class=\"fd\"><label>\u96BE\u5EA6</label><select id=\"s-diff\"><option "+((P.conf.difficulty||"")=="\u7B80\u5355"?"selected":"")+">\u7B80\u5355</option><option "+((P.conf.difficulty||"")=="\u666E\u901A"?"selected":"")+">\u666E\u901A</option><option "+((P.conf.difficulty||"")=="\u56F0\u96BE"?"selected":"")+">\u56F0\u96BE</option></select></div></div>"+
@@ -246,6 +273,7 @@ openSettings=function(){
     "<div class=\"rw\"><div class=\"fd\"><label>\u6A21\u5F0F</label><select id=\"s-mode\"><option value=\"yanyi\" "+(P.conf.gameMode==="yanyi"?"selected":"")+">\u6F14\u4E49</option><option value=\"light_hist\" "+(P.conf.gameMode==="light_hist"?"selected":"")+">\u8F7B\u5EA6\u53F2\u5B9E</option><option value=\"strict_hist\" "+(P.conf.gameMode==="strict_hist"?"selected":"")+">\u4E25\u683C\u53F2\u5B9E</option></select></div>"+
     "<div class=\"fd\"><label>AI\u63A8\u6F14\u6DF1\u5EA6</label><select id=\"s-aidepth\"><option value=\"full\" "+((P.conf.aiCallDepth||'full')==='full'?'selected':'')+">\u5B8C\u6574(11\u8C03\u7528)</option><option value=\"standard\" "+((P.conf.aiCallDepth||'full')==='standard'?'selected':'')+">\u6807\u51C6(6\u8C03\u7528)</option><option value=\"lite\" "+((P.conf.aiCallDepth||'full')==='lite'?'selected':'')+">\u7CBE\u7B80(3\u8C03\u7528)</option></select></div></div></div>"+
 
+    // ⚠️ P.conf.showRelation 当前是僵尸字段——UI 写但无消费者读·将来或补 renderCharProfile 端读取或删此 UI
     // 人物志
     "<div class=\"settings-section\"><h4>\u4EBA\u7269\u5FD7</h4>"+
     "<div class=\"toggle-wrap\"><label class=\"toggle\"><input type=\"checkbox\" id=\"s-showrel\" "+(P.conf.showRelation!==false?"checked":"")+" onchange=\"P.conf.showRelation=this.checked\"><span class=\"toggle-slider\"></span></label><div>\u663E\u793A\u5173\u7CFB</div></div></div>"+
@@ -427,6 +455,17 @@ function sSaveAll(){
     P.conf.maxOutputTokens = _moVal > 0 ? _moVal : 0;
   } else {
     P.conf.maxOutputTokens = 0; // 0=自动
+  }
+  // P18.1: turnTokenBudget + modelTier + 双覆写字段
+  if (_$("s-turn-budget")) P.conf.turnTokenBudget = parseInt(_$("s-turn-budget").value) || 0;
+  if (_$("s-model-tier")) P.conf.modelTier = _$("s-model-tier").value || 'auto';
+  if (_$("s-ctx-override")) {
+    var _ctxV = parseInt(_$("s-ctx-override").value) || 0;
+    if (_ctxV > 0) P.conf.contextSizeK = _ctxV;
+  }
+  if (_$("s-out-override")) {
+    var _outV = parseInt(_$("s-out-override").value) || 0;
+    if (_outV > 0 && _moMode === 'auto') P.conf.maxOutputTokens = _outV; // 仅 auto 模式时被覆写
   }
   // 自定义字数（仅custom模式读取，但始终保存以便切换回来）
   P.conf.shiluMin=parseInt(_$("s-shilu1")?_$("s-shilu1").value:"200")||200;P.conf.shiluMax=parseInt(_$("s-shilu2")?_$("s-shilu2").value:"400")||400;
@@ -1828,6 +1867,10 @@ function doActualStart(sid){
 // 注意：此包装层已废弃，功能已迁移到 EndTurnHooks 系统（钩子2）
 
 // 官制资源消耗设置
+// ⚠️ 死代码：本赋值会被 tm-office-editor.js (line 1371) function renderOfficeTab(em){...} 覆盖
+//   index.html 加载顺序：tm-patches.js (line 429) → tm-office-editor.js (line 452)
+//   office-editor 的函数声明 hoisting 会把这里的赋值覆盖掉·所以本块永不执行
+//   保留是为了 grep 易找·真要改请改 tm-office-editor.js
 renderOfficeTab=function(em){
   var sid=editingScenarioId;var vars=P.variables.filter(function(v){return v.sid===sid;});
   if(!P.officeConfig)P.officeConfig={costVariables:[],shortfallEffects:""};

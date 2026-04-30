@@ -44,3 +44,7 @@ tools/smoke-1627-runtime.js
 tools/smoke-fiscal-three-numbers.js
 tools/smoke-pre-endturn-save.js
 tools/smoke-save-name-and-double.js
+
+# Phase 9.1 模型预打包·Electron 打包前下载（110MB）·勿入仓库
+vendor/models/Xenova/
+!vendor/models/README.md

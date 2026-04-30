@@ -28,7 +28,11 @@
     lastIndexedTurn: 0,    // 上次索引到的 turn
     modelName: 'Xenova/bge-small-zh-v1.5',
     threshold: 0.55,
-    error: null
+    error: null,
+    // P9.2 加载源/进度可见性
+    loadSource: '',        // 'local-vendor' / 'hf-mirror' / 'hf-fallback'
+    downloadProgress: 0,   // 0-100
+    downloadFile: ''       // 当前下载的文件名
   };
 
   // ────── 模型加载 ──────
@@ -56,12 +60,62 @@
           }
         }
       }
-      // 设置缓存到 IndexedDB（Electron 默认走 disk·这里显式启用 browserCache）
+      // P9.1·P9.2 模型加载策略
+      // (a) Electron 端·若本地预打包 vendor/models 存在·优先用本地
+      // (b) 网页端·首选 hf-mirror.com（CN 友好）·失败回退 huggingface.co
+      var isElectron = (typeof window !== 'undefined' && window.tianming) ||
+                       (typeof navigator !== 'undefined' && (navigator.userAgent || '').indexOf('Electron') >= 0);
+      // 检查本地预打包是否存在（Electron 端·HEAD 请求轻量检测）
+      var hasLocalModel = false;
+      if (isElectron) {
+        try {
+          var probe = await fetch('./vendor/models/' + STATE.modelName + '/config.json', { method: 'HEAD' });
+          hasLocalModel = probe.ok;
+        } catch(_pe) { hasLocalModel = false; }
+      }
       transformers.env.allowLocalModels = true;
       transformers.env.useBrowserCache = true;
-      var pipe = await transformers.pipeline('feature-extraction', STATE.modelName, {
-        quantized: true
-      });
+      if (hasLocalModel) {
+        // 完全离线·从本地 vendor 加载
+        transformers.env.localModelPath = './vendor/models/';
+        transformers.env.allowRemoteModels = false;
+        STATE.loadSource = 'local-vendor';
+      } else {
+        // 网页端·优先 hf-mirror·失败再回退 hf 主站
+        transformers.env.allowRemoteModels = true;
+        transformers.env.remoteHost = 'https://hf-mirror.com';
+        STATE.loadSource = 'hf-mirror';
+      }
+      // 进度回调·让 UI 能看到下载进度
+      var pipeOpts = {
+        quantized: true,
+        progress_callback: function(progress) {
+          if (progress && typeof progress.progress === 'number') {
+            STATE.downloadProgress = progress.progress;
+            STATE.downloadFile = progress.file || '';
+          }
+          if (progress && progress.status === 'done') {
+            STATE.downloadProgress = 100;
+          }
+        }
+      };
+      var pipe;
+      try {
+        pipe = await transformers.pipeline('feature-extraction', STATE.modelName, pipeOpts);
+      } catch (mirrorErr) {
+        // mirror 失败·回退 hf 主站
+        if (!hasLocalModel) {
+          STATE.loadSource = 'hf-fallback';
+          transformers.env.remoteHost = 'https://huggingface.co';
+          try {
+            pipe = await transformers.pipeline('feature-extraction', STATE.modelName, pipeOpts);
+          } catch (hfErr) {
+            throw new Error('模型加载失败·hf-mirror: ' + mirrorErr.message + ' / huggingface.co: ' + hfErr.message);
+          }
+        } else {
+          throw mirrorErr;
+        }
+      }
       STATE.pipeline = pipe;
       STATE.modelReady = true;
       STATE.modelLoading = false;
@@ -104,7 +158,10 @@
       modelLoading: STATE.modelLoading,
       indexSize: STATE.index.length,
       lastIndexedTurn: STATE.lastIndexedTurn,
-      error: STATE.error
+      error: STATE.error,
+      loadSource: STATE.loadSource,
+      downloadProgress: STATE.downloadProgress,
+      downloadFile: STATE.downloadFile
     };
   }
 

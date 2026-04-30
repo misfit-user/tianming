@@ -389,15 +389,31 @@
   function _onSemanticToggle() {
     if (!window.SemanticRecall) { alert('语义检索模块未加载'); return; }
     var st = SemanticRecall.status();
+    var lines = ['🔍 本地语义检索状态'];
+    lines.push('  启用: ' + (st.enabled ? '✓' : '✗'));
+    lines.push('  模型就绪: ' + (st.modelReady ? '✓' : (st.modelLoading ? '⏳ 加载中...' : '✗')));
+    if (st.modelLoading || st.modelReady) {
+      lines.push('  加载源: ' + (st.loadSource || '?'));
+      if (st.downloadProgress > 0 && st.downloadProgress < 100) {
+        lines.push('  下载进度: ' + Math.round(st.downloadProgress) + '%' + (st.downloadFile ? ' (' + st.downloadFile + ')' : ''));
+      }
+    }
+    lines.push('  索引条目: ' + (st.indexSize || 0));
+    lines.push('  最后索引 T: ' + (st.lastIndexedTurn || 0));
+    if (st.error) lines.push('  ❌ 错误: ' + st.error);
+    lines.push('');
     if (st.enabled) {
-      if (confirm('当前已启用语义检索。是否关闭？')) {
+      lines.push('当前已启用·点确定可关闭·点取消保留。');
+      if (confirm(lines.join('\n'))) {
         SemanticRecall.disable();
         alert('已关闭');
       }
     } else {
-      if (!confirm('启用本地语义检索（首次需下载约 96MB 的 bge-small-zh 模型·之后会缓存）？')) return;
+      lines.push('当前未启用·点确定启用并加载模型（约 96MB·首次需 1-5 分钟）·点取消保留关闭。');
+      lines.push('Electron 端若已用 npm run prepare-vendor 预下载·秒开。');
+      if (!confirm(lines.join('\n'))) return;
       SemanticRecall.enable();
-      alert('已启用·模型加载中...请稍候。完成后会在 SC_RECALL 第 5 源生效。');
+      alert('已启用·模型加载中...完成后会在 SC_RECALL 第 5 源生效。\n再点 🔍 按钮查看进度。');
     }
   }
 

@@ -3,6 +3,45 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 9 语义检索 Electron 预打包 + 网页镜像 fallback + UI 进度可见",
+      "title": "用户提了两个问题：(1) 应用端能否提前下载好语义检索模型 (2) 网页端的自动下载是否有效。审计与修复——P9.1 写下载脚本 tools/download-bge-model.js + package.json scripts·支持 npm run prepare-vendor·Electron 打包前一键下载 110MB 模型到 vendor/models/。运行时检测 window.tianming + HEAD 探测 vendor 模型存在则用本地完全离线·否则走 hf-mirror。P9.2 修网页端下载——检测 CSP 无限制·加 hf-mirror.com 镜像优先（CN 友好）失败回退 huggingface.co·暴露 loadSource/downloadProgress/downloadFile 状态供 UI 展示。",
+      "items": [
+        {
+          "what": "【P9.1 Electron 预下载】新建 tools/download-bge-model.js（~120 行）：HTTPS 流式下载 6 个文件——onnx/model_quantized.onnx (~96MB) + tokenizer.json + tokenizer_config.json + config.json + special_tokens_map.json + vocab.txt 到 vendor/models/Xenova/bge-small-zh-v1.5/。支持 --hf 切换主站·--quiet 静默模式。处理 redirect (3 跳)·重试·进度报告每 10%。HF mirror 失败自动回退主站。",
+          "why": "应用端预打包·安装包 +110MB 但零网络依赖·Electron 启动后秒开。"
+        },
+        {
+          "what": "【P9.1 Electron 检测】tm-semantic-recall.js ensureModel() 加 isElectron 检测（window.tianming 或 navigator.userAgent.indexOf(\"Electron\")）。若是 Electron·HEAD 请求 ./vendor/models/Xenova/bge-small-zh-v1.5/config.json 探测预打包是否存在。命中则设 transformers.env.localModelPath = \"./vendor/models/\" + allowRemoteModels=false·完全离线。",
+          "why": "Electron 与网页路径区分清晰·一份代码两端通用。"
+        },
+        {
+          "what": "【P9.2 网页镜像 fallback】非 Electron 端·transformers.env.remoteHost = \"https://hf-mirror.com\"（CN 友好）。pipeline 调用失败时·回退 transformers.env.remoteHost = \"https://huggingface.co\" 重试。STATE.loadSource 记录实际加载源（local-vendor / hf-mirror / hf-fallback）·便于诊断。",
+          "why": "huggingface.co 在中国不可达概率极高·hf-mirror.com 是公认稳定 CN 镜像·切镜像即可解决 90% 加载失败。"
+        },
+        {
+          "what": "【P9.2 进度回调】pipeline opts 加 progress_callback·写到 STATE.downloadProgress (0-100) + STATE.downloadFile（当前文件名）。SemanticRecall.status() 暴露这两个字段。",
+          "why": "原本玩家点 🔍 启用·没任何反馈·不知道是在加载还是卡住。现在能看到进度。"
+        },
+        {
+          "what": "【P9.2 UI 改造】tm-memory-ui.js _onSemanticToggle 弹窗信息扩展：不再只是\"启用/禁用\"·而是显示完整状态——启用 / 模型就绪 / 加载源 / 下载进度% / 索引条目数 / 最后索引 T / 错误信息。再点 🔍 即可刷新查看。",
+          "why": "让玩家一眼看到模型加载在哪一步·避免\"我点了启用但好像没反应\"的困惑。"
+        },
+        {
+          "what": "【P9.1 package.json + .gitignore】scripts: { \"prepare-vendor\": \"node tools/download-bge-model.js\", \"prepare-vendor-hf\": \"node tools/download-bge-model.js --hf\" }。.gitignore 加 vendor/models/Xenova/ + !vendor/models/README.md（README 入仓·实际模型文件不入·避免 110MB 污染 git）。",
+          "why": "工程化打包流程·开发者一句命令即可准备好 Electron 版本所需模型。"
+        },
+        {
+          "what": "【P9.1 文档】vendor/models/README.md 写明：预下载命令 / 文件结构 / Electron 打包配置（electron-builder + electron-packager 例子）/ 网页版无需预下载 / 验证方式。",
+          "why": "文档化让后续维护者知道这套机制怎么用。"
+        },
+        {
+          "what": "验证：node --check tools/download-bge-model.js + tm-semantic-recall.js + tm-memory-ui.js + package.json JSON 全部通过。.gitignore 已配·模型文件不会进 git。",
+          "why": "工程化交付前的最终检查。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 8 过回合 AI 调用并行化（同效果同次数·缩短 25-50 秒）",
       "title": "用户提出：\"再看看过回合的全部 ai 调用·看看能不能进一步优化·缩短时间·效果不变·调用次数不变的情况下\"。审计当前关键路径发现两处可并行化的 sequential 阻塞——(P8.1) sc_memwrite 在 Branch A 末尾跑·消费方仅是下回合 NPC 记忆系统·应放 post-turn (P8.2) sc_audit + Branch C(sc2→sc27) + sc07 三者完全独立·原本 sequential 跑·应改为 Promise.all 并行。",
       "items": [

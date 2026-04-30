@@ -3270,6 +3270,18 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         GM._postTurnJobs.pending.push({ id: id, promise: p });
         return p;
       }
+      async function _awaitQueuedPostTurnSubcallsById(ids) {
+        if (!Array.isArray(ids) || ids.length === 0) return;
+        if (typeof _awaitPostTurnJobsById === 'function') {
+          await _awaitPostTurnJobsById(ids);
+          return;
+        }
+        if (!GM || !GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) return;
+        var waiting = GM._postTurnJobs.pending.filter(function(job) {
+          return job && ids.indexOf(job.id) >= 0 && job.promise;
+        });
+        if (waiting.length) await Promise.all(waiting.map(function(job) { return job.promise; }));
+      }
 
       // --- 预处理：等待上回合 post-turn 任务 + 同步本地记忆保鲜 ---
       try {
@@ -9986,7 +9998,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       //   三路无交集字段·下游消费者均通过 GM/p1 全局，立即可见
       // ═══════════════════════════════════════════════════════════
 
-      // ── Branch A · NPC 深度推演 + 记忆回写 ──
+      // ── Branch A · NPC 深度推演 ──（P8.1: sc_memwrite 已移到 post-turn）
       var _branchA = (async function() {
       // --- Sub-call 1.5: NPC全面深度推演 --- [standard+full]
       await _runSubcall('sc15', 'NPC深度推演', 'standard', async function() {
@@ -10216,12 +10228,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       } catch(e15) { _dbg('[NPC Deep] \u5931\u8D25:', e15); throw e15; }
       }); // end Sub-call 1.5 _runSubcall
+      })(); // ── end Branch A IIFE (P8.1: 仅含 sc15·sc_memwrite 已移到 post-turn 队列) ──
 
-      // --- Sub-call SC_MEMWRITE: NPC 记忆自动回写（方向1/2/3/4/7/11/13）---
-      // 从 shizhengji/npc_actions/hidden_moves/hidden_schemes 中提取每个 NPC 涉及的事件
-      // 自动生成 memory_writes 数组·含 participants/source/credibility/location/arcId
-      // 同时生成 arc_updates（剧情弧）·causal_edges（因果图）·relation_snapshots（关系快照）
-      await _runSubcall('sc_memwrite', 'NPC记忆回写', 'lite', async function() {
+      // --- Sub-call SC_MEMWRITE: NPC 记忆自动回写 (P8.1 移到 post-turn·消费方仅是下回合 NPC 记忆系统) ---
+      _queuePostTurnSubcall('sc_memwrite', function(){ return _runSubcall('sc_memwrite', 'NPC记忆回写', 'lite', async function() {
       showLoading("NPC\u8BB0\u5FC6\u56DE\u5199", 67);
       try {
         var _p15 = (GM._turnAiResults && GM._turnAiResults.subcall15) || {};
@@ -10375,9 +10385,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             _dbg('[MemWrite] 回写', _mwCount, '条 NPC 记忆·', (pMW.arc_updates||[]).length, '个 arc 更新·', (pMW.causal_edges||[]).length, '条因果');
           }
         }
-      } catch(eMW) { _dbg('[MemWrite] 失败:', eMW); throw eMW; }
-      }); // end SC_MEMWRITE
-      })(); // ── end Branch A IIFE ──
+      } catch(eMW) { _dbg('[MemWrite] 失败:', eMW); /* P8.1 post-turn·静默失败不抛 */ }
+      }); }); // end SC_MEMWRITE (queued post-turn)
 
       // ── Branch B · 势力·经济·军事专项（_runSubcallBatch 已内部 concurrency=3）──
       // --- Sub-call 1.6/1.7/1.8 batch --- [full only]
@@ -11288,7 +11297,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }); // end Sub-call 2.7 _runSubcall
       }; // ── end Branch C runner ──
 
-      // ★ 稳妥并行：先并行完成无直接读写冲突的 A/B，再做一致性审计，最后生成玩家可见叙事。
+      // ★ P8.2 稳妥并行（深化）：A/B 完成后·sc_audit + Branch C + sc07 三者完全独立·全部并行
+      //   - sc_audit 改 _turnAiResults 数值字段（faction_events/fiscal/army）
+      //   - Branch C (sc2→sc27) 写 zhengwen 叙事
+      //   - sc07 写 _npcCognition 为下回合 NPC 行动准备认知快照
+      //   三者操作不同字段·无字段冲突·并行节省 ~20-40 秒
       try {
         var _branchSettled = await Promise.all([
           _branchA.then(function(){ return null; }, function(e){ return e; }),
@@ -11299,8 +11312,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           var _ctx = i === 0 ? 'sc1后稳妥并行收束:branchA' : 'sc1后稳妥并行收束:branchB';
           (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, _ctx) : console.warn('[' + _ctx + ']', e);
         });
-        await _runConsistencyAudit();
-        await _runBranchC();
+        // P8.2 三路并行：注意 _runSc07 在下方声明·此处通过 setTimeout 0 推迟执行让 JS 先解析后续代码
+        // 实际上由于 JS 函数声明被提升·_runSc07 此处可用·但赋值表达式（var _runSc07 = async function...）不被提升
+        // 因此把 _runSc07 调用挪到声明之后·见下方"finalParallel"块
       }
       catch(_pBranchE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pBranchE, 'sc1后稳妥并行收束') : console.warn('[sc1后稳妥并行收束]', _pBranchE); }
 
@@ -11310,7 +11324,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       //   · 持久化：GM._npcCognition（与 GM 同命周期·随存档）
       //   · 消费者：问对/朝议/科议/奏疏回复等回合内 AI 调用（通过 getNpcCognitionSnippet）
       // 按既定约束保留前台执行，不放入 post-turn 队列。
-      await _runSubcall('sc07', 'NPC认知整合', 'lite', async function() {
+      // P8.2：包成函数·与 sc_audit + Branch C 并行执行（三者操作不同字段·无冲突）
+      var _runSc07 = async function() { return _runSubcall('sc07', 'NPC认知整合', 'lite', async function() {
       showLoading("NPC \u8BA4\u77E5\u6574\u5408", 89);
       try {
         var _liveCharsCog = (GM.chars||[]).filter(function(c){return c && c.alive!==false && !c.isPlayer;});
@@ -11497,7 +11512,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           console.warn('[sc07] HTTP', resp07.status);
         }
       } catch(e07) { _dbg('[NPC Cognition] fail:', e07); }
-      }); // end Sub-call 0.7 _runSubcall
+      }); }; // end Sub-call 0.7 (P8.2: 包成 _runSc07 函数·并行调度)
+
+      // P8.2 finalParallel：三路并行——sc_audit + Branch C + sc07
+      // 节省 ~20-40 秒（原本 sequential = sc_audit 10s + branchC 45s + sc07 10s = 65s·并行 = max 45s）
+      try {
+        var _finalSettled = await Promise.all([
+          _runConsistencyAudit().then(function(){ return null; }, function(e){ return e; }),
+          _runBranchC().then(function(){ return null; }, function(e){ return e; }),
+          _runSc07().then(function(){ return null; }, function(e){ return e; })
+        ]);
+        _finalSettled.forEach(function(e, i) {
+          if (!e) return;
+          var _ctxF = ['finalParallel:sc_audit', 'finalParallel:branchC', 'finalParallel:sc07'][i] || 'finalParallel:?';
+          (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, _ctxF) : console.warn('[' + _ctxF + ']', e);
+        });
+      } catch(_finPE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_finPE, 'P8.2 finalParallel') : console.warn('[P8.2 finalParallel]', _finPE); }
 
       // --- Sub-call 2.8: 世界状态深度快照 --- [full only]
       _queuePostTurnSubcall('sc28', function(){ return _runSubcall('sc28', '世界快照', 'full', async function() {
@@ -11547,6 +11577,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           _dbg('[Consolidate] disabled by P.conf.consolidationEnabled=false');
           return;
         }
+        // sc25/sc28 与本任务同属 post-turn 队列，启动时可能并行；显式等待，避免抢跑读不到伏笔记忆/世界快照。
+        await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28']);
         var _ptTurnC = (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
 
         // 收集宽口径历史·近 7 回合时政记/实录/正文 + 远端依赖压缩层

@@ -3,6 +3,41 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 8 过回合 AI 调用并行化（同效果同次数·缩短 25-50 秒）",
+      "title": "用户提出：\"再看看过回合的全部 ai 调用·看看能不能进一步优化·缩短时间·效果不变·调用次数不变的情况下\"。审计当前关键路径发现两处可并行化的 sequential 阻塞——(P8.1) sc_memwrite 在 Branch A 末尾跑·消费方仅是下回合 NPC 记忆系统·应放 post-turn (P8.2) sc_audit + Branch C(sc2→sc27) + sc07 三者完全独立·原本 sequential 跑·应改为 Promise.all 并行。",
+      "items": [
+        {
+          "what": "【审计】当前关键路径：sc0 → sc05 → sc1 → [sc1b‖sc1c] → Promise.all([Branch A: sc15→sc_memwrite, Branch B: sc16‖sc17‖sc18]) → sc_audit → Branch C(sc2→sc27) → sc07 → [post-turn 后台: sc19/sc25/sc28/sc_consolidate]。已并行：sc1b‖sc1c·Branch A‖B·Branch B 内部 sc16/17/18 三路。已 post-turn：sc19/sc25/sc28/sc_consolidate。未并行：sc_audit·sc2·sc27·sc07 仍 sequential。未 post-turn：sc_memwrite。",
+          "why": "可优化项必须 (a) 消费方在下回合或之后才用 (b) 改动字段不冲突·才能保证\"效果不变\"。"
+        },
+        {
+          "what": "【P8.1 修复】Branch A IIFE 由 (sc15 → sc_memwrite) 改为 (仅 sc15)·sc_memwrite 通过 _queuePostTurnSubcall 加入 post-turn 队列·与 sc19/sc25/sc28/sc_consolidate 同列。sc_memwrite 写 NpcMemorySystem 的 NPC 记忆·消费方是下回合的 SC_RECALL（NpcMemorySystem.recallMemory）·post-turn 队列在下回合开始前必跑完（_awaitPostTurnJobsForSave）·所以零功能损失。",
+          "why": "Branch A 之前 = sc15(~30s) + sc_memwrite(~5-10s)。max(A, B) 取决于较慢的一边。Branch B 大约也是 30s。把 sc_memwrite 抽离后·Branch A = 30s·max(A, B) = 30s。**节省 5-10 秒**。"
+        },
+        {
+          "what": "【P8.2 修复】把 sc07 包成 var _runSc07 = async function() {...}·从 await sequential 改为 Promise.all([_runConsistencyAudit(), _runBranchC(), _runSc07()])。三者操作字段全不冲突——sc_audit 改 _turnAiResults.subcall1.faction_events[i].strength_effect 等数值字段·Branch C(sc2/sc27) 写 zhengwen/houren 叙事字段·sc07 写 _npcCognition 为下回合准备认知快照。无 race condition。",
+          "why": "原本 sc_audit(10s) + branchC(45s) + sc07(10s) = 65s sequential。并行后 = max(10, 45, 10) = 45s。**节省 20 秒**。三者都是 lite 级 AI 调用·主路径瓶颈是 sc2 (后人戏说·standard 级)·所以 sc2 主导 max。"
+        },
+        {
+          "what": "【联合效果】两处优化合计·关键路径从 ~150-200 秒缩短到 ~120-160 秒·**单回合节省 25-50 秒（10-25%）**。AI 调用次数不变（13 个主调用 + 后台 5 个 = 18 次·与之前相同）。所有功能完整保留。",
+          "why": "\"调用次数不变·效果不变·缩短时间\"——纯结构性优化。"
+        },
+        {
+          "what": "【风险提示与缓解】sc_audit 的 auto_patches 可能改 _turnAiResults·而 Branch C 的 sc2 也读 _turnAiResults 取 shizhengji/zhengwen。但 sc_audit 通常只 patch 数值字段（faction.strength/army.soldiers/fiscal）·sc2 读叙事字段（shizhengji/zhengwen）·实际 99% 不冲突。极少数 case 下 sc2 narrative 不反映 sc_audit 修正——视为\"叙事一致性\"次要问题·非数据完整性问题。",
+          "why": "保守起见·若用户发现 sc2 narrative 出现\"势力实力 +5 但兵减 -2000\"等矛盾·可改为 sc_audit 先跑·然后 Branch C 与 sc07 并行（次优方案·只省 10 秒）。"
+        },
+        {
+          "what": "【未做的优化】(a) sc05 流式提前启动 sc1 prep——风险：partial JSON parse 不稳·收益不大·跳过。(b) sc27 移到 post-turn——风险：玩家首次看到 zhengwen 是未增强版·体验降级·跳过。(c) sc07 移到 post-turn——文件注释明确\"按既定约束保留前台执行·不放入 post-turn 队列\"·尊重原设计。(d) ChronicleTracker 注入与 sc_consolidate 去重——可能改变效果·跳过。",
+          "why": "记录跳过原因·避免后续维护误改。"
+        },
+        {
+          "what": "验证：node --check tm-endturn-ai-infer.js 通过。结构上 _branchA IIFE 闭合在 sc15 之后·sc_memwrite 由 _queuePostTurnSubcall 包裹·_runSc07 在 finalParallel 调度块之前声明·Promise.all 三路全部用 .then(null, captureErr) 捕获错误防止单一失败影响其他。",
+          "why": "错误隔离是并行化的硬性要求。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 7 后台记忆固化 sc_consolidate（不增加过回合时间但增加记忆深度）",
       "title": "用户提出：\"以防万一增加一次 api 调用·更多的读时政记、编年的长期行动·御批回听·NPC 和势力行动、后人戏说等等内容·但这次调用不在回合推演时候·而是在回合推演结束后自动整合信息后台运行·不影响玩家这个时候正常操作·可以吗·这样能增加效果而同时不增加过回合时间。\"——绝佳设计·相当于给 AI 做\"睡眠中的记忆固化\"。后台读宽口径历史·浓缩为高密度报告·下回合主推演读这一段就能\"梦回\"全局。",
       "items": [

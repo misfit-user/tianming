@@ -359,6 +359,14 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-lifecycle.js"></script>
 <!-- 2026-04-30 推演 AI 记忆增强：世界状态快照 helpers（须在 endturn 之前加载） -->
 <script src="tm-world-snapshot.js?v=2026043002"></script>
+<!-- 2026-04-30 12 表结构化记忆（Phase 1）·须在 endturn 之前加载 -->
+<script src="tm-memory-tables.js?v=2026043003"></script>
+<!-- 2026-04-30 Phase 2.1 Swipe 快照与 timeTravel 回溯 -->
+<script src="tm-state-snapshot.js?v=2026043003"></script>
+<!-- 2026-04-30 Phase 2.2 本地语义检索（bge-small-zh-v1.5） -->
+<script src="tm-semantic-recall.js?v=2026043003"></script>
+<!-- 2026-04-30 Phase 3 12 表 UI（可视化 + 锁 + 软删除 + 皇命） -->
+<script src="tm-memory-ui.js?v=2026043003" defer></script>
 <!-- R128 (2026-04-25) tm-mechanics.js 拆分 → mechanics + mechanics-world -->
 <script src="tm-mechanics.js?v=2026042715"></script>
 <script src="tm-mechanics-world.js?v=2026042714"></script>

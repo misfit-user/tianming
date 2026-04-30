@@ -3311,8 +3311,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         var _think = aiThinking || '';
         var _thinkJson = extractJSON(_think);
         if (_thinkJson && Array.isArray(_thinkJson.memoryQueries) && _thinkJson.memoryQueries.length > 0) {
-          _thinkJson.memoryQueries.slice(0, 4).forEach(function(q) {
-            if (!q || typeof q !== 'object') return;
+          var _mqList = _thinkJson.memoryQueries.slice(0, 4);
+          for (var _mqI = 0; _mqI < _mqList.length; _mqI++) {
+            var q = _mqList[_mqI];
+            if (!q || typeof q !== 'object') continue;
             var allHits = [];
             var keywords = Array.isArray(q.keywords) ? q.keywords : (q.keywords ? [q.keywords] : []);
             keywords = keywords.map(function(k) { return String(k || '').trim().slice(0, 40); }).filter(Boolean).slice(0, 6);
@@ -3387,13 +3389,28 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               } catch(_e4) {}
             }
 
+            // 源 5: 语义向量检索（bge-small-zh）·若模型未就绪/未启用·静默跳过
+            if (typeof SemanticRecall !== 'undefined' && SemanticRecall.searchSyncSafe && SemanticRecall.status && SemanticRecall.status().modelReady) {
+              try {
+                var qText = (q.query || '') + ' ' + keywords.join(' ');
+                if (qText.trim()) {
+                  var vecHits = await SemanticRecall.searchSyncSafe(qText.trim(), { topK: 4, threshold: 0.55 });
+                  if (vecHits && vecHits.length) {
+                    vecHits.forEach(function(v) {
+                      allHits.push({ source: 'vector', sub: v.sub, turn: v.turn, text: v.text, sim: v.sim });
+                    });
+                  }
+                }
+              } catch(_e5) {}
+            }
+
             if (allHits.length > 0) {
               _recallResults.push({
                 query: q,
                 hits: allHits.slice(0, 12)  // 单查询命中上限 12 条（防 prompt 爆炸）
               });
             }
-          });
+          }
 
           if (_recallResults.length > 0) {
             GM._turnAiResults.recallResults = _recallResults;
@@ -3620,7 +3637,16 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       // 让 AI 一眼看到客观局势（玩家/国势/要职/死者/进行中诏令/NPC 当下状态），降低叙事漂移
       var _wsSnap = '';
       try { if (typeof _buildAllSnapshots === 'function') _wsSnap = _buildAllSnapshots() || ''; } catch(_wsE){ _dbg('[WorldSnap sc1] fail:', _wsE); }
-      var tp1 = _wsSnap + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
+      // ★ 12 表结构化记忆注入（2026-04-30 Phase 1）：sc1 前先同步 GM 状态到表·再把表序列化注入
+      var _memTblInj = '', _memTblRule = '';
+      try {
+        if (window.MemTables && MemTables.ensureInit && MemTables.ensureInit()) {
+          MemTables.syncFromGM({});
+          _memTblInj = MemTables.buildTablesInjection({}) || '';
+          _memTblRule = MemTables.buildTableRulePostscript() || '';
+        }
+      } catch(_mtE){ _dbg('[MemTables sc1] fail:', _mtE); }
+      var tp1 = _wsSnap + _memTblInj + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
         "{\"turn_summary\":\"一句话概括本回合最重要的变化(30-50字，如:北境叛乱平定，国库因军费骤降三成)\","+
         // 实录：纯文言史官体，仿资治通鉴/历代实录
         "\"shilu_text\":\"实录"+_shiluMin+"-"+_shiluMax+"字——纯文言文(仿《资治通鉴》《明实录》)，以干支月份/日为单位，记事不评论。只记可验证事实：诏令、任免、战事、灾异、人事大变。句式仿实录：'某月某日，上诏……'/'是月，某地……'/'上命某官……'。禁止白话词汇，禁止主观评论。\","+
@@ -4589,6 +4615,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
       } catch(_tokE) {}
+      // ★ 后置强调（depth=0 等价物·LSR 范式）：把表操作规则投到 user prompt 末尾·克服长上下文头部衰减
+      if (_memTblRule) tp1 += '\n\n' + _memTblRule;
       var _sc1Body = {model:P.ai.model||"gpt-4o",messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp1}],temperature:_sc1Temp,max_tokens:_tok(_sc1BaseTok)};
       if (_modelFamily === 'openai') _sc1Body.response_format = { type: 'json_object' };
       var _streamSC1 = (P.ai && P.ai.stream_sc1 !== false);  // 默认开·可通过 P.ai.stream_sc1=false 关闭
@@ -4627,6 +4655,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       p1=extractJSON(c1);
       GM._turnAiResults.subcall1_raw = c1;
       GM._turnAiResults.subcall1 = p1;
+      // ★ 解析 sc1 输出末尾的 <tableEdit> 块·应用到 12 表（Phase 1）
+      try {
+        if (window.MemTables && c1) {
+          var _mtEditText = (p1 && typeof p1.tableEdit === 'string') ? p1.tableEdit : c1;
+          var _mtParsed = MemTables.parseTableEdit(_mtEditText);
+          if (_mtParsed && _mtParsed.ops && _mtParsed.ops.length > 0) {
+            var _mtStats = MemTables.applyAIOps(_mtParsed.ops, {});
+            _dbg('[MemTables sc1] applied:', _mtStats);
+          }
+          // 一致性哨兵·sc1 之后扫一遍
+          if (MemTables.runConsistencySentinel) {
+            var _mtWarns = MemTables.runConsistencySentinel(GM.turn || 1);
+            if (_mtWarns && _mtWarns.length) _dbg('[MemTables sentinel]', _mtWarns.length, 'warnings');
+          }
+        }
+      } catch(_mtAE) { _dbg('[MemTables sc1 apply] fail:', _mtAE); }
       // 校验 AI 输出结构（非阻断）
       try { if (window.TM && TM.validateAIOutput) TM.validateAIOutput(p1, 'subcall1'); } catch(_ve){}
 
@@ -9790,7 +9834,14 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           if (typeof _buildEdictProgressCards === 'function') _ws15 += _buildEdictProgressCards();
           if (typeof _buildRelationDeltas === 'function') _ws15 += _buildRelationDeltas();
         } catch(_wse15){ _dbg('[WorldSnap sc15] fail:', _wse15); }
-        var tp15 = _ws15 + '\u57FA\u4E8E\u672C\u56DE\u5408\u53D1\u751F\u7684\u4E8B\u4EF6\uFF1A\n';
+        // 12 \u8868\u6CE8\u5165\uFF08\u4EC5\u4E8B\u5B9E\u5C42\u00B7courtNpc/charProfile/relationNet/imperialEdict\uFF09
+        var _mt15 = '';
+        try {
+          if (window.MemTables && MemTables.buildTablesInjection) {
+            _mt15 = MemTables.buildTablesInjection({ include: ['courtNpc', 'charProfile', 'relationNet', 'imperialEdict', 'edictsActive'] }) || '';
+          }
+        } catch(_mt15E){ _dbg('[MemTables sc15] fail:', _mt15E); }
+        var tp15 = _ws15 + _mt15 + '\u57FA\u4E8E\u672C\u56DE\u5408\u53D1\u751F\u7684\u4E8B\u4EF6\uFF1A\n';
         if (shizhengji) tp15 += '\u65F6\u653F\u8BB0\uFF1A' + shizhengji + '\n'; // 完整不截断
         if (p1 && p1.npc_actions && p1.npc_actions.length > 0) {
           tp15 += '\u5DF2\u77E5NPC\u884C\u52A8\uFF1A' + p1.npc_actions.map(function(a) { return a.name + ':' + a.action + (a.result?'\u2192'+a.result:''); }).join('\uFF1B') + '\n';
@@ -10874,7 +10925,12 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp25 += '"plot_updates":[{"threadId":"\u5DF2\u6709\u7EBFID\u6216null","title":"\u5267\u60C5\u7EBF\u540D","threadType":"political/military/personal/economic/succession/foreign","update":"\u672C\u56DE\u5408\u8FDB\u5C55(30\u5B57)","status":"brewing/active/climax/resolved","newThread":false}],';
         tp25 += '"decision_echoes":[{"content":"\u54EA\u6761\u8BCF\u4EE4/\u51B3\u7B56","echoType":"positive/negative/mixed","echoDesc":"\u5EF6\u65F6\u540E\u679C\u63CF\u8FF0(30\u5B57)","delayTurns":0}],';
         tp25 += '"faction_narrative":{"\u52BF\u529B\u540D":"\u8FD1\u671F\u53D1\u5C55\u4E00\u53E5\u8BDD\u603B\u7ED3(30\u5B57)"},';
-        tp25 += '"memory":"\u672C\u56DE\u5408\u7684\u9AD8\u5BC6\u5EA6\u538B\u7F29\u8BB0\u5F55\u2014\u2014\u5305\u542B\u6240\u6709\u5173\u952E\u4EBA\u540D\u3001\u4E8B\u4EF6\u3001\u53D8\u5316\u3001\u73A9\u5BB6\u51B3\u7B56\u53CA\u5176\u540E\u679C(200\u5B57)","trend":"\u5F53\u524D\u5927\u52BF\u8D70\u5411\u548C\u52A0\u901F\u65B9\u5411(50\u5B57)","npc_mood_snapshot":"\u5404\u4E3B\u8981NPC\u672C\u56DE\u5408\u540E\u7684\u60C5\u7EEA\u72B6\u6001(100\u5B57)","contradiction_evolution":"\u5404\u77DB\u76FE\u672C\u56DE\u5408\u7684\u6F14\u5316\u65B9\u5411\u2014\u2014\u52A0\u5267/\u7F13\u548C/\u8F6C\u5316(80\u5B57)"}\n';
+        tp25 += '"memory":"\u672C\u56DE\u5408\u7684\u9AD8\u5BC6\u5EA6\u538B\u7F29\u8BB0\u5F55\u2014\u2014\u5305\u542B\u6240\u6709\u5173\u952E\u4EBA\u540D\u3001\u4E8B\u4EF6\u3001\u53D8\u5316\u3001\u73A9\u5BB6\u51B3\u7B56\u53CA\u5176\u540E\u679C(200\u5B57)","trend":"\u5F53\u524D\u5927\u52BF\u8D70\u5411\u548C\u52A0\u901F\u65B9\u5411(50\u5B57)","npc_mood_snapshot":"\u5404\u4E3B\u8981NPC\u672C\u56DE\u5408\u540E\u7684\u60C5\u7EEA\u72B6\u6001(100\u5B57)","contradiction_evolution":"\u5404\u77DB\u76FE\u672C\u56DE\u5408\u7684\u6F14\u5316\u65B9\u5411\u2014\u2014\u52A0\u5267/\u7F13\u548C/\u8F6C\u5316(80\u5B57)",';
+        // 10 \u7EF4\u4E8B\u4EF6\u8BC4\u5206\uFF08\u53C2\u8003\u5168\u81EA\u52A8\u603B\u7ED3 v4 \u51DB\u503E\u534F\u8BAE\u00B7\u672C\u5730\u5316\u4E3A\u5929\u547D\u8BED\u5883\uFF09
+        tp25 += '"event_weights":[{"event":"\u4E8B\u4EF6\u63CF\u8FF050\u5B57\u4EE5\u5185","weight":0.65,"dims":["d1","d3"]}]}\n';
+        tp25 += '\n\u3010event_weights \u8BC4\u5206\u89C4\u5219\u3011\u5BF9\u672C\u56DE\u5408\u4E0A\u62A510\u30015\u4EF6\u4E8B\u4EF6\u00B7\u9010\u4EF6\u6309 10 \u4E2A\u7EF4\u5EA6\u5404\u6253 0.05-0.15 \u7D2F\u52A0\u5C01\u9876 1.0\uFF1A\n';
+        tp25 += '  d1 \u541B\u4E3B\u884C\u52A8/\u5F71\u54CD(\u4E0A\u9650 0.15) | d2 \u4E09\u516C\u4E5D\u537F\u53C2\u4E0E(0.10) | d3 \u91CD\u5927\u51B3\u7B56/\u8F6C\u6298(0.15) | d4 \u4E3B\u8981\u51B2\u7A81\u8FDB\u5C55(0.15) | d5 \u6838\u5FC3\u4FE1\u606F\u63ED\u9732(0.15) | d6 \u5236\u5EA6/\u7586\u57DF\u9610\u91CA(0.10) | d7 \u65B0\u52BF\u529B/\u65B0\u4EBA\u7269(0.15) | d8 NPC\u6210\u957F/\u5173\u7CFB\u53D8\u52A8(0.15) | d9 \u60C5\u611F\u5CF0\u503C/\u5371\u673A\u65F6\u523B(0.15) | d10 \u4E3B\u7EBF\u63A8\u8FDB(0.15)\n';
+        tp25 += '\u8F93\u51FA\u7684 event \u63CF\u8FF0\u9700\u4E0E [\u4E8B\u4EF6\u5386\u53F2] \u8868\u4E2D\u5DF2\u5B58\u5728\u7684\u63CF\u8FF0\u504F\u8FD1\u00B7dims \u5C42\u9762\u53EA\u9700\u4E2D\u9AD8\u8D21\u732E\u7EF4\u5EA6\u00B7\u4E0D\u8981\u8F93\u51FA\u6BCF\u4E2A\u7EF4\u5EA6\u7684\u5206\u6570\u3002\n';
         tp25 += '\u4F0F\u7B14\u8981\u5177\u4F53\uFF1A\u5305\u542B\u201C\u8C01\u201D\u201C\u505A\u4EC0\u4E48\u201D\u201C\u5728\u54EA\u91CC\u201D\u201C\u51E0\u56DE\u5408\u540E\u5F15\u7206\u201D\u3002\u4E0D\u8981\u6A21\u7CCA\u3002\n';
         tp25 += 'memory\u5FC5\u987B\u5305\u542B\u6240\u6709\u5173\u952E\u53D8\u5316\uFF0C\u8FD9\u662F\u4E0B\u56DE\u5408AI\u7684\u552F\u4E00\u56DE\u5FC6\u6765\u6E90\u3002';
 
@@ -10973,6 +11029,31 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               GM._factionNarrative = p25.faction_narrative;
             }
 
+            // 10 维事件评分回写到 eventHistory 表（Phase 2.3）
+            if (p25.event_weights && Array.isArray(p25.event_weights) && window.MemTables) {
+              try {
+                var _eh = MemTables.getSheet('eventHistory');
+                if (_eh && _eh.rows && _eh.rows.length) {
+                  p25.event_weights.forEach(function(ew) {
+                    if (!ew || !ew.event) return;
+                    var w = parseFloat(ew.weight);
+                    if (isNaN(w) || w < 0) w = 0; if (w > 1) w = 1;
+                    var dims = Array.isArray(ew.dims) ? ew.dims.join(',') : (ew.dims || '');
+                    // 模糊匹配·查找最近回合中描述包含该事件关键字的行
+                    var hits = _eh.rows.filter(function(r) {
+                      var rTurn = parseInt(r[1], 10) || 0;
+                      return rTurn >= _ptTurn25 - 1 && rTurn <= _ptTurn25 && r[2] && r[2].indexOf(String(ew.event).slice(0, 8)) >= 0;
+                    });
+                    if (hits.length === 0 && _eh.rows.length > 0) {
+                      // 兜底：取本回合最后一行
+                      hits = [_eh.rows[_eh.rows.length - 1]];
+                    }
+                    hits.forEach(function(r) { r[3] = String(w); if (dims) r[4] = dims; });
+                  });
+                  _dbg('[EventWeights] 已为 ' + p25.event_weights.length + ' 件事件写回权重');
+                }
+              } catch(_ewE){ _dbg('[EventWeights] fail:', _ewE); }
+            }
             GM._turnAiResults.subcall25 = p25;
             _dbg('[Foreshadow]', (p25.foreshadow || []).length, 'hooks. Threads:', (GM._plotThreads||[]).length, 'Echoes:', (GM._decisionEchoes||[]).length);
           }

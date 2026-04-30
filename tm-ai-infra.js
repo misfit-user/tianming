@@ -2855,7 +2855,12 @@ function getCompressionParams(ctxK) {
     // D2 对话摘要注入参数
     // 8K:8条  32K:16条  128K:25条  256K:30条  1M:40条
     dialogueTotalCap: Math.max(6, Math.min(50, Math.round(16 * scale))),
-    dialogueRecentTurns: Math.max(2, Math.min(8, Math.round(3 * scale)))
+    dialogueRecentTurns: Math.max(2, Math.min(8, Math.round(3 * scale))),
+    // P6.6 时政记分层全读（用户需求"超出读取回合范围的自动纳入压缩之中"）
+    // 近端·完整全文回合数：8K:2  32K:5  128K:8  256K:10  1M:12
+    fullReadTurns: Math.max(2, Math.min(15, Math.round(5 * scale))),
+    // 中端·400 字摘要回合数（fullReadTurns 之外、压缩层之内的窗口）
+    briefReadTurns: Math.max(6, Math.min(25, Math.round(12 * scale)))
   };
 }
 

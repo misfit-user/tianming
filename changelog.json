@@ -3,6 +3,29 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·P6.6 时政记分层全读 + 远端自动压缩",
+      "title": "用户指出：\"时政记应该不止四百字·要完整读取·超出读取回合范围的自动纳入压缩之中\"。原 sc05 _recentHistory 注入用 substring(0, 400) 粗暴截断 shijiHistory 全部 10 回合·把 1500-2500 字的时政记/正文砍掉 80%·叙事关键细节流失。改为分层全读：近端完整不截断 + 中端 400 字摘要 + 远端靠现有 _aiMemory 自动压缩层（sc25 后台已就绪·>memCompressThreshold 即触发）。",
+      "items": [
+        {
+          "what": "tm-ai-infra.js getCompressionParams 加 2 个动态参数：fullReadTurns（按 ctx 缩放·8K:2 / 32K:5 / 128K:8 / 256K:10 / 1M:12）+ briefReadTurns（8K:6 / 32K:12 / 128K:19 / 256K:22 / 1M:25）。让 prompt 注入量与模型上下文容量动态匹配·避免小模型爆 token·大模型空着不用。",
+          "why": "硬编码 5 回合 / 12 回合不合理·应让 ctx 大小自动决策。"
+        },
+        {
+          "what": "tm-endturn-ai-infer.js sc05 _recentHistory 注入改为分层结构：(a) 近 fullReadTurns 回合·完整全文不截断·包括 shizhengji + shilu + zhengwen + edicts(玩家诏令逐条) + personnel(人事变动) + playerStatus + playerInner (b) fullReadTurns+1 ~ briefReadTurns 回合·400 字时政摘要 + 150 字实录摘要 + 玩家诏首句摘要 (c) briefReadTurns+ 之外的远端·靠下游已注入的 _aiMemory.compressed + _memoryLayers.L2/L3 + _foreshadows.compressed 自动压缩层（sc25 后台已就绪·>memCompressThreshold 即触发 AI 压缩）。",
+          "why": "用户核心需求——时政记是叙事核心·完整保留·让 AI 真正\"看见\"上回合发生了什么·而不是 400 字截断的摘要。Phase 1-5 时政记入了 shijiHistory[].shizhengji 但 sc05 截断·相当于近端记忆失真。"
+        },
+        {
+          "what": "验证：node --check 通过 (tm-ai-infra / tm-endturn-ai-infer)。结构上 sc05 输出 _recentHistory 体积估算：32K 模型·近端 5 回合 ≈ 5×2500=12500 字 + 中端 7 回合 ≈ 7×600=4200 字 ≈ 17K 字符 ≈ 5K tokens。仍在 sc05 max_tokens=12000 预算内。",
+          "why": "体积爆发是要担心的·但分层 + ctx 缩放参数确保不会无脑塞爆。"
+        },
+        {
+          "what": "远端自动压缩验证：line 11493 已有逻辑——sc25 后台 if (_aiMemory.length > memCompressThreshold) 即触发 AI 调用压缩为 type=compressed 摘要并替换旧条目（保留最近 memKeepRecent 条）。无需新增机制·只需让 sc05 信任此压缩层。",
+          "why": "不重复造轮子·已有压缩管线足够。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 6 关键审计：存档/读档兼容性 + AI 历史读取深度·6 项修复",
       "title": "用户提出 4 项关键审计请求：(1) 新存档/读档·12 表能否被正确序列化与恢复？(2) 老存档兼容性·缺 _memTables 字段如何处理？(3) AI 推演读取的历史深度——时政记/实录/回合数据/御批回听/编年长期行动各能读几回合？(4) 隐藏不给玩家看的 NPC 阴谋与势力非公开活动·下回合 sc1 能否看到？另外补充两点：(5) 语义检索改为自动加载·(6) 哨兵警告改为 toast 弹窗。审计后发现 6 项缺口·全部修复。",
       "items": [

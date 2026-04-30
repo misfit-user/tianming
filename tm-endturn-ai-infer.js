@@ -3430,23 +3430,66 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       await _runSubcall('sc05', '记忆回顾', 'standard', async function() {
       showLoading("\u6DF1\u5EA6\u56DE\u987E",48);
       try {
-        // 收集最近10回合的关键事件（扩大回溯范围）
+        // P6.6 分层全读：近 5 回合完整不截断·5-12 回合 400 字摘要·12+ 回合靠 _aiMemory 压缩层
+        // 用户需求："时政记应该不止四百字·要完整读取·超出读取回合范围的自动纳入压缩之中"
         var _recentHistory = '';
         if (GM.shijiHistory && GM.shijiHistory.length > 0) {
-          // P6.3：从 200 字扩到 400 字·并附 shilu 前 150 字（实录是史官体·更稳）
-          GM.shijiHistory.slice(-10).forEach(function(sh) {
-            _recentHistory += 'T' + sh.turn + ' [时政] ' + (sh.shizhengji || '').substring(0, 400) + '\n';
-            if (sh.shilu) _recentHistory += '       [实录] ' + (sh.shilu || '').substring(0, 150) + '\n';
-            // 玩家本回合诏令摘要（让 AI 知道历回玩家做了什么）
-            if (sh.edicts && typeof sh.edicts === 'object') {
-              var _eSum = [];
-              Object.keys(sh.edicts).forEach(function(cat) {
-                var v = sh.edicts[cat];
-                if (typeof v === 'string' && v.trim()) _eSum.push('[' + cat + ']' + v.split(/[\n；;]/)[0].slice(0, 40));
-              });
-              if (_eSum.length > 0) _recentHistory += '       [玩家诏] ' + _eSum.join(' · ') + '\n';
-            }
-          });
+          // 动态调整近端窗口（按 token 预算·若上下文紧张可减·若宽裕可增）
+          var _injCpRH = (typeof getCompressionParams === 'function') ? getCompressionParams() : { fullReadTurns: 5, briefReadTurns: 12 };
+          var _fullN = _injCpRH.fullReadTurns || 5;
+          var _briefN = _injCpRH.briefReadTurns || 12;
+          var _allHistory = GM.shijiHistory;
+          var _fullSlice = _allHistory.slice(-_fullN);
+          var _briefSlice = _allHistory.slice(-_briefN, -_fullN); // 5-12 回合段
+          // 近端·完整全文（时政记+实录+正文+人事+诏令）
+          if (_fullSlice.length > 0) {
+            _recentHistory += '\n=== 近 ' + _fullSlice.length + ' 回合·完整记录（不截断） ===\n';
+            _fullSlice.forEach(function(sh) {
+              _recentHistory += '\n────── T' + sh.turn + (sh.time ? '·' + sh.time : '') + ' ──────\n';
+              if (sh.shizhengji) _recentHistory += '【时政记】\n' + sh.shizhengji + '\n';
+              if (sh.shilu) _recentHistory += '【实录】\n' + sh.shilu + '\n';
+              if (sh.zhengwen) _recentHistory += '【正文/后人戏说】\n' + sh.zhengwen + '\n';
+              // 玩家诏令完整列出
+              if (sh.edicts && typeof sh.edicts === 'object') {
+                var _ed = [];
+                Object.keys(sh.edicts).forEach(function(cat) {
+                  var v = sh.edicts[cat];
+                  if (typeof v === 'string' && v.trim()) {
+                    v.split(/[\n；;]+/).map(function(s){return s.trim();}).filter(Boolean).forEach(function(line) {
+                      _ed.push('[' + cat + '] ' + line);
+                    });
+                  }
+                });
+                if (_ed.length > 0) _recentHistory += '【玩家诏令】\n' + _ed.join('\n') + '\n';
+              }
+              if (sh.personnel && Array.isArray(sh.personnel) && sh.personnel.length > 0) {
+                _recentHistory += '【人事变动】\n' + sh.personnel.map(function(p) {
+                  return '· ' + (p.name || '?') + (p.former ? '(原' + p.former + ')' : '') + '·' + (p.change || '') + (p.reason ? ' ←' + p.reason : '');
+                }).join('\n') + '\n';
+              }
+              if (sh.playerStatus) _recentHistory += '【政局摘要】' + sh.playerStatus + '\n';
+              if (sh.playerInner) _recentHistory += '【内省】' + sh.playerInner + '\n';
+            });
+            _recentHistory += '\n=== 近端完整记录结束 ===\n\n';
+          }
+          // 中端·400 字摘要（5-12 回合）
+          if (_briefSlice.length > 0) {
+            _recentHistory += '=== ' + (_fullN+1) + '-' + (_fullN+_briefSlice.length) + ' 回合前·摘要回顾 ===\n';
+            _briefSlice.forEach(function(sh) {
+              _recentHistory += 'T' + sh.turn + ' [时政] ' + (sh.shizhengji || '').substring(0, 400) + '\n';
+              if (sh.shilu) _recentHistory += '       [实录] ' + (sh.shilu || '').substring(0, 150) + '\n';
+              if (sh.edicts && typeof sh.edicts === 'object') {
+                var _eSum = [];
+                Object.keys(sh.edicts).forEach(function(cat) {
+                  var v = sh.edicts[cat];
+                  if (typeof v === 'string' && v.trim()) _eSum.push('[' + cat + ']' + v.split(/[\n；;]/)[0].slice(0, 40));
+                });
+                if (_eSum.length > 0) _recentHistory += '       [玩家诏] ' + _eSum.join(' · ') + '\n';
+              }
+            });
+            _recentHistory += '\n';
+          }
+          // 12+ 回合：靠下方注入的 _aiMemory 压缩段（已自动 sc25 后台触发）+ _memoryLayers L2/L3·此处不重复
         }
         if (GM.evtLog && GM.evtLog.length > 0) {
           // B2：过滤已死角色的过往事件（epitaph 已摘要·避免死人复活）

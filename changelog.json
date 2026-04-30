@@ -3,6 +3,49 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 13 KokoroMemo 二轮借鉴落地全套：expand_one_hop / auto_review / confidence 阈值",
+      "title": "Phase 12 已落地 state_board + 5 维加权打分·本批补完二轮调研剩余 3 项 KokoroMemo Top 5：(P13.2) expand_one_hop 双向广搜 + supersedes 抑制·让 sc1 看到诏令链时自动折叠被废旧诏。(P13.4) imperialEdict 候选 auto_review·sc25 推断\"应有皇命\"·纯规则三态裁决（importance/confidence 双高自动批准·明显不重要自动拒绝·中间态等玩家审）·UI 加候选审批列表。(P13.5) confidence 阈值改 RecallGate·上回合 eventHistory 表存在 weight<0.65 事件即触发 SC_RECALL（让 AI 对自己不确定的事回看历史确认）。",
+      "items": [
+        {
+          "what": "【P13.2 expand_one_hop·KokoroMemo graph.py:69-104 范式】tm-memory-tables.js 加 expandOneHop(node, opts) 双向广搜 API：扫 GM._memEdges + GM._edictRelations 两个边集合·forward(src→dst) + backward(dst→src) 全方向匹配·可按 opts.types 过滤边类型。findSupersededNodes(nodeList) 单独提取被 supersedes 边覆盖的节点。",
+          "why": "KokoroMemo expand_one_hop 是诏令冲突链推理的基础——给定一道诏令·能找到所有与它有关系的诏令（被它废的、它废的、与它细则的、与它矛盾的）。"
+        },
+        {
+          "what": "【P13.2 supersedes 抑制】sc1 prompt 注入诏令关系图时·识别 _supersededSet（被覆盖的旧诏 → 覆盖者映射）·原本简单按 turn 排序展示·现在加\"二级覆盖\"标记 + \"已被覆盖·当前已无效\"列表·明确告诉 AI \"AI 不得描述其在执行\"。",
+          "why": "KokoroMemo card_retriever.py:217-229 的 supersedes 抑制——避免 AI 反复颁不一致诏令、把已废政策当现行政策叙述。"
+        },
+        {
+          "what": "【P13.4 imperial_candidates·sc25 schema】sc25 输出 imperial_candidates:[{content, priority, condition, importance:0-1, confidence:0-1}]·AI 推断本回合应有的\"皇命级钉子条目\"——比如玩家颁布\"祖训\"或事件确立了一个不可变规则。",
+          "why": "原本 imperialEdict 是 readonly·AI 永不写·剧本作者预制 + 玩家手动 CRUD。现在 AI 也能\"推荐\"·走审核流程不直接进库。"
+        },
+        {
+          "what": "【P13.4 auto_review·KokoroMemo review_policy.py:6-71 范式·纯规则零 LLM】sc25 后回写时·遍历 imperial_candidates·按规则裁决：(a) importance>=0.8 && confidence>=0.85 → auto-approve·走 MemTables.editorWrite 硬接口直入 imperialEdict 表 (b) importance<0.3 → auto-reject·静默丢弃 (c) 中间态 → pending·存 GM._imperialCandidates[]·LRU 30。统计三态计数入 _dbg。",
+          "why": "纯规则·零 LLM 调用·零成本。让 AI 的\"祖训推荐\"经过严格阈值才入库·防 AI 把临时事件错当永久铁律。"
+        },
+        {
+          "what": "【P13.4 UI 候选审批】tm-memory-ui.js 皇命表渲染下方追加\"AI 推断的皇命候选\"列表·展示 pending 条目（content/priority/condition/imp/conf/proposedTurn）+ 批准/拒绝按钮。批准 → 走 editorWrite 入 imperialEdict 表·拒绝 → 改 status=rejected 静默处理。",
+          "why": "让玩家能批量审批 AI 推荐·UI 透明可控。"
+        },
+        {
+          "what": "【P13.5 confidence 阈值·KokoroMemo retrieval_gate.py:60-63 范式】tm-recall-gate.js shouldRecall 加触发条件 #6：上回合 eventHistory 表存在任一行 weight<0.65 → 触发 SC_RECALL·reason=\"上回合存在低置信度事件·需历史回看确认\"。保留原 importance>=7（条件 #5）作为兜底。两条件 OR·覆盖更广。",
+          "why": "KokoroMemo 思想——AI 对自己不确定的事·应回看历史确认。低 weight 表明 sc25 给该事件打的 10 维评分较低·意味着属于\"非定性\"事件·更需历史佐证。"
+        },
+        {
+          "what": "【二轮调研全部落地】Top 5 清单 5/5 完成·(1) ✅ state_board 4 字段（P12.1）(2) ✅ expand_one_hop + supersedes 抑制（P13.2）(3) ✅ 5 维加权打分（P12.3）(4) ✅ auto_review imperialEdict（P13.4）(5) ✅ confidence 阈值改 RecallGate（P13.5）。三个明确不抄项保持原状（字段锁定/JSON 解析/IANA 时区·天命已强）。",
+          "why": "二轮调研到此完整收尾·9 个评估项全部决策清楚（5 抄 + 3 不抄 + 1 部分覆盖）。"
+        },
+        {
+          "what": "【链路完整性】sc1 prompt 顶部注入栈：(1) state_board (2) sc_consolidated (3) timeRef (4) futureC (5) wsSnap (6) memTblInj (7) tp 主体 + SC_RECALL 5 维加权 hits + 御批回听 + NPC 阴谋 + 势力暗流 + 诏令关系图(含 supersedes 抑制) + RecallGate confidence 触发。共 11 段·覆盖事实/时间/约束/关系/张力/未来 6 个维度。",
+          "why": "一目了然全栈·便于后续维护与调优。"
+        },
+        {
+          "what": "验证：node --check 全部新文件通过——tm-memory-ui.js / tm-endturn-ai-infer.js / tm-memory-tables.js / tm-recall-gate.js。所有改动 silent fallback——auto_review 类型转 NaN 兜底·expand_one_hop 空数组·supersedes 抑制兼容老 _edictRelations。",
+          "why": "增强中间件不能阻断主流程·这是天命的硬性契约。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 12 KokoroMemo 二轮借鉴落地：state_board 4 字段 + 5 维加权打分",
       "title": "二轮 KokoroMemo 调研 agent 完成·识别 Top 5 借鉴清单·本批先实施 #1（最高 ROI）+ #3：(P12.1) state_board 4 字段补天命缺失的轻量会话状态——朝堂氛围/未解线索/近期摘要/未兑现承诺。(P12.3) SC_RECALL 5 维加权打分替代简单 slice·按 vector*0.45 + importance*0.20 + recency*0.15 + source_priority*0.15 + dim_weight*0.05 综合排序。剩余三项（诏令 graph 边表 + auto_review imperialEdict + confidence 阈值改 RecallGate）下批落地。",
       "items": [

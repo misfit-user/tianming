@@ -106,6 +106,30 @@
       }
     }
 
+    // 6. P13.5 confidence 阈值（KokoroMemo retrieval_gate.py:60-63 范式）
+    //   上回合 eventHistory 表存在 weight<0.65 的低置信度事件 → AI 对自己不确定的事·应回看历史确认
+    if (typeof MemTables !== 'undefined' && MemTables && MemTables.getSheet) {
+      try {
+        var ehSheet = MemTables.getSheet('eventHistory');
+        if (ehSheet && Array.isArray(ehSheet.rows)) {
+          var lastTurnEvts = ehSheet.rows.filter(function(r) {
+            var rTurn = parseInt(r[1], 10) || 0;
+            return rTurn === (GM.turn || 1) - 1;
+          });
+          if (lastTurnEvts.length > 0) {
+            // 任一事件 weight<0.65 即触发（低置信度·需要历史佐证）
+            var hasLowConf = lastTurnEvts.some(function(r) {
+              var w = parseFloat(r[3]);
+              return !isNaN(w) && w > 0 && w < 0.65;
+            });
+            if (hasLowConf) {
+              return { shouldRecall: true, reason: '上回合存在低置信度(weight<0.65)事件·需历史回看确认' };
+            }
+          }
+        }
+      } catch(_ehE){}
+    }
+
     // 默认：跳过
     return { shouldRecall: false, reason: '常规回合·跳过节流·节省 5 源开销' };
   }

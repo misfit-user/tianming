@@ -4350,15 +4350,28 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           tp1 += '  ' + (u.faction||'?') + '：' + (u.situation||'') + '（趋势 ' + (u.trend||'稳定') + '·' + (u.nextMove||'') + '）\n';
         });
       }
-      // P11.2B 修：注入诏令冲突链（_edictRelations·让 AI 知道哪些诏令彼此覆盖/冲突/接续/细则）
+      // P11.2B + P13.2：注入诏令冲突链 + supersedes 抑制（被废诏令折叠展示）
       if (Array.isArray(GM._edictRelations) && GM._edictRelations.length > 0) {
         var _recentRels = GM._edictRelations.slice(-15);
         if (_recentRels.length > 0) {
+          // P13.2 supersedes 抑制：识别已被覆盖的旧诏·折叠展示
+          var _supersededSet = {};
+          _recentRels.forEach(function(r) {
+            if (r.type === 'supersedes') _supersededSet[r.to] = r.from;  // r.to 被 r.from 覆盖
+          });
+
           tp1 += '\n\n【诏令关系图（KokoroMemo 范式·近 15 条·须维持因果连贯）】\n';
           _recentRels.forEach(function(r) {
             var typeLabel = { supersedes: '覆盖', contradicts: '冲突', continues: '接续', elaborates: '细则' }[r.type] || r.type;
-            tp1 += '  · T' + (r.turn||'?') + ' [' + r.from + '] →[' + typeLabel + ']→ [' + r.to + ']' + (r.reason ? ' ←' + r.reason : '') + '\n';
+            // P13.2：若 src 也已被进一步覆盖·标记 [二级覆盖]
+            var dblMark = _supersededSet[r.from] ? '[二级覆盖] ' : '';
+            tp1 += '  · ' + dblMark + 'T' + (r.turn||'?') + ' [' + r.from + '] →[' + typeLabel + ']→ [' + r.to + ']' + (r.reason ? ' ←' + r.reason : '') + '\n';
           });
+          // P13.2：被覆盖的旧诏列表（AI 不应再叙述其当前生效）
+          var _supersededList = Object.keys(_supersededSet);
+          if (_supersededList.length > 0) {
+            tp1 += '  ※ 已被覆盖·当前已无效的旧诏（AI 不得描述其在执行）：' + _supersededList.join('·') + '\n';
+          }
           tp1 += '  ※ supersedes(覆盖)：新政废旧政·旧政效力终止·须明叙取代经过\n';
           tp1 += '  ※ contradicts(冲突)：两道诏令逻辑矛盾·至少一道无法完全执行·须呈现执行困境\n';
           tp1 += '  ※ continues(接续)：本诏推进前诏未竟之业·须延续叙事而非另起炉灶\n';
@@ -11329,6 +11342,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp25 += '"recent_summary":"\u672C\u56DE\u5408\u6700\u538B\u7F29\u7684\u6458\u8981(150\u5B57\u00B7\u8986\u76D6\u6240\u6709\u5173\u952E\u53D8\u52A8\u00B7\u4E0B\u56DE\u5408 sc1 \u4F18\u5148\u8BFB)",';
         tp25 += '"unfulfilled_promises":["\u73A9\u5BB6\u672A\u5151\u73B0\u7684\u627F\u8BFA/\u62DF\u8BAE\u4F46\u672A\u9881\u7684\u8BCF\u4EE4 1(35\u5B57)","2","3"]';
         tp25 += '},';
+        // P13.4 imperialEdict \u5019\u9009\uFF08KokoroMemo review_policy \u8303\u5F0F\uFF09
+        // AI \u63A8\u65AD\u672C\u56DE\u5408\u5E94\u6709\u7684"\u7687\u547D\u7EA7\u9489\u5B50\u6761\u76EE"\u2014\u2014\u6BD4\u5982\u73A9\u5BB6\u9881\u5E03"\u7956\u8BAD"\u6216\u4E8B\u4EF6\u786E\u7ACB\u4E86\u4E00\u4E2A\u4E0D\u53EF\u53D8\u89C4\u5219
+        tp25 += '"imperial_candidates":[{"content":"\u5019\u9009\u7687\u547D\u5185\u5BB9(60\u5B57)","priority":1,"condition":"\u751F\u6548\u6761\u4EF6","importance":0.5,"confidence":0.5}],';
         // 10 \u7EF4\u4E8B\u4EF6\u8BC4\u5206\uFF08\u53C2\u8003\u5168\u81EA\u52A8\u603B\u7ED3 v4 \u51DB\u503E\u534F\u8BAE\u00B7\u672C\u5730\u5316\u4E3A\u5929\u547D\u8BED\u5883\uFF09+ affects_future \u4E8C\u5143\u6807\u8BB0\uFF08Phase 4.2 ReNovel-AI \u8303\u5F0F\uFF09
         tp25 += '"event_weights":[{"event":"\u4E8B\u4EF6\u63CF\u8FF050\u5B57\u4EE5\u5185","weight":0.65,"dims":["d1","d3"],"affects_future":true}]}\n';
         tp25 += '\n\u3010event_weights \u8BC4\u5206\u89C4\u5219\u3011\u5BF9\u672C\u56DE\u5408\u4E0A\u62A5 5-10 \u4EF6\u4E8B\u4EF6\u00B7\u9010\u4EF6\u6309 10 \u4E2A\u7EF4\u5EA6\u5404\u6253 0.05-0.15 \u7D2F\u52A0\u5C01\u9876 1.0\uFF1A\n';
@@ -11385,6 +11401,57 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                 recent_summary: String(p25.state_board.recent_summary || '').slice(0, 250),
                 unfulfilled_promises: Array.isArray(p25.state_board.unfulfilled_promises) ? p25.state_board.unfulfilled_promises.slice(0, 5).map(function(s){ return String(s).slice(0, 60); }) : []
               };
+            }
+            // P13.4 imperialEdict 候选 auto_review（KokoroMemo review_policy.py 范式·纯规则·零 LLM）
+            if (Array.isArray(p25.imperial_candidates) && p25.imperial_candidates.length > 0) {
+              if (!Array.isArray(GM._imperialCandidates)) GM._imperialCandidates = [];
+              var _autoApprovedCnt = 0, _pendingCnt = 0, _rejectedCnt = 0;
+              p25.imperial_candidates.forEach(function(ic) {
+                if (!ic || !ic.content) return;
+                var imp = parseFloat(ic.importance);
+                var conf = parseFloat(ic.confidence);
+                if (isNaN(imp)) imp = 0.5;
+                if (isNaN(conf)) conf = 0.5;
+                imp = Math.max(0, Math.min(1, imp));
+                conf = Math.max(0, Math.min(1, conf));
+                // KokoroMemo review_policy 规则：
+                //   importance >= 0.8 && confidence >= 0.85 → auto-approve（自动入 imperialEdict 表）
+                //   importance < 0.3 → auto-reject（明显不重要·丢弃）
+                //   其余 → pending（玩家审批）
+                var verdict;
+                if (imp >= 0.8 && conf >= 0.85) verdict = 'auto-approve';
+                else if (imp < 0.3) verdict = 'auto-reject';
+                else verdict = 'pending';
+
+                if (verdict === 'auto-approve' && window.MemTables && MemTables.editorWrite) {
+                  // 直接走 editor 硬接口·绕过 readonly 限制
+                  MemTables.editorWrite('imperialEdict', 'insert', {
+                    values: {
+                      0: String(ic.priority || 5),
+                      1: String(ic.content),
+                      2: String(ic.condition || '永久生效'),
+                      3: String(_ptTurn25),
+                      4: '' // 非天机
+                    }
+                  });
+                  _autoApprovedCnt++;
+                } else if (verdict === 'pending') {
+                  GM._imperialCandidates.push({
+                    content: String(ic.content).slice(0, 80),
+                    priority: ic.priority || 5,
+                    condition: String(ic.condition || '永久生效').slice(0, 40),
+                    importance: imp,
+                    confidence: conf,
+                    proposedTurn: _ptTurn25,
+                    status: 'pending'
+                  });
+                  _pendingCnt++;
+                } else {
+                  _rejectedCnt++; // 静默丢弃
+                }
+              });
+              if (GM._imperialCandidates.length > 30) GM._imperialCandidates = GM._imperialCandidates.slice(-30);
+              _dbg('[ImperialReview] auto-approve:', _autoApprovedCnt, '·pending:', _pendingCnt, '·auto-reject:', _rejectedCnt);
             }
 
             // 2.1: 处理剧情线更新

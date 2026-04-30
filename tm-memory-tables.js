@@ -972,6 +972,55 @@
   }
 
   // ────────────────────────────────────────────────────────────
+  // §8.6 通用边表 + 双向广搜（KokoroMemo graph.py 范式·P13.2）
+  //   GM._memEdges = [{ src, dst, type: 'supersedes/contradicts/continues/elaborates', reason, turn, weight }]
+  //   兼容 GM._edictRelations（P11.2B 已存在·此处提供查询 API）
+  // ────────────────────────────────────────────────────────────
+
+  function _allEdges() {
+    if (!_ensureInit()) return [];
+    var edges = [];
+    if (Array.isArray(GM._memEdges)) edges = edges.concat(GM._memEdges);
+    if (Array.isArray(GM._edictRelations)) {
+      // 把 _edictRelations 旧格式 map 到统一格式
+      GM._edictRelations.forEach(function(er) {
+        edges.push({ src: er.from, dst: er.to, type: er.type, reason: er.reason, turn: er.turn, weight: 1 });
+      });
+    }
+    return edges;
+  }
+
+  // 双向广搜·从指定节点开始一跳·返回相邻节点 + 边
+  function expandOneHop(node, opts) {
+    opts = opts || {};
+    var edges = _allEdges();
+    var typesFilter = opts.types || null;  // 数组·只匹配这些边类型
+    var hits = [];
+    edges.forEach(function(e) {
+      if (!e || !e.src || !e.dst) return;
+      if (typesFilter && typesFilter.indexOf(e.type) < 0) return;
+      if (String(e.src) === String(node)) hits.push({ neighbor: e.dst, edge: e, dir: 'forward' });
+      if (String(e.dst) === String(node)) hits.push({ neighbor: e.src, edge: e, dir: 'backward' });
+    });
+    return hits;
+  }
+
+  // 给定一组节点·返回被 supersedes 取代的节点集合（应在注入时抑制）
+  function findSupersededNodes(nodeList) {
+    if (!Array.isArray(nodeList) || nodeList.length === 0) return [];
+    var edges = _allEdges();
+    var superseded = [];
+    edges.forEach(function(e) {
+      if (e.type !== 'supersedes') return;
+      // src supersedes dst → dst 被取代
+      if (nodeList.indexOf(e.dst) >= 0 || nodeList.some(function(n){ return String(n).indexOf(e.dst) >= 0; })) {
+        superseded.push(e.dst);
+      }
+    });
+    return superseded;
+  }
+
+  // ────────────────────────────────────────────────────────────
   // §9 暴露 API
   // ────────────────────────────────────────────────────────────
   global.MemTables = {
@@ -999,7 +1048,9 @@
     },
     getSheet: function(sheetKey) { return _t(sheetKey); },
     getCellHistory: getCellHistory,
-    rebuildFromHistory: rebuildFromHistory
+    rebuildFromHistory: rebuildFromHistory,
+    expandOneHop: expandOneHop,
+    findSupersededNodes: findSupersededNodes
   };
 
   // 兼容裸函数调用

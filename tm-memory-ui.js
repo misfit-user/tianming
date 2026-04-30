@@ -251,6 +251,28 @@
     });
     html += '</tbody></table>';
     html += '<div style="margin-top:8px;"><button id="imp-add-btn">+ 新增皇命</button></div>';
+
+    // P13.4: 候选审批列表（AI 推断的待审皇命候选）
+    var pending = (typeof GM !== 'undefined' && GM && Array.isArray(GM._imperialCandidates)) ? GM._imperialCandidates.filter(function(c){return c.status==='pending';}) : [];
+    if (pending.length > 0) {
+      html += '<div style="margin-top:16px;padding:8px;background:#1a2a3a;border-left:3px solid #6b9eff;">';
+      html += '<div style="margin-bottom:6px;color:#9bbfff;font-weight:bold;">🔍 AI 推断的皇命候选 (待审 ' + pending.length + ' 条·KokoroMemo auto_review 范式)</div>';
+      html += '<div style="font-size:11px;color:#a89878;margin-bottom:8px;">sc25 后台推断的"应有皇命"·importance≥0.8 && confidence≥0.85 的已自动批准·imp<0.3 的已自动拒绝·中间态在此等审。</div>';
+      html += '<table class="mem-tbl"><thead><tr><th>内容</th><th>优先</th><th>条件</th><th>imp</th><th>conf</th><th>提议回合</th><th>操作</th></tr></thead><tbody>';
+      pending.forEach(function(c, i) {
+        html += '<tr>';
+        html += '<td>' + (c.content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</td>';
+        html += '<td>' + c.priority + '</td>';
+        html += '<td>' + c.condition + '</td>';
+        html += '<td>' + Math.round(c.importance * 100) / 100 + '</td>';
+        html += '<td>' + Math.round(c.confidence * 100) / 100 + '</td>';
+        html += '<td>T' + c.proposedTurn + '</td>';
+        html += '<td><button class="imp-cand-approve" data-idx="' + i + '">批准</button> <button class="imp-cand-reject" data-idx="' + i + '">拒绝</button></td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      html += '</div>';
+    }
     html += '</div>';
     return html;
   }
@@ -290,6 +312,39 @@
         values: { 0: '5', 1: '（在此输入皇命内容·勾选天机列即变伏笔）', 2: '永久生效', 3: String((typeof GM !== 'undefined' && GM && GM.turn) || 1), 4: '' }
       });
       _renderBody();
+    });
+
+    // P13.4 候选审批按钮
+    body.querySelectorAll('.imp-cand-approve').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.dataset.idx, 10);
+        var pending = GM._imperialCandidates.filter(function(c){return c.status==='pending';});
+        var c = pending[idx];
+        if (!c) return;
+        MemTables.editorWrite('imperialEdict', 'insert', {
+          values: {
+            0: String(c.priority || 5),
+            1: c.content,
+            2: c.condition || '永久生效',
+            3: String(c.proposedTurn || GM.turn || 1),
+            4: ''
+          }
+        });
+        c.status = 'approved';
+        c.reviewedTurn = GM.turn || 1;
+        _renderBody();
+      });
+    });
+    body.querySelectorAll('.imp-cand-reject').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.dataset.idx, 10);
+        var pending = GM._imperialCandidates.filter(function(c){return c.status==='pending';});
+        var c = pending[idx];
+        if (!c) return;
+        c.status = 'rejected';
+        c.reviewedTurn = GM.turn || 1;
+        _renderBody();
+      });
     });
   }
 

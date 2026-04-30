@@ -548,7 +548,11 @@ function getTurnDays() {
   return (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
 }
 
-function uid(){return Date.now().toString(36)+random().toString(36).slice(2,7);}
+var _uidSeq = 0;
+function uid(){
+  _uidSeq = (_uidSeq + 1) % 46656;
+  return Date.now().toString(36) + _uidSeq.toString(36).padStart(3, '0') + random().toString(36).slice(2,7);
+}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 /** prompt 内字数指引——每条发言直接按用户设置范围，不做倍率
  *  category: 'wd'=问对, 'cy'=朝议（默认 cy） */

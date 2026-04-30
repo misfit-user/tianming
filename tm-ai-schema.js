@@ -8,7 +8,7 @@
  *   - tm-ai-output-validator.js 的 KNOWN_FIELDS（验证 AI 返回）
  *   - tm-ai-change-applier.js 的消费代码（读 aiOutput.xxx）
  *
- * 原来三处各自维护字段列表，容易漂移（例 npc_actions 已废弃但 prompt 有时还提）。
+ * 原来三处各自维护字段列表，容易漂移（例 prompt/validator/applier 对同一字段认知不一致）。
  * 现在 validator 从 TM_AI_SCHEMA 动态构建 KNOWN_FIELDS，保持同步。
  *
  * 字段元数据约定：
@@ -190,7 +190,11 @@
     // ──────────────────────────────────────────────
     // NPC 互动与诏令问责
     // ──────────────────────────────────────────────
-    npc_interactions:     { type: 'array', desc: 'NPC 之间或 NPC→玩家的主动互动/奏对' },
+    npc_actions:          { type: 'array', desc: 'NPC 自主行动（兼容旧 prompt；endturn 仍消费）', consumedBy: ['endturn-ai-infer'] },
+    npc_interactions:     { type: 'array', desc: 'NPC 之间或 NPC→玩家的主动互动/奏对', consumedBy: ['endturn-ai-infer:sc1b'] },
+    npc_letters:          { type: 'array', desc: 'NPC 主动来书/远方奏报', consumedBy: ['endturn-ai-infer:sc1b'] },
+    npc_correspondence:   { type: 'array', desc: 'NPC 之间私信/密信', consumedBy: ['endturn-ai-infer:sc1b'] },
+    cultural_works:       { type: 'array', desc: '文苑作品/后人戏说', consumedBy: ['endturn-ai-infer:sc1b'] },
     directive_compliance: { type: 'array', desc: '诏令执行报告（被 _postInferenceAccountability 消费）', consumedBy: ['applier:1593'] },
 
     // ──────────────────────────────────────────────
@@ -199,12 +203,22 @@
     fiscal_adjustments: { type: 'array', desc: '财政调整（income/expense，会写 guoku）', consumedBy: ['applier:1136', 'applier:1444'] },
     region_updates:     { type: 'array', desc: '地区数据增量' },
     project_updates:    { type: 'array', desc: '工程项目进度' },
-    events:             { type: 'array', desc: '本回合事件列表' },
-    changes:            { type: 'array', desc: '通用变化列表（旧格式）' },
-    appointments:       { type: 'array', desc: '任命列表（旧格式，官方用 office_changes）' },
-    institutions:       { type: 'array', desc: '制度（旧格式）' },
-    regions:            { type: 'array', desc: '地区（旧格式）' },
-    localActions:       { type: 'array', desc: '地方行动（旧格式）' },
+    edict_feedback:     { type: 'array', desc: '诏令/裁断执行回报', consumedBy: ['endturn:9514'] },
+    edict_lifecycle_update: { type: 'array', desc: '诏令生命周期推进', consumedBy: ['endturn:8843'] },
+    route_disruptions:  { type: 'array', desc: '驿道/信使路线阻断或恢复', consumedBy: ['endturn-ai-infer'] },
+    foreshadowing:      { type: 'array', desc: '伏笔埋设/回收', consumedBy: ['endturn-ai-infer:sc25'] },
+    map_changes:        { type: 'object', desc: '地图/领地变化', consumedBy: ['endturn-ai-infer', 'map-integration'] },
+    faction_interactions_advanced: { type: 'array', desc: '势力深度互动', consumedBy: ['endturn-ai-infer:sc1c'] },
+    npc_schemes:        { type: 'array', desc: 'NPC 阴谋/长期布局', consumedBy: ['endturn-ai-infer:sc1c'] },
+    hidden_moves:       { type: 'array', desc: '暗流行动', consumedBy: ['endturn-ai-infer:sc1c'] },
+    fengwen_snippets:   { type: 'array', desc: '风闻录事条目', consumedBy: ['endturn-ai-infer:sc1c'] },
+    call_court_works:   { type: 'array', desc: '朝会/廷议衍生事项（兼容字段）', consumedBy: ['endturn-ai-infer'] },
+    events:             { type: 'array', desc: '本回合事件列表', consumedBy: ['ai-change-applier'] },
+    changes:            { type: 'array', desc: '通用变化列表（旧格式）', consumedBy: ['ai-change-applier'] },
+    appointments:       { type: 'array', desc: '任命列表（旧格式，官方用 office_changes）', consumedBy: ['ai-change-applier'] },
+    institutions:       { type: 'array', desc: '制度（旧格式）', consumedBy: ['ai-change-applier'] },
+    regions:            { type: 'array', desc: '地区（旧格式）', consumedBy: ['ai-change-applier'] },
+    localActions:       { type: 'array', desc: '地方行动（旧格式）', consumedBy: ['ai-change-applier'] },
     anyPathChanges:     { type: 'array', desc: '任意路径变更（通用出口）', consumedBy: ['applier:1332'] },
     geoData:            { type: 'object', desc: '地理推算数据（行军/围城需要）' },
     memorials:          { type: 'array', desc: '奏疏文本' },
@@ -215,7 +229,6 @@
     // ──────────────────────────────────────────────
     // 已废弃字段（validator 打 warn 提示迁移）
     // ──────────────────────────────────────────────
-    npc_actions: { type: 'array', deprecated: 'npc_interactions', desc: '旧 NPC 动作字段，已被 npc_interactions 取代' }
   };
 
   /**
@@ -263,6 +276,33 @@
    */
   function describe(fieldName) {
     return S[fieldName] || null;
+  }
+
+  /**
+   * Return field ownership metadata for smoke tests and debugging.
+   */
+  function toFieldOwnership(mode) {
+    var src = (mode === 'dialogue') ? DIALOGUE : S;
+    var out = {};
+    Object.keys(src).forEach(function(k){
+      if (k === 'version' || k === 'lastUpdate') return;
+      var meta = src[k];
+      if (!meta || !meta.type || meta.deprecated) return;
+      var producedBy = Array.isArray(meta.producedBy) ? meta.producedBy.slice() : [];
+      var consumedBy = Array.isArray(meta.consumedBy) ? meta.consumedBy.slice() : [];
+      if (producedBy.length || consumedBy.length) {
+        out[k] = {
+          type: meta.type,
+          producedBy: producedBy,
+          consumedBy: consumedBy
+        };
+      }
+    });
+    return out;
+  }
+
+  function describeOwnership(fieldName, mode) {
+    return toFieldOwnership(mode)[fieldName] || null;
   }
 
   /**
@@ -792,6 +832,8 @@
     toKnownFields: toKnownFields,
     toDeprecatedFields: toDeprecatedFields,
     toRequiredSubfields: toRequiredSubfields,
+    toFieldOwnership: toFieldOwnership,
+    describeOwnership: describeOwnership,
     describe: describe,
     listFields: listFields
   };

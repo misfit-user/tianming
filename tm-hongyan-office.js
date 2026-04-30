@@ -462,7 +462,15 @@ function renderLetterPanel() {
   }
 
   // ── 人物分组·按地域粗分 ──
-  function _regionOf(loc) {
+  var _LT_HAREM_RE = /(皇后|皇贵妃|贵妃|淑妃|德妃|贤妃|皇妃|王妃|侧妃|嫔|妾|才人|选侍|淑人|常在|答应|宫人|乳母|奉圣夫人|国夫人|郡夫人|县君|乡君|公主|郡主|县主|太后|皇太后|太妃|王太妃)/;
+  function _regionOf(ch) {
+    var loc = ch && ch.location;
+    var _tt = (ch && (ch.officialTitle || ch.title || '')) || '';
+    if (_tt && _LT_HAREM_RE.test(_tt)) return '内廷';
+    if (loc && _isSameLocation(loc, capital)) return '在京';
+    return _regionOfLoc(loc);
+  }
+  function _regionOfLoc(loc) {
     // R: \u65E7\u7248\u542B IME \u8BEF\u7801\u5B57\uFF08\u8FA3\u9633/\u5384\u95E8/\u6280\u6E7E/\u4EAC\u7B7B/\u8468/\u7B07/\u6E29\u90FD/\u7518\u590F/\u77F3\u5BAB/\u6CBF\u5DDE/\u96A9/\u8367/\u5BA7/\u7518\u76F4\uFF09
     //    \u4E14 L457/L458 \u4E24\u6761\u90FD\u8FD4\u56DE"\u8FBD\u4E1C\u00B7\u5317\u5883"\u00B7\u628A"\u5BA3\u5927\u00B7\u5C71\u897F"\u8BEF\u5E76\u5165\u8FBD\u4E1C\u00B7\u6B64\u5904\u7EDF\u4E00\u66F4\u6B63\u5E76\u62C6\u51FA\u72EC\u7ACB\u7EC4
     if (!loc) return '\u5176\u4ED6';
@@ -486,19 +494,28 @@ function renderLetterPanel() {
   // ── NPC 卡片列表 ──
   var el = _$('letter-chars');
   if (el) {
-    var remote = (GM.chars||[]).filter(function(c) { return c.alive !== false && c.location && !_isSameLocation(c.location, capital) && !c.isPlayer; });
+    var _ltQ = (GM._ltSearchQuery || '').trim().toLowerCase();
+    var _ltAll = (GM.chars||[]).filter(function(c) { return c.alive !== false && !c.isPlayer; });
+    var remote = _ltAll;
+    if (_ltQ) {
+      remote = _ltAll.filter(function(c) {
+        var hay = ((c.name||'') + '\u3000' + (c.officialTitle||'') + '\u3000' + (c.title||'') + '\u3000' + (c.role||'') + '\u3000' + (c.faction||'') + '\u3000' + (c.location||'')).toLowerCase();
+        return hay.indexOf(_ltQ) >= 0;
+      });
+    }
     if (remote.length === 0) {
-      el.innerHTML = '<div style="color:var(--color-foreground-muted);font-size:12px;padding:20px 14px;text-align:center;font-family:var(--font-serif);letter-spacing:0.12em;line-height:1.8;">\u767E\u5B98\u5747\u5728\u4EAC\u57CE\u00B7\u65E0\u9700\u4F20\u4E66</div>';
+      var _ltEmptyMsg = _ltQ ? ('\u65E0\u5339\u914D\u201C' + escHtml(GM._ltSearchQuery||'') + '\u201D\u7684\u4EBA\u7269') : '\u73B0\u4E16\u65E0\u53EF\u4F20\u4E66\u4E4B\u4EBA';
+      el.innerHTML = '<div style="color:var(--color-foreground-muted);font-size:12px;padding:20px 14px;text-align:center;font-family:var(--font-serif);letter-spacing:0.12em;line-height:1.8;">' + _ltEmptyMsg + '</div>';
     } else {
       // 按地域分组
       var _groups = {};
       remote.forEach(function(ch) {
-        var r = _regionOf(ch.location);
+        var r = _regionOf(ch);
         if (!_groups[r]) _groups[r] = [];
         _groups[r].push(ch);
       });
       // \u987A\u5E8F\uFF1A\u8FBD\u4E1C\u00B7\u5317\u5883 / \u5BA3\u5927\u00B7\u5C71\u897F / \u897F\u9677\u00B7\u8FB9\u9547 / \u4E2D\u539F\u00B7\u9C81\u8C6B / \u6C5F\u5357\u00B7\u6C5F\u6D59 / \u897F\u5357\u00B7\u5DF4\u8700 / \u5357\u65B9\u00B7\u6D77\u7586 / \u5176\u4ED6
-      var _grpOrder = ['\u8FBD\u4E1C\u00B7\u5317\u5883','\u5BA3\u5927\u00B7\u5C71\u897F','\u897F\u9677\u00B7\u8FB9\u9547','\u4E2D\u539F\u00B7\u9C81\u8C6B','\u6C5F\u5357\u00B7\u6C5F\u6D59','\u897F\u5357\u00B7\u5DF4\u8700','\u5357\u65B9\u00B7\u6D77\u7586','\u5176\u4ED6'];
+      var _grpOrder = ['\u5185\u5EF7','\u5728\u4EAC','\u8FBD\u4E1C\u00B7\u5317\u5883','\u5BA3\u5927\u00B7\u5C71\u897F','\u897F\u9677\u00B7\u8FB9\u9547','\u4E2D\u539F\u00B7\u9C81\u8C6B','\u6C5F\u5357\u00B7\u6C5F\u6D59','\u897F\u5357\u00B7\u5DF4\u8700','\u5357\u65B9\u00B7\u6D77\u7586','\u5176\u4ED6'];
 
       function _cardClass(ch) {
         var t = (ch.title||'') + (ch.officialTitle||'');
@@ -613,6 +630,27 @@ function renderLetterPanel() {
   hist.innerHTML = html;
   var _body = hist.querySelector('.hy-hist-body');
   if (_body) _body.scrollTop = _body.scrollHeight;
+}
+
+/** 鸿雁传书·检索框输入·只重渲染左侧名册（避免抢焦点） */
+function _ltOnSearchInput(v) {
+  if (typeof GM === 'undefined' || !GM) return;
+  GM._ltSearchQuery = String(v == null ? '' : v);
+  if (GM._ltSearchTimer) { clearTimeout(GM._ltSearchTimer); GM._ltSearchTimer = null; }
+  GM._ltSearchTimer = setTimeout(function() {
+    GM._ltSearchTimer = null;
+    var inp = document.getElementById('lt-search');
+    var hadFocus = (inp && document.activeElement === inp);
+    var caret = inp ? inp.selectionStart : null;
+    try { if (typeof renderLetterPanel === 'function') renderLetterPanel(); } catch(_){}
+    if (hadFocus) {
+      var inp2 = document.getElementById('lt-search');
+      if (inp2) {
+        inp2.focus();
+        try { if (caret != null) inp2.setSelectionRange(caret, caret); } catch(_){}
+      }
+    }
+  }, 80);
 }
 
 /** 渲染单封信笺卡片 */
@@ -2237,6 +2275,7 @@ function renderGameState(){
     +    '<div class="hy-left-header"><span class="hy-left-title">\u8FDC \u65B9 \u81E3 \u5B50</span>'
     +      '<button class="hy-multi-btn" id="lt-multi-toggle" onclick="GM._ltMultiMode=!GM._ltMultiMode;GM._ltMultiTargets=[];renderLetterPanel();">\u7FA4 \u53D1</button>'
     +    '</div>'
+    +    '<div class="hy-search-wrap"><input id="lt-search" class="hy-search" type="text" placeholder="\u68C0\u7D22\u59D3\u540D\u00B7\u5B98\u804C\u00B7\u515A\u6D3E\u00B7\u5730\u70B9\u2026\u2026" oninput="_ltOnSearchInput(this.value)"></div>'
     +    '<div id="letter-chars" class="hy-npc-list"></div>'
     +  '</div>'
     +  '<div class="hy-center">'

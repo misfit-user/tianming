@@ -488,8 +488,20 @@ var AccountingSystem = (function() {
  * 4. 官制联动（任命/罢免自动触发权力重分配）
  */
 
+function ensureReactiveQueueState() {
+  if (typeof GM === 'undefined' || !GM) return false;
+  if (!GM._listeners || typeof GM._listeners !== 'object' || Array.isArray(GM._listeners)) {
+    GM._listeners = {};
+  }
+  if (!Array.isArray(GM._changeQueue)) {
+    GM._changeQueue = [];
+  }
+  return true;
+}
+
 // 注册监听器
 function registerListener(entityType, propertyName, callback, priority) {
+  if (!ensureReactiveQueueState()) return;
   priority = priority || 5;
   var key = entityType + '.' + propertyName;
   if (!GM._listeners[key]) {
@@ -508,6 +520,7 @@ function registerListener(entityType, propertyName, callback, priority) {
 // 触发属性变化监听
 function triggerPropertyChange(entityType, entity, propertyName, oldValue, newValue) {
   if (oldValue === newValue) return;
+  if (!ensureReactiveQueueState()) return;
 
   var key = entityType + '.' + propertyName;
   var listeners = GM._listeners[key];
@@ -526,6 +539,7 @@ function triggerPropertyChange(entityType, entity, propertyName, oldValue, newVa
 
 // 处理变化队列（批量处理，避免重复计算）
 function processChangeQueue() {
+  if (!ensureReactiveQueueState()) return;
   if (GM._changeQueue.length === 0) return;
 
   var queue = GM._changeQueue.slice();

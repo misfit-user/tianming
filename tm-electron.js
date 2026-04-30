@@ -14,6 +14,20 @@
 // ============================================================
 if(window.tianming&&window.tianming.isDesktop){
 
+  function _isPlayableScenario(scn){
+    if (!scn || typeof scn !== 'object') return false;
+    function count(key){ return Array.isArray(scn[key]) ? scn[key].length : 0; }
+    var vars = 0;
+    if (Array.isArray(scn.variables)) vars = scn.variables.length;
+    else if (scn.variables && typeof scn.variables === 'object') {
+      vars = Object.keys(scn.variables).reduce(function(sum, key){
+        return sum + (Array.isArray(scn.variables[key]) ? scn.variables[key].length : 0);
+      }, 0);
+    }
+    return count('characters') + count('chars') + count('factions') + count('facs') +
+      count('parties') + count('classes') + vars + count('events') + count('relations') > 0;
+  }
+
   // --- 主菜单显示/隐藏辅助 ---
   // launch 改版后 #lt-menu → .home-stage 整个 hero 区(menu + title + 楹联等)·main-view 是其后兄弟
   // 旧版直接 toggle lt-menu·新版必须 toggle 整个 home-stage·不然 main-view 被 home-stage(100vh) 推到屏外
@@ -116,8 +130,12 @@ if(window.tianming&&window.tianming.isDesktop){
   showScnSelect=async function(){
     var list=await window.tianming.listScenarios();
     var files=list.success?list.files:[];
+    var allCount=files.length;
+    files=files.filter(function(f){return f.playable!==false;});
     var html='<div class="pnl">';
+    var draftNotice=(allCount>files.length)?'<p class="pnl-empty">已隐藏 '+(allCount-files.length)+' 个空白草稿；可在剧本管理中继续编辑。</p>':'';
     html+='<div class="pnl-hd"><span class="pnl-t">选择剧本</span></div>';
+    html+=draftNotice;
     if(!files.length){
       html+='<p class="pnl-empty">暂无剧本。</p>';
     }else{
@@ -140,6 +158,11 @@ if(window.tianming&&window.tianming.isDesktop){
     var r=await window.tianming.loadScenario(name);
     if(!r.success){toast('加载失败: '+(r.error||''));return;}
     var scn=r.data;
+    if(!_isPlayableScenario(scn)){
+      toast('此剧本还是空卷，请先到剧本管理中补完人物、势力或事件');
+      showScnSelect();
+      return;
+    }
     // 生成稳定ID：用文件名生成确定性id（避免重复）
     if(!scn.id){scn.id='scn_file_'+name.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'_');}
     // 兼容editor格式字段 → game格式字段
@@ -618,4 +641,3 @@ async function aiGenMapRegions(){
     }
   }catch(e){hideLoading();toast("\u5931\u8D25");}
 }
-

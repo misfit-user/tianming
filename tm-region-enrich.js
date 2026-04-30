@@ -13,6 +13,38 @@
 (function(global) {
   'use strict';
 
+  function _flattenDivisions(nodes, out) {
+    out = out || [];
+    if (!Array.isArray(nodes)) return out;
+    nodes.forEach(function(node) {
+      if (!node || typeof node !== 'object') return;
+      out.push(node);
+      _flattenDivisions(node.children || node.subs || node.divisions, out);
+    });
+    return out;
+  }
+
+  function _getRegionsArray(G) {
+    G = G || {};
+    if (global.IntegrationBridge && typeof global.IntegrationBridge.getDivisionArray === 'function') {
+      var bridged = global.IntegrationBridge.getDivisionArray(G);
+      if (bridged && bridged.length) return bridged;
+    }
+    if (Array.isArray(G.regions)) return G.regions;
+    if (G.regions && typeof G.regions === 'object') return Object.values(G.regions);
+    if (G.adminHierarchy && typeof G.adminHierarchy === 'object') {
+      var out = [];
+      Object.keys(G.adminHierarchy).forEach(function(key) {
+        var tree = G.adminHierarchy[key];
+        if (Array.isArray(tree)) _flattenDivisions(tree, out);
+        else if (tree && Array.isArray(tree.divisions)) _flattenDivisions(tree.divisions, out);
+        else if (tree && Array.isArray(tree.children)) _flattenDivisions(tree.children, out);
+      });
+      return out;
+    }
+    return [];
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   //  B1 · region 五字段扩展 + 三维承载力 + 羁縻/军镇
   // ═══════════════════════════════════════════════════════════════════
@@ -490,6 +522,8 @@
 
   /** 路引制度严格度 */
   function initTravelDocs(G) {
+    if (!G) return;
+    if (!G.population) G.population = {};
     if (!G.population.travelDocs) {
       var strictnessByDynasty = {
         '秦': 0.9, '汉': 0.6, '唐': 0.3, '宋': 0.4, '元': 0.8, '明': 0.85, '清': 0.9
@@ -539,7 +573,7 @@
     var G = global.GM;
     if (!G) return;
     // 扩 region 五字段
-    (G.regions || []).forEach(function(r) {
+    _getRegionsArray(G).forEach(function(r) {
       try { _enrichRegion(r); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseB] enrich:') : console.error('[phaseB] enrich:', e); }
     });
     // 若 population.byRegion 也要扩

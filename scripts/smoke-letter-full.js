@@ -6,6 +6,20 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
+let ASSERTS = 0;
+
+function assert(cond, msg) {
+  ASSERTS++;
+  if (!cond) throw new Error('[assert] ' + msg);
+}
+
+function assertEq(actual, expected, msg) {
+  assert(actual === expected, msg + ' expected=' + expected + ' actual=' + actual);
+}
+
+function assertOneOf(actual, expected, msg) {
+  assert(expected.indexOf(actual) >= 0, msg + ' expected one of ' + expected.join(',') + ' actual=' + actual);
+}
 
 function fakeEl() {
   const el = {
@@ -123,14 +137,18 @@ setTimeout(() => {
     const steps = sandbox.SettlementPipeline.list();
     const hasLetters = steps.some(s => s.id === 'letters');
     console.log('[A] pipeline.letters registered =', hasLetters ? '✓' : '✗ MISSING (=> bug)');
+    assert(hasLetters, 'letters settlement step must be registered');
 
     // 模拟 sendLetter：直接构造一封信，模拟玩家写信给孙承宗
     const sun = GM.chars.find(c => c.name === '孙承宗');
     console.log('[A] target 孙承宗:', sun ? sun.location : 'NOT FOUND');
+    assert(sun, 'Sun Chengzong target must exist');
 
     const dpv = sandbox._getDaysPerTurn();
     const days = sandbox.calcLetterDays(GM._capital, sun.location, 'normal');
     const deliveryTurns = Math.max(1, Math.ceil(days / dpv));
+    assert(Number.isFinite(dpv) && dpv > 0, 'days per turn must be positive');
+    assert(Number.isFinite(days) && days > 0, 'letter travel days must be positive');
     const letter = {
       id: 'L_test_A', from: '玩家', to: sun.name,
       fromLocation: GM._capital, toLocation: sun.location,
@@ -153,6 +171,8 @@ setTimeout(() => {
       endTurnLite();
       console.log(`[A] after endTurn ${i+1} → GM.turn=${GM.turn} status=${letter.status} reply=${(letter.reply||'').slice(0,30)}`);
     }
+    assertEq(letter.status, 'returned', 'player letter should return after enough turns');
+    assert((letter.reply || '').length > 0, 'player letter should have a reply');
 
     // ============ Path B: 模拟"NPC 来信" ============
     console.log('\n========== Path B: NPC 主动来信（_pendingNpcLetters） ==========');
@@ -165,16 +185,20 @@ setTimeout(() => {
     endTurnLite();
     const npcLt = GM.letters.find(l => l._npcInitiated && l.from === '袁崇焕');
     console.log('[B] after endTurn → npcLt =', npcLt ? `created status=${npcLt.status} deliveryTurn=${npcLt.deliveryTurn}` : 'NOT CREATED');
+    assert(npcLt, 'pending NPC letter should become an in-flight letter');
+    assertOneOf(npcLt.status, ['traveling', 'delivered', 'returned'], 'NPC letter should enter a live status');
     for (let i = 0; i < 3; i++) {
       endTurnLite();
       console.log(`[B] endTurn ${i+1}: status=${npcLt && npcLt.status}`);
     }
+    assertEq(npcLt.status, 'returned', 'NPC letter should arrive after enough turns');
 
     // ============ Path C: 模拟 sendLetter 真实调用 ============
     console.log('\n========== Path C: 通过 sendLetter() 真实创建 ==========');
-    sandbox.GM._pendingLetterTo = '熊廷弼';
-    const xiong = GM.chars.find(c => c.name === '熊廷弼');
-    console.log('[C] target 熊廷弼:', xiong ? xiong.location : 'NOT FOUND, skipping');
+    sandbox.GM._pendingLetterTo = '袁崇焕';
+    const xiong = GM.chars.find(c => c.name === '袁崇焕');
+    console.log('[C] target 袁崇焕:', xiong ? xiong.location : 'NOT FOUND');
+    assert(xiong, 'real sendLetter target must exist');
     if (xiong) {
       // sendLetter 读 textarea。我们 stub document.getElementById 返回带 value 的 fake 元素
       const oldGetEl = sandbox.document.getElementById;
@@ -194,15 +218,21 @@ setTimeout(() => {
       console.log('[C] letters before/after sendLetter:', before, '→', after);
       const newLt = GM.letters[GM.letters.length - 1];
       console.log('[C] new letter:', newLt ? `status=${newLt.status} to=${newLt.to} deliveryTurn=${newLt.deliveryTurn} (now=${GM.turn})` : 'none');
+      assertEq(after, before + 1, 'sendLetter should append one letter');
+      assert(newLt, 'sendLetter should create a letter object');
+      assertEq(newLt.to, xiong.name, 'sendLetter should target the selected person');
+      assertOneOf(newLt.status, ['traveling', 'delivered', 'returned'], 'sendLetter should create a live letter status');
       sandbox.document.getElementById = oldGetEl;
       if (newLt) {
         for (let i = 0; i < 3; i++) {
           endTurnLite();
           console.log(`[C] endTurn ${i+1}: status=${newLt.status} reply=${(newLt.reply||'').slice(0,30)}`);
         }
+        assertEq(newLt.status, 'returned', 'sendLetter-created letter should return after enough turns');
       }
     }
 
+    console.log('[smoke-letter-full] pass assertions=' + ASSERTS);
     process.exit(0);
   } catch (e) {
     console.error('SIMULATION ERROR:', e.message, '\n', e.stack);

@@ -439,25 +439,39 @@ GM.turnChanges = {
   map: []             // {name, changes:[{field, oldValue, newValue, reason}]}
 };
 
+function ensureTurnChangesState() {
+  if (typeof GM === 'undefined' || !GM) return null;
+  if (!GM.turnChanges || typeof GM.turnChanges !== 'object' || Array.isArray(GM.turnChanges)) {
+    GM.turnChanges = {};
+  }
+  ['variables', 'characters', 'factions', 'parties', 'classes', 'military', 'map'].forEach(function(key) {
+    if (!Array.isArray(GM.turnChanges[key])) GM.turnChanges[key] = [];
+  });
+  return GM.turnChanges;
+}
+
 /** @param {string} category @param {string} itemName @param {string} field @param {*} oldValue @param {*} newValue @param {string} reason */
 function recordChange(category, itemName, field, oldValue, newValue, reason) {
-  if (!GM.turnChanges[category]) GM.turnChanges[category] = [];
-  var item = GM.turnChanges[category].find(function(x) { return x.name === itemName; });
+  var turnChanges = ensureTurnChangesState();
+  if (!turnChanges) return;
+  if (!turnChanges[category]) turnChanges[category] = [];
+  var item = turnChanges[category].find(function(x) { return x.name === itemName; });
   if (!item) {
     item = { name: itemName, changes: [] };
-    GM.turnChanges[category].push(item);
+    turnChanges[category].push(item);
   }
   item.changes.push({ field: field, oldValue: oldValue, newValue: newValue, reason: reason });
 }
 
 // 记录变量变化（支持多个原因）
 function recordVarChange(varName, amount, type, desc) {
-  if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
-  var v = GM.turnChanges.variables.find(function(x) { return x.name === varName; });
+  var turnChanges = ensureTurnChangesState();
+  if (!turnChanges) return;
+  var v = turnChanges.variables.find(function(x) { return x.name === varName; });
   if (!v) {
     var currentVal = GM.vars[varName] ? GM.vars[varName].value : 0;
     v = { name: varName, oldValue: currentVal, newValue: currentVal, delta: 0, reasons: [] };
-    GM.turnChanges.variables.push(v);
+    turnChanges.variables.push(v);
   }
   v.newValue += amount;
   v.delta += amount;
@@ -1034,4 +1048,3 @@ function resetAIStats() {
   closeAIPerformance();
   openAIPerformance(); // 重新打开以刷新显示
 }
-

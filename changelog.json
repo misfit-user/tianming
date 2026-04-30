@@ -2,6 +2,18 @@
   "_comment": "天命·更新日志——新条目 unshift 到数组最前（由近及远）。格式：{date, module, title, items[]}；items 元素可为字符串或 {what, why}。",
   "entries": [
     {
+      "date": "2026-04-30",
+      "module": "邸报·过回合 AI 推演提速：调用次数不变·受控并行调度",
+      "title": "本次更新不削减任何过回合 AI 子调用，不改变推演内容与自由度，只把原本无硬依赖的等待链路改为受控并行。前置的三系统 NPC 预规划与长期行动摘要改为同时启动并在主推演前汇合；full 深度下的势力、经济、军事三项专项推演改为同批并行，数据一致性审核仍在三项全部完成后执行。默认并发为 3，并支持 P.conf.aiSubcallConcurrency 调整。",
+      "items": [
+        { "what": "tm-endturn-core.js：scThreeSystemsAI() 与 aiDigestLongTermActions() 从串行等待改为并行启动，随后在 _endTurn_aiInfer() 前统一 await。每个 promise 创建时立即挂 catch，避免前置任务先失败时产生未处理 rejection。", "why": "两者都是主推演前的上下文准备项，彼此没有直接依赖；并行后主推演仍能拿到两项结果，但玩家等待时间不再简单相加。" },
+        { "what": "tm-endturn-ai-infer.js：新增 _runSubcallBatch(label,tasks,limit)，用于受控并行运行一组现有 _runSubcall 任务。它保留原有深度判断、重试、计时、错误统计和 toast 逻辑。", "why": "不另起一套调用体系，避免绕开原来的失败隔离和统计。后续若继续并行化其它阶段，也可以复用同一个小调度器。" },
+        { "what": "full 深度专项层由 sc16 -> sc17 -> sc18 串行改为 parallel(sc16, sc17, sc18) -> sc_audit。sc16 势力推演、sc17 经济财政、sc18 军事态势仍按原条件全部调用，sc_audit 仍等待三者完成后再审。", "why": "三项都依赖 sc1 的结构化结果，但三者之间没有硬依赖；并行能缩短 wall-clock 时间，同时不牺牲一致性审核依据。" },
+        { "what": "P.conf.aiSubcallConcurrency 现在可以覆盖批处理并发数；未配置时默认 3。后续如果遇到模型限流或网络不稳，可以把并发降到 1 或 2。", "why": "默认提速，但保留安全阀。真实 API 环境下如果并发触发限流，可以不用回滚代码，只调配置。" },
+        { "what": "验证：node --check tm-endturn-core.js、node --check tm-endturn-ai-infer.js、node scripts\\verify-all.js 全部通过。verify-all 9 项全绿，headless smoke 维持 212 passed / 0 failed。", "why": "语法、引用、官方场景、信件、拦截反应链、廷议、headless smoke 和常朝 smoke 均未出现回归。" }
+      ]
+    },
+    {
       "date": "2026-04-29",
       "module": "邸报·廷议三修：参会范围限定·AI 兜底循环·续议机制",
       "title": "用户实测廷议反馈三大问题：(1) 廷议依旧不会自动调用 API·一进入立刻『四轮辩议毕』·12 人全『待定』；(2) 范围不对·张皇后/袁贵妃/客氏/田尔耕等不应参加廷议的人都进来了；(3) 玩家主动提起的廷议没『群臣讨论中』进度条·结束后无法判定立场继续展开。审计后定位：(a) `_ty3_phase1_openSeating` 三层兜底·第二第三次取消了在京/玩家势力/三品过滤·导致后宫外戚混入；(b) `_ty3_phase2_run` 4 轮全靠『按党派三班分坐』的 pickAllied/pickEnemy/pickArbiter 选人·当 proposerParty 为空（玩家自由议题）时 left/right 全空·arbiter 又只挑『中班党魁 + prestige≥70 老臣』·若中班全无党则三类全为 0 → 4 轮空跑直接 finalize；(c) 没有进度条 UI 也没有续议机制",

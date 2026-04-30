@@ -53,8 +53,14 @@
     faction_create: 'array', faction_succession: 'array', faction_dissolve: 'array',
     class_emerge: 'array', class_revolt: 'array', class_dissolve: 'array',
     // 行动类
-    npc_interactions: 'array', directive_compliance: 'array',
+    npc_actions: 'array', npc_interactions: 'array',
+    npc_letters: 'array', npc_correspondence: 'array', cultural_works: 'array',
+    directive_compliance: 'array',
     fiscal_adjustments: 'array', region_updates: 'array', project_updates: 'array',
+    edict_feedback: 'array', edict_lifecycle_update: 'array',
+    route_disruptions: 'array', foreshadowing: 'array', map_changes: 'object',
+    faction_interactions_advanced: 'array', npc_schemes: 'array',
+    hidden_moves: 'array', fengwen_snippets: 'array', call_court_works: 'array',
     anyPathChanges: 'array', events: 'array', changes: 'array',
     appointments: 'array', institutions: 'array', regions: 'array', localActions: 'array',
     // 其他
@@ -63,9 +69,7 @@
   };
 
   // ─── 已废弃字段（fallback） ───
-  var DEPRECATED_FIELDS_FALLBACK = {
-    npc_actions: 'npc_interactions（见 tm-endturn.js _dispatchNpcActionToPlayer）'
-  };
+  var DEPRECATED_FIELDS_FALLBACK = {};
 
   // ─── 关键子字段必填检查（fallback） ───
   var REQUIRED_SUBFIELDS_FALLBACK = {

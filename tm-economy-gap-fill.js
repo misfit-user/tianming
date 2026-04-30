@@ -110,6 +110,38 @@
     return pp > 0 ? (real / pp) : real;
   }
 
+  function _flattenDivisions(nodes, out) {
+    out = out || [];
+    if (!Array.isArray(nodes)) return out;
+    nodes.forEach(function(node) {
+      if (!node || typeof node !== 'object') return;
+      out.push(node);
+      _flattenDivisions(node.children || node.subs || node.divisions, out);
+    });
+    return out;
+  }
+
+  function _getRegionsArray(source) {
+    source = source || {};
+    if (global.IntegrationBridge && typeof global.IntegrationBridge.getDivisionArray === 'function') {
+      var bridged = global.IntegrationBridge.getDivisionArray(source);
+      if (bridged && bridged.length) return bridged;
+    }
+    if (Array.isArray(source.regions)) return source.regions;
+    if (source.regions && typeof source.regions === 'object') return Object.values(source.regions);
+    if (source.adminHierarchy && typeof source.adminHierarchy === 'object') {
+      var out = [];
+      Object.keys(source.adminHierarchy).forEach(function(key) {
+        var tree = source.adminHierarchy[key];
+        if (Array.isArray(tree)) _flattenDivisions(tree, out);
+        else if (tree && Array.isArray(tree.divisions)) _flattenDivisions(tree.divisions, out);
+        else if (tree && Array.isArray(tree.children)) _flattenDivisions(tree.children, out);
+      });
+      return out;
+    }
+    return [];
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   // #3 · 地域币值每回合动态（纸币接受度）
   // ═══════════════════════════════════════════════════════════════════
@@ -121,7 +153,7 @@
       if (iss.state === 'abolish' || iss.state === 'collapse') return;
       var byReg = iss.acceptanceByRegion || (iss.acceptanceByRegion = {});
       // 对每个区域微调
-      var regions = (global.GM.regions || []);
+      var regions = _getRegionsArray(global.GM);
       regions.forEach(function(reg) {
         if (!reg || !reg.id) return;
         var a = byReg[reg.id];
@@ -146,7 +178,7 @@
   function tickTradeArbitrage(ctx, mr) {
     var C = global.GM && global.GM.currency;
     if (!C || !C.market) return;
-    var regions = global.GM.regions;
+    var regions = _getRegionsArray(global.GM);
     if (!regions || !Array.isArray(regions) || regions.length < 2) return;
     // 每区生成本地粮价（若无）
     var rp = C.market.regionalPrices || (C.market.regionalPrices = {});
@@ -197,7 +229,8 @@
     if (!sc) return null;
     var depth = (sc.adminHierarchy && sc.adminHierarchy.depth) || 3;
     var levelNames = (sc.adminHierarchy && sc.adminHierarchy.levelNames) || ['道','州','县'];
-    var regions = sc.regions || (global.GM && global.GM.regions) || [];
+    var regions = _getRegionsArray(sc);
+    if (!regions.length && global.GM) regions = _getRegionsArray(global.GM);
     // 建立 id → level 映射
     var byId = {};
     regions.forEach(function(r) { if (r && r.id) byId[r.id] = r; });
@@ -649,7 +682,7 @@
     if (!G || !G.fiscal || !G.fiscal.regions) return { ok: false };
     var rf = G.fiscal.regions[regionId];
     if (!rf) return { ok: false };
-    var region = (G.regions || []).find(function(r) { return r.id === regionId; });
+    var region = _getRegionsArray(G).find(function(r) { return r.id === regionId; });
     var realAmount = Math.min(amount, (rf.ledgers.money || 0) + amount * 0.5); // 最多搜刮到本地留存 + 强拿 50%
     rf.ledgers.money = Math.max(0, rf.ledgers.money - realAmount);
     if (G.guoku) G.guoku.money = (G.guoku.money || 0) + realAmount * 0.8; // 20% 损耗

@@ -3207,6 +3207,26 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
       }
 
+      async function _runSubcallBatch(label, tasks, limit) {
+        if (!Array.isArray(tasks) || tasks.length === 0) return;
+        var _confLimit = parseInt(P.conf && P.conf.aiSubcallConcurrency, 10);
+        var _limit = _confLimit > 0 ? _confLimit : (limit || 3);
+        _limit = Math.max(1, Math.min(_limit, tasks.length));
+        var _cursor = 0;
+        var _started = Date.now();
+        async function _worker() {
+          while (_cursor < tasks.length) {
+            var _idx = _cursor++;
+            var _task = tasks[_idx];
+            if (typeof _task === 'function') await _task();
+          }
+        }
+        var _workers = [];
+        for (var _i = 0; _i < _limit; _i++) _workers.push(_worker());
+        await Promise.all(_workers);
+        _dbg('[SubcallBatch] ' + label + ' finished ' + tasks.length + ' tasks in ' + ((Date.now() - _started) / 1000).toFixed(1) + 's, concurrency=' + _limit);
+      }
+
       // --- 预处理：等待上回合 post-turn 任务 + 同步本地记忆保鲜 ---
       try {
         if (typeof _awaitPostTurnJobs === 'function') await _awaitPostTurnJobs();
@@ -9986,7 +10006,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       }); // end SC_MEMWRITE
 
       // --- Sub-call 1.6: 势力自主推演 --- [full only]
-      await _runSubcall('sc16', '势力推演', 'full', async function() {
+      await _runSubcallBatch('full-specialty', [
+      function(){ return _runSubcall('sc16', '势力推演', 'full', async function() {
       showLoading("\u52BF\u529B\u81EA\u4E3B\u63A8\u6F14",63);
       try {
         var tp16 = '\u57FA\u4E8E\u672C\u56DE\u5408\u5C40\u52BF\uFF0C\u63A8\u6F14\u6BCF\u4E2A\u975E\u73A9\u5BB6\u52BF\u529B\u7684\u81EA\u4E3B\u884C\u52A8\uFF1A\n';
@@ -10037,10 +10058,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
       } catch(e16) { _dbg('[Faction Auto] fail:', e16); throw e16; }
-      }); // end Sub-call 1.6 _runSubcall
+      }); }, // end Sub-call 1.6 _runSubcall
 
       // --- Sub-call 1.7: 经济财政专项推演 --- [full only]
-      await _runSubcall('sc17', '经济财政', 'full', async function() {
+      function(){ return _runSubcall('sc17', '经济财政', 'full', async function() {
       showLoading("\u7ECF\u6D4E\u8D22\u653F\u63A8\u6F14",65);
       try {
         var tp17 = '\u672C\u56DE\u5408\u7ECF\u6D4E\u8D22\u653F\u72B6\u51B5\uFF1A\n';
@@ -10069,10 +10090,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
       } catch(e17) { _dbg('[Econ] fail:', e17); throw e17; }
-      }); // end Sub-call 1.7 _runSubcall
+      }); }, // end Sub-call 1.7 _runSubcall
 
       // --- Sub-call 1.8: 军事态势专项推演 --- [full only]
-      await _runSubcall('sc18', '军事态势', 'full', async function() {
+      function(){ return _runSubcall('sc18', '军事态势', 'full', async function() {
       showLoading("\u519B\u4E8B\u6001\u52BF\u63A8\u6F14",67);
       try {
         var tp18 = '\u672C\u56DE\u5408\u519B\u4E8B\u6001\u52BF\uFF1A\n';
@@ -10150,7 +10171,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
       } catch(e18) { _dbg('[Military] fail:', e18); throw e18; }
-      }); // end Sub-call 1.8 _runSubcall
+      }); } // end Sub-call 1.8 _runSubcall
+      ], 3);
 
       // --- SC_CONSISTENCY_AUDIT: 深化数据一致性审核（方向7扩展·S3） ---
       // 扫描 SC16/17/18 彼此的输出是否冲突·auto-patch 或 rerun
@@ -11400,4 +11422,3 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
 // - _showPostTurnCourtBanner / _updatePostTurnCourtBanner / _hidePostTurnCourtBanner
 // - _onPostTurnCourtEnd (async)
 // ═══════════════════════════════════════════════════════
-

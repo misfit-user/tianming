@@ -12,6 +12,24 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
+let ASSERTS = 0;
+
+function assert(cond, msg) {
+  ASSERTS++;
+  if (!cond) throw new Error('[assert] ' + msg);
+}
+
+function assertEq(actual, expected, msg) {
+  assert(actual === expected, msg + ' expected=' + expected + ' actual=' + actual);
+}
+
+function assertOneOf(actual, expected, msg) {
+  assert(expected.indexOf(actual) >= 0, msg + ' expected one of ' + expected.join(',') + ' actual=' + actual);
+}
+
+function assertIncludes(text, needle, msg) {
+  assert(String(text || '').indexOf(needle) >= 0, msg + ' expected to include=' + needle + ' actual=' + text);
+}
 
 function fakeEl() {
   return {classList:{add(){},remove(){},toggle(){},contains(){return false}},style:{},appendChild(c){return c},removeChild(c){return c},setAttribute(){},getAttribute(){return null},addEventListener(){},removeEventListener(){},querySelector(){return fakeEl()},querySelectorAll(){return[]},children:[],childNodes:[],innerHTML:'',textContent:'',value:'',dataset:{}};
@@ -45,6 +63,7 @@ try { vm.runInContext(fs.readFileSync(path.join(ROOT,'scenarios/tianqi7-1627.js'
 setTimeout(() => {
   try {
     const sc = sandbox.P.scenarios.find(s=>s.id==='sc-tianqi7-1627');
+    assert(sc, 'official runtime scenario must be registered');
     const sid = sc.id;
     const GM = sandbox.GM = {
       running:true, sid, turn:5, busy:false,
@@ -62,6 +81,7 @@ setTimeout(() => {
 
     // 把后金设为强敌·让 hostileFacs 包含
     const houjin = GM.facs.find(f=>f.name && f.name.indexOf('后金')>=0);
+    assert(houjin, 'hostile Houjin faction must exist');
     if (houjin) {
       houjin.playerRelation = -100;
       if (!Array.isArray(houjin.territories)) houjin.territories = [];
@@ -71,6 +91,7 @@ setTimeout(() => {
 
     // 模拟一封玩家→孙承宗的 formal_edict 被截获
     const sun = GM.chars.find(c=>c.name==='孙承宗');
+    assert(sun, 'intercept target Sun Chengzong must exist');
     const interceptedLetter = {
       id: 'lt_intercept_test',
       from: '玩家', to: sun.name,
@@ -92,6 +113,14 @@ setTimeout(() => {
 
     // 强制截获
     sandbox._ltDoIntercept(interceptedLetter, hostileFacs);
+    assertOneOf(interceptedLetter.status, ['intercepted', 'intercepted_forging'], 'intercept should set an intercepted status');
+    assert(interceptedLetter.interceptedBy, 'intercept should record interceptor');
+    assertEq(interceptedLetter._interceptedTurn, GM.turn, 'intercept should record current turn');
+    assert(GM._courierStatus[interceptedLetter.id], 'intercept should record courier status');
+    assertEq(GM._undeliveredLetters.length - undelBefore, 1, 'intercept should add undelivered order');
+    assertEq(GM._interceptedIntel.length - intelBefore, 1, 'intercept should add intercepted intel');
+    assertEq(GM.qijuHistory.length - qijuBefore, 1, 'intercept should write qiju record');
+    assertEq(GM._chronicle.length - chronBefore, 1, 'formal edict intercept should write chronicle record');
 
     console.log('  letter.status:', interceptedLetter.status);
     console.log('  letter.interceptedBy:', interceptedLetter.interceptedBy);
@@ -116,10 +145,14 @@ setTimeout(() => {
     console.log('  letter pre-settle: status=' + interceptedLetter.status + ' _interceptedTurn=' + interceptedLetter._interceptedTurn + ' _npcInitiated=' + interceptedLetter._npcInitiated + ' _followupSent=' + interceptedLetter._followupSent + ' _interceptedDay=' + interceptedLetter._interceptedDay);
     console.log('  letters 总数:', GM.letters.length, '·nowDay:', _nowD);
     // 直接调 _settleLettersAndTravel·避免 SubTickRunner 中其他步骤干扰
-    try { sandbox._settleLettersAndTravel(); console.log('  settle 跑完无异常'); }
-    catch(e) { console.log('  settle 异常:', e.message); }
+    sandbox._settleLettersAndTravel();
+    console.log('  settle 跑完无异常');
     const followup = GM._pendingNpcLetters.find(nl => nl._triggeredByIntercept);
     const inflighted = GM.letters.find(l => l._npcInitiated && l.from === sun.name);
+    assert(followup, 'intercepted outbound order should create NPC follow-up');
+    assertEq(interceptedLetter._followupSent, true, 'intercepted letter should be marked follow-up sent');
+    assertEq(followup.from, sun.name, 'follow-up should come from original target');
+    assertEq(followup.type, 'plea', 'follow-up should be a plea');
     console.log('  GM._pendingNpcLetters 续问条目:', followup ? '✓ 存在' : '✗ 缺失');
     console.log('  letter._followupSent:', interceptedLetter._followupSent);
     if (followup) {
@@ -136,6 +169,12 @@ setTimeout(() => {
     const afterLetters = GM.letters.length;
     console.log('  letters +' + (afterLetters - beforeLetters) + ' (应 1)');
     const resent = GM.letters.find(l => l._resentFrom === interceptedLetter.id);
+    assertEq(afterLetters, beforeLetters + 1, 'resend should append one replacement letter');
+    assert(resent, 'resend should create replacement letter');
+    assertEq(resent._sendMode, 'multi_courier', 'resend should preserve selected mode');
+    assertEq(resent.urgency, 'extreme', 'multi-courier resend should be extreme urgency');
+    assertEq(resent.status, 'traveling', 'resent letter should enter traveling status');
+    assertEq(interceptedLetter._resendIssued, true, 'original letter should be marked resend issued');
     if (resent) {
       console.log('  重发信 _sendMode:', resent._sendMode);
       console.log('  重发信 urgency:', resent.urgency);
@@ -148,6 +187,7 @@ setTimeout(() => {
     const cnt1 = GM.letters.length;
     sandbox._ltResend(interceptedLetter.id, 'secret_agent');
     console.log('  letters 数量是否未变:', GM.letters.length === cnt1, '(应 true)');
+    assertEq(GM.letters.length, cnt1, 'second resend should be rejected');
 
     console.log('\n========== 反应链 7：续问完整生命周期 ==========');
     GM.letters = []; GM._pendingNpcLetters = [];
@@ -162,24 +202,32 @@ setTimeout(() => {
       letterType:'formal_edict'
     });
     GM.turn = 2;
-    try { sandbox._settleLettersAndTravel(); } catch(e) { console.log('  T2 settle 异常:', e.message); }
+    sandbox._settleLettersAndTravel();
     console.log('  T2 settle 后·pendingNpcLetters:', GM._pendingNpcLetters.length, '·letters:', GM.letters.length);
+    assertEq(GM._pendingNpcLetters.length, 1, 'old intercepted letter should create one follow-up pending letter');
     // 把 pending NPC 信注入 letters（_processPendingNpcLetters 由 settle 内部完成）
     GM.turn = 3;
-    try { sandbox._settleLettersAndTravel(); } catch(e) { console.log('  T3 settle 异常:', e.message); }
+    sandbox._settleLettersAndTravel();
     let followup2 = GM.letters.find(l => l._npcInitiated && l.from === sun.name);
     console.log('  T3 settle 后·NPC 续问信入队 letters·status:', followup2 && followup2.status, '·deliveryTurn:', followup2 && followup2.deliveryTurn);
+    assert(followup2, 'pending follow-up should be converted into a letter');
+    assertEq(followup2.status, 'traveling', 'converted follow-up should start traveling');
     GM.turn = 5;
-    try { sandbox._settleLettersAndTravel(); } catch(e) { console.log('  T5 settle 异常:', e.message); }
+    sandbox._settleLettersAndTravel();
     followup2 = GM.letters.find(l => l._npcInitiated && l.from === sun.name);
     console.log('  T5 settle 后·续问信 status:', followup2 && followup2.status);
+    assertEq(followup2.status, 'returned', 'follow-up letter should return by T5');
 
     console.log('\n========== 反应链 8：UI 状态文本 显示截获方 ==========');
     const txt1 = sandbox._ltGetStatusText({status:'intercepted', interceptedBy:'后金'});
     console.log('  intercepted 文本:', txt1, '(应含"后金")');
+    assertIncludes(txt1, '后金', 'intercepted status text should show interceptor');
     const txt2 = sandbox._ltGetStatusText({status:'intercepted_forging', interceptedBy:'察哈尔'});
     console.log('  intercepted_forging 文本:', txt2, '(应含"察哈尔" + "存疑")');
+    assertIncludes(txt2, '察哈尔', 'forged-reply status text should show interceptor');
+    assertIncludes(txt2, '存疑', 'forged-reply status text should show suspicion');
 
+    console.log('[smoke-letter-intercept-react] pass assertions=' + ASSERTS);
     process.exit(0);
   } catch (e) {
     console.error('SIM ERROR:', e.message, '\n', e.stack);

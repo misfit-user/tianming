@@ -991,13 +991,9 @@
       G._turnReport.push({ type:'event', category:e.category, text:e.text, turn:G.turn||0 });
     });
 
-    // 6. NPC 行动 ——【已废弃】
-    // 现有 tm-endturn.js 的 p1.npc_interactions + _dispatchNpcActionToPlayer
-    // 已负责 奏疏/问对/鸿雁/起居注/风闻 全部路由。此处不再重复处理，
-    // 避免 AI 产两套字段造成混乱。若 aiOutput.npc_actions 误存在，仅作日志。
-    if (Array.isArray(aiOutput.npc_actions) && aiOutput.npc_actions.length > 0) {
-      console.warn('[ai-applier] npc_actions 已废弃，请使用 p1.npc_interactions schema（见 tm-endturn.js _dispatchNpcActionToPlayer）。本次忽略 ' + aiOutput.npc_actions.length + ' 条。');
-    }
+    // 6. NPC 行动
+    // p1.npc_actions 仍由 tm-endturn-ai-infer 的专门通道执行；这里不重复落盘，
+    // 但也不再把它标成废弃，避免 validator/applier 与 prompt 消费方互相打架。
 
     // 7. NPC 关系变化
     (aiOutput.relations || []).forEach(function(r) {

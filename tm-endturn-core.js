@@ -140,20 +140,29 @@ async function _endTurnCore(){
   } catch(_tseE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_tseE, 'endTurn] 三系统更新失败') : console.warn('[endTurn] 三系统更新失败', _tseE); }
 
   // Phase 1.75·NPC AI 决策器(每 3 回合·批量势力/党派/将领预规划)
+  var _preThreeSystemsP = null;
+  var _preLongTermP = null;
   try {
     if (typeof scThreeSystemsAI === 'function') {
-      await scThreeSystemsAI();
+      _preThreeSystemsP = Promise.resolve(scThreeSystemsAI()).catch(function(e){
+        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] pre three systems AI') : console.warn('[endTurn] pre three systems AI failed', e);
+      });
     }
   } catch(_nDE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_nDE, 'endTurn] NPC 决策器失败') : console.warn('[endTurn] NPC 决策器失败', _nDE); }
 
   // Phase 1.8·长期行动摘要 AI 调用（过回合前读取全部长期诏书+编年·防长期项被推演遗忘）
   try {
     if (typeof aiDigestLongTermActions === 'function' && P.ai && P.ai.key) {
-      await aiDigestLongTermActions();
+      _preLongTermP = Promise.resolve(aiDigestLongTermActions()).catch(function(e){
+        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] long-term digest') : console.warn('[endTurn] long-term digest failed', e);
+      });
     }
   } catch(_ltdE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ltdE, 'endTurn] 长期摘要失败') : console.warn('[endTurn] 长期摘要失败', _ltdE); }
 
   // Phase 2: AI 推演
+  try { if (_preThreeSystemsP) await _preThreeSystemsP; } catch(_nDE2) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_nDE2, 'endTurn] pre three systems AI') : console.warn('[endTurn] pre three systems AI failed', _nDE2); }
+  try { if (_preLongTermP) await _preLongTermP; } catch(_ltdE2) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ltdE2, 'endTurn] long-term digest') : console.warn('[endTurn] long-term digest failed', _ltdE2); }
+
   var aiResult = await _endTurn_aiInfer(edicts, xinglu, memRes, oldVars);
   var shizhengji=aiResult.shizhengji, zhengwen=aiResult.zhengwen, playerStatus=aiResult.playerStatus, playerInner=aiResult.playerInner||'', turnSummary=aiResult.turnSummary||'';
   // 新增：实录、时政记标题/总结、人事变动、后人戏说

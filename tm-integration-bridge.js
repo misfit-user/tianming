@@ -82,6 +82,36 @@
     return out;
   }
 
+  // Unified admin/fiscal division reader. Use this for population, fiscal,
+  // minxin, corruption, and local-governance systems. Map code should keep
+  // using P.map.regions instead.
+  function getDivisionArray(source, opts) {
+    opts = opts || {};
+    if (!source) return [];
+    if (Array.isArray(source)) return source.slice();
+    var adminHierarchy = source.adminHierarchy || source;
+    if (adminHierarchy && typeof adminHierarchy === 'object' && !Array.isArray(adminHierarchy)) {
+      if (Array.isArray(adminHierarchy.divisions)) {
+        var wrapped = { player: adminHierarchy };
+        if (opts.mode === 'top') return getTopLevelDivisions(wrapped, 'player').slice();
+        if (opts.mode === 'leaf') return getLeafDivisions(wrapped, 'player').slice();
+        return flattenDivisions(wrapped).map(function(x) { return x.node; });
+      }
+      var hasHierarchy = Object.keys(adminHierarchy).some(function(k) {
+        var fac = adminHierarchy[k];
+        return fac && Array.isArray(fac.divisions);
+      });
+      if (hasHierarchy) {
+        if (opts.mode === 'top') return getTopLevelDivisions(adminHierarchy, opts.factionId || 'player').slice();
+        if (opts.mode === 'leaf') return getLeafDivisions(adminHierarchy, opts.factionId || 'player').slice();
+        return flattenDivisions(adminHierarchy).map(function(x) { return x.node; });
+      }
+    }
+    if (Array.isArray(source.regions)) return source.regions.slice();
+    if (source.regions && typeof source.regions === 'object') return Object.values(source.regions);
+    return [];
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   //  每个区划补齐真数据字段
   // ═══════════════════════════════════════════════════════════════════
@@ -693,6 +723,9 @@
     tick: tick,
     flattenDivisions: flattenDivisions,
     getTopLevelDivisions: getTopLevelDivisions,
+    getLeafDivisions: getLeafDivisions,
+    getAllDivisions: getAllDivisions,
+    getDivisionArray: getDivisionArray,
     ensureDivisionData: _ensureDivisionData,
     aggregateRegionsToVariables: aggregateRegionsToVariables,
     syncDivisionFromByRegion: syncDivisionFromByRegion,

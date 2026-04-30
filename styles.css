@@ -1942,6 +1942,11 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 .hy-left-title::before,.hy-left-title::after{content:"❖";color:var(--gold-300,#c9a85f);font-size:13px;margin:0 4px;opacity:0.7;}
 .hy-multi-btn{margin-left:auto;font-size:14.5px;padding:3px 10px;background:rgba(184,154,83,0.1);border:1px solid var(--gold-d);color:var(--color-foreground);border-radius:2px;font-family:var(--font-serif);letter-spacing:0.1em;cursor:pointer;}
 .hy-multi-btn.active{background:linear-gradient(to bottom,var(--vermillion-400),var(--vermillion-600));color:#f4eadd;border-color:var(--vermillion-600);}
+.hy-search-wrap{position:relative;margin:2px 2px 4px;}
+.hy-search-wrap::before{content:"⌕";position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--gold-300,#c9a85f);font-size:13px;pointer-events:none;opacity:0.7;}
+.hy-search{width:100%;padding:6px 10px 6px 28px;background:rgba(26,20,16,0.55);border:1px solid rgba(184,154,83,0.3);color:var(--color-foreground);font-family:var(--font-song,"SimSun");font-size:13px;letter-spacing:0.05em;border-radius:2px;outline:none;box-sizing:border-box;}
+.hy-search::placeholder{color:rgba(184,154,83,0.45);}
+.hy-search:focus{border-color:var(--gold-400);box-shadow:0 0 0 1px rgba(184,154,83,0.22);background:rgba(26,20,16,0.7);}
 /* 地域分组 */
 .hy-group-sep{display:flex;align-items:center;gap:8px;margin:10px 4px 4px;font-family:var(--font-serif);font-size:14.5px;color:var(--gold-300,#c9a85f);letter-spacing:0.35em;opacity:0.82;}
 .hy-group-sep::before,.hy-group-sep::after{content:"";flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(184,154,83,0.3) 20%,rgba(184,154,83,0.3) 80%,transparent);}

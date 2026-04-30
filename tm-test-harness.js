@@ -108,7 +108,10 @@
           toEqual: function(expected) { if (_deepEq(actual, expected)) fail('expected !deepEq ' + _repr(expected)); },
           toBeTruthy: function() { if (actual) fail('expected not truthy'); },
           toBeNull: function() { if (actual === null) fail('expected not null'); },
-          toBeUndefined: function() { if (typeof actual === 'undefined') fail('expected not undefined'); }
+          toBeUndefined: function() { if (typeof actual === 'undefined') fail('expected not undefined'); },
+          toContain: function(item) {
+            if (actual && actual.indexOf && actual.indexOf(item) >= 0) fail('expected not to contain ' + _repr(item));
+          }
         };
       })()
     };
@@ -216,9 +219,20 @@
       expect(fields).toContain('admin_division_updates');
       expect(fields).toContain('narrative');
     });
-    it('已废弃字段被标记', function(){
+    it('npc_actions 作为兼容字段保留', function(){
       var dep = TM_AI_SCHEMA.toDeprecatedFields();
-      expect(dep).toHaveProperty('npc_actions');
+      expect(dep.npc_actions).toBeUndefined();
+      expect(TM_AI_SCHEMA.listFields()).toContain('npc_actions');
+    });
+    it('核心回合字段声明消费方', function(){
+      expect(typeof TM_AI_SCHEMA.toFieldOwnership).toBe('function');
+      var owners = TM_AI_SCHEMA.toFieldOwnership();
+      expect(owners.npc_actions.consumedBy).toContain('endturn-ai-infer');
+      expect(owners.fiscal_adjustments.consumedBy).toContain('applier:1136');
+      expect(owners.office_assignments.consumedBy).toContain('applier:1004');
+      expect(owners.map_changes.consumedBy).toContain('map-integration');
+      expect(owners.npc_letters.consumedBy).toContain('endturn-ai-infer:sc1b');
+      expect(owners.npc_schemes.consumedBy).toContain('endturn-ai-infer:sc1c');
     });
     it('required 子字段包含 character_deaths.name', function(){
       var req = TM_AI_SCHEMA.toRequiredSubfields();
@@ -236,9 +250,9 @@
       var r = TM.validateAIOutput({}, 'test-empty');
       expect(r.ok).toBeTruthy();
     });
-    it('捕获已废弃字段 npc_actions', function(){
-      var r = TM.validateAIOutput({ npc_actions: [{ name: 'x' }] }, 'test-deprecated');
-      expect(r.warnings.length).toBeGreaterThan(0);
+    it('npc_actions 不再触发废弃警告', function(){
+      var r = TM.validateAIOutput({ npc_actions: [{ name: 'x', action: '上疏' }] }, 'test-npc-actions');
+      expect(r.warnings.length).toBe(0);
     });
     it('捕获 character_deaths 缺 name', function(){
       var r = TM.validateAIOutput({ character_deaths: [{ reason: '病亡' }] }, 'test-missing-name');
@@ -1146,11 +1160,11 @@
     });
     it('添加新全局能被检测', function(){
       TM.guard.snapshot();
-      window.__tm_guard_test_unique_xyz_123 = function(){};
+      window.tm_guard_test_unique_xyz_123 = function(){};
       var d = TM.guard.diffSince();
-      var found = d.added.some(function(a){ return a.key === '__tm_guard_test_unique_xyz_123'; });
+      var found = d.added.some(function(a){ return a.key === 'tm_guard_test_unique_xyz_123'; });
       expect(found).toBeTruthy();
-      delete window.__tm_guard_test_unique_xyz_123;
+      delete window.tm_guard_test_unique_xyz_123;
     });
     it('report 返回统计', function(){
       var r = TM.guard.report();
@@ -1210,7 +1224,7 @@
       expect(TM.Lizhi).toBeDefined();
       expect(TM.Guoku).toBeDefined();
       expect(TM.Neitang).toBeDefined();
-      expect(TM.Huji).toBeDefined();
+      expect(TM.HujiEngine).toBeDefined();
       expect(TM.ChangeQueue).toBeDefined();
     });
     it('Economy.list() 返回数组', function(){

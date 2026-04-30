@@ -1,28 +1,32 @@
 #!/usr/bin/env node
-// scripts/verify-all.js — 一键跑齐 4 项安全检查 (R149)
+// scripts/verify-all.js - run all local safety gates.
 //
-// 顺序：syntax-check → ref-check → find-orphans → headless-smoke
-// 任一失败即非零退出·成功后打印汇总 baseline
+// Order:
+//   syntax-check -> ref-check -> find-orphans -> official-scenario-smoke
+//   -> smoke-letter-full -> smoke-letter-intercept-react
+//   -> smoke-tinyi-fix -> headless-smoke -> smoke-chaoyi-v3
 //
-// 用法：node scripts/verify-all.js
+// Usage:
+//   node scripts/verify-all.js
 //
-// 与逐个跑的区别：
-//   · 单输出·避免拷贝 4 条命令
-//   · 失败立即停止 (fail-fast)·节省 smoke 的 30s
-//   · 末尾汇总 baseline 行·便于 commit message 引用
+// This is fail-fast and prints a short baseline summary at the end.
 
 'use strict';
 const cp = require('child_process');
 const path = require('path');
 const SCRIPTS = path.resolve(__dirname);
 
-// smoke 已知 baseline·允许改善但不允许退步 (R148 把 207/4 推进到 208/3)
-const SMOKE_BASELINE = { minPass: 207, maxFail: 4 };
+// Current clean baseline: 212 passing tests, 0 real failures.
+const SMOKE_BASELINE = { minPass: 212, maxFail: 0 };
 
 const checks = [
   { name: 'syntax-check', file: 'syntax-check.js',     estSec: 17, expectExit: 0 },
   { name: 'ref-check',    file: 'ref-check.js',        estSec: 1,  expectExit: 0 },
   { name: 'find-orphans', file: 'find-orphans.js',     estSec: 1,  expectExit: 0 },
+  { name: 'official-scenario', file: 'official-scenario-smoke.js', estSec: 1, expectExit: 0 },
+  { name: 'letter-full',  file: 'smoke-letter-full.js', estSec: 1,  expectExit: 0 },
+  { name: 'letter-intercept', file: 'smoke-letter-intercept-react.js', estSec: 1, expectExit: 0 },
+  { name: 'tinyi-fix',    file: 'smoke-tinyi-fix.js',  estSec: 1,  expectExit: 0 },
   { name: 'smoke',        file: 'headless-smoke.js',   estSec: 30, expectExit: null },   // 用 baseline 判断
   { name: 'cc3-smoke',    file: 'smoke-chaoyi-v3.js',  estSec: 1,  expectExit: 0 }       // 常朝 v3 纯逻辑 smoke
 ];
@@ -64,7 +68,7 @@ for (const c of checks) {
 }
 
 // 汇总末尾 baseline 行
-console.log('\n[verify-all] 全部 5 项通过 · 总耗时 ' + totalSec.toFixed(1) + 's\n');
+console.log('\n[verify-all] 全部 ' + checks.length + ' 项通过 · 总耗时 ' + totalSec.toFixed(1) + 's\n');
 for (const r of results) {
   // 抽 stdout 里关键 1 行
   const lines = (r.stdout || '').split('\n').filter(Boolean);

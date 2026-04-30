@@ -37,3 +37,10 @@ detect_globals.js
 scan.sh
 final_scan.sh
 scan_globals.js
+tools/debug-officetree.js
+tools/push-fiscal-fix.js
+tools/smoke-1627-fiscal.js
+tools/smoke-1627-runtime.js
+tools/smoke-fiscal-three-numbers.js
+tools/smoke-pre-endturn-save.js
+tools/smoke-save-name-and-double.js

@@ -2,7 +2,7 @@
 
 ## 状态
 
-此目录默认为空（不入仓库）·避免 110MB 模型污染 git 历史。
+此目录默认为空（不入仓库）·避免 23 MB 模型污染 git 历史。
 
 ## 预下载（Electron 打包前）
 
@@ -25,7 +25,7 @@ node tools/download-bge-model.js
 ```
 vendor/models/Xenova/bge-small-zh-v1.5/
 ├── onnx/
-│   └── model_quantized.onnx     ~96 MB
+│   └── model_quantized.onnx     ~23 MB
 ├── tokenizer.json                ~1 MB
 ├── tokenizer_config.json
 ├── config.json

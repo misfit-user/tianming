@@ -409,7 +409,7 @@
         alert('已关闭');
       }
     } else {
-      lines.push('当前未启用·点确定启用并加载模型（约 96MB·首次需 1-5 分钟）·点取消保留关闭。');
+      lines.push('当前未启用·点确定启用并加载模型（约 23 MB·首次需 1-5 分钟）·点取消保留关闭。');
       lines.push('Electron 端若已用 npm run prepare-vendor 预下载·秒开。');
       if (!confirm(lines.join('\n'))) return;
       SemanticRecall.enable();

@@ -3,6 +3,49 @@
   "entries": [
     {
       "date": "2026-04-30",
+      "module": "邸报·Phase 11 KokoroMemo 二期借鉴：诏令冲突链 + 完整审核收件箱 + 文档纠正",
+      "title": "用户反馈三件事：(1) 模型实测 23.4MB 而非估算 110MB·全文档要纠正 (2) KokoroMemo B/C 全部实施 (3) 二轮 KokoroMemo 调研找剩余借鉴。本批已落地 4 项：P11.0 调度 1 周后回归测试·P11.1 7 文件 110/96MB 批量改 23MB·P11.2B 诏令冲突链(supersedes/contradicts/continues/elaborates 4 边类型)·P11.2C-full 完整审核收件箱(pending → approved/rejected 双相状态机)。P11.3 二轮调研后台跑·结果下批落地。",
+      "items": [
+        {
+          "what": "【P11.1 文档纠正】Node 批量替换 7 文件中所有 96 MB / 110 MB → 23 MB：tm-memory-ui.js（玩家弹窗启用提示）·tm-semantic-recall.js（4 处注释）·tools/download-bge-model.js（说明 + 时间从 1-10 分钟改为 30-60 秒）·.gitignore（注释）·package.json（_prepare_vendor 描述）·vendor/models/README.md（结构图 96MB 改 23MB）·vendor/transformers/README.md。",
+          "why": "bge-small-zh-v1.5 量化版（INT8 onnx）实测仅 23 MB·之前估算的 96MB 是 FP32 全精度·量化对嵌入精度损失可忽略但体积小 4 倍。文档应反映实际值避免误导用户预期下载耗时。"
+        },
+        {
+          "what": "【P11.2B 诏令冲突链·KokoroMemo graph.py 范式】sc1 schema 加 edict_relations:[{from,to,type,reason}]·type=supersedes/contradicts/continues/elaborates 四边类型（KokoroMemo 8 边缩为 4 种核心）。AI 在 sc1 输出时自动识别本回合诏令与历史诏令的关联·消费端 push 到 GM._edictRelations[]·LRU 100。",
+          "why": "把\"新政废旧政\"/\"内朝旨与外朝诏冲突\"/\"细则落实\"等隐性关系显式化·让 AI 在叙事中保持因果连贯。原本 chars[].history 和 cellHistory 仅记修改·没有\"为什么这两条诏令冲突\"的语义。"
+        },
+        {
+          "what": "【P11.2B 注入端】tp1 prompt 加\"诏令关系图\"段·近 15 条 + 4 边类型说明（覆盖/冲突/接续/细则）。提示 AI：\"本回合若颁新政与上述任一构成新关系·须在 edict_relations 输出补充·不得回滚或忽视已有关系\"。",
+          "why": "AI 看到上回合的诏令关系图·下回合叙事自然延续这些关系·而非每回合单独看待新诏（\"新政从天而降\"幻觉）。"
+        },
+        {
+          "what": "【P11.2C-full 完整审核收件箱·KokoroMemo review_policy.py 范式】sc_consolidate 输出条目改三状态：pending（高风险·需验证）/ approved（低风险·确定事实）/ rejected（被证伪）。低风险条目直接 approved·高风险标 pending + _pendingTurn 时戳。每条目带 _status / _risk / _pendingTurn / _reviewedTurn 元字段。",
+          "why": "KokoroMemo 启发式 risk_level + LLM auto_review 范式的工程化简化。低风险条目走快速路径·高风险条目走\"待验证\"轨道·避免\"AI 一回合编造·下回合当真\"的幻觉传播。"
+        },
+        {
+          "what": "【P11.2C-full 自动验证逻辑】sc1 链路开头加自动 review 块：遍历 GM._consolidatedMemory[]·对 age >= 2 回合且 _status==pending 的 key_threads / unresolved_tensions / next_turn_focus 三类条目·从 thread/text 中抽 1-3 个关键词（>=2 字）·对照近 3 回合 shijiHistory.shizhengji + shilu + zhengwen·命中 → approved·未命中 → rejected。统计 approvedCnt / rejectedCnt 入 _dbg。",
+          "why": "低成本自动审核——史记是事实地·若一条 pending 推测在后续 3 回合被史记验证·自动批准；否则视为推测不实·拒绝。无 LLM 调用·纯关键词命中·零 API 成本。审核结果被下回合 sc1 注入端读取过滤。"
+        },
+        {
+          "what": "【P11.2C-full 注入端过滤】sc1 _consolidated 注入：rejected 条目不展示（已被证伪·避免误导 AI）·approved 加 ✓ 前缀·pending 加 ⚠[待验证] 前缀。next_turn_focus 已 approved 加 ✓·pending 仍 ⚠[建议]。",
+          "why": "让 AI 一眼区分\"已验证事实\"与\"待验证推测\"·决策权重自然不同。"
+        },
+        {
+          "what": "【P11.0 调度回归】CronCreate 5/7 14:53 调度·任务 97eb28f1·一周后跑 P10/P11 实测：grep 关键代码段存活·静态分析估算 RecallGate 触发率·sc_consolidate pending → approved 比例·edict_relations 期望条数。durable=true·session-only 提醒。",
+          "why": "部署后 1 周·KokoroMemo 借鉴的实际效果该见分晓·量化\"40-60% API 成本降\"是否符合预期。"
+        },
+        {
+          "what": "【P11.3 后台调研】Agent 调度二轮 KokoroMemo 深读：找 5 维加权打分公式 / 字段锁定 / LLM JSON 鲁棒解析 / 热温冷分层 / 14 类 state_categories / 0.65 置信度阈值 / Hot/Warm/Cold 注入轮次 / auto_review 启发式 / expand_one_hop 双向广搜 / IANA 时区。Agent 后台运行·结果将在下批落地。",
+          "why": "一轮调研找了 4 大范式·二轮专门挖剩余精细设计·避免漏掉小但有效的细节。"
+        },
+        {
+          "what": "验证：node --check tm-endturn-ai-infer.js 通过。所有改动 silent fallback——edict_relations 解析 try-catch·_consolidatedMemory 兼容老 string 格式·rejected 过滤兼容 typeof string。",
+          "why": "增强中间件不能阻断主流程。"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-30",
       "module": "邸报·Phase 10 KokoroMemo 借鉴 + 本地模型预下载完成 + Electron 构建集成",
       "title": "用户提了三件事：(1) Electron 是否能预打包模型 (2) 帮本地下载好 (3) 调研 KokoroMemo 设计。审计与实施——P10.1 通过 npm run prepare-vendor 已下载 bge-small-zh 量化版（23.4MB·非 110MB·因为是 int8 量化）到 web/vendor/models/Xenova/。P10.2 KokoroMemo 评分 6/10·提取 4 个可借鉴范式。P10.3 把 prepare-vendor 加入 build:X 脚本·确保 Electron 打包前自动下载。P10.4 实施 KokoroMemo 三大借鉴：A 召回门控节流 + D 注入护栏 + C 审核收件箱风险标记。",
       "items": [

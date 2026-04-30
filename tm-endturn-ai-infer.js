@@ -3757,11 +3757,16 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             _consolidated = '\n=== 上回合记忆固化（sc_consolidate 后台输出·下回合主推演必读） ===\n';
             if (_lastC.consolidated) _consolidated += '【整合摘要】\n' + _lastC.consolidated + '\n\n';
             if (Array.isArray(_lastC.key_threads) && _lastC.key_threads.length > 0) {
-              // P10.4C 风险标记·high 风险条目带 ⚠ 提醒 AI 视为推测
-              _consolidated += '【关键线索】\n' + _lastC.key_threads.map(function(t) {
-                var riskMark = (t._risk === 'high') ? '⚠[推测·下回合验证] ' : '';
-                return '· ' + riskMark + '[' + (t.status||'?') + '·张力' + (t.tension||'?') + '/10] ' + (t.thread||'') + '·参与:' + (t.actors||'?') + '·下一步:' + (t.next||'?');
-              }).join('\n') + '\n\n';
+              // P10.4C + P11.2C-full：rejected 不展示·approved 普通展示·pending 带 ⚠ 待验证
+              var _vthreads = _lastC.key_threads.filter(function(t) { return t._status !== 'rejected'; });
+              if (_vthreads.length > 0) {
+                _consolidated += '【关键线索】\n' + _vthreads.map(function(t) {
+                  var statusMark = '';
+                  if (t._status === 'pending') statusMark = '⚠[待验证] ';
+                  else if (t._status === 'approved') statusMark = '✓ ';
+                  return '· ' + statusMark + '[' + (t.status||'?') + '·张力' + (t.tension||'?') + '/10] ' + (t.thread||'') + '·参与:' + (t.actors||'?') + '·下一步:' + (t.next||'?');
+                }).join('\n') + '\n\n';
+              }
             }
             if (Array.isArray(_lastC.npc_trajectories) && _lastC.npc_trajectories.length > 0) {
               _consolidated += '【NPC 轨迹】\n' + _lastC.npc_trajectories.map(function(n) {
@@ -3774,12 +3779,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               }).join('\n') + '\n\n';
             }
             if (Array.isArray(_lastC.unresolved_tensions) && _lastC.unresolved_tensions.length > 0) {
-              _consolidated += '【未解张力（下回合可能引爆）】\n' + _lastC.unresolved_tensions.map(function(t) {
-                // P10.4C 兼容老格式（字符串）+ 新格式（{text, _risk}）
-                if (typeof t === 'string') return '· ' + t;
-                var rmk = (t._risk === 'high') ? '⚠[推测] ' : '';
-                return '· ' + rmk + (t.text || '');
-              }).join('\n') + '\n\n';
+              // P11.2C-full：rejected 不展示·approved/pending 区分标记
+              var _vtensions = _lastC.unresolved_tensions.filter(function(t) {
+                return typeof t === 'string' || t._status !== 'rejected';
+              });
+              if (_vtensions.length > 0) {
+                _consolidated += '【未解张力（下回合可能引爆）】\n' + _vtensions.map(function(t) {
+                  if (typeof t === 'string') return '· ' + t;
+                  var sm = '';
+                  if (t._status === 'pending') sm = '⚠[待验证] ';
+                  else if (t._status === 'approved') sm = '✓ ';
+                  return '· ' + sm + (t.text || '');
+                }).join('\n') + '\n\n';
+              }
             }
             if (Array.isArray(_lastC.player_reputation_drift) && _lastC.player_reputation_drift.length > 0) {
               _consolidated += '【玩家声望漂移】\n' + _lastC.player_reputation_drift.map(function(p) {
@@ -3787,11 +3799,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               }).join('\n') + '\n\n';
             }
             if (Array.isArray(_lastC.next_turn_focus) && _lastC.next_turn_focus.length > 0) {
-              _consolidated += '【下回合演绎建议（参考·非命令·全部为推测）】\n' + _lastC.next_turn_focus.map(function(f) {
-                // P10.4C 兼容老格式（字符串）+ 新格式（{text, _risk}）
-                if (typeof f === 'string') return '· ' + f;
-                return '· ⚠[建议] ' + (f.text || '');
-              }).join('\n') + '\n';
+              // P11.2C-full：rejected 不展示·approved/pending 区分（focus 默认全部建议级）
+              var _vfocus = _lastC.next_turn_focus.filter(function(f) {
+                return typeof f === 'string' || f._status !== 'rejected';
+              });
+              if (_vfocus.length > 0) {
+                _consolidated += '【下回合演绎建议（参考·非命令）】\n' + _vfocus.map(function(f) {
+                  if (typeof f === 'string') return '· ' + f;
+                  var sm = (f._status === 'approved') ? '✓ ' : '⚠[建议] ';
+                  return '· ' + sm + (f.text || '');
+                }).join('\n') + '\n';
+              }
             }
             _consolidated += '=== 记忆固化结束·此段是下回合 sc1 推演的最高优先级输入 ===\n\n';
           }
@@ -4037,7 +4055,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         // 兜底·可用 dotted.path 改任意字段（除禁区：P.ai P.conf GM.saveName turn/year/month/day/sid _开头）
         "\"anyPathChanges\":[{\"path\":\"GM.任意嵌套路径\",\"op\":\"set/push/delta/merge/delete\",\"value\":\"值\",\"reason\":\"原因\"}]," +
         // ★ 12 表结构化记忆增量更新（Phase 5.3 修 OpenAI response_format='json_object' 屏蔽 <tableEdit> 的致命 bug）
-        "\"table_updates\":[{\"sheet\":\"courtNpc/charProfile/edictsActive/specialMeans/importantItems/organizations/importantPlaces/relationNet/curStatus 之一\",\"op\":\"insert/update/delete\",\"rowIdx\":\"update/delete 时填行号\",\"values\":{\"colIdx数字\":\"值\"}}]" +
+        "\"table_updates\":[{\"sheet\":\"courtNpc/charProfile/edictsActive/specialMeans/importantItems/organizations/importantPlaces/relationNet/curStatus 之一\",\"op\":\"insert/update/delete\",\"rowIdx\":\"update/delete 时填行号\",\"values\":{\"colIdx数字\":\"值\"}}]," +
+        // ★ P11.2B 诏令冲突链（KokoroMemo graph.py 范式·8 边类型缩为 4 种）
+        "\"edict_relations\":[{\"from\":\"诏令编码或简称(如 T15-E03 / 盐法)\",\"to\":\"另一诏令编码或简称\",\"type\":\"supersedes/contradicts/continues/elaborates\",\"reason\":\"为何这样关联(40字)\"}]" +
         "}";
       // 注入待追踪诏令（让AI知道本回合有哪些诏令需要反馈）
       if (GM._edictTracker) {
@@ -4280,6 +4300,23 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           tp1 += '  ' + (u.faction||'?') + '：' + (u.situation||'') + '（趋势 ' + (u.trend||'稳定') + '·' + (u.nextMove||'') + '）\n';
         });
       }
+      // P11.2B 修：注入诏令冲突链（_edictRelations·让 AI 知道哪些诏令彼此覆盖/冲突/接续/细则）
+      if (Array.isArray(GM._edictRelations) && GM._edictRelations.length > 0) {
+        var _recentRels = GM._edictRelations.slice(-15);
+        if (_recentRels.length > 0) {
+          tp1 += '\n\n【诏令关系图（KokoroMemo 范式·近 15 条·须维持因果连贯）】\n';
+          _recentRels.forEach(function(r) {
+            var typeLabel = { supersedes: '覆盖', contradicts: '冲突', continues: '接续', elaborates: '细则' }[r.type] || r.type;
+            tp1 += '  · T' + (r.turn||'?') + ' [' + r.from + '] →[' + typeLabel + ']→ [' + r.to + ']' + (r.reason ? ' ←' + r.reason : '') + '\n';
+          });
+          tp1 += '  ※ supersedes(覆盖)：新政废旧政·旧政效力终止·须明叙取代经过\n';
+          tp1 += '  ※ contradicts(冲突)：两道诏令逻辑矛盾·至少一道无法完全执行·须呈现执行困境\n';
+          tp1 += '  ※ continues(接续)：本诏推进前诏未竟之业·须延续叙事而非另起炉灶\n';
+          tp1 += '  ※ elaborates(细则)：本诏细化前诏·实施层面·须呼应原诏精神\n';
+          tp1 += '  本回合若颁新政与上述任一构成新关系·须在 edict_relations 输出补充·不得回滚或忽视已有关系。\n';
+        }
+      }
+
       // P6.3 修：注入御批回听（_edictEfficacyHistory·上 5 回合诏令成败结果·让 AI 不重蹈覆辙）
       if (Array.isArray(GM._edictEfficacyHistory) && GM._edictEfficacyHistory.length > 0) {
         var _recentEfficacy = GM._edictEfficacyHistory.slice(-5);
@@ -4846,6 +4883,82 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
       p1=extractJSON(c1);
       GM._turnAiResults.subcall1_raw = c1;
       GM._turnAiResults.subcall1 = p1;
+      // ★ P11.2C-full 审核收件箱·解决 pending 条目（KokoroMemo review_policy 范式·完整版）
+      // 逻辑：pending 条目超 2 回合·检查后续 shijiHistory 是否提及→approved；否则 rejected
+      try {
+        if (Array.isArray(GM._consolidatedMemory) && GM._consolidatedMemory.length > 0) {
+          var _curTurnReview = (GM.turn || 1);
+          var _recentShijiText = '';
+          if (Array.isArray(GM.shijiHistory)) {
+            GM.shijiHistory.slice(-3).forEach(function(sh) {
+              _recentShijiText += (sh.shizhengji || '') + ' ' + (sh.shilu || '') + ' ' + (sh.zhengwen || '');
+            });
+          }
+          var _approvedCnt = 0, _rejectedCnt = 0;
+          GM._consolidatedMemory.forEach(function(cm) {
+            if (!cm || !cm._pendingTurn) cm._pendingTurn = cm.turn;
+            var age = _curTurnReview - cm.turn;
+            if (age < 2) return; // 不足 2 回合·继续 pending
+            // 检查 key_threads
+            (cm.key_threads || []).forEach(function(th) {
+              if (th._status !== 'pending') return;
+              // 用线索关键词匹配 shijiHistory
+              var threadText = (th.thread || '') + ' ' + (th.actors || '');
+              var keywords = threadText.split(/[·、，,。\s]/).filter(function(s){ return s.length >= 2; }).slice(0, 3);
+              var hit = keywords.some(function(k) { return _recentShijiText.indexOf(k) >= 0; });
+              th._status = hit ? 'approved' : 'rejected';
+              th._reviewedTurn = _curTurnReview;
+              if (hit) _approvedCnt++; else _rejectedCnt++;
+            });
+            // 检查 unresolved_tensions / next_turn_focus 同理
+            (cm.unresolved_tensions || []).forEach(function(t) {
+              if (typeof t !== 'object' || t._status !== 'pending') return;
+              var tText = t.text || '';
+              var tWords = tText.split(/[·、，,。\s]/).filter(function(s){ return s.length >= 2; }).slice(0, 3);
+              var hit = tWords.some(function(k) { return _recentShijiText.indexOf(k) >= 0; });
+              t._status = hit ? 'approved' : 'rejected';
+              t._reviewedTurn = _curTurnReview;
+              if (hit) _approvedCnt++; else _rejectedCnt++;
+            });
+            (cm.next_turn_focus || []).forEach(function(f) {
+              if (typeof f !== 'object' || f._status !== 'pending') return;
+              var fText = f.text || '';
+              var fWords = fText.split(/[·、，,。\s]/).filter(function(s){ return s.length >= 2; }).slice(0, 3);
+              var hit = fWords.some(function(k) { return _recentShijiText.indexOf(k) >= 0; });
+              f._status = hit ? 'approved' : 'rejected';
+              f._reviewedTurn = _curTurnReview;
+              if (hit) _approvedCnt++; else _rejectedCnt++;
+            });
+          });
+          if (_approvedCnt + _rejectedCnt > 0) {
+            _dbg('[InboxReview] approved=' + _approvedCnt + ' rejected=' + _rejectedCnt);
+          }
+        }
+      } catch(_invE) { _dbg('[InboxReview] fail:', _invE); }
+
+      // ★ P11.2B 诏令冲突链消费端（KokoroMemo graph.py 范式）
+      try {
+        if (p1 && Array.isArray(p1.edict_relations) && p1.edict_relations.length > 0) {
+          if (!Array.isArray(GM._edictRelations)) GM._edictRelations = [];
+          var _curT = GM.turn || 1;
+          p1.edict_relations.forEach(function(er) {
+            if (!er || !er.from || !er.to || !er.type) return;
+            var validTypes = ['supersedes', 'contradicts', 'continues', 'elaborates'];
+            if (validTypes.indexOf(er.type) < 0) return;
+            GM._edictRelations.push({
+              from: String(er.from).slice(0, 40),
+              to: String(er.to).slice(0, 40),
+              type: er.type,
+              reason: String(er.reason || '').slice(0, 80),
+              turn: _curT
+            });
+          });
+          // LRU 100 条
+          if (GM._edictRelations.length > 100) GM._edictRelations = GM._edictRelations.slice(-100);
+          _dbg('[EdictRelations] 本回合新增', p1.edict_relations.length, '条·总计', GM._edictRelations.length);
+        }
+      } catch(_erE) { _dbg('[EdictRelations] 解析失败:', _erE); }
+
       // ★ 应用 12 表更新·三通道兼容（Phase 5.3 修 OpenAI response_format='json_object' 屏蔽 <tableEdit> 的致命 bug）
       try {
         if (window.MemTables) {
@@ -11764,16 +11877,21 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               for (var i = 0; i < hi.length; i++) if (t.indexOf(hi[i]) >= 0) return 'high';
               return 'low';
             };
+            // P11.2C-full：高风险条目走 pending → 下回合 sc1 时验证 → approved/rejected
+            // 低风险（明确事实）直接 approved
+            var _statusFromRisk = function(risk) { return risk === 'high' ? 'pending' : 'approved'; };
             var _taggedThreads = (pC.key_threads || []).map(function(th) {
               var combined = (th.thread || '') + ' ' + (th.next || '');
-              return Object.assign({}, th, { _risk: _riskTag(combined) });
+              var r = _riskTag(combined);
+              return Object.assign({}, th, { _risk: r, _status: _statusFromRisk(r), _pendingTurn: _ptTurnC });
             });
             var _taggedTensions = (pC.unresolved_tensions || []).map(function(s) {
-              return { text: s, _risk: _riskTag(s) };
+              var r = _riskTag(s);
+              return { text: s, _risk: r, _status: _statusFromRisk(r), _pendingTurn: _ptTurnC };
             });
             var _taggedFocus = (pC.next_turn_focus || []).map(function(s) {
               // next_turn_focus 默认全部 high·因为是建议而非事实·下回合 sc1 应自行判断
-              return { text: s, _risk: 'high' };
+              return { text: s, _risk: 'high', _status: 'pending', _pendingTurn: _ptTurnC };
             });
             GM._consolidatedMemory.push({
               turn: _ptTurnC,

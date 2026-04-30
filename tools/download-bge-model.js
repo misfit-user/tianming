@@ -8,14 +8,14 @@
  *   node tools/download-bge-model.js --quiet  # 静默模式
  *
  * 输出：vendor/models/Xenova/bge-small-zh-v1.5/
- *   ├── onnx/model_quantized.onnx  (~96MB)
+ *   ├── onnx/model_quantized.onnx  (~23 MB)
  *   ├── tokenizer.json
  *   ├── tokenizer_config.json
  *   ├── config.json
  *   ├── special_tokens_map.json
  *   └── vocab.txt
  *
- * 总计 ~110MB·下载时间 1-10 分钟（取决于网速）。
+ * 总计 ~23 MB·下载时间通常 30-60 秒（量化版极小）。
  *
  * 推荐执行时机：
  *   · Electron 打包前·确保 vendor/models 进入 asar

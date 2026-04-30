@@ -4,13 +4,13 @@
 //
 // 设计来源：memos 插件的 RAG 思路·但完全本地化
 //
-// 模型：bge-small-zh-v1.5（中文专精·体积 ~96MB·首次加载缓存到 IndexedDB）
+// 模型：bge-small-zh-v1.5（中文专精·体积 ~23 MB·首次加载缓存到 IndexedDB）
 // 通过 transformers.js（@xenova/transformers）的 ESM 动态 import 加载
 // 索引：shijiHistory 句级 + ChronicleTracker 全部 + _foreshadows 全部 + 12 表 eventHistory
 // 查询：top-K 余弦相似度·阈值 0.55
 //
 // 启动策略：
-//   · 不主动加载（避免冷启动 96MB 流量）
+//   · 不主动加载（避免冷启动 23 MB 流量）
 //   · 玩家在编辑器开启"启用语义检索"开关后才下载模型
 //   · 模型 OK 后·EndTurn 钩子末尾增量索引本回合新事件
 //   · SC_RECALL 调用时·若模型未就绪·静默跳过该源·不阻断
@@ -139,7 +139,7 @@
   }
 
   // P6.4 修：游戏开始后自动启用 + 后台加载模型
-  // 不在脚本加载时立即启用·避免菜单/启动屏被 96MB 下载拖慢
+  // 不在脚本加载时立即启用·避免菜单/启动屏被 23 MB 下载拖慢
   // 改为：等到 GM.running=true（即玩家选剧本进入游戏）后再启动·此时可在游戏过程中静默下载
   function autoEnableAfterGameStart() {
     if (STATE.enabled) return;
@@ -337,8 +337,8 @@
     }
   }
 
-  // P6.4：游戏开始后自动启用·首次 96MB 模型静默缓存到 IndexedDB·之后秒开
-  // 不在脚本加载时立即启用·避免菜单/启动屏被 96MB 下载拖慢
+  // P6.4：游戏开始后自动启用·首次 23 MB 模型静默缓存到 IndexedDB·之后秒开
+  // 不在脚本加载时立即启用·避免菜单/启动屏被 23 MB 下载拖慢
   if (typeof window !== 'undefined') {
     var _autoTriesLeft = 90; // 90 秒窗口（玩家从开剧本到第一回合通常 30-60 秒）
     var _autoTimer = setInterval(function() {

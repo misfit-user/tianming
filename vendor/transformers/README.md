@@ -23,7 +23,7 @@ await import('./vendor/transformers/transformers.esm.js')
 
 ## 模型文件（不在本目录）
 
-bge-small-zh-v1.5 模型（~96MB）由 transformers.js 在首次启用时自动下载到 IndexedDB 缓存。**Electron 离线场景下需要先在线启用一次**，让模型缓存到 IDB·之后即可离线使用。
+bge-small-zh-v1.5 模型（~23 MB）由 transformers.js 在首次启用时自动下载到 IndexedDB 缓存。**Electron 离线场景下需要先在线启用一次**，让模型缓存到 IDB·之后即可离线使用。
 
 如需完全离线：
 

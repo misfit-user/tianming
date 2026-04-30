@@ -3646,7 +3646,13 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           _memTblRule = MemTables.buildTableRulePostscript() || '';
         }
       } catch(_mtE){ _dbg('[MemTables sc1] fail:', _mtE); }
-      var tp1 = _wsSnap + _memTblInj + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
+      // ★ 时间参考块（Phase 4.1 Horae 风格）·防 AI 把"3 天前"说成"昨天"
+      var _timeRef = '';
+      try { if (typeof _buildTimeRef === 'function') _timeRef = _buildTimeRef() || ''; } catch(_tr){}
+      // ★ 长期约束（Phase 4.2 ReNovel-AI affects_future 范式）
+      var _futureC = '';
+      try { if (typeof _mtBuildFuture === 'function') _futureC = _mtBuildFuture() || ''; } catch(_fc){}
+      var tp1 = _timeRef + _futureC + _wsSnap + _memTblInj + tp + _preAnalysis + _hardConstraints + "\n请仅返回绝JSON，包含:\n"+
         "{\"turn_summary\":\"一句话概括本回合最重要的变化(30-50字，如:北境叛乱平定，国库因军费骤降三成)\","+
         // 实录：纯文言史官体，仿资治通鉴/历代实录
         "\"shilu_text\":\"实录"+_shiluMin+"-"+_shiluMax+"字——纯文言文(仿《资治通鉴》《明实录》)，以干支月份/日为单位，记事不评论。只记可验证事实：诏令、任免、战事、灾异、人事大变。句式仿实录：'某月某日，上诏……'/'是月，某地……'/'上命某官……'。禁止白话词汇，禁止主观评论。\","+
@@ -9834,14 +9840,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           if (typeof _buildEdictProgressCards === 'function') _ws15 += _buildEdictProgressCards();
           if (typeof _buildRelationDeltas === 'function') _ws15 += _buildRelationDeltas();
         } catch(_wse15){ _dbg('[WorldSnap sc15] fail:', _wse15); }
-        // 12 \u8868\u6CE8\u5165\uFF08\u4EC5\u4E8B\u5B9E\u5C42\u00B7courtNpc/charProfile/relationNet/imperialEdict\uFF09
+        // 12 \u8868\u6CE8\u5165\uFF08\u4EC5\u4E8B\u5B9E\u5C42\u00B7courtNpc/charProfile/relationNet/imperialEdict\u00B7\u8FC7\u6EE4 secret \u7684\u5929\u673A\u6761\u76EE\uFF09
         var _mt15 = '';
         try {
           if (window.MemTables && MemTables.buildTablesInjection) {
-            _mt15 = MemTables.buildTablesInjection({ include: ['courtNpc', 'charProfile', 'relationNet', 'imperialEdict', 'edictsActive'] }) || '';
+            _mt15 = MemTables.buildTablesInjection({ include: ['courtNpc', 'charProfile', 'relationNet', 'imperialEdict', 'edictsActive'], hideSecret: true }) || '';
           }
         } catch(_mt15E){ _dbg('[MemTables sc15] fail:', _mt15E); }
-        var tp15 = _ws15 + _mt15 + '\u57FA\u4E8E\u672C\u56DE\u5408\u53D1\u751F\u7684\u4E8B\u4EF6\uFF1A\n';
+        // \u65F6\u95F4\u53C2\u8003\uFF08Phase 4.1\uFF09
+        var _tr15 = '';
+        try { if (typeof _buildTimeRef === 'function') _tr15 = _buildTimeRef() || ''; } catch(_e){}
+        var tp15 = _tr15 + _ws15 + _mt15 + '\u57FA\u4E8E\u672C\u56DE\u5408\u53D1\u751F\u7684\u4E8B\u4EF6\uFF1A\n';
         if (shizhengji) tp15 += '\u65F6\u653F\u8BB0\uFF1A' + shizhengji + '\n'; // 完整不截断
         if (p1 && p1.npc_actions && p1.npc_actions.length > 0) {
           tp15 += '\u5DF2\u77E5NPC\u884C\u52A8\uFF1A' + p1.npc_actions.map(function(a) { return a.name + ':' + a.action + (a.result?'\u2192'+a.result:''); }).join('\uFF1B') + '\n';
@@ -10926,11 +10935,15 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp25 += '"decision_echoes":[{"content":"\u54EA\u6761\u8BCF\u4EE4/\u51B3\u7B56","echoType":"positive/negative/mixed","echoDesc":"\u5EF6\u65F6\u540E\u679C\u63CF\u8FF0(30\u5B57)","delayTurns":0}],';
         tp25 += '"faction_narrative":{"\u52BF\u529B\u540D":"\u8FD1\u671F\u53D1\u5C55\u4E00\u53E5\u8BDD\u603B\u7ED3(30\u5B57)"},';
         tp25 += '"memory":"\u672C\u56DE\u5408\u7684\u9AD8\u5BC6\u5EA6\u538B\u7F29\u8BB0\u5F55\u2014\u2014\u5305\u542B\u6240\u6709\u5173\u952E\u4EBA\u540D\u3001\u4E8B\u4EF6\u3001\u53D8\u5316\u3001\u73A9\u5BB6\u51B3\u7B56\u53CA\u5176\u540E\u679C(200\u5B57)","trend":"\u5F53\u524D\u5927\u52BF\u8D70\u5411\u548C\u52A0\u901F\u65B9\u5411(50\u5B57)","npc_mood_snapshot":"\u5404\u4E3B\u8981NPC\u672C\u56DE\u5408\u540E\u7684\u60C5\u7EEA\u72B6\u6001(100\u5B57)","contradiction_evolution":"\u5404\u77DB\u76FE\u672C\u56DE\u5408\u7684\u6F14\u5316\u65B9\u5411\u2014\u2014\u52A0\u5267/\u7F13\u548C/\u8F6C\u5316(80\u5B57)",';
-        // 10 \u7EF4\u4E8B\u4EF6\u8BC4\u5206\uFF08\u53C2\u8003\u5168\u81EA\u52A8\u603B\u7ED3 v4 \u51DB\u503E\u534F\u8BAE\u00B7\u672C\u5730\u5316\u4E3A\u5929\u547D\u8BED\u5883\uFF09
-        tp25 += '"event_weights":[{"event":"\u4E8B\u4EF6\u63CF\u8FF050\u5B57\u4EE5\u5185","weight":0.65,"dims":["d1","d3"]}]}\n';
-        tp25 += '\n\u3010event_weights \u8BC4\u5206\u89C4\u5219\u3011\u5BF9\u672C\u56DE\u5408\u4E0A\u62A510\u30015\u4EF6\u4E8B\u4EF6\u00B7\u9010\u4EF6\u6309 10 \u4E2A\u7EF4\u5EA6\u5404\u6253 0.05-0.15 \u7D2F\u52A0\u5C01\u9876 1.0\uFF1A\n';
+        // 10 \u7EF4\u4E8B\u4EF6\u8BC4\u5206\uFF08\u53C2\u8003\u5168\u81EA\u52A8\u603B\u7ED3 v4 \u51DB\u503E\u534F\u8BAE\u00B7\u672C\u5730\u5316\u4E3A\u5929\u547D\u8BED\u5883\uFF09+ affects_future \u4E8C\u5143\u6807\u8BB0\uFF08Phase 4.2 ReNovel-AI \u8303\u5F0F\uFF09
+        tp25 += '"event_weights":[{"event":"\u4E8B\u4EF6\u63CF\u8FF050\u5B57\u4EE5\u5185","weight":0.65,"dims":["d1","d3"],"affects_future":true}]}\n';
+        tp25 += '\n\u3010event_weights \u8BC4\u5206\u89C4\u5219\u3011\u5BF9\u672C\u56DE\u5408\u4E0A\u62A5 5-10 \u4EF6\u4E8B\u4EF6\u00B7\u9010\u4EF6\u6309 10 \u4E2A\u7EF4\u5EA6\u5404\u6253 0.05-0.15 \u7D2F\u52A0\u5C01\u9876 1.0\uFF1A\n';
         tp25 += '  d1 \u541B\u4E3B\u884C\u52A8/\u5F71\u54CD(\u4E0A\u9650 0.15) | d2 \u4E09\u516C\u4E5D\u537F\u53C2\u4E0E(0.10) | d3 \u91CD\u5927\u51B3\u7B56/\u8F6C\u6298(0.15) | d4 \u4E3B\u8981\u51B2\u7A81\u8FDB\u5C55(0.15) | d5 \u6838\u5FC3\u4FE1\u606F\u63ED\u9732(0.15) | d6 \u5236\u5EA6/\u7586\u57DF\u9610\u91CA(0.10) | d7 \u65B0\u52BF\u529B/\u65B0\u4EBA\u7269(0.15) | d8 NPC\u6210\u957F/\u5173\u7CFB\u53D8\u52A8(0.15) | d9 \u60C5\u611F\u5CF0\u503C/\u5371\u673A\u65F6\u523B(0.15) | d10 \u4E3B\u7EBF\u63A8\u8FDB(0.15)\n';
         tp25 += '\u8F93\u51FA\u7684 event \u63CF\u8FF0\u9700\u4E0E [\u4E8B\u4EF6\u5386\u53F2] \u8868\u4E2D\u5DF2\u5B58\u5728\u7684\u63CF\u8FF0\u504F\u8FD1\u00B7dims \u5C42\u9762\u53EA\u9700\u4E2D\u9AD8\u8D21\u732E\u7EF4\u5EA6\u00B7\u4E0D\u8981\u8F93\u51FA\u6BCF\u4E2A\u7EF4\u5EA6\u7684\u5206\u6570\u3002\n';
+        tp25 += '\n\u3010affects_future \u4E8C\u5143\u6807\u8BB0\u3011\u5BF9\u6BCF\u6761\u4E8B\u4EF6\u5355\u72EC\u8BC4\u4F30\uFF1A\n';
+        tp25 += '  affects_future=true\uFF1A\u6B64\u4E8B\u4EF6\u5BF9 5+ \u56DE\u5408\u540E\u4ECD\u6709\u7EA6\u675F\u529B\uFF08\u5982\uFF1A\u67D0\u91CD\u81E3\u83B7\u5175\u6743\u00B7\u67D0\u6761\u7EA6\u7B7E\u8BA2\u00B7\u67D0\u6539\u9769\u843D\u5730\u00B7\u67D0\u5173\u952E\u4EBA\u7269\u8EAB\u4EFD\u53D8\u5316\u00B7\u67D0\u5730\u5931\u5B88\uFF09\n';
+        tp25 += '  affects_future=false\uFF1A\u672C\u56DE\u5408\u4E00\u6B21\u6027\u7EC6\u8282\uFF08\u5982\uFF1A\u67D0\u6B21\u53EC\u5BF9\u00B7\u67D0\u6B21\u5C0F\u578B\u9A9A\u4E71\u00B7\u4E00\u6B21\u6027\u7684\u6069\u8D4F\uFF09\n';
+        tp25 += '  \u6807\u8BB0 true \u7684\u4E8B\u4EF6\u4F1A\u8FDB\u5165"\u957F\u671F\u7EA6\u675F"\u6BB5\u00B7\u4E0B\u56DE\u5408 sc1 \u63A8\u6F14\u65F6 AI \u5FC5\u987B\u9075\u5FAA\u00B7\u4E0D\u5F97\u8FDD\u53CD\u6216\u9057\u5FD8\u3002\n';
         tp25 += '\u4F0F\u7B14\u8981\u5177\u4F53\uFF1A\u5305\u542B\u201C\u8C01\u201D\u201C\u505A\u4EC0\u4E48\u201D\u201C\u5728\u54EA\u91CC\u201D\u201C\u51E0\u56DE\u5408\u540E\u5F15\u7206\u201D\u3002\u4E0D\u8981\u6A21\u7CCA\u3002\n';
         tp25 += 'memory\u5FC5\u987B\u5305\u542B\u6240\u6709\u5173\u952E\u53D8\u5316\uFF0C\u8FD9\u662F\u4E0B\u56DE\u5408AI\u7684\u552F\u4E00\u56DE\u5FC6\u6765\u6E90\u3002';
 
@@ -11039,6 +11052,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                     var w = parseFloat(ew.weight);
                     if (isNaN(w) || w < 0) w = 0; if (w > 1) w = 1;
                     var dims = Array.isArray(ew.dims) ? ew.dims.join(',') : (ew.dims || '');
+                    var aff = (ew.affects_future === true || ew.affects_future === 'true' || ew.affects_future === 1) ? 'true' : '';
                     // 模糊匹配·查找最近回合中描述包含该事件关键字的行
                     var hits = _eh.rows.filter(function(r) {
                       var rTurn = parseInt(r[1], 10) || 0;
@@ -11048,7 +11062,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                       // 兜底：取本回合最后一行
                       hits = [_eh.rows[_eh.rows.length - 1]];
                     }
-                    hits.forEach(function(r) { r[3] = String(w); if (dims) r[4] = dims; });
+                    hits.forEach(function(r) { r[3] = String(w); if (dims) r[4] = dims; if (aff) r[6] = aff; });
                   });
                   _dbg('[EventWeights] 已为 ' + p25.event_weights.length + ' 件事件写回权重');
                 }

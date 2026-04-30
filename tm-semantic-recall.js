@@ -41,17 +41,19 @@
     }
     STATE.modelLoading = true;
     try {
-      // 通过 ESM CDN 动态加载（Electron 在线情境下可用·离线情境下需打包到本地）
-      // 使用 jsdelivr 的 +esm 路径
+      // 加载顺序：本地 vendor → jsdelivr → esm.sh（参见 vendor/transformers/README.md）
       var transformers;
       try {
-        transformers = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/+esm');
-      } catch (e1) {
-        // 备用 CDN
+        transformers = await import('./vendor/transformers/transformers.esm.js');
+      } catch (e0) {
         try {
-          transformers = await import('https://esm.sh/@xenova/transformers@2.17.2');
-        } catch (e2) {
-          throw new Error('transformers.js 加载失败：' + e1.message + ' / ' + e2.message);
+          transformers = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/+esm');
+        } catch (e1) {
+          try {
+            transformers = await import('https://esm.sh/@xenova/transformers@2.17.2');
+          } catch (e2) {
+            throw new Error('transformers.js 加载失败·本地 + 两个 CDN 全部失败：' + e0.message + ' / ' + e1.message + ' / ' + e2.message);
+          }
         }
       }
       // 设置缓存到 IndexedDB（Electron 默认走 disk·这里显式启用 browserCache）

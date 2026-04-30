@@ -1867,6 +1867,14 @@
         <button class="btn btn-add" onclick="addGoalEntry()">+ 添加目标条件</button>
       </div>
 
+      <!-- ======== 初始皇命（钉子条目） ======== -->
+      <div class="panel-section" id="panel-imperialEdicts">
+        <div class="panel-title">初始皇命（钉子条目） <button class="btn" onclick="renderImperialEdictsList()" style="font-size:11px;padding:2px 8px;margin-left:8px;">🔄 刷新</button></div>
+        <div class="panel-desc">玩家开局时已有的不可改写规则——「祖训」「先帝遗诏」「禁忌」之类。本表的条目会在每回合 sc1/sc15 推演前·注入到 prompt 顶部·AI 永读不写。游戏开始时自动同步到 GM._memTables.imperialEdict。</div>
+        <div id="imperialEdicts-list" style="margin-top:12px;"></div>
+        <button class="btn btn-add" onclick="addImperialEdictEntry()">+ 添加初始皇命</button>
+      </div>
+
       <!-- ======== 得罪群体 ======== -->
       <div class="panel-section" id="panel-offendGroups">
         <div class="panel-title">额外得罪群体 <button class="btn" onclick="renderOffendGroupsList()" style="font-size:11px;padding:2px 8px;margin-left:8px;">🔄 刷新</button></div>

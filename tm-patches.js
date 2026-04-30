@@ -1129,6 +1129,23 @@ function doActualStart(sid){
   if (sc.keju) P.keju = deepClone(sc.keju);
   if (sc.playerInfo) P.playerInfo = deepClone(sc.playerInfo);
 
+  // 初始皇命（钉子条目）写入 12 表系统的 imperialEdict（玩家锁·AI 永读不写）
+  if (sc.imperialEdicts && sc.imperialEdicts.length > 0 && window.MemTables) {
+    try {
+      MemTables.ensureInit();
+      sc.imperialEdicts.forEach(function(e) {
+        MemTables.editorWrite('imperialEdict', 'insert', {
+          values: {
+            0: String(e.priority || 5),
+            1: String(e.content || ''),
+            2: String(e.condition || '永久生效'),
+            3: String(e.startTurn || 1)
+          }
+        });
+      });
+    } catch(_ieE) { console.warn('[ImperialEdict] 初始皇命同步失败:', _ieE); }
+  }
+
   // 加载时字段自动补全（防止旧剧本缺少新字段导致崩溃）
   if (!GM.characterArcs) GM.characterArcs = {};
   if (!GM.playerDecisions) GM.playerDecisions = [];

@@ -496,6 +496,8 @@ function validateScenario(sc) {
 }
 
 // 开始游戏
+// ⚠️⚠️⚠️ 警告：本函数被 tm-patches.js (line 806) startGame=async function(sid){...} 覆盖
+//   要修改本函数行为·请去 tm-patches.js 改·此处仅为占位·实际运行版本在 patches 文件
 function startGame(sid){
   _dbg('[startGame] 开始启动游戏，sid:', sid);
   _dbg('[startGame] P.scenarios 长度:', P.scenarios ? P.scenarios.length : 'undefined');

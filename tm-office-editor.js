@@ -1366,6 +1366,8 @@ function _officeBuildTreeV10(opts) {
   };
 }
 
+// ⚠️⚠️⚠️ 警告：本函数被 tm-patches.js (line 1781) renderOfficeTab=function(em){...} 覆盖
+//   要修改本函数行为·请去 tm-patches.js 改·此处仅为占位·实际运行版本在 patches 文件
 function renderOfficeTab(em) {
   if (!P.officeTree) P.officeTree = [];
   if (!P._officeCollapsed) P._officeCollapsed = {};

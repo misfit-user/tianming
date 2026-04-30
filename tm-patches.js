@@ -86,6 +86,23 @@
 // ══════════════════════════════════════════════════════════════
 
 // 覆盖openSettings为完整版
+
+// P15.2 _togglePConf 工具函数（同文件保证·不依赖 player-settings.js·防被回滚）
+if (typeof _togglePConf === 'undefined') {
+  window._togglePConf = function(confKey, on) {
+    if (typeof P === 'undefined' || !P) return;
+    if (!P.conf) P.conf = {};
+    P.conf[confKey] = !!on;
+    if (typeof saveP === 'function') saveP();
+    var labels = {
+      recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
+      consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
+      semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' }
+    };
+    var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
+    if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));
+  };
+}
 openSettings=function(){
   var bg=_$("settings-bg");
   bg.innerHTML="<div class=\"settings-box\"><div style=\"padding:0.8rem 1.2rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;\"><div style=\"font-size:1.1rem;font-weight:700;color:var(--gold);\">"+((typeof tmIcon==='function')?tmIcon('settings',18):'')+"\u8BBE\u7F6E</div><button class=\"bt bs bsm\" onclick=\"closeSettings()\">\u2715</button></div><div class=\"settings-body\" id=\"sb2\"></div></div>";
@@ -134,9 +151,9 @@ openSettings=function(){
         "</div>";
     })()+
 
-    // P15: 性能·成本控制（KokoroMemo 借鉴）
+    // P15: 性能·成本控制（KokoroMemo 借鉴的 3 个开关）
     (function(){
-      try { console.log('[P15 settings] 性能·成本控制 段渲染中·v=2026050103'); } catch(_){}
+      try { console.log('[P15 settings] 性能·成本控制 段渲染中·v=2026050104'); } catch(_){}
       var _gateOn = !!(P.conf && P.conf.recallGateEnabled === true);
       var _consolOn = !(P.conf && P.conf.consolidationEnabled === false);
       var _semOn = !(P.conf && P.conf.semanticRecallAutoload === false);
@@ -161,7 +178,7 @@ openSettings=function(){
           '<input type="checkbox" id="s-sem" ' + (_semOn?'checked ':'') + 'onchange="_togglePConf(\'semanticRecallAutoload\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
           '<div style="flex:1;">' +
             '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">本地语义检索自动加载（默认启用）</div>' +
-            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">游戏开始 5 秒后后台加载 bge-small-zh 模型（23 MB）·提供 SC_RECALL 第 5 源语义同义召回（"叛变"匹配"举旗/起兵/造反"等）。Electron 预打包后秒开·网页端从 hf-mirror 缓存。关闭可省 23 MB 下载·但失去语义同义匹配能力。</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">游戏开始 5 秒后后台加载 bge-small-zh 模型（23 MB）·提供 SC_RECALL 第 5 源语义同义召回。Electron 预打包后秒开·网页端从 hf-mirror 缓存。关闭可省 23 MB 下载。</div>' +
           '</div>' +
         '</label>' +
       '</div>';

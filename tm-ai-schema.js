@@ -118,9 +118,12 @@
 
     class_changes: {
       type: 'array',
-      desc: '阶层状态修改',
+      desc: '阶层状态修改，可带 partyOutcomeRef 标注党派胜负来源',
       requiredSubFields: ['name']
     },
+    class_alert_responses: { type: 'array', desc: '阶层临界警报回应', requiredSubFields: ['alertId', 'action'] },
+    regent_decisions: { type: 'array', desc: '摄政决断（命中摄政信号时必须回应；hardCeiling 命中不可只写叙事）', requiredSubFields: ['action', 'reason'] },
+    reissue_topics: { type: 'array', desc: '建议将留中册议题起复再议', requiredSubFields: ['topic', 'reason'] },
     class_updates: { type: 'array', desc: '阶层增量', consumedBy: ['applier:1283'] },
     class_emerge:  { type: 'array', desc: '新阶层兴起' },
     class_revolt:  { type: 'array', desc: '阶层起义' },
@@ -130,6 +133,13 @@
     // 军事
     // ──────────────────────────────────────────────
     army_changes: { type: 'array', desc: '修改部队兵力/士气/训练（降至0→覆没）' },
+    battleResult: {
+      type: 'object',
+      desc: '结构化战斗结果：胜负、占城、伤亡、受影响军队、主将命运和战后效果',
+      requiredSubFields: ['winnerFactionId', 'loserFactionId'],
+      producedBy: ['sc23'],
+      consumedBy: ['BattleEngine', 'applier']
+    },
 
     // ──────────────────────────────────────────────
     // 物品与头衔

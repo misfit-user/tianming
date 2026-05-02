@@ -1131,6 +1131,7 @@
     if (!scriptData.playerInfo.characterAppearance) scriptData.playerInfo.characterAppearance = '';
     if (!scriptData.playerInfo.characterCharisma) scriptData.playerInfo.characterCharisma = '';
     if (!scriptData.goals) scriptData.goals = [];
+    if (!scriptData.influenceGroups) scriptData.influenceGroups = [];
     if (!scriptData.offendGroups) scriptData.offendGroups = { enabled: false, decayEnabled: true, decayRate: 0.05, groups: [] };
     if (!scriptData.keju) scriptData.keju = { enabled: false, reformed: false, examIntervalNote: '', examNote: '' };
     if (!scriptData.officialVassalMapping) scriptData.officialVassalMapping = { mappings: [] };
@@ -2014,6 +2015,7 @@
     renderGovernment();
     renderOfficeTree();
     if (typeof renderGoalsList === 'function') renderGoalsList();
+    if (typeof renderInfluenceGroupsList === 'function') renderInfluenceGroupsList();
     if (typeof renderOffendGroupsList === 'function') renderOffendGroupsList();
   }
 

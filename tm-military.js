@@ -342,6 +342,660 @@ function executeTactic(army, tacticKey, tacticCategory) {
 // 输出确定性战斗结果，注入AI prompt作为不可更改事实
 // ============================================================
 
+var MilitarySystems = (function(global) {
+  'use strict';
+
+  function _root(root) {
+    return root || global.GM || {};
+  }
+
+  function _clone(value) {
+    if (value === undefined) return undefined;
+    try { return JSON.parse(JSON.stringify(value)); }
+    catch(_) {
+      if (Array.isArray(value)) return value.slice();
+      if (value && typeof value === 'object') return Object.assign({}, value);
+      return value;
+    }
+  }
+
+  function _getPath(obj, path) {
+    if (!obj || !path) return undefined;
+    var cur = obj;
+    String(path).split('.').forEach(function(part) {
+      if (cur === undefined || cur === null) return;
+      cur = cur[part];
+    });
+    return cur;
+  }
+
+  function _readConstant(path, root) {
+    var sources = [_root(root), global.GM, global.P, global.scriptData];
+    var api = (global.TM && global.TM.EngineConstants) || global.EngineConstants;
+    if (api && typeof api.read === 'function') {
+      for (var i = 0; i < sources.length; i++) {
+        if (!sources[i]) continue;
+        try {
+          var viaApi = api.read(path, sources[i]);
+          if (viaApi !== undefined) return viaApi;
+        } catch(_) {}
+      }
+    }
+    for (var j = 0; j < sources.length; j++) {
+      var ec = sources[j] && sources[j].engineConstants;
+      var value = _getPath(ec, path);
+      if (value !== undefined) return _clone(value);
+    }
+    return undefined;
+  }
+
+  function _normalizeAttribution(value) {
+    value = String(value || '').toLowerCase();
+    if (value === 'commander' || value === 'general' || value === 'private') return 'commander';
+    if (value === 'leader') return 'leader';
+    if (value === 'local') return 'local';
+    if (value === 'throne') return 'throne';
+    if (value === 'banner') return 'banner';
+    return 'state';
+  }
+
+  function _legacySystems(root) {
+    var list = [];
+    var src = (global.P && global.P.military && global.P.military.militarySystem) ||
+              (global.scriptData && global.scriptData.military && global.scriptData.military.militarySystem) ||
+              (_root(root).military && _root(root).military.militarySystem);
+    if (Array.isArray(src)) list = src;
+    else if (src && typeof src === 'object') {
+      Object.keys(src).forEach(function(key) {
+        var item = src[key];
+        if (item && typeof item === 'object') list.push(Object.assign({ id: key }, item));
+      });
+    }
+    if (!list.length) {
+      list = [{ id:'recruited_army', name:'\u52df\u5175', recruitmentType:'paid', salaryType:'central', peacetimeRole:'garrison', mobilizationDelay:2, loyaltyAttribution:'commander' }];
+    }
+    return list;
+  }
+
+  function _normalizeSystem(sys, index) {
+    sys = sys || {};
+    var id = String(sys.id || sys.key || sys.name || ('military_system_' + index));
+    return {
+      id: id,
+      name: String(sys.name || sys.label || id),
+      recruitmentType: String(sys.recruitmentType || sys.recruitment || sys.type || 'paid'),
+      salaryType: String(sys.salaryType || sys.paymentModel || sys.salary || 'central'),
+      peacetimeRole: String(sys.peacetimeRole || sys.role || 'garrison'),
+      mobilizationDelay: Math.max(0, Math.round(Number(sys.mobilizationDelay || 0))),
+      loyaltyAttribution: _normalizeAttribution(sys.loyaltyAttribution || sys.loyalty || sys.ownerType)
+    };
+  }
+
+  function getMilitarySystems(root) {
+    var declared = _readConstant('militarySystems', root);
+    var list = Array.isArray(declared) && declared.length ? declared : _legacySystems(root);
+    return list.map(_normalizeSystem);
+  }
+
+  function getMilitarySystemForArmy(army, root) {
+    army = army || {};
+    var systems = getMilitarySystems(root);
+    var keys = [
+      army.militarySystemId, army.systemId, army.militarySystem,
+      army.armyType, army.type, army.branch, army.paymentModel
+    ].filter(Boolean).map(function(v) { return String(v).toLowerCase(); });
+    for (var i = 0; i < systems.length; i++) {
+      var s = systems[i];
+      var hay = [s.id, s.name, s.recruitmentType, s.salaryType].map(function(v) { return String(v).toLowerCase(); });
+      if (keys.some(function(k) { return hay.indexOf(k) >= 0; })) return s;
+    }
+    return systems[0] || _normalizeSystem(null, 0);
+  }
+
+  function payArrearsBaseline(army, root) {
+    army = army || {};
+    var cfg = _readConstant('militaryPayArrearsBaseline', root) || {};
+    var months = Math.max(0, Math.round(Number(army.payArrearsMonths || 0)));
+    var moralePerMonth = Number(cfg.moralePerMonth);
+    var loyaltyPerMonth = Number(cfg.loyaltyPerMonth);
+    var routeMoraleBelow = Number(cfg.routeMoraleBelow);
+    if (!isFinite(moralePerMonth)) moralePerMonth = -10;
+    if (!isFinite(loyaltyPerMonth)) loyaltyPerMonth = -5;
+    if (!isFinite(routeMoraleBelow)) routeMoraleBelow = 10;
+    return {
+      months: months,
+      moraleDelta: months > 0 ? moralePerMonth * months : 0,
+      loyaltyDelta: months > 0 ? loyaltyPerMonth * months : 0,
+      routeMoraleBelow: routeMoraleBelow
+    };
+  }
+
+  function _withinClamp(value, baseline, clamp) {
+    value = Number(value);
+    baseline = Number(baseline);
+    if (!isFinite(value) || !isFinite(baseline)) return false;
+    if (baseline === 0) return value === 0;
+    return Math.abs(value - baseline) <= Math.abs(baseline) * clamp + 0.0001;
+  }
+
+  function validatePayArrearsAdjustment(army, adjustment, root) {
+    var base = payArrearsBaseline(army, root);
+    var clamp = Number(_readConstant('militaryPayArrearsClamp', root));
+    if (!isFinite(clamp)) clamp = 0.3;
+    adjustment = adjustment || {};
+    var moraleDelta = adjustment.moraleDelta === undefined ? base.moraleDelta : Number(adjustment.moraleDelta);
+    var loyaltyDelta = adjustment.loyaltyDelta === undefined ? base.loyaltyDelta : Number(adjustment.loyaltyDelta);
+    var ok = _withinClamp(moraleDelta, base.moraleDelta, clamp) && _withinClamp(loyaltyDelta, base.loyaltyDelta, clamp);
+    if (ok && (moraleDelta !== base.moraleDelta || loyaltyDelta !== base.loyaltyDelta) && !adjustment.reason) {
+      ok = false;
+    }
+    return {
+      ok: ok,
+      reason: ok ? '' : 'pay-arrears-adjustment-out-of-clamp',
+      clamp: clamp,
+      baseline: base,
+      adjusted: { moraleDelta: moraleDelta, loyaltyDelta: loyaltyDelta }
+    };
+  }
+
+  function _clamp100(value) {
+    value = Number(value);
+    if (!isFinite(value)) value = 0;
+    return Math.max(0, Math.min(100, Math.round(value)));
+  }
+
+  function _markRouted(army, attribution, turn) {
+    army.routed = true;
+    army.state = 'routed';
+    army._routedTurn = turn || 0;
+    army._routedReason = 'pay_arrears_morale_collapse';
+    army.loyaltyAttribution = attribution;
+    if (attribution === 'commander' || attribution === 'leader') {
+      if (army.commanderAlive === false || army._commanderLost || army.leaderAlive === false || army._leaderLost) {
+        army.disbandedRisk = Math.min(100, (army.disbandedRisk || 0) + 20);
+        army._routedAftermath = attribution === 'leader' ? 'leader_lost' : 'commander_lost';
+      } else {
+        army.loyalty = _clamp100((army.loyalty || 50) - 5);
+        army._routedAftermath = attribution === 'leader' ? 'leader_holds' : 'commander_holds';
+      }
+    } else if (attribution === 'banner') {
+      army.mutinyRisk = Math.min(100, (army.mutinyRisk || 0) + 10);
+      army.cohesion = _clamp100((army.cohesion === undefined ? 70 : army.cohesion) - 10);
+      army._routedAftermath = 'banner_internal';
+    } else if (attribution === 'local') {
+      army.mutinyRisk = Math.min(100, (army.mutinyRisk || 0) + 15);
+      army.cohesion = _clamp100((army.cohesion === undefined ? 70 : army.cohesion) - 5);
+      army._routedAftermath = 'local_fragmentation';
+    } else if (attribution === 'throne') {
+      army.mutinyRisk = Math.min(100, (army.mutinyRisk || 0) + 20);
+      army.loyalty = _clamp100((army.loyalty || 50) - 10);
+      army._routedAftermath = 'throne_guard_disgraced';
+    } else {
+      army.mutinyRisk = Math.min(100, (army.mutinyRisk || 0) + 25);
+      army._routedAftermath = 'state_collapse';
+    }
+  }
+
+  function applyPayArrearsPressure(army, options, root) {
+    if (!army) return { ok: false, reason: 'missing-army' };
+    options = options || {};
+    var G = _root(root);
+    var turn = Number(G.turn || global.GM && global.GM.turn || 0) || 0;
+    var base = payArrearsBaseline(army, G);
+    if (base.months <= 0) return { ok: true, skipped: true, reason: 'no-arrears', baseline: base };
+    if (!options.force && army._payArrearsAppliedTurn === turn && army._payArrearsAppliedMonths === base.months) {
+      return { ok: true, skipped: true, reason: 'already-applied', baseline: base };
+    }
+    var validated = validatePayArrearsAdjustment(army, options.adjustment || null, G);
+    if (!validated.ok) return validated;
+    var system = getMilitarySystemForArmy(army, G);
+    var attribution = _normalizeAttribution(army.loyaltyAttribution || system.loyaltyAttribution);
+    army.morale = _clamp100((army.morale === undefined ? 70 : army.morale) + validated.adjusted.moraleDelta);
+    army.loyalty = _clamp100((army.loyalty === undefined ? 50 : army.loyalty) + validated.adjusted.loyaltyDelta);
+    army.loyaltyAttribution = attribution;
+    army._payArrearsAppliedTurn = turn;
+    army._payArrearsAppliedMonths = base.months;
+    if (army.morale < base.routeMoraleBelow) _markRouted(army, attribution, turn);
+    if (!G._militaryPayArrearsLog) G._militaryPayArrearsLog = [];
+    G._militaryPayArrearsLog.push({
+      turn: turn,
+      army: army.name || army.id || '',
+      months: base.months,
+      moraleDelta: validated.adjusted.moraleDelta,
+      loyaltyDelta: validated.adjusted.loyaltyDelta,
+      loyaltyAttribution: attribution,
+      routed: !!army.routed,
+      source: options.source || 'military-systems'
+    });
+    return { ok: true, army: army, baseline: base, adjusted: validated.adjusted, routed: !!army.routed, loyaltyAttribution: attribution };
+  }
+
+  function _armyRefs(G) {
+    return Array.isArray(G.armies) ? G.armies : [];
+  }
+
+  function _findArmy(ref, G) {
+    if (!ref) return null;
+    var key = String(ref);
+    var matches = _armyRefs(G).filter(function(a) {
+      return a && (String(a.id || '') === key || String(a.name || '') === key || String(a.armyId || '') === key);
+    });
+    if (matches.length) return matches[0];
+    matches = _armyRefs(G).filter(function(a) { return a && String(a.faction || a.owner || '') === key; });
+    return matches.length === 1 ? matches[0] : null;
+  }
+
+  function _applyCasualty(army, loss) {
+    if (!army || !isFinite(Number(loss))) return false;
+    loss = Math.max(0, Math.round(Number(loss)));
+    var field = army.soldiers !== undefined ? 'soldiers' : (army.troops !== undefined ? 'troops' : (army.strength !== undefined ? 'strength' : 'soldiers'));
+    army[field] = Math.max(0, Math.round(Number(army[field] || 0) - loss));
+    return true;
+  }
+
+  function _findChar(name, G) {
+    if (!name || !Array.isArray(G.chars)) return null;
+    return G.chars.find(function(c) { return c && c.name === name; }) || null;
+  }
+
+  function applyBattleResult(battleResult, root) {
+    var G = _root(root);
+    var br = battleResult || {};
+    if (!br || typeof br !== 'object') return { ok: false, reason: 'missing-battleResult' };
+    var winner = br.winnerFactionId || br.winnerFaction || br.winner || '';
+    var loser = br.loserFactionId || br.loserFaction || br.loser || '';
+    if (!winner || !loser) return { ok: false, reason: 'missing-winner-loser' };
+    function _armyNameOf(army) {
+      return army ? String(army.name || army.id || army.armyId || '') : '';
+    }
+    function _armyFieldOf(army) {
+      if (!army || typeof army !== 'object') return 'soldiers';
+      if (army.soldiers !== undefined) return 'soldiers';
+      if (army.troops !== undefined) return 'troops';
+      if (army.strength !== undefined) return 'strength';
+      return 'soldiers';
+    }
+    function _toNum(value, fallback) {
+      var n = Number(value);
+      return isFinite(n) ? n : (fallback || 0);
+    }
+    function _partyNameOf(army, commanderName) {
+      var party = '';
+      if (commanderName && Array.isArray(G.chars)) {
+        var ch = _findChar(commanderName, G);
+        if (ch && ch.party) party = String(ch.party || '').trim();
+      }
+      if (!party && army && army.party) party = String(army.party || '').trim();
+      if (!party && army && army.partyName) party = String(army.partyName || '').trim();
+      if (!party && army && army.partyRef && army.partyRef.id) party = String(army.partyRef.id || '').trim();
+      return party;
+    }
+    function _buildArmySnapshot(army, side, loss, moraleDelta, loyaltyDelta, cohesionDelta, state, commanderName, commanderFate) {
+      return {
+        side: side || '',
+        armyId: army && (army.id || army.armyId || army.name || ''),
+        name: _armyNameOf(army),
+        owner: army && (army.owner || army.faction || ''),
+        faction: army && (army.faction || army.owner || ''),
+        commander: commanderName || '',
+        party: _partyNameOf(army, commanderName),
+        loss: loss || 0,
+        moraleDelta: moraleDelta || 0,
+        loyaltyDelta: loyaltyDelta || 0,
+        cohesionDelta: cohesionDelta || 0,
+        stateBefore: army && army._battleResultStateBefore ? army._battleResultStateBefore : (army && army.state) || '',
+        stateAfter: state || (army && army.state) || '',
+        routed: !!(army && army.routed),
+        disbanded: !!(army && army.disbanded),
+        commanderFate: commanderFate && commanderFate.name ? {
+          name: commanderFate.name,
+          outcome: String(commanderFate.outcome || 'survived')
+        } : null
+      };
+    }
+    function _syncCommanderBattleMemory(ch, army, summary) {
+      if (!ch || !summary) return;
+      var event = '战后' + (summary.side === 'attacker' ? '攻方' : summary.side === 'defender' ? '守方' : '军队') +
+        '·' + (_armyNameOf(army) || ch.name || '') +
+        '·伤亡' + (summary.loss || 0) +
+        '·士气' + (summary.moraleDelta || 0) +
+        '·忠诚' + (summary.loyaltyDelta || 0);
+      var mem = {
+        turn: G.turn || 0,
+        event: event,
+        emotion: summary.loss > 0 ? '紧' : '平',
+        importance: Math.max(3, Math.min(10, Math.round((summary.loss || 0) / 80) + Math.abs(summary.moraleDelta || 0) + 3)),
+        who: ch.name || '',
+        type: 'military',
+        source: 'battleResult',
+        participants: [winner, loser, _armyNameOf(army)].filter(Boolean),
+        location: army && (army.garrison || army.location || ''),
+        subject: ch.name || '',
+        summary: event
+      };
+      try {
+        if (global.CharFullSchema && typeof global.CharFullSchema.syncInteractionMemory === 'function') {
+          global.CharFullSchema.syncInteractionMemory(ch, mem, ch.name || '');
+        } else {
+          ch.lastInteractionMemory = mem;
+          if (!ch.recognitionState || typeof ch.recognitionState !== 'object') {
+            ch.recognitionState = {
+              subject: ch.name || '',
+              familiarity: 0,
+              level: '陌生',
+              lastTurn: 0,
+              lastEvent: '',
+              lastEmotion: '平',
+              lastType: 'general',
+              lastSource: '',
+              lastWho: '',
+              summary: '',
+              history: []
+            };
+          }
+          ch.recognitionState.lastTurn = mem.turn;
+          ch.recognitionState.lastEvent = mem.event;
+          ch.recognitionState.lastEmotion = mem.emotion;
+          ch.recognitionState.lastType = mem.type;
+          ch.recognitionState.lastSource = mem.source;
+          ch.recognitionState.lastWho = mem.who;
+          ch.recognitionState.summary = mem.summary;
+          ch.recognitionState.familiarity = Math.min(100, Math.max(0, (Number(ch.recognitionState.familiarity) || 0) + Math.max(4, Math.round((summary.loss || 0) / 100) + 4)));
+          ch.recognitionState.level = ch.recognitionState.familiarity >= 85 ? '知己' : (ch.recognitionState.familiarity >= 65 ? '熟识' : (ch.recognitionState.familiarity >= 35 ? '眼熟' : (ch.recognitionState.familiarity >= 10 ? '略识' : '陌生')));
+          if (!Array.isArray(ch.recognitionState.history)) ch.recognitionState.history = [];
+          ch.recognitionState.history.push({
+            turn: mem.turn,
+            subject: ch.name || '',
+            level: ch.recognitionState.level,
+            event: mem.summary,
+            emotion: mem.emotion
+          });
+          if (ch.recognitionState.history.length > 8) ch.recognitionState.history = ch.recognitionState.history.slice(-8);
+        }
+      } catch(_) {}
+    }
+    var attackerArmy = _findArmy(br.attackerArmyId || br.attackerArmy || br.attacker, G);
+    var defenderArmy = _findArmy(br.defenderArmyId || br.defenderArmy || br.defender, G);
+    var lossBySide = {
+      attacker: Math.max(0, Math.round(_toNum((br.casualties || {}).attacker, 0))),
+      defender: Math.max(0, Math.round(_toNum((br.casualties || {}).defender, 0)))
+    };
+    var appliedLossBySide = { attacker: 0, defender: 0 };
+    var sawSideEntry = { attacker: false, defender: false };
+    var handledCommanders = {};
+    var partyEffects = {};
+    function _partyBucket(name) {
+      if (!name) return null;
+      if (!partyEffects[name]) {
+        partyEffects[name] = {
+          party: name,
+          armies: [],
+          winCount: 0,
+          loseCount: 0,
+          lossTotal: 0,
+          moraleDelta: 0,
+          loyaltyDelta: 0,
+          cohesionDelta: 0,
+          commanderFates: 0
+        };
+      }
+      return partyEffects[name];
+    }
+    function _applyArmyEntry(entry, fallbackArmy, fallbackSide) {
+      if (!entry && !fallbackArmy) return null;
+      entry = entry || {};
+      var armyRef = entry.armyId || entry.id || entry.army || entry.name || entry.ref || entry.armyRef || entry.target || '';
+      var army = armyRef ? _findArmy(armyRef, G) : null;
+      if (!army) army = fallbackArmy || null;
+      if (!army) return null;
+      var side = String(entry.side || fallbackSide || '').toLowerCase();
+      if (side !== 'attacker' && side !== 'defender') side = fallbackSide || '';
+      if (side === 'attacker' || side === 'defender') sawSideEntry[side] = true;
+      var loss = entry.loss;
+      if (!isFinite(Number(loss))) loss = entry.soldiersLost;
+      if (!isFinite(Number(loss)) && entry.casualties && typeof entry.casualties === 'object') {
+        if (side === 'attacker') loss = entry.casualties.attacker;
+        else if (side === 'defender') loss = entry.casualties.defender;
+      }
+      if (!isFinite(Number(loss))) {
+        loss = side === 'attacker' ? lossBySide.attacker : (side === 'defender' ? lossBySide.defender : 0);
+        if (side === 'attacker') lossBySide.attacker = 0;
+        else if (side === 'defender') lossBySide.defender = 0;
+      } else if (side === 'attacker' || side === 'defender') {
+        lossBySide[side] = 0;
+      }
+      loss = Math.max(0, Math.round(_toNum(loss, 0)));
+      if (side === 'attacker') appliedLossBySide.attacker += loss;
+      else if (side === 'defender') appliedLossBySide.defender += loss;
+      var field = _armyFieldOf(army);
+      var beforeState = army.state || '';
+      army._battleResultStateBefore = beforeState;
+      if (loss > 0) _applyCasualty(army, loss);
+      var moraleDelta = isFinite(Number(entry.moraleDelta)) ? Number(entry.moraleDelta) : (loss > 0 ? -Math.max(1, Math.round(loss / 80)) : 0);
+      var loyaltyDelta = isFinite(Number(entry.loyaltyDelta)) ? Number(entry.loyaltyDelta) : (loss > 0 ? -Math.max(1, Math.round(loss / 120)) : 0);
+      var cohesionDelta = isFinite(Number(entry.cohesionDelta)) ? Number(entry.cohesionDelta) : ((loss > 0 && side === 'defender') ? -Math.max(1, Math.round(loss / 140)) : 0);
+      if (moraleDelta) army.morale = _clamp100((army.morale === undefined ? 50 : army.morale) + moraleDelta);
+      if (loyaltyDelta) army.loyalty = _clamp100((army.loyalty === undefined ? 50 : army.loyalty) + loyaltyDelta);
+      if (cohesionDelta) army.cohesion = _clamp100((army.cohesion === undefined ? 70 : army.cohesion) + cohesionDelta);
+      if (isFinite(Number(entry.mutinyRiskDelta))) army.mutinyRisk = Math.max(0, Math.min(100, Math.round((Number(army.mutinyRisk) || 0) + Number(entry.mutinyRiskDelta))));
+      if (isFinite(Number(entry.supplyDelta))) army.supply = _clamp100((army.supply === undefined ? 70 : army.supply) + Number(entry.supplyDelta));
+      var explicitState = String(entry.state || '').trim();
+      if (explicitState === 'routed' || explicitState === 'disbanded' || explicitState === 'garrison' || explicitState === 'marching' || explicitState === 'sieging') {
+        army.state = explicitState;
+      }
+      else if (army[field] !== undefined && Number(army[field]) <= 0) army.state = 'disbanded';
+      else if (typeof army.morale === 'number' && army.morale < 25 && loss > 0) army.state = 'routed';
+      else if (typeof army.loyalty === 'number' && army.loyalty < 20 && loss > 0) army.state = 'routed';
+      if (army.state === 'routed') army.routed = true;
+      if (army.state === 'disbanded') army.disbanded = true;
+      army._battleResultTurn = G.turn || 0;
+      army._battleResultBattleId = result.battleId;
+      var commanderName = String(entry.commander || army.commander || '').trim();
+      var commander = commanderName ? _findChar(commanderName, G) : null;
+      var commanderFate = entry.commanderFate || null;
+      if (!commanderFate && br.commanderFate && String(br.commanderFate.name || '') === commanderName) commanderFate = br.commanderFate;
+      if (commander && commanderFate && commanderFate.name) {
+        var outcome = String(commanderFate.outcome || 'survived');
+        commander._battleFate = outcome;
+        commander._battleFateTurn = G.turn || 0;
+        if (outcome === 'killed' || outcome === 'dead') commander.alive = false;
+        else if (outcome === 'captured') commander.capturedBy = winner;
+        else if (outcome === 'fled') commander._fledTurn = G.turn || 0;
+        else if (outcome === 'surrendered') commander.surrenderedTo = winner;
+        else if (outcome === 'injured') commander._battleInjured = true;
+        army.commanderFate = outcome;
+        if (outcome === 'killed' || outcome === 'dead' || outcome === 'captured' || outcome === 'surrendered' || outcome === 'fled') {
+          army._commanderLost = true;
+          if (outcome === 'killed' || outcome === 'dead') army.commanderAlive = false;
+          if (outcome === 'captured') army.commanderCaptured = true;
+          if (outcome === 'fled') army.commanderFled = true;
+        }
+      }
+      var summary = _buildArmySnapshot(army, side, loss, moraleDelta, loyaltyDelta, cohesionDelta, army.state || beforeState, commanderName, commanderFate);
+      result.affectedArmies.push(summary);
+      result.applied.affectedArmies.push(summary);
+      if (loss > 0) result.applied.casualties.push({ side: side || 'unknown', army: summary.name || summary.armyId || '', loss: loss });
+      if (commander && (loss > 0 || commanderFate)) {
+        _syncCommanderBattleMemory(commander, army, summary);
+        handledCommanders[commanderName] = true;
+      }
+      var partyName = summary.party;
+      if (partyName) {
+        var bucket = _partyBucket(partyName);
+        if (bucket) {
+          bucket.armies.push(summary);
+          bucket.lossTotal += loss;
+          bucket.moraleDelta += moraleDelta;
+          bucket.loyaltyDelta += loyaltyDelta;
+          bucket.cohesionDelta += cohesionDelta;
+          if (summary.routed || summary.disbanded) bucket.commanderFates += 1;
+          var armyFaction = summary.faction || summary.owner || '';
+          if (armyFaction && armyFaction === winner) bucket.winCount += 1;
+          else if (armyFaction && armyFaction === loser) bucket.loseCount += 1;
+          else if (summary.loss > 0) bucket.loseCount += 1;
+        }
+      }
+      if (commanderFate && commanderFate.name && !result.applied.commanderFate) {
+        result.applied.commanderFate = { name: commanderFate.name, outcome: String(commanderFate.outcome || 'survived'), ok: !!commander };
+      }
+      return summary;
+    }
+    var result = {
+      battleId: br.battleId || br.id || (typeof uid === 'function' ? uid() : ('battle_' + Date.now())),
+      turn: G.turn || 0,
+      structured: true,
+      verdict: 'structured',
+      winner: winner,
+      loser: loser,
+      attackerLoss: 0,
+      defenderLoss: 0,
+      affectedArmies: [],
+      partyStateEffects: [],
+      applied: { occupiedCityIds: [], casualties: [], affectedArmies: [], commanderFate: null, postBattleEffects: [], partyState: [] }
+    };
+    var cityIds = Array.isArray(br.occupiedCityIds) ? br.occupiedCityIds : [];
+    cityIds.forEach(function(cityId) {
+      var id = String(cityId);
+      var changed = false;
+      try {
+        var setter = global.setProvinceOwner || (global.TM && global.TM.ThreeSystems && global.TM.ThreeSystems.setProvinceOwner);
+        if (typeof setter === 'function') { setter(id, winner, 'battleResult'); changed = true; }
+      } catch(_) {}
+      if (Array.isArray(G.cities)) {
+        G.cities.forEach(function(c) {
+          if (!c) return;
+          if (String(c.id || c.cityId || c.name || c.provinceId || '') === id) {
+            c.owner = winner;
+            c.ownerFaction = winner;
+            c.faction = winner;
+            changed = true;
+          }
+        });
+      }
+      if (G.provinceStats && G.provinceStats[id]) {
+        G.provinceStats[id].owner = winner;
+        changed = true;
+      }
+      result.applied.occupiedCityIds.push({ id: id, ok: changed });
+    });
+    var affectedArmies = Array.isArray(br.affectedArmies) ? br.affectedArmies : [];
+    var attackerLoss = lossBySide.attacker;
+    var defenderLoss = lossBySide.defender;
+    if (affectedArmies.length) {
+      affectedArmies.forEach(function(entry) {
+        if (!entry || typeof entry !== 'object') return;
+        _applyArmyEntry(entry, null, String(entry.side || '').toLowerCase());
+      });
+    } else {
+      if (attackerArmy) _applyArmyEntry({ side: 'attacker', loss: attackerLoss }, attackerArmy, 'attacker');
+      if (defenderArmy) _applyArmyEntry({ side: 'defender', loss: defenderLoss }, defenderArmy, 'defender');
+      result.attackerLoss = attackerLoss;
+      result.defenderLoss = defenderLoss;
+    }
+    result.attackerLoss = sawSideEntry.attacker ? appliedLossBySide.attacker : attackerLoss;
+    result.defenderLoss = sawSideEntry.defender ? appliedLossBySide.defender : defenderLoss;
+    var fate = br.commanderFate || null;
+    if (fate && fate.name) {
+      var ch = _findChar(fate.name, G);
+      var outcome = String(fate.outcome || 'survived');
+      if (ch && !handledCommanders[fate.name]) {
+        ch._battleFate = outcome;
+        ch._battleFateTurn = G.turn || 0;
+        if (outcome === 'killed' || outcome === 'dead') ch.alive = false;
+        else if (outcome === 'captured') ch.capturedBy = winner;
+        else if (outcome === 'fled') ch._fledTurn = G.turn || 0;
+        else if (outcome === 'surrendered') ch.surrenderedTo = winner;
+        var fateArmy = null;
+        if (attackerArmy && String(attackerArmy.commander || '') === fate.name) fateArmy = attackerArmy;
+        else if (defenderArmy && String(defenderArmy.commander || '') === fate.name) fateArmy = defenderArmy;
+        else fateArmy = attackerArmy || defenderArmy || null;
+        _syncCommanderBattleMemory(ch, fateArmy, {
+          side: fateArmy === attackerArmy ? 'attacker' : (fateArmy === defenderArmy ? 'defender' : ''),
+          loss: Math.max(attackerLoss, defenderLoss),
+          moraleDelta: 0,
+          loyaltyDelta: 0,
+          commanderFate: fate,
+          state: outcome,
+          party: ch.party || ''
+        });
+      }
+      result.applied.commanderFate = { name: fate.name, outcome: outcome, ok: !!ch };
+    }
+    Object.keys(partyEffects).forEach(function(partyName) {
+      var ps = G.partyState && G.partyState[partyName];
+      var eff = partyEffects[partyName];
+      if (!ps) return;
+      if (!Array.isArray(ps.historyLog)) ps.historyLog = [];
+      var influenceDelta = 0;
+      var cohesionDelta = 0;
+      if (eff.winCount > 0) {
+        influenceDelta += Math.max(1, eff.winCount);
+        cohesionDelta += Math.max(1, Math.round(eff.winCount / 2));
+      }
+      if (eff.loseCount > 0 || (eff.winCount === 0 && eff.lossTotal > 0)) {
+        influenceDelta -= Math.max(1, eff.loseCount * 2 + Math.round(eff.lossTotal / 250));
+        cohesionDelta -= Math.max(1, eff.loseCount + Math.round(eff.lossTotal / 200) + eff.commanderFates);
+      } else if (eff.winCount > 0 && eff.lossTotal > 0) {
+        cohesionDelta -= Math.max(0, Math.round(eff.lossTotal / 400));
+      }
+      if (eff.moraleDelta) influenceDelta += Math.round(eff.moraleDelta / 10);
+      if (eff.loyaltyDelta) cohesionDelta += Math.round(eff.loyaltyDelta / 10);
+      ps.influence = Math.max(0, Math.min(100, (Number(ps.influence) || 0) + influenceDelta));
+      ps.cohesion = Math.max(0, Math.min(100, (Number(ps.cohesion) || 0) + cohesionDelta));
+      ps.lastShift = { turn: G.turn || 0, influenceDelta: influenceDelta, reason: 'battleResult:' + result.battleId };
+      var logItem = {
+        turn: G.turn || 0,
+        type: 'battleResult',
+        battleId: result.battleId,
+        party: partyName,
+        lossTotal: eff.lossTotal,
+        winCount: eff.winCount,
+        loseCount: eff.loseCount,
+        influenceDelta: influenceDelta,
+        cohesionDelta: cohesionDelta,
+        armies: eff.armies.map(function(a) { return a.name || a.armyId || ''; }).filter(Boolean)
+      };
+      ps.historyLog.push(logItem);
+      if (ps.historyLog.length > 20) ps.historyLog = ps.historyLog.slice(-20);
+      result.partyStateEffects.push(logItem);
+      result.applied.partyState.push(logItem);
+    });
+    var effects = Array.isArray(br.postBattleEffects) ? br.postBattleEffects : [];
+    if (effects.length) {
+      if (!G._postBattleEffects) G._postBattleEffects = [];
+      effects.forEach(function(eff) {
+        var item = Object.assign({ turn: G.turn || 0, battleId: result.battleId }, eff || {});
+        G._postBattleEffects.push(item);
+        result.applied.postBattleEffects.push(item);
+        if (item.target && G.partyState && G.partyState[item.target]) {
+          if (!G.partyState[item.target].historyLog) G.partyState[item.target].historyLog = [];
+          G.partyState[item.target].historyLog.push(item);
+        }
+      });
+    }
+    result.report = 'structured battleResult: ' + winner + ' > ' + loser;
+    if (!G.battleHistory) G.battleHistory = [];
+    G.battleHistory.push(result);
+    if (G.battleHistory.length > 100) G.battleHistory = G.battleHistory.slice(-100);
+    return { ok: true, result: result, applied: result.applied };
+  }
+
+  var api = {
+    getMilitarySystems: getMilitarySystems,
+    getMilitarySystemForArmy: getMilitarySystemForArmy,
+    payArrearsBaseline: payArrearsBaseline,
+    validatePayArrearsAdjustment: validatePayArrearsAdjustment,
+    applyPayArrearsPressure: applyPayArrearsPressure,
+    applyBattleResult: applyBattleResult,
+    _readConstant: _readConstant
+  };
+
+  if (!global.TM) global.TM = {};
+  global.TM.MilitarySystems = api;
+  global.MilitarySystems = api;
+  return api;
+})(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : globalThis));
+
 var BattleEngine = (function() {
   'use strict';
 
@@ -413,10 +1067,14 @@ var BattleEngine = (function() {
    * @returns {Object} 结算结果 {winner, loser, attackerLoss, defenderLoss, ratio, verdict, report}
    */
   function resolve(attackerArmy, defenderArmy, context) {
+    context = context || {};
+    if (context.battleResult || context.structuredVerdict) {
+      var structured = MilitarySystems.applyBattleResult(context.battleResult || context.structuredVerdict, context.root || (typeof GM !== 'undefined' ? GM : null));
+      if (structured && structured.ok) return structured.result;
+    }
     var cfg = _getConfig();
     if (!cfg.enabled) return null; // 未启用战斗引擎，回退AI自由裁量
 
-    context = context || {};
     var terrain = context.terrain || 'plains';
     var fortLevel = context.fortLevel || 0;
     var season = context.season || _getSeason();
@@ -578,6 +1236,17 @@ var BattleEngine = (function() {
       if (battle.phase === 'resolved') return; // 已结算
       if (battle.phase === 'march') return;    // 行军中，未接战
 
+      var structuredVerdict = battle.battleResult || battle.structuredVerdict || battle.structuredResult;
+      if (structuredVerdict) {
+        var structured = MilitarySystems.applyBattleResult(structuredVerdict, GM);
+        if (structured && structured.ok) {
+          battle.phase = 'resolved';
+          battle.result = structured.result;
+          GM._turnBattleResults.push(structured.result);
+        }
+        return;
+      }
+
       // 查找对应军队
       var attackerArmy = (GM.armies || []).find(function(a) {
         return a.name === battle.attackerArmy || a.faction === battle.attackerFaction;
@@ -648,6 +1317,7 @@ var BattleEngine = (function() {
   return {
     resolve: resolve,
     resolveAllBattles: resolveAllBattles,
+    applyStructuredResult: MilitarySystems.applyBattleResult,
     getPromptInjection: getPromptInjection,
     _getConfig: _getConfig,
     _getTerrainMod: _getTerrainMod,

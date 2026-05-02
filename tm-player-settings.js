@@ -91,7 +91,7 @@ async function doSaveGameDesktop(){
 // ============================================================
 //  设置弹窗
 // ============================================================
-// ⚠️⚠️⚠️ 警告：本函数被 tm-patches.js (line 89) openSettings=function(){...} 覆盖
+// ⚠️⚠️⚠️ 警告：本函数被 tm-patches.js (line 236) openSettings=function(){...} 覆盖
 //   实际运行的是 patches 版本·不是这里！要修改设置面板·请改 tm-patches.js
 //   保留此函数仅为兼容·勿在此处增加新内容（已发生过 P15 错加在此从未生效·见 commit ad9ab79）
 function openSettings(){

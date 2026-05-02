@@ -607,9 +607,49 @@ var _DEFAULT_OFFICIAL_RANKS = {
   rank9: { name: '九品', level: 9, salary: 80 }
 };
 /** 获取当前剧本的官职品级定义 */
+function _normalizeOfficialRanks(raw) {
+  if (!raw) return null;
+  if (Array.isArray(raw)) {
+    var out = {};
+    raw.forEach(function(name, idx) {
+      var key = 'rank_' + (idx + 1);
+      out[key] = {
+        name: String(name),
+        level: idx + 1,
+        salary: Math.max(20, Math.round(1000 - idx * 45))
+      };
+    });
+    return out;
+  }
+  if (typeof raw === 'object' && Object.keys(raw).length > 0) return raw;
+  return null;
+}
+
+function _readEngineOfficialRanks() {
+  var sources = [];
+  if (typeof GM !== 'undefined' && GM) sources.push(GM);
+  if (typeof P !== 'undefined' && P) sources.push(P);
+  if (typeof scriptData !== 'undefined' && scriptData) sources.push(scriptData);
+  for (var i = 0; i < sources.length; i++) {
+    try {
+      if (typeof TM !== 'undefined' && TM.EngineConstants && typeof TM.EngineConstants.read === 'function') {
+        var fromEngine = TM.EngineConstants.read('officialRanks', sources[i]);
+        var normalizedEngine = _normalizeOfficialRanks(fromEngine);
+        if (normalizedEngine) return normalizedEngine;
+      }
+      var direct = sources[i].engineConstants && sources[i].engineConstants.officialRanks;
+      var normalizedDirect = _normalizeOfficialRanks(direct);
+      if (normalizedDirect) return normalizedDirect;
+    } catch (_) {}
+  }
+  return null;
+}
+
 function getOfficialRanks() {
+  var engineRanks = _readEngineOfficialRanks();
+  if (engineRanks) return engineRanks;
   return (P.officialRanks && Object.keys(P.officialRanks).length > 0)
-    ? P.officialRanks : _DEFAULT_OFFICIAL_RANKS;
+    ? _normalizeOfficialRanks(P.officialRanks) : _DEFAULT_OFFICIAL_RANKS;
 }
 var OFFICIAL_RANKS = _DEFAULT_OFFICIAL_RANKS; // 兼容直接引用
 
@@ -1062,7 +1102,18 @@ function assignOfficialRank(characterName, position, rank) {
     return false;
   }
 
-  var rankInfo = OFFICIAL_RANKS[rank];
+  var ranks = (typeof getOfficialRanks === 'function') ? getOfficialRanks() : OFFICIAL_RANKS;
+  var rankInfo = ranks[rank];
+  if (!rankInfo) {
+    Object.keys(ranks || {}).some(function(key) {
+      if (ranks[key] && ranks[key].name === rank) {
+        rank = key;
+        rankInfo = ranks[key];
+        return true;
+      }
+      return false;
+    });
+  }
   if (!rankInfo) {
     toast('品级无效');
     return false;

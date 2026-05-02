@@ -18,6 +18,22 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, def) { return (v === undefined || v === null) ? (def || 0) : v; }
 
+  function hasCatalogKeyOffice(grp) {
+    var offices = Array.isArray(grp && grp.keyOffices) ? grp.keyOffices : [];
+    if (!offices.length) return false;
+    var catalog = null;
+    try {
+      catalog = (global.TM && TM.InfluenceGroups && typeof TM.InfluenceGroups.getCatalog === 'function') ? TM.InfluenceGroups.getCatalog(GM) : null;
+    } catch (_) {}
+    var typeCat = catalog && grp && catalog[grp.type];
+    var keys = typeCat && Array.isArray(typeCat.keyOffices) ? typeCat.keyOffices : [];
+    if (!keys.length) return true;
+    return offices.some(function(o) {
+      var text = String(o || '');
+      return keys.some(function(k) { return k && text.indexOf(String(k)) >= 0; });
+    });
+  }
+
   // ─── 确保数据模型完整 ───
   function ensureCorruptionModel() {
     if (!GM.corruption) GM.corruption = {};
@@ -97,6 +113,20 @@
     },
     // 2.6 宠臣/宦官/外戚
     innerCircle: function() {
+      var groups = GM.influenceGroupState || {};
+      var groupTotal = 0;
+      Object.keys(groups).forEach(function(name) {
+        var grp = groups[name];
+        if (!grp || typeof grp !== 'object') return;
+        if (grp.type !== 'eunuch' && grp.type !== 'waiqi' && grp.type !== 'consort') return;
+        var infl = Number(grp.influence) || 0;
+        if (infl < 60) return;
+        var coh = Number(grp.cohesion);
+        if (!isFinite(coh)) coh = 50;
+        var officeBonus = hasCatalogKeyOffice(grp) ? 3 : 0;
+        groupTotal += (infl - 60) * 0.4 + Math.max(0, (coh - 50) * 0.1) + officeBonus;
+      });
+      if (groupTotal > 0) return groupTotal;
       var chars = GM.chars || [];
       var active = chars.filter(function(c) {
         return c.influence > 80 && c.integrity < 30 && c.isImperialFavorite;

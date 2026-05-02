@@ -2,6 +2,25 @@
   "_comment": "天命·更新日志——新条目 unshift 到数组最前（由近及远）。格式：{date, module, title, items[]}；items 元素可为字符串或 {what, why}。",
   "entries": [
     {
+      "date": "2026-05-03",
+      "module": "phase6 战后联动与人物 refs",
+      "title": "战斗结果开始同时写回军队、主将记忆、党派状态与 typed refs",
+      "items": [
+        {
+          "what": "battleResult 新增 affectedArmies 结构，战后可按军队逐条写回兵力、士气、忠诚、状态和主将命运。",
+          "why": "以前只有总伤亡和单一主将命运，战后信息太粗，很多后续系统读不到细节。"
+        },
+        {
+          "what": "人物补进 lastInteractionMemory / recognitionState，并在 AI 上下文里可读可写。",
+          "why": "角色会记住最近一次关键互动，后续推演不会再每回合像刚认识一样。"
+        },
+        {
+          "what": "开局迁移与三系统启动时同步 partyRef / factionRef / officeRef。",
+          "why": "把旧字符串关系收口成 typed refs，减少引用漂移和后续查找分叉。"
+        }
+      ]
+    },
+    {
       "date": "2026-05-01",
       "module": "邸报·P18 设置面板全面审计·补全 5 处 UI 缺失 + 修正 3 处隐藏覆盖",
       "title": "用户反馈\"看看你改错的那个文件还有没有什么内容应该放到这个设置面板的·有没有同样错误导致的 ui 缺失·并想办法避免以后再出这种错误·并看看这个真正的设置面板的全部设置项能否真正起作用\"。完成 P18 三段审计：(1) UI 缺失补全 (2) Patches 覆盖审计 (3) 全部设置项生效审计。打包到\"测试版1.1.6\"·官方剧本随包。",

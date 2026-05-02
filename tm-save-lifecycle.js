@@ -747,6 +747,20 @@ function fullLoadGame(data){
       }
     } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'fullLoadGame] CharFullSchema.ensureAll 失败:') : console.error('[fullLoadGame] CharFullSchema.ensureAll 失败:', e); }
 
+    try {
+      if (typeof EngineMigration !== 'undefined' && typeof EngineMigration.run === 'function') {
+        EngineMigration.run(GM);
+      }
+    } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'fullLoadGame] EngineMigration.run 失败:') : console.error('[fullLoadGame] EngineMigration.run 失败:', e); }
+
+    try {
+      if (typeof RelGraph !== 'undefined' && typeof RelGraph.syncCharRefs === 'function' && Array.isArray(GM.chars)) {
+        GM.chars.forEach(function(ch) {
+          try { RelGraph.syncCharRefs(ch, GM); } catch(_) {}
+        });
+      }
+    } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'fullLoadGame] RelGraph.syncCharRefs 失败:') : console.error('[fullLoadGame] RelGraph.syncCharRefs 失败:', e); }
+
     // 重建索引
     if (typeof buildIndices === 'function') buildIndices();
 
@@ -815,6 +829,27 @@ function fullLoadGame(data){
 
     // 老存档兼容：GM.fiscal.{royalClanPressure,huangzhuangIncome,imperialBusinesses} 缺失时从 P.fiscalConfig.neicangRules 镜像
     // tm-fiscal-fixed-expense.js:_calcRoyalStipend 等读 G.fiscal.royalClanPressure·缺则宗禄岁出 = 0
+    // Old-save compatibility: mirror explicit scenario constants/groups into GM and P.
+    try {
+      var _scEC = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
+      if (_scEC) {
+        if (!GM.engineConstants && _scEC.engineConstants) {
+          GM.engineConstants = deepClone(_scEC.engineConstants);
+          console.log('[fullLoadGame] GM.engineConstants restored from scenario');
+        }
+        if ((!Array.isArray(GM.influenceGroups) || GM.influenceGroups.length === 0) && Array.isArray(_scEC.influenceGroups)) {
+          GM.influenceGroups = deepClone(_scEC.influenceGroups);
+          console.log('[fullLoadGame] GM.influenceGroups restored from scenario');
+        }
+        if (P && typeof P === 'object') {
+          if (!P.engineConstants && _scEC.engineConstants) P.engineConstants = deepClone(_scEC.engineConstants);
+          if ((!Array.isArray(P.influenceGroups) || P.influenceGroups.length === 0) && Array.isArray(_scEC.influenceGroups)) {
+            P.influenceGroups = deepClone(_scEC.influenceGroups);
+          }
+        }
+      }
+    } catch(_ecLE) { try{window.TM&&TM.errors&&TM.errors.captureSilent(_ecLE,'fullLoadGame-engineConstants-GM-P');}catch(_){} }
+
     try {
       var _scFC = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
       var _fcSrc = (P.fiscalConfig && P.fiscalConfig.neicangRules)

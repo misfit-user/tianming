@@ -10,6 +10,8 @@
 
 // ⚠️⚠️⚠️ 警告：本函数被 tm-save-lifecycle.js (line 1009) generateMemorials=function... 覆盖
 //   要修改本函数行为·请去 tm-save-lifecycle.js 改·此处仅占位·实际运行版在 save-lifecycle
+// ⚠️⚠️⚠️ 警告：本函数被 tm-save-lifecycle.js (line 1009) generateMemorials=function... 覆盖
+//   要修改本函数行为·请去 tm-save-lifecycle.js 改·此处仅占位·实际运行版在 save-lifecycle
 function generateMemorials(){
   // tokens 预算 16000·原 2-4 份奏疏利用不足·按 tokens 量力而为生成更多
   // 默认提高到 6-10 份·玩家在编辑器可通过 memorialMin/memorialMax 覆盖
@@ -979,4 +981,3 @@ function _summonRecall(name) {
   ch._travelReason = '奉诏召回面圣';
   toast(name + '已奉旨启程回京，约' + Math.ceil(travelTurns * dpv) + '日后抵达');
 }
-

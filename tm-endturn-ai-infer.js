@@ -2018,6 +2018,39 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           }
         }
         if (pi.characterBio) sysP += '\u3002' + pi.characterBio;
+        var _regentSignal = null;
+        try {
+          if (TM && TM.InfluenceGroups && typeof TM.InfluenceGroups.buildRegentSignal === 'function') {
+            _regentSignal = TM.InfluenceGroups.buildRegentSignal(GM);
+            GM.regentSignal = _regentSignal;
+            GM.regentState = GM.regentState || {};
+            GM.regentState.signal = _regentSignal;
+            GM.regentState.active = !!(_regentSignal && _regentSignal.active);
+            GM.regentState.hardCeiling = !!(_regentSignal && _regentSignal.hardCeiling);
+            GM.regentState.lastCheckTurn = GM.turn || 0;
+          }
+        } catch(_regentSignalE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_regentSignalE, 'endturn] regent signal build failed') : console.warn('[endturn] regent signal build failed', _regentSignalE); }
+        if (_regentSignal && _regentSignal.active) {
+          sysP += '\n\u300c\u6444\u653f\u4fe1\u53f7\u300d\uff1a' + (_regentSignal.rulerName || '\u672a\u77e5\u541b\u4e3b');
+          if (_regentSignal.rulerTitle) sysP += ' / ' + _regentSignal.rulerTitle;
+          if (_regentSignal.rulerAge !== null && _regentSignal.rulerAge !== undefined) sysP += ' / \u5e74\u9f84' + _regentSignal.rulerAge;
+          if (_regentSignal.rulerHealth !== null && _regentSignal.rulerHealth !== undefined) sysP += ' / \u5065\u5eb7' + _regentSignal.rulerHealth;
+          if (_regentSignal.reasons && _regentSignal.reasons.length > 0) sysP += ' / \u89e6\u53d1:' + _regentSignal.reasons.join('\u3001');
+          if (_regentSignal.hardCeiling) {
+            sysP += '\n  \u26a0 \u8fd9\u662f hard ceiling\uff0c\u4e0d\u5141\u8bb8\u53ea\u5199\u53d9\u4e8b\u3002\u5fc5\u987b\u5728 regent_decisions \u4e2d\u7ed9\u51fa\u660e\u786e\u51b3\u65ad\u3002';
+          } else {
+            sysP += '\n  \u8bf7\u5728 regent_decisions \u4e2d\u7ed9\u51fa\u5904\u7406\u65b9\u6848\u3002';
+          }
+        }
+        if (Array.isArray(GM._ccHeldItems) && GM._ccHeldItems.length > 0) {
+          sysP += '\n\u3010\u7559\u4e2d\u8bae\u9898\u00b7\u53ef\u5efa\u8bae\u518d\u8bae\u3011';
+          GM._ccHeldItems.slice(0, 5).forEach(function(it, i) {
+            if (!it || it.finalBlocked) return;
+            var ht = (typeof it === 'string') ? it : (typeof it.topic === 'string' ? it.topic : (it.topic && it.topic.topic) || '');
+            sysP += '\n  ' + (i + 1) + '. ' + ht + '\u00b7\u963b\u6320\u8005:' + (it.blockedBy || '\u53cd\u5bf9\u65b9') + '\u00b7\u7559\u4e2d' + Math.max(0, (GM.turn || 0) - (it.turn || GM.turn || 0)) + '\u56de\u5408';
+          });
+          sysP += '\n  \u53ef\u9009: reissue_topics:[{topic, reason}]\u3002\u82e5\u5f62\u52bf\u5df2\u53d8\uff0c\u53ef\u5efa\u8bae\u8d77\u590d\u518d\u8bae\uff1b\u4e0d\u8981\u53cd\u590d\u63a8\u8350\u5df2 finalBlocked \u7684\u8bae\u9898\u3002';
+        }
         if (pi.characterAppearance) sysP += '\n  \u5916\u8C8C\uFF1A' + pi.characterAppearance;
         if (pi.factionGoal) sysP += '\n  \u6218\u7565\u76EE\u6807\uFF1A' + pi.factionGoal;
         // 玩家角色的私人关系网（家人、故交、仇敌）
@@ -2192,6 +2225,14 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         sysP += '\n社会阶层有各自的诉求：加税→满意度降，减负→满意度升';
         sysP += '\n- 满意度极低→抗税、骚乱、流民、甚至起义';
       }
+    }
+    try {
+      if (TM && TM.ClassEngine && typeof TM.ClassEngine.buildAlertPrompt === 'function') {
+        var _classAlertPrompt = TM.ClassEngine.buildAlertPrompt(GM, { limit: 8 });
+        if (_classAlertPrompt) sysP += _classAlertPrompt;
+      }
+    } catch(_classAlertPromptE) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classAlertPromptE, 'sysP] 阶层警报注入失败') : console.warn('[sysP] 阶层警报注入失败', _classAlertPromptE);
     }
 
     // 4.5: 党派内部动态
@@ -2437,6 +2478,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     sysP += '\n你可以通过返回JSON中的对应字段修改游戏中的一切：';
     sysP += '\n- resource_changes: 修改任何资源变量';
     sysP += '\n- char_updates: 修改角色忠诚/野心/压力/所在地/立场/党派等（new_location/new_stance/new_party）';
+    sysP += '\n- battleResult: 结构化战斗结果。若本回合明确发生战斗，请输出 {winnerFactionId, loserFactionId, occupiedCityIds, casualties:{attacker,defender}, affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}], commanderFate:{name,outcome}, postBattleEffects[]}，胜负/占城/伤亡不得只写在叙事里。';
     sysP += '\n\n【NPC自主行为系统·核心——每回合必须生成】';
     sysP += '\nnpc_actions是世界活力的引擎。每回合应有5-10条NPC自主行为，涵盖不同层级的角色。';
     sysP += '\nbehaviorType可用类型：';
@@ -2730,7 +2772,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
     sysP += '\n  ⚠ 涉及行军/围城的事件，必须在geoData中提供地理推算数据！';
     sysP += '\n- faction_relation_changes: 改变势力间关系';
     sysP += '\n- party_changes: \u4FEE\u6539\u515A\u6D3E\u72B6\u6001\uFF08influence_delta\u5F71\u54CD\u529B\u3001new_status\u6D3B\u8DC3/\u5F0F\u5FAE/\u88AB\u538B\u5236/\u5DF2\u89E3\u6563\u3001new_leader\u9996\u9886\u66F4\u66FF\u3001new_agenda\u8BAE\u7A0B\u53D8\u5316\u3001new_shortGoal\u77ED\u671F\u76EE\u6807\u53D8\u5316\uFF09';
-    sysP += '\n- class_changes: \u4FEE\u6539\u9636\u5C42\u72B6\u6001\uFF08satisfaction_delta\u6EE1\u610F\u5EA6\u3001influence_delta\u5F71\u54CD\u529B\u3001new_demands\u8BC9\u6C42\u968F\u5C40\u52BF\u53D8\u5316\u3001new_status\u5730\u4F4D\u53D8\u52A8\uFF09';
+    sysP += '\n- class_changes: \u4FEE\u6539\u9636\u5C42\u72B6\u6001\uFF08satisfaction_delta\u6EE1\u610F\u5EA6\u3001influence_delta\u5F71\u54CD\u529B\u3001new_demands\u8BC9\u6C42\u968F\u5C40\u52BF\u53D8\u5316\u3001new_status\u5730\u4F4D\u53D8\u52A8\u3001partyOutcomeRef\u53EF\u6807\u6CE8\u515A\u6D3E\u80DC\u8D1F\u6765\u6E90\uFF09';
+    sysP += '\n- class_alert_responses: \u56DE\u5E94\u9636\u5C42\u4E34\u754C\u8B66\u62A5\uFF08alertId\u3001action=address/defer/partial\u3001reason\uFF09';
+    sysP += '\n- regent_decisions: \u6444\u653f\u51b3\u65ad\uFF08action\u3001subject\u3001regentName\u3001hardCeiling\u3001reason\uFF09';
+    sysP += '\n- reissue_topics: \u5efa\u8bae\u5c06\u7559\u4e2d\u518c\u8bae\u9898\u8d77\u590d\u518d\u8bae\uff08topic\u3001reason\uff09';
     sysP += '\n- army_changes: 修改部队兵力/士气/训练（降至0→全军覆没）';
     sysP += '\n- item_changes: 让角色获得或失去物品';
     sysP += '\n- era_state_delta: 调整时代参数（社会稳定/经济/集权/军事等）';
@@ -3934,7 +3979,10 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         "\"goal_updates\":[{\"name\":\"\u89D2\u8272\u540D\",\"goalId\":\"goal_1\",\"action\":\"update/add/complete/replace\",\"longTerm\":\"\u957F\u671F\u76EE\u6807(add/replace\u65F6\u5FC5\u586B)\",\"shortTerm\":\"\u5F53\u524D\u77ED\u671F\u76EE\u6807\",\"progress\":\"0-100\",\"context\":\"\u5F53\u524D\u884C\u52A8\u65B9\u5411(1\u53E5)\",\"type\":\"power/wealth/revenge/protect/knowledge/faith(add\u65F6\u5FC5\u586B)\",\"priority\":\"1-10\"}],\"character_deaths\":[{\"name\":\"角色名\",\"reason\":\"死因描述\"}],\"char_updates\":[{\"name\":\"角色名\",\"loyalty_delta\":0,\"ambition_delta\":0,\"stress_delta\":0,\"intelligence_delta\":0,\"valor_delta\":0,\"military_delta\":0,\"administration_delta\":0,\"management_delta\":0,\"charisma_delta\":0,\"diplomacy_delta\":0,\"benevolence_delta\":0,\"legitimacy_delta\":0,\"add_traits\":[\"新获得的特质id\"],\"remove_traits\":[\"失去的特质id\"],\"new_location\":\"新所在地(可选,如被贬/外派/召回)\",\"new_stance\":\"新立场(可选)\",\"new_party\":\"新党派(可选)\",\"action_type\":\"行为类型(punish/reward/betray/mercy/declare_war/reform等)\",\"reason\":\"原因\"}],\"faction_changes\":[{\"name\":\"\u52BF\u529B\u540D\",\"strength_delta\":0,\"economy_delta\":0,\"playerRelation_delta\":0,\"reason\":\"\u539F\u56E0\"}],\"party_changes\":[{\"name\":\"\u515A\u6D3E\u540D\",\"influence_delta\":0,\"new_status\":\"\u6D3B\u8DC3/\u5F0F\u5FAE/\u88AB\u538B\u5236/\u5DF2\u89E3\u6563(\u53EF\u9009)\",\"new_leader\":\"\u65B0\u9996\u9886(\u53EF\u9009)\",\"new_agenda\":\"\u65B0\u8BAE\u7A0B(\u53EF\u9009)\",\"new_shortGoal\":\"\u65B0\u77ED\u671F\u76EE\u6807(\u53EF\u9009)\",\"reason\":\"\u539F\u56E0\"}],"+
         "\"faction_events\":[{\"actor\":\"\u52BF\u529BA\",\"target\":\"\u52BF\u529BB\u6216\u7A7A(\u5185\u653F\u4E8B\u4EF6\u53EF\u4E0D\u586Btarget)\",\"action\":\"\u5177\u4F53\u884C\u4E3A\u63CF\u8FF0(30\u5B57)\",\"actionType\":\"\u5916\u4EA4/\u5185\u653F/\u519B\u4E8B/\u7ECF\u6D4E\",\"result\":\"\u7ED3\u679C(30\u5B57)\",\"strength_effect\":0,\"geoData\":{\"routeKm\":0,\"terrainDifficulty\":0.5,\"hasOfficialRoad\":true,\"routeDescription\":\"\u7ECF\u2026\u2026\",\"passesAndBarriers\":[],\"fortLevel\":0,\"garrison\":0}}],"+
         "\"faction_relation_changes\":[{\"from\":\"\u52BF\u529BA\",\"to\":\"\u52BF\u529BB\",\"type\":\"\u65B0\u5173\u7CFB\",\"delta\":\u53D8\u5316\u91CF,\"reason\":\"\u539F\u56E0\"}],"+
-        "\"class_changes\":[{\"name\":\"\u9636\u5C42\u540D\",\"satisfaction_delta\":0,\"influence_delta\":0,\"new_demands\":\"\u65B0\u8BC9\u6C42(\u53EF\u9009)\",\"new_status\":\"\u65B0\u5730\u4F4D(\u53EF\u9009)\",\"reason\":\"\u539F\u56E0\"}],"+
+        "\"class_changes\":[{\"name\":\"\u9636\u5C42\u540D\",\"satisfaction_delta\":0,\"influence_delta\":0,\"new_demands\":\"\u65B0\u8BC9\u6C42(\u53EF\u9009)\",\"new_status\":\"\u65B0\u5730\u4F4D(\u53EF\u9009)\",\"partyOutcomeRef\":[{\"partyName\":\"\u515A\u6D3E\u540D\",\"outcome\":\"win/lose/blocked\"}],\"reason\":\"\u539F\u56E0\"}],"+
+        "\"class_alert_responses\":[{\"alertId\":\"class:\u9636\u5C42\u540D\",\"action\":\"address/defer/partial\",\"reason\":\"\u4E3A\u4F55\u5904\u7406\u3001\u6401\u7F6E\u6216\u90E8\u5206\u5904\u7406\"}],"+
+        "\"regent_decisions\":[{\"subject\":\"\u5e1d\u4f4d/\u53d7\u6444\u8005\",\"regentName\":\"\u6444\u653f\u4eba\u9009\",\"action\":\"confirm/appoint/defer/revoke/stabilize\",\"hardCeiling\":true,\"reason\":\"\u5e7c\u4e3b\u6216\u5e74\u9f84/\u5065\u5eb7\u89e6\u53d1\u6444\u653f\"}],"+
+        "\"reissue_topics\":[{\"topic\":\"\u7559\u4e2d\u8bae\u9898\u539f\u6587\",\"reason\":\"\u4e3a\u4f55\u5f62\u52bf\u5df2\u53d8\u3001\u5e94\u8d77\u590d\u518d\u8bae\"}],"+
         "\"army_changes\":[{\"name\":\"\u90E8\u961F\u540D\",\"soldiers_delta\":\u5175\u529B\u53D8\u5316,\"morale_delta\":\u58EB\u6C14\u53D8\u5316,\"training_delta\":\u8BAD\u7EC3\u53D8\u5316,\"destination\":\"\u8C03\u5175\u76EE\u7684\u5730(\u53EF\u9009)\",\"reason\":\"\u539F\u56E0\"}],"+
         "\"item_changes\":[{\"name\":\"\u7269\u54C1\u540D\",\"acquired\":true,\"owner\":\"\u65B0\u6301\u6709\u8005\",\"reason\":\"\u83B7\u5F97/\u5931\u53BB\u539F\u56E0\"}],"+
         "\"era_state_delta\":{\"socialStability_delta\":0,\"economicProsperity_delta\":0,\"centralControl_delta\":0,\"militaryProfessionalism_delta\":0},"+
@@ -5687,7 +5735,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               // 兜底：AI 常只写 personnel_changes (展示用) 而不写 office_assignments — applier 里做备胎消费
               personnel_changes: Array.isArray(p1.personnel_changes) ? p1.personnel_changes : [],
               // 问天 directive 合规回报
-              directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : []
+              directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : [],
+              regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
             });
           }
         } catch(_applyErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr); }
@@ -7055,19 +7104,57 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             var cls = null;
             if (GM.classes) GM.classes.forEach(function(c) { if (c.name === cc.name) cls = c; });
             if (!cls) return;
-            if (cc.satisfaction_delta) {
-              var oldS = parseInt(cls.satisfaction) || 50;
-              cls.satisfaction = clamp(oldS + clamp(parseInt(cc.satisfaction_delta)||0, -20, 20), 0, 100);
-              recordChange('classes', cc.name, 'satisfaction', oldS, cls.satisfaction, cc.reason || 'AI\u63A8\u6F14');
+            var _classWrite = null;
+            if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassChange === 'function') {
+              try {
+                _classWrite = TM.ClassEngine.applyClassChange(GM, cls, cc, { turn: GM.turn, source: 'endturn-ai-infer' });
+              } catch(_clsE) {
+                (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_clsE, 'endturn] class change helper:') : console.warn('[endturn] class change helper:', _clsE);
+              }
             }
-            if (cc.influence_delta) {
-              var oldI = parseInt(cls.influence || cls.classInfluence) || 50;
-              cls.influence = clamp(oldI + clamp(parseInt(cc.influence_delta)||0, -20, 20), 0, 100);
-              recordChange('classes', cc.name, 'influence', oldI, cls.influence, cc.reason || 'AI\u63A8\u6F14');
+            if (_classWrite && _classWrite.ok) {
+              recordChange('classes', cc.name, 'satisfaction', _classWrite.before.satisfaction, _classWrite.after.satisfaction, cc.reason || 'AI\u63A8\u6F14');
+              recordChange('classes', cc.name, 'influence', _classWrite.before.influence, _classWrite.after.influence, cc.reason || 'AI\u63A8\u6F14');
+            } else {
+              var _fallbackSatApplied = 0;
+              if (cc.satisfaction_delta) {
+                var oldS = parseInt(cls.satisfaction) || 50;
+                cls.satisfaction = clamp(oldS + clamp(parseInt(cc.satisfaction_delta)||0, -20, 20), 0, 100);
+                _fallbackSatApplied = cls.satisfaction - oldS;
+                recordChange('classes', cc.name, 'satisfaction', oldS, cls.satisfaction, cc.reason || 'AI\u63A8\u6F14');
+              }
+              if (cc.influence_delta) {
+                var oldI = parseInt(cls.influence || cls.classInfluence) || 50;
+                cls.influence = clamp(oldI + clamp(parseInt(cc.influence_delta)||0, -20, 20), 0, 100);
+                recordChange('classes', cc.name, 'influence', oldI, cls.influence, cc.reason || 'AI\u63A8\u6F14');
+              }
+              if (cc.new_demands) cls.demands = cc.new_demands;
+              if (cc.new_status) cls.status = cc.new_status;
+              if (_fallbackSatApplied && TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassPartyCoupling === 'function') {
+                try {
+                  TM.ClassEngine.applyClassPartyCoupling(GM, cls, _fallbackSatApplied, { turn: GM.turn, source: 'endturn-ai-infer', reason: cc.reason || '' });
+                } catch(_classCoupleFallbackE) {
+                  (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classCoupleFallbackE, 'endturn] class party fallback coupling:') : console.warn('[endturn] class party fallback coupling:', _classCoupleFallbackE);
+                }
+              }
             }
-            if (cc.new_demands) cls.demands = cc.new_demands;
-            if (cc.new_status) cls.status = cc.new_status;
           });
+        }
+
+        if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyAlertResponses === 'function') {
+          try {
+            TM.ClassEngine.applyAlertResponses(GM, p1.class_alert_responses, { turn: GM.turn, source: 'endturn-ai-infer' });
+          } catch(_classAlertE) {
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classAlertE, 'endturn] class alert responses:') : console.warn('[endturn] class alert responses:', _classAlertE);
+          }
+        }
+
+        if (Array.isArray(p1.reissue_topics) && p1.reissue_topics.length > 0 && typeof window._ty3_applyAIReissueTopics === 'function') {
+          try {
+            window._ty3_applyAIReissueTopics(p1.reissue_topics, { turn: GM.turn, source: 'endturn-ai-infer', deferOpen: true });
+          } catch(_reissueTopicsE) {
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_reissueTopicsE, 'endturn] reissue topics:') : console.warn('[endturn] reissue topics:', _reissueTopicsE);
+          }
         }
 
         // 处理部队变化
@@ -7923,6 +8010,14 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         }
 
         // ── 势力关系动态变化 ──
+        if (TM && TM.ClassEngine && typeof TM.ClassEngine.finalizeTurn === 'function') {
+          try {
+            TM.ClassEngine.finalizeTurn(GM, p1, { turn: GM.turn, source: 'endturn-ai-infer' });
+          } catch(_clsFinalizeE) {
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_clsFinalizeE, 'endturn] class finalize:') : console.warn('[endturn] class finalize:', _clsFinalizeE);
+          }
+        }
+
         if (p1.faction_relation_shift && Array.isArray(p1.faction_relation_shift) && GM.factionRelationsMap) {
           p1.faction_relation_shift.forEach(function(rs) {
             if (!rs || !rs.from || !rs.to) return;
@@ -9517,6 +9612,13 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                 var clsObj = (GM.classes || []).find(function(c) { return c.name === cls; });
                 if (clsObj) {
                   clsObj.satisfaction = Math.max(0, Math.min(100, (clsObj.satisfaction || 50) + impact));
+                  if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassPartyCoupling === 'function' && impact) {
+                    try {
+                      TM.ClassEngine.applyClassPartyCoupling(GM, clsObj, impact, { turn: GM.turn, source: 'endturn-ai-infer', reason: info.reason || '' });
+                    } catch(_classCoupleImpactE) {
+                      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classCoupleImpactE, 'endturn] class party impact coupling:') : console.warn('[endturn] class party impact coupling:', _classCoupleImpactE);
+                    }
+                  }
                   // 联动分级不满：满意度剧降推高 unrestLevels 阶梯
                   if (!clsObj.unrestLevels) clsObj.unrestLevels = { grievance: 60, petition: 70, strike: 80, revolt: 90 };
                   if (impact < -5) {
@@ -10376,7 +10478,17 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               p15.class_reactions.forEach(function(cr) {
                 if (!cr.class) return;
                 var cls = GM.classes.find(function(c){return c.name===cr.class;});
-                if (cls && cr.satisfaction_delta) cls.satisfaction = clamp(parseInt(cls.satisfaction||50) + clamp(parseInt(cr.satisfaction_delta)||0, -8, 8), 0, 100);
+                if (cls && cr.satisfaction_delta) {
+                  var _classReactionOldSat = parseInt(cls.satisfaction||50) || 50;
+                  cls.satisfaction = clamp(_classReactionOldSat + clamp(parseInt(cr.satisfaction_delta)||0, -8, 8), 0, 100);
+                  if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassPartyCoupling === 'function') {
+                    try {
+                      TM.ClassEngine.applyClassPartyCoupling(GM, cls, cls.satisfaction - _classReactionOldSat, { turn: GM.turn, source: 'endturn-ai-infer', reason: cr.reason || '' });
+                    } catch(_classCoupleReactionE) {
+                      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classCoupleReactionE, 'endturn] class reaction coupling:') : console.warn('[endturn] class reaction coupling:', _classCoupleReactionE);
+                    }
+                  }
+                }
               });
             }
             // 应用党派动作到事件日志
@@ -10714,6 +10826,15 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
           });
         });
         if (p1 && p1.army_changes && p1.army_changes.length > 0) tp18 += '\u672C\u56DE\u5408\u519B\u4E8B\u53D8\u52A8\uFF1A' + p1.army_changes.map(function(a){return a.name+' \u5175'+a.soldiers_delta;}).join('\uFF1B') + '\n';
+        try {
+          var _phase5Systems = (typeof MilitarySystems !== 'undefined' && MilitarySystems.getMilitarySystems) ? MilitarySystems.getMilitarySystems(GM) : null;
+          if (_phase5Systems && _phase5Systems.length) {
+            tp18 += '\n\u3010\u672c\u671d\u5175\u5236\u53c2\u8003\u3011\n';
+            _phase5Systems.slice(0, 8).forEach(function(ms) {
+              tp18 += '  - ' + ms.id + '\u00b7' + ms.name + '\u00b7recruitment=' + ms.recruitmentType + '\u00b7salary=' + ms.salaryType + '\u00b7loyalty=' + ms.loyaltyAttribution + '\n';
+            });
+          }
+        } catch(_phase5SysE) {}
 
         tp18 += '\n【铁律·势力军事自主】\n';
         tp18 += '· 非玩家势力（后金/察哈尔/朝鲜/郑氏/流民/外族等）的军队·由你自主推演其军事行动：扩张/掠袭/征服/防御/内争/联盟/背叛\n';
@@ -10722,12 +10843,19 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp18 += '· 两势力交锋·按双方兵力/士气/装备/补给/训练/统帅能力综合推演·给出具体伤亡与结果\n';
         tp18 += '· 每个非玩家势力本回合应至少 1 条 faction_military_actions 条目（兵力调动/作战/备战/征募等）\n';
         tp18 += '\n请返回JSON：{"military_situation":"全局军事态势分析(200字)","border_threats":"边境威胁评估(150字)","army_morale_analysis":"各军士气分析和风险(100字)","supplementary_army_changes":[{"name":"部队","faction":"所属","soldiers_delta":0,"morale_delta":0,"reason":""}],"faction_military_actions":[{"faction":"势力名","action":"军事行动30字","targetFaction":"目标势力可空","casualties":0,"outcome":"结果30字","rationale":"动机30字"}],"war_probability":"下回合爆发战争的概率和方向(80字)"}';
+        tp18 += '\n\u82e5\u672c\u56de\u5408\u660e\u786e\u53d1\u751f\u4e00\u573a\u53ef\u843d\u5730\u6218\u6597/\u5360\u57ce\uff0c\u8fd8\u5fc5\u987b\u8fd4\u56de battleResult:{winnerFactionId,loserFactionId,occupiedCityIds,casualties:{attacker,defender},affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}],attackerArmyId,defenderArmyId,commanderFate:{name,outcome},postBattleEffects[]}.\u82e5\u591a\u573a\u6218\u6597\uff0c\u9009\u6700\u91cd\u5927\u4e00\u573a\u5199 battleResult\uff0c\u5176\u4f59\u7559\u5728 faction_military_actions\u3002';
         var resp18 = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+P.ai.key},
           body:JSON.stringify({model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp18}], temperature:0.7, max_tokens:_tok(12000)})});
         if (resp18.ok) {
           var j18 = await resp18.json(); _checkTruncated(j18, '军事变动'); var c18 = j18.choices&&j18.choices[0]?j18.choices[0].message.content:'';
           var p18 = extractJSON(c18);
           if (p18) {
+            if (p18.battleResult && typeof MilitarySystems !== 'undefined' && MilitarySystems.applyBattleResult) {
+              var _phase5Battle = MilitarySystems.applyBattleResult(p18.battleResult, GM);
+              if (_phase5Battle && _phase5Battle.ok && typeof addEB === 'function') {
+                addEB('\u519b\u4e8b', '\u6218\u62a5\u7ed3\u6784\u5316\u843d\u5730\uff1a' + (_phase5Battle.result.winner || '') + '\u80dc' + (_phase5Battle.result.loser || ''));
+              }
+            }
             if (p18.supplementary_army_changes && Array.isArray(p18.supplementary_army_changes)) {
               p18.supplementary_army_changes.forEach(function(ac) {
                 if (!ac.name) return;
@@ -10948,7 +11076,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
             enrichP += '  每个阶层须返回:\n';
             enrichP += '    representativeNpcs:[从上列角色中挑选 2-4 个]\n';
             enrichP += '    leaders:[领袖 1-3 人，可与代表重合]\n';
-            enrichP += '    supportingParties:[倾向支持的党派]\n';
+            enrichP += '    supportingParties:[{class:"倾向支持的党派",affinity:0.5-1}]\n';
             enrichP += '    regionalVariants:[2-4 个地域变体 {region,satisfaction,distinguishing}]\n';
             enrichP += '    internalFaction:[1-2 个内部分化 {name,size,stance}]\n';
             enrichP += '    privileges、obligations、demands 补全\n';
@@ -10991,7 +11119,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
 
           enrichP += '\n返回 JSON：{\n';
           if (_sparseFacs.length) enrichP += '"factions_enriched":[{"name":"原势力名(锚点)","leaderInfo":{...},"heirInfo":{...}或null,"resources":"","mainstream":"","culture":"","goal":"","description":""}],\n';
-          if (_sparseClasses.length) enrichP += '"classes_enriched":[{"name":"","representativeNpcs":[],"leaders":[],"supportingParties":[],"regionalVariants":[],"internalFaction":[],"privileges":"","obligations":"","demands":""}],\n';
+          if (_sparseClasses.length) enrichP += '"classes_enriched":[{"name":"","representativeNpcs":[],"leaders":[],"supportingParties":[{"class":"","affinity":0.5}],"regionalVariants":[],"internalFaction":[],"privileges":"","obligations":"","demands":""}],\n';
           if (_sparseParties.length) enrichP += '"parties_enriched":[{"name":"","shortGoal":"","longGoal":"","description":"","members":"","base":"","policyStance":[],"socialBase":[],"agenda_history":[],"focal_disputes":[]}],\n';
           if (_sparseChars.length) enrichP += '"characters_enriched":[{"name":"","family":"","birthplace":"","ethnicity":"","culture":"","learning":"","faith":"","speechStyle":"","personalGoal":"","personality":"","bio":"","appearance":"","traits":[]}]\n';
           enrichP += '}\n请严格按史实生成；name 必须精确对应上方骨架名。';
@@ -11703,6 +11831,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
               if (_ex.selfIdentity) _lines.push('    \u81EA\u8BC6\uFF1A' + _ex.selfIdentity);
               if (_ex.personalityCore) _lines.push('    \u4EBA\u683C\u6838\u5FC3\uFF1A' + _ex.personalityCore);
               if (_ex.speechThread) _lines.push('    \u53E3\u543B\u4E3B\u7EBF\uFF1A' + _ex.speechThread);
+              if (_ex.lastInteractionMemory) _lines.push('    \u8FD1\u671F\u4EA4\u4E92\uFF1A' + (typeof CharFullSchema !== 'undefined' && CharFullSchema.describeLastInteractionMemory ? CharFullSchema.describeLastInteractionMemory(_ex.lastInteractionMemory) : String(_ex.lastInteractionMemory || '')));
+              if (_ex.recognitionState) _lines.push('    \u8BA4\u77E5\u72B6\u6001\uFF1A' + (typeof CharFullSchema !== 'undefined' && CharFullSchema.describeRecognitionState ? CharFullSchema.describeRecognitionState(_ex.recognitionState) : String((_ex.recognitionState && _ex.recognitionState.summary) || _ex.recognitionState || '')));
             }
             _npcFullCtx += _lines.join('\n') + '\n';
           });
@@ -11728,13 +11858,15 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
         tp07 += '    "attitudeTowardsPlayer":"\u5BF9\u73A9\u5BB6\u6700\u65B0\u6001\u5EA6\uFF081\u53E5\uFF09",\n';
         tp07 += '    "unspokenConcern":"\u85CF\u5728\u5FC3\u5E95\u6CA1\u8BF4\u7684\u62C5\u5FE7\uFF081\u53E5\uFF09",\n';
         tp07 += '    "infoAsymmetry":"\u4ED6\u4E0E\u540C\u50DA\u4FE1\u606F\u4E0D\u5BF9\u79F0\u4E4B\u5904\uFF081\u53E5\uFF09",\n';
-        tp07 += '    "recentMood":"\u8FD1\u671F\u5FC3\u7EEA\u6CE2\u52A8\uFF081\u53E5\uFF0C\u5982\u201C\u6027\u6FC0\u6124\u60E0\u6B4C\u805A\u5973\u201D\u3001\u201D\u541C\u4EB2\u75C5\u9ED8\u4F9D\u7D95\u4FDD\u5377\u4F24\u5BEB\u201D\uFF09"\n';
+        tp07 += '    "recentMood":"\u8FD1\u671F\u5FC3\u7EEA\u6CE2\u52A8\uFF081\u53E5\uFF0C\u5982\u201C\u6027\u6FC0\u6124\u60E0\u6B4C\u805A\u5973\u201D\u3001\u201D\u541C\u4EB2\u75C5\u9ED8\u4F9D\u7D95\u4FDD\u5377\u4F24\u5BEB\u201D\uFF09",\n';
+        tp07 += '    "lastInteractionMemory":"\u6700\u8FD1\u4E00\u6B21\u4EA4\u4E92\u8BB0\u5FC6\u6458\u8981\uff081\u53E5\uff0c\u8BF4\u6E05\u5BF9\u8C61/\u4E8B\u4EF6/\u60C5\u7EEA\uff09",\n';
+        tp07 += '    "recognitionState":{"subject":"\u4ED6\u76EE\u524D\u6700\u91CD\u8981\u7684\u8BA4\u77E5\u5BF9\u8C61","familiarity":0,"level":"\u964C\u751F","lastTurn":0,"lastEvent":"\u6700\u8FD1\u4E00\u6B21\u8BA4\u77E5\u4E8B\u4EF6\u6458\u8981","lastEmotion":"\u5E73","lastType":"general","lastSource":"witnessed","lastWho":"\u5BF9\u8C61\u540D","summary":"\u4E00\u53E5\u603B\u7EDF\u53D9\u8FF0"}\n';
         tp07 += '  }]\n}\n';
 
         tp07 += '\n\u3010\u786C\u89C4\u5219\u3011\n';
         tp07 += '\u00B7 \u4E3A\u4E0A\u8FF0\u6240\u6709\u76EE\u6807 NPC \u5168\u90E8\u8F93\u51FA\uFF0C\u4E00\u4E2A\u4E0D\u843D\u4E0B\n';
         tp07 += '\u00B7 \u3010\u7A33\u5B9A\u753B\u50CF\u4E94\u5B57\u6BB5\u3011\uFF08selfIdentity/personalityCore/abilityAwareness/fiveVirtues/speechThread\uFF09\u00B7\u82E5\u4E0A\u65B9\u5DF2\u6807\u26BF \u5DF2\u751F\u6210\u00B7\u4E0D\u8981\u91CD\u65B0\u751F\u6210\uFF0C\u7ECD\u8FFD\u7B80\u5185\u5BB9\u3002\u672A\u751F\u6210\u7684\u2014\u2014\u8981\u4F9D\u636E\u4E0A\u65B9\u8BE6\u8FF0\u4EE5\u6DF1\u5316\u5B57\u6BB5\u8BA1\u5207\u4EBA\u8BA1\u751F\u6210\u3002\n';
-        tp07 += '\u00B7 \u3010\u52A8\u6001\u4FE1\u606F\u8FC7\u3011\uFF08knows/doesntKnow/currentFocus/worldviewShift/attitudeTowardsPlayer/unspokenConcern/infoAsymmetry/recentMood\uFF09\u00B7\u6BCF\u56DE\u5408\u91CD\u65B0\u5224\u5B9A\u3002\n';
+        tp07 += '\u00B7 \u3010\u52A8\u6001\u4FE1\u606F\u8FC7\u3011\uFF08knows/doesntKnow/currentFocus/worldviewShift/attitudeTowardsPlayer/unspokenConcern/infoAsymmetry/recentMood/lastInteractionMemory/recognitionState\uFF09\u00B7\u6BCF\u56DE\u5408\u91CD\u65B0\u5224\u5B9A\u3002\n';
         tp07 += '\u00B7 \u4FE1\u606F\u5185\u5BB9\u5FC5\u987B\u7B26\u5408\u8BE5 NPC \u7684\u804C\u4F4D/\u6D3E\u7CFB/\u5173\u7CFB\u7F51/\u5730\u70B9\u2014\u2014\u4F60\u51ED\u4EC0\u4E48\u77E5\u9053\u8FD9\u4EF6\uFF1F\n';
         tp07 += '\u00B7 \u5178\u578B\u4EAC\u5B98\u77E5\u672C\u56DE\u5408\u7684\u671D\u8BAE/\u4EBA\u4E8B/\u594F\u758F\uFF0C\u5916\u5B98\u77E5\u672C\u5730\u4E8B\u52A1+\u90B8\u62A5\u6BB5\u843D\uFF1B\u6EE1\u65CF\u4EAC\u5B98\u4E0E\u6C49\u65CF\u4EAC\u5B98\u77E5\u7684\u4E0D\u540C\u3002\n';
         tp07 += '\u00B7 \u4E0D\u8981\u8BA9\u6240\u6709 NPC \u90FD"\u77E5\u9053\u5168\u90E8"\u2014\u2014\u6709\u4EBA\u6D88\u606F\u7075\u901A\uFF0C\u6709\u4EBA\u6D88\u606F\u9ED8\u585E\n';
@@ -11781,6 +11913,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars) {
                 unspokenConcern: String(ent.unspokenConcern||'').slice(0,80),
                 infoAsymmetry: String(ent.infoAsymmetry||'').slice(0,80),
                 recentMood: String(ent.recentMood||'').slice(0,80),
+                lastInteractionMemory: _ex.lastInteractionMemory || (ent.lastInteractionMemory && typeof ent.lastInteractionMemory === 'object' ? ent.lastInteractionMemory : null),
+                recognitionState: _ex.recognitionState || (ent.recognitionState && typeof ent.recognitionState === 'object' ? ent.recognitionState : null),
                 _turn: GM.turn
               };
               if (!_ex._identityInitialized && (_rec.selfIdentity || _rec.personalityCore || _rec.speechThread)) {

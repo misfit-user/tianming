@@ -40,7 +40,10 @@
     faction_changes: 'array', faction_events: 'array', faction_relation_changes: 'array', faction_updates: 'array',
     party_changes: 'array', party_updates: 'array',
     class_changes: 'array', class_updates: 'array',
-    army_changes: 'array', item_changes: 'array',
+    class_alert_responses: 'array',
+    regent_decisions: 'array',
+    reissue_topics: 'array',
+    army_changes: 'array', battleResult: 'object', item_changes: 'array',
     office_changes: 'array', office_assignments: 'array', office_spawn: 'array',
     personnel_changes: 'array',
     vassal_changes: 'array', title_changes: 'array', building_changes: 'array',
@@ -81,7 +84,11 @@
     current_issues_update: ['action'],
     party_changes: ['name'],
     class_changes: ['name'],
-    faction_changes: ['name']
+    class_alert_responses: ['alertId', 'action'],
+    regent_decisions: ['action', 'reason'],
+    reissue_topics: ['topic', 'reason'],
+    faction_changes: ['name'],
+    battleResult: ['winnerFactionId', 'loserFactionId']
   };
 
   // ─── 实际使用的 map（每次 validate 时解析，保证 schema 热更生效） ───
@@ -154,7 +161,13 @@
       }
 
       // 子字段检查
-      if (expected === 'array' && REQUIRED_SUBFIELDS[key]) {
+      if (expected === 'object' && REQUIRED_SUBFIELDS[key]) {
+        REQUIRED_SUBFIELDS[key].forEach(function(sub) {
+          if (!output[key] || output[key][sub] === undefined || output[key][sub] === null || output[key][sub] === '') {
+            warnings.push('[missing] ' + key + '.' + sub + ' 缺失');
+          }
+        });
+      } else if (expected === 'array' && REQUIRED_SUBFIELDS[key]) {
         var required = REQUIRED_SUBFIELDS[key];
         output[key].forEach(function(item, idx) {
           if (!item || typeof item !== 'object') {

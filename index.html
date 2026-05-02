@@ -356,6 +356,11 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-chronicle-tracker.js?v=2026042714"></script>
 <script src="tm-chronicle-effects.js?v=2026042714"></script>
 <script src="tm-relations.js?v=2026042714"></script>
+<!-- 2026-05-01 6系统翻新 phase 0：引擎常量/Typed RelGraph/迁移框架 -->
+<script src="tm-engine-constants.js?v=2026050202"></script>
+<script src="tm-rel-graph.js?v=2026050101"></script>
+<script src="tm-migration.js?v=2026050101"></script>
+<script src="tm-influence-groups.js?v=2026050202"></script>
 <script src="tm-edict-lifecycle.js"></script>
 <!-- 2026-04-30 Phase 4.1 时间工具：回合→干支年月日/相对时间/时辰 -->
 <script src="tm-time-utils.js?v=2026050101"></script>
@@ -423,7 +428,8 @@ console.log('天命游戏脚本开始加载...');
 <!-- R138 (2026-04-25) endturn-prep 再拆·启动 AI 规划独立成 tm-ai-planning -->
 <script src="tm-ai-planning.js?v=2026042816"></script>
 <script src="tm-endturn-prep.js?v=2026042816"></script>
-<script src="tm-endturn-ai-infer.js?v=2026050101"></script>
+<script src="tm-class-engine.js?v=2026050102"></script>
+<script src="tm-endturn-ai-infer.js?v=2026050202"></script>
 <script src="tm-endturn-core.js?v=2026043001"></script>
 <script src="tm-endturn-render.js?v=2026042820a"></script>
 <script src="tm-patches.js?v=2026050105"></script>
@@ -519,10 +525,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-checklist.js?v=2026042714" defer></script>
 <script src="tm-cheatsheet-overlay.js?v=2026042714" defer></script>
 <script src="tm-onboard-tools.js?v=2026042714" defer></script>
-<script src="tm-ai-schema.js?v=2026042714"></script>
-<script src="tm-ai-output-validator.js?v=2026042714"></script>
+<script src="tm-ai-schema.js?v=2026050202"></script>
+<script src="tm-ai-output-validator.js?v=2026050202"></script>
 <script src="tm-data-access.js?v=2026042714"></script>
-<script src="tm-ai-change-applier.js?v=2026042816"></script>
+<script src="tm-ai-change-applier.js?v=2026050202"></script>
 <script src="tm-ai-npc-memorials.js"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=2026042714"></script>

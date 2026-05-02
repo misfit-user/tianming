@@ -443,6 +443,11 @@
           }
         }
       }
+      if (global.MilitarySystems && typeof global.MilitarySystems.applyPayArrearsPressure === 'function') {
+        global.MilitarySystems.applyPayArrearsPressure(a, { source: 'three-systems-update' }, global.GM);
+      } else if (global.TM && global.TM.MilitarySystems && typeof global.TM.MilitarySystems.applyPayArrearsPressure === 'function') {
+        global.TM.MilitarySystems.applyPayArrearsPressure(a, { source: 'three-systems-update' }, global.GM);
+      }
       // 3. 士气崩溃判定
       if (a.supply < 20) {
         a.morale = Math.max(0, a.morale - 5);
@@ -798,6 +803,11 @@
       backfillHostileFactionArmies();
       // 6. 人物社交网络
       if (Array.isArray(GM.chars)) GM.chars.forEach(extendCharacterSocialFields);
+      if (global.RelGraph && typeof global.RelGraph.syncCharRefs === 'function' && Array.isArray(GM.chars)) {
+        GM.chars.forEach(function(ch) {
+          try { global.RelGraph.syncCharRefs(ch, global.GM); } catch(_) {}
+        });
+      }
       inferCharacterNetworks();
       console.log('[三系统扩展] 完成·势力+', (GM.facs||[]).length, '·党派+', Object.keys(GM.partyState||{}).length, '·军队+', (GM.armies||[]).length, '·角色+', (GM.chars||[]).length);
     } catch(e) {

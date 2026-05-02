@@ -263,6 +263,27 @@ openSettings=function(){
     "<div style=\"font-size:0.68rem;color:var(--txt-d);margin-top:0.3rem;line-height:1.5;\">均留空或 0 = 走自动探测。下方【保存所有设置】按钮一并生效。</div>"+
     "</div>"+
 
+    "<div class=\"settings-section\"><h4>\u6A21\u578B\u80FD\u529B\u6821\u9A8C</h4>"+
+    "<div id=\"s-model-probe-body\">" + _renderModelProbePanel('primary') + '<div style="margin-top:0.4rem;"></div>' + _renderModelProbePanel('secondary') + "</div>"+
+    "<div style=\"margin-top:0.6rem;padding:0.4rem;background:rgba(184,154,83,0.04);border-radius:3px;\">"+
+    "<div style=\"font-size:0.7rem;color:var(--gold-d);margin-bottom:0.3rem;\">\u4E3B API \u64CD\u4F5C</div>"+
+    "<div style=\"display:flex;gap:0.3rem;flex-wrap:wrap;\">"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext('primary')\">\u4E0A\u4E0B\u6587</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput('primary')\">\u8F93\u51FA\u5B9E\u6D4B</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport('primary')\">\u6A21\u578B\u81EA\u62A5</button>"+
+    "<button class=\"bt bs bsm\" onclick=\"_showAvailableModels('primary')\">\u5217\u51FA\u53EF\u7528\u6A21\u578B</button>"+
+    "</div></div>"+
+    "<div style=\"margin-top:0.4rem;padding:0.4rem;background:rgba(138,92,245,0.04);border-radius:3px;\">"+
+    "<div style=\"font-size:0.7rem;color:var(--purple,#8a5cf5);margin-bottom:0.3rem;\">\u6B21 API \u64CD\u4F5C\uFF08\u672A\u914D\u5219\u6309\u94AE\u63D0\u9192\uFF09</div>"+
+    "<div style=\"display:flex;gap:0.3rem;flex-wrap:wrap;\">"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunContext('secondary')\">\u4E0A\u4E0B\u6587</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunOutput('secondary')\">\u8F93\u51FA\u5B9E\u6D4B</button>"+
+    "<button class=\"bt bp bsm\" onclick=\"_probeRunSelfReport('secondary')\">\u6A21\u578B\u81EA\u62A5</button>"+
+    "<button class=\"bt bs bsm\" onclick=\"_showAvailableModels('secondary')\">\u5217\u51FA\u53EF\u7528\u6A21\u578B</button>"+
+    "</div></div>"+
+    "<div style=\"margin-top:0.4rem;\"><button class=\"bt bs bsm\" onclick=\"_probeClearCache()\">\u6E05\u9664\u63A2\u6D4B\u7F13\u5B58</button></div>"+
+    "</div>"+
+
     // 文风
     "<div class=\"settings-section\"><h4>\u6587\u98CE</h4>"+
     "<div class=\"rw\"><div class=\"fd\"><label>\u5168\u5C40</label><select id=\"s-style\"><option value=\"\u6587\u5B66\u5316\" "+((P.conf.style||"")=="\u6587\u5B66\u5316"?"selected":"")+">\u6587\u5B66\u5316</option><option value=\"\u53F2\u4E66\u4F53\" "+((P.conf.style||"")=="\u53F2\u4E66\u4F53"?"selected":"")+">\u53F2\u4E66\u4F53</option><option value=\"\u622F\u5267\u5316\" "+((P.conf.style||"")=="\u622F\u5267\u5316"?"selected":"")+">\u622F\u5267\u5316</option><option value=\"\u7AE0\u56DE\u4F53\" "+((P.conf.style||"")=="\u7AE0\u56DE\u4F53"?"selected":"")+">\u7AE0\u56DE\u4F53</option><option value=\"\u7EAA\u4F20\u4F53\" "+((P.conf.style||"")=="\u7EAA\u4F20\u4F53"?"selected":"")+">\u7EAA\u4F20\u4F53</option><option value=\"\u767D\u8BDD\u6587\" "+((P.conf.style||"")=="\u767D\u8BDD\u6587"?"selected":"")+">\u767D\u8BDD\u6587</option></select></div><div class=\"fd\"><label>\u96BE\u5EA6</label><select id=\"s-diff\"><option "+((P.conf.difficulty||"")=="\u7B80\u5355"?"selected":"")+">\u7B80\u5355</option><option "+((P.conf.difficulty||"")=="\u666E\u901A"?"selected":"")+">\u666E\u901A</option><option "+((P.conf.difficulty||"")=="\u56F0\u96BE"?"selected":"")+">\u56F0\u96BE</option></select></div></div>"+
@@ -1188,7 +1209,7 @@ function doActualStart(sid){
   }
   // 初始化GM（完整版，包含所有必要属性）
   var sc=findScenarioById(sid);
-  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};if(_prevSaveName)GM.saveName=_prevSaveName;
+  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};if(_prevSaveName)GM.saveName=_prevSaveName;
 
   // 根据era智能推断eraState缺失字段（当剧本未定义eraState时使用合理默认值）
   if (!sc.eraState && sc.era && GM.eraState) {
@@ -1217,6 +1238,14 @@ function doActualStart(sid){
   if (sc.offendGroups) P.offendGroups = deepClone(sc.offendGroups);
   if (sc.keju) P.keju = deepClone(sc.keju);
   if (sc.playerInfo) P.playerInfo = deepClone(sc.playerInfo);
+  if (sc.engineConstants) {
+    GM.engineConstants = deepClone(sc.engineConstants);
+    P.engineConstants = deepClone(sc.engineConstants);
+  }
+  if (Array.isArray(sc.influenceGroups)) {
+    GM.influenceGroups = deepClone(sc.influenceGroups);
+    P.influenceGroups = deepClone(sc.influenceGroups);
+  }
 
   // 初始皇命（钉子条目 + 隐藏天机）写入 12 表系统的 imperialEdict（玩家锁·AI 永读不写）
   if (sc.imperialEdicts && sc.imperialEdicts.length > 0 && window.MemTables) {

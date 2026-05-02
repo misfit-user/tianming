@@ -64,22 +64,119 @@ var _OFFICE_CLASSIFIER_PATTERNS = [
   [/\u5B97\u4EBA|\u4E09\u516C|\u4E09\u5B64|\u4E09\u5C11|\u592A\u5E08|\u592A\u5085|\u592A\u4FDD|\u5C11\u5E08|\u5C11\u5085|\u5C11\u4FDD|\u987A\u5929\u5E9C|\u5E94\u5929\u5E9C|\u7235|\u4F2F\u7235|\u4FAF|\u7687\u65CF|\u5B97\u5BA4/, { court:'central', group:'xunqi' }]
 ];
 
+function _officeEngineConstant(path, fallbackValue) {
+  var sources = [];
+  if (typeof GM !== 'undefined' && GM) sources.push(GM);
+  if (typeof P !== 'undefined' && P) sources.push(P);
+  if (typeof scriptData !== 'undefined' && scriptData) sources.push(scriptData);
+  for (var i = 0; i < sources.length; i++) {
+    try {
+      if (typeof TM !== 'undefined' && TM.EngineConstants && typeof TM.EngineConstants.read === 'function') {
+        var value = TM.EngineConstants.read(path, sources[i]);
+        if (value !== undefined) return value;
+      } else if (sources[i].engineConstants && sources[i].engineConstants[path] !== undefined) {
+        return sources[i].engineConstants[path];
+      }
+    } catch (_) {}
+  }
+  return fallbackValue;
+}
+
+function _officeNormalizeSubtabItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  var key = item.key || item.id || item.group;
+  if (!key) return null;
+  return {
+    key: key,
+    name: item.name || item.label || key,
+    desc: item.desc || item.description || ''
+  };
+}
+
+function _officeNormalizeSubtabs(raw) {
+  if (!raw) return null;
+  if (!Array.isArray(raw) && typeof raw === 'object') {
+    var out = {};
+    ['central', 'inner', 'region'].forEach(function(court) {
+      var list = Array.isArray(raw[court]) ? raw[court] : [];
+      out[court] = list.map(_officeNormalizeSubtabItem).filter(Boolean);
+      if (!out[court].some(function(item) { return item.key === 'all'; })) {
+        out[court].unshift({ key:'all', name:'\u5168\u90E8', desc:'' });
+      }
+    });
+    return out;
+  }
+  if (Array.isArray(raw)) {
+    var central = [{ key:'all', name:'\u5168\u90E8', desc:'' }];
+    raw.forEach(function(item) {
+      var normalized = _officeNormalizeSubtabItem(item);
+      if (normalized) central.push(normalized);
+    });
+    return { central: central, inner: OFFICE_SUBTABS.inner, region: OFFICE_SUBTABS.region };
+  }
+  return null;
+}
+
+function _officeGetSubtabs(courtKey) {
+  var raw = _officeEngineConstant('officeSubtabs', null);
+  var config = _officeNormalizeSubtabs(raw) || OFFICE_SUBTABS;
+  return (config && Array.isArray(config[courtKey]) && config[courtKey].length)
+    ? config[courtKey]
+    : [{ key:'all', name:'\u5168\u90E8', desc:'' }];
+}
+
+function _officeCompileClassifierPatterns(raw) {
+  if (!Array.isArray(raw) || !raw.length) return null;
+  var out = [];
+  raw.forEach(function(item) {
+    if (!item) return;
+    if (Array.isArray(item) && item[0] && item[1]) {
+      out.push(item);
+      return;
+    }
+    var pattern = item.pattern || item.regex || item.match;
+    var court = item.court;
+    var group = item.group || item.subtabKey || item.id;
+    if (!pattern || !court || !group) return;
+    try {
+      out.push([new RegExp(pattern), { court: court, group: group }]);
+    } catch (_) {}
+  });
+  return out.length ? out : null;
+}
+
+function _officeClassifierSignature() {
+  var raw = _officeEngineConstant('officeClassifierPatterns', null);
+  if (!raw) return 'legacy';
+  try { return JSON.stringify(raw); }
+  catch (_) { return 'dynamic'; }
+}
+
+function _officeGetClassifierPatterns() {
+  return _officeCompileClassifierPatterns(_officeEngineConstant('officeClassifierPatterns', null)) || _OFFICE_CLASSIFIER_PATTERNS;
+}
+
 function _officeClassifyDept(dept) {
   if (!dept) return { court:'central', group:'sijian' };
-  if (dept._classified) return dept._classified;
+  var signature = _officeClassifierSignature();
+  if (dept._classified && dept._classifiedSig === signature) return dept._classified;
   // 剧本显式声明
   if (dept.court && dept.group) {
     dept._classified = { court: dept.court, group: dept.group };
+    dept._classifiedSig = signature;
     return dept._classified;
   }
   var name = dept.name || '';
-  for (var i = 0; i < _OFFICE_CLASSIFIER_PATTERNS.length; i++) {
-    if (_OFFICE_CLASSIFIER_PATTERNS[i][0].test(name)) {
-      dept._classified = _OFFICE_CLASSIFIER_PATTERNS[i][1];
+  var patterns = _officeGetClassifierPatterns();
+  for (var i = 0; i < patterns.length; i++) {
+    if (patterns[i][0].test(name)) {
+      dept._classified = patterns[i][1];
+      dept._classifiedSig = signature;
       return dept._classified;
     }
   }
   dept._classified = { court:'central', group:'sijian' };
+  dept._classifiedSig = signature;
   return dept._classified;
 }
 
@@ -355,7 +452,7 @@ function _renderOfficeTreeList(container) {
     + '</div>';
 
   // 二级 subtab
-  var _subCfg = (typeof OFFICE_SUBTABS !== 'undefined' && OFFICE_SUBTABS[courtKey]) ? OFFICE_SUBTABS[courtKey] : [{key:'all', name:'\u5168\u90E8', desc:''}];
+  var _subCfg = (typeof _officeGetSubtabs === 'function') ? _officeGetSubtabs(courtKey) : ((typeof OFFICE_SUBTABS !== 'undefined' && OFFICE_SUBTABS[courtKey]) ? OFFICE_SUBTABS[courtKey] : [{key:'all', name:'\u5168\u90E8', desc:''}]);
   var _subtabsHtml = '<div class="og-subtabs-bar">';
   _subCfg.forEach(function(s){
     var cnt = _countSubtabPos(courtKey, s.key);
@@ -996,7 +1093,7 @@ function _renderOfficeTreeSVG(container) {
     + '</div>';
 
   // 二级 subtab
-  var _subCfg = (typeof OFFICE_SUBTABS !== 'undefined' && OFFICE_SUBTABS[courtKey]) ? OFFICE_SUBTABS[courtKey] : [{key:'all', name:'\u5168\u90E8', desc:''}];
+  var _subCfg = (typeof _officeGetSubtabs === 'function') ? _officeGetSubtabs(courtKey) : ((typeof OFFICE_SUBTABS !== 'undefined' && OFFICE_SUBTABS[courtKey]) ? OFFICE_SUBTABS[courtKey] : [{key:'all', name:'\u5168\u90E8', desc:''}]);
   var _subtabsHtml = '<div class="og-subtabs-bar">';
   _subCfg.forEach(function(s){
     var cnt = _countSubtabPos(courtKey, s.key);
@@ -1414,6 +1511,240 @@ function _countSubtabPos(courtKey, subKey) {
 }
 
 /** 部门效能摘要·v2 三栏 + 预警条 */
+function _officeFindCharByName(name, root) {
+  root = root || ((typeof GM !== 'undefined' && GM) ? GM : null);
+  if (!name || !root) return null;
+  try {
+    if (typeof findCharByName === 'function') {
+      var found = findCharByName(name);
+      if (found) return found;
+    }
+  } catch (_) {}
+  if (root._indices && root._indices.charByName && typeof root._indices.charByName.get === 'function') {
+    var byIndex = root._indices.charByName.get(name);
+    if (byIndex) return byIndex;
+  }
+  var pools = [root.chars, root.characters, root.people];
+  for (var i = 0; i < pools.length; i++) {
+    var list = pools[i];
+    if (!Array.isArray(list)) continue;
+    for (var j = 0; j < list.length; j++) {
+      if (list[j] && list[j].name === name) return list[j];
+    }
+  }
+  return null;
+}
+
+function _officeCharStat(ch, key, fallbackValue) {
+  if (!ch) return fallbackValue;
+  var value = ch[key];
+  if (value === undefined || value === null) value = ch.resources && ch.resources[key];
+  return (value === undefined || value === null) ? fallbackValue : value;
+}
+
+function _officeWalkPositions(root, visitor) {
+  function walk(nodes) {
+    (nodes || []).forEach(function(dept) {
+      (dept.positions || []).forEach(function(pos) { visitor(dept, pos); });
+      if (dept.subs) walk(dept.subs);
+    });
+  }
+  walk((root || GM).officeTree || []);
+}
+
+function _officeDismissalGradeConfig(grade) {
+  var map = {
+    S: { count:4, prestige:20, loyalty:12 },
+    A: { count:3, prestige:15, loyalty:10 },
+    B: { count:2, prestige:10, loyalty:7 },
+    C: { count:1, prestige:6, loyalty:4 },
+    D: { count:1, prestige:3, loyalty:2 }
+  };
+  return map[String(grade || 'C').toUpperCase()] || map.C;
+}
+
+function _officeBindingHintOf(dept, pos) {
+  return (pos && (pos.bindingHint || pos.binding)) || (dept && (dept.bindingHint || dept.binding)) || '';
+}
+
+function _officeApplyBindingHint(root, ch, dept, pos, grade, partyName, config) {
+  var hint = _officeBindingHintOf(dept, pos);
+  if (!hint) return;
+  if (!root._officeBindingLog) root._officeBindingLog = [];
+  var entry = {
+    turn: root.turn || 0,
+    party: partyName,
+    character: ch && ch.name,
+    dept: dept && dept.name,
+    position: pos && pos.name,
+    grade: grade,
+    bindingHint: hint
+  };
+  root._officeBindingLog.push(entry);
+  if (hint === 'region' || hint === 'local' || hint === 'province') {
+    var oldLoyalty = _officeCharStat(ch, 'loyalty', 50);
+    if (ch) ch.loyalty = Math.max(0, oldLoyalty - config.loyalty);
+    entry.effect = 'loyalty';
+    entry.delta = -config.loyalty;
+  } else if (hint === 'ministry' || hint === 'dept' || hint === 'central') {
+    if (!root._officeDeptShocks) root._officeDeptShocks = [];
+    var shock = {
+      turn: root.turn || 0,
+      party: partyName,
+      dept: dept && dept.name,
+      position: pos && pos.name,
+      grade: grade,
+      turnsLeft: 3,
+      label: '\u90e8\u9662\u9707\u8361'
+    };
+    root._officeDeptShocks.push(shock);
+    if (dept) dept._efficiencyShock = shock;
+    entry.effect = 'deptShock';
+  }
+}
+
+function _officeDismissCandidateScore(item) {
+  var ch = item.ch || {};
+  var rankLevel = (typeof getRankLevel === 'function') ? getRankLevel(item.pos && item.pos.rank) : 18;
+  return (_officeCharStat(ch, 'prestige', 50) || 0) + Math.max(0, 20 - rankLevel) * 3 + (_officeCharStat(ch, 'power', 0) || 0);
+}
+
+function officeApplyDismissalPressure(root) {
+  root = root || ((typeof GM !== 'undefined' && GM) ? GM : null);
+  if (!root || !root.partyState || !root.officeTree) return { applied:0, dismissed:0, logs:[] };
+  var result = { applied:0, dismissed:0, logs:[] };
+  if (!root._officeDismissalLog) root._officeDismissalLog = [];
+  Object.keys(root.partyState).forEach(function(partyName) {
+    var ps = root.partyState[partyName];
+    var loseCount = ps && Number(ps.recentImpeachLose || 0);
+    if (!ps || !isFinite(loseCount) || loseCount <= 0) return;
+    var grade = ps.lastImpeachGrade || ps.recentImpeachGrade || ps.lastVerdictGrade || 'C';
+    var config = _officeDismissalGradeConfig(grade);
+    var candidates = [];
+    _officeWalkPositions(root, function(dept, pos) {
+      if (!pos || !pos.holder) return;
+      var ch = _officeFindCharByName(pos.holder, root);
+      var charParty = ch && (ch.party || ch.faction);
+      if (charParty !== partyName) return;
+      candidates.push({ ch: ch, dept: dept, pos: pos, score: _officeDismissCandidateScore({ ch: ch, pos: pos }) });
+    });
+    candidates.sort(function(a, b) { return b.score - a.score; });
+    candidates.slice(0, config.count).forEach(function(item) {
+      var ch = item.ch;
+      var log = {
+        turn: root.turn || 0,
+        party: partyName,
+        character: ch && ch.name || item.pos.holder,
+        dept: item.dept && item.dept.name,
+        position: item.pos && item.pos.name,
+        grade: grade,
+        bindingHint: _officeBindingHintOf(item.dept, item.pos)
+      };
+      if (ch) {
+        ch._dismissed = true;
+        ch._dismissedTurn = root.turn || 0;
+        ch._dismissedReason = 'impeach_lose_' + grade;
+        ch.prestige = Math.max(0, (_officeCharStat(ch, 'prestige', 50) || 0) - config.prestige);
+        if (ch.position === item.pos.name || ch.officialTitle === item.pos.name) {
+          ch.position = '';
+          ch.officialTitle = '';
+        }
+      }
+      item.pos._lastHolder = item.pos.holder;
+      item.pos._dismissedTurn = root.turn || 0;
+      item.pos._dismissedGrade = grade;
+      item.pos.holder = '';
+      _officeApplyBindingHint(root, ch, item.dept, item.pos, grade, partyName, config);
+      root._officeDismissalLog.push(log);
+      result.logs.push(log);
+      result.dismissed++;
+    });
+    ps.recentImpeachLose = 0;
+    ps.lastOfficeDismissalTurn = root.turn || 0;
+    result.applied++;
+  });
+  return result;
+}
+
+function _officeConcurrentCatalog(root) {
+  var catalog = _officeEngineConstant('concurrentTitleCatalog', null);
+  if (Array.isArray(catalog)) return catalog;
+  if (catalog && typeof catalog === 'object') return Object.keys(catalog).map(function(key) {
+    var item = catalog[key];
+    if (item && typeof item === 'object') {
+      var out = {};
+      Object.keys(item).forEach(function(k) { out[k] = item[k]; });
+      if (!out.id) out.id = key;
+      return out;
+    }
+    return { id:key, name:String(item) };
+  });
+  return [];
+}
+
+function officeAssignConcurrentTitle(characterOrName, titleRef, root) {
+  root = root || ((typeof GM !== 'undefined' && GM) ? GM : null);
+  var ch = (typeof characterOrName === 'string') ? _officeFindCharByName(characterOrName, root) : characterOrName;
+  if (!ch || !titleRef) return false;
+  var catalog = _officeConcurrentCatalog(root);
+  var title = null;
+  for (var i = 0; i < catalog.length; i++) {
+    var item = catalog[i];
+    if (item && (item.id === titleRef || item.name === titleRef)) {
+      title = item;
+      break;
+    }
+  }
+  if (!title && typeof titleRef === 'object') title = titleRef;
+  if (!title) return false;
+  if (!ch.officeRef || typeof ch.officeRef !== 'object') ch.officeRef = {};
+  if (!Array.isArray(ch.officeRef.concurrentTitleRefs)) ch.officeRef.concurrentTitleRefs = [];
+  var exists = ch.officeRef.concurrentTitleRefs.some(function(ref) {
+    return ref && ((title.id && ref.id === title.id) || (title.name && ref.name === title.name));
+  });
+  if (!exists) {
+    ch.officeRef.concurrentTitleRefs.push({
+      id: title.id || title.name,
+      name: title.name || title.id,
+      politicalWeight: title.politicalWeight || 0,
+      turn: root && root.turn || 0,
+      source: 'office-dynastification'
+    });
+  }
+  if (!Array.isArray(ch.concurrentTitles)) ch.concurrentTitles = [];
+  if (ch.concurrentTitles.indexOf(title.name || title.id) < 0) ch.concurrentTitles.push(title.name || title.id);
+  ch._concurrentWith = title.name || title.id;
+  return true;
+}
+
+var OfficeDynastification = {
+  getSubtabs: _officeGetSubtabs,
+  classifyDept: _officeClassifyDept,
+  applyDismissalPressure: officeApplyDismissalPressure,
+  onDismissal: officeApplyDismissalPressure,
+  assignConcurrentTitle: officeAssignConcurrentTitle
+};
+if (typeof window !== 'undefined') window.OfficeDynastification = OfficeDynastification;
+if (typeof globalThis !== 'undefined') globalThis.OfficeDynastification = OfficeDynastification;
+
+(function _officeInstallDynastificationHook() {
+  var tries = 0;
+  function register() {
+    tries++;
+    try {
+      var hooks = (typeof EndTurnHooks !== 'undefined') ? EndTurnHooks : (typeof window !== 'undefined' ? window.EndTurnHooks : null);
+      if (hooks && typeof hooks.register === 'function') {
+        hooks.register('after', function() {
+          try { officeApplyDismissalPressure(GM); } catch (_) {}
+        }, 'office-dynastification-dismissal');
+        return;
+      }
+    } catch (_) {}
+    if (tries < 20 && typeof setTimeout === 'function') setTimeout(register, 200);
+  }
+  register();
+})();
+
 function _renderOfficeSummary() {
   var el = _$('office-summary'); if (!el) return;
   var treeStats = typeof _offTreeStats === 'function' ? _offTreeStats(GM.officeTree) : { headCount:0, actualCount:0, materialized:0, depts:0 };
@@ -2019,4 +2350,3 @@ function _offPickerSetFilter(key) {
   }
   _offRenderPickerList();
 }
-

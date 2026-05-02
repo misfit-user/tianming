@@ -344,6 +344,35 @@ function enterGame(){
     }
   } catch(_popFbE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_popFbE, 'enterGame] 户口兜底失败') : console.warn('[enterGame] 户口兜底失败', _popFbE); }
 
+  try {
+    if (TM && TM.ClassEngine && typeof TM.ClassEngine.bootstrap === 'function') {
+      TM.ClassEngine.bootstrap(GM, { turn: GM.turn, source: 'enterGame' });
+    }
+  } catch(_classBootE) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classBootE, 'enterGame] 阶层桥接初始化失败') : console.warn('[enterGame] 阶层桥接初始化失败', _classBootE);
+  }
+
+  try {
+    if (TM && TM.InfluenceGroups && typeof TM.InfluenceGroups.bootstrap === 'function') {
+      TM.InfluenceGroups.bootstrap(GM, { turn: GM.turn, source: 'enterGame' });
+    }
+  } catch(_igBootE) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_igBootE, 'enterGame] influence group bootstrap failed') : console.warn('[enterGame] influence group bootstrap failed', _igBootE);
+  }
+
+  try {
+    if (TM && TM.InfluenceGroups && typeof TM.InfluenceGroups.buildRegentSignal === 'function') {
+      GM.regentSignal = TM.InfluenceGroups.buildRegentSignal(GM);
+      GM.regentState = GM.regentState || {};
+      GM.regentState.signal = GM.regentSignal;
+      GM.regentState.active = !!(GM.regentSignal && GM.regentSignal.active);
+      GM.regentState.hardCeiling = !!(GM.regentSignal && GM.regentSignal.hardCeiling);
+      GM.regentState.lastCheckTurn = GM.turn || 0;
+    }
+  } catch(_regentBootE) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_regentBootE, 'enterGame] regent signal bootstrap failed') : console.warn('[enterGame] regent signal bootstrap failed', _regentBootE);
+  }
+
   renderGameState();
 
   // 时局概览（Turn 1专属）
@@ -547,7 +576,7 @@ function startGame(sid){
   // 进度条·消除载入期黑屏·showLoading 内部 setInterval 自动增长到 95%
   if (typeof showLoading === 'function') showLoading('\u542F\u7528\u5267\u672C\u00B7\u94FA\u9648\u5929\u4E0B\u2026', 8);
 
-  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],culturalWorks:[],_forgottenWorks:[],factionRelationsMap:{}};if(_prevSaveName)GM.saveName=_prevSaveName;
+  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],culturalWorks:[],_forgottenWorks:[],factionRelationsMap:{}};if(_prevSaveName)GM.saveName=_prevSaveName;
 // 行政区划：从剧本/P 深拷贝到 GM，税收级联/bridge/aggregate 都读 GM.adminHierarchy
 GM.adminHierarchy = (sc && sc.adminHierarchy) ? deepClone(sc.adminHierarchy) : (P.adminHierarchy ? deepClone(P.adminHierarchy) : null);
 // 勤政计数（内朝+后朝协同）
@@ -757,6 +786,14 @@ if (sc.culturalConfig && sc.culturalConfig.enabled && Array.isArray(sc.culturalC
   if(sc.titleSystem) P.titleSystem = deepClone(sc.titleSystem);
   if(sc.officialVassalMapping) P.officialVassalMapping = deepClone(sc.officialVassalMapping);
   if(sc.keju) P.keju = deepClone(sc.keju);
+  if (sc.engineConstants) {
+    GM.engineConstants = deepClone(sc.engineConstants);
+    P.engineConstants = deepClone(sc.engineConstants);
+  }
+  if (Array.isArray(sc.influenceGroups)) {
+    GM.influenceGroups = deepClone(sc.influenceGroups);
+    P.influenceGroups = deepClone(sc.influenceGroups);
+  }
   // 加载势力间关系
   GM.factionRelations = deepClone(sc.factionRelations || P.factionRelations || []);
   // 加载后宫配置到GM.harem

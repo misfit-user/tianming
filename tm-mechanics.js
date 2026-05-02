@@ -1643,6 +1643,9 @@ var NpcMemorySystem = {
       participants: (meta && Array.isArray(meta.participants)) ? meta.participants.slice(0, 10) : []
     };
     ch._memory.push(memEntry);
+    if (typeof CharFullSchema !== 'undefined' && typeof CharFullSchema.syncInteractionMemory === 'function') {
+      try { CharFullSchema.syncInteractionMemory(ch, memEntry, relatedPerson); } catch(_) {}
+    }
 
     // === 方向5：全量无损归档（永不压缩） ===
     if (!GM._memoryArchiveFull) GM._memoryArchiveFull = [];
@@ -2375,4 +2378,3 @@ function checkPersonalityEvolution() {
     }
   });
 }
-

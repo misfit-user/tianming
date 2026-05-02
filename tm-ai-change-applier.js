@@ -1466,6 +1466,8 @@
     // ── 13. 问天 directive 合规回报 ──
     // schema: directive_compliance:[{id,status:'followed|partial|ignored',reason,evidence}]
     try { _applyDirectiveCompliance(G, aiOutput); } catch(_dcE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dcE, 'applier] directive compliance:') : console.warn('[applier] directive compliance:', _dcE); }
+    try { _applyRegentDecisions(G, aiOutput); } catch(_rdE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rdE, 'applier] regent decisions:') : console.warn('[applier] regent decisions:', _rdE); }
+    try { _applyBattleResult(G, aiOutput, applied); } catch(_brE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_brE, 'applier] battle result:') : console.warn('[applier] battle result:', _brE); }
 
     // ── 14. 财务一致性校验：扫描叙事中的金额 vs fiscal_adjustments 总量 ──
     try { _validateFiscalConsistency(G, aiOutput, applied); } catch(_fvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_fvE, 'applier] fiscal validator:') : console.warn('[applier] fiscal validator:', _fvE); }
@@ -1765,6 +1767,11 @@
         if (mc.delta > 0) structuredTotal.add += n;
         else if (mc.delta < 0) structuredTotal.cut += n;
       });
+    }
+    if (aiOutput.battleResult && aiOutput.battleResult.casualties) {
+      var brLoss = aiOutput.battleResult.casualties;
+      structuredTotal.loss += Math.max(0, Math.round(Number(brLoss.attacker || 0)));
+      structuredTotal.loss += Math.max(0, Math.round(Number(brLoss.defender || 0)));
     }
 
     var mentTotal = { add: 0, cut: 0, loss: 0 };
@@ -2773,6 +2780,81 @@
     });
   }
   global._applyDirectiveCompliance = _applyDirectiveCompliance;
+
+  function _applyRegentDecisions(G, aiOutput) {
+    if (!G) return;
+    var signal = G.regentSignal || (G.regentState && G.regentState.signal) || null;
+    var decisions = aiOutput && Array.isArray(aiOutput.regent_decisions) ? aiOutput.regent_decisions : [];
+    if (!signal && decisions.length === 0) {
+      if (G.regentState && G.regentState.active === true) {
+        G.regentState.active = false;
+        G.regentState.hardCeiling = false;
+        G.regentState.lastDecisionTurn = G.turn || 0;
+      }
+      return;
+    }
+    if (!G.regentState || typeof G.regentState !== 'object') G.regentState = {};
+    G.regentState.signal = signal || G.regentState.signal || null;
+    G.regentState.decisions = decisions.map(function(r) {
+      return {
+        subject: r && r.subject || '',
+        regentName: r && r.regentName || '',
+        action: r && r.action || 'defer',
+        hardCeiling: !!(r && r.hardCeiling),
+        reason: r && r.reason || ''
+      };
+    });
+    G.regentState.active = !!(signal && signal.active);
+    G.regentState.hardCeiling = !!(signal && signal.hardCeiling);
+    G.regentState.lastDecisionTurn = G.turn || 0;
+    if (signal) {
+      G.regentState.rulerName = signal.rulerName || '';
+      G.regentState.rulerTitle = signal.rulerTitle || '';
+      G.regentState.rulerAge = signal.rulerAge;
+      G.regentState.rulerHealth = signal.rulerHealth;
+      G.regentState.playerRole = signal.playerRole || '';
+      G.regentState.reasons = signal.reasons || [];
+    }
+    decisions.forEach(function(r) {
+      G._turnReport.push({
+        type: 'regent_decision',
+        subject: r && r.subject || '',
+        regentName: r && r.regentName || '',
+        action: r && r.action || 'defer',
+        hardCeiling: !!(r && r.hardCeiling),
+        reason: r && r.reason || '',
+        turn: G.turn || 0
+      });
+    });
+  }
+  global._applyRegentDecisions = _applyRegentDecisions;
+
+  function _applyBattleResult(G, aiOutput, applied) {
+    if (!G || !aiOutput || !aiOutput.battleResult) return;
+    var api = global.MilitarySystems || (global.TM && global.TM.MilitarySystems);
+    if (!api || typeof api.applyBattleResult !== 'function') {
+      if (applied && applied.failed) applied.failed.push({ battleResult: true, reason: 'MilitarySystems missing' });
+      return;
+    }
+    var r = api.applyBattleResult(aiOutput.battleResult, G);
+    if (r && r.ok) {
+      if (applied) {
+        if (!applied.semantic) applied.semantic = {};
+        applied.semantic.battleResult = 1;
+      }
+      if (!G._turnReport) G._turnReport = [];
+      G._turnReport.push({
+        type: 'battleResult',
+        battleId: r.result && r.result.battleId,
+        winner: r.result && r.result.winner,
+        loser: r.result && r.result.loser,
+        turn: G.turn || 0
+      });
+    } else if (applied && applied.failed) {
+      applied.failed.push({ battleResult: true, reason: r && r.reason });
+    }
+  }
+  global._applyBattleResult = _applyBattleResult;
 
   // 赤字深度等级：返回 tier 对应的惩罚倍率（越深越重）
   function _deficitTier(amount, scaleMoney) {

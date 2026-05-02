@@ -125,6 +125,39 @@
     if (!Array.isArray(ch.career)) ch.career = [];
     if (!Array.isArray(ch.stressSources)) ch.stressSources = [];
     if (!Array.isArray(ch.traitIds)) ch.traitIds = [];
+    if (ch.partyRef === undefined || ch.partyRef === null || typeof ch.partyRef !== 'object') ch.partyRef = null;
+    if (ch.factionRef === undefined || ch.factionRef === null || typeof ch.factionRef !== 'object') ch.factionRef = null;
+    if (ch.officeRef === undefined || ch.officeRef === null || typeof ch.officeRef !== 'object') ch.officeRef = null;
+    if (ch.lastInteractionMemory === undefined || ch.lastInteractionMemory === null || typeof ch.lastInteractionMemory !== 'object') {
+      ch.lastInteractionMemory = null;
+    }
+    if (!ch.recognitionState || typeof ch.recognitionState !== 'object') {
+      ch.recognitionState = {
+        subject: '',
+        familiarity: 0,
+        level: '陌生',
+        lastTurn: 0,
+        lastEvent: '',
+        lastEmotion: '平',
+        lastType: 'general',
+        lastSource: '',
+        lastWho: '',
+        summary: '',
+        history: []
+      };
+    } else {
+      if (ch.recognitionState.subject === undefined || ch.recognitionState.subject === null) ch.recognitionState.subject = '';
+      if (ch.recognitionState.familiarity === undefined || ch.recognitionState.familiarity === null) ch.recognitionState.familiarity = 0;
+      if (!ch.recognitionState.level) ch.recognitionState.level = '陌生';
+      if (ch.recognitionState.lastTurn === undefined || ch.recognitionState.lastTurn === null) ch.recognitionState.lastTurn = 0;
+      if (ch.recognitionState.lastEvent === undefined || ch.recognitionState.lastEvent === null) ch.recognitionState.lastEvent = '';
+      if (ch.recognitionState.lastEmotion === undefined || ch.recognitionState.lastEmotion === null) ch.recognitionState.lastEmotion = '平';
+      if (ch.recognitionState.lastType === undefined || ch.recognitionState.lastType === null) ch.recognitionState.lastType = 'general';
+      if (ch.recognitionState.lastSource === undefined || ch.recognitionState.lastSource === null) ch.recognitionState.lastSource = '';
+      if (ch.recognitionState.lastWho === undefined || ch.recognitionState.lastWho === null) ch.recognitionState.lastWho = '';
+      if (ch.recognitionState.summary === undefined || ch.recognitionState.summary === null) ch.recognitionState.summary = '';
+      if (!Array.isArray(ch.recognitionState.history)) ch.recognitionState.history = [];
+    }
 
     // 5. 压力/健康字段冗余同步（UI 兼容两处读取）
     if (ch.resources) {
@@ -143,6 +176,99 @@
     var n = 0;
     chars.forEach(function(ch) { if (ch) { ensureFullFields(ch); n++; } });
     return n;
+  }
+
+  function _recognitionLevelLabel(familiarity) {
+    familiarity = Math.max(0, Math.min(100, Math.round(Number(familiarity) || 0)));
+    if (familiarity >= 85) return '知己';
+    if (familiarity >= 65) return '熟识';
+    if (familiarity >= 35) return '眼熟';
+    if (familiarity >= 10) return '略识';
+    return '陌生';
+  }
+
+  function describeLastInteractionMemory(mem) {
+    if (!mem || typeof mem !== 'object') return '';
+    var parts = [];
+    if (mem.turn) parts.push('T' + mem.turn);
+    if (mem.subject || mem.who) parts.push('对' + String(mem.subject || mem.who || '').slice(0, 24));
+    if (mem.event) parts.push(String(mem.event).slice(0, 42));
+    if (mem.emotion) parts.push('[' + String(mem.emotion).slice(0, 8) + ']');
+    return parts.join('·');
+  }
+
+  function describeRecognitionState(state) {
+    if (!state || typeof state !== 'object') return '';
+    var parts = [];
+    if (state.level) parts.push(String(state.level).slice(0, 8));
+    if (state.subject) parts.push('对' + String(state.subject).slice(0, 24));
+    if (typeof state.familiarity === 'number') parts.push(Math.round(state.familiarity) + '/100');
+    if (state.lastEvent) parts.push(String(state.lastEvent).slice(0, 24));
+    return parts.join('·');
+  }
+
+  function syncInteractionMemory(ch, memEntry, relatedPerson) {
+    if (!ch || typeof ch !== 'object') return null;
+    ensureFullFields(ch);
+    var src = memEntry || {};
+    var subject = String(relatedPerson || src.subject || src.target || src.who || '').trim();
+    var snapshot = {
+      turn: typeof src.turn === 'number' ? src.turn : (global.GM && typeof global.GM.turn === 'number' ? global.GM.turn : 0),
+      event: String(src.event || '').slice(0, 120),
+      emotion: String(src.emotion || '平').slice(0, 12) || '平',
+      importance: Math.max(0.1, Math.min(10, Number(src.importance || 5))),
+      who: String(src.who || relatedPerson || '').slice(0, 60),
+      type: String(src.type || 'general').slice(0, 24) || 'general',
+      source: String(src.source || 'witnessed').slice(0, 24) || 'witnessed',
+      credibility: (src.credibility != null) ? Math.max(0, Math.min(100, Number(src.credibility))) : 95,
+      arcId: String(src.arcId || '').slice(0, 60),
+      participants: Array.isArray(src.participants) ? src.participants.slice(0, 8) : [],
+      location: String(src.location || '').slice(0, 60),
+      subject: subject,
+      summary: String(src.summary || src.event || '').slice(0, 80)
+    };
+    ch.lastInteractionMemory = snapshot;
+
+    var rs = ch.recognitionState;
+    if (!rs || typeof rs !== 'object') rs = {};
+    if (!subject && rs.subject) subject = rs.subject;
+    if (subject) {
+      if (rs.subject && rs.subject !== subject) {
+        rs.familiarity = Math.max(0, Math.round((Number(rs.familiarity) || 0) * 0.55));
+      }
+      rs.subject = subject;
+    } else if (rs.subject === undefined || rs.subject === null) {
+      rs.subject = '';
+    }
+    var familiarity = Number(rs.familiarity) || 0;
+    var sameSubject = !!subject && rs.subject === subject;
+    var delta = Math.max(1, Math.round(snapshot.importance * 2));
+    if (snapshot.type === 'dialogue') delta += 2;
+    else if (snapshot.type === 'kindness' || snapshot.type === 'promotion') delta += 3;
+    else if (snapshot.type === 'betrayal' || snapshot.type === 'humiliation' || snapshot.type === 'loss' || snapshot.type === 'military') delta += 4;
+    if (snapshot.emotion === '喜' || snapshot.emotion === '敬') delta += 2;
+    if (snapshot.emotion === '怒' || snapshot.emotion === '恨' || snapshot.emotion === '惧') delta += 2;
+    familiarity = sameSubject ? familiarity + delta : Math.max(familiarity, delta);
+    rs.familiarity = Math.max(0, Math.min(100, Math.round(familiarity)));
+    rs.level = _recognitionLevelLabel(rs.familiarity);
+    rs.lastTurn = snapshot.turn || rs.lastTurn || 0;
+    rs.lastEvent = snapshot.event || rs.lastEvent || '';
+    rs.lastEmotion = snapshot.emotion || rs.lastEmotion || '平';
+    rs.lastType = snapshot.type || rs.lastType || 'general';
+    rs.lastSource = snapshot.source || rs.lastSource || 'witnessed';
+    rs.lastWho = snapshot.who || rs.lastWho || '';
+    rs.summary = snapshot.summary || rs.summary || '';
+    if (!Array.isArray(rs.history)) rs.history = [];
+    rs.history.push({
+      turn: snapshot.turn || 0,
+      subject: rs.subject || '',
+      level: rs.level,
+      event: snapshot.summary,
+      emotion: snapshot.emotion
+    });
+    if (rs.history.length > 8) rs.history = rs.history.slice(-8);
+    ch.recognitionState = rs;
+    return snapshot;
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -191,6 +317,14 @@
         return (c.date || '某时') + '：' + (c.title || c.event || '');
       }).join('；');
       lines.push('近年仕途：' + recent);
+    }
+    if (ch.lastInteractionMemory) {
+      var lim = describeLastInteractionMemory(ch.lastInteractionMemory);
+      if (lim) lines.push('最近一次互动：' + lim + (ch.lastInteractionMemory.location ? '·' + ch.lastInteractionMemory.location : ''));
+    }
+    if (ch.recognitionState && (ch.recognitionState.level || ch.recognitionState.subject || ch.recognitionState.lastEvent)) {
+      var rec = describeRecognitionState(ch.recognitionState);
+      if (rec) lines.push('认知状态：' + rec);
     }
     // 心事
     if (ch.personalGoal) lines.push('我所求：' + ch.personalGoal);
@@ -326,10 +460,13 @@
     SCHEMA: SCHEMA,
     ensureFullFields: ensureFullFields,
     ensureAll: ensureAll,
+    syncInteractionMemory: syncInteractionMemory,
+    describeLastInteractionMemory: describeLastInteractionMemory,
+    describeRecognitionState: describeRecognitionState,
     toAIContext: toAIContext,
     evolveTick: evolveTick,
     recordCareerEvent: recordCareerEvent,
-    VERSION: 1
+    VERSION: 2
   };
 
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

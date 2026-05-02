@@ -119,6 +119,7 @@ var scriptData = {
     },
     // 目标/胜负条件定义
     goals: [],
+    influenceGroups: [],
     // 得罪群体配置
     offendGroups: {
       enabled: false,
@@ -366,6 +367,7 @@ var scriptData = {
           events: function() { if(typeof renderEvents==='function') renderEvents(); },
           timeline: function() { if(typeof renderTimeline==='function') renderTimeline(); },
           goals: function() { if(typeof renderGoalsList==='function') renderGoalsList(); },
+          influenceGroups: function() { if(typeof renderInfluenceGroupsList==='function') renderInfluenceGroupsList(); },
           worldSettings: function() { if(typeof renderWorldSettings==='function') renderWorldSettings(); },
           eraState: function() { if(typeof renderEraState==='function') renderEraState(); if(typeof renderEconomyConfig==='function') renderEconomyConfig(); },
           economy: function() { if(typeof renderEconomyConfig==='function') renderEconomyConfig(); },

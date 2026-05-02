@@ -619,6 +619,7 @@
       <div class="sidebar-item active" data-panel="factions">势力 <span class="badge" id="badge-factions">0</span></div>
       <div class="sidebar-item" data-panel="parties">党派 <span class="badge" id="badge-parties">0</span></div>
       <div class="sidebar-item" data-panel="classes">阶层 <span class="badge" id="badge-classes">0</span></div>
+      <div class="sidebar-item" data-panel="influenceGroups">&#24178;&#25919;&#38598;&#22242; <span class="badge" id="badge-influenceGroups">0</span></div>
       <div class="sidebar-item" data-panel="items">物品 <span class="badge" id="badge-items">0</span></div>
       <div class="sidebar-group-title">军事与科技</div>
       <div class="sidebar-item" data-panel="military">军事 <span class="badge" id="badge-military">0</span></div>
@@ -1865,6 +1866,13 @@
         </div>
         <div id="goals-list" style="margin-top:12px;"></div>
         <button class="btn btn-add" onclick="addGoalEntry()">+ 添加目标条件</button>
+      </div>
+
+      <div class="panel-section" id="panel-influenceGroups">
+        <div class="panel-title">&#24178;&#25919;&#38598;&#22242; <button class="btn" onclick="renderInfluenceGroupsList()" style="font-size:11px;padding:2px 8px;margin-left:8px;">&#21047;&#26032;</button></div>
+        <div class="panel-desc">&#29992;&#20110;&#26126;&#31034;&#23486;&#23448;&#12289;&#22806;&#25114;&#12289;&#21518;&#23467;&#31561;&#21487;&#20197;&#20171;&#20837;&#22238;&#21512;&#25512;&#28436;&#30340;&#23467;&#24237;&#21183;&#21147;&#65292;&#24182;&#32473;&#23427;&#20204;&#35774;&#32622;&#21021;&#22987;&#24433;&#21709;&#12289;&#20957;&#32858;&#12289;&#25104;&#21592;&#19982;&#20851;&#38190;&#23448;&#32844;&#12290;</div>
+        <div id="influenceGroups-list" style="margin-top:12px;"></div>
+        <button class="btn btn-add" onclick="addInfluenceGroupEntry()">+ &#28155;&#21152;&#24178;&#25919;&#38598;&#22242;</button>
       </div>
 
       <!-- ======== 初始皇命（钉子条目） ======== -->

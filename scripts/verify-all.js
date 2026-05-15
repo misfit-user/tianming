@@ -29,6 +29,8 @@ const checks = [
   { name: 'find-orphans', file: 'find-orphans.js', estSec: 1, expectExit: 0 },
   { name: 'official-scenario', file: 'official-scenario-smoke.js', estSec: 1, expectExit: 0 },
   { name: 'tianqi-cache-recovery', file: 'smoke-tianqi-official-cache-recovery.js', estSec: 1, expectExit: 0 },
+  { name: 'start-game-data-integrity', file: 'smoke-start-game-data-integrity.js', estSec: 20, expectExit: 0 },
+  { name: 'phase8-office-standalone', file: 'smoke-phase8-office-standalone.js', estSec: 1, expectExit: 0 },
   { name: 'faction-relations', file: 'smoke-faction-relations.js', estSec: 1, expectExit: 0 },
   { name: 'faction-index', file: 'smoke-faction-index.js', estSec: 1, expectExit: 0 },
   { name: 'faction-index-e2e', file: 'smoke-faction-index-e2e.js', estSec: 1, expectExit: 0 },

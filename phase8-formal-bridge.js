@@ -256,6 +256,26 @@
     }, 30);
   }
 
+  function hasLegacyTabPanel(tabId){
+    if (!tabId) return false;
+    var panel = document.getElementById(tabId);
+    if (!panel) return false;
+    if (tabId === 'gt-office') return !!document.getElementById('office-tree');
+    return true;
+  }
+
+  function ensureLegacyTabPanel(tabId){
+    if (hasLegacyTabPanel(tabId)) return true;
+    if (typeof window.renderGameState !== 'function') return false;
+    try {
+      window.renderGameState();
+    } catch(e) {
+      if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(e, 'phase8-ensure-legacy-tab');
+      return false;
+    }
+    return hasLegacyTabPanel(tabId);
+  }
+
   function openLegacyTab(tabId){
     if (!tabId) return false;
     closeModule();
@@ -266,6 +286,7 @@
     state.legacyView = true;
     document.body.classList.add('tm-phase8-legacy');
     document.body.classList.remove('tm-phase8-home');
+    if (!ensureLegacyTabPanel(tabId)) return false;
     if (window.TM && TM.UI && TM.UI.tabs && typeof TM.UI.tabs.switchGameTab === 'function') {
       TM.UI.tabs.switchGameTab(null, tabId);
       runLegacyTabRefresh(tabId);
@@ -3796,10 +3817,12 @@
     });
     document.body.appendChild(ov);
     if (ov.querySelector('[data-renwu-card]')) filterRenwuOverlay(ov);
+    if (kind === 'renwu') restoreRenwuRosterScroll(ov);
   }
 
-  function rerenderModule(){
+  function rerenderModule(options){
     if (!state.activeModule) return;
+    if (state.activeModule.kind === 'renwu' && !(options && options.skipRenwuScrollRemember)) rememberRenwuRosterScroll();
     openModule(state.activeModule.kind, state.activeModule.options || {});
   }
 
@@ -3852,7 +3875,8 @@
       rerenderModule();
     } else if (action === 'renwu-reset') {
       state.renwuFilters = { q: '', group: 'all', faction: 'all', status: 'all', showDead: false };
-      rerenderModule();
+      state.renwuRosterScroll = 0;
+      rerenderModule({ skipRenwuScrollRemember: true });
     } else if (action === 'renwu-person-action') {
       if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.personAction === 'function') {
         window.TMPhase8FormalBridge.personAction(data.id, data.personAction || 'detail');
@@ -4703,14 +4727,14 @@
   }
 
   function renwuFilterState(){
-    var f = state.renwuFilters || {};
-    state.renwuFilters = f;
-    f.q = String(f.q || '');
-    f.group = f.group || 'all';
-    f.faction = f.faction || 'all';
-    f.status = f.status || 'all';
-    f.showDead = !!f.showDead;
-    return f;
+    var filters = state.renwuFilters || {};
+    state.renwuFilters = filters;
+    filters.q = String(filters.q || '');
+    filters.group = filters.group || 'all';
+    filters.faction = filters.faction || 'all';
+    filters.status = filters.status || 'all';
+    filters.showDead = !!filters.showDead;
+    return filters;
   }
 
   function renwuOption(value, label, current){
@@ -4718,20 +4742,46 @@
     return '<option value="' + attr(value) + '"' + (String(current) === value ? ' selected' : '') + '>' + esc(label == null ? value : label) + '</option>';
   }
 
+  function renwuRosterList(root){
+    root = root || document;
+    return root.querySelector ? root.querySelector('.renwu-roster-list') : null;
+  }
+
+  function rememberRenwuRosterScroll(root){
+    var list = renwuRosterList(root || document.getElementById('tmf-module-overlay'));
+    if (!list) return;
+    state.renwuRosterScroll = Number(list.scrollTop || 0);
+  }
+
+  function restoreRenwuRosterScroll(root){
+    var y = Number(state.renwuRosterScroll || 0);
+    if (!y) return;
+    setTimeout(function(){
+      var list = renwuRosterList(root || document.getElementById('tmf-module-overlay'));
+      if (list) list.scrollTop = y;
+    }, 0);
+  }
+
   function filterRenwuOverlay(root){
     root = root || document;
-    var f = renwuFilterState();
+    var filters = renwuFilterState();
+    var oldQ = filters.q;
+    var oldGroup = filters.group;
+    var oldFaction = filters.faction;
+    var oldStatus = filters.status;
+    var oldShowDead = filters.showDead;
     var q = (root.querySelector('[data-renwu-search]') || {}).value || '';
     q = q.trim().toLowerCase();
     var group = (root.querySelector('[data-renwu-group]') || {}).value || 'all';
     var faction = (root.querySelector('[data-renwu-faction]') || {}).value || 'all';
     var status = (root.querySelector('[data-renwu-status]') || {}).value || 'all';
     var showDead = !!((root.querySelector('[data-renwu-dead]') || {}).checked);
-    f.q = q;
-    f.group = group;
-    f.faction = faction;
-    f.status = status;
-    f.showDead = showDead;
+    filters.q = q;
+    filters.group = group;
+    filters.faction = faction;
+    filters.status = status;
+    filters.showDead = showDead;
+    var changed = oldQ !== q || oldGroup !== group || oldFaction !== faction || oldStatus !== status || oldShowDead !== showDead;
     var shown = 0;
     root.querySelectorAll('[data-renwu-card]').forEach(function(card){
       var ok = true;
@@ -4742,10 +4792,17 @@
       if (status !== 'all' && (' ' + (card.dataset.status || '') + ' ').indexOf(' ' + status + ' ') < 0) ok = false;
       if (!showDead && status !== 'dead' && (' ' + (card.dataset.status || '') + ' ').indexOf(' dead ') >= 0) ok = false;
       card.hidden = !ok;
+      card.style.display = ok ? '' : 'none';
+      card.setAttribute('aria-hidden', ok ? 'false' : 'true');
       if (ok) shown += 1;
     });
     var count = root.querySelector('#renwu-visible-count');
     if (count) count.textContent = shown;
+    if (changed) {
+      var list = renwuRosterList(root);
+      if (list) list.scrollTop = 0;
+      state.renwuRosterScroll = 0;
+    }
   }
 
   function renderRenwuModule(){
@@ -9166,6 +9223,7 @@
       'body.tm-phase8-formal .zb-action-tray #zhao-btn:before{background:linear-gradient(90deg,rgba(8,6,5,.18) 0%,rgba(8,6,5,.16) 34%,rgba(8,6,5,.45) 60%,rgba(8,6,5,.76) 100%),radial-gradient(ellipse at 76% 50%,rgba(223,174,82,.17),transparent 56%)!important;}body.tm-phase8-formal .zb-action-kicker{line-height:1!important;color:rgba(213,181,105,.72)!important;letter-spacing:0!important;}body.tm-phase8-formal .zb-action-title{line-height:1.05!important;white-space:nowrap!important;text-shadow:0 1px 1px rgba(0,0,0,.86),0 0 8px rgba(0,0,0,.62)!important;}body.tm-phase8-formal .zb-action-sub{color:rgba(232,209,150,.72)!important;white-space:nowrap!important;}',
       '.tmf-records-overlay,.tmf-event-detail{position:fixed;inset:0;z-index:9998;background:rgba(10,7,4,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;font-family:"STKaiti","KaiTi","楷体",serif;}.tmf-records-dialog,.tmf-event-dialog{width:min(760px,86vw);max-height:78vh;background:linear-gradient(180deg,#211811,#100c08);border:1px solid rgba(201,168,95,.52);box-shadow:0 18px 60px rgba(0,0,0,.72);color:#eadfbd;display:flex;flex-direction:column;}.tmf-records-dialog header,.tmf-event-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(201,168,95,.22);}.tmf-records-dialog header span,.tmf-event-dialog header span{color:#8dbdab;font-size:12px;letter-spacing:.18em;}.tmf-records-dialog h3,.tmf-event-dialog h3{margin:3px 0 0;color:#f0d98c;font-size:22px;letter-spacing:.18em;font-weight:500;}.tmf-event-dialog header p{margin:4px 0 0;color:#9f9277;font-size:12px;}.tmf-records-dialog header button,.tmf-event-dialog header button{width:28px;height:28px;border:1px solid rgba(201,168,95,.32);background:rgba(0,0,0,.18);color:#d8c27c;cursor:pointer;}.tmf-records-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px;}.tmf-records-grid button{min-height:118px;border:1px solid rgba(201,168,95,.28);background:linear-gradient(180deg,rgba(201,168,95,.08),rgba(0,0,0,.20));color:#eadfbd;font-family:inherit;cursor:pointer;padding:14px;text-align:left;}.tmf-records-grid b{display:block;color:#f0d98c;font-size:20px;letter-spacing:.22em;margin-bottom:12px;}.tmf-records-grid span{font-size:13px;color:#a99d83;line-height:1.55;}.tmf-event-dialog main{overflow-y:auto;white-space:pre-wrap;padding:22px 26px;font-size:16px;line-height:2;color:#d7c49b;}.tmf-event-dialog footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid rgba(201,168,95,.18);}.tmf-event-dialog footer button{border:1px solid rgba(201,168,95,.32);background:rgba(201,168,95,.08);color:#e6cf8e;font-family:inherit;padding:7px 12px;cursor:pointer;}',
       '.tmf-module-overlay{position:fixed;inset:0;z-index:9996;background:rgba(8,6,4,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;font-family:"STKaiti","KaiTi","楷体",serif;color:#eadfbd;}',
+      'body.tm-phase8-formal .renwu-card[hidden]{display:none!important;}',
       '.tmf-module{width:min(1360px,92vw);height:min(820px,84vh);display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(29,22,15,.98),rgba(10,8,6,.985));border:1px solid rgba(201,168,95,.54);box-shadow:0 26px 80px rgba(0,0,0,.75),inset 0 0 0 1px rgba(0,0,0,.5);overflow:hidden;}',
       '.tmf-module>header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:16px 20px;border-bottom:1px solid rgba(201,168,95,.22);background:linear-gradient(90deg,rgba(201,168,95,.08),rgba(126,184,167,.04),transparent);}.tmf-module>header span{display:block;color:#8dbdab;font-size:12px;letter-spacing:.22em;}.tmf-module>header h2{margin:4px 0 0;color:#f0d98c;font-size:28px;font-weight:500;letter-spacing:.24em;}.tmf-module>header p{margin:6px 0 0;color:#9f9277;font-size:13px;letter-spacing:.06em;}.tmf-module>header button{width:32px;height:32px;border:1px solid rgba(201,168,95,.32);background:rgba(0,0,0,.18);color:#d8c27c;cursor:pointer;font-size:18px;}',
       '.tmf-module-body{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:0;}.tmf-module-left,.tmf-module-right{min-height:0;overflow:hidden;padding:14px;border-right:1px solid rgba(201,168,95,.16);background:rgba(255,255,255,.018);}.tmf-module-right{border-right:0;border-left:1px solid rgba(201,168,95,.16);}.tmf-module-main{min-width:0;min-height:0;overflow-y:auto;padding:18px 20px;scrollbar-width:thin;scrollbar-color:rgba(201,168,95,.50) transparent;}',

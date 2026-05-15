@@ -71,31 +71,6 @@ button { font: inherit; }
   pointer-events: none;
 }
 
-.window-tools {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 20;
-  display: flex;
-  height: 35px;
-  min-width: 168px;
-  justify-content: flex-end;
-  background: rgba(19, 14, 9, 0.78);
-  border-left: 1px solid rgba(215,185,104,0.2);
-  border-bottom: 1px solid rgba(215,185,104,0.17);
-}
-
-.window-tools button {
-  width: 54px;
-  border: 0;
-  color: var(--gold);
-  background: transparent;
-  cursor: pointer;
-}
-
-.window-tools button:hover { background: rgba(215,185,104,0.12); }
-.window-tools button:last-child:hover { background: rgba(169,59,47,0.55); color: #fff0da; }
-
 .stage {
   position: relative;
   z-index: 2;
@@ -128,11 +103,12 @@ button { font: inherit; }
 
 .main {
   grid-column: 2;
-  align-self: center;
+  align-self: start;
   display: grid;
   grid-template-columns: minmax(470px, 650px) minmax(260px, 330px);
   gap: 24px;
-  align-items: end;
+  align-items: center;
+  margin-top: clamp(10px, 2vh, 24px);
 }
 
 .brand {
@@ -179,6 +155,7 @@ button { font: inherit; }
   font-size: clamp(68px, 6.8vw, 108px);
   font-weight: 900;
   line-height: 0.92;
+  margin: 0;
   letter-spacing: 0.18em;
   text-indent: 0.18em;
   color: transparent;
@@ -655,12 +632,6 @@ kbd {
 </head>
 <body>
 <div class="bg" aria-hidden="true"></div>
-
-<div class="window-tools" aria-label="窗口控制">
-  <button aria-label="最小化">一</button>
-  <button aria-label="最大化">□</button>
-  <button aria-label="关闭">×</button>
-</div>
 
 <main class="stage">
   <aside class="couplet">天行健 · 君子以自强不息<span class="source">周易</span></aside>

@@ -1066,8 +1066,310 @@ async function _logicAuditOnStart(sc) {
 }
 
 // 开场白动画（完全替换 startGame，doActualStart 内部调用 GameHooks）
+function _tmStartHasRegions(map) {
+  return !!(map && Array.isArray(map.regions) && map.regions.length > 0);
+}
+
+function _tmStartClone(value) {
+  if (typeof deepClone === 'function') return deepClone(value);
+  try { return JSON.parse(JSON.stringify(value)); } catch(_) { return value; }
+}
+
+function _tmStartIsOfficialTianqi(sid) {
+  return String(sid || '') === 'sc-tianqi7-1627';
+}
+
+function _tmStartApplyOfficialSnapshot(sid, reason) {
+  if (!_tmStartIsOfficialTianqi(sid)) return;
+  if (typeof window === 'undefined' || typeof window.TM_TIANQI_APPLY_OFFICIAL_RUNTIME_SNAPSHOT !== 'function') return;
+  try {
+    window.TM_TIANQI_APPLY_OFFICIAL_RUNTIME_SNAPSHOT();
+  } catch(e) {
+    try {
+      if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-snapshot-' + (reason || 'unknown'));
+    } catch(_) {}
+  }
+}
+
+function _tmStartFindScenario(sid, reason) {
+  _tmStartApplyOfficialSnapshot(sid, reason);
+  return (typeof findScenarioById === 'function') ? findScenarioById(sid) : null;
+}
+
+function _tmStartSidRows(key, sid, sc) {
+  if (typeof P === 'undefined' || !P) return [];
+  if (!Array.isArray(P[key])) P[key] = [];
+  var rows = P[key].filter(function(row) { return row && (!row.sid || row.sid === sid); });
+  if (rows.length === 0 && sc && Array.isArray(sc[key]) && sc[key].length > 0) {
+    P[key] = P[key].filter(function(row) { return row && row.sid !== sid; });
+    sc[key].forEach(function(row) {
+      var copy = _tmStartClone(row);
+      if (copy && typeof copy === 'object') copy.sid = sid;
+      P[key].push(copy);
+    });
+    rows = P[key].filter(function(row) { return row && (!row.sid || row.sid === sid); });
+  }
+  return rows;
+}
+
+function _tmStartVariableRows(source) {
+  if (!source) return [];
+  if (Array.isArray(source)) return source;
+  var out = [];
+  if (Array.isArray(source.base)) {
+    source.base.forEach(function(v) {
+      var copy = _tmStartClone(v);
+      if (copy && typeof copy === 'object') copy._category = copy._category || 'base';
+      out.push(copy);
+    });
+  }
+  if (Array.isArray(source.other)) {
+    source.other.forEach(function(v) {
+      var copy = _tmStartClone(v);
+      if (copy && typeof copy === 'object') copy._category = copy._category || 'other';
+      out.push(copy);
+    });
+  }
+  return out;
+}
+
+function _tmStartLoadVars(sid, sc) {
+  if (typeof GM === 'undefined' || !GM || typeof P === 'undefined' || !P) return 0;
+  var rows = _tmStartVariableRows(P.variables).filter(function(v) { return v && (!v.sid || v.sid === sid); });
+  if (rows.length === 0 && sc && sc.variables) rows = _tmStartVariableRows(sc.variables);
+  if (rows.length === 0) return 0;
+  if (!Array.isArray(P.variables) || P.variables.length === 0) P.variables = rows.map(function(v) {
+    var copy = _tmStartClone(v);
+    if (copy && typeof copy === 'object' && !copy.sid) copy.sid = sid;
+    return copy;
+  });
+  if (!GM.vars || typeof GM.vars !== 'object') GM.vars = {};
+  rows.forEach(function(v) {
+    if (!v || !v.name) return;
+    var gv = _tmStartClone(v);
+    if (gv.value === undefined) gv.value = parseFloat(gv.defaultValue) || parseFloat(gv.initial) || parseFloat(gv.default) || 0;
+    gv.value = parseFloat(gv.value) || 0;
+    if (gv.min === undefined && gv.minimum !== undefined) gv.min = gv.minimum;
+    if (gv.max === undefined && gv.maximum !== undefined) gv.max = gv.maximum;
+    if (gv.min === undefined) gv.min = 0;
+    if (gv.max === undefined) gv.max = Math.max(100, Math.abs(gv.value) * 10);
+    gv.min = parseFloat(gv.min) || 0;
+    gv.max = parseFloat(gv.max) || 100;
+    if (gv.max <= gv.min) gv.max = gv.min + 100;
+    GM.vars[gv.name] = gv;
+  });
+  return Object.keys(GM.vars || {}).length;
+}
+
+function _tmStartMapSource(sc, allowDisabled) {
+  if (typeof GM !== 'undefined' && _tmStartHasRegions(GM.mapData)) return GM.mapData;
+  if (typeof P !== 'undefined' && P) {
+    if (_tmStartHasRegions(P.map) && (allowDisabled || P.map.enabled !== false)) return P.map;
+    if (_tmStartHasRegions(P.mapData) && (allowDisabled || P.mapData.enabled !== false)) return P.mapData;
+  }
+  if (sc) {
+    if (_tmStartHasRegions(sc.map) && (allowDisabled || sc.map.enabled !== false)) return sc.map;
+    if (_tmStartHasRegions(sc.mapData) && (allowDisabled || sc.mapData.enabled !== false)) return sc.mapData;
+  }
+  return null;
+}
+
+function _tmStartBindMap(sourceMap) {
+  if (!_tmStartHasRegions(sourceMap)) return null;
+  var live = null;
+  if (typeof bindRuntimeMapState === 'function') {
+    try { live = bindRuntimeMapState(sourceMap); } catch(_) { live = null; }
+  }
+  if (!_tmStartHasRegions(live)) {
+    live = _tmStartClone(sourceMap);
+    if (typeof GM !== 'undefined' && GM) GM.mapData = live;
+    if (typeof P !== 'undefined' && P) {
+      P.map = live;
+      P.mapData = live;
+    }
+  }
+  if (live) live.enabled = true;
+  return live;
+}
+
+function _tmStartConsumeMapChoice(sid) {
+  if (typeof window === 'undefined') return true;
+  var choice = window._pendingUseMap;
+  var choiceSid = window._pendingMapModeSid;
+  var choiceAt = Number(window._pendingMapModeAt || 0);
+  var fresh = (choiceSid === sid) && (!choiceAt || (Date.now() - choiceAt < 30 * 60 * 1000));
+  delete window._pendingUseMap;
+  delete window._pendingMapModeSid;
+  delete window._pendingMapModeAt;
+  if (choice === false && fresh) return false;
+  return true;
+}
+
+function _tmStartApplyMapChoice(sid, sc) {
+  var useMap = _tmStartConsumeMapChoice(sid);
+  if (useMap === false) {
+    if (typeof P !== 'undefined' && P) {
+      P.map = P.map || {};
+      P.map.enabled = false;
+      P.map.regions = [];
+      P.map.roads = [];
+      P.mapData = P.mapData || {};
+      P.mapData.enabled = false;
+      P.mapData.regions = [];
+    }
+    if (typeof GM !== 'undefined' && GM) {
+      GM.mapData = null;
+      GM._useAIGeo = true;
+    }
+    return false;
+  }
+  if (typeof GM !== 'undefined' && GM) GM._useAIGeo = false;
+  var source = _tmStartMapSource(sc, true);
+  if (source) _tmStartBindMap(source);
+  return true;
+}
+
+function _tmStartRepairRuntimeData(sid, sc, reason) {
+  if (typeof GM === 'undefined' || !GM || typeof P === 'undefined' || !P) return null;
+  var official = _tmStartIsOfficialTianqi(sid);
+  if (official) {
+    _tmStartApplyOfficialSnapshot(sid, reason || 'repair');
+    sc = (typeof findScenarioById === 'function') ? findScenarioById(sid) : sc;
+  }
+  var report = { reason: reason || '', chars: 0, facs: 0, vars: 0, mapRegions: 0, fixed: [] };
+  var minChars = official ? 30 : 1;
+  var minFacs = official ? 5 : 1;
+  var minVars = official ? 10 : 1;
+  var minRegions = official ? 10 : 1;
+
+  if (!Array.isArray(GM.chars) || GM.chars.length < minChars) {
+    var charRows = _tmStartSidRows('characters', sid, sc);
+    if (charRows.length >= minChars) {
+      GM.chars = charRows.map(function(c) { return _tmStartClone(c); });
+      report.fixed.push('chars');
+    }
+  }
+  if (!Array.isArray(GM.facs) || GM.facs.length < minFacs) {
+    var facRows = _tmStartSidRows('factions', sid, sc);
+    if (facRows.length >= minFacs) {
+      GM.facs = facRows.map(function(f) {
+        var copy = _tmStartClone(f);
+        if (copy && typeof copy === 'object') {
+          if (!copy.vassals) copy.vassals = [];
+          if (copy.liege === undefined) copy.liege = null;
+          if (copy.tributeRate === undefined) copy.tributeRate = 0.3;
+          if (!copy.territories) copy.territories = [];
+        }
+        return copy;
+      });
+      report.fixed.push('facs');
+    }
+  }
+  if (!GM.vars || Object.keys(GM.vars).length < minVars) {
+    var varCount = _tmStartLoadVars(sid, sc);
+    if (varCount >= minVars) report.fixed.push('vars');
+  }
+  if (!GM._useAIGeo && (!_tmStartHasRegions(GM.mapData) || GM.mapData.regions.length < minRegions)) {
+    var mapSource = _tmStartMapSource(sc, true);
+    var live = _tmStartBindMap(mapSource);
+    if (_tmStartHasRegions(live) && live.regions.length >= minRegions) report.fixed.push('map');
+  } else if (_tmStartHasRegions(GM.mapData)) {
+    P.map = GM.mapData;
+    P.mapData = GM.mapData;
+  }
+
+  report.chars = Array.isArray(GM.chars) ? GM.chars.length : 0;
+  report.facs = Array.isArray(GM.facs) ? GM.facs.length : 0;
+  report.vars = GM.vars ? Object.keys(GM.vars).length : 0;
+  report.mapRegions = _tmStartHasRegions(GM.mapData) ? GM.mapData.regions.length : 0;
+  if (report.fixed.length) {
+    try { console.warn('[StartRuntimeRepair]', report); } catch(_) {}
+    try { if (typeof buildIndices === 'function' && (report.fixed.indexOf('chars') >= 0 || report.fixed.indexOf('facs') >= 0)) buildIndices(); } catch(_) {}
+  }
+  return report;
+}
+
+function _tmStartDynastyContext(sc) {
+  var dynasty = (sc && (sc.dynasty || sc.era)) || (typeof GM !== 'undefined' && GM && GM.eraState && GM.eraState.dynasty) || '';
+  var phase = (typeof GM !== 'undefined' && GM && GM.eraState && GM.eraState.dynastyPhase) || 'peak';
+  return { dynasty: dynasty, phase: phase };
+}
+
+function _tmStartRefreshFormalShell() {
+  try { if (typeof renderTopBarVars === 'function') renderTopBarVars(); } catch(_) {}
+  try {
+    if (typeof window !== 'undefined' && window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.refresh === 'function') {
+      window.TMPhase8FormalBridge.refresh();
+    }
+  } catch(_) {}
+}
+
+function _tmStartPrimeFormalRuntime(sid, sc, reason) {
+  if (typeof GM === 'undefined' || !GM) return null;
+  sc = sc || ((typeof findScenarioById === 'function' && sid) ? findScenarioById(sid) : null);
+  var ctx = _tmStartDynastyContext(sc);
+  var fixed = [];
+
+  try {
+    if (GM.turn === 1 && !GM._corruptionPresetDone && typeof CorruptionEngine !== 'undefined' && typeof CorruptionEngine.initFromDynasty === 'function') {
+      CorruptionEngine.initFromDynasty(ctx.dynasty, ctx.phase, sc || {});
+      GM._corruptionPresetDone = true;
+      fixed.push('corruption');
+    } else if (typeof CorruptionEngine !== 'undefined' && typeof CorruptionEngine.ensureModel === 'function') {
+      CorruptionEngine.ensureModel();
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-corruption'); } catch(_) {} }
+
+  try {
+    if (GM.turn === 1 && !GM._guokuPresetDone && typeof GuokuEngine !== 'undefined' && typeof GuokuEngine.initFromDynasty === 'function') {
+      GuokuEngine.initFromDynasty(ctx.dynasty, ctx.phase, sc || {});
+      GM._guokuPresetDone = true;
+      fixed.push('guoku');
+    } else if (typeof GuokuEngine !== 'undefined' && typeof GuokuEngine.ensureModel === 'function') {
+      GuokuEngine.ensureModel();
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-guoku'); } catch(_) {} }
+
+  try {
+    if (GM.turn === 1 && !GM._neitangPresetDone && typeof NeitangEngine !== 'undefined' && typeof NeitangEngine.initFromDynasty === 'function') {
+      NeitangEngine.initFromDynasty(ctx.dynasty, ctx.phase, sc || {});
+      GM._neitangPresetDone = true;
+      fixed.push('neitang');
+    } else if (typeof NeitangEngine !== 'undefined' && typeof NeitangEngine.ensureModel === 'function') {
+      NeitangEngine.ensureModel();
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-neitang'); } catch(_) {} }
+
+  try {
+    if (typeof HujiEngine !== 'undefined' && typeof HujiEngine.init === 'function') {
+      HujiEngine.init(sc || {});
+      fixed.push('population');
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-huji'); } catch(_) {} }
+
+  try {
+    if (typeof AuthorityEngines !== 'undefined' && typeof AuthorityEngines.init === 'function') {
+      AuthorityEngines.init();
+      fixed.push('authority');
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-authority'); } catch(_) {} }
+
+  try {
+    if (!GM._useAIGeo && !_tmStartHasRegions(GM.mapData)) {
+      var mapSource = _tmStartMapSource(sc, true);
+      if (_tmStartBindMap(mapSource)) fixed.push('map');
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-map'); } catch(_) {} }
+
+  if (fixed.length) {
+    try { console.warn('[StartRuntimePrime]', { reason: reason || '', fixed: fixed }); } catch(_) {}
+  }
+  _tmStartRefreshFormalShell();
+  return fixed;
+}
+
 startGame=async function(sid){
-  var sc=findScenarioById(sid);
+  var sc=_tmStartFindScenario(sid, 'startGame-pre') || findScenarioById(sid);
   if(!sc){toast("\u672A\u627E\u5230");return;}
   _$("scn-page").classList.remove("show");
   _$("launch").style.display="none";
@@ -1360,13 +1662,10 @@ function doActualStart(sid){
     P.conf.difficulty = window._pendingDifficulty;
     delete window._pendingDifficulty;
   }
-  if (sid === 'sc-tianqi7-1627' && typeof window !== 'undefined' && typeof window.TM_TIANQI_APPLY_OFFICIAL_RUNTIME_SNAPSHOT === 'function') {
-    try { window.TM_TIANQI_APPLY_OFFICIAL_RUNTIME_SNAPSHOT(); } catch(_snapshotStartE) {
-      try { window.TM && TM.errors && TM.errors.captureSilent(_snapshotStartE, 'doActualStart-tianqi-snapshot'); } catch(_) {}
-    }
-  }
+  _tmStartApplyOfficialSnapshot(sid, 'doActualStart-pre');
   // 初始化GM（完整版，包含所有必要属性）
-  var sc=findScenarioById(sid);
+  var sc=_tmStartFindScenario(sid, 'doActualStart-find') || findScenarioById(sid);
+  if(!sc){toast("\u672A\u627E\u5230");return;}
   var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};if(_prevSaveName)GM.saveName=_prevSaveName;
 
   // 根据era智能推断eraState缺失字段（当剧本未定义eraState时使用合理默认值）
@@ -1575,6 +1874,7 @@ function doActualStart(sid){
       P.mapData = GM.mapData;
     }
   }
+  _tmStartApplyMapChoice(sid, sc);
   if(sc.buildingSystem) P.buildingSystem = deepClone(sc.buildingSystem);
   if(sc.battleConfig) P.battleConfig = deepClone(sc.battleConfig);
   if(sc.mechanicsConfig) { if(!P.mechanicsConfig) P.mechanicsConfig={}; Object.assign(P.mechanicsConfig, deepClone(sc.mechanicsConfig)); }
@@ -1744,6 +2044,7 @@ function doActualStart(sid){
   GM.techTree=(P.techTree||[]).filter(function(t){return t.sid===sid;}).map(function(t){var c=deepClone(t);c.unlocked=false;return c;});
   GM.civicTree=(P.civicTree||[]).filter(function(c){return c.sid===sid;}).map(function(c){var cp=deepClone(c);cp.adopted=false;return cp;});
   GM.events=(P.events||[]).filter(function(e){return e.sid===sid;}).map(function(e){var ev=deepClone(e);if(ev.triggered===undefined)ev.triggered=false;return ev;});
+  _tmStartRepairRuntimeData(sid, sc, 'after-runtime-load');
   GM.allCharacters=GM.chars.map(function(c){return{name:c.name,title:c.title,age:c.age||"?",gender:c.gender||"\u7537",personality:c.personality,appearance:c.appearance,desc:c.desc,loyalty:c.loyalty,relationValue:c.loyalty,faction:c.faction,recruited:true,recruitTurn:0,source:"\u521D\u59CB",avatarUrl:""};});
 
   // 自动为旧角色匹配 traitIds + 初始化stress/goals
@@ -1990,6 +2291,8 @@ function doActualStart(sid){
   _$("launch").style.display="none";_$("bar").style.display="flex";_$("bar-btns").innerHTML="";_$("G").style.display="grid";_$("E").style.display="none";
   _$("shiji-btn").classList.add("show");_$("save-btn").classList.add("show");
 
+  _tmStartRepairRuntimeData(sid, sc, 'before-start-hook');
+  _tmStartPrimeFormalRuntime(sid, sc, 'before-start-hook');
   GameHooks.run('startGame:after', sid);
 
   // 5.1: 剧本完整度预检（非阻断式警告）
@@ -2043,14 +2346,19 @@ function doActualStart(sid){
         ]);
       } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '3 plans parallel') : console.warn('[3 plans parallel]', e); }
       showLoading('\u751F\u6210\u521D\u59CB\u594F\u758F...', 98);
+      _tmStartRepairRuntimeData(sid, sc, 'before-enter-api');
+      _tmStartPrimeFormalRuntime(sid, sc, 'before-enter-api');
       generateMemorials();
       hideLoading();
       enterGame();
+      _tmStartRefreshFormalShell();
     })();
   } else {
     showLoading('\u8FDB\u5165\u6E38\u620F\u4E16\u754C...', 95);
+    _tmStartRepairRuntimeData(sid, sc, 'before-enter-local');
+    _tmStartPrimeFormalRuntime(sid, sc, 'before-enter-local');
     generateMemorials();
-    setTimeout(function(){hideLoading();enterGame();},100);
+    setTimeout(function(){hideLoading();enterGame();_tmStartRefreshFormalShell();},100);
   }
   var hd=_$("qiju-history");if(hd&&sc)hd.innerHTML="<div class=\"qiju-record\"><div class=\"qiju-turn\">"+getTS(1)+" \u5F00\u7BC7</div><div class=\"nt\">"+sc.opening+"</div></div>";
 

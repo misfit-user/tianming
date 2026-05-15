@@ -305,6 +305,8 @@ function _confirmMapMode(sid, useMap) {
 
   // 存储选择
   window._pendingUseMap = useMap;
+  window._pendingMapModeSid = sid;
+  window._pendingMapModeAt = Date.now();
 
   // 进入存档命名 + 游戏模式选择
   _showGameSetupModal(sid);

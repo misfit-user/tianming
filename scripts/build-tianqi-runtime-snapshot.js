@@ -38,7 +38,7 @@ function main() {
   });
 
   const snapshot = {
-    version: '2026-05-15-prefectures',
+    version: '2026-05-15-laterjin-liaodong',
     sid: SID,
     sourceFile: path.relative(repoRoot, loaded.file).replace(/\\/g, '/'),
     scenario,

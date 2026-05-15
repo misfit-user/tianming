@@ -128,33 +128,42 @@
     }
   }
 
-  function adjustHuangwei(source, delta, reason) {
+  function adjustHuangwei(source, delta, reason, opts) {
     var hw = _ensureHuangwei();
-    if (!hw) return;
-    var oldIdx = hw.index;
-    hw.index = Math.max(0, Math.min(100, hw.index + delta));
-    if (delta > 0 && hw.sources[source] !== undefined) hw.sources[source] += delta;
-    if (delta < 0 && hw.drains[source] !== undefined) hw.drains[source] += -delta;
+    if (!hw) return { ok: false, reason: 'missing-huangwei' };
+    var amount = Number(delta);
+    if (!isFinite(amount) || amount === 0) return { ok: false, reason: 'invalid-delta' };
+    var cleanReason = _authorityCleanReason(reason, {
+      defaultReason: source || 'huangwei-change',
+      allowUnattributed: true
+    });
+    var oldIdx = typeof hw.index === 'number' && isFinite(hw.index) ? hw.index : 50;
+    hw.index = Math.max(0, Math.min(100, oldIdx + amount));
+    var applied = hw.index - oldIdx;
+    if (applied > 0 && hw.sources[source] !== undefined) hw.sources[source] += applied;
+    if (applied < 0 && hw.drains[source] !== undefined) hw.drains[source] += -applied;
     // 阶段迁移
     var newPhase = _getHuangweiPhase(hw.index);
     if (newPhase !== hw.phase) {
       hw.phase = newPhase;
       if (global.addEB) global.addEB('皇威', '转入 ' + HUANGWEI_PHASE[newPhase].name + ' 段（' + Math.round(hw.index) + '）');
     }
-    hw.trend = delta > 0 ? 'rising' : delta < 0 ? 'falling' : 'stable';
+    hw.trend = applied > 0 ? 'rising' : applied < 0 ? 'falling' : 'stable';
     // 同步四维
     if (source === 'militaryVictory' || source === 'militaryDefeat' || source === 'personalCampaign' || source === 'personalCampaignFail') {
-      hw.subDims.military.value = Math.max(0, Math.min(100, hw.subDims.military.value + delta * 1.5));
+      hw.subDims.military.value = Math.max(0, Math.min(100, hw.subDims.military.value + applied * 1.5));
     }
     if (source === 'tribute' || source === 'diplomaticHumiliation' || source === 'territoryExpansion') {
-      hw.subDims.foreign.value = Math.max(0, Math.min(100, hw.subDims.foreign.value + delta * 1.5));
+      hw.subDims.foreign.value = Math.max(0, Math.min(100, hw.subDims.foreign.value + applied * 1.5));
     }
     if (source === 'executeRebelMinister' || source === 'memorialObjection' || source === 'courtScandal') {
-      hw.subDims.court.value = Math.max(0, Math.min(100, hw.subDims.court.value + delta * 1.5));
+      hw.subDims.court.value = Math.max(0, Math.min(100, hw.subDims.court.value + applied * 1.5));
     }
     if (source === 'suppressRevolt' || source === 'forcedAbdication') {
-      hw.subDims.provincial.value = Math.max(0, Math.min(100, hw.subDims.provincial.value + delta * 1.5));
+      hw.subDims.provincial.value = Math.max(0, Math.min(100, hw.subDims.provincial.value + applied * 1.5));
     }
+    _recordAuthorityChange('huangwei', '\u7687\u5a01', 'huangwei.index', oldIdx, hw.index, cleanReason, source);
+    return { ok: true, oldValue: oldIdx, newValue: hw.index, delta: applied, reason: cleanReason };
   }
 
   function _tickHuangwei(ctx, mr) {

@@ -539,19 +539,25 @@
     // 年幼/病弱
     var player = (G.chars || []).find(function(c){return c.isPlayer;});
     if (player) {
-      if ((player.age || 30) < 12) triggerHuangquanEvent('youngOrIllness', {});
-      if ((player.health || 80) < 40) triggerHuangquanEvent('youngOrIllness', {});
+      var playerKey = player.id || player.name || 'player';
+      if ((player.age || 30) < 12 && _autoAuthorityEventDue('huangquan', 'young:' + playerKey, _turnsForMonthsLocal(12))) {
+        triggerHuangquanEvent('youngOrIllness', { reason: '\u5e7c\u4e3b\u4e34\u671d' });
+      }
+      if ((player.health || 80) < 40 && _autoAuthorityEventDue('huangquan', 'ill:' + playerKey, _turnsForMonthsLocal(6))) {
+        triggerHuangquanEvent('youngOrIllness', { reason: '\u541b\u4e3b\u4f53\u5f31' });
+      }
     }
     // 党争
-    if (G.partyStrife > 70) triggerHuangquanEvent('factionConsuming', {});
+    if (G.partyStrife > 70 && _autoAuthorityEventDue('huangquan', 'partyStrifeHigh', _turnsForMonthsLocal(6))) {
+      triggerHuangquanEvent('factionConsuming', { reason: '\u515a\u4e89\u8017\u653f' });
+    }
     // 怠政
-    if (!G._edictTracker || G._edictTracker.length === 0) triggerHuangquanEvent('idleGovern', {});
     // 军事惨败
     if (G._turnBattleResults) {
       G._turnBattleResults.forEach(function(b) {
         if (b._hqChecked) return;
         b._hqChecked = true;
-        if (!b.win && b.scale === 'decisive') triggerHuangquanEvent('militaryDefeat', {});
+        if (!b.win && b.scale === 'decisive') triggerHuangquanEvent('militaryDefeat', { reason: '\u51b3\u5b9a\u6027\u6218\u8d25' });
       });
     }
   }

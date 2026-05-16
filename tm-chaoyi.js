@@ -18,10 +18,9 @@
 // ============================================================
 
 function openChaoyi(){
-  // 频率限制：每回合最多2次朝议（廷议+常朝各1次，御前会议不限）
+  // 频率计数初始化；具体限制在 _cy_pickMode 按模式判断，御前会议不限。
   if (!GM._chaoyiCount) GM._chaoyiCount = {};
   if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
-  if (GM._chaoyiCount[GM.turn] >= 2) { toast('今日已朝议' + GM._chaoyiCount[GM.turn] + '次，改日再议'); return; }
   CY={open:true,topic:"",selected:[],messages:[],speaking:false,abortCtrl:null,round:0,phase:'setup',stances:{},mode:'tinyi',maxRounds:99,_playerActions:[],_pendingPlayerLine:null,_abortChaoyi:false};
   var modal=document.createElement("div");modal.className="modal-bg show";modal.id="chaoyi-modal";
   modal.innerHTML='<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:95%;max-width:860px;height:88vh;display:flex;flex-direction:column;overflow:hidden;">'
@@ -123,8 +122,18 @@ function _cy_modeCardHtml(mode, title, subtitle, desc, scale, energy) {
     + '</div>';
 }
 
+function _cy_isModeBlockedByFrequency(mode) {
+  if (mode === 'yuqian') return false;
+  if (!GM._chaoyiCount) GM._chaoyiCount = {};
+  if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
+  if (GM._chaoyiCount[GM.turn] < 2) return false;
+  if (typeof toast === 'function') toast('今日已朝议' + GM._chaoyiCount[GM.turn] + '次，改日再议；御前会议仍可密召');
+  return true;
+}
+
 function _cy_pickMode(mode) {
   CY.mode = mode;
+  if (_cy_isModeBlockedByFrequency(mode)) return;
   if (mode === 'changchao') {
     // CC 迁移波 5+ → Phase 3 (2026-05-03)·v2 §1 物理删除·常朝唯一入口为 _cc3_open（tm-chaoyi-changchao.js）
     if (typeof _cc3_open === 'function') {

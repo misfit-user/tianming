@@ -6093,7 +6093,8 @@
   }
 
   function legacyEdictDraftValue(id, keys){
-    var live = document.getElementById(id);
+    var root = document.querySelector('.tm-desk-overlay');
+    var live = root && root.querySelector ? root.querySelector('#' + cssEscape(id)) : null;
     if (live && typeof live.value === 'string') return live.value;
     var drafts = ensureFormalEdictDrafts();
     for (var i = 0; i < keys.length; i++) {
@@ -6120,19 +6121,60 @@
     return Array.isArray(gm._edictSuggestions) ? gm._edictSuggestions : (Array.isArray(gm.edictSuggestions) ? gm.edictSuggestions : []);
   }
 
+  function formalEdictDraftKeys(catId){
+    var keyMap = {
+      'edict-pol':['policy','political'],
+      'edict-mil':['military'],
+      'edict-dip':['diplomatic','diplomacy'],
+      'edict-eco':['finance','economic','economy'],
+      'edict-oth':['other','private']
+    };
+    return keyMap[catId] || ['policy'];
+  }
+
+  function findFormalEdictDraftInput(catId, root){
+    var selector = '#' + cssEscape(catId);
+    var scoped = root && root.closest ? root.closest('.tm-desk-overlay') : root;
+    if (scoped && scoped.querySelector) {
+      var scopedEl = scoped.querySelector(selector);
+      if (scopedEl) return scopedEl;
+    }
+    var actionOverlay = document.getElementById('tm-action-edict-overlay');
+    if (actionOverlay && actionOverlay.querySelector) {
+      var actionEl = actionOverlay.querySelector(selector);
+      if (actionEl) return actionEl;
+    }
+    var currentOverlay = document.querySelector('.tm-desk-overlay');
+    if (currentOverlay && currentOverlay.querySelector) {
+      var currentEl = currentOverlay.querySelector(selector);
+      if (currentEl) return currentEl;
+    }
+    return null;
+  }
+
   function syncFormalEdictDraft(catId, value){
     state.edictDrafts = state.edictDrafts || {};
-    var keyMap = {
-      'edict-pol':'policy',
-      'edict-mil':'military',
-      'edict-dip':'diplomatic',
-      'edict-eco':'finance',
-      'edict-oth':'other'
-    };
-    var key = keyMap[catId] || 'policy';
-    state.edictDrafts[key] = value || '';
-    if (catId === 'edict-eco') state.edictDrafts.economic = value || '';
-    if (catId === 'edict-oth') state.edictDrafts.private = value || '';
+    formalEdictDraftKeys(catId).forEach(function(key){
+      state.edictDrafts[key] = value || '';
+    });
+  }
+
+  function appendFormalEdictDraft(catId, block, root){
+    block = String(block || '').trim();
+    if (!block) return { ok:false, live:false };
+    state.edictDrafts = state.edictDrafts || {};
+    var keys = formalEdictDraftKeys(catId);
+    var primary = keys[0] || 'policy';
+    var ta = findFormalEdictDraftInput(catId, root);
+    var base = ta && typeof ta.value === 'string' ? ta.value : (state.edictDrafts[primary] || '');
+    var next = (base ? String(base).replace(/\s+$/, '') + '\n\n' : '') + block;
+    syncFormalEdictDraft(catId, next);
+    if (ta) {
+      ta.value = next;
+      try { if (typeof window._edictLiveForecast === 'function') window._edictLiveForecast(catId); } catch(_) {}
+      try { ta.focus(); } catch(_) {}
+    }
+    return { ok:true, live:!!ta };
   }
 
   function dismissFormalEdictSuggestion(realIndex){
@@ -6149,6 +6191,7 @@
     var sg = list[realIndex];
     if (!sg) return;
     var anchor = evt && (evt.currentTarget || evt.target);
+    var adoptRoot = anchor && anchor.closest ? anchor.closest('.tm-desk-overlay') : null;
     var rect = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 80, right: 160, top: 120, bottom: 150 };
     var cats = [
       {id:'edict-pol', label:'政 令', color:'var(--indigo-400)'},
@@ -6173,19 +6216,18 @@
       item.onclick = function(ev){
         ev.preventDefault();
         ev.stopPropagation();
-        var ta = document.getElementById(cat.id);
         var content = String(sg.content || sg.text || sg.body || '').trim();
         var prefix = '';
         if (sg.topic || sg.title) prefix += '〔' + (sg.topic || sg.title) + '〕';
         if (sg.from) prefix += '（' + sg.from + '言）';
         var block = (prefix ? prefix + '\n' : '') + content;
-        if (ta && block) {
-          ta.value += (ta.value ? '\n\n' : '') + block;
-          syncFormalEdictDraft(cat.id, ta.value);
-          try { if (typeof window._edictLiveForecast === 'function') window._edictLiveForecast(cat.id); } catch(_) {}
-          ta.focus();
+        var write = appendFormalEdictDraft(cat.id, block, adoptRoot);
+        if (write.ok) {
+          if (typeof window.toast === 'function') window.toast('已纳入' + cat.label + (prefix ? '（含问题背景）' : ''));
+          if (!write.live) setTimeout(openZhaoPreviewPanel, 0);
+        } else if (typeof window.toast === 'function') {
+          window.toast('建议为空，未纳入');
         }
-        if (typeof window.toast === 'function') window.toast('已纳入' + cat.label + (prefix ? '（含问题背景）' : ''));
         menu.remove();
       };
       menu.appendChild(item);

@@ -119,7 +119,7 @@ function _postTurnCourtChoose(openCourt) {
   if (_bg) _bg.remove();
   if (openCourt) {
     // 先标记 courtDone=false 并启动 AI 推演（后台）
-    GM._pendingShijiModal = { aiReady: false, courtDone: false, payload: null };
+    GM._pendingShijiModal = { aiReady: false, courtDone: false, payload: null, source: 'post-turn-court', startedTurn: GM.turn || 0 };
     GM._isPostTurnCourt = true;
     // 并发：启动 endTurn 主流程（不 await·让 AI 在后台跑）
     _endTurnInternal();
@@ -131,7 +131,7 @@ function _postTurnCourtChoose(openCourt) {
         if (!GM._chaoyiCount) GM._chaoyiCount = {};
         if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
         if (typeof _cc3_open === 'function') {
-          _cc3_open();
+          _cc3_open({ isPostTurn: true, source: 'post-turn-court' });
         } else if (typeof openChaoyi === 'function') {
           // 兜底·v3 未加载时退到 v1 模式选择页
           openChaoyi();
@@ -152,7 +152,7 @@ function _postTurnCourtChoose(openCourt) {
     }, 200);
   } else {
     // 不开朝——直接跑 endTurn，显示加载条
-    GM._pendingShijiModal = { aiReady: false, courtDone: true, payload: null };
+    GM._pendingShijiModal = { aiReady: false, courtDone: true, payload: null, source: 'post-turn-skip', startedTurn: GM.turn || 0 };
     GM._isPostTurnCourt = false;
     _endTurnInternal();
   }
@@ -186,6 +186,10 @@ function _hidePostTurnCourtBanner() {
 // 朝会结束时调用——顺序：先弹史记，其他模态（keju/事件等）排队其后
 async function _onPostTurnCourtEnd() {
   if (!GM._pendingShijiModal) { GM._isPostTurnCourt = false; return; }
+  if (GM._pendingShijiModal.courtDone !== false && !GM._pendingShijiModal.aiReady && !GM._pendingShijiModal.payload) {
+    GM._isPostTurnCourt = false;
+    return;
+  }
   _hidePostTurnCourtBanner();
   if (!(GM._pendingShijiModal.aiReady && GM._pendingShijiModal.payload)) {
     // AI 还没好——关闭后朝标志让后续 AI 完成时直接 render

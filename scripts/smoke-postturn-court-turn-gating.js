@@ -12,6 +12,7 @@ const ROOT = path.resolve(__dirname, '..');
 const promptSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 const changchaoSrc = fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao.js'), 'utf8');
 const courtSrc = fs.readFileSync(path.join(ROOT, 'tm-court-meter.js'), 'utf8');
+const chaoyiSrc = fs.readFileSync(path.join(ROOT, 'tm-chaoyi.js'), 'utf8');
 
 let passed = 0;
 function assert(cond, label) {
@@ -34,6 +35,17 @@ const promptApi = sandbox.TM.Endturn.AI.prompt;
 assert(promptApi && typeof promptApi.getCurrentChangchaoDecisions === 'function', 'prompt exposes getCurrentChangchaoDecisions');
 assert(promptSrc.indexOf('_getCurrentChangchaoDecisions(GM)') >= 0, 'prompt build reads gated Changchao decisions');
 assert(changchaoSrc.indexOf('_lastChangchaoDecisionMeta') >= 0, 'Changchao persist writes decision targetTurn metadata');
+assert(changchaoSrc.indexOf('async function _cc3_open(opts)') >= 0, 'Changchao open accepts explicit context');
+assert(changchaoSrc.indexOf("Object.prototype.hasOwnProperty.call(opts, 'isPostTurn')") >= 0, 'Changchao open reads explicit isPostTurn option');
+assert(changchaoSrc.indexOf('state._isPostTurn = !!isPostTurnOpen;') >= 0, 'Changchao snapshots per-session post-turn state');
+assert(changchaoSrc.indexOf("state.mode = state._isPostTurn ? 'shuochao' : 'changchao';") >= 0, 'Changchao title mode follows per-session state');
+assert(chaoyiSrc.indexOf("_cc3_open({ isPostTurn: false, source: 'in-turn-picker' })") >= 0, 'in-turn Changchao picker forces non-post-turn context');
+assert(courtSrc.indexOf("_cc3_open({ isPostTurn: true, source: 'post-turn-court' })") >= 0, 'post-turn Shuochao opener forces post-turn context');
+assert(changchaoSrc.indexOf('if (state._isPostTurn && typeof _onPostTurnCourtEnd ===') >= 0, 'closing hook is gated by per-session post-turn state');
+
+const closeMatch = changchaoSrc.match(/function _cc3_close\(\)\s*\{([\s\S]*?)\n\}/);
+assert(!!closeMatch, 'Changchao close block found');
+assert(closeMatch[1].indexOf('GM._isPostTurnCourt') < 0, 'manual Changchao close does not infer post-turn from stale GM flag');
 
 const openBranch = courtSrc.match(/function _postTurnCourtChoose\(openCourt\)\s*\{([\s\S]*?)\}\s*else\s*\{/);
 assert(!!openBranch, 'post-turn court open branch found');

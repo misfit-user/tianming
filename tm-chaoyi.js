@@ -48,7 +48,7 @@ function closeChaoyi(){
   var m=_$("chaoyi-modal");if(m)m.remove();
   if(typeof renderLeftPanel==='function')renderLeftPanel();
   // 后朝结束钩子——触发史记弹窗或过渡到加载条
-  if (GM._isPostTurnCourt && typeof _onPostTurnCourtEnd === 'function') {
+  if (GM._isPostTurnCourt && GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false && typeof _onPostTurnCourtEnd === 'function') {
     _onPostTurnCourtEnd();
   }
 }
@@ -128,7 +128,7 @@ function _cy_pickMode(mode) {
   if (mode === 'changchao') {
     // CC 迁移波 5+ → Phase 3 (2026-05-03)·v2 §1 物理删除·常朝唯一入口为 _cc3_open（tm-chaoyi-changchao.js）
     if (typeof _cc3_open === 'function') {
-      _cc3_open();
+      _cc3_open({ isPostTurn: false, source: 'in-turn-picker' });
     } else if (typeof toast === 'function') {
       toast('常朝 v3 未加载·请刷新页面');
     }

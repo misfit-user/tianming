@@ -348,7 +348,9 @@ async function _cc3_buildAgendaFromGM() {
         if (digest) prompt += '\n' + digest;
       }
       // 朔朝特别注入：本月已开过早朝时·朔朝须接续不重复
-      const _isPostTurnNow = (typeof state !== 'undefined' && state._isPostTurn) || (GM && GM._isPostTurnCourt);
+      const _isPostTurnNow = (typeof state !== 'undefined' && state._isPostTurn != null)
+        ? !!state._isPostTurn
+        : !!(GM && GM._isPostTurnCourt);
       if (_isPostTurnNow && Array.isArray(GM._courtRecords)) {
         const sameTurnIn = GM._courtRecords.filter(function(r) {
           return r && r.phase === 'in-turn' && r.targetTurn === GM.turn;
@@ -1160,6 +1162,8 @@ const AGENDA = []; // mock 数据·_cc3_open 时由 _cc3_buildAgendaFromGM (走 
 // ═══════════════════════════════════════════════
 const state = {
   mode: 'changchao',           // 'changchao' | 'shuochao'
+  _isPostTurn: null,
+  _openSource: '',
   phase: 'opening',
   currentIdx: 0,
   decisions: [],               // {idx, action, item, label, extra?}
@@ -2740,7 +2744,7 @@ async function runClosing() {
   // P0 C6·朝会决议持久化到 GM._courtRecords
   _cc3_persistCourtRecord();
   // P0 后朝结束钩子
-  if (typeof GM !== 'undefined' && GM._isPostTurnCourt && typeof _onPostTurnCourtEnd === 'function') {
+  if (state._isPostTurn && typeof _onPostTurnCourtEnd === 'function') {
     try { _onPostTurnCourtEnd(); } catch (_) {}
   }
   showSummary();
@@ -3639,12 +3643,19 @@ async function runDecreeFlow(extra) {
 // ───────────────────────────────────────────
 
 /** v3 朝议入口·暂供 console 测试·后续接 _cy_pickMode */
-async function _cc3_open() {
+async function _cc3_open(opts) {
+  opts = opts || {};
+  var explicitPostTurn = null;
+  if (Object.prototype.hasOwnProperty.call(opts, 'isPostTurn')) explicitPostTurn = !!opts.isPostTurn;
+  else if (Object.prototype.hasOwnProperty.call(opts, 'postTurn')) explicitPostTurn = !!opts.postTurn;
+  var isPostTurnOpen = explicitPostTurn !== null
+    ? explicitPostTurn
+    : (typeof GM !== 'undefined' && !!GM._isPostTurnCourt);
   // 频次计数（与 v2 兼容·in-turn court 受 2/turn 限·post-turn 不受）
   if (typeof GM !== 'undefined') {
     if (!GM._chaoyiCount) GM._chaoyiCount = {};
     if (!GM._chaoyiCount[GM.turn]) GM._chaoyiCount[GM.turn] = 0;
-    if (!GM._isPostTurnCourt && GM._chaoyiCount[GM.turn] >= 2) {
+    if (!isPostTurnOpen && GM._chaoyiCount[GM.turn] >= 2) {
       if (typeof toast === 'function') toast('今日已朝议 ' + GM._chaoyiCount[GM.turn] + ' 次·改日再议');
       return;
     }
@@ -3656,7 +3667,8 @@ async function _cc3_open() {
   if (oldModal) oldModal.remove();
 
   // ★ 立即捕获是否朔朝·避免 await 期间 GM._isPostTurnCourt 被外部 reset 导致标题/system prompt 错位
-  state._isPostTurn = (typeof GM !== 'undefined' && !!GM._isPostTurnCourt);
+  state._isPostTurn = !!isPostTurnOpen;
+  state._openSource = opts.source || (state._isPostTurn ? 'post-turn' : 'in-turn');
   state.mode = state._isPostTurn ? 'shuochao' : 'changchao';
   console.log('[cc3] _cc3_open·进入·朔朝=' + state._isPostTurn + '·mode=' + state.mode);
 
@@ -3695,7 +3707,7 @@ async function _cc3_open() {
   state.attendees = [];
   state.absents = [];
   // 朝议类型·根据 GM._isPostTurnCourt 决定标题/时间是早朝还是朔朝（流程完全一致）
-  state.mode = (typeof GM !== 'undefined' && GM._isPostTurnCourt) ? 'shuochao' : 'changchao';
+  state.mode = state._isPostTurn ? 'shuochao' : 'changchao';
 
   // 班次区从真实 CHARS 重建
   if (typeof renderBench === 'function') renderBench();
@@ -3832,8 +3844,7 @@ function _cc3_close() {
   // 保证后续 _onPostTurnCourtEnd 能展示推演 loading / 弹史记
   var _wasPostTurn = false;
   try {
-    _wasPostTurn = (typeof state !== 'undefined' && state._isPostTurn)
-                || (typeof GM !== 'undefined' && GM._isPostTurnCourt);
+    _wasPostTurn = !!(typeof state !== 'undefined' && state._isPostTurn);
   } catch(_) {}
   var _alreadyDone = (typeof state !== 'undefined' && state.done);
 

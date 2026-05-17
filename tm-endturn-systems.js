@@ -20,6 +20,23 @@
 
 /** Step 3: 系统更新 — 动态数据更新 + NPC + ChangeQueue 结算 */
 async function _endTurn_updateSystems(timeRatio, zhengwen) {
+  var _systemsWholeStart = Date.now();
+  var _systemsStageTimings = [];
+  function _markSystemStage(id, label, startedAt, extra) {
+    var ms = Math.max(0, Date.now() - (startedAt || Date.now()));
+    var entry = Object.assign({ id: id, label: label, ms: ms }, extra || {});
+    _systemsStageTimings.push(entry);
+    try {
+      if (window.TM && TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+        TM.Endturn.Timing.mark(null, 'systems_stage', entry);
+      }
+    } catch(_) {}
+    if (ms > 1500) {
+      try { console.warn('[endTurn systems] slow stage:', label, ms + 'ms', extra || ''); } catch(_) {}
+    }
+    return entry;
+  }
+
   // 3.0 机械层先行结算（战斗/围城/行军等确定性系统，在AI叙事之后、系统更新之前）
   if (typeof BattleEngine !== 'undefined' && BattleEngine._getConfig().enabled) {
     try { BattleEngine.resolveAllBattles(); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'BattleEngine] 结算失败:') : console.error('[BattleEngine] 结算失败:', e); }
@@ -273,50 +290,66 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   try { AutoReboundSystem.applyRebounds(); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 自动反弹失败:') : console.error('[endTurn] 自动反弹失败:', e); }
 
   // 6.855 应用变动队列（ChangeQueue System）
+  var _changeQueueTimingStart = Date.now();
   showLoading("应用决策变动", 93);
   _dbg('[endTurn] Step 6.855: 开始应用变动队列');
   var queueResult = null;
+  var variableChanges = {};
+  var _changeQueueLen = 0;
+  var _changeQueueStats = null;
   try {
-    queueResult = ChangeQueue.applyAll() || {};
-    _dbg('[endTurn] 变动队列应用完成:', queueResult);
-    var _execRate = (typeof queueResult.executionRate === 'number') ? queueResult.executionRate : 0;
-    _dbg('[endTurn] 执行率: ' + _execRate.toFixed(1) + '%，已应用 ' + (queueResult.appliedCount || 0) + ' 个变动');
-
-    // 将队列中的国库变动记录到 AccountingSystem
-    var appliedChanges = ChangeQueue.getAppliedChanges();
-
-    // 收集变量变化用于检查改革触发
-    var variableChanges = {};
-    appliedChanges.forEach(function(change) {
-      if (change.type === 'treasury' && change.field === 'gold') {
-        if (change.delta > 0) {
-          AccountingSystem.addIncome(change.description, change.delta, change.source);
-        } else if (change.delta < 0) {
-          AccountingSystem.addExpense(change.description, Math.abs(change.delta), change.source);
-        }
-      } else if (change.type === 'variable' && change.delta !== undefined) {
-        // 累积变量变化
-        if (!variableChanges[change.target]) {
-          variableChanges[change.target] = 0;
-        }
-        variableChanges[change.target] += change.delta;
-      }
-    });
-
-    if (queueResult && queueResult.ok === false) {
-      try {
-        GM._lastChangeQueueFailure = {
-          turn: GM.turn,
-          failedCount: queueResult.failedCount || 0,
-          errors: queueResult.errors || [],
-          at: Date.now()
-        };
-      } catch(_) {}
-      if (typeof toast === 'function') toast('部分决策变动未能应用，已保留待下回合重试；请查看控制台诊断。');
+    if (typeof ChangeQueue !== 'undefined' && ChangeQueue) {
+      if (typeof ChangeQueue.length === 'function') _changeQueueLen = ChangeQueue.length();
+      if (typeof ChangeQueue.getStats === 'function') _changeQueueStats = ChangeQueue.getStats();
+    }
+  } catch(_changeQueueStatError) {
+    _dbg('[endTurn] 变动队列统计读取失败:', _changeQueueStatError && _changeQueueStatError.message || _changeQueueStatError);
+  }
+  try {
+    if (_changeQueueLen <= 0) {
+      queueResult = { ok: true, skipped: true, appliedCount: 0, failedCount: 0, pendingCount: 0, errors: [] };
+      _dbg('[endTurn] 变动队列为空，跳过应用');
     } else {
-      // 清空队列
-      ChangeQueue.clear();
-      _dbg('[endTurn] 变动队列已清空');
+      queueResult = ChangeQueue.applyAll() || {};
+      _dbg('[endTurn] 变动队列应用完成:', queueResult);
+      var _execRate = (typeof queueResult.executionRate === 'number') ? queueResult.executionRate : 0;
+      _dbg('[endTurn] 执行率: ' + _execRate.toFixed(1) + '%，已应用 ' + (queueResult.appliedCount || 0) + ' 个变动');
+
+      // 将队列中的国库变动记录到 AccountingSystem
+      var appliedChanges = ChangeQueue.getAppliedChanges();
+
+      // 收集变量变化用于检查改革触发
+      appliedChanges.forEach(function(change) {
+        if (change.type === 'treasury' && change.field === 'gold') {
+          if (change.delta > 0) {
+            AccountingSystem.addIncome(change.description, change.delta, change.source);
+          } else if (change.delta < 0) {
+            AccountingSystem.addExpense(change.description, Math.abs(change.delta), change.source);
+          }
+        } else if (change.type === 'variable' && change.delta !== undefined) {
+          // 累积变量变化
+          if (!variableChanges[change.target]) {
+            variableChanges[change.target] = 0;
+          }
+          variableChanges[change.target] += change.delta;
+        }
+      });
+
+      if (queueResult && queueResult.ok === false) {
+        try {
+          GM._lastChangeQueueFailure = {
+            turn: GM.turn,
+            failedCount: queueResult.failedCount || 0,
+            errors: queueResult.errors || [],
+            at: Date.now()
+          };
+        } catch(_) {}
+        if (typeof toast === 'function') toast('部分决策变动未能应用，已保留待下回合重试；请查看控制台诊断。');
+      } else {
+        // 清空队列
+        ChangeQueue.clear();
+        _dbg('[endTurn] 变动队列已清空');
+      }
     }
 
     // 检查改革触发（基于本回合变量变化）
@@ -330,8 +363,18 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   } catch (error) {
     console.error('[endTurn] 应用变动队列失败:', error);
   }
+  _markSystemStage('changeQueueApply', '应用决策变动', _changeQueueTimingStart, {
+    queueLength: _changeQueueLen,
+    skipped: !!(queueResult && queueResult.skipped),
+    appliedCount: queueResult && queueResult.appliedCount || 0,
+    failedCount: queueResult && queueResult.failedCount || 0,
+    pendingCount: queueResult && queueResult.pendingCount || 0,
+    byType: _changeQueueStats && _changeQueueStats.byType || null
+  });
 
   // 6.87 检查历史事件触发
+  showLoading("检查历史事件", 93.4);
+  var _historyChecksTimingStart = Date.now();
   try {
     if (typeof checkHistoryEvents === 'function') checkHistoryEvents();
   } catch(e) {
@@ -365,8 +408,11 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
       }, 2000);
     }
   }
+  _markSystemStage('historyAndTriggers', '历史与触发检查', _historyChecksTimingStart);
 
   // 6.89 更新职位系统（品位晋升）
+  showLoading("检查职位与寿数", 93.7);
+  var _positionChecksTimingStart = Date.now();
   if (P.positionSystem && P.positionSystem.enabled) {
     _dbg('[endTurn] Step 6.89: 更新职位系统');
     try {
@@ -401,8 +447,11 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 自然死亡检查失败:') : console.error('[endTurn] 自然死亡检查失败:', e);
     }
   }
+  _markSystemStage('positionAndMortality', '职位与寿数检查', _positionChecksTimingStart);
 
   // 6.9 处理数据变化队列（监听系统）
+  showLoading("处理监听队列", 94);
+  var _reactiveQueueTimingStart = Date.now();
   try {
     if (typeof processChangeQueue === 'function') processChangeQueue();
   } catch(e) {
@@ -417,8 +466,11 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   if (typeof inheritBloodFeuds === 'function') {
     try { inheritBloodFeuds(); } catch(_) {}
   }
+  _markSystemStage('reactiveQueueAndRelations', '监听队列与关系衰减', _reactiveQueueTimingStart);
 
   // 6.92 文事作品老化：非传世且质量<70 的作品 > 10 回合后移入 _forgottenWorks（压缩记忆）
+  showLoading("清理回合缓存", 94.3);
+  var _cleanupTimingStart = Date.now();
   if (GM.culturalWorks && GM.culturalWorks.length > 0) {
     if (!GM._forgottenWorks) GM._forgottenWorks = [];
     var _aged = [];
@@ -444,6 +496,9 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   } catch(e) {
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 世界缓存清理失败:') : console.error('[endTurn] 世界缓存清理失败:', e);
   }
+  _markSystemStage('cleanup', '清理回合缓存', _cleanupTimingStart);
+  _markSystemStage('systemsTotal', '系统结算总耗时', _systemsWholeStart);
+  try { GM._lastEndturnSystemsTimings = _systemsStageTimings; } catch(_) {}
 
   return queueResult;
 }

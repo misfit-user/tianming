@@ -10,6 +10,12 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const v3src = fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao.js'), 'utf8');
+const legacySrc = fs.readFileSync(path.join(ROOT, 'tm-chaoyi.js'), 'utf8');
+
+if (!/禁止原文照搬|不得原文照搬/.test(v3src)) throw new Error('v3 prompt must block verbatim issue reuse');
+if (!/function issueAgendaHint\(iss\)/.test(v3src)) throw new Error('v3 fallback must rewrite currentIssues via issueAgendaHint');
+if (/content:\s*iss\.description/.test(v3src) || /detail:\s*iss\.description/.test(v3src)) throw new Error('v3 fallback must not use issue.description as memorial content');
+if (!/禁止原文照搬/.test(legacySrc) || /须出现在议程/.test(legacySrc)) throw new Error('legacy prompt must treat currentIssues as hints only');
 
 // ─── 沙盒构造（mock GM/P/DOM/callAI 等）───
 function makeSandbox(opts) {

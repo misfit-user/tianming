@@ -219,6 +219,15 @@ function _ensurePDefaults() {
 
 // 统一的存档前准备函数——所有存档路径都必须调用此函数
 function _prepareGMForSave() {
+  try {
+    if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.saveDraftsToGM === 'function') {
+      window.TMPhase8FormalBridge.saveDraftsToGM(true);
+    } else if (typeof window.savePhase8FormalDraftsToGM === 'function') {
+      window.savePhase8FormalDraftsToGM(true);
+    }
+  } catch(_phase8DraftSaveE) {
+    try { window.TM && TM.errors && TM.errors.captureSilent(_phase8DraftSaveE, 'prepareGMForSave·phase8FormalDrafts'); } catch(_) {}
+  }
   // 系统序列化
   // 注意：GM._chronicle是编年事件数组，不可与ChronicleSystem的月/年摘要对象混用——分开存
   GM._chronicleSysState = typeof ChronicleSystem !== 'undefined' ? ChronicleSystem.serialize() : null;
@@ -737,6 +746,15 @@ function fullLoadGame(data){
 
     // 恢复所有_saved*字段
     _restoreSavedFields();
+    try {
+      if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.restoreDraftsFromGM === 'function') {
+        window.TMPhase8FormalBridge.restoreDraftsFromGM(true);
+      } else if (typeof window.restorePhase8FormalDraftsFromGM === 'function') {
+        window.restorePhase8FormalDraftsFromGM(true);
+      }
+    } catch(_phase8DraftLoadE) {
+      try { window.TM && TM.errors && TM.errors.captureSilent(_phase8DraftLoadE, 'fullLoadGame·phase8FormalDrafts'); } catch(_) {}
+    }
     // 存档载入后恢复地图 live-state 引用，避免 P.map 与 GM.mapData 分裂。
     try {
       var _liveMapSrc = (GM && GM.mapData && GM.mapData.regions && GM.mapData.regions.length > 0) ? GM.mapData :

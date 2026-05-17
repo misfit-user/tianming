@@ -410,7 +410,9 @@
           return;
         }
         var _start = Date.now();
-        var _retries = (id === 'sc1') ? 2 : 1;
+        // sc27 is a foreground quality pass, not the core turn result. Keep it bounded so
+        // one slow review call cannot hold the whole end-turn flow for 10+ minutes.
+        var _retries = (id === 'sc1') ? 2 : (id === 'sc27' ? 0 : 1);
         var _stats = GM._aiDispatchStats;
         if (!_stats.byId[id]) _stats.byId[id] = { name:name, calls:0, totalTime:0, errors:0 };
         _stats.totalCalls++;

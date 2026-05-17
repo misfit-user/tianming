@@ -15,6 +15,91 @@
   state.legacyView = false;
   state.runtimeChromeSig = state.runtimeChromeSig || '';
 
+  function cloneDraftValue(value){
+    if (value == null) return value;
+    try { return JSON.parse(JSON.stringify(value)); }
+    catch(_) {
+      if (Array.isArray(value)) return value.slice();
+      if (typeof value === 'object') {
+        var out = {};
+        Object.keys(value).forEach(function(k){ out[k] = value[k]; });
+        return out;
+      }
+      return value;
+    }
+  }
+
+  function formalDraftStore(create){
+    var gm = window.GM;
+    if (!gm || typeof gm !== 'object') return null;
+    if (!gm._phase8FormalDrafts || typeof gm._phase8FormalDrafts !== 'object' || Array.isArray(gm._phase8FormalDrafts)) {
+      if (!create) return null;
+      gm._phase8FormalDrafts = {};
+    }
+    return gm._phase8FormalDrafts;
+  }
+
+  function clearFormalDraftRuntimeState(){
+    state.edictDraft = [];
+    state.edictDrafts = {};
+    state.playerAction = '';
+    state.letterDraft = {};
+    state.letterTarget = '';
+    state.letterFilter = 'all';
+    state.letterSearch = '';
+    state.memorialReplies = {};
+  }
+
+  function saveFormalDraftsToGM(captureOpen){
+    if (state._savingFormalDrafts) return;
+    var store = formalDraftStore(true);
+    if (!store) return;
+    state._savingFormalDrafts = true;
+    try {
+      if (captureOpen && typeof document !== 'undefined' && document.querySelectorAll) {
+        Array.prototype.forEach.call(document.querySelectorAll('.tm-desk-overlay'), function(root){
+          captureDeskOverlayState(root);
+        });
+      }
+      store.edictDraft = Array.isArray(state.edictDraft) ? state.edictDraft.slice() : [];
+      store.edictDrafts = cloneDraftValue(state.edictDrafts || {});
+      store.playerAction = String(state.playerAction || '');
+      store.letterDraft = cloneDraftValue(state.letterDraft || {});
+      store.letterTarget = String(state.letterTarget || '');
+      store.letterFilter = String(state.letterFilter || 'all');
+      store.letterSearch = String(state.letterSearch || '');
+      store.memorialReplies = cloneDraftValue(state.memorialReplies || {});
+      store.turn = window.GM && GM.turn || 1;
+      store.updatedAt = Date.now();
+      store.version = 1;
+    } finally {
+      state._savingFormalDrafts = false;
+    }
+  }
+
+  function restoreFormalDraftsFromGM(force){
+    var store = formalDraftStore(false);
+    if (!store) {
+      if (force) clearFormalDraftRuntimeState();
+      return;
+    }
+    if (Array.isArray(store.edictDraft) || force) state.edictDraft = Array.isArray(store.edictDraft) ? store.edictDraft.slice() : [];
+    if (store.edictDrafts || force) state.edictDrafts = cloneDraftValue(store.edictDrafts || {});
+    if (store.playerAction || force) state.playerAction = String(store.playerAction || '');
+    if (store.letterDraft || force) state.letterDraft = cloneDraftValue(store.letterDraft || {});
+    if (store.letterTarget || force) state.letterTarget = String(store.letterTarget || '');
+    if (store.letterFilter || force) state.letterFilter = String(store.letterFilter || 'all');
+    if (store.letterSearch || force) state.letterSearch = String(store.letterSearch || '');
+    if (store.memorialReplies || force) state.memorialReplies = cloneDraftValue(store.memorialReplies || {});
+  }
+
+  function clearFormalDraftStore(keys){
+    var store = formalDraftStore(false);
+    if (!store) return;
+    keys.forEach(function(k){ delete store[k]; });
+    store.updatedAt = Date.now();
+  }
+
   function esc(v){
     return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
@@ -5540,6 +5625,7 @@
       if (search) {
         state.letterSearch = String(search.value || '');
         applyFormalLetterSearch(ov, state.letterSearch);
+        saveFormalDraftsToGM(false);
         return;
       }
       var recordSearch = e.target && e.target.closest ? e.target.closest('[data-desk-record-search]') : null;
@@ -5604,6 +5690,7 @@
     var draft = state.letterDraft || {};
     draft[key] = String(el.value == null ? '' : el.value);
     state.letterDraft = draft;
+    saveFormalDraftsToGM(false);
   }
 
   function updateFormalMemorialReply(el){
@@ -5612,6 +5699,7 @@
     if (!key) return;
     state.memorialReplies = state.memorialReplies || {};
     state.memorialReplies[key] = String(el.value == null ? '' : el.value);
+    saveFormalDraftsToGM(false);
   }
 
   function updateFormalEdictDraft(el){
@@ -5633,6 +5721,7 @@
     if (el.hasAttribute && el.hasAttribute('data-desk-edict-body')) {
       state.edictDraft = value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
     }
+    saveFormalDraftsToGM(false);
   }
 
   function captureDeskOverlayState(root){
@@ -5640,6 +5729,7 @@
     Array.prototype.forEach.call(root.querySelectorAll('[data-letter-draft-field]'), updateFormalLetterDraft);
     Array.prototype.forEach.call(root.querySelectorAll('[data-desk-memorial-reply]'), updateFormalMemorialReply);
     Array.prototype.forEach.call(root.querySelectorAll('[data-desk-edict-cat],[data-desk-edict-body],[data-desk-player-action],#edict-pol,#edict-mil,#edict-dip,#edict-eco,#edict-oth,#xinglu-pub'), updateFormalEdictDraft);
+    saveFormalDraftsToGM(false);
   }
 
   function applyFormalLetterSearch(root, value){
@@ -5797,6 +5887,7 @@
     deskDecision('edict', body, '暂存为诏书建议，待后续颁行或票拟');
     deskRefreshLegacy();
     toast('诏令已存入草诏与建议库');
+    saveFormalDraftsToGM(true);
     return true;
   }
 
@@ -5832,6 +5923,8 @@
     deskDecision('edict', body, '已进入诏令追踪，后续过回合推演会读取执行与阻力');
     state.edictDraft = [];
     state.edictDrafts = {};
+    state.playerAction = '';
+    clearFormalDraftStore(['edictDraft', 'edictDrafts', 'playerAction']);
     deskRefreshLegacy();
     toast('诏令已颁行，过回合会进入执行推演');
     openZhaoPreviewPanel();
@@ -5903,6 +5996,7 @@
     deskRefreshLegacy();
     toast(decision === 'approved' ? '已准奏，过回合前生效' : decision === 'rejected' ? '已驳回，过回合前生效' : decision === 'court_debate' ? '已发交廷议' : decision === 'referred' ? '已转交有司' : decision === 'hold' ? '已留中' : '已批示');
     if (replyId && state.memorialReplies) delete state.memorialReplies[replyId];
+    saveFormalDraftsToGM(false);
     openYueZouPreviewPanel();
   }
 
@@ -5932,6 +6026,7 @@
     state.letterTarget = name;
     state.letterDraft = state.letterDraft || {};
     state.letterDraft.to = name;
+    saveFormalDraftsToGM(false);
     openHongyanPreviewPanel();
   }
 
@@ -6024,6 +6119,7 @@
     state.letterDraft.cipher = cipher;
     state.letterDraft.sendMode = sendMode;
     if (!draftOnly) state.letterDraft.body = '';
+    saveFormalDraftsToGM(false);
     deskRefreshLegacy();
     toast(draftOnly ? '鸿雁草稿已保存' : '信函已发出，驿递系统会继续结算');
     openHongyanPreviewPanel();
@@ -6165,6 +6261,7 @@
       deskTargetLetter(data.name || data.id || '');
     } else if (action === 'letter-filter-desk') {
       state.letterFilter = data.filter || 'all';
+      saveFormalDraftsToGM(false);
       openHongyanPreviewPanel();
     } else if (action === 'letter-thread-action-desk') {
       var letter = getLetters().find(function(x){ return String(x.id || '') === String(data.id || ''); });
@@ -6186,6 +6283,7 @@
         state.letterTarget = (replyTarget || state.letterTarget || '');
         state.letterDraft = state.letterDraft || {};
         state.letterDraft.to = state.letterTarget;
+        saveFormalDraftsToGM(false);
       } else if (data.letterAction === 'star' && rawLetter) {
         if (typeof window._ltStar === 'function') {
           window._ltStar(rawLetter.id);
@@ -6738,6 +6836,7 @@
     state.edictDraft = [];
     state.edictDrafts = {};
     state.playerAction = '';
+    clearFormalDraftStore(['edictDraft', 'edictDrafts', 'playerAction']);
     removeFormalEdictHiddenInputs();
   }
 
@@ -6827,6 +6926,7 @@
   }
 
   function renderFormalEdictPanel(){
+    restoreFormalDraftsFromGM(false);
     var gm = window.GM || {};
     var role = '天子';
     var sc = (typeof window.findScenarioById === 'function') ? window.findScenarioById(gm.sid) : null;
@@ -6974,6 +7074,7 @@
   }
 
   function renderFormalMemorialPanel(){
+    restoreFormalDraftsFromGM(false);
     var mems = getMemorials();
     var filter = state.memorialFilter || 'all';
     if (filter === 'review') filter = 'all';
@@ -7213,6 +7314,7 @@
   }
 
   function renderFormalLetterPanel(){
+    restoreFormalDraftsFromGM(false);
     var letters = getLetters();
     var people = normalizeLetterPeople();
     var filter = state.letterFilter || 'all';
@@ -9272,6 +9374,9 @@
     var name = p.name || personKey(p);
     if (window.GM) GM._pendingLetterTo = name;
     state.letterTarget = name;
+    state.letterDraft = state.letterDraft || {};
+    state.letterDraft.to = name;
+    saveFormalDraftsToGM(false);
     closeDeskOverlay();
     closeModule();
     closeRightDrawer();
@@ -10301,6 +10406,8 @@
   window.openShizheng = openShizhengLegacyFlow;
   window.syncPhase8FormalEdictDrafts = syncFormalEdictDraftsToLegacyInputs;
   window.getPhase8FormalEdictDraftSnapshot = getFormalEdictDraftSnapshot;
+  window.savePhase8FormalDraftsToGM = saveFormalDraftsToGM;
+  window.restorePhase8FormalDraftsFromGM = restoreFormalDraftsFromGM;
 
   window.TMPhase8FormalBridge = {
     home: showHome,
@@ -10322,6 +10429,8 @@
     syncEdictDraftsToLegacy: syncFormalEdictDraftsToLegacyInputs,
     getEdictDraftSnapshot: getFormalEdictDraftSnapshot,
     clearEdictDrafts: clearFormalEdictDrafts,
+    saveDraftsToGM: saveFormalDraftsToGM,
+    restoreDraftsFromGM: restoreFormalDraftsFromGM,
     closeArmyFlyout: rightCloseArmyFlyout,
     showEdictAdoptMenu: showFormalEdictAdoptMenu,
     dismissEdictSuggestion: dismissFormalEdictSuggestion,
@@ -10395,6 +10504,8 @@
       renderFormalMapSoon();
     }
   };
+
+  try { restoreFormalDraftsFromGM(false); } catch(_) {}
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function(){ installFormalShell(); wrapRenderHooks(); });

@@ -66,6 +66,28 @@ assert(promptApi.getCurrentChangchaoDecisions(postTurnGM).length === 0, 'post-tu
 postTurnGM.turn = 2;
 assert(promptApi.getCurrentChangchaoDecisions(postTurnGM).length === 1, 'post-turn decisions affect their target turn');
 
+const overlappingCourtGM = {
+  turn: 1,
+  _lastChangchaoDecisions: [{ action: 'decree', title: 'Next-turn Shuochao decision' }],
+  _lastChangchaoDecisionMeta: { turn: 1, targetTurn: 2, phase: 'post-turn', mode: 'changchao' },
+  _courtRecords: [
+    {
+      turn: 1,
+      targetTurn: 1,
+      phase: 'in-turn',
+      decisions: [{ action: 'approve', title: 'Current-turn morning court decision' }]
+    },
+    {
+      turn: 1,
+      targetTurn: 2,
+      phase: 'post-turn',
+      decisions: [{ action: 'decree', title: 'Next-turn Shuochao decision' }]
+    }
+  ]
+};
+assert(promptApi.getCurrentChangchaoDecisions(overlappingCourtGM).length === 1,
+  'current-turn court decisions survive when post-turn Shuochao overwrites _lastChangchaoDecisions');
+
 const inTurnGM = {
   turn: 3,
   _lastChangchaoDecisions: [{ action: 'reject', title: 'In-turn court decision' }],

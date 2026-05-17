@@ -41,6 +41,12 @@ assert(/TM\.Endturn\.Timing\.mark/.test(executorSrc), 'pipeline executor records
 assert(!/setTimeout\s*\(\s*resolve\s*,\s*300\s*\)/.test(inferSrc), 'strict-history artificial 300ms delay removed');
 
 assert(!/await\s+executeNpcBehaviors\s*\(/.test(systemsSrc), 'systems step no longer awaits NPC behavior in foreground');
+assert(/_markSystemStage/.test(systemsSrc), 'systems step records fine-grained stage timings');
+assert(/GM\._lastEndturnSystemsTimings/.test(systemsSrc), 'systems step stores last detailed timings');
+assert(/showLoading\("检查历史事件"/.test(systemsSrc), 'systems tail updates loading after ChangeQueue');
+assert(/changeQueueApply/.test(systemsSrc), 'ChangeQueue apply stage is timed separately');
+assert(/变动队列为空，跳过应用/.test(systemsSrc), 'systems step skips empty ChangeQueue without applyAll');
+assert(/queueLength:\s*_changeQueueLen/.test(systemsSrc), 'systems timing records ChangeQueue length');
 assert(/_scheduleNpcBehaviorPostRender/.test(stepsSrc), 'pipeline schedules NPC behavior after render');
 assert(/npc_behavior/.test(stepsSrc), 'NPC behavior is tracked as a post-turn job');
 
@@ -54,6 +60,18 @@ assert(/_branchCSc2ReadyP/.test(followupSrc), 'followup starts SC2 branch from t
 assert(/_branchCSc27ReadyP/.test(followupSrc), 'followup waits for specialty/audit before SC27');
 assert(!/Promise\.all\s*\(\s*\[\s*_branchASettledP\s*,\s*_branchBSettledP\s*\]\s*\)\.then\s*\([^)]*?_runBranchC/s.test(followupSrc), 'SC2 no longer waits for both A and B branches');
 assert(/_buildLateSpecialtySummary/.test(followupSrc), 'SC27 can consume late specialty summaries');
+assert(/id:\s*'sc19'[\s\S]{0,220}priority:\s*'background'/.test(followupSrc), 'SC19 sparse detail enrichment runs as background work');
+assert(/id:\s*'sc19'[\s\S]{0,260}timeoutMs:\s*45000/.test(followupSrc), 'SC19 sparse detail enrichment has a bounded timeout');
+assert(/id:\s*'sc19'[\s\S]{0,280}maxRetries:\s*0/.test(followupSrc), 'SC19 sparse detail enrichment has no retry amplification');
+assert(/_enrichExpectedKeys\.push\('factions_enriched'\)/.test(followupSrc), 'SC19 validates faction enrichment with the actual requested key');
+assert(/_enrichExpectedKeys\.push\('characters_enriched'\)/.test(followupSrc), 'SC19 validates character enrichment with the actual requested key');
+assert(/repair:\s*false/.test(followupSrc), 'SC19 sparse detail enrichment does not launch foreground repair');
+assert(/_reviewText27\.length > 7000/.test(followupSrc), 'SC27 trims very long narrative review text');
+assert(/id:\s*'sc27'[\s\S]{0,180}priority:\s*'high'/.test(followupSrc), 'SC27 foreground review uses high queue priority');
+assert(/id:\s*'sc27'[\s\S]{0,220}timeoutMs:\s*60000/.test(followupSrc), 'SC27 foreground review has bounded timeout');
+assert(/id:\s*'sc27'[\s\S]{0,240}maxRetries:\s*0/.test(followupSrc), 'SC27 foreground review has bounded internal retries');
+assert(/id === 'sc27'\s*\?\s*0\s*:\s*1/.test(aiSubcallSrc), 'SC27 disables outer subcall retry amplification');
+assert(/max_tokens:\s*_tok\(3000\)/.test(followupSrc), 'SC27 output budget is bounded to review-sized JSON');
 assert(/var _needsForegroundHistoryCheck =/.test(followupSrc), 'historical foreground check controls post-turn launch timing');
 assert(/if \(!_needsForegroundHistoryCheck\)[\s\S]*_flushQueuedPostTurnSubcalls/.test(followupSrc), 'post-turn jobs are not flushed before foreground history check');
 assert(/id: 'history_check'[\s\S]*priority: 'critical'/.test(followupSrc), 'foreground history check is queued as critical work');

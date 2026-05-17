@@ -1276,19 +1276,24 @@
             model: P.ai.model || 'gpt-4o',
             messages: [{ role: 'user', content: enrichP }],
             temperature: 0.7,
-            max_tokens: _tok(4000)
+            max_tokens: _tok(3000)
           };
           if (_modelFamily === 'openai') _enrichBody.response_format = { type: 'json_object' };
           var _enrichCall = null;
           try {
-            _enrichCall = await _callFollowupAI(_enrichBody, { id: 'sc19', label: '角色势力细节补全', priority: 'low' });
+            _enrichCall = await _callFollowupAI(_enrichBody, { id: 'sc19', label: '角色势力细节补全', priority: 'background', timeoutMs: 45000, maxRetries: 0 });
           } catch(_enrichHttpE) {
             _dbg('[Enrich] call failed', _enrichHttpE && _enrichHttpE.message || _enrichHttpE);
             return;
           }
           var dataE = _enrichCall.data;
           var cE = _enrichCall.raw || '';
-          var _pEParse = await _parseOrRepairJsonResult(cE, dataE, '角色势力细节补全', { url: url, key: P.ai.key, body: _enrichBody, expectedKeys: ['characters', 'factions'], priority: 'low' });
+          var _enrichExpectedKeys = [];
+          if (_sparseFacs.length) _enrichExpectedKeys.push('factions_enriched');
+          if (_sparseClasses.length) _enrichExpectedKeys.push('classes_enriched');
+          if (_sparseParties.length) _enrichExpectedKeys.push('parties_enriched');
+          if (_sparseChars.length) _enrichExpectedKeys.push('characters_enriched');
+          var _pEParse = await _parseOrRepairJsonResult(cE, dataE, '角色势力细节补全', { url: url, key: P.ai.key, body: _enrichBody, expectedKeys: _enrichExpectedKeys, priority: 'background', repair: false });
           if (_pEParse && _pEParse.raw) cE = _pEParse.raw;
           var pE = _pEParse ? _pEParse.parsed : null;
           if (!pE) { _dbg('[Enrich] JSON 解析失败'); return; }
@@ -1863,7 +1868,11 @@
       await _runSubcall('sc27', '叙事审查', 'standard', async function() {
       showLoading("\u53D9\u4E8B\u8D28\u91CF\u5BA1\u67E5",85);
       try {
-        var tp27 = '请审查以下叙事正文的质量：\n' + (zhengwen||'') + '\n\n';
+        var _reviewText27 = String(zhengwen || '');
+        if (_reviewText27.length > 7000) {
+          _reviewText27 = _reviewText27.slice(0, 4200) + '\n\n【中略：正文过长，仅抽审首尾与关键段；不可据中略编造新事实】\n\n' + _reviewText27.slice(-2600);
+        }
+        var tp27 = '请审查以下叙事正文的质量：\n' + _reviewText27 + '\n\n';
         var _lateSpecialtyFor27 = _buildLateSpecialtySummary();
         if (_lateSpecialtyFor27) {
           tp27 += '\n【专项推演补充】以下是并行专项推演刚收束的事实与趋势。若正文未体现，请只以增补细节方式补入，不要推翻玩家诏令或已落地数据：\n' + _lateSpecialtyFor27.substring(0, 1800) + '\n';
@@ -1879,12 +1888,12 @@
         var _charNames27 = (GM.chars||[]).filter(function(c){return c.alive!==false;}).map(function(c){return c.name;});
         if (_charNames27.length > 0) tp27 += '\u3010\u5728\u4E16\u89D2\u8272\u540D\u5355\uFF08\u6B63\u6587\u4E2D\u63D0\u5230\u7684\u4EBA\u540D\u5FC5\u987B\u5728\u6B64\u5217\u8868\u4E2D\uFF09\u3011' + _charNames27.join('\u3001') + '\n';
         tp27 += '\u8BF7\u8FD4\u56DEJSON\uFF1A{"anachronisms":"\u53D1\u73B0\u7684\u65F6\u4EE3\u9519\u8BEF\u2014\u2014\u7528\u8BCD\u3001\u79F0\u8C13\u3001\u5236\u5EA6\u4E0D\u7B26\u5408\u65F6\u4EE3(100\u5B57)","name_errors":"\u6B63\u6587\u4E2D\u51FA\u73B0\u4F46\u4E0D\u5728\u89D2\u8272\u5217\u8868\u4E2D\u7684\u4EBA\u540D(\u5982\u6709)","enhancement":"\u53EF\u4EE5\u589E\u5F3A\u7684\u90E8\u5206\u2014\u2014\u54EA\u91CC\u53EF\u4EE5\u52A0\u5165\u66F4\u591A\u611F\u5B98\u7EC6\u8282\u3001\u5178\u6545\u5F15\u7528\u3001\u60C5\u611F\u6E32\u67D3(150\u5B57)","rewritten_passages":"\u91CD\u5199\u7684\u6BB5\u843D\u2014\u2014\u5C06\u6700\u5F31\u76842-3\u6BB5\u91CD\u5199\u5F97\u66F4\u597D(300\u5B57)","added_details":"\u5E94\u8865\u5145\u7684\u7EC6\u8282\u2014\u2014\u73AF\u5883\u63CF\u5199\u3001\u4EBA\u7269\u795E\u6001\u3001\u6C14\u6C1B\u70D8\u6258(200\u5B57)"}';
-        var _sc27Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp27}], temperature:0.6, max_tokens:_tok(12000)};
+        var _sc27Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp27}], temperature:0.6, max_tokens:_tok(3000)};
         if (_modelFamily === 'openai') _sc27Body.response_format = { type: 'json_object' };
-        var _sc27Call = await _callFollowupAI(_sc27Body, { id: 'sc27', label: '人名校验', priority: 'normal' });
+        var _sc27Call = await _callFollowupAI(_sc27Body, { id: 'sc27', label: '叙事质量审查', priority: 'high', timeoutMs: 60000, maxRetries: 0 });
         {
-          var j27 = _sc27Call.data; _checkTruncated(j27, '人名校验'); var c27 = _sc27Call.raw || '';
-          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '人名校验', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'], priority: 'normal' });
+          var j27 = _sc27Call.data; _checkTruncated(j27, '叙事质量审查'); var c27 = _sc27Call.raw || '';
+          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '叙事质量审查', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'], priority: 'high', repairPriority: 'high', repairTimeoutMs: 45000, repairMaxRetries: 0 });
           if (_p27Parse && _p27Parse.raw) c27 = _p27Parse.raw;
           var p27 = _p27Parse ? _p27Parse.parsed : null;
           if (p27) {

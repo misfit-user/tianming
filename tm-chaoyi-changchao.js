@@ -505,16 +505,35 @@ function _cc3_fallbackAgenda() {
     }
     return { name: '某部官员', dept: deptHint || '六部' };
   }
+  function issueAgendaHint(iss) {
+    iss = iss || {};
+    const title = String(iss.title || "时政要议").trim() || "时政要议";
+    const dept = String(iss.dept || iss.category || "时政").trim() || "时政";
+    const proposer = String(iss.proposer || iss.from || "通政司").trim() || "通政司";
+    const raw = String(iss.description || iss.summary || iss.brief || iss.narrative || iss.text || "").replace(/\s+/g, " ").trim();
+    const hint = raw ? raw.slice(0, 42) : "请有司据实核奏";
+    return {
+      title: title,
+      dept: dept,
+      proposer: proposer,
+      hint: hint,
+      content: proposer + "奏称：" + dept + "有“" + title + "”一事，须由有司核明情由、具议处置。",
+      detail: "御案线索：" + title + "；要点：" + hint + "。此处为朝会改写摘要，不取御案原文。",
+      announceLine: dept + "有事关“" + title + "”者，请旨裁断。"
+    };
+  }
+
   // 去重：排除已分配给廷议的 issue·廷议会单独处理这些
   const pending = ((GM.currentIssues || []).filter(i => i.status === "pending" && i.allocatedTo !== 'tinyi')).slice(0, 3);
   pending.forEach(function(iss) {
     const p = pickPresenter(iss.dept);
+    const hint = issueAgendaHint(iss);
     items.push({
       presenter: p.name, dept: p.dept, type: "routine", urgency: "normal",
-      title: (iss.title || "时政要议").slice(0, 10),
-      announceLine: "臣有一事启奏。",
-      content: iss.description || "事宜需陛下圣裁",
-      detail: iss.description || "事宜需陛下圣裁·伏惟圣意。",
+      title: hint.title.slice(0, 10),
+      announceLine: hint.announceLine,
+      content: hint.content,
+      detail: hint.detail,
       controversial: 3, importance: 5, _fallback: true
     });
   });
@@ -578,7 +597,7 @@ function _cc3_buildSystemPromptStable() {
   s += '· 紧扣议题具体内容·不重复他臣已表态·要有差异和进展\n';
   s += '· 涉及自身利害则语气强烈·涉及记忆则态度连贯\n';
   s += '\n【发言信息源】NPC 发言可引用以下游戏状态作为论据（自下文 sysVariable 段读）：\n';
-  s += '  · 御案时政（待处理时政清单·可议）·\n';
+  s += '  · 御案时政（待处理时政清单·只作议题线索，不得原文照搬为奏报正文）·\n';
   s += '  · 国帑·征伐·乱政指数（财政/军事/党争实情·关乎是否切实可行）·\n';
   s += '  · 近回合推演摘要（近事变化·NPC 已知）·\n';
   s += '  · 近期诏令（陛下已下旨·NPC 所言不可与已颁诏书相悖；亦可言其执行中得失）·\n';
@@ -634,13 +653,13 @@ function _cc3_buildSystemPromptVariable() {
     });
     if (parts.length) s += '【国势】' + parts.join('·') + '\n';
   }
-  // 顶层时政（御案·最多 6 条·带描述·排除已分配给廷议的）
+  // 顶层时政（御案·最多 6 条·只给线索摘要·排除已分配给廷议的）
   const issues = ((typeof GM !== 'undefined' && GM.currentIssues) || []).filter(i => i && i.status === 'pending' && i.allocatedTo !== 'tinyi').slice(0, 6);
   if (issues.length) {
-    s += '【御案时政·待处理】\n';
+    s += '【御案时政·待处理】以下只作朝会议题线索，禁止原文照搬为奏报正文；可改写为有司奏称。\n';
     issues.forEach(i => {
-      const desc = String(i.description || '').slice(0, 60);
-      s += '  · ' + (i.title || '') + (desc ? '：' + desc : '') + (i.dept ? '（' + i.dept + '）' : '') + '\n';
+      const desc = String(i.description || i.summary || i.brief || i.narrative || i.text || '').replace(/\s+/g, ' ').slice(0, 42);
+      s += '  · ' + (i.title || '') + (desc ? '：要点 ' + desc : '') + (i.dept ? '（' + i.dept + '）' : '') + '；须改写，不得照搬。\n';
     });
   }
   // 财政状况（帑廪/内帑/积粮/布）

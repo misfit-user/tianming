@@ -195,7 +195,7 @@ const STRIP_KEYS = new Set([
   '_savedCharacterArcs', '_savedPlayerDecisions',
   // 其它 in-flight backup·也是 save lifecycle 临时
   '_pendingShijiModal',
-  '_endturnTimingLedger', '_endturnTimingHistory'
+  '_endturnTimingLedger', '_endturnTimingHistory', '_lastEndturnSystemsTimings'
 ]);
 
 function normalize(s) {
@@ -220,7 +220,7 @@ function normalize(s) {
           } else {
             o[k] = v.replace(/_\d{13}_/g, '_<TS>_').replace(/\b\d{13}\b/g, '<TS>');
           }
-        } else if (k === 'savedAt' || k === 'timestamp' || k === '_ts') {
+        } else if (k === 'savedAt' || k === 'timestamp' || k === 'updatedAt' || k === '_ts') {
           o[k] = '<TS>';
         } else {
           walk(v);

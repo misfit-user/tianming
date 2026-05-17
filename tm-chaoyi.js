@@ -319,7 +319,7 @@ function _cc2_buildAgendaPrompt() {
   p += '当前：' + (typeof getTSText==='function'?getTSText(GM.turn):'T'+GM.turn) + '\n';
   if (GM.currentIssues) {
     var _pi = GM.currentIssues.filter(function(i){return i.status==='pending';}).slice(0,5);
-    if (_pi.length) p += '【待处理时政——须出现在议程】\n' + _pi.map(function(i){return '  '+i.title+'：'+(i.description||'').slice(0,50);}).join('\n') + '\n';
+    if (_pi.length) p += '【待处理时政——只作议题线索，禁止原文照搬为奏报正文】\n' + _pi.map(function(i){return '  '+i.title+'：要点 '+(i.description||i.summary||i.brief||'').slice(0,42)+'；须改写为有司奏称';}).join('\n') + '\n';
   }
   var _at = (CY && CY._cc2 && CY._cc2.attendees) || [];
   if (_at.length) {
@@ -351,7 +351,7 @@ function _cc2_buildAgendaPrompt() {
   p += '· 至少 1 条 confrontation（官员对质/弹劾，须有明确 target）\n';
   p += '· 议程类型多样，不要全是 routine\n';
   p += '· 高 controversial 的议题会引发 2-3 轮朝堂交锋\n';
-  p += '· 关联本回合的 currentIssues\n';
+  p += '· 关联本回合的 currentIssues，但只能改写摘要，不得把御案时政原文直接作为 content\n';
   p += '· content 字段必须遵守朝议字数（仅 announceLine 可简略），百官奏报须行文详尽\n';
   p += '返回 JSON 数组。';
   return p;
@@ -362,14 +362,19 @@ function _cc2_fallbackAgenda() {
   var items = [];
   var pending = (GM.currentIssues || []).filter(function(i){return i.status==='pending';}).slice(0, 3);
   pending.forEach(function(iss) {
+    var title = iss.title || '时政要议';
+    var dept = iss.dept || iss.category || '六部';
+    var proposer = iss.proposer || iss.from || '通政司';
+    var desc = String(iss.description || iss.summary || iss.brief || iss.narrative || iss.text || '').replace(/\s+/g, ' ').slice(0, 42) || '请有司据实核奏';
     items.push({
       presenter: '某部官员',
-      dept: iss.dept || '六部',
+      dept: dept,
       type: 'routine',
       urgency: 'normal',
-      title: (iss.title || '时政要议').slice(0, 10),
-      announceLine: '臣有一事启奏。',
-      content: iss.description || (iss.title || '事宜需陛下圣裁'),
+      title: title.slice(0, 10),
+      announceLine: dept + '有事关“' + title + '”者，请旨裁断。',
+      content: proposer + '奏称：' + dept + '有“' + title + '”一事，须由有司核明情由、具议处置。',
+      detail: '御案线索：' + title + '；要点：' + desc + '。此处为朝会改写摘要，不取御案原文。',
       controversial: 3,
       importance: 5,
       _fallback: true

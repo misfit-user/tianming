@@ -30,7 +30,19 @@
   function _getCurrentChangchaoDecisions(gameState) {
     var gm = gameState || {};
     var decisions = Array.isArray(gm._lastChangchaoDecisions) ? gm._lastChangchaoDecisions : [];
-    if (decisions.length === 0) return [];
+    var currentTurn = Number(gm.turn || 0);
+    function _decisionsFromCourtRecords() {
+      var records = Array.isArray(gm._courtRecords) ? gm._courtRecords : [];
+      for (var i = records.length - 1; i >= 0; i--) {
+        var r = records[i];
+        if (!r || !Array.isArray(r.decisions) || r.decisions.length === 0) continue;
+        var rt = Number(r.targetTurn || r.turn || 0);
+        if (!isFinite(rt) || rt !== currentTurn) continue;
+        return r.decisions;
+      }
+      return [];
+    }
+    if (decisions.length === 0) return _decisionsFromCourtRecords();
 
     var meta = gm._lastChangchaoDecisionMeta || null;
     var rawTargetTurn = null;
@@ -44,9 +56,8 @@
     if (rawTargetTurn == null) return decisions;
 
     var targetTurn = Number(rawTargetTurn);
-    var currentTurn = Number(gm.turn || 0);
     if (!isFinite(targetTurn)) return decisions;
-    return targetTurn === currentTurn ? decisions : [];
+    return targetTurn === currentTurn ? decisions : _decisionsFromCourtRecords();
   }
 
   global.TM.Endturn.AI.prompt.getCurrentChangchaoDecisions = _getCurrentChangchaoDecisions;

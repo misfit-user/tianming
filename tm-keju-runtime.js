@@ -199,7 +199,7 @@ async function checkKejuTrigger() {
       '返回JSON：{"shouldTrigger":true/false,"reason":"原因"}\n\n' +
       '只输出JSON。';
 
-    var result = await callAISmart(prompt, 300, {maxRetries: 1});
+    var result = await callAISmart(prompt, 300, {maxRetries: 1, priority: 'high'});
     var data = JSON.parse(result.replace(/```json|```/g, '').trim());
 
     if (data.shouldTrigger) {
@@ -659,7 +659,9 @@ function renderExaminerSelectStage(container) {
   }
   // 候选考官——从GM.chars中选智力较高的
   var candidates = (GM.chars||[]).filter(function(c) {
-    return c.alive !== false && !c.isPlayer && (c.intelligence||0) >= 60;
+    return typeof _kejuIsEligibleChiefExaminer === 'function'
+      ? _kejuIsEligibleChiefExaminer(c)
+      : !!(c && c.alive !== false && !c.isPlayer && (c.intelligence||0) >= 60 && (c.officialTitle || c.title));
   }).sort(function(a,b) { return (b.intelligence||0) - (a.intelligence||0); }).slice(0, 12);
   candidates.forEach(function(c) {
     var partyTag = c.party && c.party !== '\u65E0\u515A\u6D3E' ? ' <span style="font-size:0.7rem;color:var(--purple,#8a5cf5);">\u515A:' + c.party + '</span>' : '';
@@ -667,7 +669,7 @@ function renderExaminerSelectStage(container) {
     Object.entries(_partyRecs).forEach(function(e){ if(e[1]===c.name) recTag=' <span style="font-size:0.65rem;background:var(--purple,#8a5cf5);color:#fff;padding:0 3px;border-radius:2px;">'+e[0]+'\u63A8\u8350</span>'; });
     html += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.6rem;margin-bottom:0.3rem;background:var(--bg-3);border-radius:4px;cursor:pointer;" onclick="selectExaminer(\'' + escHtml(c.name).replace(/'/g,"\\'") + '\')">';
     html += '<strong style="flex:1;">' + escHtml(c.name) + recTag + '</strong>';
-    html += '<span style="font-size:0.8rem;color:var(--txt-d);">' + (c.title||'') + ' \u667A' + (c.intelligence||0) + ' \u6CBB' + (c.administration||0) + partyTag + '</span>';
+    html += '<span style="font-size:0.8rem;color:var(--txt-d);">' + (c.officialTitle||c.title||'') + ' \u667A' + (c.intelligence||0) + ' \u6CBB' + (c.administration||0) + partyTag + '</span>';
     html += '</div>';
   });
   html += '</div></div>';
@@ -682,6 +684,10 @@ function selectExaminer(name) {
   var exam = P.keju.currentExam;
   var ch = typeof findCharByName === 'function' ? findCharByName(name) : null;
   if (!ch) return;
+  if (typeof _kejuIsEligibleChiefExaminer === 'function' && !_kejuIsEligibleChiefExaminer(ch)) {
+    toast('\u4e3b\u8003\u5b98\u5fc5\u987b\u4e3a\u73a9\u5bb6\u540c\u52bf\u529b\u7684\u5728\u4efb\u5b98\u5458');
+    return;
+  }
   if (typeof _kejuClearUrgentBanner === 'function') _kejuClearUrgentBanner();
   exam.chiefExaminer = name;
   exam.examinerParty = ch.party || '';
@@ -693,7 +699,7 @@ function selectExaminer(name) {
     infoEl.style.display = 'block';
     infoEl.innerHTML = '<strong style="color:var(--gold);">\u5DF2\u9009\u4EFB\uFF1A' + escHtml(name) + '</strong>' +
       '<div style="font-size:0.85rem;color:var(--txt-s);margin-top:0.3rem;">' +
-      (ch.title||'') + ' \u667A\u8C0B' + (ch.intelligence||0) + ' \u6CBB\u653F' + (ch.administration||0) +
+      (ch.officialTitle||ch.title||'') + ' \u667A\u8C0B' + (ch.intelligence||0) + ' \u6CBB\u653F' + (ch.administration||0) +
       (ch.party && ch.party !== '\u65E0\u515A\u6D3E' ? ' \u515A\u6D3E:' + ch.party : '') +
       (ch.stance ? ' \u7ACB\u573A:' + ch.stance : '') +
       '</div>' +

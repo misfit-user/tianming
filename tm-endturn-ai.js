@@ -250,7 +250,11 @@
             body: body,
             expectedKeys: opts.expectedKeys,
             repair: opts.repair,
-            repairTokens: opts.repairTokens
+            repairTokens: opts.repairTokens,
+            priority: opts.priority || 'normal',
+            repairPriority: opts.repairPriority,
+            repairTimeoutMs: opts.repairTimeoutMs,
+            repairMaxRetries: opts.repairMaxRetries
           });
           if (parsed && parsed.repaired && typeof recordAIDiagnostic === 'function') {
             recordAIDiagnostic('json_repair', { id: opts.id || '', label: label, raw_len: String(raw || '').length });
@@ -542,7 +546,7 @@
         _checkTruncated(data0, '局势分析');
         if (_sc0Call.raw) {
           aiThinking = _sc0Call.raw;
-          var _sc0Parsed = await _parseOrRepairJsonResult(aiThinking, data0, '局势分析', { url: url, key: P.ai.key, body: _sc0Body, expectedKeys: ['tensions', 'consequences', 'memoryQueries'] });
+          var _sc0Parsed = await _parseOrRepairJsonResult(aiThinking, data0, '局势分析', { url: url, key: P.ai.key, body: _sc0Body, expectedKeys: ['tensions', 'consequences', 'memoryQueries'], priority: 'normal' });
           if (_sc0Parsed && _sc0Parsed.repaired) aiThinking = _sc0Parsed.raw;
           GM._turnAiResults.thinking = aiThinking;
           _dbg('[AI Think]', aiThinking.substring(0, 200));
@@ -2190,8 +2194,10 @@
                   temperature: 0.3,
                   max_tokens: _tok(1200)
                 };
-                var _callARaw = await callAIMessages(_callABody.messages, _callABody.max_tokens !== undefined ? _callABody.max_tokens : 1200, undefined, 'tier-low');
-                var _summary = (_callARaw && _callARaw.choices && _callARaw.choices[0] && _callARaw.choices[0].message && _callARaw.choices[0].message.content) || '';
+                var _callARaw = await callAIMessages(_callABody.messages, _callABody.max_tokens !== undefined ? _callABody.max_tokens : 1200, undefined, 'tier-low', { priority: 'critical' });
+                var _summary = (typeof _callARaw === 'string')
+                  ? _callARaw
+                  : ((_callARaw && _callARaw.choices && _callARaw.choices[0] && _callARaw.choices[0].message && _callARaw.choices[0].message.content) || '');
                 if (_summary.length > 100) {
                   // 把压缩结果嵌回 tp1 — 紧接七变量段后
                   var _injection = '\n\n【财政民心·压缩观察(原数据 ' + _extractedLabels.length + ' 段·共 ' + _extracted.length + ' 字 → 压缩 ' + _summary.length + ' 字)】\n' + _summary.trim() + '\n';
@@ -2272,7 +2278,7 @@
       }
       _checkTruncated(data1, '结构化数据');
       p1=null; // 赋值到外层声明的p1
-      var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'] });
+      var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'], priority: 'critical' });
       if (_p1Parse && _p1Parse.raw) c1 = _p1Parse.raw;
       p1 = _p1Parse ? _p1Parse.parsed : null;
       GM._turnAiResults.subcall1_raw = c1;

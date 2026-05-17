@@ -151,8 +151,8 @@ var ChronicleSystem = {
     });
     prompt += '\n请返回 JSON: {"chronicle":"正史正文' + _charRangeText('chronicle') + '","afterword":"史评/论赞' + _charRangeScaled('comment', 1.0) + '"}';
 
-    // 异步生成，不阻塞
-    callAI(prompt, 1500).then(function(result) {
+    // 异步生成，不阻塞；年度编年不应抢占玩家正在等待的主推演通道。
+    callAI(prompt, 1500, null, 'primary', { priority: 'background' }).then(function(result) {
       var parsed = extractJSON(result);
       if (parsed) {
         ChronicleSystem.yearChronicles[year] = {

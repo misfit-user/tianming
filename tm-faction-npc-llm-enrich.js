@@ -87,7 +87,7 @@
     if (typeof global.callAI !== 'function') return null;
     try {
       var combined = prompts.system + '\n\n' + prompts.user;
-      var result = await global.callAI(combined, 200, null, 'secondary');  // 走次要 API 省主 quota
+      var result = await global.callAI(combined, 200, null, 'secondary', { priority: 'background' });  // 走次要 API 省主 quota
       return result || null;
     } catch (e) {
       try { console.warn('[npc-llm-enrich] LLM call failed', e); } catch(_){}

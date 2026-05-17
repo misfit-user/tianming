@@ -668,7 +668,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
 async function callAIWithTools(prompt, tools, opts) {
   opts = opts || {};
   if (!Array.isArray(tools) || tools.length === 0) {
-    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier);
+    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier, { priority: opts.priority || 'normal' });
     return { text: _t0 || '', toolCalls: [] };
   }
   // 取 tier 配置
@@ -907,7 +907,7 @@ async function callAISmart(prompt, maxTok, options) {
     }
 
     try {
-      var result = await callAI(currentPrompt, maxTok, signal, options.tier);
+      var result = await callAI(currentPrompt, maxTok, signal, options.tier, { priority: options.priority || 'normal' });
 
       // Append to existing content
       if (allContent.length > 0) {

@@ -602,6 +602,23 @@ function _isPlayerFactionChar(c) {
   return false;
 }
 
+function _kejuHasChiefExaminerOffice(c) {
+  if (!c || c.alive === false) return false;
+  var title = String(c.officialTitle || c.office || c.postName || c.position || c.title || '').trim();
+  if (!title) return false;
+  if (c.spouse) return false;
+  var roleText = String(c.role || '') + ' ' + title;
+  if (/后|妃|嫔|贵人|太后|太妃|公主|郡主|太监|学生/.test(roleText)) return false;
+  return true;
+}
+
+function _kejuIsEligibleChiefExaminer(c) {
+  return !!(c && c.alive !== false && !c.isPlayer
+    && (c.intelligence || 0) >= 60
+    && _isPlayerFactionChar(c)
+    && _kejuHasChiefExaminerOffice(c));
+}
+
 /** 打开殿试主持人选任面板 */
 function openDianshiDelegatePicker() {
   var exam = P.keju.currentExam;
@@ -696,8 +713,7 @@ function _pickDianshiDelegate(name) {
 function _kejuAutoPickExaminer(exam) {
   if (!exam) return;
   var cands = (GM.chars || []).filter(function(c){
-    return c && c.alive !== false && !c.isPlayer && (c.intelligence||0) >= 60
-           && _isPlayerFactionChar(c);  // ★ 仅玩家势力
+    return _kejuIsEligibleChiefExaminer(c);
   }).sort(function(a,b){ return (b.intelligence||0)-(a.intelligence||0); });
   if (cands.length === 0) return;
   var chosen = cands[0];

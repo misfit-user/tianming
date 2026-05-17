@@ -1492,6 +1492,10 @@ function _bnDownload(txt) {
 // ============================================================
 function confirmEndTurn(){
   if(GM.busy)return;
+  try {
+    if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.syncEdictDraftsToLegacy === 'function') window.TMPhase8FormalBridge.syncEdictDraftsToLegacy();
+    else if (typeof window.syncPhase8FormalEdictDrafts === 'function') window.syncPhase8FormalEdictDrafts();
+  } catch(_) {}
   var edict=(_$('edict-pol')||{}).value||'';
   var mil=(_$('edict-mil')||{}).value||'';
   var dip=(_$('edict-dip')||{}).value||'';

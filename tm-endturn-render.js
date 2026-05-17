@@ -1192,6 +1192,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
 
   // 9. 清空输入
   ["edict-pol","edict-mil","edict-dip","edict-eco","edict-oth","xinglu","xinglu-pub","xinglu-prv"].forEach(function(id){var el=_$(id);if(el)el.value="";});
+  try { if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.clearEdictDrafts === 'function') window.TMPhase8FormalBridge.clearEdictDrafts(); } catch(_) {}
 
   // 10. 问对：保留聊天记录（跨回合持久），刷新角色列表，关闭弹窗
   renderWenduiChars();

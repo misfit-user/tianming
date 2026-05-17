@@ -6134,6 +6134,41 @@
           if (f[k] === undefined || f[k] === null) f[k] = _FAC_AI_DIRECTIVES[f.name][k];
         });
       }
+      if (f.name === '\u9655\u5317\u9965\u6c11(\u5c06\u8d77)') {
+        Object.assign(f, {
+          strength: 28,
+          militaryStrength: 18000,
+          economy: 6,
+          popularInfluence: 62,
+          population: {
+            actual: 1600000,
+            registered: 0,
+            mobile: 420000,
+            armedPotential: 120000,
+            starvingHouseholds: 240000
+          },
+          treasury: {
+            money: 20000,
+            grain: 45000,
+            cloth: 3000,
+            note: '\u52ab\u7cae\u3001\u4e61\u5be8\u6697\u8f93\u548c\u9003\u5175\u519b\u68b0\uff0c\u4e0d\u662f\u7a33\u5b9a\u8d22\u653f'
+          },
+          militaryBreakdown: { standingArmy: 0, militia: 14500, elite: 3500, fleet: 0 },
+          cohesion: { political: 18, military: 38, economic: 8, cultural: 50, ethnic: 90, loyalty: 42 },
+          techLevel: { overall: 18, military: 34, agriculture: 8 },
+          warState: {
+            active: ['\u5ef6\u5b89\u3001\u6986\u6797\u3001\u5e9c\u8c37\u9965\u6c11\u805a\u5578\u6269\u5927', '\u8fb9\u5175\u9003\u4ea1\u4e0e\u707e\u6c11\u6df7\u6d41'],
+            pending: ['\u5e9c\u8c37\u767d\u6c34\u53ef\u80fd\u6210\u519b', '\u95ef\u738b\u7cfb\u4e0e\u5927\u897f\u7cfb\u5c1a\u672a\u6210\u578b'],
+            recent: ['1625-1627 \u9655\u5317\u6301\u7eed\u5927\u65f1', '\u8fbd\u9977\u4e0e\u4e09\u9977\u538b\u8feb\u6c11\u6237\u7834\u4ea7']
+          },
+          desc: '\u9655\u5317\u9965\u6c11\u5c1a\u672a\u662f\u6210\u719f\u653f\u6743\uff0c\u5374\u5df2\u662f\u5de8\u5927\u7684\u707e\u8352\u4eba\u53e3\u6c60\u548c\u9003\u5175\u706b\u79cd\u3002\u5ef6\u5b89\u3001\u6986\u6797\u3001\u5e9c\u8c37\u95f4\u7f3a\u7cae\u3001\u6b20\u9977\u3001\u50ac\u5f81\u3001\u9003\u4ea1\u6b63\u5728\u5408\u6d41\uff0c\u82e5\u8d48\u629a\u4e0d\u53ca\u6216\u5f3a\u527f\u5931\u63a7\uff0c\u4e00\u4e24\u56de\u5408\u5185\u4fbf\u53ef\u7531\u9965\u6c11\u805a\u5578\u8f6c\u6210\u5927\u80a1\u6d41\u5bc7\u3002',
+          description: '\u9655\u5317\u9965\u6c11\u5c1a\u672a\u662f\u6210\u719f\u653f\u6743\uff0c\u5374\u5df2\u662f\u5de8\u5927\u7684\u707e\u8352\u4eba\u53e3\u6c60\u548c\u9003\u5175\u706b\u79cd\u3002',
+          mainResources: '\u9965\u6c11\u4eba\u53e3\u6c60\u3001\u9003\u5175\u519b\u68b0\u3001\u8fb9\u5730\u5730\u5f62\u3001\u707e\u533a\u4e61\u5be8\u6697\u8f93',
+          strengths: ['\u707e\u8352\u4eba\u53e3\u6c60\u6781\u5927', '\u9003\u5175\u5e26\u5165\u519b\u68b0\u548c\u519b\u4e8b\u7ecf\u9a8c', '\u5b98\u5e9c\u8d22\u653f\u96be\u4ee5\u540c\u65f6\u8d48\u629a\u4e0e\u5f81\u527f', '\u9ad8\u539f\u6c9f\u58d1\u5229\u4e8e\u6d41\u52a8\u4f5c\u6218'],
+          weaknesses: ['\u672a\u5efa\u7a33\u5b9a\u653f\u6743', '\u7cae\u9977\u6765\u6e90\u6781\u4e0d\u7a33\u5b9a', '\u9996\u9886\u4e0e\u8def\u7ebf\u5c1a\u672a\u5b9a\u578b', '\u8d48\u629a\u5206\u5316\u53ef\u4ee5\u6682\u65f6\u538b\u4f4e\u98ce\u9669'],
+          strategy: '\u5148\u627e\u7cae\u3001\u88f9\u631f\u3001\u6536\u9003\u5175\uff1b\u9047\u5f3a\u5175\u5219\u6d41\u52a8\u907f\u6218\uff0c\u9047\u7a7a\u865a\u5dde\u53bf\u5219\u7834\u4ed3\u53d6\u7cae\u3002\u82e5\u660e\u5ef7\u771f\u8d48\u3001\u514d\u8d4b\u3001\u5b89\u63d2\uff0c\u8d77\u52bf\u4f1a\u5ef6\u7f13\uff1b\u82e5\u7ee7\u7eed\u50ac\u5f81\u6216\u4ee5\u5c0f\u5175\u527f\u4e4b\uff0c\u5219\u8fc5\u901f\u6d41\u5bc7\u5316\u3002'
+        });
+      }
       if (!f.npcDecisionHints && Array.isArray(f.decisionHints)) f.npcDecisionHints = f.decisionHints.slice();
       // 字段名对齐编辑器：desc → description（编辑器用 description 保存并渲染）
       if (f.desc && !f.description) f.description = f.desc;
@@ -6758,8 +6793,23 @@
         { score: 85, description: '灭佛灭道', consequences: ['天下骚动', '宗教反抗'] }
       ]
     };
+    var _CLASS_POPULATION_PROFILE = {
+      '\u5b97\u5ba4': { populationEstimate: 250000, populationShare: 0.0017, size: '\u7ea6 25 \u4e07(\u5360 0.17%)' },
+      '\u58eb\u5927\u592b': { populationEstimate: 500000, populationShare: 0.0033, size: '\u7ea6 50 \u4e07(\u5360 0.33%\u00b7\u542b\u751f\u5458\u79c0\u624d)' },
+      '\u7f19\u7ec5': { populationEstimate: 3000000, populationShare: 0.02, size: '\u7ea6 300 \u4e07(\u5360 2%)' },
+      '\u81ea\u8015\u519c': { populationEstimate: 30000000, populationShare: 0.20, size: '\u7ea6 3000 \u4e07(\u5360 20%)' },
+      '\u4f43\u519c\u4e0e\u6d41\u6c11': { populationEstimate: 50000000, populationShare: 0.3333, size: '\u7ea6 5000 \u4e07(\u5360 33.33%\u00b7\u542b\u9690\u6237)' },
+      '\u5546\u4eba': { populationEstimate: 5000000, populationShare: 0.0333, size: '\u7ea6 500 \u4e07(\u5360 3.33%)' },
+      '\u5de5\u5320': { populationEstimate: 4000000, populationShare: 0.0267, size: '\u7ea6 400 \u4e07(\u5360 2.67%)' },
+      '\u519b\u6237': { populationEstimate: 2000000, populationShare: 0.0133, size: '\u7ea6 200 \u4e07(\u5360 1.33%\u00b7\u5b9e\u5728\u518c)' },
+      '\u50e7\u9053\u00b7\u5916\u7c4d': { populationEstimate: 500000, populationShare: 0.0033, size: '\u7ea6 50 \u4e07(\u5360 0.33%)' }
+    };
     classes.forEach(function (c) {
       c.sid = SID; c.id = _uid('cls_');
+      if (_CLASS_POPULATION_PROFILE[c.name]) {
+        Object.assign(c, _CLASS_POPULATION_PROFILE[c.name]);
+        c.populationShareBasis = '\u6309\u5b9e\u9645\u4eba\u53e3\u7ea6 1.5 \u4ebf\u53e3\u4f30\u7b97\uff1b\u672a\u5217\u660e\u7684\u7f16\u6237\u6c11\u3001\u9690\u6237\u548c\u6df7\u5408\u8eab\u4efd\u4e0d\u5f3a\u884c\u5e73\u644a\u5165\u5355\u4e00\u9636\u5c42';
+      }
       if (_CLASS_OFFEND[c.name] && (!Array.isArray(c.offendThresholds) || c.offendThresholds.length === 0)) {
         c.offendThresholds = _CLASS_OFFEND[c.name];
       }
@@ -9535,16 +9585,7 @@
           trigger: '辽东防线稳固度 < 40 且 皇太极优势',
           effect: '后金取蒙古察哈尔',
           description: '皇太极趁林丹汗西迁·漠南蒙古倒向后金。蒙古诸部（科尔沁/察哈尔）归附或降。',
-          chainNext: '后金叩关·第二环·破塞入华北',
           linkedChars: ['皇太极', '林丹汗'], linkedFactions: ['后金', '察哈尔']
-        },
-        {
-          name: '后金叩关·第二环·破塞入华北(己巳之变)', type: 'chain', importance: '关键',
-          trigger: '蒙古归金 且 辽东防线稳固度 < 35',
-          effect: '后金十万大军破长城至北京城下',
-          description: '皇太极绕蒙古突破喜峰口/遵化。十万骑南下至北京城下。袁崇焕从辽东回援被中反间死。',
-          chainNext: '后金叩关·第三环·议和或决战',
-          linkedChars: ['皇太极', '袁崇焕'], linkedFactions: ['后金', '明朝廷']
         },
         {
           name: '后金叩关·第三环·议和或决战', type: 'chain', importance: '关键',
@@ -9566,30 +9607,14 @@
           trigger: '流民合流 且 明军分兵',
           effect: '高迎祥号闯王·诸部合流',
           description: '各股饥民合流。高迎祥被推为"闯王"。下辖李自成/张献忠/罗汝才等十三家七十二营。',
-          chainNext: '流寇燎原·第三环·入河南湖广',
           linkedChars: ['高迎祥', '李自成', '张献忠'], linkedFactions: ['陕北饥民(将起)']
-        },
-        {
-          name: '流寇燎原·第三环·闯王破京', type: 'chain', importance: '关键',
-          trigger: '明军溃 且 闯军入河南湖广',
-          effect: '李自成破潼关至北京',
-          description: '李自成取高迎祥之号继为闯王。1643 年破西安建大顺。1644 年三月破北京。崇祯自缢煤山。',
-          linkedChars: ['李自成', '朱由检'], linkedFactions: ['陕北饥民(将起)', '明朝廷']
         },
         {
           name: '奢安终平·第一环·朱燮元再督', type: 'chain', importance: '重要',
           trigger: '奢安之乱联军仍存 且 朱燮元被起用',
           effect: '朱燮元再督川贵云贵军务',
           description: '召朱燮元再督川贵云贵军务。秦良玉白杆兵集结。大军齐向水西。',
-          chainNext: '奢安终平·第二环·红崖决战',
           linkedChars: ['朱燮元', '秦良玉'], linkedFactions: ['明朝廷', '奢安之乱联军']
-        },
-        {
-          name: '奢安终平·第二环·红崖决战(1629 八月)', type: 'chain', importance: '关键',
-          trigger: '朱燮元兵至水西',
-          effect: '奢崇明安邦彦战死·奢安之乱平',
-          description: '朱燮元、秦良玉会攻奢崇明于永宁红崖大坝。奢崇明、安邦彦、奢崇辉皆战死。奢安之乱终平。',
-          linkedChars: ['奢崇明', '安邦彦', '朱燮元', '秦良玉'], linkedFactions: ['明朝廷', '奢安之乱联军']
         }
       ]
     };

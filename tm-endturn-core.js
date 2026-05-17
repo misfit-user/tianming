@@ -125,8 +125,9 @@ async function _endTurnCore(){
       + '事件列表：\n' + _evtText + '\n\n请直接输出摘要正文：';
 
     // 使用callAI而非raw fetch——自动适配所有模型（OpenAI/Anthropic/本地）
+    // 后台摘要不应抢占玩家正在等待的前台推演通道。
     if (typeof callAI === 'function') {
-      callAI(_compressPrompt, 500).then(function(txt) {
+      callAI(_compressPrompt, 500, null, 'primary', { priority: 'background' }).then(function(txt) {
         if (txt && txt.length > 30) {
           GM._aiMemorySummaries.push({ turn: GM.turn, summary: txt.substring(0, 400) });
           if (GM._aiMemorySummaries.length > 10) GM._aiMemorySummaries = GM._aiMemorySummaries.slice(-10);
@@ -187,26 +188,12 @@ async function _endTurnCore(){
     if (_prevMonthly) _mPrompt += '\n【上月纪事末尾】' + _prevMonthly + '\n';
     _mPrompt += '\n请直接输出纪事正文（不要JSON包裹）：';
 
-    // 异步调用，不await——不阻塞后续逻辑
-    var _mUrl = P.ai.url;
-    if (_mUrl.indexOf('/chat/completions') < 0) _mUrl = _mUrl.replace(/\/+$/, '') + '/chat/completions';
-    fetch(_mUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + P.ai.key },
-      body: JSON.stringify({
-        model: P.ai.model || 'gpt-4o',
-        messages: [
-          { role: 'system', content: '你是' + (P.dynasty || '') + _narrator },
-          { role: 'user', content: _mPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: Math.min(800, _wordLimit * 3)
-      })
-    }).then(function(resp) {
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      return resp.json();
-    }).then(function(j) {
-      var txt = (j.choices && j.choices[0] && j.choices[0].message) ? j.choices[0].message.content : '';
+    // 异步调用，不await——不阻塞后续逻辑；必须走共享 AI 队列，避免绕过并发控制。
+    if (typeof callAIMessages !== 'function') return;
+    callAIMessages([
+      { role: 'system', content: '你是' + (P.dynasty || '') + _narrator },
+      { role: 'user', content: _mPrompt }
+    ], Math.min(800, _wordLimit * 3), null, 'primary', { priority: 'background' }).then(function(txt) {
       if (txt && txt.length > 20) {
         if (!GM.monthlyChronicles) GM.monthlyChronicles = [];
         GM.monthlyChronicles.push({
@@ -573,7 +560,7 @@ EndTurnHooks.register('after', function() {
     checkPrompt += '若玩家诏令完全合史·deviations 返回空数组 []·不要硬找问题。';
 
     var resp = await callAISmart(checkPrompt, 1500, {
-      temperature: 0.3, maxRetries: 2,
+      temperature: 0.3, maxRetries: 2, priority: 'background',
       validator: function(c){ try{ var j=extractJSON(c); return j && Array.isArray(j.deviations); } catch(e){ return false; } }
     });
     var parsed = extractJSON(resp);

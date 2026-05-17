@@ -4,7 +4,7 @@
     "factionName": "明朝廷",
     "divisions": [
       {
-        "id": "div_mp3yvbbor3fzw",
+        "id": "div_mp9rsc2lzxgxq",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8200000,
@@ -173,7 +173,7 @@
         "mapRegionId": "ming-01"
       },
       {
-        "id": "div_mp3yvbbohzikt",
+        "id": "div_mp9rsc2lbpxij",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 16500000,
@@ -347,7 +347,7 @@
         "mapRegionId": "ming-02"
       },
       {
-        "id": "div_mp3yvbbosdju4",
+        "id": "div_mp9rsc2l04i3p",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 9200000,
@@ -514,7 +514,7 @@
         "mapRegionId": "ming-03"
       },
       {
-        "id": "div_mp3yvbbp4bi0t",
+        "id": "div_mp9rsc2l3tavr",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8100000,
@@ -676,7 +676,7 @@
         "mapRegionId": "ming-07"
       },
       {
-        "id": "div_mp3yvbbpk06jz",
+        "id": "div_mp9rsc2lwr3oi",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8300000,
@@ -836,7 +836,7 @@
         "mapRegionId": "ming-08"
       },
       {
-        "id": "div_mp3yvbbp0ky3x",
+        "id": "div_mp9rsc2ly0rr3",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 4800000,
@@ -999,7 +999,7 @@
         "mapRegionId": "ming-04"
       },
       {
-        "id": "div_mp3yvbbpu04s4",
+        "id": "div_mp9rsc2l500u6",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 6200000,
@@ -1164,7 +1164,7 @@
         "mapRegionId": "ming-26"
       },
       {
-        "id": "div_mp3yvbbpgkntv",
+        "id": "div_mp9rsc2mykatn",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 5200000,
@@ -1327,7 +1327,7 @@
         "mapRegionId": "ming-10"
       },
       {
-        "id": "div_mp3yvbbpg4464",
+        "id": "div_mp9rsc2m3vtpq",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 6800000,
@@ -1490,7 +1490,7 @@
         "mapRegionId": "ming-09"
       },
       {
-        "id": "div_mp3yvbbpoo72u",
+        "id": "div_mp9rsc2mmjx69",
         "regionType": "disaster_zone",
         "populationDetail": {
           "mouths": 5800000,
@@ -1708,7 +1708,7 @@
         "mapRegionId": "ming-11"
       },
       {
-        "id": "div_mp3yvbbpqnzc3",
+        "id": "div_mp9rsc2m2jp7z",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 3400000,
@@ -1871,7 +1871,7 @@
         "mapRegionId": "ming-12"
       },
       {
-        "id": "div_mp3yvbbpttcsp",
+        "id": "div_mp9rsc2m6eq76",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 5000000,
@@ -2039,7 +2039,7 @@
         "mapRegionId": "ming-05"
       },
       {
-        "id": "div_mp3yvbbpevmoc",
+        "id": "div_mp9rsc2mg07v4",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 1800000,
@@ -2200,7 +2200,7 @@
         "mapRegionId": "ming-06"
       },
       {
-        "id": "div_mp3yvbbpyqoqt",
+        "id": "div_mp9rsc2ml2n6w",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 1400000,
@@ -2366,7 +2366,7 @@
         "mapRegionId": "ming-14"
       },
       {
-        "id": "div_mp3yvbbpg4f5s",
+        "id": "div_mp9rsc2mlffnx",
         "regionType": "tusi",
         "populationDetail": {
           "mouths": 1150000,
@@ -2530,7 +2530,7 @@
         "mapRegionId": "ming-13"
       },
       {
-        "id": "div_mp3yvbbrywuzo",
+        "id": "div_mp9rsc2ml1zla",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 500000,
@@ -2692,7 +2692,7 @@
         "mapRegionId": "ming-28"
       },
       {
-        "id": "div_mp3yvbbrj19ga",
+        "id": "div_mp9rsc2mbhlbf",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 1800000,
@@ -2831,7 +2831,7 @@
     "factionName": "后金",
     "divisions": [
       {
-        "id": "div_mp3yvbbt1811c",
+        "id": "div_mp9rsc2oxuwcj",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 970000,
@@ -2966,7 +2966,7 @@
     "factionName": "察哈尔",
     "divisions": [
       {
-        "id": "div_mp3yvbbtectcn",
+        "id": "div_mp9rsc2pq38wr",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 330000,
@@ -3205,7 +3205,7 @@
     "factionName": "科尔沁蒙古",
     "divisions": [
       {
-        "id": "div_mp3yvbbtr8e87",
+        "id": "div_mp9rsc2pnhaer",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 280000,
@@ -3332,7 +3332,7 @@
     "factionName": "朝鲜",
     "divisions": [
       {
-        "id": "div_mp3yvbbud392m",
+        "id": "div_mp9rsc2pxp70y",
         "regionType": "fanbang",
         "populationDetail": {
           "mouths": 6950000,
@@ -3467,7 +3467,7 @@
     "factionName": "播州土司·杨氏(余裔)",
     "divisions": [
       {
-        "id": "div_mp3yvbbucgxfr",
+        "id": "div_mp9rsc2pljwli",
         "regionType": "tusi",
         "populationDetail": {
           "mouths": 68000,
@@ -3601,7 +3601,7 @@
     "factionName": "郑氏海商",
     "divisions": [
       {
-        "id": "div_mp3yvbbuomlca",
+        "id": "div_mp9rsc2pz11km",
         "regionType": "maritime",
         "populationDetail": {
           "mouths": 100000,
@@ -3736,7 +3736,7 @@
     "factionName": "陕北饥民(将起)",
     "divisions": [
       {
-        "id": "div_mp3yvbbu0vhct",
+        "id": "div_mp9rsc2pfqvz1",
         "regionType": "disaster_zone",
         "populationDetail": {
           "mouths": 180000,
@@ -3868,7 +3868,7 @@
     "factionName": "葡萄牙·澳门",
     "divisions": [
       {
-        "id": "div_mp3yvbbu01j0k",
+        "id": "div_mp9rsc2p731jx",
         "regionType": "leased_port",
         "populationDetail": {
           "mouths": 13500,
@@ -4002,7 +4002,7 @@
     "factionName": "荷兰·台海(东印度公司)",
     "divisions": [
       {
-        "id": "div_mp3yvbbuz6wrv",
+        "id": "div_mp9rsc2pcm2iq",
         "regionType": "company_colony",
         "populationDetail": {
           "mouths": 35500,
@@ -4137,7 +4137,7 @@
     "factionName": "西班牙·马尼拉",
     "divisions": [
       {
-        "id": "div_mp3yvbbu3b8ta",
+        "id": "div_mp9rsc2pgd5p0",
         "regionType": "colonial_governorate",
         "populationDetail": {
           "mouths": 499500,
@@ -4274,7 +4274,7 @@
     "factionName": "奢安之乱联军",
     "divisions": [
       {
-        "id": "div_mp3yvbbusohkn",
+        "id": "div_mp9rsc2pgmcpi",
         "regionType": "tusi",
         "populationDetail": {
           "mouths": 505000,
@@ -4401,6 +4401,135 @@
         ],
         "population": 505000,
         "mapRegionId": null
+      }
+    ]
+  },
+  "dokham": {
+    "factionId": "fac-ming",
+    "factionName": "明朝廷",
+    "divisions": [
+      {
+        "level": "province",
+        "taxLevel": "轻",
+        "minxinLocal": 38,
+        "corruptionLocal": 18,
+        "id": "supp-dokham",
+        "name": "朵甘思宣慰司",
+        "factionId": "fac-ming",
+        "factionName": "明朝廷",
+        "officialPosition": "朵甘行都指挥使司 / 宣慰司土官体系",
+        "governor": "诸招讨、万户、土官袭替",
+        "regionType": "jimi",
+        "dejureOwner": "明朝羁縻",
+        "description": "康藏东部朵甘思诸部。明廷名义设都司、宣慰、招讨、万户等职，实际依宗教法王、土官与茶马道维系册封朝贡。",
+        "terrain": "高原山地",
+        "specialResources": "茶马道、马匹、麝香、牦牛、皮毛",
+        "population": 380000,
+        "prosperity": 38,
+        "byEthnicity": {
+          "藏": 0.82,
+          "羌": 0.1,
+          "汉回商旅": 0.08
+        },
+        "byFaith": {
+          "藏传佛教": 0.86,
+          "本地信仰": 0.1,
+          "其他": 0.04
+        },
+        "bySettlement": {
+          "寺院庄园": 0.26,
+          "牧帐": 0.44,
+          "山谷村寨": 0.3
+        },
+        "leadingGentry": [
+          "诸法王封地",
+          "宣慰土官",
+          "茶马商旅"
+        ],
+        "academies": [
+          "寺院经院"
+        ],
+        "religiousSites": [
+          "康区寺院",
+          "茶马古道驿寺"
+        ],
+        "strategicValue": "西番羁縻、茶马互市、川陕藏通道",
+        "tradeRoutes": [
+          "茶马道",
+          "川藏道",
+          "青海河湟通道"
+        ],
+        "threats": [
+          "土官互争",
+          "交通艰险",
+          "册封名实不一"
+        ],
+        "recentDisasters": [
+          "高寒歉收"
+        ],
+        "specialCulture": "康藏藏传佛教文化",
+        "dataConfidence": "medium",
+        "sourceRefs": [
+          "tibet-dokham",
+          "ming-geography"
+        ],
+        "populationDetail": {
+          "households": 76000,
+          "mouths": 380000,
+          "ding": 159600,
+          "fugitives": 5700,
+          "hiddenCount": 45600
+        },
+        "economyBase": {
+          "farmland": 1900,
+          "commerceCoefficient": 0.76,
+          "commerceVolume": 1155200,
+          "maritimeTradeVolume": 0,
+          "saltProduction": 0,
+          "mineralProduction": 0,
+          "horseProduction": 34200,
+          "fishingProduction": 0,
+          "imperialFarmland": 0,
+          "imperialAssets": {
+            "zhizao": 0,
+            "kuangchang": 0,
+            "yuyao": 0
+          },
+          "postRelays": 3,
+          "kejuQuota": 0,
+          "roadQuality": 34,
+          "landsAnnexed": 0,
+          "landsReclaimed": 95,
+          "landsSurveyed": 798,
+          "disasterRecord": [
+            "高寒歉收"
+          ]
+        },
+        "fiscalDetail": {
+          "claimedRevenue": 505400,
+          "actualRevenue": 212268,
+          "remittedToCenter": 38208,
+          "retainedBudget": 110379,
+          "compliance": 0.42,
+          "skimmingRate": 0.08,
+          "autonomyLevel": 0.74
+        },
+        "publicTreasuryInit": {
+          "money": 148588,
+          "grain": 418000,
+          "cloth": 11400
+        },
+        "tags": {
+          "hasPort": false,
+          "saltRegion": false,
+          "mineralRegion": false,
+          "horseRegion": true,
+          "fishingRegion": false,
+          "imperialDomain": false
+        },
+        "isSupplement": true,
+        "groupKey": "supplement-fac-ming",
+        "mapRegionId": "ming-15"
       }
     ]
   },
@@ -5633,7 +5762,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 14850,
           "landsSurveyed": 124740,
-          "disasterRecord": []
+          "disasterRecord": [
+            "????????",
+            "????????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 72930000,
@@ -5742,7 +5874,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 2790,
           "landsSurveyed": 23436,
-          "disasterRecord": []
+          "disasterRecord": [
+            "???????????",
+            "???????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 11687000,
@@ -5846,7 +5981,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 263,
           "landsSurveyed": 2205,
-          "disasterRecord": []
+          "disasterRecord": [
+            "??????",
+            "??????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 3412500,
@@ -6107,135 +6245,6 @@
         "isSupplement": true,
         "groupKey": "supplement-fac-khalkha",
         "mapRegionId": "ming2-35"
-      }
-    ]
-  },
-  "dokham": {
-    "factionId": "fac-ming",
-    "factionName": "明朝廷",
-    "divisions": [
-      {
-        "level": "province",
-        "taxLevel": "轻",
-        "minxinLocal": 38,
-        "corruptionLocal": 18,
-        "id": "supp-dokham",
-        "name": "朵甘思宣慰司",
-        "factionId": "fac-ming",
-        "factionName": "明朝廷",
-        "officialPosition": "朵甘行都指挥使司 / 宣慰司土官体系",
-        "governor": "诸招讨、万户、土官袭替",
-        "regionType": "jimi",
-        "dejureOwner": "明朝羁縻",
-        "description": "康藏东部朵甘思诸部。明廷名义设都司、宣慰、招讨、万户等职，实际依宗教法王、土官与茶马道维系册封朝贡。",
-        "terrain": "高原山地",
-        "specialResources": "茶马道、马匹、麝香、牦牛、皮毛",
-        "population": 380000,
-        "prosperity": 38,
-        "byEthnicity": {
-          "藏": 0.82,
-          "羌": 0.1,
-          "汉回商旅": 0.08
-        },
-        "byFaith": {
-          "藏传佛教": 0.86,
-          "本地信仰": 0.1,
-          "其他": 0.04
-        },
-        "bySettlement": {
-          "寺院庄园": 0.26,
-          "牧帐": 0.44,
-          "山谷村寨": 0.3
-        },
-        "leadingGentry": [
-          "诸法王封地",
-          "宣慰土官",
-          "茶马商旅"
-        ],
-        "academies": [
-          "寺院经院"
-        ],
-        "religiousSites": [
-          "康区寺院",
-          "茶马古道驿寺"
-        ],
-        "strategicValue": "西番羁縻、茶马互市、川陕藏通道",
-        "tradeRoutes": [
-          "茶马道",
-          "川藏道",
-          "青海河湟通道"
-        ],
-        "threats": [
-          "土官互争",
-          "交通艰险",
-          "册封名实不一"
-        ],
-        "recentDisasters": [
-          "高寒歉收"
-        ],
-        "specialCulture": "康藏藏传佛教文化",
-        "dataConfidence": "medium",
-        "sourceRefs": [
-          "tibet-dokham",
-          "ming-geography"
-        ],
-        "populationDetail": {
-          "households": 76000,
-          "mouths": 380000,
-          "ding": 159600,
-          "fugitives": 5700,
-          "hiddenCount": 45600
-        },
-        "economyBase": {
-          "farmland": 1900,
-          "commerceCoefficient": 0.76,
-          "commerceVolume": 1155200,
-          "maritimeTradeVolume": 0,
-          "saltProduction": 0,
-          "mineralProduction": 0,
-          "horseProduction": 34200,
-          "fishingProduction": 0,
-          "imperialFarmland": 0,
-          "imperialAssets": {
-            "zhizao": 0,
-            "kuangchang": 0,
-            "yuyao": 0
-          },
-          "postRelays": 3,
-          "kejuQuota": 0,
-          "roadQuality": 34,
-          "landsAnnexed": 0,
-          "landsReclaimed": 95,
-          "landsSurveyed": 798,
-          "disasterRecord": [
-            "高寒歉收"
-          ]
-        },
-        "fiscalDetail": {
-          "claimedRevenue": 505400,
-          "actualRevenue": 212268,
-          "remittedToCenter": 38208,
-          "retainedBudget": 110379,
-          "compliance": 0.42,
-          "skimmingRate": 0.08,
-          "autonomyLevel": 0.74
-        },
-        "publicTreasuryInit": {
-          "money": 148588,
-          "grain": 418000,
-          "cloth": 11400
-        },
-        "tags": {
-          "hasPort": false,
-          "saltRegion": false,
-          "mineralRegion": false,
-          "horseRegion": true,
-          "fishingRegion": false,
-          "imperialDomain": false
-        },
-        "isSupplement": true,
-        "groupKey": "supplement-fac-ming",
-        "mapRegionId": "ming-15"
       }
     ]
   }

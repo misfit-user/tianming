@@ -13,7 +13,7 @@
     "supplementId": "tianqi7-ming2-historical-supplement",
     "supplementName": "天启七年新舆图历史补丁",
     "dataConfidenceNote": "数值字段为游戏化历史估算；政权、领属、资源、冲突和人物字段据可核史实整理，带 sourceRefs。",
-    "generatedAt": "2026-05-13T12:39:10.596Z",
+    "generatedAt": "2026-05-17T12:47:16.865Z",
     "width": 1200,
     "height": 720,
     "landRegionCount": 43,
@@ -65,7 +65,7 @@
       "note": "明朝廷在天启官方剧本中的初始控制范围。",
       "type": "主权国",
       "score": 28,
-      "scenarioFactionId": "fac_mp3yvbcbwm4mz",
+      "scenarioFactionId": "fac_mp9rsc3fd62j6",
       "scenarioFactionName": "明朝廷"
     },
     "fac-later-jin": {
@@ -76,7 +76,7 @@
       "note": "后金在天启官方剧本中的初始控制范围。",
       "type": "主权国",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbabeup",
+      "scenarioFactionId": "fac_mp9rsc3f4r9co",
       "scenarioFactionName": "后金"
     },
     "fac-chahar": {
@@ -87,7 +87,7 @@
       "note": "察哈尔在天启官方剧本中的初始控制范围。",
       "type": "部落",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcb56o05",
+      "scenarioFactionId": "fac_mp9rsc3fex7fo",
       "scenarioFactionName": "察哈尔"
     },
     "fac-khorchin": {
@@ -98,7 +98,7 @@
       "note": "科尔沁蒙古在天启官方剧本中的初始控制范围。",
       "type": "蒙古部盟·后金联姻盟友",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcb36lj7",
+      "scenarioFactionId": "fac_mp9rsc3fjy38l",
       "scenarioFactionName": "科尔沁蒙古"
     },
     "fac-joseon": {
@@ -109,7 +109,7 @@
       "note": "朝鲜在天启官方剧本中的初始控制范围。",
       "type": "番属",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbpgpmo",
+      "scenarioFactionId": "fac_mp9rsc3f60u3b",
       "scenarioFactionName": "朝鲜"
     },
     "fac-bozhou-yang": {
@@ -120,7 +120,7 @@
       "note": "播州土司·杨氏(余裔)在天启官方剧本中的初始控制范围。",
       "type": "部落",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbt1v11",
+      "scenarioFactionId": "fac_mp9rsc3fuezsa",
       "scenarioFactionName": "播州土司·杨氏(余裔)"
     },
     "fac-zheng-maritime": {
@@ -131,7 +131,7 @@
       "note": "郑氏海商在天启官方剧本中的初始控制范围。",
       "type": "商贸势力",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbklckf",
+      "scenarioFactionId": "fac_mp9rsc3funmyu",
       "scenarioFactionName": "郑氏海商"
     },
     "fac-shaanbei-famine": {
@@ -142,7 +142,7 @@
       "note": "陕北饥民(将起)在天启官方剧本中的初始控制范围。",
       "type": "起义军",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbsqjwq",
+      "scenarioFactionId": "fac_mp9rsc3fcjwcm",
       "scenarioFactionName": "陕北饥民(将起)"
     },
     "fac-portuguese-macau": {
@@ -153,7 +153,7 @@
       "note": "葡萄牙·澳门在天启官方剧本中的初始控制范围。",
       "type": "外国势力·欧洲",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcb58joi",
+      "scenarioFactionId": "fac_mp9rsc3ilucz2",
       "scenarioFactionName": "葡萄牙·澳门"
     },
     "fac-dutch-formosa": {
@@ -164,7 +164,7 @@
       "note": "荷兰·台海(东印度公司)在天启官方剧本中的初始控制范围。",
       "type": "外国势力·欧洲",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbxgvot",
+      "scenarioFactionId": "fac_mp9rsc3ish4kg",
       "scenarioFactionName": "荷兰·台海(东印度公司)"
     },
     "fac-spanish-manila": {
@@ -175,7 +175,7 @@
       "note": "西班牙·马尼拉在天启官方剧本中的初始控制范围。",
       "type": "外国势力·欧洲",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcbjvj05",
+      "scenarioFactionId": "fac_mp9rsc3itegih",
       "scenarioFactionName": "西班牙·马尼拉"
     },
     "fac-she-an-rebels": {
@@ -186,7 +186,7 @@
       "note": "奢安之乱联军在天启官方剧本中的初始控制范围。",
       "type": "叛乱势力·土司",
       "score": 72,
-      "scenarioFactionId": "fac_mp3yvbcb2lsid",
+      "scenarioFactionId": "fac_mp9rsc3iwppav",
       "scenarioFactionName": "奢安之乱联军"
     },
     "fac-tumed": {
@@ -3462,16 +3462,16 @@
         "铁",
         "海盐(长芦)"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -3504,7 +3504,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbor3fzw",
+        "id": "div_mp9rsc2lzxgxq",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8200000,
@@ -6691,16 +6691,16 @@
         "漕米",
         "盐(两淮)"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -6733,7 +6733,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbohzikt",
+        "id": "div_mp9rsc2lbpxij",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 16500000,
@@ -9723,16 +9723,16 @@
         "瓷",
         "海贸"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -9765,7 +9765,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbosdju4",
+        "id": "div_mp9rsc2l04i3p",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 9200000,
@@ -13618,16 +13618,16 @@
         "木材",
         "海船"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -13660,7 +13660,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbp0ky3x",
+        "id": "div_mp9rsc2ly0rr3",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 4800000,
@@ -17480,16 +17480,16 @@
         "糯米",
         "马"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -17522,7 +17522,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpevmoc",
+        "id": "div_mp9rsc2mg07v4",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 1800000,
@@ -20370,16 +20370,16 @@
         "米",
         "茶"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -20412,7 +20412,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbp4bi0t",
+        "id": "div_mp9rsc2l3tavr",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8100000,
@@ -24884,16 +24884,16 @@
         "桐油",
         "湘水军器"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -24926,7 +24926,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpk06jz",
+        "id": "div_mp9rsc2lwr3oi",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 8300000,
@@ -27534,16 +27534,16 @@
         "豆",
         "药材"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -27576,7 +27576,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpg4464",
+        "id": "div_mp9rsc2m3vtpq",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 6800000,
@@ -30017,16 +30017,16 @@
         "马",
         "晋商"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -30059,7 +30059,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpgkntv",
+        "id": "div_mp9rsc2mykatn",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 5200000,
@@ -33933,16 +33933,16 @@
         "马",
         "边塞"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -33975,7 +33975,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpoo72u",
+        "id": "div_mp9rsc2mmjx69",
         "regionType": "disaster_zone",
         "populationDetail": {
           "mouths": 5800000,
@@ -38561,16 +38561,16 @@
         "盐井",
         "药材"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -38603,7 +38603,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpqnzc3",
+        "id": "div_mp9rsc2m2jp7z",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 3400000,
@@ -41903,16 +41903,16 @@
         "马",
         "木材"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -41945,7 +41945,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpg4f5s",
+        "id": "div_mp9rsc2mlffnx",
         "regionType": "tusi",
         "populationDetail": {
           "mouths": 1150000,
@@ -46358,16 +46358,16 @@
         "马",
         "木材"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -46400,7 +46400,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpyqoqt",
+        "id": "div_mp9rsc2ml2n6w",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 1400000,
@@ -49085,16 +49085,16 @@
         "牦牛",
         "皮毛"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -52338,16 +52338,16 @@
         "盐(湖盐)",
         "金"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -52380,7 +52380,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbrj19ga",
+        "id": "div_mp9rsc2mbhlbf",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 1800000,
@@ -59953,16 +59953,16 @@
         "皮毛",
         "战马"
       ],
-      "owner": "fac_mp3yvbcbabeup",
-      "initialOwner": "fac_mp3yvbcbabeup",
-      "currentOwner": "fac_mp3yvbcbabeup",
-      "controller": "fac_mp3yvbcbabeup",
+      "owner": "fac_mp9rsc3f4r9co",
+      "initialOwner": "fac_mp9rsc3f4r9co",
+      "currentOwner": "fac_mp9rsc3f4r9co",
+      "controller": "fac_mp9rsc3f4r9co",
       "ownerKey": "fac-later-jin",
       "initialOwnerKey": "fac-later-jin",
       "currentOwnerKey": "fac-later-jin",
       "controllerKey": "fac-later-jin",
       "stableFactionId": "fac-later-jin",
-      "factionId": "fac_mp3yvbcbabeup",
+      "factionId": "fac_mp9rsc3f4r9co",
       "factionName": "后金",
       "ownerName": "后金",
       "factionColor": "#6a4c93",
@@ -59995,7 +59995,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbt1811c",
+        "id": "div_mp9rsc2oxuwcj",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 970000,
@@ -68128,16 +68128,16 @@
         "铁",
         "海鲜"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -68170,7 +68170,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpu04s4",
+        "id": "div_mp9rsc2l500u6",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 6200000,
@@ -80589,7 +80589,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 2790,
           "landsSurveyed": 23436,
-          "disasterRecord": []
+          "disasterRecord": [
+            "???????????",
+            "???????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 11687000,
@@ -81684,7 +81687,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 263,
           "landsSurveyed": 2205,
-          "disasterRecord": []
+          "disasterRecord": [
+            "??????",
+            "??????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 3412500,
@@ -85461,16 +85467,16 @@
         "皮毛",
         "战马"
       ],
-      "owner": "fac_mp3yvbcbabeup",
-      "initialOwner": "fac_mp3yvbcbabeup",
-      "currentOwner": "fac_mp3yvbcbabeup",
-      "controller": "fac_mp3yvbcbabeup",
+      "owner": "fac_mp9rsc3f4r9co",
+      "initialOwner": "fac_mp9rsc3f4r9co",
+      "currentOwner": "fac_mp9rsc3f4r9co",
+      "controller": "fac_mp9rsc3f4r9co",
       "ownerKey": "fac-later-jin",
       "initialOwnerKey": "fac-later-jin",
       "currentOwnerKey": "fac-later-jin",
       "controllerKey": "fac-later-jin",
       "stableFactionId": "fac-later-jin",
-      "factionId": "fac_mp3yvbcbabeup",
+      "factionId": "fac_mp9rsc3f4r9co",
       "factionName": "后金",
       "ownerName": "后金",
       "factionColor": "#6a4c93",
@@ -85503,7 +85509,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbt1811c",
+        "id": "div_mp9rsc2oxuwcj",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 970000,
@@ -86638,16 +86644,16 @@
         "骑兵",
         "联姻网络"
       ],
-      "owner": "fac_mp3yvbcb36lj7",
-      "initialOwner": "fac_mp3yvbcb36lj7",
-      "currentOwner": "fac_mp3yvbcb36lj7",
-      "controller": "fac_mp3yvbcb36lj7",
+      "owner": "fac_mp9rsc3fjy38l",
+      "initialOwner": "fac_mp9rsc3fjy38l",
+      "currentOwner": "fac_mp9rsc3fjy38l",
+      "controller": "fac_mp9rsc3fjy38l",
       "ownerKey": "fac-khorchin",
       "initialOwnerKey": "fac-khorchin",
       "currentOwnerKey": "fac-khorchin",
       "controllerKey": "fac-khorchin",
       "stableFactionId": "fac-khorchin",
-      "factionId": "fac_mp3yvbcb36lj7",
+      "factionId": "fac_mp9rsc3fjy38l",
       "factionName": "科尔沁蒙古",
       "ownerName": "科尔沁蒙古",
       "factionColor": "#6f7f9a",
@@ -86680,7 +86686,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbtr8e87",
+        "id": "div_mp9rsc2pnhaer",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 280000,
@@ -97595,16 +97601,16 @@
         "船坞",
         "基隆炮台"
       ],
-      "owner": "fac_mp3yvbcbjvj05",
-      "initialOwner": "fac_mp3yvbcbjvj05",
-      "currentOwner": "fac_mp3yvbcbjvj05",
-      "controller": "fac_mp3yvbcbjvj05",
+      "owner": "fac_mp9rsc3itegih",
+      "initialOwner": "fac_mp9rsc3itegih",
+      "currentOwner": "fac_mp9rsc3itegih",
+      "controller": "fac_mp9rsc3itegih",
       "ownerKey": "fac-spanish-manila",
       "initialOwnerKey": "fac-spanish-manila",
       "currentOwnerKey": "fac-spanish-manila",
       "controllerKey": "fac-spanish-manila",
       "stableFactionId": "fac-spanish-manila",
-      "factionId": "fac_mp3yvbcbjvj05",
+      "factionId": "fac_mp9rsc3itegih",
       "factionName": "西班牙·马尼拉",
       "ownerName": "西班牙·马尼拉",
       "factionColor": "#b8860b",
@@ -97637,7 +97643,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbu3b8ta",
+        "id": "div_mp9rsc2pgd5p0",
         "regionType": "colonial_governorate",
         "populationDetail": {
           "mouths": 499500,
@@ -102514,16 +102520,16 @@
         "羊群",
         "皮毛"
       ],
-      "owner": "fac_mp3yvbcb56o05",
-      "initialOwner": "fac_mp3yvbcb56o05",
-      "currentOwner": "fac_mp3yvbcb56o05",
-      "controller": "fac_mp3yvbcb56o05",
+      "owner": "fac_mp9rsc3fex7fo",
+      "initialOwner": "fac_mp9rsc3fex7fo",
+      "currentOwner": "fac_mp9rsc3fex7fo",
+      "controller": "fac_mp9rsc3fex7fo",
       "ownerKey": "fac-chahar",
       "initialOwnerKey": "fac-chahar",
       "currentOwnerKey": "fac-chahar",
       "controllerKey": "fac-chahar",
       "stableFactionId": "fac-chahar",
-      "factionId": "fac_mp3yvbcb56o05",
+      "factionId": "fac_mp9rsc3fex7fo",
       "factionName": "察哈尔",
       "ownerName": "察哈尔",
       "factionColor": "#8b4513",
@@ -106039,16 +106045,16 @@
         "边市",
         "寺院供养"
       ],
-      "owner": "fac_mp3yvbcb56o05",
-      "initialOwner": "fac_mp3yvbcb56o05",
-      "currentOwner": "fac_mp3yvbcb56o05",
-      "controller": "fac_mp3yvbcb56o05",
+      "owner": "fac_mp9rsc3fex7fo",
+      "initialOwner": "fac_mp9rsc3fex7fo",
+      "currentOwner": "fac_mp9rsc3fex7fo",
+      "controller": "fac_mp9rsc3fex7fo",
       "ownerKey": "fac-chahar",
       "initialOwnerKey": "fac-chahar",
       "currentOwnerKey": "fac-chahar",
       "controllerKey": "fac-chahar",
       "stableFactionId": "fac-chahar",
-      "factionId": "fac_mp3yvbcb56o05",
+      "factionId": "fac_mp9rsc3fex7fo",
       "factionName": "察哈尔",
       "ownerName": "察哈尔",
       "factionColor": "#8b4513",
@@ -106081,7 +106087,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbtectcn",
+        "id": "div_mp9rsc2pq38wr",
         "regionType": "jimi",
         "populationDetail": {
           "mouths": 330000,
@@ -106338,16 +106344,16 @@
         "中日转口贸易",
         "船坞"
       ],
-      "owner": "fac_mp3yvbcb58joi",
-      "initialOwner": "fac_mp3yvbcb58joi",
-      "currentOwner": "fac_mp3yvbcb58joi",
-      "controller": "fac_mp3yvbcb58joi",
+      "owner": "fac_mp9rsc3ilucz2",
+      "initialOwner": "fac_mp9rsc3ilucz2",
+      "currentOwner": "fac_mp9rsc3ilucz2",
+      "controller": "fac_mp9rsc3ilucz2",
       "ownerKey": "fac-portuguese-macau",
       "initialOwnerKey": "fac-portuguese-macau",
       "currentOwnerKey": "fac-portuguese-macau",
       "controllerKey": "fac-portuguese-macau",
       "stableFactionId": "fac-portuguese-macau",
-      "factionId": "fac_mp3yvbcb58joi",
+      "factionId": "fac_mp9rsc3ilucz2",
       "factionName": "葡萄牙·澳门",
       "ownerName": "葡萄牙·澳门",
       "factionColor": "#8b4513",
@@ -106380,7 +106386,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbu01j0k",
+        "id": "div_mp9rsc2p731jx",
         "regionType": "leased_port",
         "populationDetail": {
           "mouths": 13500,
@@ -108510,7 +108516,10 @@
           "landsAnnexed": 0,
           "landsReclaimed": 14850,
           "landsSurveyed": 124740,
-          "disasterRecord": []
+          "disasterRecord": [
+            "????????",
+            "????????????"
+          ]
         },
         "fiscalDetail": {
           "claimedRevenue": 72930000,
@@ -113627,16 +113636,16 @@
         "瓷",
         "香料"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -113669,7 +113678,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbpttcsp",
+        "id": "div_mp9rsc2m6eq76",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 5000000,
@@ -117854,16 +117863,16 @@
         "煤",
         "铁"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -117896,7 +117905,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbrywuzo",
+        "id": "div_mp9rsc2ml1zla",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 500000,
@@ -118774,16 +118783,16 @@
         "煤",
         "铁"
       ],
-      "owner": "fac_mp3yvbcbwm4mz",
-      "initialOwner": "fac_mp3yvbcbwm4mz",
-      "currentOwner": "fac_mp3yvbcbwm4mz",
-      "controller": "fac_mp3yvbcbwm4mz",
+      "owner": "fac_mp9rsc3fd62j6",
+      "initialOwner": "fac_mp9rsc3fd62j6",
+      "currentOwner": "fac_mp9rsc3fd62j6",
+      "controller": "fac_mp9rsc3fd62j6",
       "ownerKey": "fac-ming",
       "initialOwnerKey": "fac-ming",
       "currentOwnerKey": "fac-ming",
       "controllerKey": "fac-ming",
       "stableFactionId": "fac-ming",
-      "factionId": "fac_mp3yvbcbwm4mz",
+      "factionId": "fac_mp9rsc3fd62j6",
       "factionName": "明朝廷",
       "ownerName": "明朝廷",
       "factionColor": "#c9a84c",
@@ -118816,7 +118825,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbrywuzo",
+        "id": "div_mp9rsc2ml1zla",
         "regionType": "normal",
         "populationDetail": {
           "mouths": 500000,
@@ -120724,16 +120733,16 @@
         "海产",
         "山城"
       ],
-      "owner": "fac_mp3yvbcbpgpmo",
-      "initialOwner": "fac_mp3yvbcbpgpmo",
-      "currentOwner": "fac_mp3yvbcbpgpmo",
-      "controller": "fac_mp3yvbcbpgpmo",
+      "owner": "fac_mp9rsc3f60u3b",
+      "initialOwner": "fac_mp9rsc3f60u3b",
+      "currentOwner": "fac_mp9rsc3f60u3b",
+      "controller": "fac_mp9rsc3f60u3b",
       "ownerKey": "fac-joseon",
       "initialOwnerKey": "fac-joseon",
       "currentOwnerKey": "fac-joseon",
       "controllerKey": "fac-joseon",
       "stableFactionId": "fac-joseon",
-      "factionId": "fac_mp3yvbcbpgpmo",
+      "factionId": "fac_mp9rsc3f60u3b",
       "factionName": "朝鲜",
       "ownerName": "朝鲜",
       "factionColor": "#4a7c2c",
@@ -120766,7 +120775,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbud392m",
+        "id": "div_mp9rsc2pxp70y",
         "regionType": "fanbang",
         "populationDetail": {
           "mouths": 6950000,
@@ -121577,16 +121586,16 @@
         "火炮",
         "武装商船"
       ],
-      "owner": "fac_mp3yvbcbxgvot",
-      "initialOwner": "fac_mp3yvbcbxgvot",
-      "currentOwner": "fac_mp3yvbcbxgvot",
-      "controller": "fac_mp3yvbcbxgvot",
+      "owner": "fac_mp9rsc3ish4kg",
+      "initialOwner": "fac_mp9rsc3ish4kg",
+      "currentOwner": "fac_mp9rsc3ish4kg",
+      "controller": "fac_mp9rsc3ish4kg",
       "ownerKey": "fac-dutch-formosa",
       "initialOwnerKey": "fac-dutch-formosa",
       "currentOwnerKey": "fac-dutch-formosa",
       "controllerKey": "fac-dutch-formosa",
       "stableFactionId": "fac-dutch-formosa",
-      "factionId": "fac_mp3yvbcbxgvot",
+      "factionId": "fac_mp9rsc3ish4kg",
       "factionName": "荷兰·台海(东印度公司)",
       "ownerName": "荷兰·台海(东印度公司)",
       "factionColor": "#d2691e",
@@ -121619,7 +121628,7 @@
         "data"
       ],
       "data": {
-        "id": "div_mp3yvbbuz6wrv",
+        "id": "div_mp9rsc2pcm2iq",
         "regionType": "company_colony",
         "populationDetail": {
           "mouths": 35500,

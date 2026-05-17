@@ -156,8 +156,22 @@
     return null;
   }
 
+  function readExplicitPopulationShare(cls) {
+    if (!cls || typeof cls !== 'object') return null;
+    var raw = cls.populationShare;
+    if (raw === undefined || raw === null || raw === '') raw = cls.popShare;
+    if (raw === undefined || raw === null || raw === '') raw = cls._populationShare;
+    if (raw === undefined || raw === null || raw === '') return null;
+    var n = Number(raw);
+    if (!isFinite(n)) return null;
+    return n > 1 ? clamp(n / 100, 0, 1) : clamp(n, 0, 1);
+  }
+
   function formatSizeText(share) {
-    var pct = Math.max(0, Math.round(clamp(share, 0, 1) * 100));
+    var raw = Math.max(0, clamp(share, 0, 1) * 100);
+    var pct = raw < 1
+      ? raw.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
+      : (raw < 10 ? raw.toFixed(1).replace(/0$/, '').replace(/\.$/, '') : String(Math.round(raw)));
     return '约' + pct + '%人口';
   }
 
@@ -819,7 +833,8 @@
       ensureClassRuntime(cls);
       var keys = resolvePopulationKeys(cls, source);
       var current = sumBuckets(pop, keys);
-      var share = parseSizeShare(cls.size);
+      var share = readExplicitPopulationShare(cls);
+      if (share === null) share = parseSizeShare(cls.size);
       var hiddenMouths = parseTurnNumber(cls._populationMouths);
       var nextMouths = current;
       if (mode === 'bootstrap') {

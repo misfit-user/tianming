@@ -103,7 +103,7 @@ async function _scL2AIGenerate(turnOverride) {
     var respL2 = await callAIMessages([
       { role: 'system', content: '你是天命游戏的史官·专长将散乱事件压缩为精炼的情景纲要·保留因果与情绪而非堆砌细节。' },
       { role: 'user', content: tpL2 }
-    ], 3000);
+    ], 3000, null, 'primary', { priority: 'background' });
     var parsedL2 = extractJSON(respL2);
     if (parsedL2 && parsedL2.summary) {
       // 替换或新增
@@ -162,7 +162,7 @@ async function _scL3Condense(turnOverride) {
     var respL3 = await callAIMessages([
       { role: 'system', content: '你是天命游戏的编年史官·写年代纲要如《资治通鉴》综述·提炼主题与因果·非流水记事。' },
       { role: 'user', content: tpL3 }
-    ], 4000);
+    ], 4000, null, 'primary', { priority: 'background' });
     var parsedL3 = extractJSON(respL3);
     if (parsedL3 && parsedL3.theme) {
       GM._memoryLayers.L3 = (GM._memoryLayers.L3 || []).filter(function(x){ return x.turnBucket !== jobTurn || !x.aiGenerated; });
@@ -223,7 +223,7 @@ async function _scReflect(turnOverride, turnResultsOverride) {
     var respR = await callAIMessages([
       { role: 'system', content: '你是一个自省的 AI·客观比较预测与实际·提炼教训·不避讳自己的错误。' },
       { role: 'user', content: tpR }
-    ], 1500);
+    ], 1500, null, 'primary', { priority: 'background' });
     var parsedR = extractJSON(respR);
     if (parsedR && parsedR.lesson) {
       if (!GM._aiReflections) GM._aiReflections = [];
@@ -486,7 +486,7 @@ function _compressOldArchives(limit) {
   // 异步 AI 压缩（不阻塞游戏，后台生成更好的摘要替换）
   if (P.ai.key) {
     var prompt = '请将以下历史纪要压缩为一段100字以内的综述：\n' + overflow.map(function(a){ return a.content; }).join('\n');
-    callAI(prompt, 300).then(function(result) {
+    callAI(prompt, 300, null, 'primary', { priority: 'background' }).then(function(result) {
       if (result && GM.memoryArchive[0] && GM.memoryArchive[0].compressed) {
         GM.memoryArchive[0].content = result.substring(0, 200);
         GM.memoryArchive[0].aiCompressed = true;

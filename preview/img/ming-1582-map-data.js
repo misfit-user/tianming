@@ -10,7 +10,7 @@ window.MING_MAP_SOURCE_META={
   "supplementId": "tianqi7-ming2-historical-supplement",
   "supplementName": "天启七年新舆图历史补丁",
   "dataConfidenceNote": "数值字段为游戏化历史估算；政权、领属、资源、冲突和人物字段据可核史实整理，带 sourceRefs。",
-  "generatedAt": "2026-05-13T12:39:10.596Z",
+  "generatedAt": "2026-05-17T12:47:16.865Z",
   "width": 1200,
   "height": 720,
   "landRegionCount": 43,
@@ -370,7 +370,7 @@ window.MING_FACTION_SCENARIO_DATA={
     "strategy": "新帝即位首务：稳京师、除权阉、用贤能、救陕饥、守辽东。",
     "playerRelation": "玩家本尊",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbwm4mz",
+    "id": "fac_mp9rsc3fd62j6",
     "type": "主权国",
     "leaderTitle": "皇帝",
     "goal": "中兴大明·除阉党·守辽东·救饥",
@@ -698,7 +698,7 @@ window.MING_FACTION_SCENARIO_DATA={
     "foundYear": 1616,
     "peakYear": 1644,
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbabeup",
+    "id": "fac_mp9rsc3f4r9co",
     "type": "主权国",
     "leaderTitle": "大金天聪汗",
     "goal": "削察哈尔·迫朝鲜·绕蒙古破塞入中原",
@@ -940,7 +940,7 @@ window.MING_FACTION_SCENARIO_DATA={
     ],
     "strategy": "结明联抗后金；恢复蒙古一统。",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcb56o05",
+    "id": "fac_mp9rsc3fex7fo",
     "type": "部落",
     "leaderTitle": "察哈尔可汗",
     "goal": "复元裔大统·抗后金",
@@ -1219,7 +1219,7 @@ window.MING_FACTION_SCENARIO_DATA={
       "对察哈尔警戒派"
     ],
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcb36lj7",
+    "id": "fac_mp9rsc3fjy38l",
     "personality": "务实保族，亲后金但保留草原部盟算盘",
     "aiProfile": {
       "posture": "后金侧翼盟友，收益来自联姻、赏赐和保护。",
@@ -1300,7 +1300,7 @@ window.MING_FACTION_SCENARIO_DATA={
     ],
     "strategy": "对明恭敬求援；对后金虚与委蛇。",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbpgpmo",
+    "id": "fac_mp9rsc3f60u3b",
     "type": "番属",
     "leaderTitle": "国王",
     "goal": "对明事大·对金虚应",
@@ -1523,7 +1523,7 @@ window.MING_FACTION_SCENARIO_DATA={
     ],
     "strategy": "等待明内乱时借势复起。",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbt1v11",
+    "id": "fac_mp9rsc3fuezsa",
     "type": "部落",
     "leaderTitle": "土司",
     "goal": "复播州旧业",
@@ -1717,7 +1717,7 @@ window.MING_FACTION_SCENARIO_DATA={
     ],
     "strategy": "受抚得官，换取合法性；以剿其他海盗为条件扩张。",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbklckf",
+    "id": "fac_mp9rsc3funmyu",
     "type": "商贸势力",
     "leaderTitle": "海贸大头领",
     "goal": "受明招抚为游击·海上王国",
@@ -1884,15 +1884,15 @@ window.MING_FACTION_SCENARIO_DATA={
     "name": "陕北饥民(将起)",
     "leader": "王嘉胤",
     "color": "#7a4e3b",
-    "strength": 6,
-    "militaryStrength": 2200,
-    "economy": 1,
+    "strength": 28,
+    "militaryStrength": 18000,
+    "economy": 6,
     "courtInfluence": 0,
-    "popularInfluence": 35,
+    "popularInfluence": 62,
     "territory": "陕西延安府·榆林·米脂·府谷",
     "capital": "(无·流动)",
     "ideology": "求活·均田免赋（后发展）·反明",
-    "desc": "连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。",
+    "desc": "陕北饥民尚未是成熟政权，却已是巨大的灾荒人口池和逃兵火种。延安、榆林、府谷间缺粮、欠饷、催征、逃亡正在合流，若赈抚不及或强剿失控，一两回合内便可由饥民聚啸转成大股流寇。",
     "traits": [
       "饥民",
       "逃兵",
@@ -1908,28 +1908,30 @@ window.MING_FACTION_SCENARIO_DATA={
       "spy": ""
     },
     "attitude": "敌视",
-    "mainResources": "劫掠所得",
+    "mainResources": "饥民人口池、逃兵军械、边地地形、灾区乡寨暗输",
     "treasury": {
-      "money": 0,
-      "grain": 500,
-      "cloth": 0
+      "money": 20000,
+      "grain": 45000,
+      "cloth": 3000,
+      "note": "劫粮、乡寨暗输和逃兵军械，不是稳定财政"
     },
     "partyRelations": "此时尚无政治组织。内部散乱。",
     "history": "1625-1627 陕北持续大旱 → 饥民聚啸渐起 → 边军欠饷逃卒混入 → 燎原之势将起。",
     "strengths": [
-      "兵员无限补充(饥民)",
-      "机动",
-      "知地利"
+      "灾荒人口池极大",
+      "逃兵带入军械和军事经验",
+      "官府财政难以同时赈抚与征剿",
+      "高原沟壑利于流动作战"
     ],
     "weaknesses": [
-      "无军纪",
-      "无根据地",
-      "首脑不稳",
-      "补给难"
+      "未建稳定政权",
+      "粮饷来源极不稳定",
+      "首领与路线尚未定型",
+      "赈抚分化可以暂时压低风险"
     ],
-    "strategy": "此时仅求食。若民变燎原则走\"流寇\"战略——不据一城，流动求活。",
+    "strategy": "先找粮、裹挟、收逃兵；遇强兵则流动避战，遇空虚州县则破仓取粮。若明廷真赈、免赋、安插，起势会延缓；若继续催征或以小兵剿之，则迅速流寇化。",
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbsqjwq",
+    "id": "fac_mp9rsc3fcjwcm",
     "type": "起义军",
     "leaderTitle": "魁首",
     "goal": "生存→均田免赋",
@@ -1957,17 +1959,17 @@ window.MING_FACTION_SCENARIO_DATA={
       "bio": ""
     },
     "cohesion": {
-      "political": 10,
-      "military": 20,
-      "economic": 5,
-      "cultural": 45,
+      "political": 18,
+      "military": 38,
+      "economic": 8,
+      "cultural": 50,
       "ethnic": 90,
-      "loyalty": 30
+      "loyalty": 42
     },
     "militaryBreakdown": {
       "standingArmy": 0,
-      "militia": 2000,
-      "elite": 200,
+      "militia": 14500,
+      "elite": 3500,
       "fleet": 0
     },
     "economicStructure": {
@@ -2000,16 +2002,29 @@ window.MING_FACTION_SCENARIO_DATA={
       "流民": 100
     },
     "population": {
-      "actual": 900000
+      "actual": 1600000,
+      "registered": 0,
+      "mobile": 420000,
+      "armedPotential": 120000,
+      "starvingHouseholds": 240000
     },
     "techLevel": {
-      "overall": 10,
-      "military": 25,
-      "agriculture": 10
+      "overall": 18,
+      "military": 34,
+      "agriculture": 8
     },
     "warState": {
       "active": [
-        "此时尚为饥民·未成军"
+        "延安、榆林、府谷饥民聚啸扩大",
+        "边兵逃亡与灾民混流"
+      ],
+      "pending": [
+        "府谷白水可能成军",
+        "闯王系与大西系尚未成型"
+      ],
+      "recent": [
+        "1625-1627 陕北持续大旱",
+        "辽饷与三饷压迫民户破产"
       ]
     },
     "victoryConditions": [
@@ -2046,12 +2061,12 @@ window.MING_FACTION_SCENARIO_DATA={
       "开局就组织成纪律严明大军",
       "无饥荒压力仍大规模起义"
     ],
+    "description": "陕北饥民尚未是成熟政权，却已是巨大的灾荒人口池和逃兵火种。",
     "npcDecisionHints": [
       "赈济和免赋能降低爆发",
       "催征、剿杀、欠饷会加速成军",
       "地方官粉饰太平会让风险隐藏累积"
     ],
-    "description": "连年大旱，赋重饷严，逃兵饥民聚啸成伙。今秋尚未成势，一二年内将燎原。",
     "attitudeDetail": {
       "self": "求活之民",
       "enemies": "明官军·缙绅",
@@ -2216,7 +2231,7 @@ window.MING_FACTION_SCENARIO_DATA={
       "总督府(军事派)"
     ],
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcb58joi",
+    "id": "fac_mp9rsc3ilucz2",
     "relations": {
       "明朝廷": 40,
       "荷兰·台海(东印度公司)": -85,
@@ -2474,7 +2489,7 @@ window.MING_FACTION_SCENARIO_DATA={
       "海军扩张派"
     ],
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbxgvot",
+    "id": "fac_mp9rsc3ish4kg",
     "relations": {
       "明朝廷": -30,
       "葡萄牙·澳门": -85,
@@ -2736,7 +2751,7 @@ window.MING_FACTION_SCENARIO_DATA={
       "Audiencia 法理派"
     ],
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcbjvj05",
+    "id": "fac_mp9rsc3itegih",
     "relations": {
       "明朝廷": 10,
       "葡萄牙·澳门": 60,
@@ -3007,7 +3022,7 @@ window.MING_FACTION_SCENARIO_DATA={
       "乌撒乌蒙呼应派"
     ],
     "sid": "sc-tianqi7-1627",
-    "id": "fac_mp3yvbcb2lsid",
+    "id": "fac_mp9rsc3iwppav",
     "relations": {
       "明朝廷": -95,
       "播州土司·杨氏(余裔)": 85,
@@ -59394,7 +59409,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 北直隶",
     "prefLabel": "顺天巡抚",
     "admin": {
-      "id": "div_mp3yvbbor3fzw",
+      "id": "div_mp9rsc2lzxgxq",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 8200000,
@@ -62662,7 +62677,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 南直隶",
     "prefLabel": "应天巡抚",
     "admin": {
-      "id": "div_mp3yvbbohzikt",
+      "id": "div_mp9rsc2lbpxij",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 16500000,
@@ -65733,7 +65748,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 浙江",
     "prefLabel": "浙江巡抚",
     "admin": {
-      "id": "div_mp3yvbbosdju4",
+      "id": "div_mp9rsc2l04i3p",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 9200000,
@@ -69667,7 +69682,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 福建",
     "prefLabel": "福建巡抚",
     "admin": {
-      "id": "div_mp3yvbbp0ky3x",
+      "id": "div_mp9rsc2ly0rr3",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 4800000,
@@ -73569,7 +73584,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 广西",
     "prefLabel": "广西巡抚",
     "admin": {
-      "id": "div_mp3yvbbpevmoc",
+      "id": "div_mp9rsc2mg07v4",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 1800000,
@@ -76499,7 +76514,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 江西",
     "prefLabel": "江西巡抚",
     "admin": {
-      "id": "div_mp3yvbbp4bi0t",
+      "id": "div_mp9rsc2l3tavr",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 8100000,
@@ -81053,7 +81068,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 湖广",
     "prefLabel": "湖广巡抚",
     "admin": {
-      "id": "div_mp3yvbbpk06jz",
+      "id": "div_mp9rsc2lwr3oi",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 8300000,
@@ -83743,7 +83758,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 河南",
     "prefLabel": "河南巡抚",
     "admin": {
-      "id": "div_mp3yvbbpg4464",
+      "id": "div_mp9rsc2m3vtpq",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 6800000,
@@ -86265,7 +86280,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 山西",
     "prefLabel": "山西巡抚",
     "admin": {
-      "id": "div_mp3yvbbpgkntv",
+      "id": "div_mp9rsc2mykatn",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 5200000,
@@ -90220,7 +90235,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 陕西",
     "prefLabel": "陕西巡抚",
     "admin": {
-      "id": "div_mp3yvbbpoo72u",
+      "id": "div_mp9rsc2mmjx69",
       "regionType": "disaster_zone",
       "populationDetail": {
         "mouths": 5800000,
@@ -94887,7 +94902,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 四川",
     "prefLabel": "四川巡抚",
     "admin": {
-      "id": "div_mp3yvbbpqnzc3",
+      "id": "div_mp9rsc2m2jp7z",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 3400000,
@@ -98268,7 +98283,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 贵州",
     "prefLabel": "贵州巡抚",
     "admin": {
-      "id": "div_mp3yvbbpg4f5s",
+      "id": "div_mp9rsc2mlffnx",
       "regionType": "tusi",
       "populationDetail": {
         "mouths": 1150000,
@@ -102761,7 +102776,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 云南",
     "prefLabel": "云南巡抚",
     "admin": {
-      "id": "div_mp3yvbbpyqoqt",
+      "id": "div_mp9rsc2ml2n6w",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 1400000,
@@ -108860,7 +108875,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 乌思藏宣慰司",
     "prefLabel": "灌顶国师",
     "admin": {
-      "id": "div_mp3yvbbrj19ga",
+      "id": "div_mp9rsc2mbhlbf",
       "regionType": "jimi",
       "populationDetail": {
         "mouths": 1800000,
@@ -116673,7 +116688,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 后金 · 后金（沈阳）",
     "prefLabel": "后金汗廷直辖",
     "admin": {
-      "id": "div_mp3yvbbt1811c",
+      "id": "div_mp9rsc2oxuwcj",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 970000,
@@ -124927,7 +124942,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 山东",
     "prefLabel": "山东巡抚",
     "admin": {
-      "id": "div_mp3yvbbpu04s4",
+      "id": "div_mp9rsc2l500u6",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 6200000,
@@ -137426,7 +137441,10 @@ window.MING_MAP_REGIONS=[
         "landsAnnexed": 0,
         "landsReclaimed": 2790,
         "landsSurveyed": 23436,
-        "disasterRecord": []
+        "disasterRecord": [
+          "???????????",
+          "???????????"
+        ]
       },
       "fiscalDetail": {
         "claimedRevenue": 11687000,
@@ -138561,7 +138579,10 @@ window.MING_MAP_REGIONS=[
         "landsAnnexed": 0,
         "landsReclaimed": 263,
         "landsSurveyed": 2205,
-        "disasterRecord": []
+        "disasterRecord": [
+          "??????",
+          "??????????"
+        ]
       },
       "fiscalDetail": {
         "claimedRevenue": 3412500,
@@ -142501,7 +142522,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 后金 · 后金（建州）",
     "prefLabel": "后金汗廷直辖",
     "admin": {
-      "id": "div_mp3yvbbt1811c",
+      "id": "div_mp9rsc2oxuwcj",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 970000,
@@ -143718,7 +143739,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 科尔沁蒙古 · 科尔沁",
     "prefLabel": "科尔沁部帐",
     "admin": {
-      "id": "div_mp3yvbbtr8e87",
+      "id": "div_mp9rsc2pnhaer",
       "regionType": "jimi",
       "populationDetail": {
         "mouths": 280000,
@@ -154754,7 +154775,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 西班牙·马尼拉 · 北吕宋",
     "prefLabel": "菲律宾总督府",
     "admin": {
-      "id": "div_mp3yvbbu3b8ta",
+      "id": "div_mp9rsc2pgd5p0",
       "regionType": "colonial_governorate",
       "populationDetail": {
         "mouths": 499500,
@@ -163358,7 +163379,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 察哈尔 · 察哈尔",
     "prefLabel": "察哈尔大汗本营",
     "admin": {
-      "id": "div_mp3yvbbtectcn",
+      "id": "div_mp9rsc2pq38wr",
       "regionType": "jimi",
       "populationDetail": {
         "mouths": 330000,
@@ -163697,7 +163718,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 葡萄牙·澳门 · 澳门（葡萄牙占）",
     "prefLabel": "澳门议事会与总督辖区",
     "admin": {
-      "id": "div_mp3yvbbu01j0k",
+      "id": "div_mp9rsc2p731jx",
       "regionType": "leased_port",
       "populationDetail": {
         "mouths": 13500,
@@ -165867,7 +165888,10 @@ window.MING_MAP_REGIONS=[
         "landsAnnexed": 0,
         "landsReclaimed": 14850,
         "landsSurveyed": 124740,
-        "disasterRecord": []
+        "disasterRecord": [
+          "????????",
+          "????????????"
+        ]
       },
       "fiscalDetail": {
         "claimedRevenue": 72930000,
@@ -171064,7 +171088,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 广东",
     "prefLabel": "广东巡抚",
     "admin": {
-      "id": "div_mp3yvbbpttcsp",
+      "id": "div_mp9rsc2m6eq76",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 5000000,
@@ -175330,7 +175354,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 辽东",
     "prefLabel": "辽东经略",
     "admin": {
-      "id": "div_mp3yvbbrywuzo",
+      "id": "div_mp9rsc2ml1zla",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 500000,
@@ -176289,7 +176313,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 明朝廷 · 辽东（明）",
     "prefLabel": "辽东经略",
     "admin": {
-      "id": "div_mp3yvbbrywuzo",
+      "id": "div_mp9rsc2ml1zla",
       "regionType": "normal",
       "populationDetail": {
         "mouths": 500000,
@@ -178278,7 +178302,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 朝鲜 · 朝鲜",
     "prefLabel": "朝鲜国王辖境",
     "admin": {
-      "id": "div_mp3yvbbud392m",
+      "id": "div_mp9rsc2pxp70y",
       "regionType": "fanbang",
       "populationDetail": {
         "mouths": 6950000,
@@ -179170,7 +179194,7 @@ window.MING_MAP_REGIONS=[
     "breadcrumb": "天下 · 荷兰·台海(东印度公司) · 台湾",
     "prefLabel": "VOC 大员长官辖区",
     "admin": {
-      "id": "div_mp3yvbbuz6wrv",
+      "id": "div_mp9rsc2pcm2iq",
       "regionType": "company_colony",
       "populationDetail": {
         "mouths": 35500,

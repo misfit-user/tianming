@@ -6644,6 +6644,76 @@
     });
   }
 
+  function formalEdictDraftValue(keys){
+    var drafts = ensureFormalEdictDrafts();
+    for (var i = 0; i < keys.length; i += 1) {
+      var value = String(drafts[keys[i]] || '').trim();
+      if (value) return value;
+    }
+    return '';
+  }
+
+  function getFormalEdictDraftSnapshot(){
+    Array.prototype.forEach.call(document.querySelectorAll('.tm-desk-overlay'), captureDeskOverlayState);
+    return {
+      political: formalEdictDraftValue(['policy','political']),
+      military: formalEdictDraftValue(['military']),
+      diplomatic: formalEdictDraftValue(['diplomatic','diplomacy']),
+      economic: formalEdictDraftValue(['finance','economic','economy']),
+      other: formalEdictDraftValue(['other','private']),
+      xingluPub: String(state.playerAction || '').trim()
+    };
+  }
+
+  function removeFormalEdictHiddenInputs(){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-phase8-edict-bridge="1"]'), function(el){
+      el.remove();
+    });
+  }
+
+  function ensureFormalEdictBridgeInput(id, value){
+    value = String(value || '');
+    var el = document.getElementById(id);
+    if (el && (!el.getAttribute || el.getAttribute('data-phase8-edict-bridge') !== '1')) {
+      if (value && 'value' in el) el.value = value;
+      return el;
+    }
+    if (!el) {
+      if (!value) return null;
+      el = document.createElement('textarea');
+      el.id = id;
+      el.setAttribute('data-phase8-edict-bridge', '1');
+      el.setAttribute('aria-hidden', 'true');
+      el.tabIndex = -1;
+      el.style.cssText = 'position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(el);
+    }
+    if ('value' in el) el.value = value;
+    return el;
+  }
+
+  function syncFormalEdictDraftsToLegacyInputs(){
+    var snap = getFormalEdictDraftSnapshot();
+    [
+      ['edict-pol', snap.political],
+      ['edict-mil', snap.military],
+      ['edict-dip', snap.diplomatic],
+      ['edict-eco', snap.economic],
+      ['edict-oth', snap.other],
+      ['xinglu-pub', snap.xingluPub]
+    ].forEach(function(pair){
+      ensureFormalEdictBridgeInput(pair[0], pair[1]);
+    });
+    return snap;
+  }
+
+  function clearFormalEdictDrafts(){
+    state.edictDraft = [];
+    state.edictDrafts = {};
+    state.playerAction = '';
+    removeFormalEdictHiddenInputs();
+  }
+
   function appendFormalEdictDraft(catId, block, root){
     block = String(block || '').trim();
     if (!block) return { ok:false, live:false };
@@ -7602,6 +7672,7 @@
   }
 
   function openZhaoPreviewPanel(){
+    removeFormalEdictHiddenInputs();
     openDeskOverlay('tm-action-edict-overlay', actionShell('edict', renderFormalEdictPanel()));
     setTimeout(function(){
       if (typeof window._edictLiveForecast === 'function') {
@@ -10199,6 +10270,8 @@
   window.openHongyan = openHongyanPreviewPanel;
   window.openShilu = openShiluPreviewPanel;
   window.openShizheng = openShizhengLegacyFlow;
+  window.syncPhase8FormalEdictDrafts = syncFormalEdictDraftsToLegacyInputs;
+  window.getPhase8FormalEdictDraftSnapshot = getFormalEdictDraftSnapshot;
 
   window.TMPhase8FormalBridge = {
     home: showHome,
@@ -10217,6 +10290,9 @@
     openHongyan: openHongyanPreviewPanel,
     openShilu: openShiluPreviewPanel,
     openShizheng: openShizhengLegacyFlow,
+    syncEdictDraftsToLegacy: syncFormalEdictDraftsToLegacyInputs,
+    getEdictDraftSnapshot: getFormalEdictDraftSnapshot,
+    clearEdictDrafts: clearFormalEdictDrafts,
     closeArmyFlyout: rightCloseArmyFlyout,
     showEdictAdoptMenu: showFormalEdictAdoptMenu,
     dismissEdictSuggestion: dismissFormalEdictSuggestion,

@@ -1,6 +1,6 @@
 {
   "scenarioPath": "C:\\Users\\37814\\Desktop\\tianming\\scenarios\\天启七年·九月（官方）.json",
-  "backupPath": "C:\\Users\\37814\\Desktop\\tianming\\scenarios\\天启七年·九月（官方）.json.pre-historical-supplement-20260513-191855.bak",
+  "backupPath": "C:\\Users\\37814\\Desktop\\tianming\\scenarios\\天启七年·九月（官方）.json.pre-historical-supplement-20260517-204716.bak",
   "supplementPath": "C:\\Users\\37814\\Desktop\\tianming\\web\\data\\scenario-supplements\\tianqi7-ming2-historical-supplement.json",
   "addedFactions": [
     "土默特蒙古",
@@ -15,7 +15,7 @@
     "喀尔喀蒙古"
   ],
   "addedAdminDivisions": [
-    "漠南诸部",
+    "朵甘思宣慰司",
     "鞑靼土默特部",
     "叶尔羌",
     "吐鲁番",
@@ -30,8 +30,8 @@
     "九州",
     "四国",
     "交趾",
-    "喀尔喀蒙古",
-    "朵甘思宣慰司"
+    "漠南诸部",
+    "喀尔喀蒙古"
   ],
   "movedAdminDivisions": [],
   "addedCharacters": [

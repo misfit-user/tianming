@@ -502,7 +502,7 @@
           var data15 = _sc15Call.data;
           _checkTruncated(data15, '人物关系');
           var c15 = _sc15Call.raw || '';
-          var _p15Parse = await _parseOrRepairJsonResult(c15, data15, '人物关系', { url: url, key: P.ai.key, body: _sc15Body, expectedKeys: ['mood_shifts', 'relationship_changes', 'hidden_moves', 'faction_undercurrents'] });
+          var _p15Parse = await _parseOrRepairJsonResult(c15, data15, '人物关系', { url: url, key: P.ai.key, body: _sc15Body, expectedKeys: ['mood_shifts', 'relationship_changes', 'hidden_moves', 'faction_undercurrents'], priority: 'normal' });
           if (_p15Parse && _p15Parse.raw) c15 = _p15Parse.raw;
           var p15 = _p15Parse ? _p15Parse.parsed : null;
           if (p15) {
@@ -744,7 +744,7 @@
           var dataMW = _mwCall.data;
           _checkTruncated(dataMW, 'NPC记忆回写');
           var cMW = _mwCall.raw || '';
-          var _pMWParse = await _parseOrRepairJsonResult(cMW, dataMW, 'NPC记忆回写', { url: url, key: P.ai.key, body: _mwBody, expectedKeys: ['memory_writes', 'arc_updates', 'relationship_notes'] });
+          var _pMWParse = await _parseOrRepairJsonResult(cMW, dataMW, 'NPC记忆回写', { url: url, key: P.ai.key, body: _mwBody, expectedKeys: ['memory_writes', 'arc_updates', 'relationship_notes'], priority: 'low' });
           if (_pMWParse && _pMWParse.raw) cMW = _pMWParse.raw;
           var pMW = _pMWParse ? _pMWParse.parsed : null;
           if (pMW) {
@@ -867,7 +867,7 @@
         var _sc16Call = await _callFollowupAI(_sc16Body, { id: 'sc16', label: '势力行动', priority: 'normal' });
         {
           var j16 = _sc16Call.data; _checkTruncated(j16, '势力行动'); var c16 = _sc16Call.raw || '';
-          var _p16Parse = await _parseOrRepairJsonResult(c16, j16, '势力行动', { url: url, key: P.ai.key, body: _sc16Body, expectedKeys: ['faction_priorities', 'faction_actions', 'faction_directives', 'diplomatic_shifts', 'power_balance_shift'] });
+          var _p16Parse = await _parseOrRepairJsonResult(c16, j16, '势力行动', { url: url, key: P.ai.key, body: _sc16Body, expectedKeys: ['faction_priorities', 'faction_actions', 'faction_directives', 'diplomatic_shifts', 'power_balance_shift'], priority: 'normal' });
           if (_p16Parse && _p16Parse.raw) c16 = _p16Parse.raw;
           var p16 = _p16Parse ? _p16Parse.parsed : null;
           if (p16) {
@@ -907,7 +907,7 @@
         var _sc17Call = await _callFollowupAI(_sc17Body, { id: 'sc17', label: '资源变动', priority: 'normal' });
         {
           var j17 = _sc17Call.data; _checkTruncated(j17, '资源变动'); var c17 = _sc17Call.raw || '';
-          var _p17Parse = await _parseOrRepairJsonResult(c17, j17, '资源变动', { url: url, key: P.ai.key, body: _sc17Body, expectedKeys: ['fiscal_analysis', 'supplementary_resource_changes', 'economic_advice'] });
+          var _p17Parse = await _parseOrRepairJsonResult(c17, j17, '资源变动', { url: url, key: P.ai.key, body: _sc17Body, expectedKeys: ['fiscal_analysis', 'supplementary_resource_changes', 'economic_advice'], priority: 'normal' });
           if (_p17Parse && _p17Parse.raw) c17 = _p17Parse.raw;
           var p17 = _p17Parse ? _p17Parse.parsed : null;
           if (p17) {
@@ -972,7 +972,7 @@
         var _sc18Call = await _callFollowupAI(_sc18Body, { id: 'sc18', label: '军事变动', priority: 'normal' });
         {
           var j18 = _sc18Call.data; _checkTruncated(j18, '军事变动'); var c18 = _sc18Call.raw || '';
-          var _p18Parse = await _parseOrRepairJsonResult(c18, j18, '军事变动', { url: url, key: P.ai.key, body: _sc18Body, expectedKeys: ['military_situation', 'supplementary_army_changes', 'faction_military_actions', 'battleResult'] });
+          var _p18Parse = await _parseOrRepairJsonResult(c18, j18, '军事变动', { url: url, key: P.ai.key, body: _sc18Body, expectedKeys: ['military_situation', 'supplementary_army_changes', 'faction_military_actions', 'battleResult'], priority: 'normal' });
           if (_p18Parse && _p18Parse.raw) c18 = _p18Parse.raw;
           var p18 = _p18Parse ? _p18Parse.parsed : null;
           if (p18) {
@@ -1103,7 +1103,7 @@
         {
           var dataAu = _auditCall.data;
           var cAu = _auditCall.raw || '';
-          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'] });
+          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal' });
           if (_pAuParse && _pAuParse.raw) cAu = _pAuParse.raw;
           var pAu = _pAuParse ? _pAuParse.parsed : null;
           if (pAu) {
@@ -1288,7 +1288,7 @@
           }
           var dataE = _enrichCall.data;
           var cE = _enrichCall.raw || '';
-          var _pEParse = await _parseOrRepairJsonResult(cE, dataE, '角色势力细节补全', { url: url, key: P.ai.key, body: _enrichBody, expectedKeys: ['characters', 'factions'] });
+          var _pEParse = await _parseOrRepairJsonResult(cE, dataE, '角色势力细节补全', { url: url, key: P.ai.key, body: _enrichBody, expectedKeys: ['characters', 'factions'], priority: 'low' });
           if (_pEParse && _pEParse.raw) cE = _pEParse.raw;
           var pE = _pEParse ? _pEParse.parsed : null;
           if (!pE) { _dbg('[Enrich] JSON 解析失败'); return; }
@@ -1530,7 +1530,7 @@
       var data2 = _sc2Call.data;
       _checkTruncated(data2, '后人戏说');
       var c2 = _sc2Call.raw || "";
-      var _p2Parse = await _parseOrRepairJsonResult(c2, data2, '后人戏说', { url: url, key: P.ai.key, body: _sc2Body, expectedKeys: ['houren_xishuo', 'hourenXishuo', 'houren', 'zhengwen', 'new_activities'] });
+      var _p2Parse = await _parseOrRepairJsonResult(c2, data2, '后人戏说', { url: url, key: P.ai.key, body: _sc2Body, expectedKeys: ['houren_xishuo', 'hourenXishuo', 'houren', 'zhengwen', 'new_activities'], priority: 'normal' });
       if (_p2Parse && _p2Parse.raw) c2 = _p2Parse.raw;
       p2 = _p2Parse ? _p2Parse.parsed : null;
       GM._turnAiResults.subcall2_raw = c2;
@@ -1660,7 +1660,7 @@
           var data25 = _sc25Call.data;
           _checkTruncated(data25, '伏笔记忆');
           var c25 = _sc25Call.raw || '';
-          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { url: _u25, key: _c25.key, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'] });
+          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { url: _u25, key: _c25.key, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'], priority: 'high' });
           if (_p25Parse && _p25Parse.raw) c25 = _p25Parse.raw;
           var p25 = _p25Parse ? _p25Parse.parsed : null;
           if (p25) {
@@ -1884,7 +1884,7 @@
         var _sc27Call = await _callFollowupAI(_sc27Body, { id: 'sc27', label: '人名校验', priority: 'normal' });
         {
           var j27 = _sc27Call.data; _checkTruncated(j27, '人名校验'); var c27 = _sc27Call.raw || '';
-          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '人名校验', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'] });
+          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '人名校验', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'], priority: 'normal' });
           if (_p27Parse && _p27Parse.raw) c27 = _p27Parse.raw;
           var p27 = _p27Parse ? _p27Parse.parsed : null;
           if (p27) {
@@ -2057,7 +2057,7 @@
           var data07 = _sc07Call.data;
           _checkTruncated(data07, 'NPC \u8BA4\u77E5');
           var c07 = _sc07Call.raw || '';
-          var _p07Parse = await _parseOrRepairJsonResult(c07, data07, 'NPC \u8BA4\u77E5', { url: url, key: P.ai.key, body: _sc07Body, expectedKeys: ['npc_cognition'] });
+          var _p07Parse = await _parseOrRepairJsonResult(c07, data07, 'NPC \u8BA4\u77E5', { url: url, key: P.ai.key, body: _sc07Body, expectedKeys: ['npc_cognition'], priority: 'normal' });
           if (_p07Parse && _p07Parse.raw) c07 = _p07Parse.raw;
           var p07 = _p07Parse ? _p07Parse.parsed : null;
           GM._turnAiResults.subcall07_raw = c07;
@@ -2166,7 +2166,7 @@
         var _sc28Call = await _callFollowupAI(_sc28Body, { id: 'sc28', label: '世界快照', priority: 'low' });
         {
           var j28 = _sc28Call.data; _checkTruncated(j28, '世界快照'); var c28 = _sc28Call.raw || '';
-          var _p28Parse = await _parseOrRepairJsonResult(c28, j28, '世界快照', { url: url, key: P.ai.key, body: _sc28Body, expectedKeys: ['world_snapshot', 'next_turn_seeds', 'tension_level'] });
+          var _p28Parse = await _parseOrRepairJsonResult(c28, j28, '世界快照', { url: url, key: P.ai.key, body: _sc28Body, expectedKeys: ['world_snapshot', 'next_turn_seeds', 'tension_level'], priority: 'low' });
           if (_p28Parse && _p28Parse.raw) c28 = _p28Parse.raw;
           var p28 = _p28Parse ? _p28Parse.parsed : null;
           if (p28) {
@@ -2337,7 +2337,7 @@
           var dataC = _consCall.data;
           _checkTruncated(dataC, '记忆固化');
           var cC = _consCall.raw || '';
-          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { url: _uCons, key: _cCons.key, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'] });
+          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { url: _uCons, key: _cCons.key, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'], priority: 'low' });
           if (_pCParse && _pCParse.raw) cC = _pCParse.raw;
           var pC = _pCParse ? _pCParse.parsed : null;
           if (pC && (pC.consolidated || pC.key_threads || pC.next_turn_focus)) {
@@ -2433,7 +2433,7 @@
             var _compJ1 = _compCall1.data;
             _checkTruncated(_compJ1, '压缩AI记忆');
             var _compC1 = _compJ1.choices&&_compJ1.choices[0]?_compJ1.choices[0].message.content:'';
-            var _compP1Parsed = await _parseOrRepairJsonResult(_compC1, _compJ1, '压缩AI记忆', { url: url, key: P.ai.key, body: _comp1Body, expectedKeys: ['compressed_memory', 'key_threads'] });
+            var _compP1Parsed = await _parseOrRepairJsonResult(_compC1, _compJ1, '压缩AI记忆', { url: url, key: P.ai.key, body: _comp1Body, expectedKeys: ['compressed_memory', 'key_threads'], priority: 'low' });
             if (_compP1Parsed && _compP1Parsed.raw) _compC1 = _compP1Parsed.raw;
             var _compP1r = _compP1Parsed ? _compP1Parsed.parsed : null;
             if (_compP1r && _compP1r.compressed_memory) {
@@ -2470,7 +2470,7 @@
             var _compJ2 = _compCall2.data;
             _checkTruncated(_compJ2, '整理伏笔');
             var _compC2 = _compJ2.choices&&_compJ2.choices[0]?_compJ2.choices[0].message.content:'';
-            var _compP2Parsed = await _parseOrRepairJsonResult(_compC2, _compJ2, '整理伏笔', { url: url, key: P.ai.key, body: _comp2Body, expectedKeys: ['active_foreshadows', 'resolved', 'still_pending_count'] });
+            var _compP2Parsed = await _parseOrRepairJsonResult(_compC2, _compJ2, '整理伏笔', { url: url, key: P.ai.key, body: _comp2Body, expectedKeys: ['active_foreshadows', 'resolved', 'still_pending_count'], priority: 'low' });
             if (_compP2Parsed && _compP2Parsed.raw) _compC2 = _compP2Parsed.raw;
             var _compP2r = _compP2Parsed ? _compP2Parsed.parsed : null;
             if (_compP2r && _compP2r.active_foreshadows) {
@@ -2512,7 +2512,7 @@
             var _compJ3 = _compCall3.data;
             _checkTruncated(_compJ3, '压缩对话');
             var _compC3 = _compJ3.choices&&_compJ3.choices[0]?_compJ3.choices[0].message.content:'';
-            var _compP3Parsed = await _parseOrRepairJsonResult(_compC3, _compJ3, '压缩对话', { url: url, key: P.ai.key, body: _comp3Body, expectedKeys: ['conversation_summary'] });
+            var _compP3Parsed = await _parseOrRepairJsonResult(_compC3, _compJ3, '压缩对话', { url: url, key: P.ai.key, body: _comp3Body, expectedKeys: ['conversation_summary'], priority: 'low' });
             if (_compP3Parsed && _compP3Parsed.raw) _compC3 = _compP3Parsed.raw;
             var _compP3r = _compP3Parsed ? _compP3Parsed.parsed : null;
             if (_compP3r && _compP3r.conversation_summary) {
@@ -2587,11 +2587,15 @@
       //   ★ 核心原则：此检查只"标注"AI 自生的时代错乱（如唐代 shizhengji 中出现"火枪"）
       //   ★ 绝对不触碰玩家诏令引发的任何字面执行（玩家诏"赏银万两"在唐代·按原文记录·不修正）
       //   ★ 只能追加"史官按"注释·不得重写 shizhengji/zhengwen 原文
-      // Start queued memory/snapshot jobs after foreground memory compression is done,
-      // but before history checks/rendering, so post-turn AI overlaps later UI work without racing compression.
-      try { _flushQueuedPostTurnSubcalls(); } catch(_qptEarlyE) { _dbg('[PostTurn] early queued subcall launch failed:', _qptEarlyE); }
+      // Start queued memory/snapshot jobs after foreground memory compression is done.
+      // In historical modes, history_check is still on the player's wait path, so
+      // it must not be queued behind background sc25/sc28/sc_consolidate work.
+      var _needsForegroundHistoryCheck = (P.conf.gameMode === 'light_hist' || P.conf.gameMode === 'strict_hist');
+      if (!_needsForegroundHistoryCheck) {
+        try { _flushQueuedPostTurnSubcalls(); } catch(_qptEarlyE) { _dbg('[PostTurn] early queued subcall launch failed:', _qptEarlyE); }
+      }
 
-      if(P.conf.gameMode === 'light_hist' || P.conf.gameMode === 'strict_hist') {
+      if(_needsForegroundHistoryCheck) {
         showLoading("历史检查",85);
         try {
           var _edictText = '';
@@ -2635,13 +2639,13 @@
             max_tokens:_tok(1500)
           };
           if (_modelFamily === 'openai') _histBody.response_format = { type: 'json_object' };
-          var _histCall = await _callFollowupAI(_histBody, { id: 'history_check', label: '历史检查', priority: 'low' });
+          var _histCall = await _callFollowupAI(_histBody, { id: 'history_check', label: '历史检查', priority: 'critical' });
           var histData = _histCall.data;
           _checkTruncated(histData, '历史检查');
           var histContent = _histCall.raw || "";
 
           try {
-            var _histParsed = await _parseOrRepairJsonResult(histContent, histData, '历史检查', { url: url, key: P.ai.key, body: _histBody, expectedKeys: ['has_ai_hallucination', 'ai_errors', 'corrected_shizhengji', 'corrected_zhengwen'] });
+            var _histParsed = await _parseOrRepairJsonResult(histContent, histData, '历史检查', { url: url, key: P.ai.key, body: _histBody, expectedKeys: ['has_ai_hallucination', 'ai_errors', 'corrected_shizhengji', 'corrected_zhengwen'], priority: 'critical' });
             if (_histParsed && _histParsed.raw) histContent = _histParsed.raw;
             var histJson = _histParsed ? _histParsed.parsed : null;
             if(histJson && histJson.has_ai_hallucination) {

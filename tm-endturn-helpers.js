@@ -695,7 +695,7 @@ function _showEndgameScreen(type, failGoal) {
       '\u3010\u6B66\u529F\u3011\u519B\u4E8B\u5916\u4EA4\u65B9\u9762\u7684\u8BC4\u4EF7(50\u5B57)\n' +
       '\u3010\u603B\u8BC4\u3011\u7EFC\u5408\u8BC4\u4EF7\u548C\u5386\u53F2\u5730\u4F4D(80\u5B57)\n' +
       '\u76F4\u63A5\u8FD4\u56DE\u4E09\u6BB5\u6587\u5B57\uFF0C\u4E0D\u8981JSON\u3002';
-    callAI(prompt, 600).then(function(r) {
+    callAI(prompt, 600, null, 'primary', { priority: 'background' }).then(function(r) {
       var el = document.getElementById('_taishigong');
       if (el) el.innerHTML = '\u592A\u53F2\u516C\u66F0\uFF1A<br>' + escHtml(r).replace(/\u3010/g, '<br><b style="color:' + accentColor + ';">\u3010').replace(/\u3011/g, '\u3011</b>');
     }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u592A\u53F2\u516C] \u751F\u6210\u5931\u8D25:') : console.warn('[\u592A\u53F2\u516C] \u751F\u6210\u5931\u8D25:', e); });

@@ -342,6 +342,10 @@ function _reactToEdicts(actions) {
 
 /** Step 1: 收集玩家输入 */
 function _endTurn_collectInput() {
+  try {
+    if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge.syncEdictDraftsToLegacy === 'function') window.TMPhase8FormalBridge.syncEdictDraftsToLegacy();
+    else if (typeof window.syncPhase8FormalEdictDrafts === 'function') window.syncPhase8FormalEdictDrafts();
+  } catch(_) {}
   var edicts={political:(_$("edict-pol")?_$("edict-pol").value:"").trim(),military:(_$("edict-mil")?_$("edict-mil").value:"").trim(),diplomatic:(_$("edict-dip")?_$("edict-dip").value:"").trim(),economic:(_$("edict-eco")?_$("edict-eco").value:"").trim(),other:(_$("edict-oth")?_$("edict-oth").value:"").trim()};
   // 记录玩家决策
   if (edicts.political) recordPlayerDecision('edict', '政令:' + edicts.political.substring(0, 80));

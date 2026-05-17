@@ -20,9 +20,15 @@ const systemsSrc = read('tm-endturn-systems.js');
 const stepsSrc = read('tm-endturn-pipeline-steps.js');
 const postJobsSrc = read('tm-post-turn-jobs.js');
 const followupSrc = read('tm-endturn-followup.js');
+const coreSrc = read('tm-endturn-core.js');
 const infraSrc = read('tm-ai-infra.js');
 const applySrc = read('tm-endturn-apply.js');
+const aiSubcallSrc = read('tm-endturn-ai.js');
 const factionDecisionSrc = read('tm-faction-npc-llm-decision.js');
+const postTurnSrc = read('tm-post-turn-jobs.js');
+const chronicleSrc = read('tm-chronicle-system.js');
+const factionEnrichSrc = read('tm-faction-npc-llm-enrich.js');
+const kejuRuntimeSrc = read('tm-keju-runtime.js');
 
 assert(fs.existsSync(timingPath), 'endturn timing ledger module exists');
 assert(indexSrc.indexOf('tm-endturn-timing-ledger.js') >= 0, 'timing ledger is loaded by index.html');
@@ -48,6 +54,9 @@ assert(/_branchCSc2ReadyP/.test(followupSrc), 'followup starts SC2 branch from t
 assert(/_branchCSc27ReadyP/.test(followupSrc), 'followup waits for specialty/audit before SC27');
 assert(!/Promise\.all\s*\(\s*\[\s*_branchASettledP\s*,\s*_branchBSettledP\s*\]\s*\)\.then\s*\([^)]*?_runBranchC/s.test(followupSrc), 'SC2 no longer waits for both A and B branches');
 assert(/_buildLateSpecialtySummary/.test(followupSrc), 'SC27 can consume late specialty summaries');
+assert(/var _needsForegroundHistoryCheck =/.test(followupSrc), 'historical foreground check controls post-turn launch timing');
+assert(/if \(!_needsForegroundHistoryCheck\)[\s\S]*_flushQueuedPostTurnSubcalls/.test(followupSrc), 'post-turn jobs are not flushed before foreground history check');
+assert(/id: 'history_check'[\s\S]*priority: 'critical'/.test(followupSrc), 'foreground history check is queued as critical work');
 
 assert(/adaptiveMaxConcurrent/.test(infraSrc), 'AI queue supports adaptive max concurrency setting');
 assert(/_aiQueueHealth/.test(infraSrc), 'AI queue tracks health for adaptive concurrency');
@@ -55,6 +64,8 @@ assert(/recordResult/.test(infraSrc), 'AI queue records success/failure outcomes
 
 assert(/_aiQueuePickNext/.test(infraSrc), 'AI queue reserves foreground dispatch capacity');
 assert(/backgroundMaxConcurrent/.test(infraSrc), 'AI queue caps background/low-priority lanes');
+assert(/callAI\(currentPrompt,\s*maxTok,\s*signal,\s*options\.tier,\s*\{\s*priority:\s*options\.priority/.test(infraSrc), 'callAISmart forwards explicit priority');
+assert(/priority:\s*opts\.priority \|\| 'normal'[\s\S]*repairPriority:\s*opts\.repairPriority/.test(aiSubcallSrc), 'JSON repair inherits original call priority');
 assert(!/await\s+ctx\.subcalls\.preThreeSystemsP/.test(stepsSrc), 'three-systems prefetch no longer blocks foreground AI');
 assert(!/await\s+ctx\.subcalls\.preLongTermP/.test(stepsSrc), 'long-term digest prefetch no longer blocks foreground AI');
 assert(/_POST_TURN_NEXT_REQUIRED_IDS/.test(postJobsSrc), 'post-turn jobs distinguish next-turn-required jobs');
@@ -70,8 +81,22 @@ assert(/_queuePostTurnSubcall\('compress_conversation'/.test(followupSrc), 'conv
 assert(!/await\s+fetch\(opts\.url/.test(inferSrc + '\n' + read('tm-endturn-ai.js')), 'JSON repair uses controlled AI queue instead of raw fetch');
 assert(/function\s+_callAIMessagesStreamDirect/.test(infraSrc) && /_aiQueue\.enqueue\(function\(\)\s*\{\s*return _callAIMessagesStreamDirect/.test(infraSrc), 'streaming AI calls are routed through the shared AI queue');
 assert(/priority:\s*opts\.priority/.test(infraSrc), 'generic AI helpers forward explicit priority into the queue');
-assert(/callAIMessagesStream\(_sc1Body\.messages[\s\S]*priority:\s*'critical'/.test(read('tm-endturn-ai.js')), 'SC1 streaming request is queued as critical foreground work');
+assert(/callAIMessagesStream\(_sc1Body\.messages[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 streaming request is queued as critical foreground work');
+assert(/callAIMessages\(_callABody\.messages[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 Call A compression is queued as critical foreground work');
+assert(/typeof _callARaw === 'string'/.test(aiSubcallSrc), 'SC1 Call A accepts callAIMessages string results');
+assert(/结构化数据'[\s\S]{0,260}priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 repair fallback remains critical priority');
+assert(/历史检查'[\s\S]{0,260}priority:\s*'critical'/.test(followupSrc), 'history-check JSON repair remains critical priority');
+assert(/伏笔记忆'[\s\S]{0,260}priority:\s*'high'/.test(followupSrc), 'sc25 JSON repair keeps high priority');
+assert(/世界快照'[\s\S]{0,260}priority:\s*'low'/.test(followupSrc), 'sc28 JSON repair keeps low priority');
 assert(/callAIWithTools\(_reconcilePrompt[\s\S]*priority:\s*'high'/.test(applySrc), 'foreground reconciliation tool call is queued as high priority');
 assert(/global\.callAI\(promptText,\s*maxTokens,\s*null,\s*'secondary',\s*\{\s*priority:\s*'background'/.test(factionDecisionSrc), 'background faction NPC LLM uses background queue priority');
+assert(/callAI\(_compressPrompt,\s*500,\s*null,\s*'primary',\s*\{\s*priority:\s*'background'/.test(coreSrc), 'tail AI memory summary uses background queue priority');
+assert(/callAISmart\(checkPrompt,\s*1500,[\s\S]*priority:\s*'background'/.test(coreSrc), 'post-turn historical deviation check uses background priority');
+assert(!/fetch\(_mUrl/.test(coreSrc), 'monthly chronicle no longer bypasses the shared AI queue');
+assert(/callAIMessages\(\[[\s\S]*priority:\s*'background'/.test(coreSrc), 'monthly chronicle uses background queue priority');
+assert((postTurnSrc.match(/priority:\s*'background'/g) || []).length >= 4, 'post-turn optional memory jobs use background queue priority');
+assert(/callAI\(prompt,\s*1500,\s*null,\s*'primary',\s*\{\s*priority:\s*'background'/.test(chronicleSrc), 'chronicle year generation uses background queue priority');
+assert(/global\.callAI\(combined,\s*200,\s*null,\s*'secondary',\s*\{\s*priority:\s*'background'/.test(factionEnrichSrc), 'NPC faction enrichment uses background queue priority');
+assert(/callAISmart\(prompt,\s*300,\s*\{maxRetries:\s*1,\s*priority:\s*'high'\}/.test(kejuRuntimeSrc), 'foreground keju trigger check uses high priority');
 
 console.log('[smoke-endturn-performance-optimizations] pass assertions=' + passed.value);

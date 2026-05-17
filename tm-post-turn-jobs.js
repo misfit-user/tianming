@@ -26,10 +26,7 @@
 // ════════════════════════════════════════════════════════════════════════
 
 var _POST_TURN_NEXT_REQUIRED_IDS = {
-  sc25: true,
-  compress_ai_memory: true,
-  compress_foreshadows: true,
-  compress_conversation: true
+  sc25: true
 };
 
 var _POST_TURN_CRITICAL_IDS = _POST_TURN_NEXT_REQUIRED_IDS;

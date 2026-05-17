@@ -20,12 +20,18 @@ function runFile(ctx, file) {
 
 async function main() {
   const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const pipelineSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
   const decisionPos = index.indexOf('tm-faction-npc-llm-decision.js');
   const driverPos = index.indexOf('tm-faction-npc-in-turn-driver.js');
+  const dispatcherPos = index.indexOf('tm-faction-npc-dispatcher.js');
   const indexPos = index.indexOf('tm-faction-index.js');
   assert(decisionPos >= 0, 'index missing tm-faction-npc-llm-decision.js');
   assert(driverPos > decisionPos, 'in-turn driver must load after LLM decision');
+  assert(dispatcherPos > driverPos, 'dispatcher must load after in-turn driver');
   assert(indexPos < 0 || driverPos < indexPos, 'in-turn driver should load before faction index/UI block');
+  assert(indexPos < 0 || dispatcherPos < indexPos, 'dispatcher should load before faction index/UI block');
+  assert(pipelineSrc.indexOf('FactionNpcDispatchQueue.scheduleTurnRuns') >= 0,
+    'render-finalize should schedule faction LLM through unified dispatch queue');
 
   const timers = [];
   const cleared = [];
@@ -124,6 +130,16 @@ async function main() {
   assert(driver._pickOneFac(7).name === 'NpcOnly', 'pickOneFac must skip GM.playerFaction even without fac.isPlayer');
   ctx.GM = normalGM;
   ctx.P.playerInfo.factionName = normalPlayerFactionName;
+  ctx.TM.FactionActionEngine = {
+    scoreFactionCandidate(f) {
+      if (f === ctx.GM.facs[2]) return { score: 120, reasons: ['sc16-directive'] };
+      return { score: 10, reasons: ['strength-fallback'] };
+    }
+  };
+  const forcedPicked = driver._pickOneFac(7);
+  assert(forcedPicked === ctx.GM.facs[2], 'pickOneFac should prefer forced SC16/directive pool before ordinary weighted pool');
+  assert(ctx.GM._npcFactionLlmPickLog && ctx.GM._npcFactionLlmPickLog[0].pool === 'forced', 'pickOneFac should record chosen candidate pool');
+  delete ctx.TM.FactionActionEngine;
 
   const scheduled = driver.scheduleInTurnRuns();
   assert(scheduled.scheduled === 8, 'default should move eight precision API runs to after-endturn background');
@@ -147,6 +163,50 @@ async function main() {
   assert(ctx.P.conf.npcAiPrecision === false, 'turning precision off should lower the master switch');
   assert(!ctx.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'turning precision off should stop NPC LLM');
   assert(!ctx.TM.FactionNpcSettings.isEagerMode(), 'turning precision off should stop endturn eager NPC LLM batch');
+
+  timers.length = 0;
+  cleared.length = 0;
+  ctx.P.conf.npcAiPrecision = true;
+  ctx.P.conf.npcAiPrecisionMode = 'eager';
+  ctx.P.conf.npcInTurnFirstDelayMs = 10;
+  ctx.P.conf.npcInTurnRepeatDelayMs = 20;
+  ctx.P.conf.npcInTurnMaxPerTurn = 8;
+  ctx.P.conf.npcAiPrecisionMaxTokens = 3200;
+  ctx.GM = normalGM;
+  let eagerResolve = null;
+  ctx.TM.FactionNpcLlmDecision = {
+    async decideAll() { return new Promise(resolve => { eagerResolve = resolve; }); },
+    async decideFor(name) { return { applied: true, fac: name, rationale: name + ' queue move' }; },
+    countRunsThisTurn() { return 0; }
+  };
+  runFile(ctx, 'tm-faction-npc-dispatcher.js');
+  assert(ctx.TM.FactionNpcDispatchQueue && typeof ctx.TM.FactionNpcDispatchQueue.scheduleTurnRuns === 'function',
+    'dispatcher should expose unified scheduleTurnRuns');
+  const queued = ctx.TM.FactionNpcDispatchQueue.scheduleTurnRuns({ turn: 7, eagerDelayMs: 300 });
+  assert(queued.scheduled === 9 && queued.eagerScheduled === 1 && queued.inTurnScheduled === 8,
+    'unified dispatcher should schedule one eager batch plus eight in-turn faction LLM jobs');
+  assert(timers.length === 9 && timers[0].delay === 300 && timers[1].delay === 10 && timers[2].delay === 20,
+    'dispatcher should preserve eager and in-turn timing cadence');
+  assert(ctx.GM._npcFactionLlmDispatchLedger && ctx.GM._npcFactionLlmDispatchLedger.jobs.length === 9,
+    'dispatcher should record every scheduled faction LLM job in one ledger');
+  assert(ctx.GM._npcFactionAiTurnLedger && ctx.GM._npcFactionAiTurnLedger.dispatch === ctx.GM._npcFactionLlmDispatchLedger,
+    'dispatcher should attach dispatch ledger to unified faction AI turn ledger');
+  timers[0].fn();
+  assert(ctx.GM._npcFactionLlmDispatchLedger.stats.running === 1,
+    'dispatcher stats should count a job while it is running');
+  eagerResolve({ applied: 0, attempted: 2, results: [{ fac: 'A', result: { skipped: true, reason: 'no valid action' } }] });
+  await Promise.resolve();
+  await Promise.resolve();
+  await new Promise(resolve => setImmediate(resolve));
+  assert(ctx.GM._npcFactionLlmDispatchLedger.jobs[0].status === 'completed_no_action',
+    'dispatcher should distinguish completed jobs with zero applied actions from applied jobs');
+  assert(ctx.GM._npcFactionLlmDispatchLedger.stats.running === 0 && ctx.GM._npcFactionLlmDispatchLedger.stats.noAction === 1,
+    'dispatcher stats should decrement running and count no-action completions');
+  const delegated = driver.scheduleInTurnRuns({ turn: 7, maxRuns: 1 });
+  assert(delegated && delegated.dispatcher === true,
+    'old in-turn driver scheduler should delegate to unified dispatcher when available');
+  assert(timers[0].cleared !== true,
+    'rescheduling in-turn jobs through dispatcher must not cancel the pending eager batch');
 
   console.log('[smoke-faction-npc-in-turn-driver] all assertions pass');
 }

@@ -21,7 +21,11 @@
     npcAiPrecision: true,              // 主开关
     npcAiPrecisionMaxPerTurn: 2,       // 限流·过回合时最多 LLM call 次数；重活交给回合后后台队列
     npcAiPrecisionPriority: 'overall', // 'overall' | 'random' — 优先 enrich 哪些 fac
-    npcAiPrecisionMode: 'eager'        // master switch ON means endturn batch + in-turn extra LLM can both run
+    npcAiPrecisionMode: 'eager',       // master switch ON means endturn batch + in-turn extra LLM can both run
+    npcAiPrecisionConcurrency: 2,
+    npcAiPrecisionRetryAttempts: 2,
+    npcAiPrecisionTimeoutMs: 30000,
+    npcAiPrecisionMaxTokens: 3000
   };
 
   function _migrateCadence(conf) {
@@ -44,7 +48,11 @@
       npcAiPrecision: typeof conf.npcAiPrecision === 'boolean' ? conf.npcAiPrecision : DEFAULTS.npcAiPrecision,
       npcAiPrecisionMaxPerTurn: typeof conf.npcAiPrecisionMaxPerTurn === 'number' ? conf.npcAiPrecisionMaxPerTurn : DEFAULTS.npcAiPrecisionMaxPerTurn,
       npcAiPrecisionPriority: conf.npcAiPrecisionPriority || DEFAULTS.npcAiPrecisionPriority,
-      npcAiPrecisionMode: conf.npcAiPrecisionMode || DEFAULTS.npcAiPrecisionMode
+      npcAiPrecisionMode: conf.npcAiPrecisionMode || DEFAULTS.npcAiPrecisionMode,
+      npcAiPrecisionConcurrency: typeof conf.npcAiPrecisionConcurrency === 'number' ? conf.npcAiPrecisionConcurrency : DEFAULTS.npcAiPrecisionConcurrency,
+      npcAiPrecisionRetryAttempts: typeof conf.npcAiPrecisionRetryAttempts === 'number' ? conf.npcAiPrecisionRetryAttempts : DEFAULTS.npcAiPrecisionRetryAttempts,
+      npcAiPrecisionTimeoutMs: typeof conf.npcAiPrecisionTimeoutMs === 'number' ? conf.npcAiPrecisionTimeoutMs : DEFAULTS.npcAiPrecisionTimeoutMs,
+      npcAiPrecisionMaxTokens: typeof conf.npcAiPrecisionMaxTokens === 'number' ? conf.npcAiPrecisionMaxTokens : DEFAULTS.npcAiPrecisionMaxTokens
     };
   }
 
@@ -63,6 +71,10 @@
 
   function maxPerTurn() {
     return _getConf().npcAiPrecisionMaxPerTurn;
+  }
+
+  function concurrency() {
+    return Math.max(1, Math.min(4, _getConf().npcAiPrecisionConcurrency));
   }
 
   function setEnabled(on) {
@@ -87,6 +99,10 @@
       eagerMode: isEagerMode(),
       hasKey: hasKey,
       maxPerTurn: c.npcAiPrecisionMaxPerTurn,
+      concurrency: c.npcAiPrecisionConcurrency,
+      retryAttempts: c.npcAiPrecisionRetryAttempts,
+      timeoutMs: c.npcAiPrecisionTimeoutMs,
+      maxTokens: c.npcAiPrecisionMaxTokens,
       reason: !c.npcAiPrecision ? 'switch off' : (!hasKey ? 'no API key' : 'enabled')
     };
   }
@@ -96,6 +112,7 @@
     isAiPrecisionEnabled: isAiPrecisionEnabled,
     isEagerMode: isEagerMode,
     maxPerTurn: maxPerTurn,
+    concurrency: concurrency,
     setEnabled: setEnabled,
     getStatus: getStatus,
     DEFAULTS: DEFAULTS

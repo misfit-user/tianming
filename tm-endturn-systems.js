@@ -321,10 +321,18 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   }
 
   // 6.87 检查历史事件触发
-  checkHistoryEvents();
+  try {
+    if (typeof checkHistoryEvents === 'function') checkHistoryEvents();
+  } catch(e) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 历史事件触发检查失败:') : console.error('[endTurn] 历史事件触发检查失败:', e);
+  }
 
   // 6.88 检查刚性触发器
-  checkRigidTriggers();
+  try {
+    if (typeof checkRigidTriggers === 'function') checkRigidTriggers();
+  } catch(e) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 刚性触发器检查失败:') : console.error('[endTurn] 刚性触发器检查失败:', e);
+  }
 
   // 6.885 检查科举筹办完成
   if(GM.keju && GM.keju.preparingExam && zhengwen) {
@@ -350,23 +358,45 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   // 6.89 更新职位系统（品位晋升）
   if (P.positionSystem && P.positionSystem.enabled) {
     _dbg('[endTurn] Step 6.89: 更新职位系统');
-    PositionSystem.updatePrestige();
+    try {
+      if (typeof PositionSystem !== 'undefined' && PositionSystem && typeof PositionSystem.updatePrestige === 'function') {
+        PositionSystem.updatePrestige();
+      }
+    } catch(e) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 职位系统更新失败:') : console.error('[endTurn] 职位系统更新失败:', e);
+    }
   }
 
   // 6.90 检查空缺职位提醒
   if (P.vacantPositionReminder && P.vacantPositionReminder.enabled) {
     _dbg('[endTurn] Step 6.90: 检查空缺职位');
-    VacantPositionReminder.checkVacantPositions();
+    try {
+      if (typeof VacantPositionReminder !== 'undefined' && VacantPositionReminder && typeof VacantPositionReminder.checkVacantPositions === 'function') {
+        VacantPositionReminder.checkVacantPositions();
+      }
+    } catch(e) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 空缺职位提醒失败:') : console.error('[endTurn] 空缺职位提醒失败:', e);
+    }
   }
 
   // 6.91 检查自然死亡
   if (P.naturalDeath && P.naturalDeath.enabled) {
     _dbg('[endTurn] Step 6.91: 检查自然死亡');
-    NaturalDeathSystem.checkNaturalDeaths();
+    try {
+      if (typeof NaturalDeathSystem !== 'undefined' && NaturalDeathSystem && typeof NaturalDeathSystem.checkNaturalDeaths === 'function') {
+        NaturalDeathSystem.checkNaturalDeaths();
+      }
+    } catch(e) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 自然死亡检查失败:') : console.error('[endTurn] 自然死亡检查失败:', e);
+    }
   }
 
   // 6.9 处理数据变化队列（监听系统）
-  processChangeQueue();
+  try {
+    if (typeof processChangeQueue === 'function') processChangeQueue();
+  } catch(e) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 监听队列处理失败:') : console.error('[endTurn] 监听队列处理失败:', e);
+  }
 
   // 6.91b 关系网冲突自然衰减（每回合）
   if (typeof decayConflictLevels === 'function') {
@@ -396,7 +426,13 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   }
 
   // 6.95 清空查询缓存（每回合结束后数据已变化）
-  WorldHelper.clearCache();
+  try {
+    if (typeof WorldHelper !== 'undefined' && WorldHelper && typeof WorldHelper.clearCache === 'function') {
+      WorldHelper.clearCache();
+    }
+  } catch(e) {
+    (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] 世界缓存清理失败:') : console.error('[endTurn] 世界缓存清理失败:', e);
+  }
 
   return queueResult;
 }

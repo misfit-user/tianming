@@ -26,7 +26,9 @@ async function main() {
     { id: 'c3', name: 'GeneralWang', alive: true, loyalty: 58, ambition: 65, valor: 88, troops: 1000, officialTitle: 'General', location: 'Frontier' },
     { id: 'c4', name: 'RemoteZhao', alive: true, loyalty: 72, ambition: 35, intelligence: 70, officialTitle: 'Governor', location: 'Liaodong', faction: 'Ming' },
     { id: 'c5', name: 'QianRival', alive: true, loyalty: 45, ambition: 77, intelligence: 72, officialTitle: 'Censor', location: 'Capital', faction: 'Ming', party: 'RivalBloc' },
-    { id: 'c6', name: 'ChenAlly', alive: true, loyalty: 80, ambition: 25, intelligence: 50, officialTitle: 'Secretary', location: 'Capital', faction: 'Ming', party: 'CourtBloc' }
+    { id: 'c6', name: 'ChenAlly', alive: true, loyalty: 80, ambition: 25, intelligence: 50, officialTitle: 'Secretary', location: 'Capital', faction: 'Ming', party: 'CourtBloc' },
+    { id: 'c7', name: 'CleanCensor', alive: true, loyalty: 82, ambition: 42, intelligence: 86, integrity: 92, officialTitle: 'Censor', location: 'Capital', faction: 'Ming', party: 'CourtBloc' },
+    { id: 'c8', name: 'LocalMagistrate', alive: true, loyalty: 68, ambition: 45, intelligence: 66, integrity: 72, officialTitle: 'Magistrate', location: 'Liaodong', faction: 'Ming', jurisdiction: 'Liaodong' }
   ];
   const events = [];
   let lastPrompt = '';
@@ -70,18 +72,26 @@ async function main() {
       _npcHiddenMoves: [],
       _pendingAudiences: [],
       _npcActionLedger: [],
+      _npcPlans: [],
+      _npcDecisionDiagnostics: [],
       _capital: 'Capital',
+      provinceStats: {
+        Liaodong: { prosperity: 45, unrest: 32, security: 44 },
+        Capital: { prosperity: 70, unrest: 8, security: 72 }
+      },
       officeTree: [
         { name: 'Court', positions: [
           { name: 'Minister', holder: 'ZhangSan', rank: '2' },
           { name: 'Clerk', holder: 'LiSi', rank: '7' },
-          { name: 'Censor', holder: 'QianRival', rank: '5' }
+          { name: 'Censor', holder: 'QianRival', rank: '5' },
+          { name: 'Censor', holder: 'CleanCensor', rank: '5' }
         ] },
         { name: 'Army', positions: [
           { name: 'General', holder: 'GeneralWang', rank: '3' }
         ] },
         { name: 'Province', positions: [
-          { name: 'Governor', holder: 'RemoteZhao', rank: '4' }
+          { name: 'Governor', holder: 'RemoteZhao', rank: '4' },
+          { name: 'Magistrate', holder: 'LocalMagistrate', rank: '7' }
         ] }
       ],
       _turnContext: { npcActionsThisTurn: [] }
@@ -117,7 +127,87 @@ async function main() {
   vm.createContext(ctx);
 
   load(ctx, 'tm-npc-engine.js');
+  load(ctx, 'tm-npc-action-ledger.js');
   load(ctx, 'tm-npc-decision.js');
+
+  assert(ctx.TM && ctx.TM.NPC && ctx.TM.NPC.ActionLedger,
+    'TM.NPC.ActionLedger should expose the unified character NPC action ledger');
+  assert(typeof ctx.TM.NPC.ActionLedger.collectHandledNamesFromP1 === 'function',
+    'NPC action ledger should collect handled actors from main AI outputs');
+  assert(typeof ctx.TM.NPC.ActionLedger.record === 'function',
+    'NPC action ledger should record normalized character NPC actions');
+  assert(typeof ctx.TM.NPC.ActionLedger.diagnose === 'function',
+    'NPC action ledger should expose diagnostics');
+  assert(typeof ctx.TM.NPC.ActionLedger.recordConsideration === 'function',
+    'NPC action ledger should record per-turn NPC decision consideration diagnostics');
+  assert(typeof ctx.TM.NPC.ActionLedger.recordPlan === 'function',
+    'NPC action ledger should persist multi-turn NPC plans');
+
+  const indexSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const inferSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai-infer.js'), 'utf8');
+  const applySrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
+  const decisionSrc = fs.readFileSync(path.join(ROOT, 'tm-npc-decision.js'), 'utf8');
+  assert(indexSrc.indexOf('tm-npc-action-ledger.js') >= 0,
+    'index.html should load the unified NPC action ledger before npc decision logic');
+  assert(inferSrc.indexOf('collectHandledNamesFromP1') >= 0,
+    'end-turn inference should prime handled NPC names from all main-AI NPC outputs');
+  assert(applySrc.indexOf('main_ai:npc_actions') >= 0,
+    'end-turn apply should record main-AI npc_actions into the NPC action ledger');
+  assert(applySrc.indexOf('main_ai:npc_interactions') >= 0,
+    'end-turn apply should record main-AI npc_interactions into the NPC action ledger');
+  assert(applySrc.indexOf('main_ai:npc_letters') >= 0,
+    'end-turn apply should record main-AI npc_letters into the NPC action ledger');
+  assert(applySrc.indexOf('main_ai:npc_correspondence') >= 0,
+    'end-turn apply should record main-AI npc_correspondence into the NPC action ledger');
+  assert(decisionSrc.indexOf('TM.NPC.ActionLedger.record') >= 0,
+    'supplemental NPC autonomy should record decisions through the unified NPC action ledger');
+  assert(decisionSrc.indexOf('TM.NPC.ActionLedger.getHandledNames') >= 0,
+    'supplemental NPC autonomy should dedupe through the unified handled-name list');
+
+  const handledFromMainAi = ctx.TM.NPC.ActionLedger.collectHandledNamesFromP1({
+    npc_actions: [{ name: 'ZhangSan', action: 'petition' }],
+    npc_interactions: [{ actor: 'QianRival', target: 'LiSi', type: 'slander' }],
+    npc_letters: [{ from: 'RemoteZhao', content: 'frontier report' }],
+    npc_correspondence: [{ from: 'ChenAlly', to: 'LiSi', content: 'private note' }]
+  });
+  assert(handledFromMainAi.indexOf('ZhangSan') >= 0,
+    'main npc_actions should mark actor as handled');
+  assert(handledFromMainAi.indexOf('QianRival') >= 0,
+    'main npc_interactions should mark actor as handled');
+  assert(handledFromMainAi.indexOf('RemoteZhao') >= 0 && handledFromMainAi.indexOf('ChenAlly') >= 0,
+    'main npc letter/correspondence outputs should mark senders as handled');
+
+  const deadPreflight = ctx.TM.NPC.ActionLedger.preflight({
+    actor: 'DeadMinister',
+    type: 'petition',
+    source: 'unit'
+  }, { chars: chars.concat([{ name: 'DeadMinister', alive: false }]) });
+  assert(deadPreflight.ok === false,
+    'NPC action preflight should reject dead actors');
+  chars[0].isPlayer = true;
+  const playerPreflight = ctx.TM.NPC.ActionLedger.preflight({
+    actor: 'ZhangSan',
+    type: 'petition',
+    source: 'unit'
+  });
+  assert(playerPreflight.ok === false,
+    'NPC action preflight should reject player-controlled actors as autonomous actors');
+  chars[0].isPlayer = false;
+
+  const interactionEntry = ctx.TM.NPC.ActionLedger.record({
+    source: 'main_ai:npc_interactions',
+    actor: 'QianRival',
+    type: 'slander',
+    target: 'LiSi',
+    action: 'QianRival slanders LiSi',
+    uiRoutes: ['relation', 'memory']
+  }, { markHandled: true });
+  assert(interactionEntry && interactionEntry.kind === 'npc_interaction',
+    'recorded npc_interactions should normalize to npc_interaction kind');
+  assert(ctx.GM._turnContext.npcActionsThisTurn.indexOf('QianRival') >= 0,
+    'recorded NPC interaction should mark actor as handled for supplemental decision dedupe');
+  assert(ctx.TM.NPC.ActionLedger.diagnose().byKind.npc_interaction >= 1,
+    'NPC action diagnostics should count recorded interaction entries');
 
   assert(typeof ctx.NpcEngine.hasExecutableBehaviors === 'function',
     'NpcEngine should expose hasExecutableBehaviors() for end-turn guard');
@@ -128,12 +218,29 @@ async function main() {
     'NPC decision layer should expose candidate action builder');
   assert(typeof ctx._scoreNpcActionCandidate === 'function',
     'NPC decision layer should expose candidate scoring helper');
+  assert(typeof ctx._buildNpcMotiveProfile === 'function',
+    'NPC decision layer should expose motive profile builder');
 
   const behaviorContext = ctx.buildNpcBehaviorContext();
   const courtCandidates = ctx._buildNpcActionCandidates(chars[0], behaviorContext);
   const militaryCandidates = ctx._buildNpcActionCandidates(chars[2], behaviorContext);
   const remoteCandidates = ctx._buildNpcActionCandidates(chars[3], behaviorContext);
+  const censorCandidates = ctx._buildNpcActionCandidates(chars[6], behaviorContext);
+  const localCandidates = ctx._buildNpcActionCandidates(chars[7], behaviorContext);
+  const zhangMotives = ctx._buildNpcMotiveProfile(chars[0], behaviorContext);
+  const crowdedNpcs = [];
+  for (let i = 0; i < 14; i++) {
+    crowdedNpcs.push({ name: 'CourtHeavy' + i, alive: true, loyalty: 35, ambition: 86, intelligence: 82, officialTitle: 'Minister', location: 'Capital', faction: 'Ming' });
+  }
+  crowdedNpcs.push(chars[7]);
+  const cohortSelected = ctx.selectImportantNpcs(crowdedNpcs).map(function(c) { return c.name; });
 
+  assert(zhangMotives && zhangMotives.networking > 0 && zhangMotives.career > 0,
+    'motive profile should expose scored career/networking motives for ambitious officials');
+  assert(cohortSelected.indexOf('LocalMagistrate') >= 0,
+    'important NPC selection should reserve room for local/frontier actors even when court elites crowd the top score list');
+  assert(courtCandidates.every(function(c) { return c.motive && typeof c.motiveScore === 'number'; }),
+    'candidate actions should include a motive label and motiveScore');
   assert(courtCandidates.some(function(c) { return c.behaviorType === 'petition'; }),
     'court NPC should receive petition candidate');
   assert(courtCandidates.some(function(c) { return c.behaviorType === 'conspire'; }),
@@ -152,20 +259,34 @@ async function main() {
     'remote NPC should receive seek_audience candidate');
   assert(militaryCandidates.some(function(c) { return c.behaviorType === 'request_funds'; }),
     'military NPC should receive request_funds candidate');
+  assert(militaryCandidates.some(function(c) { return c.behaviorType === 'patrol'; }),
+    'military NPC should receive patrol candidate');
+  assert(militaryCandidates.some(function(c) { return c.behaviorType === 'fortify'; }),
+    'military NPC should receive fortify candidate');
+  assert(censorCandidates.some(function(c) { return c.behaviorType === 'recommend'; }),
+    'high-integrity intelligent censor should receive recommend candidate');
+  assert(censorCandidates.some(function(c) { return c.behaviorType === 'impeach'; }),
+    'high-integrity intelligent censor should receive impeach candidate');
+  assert(courtCandidates.some(function(c) { return c.behaviorType === 'build_network'; }),
+    'ambitious court NPC should receive a multi-turn build_network candidate');
+  assert(localCandidates.some(function(c) { return c.behaviorType === 'develop_local'; }),
+    'local official should receive develop_local candidate');
+  assert(localCandidates.some(function(c) { return c.behaviorType === 'relief'; }),
+    'local official in unrest province should receive relief candidate');
   assert(courtCandidates.every(function(c) { return typeof c.score === 'number' && c.score > 0; }),
     'candidate actions should carry positive motivation scores');
 
   ctx.GM._npcInternalActionHistory = [{ kind: 'private_correspondence', from: 'ZhangSan', to: 'LiSi', intent: 'Recent private note', turn: ctx.GM.turn - 1 }];
   const diversifiedCandidates = ctx._buildNpcActionCandidates(chars[0], ctx.buildNpcBehaviorContext());
   const diversifiedPrivate = diversifiedCandidates.find(function(c) { return c.behaviorType === 'private_correspondence'; });
-  assert(diversifiedPrivate && diversifiedPrivate.target === 'ChenAlly',
+  assert(diversifiedPrivate && diversifiedPrivate.target && diversifiedPrivate.target !== 'LiSi',
     'recent private correspondence should diversify the next NPC-to-NPC correspondence target');
   ctx.GM._npcInternalActionHistory = [];
 
   ctx.GM._pendingNpcCorrespondence.push({ from: 'ZhangSan', to: 'LiSi', intent: 'Pending private note', turn: ctx.GM.turn });
   const pendingDiversifiedCandidates = ctx._buildNpcActionCandidates(chars[0], ctx.buildNpcBehaviorContext());
   const pendingDiversifiedPrivate = pendingDiversifiedCandidates.find(function(c) { return c.behaviorType === 'private_correspondence'; });
-  assert(pendingDiversifiedPrivate && pendingDiversifiedPrivate.target === 'ChenAlly',
+  assert(pendingDiversifiedPrivate && pendingDiversifiedPrivate.target && pendingDiversifiedPrivate.target !== 'LiSi',
     'pending private correspondence should diversify same-turn NPC-to-NPC correspondence target');
   ctx.GM._pendingNpcCorrespondence = [];
 
@@ -262,6 +383,25 @@ async function main() {
   assert(chars[1].loyalty === 55,
     'normalized actor/action reward should adjust target loyalty');
 
+  const deadExecOk = ctx._executeNormalizedNpcDecision({
+    actor: 'DeadMinister',
+    behaviorType: 'petition',
+    action: 'Dead petition',
+    shouldExecute: true
+  }, { name: 'DeadMinister', alive: false }, behaviorContext);
+  assert(deadExecOk === false,
+    'supplemental NPC executor should reject dead actors through unified preflight');
+  chars[1].isPlayer = true;
+  const playerExecOk = ctx._executeNormalizedNpcDecision({
+    actor: 'LiSi',
+    behaviorType: 'petition',
+    action: 'Player-controlled petition',
+    shouldExecute: true
+  }, chars[1], behaviorContext);
+  assert(playerExecOk === false,
+    'supplemental NPC executor should reject player-controlled actors through unified preflight');
+  chars[1].isPlayer = false;
+
   const audienceOk = ctx._executeNormalizedNpcDecision({
     actor: 'RemoteZhao',
     behaviorType: 'seek_audience',
@@ -313,6 +453,52 @@ async function main() {
   assert(obstructOk === true && ctx.GM._npcInternalActionHistory.some(function(x) { return x.kind === 'hidden_move' && x.from === 'ZhangSan' && x.to === 'QianRival'; }),
     'hidden obstruct behavior should persist internal action history');
 
+  const recommendOk = ctx._executeNormalizedNpcDecision({
+    actor: 'CleanCensor',
+    behaviorType: 'recommend',
+    target: 'ChenAlly',
+    action: 'Recommend ChenAlly',
+    shouldExecute: true
+  }, chars[6], behaviorContext);
+  assert(recommendOk === true && ctx.GM.memorials.some(function(m) { return m.from === 'CleanCensor' && /ChenAlly/.test(String(m.content || m.title || '')); }),
+    'recommend behavior should materialize as a personnel memorial');
+
+  const beforeProsperity = ctx.GM.provinceStats.Liaodong.prosperity;
+  const developOk = ctx._executeNormalizedNpcDecision({
+    actor: 'LocalMagistrate',
+    behaviorType: 'develop_local',
+    target: 'Liaodong',
+    action: 'Develop Liaodong',
+    shouldExecute: true
+  }, chars[7], behaviorContext);
+  assert(developOk === true && ctx.GM.provinceStats.Liaodong.prosperity > beforeProsperity,
+    'develop_local behavior should change live province prosperity data');
+
+  const beforeUnrest = ctx.GM.provinceStats.Liaodong.unrest;
+  const reliefOk = ctx._executeNormalizedNpcDecision({
+    actor: 'LocalMagistrate',
+    behaviorType: 'relief',
+    target: 'Liaodong',
+    action: 'Relief Liaodong',
+    shouldExecute: true
+  }, chars[7], behaviorContext);
+  assert(reliefOk === true && ctx.GM.provinceStats.Liaodong.unrest < beforeUnrest,
+    'relief behavior should change live province unrest data');
+
+  const planOk = ctx._executeNormalizedNpcDecision({
+    actor: 'ZhangSan',
+    behaviorType: 'build_network',
+    target: 'ChenAlly',
+    action: 'Build a court network',
+    shouldExecute: true
+  }, chars[0], behaviorContext);
+  assert(planOk === true && ctx.GM._npcPlans.some(function(p) { return p.actor === 'ZhangSan' && p.type === 'build_network'; }),
+    'build_network behavior should create a durable multi-turn NPC plan');
+  assert(ctx.TM.NPC.ActionLedger.diagnose().plans >= 1,
+    'NPC action diagnostics should report durable NPC plans');
+  assert(ctx.GM._npcDecisionDiagnostics.some(function(d) { return d.actor === 'ZhangSan' && d.status === 'executed'; }),
+    'NPC executor should record decision diagnostics for executed actions');
+
   ctx.GM._pendingNpcCorrespondence = [];
   ctx.GM._pendingNpcConspiracies = [];
   ctx.GM._npcHiddenMoves = [];
@@ -325,6 +511,12 @@ async function main() {
   const saveLifecycleSrc = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
   assert(saveLifecycleSrc.indexOf('GM._npcInternalActionHistory') >= 0 && saveLifecycleSrc.indexOf('GM._savedNpcInternalActionHistory') >= 0,
     'save lifecycle should persist NPC internal action history');
+  assert(saveLifecycleSrc.indexOf('GM._npcActionLedger') >= 0 && saveLifecycleSrc.indexOf('GM._savedNpcActionLedger') >= 0,
+    'save lifecycle should persist NPC action ledger cooldowns across save/load');
+  assert(saveLifecycleSrc.indexOf('GM._npcPlans') >= 0 && saveLifecycleSrc.indexOf('GM._savedNpcPlans') >= 0,
+    'save lifecycle should persist durable NPC plans across save/load');
+  assert(saveLifecycleSrc.indexOf('GM._npcDecisionDiagnostics') >= 0 && saveLifecycleSrc.indexOf('GM._savedNpcDecisionDiagnostics') >= 0,
+    'save lifecycle should persist recent NPC decision diagnostics across save/load');
 
   console.log('[smoke-npc-action-logic] PASS ' + passed + ' assertions');
 }

@@ -165,6 +165,91 @@
     return p16;
   }
 
+  function _tmSc16TextBlob(obj) { if (obj == null) return ""; if (typeof obj === "string") return obj; try { return JSON.stringify(obj); } catch(_) { return String(obj); } }
+  function _tmMentionsFactionForAi(obj, facName) { var k = _tmNormFactionName(facName); return !!k && _tmNormFactionName(_tmSc16TextBlob(obj)).indexOf(k) >= 0; }
+  function _tmSc16ActorOf(obj) { return _tmFirstText(obj && obj.faction, obj && obj.name, obj && obj.actor, obj && obj.from, obj && obj.source, obj && obj.initiator); }
+  function _tmSc16MatchesFac(obj, facName) {
+    if (!obj || !facName) return false;
+    var k = _tmNormFactionName(facName);
+    return _tmNormFactionName(_tmSc16ActorOf(obj)) === k
+      || _tmNormFactionName(_tmFirstText(obj.target, obj.targetFaction, obj.to, obj.receiver, obj.object)) === k
+      || _tmMentionsFactionForAi(obj, facName);
+  }
+  function _tmSc16HasDirectContent(row) { return !!(row && ((Array.isArray(row.actions) && row.actions.length) || (Array.isArray(row.diplomacy) && row.diplomacy.length) || (Array.isArray(row.directives) && row.directives.length))); }
+  function _tmSc16PriorityValue(row) { var v = row && (row.priority != null ? row.priority : (row.score != null ? row.score : row.weight)); v = Number(v); return isFinite(v) ? v : 0; }
+  function _tmBuildSc16PriorityQueue(p16, playerNames) {
+    var raw = Array.isArray(p16.faction_priorities) ? p16.faction_priorities : (Array.isArray(p16.factionPriorities) ? p16.factionPriorities : []);
+    return raw.map(function(row) {
+      var fac = _tmFirstText(row && row.faction, row && row.name, row && row.targetFaction);
+      return { faction: fac, priorityScore: _tmSc16PriorityValue(row), urgency: _tmFirstText(row && row.urgency, row && row.level), priorityReason: _tmFirstText(row && row.reason, row && row.rationale, row && row.motive), raw: row || {} };
+    }).filter(function(row) { return row.faction && !_tmIsPlayerFactionNameForAi(row.faction, playerNames); }).sort(function(a, b) { return (b.priorityScore || 0) - (a.priorityScore || 0); });
+  }
+  function _tmBuildSc16DirectiveLedger(p16, G, playerFactionName) {
+    G = G || global.GM || {};
+    p16 = p16 || {};
+    var playerNames = _tmPlayerFactionNameList(playerFactionName);
+    var ledger = { turn: G.turn || 1, source: "sc16", byFaction: {}, order: [], directCount: 0, priorityQueue: [] };
+    ledger.priorityQueue = _tmBuildSc16PriorityQueue(p16, playerNames);
+    var priorityByFaction = {};
+    ledger.priorityQueue.forEach(function(row) {
+      priorityByFaction[_tmNormFactionName(row.faction)] = row;
+    });
+    (Array.isArray(G.facs) ? G.facs : []).forEach(function(fac) {
+      if (!fac || !fac.name) return;
+      if (_tmIsPlayerFactionForAi(fac, playerNames)) return;
+      var row = { faction: fac.name, turn: ledger.turn, source: "sc16", actions: [], diplomacy: [], directives: [],
+        territorialChanges: _tmFirstText(p16.territorial_changes, p16.territorialChanges),
+        powerBalanceShift: _tmFirstText(p16.power_balance_shift, p16.powerBalanceShift) };
+      var priority = priorityByFaction[_tmNormFactionName(fac.name)] || null;
+      row.priorityScore = priority ? priority.priorityScore : 0;
+      row.priorityUrgency = priority ? priority.urgency : "";
+      row.priorityReason = priority ? priority.priorityReason : "";
+      if (Array.isArray(p16.faction_actions)) row.actions = p16.faction_actions.filter(function(a) { return _tmSc16MatchesFac(a, fac.name); }).slice(0, 8);
+      if (Array.isArray(p16.diplomatic_shifts)) {
+        row.diplomacy = p16.diplomatic_shifts.filter(function(d) {
+          var k = _tmNormFactionName(fac.name);
+          return d && (_tmNormFactionName(d.from) === k || _tmNormFactionName(d.to) === k || _tmMentionsFactionForAi(d, fac.name));
+        }).slice(0, 8);
+      }
+      if (Array.isArray(p16.faction_directives)) row.directives = p16.faction_directives.filter(function(d) { return _tmSc16MatchesFac(d, fac.name); }).slice(0, 4);
+      row.hasDirectContent = _tmSc16HasDirectContent(row);
+      if (!row.priorityScore && row.hasDirectContent) row.priorityScore = 65;
+      if (!row.priorityReason && row.hasDirectContent) row.priorityReason = "sc16-directive";
+      row.actionBudgetHint = row.priorityScore >= 80 ? "precision-soon" : (row.priorityScore >= 55 ? "precision-normal" : "watch");
+      ledger.byFaction[fac.name] = row;
+      if (!priority) ledger.priorityQueue.push({ faction: fac.name, priorityScore: row.priorityScore, urgency: row.priorityUrgency, priorityReason: row.priorityReason, raw: null });
+      if (row.hasDirectContent) ledger.directCount++;
+    });
+    ledger.priorityQueue.sort(function(a, b) { return (b.priorityScore || 0) - (a.priorityScore || 0); });
+    ledger.priorityQueue.forEach(function(item, idx) { if (ledger.byFaction[item.faction]) ledger.byFaction[item.faction].priorityRank = idx + 1; });
+    ledger.order = ledger.priorityQueue.map(function(x) { return x.faction; });
+    return ledger;
+  }
+
+  function _tmStoreSc16DirectiveLedger(p16, G, playerFactionName) {
+    if (!p16 || typeof p16 !== "object") return null;
+    G = G || global.GM || {};
+    var ledger = _tmBuildSc16DirectiveLedger(p16, G, playerFactionName);
+    G._sc16FactionDirectives = ledger;
+    (Array.isArray(G.facs) ? G.facs : []).forEach(function(fac) {
+      if (!fac || !fac.name) return;
+      var row = ledger.byFaction[fac.name];
+      if (!row) return;
+      fac._sc16Directive = row;
+      if (row.hasDirectContent) {
+        if (!Array.isArray(fac._sc16DirectiveHistory)) fac._sc16DirectiveHistory = [];
+        fac._sc16DirectiveHistory.push(row);
+        if (fac._sc16DirectiveHistory.length > 8) fac._sc16DirectiveHistory = fac._sc16DirectiveHistory.slice(-8);
+      }
+    });
+    p16._factionDirectiveLedger = { turn: ledger.turn, source: ledger.source, count: ledger.order.length, directCount: ledger.directCount, factions: ledger.order.slice(), priorityQueue: ledger.priorityQueue.slice() };
+    if (!G._npcFactionAiTurnLedger || G._npcFactionAiTurnLedger.turn !== ledger.turn) {
+      G._npcFactionAiTurnLedger = { turn: ledger.turn, createdAt: ledger.turn, sc16: null, dispatch: G._npcFactionLlmDispatchLedger || null, runs: (G._npcFactionLlmLedger && G._npcFactionLlmLedger.runs) || {}, actions: [], candidateRanks: [], notes: [], stats: {} };
+    }
+    G._npcFactionAiTurnLedger.sc16 = ledger;
+    return ledger;
+  }
+
   function _tmDetectModelFamily(model, fallbackFamily) {
     if (model && typeof ModelAdapter !== "undefined" && ModelAdapter.detectFamily) {
       try { return ModelAdapter.detectFamily(model); } catch(_) {}
@@ -193,6 +278,8 @@
   ns._resolvePlayerFactionNameForAi = _tmResolvePlayerFactionNameForAi;
   ns._isPlayerFactionForAi = _tmIsPlayerFactionForAi;
   ns._filterSc16PlayerOutputs = _tmFilterSc16PlayerOutputs;
+  ns._buildSc16DirectiveLedger = _tmBuildSc16DirectiveLedger;
+  ns._storeSc16DirectiveLedger = _tmStoreSc16DirectiveLedger;
 
   ns.run = async function(ctx) {
     ensureGroups(ctx);
@@ -718,7 +805,7 @@
       showLoading("\u52BF\u529B\u81EA\u4E3B\u63A8\u6F14",63);
       try {
         var _playerFacNames16 = _tmResolvePlayerFactionNamesForAi(GM, P);
-        var tp16 = '\u57FA\u4E8E\u672C\u56DE\u5408\u5C40\u52BF\uFF0C\u63A8\u6F14\u6BCF\u4E2A\u975E\u73A9\u5BB6\u52BF\u529B\u7684\u81EA\u4E3B\u884C\u52A8\uFF1A\n';
+        var tp16 = '\u57FA\u4E8E\u672C\u56DE\u5408\u5C40\u52BF\uFF0C\u751F\u6210\u975E\u73A9\u5BB6\u52BF\u529B\u7684\u6218\u7565\u65B9\u5411\u4E0E\u7CBE\u7EC6\u5316\u63A8\u6F14\u4F18\u5148\u7EA7\uFF1A\n';
         tp16 += '\u65F6\u653F\u8BB0\uFF1A' + (shizhengji||'').substring(0,500) + '\n';
         (GM.facs||[]).forEach(function(f) {
           if (_tmIsPlayerFactionForAi(f, _playerFacNames16)) return;
@@ -763,26 +850,26 @@
             tp16 += '\u3010\u7CBE\u7EC6\u5316\u52BF\u529B\u63A8\u6F14\u627F\u63A5\u8981\u6C42\u3011\u4EE5\u4E0A\u662F\u5148\u524D\u56DE\u5408\u7684\u52BF\u529B\u7CBE\u7EC6\u5316\u63A8\u6F14\u8BB0\u5F55\uFF0C\u5305\u62EC\u8FC7\u56DE\u5408\u65F6\u6279\u91CF\u52BF\u529B\u63A8\u6F14\u5199\u5165\u7684\u52BF\u529B\u65E7\u8D26\u3001\u8FC7\u56DE\u5408\u540E\u8FD1\u4E8B\u5FEB\u62A5\u5199\u5165\u3001\u4EE5\u53CA\u56DE\u5408\u5185\u7CBE\u7EC6\u5316\u52BF\u529B\u63A8\u6F14\u3002sc16\u5FC5\u987B\u628A\u5B83\u4EEC\u5F53\u4F5C\u5404\u52BF\u529B\u5DF2\u5F62\u6210\u7684\u8DEF\u7EBF\u548C\u8BB0\u5FC6\uFF1B\u4E0D\u5F97\u65E0\u6545\u53CD\u5411\u63A8\u7FFB\u3002\u5982\u9700\u8F6C\u5411\uFF0C\u5FC5\u987B\u5728motive/reason\u4E2D\u8BF4\u660E\u65B0\u53D8\u6545\u3002\n';
           }
         } catch(_npcPrecision16Err) { try { _dbg('[sc16 precision history] fail:', _npcPrecision16Err); } catch(_){} }
-        tp16 += '\n\u8BF7\u8FD4\u56DEJSON\uFF1A{"faction_actions":[{"faction":"\u52BF\u529B\u540D","action":"\u5177\u4F53\u884C\u52A8(50\u5B57)","target":"\u5BF9\u8C01","motive":"\u52A8\u673A","impact":"\u5F71\u54CD"}],"diplomatic_shifts":[{"from":"","to":"","old_relation":"","new_relation":"","reason":""}],"territorial_changes":"\u9886\u571F\u53D8\u5316\u63CF\u8FF0(100\u5B57)","power_balance_shift":"\u529B\u91CF\u5BF9\u6BD4\u53D8\u5316(100\u5B57)"}\n';
-        tp16 += '只为上述非玩家势力生成行动；玩家势力不得作为行动发起方。每个非玩家势力都应有行动。包括战争、联盟、贸易、内部整合、扩张、防御等。';
+        tp16 += '\n\u8BF7\u8FD4\u56DEJSON\uFF1A{"faction_priorities":[{"faction":"\u52BF\u529B\u540D","priority":0,"urgency":"high|normal|low","reason":"\u4E3A\u4EC0\u4E48\u8FD9\u4E2A\u52BF\u529B\u5E94\u4F18\u5148\u4EA4\u7ED9\u7CBE\u7EC6\u5316LLM"}],"faction_actions":[{"faction":"\u52BF\u529B\u540D","action":"\u5177\u4F53\u884C\u52A8(50\u5B57)","target":"\u5BF9\u8C01","motive":"\u52A8\u673A","impact":"\u5F71\u54CD"}],"faction_directives":[{"faction":"\u52BF\u529B\u540D","strategic_intent":"\u672C\u56DE\u5408\u603B\u76EE\u6807(30-80\u5B57)","must_follow":"\u7CBE\u7EC6\u5316\u52BF\u529BLLM\u5FC5\u987B\u627F\u63A5\u7684\u65B9\u5411","preferred_actions":["\u5EFA\u8BAE\u843D\u5730\u52A8\u4F5C"],"red_lines":"\u4E0D\u5E94\u53CD\u5411\u63A8\u7FFB\u7684\u8FB9\u754C","reason":"\u4F9D\u636E"}],"diplomatic_shifts":[{"from":"","to":"","old_relation":"","new_relation":"","reason":""}],"territorial_changes":"\u9886\u571F\u53D8\u5316\u63CF\u8FF0(100\u5B57)","power_balance_shift":"\u529B\u91CF\u5BF9\u6BD4\u53D8\u5316(100\u5B57)"}\n';
+        tp16 += 'SC16 是势力层的战略指令账本与优先级队列；faction_priorities 决定后续精细化 LLM 优先处理谁，faction_actions/faction_directives 只提供战略方向。真正的人物、军队、财政、地块等落地由后续势力精细化 LLM 执行。只为上述非玩家势力生成方向；玩家势力不得作为行动发起方。不要为了凑满全部势力而制造低价值行动，优先标出最该行动、最可能行动、最危险的势力。包括战争、联盟、贸易、内部整合、扩张、防御等。';
         var _sc16Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp16}], temperature:P.ai.temp||0.8, max_tokens:_tok(8000)};
         if (_modelFamily === 'openai') _sc16Body.response_format = { type: 'json_object' };
         var _sc16Call = await _callFollowupAI(_sc16Body, { id: 'sc16', label: '势力行动', priority: 'normal' });
         {
           var j16 = _sc16Call.data; _checkTruncated(j16, '势力行动'); var c16 = _sc16Call.raw || '';
-          var _p16Parse = await _parseOrRepairJsonResult(c16, j16, '势力行动', { url: url, key: P.ai.key, body: _sc16Body, expectedKeys: ['faction_actions', 'diplomatic_shifts', 'power_balance_shift'] });
+          var _p16Parse = await _parseOrRepairJsonResult(c16, j16, '势力行动', { url: url, key: P.ai.key, body: _sc16Body, expectedKeys: ['faction_priorities', 'faction_actions', 'faction_directives', 'diplomatic_shifts', 'power_balance_shift'] });
           if (_p16Parse && _p16Parse.raw) c16 = _p16Parse.raw;
           var p16 = _p16Parse ? _p16Parse.parsed : null;
           if (p16) {
             p16 = _tmFilterSc16PlayerOutputs(p16, _playerFacNames16);
+            _tmStoreSc16DirectiveLedger(p16, GM, _playerFacNames16);
             if (p16.faction_actions && Array.isArray(p16.faction_actions)) {
               p16.faction_actions.forEach(function(fa) { if (fa.faction && fa.action) addEB('\u52BF\u529B\u52A8\u6001', fa.faction + '：' + fa.action); });
             }
             if (p16.diplomatic_shifts && Array.isArray(p16.diplomatic_shifts)) {
               p16.diplomatic_shifts.forEach(function(ds) {
-                if (ds.from && ds.to && GM.factionRelations) {
-                  var rel = GM.factionRelations.find(function(r){return r.from===ds.from&&r.to===ds.to;});
-                  if (rel && ds.new_relation) { rel.type = ds.new_relation; addEB('\u5916\u4EA4', ds.from+'\u2192'+ds.to+' '+ds.new_relation); }
+                if (ds.from && ds.to && ds.new_relation) {
+                  addEB('\u5916\u4EA4\u98CE\u5411', ds.from+'\u2192'+ds.to+' \u915D\u917F '+ds.new_relation);
                 }
               });
             }

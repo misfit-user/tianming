@@ -25,8 +25,8 @@ assert(deferredMatch[1].indexOf('await _runPostRenderTurnOpeners(ctx);') >= 0, '
 
 const helperMatch = src.match(/async function _runPostRenderTurnOpeners\(ctx\)\s*\{([\s\S]*?)\n  \}\n\n  \/\*\* @type/);
 assert(!!helperMatch, 'helper body found');
-assert(helperMatch[1].indexOf('FactionNpcLlmDecision') >= 0, 'helper includes NPC LLM eager scheduling');
-assert(helperMatch[1].indexOf('FactionNpcInTurnDriver') >= 0, 'helper includes in-turn NPC scheduling');
+assert(helperMatch[1].indexOf('FactionNpcDispatchQueue') >= 0, 'helper includes unified NPC LLM dispatch scheduling');
+assert(helperMatch[1].indexOf('scheduleTurnRuns') >= 0, 'helper schedules eager and in-turn NPC LLM through one dispatcher');
 assert(helperMatch[1].indexOf('FactionIndex') >= 0, 'helper includes faction index refresh');
 
 console.log('[smoke-postturn-court-deferred-finalize] pass assertions=' + passed);

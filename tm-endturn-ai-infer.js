@@ -173,11 +173,22 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
     shizhengji="\u56FD\u5BB6\u53D8\u5316\u4E2D";zhengwen="\u65F6\u5149\u6D41\u901D";playerStatus="\u5982\u5E38";
   }
   // 存储本回合 AI 叙事摘要供 NPC 引擎使用（避免重复 API 调用）
+  var _npcHandledNames = [];
+  try {
+    if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.collectHandledNamesFromP1) {
+      _npcHandledNames = TM.NPC.ActionLedger.collectHandledNamesFromP1(p1);
+    } else {
+      _npcHandledNames = (p1 && p1.npc_actions) ? p1.npc_actions.map(function(a) { return a && a.name; }).filter(Boolean) : [];
+    }
+  } catch(_npcHandledErr) {
+    _npcHandledNames = (p1 && p1.npc_actions) ? p1.npc_actions.map(function(a) { return a && a.name; }).filter(Boolean) : [];
+  }
+
   GM._turnContext = {
     edicts: edicts,
     shizhengji: (shizhengji || '').substring(0, 300),
     zhengwen: (zhengwen || '').substring(0, 200),
-    npcActionsThisTurn: (p1 && p1.npc_actions) ? p1.npc_actions.map(function(a) { return a.name; }) : []
+    npcActionsThisTurn: _npcHandledNames
   };
 
   // AI失败兜底——确保玩家至少看到时间推进的信息

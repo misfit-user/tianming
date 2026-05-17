@@ -68,6 +68,9 @@
   function cancelInTurnTimers() {
     _activeTimers.forEach(function(id){ try { clearTimeout(id); } catch(_){} });
     _activeTimers = [];
+    if (global.TM && global.TM.FactionNpcDispatchQueue && typeof global.TM.FactionNpcDispatchQueue.cancelInTurnTimers === 'function') {
+      try { global.TM.FactionNpcDispatchQueue.cancelInTurnTimers(); } catch(_){}
+    }
   }
 
   function _isEnabled() {
@@ -110,21 +113,54 @@
     if (npcs.length === 0) return null;
     // 优先战争、财政危机、刚被玩家干预过的势力；没有 action engine 时退回强度权重。
     var engine = global.TM && global.TM.FactionActionEngine;
-    var weights = npcs.map(function(f){
+    var ranked = npcs.map(function(f){
       if (engine && typeof engine.scoreFactionCandidate === 'function') {
         var row = engine.scoreFactionCandidate(f, { turn: turn, playerFactionNames: playerFacNames });
-        return Math.max(1, _safeNum(row && row.score) || 1);
+        return { fac: f, score: Math.max(1, _safeNum(row && row.score) || 1), reasons: _arr(row && row.reasons) };
       }
-      return Math.max(1, (f.derivedStrength && f.derivedStrength.value) || 50);
+      return { fac: f, score: Math.max(1, (f.derivedStrength && f.derivedStrength.value) || 50), reasons: ['strength-fallback'] };
+    }).sort(function(a, b){ return b.score - a.score; });
+    function hasReason(row, names) {
+      var s = '|' + _arr(row && row.reasons).join('|') + '|';
+      return names.some(function(n){ return s.indexOf('|' + n + '|') >= 0; });
+    }
+    var forced = ranked.filter(function(row) {
+      return hasReason(row, ['sc16-directive','war','fiscal','intervention','recent-loss','empty-treasury']);
     });
+    var hot = ranked.filter(function(row) {
+      return hasReason(row, ['hotspot','story','player-relation','player-border','retry-pressure','intrigue','rebellion','long-idle']);
+    });
+    var poolName = forced.length ? 'forced' : (hot.length ? 'hot' : 'ranked');
+    var pool = forced.length ? forced.slice(0, 4) : (hot.length ? hot.slice(0, 6) : ranked.slice(0, Math.min(8, ranked.length)));
+    var weights = pool.map(function(row){ return Math.max(1, _safeNum(row.score) || 1); });
     var sum = weights.reduce(function(a, b){ return a + b; }, 0);
     var r = Math.random() * sum;
     var cum = 0;
-    for (var i = 0; i < npcs.length; i++) {
+    for (var i = 0; i < pool.length; i++) {
       cum += weights[i];
-      if (r <= cum) return npcs[i];
+      if (r <= cum) {
+        _recordPickLog(turn, poolName, pool, pool[i] && pool[i].fac);
+        return pool[i] && pool[i].fac;
+      }
     }
-    return npcs[npcs.length - 1];
+    _recordPickLog(turn, poolName, pool, pool[pool.length - 1] && pool[pool.length - 1].fac);
+    return pool[pool.length - 1] && pool[pool.length - 1].fac;
+  }
+
+  function _recordPickLog(turn, poolName, pool, selected) {
+    try {
+      if (!global.GM) return;
+      if (!Array.isArray(global.GM._npcFactionLlmPickLog)) global.GM._npcFactionLlmPickLog = [];
+      global.GM._npcFactionLlmPickLog.push({
+        turn: turn,
+        pool: poolName || 'ranked',
+        selected: selected && selected.name || '',
+        candidates: _arr(pool).slice(0, 8).map(function(row) {
+          return { faction: row.fac && row.fac.name || '', score: Math.round(_safeNum(row.score)), reasons: _arr(row.reasons).slice(0, 6) };
+        })
+      });
+      if (global.GM._npcFactionLlmPickLog.length > 30) global.GM._npcFactionLlmPickLog = global.GM._npcFactionLlmPickLog.slice(-30);
+    } catch(_){}
   }
 
   function _markRan(fac, turn) {
@@ -166,7 +202,11 @@
   }
 
   // 玩家进入新回合时调用·分批安排后台推演
-  function scheduleInTurnRuns() {
+  function scheduleInTurnRuns(opts) {
+    opts = opts || {};
+    if (!opts.internal && global.TM && global.TM.FactionNpcDispatchQueue && typeof global.TM.FactionNpcDispatchQueue.scheduleInTurnRuns === 'function') {
+      return global.TM.FactionNpcDispatchQueue.scheduleInTurnRuns(opts);
+    }
     cancelInTurnTimers();
     if (!_isEnabled()) return { scheduled: 0, reason: 'precision off' };
     if (typeof setTimeout === 'undefined') return { scheduled: 0, reason: 'no setTimeout' };

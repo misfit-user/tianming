@@ -137,7 +137,30 @@
   }
 
   function _ledgerEnabled(opts) {
-    return !!(opts && (opts.source === 'eager' || opts.source === 'in-turn'));
+    return !!(opts && (opts.source === 'eager' || opts.source === 'in-turn' || opts.source === 'manual'));
+  }
+
+  function _ensureFactionAiTurnLedger(turn) {
+    if (!global.GM) return null;
+    turn = _safeNum(turn) || _currentTurn();
+    if (!global.GM._npcFactionAiTurnLedger || global.GM._npcFactionAiTurnLedger.turn !== turn) {
+      global.GM._npcFactionAiTurnLedger = {
+        turn: turn,
+        createdAt: turn,
+        sc16: global.GM._sc16FactionDirectives || null,
+        dispatch: global.GM._npcFactionLlmDispatchLedger || null,
+        runs: {},
+        actions: [],
+        candidateRanks: [],
+        notes: [],
+        stats: {}
+      };
+    }
+    if (!global.GM._npcFactionAiTurnLedger.stats) global.GM._npcFactionAiTurnLedger.stats = {};
+    if (!Array.isArray(global.GM._npcFactionAiTurnLedger.actions)) global.GM._npcFactionAiTurnLedger.actions = [];
+    if (!Array.isArray(global.GM._npcFactionAiTurnLedger.candidateRanks)) global.GM._npcFactionAiTurnLedger.candidateRanks = [];
+    if (!Array.isArray(global.GM._npcFactionAiTurnLedger.notes)) global.GM._npcFactionAiTurnLedger.notes = [];
+    return global.GM._npcFactionAiTurnLedger;
   }
 
   function _ensureLedger(turn) {
@@ -148,6 +171,8 @@
     }
     if (!global.GM._npcFactionLlmLedger.runs) global.GM._npcFactionLlmLedger.runs = {};
     if (!Array.isArray(global.GM._npcFactionLlmLedger.order)) global.GM._npcFactionLlmLedger.order = [];
+    var turnLedger = _ensureFactionAiTurnLedger(turn);
+    if (turnLedger) turnLedger.runs = global.GM._npcFactionLlmLedger.runs;
     return global.GM._npcFactionLlmLedger;
   }
 
@@ -215,6 +240,8 @@
     row.status = status || row.status || 'skipped';
     row.finishedAt = Date.now();
     if (reason) row.reason = reason;
+    var turnLedger = _ensureFactionAiTurnLedger(token.turn);
+    if (turnLedger) turnLedger.runs = ledger.runs;
   }
 
   function _formatRecentWorld(facName) {
@@ -307,6 +334,12 @@
     _tail(fac.npcFiscalActions, 4).forEach(function(a){
       lines.push('  财策 ' + _fmtTurn(a) + ' ' + _txt(a.resource || a.action, 60) + ' ' + _txt(a.amount, 40) + ' ' + _txt(a.reason, 100) + ' ' + _txt(a.effect, 140));
     });
+    _tail(fac.npcIntrigueActions, 4).forEach(function(a){
+      lines.push('  间谍 ' + _fmtTurn(a) + ' ->' + _txt(a.targetFaction || a.target || '', 60) + ' ' + _txt(a.intrigue || a.policy || a.action, 80) + ' ' + _txt(a.reason, 100));
+    });
+    _tail(fac.npcRebellionPolicies, 4).forEach(function(a){
+      lines.push('  叛乱 ' + _fmtTurn(a) + ' ->' + _txt(a.targetFaction || a.target || '', 60) + ' ' + _txt(a.policy || a.action, 80) + ' ' + _txt(a.reason, 100));
+    });
     if (fac._lastLlmRationale && fac._lastLlmRationale.text) {
       lines.push('  上次君主考量: ' + _txt(fac._lastLlmRationale.text, 180));
     }
@@ -322,6 +355,38 @@
     var lines = [];
     var G = global.GM || {};
     var sc16 = G._turnAiResults && G._turnAiResults.subcall16;
+    if (!fac || !fac.name) return lines;
+
+    var ledger = G._sc16FactionDirectives || null;
+    var directive = (ledger && ledger.byFaction && ledger.byFaction[fac.name]) || fac._sc16Directive || null;
+    if (directive) {
+      lines.push('  sc16-ledger turn=' + (directive.turn || (ledger && ledger.turn) || '?') + ' source=' + (directive.source || 'sc16') + (directive.hasDirectContent ? ' direct=1' : ' direct=0'));
+      if (directive.powerBalanceShift) lines.push('  sc16 world balance: ' + _txt(directive.powerBalanceShift, 180));
+      if (directive.territorialChanges) lines.push('  sc16 territory: ' + _txt(directive.territorialChanges, 160));
+      _arr(directive.directives).slice(0, 4).forEach(function(d) {
+        lines.push('  sc16 directive: ' + _txt(d.strategic_intent || d.intent || d.goal || d.must_follow || d.reason || d, 180)
+          + (d.must_follow ? ' | must:' + _txt(d.must_follow, 120) : '')
+          + (Array.isArray(d.preferred_actions) ? ' | preferred:' + d.preferred_actions.slice(0, 4).map(function(x){ return _txt(x, 50); }).join('/') : '')
+          + (d.red_lines ? ' | red_lines:' + _txt(d.red_lines, 100) : ''));
+      });
+      _arr(directive.actions).slice(0, 6).forEach(function(a) {
+        var who = a.faction || a.actor || a.from || fac.name;
+        var target = a.target || a.targetFaction || a.to || '';
+        lines.push('  sc16 action: ' + who + (target ? '->' + target : '') + ' ' + _txt(a.action || a.move || a.intent, 160)
+          + (a.motive ? ' | motive:' + _txt(a.motive, 90) : '')
+          + (a.impact ? ' | impact:' + _txt(a.impact, 90) : ''));
+      });
+      _arr(directive.diplomacy).slice(0, 6).forEach(function(d) {
+        lines.push('  sc16 diplomacy: ' + (d.from || '?') + '->' + (d.to || '?') + ' '
+          + _txt(d.old_relation || '', 40) + '=>' + _txt(d.new_relation || d.type || '', 60)
+          + (d.reason ? ' | reason:' + _txt(d.reason, 100) : ''));
+      });
+      if (lines.length > 1) {
+        lines.push('  operational rule: turn sc16 directives into concrete actions[] where possible; if impossible, explain the contradiction in rationale instead of silently ignoring it.');
+      }
+      return lines;
+    }
+
     if (!sc16 || !fac || !fac.name) return lines;
 
     if (sc16.power_balance_shift) lines.push('  sc16 world balance: ' + _txt(sc16.power_balance_shift, 180));
@@ -669,6 +734,91 @@
     return lines;
   }
 
+  function _charDecisionScore(c) {
+    var role = _classifyChar(c);
+    var score = 0;
+    if (role === 'ruler') score += 100;
+    else if (role === 'general') score += 82;
+    else if (role === 'court') score += 72;
+    else if (role === 'clan') score += 62;
+    var loyalty = c && c.loyalty != null ? _safeNum(c.loyalty) : 50;
+    if (loyalty <= 35) score += 28;
+    if (loyalty >= 75) score += 14;
+    if (c && (c.position || c.title || c.officialTitle || c.office)) score += 8;
+    if (c && c.party) score += 6;
+    if (c && (c.isImportant || c.keyFigure || c.featured)) score += 20;
+    return score;
+  }
+
+  function _selectActionCandidateChars(fac, alive, limit) {
+    var G = global.GM || {};
+    var list = _arr(alive).slice();
+    if (!list.length && fac && fac.name) {
+      list = _arr(G.chars).filter(function(c){
+        return c && c.alive !== false && (c.faction === fac.name || c.factionName === fac.name || c.ownerFaction === fac.name);
+      });
+    }
+    var seen = {};
+    return list.filter(function(c){
+      var name = c && (c.name || c.id);
+      if (!name || seen[name]) return false;
+      seen[name] = true;
+      return true;
+    }).sort(function(a, b){
+      return _charDecisionScore(b) - _charDecisionScore(a);
+    }).slice(0, limit || 18);
+  }
+
+  function _formatActionCandidates(fac, alive) {
+    var G = global.GM || {};
+    var lines = [];
+    var chars = _selectActionCandidateChars(fac, alive, 18);
+    if (chars.length) {
+      lines.push('  valid char targets: ' + chars.map(function(c) {
+        return c.name + '(' + _classifyChar(c)
+          + (c.party ? '/' + c.party : '')
+          + (c.position || c.officialTitle || c.title ? '/' + _txt(c.position || c.officialTitle || c.title, 24) : '')
+          + '/loyalty=' + (c.loyalty != null ? c.loyalty : '?') + ')';
+      }).join('; '));
+    }
+    var facNames = [fac && fac.name, fac && fac.id, fac && fac.factionId].filter(function(x){ return !!x; });
+    var armies = _arr(G.armies).filter(function(a) {
+      var owner = a && (a.faction || a.ownerFaction || a.owner || a.factionName || a.side || '');
+      return facNames.indexOf(owner) >= 0 || _txt(a, 260).indexOf(fac.name) >= 0;
+    }).slice(0, 12);
+    if (armies.length) {
+      lines.push('  valid army targets: ' + armies.map(function(a){
+        return _txt(a.name || a.id || 'unnamed', 40)
+          + '(soldiers=' + (a.soldiers || a.troops || a.count || a.size || '?')
+          + (a.commander ? ',cmd=' + _txt(a.commander, 24) : '')
+          + (a.location || a.garrison ? ',loc=' + _txt(a.location || a.garrison, 30) : '') + ')';
+      }).join('; '));
+    }
+    var provinces = [];
+    try {
+      if (typeof global.getFactionProvinces === 'function') provinces = global.getFactionProvinces(fac.name) || [];
+    } catch(_){}
+    if (!provinces.length) {
+      provinces = _arr(fac && (fac.territories || fac.provinceIds || fac.provinces || fac.territory));
+      if (typeof (fac && fac.territory) === 'string') provinces = [fac.territory];
+    }
+    if (provinces.length) lines.push('  valid province targets: ' + provinces.slice(0, 18).map(function(p){ return _txt(p, 40); }).join('; '));
+    var relTargets = [];
+    _arr(G.factionRelations).forEach(function(r) {
+      if (!r) return;
+      if (r.from === fac.name && r.to) relTargets.push(r.to + '(' + (r.type || '?') + '/' + (r.value != null ? r.value : 0) + ')');
+      if (r.to === fac.name && r.from) relTargets.push(r.from + '(' + (r.type || '?') + '/' + (r.value != null ? r.value : 0) + ')');
+    });
+    _arr(G.facs).forEach(function(f) {
+      if (!f || !f.name || f.name === fac.name) return;
+      if (_isPlayerFaction(f, _resolvePlayerFactionNames())) return;
+      if (relTargets.join('|').indexOf(f.name + '(') < 0) relTargets.push(f.name + '(power=' + ((f.derivedStrength && f.derivedStrength.value) || f.strength || '?') + ')');
+    });
+    if (relTargets.length) lines.push('  valid faction targets: ' + relTargets.slice(0, 14).join('; '));
+    lines.push('  target discipline: use these exact names for char/army/province/faction fields; if sc16 asks for an action outside these candidates, choose the closest valid target and explain in rationale.');
+    return lines;
+  }
+
   function _formatCharacterMemory(alive) {
     var lines = [];
     alive.slice(0, 12).forEach(function(c){
@@ -717,6 +867,7 @@
     var entry = (global.GM && global.GM._facIndex && global.GM._facIndex[fac.name]) || null;
     var alive = (entry && entry.chars) ? entry.chars.filter(function(c){ return c.alive !== false; }) : [];
     var ruler = alive.find(function(c){ return _classifyChar(c) === 'ruler'; }) || alive[0] || { name: '?' };
+    var candidateChars = _selectActionCandidateChars(fac, alive, 12);
 
     var dh = fac.derivedHealth || {};
     var de = fac.derivedEconomy || {};
@@ -741,7 +892,7 @@
     var parties = (entry && entry.parties) ? Object.keys(entry.parties) : [];
     if (parties.length > 0) sys += '\n  派系: ' + parties.join('·') + ' (主导·' + ((entry.metrics && entry.metrics.partyDominantName) || '?') + ' 失衡·' + ((entry.metrics && entry.metrics.partyImbalance) || 0) + ')';
 
-    sys += '\n  治下 chars (上奏候选): ' + alive.slice(0, 6).map(function(c){
+    sys += '\n  治下 chars (action target candidates): ' + candidateChars.map(function(c){
       return c.name + '(' + _classifyChar(c) + (c.party ? '·' + c.party : '') + '·忠' + (c.loyalty || 50) + ')';
     }).join('·');
 
@@ -755,6 +906,12 @@
     _pushSection(extra, 'SCENARIO_FACTION_PROFILE', _formatFactionProfile(fac));
     _pushSection(extra, 'OWN_ADMIN_HIERARCHY', _formatOwnAdminHierarchy(fac));
     _pushSection(extra, 'SC16_WORLD_DIRECTIVE', _formatSc16DirectiveForFac(fac));
+    _pushSection(extra, 'ACTION_CANDIDATES', _formatActionCandidates(fac, alive));
+    try {
+      if (global.TM && TM.FactionActionEngine && typeof TM.FactionActionEngine.formatActionContractForPrompt === 'function') {
+        _pushSection(extra, 'ACTION_CONTRACT', String(TM.FactionActionEngine.formatActionContractForPrompt({ maxChars: 1800 })).split('\n'));
+      }
+    } catch(_){}
     _pushSection(extra, 'FACTION_TRAJECTORY', _formatFactionTrajectory(fac));
     _pushSection(extra, 'RELATIONS_AND_WARS', _formatRelationsAndWars(fac));
     _pushSection(extra, 'MILITARY_CONTEXT', _formatMilitaryContext(fac));
@@ -772,39 +929,89 @@
     user += '  "edict": {"type":"催征|减俸|补饷|整军|安抚|罢党争|怀柔|赏赐|巡抚|经略","content":"诏令 60-120 字","trigger":"财政危|军权弱|朝堂裂|稳定·示恩|...","treasuryDelta":-500000至500000,"loyaltyDeltas":{"court":-10至10,"general":0,"clan":0}},\n';
     user += '  "chaoyi": {"type":"cooperate|attack|compromise|infight|null (单派则 null)","summary":"20-50 字","partyImbalanceDelta":-0.2至0.2,"loyaltyDeltaByParty":{"partyA":-5至5}},\n';
     user += '  "office": [{"kind":"promote|demote","target":"char.name","newPosition":"按 paradigm 头衔","loyaltyDelta":-10至10,"reason":"..."}, ...0-1 条],\n';
-    user += '  "actions": [{"type":"office_change|fiscal_policy|military_order|diplomacy|province_policy","target":"char.name","newPosition":"官职","resource":"money|grain|cloth","treasuryDelta":0,"army":"army.name","commander":"char.name","targetFaction":"faction.name","relationDelta":-20,"province":"province.name","ownerFaction":"faction.name","reason":"20-60 chars"}, ...0-3]\n';
+    user += '  "actions": [{"type":"office_change|fiscal_policy|military_order|diplomacy|province_policy|spy_or_intrigue|rebellion_policy","target":"char.name","newPosition":"官职","resource":"money|grain|cloth","treasuryDelta":0,"army":"army.name","commander":"char.name","targetFaction":"faction.name","relationDelta":-20,"province":"province.name","ownerFaction":"faction.name","intrigue":"spread_rumor|bribe|sabotage","policy":"incite|pacify|sponsor","support":1,"reason":"20-60 chars"}, ...0-8]\n';
     user += '}\n';
-    user += 'actions 可选但优先用于真实外部动作: office_change 字段 {target,newPosition,kind:"promote|demote|appoint",loyaltyDelta,reason}; fiscal_policy 字段 {resource:"money|grain|cloth",treasuryDelta,reason}; military_order 字段 {army, order:"change_commander|move|reinforce", commander, destination}; diplomacy 字段 {targetFaction, relationDelta:-100至100, relationType, reason}; province_policy 字段 {province, policy:"transfer_owner|pacify|extract", ownerFaction, reason}。';
+    user += 'actions 可选但优先用于真实外部动作: office_change 字段 {target,newPosition,kind:"promote|demote|appoint",loyaltyDelta,reason}; fiscal_policy 字段 {resource:"money|grain|cloth",treasuryDelta,reason}; military_order 字段 {army, order:"change_commander|move|reinforce", commander, destination}; diplomacy 字段 {targetFaction, relationDelta:-100至100, relationType, reason}; province_policy 字段 {province, policy:"transfer_owner|pacify|extract", ownerFaction, reason}; spy_or_intrigue 字段 {targetFaction,intrigue:"spread_rumor|bribe|sabotage",relationDelta,pressure,reason}; rebellion_policy 字段 {targetFaction,policy:"incite|sponsor|pacify",support,reason}。';
     user += '\n约束: type/decision/kind 必须是给定 enum·content 必须中文古文风·目标 char 必须在治下 chars 列表中·军队/地块/势力名必须来自上下文·所有数值必须在区间内。';
+    user += '\nTARGET RULE: char/army/province/faction names must come from ACTION_CANDIDATES or the visible context above. Prefer concrete actions[] that operationalize SC16_WORLD_DIRECTIVE; do not invent invisible characters or armies.';
 
     return { system: sys, user: user };
   }
 
-  async function _callLLMDecision(prompts) {
-    if (typeof global.callAI !== 'function') return null;
-    try {
-      var combined = prompts.system + '\n\n' + prompts.user;
-      var raw = await global.callAI(combined, 800, null, 'secondary');
-      if (!raw) return null;
-      // 提取 JSON·允许包前后说明
-      var jsonStart = raw.indexOf('{');
-      var jsonEnd = raw.lastIndexOf('}');
-      if (jsonStart < 0 || jsonEnd <= jsonStart) {
-        try { console.warn('[npc-llm-decision] no JSON in response·preview:', raw.slice(0, 100)); } catch(_){}
-        return null;
-      }
-      var jsonStr = raw.slice(jsonStart, jsonEnd + 1);
-      var parsed = JSON.parse(jsonStr);
-      return parsed;
-    } catch (e) {
-      try { console.warn('[npc-llm-decision] parse failed', e); } catch(_){}
-      return null;
-    }
+  function _extractJsonText(raw) {
+    raw = String(raw || '').replace(/```json/gi, '```').replace(/```/g, '').trim();
+    var jsonStart = raw.indexOf('{');
+    var jsonEnd = raw.lastIndexOf('}');
+    if (jsonStart < 0 || jsonEnd <= jsonStart) return '';
+    return raw.slice(jsonStart, jsonEnd + 1)
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'");
   }
 
-  // ──────────────────────────────────────────────────────────
-  // Validate decision schema·失败 returns null
-  // ──────────────────────────────────────────────────────────
+  function _parseDecisionJson(raw) {
+    var jsonStr = _extractJsonText(raw);
+    if (!jsonStr) return null;
+    return JSON.parse(jsonStr);
+  }
+
+  function _withTimeout(promise, ms) {
+    if (!ms || typeof global.setTimeout !== 'function' || typeof global.clearTimeout !== 'function') return promise;
+    return new Promise(function(resolve, reject) {
+      var done = false;
+      var timer = global.setTimeout(function(){
+        if (done) return;
+        done = true;
+        reject(new Error('LLM timeout'));
+      }, ms);
+      promise.then(function(v){
+        if (done) return;
+        done = true;
+        global.clearTimeout(timer);
+        resolve(v);
+      }, function(e){
+        if (done) return;
+        done = true;
+        global.clearTimeout(timer);
+        reject(e);
+      });
+    });
+  }
+
+  function _precisionMaxTokens(opts) {
+    opts = opts || {};
+    var conf = (global.P && P.conf) || {};
+    var raw = opts.maxTokens != null ? opts.maxTokens : conf.npcAiPrecisionMaxTokens;
+    var n = _safeNum(raw);
+    if (!n) n = 3000;
+    return Math.max(1200, Math.min(12000, Math.floor(n)));
+  }
+
+  async function _callLLMDecision(prompts, opts) {
+    opts = opts || {};
+    if (typeof global.callAI !== 'function') return null;
+    var attempts = Math.max(1, _safeNum(opts.maxAttempts) || ((global.P && P.conf && P.conf.npcAiPrecisionRetryAttempts) || 2));
+    var timeoutMs = _safeNum(opts.timeoutMs || (global.P && P.conf && P.conf.npcAiPrecisionTimeoutMs)) || 0;
+    var maxTokens = _precisionMaxTokens(opts);
+    var combined = prompts.system + '\n\n' + prompts.user;
+    var lastError = '';
+    for (var i = 0; i < attempts; i++) {
+      try {
+        var promptText = combined;
+        if (i > 0) promptText += '\n\nFORMAT_ERROR_RETRY: 上次输出无法解析为 strict JSON。请只返回一个 JSON object，不要 markdown，不要解释。错误: ' + lastError;
+        var raw = await _withTimeout(global.callAI(promptText, maxTokens, null, 'secondary'), timeoutMs);
+        if (!raw) { lastError = 'empty response'; continue; }
+        var parsed = _parseDecisionJson(raw);
+        if (parsed) return parsed;
+        lastError = 'no JSON object in response';
+      } catch (e) {
+        lastError = (e && e.message) || String(e || 'parse failed');
+        try { console.warn('[npc-llm-decision] parse/call failed attempt ' + (i + 1), lastError); } catch(_){}
+      }
+    }
+    return null;
+  }
+
   var VALID_MEM_TYPES = ['军务','政务','民生','经济','人事','密奏'];
   var VALID_DECISIONS = ['approved','rejected','annotated','referred'];
   var VALID_EDICT_TYPES = ['催征','减俸','补饷','整军','安抚','罢党争','怀柔','赏赐','巡抚','经略'];
@@ -1426,7 +1633,7 @@
     var ledgerToken = ledgerRun.token;
 
     var prompts = _buildPrompt(fac);
-    var raw = await _callLLMDecision(prompts);
+    var raw = await _callLLMDecision(prompts, opts);
     if (_isLedgerTokenStale(ledgerToken)) {
       return { skipped: true, reason: 'stale turn', turn: ledgerToken.turn, currentTurn: _currentTurn() };
     }
@@ -1448,6 +1655,29 @@
   }
 
   // 多 fac 并发·用 action engine 评分优先处理战争/财政/干预后的活跃势力
+  function _precisionConcurrency() {
+    var conf = (global.P && P.conf) || {};
+    var n = _safeNum(conf.npcAiPrecisionConcurrency);
+    return Math.max(1, Math.min(4, n || 2));
+  }
+
+  async function _mapLimit(list, limit, worker) {
+    list = _arr(list);
+    limit = Math.max(1, _safeNum(limit) || 1);
+    var results = new Array(list.length);
+    var next = 0;
+    async function runOne() {
+      while (next < list.length) {
+        var idx = next++;
+        results[idx] = await worker(list[idx], idx);
+      }
+    }
+    var runners = [];
+    for (var i = 0; i < Math.min(limit, list.length); i++) runners.push(runOne());
+    await Promise.all(runners);
+    return results;
+  }
+
   async function decideAll(opts) {
     opts = opts || {};
     if (!_isEnabled()) return { skipped: true, reason: 'LLM mode off' };
@@ -1461,10 +1691,10 @@
       .filter(function(f){ return !hasRunThisTurn(f.name, batchTurn); });
     var engine = _actionEngine();
     var npcs = [];
+    var rankedRows = [];
     if (engine && typeof engine.rankFactionCandidates === 'function') {
-      npcs = engine.rankFactionCandidates(candidates, { turn: batchTurn, playerFactionNames: playerFacNames })
-        .map(function(row){ return row.fac; })
-        .slice(0, maxPerTurn);
+      rankedRows = engine.rankFactionCandidates(candidates, { turn: batchTurn, playerFactionNames: playerFacNames });
+      npcs = rankedRows.map(function(row){ return row.fac; }).slice(0, maxPerTurn);
     } else {
       npcs = candidates.sort(function(a, b){
         var sa = (a.derivedStrength && a.derivedStrength.value) || 0;
@@ -1472,13 +1702,98 @@
         return sb - sa;
       })
       .slice(0, maxPerTurn);
+      rankedRows = npcs.map(function(f){ return { fac:f, score:(f.derivedStrength && f.derivedStrength.value) || 0, reasons:['strength-fallback'] }; });
     }
+    try {
+      global.GM._npcFactionLlmCandidateRanks = {
+        turn: batchTurn,
+        source: source,
+        maxPerTurn: maxPerTurn,
+        rows: rankedRows.slice(0, 16).map(function(row) {
+          return { faction: row.fac && row.fac.name || '', score: Math.round(_safeNum(row.score)), reasons: _arr(row.reasons).slice(0, 8) };
+        })
+      };
+      var turnLedger = _ensureFactionAiTurnLedger(batchTurn);
+      if (turnLedger) turnLedger.candidateRanks = global.GM._npcFactionLlmCandidateRanks.rows.slice();
+    } catch(_){}
 
-    var results = await Promise.all(npcs.map(function(f){
+    var results = await _mapLimit(npcs, _precisionConcurrency(), function(f){
       return decideFor(f.name, { source: source, turn: batchTurn }).then(function(r){ return { fac: f.name, result: r }; });
-    }));
+    });
     var applied = results.filter(function(r){ return r.result.applied; }).length;
     return { applied: applied, attempted: npcs.length, results: results };
+  }
+
+  function _diagText(obj) {
+    if (obj == null) return '';
+    if (typeof obj === 'string') return obj;
+    try { return JSON.stringify(obj); } catch(_) { return String(obj || ''); }
+  }
+
+  function buildFactionAiDiagnostics(facName) {
+    var G = global.GM || {};
+    var fac = null;
+    if (facName && Array.isArray(G.facs)) {
+      fac = G.facs.find(function(x){ return x && x.name === facName; }) || null;
+    }
+    if (!fac && facName && typeof facName === 'object') {
+      fac = facName;
+      facName = fac.name;
+    }
+    if (!facName && fac) facName = fac.name;
+    var run = (G._npcFactionLlmLedger && G._npcFactionLlmLedger.runs && G._npcFactionLlmLedger.runs[facName]) || null;
+    var directive = (G._sc16FactionDirectives && G._sc16FactionDirectives.byFaction && G._sc16FactionDirectives.byFaction[facName])
+      || (fac && fac._sc16Directive)
+      || null;
+    var candidateRank = null;
+    var ranks = G._npcFactionLlmCandidateRanks && G._npcFactionLlmCandidateRanks.rows;
+    if (Array.isArray(ranks)) {
+      candidateRank = ranks.find(function(row){ return row && row.faction === facName; }) || null;
+    }
+    var qijuWrites = _arr(G.qijuHistory).filter(function(q) {
+      if (!q) return false;
+      var src = q._source || '';
+      if (['npc-in-turn-llm','npc-bridge','faction-npc-llm'].indexOf(src) < 0) return false;
+      return q._facName === facName || _diagText(q).indexOf(facName) >= 0;
+    });
+    var settings = {};
+    try {
+      if (global.TM && TM.FactionNpcSettings && typeof TM.FactionNpcSettings.getStatus === 'function') {
+        settings = TM.FactionNpcSettings.getStatus() || {};
+      }
+    } catch(_){}
+    var dispatch = G._npcFactionLlmDispatchLedger || null;
+    var turn = _safeNum(G.turn) || _currentTurn();
+    var turnLedger = (G._npcFactionAiTurnLedger && G._npcFactionAiTurnLedger.turn === turn)
+      ? G._npcFactionAiTurnLedger
+      : null;
+    if (!turnLedger && (G._npcFactionLlmLedger || dispatch || G._npcFactionLlmCandidateRanks || G._sc16FactionDirectives)) {
+      turnLedger = {
+        turn: turn,
+        sc16: G._sc16FactionDirectives || null,
+        dispatch: dispatch,
+        runs: (G._npcFactionLlmLedger && G._npcFactionLlmLedger.runs) || {},
+        actions: _arr(fac && fac._npcLlmActionLedger).slice(),
+        candidateRanks: _arr(G._npcFactionLlmCandidateRanks && G._npcFactionLlmCandidateRanks.rows).slice(),
+        notes: [],
+        stats: dispatch && dispatch.stats ? { dispatch: dispatch.stats } : {}
+      };
+    }
+    return {
+      turn: turn,
+      faction: facName || '',
+      exists: !!fac,
+      settings: settings,
+      run: run,
+      sc16Directive: directive,
+      candidateRank: candidateRank,
+      dispatch: dispatch,
+      turnLedger: turnLedger,
+      actionLedger: _arr(fac && fac._npcLlmActionLedger).slice(),
+      lastRationale: fac && fac._lastLlmRationale || null,
+      lastApplySummary: fac && fac._lastLlmApplySummary || null,
+      qijuWrites: qijuWrites.slice(-12)
+    };
   }
 
   global.TM = global.TM || {};
@@ -1491,6 +1806,7 @@
     _formatOwnAdminHierarchy: _formatOwnAdminHierarchy,
     hasRunThisTurn: hasRunThisTurn,
     countRunsThisTurn: countRunsThisTurn,
+    buildFactionAiDiagnostics: buildFactionAiDiagnostics,
     _resolvePlayerFactionNames: _resolvePlayerFactionNames,
     _isPlayerFaction: _isPlayerFaction,
     _validateDecision: _validateDecision,
@@ -1500,6 +1816,6 @@
   };
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { decideFor: decideFor, decideAll: decideAll, hasRunThisTurn: hasRunThisTurn, countRunsThisTurn: countRunsThisTurn, buildRecentTrajectoryContextForSc16: buildRecentTrajectoryContextForSc16, buildFactionAdminSummaryForSc16: buildFactionAdminSummaryForSc16, _resolvePlayerFactionNames: _resolvePlayerFactionNames, _isPlayerFaction: _isPlayerFaction, _normalizeDecisionActions: _normalizeDecisionActions };
+    module.exports = { decideFor: decideFor, decideAll: decideAll, hasRunThisTurn: hasRunThisTurn, countRunsThisTurn: countRunsThisTurn, buildRecentTrajectoryContextForSc16: buildRecentTrajectoryContextForSc16, buildFactionAdminSummaryForSc16: buildFactionAdminSummaryForSc16, buildFactionAiDiagnostics: buildFactionAiDiagnostics, _resolvePlayerFactionNames: _resolvePlayerFactionNames, _isPlayerFaction: _isPlayerFaction, _normalizeDecisionActions: _normalizeDecisionActions };
   }
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : globalThis));

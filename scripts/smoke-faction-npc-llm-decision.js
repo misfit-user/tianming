@@ -17,13 +17,14 @@ function buildContext() {
     Math: Math, Date: Date, JSON: JSON, Object: Object, Array: Array,
     Number: Number, String: String, Boolean: Boolean, RegExp: RegExp,
     isFinite: isFinite, parseInt: parseInt, parseFloat: parseFloat, isNaN: isNaN, Set: Set,
-    Promise: Promise };
+    Promise: Promise, setTimeout: setTimeout, clearTimeout: clearTimeout };
   ctx.window = ctx; ctx.global = ctx; ctx.globalThis = ctx;
   vm.createContext(ctx);
   ['tm-faction-paradigm.js', 'tm-faction-personality.js', 'tm-faction-index.js',
    'tm-faction-derived-health.js', 'tm-faction-membership.js',
    'tm-faction-derived-economy.js', 'tm-faction-derived-cohesion.js', 'tm-faction-derived-strength.js',
    'tm-faction-npc-settings.js',
+   'tm-faction-npc-news-bridge.js',
    'tm-faction-action-engine.js',
    'tm-faction-npc-memorial.js', 'tm-faction-npc-edict.js', 'tm-faction-npc-chaoyi.js',
    'tm-faction-npc-office.js', 'tm-faction-npc-guoku.js',
@@ -68,6 +69,7 @@ function unitTests() {
   var fld = ctx.TM.FactionNpcLlmDecision;
   assert(typeof fld.decideFor === 'function', 'decideFor missing');
   assert(typeof fld.decideAll === 'function', 'decideAll missing');
+  assert(typeof fld.buildFactionAiDiagnostics === 'function', 'buildFactionAiDiagnostics missing');
 
   // Validate·正常
   var d1 = fld._validateDecision({
@@ -230,6 +232,11 @@ function actionEngineStrategicActionsTest() {
   assert(typeof ctx.TM.FactionActionEngine.validateDecision === 'function', 'engine validateDecision missing');
   assert(typeof ctx.TM.FactionActionEngine.applyDecision === 'function', 'engine applyDecision missing');
   assert(typeof ctx.TM.FactionActionEngine.scoreFactionCandidate === 'function', 'engine scoreFactionCandidate missing');
+  assert(typeof ctx.TM.FactionActionEngine.getActionContract === 'function', 'engine action contract getter missing');
+  assert(typeof ctx.TM.FactionActionEngine.formatActionContractForPrompt === 'function', 'engine action contract formatter missing');
+  var contract = ctx.TM.FactionActionEngine.getActionContract();
+  assert(contract.diplomacy && contract.diplomacy.required.indexOf('targetFaction') >= 0, 'action contract should describe diplomacy target');
+  assert(ctx.TM.FactionActionEngine.formatActionContractForPrompt().indexOf('province_policy') >= 0, 'prompt contract should list province_policy');
 
   var fac = { name: '北镇', treasury: { money: 200000 }, derivedStrength: { value: 30 }, derivedHealth: { overall: 35, _source: { partyImbalance: 0.4 } }, aiProfile: { posture: '守势' } };
   var target = { name: '南藩', treasury: { money: 300000 }, derivedStrength: { value: 90 }, derivedHealth: { overall: 80, _source: { partyImbalance: 0.1 } } };
@@ -259,6 +266,8 @@ function actionEngineStrategicActionsTest() {
   assert(actions.map(function(a){ return a.type; }).join('|') === 'spy_or_intrigue|rebellion_policy', 'engine should normalize intrigue/rebellion actions');
   var summary = ctx.TM.FactionActionEngine.applyDecision(fac, decision);
   assert(summary.actions === 2, 'engine should apply intrigue/rebellion actions');
+  assert(summary.attemptedActions === 2, 'engine summary should expose attempted action count');
+  assert(fac._lastLlmApplySummary && fac._lastLlmApplySummary.appliedActions === 2, 'faction should remember last apply summary for UI/debug');
   assert(Array.isArray(fac.npcIntrigueActions) && fac.npcIntrigueActions.length === 1, 'intrigue trajectory should be recorded');
   assert(Array.isArray(fac.npcRebellionPolicies) && fac.npcRebellionPolicies.length === 1, 'rebellion trajectory should be recorded');
   assert(target._rebellionPressure >= 2, 'rebellion policy should pressure target faction');
@@ -268,6 +277,188 @@ function actionEngineStrategicActionsTest() {
   var strongQuiet = ctx.TM.FactionActionEngine.scoreFactionCandidate(target, { turn: 11, playerFactionNames: ['玩家朝廷'] });
   assert(weakButUrgent.score > strongQuiet.score, 'crisis/war/intervention should outrank raw strength');
   console.log('[action-engine] strategic actions and priority scoring assertions pass');
+}
+
+function actionEnginePreflightStrategyNewsTest() {
+  var ctx = buildContext();
+  var engine = ctx.TM.FactionActionEngine;
+  assert(engine && typeof engine.dryRunDecision === 'function', 'engine should expose dryRunDecision');
+  assert(typeof engine.validateActionTarget === 'function', 'engine should expose action target validator');
+
+  var fac = {
+    name: 'NorthCourt',
+    treasury: { money: 200000, grain: 100000, cloth: 20000 },
+    territories: [],
+    derivedStrength: { value: 35 },
+    derivedHealth: { overall: 48, _source: { partyImbalance: 0.45 } },
+    derivedEconomy: { fiscalStress: 64 },
+    aiProfile: { posture: 'defensive', strategicPriority: 18 }
+  };
+  var target = {
+    name: 'SouthCamp',
+    treasury: { money: 400000 },
+    territories: ['Frontier'],
+    derivedStrength: { value: 82 },
+    derivedHealth: { overall: 80 }
+  };
+  var player = { name: 'PlayerRealm', isPlayer: true, territories: ['Capital'] };
+  var ruler = { name: 'NorthRuler', faction: 'NorthCourt', role: 'ruler', loyalty: 80, alive: true };
+  var general = { name: 'NorthGeneral', faction: 'NorthCourt', role: 'general', loyalty: 70, alive: true };
+  ctx.GM = {
+    turn: 12,
+    facs: [fac, target, player],
+    chars: [ruler, general],
+    armies: [{ name: 'FrontArmy', faction: 'NorthCourt', commander: 'OldGeneral', soldiers: 12000 }],
+    factionRelations: [
+      { from: 'NorthCourt', to: 'PlayerRealm', type: 'hostile', value: -58, desc: 'border dispute' },
+      { from: 'NorthCourt', to: 'SouthCamp', type: 'tense', value: -35, desc: 'frontier claim' }
+    ],
+    provinceStats: { Frontier: { owner: 'SouthCamp' } },
+    _provinceToFaction: { Frontier: 'SouthCamp' },
+    _facIndex: { NorthCourt: { chars: [ruler, general], parties: {}, metrics: {} }, SouthCamp: { chars: [], parties: {}, metrics: {} } },
+    qijuHistory: [],
+    _npcInterventions: [{ turn: 11, targetFac: 'NorthCourt', action: 'spreadRumor' }],
+    activeWars: [{ sides: ['NorthCourt', 'SouthCamp'], status: 'active' }]
+  };
+  ctx.P = { conf: { npcAiPrecision: true }, ai: { key: 'fake' }, playerInfo: { factionName: 'PlayerRealm' } };
+
+  var invalid = {
+    rationale: 'Probe invalid targets.',
+    actions: [
+      { type: 'military_order', army: 'MissingArmy', commander: 'NorthGeneral', reason: 'bad army' },
+      { type: 'province_policy', province: 'MissingProvince', ownerFaction: 'NorthCourt', reason: 'bad province' }
+    ]
+  };
+  var dry = engine.dryRunDecision(fac, invalid);
+  assert(dry && dry.ok === false && dry.errors.length === 2, 'dryRunDecision should reject unknown army/province before mutation');
+  var skipped = engine.applyDecision(fac, invalid, { turn: 12 });
+  assert(skipped.actions === 0 && skipped.skippedActions === 2, 'applyDecision should skip preflight failures');
+  assert(!fac.npcMilitaryActions && ctx.GM._provinceToFaction.Frontier === 'SouthCamp', 'preflight failures should not mutate army/province state');
+
+  var localRec = { id: 'fixed-local-office', turn: 12 };
+  var localAction = engine.recordLocalAction(fac, 'office_change', { target: 'NorthGeneral' }, localRec);
+  assert(localAction.actionId.indexOf('fixed-local-office') >= 0, 'local action id should use record id instead of random number');
+
+  var valid = {
+    rationale: 'Use army, diplomacy, province, intrigue and rebellion tools together.',
+    actions: [
+      { type: 'military_order', army: 'FrontArmy', order: 'change_commander', commander: 'NorthGeneral', reason: 'trusted general' },
+      { type: 'diplomacy', targetFaction: 'SouthCamp', relationDelta: -12, relationType: 'hostile', reason: 'press claim' },
+      { type: 'province_policy', province: 'Frontier', ownerFaction: 'NorthCourt', policy: 'transfer_owner', reason: 'frontier seizure' },
+      { type: 'spy_or_intrigue', targetFaction: 'SouthCamp', intrigue: 'spread_rumor', relationDelta: -6, reason: 'covert pressure' },
+      { type: 'rebellion_policy', targetFaction: 'SouthCamp', policy: 'incite', support: 3, reason: 'stir border rebels' }
+    ]
+  };
+  var applied = engine.applyDecision(fac, valid, { turn: 12 });
+  assert(applied.actions === 5, 'valid strategic actions should apply');
+  assert(ctx.GM._npcFactionAiTurnLedger && ctx.GM._npcFactionAiTurnLedger.actions && ctx.GM._npcFactionAiTurnLedger.actions.length >= 5,
+    'valid faction LLM actions should also enter unified faction AI turn ledger');
+  assert(ctx.GM._npcFactionAiTurnLedger.actions.some(function(row){ return row.faction === 'NorthCourt' && row.type === 'province_policy'; }),
+    'unified faction AI turn ledger should preserve faction and action type for UI/debug');
+  assert(ctx.GM.armies[0].commander === 'NorthGeneral', 'military preflight should still allow valid army mutation');
+  assert(ctx.GM._provinceToFaction.Frontier === 'NorthCourt', 'province policy should transfer valid province');
+  assert(target._intriguePressure > 0 && target._rebellionPressure >= 3, 'intrigue and rebellion pressure should reach target faction');
+  assert(fac.aiStrategy && fac.aiStrategy.version >= 2, 'strategy memory should be upgraded to v2');
+  assert(Array.isArray(fac.aiStrategy.objectives) && fac.aiStrategy.objectives.length > 0, 'strategy memory should track objectives');
+  assert(Array.isArray(fac.aiStrategy.threats) && fac.aiStrategy.threats.indexOf('SouthCamp') >= 0, 'strategy memory should track hostile targets');
+  assert(Array.isArray(fac.aiStrategy.claims) && fac.aiStrategy.claims.indexOf('Frontier') >= 0, 'strategy memory should track province claims');
+  assert(fac.aiStrategy.lastDecision && fac.aiStrategy.lastDecision.turn === 12, 'strategy memory should store last decision summary');
+  assert(ctx.GM.qijuHistory.some(function(x){ return String(x.content).indexOf('FrontArmy') >= 0; }), 'military action should enter qiju news');
+  assert(ctx.GM.qijuHistory.some(function(x){ return String(x.content).indexOf('SouthCamp') >= 0 && String(x.category).indexOf('间') >= 0; }), 'intrigue action should enter qiju news');
+
+  var ranked = engine.scoreFactionCandidate(fac, { turn: 12, playerFactionNames: ['PlayerRealm'] });
+  assert(ranked.reasons.join('|').indexOf('player-border') >= 0 || ranked.reasons.join('|').indexOf('player-relation') >= 0, 'candidate scoring should account for player-facing pressure');
+  var targetRanked = engine.scoreFactionCandidate(target, { turn: 12, playerFactionNames: ['PlayerRealm'] });
+  assert(targetRanked.reasons.join('|').indexOf('intrigue') >= 0 || targetRanked.reasons.join('|').indexOf('rebellion') >= 0, 'candidate scoring should account for covert/rebellion pressure');
+  console.log('[action-engine-v2] preflight, strategy memory, news, scoring assertions pass');
+}
+
+function factionAiDiagnosticsSnapshotTest() {
+  var ctx = buildContext();
+  var fac = { name: 'DiagNpc', treasury: { money: 100000 }, derivedStrength: { value: 33 } };
+  ctx.GM = {
+    turn: 13,
+    facs: [fac],
+    chars: [],
+    qijuHistory: [{ turn: 13, _source: 'npc-in-turn-llm', _facName: 'DiagNpc', content: 'DiagNpc 后台推演完成' }],
+    _npcFactionLlmLedger: { turn: 13, runs: { DiagNpc: { status: 'applied', source: 'eager', startedAt: 1, finishedAt: 2 } }, order: ['DiagNpc'] },
+    _npcFactionLlmDispatchLedger: { turn: 13, jobs: [{ source: 'eager', status: 'applied' }, { source: 'in-turn', status: 'scheduled' }] },
+    _npcFactionLlmCandidateRanks: { turn: 13, rows: [{ faction: 'DiagNpc', score: 88, reasons: ['sc16-directive'] }] },
+    _sc16FactionDirectives: { turn: 13, source: 'sc16', byFaction: { DiagNpc: { faction: 'DiagNpc', hasDirectContent: true, directives: [{ strategic_intent: '稳内政而窥边' }] } } }
+  };
+  fac._npcLlmActionLedger = [{ turn: 13, type: 'diplomacy', status: 'applied', detail: { targetFaction: 'Other' } }];
+  fac._lastLlmApplySummary = { turn: 13, attemptedActions: 1, appliedActions: 1, skippedActions: 0, mergedActions: 0 };
+  var snap = ctx.TM.FactionNpcLlmDecision.buildFactionAiDiagnostics('DiagNpc');
+  assert(snap && snap.faction === 'DiagNpc', 'diagnostics should resolve faction');
+  assert(snap.run && snap.run.status === 'applied', 'diagnostics should include run ledger');
+  assert(snap.sc16Directive && snap.sc16Directive.hasDirectContent, 'diagnostics should include sc16 directive');
+  assert(snap.dispatch && snap.dispatch.jobs.length === 2, 'diagnostics should include dispatch ledger');
+  assert(snap.turnLedger && snap.turnLedger.turn === 13, 'diagnostics should include unified faction AI turn ledger');
+  assert(snap.actionLedger.length === 1 && snap.qijuWrites.length === 1, 'diagnostics should include action ledger and qiju writes');
+  assert(snap.candidateRank && snap.candidateRank.score === 88, 'diagnostics should include candidate rank row');
+  console.log('[faction-ai-diagnostics] snapshot assertions pass');
+}
+
+async function llmRetryAndConcurrencyTest() {
+  var ctx = buildContext();
+  var fac = { name: 'RetryNpc', treasury: { money: 100000 }, derivedStrength: { value: 20 } };
+  var ruler = { name: 'RetryRuler', faction: 'RetryNpc', role: 'ruler', loyalty: 70, alive: true };
+  ctx.GM = { turn: 20, facs: [fac], chars: [ruler], qijuHistory: [], _facIndex: { RetryNpc: { chars: [ruler], parties: {}, metrics: {} } } };
+  ctx.P = { conf: { npcAiPrecision: true, npcAiPrecisionMaxPerTurn: 3 }, ai: { key: 'fake' }, playerInfo: { factionName: 'PlayerRealm' } };
+  assert(ctx.TM.FactionNpcSettings.getStatus().maxTokens >= 2400, 'precision LLM max token default should be expanded beyond the old 800-token cap');
+  var prompt = ctx.TM.FactionNpcLlmDecision._buildPrompt(fac);
+  var combined = prompt.system + '\n' + prompt.user;
+  assert(combined.indexOf('ACTION_CONTRACT') >= 0, 'prompt should include engine action contract');
+  assert(combined.indexOf('spy_or_intrigue') >= 0 && combined.indexOf('rebellion_policy') >= 0, 'prompt should advertise intrigue and rebellion actions');
+  assert(combined.indexOf('0-8') >= 0, 'prompt action limit should match engine limit');
+
+  var calls = 0;
+  var tokenArgs = [];
+  var tierArgs = [];
+  ctx.callAI = function(promptText, maxTokens, apiKey, tier){
+    calls++;
+    tokenArgs.push(maxTokens);
+    tierArgs.push(tier);
+    if (calls === 1) return Promise.resolve('not json at all');
+    return Promise.resolve(JSON.stringify({ rationale: 'retry ok', memorials: [], edict: null, chaoyi: null, office: [], actions: [] }));
+  };
+  var ret = await ctx.TM.FactionNpcLlmDecision.decideFor('RetryNpc', { source: 'manual' });
+  assert(ret && ret.applied, 'decideFor should retry once after malformed JSON');
+  assert(calls === 2, 'malformed JSON should trigger exactly one repair retry');
+  assert(tokenArgs.length === 2 && tokenArgs.every(function(x){ return x >= 2400 && x > 800; }),
+    'single-faction LLM should request expanded output tokens on initial call and retry');
+  assert(tierArgs.every(function(x){ return x === 'secondary'; }), 'single-faction LLM should stay on secondary API tier');
+
+  var facs = [
+    { name: 'QueueA', treasury: { money: 1 }, derivedStrength: { value: 50 } },
+    { name: 'QueueB', treasury: { money: 1 }, derivedStrength: { value: 40 } },
+    { name: 'QueueC', treasury: { money: 1 }, derivedStrength: { value: 30 } }
+  ];
+  ctx.GM = { turn: 21, facs: facs, chars: [], qijuHistory: [], _facIndex: {} };
+  ctx.P.conf.npcAiPrecisionMaxPerTurn = 3;
+  ctx.P.conf.npcAiPrecisionConcurrency = 1;
+  ctx.P.conf.npcAiPrecisionMaxTokens = 3600;
+  var active = 0;
+  var maxActive = 0;
+  var configuredTokenArgs = [];
+  ctx.callAI = function(promptText, maxTokens){
+    active++;
+    maxActive = Math.max(maxActive, active);
+    configuredTokenArgs.push(maxTokens);
+    return new Promise(function(resolve){
+      setTimeout(function(){
+        active--;
+        resolve(JSON.stringify({ rationale: 'queued ok', memorials: [], edict: null, chaoyi: null, office: [], actions: [] }));
+      }, 5);
+    });
+  };
+  var batch = await ctx.TM.FactionNpcLlmDecision.decideAll({ source: 'eager', turn: 21 });
+  assert(batch.attempted === 3 && batch.applied === 3, 'decideAll should attempt all selected factions');
+  assert(maxActive === 1, 'decideAll should honor npcAiPrecisionConcurrency=1');
+  assert(configuredTokenArgs.length === 3 && configuredTokenArgs.every(function(x){ return x === 3600; }),
+    'single-faction LLM should honor configured npcAiPrecisionMaxTokens');
+  assert(ctx.GM._npcFactionLlmCandidateRanks && ctx.GM._npcFactionLlmCandidateRanks.rows.length >= 3, 'decideAll should record candidate rank ledger');
+  console.log('[llm-retry-concurrency] assertions pass');
 }
 
 function localTemplateLedgerTest() {
@@ -477,8 +668,35 @@ function promptContextExpansionTest() {
         }
       ],
       territorial_changes: '\u65e0\u5927\u89c4\u6a21\u6613\u624b',
-      power_balance_shift: '\u540e\u91d1\u6682\u5b88\uff0c\u660e\u5ef7\u538b\u529b\u4ecd\u5728'
+      power_balance_shift: '\u540e\u91d1\u6682\u5b88\uff0c\u660e\u5ef7\u538b\u529b\u4ecd\u5728',
+      faction_directives: [
+        {
+          faction: '\u540e\u91d1',
+          strategic_intent: '\u5b88\u52bf\u6574\u519b\uff0c\u4f46\u4fdd\u6301\u5bf9\u8fbd\u4e1c\u7684\u538b\u529b',
+          must_follow: '\u4e0d\u5b9c\u7acb\u523b\u5357\u4e0b\uff0c\u5e94\u8f6c\u4e3a\u6574\u519b\u4e0e\u8bd5\u63a2',
+          preferred_actions: ['\u6574\u519b', '\u9063\u4f7f\u8bd5\u63a2'],
+          red_lines: '\u4e0d\u8981\u65e0\u56e0\u653e\u5f03\u8fbd\u4e1c\u538b\u529b'
+        }
+      ]
     }
+  };
+  ctx.GM._sc16FactionDirectives = {
+    turn: 4,
+    source: 'sc16',
+    byFaction: {
+      '\u540e\u91d1': {
+        faction: '\u540e\u91d1',
+        turn: 4,
+        source: 'sc16',
+        hasDirectContent: true,
+        directives: ctx.GM._turnAiResults.subcall16.faction_directives,
+        actions: ctx.GM._turnAiResults.subcall16.faction_actions,
+        diplomacy: ctx.GM._turnAiResults.subcall16.diplomatic_shifts,
+        territorialChanges: ctx.GM._turnAiResults.subcall16.territorial_changes,
+        powerBalanceShift: ctx.GM._turnAiResults.subcall16.power_balance_shift
+      }
+    },
+    order: ['\u540e\u91d1']
   };
   ctx.GM.factionRelations = [
     { from: '后金', to: '明朝廷', type: '敌对', value: -90, desc: '辽东交兵' }
@@ -506,6 +724,9 @@ function promptContextExpansionTest() {
   assert(combined.indexOf('BlueBannerPrompt') >= 0 && combined.indexOf('MingPromptEnvoy') >= 0 && combined.indexOf('PromptLiaoyang') >= 0 && combined.indexOf('Prompt war levy') >= 0,
     'prompt should include expanded NPC LLM action trajectory');
   assert(combined.indexOf('SC16_WORLD_DIRECTIVE') >= 0, 'prompt should include sc16 current-turn directive section');
+  assert(combined.indexOf('sc16-ledger') >= 0 && combined.indexOf('\u5b88\u52bf\u6574\u519b') >= 0, 'prompt should prefer structured sc16 directive ledger');
+  assert(combined.indexOf('ACTION_CANDIDATES') >= 0, 'prompt should include action candidate section');
+  assert(combined.indexOf('valid char targets') >= 0 && combined.indexOf('valid army targets') >= 0 && combined.indexOf('valid faction targets') >= 0, 'prompt should include valid concrete targets');
   assert(combined.indexOf('\u6682\u7f13\u5357\u4e0b') >= 0, 'prompt should include sc16 faction action');
   assert(combined.indexOf('sc16') >= 0, 'prompt should explain sc16 continuity rule');
   assert(combined.indexOf('先稳内部，再窥辽东') >= 0, 'prompt should include last LLM rationale');
@@ -586,8 +807,35 @@ function sc16BridgeContextTest() {
   assert(bridge.indexOf('npc-bridge') >= 0, 'sc16 bridge should include post-endturn precision news');
 
   var followupSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-followup.js'), 'utf8');
+  vm.runInContext(followupSrc, ctx, { filename: 'tm-endturn-followup.js' });
+  assert(ctx.TM.Endturn && ctx.TM.Endturn.AI && ctx.TM.Endturn.AI.followup,
+    'followup helpers should be loadable for sc16 directive ledger tests');
+  var p16 = {
+    faction_priorities: [
+      { faction: '\u540e\u91d1', priority: 96, urgency: 'high', reason: 'frontline initiative' },
+      { faction: 'OtherNpc', priority: 40, urgency: 'low', reason: 'watch' }
+    ],
+    faction_directives: [
+      { faction: '\u540e\u91d1', strategic_intent: '\u5b88\u52bf\u6574\u519b', must_follow: '\u6682\u7f13\u5357\u4e0b' }
+    ],
+    faction_actions: [
+      { faction: '\u540e\u91d1', action: '\u6682\u7f13\u5357\u4e0b', motive: 'ledger test' }
+    ],
+    diplomatic_shifts: []
+  };
+  var sc16Ledger = ctx.TM.Endturn.AI.followup._storeSc16DirectiveLedger(p16, ctx.GM, ['\u660e']);
+  assert(sc16Ledger && Array.isArray(sc16Ledger.priorityQueue) && sc16Ledger.priorityQueue[0].faction === '\u540e\u91d1',
+    'sc16 directive ledger should expose a sorted faction priority queue');
+  assert(sc16Ledger.byFaction['\u540e\u91d1'].priorityScore >= 90 && sc16Ledger.byFaction['\u540e\u91d1'].priorityReason,
+    'sc16 directive row should preserve priority score and reason for later precision LLM');
+  assert(ctx.GM._npcFactionAiTurnLedger && ctx.GM._npcFactionAiTurnLedger.sc16 && ctx.GM._npcFactionAiTurnLedger.sc16.priorityQueue[0].faction === '\u540e\u91d1',
+    'sc16 storage should attach priority directives to the unified faction AI turn ledger');
   assert(followupSrc.indexOf('buildRecentTrajectoryContextForSc16') >= 0, 'sc16 prompt should call precision history helper');
   assert(followupSrc.indexOf('buildFactionAdminSummaryForSc16') >= 0, 'sc16 prompt should call admin hierarchy helper');
+  assert(followupSrc.indexOf('rel.type = ds.new_relation') < 0,
+    'sc16 should remain a strategic directive ledger and must not directly mutate factionRelations.type');
+  assert(followupSrc.indexOf('_tmStoreSc16DirectiveLedger') >= 0,
+    'sc16 should store structured directives for later faction precision LLM');
   console.log('[sc16-bridge] precision history assertions pass');
 }
 
@@ -597,8 +845,11 @@ async function main() {
   nativeExpandedActionsTest();
   nativeOfficeFiscalActionsTest();
   actionEngineStrategicActionsTest();
+  actionEnginePreflightStrategyNewsTest();
+  factionAiDiagnosticsSnapshotTest();
   localTemplateLedgerTest();
   await playerIsPlayerGuardTest();
+  await llmRetryAndConcurrencyTest();
   promptContextExpansionTest();
   sc16BridgeContextTest();
   e2eApplyMockDecision();

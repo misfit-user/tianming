@@ -546,6 +546,8 @@
     var diplomacyActions = Array.isArray(fac.npcDiplomacyActions) ? fac.npcDiplomacyActions : [];
     var provincePolicies = Array.isArray(fac.npcProvincePolicies) ? fac.npcProvincePolicies : [];
     var fiscalActions = Array.isArray(fac.npcFiscalActions) ? fac.npcFiscalActions : [];
+    var intrigueActions = Array.isArray(fac.npcIntrigueActions) ? fac.npcIntrigueActions : [];
+    var rebellionPolicies = Array.isArray(fac.npcRebellionPolicies) ? fac.npcRebellionPolicies : [];
 
     var html = '<div style="padding:0.8rem;max-height:78vh;overflow-y:auto;">';
     html += '<div style="font-size:0.78rem;color:var(--txt-d);margin-bottom:0.8rem;">观察·' + esc(fac.name) + ' 内政 (read-only·情报视角)·勿言敌国之政非己事</div>';
@@ -631,9 +633,12 @@
     html += _renderNpcActionSection('外交', diplomacyActions, 5, _npcDiplomacyActionText);
     html += _renderNpcActionSection('地政', provincePolicies, 5, _npcProvincePolicyText);
     html += _renderNpcActionSection('财计', fiscalActions, 5, _npcFiscalActionText);
+    html += _renderNpcActionSection('间谍', intrigueActions, 5, _npcIntrigueActionText);
+    html += _renderNpcActionSection('叛乱', rebellionPolicies, 5, _npcRebellionPolicyText);
 
     if (memorials.length === 0 && edicts.length === 0 && chaoyi.length === 0 && officeActions.length === 0 && ledger.length === 0
-        && militaryActions.length === 0 && diplomacyActions.length === 0 && provincePolicies.length === 0 && fiscalActions.length === 0) {
+        && militaryActions.length === 0 && diplomacyActions.length === 0 && provincePolicies.length === 0 && fiscalActions.length === 0
+        && intrigueActions.length === 0 && rebellionPolicies.length === 0) {
       html += '<div style="color:var(--txt-d);padding:1rem;text-align:center;">暂无内政记录·该势力 chars 数据稀少或刚刚生成</div>';
     }
 
@@ -642,6 +647,7 @@
     if (llmOn) {
       html += '<div style="margin-top:0.8rem;padding-top:0.5rem;border-top:1px dashed var(--bd,rgba(255,255,255,0.1));">';
       html += '<button class="bt bs" onclick="_tsNpcLlmDecide(\''+jsEsc(fac.name)+'\')" style="font-size:0.75rem;padding:0.3rem 0.7rem;background:rgba(107,176,124,0.15);color:var(--celadon-400,#6bb07c);">让 LLM 主君决策本回合</button>';
+      html += '<button class="bt bs" onclick="_tsInspectFactionAiDebug(\''+jsEsc(fac.name)+'\')" style="font-size:0.7rem;padding:0.25rem 0.5rem;margin-left:0.4rem;">势力AI账本</button>';
       html += '<button class="bt bs" onclick="_tsNpcEnrich(\''+jsEsc(fac.name)+'\')" style="font-size:0.7rem;padding:0.25rem 0.5rem;margin-left:0.4rem;background:rgba(107,176,124,0.05);color:var(--celadon-400,#6bb07c);">仅润色文字 (cosmetic)</button>';
       // 上次 rationale 显示
       if (fac._lastLlmRationale) {
@@ -687,6 +693,123 @@
     _openModal('内政查阅·' + fac.name, html, null);
   }
   global._tsInspectNpcInternal = _tsInspectNpcInternal;
+
+  function _aiDbgClip(v, max) {
+    var s = '';
+    if (v == null) return '';
+    if (typeof v === 'string') s = v;
+    else {
+      try { s = JSON.stringify(v); } catch(_) { s = String(v); }
+    }
+    max = max || 160;
+    return s.length > max ? s.slice(0, max) + '...' : s;
+  }
+
+  function _aiDbgCounts(rows) {
+    var out = {};
+    (Array.isArray(rows) ? rows : []).forEach(function(r){
+      var k = (r && r.status) || 'unknown';
+      out[k] = (out[k] || 0) + 1;
+    });
+    return out;
+  }
+
+  function _aiDbgPairs(obj) {
+    if (!obj || typeof obj !== 'object') return '';
+    return Object.keys(obj).map(function(k){ return esc(k) + ':' + esc(obj[k]); }).join(' / ');
+  }
+
+  function _tsInspectFactionAiDebug(facName) {
+    if (!global.GM || !Array.isArray(GM.facs)) { _toast('暂无势力数据'); return; }
+    var fac = GM.facs.find(function(x){ return x && x.name === facName; });
+    if (!fac) { _toast('势力不存在 ' + facName); return; }
+    var diag = null;
+    try {
+      if (global.TM && TM.FactionNpcLlmDecision && typeof TM.FactionNpcLlmDecision.buildFactionAiDiagnostics === 'function') {
+        diag = TM.FactionNpcLlmDecision.buildFactionAiDiagnostics(fac.name);
+      }
+    } catch(_){}
+    var ledger = (diag && Array.isArray(diag.actionLedger)) ? diag.actionLedger : (Array.isArray(fac._npcLlmActionLedger) ? fac._npcLlmActionLedger : []);
+    var directive = (diag && diag.sc16Directive) || (GM._sc16FactionDirectives && GM._sc16FactionDirectives.byFaction && GM._sc16FactionDirectives.byFaction[fac.name]) || fac._sc16Directive || null;
+    var run = (diag && diag.run) || (GM._npcFactionLlmLedger && GM._npcFactionLlmLedger.runs && GM._npcFactionLlmLedger.runs[fac.name]) || null;
+    var settings = {};
+    try {
+      if (diag && diag.settings) settings = diag.settings;
+      else if (global.TM && TM.FactionNpcSettings && typeof TM.FactionNpcSettings.getStatus === 'function') settings = TM.FactionNpcSettings.getStatus() || {};
+    } catch(_){}
+    var candidateRank = diag && diag.candidateRank || null;
+    var actionContract = '';
+    try {
+      if (global.TM && TM.FactionActionEngine) {
+        if (!candidateRank && typeof TM.FactionActionEngine.scoreFactionCandidate === 'function') candidateRank = TM.FactionActionEngine.scoreFactionCandidate(fac, { turn: (GM && GM.turn) || 1 });
+        if (typeof TM.FactionActionEngine.formatActionContractForPrompt === 'function') actionContract = TM.FactionActionEngine.formatActionContractForPrompt({ maxChars: 900 });
+      }
+    } catch(_){}
+    var qiju = (diag && Array.isArray(diag.qijuWrites)) ? diag.qijuWrites.slice(-8).reverse() : (Array.isArray(GM.qijuHistory) ? GM.qijuHistory : []).filter(function(q){
+      if (!q) return false;
+      var src = q._source || '';
+      if (['npc-in-turn-llm','npc-bridge','faction-npc-llm'].indexOf(src) < 0) return false;
+      return q._facName === fac.name || _aiDbgClip(q, 260).indexOf(fac.name) >= 0;
+    }).slice(-8).reverse();
+    var dispatch = diag && diag.dispatch || GM._npcFactionLlmDispatchLedger || null;
+
+    var html = '<div style="padding:0.9rem;max-height:78vh;overflow-y:auto;">';
+    html += '<div style="display:flex;justify-content:space-between;gap:0.8rem;align-items:flex-start;margin-bottom:0.8rem;">';
+    html += '<div><h3 style="margin:0;color:var(--gold);">势力 AI 调试 · ' + esc(fac.name) + '</h3><div style="font-size:0.76rem;color:var(--txt-d);">查看 SC16 战略指令、精细化 LLM 执行账本、失败/合并原因与近事写入。</div></div>';
+    html += '<button class="bt bs" onclick="_tsNpcLlmDecide(\'' + jsEsc(fac.name) + '\')">手动精细推演</button>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem;margin-bottom:0.8rem;font-size:0.74rem;">';
+    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>精细化开关</b><br>' + esc(settings.enabled != null ? settings.enabled : (settings.npcAiPrecision != null ? settings.npcAiPrecision : 'unknown')) + '</div>';
+    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>并发/上限</b><br>' + esc(settings.concurrency || settings.npcAiPrecisionConcurrency || '?') + ' / ' + esc(settings.maxPerTurn || settings.npcAiPrecisionMaxPerTurn || '?') + '</div>';
+    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>本轮 run</b><br>' + esc(run ? (run.status || run.state || 'running') : '未记录') + '</div>';
+    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>调度/动作</b><br>' + esc(dispatch && dispatch.jobs ? dispatch.jobs.length : 0) + ' job / ' + esc(ledger.length) + ' 条</div>';
+    html += '</div>';
+
+    if (candidateRank || fac._lastLlmApplySummary) {
+      var s = fac._lastLlmApplySummary || {};
+      html += '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5rem;margin-bottom:0.8rem;font-size:0.74rem;">';
+      html += '<div style="background:rgba(205,165,76,0.08);padding:0.5rem;border-radius:4px;"><b>候选评分</b><br>' + (candidateRank ? ('score=' + esc(Math.round(candidateRank.score || 0)) + ' / ' + esc((candidateRank.reasons || []).join('、'))) : '暂无') + '</div>';
+      html += '<div style="background:rgba(107,176,124,0.08);padding:0.5rem;border-radius:4px;"><b>上次执行汇总</b><br>' + (fac._lastLlmApplySummary ? ('T' + esc(s.turn || '?') + ' 尝试' + esc(s.attemptedActions || 0) + ' 成功' + esc(s.appliedActions || 0) + ' 跳过' + esc(s.skippedActions || 0) + ' 合并' + esc(s.mergedActions || 0)) : '暂无') + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div style="margin-bottom:0.8rem;background:var(--bg-2);padding:0.55rem;border-radius:4px;font-size:0.75rem;">';
+    html += '<b style="color:var(--gold);">SC16 指令</b>';
+    if (directive) {
+      html += '<div>turn=' + esc(directive.turn || '?') + ' direct=' + esc(directive.hasDirectContent ? 'yes' : 'no') + '</div>';
+      (directive.directives || []).slice(0, 3).forEach(function(d){ html += '<div>指令：' + esc(_aiDbgClip(d.strategic_intent || d.must_follow || d.reason || d, 180)) + '</div>'; });
+      (directive.actions || []).slice(0, 4).forEach(function(a){ html += '<div>行动：' + esc(_aiDbgClip((a.faction || fac.name) + ' -> ' + (a.target || a.targetFaction || '') + ' ' + (a.action || a.intent || ''), 180)) + '</div>'; });
+      (directive.diplomacy || []).slice(0, 4).forEach(function(d){ html += '<div>外交：' + esc(_aiDbgClip((d.from || '?') + ' -> ' + (d.to || '?') + ' ' + (d.new_relation || d.type || ''), 160)) + '</div>'; });
+    } else {
+      html += '<div style="color:var(--txt-d);">暂无 SC16 指令账本。通常说明本局尚未跑过 full 势力自主推演，或本回合 SC16 失败。</div>';
+    }
+    html += '</div>';
+
+    if (actionContract) {
+      html += '<details style="margin-bottom:0.8rem;background:var(--bg-2);padding:0.55rem;border-radius:4px;font-size:0.72rem;"><summary style="cursor:pointer;color:var(--gold);">动作契约</summary><pre style="white-space:pre-wrap;margin:0.45rem 0 0;color:var(--txt);">' + esc(actionContract) + '</pre></details>';
+    }
+
+    if (fac._lastLlmRationale) {
+      html += '<div style="margin-bottom:0.8rem;background:rgba(107,176,124,0.08);padding:0.55rem;border-left:2px solid var(--celadon-400,#6bb07c);font-size:0.75rem;"><b>上次君主考量 T' + esc(fac._lastLlmRationale.turn || '?') + '</b><br>' + esc(_aiDbgClip(fac._lastLlmRationale.text, 260)) + '</div>';
+    }
+
+    html += '<div style="margin-bottom:0.8rem;"><b style="color:var(--gold);font-size:0.78rem;">最近 LLM 动作账本</b>';
+    html += '<div style="font-size:0.72rem;background:var(--bg-2);border-radius:4px;padding:0.45rem;">';
+    if (ledger.length) ledger.slice(-18).reverse().forEach(function(r){
+      html += '<div style="border-bottom:1px dashed rgba(255,255,255,0.08);padding:0.25rem 0;"><b>T' + esc(r.turn || '?') + ' ' + esc(r.type || '?') + '</b> <span style="color:var(--txt-d);">' + esc(r.status || '?') + ' / ' + esc(r.source || '') + '</span><br><span>' + esc(_aiDbgClip(r.detail, 180)) + '</span></div>';
+    });
+    else html += '<div style="color:var(--txt-d);">暂无动作账本。</div>';
+    html += '</div></div>';
+
+    html += '<div><b style="color:var(--gold);font-size:0.78rem;">近事/起居注写入</b><div style="font-size:0.72rem;background:var(--bg-2);border-radius:4px;padding:0.45rem;">';
+    if (qiju.length) qiju.forEach(function(q){ html += '<div>[' + esc(q._source || '?') + '] T' + esc(q.turn || '?') + ' ' + esc(_aiDbgClip(q.content || q.text || q.zhengwen || q, 180)) + '</div>'; });
+    else html += '<div style="color:var(--txt-d);">暂无精细化近事写入。</div>';
+    html += '</div></div>';
+    html += '</div>';
+    _openModal('势力 AI 调试 · ' + fac.name, html, null);
+  }
+  global._tsInspectFactionAiDebug = _tsInspectFactionAiDebug;
 
   // ─────── Phase F2·干预 action handlers ───────
   function _runIntervention(fnName, args, successMsg) {
@@ -911,6 +1034,20 @@
     if (x.reason) text += ' · ' + x.reason;
     return text;
   }
+  function _npcIntrigueActionText(x) {
+    x = x || {};
+    var text = (x.targetFaction || x.target || '目标') + ' · ' + (x.intrigue || x.policy || x.action || '间谍行动');
+    if (x.pressure !== undefined) text += ' 压力+' + x.pressure;
+    if (x.reason) text += ' · ' + x.reason;
+    return text;
+  }
+  function _npcRebellionPolicyText(x) {
+    x = x || {};
+    var text = (x.targetFaction || x.target || '目标') + ' · ' + (x.policy || x.action || '叛乱政策');
+    if (x.support !== undefined) text += ' 声势+' + x.support;
+    if (x.reason) text += ' · ' + x.reason;
+    return text;
+  }
   function _renderNpcActionSection(title, list, limit, renderText) {
     if (!Array.isArray(list) || list.length === 0) return '';
     var html = '<div style="margin-bottom:0.7rem;"><div style="font-weight:600;color:var(--gold);margin-bottom:0.3rem;">' + esc(title) + '·近' + Math.min(list.length, limit) + '项</div>';
@@ -938,6 +1075,8 @@
       (fac.npcDiplomacyActions || []).slice(-3).forEach(function(x){ out.push({ turn:x.turn, type:'外交', text:_npcDiplomacyActionText(x) }); });
       (fac.npcProvincePolicies || []).slice(-3).forEach(function(x){ out.push({ turn:x.turn, type:'地政', text:_npcProvincePolicyText(x) }); });
       (fac.npcFiscalActions || []).slice(-3).forEach(function(x){ out.push({ turn:x.turn, type:'财计', text:_npcFiscalActionText(x) }); });
+      (fac.npcIntrigueActions || []).slice(-3).forEach(function(x){ out.push({ turn:x.turn, type:'间谍', text:_npcIntrigueActionText(x) }); });
+      (fac.npcRebellionPolicies || []).slice(-3).forEach(function(x){ out.push({ turn:x.turn, type:'叛乱', text:_npcRebellionPolicyText(x) }); });
     }
     return out.sort(function(a,b){ return _num(b.turn,0) - _num(a.turn,0); }).slice(0, 8);
   }
@@ -974,7 +1113,7 @@
     else html += '<div><b>暂无</b><span>此势力暂未留下可见近事，可能刚刚开局或尚未触发精细化推演。</span></div>';
     html += '</div></div>';
     if (fac.name !== playerFac) {
-      html += '<div class="frp-actions"><button onclick="_tsInspectNpcInternal(\'' + jsEsc(fac.name) + '\')">查内政</button><button onclick="_tsTribute(\'' + jsEsc(fac.name) + '\')">遣使</button><button onclick="_tsProposePeace(\'' + jsEsc(fac.name) + '\')">议和</button><button class="danger" onclick="_tsDeclareWar(\'' + jsEsc(fac.name) + '\')">宣战</button></div>';
+      html += '<div class="frp-actions"><button onclick="_tsInspectNpcInternal(\'' + jsEsc(fac.name) + '\')">查内政</button><button onclick="_tsInspectFactionAiDebug(\'' + jsEsc(fac.name) + '\')">势力AI</button><button onclick="_tsTribute(\'' + jsEsc(fac.name) + '\')">遣使</button><button onclick="_tsProposePeace(\'' + jsEsc(fac.name) + '\')">议和</button><button class="danger" onclick="_tsDeclareWar(\'' + jsEsc(fac.name) + '\')">宣战</button></div>';
     }
     html += '</section>';
     return html;

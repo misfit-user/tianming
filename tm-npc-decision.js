@@ -577,6 +577,13 @@ NpcBehaviorRegistry.register('request_funds', function(npc, target, d, ctx) { ex
 NpcBehaviorRegistry.register('obstruct', function(npc, target, d, ctx) { executeObstructBehavior(npc, target, d, ctx); });
 NpcBehaviorRegistry.register('slander', function(npc, target, d, ctx) { executeSlanderBehavior(npc, target, d, ctx); });
 NpcBehaviorRegistry.register('private_correspondence', function(npc, target, d, ctx) { executePrivateCorrespondenceBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('recommend', function(npc, target, d, ctx) { executeRecommendBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('impeach', function(npc, target, d, ctx) { executeImpeachBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('patrol', function(npc, target, d, ctx) { executePatrolBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('fortify', function(npc, target, d, ctx) { executeFortifyBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('develop_local', function(npc, target, d, ctx) { executeDevelopLocalBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('relief', function(npc, target, d, ctx) { executeReliefBehavior(npc, target, d, ctx); });
+NpcBehaviorRegistry.register('build_network', function(npc, target, d, ctx) { executeBuildNetworkBehavior(npc, target, d, ctx); });
 
 // ===== 执行层 =====
 
@@ -759,21 +766,77 @@ function _hasMilitaryCommand(npc) {
   return /将|帅|军|营|总兵|提督|都督|指挥|General/i.test(title);
 }
 
+function _buildNpcMotiveProfile(npc, context) {
+  npc = npc || {};
+  context = context || {};
+  var loyalty = typeof npc.loyalty === 'number' ? npc.loyalty : 50;
+  var ambition = typeof npc.ambition === 'number' ? npc.ambition : 50;
+  var intel = typeof npc.intelligence === 'number' ? npc.intelligence : 50;
+  var integrity = typeof npc.integrity === 'number' ? npc.integrity : 50;
+  var valor = typeof npc.valor === 'number' ? npc.valor : 50;
+  var stress = typeof npc.stress === 'number' ? npc.stress : 0;
+  var capital = GM && GM._capital || 'Capital';
+  var localKey = npc.jurisdiction || npc.location || npc.province || '';
+  var localStats = GM && GM.provinceStats && localKey ? GM.provinceStats[localKey] : null;
+  var localUnrest = localStats ? Number(localStats.unrest || 0) : 0;
+  return {
+    career: Math.max(0, 12 + (hasOffice(npc.name) ? 14 : 0) + (intel - 50) * 0.2 + (ambition - 50) * 0.15),
+    networking: Math.max(0, 10 + (ambition - 45) * 0.35 + Math.max(0, 70 - loyalty) * 0.12 + (_npcHasRealParty(npc) ? 8 : 0)),
+    military: Math.max(0, (_hasMilitaryCommand(npc) ? 28 : 0) + (valor - 50) * 0.25),
+    local: Math.max(0, (npc.location && npc.location !== capital ? 18 : 0) + (localKey ? 8 : 0) + localUnrest * 0.18),
+    integrity: Math.max(0, (integrity - 45) * 0.35 + (intel - 55) * 0.12 + (loyalty - 50) * 0.08),
+    grievance: Math.max(0, Math.max(0, 55 - loyalty) * 0.28 + Math.max(0, ambition - 60) * 0.22 + stress * 0.16),
+    survival: Math.max(0, stress * 0.2 + Math.max(0, 45 - loyalty) * 0.2)
+  };
+}
+
+function _npcMotiveForBehavior(type) {
+  var map = {
+    petition: 'career',
+    recommend: 'integrity',
+    impeach: 'integrity',
+    conspire: 'networking',
+    private_correspondence: 'networking',
+    build_network: 'networking',
+    train_troops: 'military',
+    request_funds: 'military',
+    patrol: 'military',
+    fortify: 'military',
+    send_letter: 'local',
+    seek_audience: 'career',
+    develop_local: 'local',
+    relief: 'local',
+    obstruct: 'grievance',
+    slander: 'grievance'
+  };
+  return map[type] || 'career';
+}
+
 function _scoreNpcActionCandidate(candidate, npc, context) {
   if (!candidate || !npc) return 0;
   var loyalty = typeof npc.loyalty === 'number' ? npc.loyalty : 50;
   var ambition = typeof npc.ambition === 'number' ? npc.ambition : 50;
   var intel = typeof npc.intelligence === 'number' ? npc.intelligence : 50;
   var score = candidate.baseScore || 10;
+  if (typeof candidate.motiveScore === 'number') score += candidate.motiveScore * 0.35;
   if (candidate.behaviorType === 'petition') {
     score += Math.max(0, intel - 50) * 0.15;
     score += loyalty >= 60 ? 8 : 3;
+  } else if (candidate.behaviorType === 'recommend' || candidate.behaviorType === 'impeach') {
+    score += Math.max(0, (npc.integrity || 50) - 55) * 0.22;
+    score += Math.max(0, intel - 55) * 0.15;
   } else if (candidate.behaviorType === 'conspire') {
     score += Math.max(0, ambition - 55) * 0.35;
     score += Math.max(0, 55 - loyalty) * 0.25;
+  } else if (candidate.behaviorType === 'build_network') {
+    score += Math.max(0, ambition - 55) * 0.28;
+    score += _npcHasRealParty(npc) ? 6 : 0;
   } else if (candidate.behaviorType === 'train_troops') {
     score += _hasMilitaryCommand(npc) ? 15 : 0;
     score += Math.max(0, (npc.valor || 50) - 50) * 0.2;
+  } else if (candidate.behaviorType === 'patrol' || candidate.behaviorType === 'fortify') {
+    score += _hasMilitaryCommand(npc) ? 10 : 0;
+    score += Math.max(0, (npc.valor || 50) - 45) * 0.16;
   } else if (candidate.behaviorType === 'send_letter') {
     var capital = GM._capital || '京师';
     score += npc.location && npc.location !== capital ? 12 : 2;
@@ -788,6 +851,9 @@ function _scoreNpcActionCandidate(candidate, npc, context) {
   } else if (candidate.behaviorType === 'request_funds') {
     score += _hasMilitaryCommand(npc) ? 12 : 2;
     score += Math.max(0, (npc.valor || 50) - 50) * 0.1;
+  } else if (candidate.behaviorType === 'develop_local' || candidate.behaviorType === 'relief') {
+    score += npc.location && npc.location !== (GM._capital || 'Capital') ? 8 : 2;
+    score += Math.max(0, (npc.integrity || 50) - 50) * 0.1;
   } else if (candidate.behaviorType === 'obstruct' || candidate.behaviorType === 'slander') {
     score += Math.max(0, ambition - 60) * 0.25;
     score += Math.max(0, 50 - loyalty) * 0.15;
@@ -795,7 +861,9 @@ function _scoreNpcActionCandidate(candidate, npc, context) {
   return Math.max(1, Math.round(score));
 }
 
-function _makeNpcActionCandidate(npc, type, target, intent, baseScore) {
+function _makeNpcActionCandidate(npc, type, target, intent, baseScore, context) {
+  var motives = _buildNpcMotiveProfile(npc, context || {});
+  var motive = _npcMotiveForBehavior(type);
   var candidate = {
     id: _npcActionUid(npc, type, target),
     actor: npc && npc.name || '',
@@ -803,9 +871,11 @@ function _makeNpcActionCandidate(npc, type, target, intent, baseScore) {
     behaviorType: type,
     target: target || '',
     intent: intent || type,
-    baseScore: baseScore || 10
+    baseScore: baseScore || 10,
+    motive: motive,
+    motiveScore: Math.round(Number(motives[motive] || 0))
   };
-  candidate.score = _scoreNpcActionCandidate(candidate, npc, null);
+  candidate.score = _scoreNpcActionCandidate(candidate, npc, context || null);
   return candidate;
 }
 
@@ -879,7 +949,7 @@ function _selectNpcActionTarget(npc, type, context) {
   if (!people.length) return '';
   var actorOffice = findNpcOffice(npc.name);
 
-  if (type === 'conspire') {
+  if (type === 'conspire' || type === 'build_network') {
     var allies = people.map(function(ch) {
       var score = 0;
       if (_npcHasRealParty(npc) && ch.party === npc.party) score += 40;
@@ -902,14 +972,29 @@ function _selectNpcActionTarget(npc, type, context) {
       if (npc.location && ch.location === npc.location) score += 10;
       if (findNpcOffice(ch.name)) score += 6;
       score += Math.max(0, (ch.intelligence || 50) - 50) * 0.08;
-      score += Math.max(0, 75 - (ch.loyalty || 50)) * 0.04;
+      score += Math.max(0, 80 - (ch.loyalty || 50)) * 0.25;
+      score -= Math.max(0, (ch.integrity || 50) - 75) * 0.8;
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
     return contacts[0] ? contacts[0].ch.name : '';
   }
 
-  if (type === 'obstruct' || type === 'slander') {
+  if (type === 'recommend') {
+    var talents = people.map(function(ch) {
+      var score = 0;
+      if (_npcSameFaction(npc, ch)) score += 20;
+      if (_npcHasRealParty(npc) && ch.party === npc.party) score += 12;
+      if (findNpcOffice(ch.name)) score += 6;
+      score += Math.max(0, (ch.intelligence || 50) - 50) * 0.18;
+      score += Math.max(0, (ch.integrity || 50) - 45) * 0.12;
+      score -= _npcRecentTargetPenalty(npc, type, ch.name);
+      return { ch: ch, score: score };
+    }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
+    return talents[0] ? talents[0].ch.name : '';
+  }
+
+  if (type === 'obstruct' || type === 'slander' || type === 'impeach') {
     var rivals = people.map(function(ch) {
       var score = 0;
       if (_npcHasRealParty(npc) && _npcHasRealParty(ch) && ch.party !== npc.party) score += 35;
@@ -940,12 +1025,22 @@ function _npcActionCooldownTurns(type) {
     seek_audience: 2,
     request_funds: 3,
     obstruct: 2,
-    slander: 2
+    slander: 2,
+    recommend: 3,
+    impeach: 3,
+    patrol: 1,
+    fortify: 2,
+    develop_local: 2,
+    relief: 2,
+    build_network: 4
   };
   return map[type] || 1;
 }
 
 function _getNpcActionLedger() {
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.ensureLedger) {
+    return TM.NPC.ActionLedger.ensureLedger(GM);
+  }
   if (!Array.isArray(GM._npcActionLedger)) GM._npcActionLedger = [];
   return GM._npcActionLedger;
 }
@@ -966,6 +1061,22 @@ function _isNpcActionCoolingDown(npc, type, target, context, actionId) {
 
 function _recordNpcActionLedger(npc, decision) {
   if (!npc || !decision || !decision.behaviorType || decision.behaviorType === 'none') return;
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.record) {
+    TM.NPC.ActionLedger.record({
+      source: 'npc-autonomy',
+      kind: 'npc_action',
+      actor: npc.name,
+      behaviorType: decision.behaviorType,
+      type: decision.behaviorType,
+      target: decision.target || '',
+      action: decision.action || decision.intent || '',
+      intent: decision.intent || '',
+      actionId: decision.actionId || '',
+      status: 'applied',
+      uiRoutes: ['event', 'memory']
+    }, { markHandled: true });
+    return;
+  }
   var ledger = _getNpcActionLedger();
   var turn = GM.turn || 0;
   var exists = ledger.some(function(item) {
@@ -1021,33 +1132,49 @@ function _isNpcCandidateBlockedByQueuePressure(candidate) {
 
 function _buildNpcActionCandidates(npc, context) {
   if (!npc || npc.alive === false) return [];
+  context = context || buildNpcBehaviorContext();
   var candidates = [];
   var capital = GM._capital || '京师';
   var memorialQueueBusy = _npcPendingMemorialCount() >= 10;
   if (!memorialQueueBusy && (hasOffice(npc.name) || npc.officialTitle || npc.title)) {
-    candidates.push(_makeNpcActionCandidate(npc, 'petition', '朝廷', '上奏陈事，请求朝廷裁断', 18));
+    candidates.push(_makeNpcActionCandidate(npc, 'petition', '朝廷', '上奏陈事，请求朝廷裁断', 18, context));
+  }
+  if (!memorialQueueBusy && hasOffice(npc.name) && ((npc.integrity || 50) >= 70 || (npc.intelligence || 50) >= 78)) {
+    var recommendTarget = _selectNpcActionTarget(npc, 'recommend', context) || '';
+    if (recommendTarget) candidates.push(_makeNpcActionCandidate(npc, 'recommend', recommendTarget, 'Recommend a useful official to court', 14, context));
+    var impeachTarget = _selectNpcActionTarget(npc, 'impeach', context) || '';
+    if (impeachTarget) candidates.push(_makeNpcActionCandidate(npc, 'impeach', impeachTarget, 'Impeach a rival or corrupt official', 13, context));
   }
   if ((npc.ambition || 50) >= 70 || ((npc.loyalty || 50) < 40 && (npc.ambition || 50) >= 55)) {
     var allyTarget = _selectNpcActionTarget(npc, 'conspire', context) || '同党';
-    candidates.push(_makeNpcActionCandidate(npc, 'conspire', allyTarget, '暗中串联，试探同道', 16));
+    candidates.push(_makeNpcActionCandidate(npc, 'conspire', allyTarget, '暗中串联，试探同道', 16, context));
     var contactTarget = _selectNpcActionTarget(npc, 'private_correspondence', context) || allyTarget;
-    candidates.push(_makeNpcActionCandidate(npc, 'private_correspondence', contactTarget, '私下通书，互探局势', 14));
+    candidates.push(_makeNpcActionCandidate(npc, 'private_correspondence', contactTarget, '私下通书，互探局势', 14, context));
+    var networkTarget = _selectNpcActionTarget(npc, 'build_network', context) || contactTarget || allyTarget;
+    candidates.push(_makeNpcActionCandidate(npc, 'build_network', networkTarget, 'Build a durable political network', 15, context));
   }
   if (_hasMilitaryCommand(npc)) {
-    candidates.push(_makeNpcActionCandidate(npc, 'train_troops', npc.name, '整训所部，申严军纪', 20));
-    candidates.push(_makeNpcActionCandidate(npc, 'request_funds', '朝廷', '请给军饷器械，以固军心', 15));
+    candidates.push(_makeNpcActionCandidate(npc, 'train_troops', npc.name, '整训所部，申严军纪', 20, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'request_funds', '朝廷', '请给军饷器械，以固军心', 15, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'patrol', npc.location || npc.name, 'Patrol troops and secure the district', 13, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'fortify', npc.location || npc.name, 'Fortify frontier defenses', 12, context));
   }
   if (npc.location && npc.location !== capital) {
-    candidates.push(_makeNpcActionCandidate(npc, 'send_letter', '朝廷', '遣书入京，通报地方情势', 14));
-    candidates.push(_makeNpcActionCandidate(npc, 'seek_audience', '天子', '请求入对，面陈地方急务', 12));
+    candidates.push(_makeNpcActionCandidate(npc, 'send_letter', '朝廷', '遣书入京，通报地方情势', 14, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'seek_audience', '天子', '请求入对，面陈地方急务', 12, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'develop_local', npc.jurisdiction || npc.location, 'Develop local administration and livelihood', 13, context));
+    var stats = GM.provinceStats && GM.provinceStats[npc.jurisdiction || npc.location];
+    if (!stats || Number(stats.unrest || 0) >= 20) {
+      candidates.push(_makeNpcActionCandidate(npc, 'relief', npc.jurisdiction || npc.location, 'Organize relief to calm local unrest', 12, context));
+    }
   }
   if ((npc.stress || 0) >= 60) {
-    candidates.push(_makeNpcActionCandidate(npc, 'seek_audience', '天子', '压力积重，请求面圣陈情', 13));
+    candidates.push(_makeNpcActionCandidate(npc, 'seek_audience', '天子', '压力积重，请求面圣陈情', 13, context));
   }
   if ((npc.ambition || 50) >= 75 && (npc.loyalty || 50) < 70) {
     var rivalTarget = _selectNpcActionTarget(npc, 'obstruct', context) || '政敌';
-    candidates.push(_makeNpcActionCandidate(npc, 'obstruct', rivalTarget, '私下拖延阻挠不利己之事', 11));
-    candidates.push(_makeNpcActionCandidate(npc, 'slander', rivalTarget, '散布微词，试探朝局风向', 10));
+    candidates.push(_makeNpcActionCandidate(npc, 'obstruct', rivalTarget, '私下拖延阻挠不利己之事', 11, context));
+    candidates.push(_makeNpcActionCandidate(npc, 'slander', rivalTarget, '散布微词，试探朝局风向', 10, context));
   }
   candidates = candidates.filter(function(c) {
     return !_isNpcActionCoolingDown(npc, c.behaviorType, c.target, context, c.id)
@@ -1241,6 +1368,131 @@ function executeRequestFundsBehavior(npc, target, decision, context) {
   executePetitionBehavior(npc, target, decision, context);
 }
 
+function _npcProvinceKeyFor(npc, target) {
+  var key = target || (npc && (npc.jurisdiction || npc.location || npc.province)) || '';
+  if (key && GM.provinceStats && GM.provinceStats[key]) return key;
+  if (npc && npc.location && GM.provinceStats && GM.provinceStats[npc.location]) return npc.location;
+  if (GM.provinceStats) {
+    var keys = Object.keys(GM.provinceStats);
+    if (keys.length) return keys[0];
+  }
+  return key || '';
+}
+
+function _npcEnsureProvinceStats(key) {
+  if (!key) return null;
+  if (!GM.provinceStats) GM.provinceStats = {};
+  if (!GM.provinceStats[key]) GM.provinceStats[key] = { prosperity: 50, unrest: 20, security: 50 };
+  return GM.provinceStats[key];
+}
+
+function _npcAdjustProvinceStat(key, field, delta, min, max) {
+  var stats = _npcEnsureProvinceStats(key);
+  if (!stats) return null;
+  var old = Number(stats[field] == null ? 0 : stats[field]);
+  var lo = min == null ? 0 : min;
+  var hi = max == null ? 100 : max;
+  stats[field] = Math.max(lo, Math.min(hi, old + delta));
+  return stats[field];
+}
+
+function executeRecommendBehavior(npc, target, decision, context) {
+  var to = target || decision.targetName || _selectNpcActionTarget(npc, 'recommend', context || buildNpcBehaviorContext());
+  decision.title = decision.title || 'Personnel recommendation';
+  decision.content = decision.content || (npc.name + ' recommends ' + (to || 'a suitable talent') + ' for court attention.');
+  decision.petitionType = decision.petitionType || 'Personnel';
+  decision.subtype = decision.subtype || 'Recommend';
+  executePetitionBehavior(npc, to || 'court', decision, context);
+  if (to && typeof AffinityMap !== 'undefined') {
+    try { AffinityMap.add(to, npc.name, 5, 'NPC recommendation'); } catch (_) {}
+  }
+  _npcRemember(npc.name, 'Recommended ' + (to || 'a talent') + ' to court', '敬', 5, to || 'court');
+}
+
+function executeImpeachBehavior(npc, target, decision, context) {
+  var to = target || decision.targetName || _selectNpcActionTarget(npc, 'impeach', context || buildNpcBehaviorContext());
+  decision.title = decision.title || 'Impeachment memorial';
+  decision.content = decision.content || (npc.name + ' impeaches ' + (to || 'a rival') + ' for misconduct.');
+  decision.petitionType = decision.petitionType || 'Personnel';
+  decision.subtype = decision.subtype || 'Impeach';
+  executePetitionBehavior(npc, to || 'court', decision, context);
+  if (to && typeof AffinityMap !== 'undefined') {
+    try { AffinityMap.add(to, npc.name, -8, 'NPC impeachment'); } catch (_) {}
+  }
+  _recordNpcInternalAction('impeach', {
+    from: npc.name,
+    to: to || '',
+    intent: decision.intent || decision.content,
+    turn: GM.turn,
+    visibility: 'public'
+  });
+}
+
+function executePatrolBehavior(npc, target, decision, context) {
+  var armies = _findNpcCommandedArmies(npc);
+  armies.forEach(function(army) {
+    army.morale = Math.min(100, Number(army.morale || 50) + 3);
+    army.training = Math.min(100, Number(army.training || 0) + 1);
+  });
+  var key = _npcProvinceKeyFor(npc, target);
+  _npcAdjustProvinceStat(key, 'security', 4, 0, 100);
+  addEB('NPC Patrol', npc.name + ' patrols ' + (key || 'his jurisdiction') + '.');
+}
+
+function executeFortifyBehavior(npc, target, decision, context) {
+  var armies = _findNpcCommandedArmies(npc);
+  armies.forEach(function(army) {
+    army.fortification = Math.min(100, Number(army.fortification || 0) + 5);
+    army.morale = Math.min(100, Number(army.morale || 50) + 1);
+  });
+  var key = _npcProvinceKeyFor(npc, target);
+  _npcAdjustProvinceStat(key, 'security', 5, 0, 100);
+  addEB('NPC Fortify', npc.name + ' strengthens defenses at ' + (key || 'the frontier') + '.');
+}
+
+function executeDevelopLocalBehavior(npc, target, decision, context) {
+  var key = _npcProvinceKeyFor(npc, target);
+  _npcAdjustProvinceStat(key, 'prosperity', 5, 0, 100);
+  _npcAdjustProvinceStat(key, 'unrest', -1, 0, 100);
+  addEB('NPC Local', npc.name + ' develops ' + (key || 'local administration') + '.');
+  _npcRemember(npc.name, 'Promoted local development at ' + (key || 'his post'), '敬', 4, key || 'local');
+}
+
+function executeReliefBehavior(npc, target, decision, context) {
+  var key = _npcProvinceKeyFor(npc, target);
+  _npcAdjustProvinceStat(key, 'unrest', -6, 0, 100);
+  _npcAdjustProvinceStat(key, 'prosperity', 1, 0, 100);
+  addEB('NPC Relief', npc.name + ' organizes relief at ' + (key || 'his jurisdiction') + '.');
+  _npcRemember(npc.name, 'Organized relief at ' + (key || 'his post'), '敬', 5, key || 'local');
+}
+
+function executeBuildNetworkBehavior(npc, target, decision, context) {
+  var to = target || decision.targetName || _selectNpcActionTarget(npc, 'build_network', context || buildNpcBehaviorContext()) || '';
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.recordPlan) {
+    TM.NPC.ActionLedger.recordPlan({
+      actor: npc.name,
+      type: 'build_network',
+      target: to,
+      intent: decision.intent || decision.action || 'Build a court network',
+      source: 'npc-autonomy'
+    }, { GM: GM, progress: 1 });
+  } else {
+    var plans = _npcEnsureArray(GM, '_npcPlans');
+    plans.push({ id: _npcGeneratedId('npc-plan', npc), actor: npc.name, type: 'build_network', target: to, intent: decision.intent || '', createdTurn: GM.turn, updatedTurn: GM.turn, progress: 1, status: 'active' });
+  }
+  if (to && typeof AffinityMap !== 'undefined') {
+    try { AffinityMap.add(npc.name, to, 4, 'NPC network building'); } catch (_) {}
+  }
+  _recordNpcInternalAction('plan', {
+    from: npc.name,
+    to: to,
+    intent: decision.intent || 'Build a court network',
+    turn: GM.turn,
+    visibility: 'internal'
+  });
+  addEB('NPC Plan', npc.name + ' begins building a network' + (to ? ' with ' + to : '') + '.');
+}
+
 function executeObstructBehavior(npc, target, decision, context) {
   var moves = _npcEnsureArray(GM, '_npcHiddenMoves');
   var rec = {
@@ -1354,6 +1606,12 @@ function _normalizeNpcBehaviorType(type) {
     seek_audience: 'seek_audience',
     requestFunds: 'request_funds',
     request_funds: 'request_funds',
+    buildNetwork: 'build_network',
+    build_network: 'build_network',
+    developLocal: 'develop_local',
+    develop_local: 'develop_local',
+    giftPresent: 'gift_present',
+    gift_present: 'gift_present',
     none: 'none'
   };
   return map[raw] || map[key] || key;
@@ -1383,6 +1641,9 @@ function _normalizeNpcDecision(raw, fallbackName, context) {
 }
 
 function _getNpcDecisionHandledNames() {
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.getHandledNames) {
+    return TM.NPC.ActionLedger.getHandledNames(GM);
+  }
   if (!GM._turnContext) GM._turnContext = {};
   if (!Array.isArray(GM._turnContext.npcActionsThisTurn)) GM._turnContext.npcActionsThisTurn = [];
   return GM._turnContext.npcActionsThisTurn;
@@ -1390,27 +1651,86 @@ function _getNpcDecisionHandledNames() {
 
 function _markNpcDecisionHandled(name) {
   if (!name) return;
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.markHandled) {
+    TM.NPC.ActionLedger.markHandled(name, GM);
+    return;
+  }
   var handled = _getNpcDecisionHandledNames();
   if (handled.indexOf(name) < 0) handled.push(name);
 }
 
+function _recordNpcDecisionDiagnostic(raw, status, reason) {
+  raw = raw || {};
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.recordConsideration) {
+    return TM.NPC.ActionLedger.recordConsideration({
+      actor: raw.actor || raw.name,
+      behaviorType: raw.behaviorType || raw.type,
+      target: raw.target || raw.to || '',
+      status: status || raw.status || 'considered',
+      reason: reason || raw.reason || raw.intent || raw.action || '',
+      score: raw.score,
+      motive: raw.motive,
+      source: raw.source || 'npc-autonomy'
+    }, { GM: GM });
+  }
+  if (!Array.isArray(GM._npcDecisionDiagnostics)) GM._npcDecisionDiagnostics = [];
+  GM._npcDecisionDiagnostics.push({
+    turn: GM.turn || 0,
+    actor: raw.actor || raw.name || '',
+    behaviorType: raw.behaviorType || raw.type || '',
+    target: raw.target || raw.to || '',
+    status: status || 'considered',
+    reason: reason || raw.reason || raw.intent || raw.action || '',
+    source: raw.source || 'npc-autonomy'
+  });
+  if (GM._npcDecisionDiagnostics.length > 240) GM._npcDecisionDiagnostics.splice(0, GM._npcDecisionDiagnostics.length - 240);
+  return GM._npcDecisionDiagnostics[GM._npcDecisionDiagnostics.length - 1];
+}
+
 function _executeNormalizedNpcDecision(rawDecision, fallbackNpc, context) {
   var decision = _normalizeNpcDecision(rawDecision, fallbackNpc && fallbackNpc.name, context);
-  if (!decision || !decision.name || !decision.shouldExecute || decision.behaviorType === 'none') return false;
-  if (!NpcBehaviorRegistry._behaviors[decision.behaviorType]) return false;
+  if (!decision || !decision.name || !decision.shouldExecute || decision.behaviorType === 'none') {
+    _recordNpcDecisionDiagnostic(decision || rawDecision || {}, 'skipped', 'no executable decision');
+    return false;
+  }
+  if (!NpcBehaviorRegistry._behaviors[decision.behaviorType]) {
+    _recordNpcDecisionDiagnostic(decision, 'skipped', 'unregistered behavior');
+    return false;
+  }
   var npc = fallbackNpc && fallbackNpc.name === decision.name ? fallbackNpc : findCharByName(decision.name);
-  if (!npc) return false;
+  if (!npc) {
+    _recordNpcDecisionDiagnostic(decision, 'blocked', 'unknown actor');
+    return false;
+  }
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.preflight) {
+    var pf = TM.NPC.ActionLedger.preflight({
+      actor: npc.name,
+      behaviorType: decision.behaviorType,
+      target: decision.target || '',
+      source: 'npc-autonomy'
+    }, GM);
+    if (!pf.ok) {
+      _recordNpcDecisionDiagnostic(decision, 'blocked', pf.errors.join(','));
+      return false;
+    }
+  } else if (npc.alive === false || npc.isPlayer) {
+    _recordNpcDecisionDiagnostic(decision, 'blocked', npc.alive === false ? 'dead actor' : 'player actor');
+    return false;
+  }
   if (!_validatePersonalityConsistency(npc, decision)) {
     _dbg('[NPC] ' + npc.name + ' 行为 ' + decision.behaviorType + ' 与性格矛盾，降级为观望');
+    _recordNpcDecisionDiagnostic(decision, 'skipped', 'personality mismatch');
     return false;
   }
   if (_isNpcActionCoolingDown(npc, decision.behaviorType, decision.target, context, decision.actionId)) {
     _dbg('[NPC] ' + npc.name + ' 行为 ' + decision.behaviorType + ' 正在冷却，跳过重复执行');
+    _recordNpcDecisionDiagnostic(decision, 'skipped', 'cooldown');
     return false;
   }
   NpcBehaviorRegistry.execute(npc, decision, context);
   _recordNpcActionLedger(npc, decision);
   addEB('NPC行为', npc.name + '：' + decision.intent);
+  _recordNpcDecisionDiagnostic(decision, 'executed', decision.intent || decision.behaviorType);
   _markNpcDecisionHandled(npc.name);
   return true;
 }
@@ -1644,7 +1964,7 @@ async function batchNpcDecisions(npcs, context) {
     }
   });
 
-  prompt += '\n为每人返回JSON数组：[{"name":"角色名","actionId":"候选行动id，优先填写","behaviorType":"appoint|dismiss|reward|punish|declare_war|request_loyalty|reform|petition|conspire|train_troops|send_letter|private_correspondence|seek_audience|request_funds|obstruct|slander|none","target":"对象","intent":"意图描述20字","shouldExecute":true,"publicReason":"对外说辞/冠冕堂皇的理由15字","privateMotiv":"真实内心动机15字","innerThought":"内心独白15字"}]\n';
+  prompt += '\n为每人返回JSON数组：[{"name":"角色名","actionId":"候选行动id，优先填写","behaviorType":"appoint|dismiss|reward|punish|declare_war|request_loyalty|reform|petition|recommend|impeach|conspire|build_network|train_troops|patrol|fortify|send_letter|private_correspondence|seek_audience|request_funds|develop_local|relief|obstruct|slander|none","target":"对象","intent":"意图描述20字","shouldExecute":true,"publicReason":"对外说辞/冠冕堂皇的理由15字","privateMotiv":"真实内心动机15字","innerThought":"内心独白15字"}]\n';
   prompt += '\u6CE8\u610F\uFF1A\n';
   prompt += '\u2022 \u4F18\u5148\u4ECE ActionCards \u4E2D\u9009 actionId\uFF1B\u53EA\u6709 ActionCards \u4E0D\u8DB3\u4EE5\u8868\u8FBE\u65F6\uFF0C\u624D\u76F4\u63A5\u5199 behaviorType\u3002\n';
   prompt += '\u2022 \u6BCF\u4E2A\u89D2\u8272\u662F\u72EC\u7ACB\u7684\u4EBA\uFF0C\u6709\u81EA\u5DF1\u7684\u559C\u6012\u54C0\u4E50\u3001\u6069\u6028\u60C5\u4EC7\uFF0C\u4E0D\u56F4\u7ED5\u73A9\u5BB6\u3002\n';
@@ -1794,6 +2114,12 @@ function selectImportantNpcs(npcs) {
       score += 5;
     }
 
+    // 地方/边地角色必须进入候选池，否则朝堂高分角色会挤掉地方线索
+    if (npc.location && npc.location !== (GM._capital || '京师')) {
+      score += 4;
+      if (GM.provinceStats && GM.provinceStats[npc.jurisdiction || npc.location]) score += 2;
+    }
+
     // 后宫妻室（政治影响力极大）
     if (npc.spouse) {
       score += 7; // 妻室总是重要角色
@@ -1824,9 +2150,31 @@ function selectImportantNpcs(npcs) {
     }
   });
 
-  // 按分数排序，取前 10 个（增加到 10 个）
+  // Cohort-aware selection: keep elite priority but reserve room for
+  // military, local/frontier, and politically unstable actors.
   important.sort(function(a, b) { return b.score - a.score; });
-  return important.slice(0, 10).map(function(item) { return item.npc; });
+  var selected = [];
+  var seen = {};
+  function addItem(item) {
+    if (!item || !item.npc || seen[item.npc.name]) return false;
+    selected.push(item);
+    seen[item.npc.name] = true;
+    return true;
+  }
+  function bestWhere(fn) {
+    for (var i = 0; i < important.length; i++) {
+      if (!seen[important[i].npc.name] && fn(important[i].npc)) return important[i];
+    }
+    return null;
+  }
+  important.slice(0, 7).forEach(addItem);
+  addItem(bestWhere(function(npc) { return _hasMilitaryCommand(npc); }));
+  addItem(bestWhere(function(npc) { return npc.location && npc.location !== (GM._capital || '京师'); }));
+  addItem(bestWhere(function(npc) {
+    return (npc.loyalty !== undefined && npc.loyalty < 45) || (npc.ambition || 0) >= 75 || (npc.stress || 0) >= 60;
+  }));
+  for (var j = 0; selected.length < 10 && j < important.length; j++) addItem(important[j]);
+  return selected.slice(0, 10).map(function(item) { return item.npc; });
 }
 
 /** @param {string} charName @returns {boolean} */

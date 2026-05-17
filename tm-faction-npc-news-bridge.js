@@ -123,6 +123,53 @@
     return _push('鸿雁', rec.targetFac || '?', content);
   }
 
+  function pushMilitaryAction(fac, action) {
+    if (!fac || !action) return false;
+    var content = '调军·' + (action.army || action.name || '?');
+    if (action.commanderFrom || action.commanderTo) content += '·帅 ' + (action.commanderFrom || '?') + '→' + (action.commanderTo || '?');
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('军务', fac.name, content);
+  }
+
+  function pushDiplomacyAction(fac, action) {
+    if (!fac || !action) return false;
+    var content = '外交·' + (action.to || action.targetFaction || '?');
+    if (action.relationFrom !== undefined || action.relationTo !== undefined) content += '·关系 ' + (action.relationFrom !== undefined ? action.relationFrom : '?') + '→' + (action.relationTo !== undefined ? action.relationTo : '?');
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('外交', fac.name, content);
+  }
+
+  function pushProvincePolicy(fac, action) {
+    if (!fac || !action) return false;
+    var content = '地政·' + (action.province || '?');
+    if (action.ownerFrom || action.ownerTo) content += '·归属 ' + (action.ownerFrom || '?') + '→' + (action.ownerTo || '?');
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('地政', fac.name, content);
+  }
+
+  function pushFiscalPolicy(fac, action) {
+    if (!fac || !action) return false;
+    var content = '财计·' + (action.resource || 'money') + ' ' + ((action.delta || 0) >= 0 ? '+' : '') + (action.delta || 0);
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('财计', fac.name, content);
+  }
+
+  function pushIntrigue(fac, action) {
+    if (!fac || !action) return false;
+    var content = '间谍·' + (action.targetFaction || '?') + '·' + (action.intrigue || action.policy || 'covert');
+    if (action.pressure) content += '·压力+' + action.pressure;
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('间谍', fac.name, content);
+  }
+
+  function pushRebellionPolicy(fac, action) {
+    if (!fac || !action) return false;
+    var content = '叛乱·' + (action.targetFaction || '?') + '·' + (action.policy || 'incite');
+    if (action.support) content += '·声势+' + action.support;
+    if (action.reason) content += '·' + String(action.reason).slice(0, 32);
+    return _push('叛乱', fac.name, content);
+  }
+
   global.TM = global.TM || {};
   global.TM.FactionNpcNewsBridge = {
     pushMemorial: pushMemorial,
@@ -130,7 +177,13 @@
     pushChaoyi: pushChaoyi,
     pushOffice: pushOffice,
     pushFiscalCrisis: pushFiscalCrisis,
-    pushIntervention: pushIntervention
+    pushIntervention: pushIntervention,
+    pushMilitaryAction: pushMilitaryAction,
+    pushDiplomacyAction: pushDiplomacyAction,
+    pushProvincePolicy: pushProvincePolicy,
+    pushFiscalPolicy: pushFiscalPolicy,
+    pushIntrigue: pushIntrigue,
+    pushRebellionPolicy: pushRebellionPolicy
   };
 
   if (typeof module !== 'undefined' && module.exports) {

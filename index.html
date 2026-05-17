@@ -510,6 +510,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-office-panel.js?v=2026050701"></script>
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
 <script src="tm-npc-engine.js?v=2026050701"></script>
+<script src="tm-npc-action-ledger.js?v=2026051701"></script>
 <script src="tm-npc-decision.js?v=2026050701"></script>
 <!-- R111+R127 拆分 tm-game-engine.js → launch + player-settings + player-core + hongyan-office + game-loop -->
 <script src="tm-launch.js?v=20260514-mapdata-detect"></script>
@@ -588,6 +589,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-faction-npc-llm-decision.js?v=2026051001"></script>
 <!-- 2026-05-10 Phase H3: in-turn NPC background LLM driver -->
 <script src="tm-faction-npc-in-turn-driver.js?v=2026051001"></script>
+<!-- 2026-05-17: unified faction precision LLM scheduler + dispatch ledger -->
+<script src="tm-faction-npc-dispatcher.js?v=2026051701"></script>
 <!-- 2026-05-10·Layer 2 势力反向索引·必须在 three-systems-ui 之前·game-loop 之后 -->
 <script src="tm-faction-index.js?v=2026051001"></script>
 <!-- 2026-05-10·Layer 3 势力派生健康度·依赖 _facIndex·必须在 index 之后 -->

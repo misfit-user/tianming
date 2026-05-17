@@ -103,6 +103,9 @@ function _ensureGMDefaults() {
   if (!Array.isArray(GM._npcCorrespondence)) GM._npcCorrespondence = [];
   if (!Array.isArray(GM._pendingNpcCorrespondence)) GM._pendingNpcCorrespondence = [];
   if (!Array.isArray(GM._npcInternalActionHistory)) GM._npcInternalActionHistory = [];
+  if (!Array.isArray(GM._npcActionLedger)) GM._npcActionLedger = [];
+  if (!Array.isArray(GM._npcPlans)) GM._npcPlans = [];
+  if (!Array.isArray(GM._npcDecisionDiagnostics)) GM._npcDecisionDiagnostics = [];
   if (!Array.isArray(GM._pendingMemorialDeliveries)) GM._pendingMemorialDeliveries = [];
   if (!Array.isArray(GM._interceptedIntel)) GM._interceptedIntel = [];
   if (!Array.isArray(GM._undeliveredLetters)) GM._undeliveredLetters = [];
@@ -320,6 +323,9 @@ function _prepareGMForSave() {
   if (GM._pendingMemorialDeliveries && GM._pendingMemorialDeliveries.length > 0) GM._savedPendingMemDeliveries = _safeClone(GM._pendingMemorialDeliveries);
   if (GM._pendingNpcCorrespondence && GM._pendingNpcCorrespondence.length > 0) GM._savedPendingNpcCorr = _safeClone(GM._pendingNpcCorrespondence);
   if (GM._npcInternalActionHistory && GM._npcInternalActionHistory.length > 0) GM._savedNpcInternalActionHistory = _safeClone(GM._npcInternalActionHistory);
+  if (GM._npcActionLedger && GM._npcActionLedger.length > 0) GM._savedNpcActionLedger = _safeClone(GM._npcActionLedger);
+  if (GM._npcPlans && GM._npcPlans.length > 0) GM._savedNpcPlans = _safeClone(GM._npcPlans);
+  if (GM._npcDecisionDiagnostics && GM._npcDecisionDiagnostics.length > 0) GM._savedNpcDecisionDiagnostics = _safeClone(GM._npcDecisionDiagnostics.slice(-120));
   if (GM._officeCollapsed) GM._savedOfficeCollapsed = _safeClone(GM._officeCollapsed);
   if (GM._wdState && Object.keys(GM._wdState).length > 0) GM._savedWdState = _safeClone(GM._wdState);
   if (GM._playerDirectives && GM._playerDirectives.length > 0) GM._savedPlayerDirectives = _safeClone(GM._playerDirectives);
@@ -593,6 +599,9 @@ function _restoreSavedFields() {
   if (GM._savedPendingMemDeliveries) { GM._pendingMemorialDeliveries = GM._savedPendingMemDeliveries; delete GM._savedPendingMemDeliveries; }
   if (GM._savedPendingNpcCorr) { GM._pendingNpcCorrespondence = GM._savedPendingNpcCorr; delete GM._savedPendingNpcCorr; }
   if (GM._savedNpcInternalActionHistory) { GM._npcInternalActionHistory = GM._savedNpcInternalActionHistory; delete GM._savedNpcInternalActionHistory; }
+  if (GM._savedNpcActionLedger) { GM._npcActionLedger = GM._savedNpcActionLedger; delete GM._savedNpcActionLedger; }
+  if (GM._savedNpcPlans) { GM._npcPlans = GM._savedNpcPlans; delete GM._savedNpcPlans; }
+  if (GM._savedNpcDecisionDiagnostics) { GM._npcDecisionDiagnostics = GM._savedNpcDecisionDiagnostics; delete GM._savedNpcDecisionDiagnostics; }
   if (GM._savedOfficeCollapsed) { GM._officeCollapsed = GM._savedOfficeCollapsed; delete GM._savedOfficeCollapsed; }
   if (GM._savedWdState) { GM._wdState = GM._savedWdState; delete GM._savedWdState; }
   if (GM._savedPlayerDirectives) { GM._playerDirectives = GM._savedPlayerDirectives; delete GM._savedPlayerDirectives; }

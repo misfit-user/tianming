@@ -50,11 +50,29 @@
     return !!k && _arr(playerFactionNames).some(function(n){ return _normFactionName(n) === k; });
   }
 
+  function _daysPerTurn() {
+    var n = 0;
+    try {
+      if (typeof global._getDaysPerTurn === 'function') n = Number(global._getDaysPerTurn()) || n;
+    } catch(_){}
+    if (!(n > 0) && global.P && P.time && Number(P.time.daysPerTurn) > 0) n = Number(P.time.daysPerTurn);
+    if (!(n > 0) && global.GM && GM.time && Number(GM.time.daysPerTurn) > 0) n = Number(GM.time.daysPerTurn);
+    return Math.max(0.001, n || 30);
+  }
+
+  function _monthRatio() {
+    return _daysPerTurn() / 30;
+  }
+
   function _runFiscalCycle(fac) {
     var de = fac.derivedEconomy;
     if (!de) return null;
-    var monthlyIncome = Math.round(_safeNum(de.annualTaxIncome) / 12);
-    var monthlyExpense = Math.round(_safeNum(de.annualMilitaryCost) / 12);
+    var daysPerTurn = _daysPerTurn();
+    var monthRatio = _monthRatio();
+    var monthlyIncomeBase = _safeNum(de.annualTaxIncome) / 12;
+    var monthlyExpenseBase = _safeNum(de.annualMilitaryCost) / 12;
+    var monthlyIncome = Math.round(monthlyIncomeBase * monthRatio);
+    var monthlyExpense = Math.round(monthlyExpenseBase * monthRatio);
     var net = monthlyIncome - monthlyExpense;
 
     if (!fac.treasury || typeof fac.treasury !== 'object') {
@@ -75,6 +93,10 @@
     return {
       monthlyIncome: monthlyIncome,
       monthlyExpense: monthlyExpense,
+      periodIncome: monthlyIncome,
+      periodExpense: monthlyExpense,
+      daysPerTurn: daysPerTurn,
+      monthRatio: monthRatio,
       net: net,
       treasuryBefore: before,
       treasuryAfter: after,
@@ -113,6 +135,8 @@
             delta: rec.net,
             monthlyIncome: rec.monthlyIncome,
             monthlyExpense: rec.monthlyExpense,
+            daysPerTurn: rec.daysPerTurn,
+            monthRatio: rec.monthRatio,
             crisis: rec.crisis
           }, rec);
         } catch(_){}

@@ -62,19 +62,47 @@ ctx.GM.facs[1].npcMilitaryActions = [{ turn:3, action:'military_order', army:'Bl
 ctx.GM.facs[1].npcDiplomacyActions = [{ turn:3, action:'diplomacy', to:'MingEnvoy', reason:'Probe peace terms', effect:{ relationFrom:-70, relationTo:-55 } }];
 ctx.GM.facs[1].npcProvincePolicies = [{ turn:3, action:'province_policy', province:'Liaoyang', reason:'Move grain levy', effect:{ ownerFrom:'OldOwner', ownerTo:'NewOwner', revenueDelta:1200 } }];
 ctx.GM.facs[1].npcFiscalActions = [{ turn:3, action:'fiscal_policy', resource:'money', amount:120000, reason:'War levy', effect:{ before:100000, after:220000 } }];
+ctx.GM.facs[1].npcIntrigueActions = [{ turn:3, intrigue:'spread_rumor', targetFaction:'MingCourt', pressure:3, reason:'Covert rumor' }];
+ctx.GM.facs[1].npcRebellionPolicies = [{ turn:3, policy:'incite', targetFaction:'MingBorder', support:2, reason:'Border rebels' }];
+ctx.GM.facs[1]._npcLlmActionLedger = [{ turn:3, type:'diplomacy', status:'applied', source:'native', detail:{ to:'MingCourt', reason:'Debug ledger row' } }];
+ctx.GM.facs[1]._lastLlmRationale = { turn:3, text:'Debug rationale' };
+ctx.GM.facs[1]._lastLlmApplySummary = { turn:3, attemptedActions:3, appliedActions:2, skippedActions:1, mergedActions:0 };
+ctx.GM._sc16FactionDirectives = { turn:3, source:'sc16', byFaction:{} };
+ctx.GM._sc16FactionDirectives.byFaction[ctx.GM.facs[1].name] = {
+  turn:3,
+  source:'sc16',
+  hasDirectContent:true,
+  directives:[{ strategic_intent:'Debug sc16 directive', must_follow:'Debug must follow' }],
+  actions:[{ faction:ctx.GM.facs[1].name, target:'MingCourt', action:'Debug action' }],
+  diplomacy:[{ from:ctx.GM.facs[1].name, to:'MingCourt', new_relation:'tense' }]
+};
+ctx.GM.qijuHistory = [{ turn:3, _source:'npc-bridge', _facName:ctx.GM.facs[1].name, content:'Debug precision news' }];
 ctx.window = ctx;
 ctx.globalThis = ctx;
+ctx.TM.FactionActionEngine = {
+  scoreFactionCandidate() { return { score: 88, reasons: ['sc16-directive','hotspot'] }; },
+  formatActionContractForPrompt() { return 'ACTION_CONTRACT\n- diplomacy: required=targetFaction,relationDelta'; }
+};
 vm.createContext(ctx);
 vm.runInContext(src, ctx, { filename:'tm-three-systems-ui.js' });
 ctx.openForcesRelationsPanel('后金');
 assert(captured && captured.title === '势力天平', 'panel did not open expected modal');
 assert(captured.html.includes('frp-shell') && captured.html.includes('后金') && captured.html.includes('关系棋盘'), 'rendered modal missing core content');
 
-assert(captured.html.includes('BlueBanner') && captured.html.includes('Probe peace terms') && captured.html.includes('Liaoyang') && captured.html.includes('War levy'),
+assert(captured.html.includes('BlueBanner') && captured.html.includes('Probe peace terms') && captured.html.includes('Liaoyang') && captured.html.includes('War levy')
+  && captured.html.includes('Covert rumor') && captured.html.includes('Border rebels'),
   'faction detail panel should surface expanded NPC LLM action trajectories');
 
 ctx._tsInspectNpcInternal(ctx.GM.facs[1].name);
-assert(captured && captured.html.includes('BlueBanner') && captured.html.includes('Probe peace terms') && captured.html.includes('Liaoyang') && captured.html.includes('War levy'),
+assert(captured && captured.html.includes('BlueBanner') && captured.html.includes('Probe peace terms') && captured.html.includes('Liaoyang') && captured.html.includes('War levy')
+  && captured.html.includes('Covert rumor') && captured.html.includes('Border rebels'),
   'NPC internal inspection panel should surface expanded NPC LLM action trajectories');
+assert(typeof ctx._tsInspectFactionAiDebug === 'function', 'faction AI debug panel should be exported');
+ctx._tsInspectFactionAiDebug(ctx.GM.facs[1].name);
+assert(captured && captured.html.includes('势力 AI 调试') && captured.html.includes('Debug sc16 directive') && captured.html.includes('Debug ledger row') && captured.html.includes('Debug precision news'),
+  'faction AI debug panel should surface sc16 directive, ledger and precision news');
+
+assert(captured && captured.html.includes('候选评分') && captured.html.includes('上次执行汇总') && captured.html.includes('ACTION_CONTRACT'),
+  'faction AI debug panel should surface ranking, apply summary and action contract');
 
 console.log('[smoke-faction-panel-ui] pass');

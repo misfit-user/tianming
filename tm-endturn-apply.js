@@ -574,6 +574,8 @@
               if (_ft) act.target = _ft.name;
             }
 
+            if (!_tmNpcLedgerPreflight({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '' }, 'AI NPC行动已阻止')) return;
+
             // 尝试机械执行（让 AI 的决策产生真实游戏效果）
             var mechanicallyExecuted = false;
 
@@ -788,6 +790,7 @@
             var _pubReason = act.publicReason || act.intent || '';
             var _evtText = act.name + '：' + act.action + (act.target ? '（对象：' + act.target + '）' : '') + (act.result ? ' → ' + act.result : '');
             if (_pubReason) _evtText += '（' + _pubReason + '）';
+            _tmNpcLedgerRecord({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '', result: act.result || '', publicReason: _pubReason, motivePrivate: act.privateMotiv || act.innerThought || '', intent: act.intent || '', status: mechanicallyExecuted ? 'applied' : 'narrative_only', uiRoutes: ['event', 'memory'] });
             addEB('NPC自主', _evtText);
             // 角色弧线记录真实动机（玩家通过人物志可窥见深层故事）
             var _arcDesc = act.action;
@@ -832,6 +835,7 @@
             var _cap = GM._capital || '京城';
             if (!_nlCh) { _nlSkipNoChar++; _dbg('[npc_letters] 找不到角色: ' + nl.from + '·跳过'); return; }
             if (_nlCh.isPlayer) { _nlSkipMissing++; return; }
+            if (_nlCh.alive === false) { _nlSkipMissing++; return; }
             if (_isSameLocation(_nlCh.location, _cap)) {
               // 在京 NPC 不应走鸿雁——但 AI 已生成内容·改投奏疏避免内容浪费
               _nlSkipCapital++;
@@ -845,6 +849,7 @@
                 reliability: 'medium', bias: 'none', priority: nl.urgency === 'extreme' ? 'urgent' : 'normal',
                 _convertedFromLetter: true
               });
+              _tmNpcLedgerRecord({ source: 'main_ai:npc_letters', kind: 'npc_letter', actor: nl.from, type: nl.type || 'report', behaviorType: nl.type || 'report', target: '天子', action: nl.content || '', result: nl.suggestion || '', status: 'converted_to_memorial', uiRoutes: ['memorials', 'memory'] });
               return;
             }
             _nlAccepted++;
@@ -856,6 +861,7 @@
               suggestion: nl.suggestion || '',
               replyExpected: nl.replyExpected !== false
             });
+            _tmNpcLedgerRecord({ source: 'main_ai:npc_letters', kind: 'npc_letter', actor: nl.from, type: nl.type || 'report', behaviorType: nl.type || 'report', target: '天子', action: nl.content || '', result: nl.suggestion || '', status: 'queued', uiRoutes: ['letters', 'memory'] });
             // NPC 记一笔·"我写过这封信"·以备日后推演时保持一致
             try {
               if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
@@ -875,11 +881,13 @@
           if (!GM._pendingNpcCorrespondence) GM._pendingNpcCorrespondence = [];
           p1.npc_correspondence.forEach(function(nc) {
             if (!nc.from || !nc.to) return;
+            if (!_tmNpcLedgerPreflight({ source: 'main_ai:npc_correspondence', kind: 'npc_correspondence', actor: nc.from, type: nc.type || 'secret', behaviorType: nc.type || 'secret', target: nc.to, action: nc.content || nc.summary || '' }, 'AI NPC通信已阻止')) return;
             GM._pendingNpcCorrespondence.push({
               from: nc.from, to: nc.to,
               content: nc.content||'', summary: nc.summary||'',
               implication: nc.implication||'', type: nc.type||'secret'
             });
+            _tmNpcLedgerRecord({ source: 'main_ai:npc_correspondence', kind: 'npc_correspondence', actor: nc.from, type: nc.type || 'secret', behaviorType: nc.type || 'secret', target: nc.to || '', action: nc.content || nc.summary || '', result: nc.implication || '', status: 'queued', uiRoutes: ['correspondence', 'memory'] });
             _dbg('[npc_correspondence] ' + nc.from + ' → ' + nc.to + '（' + (nc.type||'secret') + '）');
           });
         }
@@ -4134,11 +4142,13 @@
               addEB('\u8FC7\u6EE4', 'AI 试图替玩家 ' + _pName + ' autonomous 互动(' + it.type + '→' + it.target + ')，已过滤');
               return;
             }
+            if (!_tmNpcLedgerPreflight({ source: 'main_ai:npc_interactions', kind: 'npc_interaction', actor: it.actor, type: it.type, behaviorType: it.type, target: it.target, action: it.description || '' }, 'AI NPC互动已阻止')) return;
             if (typeof applyNpcInteraction !== 'function') return;
             var extra = { description: it.description || '' };
             var ok = applyNpcInteraction(it.actor, it.target, it.type, extra);
             if (ok) {
               var typeInfo = (typeof NPC_INTERACTION_TYPES !== 'undefined' && NPC_INTERACTION_TYPES[it.type]) ? NPC_INTERACTION_TYPES[it.type].label : it.type;
+              _tmNpcLedgerRecord({ source: 'main_ai:npc_interactions', kind: 'npc_interaction', actor: it.actor, type: it.type, behaviorType: it.type, target: it.target, action: it.description || typeInfo || '', result: it.result || '', status: 'applied', uiRoutes: ['relations', 'memory'] });
               addEB('\u4EBA\u7269', it.actor + '→' + it.target + ' ' + typeInfo + (it.description ? '：' + it.description : ''));
               // ── 名望/贤能涨跌（由行为定义查询）──
               try {
@@ -4752,5 +4762,27 @@
     ctx.meta.timing.apply = Date.now() - _applyStart;
     return ctx;
   };
+
+  function _tmNpcLedger() {
+    return global.TM && global.TM.NPC && global.TM.NPC.ActionLedger ? global.TM.NPC.ActionLedger : null;
+  }
+  function _tmNpcLedgerPreflight(raw, label) {
+    try {
+      var L = _tmNpcLedger();
+      if (!L || !L.preflight) return true;
+      var pf = L.preflight(raw, global.GM);
+      if (pf && !pf.ok) {
+        if (typeof global.addEB === 'function') global.addEB('过滤', (label || 'AI NPC行动已阻止') + '：' + (raw.actor || raw.name || raw.from || '') + '·' + (pf.errors || []).join('/'));
+        return false;
+      }
+    } catch(_npcLedgerPreflightErr) {}
+    return true;
+  }
+  function _tmNpcLedgerRecord(raw) {
+    try {
+      var L = _tmNpcLedger();
+      if (L && L.record) L.record(raw, { markHandled: true });
+    } catch(_npcLedgerRecordErr) {}
+  }
 
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

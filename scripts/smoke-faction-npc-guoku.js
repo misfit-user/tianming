@@ -90,7 +90,20 @@ function unitTests() {
   assert(rec2.crisis === false, 'no crisis');
   assert(fac2.treasury.money > 500000, 'treasury grows');
 
-  console.log('[smoke-faction-npc-guoku] unit tests pass·9 assertions');
+  // 剧本回合跨度：90 天回合应按 3 个月结算，不再固定 1 个月。
+  ctx._getDaysPerTurn = function(){ return 90; };
+  var fac3 = {
+    name: 'Z',
+    derivedEconomy: { annualTaxIncome: 12000, annualMilitaryCost: 24000 },
+    treasury: { money: 100000 }
+  };
+  var rec3 = fng._runFiscalCycle(fac3);
+  assert(rec3.daysPerTurn === 90, 'daysPerTurn captured');
+  assert(rec3.monthRatio === 3, 'monthRatio should be 3 for 90 days');
+  assert(rec3.monthlyIncome === 3000, '90-day income should be 3 monthly incomes');
+  assert(rec3.monthlyExpense === 6000, '90-day expense should be 3 monthly expenses');
+
+  console.log('[smoke-faction-npc-guoku] unit tests pass·13 assertions');
 }
 
 function e2eTianqi() {

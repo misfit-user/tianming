@@ -122,6 +122,8 @@ const checks = [
   { name: 'endturn-subcall-registry', file: 'smoke-endturn-subcall-registry.js', estSec: 1, expectExit: 0 },
   { name: 'postturn-court-turn-gating', file: 'smoke-postturn-court-turn-gating.js', estSec: 1, expectExit: 0 },
   { name: 'postturn-court-deferred-finalize', file: 'smoke-postturn-court-deferred-finalize.js', estSec: 1, expectExit: 0 },
+  { name: 'endturn-systems-tail-guards', file: 'smoke-endturn-systems-tail-guards.js', estSec: 1, expectExit: 0 },
+  { name: 'endturn-render-loading-guard', file: 'smoke-endturn-render-loading-guard.js', estSec: 1, expectExit: 0 },
   { name: 'endturn-prompt-tokens', file: 'smoke-endturn-prompt-tokens.js', estSec: 1, expectExit: 0 },
   { name: 'endturn-helpers', file: 'smoke-endturn-helpers.js', estSec: 1, expectExit: 0 },
   { name: 'endturn-apply-fields', file: 'smoke-endturn-apply-fields.js', estSec: 1, expectExit: 0 },

@@ -196,9 +196,9 @@
             global.TM.FactionActionEngine.recordLocalAction(fac, 'office_change', {
               kind: rec.action || a.kind,
               target: rec.target,
-              oldPosition: rec.oldPosition,
-              newPosition: rec.newPosition,
-              loyaltyDelta: rec.loyaltyDelta,
+              oldPosition: rec.effect && rec.effect.positionFrom,
+              newPosition: rec.effect && rec.effect.positionTo,
+              loyaltyDelta: rec.effect && rec.effect.loyaltyDelta,
               reason: rec.reason
             }, rec);
           } catch(_){}

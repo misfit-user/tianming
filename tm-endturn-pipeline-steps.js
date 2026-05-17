@@ -57,23 +57,10 @@
       }
     } catch(_npcgE) { try { console.warn('[pipeline.render-finalize] NPC guoku 失败', _npcgE); } catch(_){} }
     try {
-      if (typeof window !== 'undefined' && window.TM && TM.FactionNpcLlmDecision && TM.FactionNpcSettings
-          && TM.FactionNpcSettings.isAiPrecisionEnabled() && TM.FactionNpcSettings.isEagerMode()) {
-        var _npcLlmTurn = (window.GM && GM.turn) || 1;
-        setTimeout(function() {
-          TM.FactionNpcLlmDecision.decideAll({ source: 'eager', turn: _npcLlmTurn }).then(function(r){
-            try { console.log('[npc-llm-decision/eager] turn ' + (window.GM && GM.turn) + ' applied=' + (r && r.applied) + ' attempted=' + (r && r.attempted)); } catch(_){}
-          }).catch(function(_e){
-            try { console.warn('[npc-llm-decision/eager] failed', _e); } catch(_){}
-          });
-        }, 300);
+      if (typeof window !== 'undefined' && window.TM && TM.FactionNpcDispatchQueue && TM.FactionNpcDispatchQueue.scheduleTurnRuns) {
+        TM.FactionNpcDispatchQueue.scheduleTurnRuns({ source: 'render-finalize' });
       }
-    } catch(_npcdE) { try { console.warn('[pipeline.render-finalize] NPC LLM decision 调度失败', _npcdE); } catch(_){} }
-    try {
-      if (typeof window !== 'undefined' && window.TM && TM.FactionNpcInTurnDriver && TM.FactionNpcInTurnDriver.scheduleInTurnRuns) {
-        TM.FactionNpcInTurnDriver.scheduleInTurnRuns();
-      }
-    } catch(_npcInTurnE) { try { console.warn('[pipeline.render-finalize] NPC in-turn 调度失败', _npcInTurnE); } catch(_){} }
+    } catch(_npcdE) { try { console.warn('[pipeline.render-finalize] NPC LLM dispatch 调度失败', _npcdE); } catch(_){} }
     return ctx;
   }
 
@@ -373,7 +360,42 @@
         // 非 deferred 路径·正常 render + 4.5 + 4.6 + 5
         // 注：render 不 wrap try/catch·让 error 跟 legacy 同 propagate
         if (typeof _endTurn_render === 'function') {
-          _endTurn_render.apply(null, _renderArgs);
+          try {
+            try { if (typeof showLoading === 'function') showLoading('生成史记弹窗', 97); } catch(_progressE) {}
+            _endTurn_render.apply(null, _renderArgs);
+          } catch(_renderE) {
+            ctx.results.renderError = _renderE;
+            try {
+              if (typeof window !== 'undefined' && window.TM && TM.errors && TM.errors.capture) {
+                TM.errors.capture(_renderE, 'pipeline.render-finalize] render failed');
+              } else {
+                console.error('[pipeline.render-finalize] render failed', _renderE);
+              }
+            } catch(_diagE) {
+              try { console.error('[pipeline.render-finalize] render failure diagnostic failed', _diagE); } catch(_){}
+            }
+            try { if (typeof hideLoading === 'function') hideLoading(); } catch(_hideE) {
+              try { console.warn('[pipeline.render-finalize] hideLoading after render failure failed', _hideE); } catch(_){}
+            }
+            try {
+              if (typeof showTurnResult === 'function') {
+                var _renderErrMsg = (_renderE && (_renderE.message || _renderE.toString())) || 'unknown render error';
+                var _safeRenderErr = String(_renderErrMsg).replace(/[&<>"']/g, function(ch) {
+                  return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+                });
+                showTurnResult(
+                  '<div style="padding:1rem;line-height:1.8;color:var(--txt);">' +
+                  '<h3 style="color:var(--gold);margin:0 0 0.8rem;">史记弹窗渲染失败</h3>' +
+                  '<p>本回合推演与数值结算已经完成，但结果弹窗在渲染时出错。游戏已解除等待状态，可继续操作；请把控制台诊断发给开发者。</p>' +
+                  '<pre style="white-space:pre-wrap;color:var(--red,#c44);background:rgba(0,0,0,0.22);padding:0.75rem;border:1px solid rgba(200,80,70,0.35);">' + _safeRenderErr + '</pre>' +
+                  '</div>'
+                );
+              }
+            } catch(_fallbackE) {
+              try { console.warn('[pipeline.render-finalize] fallback render failed', _fallbackE); } catch(_){}
+            }
+            try { if (typeof toast === 'function') toast('回合推演已完成，但史记弹窗渲染失败，请查看控制台诊断。'); } catch(_toastE) {}
+          }
         }
         if (GM._pendingShijiModal) { GM._pendingShijiModal.aiReady = false; GM._pendingShijiModal.payload = null; }
         if (typeof GM !== 'undefined') {
@@ -468,24 +490,10 @@
         // 2026-05-10·Phase G·NPC LLM 决策接管·若开关 on + eager mode·后台并发跑
         // 模板已先跑·LLM 决策会"覆盖"产出新 trajectory·不破坏 fallback
         try {
-          if (typeof window !== 'undefined' && window.TM && TM.FactionNpcLlmDecision && TM.FactionNpcSettings
-              && TM.FactionNpcSettings.isAiPrecisionEnabled() && TM.FactionNpcSettings.isEagerMode()) {
-            var _npcLlmTurn = (window.GM && GM.turn) || 1;
-            setTimeout(function() {
-              TM.FactionNpcLlmDecision.decideAll({ source: 'eager', turn: _npcLlmTurn }).then(function(r){
-                try { console.log('[npc-llm-decision/eager] turn ' + (window.GM && GM.turn) + ' applied=' + (r && r.applied) + ' attempted=' + (r && r.attempted)); } catch(_){}
-              }).catch(function(_e){
-                try { console.warn('[npc-llm-decision/eager] failed', _e); } catch(_){}
-              });
-            }, 300);  // 300ms 后台·并发 N task ≈ 1-3s·不阻塞 UI
+          if (typeof window !== 'undefined' && window.TM && TM.FactionNpcDispatchQueue && TM.FactionNpcDispatchQueue.scheduleTurnRuns) {
+            TM.FactionNpcDispatchQueue.scheduleTurnRuns({ source: 'render-finalize' });
           }
-        } catch(_npcdE) { try { console.warn('[pipeline.render-finalize] NPC LLM decision 调度失败', _npcdE); } catch(_){} }
-        // Phase H3: once the player receives the new turn, schedule background NPC LLM moves.
-        try {
-          if (typeof window !== 'undefined' && window.TM && TM.FactionNpcInTurnDriver && TM.FactionNpcInTurnDriver.scheduleInTurnRuns) {
-            TM.FactionNpcInTurnDriver.scheduleInTurnRuns();
-          }
-        } catch(_npcInTurnE) { try { console.warn('[pipeline.render-finalize] NPC in-turn 调度失败', _npcInTurnE); } catch(_){} }
+        } catch(_npcdE) { try { console.warn('[pipeline.render-finalize] NPC LLM dispatch 调度失败', _npcdE); } catch(_){} }
         return ctx;
       },
       onError: 'continue',

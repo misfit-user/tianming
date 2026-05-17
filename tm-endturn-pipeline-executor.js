@@ -93,11 +93,26 @@
     /** @type {StepLogEntry[]} */
     var log = [];
     ctx.meta.stepLog = log;
+    if (TM.Endturn.Timing && typeof TM.Endturn.Timing.startLedger === 'function') {
+      TM.Endturn.Timing.startLedger(ctx, { source: 'pipeline', stepCount: steps.length });
+    }
 
     for (var i = 0; i < steps.length; i++) {
       var step = steps[i];
       var entry = await _runStep(step, ctx);
       log.push(entry);
+      if (TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+        TM.Endturn.Timing.mark(ctx, 'step', {
+          step: step.name,
+          index: i + 1,
+          total: steps.length,
+          ok: !!entry.ok,
+          retried: !!entry.retried,
+          ms: entry.ms || 0,
+          onError: step.onError || 'abort',
+          error: entry.error ? String(entry.error && (entry.error.message || entry.error) || '') : ''
+        });
+      }
       var statusTag = entry.ok ? 'ok' : 'fail';
       if (entry.retried) statusTag += '(retried)';
       try {
@@ -109,6 +124,9 @@
         if (policy === 'abort') {
           ctx.meta.lastRun = log.slice();
           _lastRunLog = log.slice();
+          if (TM.Endturn.Timing && typeof TM.Endturn.Timing.finishLedger === 'function') {
+            TM.Endturn.Timing.finishLedger(ctx, 'failed', { failedStep: step.name });
+          }
           throw entry.error;
         }
         // 'continue'·继续下一步
@@ -122,6 +140,9 @@
 
     ctx.meta.lastRun = log.slice();
     _lastRunLog = log.slice();
+    if (TM.Endturn.Timing && typeof TM.Endturn.Timing.finishLedger === 'function') {
+      TM.Endturn.Timing.finishLedger(ctx, 'done');
+    }
     return ctx;
   }
 

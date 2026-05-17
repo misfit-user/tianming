@@ -25,6 +25,42 @@
 //  包含：SC_L2_AI / SC_L3_CONDENSE / SC_REFLECT / 更新势力弧 / 更新因果图元数据
 // ════════════════════════════════════════════════════════════════════════
 
+var _POST_TURN_NEXT_REQUIRED_IDS = {
+  sc25: true,
+  compress_ai_memory: true,
+  compress_foreshadows: true,
+  compress_conversation: true
+};
+
+var _POST_TURN_CRITICAL_IDS = _POST_TURN_NEXT_REQUIRED_IDS;
+
+// npc_behavior 由 tm-endturn-pipeline-steps.js 入队；它允许在结果弹窗后后台运行，
+// 不默认列入 next/save 必阻塞项，避免玩家过回合等待重新变长。
+var _POST_TURN_SAVE_REQUIRED_IDS = {
+  sc25: true
+};
+
+function _isCriticalPostTurnJob(job) {
+  return !!(job && _POST_TURN_CRITICAL_IDS[job.id]);
+}
+
+function _isSaveRequiredPostTurnJob(job) {
+  return !!(job && _POST_TURN_SAVE_REQUIRED_IDS[job.id]);
+}
+
+function _postTurnSaveRequiredIds() {
+  return Object.keys(_POST_TURN_SAVE_REQUIRED_IDS);
+}
+
+function _snapshotTurnAiResultsForPostTurn() {
+  try {
+    if (typeof deepClone === 'function') return deepClone(GM._turnAiResults || {});
+    return JSON.parse(JSON.stringify(GM._turnAiResults || {}));
+  } catch(_) {
+    return GM && GM._turnAiResults ? Object.assign({}, GM._turnAiResults) : {};
+  }
+}
+
 /** 方向 8：SC_L2_AI·每 5 回合 AI 语义化情景摘要 */
 async function _scL2AIGenerate(turnOverride) {
   if (!GM || !P || !P.ai || !P.ai.key) return;
@@ -158,24 +194,25 @@ async function _scL3Condense(turnOverride) {
 }
 
 /** 方向 12：SC_REFLECT·对比上回合预测 vs 本回合实际·生成反省记录 */
-async function _scReflect(turnOverride) {
+async function _scReflect(turnOverride, turnResultsOverride) {
   if (!GM || !P || !P.ai || !P.ai.key) return;
   var jobTurn = turnOverride || (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
-  if (!GM._turnAiResults || !GM._turnAiResults.thinking) return;
+  var _turnResults = turnResultsOverride || GM._turnAiResults || {};
+  if (!_turnResults || !_turnResults.thinking) return;
   // 需要上回合存下的 predictions（来自 SC25 的 predictions 字段·新增）
   var lastPredictions = GM._lastTurnPredictions;
   if (!lastPredictions) {
     // 首次·保存本回合 thinking 为下次对比基准
     GM._lastTurnPredictions = {
       turn: jobTurn,
-      thinking: (GM._turnAiResults.thinking || '').substring(0, 1500)
+      thinking: (_turnResults.thinking || '').substring(0, 1500)
     };
     return;
   }
   var tpR = '【任务·对比上回合预测与本回合实际·提炼经验教训】\n\n';
   tpR += '<last-turn-predictions turn="' + lastPredictions.turn + '">\n' + lastPredictions.thinking + '\n</last-turn-predictions>\n\n';
   tpR += '<this-turn-actual turn="' + jobTurn + '">\n';
-  tpR += ((GM._turnAiResults && GM._turnAiResults.subcall25 && GM._turnAiResults.subcall25.memory) || '').substring(0, 1500) + '\n';
+  tpR += ((_turnResults && _turnResults.subcall25 && _turnResults.subcall25.memory) || '').substring(0, 1500) + '\n';
   tpR += '</this-turn-actual>\n\n';
   tpR += '【输出 JSON】\n';
   tpR += '{\n';
@@ -207,7 +244,7 @@ async function _scReflect(turnOverride) {
     // 保存本回合为下次对比基准
     GM._lastTurnPredictions = {
       turn: jobTurn,
-      thinking: (GM._turnAiResults.thinking || '').substring(0, 1500)
+      thinking: (_turnResults.thinking || '').substring(0, 1500)
     };
   } catch(e) { _dbg('[SC_REFLECT] 失败:', e); }
 }
@@ -284,7 +321,7 @@ function _updateFactionArcs() {
 function _ensurePostTurnJobQueue() {
   if (!GM) return;
   if (!GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) {
-    GM._postTurnJobs = { pending: [], launchedAt: Date.now(), turn: GM.turn || 0 };
+    GM._postTurnJobs = { pending: [], launchedAt: Date.now(), turn: GM.turn || 0, results: {} };
   }
   return GM._postTurnJobs;
 }
@@ -314,6 +351,8 @@ function _launchPostTurnJobs() {
   if (!GM) return;
   var q = _ensurePostTurnJobQueue();
   var jobTurn = q.turn || GM.turn || 0;
+  var turnResultsSnapshot = q.turnResultsSnapshot || _snapshotTurnAiResultsForPostTurn();
+  q.turnResultsSnapshot = turnResultsSnapshot;
   var jobs = [];
   // 同步任务（不涉及 AI 调用）
   try { _updateFactionArcs(); } catch(e) { _dbg('[PostTurn] factionArcs:', e); }
@@ -328,7 +367,7 @@ function _launchPostTurnJobs() {
   } });
   jobs.push({ id: 'reflect', fn: async function() {
     await _awaitPostTurnJobsById(['sc25']);
-    return _scReflect(jobTurn);
+    return _scReflect(jobTurn, turnResultsSnapshot);
   } });
   jobs.forEach(function(j) { _enqueuePostTurnJob(j.id, j.fn); });
   try {
@@ -363,6 +402,71 @@ async function _awaitPostTurnJobsForSave(ids) {
   if (!wanted.length) return;
   _dbg('[PostTurn] wait before save:', wanted.map(function(job) { return job.id || '?'; }).join(','));
   await Promise.all(wanted.map(function(job) { return job.promise; }));
+}
+
+function _detachRemainingPostTurnJobs(remaining, sourceTurn) {
+  if (!remaining || !remaining.length) return;
+  if (!Array.isArray(GM._postTurnDetachedJobs)) GM._postTurnDetachedJobs = [];
+  remaining.forEach(function(job) {
+    if (!job) return;
+    job.detached = true;
+    job.sourceTurn = sourceTurn || job.sourceTurn || 0;
+    GM._postTurnDetachedJobs.push(job);
+  });
+  if (GM._postTurnDetachedJobs.length > 40) {
+    GM._postTurnDetachedJobs = GM._postTurnDetachedJobs.slice(-40);
+  }
+}
+
+async function _awaitPostTurnJobs(opts) {
+  opts = opts || {};
+  if (!GM || !GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) return;
+  var pending = GM._postTurnJobs.pending;
+  if (!pending.length) return;
+  var criticalOnly = opts.criticalOnly !== false;
+  var waiting = criticalOnly ? pending.filter(_isCriticalPostTurnJob) : pending.slice();
+  var remaining = criticalOnly ? pending.filter(function(job) { return !_isCriticalPostTurnJob(job); }) : [];
+  _dbg('[PostTurn] wait', waiting.length, criticalOnly ? 'critical jobs' : 'jobs', 'detach', remaining.length);
+  try {
+    if (waiting.length) await Promise.all(waiting.map(function(job) { return job.promise; }));
+  } catch(_e) {}
+  try {
+    if (typeof recordMemoryDiagnostic === 'function') {
+      recordMemoryDiagnostic('post_turn_await', {
+        status: 'done',
+        count: waiting.length,
+        criticalOnly: criticalOnly,
+        detached: remaining.length,
+        snapshot: (typeof buildMemoryDiagnosticSnapshot === 'function' ? buildMemoryDiagnosticSnapshot(GM) : null)
+      });
+    }
+  } catch(_) {}
+  if (criticalOnly) _detachRemainingPostTurnJobs(remaining, GM._postTurnJobs.turn || GM.turn || 0);
+  GM._postTurnJobs = null;
+  delete GM._turnAiResults;
+}
+
+async function _awaitPostTurnJobsForSave(ids) {
+  if (!GM) return;
+  var wanted = [];
+  if (GM._postTurnJobs && Array.isArray(GM._postTurnJobs.pending)) wanted = wanted.concat(GM._postTurnJobs.pending);
+  if (Array.isArray(GM._postTurnDetachedJobs)) wanted = wanted.concat(GM._postTurnDetachedJobs);
+  if (Array.isArray(ids) && ids.length) {
+    wanted = wanted.filter(function(job) { return job && ids.indexOf(job.id) >= 0; });
+  } else {
+    wanted = wanted.filter(_isSaveRequiredPostTurnJob);
+  }
+  if (!wanted.length) return;
+  _dbg('[PostTurn] wait before save:', wanted.map(function(job) { return job.id || '?'; }).join(','));
+  await Promise.all(wanted.map(function(job) { return job.promise; }));
+  if (!Array.isArray(ids) || !ids.length) {
+    var saveIds = _postTurnSaveRequiredIds();
+    if (Array.isArray(GM._postTurnDetachedJobs)) {
+      GM._postTurnDetachedJobs = GM._postTurnDetachedJobs.filter(function(job) {
+        return job && saveIds.indexOf(job.id) < 0;
+      });
+    }
+  }
 }
 
 function _compressOldArchives(limit) {

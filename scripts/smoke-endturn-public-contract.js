@@ -80,8 +80,8 @@ const applyModulePath = path.join(ROOT, 'tm-endturn-apply.js');
 assert(fs.existsSync(applyModulePath), 'tm-endturn-apply.js exists');
 const applyModuleLines = fs.readFileSync(applyModulePath, 'utf8').split('\n').length;
 assert(applyModuleLines >= 4550 && applyModuleLines <= 4850, 'tm-endturn-apply.js line count 4550-4850, actual ' + applyModuleLines);
-assert(followupModuleLines.length >= 2200 && followupModuleLines.length <= 2700,
-  'tm-endturn-followup.js line count 2200-2700, actual ' + followupModuleLines.length);
+assert(followupModuleLines.length >= 2200 && followupModuleLines.length <= 2750,
+  'tm-endturn-followup.js line count 2200-2750, actual ' + followupModuleLines.length);
 
 // P7-eta·tm-endturn-record.js: 文件存在·finalize export·sanitize 留 ai-infer·suggestions 优先 ctx.record
 const recordModulePath = path.join(ROOT, 'tm-endturn-record.js');

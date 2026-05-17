@@ -137,6 +137,7 @@ function _ensurePDefaults() {
   if (!P.conf) P.conf = {};
   if (!P.conf.verbosity) P.conf.verbosity = 'standard';
   if (typeof P.conf.npcAiPrecision !== 'boolean') P.conf.npcAiPrecision = true;
+  if (typeof P.conf.npcAiCosmeticEnrich !== 'boolean') P.conf.npcAiCosmeticEnrich = true;
   if (!P.conf.npcAiPrecisionMode) P.conf.npcAiPrecisionMode = 'eager';
   if (typeof P.conf.npcAiPrecisionMaxPerTurn !== 'number') P.conf.npcAiPrecisionMaxPerTurn = 2;
   if (typeof P.conf.npcInTurnMaxPerTurn !== 'number') P.conf.npcInTurnMaxPerTurn = 8;

@@ -174,13 +174,13 @@
           max_tokens: _tok(opts.repairTokens || 6000)
         };
         if (originalBody.response_format) repairBody.response_format = originalBody.response_format;
-        var repairResp = await fetch(opts.url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + opts.key },
-          body: JSON.stringify(repairBody)
+        if (typeof _aiFetchWithRetry !== "function") throw new Error("AI queue unavailable for JSON repair");
+        var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, {
+          apiKey: opts.key,
+          priority: opts.repairPriority || opts.priority || "normal",
+          timeoutMs: opts.repairTimeoutMs || 90000,
+          maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 1
         });
-        if (!repairResp.ok) throw new Error("HTTP " + repairResp.status);
-        var repairData = await repairResp.json();
         _checkTruncated(repairData, (label || "JSON") + " repair");
         if (repairData.usage && typeof TokenUsageTracker !== "undefined") TokenUsageTracker.record(repairData.usage);
         var repairRaw = "";
@@ -216,7 +216,9 @@
         if (typeof _aiFetchWithRetry === 'function') {
           data = await _aiFetchWithRetry(callUrl, body, opts.signal || null, {
             apiKey: key,
-            priority: opts.priority || 'normal'
+            priority: opts.priority || 'normal',
+            timeoutMs: opts.timeoutMs,
+            maxRetries: opts.maxRetries
           });
         } else {
           var resp = await fetch(callUrl, {
@@ -416,6 +418,9 @@
             GM._subcallTimings[id] = _elapsed;
             _stats.totalTime += _elapsed;
             _stats.byId[id].totalTime += _elapsed;
+            if (window.TM && TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+              TM.Endturn.Timing.mark(ctx, 'subcall', { id: id, label: name, ok: true, attempts: _attempt + 1, ms: _elapsed });
+            }
             if (typeof setAIBranchDiagnostic === 'function') setAIBranchDiagnostic(id, 'ok', name + ' ' + _elapsed + 'ms');
             return;
           } catch(_scErr) {
@@ -428,6 +433,9 @@
               _stats.byId[id].totalTime += _elapsed;
               _stats.errors++;
               _stats.byId[id].errors++;
+              if (window.TM && TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+                TM.Endturn.Timing.mark(ctx, 'subcall', { id: id, label: name, ok: false, attempts: _attempt + 1, ms: _elapsed, error: _errInfo.message, status: _errInfo.status });
+              }
               _stats.errorLog.push({ id:id, name:name, turn:GM.turn, msg:_errInfo.message, status:_errInfo.status, snippet:_errInfo.snippet, time:new Date().toLocaleTimeString() });
               if (_stats.errorLog.length > 20) _stats.errorLog.shift();
               if (typeof recordAIDiagnostic === 'function') {
@@ -487,7 +495,7 @@
         });
       }
       function _enqueueLocalPostTurnJob(id, fn) {
-        if (!GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) GM._postTurnJobs = { pending: [], launchedAt: Date.now() };
+        if (!GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) GM._postTurnJobs = { pending: [], launchedAt: Date.now(), results: {} };
         var p = Promise.resolve().then(fn).catch(function(e){ _dbg('[PostTurn]' + id + ' failed:', e); });
         GM._postTurnJobs.pending.push({ id: id, promise: p });
         return p;

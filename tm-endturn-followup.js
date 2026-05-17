@@ -322,7 +322,9 @@
             label: label,
             url: callUrl,
             key: key,
-            priority: opts.priority || 'normal'
+            priority: opts.priority || 'normal',
+            timeoutMs: opts.timeoutMs,
+            maxRetries: opts.maxRetries
           });
           if (opts.soft) routed.ok = true;
           return routed;
@@ -370,6 +372,14 @@
     var szjSummary = ctx.record.szjSummary || "";
     var personnelChanges = Array.isArray(ctx.record.personnelChanges) ? ctx.record.personnelChanges : [];
     var hourenXishuo = ctx.record.hourenXishuo || "";
+    function _buildLateSpecialtySummary() {
+      return [
+        _specialtySummary.sc15,
+        _specialtySummary.sc16,
+        _specialtySummary.sc17,
+        _specialtySummary.sc18
+      ].filter(Boolean).join('');
+    }
       // §5 sc15-sc27 后续子调用 + 收尾（NPC 深度·势力·财政·军事·审计·丰化·叙事）
       // ★ 并行优化（2026-04-30）：sc1 完成后扇出三路并行
       //   Branch A: sc15 → sc_memwrite（memwrite 消费 sc15 的 hidden_moves）
@@ -738,7 +748,7 @@
           if (_pMWParse && _pMWParse.raw) cMW = _pMWParse.raw;
           var pMW = _pMWParse ? _pMWParse.parsed : null;
           if (pMW) {
-            GM._turnAiResults.subcallMemwrite = pMW;
+            if (GM._turnAiResults) GM._turnAiResults.subcallMemwrite = pMW;
             // 应用 arc_updates（先做·让 memory_writes 能引用 arcId）
             if (Array.isArray(pMW.arc_updates)) {
               pMW.arc_updates.forEach(function(au) {
@@ -1341,7 +1351,7 @@
             });
           }
 
-          GM._turnAiResults.subcall19 = pE;
+          if (GM._turnAiResults) GM._turnAiResults.subcall19 = pE;
           addEB('\u4E30\u5316', '\u672C\u56DE\u5408\u4E30\u5316\u65B0\u5B9E\u4F53 ' + _totalSparse + ' \u9879');
           _dbg('[Enrich] 完成 ' + _totalSparse + ' 项丰化');
         } catch (eE) { _dbg('[Enrich] fail:', eE); }
@@ -1374,12 +1384,7 @@
         if (GM._kejuPendingAssignment && GM._kejuPendingAssignment.length > 0) p1Summary += '【待铨】' + GM._kejuPendingAssignment.length + '名进士等待授官\n';
       }
       // 附加：玩家本回合推演依据（让AI明白哪些要体现在场景中）
-      var _branchSpecialtySummary = [
-        _specialtySummary.sc15,
-        _specialtySummary.sc16,
-        _specialtySummary.sc17,
-        _specialtySummary.sc18
-      ].filter(Boolean).join('');
+      var _branchSpecialtySummary = _buildLateSpecialtySummary();
       if (_branchSpecialtySummary) p1Summary += _branchSpecialtySummary;
       var _basisBrief = '';
       // 名望/贤能显著变动的 NPC（供后人戏说穿插议论）
@@ -1586,7 +1591,8 @@
       _queuePostTurnSubcall('sc25', function(){ return _runSubcall('sc25', '伏笔记忆', 'lite', async function() {
       _dbg('[PostTurn] sc25 start');
       try {
-        var _ptTurn25 = (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
+        var _ptQueue25 = GM._postTurnJobs || null;
+        var _ptTurn25 = (_ptQueue25 && _ptQueue25.turn) || GM.turn || 0;
         var _turnSummary = '\u672C\u56DE\u5408\u5B8C\u6574\u6458\u8981\uFF1A\n';
         _turnSummary += '\u65F6\u653F\u8BB0\uFF1A' + (shizhengji || '') + '\n';
         _turnSummary += '\u6B63\u6587\uFF1A' + (zhengwen || '').substring(0, 600) + '\n';
@@ -1649,7 +1655,7 @@
         _dbg('[sc25] using tier:', _c25.tier || _t25, 'model:', _c25.model);
         var _sc25Body = {model:_c25.model, messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp25}], temperature:0.7, max_tokens:_tok(12000)};
         if (_tmDetectModelFamily(_c25.model, _modelFamily) === 'openai') _sc25Body.response_format = { type: 'json_object' };
-        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, priority: 'low' });
+        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, priority: 'high' });
         {
           var data25 = _sc25Call.data;
           _checkTruncated(data25, '伏笔记忆');
@@ -1840,18 +1846,28 @@
                 }
               } catch(_ewE){ _dbg('[EventWeights] fail:', _ewE); }
             }
-            GM._turnAiResults.subcall25 = p25;
+            if (_ptQueue25) {
+              _ptQueue25.results = _ptQueue25.results || {};
+              _ptQueue25.results.sc25 = p25;
+            }
+            if (GM._turnAiResults) GM._turnAiResults.subcall25 = p25;
             _dbg('[Foreshadow]', (p25.foreshadow || []).length, 'hooks. Threads:', (GM._plotThreads||[]).length, 'Echoes:', (GM._decisionEchoes||[]).length);
           }
         }
       } catch(e25) { _dbg('[Foreshadow] \u5931\u8D25:', e25); throw e25; }
       }); }); // end Sub-call 2.5 _runSubcall (queued post-turn)
 
+      if (typeof _branchCSc27ReadyP !== 'undefined' && _branchCSc27ReadyP) await _branchCSc27ReadyP;
+
       // --- Sub-call 2.7: 叙事质量审查与增强 --- [standard+full]
       await _runSubcall('sc27', '叙事审查', 'standard', async function() {
       showLoading("\u53D9\u4E8B\u8D28\u91CF\u5BA1\u67E5",85);
       try {
         var tp27 = '请审查以下叙事正文的质量：\n' + (zhengwen||'') + '\n\n';
+        var _lateSpecialtyFor27 = _buildLateSpecialtySummary();
+        if (_lateSpecialtyFor27) {
+          tp27 += '\n【专项推演补充】以下是并行专项推演刚收束的事实与趋势。若正文未体现，请只以增补细节方式补入，不要推翻玩家诏令或已落地数据：\n' + _lateSpecialtyFor27.substring(0, 1800) + '\n';
+        }
         tp27 += '【铁律】玩家诏令引起的任何字面执行描述（即使荒唐/时代错乱）·你都不得改写。若玩家在唐代诏"赏银"/令"刑部管科举"等·相关叙事必须原样保留。你只能增补环境/情绪/感官细节·或重写"纯 AI 虚构的、与玩家无关的段落"。\n';
         // 注入史料知识供审查参考
         if (GM._aiScenarioDigest) {
@@ -2090,8 +2106,8 @@
       } catch(e07) { _dbg('[NPC Cognition] fail:', e07); }
       }); }; // end Sub-call 0.7 (P8.2: 包成 _runSc07 函数·并行调度)
 
-      // 2026-05-12 Codex: dependency DAG for foreground subcalls.
-      // sc07 waits only for sc15; sc_audit waits only for sc16/17/18; sc2->sc27 waits for both.
+      // 2026-05-17 Codex: narrower foreground DAG.
+      // sc2 starts after sc15; sc27 waits for specialty/audit and can add late details.
       try {
         var _branchASettledP = _branchA.then(function(){ return null; }, function(e){ return e; });
         var _branchBSettledP = _branchB.then(function(){ return null; }, function(e){ return e; });
@@ -2104,16 +2120,24 @@
           return _runSc07().then(function(){ return null; }, function(e){ return e; });
         });
 
-        var _branchCP = Promise.all([_branchASettledP, _branchBSettledP]).then(function(branchErrors){
+        var _branchCSc27ReadyP = Promise.all([_branchBSettledP, _auditP]).then(function(branchErrors){
           branchErrors.forEach(function(e, i) {
             if (!e) return;
-            var _ctx = i === 0 ? 'post-sc1 branchA' : 'post-sc1 branchB';
+            var _ctx = i === 0 ? 'post-sc1 branchB' : 'post-sc1 audit';
             (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, _ctx) : console.warn('[' + _ctx + ']', e);
           });
+          return null;
+        });
+
+        var _branchCSc2ReadyP = _branchASettledP.then(function(branchAError){
+          if (branchAError) {
+            var _ctx = 'post-sc1 branchA';
+            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(branchAError, _ctx) : console.warn('[' + _ctx + ']', branchAError);
+          }
           return _runBranchC().then(function(){ return null; }, function(e){ return e; });
         });
 
-        var _finalSettled = await Promise.all([_auditP, _branchCP, _sc07P]);
+        var _finalSettled = await Promise.all([_auditP, _branchCSc2ReadyP, _sc07P]);
         _finalSettled.forEach(function(e, i) {
           if (!e) return;
           var _ctxF = ['finalDAG:sc_audit', 'finalDAG:branchC', 'finalDAG:sc07'][i] || 'finalDAG:?';
@@ -2125,7 +2149,8 @@
       _queuePostTurnSubcall('sc28', function(){ return _runSubcall('sc28', '世界快照', 'full', async function() {
       _dbg('[PostTurn] sc28 start');
       try {
-        var _ptTurn28 = (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
+        var _ptQueue28 = GM._postTurnJobs || null;
+        var _ptTurn28 = (_ptQueue28 && _ptQueue28.turn) || GM.turn || 0;
         var tp28 = '\u672C\u56DE\u5408\u7ED3\u675F\u540E\u7684\u4E16\u754C\u5B8C\u6574\u72B6\u6001\uFF1A\n';
         tp28 += '\u65F6\u653F\u8BB0\uFF1A' + (shizhengji||'') + '\n';
         tp28 += '\u6B63\u6587\u6458\u8981\uFF1A' + (zhengwen||'').substring(0,400) + '\n';
@@ -2154,7 +2179,11 @@
               if (!GM._foreshadows) GM._foreshadows = [];
               GM._foreshadows.push({ turn: _ptTurn28, content: '\u3010\u4E0B\u56DE\u5408\u79CD\u5B50\u3011' + p28.next_turn_seeds, priority: 'high' });
             }
-            GM._turnAiResults.subcall28 = p28;
+            if (_ptQueue28) {
+              _ptQueue28.results = _ptQueue28.results || {};
+              _ptQueue28.results.sc28 = p28;
+            }
+            if (GM._turnAiResults) GM._turnAiResults.subcall28 = p28;
           }
         }
       } catch(e28) { _dbg('[World Snapshot] fail:', e28); throw e28; }
@@ -2173,8 +2202,10 @@
           return;
         }
         // sc25/sc28 与本任务同属 post-turn 队列，启动时可能并行；显式等待，避免抢跑读不到伏笔记忆/世界快照。
+        var _ptQueueC = GM._postTurnJobs || null;
         await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28']);
-        var _ptTurnC = (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
+        var _ptResultsC = (_ptQueueC && _ptQueueC.results) || {};
+        var _ptTurnC = (_ptQueueC && _ptQueueC.turn) || GM.turn || 0;
 
         // 收集宽口径历史·近 7 回合时政记/实录/正文 + 远端依赖压缩层
         var _hist = '';
@@ -2245,8 +2276,8 @@
 
         // 上回合 sc25 输出（伏笔/趋势/NPC 情绪）
         var _sc25Str = '';
-        if (GM._turnAiResults && GM._turnAiResults.subcall25) {
-          var _p25 = GM._turnAiResults.subcall25;
+        var _p25 = _ptResultsC.sc25 || (GM._turnAiResults && GM._turnAiResults.subcall25);
+        if (_p25) {
           if (_p25.trend) _sc25Str += '【sc25 趋势】' + _p25.trend + '\n';
           if (_p25.npc_mood_snapshot) _sc25Str += '【sc25 NPC 情绪】' + _p25.npc_mood_snapshot + '\n';
           if (_p25.contradiction_evolution) _sc25Str += '【sc25 矛盾演化】' + _p25.contradiction_evolution + '\n';
@@ -2254,8 +2285,8 @@
 
         // 上回合 sc28 输出（世界快照）
         var _sc28Str = '';
-        if (GM._turnAiResults && GM._turnAiResults.subcall28) {
-          var _p28 = GM._turnAiResults.subcall28;
+        var _p28 = _ptResultsC.sc28 || (GM._turnAiResults && GM._turnAiResults.subcall28);
+        if (_p28) {
           if (_p28.world_snapshot) _sc28Str += '【sc28 世界快照】' + _p28.world_snapshot + '\n';
           if (_p28.next_turn_seeds) _sc28Str += '【sc28 种子】' + _p28.next_turn_seeds + '\n';
         }
@@ -2352,7 +2383,11 @@
             if (GM._consolidatedMemory.length > 50) {
               GM._consolidatedMemory = GM._consolidatedMemory.slice(-50);
             }
-            GM._turnAiResults.subcallConsolidate = pC;
+            if (_ptQueueC) {
+              _ptQueueC.results = _ptQueueC.results || {};
+              _ptQueueC.results.sc_consolidate = pC;
+            }
+            if (GM._turnAiResults) GM._turnAiResults.subcallConsolidate = pC;
             _dbg('[sc_consolidate] 完成·threads:', (pC.key_threads||[]).length, '·tensions:', (pC.unresolved_tensions||[]).length);
           }
         }
@@ -2381,6 +2416,9 @@
 
         // 压缩AI记忆
         if (GM._aiMemory && GM._aiMemory.length > _memCompressThreshold) {
+          _queuePostTurnSubcall('compress_ai_memory', function(){ return _runSubcall('compress_ai_memory', '压缩AI记忆', 'lite', async function() {
+          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28', 'sc_consolidate']);
+          if (!GM._aiMemory || GM._aiMemory.length <= _memCompressThreshold) return;
           _needCompress = true;
           var _oldMem = GM._aiMemory.slice(0, GM._aiMemory.length - _memKeepRecent);
           var _keepMem = GM._aiMemory.slice(-_memKeepRecent);
@@ -2411,10 +2449,14 @@
           } else {
             try { if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('compress', { bucket: 'aiMemory', status: 'http_fail', statusCode: (_compCall1.error && (_compCall1.error.status || _compCall1.error.statusCode)) || 0, error: String(_compCall1.error && _compCall1.error.message || _compCall1.error || '') }); } catch(_) {}
           }
+          }); });
         }
 
         // 压缩伏笔
         if (GM._foreshadows && GM._foreshadows.length > _foreCompressThreshold) {
+          _queuePostTurnSubcall('compress_foreshadows', function(){ return _runSubcall('compress_foreshadows', '整理伏笔', 'lite', async function() {
+          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28', 'sc_consolidate']);
+          if (!GM._foreshadows || GM._foreshadows.length <= _foreCompressThreshold) return;
           var _oldFore = GM._foreshadows.slice(0, GM._foreshadows.length - _foreKeepRecent);
           var _keepFore = GM._foreshadows.slice(-_foreKeepRecent);
           var _oldForeText = _oldFore.map(function(f){ return 'T'+(f.turn||'?')+': '+((typeof memoryEntryText === 'function') ? memoryEntryText(f) : (f.content||f.text||f)); }).join('\n');
@@ -2443,11 +2485,14 @@
           } else {
             try { if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('compress', { bucket: 'foreshadows', status: 'http_fail', statusCode: (_compCall2.error && (_compCall2.error.status || _compCall2.error.statusCode)) || 0, error: String(_compCall2.error && _compCall2.error.message || _compCall2.error || '') }); } catch(_) {}
           }
+          }); });
         }
 
         // 压缩对话历史
         var _maxConvForCompress = (P.conf && P.conf.convKeep) || ((P.ai.mem || 20) * 2);
         if (GM.conv && GM.conv.length > _convCompressThreshold && GM.conv.length > _maxConvForCompress * 0.7) {
+          _queuePostTurnSubcall('compress_conversation', function(){ return _runSubcall('compress_conversation', '压缩对话', 'lite', async function() {
+          if (!GM.conv || GM.conv.length <= _convCompressThreshold || GM.conv.length <= _maxConvForCompress * 0.7) return;
           var _halfConv = Math.floor(GM.conv.length / 2);
           var _oldConv = GM.conv.slice(0, _halfConv);
           var _keepConv = GM.conv.slice(_halfConv);
@@ -2483,6 +2528,7 @@
               _dbg('[Conv Compress]', _oldConv.length, '条旧对话压缩为摘要·原文已归档');
             }
           }
+          }); });
         }
       } catch(_compErr) {
         try { if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('compress', { status: 'fail', error: String(_compErr && _compErr.message || _compErr) }); } catch(_) {}

@@ -194,7 +194,8 @@ const STRIP_KEYS = new Set([
   '_savedChronicle', '_savedChronicleAfterwords', '_savedRngCheckpoints',
   '_savedCharacterArcs', '_savedPlayerDecisions',
   // 其它 in-flight backup·也是 save lifecycle 临时
-  '_pendingShijiModal'
+  '_pendingShijiModal',
+  '_endturnTimingLedger', '_endturnTimingHistory'
 ]);
 
 function normalize(s) {

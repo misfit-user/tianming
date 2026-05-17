@@ -194,16 +194,92 @@ var PromptTemplate = {
 var _aiQueue = (function() {
   var queue = []; // [{task, priority, resolve, reject, seq}]
   var inflight = 0;
+  var inflightByPriority = { critical: 0, high: 0, normal: 0, low: 0, background: 0 };
   var lastDispatch = 0;
   var seqCounter = 0;
+  var _aiQueueHealth = {
+    recent: [],
+    cooldownUntil: 0,
+    lastFailureAt: 0,
+    successes: 0,
+    failures: 0
+  };
+  function recordResult(ok, err) {
+    var now = Date.now();
+    _aiQueueHealth.recent.push({ ok: !!ok, at: now, status: err && (err.status || err.statusCode || 0) });
+    if (_aiQueueHealth.recent.length > 20) _aiQueueHealth.recent.shift();
+    if (ok) _aiQueueHealth.successes++;
+    else {
+      _aiQueueHealth.failures++;
+      _aiQueueHealth.lastFailureAt = now;
+      var status = err && (err.status || err.statusCode || 0);
+      if (status === 429 || status === 503 || status === 529 || status === 500 || !status) {
+        _aiQueueHealth.cooldownUntil = Math.max(_aiQueueHealth.cooldownUntil || 0, now + 45000);
+      }
+    }
+  }
+  function _recentFailureRate() {
+    var recent = _aiQueueHealth.recent;
+    if (!recent.length) return 0;
+    var fails = recent.filter(function(x) { return !x.ok; }).length;
+    return fails / recent.length;
+  }
+  function _adaptiveMaxConcurrent(base, p) {
+    var raw = parseInt(p.adaptiveMaxConcurrent, 10);
+    if (!raw || raw <= base) return base;
+    var cap = Math.max(base, Math.min(raw, 8));
+    var now = Date.now();
+    if ((_aiQueueHealth.cooldownUntil || 0) > now) return base;
+    if (_recentFailureRate() > 0.15) return base;
+    if (_aiQueueHealth.recent.length < 6) return Math.min(cap, base + 1);
+    return cap;
+  }
   function getConf() {
     var p = (typeof P !== 'undefined' && P.ai) ? P.ai : {};
+    var baseMax = Math.max(1, parseInt(p.maxConcurrent) || 3);
     return {
-      maxConcurrent: Math.max(1, parseInt(p.maxConcurrent) || 3),
+      maxConcurrent: _adaptiveMaxConcurrent(baseMax, p),
+      backgroundMaxConcurrent: Math.max(1, parseInt(p.backgroundMaxConcurrent) || 1),
       minInterval: Math.max(0, parseInt(p.minInterval) || 300)
     };
   }
-  var priorityRank = { critical: 0, high: 1, normal: 2, low: 3 };
+  var priorityRank = { critical: 0, high: 1, normal: 2, low: 3, background: 4 };
+  function _priorityOf(item) {
+    return item && priorityRank[item.priority] != null ? item.priority : 'normal';
+  }
+  function _isBackgroundPriority(priority) {
+    return priority === 'low' || priority === 'background';
+  }
+  function _backgroundInflight() {
+    return (inflightByPriority.low || 0) + (inflightByPriority.background || 0);
+  }
+  function _hasForegroundWaiting() {
+    return queue.some(function(item) {
+      return !_isBackgroundPriority(_priorityOf(item));
+    });
+  }
+  function _canStartQueuedItem(item, conf) {
+    var pri = _priorityOf(item);
+    if (!_isBackgroundPriority(pri)) return true;
+    if (_backgroundInflight() >= conf.backgroundMaxConcurrent) return false;
+    // Keep at least one lane open when foreground work is waiting.
+    if (_hasForegroundWaiting() && inflight >= Math.max(0, conf.maxConcurrent - 1)) return false;
+    return true;
+  }
+  function _aiQueuePickNext(conf) {
+    queue.sort(function(a, b) {
+      var pa = priorityRank[_priorityOf(a)];
+      var pb = priorityRank[_priorityOf(b)];
+      if (pa !== pb) return pa - pb;
+      return a.seq - b.seq;
+    });
+    for (var i = 0; i < queue.length; i++) {
+      if (_canStartQueuedItem(queue[i], conf)) {
+        return queue.splice(i, 1)[0];
+      }
+    }
+    return null;
+  }
   function pump() {
     var conf = getConf();
     while (queue.length > 0 && inflight < conf.maxConcurrent) {
@@ -213,25 +289,27 @@ var _aiQueue = (function() {
         setTimeout(pump, wait + 10);
         return;
       }
-      // 按 priority 然后 seq 排序
-      queue.sort(function(a, b) {
-        var pa = priorityRank[a.priority] != null ? priorityRank[a.priority] : 2;
-        var pb = priorityRank[b.priority] != null ? priorityRank[b.priority] : 2;
-        if (pa !== pb) return pa - pb;
-        return a.seq - b.seq;
-      });
-      var item = queue.shift();
+      var item = _aiQueuePickNext(conf);
+      if (!item) return;
+      var itemPriority = _priorityOf(item);
       inflight++;
+      inflightByPriority[itemPriority] = (inflightByPriority[itemPriority] || 0) + 1;
       lastDispatch = Date.now();
-      Promise.resolve().then(item.task).then(function(res) {
-        inflight--;
-        item.resolve(res);
-        pump();
-      }).catch(function(err) {
-        inflight--;
-        item.reject(err);
-        pump();
-      });
+      (function(activeItem, activePriority) {
+        Promise.resolve().then(activeItem.task).then(function(res) {
+          recordResult(true);
+          inflight--;
+          inflightByPriority[activePriority] = Math.max(0, (inflightByPriority[activePriority] || 1) - 1);
+          activeItem.resolve(res);
+          pump();
+        }).catch(function(err) {
+          recordResult(false, err);
+          inflight--;
+          inflightByPriority[activePriority] = Math.max(0, (inflightByPriority[activePriority] || 1) - 1);
+          activeItem.reject(err);
+          pump();
+        });
+      })(item, itemPriority);
     }
   }
   return {
@@ -241,7 +319,7 @@ var _aiQueue = (function() {
         pump();
       });
     },
-    stats: function() { return { inflight: inflight, queued: queue.length, conf: getConf() }; }
+    stats: function() { return { inflight: inflight, byPriority: Object.assign({}, inflightByPriority), queued: queue.length, conf: getConf(), health: Object.assign({}, _aiQueueHealth, { recent: _aiQueueHealth.recent.slice() }) }; }
   };
 })();
 

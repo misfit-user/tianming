@@ -49,10 +49,16 @@ sandbox.GM = {
   chars: []
 };
 
-// 加载档案库 + 扩展 + ceming
-['tm-char-historical-profiles.js', 'tm-char-historical-profiles-ext.js', 'tm-ceming.js'].forEach(function(f){
+// 加载档案库 + 12 个拆分 wave + ceming
+const historicalFiles = ['tm-char-historical-profiles.js'].concat(
+  fs.readdirSync(ROOT)
+    .filter(function(f){ return /^tm-char-historical-wave-\d+\.js$/.test(f); })
+    .sort()
+).concat(['tm-ceming.js']);
+
+vm.createContext(sandbox);
+historicalFiles.forEach(function(f){
   const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
-  vm.createContext(sandbox);
   vm.runInContext(src, sandbox, { filename: f });
 });
 

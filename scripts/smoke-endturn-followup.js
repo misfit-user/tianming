@@ -78,15 +78,18 @@ assert(followupSrc.indexOf('var _auditP = _branchBSettledP.then', finalDag) > fi
   'sc_audit waits only for sc16/sc17/sc18 branch');
 assert(followupSrc.indexOf('var _sc07P = _branchASettledP.then', finalDag) > finalDag,
   'sc07 waits only for sc15 branch');
-assert(followupSrc.indexOf('var _branchCP = Promise.all([_branchASettledP, _branchBSettledP])', finalDag) > finalDag,
-  'sc2/sc27 branch still waits for both branches');
-const finalParallel = followupSrc.indexOf('var _finalSettled = await Promise.all([_auditP, _branchCP, _sc07P])');
+assert(followupSrc.indexOf('var _branchCSc27ReadyP = Promise.all([_branchBSettledP, _auditP])', finalDag) > finalDag,
+  'sc27 waits for specialty branch and audit before final review');
+assert(followupSrc.indexOf('var _branchCSc2ReadyP = _branchASettledP.then', finalDag) > finalDag,
+  'sc2 starts after sc15 branch without waiting for specialty branch');
+const finalParallel = followupSrc.indexOf('var _finalSettled = await Promise.all([_auditP, _branchCSc2ReadyP, _sc07P])');
 assert(finalParallel >= 0, 'final wait joins audit + branchC + sc07 DAG promises');
 assert(followupSrc.indexOf('var _specialtySummary = { sc15: "", sc16: "", sc17: "", sc18: "" }') >= 0,
   'parallel specialty summaries use deterministic slots');
-assert(followupSrc.indexOf('var _branchSpecialtySummary = [') > 0 &&
+assert(followupSrc.indexOf('function _buildLateSpecialtySummary()') > 0 &&
+       followupSrc.indexOf('var _branchSpecialtySummary = _buildLateSpecialtySummary()') > 0 &&
        followupSrc.indexOf('if (_branchSpecialtySummary) p1Summary += _branchSpecialtySummary;') > 0,
-  'sc2 prompt receives branch specialty summaries after DAG join');
+  'sc2/sc27 share the late specialty summary builder');
 
 assert(followupSrc.indexOf("_queuePostTurnSubcall('sc_consolidate'") >= 0,
   'sc_consolidate remains queued post-turn');

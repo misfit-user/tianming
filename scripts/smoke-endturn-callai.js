@@ -56,6 +56,10 @@ assert(src.indexOf("callAIMessages(_callABody.messages, _callABody.max_tokens !=
   'SC1 Call A compression does not fall back to callAIMessages 500-token default');
 assert(src.indexOf("callAIMessagesStream(_sc1Body.messages, _sc1Body.max_tokens !== undefined ? _sc1Body.max_tokens : _sc1BaseTok") >= 0,
   'SC1 stream uses business output budget when max_tokens is omitted');
+assert(src.indexOf('timeoutMs: opts.timeoutMs') >= 0,
+  '_callEndturnAI forwards timeoutMs to _aiFetchWithRetry when configured');
+assert(src.indexOf('maxRetries: opts.maxRetries') >= 0,
+  '_callEndturnAI forwards maxRetries to _aiFetchWithRetry when configured');
 
 // ─── 总 callAI 调用次数·至少 4 处 (sub-call 各发起 LLM 调用) ───
 const totalAI = countMatches(/\bawait\s+callAI/g);

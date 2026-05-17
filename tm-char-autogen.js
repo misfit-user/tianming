@@ -14,6 +14,193 @@
 (function(global){
   'use strict';
 
+  function _tmCharListFromContainer(container) {
+    if (!container) return [];
+    if (Array.isArray(container)) return container.filter(Boolean);
+    if (typeof Map !== 'undefined' && container instanceof Map) return Array.from(container.values()).filter(Boolean);
+    if (typeof Set !== 'undefined' && container instanceof Set) return Array.from(container.values()).filter(Boolean);
+    if (typeof container === 'object') {
+      return Object.keys(container).map(function(k){ return container[k]; }).filter(Boolean);
+    }
+    return [];
+  }
+
+  function _tmGetFactionList() {
+    var buckets = [];
+    if (typeof GM !== 'undefined' && GM) {
+      buckets = buckets.concat(_tmCharListFromContainer(GM.facs));
+      buckets = buckets.concat(_tmCharListFromContainer(GM.factions));
+    }
+    if (typeof P !== 'undefined' && P) {
+      buckets = buckets.concat(_tmCharListFromContainer(P.facs));
+      buckets = buckets.concat(_tmCharListFromContainer(P.factions));
+    }
+    var seen = {};
+    return buckets.filter(function(f){
+      if (!f || typeof f !== 'object') return false;
+      var key = f.id || f.name;
+      if (!key) return false;
+      key = String(key);
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function _tmGetPartyList() {
+    var buckets = [];
+    if (typeof GM !== 'undefined' && GM) buckets = buckets.concat(_tmCharListFromContainer(GM.parties));
+    if (typeof P !== 'undefined' && P) buckets = buckets.concat(_tmCharListFromContainer(P.parties));
+    return buckets.filter(function(p){ return p && typeof p === 'object' && (p.name || p.id); });
+  }
+
+  function _tmHashStatSeed(text) {
+    text = String(text || '');
+    var h = 0;
+    for (var i = 0; i < text.length; i++) h = ((h * 31) + text.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  function _tmStatJitter(name, field, spread) {
+    spread = Math.max(0, spread || 0);
+    if (!spread) return 0;
+    var width = spread * 2 + 1;
+    return (_tmHashStatSeed(String(name || '') + ':' + field) % width) - spread;
+  }
+
+  function _tmClampStat(v, min, max) {
+    v = parseInt(v, 10);
+    if (!Number.isFinite(v)) return null;
+    min = (typeof min === 'number') ? min : 0;
+    max = (typeof max === 'number') ? max : 100;
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function _tmReadNumericField(data, keys) {
+    data = data || {};
+    var pools = [data, data.abilities, data.stats, data.attributes, data.capabilities];
+    for (var p = 0; p < pools.length; p++) {
+      var obj = pools[p];
+      if (!obj || typeof obj !== 'object') continue;
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (obj[key] === undefined || obj[key] === null || obj[key] === '') continue;
+        var n = _tmClampStat(obj[key], 0, 100);
+        if (n !== null) return n;
+      }
+    }
+    return null;
+  }
+
+  function _tmDetectStatArchetype(data, opts) {
+    data = data || {};
+    opts = opts || {};
+    var text = [
+      data.role, data.type, data.class, data.title, data.officialTitle,
+      data.bio, data.background, data.personality, data.stance,
+      opts.assignPost, opts.sourceContext
+    ].map(function(v){ return v ? String(v) : ''; }).join(' ');
+    if (/corrupt|巨贪|贪|聚敛|酷吏|赃/.test(text)) return 'corrupt';
+    if (/eunuch|宦|司礼|东厂|内侍|太监/.test(text)) return 'eunuch';
+    if (/usurper|篡|权臣|摄政|首辅|辅政|枢臣/.test(text)) return 'regent';
+    if (/reformer|改革|变法|新政|整饬|改制/.test(text)) return 'reformer';
+    if (/clean|清官|廉|直谏|言官|御史|给事中/.test(text)) return 'clean';
+    if (/loyal|忠臣|死节|殉国|义士|不屈/.test(text)) return 'loyal';
+    if (/military|martial|名将|武将|将军|总兵|提督|督师|经略|统兵|戍边|边将|卫所|水师/.test(text)) return 'military';
+    if (/diplomat|外交|使臣|通使|和议|朝贡|鸿胪|理藩/.test(text)) return 'diplomat';
+    if (/merchant|商贾|盐商|榷税|理财|税务|转运|户部|度支/.test(text)) return 'merchant';
+    if (/scholar|文宗|硕儒|翰林|学士|经筵|书院|儒|诗文|史馆/.test(text)) return 'scholar';
+    if (/admin|干吏|知府|巡抚|布政|按察|尚书|侍郎|府尹|地方主官/.test(text)) return 'admin';
+    return 'normal';
+  }
+
+  function _tmNormalizeWuchang(data, stats, name) {
+    data = data || {};
+    var src = (data.wuchang && typeof data.wuchang === 'object') ? data.wuchang :
+              (data.wuchangOverride && typeof data.wuchangOverride === 'object') ? data.wuchangOverride : {};
+    function wc(keys, fallback, field) {
+      for (var i = 0; i < keys.length; i++) {
+        if (src[keys[i]] !== undefined && src[keys[i]] !== null && src[keys[i]] !== '') {
+          var n = _tmClampStat(src[keys[i]], 0, 100);
+          if (n !== null) return n;
+        }
+      }
+      return _tmClampStat(fallback + _tmStatJitter(name, 'wc_' + field, 4), 0, 100);
+    }
+    var out = {
+      ren: wc(['ren', '仁'], stats.benevolence, 'ren'),
+      yi: wc(['yi', '义', '義'], Math.round((stats.loyalty + stats.integrity) / 2), 'yi'),
+      li: wc(['li', '礼', '禮'], Math.round((stats.integrity + stats.charisma) / 2), 'li'),
+      zhi: wc(['zhi', '智'], stats.intelligence, 'zhi'),
+      xin: wc(['xin', '信'], Math.round((stats.integrity + stats.loyalty) / 2), 'xin')
+    };
+    var vals = [out.ren, out.yi, out.li, out.zhi, out.xin];
+    var min = Math.min.apply(null, vals);
+    var max = Math.max.apply(null, vals);
+    if (max - min < 12) {
+      out.zhi = _tmClampStat(out.zhi + 8, 0, 100);
+      out.xin = _tmClampStat(out.xin - 7, 0, 100);
+    }
+    return out;
+  }
+
+  function _tmNormalizeGeneratedStats(name, data, opts) {
+    data = data || {};
+    opts = opts || {};
+    var bases = {
+      military: { loyalty:82, ambition:62, benevolence:60, intelligence:72, valor:88, military:90, administration:62, management:50, charisma:68, diplomacy:50, integrity:78 },
+      scholar:  { loyalty:78, ambition:55, benevolence:72, intelligence:90, valor:30, military:35, administration:60, management:50, charisma:78, diplomacy:60, integrity:82 },
+      reformer: { loyalty:82, ambition:82, benevolence:70, intelligence:90, valor:38, military:45, administration:92, management:88, charisma:72, diplomacy:68, integrity:80 },
+      corrupt:  { loyalty:45, ambition:88, benevolence:25, intelligence:78, valor:35, military:40, administration:65, management:85, charisma:70, diplomacy:78, integrity:15 },
+      eunuch:   { loyalty:62, ambition:88, benevolence:35, intelligence:76, valor:28, military:30, administration:60, management:62, charisma:58, diplomacy:55, integrity:22 },
+      regent:   { loyalty:66, ambition:86, benevolence:52, intelligence:88, valor:45, military:62, administration:90, management:78, charisma:78, diplomacy:82, integrity:58 },
+      clean:    { loyalty:90, ambition:45, benevolence:92, intelligence:78, valor:35, military:35, administration:82, management:65, charisma:65, diplomacy:60, integrity:95 },
+      loyal:    { loyalty:95, ambition:58, benevolence:80, intelligence:72, valor:50, military:58, administration:70, management:55, charisma:66, diplomacy:55, integrity:92 },
+      diplomat: { loyalty:70, ambition:62, benevolence:60, intelligence:78, valor:35, military:38, administration:62, management:52, charisma:74, diplomacy:88, integrity:68 },
+      merchant: { loyalty:55, ambition:72, benevolence:52, intelligence:72, valor:30, military:25, administration:52, management:85, charisma:64, diplomacy:70, integrity:55 },
+      admin:    { loyalty:76, ambition:62, benevolence:66, intelligence:80, valor:42, military:48, administration:86, management:72, charisma:62, diplomacy:58, integrity:76 },
+      normal:   { loyalty:65, ambition:55, benevolence:60, intelligence:65, valor:38, military:42, administration:62, management:56, charisma:55, diplomacy:50, integrity:65 }
+    };
+    var archetype = _tmDetectStatArchetype(data, opts);
+    var base = bases[archetype] || bases.normal;
+    function stat(field, aliases, min, max) {
+      var n = _tmReadNumericField(data, aliases);
+      if (n === null) n = base[field] + _tmStatJitter(name, field, 6);
+      return _tmClampStat(n, min, max);
+    }
+    var stats = {
+      archetype: archetype,
+      loyalty: stat('loyalty', ['loyalty', '忠诚', '忠'], 0, 100),
+      ambition: stat('ambition', ['ambition', '野心', '野'], 0, 100),
+      benevolence: stat('benevolence', ['benevolence', 'ren', '仁德', '仁'], 0, 100),
+      intelligence: stat('intelligence', ['intelligence', 'wisdom', 'zhi', '智谋', '智'], 0, 100),
+      valor: stat('valor', ['valor', 'martial', 'bravery', '武勇', '武'], 0, 100),
+      military: stat('military', ['military', 'command', 'strategy', '统兵', '军事', '军'], 0, 100),
+      administration: stat('administration', ['administration', 'governance', 'governing', '治政', '政'], 0, 100),
+      management: stat('management', ['management', 'finance', 'fiscal', '理财', '管理', '财'], 0, 100),
+      charisma: stat('charisma', ['charisma', 'charm', '魅力', '魅'], 0, 100),
+      diplomacy: stat('diplomacy', ['diplomacy', 'negotiation', '外交', '交'], 0, 100),
+      integrity: stat('integrity', ['integrity', 'honesty', '廉节', '廉'], 0, 100)
+    };
+    stats.wuchang = _tmNormalizeWuchang(data, stats, name);
+    stats.abilities = {
+      intelligence: stats.intelligence,
+      valor: stats.valor,
+      military: stats.military,
+      governance: stats.administration,
+      administration: stats.administration,
+      management: stats.management,
+      finance: stats.management,
+      charisma: stats.charisma,
+      diplomacy: stats.diplomacy,
+      integrity: stats.integrity,
+      benevolence: stats.benevolence,
+      scholarship: _tmClampStat(Math.round((stats.intelligence + stats.wuchang.li) / 2), 0, 100),
+      cunning: _tmClampStat(Math.round((stats.intelligence + stats.ambition) / 2), 0, 100)
+    };
+    return stats;
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   // 势力归属解析 helper（统一 7 步兜底链）
   //   1. 显式 explicitFaction → 模糊匹配
@@ -27,7 +214,7 @@
   // ═══════════════════════════════════════════════════════════════════
   function _resolveFactionForChar(opts) {
     opts = opts || {};
-    var existFacs = (typeof GM !== 'undefined' && (GM.factions || GM.facs)) || [];
+    var existFacs = _tmGetFactionList();
     var existNames = [];
     for (var i = 0; i < existFacs.length; i++) {
       if (existFacs[i] && existFacs[i].name) existNames.push(existFacs[i].name);
@@ -152,14 +339,14 @@
 
     // 势力清单+已有代表人物——注入 prompt 供 AI 定位
     // 关键：保留两份·一份带 leader 给 AI 看上下文·一份纯净 name 让 AI 严格选择
-    var _facObjs = (GM.factions || GM.facs || []).slice(0, 10);
+    var _facObjs = _tmGetFactionList().slice(0, 10);
     var _facNamesOnly = _facObjs.map(function(f){ return f.name; }).filter(Boolean);
     var _facList = _facObjs.map(function(f){
       var lead = f.leader || f.leaderName || '';
-      var terr = f.territory ? f.territory.slice(0, 20) : '';
+      var terr = f.territory ? String(f.territory).slice(0, 20) : '';
       return f.name + (lead ? '(领袖' + lead + ')' : '') + (terr ? '·' + terr : '');
     }).join('；');
-    var _partyList = (GM.parties || []).map(function(p){ return p.name + '(' + (p.leader || '') + ')'; }).slice(0, 8).join('、');
+    var _partyList = _tmGetPartyList().map(function(p){ return p.name + '(' + (p.leader || '') + ')'; }).slice(0, 8).join('、');
     var _existingChars = (GM.chars || [])
       .filter(function(c){ return c && c.alive !== false && c.isHistorical; })
       .slice(0, 15)
@@ -297,13 +484,20 @@
       '  "bio": "\u751F\u5E73 300-600 \u5B57\u00B7\u5305\u542B\u51FA\u8EAB/\u6C0F\u65CF/\u65E9\u5E74/\u5E08\u627F/\u4E60\u4E1A/\u6210\u5C31\u3002\u82E5\u662F\u5386\u53F2\u4EBA\u7269\u00B7\u672B\u6BB5\u5355\u5217 \u3010\u53F2\u6599\u51FA\u5904\u3011+ shiliao \u539F\u6587",\n' +
       '  "shiliao": "\u5386\u53F2\u4EBA\u7269\u586B\u53F2\u4E66\u539F\u6587\u3001\u867A\u6784\u4EBA\u7269\u7A7A\u5B57\u7B26\u4E32",\n' +
       '  "personalGoal": "\u5FD7\u5411 10-30 \u5B57",\n' +
+      '  "abilityRationale": "用 30-80 字说明此人数值依据：史评/履历/身份如何对应十维能力",\n' +
+      '  "statArchetype": "military|scholar|reformer|corrupt|eunuch|regent|clean|loyal|diplomat|merchant|admin|normal",\n' +
       '  "ambition": 30-85,\n' +
       '  "intelligence": 50-95,\n' +
       '  "administration": 40-90,\n' +
+      '  "management": 20-95,\n' +
       '  "valor": 20-90,\n' +
+      '  "military": 20-95,\n' +
       '  "benevolence": 30-90,\n' +
+      '  "charisma": 30-95,\n' +
+      '  "diplomacy": 20-95,\n' +
       '  "loyalty": 40-95,\n' +
       '  "integrity": 30-95,\n' +
+      '  "abilities": {"intelligence":80,"valor":30,"military":50,"governance":70,"management":60,"charisma":65,"diplomacy":55,"integrity":70,"benevolence":65},\n' +
       '  "wuchang": {"ren":50,"yi":50,"li":50,"zhi":50,"xin":50},\n' +
       '  "family": "\u6C0F\u65CF",\n' +
       '  "familyTier": "gentry|common|royal",\n' +
@@ -458,6 +652,7 @@
             data.wuchang[_keys[_minIdx]] = Math.max(15, _wcMin - 10);
           }
         }
+        var _statPack = _tmNormalizeGeneratedStats(name, data, opts);
 
         // 势力确定：统一兜底 helper（含 historicalFaction / location / timelineStatus）
         // opts.historicalFactionHint 兜底·让 summonByCard/库内人物能透传 card/profile 的史实势力
@@ -487,21 +682,30 @@
           officialTitle: opts.assignPost || data.title || '',
           // 外貌
           appearance: data.appearance || '',
-          charisma: data.charisma || 60,
+          charisma: _statPack.charisma,
           // 生平
           bio: bio,
           historicalSource: data.shiliao || '',
+          abilityRationale: data.abilityRationale || data.statRationale || '',
+          statArchetype: data.statArchetype || _statPack.archetype,
           // 志向
           personalGoal: data.personalGoal || '',
-          ambition: data.ambition || 50,
+          ambition: _statPack.ambition,
           // 能力
-          intelligence: data.intelligence || 70,
-          administration: data.administration || 60,
-          valor: data.valor || 40,
-          benevolence: data.benevolence || 60,
-          loyalty: (data.loyalty || 70) + (opts.loyaltyBonus || 0),
-          integrity: data.integrity || 65,
-          wuchang: data.wuchang || { ren: 60, yi: 60, li: 60, zhi: 60, xin: 60 },
+          intelligence: _statPack.intelligence,
+          administration: _statPack.administration,
+          management: _statPack.management,
+          valor: _statPack.valor,
+          military: _statPack.military,
+          benevolence: _statPack.benevolence,
+          diplomacy: _statPack.diplomacy,
+          scholarship: _statPack.abilities.scholarship,
+          finance: _statPack.abilities.finance,
+          cunning: _statPack.abilities.cunning,
+          loyalty: _tmClampStat(_statPack.loyalty + (opts.loyaltyBonus || 0), 0, 100),
+          integrity: _statPack.integrity,
+          abilities: Object.assign({}, _statPack.abilities),
+          wuchang: _statPack.wuchang,
           // 身世
           family: data.family || (name.charAt(0) + '\u6C0F'),
           familyTier: data.familyTier || 'common',
@@ -595,6 +799,13 @@
 
   /** 模板兜底·最小字段 */
   function _fallbackTemplate(name, opts, err) {
+    opts = opts || {};
+    var _fbData = {
+      role: opts.role || opts.statArchetype || '',
+      title: opts.assignPost || '',
+      bio: (opts.sourceContext || '') + ' ' + (opts.reason || '')
+    };
+    var _fbStats = _tmNormalizeGeneratedStats(name, _fbData, opts);
     var newChar = {
       id: 'autogen_tpl_' + Date.now() + '_' + name,
       name: name,
@@ -607,12 +818,24 @@
       officialTitle: opts.assignPost || '',
       bio: '\u672A\u8BE6\u00B7' + (opts.reason || '\u51FA\u8EAB\u672A\u660E'),
       historicalSource: '',
-      intelligence: 70, administration: 65, valor: 40, benevolence: 60,
-      loyalty: 70 + (opts.loyaltyBonus || 0),
-      integrity: 65,
-      charisma: 60,
-      ambition: 55,
-      wuchang: { ren: 60, yi: 60, li: 60, zhi: 60, xin: 60 },
+      abilityRationale: err ? ('AI生成失败兜底：' + (err.message || err)) : '模板兜底·按身份原型生成差异化十维数值',
+      statArchetype: _fbStats.archetype,
+      intelligence: _fbStats.intelligence,
+      administration: _fbStats.administration,
+      management: _fbStats.management,
+      valor: _fbStats.valor,
+      military: _fbStats.military,
+      benevolence: _fbStats.benevolence,
+      diplomacy: _fbStats.diplomacy,
+      scholarship: _fbStats.abilities.scholarship,
+      finance: _fbStats.abilities.finance,
+      cunning: _fbStats.abilities.cunning,
+      loyalty: _tmClampStat(_fbStats.loyalty + (opts.loyaltyBonus || 0), 0, 100),
+      integrity: _fbStats.integrity,
+      charisma: _fbStats.charisma,
+      ambition: _fbStats.ambition,
+      abilities: Object.assign({}, _fbStats.abilities),
+      wuchang: _fbStats.wuchang,
       family: name.charAt(0) + '\u6C0F',
       familyTier: 'common',
       familyMembers: [],

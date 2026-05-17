@@ -703,10 +703,38 @@
     var p = HISTORICAL_CHAR_PROFILES[profileId];
     if (!p) return null;
     opts = opts || {};
+    var abilities = p.abilities || {};
+    var resources = p.resources || {};
+    var birthYear = p.birthYear != null ? p.birthYear : null;
+    var deathYear = p.deathYear != null ? p.deathYear : null;
+    var curYear = (typeof GM !== 'undefined' && GM && GM.year) ||
+                  (typeof P !== 'undefined' && P && P.time && P.time.year) || null;
+    var age = opts.age;
+    if (age == null && birthYear != null && deathYear != null && curYear != null && curYear >= birthYear && curYear <= deathYear) {
+      age = curYear - birthYear;
+    }
+    function abilityValue(primary, fallback, defaultValue) {
+      if (typeof primary === 'number') return primary;
+      if (typeof fallback === 'number') return fallback;
+      return defaultValue;
+    }
+    var intelligence = abilityValue(abilities.intelligence, null, 70);
+    var administration = abilityValue(abilities.administration, abilities.governance, 60);
+    var valor = abilityValue(abilities.valor, abilities.military, 40);
+    var military = abilityValue(abilities.military, null, 40);
+    var management = abilityValue(abilities.management, abilities.finance, 50);
+    var benevolence = abilityValue(abilities.benevolence, null, 60);
+    var scholarship = abilityValue(abilities.scholarship, null, 60);
+    var bio = p.bio || p.background || '';
     var ch = {
       id: opts.id || 'char_' + profileId + '_' + Math.random().toString(36).slice(2, 5),
       name: p.name,
       zi: p.zi,
+      gender: opts.gender || p.gender || '男',
+      age: age || null,
+      birthYear: birthYear,
+      deathYear: deathYear,
+      alternateNames: p.alternateNames ? p.alternateNames.slice() : [],
       title: p.title,
       officialTitle: p.officialTitle,
       rankLevel: p.rankLevel,
@@ -715,22 +743,43 @@
       loyalty: p.loyalty,
       ambition: p.ambition,
       integrity: p.integrity,
-      abilities: Object.assign({}, p.abilities),
+      intelligence: intelligence,
+      administration: administration,
+      management: management,
+      valor: valor,
+      military: military,
+      benevolence: benevolence,
+      charisma: abilityValue(abilities.charisma, null, 60),
+      diplomacy: abilityValue(abilities.diplomacy, null, 50),
+      scholarship: scholarship,
+      finance: abilityValue(abilities.finance, null, 50),
+      cunning: abilityValue(abilities.cunning, null, 50),
+      wuchang: p.wuchang ? Object.assign({}, p.wuchang) : {
+        ren: benevolence,
+        yi: abilityValue(p.loyalty, null, 60),
+        li: scholarship,
+        zhi: intelligence,
+        xin: abilityValue(p.integrity, null, 60)
+      },
+      abilities: Object.assign({}, abilities),
       traits: p.traits ? p.traits.slice() : [],
       resources: {
-        privateWealth: Object.assign({}, p.resources.privateWealth || {}),
-        hiddenWealth: p.resources.hiddenWealth || 0,
-        fame: p.resources.fame || 0,
-        virtueMerit: p.resources.virtueMerit || 0,
-        virtueStage: p.resources.virtueStage || 1,
+        privateWealth: Object.assign({}, resources.privateWealth || {}),
+        hiddenWealth: resources.hiddenWealth || 0,
+        fame: resources.fame || 0,
+        virtueMerit: resources.virtueMerit || 0,
+        virtueStage: resources.virtueStage || 1,
         publicTreasury: { balance: 0, isReadOnly: true }
       },
+      bio: bio,
+      desc: p.desc || bio,
       background: p.background,
       famousQuote: p.famousQuote,
       historicalFate: p.historicalFate,
       fateHint: p.fateHint,
       era: p.era,
       dynasty: p.dynasty,
+      isHistorical: true,
       historicalFaction: p.historicalFaction || '',
       faction: (typeof global._resolveFactionForChar === 'function')
         ? global._resolveFactionForChar({

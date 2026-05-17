@@ -1263,7 +1263,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
   if (typeof TM_SaveDB !== 'undefined' && typeof _prepareGMForSave === 'function') {
     (async function() {
       try {
-        if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave();
+        if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave(['sc25']);
         _prepareGMForSave();
     var _autoState = { GM: deepClone(GM), P: deepClone(P) };
     var _sc3 = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
@@ -1333,7 +1333,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     if(_asTurns>0&&GM.turn%_asTurns===0){
       (async function(){
         try{
-          if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave();
+          if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave(['sc25']);
           if (typeof _prepareGMForSave === 'function') _prepareGMForSave();
           var _asd=deepClone(P);
           _asd.gameState=deepClone(GM);

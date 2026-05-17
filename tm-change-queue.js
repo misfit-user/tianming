@@ -70,7 +70,7 @@ var ChangeQueue = (function() {
   function applyAll() {
     if (isApplying) {
       console.error('[ChangeQueue] applyAll 正在执行中，防止重入！');
-      return { logs: [], appliedCount: 0 };
+      return { logs: [], appliedCount: 0, failedCount: queue.length, errors: ['applyAll reentry'], ok: false };
     }
 
     isApplying = true;
@@ -78,19 +78,25 @@ var ChangeQueue = (function() {
 
     var logs = [];
     var appliedCount = 0;
+    var failedCount = 0;
+    var errors = [];
+    var failedChanges = [];
     var multiplier = 1;
 
     _dbg('[ChangeQueue] 开始应用 ' + queue.length + ' 个变动');
 
     try {
       // 应用软下限系统
-      var processedQueue = SoftFloorSystem.processChanges(queue);
+      var processedQueue = (typeof SoftFloorSystem !== 'undefined' && SoftFloorSystem && SoftFloorSystem.processChanges)
+        ? SoftFloorSystem.processChanges(queue)
+        : queue.slice();
       _dbg('[ChangeQueue] 软下限系统处理完成');
 
       for (var i = 0; i < processedQueue.length; i++) {
         var change = processedQueue[i];
 
-        switch (change.type) {
+        try {
+          switch (change.type) {
           case 'treasury':
             applyTreasuryChange(change, logs, multiplier);
             break;
@@ -110,21 +116,36 @@ var ChangeQueue = (function() {
             applyNationChange(change, logs, multiplier);
             break;
           default:
-            console.warn('[ChangeQueue] 未知变动类型: ' + change.type);
+            throw new Error('Unknown change type: ' + change.type);
         }
 
         appliedCount++;
+        } catch (changeError) {
+          failedCount++;
+          failedChanges.push(change);
+          errors.push((change && change.id ? change.id + ': ' : '') + (changeError && changeError.message || String(changeError)));
+          console.error('[ChangeQueue] failed to apply change:', change, changeError);
+        }
       }
 
-      _dbg('[ChangeQueue] 成功应用 ' + appliedCount + ' 个变动');
+      if (failedCount > 0) {
+        queue = failedChanges;
+        _dbg('[ChangeQueue] applied ' + appliedCount + ', kept failed ' + failedCount);
+      } else {
+        _dbg('[ChangeQueue] 成功应用 ' + appliedCount + ' 个变动');
+      }
 
     } catch (error) {
+      failedCount = queue.length;
+      errors.push(error && error.message || String(error));
+      failedChanges = queue.slice();
+      queue = failedChanges;
       console.error('[ChangeQueue] 应用变动失败:', error);
     } finally {
       isApplying = false;
     }
 
-    return { logs: logs, appliedCount: appliedCount };
+    return { logs: logs, appliedCount: appliedCount, failedCount: failedCount, errors: errors, ok: failedCount === 0, pendingCount: queue.length };
   }
 
   /**

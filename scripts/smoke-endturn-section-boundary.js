@@ -66,8 +66,8 @@ assert(aiLines.length >= 2600 && aiLines.length <= 3050,
   'tm-endturn-ai.js line count after P7-delta 2600-3050, actual ' + aiLines.length);
 assert(applyLines.length >= 4550 && applyLines.length <= 4850,
   'tm-endturn-apply.js line count after P7-epsilon 4550-4850, actual ' + applyLines.length);
-assert(followupLines.length >= 2200 && followupLines.length <= 2700,
-  'tm-endturn-followup.js line count after P7-zeta 2200-2700, actual ' + followupLines.length);
+assert(followupLines.length >= 2200 && followupLines.length <= 2750,
+  'tm-endturn-followup.js line count after P7-zeta 2200-2750, actual ' + followupLines.length);
 assert(/ns\.setupInfra\s*=/.test(aiText), 'tm-endturn-ai.js exposes setupInfra');
 assert(/ns\.runMain\s*=/.test(aiText), 'tm-endturn-ai.js exposes runMain');
 assert(/TM\.Endturn\.AI\.subcalls\.runMain\s*\(ctx\s*(,\s*async\s+function\s*\(\)\s*\{)?/.test(aiInferSrc), 'ai-infer bridge calls runMain(ctx)');

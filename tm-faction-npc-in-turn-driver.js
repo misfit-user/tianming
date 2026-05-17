@@ -125,7 +125,7 @@
       return names.some(function(n){ return s.indexOf('|' + n + '|') >= 0; });
     }
     var forced = ranked.filter(function(row) {
-      return hasReason(row, ['sc16-directive','war','fiscal','intervention','recent-loss','empty-treasury']);
+      return hasReason(row, ['sc16-directive','sc16-priority','sc16-rank','war','fiscal','intervention','recent-loss','empty-treasury']);
     });
     var hot = ranked.filter(function(row) {
       return hasReason(row, ['hotspot','story','player-relation','player-border','retry-pressure','intrigue','rebellion','long-idle']);

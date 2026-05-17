@@ -231,7 +231,7 @@
     return !!(token && token.turn !== _currentTurn());
   }
 
-  function _finishLedgerRun(token, status, reason) {
+  function _finishLedgerRun(token, status, reason, diagnostics) {
     if (!token) return;
     var ledger = _readLedger(token.turn);
     if (!ledger || !ledger.runs || !ledger.runs[token.fac]) return;
@@ -240,6 +240,18 @@
     row.status = status || row.status || 'skipped';
     row.finishedAt = Date.now();
     if (reason) row.reason = reason;
+    if (diagnostics && typeof diagnostics === 'object') {
+      if (row.status === 'failed') {
+        row.failure = {
+          kind: diagnostics.kind || 'unknown',
+          error: diagnostics.error || diagnostics.reason || reason || '',
+          rawPreview: diagnostics.rawPreview || '',
+          attempts: diagnostics.attempts || 0,
+          maxTokens: diagnostics.maxTokens || 0
+        };
+      }
+      row.diagnostics = diagnostics;
+    }
     var turnLedger = _ensureFactionAiTurnLedger(token.turn);
     if (turnLedger) turnLedger.runs = ledger.runs;
   }
@@ -857,6 +869,31 @@
     return lines;
   }
 
+  function _formatLocalTemplatePreplan(fac) {
+    var turn = _currentTurn();
+    var rows = _arr(fac && fac._npcLlmActionLedger).filter(function(r) {
+      if (!r) return false;
+      var source = String(r.source || '').toLowerCase();
+      var engine = String(r.engine || '').toLowerCase();
+      return turn - _safeNum(r.turn) <= 1
+        && (source === 'local' || source === 'local-template' || engine.indexOf('local-template') >= 0);
+    }).slice(-10);
+    if (!rows.length) return [];
+    var lines = [];
+    lines.push('  Local template actions are already applied this turn; avoid duplicates unless you upgrade them with a new consequence.');
+    rows.forEach(function(r) {
+      var detail = r.detail || {};
+      var parts = [];
+      if (detail.reason) parts.push('reason=' + _txt(detail.reason, 80));
+      if (detail.resource) parts.push('resource=' + _txt(detail.resource, 30));
+      if (detail.delta != null) parts.push('delta=' + detail.delta);
+      if (detail.target || detail.targetFaction) parts.push('target=' + _txt(detail.target || detail.targetFaction, 50));
+      if (detail.province) parts.push('province=' + _txt(detail.province, 50));
+      lines.push('  T' + (r.turn || turn) + ' ' + (r.type || '?') + ' status=' + (r.status || '?') + ' ' + parts.join(' | '));
+    });
+    return lines;
+  }
+
   // ──────────────────────────────────────────────────────────
   // Build prompt — 拼 fac state·让 LLM 全面理解再决策
   // ──────────────────────────────────────────────────────────
@@ -907,6 +944,7 @@
     _pushSection(extra, 'OWN_ADMIN_HIERARCHY', _formatOwnAdminHierarchy(fac));
     _pushSection(extra, 'SC16_WORLD_DIRECTIVE', _formatSc16DirectiveForFac(fac));
     _pushSection(extra, 'ACTION_CANDIDATES', _formatActionCandidates(fac, alive));
+    _pushSection(extra, 'LOCAL_TEMPLATE_PREPLAN', _formatLocalTemplatePreplan(fac));
     try {
       if (global.TM && TM.FactionActionEngine && typeof TM.FactionActionEngine.formatActionContractForPrompt === 'function') {
         _pushSection(extra, 'ACTION_CONTRACT', String(TM.FactionActionEngine.formatActionContractForPrompt({ maxChars: 1800 })).split('\n'));
@@ -929,9 +967,9 @@
     user += '  "edict": {"type":"催征|减俸|补饷|整军|安抚|罢党争|怀柔|赏赐|巡抚|经略","content":"诏令 60-120 字","trigger":"财政危|军权弱|朝堂裂|稳定·示恩|...","treasuryDelta":-500000至500000,"loyaltyDeltas":{"court":-10至10,"general":0,"clan":0}},\n';
     user += '  "chaoyi": {"type":"cooperate|attack|compromise|infight|null (单派则 null)","summary":"20-50 字","partyImbalanceDelta":-0.2至0.2,"loyaltyDeltaByParty":{"partyA":-5至5}},\n';
     user += '  "office": [{"kind":"promote|demote","target":"char.name","newPosition":"按 paradigm 头衔","loyaltyDelta":-10至10,"reason":"..."}, ...0-1 条],\n';
-    user += '  "actions": [{"type":"office_change|fiscal_policy|military_order|diplomacy|province_policy|spy_or_intrigue|rebellion_policy","target":"char.name","newPosition":"官职","resource":"money|grain|cloth","treasuryDelta":0,"army":"army.name","commander":"char.name","targetFaction":"faction.name","relationDelta":-20,"province":"province.name","ownerFaction":"faction.name","intrigue":"spread_rumor|bribe|sabotage","policy":"incite|pacify|sponsor","support":1,"reason":"20-60 chars"}, ...0-8]\n';
+    user += '  "actions": [{"type":"office_change|fiscal_policy|military_order|diplomacy|province_policy|spy_or_intrigue|rebellion_policy","target":"char.name","newPosition":"官职","resource":"money|grain|cloth","treasuryDelta":0,"incomeDelta":0,"expenseDelta":0,"army":"army.name","commander":"char.name","soldiersDelta":0,"moraleDelta":0,"trainingDelta":0,"targetFaction":"faction.name","relationDelta":-20,"treaty":"条约名","province":"province.name","ownerFaction":"faction.name","minxinDelta":0,"corruptionDelta":0,"unrestDelta":0,"taxDelta":0,"intrigue":"spread_rumor|bribe|sabotage","policy":"incite|pacify|sponsor","support":1,"reason":"20-60 chars"}, ...0-8]\n';
     user += '}\n';
-    user += 'actions 可选但优先用于真实外部动作: office_change 字段 {target,newPosition,kind:"promote|demote|appoint",loyaltyDelta,reason}; fiscal_policy 字段 {resource:"money|grain|cloth",treasuryDelta,reason}; military_order 字段 {army, order:"change_commander|move|reinforce", commander, destination}; diplomacy 字段 {targetFaction, relationDelta:-100至100, relationType, reason}; province_policy 字段 {province, policy:"transfer_owner|pacify|extract", ownerFaction, reason}; spy_or_intrigue 字段 {targetFaction,intrigue:"spread_rumor|bribe|sabotage",relationDelta,pressure,reason}; rebellion_policy 字段 {targetFaction,policy:"incite|sponsor|pacify",support,reason}。';
+    user += 'actions 可选但优先用于真实外部动作: office_change 字段 {target,newPosition,kind:"promote|demote|appoint",loyaltyDelta,reason}; fiscal_policy 字段 {resource:"money|grain|cloth",treasuryDelta,incomeDelta,expenseDelta,reason}; military_order 字段 {army, order:"change_commander|move|reinforce|train", commander, destination, soldiersDelta, moraleDelta, trainingDelta}; diplomacy 字段 {targetFaction, relationDelta:-100至100, relationType, treaty, durationTurns, reason}; province_policy 字段 {province, policy:"transfer_owner|pacify|extract|reform", ownerFaction, minxinDelta, corruptionDelta, unrestDelta, taxDelta, reason}; spy_or_intrigue 字段 {targetFaction,intrigue:"spread_rumor|bribe|sabotage",relationDelta,pressure,reason}; rebellion_policy 字段 {targetFaction,policy:"incite|sponsor|pacify",support,reason}。';
     user += '\n约束: type/decision/kind 必须是给定 enum·content 必须中文古文风·目标 char 必须在治下 chars 列表中·军队/地块/势力名必须来自上下文·所有数值必须在区间内。';
     user += '\nTARGET RULE: char/army/province/faction names must come from ACTION_CANDIDATES or the visible context above. Prefer concrete actions[] that operationalize SC16_WORLD_DIRECTIVE; do not invent invisible characters or armies.';
 
@@ -989,27 +1027,34 @@
 
   async function _callLLMDecision(prompts, opts) {
     opts = opts || {};
-    if (typeof global.callAI !== 'function') return null;
+    if (typeof global.callAI !== 'function') {
+      return { parsed:null, diagnostics:{ kind:'missing_callAI', error:'callAI is not available', rawPreview:'', attempts:0, maxTokens:0 } };
+    }
     var attempts = Math.max(1, _safeNum(opts.maxAttempts) || ((global.P && P.conf && P.conf.npcAiPrecisionRetryAttempts) || 2));
     var timeoutMs = _safeNum(opts.timeoutMs || (global.P && P.conf && P.conf.npcAiPrecisionTimeoutMs)) || 0;
     var maxTokens = _precisionMaxTokens(opts);
     var combined = prompts.system + '\n\n' + prompts.user;
     var lastError = '';
+    var lastRawPreview = '';
+    var failureKind = 'parse';
     for (var i = 0; i < attempts; i++) {
       try {
         var promptText = combined;
         if (i > 0) promptText += '\n\nFORMAT_ERROR_RETRY: 上次输出无法解析为 strict JSON。请只返回一个 JSON object，不要 markdown，不要解释。错误: ' + lastError;
         var raw = await _withTimeout(global.callAI(promptText, maxTokens, null, 'secondary'), timeoutMs);
-        if (!raw) { lastError = 'empty response'; continue; }
+        lastRawPreview = String(raw || '').slice(0, 600);
+        if (!raw) { lastError = 'empty response'; failureKind = 'empty'; continue; }
         var parsed = _parseDecisionJson(raw);
-        if (parsed) return parsed;
+        if (parsed) return { parsed:parsed, diagnostics:{ kind:'ok', attempts:i + 1, maxTokens:maxTokens } };
         lastError = 'no JSON object in response';
+        failureKind = 'parse';
       } catch (e) {
         lastError = (e && e.message) || String(e || 'parse failed');
+        failureKind = /timeout/i.test(lastError) ? 'timeout' : 'call_or_parse';
         try { console.warn('[npc-llm-decision] parse/call failed attempt ' + (i + 1), lastError); } catch(_){}
       }
     }
-    return null;
+    return { parsed:null, diagnostics:{ kind:failureKind, error:lastError, rawPreview:lastRawPreview, attempts:attempts, maxTokens:maxTokens } };
   }
 
   var VALID_MEM_TYPES = ['军务','政务','民生','经济','人事','密奏'];
@@ -1633,20 +1678,22 @@
     var ledgerToken = ledgerRun.token;
 
     var prompts = _buildPrompt(fac);
-    var raw = await _callLLMDecision(prompts, opts);
+    var callResult = await _callLLMDecision(prompts, opts);
+    var raw = callResult && callResult.parsed;
+    var callDiagnostics = (callResult && callResult.diagnostics) || null;
     if (_isLedgerTokenStale(ledgerToken)) {
       return { skipped: true, reason: 'stale turn', turn: ledgerToken.turn, currentTurn: _currentTurn() };
     }
     if (!raw) {
-      _finishLedgerRun(ledgerToken, 'failed', 'LLM call/parse failed');
-      return { skipped: true, reason: 'LLM call/parse failed', fallbackToTemplate: true };
+      _finishLedgerRun(ledgerToken, 'failed', 'LLM call/parse failed', callDiagnostics || { kind:'parse', error:'empty parsed decision' });
+      return { skipped: true, reason: 'LLM call/parse failed', fallbackToTemplate: true, diagnostics: callDiagnostics };
     }
     var decision = _validateDecision(raw);
     if (_isLedgerTokenStale(ledgerToken)) {
       return { skipped: true, reason: 'stale turn', turn: ledgerToken.turn, currentTurn: _currentTurn() };
     }
     if (!decision) {
-      _finishLedgerRun(ledgerToken, 'failed', 'decision invalid');
+      _finishLedgerRun(ledgerToken, 'failed', 'decision invalid', { kind:'schema', error:'decision invalid', rawPreview:'' });
       return { skipped: true, reason: 'decision invalid', fallbackToTemplate: true };
     }
     var summary = _applyDecision(fac, decision);
@@ -1678,6 +1725,63 @@
     return results;
   }
 
+  function _sc16HardPriorityNames(turn) {
+    var G = global.GM || {};
+    var ledger = G._sc16FactionDirectives || null;
+    if (!ledger) return [];
+    var names = [];
+    function push(v) {
+      var s = String(v == null ? '' : v).trim();
+      if (s && names.indexOf(s) < 0) names.push(s);
+    }
+    _arr(ledger.priorityQueue).sort(function(a, b) {
+      var ap = _safeNum(a && (a.priority || a.priorityScore || a.score));
+      var bp = _safeNum(b && (b.priority || b.priorityScore || b.score));
+      var ar = _safeNum(a && a.priorityRank);
+      var br = _safeNum(b && b.priorityRank);
+      if (ar || br) return (ar || 999) - (br || 999);
+      return bp - ap;
+    }).forEach(function(row) {
+      push(row && (row.faction || row.name || row.fac));
+    });
+    var by = ledger.byFaction || {};
+    Object.keys(by).map(function(name) {
+      var row = by[name] || {};
+      return { name:name, rank:_safeNum(row.priorityRank), score:_safeNum(row.priorityScore || row.priority || (row.raw && row.raw.priority)) };
+    }).filter(function(row) {
+      return row.rank > 0 || row.score > 0;
+    }).sort(function(a, b) {
+      if (a.rank || b.rank) return (a.rank || 999) - (b.rank || 999);
+      return b.score - a.score;
+    }).forEach(function(row) { push(row.name); });
+    return names;
+  }
+
+  function _applySc16HardPriorityRows(rows, turn) {
+    rows = _arr(rows).slice();
+    var names = _sc16HardPriorityNames(turn);
+    if (!names.length) return rows;
+    var used = {};
+    var ordered = [];
+    names.forEach(function(name, idx) {
+      var row = rows.find(function(r){ return r && r.fac && r.fac.name === name; });
+      if (!row || used[name]) return;
+      used[name] = true;
+      row.hardPriority = idx + 1;
+      if (_arr(row.reasons).indexOf('sc16-hard-priority') < 0) {
+        if (!Array.isArray(row.reasons)) row.reasons = [];
+        row.reasons.unshift('sc16-hard-priority');
+      }
+      ordered.push(row);
+    });
+    rows.forEach(function(row) {
+      var name = row && row.fac && row.fac.name;
+      if (name && used[name]) return;
+      ordered.push(row);
+    });
+    return ordered;
+  }
+
   async function decideAll(opts) {
     opts = opts || {};
     if (!_isEnabled()) return { skipped: true, reason: 'LLM mode off' };
@@ -1694,15 +1798,16 @@
     var rankedRows = [];
     if (engine && typeof engine.rankFactionCandidates === 'function') {
       rankedRows = engine.rankFactionCandidates(candidates, { turn: batchTurn, playerFactionNames: playerFacNames });
+      rankedRows = _applySc16HardPriorityRows(rankedRows, batchTurn);
       npcs = rankedRows.map(function(row){ return row.fac; }).slice(0, maxPerTurn);
     } else {
-      npcs = candidates.sort(function(a, b){
+      rankedRows = candidates.sort(function(a, b){
         var sa = (a.derivedStrength && a.derivedStrength.value) || 0;
         var sb = (b.derivedStrength && b.derivedStrength.value) || 0;
         return sb - sa;
-      })
-      .slice(0, maxPerTurn);
-      rankedRows = npcs.map(function(f){ return { fac:f, score:(f.derivedStrength && f.derivedStrength.value) || 0, reasons:['strength-fallback'] }; });
+      }).map(function(f){ return { fac:f, score:(f.derivedStrength && f.derivedStrength.value) || 0, reasons:['strength-fallback'] }; });
+      rankedRows = _applySc16HardPriorityRows(rankedRows, batchTurn);
+      npcs = rankedRows.map(function(row){ return row.fac; }).slice(0, maxPerTurn);
     }
     try {
       global.GM._npcFactionLlmCandidateRanks = {

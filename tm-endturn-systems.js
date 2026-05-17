@@ -35,7 +35,6 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
 
   // 3.5 NPC 行为推演（异步，不在 pipeline 中）
   try {
-    if (P.ai.key) { showLoading("推演 NPC 行为",94); await executeNpcBehaviors(); }
     if (P.npcEngine && P.npcEngine.enabled) { showLoading("运行 NPC Engine",94.5); NpcEngine.runEngine(); }
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] NPC行为推演失败:') : console.error('[endTurn] NPC行为推演失败:', e); }
 
@@ -304,9 +303,21 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
       }
     });
 
-    // 清空队列
-    ChangeQueue.clear();
-    _dbg('[endTurn] 变动队列已清空');
+    if (queueResult && queueResult.ok === false) {
+      try {
+        GM._lastChangeQueueFailure = {
+          turn: GM.turn,
+          failedCount: queueResult.failedCount || 0,
+          errors: queueResult.errors || [],
+          at: Date.now()
+        };
+      } catch(_) {}
+      if (typeof toast === 'function') toast('部分决策变动未能应用，已保留待下回合重试；请查看控制台诊断。');
+    } else {
+      // 清空队列
+      ChangeQueue.clear();
+      _dbg('[endTurn] 变动队列已清空');
+    }
 
     // 检查改革触发（基于本回合变量变化）
     AutoReboundSystem.checkReforms(variableChanges);

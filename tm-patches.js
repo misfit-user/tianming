@@ -110,7 +110,8 @@ if (typeof _togglePConf === 'undefined') {
       recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
       consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
       semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' },
-      npcAiPrecision: { on: '已启用 NPC 推演 LLM 精细化·每回合最多 8 次润色', off: '已关闭 NPC LLM 精细化·走本地模板 + 人格 hints' }
+      npcAiPrecision: { on: '已启用 NPC 势力真决策·会真实改动数据并写入账本', off: '已关闭 NPC 势力真决策·走本地模板 + 人格 hints' },
+      npcAiCosmeticEnrich: { on: '已启用 NPC 文字润色·仅改显示文辞', off: '已关闭 NPC 文字润色·不影响真决策' }
     };
     var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
     if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));
@@ -322,11 +323,19 @@ openSettings=function(){
         // Phase F3·2026-05-10·NPC 决策精细化开关
         (function(){
           var _npcAi = !(P.conf && P.conf.npcAiPrecision === false);
+          var _npcPolish = !(P.conf && P.conf.npcAiCosmeticEnrich === false);
           return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
             '<input type="checkbox" id="s-npc-ai" ' + (_npcAi?'checked ':'') + 'onchange="_togglePConf(\'npcAiPrecision\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">NPC 势力推演精细化（LLM 增强·按需启用）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">关闭（默认）：NPC 奏疏/诏令/朝议/人事用模板 + 人格 hints 本地生成·零成本。开启：每回合 LLM 调用 N 次润色 NPC 内政文本（按 fac 实力优先）·成本可控但增加 ~5-10% API 用量。需有主 API key。</div>' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">NPC 势力真决策（LLM 精细推演·真实改动数据）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">关闭：NPC 奏疏/诏令/朝议/人事主要走本地模板。开启：每回合按优先级调用 LLM，让非玩家势力产生可落账的财政、军务、外交、地政等行动；结果会进入势力 AI 账本、近事和后续推演依据。需有主 API key。</div>' +
+            '</div>' +
+          '</label>' +
+          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-npc-polish" ' + (_npcPolish?'checked ':'') + 'onchange="_togglePConf(\'npcAiCosmeticEnrich\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">NPC 文字润色（cosmetic·不改数据）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">只润色 NPC 已有奏疏/诏令的文辞显示，不新增行动、不改财政军务外交地政；用于和“真决策”区分。</div>' +
             '</div>' +
           '</label>';
         })()+

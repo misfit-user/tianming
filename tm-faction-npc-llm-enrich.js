@@ -53,6 +53,9 @@
 
   function _isEnabled() {
     if (!global.TM || !global.TM.FactionNpcSettings) return false;
+    if (typeof global.TM.FactionNpcSettings.isCosmeticEnrichEnabled === 'function') {
+      return global.TM.FactionNpcSettings.isCosmeticEnrichEnabled();
+    }
     return global.TM.FactionNpcSettings.isAiPrecisionEnabled();
   }
 

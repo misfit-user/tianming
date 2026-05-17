@@ -13,7 +13,38 @@
   window.TM = window.TM || {};
   TM.Endturn = TM.Endturn || {};
 
+  function _scheduleNpcBehaviorPostRender(ctx) {
+    try {
+      if (typeof P === 'undefined' || !P || !P.ai || !P.ai.key) return;
+      if (typeof executeNpcBehaviors !== 'function') return;
+      if (typeof GM === 'undefined' || !GM) return;
+      var queuedTurn = GM.turn || 0;
+      if (GM._npcBehaviorPostTurnQueued === queuedTurn) return;
+      GM._npcBehaviorPostTurnQueued = queuedTurn;
+      var runner = async function() {
+        var _t0 = Date.now();
+        try {
+          if (TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+            TM.Endturn.Timing.mark(ctx, 'background', { id: 'npc_behavior', phase: 'start', turn: queuedTurn });
+          }
+          await executeNpcBehaviors();
+          if (TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+            TM.Endturn.Timing.mark(ctx, 'background', { id: 'npc_behavior', phase: 'done', turn: queuedTurn, ok: true, ms: Date.now() - _t0 });
+          }
+        } catch(e) {
+          if (TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
+            TM.Endturn.Timing.mark(ctx, 'background', { id: 'npc_behavior', phase: 'done', turn: queuedTurn, ok: false, ms: Date.now() - _t0, error: String(e && (e.message || e) || '') });
+          }
+          throw e;
+        }
+      };
+      if (typeof _enqueuePostTurnJob === 'function') _enqueuePostTurnJob('npc_behavior', runner);
+      else setTimeout(function(){ runner().catch(function(e){ try { console.warn('[pipeline.render-finalize] npc_behavior failed', e); } catch(_){} }); }, 0);
+    } catch(_npcbE) { try { console.warn('[pipeline.render-finalize] NPC behavior schedule failed', _npcbE); } catch(_){} }
+  }
+
   async function _runPostRenderTurnOpeners(ctx) {
+    _scheduleNpcBehaviorPostRender(ctx);
     try {
       if (typeof window !== 'undefined' && window.TM && TM.FactionIndex && TM.FactionIndex.rebuild) {
         TM.FactionIndex.rebuild();
@@ -31,6 +62,7 @@
         if (TM.FactionDerivedStrength && TM.FactionDerivedStrength.compute) TM.FactionDerivedStrength.compute();
       }
     } catch(_dxE) { try { console.warn('[pipeline.render-finalize] derived B1-B3 失败', _dxE); } catch(_){} }
+    _scheduleNpcBehaviorPostRender(ctx);
     try {
       if (typeof window !== 'undefined' && window.TM && TM.FactionNpcMemorial && TM.FactionNpcMemorial.generate) {
         TM.FactionNpcMemorial.generate();
@@ -178,6 +210,14 @@
         } catch(_nDE) { try { console.warn('[pipeline.plan-prefetch] 1.75 scThreeSystemsAI kickoff failed', _nDE); } catch(_){} }
         try {
           if (typeof aiDigestLongTermActions === 'function' && typeof P !== 'undefined' && P.ai && P.ai.key) {
+            try {
+              if (typeof _buildLongTermActionsDigest === 'function' && typeof GM !== 'undefined') {
+                var _rawLt = _buildLongTermActionsDigest();
+                if (_rawLt && _rawLt.length >= 30 && (!GM._longTermDigest || GM._longTermDigest.turn !== GM.turn)) {
+                  GM._longTermDigest = { text: _rawLt, generatedAt: GM.turn, turn: GM.turn, _fromRaw: true, _prefetchFallback: true };
+                }
+              }
+            } catch(_rawLtE) { try { console.warn('[pipeline.plan-prefetch] long-term raw fallback failed', _rawLtE); } catch(_){} }
             ctx.subcalls.preLongTermP = Promise.resolve(aiDigestLongTermActions()).catch(function(e){
               try { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] long-term digest') : console.warn('[endTurn] long-term digest failed', e); } catch(_){}
             });
@@ -200,14 +240,9 @@
       fn: async function(ctx) {
         if (typeof _endTurn_aiInfer !== 'function') return ctx;
         // await plan-prefetch 启动的 promise·legacy Phase 2 同样 await·此处仅确保 ai 调用前数据齐
-        if (ctx.subcalls && ctx.subcalls.preThreeSystemsP) {
-          try { await ctx.subcalls.preThreeSystemsP; }
-          catch(e) { try { console.warn('[pipeline.ai] await preThreeSystemsP failed', e); } catch(_){} }
-        }
-        if (ctx.subcalls && ctx.subcalls.preLongTermP) {
-          try { await ctx.subcalls.preLongTermP; }
-          catch(e) { try { console.warn('[pipeline.ai] await preLongTermP failed', e); } catch(_){} }
-        }
+        // plan-prefetch is intentionally not awaited here. If it finishes before prompt
+        // construction, its cache is used; otherwise current-turn deterministic fallbacks
+        // stay in GM and the AI summary updates later.
         // [slice 3c.1·2026-05-07] 把 ctx 作为 5th arg·_endTurn_aiInfer 在 finalize 前 copy 内部 ctx 字段过来
         // 这样 pipeline ctx.results 看得到全部 sc0-sc28·不只是最终 aiResult
         var aiResult = await _endTurn_aiInfer(
@@ -218,6 +253,19 @@
           ctx
         );
         ctx.results.aiResult = aiResult;
+        if (TM.Endturn && TM.Endturn.Validity && typeof TM.Endturn.Validity.validateBeforeCommit === 'function') {
+          var validity = TM.Endturn.Validity.validateBeforeCommit(ctx);
+          ctx.meta.endturnValidity = validity;
+          try { if (typeof GM !== 'undefined') GM._lastEndturnValidity = validity; } catch(_) {}
+          if (validity && validity.status === 'failed') {
+            try { if (typeof hideLoading === 'function') hideLoading(); } catch(_) {}
+            try { if (typeof toast === 'function') toast('本回合 AI 推演失败，未推进回合；请重试或检查 AI 诊断。'); } catch(_) {}
+            if (TM.Endturn.Validity.EndturnInvalidResultError) {
+              throw new TM.Endturn.Validity.EndturnInvalidResultError(validity);
+            }
+            throw new Error('本回合 AI 推演未形成可提交结果');
+          }
+        }
         ctx.input._aiInferRan = true;
         return ctx;
       },
@@ -457,6 +505,7 @@
             if (TM.FactionDerivedStrength && TM.FactionDerivedStrength.compute) TM.FactionDerivedStrength.compute();
           }
         } catch(_dxE) { try { console.warn('[pipeline.render-finalize] derived B1-B3 失败', _dxE); } catch(_){} }
+        _scheduleNpcBehaviorPostRender(ctx);
         // 2026-05-10·Phase C1·NPC memorial 生成+自决·每回合 1 轮
         try {
           if (typeof window !== 'undefined' && window.TM && TM.FactionNpcMemorial && TM.FactionNpcMemorial.generate) {

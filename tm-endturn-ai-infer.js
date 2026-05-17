@@ -36,7 +36,6 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
     // 严格史实模式：检索数据库
     if(P.conf.gameMode === 'strict_hist' && P.conf.refText) {
       showLoading("检索数据库中",20);
-      await new Promise(resolve => setTimeout(resolve, 300)); // 模拟检索延迟
     }
 
     showLoading("\u6253\u5305\u6570\u636E",25);

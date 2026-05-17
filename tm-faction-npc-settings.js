@@ -21,6 +21,8 @@
     npcAiPrecision: true,              // 主开关
     npcAiPrecisionMaxPerTurn: 2,       // 限流·过回合时最多 LLM call 次数；重活交给回合后后台队列
     npcAiPrecisionPriority: 'overall', // 'overall' | 'random' — 优先 enrich 哪些 fac
+    npcAiPrecisionMaxPerTurn: 2,
+    npcAiCosmeticEnrich: true,         // separate text-polish switch: cosmetic only
     npcAiPrecisionMode: 'eager',       // master switch ON means endturn batch + in-turn extra LLM can both run
     npcAiPrecisionConcurrency: 2,
     npcAiPrecisionRetryAttempts: 2,
@@ -48,6 +50,7 @@
       npcAiPrecision: typeof conf.npcAiPrecision === 'boolean' ? conf.npcAiPrecision : DEFAULTS.npcAiPrecision,
       npcAiPrecisionMaxPerTurn: typeof conf.npcAiPrecisionMaxPerTurn === 'number' ? conf.npcAiPrecisionMaxPerTurn : DEFAULTS.npcAiPrecisionMaxPerTurn,
       npcAiPrecisionPriority: conf.npcAiPrecisionPriority || DEFAULTS.npcAiPrecisionPriority,
+      npcAiCosmeticEnrich: typeof conf.npcAiCosmeticEnrich === 'boolean' ? conf.npcAiCosmeticEnrich : DEFAULTS.npcAiCosmeticEnrich,
       npcAiPrecisionMode: conf.npcAiPrecisionMode || DEFAULTS.npcAiPrecisionMode,
       npcAiPrecisionConcurrency: typeof conf.npcAiPrecisionConcurrency === 'number' ? conf.npcAiPrecisionConcurrency : DEFAULTS.npcAiPrecisionConcurrency,
       npcAiPrecisionRetryAttempts: typeof conf.npcAiPrecisionRetryAttempts === 'number' ? conf.npcAiPrecisionRetryAttempts : DEFAULTS.npcAiPrecisionRetryAttempts,
@@ -65,6 +68,13 @@
     var c = _getConf();
     if (!c.npcAiPrecision) return false;
     // 还要 check P.ai.key 已配·没 key 即便开了也 noop
+    if (!global.P || !global.P.ai || !global.P.ai.key) return false;
+    return true;
+  }
+
+  function isCosmeticEnrichEnabled() {
+    var c = _getConf();
+    if (!c.npcAiCosmeticEnrich) return false;
     if (!global.P || !global.P.ai || !global.P.ai.key) return false;
     return true;
   }
@@ -90,12 +100,21 @@
     return true;
   }
 
+  function setCosmeticEnrichEnabled(on) {
+    if (!global.P) return false;
+    if (!global.P.conf) global.P.conf = {};
+    global.P.conf.npcAiCosmeticEnrich = !!on;
+    return true;
+  }
+
   function getStatus() {
     var c = _getConf();
     var hasKey = !!(global.P && global.P.ai && global.P.ai.key);
     return {
       enabled: c.npcAiPrecision,
       effectivelyOn: isAiPrecisionEnabled(),
+      cosmeticEnrich: c.npcAiCosmeticEnrich,
+      cosmeticEffectivelyOn: isCosmeticEnrichEnabled(),
       eagerMode: isEagerMode(),
       hasKey: hasKey,
       maxPerTurn: c.npcAiPrecisionMaxPerTurn,
@@ -110,10 +129,12 @@
   global.TM = global.TM || {};
   global.TM.FactionNpcSettings = {
     isAiPrecisionEnabled: isAiPrecisionEnabled,
+    isCosmeticEnrichEnabled: isCosmeticEnrichEnabled,
     isEagerMode: isEagerMode,
     maxPerTurn: maxPerTurn,
     concurrency: concurrency,
     setEnabled: setEnabled,
+    setCosmeticEnrichEnabled: setCosmeticEnrichEnabled,
     getStatus: getStatus,
     DEFAULTS: DEFAULTS
   };
@@ -121,8 +142,10 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       isAiPrecisionEnabled: isAiPrecisionEnabled,
+      isCosmeticEnrichEnabled: isCosmeticEnrichEnabled,
       isEagerMode: isEagerMode,
       setEnabled: setEnabled,
+      setCosmeticEnrichEnabled: setCosmeticEnrichEnabled,
       getStatus: getStatus
     };
   }

@@ -168,20 +168,31 @@
     ch.cemingTurn = (typeof GM !== 'undefined' && GM.turn) || 1;
     ch.cemingByPlayer = true;
     ch.cemingMode = check.mode || 'yanyi';
-    ch.birthYear = profile.birthYear || ch.birthYear;
-    ch.deathYear = profile.deathYear || ch.deathYear;
+    ch.birthYear = profile.birthYear != null ? profile.birthYear : ch.birthYear;
+    ch.deathYear = profile.deathYear != null ? profile.deathYear : ch.deathYear;
     ch.alternateNames = profile.alternateNames ? profile.alternateNames.slice() : [];
     ch.alive = true;
-    // 当世人物·标 timelineStatus=alive·让推演/对话 AI 知道
-    ch.timelineStatus = 'alive';
-    ch.originTime = (profile.birthYear && profile.deathYear) ? { birth: profile.birthYear, death: profile.deathYear } : null;
-    ch.timelineMood = 'normal';
-    ch.displacement = false;
-    ch.knowledgeReliability = 'verified';
+    ch.timelineStatus = timelineStatus;
+    ch.originTime = (profile.birthYear != null && profile.deathYear != null) ? { birth: profile.birthYear, death: profile.deathYear } : null;
+    ch.timelineMood = (timelineStatus === 'past_visitor') ? 'confused_past' : (timelineStatus === 'future_visitor') ? 'confused_future' : 'normal';
+    ch.displacement = isCrossTime;
+    ch.knowledgeReliability = isCrossTime ? 'unreliable_crosstime' : 'verified';
+    if (isCrossTime) {
+      var crack = '【时空裂痕】此人本属 ' + (profile.birthYear != null ? profile.birthYear : '?') + '-' + (profile.deathYear != null ? profile.deathYear : '?') + ' 年间·';
+      crack += (timelineStatus === 'past_visitor') ? ('已殁至今·被玩家策名召入此世。') : ('尚未出世·被玩家策名提前召入此世。');
+      var baseBio = ch.bio || ch.background || '';
+      if (baseBio.indexOf('【时空裂痕】') < 0) {
+        ch.bio = baseBio ? (baseBio + '\n\n' + crack) : crack;
+        ch.background = ch.bio;
+      }
+    }
 
     if (typeof GM !== 'undefined') {
       if (!GM.chars) GM.chars = [];
       GM.chars.push(ch);
+      if (GM._indices && GM._indices.charByName && typeof GM._indices.charByName.set === 'function') {
+        GM._indices.charByName.set(ch.name, ch);
+      }
     }
 
     return { existed: false, char: ch };

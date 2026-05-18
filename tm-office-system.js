@@ -115,6 +115,95 @@ function _offAllHolders(pos) {
   return arr;
 }
 
+function _offNormalizeTitleName(title) {
+  var t = String(title == null ? '' : title).replace(/\s+/g, '').replace(/^[·、，,。；;]+|[·、，,。；;]+$/g, '');
+  return /^(无|无职|未任|布衣|—|-|null|undefined)$/i.test(t) ? '' : t;
+}
+
+function _offUniqueTitles(list) {
+  var out = [];
+  (list || []).forEach(function(t) {
+    t = _offNormalizeTitleName(t);
+    if (t && out.indexOf(t) < 0) out.push(t);
+  });
+  return out;
+}
+
+function _offGetCharOfficeTitles(ch) {
+  if (!ch) return [];
+  var arr = [];
+  if (ch.officialTitle) arr.push(ch.officialTitle);
+  if (Array.isArray(ch.officialTitles)) arr = arr.concat(ch.officialTitles);
+  if (Array.isArray(ch.concurrentTitles)) arr = arr.concat(ch.concurrentTitles);
+  if (ch.concurrentTitle) String(ch.concurrentTitle).split(/[、,，;；\s]+/).forEach(function(t){ arr.push(t); });
+  return _offUniqueTitles(arr);
+}
+
+function _offIsConcurrentAppointment(spec, text) {
+  spec = spec || {};
+  if (spec.concurrent === true || spec.keepExisting === true || spec.keepCurrentOffice === true || spec.keepCurrent === true) return true;
+  if (spec.mode === 'concurrent' || spec.appointmentMode === 'concurrent' || spec.action === 'concurrent') return true;
+  var flag = String(spec.concurrent == null ? '' : spec.concurrent).toLowerCase();
+  if (flag === 'true' || flag === '1' || flag === 'yes' || flag === 'y' || flag === '是' || flag === '兼任') return true;
+  var raw = [
+    text || '',
+    spec.reason || '',
+    spec.note || '',
+    spec.raw || '',
+    spec.mode || '',
+    spec.action || '',
+    spec.verb || ''
+  ].join(' ');
+  return /兼任|兼职|加兼|兼领|兼署|兼管|兼摄|兼差|兼掌|兼督|兼理/.test(raw);
+}
+
+function _offAddCharOfficeTitle(ch, title, opts) {
+  if (!ch) return [];
+  opts = opts || {};
+  title = _offNormalizeTitleName(title);
+  if (!title) return _offGetCharOfficeTitles(ch);
+
+  var existing = _offGetCharOfficeTitles(ch);
+  var currentMain = _offNormalizeTitleName(ch.officialTitle || '');
+  var titles;
+
+  if (opts.concurrent && currentMain && currentMain !== title) {
+    titles = _offUniqueTitles([currentMain].concat(existing).concat([title]));
+    ch.officialTitle = currentMain;
+    if (!ch.position) ch.position = currentMain;
+  } else {
+    titles = _offUniqueTitles([title].concat(opts.keepConcurrent ? existing.filter(function(t){ return t !== title; }) : []));
+    ch.officialTitle = title;
+    ch.position = title;
+  }
+
+  var main = _offNormalizeTitleName(ch.officialTitle || '');
+  var concurrent = titles.filter(function(t) { return t && t !== main; });
+  ch.officialTitles = _offUniqueTitles([main].concat(concurrent));
+  ch.concurrentTitles = concurrent;
+  ch.concurrentTitle = concurrent.join('、');
+  return ch.officialTitles;
+}
+
+function _offRemoveCharOfficeTitle(ch, title) {
+  if (!ch) return [];
+  title = _offNormalizeTitleName(title);
+  if (!title) return _offGetCharOfficeTitles(ch);
+  var titles = _offGetCharOfficeTitles(ch).filter(function(t) { return t !== title; });
+  if (_offNormalizeTitleName(ch.officialTitle || '') === title) {
+    ch.officialTitle = titles[0] || '';
+  }
+  if (_offNormalizeTitleName(ch.position || '') === title) {
+    ch.position = ch.officialTitle || '';
+  }
+  var main = _offNormalizeTitleName(ch.officialTitle || '');
+  var concurrent = titles.filter(function(t) { return t && t !== main; });
+  ch.officialTitles = _offUniqueTitles((main ? [main] : []).concat(concurrent));
+  ch.concurrentTitles = concurrent;
+  ch.concurrentTitle = concurrent.join('、');
+  return ch.officialTitles;
+}
+
 function _offFindPositionByName(positionName, deptHint, tree) {
   if (!positionName) return null;
   tree = tree || (typeof GM !== 'undefined' && GM.officeTree) || [];
@@ -787,6 +876,10 @@ if (typeof window !== 'undefined') {
   window._findPositionByCharName = _findPositionByCharName;
   window._offFindPositionByName = _offFindPositionByName;
   window._offSeatPersonInPosition = _offSeatPersonInPosition;
+  window._offIsConcurrentAppointment = _offIsConcurrentAppointment;
+  window._offAddCharOfficeTitle = _offAddCharOfficeTitle;
+  window._offRemoveCharOfficeTitle = _offRemoveCharOfficeTitle;
+  window._offGetCharOfficeTitles = _offGetCharOfficeTitles;
 }
 
 // ============================================================

@@ -793,10 +793,17 @@ function fullLoadGame(data){
       (function _syncTitles(nodes) {
         nodes.forEach(function(n) {
           (n.positions||[]).forEach(function(p) {
-            if (p.holder) {
-              var _sch = GM.chars.find(function(c){ return c.name === p.holder; });
-              if (_sch) _sch.officialTitle = p.name;
+            var _names = [];
+            if (typeof _offAllHolders === 'function') {
+              try { _names = _offAllHolders(p) || []; } catch(_) { _names = []; }
             }
+            if (!_names.length && p.holder) _names = [p.holder];
+            _names.forEach(function(_nm, _idx) {
+              var _sch = GM.chars.find(function(c){ return c.name === _nm; });
+              if (!_sch) return;
+              if (typeof _offAddCharOfficeTitle === 'function') _offAddCharOfficeTitle(_sch, p.name, { concurrent: _idx > 0 || !!_sch.officialTitle });
+              else if (!_sch.officialTitle) _sch.officialTitle = p.name;
+            });
           });
           if (n.subs) _syncTitles(n.subs);
         });

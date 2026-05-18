@@ -2206,13 +2206,20 @@ function doActualStart(sid){
     (function _syncOffice(nodes) {
       nodes.forEach(function(dept) {
         (dept.positions || []).forEach(function(pos) {
-          if (pos.holder) {
-            // 职位已有人 → 确保该角色知道自己的官职
-            var ch = GM.chars.find(function(c) { return c.name === pos.holder && c.alive !== false; });
-            if (ch && !ch.officialTitle) {
-              ch.officialTitle = pos.name;
-              _syncCount++;
+          if (pos.holder || (Array.isArray(pos.actualHolders) && pos.actualHolders.length)) {
+            // 职位已有人 → 确保该角色知道自己的官职；兼任者保留主职并写入 concurrentTitles
+            var _holders = [];
+            if (typeof _offAllHolders === 'function') {
+              try { _holders = _offAllHolders(pos) || []; } catch(_) { _holders = []; }
             }
+            if (!_holders.length && pos.holder) _holders = [pos.holder];
+            _holders.forEach(function(_hn, _idx) {
+              var ch = GM.chars.find(function(c) { return c.name === _hn && c.alive !== false; });
+              if (!ch) return;
+              if (typeof _offAddCharOfficeTitle === 'function') _offAddCharOfficeTitle(ch, pos.name, { concurrent: _idx > 0 || !!ch.officialTitle });
+              else if (!ch.officialTitle) ch.officialTitle = pos.name;
+              _syncCount++;
+            });
           } else {
             // 职位空缺 → 从角色的title/officialTitle中寻找匹配
             var posName = pos.name || '';

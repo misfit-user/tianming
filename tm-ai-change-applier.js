@@ -1775,9 +1775,12 @@
     var G = global.GM;
     var ch = _findChar(charName);
     if (!ch) return { ok: false, reason: '未找到角色 ' + charName };
+    var isConcurrent = (typeof global._offIsConcurrentAppointment === 'function')
+      ? global._offIsConcurrentAppointment(binding || {}, position)
+      : !!(binding && (binding.concurrent || binding.mode === 'concurrent'));
     // 解绑旧
     var oldBinding = ch.resources && ch.resources.publicTreasury && ch.resources.publicTreasury.binding;
-    if (oldBinding) {
+    if (!isConcurrent && oldBinding) {
       var oldEntity = _resolveBinding(oldBinding);
       if (oldEntity) {
         _ensurePublicTreasury(oldEntity);
@@ -1795,9 +1798,20 @@
     // 建新绑定
     if (!ch.resources) ch.resources = {};
     if (!ch.resources.publicTreasury) ch.resources.publicTreasury = { binding: null };
-    ch.resources.publicTreasury.binding = binding || null;
-    if (position) ch.officialTitle = position;
-    if (position && ch.currentPosition) ch.currentPosition.title = position;
+    if (isConcurrent && binding) {
+      if (!Array.isArray(ch.resources.publicTreasury.concurrentBindings)) ch.resources.publicTreasury.concurrentBindings = [];
+      ch.resources.publicTreasury.concurrentBindings.push(binding);
+    } else {
+      ch.resources.publicTreasury.binding = binding || null;
+    }
+    if (position) {
+      if (typeof global._offAddCharOfficeTitle === 'function') {
+        global._offAddCharOfficeTitle(ch, position, { concurrent: isConcurrent });
+      } else if (!isConcurrent || !ch.officialTitle) {
+        ch.officialTitle = position;
+      }
+    }
+    if (position && ch.currentPosition && !isConcurrent) ch.currentPosition.title = position;
 
     // ★ 核心修复：同步 officeTree.positions.holder —— 官制面板靠此字段
     var treeUpdated = false;
@@ -1839,7 +1853,7 @@
         });
       }
       var deptHint = (binding && typeof binding === 'object') ? (binding.dept || binding.deptHint) : null;
-      _clearOldHolders(G.officeTree || []);
+      if (!isConcurrent) _clearOldHolders(G.officeTree || []);
       // 2) 找目标 position 并写入·按 headCount 允许几人同任
       var hit = _findOfficePos(G.officeTree || [], position, deptHint);
       if (hit) {
@@ -1870,7 +1884,12 @@
           if (removed2 && removed2.name) {
             evicted = removed2.name;
             var prevCh2 = _findChar(removed2.name);
-            if (prevCh2 && (prevCh2.officialTitle === pos.name || prevCh2.officialTitle === position)) prevCh2.officialTitle = '';
+            if (prevCh2 && typeof global._offRemoveCharOfficeTitle === 'function') {
+              global._offRemoveCharOfficeTitle(prevCh2, pos.name || position);
+              if (position && position !== pos.name) global._offRemoveCharOfficeTitle(prevCh2, position);
+            } else if (prevCh2 && (prevCh2.officialTitle === pos.name || prevCh2.officialTitle === position)) {
+              prevCh2.officialTitle = '';
+            }
             if (!Array.isArray(pos.holderHistory)) pos.holderHistory = [];
             pos.holderHistory.push({ name: removed2.name, since: removed2.joinedTurn||0, until: G.turn||0, reason: '额满·最老者罢黜' });
             if (global.addEB) global.addEB('\u4EFB\u514D', pos.name + ' \u989D\u6EE1\uFF08' + cap + '\u4EBA\uFF09\u2014\u2014' + removed2.name + ' \u7F62');
@@ -1891,7 +1910,11 @@
         }
         treeUpdated = true;
         // 修正 ch.officialTitle 为树里的规范名称
-        if (pos.name && pos.name !== position) ch.officialTitle = pos.name;
+        if (pos.name && pos.name !== position) {
+          if (typeof global._offRemoveCharOfficeTitle === 'function') global._offRemoveCharOfficeTitle(ch, position);
+          if (typeof global._offAddCharOfficeTitle === 'function') global._offAddCharOfficeTitle(ch, pos.name, { concurrent: isConcurrent });
+          else ch.officialTitle = pos.name;
+        }
         // 同时同步公库绑定到该位（若编辑器 position 有 bindingHint）
         if (!binding && pos.bindingHint) {
           ch.resources.publicTreasury.binding = { dept: hit.node.name, position: pos.name, hint: pos.bindingHint };
@@ -2024,6 +2047,10 @@
       });
     })(G.officeTree || []);
     ch.officialTitle = null;
+    ch.position = '';
+    ch.officialTitles = [];
+    ch.concurrentTitles = [];
+    ch.concurrentTitle = '';
     if (global.addEB) global.addEB('任免', charName + ' ' + (reason || '免职'));
     return { ok: true };
   }
@@ -2382,7 +2409,13 @@
       if (!oa || !oa.name) return;
       var ch = _findEntity(G, 'char', oa.name);
       if (!ch) { applied.failed.push({office_assignment: oa, reason: 'char not found'}); return; }
-      var action = oa.action || 'appoint';
+      var rawAction = String(oa.action || 'appoint');
+      var action = rawAction.toLowerCase();
+      var isConcurrentOffice = (typeof global._offIsConcurrentAppointment === 'function')
+        ? global._offIsConcurrentAppointment(Object.assign({}, oa, { action: rawAction }), oa.post || '')
+        : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(rawAction + ' ' + (oa.reason || ''));
+      if (/兼/.test(rawAction)) action = 'appoint';
+      if (action === 'concurrent') { action = 'appoint'; isConcurrentOffice = true; }
       // 是否需要先走位（任命/调任至他处皆走位）
       var needTravel = oa.toLocation && ch.location && !_sameTravelLocation(oa.toLocation, ch.location);
       if (needTravel && (action === 'appoint' || action === 'transfer')) {
@@ -2394,6 +2427,7 @@
           // 若新诏含官职·补到 _travelAssignPost（原 travelTo 可能是 char_updates 设的·没 assignPost）
           if (oa.post && !ch._travelAssignPost) {
             ch._travelAssignPost = (oa.dept ? oa.dept + '/' : '') + oa.post;
+            ch._travelAssignConcurrent = !!isConcurrentOffice;
             _syncCharacterLocationMirrors(G, ch, _travelMirrorFields(ch), []);
           }
           return;
@@ -2406,6 +2440,7 @@
         ch._travelRemainingDays = days;
         ch._travelReason = (oa.reason || '') + '·赴任';
         ch._travelAssignPost = (oa.dept ? oa.dept + '/' : '') + (oa.post || '');
+        ch._travelAssignConcurrent = !!isConcurrentOffice;
         _syncCharacterLocationMirrors(G, ch, _travelMirrorFields(ch), []);
         G._turnReport.push({ type:'travel', char: ch.name, from:ch._travelFrom, to:ch._travelTo, days:days, reason:ch._travelReason, turn:G.turn||0 });
         if (typeof global.addEB === 'function') global.addEB('\u4EFB\u547D', ch.name + ' \u8D74 ' + oa.toLocation + ' \u4EFB ' + (oa.post||'') + '\uFF08\u9884\u8BA1 ' + days + ' \u65E5\u5230\u4EFB\uFF09');
@@ -2437,7 +2472,7 @@
         }
         posList.forEach(function(singlePost, idx) {
           var rr;
-          if (action === 'appoint') rr = onAppointment(oa.name, singlePost, { dept: oa.dept });
+          if (action === 'appoint') rr = onAppointment(oa.name, singlePost, { dept: oa.dept, concurrent: isConcurrentOffice, reason: oa.reason || '' });
           else if (action === 'dismiss') rr = onDismissal(oa.name, oa.reason);
           else if (action === 'transfer') rr = onTransfer(oa.name, oa.fromPost, singlePost, { dept: oa.dept });
           if (rr && rr.ok) {
@@ -2473,6 +2508,9 @@
       if (!changeText) return;
       // 动作识别
       var action = null, post = '', reason = pc.reason || changeText;
+      var isConcurrentPersonnel = (typeof global._offIsConcurrentAppointment === 'function')
+        ? global._offIsConcurrentAppointment({ reason: reason, raw: changeText }, changeText)
+        : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(changeText);
       // 免/罢/贬/黜/斩/诛/免职/罢官/致仕
       // \u4E0B\u72F1/\u5165\u72F1/\u7CFB\u72F1/\u6349\u62FF/\u902E\u6355 -> imprison
       if (/\u4E0B\u72F1|\u5165\u72F1|\u7CFB\u72F1|\u6349\u62FF|\u902E\u6355|\u6293\u6355|\u7F09\u62FF/.test(changeText)) {
@@ -2502,7 +2540,7 @@
       }
       if (!action) return;
       var r = null;
-      if (action === 'appoint' && post) r = onAppointment(pc.name, post, null);
+      if (action === 'appoint' && post) r = onAppointment(pc.name, post, { concurrent: isConcurrentPersonnel, reason: reason });
       else if (action === 'dismiss') r = onDismissal(pc.name, reason);
       if (r && r.ok) {
         personnelFromPcCount++;
@@ -3292,7 +3330,7 @@
     allChars.forEach(function(c){ charNames[c.name] = c; });
 
     // 任命动词 + 人名 + 为 + 官职
-    var appointVerbs = '拜|擢|迁|转|命|授|任|升|进|起|起复|改任|擢任|超擢';
+    var appointVerbs = '拜|擢|迁|转|命|授|任|升|进|起|起复|改任|擢任|超擢|兼任|兼职|加兼|兼领|兼署|兼管|兼摄';
     // 模式 1: 动词 X 为/任 Y
     var pat = new RegExp('(' + appointVerbs + ')\\s*([\\u4e00-\\u9fff]{2,4})\\s*(?:为|任)\\s*([\\u4e00-\\u9fff]{2,12})', 'g');
 
@@ -3324,7 +3362,7 @@
     missing.forEach(function(m) {
       try {
         if (typeof onAppointment === 'function') {
-          var r = onAppointment(m.name, m.post, null);
+          var r = onAppointment(m.name, m.post, { concurrent: /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(m.raw), reason: m.raw });
           if (r && r.ok) {
             patched++;
             if (global.addEB) global.addEB('校验补录', '官职校验·' + m.name + '『' + m.verb + '为' + m.post + '』补录(原文: ' + m.raw + ')');
@@ -4422,7 +4460,9 @@
       var oaRes = _tmResolveChar(G, oa.name);
       if (!oaRes) return _tmWeakEntityHint('office_assignments', 'char seems not in current known lists: ' + oa.name, oa, oaRes);
       if (!oaRes.active) _tmPushAIWeakHint('office_assignments', 'char seems known but not active roster: ' + oa.name, oa, oaRes);
-      var action = oa.action || 'appoint';
+      var action = String(oa.action || 'appoint').toLowerCase();
+      if (/兼/.test(String(oa.action || ''))) action = 'appoint';
+      if (action === 'concurrent') action = 'appoint';
       if ((action === 'appoint' || action === 'transfer') && !oa.post) return _tmGateReason('office_assignments', 'missing post: ' + oa.name, oa);
       return true;
     });
@@ -5018,6 +5058,7 @@
       var toLoc = ch._travelTo;
       var assignPost = ch._travelAssignPost || '';
       var reason = ch._travelReason || '';
+      var assignConcurrent = !!ch._travelAssignConcurrent || /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(reason + ' ' + assignPost);
 
       ch.location = toLoc;
       _syncCharacterLocationMirrors(G, ch, { location: toLoc }, []);
@@ -5031,7 +5072,7 @@
           post = parts.slice(1).join('/') || '';
         }
         try {
-          var r = onAppointment(ch.name, post, { dept: dept });
+          var r = onAppointment(ch.name, post, { dept: dept, concurrent: assignConcurrent, reason: reason });
           if (r && r.ok) {
             if (!Array.isArray(ch.careerHistory)) ch.careerHistory = [];
             ch.careerHistory.push({
@@ -5085,6 +5126,7 @@
       delete ch._travelArrival;
       delete ch._travelReason;
       delete ch._travelAssignPost;
+      delete ch._travelAssignConcurrent;
       _syncCharacterLocationMirrors(G, ch, { location: toLoc }, [
         '_travelTo',
         '_travelFrom',
@@ -5092,7 +5134,8 @@
         '_travelRemainingDays',
         '_travelArrival',
         '_travelReason',
-        '_travelAssignPost'
+        '_travelAssignPost',
+        '_travelAssignConcurrent'
       ]);
 
       // 写入本回合报告（供史记读取）

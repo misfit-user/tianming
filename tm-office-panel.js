@@ -336,12 +336,20 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
   if (newChar) {
     if (mode === 'concurrent' && _snapPrevMainTitle && _snapPrevMainTitle !== posName) {
       // 兼任·原主职保留·新职入 concurrentTitles
-      if (!Array.isArray(newChar.concurrentTitles)) newChar.concurrentTitles = [];
-      if (newChar.concurrentTitles.indexOf(posName) < 0) newChar.concurrentTitles.push(posName);
+      if (typeof _offAddCharOfficeTitle === 'function') {
+        _offAddCharOfficeTitle(newChar, posName, { concurrent: true });
+      } else {
+        if (!Array.isArray(newChar.concurrentTitles)) newChar.concurrentTitles = [];
+        if (newChar.concurrentTitles.indexOf(posName) < 0) newChar.concurrentTitles.push(posName);
+      }
     } else {
       // 辞旧就新·正常改主职
-      newChar.officialTitle = posName;
-      newChar.position = posName;
+      if (typeof _offAddCharOfficeTitle === 'function') {
+        _offAddCharOfficeTitle(newChar, posName, { primary: true });
+      } else {
+        newChar.officialTitle = posName;
+        newChar.position = posName;
+      }
       // 若原是兼任名单中的一员·从 concurrentTitles 移除
       if (Array.isArray(newChar.concurrentTitles)) {
         var _ci = newChar.concurrentTitles.indexOf(posName);
@@ -361,8 +369,12 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     }
   }
   if (oldChar) {
-    if (oldChar.officialTitle === posName) oldChar.officialTitle = '';
-    if (oldChar.position === posName) oldChar.position = '';
+    if (typeof _offRemoveCharOfficeTitle === 'function') {
+      _offRemoveCharOfficeTitle(oldChar, posName);
+    } else {
+      if (oldChar.officialTitle === posName) oldChar.officialTitle = '';
+      if (oldChar.position === posName) oldChar.position = '';
+    }
     oldChar._displaced = { from: posName, by: charName, turn: GM.turn };
     if (!oldChar.careerHistory) oldChar.careerHistory = [];
     oldChar.careerHistory.push({ turn: GM.turn, event: '奉诏免 ' + deptName + posName + '·由 ' + charName + ' 代' });
@@ -822,7 +834,9 @@ function _offUndoAppointment(deptName, posName) {
   if (newChar) {
     if (pe.mode === 'concurrent') {
       // 兼任撤销·从 concurrentTitles 移除
-      if (Array.isArray(newChar.concurrentTitles)) {
+      if (typeof _offRemoveCharOfficeTitle === 'function') {
+        _offRemoveCharOfficeTitle(newChar, pe.posName);
+      } else if (Array.isArray(newChar.concurrentTitles)) {
         var _ci2 = newChar.concurrentTitles.indexOf(pe.posName);
         if (_ci2 >= 0) newChar.concurrentTitles.splice(_ci2, 1);
       }

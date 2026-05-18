@@ -63,6 +63,8 @@ function extractEdictActions(edictText) {
   var appointVerbs = '(?:任命|擢升|擢任|擢拜|改任|起用|起复|授任|着任|特命|特授|授|命|令|擢|拜|召|迁|进|升|加|封|册封|册立|加封|除授|除|转)';
   var appointLinks = '(?:为|任|出任|担任|兼任|兼|领|主|掌|督|统|行|权|摄)';
   var appointPatterns = [
+    // 兼任/加兼：命 X 以旧职加兼新职 / X 兼任新职
+    new RegExp('(?:命|令|着|使|诏)?([\\u4e00-\\u9fa5]{2,6}?)(?:以[\\u4e00-\\u9fa5]{2,14})?(?:加兼|兼任|兼职|兼领|兼署|兼管|兼摄|兼)([\\u4e00-\\u9fa5]{2,14})', 'g'),
     // V + 名 + 连接词 + 职
     new RegExp(appointVerbs + '([\\u4e00-\\u9fa5]{2,6}?)' + appointLinks + '([\\u4e00-\\u9fa5]{2,14})', 'g'),
     // 着/令 + 名 + 职（无连接词·如"着韩爌内阁首辅"）
@@ -91,7 +93,13 @@ function extractEdictActions(edictText) {
       var key = char + '→' + pos;
       if (_appointSet[key]) continue;
       _appointSet[key] = true;
-      actions.appointments.push({ character: char, position: pos });
+      actions.appointments.push({
+        character: char,
+        position: pos,
+        concurrent: (typeof _offIsConcurrentAppointment === 'function')
+          ? _offIsConcurrentAppointment({ raw: m[0] }, m[0])
+          : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(m[0])
+      });
     }
   });
 
@@ -223,7 +231,8 @@ function applyEdictActions(actions) {
       var hit = _findPositionInOfficeTree(a.position);
       if (hit) {
         var prevHolder = hit.pos.holder || ((typeof _offAllHolders === 'function' && _offAllHolders(hit.pos)[0]) || '');
-        if (typeof _offVacateByCharName === 'function') {
+        var isConcurrent = !!a.concurrent || (typeof _offIsConcurrentAppointment === 'function' && _offIsConcurrentAppointment(a, a.raw || ''));
+        if (!isConcurrent && typeof _offVacateByCharName === 'function') {
           try { _offVacateByCharName(a.character, 'edict-appointment'); } catch(_vacE) {}
         }
         if (typeof _offSeatPersonInPosition === 'function') {
@@ -235,23 +244,28 @@ function applyEdictActions(actions) {
           hit.pos.holder = a.character;
         }
         // 更新 char 元数据
-        char.officialTitle = a.position;
-        char.position = a.position;
+        if (typeof _offAddCharOfficeTitle === 'function') {
+          _offAddCharOfficeTitle(char, a.position, { concurrent: isConcurrent });
+        } else if (!isConcurrent || !char.officialTitle) {
+          char.officialTitle = a.position;
+          char.position = a.position;
+        }
         if (!char.careerHistory) char.careerHistory = [];
-        char.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + a.position + '（' + hit.deptPath + '）' });
+        char.careerHistory.push({ turn: GM.turn, event: (isConcurrent ? '奉诏加兼 ' : '奉诏就任 ') + a.position + '（' + hit.deptPath + '）' });
         // 前任记录
         if (prevHolder && prevHolder !== a.character) {
           var prevCh = findCharByName(prevHolder);
           if (prevCh) {
             prevCh._displaced = { from: a.position, by: a.character, turn: GM.turn };
-            if (prevCh.officialTitle === a.position) prevCh.officialTitle = '';
+            if (typeof _offRemoveCharOfficeTitle === 'function') _offRemoveCharOfficeTitle(prevCh, a.position);
+            else if (prevCh.officialTitle === a.position) prevCh.officialTitle = '';
           }
         }
         // 官职公库 currentHead 跟着换
         if (hit.pos.publicTreasury) hit.pos.publicTreasury.currentHead = a.character;
         if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'appointment', '奉诏就任' + a.position);
         if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) CorruptionEngine.markAsRecentAppointment(char);
-        addEB('人事', a.character + '奉诏就任' + a.position + '（' + hit.deptPath + '）', { credibility: 'high' });
+        addEB('人事', a.character + (isConcurrent ? '奉诏加兼' : '奉诏就任') + a.position + '（' + hit.deptPath + '）', { credibility: 'high' });
         if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
         // ★ 远地角色启动赴任行程
         if (char.location) {
@@ -270,6 +284,7 @@ function applyEdictActions(actions) {
             char._travelArrival = GM.turn + Math.max(1, Math.ceil(_daysE / _dpvE));
             char._travelReason = '奉诏赴任 ' + a.position;
             char._travelAssignPost = (hit.deptPath || '') + '/' + a.position;
+            char._travelAssignConcurrent = !!isConcurrent;
             if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
             GM._chronicle.unshift({
               turn: GM.turn, date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
@@ -289,11 +304,16 @@ function applyEdictActions(actions) {
     }
     // Path 3: 即使都找不到·也要更新角色字段 + 记录（让 AI 至少知道玩家意图已生效）
     if (!done) {
-      char.officialTitle = a.position;
-      char.position = a.position;
+      var isConcurrentFallback = !!a.concurrent || (typeof _offIsConcurrentAppointment === 'function' && _offIsConcurrentAppointment(a, a.raw || ''));
+      if (typeof _offAddCharOfficeTitle === 'function') {
+        _offAddCharOfficeTitle(char, a.position, { concurrent: isConcurrentFallback });
+      } else if (!isConcurrentFallback || !char.officialTitle) {
+        char.officialTitle = a.position;
+        char.position = a.position;
+      }
       if (!char.careerHistory) char.careerHistory = [];
-      char.careerHistory.push({ turn: GM.turn, event: '奉诏就任 ' + a.position + '（官制中暂未立此衙门·视同特设）' });
-      addEB('人事', a.character + '奉诏就任' + a.position + '（特设）', { credibility: 'medium' });
+      char.careerHistory.push({ turn: GM.turn, event: (isConcurrentFallback ? '奉诏加兼 ' : '奉诏就任 ') + a.position + '（官制中暂未立此衙门·视同特设）' });
+      addEB('人事', a.character + (isConcurrentFallback ? '奉诏加兼' : '奉诏就任') + a.position + '（特设）', { credibility: 'medium' });
       if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
     }
   });
@@ -327,6 +347,9 @@ function applyEdictActions(actions) {
     if (char) {
       char.officialTitle = '';
       char.position = '';
+      char.officialTitles = [];
+      char.concurrentTitles = [];
+      char.concurrentTitle = '';
       if (!char.careerHistory) char.careerHistory = [];
       char.careerHistory.push({ turn: GM.turn, event: '奉诏免职' });
     }

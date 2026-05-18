@@ -65,6 +65,7 @@ const checks = [
   { name: 'office-dynastification', file: 'smoke-office-dynastification.js', estSec: 1, expectExit: 0 },
   { name: 'office-appointment-sync', file: 'smoke-office-appointment-sync.js', estSec: 1, expectExit: 0 },
   { name: 'loyalty-attribution', file: 'smoke-loyalty-attribution.js', estSec: 1, expectExit: 0 },
+  { name: 'office-loyalty-transfer', file: 'smoke-office-loyalty-transfer.js', estSec: 1, expectExit: 0 },
   { name: 'huangquan-attribution', file: 'smoke-huangquan-attribution.js', estSec: 1, expectExit: 0 },
   { name: 'memory-read-contract', file: 'smoke-memory-read-contract.js', estSec: 1, expectExit: 0 },
   { name: 'military-systems', file: 'smoke-military-systems.js', estSec: 1, expectExit: 0 },

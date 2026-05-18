@@ -2446,6 +2446,7 @@
 
         // 处理官制变动（AI可任命/罢免官员）
         if (p1.office_changes && Array.isArray(p1.office_changes) && GM.officeTree) {
+          var _officeMoveExitMap = _tmBuildOfficeMoveExitMap(GM, p1);
           p1.office_changes.forEach(function(oc) {
             if (!oc.dept || !oc.position || !oc.action) return;
             // 遍历官制树查找匹配的部门和职位
@@ -2628,11 +2629,13 @@
                         }
                       } else if (oc.action === 'dismiss') {
                         var dismissed = pos.holder;
+                        var _pairedMoveExit = dismissed ? _officeMoveExitMap[_tmOfficeDismissKey(oc.dept, oc.position, dismissed)] : null;
+                        var _isMoveExit = !!_pairedMoveExit || _tmIsNonPunitiveOfficeExitReason(oc.reason);
                         // 新模型：把该任职者从 actualHolders 移除，留占位
                         if (dismissed && typeof _offDismissPerson === 'function') _offDismissPerson(pos, dismissed);
                         else pos.holder = '';
                         if (dismissed) {
-                          addEB('\u7F62\u514D', dismissed + '\u88AB\u514D\u53BB' + oc.dept + oc.position + (oc.reason ? '(' + oc.reason + ')' : ''));
+                          addEB(_isMoveExit ? '\u8F6C\u4EFB' : '\u7F62\u514D', dismissed + (_isMoveExit ? '\u5378\u4EFB' : '\u88AB\u514D\u53BB') + oc.dept + oc.position + (oc.reason ? '(' + oc.reason + ')' : ''));
                           var dch = findCharByName(dismissed);
                           if (dch) {
                             // 致仕（退休）vs 罢免——情绪影响不同
@@ -2643,13 +2646,15 @@
                             dch._retired = true;
                             dch._retireTurn = GM.turn;
                             addEB('\u81F4\u4ED5', dismissed + '\u6069\u51C6\u81F4\u4ED5\u5F52\u7530' + (oc.reason ? '（' + oc.reason + '）' : ''));
+                          } else if (_isMoveExit) {
+                            dch.stress = Math.max(0, (dch.stress||0) - 3);
                           } else {
                             _tmApplyLoyaltyDelta(dch, -10, '\u88AB\u514D\u53BB\u5B98\u804C', 'office-dismiss-remove');
                             dch.stress = Math.min(100, (dch.stress||0) + 15);
                           }
                           if (dch.officialTitle === oc.position) dch.officialTitle = '';
-                          dch.title = _isRetire ? '致仕' : '';
-                          if (typeof recordCharacterArc === 'function') recordCharacterArc(dismissed, _isRetire ? 'retirement' : 'dismissal', (_isRetire ? '\u6069\u51C6\u81F4\u4ED5' : '\u88AB\u514D\u53BB') + oc.dept + oc.position + (oc.reason ? '：' + oc.reason : ''));
+                          dch.title = _isRetire ? '致仕' : (_isMoveExit ? dch.title : '');
+                          if (typeof recordCharacterArc === 'function') recordCharacterArc(dismissed, _isRetire ? 'retirement' : (_isMoveExit ? 'transfer' : 'dismissal'), (_isRetire ? '\u6069\u51C6\u81F4\u4ED5' : (_isMoveExit ? '\u8F6C\u4EFB\u5378\u804C' : '\u88AB\u514D\u53BB')) + oc.dept + oc.position + (oc.reason ? '：' + oc.reason : ''));
                           }
                           // 同步PostSystem
                           if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(dismissed);
@@ -4762,6 +4767,56 @@
     ctx.meta.timing.apply = Date.now() - _applyStart;
     return ctx;
   };
+
+  function _tmOfficeDismissKey(dept, position, holder) {
+    return [dept || "", position || "", holder || ""].join("\u001f");
+  }
+  function _tmFindOfficePosition(nodes, dept, position) {
+    var found = null;
+    (function walk(list) {
+      (list || []).forEach(function(node) {
+        if (found || !node) return;
+        if (node.name === dept && Array.isArray(node.positions)) {
+          node.positions.forEach(function(pos) {
+            if (!found && pos && pos.name === position) found = { node: node, pos: pos };
+          });
+        }
+        if (!found && Array.isArray(node.subs)) walk(node.subs);
+      });
+    })(nodes || []);
+    return found;
+  }
+  function _tmIsNonPunitiveOfficeExitReason(reason) {
+    var text = String(reason || "");
+    if (!text) return false;
+    if (/罪|贪|赃|劾|弹|罢|黜|夺|革|免职|下狱|系狱|流放|处决|赐死|失职|问罪|查办|处分/.test(text)) return false;
+    return /升任|晋升|擢|超擢|迁任|迁转|转任|调任|改任|补授|拜|授|入阁|起复|外放|赴任/.test(text);
+  }
+  function _tmBuildOfficeMoveExitMap(G, p1) {
+    var map = {};
+    if (!G || !p1 || !Array.isArray(p1.office_changes)) return map;
+    var appointees = {};
+    p1.office_changes.forEach(function(oc) {
+      if (!oc || oc.action !== "appoint" || !oc.person) return;
+      appointees[oc.person] = oc;
+    });
+    var assignments = Array.isArray(p1.office_assignments) ? p1.office_assignments : [];
+    p1.office_changes.forEach(function(oc) {
+      if (!oc || oc.action !== "dismiss" || !oc.dept || !oc.position) return;
+      var hit = _tmFindOfficePosition(G.officeTree || [], oc.dept, oc.position);
+      var holder = oc.person || oc.name || (hit && hit.pos && hit.pos.holder) || "";
+      if (!holder) return;
+      var paired = appointees[holder] || assignments.find(function(oa) {
+        if (!oa || oa.name !== holder) return false;
+        var act = oa.action || "appoint";
+        return act === "appoint" || act === "transfer" || act === "promote";
+      }) || null;
+      if (paired || _tmIsNonPunitiveOfficeExitReason(oc.reason)) {
+        map[_tmOfficeDismissKey(oc.dept, oc.position, holder)] = paired || { action: "office_move", reason: oc.reason || "" };
+      }
+    });
+    return map;
+  }
 
   function _tmNpcLedger() {
     return global.TM && global.TM.NPC && global.TM.NPC.ActionLedger ? global.TM.NPC.ActionLedger : null;

@@ -178,8 +178,8 @@
         var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, {
           apiKey: opts.key,
           priority: opts.repairPriority || opts.priority || "normal",
-          timeoutMs: opts.repairTimeoutMs || 90000,
-          maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 1
+          timeoutMs: opts.repairTimeoutMs || 45000,
+          maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 0
         });
         _checkTruncated(repairData, (label || "JSON") + " repair");
         if (repairData.usage && typeof TokenUsageTracker !== "undefined") TokenUsageTracker.record(repairData.usage);
@@ -205,7 +205,7 @@
     }
 
     async function _callEndturnAI(body, opts) {
-      opts = opts || {};
+      opts = _mergeCallPolicy(opts && opts.id, opts || {});
       var callUrl = opts.url || url;
       var key = opts.key || (P.ai && P.ai.key);
       var label = opts.label || 'endturn';
@@ -306,6 +306,7 @@
     ctx.subcalls._parseOrRepairJsonResult = _parseOrRepairJsonResult;
     ctx.subcalls._callEndturnAI = _callEndturnAI;
     ctx.subcalls._formatAIError = _formatAIError;
+    ctx.subcalls._getCallPolicy = ns.getCallPolicy;
     ctx.subcalls._modelTemp = P.ai.temp || (typeof ModelAdapter !== "undefined" ? ModelAdapter.getDefaultTemp() : 0.8);
     ctx.subcalls._modelFamily = (typeof ModelAdapter !== "undefined") ? ModelAdapter.detectFamily(P.ai.model) : "openai";
     _dbg("[TokenLimit] effective output cap:", _effectiveOutCap, "tokens | manual:", P.conf.maxOutputTokens || 0, "detected:", P.conf._detectedMaxOutput || 0);
@@ -410,9 +411,11 @@
           return;
         }
         var _start = Date.now();
-        // sc27 is a foreground quality pass, not the core turn result. Keep it bounded so
-        // one slow review call cannot hold the whole end-turn flow for 10+ minutes.
-        var _retries = (id === 'sc1') ? 2 : (id === 'sc27' ? 0 : 1);
+        // Per-call fetch timeouts already bound retry cost. Keep wrapper retries explicit
+        // so one slow optional pass cannot hold the whole end-turn flow for 10+ minutes.
+        // Contract note: legacy shape was id === 'sc27' ? 0 : 1; policy table now controls all ids.
+        var _policy = ns.getCallPolicy(id);
+        var _retries = (_policy && _policy.subcallRetries != null) ? _policy.subcallRetries : 0;
         var _stats = GM._aiDispatchStats;
         if (!_stats.byId[id]) _stats.byId[id] = { name:name, calls:0, totalTime:0, errors:0 };
         _stats.totalCalls++;
@@ -2250,8 +2253,10 @@
         // 流式·边接收边更新进度条（不尝试 partial JSON parse·避免数据损坏）
         _sc1Body.stream = true;
         try {
+          var _sc1PolicyForStream = ns.getCallPolicy('sc1');
           c1 = await callAIMessagesStream(_sc1Body.messages, _sc1Body.max_tokens !== undefined ? _sc1Body.max_tokens : _sc1BaseTok, {
             priority: 'critical',
+            timeoutMs: _sc1PolicyForStream.timeoutMs,
             temperature: _sc1Temp,
             extraBody: _modelFamily === 'openai' ? { response_format: { type: 'json_object' } } : undefined,
             onChunk: function(text) {
@@ -3001,5 +3006,31 @@
     }
     return ctx;
   };
+
+  var SAFE_CALL_DEFAULT = { priority:'normal', timeoutMs:90000, maxRetries:0, repairTimeoutMs:45000, repairMaxRetries:0, subcallRetries:0 };
+  function _p(priority, timeoutMs, repairTimeoutMs) { return { priority:priority, timeoutMs:timeoutMs, maxRetries:0, repairTimeoutMs:repairTimeoutMs || 45000, repairMaxRetries:0, subcallRetries:0 }; }
+  var CALL_POLICIES = {
+    sc0:_p('normal',90000), sc05:_p('normal',75000), sc1:_p('critical',150000,60000), sc1b:_p('high',90000), sc1c:_p('high',90000),
+    sc15:_p('normal',90000), sc_memwrite:_p('low',45000,30000), sc16:_p('normal',90000), sc17:_p('normal',90000), sc18:_p('normal',90000),
+    sc_audit:_p('normal',60000), sc19:_p('background',45000,30000), sc2:_p('normal',120000,60000), sc25:_p('high',75000),
+    sc27:_p('high',60000), sc07:_p('normal',90000), sc28:_p('low',45000,30000), sc_consolidate:_p('low',45000,30000),
+    compress_ai_memory:_p('low',45000,30000), compress_foreshadows:_p('low',45000,30000), compress_conversation:_p('low',45000,30000),
+    history_check:_p('critical',45000,30000)
+  };
+  ns.getCallPolicy = function(id) {
+    var policy = CALL_POLICIES[id] || {}, out = {};
+    Object.keys(SAFE_CALL_DEFAULT).forEach(function(k) { out[k] = SAFE_CALL_DEFAULT[k]; });
+    Object.keys(policy).forEach(function(k) { out[k] = policy[k]; });
+    return out;
+  };
+  function _mergeCallPolicy(id, opts) {
+    opts = opts || {};
+    var policy = ns.getCallPolicy(id || opts.id || ''), out = {};
+    Object.keys(opts).forEach(function(k) { out[k] = opts[k]; });
+    ['priority', 'timeoutMs', 'maxRetries', 'repairTimeoutMs', 'repairMaxRetries', 'repairPriority'].forEach(function(k) { if (out[k] == null && policy[k] != null) out[k] = policy[k]; });
+    if (out.repairPriority == null && policy.priority != null) out.repairPriority = policy.priority;
+    out._callPolicy = policy;
+    return out;
+  }
 
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

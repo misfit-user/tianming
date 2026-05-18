@@ -302,7 +302,7 @@
     var _buildFetchBody = ctx.subcalls._buildFetchBody;
     var _checkTruncated = ctx.subcalls._checkTruncated;
     var _parseOrRepairJsonResult = ctx.subcalls._parseOrRepairJsonResult || async function(raw) { return { parsed: (typeof extractJSON === "function" ? extractJSON(raw) : null), raw: raw, repaired: false }; };
-    var _callEndturnAI = ctx.subcalls._callEndturnAI || null;
+    var _callEndturnAI = ctx.subcalls._callEndturnAI || null, _getCallPolicy = ctx.subcalls._getCallPolicy || function() { return { priority: 'normal', timeoutMs: 90000, maxRetries: 0 }; };
     function _requireAIResponseOk(resp, label) {
       if (!resp || !resp.ok) {
         var err = new Error((label || 'AI') + ' HTTP ' + (resp ? resp.status : 'no response'));
@@ -311,7 +311,7 @@
       }
     }
     async function _callFollowupAI(body, opts) {
-      opts = opts || {};
+      opts = opts || {}; var _fp = _getCallPolicy(opts.id || ''); if (opts.priority == null) opts.priority = _fp.priority; if (opts.timeoutMs == null) opts.timeoutMs = _fp.timeoutMs; if (opts.maxRetries == null) opts.maxRetries = _fp.maxRetries;
       var callUrl = opts.url || url;
       var key = opts.key || (P.ai && P.ai.key);
       var label = opts.label || opts.id || 'endturn-followup';
@@ -322,7 +322,7 @@
             label: label,
             url: callUrl,
             key: key,
-            priority: opts.priority || 'normal',
+            priority: opts.priority,
             timeoutMs: opts.timeoutMs,
             maxRetries: opts.maxRetries
           });

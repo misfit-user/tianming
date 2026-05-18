@@ -711,9 +711,18 @@
       var result;
       try {
         if (typeof callAISmart === 'function') {
-          result = await callAISmart(prompt, 3000, { maxRetries: 2 });
+          result = await callAISmart(prompt, 3000, {
+            maxRetries: 0,
+            priority: 'background',
+            timeoutMs: 30000,
+            fetchMaxRetries: 0
+          });
         } else if (typeof callAI === 'function') {
-          result = await callAI(prompt, 3000);
+          result = await callAI(prompt, 3000, null, undefined, {
+            priority: 'background',
+            timeoutMs: 30000,
+            maxRetries: 0
+          });
         }
       } catch(e) {
         console.warn('[NPC 决策器] AI 调用失败', e);

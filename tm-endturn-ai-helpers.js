@@ -140,8 +140,9 @@ async function aiDigestLongTermActions() {
     '直接输出摘要·不要 JSON 不要前言。';
   try {
     var raw = await callAISmart(prompt, 1500, {
-      maxRetries: 2,
+      maxRetries: 0,
       minLength: 300,
+      priority: 'background',
       timeoutMs: 60000,
       fetchMaxRetries: 0
     });

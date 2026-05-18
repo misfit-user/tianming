@@ -99,6 +99,32 @@
     } catch(_npcbE) { try { console.warn('[pipeline.render-finalize] NPC behavior schedule failed', _npcbE); } catch(_){} }
   }
 
+  function _scheduleEndturnIdleBackground(label, fn) {
+    return new Promise(function(resolve) {
+      var attempts = 0;
+      function runWhenIdle() {
+        attempts++;
+        try {
+          if (typeof GM === 'undefined' || !GM || !GM.busy || attempts >= 240) {
+            Promise.resolve()
+              .then(fn)
+              .then(function(v) { resolve(v); })
+              .catch(function(e) {
+                try {
+                  if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(e, label || 'endturn idle background');
+                  else console.warn('[pipeline.plan-prefetch] ' + (label || 'background') + ' failed', e);
+                } catch(_) {}
+                resolve(null);
+              });
+            return;
+          }
+        } catch(_) {}
+        setTimeout(runWhenIdle, 1000);
+      }
+      setTimeout(runWhenIdle, 1000);
+    });
+  }
+
   async function _runPostRenderTurnOpeners(ctx) {
     _scheduleNpcBehaviorPostRender(ctx);
     try {
@@ -259,7 +285,9 @@
         ctx.subcalls = ctx.subcalls || {};
         try {
           if (typeof scThreeSystemsAI === 'function') {
-            ctx.subcalls.preThreeSystemsP = Promise.resolve(scThreeSystemsAI()).catch(function(e){
+            ctx.subcalls.preThreeSystemsP = _scheduleEndturnIdleBackground('endTurn] pre three systems AI', function() {
+              return scThreeSystemsAI();
+            }).catch(function(e){
               try { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] pre three systems AI') : console.warn('[endTurn] pre three systems AI failed', e); } catch(_){}
             });
           }
@@ -274,7 +302,9 @@
                 }
               }
             } catch(_rawLtE) { try { console.warn('[pipeline.plan-prefetch] long-term raw fallback failed', _rawLtE); } catch(_){} }
-            ctx.subcalls.preLongTermP = Promise.resolve(aiDigestLongTermActions()).catch(function(e){
+            ctx.subcalls.preLongTermP = _scheduleEndturnIdleBackground('endTurn] long-term digest', function() {
+              return aiDigestLongTermActions();
+            }).catch(function(e){
               try { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] long-term digest') : console.warn('[endTurn] long-term digest failed', e); } catch(_){}
             });
           }

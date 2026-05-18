@@ -302,7 +302,7 @@
     var _buildFetchBody = ctx.subcalls._buildFetchBody;
     var _checkTruncated = ctx.subcalls._checkTruncated;
     var _parseOrRepairJsonResult = ctx.subcalls._parseOrRepairJsonResult || async function(raw) { return { parsed: (typeof extractJSON === "function" ? extractJSON(raw) : null), raw: raw, repaired: false }; };
-    var _callEndturnAI = ctx.subcalls._callEndturnAI || null, _getCallPolicy = ctx.subcalls._getCallPolicy || function() { return { priority: 'normal', timeoutMs: 90000, maxRetries: 0 }; };
+    var _callEndturnAI = ctx.subcalls._callEndturnAI || null, _getCallPolicy = ctx.subcalls._getCallPolicy || function() { return { priority: 'normal', timeoutMs: 90000, maxRetries: 1 }; };
     function _requireAIResponseOk(resp, label) {
       if (!resp || !resp.ok) {
         var err = new Error((label || 'AI') + ' HTTP ' + (resp ? resp.status : 'no response'));
@@ -1099,11 +1099,11 @@
           max_tokens: _tok(3000)
         };
         if (_tmDetectModelFamily(_auCfg.model, _modelFamily) === 'openai') _auditBody.response_format = { type: 'json_object' };
-        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, priority: 'normal', timeoutMs: 60000, maxRetries: 0 });
+        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, priority: 'normal', timeoutMs: 60000, maxRetries: 1 });
         {
           var dataAu = _auditCall.data;
           var cAu = _auditCall.raw || '';
-          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 0 });
+          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 1 });
           if (_pAuParse && _pAuParse.raw) cAu = _pAuParse.raw;
           var pAu = _pAuParse ? _pAuParse.parsed : null;
           if (pAu) {
@@ -1281,7 +1281,7 @@
           if (_modelFamily === 'openai') _enrichBody.response_format = { type: 'json_object' };
           var _enrichCall = null;
           try {
-            _enrichCall = await _callFollowupAI(_enrichBody, { id: 'sc19', label: '角色势力细节补全', priority: 'background', timeoutMs: 45000, maxRetries: 0 });
+            _enrichCall = await _callFollowupAI(_enrichBody, { id: 'sc19', label: '角色势力细节补全', priority: 'background', timeoutMs: 45000, maxRetries: 1 });
           } catch(_enrichHttpE) {
             _dbg('[Enrich] call failed', _enrichHttpE && _enrichHttpE.message || _enrichHttpE);
             return;
@@ -1885,10 +1885,10 @@
         tp27 += '\u8BF7\u8FD4\u56DEJSON\uFF1A{"anachronisms":"\u53D1\u73B0\u7684\u65F6\u4EE3\u9519\u8BEF\u2014\u2014\u7528\u8BCD\u3001\u79F0\u8C13\u3001\u5236\u5EA6\u4E0D\u7B26\u5408\u65F6\u4EE3(100\u5B57)","name_errors":"\u6B63\u6587\u4E2D\u51FA\u73B0\u4F46\u4E0D\u5728\u89D2\u8272\u5217\u8868\u4E2D\u7684\u4EBA\u540D(\u5982\u6709)","enhancement":"\u53EF\u4EE5\u589E\u5F3A\u7684\u90E8\u5206\u2014\u2014\u54EA\u91CC\u53EF\u4EE5\u52A0\u5165\u66F4\u591A\u611F\u5B98\u7EC6\u8282\u3001\u5178\u6545\u5F15\u7528\u3001\u60C5\u611F\u6E32\u67D3(150\u5B57)","rewritten_passages":"\u91CD\u5199\u7684\u6BB5\u843D\u2014\u2014\u5C06\u6700\u5F31\u76842-3\u6BB5\u91CD\u5199\u5F97\u66F4\u597D(300\u5B57)","added_details":"\u5E94\u8865\u5145\u7684\u7EC6\u8282\u2014\u2014\u73AF\u5883\u63CF\u5199\u3001\u4EBA\u7269\u795E\u6001\u3001\u6C14\u6C1B\u70D8\u6258(200\u5B57)"}';
         var _sc27Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysP)},{role:"user",content:tp27}], temperature:0.6, max_tokens:_tok(3000)};
         if (_modelFamily === 'openai') _sc27Body.response_format = { type: 'json_object' };
-        var _sc27Call = await _callFollowupAI(_sc27Body, { id: 'sc27', label: '叙事质量审查', priority: 'high', timeoutMs: 60000, maxRetries: 0 });
+        var _sc27Call = await _callFollowupAI(_sc27Body, { id: 'sc27', label: '叙事质量审查', priority: 'high', timeoutMs: 60000, maxRetries: 1 });
         {
           var j27 = _sc27Call.data; _checkTruncated(j27, '叙事质量审查'); var c27 = _sc27Call.raw || '';
-          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '叙事质量审查', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'], priority: 'high', repairPriority: 'high', repairTimeoutMs: 45000, repairMaxRetries: 0 });
+          var _p27Parse = await _parseOrRepairJsonResult(c27, j27, '叙事质量审查', { url: url, key: P.ai.key, body: _sc27Body, expectedKeys: ['anachronisms', 'name_errors', 'rewritten_passages', 'added_details'], priority: 'high', repairPriority: 'high', repairTimeoutMs: 45000, repairMaxRetries: 1 });
           if (_p27Parse && _p27Parse.raw) c27 = _p27Parse.raw;
           var p27 = _p27Parse ? _p27Parse.parsed : null;
           if (p27) {

@@ -37,16 +37,16 @@ function assertPolicy(id, expected) {
 }
 
 assertPolicy('sc1', { priority: 'critical', timeoutMs: 150000, maxRetries: 1 });
-assertPolicy('sc1b', { priority: 'high', timeoutMs: 90000, maxRetries: 0 });
-assertPolicy('sc1c', { priority: 'high', timeoutMs: 90000, maxRetries: 0 });
-assertPolicy('sc1d', { priority: 'high', timeoutMs: 90000, maxRetries: 0 });
-assertPolicy('sc15', { priority: 'normal', timeoutMs: 90000, maxRetries: 0 });
-assertPolicy('sc27', { priority: 'high', timeoutMs: 60000, maxRetries: 0 });
-assertPolicy('sc28', { priority: 'low', timeoutMs: 45000, maxRetries: 0 });
-assertPolicy('sc_consolidate', { priority: 'low', timeoutMs: 45000, maxRetries: 0 });
+assertPolicy('sc1b', { priority: 'high', timeoutMs: 90000, maxRetries: 1 });
+assertPolicy('sc1c', { priority: 'high', timeoutMs: 90000, maxRetries: 1 });
+assertPolicy('sc1d', { priority: 'high', timeoutMs: 90000, maxRetries: 1 });
+assertPolicy('sc15', { priority: 'normal', timeoutMs: 90000, maxRetries: 1 });
+assertPolicy('sc27', { priority: 'high', timeoutMs: 60000, maxRetries: 1 });
+assertPolicy('sc28', { priority: 'low', timeoutMs: 45000, maxRetries: 1 });
+assertPolicy('sc_consolidate', { priority: 'low', timeoutMs: 45000, maxRetries: 1 });
 
 const unknown = policy('unknown');
-if (unknown.timeoutMs !== 90000 || unknown.maxRetries !== 0 || unknown.priority !== 'normal') {
+if (unknown.timeoutMs !== 90000 || unknown.maxRetries !== 1 || unknown.priority !== 'normal') {
   throw new Error('unknown subcall should get safe normal defaults');
 }
 

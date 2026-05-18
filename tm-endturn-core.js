@@ -135,7 +135,7 @@ async function _endTurnCore(){
       callAI(_compressPrompt, 500, null, 'primary', {
         priority: 'background',
         timeoutMs: 45000,
-        maxRetries: 0
+        maxRetries: 1
       }).then(function(txt) {
         if (txt && txt.length > 30) {
           GM._aiMemorySummaries.push({ turn: GM.turn, summary: txt.substring(0, 400) });
@@ -205,7 +205,7 @@ async function _endTurnCore(){
     ], Math.min(800, _wordLimit * 3), null, 'primary', {
       priority: 'background',
       timeoutMs: 45000,
-      maxRetries: 0
+      maxRetries: 1
     }).then(function(txt) {
       if (txt && txt.length > 20) {
         if (!GM.monthlyChronicles) GM.monthlyChronicles = [];
@@ -573,7 +573,7 @@ EndTurnHooks.register('after', function() {
     checkPrompt += '若玩家诏令完全合史·deviations 返回空数组 []·不要硬找问题。';
 
     var resp = await callAISmart(checkPrompt, 1500, {
-      temperature: 0.3, maxRetries: 2, priority: 'background', timeoutMs: 60000, fetchMaxRetries: 0,
+      temperature: 0.3, maxRetries: 2, priority: 'background', timeoutMs: 60000, fetchMaxRetries: 1,
       validator: function(c){ try{ var j=extractJSON(c); return j && Array.isArray(j.deviations); } catch(e){ return false; } }
     });
     var parsed = extractJSON(resp);

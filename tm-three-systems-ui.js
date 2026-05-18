@@ -651,7 +651,7 @@
       html += '<button class="bt bs" onclick="_tsNpcEnrich(\''+jsEsc(fac.name)+'\')" style="font-size:0.7rem;padding:0.25rem 0.5rem;margin-left:0.4rem;background:rgba(107,176,124,0.05);color:var(--celadon-400,#6bb07c);">仅润色文字 (cosmetic)</button>';
       // 上次 rationale 显示
       if (fac._lastLlmRationale) {
-        html += '<div style="font-size:0.72rem;color:var(--celadon-400,#6bb07c);margin-top:0.3rem;padding:0.4rem;background:rgba(107,176,124,0.05);border-left:2px solid var(--celadon-400,#6bb07c);">第'+fac._lastLlmRationale.turn+'回·LLM 主君考量: '+esc(fac._lastLlmRationale.text)+'</div>';
+        html += '<div style="font-size:0.72rem;color:var(--celadon-400,#6bb07c);margin-top:0.3rem;padding:0.4rem;background:rgba(107,176,124,0.05);border-left:2px solid var(--celadon-400,#6bb07c);">第'+fac._lastLlmRationale.turn+'回·LLM 主君考量: '+_renderAiFullText(fac._lastLlmRationale.text, 220)+'</div>';
       } else {
         html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-top:0.3rem;">点击触发 LLM 真做决策·影响 char.loyalty/treasury·~3-5s</div>';
       }
@@ -703,6 +703,23 @@
     }
     max = max || 160;
     return s.length > max ? s.slice(0, max) + '...' : s;
+  }
+
+  function _aiDbgText(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    try { return JSON.stringify(v, null, 2); } catch(_) { return String(v); }
+  }
+
+  function _renderAiFullText(v, max) {
+    var s = _aiDbgText(v);
+    if (!s) return '';
+    max = max || 180;
+    if (s.length <= max) return '<span>' + esc(s) + '</span>';
+    return '<details class="tm-ai-fulltext" style="margin-top:0.25rem;">'
+      + '<summary style="cursor:pointer;color:var(--txt-s);">' + esc(_aiDbgClip(s, max)) + '</summary>'
+      + '<pre style="white-space:pre-wrap;margin:0.4rem 0 0;padding:0.45rem;background:rgba(0,0,0,0.18);border:1px solid var(--bd,rgba(255,255,255,0.1));border-radius:4px;color:var(--txt);font:inherit;line-height:1.65;max-height:22rem;overflow:auto;">' + esc(s) + '</pre>'
+      + '</details>';
   }
 
   function _aiDbgCounts(rows) {
@@ -766,6 +783,15 @@
     html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>调度/动作</b><br>' + esc(dispatch && dispatch.jobs ? dispatch.jobs.length : 0) + ' job / ' + esc(ledger.length) + ' 条</div>';
     html += '</div>';
 
+    if (run && run.failure) {
+      var fail = run.failure || {};
+      html += '<div style="margin-bottom:0.8rem;background:rgba(184,80,60,0.1);padding:0.55rem;border-left:2px solid var(--red,#b04030);font-size:0.73rem;">';
+      html += '<b>LLM 失败诊断</b><br>kind=' + esc(fail.kind || '?') + ' / attempts=' + esc(fail.attempts || 0) + ' / maxTokens=' + esc(fail.maxTokens || 0) + ' / rawLength=' + esc(fail.rawLength || 0);
+      if (fail.possibleTruncation) html += ' <span style="color:var(--red,#b04030);">疑似输出截断</span>';
+      if (fail.rawPreview) html += '<div style="margin-top:0.35rem;">raw preview: ' + _renderAiFullText(fail.rawPreview, 260) + '</div>';
+      html += '</div>';
+    }
+
     if (candidateRank || fac._lastLlmApplySummary) {
       var s = fac._lastLlmApplySummary || {};
       html += '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5rem;margin-bottom:0.8rem;font-size:0.74rem;">';
@@ -778,9 +804,9 @@
     html += '<b style="color:var(--gold);">SC16 指令</b>';
     if (directive) {
       html += '<div>turn=' + esc(directive.turn || '?') + ' direct=' + esc(directive.hasDirectContent ? 'yes' : 'no') + '</div>';
-      (directive.directives || []).slice(0, 3).forEach(function(d){ html += '<div>指令：' + esc(_aiDbgClip(d.strategic_intent || d.must_follow || d.reason || d, 180)) + '</div>'; });
-      (directive.actions || []).slice(0, 4).forEach(function(a){ html += '<div>行动：' + esc(_aiDbgClip((a.faction || fac.name) + ' -> ' + (a.target || a.targetFaction || '') + ' ' + (a.action || a.intent || ''), 180)) + '</div>'; });
-      (directive.diplomacy || []).slice(0, 4).forEach(function(d){ html += '<div>外交：' + esc(_aiDbgClip((d.from || '?') + ' -> ' + (d.to || '?') + ' ' + (d.new_relation || d.type || ''), 160)) + '</div>'; });
+      (directive.directives || []).slice(0, 3).forEach(function(d){ html += '<div>指令：' + _renderAiFullText(d.strategic_intent || d.must_follow || d.reason || d, 180) + '</div>'; });
+      (directive.actions || []).slice(0, 4).forEach(function(a){ html += '<div>行动：' + _renderAiFullText((a.faction || fac.name) + ' -> ' + (a.target || a.targetFaction || '') + ' ' + (a.action || a.intent || ''), 180) + '</div>'; });
+      (directive.diplomacy || []).slice(0, 4).forEach(function(d){ html += '<div>外交：' + _renderAiFullText((d.from || '?') + ' -> ' + (d.to || '?') + ' ' + (d.new_relation || d.type || ''), 160) + '</div>'; });
     } else {
       html += '<div style="color:var(--txt-d);">暂无 SC16 指令账本。通常说明本局尚未跑过 full 势力自主推演，或本回合 SC16 失败。</div>';
     }
@@ -791,19 +817,19 @@
     }
 
     if (fac._lastLlmRationale) {
-      html += '<div style="margin-bottom:0.8rem;background:rgba(107,176,124,0.08);padding:0.55rem;border-left:2px solid var(--celadon-400,#6bb07c);font-size:0.75rem;"><b>上次君主考量 T' + esc(fac._lastLlmRationale.turn || '?') + '</b><br>' + esc(_aiDbgClip(fac._lastLlmRationale.text, 260)) + '</div>';
+      html += '<div style="margin-bottom:0.8rem;background:rgba(107,176,124,0.08);padding:0.55rem;border-left:2px solid var(--celadon-400,#6bb07c);font-size:0.75rem;"><b>上次君主考量 T' + esc(fac._lastLlmRationale.turn || '?') + '</b><br>' + _renderAiFullText(fac._lastLlmRationale.text, 260) + '</div>';
     }
 
     html += '<div style="margin-bottom:0.8rem;"><b style="color:var(--gold);font-size:0.78rem;">最近 LLM 动作账本</b>';
     html += '<div style="font-size:0.72rem;background:var(--bg-2);border-radius:4px;padding:0.45rem;">';
     if (ledger.length) ledger.slice(-18).reverse().forEach(function(r){
-      html += '<div style="border-bottom:1px dashed rgba(255,255,255,0.08);padding:0.25rem 0;"><b>T' + esc(r.turn || '?') + ' ' + esc(r.type || '?') + '</b> <span style="color:var(--txt-d);">' + esc(r.status || '?') + ' / ' + esc(r.source || '') + '</span><br><span>' + esc(_aiDbgClip(r.detail, 180)) + '</span></div>';
+      html += '<div style="border-bottom:1px dashed rgba(255,255,255,0.08);padding:0.25rem 0;"><b>T' + esc(r.turn || '?') + ' ' + esc(r.type || '?') + '</b> <span style="color:var(--txt-d);">' + esc(r.status || '?') + ' / ' + esc(r.source || '') + '</span><br>' + _renderAiFullText(r.detail, 180) + '</div>';
     });
     else html += '<div style="color:var(--txt-d);">暂无动作账本。</div>';
     html += '</div></div>';
 
     html += '<div><b style="color:var(--gold);font-size:0.78rem;">近事/起居注写入</b><div style="font-size:0.72rem;background:var(--bg-2);border-radius:4px;padding:0.45rem;">';
-    if (qiju.length) qiju.forEach(function(q){ html += '<div>[' + esc(q._source || '?') + '] T' + esc(q.turn || '?') + ' ' + esc(_aiDbgClip(q.content || q.text || q.zhengwen || q, 180)) + '</div>'; });
+    if (qiju.length) qiju.forEach(function(q){ html += '<div>[' + esc(q._source || '?') + '] T' + esc(q.turn || '?') + ' ' + _renderAiFullText(q.content || q.text || q.zhengwen || q, 180) + '</div>'; });
     else html += '<div style="color:var(--txt-d);">暂无精细化近事写入。</div>';
     html += '</div></div>';
     html += '</div>';

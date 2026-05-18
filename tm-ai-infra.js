@@ -913,7 +913,7 @@ async function callAISmart(prompt, maxTok, options) {
       var result = await callAI(currentPrompt, maxTok, signal, options.tier, {
         priority: options.priority || 'normal',
         timeoutMs: options.timeoutMs,
-        maxRetries: (options.fetchMaxRetries != null) ? options.fetchMaxRetries : 0
+        maxRetries: (options.fetchMaxRetries != null) ? options.fetchMaxRetries : 1
       });
 
       // Append to existing content

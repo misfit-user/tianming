@@ -155,7 +155,7 @@ var ChronicleSystem = {
     callAI(prompt, 1500, null, 'primary', {
       priority: 'background',
       timeoutMs: 60000,
-      maxRetries: 0
+      maxRetries: 1
     }).then(function(result) {
       var parsed = extractJSON(result);
       if (parsed) {

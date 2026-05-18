@@ -90,7 +90,7 @@
       var result = await global.callAI(combined, 200, null, 'secondary', {
         priority: 'background',
         timeoutMs: 45000,
-        maxRetries: 0
+        maxRetries: 1
       });  // 走次要 API 省主 quota
       return result || null;
     } catch (e) {

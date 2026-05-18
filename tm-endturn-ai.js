@@ -226,7 +226,7 @@
           apiKey: opts.key,
           priority: opts.repairPriority || opts.priority || "normal",
           timeoutMs: opts.repairTimeoutMs || 45000,
-          maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 0
+          maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 1
         });
         _checkTruncated(repairData, (label || "JSON") + " repair");
         if (repairData.usage && typeof TokenUsageTracker !== "undefined") TokenUsageTracker.record(repairData.usage);
@@ -467,9 +467,9 @@
         var _start = Date.now();
         // Per-call fetch timeouts already bound retry cost. Keep wrapper retries explicit
         // so one slow optional pass cannot hold the whole end-turn flow for 10+ minutes.
-        // Contract note: legacy shape was id === 'sc27' ? 0 : 1; policy table now controls all ids.
+        // Contract note: policy table now controls all wrapper retry counts.
         var _policy = ns.getCallPolicy(id);
-        var _retries = (_policy && _policy.subcallRetries != null) ? _policy.subcallRetries : 0;
+        var _retries = (_policy && _policy.subcallRetries != null) ? _policy.subcallRetries : 1;
         var _stats = GM._aiDispatchStats;
         if (!_stats.byId[id]) _stats.byId[id] = { name:name, calls:0, totalTime:0, errors:0 };
         _stats.totalCalls++;
@@ -3253,8 +3253,8 @@
     return ctx;
   };
 
-  var SAFE_CALL_DEFAULT = { priority:'normal', timeoutMs:90000, maxRetries:0, repairTimeoutMs:45000, repairMaxRetries:0, subcallRetries:0 };
-  function _p(priority, timeoutMs, repairTimeoutMs, maxRetries) { return { priority:priority, timeoutMs:timeoutMs, maxRetries:maxRetries || 0, repairTimeoutMs:repairTimeoutMs || 45000, repairMaxRetries:0, subcallRetries:0 }; }
+  var SAFE_CALL_DEFAULT = { priority:'normal', timeoutMs:90000, maxRetries:1, repairTimeoutMs:45000, repairMaxRetries:1, subcallRetries:1 };
+  function _p(priority, timeoutMs, repairTimeoutMs, maxRetries) { return { priority:priority, timeoutMs:timeoutMs, maxRetries:maxRetries == null ? 1 : maxRetries, repairTimeoutMs:repairTimeoutMs || 45000, repairMaxRetries:1, subcallRetries:1 }; }
   var CALL_POLICIES = {
     sc0:_p('normal',90000), sc05:_p('normal',75000), sc1:_p('critical',150000,60000,1), sc1b:_p('high',90000), sc1c:_p('high',90000), sc1d:_p('high',90000,45000),
     sc15:_p('normal',90000), sc_memwrite:_p('low',45000,30000), sc16:_p('normal',90000), sc17:_p('normal',90000), sc18:_p('normal',90000),

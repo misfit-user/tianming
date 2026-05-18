@@ -203,7 +203,7 @@ async function checkKejuTrigger() {
       maxRetries: 1,
       priority: 'high',
       timeoutMs: 30000,
-      fetchMaxRetries: 0
+      fetchMaxRetries: 1
     });
     var data = JSON.parse(result.replace(/```json|```/g, '').trim());
 

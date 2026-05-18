@@ -27,7 +27,7 @@
     npcAiPrecisionConcurrency: 2,
     npcAiPrecisionRetryAttempts: 2,
     npcAiPrecisionTimeoutMs: 30000,
-    npcAiPrecisionMaxTokens: 3000
+    npcAiPrecisionMaxTokens: 6000
   };
 
   function _migrateCadence(conf) {

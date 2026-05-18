@@ -698,7 +698,7 @@ function _showEndgameScreen(type, failGoal) {
     callAI(prompt, 600, null, 'primary', {
       priority: 'background',
       timeoutMs: 45000,
-      maxRetries: 0
+      maxRetries: 1
     }).then(function(r) {
       var el = document.getElementById('_taishigong');
       if (el) el.innerHTML = '\u592A\u53F2\u516C\u66F0\uFF1A<br>' + escHtml(r).replace(/\u3010/g, '<br><b style="color:' + accentColor + ';">\u3010').replace(/\u3011/g, '\u3011</b>');

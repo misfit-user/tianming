@@ -67,6 +67,7 @@ function settingsTextSeparationTest() {
   const settings = src('tm-faction-npc-settings.js');
   assert(settings.indexOf('npcAiCosmeticEnrich') >= 0, 'settings should expose a separate cosmetic enrich switch');
   assert(settings.indexOf('isCosmeticEnrichEnabled') >= 0, 'settings should expose a cosmetic enrich capability check');
+  assert(settings.indexOf('npcAiPrecisionMaxTokens: 6000') >= 0, 'precision faction LLM should default to a larger JSON budget');
   assert(patches.indexOf('每回合最多 8 次润色') < 0, 'npcAiPrecision UI copy must not describe true decision LLM as polish');
   assert(patches.indexOf('真实改动数据') >= 0 || patches.indexOf('真决策') >= 0, 'npcAiPrecision UI copy should say this is a true data-changing decision path');
 }
@@ -231,6 +232,22 @@ async function failureDiagnosticsTest() {
   assert(row && row.status === 'failed', 'failed run should stay in faction LLM ledger');
   assert(row.failure && row.failure.kind, 'failed run should record failure kind');
   assert(row.failure.rawPreview && row.failure.rawPreview.indexOf('plain text') >= 0, 'failed run should record raw output preview');
+
+  const ctx2 = makeFactionLlmContext();
+  const fac2 = { name: 'TruncNpc', treasury: { money: 1000 }, derivedStrength: { value: 20 } };
+  ctx2.P = {
+    playerInfo: { factionName: 'PlayerRealm' },
+    ai: { key: 'fake' },
+    conf: { npcAiPrecision: true, npcAiPrecisionRetryAttempts: 1, npcAiPrecisionMaxTokens: 1200 }
+  };
+  ctx2.GM = { turn: 34, facs: [fac2], chars: [], qijuHistory: [], _facIndex: { TruncNpc: { chars: [], parties: {}, metrics: {} } } };
+  ctx2.callAI = function() {
+    return Promise.resolve('{"rationale":"' + 'truncated-json-body '.repeat(90));
+  };
+  await ctx2.TM.FactionNpcLlmDecision.decideFor('TruncNpc', { source: 'manual', turn: 34, maxAttempts: 1 });
+  const row2 = ctx2.GM._npcFactionLlmLedger.runs.TruncNpc;
+  assert(row2 && row2.failure && row2.failure.rawLength > 1000, 'failed run should record raw output length');
+  assert(row2.failure.possibleTruncation === true, 'failed run should flag likely truncated JSON output');
 }
 
 function inTurnForcedPoolTest() {

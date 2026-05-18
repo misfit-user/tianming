@@ -141,7 +141,7 @@ async function aiPlanFirstTurnEvents() {
       maxRetries: 2,
       minLength: 400,
       timeoutMs: 60000,
-      fetchMaxRetries: 0
+      fetchMaxRetries: 1
     });
     var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
     if (!parsed || !Array.isArray(parsed.candidateEvents)) { console.warn('[aiFTE] 解析失败'); return; }
@@ -202,11 +202,11 @@ async function aiDigestLongTermActions() {
     '直接输出摘要·不要 JSON 不要前言。';
   try {
     var raw = await callAISmart(prompt, 1500, {
-      maxRetries: 0,
+      maxRetries: 1,
       minLength: 300,
       priority: 'background',
       timeoutMs: 60000,
-      fetchMaxRetries: 0
+      fetchMaxRetries: 1
     });
     if (raw && raw.length > 100) {
       GM._longTermDigest = { text: raw.trim(), generatedAt: GM.turn, turn: GM.turn, _fromAI: true };
@@ -347,7 +347,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     var raw = await callAISmart(prompt, 2000, {
       maxRetries: 2,
       timeoutMs: 60000,
-      fetchMaxRetries: 0
+      fetchMaxRetries: 1
     });
     if (!raw) return;
     var parsed;

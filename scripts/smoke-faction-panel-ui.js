@@ -64,8 +64,11 @@ ctx.GM.facs[1].npcProvincePolicies = [{ turn:3, action:'province_policy', provin
 ctx.GM.facs[1].npcFiscalActions = [{ turn:3, action:'fiscal_policy', resource:'money', amount:120000, reason:'War levy', effect:{ before:100000, after:220000 } }];
 ctx.GM.facs[1].npcIntrigueActions = [{ turn:3, intrigue:'spread_rumor', targetFaction:'MingCourt', pressure:3, reason:'Covert rumor' }];
 ctx.GM.facs[1].npcRebellionPolicies = [{ turn:3, policy:'incite', targetFaction:'MingBorder', support:2, reason:'Border rebels' }];
-ctx.GM.facs[1]._npcLlmActionLedger = [{ turn:3, type:'diplomacy', status:'applied', source:'native', detail:{ to:'MingCourt', reason:'Debug ledger row' } }];
-ctx.GM.facs[1]._lastLlmRationale = { turn:3, text:'Debug rationale' };
+const longRationale = 'Debug rationale ' + 'rationale-detail '.repeat(24) + 'FULL_RATIONALE_SENTINEL';
+const longLedgerDetail = { to:'MingCourt', reason:'Debug ledger row ' + 'ledger-detail '.repeat(22) + 'FULL_LEDGER_SENTINEL' };
+const longQiju = 'Debug precision news ' + 'precision-news-detail '.repeat(18) + 'FULL_QIJU_SENTINEL';
+ctx.GM.facs[1]._npcLlmActionLedger = [{ turn:3, type:'diplomacy', status:'applied', source:'native', detail:longLedgerDetail }];
+ctx.GM.facs[1]._lastLlmRationale = { turn:3, text:longRationale };
 ctx.GM.facs[1]._lastLlmApplySummary = { turn:3, attemptedActions:3, appliedActions:2, skippedActions:1, mergedActions:0 };
 ctx.GM._sc16FactionDirectives = { turn:3, source:'sc16', byFaction:{} };
 ctx.GM._sc16FactionDirectives.byFaction[ctx.GM.facs[1].name] = {
@@ -76,7 +79,7 @@ ctx.GM._sc16FactionDirectives.byFaction[ctx.GM.facs[1].name] = {
   actions:[{ faction:ctx.GM.facs[1].name, target:'MingCourt', action:'Debug action' }],
   diplomacy:[{ from:ctx.GM.facs[1].name, to:'MingCourt', new_relation:'tense' }]
 };
-ctx.GM.qijuHistory = [{ turn:3, _source:'npc-bridge', _facName:ctx.GM.facs[1].name, content:'Debug precision news' }];
+ctx.GM.qijuHistory = [{ turn:3, _source:'npc-bridge', _facName:ctx.GM.facs[1].name, content:longQiju }];
 ctx.window = ctx;
 ctx.globalThis = ctx;
 ctx.TM.FactionActionEngine = {
@@ -101,6 +104,10 @@ assert(typeof ctx._tsInspectFactionAiDebug === 'function', 'faction AI debug pan
 ctx._tsInspectFactionAiDebug(ctx.GM.facs[1].name);
 assert(captured && captured.html.includes('势力 AI 调试') && captured.html.includes('Debug sc16 directive') && captured.html.includes('Debug ledger row') && captured.html.includes('Debug precision news'),
   'faction AI debug panel should surface sc16 directive, ledger and precision news');
+assert(captured && captured.html.includes('FULL_RATIONALE_SENTINEL') && captured.html.includes('FULL_LEDGER_SENTINEL') && captured.html.includes('FULL_QIJU_SENTINEL'),
+  'faction AI debug panel should keep full long LLM text available instead of clipping it away');
+assert(captured && captured.html.includes('tm-ai-fulltext'),
+  'faction AI debug panel should render long LLM text in expandable full-text blocks');
 
 assert(captured && captured.html.includes('候选评分') && captured.html.includes('上次执行汇总') && captured.html.includes('ACTION_CONTRACT'),
   'faction AI debug panel should surface ranking, apply summary and action contract');

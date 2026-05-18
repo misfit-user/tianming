@@ -712,16 +712,16 @@
       try {
         if (typeof callAISmart === 'function') {
           result = await callAISmart(prompt, 3000, {
-            maxRetries: 0,
+            maxRetries: 1,
             priority: 'background',
             timeoutMs: 30000,
-            fetchMaxRetries: 0
+            fetchMaxRetries: 1
           });
         } else if (typeof callAI === 'function') {
           result = await callAI(prompt, 3000, null, undefined, {
             priority: 'background',
             timeoutMs: 30000,
-            maxRetries: 0
+            maxRetries: 1
           });
         }
       } catch(e) {

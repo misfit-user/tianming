@@ -2422,7 +2422,7 @@ async function batchNpcDecisions(npcs, context, options) {
   var result = await callAI(prompt, options.maxTokens || 2500, null, options.tier || null, {
     priority: options.priority || 'background',
     timeoutMs: options.timeoutMs || 60000,
-    maxRetries: 0
+    maxRetries: 1
   });
   var parsed = extractJSON(result);
 

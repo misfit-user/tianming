@@ -246,6 +246,8 @@
           kind: diagnostics.kind || 'unknown',
           error: diagnostics.error || diagnostics.reason || reason || '',
           rawPreview: diagnostics.rawPreview || '',
+          rawLength: diagnostics.rawLength || 0,
+          possibleTruncation: diagnostics.possibleTruncation === true,
           attempts: diagnostics.attempts || 0,
           maxTokens: diagnostics.maxTokens || 0
         };
@@ -1021,8 +1023,20 @@
     var conf = (global.P && P.conf) || {};
     var raw = opts.maxTokens != null ? opts.maxTokens : conf.npcAiPrecisionMaxTokens;
     var n = _safeNum(raw);
-    if (!n) n = 3000;
+    if (!n) n = 6000;
     return Math.max(1200, Math.min(12000, Math.floor(n)));
+  }
+
+  function _looksLikeTruncatedLlmOutput(raw, maxTokens) {
+    var s = String(raw || '');
+    if (!s) return false;
+    var trimmed = s.replace(/\s+$/g, '');
+    var open = (trimmed.match(/\{/g) || []).length;
+    var close = (trimmed.match(/\}/g) || []).length;
+    if (open > close) return true;
+    if (/[:,\["]$/.test(trimmed)) return true;
+    if (trimmed.charAt(0) === '{' && trimmed.charAt(trimmed.length - 1) !== '}') return true;
+    return trimmed.length > Math.max(900, Math.floor((maxTokens || 1200) * 0.75)) && close === 0;
   }
 
   async function _callLLMDecision(prompts, opts) {
@@ -1036,29 +1050,34 @@
     var combined = prompts.system + '\n\n' + prompts.user;
     var lastError = '';
     var lastRawPreview = '';
+    var lastRawLength = 0;
+    var lastPossibleTruncation = false;
     var failureKind = 'parse';
     for (var i = 0; i < attempts; i++) {
       try {
         var promptText = combined;
         if (i > 0) promptText += '\n\nFORMAT_ERROR_RETRY: 上次输出无法解析为 strict JSON。请只返回一个 JSON object，不要 markdown，不要解释。错误: ' + lastError;
+        if (i > 0 && lastPossibleTruncation) promptText += '\nTRUNCATION_RETRY: previous output looked cut off. Return a shorter but complete JSON object; trim narrative/summary/reason fields first.';
         var raw = await _withTimeout(global.callAI(promptText, maxTokens, null, 'secondary', {
           priority: 'background',
           timeoutMs: timeoutMs || undefined,
-          maxRetries: 0
+          maxRetries: 1
         }), timeoutMs);
-        lastRawPreview = String(raw || '').slice(0, 600);
+        lastRawPreview = String(raw || '').slice(0, 1200);
+        lastRawLength = String(raw || '').length;
+        lastPossibleTruncation = _looksLikeTruncatedLlmOutput(raw, maxTokens);
         if (!raw) { lastError = 'empty response'; failureKind = 'empty'; continue; }
         var parsed = _parseDecisionJson(raw);
         if (parsed) return { parsed:parsed, diagnostics:{ kind:'ok', attempts:i + 1, maxTokens:maxTokens } };
         lastError = 'no JSON object in response';
-        failureKind = 'parse';
+        failureKind = lastPossibleTruncation ? 'truncated_json' : 'parse';
       } catch (e) {
         lastError = (e && e.message) || String(e || 'parse failed');
-        failureKind = /timeout/i.test(lastError) ? 'timeout' : 'call_or_parse';
+        failureKind = lastPossibleTruncation ? 'truncated_json' : (/timeout/i.test(lastError) ? 'timeout' : 'call_or_parse');
         try { console.warn('[npc-llm-decision] parse/call failed attempt ' + (i + 1), lastError); } catch(_){}
       }
     }
-    return { parsed:null, diagnostics:{ kind:failureKind, error:lastError, rawPreview:lastRawPreview, attempts:attempts, maxTokens:maxTokens } };
+    return { parsed:null, diagnostics:{ kind:failureKind, error:lastError, rawPreview:lastRawPreview, rawLength:lastRawLength, possibleTruncation:lastPossibleTruncation, attempts:attempts, maxTokens:maxTokens } };
   }
 
   var VALID_MEM_TYPES = ['军务','政务','民生','经济','人事','密奏'];

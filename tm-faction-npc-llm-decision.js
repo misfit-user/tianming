@@ -1041,7 +1041,11 @@
       try {
         var promptText = combined;
         if (i > 0) promptText += '\n\nFORMAT_ERROR_RETRY: 上次输出无法解析为 strict JSON。请只返回一个 JSON object，不要 markdown，不要解释。错误: ' + lastError;
-        var raw = await _withTimeout(global.callAI(promptText, maxTokens, null, 'secondary', { priority: 'background' }), timeoutMs);
+        var raw = await _withTimeout(global.callAI(promptText, maxTokens, null, 'secondary', {
+          priority: 'background',
+          timeoutMs: timeoutMs || undefined,
+          maxRetries: 0
+        }), timeoutMs);
         lastRawPreview = String(raw || '').slice(0, 600);
         if (!raw) { lastError = 'empty response'; failureKind = 'empty'; continue; }
         var parsed = _parseDecisionJson(raw);

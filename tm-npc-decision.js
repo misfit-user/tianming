@@ -1979,7 +1979,11 @@ async function batchNpcDecisions(npcs, context) {
   prompt += '  - innerThought\uFF1A\u5185\u5FC3\u72EC\u767D\uFF0C\u4F53\u73B0\u6027\u683C\uFF08\u91CE\u5FC3\u8005\u7B97\u8BA1\u3001\u5FE0\u81E3\u5FE7\u56FD\u3001\u6028\u6068\u8005\u6697\u6068\u3001\u5BD2\u95E8\u8005\u4E0D\u5FFF\uFF09\n';
   prompt += '  - \u4E8C\u8005\u53EF\u4EE5\u4E00\u81F4\uFF08\u516C\u5FE0\u4F53\u56FD\uFF09\u4E5F\u53EF\u4EE5\u77DB\u76FE\uFF08\u8868\u9762\u5FE0\u8BDA\u5B9E\u5219\u56FE\u8C0B\uFF09\n';
 
-  var result = await callAI(prompt, 2500);
+  var result = await callAI(prompt, 2500, null, null, {
+    priority: 'background',
+    timeoutMs: 60000,
+    maxRetries: 0
+  });
   var parsed = extractJSON(result);
 
   if (Array.isArray(parsed)) return parsed;

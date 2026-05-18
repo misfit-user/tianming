@@ -107,14 +107,20 @@ assert(/历史检查'[\s\S]{0,260}priority:\s*'critical'/.test(followupSrc), 'hi
 assert(/伏笔记忆'[\s\S]{0,260}priority:\s*'high'/.test(followupSrc), 'sc25 JSON repair keeps high priority');
 assert(/世界快照'[\s\S]{0,260}priority:\s*'low'/.test(followupSrc), 'sc28 JSON repair keeps low priority');
 assert(/callAIWithTools\(_reconcilePrompt[\s\S]*priority:\s*'high'/.test(applySrc), 'foreground reconciliation tool call is queued as high priority');
+assert(/callAIWithTools\(_reconcilePrompt[\s\S]*timeoutMs:\s*60000[\s\S]*maxRetries:\s*0/.test(applySrc), 'foreground reconciliation tool call has bounded timeout and no inner retry amplification');
 assert(/global\.callAI\(promptText,\s*maxTokens,\s*null,\s*'secondary',\s*\{\s*priority:\s*'background'/.test(factionDecisionSrc), 'background faction NPC LLM uses background queue priority');
+assert(/global\.callAI\(promptText,\s*maxTokens,\s*null,\s*'secondary',[\s\S]*timeoutMs:\s*timeoutMs \|\| undefined[\s\S]*maxRetries:\s*0/.test(factionDecisionSrc), 'background faction NPC LLM forwards configured timeout to fetch layer');
 assert(/callAI\(_compressPrompt,\s*500,\s*null,\s*'primary',\s*\{\s*priority:\s*'background'/.test(coreSrc), 'tail AI memory summary uses background queue priority');
+assert(/callAI\(_compressPrompt,\s*500,\s*null,\s*'primary',[\s\S]*timeoutMs:\s*45000[\s\S]*maxRetries:\s*0/.test(coreSrc), 'tail AI memory summary is bounded to avoid queue stalls');
 assert(/callAISmart\(checkPrompt,\s*1500,[\s\S]*priority:\s*'background'/.test(coreSrc), 'post-turn historical deviation check uses background priority');
+assert(/callAISmart\(checkPrompt,\s*1500,[\s\S]*timeoutMs:\s*60000[\s\S]*fetchMaxRetries:\s*0/.test(coreSrc), 'post-turn historical deviation check has bounded fetch attempts');
 assert(!/fetch\(_mUrl/.test(coreSrc), 'monthly chronicle no longer bypasses the shared AI queue');
 assert(/callAIMessages\(\[[\s\S]*priority:\s*'background'/.test(coreSrc), 'monthly chronicle uses background queue priority');
+assert(/callAIMessages\(\[[\s\S]*timeoutMs:\s*45000[\s\S]*maxRetries:\s*0/.test(coreSrc), 'monthly chronicle is bounded to avoid queue stalls');
 assert((postTurnSrc.match(/priority:\s*'background'/g) || []).length >= 4, 'post-turn optional memory jobs use background queue priority');
 assert(/callAI\(prompt,\s*1500,\s*null,\s*'primary',\s*\{\s*priority:\s*'background'/.test(chronicleSrc), 'chronicle year generation uses background queue priority');
 assert(/global\.callAI\(combined,\s*200,\s*null,\s*'secondary',\s*\{\s*priority:\s*'background'/.test(factionEnrichSrc), 'NPC faction enrichment uses background queue priority');
-assert(/callAISmart\(prompt,\s*300,\s*\{maxRetries:\s*1,\s*priority:\s*'high'\}/.test(kejuRuntimeSrc), 'foreground keju trigger check uses high priority');
+assert(/callAISmart\(prompt,\s*300,[\s\S]*priority:\s*'high'/.test(kejuRuntimeSrc), 'foreground keju trigger check uses high priority');
+assert(/callAISmart\(prompt,\s*300,[\s\S]*timeoutMs:\s*30000[\s\S]*fetchMaxRetries:\s*0/.test(kejuRuntimeSrc), 'foreground keju trigger check has bounded fetch attempts');
 
 console.log('[smoke-endturn-performance-optimizations] pass assertions=' + passed.value);

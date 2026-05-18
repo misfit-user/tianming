@@ -199,7 +199,12 @@ async function checkKejuTrigger() {
       '返回JSON：{"shouldTrigger":true/false,"reason":"原因"}\n\n' +
       '只输出JSON。';
 
-    var result = await callAISmart(prompt, 300, {maxRetries: 1, priority: 'high'});
+    var result = await callAISmart(prompt, 300, {
+      maxRetries: 1,
+      priority: 'high',
+      timeoutMs: 30000,
+      fetchMaxRetries: 0
+    });
     var data = JSON.parse(result.replace(/```json|```/g, '').trim());
 
     if (data.shouldTrigger) {

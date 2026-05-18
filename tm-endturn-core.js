@@ -127,7 +127,11 @@ async function _endTurnCore(){
     // 使用callAI而非raw fetch——自动适配所有模型（OpenAI/Anthropic/本地）
     // 后台摘要不应抢占玩家正在等待的前台推演通道。
     if (typeof callAI === 'function') {
-      callAI(_compressPrompt, 500, null, 'primary', { priority: 'background' }).then(function(txt) {
+      callAI(_compressPrompt, 500, null, 'primary', {
+        priority: 'background',
+        timeoutMs: 45000,
+        maxRetries: 0
+      }).then(function(txt) {
         if (txt && txt.length > 30) {
           GM._aiMemorySummaries.push({ turn: GM.turn, summary: txt.substring(0, 400) });
           if (GM._aiMemorySummaries.length > 10) GM._aiMemorySummaries = GM._aiMemorySummaries.slice(-10);
@@ -193,7 +197,11 @@ async function _endTurnCore(){
     callAIMessages([
       { role: 'system', content: '你是' + (P.dynasty || '') + _narrator },
       { role: 'user', content: _mPrompt }
-    ], Math.min(800, _wordLimit * 3), null, 'primary', { priority: 'background' }).then(function(txt) {
+    ], Math.min(800, _wordLimit * 3), null, 'primary', {
+      priority: 'background',
+      timeoutMs: 45000,
+      maxRetries: 0
+    }).then(function(txt) {
       if (txt && txt.length > 20) {
         if (!GM.monthlyChronicles) GM.monthlyChronicles = [];
         GM.monthlyChronicles.push({
@@ -560,7 +568,7 @@ EndTurnHooks.register('after', function() {
     checkPrompt += '若玩家诏令完全合史·deviations 返回空数组 []·不要硬找问题。';
 
     var resp = await callAISmart(checkPrompt, 1500, {
-      temperature: 0.3, maxRetries: 2, priority: 'background',
+      temperature: 0.3, maxRetries: 2, priority: 'background', timeoutMs: 60000, fetchMaxRetries: 0,
       validator: function(c){ try{ var j=extractJSON(c); return j && Array.isArray(j.deviations); } catch(e){ return false; } }
     });
     var parsed = extractJSON(resp);

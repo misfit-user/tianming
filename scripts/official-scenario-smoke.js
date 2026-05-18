@@ -127,6 +127,32 @@ function assertHoujinCharacterExpansion(sc) {
   assert(houjinNames.size >= 11, 'expected at least 11 Later Jin characters after expansion, got ' + houjinNames.size);
 }
 
+function assertTianqiClassPopulationAndCao(sc) {
+  const chars = new Map((sc.characters || []).map((c) => [c && c.name, c]));
+  ['曹文诏', '曹变蛟'].forEach((name) => {
+    const ch = chars.get(name);
+    assert(ch, 'official scenario missing expanded Cao character: ' + name);
+    assert(ch.faction === '明朝廷', name + ' should belong to 明朝廷');
+    assert(ch.portrait && ch.portrait.indexOf('assets/portraits/tianqi7/') === 0, name + ' missing tianqi portrait');
+    assert(ch.aiPersonaText && ch.innerThought && ch.bio, name + ' missing detailed persona fields');
+  });
+
+  const cwz = chars.get('曹文诏');
+  const cbj = chars.get('曹变蛟');
+  assert(cwz.valor >= 90 && cwz.military >= 80, '曹文诏 should be elite military talent');
+  assert(cbj.valor >= 85 && cbj.military >= 75, '曹变蛟 should be high-potential military talent');
+
+  const suspicious = (sc.classes || [])
+    .filter((cls) => cls && (typeof cls.populationShare !== 'number' || cls.populationShare <= 0 || cls.populationShare >= 0.5))
+    .map((cls) => cls.name + ':' + cls.populationShare);
+  assert(suspicious.length === 0, 'class populationShare should be explicit and below 50%: ' + suspicious.join(', '));
+
+  const missingEstimate = (sc.classes || [])
+    .filter((cls) => cls && (!cls.populationEstimate || String(cls.size || '').indexOf('占') < 0))
+    .map((cls) => cls.name);
+  assert(missingEstimate.length === 0, 'classes missing estimate/share size text: ' + missingEstimate.join(', '));
+}
+
 function assertNpcAdminQuality(sc) {
   const ah = sc.adminHierarchy || {};
   Object.keys(ah).forEach((key) => {
@@ -239,6 +265,7 @@ function main() {
   const sc = loaded.scenario;
   assertFactionConsistency(sc);
   assertHoujinCharacterExpansion(sc);
+  assertTianqiClassPopulationAndCao(sc);
   assertNpcAdminQuality(sc);
   const ctx = makeContext(sc);
 

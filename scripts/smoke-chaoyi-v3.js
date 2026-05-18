@@ -16,6 +16,10 @@ if (!/禁止原文照搬|不得原文照搬/.test(v3src)) throw new Error('v3 pr
 if (!/function issueAgendaHint\(iss\)/.test(v3src)) throw new Error('v3 fallback must rewrite currentIssues via issueAgendaHint');
 if (/content:\s*iss\.description/.test(v3src) || /detail:\s*iss\.description/.test(v3src)) throw new Error('v3 fallback must not use issue.description as memorial content');
 if (!/禁止原文照搬/.test(legacySrc) || /须出现在议程/.test(legacySrc)) throw new Error('legacy prompt must treat currentIssues as hints only');
+if (!/function _cc2_collectAgendaSources/.test(legacySrc)) throw new Error('legacy prompt must expose shared agenda source collector');
+if (!/常朝候选来源池/.test(legacySrc) || !/百官奏疏/.test(legacySrc) || !/近事起居/.test(legacySrc)) throw new Error('agenda prompt must include non-currentIssues source pool');
+if (!/陛下诏令/.test(legacySrc) || !/朱批奏疏/.test(legacySrc) || !/外部势力/.test(legacySrc) || !/主角行止/.test(legacySrc)) throw new Error('agenda source pool must include edicts, memorial replies, external forces, and player actions');
+if (!/_cc2_collectAgendaSources\(\{ max: 12, includeHeld: true \}\)/.test(v3src)) throw new Error('v3 fallback/system prompt must read shared agenda source pool');
 
 // ─── 沙盒构造（mock GM/P/DOM/callAI 等）───
 function makeSandbox(opts) {

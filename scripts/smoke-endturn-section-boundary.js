@@ -46,8 +46,8 @@ const sec2 = findLines(aiText, /\u00a72\s*Sub-call\s*/).filter(function(line) { 
 const sec3 = findLines(aiText, /\u00a73\s*Sub-calls?\s*sc0/).filter(function(line) { return line > 20; });
 assert(sec2.length === 1, 'section 2 marker appears once in tm-endturn-ai.js, count=' + sec2.length);
 assert(sec3.length === 1, 'section 3 marker appears once in tm-endturn-ai.js, count=' + sec3.length);
-assert(sec2[0] >= 100 && sec2[0] <= 360, 'section 2 marker in ai module near setup bridge, actual L' + sec2[0]);
-assert(sec3[0] >= 240 && sec3[0] <= 560, 'section 3 marker in ai module after infra, actual L' + sec3[0]);
+assert(sec2[0] >= 100 && sec2[0] <= 430, 'section 2 marker in ai module near setup bridge, actual L' + sec2[0]);
+assert(sec3[0] >= 240 && sec3[0] <= 650, 'section 3 marker in ai module after infra, actual L' + sec3[0]);
 
 const sec5 = findLines(followupText, /\u00a75\s*sc15-sc27\s*/).filter(function(line) { return line > 25; });
 const followupRunHead = findLines(followupText, /ns\.run\s*=\s*async\s+function\s*\(ctx\)/);
@@ -62,8 +62,8 @@ assert(sec5[0] > followupRunHead[0] && sec5[0] - followupRunHead[0] <= 120,
 
 assert(aiInferLines.length >= 200 && aiInferLines.length <= 280,
   'ai-infer line count after P7-zeta 200-280, actual ' + aiInferLines.length);
-assert(aiLines.length >= 2600 && aiLines.length <= 3050,
-  'tm-endturn-ai.js line count after P7-delta 2600-3050, actual ' + aiLines.length);
+assert(aiLines.length >= 2600 && aiLines.length <= 3200,
+  'tm-endturn-ai.js line count after P7-delta 2600-3200, actual ' + aiLines.length);
 assert(applyLines.length >= 4550 && applyLines.length <= 4850,
   'tm-endturn-apply.js line count after P7-epsilon 4550-4850, actual ' + applyLines.length);
 assert(followupLines.length >= 2200 && followupLines.length <= 2750,

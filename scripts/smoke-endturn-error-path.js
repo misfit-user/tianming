@@ -38,6 +38,22 @@ assert(src.indexOf('Repair this end-turn JSON result') >= 0 &&
   'JSON repair prompt preserves facts and forbids new numeric/fatal changes');
 assert(src.indexOf('_jsonRepairs') >= 0 && src.indexOf('_jsonRepairFailures') >= 0,
   'JSON repair success/failure diagnostics recorded');
+assert(src.indexOf('function _buildSc1EmergencyFallback') >= 0,
+  'SC1 has emergency structured fallback builder');
+assert(src.indexOf('SC1/SC1b/SC1c 均无有效数据') >= 0 &&
+       src.indexOf('_emergencyFallback') >= 0,
+  'SC1 empty result can degrade to a commit-safe emergency ledger');
+assert(src.indexOf('critical call failed·will continue to fallback chain') >= 0,
+  'SC1 critical call failure remains inside fallback chain instead of aborting the subcall body');
+assert(src.indexOf('AI请求超时或被浏览器中断') >= 0 && src.indexOf('ABORT') >= 0,
+  'AbortSignal errors are normalized before user-facing AI failure toasts');
+assert(src.indexOf('function _normalizeParsedJsonForExpected') >= 0 &&
+       src.indexOf('_jsonNormalizations') >= 0,
+  'malformed-but-useful AI JSON is normalized before expected-key validation');
+assert(src.indexOf("copy('shizhengji'") >= 0 &&
+       src.indexOf("copy('resource_changes'") >= 0 &&
+       src.indexOf("copy('char_updates'") >= 0,
+  'SC1 parser accepts common alias fields for core structured output');
 
 // ─── partial-result handling·sub-call 失败仍尝试后续 ───
 // _runSubcall 内应有 try-catch·sub-call 失败不阻塞 pipeline

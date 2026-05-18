@@ -111,6 +111,41 @@
       }
       return false;
     }
+    function _normalizeParsedJsonForExpected(parsed, expectedKeys) {
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return parsed;
+      var keys = expectedKeys || [];
+      var obj = parsed;
+      if (!_hasExpectedJsonKey(obj, keys)) {
+        ['result','data','output','response','json'].some(function(k) {
+          if (obj[k] && typeof obj[k] === 'object' && !Array.isArray(obj[k])) { obj = obj[k]; return true; }
+          return false;
+        });
+      }
+      var changed = obj !== parsed;
+      function copy(to, froms) {
+        if (Object.prototype.hasOwnProperty.call(obj, to)) return;
+        for (var i = 0; i < froms.length; i++) {
+          var k = froms[i];
+          if (Object.prototype.hasOwnProperty.call(obj, k)) { obj[to] = obj[k]; changed = true; return; }
+        }
+      }
+      copy('shizhengji', ['shizheng','szj','shizhengji_text','political_record','chronicle','时政记','时政','史记','本回合时政']);
+      copy('zhengwen', ['text','content','narrative','story','houren','houren_xishuo','hourenXishuo','正文','叙事正文','后人戏说']);
+      copy('events', ['event_list','eventLog','eventLogs','事件','事件列表']);
+      copy('resource_changes', ['resourceChanges','resources','variable_changes','stat_changes','资源变化','数值变化']);
+      copy('char_updates', ['character_updates','characters','npc_updates','人物变化','角色变化']);
+      if (obj.event && !obj.events) { obj.events = [obj.event]; changed = true; }
+      if (changed) {
+        obj._formatNormalized = true;
+        try {
+          if (!GM._turnAiResults) GM._turnAiResults = {};
+          if (!Array.isArray(GM._turnAiResults._jsonNormalizations)) GM._turnAiResults._jsonNormalizations = [];
+          GM._turnAiResults._jsonNormalizations.push({ keys: Object.keys(obj).slice(0, 12), expected: keys.slice(0), at: Date.now() });
+          if (GM._turnAiResults._jsonNormalizations.length > 20) GM._turnAiResults._jsonNormalizations.shift();
+        } catch(_) {}
+      }
+      return obj;
+    }
     function _trimRepairText(text, maxLen) {
       text = String(text || "");
       maxLen = maxLen || 9000;
@@ -123,6 +158,10 @@
       var msg = (err && err.message) ? String(err.message) : String(err || "unknown error");
       var status = (err && (err.status || err.statusCode)) || "";
       var snippet = "";
+      if (/aborted without reason|aborterror|signal is aborted|the operation was aborted/i.test(msg)) {
+        msg = "AI请求超时或被浏览器中断";
+        status = status || "ABORT";
+      }
       try {
         var raw = err && err.lastRaw;
         if (raw) {
@@ -143,6 +182,7 @@
       opts = opts || {};
       var expectedKeys = opts.expectedKeys || [];
       var parsed = (typeof extractJSON === "function") ? extractJSON(raw) : null;
+      parsed = _normalizeParsedJsonForExpected(parsed, expectedKeys);
       var finishReason = _jsonFinishReason(data);
       var truncated = finishReason === "length" || finishReason === "max_tokens" || _looksJsonUnclosed(raw);
       var valid = _hasExpectedJsonKey(parsed, expectedKeys);
@@ -186,6 +226,7 @@
         var repairRaw = "";
         if (repairData.choices && repairData.choices[0] && repairData.choices[0].message) repairRaw = repairData.choices[0].message.content || "";
         var repairParsed = (typeof extractJSON === "function") ? extractJSON(repairRaw) : null;
+        repairParsed = _normalizeParsedJsonForExpected(repairParsed, expectedKeys);
         var repairValid = _hasExpectedJsonKey(repairParsed, expectedKeys);
         if (repairValid) {
           if (!GM._turnAiResults) GM._turnAiResults = {};
@@ -493,6 +534,22 @@
         for (var _i = 0; _i < _limit; _i++) _workers.push(_worker());
         await Promise.all(_workers);
         _dbg('[SubcallBatch] ' + label + ' finished ' + tasks.length + ' tasks in ' + ((Date.now() - _started) / 1000).toFixed(1) + 's, concurrency=' + _limit);
+      }
+
+      function _buildSc1EmergencyFallback(reason) {
+        var _turn = (GM && GM.turn) || 1;
+        var _dateText = ''; try { _dateText = (typeof getTSText === 'function') ? getTSText(_turn) : ''; } catch(_) {}
+        var _why = reason && (reason.message || String(reason)) || 'SC1 returned no usable structured JSON';
+        var _brief = (_dateText ? (_dateText + '，') : '') + '本回合主推演结构化返回暂缺，系统以保守账本推进：未凭空增减资源、人物、势力或军政结果，玩家已提交事务保留至后续推演继续处理。';
+        var _p = { shizhengji:_brief, zhengwen:_brief, shilu_text:_brief, szj_title:'时移事去', szj_summary:'主推演结构化结果暂缺，系统采用保守降级账本。', turn_summary:'SC1 emergency fallback: no synthetic gameplay deltas applied.', player_status:'朝局暂按既有状态延续。', player_inner:'', events:[{ type:'AI降级', title:'主推演结构化结果暂缺', text:_brief, turn:_turn }], _g2Fallback:true, _emergencyFallback:true, _fallbackReason:String(_why).slice(0, 200) };
+        ['changes','resource_changes','variable_changes','char_updates','character_deaths','npc_actions','npc_interactions','npc_letters','npc_correspondence','cultural_works','faction_changes','faction_events','faction_relation_changes','faction_interactions','fiscal_adjustments','office_assignments','office_dismissals','personnel_changes','army_changes','province_changes','table_updates','suggestions'].forEach(function(k){ _p[k] = []; });
+        try {
+          if (!GM._turnAiResults) GM._turnAiResults = {};
+          if (!Array.isArray(GM._turnAiResults._fallbacks)) GM._turnAiResults._fallbacks = [];
+          GM._turnAiResults._fallbacks.push({ id:'sc1', type:'emergency', reason:_p._fallbackReason, turn:_turn, at:Date.now() });
+          if (GM._turnAiResults._fallbacks.length > 20) GM._turnAiResults._fallbacks.shift();
+        } catch(_) {}
+        return _p;
       }
 
       var _queuedPostTurnSubcalls = [];
@@ -2254,6 +2311,8 @@
       var _streamSC1 = (P.ai && P.ai.stream_sc1 !== false);  // 默认开·可通过 P.ai.stream_sc1=false 关闭
       var c1 = "";
       var data1 = null;
+      var _sc1Call = null;
+      var _sc1CriticalError = null;
       if (_streamSC1) {
         // 流式·边接收边更新进度条（不尝试 partial JSON parse·避免数据损坏）
         _sc1Body.stream = true;
@@ -2274,25 +2333,39 @@
           // 流式模式无 usage·不记 token
         } catch(_se) {
           _dbg('[SC1 stream] failed·fallback to fetch:', _se);
+          _sc1CriticalError = _se;
           _streamSC1 = false;
         }
       }
       if (!_streamSC1) {
         delete _sc1Body.stream;  // 确保 fallback 不发 stream:true
-        var _sc1Call = await _callEndturnAI(_sc1Body, {
-          id: 'sc1',
-          label: '结构化数据',
-          expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'],
-          priority: 'critical'
-        });
-        data1 = _sc1Call.data;
-        c1 = _sc1Call.raw || '';
+        try {
+          _sc1Call = await _callEndturnAI(_sc1Body, {
+            id: 'sc1',
+            label: '结构化数据',
+            expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'],
+            priority: 'critical'
+          });
+          data1 = _sc1Call.data;
+          c1 = _sc1Call.raw || '';
+        } catch(_sc1FetchErr) {
+          _sc1CriticalError = _sc1FetchErr;
+          data1 = null;
+          c1 = c1 || '';
+          console.warn('[SC1] critical call failed·will continue to fallback chain:', _sc1FetchErr && (_sc1FetchErr.message || _sc1FetchErr));
+        }
       }
-      _checkTruncated(data1, '结构化数据');
       p1=null; // 赋值到外层声明的p1
-      var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'], priority: 'critical' });
-      if (_p1Parse && _p1Parse.raw) c1 = _p1Parse.raw;
-      p1 = _p1Parse ? _p1Parse.parsed : null;
+      try {
+        if (data1) _checkTruncated(data1, '结构化数据');
+        var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['shizhengji', 'events', 'resource_changes', 'char_updates'], priority: 'critical' });
+        if (_p1Parse && _p1Parse.raw) c1 = _p1Parse.raw;
+        p1 = _p1Parse ? _p1Parse.parsed : null;
+      } catch(_sc1ParseErr) {
+        _sc1CriticalError = _sc1ParseErr;
+        p1 = null;
+        console.warn('[SC1] parse/repair failed·will continue to fallback chain:', _sc1ParseErr && (_sc1ParseErr.message || _sc1ParseErr));
+      }
       GM._turnAiResults.subcall1_raw = c1;
       GM._turnAiResults.subcall1 = p1;
 
@@ -2969,6 +3042,12 @@
           p1._g2Fallback = true;
           if (typeof toast === 'function') toast('⚠ AI主推演未返回有效数据·已从子调用合成最小史记·建议检查模型输出能力');
         }
+        if (!p1 || (!p1.shizhengji && !p1.zhengwen)) {
+          console.warn('[G2·降级] SC1/SC1b/SC1c 均无有效数据·启用保守应急账本');
+          p1 = _buildSc1EmergencyFallback(_sc1CriticalError);
+          if (typeof toast === 'function') toast('⚠ AI主推演未返回有效结构·已启用保守应急账本，本回合会继续；详见AI诊断');
+        }
+        GM._turnAiResults.subcall1 = p1;
       }
 
       // ═══════════════════════════════════════════════════════════

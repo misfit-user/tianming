@@ -314,10 +314,518 @@ function addCYBubble(name,text,isSystem){
 // 来源：原 tm-chaoyi-v2.js L20-99·v2 §1 常朝已物理删除·只 prompts 复用
 // changchao (v3) _cc3_buildAgendaFromGM 调 _cc2_buildAgendaPrompt + _cc2_fallbackAgenda
 
+function _cc2_cleanAgendaText(v, n) {
+  var s = String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+  if (!n || s.length <= n) return s;
+  return s.slice(0, n);
+}
+
+function _cc2_agendaStatusOpen(status) {
+  var s = String(status == null ? 'pending' : status).toLowerCase();
+  if (!s) return true;
+  if (/resolved|approved|rejected|completed|complete|done|closed|cancel/.test(s)) return false;
+  return /pending|review|new|submit|traveling|returned|arrived|unread|open|hold|defer/.test(s) || s === 'normal';
+}
+
+function _cc2_agendaDedupKey(row) {
+  return _cc2_cleanAgendaText((row.title || '') + '|' + (row.detail || row.content || ''), 80).replace(/\s+/g, '');
+}
+
+function _cc2_pushAgendaSource(out, seen, row) {
+  if (!row) return;
+  var title = _cc2_cleanAgendaText(row.title || row.topic || row.subject || row.name || '', 24);
+  var detail = _cc2_cleanAgendaText(row.detail || row.content || row.text || row.summary || row.description || row.narrative || '', 120);
+  if (!title && detail) title = _cc2_cleanAgendaText(detail, 12);
+  if (!title && !detail) return;
+  var source = _cc2_cleanAgendaText(row.source || '朝政', 12) || '朝政';
+  var key = _cc2_agendaDedupKey({ title: title, detail: detail || source });
+  if (key && seen[key]) return;
+  if (key) seen[key] = 1;
+  out.push({
+    source: source,
+    title: title || '未名事务',
+    dept: _cc2_cleanAgendaText(row.dept || row.department || row.category || row.type || '', 16),
+    presenter: _cc2_cleanAgendaText(row.presenter || row.from || row.author || row.proposer || '', 16),
+    detail: detail || '请有司据实核奏。',
+    urgency: _cc2_cleanAgendaText(row.urgency || row.priority || '', 12),
+    type: _cc2_cleanAgendaText(row.agendaType || row.kind || row.type || '', 18),
+    importance: typeof row.importance === 'number' ? row.importance : (row.urgency === 'urgent' || row.priority === 'urgent' ? 8 : 5),
+    controversial: typeof row.controversial === 'number' ? row.controversial : 4,
+    ref: row.ref || ''
+  });
+}
+
+function _cc2_collectAgendaSources(opts) {
+  opts = opts || {};
+  var max = opts.max || 18;
+  var out = [], seen = {};
+  var g = (typeof GM !== 'undefined' && GM) ? GM : {};
+  var playerFac = (typeof P !== 'undefined' && P && P.playerInfo && P.playerInfo.factionName) || '';
+  function _recentRows(arr, n) {
+    return Array.isArray(arr) ? arr.slice(-Math.max(1, n || 4)).reverse() : [];
+  }
+  function _rowDetail(o) {
+    if (!o || typeof o !== 'object') return '';
+    var keys = ['summary','content','text','detail','description','reason','result','ruling','reply','trigger','policy','action','intent','topic'];
+    for (var i = 0; i < keys.length; i++) {
+      if (o[keys[i]]) return o[keys[i]];
+    }
+    if (o.effects && typeof o.effects === 'object') return Object.keys(o.effects).slice(0, 4).map(function(k){ return k + ':' + JSON.stringify(o.effects[k]); }).join('；');
+    if (o.effect && typeof o.effect === 'object') return Object.keys(o.effect).slice(0, 4).map(function(k){ return k + ':' + JSON.stringify(o.effect[k]); }).join('；');
+    return '';
+  }
+
+  if (opts.includeHeld !== false && Array.isArray(g._ccHeldItems)) {
+    g._ccHeldItems.slice(0, 5).forEach(function(h) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '留中续议',
+        title: h.title || h.topic,
+        dept: h.dept || h.department || h.type,
+        presenter: h.presenter || h.from || '上次常朝',
+        detail: h.content || h.detail || h.summary,
+        agendaType: h.type || 'request',
+        importance: 8,
+        controversial: h.controversial || 5,
+        ref: 'ccHeld'
+      });
+    });
+  }
+
+  if (Array.isArray(g._pendingTinyiTopics)) {
+    g._pendingTinyiTopics.slice(0, 4).forEach(function(t) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '廷议待议',
+        title: t.title || t.topic || '廷议未决',
+        dept: t.dept || '朝议',
+        presenter: t.from || '廷议',
+        detail: t.detail || t.content || t.topic,
+        agendaType: 'request',
+        importance: 7,
+        controversial: 6,
+        ref: 'pendingTinyi'
+      });
+    });
+  }
+
+  _recentRows(g._edictTracker, 6).filter(function(e) {
+    return e && _cc2_agendaStatusOpen(e.status || 'pending');
+  }).forEach(function(e) {
+    var stat = e.status ? '状态 ' + e.status + '。' : '';
+    var fb = e.feedback ? '反馈：' + e.feedback + '。' : '';
+    _cc2_pushAgendaSource(out, seen, {
+      source: '陛下诏令',
+      title: e.title || e.category || '本朝诏令',
+      dept: e.category || e.assignee || '御前',
+      presenter: '御前',
+      detail: stat + _cc2_cleanAgendaText(e.content || e.text || '', 110) + (fb ? '；' + fb : ''),
+      agendaType: e._crossFaction || e._diplomaticMsg ? 'warning' : 'request',
+      importance: e.status === 'obstructed' || e.status === 'partial' ? 8 : 6,
+      controversial: /严办|罢|诛|抄|征|税|党|弹劾|外交|攻|讨/.test(String(e.content || '')) ? 7 : 4,
+      ref: e.id || ''
+    });
+  });
+
+  _recentRows(g._approvedMemorials, 6).forEach(function(m) {
+    if (!m) return;
+    var actionText = m.action || m.status || '已批';
+    _cc2_pushAgendaSource(out, seen, {
+      source: '朱批奏疏',
+      title: (m.from || '臣工') + '所奏',
+      dept: m.type || m.referredTo || '奏疏',
+      presenter: m.from || '臣工',
+      detail: '陛下已作“' + actionText + '”批复；奏由：' + _cc2_cleanAgendaText(m.content || m.text || '', 72) + (m.reply ? '；朱批：' + _cc2_cleanAgendaText(m.reply, 48) : ''),
+      agendaType: actionText === 'rejected' ? 'confrontation' : 'request',
+      importance: actionText === 'court_debate' || actionText === 'referred' ? 8 : 5,
+      controversial: /rejected|驳|弹劾|劾|罪|贪|党/.test(actionText + String(m.content || '') + String(m.reply || '')) ? 7 : 4,
+      ref: 'approvedMemorial'
+    });
+  });
+
+  _recentRows(g.playerDecisions, 6).forEach(function(d) {
+    if (!d) return;
+    _cc2_pushAgendaSource(out, seen, {
+      source: d.category === 'edict' ? '陛下诏令' : '主角行止',
+      title: d.category || '玩家决策',
+      dept: '御前',
+      presenter: '陛下',
+      detail: (d.desc || d.description || '') + (d.consequences ? '；后果：' + d.consequences : ''),
+      agendaType: d.category === 'appointment' ? 'personnel' : 'routine',
+      importance: 6,
+      controversial: /严办|诛|罢|抄|弹劾|战|税|党/.test(String(d.desc || d.description || '')) ? 7 : 3,
+      ref: 'playerDecisions'
+    });
+  });
+
+  try {
+    var liveAction = (typeof window !== 'undefined' && window.TM_PHASE8_FORMAL && window.TM_PHASE8_FORMAL.playerAction) ? window.TM_PHASE8_FORMAL.playerAction : '';
+    if (liveAction) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '主角行止',
+        title: '本回合行止',
+        dept: '御前',
+        presenter: '陛下',
+        detail: liveAction,
+        agendaType: 'routine',
+        importance: 5,
+        controversial: /召见|校阅|宴|祭|巡|严办|抄|诛|微服/.test(String(liveAction)) ? 5 : 2,
+        ref: 'phase8PlayerAction'
+      });
+    }
+  } catch (_) {}
+
+  var mems = [];
+  if (Array.isArray(g.memorials)) mems = mems.concat(g.memorials);
+  if (Array.isArray(g.zoushuPool)) mems = mems.concat(g.zoushuPool);
+  mems.filter(function(m) {
+    return m && _cc2_agendaStatusOpen(m.status) && !m._commitApplied && !m._phase8Fallback;
+  }).slice(0, 8).forEach(function(m) {
+    _cc2_pushAgendaSource(out, seen, {
+      source: '百官奏疏',
+      title: m.title || m.topic || m.subject || ((m.from || m.author || '臣工') + '奏事'),
+      dept: m.dept || m.department || m.type || m.category || '通政司',
+      presenter: m.from || m.author || m.proposer || m.official || '',
+      detail: m.content || m.text || m.body || m.desc || m.summary,
+      urgency: m.urgency || m.priority,
+      agendaType: m.subtype || m.type || 'request',
+      importance: m.priority === 'urgent' ? 8 : 6,
+      controversial: /弹劾|劾|争|党|罪|贪|叛/.test(String(m.title || m.content || '')) ? 8 : 4,
+      ref: m.id || ''
+    });
+  });
+
+  (g.currentIssues || []).filter(function(i) {
+    return i && i.status === 'pending' && i.allocatedTo !== 'tinyi';
+  }).slice(0, 6).forEach(function(i) {
+    _cc2_pushAgendaSource(out, seen, {
+      source: '御案时政',
+      title: i.title || i.topic,
+      dept: i.dept || i.category || '时政',
+      presenter: i.proposer || i.from || '通政司',
+      detail: i.description || i.summary || i.brief || i.narrative || i.text || i.detail,
+      urgency: i.urgency || i.severity,
+      agendaType: 'routine',
+      importance: i.severity === 'urgent' ? 8 : 6,
+      controversial: i.controversial || 5,
+      ref: i.id || ''
+    });
+  });
+
+  var letters = [];
+  if (Array.isArray(g.letters)) letters = letters.concat(g.letters);
+  if (Array.isArray(g._pendingNpcLetters)) letters = letters.concat(g._pendingNpcLetters);
+  letters.filter(function(l) {
+    if (!l) return false;
+    if (l._npcInitiated === false && !l.from) return false;
+    return _cc2_agendaStatusOpen(l.status || 'pending') && !l._cc2AgendaUsed;
+  }).slice(-5).forEach(function(l) {
+    _cc2_pushAgendaSource(out, seen, {
+      source: '鸿雁来书',
+      title: l.title || l.subject || l.subjectLine || ((l.from || l.sender || '远臣') + '来书'),
+      dept: l.dept || l.letterType || l.type || '传书',
+      presenter: l.from || l.sender || l.author || '',
+      detail: l.content || l.text || l.body || l.summary || l.suggestion,
+      urgency: l.urgency,
+      agendaType: l.type || l.letterType || 'request',
+      importance: l.urgency === 'urgent' || l.urgency === 'extreme' ? 8 : 5,
+      controversial: /弹劾|密|急|军|叛|乱/.test(String(l.content || l.title || '')) ? 7 : 3,
+      ref: l.id || ''
+    });
+  });
+
+  _recentRows(g._npcInternalActionHistory, 8).forEach(function(a) {
+    if (!a) return;
+    var raw = [a.kind, a.from, a.to, a.intent, a.visibility].join(' ');
+    if (!/impeach|slander|expose|frame|clique|petition|弹劾|诽谤|揭发|构陷|结党|朋党|党/.test(raw)) return;
+    _cc2_pushAgendaSource(out, seen, {
+      source: '政斗弹劾',
+      title: (a.from || '某臣') + (a.to ? '涉' + a.to : '政争'),
+      dept: '都察院',
+      presenter: a.from || '科道',
+      detail: a.intent || a.visibility || a.kind || '朝中政争已露端倪。',
+      agendaType: 'confrontation',
+      importance: 7,
+      controversial: 9,
+      ref: a.actionId || ''
+    });
+  });
+
+  if (Array.isArray(g.parties)) {
+    g.parties.slice(0, 8).forEach(function(party) {
+      if (!party) return;
+      var agenda = party.currentAgenda || party.shortGoal || party.longGoal || '';
+      if (!agenda && !(party.rivalParty || party.status)) return;
+      _cc2_pushAgendaSource(out, seen, {
+        source: '政斗弹劾',
+        title: (party.name || '党派') + '议程',
+        dept: '都察院',
+        presenter: party.leader || '言官',
+        detail: '党派状态：' + (party.status || '活跃') + '；诉求：' + agenda + (party.rivalParty ? '；主要对手：' + party.rivalParty : ''),
+        agendaType: /弹劾|攻讦|倒/.test(agenda) ? 'confrontation' : 'routine',
+        importance: Math.max(4, Number(party.influence || 0) / 12),
+        controversial: /弹劾|阉党|东林|攻讦|清流|朋党/.test((party.name || '') + agenda) ? 8 : 5,
+        ref: party.name || ''
+      });
+    });
+  }
+
+  if (Array.isArray(g.qijuHistory)) {
+    g.qijuHistory.slice(0, 6).forEach(function(q) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '近事起居',
+        title: q.title || _cc2_cleanAgendaText(q.content || q.text || '起居近事', 18),
+        dept: q.type || '起居注',
+        presenter: q.from || '起居注',
+        detail: q.content || q.text || q.summary,
+        agendaType: 'routine',
+        importance: 4,
+        controversial: /弹劾|争|罪|贪|乱|军|饷/.test(String(q.content || '')) ? 6 : 2,
+        ref: 'qiju'
+      });
+    });
+  }
+
+  if (Array.isArray(g.evtLog)) {
+    g.evtLog.slice(-10).reverse().forEach(function(e) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '事件栏',
+        title: e.title || e.type || '近事',
+        dept: e.type || '近事',
+        presenter: e.from || '有司',
+        detail: e.text || e.content || e.summary || e.detail,
+        agendaType: 'routine',
+        importance: /战争|军|叛|乱|灾|死|任免|财政/.test(String(e.type || e.text || '')) ? 7 : 4,
+        controversial: /弹劾|贪|党|罢|罪/.test(String(e.text || '')) ? 7 : 3,
+        ref: 'evtLog'
+      });
+    });
+  }
+
+  if (g._eventBus && Array.isArray(g._eventBus.items)) {
+    g._eventBus.items.slice(-6).reverse().forEach(function(e) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '事件栏',
+        title: e.title || e.type || '事件',
+        dept: e.type || e.category || '近事',
+        presenter: e.from || '有司',
+        detail: e.text || e.content || e.summary || e.detail,
+        importance: 4,
+        controversial: 3,
+        ref: 'eventBus'
+      });
+    });
+  }
+
+  var facs = [];
+  if (Array.isArray(g.facs)) facs = facs.concat(g.facs);
+  if (Array.isArray(g.factions)) facs = facs.concat(g.factions);
+  if (typeof P !== 'undefined' && P && Array.isArray(P.factions)) facs = facs.concat(P.factions);
+  var facSeen = {};
+  facs.filter(function(f) {
+    if (!f || !f.name || facSeen[f.name]) return false;
+    facSeen[f.name] = 1;
+    return !playerFac || f.name !== playerFac;
+  }).slice(0, 12).forEach(function(fac) {
+    [
+      ['npcMilitaryActions', '外部势力军政', '兵部'],
+      ['npcDiplomacyActions', '外部势力外交', '礼部'],
+      ['npcProvincePolicies', '外部势力内政', '户部'],
+      ['npcFiscalActions', '外部势力内政', '户部'],
+      ['npcFiscalLedger', '外部势力内政', '户部'],
+      ['npcIntrigueActions', '外部势力外交', '礼部'],
+      ['npcRebellionPolicies', '外部势力军政', '兵部'],
+      ['npcChaoyi', '外部势力朝议', '通政司'],
+      ['npcEdicts', '外部势力朝议', '通政司'],
+      ['npcOfficeActions', '外部势力内政', '吏部'],
+      ['npcMemorials', '外部势力朝议', '通政司']
+    ].forEach(function(def) {
+      _recentRows(fac[def[0]], 2).forEach(function(a) {
+        var detail = _rowDetail(a);
+        _cc2_pushAgendaSource(out, seen, {
+          source: def[1],
+          title: fac.name + '·' + (a.title || a.type || a.action || a.kind || def[0].replace(/^npc/, '')),
+          dept: def[2],
+          presenter: fac.leader || fac.ruler || fac.name,
+          detail: detail || (fac.name + '近期有' + def[1] + '动向。'),
+          agendaType: /Intrigue|Rebellion|Military|impeach|slander|叛|乱|攻/.test(def[0] + detail) ? 'warning' : 'routine',
+          importance: /Military|Diplomacy|Rebellion|Intrigue/.test(def[0]) ? 7 : 5,
+          controversial: /Intrigue|impeach|slander|叛|乱|攻|盟|外交/.test(def[0] + detail) ? 7 : 4,
+          ref: fac.name + ':' + def[0]
+        });
+      });
+    });
+  });
+
+  var externalForces = [];
+  if (Array.isArray(g.extForces)) externalForces = externalForces.concat(g.extForces);
+  if (Array.isArray(g.externalForces)) externalForces = externalForces.concat(g.externalForces);
+  if (typeof P !== 'undefined' && P && Array.isArray(P.externalForces)) externalForces = externalForces.concat(P.externalForces);
+  externalForces.slice(0, 8).forEach(function(x) {
+    if (!x || !x.name) return;
+    var rel = typeof x.relation === 'number' ? x.relation : null;
+    if (rel != null && rel > 20 && !/敌|中立|叛|侵|窥|不稳/.test(String(x.attitude || x.description || ''))) return;
+    _cc2_pushAgendaSource(out, seen, {
+      source: '外部势力态势',
+      title: x.name + '动向',
+      dept: '礼部',
+      presenter: '礼部',
+      detail: '关系 ' + (rel == null ? '未详' : rel) + '；态度 ' + (x.attitude || '未详') + '；实力 ' + (x.strength || '') + '；' + (x.description || x.territory || ''),
+      agendaType: rel != null && rel < -20 ? 'warning' : 'routine',
+      importance: rel != null && rel < -40 ? 8 : 5,
+      controversial: rel != null && rel < -30 ? 6 : 3,
+      ref: x.name
+    });
+  });
+
+  if (Array.isArray(g.deptTasks)) {
+    _recentRows(g.deptTasks.filter(function(t){ return t && _cc2_agendaStatusOpen(t.status || 'pending'); }), 5).forEach(function(t) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '内政事务',
+        title: t.task || t.title || '部议任务',
+        dept: t.dept || '六部',
+        presenter: t.dept || '有司',
+        detail: t.detail || t.content || t.reason || '部议任务尚待推进。',
+        agendaType: 'request',
+        importance: t.dueIn != null && t.dueIn <= 1 ? 7 : 5,
+        controversial: /阻|争|弹劾|钱|粮|军/.test(String(t.detail || t.task || '')) ? 6 : 3,
+        ref: 'deptTasks'
+      });
+    });
+  }
+
+  if (Array.isArray(g.officeChanges)) {
+    _recentRows(g.officeChanges, 5).forEach(function(o) {
+      var oText = [o && o.title, o && o.name, o && o.charName, o && o.from, o && o.to, o && o.reason, o && o.action].filter(Boolean).join(' ');
+      _cc2_pushAgendaSource(out, seen, {
+        source: '官制人事',
+        title: o.title || o.name || o.charName || '人事变动',
+        dept: o.dept || o.office || '吏部',
+        presenter: '吏部',
+        detail: _rowDetail(o) || [o.from, o.to, o.reason].filter(Boolean).join(' → '),
+        agendaType: 'personnel',
+        importance: 5,
+        controversial: /罢|黜|弹劾|争|党|贬/.test(oText) ? 7 : 4,
+        ref: 'officeChanges'
+      });
+    });
+  }
+
+  if (g.provinceStats && typeof g.provinceStats === 'object') {
+    Object.keys(g.provinceStats).slice(0, 12).forEach(function(k) {
+      var ps = g.provinceStats[k] || {};
+      var unrest = Number(ps.unrest || ps.revoltRisk || ps.instability || 0);
+      var tax = Number(ps.taxPressure || ps.tax || 0);
+      if (unrest < 60 && tax < 70 && !ps.crisis && !ps.famine) return;
+      _cc2_pushAgendaSource(out, seen, {
+        source: '地方民情',
+        title: k + '民情',
+        dept: '户部',
+        presenter: '户部',
+        detail: '地方指标异常：民变/不稳 ' + unrest + '，税压 ' + tax + (ps.crisis ? '；危机 ' + ps.crisis : '') + (ps.famine ? '；饥荒' : ''),
+        agendaType: 'warning',
+        importance: 7,
+        controversial: 5,
+        ref: k
+      });
+    });
+  }
+
+  if (Array.isArray(g.activeWars) && g.activeWars.length) {
+    g.activeWars.slice(0, 3).forEach(function(w) {
+      _cc2_pushAgendaSource(out, seen, {
+        source: '军务战事',
+        title: (w.frontline || w.location || w.enemy || '边镇') + '军情',
+        dept: '兵部',
+        presenter: '兵部',
+        detail: '战事对手 ' + (w.enemy || w.opponent || '未详') + '；状态 ' + (w.status || '相持') + '；请议粮饷、援兵与主将调度。',
+        agendaType: 'warning',
+        urgency: 'urgent',
+        importance: 9,
+        controversial: 6,
+        ref: 'activeWars'
+      });
+    });
+  }
+
+  var meters = [];
+  if (typeof g.unrest === 'number' && g.unrest >= 60) meters.push({ source:'民情财赋', title:'民变指数偏高', dept:'户部', detail:'民变指数已至 ' + Math.round(g.unrest) + '，有司须议赈济、蠲免与安抚。', importance:7, controversial:5 });
+  if (typeof g.partyStrife === 'number' && g.partyStrife >= 60) meters.push({ source:'官守党争', title:'党争日炽', dept:'都察院', detail:'党争指数已至 ' + Math.round(g.partyStrife) + '，科道与内阁须议弹章、考核与廷推秩序。', importance:6, controversial:8 });
+  var corr = null;
+  if (typeof g.corruption === 'number') corr = g.corruption;
+  else if (g.corruption && typeof g.corruption.trueIndex === 'number') corr = g.corruption.trueIndex;
+  else if (g.corruption && typeof g.corruption.overall === 'number') corr = g.corruption.overall;
+  else if (g.corruption && typeof g.corruption.index === 'number') corr = g.corruption.index;
+  if (corr != null && corr >= 60) meters.push({ source:'官守党争', title:'贪墨渐重', dept:'都察院', detail:'腐败指数已至 ' + Math.round(corr) + '，宜议清查、考成与抚按稽核。', importance:6, controversial:7 });
+  meters.forEach(function(m) { _cc2_pushAgendaSource(out, seen, m); });
+
+  return (typeof _cc2_pickAgendaSourcesForCourt === 'function') ? _cc2_pickAgendaSourcesForCourt(out, max) : out.slice(0, max);
+}
+
+function _cc2_formatAgendaSourcesForPrompt(list, max) {
+  list = (list || []).slice(0, max || 18);
+  if (!list.length) return '';
+  return list.map(function(s, idx) {
+    var meta = [s.source, s.dept, s.presenter].filter(Boolean).join('·');
+    return '  ' + (idx + 1) + '. 【' + meta + '】' + s.title + '：' + _cc2_cleanAgendaText(s.detail, 86);
+  }).join('\n');
+}
+
+function _cc2_pickAgendaSourcesForCourt(pool, max) {
+  pool = pool || [];
+  max = max || 6;
+  var picked = [], used = {};
+  var order = ['留中续议', '陛下诏令', '朱批奏疏', '主角行止', '百官奏疏', '政斗弹劾', '外部势力军政', '外部势力外交', '外部势力内政', '外部势力朝议', '外部势力态势', '鸿雁来书', '近事起居', '事件栏', '军务战事', '地方民情', '内政事务', '官制人事', '民情财赋', '官守党争', '廷议待议', '御案时政'];
+  order.forEach(function(src) {
+    if (picked.length >= max) return;
+    var row = pool.find(function(x) { return x && x.source === src && !used[_cc2_agendaDedupKey(x)]; });
+    if (row) {
+      used[_cc2_agendaDedupKey(row)] = 1;
+      picked.push(row);
+    }
+  });
+  pool.forEach(function(row) {
+    if (picked.length >= max || !row) return;
+    var key = _cc2_agendaDedupKey(row);
+    if (used[key]) return;
+    used[key] = 1;
+    picked.push(row);
+  });
+  return picked;
+}
+
+function _cc2_agendaSourceToItem(src, idx) {
+  src = src || {};
+  var source = src.source || '朝政';
+  var title = _cc2_cleanAgendaText(src.title || '朝政议题', 10) || '朝政议题';
+  var dept = src.dept || (source === '百官奏疏' ? '通政司' : source === '军务战事' ? '兵部' : source === '民情财赋' ? '户部' : source === '官守党争' ? '都察院' : '六部');
+  var raw = _cc2_cleanAgendaText(src.detail || '请有司据实核奏。', 90) || '请有司据实核奏。';
+  var type = src.type || (source === '军务战事' ? 'warning' : source === '百官奏疏' || source === '鸿雁来书' ? 'request' : source === '官守党争' ? 'confrontation' : 'routine');
+  var urgent = src.urgency === 'urgent' || src.urgency === 'extreme' || source === '军务战事';
+  return {
+    presenter: src.presenter || '某部官员',
+    dept: dept,
+    type: type,
+    urgency: urgent ? 'urgent' : 'normal',
+    title: title,
+    announceLine: dept + '据' + source + '奏称：“' + title + '”须请旨裁断。',
+    content: (src.presenter ? src.presenter + '所陈' : dept + '奏称') + '：据' + source + '，“' + title + '”一事已见端倪。' + raw + '。乞敕有司核明情由，酌定处分。',
+    detail: source + '线索：' + src.title + '；要点：' + raw + '。',
+    controversial: src.controversial || (/confrontation|弹劾|党争|贪/.test(type + raw) ? 7 : 4),
+    importance: src.importance || (urgent ? 8 : 5),
+    relatedDepts: dept ? [dept] : [],
+    relatedPeople: src.presenter ? [src.presenter] : [],
+    _fallback: true,
+    _source: source,
+    _sourceRef: src.ref || ''
+  };
+}
+
 function _cc2_buildAgendaPrompt() {
   var p = '你是常朝议程编撰官。请为今日常朝后台生成 5-9 条奏报事务（玩家暂不可见，将按顺序一条一条登场）。\n';
   p += '当前：' + (typeof getTSText==='function'?getTSText(GM.turn):'T'+GM.turn) + '\n';
-  if (GM.currentIssues) {
+  var _agendaSources = (typeof _cc2_collectAgendaSources === 'function') ? _cc2_collectAgendaSources({ max: 18, includeHeld: false }) : [];
+  if (_agendaSources.length) {
+    p += '【常朝候选来源池——只作议题线索，禁止原文照搬为奏报正文】\n' + _cc2_formatAgendaSourcesForPrompt(_agendaSources, 18) + '\n';
+  } else if (GM.currentIssues) {
     var _pi = GM.currentIssues.filter(function(i){return i.status==='pending';}).slice(0,5);
     if (_pi.length) p += '【待处理时政——只作议题线索，禁止原文照搬为奏报正文】\n' + _pi.map(function(i){return '  '+i.title+'：要点 '+(i.description||i.summary||i.brief||'').slice(0,42)+'；须改写为有司奏称';}).join('\n') + '\n';
   }
@@ -351,7 +859,9 @@ function _cc2_buildAgendaPrompt() {
   p += '· 至少 1 条 confrontation（官员对质/弹劾，须有明确 target）\n';
   p += '· 议程类型多样，不要全是 routine\n';
   p += '· 高 controversial 的议题会引发 2-3 轮朝堂交锋\n';
-  p += '· 关联本回合的 currentIssues，但只能改写摘要，不得把御案时政原文直接作为 content\n';
+  p += '· 从“常朝候选来源池”多源轮换取材；若候选池有三类以上来源，议程至少覆盖三类，不得全部来自御案时政\n';
+  p += '· 百官奏疏、朱批奏疏、陛下诏令、主角行止、近事起居、鸿雁来书、政斗弹劾、外部势力、内政事务、留中续议有具体条目时，优先穿插取材\n';
+  p += '· currentIssues 只是“御案时政”来源之一；不得把御案时政当作常朝唯一议题池\n';
   p += '· content 字段必须遵守朝议字数（仅 announceLine 可简略），百官奏报须行文详尽\n';
   p += '返回 JSON 数组。';
   return p;
@@ -360,26 +870,9 @@ function _cc2_buildAgendaPrompt() {
 // ─── 议程兜底·AI 调用失败/返回空时·从时政要务派生最小议程·让朝会能跑完 ───
 function _cc2_fallbackAgenda() {
   var items = [];
-  var pending = (GM.currentIssues || []).filter(function(i){return i.status==='pending';}).slice(0, 3);
-  pending.forEach(function(iss) {
-    var title = iss.title || '时政要议';
-    var dept = iss.dept || iss.category || '六部';
-    var proposer = iss.proposer || iss.from || '通政司';
-    var desc = String(iss.description || iss.summary || iss.brief || iss.narrative || iss.text || '').replace(/\s+/g, ' ').slice(0, 42) || '请有司据实核奏';
-    items.push({
-      presenter: '某部官员',
-      dept: dept,
-      type: 'routine',
-      urgency: 'normal',
-      title: title.slice(0, 10),
-      announceLine: dept + '有事关“' + title + '”者，请旨裁断。',
-      content: proposer + '奏称：' + dept + '有“' + title + '”一事，须由有司核明情由、具议处置。',
-      detail: '御案线索：' + title + '；要点：' + desc + '。此处为朝会改写摘要，不取御案原文。',
-      controversial: 3,
-      importance: 5,
-      _fallback: true
-    });
-  });
+  var pool = (typeof _cc2_collectAgendaSources === 'function') ? _cc2_collectAgendaSources({ max: 12, includeHeld: true }) : [];
+  var picked = (typeof _cc2_pickAgendaSourcesForCourt === 'function') ? _cc2_pickAgendaSourcesForCourt(pool, 5) : pool.slice(0, 5);
+  picked.forEach(function(src, idx) { items.push(_cc2_agendaSourceToItem(src, idx)); });
   if (items.length === 0) {
     items.push({
       presenter: '内侍',

@@ -524,19 +524,39 @@ function _cc3_fallbackAgenda() {
   }
 
   // 去重：排除已分配给廷议的 issue·廷议会单独处理这些
-  const pending = ((GM.currentIssues || []).filter(i => i.status === "pending" && i.allocatedTo !== 'tinyi')).slice(0, 3);
-  pending.forEach(function(iss) {
-    const p = pickPresenter(iss.dept);
-    const hint = issueAgendaHint(iss);
-    items.push({
-      presenter: p.name, dept: p.dept, type: "routine", urgency: "normal",
-      title: hint.title.slice(0, 10),
-      announceLine: hint.announceLine,
-      content: hint.content,
-      detail: hint.detail,
-      controversial: 3, importance: 5, _fallback: true
-    });
+  const sourcePool = (typeof _cc2_collectAgendaSources === 'function')
+    ? _cc2_collectAgendaSources({ max: 12, includeHeld: true })
+    : [];
+  const pickedSources = sourcePool.length && typeof _cc2_pickAgendaSourcesForCourt === 'function'
+    ? _cc2_pickAgendaSourcesForCourt(sourcePool, 5)
+    : sourcePool.slice(0, 5);
+  pickedSources.forEach(function(src, idx) {
+    if (typeof _cc2_agendaSourceToItem !== 'function') return;
+    const base = _cc2_agendaSourceToItem(src, idx);
+    const p = pickPresenter(base.dept || src.dept);
+    const sourcePresenter = src.presenter && CHARS[src.presenter] && !CHARS[src.presenter].absent ? src.presenter : '';
+    base.presenter = sourcePresenter || p.name;
+    base.dept = base.dept || p.dept;
+    if (src.source === '百官奏疏' || src.source === '鸿雁来书') {
+      base.announceLine = (base.dept || p.dept || '通政司') + '代奏“' + (src.title || base.title || '一事') + '”，请旨裁断。';
+    }
+    items.push(base);
   });
+  if (items.length === 0) {
+    const pending = ((GM.currentIssues || []).filter(i => i.status === "pending" && i.allocatedTo !== 'tinyi')).slice(0, 3);
+    pending.forEach(function(iss) {
+      const p = pickPresenter(iss.dept);
+      const hint = issueAgendaHint(iss);
+      items.push({
+        presenter: p.name, dept: p.dept, type: "routine", urgency: "normal",
+        title: hint.title.slice(0, 10),
+        announceLine: hint.announceLine,
+        content: hint.content,
+        detail: hint.detail,
+        controversial: 3, importance: 5, _fallback: true
+      });
+    });
+  }
   if (items.length === 0) {
     items.push({ presenter: "内侍", dept: "内廷", type: "routine", urgency: "normal", title: "日常无事", announceLine: "今日并无紧要奏报。", content: "百官今日并无紧要事务奏闻陛下。", detail: "百官今日并无紧要事务奏闻陛下。", controversial: 0, importance: 1, _fallback: true });
   }
@@ -732,10 +752,20 @@ function _cc3_buildSystemPromptVariable() {
     });
     s += '【近事·起居注】\n  ' + recent.join('\n  ') + '\n';
   }
-  // 待审奏疏数（不展开内容·只总数）
-  if (typeof GM !== 'undefined' && Array.isArray(GM.zoushuPool)) {
+  // 常朝来源池摘要·给 NPC 发言使用，避免只围绕御案时政
+  if (typeof _cc2_collectAgendaSources === 'function' && typeof _cc2_formatAgendaSourcesForPrompt === 'function') {
+    try {
+      const sourcePool = _cc2_collectAgendaSources({ max: 12, includeHeld: true });
+      if (sourcePool.length) s += '【常朝候选来源】\n' + _cc2_formatAgendaSourcesForPrompt(sourcePool, 12) + '\n';
+    } catch (_) {}
+  } else if (typeof GM !== 'undefined' && Array.isArray(GM.zoushuPool)) {
     const pendingZS = GM.zoushuPool.filter(z => z && (z.status === 'pending' || !z.status));
-    if (pendingZS.length) s += '【奏疏池】' + pendingZS.length + ' 件待批\n';
+    if (pendingZS.length) {
+      s += '【奏疏池】\n';
+      pendingZS.slice(0, 6).forEach(z => {
+        s += '  · ' + (z.title || z.topic || '未题奏疏') + '：' + String(z.summary || z.content || '').replace(/\s+/g, ' ').slice(0, 60) + '\n';
+      });
+    }
   }
   return s;
 }

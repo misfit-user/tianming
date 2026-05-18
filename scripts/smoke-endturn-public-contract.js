@@ -74,7 +74,7 @@ assert(aiInferLines.length >= 200 && aiInferLines.length <= 280,
 const aiModulePath = path.join(ROOT, 'tm-endturn-ai.js');
 assert(fs.existsSync(aiModulePath), 'tm-endturn-ai.js exists');
 const aiModuleLines = fs.readFileSync(aiModulePath, 'utf8').split('\n').length;
-assert(aiModuleLines >= 2600 && aiModuleLines <= 3050, 'tm-endturn-ai.js line count 2600-3050, actual ' + aiModuleLines);
+assert(aiModuleLines >= 2600 && aiModuleLines <= 3200, 'tm-endturn-ai.js line count 2600-3200, actual ' + aiModuleLines);
 
 const applyModulePath = path.join(ROOT, 'tm-endturn-apply.js');
 assert(fs.existsSync(applyModulePath), 'tm-endturn-apply.js exists');

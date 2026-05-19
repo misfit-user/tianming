@@ -6,18 +6,32 @@
   'use strict';
 
   var STORAGE_KEY = 'tm.changelog.lastSeen';
+  var REMOTE_CHANGELOG_URL = 'https://api.themisfitserspeople.top/tianming/changelog.json';
   var _changelogData = null;
   var _loading = null;
   var _lastModalEntries = [];
   var _lastModalUnread = 0;
 
+  function _fetchJson(url, options) {
+    return fetch(url, options || {})
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+  }
+
+  function _validData(j) {
+    return (j && Array.isArray(j.entries)) ? j : null;
+  }
+
   function _load() {
     if (_changelogData) return Promise.resolve(_changelogData);
     if (_loading) return _loading;
-    _loading = fetch('changelog.json?v=' + (window._TM_CACHE_V || Date.now()))
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(j) {
-        _changelogData = (j && Array.isArray(j.entries)) ? j : { entries: [] };
+    var cacheV = window._TM_CACHE_V || Date.now();
+    var remoteUrl = window.TM_REMOTE_CHANGELOG_URL || REMOTE_CHANGELOG_URL;
+    _loading = Promise.all([
+      _fetchJson(remoteUrl + '?v=' + cacheV, { cache: 'no-store' }),
+      _fetchJson('changelog.json?v=' + cacheV)
+    ]).then(function(list) {
+        _changelogData = _validData(list[0]) || _validData(list[1]) || { entries: [] };
         return _changelogData;
       })
       .catch(function() { _changelogData = { entries: [] }; return _changelogData; });

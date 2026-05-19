@@ -27,5 +27,7 @@ assert(/_settingsSwitchTab/.test(patches), 'settings tab switcher missing');
 assert(/settings-tab-shell/.test(styles) && /settings-pane\.active/.test(styles), 'settings tab CSS missing');
 assert(/styles\.css\?v=20260519-settings-tabs/.test(index), 'index.html should bust settings CSS cache');
 assert(/tm-patches\.js\?v=20260519-settings-tabs/.test(index), 'index.html should bust settings JS cache');
+assert(/REMOTE_CHANGELOG_URL/.test(fs.readFileSync(path.join(ROOT, 'tm-changelog.js'), 'utf8')), 'remote changelog source missing');
+assert(/tm-changelog\.js\?v=20260519-remote-changelog/.test(index), 'index.html should bust changelog JS cache');
 
 console.log('[smoke-settings-media-theme] PASS settings media/theme sections present');

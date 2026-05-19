@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/character_selection_live_refresh_test.gd" id="1_test"]
+
+[node name="CharacterSelectionLiveRefreshTest" type="Node"]
+script = ExtResource("1_test")

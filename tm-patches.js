@@ -242,6 +242,93 @@ window._settingsThemeApply = function(name, el) {
 window._settingsSizeApply = function(size, el) {
   if (typeof _tmApplySize === 'function') _tmApplySize(size, el);
 };
+
+function _settingsTabText(section, index) {
+  var h = section && section.querySelector ? section.querySelector('h4') : null;
+  var txt = h ? (h.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  var fallback = [
+    'API连接', '次要 API', '性能', '更新工坊', '声乐', '主题字号',
+    '回合读取', 'AI记忆', '生成字数', '高级预算', '模型校验',
+    '文风', '游戏模式', '人物志', '提示词'
+  ];
+  return txt || fallback[index] || ('设置 ' + (index + 1));
+}
+
+function _settingsBuildTabs() {
+  var body = _$('sb2');
+  if (!body || body.querySelector('.settings-tab-shell')) return;
+  var sections = Array.prototype.slice.call(body.children).filter(function(el) {
+    return el && el.classList && el.classList.contains('settings-section');
+  });
+  if (sections.length <= 1) return;
+
+  var saveBtn = Array.prototype.slice.call(body.children).filter(function(el) {
+    return el && el.tagName === 'BUTTON' && /sSaveAll/.test(el.getAttribute('onclick') || '');
+  })[0] || null;
+
+  var shell = document.createElement('div');
+  shell.className = 'settings-tab-shell';
+  var tabs = document.createElement('div');
+  tabs.className = 'settings-tabs';
+  tabs.setAttribute('role', 'tablist');
+  var panes = document.createElement('div');
+  panes.className = 'settings-panes';
+
+  sections.forEach(function(section, idx) {
+    var label = _settingsTabText(section, idx);
+    var key = 'tab-' + idx;
+    section.setAttribute('data-settings-section', key);
+
+    var tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'settings-tab';
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('data-settings-tab', key);
+    tab.setAttribute('onclick', "_settingsSwitchTab('" + key + "')");
+    tab.innerHTML = '<span class="settings-tab-index">' + String(idx + 1).padStart(2, '0') + '</span><span class="settings-tab-label">' + _settingsEsc(label) + '</span>';
+    tabs.appendChild(tab);
+
+    var pane = document.createElement('div');
+    pane.className = 'settings-pane';
+    pane.setAttribute('role', 'tabpanel');
+    pane.setAttribute('data-settings-pane', key);
+    pane.appendChild(section);
+    panes.appendChild(pane);
+  });
+
+  shell.appendChild(tabs);
+  shell.appendChild(panes);
+  body.innerHTML = '';
+  body.appendChild(shell);
+  if (saveBtn) {
+    var savebar = document.createElement('div');
+    savebar.className = 'settings-savebar';
+    savebar.appendChild(saveBtn);
+    body.appendChild(savebar);
+  }
+
+  var active = 'tab-0';
+  try {
+    var remembered = localStorage.getItem('tm.settings.activeTab');
+    if (remembered && shell.querySelector('[data-settings-pane="' + remembered + '"]')) active = remembered;
+  } catch(_){}
+  window._settingsSwitchTab(active);
+}
+
+window._settingsSwitchTab = function(key) {
+  var body = _$('sb2');
+  if (!body) return;
+  body.querySelectorAll('.settings-tab').forEach(function(tab) {
+    var on = tab.getAttribute('data-settings-tab') === key;
+    tab.classList.toggle('active', on);
+    tab.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  body.querySelectorAll('.settings-pane').forEach(function(pane) {
+    pane.classList.toggle('active', pane.getAttribute('data-settings-pane') === key);
+  });
+  try { localStorage.setItem('tm.settings.activeTab', key); } catch(_){}
+};
+
 openSettings=function(){
   var bg=_$("settings-bg");
   bg.innerHTML="<div class=\"settings-box\"><div style=\"padding:0.8rem 1.2rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;\"><div style=\"font-size:1.1rem;font-weight:700;color:var(--gold);\">"+((typeof tmIcon==='function')?tmIcon('settings',18):'')+"\u8BBE\u7F6E</div><button class=\"bt bs bsm\" onclick=\"closeSettings()\">\u2715</button></div><div class=\"settings-body\" id=\"sb2\"></div></div>";
@@ -473,6 +560,7 @@ openSettings=function(){
 
     "<button class=\"bt bp\" onclick=\"sSaveAll()\" style=\"width:100%;padding:0.7rem;font-size:1rem;\">\u4FDD\u5B58\u6240\u6709\u8BBE\u7F6E</button>";
 
+  _settingsBuildTabs();
   setTimeout(function(){
     var p=_$("s-prov");if(p&&P.ai.provider)p.value=P.ai.provider;
     // 次 API 服务商下拉·按已保存值回显

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/title_screen_flow_test.gd" id="1_title_screen_flow"]
+
+[node name="TitleScreenFlowTest" type="Node"]
+script = ExtResource("1_title_screen_flow")

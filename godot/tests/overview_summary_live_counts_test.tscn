@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/overview_summary_live_counts_test.gd" id="1_test"]
+
+[node name="OverviewSummaryLiveCountsTest" type="Node"]
+script = ExtResource("1_test")

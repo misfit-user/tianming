@@ -4160,9 +4160,22 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;o
 /* 设置弹窗 */
 .settings-bg{position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 .settings-bg.show{display:flex;animation:fi 0.25s var(--ease);}
-.settings-box{background:var(--bg-1);border:1px solid var(--gold-d);border-radius:14px;width:90%;max-width:650px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg);animation:modal-in 0.3s var(--ease);}
-.settings-body{flex:1;overflow-y:auto;padding:1.4rem;}
+.settings-box{background:var(--bg-1);border:1px solid var(--gold-d);border-radius:14px;width:min(92vw,980px);max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg);animation:modal-in 0.3s var(--ease);}
+.settings-body{flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column;min-height:0;}
+.settings-tab-shell{flex:1;min-height:0;display:grid;grid-template-columns:178px minmax(0,1fr);background:linear-gradient(180deg,rgba(184,154,83,0.035),rgba(0,0,0,0));}
+.settings-tabs{overflow:auto;padding:0.8rem 0.65rem;border-right:1px solid var(--bdr);background:rgba(10,8,6,0.22);display:flex;flex-direction:column;gap:0.35rem;}
+.settings-tab{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:0.45rem;padding:0.48rem 0.55rem;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--txt-d);font-family:inherit;text-align:left;cursor:pointer;transition:background 0.18s,border-color 0.18s,color 0.18s;}
+.settings-tab:hover{background:rgba(184,154,83,0.08);border-color:rgba(184,154,83,0.22);color:var(--txt);}
+.settings-tab.active{background:linear-gradient(90deg,rgba(184,154,83,0.18),rgba(184,154,83,0.06));border-color:rgba(184,154,83,0.48);color:var(--gold-l);box-shadow:inset 3px 0 0 var(--gold);}
+.settings-tab-index{font-size:0.68rem;color:var(--gold-d);font-variant-numeric:tabular-nums;letter-spacing:0.04em;}
+.settings-tab-label{font-size:0.82rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.settings-panes{min-height:0;overflow:auto;padding:1.05rem 1.15rem 1.2rem;}
+.settings-pane{display:none;}
+.settings-pane.active{display:block;animation:fi 0.16s var(--ease);}
+.settings-savebar{border-top:1px solid var(--bdr);padding:0.65rem 1.15rem;background:linear-gradient(180deg,rgba(26,21,16,0.98),rgba(18,14,10,0.98));box-shadow:0 -8px 18px rgba(0,0,0,0.22);}
+.settings-savebar .bt{margin:0;}
 .settings-section{margin-bottom:1.4rem;padding:0.8rem;background:var(--bg-2);border-radius:var(--r);border:1px solid var(--bdr);}
+.settings-pane .settings-section{margin-bottom:0;}
 .settings-section h4{color:var(--gold);font-size:0.88rem;margin-bottom:0.7rem;border-bottom:1px solid var(--bdr);padding-bottom:0.4rem;letter-spacing:0.05em;}
 .tm-settings-sub{font-size:0.72rem;color:var(--txt-d);margin:-0.25rem 0 0.7rem;line-height:1.55;}
 .tm-settings-two{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.65rem;}
@@ -4183,7 +4196,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;o
 .wd-preset-label{display:inline-flex;flex-direction:column;align-items:center;padding:0.4rem 0.8rem;border:1px solid var(--bdr);border-radius:8px;cursor:pointer;font-size:0.82rem;transition:all 0.2s;text-align:center;min-width:70px;}
 .wd-preset-label:has(input:checked){border-color:var(--gold);color:var(--gold);background:rgba(184,154,83,0.08);}
 .wd-preset-label input[type="radio"]{margin-bottom:2px;accent-color:var(--gold);}
-@media (max-width: 720px){.tm-settings-two{grid-template-columns:1fr}.tm-settings-theme-grid{grid-template-columns:1fr;}}
+@media (max-width: 720px){.tm-settings-two{grid-template-columns:1fr}.tm-settings-theme-grid{grid-template-columns:1fr;}.settings-box{width:96vw;max-height:88vh}.settings-tab-shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.settings-tabs{border-right:none;border-bottom:1px solid var(--bdr);flex-direction:row;overflow-x:auto;padding:0.55rem}.settings-tab{min-width:118px;grid-template-columns:28px minmax(0,1fr)}.settings-panes{padding:0.8rem}.settings-savebar{padding:0.6rem 0.8rem;}}
 
 /* 开关 */
 .toggle-wrap{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;}

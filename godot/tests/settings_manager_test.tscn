@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/settings_manager_test.gd" id="1_settings_manager"]
+
+[node name="SettingsManagerTest" type="Node"]
+script = ExtResource("1_settings_manager")

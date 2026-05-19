@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/faction_ai_pressure_ui_test.gd" id="1_faction_ai_pressure_ui"]
+
+[node name="FactionAiPressureUiTest" type="Node"]
+script = ExtResource("1_faction_ai_pressure_ui")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/court_meeting_agenda_full_pressure_test.gd" id="1_court_agenda_full_pressure"]
+
+[node name="CourtMeetingAgendaFullPressureTest" type="Node"]
+script = ExtResource("1_court_agenda_full_pressure")

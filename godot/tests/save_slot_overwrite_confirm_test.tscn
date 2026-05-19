@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/save_slot_overwrite_confirm_test.gd" id="1_save_slot_overwrite_confirm"]
+
+[node name="SaveSlotOverwriteConfirmTest" type="Node"]
+script = ExtResource("1_save_slot_overwrite_confirm")

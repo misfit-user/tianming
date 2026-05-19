@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/relationship_panel_character_action_refresh_test.gd" id="1_relationship_panel_character_action_refresh"]
+
+[node name="RelationshipPanelCharacterActionRefreshTest" type="Node"]
+script = ExtResource("1_relationship_panel_character_action_refresh")

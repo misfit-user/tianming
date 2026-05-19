@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/communication_archive_full_history_test.gd" id="1_comm_archive_full"]
+
+[node name="CommunicationArchiveFullHistoryTest" type="Node"]
+script = ExtResource("1_comm_archive_full")

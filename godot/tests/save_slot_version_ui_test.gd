@@ -1,0 +1,77 @@
+extends Node
+
+const SaveSlotPanelScript := preload("res://scripts/save_slot_panel.gd")
+
+var loaded_slots: Array = []
+var deleted_slots: Array = []
+
+func _ready() -> void:
+	var panel: Control = SaveSlotPanelScript.new()
+	add_child(panel)
+	await get_tree().process_frame
+
+	panel.connect("load_slot_requested", Callable(self, "_on_load_slot_requested"))
+	panel.connect("delete_slot_requested", Callable(self, "_on_delete_slot_requested"))
+	panel.call("set_slots", [
+		{
+			"slot_id": "slot_1",
+			"exists": true,
+			"compatible": false,
+			"version_warning": "unsupported save format: old",
+		}
+	])
+
+	var load_result: Dictionary = panel.call("request_load_slot", "slot_1")
+	await get_tree().process_frame
+	if bool(load_result.get("ok", true)):
+		_fail("Load request accepted an incompatible save slot")
+		return
+	if not bool(load_result.get("incompatible", false)):
+		_fail("Load request did not mark the incompatible save slot")
+		return
+	if not loaded_slots.is_empty():
+		_fail("Incompatible load request emitted a load signal")
+		return
+
+	var delete_result: Dictionary = panel.call("request_delete_slot", "slot_1")
+	await get_tree().process_frame
+	if not bool(delete_result.get("ok", false)):
+		_fail("Delete request on an incompatible save slot did not return ok")
+		return
+	if deleted_slots.size() != 1 or str(deleted_slots[0]) != "slot_1":
+		_fail("Delete request on an incompatible save slot did not emit")
+		return
+
+	panel.call("set_slots", [
+		{
+			"slot_id": "slot_2",
+			"exists": true,
+			"compatible": true,
+		}
+	])
+	var compatible_load: Dictionary = panel.call("request_load_slot", "slot_2")
+	await get_tree().process_frame
+	if not bool(compatible_load.get("ok", false)):
+		_fail("Load request rejected a compatible save slot")
+		return
+	if loaded_slots.size() != 1 or str(loaded_slots[0]) != "slot_2":
+		_fail("Compatible load request did not emit")
+		return
+
+	print("[TianmingGodotTest] save slot version UI scene test passed")
+	get_tree().create_timer(1.0).timeout.connect(func() -> void: _finish(0))
+
+func _on_load_slot_requested(slot_id: String) -> void:
+	loaded_slots.append(slot_id)
+
+func _on_delete_slot_requested(slot_id: String) -> void:
+	deleted_slots.append(slot_id)
+
+func _fail(message: String) -> void:
+	print("[TianmingGodotTest] save slot version UI scene test failed: %s" % message)
+	push_error(message)
+	get_tree().create_timer(5.0).timeout.connect(func() -> void: _finish(1))
+
+func _finish(exit_code: int) -> void:
+	print("[TianmingGodotTest] save slot version UI scene test exit_code=%d" % exit_code)
+	get_tree().quit(exit_code)

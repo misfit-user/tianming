@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/faction_top_level_relationship_summary_test.gd" id="1_faction_top_level_relationship_summary"]
+
+[node name="FactionTopLevelRelationshipSummaryTest" type="Node"]
+script = ExtResource("1_faction_top_level_relationship_summary")

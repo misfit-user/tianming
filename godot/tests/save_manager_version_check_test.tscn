@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/save_manager_version_check_test.gd" id="1_save_manager_version_check"]
+
+[node name="SaveManagerVersionCheckTest" type="Node"]
+script = ExtResource("1_save_manager_version_check")

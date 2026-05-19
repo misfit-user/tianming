@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/faction_ai_memory_strategy_test.gd" id="1_faction_ai_memory_strategy"]
+
+[node name="FactionAiMemoryStrategyTest" type="Node"]
+script = ExtResource("1_faction_ai_memory_strategy")

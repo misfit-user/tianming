@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/appointment_updates_relationship_test.gd" id="1_appointment_updates_relationship"]
+
+[node name="AppointmentUpdatesRelationshipTest" type="Node"]
+script = ExtResource("1_appointment_updates_relationship")

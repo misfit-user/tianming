@@ -2,6 +2,8 @@
 
 桌面版支持导入 `.tm-pack`、`.zip` 或单个剧本 `.json`。`.tm-pack` 本质是 zip 包，包内必须包含 `manifest.json`。
 
+也支持服务器发布在线目录 `catalog.json`。玩家在“内容管理 -> 工坊”里刷新目录后，可以直接在线安装目录中的 `.tm-pack`。
+
 ## manifest.json
 
 ```json
@@ -66,6 +68,31 @@ assets/audio/theme.mp3
 ```
 
 游戏会在载入工坊剧本时把这些路径转换为受控的 `tm-content://workshop/...` 地址。普通 `assets/...` 路径会被视为游戏本体资源，不会自动改写。
+
+## 在线工坊目录
+
+```json
+{
+  "type": "tianming-workshop-catalog",
+  "title": "天命创意工坊",
+  "updatedAt": "2026-05-19",
+  "packs": [
+    {
+      "id": "sample-scenario",
+      "title": "示例剧本",
+      "version": "1.0.0",
+      "author": "作者",
+      "type": "scenario",
+      "description": "示例说明",
+      "packageUrl": "packs/sample.tm-pack",
+      "sha256": "tm-pack 文件 sha256",
+      "size": 123456
+    }
+  ]
+}
+```
+
+`packageUrl` 可以是相对目录，也可以是 HTTPS 绝对地址。客户端会在安装时校验 `sha256`。生产环境要求 HTTPS；本地调试允许 `localhost`。
 
 ## 在线更新发布目录
 

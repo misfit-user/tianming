@@ -8,6 +8,8 @@
   var STORAGE_KEY = 'tm.changelog.lastSeen';
   var _changelogData = null;
   var _loading = null;
+  var _lastModalEntries = [];
+  var _lastModalUnread = 0;
 
   function _load() {
     if (_changelogData) return Promise.resolve(_changelogData);
@@ -119,6 +121,7 @@
       html += '<div class="tm-cl-body">' + _renderEntries(entries, unread) + '</div>';
       html += '<div class="tm-cl-foot">';
       if (unread > 0) {
+        html += '<button class="bt bp" onclick="TM_Changelog.applyUpdate()">应用更新</button>';
         html += '<button class="bt bp" onclick="TM_Changelog.markRead()">已阅·闭卷</button>';
       } else {
         html += '<button class="bt bs" onclick="TM_Changelog.close()">收卷</button>';
@@ -130,6 +133,8 @@
 
       // 保存签名以便 markRead 使用
       ov._topSig = topSig;
+      _lastModalEntries = entries.slice(0, Math.max(1, unread || 1));
+      _lastModalUnread = unread || 0;
 
       // ESC 关闭
       var escHandler = function(e) {
@@ -158,6 +163,28 @@
     _close();
   }
 
+  function _applyUpdate() {
+    var ov = document.getElementById('tm-changelog-ov');
+    var sig = ov ? ov._topSig : _topSig(_changelogData);
+    if (sig) _setLastSeen(sig);
+    var entries = _lastModalEntries && _lastModalEntries.length ? _lastModalEntries : ((_changelogData && _changelogData.entries) || []).slice(0, Math.max(1, _lastModalUnread || 3));
+    _close();
+    var start = function() {
+      if (window.TMContentManager && typeof window.TMContentManager.applyUpdateFromChangelog === 'function') {
+        window.TMContentManager.applyUpdateFromChangelog(entries);
+      } else if (window.openContentManager) {
+        window.openContentManager();
+        setTimeout(function(){
+          if (window.TMContentManager && window.TMContentManager.switchTab) window.TMContentManager.switchTab('update');
+        }, 100);
+      } else {
+        alert('更新模块尚未载入，请稍后再试。');
+      }
+    };
+    setTimeout(start, 50);
+    setTimeout(_updateDot, 80);
+  }
+
   // 首屏自动弹出——仅在有未读时
   function _autoPopIfUnread() {
     _load().then(function(data) {
@@ -175,6 +202,7 @@
     show: _showModal,
     close: _close,
     markRead: _markRead,
+    applyUpdate: _applyUpdate,
     autoPop: _autoPopIfUnread,
     // 未读数供外部标记角标
     getUnreadCount: function() {

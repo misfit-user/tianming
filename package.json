@@ -21,7 +21,8 @@
   "private": true,
   "scripts": {
     "prepare-vendor": "node tools/download-bge-model.js",
-    "prepare-vendor-hf": "node tools/download-bge-model.js --hf"
+    "prepare-vendor-hf": "node tools/download-bge-model.js --hf",
+    "build-hot-update": "node tools/build-hot-update-package.js"
   },
   "_comment": "本项目刻意不引入 npm 依赖与构建流程·package.json 仅作元数据声明。详见 ARCHITECTURE.md §1。",
   "_prepare_vendor": "Electron 打包前·跑 npm run prepare-vendor（默认 hf-mirror·中国友好）下载 bge-small-zh ~23 MB 到 vendor/models/。--hf 走 huggingface.co 主站。",

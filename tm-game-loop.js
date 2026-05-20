@@ -1707,9 +1707,9 @@ async function _wtSend() {
     + '2. 判断分类 category（重要）：\n'
     + '   · narrative — 叙事/规则控制：让剧情走向X、让AI行为Y、保护某人、禁止某事发生（例："不要让袁崇焕被处决"、"AI多写诗词"）\n'
     + '   · setting — 世界背景/设定注入：补充剧本的背景信息/状态/历史（例："此时倭寇已平"、"北方去年大旱未记入"）\n'
-    + '   · hardChange — 直接修改数值：要求直接改具体数值/字段（例："帑廪+1000万两"、"某NPC忠诚设为100"、"皇威+10"）\n'
-    + '       ★【识别规则】只要指令提到：具体金额(万两/石/匹)、具体数值(+N/-N/设为N)、具体字段(国库/帑廪/内帑/忠诚/皇威/皇权/民心等)——必须归入 hardChange。不要误判为 narrative/directive。\n'
-    + '       ★【常见路径】白银=guoku.money·粮=guoku.grain·布=guoku.cloth·内帑银=neitang.money·皇威=huangwei.index·皇权=huangquan.index·腐败/吏治=corruption.trueIndex·民心=minxin.trueIndex·人物忠诚=chars[N].loyalty\n'
+    + '   · hardChange — 直接修改数值或字段：要求直接改具体数值/字段（例："帑廪+1000万两"、"某NPC忠诚设为100"、"袁崇焕所在地改为京师"、"皇威+10"）\n'
+    + '       ★【识别规则】只要指令提到：具体金额(万两/石/匹)、具体数值(+N/-N/设为N)、具体字段(国库/帑廪/内帑/忠诚/所在地/位置/皇威/皇权/民心等)——必须归入 hardChange。不要误判为 narrative/directive。\n'
+    + '       ★【常见路径】白银=guoku.money·粮=guoku.grain·布=guoku.cloth·内帑银=neitang.money·皇威=huangwei.index·皇权=huangquan.index·腐败/吏治=corruption.trueIndex·民心=minxin.trueIndex·人物忠诚=chars[人物名].loyalty·人物所在地=chars[人物名].location\n'
     + '       ★【操作符】"加/增/+"→op:add · "减/扣/-"→op:add(负数) · "设为/改为/="→op:set · "翻倍/x2"→op:mul\n'
     + '       ★【单位换算】1 万两=10000·50 万两=500000·100 万石=1000000·玩家说"100 万"一律写成 1000000 数字不要保留"万"字\n'
     + '   · edictSubstitute — 等同诏令：玩家实际想下诏令的事（例："拨银赈灾"、"罢某某官"、"遣使某国"——这些本该走诏令而非问天）\n'
@@ -1727,6 +1727,7 @@ async function _wtSend() {
     var th = _$('wt-thinking'); if (th) th.remove();
     var parsed = (typeof extractJSON === 'function') ? extractJSON(resp) : null;
     if (!parsed) parsed = { interpretation: resp || content, type: type, structured: {}, ambiguity: [], plan: '将在下回合推演时参考此条指令' };
+    parsed = _wtAugmentParsedHardChange(content, parsed, _wtForceCategory);
     _wtPending = {
       raw: content,
       type: parsed.type || type,
@@ -1789,7 +1790,7 @@ function _wtShowPendingConfirmation() {
   }
   if (sParts.length > 0) h += '<div style="font-size:0.62rem;color:var(--ink-200);padding:4px 6px;background:rgba(10,9,8,0.35);border-radius:3px;margin-bottom:4px;">' + sParts.join('\u3000') + '</div>';
   // hardChange 预览
-  if (p.category === 'hardChange' && p.hardChange && p.hardChange.path) {
+  if ((p.category === 'hardChange' || p.category === 'absolute') && p.hardChange && p.hardChange.path) {
     var hc = p.hardChange;
     h += '<div style="font-size:0.62rem;color:var(--vermillion-300);padding:4px 6px;background:rgba(192,64,48,0.1);border:1px solid rgba(192,64,48,0.3);border-radius:3px;margin-bottom:4px;font-family:monospace;">\u2696\ufe0e <b>' + escHtml(hc.path) + '</b> <span style="color:var(--ink-200);">' + escHtml(hc.op||'set') + '</span> <b>' + escHtml(String(hc.value)) + '</b></div>';
   }
@@ -1919,6 +1920,8 @@ function _wtNormalizeHardChangePath(path) {
     p = m[2];
   }
   p = p.replace(/^(vars|variables|var|变量|變量|七变量|七變量)\./i, '');
+  var charPath = _wtNormalizeCharacterHardChangePath(p);
+  if (charPath) return root + charPath;
 
   var aliases = {
     '帑廪': 'guoku.money',
@@ -1978,6 +1981,215 @@ function _wtNormalizeHardChangePath(path) {
     'minxin.value': 'minxin.trueIndex'
   };
   return root + (aliases[p] || p);
+}
+
+function _wtNormalizeCharacterHardChangePath(path) {
+  var p = String(path || '').trim().replace(/\s+/g, '');
+  p = p.replace(/\[(\d+)\]/g, '.$1');
+  var directLoc = p.match(/^(?:人物所在地|角色所在地|NPC所在地|npc所在地)\.(.+)$/);
+  if (directLoc) return 'chars.' + directLoc[1] + '.location';
+  var directLoyalty = p.match(/^(?:人物忠诚|人物忠诚度|角色忠诚|角色忠诚度|NPC忠诚|NPC忠诚度|npc忠诚|npc忠诚度)\.(.+)$/);
+  if (directLoyalty) return 'chars.' + directLoyalty[1] + '.loyalty';
+  var m = p.match(/^(?:chars|characters|character|allCharacters|人物|角色|NPC|npc)\.(.+)\.([^.]+)$/);
+  if (!m) return '';
+  var field = _wtCanonicalCharacterHardChangeField(m[2]);
+  if (!field) return '';
+  return 'chars.' + m[1] + '.' + field;
+}
+
+function _wtCanonicalCharacterHardChangeField(field) {
+  var f = String(field || '').trim().replace(/\s+/g, '');
+  var aliases = {
+    '所在地': 'location',
+    '所在': 'location',
+    '位置': 'location',
+    '地点': 'location',
+    '地點': 'location',
+    '当前所在地': 'location',
+    '目前所在地': 'location',
+    'currentLocation': 'location',
+    'place': 'location',
+    'loc': 'location',
+    'location': 'location',
+    '忠诚': 'loyalty',
+    '忠诚度': 'loyalty',
+    '忠誠': 'loyalty',
+    '忠誠度': 'loyalty',
+    'loyalty': 'loyalty'
+  };
+  return aliases[f] || f;
+}
+
+function _wtHardChangeCharacterLists() {
+  var lists = [];
+  try {
+    if (typeof GM !== 'undefined' && GM && Array.isArray(GM.chars)) lists.push({ name: 'chars', list: GM.chars });
+    if (typeof GM !== 'undefined' && GM && Array.isArray(GM.allCharacters) && GM.allCharacters !== GM.chars) lists.push({ name: 'allCharacters', list: GM.allCharacters });
+  } catch(_) {}
+  return lists;
+}
+
+function _wtNormalizeCharacterLookupToken(v) {
+  return String(v || '').trim().replace(/\s+/g, '').replace(/[「」『』《》【】\[\]（）()"'“”]/g, '');
+}
+
+function _wtFindCharacterHardChangeTarget(target) {
+  var t = _wtNormalizeCharacterLookupToken(target);
+  if (!t) return null;
+  var lists = _wtHardChangeCharacterLists();
+  var loose = [];
+  for (var li = 0; li < lists.length; li++) {
+    var list = lists[li].list;
+    for (var i = 0; i < list.length; i++) {
+      var ch = list[i];
+      if (!ch) continue;
+      var keys = [ch.name, ch.id, ch.displayName, ch.fullName, ch.title].map(_wtNormalizeCharacterLookupToken).filter(Boolean);
+      if (keys.indexOf(t) >= 0) return { ch: ch, index: i, listName: lists[li].name };
+      if (keys.some(function(k){ return k && (k.indexOf(t) >= 0 || t.indexOf(k) >= 0); })) loose.push({ ch: ch, index: i, listName: lists[li].name });
+    }
+  }
+  return loose.length === 1 ? loose[0] : null;
+}
+
+function _wtResolveCharacterHardChange(parts) {
+  if (!parts || parts.length < 3) return null;
+  var rootKey = String(parts[0] || '');
+  if (!/^(chars|characters|character|allCharacters|人物|角色|NPC|npc)$/i.test(rootKey)) return null;
+  var target = parts[1];
+  var field = _wtCanonicalCharacterHardChangeField(parts.slice(2).join('.'));
+  if (!field) return null;
+  var hit = null;
+  var lists = _wtHardChangeCharacterLists();
+  if (/^\d+$/.test(String(target || ''))) {
+    var idx = parseInt(target, 10);
+    var primary = (typeof GM !== 'undefined' && GM && Array.isArray(GM.chars)) ? GM.chars : null;
+    if (primary && primary[idx]) hit = { ch: primary[idx], index: idx, listName: 'chars' };
+    else if (lists.length && lists[0].list[idx]) hit = { ch: lists[0].list[idx], index: idx, listName: lists[0].name };
+  } else {
+    hit = _wtFindCharacterHardChangeTarget(target);
+  }
+  if (!hit || !hit.ch) return null;
+  return { ch: hit.ch, index: hit.index, listName: hit.listName, field: field };
+}
+
+function _wtMirrorCharacterHardChange(name, fields, deleteKeys) {
+  var key = _wtNormalizeCharacterLookupToken(name);
+  if (!key) return;
+  fields = fields || {};
+  deleteKeys = deleteKeys || [];
+  _wtHardChangeCharacterLists().forEach(function(entry) {
+    entry.list.forEach(function(item) {
+      if (!item || _wtNormalizeCharacterLookupToken(item.name) !== key) return;
+      Object.keys(fields).forEach(function(k) { item[k] = fields[k]; });
+      deleteKeys.forEach(function(k) { try { delete item[k]; } catch(_) {} });
+    });
+  });
+}
+
+function _wtSetCharacterLocationHardChange(ch, value) {
+  if (!ch) return;
+  var loc = String(value == null ? '' : value).trim();
+  ch.location = loc;
+  ch.place = loc;
+  ch.currentLocation = loc;
+  ch.loc = loc;
+  var clearTravel = [
+    '_travelTo',
+    '_travelFrom',
+    '_travelStartTurn',
+    '_travelRemainingDays',
+    '_travelArrival',
+    '_travelReason',
+    '_travelAssignPost',
+    '_travelAssignConcurrent'
+  ];
+  clearTravel.forEach(function(k) { try { delete ch[k]; } catch(_) {} });
+  _wtMirrorCharacterHardChange(ch.name, { location: loc, place: loc, currentLocation: loc, loc: loc }, clearTravel);
+}
+
+function _wtApplyScalarHardChange(oldVal, op, value) {
+  if (op === 'add') {
+    var delta = parseFloat(value);
+    if (isNaN(delta)) return { ok: false };
+    return { ok: true, value: (Number(oldVal) || 0) + delta };
+  }
+  if (op === 'mul') {
+    var m = parseFloat(value);
+    if (isNaN(m)) return { ok: false };
+    return { ok: true, value: (Number(oldVal) || 0) * m };
+  }
+  if (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim())) return { ok: true, value: parseFloat(value) };
+  return { ok: true, value: value };
+}
+
+function _wtAfterHardChange(normalizedPath, oldVal, newVal) {
+  try { if (typeof renderLeftPanel === 'function') renderLeftPanel(); } catch(_){}
+  try { if (typeof renderGameState === 'function') renderGameState(); } catch(_){}
+  try { if (typeof renderGuokuPanel === 'function') renderGuokuPanel(); } catch(_){}
+  try { if (typeof renderNeitangPanel === 'function') renderNeitangPanel(); } catch(_){}
+  try { if (typeof renderRenwu === 'function') renderRenwu(); } catch(_){}
+  try { if (typeof renderWenduiPanel === 'function') renderWenduiPanel(); } catch(_){}
+  try { if (typeof renderShizhengPanel === 'function') renderShizhengPanel(); } catch(_){}
+  try { if (typeof GM !== 'undefined' && GM._listeners && Array.isArray(GM._listeners.varChange)) {
+    GM._listeners.varChange.forEach(function(fn){ try { fn(normalizedPath, oldVal, newVal); } catch(_){} });
+  } } catch(_){}
+  if (typeof addEB === 'function') addEB('\u95EE\u5929', '\u76F4\u6539 ' + normalizedPath + ' \u00B7 ' + oldVal + '\u2192' + newVal);
+}
+
+function _wtCleanHardChangeToken(v) {
+  return String(v || '').trim()
+    .replace(/^[\s，。；、：:,.!?！？"'“”「」『』《》【】\[\]（）()]+/, '')
+    .replace(/[\s，。；、：:,.!?！？"'“”「」『』《》【】\[\]（）()]+$/, '');
+}
+
+function _wtCanonicalLocationHardChangeValue(v) {
+  var loc = _wtCleanHardChangeToken(v);
+  if (!loc) return '';
+  if (/^(京|京城|在京|入京|赴京)$/.test(loc)) {
+    try { return (GM && GM._capital) || '京师'; } catch(_) { return '京师'; }
+  }
+  return loc;
+}
+
+function _wtInferCharacterLocationHardChange(raw) {
+  var text = String(raw || '');
+  if (!/(所在地|所在|位置|地点|地點|迁|遷|移|抵达|抵達|到达|到達|入京|赴京|召.*京)/.test(text)) return null;
+  var chars = [];
+  _wtHardChangeCharacterLists().forEach(function(entry) {
+    entry.list.forEach(function(ch) {
+      if (ch && ch.name) chars.push(ch);
+    });
+  });
+  chars.sort(function(a, b){ return String(b.name || '').length - String(a.name || '').length; });
+  for (var i = 0; i < chars.length; i++) {
+    var name = String(chars[i].name || '');
+    var at = name ? text.indexOf(name) : -1;
+    if (at < 0) continue;
+    var after = text.slice(at + name.length);
+    var m = after.match(/(?:所在地|所在|位置|地点|地點|当前所在地|目前所在地)(?:设为|设置为|改为|改到|改至|变为|變為|为|為|=|：|:)([^，。；、\s]{1,20})/);
+    if (!m) m = after.match(/(?:迁到|迁至|遷到|遷至|移到|移至|抵达|抵達|到达|到達|赴|去|入|到|至)([^，。；、\s]{1,20})/);
+    var target = m ? _wtCanonicalLocationHardChangeValue(m[1]) : '';
+    if (!target && /(入京|赴京|召.*入京|召.*赴京)/.test(text)) target = _wtCanonicalLocationHardChangeValue('京');
+    if (target) return { path: 'chars.' + name + '.location', op: 'set', value: target };
+  }
+  return null;
+}
+
+function _wtAugmentParsedHardChange(raw, parsed, forcedCategory) {
+  parsed = parsed || {};
+  var cat = forcedCategory || parsed.category || '';
+  if (cat !== 'hardChange' && cat !== 'absolute') return parsed;
+  if (parsed.hardChange && parsed.hardChange.path) return parsed;
+  var inferred = _wtInferCharacterLocationHardChange(raw);
+  if (!inferred) return parsed;
+  parsed.hardChange = inferred;
+  if (!parsed.structured) parsed.structured = {};
+  parsed.structured.target = parsed.structured.target || String(inferred.path).split('.')[1] || '';
+  parsed.structured.action = parsed.structured.action || '修改人物所在地';
+  parsed.structured.scope = parsed.structured.scope || 'GM.chars';
+  parsed.interpretation = parsed.interpretation || ('将' + parsed.structured.target + '的所在地直接改为' + inferred.value);
+  parsed.plan = parsed.plan || '确认后立即写入人物所在地，并清理旧在途状态';
+  return parsed;
 }
 
 function _wtSetNumericIfPossible(obj, key, value) {
@@ -2074,6 +2286,26 @@ function _wtApplyHardChange(path, op, value) {
   else if (parts[0] === 'P' || parts[0] === 'p') { parts.shift(); root = P; }
   else root = GM;  // 默认 GM
   if (parts.length === 0) return false;
+  if (root === GM) {
+    var charChange = _wtResolveCharacterHardChange(parts);
+    if (charChange && charChange.ch) {
+      var charPath = (charChange.listName || 'chars') + '.' + charChange.index + '.' + charChange.field;
+      var oldCharVal = (charChange.field === 'location')
+        ? (charChange.ch.location || charChange.ch.place || charChange.ch.currentLocation || charChange.ch.loc || '')
+        : charChange.ch[charChange.field];
+      var scalar = _wtApplyScalarHardChange(oldCharVal, op || 'set', value);
+      if (!scalar.ok) return false;
+      if (charChange.field === 'location') _wtSetCharacterLocationHardChange(charChange.ch, scalar.value);
+      else {
+        charChange.ch[charChange.field] = scalar.value;
+        var mirror = {};
+        mirror[charChange.field] = scalar.value;
+        _wtMirrorCharacterHardChange(charChange.ch.name, mirror, []);
+      }
+      _wtAfterHardChange(charPath, oldCharVal, scalar.value);
+      return true;
+    }
+  }
   // 导航到父对象
   var cur = root;
   for (var i = 0; i < parts.length - 1; i++) {
@@ -2083,31 +2315,12 @@ function _wtApplyHardChange(path, op, value) {
   }
   var lastKey = parts[parts.length - 1];
   var oldVal = cur[lastKey];
-  if (op === 'add') {
-    var delta = parseFloat(value);
-    if (isNaN(delta)) return false;
-    cur[lastKey] = (Number(oldVal)||0) + delta;
-  } else if (op === 'mul') {
-    var m = parseFloat(value);
-    if (isNaN(m)) return false;
-    cur[lastKey] = (Number(oldVal)||0) * m;
-  } else {
-    // set
-    if (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim())) cur[lastKey] = parseFloat(value);
-    else cur[lastKey] = value;
-  }
+  var applied = _wtApplyScalarHardChange(oldVal, op || 'set', value);
+  if (!applied.ok) return false;
+  cur[lastKey] = applied.value;
   if (root === GM) _wtSyncHardChangeSideEffects(parts, cur[lastKey]);
   // 立即刷新 UI·让玩家看到数值变化——原只刷 renderLeftPanel 不够·补全帑廪/内帑/七变量/整体
-  try { if (typeof renderLeftPanel === 'function') renderLeftPanel(); } catch(_){}
-  try { if (typeof renderGameState === 'function') renderGameState(); } catch(_){}
-  try { if (typeof renderGuokuPanel === 'function') renderGuokuPanel(); } catch(_){}
-  try { if (typeof renderNeitangPanel === 'function') renderNeitangPanel(); } catch(_){}
-  try { if (typeof renderRenwu === 'function') renderRenwu(); } catch(_){}
-  // 变量变化广播·供 delta panel 等监听
-  try { if (typeof GM !== 'undefined' && GM._listeners && Array.isArray(GM._listeners.varChange)) {
-    GM._listeners.varChange.forEach(function(fn){ try { fn(normalizedPath, oldVal, cur[lastKey]); } catch(_){} });
-  } } catch(_){}
-  if (typeof addEB === 'function') addEB('\u95EE\u5929', '\u76F4\u6539 ' + normalizedPath + ' \u00B7 ' + oldVal + '\u2192' + cur[lastKey]);
+  _wtAfterHardChange(normalizedPath, oldVal, cur[lastKey]);
   return true;
 }
 

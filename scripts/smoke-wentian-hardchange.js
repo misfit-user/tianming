@@ -32,7 +32,33 @@ const context = {
         fiscal: { true: 72 }
       }
     },
-    chars: [{ name: '甲', loyalty: 20 }],
+    chars: [
+      { name: '甲', loyalty: 20 },
+      {
+        name: '袁崇焕',
+        loyalty: 55,
+        location: '宁远',
+        place: '宁远',
+        currentLocation: '宁远',
+        loc: '宁远',
+        _travelTo: '京师',
+        _travelRemainingDays: 8,
+        _travelReason: '赴召'
+      }
+    ],
+    allCharacters: [
+      {
+        name: '袁崇焕',
+        loyalty: 55,
+        location: '宁远',
+        place: '宁远',
+        currentLocation: '宁远',
+        loc: '宁远',
+        _travelTo: '京师',
+        _travelRemainingDays: 8,
+        _travelReason: '赴召'
+      }
+    ],
     _listeners: { varChange: [] }
   },
   P: {},
@@ -51,6 +77,8 @@ assert(context._wtNormalizeHardChangePath('vars.皇权.value') === 'huangquan.in
 assert(context._wtNormalizeHardChangePath('vars.皇威.value') === 'huangwei.index', '皇威 vars alias should target real huangwei index');
 assert(context._wtNormalizeHardChangePath('vars.腐败.value') === 'corruption.trueIndex', '腐败 vars alias should target real corruption index');
 assert(context._wtNormalizeHardChangePath('chars[0].loyalty') === 'chars.0.loyalty', 'bracket index path should normalize');
+assert(context._wtNormalizeHardChangePath('人物.袁崇焕.所在地') === 'chars.袁崇焕.location', 'Chinese character location path should normalize');
+assert(context._wtNormalizeHardChangePath('characters.袁崇焕.currentLocation') === 'chars.袁崇焕.location', 'character currentLocation path should normalize');
 assert(context._wtNormalizeHardChangePath('guoku.balance') === 'guoku.money', 'guoku balance alias should target money');
 assert(context._wtNormalizeHardChangePath('neicang.money') === 'neitang.money', 'legacy neicang alias should target neitang money');
 
@@ -80,6 +108,19 @@ assert(Math.abs(context.GM.corruption.trueIndex - (130 / 3)) < 0.000001, 'byDept
 
 assert(context._wtApplyHardChange('chars[0].loyalty', 'set', 99) === true, 'character bracket path should apply');
 assert(context.GM.chars[0].loyalty === 99, 'character bracket path should write the indexed character');
+
+assert(context._wtApplyHardChange('人物.袁崇焕.所在地', 'set', '京师') === true, 'character location by Chinese name should apply');
+assert(context.GM.chars[1].location === '京师', 'character location should update real GM.chars item');
+assert(context.GM.chars[1].place === '京师' && context.GM.chars[1].currentLocation === '京师' && context.GM.chars[1].loc === '京师', 'character location mirrors should sync');
+assert(context.GM.allCharacters[0].location === '京师' && context.GM.allCharacters[0].place === '京师', 'allCharacters mirror should sync');
+assert(!('_travelTo' in context.GM.chars[1]) && !('_travelRemainingDays' in context.GM.chars[1]), 'direct location set should clear stale travel state');
+assert(!Object.prototype.hasOwnProperty.call(context.GM.chars, '袁崇焕'), 'name path should not create shadow property on chars array');
+
+assert(context._wtApplyHardChange('chars.袁崇焕.location', 'set', '顺天府') === true, 'character location by chars.name path should apply');
+assert(context.GM.chars[1].location === '顺天府', 'chars.name.location should write real character');
+
+const inferred = context._wtAugmentParsedHardChange('天意让袁崇焕所在地改为京师', { category: 'absolute', structured: {} }, 'absolute');
+assert(inferred.hardChange && inferred.hardChange.path === 'chars.袁崇焕.location' && inferred.hardChange.value === '京师', 'Tianyi location text should infer hardChange payload');
 
 assert(src.includes("p.category === 'absolute'") && src.includes('p.hardChange && p.hardChange.path') && src.includes('_wtApplyHardChange(ahc.path'), 'Tianyi branch should immediately apply hardChange payloads');
 assert(src.includes('category":"narrative|setting|hardChange|edictSubstitute|absolute"'), 'Wentian parser JSON schema should allow absolute category');

@@ -585,11 +585,35 @@
 
   function _armyCommanderField(change) {
     if (!change || typeof change !== 'object') return null;
-    var keys = ['commander', 'commanderName', 'general', 'leader', 'newCommander', 'newGeneral', 'chiefCommander'];
+    var keys = ['commander', 'commanderName', 'general', 'leader', 'newCommander', 'newGeneral', 'chiefCommander', '统帅', '主帅', '主将', '将领', '将帅'];
     for (var i = 0; i < keys.length; i += 1) {
       if (Object.prototype.hasOwnProperty.call(change, keys[i]) && change[keys[i]] != null) {
         return String(change[keys[i]] || '').trim();
       }
+    }
+    return null;
+  }
+
+  function _armyTextField(change, keys) {
+    if (!change || typeof change !== 'object') return null;
+    for (var i = 0; i < keys.length; i += 1) {
+      var k = keys[i];
+      if (Object.prototype.hasOwnProperty.call(change, k) && change[k] != null) {
+        return String(change[k] || '').trim();
+      }
+    }
+    return null;
+  }
+
+  function _armyQualityField(change) {
+    return _armyTextField(change, ['quality', 'grade', 'eliteLevel', 'troopQuality', 'armyQuality', 'unitQuality', 'qualityLabel', '军质', '品质', '素质', '兵员素质', '部队质量', '军队质量']);
+  }
+
+  function _armyEquipmentField(change) {
+    var text = _armyTextField(change, ['equipmentCondition', 'equipmentStatus', 'equipmentLevel', 'equipmentSummary', 'equipmentDesc', 'equipmentText', '装备', '装备状况', '装备水平', '军械', '器械']);
+    if (text !== null) return text;
+    if (change && Object.prototype.hasOwnProperty.call(change, 'equipment') && !Array.isArray(change.equipment) && change.equipment != null) {
+      return String(change.equipment || '').trim();
     }
     return null;
   }
@@ -630,6 +654,37 @@
     return changed;
   }
 
+  function _syncArmyQualityAliases(army, quality) {
+    if (!army) return false;
+    quality = String(quality || '').trim();
+    var changed = false;
+    ['quality', 'grade', 'eliteLevel', 'troopQuality', 'armyQuality', 'unitQuality', 'qualityLabel'].forEach(function(k) {
+      if (army[k] !== quality) {
+        army[k] = quality;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
+  function _syncArmyEquipmentAliases(army, value) {
+    if (!army) return false;
+    var changed = false;
+    if (Array.isArray(value)) {
+      army.equipment = value;
+      changed = true;
+      return changed;
+    }
+    value = String(value || '').trim();
+    ['equipmentCondition', 'equipmentStatus', 'equipmentLevel', 'equipmentSummary', 'equipmentDesc', 'equipmentText'].forEach(function(k) {
+      if (army[k] !== value) {
+        army[k] = value;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
   function applyAIArmyChange(change, opts) {
     opts = opts || {};
     var G = global.GM;
@@ -645,6 +700,8 @@
     var army = _findArmyForAIChange(G, name);
     var reason = change.reason || change.rationale || opts.reason || 'AI推演';
     var commanderInput = _armyCommanderField(change);
+    var qualityInput = _armyQualityField(change);
+    var equipmentInput = _armyEquipmentField(change);
     var factionInput = (change.faction != null) ? change.faction
       : (change.owner != null) ? change.owner
       : (change.factionName != null) ? change.factionName
@@ -676,6 +733,8 @@
         garrison: change.garrison || change.location || change.region || change.province || change.destination || '',
         commander: commanderInput || '',
         equipment: Array.isArray(change.equipment) ? change.equipment : [],
+        quality: qualityInput || '',
+        equipmentCondition: equipmentInput || '',
         composition: Array.isArray(change.composition) ? change.composition : [{ type: armyType, count: delta }],
         state: change.state || 'garrison',
         source: opts.source || change.source || 'ai_military_change',
@@ -684,6 +743,8 @@
         _createdTurn: G.turn || 0
       };
       if (commanderInput) _syncArmyCommanderAliases(army, commanderInput, '');
+      if (qualityInput !== null) _syncArmyQualityAliases(army, qualityInput);
+      if (equipmentInput !== null) _syncArmyEquipmentAliases(army, equipmentInput);
       G.armies.push(army);
       if (factionName) {
         try {
@@ -711,6 +772,34 @@
           if (oldCommander !== commanderInput) {
             G._turnReport.push({ type:'military', armyName:army.name || name, field:'commander', old:oldCommander, new:commanderInput, reason:reason, source:opts.source || '', turn:G.turn||0 });
             if (typeof global.addEB === 'function') global.addEB('\u519b\u4e8b', (army.name || name) + '\u6539\u4efb\u4e3b\u5c06: ' + (commanderInput || '\u672a\u7f6e') + (reason ? '; ' + reason : ''));
+          }
+          changed = true;
+        }
+      }
+      if (qualityInput !== null) {
+        var oldQuality = String(army.quality || army.grade || army.eliteLevel || '').trim();
+        var qualityChanged = _syncArmyQualityAliases(army, qualityInput);
+        if (qualityChanged) {
+          if (oldQuality !== qualityInput && typeof opts.recordChange === 'function') {
+            opts.recordChange('military', army.name || name, 'quality', oldQuality, qualityInput, reason);
+          }
+          if (oldQuality !== qualityInput && G._turnReport) {
+            G._turnReport.push({ type:'military', armyName:army.name || name, field:'quality', old:oldQuality, new:qualityInput, reason:reason, source:opts.source || '', turn:G.turn||0 });
+          }
+          changed = true;
+        }
+      }
+      if (equipmentInput !== null || Array.isArray(change.equipment)) {
+        var newEquipmentValue = equipmentInput !== null ? equipmentInput : change.equipment;
+        var oldEquipment = String(army.equipmentCondition || army.equipmentStatus || army.equipmentLevel || '').trim();
+        var equipmentChanged = _syncArmyEquipmentAliases(army, newEquipmentValue);
+        var newEquipmentReport = Array.isArray(newEquipmentValue) ? ('装备 ' + newEquipmentValue.length + ' 项') : String(newEquipmentValue || '').trim();
+        if (equipmentChanged) {
+          if (oldEquipment !== newEquipmentReport && typeof opts.recordChange === 'function') {
+            opts.recordChange('military', army.name || name, 'equipmentCondition', oldEquipment, newEquipmentReport, reason);
+          }
+          if (oldEquipment !== newEquipmentReport && G._turnReport) {
+            G._turnReport.push({ type:'military', armyName:army.name || name, field:'equipmentCondition', old:oldEquipment, new:newEquipmentReport, reason:reason, source:opts.source || '', turn:G.turn||0 });
           }
           changed = true;
         }
@@ -873,6 +962,7 @@
         var patterns = [
           new RegExp(namePat + '[^。；;\\n]{0,32}?' + roleWords + '[^。；;\\n]{0,16}?由[^。；;\\n]{0,16}?改为\\s*([^，,。；;\\n\\s]{2,16})', 'g'),
           new RegExp(namePat + '[^。；;\\n]{0,32}?' + roleWords + '[^。；;\\n]{0,12}?(?:更正为|改任为|改为|更为|调整为|换为|易为|任为|新任|继任|补为|补授)\\s*([^，,。；;\\n\\s]{2,16})', 'g'),
+          new RegExp(namePat + '[^。；;\\n]{0,32}?' + roleWords + '\\s*[:：]?\\s*([^，,。；;\\n\\s]{2,16})', 'g'),
           new RegExp(namePat + '[^。；;\\n]{0,32}?(?:改由|由|转由|交由|移交|付与)\\s*([^，,。；;\\n\\s]{2,16})\\s*(?:接掌|' + leadTerms + ')', 'g'),
           new RegExp(namePat + '[^。；;\\n]{0,24}?' + handoverVerbs + '\\s*([^，,。；;\\n\\s]{2,16})\\s*(?:' + roleTerms + ')', 'g'),
           new RegExp(commandVerbs + '\\s*([^，,。；;\\n\\s]{2,16})\\s*(?:为|任|充|领|统领|统带|统辖|节制|督率|督|管带|接掌|' + leadTerms + ')[^。；;\\n]{0,24}?' + namePat + '(?:[^。；;\\n]{0,10}?' + roleWords + ')?', 'g'),
@@ -1306,6 +1396,25 @@
             }
             var nr = applyAIArmyChange(change, { source:'narrative.army_fields' });
             if (nr && nr.ok && nr.changed) count++;
+          }
+        });
+        var armyTextRules = [
+          { labels:'军质|品质|素质|兵员素质|部队质量|军队质量', field:'quality', reason:'叙事军质补录' },
+          { labels:'装备状况|装备水平|装备|军械|器械', field:'equipmentCondition', reason:'叙事装备补录' }
+        ];
+        armyTextRules.forEach(function(rule) {
+          var tpat = new RegExp(namePat + '[^。\\n]{0,120}?(?:' + rule.labels + ')\\s*[:：]?\\s*([^，,。；;\\n]{2,48})', 'g');
+          var tm;
+          while ((tm = tpat.exec(narrative)) !== null) {
+            var value = _cleanNarrativeFieldValue(tm[1]);
+            if (!value) continue;
+            var tkey = (army.id || army.name || alias) + '|' + rule.field + '|' + value;
+            if (seen[tkey]) continue;
+            seen[tkey] = true;
+            var textChange = { name: army.name || alias, reason: rule.reason };
+            textChange[rule.field] = value;
+            var tr = applyAIArmyChange(textChange, { source:'narrative.army_fields' });
+            if (tr && tr.ok && tr.changed) count++;
           }
         });
         (G.facs || []).forEach(function(fac) {

@@ -8621,6 +8621,29 @@
     return eq || '未录';
   }
 
+  function rightArmyActivityText(value){
+    var raw = String(value || '').trim();
+    if (!raw) return '驻防';
+    var key = raw.toLowerCase();
+    var map = {
+      garrison: '驻防',
+      stationed: '驻防',
+      idle: '待命',
+      marching: '行军',
+      march: '行军',
+      moving: '行军',
+      siege: '围城',
+      sieging: '围城',
+      battle: '交战',
+      fighting: '交战',
+      training: '操练',
+      patrol: '巡防',
+      routed: '溃散',
+      disbanded: '裁撤'
+    };
+    return map[key] || raw;
+  }
+
   function rightArmyMoneyText(a){
     var value = rightArmyFirst(a, ['salary','annualSalary','yearlySalary','upkeep','cost','monthlyCost'], '');
     if (value && typeof value === 'object') {
@@ -8655,7 +8678,7 @@
     var hot = morale < 45 || supply < 35 || mutiny >= 55;
     var commander = rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
     var location = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
-    var activity = rightArmyFirst(a, ['activity','state','status','currentAction'], '驻防');
+    var activity = rightArmyActivityText(rightArmyFirst(a, ['activity','state','status','currentAction'], '驻防'));
     var desc = rightArmyFirst(a, ['description','desc','note','memo','reason'], '暂无军情说明');
     return '<section class="tmrp-card tmrp-army-detail ' + (hot ? 'hot' : 'ok') + '">' +
       '<div class="tmrp-card-title"><span>' + esc(rightArmyName(a)) + '</span><small>' + esc(rightArmyType(a)) + ' · ' + esc(rightArmyFmtNum(soldiers)) + ' 兵</small></div>' +

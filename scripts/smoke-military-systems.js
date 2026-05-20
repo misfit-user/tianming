@@ -213,6 +213,65 @@ check(context.GM._turnReport.some(function(r) {
 }), 'army commander change should be recorded in turn report');
 
 context.GM = {
+  turn: 7,
+  chars: [{ name: '曹文诏', faction: '明朝廷' }],
+  facs: [],
+  armies: [{
+    id: 'army_shenlong',
+    name: '神龙军',
+    faction: '明朝廷',
+    commander: '',
+    commanderName: '',
+    general: '',
+    quality: '',
+    equipmentCondition: '',
+    soldiers: 30000,
+    size: 30000,
+    strength: 30000,
+    state: 'garrison'
+  }]
+};
+const chineseArmyFieldSwap = context.applyAITurnChanges({
+  narrative: '命兵部补录更正神龙军信息：统帅 曹文诏；军质：精锐；装备：精良（全员列装自生火铳）。',
+  army_changes: [{
+    name: '神龙军',
+    '统帅': '曹文诏',
+    '军质': '精锐',
+    '装备': '精良（全员列装自生火铳）',
+    reason: '兵部补录'
+  }]
+});
+check(chineseArmyFieldSwap && chineseArmyFieldSwap.ok, 'Chinese army field correction should apply turn');
+checkEq(context.GM.armies[0].commander, '曹文诏', 'Chinese 统帅 key should update army.commander');
+checkEq(context.GM.armies[0].commanderName, '曹文诏', 'Chinese 统帅 key should sync commander aliases');
+checkEq(context.GM.armies[0].quality, '精锐', 'Chinese 军质 key should update army.quality');
+checkEq(context.GM.armies[0].equipmentCondition, '精良（全员列装自生火铳）', 'Chinese 装备 key should update army.equipmentCondition');
+
+context.GM = {
+  turn: 7,
+  chars: [{ name: '曹变蛟', faction: '明朝廷' }],
+  facs: [],
+  armies: [{
+    id: 'army_shenlong_narrative',
+    name: '神龙军',
+    faction: '明朝廷',
+    commander: '',
+    commanderName: '',
+    general: '',
+    quality: '',
+    equipmentCondition: '',
+    soldiers: 30000
+  }]
+};
+const narrativeArmyFieldSwap = context.applyAITurnChanges({
+  narrative: '命兵部补录更正神龙军信息：统帅 曹变蛟；军质：精锐；装备：精良（全员列装自生火铳）。'
+});
+check(narrativeArmyFieldSwap && narrativeArmyFieldSwap.ok, 'narrative-only army field correction should apply turn');
+checkEq(context.GM.armies[0].commander, '曹变蛟', 'narrative 统帅 should update army.commander');
+checkEq(context.GM.armies[0].quality, '精锐', 'narrative 军质 should update army.quality');
+checkEq(context.GM.armies[0].equipmentCondition, '精良（全员列装自生火铳）', 'narrative 装备 should update army.equipmentCondition');
+
+context.GM = {
   turn: 8,
   chars: [{ name: '张惟贤', faction: '明朝廷' }],
   facs: [],

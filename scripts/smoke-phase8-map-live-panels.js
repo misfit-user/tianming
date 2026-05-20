@@ -534,7 +534,8 @@ sandbox.GM.armies.push({
   faction: MING,
   soldiers: 1111,
   commanderDisplayName: ALIAS_COMMANDER,
-  generalName: ALIAS_COMMANDER
+  generalName: ALIAS_COMMANDER,
+  state: 'garrison'
 });
 sandbox.GM.running = true;
 sandbox.P.playerInfo = { factionName: MING };
@@ -546,6 +547,8 @@ sandbox.TMPhase8FormalBridge.openPanel('army');
 const rightPanel = sandbox.document.getElementById('tm-phase8-formal-panel');
 const armyPanelHtml = rightPanel && rightPanel.innerHTML || '';
 assertAll(armyPanelHtml, ['\u522b\u540d\u519b', ALIAS_COMMANDER], 'right army panel alias commander');
+const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
+assert(bridgeSource.includes("garrison: '驻防'"), 'right army detail should localize raw garrison state');
 
 console.log('[smoke-phase8-map-live-panels] PASS');
 process.exit(0);

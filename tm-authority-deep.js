@@ -41,8 +41,31 @@
     // 承诺：皇帝宣布但未执行
     (G._imperialPromises || []).forEach(function(p) {
       if (p.fulfilled) return;
+      // ★2026-07-01 W5·兑现检测(宽松·偏袒玩家避误罚):promote 类若该臣官职较许诺时有变→视为践诺·标 fulfilled 并谢恩记忆
+      var _pch = (G.chars || []).filter(function(c){ return c && c.name === p.npc; })[0];
+      if (_pch && (p.kind === 'promote' || !p.kind)) {
+        // ★codex-fix W5:兑现须是「真升迁」·非任意 title 变化(旧码 title 一变就 fulfilled·致平调/降职/无关任命都被当践诺·玩家借降职逃避食言之罚)。
+        //   rankLevel 1=正一品最高·升迁=数值下降。平调(rank同)/降职(rank升)不算;原本无官(snapRank null)后授实职亦算兑现该「加官」诺。
+        var _nowTitle = (_pch.officialTitle || _pch.title || '');
+        var _nowRank = (typeof _pch.rankLevel === 'number') ? _pch.rankLevel : null;
+        var _promoted = (_nowRank != null && p._snapRank != null && _nowRank < p._snapRank);
+        var _gotOffice = (p._snapRank == null && _nowRank != null && _nowTitle && _nowTitle !== (p._snapTitle || ''));
+        if (_promoted || _gotOffice) {
+          p.fulfilled = true;
+          if (typeof global.NpcMemorySystem !== 'undefined') { try { global.NpcMemorySystem.remember(p.npc, '陛下践诺·擢臣以职·感佩圣恩', '敬', 6, '天子'); } catch (_e1) {} }
+          return;
+        }
+      }
       if ((ctx.turn - p.promiseTurn) > _turnsForMonthsLocal(3) && !p._brokenFired) {
         p._brokenFired = true;
+        // ★2026-07-01 W5·食言:铁证逾期(逾3月)仍未兑现→掉该臣忠诚/加压+入怨恨记忆(每诺仅一次)·再触发皇威 brokenPromise
+        if (_pch && !p._npcReneged) {
+          p._npcReneged = true;
+          if (typeof _pch.loyalty === 'number') _pch.loyalty = Math.max(0, _pch.loyalty - 8);
+          if (typeof _pch.stress === 'number') _pch.stress = Math.min(100, _pch.stress + 6);
+          _pch._promiseBrokenByPlayer = (_pch._promiseBrokenByPlayer || 0) + 1;
+          if (typeof global.NpcMemorySystem !== 'undefined') { try { global.NpcMemorySystem.remember(p.npc, '圣意反复·许而不予（' + (p.detail || '恩赏') + '）·臣心黯然', '怨', 7, '天子'); } catch (_e2) {} }
+        }
         if (typeof global.AuthorityComplete !== 'undefined') {
           global.AuthorityComplete.triggerHuangweiEvent('brokenPromise', {});
         }

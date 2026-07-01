@@ -311,4 +311,73 @@ assert.strictEqual(
   );
 });
 
+// ── 2026-06-16 减量:47 个零引用死函数已删除(全树 ref=1 复核)·锁定防回潮 ──
+[
+  ['tm-endturn-render.js', ['_renderUnifiedChangesLegacy']],
+  ['tm-npc-decision.js', ['executeNpcAction', 'generateWeightReport', 'rankCandidatesByWeight', 'npcExecutionLayer', '_npcHasRealFaction']],
+  ['tm-game-loop.js', ['_showEnthronementEvent']],
+  ['tm-military.js', ['startBuildingUpgrade', 'generateBattleStrategyReport', 'recruitUnit', 'transferUnit', 'disbandUnit', 'generateArmyCompositionReport', 'getCharacterResidence']],
+  ['tm-feudal.js', ['revokeTitle', 'getHighestTitle', 'cutSupplyRoute', 'getAutonomyPermission']],
+  ['tm-map-system.js', ['generateVoronoiMap', 'applyTerrainEffects', 'setPolygonTerrain']],
+  ['tm-mechanics.js', ['processCharacterDeath', 'showDeathNotification']],
+  ['phase8-formal-map.js', ['regionIdentity', 'objectValue', 'realmFactionSub', 'anyDisplayValue']],
+  ['tm-content-manager.js', ['catalogPackRowV2', 'commentRow']],
+  ['tm-ai-infra.js', ['buildTimeTriad', 'xmlTag', 'getFullDateStr', 'turnToDay', 'getAICacheStats']],
+  ['tm-keju.js', ['_kejuFindDivision']],
+  ['phase8-formal-drafts.js', ['getEdictArchiveRows', 'getFormalEdictCategories', 'letterStateClassFormal']],
+  ['phase8-formal-bridge.js', ['pendingEdictCount', 'pendingLetterCount', 'recordCount', 'showLegacy']],
+  ['tm-ai-change-applier.js', ['_tmExistsChar', '_tmExistsFaction']],
+  ['tm-corruption-engine.js', ['setIfDef']],
+  ['tm-wendui.js', ['setWenduiMode']],
+  ['tm-chaoyi-changchao.js', ['_cc3_checkDeptAbsenceMalus']],
+  ['tm-npc-engine.js', ['generateChangeReport', 'toggleSection', 'updatePartyLoyaltyLink',
+    'buildNpcContext', 'getCharacterFromContext', 'getFactionFromContext', 'getVariableFromContext',
+    'getRelationFromContext', 'getOpinionFromContext', 'getMilitaryStrengthFromContext', 'getEconomicLevelFromContext',
+    'calculateDecisionWeight', 'evaluateCondition', 'generateDecisionsForActor', 'executeNpcDecisions']]
+].forEach((entry) => {
+  const src = read(entry[0]);
+  entry[1].forEach((name) => {
+    assert(
+      !new RegExp('function\\s+' + name + '\\s*\\(').test(src),
+      '[减量2026-06-16] ' + entry[0] + ' 的零引用死函数应保持删除: ' + name
+    );
+  });
+});
+// closeMapDossier 曾有重复定义(旧版已删)·锁定只剩一个(完整版)
+assert.strictEqual(
+  countMatches(read('phase8-formal-map.js'), /function\s+closeMapDossier\s*\(/g),
+  1,
+  'closeMapDossier duplicate definition should stay removed (only fuller version remains)'
+);
+// tm-test.js 整文件已删除(dev-only·runAllTests 零消费方)·锁定不回潮
+assert(!fs.existsSync(path.join(root, 'tm-test.js')), 'tm-test.js (dev-only test harness) should stay deleted');
+assert(!/tm-test\.js/.test(read('index.html')), 'index.html should not reload the deleted tm-test.js');
+
+// ── npc-engine 决策死簇切除(2026-06-16)·锁定 IIFE + 解线不回潮 ──
+const npcEngineSrc = read('tm-npc-engine.js');
+assert(!/var\s+InteractionSystem\s*=\s*\(function/.test(npcEngineSrc), 'dead InteractionSystem IIFE should stay removed');
+assert(!/var\s+NpcEngine\s*=\s*\(function/.test(npcEngineSrc), 'dead NpcEngine driver IIFE should stay removed');
+// live 部分必须保留
+assert(/window\.TM\.NpcEngine\.aggregateDims\s*=\s*_aggregatePersonalityDims/.test(npcEngineSrc), 'live TM.NpcEngine.aggregateDims export must remain');
+assert(/var\s+CentralizationSystem\s*=\s*\(function/.test(npcEngineSrc), 'live CentralizationSystem must remain');
+assert(/function\s+resetTurnChanges\s*\(/.test(npcEngineSrc) && /function\s+evaluateThresholdTriggers\s*\(/.test(npcEngineSrc), 'live resetTurnChanges/evaluateThresholdTriggers must remain');
+// 5-file 解线:死调用/死注册保持移除
+assert(!/NpcEngine\.runEngine\s*\(/.test(read('tm-endturn-systems.js')), 'dead NpcEngine.runEngine() call should stay removed');
+assert(!/InteractionSystem\.initialize\s*\(/.test(read('tm-patches.js')) && !/NpcEngine\.initialize\s*\(/.test(read('tm-patches.js')), 'dead InteractionSystem/NpcEngine.initialize() calls should stay removed');
+assert(!/_buildWindowRefGroup\('NPC\.legacy'/.test(read('tm-namespaces.js')), 'dead NPC.legacy namespace group should stay removed');
+
+// ── 二阶死代码切除(2026-06-16·被删发射器/调用方留下的孤儿)·锁定不回潮 ──
+[
+  ['tm-game-loop.js', ['_confirmEnthronement']],
+  ['tm-map-system.js', ['delaunayTriangulation', 'generateVoronoiCells', 'clipVoronoiCells']],
+  ['tm-military.js', ['getBuildingCost', 'getBuildingTime']],
+  ['tm-feudal.js', ['revokeFief']],
+  ['tm-mechanics.js', ['removeFromOfficeTree']]
+].forEach((entry) => {
+  const src = read(entry[0]);
+  entry[1].forEach((name) => {
+    assert(!new RegExp('function\\s+' + name + '\\s*\\(').test(src), '[二阶减量2026-06-16] ' + entry[0] + ' 的孤儿死函数应保持删除: ' + name);
+  });
+});
+
 console.log('smoke-dead-code-removal-guards ok');

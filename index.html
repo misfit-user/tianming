@@ -15,7 +15,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 正在运行的包版本·与代码同包同发·footer 与在线版更新提示都读这里（发版工具自动盖戳） -->
-<meta name="tm-version" content="1.3.4.3">
+<meta name="tm-version" content="1.3.4.4">
 <title>天命 · AI历史模拟</title>
 <script>
 (function(){
@@ -61,7 +61,6 @@
 </script>
 <link id="tm-main-css" rel="stylesheet" href="styles.css?v=20260621-beautify" data-css-base="styles.css?v=20260621-beautify" data-css-fallback="https://cdn.jsdelivr.net/gh/misfit-user/tianming@main/styles.css?v=20260621-beautify" onload="window.TM_CSS_LOADED&&window.TM_CSS_LOADED(this)" onerror="window.TM_CSS_RETRY&&window.TM_CSS_RETRY(this)">
 <link rel="stylesheet" href="tm-keju-paradigm-panel.css?v=20260524-L2">
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <script src="map-converter.js"></script>
 <script src="map-integration.js"></script>
 <script src="map-display.js?v=2026042816"></script>
@@ -226,7 +225,7 @@
   </div>
   <!-- 底部栏 -->
   <div class="home-foot">
-    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.4.3</span></div>
+    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.4.4</span></div>
     <div class="f-mid" id="home-foot-mid">春 分<span class="dot">◆</span>太 平<span class="dot">◆</span>河 清 海 晏</div>
     <div class="f-right">
       <span class="lt-dibao-btn" style="cursor:pointer;" onclick="if(window.TM_Changelog)TM_Changelog.show();" title="查看更新公告"><kbd>报</kbd> 邸 报<span class="tm-cl-dot" id="tm-cl-dot" style="display:none;"></span></span>
@@ -603,6 +602,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-shiji-qiju-ui.js?v=2026042714"></script>
 <script src="tm-court-meter.js?v=2026050701"></script>
 <script src="tm-conspiracy.js?v=20260621"></script>
+<script src="tm-globalrules.js?v=20260630"></script><!-- 全局持续规则册（国是·风气）·B1·建筑/事件可立间接全局之制+配套阻力 -->
+<script src="tm-world-digest.js?v=20260630"></script><!-- 天下牵动·因果综述·W1a·把割裂的系统反应重组成连贯因果注入推演 -->
+<script src="tm-world-reactors.js?v=20260630"></script><!-- 世界反应总线·跨系统reactor·W2a军事→势力·flag-gated默认关 -->
 <script src="tm-endturn-systems.js?v=20260623-metacog"></script>
 <script src="tm-endturn-ai-helpers.js?v=2026042714"></script>
 <script src="tm-endturn-ai-context.js?v=2026050401"></script>
@@ -814,6 +816,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-env-recovery-fill.js"></script>
 <script src="tm-authority-engines.js?v=20260623-ledgerflow"></script>
 <script src="tm-building-works.js?v=20260621-s7"></script><!-- A4 活字段+S6 生命周期(灾损/修缮/维护分档)+S7 营造可观测账 buildingLedger -->
+<script src="tm-talent-cohorts.js?v=20260630-talent-s1"></script><!-- 人才范式渗透引擎 S1：多瓶颈漏斗(招生/师资/吸纳/历练/制度空间)·flag talentCohortEnabled 默认关 -->
+<script src="tm-talent-bottlenecks.js?v=20260630-talent-s3b"></script><!-- S3b：瓶颈接全国 economyBase/政区/驻军(没产业=没岗位=毕业即失业) -->
+<script src="tm-talent-building-bridge.js?v=20260630-talent-s2"></script><!-- S2：建筑完工→人才范式源(费效封顶·可逆·幂等) -->
+<script src="tm-talent-backlash.js?v=20260630-talent-s5"></script><!-- S5：渗透反弹→御案时政政治事件(请罢新学/失业学潮)+临界旧式瓦解+动态room政治阻力 -->
 <script src="tm-field-pipelines.js?v=20260612"></script>
 <script src="tm-region-status.js?v=20260612"></script>
 <script src="tm-renli.js?v=20260616"></script>
@@ -950,6 +956,9 @@ console.log('天命游戏脚本开始加载...');
 
 <!-- 触屏 pinch 缩放 + 拖拽通用桥（舆图 / 官制树）·仅 touch 事件·桌面零影响 -->
 <script src="tm-pinch-pan.js?v=20260614-pinchpan"></script>
+
+<!-- 全局「悬停显示完整文本」·委托监听 document·凡被 CSS 省略号截断(…)的元素鼠标悬停即弹完整内容·仅 hover:hover 设备装(纯触屏不装) -->
+<script src="tm-hover-fulltext.js?v=20260701-fulltip"></script>
 
 <!-- 触屏工效层（移植 Phase 2·S2.1）·仅 @media(pointer:coarse) 生效·桌面零影响·置尾以压过御案注入样式 -->
 <link rel="stylesheet" href="tm-touch.css?v=20260603-s21-touch">

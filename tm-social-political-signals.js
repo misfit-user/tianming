@@ -245,6 +245,8 @@
       confidence: clamp(raw.confidence != null ? raw.confidence : 0.7, 0, 1),
       linkedIssue: compact(raw.linkedIssue || raw.issueId || raw.topicId || raw.chaoyiTrackId || '', 100),
       reason: reason,
+      // W2c·上游因（此信号「由什么引发」）——供 WorldDigest 串成「因→果→牵动谁」因果链；缺省空串不改既有行为
+      cause: compact(raw.cause || raw.causedBy || raw.upstream || raw.trigger || '', 160),
       characterName: compact(raw.characterName || raw.character || raw.executorName || raw.delegateCharacter || raw.sourceCharacter || raw.actorName || '', 80),
       characterId: compact(raw.characterId || raw.charId || raw.executorId || raw.delegateCharacterId || raw.sourceCharacterId || '', 80),
       executorName: compact(raw.executorName || raw.executor || '', 80),
@@ -1397,6 +1399,29 @@
     return vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
   }
 
+  // W2b·国库紧张（破产/赤字）→ 牵动流民·农户（赈济救荒无力、欠饷积压）。读 GM.guoku 确定性态，
+  //   与既有 fiscal-peasant-burden（民负/加派→农户）互补：那条管「负担重」，这条管「国库空·赈不起」。
+  function readTreasuryStrain(root) {
+    var gk = root && root.guoku;
+    if (!gk || typeof gk !== 'object') return null;
+    var bk = gk.bankruptcy;
+    if (bk && bk.active) {                                  // 破产态最重（与 guoku-engine.checkBankruptcy 同源）
+      var sev = Number(bk.severity);
+      sev = isFinite(sev) && sev > 0 ? (sev > 1 ? sev / 100 : sev) : 0.85;   // severity 容 0-1 或 0-100 两种口径
+      return { severity: clamp(sev, 0.5, 1), cause: '帑廪告罄·国库破产', trigger: 'bankruptcy' };
+    }
+    var bal = Number(gk.balance);
+    var annual = Number(gk.annualIncome) || (Number(gk.monthlyIncome) || 0) * 12 || 0;
+    if (isFinite(bal) && bal < 0 && annual > 0) {
+      var deficitRatio = -bal / annual;                    // = 赤字/年入·与 guoku-engine:835 同口径
+      var thr = tuneNumber(root, 'socialSignals.thresholds.treasuryDeficit', 0.15);
+      if (deficitRatio >= thr) {
+        return { severity: clamp(deficitRatio / 0.5, 0, 1), cause: '国库赤字·岁入不抵岁出', trigger: 'deficit' };  // 国库赤字·岁入不抵岁出
+      }
+    }
+    return null;
+  }
+
   function scanKey(root, source, kind, turn) {
     return [turn || 0, source || 'runtime-pressure', kind || 'signal'].join(':');
   }
@@ -1467,6 +1492,29 @@
             unrestDelta: { grievance: -Math.round(2 + tSeverity * 4), petition: -Math.round(1 + tSeverity * 3) },
             demand: 'reduce tax and levy pressure',
             reason: 'tax pressure'
+          };
+        })
+      });
+    }
+
+    // W2b·国库紧张（破产/赤字）→ 牵动流民·农户。带 cause 上游因 → WorldDigest 串「因→致→果→牵动」因果链（W2c）。
+    var strain = readTreasuryStrain(root);
+    if (strain) {
+      var sSeverity = strain.severity;
+      emit('treasury-strain', {
+        tags: ['fiscal', 'treasury', 'deficit', 'relief', 'refugee'],
+        intensity: sSeverity,
+        confidence: 0.86,
+        cause: strain.cause,
+        // reason=下游后果（不复述 cause 里的「国库赤字/告罄」，避免链条重复）
+        reason: strain.trigger === 'bankruptcy' ? '府库一空，赈济停摆、边饷断绝、民生失养' : '赈济救荒无力、欠饷积压，民生渐困',
+        affectedClasses: inferClassImpacts(root, ['refugee', 'famine', 'relief', 'displaced', 'poor', 'peasant', 'rural', 'household', '流民', '灾民', '赈', '农', '民', '贫'], function() {
+          return {
+            satisfactionDelta: -Math.max(3, Math.round(3 + sSeverity * 6)),
+            influenceDelta: 0,
+            unrestDelta: { grievance: -Math.round(3 + sSeverity * 5), petition: -Math.round(2 + sSeverity * 3) },
+            demand: 'state relief and back-pay',
+            reason: 'treasury strain cuts relief capacity'
           };
         })
       });
@@ -1804,23 +1852,23 @@
     if (has(/tax|levy|arrear|rent|corvee|tenant|quota|赋|税|租|役|欠粮|加派|催科|催征/)) {
       var taxRelief = positive(/relief|remit|remission|reduce|lower|exempt|减免|蠲|赈|抚/);
       var taxStress = has(/unrest|complain|anger|pressed|tighten|caused|pressure|new levy|加派|催|怨|困|骚动|民变/);
-      var taxSign = taxRelief && !taxStress ? 1 : -1;
+      var taxSign = taxRelief && !taxStress ? 1 : (taxStress ? -1 : 0);   // \u4e2d\u6027(\u65e0\u7ebe\u89e3\u65e0\u538b)\u21920\u00b7\u4e0d\u518d\u65e0\u8111\u5224\u574f
       emit('turn-result-tax-pressure', {
         tags: ['turn-result', 'tax', 'levy', 'peasant', 'merchant'],
         intensity: taxSign > 0 ? 0.42 : 0.68,
         reason: compact(evidence.join(' '), 220),
         affectedClasses: inferClassImpacts(root, ['tax', 'levy', 'arrear', 'rent', 'tenant', 'peasant', 'farmer', 'merchant', 'guild', '\u7a0e', '\u8d4b', '\u79df', '\u6c11'], function() {
           return {
-            satisfactionDelta: taxSign > 0 ? 3 : -4,
-            influenceDelta: taxSign < 0 ? 1 : 0,
-            unrestDelta: { grievance: taxSign > 0 ? 2 : -3, petition: taxSign > 0 ? 1 : -2 },
+            satisfactionDelta: taxSign > 0 ? 3 : (taxSign < 0 ? -4 : 0),
+            influenceDelta: taxSign < 0 ? 1 : (taxSign > 0 ? -1 : 0),        // \u7ebe\u89e3\u2192\u9000\u6f6e\u8dcc\u5f71\u54cd(\u4fee\u65e0\u8111\u5347)
+            unrestDelta: { grievance: taxSign > 0 ? 2 : (taxSign < 0 ? -3 : 0), petition: taxSign > 0 ? 1 : (taxSign < 0 ? -2 : 0) },
             demand: taxSign > 0 ? 'preserve tax and levy relief' : 'reduce tax and levy pressure',
             reason: 'AI turn result tax/levy pressure'
           };
         }),
         affectedParties: inferPartyImpacts(root, ['tax', 'levy', 'relief', 'tenant', 'peasant', 'merchant'], function() {
           return {
-            influenceDelta: 1,
+            influenceDelta: taxSign < 0 ? 1 : (taxSign > 0 ? -1 : 0),        // \u53cc\u5411
             cohesionDelta: taxSign > 0 ? 1 : 0,
             shortGoal: taxSign > 0 ? 'defend turn-result tax relief' : 'respond to turn-result tax pressure',
             reason: 'AI turn result tax/levy pressure'
@@ -1831,13 +1879,15 @@
 
     if (has(/land|tenant|estate|annexation|field|田|地|佃|兼并|庄田/)) {
       var landRelief = positive(/protect|survey|check|restrain|清丈|抑兼并|保护|均田|安抚/);
+      var landStress = has(/annexation|seize|encroach|displace|兼并|夺|侵占|失地|流离|逼佃/);
+      var landSign = landRelief ? 1 : (landStress ? -1 : 0);   // 「田/地」常中性出现·无兼并压则不判坏(中性→0)
       emit('turn-result-land-pressure', {
         tags: ['turn-result', 'land', 'tenant', 'peasant'],
         intensity: landRelief ? 0.4 : 0.64,
         affectedClasses: inferClassImpacts(root, ['land', 'tenant', 'field', 'peasant', 'farmer', '\u7530', '\u5730', '\u4f43'], function() {
           return {
-            satisfactionDelta: landRelief ? 3 : -4,
-            unrestDelta: { grievance: landRelief ? 2 : -3 },
+            satisfactionDelta: landSign > 0 ? 3 : (landSign < 0 ? -4 : 0),
+            unrestDelta: { grievance: landSign > 0 ? 2 : (landSign < 0 ? -3 : 0) },
             demand: landRelief ? 'keep land protection credible' : 'check land annexation and protect tenants',
             reason: 'AI turn result land pressure'
           };
@@ -1848,23 +1898,23 @@
     if (has(/military|soldier|garrison|wage|arrear|mutiny|conscription|army|兵|军|饷|欠饷|哗变|强征|征发/)) {
       var milRelief = positive(/pay|paid|repaid|settle|补饷|发饷|给饷|安抚/);
       var milStress = has(/arrear|mutiny|unpaid|complain|欠饷|哗变|强征|怨/);
-      var milSign = milRelief && !milStress ? 1 : -1;
+      var milSign = milRelief && !milStress ? 1 : (milStress ? -1 : 0);   // \u4e2d\u6027\u21920
       emit('turn-result-military-arrears', {
         sourceSystem: 'turn-result',
         tags: ['turn-result', 'military', 'wage', 'arrears', 'soldier'],
         intensity: milSign > 0 ? 0.42 : 0.7,
         affectedClasses: inferClassImpacts(root, ['military', 'soldier', 'wage', 'arrears', 'garrison', '\u519b', '\u5175', '\u9977', '\u6b20\u9977'], function() {
           return {
-            satisfactionDelta: milSign > 0 ? 3 : -5,
-            influenceDelta: milSign < 0 ? 1 : 0,
-            unrestDelta: { grievance: milSign > 0 ? 2 : -4, revolt: milSign > 0 ? 1 : -3 },
+            satisfactionDelta: milSign > 0 ? 3 : (milSign < 0 ? -5 : 0),
+            influenceDelta: milSign < 0 ? 1 : (milSign > 0 ? -1 : 0),
+            unrestDelta: { grievance: milSign > 0 ? 2 : (milSign < 0 ? -4 : 0), revolt: milSign > 0 ? 1 : (milSign < 0 ? -3 : 0) },
             demand: milSign > 0 ? 'keep military pay current' : 'pay military wage arrears',
             reason: 'AI turn result military arrears'
           };
         }),
         affectedParties: inferPartyImpacts(root, ['military', 'soldier', 'wage', 'arrears'], function() {
           return {
-            influenceDelta: 1,
+            influenceDelta: milSign < 0 ? 1 : (milSign > 0 ? -1 : 0),
             shortGoal: milSign > 0 ? 'defend wage settlement' : 'press for wage arrears settlement',
             reason: 'AI turn result military arrears'
           };
@@ -1875,22 +1925,22 @@
     if (has(/keju|exam|admission|scholar|degree|科举|科场|录取|士子|生员|举人|舞弊/)) {
       var kejuRelief = positive(/fair|restore|open|admit|enke|公平|开科|恩科|录取|澄清/);
       var kejuStress = has(/fraud|anger|unfair|tight|distorted|舞弊|怨|不公|壅滞/);
-      var kejuSign = kejuRelief && !kejuStress ? 1 : -1;
+      var kejuSign = kejuRelief && !kejuStress ? 1 : (kejuStress ? -1 : 0);   // \u4e2d\u6027\u21920
       emit('turn-result-keju-pressure', {
         sourceSystem: 'turn-result',
         tags: ['turn-result', 'keju', 'exam', 'scholar', 'office'],
         intensity: kejuSign > 0 ? 0.42 : 0.64,
         affectedClasses: inferClassImpacts(root, ['keju', 'exam', 'admission', 'scholar', 'student', 'office', '\u79d1\u4e3e', '\u58eb', '\u751f\u5458'], function() {
           return {
-            satisfactionDelta: kejuSign > 0 ? 3 : -4,
-            unrestDelta: { grievance: kejuSign > 0 ? 1 : -3, petition: kejuSign > 0 ? 1 : -3 },
+            satisfactionDelta: kejuSign > 0 ? 3 : (kejuSign < 0 ? -4 : 0),
+            unrestDelta: { grievance: kejuSign > 0 ? 1 : (kejuSign < 0 ? -3 : 0), petition: kejuSign > 0 ? 1 : (kejuSign < 0 ? -3 : 0) },
             demand: kejuSign > 0 ? 'preserve credible exam access' : 'restore fair exam access',
             reason: 'AI turn result keju pressure'
           };
         }),
         affectedParties: inferPartyImpacts(root, ['keju', 'exam', 'scholar', 'office'], function() {
           return {
-            influenceDelta: 1,
+            influenceDelta: kejuSign < 0 ? 1 : (kejuSign > 0 ? -1 : 0),
             shortGoal: kejuSign > 0 ? 'claim credit for exam access' : 'push exam admission review',
             reason: 'AI turn result keju pressure'
           };

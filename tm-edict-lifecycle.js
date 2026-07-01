@@ -362,8 +362,63 @@ function generateEdictForecast(edictType) {
   return { label: t.label, forecast: lines.join('\n'), type: t };
 }
 
+// ── F·改革杠杆 typed-incidence（2026-06-16·未 ship 未 commit）：接上 orphaned EDICT_TYPES.affectedClasses ──
+//   把诏令类型的跨阶层赢家/输家向量经 gateSatisfaction 落地（±14 预算自动 bound·与 AI class_changes/huji 硬效果不双砸·source 记账）。
+//   仅阶层类键（农民/官僚/士绅/豪强/商贾/军/士人/士林/寒门/宗室）→ 标签路由匹配 GM.classes（含现生阶层）；
+//   非阶层键（国库/皇权/民心/囚犯/党派/外藩/地方/朝野）归 parser/别系不在此施；
+//   盲 fallback（无关键词命中→默认 amnesty）不施；按类取最大绝对值 delta 防粗键重叠人为叠加。
+//   仅玩家诏令路径（processEdictEffects）调用→与 AI class_changes 天然分离；朝代中立（标签路由·不写死单朝阶层）。
+var _EDICT_CLASS_MATCH = {
+  '农民': /自耕|佃|编户|农/, '寒门': /自耕|寒|庶|农/,
+  '商贾': /商|贾/, '商人': /商|贾/,
+  '士绅': /绅|豪强|地主/, '豪强': /豪强|地主|绅/,
+  '士人': /士大夫|士林|生员|翰林/, '士林': /士大夫|士林|生员|翰林/, '官僚': /士大夫|官僚|翰林/,
+  '军人': /军|武人/, '军': /军|武人/,
+  '宗室': /宗室|宗藩|藩王|皇族/
+};
+function applyEdictTypedIncidence(root, edictText, opts) {
+  opts = opts || {};
+  if (!root || !Array.isArray(root.classes) || !edictText) return null;
+  var CE = (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function') ? TM.ClassEngine : null;
+  if (!CE) return null;   // 无总闸则不施（守纪律·不绕闸直写满意度）
+  var type = classifyEdict(edictText);
+  var def = EDICT_TYPES[type];
+  if (!def || !def.affectedClasses) return null;
+  // 防盲 fallback：所选类型的关键词须真出现在文本（classifyEdict 无命中默认 amnesty），否则不施
+  var hit = (def.keywords || []).some(function(kw) { return edictText.indexOf(kw) >= 0; });
+  if (!hit) return null;
+  var SCALE = 0.5;   // 不独占 ±14 预算·留余地给其余信号；溢出由闸夹
+  var turn = opts.turn != null ? opts.turn : (root.turn || 0);
+  var perClass = [];   // 按 GM.class 聚合·取最大绝对值 delta（防粗键重叠 e.g. 士绅+豪强 同砸缙绅）
+  Object.keys(def.affectedClasses).forEach(function(key) {
+    var delta = Number(def.affectedClasses[key]) || 0;
+    if (!delta) return;
+    var re = _EDICT_CLASS_MATCH[key];
+    if (!re) return;   // 非阶层键跳过
+    root.classes.forEach(function(cls) {
+      if (!cls || !re.test(cls.name || '')) return;
+      var ex = perClass.filter(function(p) { return p.cls === cls; })[0];
+      if (!ex) perClass.push({ cls: cls, delta: delta });
+      else if (Math.abs(delta) > Math.abs(ex.delta)) ex.delta = delta;
+    });
+  });
+  var applied = [];
+  perClass.forEach(function(p) {
+    var raw = p.delta * SCALE;
+    var res = CE.gateSatisfaction(root, p.cls, raw, { turn: turn, source: 'edict-typed-incidence:' + type, reason: (def.label || type) + '·跨阶层后果' });
+    applied.push({ name: p.cls.name, delta: raw, approved: res ? res.approved : 0 });
+  });
+  if (applied.length && typeof addEB === 'function') {
+    var winners = applied.filter(function(a) { return a.delta > 0; }).map(function(a) { return a.name; });
+    var losers = applied.filter(function(a) { return a.delta < 0; }).map(function(a) { return a.name; });
+    addEB('诏令', (def.label || '诏令') + '·阶层向背：' + (winners.length ? '利' + winners.join('、') : '') + (losers.length ? (winners.length ? '；' : '') + '损' + losers.join('、') : ''));
+  }
+  return { type: type, applied: applied };
+}
+
 // 导出
 if (typeof window !== 'undefined') {
+  window.applyEdictTypedIncidence = applyEdictTypedIncidence;
   window.EDICT_TYPES = EDICT_TYPES;
   window.EDICT_STAGES = EDICT_STAGES;
   window.REFORM_PHASES = REFORM_PHASES;

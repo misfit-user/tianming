@@ -118,36 +118,35 @@ function applyCharacterDeaths(p1) {
             // 级联清理：若死者是势力首领，标记势力动荡
             if (GM.facs) {
               GM.facs.forEach(function(fac) {
-                if (fac.leader === cd.name) {
-                  fac.leader = '';
-                  addEB('\u52BF\u529B\u52A8\u6001', fac.name + '\u9996\u9886' + cd.name + '\u6B7B\u4EA1\uFF0C\u52BF\u529B\u52A8\u8361');
-                  fac.strength = Math.max(0, (fac.strength || 50) - 10);
+                if (fac.leader !== cd.name) return;
+                fac.leader = '';
+                addEB('\u52BF\u529B\u52A8\u6001', fac.name + '\u9996\u9886' + cd.name + '\u6B7B\u4EA1\uFF0C\u52BF\u529B\u52A8\u8361');
+                fac.strength = Math.max(0, (fac.strength || 50) - 10);
 
-                  // 封臣级联：宗主首领死亡→所有封臣忠诚度下降
-                  if (fac.vassals && fac.vassals.length > 0) {
-                    fac.vassals.forEach(function(vn) {
-                      var vRuler = GM.chars ? GM.chars.find(function(c) { return c.faction === vn && c.alive !== false && (c.position === '\u541B\u4E3B' || c.position === '\u9996\u9886'); }) : null;
-                      if (vRuler) {
-                        if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(vRuler, -10, '\u5B97\u4E3B\u4E4B\u6B7B', { source:'liege-death-vassal-loyalty' });
-                        else vRuler.loyalty = Math.max(0, ((typeof vRuler.loyalty === 'number' && isFinite(vRuler.loyalty)) ? vRuler.loyalty : 50) - 10);
-                        addEB('\u5C01\u81E3\u52A8\u6001', vn + '\u5C01\u81E3' + vRuler.name + '\u56E0\u5B97\u4E3B\u4E4B\u6B7B\u5FE0\u8BDA\u5EA6\u4E0B\u964D');
-                      }
-                    });
-                  }
-
-                  // 封臣首领死亡→检查是否世袭
-                  if (fac.liege) {
-                    // 查找继承人（子嗣或同族）
-                    var heir = GM.chars ? GM.chars.find(function(c) {
-                      return c.alive !== false && c.faction === fac.name && c.name !== cd.name && (c.parentOf === cd.name || c.father === cd.name);
-                    }) : null;
-                    if (heir) {
-                      fac.leader = heir.name;
-                      heir.position = '\u9996\u9886';
-                      addEB('\u5C01\u81E3\u7EE7\u627F', fac.name + '\u5C01\u81E3\u7531' + heir.name + '\u7EE7\u627F');
-                    } else {
-                      addEB('\u5C01\u81E3\u5371\u673A', fac.name + '\u5C01\u81E3\u9996\u9886' + cd.name + '\u6B7B\u4EA1\u4E14\u65E0\u7EE7\u627F\u4EBA\uFF0C\u5C01\u81E3\u5173\u7CFB\u52A8\u6447');
+                // 封臣级联：宗主首领死亡→所有封臣忠诚度下降
+                if (fac.vassals && fac.vassals.length > 0) {
+                  fac.vassals.forEach(function(vn) {
+                    var vRuler = GM.chars ? GM.chars.find(function(c) { return c.faction === vn && c.alive !== false && (c.position === '\u541B\u4E3B' || c.position === '\u9996\u9886'); }) : null;
+                    if (vRuler) {
+                      if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(vRuler, -10, '\u5B97\u4E3B\u4E4B\u6B7B', { source:'liege-death-vassal-loyalty' });
+                      else vRuler.loyalty = Math.max(0, ((typeof vRuler.loyalty === 'number' && isFinite(vRuler.loyalty)) ? vRuler.loyalty : 50) - 10);
+                      addEB('\u5C01\u81E3\u52A8\u6001', vn + '\u5C01\u81E3' + vRuler.name + '\u56E0\u5B97\u4E3B\u4E4B\u6B7B\u5FE0\u8BDA\u5EA6\u4E0B\u964D');
                     }
+                  });
+                }
+
+                // 封臣首领死亡→检查是否世袭
+                if (fac.liege) {
+                  // 查找继承人（子嗣或同族）
+                  var heir = GM.chars ? GM.chars.find(function(c) {
+                    return c.alive !== false && c.faction === fac.name && c.name !== cd.name && (c.parentOf === cd.name || c.father === cd.name);
+                  }) : null;
+                  if (heir) {
+                    fac.leader = heir.name;
+                    heir.position = '\u9996\u9886';
+                    addEB('\u5C01\u81E3\u7EE7\u627F', fac.name + '\u5C01\u81E3\u7531' + heir.name + '\u7EE7\u627F');
+                  } else {
+                    addEB('\u5C01\u81E3\u5371\u673A', fac.name + '\u5C01\u81E3\u9996\u9886' + cd.name + '\u6B7B\u4EA1\u4E14\u65E0\u7EE7\u627F\u4EBA\uFF0C\u5C01\u81E3\u5173\u7CFB\u52A8\u6447');
                   }
                 }
               });

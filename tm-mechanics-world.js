@@ -95,6 +95,93 @@ SettlementPipeline.register('personalityEvolution', '\u6027\u683C\u6F14\u53D8', 
 // npcMemDecay uses 26 monthly — different phase, no conflict
 // 注册NPC记忆衰减（每月）
 SettlementPipeline.register('npcMemDecay', 'NPC记忆衰减', function() { NpcMemorySystem.monthlyDecay(); }, 26, 'monthly');
+// ★2026-07-01 早年概略 AI 精炼（每月·后台 fire-and-forget·默认次要 API·每次限 2 个·失败静默保留确定性摘要·不阻断结算）
+SettlementPipeline.register('npcEpochRefine', '早年概略精炼', function() {
+  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.refineEpochSummaries) { var _p = NpcMemorySystem.refineEpochSummaries({ limit: 2, tier: 'secondary' }); if (_p && _p.catch) _p.catch(function(){}); } } catch (_) {}
+}, 27, 'monthly');
+
+// ★2026-07-01 W3·活朝堂·消息会长脚:朝堂私下事(NPC自主密谋/构陷/通书·泄密话题)会自发沿「同党/亲近」传一跳·
+//   写进第三方 NPC 的低可信「风闻…」记忆·令玩家过几回合去问一个无关大臣他也隐约知情——朝堂是活的、消息会走漏。
+//   确定性(mulberry32 按回合+序号播种·不触 Math.random·可重放)·不靠 API key·只增量写记忆·不动任何平衡数值。
+;(function(){
+  var _root = (typeof window !== 'undefined') ? window : (typeof globalThis !== 'undefined' ? globalThis : this);
+  if (!_root) return;
+  _root.TM = _root.TM || {};
+  var Gossip = _root.TM.Gossip = {
+    // 确定性 RNG(mulberry32)·种子=回合数异或序号·避开 Math.random 保可重放
+    _rng: function(seed){
+      var a = (seed >>> 0) || 1;
+      return function(){ a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    },
+    // 以讹传讹:经操守低者转述会走样(把不确定说成确定·把往来说成密谋)·hostile 时更甚。保守·只做词面替换。
+    _distort: function(text, carrier, hostile){
+      text = String(text || '');
+      var integ = (carrier && typeof carrier.integrity === 'number') ? carrier.integrity : 50;
+      if (hostile) text = text.replace(/往来|私议|议及|走动/g, '密谋').replace(/或有|恐有|似/g, '确有');
+      if (integ < 38) text = text.replace(/风闻|据传|似乎|恐|或/g, '').replace(/近日|日前/g, '');
+      return text;
+    },
+    // 供其他系统投递「值得走漏的事」:{text,subject,seeds:[发端者名],importance,budget}
+    enqueue: function(fact){
+      if (!fact || !fact.text || typeof GM === 'undefined') return;
+      if (!GM._gossipQueue) GM._gossipQueue = [];
+      // ★codex-fix W3:同回合按 subject+text+seeds 去重·避免重复入队消耗预算/制造重复传闻
+      var _k = String(fact.subject||'') + '|' + String(fact.text||'') + '|' + (Array.isArray(fact.seeds)?fact.seeds.join(','):'');
+      for (var _qi = 0; _qi < GM._gossipQueue.length; _qi++){
+        var _qe = GM._gossipQueue[_qi];
+        if (_qe && (String(_qe.subject||'')+'|'+String(_qe.text||'')+'|'+(Array.isArray(_qe.seeds)?_qe.seeds.join(','):'')) === _k) return;
+      }
+      GM._gossipQueue.push(fact);
+      if (GM._gossipQueue.length > 40) GM._gossipQueue = GM._gossipQueue.slice(-40);
+    },
+    // 把一条事沿「同党 / 发端者对其高好感(≥60)」传一跳·写进第三方记忆·返回传达人数
+    spread: function(fact, seedNames, turn){
+      if (!fact || !fact.text || typeof GM === 'undefined' || !GM.chars) return 0;
+      var rng = Gossip._rng(((turn|0) * 131) ^ ((fact._seq|0) * 2654435761));
+      var chars = GM.chars, subject = fact.subject || '';
+      var budget = Math.max(1, fact.budget || 3), told = 0;
+      var seeds = (seedNames || []).filter(Boolean);
+      for (var s = 0; s < seeds.length && told < budget; s++){
+        var seed = (typeof findCharByName === 'function') ? findCharByName(seeds[s]) : null;
+        if (!seed) continue;
+        for (var i = 0; i < chars.length && told < budget; i++){
+          var ch = chars[i];
+          if (!ch || ch.isPlayer || ch.name === seed.name || ch.name === subject) continue;
+          if (ch.alive === false) continue;
+          var sameParty = seed.party && ch.party && seed.party === ch.party && seed.party !== '无';
+          var favor = (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getImpression) ? NpcMemorySystem.getImpression(seed.name, ch.name) : 0;
+          if (!sameParty && !(favor >= 60)) continue;
+          if (rng() > (sameParty ? 0.5 : 0.35)) continue;
+          var text = Gossip._distort(fact.text, seed, false);
+          if (typeof NpcMemorySystem !== 'undefined') {
+            NpcMemorySystem.remember(ch.name, '风闻·' + seeds[s] + '言及：' + text.slice(0, 40), '察', Math.max(2, (fact.importance || 3) - 1), subject || undefined, { source: 'rumor', credibility: 45 });   // ★codex-fix W3:传meta·风闻=二手低可信·否则默认 witnessed/95 被当亲历高可信
+          }
+          told++;
+        }
+      }
+      return told;
+    },
+    // 每回合:排空队列·各传一跳·总预算封顶防刷屏。确定性·不依赖 API key·无发端者不凭空造谣。
+    tick: function(turn){
+      if (typeof GM === 'undefined' || !GM.chars) return 0;
+      var q = GM._gossipQueue || []; GM._gossipQueue = [];
+      if (!q.length) return 0;
+      var told = 0;
+      for (var f = 0; f < q.length && told < 8; f++){
+        var fact = q[f];
+        if (!fact || !fact.seeds || !fact.seeds.length) continue;
+        fact._seq = f;
+        fact.budget = Math.min(fact.budget || 3, 8 - told);   // ★codex-fix W3:总预算8须严格·按剩余额度限每次spread(否则spread单次返2/3会累计超8)
+        if (fact.budget <= 0) break;
+        told += Gossip.spread(fact, fact.seeds, turn);
+      }
+      return told;
+    }
+  };
+  if (typeof SettlementPipeline !== 'undefined' && SettlementPipeline.register) {
+    SettlementPipeline.register('gossipSpread', '朝堂风闻', function(){ try { Gossip.tick((typeof GM !== 'undefined' && GM.turn) || 0); } catch (_) {} }, 33, 'perturn');   // ★codex-fix W3:phase 28 与 consortClan 同级·改33避免注册顺序依赖
+  }
+})();
 
 // ============================================================
 // 门阀家族系统 — AI 在开局时为角色生成郡望门第

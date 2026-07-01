@@ -33,6 +33,9 @@
     var note = document.getElementById('fullGenNote').value.trim();
     var playerFaction = document.getElementById('fullGenPlayerFaction').value.trim();
     var playerCharacter = document.getElementById('fullGenPlayerCharacter').value.trim();
+    var _wkEl = document.getElementById('fullGenWorldKind');
+    var worldKind = (_wkEl && _wkEl.value === 'fictional') ? 'fictional' : 'historical';
+    var fiction = worldKind === 'fictional';
 
     if (!dynasty || !emperor) {
       showToast('请至少填写朝代和皇帝');
@@ -40,6 +43,7 @@
     }
     scriptData.dynasty = dynasty;
     scriptData.emperor = emperor;
+    scriptData.worldKind = worldKind;   // 世界类型落库(虚构/史实)·供国师 genReference 与运行时识别
     document.getElementById('scriptDynasty').value = dynasty;
     document.getElementById('scriptEmperor').value = emperor;
     closeFullGenModal();
@@ -60,6 +64,8 @@
       ctx = '朝代:' + dynasty + ' 皇帝:' + emperor;
     }
     if (note) ctx += ' 附加说明:' + note;
+    // 虚构/架空世界观：把强史实指令一次性中和(ctx 会拼进各步 prompt·一处生效全局)
+    if (fiction) ctx += '\n\n【世界观·虚构/架空】这是一个原创世界观剧本（奇幻/武侠/仙侠/未来/异世界/架空历史等），不受真实历史约束。下文若出现「中国古代史/正史/二十四史/资治通鉴/真实历史人物/史实/史料」等要求，一律改为按本原创世界观自由创作：人物可全为原创（type 一律填 "fictional"）、数值按该世界设定自洽评估（不必对应真实历史评价）、bio 不必引正史史料、纪年用该世界自拟历法。请放手创作，只需保持世界观前后自洽、生动可玩。';
 
     // 构建玩家指定信息
     var playerSpec = '';
@@ -89,9 +95,11 @@
 
     // 构建参考文本上下文（严格史实模式）
     var refContext = '';
-    if (gameMode === 'strict_hist' && refText) {
+    if (!fiction && gameMode === 'strict_hist' && refText) {
       refContext = '\n\n【参考数据库】\n' + refText.substring(0, 8000) + (refText.length > 8000 ? '\n...(数据库内容过长，已截取前8000字)' : '') + '\n\n请严格参考上述数据库中的历史人物信息，确保生成的人物在数据库中有记载或符合数据库描述的历史背景。';
     }
+    // 虚构/架空世界观：关掉一切真实史实约束（与 gameMode 正交·fiction 覆盖）
+    if (fiction) { historicalCharLimit = ''; refContext = ''; }
 
     var steps = [
       { key:'scriptInfo', label:'剧本基础信息', minItems: 0,
@@ -343,8 +351,8 @@
     }
     setProgress(0, '准备生成…');
 
-    // 严格史实模式：显示数据库检索步骤
-    if (gameMode === 'strict_hist') {
+    // 严格史实模式：显示数据库检索步骤（虚构世界观跳过·无真实史实可检索）
+    if (!fiction && gameMode === 'strict_hist') {
       setProgress(0, '检索数据库中…');
       setTimeout(function() {
         // 数据库检索完成，开始生成
@@ -381,8 +389,8 @@
 
     function runStep(idx) {
       if (idx >= steps.length) {
-        // 生成完成后，轻度史实和严格史实模式需要进行历史检查
-        if (gameMode === 'light_hist' || gameMode === 'strict_hist') {
+        // 生成完成后，轻度史实和严格史实模式需要进行历史检查（虚构世界观跳过·无真实史实可校）
+        if (!fiction && (gameMode === 'light_hist' || gameMode === 'strict_hist')) {
           setProgress(steps.length, '历史检查中…');
           setTimeout(function() {
             try { performHistoricalCheck(); }
@@ -1414,6 +1422,15 @@
     if (noFacChars.length > 0) issues.push(noFacChars.length + '个角色未分配势力');
     // 空官制
     if (!scriptData.government || !scriptData.government.nodes || scriptData.government.nodes.length === 0) issues.push('未设置官制体系');
+    // 接入确定性 preflight(运行时体检·免 API)·补 ad-hoc 检查的运行时盲区(runtime-boot/faction-refs/runtime-office/runtime-chars 等会影响加载的阻塞)。
+    // 传深克隆(preflight 经 ensureCharFactionId/ensureTimeFields 会改 draft)·不污染 live scriptData。
+    try {
+      var _AA = (typeof window !== 'undefined' && window.TM && window.TM.AuthoringAgent) || (typeof TM !== 'undefined' && TM.AuthoringAgent);
+      if (_AA && typeof _AA.preflight === 'function') {
+        var _pf = _AA.preflight(JSON.parse(JSON.stringify(scriptData)));
+        (_pf && _pf.blockers || []).forEach(function (b) { issues.push('运行时体检 · ' + b); });
+      }
+    } catch (_pfe) {}
 
     if (issues.length > 0) {
       html += '<div style="margin-bottom:1rem;padding:0.8rem;background:rgba(231,76,60,0.1);border-radius:8px;border-left:3px solid #e74c3c;">';
@@ -1777,7 +1794,7 @@
       appearance: pi.characterAppearance || '', charisma: parseInt(pi.characterCharisma) || 60,
       diplomacy: parseInt(pi.characterDiplomacy) || 50,
       loyalty: 100, ambition: 50, intelligence: 60, valor: 50, benevolence: 50,
-      type: 'historical', role: '玩家角色', isPlayer: true
+      type: (scriptData.worldKind === 'fictional') ? 'fictional' : 'historical', role: '玩家角色', isPlayer: true
     };
     if (existing) {
       // 只更新有值的字段，保留已有属性
@@ -2039,34 +2056,24 @@
   }
 
   function renderAll() {
-    renderPlayerOverview();
-    renderCharacters();
-    renderFactions();
-    renderParties();
-    renderClasses();
-    renderItems();
-    renderMilitaryNew();
-    renderTechTree();
-    renderCivicTree();
-    renderVariables();
-    renderRules();
-    renderEvents();
-    renderTimeline();
-    renderMap();
-    renderWorldSettings();
-    renderEraState();
-    renderEconomyConfig();
-    renderPostSystem();
-    renderBuildingSystem();
-    renderVassalSystem();
-    renderTitleSystem();
-    renderMapSystem();
-    renderTerrainConfig();
-    renderGovernment();
-    renderOfficeTree();
-    if (typeof renderGoalsList === 'function') renderGoalsList();
-    if (typeof renderInfluenceGroupsList === 'function') renderInfluenceGroupsList();
-    if (typeof renderOffendGroupsList === 'function') renderOffendGroupsList();
+    // 逐个渲染·任一渲染器未定义(脚本加载竞态/模块局部非全局·如 renderMapSystem/renderTerrainConfig 仅 TM.Editor.map.*)
+    // 或运行时抛错·都只跳过它·不中断其余面板。
+    // 原为 25 个无守卫裸调:实测 renderMapSystem 在 editor.html 上下文非全局→每次加载 renderAll 必 ReferenceError 中断
+    // →其后 government/officeTree/goals/influenceGroups/offendGroups 初始批量渲染全漏(虽点侧栏可补渲)+每次报错。
+    // 与 editor-core.js 的 _panelRenderers(早已 if(typeof renderMapSystem)守卫)对齐。
+    ['renderPlayerOverview', 'renderCharacters', 'renderFactions', 'renderParties', 'renderClasses', 'renderItems',
+      'renderMilitaryNew', 'renderTechTree', 'renderCivicTree', 'renderVariables', 'renderRules', 'renderEvents',
+      'renderTimeline', 'renderMap', 'renderWorldSettings', 'renderEraState', 'renderEconomyConfig', 'renderPostSystem',
+      'renderBuildingSystem', 'renderVassalSystem', 'renderTitleSystem', 'renderMapSystem', 'renderTerrainConfig',
+      'renderGovernment', 'renderOfficeTree', 'renderGoalsList', 'renderInfluenceGroupsList', 'renderOffendGroupsList']
+      .forEach(function (name) {
+        try {
+          var f = (typeof window !== 'undefined') ? window[name] : null;
+          if (typeof f === 'function') f();
+        } catch (e) {
+          (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'renderAll:' + name) : console.warn('[editor] renderAll ' + name + ' 失败(已跳过·不阻断其余):', e);
+        }
+      });
   }
 
   function renderPlayerOverview() {

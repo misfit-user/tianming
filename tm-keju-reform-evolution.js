@@ -16,7 +16,7 @@
  *      _kjpMigrateReformChronicleV1 (migration helper)
  *
  * 调用 budget·每年 evolve ~800-1500 token·30y matured ~24-45k / reform·flag gate
- *   P.conf.useNewKejuL8=false 默认 off
+ *   P.conf.useNewKejuL8 !== false（默认开）·仅显式设 =false 才全 no-op
  *
  * red line·
  *   - 全 LLM 容错·失败 fallback·panel 不崩

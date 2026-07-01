@@ -65,7 +65,7 @@ var SaveManager = {
     if (typeof _prepareGMForSave === 'function') _prepareGMForSave();
 
     var _sc = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
-    var gameState = { GM: deepClone(GM), P: deepClone(P) };
+    var gameState = { GM: deepClone(GM), P: _tmStripAiKeyInPlace(deepClone(P)) };
     // 打上存档版本号，避免旧存档被误判为 v1 触发全链迁移
     if (typeof SaveMigrations !== 'undefined' && typeof SaveMigrations.stamp === 'function') {
       SaveMigrations.stamp(gameState);
@@ -190,6 +190,11 @@ var SaveManager = {
         console.error('[exportSave] record.gameState empty:', record);
         return;
       }
+      // 存档脱敏·剥离玩家 AI key：gameState 可能是 {GM,P} 也可能直接是 P
+      try {
+        if (record.gameState && record.gameState.P && typeof record.gameState.P === 'object') _tmStripAiKeyInPlace(record.gameState.P);
+        else _tmStripAiKeyInPlace(record.gameState);
+      } catch(_){}
       // 统一用未压缩·可人读的 JSON 导出
       var exportRec = {
         id: record.id,

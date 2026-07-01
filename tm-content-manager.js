@@ -842,27 +842,6 @@
     return '<div style="margin-top:.35rem;font-size:.72rem;color:rgba(234,223,203,.74);">我来评：' + btns + '</div>';
   }
 
-  function catalogPackRowV2(p) {
-    var disabled = !p.packageUrl;
-    var tags = Array.isArray(p.tags) ? p.tags.filter(Boolean) : [];
-    var tagHtml = tags.length ? '<div class="tm-tags">' + tags.slice(0, 6).map(function(t){ return '<span class="tm-tagchip">' + esc(t) + '</span>'; }).join('') + '</div>' : '';
-    return '<div class="tm-pack">' +
-      '<div>' +
-        '<div class="tm-pack-title">' + esc(p.title || p.id) + '</div>' +
-        '<div class="tm-pack-meta">v' + esc(p.version || '1.0.0') + ' · 作者 ' +
-          '<span onclick="TMContentManager.loadAuthorPacks(' + jsArg(p.authorId != null ? p.authorId : '') + ',' + jsArg(p.author || '') + ')" style="color:var(--gold,#d8b56a);cursor:pointer;text-decoration:underline;">' + esc(p.author || '佚名') + '</span>' +
-          (p.downloads ? ' · 下载 ' + p.downloads : '') + '</div>' +
-        '<div style="margin-top:.3rem;">' + ratingStars(p) + '</div>' +
-        (p.description ? '<div class="tm-pack-desc">' + esc(p.description) + '</div>' : '') +
-        tagHtml +
-        rateControl(p) +
-      '</div>' +
-      '<div class="tm-actions" style="margin-top:0;justify-content:flex-end;">' +
-        action('在线安装', 'TMContentManager.installCatalogPack(' + jsArg(p.packageUrl || '') + ',' + jsArg(p.sha256 || '') + ',' + jsArg(p.id || '') + ')', 'primary', disabled) +
-      '</div>' +
-    '</div>';
-  }
-
   // 内容类型（catalog 的 pack.type）→ 中文标签。剧本是默认，不打角标。
   var PACK_TYPES = [
     { v: '', label: '全部' },
@@ -909,13 +888,13 @@
   }
 
   // S2：剧本详情浮层 —— 从目录数据开局，best-effort 用 packMeta 刷新。
-  function findCatalogPack(id) {
+  function findCatalogPackById(id) {
     var packs = (state.catalog && state.catalog.packs) || [];
     for (var i = 0; i < packs.length; i++) if (String(packs[i].id) === String(id)) return packs[i];
     return state.detailPack && String(state.detailPack.id) === String(id) ? state.detailPack : null;
   }
   function openPackDetail(id) {
-    var p = findCatalogPack(id);
+    var p = findCatalogPackById(id);
     if (!p) return;
     state.detailPack = p;
     state.detailOpen = true;
@@ -997,10 +976,6 @@
       if (res && res.success) { state.detailCommentMsg = '已发表。'; loadPackComments(p.id); }
       else { state.detailCommentMsg = '发表失败：' + ((res && res.error) || '未知错误'); render(); }
     }).catch(function(e){ state.detailCommentMsg = '发表失败：' + (e && e.message || '网络错误'); render(); });
-  }
-  function commentRow(c) {
-    return '<div class="tm-comment"><div class="tm-comment-h"><b>' + esc(c.nickname || '玩家') + '</b><small>' + esc(c.createdAt || '') + '</small></div>' +
-      '<div class="tm-comment-t">' + esc(c.text || '') + '</div></div>';
   }
 
   function packTypeNoun(t) { t = String(t || 'scenario'); return ({ scenario: '剧本', portrait: '立绘包', music: '音乐包', map: '地图包', mod: 'MOD' })[t] || t; }

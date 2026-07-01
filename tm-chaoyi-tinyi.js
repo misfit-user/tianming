@@ -542,9 +542,16 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
       if (_yh) prompt += _yh + '\n';
     } catch(_yhE) {}
   }
-  // 近期记忆(扩到 5 条·fallback 若无 recognitionState)
-  var _memList = (ch && ch._memory || []).slice(-5).map(function(m){return (m.event||'').slice(0,40);});
-  prompt += '  近期记忆：' + (_memList.join('；') || '无') + '\n';
+  // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏同源·含心绪/人生底色/要事/印象/伤疤)·
+  //   而非浅切片(_memory.slice(-5))——同一人在廷议/问对/奏疏读到同一份记忆与心性·人格一致。缓存·token 可控·无则回退。
+  var _unifiedMem = '';
+  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _unifiedMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_umE) {}
+  if (_unifiedMem) {
+    prompt += '  【此人记忆与心性】' + _unifiedMem + '\n';
+  } else {
+    var _memList = (ch && ch._memory || []).slice(-5).map(function(m){return (m.event||'').slice(0,40);});
+    prompt += '  近期记忆：' + (_memList.join('；') || '无') + '\n';
+  }
   // 党派立场+焦点争议·让 NPC 发言契合其党派纲领
   if (ch && ch.party) {
     var _partyObj = (typeof GM !== 'undefined' && Array.isArray(GM.parties))

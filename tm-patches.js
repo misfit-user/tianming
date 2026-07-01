@@ -219,6 +219,8 @@ window._settingsSizeApply = function(size, el) {
 function _settingsTabText(section, index) {
   var h = section && section.querySelector ? section.querySelector('h4') : null;
   var txt = h ? (h.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  // 导航标签精简（右栏 h4 原样不动）：去状态尾（如「○ 未配置」）与括注（如「（实验·默认关）」）
+  if (txt) txt = txt.replace(/（[^）]*）/g, '').replace(/\s*[○●].*$/, '').replace(/\s+/g, ' ').trim();
   var fallback = [
     'API连接', '次要 API', '性能', '更新工坊', '声乐', '主题字号',
     '回合读取', 'AI记忆', '生成字数', '高级预算', '模型校验',
@@ -247,27 +249,55 @@ function _settingsBuildTabs() {
   var panes = document.createElement('div');
   panes.className = 'settings-panes';
 
-  sections.forEach(function(section, idx) {
+  // 左栏分组（2026-07-01·治「19 项平铺、顺序随意、标签截断」）：按标题归类·组内保持原顺序·
+  // 只重排左栏 tab 顺序 + 插组标题·pane 仍按原顺序(只按 key 切换·顺序无关)·不动任何 section 内容。
+  var _settingsGroups = [
+    { name: '常用',      re: /界面显示|声乐|主题|字号|文风|游戏模式|回合读取/ },
+    { name: 'AI · 模型', re: /API|次要|性能|成本|高级|预算|档位|模型|记忆|生成字数|提示词/ },
+    { name: '玩法机制',  re: /御驾|战斗|玩法机制|人物志/ },
+    { name: '实验 · 进阶', re: /实验/ },
+    { name: '系统 · 其他', re: /更新|工坊/ }
+  ];
+  function _settingsGroupOf(title) {
+    for (var g = 0; g < _settingsGroups.length; g++) { if (_settingsGroups[g].re.test(title)) return g; }
+    return _settingsGroups.length - 1; // 未命中 → 落「系统·其他」（含将来新增分区，不丢）
+  }
+
+  // 一遍：给每个 section 建 pane（按原 DOM 顺序）+ 记录分组
+  var _settingsEntries = sections.map(function(section, idx) {
     var label = _settingsTabText(section, idx);
     var key = 'tab-' + idx;
     section.setAttribute('data-settings-section', key);
-
-    var tab = document.createElement('button');
-    tab.type = 'button';
-    tab.className = 'settings-tab';
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('data-settings-tab', key);
-    tab.setAttribute('onclick', "_settingsSwitchTab('" + key + "')");
-    tab.innerHTML = '<span class="settings-tab-index">' + String(idx + 1).padStart(2, '0') + '</span><span class="settings-tab-label">' + _settingsEsc(label) + '</span>';
-    tabs.appendChild(tab);
-
     var pane = document.createElement('div');
     pane.className = 'settings-pane';
     pane.setAttribute('role', 'tabpanel');
     pane.setAttribute('data-settings-pane', key);
     pane.appendChild(section);
     panes.appendChild(pane);
+    return { key: key, label: label, group: _settingsGroupOf(label) };
   });
+
+  // 二遍：按分组顺序渲染左栏 tab（组内保持原顺序），组首插组标题，编号按显示顺序连排
+  var _settingsNum = 0;
+  for (var _gi = 0; _gi < _settingsGroups.length; _gi++) {
+    var _groupEntries = _settingsEntries.filter(function(e) { return e.group === _gi; });
+    if (!_groupEntries.length) continue;
+    var _gh = document.createElement('div');
+    _gh.className = 'settings-tab-group';
+    _gh.textContent = _settingsGroups[_gi].name;
+    tabs.appendChild(_gh);
+    _groupEntries.forEach(function(e) {
+      _settingsNum++;
+      var tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'settings-tab';
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('data-settings-tab', e.key);
+      tab.setAttribute('onclick', "_settingsSwitchTab('" + e.key + "')");
+      tab.innerHTML = '<span class="settings-tab-index">' + String(_settingsNum).padStart(2, '0') + '</span><span class="settings-tab-label">' + _settingsEsc(e.label) + '</span>';
+      tabs.appendChild(tab);
+    });
+  }
 
   shell.appendChild(tabs);
   shell.appendChild(panes);
@@ -567,6 +597,17 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })()+
+        // Scandal·科场弊案 (opt-in·默认关·2026-07-01·补设置开关·此前仅 console 可开) ───
+        (function(){
+          var _on = !!(P.conf && P.conf.useNewKejuScandal === true);
+          return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-keju-scandal" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'useNewKejuScandal\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎓 科场弊案（默认关）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后，科举可能爆出舞弊/科场案（关节、冒籍、鬻题、通关节等），牵连考官士子、引发清议与查办；关闭则不触发弊案链。</div>' +
+            '</div>' +
+          '</label>';
+        })()+
       '</div>';
     })()+
 
@@ -579,6 +620,7 @@ openSettings=function(){
       var _ftc = !!((P.conf && P.conf.factionToolDecisionEnabled) || (P.ai && P.ai.factionToolDecisionEnabled));
       var _evu = !!((P.conf && P.conf.eventUnificationEnabled) || (P.ai && P.ai.eventUnificationEnabled));
       var _ofa = !!((P.conf && P.conf.officeActivationEnabled) || (P.ai && P.ai.officeActivationEnabled));
+      var _tlc = !!((P.conf && P.conf.talentCohortEnabled) || (P.ai && P.ai.talentCohortEnabled));
       var h = '<div class="settings-section" style="border-left:3px solid #b98bff;background:rgba(185,139,255,0.04);">' +
         '<h4 style="color:#c9a9ff;">🧪 实验模式</h4>' +
         '<div style="font-size:0.72rem;color:var(--txt-d);margin:-0.3rem 0 0.6rem;line-height:1.55;">实验性玩法（默认关）。先<b>开启实验模式</b>·再二选一：<b>LLM 模式</b>(对现回合管线的增量增强)或 <b>Agent 模式</b>(全新·AI 主动改世界·替换管线)。会增加 API 调用·建议先小局试。</div>' +
@@ -708,6 +750,55 @@ openSettings=function(){
               '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">让死的官制活起来：①职权舆图喂推演 ②官员履职度(才+五常·失职衰减·与主动行动耦合) ③权限门(掌“征税”之权出缺/失职→实征打折·腐败涨) ④AI 裁定式改制(玩家自由改官制·官僚抵抗·拟制两回合) ⑤官署按需细查(agent 走次要 API·返职责描述)。各刀另有独立开关可单独调试·会增加 API 调用。</div>' +
             '</div>' +
           '</label>' +
+          // ── 官制活化·细粒度（活化四刀/recall/出缺补员各独立开关·总闸开则全覆盖·此处供总闸关时单独调；默认开者可在此关·2026-07-01）──
+          '<div style="font-size:0.74rem;color:var(--gold-d);margin:0.45rem 0 0.15rem;padding-top:0.35rem;border-top:1px dashed rgba(185,139,255,0.22);">🏛️ 官制活化·细粒度（总闸开则四刀全启；下列供总闸关时单独调·默认开者可在此关）</div>' +
+          (function(){
+            var _acts = [
+              ['officePowerPerceptionEnabled','职权舆图（默认开）','把官制结构(谁掌何权/才德/履职/出缺)喂进 AI 推演·纯增益无 balance 后果。',true],
+              ['officeDutyStateEnabled','官员履职度','官员履职度(才+五常)·失职衰减·与主动行动耦合(影响 balance)。',false],
+              ['officeAuthorityGateEnabled','权限门控','掌“征税”等权者出缺/失职→实征打折·腐败涨(影响 balance)。',false],
+              ['officeReformAdjudicationEnabled','改制裁定','玩家自由改官制→官僚抵抗·拟制两回合·AI 裁定准驳。',false],
+              ['officeRecallAgentEnabled','官署按需细查','主推演对焦点衙门发 agent 子调用取职责细节(走次要 API·增调用)。',false],
+              ['officeVacancyEnabled','出缺补员（默认开）','官员亡故/致仕留缺→按建制走出缺·可被补员(关则不自动出缺)。',true]
+            ];
+            var _ah = '';
+            for (var _ai2 = 0; _ai2 < _acts.length; _ai2++) {
+              var _ac = _acts[_ai2];
+              var _acOn = _ac[3]
+                ? !((P && P.conf && P.conf[_ac[0]] === false) || (P && P.ai && P.ai[_ac[0]] === false))
+                : !!((P && P.conf && P.conf[_ac[0]]) || (P && P.ai && P.ai[_ac[0]]));
+              _ah += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.3rem 0;cursor:pointer;border-top:1px dotted rgba(185,139,255,0.12);">' +
+                '<input type="checkbox" ' + (_acOn ? 'checked ' : '') + 'onchange="_togglePConf(\'' + _ac[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+                '<div style="flex:1;"><div style="font-size:0.8rem;color:var(--gold);font-weight:600;">' + _ac[1] + '</div>' +
+                '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.5;margin-top:0.1rem;">' + _ac[2] + '</div></div>' +
+                '</label>';
+            }
+            return _ah;
+          })() +
+          // ── 官制·机制深化（S1/S4·各独立开关·与上「官制活化」并行·默认关·2026-06-30）──
+          '<div style="font-size:0.74rem;color:var(--gold-d);margin:0.45rem 0 0.15rem;padding-top:0.35rem;border-top:1px dashed rgba(185,139,255,0.22);">🏛️ 官制·机制深化（独立开关·默认关·开后官制真撬动财政/吏治/阴谋/人才/皇权）</div>' +
+          (function(){
+            var _items = [
+              ['powerMinisterEnabled','权臣坐大','久居要位(宰相/首辅等)+高野心者坐大：截留奏疏·自拟诏命·皇权极弱时篡位终局。'],
+              ['officeReviewLandingEnabled','考课落地','年度考课优劣真升降功名(驱动 rankLevel)：优等擢·劣等黜失职·连劣记数。'],
+              ['officeConspiracyEnabled','官位入阴谋','官位品级喂阴谋：高官谋逆酝酿更快更隐秘·门生故吏更易拉拢。'],
+              ['officeSatisfactionFeedbackEnabled','才不配位反哺','能臣才高位卑(怀才不遇)→忠诚渐降·久郁萌求去。'],
+              ['officeSalaryHeadcountEnabled','俸禄认人','冗官超编→国库俸禄开支真增(冗官有财政代价·非凭空养)。'],
+              ['officePersonnelTurnoverEnabled','致仕新陈代谢','年终察老：高龄官乞骸骨(可慰留)·耄耋准致仕去位(可诏起复)。'],
+              ['officeJingchaEnabled','京察大计','每三年黜庸劣(屡考连劣)+拔沉才(怀才不遇)·只降擢功名(可逆)·不擅自革职。']
+            ];
+            var _hh = '';
+            for (var _i = 0; _i < _items.length; _i++) {
+              var _it = _items[_i];
+              var _on = !!(typeof P !== 'undefined' && P && P.conf && P.conf[_it[0]]);
+              _hh += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.3rem 0;cursor:pointer;border-top:1px dotted rgba(185,139,255,0.12);">' +
+                '<input type="checkbox" ' + (_on ? 'checked ' : '') + 'onchange="_togglePConf(\'' + _it[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+                '<div style="flex:1;"><div style="font-size:0.8rem;color:var(--gold);font-weight:600;">' + _it[1] + '</div>' +
+                '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.5;margin-top:0.1rem;">' + _it[2] + '</div></div>' +
+                '</label>';
+            }
+            return _hh;
+          })() +
           // 【A·S4】势力按需取数·单独 opt-in(总闸已含·此处供隔离试)·换深度非降本
           '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(185,139,255,0.15);margin-top:0.3rem;">' +
             '<input type="checkbox" id="s-faction-toolcall" ' + (_ftc?'checked ':'') + 'onchange="_togglePConf(\'factionToolDecisionEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
@@ -722,6 +813,14 @@ openSettings=function(){
             '<div style="flex:1;">' +
               '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎭 事件系统统一（S1 骨架·默认关）</div>' +
               '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">把散落的事件机制统一为「活世界抛局面→玩家应对→AI 裁硬核后果」主线。<b>当前为 S1 骨架，拨开暂无可见变化</b>(仅打通事件总线管道+验证不破坏存档)；后续切片接通后，事件将由 AI 裁定连锁后果。现在开=仅供验证不炸。</div>' +
+            '</div>' +
+          '</label>' +
+          // 【人才范式渗透·S1-S6】制度性建筑(新式学校)→人才渐渗·独立 opt-in
+          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(185,139,255,0.15);margin-top:0.3rem;">' +
+            '<input type="checkbox" id="s-talent-cohort" ' + (_tlc?'checked ':'') + 'onchange="_togglePConf(\'talentCohortEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎓 人才范式渗透（默认关·实验）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">新式学校不直接加数值，而向「人才范式渗透引擎」注入毕业生→多瓶颈漏斗(招生/师资质量/产业吸纳/历练数年/制度空间)→日积月累渐渗→因学而异的全局风气软修正(注入 AI 推演)+双向阻力(旧学请罢新学/失业学潮·入御案时政)。狂建空壳学校(无师资/无产业)无效·毕业即失业。兴造弹窗可见「人才与风气」一览·剧本可 preset 既有正统。</div>' +
             '</div>' +
           '</label>';
         }
@@ -741,6 +840,28 @@ openSettings=function(){
           '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后，当推演 AI 漏报或给出离谱伤亡时，改由战斗引擎按双方兵力、地形、城防、季节确定性核算战损，机械可信度更高；关闭则一切战果由 AI 自由裁量（默认）。</div>' +
         '</div>' +
       '</label></div>';
+    })()+
+
+    // ── 玩法机制·深化 (opt-in·默认关·2026-07-01·补设置开关·此前仅 console 可开·确定性玩法非 AI) ──
+    (function(){
+      var _mechs = [
+        ['worldReactorBattleEnabled','⚔️ 兵败牵动天下（默认关）','开启后，一方在会战中大败，其军事实力确定性受损，并联动编年记述天下反应；关闭则战败只走 AI 自由裁量，不自动折损实力。'],
+        ['populationBottomUpEnabled','👥 人口自下而上（默认关）','开启后，人口增长发生在各叶级政区、按当地民心与承载力分别核算并写入地方户口；关闭则走全局粗粒度增长。'],
+        ['cognitionFeedbackEnabled','🎭 认知反馈·忠诚（默认关·未充分实测）','开启后，臣子被贬则渐离心、受知遇则渐效忠——把「知遇/贬谪」从叙事落到忠诚数值动平衡；关闭则忠诚不因升降迁谪自动漂移。此项动平衡幅度未充分验证，酌情开启。']
+      ];
+      var _mh = '<div class="settings-section"><h4>玩法机制·深化（实验·默认关）</h4>' +
+        '<div style="font-size:0.7rem;color:var(--txt-d);margin:0 0 0.2rem;line-height:1.5;">确定性玩法深化，不依赖 AI；默认关以保持零回归，逐项 opt-in。</div>';
+      for (var _mi = 0; _mi < _mechs.length; _mi++) {
+        var _m = _mechs[_mi];
+        var _mon = !!(P && P.conf && P.conf[_m[0]]);
+        _mh += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px dotted var(--bdr);">' +
+          '<input type="checkbox" ' + (_mon?'checked ':'') + 'onchange="_togglePConf(\'' + _m[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;"><div style="font-size:0.82rem;color:var(--gold);font-weight:600;">' + _m[1] + '</div>' +
+          '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">' + _m[2] + '</div></div>' +
+        '</label>';
+      }
+      _mh += '</div>';
+      return _mh;
     })()+
 
     "<div class=\"settings-section\"><h4>更新与工坊</h4>"+
@@ -880,6 +1001,8 @@ openSettings=function(){
     "<label><input type=\"checkbox\" "+(!(P.ai && P.ai.sc25cEnabled===false)?'checked':'')+" onchange=\"if(!P.ai)P.ai={};P.ai.sc25cEnabled=this.checked;saveP();\"> sc25c \u53CC\u8C03\u7528</label>"+
     "<label><input type=\"checkbox\" "+(P.ai && P.ai.sc15nEnabled===true?'checked':'')+" onchange=\"if(!P.ai)P.ai={};P.ai.sc15nEnabled=this.checked;saveP();\"> sc15n 3-tier</label>"+
     "<label><input type=\"checkbox\" "+(P.ai && P.ai.sc2Pipeline==='3stage'?'checked':'')+" onchange=\"if(!P.ai)P.ai={};P.ai.sc2Pipeline=this.checked?'3stage':null;saveP();\"> sc2 3stage</label>"+
+    "<label><input type=\"checkbox\" "+(P.ai && P.ai.narrativeReviewEnabled===true?'checked':'')+" onchange=\"if(!P.ai)P.ai={};P.ai.narrativeReviewEnabled=this.checked;saveP();\"> sc27 叙事审查</label>"+
+    "<label><input type=\"checkbox\" "+(P.ai && P.ai.sc28Enabled===true?'checked':'')+" onchange=\"if(!P.ai)P.ai={};P.ai.sc28Enabled=this.checked;saveP();\"> sc28 世界快照</label>"+
     "</div>"+
     "<span style=\"font-size:0.7rem;color:var(--ink-300,#888);\">\u6CE8\u00B7\u6539\u540E\u6E05 sysP cache\u00B7\u9996\u56DE\u5408\u591A\u82B1 ~$0.004 (Phase 7.5 D)</span>"+
     "</div></div></div>"+
@@ -1035,7 +1158,11 @@ var DEFAULT_RULES="1.\u6570\u503C\u5408\u7406 2.\u89D2\u8272\u72EC\u7ACB 3.\u621
 function sSaveAPI(){
   P.ai.key=_$("s-key")?_$("s-key").value:"";P.ai.url=_$("s-url")?_$("s-url").value:"";P.ai.model=_$("s-model")?_$("s-model").value:"";P.ai.temp=parseFloat(_$("s-temp")?_$("s-temp").value:"0.8");P.ai.mem=parseInt(_$("s-mem")?_$("s-mem").value:"20");P.ai.provider=_$("s-prov")?_$("s-prov").value:"openai";
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
-  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(_tmStripAiKeyView(P)).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });}else{try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}
+  // ★2026-07-01·修「桌面端保存主 API key·关游戏再进就丢」:key 真源在 localStorage.tm_api(启动时 tm-player-core.js:257
+  //   从此水合 P.ai)·桌面 autoSave 走 _tmStripAiKeyView 故意剥掉 key(不进可分享存档·安全)。原实现桌面分支只 autoSave、
+  //   漏写 localStorage.tm_api → 主 key 只活内存·重启即失。改为两端都写 localStorage.tm_api(与 sSaveSecondaryAPI 同范式)·桌面再 autoSave。
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
+  if(window.tianming&&window.tianming.isDesktop){window.tianming.autoSave(_tmStripAiKeyView(P)).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });}
   toast("\u2705 API\u5DF2\u4FDD\u5B58");
 }
 function sSaveAll(){
@@ -2349,17 +2476,24 @@ function doActualStart(sid){
   if(_gs.eraName)GM.eraName=_gs.eraName;
   if(_gs.eraNames&&_gs.eraNames.length)GM.eraNames=_gs.eraNames.slice();
 
-  // 加载完整的时间配置
+  // 加载完整的时间配置（历法/季节/年号模板等）
   if(sc.time){
     P.time = deepClone(sc.time);
-  } else {
-    // 从 gameSettings 加载部分时间配置（兼容旧版本）
-    if(_gs.startMonth)P.time.startMonth=_gs.startMonth;
-    if(_gs.startDay)P.time.startDay=_gs.startDay;
-    if(_gs.startYear!==undefined)P.time.year=_gs.startYear;
   }
-  // 优先使用剧本元数据的startYear（如果time配置中没有设置）
-  if(sc.startYear && !P.time.year) P.time.year = sc.startYear;
+  // ★ gameSettings 是编辑器「开局日期」权威字段：即使剧本带 sc.time（可能陈旧·含默认 year:-356 公元前356），
+  //   也须以 gameSettings.startYear/startMonth/startDay 覆盖开局年月日——否则编辑器改了开局时间进游戏仍显旧 sc.time 年份（玩家报「固定公元前」）。
+  //   见 tm-launch 注释「引擎权威读 gameSettings.startYear/startMonth（仅设 scn.time 会致公元前）」。剧本未设 gameSettings 相应字段则保留 sc.time 原值。
+  if(_gs.startMonth)P.time.startMonth=_gs.startMonth;
+  if(_gs.startDay)P.time.startDay=_gs.startDay;
+  var _gsStartYear = (_gs.startYear!==undefined && _gs.startYear!=='' && !isNaN(Number(_gs.startYear)) && Number(_gs.startYear)!==0) ? Number(_gs.startYear) : null;
+  if(_gsStartYear !== null) {
+    P.time.year = _gsStartYear;                       // gameSettings.startYear 权威（编辑器改开局年的字段）
+  } else if(!sc.time && sc.startYear) {
+    // 兜底：无 sc.time 且无有效 gameSettings.startYear → 用剧本元数据顶层 startYear。
+    // 不用 `!P.time.year` 判空——P.time 默认 year 为 -356（公元前356·真值），会漏掉此兜底（见 tm-data-model 默认）。
+    // 有 sc.time 时保留 sc.time.year（不误伤纯 sc.time 剧本，含合法的公元前年份）。
+    P.time.year = sc.startYear;
+  }
   // 标准化回合时长：gameSettings.daysPerTurn 是编辑器权威字段，perTurn/customDays 只作旧系统兼容。
   if (typeof normalizeTimeConfigFromGameSettings === 'function') {
     P.time = normalizeTimeConfigFromGameSettings(P.time, _gs);
@@ -2932,6 +3066,26 @@ function doActualStart(sid){
       }
     });
   }
+
+  // S6b·人才范式渗透引擎·剧本 preset（既有正统 label/初始 stock·design §2.3·仿 families 分发）。
+  //   flag talentCohortEnabled 关 → 不播种（零回归）；跨朝代：范式名取剧本，引擎不预设任何「学」。不重复立。
+  //   sc.talentParadigms = [{label, kind:'established'|'emergent', stock, influenceProfile?, absorptionKind?, maturityTurns?}]
+  (function _seedTalentParadigms(){
+    try {
+      var TC = (typeof TM !== 'undefined' && TM.TalentCohorts) || (typeof window !== 'undefined' && window.TM && window.TM.TalentCohorts);
+      if (!TC || typeof TC.enabled !== 'function' || !TC.enabled(P)) return;
+      var presets = sc.talentParadigms || sc.talentCohorts;
+      if (!Array.isArray(presets) || !presets.length) return;
+      TC.init(GM, P);
+      presets.forEach(function(pd){
+        if (!pd || !pd.label || TC.findParadigm(GM, pd.label)) return;
+        TC.registerParadigm(GM, {
+          label: pd.label, kind: (pd.kind === 'emergent') ? 'emergent' : 'established',
+          stock: pd.stock, influenceProfile: pd.influenceProfile, absorptionKind: pd.absorptionKind, maturityTurns: pd.maturityTurns
+        });
+      });
+    } catch(_e){}
+  })();
 
   // 剧本 relations 数组（from/to）分发到人物 ch.relations（根治）。
   // 此前剧本 relations 只进坏的 GM.rels[r.name]（relations 无 name 字段→key undefined·63条全覆盖成1条），

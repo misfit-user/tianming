@@ -23,6 +23,13 @@
       var P = global.P || {};
       var ai = P.ai || {}, conf = P.conf || {};
       if (ai.officeActivationEnabled || conf.officeActivationEnabled) return true;
+      // ① 职权舆图（officePowerPerceptionEnabled）·纯增益：给 AI 结构化官制信息（谁掌什么权/才德/履职/出缺），
+      //   零 balance 改动、只增进硬核可信回应 → 默认开（owner 2026-06-30 拍板 flip），显式 false 才关。
+      //   ②③④（履职度/权限门/改制裁定·有 balance 后果）仍默认关·owner playtest 后再 flip。
+      if (name === 'officePowerPerceptionEnabled') {
+        if (ai.officePowerPerceptionEnabled === false || conf.officePowerPerceptionEnabled === false) return false;
+        return true;
+      }
       return !!(ai[name] || conf[name]);
     } catch (e) { return false; }
   }

@@ -835,7 +835,8 @@ function renderMap() {
   if (!GM.mapData) return;
 
   var canvas = initMapCanvas();
-  if (!canvas) return;
+  // 无头/测试环境无真 canvas(getContext 缺失)时跳过渲染·不影响真浏览器(getContext 恒在)·并保结算管线确定性
+  if (!canvas || typeof canvas.getContext !== 'function') return;
 
   var ctx = canvas.getContext('2d');
 
@@ -1383,7 +1384,19 @@ function initMapInteraction() {
   var canvas = document.getElementById('mapCanvas');
   if (!canvas) return;
 
+  // 拖拽/渲染性能（治拖拽卡顿）：拖拽状态 + rAF 节流渲染——把每帧多次 mousemove 合并为一次重绘，
+  // 避免多次 renderMap() 挤在同一帧做无用功；拖拽中亦跳过悬停命中测试(见下)。
+  var isDragging = false, lastX = 0, lastY = 0;
+  var _renderQueued = false;
+  var _raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(cb){ return setTimeout(cb, 16); };
+  function _scheduleRender() {
+    if (_renderQueued) return;
+    _renderQueued = true;
+    _raf(function() { _renderQueued = false; renderMap(); });
+  }
+
   canvas.addEventListener('mousemove', function(e) {
+    if (isDragging) return; // 拖拽中跳过悬停命中测试+重绘（与拖拽渲染叠加是卡顿主因之一）
     var rect = canvas.getBoundingClientRect();
     var x = e.clientX - rect.left;
     var y = e.clientY - rect.top;
@@ -1392,7 +1405,7 @@ function initMapInteraction() {
 
     if (GM.mapData.state.hoveredCityId !== cityId) {
       GM.mapData.state.hoveredCityId = cityId;
-      renderMap();
+      _scheduleRender();
       canvas.style.cursor = cityId ? 'pointer' : 'default';
     }
   });
@@ -1429,10 +1442,7 @@ function initMapInteraction() {
     }
   });
 
-  var isDragging = false;
-  var lastX = 0;
-  var lastY = 0;
-
+  // isDragging / lastX / lastY 已在函数顶部声明（配合 rAF 节流渲染）
   canvas.addEventListener('mousedown', function(e) {
     if (e.button === 2) {
       isDragging = true;
@@ -1453,7 +1463,7 @@ function initMapInteraction() {
       lastX = e.clientX;
       lastY = e.clientY;
 
-      renderMap();
+      _scheduleRender(); // rAF 节流：多次 mousemove 合并为每帧一次重绘（去卡顿）
     }
   });
 

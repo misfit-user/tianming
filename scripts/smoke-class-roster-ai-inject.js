@@ -24,7 +24,7 @@ function run(GM){
 }
 const GM = { turn:5, classes:[
   { name:'士绅', satisfaction:62, influence:40, _structBaseline:55, currentDemand:'减赋', _satLedger:[{t:5,d:-3}] },
-  { name:'农户', satisfaction:28, influence:15, demands:['赈灾','减役'] }
+  { name:'农户', satisfaction:28, influence:15, demands:['赈灾','减役'], _radicalFrac:0.5 }
 ]};
 const out = run(GM);
 ok(out.indexOf('【阶层正册】') >= 0, '★运行输出含【阶层正册】');
@@ -32,6 +32,8 @@ ok(out.indexOf('士绅') >= 0 && out.indexOf('农户') >= 0, '两阶层名都注
 ok(/满意62/.test(out), '士绅满意度数值注入');
 ok(/满意28/.test(out), '农户满意度数值注入');
 ok(/求:减赋/.test(out), '诉求注入(currentDemand)');
+ok(/乱民5成\(汹汹\)/.test(out), '★乱民比例(B)注入正册·农户0.5→乱民5成(汹汹)');
+ok((out.match(/乱民\d成/g) || []).length === 1, '安康阶层(士绅·无_radicalFrac)不显乱民token(阈值守卫·只农户1处)');
 
 // 条件正确性:无阶层 → 不注入(防空块)
 const out0 = run({ turn:5, classes:[] });

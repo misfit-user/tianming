@@ -3396,7 +3396,7 @@
         var _seg = [];
         if (_low.length) _seg.push('失职：' + _low.join('、'));
         if (_high.length) _seg.push('称职：' + _high.join('、'));
-        if (_seg.length) global.addEB('官制', '履职结算·' + _seg.join('；') + '（实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + '·腐败' + (agg.corruption >= 0 ? '+' : '') + agg.corruption.toFixed(1) + '）');
+        if (_seg.length) { global.addEB('官制', '履职结算·' + _seg.join('；') + '（实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + '·腐败' + (agg.corruption >= 0 ? '+' : '') + agg.corruption.toFixed(1) + '）'); if (!Array.isArray(G._chronicle)) G._chronicle = []; G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || '', type: (agg.compliance !== 0 && agg.corruption !== 0) ? '官制↔财政·吏治' : (agg.corruption !== 0 ? '官制↔吏治' : '官制↔财政'), text: '百官履职·' + _seg.join('；') + '·实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + '·吏治' + (agg.corruption >= 0 ? '+' : '') + agg.corruption.toFixed(1), tags: ['联动', '官制'] }); }
       }
     } catch (_ebE) {}
   }
@@ -3429,6 +3429,7 @@
       } catch (_cgE) {}
     }
     try { if (typeof global.addEB === 'function') global.addEB('官制', '加赋失实·' + (fa.name || fa.category || '税入') + ' 原额' + amount + ' → 实收' + collected + '（×' + auth.effectiveness.toFixed(2) + '·' + auth.reason + '·漏额中饱）'); } catch (_egE) {}
+    try { if (!Array.isArray(G._chronicle)) G._chronicle = []; G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || '', type: '官制↔财政·吏治', text: '掌征税之权' + auth.reason + '·' + (fa.name || fa.category || '税入') + ' 加赋原额' + amount + '·实收' + collected + '·漏额' + shortfall + '中饱', tags: ['联动', '官制'] }); } catch (_cgE2) {}
     return collected;
   }
   global._applyTaxAuthorityGate = _applyTaxAuthorityGate;
@@ -4196,7 +4197,8 @@
           turnExpense: G.guoku.turnExpense,
           turnDays: G.guoku.turnDays,
           armory: (typeof window !== 'undefined' && window.TMArmory) ? window.TMArmory.allStock(G) : undefined,      // 军备库(甲胄/兵刃/弓弩/火器/战马)·供AI推演军务可读
-          materials: (typeof window !== 'undefined' && window.TMArmory) ? window.TMArmory.matAllStock(G) : undefined  // 原料库(铁/硝石/皮革/木)
+          materials: (typeof window !== 'undefined' && window.TMArmory) ? window.TMArmory.matAllStock(G) : undefined,  // 原料库(铁/硝石/皮革/木)
+          armoryReadiness: (typeof window !== 'undefined' && window.TMArmory && window.TMArmory.readinessForAI) ? window.TMArmory.readinessForAI(G) : undefined  // 军备研判(储备vs全军需求·充盈/够用/偏紧/紧缺)·供AI推演判军事虚实(火器紧缺→不宜倚火器决胜)
         } : null,
         neitang: G.neitang ? {
           money: G.neitang.money !== undefined ? G.neitang.money : G.neitang.balance,

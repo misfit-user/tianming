@@ -1133,8 +1133,6 @@
     FACTION_TEMPLATES: FACTION_TEMPLATES
   };
 
-
-
 // @ts-check
 /// <reference path="types.d.ts" />
 // ═══════════════════════════════════════════════════════════════
@@ -1844,7 +1842,6 @@
 
 })(typeof window !== 'undefined' ? window : this);
 
-
 // @ts-check
 /// <reference path="types.d.ts" />
 // ═══════════════════════════════════════════════════════════════
@@ -2313,9 +2310,6 @@
       if (v === '') return undefined;
       return Number(v);
     }
-    function setIfDef(obj, key, val) {
-      if (val !== undefined && !isNaN(val)) obj[key] = val;
-    }
     var ti = getNum('trueIndex');
     if (ti !== undefined) cc.trueIndex = ti;
 
@@ -2407,6 +2401,5 @@
   console.log('[corruption-p4] 已加载：模式调节 / 轮换副作用 / 卖官 / AI增强 / 地图热力 / 编辑器面板');
 
 })(typeof window !== 'undefined' ? window : this);
-
 
 })(typeof window !== 'undefined' ? window : this);

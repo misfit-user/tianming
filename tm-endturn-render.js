@@ -107,6 +107,23 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
   szjSummary = szjSummary || '';
   personnelChanges = personnelChanges || [];
   hourenXishuo = hourenXishuo || zhengwen || '';
+  // ★2026-07-01·归一叙事里的字面转义(agent 模式常见坑):AI 把段落分隔写成字面 "\n\n"、或过度转义 \\n/\\"·
+  //   JSON.parse 后仍是「字面反斜杠+n」→ 渲染直出 "\n\n"/误显英文 n·且下方时政记 split(/\n{2,}/) 按真换行
+  //   分段失效→整段糊成一坨。此处统一转真换行/引号(所有来源:agent finalize/deepen、LLM 管线、史记回放共此入口)。
+  //   纯文本清洗·不改结构;正常路径(已是真换行)无字面转义→全 no-op·零回归。
+  var _unescNarr = function (s) {
+    return String(s == null ? '' : s)
+      .replace(/\\r\\n/g, '\n').replace(/\\r/g, '\n').replace(/\\n/g, '\n')
+      .replace(/\\t/g, '  ').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  };
+  shizhengji = _unescNarr(shizhengji);
+  zhengwen = _unescNarr(zhengwen);
+  shiluText = _unescNarr(shiluText);
+  hourenXishuo = _unescNarr(hourenXishuo);
+  playerStatus = _unescNarr(playerStatus);
+  playerInner = _unescNarr(playerInner);
+  turnSummary = _unescNarr(turnSummary);
+  szjSummary = _unescNarr(szjSummary);
   // 1.4 措施4: 死亡角色二次过滤——标记叙事中已死角色的主动行为
   if (GM.chars && zhengwen) {
     var _deadNames = GM.chars.filter(function(c) { return c.alive === false && c.dead; }).map(function(c) { return c.name; });

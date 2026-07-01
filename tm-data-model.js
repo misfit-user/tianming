@@ -802,11 +802,37 @@ function _sovereignLanguagePromptLine(G) {
   if (c.sovName || c.sovTitle) bits.push('君主：' + (c.sovName || '') + (c.sovTitle ? '·' + c.sovTitle : ''));
   var line = '【称谓感知·本剧本语境——AI 据此感知本朝君臣称谓与语言习惯·全程一致·勿串他朝/现代】\n';
   line += '  · ' + bits.join('  ') + '\n';
+  // 具体君臣称谓：数据层 era 包中立查表(剧本 imperialAddress 优先→朝代包回退)·引擎不认专名·仅 eraLangField(era,...) 查表(见 tm-era-language-pack.js)
+  var _ia = '';
+  try {
+    var _P = (typeof P !== 'undefined') ? P : null;
+    var _sv = (_P && _P.scenario && _P.scenario.imperialAddress) || (G && G.imperialAddress) || '';
+    var _era = c.eraDesc || c.dynKey || '';
+    _ia = (typeof eraLangField === 'function') ? eraLangField(_era, 'imperialAddress', _sv) : _sv;
+  } catch (e) {}
+  if (_ia) line += '  · 本朝君臣称谓（据此·勿用他朝/现代称呼）：' + _ia + '\n';
   line += '  · 据上述朝代、国家、君主身份，感知并一致使用本朝特有的「君上称谓」「臣下自称」「奏对/书信/口语」习惯（各朝迥异，如宋称官家、明清称皇上/万岁、汉唐称陛下/圣上），切勿混入他朝或现代用语；架空设定则据其自洽逻辑自判。\n';
+  // 货币单位·跨朝代(宋/唐/元为「贯」·明清为「两」等)·从 CurrencyUnit 派生·让 AI 涉钱数一律用本朝单位·不串他朝(旧朝议/问对/奏疏硬编码「两」致宋剧本大臣误用白银)
+  try {
+    var _mu = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? CurrencyUnit.unitOf('money') : '';
+    if (_mu) line += '  · 本朝钱货以「' + _mu + '」为单位——凡奏对、议政、文书言及银钱数额，一律以「' + _mu + '」计（粮以石、布以匹），切勿用他朝或现代货币单位。\n';
+  } catch (e) {}
   return line;
 }
-if (typeof window !== 'undefined') { window._sovereignLanguageContext = _sovereignLanguageContext; window._sovereignLanguagePromptLine = _sovereignLanguagePromptLine; }
-if (typeof global !== 'undefined') { try { global._sovereignLanguageContext = _sovereignLanguageContext; global._sovereignLanguagePromptLine = _sovereignLanguagePromptLine; } catch (e) {} }
+// 单词君上称呼(供 UI/模板固定文案·非 AI 感知)：剧本 sovereignAddress → era 包中立查表 → 保守回退「陛下」(现有明/汉唐剧本不回归·宋等有包朝代得专称·架空作者可自设 scenario.sovereignAddress)。引擎不认专名·仅 eraLangField 查表。
+function _sovereignAddressTerm(G) {
+  try {
+    var _P = (typeof P !== 'undefined') ? P : null;
+    var sv = (_P && _P.scenario && _P.scenario.sovereignAddress) || (G && G.sovereignAddress) || '';
+    if (sv) return sv;
+    var c = _sovereignLanguageContext(G);
+    var era = (c && (c.eraDesc || c.dynKey)) || '';
+    var t = (typeof eraLangField === 'function') ? eraLangField(era, 'sovereignAddress', '') : '';
+    return t || '陛下';
+  } catch (e) { return '陛下'; }
+}
+if (typeof window !== 'undefined') { window._sovereignLanguageContext = _sovereignLanguageContext; window._sovereignLanguagePromptLine = _sovereignLanguagePromptLine; window._sovereignAddressTerm = _sovereignAddressTerm; }
+if (typeof global !== 'undefined') { try { global._sovereignLanguageContext = _sovereignLanguageContext; global._sovereignLanguagePromptLine = _sovereignLanguagePromptLine; global._sovereignAddressTerm = _sovereignAddressTerm; } catch (e) {} }
 
 // ── 跨剧本数据隔离（防串台）─────────────────────────────────────────────
 // P.characters/factions/parties/classes/events 等是「跨剧本累积」的全局表：官方天启运行时快照

@@ -233,6 +233,30 @@
   /* AI 推演 / 问天可读的紧凑摘要 */
   function summaryForAI(GM) { return { 军备库: allStock(GM), 原料库: matAllStock(GM) }; }
 
+  /* AI 推演可读的「军备研判」:逐类 储备 vs 全军装备总需求 → 充裕比 + 紧缺研判。
+   * 原始库存数字(allStock)之上的「可行动情报」:让推演知军备虚实(火器紧缺→不宜倚火器决胜/敌可乘),
+   * 而非只见数字。纯函数读 GM 不改(read-only·永不崩·空军队/空 GM 皆安全)。 */
+  function readinessForAI(GM) {
+    var armies = (GM && GM.armies) || [];
+    var demand = {};
+    armies.forEach(function (a) {
+      if (!a) return;
+      var units = (typeof window !== 'undefined' && window.TMArmyUnits && window.TMArmyUnits.ensureArmyUnits) ? window.TMArmyUnits.ensureArmyUnits(a) : (a.units || []);
+      var n = needForUnits(units);
+      for (var k in n) if (n.hasOwnProperty(k)) demand[k] = num(demand[k], 0) + num(n[k], 0);
+    });
+    var have = allStock(GM) || {}, by = {}, worst = null;
+    CAT_KEYS.forEach(function (k) {
+      var d = num(demand[k], 0), s = num(have[k], 0);
+      var ratio = d > 0 ? Math.round((s / d) * 100) / 100 : null;
+      var level = (ratio === null) ? '不需' : (ratio >= 1 ? '充盈' : (ratio >= 0.5 ? '够用' : (ratio >= 0.2 ? '偏紧' : '紧缺')));
+      by[k] = { stock: s, demand: d, ratio: ratio, level: level };
+      if (ratio !== null && (worst === null || ratio < worst.ratio)) worst = { cat: k, ratio: ratio, level: level };
+    });
+    var note = worst ? (worst.ratio < 0.5 ? (worst.cat + '紧缺·储备仅及全军需求' + Math.round(worst.ratio * 100) + '%') : '军备储备尚足') : '无在役军队';
+    return { byCategory: by, worst: worst, note: note };
+  }
+
   /* ═══════════ 军工建筑产能(S3:每回合消耗原料产军备·新流量模型·非一次性) ═══════════
    * 一座军工建筑每回合按 profile 产军备:{produce:{军备类:量/级}, consume:{原料类:量/级}}(每级·每回合)。
    * 来源优先级:AI 核定(building.effectsStructured.armoryProfile)> 名称关键词默认 > 无(非军工建筑)。
@@ -443,7 +467,7 @@
 
   var API = {
     CATS: CATS, CAT_KEYS: CAT_KEYS, NEED: NEED, PRODUCE_BASE: PRODUCE_BASE,
-    ARMORY_DEFAULT: ARMORY_DEFAULT, MATERIALS_DEFAULT: MATERIALS_DEFAULT, seedFromScenario: seedFromScenario, summaryForAI: summaryForAI,
+    ARMORY_DEFAULT: ARMORY_DEFAULT, MATERIALS_DEFAULT: MATERIALS_DEFAULT, seedFromScenario: seedFromScenario, summaryForAI: summaryForAI, readinessForAI: readinessForAI,
     BUILD_PROFILES: BUILD_PROFILES, buildingArmoryProfile: buildingArmoryProfile, isArmoryWorks: isArmoryWorks,
     runArmoryProduction: runArmoryProduction, runTurn: runTurn, consumeForRecruit: consumeForRecruit, battleSpoils: battleSpoils,
     playerRegions: playerRegions, playerFactionOf: playerFactionOf, procure: procure, PROCURE_PRICE: PROCURE_PRICE,

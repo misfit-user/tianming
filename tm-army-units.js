@@ -37,6 +37,20 @@
     baggage: /辎|辅|夫|工|粮|弹药|运卒|辎重|民壮/
   };
 
+  /* ── 兵种识别第4层:已学词典(learnUnknownTypes 用次级 LLM 归类生僻名·记忆化沉淀·同步命中)── */
+  var _LEX = {};                                    // normKey → {arm,sub}·会话内活缓存(_syncLexicon 从 GM._unitLexicon 水合)
+  var _VALID_ARM = { step: 1, cav: 1, bow: 1, art: 1, guard: 1 };
+  function _normType(s) { return String(s == null ? '' : s).replace(/\s+/g, ''); }
+  function _defSub(arm) { return arm === 'cav' ? 'horse' : arm === 'bow' ? 'bow' : arm === 'art' ? 'cannon' : arm === 'guard' ? 'guard' : 'sword'; }
+  /* 从 GM._unitLexicon(持久·随存档)水合活缓存·载入/学习后调 */
+  function _syncLexicon(g) {
+    try { var lx = g && g._unitLexicon; if (lx && typeof lx === 'object') { for (var k in lx) { if (lx[k] && _VALID_ARM[lx[k].arm]) _LEX[k] = { arm: lx[k].arm, sub: lx[k].sub || _defSub(lx[k].arm) }; } } } catch (e) {}
+  }
+  /* BYOK 就绪(读全局 localStorage.tm_api 的 key·无 key→不触发失败 LLM 调用) */
+  function _aiReady() {
+    try { if (typeof localStorage === 'undefined') return false; var cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); return !!(cfg && (cfg.key || cfg.apiKey)); } catch (e) { return false; }
+  }
+
   /* 兵种识别瀑布 → {arm(step/cav/bow/art/guard), sub, flags[], src} */
   function classifyUnitType(typeStr, army) {
     var s = String(typeStr == null ? '' : typeStr);
@@ -88,7 +102,10 @@
       if (RX.spear.test(ej))         return { arm: 'step', sub: 'spear',    flags: flags, src: 'equipment' };
     }
 
-    /* level4:LLM 归类(记忆化)— 待 Phase 4 接次级 LLM·此处先落底 */
+    /* level4:已学词典(learnUnknownTypes 沉淀·次级 LLM 归类生僻名·同步命中·前三层接不住的开放词) */
+    var _lk = _LEX[_normType(s)];
+    if (_lk && _VALID_ARM[_lk.arm]) return { arm: _lk.arm, sub: _lk.sub || _defSub(_lk.arm), flags: flags, src: 'lexicon' };
+
     /* level5:杂兵兜底(中庸近战·无专长 flag)·永不崩 */
     flags.push('miscellaneous');
     return { arm: 'step', sub: 'sword', flags: flags, src: 'fallback' };
@@ -113,7 +130,7 @@
   function splitTypeMix(typeStr, army) {
     var s = String(typeStr == null ? '' : typeStr);
     var single = classifyUnitType(s, army);
-    if (single.arm === 'guard' || single.arm === 'cav' || single.src === 'fallback' || single.src === 'equipment')
+    if (single.arm === 'guard' || single.arm === 'cav' || single.src === 'fallback' || single.src === 'equipment' || single.src === 'lexicon')
       return [{ arm: single.arm, sub: single.sub, flags: single.flags.slice(), weight: 1, src: single.src }];
     var cats = detectWeaponCats(s);
     if (cats.length <= 1)
@@ -141,6 +158,42 @@
     return 20;
   }
 
+  /* ═══════════ 历练(veterancy)持久化 + 战后增长/稀释(§12.3·御驾亲征 Phase3 整编屏地基) ═══════════
+   * 模型:units[] 历练 = vetFromQuality(quality) 基线 + army.veterancy(战后累计·数值·持久)·army 级统一(units[] 是派生视图)。
+   * army.veterancy 纳入 compSig→变则重派(签名自愈)·effective 历练封顶 90。本组纯逻辑·活线接入(flag-gated 会战阶段)属后续刀。
+   * 注:veterancy 默认 0/未设→effectiveVet = 基线·与改动前完全一致(零行为变更·须 gain 后才升)。 */
+  function _vnum(x) { x = +x; return isFinite(x) ? x : 0; }
+  function clampVet(v) { return Math.max(0, Math.min(90, Math.round(_vnum(v)))); }
+  /* 一军当前有效历练 = 品质基线 + 累计 veterancy(封顶90) */
+  function effectiveVet(army) { return clampVet(vetFromQuality(army && army.quality) + _vnum(army && army.veterancy)); }
+  /* 战后历练增长(§12.3):烈度=该军减员率·Δ=4+6×烈度+血战加成(减员率>0.4 加4)·递减×(1−当前历练/100)·封顶90。返实得Δ。 */
+  function gainBattleVeterancy(army, lossRatio) {
+    if (!army) return 0;
+    var lr = Math.max(0, Math.min(1, _vnum(lossRatio)));
+    var cur = effectiveVet(army);
+    var raw = 4 + 6 * lr + (lr > 0.4 ? 4 : 0);          // 轻松≈4 / 苦战≈10 / 血战≈14
+    var delta = Math.round(raw * (1 - cur / 100));       // 递减:精锐稀有(70→85 远慢于 10→50)
+    if (delta <= 0) return 0;
+    var base = vetFromQuality(army.quality);
+    var maxBonus = Math.max(0, 90 - base);               // effective 封顶90
+    var before = _vnum(army.veterancy);
+    army.veterancy = Math.min(maxBonus, before + delta);
+    army._unitsStale = true;                              // 标脏→下次 ensure 重派(units[] 历练随之更新)
+    return Math.round(army.veterancy - before);
+  }
+  /* 新兵稀释老兵(§12.3):oldCount 老兵(当前有效历练)+ newCount 新募(历练15)→加权平均·写回 veterancy 持久。返稀释后有效历练。 */
+  function diluteVeterancy(army, oldCount, newCount) {
+    if (!army) return 0;
+    oldCount = Math.max(0, _vnum(oldCount)); newCount = Math.max(0, _vnum(newCount));
+    if (newCount <= 0) return effectiveVet(army);
+    var oldEff = effectiveVet(army), recruitVet = 15;    // §12.3 新募初值
+    var blended = (oldCount * oldEff + newCount * recruitVet) / Math.max(1, oldCount + newCount);
+    var base = vetFromQuality(army.quality);
+    army.veterancy = Math.max(0, Math.round(blended - base));
+    army._unitsStale = true;
+    return clampVet(blended);
+  }
+
   /* composition → units[]:混编拆分(§12.2)→每兵种"填满+余数"切队(≤1000)+防碎牌(§12.1)·总人数守恒 */
   function deriveArmyUnits(army) {
     if (!army) return [];
@@ -151,10 +204,18 @@
       if (!tot0) return [];
       comp = [{ type: army.quality || '杂兵', count: tot0 }];
     }
-    var units = [], uid = 0, vet = vetFromQuality(army.quality), aid = army.id || army.name || 'army';
+    // ★units 反映真实兵力(整编屏刀4):战损/募兵后 army.soldiers 变而 composition 未同步→按比例缩放·避免 units[] 陈旧(整编随之自动·填满+余数自然合并残队)
+    var _compSum = 0; comp.forEach(function (c) { _compSum += Math.max(0, Math.round((c && c.count) || 0)); });
+    var _total;
+    if (typeof army.soldiers === 'number' && isFinite(army.soldiers)) _total = Math.max(0, Math.round(army.soldiers));        // soldiers 为数(含0)→权威总兵力·0则全歼→units空
+    else if (typeof army.strength === 'number' && isFinite(army.strength)) _total = Math.max(0, Math.round(army.strength));
+    else if (typeof army.size === 'number' && isFinite(army.size)) _total = Math.max(0, Math.round(army.size));
+    else _total = _compSum;                                  // 兵力字段都未设→用 composition 和(向后兼容)
+    var _scale = (_compSum > 0) ? (_total / _compSum) : 1;   // 真实兵力 ÷ 编制和·=1 无变化(新军/已同步=零行为变更)
+    var units = [], uid = 0, vet = effectiveVet(army), aid = army.id || army.name || 'army';   // 历练=品质基线+累计veterancy(veterancy=0时=基线·不变)
     comp.forEach(function (c) {
       var type = (c && (c.type || c.unitTypeId)) || '杂兵';
-      var count = Math.max(0, Math.round((c && c.count) || 0));
+      var count = Math.max(0, Math.round(((c && c.count) || 0) * _scale));   // ★按真实兵力缩放(战损/募兵反映·_scale=1时不变)
       if (!count) return;
       var parts = splitTypeMix(type, army);          // 混编→多兵种(单一则1个)
       var wsum = 0; parts.forEach(function (p) { wsum += p.weight; });
@@ -186,7 +247,7 @@
     var base = (Array.isArray(c) && c.length)
       ? c.map(function (x) { return (x && (x.type || x.unitTypeId) || '') + ':' + Math.round((x && x.count) || 0); }).join('|')
       : 'S';
-    return base + '#' + Math.round((army && (army.soldiers || army.strength || army.size)) || 0) + '@' + String((army && army.quality) || '');
+    return base + '#' + Math.round((army && (army.soldiers || army.strength || army.size)) || 0) + '@' + String((army && army.quality) || '') + '^' + clampVet(army && army.veterancy);   // ^veterancy 纳入签名→战后历练增长触发重派
   }
   /* 幂等 + 自愈:无 units[] / 源签名变 / 标脏 → 重派;否则原样返回(渲染热路径可放心每帧调) */
   function ensureArmyUnits(army) {
@@ -203,6 +264,7 @@
   /* 全军派生(载入钩子用)·永不崩:单军失败保留 composition·置空 units·不阻断其余 */
   function ensureAllArmies(GMref) {
     var g = GMref || (typeof GM !== 'undefined' ? GM : (typeof window !== 'undefined' ? window.GM : null));
+    _syncLexicon(g);                                 // 水合已学词典→本轮派生命中 lexicon 层
     var ok = 0, fail = 0;
     if (g && Array.isArray(g.armies)) {
       for (var i = 0; i < g.armies.length; i++) {
@@ -214,13 +276,79 @@
     return { ok: ok, fail: fail };
   }
 
+  /* 次级 LLM 归类 prompt(朝代中立·枚举给定 arm/sub·JSON 数组输出) */
+  function _buildLexiconPrompt(names) {
+    return '你是兵种归类器。把下列（前几层字根/装备规则接不住的）生僻/架空/近代兵种名，各归入一个基础兵种。\n'
+      + '【arm 枚举】step(步兵) cav(骑兵) bow(远程) art(火炮) guard(禁卫/精锐护卫)\n'
+      + '【sub 枚举】sword(刀盾/短兵) spear(长枪/矛) halberd(戟镋钯) bow(弓) crossbow(弩) musket(火铳/火枪) horse(骑乘) heavy(重甲骑) shock(冲击骑) cannon(炮) guard(禁卫)\n'
+      + '规则:按名字语义与武器/机动特征归类·朝代中立(古今中外架空皆可)·拿不准就归最接近的桶。\n'
+      + '只输出 JSON 数组,每项 {"name":"原名","arm":"...","sub":"..."},不要解释。\n'
+      + '待归类:\n' + names.map(function (n, i) { return (i + 1) + '. ' + n; }).join('\n');
+  }
+  /* 解析回复 → {normKey: {arm,sub}}(robust·剥 code fence·容错) */
+  function _parseLexiconReply(raw) {
+    var out = {};
+    if (!raw) return out;
+    var t = String(raw).replace(/```json/gi, '').replace(/```/g, '').trim();
+    var arr = null;
+    try { arr = JSON.parse(t); } catch (e) { var m = t.match(/\[[\s\S]*\]/); if (m) { try { arr = JSON.parse(m[0]); } catch (e2) {} } }
+    if (!Array.isArray(arr)) return out;
+    arr.forEach(function (o) { if (o && o.name && _VALID_ARM[o.arm]) out[_normType(o.name)] = { arm: o.arm, sub: o.sub || _defSub(o.arm) }; });
+    return out;
+  }
+  /* 第4层活线:扫兜底(fallback)兵种名 → 次级 LLM 归类 → 写持久词典 GM._unitLexicon+活缓存 → 标受影响军 _unitsStale
+   * (签名自愈重派→命中词典层)。记忆化(只问一次·负缓存 _unitLexiconMiss)·无 key/无生僻则 no-op·永不崩·异步(会战阶段前调·出热路径)。
+   * opts:{callAI(测试注入),cap=40,maxTok=900,maxRetries=1} */
+  function learnUnknownTypes(GMref, opts) {
+    opts = opts || {};
+    var g = GMref || (typeof GM !== 'undefined' ? GM : (typeof window !== 'undefined' ? window.GM : null));
+    if (!g || !Array.isArray(g.armies)) return Promise.resolve({ learned: 0, reason: 'no-armies' });
+    _syncLexicon(g);
+    g._unitLexicon = g._unitLexicon || {};
+    g._unitLexiconMiss = g._unitLexiconMiss || {};
+    var unknown = {};
+    g.armies.forEach(function (a) {
+      if (!a || !Array.isArray(a.composition)) return;
+      a.composition.forEach(function (c) {
+        var type = (c && (c.type || c.unitTypeId)) || ''; if (!type) return;
+        var key = _normType(type);
+        if (_LEX[key] || g._unitLexicon[key] || g._unitLexiconMiss[key] || unknown[key]) return;
+        try { if (classifyUnitType(type, a).src === 'fallback') unknown[key] = type; } catch (e) {}   // 只学真兜底的(前几层接不住)
+      });
+    });
+    var keys = Object.keys(unknown);
+    if (!keys.length) return Promise.resolve({ learned: 0, reason: 'none-unknown' });
+    var callAI = opts.callAI || (typeof window !== 'undefined' && window.callAISmart) || (typeof callAISmart !== 'undefined' ? callAISmart : null);
+    if (typeof callAI !== 'function') return Promise.resolve({ learned: 0, reason: 'no-ai', pending: keys.length });
+    if (!opts.callAI && !_aiReady()) return Promise.resolve({ learned: 0, reason: 'no-key', pending: keys.length });
+    var cap = opts.cap || 40;
+    var batch = keys.slice(0, cap).map(function (k) { return unknown[k]; });
+    return Promise.resolve().then(function () { return callAI(_buildLexiconPrompt(batch), opts.maxTok || 900, { temperature: 0, maxRetries: opts.maxRetries != null ? opts.maxRetries : 1 }); })
+      .then(function (raw) {
+        var parsed = _parseLexiconReply(raw), learned = 0, affected = {};
+        batch.forEach(function (typeStr) {
+          var key = _normType(typeStr), r = parsed[key];
+          if (r && _VALID_ARM[r.arm]) { var e = { arm: r.arm, sub: r.sub || _defSub(r.arm) }; g._unitLexicon[key] = e; _LEX[key] = e; affected[key] = 1; learned++; }
+          else { g._unitLexiconMiss[key] = 1; }        // 归不了→负缓存·不再问
+        });
+        if (learned) g.armies.forEach(function (a) { if (a && Array.isArray(a.composition) && a.composition.some(function (c) { return affected[_normType((c && (c.type || c.unitTypeId)) || '')]; })) a._unitsStale = true; });
+        return { learned: learned, asked: batch.length, remaining: keys.length - batch.length };
+      })
+      .catch(function (e) { return { learned: 0, reason: 'ai-error', err: String((e && e.message) || e) }; });
+  }
+
   var API = {
     deriveArmyUnits: deriveArmyUnits,
     ensureArmyUnits: ensureArmyUnits,
     ensureAllArmies: ensureAllArmies,
     classifyUnitType: classifyUnitType,
     vetFromQuality: vetFromQuality,
-    compSig: compSig
+    effectiveVet: effectiveVet,
+    gainBattleVeterancy: gainBattleVeterancy,
+    diluteVeterancy: diluteVeterancy,
+    compSig: compSig,
+    learnUnknownTypes: learnUnknownTypes,
+    _clearLexicon: function () { _LEX = {}; }         // 测试用:清活缓存(隔离用例)
   };
   if (typeof window !== 'undefined') window.TMArmyUnits = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

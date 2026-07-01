@@ -14,16 +14,20 @@ const arrayKeys = ['characters', 'factions', 'parties', 'classes', 'variables', 
 
 function loadOfficialScenario() {
   const files = fs.readdirSync(scenarioDir).filter((name) => name.endsWith('.json'));
+  const matches = [];
   for (const name of files) {
     const full = path.join(scenarioDir, name);
     try {
       const data = JSON.parse(fs.readFileSync(full, 'utf8'));
-      if (data && data.id === SID) return { file: full, data };
+      if (data && data.id === SID) matches.push({ file: full, name, data });
     } catch (_) {
       // Ignore unrelated user scenario files that are temporarily invalid.
     }
   }
-  throw new Error(`official scenario ${SID} not found in ${scenarioDir}`);
+  if (!matches.length) throw new Error(`official scenario ${SID} not found in ${scenarioDir}`);
+  // 同 id 多文件（官方版 + 自用测试版）→ 确定性优先「官方」·否则排除 测试/自用/备份 标记·否则首个（修旧版取 readdir 首个之脆弱：测试版排序在前会被误选）
+  const isTest = (n) => /测试|自用|test|备份|\.bak/i.test(n);
+  return matches.find((m) => /官方/.test(m.name)) || matches.find((m) => !isTest(m.name)) || matches[0];
 }
 
 function main() {
@@ -31,6 +35,13 @@ function main() {
   const data = loaded.data;
   const scenario = Object.assign({}, data);
   arrayKeys.forEach((key) => { delete scenario[key]; });
+
+  // A3b 激活·人力/徭役/农政层试点种子：陕西布政使司（瘠·旱地·无银市场）→ 运行时 TM.Renli.ensurePilotSeeds
+  // 读 P.scenarios[sid].renliPilot·展开种其府叶（西安府等 15 府）。役额按册载丁(=ding)·田源取 economyBase.farmland·
+  // 逃亡/役负满意度去重后归 Renli（huji 对已种子让出）。瘠省 laborMarketDepth 0.2=无银市场（一条鞭法行此为毒）。
+  scenario.renliPilot = [
+    { region: '陕西布政使司', seed: { soilBase: 65, waterworks: 45, doubleCropping: 1.0, laborMarketDepth: 0.2 } }
+  ];
 
   const arrays = {};
   arrayKeys.forEach((key) => {

@@ -87,5 +87,15 @@ function makeGM() {
   assert(!r4e.ok && /未找到地块/.test(r4e.text), '④ 不存在地块→拒');
   assert((gm4._turnReport || []).some(function (e) { return e._op === 'adjust_region_state'; }), '④ 落 _turnReport(_op=adjust_region_state)');
 
+  // ── ⑤ building_project 须优先落 P.adminHierarchy（BuildingWorks.tick 消费的树）──
+  // 旧 bug：写工具只搜 GM.adminHierarchy；当 P/GM 双源不同步时，agent 兴工会写不到建筑 tick 读取的树。
+  var gm5 = { turn: 8, adminHierarchy: {}, _turnReport: [], _agentWriteLog: [] };
+  globalThis.P = { adminHierarchy: { player: { divisions: [{ name: '宁远', buildings: [] }] } } };
+  var r5 = await WT.handle('building_project', { action: 'start', region: '宁远', name: '镇边堡', turns: 2, cost: 20000, reason: '固辽西' }, { GM: gm5 });
+  var pDiv = globalThis.P.adminHierarchy.player.divisions[0];
+  assert(r5.ok && pDiv.buildings.length === 1 && pDiv.buildings[0].name === '镇边堡', '⑤ building_project 双源定位：GM无地块时落 P.adminHierarchy（建筑tick可消费）');
+  assert((gm5._turnReport || []).some(function (e) { return e._op === 'building_start'; }), '⑤ building_project 落 _turnReport(_op=building_start)');
+  delete globalThis.P;
+
   console.log('[smoke-agent-mode-geo] pass assertions=' + passed.value);
 })().catch(function (e) { console.error(e); process.exit(1); });

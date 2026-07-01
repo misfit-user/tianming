@@ -654,6 +654,7 @@
               character_memory_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
               edict_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
               dialogue_commitment_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              court_resolution_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
               fiscal_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
               currency_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
               population_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
@@ -1312,6 +1313,19 @@
             return;
           }
 
+          // 【sc1q 升级·Q3】给 sc1q 喂涉事 NPC 的认知快照(sc07 _npcCognition·所求/朝局判断/恩怨)·让 mood/subtext/willingness 有据·非纯凭答话语气猜。
+          var _q3Cue = '';
+          try {
+            if (typeof getNpcCognitionSnippet === 'function') {
+              var _q3Names = {};
+              _jishi.forEach(function(r){ if (r && r.char) _q3Names[r.char] = 1; });
+              _flatCommits.forEach(function(c){ if (c && c.npc) _q3Names[c.npc] = 1; });
+              Object.keys(_q3Names).slice(0, 10).forEach(function(nm){
+                var s = ''; try { s = getNpcCognitionSnippet(nm) || ''; } catch(_) {}
+                if (s) _q3Cue += '· ' + nm + '：' + String(s).replace(/\s+/g, ' ').slice(0, 180) + '\n';
+              });
+            }
+          } catch(_q3E) {}
           function _packQ(v, max) { try { return JSON.stringify(v||null).slice(0, max||1500); } catch(_) { return ''; } }
           var tp1q = '【对话承诺推演·sc1q】\n本回合 T' + _curTurn + '·从 7 渠道 (问对/朝议/常朝/廷议/御前/鸿雁/朱批) 提取对话型决策·让 SC1 主推演视它们为"和诏书等同的输入"。\n\n'
             + '【输入 1·问对/常朝/御前公开 (jishiRecords·近 ' + _recallTurns + ' 回合)】' + _packQ(_jishi.map(function(r){return {t:r.turn, char:r.char, mode:r.mode, said:String(r.playerSaid||'').slice(0,200), npcSaid:String(r.npcSaid||'').slice(0,200), loyDelta:r.loyaltyDelta};}), 4000) + '\n\n'
@@ -1320,9 +1334,10 @@
             + '【输入 4·跨回合未完承诺 (_npcCommitments)】' + _packQ(_flatCommits, 2500) + '\n\n'
             + '【输入 5·玩家发出私信 (letters from=玩家·本回合)】' + _packQ(_outLetters.map(function(l){return {to:l.to, content:String(l.content||'').slice(0,200)};}), 2000) + '\n\n'
             + '【输入 6·奏疏朱批 (approvedMemorials·本回合·reply 含具体命令)】' + _packQ(_approvedReplies.map(function(m){return {from:m.from, summary:m.summary, reply:String(m.reply||'').slice(0,200)};}), 2000) + '\n\n'
+            + (_q3Cue ? '【涉事 NPC 认知底细 (sc07·据此推断 mood/willingness/subtext·勿凭空臆测语气)】\n' + _q3Cue + '\n' : '')
             + '【输出严格 JSON·只包含 4 字段】\n'
             + '{\n'
-            + '  "dialogue_commitments":[{"npc":"承诺NPC名","task":"具体动作 (40字内·必须有动词+对象·禁泛泛表态)","deadline":"3回合内/秋季前等","source_type":"问对/朝议/常朝/廷议/御前/鸿雁/朱批 之一","source_conv_id":"jishiRecords[i] 的 turn-char-mode 联合标识·或 courtRecords[i].turn","willingness":0.5,"player_emphasis":"明命/暗示/试探","required_npc_action":"NPC 在 SC1 npc_actions 中必须出现的行动 (30字内)"}],\n'
+            + '  "dialogue_commitments":[{"npc":"承诺NPC名","task":"具体动作 (40字内·必须有动词+对象·禁泛泛表态)","category":"query/finance/intel/dispatch/diplomacy/write/other 之一 (查办肃贪=query·财赋征税=finance·侦查密探=intel·出兵调度=dispatch·外交邦交=diplomacy·撰拟文书=write·其余=other·据 task 性质定·决定履成后的结构化后果)","deadline":"3回合内/秋季前等","source_type":"问对/朝议/常朝/廷议/御前/鸿雁/朱批 之一","source_conv_id":"jishiRecords[i] 的 turn-char-mode 联合标识·或 courtRecords[i].turn","willingness":0.5,"player_emphasis":"明命/暗示/试探","required_npc_action":"NPC 在 SC1 npc_actions 中必须出现的行动 (30字内)"}],\n'
             + '  "collective_resolutions":[{"topic":"议题","forum":"朝议/常朝/廷议","decision":"决议内容","adopted_by_emperor":true,"required_actions":["承办者必做的 1-3 项"],"source_court_id":"courtRecords[i].turn"}],\n'
             + '  "npc_dialogue_intent":[{"npc":"NPC名","mood":"unenthused/eager/resentful/sincere/sycophant","subtext":"潜台词 (40字)","next_likely_move":"下一步可能动作 (40字)"}],\n'
             + '  "required_sc1_actions":["SC1 必须在 npc_actions/edict_feedback/char_updates 中出现的硬性条目 (每条 40字内·≤5 条)"]\n'
@@ -2367,7 +2382,7 @@
           "\"narrative\":\"招安过程\""+
         "}],"+
         // 问对承诺进展更新——NPC 对玩家承诺任务的执行报告
-        "\"commitment_update\":[{\"id\":\"承诺id(匹配GM._npcCommitments)\",\"npcName\":\"承诺者\",\"progress_delta\":10,\"status\":\"executing/completed/failed/delayed\",\"feedback\":\"执行情况叙事(30-80字，具体描述做了什么、遇到什么)\",\"consequenceType\":\"success/partial/obstructed/abandoned\"}],"+
+        "\"commitment_update\":[{\"id\":\"承诺id(匹配GM._npcCommitments)\",\"npcName\":\"承诺者\",\"progress_delta\":10,\"status\":\"executing/completed/failed/delayed\",\"feedback\":\"执行情况叙事(30-80字，具体描述做了什么、遇到什么)\",\"consequenceType\":\"success/partial/obstructed/abandoned\",\"failReason\":\"若status=failed/delayed·为何未成:推诿/无能/被掣肘/阳奉阴违/客观受阻(不填=未知·据承办人忠诚才干心绪判)\"}],"+
         // 起义转化——建政/割据/融入他派/彻底消散
         "\"revolt_transform\":[{"+
           "\"revoltId\":\"目标起义\","+
@@ -2533,11 +2548,14 @@
           if (_sc1qOut && Array.isArray(_sc1qOut.dialogue_commitments) && _sc1qOut.dialogue_commitments.length > 0) {
             tp1 += '\n\n【本回合对话承诺·sc1q 推演输出·与诏令同等权重·必须推演】\n';
             tp1 += '  ※ 这些是玩家通过对话/朝议/常朝/廷议/御前/鸿雁/朱批下达的命令·NPC 当面承诺·必须在本回合 npc_actions / char_updates / events 中体现\n';
+            tp1 += '  ※ 反馈时(dialogue_commitment_feedback)务必回带该承诺的 source_conv_id 与 category 原值·供落地按类归结构化后果(查办降腐/理财提征/密查入情报)\n';
             _sc1qOut.dialogue_commitments.slice(0, 12).forEach(function(dc) {
               if (!dc || !dc.npc) return;
               tp1 += '  · [' + (dc.source_type || '?') + '] ' + dc.npc + '·允诺：' + String(dc.task||'').slice(0, 80);
               if (dc.deadline) tp1 += '·限：' + dc.deadline;
               tp1 += '·意愿' + (Math.round((dc.willingness || 0.5) * 100)) + '%';
+              if (dc.category) tp1 += '·类别:' + dc.category;
+              if (dc.source_conv_id) tp1 += '·convId:' + dc.source_conv_id;
               if (dc.required_npc_action) tp1 += '·必须出现的行动：' + String(dc.required_npc_action).slice(0, 60);
               tp1 += '\n';
             });
@@ -2552,6 +2570,23 @@
               tp1 += '\n';
             });
           }
+          // 【Q2 闭环·注入】往期未结朝议决议喂回 SC1·让决议不止本回合一次性·须承接跟进(否则决而不行)。
+          try {
+            if (Array.isArray(GM._courtResolutions) && GM._courtResolutions.length) {
+              var _curTcr = GM.turn || 1;
+              var _pendCR = GM._courtResolutions.filter(function(r){ return r && (r.status === 'pending' || r.status === 'stalled') && r.turn < _curTcr; }).slice(-6);
+              if (_pendCR.length) {
+                tp1 += '\n【往期未结朝议决议·须承接跟进】\n';
+                tp1 += '  ※ 若本回合已落实请在 court_resolution_feedback:[{"id":"决议id","status":"resolved","note":"如何落实(30字)"}] 标 resolved·仍受阻则 status:"stalled"+note 说明梗阻·勿凭空\n';
+                _pendCR.forEach(function(r){
+                  tp1 += '  · [id=' + (r.id || '?') + '·T' + r.turn + '·' + (r.forum || '?') + '] ' + String(r.topic || '').slice(0, 40) + ' → ' + String(r.decision || '').slice(0, 60);
+                  if (Array.isArray(r.requiredActions) && r.requiredActions.length) tp1 += '·承办：' + r.requiredActions.slice(0, 3).join('；');
+                  if (r.status === 'stalled') tp1 += '（前报梗阻）';
+                  tp1 += '\n';
+                });
+              }
+            }
+          } catch(_crInjE) {}
           // 第一刀·补注入 sc1q 语气层(mood/subtext)——替代被摘要化的问对全文·保推演与叙事的语气依据
           if (_sc1qOut && Array.isArray(_sc1qOut.npc_dialogue_intent) && _sc1qOut.npc_dialogue_intent.length > 0) {
             tp1 += '\n【本回合 NPC 对话语气·sc1q 推演输出·供推演与叙事还原语气】\n';
@@ -2565,7 +2600,7 @@
             });
           }
         } catch(_sc1qInjE) { _dbg('[sc1q inject] fail', _sc1qInjE); }
-        var _pendingEdicts = GM._edictTracker.filter(function(e) { return e.turn === GM.turn && e.status === 'pending'; });
+        var _pendingEdicts = GM._edictTracker.filter(function(e) { return e.turn === GM.turn && e.status === 'pending' && !e._offTreeAppoint; });   // 官制树 UI 任命不交 AI 识别(确定性落地·见 tm-endturn-apply)·仅手打诏令走 AI·2026-07-01
         if (_pendingEdicts.length > 0) {
           // 按内政/外交分类注入
           var _domesticEdicts = _pendingEdicts.filter(function(e){ return !e._crossFaction; });
@@ -2768,13 +2803,32 @@
           });
         });
         if (_pendingCmt.length > 0) {
+          // ★codex-fix W2b:承诺清单封顶16·防积压随回合线性膨胀主 prompt(按逾期>意愿排序取前16·sc1q 有 _packQ 上限·此处原无)
+          if (_pendingCmt.length > 16) {
+            _pendingCmt.sort(function(a,b){
+              var _oa = ((GM.turn - a.c.assignedTurn) > (a.c.deadline||3)) ? 1 : 0;
+              var _ob = ((GM.turn - b.c.assignedTurn) > (b.c.deadline||3)) ? 1 : 0;
+              if (_oa !== _ob) return _ob - _oa;
+              return (b.c.willingness||0.5) - (a.c.willingness||0.5);
+            });
+            _pendingCmt = _pendingCmt.slice(0, 16);
+          }
           tp1 += '\n\n【问对承诺——NPC 应按此行动（AI 推演时体现；可通过 npc_actions 或 commitment_update 报告进展）】\n';
           _pendingCmt.forEach(function(x) {
             var elapsed = GM.turn - x.c.assignedTurn;
             tp1 += '  [id=' + x.c.id + '] ' + x.name + ' 允' + elapsed + '回合前：' + x.c.task + '（意愿' + Math.round((x.c.willingness||0.5)*100) + '%，限' + x.c.deadline + '回合，状态' + x.c.status + ' 进展' + x.c.progress + '%）\n';
             if (x.c.npcPromise) tp1 += '    原诺："' + x.c.npcPromise + '"\n';
+            // ★2026-07-01 W2b·让记忆/属性真正影响办事质量:注入承办人的忠诚/才干/心绪(此前只给 willingness)·
+            //   令 AI 的进展/成败因人而异而非一视同仁。心绪走零调用的 getMood(点亮死API·记忆派生)·把记忆接进办事结果。
+            var _cch = (typeof findCharByName === 'function') ? findCharByName(x.name) : null;
+            if (_cch) {
+              var _loy = (typeof _cch.loyalty === 'number') ? _cch.loyalty : 50;
+              var _abil = [_cch.ability, _cch.talent, _cch.administration, _cch.governance, _cch.management, _cch.intelligence, _cch.diplomacy].find(function(v){ return Number.isFinite(v); });   // ★codex-fix W2b:只取数值型能力(排除 learning 文本「进士/秀才」·且不把 0 当缺失)
+              var _mood = (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMood) ? NpcMemorySystem.getMood(x.name) : '';
+              tp1 += '    ·承办人：忠诚' + _loy + (_abil != null ? '·才干' + _abil : '') + (_mood ? '·心绪「' + _mood + '」' : '') + '（据此定其办事快慢/尽力/成败）\n';
+            }
           });
-          tp1 += '  ※ 忠诚/意愿高者执行快；忠诚低/推诿型者易拖延/忘记/阳奉阴违；可在 npc_actions 中体现行动，或在 p1 中新增 commitment_update:[{id,progress,status,feedback}]\n';
+          tp1 += '  ※ 办事质量应因人而异：忠诚高+心绪佳+才干强者办得快而妥；忠诚低/心绪恶(怒/恨/惧)/才干弱者易拖延、敷衍、办砸或阳奉阴违。请据上列承办人属性让进展合理分层；可在 npc_actions 中体现行动，或在 p1 中新增 commitment_update:[{id,progress,status,feedback}]\n';
         }
       }
       // 注入御前密谋（activeSchemes 中 source=yuqian2 的）——提醒 AI 暗中推进
@@ -3173,6 +3227,19 @@
                 return d + Math.round(v||0);
               }).join('·');
               if (dp) tp1 += '\n  吏治·6部门：' + dp;
+            }
+          } catch(_e){}
+          // ── 腐败九源 breakdown（因何而腐·W3 补盲区）──
+          //   此前 GM.corruption.sources 只喂 UI 抽屉，prompt 仅给标量+6部门→AI 盲于「成因」；
+          //   与民心 sources（下方）对称补上，让推演知道腐败由俸薄/急征/鬻官/宠信…何源而起。
+          try {
+            if (GM.corruption && GM.corruption.sources) {
+              var _corrSrcCN = { lowSalary:'俸薄', laxSupervision:'监弛', emergencyLevy:'急征', officeSelling:'鬻官', nepotism:'荐幸', innerCircle:'宠信', redundancy:'冗员', institutional:'制弊', lumpSumSpending:'巨支' };
+              var _cs = GM.corruption.sources;
+              var corrSrc = Object.keys(_cs).filter(function(k){ return Math.abs(_cs[k]) > 0.5; })
+                .sort(function(a,b){ return Math.abs(_cs[b]) - Math.abs(_cs[a]); })
+                .slice(0,6).map(function(k){ var v=_cs[k]; return (_corrSrcCN[k]||k) + (v>=0?'+':'') + (Math.round(v*10)/10); }).join(' ');
+              if (corrSrc) tp1 += '\n  吏治·九源（因何而腐）：' + corrSrc;
             }
           } catch(_e){}
           // ── 14源累积（民心驱动因素）──
@@ -3896,9 +3963,37 @@
         tp1d += '本回合：T' + (GM.turn || 1) + (_dateText1d ? (' · ' + _dateText1d) : '') + '\n';
         tp1d += '玩家诏令/行止原始摘要：' + _packSc1d({ edicts: edicts || {}, xinglu: xinglu || '' }, 2500) + '\n';
         tp1d += 'SC1结构化账本：' + _packSc1d(_facts1d, 12000) + '\n\n';
+        // 【sc1d 升级·D1】给时政记喂涉事 NPC 的认知/关系线索(所求/势/视上/睦/隙)——兄弟 sc1b/sc1c 都吃·时政记要写"谁办的·遇何阻力"却看不到 → 复用 _cogRelCueSC。
+        try {
+          var _d1Names = {};
+          if (p1 && Array.isArray(p1.npc_actions)) p1.npc_actions.forEach(function(a){ var n = a && (a.npc || a.name); if (n) _d1Names[n] = 1; });
+          if (p1 && Array.isArray(p1.char_updates)) p1.char_updates.forEach(function(u){ var n = u && (u.name || u.npc); if (n) _d1Names[n] = 1; });
+          if (p1 && Array.isArray(p1.dialogue_commitment_feedback)) p1.dialogue_commitment_feedback.forEach(function(d){ if (d && d.npc) _d1Names[d.npc] = 1; });
+          var _d1Cue = '';
+          Object.keys(_d1Names).slice(0, 12).forEach(function(nm){
+            var _ch = (typeof findCharByName === 'function') ? findCharByName(nm) : null;
+            if (!_ch) return;
+            var cue = _cogRelCueSC(_ch);
+            if (cue) _d1Cue += '  · ' + nm + cue + '\n';
+          });
+          if (_d1Cue) tp1d += '涉事人物底细(所求/势/视上/睦/隙·据此写执行者动机与阻力·勿凭空)：\n' + _d1Cue + '\n';
+        } catch(_d1E) {}
+        // 【sc1d 升级·D2】往期未结朝议决议喂给时政记(它须逐条复述朝议·却从没见过 _courtResolutions)。
+        try {
+          if (Array.isArray(GM._courtResolutions) && GM._courtResolutions.length) {
+            var _curTd = GM.turn || 1;
+            var _pendCRd = GM._courtResolutions.filter(function(r){ return r && (r.status === 'pending' || r.status === 'stalled') && r.turn < _curTd; }).slice(-6);
+            if (_pendCRd.length) {
+              tp1d += '往期未结朝议决议(须在时政记中交代其进展/搁置)：\n';
+              _pendCRd.forEach(function(r){ tp1d += '  · [T' + r.turn + '·' + (r.forum||'?') + '·' + r.status + '] ' + String(r.topic||'').slice(0,40) + ' → ' + String(r.decision||'').slice(0,60) + '\n'; });
+              tp1d += '\n';
+            }
+          }
+        } catch(_d2E) {}
         tp1d += '请返回严格 JSON，只包含以下字段：\n';
         tp1d += '{"shilu_text":"实录' + _shiluMin + '-' + _shiluMax + '字。纯文言史官体，仿《资治通鉴》《明实录》，以月日/是月/上命为句式，只记可验证事实，不评论。","szj_title":"时政记副标题，七字对仗两句，用顿号或逗号分隔。","shizhengji":"时政记正文' + _szjMin + '-' + _szjMax + '字。仿朝政纪要体，分3-5段，逐条复述玩家诏令/奏疏批复/问对朝议，并写执行者、执行过程、阻力、实际效果、遗留隐患。不得编造 SC1 账本没有的变化。","szj_summary":"时政记总结一句话，概括局势与隐患。"}';
         tp1d += '\n可选字段 basis_refs：数组，列出 shilu_text/shizhengji 所依据的 SC1 字段、诏令、问对或奏疏摘要；不得把 basis_refs 当作新增事实。';
+        tp1d += '\n可选字段 zhengwen：一段独立的"史臣曰/朝野时评"(80-160字·带立场的短评论断·区别于时政记的纪实体·不新增事实)；若无从评则留空。';
         var _sc1dBaseTok = Math.min(_effectiveOutCap || 7000, 7000);
         var _sc1dBody = {model:P.ai.model||'gpt-4o', messages:[{role:'system', content:_maybeCacheSys(sysPFor('sc1d'))}, {role:'user', content:tp1d}], temperature:Math.max(0.35, Math.min(0.75, _modelTemp || 0.6)), max_tokens:_tok(_sc1dBaseTok)};
         if (_modelFamily === 'openai') _sc1dBody.response_format = { type:'json_object' };
@@ -3919,9 +4014,20 @@
           p1.shizhengji = p1d.shizhengji || p1d.shizheng || p1d.szj || p1.shizhengji || '';
           p1.szj_summary = p1d.szj_summary || p1d.shizhengji_summary || p1d.summary || p1.szj_summary || '';
           if (Array.isArray(p1d.basis_refs)) p1.basis_refs = p1d.basis_refs.slice(0, 16);
-          if (!p1.zhengwen) p1.zhengwen = p1.shizhengji;
+          if (p1d.zhengwen && String(p1d.zhengwen).trim()) p1.zhengwen = String(p1d.zhengwen);   // 【sc1d·D3】优先用 sc1d 独立时评(治 zhengwen 逐字拷贝 shizhengji 的 degenerate)
+          else if (!p1.zhengwen) p1.zhengwen = p1.shizhengji;   // 无独立时评仍回退拷贝·不空政文面板
           GM._turnAiResults.subcall1 = p1;
           ctx.results.sc1d = p1d;
+          // 【sc1d 升级·D4】账本空洞(SC1 兜底/字段全空)时标记叙述·让下游(起居注/史记/records UI)知其"无实据成文"·勿当权威史实。
+          try {
+            var _hlw = !!(p1 && p1._sc1dSeedFallback);
+            if (!_hlw) {
+              var _ht = (_facts1d.turn_summary && _facts1d.turn_summary.length > 4) || (_facts1d.shizhengji_basis && _facts1d.shizhengji_basis.length > 4);
+              var _hr = ['edict_feedback','events','fiscal_adjustments','char_updates','personnel_changes','office_changes','faction_events','faction_changes','army_changes','central_local_actions','institution_changes'].some(function(k){ return Array.isArray(_facts1d[k]) && _facts1d[k].length > 0; });
+              _hlw = !_ht && !_hr;
+            }
+            if (_hlw) { p1._shiluHollow = true; p1d._hollowLedger = true; GM._turnAiResults._sc1dHollow = true; _dbg('[sc1d·D4] 账本空洞·叙述标 _shiluHollow(下游勿当权威史实)'); }
+          } catch(_d4E) {}
         }
         GM._subcallTimings.sc1d = Date.now() - _sc1dStart;
       } catch(_sc1dErr) {
@@ -3930,6 +4036,27 @@
         if (GM && GM._turnAiResults) GM._turnAiResults.subcall1 = p1;
       }
       })();
+
+      // 【sc1b/sc1c 升级·C2/B1】共享:把 sc07 的 _npcCognition(所求/朝局判断/视上)+ NPC 间关系(睦/隙)压成紧凑线索——
+      //   让书信/阴谋/结盟不再无视「谁想要什么·谁信谁·谁恨谁」这两大既有富数据源(此前 sc1b/sc1c 只看对玩家亲和)。
+      function _cogRelCueSC(c) {
+        if (!c || !c.name) return '';
+        var bits = [];
+        var cg = (typeof GM !== 'undefined' && GM._npcCognition && GM._npcCognition[c.name]);
+        if (cg) {
+          if (cg.agenda) bits.push('求:' + String(cg.agenda).slice(0, 16));
+          if (cg.situationRead) bits.push('势:' + String(cg.situationRead).slice(0, 16));
+          if (cg.attitudeTowardsPlayer) bits.push('视上:' + String(cg.attitudeTowardsPlayer).slice(0, 12));
+        }
+        if (c.relations && typeof c.relations === 'object') {
+          var rel = Object.keys(c.relations).map(function(rn){ var r = c.relations[rn] || {}; var _af = Number(r.affinity); return { n: rn, aff: isFinite(_af) ? _af : 50, host: Number(r.hostility) || 0 }; });   /* Codex 审查修·F3:affinity:0(死敌)勿被 ||50 当中性 */
+          var close = rel.filter(function(r){ return r.aff >= 65; }).sort(function(a, b){ return b.aff - a.aff; }).slice(0, 2);
+          var foe = rel.filter(function(r){ return r.host >= 25 || r.aff <= 30; }).sort(function(a, b){ return (b.host - b.aff) - (a.host - a.aff); }).slice(0, 2);
+          if (close.length) bits.push('睦:' + close.map(function(r){ return r.n; }).join('/'));
+          if (foe.length) bits.push('隙:' + foe.map(function(r){ return r.n; }).join('/'));
+        }
+        return bits.length ? (' ⟨' + bits.join('·') + '⟩') : '';
+      }
 
       var _sc1bP = (async function() {
       // ═══ Sub-call 1b · 文事鸿雁人际专项（独立预算 8k，避免文事/鸿雁/互动被 sc1 庞大 schema 挤出）═══
@@ -3950,6 +4077,7 @@
             var _favA = (typeof AffinityMap !== 'undefined' && AffinityMap.get) ? (AffinityMap.get(c.name, (P.playerInfo && P.playerInfo.characterName) || '') || 0) : 0;
             if (_favA) _p += (_favA > 0 ? '\u00B7\u53D7\u6069' : '\u00B7\u79EF\u6028') + Math.abs(_favA);
             if (Array.isArray(c.traits) && c.traits.length) _p += ' \u7279{' + c.traits.slice(0,3).join(',') + '}';
+            _p += _cogRelCueSC(c);   // 【B1】写信人认知(所求/口吻由认知带)+ 与他人交情(睦/隙·谁给谁写信)
             return _p;
           });
           _charsBriefB = _briefListB.join('\n');
@@ -4000,7 +4128,7 @@
 
         tp1b += '\u25C6 npc_letters\uFF08\u9E3F\u96C1\u4F20\u4E66\u00B7\u6BCF\u56DE\u5408 2-5 \u5C01\uFF09\u2014\u2014\n';
         tp1b += '  \u4E0D\u5728 ' + _capB + ' \u7684 NPC \u9047\u91CD\u5927\u4E8B\u4EF6\u4E3B\u52A8\u5199\u4FE1\u7ED9\u7687\u5E1D\u3002from \u5FC5\u987B\u662F\u4E0D\u5728\u9996\u90FD\u7684 NPC\u3002\n';
-        tp1b += '  \u5B57\u6BB5\uFF1A{from, type:"report\u5954\u544A/plea\u6C42\u63F4/warning\u8B66\u62A5/personal\u79C1\u60C5/intelligence\u60C5\u62A5", urgency:"normal/urgent/extreme", content(100-200\u5B57\u53E4\u5178\u4E2D\u6587), suggestion(1-2\u53E5\u53EF\u7701), replyExpected:true}\n';
+        tp1b += '  \u5B57\u6BB5\uFF1A{from, type:"report\u5954\u544A/plea\u6C42\u63F4/warning\u8B66\u62A5/personal\u79C1\u60C5/intelligence\u60C5\u62A5", urgency:"normal/urgent/extreme", content(100-200\u5B57\u53E4\u5178\u4E2D\u6587), suggestion(1-2\u53E5\u53EF\u7701), subjectLine:"\u4FE1\u51FD\u9898\u540D\u00B75-12\u5B57\u5982\u300A\u8FBD\u4E1C\u544A\u6025\u758F\u300B", replyExpected:true}\n';
         tp1b += '  \u53C2\u8003\u4FE1\u4EF6\u6A21\u5F0F\uFF1A\u8FB9\u5C06\u544A\u6025\u00B7\u5730\u65B9\u5B98\u8BF7\u547D\u00B7\u6D41\u5B98\u8FF0\u60C5\u00B7\u51FA\u4F7F\u56DE\u62A5\u00B7\u79BB\u4EAC\u65E7\u81E3\u6000\u60F3\u00B7\u5BC6\u63A2\u5BC6\u62A5\u3002\n\n';
 
         tp1b += '\u25C6 npc_correspondence\uFF08NPC \u4E4B\u95F4\u5BC6\u4FE1\u00B72-5 \u6761\uFF09\u2014\u2014\n';
@@ -4051,7 +4179,7 @@
         var _sc1bCall = await _callEndturnAI(_sc1bBody, {
           id: 'sc1b',
           label: '\u6587\u4E8B\u9E3F\u96C1\u4EBA\u9645',
-          expectedKeys: ['npc_interactions', 'cultural_works', 'hongyan_letters', 'fengwen_snippets'],
+          expectedKeys: ['cultural_works', 'npc_letters', 'npc_correspondence', 'npc_interactions'],   // 【sc1b 升级·B2】修过期 keys:原列 hongyan_letters/fengwen_snippets 是 sc1c 的·sc1b 实产 npc_letters/npc_correspondence(错的 repair/validation 提示)
           priority: 'high'
         });
         if (_sc1bCall && _sc1bCall.data) {
@@ -4137,6 +4265,7 @@
             var _favC = (typeof AffinityMap !== 'undefined' && AffinityMap.get) ? (AffinityMap.get(c.name, (P.playerInfo && P.playerInfo.characterName) || '') || 0) : 0;
             if (_favC) _p += (_favC > 0 ? '\u00B7\u53D7\u6069' : '\u00B7\u79EF\u6028') + Math.abs(_favC);
             if (Array.isArray(c.traits) && c.traits.length) _p += ' \u7279{' + c.traits.slice(0,2).join(',') + '}';
+            _p += _cogRelCueSC(c);   // 【C2】谋者认知(所求/朝局判断)+ 与他人交情(睦/隙·谁与谁结党、谋算谁)
             return _p;
           }).join('\n');
         } catch(_e){}
@@ -4155,6 +4284,8 @@
           }).join('\n');
         }
 
+        // 【sc1c 升级·C3】近期暗流(GM._hiddenMoves·近 2 回合)喂回 sc1c·让它承接前番埋下的暗流而非每回合另起。
+        var _hiddenMovesC = (Array.isArray(GM._hiddenMoves) && GM._hiddenMoves.length) ? GM._hiddenMoves.filter(function(h){ return h && (Number(h.turn) || 0) >= (GM.turn || 0) - 2; }).slice(-10).map(function(h){ return '· ' + h.text; }).join('\n') : '';
         var _recentSZJC = (p1 && (p1.shizhengji || p1.shizhengji_basis || p1.turn_summary)) ? String(p1.shizhengji || p1.shizhengji_basis || p1.turn_summary).slice(0,1200) : '';
         var _pNameC = (P.playerInfo && P.playerInfo.characterName) || '';
 
@@ -4165,6 +4296,7 @@
         if (_relsBriefC) tp1c += '\n\u3010\u52BF\u529B\u5173\u7CFB\u5FEB\u7167\u3011\n' + _relsBriefC + '\n';
         if (_undercurrentsC) tp1c += '\n\u3010\u4E0A\u56DE\u5408\u52BF\u529B\u6697\u6D41\uFF08\u5E94\u6709\u540E\u7EED\uFF09\u3011\n' + _undercurrentsC + '\n';
         if (_activeSchemesC) tp1c += '\n\u3010\u8FDB\u884C\u4E2D\u9634\u8C0B\uFF08\u901A\u8FC7 scheme_actions \u63A8\u8FDB\uFF0C\u4E0D\u8981\u5728 npc_schemes \u91CD\u590D\uFF09\u3011\n' + _activeSchemesC + '\n';
+        if (_hiddenMovesC) tp1c += '\n【近期暗流（前番已埋·可承接推进/收束·勿凭空另起）】\n' + _hiddenMovesC + '\n';
         // 长期事势·含 hidden 条目（AI 全见，用于构思本回合该推进/完成哪些）
         if (typeof ChronicleTracker !== 'undefined' && ChronicleTracker.getAIContextString) {
           var _chronCtxC = ChronicleTracker.getAIContextString();
@@ -4205,7 +4337,7 @@
 
         tp1c += '\u25C6 npc_schemes\uFF08NPC \u9634\u8C0B\u00B7\u65B0\u589E\u9634\u8C0B\u3002\u5E38\u6001 2-4 \u6761\uFF0C\u5F20\u529B\u671F 4-8 \u6761\uFF09\u2014\u2014\n';
         tp1c += '  \u8DE8\u56DE\u5408\u9634\u8C0B\u2014\u2014\u6743\u81E3\u6392\u6324\u5BF9\u624B\u3001\u5C06\u519B\u6697\u8054\u5916\u90E8\u3001\u6536\u96C6\u53CD\u5BF9\u6D3E\u7F6A\u8BC1\u3001\u6B3E\u586B\u4E00\u8D1D\u3001\u4EA4\u5851\u540E\u5BAB\u3001\u6D41\u8A00\u9020\u52BF\u3001\u540E\u9752\u52FE\u7ED3\u7B49\u957F\u671F\u5E03\u5C40\n';
-        tp1c += '  \u5B57\u6BB5\uFF1A{schemer, target, plan(40\u5B57\u63CF\u8FF0), progress:"\u915D\u917F\u4E2D/\u5373\u5C06\u53D1\u52A8/\u957F\u671F\u5E03\u5C40", allies:"\u540C\u8C0B\u8005\uFF08\u4EBA\u540D\u9017\u53F7\u5206\u9694\uFF09"}\n\n';
+        tp1c += '  \u5B57\u6BB5\uFF1A{schemer, target, plan(40\u5B57\u63CF\u8FF0), progress:"\u915D\u917F\u4E2D/\u5373\u5C06\u53D1\u52A8/\u957F\u671F\u5E03\u5C40", allies:"\u540C\u8C0B\u8005\uFF08\u4EBA\u540D\u9017\u53F7\u5206\u9694\uFF09", motive:"\u52A8\u673A\u00B7\u636E\u5176\u6240\u6C42/\u6069\u6028(20\u5B57\u00B7\u5982\u300C\u6068\u674E\u67D0\u6784\u9677\u3001\u6B32\u62A5\u6B64\u4EC7\u300D)", method:"\u624B\u6BB5\u00B71\u8BCD\u5982\u8BEC\u9677/\u7ED3\u515A/\u8D3F\u8D42/\u6784\u9677/\u5BC6\u594F/\u8054\u59FB/\u6563\u8C23", secrecy:"\u9690\u79D8\u5EA6\u00B7\u6781\u9690/\u534A\u516C\u5F00/\u5F20\u626C", winCondition:"\u4F55\u4E3A\u5F97\u624B\u00B720\u5B57"}\n\n';
 
         tp1c += '\u25C6 scheme_actions\uFF08\u5DF2\u6709\u9634\u8C0B\u63A8\u8FDB\u00B71-3 \u6761\uFF0C\u5BF9\u5E94\u4E0A\u4E00\u56DE\u5408\u9634\u8C0B\uFF09\u2014\u2014\n';
         tp1c += '  \u5B57\u6BB5\uFF1A{schemer, action:"advance\u63A8\u8FDB/disrupt\u7834\u574F/abort\u4E2D\u6B62/expose\u88AB\u63ED\u53D1", reason(30\u5B57)}\n\n';
@@ -4462,6 +4594,16 @@
                   id: 'scheme_T' + GM.turn + '_' + Math.random().toString(36).slice(2,6),
                   schemer: s.schemer, target: s.target,
                   plan: s.plan, progress: s.progress || '\u915D\u917F\u4E2D',
+                  // \u3010sc1c \u5347\u7EA7\u00B7C1\u3011\u8865\u9F50 scheme_actions \u6D88\u8D39\u65B9(apply.js:5431)\u6240\u9700\u5F62\u72B6:status/\u6570\u503C progressPct/typeName\u2014\u2014
+                  //   \u539F\u7F3A\u6B64\u4E09\u8005\u81F4 sc1c \u81EA\u4EA7\u9634\u8C0B\u7684 advance/disrupt/expose \u751F\u547D\u5468\u671F\u6C38\u8FDC\u5339\u914D\u4E0D\u4E0A\u00B7\u540D\u5B58\u5B9E\u4EA1\u3002progress \u5B57\u7B26\u4E32\u4FDD\u7559\u7ED9 ChronicleTracker\u3002
+                  status: 'active',
+                  progressPct: ({ '\u957F\u671F\u5E03\u5C40':15, '\u915D\u917F\u4E2D':35, '\u5373\u5C06\u53D1\u52A8':70, '\u5DF2\u53D1':90 })[s.progress || '酝酿中'] || 20,   /* Codex 审查修·F4:progressPct 从与 progress 同一默认阶段算·免 20/35 不一致 */
+                  typeName: String(s.typeName || s.type || '\u5BC6\u8C0B').slice(0, 12),
+                  // \u3010sc1c \u5347\u7EA7\u00B7C4\u3011\u9634\u8C0B\u6DF1\u5316\u5B57\u6BB5:\u52A8\u673A/\u624B\u6BB5/\u9690\u79D8\u5EA6/\u5F97\u624B\u6761\u4EF6\u2014\u2014\u4F9B\u53D9\u4E8B\u4E0E\u540E\u7EED\u63A8\u8FDB\u66F4\u7ACB\u4F53(\u636E\u8C0B\u8005 agenda/\u6069\u6028)\u3002
+                  motive: String(s.motive || '').slice(0, 60),
+                  method: String(s.method || '').slice(0, 20),
+                  secrecy: String(s.secrecy || '').slice(0, 12),
+                  winCondition: String(s.winCondition || '').slice(0, 60),
                   allies: s.allies || '',
                   startTurn: GM.turn
                 });
@@ -4469,9 +4611,12 @@
               });
             }
             if (Array.isArray(p1c.hidden_moves)) {
+              // \u3010sc1c \u5347\u7EA7\u00B7C3\u3011\u6697\u6D41\u4E0D\u518D\u53EA addEB \u65E5\u5FD7(\u8FD1\u4E4E\u6B7B\u8F93\u51FA:\u6BCF\u56DE\u5408\u4EA7 \u22658 \u6761\u5374\u65E0\u5B58\u7EED)\u00B7\u6EDA\u52A8\u5B58 GM._hiddenMoves \u4F9B\u4E0B\u56DE\u5408 sc1c \u627F\u63A5(\u591A\u56DE\u5408\u6697\u6D41\u8FDE\u7EED\u6027)\u3002
+              if (!Array.isArray(GM._hiddenMoves)) GM._hiddenMoves = [];
               p1c.hidden_moves.forEach(function(hm){
-                if (typeof hm === 'string' && hm) addEB('\u6697\u6D41', hm);
+                if (typeof hm === 'string' && hm) { addEB('\u6697\u6D41', hm); GM._hiddenMoves.push({ text: String(hm).slice(0, 80), turn: GM.turn }); }
               });
+              if (GM._hiddenMoves.length > 40) GM._hiddenMoves = GM._hiddenMoves.slice(-40);
             }
 
             // ── fengwen_snippets：直接入风闻录事 + actors 记忆心绪联动 ──

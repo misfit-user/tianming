@@ -250,7 +250,10 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
   prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '）。\n';
   prompt += '性格：' + (ch.personality||'') + '\n';
   prompt += '忠' + (ch.loyalty||50) + ' 野' + (ch.ambition||40) + ' 学识:' + (ch.learning||'') + ' 党:' + (ch.party||'无') + '\n';
-  prompt += '近期记忆：' + ((ch._memory||[]).slice(-3).map(function(m){return (m.event||'').slice(0,30);}).join('；')||'无') + '\n';
+  // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏/廷议/常朝同源·含心绪/人生底色/要事/印象/伤疤)·而非 slice(-3) 浅切片·人格一致·无则回退
+  var _yqMem = '';
+  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _yqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_yqmE) {}
+  prompt += _yqMem ? ('【此人记忆与心性】' + _yqMem + '\n') : ('近期记忆：' + ((ch._memory||[]).slice(-3).map(function(m){return (m.event||'').slice(0,30);}).join('；')||'无') + '\n');
   prompt += '你的坦白度：' + candor + '/100（' + candorLevel + '·\u8D8A\u9AD8\u8D8A\u76F4\u8A00\u00B7\u8D8A\u4F4E\u8D8A\u8FCE\u5408\uFF09\n';
   if (CY._yq2._transcript) {
     prompt += '\n已有对话（仅供参考，你可附议/反驳/补充/转圜）：\n' + CY._yq2._transcript.slice(-1600) + '\n';

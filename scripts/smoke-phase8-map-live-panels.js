@@ -170,6 +170,7 @@ const ALIAS_COMMANDER = '\u8d75\u7387\u6559';
 const SPARSE_REGION = '\u6d77\u897f\u8bd5\u5730';
 const UNOWNED_REGION = '\u65e0\u4e3b\u8bd5\u5730';
 const EMPTY_FACTION_LABEL = '\u7a7a\u767d\u8bd5\u52bf';
+const APPROVED_BUILDING = 'LIVE approved building field 980';
 
 const sandbox = loadGame();
 installTrackedDom(sandbox);
@@ -354,6 +355,14 @@ sandbox.GM.adminHierarchy = {
     }]
   }
 };
+sandbox.P.adminHierarchy = {
+  player: {
+    divisions: [{
+      name: LIAODONG,
+      buildings: [{ name: APPROVED_BUILDING, status: 'building', remainingTurns: 2 }]
+    }]
+  }
+};
 sandbox.GM.facs = [{
   id: 'houjin',
   name: HOUJIN,
@@ -466,6 +475,7 @@ assert(regionHtml.includes(HOUJIN) || regionHtml.includes(LIVE_HOUJIN_LABEL), 'r
 assert(regionHtml.includes('9000') || regionHtml.includes('9,000'), 'region panel did not show live population');
 assert(regionHtml.includes('777'), 'region panel did not show live revenue');
 assert(regionHtml.includes('66'), 'region panel did not show live corruption');
+assert(regionHtml.includes(APPROVED_BUILDING), 'region construction panel did not read approved P-admin building');
 assertAll(regionHtml, [
   LIVE_TERRAIN,
   'LIVE region level field 935',

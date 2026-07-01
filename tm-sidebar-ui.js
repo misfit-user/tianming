@@ -437,7 +437,12 @@ function renderSidePanels(){
         var morClr=(a.morale||0)>70?'var(--green)':(a.morale||0)>40?'var(--gold)':'var(--red)';
         var info=a.name+(a.armyType?' <span style=\"font-size:0.66rem;color:var(--txt-d);\">'+a.armyType+'</span>':'');
         var detail=sol+'\u5175 \u58EB\u6C14'+(a.morale||50)+' \u8BAD\u7EC3'+(a.training||50);
-        if(a.commander)detail+=' \u5E05:'+a.commander;
+        var _cn=a.commander||'';
+        var _cc=(_cn&&typeof findCharByName==='function')?findCharByName(_cn):null;
+        var _cDead=!!_cn&&(_cc?(_cc.alive===false||_cc.dead===true):true);
+        if(!_cn)detail+=' <span style="color:var(--red,#c0563a);">\u5E05:\u7A7A\u7F3A</span>';
+        else if(_cDead)detail+=' <span style="color:var(--red,#c0563a);">\u5E05:'+_cn+'(\u6B81)</span>';
+        else detail+=' \u5E05:'+_cn;
         if(a.garrison)detail+=' \u9A7B:'+String(a.garrison);
         return "<div style=\"margin-bottom:0.4rem;\"><div style=\"display:flex;justify-content:space-between;font-size:0.78rem;\"><span>"+info+"</span><span style=\"color:"+morClr+";\">"+sol+"</span></div><div class=\"rb\"><div class=\"rf\" style=\"width:"+pct+"%;background:"+morClr+";\"></div></div><div style=\"font-size:0.7rem;color:var(--txt-d);\">"+ detail+"</div></div>";
       }).join("");
@@ -624,10 +629,11 @@ function renderSidePanels(){
   }
 
   // 建筑概览
-  if(GM.buildings&&GM.buildings.length>0){
-    var _catCount={};var _totalBld=GM.buildings.length;
+  var _allBlds=(typeof getAllBuildingsCompat==='function')?getAllBuildingsCompat():((GM.buildings&&GM.buildings)||[]);
+  if(_allBlds&&_allBlds.length>0){
+    var _catCount={};var _totalBld=_allBlds.length;
     var _inQueue=GM.buildingQueue?GM.buildingQueue.length:0;
-    GM.buildings.forEach(function(b){
+    _allBlds.forEach(function(b){
       var cat=b.category||(typeof BUILDING_TYPES!=='undefined'&&BUILDING_TYPES[b.type]?BUILDING_TYPES[b.type].category:'');
       _catCount[cat]=(_catCount[cat]||0)+1;
     });

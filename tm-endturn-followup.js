@@ -1065,11 +1065,35 @@
               p16.faction_actions.forEach(function(fa) { if (fa.faction && fa.action) addEB('\u52BF\u529B\u52A8\u6001', fa.faction + '：' + fa.action); });
             }
             if (p16.diplomatic_shifts && Array.isArray(p16.diplomatic_shifts)) {
+              // \u3010sc16\u00B7F1\u3011new_relation(\u5173\u7CFB\u7C7B\u578B)\u2192\u6570\u503C\u9776\u00B7\u5206\u7C7B\u5173\u952E\u8BCD(\u7528 indexOf \u907F\u514D\u6B63\u5219\u542B\u4E2D\u6587\u88AB lint \u8F6C\u4E49)
+              var _sc16RelTarget = function(rel) {
+                var s = String(rel || ''); var has = function(arr){ return arr.some(function(k){ return s.indexOf(k) >= 0; }); };
+                if (has(['\u540C\u76DF','\u7ED3\u76DF','\u76DF\u53CB','\u8054\u76DF'])) return 70;
+                if (has(['\u9644\u5EB8','\u81E3\u5C5E','\u5F52\u9644','\u79F0\u81E3'])) return 55;
+                if (has(['\u53CB\u597D','\u4EB2\u5584','\u4FEE\u597D','\u548C\u7766','\u901A\u597D'])) return 40;
+                if (has(['\u5BBF\u654C','\u6B7B\u654C','\u654C\u5BF9','\u5F00\u6218','\u4EA4\u6218','\u51B3\u88C2','\u53CD\u76EE'])) return -70;
+                if (has(['\u4EA4\u6076','\u4E0D\u548C','\u654C\u610F','\u7D27\u5F20','\u6469\u64E6','\u9F83\u9F89'])) return -35;
+                if (has(['\u4E2D\u7ACB','\u89C2\u671B','\u9A91\u5899','\u758F\u8FDC'])) return 0;
+                return null;
+              };
+              var _cl16 = function(v){ return Math.max(-100, Math.min(100, Math.round(v))); };
               p16.diplomatic_shifts.forEach(function(ds) {
-                if (ds.from && ds.to && ds.new_relation) {
-                  addEB('\u5916\u4EA4\u98CE\u5411', ds.from+'\u2192'+ds.to+' \u915D\u917F '+ds.new_relation);
-                }
+                if (!ds || !ds.from || !ds.to || !ds.new_relation) return;
+                addEB('\u5916\u4EA4\u98CE\u5411', ds.from+'\u2192'+ds.to+' \u915D\u917F '+ds.new_relation);
+                // \u3010sc16\u00B7F1\u3011\u628A\u5916\u4EA4\u8F6C\u5411\u771F\u6B63\u5E94\u7528\u5230 GM.factionRelations(\u539F\u5148\u53EA\u51FA\u4E8B\u4EF6\u00B7\u5173\u7CFB\u6570\u503C/\u7C7B\u578B\u4ECE\u4E0D\u53D8\u2192sc16"\u552F\u4E00\u8D1F\u8D23\u5916\u4EA4"\u843D\u7A7A)\u00B7\u53CC\u5411\u00B7\u672A\u77E5\u7C7B\u578B\u53EA\u8BB0 type \u4E0D\u6539 value
+                try {
+                  if (!Array.isArray(GM.factionRelations)) GM.factionRelations = [];
+                  var _tv16 = _sc16RelTarget(ds.new_relation);
+                  var _fwd16 = GM.factionRelations.find(function(r){ return r.from === ds.from && r.to === ds.to; });
+                  if (!_fwd16) { if (_tv16 != null) GM.factionRelations.push({ from: ds.from, to: ds.to, type: ds.new_relation, value: _cl16(_tv16 * 0.5), desc: ds.reason || '', _sc16: true, _sc16Turn: GM.turn }); }   // Codex修·MED:未知类型(_tv16==null)不新建中立行(否则"不改value"变成持久化中立关系)
+                  else { _fwd16.type = ds.new_relation; if (_tv16 != null && _fwd16._sc16Turn !== GM.turn) _fwd16.value = _cl16(((_fwd16.value||0) + _tv16) / 2); if (ds.reason) _fwd16.desc = ds.reason; _fwd16._sc16 = true; _fwd16._sc16Turn = GM.turn; }   // Codex修·MED:同回合已被 sc16 改过只更 type 不再叠 value(防同 response 重复 shift 叠乘)
+                  var _rev16 = GM.factionRelations.find(function(r){ return r.from === ds.to && r.to === ds.from; });
+                  if (!_rev16) { if (_tv16 != null) GM.factionRelations.push({ from: ds.to, to: ds.from, type: ds.new_relation, value: _cl16(_tv16 * 0.35), desc: ds.reason || '', _sc16Turn: GM.turn }); }
+                  else if (_tv16 != null && _rev16._sc16Turn !== GM.turn) { _rev16.value = _cl16((_rev16.value||0) * 0.7 + _tv16 * 0.3); _rev16._sc16Turn = GM.turn; }
+                  _dbg('[sc16 F1\u00B7diplomacy applied] ' + ds.from + '->' + ds.to + ' ' + ds.new_relation + ' target=' + _tv16);
+                } catch(_dsApplyE16) {}
               });
+              if (GM.factionRelations.length > 200) GM.factionRelations = GM.factionRelations.slice(-200);   // Codex修·MED:sc16 自身写入后也封顶(原 >200 dedupe 仅在 p1 apply 路径·幻觉势力会无上限累积)
             }
             _specialtySummary.sc16 = '\u3010\u52BF\u529B\u52A8\u6001\u3011' + (p16.power_balance_shift||'') + '\n';
             GM._turnAiResults.subcall16 = p16;
@@ -1159,6 +1183,33 @@
       showLoading("\u519B\u4E8B\u6001\u52BF\u63A8\u6F14",67);
       try {
         var tp18 = '\u672C\u56DE\u5408\u519B\u4E8B\u6001\u52BF\uFF1A\n';
+        // 【sc18·A1】注入往期军事研判(战云/边警连续性)·让 war_probability 逐回合演化而非从零重置。
+        try {
+          if (Array.isArray(GM._militaryOutlook) && GM._militaryOutlook.length) {
+            var _prevMO = GM._militaryOutlook[GM._militaryOutlook.length - 1];
+            if (_prevMO && ((_prevMO.war_probability && _prevMO.war_probability.length) || (_prevMO.border_threats && _prevMO.border_threats.length) || _prevMO.situation || _prevMO.army_morale)) {
+              tp18 += '【上回合军事研判(T' + _prevMO.turn + '·据此看战云升降/边警存续·勿凭空重置)】\n';
+              (_prevMO.war_probability||[]).slice(0,5).forEach(function(w){ tp18 += '  · 战云 ' + w.between + ' ' + Math.round((w.probability||0)*100) + '%' + (w.reason?('·'+w.reason):'') + '\n'; });
+              if (_prevMO.border_threats && _prevMO.border_threats.length) tp18 += '  · 边警：' + _prevMO.border_threats.join('；') + '\n';
+              if (_prevMO.situation) tp18 += '  · 态势：' + String(_prevMO.situation).slice(0, 120) + '\n';   // Codex修·MED:full sc18 常只给 military_situation 字符串·须一并回注·否则数组空则无连续性可读
+              if (_prevMO.army_morale) tp18 += '  · 士气：' + String(_prevMO.army_morale).slice(0, 100) + '\n';
+            }
+          }
+        } catch(_moInjE) {}
+        // 【sc18·A2】时代锚定(复用 _aiScenarioDigest·同 sc19/sc27)·让军制/边情用语不穿越。
+        try { if (GM._aiScenarioDigest && GM._aiScenarioDigest.periodVocabulary) tp18 += '【时代用语锚定】' + String(GM._aiScenarioDigest.periodVocabulary).slice(0, 150) + '\n'; } catch(_eraE18) {}
+        // 【sc18·A2】将领认知地基(commanderFate/忠诚推理原先无据)·注入统兵将领的 sc07 认知快照。
+        try {
+          if (typeof getNpcCognitionSnippet === 'function') {
+            var _cmdSeen18 = {}, _cmdCue18 = '';
+            (GM.armies||[]).forEach(function(a){ if (a && a.commander && !a.destroyed) _cmdSeen18[a.commander] = 1; });
+            Object.keys(_cmdSeen18).slice(0, 10).forEach(function(cn){
+              var s = ''; try { s = getNpcCognitionSnippet(cn) || ''; } catch(_) {}
+              if (s) _cmdCue18 += '  · ' + cn + '：' + String(s).replace(/\s+/g, ' ').slice(0, 140) + '\n';
+            });
+            if (_cmdCue18) tp18 += '【统兵将领底细(据此判忠诚/临阵/请战意向·勿凭空定 commanderFate)】\n' + _cmdCue18;
+          }
+        } catch(_cmdE18) {}
         // 找出玩家势力
         var _playerFac = '';
         try { var _pcM = (GM.chars||[]).find(function(c){return c&&c.isPlayer;}); if (_pcM) _playerFac = _pcM.faction || ''; } catch(_){}
@@ -1357,6 +1408,17 @@
               if (GM._factionMilitaryLog.length > 200) GM._factionMilitaryLog = GM._factionMilitaryLog.slice(-200);
             }
             _specialtySummary.sc18 = '\u3010\u519B\u4E8B\u3011' + (p18.military_situation||'').substring(0,100) + '\n';
+            // \u3010sc18\u00B7A1\u3011\u628A\u539F\u5148\u53EA dump \u7684\u519B\u4E8B\u7814\u5224(war_probability/border_threats/army_morale/military_situation)\u6301\u4E45\u5316\u8FDB GM._militaryOutlook(\u6EDA\u52A8)\u00B7\u4E0B\u56DE\u5408\u6CE8\u5165 sc18/sc16 \u2192 \u6218\u4E91/\u8FB9\u8B66\u8DE8\u56DE\u5408\u6709\u8FDE\u7EED\u6027(\u975E\u6BCF\u56DE\u5408\u4ECE\u96F6\u7B97)\u3002
+            try {
+              if (!Array.isArray(GM._militaryOutlook)) GM._militaryOutlook = [];
+              var _wpA1 = Array.isArray(p18.war_probability) ? p18.war_probability.slice(0, 8).map(function(w){ return { between: String((w&&w.between)||'').slice(0,40), probability: Math.max(0, Math.min(1, parseFloat(w&&w.probability)||0)), reason: String((w&&w.reason)||'').slice(0,50) }; }) : [];
+              var _btA1 = Array.isArray(p18.border_threats) ? p18.border_threats.slice(0, 6).map(function(b){ return typeof b === 'string' ? b.slice(0,60) : String((b && (b.threat||b.desc||b.region))||'').slice(0,60); }) : [];
+              var _amA1 = (p18.army_morale_analysis != null) ? String(typeof p18.army_morale_analysis === 'string' ? p18.army_morale_analysis : JSON.stringify(p18.army_morale_analysis)).slice(0, 200) : '';
+              if (_wpA1.length || _btA1.length || _amA1 || p18.military_situation) {
+                GM._militaryOutlook.push({ turn: GM.turn, war_probability: _wpA1, border_threats: _btA1, army_morale: _amA1, situation: String(p18.military_situation||'').slice(0, 200) });
+                if (GM._militaryOutlook.length > 20) GM._militaryOutlook = GM._militaryOutlook.slice(-20);
+              }
+            } catch(_moE) {}
             GM._turnAiResults.subcall18 = p18;
           }
         }
@@ -1371,6 +1433,19 @@
       _quietLoad("\u6570\u636E\u4E00\u81F4\u6027\u5BA1\u6838", 66);
       try {
         var _tres = GM._turnAiResults || {};
+        // 【调用优化·Cut3(B)·提速+降本】审核仅跨-比对 sc1 的 faction_events/fiscal_adjustments/army_changes 与 sc16/17/18·
+        //   四源皆空时无可审数据 → LLM 必返空 conflicts/auto_patches → 跳过与结果一致(确定性安全)。sc_audit 在关键路径(阻塞完成)·空审跳过=更快。
+        var _s1au = _tres.subcall1 || {};
+        var _auditInputN = (Array.isArray(_s1au.faction_events) ? _s1au.faction_events.length : 0)
+          + (Array.isArray(_s1au.fiscal_adjustments) ? _s1au.fiscal_adjustments.length : 0)
+          + (Array.isArray(_s1au.army_changes) ? _s1au.army_changes.length : 0)
+          + (_tres.subcall16 && typeof _tres.subcall16 === 'object' ? Object.keys(_tres.subcall16).length : 0)
+          + (_tres.subcall17 && typeof _tres.subcall17 === 'object' ? Object.keys(_tres.subcall17).length : 0)
+          + (_tres.subcall18 && typeof _tres.subcall18 === 'object' ? Object.keys(_tres.subcall18).length : 0);
+        if (_auditInputN === 0) {
+          _dbg('[sc_audit] skip·无跨-subcall 可审数据(faction_events/fiscal/army/sc16-18 皆空)');
+          return;
+        }
         var tpAu = '【任务·跨 sub-call 数据一致性审核】\n\n';
         tpAu += '<subcall-1-core>\n';
         if (_tres.subcall1) {
@@ -1614,18 +1689,24 @@
             enrichP += '    personality(性格 40字)、bio(生平 80-120字)\n';
             enrichP += '    appearance(外貌 30字)\n';
             enrichP += '    traits:[特质标签 3-5 个，如"刚直/狡诈/仁厚/多疑"]\n';
+            enrichP += '    keyRelations:[{name:关联角色名(须剧本已有角色), type:盟友/师承/门生/亲族/政敌/宿怨/举主 之一, note:关系由来20字}] (0-3个·只写确有其人者·宁缺勿造)\n';
           }
 
+          // 【sc19 升级·S3】注入时代用语/礼仪锚定(复用 GM._aiScenarioDigest·同 sc27/scOl)·让丰化的身世/口吻/称谓不穿越·sc19 原先零时代锚定最易出戏。
+          if (GM._aiScenarioDigest) {
+            if (GM._aiScenarioDigest.periodVocabulary) enrichP += '\n【时代用语锚定·务必贴合】' + String(GM._aiScenarioDigest.periodVocabulary).slice(0, 200) + '\n';
+            if (GM._aiScenarioDigest.etiquetteNorms) enrichP += '【礼仪/称谓规范】' + String(GM._aiScenarioDigest.etiquetteNorms).slice(0, 150) + '\n';
+          }
           enrichP += '\n返回 JSON：{\n';
           if (_sparseFacs.length) enrichP += '"factions_enriched":[{"name":"原势力名(锚点)","leaderInfo":{...},"heirInfo":{...}或null,"resources":"","mainstream":"","culture":"","goal":"","description":""}],\n';
           if (_sparseClasses.length) enrichP += '"classes_enriched":[{"name":"","representativeNpcs":[],"leaders":[],"supportingParties":[{"class":"","affinity":0.5}],"regionalVariants":[],"internalFaction":[],"privileges":"","obligations":"","demands":""}],\n';
           if (_sparseParties.length) enrichP += '"parties_enriched":[{"name":"","shortGoal":"","longGoal":"","description":"","members":"","base":"","policyStance":[],"socialBase":[],"agenda_history":[],"focal_disputes":[]}],\n';
-          if (_sparseChars.length) enrichP += '"characters_enriched":[{"name":"","family":"","birthplace":"","ethnicity":"","culture":"","learning":"","faith":"","speechStyle":"","personalGoal":"","personality":"","bio":"","appearance":"","traits":[]}]\n';
+          if (_sparseChars.length) enrichP += '"characters_enriched":[{"name":"","family":"","birthplace":"","ethnicity":"","culture":"","learning":"","faith":"","speechStyle":"","personalGoal":"","personality":"","bio":"","appearance":"","traits":[],"keyRelations":[{"name":"关联角色名(剧本已有)","type":"盟友/师承/门生/亲族/政敌/宿怨/举主","note":"由来20字"}]}]\n';
           enrichP += '}\n请严格按史实生成；name 必须精确对应上方骨架名。';
 
           var _enrichBody = {
             model: P.ai.model || 'gpt-4o',
-            messages: [{ role: 'user', content: enrichP }],
+            messages: [{ role: 'system', content: _maybeCacheSys(sysPFor('sc19')) }, { role: 'user', content: enrichP }],   // 【sc19 升级·S3】补系统提示(原先无 sysP·裸 user·史观/口吻/时代全无约束)
             temperature: 0.7,
             max_tokens: _tok(3000)
           };
@@ -1694,7 +1775,72 @@
               var tgt = findCharByName(ech.name);
               if (!tgt) return;
               _mergeIfEmpty(tgt, ech, ['family','birthplace','ethnicity','culture','learning','faith','speechStyle','personalGoal','personality','bio','appearance','traits']);
-              tgt._enriched = true;
+              // 【sc19 升级·S4】仅当 AI 真给了有意义字段才标 _enriched·否则空/烂响应不该占掉 _RETRY_WINDOW 的重试机会。
+              //   Codex修·MED:检查全部可 merge 字段(原先只看 5 个·漏 appearance/traits/culture 等·只给这些的响应会被误判空→白白重试)。
+              var _s4Filled = ['family','birthplace','ethnicity','culture','learning','faith','speechStyle','personalGoal','personality','bio','appearance','traits'].some(function(k){ var v = ech[k]; return v != null && v !== '' && (!Array.isArray(v) || v.length > 0); });
+              if (_s4Filled) tgt._enriched = true;
+              // 【sc19 升级·S1】把丰化人设 seed 进 _npcCognition·让新人物 getNpcCognitionSnippet 立即有内容(问对/朝议/常朝可用)——
+              //   否则新 NPC 认知空白直到 sc07 下回合才补。仅 seed 稳定画像·不覆盖 sc07 既有(_identityInitialized 守卫)。
+              try {
+                if (!GM._npcCognition || typeof GM._npcCognition !== 'object') GM._npcCognition = {};
+                var _exCog19 = GM._npcCognition[ech.name];
+                if (!_exCog19 || !_exCog19._identityInitialized) {
+                  var _sp19 = String(ech.speechStyle || tgt.speechStyle || '').slice(0, 120);
+                  var _pc19 = String(ech.personality || tgt.personality || '').slice(0, 80);
+                  var _si19 = String(ech.bio || ech.personalGoal || tgt.bio || '').slice(0, 120);
+                  if (_sp19 || _pc19 || _si19) {
+                    GM._npcCognition[ech.name] = Object.assign({}, _exCog19 || {}, {
+                      selfIdentity: (_exCog19 && _exCog19.selfIdentity) || _si19,
+                      personalityCore: (_exCog19 && _exCog19.personalityCore) || _pc19,
+                      speechThread: (_exCog19 && _exCog19.speechThread) || _sp19,
+                      _identityInitialized: true, _fromSc19: true, _turn: GM.turn
+                    });
+                  }
+                }
+              } catch(_cogSeed19E) {}
+              // 【sc19 升级·S2】把 AI 陈述的关键关系落成 char.relations(新实体原先关系图空白·sc1b/sc1c/sc07 的关系线读不到)。
+              //   仅 seed 处于默认值的关系(不覆盖 gameplay 已演化的)·数值按关系类型给保守初值·标 _fromSc19。
+              try {
+                if (Array.isArray(ech.keyRelations) && typeof ensureCharRelation === 'function') {
+                  var _relTbl19 = {
+                    '盟友': { affinity: 68, trust: 62, respect: 55, hostility: 0 },
+                    '师承': { affinity: 66, trust: 68, respect: 80, hostility: 0 },
+                    '门生': { affinity: 66, trust: 64, respect: 58, hostility: 0 },
+                    '亲族': { affinity: 70, trust: 64, respect: 55, hostility: 0 },
+                    '举主': { affinity: 64, trust: 60, respect: 72, hostility: 0 },
+                    '政敌': { affinity: 36, trust: 40, respect: 48, hostility: 42 },
+                    '宿怨': { affinity: 22, trust: 25, respect: 40, hostility: 66 }
+                  };
+                  var _relInv19 = { '师承': '门生', '门生': '师承', '举主': '门生' };   // 非对称关系反向标签·数值对称镜像
+                  // Codex修·HIGH:判定关系是否仍是 ensureCharRelation 刚建的「全默认态」·只有全默认才 seed·防覆盖真实 trust/hostility
+                  //   (旧版只查 affinity·一段 affinity 恰 50 而 hostility 高的死敌会被误当空白覆盖成盟友)
+                  function _relPristine19(r) {
+                    return r && !r._fromSc19
+                      && (r.affinity == null || r.affinity === 50)
+                      && (r.trust == null || r.trust === 50)
+                      && (r.respect == null || r.respect === 50)
+                      && (r.fear == null || r.fear === 0)
+                      && (r.hostility == null || r.hostility === 0)
+                      && !(r.labels && r.labels.length)
+                      && !(r.history && r.history.length);
+                  }
+                  function _seedRel19(from, to, vals, label, note) {
+                    var r = ensureCharRelation(from, to);
+                    if (!r || !_relPristine19(r)) return;
+                    r.affinity = vals.affinity; r.trust = vals.trust; r.respect = vals.respect; r.hostility = vals.hostility;
+                    if (Array.isArray(r.labels) && label) r.labels.push(label);
+                    if (Array.isArray(r.history)) r.history.push({ turn: GM.turn, kind: 'sc19_seed', note: String(note || label || '').slice(0, 40) });
+                    r._fromSc19 = true;
+                  }
+                  ech.keyRelations.slice(0, 3).forEach(function(kr) {
+                    if (!kr || !kr.name || kr.name === ech.name) return;
+                    var _rv = _relTbl19[kr.type];
+                    if (!_rv) return;
+                    _seedRel19(ech.name, kr.name, _rv, kr.type, kr.note);                          // 正向 A→B
+                    _seedRel19(kr.name, ech.name, _rv, _relInv19[kr.type] || kr.type, kr.note);     // Codex修·MED:反向 B→A(数值镜像·标签反转)·sc1b/sc1c/sc07 读各自 c.relations 时双侧都见
+                  });
+                }
+              } catch(_relSeed19E) {}
               // 写入 NPC 记忆：初始身世记忆
               if (typeof NpcMemorySystem !== 'undefined' && ech.bio) {
                 NpcMemorySystem.remember(ech.name, '身世：' + ech.bio.slice(0, 60), '平', 5);
@@ -2079,6 +2225,7 @@
           + '"turn_memory":[{"event":"40字","importance":1-10,"actors":["..."]}],'
           + '"state_board":{"mood":"朝堂氛围(40字)","open_loops":["待推进的悬念"],"unfulfilled_promises":["待兑现决策/未闭环事项"],"recent_summary":"近期摘要(150字)"},'
           + '"imperial_candidates":[{"content":"诏令候选(40字)","importance":0.5,"confidence":0.5,"reason":"为何应起诏"}],'
+          + '"event_weights":[{"event":"本回合已发生事件40字","weight":0.65,"dims":["政/军/财/文/民/外/灾/谋/亲/命 中命中的维度"],"affects_future":true}],'
           + '"trend":"局势短期趋势(50字)"}';
         var tpStr = '【sc25c·战略层 strategic】（temp=0.5·允许判断与综合）\n' + _ctx25c + '\n返回严格 JSON·\n'
           + '{"consolidated":"跨回合记忆综述(400字)","key_threads":[{"thread":"主线(40字)","status":"开始/推进/收束","tension":1-10,"actors":"涉及","next":"下一步"}],'
@@ -2132,6 +2279,55 @@
             };
           }
           if (pT.trend) GM._currentTrend = pT.trend;
+          // 【sc25c·M1·修死功能】imperial_candidates 自动核议(KokoroMemo review_policy·纯规则零 LLM)·原 legacy sc25 路径产出·sc25c 取代后此逻辑不再跑→皇命钉子候选饿死(Ctrl+M 面板空)。
+          if (Array.isArray(pT.imperial_candidates) && pT.imperial_candidates.length) {
+            if (!Array.isArray(GM._imperialCandidates)) GM._imperialCandidates = [];
+            var _icA = 0, _icP = 0, _icR = 0;
+            pT.imperial_candidates.forEach(function(ic) {
+              if (!ic || !ic.content) return;
+              var imp = parseFloat(ic.importance); var conf = parseFloat(ic.confidence);
+              if (isNaN(imp)) imp = 0.5; if (isNaN(conf)) conf = 0.5;
+              imp = Math.max(0, Math.min(1, imp)); conf = Math.max(0, Math.min(1, conf));
+              var verdict = (imp >= 0.8 && conf >= 0.85) ? 'auto-approve' : (imp < 0.3 ? 'auto-reject' : 'pending');
+              if (verdict === 'auto-approve' && window.MemTables && MemTables.editorWrite) {
+                MemTables.editorWrite('imperialEdict', 'insert', { values: { 0: String(ic.priority || 5), 1: String(ic.content), 2: String(ic.condition || '永久生效'), 3: String(_ptT25c), 4: '' } });
+                _icA++;
+              } else if (verdict === 'pending') {
+                GM._imperialCandidates.push({ content: String(ic.content).slice(0, 80), priority: ic.priority || 5, condition: String(ic.condition || '永久生效').slice(0, 40), importance: imp, confidence: conf, proposedTurn: _ptT25c, status: 'pending' });
+                _icP++;
+              } else { _icR++; }
+            });
+            if (GM._imperialCandidates.length > 30) GM._imperialCandidates = GM._imperialCandidates.slice(-30);
+            _dbg('[sc25c·M1 ImperialReview] approve:' + _icA + ' pending:' + _icP + ' reject:' + _icR);
+          }
+          // 【sc25c·M2·修死功能】turn_memory → GM._aiMemory(sc1 的 12+ 回合压缩记忆层 ai.js:1770 读它·原先 sc25c 不写→该层饿死)。
+          if (Array.isArray(pT.turn_memory) && pT.turn_memory.length) {
+            if (!Array.isArray(GM._aiMemory)) GM._aiMemory = [];
+            pT.turn_memory.forEach(function(tm) {
+              if (!tm || !tm.event) return;
+              var _imp = parseInt(tm.importance, 10) || 0;
+              GM._aiMemory.push({ turn: _ptT25c, content: String(tm.event).slice(0, 120), type: 'turn', priority: _imp >= 7 ? 'high' : 'normal', actors: Array.isArray(tm.actors) ? tm.actors.slice(0, 5) : [] });
+            });
+            if (GM._aiMemory.length > 200) GM._aiMemory = GM._aiMemory.slice(-200);
+          }
+          // 【sc25c·M3b·修死功能】event_weights → MemTables eventHistory 10 维权重回写(原 legacy sc25·sc25c 取代后不再跑)。
+          if (Array.isArray(pT.event_weights) && pT.event_weights.length && window.MemTables && MemTables.getSheet) {
+            try {
+              var _eh25c = MemTables.getSheet('eventHistory');
+              if (_eh25c && _eh25c.rows && _eh25c.rows.length) {
+                pT.event_weights.forEach(function(ew) {
+                  if (!ew || !ew.event) return;
+                  var w = parseFloat(ew.weight); if (isNaN(w) || w < 0) w = 0; if (w > 1) w = 1;
+                  var dims = Array.isArray(ew.dims) ? ew.dims.join(',') : (ew.dims || '');
+                  var aff = (ew.affects_future === true || ew.affects_future === 'true' || ew.affects_future === 1) ? 'true' : '';
+                  var hits = _eh25c.rows.filter(function(r) { var rTurn = parseInt(r[1], 10) || 0; return rTurn >= _ptT25c - 1 && rTurn <= _ptT25c && r[2] && r[2].indexOf(String(ew.event).slice(0, 8)) >= 0; });
+                  if (hits.length === 0) return;   // Codex修·HIGH:无关键字匹配则跳过·勿兜底写末行(否则覆盖无关事件的权重·legacy 此兜底是 bug)
+                  hits.forEach(function(r) { r[3] = String(w); if (dims) r[4] = dims; if (aff) r[6] = aff; });
+                });
+                _dbg('[sc25c·M3b EventWeights] 回写 ' + pT.event_weights.length + ' 件');
+              }
+            } catch(_ew25cE) {}
+          }
         }
         if (pS) {
           // strategic → GM._consolidatedMemory
@@ -2151,7 +2347,7 @@
         }
         // GM._turnAiResults mirror·新 canonical + 旧 alias 兼容
         GM._turnAiResults.subcall25c = { tactical: pT, strategic: pS, _dualCallSucceeded: !!(pT && pS), _mirrorOnly: false };
-        GM._turnAiResults.subcall25 = pT || { _sc25cAlias: true };  // 旧 sc25 alias·_specialtySummary 等 consumer 仍能读
+        GM._turnAiResults.subcall25 = Object.assign({}, pT || {}, { memory: (pS && pS.consolidated) || (pT && pT.state_board && pT.state_board.recent_summary) || '', _sc25cAlias: true });  // 【sc25c·M3a】补 .memory(=strategic consolidated)供 reflect(tm-post-turn-jobs:274)读·原 alias 只有 tactical 无 memory→reflect 拿空字符串
         if (_ptQ25c) {
           _ptQ25c.results = _ptQ25c.results || {};
           _ptQ25c.results.sc25c = { tactical: pT, strategic: pS };
@@ -2525,7 +2721,20 @@
       showLoading("NPC \u8BA4\u77E5\u6574\u5408", 89);
       try {
         var _liveCharsCog = (GM.chars||[]).filter(function(c){return c && c.alive!==false && !c.isPlayer;});
-        _liveCharsCog.sort(function(a,b){return (a.rank||99)-(b.rank||99);});
+        // 【sc07 深化·D1 名录相关性优先】认知预算(22)优先给「玩家此刻真会接触的人」而非纯高品级——
+        //   本回合活跃(npc_interactions 的 actor/target)/近期上疏者(GM.memorials)优先·让低品级但正在互动者也有新鲜认知;
+        //   同分再按品级。落选者保留其既有认知(不被覆盖·只是本回合不刷新)。
+        var _activeN07 = {};
+        if (p1 && Array.isArray(p1.npc_interactions)) p1.npc_interactions.forEach(function(it){ if (it) { if (it.actor) _activeN07[it.actor] = 1; if (it.target) _activeN07[it.target] = 1; } });
+        if (Array.isArray(GM.memorials)) GM.memorials.forEach(function(m){ if (m && m.from && (Number(m.turn) || 0) >= (GM.turn || 0) - 1) _activeN07[m.from] = 1; });
+        function _cogRelevance07(c){
+          // 【Codex 审查修·HIGH】角色 schema 用 rankLevel(1-18·1 最高)·无数值 rank → 原 Number(c.rank)||99 全并列使 rank 序失效。
+          var _lvl = Number(c && c.rankLevel);
+          if (!isFinite(_lvl) || _lvl <= 0) _lvl = Number(c && c.rank);
+          if (!isFinite(_lvl) || _lvl <= 0) _lvl = 99;
+          return (_activeN07[c.name] ? 1000 : 0) + Math.max(0, 100 - _lvl);
+        }
+        _liveCharsCog.sort(function(a,b){ return _cogRelevance07(b) - _cogRelevance07(a); });
         var _cogTargets = _liveCharsCog.slice(0, 22);
         if (_cogTargets.length === 0) return;
 
@@ -2578,6 +2787,19 @@
         try {
           _cogTargets.forEach(function(c){
             var _lines = [c.name + ':'];
+            // 【sc07 升级·S1 输入增强】关系网——信息不对称与立场的根据:消息顺关系网传·亲近者互通声息/敌视者相防。
+            if (c.relations && typeof c.relations === 'object') {
+              var _relA07 = Object.keys(c.relations).map(function(rn){ var r = c.relations[rn] || {}; var _af = Number(r.affinity), _tr = Number(r.trust); return { n: rn, aff: isFinite(_af) ? _af : 50, host: Number(r.hostility) || 0, trust: isFinite(_tr) ? _tr : 50 }; });   /* Codex 审查修·F3:affinity/trust:0 勿被 ||50 当中性 */
+              var _close07 = _relA07.filter(function(r){ return r.aff >= 65 || r.trust >= 70; }).sort(function(a, b){ return b.aff - a.aff; }).slice(0, 3);
+              var _foe07 = _relA07.filter(function(r){ return r.host >= 25 || r.aff <= 30; }).sort(function(a, b){ return (b.host - b.aff) - (a.host - a.aff); }).slice(0, 2);
+              if (_close07.length) _lines.push('  亲近：' + _close07.map(function(r){ return r.n + '(睦' + r.aff + ')'; }).join('、') + '——其消息与立场易受此数人牵动');
+              if (_foe07.length) _lines.push('  嫌隙：' + _foe07.map(function(r){ return r.n + '(隙' + Math.max(r.host, 100 - r.aff) + ')'; }).join('、'));
+            }
+            // 【sc07 升级·S1】本回合他自己亲历的动作(他必强知——勿让他对亲历之事装作不知)。
+            if (p1 && Array.isArray(p1.npc_interactions)) {
+              var _mine07 = p1.npc_interactions.filter(function(it){ return it && it.actor === c.name; }).slice(0, 3);
+              if (_mine07.length) _lines.push('  ⟨本回合亲历⟩' + _mine07.map(function(it){ return (it.type || '') + '→' + (it.target || ''); }).join('、'));
+            }
             if (c.family) _lines.push('  \u5BB6\u65CF\uFF1A' + c.family);
             if (c.aspiration || c.goal || c.lifeGoal) _lines.push('  \u5FD7\u5411\uFF1A' + (c.aspiration||c.goal||c.lifeGoal));
             if (c.personality) _lines.push('  \u6027\u683C\uFF1A' + String(c.personality).slice(0,60));
@@ -2658,6 +2880,20 @@
         tp07 += '\u00B7 unspokenConcern \u8981\u771F\u7684\u85CF\u7740\u2014\u2014\u5982\u201C\u6016\u67D0\u67D0\u7690\u5BB3\u81EA\u5DF1\u4FDD\u5929\u5B50\u201D/\u201C\u5BB6\u4E2D\u7236\u8001\u75C5\u91CD\u5374\u65E0\u6CD5\u56DE\u9645\u201D\n';
         tp07 += '\u00B7 \u5C3D\u91CF\u6840\u5356\u201C\u6211\u77E5\u9053\u67D0\u4EBA\u5728\u7B79\u5212\u67D0\u4E8B\u300C\u4F46\u540C\u50DA\u4E0D\u77E5\u300D\u201D\u7684\u8F7D\u5FC3\u4E0D\u5BF9\u79F0\n';
 
+        // 【sc07 升级·S2 认知维度扩充】每个 NPC 对象另须输出下列动态字段(短·可空)——供问对/朝议更立体:
+        tp07 += '\n【每个 npc_cognition[] 对象另须并列追加以下动态字段·每回合重判·无则空串】\n';
+        tp07 += '    "gratitudeGrudge":"对具体某人的恩与怨·点名(如「感张公昔年提携」「恨李某构陷」)·1句·可空",\n';
+        tp07 += '    "agenda":"他此刻最想从君上/朝廷得到什么(升迁/雪冤/拨饷/调任/保全家族等)·据其处境·1句·可空",\n';
+        tp07 += '    "situationRead":"他对当前朝局的判断——谁在得势、风向何往、自身站位安危·1句",\n';
+        tp07 += '    "rumorVsFact":"他听到但未证实的风闻(区别于 knows 的确知·可能据此误判行事)·1句·可空",\n';
+        tp07 += '    "attitudeDelta":本回合他对君上态度的净变化·填整数 -3..3(被冤/受辱 -3~-2·无明显变化 0·蒙恩/受知遇 +2~+3)·据本回合他实际遭遇·供机制层微调忠诚\n';
+
+        // 【sc07 深化·D3 信息不对称收紧】把上方各人「亲近」关系 + 事件公/私标记接进 knows/doesntKnow 判定:
+        tp07 += '\n【知与不知·硬规则】\n';
+        tp07 += '· 【私】事仅当事人及其「亲近」者(见上方各人亲近名单)知晓·外人不当凭空知;【公】事在朝者皆知、外官迟一步。\n';
+        tp07 += '· 某人本回合「亲历」之事他必知;非亲历非在场之远事·除非有亲近者可通报·否则列入 doesntKnow。\n';
+        tp07 += '· 消息顺关系网传:与消息当事人愈亲近愈早知愈详;素无往来者多不知或只得风闻(入 rumorVsFact 而非 knows)。勿让人人皆知一切。\n';
+
         var _sc07Body = {model:P.ai.model||'gpt-4o', messages:[{role:'system',content:_maybeCacheSys(sysPFor('sc07'))},{role:'user',content:tp07}], temperature:_modelTemp, max_tokens:_tok(12000)};
         if (_modelFamily === 'openai') _sc07Body.response_format = { type:'json_object' };
 
@@ -2696,8 +2932,24 @@
                 unspokenConcern: String(ent.unspokenConcern||'').slice(0,80),
                 infoAsymmetry: String(ent.infoAsymmetry||'').slice(0,80),
                 recentMood: String(ent.recentMood||'').slice(0,80),
-                lastInteractionMemory: _ex.lastInteractionMemory || (ent.lastInteractionMemory && typeof ent.lastInteractionMemory === 'object' ? ent.lastInteractionMemory : null),
-                recognitionState: _ex.recognitionState || (ent.recognitionState && typeof ent.recognitionState === 'object' ? ent.recognitionState : null),
+                // 【sc07 升级·S2 新增动态认知维度】恩怨/诉求/朝局判断/风闻——供问对·朝议更立体
+                gratitudeGrudge: String(ent.gratitudeGrudge||'').slice(0,90),
+                agenda: String(ent.agenda||'').slice(0,90),
+                situationRead: String(ent.situationRead||'').slice(0,90),
+                rumorVsFact: String(ent.rumorVsFact||'').slice(0,90),
+                // 【sc07 深化·D4 认知反哺】结构化态度净变化(-3..3·有界)·供反哺桥微调 loyalty
+                attitudeDelta: (function(){ var _ad = parseInt(ent.attitudeDelta, 10); return isFinite(_ad) ? Math.max(-3, Math.min(3, _ad)) : 0; })(),
+                // 【sc07 升级·S2 修「生成一次永不更新」】此二者本在「动态·每回合覆盖」段·却被写成 preserve-once →
+                //   认知无法随回合演进。改:模型给了新对象就更新(演进)·仅模型省略才保留旧值。
+                lastInteractionMemory: (function(){
+                  // 【Codex 审查修·HIGH】prompt 要 lastInteractionMemory 为「1句字符串」·原持久化只收对象 → 模型合规的字符串被丢弃·永不演进。
+                  //   归一:对象直接用;字符串归一为 describeLastInteractionMemory 认的对象形(读 turn/event);模型省略才保旧。
+                  var _lim = ent.lastInteractionMemory;
+                  if (_lim && typeof _lim === 'object') return _lim;
+                  if (typeof _lim === 'string' && _lim.trim()) return { turn: GM.turn || 0, event: _lim.trim().slice(0, 120), summary: _lim.trim().slice(0, 80), source: 'sc07' };
+                  return _ex.lastInteractionMemory || null;
+                })(),
+                recognitionState: (ent.recognitionState && typeof ent.recognitionState === 'object') ? ent.recognitionState : (_ex.recognitionState || null),
                 _turn: GM.turn
               };
               if (!_ex._identityInitialized && (_rec.selfIdentity || _rec.personalityCore || _rec.speechThread)) {
@@ -2709,6 +2961,24 @@
               GM._npcCognition[ent.name] = _rec;
               _cogCount++;
             });
+            // 【sc07 深化·D4 认知反哺机制层】把 sc07 的态度净变化(attitudeDelta)有界·幂等·可关地反哺 char.loyalty——
+            //   让「被贬则离心、受知遇则效忠」从叙事落到数值。默认关(P.conf.cognitionFeedbackEnabled)·动平衡须真机验幅度后再开。
+            try {
+              if (P && P.conf && P.conf.cognitionFeedbackEnabled) {
+                var _cfCap = 2, _cfN = 0;    // 每回合每人 loyalty 变动上限(有界·防叙事噪声冲垮数值)
+                (GM.chars || []).forEach(function(_ch){
+                  if (!_ch || _ch.isPlayer || _ch.alive === false || typeof _ch.loyalty !== 'number') return;
+                  if (_ch._cogFeedbackTurn === GM.turn) return;                // 幂等:本回合已反哺则跳(防 sc07 重跑双算)
+                  var _cg = GM._npcCognition[_ch.name];
+                  var _nud = _cg ? Math.max(-_cfCap, Math.min(_cfCap, Number(_cg.attitudeDelta) || 0)) : 0;
+                  if (!_nud) return;
+                  _ch.loyalty = Math.max(0, Math.min(100, _ch.loyalty + _nud));
+                  _ch._cogFeedbackTurn = GM.turn;
+                  _cfN++;
+                });
+                if (_cfN) _dbg('[sc07·认知反哺] ' + _cfN + ' 人 loyalty 依态度净变化微调(±' + _cfCap + '封顶)');
+              }
+            } catch(_cfE) { _dbg('[sc07·认知反哺] fail:', _cfE); }
             _dbg('[sc07] NPC \u8BA4\u77E5\u753B\u50CF\uFF1A' + _cogCount + ' \u4EBA\u66F4\u65B0\uFF0C' + _identInit + ' \u4EBA\u7A33\u5B9A\u753B\u50CF\u9996\u6B21\u751F\u6210');
           }
         }

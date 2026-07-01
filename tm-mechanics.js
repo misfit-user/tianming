@@ -708,11 +708,32 @@ var StateCouplingSystem = (function() {
     _dbg('[StateCoupling] 已重置系统');
   }
 
+  /**
+   * 取变量基线快照（深拷）——供 agent 回滚快照本 module 单例 previousValues。
+   * previousValues 活在 GM 之外的闭包·flat 数值表·JSON 深拷即可。
+   */
+  function getPreviousValues() {
+    try { return JSON.parse(JSON.stringify(previousValues)); } catch (e) { return {}; }
+  }
+
+  /**
+   * 还原变量基线快照——回滚时撤销结算 updateSnapshot 对 previousValues 的累进。
+   * 不还原则回滚把 GM.vars 复位到 pre-tick·但 previousValues 停在 post-tick → LLM 重跑 processCouplings 的
+   * delta=current-previousValues 基线被污染 → 错误耦合 delta 悄悄漂进已提交回合。
+   */
+  function restorePreviousValues(snap) {
+    if (snap && typeof snap === 'object') {
+      try { previousValues = JSON.parse(JSON.stringify(snap)); } catch (e) {}
+    }
+  }
+
   return {
     initialize: initialize,
     processCouplings: processCouplings,
     updateSnapshot: updateSnapshot,
-    reset: reset
+    reset: reset,
+    getPreviousValues: getPreviousValues,
+    restorePreviousValues: restorePreviousValues
   };
 })();
 
@@ -913,73 +934,6 @@ var NaturalDeathSystem = (function() {
     });
 
     return rate;
-  }
-
-  /**
-   * 处理角色死亡
-   */
-  function processCharacterDeath(char, reason) {
-    // 标记为死亡
-    char.dead = true;
-    char.deathTurn = GM.turn;
-    char.deathReason = reason;
-
-    // 从官职树中移除
-    if (GM.officeTree && GM.officeTree.length > 0) {
-      removeFromOfficeTree(GM.officeTree, char.name);
-    }
-
-    // 记录到编年
-    if (GM.biannianItems) {
-      GM.biannianItems.push({
-        turn: GM.turn,
-        time: getTSText(GM.turn),
-        type: 'death',
-        content: char.name + ' ' + reason + '，享年 ' + (char.age || '未知') + ' 岁'
-      });
-    }
-
-    _dbg('[NaturalDeath] ' + char.name + ' 死亡，享年 ' + (char.age || '未知') + ' 岁');
-  }
-
-  /**
-   * 从官职树中移除角色
-   */
-  function removeFromOfficeTree(nodes, charName) {
-    nodes.forEach(function(node) {
-      if (node.holder === charName) {
-        node.holder = '';
-      }
-      if (node.children && node.children.length > 0) {
-        removeFromOfficeTree(node.children, charName);
-      }
-    });
-  }
-
-  /**
-   * 显示死亡通知
-   */
-  function showDeathNotification(deathList) {
-    var html = '<div style="padding:20px;">' +
-               '<h3 style="color:var(--red); margin-bottom:15px;">讣告</h3>' +
-               '<p>以下人物已去世：</p>' +
-               '<ul style="text-align:left; max-height:300px; overflow-y:auto;">';
-
-    deathList.forEach(function(death) {
-      var char = death.char;
-      html += '<li><strong>' + char.name + '</strong> - 享年 ' + (char.age || '未知') + ' 岁';
-      if (char.position) {
-        html += ' (' + char.position + ')';
-      }
-      html += '</li>';
-    });
-
-    html += '</ul>' +
-            '<p style="margin-top:15px; color:#666;">共 ' + deathList.length + ' 人</p>' +
-            '<button onclick="closeModal()" style="margin-top:15px; padding:8px 20px;">知道了</button>' +
-            '</div>';
-
-    showModal('讣告', html);
   }
 
   /**
@@ -1560,7 +1514,7 @@ var NpcMemorySystem = {
    * @returns {{active:number, archive:number, scars:number}}
    */
   getCapacity: function(ch) {
-    if (!ch) return { active: 15, archive: 8, scars: 8 };
+    if (!ch) return { active: 28, archive: 16, scars: 16 };
 
     // 模型上下文倍率（大模型=更多记忆容量）
     var modelScale = 1.0;
@@ -1569,14 +1523,14 @@ var NpcMemorySystem = {
       modelScale = Math.max(0.6, Math.min(cp.scale, 2.5)); // 0.6~2.5
     }
 
-    // 基础容量（所有人都有）
-    var active = 20, archive = 12, scars = 10;
+    // 基础容量（所有人都有）·★2026-07-01 记住更多:base 20/12/10→28/17/14→再放大 40/24/18
+    var active = 40, archive = 24, scars = 18;
 
     // ── 身份加成 ──
     // 玩家角色
-    if (ch.isPlayer) { active = 80; archive = 40; scars = 30; }
+    if (ch.isPlayer) { active = 180; archive = 96; scars = 64; }
     // 后妃
-    else if (typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(ch) : ch.spouse === true) { active = 70; archive = 35; scars = 25; }
+    else if (typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(ch) : ch.spouse === true) { active = 148; archive = 80; scars = 56; }
     else {
       // 官职品位加成
       var rank = 0;
@@ -1588,14 +1542,14 @@ var NpcMemorySystem = {
         else if (/郎中|参军|员外|御史|五品|六品|县令/.test(t)) rank = 2;
         else if (t.length > 0) rank = 1;
       }
-      active += rank * 8;   // 一品+40, 五六品+16, 无品+0
-      archive += rank * 4;  // 一品+20
-      scars += rank * 3;    // 一品+15
+      active += rank * 15;  // ★记住更多(再放大):一品+75, 五六品+30, 无品+0
+      archive += rank * 8;  // 一品+40
+      scars += rank * 5;    // 一品+25
 
       // 势力首领额外
       if (GM.facs) {
         var isLeader = GM.facs.some(function(f) { return f.leader === ch.name; });
-        if (isLeader) { active += 15; archive += 8; scars += 6; }
+        if (isLeader) { active += 32; archive += 17; scars += 11; }
       }
     }
 
@@ -1637,9 +1591,9 @@ var NpcMemorySystem = {
     scars = Math.round(scars * modelScale);
 
     return {
-      active: Math.max(10, Math.min(active, 200)),   // 绝对范围10~200
-      archive: Math.max(5, Math.min(archive, 80)),    // 绝对范围5~80
-      scars: Math.max(5, Math.min(scars, 50))         // 绝对范围5~50
+      active: Math.max(16, Math.min(active, 480)),   // ★记住更多(再放大):绝对范围16~480(原10~200)
+      archive: Math.max(10, Math.min(archive, 240)),  // 10~240(原5~80)
+      scars: Math.max(10, Math.min(scars, 120))       // 10~120(原5~50)
     };
   },
 
@@ -1847,7 +1801,8 @@ var NpcMemorySystem = {
     old.forEach(function(m) {
       if (m.importance >= 7) {
         ch._scars.push({ event: m.event.slice(0, 40), emotion: m.emotion, turn: m.turn, who: m.who || '' });
-        if (ch._scars.length > cap.scars) ch._scars.shift();
+        // ★2026-07-01 防失忆:伤疤超容量不再 FIFO 直丢·把移出的最老伤疤折入档案(仍保留痕迹)
+        if (ch._scars.length > cap.scars) { var _dsc = ch._scars.shift(); if (_dsc) NpcMemorySystem._archiveAgingMemory(ch, { event: '〔铭刻〕' + (_dsc.event || ''), who: _dsc.who, emotion: _dsc.emotion, turn: _dsc.turn }); }
       } else {
         remaining.push(m);
       }
@@ -1887,10 +1842,91 @@ var NpcMemorySystem = {
         keyEvents: importantOnes.length
       });
       if (ch._memArchive.length > cap.archive) {
-        ch._memArchive = ch._memArchive.slice(-cap.archive);
+        NpcMemorySystem._foldArchive(ch, cap);   // ★防失忆:老段"再压缩"成纪元粗摘要·不再 slice 丢弃
       }
     }
     _dbg('[NpcMem] ' + ch.name + ' 记忆压缩：' + old.length + '条→归档+' + (ch._scars||[]).length + '伤疤');
+  },
+
+  /**
+   * ★2026-07-01 防失忆核心:档案溢出时把最老的若干段"再压缩"成一条更粗的「纪元概略」·而非 slice 丢弃。
+   *   → NPC 早年人生始终保留一条(逐渐粗化但恒在)的痕迹·不再整段失忆。纪元摘要上限 300 字·多次溢出会递归并粗。
+   */
+  _foldArchive: function(ch, cap) {
+    if (!ch || !ch._memArchive) return;
+    if (!cap) cap = NpcMemorySystem.getCapacity(ch);
+    if (ch._memArchive.length <= cap.archive) return;
+    var overflow = ch._memArchive.length - cap.archive;
+    var merge = ch._memArchive.slice(0, overflow + 1);   // 多并 1 条给后续段腾位
+    var rest = ch._memArchive.slice(overflow + 1);
+    var startP = String(merge[0].period || '').split('-')[0] || '';
+    var endP = String(merge[merge.length - 1].period || '').split('-').pop() || '';
+    var mergedSummary = merge.map(function(a) { return a.summary || ''; }).filter(Boolean).join('｜');
+    ch._memArchive = [{
+      period: (startP && endP) ? (startP + '-' + endP) : (merge[0].period || ''),
+      summary: '〔早年概略〕' + mergedSummary.slice(0, 300),
+      _raw: mergedSummary.slice(0, 600),   // ★供 refineEpochSummaries 走次要 API 凝练的原料(确定性摘要仍在 summary 兜底)
+      _needsRefine: true,                  // ★标记待 AI 精炼(refineEpochSummaries 节流处理·失败则保留确定性摘要)
+      count: merge.reduce(function(s, a) { return s + (a.count || 0); }, 0),
+      keyEvents: merge.reduce(function(s, a) { return s + (a.keyEvents || 0); }, 0),
+      _epoch: true
+    }].concat(rest);
+  },
+
+  /**
+   * ★2026-07-01 早年概略 AI 精炼:把 _foldArchive 生成的确定性纪元摘要(_raw 零散片段)·交 AI 凝练成一句连贯的
+   *   「早年概略」(默认走次要 API·省钱)。节流:每次最多精炼 limit 个 NPC·由回合末后台非阻塞调用·失败/无AI则保留
+   *   确定性摘要不阻断。async·返回本次精炼数。
+   */
+  refineEpochSummaries: async function(opts) {
+    opts = opts || {};
+    if (typeof callAIMessages !== 'function') return 0;
+    if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.chars)) return 0;
+    var limit = opts.limit || 2;   // 每回合最多精炼 2 个·防烧钱
+    var tier = opts.tier || 'secondary';
+    var done = 0;
+    for (var i = 0; i < GM.chars.length && done < limit; i++) {
+      var ch = GM.chars[i];
+      if (!ch || ch.alive === false || !Array.isArray(ch._memArchive)) continue;
+      var ep = null;
+      for (var j = 0; j < ch._memArchive.length; j++) { if (ch._memArchive[j] && ch._memArchive[j]._needsRefine && ch._memArchive[j]._epoch) { ep = ch._memArchive[j]; break; } }
+      if (!ep) continue;
+      var raw = String(ep._raw || ep.summary || '').replace(/〔[^〕]*〕/g, '').slice(0, 600).trim();
+      if (!raw) { ep._needsRefine = false; continue; }
+      try {
+        var res = await callAIMessages([
+          { role: 'system', content: '你是史官。把某人早年的零散记忆片段·凝练成一句连贯的「早年概略」:第三人称·≤80字·点出其早年关键际遇与由此养成的心性底色·忠于片段不杜撰。只返回概略正文·勿加书名号/引号/前后缀。' },
+          { role: 'user', content: (ch.name || '此人') + '·早年记忆片段：\n' + raw }
+        ], 400, null, tier);
+        var txt = (typeof res === 'string') ? res : ((res && (res.content || res.text)) || '');
+        txt = String(txt).replace(/^[\s"「『（(]+|[\s"」』）)]+$/g, '').replace(/[\r\n]+/g, ' ').slice(0, 96).trim();
+        if (txt) { ep.summary = '〔早年概略〕' + txt; ep._refined = true; }
+      } catch (e) { /* AI 失败不阻断·保留确定性摘要 */ }
+      ep._needsRefine = false;
+      try { delete ep._raw; } catch (_) {}   // 精炼(或尝试)后原料不再需要·删之省存档
+      done++;
+    }
+    return done;
+  },
+
+  /**
+   * ★2026-07-01 防失忆:monthlyDecay 中「老化的中要度记忆」与「溢出的最老伤疤」在被删前·先折入档案的一条滚动「散忆」，
+   *   而非直接消失。低活跃 NPC(记忆从不撑破容量、不触发压缩归档)因此也不再整段失忆。散忆条上限 ~280 字·满则新起一条。
+   */
+  _archiveAgingMemory: function(ch, m) {
+    if (!ch || !m) return;
+    if (!ch._memArchive) ch._memArchive = [];
+    var note = String(m.event || '').slice(0, 20) + (m.who ? '(' + m.who + ')' : '') + '[' + (m.emotion || '平') + ']';
+    var last = ch._memArchive[ch._memArchive.length - 1];
+    if (last && last._loose && String(last.summary || '').length < 280) {
+      last.summary += '、' + note;
+      last.count = (last.count || 0) + 1;
+      last.period = String(last.period || '').split('-')[0] + '-' + (m.turn || GM.turn || 0);
+    } else {
+      ch._memArchive.push({ period: (m.turn || GM.turn || 0) + '-' + (m.turn || GM.turn || 0), summary: '〔散忆〕' + note, count: 1, keyEvents: 0, _loose: true });
+    }
+    var cap = NpcMemorySystem.getCapacity(ch);
+    if (ch._memArchive.length > cap.archive) NpcMemorySystem._foldArchive(ch, cap);
   },
 
   /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存 */
@@ -1977,8 +2013,15 @@ var NpcMemorySystem = {
         var sediment = { '喜': '一生多逢好事，心态乐观', '怒': '一生多遭不平，性格暴躁', '忧': '一生多经忧患，性格沉郁', '恨': '一生多遭背叛，心怀戒备', '敬': '一生多遇贵人，知恩图报' };
         parts.push(sediment[dominant] || '');
       }
-      // 最近一段归档
-      parts.push('往事：' + ch._memArchive[ch._memArchive.length - 1].summary.slice(0, 80));
+      // ★2026-07-01 防失忆闭环:除最近一段·再 surface 最早一段(折叠的「早年概略/散忆」恒在队首)·
+      //   让 NPC 忆及早年而非只近事——被保留的老记忆真正读进推演上下文·而非只默默影响"人生底色"。
+      var _arch = ch._memArchive;
+      if (_arch.length === 1) {
+        parts.push('往事：' + String(_arch[0].summary || '').slice(0, 80));
+      } else {
+        parts.push('往事·近：' + String(_arch[_arch.length - 1].summary || '').slice(0, 80));
+        parts.push('往事·早年：' + String(_arch[0].summary || '').slice(0, 90));
+      }
     }
 
     // 4.4: 近期记忆（按重要性前4，结构化格式含类型和重要度）
@@ -2066,12 +2109,13 @@ var NpcMemorySystem = {
           var age = GM.turn - (m.turn || 0);
           // importance>=7的记忆永不自动淡忘（会在压缩时变成_scars）
           if (m.importance >= 7) return true;
-          // importance 5-6: 超过30回合才可能淡忘
-          if (m.importance >= 5) return age <= 30;
-          // importance 3-4: 超过18回合淡忘
-          if (m.importance >= 3) return age <= 18;
-          // importance 1-2: 超过10回合淡忘
-          return age <= 10;
+          // ★2026-07-01 完全不删只压缩:任何要度的记忆老化都不直删·一律 _archiveAgingMemory 折入档案(散忆)·仅移出活跃层。
+          // importance 5-6: 超过50回合移出活跃（原30）
+          if (m.importance >= 5) { if (age <= 50) return true; NpcMemorySystem._archiveAgingMemory(ch, m); return false; }
+          // importance 3-4: 超过30回合移出活跃（原18）
+          if (m.importance >= 3) { if (age <= 30) return true; NpcMemorySystem._archiveAgingMemory(ch, m); return false; }
+          // importance 1-2: 超过20回合移出活跃（原10）·★琐碎事也折档不直删
+          if (age <= 20) return true; NpcMemorySystem._archiveAgingMemory(ch, m); return false;
         });
       }
       // 印象衰减（不对称：恩情慢衰，怨恨更慢衰——人记仇比记恩更久）

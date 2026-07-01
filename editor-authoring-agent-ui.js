@@ -412,6 +412,12 @@
   function injectStyles() {
     if (document.getElementById('tm-aa-style')) return;
     var css = [
+      // 世界类型选择器（史实/虚构）
+      '#tm-aa-worldkind{display:flex;align-items:center;gap:6px;margin:0 0 6px;font-size:11px;color:#b8b4a6}',
+      '#tm-aa-worldkind .tm-aa-wk-lab{opacity:.75;letter-spacing:.05em}',
+      '#tm-aa-worldkind .tm-aa-wk-opt{background:#34322d;color:#b8b4a6;border:1px solid #46433c;border-radius:11px;padding:2px 11px;font-size:11px;cursor:pointer;font-family:inherit;line-height:1.5}',
+      '#tm-aa-worldkind .tm-aa-wk-opt:hover{background:#3c3933;color:#ecebe2}',
+      '#tm-aa-worldkind .tm-aa-wk-opt.on{background:#d97757;color:#fff;border-color:#d97757}',
       '#tm-aa-fab{position:fixed;right:18px;bottom:18px;z-index:99998;background:#d97757;color:#fff;border:none;',
       'border-radius:24px;padding:10px 16px;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);font-family:inherit}',
       '#tm-aa-fab:hover{background:#e08a6b}',
@@ -428,6 +434,7 @@
       '.tm-aa-search button{background:#322f2a;color:#b4afa2;border:none;border-radius:5px;padding:2px 7px;font-size:11px;cursor:pointer;line-height:1.4}.tm-aa-search button:hover{background:#3c3933;color:#ecebe2}',
       '.tm-aa-hl{background:rgba(232,200,106,.32);color:inherit;border-radius:2px}.tm-aa-hl.active{background:#e8c86a;color:#1a1206}',
       '#tm-aa-fs{background:none;border:none;color:#8f8a7e;font-size:13px;cursor:pointer;line-height:1;padding:0 3px}#tm-aa-fs:hover{color:#ecebe2}',
+      '#tm-aa-preflight{background:none;border:none;color:#8f8a7e;font-size:13px;cursor:pointer;line-height:1;padding:0 3px}#tm-aa-preflight:hover{color:#7fe0a0}',
       '#tm-aa-hd b{font-size:13px}',
       '.tm-aa-ava{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#d97757,#bf5f3f);font-size:13px;margin-right:7px;vertical-align:middle;box-shadow:0 1px 4px rgba(217,119,87,.45)}',
       '#tm-aa-hd .sub{font-size:11px;color:#8f8a7e;margin-left:6px}',
@@ -592,7 +599,7 @@
     panel.innerHTML = [
       '<div class="tm-aa-resize" id="tm-aa-resize" title="拖动调整宽度"></div>',   // UI·AI · 左缘拖拽调宽
       '<div id="tm-aa-hd"><span><span class="tm-aa-ava">🧙</span><b>国师</b><span class="sub">' + esc(ui.adapter.label || '') + '</span></span>',
-      '<button id="tm-aa-newchat" aria-label="开始新对话" title="开始新对话（清空当前会话线程与消息·上一会话已入历史/记忆）">✎</button><button id="tm-aa-fs" aria-label="全屏或还原" title="全屏 / 还原">⛶</button><button id="tm-aa-x" aria-label="关闭" title="关闭">×</button></div>',
+      '<button id="tm-aa-preflight" aria-label="运行时体检" title="运行时体检（确定性·免 API）：检查会影响加载的阻塞问题，随时可重跑">🩺</button><button id="tm-aa-newchat" aria-label="开始新对话" title="开始新对话（清空当前会话线程与消息·上一会话已入历史/记忆）">✎</button><button id="tm-aa-fs" aria-label="全屏或还原" title="全屏 / 还原">⛶</button><button id="tm-aa-x" aria-label="关闭" title="关闭">×</button></div>',
       '<div id="tm-aa-body">',
       '<div class="tm-aa-search" id="tm-aa-search" hidden><input type="text" id="tm-aa-search-in" placeholder="在结果里查找…"><span class="tm-aa-search-n" id="tm-aa-search-n">0/0</span><button type="button" id="tm-aa-search-prev" title="上一个">↑</button><button type="button" id="tm-aa-search-next" title="下一个">↓</button><button type="button" id="tm-aa-search-x" title="关闭 (Esc)">×</button></div>',
       '<div id="tm-aa-composer">',   // UI iteration2 · 输入区聚成一块（docked 下 sticky 钉底）
@@ -600,6 +607,7 @@
       '<div id="tm-aa-mentions" hidden></div>',
       '<div id="tm-aa-atpop" hidden></div>',
       '<div id="tm-aa-status" aria-live="polite"></div>',
+      '<div id="tm-aa-worldkind"><span class="tm-aa-wk-lab">世界类型</span><button type="button" class="tm-aa-wk-opt" data-wk="historical" title="史实剧本·全考据：年号/生卒/职官/事件与正史相符，遇硬伤进谏">史实</button><button type="button" class="tm-aa-wk-opt" data-wk="fictional" title="虚构/架空世界观·奇幻/武侠/仙侠/未来/异世界等原创设定，不受真实历史约束，国师只管设定自洽与平衡">虚构</button></div>',
       '<div id="tm-aa-field">',
       '<textarea id="tm-aa-req" placeholder="描述你想要的修改，例如：把主角势力改名为「西凉军」并补两个文官"></textarea>',
       '<span class="tm-aa-charcount" id="tm-aa-charcount" hidden></span>',
@@ -624,6 +632,7 @@
       panel: panel,
       req: panel.querySelector('#tm-aa-req'),
       charCount: panel.querySelector('#tm-aa-charcount'),
+      worldkind: panel.querySelector('#tm-aa-worldkind'),
       go: panel.querySelector('#tm-aa-go'),
       status: panel.querySelector('#tm-aa-status'),
       ctx: panel.querySelector('#tm-aa-ctx'),
@@ -652,6 +661,7 @@
     };
     panel.querySelector('#tm-aa-x').addEventListener('click', function() { if (panel._fs) _toggleFullscreen(); panel.classList.remove('open'); });
     var _nc = panel.querySelector('#tm-aa-newchat'); if (_nc) _nc.addEventListener('click', newConversation);   // 真·连续会话：另起新对话
+    var _pf = panel.querySelector('#tm-aa-preflight'); if (_pf) _pf.addEventListener('click', function () { runPreflightUI(); });   // 常驻·运行时体检(确定性免API·随时重跑·不止空状态)
     if (ui.els.fs) ui.els.fs.addEventListener('click', _toggleFullscreen);   // UI·AI · 全屏切换
     _ensurePanelResize();   // UI·AI · 左缘拖拽调宽 + 载入持久宽度
     _ensureSearch();   // UI·AJ · 过程区内搜索（⌘F）
@@ -660,6 +670,7 @@
     ui.els.go.addEventListener('click', onGoClick);   // UI·Q · 运行中此键=停止
     ui.els.apply.addEventListener('click', onApply);
     ui.els.discard.addEventListener('click', onDiscard);
+    _ensureWorldKind();   // 刀2 · 世界类型选择器（史实/虚构）绑定 + 初始反映
     _ensureLogFollow();   // UI·AB · 滚动跟随 + 回到底部
     _renderEmpty();   // UI·AD · 空状态欢迎 + 建议提示
     ui.els.req.addEventListener('input', _syncEmpty);   // 有字则隐欢迎态
@@ -672,6 +683,44 @@
     var p = document.getElementById(PANEL_ID);
     if (!p) p = buildPanel();
     return p;
+  }
+
+  // ── 刀2 · 世界类型（史实/虚构）：写进剧本对象 worldKind；国师 runAuthoringLoop 经 draft.worldKind 自动读取，5 个入口零改 ──
+  function _worldKind() {
+    try {
+      var sc = (ui.adapter && ui.adapter.getScenario) ? ui.adapter.getScenario() : null;
+      return (sc && sc.worldKind === 'fictional') ? 'fictional' : 'historical';
+    } catch (e) { return 'historical'; }
+  }
+  function _reflectWorldKind() {
+    var box = ui.els && ui.els.worldkind; if (!box) return;
+    var cur = _worldKind();
+    var btns = box.querySelectorAll('.tm-aa-wk-opt');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('on', btns[i].getAttribute('data-wk') === cur);
+    }
+  }
+  function _setWorldKind(v) {
+    v = (v === 'fictional') ? 'fictional' : 'historical';
+    try {
+      var sc = (ui.adapter && ui.adapter.getScenario) ? ui.adapter.getScenario() : null;
+      if (sc) {
+        sc.worldKind = v;                 // 写进活剧本对象：makeDraft 每次克隆活对象 → draft.worldKind 带过去
+        if (ui.draft) ui.draft.worldKind = v;   // 续接会话中已建 draft → 同步本轮
+      }
+    } catch (e) {}
+    _reflectWorldKind();
+    setStatus(v === 'fictional'
+      ? '世界类型已设为「虚构」——国师按架空/原创世界观创作，不再以真实史实为据（只管设定自洽与平衡）。'
+      : '世界类型已设为「史实」——国师按正史考据创作（年号/生卒/职官相符，遇硬伤进谏）。');
+  }
+  function _ensureWorldKind() {
+    var box = ui.els && ui.els.worldkind; if (!box) return;
+    box.addEventListener('click', function (ev) {
+      var b = (ev.target && ev.target.closest) ? ev.target.closest('.tm-aa-wk-opt') : null;
+      if (b) _setWorldKind(b.getAttribute('data-wk'));
+    });
+    _reflectWorldKind();   // 初始反映剧本当前 worldKind
   }
 
   function setStatus(t) { if (ui.els) ui.els.status.textContent = t || ''; }
@@ -2012,7 +2061,7 @@
     fab.addEventListener('click', function() {
       var p = ensurePanel();
       p.classList.toggle('open');
-      if (p.classList.contains('open')) _syncEmpty();   // UI·AD · 开面板时按需显欢迎态
+      if (p.classList.contains('open')) { _syncEmpty(); _reflectWorldKind(); }   // UI·AD · 开面板时按需显欢迎态 + 反映当前世界类型
     });
     document.body.appendChild(fab);
   }

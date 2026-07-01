@@ -524,6 +524,28 @@
       : Promise.resolve(null);
     var raw2; try { raw2 = await root.callAIMessages([{ role: 'system', content: '你是天命史官·产出本回合史记主体记录(对齐 LLM 管线 ctx.record 契约·各文体风格有别·后人戏说另由专项 pass 出)。' + _schema }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n纲要:' + (beats || '(自拟)') + '\n\n据此产出完整史记记录(时政记/实录/政文 + 君上状态/主角内心/宰辅进言 + 标题/摘要)·各体文风须别·须达字数下限·须续接跨回合记忆(呼应过往与情节线·勿失忆重起)·**人物言行须与其本回合在问对/朝议/书信中的表现一致(勿矛盾·勿人格分裂)**。' + _xinshi }], _tokRecord, null, 'secondary'); } catch (e) { return { ok: false, text: '(史记记录失败:' + (e && e.message) + ')' }; }
     var t2 = (typeof raw2 === 'string') ? raw2 : ((raw2 && (raw2.content || raw2.text)) || ''); var p = _parse(t2);
+    // ★2026-07-01·健壮兜底(镜像下方 houren 兜底·根治"实录/政文直接没了"):史记主体是长 prose(时政记+实录+政文
+    //   动辄数千字)·内部真换行/未转义引号极易致 JSON.parse 失败→p 空→**整个史记四体丢弃**→renderer 回落
+    //   finalize 生的粗叙事(带字面 \n\n)·且实录/政文全空。故 parse 失败或缺 shizhengji 时·正则逐字段抽值
+    //   (容转义引号与换行·带 \\n→\n 归一)salvage 各体·尽力保住实录/政文/时政记。
+    if (!p || !p.shizhengji) {
+      var _cl2 = String(t2 || '').replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+      var _xField = function (key) {
+        var _m = _cl2.match(new RegExp('"' + key + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"'));
+        return (_m && _m[1]) ? _m[1].replace(/\\n/g, '\n').replace(/\\t/g, '  ').replace(/\\"/g, '"').replace(/\\\\/g, '\\') : '';
+      };
+      var _szSalvage = _xField('shizhengji') || _xField('narrative');
+      if (_szSalvage) {
+        p = p || {};
+        p.shizhengji  = p.shizhengji  || _szSalvage;
+        p.shilu       = p.shilu       || _xField('shilu');
+        p.zhengwen    = p.zhengwen    || _xField('zhengwen');
+        p.playerStatus= p.playerStatus|| _xField('playerStatus');
+        p.playerInner = p.playerInner || _xField('playerInner');
+        p.title       = p.title       || _xField('title');
+        p.summary     = p.summary     || _xField('summary');
+      }
+    }
     var _main = (p && (p.shizhengji || p.narrative)) || '';
     if (!p || !_main) return { ok: false, text: '(史记四体解析失败/空)' };
     // DA-Q2b·后人戏说(已并行 in-flight·此 await 取结果)·镜像管线 sc2·富场景叙事·失败/空不阻断史记主体

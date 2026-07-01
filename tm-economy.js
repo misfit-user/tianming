@@ -620,28 +620,27 @@ async function handleInheritance(deadChar) {
           // 处理其他候选人的反应（继承冲突）
           if (inheritanceData.candidates && inheritanceData.candidates.length > 1) {
             inheritanceData.candidates.forEach(function(candidate) {
-              if (candidate.name !== heir) {
-                var candidateChar = findCharByName(candidate.name);
-                if (candidateChar) {
-                  // 落选候选人的忠诚度下降
-                  var oldLoyalty = (typeof candidateChar.loyalty === 'number' && isFinite(candidateChar.loyalty)) ? candidateChar.loyalty : 50;
-                  var heirLegitimacy = (inheritanceData.candidates.find(function(c) { return c.name === heir; }) || {legitimacy: 0.5}).legitimacy;
-                  var legitimacyGap = (candidate.legitimacy || 0.5) - heirLegitimacy;
-                  var loyaltyDrop = -Math.max(1, Math.round((0.2 + Math.max(0, legitimacyGap)) * 20)); // 资格越强却落选，不满越大
-                  if (typeof adjustCharacterLoyalty === 'function') {
-                    adjustCharacterLoyalty(candidateChar, loyaltyDrop, '\u7EE7\u627F\u843D\u9009\u4E0D\u6EE1\uFF1A' + deadChar.name, { source:'inheritance-candidate-lost' });
-                  } else {
-                    candidateChar.loyalty = Math.max(0, oldLoyalty + loyaltyDrop);
-                  }
+              if (candidate.name === heir) return;
+              var candidateChar = findCharByName(candidate.name);
+              if (candidateChar) {
+                // 落选候选人的忠诚度下降
+                var oldLoyalty = (typeof candidateChar.loyalty === 'number' && isFinite(candidateChar.loyalty)) ? candidateChar.loyalty : 50;
+                var heirLegitimacy = (inheritanceData.candidates.find(function(c) { return c.name === heir; }) || {legitimacy: 0.5}).legitimacy;
+                var legitimacyGap = (candidate.legitimacy || 0.5) - heirLegitimacy;
+                var loyaltyDrop = -Math.max(1, Math.round((0.2 + Math.max(0, legitimacyGap)) * 20)); // 资格越强却落选，不满越大
+                if (typeof adjustCharacterLoyalty === 'function') {
+                  adjustCharacterLoyalty(candidateChar, loyaltyDrop, '\u7EE7\u627F\u843D\u9009\u4E0D\u6EE1\uFF1A' + deadChar.name, { source:'inheritance-candidate-lost' });
+                } else {
+                  candidateChar.loyalty = Math.max(0, oldLoyalty + loyaltyDrop);
+                }
 
-                  if (loyaltyDrop < -10) {
-                    if (typeof adjustCharacterLoyalty !== 'function') recordChange('characters', candidate.name, 'loyalty', oldLoyalty, candidateChar.loyalty, '继承落选不满');
-                    addEB('不满', candidate.name + '对继承结果不满，忠诚度下降。');
+                if (loyaltyDrop < -10) {
+                  if (typeof adjustCharacterLoyalty !== 'function') recordChange('characters', candidate.name, 'loyalty', oldLoyalty, candidateChar.loyalty, '继承落选不满');
+                  addEB('不满', candidate.name + '对继承结果不满，忠诚度下降。');
 
-                    // 如果不满严重且有反对者支持，可能引发叛乱
-                    if (candidateChar.loyalty < 30 && candidate.opposition && candidate.opposition.length > 0) {
-                      addEB('警告', candidate.name + '可能联合' + candidate.opposition.join('、') + '发动叛乱！');
-                    }
+                  // 如果不满严重且有反对者支持，可能引发叛乱
+                  if (candidateChar.loyalty < 30 && candidate.opposition && candidate.opposition.length > 0) {
+                    addEB('警告', candidate.name + '可能联合' + candidate.opposition.join('、') + '发动叛乱！');
                   }
                 }
               }

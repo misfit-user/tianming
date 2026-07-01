@@ -44,6 +44,24 @@
     return String(v == null ? '' : v).slice(0, n || 120);
   }
 
+  // 【降本·S1】显要度评分——仅当势力/党派数远超阈值(极大剧本)时用于排序保留最要紧者。
+  // 常规剧本走原序不排序(字节不变·不扰缓存前缀·不改行为)。
+  function _facSalience(f) {
+    if (!f) return -1;
+    return (f._collapsing ? 1000 : 0)
+      + Math.abs(Number(f.strength) || 0)
+      + (100 - (Number(f.stability) == null ? 100 : (Number(f.stability) || 0)))
+      + (100 - (Number(f.morale) == null ? 100 : (Number(f.morale) || 0)))
+      + (f.suzerainFaction ? 50 : 0);
+  }
+  function _partySalience(ps) {
+    if (!ps) return -1;
+    return (Number(ps.influence) || 0)
+      + (Number(ps.officeCount) || 0) * 10
+      + (Number(ps.recentImpeachWin) || 0)
+      + (Number(ps.recentImpeachLose) || 0);
+  }
+
   function appendPromptPolicyContext(sysP, ctx) {
     ctx = ctx || {};
     var GM = ctx.GM || global.GM || {};
@@ -52,7 +70,15 @@
       var stateLines = [];
       if (Array.isArray(GM.facs) && GM.facs.length > 0) {
         stateLines.push('【势力运行时态】');
-        GM.facs.forEach(function(f) {
+        // 【降本·S1】常规剧本(≤上限)保持原序原样=字节不变;仅极大剧本按显要度截断+注明从略。
+        var _facCap = 24, _facList = GM.facs, _facOmit = 0;
+        if (GM.facs.length > _facCap) {
+          var _fr = GM.facs.filter(function(f) { return f && f.name; });
+          _fr.sort(function(a, b) { return _facSalience(b) - _facSalience(a); });
+          _facOmit = Math.max(0, _fr.length - _facCap);
+          _facList = _fr.slice(0, _facCap);
+        }
+        _facList.forEach(function(f) {
           if (!f || !f.name) return;
           var line = '  - ' + f.name +
             ' 阶段=' + (f.lifePhase || 'stable') +
@@ -65,10 +91,19 @@
           if (f.suzerainFaction) line += ' 宗主=' + f.suzerainFaction;
           stateLines.push(line);
         });
+        if (_facOmit > 0) stateLines.push('  （另有 ' + _facOmit + ' 个次要势力数值从略——不可据此断言其不存在或已亡，仅未列其细目）');
       }
       if (GM.partyState && typeof GM.partyState === 'object') {
         stateLines.push('【党派数值】');
-        Object.keys(GM.partyState).forEach(function(pn) {
+        // 【降本·S1】同上:常规(≤上限)原序原样字节不变;极大才按显要度截断+注明从略。
+        var _pKeys = Object.keys(GM.partyState), _pCap = 16, _pOmit = 0;
+        if (_pKeys.length > _pCap) {
+          _pKeys = _pKeys.filter(function(pn) { return GM.partyState[pn]; });
+          _pKeys.sort(function(a, b) { return _partySalience(GM.partyState[b]) - _partySalience(GM.partyState[a]); });
+          _pOmit = Math.max(0, _pKeys.length - _pCap);
+          _pKeys = _pKeys.slice(0, _pCap);
+        }
+        _pKeys.forEach(function(pn) {
           var ps = GM.partyState[pn];
           if (!ps) return;
           stateLines.push('  - ' + pn +
@@ -79,6 +114,7 @@
             ((ps.recentImpeachWin || 0) > 0 ? ' 近期弹劾胜=' + Math.round(ps.recentImpeachWin) : '') +
             ((ps.recentImpeachLose || 0) > 0 ? ' 近期弹劾败=' + Math.round(ps.recentImpeachLose) : ''));
         });
+        if (_pOmit > 0) stateLines.push('  （另有 ' + _pOmit + ' 个次要党派数值从略）');
       }
       // 阶层正册：Phase-3 抽取重构时此块漏迁，致主推演活路径对阶层全盲（历史大 bug 复发）。
       // 数据契约同 tm-endturn-prompt.js 死 else 分支（满意/趋势/影响/势位/诉求/最艰地域）。
@@ -92,15 +128,50 @@
           _cTrend = Math.round(_cTrend * 10) / 10;
           var _cDm = String(c.currentDemand || (Array.isArray(c.demands) ? c.demands.join('·') : c.demands) || '').slice(0, 34);
           var _cPhase = (c.revoltState && c.revoltState.phase && c.revoltState.phase !== 'calm') ? ('·态:' + c.revoltState.phase) : '';
+          var _rf = Number(c._radicalFrac); var _cRadical = (isFinite(_rf) && _rf >= 0.2) ? ('·乱民' + Math.round(_rf * 10) + '成(' + (_rf >= 0.6 ? '鼎沸' : (_rf >= 0.4 ? '汹汹' : '不稳')) + ')') : '';
           var _cWorst = '';
           if (Array.isArray(c.regionalVariants)) {
             var _wv = null;
             c.regionalVariants.forEach(function(v) { if (v && v.region && isFinite(Number(v.satisfaction)) && (!_wv || Number(v.satisfaction) < Number(_wv.satisfaction))) _wv = v; });
             if (_wv && Number(_wv.satisfaction) <= _cSat - 8) _cWorst = '·最艰:' + String(_wv.region).slice(0, 6) + Math.round(Number(_wv.satisfaction));
           }
-          stateLines.push('  - ' + c.name + '·满意' + _cSat + (_cTrend ? ('(' + (_cTrend > 0 ? '+' : '') + _cTrend + ')') : '') + '·影响' + Math.round(Number(c.influence) || 0) + (c._structBaseline != null ? ('·势位' + Math.round(c._structBaseline)) : '') + _cPhase + _cWorst + (_cDm ? ('·求:' + _cDm) : ''));
+          stateLines.push('  - ' + c.name + '·满意' + _cSat + (_cTrend ? ('(' + (_cTrend > 0 ? '+' : '') + _cTrend + ')') : '') + '·影响' + Math.round(Number(c.influence) || 0) + (c._structBaseline != null ? ('·势位' + Math.round(c._structBaseline)) : '') + _cPhase + _cRadical + _cWorst + (_cDm ? ('·求:' + _cDm) : ''));
         });
-        stateLines.push('  （满意=当下·势位=结构应然·求=当前诉求——class_changes 须以正册为准）');
+        var _leg = GM._legitimacy;
+        if (_leg && _leg.flag && _leg.flag !== '相安') stateLines.push('  〔天命权重〕权贵满意(clout)' + _leg.clout + ' vs 民心(人口)' + _leg.pop + '·' + _leg.flag);
+        stateLines.push('  （满意=当下·势位=结构应然·乱民=激进民情(汹涌则近民变)·求=当前诉求——class_changes 须以正册为准）');
+      }
+      // ①·C4 流寇威胁喂 LLM（朝廷据此叙事/下旨剿抚·出 roving_actions）
+      if (Array.isArray(GM.rovingRebels)) {
+        var _rov = GM.rovingRebels.filter(function(r) { return r && !r.disbanded && (Number(r.strength) || 0) > 0; });
+        if (_rov.length > 0) {
+          stateLines.push('【流寇警报】');
+          _rov.slice(0, 6).forEach(function(r) {
+            stateLines.push('  - ' + (r.name || '流寇') + '·众' + (Number(r.strength) || 0) + ((r.regions && r.regions.length) ? ('·流窜' + r.regions.slice(0, 4).join('、')) : '') + '（可剿:roving_actions{action:suppress,force:兵力}耗军饷战损·或抚:{action:pacify}招为编户/军户然开赦贼恶例）');
+          });
+        }
+      }
+      // 本朝军力·全貌(补盲:让 AI 推演纳入军队各项数据·非只风险军队·主路径·2026-07-01)
+      if (Array.isArray(GM.armies) && GM.armies.length > 0) {
+        var _mlPf = (typeof P !== 'undefined' && P && P.playerInfo && P.playerInfo.factionName) || '';
+        var _mlMine = _mlPf ? GM.armies.filter(function(a){ return a && !a.destroyed && a.faction === _mlPf; }) : [];
+        if (_mlMine.length > 0) {
+          var _mlFind = (typeof findCharByName === 'function') ? findCharByName : function(){ return null; };
+          var _mlDeadCmd = function(a){ if(!a.commander) return true; var _c=_mlFind(a.commander); return !!(_c && (_c.alive===false||_c.dead===true)); };
+          var _mlTot = _mlMine.reduce(function(s,a){ return s + (a.soldiers||a.size||0); }, 0);
+          var _mlElite = _mlMine.filter(function(a){ return (a.training||0) >= 70 && (a.morale||0) >= 60; }).length;
+          var _mlWeak = _mlMine.filter(function(a){ return (a.morale||100) < 40 || (a.training||100) < 40; }).length;
+          var _mlNoCmd = _mlMine.filter(_mlDeadCmd).length;
+          stateLines.push('【本朝军力·全貌】共 ' + _mlMine.length + ' 支·总兵 ' + _mlTot.toLocaleString() + '·精锐(训≥70气≥60) ' + _mlElite + ' 支·虚弱(气或训<40) ' + _mlWeak + ' 支' + (_mlNoCmd ? ('·缺帅/阵殁 ' + _mlNoCmd + ' 支') : ''));
+          stateLines.push('〔主力军镇·按兵力(含主帅武智/训练/编制·推演用将募兵战守须据此)〕');
+          _mlMine.slice().sort(function(a,b){ return (b.soldiers||b.size||0) - (a.soldiers||a.size||0); }).slice(0, 6).forEach(function(a){
+            var _c = a.commander ? _mlFind(a.commander) : null;
+            var _cmS = a.commander ? (_c ? (a.commander + '(武' + (_c.military||_c.valor||50) + '智' + (_c.intelligence||50) + ')') : a.commander) : '缺帅';
+            if (a.commander && _mlDeadCmd(a)) _cmS = a.commander + '(阵殁/失联·待补)';
+            var _cp = Array.isArray(a.composition) ? a.composition.slice(0,3).map(function(c){ return (c && c.type) ? c.type : ''; }).filter(Boolean).join('/') : '';
+            stateLines.push('  · ' + a.name + '·' + (a.soldiers||a.size||0) + '兵·训' + (a.training||50) + '·气' + (a.morale||0) + '·帅' + _cmS + (_cp ? ('·编制' + _cp) : ''));
+          });
+        }
       }
       if (Array.isArray(GM.armies) && GM.armies.length > 0) {
         var riskArmies = GM.armies.filter(function(a) {

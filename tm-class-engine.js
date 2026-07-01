@@ -116,6 +116,34 @@
     return index;
   }
 
+  // ── 现生阶层人口格子保障（§7.2.②·2026-06-16）──
+  // AI class_emerge 落地的新阶层只进 GM.classes（有满意度），却无 populationKeys、无人口格子，
+  // 致乱民/流民等人口流（B/C）对它算不出。此助手：①固化 populationKeys（止关键词误配）；
+  // ②命中既有格子则绑之复用；否则按 size 播种一个专属格子。幂等；无人口模型则只固化键不臆造。
+  function ensureClassPopulationCell(cls, root) {
+    var source = pickRoot(root);
+    if (!cls || typeof cls !== 'object') return null;
+    var keys = resolvePopulationKeys(cls, source);
+    var pop = source && source.population;
+    if (!pop) { if (keys.length) cls.populationKeys = keys.slice(); return null; }
+    if (!pop.byClass || typeof pop.byClass !== 'object') pop.byClass = {};
+    var byClass = pop.byClass;
+    for (var i = 0; i < keys.length; i += 1) {
+      if (byClass[keys[i]] && isFinite(Number(byClass[keys[i]].mouths))) {
+        cls.populationKeys = keys.slice();
+        return keys[i];
+      }
+    }
+    var key = keys[0] || normalizeText(cls.name || '');
+    if (!key) return null;
+    var share = parseSizeShare(cls.size);
+    var nat = pop.national && Number(pop.national.mouths);
+    var mouths = (isFinite(share) && isFinite(nat) && nat > 0) ? Math.max(1, Math.round(nat * share)) : 0;
+    if (!byClass[key]) byClass[key] = { mouths: mouths, _emergedCell: true, _emergeTurn: (source && source.turn) || 0 };
+    cls.populationKeys = keys.length ? keys.slice() : [key];
+    return key;
+  }
+
   function resolvePopulationKeys(cls, root) {
     var source = pickRoot(root);
     var name = cls && (cls.name || cls.class || cls.id || cls.title || '');
@@ -960,16 +988,17 @@
     var revolt = cls.unrestLevels && parseTurnNumber(cls.unrestLevels.revolt);
     if (!revolt) revolt = 90;
     var sat = parseTurnNumber(cls.satisfaction);
+    var rf = Number(cls._radicalFrac) || 0;   // 乱民比例(B·政治蓄水池)作起义独立触发：蓄水满则起义，即便瞬时满意度未到阈
     var state = cls.revoltState || (cls.revoltState = { phase: 'calm', turns: 0, lastTurn: 0, note: '' });
     var phase = state.phase || 'calm';
     var nextPhase = phase;
     var note = '';
-    if (revolt <= 20 || sat <= 30) {
+    if (revolt <= 20 || sat <= 30 || rf >= 0.6) {
       nextPhase = 'uprising';
-      note = '临界已到';
-    } else if (revolt <= 35 || sat <= 45) {
+      note = rf >= 0.6 ? '乱民鼎沸' : '临界已到';
+    } else if (revolt <= 35 || sat <= 45 || rf >= 0.4) {
       nextPhase = 'brewing';
-      note = '局势趋紧';
+      note = rf >= 0.4 ? '民情汹汹' : '局势趋紧';
     } else {
       nextPhase = 'calm';
     }
@@ -1155,6 +1184,7 @@
     refreshClassPhase: refreshClassPhase,
     ensureClassRuntime: ensureClassRuntime,
     resolvePopulationKeys: resolvePopulationKeys,
+    ensureClassPopulationCell: ensureClassPopulationCell,
     parseSizeShare: parseSizeShare,
     formatSizeText: formatSizeText,
     deriveTagsFromReason: deriveTagsFromReason,

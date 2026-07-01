@@ -198,6 +198,7 @@
     if (typeof TMTianji !== 'undefined' && typeof GM !== 'undefined' && TMTianji.on(GM)) { var _tjLine = TMTianji.aiContextLine(GM); if (_tjLine) tp += _tjLine; }
     if (typeof TMJunqing !== 'undefined' && typeof GM !== 'undefined' && TMJunqing.on(GM)) { var _jqLine = TMJunqing.aiContextLine(GM); if (_jqLine) tp += _jqLine; }
     if (typeof TMXinjun !== 'undefined' && typeof GM !== 'undefined' && TMXinjun.on(GM)) { var _xjLine = TMXinjun.aiContextLine(GM); if (_xjLine) tp += _xjLine; }
+    try { if (window.TM && TM.TalentCohorts && typeof TM.TalentCohorts.summarize === 'function') { var _talentSeg = TM.TalentCohorts.summarize(GM, P); if (_talentSeg) tp += _talentSeg + '\n'; } } catch (_tse) {} // S3c
     tp += '【推演依据——本回合推演基于以下五层数据，请综合推演】\n';
     tp += '  A. 玩家国家行动：下方【诏令】段是君主本回合颁布的正式政令，其执行效果取决于执行者能力、忠诚、局势阻力\n';
     tp += '  B. 玩家私人行动：下方【主角行止】段是君主的个人举止(微服/读书/饮宴/私见等)，影响情绪与人物关系\n';
@@ -754,16 +755,48 @@
       }
     }
 
+    // ★2026-07-01 O5·本回合君臣互动总账(化零为整):此前六界面注入散在约15段·AI 拿到的是碎片·无「君主本回合通过各渠道做了什么」的连贯全景。
+    //   此处确定性汇总给一段总览(各段仍在下方详述)·令 AI 把跨渠道决策视为君主整体意志·保持连贯。纯计数/名单·token 极省。
+    (function(){
+      var _t = GM.turn, _ov = [], _jr = GM.jishiRecords || [];
+      var _wd = _jr.filter(function(j){ return j && j.turn===_t && j.char && (j.mode==='formal'||j.mode==='private'||j.mode==='cedui'||j.mode==='mizhao'); });   // ★codex-fix:+mizhao独召密问(问对式)·+null守卫
+      if (_wd.length) _ov.push('问对召见 ' + _wd.length + ' 人（' + _wd.map(function(j){return j.char;}).filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,8).join('、') + '）');
+      var _cc = _jr.filter(function(j){ return j && j.turn===_t && j.mode==='changchao'; });
+      if (_cc.length) _ov.push('常朝裁决 ' + _cc.length + ' 事');
+      if (_jr.some(function(j){ return j && j.turn===_t && (j.mode==='tinyi'||j.mode==='tingyi'); })) _ov.push('廷议');
+      var _sm = (GM._secretMeetings||[]).filter(function(s){ return s && s.turn===_t; });
+      if (_sm.length) _ov.push('御前密召 ' + _sm.length + ' 次');
+      // ★codex-fix O5:奏疏改用本回合 _approvedMemorials(带 turn+action·_stageMemorialDecision 每个决定都写)按 action 正确分桶·
+      //   此前遍历全量 GM.memorials(跨回合)且把批注/批转/付廷议全塞进「留」=口径双错。
+      var _am = (GM._approvedMemorials||[]).filter(function(a){ return a && a.turn===_t; });
+      if (_am.length){
+        var _amc = {}, _amLbl = { approved:'准', rejected:'驳', annotated:'批注', referred:'批转', court_debate:'付廷议', pending_review:'留', pending:'留' };
+        _am.forEach(function(a){ var k=a.action||'?'; _amc[k]=(_amc[k]||0)+1; });
+        _ov.push('奏疏批复（' + Object.keys(_amc).map(function(k){ return (_amLbl[k]||k) + _amc[k]; }).join('·') + '）');
+      }
+      var _lt = (GM.letters||[]).filter(function(l){ return l && !l._npcInitiated && (l.sentTurn===_t); });
+      if (_lt.length) _ov.push('鸿雁私信 ' + _lt.length + ' 封');
+      var _rp = (GM._wdRewardPunish||[]).filter(function(r){ return r && r.turn===_t; });
+      if (_rp.length){ var _rw=0,_pu=0; _rp.forEach(function(r){ if(r.type==='reward')_rw++; else _pu++; }); _ov.push('赏罚（赏' + _rw + '·罚' + _pu + '）'); }
+      if (_ov.length) {
+        tp += '\n【本回合君主行动全景——君主经各渠道之举（下方各段详述，此处给你连贯总览，勿孤立看待）】\n  · ' + _ov.join('\n  · ') + '\n  ※ 请将各渠道决策视为君主本回合意志的整体：一渠道之决应与他渠道相容呼应，臣下反应亦应通盘考量君主诸般举措。\n';
+      }
+    })();
+
     // 本回合问对内容（让AI知道玩家在问对中获得的信息和NPC的承诺）
     if (GM.jishiRecords && GM.jishiRecords.length > 0) {
-      var _thisWendui = GM.jishiRecords.filter(function(j) { return j.turn === GM.turn && j.char; });
+      // ★2026-07-01 O1·加 mode 过滤·只取真问对(formal/private/cedui)·不再把常朝/廷议/御前/科议/奏疏(各有专段)误标成「召见问对」复述→消冗余+止语义污染
+      var _thisWendui = GM.jishiRecords.filter(function(j) { return j && j.turn === GM.turn && j.char && (j.mode === 'formal' || j.mode === 'private' || j.mode === 'cedui' || j.mode === 'mizhao'); });   // ★codex-fix:+mizhao独召密问(tm-shizheng-panel 写·有 playerSaid/npcSaid·问对式)·+null守卫
       if (_thisWendui.length > 0) {
         // \u7B2C\u4E00\u5200\u00B7\u95EE\u5BF9\u6458\u8981\u5316\uFF1AnpcSaid \u5168\u6587\u622A\u65AD\u4E3A\u6897\u6982\uFF08\u627F\u8BFA/\u8BED\u6C14\u7531 sc1q \u7684 commitments/npc_dialogue_intent \u7ED3\u6784\u5316\u6CE8\u5165\u00B7\u89C1 ai.js sc1q \u6CE8\u5165\u6BB5\uFF09\u00B7\u7701 ~4.5K tp1
         tp += '\u3010\u672C\u56DE\u5408\u95EE\u5BF9\u6458\u8981\u2014\u2014\u627F\u8BFA\u4E0E\u8BED\u6C14\u8BE6\u89C1\u4E0B\u65B9 sc1q \u63A8\u6F14\u8F93\u51FA\u3011\n';
+        // \u26052026-07-01 O6\u00b7\u63a5\u5165\u6a21\u578b\u7f29\u653e:\u6b64\u524d 40/70 \u786c\u7f16\u7801\u5b9a\u957f\u00b7\u5927\u6a21\u578b\u4e0d\u53d8\u8be6\u3001\u5c0f\u6a21\u578b\u4e0d\u88c1\u3002\u6539\u6309 getCompressionParams().scale \u81ea\u9002\u5e94(\u4e0e :811/:850 \u4e00\u81f4)\u3002
+        var _wdSc = Math.max(0.6, Math.min(2.4, (typeof getCompressionParams === 'function' && getCompressionParams().scale) || 1));
+        var _psLen = Math.round(130 * _wdSc), _nsLen = Math.round(280 * _wdSc);   // ★2026-07-01 放宽标准截断(40/70→80/150→130/280·容纳更多问对信息·缩放仍在其上叠加·仅对长内容起作用)
         _thisWendui.forEach(function(j) {
-          var _ps = (j.playerSaid || '').slice(0, 40);
-          var _ns = (j.npcSaid || '').slice(0, 70);
-          var _nsTail = (j.npcSaid || '').length > 70 ? '\u2026' : '';
+          var _ps = (j.playerSaid || '').slice(0, _psLen);
+          var _ns = (j.npcSaid || '').slice(0, _nsLen);
+          var _nsTail = (j.npcSaid || '').length > _nsLen ? '\u2026' : '';
           tp += '  \u53EC\u89C1' + (j.char || '') + '\uFF1A\u73A9\u5BB6\u95EE\u201C' + _ps + '\u201D\u2192NPC\u7B54\u201C' + _ns + _nsTail + '\u201D\n';
         });
       }
@@ -908,6 +941,15 @@
         var _csAttr = '';
         try { if (window.TMGongming && TMGongming.summaryLine && !c.isPlayer) { _csAttr = ' chushen="' + _xE(TMGongming.summaryLine(c, GM)) + '"'; } } catch(_csE){}
         xmlLines.push('  <heart char="' + _xE(c.name||'') + '" mood="' + _xE(mood) + '" title="' + _xE(curTitle) + '"' + _gmAttr + _csAttr + arcAttr + '>');
+        // ★2026-07-01 S2治「跨界面人格分裂」:补人格串 + 顶级伤疤(定义性记忆)·令推演中的此人与问对/奏疏/朝议同一副性情。
+        //   推演是多 NPC 单 prompt·不塞整份 getMemoryContext(token爆)·只补最定义人格的两样(轻量)·记忆事项仍由下方 imp 门槛出。
+        var _selfBits = [];
+        if (c.personality) _selfBits.push(String(c.personality).slice(0, 60));
+        if (Array.isArray(c._scars) && c._scars.length) {
+          var _topScar = c._scars.slice(-2).map(function(s){ return String(s.event||'').slice(0,24) + (s.emotion ? '[' + s.emotion + ']' : ''); }).filter(Boolean).join('、');
+          if (_topScar) _selfBits.push('铭心：' + _topScar);
+        }
+        if (_selfBits.length) xmlLines.push('    <self>' + _xE(_selfBits.join('｜')) + '</self>');
         // 驱动目标——该 NPC 当前所求(让 npc_actions 朝目标连贯·与图志/goal_updates 同源·补齐 heart 决策上下文「他想要什么」)
         if (Array.isArray(c.personalGoals) && c.personalGoals.length) {
           var _g0 = c.personalGoals.slice().sort(function(_x,_y){ return (_y.priority||5) - (_x.priority||5); })[0];
@@ -919,7 +961,13 @@
           }
         }
         var sorted = c._memory.slice().sort(function(a,b){ return (b.importance||0) - (a.importance||0); });
-        var top = sorted.slice(0, perChar).filter(function(m){ return (m.importance||0) >= impMin; });
+        // ★2026-07-01 codex-fix S1:hearts 门槛 impMin 随模型上下文动态(3~9·见 tm-ai-infra heartsImportanceMin)·中/小上下文可到 7~8·
+        //   会把 imp6 的正式问对记忆挡在推演外。额外放行「近2回合内 importance>=6」的记忆(典型=刚发生的问对/奏疏交谈)·
+        //   令新近君臣交谈无论动态门槛多高都能进推演·不改其 importance(避伤疤膨胀)。先过滤后截断·以保其入选。
+        var _recentTurnGate = (GM.turn || 0) - 2;
+        var top = sorted.filter(function(m){
+          return (m.importance||0) >= impMin || ((m.importance||0) >= 6 && (m.turn||0) >= _recentTurnGate);
+        }).slice(0, perChar);
         top.forEach(function(m){
           if (heartCount >= totalCap) return;
           var attrs = [
@@ -1031,6 +1079,37 @@
       }
     }
 
+    // ── S7·官制新机制 AI 喂料补盲（权臣坐大/京察黜陟/怀才不遇·纯 prompt 注入·flag 关时数据恒空天然门控零回归·2026-07-01）──
+    // S7-1: 权臣坐大——引擎已判定的权臣喂 AI（powerMinisterEnabled 关时 GM.huangquan.powerMinister 恒 null·不注入）
+    if (GM.huangquan && GM.huangquan.powerMinister && GM.huangquan.powerMinister.name) {
+      var _s7pm = GM.huangquan.powerMinister;
+      var _s7pmc = GM.chars && GM.chars.find(function (c) { return c && c.name === _s7pm.name; });
+      tp += '\n【权臣坐大·皇权旁落警讯（叙事须体现）】\n';
+      tp += '  ' + _s7pm.name + (_s7pmc && _s7pmc.officialTitle ? '（' + _s7pmc.officialTitle + '）' : '') + ' 久居枢要、权倾朝野，已成坐大之权臣（坐大程度约' + Math.round((_s7pm.controlLevel || 0) * 100) + '%，皇权' + (GM.huangquan.index != null ? Math.round(GM.huangquan.index) : '?') + '）。\n';
+      var _s7pmActs = [];
+      if (_s7pm.interceptions > 0) _s7pmActs.push('截留奏疏' + _s7pm.interceptions + '次');
+      if (_s7pm.counterEdicts > 0) _s7pmActs.push('假拟诏命' + _s7pm.counterEdicts + '次');
+      if (_s7pm.faction && _s7pm.faction.length) _s7pmActs.push('党羽：' + _s7pm.faction.slice(0, 6).join('、'));
+      if (_s7pmActs.length) tp += '  劣迹：' + _s7pmActs.join('；') + '。\n';
+      tp += '  推演中其 npc_actions 应现专权跋扈、结党营私、架空君上；正直科道当有弹劾之举，君主当现猜忌之心，皇权愈弱其势愈张。\n';
+    }
+    // S7-2: 京察大计——本届黜陟喂 AI（officeJingchaEnabled 关时 GM._jingchaResult 不产生·不注入）
+    if (GM._jingchaResult && (GM.turn - (GM._jingchaResult.turn || 0)) <= 1) {
+      var _s7jr = GM._jingchaResult;
+      if ((_s7jr.demoted && _s7jr.demoted.length) || (_s7jr.promoted && _s7jr.promoted.length)) {
+        tp += '\n【京察大计·黜陟（本届考察·叙事应体现震动）】\n';
+        if (_s7jr.demoted && _s7jr.demoted.length) tp += '  黜降庸劣：' + _s7jr.demoted.slice(0, 8).join('、') + '（屡考劣等·当有怨望攀援或求免）\n';
+        if (_s7jr.promoted && _s7jr.promoted.length) tp += '  拔擢沉才：' + _s7jr.promoted.slice(0, 8).join('、') + '（怀才得伸·当有感奋图报）\n';
+      }
+    }
+    // S7-3: 才高位卑·怀才不遇能臣喂 AI（officeSatisfactionFeedbackEnabled 关时无 _seeksRemoval·不注入）
+    var _s7disaff = (GM.chars || []).filter(function (c) { return c && c.alive !== false && c._seeksRemoval; });
+    if (_s7disaff.length) {
+      tp += '\n【才高位卑·怀才不遇（能臣萌去意·叙事可体现）】\n';
+      tp += '  ' + _s7disaff.slice(0, 8).map(function (c) { return c.name + (c.officialTitle ? '（' + c.officialTitle + '）' : ''); }).join('、') + ' 才略高而位卑久郁，忠诚渐衰、萌生去意。\n';
+      tp += '  推演中他们可能消极避事、另择明主、上疏乞归；明君贤相当加拔擢留贤，否则恐致人才流失。\n';
+    }
+
     // N4: 主角精力注入（全范围——精力影响叙事基调）
     if (GM._energy !== undefined) {
       var _enRatio = GM._energy / (GM._energyMax || 100);
@@ -1105,11 +1184,11 @@
     tp += '    ★ 例："增商税三分以充军饷"→tax_reforms:[{op:"rate",taxId:"shangshui",rate:0.06,reason:"充军饷"}]；"罢两浙和买宽民"→[{op:"remove",taxId:"hemai",reason:"宽东南民力"}]；"行经界、立月桩钱"→[{op:"add",tax:{id:"yuezhuang",name:"月桩钱",base:"commerceVolume",rate:0.025,storeAs:"money",sourceTag:"yuezhuang"},reason:"经界后新财源"}]\n';
     tp += '    ★ recurring:true 的 amount 是年度账目，不会当回合一次性入库/出库；若政策同时产生当场缴纳/拨付的一笔钱粮，另写一条 recurring:false 的 fiscal_adjustments\n';
     tp += '    ★ 玩家扩大/缩减既有长期项时，用 action:"update" 并保持同 name/id，amount 写新的年度数额；玩家裁撤/取消既有长期项时，用 action:"stop" 或 "remove"，amount 可省略或为 0，reason 说明终止依据\n';
-    tp += '    ★ 玩家诏令文本若出现明确数额（赏/赐/拨/发/征/抄/没）X 两/石/匹——必须生成对应 fiscal_adjustments；若库不足则 kind:expense 只能到库余，并在 reason 里说明"库不足仅拨 N"\n';
+    tp += '    ★ 玩家诏令文本若出现明确数额（赏/赐/拨/发/征/抄/没）X ' + ((typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两') + '/石/匹——必须生成对应 fiscal_adjustments；若库不足则 kind:expense 只能到库余，并在 reason 里说明"库不足仅拨 N"\n';
     tp += '    ★【执行上限·不得突破 0】玩家主动花钱最多花到库存见底，不能透支到负数：\n';
     tp += '        - 若 帑廪/内帑 余额 <= 0（被动结算后已赤字）→ 本条诏令 expense 完全无法执行（applier 会标 executionStatus:blocked）\n';
     tp += '        - 若 0 < 余额 < 请款额 → 拨到见底·剩余记亏欠（executionStatus:partial）\n';
-    tp += '        - edict_feedback 对应条目必须据此给出后果：blocked→"国库空虚·诏不得行·某事因此停顿/激变"；partial→"仅拨 N 两/石·不足部分如何措置（加派/借贷/挪移/拖欠）"\n';
+    tp += '        - edict_feedback 对应条目必须据此给出后果：blocked→"国库空虚·诏不得行·某事因此停顿/激变"；partial→"仅拨 N ' + ((typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两') + '/石·不足部分如何措置（加派/借贷/挪移/拖欠）"\n';
     tp += '        - npc_actions 中：受益者对 blocked/partial 应有不满/怨言·地方大员请饷不得应有怠政\n';
     tp += '        - 叙事里一定要写明"帑廪已空·户部尚书泣请/南京仓无可调/漕运绝流"而不得回避\n';
     tp += '  · 势力/党派/阶层/区域变化 → faction_updates / party_updates / class_updates / region_updates\n';
@@ -1263,9 +1342,10 @@
               var head = (k >= 0 && d) ? '    ── 议 [' + (k+1) + '] ' + d.title + (d.dept ? '·' + d.dept : '') + ' → ' + (d.label || d.action) + (d.extra ? '·' + d.extra : '') + ' ──'
                        : '    ── 朝中其他对话 ──';
               tp += head + '\n';
-              byIdx[k].slice(-12).forEach(function(t) {
+              var _tySc = Math.max(0.6, Math.min(2.4, (typeof getCompressionParams === 'function' && getCompressionParams().scale) || 1));   // ★2026-07-01 O6·朝议 transcript 接入缩放(行数/每行字数随模型上下文)
+              byIdx[k].slice(-Math.round(20 * _tySc)).forEach(function(t) {   // ★2026-07-01 放宽:朝议 transcript 12→16→20 行
                 var sp = (t.role === 'player') ? '陛下' : (t.speaker || '某员');
-                tp += '      ' + sp + (t.stance ? '(' + t.stance + ')' : '') + '：' + String(t.text || '').slice(0, 130) + '\n';
+                tp += '      ' + sp + (t.stance ? '(' + t.stance + ')' : '') + '：' + String(t.text || '').slice(0, Math.round(320 * _tySc)) + '\n';   // ★2026-07-01 放宽:朝议每句 130→200→320 字
               });
             });
           }
@@ -1302,6 +1382,21 @@
             if (_leakRisk.length > 0) tp += '  泄密高风险者：' + _leakRisk.join('、') + '\n';
           }
         });
+      }
+      // ★2026-07-01 O3·补御前密议主 prompt 兜底段:_secretMeetings(yuqian「不录」型)此前主 prompt 零读取·只靠 sc1q 一条腿·sc1q 挂则彻底不可见(黑洞)。
+      //   此处确定性注入本回合密议 topic/advisors/decision·堵内容层黑洞。密议机密·仅供推演逻辑·非公开叙事。
+      if (Array.isArray(GM._secretMeetings)) {
+        var _thisSecret = GM._secretMeetings.filter(function(sm){ return sm && sm.turn === GM.turn; });
+        if (_thisSecret.length > 0) {
+          tp += '\n【御前密议——本回合君主密召近臣议定（机密·不应为外朝所知·仅供你推演相关行动逻辑，勿作公开叙事泄露）】\n';
+          _thisSecret.forEach(function(sm){
+            // ★codex-fix O3:decision 是对象 {mode,custom}(见 tm-chaoyi-yuqian:414)·此前 String() 成「[object Object]」→结论正文全丢。按 mode 展开。
+            var _dec = sm.decision;
+            var _decTxt = (_dec && typeof _dec === 'object') ? (_dec.mode==='approve'?'准行':_dec.mode==='reject'?'驳否':_dec.mode==='defer'?'留待再议':(_dec.custom||'圣裁')) : String(_dec||'');
+            tp += '  · 议题「' + String(sm.topic||'').slice(0, 40) + '」·与议：' + (Array.isArray(sm.advisors) ? sm.advisors.join('、') : (sm.advisors||'')) + '·密定：' + _decTxt.slice(0, 80) + '\n';
+          });
+          tp += '  ※ 参与密议的近臣应按密定意图暗中推进；若其中有忠诚低(<40)或敌对派系者，可能泄密(npc_actions behaviorType:"leak")。\n';
+        }
       }
       // 常朝快速裁决（如果有）
       var _currentChangchaoDecisions = _getCurrentChangchaoDecisions(GM);
@@ -2134,6 +2229,9 @@
         sysP += TM.PromptComposer.buildSharedPromptPrefix(GM);
       }
     } catch(_sppInjE) { try { console.warn('[prompt.build] sharedPromptPrefix inject failed', _sppInjE); } catch(_){} }
+
+    // ★ 全局持续规则（国是·风气）注入推演：让倾向所及之事更易推行、新群体渐出，阻力如实体现
+    try { if (window.GlobalRules && typeof GlobalRules.promptContext === 'function') sysP += GlobalRules.promptContext(); } catch(_grCtxE){}
 
     // ★ 三系统运行时状态（势力 lifePhase·党派 influence/officeCount·军队 mutinyRisk）
     if (TM && TM.EndTurnAIContext && typeof TM.EndTurnAIContext.appendPromptPolicyContext === 'function') {
@@ -3178,10 +3276,7 @@
     }
 
     _mark('npcDeep');
-    // 2.1: 注入状态耦合参考（非机械执行，AI自行决定实际变化）
-    if (GM._couplingReport) {
-      sysP += '\n\n' + GM._couplingReport;
-    }
+    // 2.1: 状态耦合参考已并入「天下牵动·因果综述」（WorldDigest·W1b），不再单独注入 sysP（去碎片化）
     // 注入时代进度参考（非机械执行，AI自行决定朝代阶段变化）
     if (GM._eraProgressReport) {
       sysP += '\n\n\u3010\u671D\u4EE3\u8D8B\u52BF\u53C2\u8003\u3011' + GM._eraProgressReport + '\u3002AI\u53EF\u901A\u8FC7era_state_delta\u81EA\u884C\u51B3\u5B9A\u662F\u5426\u8C03\u6574\u671D\u4EE3\u9636\u6BB5\u3002';

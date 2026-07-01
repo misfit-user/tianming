@@ -1,17 +1,24 @@
 // ============================================================
-//  tm-desktop-update.js — 桌面端启动自动检查更新
+//  tm-desktop-update.js — 桌面端更新卡驱动（自动检查已停用）
 //  2026-06-11·更新功能全面升级 S4
+//
+//  ★2026-07-01·桌面端取消「自动弹热更卡」(owner：桌面热更统一走「创意工坊 / 更新中心」手动检查下载)。
+//    原实现在启动后自动查 feed·发现新版即弹 TMUpdateCard「发现新版本→立即更新→下载 771MB 全量包」。
+//    玩家点✕收起后·后台下载的进度事件又把卡反复拽回来(且标题退回默认「检查更新」)·观感如同
+//    「电脑版莫名冒出一个安卓 OTA 式的更新弹窗」。现自动检查/自愈 toast 一并停发·所有桌面更新
+//    改由创意工坊(TMContentManager 更新中心/设置页的 checkHotUpdate/installHotUpdate)手动驱动。
+//    新版发现不丢：新版→新 changelog→邸报自动弹+红点提示玩家去创意工坊更新。
+//    下方 ①-⑦ 为停用前的历史行为·arm() 已不再排程自动检查；手动 TMDesktopUpdate.check(true)
+//    (调试/联网中枢)仍可用·wireXxx 保留仅为其进度回显。
 //
 //  ① 仅桌面 Electron 生效（window.tianming 在）·安卓有 tm-capacitor-boot.js·在线版有
 //     tm-online-update.js·三端各管各的。
-//  ② 启动后 8s 后台静默查 hot-latest.json（版本驱动·不再依赖邸报已读状态）；
-//     发现新版 → 弹更新卡（TMUpdateCard）·玩家点「立即更新」才下载·装完提示一键重启。
-//  ③ 避让·邸报弹窗（#tm-changelog-ov）或联网中枢更新仪式（.tm-update-ritual.show）开着时
-//     不弹卡·每 1.5s 复查·最多等 10 分钟。
+//  ② 〔已停用〕启动后 8s 后台静默查 hot-latest.json → 发现新版弹更新卡（TMUpdateCard）。
+//  ③ 〔已停用〕避让·邸报弹窗 / 联网中枢更新仪式开着时不弹卡·每 1.5s 复查·最多等 10 分钟。
 //  ④ dev (npm start·isPackaged=false) 不自动检查·手动 TMDesktopUpdate.check(true) 仍可用。
 //  ⑤ feed flags.disableAutoCheck=true → 服务器端一键静默全部自动检查（kill-switch）。
-//  ⑥ 周期复查·6 小时·页面隐藏/忙碌/卡可见时跳过。
-//  ⑦ 自愈提示·主进程报告 lastRepair（状态修复/崩溃环自禁）→ 一次性 toast 告知玩家。
+//  ⑥ 〔已停用〕周期复查·6 小时·页面隐藏/忙碌/卡可见时跳过。
+//  ⑦ 〔已停用〕自愈提示·主进程报告 lastRepair → 一次性 toast 告知玩家。
 // ============================================================
 
 (function () {
@@ -330,18 +337,13 @@
   }
 
   function arm() {
+    // wireXxx 保留：手动 TMDesktopUpdate.check(true) 发起的安装会话仍需进度回显。
     wireStatusEvents();
     wireInstallerEvents();
-    setTimeout(function () { checkWhenClear(false, 0); }, CHECK_DELAY_MS);
-    setInterval(function () {
-      try {
-        if (document.hidden) return;
-        if (_busy || _sessionActive) return;
-        var c = card();
-        if (c && c.isVisible()) return;
-        checkWhenClear(false, 0);
-      } catch (_) {}
-    }, RECHECK_INTERVAL_MS);
+    // ★2026-07-01·桌面端不再自动检查/自动弹热更卡（owner：桌面热更改到「创意工坊 / 更新中心」手动做）。
+    //   原「启动 8s 首查 + 6h 周期复查」会自动 offerUpdate/installerFlow 弹 TMUpdateCard·已整段移除。
+    //   → 桌面开局零更新卡；新版仍靠邸报(有未读 changelog 自动弹+红点)提示玩家去创意工坊更新。
+    //   checkWhenClear / CHECK_DELAY_MS / RECHECK_INTERVAL_MS / AVOID_* 现仅供手动路径与历史参考。
   }
   if (document.readyState === 'complete') arm();
   else window.addEventListener('load', arm);

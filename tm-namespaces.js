@@ -367,8 +367,6 @@
   //     属于 fiscal/territory 责任，不纳入 TM.NPC
   //   - _charConfiscate / _charInspect 保留 window inline onclick 兼容，同时挂到 TM.Char.ui
   // ═══════════════════════════════════════════════════════════════════
-  _defineWindowAlias(TM.NPC, 'engine', 'NpcEngine');
-  _defineWindowAlias(TM.NPC, 'interactions', 'InteractionSystem');
   _defineWindowAlias(TM.NPC, 'behaviors', 'NpcBehaviorRegistry');
   TM.NPC.decision = _buildWindowRefGroup('NPC.decision', {
     executeNpcBehaviors: 'executeNpcBehaviors',
@@ -384,21 +382,6 @@
     getCharacterPersonalityBrief: 'getCharacterPersonalityBrief',
     getNpcPersonalityInjection: 'getNpcPersonalityInjection'
   });
-  TM.NPC.legacy = _buildWindowRefGroup('NPC.legacy', {
-    buildNpcContext: 'buildNpcContext',
-    getCharacterFromContext: 'getCharacterFromContext',
-    getFactionFromContext: 'getFactionFromContext',
-    getVariableFromContext: 'getVariableFromContext',
-    getRelationFromContext: 'getRelationFromContext',
-    getOpinionFromContext: 'getOpinionFromContext',
-    getMilitaryStrengthFromContext: 'getMilitaryStrengthFromContext',
-    getEconomicLevelFromContext: 'getEconomicLevelFromContext',
-    calculateDecisionWeight: 'calculateDecisionWeight',
-    evaluateCondition: 'evaluateCondition',
-    generateDecisionsForActor: 'generateDecisionsForActor',
-    executeNpcDecisions: 'executeNpcDecisions'
-  });
-
   _defineWindowAlias(TM.Char, 'schema', 'CharFullSchema');
   _defineWindowAlias(TM.Char, 'economy', 'CharEconEngine');
   _defineWindowAlias(TM.Char, 'arcs', 'CharArcs');

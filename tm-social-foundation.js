@@ -127,7 +127,99 @@
     var ei = cls && cls.economicIndicators;
     var tb = Number(ei && ei.taxBurden);
     if (isFinite(tb) && tb >= 0) exp.tax = round2(clamp(tb / 100, 0, 1));
+    // E·描述符 fiscalStatus 驱动税/饷暴露（开放词表·优免→加派 incidence≈0·负担挤到编户自动涌现；受饷→吃欠饷）
+    var fs = cls && cls.descriptor && cls.descriptor.fiscalStatus;
+    if (fs === '优免') exp.tax = Math.min(exp.tax, 0.05);
+    else if (fs === '法外') exp.tax = Math.min(exp.tax, 0.1);
+    else if (fs === '受饷') exp.arrears = Math.max(exp.arrears, 1);
     return exp;
+  }
+
+  // ── E·阶层描述符 schema + 现生对账（2026-06-16·未 ship 未 commit）──
+  //   多标签描述符：stratum（上/中/下·唯一强制闭合字段·保底地板）+ economicBase/fiscalStatus/unrestArchetype（开放词表）。
+  //   主标+对账兜底：AI/种子给的 cls.descriptor 可选非阻塞（sticky·只补缺·尊重表外原词）；确定性对账器从 economicRole/name/privileges 派生缺栏。
+  //   开放词表+待补账：开放栏出现表外 novel 标签→记 GM._descriptorLedger（高频者后续升格配专属驱动）。描述符是 sticky 输入·SoL/满意度仍每回合派生。
+  var _DESC_KNOWN = {
+    stratum: ['上', '中', '下'],
+    fiscalStatus: ['优免', '编户', '受饷', '法外'],
+    unrestArchetype: ['暴烈', '撤离', '不合作', '哗变', '倒戈', '请愿']
+  };
+  function _descStratum(cls) {
+    var infl = Number(cls.influence);
+    var nm = String(cls.name || '') + String(cls.status || '');
+    var role = String(cls.economicRole || cls.role || '');
+    if (/士|绅|宗室|皇|贵|官|阀|世家|高门/.test(nm) || /治理/.test(role) || (isFinite(infl) && infl >= 60)) return '上';
+    if (/农|佃|流|匠|工|卒|贱|奴|乐户|疍/.test(nm) || (isFinite(infl) && infl <= 25)) return '下';
+    return '中';
+  }
+  function _descFiscal(cls) {
+    var t = String(cls.privileges || '') + String(cls.obligations || '') + String(cls.status || '') + String(cls.name || '');
+    if (/免徭役|免杂税|优免|免科|免税|不纳税|不服役/.test(t) || /宗室|皇族/.test(String(cls.name || ''))) return '优免';
+    if (/军籍|受饷|饷/.test(t)) return '受饷';
+    if (/法外|隐户|逃户|无籍|流民/.test(t)) return '法外';
+    return '编户';
+  }
+  function _descEconBase(cls) {
+    var role = String(cls.economicRole || ''), nm = String(cls.name || '');
+    if (/自耕/.test(nm)) return '自耕';
+    if (/佃/.test(nm)) return '佃租';
+    if (/绅|地主|豪强/.test(nm)) return '地租';
+    if (/商|贾/.test(nm) || /商贸|流通/.test(role)) return '工商';
+    if (/匠|工/.test(nm) || /手工/.test(role)) return '工役';
+    if (/军|卒|戍/.test(nm) || /军事/.test(role)) return '俸饷';
+    if (/僧|道|寺|教/.test(nm)) return '教权';
+    if (/治理/.test(role)) return '俸禄';
+    return role || '杂业';
+  }
+  function _descUnrest(cls, stratum, bucket) {
+    if (bucket === 'military') return '哗变';
+    if (stratum === '上') return '不合作';   // 隐田/抗税/通敌——上层安静而致命
+    if (bucket === 'trade') return '撤离';    // 逃税/外流
+    if (stratum === '下') return '暴烈';      // 揭竿/流寇
+    return '请愿';
+  }
+  function reconcileClassDescriptor(cls, root) {
+    if (!cls || typeof cls !== 'object') return null;
+    var d = (cls.descriptor && typeof cls.descriptor === 'object') ? cls.descriptor : {};
+    // stratum 强制闭合地板（缺失/非法值→派生纠正）
+    if (!d.stratum || _DESC_KNOWN.stratum.indexOf(d.stratum) < 0) d.stratum = _descStratum(cls);
+    // 开放词表三栏：缺则派生·有则尊重（含表外原词）
+    if (!d.fiscalStatus) d.fiscalStatus = _descFiscal(cls);
+    if (!d.economicBase) d.economicBase = _descEconBase(cls);
+    if (!d.unrestArchetype) d.unrestArchetype = _descUnrest(cls, d.stratum, bucketOf(cls));
+    // 待补账：开放栏 novel 标签（表外）记 ledger
+    var ledger = root && (root._descriptorLedger = root._descriptorLedger || []);
+    if (ledger) {
+      ['fiscalStatus', 'unrestArchetype'].forEach(function(field) {
+        var v = d[field];
+        if (v && _DESC_KNOWN[field] && _DESC_KNOWN[field].indexOf(v) < 0) {
+          if (!d._adjudicated) d._needsAdjudication = true;   // ⑤·表外 novel 标签→交 secondary-LLM 裁(归一通用词表)·已裁过不重裁
+          var hit = ledger.filter(function(e) { return e.field === field && e.tag === v; })[0];
+          if (hit) hit.count++; else ledger.push({ field: field, tag: v, count: 1, firstClass: cls.name || '' });
+        }
+      });
+    }
+    d._reconciled = true;
+    cls.descriptor = d;
+    return d;
+  }
+
+  // ⑤·E 现生管线「硬骨头升 secondary-LLM 裁」的结果落地（纯逻辑·可 smoke·AI 调用在 apply 层）：
+  //   把 secondary-LLM 归一出的通用词表标签采用为 canonical（表外原词存 _raw_*·开放词表「留原词」）；
+  //   非法/不在词表的值不采用（保确定性兜底）；置 _adjudicated 止重裁。返 applied 布尔。
+  function applyAdjudicatedDescriptor(cls, parsed) {
+    if (!cls || !cls.descriptor || !parsed || typeof parsed !== 'object') return false;
+    var d = cls.descriptor, applied = false;
+    if (parsed.stratum && _DESC_KNOWN.stratum.indexOf(parsed.stratum) >= 0 && parsed.stratum !== d.stratum) { d.stratum = parsed.stratum; applied = true; }
+    ['fiscalStatus', 'unrestArchetype'].forEach(function(field) {
+      var val = parsed[field];
+      if (val && _DESC_KNOWN[field] && _DESC_KNOWN[field].indexOf(val) >= 0 && val !== d[field]) {
+        if (d[field] && _DESC_KNOWN[field].indexOf(d[field]) < 0) d['_raw_' + field] = d[field];   // 表外原词留档
+        d[field] = val; applied = true;
+      }
+    });
+    d._adjudicated = true; d._needsAdjudication = false;
+    return applied;
   }
 
   // ── 结构基线：实况 → 各阶层「应然势位」 ──
@@ -285,14 +377,23 @@
     return changed;
   }
 
-  // ── 稳定器：满意度向结构基线缓变（闸外恢复通道·近账可查） ──
+  // 升米恩斗米仇：境遇恶化（gap<0·满意度高于实况→向下修正）激进快，回升（gap>0·实况好转）信任慢。
+  // 不对称缓变，替代旧对称 ×0.12/±cap。rate/cap 日后可移入 engineConstants 调参。
+  function asymDrift(gap, baseCap) {
+    if (!isFinite(gap) || gap === 0) return 0;
+    if (gap < 0) return clamp(gap * 0.18, -baseCap * 1.6, 0);   // 恶化向：快
+    return clamp(gap * 0.08, 0, baseCap * 0.75);                 // 回升向：慢
+  }
+
+  // ── 稳定器：满意度向结构基线缓变（闸外恢复通道·近账可查·不对称：恶化快/回升慢） ──
   function tickClassDrift(GM, cls, inputs, turn) {
     var sb = structuralBaseline(cls, inputs);
     cls._structBaseline = sb.baseline;
     cls._structParts = sb.parts.slice(0, 4);
     var sat = Number(cls.satisfaction);
     if (!isFinite(sat)) return 0;
-    var drift = clamp((sb.baseline - sat) * 0.12, -1.2, 1.2);
+    var drift = asymDrift(sb.baseline - sat, 1.2);
+    cls._lastDrift = drift;   // 供乱民层(B)读「本回合骤跌」做急性恶化信号
     if (Math.abs(drift) < 0.05) return 0;
     cls.satisfaction = round2(clamp(sat + drift, 0, 100));
     if (!Array.isArray(cls._satLedger)) cls._satLedger = [];
@@ -378,10 +479,19 @@
       var sb = structuralBaseline(cls, li || inputs);
       var cur = Number(v._satLocal != null ? v._satLocal : v.satisfaction);
       if (!isFinite(cur)) cur = numOr(cls.satisfaction, 50);
-      var drift = clamp((sb.baseline - cur) * 0.12, -1.5, 1.5);
+      var drift = asymDrift(sb.baseline - cur, 1.5);
       v._satLocal = round2(clamp(cur + drift, 0, 100));
       v.satisfaction = Math.round(v._satLocal);
       v._structBaseline = sb.baseline;
+      v._lastDrift = round2(drift);
+      // ④·per-region radicalFrac（地域化乱民蓄水·2026-06-17）：本地满意度 + 急性骤跌驱动·快激进(≤0.12)/慢平复(≤0.04)
+      //   同 national tickClassRadical 动力学（不含 agenda/bandwagon·那是全局政治项）；national cls._radicalFrac 仍由 tickClassRadical 独算·此为附加地域分辨率（C4 真跨省凝聚据此）。
+      var _vsc = clamp((48 - v._satLocal) / 48, 0, 1);
+      var _vw = clamp(-(drift || 0) / 4, 0, 0.3);
+      var _vp = clamp(_vsc * 0.7 + _vw, 0, 1);
+      var _vcur = Number(v._radicalFrac); if (!isFinite(_vcur)) _vcur = round2(clamp(_vsc * 0.4, 0, 1));
+      var _vd = _vp - _vcur; var _vstep = _vd > 0 ? Math.min(_vd, 0.12) : Math.max(_vd, -0.04);
+      v._radicalFrac = round2(clamp(_vcur + _vstep, 0, 1));
       if (Math.abs(drift) >= 0.05) moved++;
     });
     return moved;
@@ -458,22 +568,92 @@
   }
 
   // ── 总 tick：endturn-core 挂载 ──
+  // ── 乱民层（B·2026-06-16）：满意度与民变之间的政治蓄水池 ──
+  // _radicalFrac（0..1）由「低满意度均衡 + 急性恶化(本回合骤跌·读 _lastDrift) + 政治边缘化(未得偿高急议程) + 上行受阻(科举通道塞·G 刀)」推高，
+  // 快激进、慢平复（升米恩斗米仇的政治版）。挂 GM.classes 侧；C 刀再经 resolvePopulationKeys 摊到人口格子驱动流民。
+  function agendaUrgencyLoad(cls) {
+    var items = cls && cls._agenda && Array.isArray(cls._agenda.items) ? cls._agenda.items : [];
+    var load = 0;
+    for (var i = 0; i < items.length; i += 1) {
+      var it = items[i];
+      if (!it || it.kind === 'ai') continue;   // AI 补充槽不计政治边缘化
+      var u = Number(it.urgency) || 1;
+      load += u >= 3 ? 0.25 : (u >= 2 ? 0.12 : 0.05);
+    }
+    return clamp(load, 0, 0.6);
+  }
+
+  function tickClassRadical(GM, cls, inputs, turn) {
+    var sat = Number(cls && cls.satisfaction);
+    if (!isFinite(sat)) return undefined;
+    var satComp = clamp((48 - sat) / 48, 0, 1);                          // ① 低满意度均衡乱民
+    var worsenComp = clamp(-(Number(cls._lastDrift) || 0) / 4, 0, 0.3);  // ② 急性恶化（本回合满意度骤跌）
+    var agendaComp = agendaUrgencyLoad(cls);                             // ③ 政治边缘化（未得偿高急议程）
+    var aspirationComp = clamp(Number(cls._aspirationBlock) || 0, 0, 0.5); // ⑤ 上行受阻（科举通道塞·范进式怨望·G 刀于结案注入·本函数下方逐回合衰减）
+    // ④ 墙头草/士绅离心：皇威低（王朝可见倾危）→ 激进加速，高 clout 阶层（权贵）离心更烈（树倒猢狲散·闭合死亡螺旋）
+    var hw = (GM && GM.huangwei && isFinite(Number(GM.huangwei.index))) ? Number(GM.huangwei.index) : 100;
+    var bandwagon = hw < 45 ? clamp((45 - hw) / 45, 0, 1) * 0.5 * ((CLOUT_BUCKET_W[bucketOf(cls)] || 1.0) / 2.2) : 0;
+    var pressure = clamp(satComp * 0.7 + worsenComp + agendaComp + bandwagon + aspirationComp, 0, 1);
+    var cur = Number(cls._radicalFrac);
+    if (!isFinite(cur)) cur = round2(clamp(satComp * 0.4, 0, 1));        // 首回合播种（苦难阶层非0）
+    var d = pressure - cur;
+    var step = d > 0 ? Math.min(d, 0.12) : Math.max(d, -0.04);           // 快激进 / 慢平复
+    cls._radicalFrac = round2(clamp(cur + step, 0, 1));
+    cls._radicalPressure = round2(pressure);
+    if (cls._aspirationBlock) cls._aspirationBlock = round2(Math.max(0, (Number(cls._aspirationBlock) || 0) - 0.04));  // 受阻怨望随时间自平复（不被新一科再塞则消退）
+    return cls._radicalFrac;
+  }
+
+  // ── §三D·合法性 clout 加权读模型（2026-06-16）──
+  // Vic3 合法性按政治权力加权（缙绅作乱 ≫ 等量农户）；现状 GM.minxin.trueIndex 是人口加权。
+  // 此处算 clout 加权满意度 + 与人口加权民心的背离旗标，作**只读信号**喂 LLM（不动刻意自由的皇威）。
+  var CLOUT_BUCKET_W = { governing: 2.2, military: 1.6, clergy: 1.2, trade: 1.1, agrarian: 1.0 };
+  function classClout(cls) {
+    var infl = Number(cls && cls.influence);
+    if (!isFinite(infl) || infl < 0) infl = 0;
+    return infl * (CLOUT_BUCKET_W[bucketOf(cls)] || 1.0);
+  }
+  function computeLegitimacy(GM) {
+    var classes = toArray(GM.classes).filter(function(c) { return c && (c.name || c.className) && isFinite(Number(c.satisfaction)); });
+    if (!classes.length) return null;
+    var sumCS = 0, sumC = 0;
+    classes.forEach(function(cls) {
+      var sat = clamp(Number(cls.satisfaction), 0, 100);
+      var rf = Number(cls._radicalFrac) || 0;
+      var loyalty = clamp(sat - rf * 60, 0, 100);   // 乱民化拉低忠诚：高 radicalFrac 阶层纵满意度尚可亦不忠（士绅离心即在此现形）
+      var clout = classClout(cls);
+      sumCS += loyalty * clout; sumC += clout;
+    });
+    var cloutIdx = sumC > 0 ? round2(sumCS / sumC) : round2(sumCS / Math.max(1, classes.length));
+    var popIdx = (GM.minxin && isFinite(Number(GM.minxin.trueIndex))) ? round2(Number(GM.minxin.trueIndex)) : null;
+    var div = (popIdx != null) ? round2(cloutIdx - popIdx) : 0;
+    var flag = '';
+    if (popIdx != null) flag = div <= -12 ? '缙绅离心' : (div >= 12 ? '民怨上达' : '相安');
+    var leg = { clout: cloutIdx, pop: popIdx, divergence: div, flag: flag, turn: numOr(GM.turn, 0) };
+    GM._legitimacy = leg;
+    return leg;
+  }
+
   function tick(GM, P) {
     GM = GM || (typeof global.GM === 'object' ? global.GM : {});
     P = P || (typeof global.P === 'object' ? global.P : {});
-    var out = { classes: 0, drifted: 0, agendaChanged: 0, party: null };
+    var out = { classes: 0, drifted: 0, agendaChanged: 0, radical: 0, party: null };
     var turn = numOr(GM.turn, 0);
     var classes = toArray(GM.classes).filter(function(c) { return c && typeof c === 'object' && (c.name || c.className); });
     if (classes.length) {
       var inputs = structuralInputs(GM, P);
       classes.forEach(function(cls) {
         out.classes++;
+        if (!cls.descriptor || !cls.descriptor._reconciled) reconcileClassDescriptor(cls, GM);   // E·描述符对账（sticky·首遇固化·补缺）
         if (tickClassAgenda(GM, cls, inputs, turn)) out.agendaChanged++;
         if (tickClassDrift(GM, cls, inputs, turn)) out.drifted++;
+        var rf = tickClassRadical(GM, cls, inputs, turn);
+        if (isFinite(rf) && rf >= 0.1) out.radical++;
         out.regionalMoved = (out.regionalMoved || 0) + tickClassRegional(GM, P, cls, inputs, turn);
       });
     }
     out.party = syncPartyTruth(GM);
+    out.legitimacy = computeLegitimacy(GM);
     GM._socialFoundationLastTick = { turn: turn, classes: out.classes, drifted: out.drifted, agendaChanged: out.agendaChanged, party: out.party };
     return out;
   }
@@ -489,6 +669,10 @@
     localInputsFor: localInputsFor,
     applyRegionalDelta: applyRegionalDelta,
     syncPartyTruth: syncPartyTruth,
+    tickClassRadical: tickClassRadical,
+    computeLegitimacy: computeLegitimacy,
+    reconcileClassDescriptor: reconcileClassDescriptor,
+    applyAdjudicatedDescriptor: applyAdjudicatedDescriptor,
     tick: tick
   };
   TM.SocialFoundation = api;

@@ -451,6 +451,8 @@
         army.strength = newS;
         if ((army._createdTurn === (G.turn || 0)) || /募|征兵|招兵|招募|抽丁|建军|扩编/.test(String(reason || '') + ' ' + String(change.action || ''))) {
           _chargeRecruitment(G, army, delta, change, reason, opts.source); // 募兵性增兵才扣（调防/合军/援军不扣）
+          // 新兵稀释累计历练(§12.3·老兵金贵)·丁口/募兵两源共用此 delta apply·只对募兵性增兵(非调防/合军老兵)·flag-inert(veterancy=0时无操作·零变更)
+          try { var _AU = (typeof window !== 'undefined' && window.TMArmyUnits) || (typeof global !== 'undefined' && global.TMArmyUnits); if (_AU && typeof _AU.diluteVeterancy === 'function') _AU.diluteVeterancy(army, oldS, delta); } catch (_dv) {}
         }
         if (typeof opts.recordChange === 'function') opts.recordChange('military', army.name || name, 'soldiers', oldS, newS, reason);
         G._turnReport.push({ type:'military', armyName:army.name || name, field:'soldiers', old:oldS, new:newS, delta:delta, reason:reason, source:opts.source || '', turn:G.turn||0 });

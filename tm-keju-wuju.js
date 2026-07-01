@@ -1007,38 +1007,37 @@
       bySurname[surname].push(name);
     });
     Object.keys(bySurname).forEach(function(s) {
-      if (bySurname[s].length >= 2) {
-        var clanName = s + '家';
-        if (!GM._martialClans) GM._martialClans = {};
-        if (!GM._martialClans[clanName]) {
-          GM._martialClans[clanName] = {
-            surname: s,
-            members: bySurname[s].slice(),
-            formedYear: GM.year || 0
-          };
-          // 给 members mark _wuPartyLineage
-          if (Array.isArray(GM.chars)) {
-            bySurname[s].forEach(function(nm) {
-              var ch = GM.chars.find(function(c) { return c && c.name === nm; });
-              if (ch) ch._wuPartyLineage = clanName;
-            });
-          }
-          if (Array.isArray(GM._chronicle)) {
-            GM._chronicle.push({
-              turn: GM.turn || 1,
-              type: 'martial_clan_formed',
-              text: (GM.year || 0) + '年·' + clanName + '将形成·' + bySurname[s].length + ' 人·' +
-                    (s === '杨' ? '杨家将复出' : (s === '岳' ? '岳家军再续' : (clanName + '世为武勋'))),
-              tags: ['科举', '武举', '世家']
-            });
-          }
-        } else {
-          // 更新 members (累加)
-          var existing = GM._martialClans[clanName];
+      if (bySurname[s].length < 2) return;
+      var clanName = s + '家';
+      if (!GM._martialClans) GM._martialClans = {};
+      if (!GM._martialClans[clanName]) {
+        GM._martialClans[clanName] = {
+          surname: s,
+          members: bySurname[s].slice(),
+          formedYear: GM.year || 0
+        };
+        // 给 members mark _wuPartyLineage
+        if (Array.isArray(GM.chars)) {
           bySurname[s].forEach(function(nm) {
-            if (existing.members.indexOf(nm) < 0) existing.members.push(nm);
+            var ch = GM.chars.find(function(c) { return c && c.name === nm; });
+            if (ch) ch._wuPartyLineage = clanName;
           });
         }
+        if (Array.isArray(GM._chronicle)) {
+          GM._chronicle.push({
+            turn: GM.turn || 1,
+            type: 'martial_clan_formed',
+            text: (GM.year || 0) + '年·' + clanName + '将形成·' + bySurname[s].length + ' 人·' +
+                  (s === '杨' ? '杨家将复出' : (s === '岳' ? '岳家军再续' : (clanName + '世为武勋'))),
+            tags: ['科举', '武举', '世家']
+          });
+        }
+      } else {
+        // 更新 members (累加)
+        var existing = GM._martialClans[clanName];
+        bySurname[s].forEach(function(nm) {
+          if (existing.members.indexOf(nm) < 0) existing.members.push(nm);
+        });
       }
     });
   }

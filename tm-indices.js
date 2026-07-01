@@ -120,6 +120,84 @@ function _tmGetCurrentScenarioRaw() {
   return null;
 }
 
+// 建筑双账只读兼容层：旧账 GM.buildings 仍服务老经济结算；新账 division.buildings[] 是现行营造主链。
+// 展示/AI 上下文读取时合并两者，避免新建筑在旧面板里“隐身”；不把新账喂给旧建筑产出公式，防止重复收益。
+function _tmAdminBuildingSources() {
+  var srcs = [];
+  function add(ah) {
+    if (!ah || typeof ah !== 'object' || !Object.keys(ah).length) return;
+    if (srcs.indexOf(ah) >= 0) return;
+    srcs.push(ah);
+  }
+  try { if (typeof P !== 'undefined' && P) add(P.adminHierarchy); } catch (_) {}
+  try { if (typeof GM !== 'undefined' && GM) add(GM.adminHierarchy); } catch (_) {}
+  return srcs;
+}
+
+function _tmWalkAdminBuildings(visitor) {
+  var seenDivs = [];
+  function walkNode(node) {
+    if (!node || typeof node !== 'object') return;
+    if (seenDivs.indexOf(node) >= 0) return;
+    seenDivs.push(node);
+    if ((node.name || node.id) && Array.isArray(node.buildings) && node.buildings.length) visitor(node);
+    ['divisions', 'children', 'subDivisions', 'subs'].forEach(function (k) {
+      var list = node[k];
+      if (Array.isArray(list)) list.forEach(walkNode);
+    });
+  }
+  _tmAdminBuildingSources().forEach(function (ah) {
+    if (Array.isArray(ah)) ah.forEach(walkNode);
+    else if (ah && (ah.name || ah.id || ah.divisions || ah.children || ah.subDivisions || ah.subs)) walkNode(ah);
+    else Object.keys(ah).forEach(function (k) { walkNode(ah[k]); });
+  });
+}
+
+function _tmBuildingKey(b) {
+  if (!b) return '';
+  return String(b.territory || b._territory || '') + '|' + String(b.type || b.name || '');
+}
+
+function _tmCloneDivisionBuilding(b, div) {
+  var out = {};
+  Object.keys(b || {}).forEach(function (k) { out[k] = b[k]; });
+  out.territory = out.territory || (div && div.name) || '';
+  out._divisionBuilding = true;
+  return out;
+}
+
+function getAllBuildingsCompat() {
+  var out = [];
+  var seen = {};
+  try {
+    if (typeof GM !== 'undefined' && GM && Array.isArray(GM.buildings)) {
+      GM.buildings.forEach(function (b) {
+        if (!b) return;
+        out.push(b);
+        seen[_tmBuildingKey(b)] = true;
+        if (b.name) seen[String(b.territory || '') + '|' + String(b.name)] = true;
+      });
+    }
+  } catch (_) {}
+  _tmWalkAdminBuildings(function (div) {
+    (div.buildings || []).forEach(function (b) {
+      if (!b) return;
+      var view = _tmCloneDivisionBuilding(b, div);
+      var k = _tmBuildingKey(view);
+      if (seen[k]) return;
+      seen[k] = true;
+      if (view.name) seen[String(view.territory || '') + '|' + String(view.name)] = true;
+      out.push(view);
+    });
+  });
+  return out;
+}
+
+function getTerritoryBuildingsCompat(territory) {
+  var t = String(territory || '');
+  return getAllBuildingsCompat().filter(function (b) { return b && String(b.territory || '') === t; });
+}
+
 function _tmPlayerCharAliases() {
   var out = {};
   var ch = _tmFindPlayerCharRaw();

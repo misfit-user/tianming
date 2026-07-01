@@ -460,6 +460,16 @@ var AccountingSystem = (function() {
   }
 
   /**
+   * 还原账本到指定快照（供 agent 回滚·撤销引擎结算对本 module 单例账本的累加）。
+   * 账本活在 GM 之外的闭包·deepClone(GM) 的回滚盖不到它·不还原则 LLM 模式重跑结算会二次 push → 本回合收支双记。
+   */
+  function restoreLedger(snap) {
+    if (snap && typeof snap === 'object') {
+      ledger = deepClone(snap);
+    }
+  }
+
+  /**
    * 验证账本
    */
   function validateLedger() {
@@ -490,6 +500,7 @@ var AccountingSystem = (function() {
     addIncome: addIncome,
     addExpense: addExpense,
     getLedger: getLedger,
+    restoreLedger: restoreLedger,
     validateLedger: validateLedger
   };
 })();

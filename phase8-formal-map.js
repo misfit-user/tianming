@@ -759,6 +759,28 @@
     );
   }
 
+  // ★地方主官绑定官职持有人:剧本里 division.governor 是死字段(初始设定·任命/赴任/死亡都不更新)。
+  // 按区划治理官职 officialPosition 在 GM.chars 找在世持有人——char.title 常为净官职(如「顺天巡抚」与
+  // officialPosition 精确等值)·officialTitle 含兼衔(如「顺天巡抚·都察院右副都御史」)故以起头/包含匹配。
+  function liveRegionGovernor(officePosition){
+    if (!officePosition || typeof window === 'undefined' || !window.GM || !Array.isArray(GM.chars)) return null;
+    var op = String(officePosition).trim();
+    if (!op) return null;
+    // ★唯一匹配才派生(朝代中立·不硬编泛称表):专称如「顺天巡抚」全场唯一→派生;泛称如「知府」多人匹配→歧义→null→保静态。
+    var hit = null;
+    for (var i = 0; i < GM.chars.length; i += 1) {
+      var c = GM.chars[i];
+      if (!c || c.alive === false || c.dead === true) continue;
+      var title = String(c.title || '').trim();
+      var ot = String(c.officialTitle || '').trim();
+      if (title === op || (ot && (ot === op || ot.split('·')[0].trim() === op || ot.indexOf(op) === 0))) {
+        if (hit) return null;   // 第二个匹配=泛称歧义·不派生
+        hit = c;
+      }
+    }
+    return hit;
+  }
+
   function ownerKey(r){
     if (!r) return '';
     var liveOwner = liveRegionOwner(r);
@@ -1359,6 +1381,17 @@
     _syncScaleLevelFromZoom();  // 阶段3·缩放跨阈值自动切层级(CK3)
   }
 
+  // 拖拽性能（治拖拽卡顿）：把 applyMapTransform（含 DOM 写 + _syncScaleLevelFromZoom）rAF 节流·
+  // 一帧多次 pointermove 合并为一次 transform 应用·避免每次指针事件都 setAttribute+跨阈值检查。
+  var _mapTransformRaf = 0;
+  function scheduleMapTransform(){
+    if (_mapTransformRaf) return;
+    _mapTransformRaf = (window.requestAnimationFrame || function(cb){ return setTimeout(cb, 16); })(function(){
+      _mapTransformRaf = 0;
+      applyMapTransform();
+    });
+  }
+
   function regionPathFromPoint(e){
     if (!e) return null;
     var direct = e.target && e.target.closest ? e.target.closest('.tmf-region,.ming-region') : null;
@@ -1546,21 +1579,24 @@
       if (!state.drag || state.drag.id !== e.pointerId) return;
       var map = getMapData();
       if (!map) return;
+      // 每次读 rect：stage 的 rect 不受 world 组 transform 影响(不会 layout thrash)·且拖拽中窗口/容器 resize 时坐标仍准。
+      // 性能收益全在下方 applyMapTransform 的 rAF 节流·不靠缓存 rect。
       var rect = stage.getBoundingClientRect();
       var dx = (e.clientX - state.drag.x) / rect.width * Number(map.width || 1200);
       var dy = (e.clientY - state.drag.y) / rect.height * Number(map.height || 720);
-      if (Math.abs(dx) + Math.abs(dy) > 2) {
+      if (!state.drag.moved && Math.abs(dx) + Math.abs(dy) > 2) { // 只在首次越过阈值时清一次选中·非每帧
         state.drag.moved = true;
         clearMapSelection();
       }
       state.mapView.tx = state.drag.tx + dx;
       state.mapView.ty = state.drag.ty + dy;
-      applyMapTransform();
+      scheduleMapTransform(); // rAF 节流：一帧多次 pointermove 合并为一次 transform 应用（去卡顿）
     });
     stage.addEventListener('pointerup', function(e){
       if (state.drag && state.drag.id === e.pointerId) {
         state.dragSuppressClick = state.drag.moved;
         state.drag = null;
+        applyMapTransform(); // flush 最终位置（rAF 节流下最后一帧可能尚未应用）
         stage.classList.remove('dragging');
         clearMapSelection();
         setTimeout(function(){ state.dragSuppressClick = false; }, 0);
@@ -2210,6 +2246,19 @@
       data.officialPosition = liveOffice;
       data.office = liveOffice;
     }
+    // ★主官绑定官职:按治理官职找在世持有人(权威·随任命/死亡而变)·剧本静态 governor(死字段)降为兜底。
+    var _officePos = firstValue(data.officialPosition, liveOffice);
+    var _liveGov = _officePos ? liveRegionGovernor(_officePos) : null;
+    if (_liveGov) {
+      data.governor = _liveGov.name; data.official = _liveGov.name;
+      data.governorChar = _liveGov.name; data.governorVacant = false;
+    } else {
+      var _sg = firstValue(data.governor, data.official);
+      var _sc = (hasValue(_sg) && typeof findCharByName === 'function') ? findCharByName(_sg) : null;
+      if (_sc && (_sc.alive === false || _sc.dead === true)) { data.governor = ''; data.official = ''; data.governorVacant = true; }   // 静态主官已殁→出缺(死字段曾显死人)
+      else if (!hasValue(_sg) && hasValue(_officePos)) { data.governorVacant = true; }                                                  // 有治理官职却无人→出缺
+      else if (_sc) { data.governorChar = _sc.name; }                                                                                   // 静态主官在世(官职串格式异)→兜底保留+可取属性
+    }
     var pop = assignKnown({},
       plainObject(base.populationDetail),
       plainObject(liveDivision && liveDivision.populationDetail),
@@ -2738,10 +2787,11 @@
         if (el) hideBkCause();
       });
       // 兴造录入诏令后：方志开着就重渲营造志（候诏卡即时可见）并滚到该卷
-      document.addEventListener('tm-yingzao-submitted', function(){
+      document.addEventListener('tm-yingzao-submitted', function(e){
+        var detail = (e && e.detail) || {};
         var p = document.getElementById('ppop');
         if (!p || p.dataset.panelKind !== 'region' || p.className.indexOf('show') < 0) return;
-        var r = findRegion(p.dataset.regionId || '');
+        var r = findRegion(p.dataset.regionId || '') || findRegion(detail.regionId || detail.divName || '');
         if (!r) return;
         openRegionDossier(r);
         setTimeout(function(){
@@ -2817,6 +2867,33 @@
       return '<span class="bk-chip"><b>' + esc(row[0]) + '</b>' + esc(ppValue(row[1])) + '</span>';
     }).join('');
     return html ? '<div class="bk-chips">' + html + '</div>' : '';
+  }
+  // 年龄结构 {young/ding/old:{count,ratio}} → "少壮 X / 丁壮 X / 老弱 X"(专用格式化·绕开泛型 dump·免 old 被误译"旧值"+count/ratio 吐原文)
+  function fmtByAge(a){
+    if (!a || typeof a !== 'object' || Array.isArray(a)) return a;
+    var AGE = { infant: '婴孩', child: '幼弱', young: '少壮', ding: '丁壮', adult: '丁壮', old: '老弱', elder: '耆老' };
+    var order = ['infant', 'child', 'young', 'ding', 'adult', 'old', 'elder'];
+    var keys = order.filter(function(k){ return a[k] != null; });
+    Object.keys(a).forEach(function(k){ if (keys.indexOf(k) < 0 && a[k] != null) keys.push(k); });
+    var parts = [];
+    keys.forEach(function(k){
+      var g = a[k], cnt = (g && typeof g === 'object') ? g.count : g;
+      if (cnt == null || cnt === '') return;
+      parts.push((AGE[k] || fieldLabel(k)) + ' ' + mapNum(cnt));
+    });
+    return parts.length ? parts.join(' / ') : a;
+  }
+  // 聚落结构 {fang/shi/zhen:{mouths,households}} → "坊 X / 市 X / 镇 X"(专用格式化·免拼音键+口数重复)
+  function fmtBySettlement(s){
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return s;
+    var SET = { fang: '坊', shi: '市', zhen: '镇', cun: '村', xiang: '乡', li: '里', du: '都', tun: '屯', bao: '堡', wei: '卫', suo: '所', cheng: '城', guan: '关' };
+    var parts = [];
+    Object.keys(s).forEach(function(k){
+      var v = s[k], m = (v && typeof v === 'object') ? (v.mouths != null ? v.mouths : (v.population != null ? v.population : v.count)) : v;
+      if (m == null || m === '') return;
+      parts.push((SET[k] || fieldLabel(k)) + ' ' + mapNum(m));
+    });
+    return parts.length ? parts.join(' / ') : s;
   }
   function bkFold(text){
     if (!hasDisplayValue(text)) return '';
@@ -3017,8 +3094,31 @@
     var P = window.P || {};
     var divName = firstValue(live && live.name, r && r.name, r && r.title, '');
     var cards = [];
+    var seenBuildCards = {};
+    function buildCardKey(bld){
+      if (!bld) return '';
+      return String(bld.territory || bld._territory || divName || '') + '|' + String(bld.type || bld.name || '');
+    }
+    function pushBuildCard(bld){
+      if (!bld) return;
+      var k = buildCardKey(bld);
+      if (k && seenBuildCards[k]) return;
+      if (k) seenBuildCards[k] = true;
+      cards.push(bkYeCard(bld, P));
+    }
     if (live && Array.isArray(live.buildings) && live.buildings.length) {
-      live.buildings.forEach(function(bld){ if (bld) cards.push(bkYeCard(bld, P)); });
+      live.buildings.forEach(pushBuildCard);
+    }
+    if (typeof getTerritoryBuildingsCompat === 'function') {
+      var compatNames = [];
+      [divName, live && live.name, r && r.name, r && r.title, r && r.officialName].forEach(function(v){
+        if (!hasDisplayValue(v)) return;
+        v = String(v);
+        if (compatNames.indexOf(v) < 0) compatNames.push(v);
+      });
+      compatNames.forEach(function(name){
+        try { getTerritoryBuildingsCompat(name).forEach(pushBuildCard); } catch (_) {}
+      });
     }
     // 诏令建议库中候颁的本地营造案（_dfBuildModal 推入·source='工程'）
     var gm = window.GM || {};
@@ -3058,7 +3158,15 @@
       name: regionTitle(r), sub: regionLevel(r), desc: firstValue(data.description, r && r.description),
       pills: [
         hasDisplayValue(ownerName(r)) ? '<span class="bk-pill owner" data-bk-open-faction="' + attr(oKey) + '" title="展其谱牒"><span class="dot"></span>隶 <b>' + esc(ownerName(r)) + '</b></span>' : '',
-        hasDisplayValue(firstValue(data.governor, data.official)) ? '<span class="bk-pill">' + esc(firstValue(data.officialPosition, '主官')) + ' <b>' + esc(firstValue(data.governor, data.official)) + '</b></span>' : '',
+        (function(){
+          var op = esc(firstValue(data.officialPosition, '主官'));
+          if (data.governorVacant) return '<span class="bk-pill" style="color:var(--vermillion-400,#c0563a);border-color:var(--vermillion-400,#c0563a);" title="该地治理官职出缺·待补任">' + op + ' <b>空缺·待补</b></span>';
+          var gn = firstValue(data.governor, data.official);
+          if (!hasDisplayValue(gn)) return '';
+          var gc = (data.governorChar && typeof findCharByName === 'function') ? findCharByName(data.governorChar) : null;
+          var adm = (gc && hasDisplayValue(gc.administration)) ? ' <span style="opacity:.65;font-size:0.92em;">政' + esc(gc.administration) + '</span>' : '';
+          return '<span class="bk-pill" title="' + op + ' · 当任主官(绑官职持有人·随任免更新)">' + op + ' <b>' + esc(gn) + '</b>' + adm + '</span>';
+        })(),
         hasDisplayValue(firstValue(data.terrain, r && r.terrain)) ? '<span class="bk-pill">' + esc(firstValue(data.terrain, r && r.terrain)) + '</span>' : '',
         hasDisplayValue(data.taxLevel) ? '<span class="bk-pill">税 <b>' + esc(data.taxLevel) + '</b></span>' : ''
       ]
@@ -3083,8 +3191,8 @@
       (hasDisplayValue(data.development) && String(data.development) !== String(firstValue(data.prosperity, r && r.prosperity)) ? bkRow('发展', data.development) : ''),  // P2-2·同上
       bkRow('不稳', data.unrest, 'zhu')
     ]) + bkChips([
-      ['性别', data.byGender], ['年龄', data.byAge], ['族群', data.byEthnicity],
-      ['信仰', data.byFaith], ['聚落', data.bySettlement], ['宗教场所', data.religiousSites]
+      ['性别', data.byGender], ['年龄', fmtByAge(data.byAge)], ['族群', data.byEthnicity],
+      ['信仰', data.byFaith], ['聚落', fmtBySettlement(data.bySettlement)], ['宗教场所', data.religiousSites]
     ]) + cpHtml;
     var caifu = bkLan([
       bkRow('应征', b.fiscal.claimedRevenue),
@@ -3132,7 +3240,7 @@
       bkRow('战略价值', data.strategicValue)
     ], true);
     var zhiguan = bkLan([
-      bkRow('主官', firstValue(data.governor, data.official)),
+      bkRow('主官', data.governorVacant ? '空缺·待补' : firstValue(data.governor, data.official), data.governorVacant ? 'zhu' : ''),
       bkRow('官职', data.officialPosition),
       bkRow('官缺', firstValue(data.officeVacancy, data.vacancy), null, 'vacancy'),
       bkRow('贪腐', corr, 'zhu', 'corr'),

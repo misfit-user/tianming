@@ -142,8 +142,10 @@
     if (raw.corruption != null) out.corruption = num(raw.corruption, 0);
     if (raw.upkeepPerTurn != null) out.upkeepPerTurn = Math.max(0, num(raw.upkeepPerTurn, 0));
     if (raw.label) out.label = String(raw.label);
+    // S2·制度性建筑：talentSource 透传为合法 effectsStructured 字段（不写区划叶，路由至 TalentBuildingBridge；年毕业数费效封顶在 bridge）
+    if (raw.talentSource && typeof raw.talentSource === 'object') out.talentSource = raw.talentSource;
     if (dropped.length) { try { console.warn('[building-works] 自拟效果越界已削/弃:', dropped.join('、')); } catch (_) {} }
-    return (out.pct || out.abs || out.minxin || out.corruption || out.upkeepPerTurn != null || out.label) ? out : null;
+    return (out.pct || out.abs || out.minxin || out.corruption || out.upkeepPerTurn != null || out.label || out.talentSource) ? out : null;
   }
 
   // 解析一座建筑的「每级效果」。返回 { pct, base, abs, minxin, corruption, label }
@@ -325,12 +327,23 @@
     if (typeof _buildingPolitics === 'function') {
       try { _buildingPolitics(div, bld, P, GM); } catch (_bpE) {}
     }
+    // S2·制度性建筑：完工注入人才范式渗透引擎（含 talentSource 才路由；flag talentCohortEnabled 默认关 → no-op）
+    try {
+      var _TBB = (typeof TM !== 'undefined' && TM.TalentBuildingBridge) || (typeof window !== 'undefined' && window.TM && window.TM.TalentBuildingBridge);
+      if (_TBB && typeof _TBB.onComplete === 'function') _TBB.onComplete(div, bld, _typeDef, P, GM);
+    } catch (_tbbE) {}
     return true;
   }
 
   // 拆毁回退（destroy 路径调用）：按 appliedDelta 逐笔反向 + 撤工成之利状态
   function revertBuilding(div, bld) {
     if (div && bld) revokeBuildingStatus(div, bld, (typeof window !== 'undefined' && window.GM) || null);
+    // S2·制度性建筑：拆毁撤回人才源（须在 appliedDelta 守卫前——纯制度性建筑无 appliedDelta 也要撤源；可逆/幂等在 bridge）
+    try {
+      var _TBB2 = (typeof TM !== 'undefined' && TM.TalentBuildingBridge) || (typeof window !== 'undefined' && window.TM && window.TM.TalentBuildingBridge);
+      var _gmR = (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
+      if (_TBB2 && typeof _TBB2.onRevert === 'function') _TBB2.onRevert(div, bld, _gmR);
+    } catch (_tbbRE) {}
     if (!div || !bld || !bld.appliedDelta) return false;
     var applied = bld.appliedDelta;
     Object.keys(applied).forEach(function (k) {

@@ -107,6 +107,11 @@ console.log(`[smoke] loaded ${loaded}/${scripts.length} (${failed} failed)`);
 try {
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'scenarios/tianqi7-1627.js'), 'utf8'), sandbox);
 } catch (e) { console.error('scenario load fail:', e.message); }
+// 官方剧本重建为「壳+快照」后，可玩花名册由 7MB 运行时快照平铺到 P.characters(sid 标记)；
+// index.html 用动态 <script> 注入它(非静态 src·上面正则扫不到)，故这里显式加载，复刻真游戏的快照应用。
+try {
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'data/scenario-supplements/tianqi7-official-runtime-snapshot.js'), 'utf8'), sandbox);
+} catch (e) { console.error('snapshot load fail:', e.message); }
 
 setTimeout(() => {
   try {

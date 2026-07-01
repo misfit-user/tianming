@@ -32,7 +32,7 @@ function assertIncludes(text, needle, msg) {
 }
 
 function fakeEl() {
-  return {classList:{add(){},remove(){},toggle(){},contains(){return false}},style:{},appendChild(c){return c},removeChild(c){return c},setAttribute(){},getAttribute(){return null},addEventListener(){},removeEventListener(){},querySelector(){return fakeEl()},querySelectorAll(){return[]},children:[],childNodes:[],innerHTML:'',textContent:'',value:'',dataset:{}};
+  return {classList:{add(){},remove(){},toggle(){},contains(){return false}},style:{},appendChild(c){return c},removeChild(c){return c},setAttribute(){},getAttribute(){return null},addEventListener(){},removeEventListener(){},querySelector(){return fakeEl()},querySelectorAll(){return[]},getBoundingClientRect(){return{top:0,left:0,bottom:0,right:0,width:0,height:0}},offsetWidth:0,offsetHeight:0,children:[],childNodes:[],innerHTML:'',textContent:'',value:'',dataset:{}};
 }
 const sandbox = {
   console, setTimeout, clearTimeout, setInterval, clearInterval,
@@ -59,6 +59,8 @@ while ((m = re.exec(html))) {
   try { vm.runInContext(fs.readFileSync(fp,'utf8'), sandbox, { filename: m[1] }); } catch(e) {}
 }
 try { vm.runInContext(fs.readFileSync(path.join(ROOT,'scenarios/tianqi7-1627.js'),'utf8'), sandbox); } catch(e) {}
+// 壳+快照:显式加载运行时快照,平铺官方花名册到 P.characters(sid)·复刻真游戏动态注入(静态正则扫不到)
+try { vm.runInContext(fs.readFileSync(path.join(ROOT,'data/scenario-supplements/tianqi7-official-runtime-snapshot.js'),'utf8'), sandbox); } catch(e) {}
 
 setTimeout(() => {
   try {

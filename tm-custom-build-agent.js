@@ -64,14 +64,40 @@
     return target;
   }
 
+  // ── S4·勘学统格局 + 士绅/旧学势力（供「教什么学/是否新范式/变革阻力」核议）──
+  //   全国学统：既有人才范式（旧学正统存量 / 新学渗透档·读 GM._talentCohorts·读不写）——
+  //     供 AI 判此校所教之「学」归入已有范式还是新立、并衡量旧学之庞大（数亿之国非几千新人能改变）。
+  //   本地士绅/风土：div 氛围字段（leadingGentry/specialCulture/localFaction·有则 surface）——供衡变革阻力。
+  function _talentScene(GM, div) {
+    var out = { established: [], emergent: [], gentry: [] };
+    var TC = root.TM && root.TM.TalentCohorts;
+    var st = GM && GM._talentCohorts;
+    if (TC && st && st.paradigms) {
+      var pen = (typeof TC.penetration === 'function') ? TC.penetration(GM, root.P || {}, null) : { byParadigm: {} };
+      Object.keys(st.paradigms).forEach(function (id) {
+        var p = st.paradigms[id]; if (!p) return;
+        if (p.kind === 'established') out.established.push({ label: p.label, stock: Math.round(_num(p.stock)) });
+        else out.emergent.push({ label: p.label, pen: pen.byParadigm[id] || 0, tier: (typeof TC.tierOf === 'function') ? TC.tierOf(pen.byParadigm[id] || 0) : '' });
+      });
+    }
+    if (div) {
+      if (div.leadingGentry) out.gentry.push(String(div.leadingGentry));
+      if (div.specialCulture) out.gentry.push(String(div.specialCulture));
+      if (div.localFaction) out.gentry.push(String(div.localFaction));
+    }
+    return out;
+  }
+
   // ── inspectRegion：勘此地真实营建条件（结构化 data + 人话 text）──
   //   地理(沿海/物产/田亩) · 现状(已建/城防/海防) · 军务(边警/驻军/战略价值/军压)
-  //   · 吏治(官缺/长官/民心) · 民力(丁口/口/承载) · 财力(地方库银/岁留用)
+  //   · 吏治(官缺/长官/民心) · 民力(丁口/口/承载) · 财力(地方库银/岁留用) · S4 学统格局(既有范式/士绅)
   function inspectRegion(divName, ctx) {
     ctx = ctx || {};
     var P = ctx.P || root.P || {};
+    var GM = ctx.GM || root.GM || null;
     var div = ctx.div || _findDivByName(P, divName);
     if (!div) return { ok: false, name: divName, text: '（未找到此地：' + divName + '·无从勘报，请按通则核议）', data: null };
+    var scene = _talentScene(GM, div);
     var eb = div.economyBase || {};
     var pd = div.populationDetail || {};
     var pt = (div.publicTreasury && div.publicTreasury.money) || {};
@@ -120,7 +146,8 @@
       fiscal: {
         localTreasury: _num(pt.stock != null ? pt.stock : pt.available),
         retainedBudget: _num(fd.retainedBudget)
-      }
+      },
+      talentScene: scene
     };
 
     var L = [];
@@ -136,6 +163,16 @@
     L.push('民力：丁口约 ' + data.population.ding + '·口 ' + data.population.mouths +
       (data.population.carryingCapacity != null ? ('·承载 ' + data.population.carryingCapacity) : ''));
     L.push('财力：地方库银约 ' + data.fiscal.localTreasury + '·岁留用约 ' + data.fiscal.retainedBudget);
+    // S4·学统格局（既有范式·供「教什么学/是否新范式」）+ 本地士绅（供「变革阻力」）
+    if (scene.established.length || scene.emergent.length || scene.gentry.length) {
+      var sl = '学统：';
+      if (scene.established.length) sl += '旧学正统 ' + scene.established.map(function (e) { return e.label + '(存量约' + e.stock + ')'; }).join('、');
+      if (scene.emergent.length) sl += (scene.established.length ? '；' : '') + '新学 ' + scene.emergent.map(function (e) { return e.label + '(' + e.tier + (e.pen ? '·' + (e.pen * 100).toFixed(1) + '%' : '') + ')'; }).join('、');
+      if (scene.gentry.length) sl += '；本地士绅/风土 ' + scene.gentry.join('/');
+      L.push(sl);
+    } else {
+      L.push('学统：尚无新学范式立籍（此校若开新学，乃首倡——可立新范式）');
+    }
     return { ok: true, name: div.name, text: L.join('\n'), data: data };
   }
 
@@ -152,6 +189,49 @@
         effectsStructured: {
           type: 'object',
           description: '结构化效果账·完工照此入账（judgedEffects 叙述不入账）。pct{白名单路径:小数}、abs{白名单路径:整数}、minxin(±2内)、corruption(±3内)、upkeepPerTurn(约造价2%/回合)。白名单：economyBase.{farmland,commerceVolume,commerceCoefficient,maritimeTradeVolume,saltProduction,mineralProduction,fishingProduction,horseProduction,postRelays,roadQuality,kejuQuota}、fortLevel、coastalDefense(海防档)、militaryRecruits、defenseBonus(边防工事档·降本地边警)、officialSupply(育才储官·补地方官缺)。名单外引擎丢弃。十两银修不出雄关——费效为度。'
+        },
+        globalRule: {
+          type: 'object',
+          description: '【全局之制·选填】仅当此工役非寻常钱粮工役，而在变更制度/风气/学统/社会结构时填（如实学馆/译书馆/算学馆/通商局/医学馆——为国持续输送某类人才、确立某种风气）。寻常仓/田/城/坊留空。此为持续生效之全局规则，不入钱粮账，潜移默化国是民风，且必招既得群体之阻力。',
+          properties: {
+            name: { type: 'string', description: '制名·中立古词（如「实学之制」「通商之制」「译书之制」），勿用朝代专名。' },
+            tendencies: {
+              type: 'array',
+              description: '此制确立的持续倾向（1-4 条）。key 取通用义：reform_success(改革推行)/tech_promotion(实学技艺推广)/shixue_recognition(实学为世所重)/commerce_open(通商开放)/talent_supply(才俊辈出)/orthodoxy(正统维护) 等，亦可据实另拟。一制至多 1 条 major。',
+              items: { type: 'object', properties: {
+                key: { type: 'string' },
+                label: { type: 'string', description: '人话(如「改革推行」)' },
+                mag: { type: 'string', description: '档：minor(渐)/moderate(颇)/major(大)', enum: ['minor', 'moderate', 'major'] }
+              }, required: ['key', 'label', 'mag'] }
+            },
+            resistance: {
+              type: 'object',
+              description: '此制招致之既得群体阻力（立新制几乎必有·勿讳言勿低估）。',
+              properties: {
+                from: { type: 'array', items: { type: 'string' }, description: '抵制群体（如「士绅」「旧学官」「海禁旧党」「勋贵」）' },
+                intensity: { type: 'string', description: 'simmering(私议·微)/active(清议上疏·炽)/fierce(结党请罢·沸)——越动摇正统、越夺多数士绅之利则愈烈', enum: ['simmering', 'active', 'fierce'] },
+                label: { type: 'string', description: '阻力情状一句（如「科举正途外别立旁门，物议沸然」）' }
+              }
+            }
+          }
+        },
+        talentSource: {
+          type: 'object',
+          description: '【人才范式·选填】仅当此工役是持续培养某类新人才的学校（新式学堂/学馆/讲武堂/算学馆/医学馆/译书馆…）时填。引擎据此把毕业生注入「人才范式渗透漏斗」（招生→师资质量→产业吸纳→历练数年→制度空间→渗透），日积月累、瓶颈层层方显效——绝非即时加成；无师资/无对应产业之空壳学校，毕业即失业、徒增动荡。寻常仓/田/城/坊不填。此为学校「利于什么」的硬核载体——勿再于 globalRule 重复声明同义倾向。',
+          properties: {
+            paradigm: { type: 'string', description: '若所教之「学」已有范式（见勘报〔学统〕所列），填其名归入（共享既有渗透积累）；新创之学则留空、改填 newParadigm。' },
+            newParadigm: {
+              type: 'object',
+              description: '若所教是前所未有之新「学」，在此命名并定性。',
+              properties: {
+                label: { type: 'string', description: '此学之名·中立古词（如「格致之学」「经世实学」「泰西算学」「武备新学」「岐黄新学」）·勿用朝代专名。' },
+                influenceProfile: { type: 'object', description: '此学「利于什么」——稀疏键值 {维度:0~1}。维度取通用义：techPromotion(技艺推广)/industry(工矿)/commerce(商贸)/reformSuccess(改革推行)/governance(吏治)/military(武备)/medicine(医)/agriculture(农) 等，值为该学对此维度之偏重(0~1)。例 格致→{techPromotion:0.8,industry:0.6}；经世→{reformSuccess:0.7,governance:0.5}。此即新人才渗透后软推之全局倾向（经人才载体·非凭空+X）。' },
+                absorptionKind: { type: 'array', items: { type: 'string' }, description: '此学人才需哪类岗位（决定产业吸纳瓶颈读哪些产业）：industry/craft/commerce/agriculture/governance/military/medicine。没对应产业 = 没岗位 = 毕业即失业。' },
+                maturityTurns: { type: 'number', description: '毕业→成熟历练回合（约数年·缺省 60）。' }
+              }
+            },
+            graduates: { type: 'number', description: '约略年毕业数（费效封顶按造价档：十万两巨学方可数千·小学堂数百）。' }
+          }
         },
         judgedEffects: { type: 'string', description: '效果叙述(人话·给玩家读)。' },
         reason: { type: 'string', description: '判语：为何此可行性/造价/工期——须扣此地真实条件（勘报所见）。' }
@@ -181,6 +261,9 @@
     L.push('· 大额营造（数万两以上）应给相称的**绝对值**经济产出（abs:economyBase.commerceVolume/mineralProduction/saltProduction/farmland 等直接增量），勿只给小比例。经济类年回报约造价 8%~15%。');
     L.push('· 活字段（拨动世界·须经源头叶）：边防工事(巡检/烽燧/堡台)给 defenseBonus 降本地边警；书院/学宫给 officialSupply 补地方官缺；军屯/养兵庄增 economyBase 田粮→地方留用增→军费负担间接降。勿直给 borderRisk/officeVacancy/armyPressure——那是派生值，引擎每回合重算，须经上述源头叶。');
     L.push('· 维护费 upkeepPerTurn 约为造价 2%/回合。');
+    L.push('· **育才之学校（首选 talentSource·人才范式）**：若此工役是持续培养某类新人才的学校（新式学堂/学馆/讲武堂/算学馆/医学馆/译书馆…），填 talentSource——判它教的是哪一种「学」：归入勘报〔学统〕已列范式（paradigm=其名·共享渗透积累），还是前所未有当新立（newParadigm·命名 + 定 influenceProfile「利于哪些全局维度」+ absorptionKind「人才需何岗位」+ 约略年毕业数）。其全局之效**经人才渗透日积月累方显**（招生→师资→产业吸纳→历练→制度空间），非即时加成；勘报〔学统〕之旧学存量愈庞大，新学愈难骤显（数亿之国非几千新人能改变）。');
+    L.push('· **学校之「利于什么」走 talentSource.influenceProfile，勿再于 globalRule 重复声明同义倾向（免双计）**。globalRule 仅用于：① 非育才的纯制度/风气变更（通商局/海禁开弛/某种国策之制）填其倾向 tendencies；② 承载「变革阻力」——凡新学新制动摇正统、夺士绅科举正途之利，必招阻力，于 globalRule.resistance（from/intensity/label）如实记其反对者与烈度（若仅承载阻力而无独立制度倾向，倾向可只填一条「此学统/风气之确立」，勿重述功能维度）。');
+    L.push('· **凡立新制必招阻力**：动摇正统、夺既得之利者，士绅旧党必清议、上疏、乃至结党请罢。据其触动之深核定 resistance.intensity——此为实情，须如实，勿讳言、勿低估。逾分之制纵一时兴造，亦终为物议所夺。');
     L.push('');
     L.push('请调用 submit_appraisal 提交核议（必须调用一次）。');
     return L.join('\n');
@@ -278,6 +361,34 @@
     return out;
   }
 
+  // S4·校验 talentSource（AI 原拟 → 干净规整·费效封顶 graduates 留给 S2 bridge.capGraduates）。
+  //   既非归入已有范式（paradigm）、也无新范式名（newParadigm.label）→ 非有效人才源，返 null。
+  function _normalizeTalentSource(ts) {
+    if (!ts || typeof ts !== 'object') return null;
+    var hasRef = ts.paradigm && String(ts.paradigm).trim();
+    var np = ts.newParadigm;
+    var hasNew = np && typeof np === 'object' && np.label && String(np.label).trim();
+    if (!hasRef && !hasNew) return null;
+    var out = { graduates: Math.max(0, _num(ts.graduates, 0)) };
+    if (hasRef) out.paradigm = String(ts.paradigm).trim();
+    if (hasNew) {
+      var ip = {};
+      if (np.influenceProfile && typeof np.influenceProfile === 'object') {
+        Object.keys(np.influenceProfile).forEach(function (k) {
+          var v = _num(np.influenceProfile[k], 0);
+          if (v) ip[String(k)] = Math.max(-1, Math.min(1, v));
+        });
+      }
+      out.newParadigm = {
+        label: String(np.label).trim(),
+        influenceProfile: ip,
+        absorptionKind: Array.isArray(np.absorptionKind) ? np.absorptionKind.map(String).filter(Boolean).slice(0, 6) : []
+      };
+      if (np.maturityTurns != null) out.newParadigm.maturityTurns = Math.max(1, Math.round(_num(np.maturityTurns, 60)));
+    }
+    return out;
+  }
+
   // A5 谏官对抗审：审过誉/工期虚短·据评回调效果与工期（走次要 API·失败则不动·宁严勿宽）
   async function _critiqueAppraisal(req, ap, inspection, ctx) {
     var cawt = root.callAIWithTools;
@@ -367,6 +478,25 @@
       try { if (typeof BW.fxLabels === 'function') labels = BW.fxLabels(_bld, null) || []; } catch (e2) {}
       try { if (typeof BW.upkeepFor === 'function') upkeep = BW.upkeepFor(_bld, null); } catch (e3) {}
     }
+    // S4·人才范式源：校验 AI 拟的 talentSource → 并入 effectsStructured（S2 bridge 在完工时路由进 talent-cohorts·
+    //   费效封顶 graduates 由 bridge.capGraduates 据造价档处理；flag talentCohortEnabled 关时 bridge no-op·零回归）。
+    var talentSrc = _normalizeTalentSource(ap.talentSource);
+    if (talentSrc) { if (!sanitized || typeof sanitized !== 'object') sanitized = {}; sanitized.talentSource = talentSrc; }
+    // 全局之制预览（B2·不写 GM·只供核议帖显示；倾向配额裁档后即「准奏将立之制」）。
+    //   真正登记在 approveBuild → GlobalRules.register。preview 传定 id 以免触 _uid 改 GM。
+    var grPreview = null;
+    try {
+      if (root.GlobalRules && ap.globalRule && typeof ap.globalRule === 'object' &&
+          typeof root.GlobalRules._normalizeRule === 'function') {
+        grPreview = root.GlobalRules._normalizeRule({
+          id: 'preview', source: 'building',
+          name: ap.globalRule.name || ((req.name || '此') + '之制'),
+          tendencies: ap.globalRule.tendencies,
+          resistance: ap.globalRule.resistance
+        });
+      }
+    } catch (eGR) {}
+
     out.ok = true;
     out.appraisal = {
       feasibility: ap.feasibility || '合理',
@@ -376,6 +506,9 @@
       effectsRaw: rawFx,                      // AI 原拟（可观测·对照硬门削了什么）
       effectLabels: labels,                   // 人话徽签（核议帖显示·含维护·与真实建筑册页同源）
       upkeep: _num(upkeep),                   // 维护费 两/回合
+      talentSource: talentSrc || null,        // S4·人才范式源（已并入 effectsStructured·null=非育才学校）·供核议帖显示
+      globalRule: grPreview,                  // 全局之制（裁档后·null=寻常工役无此）·准奏据此 register
+      globalRuleRaw: (ap.globalRule && typeof ap.globalRule === 'object') ? ap.globalRule : null,  // AI 原拟（可观测）
       judgedEffects: ap.judgedEffects || '',
       reason: ap.reason || ''
     };
@@ -428,6 +561,23 @@
     div.buildings.push(building);
     out.building = building;
 
+    // 全局之制登记（B2·如实学馆→「改革推行/实学推广」之持续全局规则·配套阻力）。
+    //   判断在核议自由，落账走硬门：register 内倾向配额裁档 + 阻力规整。建筑挂名以备溯源。
+    try {
+      var GR = root.GlobalRules;
+      var grIn = appraisal.globalRule || appraisal.globalRuleRaw;
+      if (GR && typeof GR.register === 'function' && grIn && typeof grIn === 'object' && grIn.tendencies) {
+        var enacted = GR.register({
+          name: grIn.name || ((req.name || '此') + '之制'),
+          source: 'building',
+          sourceRef: { div: divName, bld: building.name },
+          tendencies: grIn.tendencies,
+          resistance: grIn.resistance
+        });
+        if (enacted) building._globalRule = enacted.name;
+      }
+    } catch (eReg) {}
+
     // 注入回合推演（不隔绝）：记本回合玩家新营建 + 有司核议·推演 prompt 段消费
     if (!Array.isArray(GM._pendingCustomBuilds)) GM._pendingCustomBuilds = [];
     GM._pendingCustomBuilds.push({
@@ -452,7 +602,9 @@
     APPRAISAL_TOOL: APPRAISAL_TOOL,
     _findDivByName: _findDivByName,
     _buildAppraisePrompt: _buildAppraisePrompt,
-    version: '0.1.0-A1'
+    _talentScene: _talentScene,                  // S4·勘学统格局/士绅（测试用）
+    _normalizeTalentSource: _normalizeTalentSource, // S4·人才范式源校验（测试用）
+    version: '0.3.0-S4-talent-paradigm'
   };
   root.CustomBuildAgent = TM.CustomBuildAgent;
   if (typeof module !== 'undefined' && module.exports) module.exports = TM.CustomBuildAgent;

@@ -33,7 +33,6 @@
 // audit: web/docs/tm-feudal-audit.md (R10h done note in §4)
 // ============================================================
 
-
 // ============================================================
 // 封建管辖层级系统（中国化）
 // ============================================================
@@ -138,18 +137,6 @@ function deriveAutonomy(division, faction, playerFaction) {
   // 其他势力的附庸——玩家无权管辖
   result.type = null;
   return result;
-}
-
-/**
- * 获取某种管辖类型的权限矩阵条目
- */
-function getAutonomyPermission(autonomy) {
-  if (!autonomy || !autonomy.type) return null;
-  var key = autonomy.type;
-  if (key === 'fanguo') {
-    key = 'fanguo_' + (autonomy.subtype === 'real' ? 'real' : 'nominal');
-  }
-  return PERMISSION_MATRIX[key] || null;
 }
 
 /**
@@ -798,29 +785,6 @@ function grantFief(characterName, divisionName, titleType, subtype) {
   return true;
 }
 
-/**
- * 收回封地——回归直辖
- */
-function revokeFief(divisionName) {
-  if (!P.adminHierarchy) return false;
-  var _found = null;
-  Object.keys(P.adminHierarchy).forEach(function(fk) {
-    var fh = P.adminHierarchy[fk];
-    if (!fh || !fh.divisions) return;
-    (function _walk(ds) {
-      ds.forEach(function(d) {
-        if (d.name === divisionName) _found = d;
-        if (d.divisions) _walk(d.divisions);
-      });
-    })(fh.divisions);
-  });
-  if (!_found) return false;
-  var oldHolder = _found.autonomy && _found.autonomy.holder || '';
-  _found.autonomy = { type: 'zhixia', subtype: null, holder: null, suzerain: null, loyalty: 100, tributeRate: 0 };
-  if (oldHolder) addEB('回收', oldHolder + ' 之封地 ' + divisionName + ' 回归朝廷直辖');
-  return true;
-}
-
 // 为角色授予头衔（支持key查找或直接传名称）
 function grantTitle(characterName, titleType, titleLevel, hereditary) {
   var character = GM._indices.charByName ? GM._indices.charByName.get(characterName) : null;
@@ -888,48 +852,6 @@ function grantTitle(characterName, titleType, titleLevel, hereditary) {
 }
 
 // 剥夺头衔
-function revokeTitle(characterName, titleType) {
-  var character = GM._indices.charByName ? GM._indices.charByName.get(characterName) : null;
-  if (!character || !character.titles) {
-    toast('角色没有头衔');
-    return false;
-  }
-
-  var titleIndex = character.titles.findIndex(function(t) {
-    return t.type === titleType;
-  });
-
-  if (titleIndex === -1) {
-    toast('角色没有该头衔');
-    return false;
-  }
-
-  var title = character.titles[titleIndex];
-  character.titles.splice(titleIndex, 1);
-
-  // 联动：回收该爵位下属的封地为直辖
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(fk) {
-      var fh = P.adminHierarchy[fk];
-      if (!fh || !fh.divisions) return;
-      (function _walk(ds) {
-        ds.forEach(function(d) {
-          if (d.autonomy && d.autonomy.holder === characterName &&
-              (!title.type || d.autonomy.titleType === title.type || !d.autonomy.titleType)) {
-            if (typeof revokeFief === 'function') revokeFief(d.name);
-          }
-          if (d.divisions) _walk(d.divisions);
-        });
-      })(fh.divisions);
-    });
-  }
-
-  // 记录事件
-  addEB('降爵', characterName + ' 的 ' + title.name + ' 头衔被剥夺');
-
-  toast(characterName + ' 的 ' + title.name + ' 头衔被剥夺');
-  return true;
-}
 
 // 头衔继承
 function inheritTitle(deceasedName, heirName, titleType) {
@@ -1097,21 +1019,6 @@ function hasPrivilege(characterName, privilege) {
 }
 
 // 获取角色的最高头衔
-function getHighestTitle(characterName) {
-  var character = GM._indices.charByName ? GM._indices.charByName.get(characterName) : null;
-  if (!character || !character.titles || character.titles.length === 0) {
-    return null;
-  }
-
-  var highestTitle = character.titles[0];
-  character.titles.forEach(function(t) {
-    if (t.level < highestTitle.level) {
-      highestTitle = t;
-    }
-  });
-
-  return highestTitle;
-}
 
 // 为官职添加品级
 function assignOfficialRank(characterName, position, rank) {
@@ -1409,17 +1316,6 @@ function createSupplyRoute(sourceDepotId, targetDepotId, capacity) {
 }
 
 // 切断补给线路
-function cutSupplyRoute(routeId) {
-  var route = GM.supplyRoutes.find(function(r) { return r.id === routeId; });
-  if (!route) {
-    return { success: false, reason: '补给线路不存在' };
-  }
-
-  route.active = false;
-  addEB('补给', '补给线路已切断');
-
-  return { success: true };
-}
 
 // 生成补给报告
 function generateSupplyReport(faction) {
@@ -1757,7 +1653,6 @@ function autoQuanxuanAndAppoint(postId, context) {
     return { success: false, reason: '任命失败：' + appointResult.reason };
   }
 }
-
 
 // 更新军事单位
 function updateMilitary(timeRatio) {

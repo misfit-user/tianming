@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tianming-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8000", "--directory", "C:/Users/37814/Desktop/tianming/web"],
+      "port": 8000
+    }
+  ]
+}

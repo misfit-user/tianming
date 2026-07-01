@@ -271,7 +271,9 @@ async function _scReflect(turnOverride, turnResultsOverride) {
   var tpR = '【任务·对比上回合预测与本回合实际·提炼经验教训】\n\n';
   tpR += '<last-turn-predictions turn="' + lastPredictions.turn + '">\n' + lastPredictions.thinking + '\n</last-turn-predictions>\n\n';
   tpR += '<this-turn-actual turn="' + jobTurn + '">\n';
-  tpR += ((_turnResults && _turnResults.subcall25 && _turnResults.subcall25.memory) || '').substring(0, 1500) + '\n';
+  // Codex修·MED:turnResultsOverride 快照可能早于 sc25c 完成→subcall25.memory 空;回退读 live GM._turnAiResults(reflect 在 sc25c 之后跑·此时 sc25c·M3a 的 .memory 已写入)
+  var _refMem = (_turnResults && _turnResults.subcall25 && _turnResults.subcall25.memory) || (GM._turnAiResults && GM._turnAiResults.subcall25 && GM._turnAiResults.subcall25.memory) || '';
+  tpR += String(_refMem).substring(0, 1500) + '\n';
   tpR += '</this-turn-actual>\n\n';
   tpR += '【输出 JSON】\n';
   tpR += '{\n';
@@ -431,7 +433,11 @@ function _launchPostTurnJobs() {
     await _awaitPostTurnJobsById(['l2_ai']);
     return _scL3Condense(jobTurn);
   } });
-  jobs.push({ id: 'reflect', fn: async function() {
+  // 【调用优化·Cut1·降本】自省降频:偏差画像 GM._aiReflections(留 30 条)持久注入 sc0·不必每回合新增·
+  //   默认每 3 回合反省一次(比对「距上次反省的预测 vs 现在」=多回合视角·noise 更低)·省 ~2/3 后台反省调用。
+  //   P.conf.reflectIntervalTurns 可调(设 1 恢复每回合)。
+  var _reflectItv = (typeof P !== 'undefined' && P && P.conf && Number(P.conf.reflectIntervalTurns) > 0) ? Number(P.conf.reflectIntervalTurns) : 3;
+  if (jobTurn % _reflectItv === 0) jobs.push({ id: 'reflect', fn: async function() {
     await _awaitPostTurnJobsById(['sc25']);
     // 【自我反思 agent·S2】开关开且未回落时 agent 接管(比对 + 维护滚动偏差画像→sc0 注入)·此写死 pass 跳；默认关 / 连失回落 → _scReflect 原样跑零回归
     if (typeof TM !== 'undefined' && TM.ReflectionAgent && TM.ReflectionAgent.shouldHandle(GM)) return TM.ReflectionAgent.run(GM);

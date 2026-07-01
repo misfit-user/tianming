@@ -1606,6 +1606,18 @@ function getLocationPromptInjection() {
     });
   }
 
+  // ★2026-07-01 O4·补玩家私信正文:此前鸿雁只注物流态势(在途/被截)·玩家信里下的实质指令只靠 sc1q 抽一次·
+  //   sc1q 挂则 SC1 永远看不到信里写了什么(六界面最薄的腿)。此处注入近2回合玩家发出、未截获的信的正文摘要·让推演不依赖 sc1q 也知玩家私信里下的令。
+  // ★codex-fix O4:窗口收紧为「本回合新发」(sentTurn===GM.turn)·此前 <=2 令同一在途信连续2-3回合重复注入正文·且与 sc1q 输入5 双注入。只注本回合新令。
+  var _playerLetters = pendingLetters.filter(function(l){ return l && !l._npcInitiated && l.content && l.sentTurn === GM.turn; });
+  if (_playerLetters.length > 0) {
+    lines.push('本回合皇帝新发私信内容（玩家经鸿雁亲下·可能含实质指令/嘱托·NPC 收到后应据此行动，勿只当物流）：');
+    _playerLetters.slice(-6).forEach(function(l){
+      var _lc = String(l.content||'').replace(/<[^>]+>/g, '').slice(0, 120);
+      lines.push('  皇帝→' + l.to + '：「' + _lc + '」');
+    });
+  }
+
   // 信使失踪（截获线索——玩家看到的是"信使逾期"）
   var lostLetters = allLetters.filter(function(l) {
     return l.status === 'intercepted' || (l.status === 'traveling' && GM.turn > l.deliveryTurn + _hyTurnsForMonths(1));

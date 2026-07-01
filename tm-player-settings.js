@@ -312,7 +312,12 @@ function _togglePConf(confKey, on) {
     agentUpgradesEnabled: { on: '已启用全部 agent 升级（实验）·6 项 AI agent 化全开', off: '已关闭全部 agent 升级·各 agent 回落写死路径（单独开关仍生效）' },
     eventUnificationEnabled: { on: '已启用事件系统统一（S1 骨架·当前无可见效果·仅验证不破坏现状）', off: '已关闭事件系统统一·事件总线 drain 不跑' },
     officeActivationEnabled: { on: '已启用官制活化（实验）·5 刀全开：职权舆图/履职度/权限门/改制裁定/按需细查', off: '已关闭官制活化·官制回落写死路径（各刀独立开关仍生效）' },
-    agentAdaptiveDeepen: { on: '已启用自适应深化·收尾只深化本回合有动静的维度（省调用·去填充·地板维度始终深化）', off: '已关闭自适应深化·每维度都深化（深度纯粹优先·更耗调用）' }
+    agentAdaptiveDeepen: { on: '已启用自适应深化·收尾只深化本回合有动静的维度（省调用·去填充·地板维度始终深化）', off: '已关闭自适应深化·每维度都深化（深度纯粹优先·更耗调用）' },
+    talentCohortEnabled: { on: '已启用人才范式渗透（实验）·新式学校→多瓶颈漏斗→渐渗+双向阻力·兴造弹窗见「人才与风气」', off: '已关闭人才范式渗透·学校不再注入人才引擎（零回归）' },
+    worldReactorBattleEnabled: { on: '已启用兵败牵动天下·战败方确定性折损实力', off: '已关闭·战败只走 AI 裁量·不自动折损实力' },
+    populationBottomUpEnabled: { on: '已启用人口自下而上·按叶级政区分别核算', off: '已关闭·走全局粗粒度人口增长' },
+    cognitionFeedbackEnabled: { on: '已启用认知反馈·知遇/贬谪落到忠诚数值', off: '已关闭·忠诚不因升降迁谪自动漂移' },
+    useNewKejuScandal: { on: '已启用科场弊案·科举可能爆舞弊/科场案', off: '已关闭科场弊案链' }
   };
   var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
   if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));

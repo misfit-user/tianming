@@ -152,10 +152,19 @@
           var _chipColor = _isOurs ? 'rgba(184,154,83,0.25);color:#e8d49a' : 'rgba(184,71,56,0.25);color:#e8b8a8';
           _facChip = '<span style="background:'+_chipColor+';padding:0 5px;border-radius:3px;font-size:0.72rem;margin-left:4px;">'+esc(_fac)+(_isOurs?'·我':'·外')+'</span>';
         }
+        // 主帅在世校验·侧栏反映空缺/阵殁(findCharByName 全局·死亡过回合自动卸职后即显空缺)
+        var _cn = a.commander || '';
+        var _cc = (_cn && typeof findCharByName === 'function') ? findCharByName(_cn) : null;
+        var _cDead = !!_cn && (_cc ? (_cc.alive === false || _cc.dead === true) : true);
+        var _cmHtml = !_cn ? '<span style="color:var(--vermillion-400,#c0563a);">帅缺</span>'
+                    : _cDead ? '<span style="color:var(--vermillion-400,#c0563a);">'+esc(_cn)+'(殁)</span>'
+                    : esc(_cn);
+        var _locBase = a.location || a.stationed || '';
+        var _locLine = (_locBase ? esc(_locBase)+' · ' : '') + _cmHtml;
         _mHtml += '<div class="gs-army-row" onclick="if(typeof openMilitaryDetailPanel===\'function\')openMilitaryDetailPanel();">'
           + '<span class="gs-army-icon">⚔</span>'
           + '<div class="gs-army-info"><div class="gs-army-name">'+esc(a.name||'军')+_facChip+'</div>'
-          + '<div class="gs-army-loc">'+esc((a.location||a.stationed||'')+(a.commander?' · '+a.commander:''))+'</div></div>'
+          + '<div class="gs-army-loc">'+_locLine+'</div></div>'
           + '<div style="text-align:right;"><div class="gs-army-size">'+num(size)+'</div>'
           + '<div class="gs-army-morale"><div class="gs-army-morale-fill" style="width:'+Math.min(100,morale)+'%;background:'+mColor+';"></div></div></div></div>';
       });
@@ -377,9 +386,11 @@
           + '<span class="gs-price-spark">'+spark+'</span>'
           + '<span class="gs-price-trend '+tCls+'">'+tTxt+'</span></div>';
       };
-      var _defM = {val:'1.8', unit:'两/石', trend:42, spark:[30,45,40,55,70,85]};
-      var _defB = {val:'0.8', unit:'两/匹', trend:8, spark:[50,52,55,54,58,60]};
-      var _defS = {val:'3.2', unit:'两/引', trend:6, spark:[70,65,68,72,75,78]};
+      // 货币单位随朝代（宋→贯·明清→两）·米/布/盐以本朝货币计价；银行以「两」计重(金银论两·各朝通用)不随货币单位变
+      var _mu = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两';
+      var _defM = {val:'1.8', unit:_mu+'/石', trend:42, spark:[30,45,40,55,70,85]};
+      var _defB = {val:'0.8', unit:_mu+'/匹', trend:8, spark:[50,52,55,54,58,60]};
+      var _defS = {val:'3.2', unit:_mu+'/引', trend:6, spark:[70,65,68,72,75,78]};
       var _defY = {val:'650', unit:'/两金', trend:-14, spark:[75,70,68,65,60,58]};
       var _mi = Object.assign({}, _defM, (typeof prices.rice==='object'?prices.rice:{}));
       var _bu = Object.assign({}, _defB, (typeof prices.cloth==='object'?prices.cloth:{}));

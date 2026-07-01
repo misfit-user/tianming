@@ -812,8 +812,10 @@ function aiGenFullScenario(){
     '<div class="rw"><div class="fd full"><label>\u8865\u5145\u63CF\u8FF0 <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u53EF\u9009\uff0C\u6307\u5B9A\u80CC\u666F\u3001\u4E8B\u4EF6\uff09</span></label>'+
     '<textarea id="fg-desc" rows="2" placeholder="\u5982\uff1A\u5D07\u797A\u5341\u4E03\u5E74\uff0C\u674E\u81EA\u6210\u5175\u4E34\u57CE\u4E0B\uff0C\u671D\u5C40\u52A8\u8361\u2026"></textarea></div></div>'+
     '<div class="rw"><div class="fd"><label>\u751F\u6210\u8BE6\u7EC6\u7A0B\u5EA6</label>'+
-    '<select id="fg-words"><option value="brief">\u7B80\u7565\uff08\u5FEB\u901F\uff09</option><option value="normal" selected>\u6807\u51C6\uff08\u63A8\u8350\uff09</option><option value="detailed">\u8BE6\u7EC6\uff08\u5185\u5BB9\u4E30\u5BCC\uff09</option><option value="full">\u5B8C\u6574\uff08\u6700\u8BE6\u5C3D\uff09</option></select></div></div>'+
-    '<button class="bai" onclick="execFullGen()" style="margin-top:0.8rem;width:100%;">\uD83D\uDE80 \u5F00\u59CB\u751F\u6210\u5386\u53F2\u5267\u672C</button>'+
+    '<select id="fg-words"><option value="brief">\u7B80\u7565\uff08\u5FEB\u901F\uff09</option><option value="normal" selected>\u6807\u51C6\uff08\u63A8\u8350\uff09</option><option value="detailed">\u8BE6\u7EC6\uff08\u5185\u5BB9\u4E30\u5BCC\uff09</option><option value="full">\u5B8C\u6574\uff08\u6700\u8BE6\u5C3D\uff09</option></select></div>'+
+    '<div class="fd"><label>\u4E16\u754C\u7C7B\u578B</label>'+
+    '<select id="fg-worldkind"><option value="historical" selected>\u53F2\u5B9E\uff08\u6309\u6B63\u53F2\u8003\u636E\uff09</option><option value="fictional">\u865A\u6784\uff08\u67B6\u7A7A/\u5947\u5E7B/\u6B66\u4FA0/\u672A\u6765\u00B7\u539F\u521B\u4E16\u754C\u89C2\uff09</option></select></div></div>'+
+    '<button class="bai" onclick="execFullGen()" style="margin-top:0.8rem;width:100%;">\uD83D\uDE80 \u5F00\u59CB\u751F\u6210\u5267\u672C</button>'+
     '<div id="fg-status" style="font-size:0.82rem;color:var(--txt-d);margin-top:0.3rem;"></div></div>';
 }
 var _fgAbortCtrl=null;
@@ -850,6 +852,8 @@ async function execFullGen(){
   if(!dynasty){toast("\u8bf7\u5148\u8f93\u5165\u671d\u4ee3/\u7687\u5e1d");return;}
   var desc=_$("fg-desc")?_$("fg-desc").value.trim():"";
   var level=_$("fg-words")?_$("fg-words").value:"normal";
+  var worldKind=(_$("fg-worldkind")&&_$("fg-worldkind").value==="fictional")?"fictional":"historical";
+  var fiction=worldKind==="fictional";
   var bgLen={brief:"150\u5b57",normal:"300\u5b57",detailed:"500\u5b57",full:"800\u5b57"}[level]||"300\u5b57";
   var openLen={brief:"300\u5b57",normal:"600\u5b57",detailed:"1000\u5b57",full:"1500\u5b57"}[level]||"600\u5b57";
   var chrCount={brief:5,normal:8,detailed:12,full:16}[level]||8;
@@ -864,13 +868,18 @@ async function execFullGen(){
   var itemCount={brief:4,normal:6,detailed:10,full:14}[level]||6;
   var TOTAL=12;
   var context=dynasty+(desc?","+desc:"");
-  var histNote="\u3010\u8981\u6c42\u3011\u4e25\u683c\u6309\u7167\u4e2d\u56fd\u6b63\u53f2\u8fd8\u539f\uff0c\u4eba\u7269\u5fc5\u987b\u662f\u771f\u5b9e\u5386\u53f2\u4eba\u7269\uff0c\u4e8b\u4ef6\u5fc5\u987b\u5c5e\u4e8e\u8be5\u671d\u4ee3\u8be5\u7687\u5e1d\u65f6\u671f\uff0c\u4e0d\u5f97\u865a\u6784\u3002";
+  var histNote=fiction
+    ?"\u3010\u8981\u6c42\u3011\u8fd9\u662f\u4e00\u4e2a\u865a\u6784/\u67b6\u7a7a\u4e16\u754c\u89c2\u5267\u672c\uff08\u53ef\u4e3a\u5947\u5e7b\u3001\u6b66\u4fa0\u3001\u4ed9\u4fa0\u3001\u672a\u6765\u3001\u5f02\u4e16\u754c\u3001\u67b6\u7a7a\u5386\u53f2\u7b49\u539f\u521b\u8bbe\u5b9a\uff09\uff0c\u4e0d\u53d7\u771f\u5b9e\u5386\u53f2\u7ea6\u675f\u3002\u4eba\u7269\u3001\u52bf\u529b\u3001\u4e8b\u4ef6\u3001\u5668\u7269\u5747\u4e3a\u539f\u521b\u8bbe\u5b9a\uff0c\u9700\u81ea\u6d3d\u3001\u751f\u52a8\u3001\u5951\u5408\u8be5\u4e16\u754c\u89c2\u7684\u57fa\u8c03\uff1b\u524d\u540e\u8bbe\u5b9a\u4e0d\u5f97\u81ea\u76f8\u77db\u76fe\u3002\uff08\u6ce8\u610f\uff1a\u4e0b\u6587\u82e5\u51fa\u73b0\u300c\u771f\u5b9e\u5386\u53f2\u4eba\u7269\uff0f\u771f\u5b9e\u5386\u53f2\u5e74\u4ee3\uff0f\u8be5\u671d\u4ee3\u8be5\u7687\u5e1d\uff0f\u4e0d\u5f97\u865a\u6784\u300d\u7b49\u5b57\u6837\uff0c\u5728\u672c\u865a\u6784\u5267\u672c\u91cc\u4e00\u5f8b\u6539\u4e3a\u6309\u8be5\u539f\u521b\u4e16\u754c\u89c2\u81ea\u7531\u521b\u4f5c\u2014\u2014\u7406\u89e3\u4e3a\u300c\u8be5\u4e16\u754c\u7684\u4eba\u7269\uff0f\u7eaa\u5e74\uff0f\u653f\u6743\u65f6\u4ee3\u300d\uff0c\u8bf7\u653e\u624b\u7f16\u5199\uff0c\u4e0d\u8981\u5957\u7528\u771f\u5b9e\u5386\u53f2\u3002\uff09"
+    :"\u3010\u8981\u6c42\u3011\u4e25\u683c\u6309\u7167\u4e2d\u56fd\u6b63\u53f2\u8fd8\u539f\uff0c\u4eba\u7269\u5fc5\u987b\u662f\u771f\u5b9e\u5386\u53f2\u4eba\u7269\uff0c\u4e8b\u4ef6\u5fc5\u987b\u5c5e\u4e8e\u8be5\u671d\u4ee3\u8be5\u7687\u5e1d\u65f6\u671f\uff0c\u4e0d\u5f97\u865a\u6784\u3002";
   var done=[];
   var st=_$("fg-status");if(st)st.textContent="\u751f\u6210\u4e2d...";
   _fgAbortCtrl=new AbortController();
   _fgShowProgress(0,TOTAL,"\u51c6\u5907\u4e2d",done);
   var sid=uid();
-  var scn={id:sid,era:"",name:"",role:"",background:"",tags:[],opening:"",suggestions:[],active:true,winCond:"",loseCond:"",customPrompt:"",masterScript:"",refFiles:[]};
+  var scn={id:sid,era:"",name:"",role:"",background:"",tags:[],opening:"",suggestions:[],active:true,winCond:"",loseCond:"",customPrompt:"",masterScript:"",refFiles:[],worldKind:worldKind};
+  // 单步独立兜底：AbortError(玩家取消)透传中止整体；其余错误(API/网络/校验耗尽)→''→走各自 parse 的空兜底(一步失败不拖累其余·更稳)。
+  // 定义在 try 外的函数作用域·确保 Step1/2 也能用(避免严格模式下块级函数声明的可见性歧义)。
+  function _fgFire(p,tok,o){return callAISmart(p,tok,o).then(function(r){return r;},function(e){if(e&&e.name==='AbortError')throw e;return '';});}
   try{
     // Step 1
     _fgShowProgress(1,TOTAL,"\u751f\u6210\u5267\u672c\u57fa\u7840\u8bbe\u5b9a",done);
@@ -879,7 +888,7 @@ async function execFullGen(){
       "\u8981\u6c42:\n1. era\u5fc5\u987b\u662f\u771f\u5b9e\u5386\u53f2\u5e74\u4ee3\u3002\n2. background\u8be6\u7ec6\u63cf\u5199\u653f\u6cbb\u683c\u5c40\u3001\u7ecf\u6d4e\u72b6\u51b5\u3001\u793e\u4f1a\u77db\u76fe\uff0c\u7ea6"+bgLen+"\u3002\n3. opening\u5f00\u573a\u767d\u5c55\u793a\u5c40\u52bf\u7d27\u8feb\u611f\uff0c\u7ea6"+openLen+"\u3002"+
       "\n4. role\u662f\u73a9\u5bb6\u626e\u6f14\u7684\u771f\u5b9e\u5386\u53f2\u4eba\u7269\u3002\n5. name\u662f\u5267\u672c\u6807\u9898\u3002\n6. suggestions\u662f3\u4e2a\u5267\u60c5\u5efa\u8bae\u6570\u7ec4\u3002"+
       "\n\u8fd4\u56de\u7eefJSON\uff1a{\"era\":\"...\",\"name\":\"...\",\"role\":\"...\",\"background\":\"...\",\"opening\":\"...\",\"suggestions\":[\"...\",\"...\",\"...\"]}";
-    var r1=await callAISmart(prompt1,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3});
+    var r1=await _fgFire(prompt1,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3});   // 3a · API/网络错误降级为''(走下面 JSON 兜底)·不再让单次 AI 故障整体失败
     var ctxScn="";
     try{
       var j1=JSON.parse(r1.replace(/```json|```/g,"").trim());
@@ -894,18 +903,25 @@ async function execFullGen(){
       "\u80cc\u666f\uff1a"+ctxScn+
       "\n\u8bf7\u751f\u6210"+chrCount+"\u4e2a\u771f\u5b9e\u5386\u53f2\u4eba\u7269\u3002\u6bcf\u4e2a\u5305\u542b: name(\u771f\u5b9e\u59d3\u540d), role(\u5b98\u804c), faction(\u9635\u8425), personality(\u6027\u683c\u63cf\u8ff0), loyalty(0-100), ambition(0-100), benevolence(0-100), intelligence(0-100), valor(0-100), morale(0-100)\u3002"+
       "\n\u8fd4\u56de\u7eefJSON\u6570\u7ec4: [{\"name\":\"...\",\"role\":\"...\",\"faction\":\"...\",\"personality\":\"...\",\"loyalty\":70,\"ambition\":60,\"benevolence\":50,\"intelligence\":80,\"valor\":65,\"morale\":75},...]";
-    var r2=await callAISmart(prompt2,3000,{signal:_fgAbortCtrl.signal,minLength:500,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=Math.min(chrCount,3);}catch(e){return false;}}});
+    var r2=await _fgFire(prompt2,3000,{signal:_fgAbortCtrl.signal,minLength:500,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=Math.min(chrCount,3);}catch(e){return false;}}});   // 3a · 降级为''·不整体失败
     var chrs=[];var ctxChrs="";
     try{
       var j2=JSON.parse(r2.replace(/```json|```/g,"").trim());
       if(Array.isArray(j2))chrs=j2;
     }catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
     chrs.forEach(function(c){
-      P.characters.push({id:uid(),sid:sid,name:c.name||"",role:c.role||"",faction:c.faction||"",personality:c.personality||"",loyalty:c.loyalty!=null?c.loyalty:50,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:50,valor:c.valor!=null?c.valor:50,morale:c.morale!=null?c.morale:75,stats:{},isPlayer:false});
+      P.characters.push({id:uid(),sid:sid,name:c.name||"",role:c.role||"",faction:c.faction||"",personality:c.personality||"",loyalty:c.loyalty!=null?c.loyalty:50,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:50,valor:c.valor!=null?c.valor:50,morale:c.morale!=null?c.morale:75,stats:{},isPlayer:false,isFictional:fiction,isHistorical:!fiction});
       // 自动从 personality 文本匹配 traitIds
       var lastChar = P.characters[P.characters.length - 1];
       if (typeof autoAssignTraitIds === 'function') autoAssignTraitIds(lastChar);
     });
+    // 3c · 现代化：确保有玩家主角入口(运行时需 isPlayer·旧生成器从不设→剧本无主角)。优先匹配 scn.role 名，否则取首位。
+    var _scnChars=P.characters.filter(function(c){return c.sid===sid;});
+    if(_scnChars.length&&!_scnChars.some(function(c){return c.isPlayer;})){
+      var _roleStr=(scn.role||"").trim();
+      var _pc=_roleStr?_scnChars.filter(function(c){return c.name&&(_roleStr.indexOf(c.name)>=0||c.name.indexOf(_roleStr)>=0||c.role===_roleStr);})[0]:null;
+      (_pc||_scnChars[0]).isPlayer=true;
+    }
     if(chrs.length)ctxChrs="\u4E3B\u8981\u4EBA\u7269\uFF1A"+chrs.map(function(c){return c.name+"("+c.role+")";}).join("\u3001");
     done.push("\u5386\u53f2\u4eba\u7269("+chrs.length+")");
 
@@ -947,7 +963,11 @@ async function execFullGen(){
       "\n\u8bf7\u751f\u6210"+itemCount+"\u4e2a\u8be5\u65f6\u671f\u6709\u5386\u53f2\u8bb0\u8f7d\u7684\u91cd\u8981\u5668\u7269/\u5b9d\u7269/\u5178\u7c4d/\u5175\u5668\u3002\u6bcf\u4e2a\u5305\u542b: name, type(\u7c7b\u578b), desc(\u5386\u53f2\u63cf\u8ff0), effect(\u6e38\u620f\u6548\u679c), rarity(common/rare/epic/legendary)\u3002"+
       "\n\u8fd4\u56deJSON\u6570\u7ec4: [{\"name\":\"...\",\"type\":\"...\",\"desc\":\"...\",\"effect\":\"...\",\"rarity\":\"rare\"},...] \u5171"+itemCount+"\u4e2a\u3002";
     // \u5e76\u53d1\u89e6\u53d1\u00b7\u5355\u6b65\u72ec\u7acb\u515c\u5e95\uff1aAbortError(\u73a9\u5bb6\u53d6\u6d88) \u900f\u4f20\u4e2d\u6b62\u6574\u4f53\uff1b\u5176\u4f59\u9519\u8bef\u2192''\u2192\u8d70\u5404\u81ea parse \u7684\u7a7a\u515c\u5e95(\u4e00\u6b65\u5931\u8d25\u4e0d\u62d6\u7d2f\u5176\u4f59\u00b7\u6bd4\u539f\u4e32\u884c\u66f4\u7a33)
-    function _fgFire(p,tok,o){return callAISmart(p,tok,o).then(function(r){return r;},function(e){if(e&&e.name==='AbortError')throw e;return '';});}
+    // 3c · 现代化：补「社会阶层」生成(现代剧本用阶层满意度/影响力·旧生成器从不产 classes)
+    var classCount={brief:3,normal:4,detailed:6,full:8}[level]||4;
+    var prompt11="你是社会结构专家。"+histNote+ctxScn+" "+ctxChrs+
+      "\n请生成"+classCount+"个该世界的社会阶层（如士绅/农户/工匠/商贾/军户等；虚构世界按其设定自拟阶层）。每个包含: name(阶层名), desc(简述其处境与诉求), satisfaction(0-100当前满意度), influence(0-100对局势的影响力), population(人口规模描述)。"+
+      "\n返回纯JSON数组: [{\"name\":\"...\",\"desc\":\"...\",\"satisfaction\":50,\"influence\":40,\"population\":\"...\"},...] 共"+classCount+"个。";
     var _fgR=await Promise.all([
       _fgFire(prompt3,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return j.variables&&Array.isArray(j.variables)&&j.variables.length>=Math.min(varCount,3);}catch(e){return false;}}}),
       _fgFire(prompt4,1500,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=Math.min(facCount,3);}catch(e){return false;}}}),
@@ -956,9 +976,10 @@ async function execFullGen(){
       _fgFire(prompt7,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3}),
       _fgFire(prompt8,1500,{signal:_fgAbortCtrl.signal,minLength:200,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=2;}catch(e){return false;}}}),
       _fgFire(prompt9,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3}),
-      _fgFire(prompt10,1500,{signal:_fgAbortCtrl.signal,minLength:200,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=2;}catch(e){return false;}}})
+      _fgFire(prompt10,1500,{signal:_fgAbortCtrl.signal,minLength:200,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=2;}catch(e){return false;}}}),
+      _fgFire(prompt11,1500,{signal:_fgAbortCtrl.signal,minLength:150,maxRetries:3,validator:function(c){try{var j=JSON.parse(c.replace(/```json|```/g,"").trim());return Array.isArray(j)&&j.length>=2;}catch(e){return false;}}})
     ]);
-    var r3=_fgR[0],r4=_fgR[1],r5=_fgR[2],r6=_fgR[3],r7=_fgR[4],r8=_fgR[5],r9=_fgR[6],r10=_fgR[7];
+    var r3=_fgR[0],r4=_fgR[1],r5=_fgR[2],r6=_fgR[3],r7=_fgR[4],r8=_fgR[5],r9=_fgR[6],r10=_fgR[7],r11=_fgR[8];
     // \u89e3\u6790\u5165\u5e93(\u987a\u5e8f\u00b7\u7eaf JSON \u65e0 AI\u00b7\u4e0e\u539f\u9010\u6b65\u7b49\u4ef7\u00b7\u5404\u81ea try/catch + done.push)
     try{
       var j3=JSON.parse(r3.replace(/```json|```/g,"").trim());
@@ -1012,6 +1033,15 @@ async function execFullGen(){
       });
     }catch(e){(window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Step 10 (items) parse failed:') : console.warn('Step 10 (items) parse failed:', e); }
     done.push("\u5386\u53f2\u7269\u54c1");
+    // 3c \u00b7 \u73b0\u4ee3\u5316\uff1a\u793e\u4f1a\u9636\u5c42\u5165\u5e93(P.classes)
+    try{
+      var j11=JSON.parse((r11||"").replace(/```json|```/g,"").trim());
+      if(Array.isArray(j11))j11.forEach(function(cl){
+        if(!P.classes)P.classes=[];
+        P.classes.push({id:uid(),sid:sid,name:cl.name||"",desc:cl.desc||"",satisfaction:cl.satisfaction!=null?cl.satisfaction:50,influence:cl.influence!=null?cl.influence:40,population:cl.population||""});
+      });
+    }catch(e){(window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'Step 11 (classes) parse failed:') : console.warn('Step 11 (classes) parse failed:', e); }
+    done.push("\u793e\u4f1a\u9636\u5c42");
     _fgShowProgress(10,TOTAL,"\u5236\u5ea6\u4f53\u7cfb\u5df2\u751f\u6210",done);
 
     // ============ 第12步：交叉验证 + 自动修复 ============
@@ -1088,6 +1118,10 @@ async function execFullGen(){
       }
       scn.time = { year: guessYear || 1, perTurn: '1s', daysPerTurn: 90, seasons: ['春','夏','秋','冬'], startS: 0, prefix: guessYear < 0 ? '公元前' : '', suffix: '年', startMonth: 1, startDay: 1 };
     }
+    // 3c · 现代化：引擎权威读 gameSettings.startYear/startMonth（仅设 scn.time 会致进游戏时间显示异常/公元前）
+    if (!scn.gameSettings) scn.gameSettings = {};
+    if (scn.gameSettings.startYear == null) scn.gameSettings.startYear = (scn.time && scn.time.year) || 1;
+    if (scn.gameSettings.startMonth == null) scn.gameSettings.startMonth = 1;
 
     // Step 12: finalize
     _fgShowProgress(12,TOTAL,"\u4fdd\u5b58\u5267\u672c",done);

@@ -483,20 +483,30 @@
     raw.affectedParties = toArray(raw.affectedParties || raw.parties || raw.partyImpacts);
     raw.relationAdjustments = toArray(raw.relationAdjustments || raw.relations || raw.partyClassRelations);
 
+    // 信号极性(修「满意无脑降/影响无脑升」):从信号已列明的 affectedClasses 满意度 delta 取符号——纾解(+1)/民怨(-1)/中性(0)。
+    // ecology 扩展据此双向:民怨→满意降·党派借势升;纾解→满意升·党派退潮降;中性→不施加(不再无条件扣满意/加影响)。
+    var _pol = 0;
+    (raw.affectedClasses || []).forEach(function(x){ var d = x && Number(x.satisfactionDelta); if (isFinite(d) && d) _pol += (d > 0 ? 1 : -1); });
+    _pol = _pol > 0 ? 1 : (_pol < 0 ? -1 : 0);
+
     getClasses(root).forEach(function(cls) {
       var name = classNameOf(cls);
       var score = scoreClass(root, cls, tokens);
       if (!name || score < 2) return;
       classMatches.push({ name: name, score: score, categories: categories.slice() });
       if (!classNames[normalizeName(name)]) {
-        raw.affectedClasses.push({
-          name: name,
-          satisfactionDelta: -Math.max(2, Math.round(1 + intensity * 5)),
-          influenceDelta: intensity >= 0.75 ? 1 : 0,
-          unrestDelta: { grievance: -Math.max(2, Math.round(1 + intensity * 4)), petition: -Math.max(1, Math.round(intensity * 3)) },
-          demand: demandForCategories(categories, cls && (cls.demands || cls.currentDemand)),
-          reason: 'ecology matched ' + categories.join('/')
-        });
+        if (_pol !== 0) {                                   // 中性信号不波及旁支阶层(不再无脑扣满意)
+          var _mag = Math.max(1, Math.round(1 + intensity * 4));
+          var _c = {
+            name: name,
+            satisfactionDelta: _pol * _mag,                 // 双向:纾解则升·民怨则降
+            influenceDelta: _pol < 0 ? (intensity >= 0.75 ? 1 : 0) : -1,   // 民怨→动员涨影响·纾解→退潮跌影响(修无脑升)
+            demand: demandForCategories(categories, cls && (cls.demands || cls.currentDemand)),
+            reason: 'ecology matched ' + categories.join('/')
+          };
+          if (_pol < 0) _c.unrestDelta = { grievance: -Math.max(2, Math.round(1 + intensity * 4)), petition: -Math.max(1, Math.round(intensity * 3)) };
+          raw.affectedClasses.push(_c);
+        }
         classNames[normalizeName(name)] = true;
       }
     });
@@ -509,7 +519,8 @@
       if (!partyNames[normalizeName(name)]) {
         raw.affectedParties.push({
           name: name,
-          influenceDelta: Math.max(1, Math.round(intensity * 2)),
+          // 双向(修影响力无脑升):民怨(_pol<0)→党派借势涨;纾解(_pol>0)→议题退潮跌;中性→0。幅度按 intensity。
+          influenceDelta: _pol < 0 ? Math.max(1, Math.round(intensity * 2)) : (_pol > 0 ? -Math.max(1, Math.round(intensity * 1.5)) : 0),
           cohesionDelta: signed < 0 ? -Math.max(1, Math.round(intensity * 2)) : 0,
           shortGoal: signed < 0 ? 'block ' + demandForCategories(categories, 'class relief') : 'carry ' + demandForCategories(categories, 'class relief'),
           reason: 'ecology matched ' + categories.join('/')

@@ -493,7 +493,8 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
       turn: GM.turn, status: 'pending',
       assignee: charName, feedback: '',
       progressPercent: 0,
-      _appointmentAction: { character: charName, position: posName, dept: deptName, oldHolder: oldHolder },
+      _appointmentAction: { character: charName, position: posName, dept: deptName, oldHolder: oldHolder, mode: mode },
+      _offTreeAppoint: true,  // 官制树 UI 确定性任命·过回合直接权威落地(tm-endturn-apply)·不交 AI 识别(tm-endturn-ai L2568 排除)·2026-07-01
       _chainEffects: []  // 后续回合连带效应记录
     });
   }
@@ -1157,6 +1158,86 @@ function _offDismissToEdict(holderName, deptName, posName) {
   toast('已录入诏书建议库——请在诏令中正式下旨');
   if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
 }
+
+/** S5·门荫/荫补：本朝高官(达三品·level≤6)荫一子入仕——确定性生成荫生候选(零 AI·复用 family)+授门荫出身，
+ *  入候选池待玩家任命(走既有任命器)。一官一荫(_menyinGranted 守)。士林微议(滥则清议)+digest 联动。
+ *  范式照抄武勋荫袭 son(tm-keju-wuju)+grantPreset(tm-endturn-apply)·零随机依赖 AI。*/
+function _offMenyin(officialName) {
+  var ch = (typeof findCharByName === 'function') ? findCharByName(officialName) : null;
+  if (!ch) { if (typeof toast === 'function') toast('未找到该官员'); return; }
+  if (ch._menyinGranted) { if (typeof toast === 'function') toast(officialName + ' 已荫一子（一官只荫一子）'); return; }
+  var lv = (typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(ch, GM) : (ch.rankLevel || 18);
+  if (!(lv > 0 && lv <= 6)) { if (typeof toast === 'function') toast(officialName + ' 品级未达三品·不得荫子'); return; }
+  function _clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  var surname = String(ch.name || '').slice(0, 1) || '某';
+  var pool = ['荫', '嗣', '绍', '承', '袭', '荣'];
+  var sonName = surname + pool[((GM.turn || 0) + (Array.isArray(ch.children) ? ch.children.length : 0)) % pool.length];
+  var base = sonName, k = 1;
+  while (typeof findCharByName === 'function' && findCharByName(sonName) && k <= 40) { sonName = base + k; k++; }
+  var son = {
+    name: sonName, age: 17, gender: '男',
+    faction: ch.faction || '', location: ch.location || GM._capital || '京师', alive: true,
+    officialTitle: '', title: '荫生',
+    family: ch.family || ch.name, familyTier: ch.familyTier || 'gentry', familyRole: '荫子', familyOf: ch.name,
+    intelligence: _clamp(Math.round((ch.intelligence || 50) * 0.7 + 8), 25, 72),
+    administration: _clamp(Math.round((ch.administration || 50) * 0.7 + 6), 25, 70),
+    military: _clamp(Math.round((ch.military || 40) * 0.6), 18, 58),
+    loyalty: _clamp(ch.loyalty || 60, 45, 92), ambition: 45, rankLevel: 9,
+    bio: ch.name + '之子·门荫入仕（荫生）'
+  };
+  if (typeof CharFullSchema !== 'undefined' && CharFullSchema.ensureFullFields) { try { CharFullSchema.ensureFullFields(son); } catch (e) {} }
+  son.officialTitle = '';   // 候选·未授官(ensureFullFields 后再确保空)
+  if (!Array.isArray(GM.chars)) GM.chars = [];
+  GM.chars.push(son);
+  if (typeof TMGongming !== 'undefined' && TMGongming.grantPreset) { try { TMGongming.grantPreset(son, 'menyin', { turn: GM.turn }, GM); } catch (e) {} }
+  ch._menyinGranted = { son: sonName, turn: GM.turn || 0 };
+  if (!Array.isArray(ch.children)) ch.children = [];
+  ch.children.push(sonName);
+  try { if (GM.minxin && GM.minxin.byClass && GM.minxin.byClass.shi && typeof GM.minxin.byClass.shi.true === 'number') GM.minxin.byClass.shi.true = Math.max(0, GM.minxin.byClass.shi.true - 0.15); } catch (e) {}
+  if (typeof addEB === 'function') addEB('功名', ch.name + ' 荫一子 ' + sonName + ' 入仕（荫生·待铨)');
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; GM._chronicle.push({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行门荫·' + sonName + ' 以荫生入仕候铨（恩荫世禄）', tags: ['联动', '官制'] }); } catch (e) {}
+  if (typeof toast === 'function') toast('已荫 ' + ch.name + ' 之子 ' + sonName + '（荫生·入候选池·可于任命中授官）');
+  if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
+}
+if (typeof window !== 'undefined') window._offMenyin = _offMenyin;
+
+/** S5·荐辟/荐贤：官员(达五品·level≤8)荐一布衣贤才入仕——确定性生成才略中上的布衣候选(零 AI·野有遗贤)+
+ *  授荐辟出身(grant path:jianxuan)，荐主-荐人结 mentor(报恩/朋党隐患)，入候选池待任命。一官一荐(_jianbiGranted)。*/
+function _offJianbi(officialName) {
+  var ch = (typeof findCharByName === 'function') ? findCharByName(officialName) : null;
+  if (!ch) { if (typeof toast === 'function') toast('未找到该官员'); return; }
+  if (ch._jianbiGranted) { if (typeof toast === 'function') toast(officialName + ' 已荐一贤（一官只荐一人）'); return; }
+  var lv = (typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(ch, GM) : (ch.rankLevel || 18);
+  if (!(lv > 0 && lv <= 8)) { if (typeof toast === 'function') toast(officialName + ' 品级未达五品·不得荐辟'); return; }
+  function _clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  var seed = (GM.turn || 0) * 13 + (((GM.chars && GM.chars.length) || 0) * 7);
+  var sn = ['李', '王', '张', '陈', '刘', '杨', '黄', '周', '吴', '徐'][seed % 10];
+  var gn = ['彦贤', '逸之', '士奇', '茂卿', '元方', '希文', '景濂', '伯温'][(seed >> 1) % 8];
+  var name = sn + gn, base = name, k = 1;
+  while (typeof findCharByName === 'function' && findCharByName(name) && k <= 40) { name = base + k; k++; }
+  var civ = _clamp(60 + (seed % 23), 55, 84);
+  var person = {
+    name: name, age: 26 + (seed % 9), gender: '男',
+    faction: ch.faction || '', location: ch.location || GM._capital || '京师', alive: true,
+    officialTitle: '', title: '荐辟·布衣',
+    familyTier: 'common', familyRole: '布衣', _recommendedBy: ch.name, _mentorId: ch.name,
+    intelligence: civ, administration: _clamp(civ - 4 + (seed % 7), 50, 82),
+    military: _clamp(34 + (seed % 18), 25, 60),
+    loyalty: _clamp(62 + (seed % 16), 50, 88), ambition: _clamp(48 + (seed % 20), 40, 78), rankLevel: 9,
+    bio: ch.name + '所荐布衣·荐辟入仕'
+  };
+  if (typeof CharFullSchema !== 'undefined' && CharFullSchema.ensureFullFields) { try { CharFullSchema.ensureFullFields(person); } catch (e) {} }
+  person.officialTitle = '';
+  if (!Array.isArray(GM.chars)) GM.chars = [];
+  GM.chars.push(person);
+  if (typeof TMGongming !== 'undefined' && TMGongming.grant) { try { TMGongming.grant(person, { path: 'jianxuan', tier: '荐辟', source: 'edict', turn: GM.turn }, GM); } catch (e) {} }
+  ch._jianbiGranted = { person: name, turn: GM.turn || 0 };
+  if (typeof addEB === 'function') addEB('功名', ch.name + ' 荐布衣 ' + name + ' 入仕（荐辟·待铨)');
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; GM._chronicle.push({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行荐辟·布衣 ' + name + ' 以荐贤入仕候铨（野有遗贤·结知遇）', tags: ['联动', '官制'] }); } catch (e) {}
+  if (typeof toast === 'function') toast('已荐 ' + ch.name + ' 所举布衣 ' + name + '（荐辟·入候选池·可于任命中授官）');
+  if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
+}
+if (typeof window !== 'undefined') window._offJianbi = _offJianbi;
 
 function getOffNode(path,tree){
   var node=null;var list=tree||GM.officeTree;

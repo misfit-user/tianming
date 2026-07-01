@@ -448,21 +448,6 @@ function _kejuWalkDivisions(nodes, visitor, ancestors) {
   return true;
 }
 
-/** 在 adminHierarchy 中递归找节点 */
-function _kejuFindDivision(id, hierarchy) {
-  if (!hierarchy) hierarchy = GM.adminHierarchy;
-  if (!hierarchy || !hierarchy.player || !hierarchy.player.divisions) return null;
-  var result = null;
-  _kejuWalkDivisions(hierarchy.player.divisions, function(n) {
-    if (n.id === id || n.name === id) {
-      result = n;
-      return false;
-    }
-    return true;
-  });
-  return result;
-}
-
 /** 找某节点的指定级别祖先（自身若匹配直接返回） */
 function _kejuFindAncestorByLevel(node, level, hierarchy) {
   if (!node) return null;
@@ -630,10 +615,10 @@ function kejuConsultCourtier() {
   // 打开问对面板·传入话题
   if (typeof openWenduiPanel === 'function') {
     openWenduiPanel({ initialTopic: '\u54A8\u8BE2\u4F1A\u8BD5\u62DF\u9898', contextHint: context });
-  } else if (typeof openChaoyi === 'function') {
-    openChaoyi();
+  } else if (typeof _ty2_openSetup === 'function') {
+    _ty2_openSetup();
     setTimeout(function(){
-      var topicEl = _$('cy-topic-input');
+      var topicEl = _$('ty2-topic');
       if (topicEl) topicEl.value = '\u54A8\u8BE2\u4F1A\u8BD5\u62DF\u9898\uFF1A' + topic.slice(0,60);
     }, 100);
   }
@@ -655,10 +640,10 @@ function kejuConsultGuanGe() {
 
   if (typeof openWenduiPanel === 'function') {
     openWenduiPanel({ initialTopic: '\u54A8\u8BE2\u6BBE\u8BD5\u62DF\u9898', contextHint: context, suggestedChars: guanGeChars.map(function(c){return c.name;}) });
-  } else if (typeof openChaoyi === 'function') {
-    openChaoyi();
+  } else if (typeof _ty2_openSetup === 'function') {
+    _ty2_openSetup();
     setTimeout(function(){
-      var topicEl = _$('cy-topic-input');
+      var topicEl = _$('ty2-topic');
       if (topicEl) topicEl.value = '\u54A8\u8BE2\u6BBE\u8BD5\u7B56\u95EE\uFF1A' + topic.slice(0,60);
     }, 100);
   }

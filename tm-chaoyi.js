@@ -1045,11 +1045,23 @@ function _cc2_buildAgendaPrompt() {
     var _pi = GM.currentIssues.filter(function(i){return i.status==='pending';}).slice(0,5);
     if (_pi.length) p += '【待处理时政——只作议题线索，禁止原文照搬为奏报正文】\n' + _pi.map(function(i){return '  '+i.title+'：要点 '+(i.description||i.summary||i.brief||'').slice(0,42)+'；须改写为有司奏称';}).join('\n') + '\n';
   }
+  // 【sc07 深化·D2 廷议批量接认知】给在场官员名录每人加短认知线索(念/对陛下/所求)·让批量生成的奏报反映各人 sc07 认知(短线索不撑爆 prompt)。
+  var _cc2CogCue07 = function(nm){
+    try {
+      var cg = (typeof GM !== 'undefined' && GM._npcCognition && GM._npcCognition[nm]);
+      if (!cg) return '';
+      var b = [];
+      if (cg.currentFocus) b.push('念:' + String(cg.currentFocus).slice(0, 14));
+      if (cg.attitudeTowardsPlayer) b.push('对陛下:' + String(cg.attitudeTowardsPlayer).slice(0, 12));
+      if (cg.agenda) b.push('求:' + String(cg.agenda).slice(0, 14));
+      return b.length ? (' 〔' + b.join('·') + '〕') : '';
+    } catch (_) { return ''; }
+  };
   var _at = (CY && CY._cc2 && CY._cc2.attendees) || [];
   if (_at.length) {
     p += '【在场官员】\n' + _at.slice(0,20).map(function(a){
       var ch = findCharByName(a.name);
-      return '  ' + a.name + (a.title?'('+a.title+')':'') + (a.faction?' 属'+a.faction:'') + (a.party?' 党'+a.party:'') + (ch&&ch.personality?' 性:'+ch.personality.slice(0,16):'');
+      return '  ' + a.name + (a.title?'('+a.title+')':'') + (a.faction?' 属'+a.faction:'') + (a.party?' 党'+a.party:'') + (ch&&ch.personality?' 性:'+ch.personality.slice(0,16):'') + _cc2CogCue07(a.name);
     }).join('\n') + '\n';
   }
   if (GM._ccHeldItems && GM._ccHeldItems.length) {

@@ -36,6 +36,9 @@ ok(!/function heatColor\(/.test(SRC), '旧 heatColor 三档插值已删（不留
 ok(!/function ppRegionGridV2\(/.test(SRC) && !/function factionTabDetail\(/.test(SRC), '旧 codex 渲染链已删');
 
 // ── 抽出纯函数段 vm 实算 ──
+ok(/getTerritoryBuildingsCompat/.test(SRC) && /pushBuildCard/.test(SRC), 'building panel reads compat division.buildings after approval');
+ok(/tm-yingzao-submitted', function\(e\)/.test(SRC) && /detail\.divName/.test(SRC), 'building submit event can refresh panel by division name');
+
 function extract(name) {
   const m = SRC.match(new RegExp('  (function ' + name + '\\([^)]*\\)\\{[\\s\\S]*?\\n  \\})'));
   if (m) return m[1];

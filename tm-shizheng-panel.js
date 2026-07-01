@@ -214,6 +214,9 @@ function _openShizhengDetail(issueId) {
   }
 
   // 陛下决断·选项按钮
+  // label/consequence → text/desc 兼容归一(绍宋剧本 choices 用 label·否则回落占位符「选项1/2/3」)
+  if (typeof window !== 'undefined' && typeof window._tmNormIssueChoices === 'function') window._tmNormIssueChoices(issue);
+  else if (Array.isArray(issue.choices)) issue.choices.forEach(function(ch){ if(ch&&typeof ch==='object'){ if((ch.text==null||ch.text==='')&&ch.label)ch.text=ch.label; if((ch.desc==null||ch.desc==='')&&ch.consequence)ch.desc=ch.consequence; } });
   if (Array.isArray(issue.choices) && issue.choices.length > 0 && isPending) {
     h += '<div style="margin-bottom:1.2rem;">';
     h += '<div style="font-size:0.78rem;color:var(--gold);letter-spacing:0.28em;margin-bottom:0.5rem;font-family:\'STKaiti\',\'KaiTi\',serif;text-align:center;">〔 陛 下 决 断 〕</div>';

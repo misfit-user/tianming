@@ -517,6 +517,17 @@ async function _endTurnCore(){
   // 维护费扣地方库银。须在 final aggregate 之前——完工改的叶子当回合即被聚合。
   try { if (window.TM && TM.BuildingWorks && typeof TM.BuildingWorks.tick === 'function') TM.BuildingWorks.tick(GM, P); } catch(_bwTickE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_bwTickE, 'endTurn] building works tick') : console.warn('[endTurn] building works tick', _bwTickE); }
 
+  // S3a·人才范式渗透引擎 tick：须在 BuildingWorks.tick 之后（本回合完工的新式学校已注册人才源），多瓶颈漏斗推进一回合。
+  // 瓶颈 ctx 由 tm-talent-bottlenecks 据全国真实 economyBase/政区/驻军实算（没产业=没岗位=毕业即失业）。flag talentCohortEnabled 默认关 → no-op。
+  try {
+    if (window.TM && TM.TalentCohorts && typeof TM.TalentCohorts.tick === 'function' && TM.TalentCohorts.enabled(P)) {
+      var _talentCtx = (TM.TalentBottlenecks && typeof TM.TalentBottlenecks.buildCtx === 'function') ? TM.TalentBottlenecks.buildCtx(GM, P) : null;
+      TM.TalentCohorts.tick(GM, P, _talentCtx);
+      // S5·全局阻力：渗透反弹 → 御案时政政治事件(请罢新学/失业学潮) + 临界旧式瓦解 + 写 _lastBacklash 供动态 room
+      if (TM.TalentBacklash && typeof TM.TalentBacklash.tick === 'function') TM.TalentBacklash.tick(GM, P, _talentCtx);
+    }
+  } catch(_tcTickE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_tcTickE, 'endTurn] talent cohorts tick') : console.warn('[endTurn] talent cohorts tick', _tcTickE); }
+
   // 地块状态 tick（2026-06-12·确定性步）：过期清除 + 状态民心摊叶 + 繁荣度缓变。
   // 须在 BuildingWorks.tick 之后（完工状态当回合生效）、final aggregate 之前。
   try { if (window.TM && TM.RegionStatus && typeof TM.RegionStatus.tick === 'function') TM.RegionStatus.tick(GM, P); } catch(_rsTickE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rsTickE, 'endTurn] region status tick') : console.warn('[endTurn] region status tick', _rsTickE); }
@@ -605,7 +616,7 @@ EndTurnHooks.register('before', function() {
     GM.memorials.forEach(function(m){
       var statusText=m.status==="approved"?"准奏":m.status==="rejected"?"驳回":"未批复";
       var exists=GM.jishiRecords.find(function(r){return r.turn===GM.turn&&r.char===m.from&&r.playerSaid&&r.playerSaid.indexOf("奏疏")>=0;});
-      if(!exists)GM.jishiRecords.push({turn:GM.turn,char:m.from,playerSaid:"\u594F\u758F("+m.type+"): "+m.content,npcSaid:"\u6279\u590D: "+statusText+(m.reply?" | "+m.reply:"")});
+      if(!exists)GM.jishiRecords.push({turn:GM.turn,char:m.from,playerSaid:"\u594F\u758F("+m.type+"): "+m.content,npcSaid:"\u6279\u590D: "+statusText+(m.reply?" | "+m.reply:""),mode:'memorial'});   // \u26052026-07-01 O2\u00B7\u6253 mode:memorial\u00B7\u4EE4 O1 \u95EE\u5BF9\u6BB5\u8FC7\u6EE4\u6321\u6389(\u594F\u758F\u5DF2\u6709:581\u4E13\u6BB5\u00B7\u53BB\u53CC\u6CE8\u5165)\u00B7\u5B9E\u5F55\u4ECD\u4FDD\u7559\u6B64\u6761
     });
     renderJishi();
   }
@@ -895,6 +906,10 @@ EndTurnHooks.register('after', function() {
       if (_edictSnapshot.other) _eL.push('其他:' + _edictSnapshot.other);
       if (_eL.length) _edictText = _eL.join('\n  ');
     }
+    // 【调用优化·Cut2·降本】玩家本回合无诏令 → 无「玩家诏令/行为」可查史实偏离(此检查专查玩家所为·非 AI 叙事)
+    //   → 必返空 deviations·不注入·无大事记 → 跳过 LLM 与结果完全一致·省一次每回合背景调用(确定性安全)。
+    var _hasEdictForHist = !!(_edictSnapshot && (_edictSnapshot.decree || _edictSnapshot.political || _edictSnapshot.military || _edictSnapshot.diplomatic || _edictSnapshot.economic || _edictSnapshot.other));
+    if (!_hasEdictForHist) return;
 
     // 【史实顾问 agent·S2】开关开且未回落时·史实顾问 agent 接管(逼引证真实先例·替模型脑内臆测)·此写死 hist_check 跳；默认关/演义模式/连失回落 → 原 hist_check 原样跑零回归
     try {
@@ -1043,6 +1058,18 @@ EndTurnHooks.registerFragment('party-class-calibration', function(ctx) {
       if (relLines.length) lines.push('relations:\n' + relLines.map(function(x) { return '- ' + x; }).join('\n'));
     }
   } catch (_) {}
+  try {
+    // W1a·天下牵动因果综述：置于细节信号块之前，作 AI 的「因果导读」（把各系统反应连成一脉）
+    if (typeof WorldDigest !== 'undefined' && typeof WorldDigest.promptBlock === 'function') {
+      var _wdBlock = WorldDigest.promptBlock(GM, { turnsBack: 1 });
+      if (_wdBlock) lines.push(_wdBlock);
+    }
+    // W4·趋势预演（前瞻·「若不干预将如何牵动」）：紧随回望综述之后，给 AI/玩家默认命运轨迹，立逆天改命之势
+    if (typeof WorldDigest !== 'undefined' && typeof WorldDigest.previewBlock === 'function') {
+      var _wpBlock = WorldDigest.previewBlock(GM, { limit: 4 });
+      if (_wpBlock) lines.push(_wpBlock);
+    }
+  } catch (_wdE) {}
   try {
     if (typeof TM !== 'undefined' && TM.PlayerActionSignals && typeof TM.PlayerActionSignals.formatForPrompt === 'function') {
       var signals = TM.PlayerActionSignals.formatForPrompt(GM, { limit: 8 });

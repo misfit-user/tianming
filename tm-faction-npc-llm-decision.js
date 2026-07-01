@@ -837,7 +837,8 @@
       fertile.forEach(function(l){ lines.push('    ' + _txt(l.name || l.id || '?', 36) + ' 田亩约' + _safeNum(l.economyBase.farmland)); });
     }
     if (lines.length && fac.treasury && typeof fac.treasury.money === 'number') {
-      lines.push('  本派库银约 ' + _fmtAmount(_safeNum(fac.treasury.money)) + ' 两·量入为出，勿拟力所不及之大役。');   // 完善·财力门槛(扣本派库银·不继不建)
+      var _muF = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两';
+      lines.push('  本派库藏约 ' + _fmtAmount(_safeNum(fac.treasury.money)) + ' ' + _muF + '·量入为出，勿拟力所不及之大役。');   // 完善·财力门槛(扣本派库银·不继不建)
     }
     if (!lines.length) return [];
     return ['(本派可营建之机·据需自主兴造·非必每回合)'].concat(lines);

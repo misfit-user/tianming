@@ -2201,6 +2201,14 @@
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">AI 一键生成完整剧本</div>
       <div class="form-group">
+        <label>世界类型</label>
+        <select id="fullGenWorldKind">
+          <option value="historical" selected>史实（按中国正史考据·真实人物/年代）</option>
+          <option value="fictional">虚构（架空/奇幻/武侠/仙侠/未来/异世界·原创世界观·不受真实历史约束）</option>
+        </select>
+        <div style="font-size: 11px; color: #888; margin-top: 4px;">虚构模式下「朝代/皇帝」可填自拟的世界/纪元名与统治者，人物、势力、事件均为原创设定</div>
+      </div>
+      <div class="form-group">
         <label>朝代 *</label>
         <input type="text" id="fullGenDynasty" placeholder="例：东汉末年">
       </div>
@@ -2652,6 +2660,22 @@
     if (document.getElementById('postRuleModal').classList.contains('show')) { closePostRuleModal(); return; }
     if (document.getElementById('genericModal').classList.contains('show')) { closeGenericModal(); return; }
   });
+  </script>
+
+  <script>
+  /* 编辑器垫片(必须先于下方 defer 引擎脚本执行)：正式游戏由 tm-ai-infra.js 定义 SettlementPipeline(回合结算管线)，
+     编辑器不加载该文件；但所加载的引擎文件(tm-mechanics/tm-mechanics-world/tm-military/tm-feudal)顶层有无守卫的
+     SettlementPipeline.register(...) 裸调 → 在编辑器上下文抛 ReferenceError，截断该文件其后所有顶层定义(含末尾导出)。
+     此处提供 no-op SettlementPipeline：register 变无害空操作(编辑器本不跑回合结算)，使这些文件得以完整执行。
+     仅作用于 editor.html；正式游戏先加载 tm-ai-infra.js 定义真实版本，typeof 守卫确保不覆盖。 */
+  if (typeof window.SettlementPipeline === 'undefined') {
+    window.SettlementPipeline = { register: function(){}, run: function(){}, settle: function(){}, list: function(){ return []; } };
+  }
+  /* GameHooks 同源(tm-ai-infra.js)·编辑器未加载·引擎文件顶层亦有无守卫 GameHooks.on(...) 裸调
+     (此前被 SettlementPipeline 截断而未暴露)·同样 no-op 垫片防止抛错截断后续定义。 */
+  if (typeof window.GameHooks === 'undefined') {
+    window.GameHooks = { on: function(){}, run: function(){}, off: function(){}, emit: function(){} };
+  }
   </script>
 
   <script src="tm-utils.js" defer=""></script>

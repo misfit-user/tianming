@@ -309,6 +309,19 @@ async function runOneTurn(sb, mode) {
   const SEED = 0x12345678;
   function freshRandom() { sb.Math.random = makeSeededRandom(SEED); }
 
+  // ── warmup·先跑一遍触发 map/geo/区域经济等系统的模块级惰性初始化（一次性·当前不可重入·见 Phase2 task）。
+  //    使下面 pass 0a/0b 都在「模块已初始化」稳态下运行→消除「首跑构建 vs 次跑缓存」的 init 差异。
+  //    注意:这不掩盖真随机/时间敏感——若有,warmup 后仍会在 0a/0b 间暴露。校验目标=稳态(turn 2+)确定性。
+  sb.GM = deepClone(baselineGM);
+  sb.P = deepClone(baselineP);
+  freshRandom();
+  try { await runOneTurn(sb, 'legacy'); } catch (e) { /* warmup·结果丢弃·忽略错误 */ }
+  await new Promise(r => setTimeout(r, 100));
+  // warmup 跑完后把 GM/P 重置回 baseline(模块级初始化保持·GM 回到干净起点)·让 pass 0a 与 0b 同起点
+  sb.GM = deepClone(baselineGM);
+  sb.P = deepClone(baselineP);
+  await new Promise(r => setTimeout(r, 100));
+
   // ── pass 0·baseline 自检·legacy 跑两次·diff 应为 0 (证明 fixture 确定性 OK)
   freshRandom();
   process.stdout.write('[pipeline-diff] pass 0a: legacy baseline run ... ');

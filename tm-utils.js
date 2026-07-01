@@ -77,38 +77,420 @@ var ErrorMonitor = (function() {
 })();
 
 // ============================================================
-//  TM.safeEval · 受限表达式求值（替代 new Function 直评）
+//  TM.safeEval · 受限表达式求值（白名单解释器·替代 new Function 直评）
 //
-//  现有 7 处 new Function('GM',...) 用于评估编辑器规则与 AI 生成的条件
-//  表达式（couplingRules.if / collapseRules.condition / canShowExpr 等）。
-//  内部规则可信，但用户导入第三方剧本时表达式不可信——可通过
-//    GM.constructor.constructor('alert(1)')()
-//  逃出沙箱执行任意代码。
+//  现有 5 处调用用于评估编辑器规则与 AI 生成的条件表达式
+//  （couplingRules.if / collapseRules.condition / restorationRules.condition /
+//   legitimacyConfig.rules[].condition / goal custom condition）。
+//  内部规则可信，但用户导入第三方剧本时表达式不可信——旧实现用
+//  正则黑名单 + new Function，可被字符串拼接绕过：
+//    GM['cons'+'tructor']['cons'+'tructor']('alert(1)')()
+//    []['fill']['constr'+'uctor']('...')()
+//  逃出沙箱执行任意 JS（外发 AI key、调 Electron IPC）。
 //
-//  本 helper 不写完整 JS parser，而是：
-//    1) 黑名单封禁高危 token（constructor/__proto__/prototype/Function/eval/
-//       this/window/global/globalThis/import/require/async/Symbol）
-//    2) 严格模式 IIFE 让 this 为 undefined·阻断 .call/.apply 拿全局对象
-//    3) 仅暴露白名单上下文键·其余标识符评估为 ReferenceError
+//  本实现彻底放弃 new Function/eval，改为零依赖白名单表达式解释器：
+//    tokenizer → Pratt parser → 白名单 AST 解释器。
+//  ─ 只支持剧本规则实际用到的语法：比较/逻辑/算术/一元 ! 与负号/三元 ?:/
+//    成员访问 a.b 与 a["b"]/字面量(数字 字符串 布尔 null)/括号/
+//    白名单函数调用(Math.max 等)。
+//  ─ 成员访问经 readMember 守卫：禁 __proto__/constructor/prototype 等危险键、
+//    禁原型链(仅读自有属性)、绝不接触 Function/eval/全局对象。
+//  ─ 根标识符只能解析自 ctx 白名单键，未知标识符抛错(语义同 ReferenceError)。
+//  对外接口 TM.safeEval(expr, ctx) 签名 / 「失败抛 Error 由 caller try/catch」
+//  语义保持不变·5 个调用点零改动。
 //
-//  捕获意图同 new Function·失败抛错由 caller try/catch
+//  核心解释器(_TM_safeEvalCore)在 node 下也可被 require/测试；
+//  仅在浏览器把它挂到 window.TM.safeEval。见 web/tools/test-safeeval.js。
 // ============================================================
-(function(){
-  if (typeof window === 'undefined') return;
-  if (window.TM && window.TM.safeEval) return;
-  var FORBIDDEN = /\b(?:constructor|__proto__|__defineGetter__|__defineSetter__|prototype|Function|eval|this|window|self|globalThis|global|parent|top|frames|document|location|navigator|XMLHttpRequest|fetch|Worker|import|require|async|await|Symbol|Reflect|Proxy)\b/;
-  function safeEval(expr, ctx) {
-    if (typeof expr !== 'string') throw new Error('safeEval: expr must be string');
-    if (FORBIDDEN.test(expr)) throw new Error('safeEval: forbidden token in expr');
-    var keys = ctx ? Object.keys(ctx) : [];
-    var vals = keys.map(function(k){ return ctx[k]; });
-    // strict 模式让 this 为 undefined·body 包一层 IIFE 防止泄露
-    var fn = Function.apply(null, keys.concat(['"use strict"; return (' + expr + ');']));
-    return fn.apply(undefined, vals);
+(function(global){
+  'use strict';
+
+  // ── 词法 token 类型 ──
+  var T_NUM = 'num', T_STR = 'str', T_ID = 'id', T_PUNC = 'punc', T_EOF = 'eof';
+
+  // 危险属性键黑名单（成员访问层最后一道闸·与解析无关·防原型逃逸）
+  // 注意：不能用对象字面量写 '__proto__':1（那会设原型而非创建自有键）·
+  // 用 null 原型 map + 逐个赋值·确保 hasKey('__proto__') 真的命中。
+  var DANGEROUS_KEYS = Object.create(null);
+  ['__proto__', 'constructor', 'prototype',
+   '__defineGetter__', '__defineSetter__',
+   '__lookupGetter__', '__lookupSetter__', 'valueOf'].forEach(function (k) {
+    DANGEROUS_KEYS[k] = 1;
+  });
+  function isDangerousKey(keyStr) {
+    // 显式判 __proto__·再查 map（map 已是 null 原型·hasOwnProperty 安全）
+    return keyStr === '__proto__' || Object.prototype.hasOwnProperty.call(DANGEROUS_KEYS, keyStr);
   }
-  if (!window.TM) window.TM = {};
-  window.TM.safeEval = safeEval;
-})();
+
+  // 白名单纯函数：Math.*（这些是无副作用纯函数·剧本算术里偶尔会用）
+  var SAFE_MATH = {
+    max: Math.max, min: Math.min, abs: Math.abs, floor: Math.floor,
+    ceil: Math.ceil, round: Math.round, pow: Math.pow, sqrt: Math.sqrt,
+    sign: Math.sign, trunc: Math.trunc
+  };
+  // 白名单方法名（仅在字符串/数组这类安全宿主上放行·只读不改）
+  var SAFE_METHODS = { includes: 1, indexOf: 1, startsWith: 1, endsWith: 1 };
+
+  // ───────────────────────── Tokenizer ─────────────────────────
+  function tokenize(src) {
+    var toks = [];
+    var i = 0, n = src.length;
+    function isDigit(c){ return c >= '0' && c <= '9'; }
+    // 标识符首字符：字母 / _ / $ / 非 ASCII（含中文变量名 如 民生压力）
+    function isIdStart(c){
+      return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+             c === '_' || c === '$' || c.charCodeAt(0) > 0x7f;
+    }
+    function isIdPart(c){ return isIdStart(c) || isDigit(c); }
+
+    while (i < n) {
+      var c = src[i];
+      // 跳空白
+      if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v') { i++; continue; }
+      // 数字（含小数 与 .5 形式）
+      if (isDigit(c) || (c === '.' && isDigit(src[i+1]))) {
+        var startN = i;
+        while (i < n && isDigit(src[i])) i++;
+        if (src[i] === '.') { i++; while (i < n && isDigit(src[i])) i++; }
+        if (src[i] === 'e' || src[i] === 'E') {
+          i++; if (src[i] === '+' || src[i] === '-') i++;
+          while (i < n && isDigit(src[i])) i++;
+        }
+        toks.push({ t: T_NUM, v: parseFloat(src.slice(startN, i)) });
+        continue;
+      }
+      // 字符串（单/双引号·支持基本转义）
+      if (c === '"' || c === "'") {
+        var quote = c; i++; var buf = '';
+        while (i < n && src[i] !== quote) {
+          if (src[i] === '\\') {
+            i++;
+            var e = src[i];
+            if (e === 'n') buf += '\n';
+            else if (e === 't') buf += '\t';
+            else if (e === 'r') buf += '\r';
+            else if (e === '\\') buf += '\\';
+            else if (e === '"') buf += '"';
+            else if (e === "'") buf += "'";
+            else if (e === '0') buf += '\0';
+            else buf += e; // 其余转义按字面字符
+            i++;
+          } else {
+            buf += src[i]; i++;
+          }
+        }
+        if (i >= n) throw new Error('safeEval: unterminated string');
+        i++; // 吃掉结束引号
+        toks.push({ t: T_STR, v: buf });
+        continue;
+      }
+      // 标识符 / 关键字字面量
+      if (isIdStart(c)) {
+        var startI = i;
+        while (i < n && isIdPart(src[i])) i++;
+        toks.push({ t: T_ID, v: src.slice(startI, i) });
+        continue;
+      }
+      // 运算符 / 标点（先匹配三字符·再两字符·再单字符）
+      var three = src.substr(i, 3);
+      if (three === '===' || three === '!==') { toks.push({ t: T_PUNC, v: three }); i += 3; continue; }
+      var two = src.substr(i, 2);
+      if (two === '==' || two === '!=' || two === '>=' || two === '<=' ||
+          two === '&&' || two === '||') { toks.push({ t: T_PUNC, v: two }); i += 2; continue; }
+      if ('+-*/%<>!?:.()[],'.indexOf(c) >= 0) { toks.push({ t: T_PUNC, v: c }); i++; continue; }
+      throw new Error('safeEval: unexpected character ' + JSON.stringify(c) + ' at ' + i);
+    }
+    toks.push({ t: T_EOF, v: null });
+    return toks;
+  }
+
+  // ───────────────────────── Parser (Pratt) ─────────────────────────
+  // AST 节点形态：
+  //   {k:'num'|'str', v}            字面量数字/字符串
+  //   {k:'lit', v}                  true/false/null（已固化为 JS 值）
+  //   {k:'id', name}                根标识符
+  //   {k:'member', obj, prop}       a.b（prop 为字符串名）
+  //   {k:'index', obj, idx}         a[expr]
+  //   {k:'call', callee, args}      f(...)
+  //   {k:'unary', op, arg}          ! / - / +
+  //   {k:'bin', op, l, r}           二元运算
+  //   {k:'logic', op, l, r}         && / ||（短路）
+  //   {k:'cond', test, cons, alt}   三元 ?:
+  function parse(toks) {
+    var pos = 0;
+    function peek(){ return toks[pos]; }
+    function next(){ return toks[pos++]; }
+    function isPunc(v){ var t = peek(); return t.t === T_PUNC && t.v === v; }
+    function expectPunc(v){
+      if (!isPunc(v)) throw new Error('safeEval: expected ' + JSON.stringify(v) + ' but got ' + JSON.stringify(peek().v));
+      return next();
+    }
+
+    // 二元运算符优先级（数字越大越先结合）·仅含采样到的运算符
+    var BIN_PREC = {
+      '||': 1, '&&': 2,
+      '==': 3, '!=': 3, '===': 3, '!==': 3,
+      '<': 4, '>': 4, '<=': 4, '>=': 4,
+      '+': 5, '-': 5,
+      '*': 6, '/': 6, '%': 6
+    };
+    var LOGIC = { '||': 1, '&&': 1 };
+
+    function parseExpression(){ return parseTernary(); }
+
+    function parseTernary(){
+      var test = parseBinary(0);
+      if (isPunc('?')) {
+        next();
+        var cons = parseAssignSafe();
+        expectPunc(':');
+        var alt = parseAssignSafe();
+        return { k: 'cond', test: test, cons: cons, alt: alt };
+      }
+      return test;
+    }
+    // 三元分支内允许再嵌套三元，但不允许赋值（本语言无赋值）
+    function parseAssignSafe(){ return parseTernary(); }
+
+    function parseBinary(minPrec){
+      var left = parseUnary();
+      while (true) {
+        var tk = peek();
+        if (tk.t !== T_PUNC) break;
+        var prec = BIN_PREC[tk.v];
+        if (prec === undefined || prec < minPrec) break;
+        next();
+        var right = parseBinary(prec + 1); // 全部左结合
+        if (LOGIC[tk.v]) left = { k: 'logic', op: tk.v, l: left, r: right };
+        else left = { k: 'bin', op: tk.v, l: left, r: right };
+      }
+      return left;
+    }
+
+    function parseUnary(){
+      var tk = peek();
+      if (tk.t === T_PUNC && (tk.v === '!' || tk.v === '-' || tk.v === '+')) {
+        next();
+        return { k: 'unary', op: tk.v, arg: parseUnary() };
+      }
+      return parsePostfix();
+    }
+
+    function parsePostfix(){
+      var node = parsePrimary();
+      while (true) {
+        if (isPunc('.')) {
+          next();
+          var nameTok = next();
+          if (nameTok.t !== T_ID) throw new Error('safeEval: expected property name after "."');
+          node = { k: 'member', obj: node, prop: nameTok.v };
+        } else if (isPunc('[')) {
+          next();
+          var idx = parseExpression();
+          expectPunc(']');
+          node = { k: 'index', obj: node, idx: idx };
+        } else if (isPunc('(')) {
+          next();
+          var args = [];
+          if (!isPunc(')')) {
+            args.push(parseExpression());
+            while (isPunc(',')) { next(); args.push(parseExpression()); }
+          }
+          expectPunc(')');
+          node = { k: 'call', callee: node, args: args };
+        } else {
+          break;
+        }
+      }
+      return node;
+    }
+
+    function parsePrimary(){
+      var tk = peek();
+      if (tk.t === T_NUM) { next(); return { k: 'num', v: tk.v }; }
+      if (tk.t === T_STR) { next(); return { k: 'str', v: tk.v }; }
+      if (tk.t === T_ID) {
+        next();
+        if (tk.v === 'true') return { k: 'lit', v: true };
+        if (tk.v === 'false') return { k: 'lit', v: false };
+        if (tk.v === 'null') return { k: 'lit', v: null };
+        if (tk.v === 'undefined') return { k: 'lit', v: undefined };
+        // 显式封禁危险根标识符（即使 ctx 没有也不应被当成变量名解析）
+        if (tk.v === 'this' || tk.v === 'globalThis' || tk.v === 'window' ||
+            tk.v === 'self' || tk.v === 'global' || tk.v === 'Function' ||
+            tk.v === 'eval' || tk.v === 'Reflect' || tk.v === 'Proxy' ||
+            tk.v === 'Symbol' || tk.v === 'require' || tk.v === 'process' ||
+            tk.v === 'import') {
+          throw new Error('safeEval: forbidden identifier "' + tk.v + '"');
+        }
+        return { k: 'id', name: tk.v };
+      }
+      if (isPunc('(')) {
+        next();
+        var e = parseExpression();
+        expectPunc(')');
+        return e;
+      }
+      throw new Error('safeEval: unexpected token ' + JSON.stringify(tk.v));
+    }
+
+    var ast = parseExpression();
+    if (peek().t !== T_EOF) throw new Error('safeEval: unexpected trailing token ' + JSON.stringify(peek().v));
+    return ast;
+  }
+
+  // ───────────────────────── Evaluator ─────────────────────────
+  // 成员读取守卫：禁危险键 / 禁原型链 / 禁函数对象属性穿透
+  function readMember(obj, key) {
+    if (obj === null || obj === undefined) {
+      throw new Error('safeEval: cannot read property "' + key + '" of ' + obj);
+    }
+    var keyStr = String(key);
+    if (isDangerousKey(keyStr)) {
+      throw new Error('safeEval: access to "' + keyStr + '" is forbidden');
+    }
+    // 绝不允许把函数当容器穿透其属性（.call/.apply/.bind/.constructor 等）
+    if (typeof obj === 'function') {
+      throw new Error('safeEval: cannot access properties of a function');
+    }
+    var t = typeof obj;
+    // 字符串：放行只读的 length 与白名单方法
+    if (t === 'string') {
+      if (keyStr === 'length') return obj.length;
+      if (Object.prototype.hasOwnProperty.call(SAFE_METHODS, keyStr)) return obj[keyStr].bind(obj);
+      throw new Error('safeEval: forbidden string property "' + keyStr + '"');
+    }
+    if (t === 'number' || t === 'boolean') {
+      throw new Error('safeEval: cannot access property "' + keyStr + '" of ' + t);
+    }
+    // 数组：length / 数字下标 / 白名单方法
+    if (Array.isArray(obj)) {
+      if (keyStr === 'length') return obj.length;
+      if (Object.prototype.hasOwnProperty.call(SAFE_METHODS, keyStr)) return obj[keyStr].bind(obj);
+      if (/^\d+$/.test(keyStr)) return obj[keyStr];
+      // 其余（非自有 / 原型方法）一律拒绝
+      if (Object.prototype.hasOwnProperty.call(obj, keyStr)) return obj[keyStr];
+      throw new Error('safeEval: forbidden array property "' + keyStr + '"');
+    }
+    // 普通对象：仅读「自有属性」·不走原型链
+    if (Object.prototype.hasOwnProperty.call(obj, keyStr)) {
+      return obj[keyStr];
+    }
+    // 自有不存在 → 返回 undefined（与 JS 取不存在属性一致·便于 a.b===undefined 这类判空）
+    return undefined;
+  }
+
+  function evalNode(node, ctx) {
+    switch (node.k) {
+      case 'num': return node.v;
+      case 'str': return node.v;
+      case 'lit': return node.v;
+      case 'id': {
+        if (ctx && Object.prototype.hasOwnProperty.call(ctx, node.name)) return ctx[node.name];
+        // 未在白名单上下文中 → 同 new Function 下的 ReferenceError 语义
+        throw new Error('safeEval: ' + node.name + ' is not defined');
+      }
+      case 'member': {
+        var obj = evalNode(node.obj, ctx);
+        return readMember(obj, node.prop);
+      }
+      case 'index': {
+        var o = evalNode(node.obj, ctx);
+        var idx = evalNode(node.idx, ctx);
+        if (typeof idx !== 'string' && typeof idx !== 'number') {
+          throw new Error('safeEval: index must be string or number');
+        }
+        return readMember(o, idx);
+      }
+      case 'unary': {
+        var a = evalNode(node.arg, ctx);
+        if (node.op === '!') return !a;
+        if (node.op === '-') return -a;
+        if (node.op === '+') return +a;
+        throw new Error('safeEval: bad unary op');
+      }
+      case 'logic': {
+        if (node.op === '&&') { var lv = evalNode(node.l, ctx); return lv ? evalNode(node.r, ctx) : lv; }
+        if (node.op === '||') { var lv2 = evalNode(node.l, ctx); return lv2 ? lv2 : evalNode(node.r, ctx); }
+        throw new Error('safeEval: bad logic op');
+      }
+      case 'cond': {
+        return evalNode(node.test, ctx) ? evalNode(node.cons, ctx) : evalNode(node.alt, ctx);
+      }
+      case 'bin': {
+        var l = evalNode(node.l, ctx), r = evalNode(node.r, ctx);
+        switch (node.op) {
+          case '+': return l + r;
+          case '-': return l - r;
+          case '*': return l * r;
+          case '/': return l / r;
+          case '%': return l % r;
+          case '<': return l < r;
+          case '>': return l > r;
+          case '<=': return l <= r;
+          case '>=': return l >= r;
+          case '==': return l == r;   // 宽松比较·与旧 new Function 行为一致
+          case '!=': return l != r;
+          case '===': return l === r;
+          case '!==': return l !== r;
+        }
+        throw new Error('safeEval: bad binary op ' + node.op);
+      }
+      case 'call': {
+        // 仅放行白名单调用：Math.<fn>(...) 与 安全宿主上的白名单只读方法
+        var callee = node.callee;
+        var fn, thisArg = undefined;
+        if (callee.k === 'member' && callee.obj.k === 'id' && callee.obj.name === 'Math' &&
+            !(ctx && Object.prototype.hasOwnProperty.call(ctx, 'Math'))) {
+          // Math.* —— 仅当 ctx 未自定义 Math 时才认作内置数学函数
+          if (!Object.prototype.hasOwnProperty.call(SAFE_MATH, callee.prop)) {
+            throw new Error('safeEval: Math.' + callee.prop + ' is not allowed');
+          }
+          fn = SAFE_MATH[callee.prop];
+        } else if (callee.k === 'member' || callee.k === 'index') {
+          // 形如 str.includes(...) / arr.indexOf(...)·经 readMember 守卫取出已 bind 的方法
+          var propName = callee.k === 'member' ? callee.prop : evalNode(callee.idx, ctx);
+          if (!Object.prototype.hasOwnProperty.call(SAFE_METHODS, String(propName))) {
+            throw new Error('safeEval: method "' + propName + '" is not allowed');
+          }
+          var host = evalNode(callee.obj, ctx);
+          fn = readMember(host, propName); // 返回 bind 过的安全方法
+        } else {
+          throw new Error('safeEval: only whitelisted function calls are allowed');
+        }
+        if (typeof fn !== 'function') throw new Error('safeEval: callee is not a function');
+        var args = node.args.map(function(a){ return evalNode(a, ctx); });
+        return fn.apply(thisArg, args);
+      }
+    }
+    throw new Error('safeEval: unknown node ' + (node && node.k));
+  }
+
+  // ── 核心入口（node 下亦可调用·供测试）──
+  function safeEvalCore(expr, ctx) {
+    if (typeof expr !== 'string') throw new Error('safeEval: expr must be string');
+    var ast = parse(tokenize(expr));
+    return evalNode(ast, ctx || null);
+  }
+
+  // node/测试环境：导出核心 + 内部件（便于单元测试 tokenizer/parser）
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      safeEval: safeEvalCore,
+      _tokenize: tokenize,
+      _parse: parse,
+      _evalNode: evalNode
+    };
+  }
+  // 同时暴露到全局核心引用（浏览器与 node 都可见·不依赖 window）
+  if (global && !global._TM_safeEvalCore) global._TM_safeEvalCore = safeEvalCore;
+
+  // 浏览器：仅在此把核心挂到 window.TM.safeEval（保持原对外接口与语义）
+  if (typeof window !== 'undefined') {
+    if (!window.TM) window.TM = {};
+    if (!window.TM.safeEval) window.TM.safeEval = safeEvalCore;
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this));
 
 // 核心指标显示名映射——动态从剧本 P.variables 读取（标记 isCore=true 的变量）
 // 引擎不硬编码任何指标名，全由编辑器定义。以下仅为兜底（无剧本加载时）。
@@ -368,6 +750,13 @@ function getNpcCognitionSnippet(name, opts) {
     if (cog.recentMood) bits.push('\u5FC3\u7EEA\uFF1A' + cog.recentMood);
   }
   // 自作文苑作品（文事系统·NPC 对自己的作品应了如指掌）
+  // 【sc07 升级·S3 消费】新增认知维度注入(恩怨/诉求/朝局判断/风闻)——让问对·朝议中的他更立体、更像本人
+  if (!short) {
+    if (cog.gratitudeGrudge) bits.push('恩怨：' + cog.gratitudeGrudge);
+    if (cog.agenda) bits.push('所求：' + cog.agenda);
+    if (cog.situationRead) bits.push('朝局判断：' + cog.situationRead);
+    if (cog.rumorVsFact) bits.push('风闻(未证)：' + cog.rumorVsFact);
+  }
   if (!short && window.GM && Array.isArray(window.GM.culturalWorks)) {
     var _myW = window.GM.culturalWorks.filter(function(w){return w && w.author === name;});
     if (_myW.length) {
@@ -1308,14 +1697,14 @@ function _trDownloadTxt(txt, turn){
 function saveP(){
   // 1. 写入 IndexedDB（主存储，无容量限制）
   if (typeof TM_SaveDB !== 'undefined') {
-    TM_SaveDB.saveProject(deepClone(P)).catch(function(e) {
+    TM_SaveDB.saveProject(_tmStripAiKeyInPlace(deepClone(P))).catch(function(e) {
       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP') : console.warn('[saveP] IndexedDB写入失败:', e); });
   }
   // 2. 写入 localStorage 骨架（轻量，<10KB，用于快速启动）
   try {
     var lite = {
       scenarios: (P.scenarios || []).map(function(s) { return {id:s.id, name:s.name, era:s.era, role:s.role}; }),
-      ai: P.ai,
+      ai: _tmStripAiKeyView(P).ai,
       // conf 镜像入轻量骨架——这是同步存储·随 saveP 一并写·用于在启动同步层即恢复用户设置(生成字数/推演深度/记忆容量等)
       // 修 2026-06-11·剧本 register() 在 DOMContentLoaded 早于异步 IndexedDB restore 跑·会用默认 conf 覆盖玩家保存的设置
       // 让 conf 经同步骨架抢先在 register 之前落到内存·register 的 saveP 便持久化正确 conf·竞态消除
@@ -1327,7 +1716,7 @@ function saveP(){
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] localStorage骨架写入失败:') : console.warn('[saveP] localStorage骨架写入失败:', e); }
   // 3. 桌面端额外保存
   if (window.tianming && window.tianming.isDesktop) {
-    window.tianming.autoSave(P).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] desktop failed:') : console.warn('[saveP] desktop failed:', e); });
+    window.tianming.autoSave(_tmStripAiKeyView(P)).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] desktop failed:') : console.warn('[saveP] desktop failed:', e); });
   }
 }
 
@@ -1366,6 +1755,57 @@ function _tmApplyMachinePrefsFromProject(project) {
   }
 }
 
+// 当缓存被判为「官方剧本不完整」而整体跳过恢复时，会连用户自建剧本一起丢（安卓/网页无桌面 autoSave 兜底）。
+// 真因：7MB 官方运行时快照走 requestIdleCallback 延迟注入，而 IndexedDB 恢复毫秒级先跑——若玩家在快照加载前
+// 就创建剧本并触发 saveP，存档里官方花名册尚未平铺到顶层（<30），重启即被守卫判为不完整。
+// 修：守卫触发时不再整体丢弃，而是「保留刚注册的官方数据 + 仅把用户自建剧本及其按 sid 归属的内容行合并回来」。
+// 自建剧本=缓存里有、但当前 P.scenarios（register 脚本刚注册的官方剧本）里没有的那些；官方剧本绝不从陈旧缓存覆盖。
+function _tmMergeCustomScenariosFromProject(project) {
+  if (!project || !Array.isArray(project.scenarios)) return 0;
+  if (!Array.isArray(P.scenarios)) P.scenarios = [];
+  var existing = {};
+  for (var i = 0; i < P.scenarios.length; i++) {
+    var s0 = P.scenarios[i];
+    if (s0 && s0.id != null) existing[s0.id] = true;
+  }
+  var customIds = {};
+  var added = 0;
+  for (var j = 0; j < project.scenarios.length; j++) {
+    var s = project.scenarios[j];
+    if (s && s.id != null && !existing[s.id]) {
+      P.scenarios.push(s);
+      existing[s.id] = true;
+      customIds[s.id] = true;
+      added++;
+    }
+  }
+  if (!added) return 0;
+  // 自建剧本按 sid 归属的内容行一并合并（空白剧本无行·此处自然跳过）
+  var COLLS = ['characters', 'factions', 'parties', 'classes', 'variables', 'events', 'relations', 'items', 'rigidHistoryEvents'];
+  for (var c = 0; c < COLLS.length; c++) {
+    var key = COLLS[c];
+    var srcRows = project[key];
+    if (!Array.isArray(srcRows)) continue;
+    if (!Array.isArray(P[key])) P[key] = [];
+    var have = {};
+    for (var h = 0; h < P[key].length; h++) {
+      var er = P[key][h];
+      if (er && er.sid != null && er.id != null) have[er.sid + '' + er.id] = true;
+    }
+    for (var r = 0; r < srcRows.length; r++) {
+      var row = srcRows[r];
+      if (!row || row.sid == null || !customIds[row.sid]) continue;   // 只收自建剧本的行·不碰官方行
+      if (row.id != null) {
+        var dk = row.sid + '' + row.id;
+        if (have[dk]) continue;
+        have[dk] = true;
+      }
+      P[key].push(row);
+    }
+  }
+  return added;
+}
+
 function _tmEmitPRestored(source) {
   try {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
@@ -1390,8 +1830,10 @@ function _tmEmitPRestored(source) {
       var saved = JSON.parse(s);
       if (_tmIsIncompleteOfficialProject(saved)) {
         _tmApplyMachinePrefsFromProject(saved);
+        // 不整体丢弃：保留刚注册的官方剧本，仅把用户自建剧本合并回来
+        var _mergedLite = _tmMergeCustomScenariosFromProject(saved);
         try { localStorage.removeItem('tm_P'); } catch(_){}
-        console.warn('[restoreP] skipped incomplete official scenario cache from tm_P');
+        console.warn('[restoreP] incomplete official cache from tm_P·保留官方·合并自建剧本 ' + _mergedLite + ' 个');
       } else {
         for (var key in saved) {
           if (saved.hasOwnProperty(key)) P[key] = saved[key];
@@ -1399,7 +1841,7 @@ function _tmEmitPRestored(source) {
         console.log('[restoreP] 从localStorage(tm_P)恢复, scenarios:', P.scenarios.length);
         // 迁移：旧格式存在则写入IndexedDB并清理
         if (typeof TM_SaveDB !== 'undefined') {
-          TM_SaveDB.saveProject(deepClone(P)).then(function() {
+          TM_SaveDB.saveProject(_tmStripAiKeyInPlace(deepClone(P))).then(function() {
             try { localStorage.removeItem('tm_P'); } catch(e) {}
             console.log('[restoreP] 已迁移tm_P到IndexedDB');
           });
@@ -1430,8 +1872,13 @@ function _tmEmitPRestored(source) {
       if (fullP && fullP.scenarios) {
         if (_tmIsIncompleteOfficialProject(fullP)) {
           _tmApplyMachinePrefsFromProject(fullP);
-          console.warn('[restoreP] skipped incomplete official scenario project from IndexedDB');
-          _tmEmitPRestored('indexeddb-incomplete-skip');
+          // 不整体丢弃：保留刚注册的官方剧本，仅把用户自建剧本合并回来（修安卓/网页重启自建剧本消失）
+          var _mergedN = _tmMergeCustomScenariosFromProject(fullP);
+          console.warn('[restoreP] incomplete official cache from IndexedDB·保留官方·合并自建剧本 ' + _mergedN + ' 个');
+          if (_mergedN && typeof showScnManage === 'function' && document.querySelector('.scn-page.show')) {
+            showScnManage();
+          }
+          _tmEmitPRestored('indexeddb-incomplete-merge-custom');
           return;
         }
         for (var key in fullP) {
@@ -1506,3 +1953,18 @@ function _buildAIUrlForTier(tier) {
   if (u.indexOf('/chat/completions') >= 0 || u.indexOf('/messages') >= 0) return u;
   return u + '/chat/completions';
 }
+
+// 存档脱敏·剥离玩家 AI key（key 真源在 localStorage['tm_api']，load 时 _preservedAi 会重新注入）
+function _tmStripAiKeyInPlace(o){ // 用于 deepClone 出的独立副本：原地删 key
+  if(o && o.ai && typeof o.ai==='object'){ try{ delete o.ai.key; if(o.ai.secondary&&typeof o.ai.secondary==='object') delete o.ai.secondary.key; }catch(_){} }
+  return o;
+}
+function _tmStripAiKeyView(o){ // 用于直接序列化运行时 P：返回浅拷视图，不改原 o
+  if(!o || !o.ai || typeof o.ai!=='object') return o;
+  var v={},k; for(k in o) if(Object.prototype.hasOwnProperty.call(o,k)) v[k]=o[k];
+  var ai={}; for(k in o.ai) if(Object.prototype.hasOwnProperty.call(o.ai,k)) ai[k]=o.ai[k];
+  delete ai.key;
+  if(ai.secondary&&typeof ai.secondary==='object'){ var s={},k2; for(k2 in ai.secondary) if(Object.prototype.hasOwnProperty.call(ai.secondary,k2)) s[k2]=ai.secondary[k2]; delete s.key; ai.secondary=s; }
+  v.ai=ai; return v;
+}
+if(typeof window!=='undefined'){ window._tmStripAiKeyInPlace=_tmStripAiKeyInPlace; window._tmStripAiKeyView=_tmStripAiKeyView; }

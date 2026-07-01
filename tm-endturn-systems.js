@@ -249,6 +249,11 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
     }
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] HistoricalPresets.tick 失败:') : console.error('[endTurn] HistoricalPresets.tick 失败:', e); }
 
+  // 6.155 全局持续规则演进（国是·风气：扎根度随在位/同类增长，遭阻力承压，suppressed 即名存实亡）
+  try {
+    if (typeof GlobalRulesEngine !== 'undefined' && GlobalRulesEngine.tick) GlobalRulesEngine.tick();
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] GlobalRulesEngine.tick 失败:') : console.error('[endTurn] GlobalRulesEngine.tick 失败:', e); }
+
   // 6.16 C/D/B/A/E 阶段补丁 tick
   try {
     if (typeof PhaseC !== 'undefined') PhaseC.tick({ turn: GM.turn, monthRatio: monthRatio, _monthRatio: monthRatio });

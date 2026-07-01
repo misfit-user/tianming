@@ -553,7 +553,9 @@
     var v = [];
     var chars = (draft && (draft.characters || draft.chars)) || [];
     if (!Array.isArray(chars) || !chars.length) return { ok: true, violations: [] };
-    var histNoWC = chars.filter(function (c) { return c && (c.isHistorical !== false) && !c.isFictional && !(c.wuchangOverride && typeof c.wuchangOverride === 'object'); });
+    // 虚构/架空世界：人物全是原创，没有「史实人物」之说——豁免「五常」要求（仍查能力越界与势力绑定一致性）。
+    var fictionWorld = !!(draft && draft.worldKind === 'fictional');
+    var histNoWC = fictionWorld ? [] : chars.filter(function (c) { return c && (c.isHistorical !== false) && !c.isFictional && !(c.wuchangOverride && typeof c.wuchangOverride === 'object'); });
     if (histNoWC.length) v.push('史实人物缺五常(wuchangOverride 仁义礼智信) ' + histNoWC.length + ' 人——履职系统消费·史实人物须定位。例：' + histNoWC.slice(0, 6).map(function (c) { return c.name || '?'; }).join('、'));
     var abil = ['intelligence', 'military', 'administration', 'charisma', 'diplomacy', 'valor', 'management'], oob = 0, oobName = '';
     chars.forEach(function (c) { if (!c) return; abil.forEach(function (f) { var x = c[f]; if (typeof x === 'number' && (x < 0 || x > 100)) { oob++; if (!oobName) oobName = (c.name || '?') + '.' + f + '=' + x; } }); });
@@ -1261,14 +1263,21 @@
   };
 
   /** 剧本结构速查（注入 loop prompt·让模型用对字段名与形状、守硬约束）。 */
-  function buildSchemaGuide() {
+  function buildSchemaGuide(worldKind) {
     var T = ENTITY_TEMPLATES;
+    var fiction = worldKind === 'fictional';
+    // 顶层字段说明：虚构世界把 dynasty/emperor 解读为「自拟政权/时代名」与「该世界最高统治者」，不要求真实朝代帝王。
+    var topLine = fiction
+      ? '- 顶层：name(剧本名) dynasty(时代/政权名·虚构世界填自拟名，如「天元历」「苍穹帝国」「魔历三千年」) emperor(最高统治者/主君·填该世界的君主或领袖名) overview(世界观概述) startYear playerInfo gameSettings'
+      : '- 顶层：name(剧本名) dynasty(朝代) emperor(帝王) overview(概述) startYear playerInfo gameSettings';
     return [
       '【剧本结构速查】（applyEdit/applyPush 时遵循这些字段名与形状）',
-      '- 顶层：name(剧本名) dynasty(朝代) emperor(帝王) overview(概述) startYear playerInfo gameSettings',
-      '  ※ 时间务必写入 gameSettings.startYear / gameSettings.startMonth（引擎权威读此·只写顶层 startYear 会导致进游戏显示公元前）',
+      topLine,
+      '  ※ 时间务必写入 gameSettings.startYear / gameSettings.startMonth（引擎权威读此·只写顶层 startYear 会导致进游戏显示公元前）' + (fiction ? '。虚构世界亦可用自拟纪年，但 startYear 仍填一个数字年份作引擎锚点（纪年显示名走 gameSettings.eraNames）。' : ''),
+      // 世界观容器（朝代中立·原本不在速查里·虚构/架空世界尤需用它承载背景设定）
+      '- world{history,politics,economy,military,culture,glossary,entries,rules} / worldSettings{culture,weather,religion,economy,technology,diplomacy}（世界观容器·把时代背景、地理山川、势力源流、力量/科技体系、特殊规则等写这里' + (fiction ? '——虚构世界的设定主要落在这两处，先把世界观立住再填人物势力' : '') + '）',
       '- factions[]（势力）: ' + JSON.stringify(T.faction),
-      '- characters[]（人物）: ' + JSON.stringify(T.character) + '  ← faction 必须等于某个 factions[].name',
+      '- characters[]（人物）: ' + JSON.stringify(T.character) + '  ← faction 必须等于某个 factions[].name' + (fiction ? '；虚构世界人物请置 isFictional:true（标记为原创人物）' : ''),
       '- parties[]（党派）: ' + JSON.stringify(T.party) + ' / classes[]（阶层）: ' + JSON.stringify(T['class']),
       '- military.initialTroops[]（开局部队）: ' + JSON.stringify(T.troop) + '  ← commander=人物名, faction=势力名',
       '- adminHierarchy{ "势力名":{ divisions:[ 区划 ] } }，区划递归含 .divisions；区划形如 ' + JSON.stringify(T.division),
@@ -1361,8 +1370,12 @@
   }
 
   // D1 \u00b7 \u8001\u7f16\u8f91\u5668\u5404\u90e8\u5206 AI \u751f\u6210\u8303\u5f0f\uff08\u5b9e\u65f6\u8bfb editor-fullgen.js \u7684 33 \u4e2a\u751f\u6210\u6b65\uff0c\u96f6\u590d\u5236\u96f6\u6f02\u79fb\uff09\u3002
-  function _genReferenceTool(part) {
+  function _genReferenceTool(part, worldKind) {
     if (typeof fetch !== 'function') return Promise.resolve({ ok: false, reason: '\u4ec5\u6d4f\u89c8\u5668\u5185\u53ef\u7528' });
+    // \u865a\u6784/\u67b6\u7a7a\u4e16\u754c\u89c2\uff1a\u8001\u7f16\u8f91\u5668\u8303\u5f0f\u6309\u53f2\u5b9e\u5267\u672c\u5199\u5c31\uff0c\u4ec5\u501f\u9274\u5b57\u6bb5\u5f62\u72b6/\u8bbe\u5b9a\u6df1\u5ea6\uff0c\u53f2\u5b9e\u8003\u636e\u8981\u6c42\u987b\u4e2d\u548c\u3002
+    var fictionNote = worldKind === 'fictional'
+      ? '\uff08\u6ce8\u610f\uff1a\u672c\u5267\u672c\u662f\u3010\u865a\u6784/\u67b6\u7a7a\u4e16\u754c\u89c2\u3011\u3002\u4ee5\u4e0a\u8303\u5f0f\u6309\u53f2\u5b9e\u5267\u672c\u5199\u5c31\uff0c\u4f60\u53ea\u501f\u9274\u5176\u5b57\u6bb5\u5f62\u72b6\u3001\u8bbe\u5b9a\u6df1\u5ea6\u3001\u6570\u503c\u533a\u95f4\uff1b\u5176\u4e2d\u300c\u51e1\u300a\u4e8c\u5341\u56db\u53f2\u300b\u6709\u4f20\u2192type\u5fc5\u987bhistorical\u300d\u300cbio\u987b\u5f15\u6b63\u53f2\u53f2\u6599\u300d\u300c\u6570\u503c\u5fc5\u987b\u57fa\u4e8e\u53f2\u5b9e\u300d\u7b49\u771f\u5b9e\u5386\u53f2\u8003\u636e\u8981\u6c42\u4e00\u5f8b\u5ffd\u7565\u2014\u2014\u4eba\u7269\u6309\u539f\u521b\u521b\u4f5c\u3001type \u4e00\u5f8b\u586b "fictional"\u3001\u6570\u503c\u6309\u8be5\u4e16\u754c\u8bbe\u5b9a\u81ea\u6d3d\u8bc4\u4f30\u3001bio \u5199\u539f\u521b\u5c0f\u4f20\u4e0d\u5fc5\u5f15\u53f2\u6599\u3002\uff09'
+      : '';
     function deU(x) { return String(x == null ? '' : x).replace(/\\u([0-9a-fA-F]{4})/g, function (_, h) { return String.fromCharCode(parseInt(h, 16)); }); }
     return fetch('/editor-fullgen.js').then(function (r) { return r.ok ? r.text() : ''; }).then(function (text) {
       if (!text) return { ok: false, reason: '\u8bfb\u4e0d\u5230 editor-fullgen.js' };
@@ -1378,7 +1391,7 @@
       var nextIdx = steps.filter(function (x) { return x.idx > hit.idx; }).map(function (x) { return x.idx; }).sort(function (a, b) { return a - b; })[0];
       var end = nextIdx || Math.min(text.length, hit.idx + 3500);
       var block = text.slice(hit.idx, Math.min(end, hit.idx + 3500));
-      return { ok: true, found: true, part: hit.key, label: hit.label, file: 'editor-fullgen.js', guide: '\u8001\u7f16\u8f91\u5668\u751f\u6210\u300c' + hit.label + '\u300d\u7684\u63d0\u793a\u8bcd+\u6821\u9a8c\u53c2\u8003\u2014\u2014\u501f\u9274\u5176\u8bbe\u5b9a\u6df1\u5ea6/\u5b57\u6bb5\u5f62\u72b6/\u671d\u4ee3\u903b\u8f91/\u53c2\u6570\u533a\u95f4\uff1b\u4f60\u662f\u5de5\u5177\u6d41\uff0c\u522b\u7167\u6284"\u53ea\u8f93\u51faJSON"\u3002', reference: deU(block) };
+      return { ok: true, found: true, part: hit.key, label: hit.label, file: 'editor-fullgen.js', guide: '\u8001\u7f16\u8f91\u5668\u751f\u6210\u300c' + hit.label + '\u300d\u7684\u63d0\u793a\u8bcd+\u6821\u9a8c\u53c2\u8003\u2014\u2014\u501f\u9274\u5176\u8bbe\u5b9a\u6df1\u5ea6/\u5b57\u6bb5\u5f62\u72b6/\u671d\u4ee3\u903b\u8f91/\u53c2\u6570\u533a\u95f4\uff1b\u4f60\u662f\u5de5\u5177\u6d41\uff0c\u522b\u7167\u6284"\u53ea\u8f93\u51faJSON"\u3002' + fictionNote, reference: deU(block) };
     }).catch(function (e) { return { ok: false, reason: '\u8bfb\u53d6\u51fa\u9519\uff1a' + ((e && e.message) || e) }; });
   }
 
@@ -1529,7 +1542,7 @@
         return { ok: true, count: sv.length, fields: sv.map(function (s) { return s.field + (s.title ? '(' + s.title + ')' : '') + (s.required ? '\u00b7\u5fc5\u9700' : ''); }) };
       }
       case 'readSource': return _readSourceTool(input.path, input.offset, input.limit);
-      case 'genReference': return _genReferenceTool(input.part);
+      case 'genReference': return _genReferenceTool(input.part, (draft && draft.worldKind === 'fictional') ? 'fictional' : 'historical');
       case 'mapOverview': {
         var _m = (draft && draft.map) || (draft && draft.mapData) || {};
         var _rg = Array.isArray(_m.regions) ? _m.regions : [];
@@ -1768,14 +1781,24 @@
   }
 
   // focus（刀3 · 对抗式三角色）：'history'=史官只查史实硬伤·'balance'=谏官只批平衡死局可玩性·空=通用六维审阅官
-  function _buildReviewSystemPrompt(conventions, focus) {
+  function _buildReviewSystemPrompt(conventions, focus, worldKind) {
+    var fiction = worldKind === 'fictional';
     var head, dims;
     if (focus === 'history') {
-      head = '你是历史策略游戏「天命」的【史官】，现在为剧本做史实核查：把涉及史实处逐一核对，只诊断硬伤、不修改。';
-      dims = [
-        '· 史实合理性（本职·重点）：人物生卒与年龄、年号与纪年、官职名称与品级、地理建置与地名、势力存废时间，是否与设定时代相符；有无张冠李戴、时代错置、把虚构当定论、把孤证当信史；',
-        '· 旁及：凡落了确定口吻的具体史实都该经得起推敲，拿不准的应改保守措辞或标存疑。'
-      ];
+      if (fiction) {
+        // 虚构世界没有「正史」可对：史官改任「设定核查官」，查的是世界观自洽而非真实史实。
+        head = '你是策略游戏「天命」的【设定核查官】，现在为这个【虚构/架空世界观】剧本做自洽核查：把世界观设定逐一比对，只诊断前后矛盾、不修改。';
+        dims = [
+          '· 设定自洽性（本职·重点）：势力国号/称谓/源流、纪年与前史、地理建置与地名、力量/科技/修行体系、人物身世与时间线，前后是否一致；有无自相矛盾、设定破例（如已立的规则被无故打破）、张冠李戴；',
+          '· 旁及：凡落了确定口吻的设定都应与已确立的世界观相容；拿不准是否冲突的，应标存疑交玩家定夺。不要用真实历史去挑这个原创世界的「错」。'
+        ];
+      } else {
+        head = '你是历史策略游戏「天命」的【史官】，现在为剧本做史实核查：把涉及史实处逐一核对，只诊断硬伤、不修改。';
+        dims = [
+          '· 史实合理性（本职·重点）：人物生卒与年龄、年号与纪年、官职名称与品级、地理建置与地名、势力存废时间，是否与设定时代相符；有无张冠李戴、时代错置、把虚构当定论、把孤证当信史；',
+          '· 旁及：凡落了确定口吻的具体史实都该经得起推敲，拿不准的应改保守措辞或标存疑。'
+        ];
+      }
     } else if (focus === 'balance') {
       head = '你是历史策略游戏「天命」的【谏官】，现在为剧本批可玩性与平衡：只挑失衡、死局与无趣，不修改。';
       dims = [
@@ -1784,10 +1807,12 @@
         '· 可玩性：玩家开局目标是否清晰、有无可操作抓手、节奏是否合理、忠奸是否脸谱化。'
       ];
     } else {
-      head = '你是历史策略游戏「天命」的剧本审阅官，现在处于【审阅模式】：把剧本当作品做体检，只诊断、不修改。';
+      head = (fiction ? '你是策略游戏「天命」的剧本审阅官，现在为这个【虚构/架空世界观】剧本做体检' : '你是历史策略游戏「天命」的剧本审阅官，现在处于【审阅模式】：把剧本当作品做体检') + '，只诊断、不修改。';
       dims = [
         '· 平衡性：势力强弱/资源/兵力是否失衡，是否某方碾压或开局即崩；',
-        '· 史实合理性：人物/势力/时间/官职/地理是否与设定时代相符，有无硬伤；',
+        (fiction
+          ? '· 设定自洽性：人物/势力/时间/地理/力量体系前后是否一致，有无自相矛盾或设定破例（不要用真实历史挑这个原创世界的错）；'
+          : '· 史实合理性：人物/势力/时间/官职/地理是否与设定时代相符，有无硬伤；'),
         '· 可玩性：玩家开局目标是否清晰、是否有可操作的抓手、节奏是否合理；',
         '· 死局风险：是否存在玩家无论如何都赢不了/活不过的结构性死局；',
         '· 内容缺口：运行时必需但缺失的字段（listGaps）、缺关键人物/事件/关系；',
@@ -1800,7 +1825,7 @@
         '逐条要可定位（指出具体实体/字段）、给可执行建议、按严重度（高/中/低）标注；只报本职范围内最值得修的问题，别凑数。充分查证后调用 submitReview 提交报告；绝不调用任何修改工具、绝不改剧本。',
         _conventionsBlock(conventions),
         '',
-        buildSchemaGuide()
+        buildSchemaGuide(worldKind)
       ]).join('\n');
   }
 
@@ -1827,20 +1852,32 @@
     ].join('\n');
   }
 
-  function _buildSystemPrompt(conventions) {
+  function _buildSystemPrompt(conventions, worldKind) {
+    var fiction = worldKind === 'fictional';
+    // 世界类型分支：虚构世界观（奇幻/武侠/未来/异世界/架空历史等原创设定）下，去掉「违背史实即硬伤」的史实锚定，
+    // 改以「世界观自洽性」为判据；史实世界保持原有考据铁律不变。
+    var head = fiction
+      ? '你是策略游戏「天命」的剧本编辑助手。当前剧本是【虚构/架空世界观】——可为奇幻、武侠、仙侠、未来、异世界、架空历史等原创设定，不受真实历史约束。你的职责是帮玩家把这个原创世界建得自洽、丰满、可玩。通过调用工具编辑剧本草稿，满足用户需求。'
+      : '你是历史策略游戏「天命」的剧本编辑助手。通过调用工具编辑剧本草稿，满足用户需求。';
+    var ruleRemonstrate = fiction
+      ? '⑪【遇硬伤先进谏·别默默照做】虚构世界不存在「与正史不符」这种错（这是原创设定，玩家说了算）。你进谏的依据只有三类：世界观自洽性（前后设定自相矛盾，如同一势力两处国号不一、力量体系破例）、平衡（某方碾压/开局即崩/数值严重失衡）、可玩性（结构性死局/无操作抓手）。遇这三类才调 remonstrate：一句话说清利害＋给一个可一键采纳的替代方案，停下等玩家定夺。severity 用「设定/平衡/机制」（虚构世界不要用「史实」）。别为风格口味打断；玩家听谏后仍坚持的，尊重其设定、照办。'
+      : '⑪【遇硬伤先进谏·别默默照做】当玩家需求确有硬伤——明显违背史实（年号/生卒/职官/事件与正史冲突）、会致某势力开局即崩盘或数值严重失衡、或把某朝专名当通用机制（违反朝代中立）——先调 remonstrate 进谏：一句话说清利害＋给一个可一键采纳的替代方案，停下来等玩家定夺，别默默照做。这是「国师」的本分：给硬核可信的判断而非有求必应。但只在确有硬伤时进谏，别动辄劝阻、别为小事打断；玩家听谏后仍坚持的，尊重玩家最终决定、照办。';
+    var ruleSelfCheck = fiction
+      ? '⑫【设定自洽·建档自查】虚构世界不要用 checkHistory 纠结真实史实（这是原创世界，没有「正史」可对）。改用 note 把你为这个世界确立的设定逐条记下来——地理山川、势力源流与恩怨、力量/科技/修行体系、纪年与重大前史、关键名物——后续新增内容都要与已记设定保持一致、不自相矛盾。把世界观背景写进 world / worldSettings / overview。真拿不准某处会不会和既有设定冲突时，用 flagUncertain 标出来交玩家定夺。'
+      : '⑫【先核后写·自查证】新增/改写涉及具体史实的内容（年号纪年、人物生卒与年龄、职官名称品级、重大事件时间地点）前，先用 checkHistory 把你将依据的关键史实逐条列出并自评把握：把握高的照写；把握低/拿不准的，落字用保守措辞（约/相传/据载）并对该路径 flagUncertain，绝不把存疑当确定口吻硬写。这是「国师」对硬核可信的本分。注意：无外部资料时这是自我审视，治"自信地编"，但变不出你本就不知道的事——真拿不准就老实标出来交玩家定夺。';
     return [
-      '你是历史策略游戏「天命」的剧本编辑助手。通过调用工具编辑剧本草稿，满足用户需求。',
+      head,
       '⓪ 多步/复杂任务先用 note 记一句计划（1. 2. 3.）再动手；用 listCollection/describeSchema 看清现状与字段、bulkAdd/multiEdit 一次多改提效。若需求含糊到无法动手（缺关键信息），先用 askClarification 问 1-3 个具体问题再继续；需求清楚就直接做。',
       '规则：① 只用工具修改/查询，不要直接输出 JSON 剧本正文。② 中文显示名（人物/势力/地名）保持中文，禁止英译。',
       '③ 先用 getField（单路径）/getFields（批量·一次读多个路径，省往返，需同时核对多处状态时优先用它，别一个个 getField）/searchEntities/listGaps 查看现状与规格缺口再改；不确定东西在哪个集合时用 globalSearch 全局检索定位。想确认正式游戏怎么读某字段、读不读它，用 fieldContract 查契约（按需查，别凭印象）。想看游戏 UI/逻辑的源码实现，用 listSource 找文件、readSource 读、grepSource 全局搜——可直接读整个代码库。生成或大改某部分(人物/势力/经济/官制/封臣…)前，先 genReference 看老编辑器对该部分的生成范式(设定深度/字段形状/朝代逻辑/参数区间)，借鉴后再动手。改地图归属（把某地块划给某势力、调整疆域归属）时，先 mapOverview 看清现有地块/归属/势力，再 mapAssignOwner 按地块名+势力名改（自动上色、同步 map/mapData）。与用户需求相关的必需缺口顺手补齐，让剧本完整可玩。④ 每改完一批用 validateDraft 自查，有违规继续修（写类工具 applyEdit/applyPush/multiEdit/bulkAdd 的返回已回挂变更后的当前值 nowValue/nowValues/collectionLength，据此确认改动已落地，无需再 getField 重读确认）。⑤ 改好后用 preflight 跑运行时体检（确保游戏能正常加载），有 blockers 继续修到 bootable，再调用 finish——summary 要向玩家说清「改了什么、为什么这么改」（具体到关键实体/字段，2-4 句中文），不要只写"完成"。',
       '⑥ 若发现该玩家/剧本有值得长期沿用的约定（命名规律、文风、设定惯例），可调 recordConvention 记一条（仅在确有发现时，别凑数）。⑦ 改名优先用 renameEntity（联动所有引用、不留死链）；删除实体前先 findReferences 查谁引用了它。⑧ 对没把握的改动（史实存疑、靠推测填充）调 flagUncertain 标一下路径，提醒玩家重点复核（只标真没把握的）。',
       '⑨【填实·禁空内容·铁律】新增或改写实体必须填到可直接用的质量，绝不留空：先用 listCollection / searchEntities 看一两个剧本里已有的同类实体（或 genReference 看生成范式），照着它们的字段集与丰满度，把新实体的所有相关字段都填上有意义的中文内容——身份/官衔/数值(能力/人口/兵力等)/背景小传/性格/目标/关系/履历等该有的都要有，数值要符合设定区间、彼此自洽。禁止留空字符串、0 占位（除非数值确为 0）、"待补/TODO/未知/暂无"之类占位词，也禁止只填 name 就交差。createEntity 模板只是最小骨架，拿到后必须逐字段补全。宁可少加一个实体，也要把加的每个都填实、达到与官方实体同等的完整度。',
       '⑩【高权限·可写任意字段】你对剧本草稿有完全的写入权限：applyEdit/applyPush 可以创建任意新字段、新嵌套结构，包括剧本编辑器当前没有专门面板/不在结构速查/fieldContract 查不到的"非标准/自定义"字段——编辑器会自动吸收并展示这些字段，不会丢。fieldContract 返回"不在游戏字段契约中"只表示它是扩展/自定义字段（正式游戏不直接读），并不代表禁止写；只要对实现用户需求有用就大胆写。唯一不可改的是：剧本唯一 id、下划线开头的内部字段、ai/conf/meta 等配置（改这些会损坏剧本）。其余一切随需求自由创建与修改。',
-      '⑪【遇硬伤先进谏·别默默照做】当玩家需求确有硬伤——明显违背史实（年号/生卒/职官/事件与正史冲突）、会致某势力开局即崩盘或数值严重失衡、或把某朝专名当通用机制（违反朝代中立）——先调 remonstrate 进谏：一句话说清利害＋给一个可一键采纳的替代方案，停下来等玩家定夺，别默默照做。这是「国师」的本分：给硬核可信的判断而非有求必应。但只在确有硬伤时进谏，别动辄劝阻、别为小事打断；玩家听谏后仍坚持的，尊重玩家最终决定、照办。',
-      '⑫【先核后写·自查证】新增/改写涉及具体史实的内容（年号纪年、人物生卒与年龄、职官名称品级、重大事件时间地点）前，先用 checkHistory 把你将依据的关键史实逐条列出并自评把握：把握高的照写；把握低/拿不准的，落字用保守措辞（约/相传/据载）并对该路径 flagUncertain，绝不把存疑当确定口吻硬写。这是「国师」对硬核可信的本分。注意：无外部资料时这是自我审视，治"自信地编"，但变不出你本就不知道的事——真拿不准就老实标出来交玩家定夺。',
+      ruleRemonstrate,
+      ruleSelfCheck,
       _conventionsBlock(conventions),
       '',
-      buildSchemaGuide()
+      buildSchemaGuide(worldKind)
     ].join('\n');
   }
 
@@ -2024,7 +2061,10 @@
     var explainOnly = !!opts.explainOnly;   // 方向N · 讲解模式：只读 + submitExplanation，不动剧本
     var tools = explainOnly ? _explainTools() : (qaOnly ? _qaTools() : (reviewOnly ? _reviewTools() : (planOnly ? _planTools() : (opts.tools || AGENT_TOOLS))));
     var conventions = (opts.conventions != null ? opts.conventions : loadConventions()) || '';   // 方向B · 剧本约定（每次 run 注入·等价 CLAUDE.md）
-    var system = explainOnly ? _buildExplainSystemPrompt(conventions) : (qaOnly ? _buildQaSystemPrompt(conventions) : (reviewOnly ? _buildReviewSystemPrompt(conventions, opts.reviewFocus) : (planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions))));
+    // 世界类型：史实(默认) / 虚构(架空·奇幻·武侠·未来·异世界等)。优先 opts.worldKind(UI 显式声明)，否则读剧本持久字段 draft.worldKind；
+    // 虚构档去史实锚定、点出 world/worldSettings 容器、校验豁免「五常」。非 'fictional' 一律归史实。
+    var worldKind = (opts.worldKind || (draft && draft.worldKind) || 'historical') === 'fictional' ? 'fictional' : 'historical';
+    var system = explainOnly ? _buildExplainSystemPrompt(conventions) : (qaOnly ? _buildQaSystemPrompt(conventions) : (reviewOnly ? _buildReviewSystemPrompt(conventions, opts.reviewFocus, worldKind) : (planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions, worldKind))));
     var surfaces = _getFieldSurfaces(opts);   // 刀A · 规格（游戏运行时要什么）
     var editorContext = opts.editorContext || '';   // 上下文感知：编辑器当前焦点（模块/集合/选中实体）
     var exemplars = opts.exemplars || '';   // 方向J · few-shot 范例（开关式·编辑官方剧本时即官方范例）

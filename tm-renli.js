@@ -560,11 +560,39 @@
     });
   }
 
-  // 过回合入口：先种子(试点·数据驱动)·再归集优免(含诡寄折叠)·再跑农政 tick·末施崩坏点火压力(刀A)
+  // ── 刀一：天时→粮产直连（灾异/小冰期/国难→ r.weather → tickLeaf 粮产·激活灾害触发粮荒）──
+  // 现状 r.weather 仅 smoke 写、live 恒默认 1.0→旱灾/小冰期永不减收成。此处把既有灾情信号填进 r.weather(tick 前)。
+  var CLIMATE_W = 0.3;        // carryingCapacity.climate 偏离 1.0 之权重（小冰期慢拖累）
+  var DISASTER_W = 1.5;       // RegionStatus 灾异 econPct(负)→收成拖累权重（-0.2 旱灾→weather≈0.7 大旱·合设计§4.3）
+  var NAT_DISASTER_W = 0.2;   // 全国 disasterLevel 拖累权重（国难普减）
+  function _disasterDragOf(leaf) {
+    var fx = (leaf && Array.isArray(leaf.statusEffects)) ? leaf.statusEffects : [];
+    var s = 0;
+    for (var i = 0; i < fx.length; i++) { var e = fx[i]; if (e && e.kind === 'disaster' && isFinite(Number(e.econPct)) && Number(e.econPct) < 0) s += Number(e.econPct); }
+    return s; // ≤0
+  }
+  function refreshWeather(GM, Pp) {
+    Pp = Pp || _P();
+    if (!GM || !GM.renli) return;
+    var natLevel = (GM.vars && isFinite(Number(GM.vars.disasterLevel))) ? clamp(Number(GM.vars.disasterLevel), 0, 1) : 0;
+    var natDrag = -clamp(natLevel * NAT_DISASTER_W, 0, 0.25);
+    leaves(Pp).forEach(function (leaf) {
+      if (!leaf || !leaf.renliSeed) return;                       // 仅已种子（live 安全·未激活省不动）
+      var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
+      var cc = leaf.carryingCapacity;
+      var climate = (cc && isFinite(Number(cc.climate))) ? Number(cc.climate) : null;
+      var climateAdj = (climate != null) ? clamp((climate - 1) * CLIMATE_W, -0.2, 0.1) : 0; // 小冰期(<1)拖累·暖年(>1)微利
+      var disasterDrag = clamp(_disasterDragOf(leaf) * DISASTER_W, -0.5, 0);                // 本地灾异(旱/洪/蝗…)
+      r.weather = clamp(Math.round((1.0 + climateAdj + disasterDrag + natDrag) * 100) / 100, 0.3, 1.3);
+    });
+  }
+
+  // 过回合入口：先种子(试点·数据驱动)·再归集优免(含诡寄折叠)·填天时(刀一)·再跑农政 tick·末施崩坏点火压力(刀A)
   function endturnTick(GM, Pp) {
     Pp = Pp || _P();
     try { ensurePilotSeeds(GM, Pp); } catch (_) {}
     try { refreshExempt(GM, Pp); } catch (_) {}
+    try { refreshWeather(GM, Pp); } catch (_) {}
     tick(GM, Pp);
     try { applyUnrestPressure(GM, Pp); } catch (_) {}
     try { refreshReported(GM, Pp); } catch (_) {}
@@ -1048,9 +1076,10 @@
     applyUnrestPressure: applyUnrestPressure, formatForPrompt: formatForPrompt,
     refreshReported: refreshReported, getReportedVsTruth: getReportedVsTruth, formatReportedForPrompt: formatReportedForPrompt,
     spawnReportedChannels: spawnReportedChannels, applyGrainShortfall: applyGrainShortfall,
+    refreshWeather: refreshWeather,
     seededRegionKeySet: seededRegionKeySet, seededDingShare: seededDingShare,
     wtHardChange: wtHardChange,
-    VERSION: 4.1
+    VERSION: 4.2
   };
 
   if (typeof window !== 'undefined') { window.TM = window.TM || {}; window.TM.Renli = api; }

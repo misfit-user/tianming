@@ -118,6 +118,39 @@
   //  P0-1 · 权臣 NPC 系统
   // ═══════════════════════════════════════════════════════════════════
 
+  // S1a·权臣复活开关（默认关）。原 `_tenureMonths` 全代码从不递增——只在轮换(tm-prophecy:285)被设 0、
+  //   被权臣候选(≥24月·_detectPowerMinister)与坐大 drain(>60月·tm-authority-engines)读取——故候选恒空、
+  //   整套截留奏疏/自拟诏书/篡位终局形同虚设。关 → _tenureMonths 恒 0 = 零回归；
+  //   开 → 任职月数按月真递增，权臣系统活起来。启用：P.conf.powerMinisterEnabled = true（或 P.ai.同名）。
+  function _powerMinisterEnabled() {
+    try {
+      var P = global.P || {};
+      var ai = P.ai || {}, conf = P.conf || {};
+      return !!(ai.powerMinisterEnabled || conf.powerMinisterEnabled);
+    } catch (e) { return false; }
+  }
+
+  var _OFF_TENURE_RETIRE_RE = /致仕|乞骸|休致|归田|丁忧|守制/;
+
+  // S1a·任职月数递增（修死锁）：在任者 _tenureMonths 按月(mr)累加；失官/致仕者归零（重置权臣钟）。
+  //   置于 _detectPowerMinister 之前，使本回合新增任期当回合即被候选判定读到。
+  function _tickOfficeTenure(ctx, mr) {
+    if (!_powerMinisterEnabled()) return;
+    var G = global.GM;
+    if (!G || !Array.isArray(G.chars)) return;
+    var step = (mr > 0) ? mr : 1;
+    for (var i = 0; i < G.chars.length; i++) {
+      var c = G.chars[i];
+      if (!c || c.alive === false) continue;
+      var title = c.officialTitle || '';
+      if (title && !_OFF_TENURE_RETIRE_RE.test(title)) {
+        c._tenureMonths = (c._tenureMonths || 0) + step;
+      } else if (c._tenureMonths) {
+        c._tenureMonths = 0;   // 失官/致仕/守制 → 权臣资历清零
+      }
+    }
+  }
+
   function _detectPowerMinister(ctx) {
     var G = global.GM;
     if (!G.huangquan || !G.chars) return null;
@@ -1395,6 +1428,7 @@
     ctx = ctx || {};
     var mr = ctx.monthRatio || 1;
     try { _tickMinxinMatrix(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] matrix:') : console.error('[auth-c] matrix:', e); }
+    try { _tickOfficeTenure(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] tenure:') : console.error('[auth-c] tenure:', e); }
     try { _detectPowerMinister(ctx); _tickPowerMinister(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] pm:') : console.error('[auth-c] pm:', e); }
     try { _tickRevoltUpgrade(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] revolt:') : console.error('[auth-c] revolt:', e); }
     try { _tickTyrantSyndrome(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] tyrant:') : console.error('[auth-c] tyrant:', e); }
@@ -1460,6 +1494,9 @@
     getAuthorityQuadrant: getAuthorityQuadrant,
     computeEdictExecutionRate: computeEdictExecutionRate,
     getExtendedAIContext: getExtendedAIContext,
+    tickOfficeTenure: _tickOfficeTenure,
+    detectPowerMinister: _detectPowerMinister,
+    isPowerMinisterEnabled: _powerMinisterEnabled,
     REVOLT_LEVELS: REVOLT_LEVELS,
     HEAVEN_SIGNS: HEAVEN_SIGNS,
     AUSPICIOUS_SIGNS: AUSPICIOUS_SIGNS,

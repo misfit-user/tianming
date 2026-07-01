@@ -220,54 +220,8 @@ function calculateEraModifier(candidate, context) {
 }
 
 // 批量计算候选人权重并排序
-function rankCandidatesByWeight(candidates, context) {
-  if (!candidates || candidates.length === 0) return [];
-
-  var rankedCandidates = candidates.map(function(candidate) {
-    var weightResult = calculateCandidateWeight(candidate, context);
-    return {
-      candidate: candidate,
-      weight: weightResult.total,
-      breakdown: weightResult.breakdown,
-      eraModifier: weightResult.eraModifier
-    };
-  });
-
-  // 按权重降序排序
-  rankedCandidates.sort(function(a, b) {
-    return b.weight - a.weight;
-  });
-
-  return rankedCandidates;
-}
 
 // 生成权重分析报告
-function generateWeightReport(rankedCandidates) {
-  if (!rankedCandidates || rankedCandidates.length === 0) {
-    return '无候选人';
-  }
-
-  var report = '【候选人权重分析】\n\n';
-
-  rankedCandidates.forEach(function(item, index) {
-    var candidate = item.candidate;
-    var breakdown = item.breakdown;
-
-    report += (index + 1) + '. ' + candidate.name + '（总分：' + item.weight.toFixed(2) + '）\n';
-    report += '   能力：' + breakdown.ability.toFixed(2) + ' | ';
-    report += '关系：' + breakdown.relationship.toFixed(2) + ' | ';
-    report += '政治：' + breakdown.political.toFixed(2) + '\n';
-    report += '   时代系数：' + item.eraModifier.toFixed(2) + '\n';
-
-    if (candidate.note) {
-      report += '   备注：' + candidate.note + '\n';
-    }
-
-    report += '\n';
-  });
-
-  return report;
-}
 
 // ============================================================
 // NPC Engine 双层分离架构
@@ -596,12 +550,6 @@ NpcBehaviorRegistry.register('court_politics', function(npc, target, d, ctx) { e
 // ===== 执行层 =====
 
 // NPC 行为执行（通过注册表分发）
-function npcExecutionLayer(npc, decision, context) {
-  if (!decision || !decision.shouldExecute) return;
-  _dbg('[NPC Engine] ' + npc.name + ' 执行行为：' + decision.behaviorType + ' -> ' + decision.target);
-  NpcBehaviorRegistry.execute(npc, decision, context);
-  addEB('NPC行为', npc.name + '：' + decision.intent);
-}
 
 // 执行任命行为
 function executeAppointBehavior(npc, target, decision, context) {
@@ -1147,11 +1095,6 @@ function _npcHasRealParty(npc) {
   return !!party && party !== '\u65E0\u515A\u6D3E' && party.toLowerCase() !== 'none';
 }
 
-function _npcHasRealFaction(npc) {
-  var faction = String(npc && npc.faction || npc && npc.factionName || '').trim();
-  return !!faction && faction.toLowerCase() !== 'none';
-}
-
 function _npcSameFaction(a, b) {
   var af = String(a && (a.faction || a.factionName) || '').trim();
   var bf = String(b && (b.faction || b.factionName) || '').trim();
@@ -1245,6 +1188,22 @@ function _npcRecentTargetPenalty(npc, type, target) {
   return maxPenalty;
 }
 
+// ★2026-07-01 W2a·NPC自主决策纳入记忆链条:此前 _selectNpcActionTarget 只按党派/野心/忠诚/才干打分选对象·
+//   完全不读「此人对目标的印象/好感」(记忆底座 _impressions)——W1汇流审计坐实的缺口。此助手读好感(-100..100)·
+//   令 NPC 更倾向与亲近信任者密谋通书、构陷素所记恨者·把记忆真正接进自主推演的对象选择(确定性·无好感回退0=旧行为)。
+//   优先走零调用的 NpcMemorySystem.getImpression(点亮死API)·失败回退直读 _impressions.favor。
+function _npcFavorToward(npc, targetName) {
+  if (!npc || !targetName) return 0;
+  try {
+    if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getImpression) {
+      var imp = NpcMemorySystem.getImpression(npc.name, targetName);
+      if (typeof imp === 'number') return imp;
+      if (imp && typeof imp.favor === 'number') return imp.favor;
+    }
+  } catch (_e) {}
+  var d = npc._impressions && npc._impressions[targetName];
+  return (d && typeof d.favor === 'number') ? d.favor : 0;
+}
 function _selectNpcActionTarget(npc, type, context) {
   if (!npc || !npc.name) return '';
   var people = _npcLiveCharacters().filter(function(ch) { return ch.name !== npc.name && !ch.isPlayer; });
@@ -1260,6 +1219,7 @@ function _selectNpcActionTarget(npc, type, context) {
       if (findNpcOffice(ch.name)) score += 6;
       score += Math.max(0, (ch.ambition || 50) - 50) * 0.1;
       score += Math.max(0, 75 - (ch.loyalty || 50)) * 0.05;
+      score += _npcFavorToward(npc, ch.name) * 0.2;   // W2a·亲近信任者更可能被引为同谋/结网·记恨者避之
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
@@ -1276,6 +1236,7 @@ function _selectNpcActionTarget(npc, type, context) {
       score += Math.max(0, (ch.intelligence || 50) - 50) * 0.08;
       score += Math.max(0, 80 - (ch.loyalty || 50)) * 0.25;
       score -= Math.max(0, (ch.integrity || 50) - 75) * 0.8;
+      score += _npcFavorToward(npc, ch.name) * 0.18;   // W2a·更愿与好感高者私相通书
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
@@ -1290,6 +1251,7 @@ function _selectNpcActionTarget(npc, type, context) {
       if (findNpcOffice(ch.name)) score += 6;
       score += Math.max(0, (ch.intelligence || 50) - 50) * 0.18;
       score += Math.max(0, (ch.integrity || 50) - 45) * 0.12;
+      score += _npcFavorToward(npc, ch.name) * 0.12;   // W2a·举荐倾向自己赏识者·不荐所恶
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
@@ -1308,6 +1270,7 @@ function _selectNpcActionTarget(npc, type, context) {
       if (findNpcOffice(ch.name)) score += 6;
       score += Math.max(0, (ch.ambition || 50) - 55) * 0.15;
       score += Math.max(0, (ch.intelligence || 50) - 55) * 0.08;
+      score += (-_npcFavorToward(npc, ch.name)) * 0.2;   // W2a·记恨者(负好感)更易成构陷/弹劾目标·友好者(正好感)则避之
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
@@ -1321,6 +1284,7 @@ function _selectNpcActionTarget(npc, type, context) {
       if (ch.motherClan && npc.motherClan && ch.motherClan !== npc.motherClan) score += 10;
       score += Math.max(0, (ch.charisma || 50) - 50) * 0.08;
       score += Math.max(0, (ch.ambition || 50) - 45) * 0.12;
+      score += Math.max(0, -_npcFavorToward(npc, ch.name)) * 0.15;   // W2a·宫斗倾向所忌所恶者
       score -= _npcRecentTargetPenalty(npc, type, ch.name);
       return { ch: ch, score: score };
     }).filter(function(item) { return item.score > 0; }).sort(_npcTargetSort);
@@ -1672,6 +1636,8 @@ function executeConspireBehavior(npc, target, decision, context) {
   }
   addEB('暗流', npc.name + '暗中联络人脉。');
   _npcRemember(npc.name, '暗中串联' + (target ? '·' + target : ''), '密', 6, target || '同党');
+  // ★2026-07-01 W3·走漏:所引同谋(target)之亲信圈或有耳闻→风声沿其同党/亲近传出·令第三方隐约知情(确定性·非玩家触发)
+  if (typeof TM !== 'undefined' && TM.Gossip && target) TM.Gossip.enqueue({ text: '风传' + npc.name + '暗中结连党羽', subject: npc.name, seeds: [target], importance: 4, budget: 2 });
 }
 
 function executeTrainTroopsBehavior(npc, target, decision, context) {
@@ -1735,6 +1701,8 @@ function executePrivateCorrespondenceBehavior(npc, target, decision, context) {
   addEB('私信', npc.name + '私下致书' + (to ? '·' + to : ''));
   _npcRemember(npc.name, '私下通信：' + _npcShortText(decision.intent, to, 50), '密', 5, to || '同僚');
   _npcRemember(to, '收到' + npc.name + '私下来信：' + _npcShortText(decision.intent, '', 50), '密', 5, npc.name);
+  // ★2026-07-01 W3·走漏:两人私相往来·旁观/侍从或有察觉→风声沿双方同党/亲近传出
+  if (typeof TM !== 'undefined' && TM.Gossip && to) TM.Gossip.enqueue({ text: npc.name + '与' + to + '近日私相往来', subject: npc.name, seeds: [npc.name, to], importance: 3, budget: 2 });
 }
 
 function executeSeekAudienceBehavior(npc, target, decision, context) {
@@ -2412,6 +2380,8 @@ function executeSlanderBehavior(npc, target, decision, context) {
   });
   addEB('谗言', npc.name + '议及' + (target || '他人'));
   _npcRemember(npc.name, '攻讦' + (target || '他人') + '：' + _npcShortText(decision.intent, '', 50), '密', 5, target || '他人');
+  // ★2026-07-01 W3·走漏:谗言天然扩散·slander者的同党圈会听到并附和→对 target 的恶评传开(经记恨者转述更走样)
+  if (typeof TM !== 'undefined' && TM.Gossip && target) TM.Gossip.enqueue({ text: '有人暗指' + target + '之过', subject: target, seeds: [npc.name], importance: 3, budget: 3 });
 }
 
 // ============================================================
@@ -3496,223 +3466,3 @@ async function executeNpcBehavior(npc, context) {
 }
 
 // 执行 NPC 行动
-function executeNpcAction(npc, behavior, context) {
-  var action = behavior.action;
-  var target = behavior.target;
-
-  // 1. 政治类行动
-  if (action.indexOf('叛乱') >= 0 || action.indexOf('起兵') >= 0) {
-    // 叛乱：降低忠诚度，增加野心
-    if (npc.loyalty !== undefined) {
-      if (typeof adjustCharacterLoyalty === 'function') {
-        adjustCharacterLoyalty(npc, -30, '\u5BC6\u8C0B\u53DB\u4E71', { source:'npc-complex-rebellion' });
-      } else {
-        var oldLoyalty = npc.loyalty;
-        npc.loyalty = Math.max(0, npc.loyalty - 30);
-        recordChange('characters', npc.name, 'loyalty', oldLoyalty, npc.loyalty, '\u5BC6\u8C0B\u53DB\u4E71');
-      }
-      addToIndex('char', npc.name, npc);
-    }
-
-    // 降低社会稳定度
-    if (GM.eraState && GM.eraState.socialStability !== undefined) {
-      GM.eraState.socialStability = Math.max(0, GM.eraState.socialStability - 0.05);
-    }
-
-    addEB('叛乱', npc.name + '起兵叛乱！' + behavior.consequence);
-  }
-  else if (action.indexOf('结盟') >= 0 || action.indexOf('联盟') >= 0) {
-    // 结盟：提升与目标的关系
-    if (target && GM.rels[npc.name + '-' + target]) {
-      var oldRel = GM.rels[npc.name + '-' + target].value;
-      GM.rels[npc.name + '-' + target].value = Math.min(100, oldRel + 20);
-      recordChange('relations', npc.name + '-' + target, 'value', oldRel, GM.rels[npc.name + '-' + target].value, '结盟');
-    }
-    addEB('外交', npc.name + '与' + (target || '他人') + '结盟。' + behavior.consequence);
-  }
-  else if (action.indexOf('背叛') >= 0 || action.indexOf('反叛') >= 0) {
-    // 背叛：降低忠诚度和关系
-    if (npc.loyalty !== undefined) {
-      if (typeof adjustCharacterLoyalty === 'function') {
-        adjustCharacterLoyalty(npc, -40, '\u80CC\u53DB', { source:'npc-complex-betray' });
-      } else {
-        var oldLoyalty = npc.loyalty;
-        npc.loyalty = Math.max(0, npc.loyalty - 40);
-        recordChange('characters', npc.name, 'loyalty', oldLoyalty, npc.loyalty, '\u80CC\u53DB');
-      }
-      addToIndex('char', npc.name, npc);
-    }
-    if (target && GM.rels[npc.name + '-' + target]) {
-      GM.rels[npc.name + '-' + target].value = Math.max(0, GM.rels[npc.name + '-' + target].value - 30);
-    }
-    addEB('背叛', npc.name + '背叛' + (target || '朝廷') + '！' + behavior.consequence);
-  }
-  else if (action.indexOf('弹劾') >= 0) {
-    // 弹劾：降低目标的声望
-    if (target) {
-      var targetChar = findCharByName(target);
-      if (targetChar && targetChar.loyalty !== undefined) {
-        if (typeof adjustCharacterLoyalty === 'function') {
-          adjustCharacterLoyalty(targetChar, -10, '\u88AB\u5F39\u52BE', { source:'npc-complex-impeach' });
-        } else {
-          var oldLoyalty = targetChar.loyalty;
-          targetChar.loyalty = Math.max(0, targetChar.loyalty - 10);
-          recordChange('characters', target, 'loyalty', oldLoyalty, targetChar.loyalty, '\u88AB\u5F39\u52BE');
-        }
-        addToIndex('char', target, targetChar);
-      }
-    }
-    addEB('政治', npc.name + '弹劾' + (target || '他人') + '。' + behavior.consequence);
-  }
-
-  // 2. 军事类行动
-  else if (action.indexOf('招募') >= 0 || action.indexOf('征兵') >= 0) {
-    // 招募军队：增加军队数量
-    var _milKey2 = typeof _findVarByType === 'function' ? _findVarByType('military') : null;
-    if (_milKey2 && GM.vars[_milKey2]) {
-      var oldValue = GM.vars[_milKey2].value;
-      var recruited = Math.floor(random() * 1000) + 500;
-      GM.vars[_milKey2].value = Math.min(GM.vars[_milKey2].max, oldValue + recruited);
-      recordChange('military', npc.name, _milKey2, oldValue, GM.vars[_milKey2].value, '\u62DB\u52DF\u519B\u961F');
-    }
-    addEB('军事', npc.name + '招募军队。' + behavior.consequence);
-  }
-  else if (action.indexOf('扩张') >= 0 || action.indexOf('出兵') >= 0) {
-    // 扩张势力：降低社会稳定度
-    if (GM.eraState && GM.eraState.socialStability !== undefined) {
-      GM.eraState.socialStability = Math.max(0, GM.eraState.socialStability - 0.03);
-    }
-    addEB('军事', npc.name + '扩张势力。' + behavior.consequence);
-  }
-
-  // 3. 经济类行动
-  else if (action.indexOf('请求资源') >= 0 || action.indexOf('请求') >= 0) {
-    // 请求资源：记录到奏疏系统
-    if (GM.memorials) {
-      GM.memorials.push({
-        id: uid(),
-        from: npc.name,
-        title: npc.title || '',
-        type: '财政',
-        content: behavior.reason,
-        status: 'pending',
-        turn: GM.turn,
-        reply: ''
-      });
-    }
-    addEB('财政', npc.name + '请求资源。' + behavior.reason);
-  }
-  else if (action.indexOf('贪污') >= 0 || action.indexOf('受贿') >= 0) {
-    // 贪污：降低财政，降低忠诚度
-    var _ecoKey2 = typeof _findVarByType === 'function' ? _findVarByType('economy') : null;
-    if (_ecoKey2 && GM.vars[_ecoKey2]) {
-      var oldValue = GM.vars[_ecoKey2].value;
-      var embezzled = Math.floor(random() * 500) + 200;
-      GM.vars[_ecoKey2].value = Math.max(GM.vars[_ecoKey2].min || 0, oldValue - embezzled);
-      recordChange('economy', npc.name, _ecoKey2, oldValue, GM.vars[_ecoKey2].value, '\u8D2A\u6C61\u53D7\u8D3F');
-    }
-    if (npc.loyalty !== undefined) {
-      if (typeof adjustCharacterLoyalty === 'function') {
-        adjustCharacterLoyalty(npc, -5, '\u8D2A\u6C61\u53D7\u8D3F', { source:'npc-complex-corruption' });
-      } else {
-        npc.loyalty = Math.max(0, npc.loyalty - 5);
-      }
-      addToIndex('char', npc.name, npc);
-    }
-    addEB('腐败', npc.name + '贪污受贿。' + behavior.consequence);
-  }
-  else if (action.indexOf('发展经济') >= 0 || action.indexOf('减免赋税') >= 0) {
-    // 发展经济：提升经济繁荣度
-    if (GM.eraState && GM.eraState.economicProsperity !== undefined) {
-      GM.eraState.economicProsperity = Math.min(1, GM.eraState.economicProsperity + 0.02);
-    }
-    addEB('经济', npc.name + '发展经济。' + behavior.consequence);
-  }
-
-  // 4. 人事类行动
-  else if (action.indexOf('辞职') >= 0 || action.indexOf('隐退') >= 0) {
-    // 辞职：清空官职
-    if (GM.officeTree && GM.officeTree.length > 0) {
-      function clearOffice(nodes) {
-        nodes.forEach(function(node) {
-          if (node.positions) {
-            node.positions.forEach(function(pos) {
-              if (pos.holder === npc.name) {
-                pos.holder = '';
-              }
-            });
-          }
-          if (node.subs && node.subs.length > 0) {
-            clearOffice(node.subs);
-          }
-        });
-      }
-      clearOffice(GM.officeTree);
-    }
-    addEB('人事', npc.name + '辞职。' + behavior.consequence);
-  }
-  else if (action.indexOf('推荐') >= 0 || action.indexOf('举荐') >= 0) {
-    // 推荐人才：记录到奏疏系统
-    if (GM.memorials) {
-      GM.memorials.push({
-        id: uid(),
-        from: npc.name,
-        title: npc.title || '',
-        type: '人事',
-        content: behavior.reason,
-        status: 'pending',
-        turn: GM.turn,
-        reply: ''
-      });
-    }
-    addEB('人事', npc.name + '推荐' + (target || '人才') + '。' + behavior.reason);
-  }
-
-  // 5. 社会类行动
-  else if (action.indexOf('赈济') >= 0 || action.indexOf('安抚') >= 0) {
-    // 赈济灾民：提升社会稳定度
-    if (GM.eraState && GM.eraState.socialStability !== undefined) {
-      GM.eraState.socialStability = Math.min(1, GM.eraState.socialStability + 0.03);
-    }
-    var _morK3=typeof _findVarByType==='function'?_findVarByType('morale'):null;
-    if (_morK3&&GM.vars[_morK3]) {
-      var oldValue = GM.vars[_morK3].value;
-      GM.vars[_morK3].value = Math.min(GM.vars[_morK3].max||100, oldValue + 5);
-      recordChange('society', npc.name, _morK3, oldValue, GM.vars[_morK3].value, '\u8D48\u6D4E\u707E\u6C11');
-    }
-    addEB('\u793E\u4F1A', npc.name + '\u8D48\u6D4E\u707E\u6C11\u3002' + behavior.consequence);
-  }
-  else if (action.indexOf('\u9547\u538B') >= 0) {
-    if (GM.eraState && GM.eraState.socialStability !== undefined) {
-      GM.eraState.socialStability = Math.min(1, GM.eraState.socialStability + 0.05);
-    }
-    var _morK4=typeof _findVarByType==='function'?_findVarByType('morale'):null;
-    if (_morK4&&GM.vars[_morK4]) {
-      GM.vars[_morK4].value = Math.max(GM.vars[_morK4].min || 0, GM.vars[_morK4].value - 10);
-    }
-    addEB('军事', npc.name + '镇压叛乱。' + behavior.consequence);
-  }
-
-  // 6. 建议类行动（通用）
-  else if (action.indexOf('建议') >= 0) {
-    // 建议：记录到奏疏系统
-    if (GM.memorials) {
-      GM.memorials.push({
-        id: uid(),
-        from: npc.name,
-        title: npc.title || '',
-        type: '政务',
-        content: behavior.reason,
-        status: 'pending',
-        turn: GM.turn,
-        reply: ''
-      });
-    }
-    addEB('政务', npc.name + '提出建议。' + behavior.reason);
-  }
-
-  // 7. 其他行动：仅记录
-  else {
-    addEB('NPC动态', npc.name + '：' + behavior.action + '。' + behavior.consequence);
-  }
-}

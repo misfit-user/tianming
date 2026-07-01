@@ -627,7 +627,14 @@
       state.finalized = true;
       if (gate.ok) state.depthOk = true; else state.depthIncomplete = gate.reason;
       if (input && input.summary) state.summary = input.summary;
-      if (input && input.narrative) state.narrative = input.narrative;
+      // ★2026-07-01·finalize 叙事在源头归一字面转义(AI 常把段落分隔写成字面 "\n\n"、或过度转义 \\n)。
+      //   此 narrative 是「deepen_narrative 缺席时」渲染回落的时政记·也进 _turnReport/喂 AI 记忆·
+      //   不归一则字面 \n\n 既直显、又成 few-shot 污染让 AI 下回合照抄。转真换行·纯文本清洗零结构改动。
+      if (input && input.narrative) {
+        state.narrative = String(input.narrative)
+          .replace(/\\r\\n/g, '\n').replace(/\\r/g, '\n').replace(/\\n/g, '\n')
+          .replace(/\\t/g, '  ').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      }
       return { ok: true, name: name, text: '(已收尾)' + (gate.ok ? '' : '·注:深度未尽(' + gate.reason + ')') };
     }
     if (RT && RT.isToolName(name)) return await RT.handle(name, input, ctx);
@@ -662,13 +669,32 @@
       return JSON.parse(JSON.stringify(gm));
     } catch (e) { try { console.warn('[agent-mode] 回合快照失败·回滚将不可用', e); } catch (_) {} return null; }
   }
-  // 原地还原(保 gm 引用不变·ctx.GM/root.GM 仍有效)·并清 _systemsRan 让 mode a 的 systems 步重新跑引擎
-  function _rollback(gm, snapshot, ctx) {
+  // ── S8 结算可重入·补全回滚:引擎结算除改 GM 外·还累加两个「活在 GM 之外的 module 级单例」——
+  //   AccountingSystem.ledger(收支账本 push+=)与 StateCouplingSystem.previousValues(耦合基线)。
+  //   deepClone(GM) 的快照/回滚盖不到它们·bail 后 LLM 模式重跑结算会二次累加(账本双记/耦合基线污染悄悄漂进已提交回合)。
+  //   → 随 GM 快照一并快照这两个单例·回滚时一并还原·让「engine-first→rollback→LLM 重跑」真正干净。
+  function _acctMod() { try { if (root && root.AccountingSystem) return root.AccountingSystem; } catch (_) {} try { if (typeof AccountingSystem !== 'undefined') return AccountingSystem; } catch (_) {} return null; }
+  function _coupMod() { try { if (root && root.StateCouplingSystem) return root.StateCouplingSystem; } catch (_) {} try { if (typeof StateCouplingSystem !== 'undefined') return StateCouplingSystem; } catch (_) {} return null; }
+  function _snapshotExternals() {
+    var ext = {};
+    try { var A = _acctMod(); if (A && typeof A.getLedger === 'function') ext.acct = A.getLedger(); } catch (_) {}
+    try { var S = _coupMod(); if (S && typeof S.getPreviousValues === 'function') ext.coupling = S.getPreviousValues(); } catch (_) {}
+    return ext;
+  }
+  function _restoreExternals(ext) {
+    if (!ext) return;
+    try { var A = _acctMod(); if (ext.acct && A && typeof A.restoreLedger === 'function') A.restoreLedger(ext.acct); } catch (_) {}
+    try { var S = _coupMod(); if (ext.coupling && S && typeof S.restorePreviousValues === 'function') S.restorePreviousValues(ext.coupling); } catch (_) {}
+  }
+  // 原地还原(保 gm 引用不变·ctx.GM/root.GM 仍有效)·并清 _systemsRan 让 mode a 的 systems 步重新跑引擎·
+  // 并还原 GM 外的 module 单例(extSnap·可选·旧 3 参调用向后兼容=不动单例)。
+  function _rollback(gm, snapshot, ctx, extSnap) {
     if (!gm || !snapshot) return false;
     try {
       Object.keys(gm).forEach(function (k) { delete gm[k]; });
       Object.keys(snapshot).forEach(function (k) { gm[k] = snapshot[k]; });
       if (ctx && ctx.input) { delete ctx.input._systemsRan; }
+      _restoreExternals(extSnap);   // S8·撤销引擎结算对账本/耦合基线单例的累加·补全回滚
       return true;
     } catch (e) { try { console.warn('[agent-mode] 回滚失败', e); } catch (_) {} return false; }
   }
@@ -702,10 +728,11 @@
 
     // ── S5 甲案:快照 → 引擎先算硬核基线 ──
     var snapshot = _snapshot(gm);
+    var _extSnap = _snapshotExternals();   // S8·结算前一并快照 GM 外的 module 单例(账本/耦合基线)·供回滚补全
     var engineRan = false;
     var engineDims = {};
     // 回落兜底:engineRan 时先回滚再回落(让 mode a 在干净态重跑)
-    function bail(reason) { if (engineRan && snapshot) _rollback(gm, snapshot, ctx); return { ok: false, fallback: true, reason: reason }; }
+    function bail(reason) { if (engineRan && snapshot) _rollback(gm, snapshot, ctx, _extSnap); return { ok: false, fallback: true, reason: reason }; }
 
     if (snapshot && typeof root._endTurn_updateSystems === 'function') {
       try {
@@ -717,8 +744,8 @@
         if (ctx && ctx.input) ctx.input._systemsRan = true;  // 让后续 systems 步幂等跳过引擎 tick(防双跑)
         engineRan = true;
       } catch (engErr) {
-        // 引擎在 await 中抛错:engineRan 尚未置 true·但引擎可能已部分 mutate(turn++ 等)→显式回滚
-        if (snapshot) _rollback(gm, snapshot, ctx);
+        // 引擎在 await 中抛错:engineRan 尚未置 true·但引擎可能已部分 mutate(turn++ + 账本/耦合单例累加)→显式回滚(含单例)
+        if (snapshot) _rollback(gm, snapshot, ctx, _extSnap);
         return { ok: false, fallback: true, reason: '引擎基线(engine-first)失败·回滚回落 LLM:' + (engErr && engErr.message) };
       }
     }

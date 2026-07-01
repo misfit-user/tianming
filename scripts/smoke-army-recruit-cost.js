@@ -55,6 +55,7 @@ function build(guoku) {
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-ai-change-pathutils.js'), 'utf8'), ctx, { filename: 'pathutils' });
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-ai-change-army.js'), 'utf8'), ctx, { filename: 'army' });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-army-units.js'), 'utf8'), ctx, { filename: 'army-units' });   // 募兵历练稀释(刀3)依赖 TMArmyUnits.diluteVeterancy
   // 全局 applyAIArmyChange 由 applier 模块 alias；此处直接取 army 模块导出
   ctx.applyAIArmyChange = ctx.TM && ctx.TM.AIChange && ctx.TM.AIChange.Army && ctx.TM.AIChange.Army.applyAIArmyChange;
   assert(typeof ctx.applyAIArmyChange === 'function', 'applyAIArmyChange 可调用');
@@ -120,6 +121,21 @@ function build(guoku) {
   assert(followup.indexOf('_recruitChargedTurn === (GM.turn||0)) return;') >= 0, 'F followup 含「已扣则跳过」防双扣守卫');
   const edict = fs.readFileSync(path.join(ROOT, 'tm-endturn-edict.js'), 'utf8');
   assert(/armyBuilds[\s\S]{0,400}applyAIArmyChange|_applyArmy\(\{/.test(edict), 'F 玩家诏书建军走 applyAIArmyChange（扣费点覆盖玩家路径）');
+}
+
+// ── G. 募兵新兵稀释累计历练(§12.3·整编屏刀3·老兵金贵) ──
+{
+  const ctx = build();
+  const army = ctx.GM.armies[0];                 // 神龙军 5000
+  army.quality = '精锐'; army.veterancy = 30;     // 基线55+累计30→有效历练85
+  ctx.applyAIArmyChange({ name: '神龙军', soldiers_delta: 1000, reason: '招募新兵充实行伍', action: 'recruit' }, { source: 'ai_military_change' });
+  assert(army.soldiers === 6000, 'G 募兵 5000→6000');
+  assert(army.veterancy < 30 && army.veterancy > 0, 'G 募1000绿兵入5000老兵→累计历练部分稀释 30→' + army.veterancy + '(老兵金贵·§12.3)');
+  // 调防增兵(非募绿兵·老兵转隶) → 不稀释
+  const ctx2 = build();
+  const a2 = ctx2.GM.armies[0]; a2.quality = '精锐'; a2.veterancy = 30;
+  ctx2.applyAIArmyChange({ name: '神龙军', soldiers_delta: 1000, reason: '调防援京', action: 'reinforce' }, { source: 'ai_military_change' });
+  assert(a2.veterancy === 30, 'G 调防增兵(非募绿兵)→历练不稀释(老兵转隶·非新募·与不扣费同条件)');
 }
 
 console.log('PASS smoke-army-recruit-cost · ' + passed + ' 断言');

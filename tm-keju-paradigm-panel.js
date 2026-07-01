@@ -21,7 +21,7 @@
  *   - 无 hardcode 党名·遍历 GM.parties + 调 _ty3_initialStanceFromDims·跟 F4c 一致
  *   - 议题走 keyi `topicType='reform'`·非新 modal 议政
  *   - NPC 反应 0 自造·全复用 tinyi v3
- *   - flag gate·P.conf.useNewKejuL=false 默认 off·按钮 hidden
+ *   - flag gate·P.conf.useNewKejuL !== false（默认开）·仅显式设 =false 才隐藏按钮
  *   - event delegation·rerender 不重 bind·避免 listener 双绑
  *
  * 集成点·
@@ -93,7 +93,7 @@
 
   function _kjpOpenReformProposal() {
     if (!_kjpIsLEnabled()) {
-      try { if (typeof toast === 'function') toast('⚠️ 科举改革系统未开启 (设置·useNewKejuL)'); } catch(_){}
+      try { if (typeof toast === 'function') toast('⚠️ 科举改革系统已被关闭（默认开·如需重开，控制台设 P.conf.useNewKejuL=true）'); } catch(_){}
       return;
     }
     if (typeof GM === 'undefined' || !GM._kejuParadigm) {
@@ -507,7 +507,8 @@
         });
       }
     } catch(_){}
-    var l5Off = !(typeof P !== 'undefined' && P && P.conf && P.conf.useNewKejuL5 === false);
+    // L5 默认开(gate `!== false`)·仅显式设 false 才算关。旧码此处多一层 `!` 反相→默认(开)也误显「需开 L5」·已修。
+    var l5Off = !!(typeof P !== 'undefined' && P && P.conf && P.conf.useNewKejuL5 === false);
     if (!memorials.length) {
       var emptyText = l5Off
         ? '议政后·反对派可能上书 (需开 P.conf.useNewKejuL5)·入「百官奏疏」面板'

@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "capturedAt": "2026-05-21T15:56:16.603Z",
+    "capturedAt": "2026-07-01T10:45:43.174Z",
     "purpose": "Slice 0 prompt baseline·sprint 完后跟 v3 对比·展示 prompt 字段增量",
     "method": "structural extract (not runtime render)·runtime 依赖标 <runtime-only>",
     "slice": "changchao overhaul Slice 0"
@@ -19,7 +19,7 @@
       "traitIds_coverage": "5/5"
     },
     "shaosong": {
-      "total_chars": 98,
+      "total_chars": 501,
       "sampled_npcs": [
         "黄潜善",
         "李纲",
@@ -29,7 +29,7 @@
         "韩世忠"
       ],
       "item": "是否南幸扬州",
-      "traitIds_coverage": "0/6 ⚠️ 全 0·8D 在此剧本完全失效·需 fallback"
+      "traitIds_coverage": "6/6 ⚠️ 全 0·8D 在此剧本完全失效·需 fallback"
     }
   },
   "tianqi_prompts": [
@@ -260,12 +260,15 @@
       "archetype": {
         "officialTitle": "尚书右仆射兼中书侍郎",
         "faction": "宋朝廷",
-        "party": "主和派",
+        "party": "主和当国派 (汪黄)",
         "rank": null,
         "class": "士大夫",
         "personality": "刻薄·寡恩·与汪同主避战·驱岳飞·废李纲经略",
         "traits": "acerbic·self_serving·anti_war·vindictive·politically_calculating",
-        "traitIds": [],
+        "traitIds": [
+          "strategist",
+          "cautious_leader"
+        ],
         "stats": {
           "loyalty": 90,
           "integrity": 35,
@@ -298,12 +301,19 @@
       "archetype": {
         "officialTitle": "观文殿学士·授知江宁府（罢相未到任·闲居江西）",
         "faction": "宋朝廷",
-        "party": "主战派",
+        "party": "主战派 (李纲遗绪)",
         "rank": null,
         "class": "士大夫",
         "personality": "刚直·急切·制度感强·不肯妥协·罢后忧愤而不悔",
         "traits": "upright·decisive·institutionalist·anti-compromise·burdened_by_failure",
-        "traitIds": [],
+        "traitIds": [
+          "brave",
+          "just",
+          "impatient",
+          "strategist",
+          "aggressive_attacker",
+          "reckless"
+        ],
         "stats": {
           "loyalty": 95,
           "integrity": 95,
@@ -341,7 +351,13 @@
         "class": "士",
         "personality": "刚直·激切·不避祸",
         "traits": "scholar-activist·martyr·pure-faction",
-        "traitIds": [],
+        "traitIds": [
+          "brave",
+          "just",
+          "impatient",
+          "zealous",
+          "aggressive_attacker"
+        ],
         "stats": {
           "loyalty": 90,
           "integrity": 95,
@@ -355,7 +371,7 @@
         "relationToRuler": "<runtime-only·OpinionSystem.getEventOpinion(name, \"玩家\")>"
       },
       "v3Diff": {
-        "aiPersonaText_inChar": "激进慷慨·言行不顾后果·士大夫风骨之极致·愿以一死殉国论。...",
+        "aiPersonaText_inChar": "你是陈东，太学领袖，年四十一。靖康之初你便伏阙上书，斥蔡京、王黼、童贯六贼祸国，挽留李纲于罢相之际，京师军民数万随你叩宫门，由是开本朝太学生议政之风。你视社稷重于性命，认死理而不避祸——金虏方退，黄潜...",
         "v3MissingInjection": "⚠️ 当前 _cc3_aiGenReact 没调 TM.PromptComposer.buildAiPersonaText·此 aiPersonaText 字段当前 prompt 中**缺失**"
       },
       "item": {
@@ -379,7 +395,14 @@
         "class": "武将",
         "personality": "谨慎·小心·唯赵构是从·爱财吝啬·后期渐贪",
         "traits": "loyal_to_emperor·cautious·greedy·calculating·old_school_warrior·self_preserving",
-        "traitIds": [],
+        "traitIds": [
+          "strategist",
+          "diligent",
+          "greedy",
+          "patient",
+          "schemer",
+          "cautious_leader"
+        ],
         "stats": {
           "loyalty": 95,
           "integrity": 50,
@@ -412,12 +435,16 @@
       "archetype": {
         "officialTitle": "观文殿大学士·太保 (废楚帝改授)",
         "faction": "宋朝廷",
-        "party": "主和",
+        "party": "燕云汉人世侯·治理派 (降臣治汉地)",
         "rank": null,
         "class": "士",
         "personality": "怯懦·趋附",
         "traits": "ex-puppet·collaborator-suspect·former-prime-minister",
-        "traitIds": [],
+        "traitIds": [
+          "deceitful",
+          "craven",
+          "cautious_leader"
+        ],
         "stats": {
           "loyalty": 30,
           "integrity": 25,
@@ -431,7 +458,7 @@
         "relationToRuler": "<runtime-only·OpinionSystem.getEventOpinion(name, \"玩家\")>"
       },
       "v3Diff": {
-        "aiPersonaText_inChar": "怕事·欲偏安·以让位求保身·实质主和。...",
+        "aiPersonaText_inChar": "你是张邦昌，年四十七，曾居北宋宰相之位。靖康城破，金人废二帝，逼立你为伪楚皇帝——你涕泣坚辞不获，终在刀斧下受了那三十三日伪号，心知那不是荣宠，是催命的烙印。金人一退，你即去帝号、迎元祐皇后垂帘、奉表...",
         "v3MissingInjection": "⚠️ 当前 _cc3_aiGenReact 没调 TM.PromptComposer.buildAiPersonaText·此 aiPersonaText 字段当前 prompt 中**缺失**"
       },
       "item": {
@@ -455,7 +482,14 @@
         "class": "武将",
         "personality": "忠勇·豪侠·重然诺·武人不通文理但识大体",
         "traits": "loyal·brave·old_school_warrior·martial_strength·unbookish·honorable",
-        "traitIds": [],
+        "traitIds": [
+          "brave",
+          "strategist",
+          "gallant",
+          "diligent",
+          "honest",
+          "just"
+        ],
         "stats": {
           "loyalty": 95,
           "integrity": 90,

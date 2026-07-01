@@ -66,10 +66,22 @@ const clsLow = { name: '自耕农', economicRole: '生产', satisfaction: 5, inf
 const clsHigh = { name: '宗室', economicRole: '治理', satisfaction: 95, influence: 42, demands: '增岁禄' };
 const w4 = mkWorld({ taxRate: 1.3, disasterLeaves: 3, minxin: 40, classes: [clsLow, clsHigh], turn: 20 });
 SF.tick(w4.GM, w4.P);
-ok(clsLow.satisfaction > 5 && clsLow.satisfaction <= 6.2, '缓变·低于势位回升 ≤1.2 (got ' + clsLow.satisfaction + ')');
-ok(clsHigh.satisfaction < 95 && clsHigh.satisfaction >= 93.8, '缓变·高于势位缓落 (got ' + clsHigh.satisfaction + ')');
+ok(clsLow.satisfaction > 5 && clsLow.satisfaction <= 5.95, '缓变·低于势位回升慢 ≤0.9（不对称·2026-06-16）(got ' + clsLow.satisfaction + ')');
+ok(clsHigh.satisfaction < 95 && clsHigh.satisfaction >= 92.9, '缓变·高于势位恶化向落快 ≤1.92（旧对称1.2·契约有意改·2026-06-16）(got ' + clsHigh.satisfaction + ')');
 ok(clsLow._satLedger.some(e => e.src === 'struct-drift' && /结构回归/.test(e.why)), '缓变·近账「结构回归」可查');
 ok(typeof clsLow._structBaseline === 'number' && Array.isArray(clsLow._structParts), '缓变·势位+主因挂账供 UI');
+
+// ── 4b. 不对称缓变（升米恩斗米仇·2026-06-16）：恶化向(快) 显著 > 回升向(慢) ──
+const wAsym = mkWorld({ taxRate: 1, minxin: 55, turn: 30 });
+const blN = SF.structuralBaseline({ name: '测试农', economicRole: '生产' }, SF.structuralInputs(wAsym.GM, wAsym.P)).baseline;
+const cUp = { name: '测试农', economicRole: '生产', satisfaction: blN - 10, influence: 20 };
+const cDn = { name: '测试农', economicRole: '生产', satisfaction: blN + 10, influence: 20 };
+wAsym.GM.classes = [cUp, cDn];
+SF.tick(wAsym.GM, wAsym.P);
+const dUp = Math.round((cUp.satisfaction - (blN - 10)) * 100) / 100;
+const dDn = Math.round((cDn.satisfaction - (blN + 10)) * 100) / 100;
+ok(dUp > 0 && dDn < 0, '不对称·同|gap| 回升向上(' + dUp + ')、恶化向下(' + dDn + ')');
+ok(Math.abs(dDn) >= Math.abs(dUp) * 1.8, '不对称·恶化快于回升 ≥1.8×（rate 0.18 vs 0.08·' + Math.abs(dDn) + ' vs ' + Math.abs(dUp) + '）');
 
 // ── 5. 议程引擎：各异/触发/种子 ──
 ok(clsLow.demands !== clsHigh.demands, '议程·农/宗室诉求各异');
@@ -181,7 +193,7 @@ srcHas('tm-ai-output-validator.js', /party_relation_changes/, 'validator：党�
 srcHas('phase8-formal-map.js', /localityLayer/, '军绑：聚落层名册');
 srcHas('phase8-formal-map.js', /regionHint/, '军绑：剧本 regionHint 扩展点');
 srcHas('phase8-formal-map.js', /分驻/, '军绑：散驻分摊');
-srcHas('scenarios/tianqi7-1627.js', /regionHint: '北直隶'/, '剧本：京营/蓟州 regionHint');
+srcHas('scenarios/tianqi7-1627.js', /regionHint"?:\s*['"]北直隶['"]/, '剧本：京营/蓟州 regionHint');
 srcHas('phase8-formal-rightrail.js', /rightAgendaChips/, 'UI：议程条目徽');
 srcHas('phase8-formal-rightrail.js', /rightPartyLedgerRows/, 'UI：党势近账');
 srcHas('phase8-formal-bridge.js', /tmrp-ledger-row/, 'CSS：近账行样式');

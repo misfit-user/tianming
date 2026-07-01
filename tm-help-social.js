@@ -482,6 +482,107 @@ function switchHelpTopic(topic) {
   openHelp(topic);
 }
 
+// ─── 新手帮助入口 ───
+// 游戏内「帮助·典范」抽屉的 4 个按钮此前 onclick 调 openHelp*()·但这些函数从未定义→只 toast 标签(死按钮)。
+// 此处定义并接到现有 HelpSystem·按钮的 `if(typeof openHelpNewbie==='function')` 守卫即转真→帮助内容(本就丰富)变可达。
+function openHelpNewbie() { openHelp('gameplay'); }    // 新手入门 → 玩法指引
+function openHelpPresets() { openHelp('overview'); }   // 历代典范 → 游戏概览(跨朝代)
+function openHelpAI() { openHelp('apikey'); }          // AI 推演原理 → AI 引擎与密钥(没 key 则空转)
+function openHelpHotkey() { openHelp('shortcuts'); }   // 键位速查 → 快捷键
+if (typeof window !== 'undefined') {
+  window.openHelpNewbie = openHelpNewbie;
+  window.openHelpPresets = openHelpPresets;
+  window.openHelpAI = openHelpAI;
+  window.openHelpHotkey = openHelpHotkey;
+}
+// F1 打开帮助(状态栏宣传 F1 却一直无绑定·此处补上)·焦点在输入框时不拦截
+if (typeof document !== 'undefined' && document.addEventListener) {
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'F1') return;
+    var t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    e.preventDefault();
+    try { if (typeof openHelp === 'function') openHelp(); } catch (_) {}
+  });
+}
+
+// ─── 开局·无 AI 密钥提示 ───
+// 天命以 AI 为引擎(P.ai.key)·没 key 过回合只空转(世界无反应·非故障)·但开局完全不提示→新手误以为游戏坏了。
+// 开局(enterGame:after)若未配 key·弹一条可关提示条·一键直达「如何配置」帮助。配了 key 即不打扰。
+function _tmCheckApiKeyOnStart() {
+  try {
+    var _P = (typeof window !== 'undefined' && window.P) || (typeof P !== 'undefined' ? P : null);
+    if (_P && _P.ai && _P.ai.key) return;                 // 已配置→不打扰
+    if (typeof document === 'undefined' || !document.body) return;
+    if (document.getElementById('tm-nokey-banner')) return; // 防重
+    var bar = document.createElement('div');
+    bar.id = 'tm-nokey-banner';
+    bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:2147483600;max-width:min(680px,92vw);background:linear-gradient(#3a2412,#2a1a0c);border:1px solid #c08a3a;border-radius:8px;padding:12px 16px;color:#f0dcc0;font-family:serif;font-size:0.85rem;box-shadow:0 8px 30px rgba(0,0,0,.55);display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
+    var msg = document.createElement('span');
+    msg.style.cssText = 'flex:1;min-width:220px;line-height:1.55;';
+    msg.innerHTML = '⚠ <b style="color:#e8c87a;">尚未配置 AI 密钥</b>——天命以 AI 为引擎，没有密钥过回合只会空转、世界毫无反应（这不是故障，是缺了引擎的燃料）。';
+    bar.appendChild(msg);
+    var help = document.createElement('button');
+    help.className = 'bt bp'; help.textContent = '如何配置';
+    help.style.cssText = 'min-height:40px;padding:0.45rem 0.95rem;touch-action:manipulation;white-space:nowrap;';
+    help.onclick = function () { try { if (typeof openHelp === 'function') openHelp('apikey'); } catch (_) {} };
+    var ok = document.createElement('button');
+    ok.className = 'bt bs'; ok.textContent = '知道了';
+    ok.style.cssText = 'min-height:40px;padding:0.45rem 0.95rem;touch-action:manipulation;white-space:nowrap;';
+    ok.onclick = function () { try { bar.remove(); } catch (_) {} };
+    bar.appendChild(help); bar.appendChild(ok);
+    document.body.appendChild(bar);
+  } catch (e) {}
+}
+if (typeof window !== 'undefined') window._tmCheckApiKeyOnStart = _tmCheckApiKeyOnStart;
+if (typeof GameHooks !== 'undefined' && GameHooks && GameHooks.on) {
+  GameHooks.on('enterGame:after', _tmCheckApiKeyOnStart);
+}
+
+// ─── 首回合·行动指引 ───
+// 新手落地后面对 ~21 栏按钮+6 FAB·无"从这开始"·开场白纯氛围不讲机制。开局首回合弹一次"临朝第一日"四步引导
+// (时政→拟诏→朝议→诏付有司)·一次性(localStorage 记忆·看过不再扰)·一键直达完整玩法帮助。
+function _tmFirstTurnGuide() {
+  try {
+    var _GM = (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
+    if (!_GM || (_GM.turn || 1) !== 1) return;            // 仅开局首回合
+    var KEY = 'tm_seen_firstturn_guide';
+    try { if (localStorage.getItem(KEY)) return; } catch (_) {}   // 看过→不再打扰
+    if (typeof document === 'undefined' || !document.body || document.getElementById('tm-firstturn-guide')) return;
+    var ov = document.createElement('div');
+    ov.id = 'tm-firstturn-guide';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483650;background:rgba(8,6,4,.72);display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'max-width:min(520px,92vw);max-height:84vh;overflow:auto;background:linear-gradient(#211710,#2b1f12);border:1px solid #b8893a;border-radius:10px;padding:22px 24px;color:#f0dcc0;font-family:serif;box-shadow:0 14px 44px rgba(0,0,0,.6);';
+    box.innerHTML =
+      '<div style="font-size:1.15rem;color:#e8c87a;text-align:center;margin-bottom:6px;">临朝第一日</div>'
+      + '<div style="font-size:0.8rem;color:#bfa988;text-align:center;margin-bottom:16px;border-bottom:1px solid #5a4420;padding-bottom:12px;">天命无固定剧本——你的每道旨意都会被 AI 当场推演。开局先做这几件事：</div>'
+      + '<div style="font-size:0.9rem;line-height:1.75;">'
+      + '<div style="margin-bottom:10px;"><b style="color:#e8c87a;">一 · 御案时政 / 奏疏</b><br><span style="color:#cdb997;">看臣下所请、当前要务，心中有数。</span></div>'
+      + '<div style="margin-bottom:10px;"><b style="color:#e8c87a;">二 · 拟诏施政</b><br><span style="color:#cdb997;">右下「拟诏」下达旨意——施政、任免、征伐皆由此。</span></div>'
+      + '<div style="margin-bottom:10px;"><b style="color:#e8c87a;">三 · 朝议 / 召对</b><br><span style="color:#cdb997;">与群臣议事问对，听取异见。</span></div>'
+      + '<div style="margin-bottom:4px;"><b style="color:#e8c87a;">四 · 诏付有司（过回合）</b><br><span style="color:#cdb997;">右下角推进时局——AI 演绎天下对你这一朝的反应。</span></div>'
+      + '</div>';
+    var foot = document.createElement('div');
+    foot.style.cssText = 'display:flex;gap:0.6rem;justify-content:flex-end;margin-top:18px;';
+    var more = document.createElement('button');
+    more.className = 'bt bs'; more.textContent = '完整玩法';
+    more.style.cssText = 'min-height:44px;padding:0.5rem 1rem;touch-action:manipulation;';
+    more.onclick = function () { try { if (typeof openHelp === 'function') openHelp('gameplay'); } catch (_) {} };
+    var start = document.createElement('button');
+    start.className = 'bt bp'; start.textContent = '开始临朝';
+    start.style.cssText = 'min-height:44px;padding:0.5rem 1.2rem;touch-action:manipulation;';
+    start.onclick = function () { try { ov.remove(); } catch (_) {} };
+    foot.appendChild(more); foot.appendChild(start);
+    box.appendChild(foot); ov.appendChild(box); document.body.appendChild(ov);
+    try { localStorage.setItem(KEY, '1'); } catch (_) {}
+  } catch (e) {}
+}
+if (typeof window !== 'undefined') window._tmFirstTurnGuide = _tmFirstTurnGuide;
+if (typeof GameHooks !== 'undefined' && GameHooks && GameHooks.on) {
+  GameHooks.on('enterGame:after', _tmFirstTurnGuide);
+}
+
 // AI 推演缓存系统
 var AICache = {
   cache: new Map(),

@@ -16,7 +16,7 @@
  *   - 复用·preset 跟 L7 entry schema + L9 canonicalName 兼容
  *   - 失败禁玄幻·13 preset 全真历史 (王安石/张相/戊戌等)·无虚构
  *   - 工具型·preset 是 zero-cost fill·后续走 L7 系统型 commit·两者分明
- *   - flag gate·P.conf.useNewKejuL10=false 默认 off
+ *   - flag gate·P.conf.useNewKejuL10 !== false（默认开）·仅显式设 =false 才全 no-op
  *
  * 跟 L7 entry shape 兼容·apply 后 entry.canonicalName / historicalEvaluation 直 set·skip L9 LLM
  */

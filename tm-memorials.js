@@ -605,6 +605,11 @@ async function genMemorialsAI(count){
           try { console.warn('[memorials] drop non-player-faction presenter:', mem.from, '(' + (ch.faction || ch.factionName || '?') + ')'); } catch(_) {}
           return;
         }
+        // ★2026-07-01·「上奏即入上奏者记忆」·移到远方/在京分支之前(原仅远方分支写·在京大臣漏→其上奏行为不进记忆·而多数大臣在京)。
+        //   批复后果由 _commitMemorialDecisions 另记(准/驳/批注/转交/廷议差异化+朱批原文)。二者合成:上奏与被批复皆入记忆·供推演续接。
+        if (mem.from && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
+          try { NpcMemorySystem.remember(mem.from, '向天子上奏疏：' + (mem.content||'').slice(0,60), '平', 6); } catch(_) {}
+        }
         var isRemote = ch && ch.alive !== false && ch.location && !_isSameLocation(ch.location, capital);
         if (isRemote) {
           // 远方NPC奏疏——进入驿递队列
@@ -645,10 +650,7 @@ async function genMemorialsAI(count){
               if (typeof addEB === 'function') addEB('传书', mem.from + '的奏疏信使失踪');
             }
           }
-          // NPC记住自己上了什么折子
-          if (mem.from && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-            NpcMemorySystem.remember(mem.from, '向天子上奏疏：' + (mem.content||'').slice(0,60), '平', 6);
-          }
+          // 上奏记忆已在分支前统一写入(远方/在京一律)·此处不再重复
           if (!GM._pendingMemorialDeliveries) GM._pendingMemorialDeliveries = [];
           GM._pendingMemorialDeliveries.push(mem);
         } else {
@@ -1061,12 +1063,15 @@ function _commitMemorialDecisions() {
                   : '已发交廷议';
     var memoryLbl = status === 'approved' ? '被准奏'
                   : status === 'rejected' ? '被驳回'
-                  : status === 'annotated' ? ('被朱批批示：' + (m.reply||''))
+                  : status === 'annotated' ? ('被朱批批示：' + String(m.reply||'').slice(0, 240))
                   : status === 'referred' ? ('被批转给' + (m._referredTo||'有司') + '议处')
                   : '被发交廷议';
     if (m.from && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-      var memText = '\u6240\u4E0A\u594F\u758F\u300C' + (m.content || '').slice(0, 30) + '\u300D' + memoryLbl;
-      if (status !== 'annotated' && m.reply) memText += '\uFF0C\u6731\u6279\uFF1A' + m.reply;
+      var _mTitle = m.title ? ('\u3014' + String(m.title).slice(0, 24) + '\u3015') : '';
+      var memText = '\u6240\u4E0A\u594F\u758F' + _mTitle + '\u300C' + String(m.content || '').slice(0, 80) + '\u300D' + memoryLbl;
+      if (status !== 'annotated' && m.reply) memText += '\uFF0C\u6731\u6279\uFF1A' + String(m.reply).slice(0, 240);
+      // \u26052026-07-01\u00B7\u56E0\u679C\u4E32\u8054\u300C\u4E0B\u573A\u300D\u2014\u2014\u6279\u590D\u5BF9\u4E0A\u594F\u8005\u7684\u5904\u5883/\u5FC3\u5883(\u51C6/\u9A73/\u6279\u6CE8/\u8F6C\u4EA4/\u5EF7\u8BAE\u5404\u5F02)\u00B7\u8BA9\u8BB0\u5FC6\u6210\u300C\u6211\u4E0A\u594F\u3014\u9898\u3015\u300EX\u300F\u2192\u7EC8\u5F97Y\u2192\u6731\u6279Z\u2192\u6211\u5904\u5883\u5982\u4F55\u300D\u5B8C\u6574\u56E0\u679C\u5F27\u00B7\u4F9B\u63A8\u6F14\u7EED\u63A5\u4E0D\u5931\u5FC6
+      memText += (status === 'approved' ? '\u2014\u2014\u6240\u8BF7\u5F97\u884C\u00B7\u5FD7\u5F97\u610F\u8212' : status === 'rejected' ? '\u2014\u2014\u6240\u8BF7\u89C1\u683C\u00B7\u5FD7\u90C1\u96BE\u7533' : status === 'annotated' ? '\u2014\u2014\u8499\u5723\u7B14\u4EB2\u88C1\u00B7\u656C\u51DB\u53D7\u4E4B' : status === 'referred' ? '\u2014\u2014\u4E8B\u4E0B\u6709\u53F8\u00B7\u60AC\u800C\u5F85\u51B3' : '\u2014\u2014\u4ED8\u8BF8\u5EF7\u8BAE\u00B7\u53EF\u5426\u672A\u535C');
       try { NpcMemorySystem.remember(m.from, memText, fx.emo, 5); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
       // referred 也给被转交者留一条记忆
       if (status === 'referred' && m._referredTo) {

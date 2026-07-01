@@ -86,12 +86,31 @@
     return p ? p.name : ((global.P && P.playerInfo && P.playerInfo.characterName) || '');
   }
 
-  // 能臣度代理(智为主·辅以勇/军)·用于酝酿速率与保密
-  function _cap(ch) {
+  // S1c·官位→谋逆能量开关(默认关)。原阴谋酝酿/招募全不读官位(只 _hasMilitary 读军职定 coup/plot)。
+  //   开 → 品级越高(权位=资源/门生故吏/隐蔽手段)谋逆能量越大·喂 _cap(动量+保密)与 _recruit(拉拢半径)。
+  //   关 → _officeConspiracyBonus 返 0 = 零回归(确定性 rng 序列字节不变)。启用：P.conf.officeConspiracyEnabled = true。
+  function _officeConspiracyOn() {
+    try {
+      var P = global.P || {};
+      var ai = P.ai || {}, conf = P.conf || {};
+      return !!(ai.officeConspiracyEnabled || conf.officeConspiracyEnabled);
+    } catch (e) { return false; }
+  }
+  // 官位谋逆能量加成：品级越高(level 越小)→ 加成越大。仅在任官(有 officialTitle)受用·散阶无实权不算。
+  function _officeConspiracyBonus(ch, G) {
+    if (!ch || !ch.officialTitle || !_officeConspiracyOn()) return 0;
+    var lv = (global.TMPromotion && typeof TMPromotion.resolveRankLevel === 'function')
+      ? TMPromotion.resolveRankLevel(ch, G || global.GM) : (ch.rankLevel || 0);
+    if (!(lv > 0)) return 0;
+    return clamp((13 - lv) * 2.5, 0, 30);   // lv1(正一品)→+30·lv5→+20·lv9(正五品)→+10·lv≥13→0
+  }
+
+  // 能臣度代理(智为主·辅以勇/军)·用于酝酿速率与保密。S1c：叠加官位谋逆能量(flag 关=0·零回归)。
+  function _cap(ch, G) {
     if (!ch) return 50;
     var intel = ch.intelligence || 50;
     var force = ch.valor || ch.military || 50;
-    return intel * 0.6 + force * 0.4;
+    return intel * 0.6 + force * 0.4 + _officeConspiracyBonus(ch, G);
   }
   function _hasMilitary(ch) {
     return !!(ch && ((typeof ch.troops === 'number' && ch.troops > 0) || ch._commandsArmy || /将|帅|都督|总兵|提督|总兵官|参将|游击|宗室|藩王|郡王|亲王/.test(String(ch.role || ch.officialTitle || ch.title || ''))));
@@ -219,11 +238,13 @@
   // ─── 招募同谋 ───
   function _recruit(G, plot, rng, monthRatio) {
     if ((plot.conspirators || []).length >= CFG.maxConspirators) return;
-    if (rng() >= clamp(CFG.recruitChanceBase * monthRatio, 0, 0.9)) return;
+    var lead = _findChar(G, plot.ringleader);
+    // S1c·官位→门生故吏拉拢半径(flag 关 → _reach=1·阈值字节不变·rng 序列不变·零回归)
+    var _reach = 1 + _officeConspiracyBonus(lead, G) / 60;
+    if (rng() >= clamp(CFG.recruitChanceBase * monthRatio * _reach, 0, 0.9)) return;
     var taken = {};
     taken[plot.ringleader] = true;
     (plot.conspirators || []).forEach(function (n) { taken[n] = true; });
-    var lead = _findChar(G, plot.ringleader);
     var cands = _liveChars(G).filter(function (ch) {
       if (taken[ch.name] || ch.name === plot.target) return false;
       var amb = ch.ambition || 50, loy = ch.loyalty || 50;
@@ -252,14 +273,14 @@
   function _advance(G, plot, rng, monthRatio) {
     _recruit(G, plot, rng, monthRatio);
     var lead = _findChar(G, plot.ringleader);
-    var capFactor = clamp(_cap(lead) / CFG.capPivot, 0.5, 1.6);
+    var capFactor = clamp(_cap(lead, G) / CFG.capPivot, 0.5, 1.6);
     var allies = (plot.conspirators || []).length;
 
     var dM = (CFG.momentumBase + allies * CFG.momentumPerAlly) * capFactor * monthRatio * (0.7 + rng() * 0.6);
     plot.momentum = clamp(plot.momentum + dM, 0, 140);
 
     // 败露: 人越多越漏·保密度越低越快·主谋越精明越能压(智高减泄)
-    var hideFactor = clamp(1.4 - _cap(lead) / 120, 0.6, 1.4);
+    var hideFactor = clamp(1.4 - _cap(lead, G) / 120, 0.6, 1.4);
     var leakFromSecrecy = 1 + (CFG.secrecyStart - plot.secrecy) / 100;
     var dE = (CFG.exposureBase + allies * CFG.exposurePerAlly) * monthRatio * hideFactor * leakFromSecrecy * (0.6 + rng() * 0.8);
     plot.exposure = clamp(plot.exposure + dE, 0, 130);
@@ -368,21 +389,31 @@
     return '初萌';
   }
   // AI 叙事上下文块(喂进 endturn prompt·让叙事者知道谁在密谋·将发者交其决成败)
+  // W3·补盲区：除定性热度桶外，附原始运行态数值（密谋值/败露度/同谋数/酝酿回合），让叙事者据真值把握火候，
+  //   而非只见「酝酿已深」这类粗桶（此前 momentum/exposure 数值对 AI 不可见，是世界反应总线 W3 盲区之一）。
+  function _plotRuntime(G, p, rosterWord) {
+    var nowT = (G && G.turn) || 0;
+    var aged = Math.max(0, nowT - (p.startTurn || 0));
+    var roster = (p.conspirators && p.conspirators.length)
+      ? ('·' + (rosterWord || '同谋') + p.conspirators.length + '人（' + p.conspirators.slice(0, 3).join('、') + (p.conspirators.length > 3 ? '等' : '') + '）')
+      : '';
+    return '·密谋' + Math.round(p.momentum || 0) + '·败露' + Math.round(p.exposure || 0) + roster + (aged ? ('·已酿' + aged + '回合') : '');
+  }
   function aiContextBlock(G) {
     G = G || _G();
     var plots = activePlots(G);
     if (!plots.length) return '';
     var brew = plots.filter(function (p) { return p.stage !== 'ripe'; });
     var ripe = plots.filter(function (p) { return p.stage === 'ripe'; });
-    var s = '【密谋·暗流】朝中暗流涌动（机械引擎逐回合推演·请在叙事中呼应·勿凭空另起重复阴谋）：\n';
+    var s = '【密谋·暗流】朝中暗流涌动（机械引擎逐回合推演·密谋值满100将发、败露满100则事泄就擒·请据火候在叙事中呼应·勿凭空另起重复阴谋）：\n';
     brew.forEach(function (p) {
       s += '  ' + p.ringleader + ' 暗中' + _kindCN(p.kind) + (p.target ? ('（指 ' + p.target + '）') : '') + '·' + _heatCN(p)
-        + ((p.conspirators && p.conspirators.length) ? ('·同谋 ' + p.conspirators.slice(0, 3).join('、')) : '')
+        + _plotRuntime(G, p, '同谋')
         + (p._knownToPlayer ? '·已露端倪' : '·尚隐秘') + '\n';
     });
     ripe.forEach(function (p) {
       s += '  ★将发：' + p.ringleader + ' ' + _kindCN(p.kind) + (p.target ? ('（指 ' + p.target + '）') : '')
-        + ((p.conspirators && p.conspirators.length) ? ('·党羽 ' + p.conspirators.slice(0, 3).join('、')) : '')
+        + _plotRuntime(G, p, '党羽')
         + ' — 君威已衰·蓄势待发；你可据剧情决其成败，若坐实务必 record_conspiracy_events 记录。\n';
     });
     s += '  ※ 已了结者(下狱/伏诛)勿重复另立；引擎会自行酝酿与败露。\n';
@@ -485,6 +516,9 @@
     _makeRng: _makeRng,
     _eligibleRingleader: _eligibleRingleader,
     _throneStrong: _throneStrong,
+    _cap: _cap,
+    _officeConspiracyBonus: _officeConspiracyBonus,
+    _officeConspiracyOn: _officeConspiracyOn,
     ensure: ensure
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.ConspiracyEngine;

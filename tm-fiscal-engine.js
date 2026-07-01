@@ -1646,6 +1646,24 @@
     return 'silver';
   }
 
+  // S1·俸禄认人开关(默认关)。原 calcSalary 只认「编制×虚拟在岗率」·换谁来当、冗员超编对国库零差别。
+  //   开 → 实有人数超编制虚拟在岗时按实有计俸(冗官有财政代价)。关 → 零回归。
+  //   启用：P.conf.officeSalaryHeadcountEnabled = true（或 P.ai.同名）。
+  function _salaryHeadcountOn() {
+    var P = global.P || {};
+    return !!((P.conf && P.conf.officeSalaryHeadcountEnabled) || (P.ai && P.ai.officeSalaryHeadcountEnabled));
+  }
+  // 职位实有人数(跨新旧双模型：actualHolders 已具象 优先·否则 holder + additionalHolders)
+  function _salaryActualBodies(pos) {
+    if (!pos) return 0;
+    var ah = Array.isArray(pos.actualHolders)
+      ? pos.actualHolders.filter(function (h) { return h && h.name && h.generated !== false; }).length : 0;
+    if (ah > 0) return ah;
+    var n = (pos.holder && pos.holder !== '空缺' && pos.holder !== '(空缺)') ? 1 : 0;
+    if (Array.isArray(pos.additionalHolders)) n += pos.additionalHolders.filter(Boolean).length;
+    return n;
+  }
+
   function calcSalary(ctx) {
     var G = getGame();
     var cfg = getSalaryConfig(G);
@@ -1683,6 +1701,12 @@
           var established = safeNumber(pos.establishedCount, 1);
           var heads = hasHolder ? Math.max(1, Math.floor(established * virtualFillRate)) : 0;
           if (!hasHolder && established > 5) heads = Math.floor(established * virtualFillRate * 0.5);
+          // S1·俸禄认人(flag 默认关)：实有人数超过编制虚拟在岗(冗员超编) → 按实有计俸(冗官有财政代价)。
+          //   关 → heads 不变=零回归；开且超编 → heads=实有。空缺/常编/缺员不变(只惩超编·缺员不另省)。
+          if (_salaryHeadcountOn()) {
+            var _bodies = _salaryActualBodies(pos);
+            if (_bodies > heads) heads = _bodies;
+          }
           if (heads <= 0) return;
           var monthly = pos.salary != null ? safeNumber(pos.salary, 0)
             : (pos.perPersonSalary != null ? safeNumber(pos.perPersonSalary, 0)
@@ -2038,7 +2062,10 @@
     triggerPlayerSurvey: triggerPlayerSurvey,
     spendFromGuoku: spendFromGuoku,
     addToGuoku: addToGuoku,
-    applyPlayerTaxReform: applyPlayerTaxReform
+    applyPlayerTaxReform: applyPlayerTaxReform,
+    // S1·俸禄认人单测钩子
+    calcSalary: calcSalary,
+    _salaryActualBodies: _salaryActualBodies
   };
 
   global.FiscalEngine = global.FiscalEngine || {};

@@ -832,9 +832,10 @@ function buildAIContext(deepMode) {
     ctx += '  \u203B \u7528building_changes\u5EFA\u9020/\u5347\u7EA7/\u62C6\u9664\u5EFA\u7B51\u3002\u5EFA\u7B51\u5F71\u54CD\u7ECF\u6D4E\u3001\u519B\u4E8B\u3001\u6587\u5316\u3002\n';
   }
   // 实际建筑概况
-  if (GM.buildings && GM.buildings.length > 0) {
+  var _allBlds = (typeof getAllBuildingsCompat === 'function') ? getAllBuildingsCompat() : ((GM.buildings && GM.buildings) || []);
+  if (_allBlds && _allBlds.length > 0) {
     var _bldByTerritory = {};
-    GM.buildings.forEach(function(b) {
+    _allBlds.forEach(function(b) {
       if (!_bldByTerritory[b.territory]) _bldByTerritory[b.territory] = [];
       _bldByTerritory[b.territory].push(b.name + 'Lv' + b.level);
     });

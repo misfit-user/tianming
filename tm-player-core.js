@@ -1155,6 +1155,88 @@ function _edictLiveForecast(textareaId) {
   }, 500); // 500ms 防抖
 }
 
+/** 国是·风气（全局持续之制）一览·内联样式不碰 styles.css·B4 */
+var _GR_STATUS_TONE = { nascent: '#9a7b3f', established: '#7a5a2a', entrenched: '#5a7a3a', suppressed: '#9a9a9a' };
+function _dfGlobalRulesHtml() {
+  var GRapi = window.GlobalRules;
+  if (!GRapi || typeof GRapi.cards !== 'function') return '';
+  var cards = [];
+  try { cards = GRapi.cards() || []; } catch (_e) { return ''; }
+  if (!cards.length) return '';
+  var s = '<div style="margin-top:12px;padding:10px 12px;border:1px solid #d8c79b;border-radius:6px;background:rgba(248,242,224,.6);">';
+  s += '<div style="font-weight:700;color:#5a4326;margin-bottom:6px;">国 是 · 风 气 <span style="font-weight:400;font-size:12px;color:#8a754a;">（已立之制 · 持续生效 · 由营建确立）</span></div>';
+  cards.forEach(function (c) {
+    var tone = _GR_STATUS_TONE[c.status] || '#7a5a2a';
+    var barW = Math.max(2, Math.min(100, c.strength));
+    s += '<div style="padding:6px 0;border-top:1px solid #e7dcc0;">';
+    s += '<div style="display:flex;align-items:center;gap:6px;">';
+    s += '<b style="color:#4a3820;">' + escHtml(c.name) + '</b>';
+    s += '<span style="font-size:11px;padding:1px 6px;border-radius:8px;background:' + tone + ';color:#fff;">' + escHtml(c.statusLabel) + '</span>';
+    s += '<span style="margin-left:auto;font-size:11px;color:#8a754a;">扎根 ' + c.strength + '</span>';
+    s += '</div>';
+    s += '<div style="height:4px;border-radius:2px;background:#e7dcc0;margin:3px 0;"><div style="height:100%;width:' + barW + '%;border-radius:2px;background:' + tone + ';"></div></div>';
+    if (c.tends && c.tends.length) {
+      s += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">';
+      c.tends.forEach(function (t) {
+        s += '<em style="font-style:normal;font-size:11px;padding:1px 6px;border-radius:4px;background:#ede2c4;color:#5a4326;">' + escHtml(t.label) + '·' + escHtml(t.magLabel) + '</em>';
+      });
+      s += '</div>';
+    }
+    if (c.resist && c.resist.from && c.resist.from.length) {
+      s += '<div style="font-size:11px;color:#9a4a3a;margin-top:3px;">阻力：' + escHtml(c.resist.from.join('、')) + ' ' + escHtml(c.resist.intensityLabel) + '议' + (c.resist.label ? '（' + escHtml(c.resist.label) + '）' : '') + '</div>';
+    }
+    s += '</div>';
+  });
+  s += '</div>';
+  return s;
+}
+
+/** 人才与风气（学统格局·学校育才渐渗）一览·内联样式不碰 styles.css·S6·仿 _dfGlobalRulesHtml。
+ *  flag talentCohortEnabled 关 / 无范式 → 返 ''（面板自动隐藏·零视觉变化）。 */
+var _TC_TIER_TONE = { '萌芽': '#9a9a7a', '渐显': '#9a7b3f', '可观': '#7a5a2a', '主流': '#5a7a3a', '主导': '#3a6a4a' };
+function _dfTalentCohortsHtml() {
+  var TC = window.TM && window.TM.TalentCohorts;
+  if (!TC || typeof TC.cards !== 'function') return '';
+  var data = null;
+  try { data = TC.cards(window.GM, window.P); } catch (_e) { return ''; }
+  if (!data || !data.paradigms || !data.paradigms.length) return '';
+  var emergent = data.paradigms.filter(function (p) { return p.kind === 'emergent'; });
+  var established = data.paradigms.filter(function (p) { return p.kind === 'established'; });
+  var s = '<div style="margin-top:12px;padding:10px 12px;border:1px solid #d8c79b;border-radius:6px;background:rgba(248,242,224,.6);">';
+  s += '<div style="font-weight:700;color:#5a4326;margin-bottom:6px;">人 才 与 风 气 <span style="font-weight:400;font-size:12px;color:#8a754a;">（学统格局 · 学校育才→历练→渐渗 · 由新式学堂注入·日积月累）</span></div>';
+  emergent.forEach(function (p) {
+    var tone = _TC_TIER_TONE[p.tier] || '#7a5a2a';
+    var barW = Math.max(2, Math.min(100, Math.round(p.penetration * 100)));
+    s += '<div style="padding:6px 0;border-top:1px solid #e7dcc0;">';
+    s += '<div style="display:flex;align-items:center;gap:6px;">';
+    s += '<b style="color:#4a3820;">' + escHtml(p.label) + '</b>';
+    s += '<span style="font-size:11px;padding:1px 6px;border-radius:8px;background:' + tone + ';color:#fff;">' + escHtml(p.tier) + '</span>';
+    s += '<span style="margin-left:auto;font-size:11px;color:#8a754a;">渗透 ' + (p.penetration * 100).toFixed(1) + '%</span>';
+    s += '</div>';
+    s += '<div style="height:4px;border-radius:2px;background:#e7dcc0;margin:3px 0;"><div style="height:100%;width:' + barW + '%;border-radius:2px;background:' + tone + ';"></div></div>';
+    s += '<div style="font-size:11px;color:#8a754a;">有效 ' + p.effectiveStock + ' · 成熟 ' + p.stock + ' · 在训 ' + p.training + ' · 失业 ' + p.unemployed + ' · 年招 ' + p.intake + ' · 培养质量 ' + Math.round(p.quality * 100) + '%</div>';
+    s += '</div>';
+  });
+  established.forEach(function (p) {
+    s += '<div style="padding:5px 0;border-top:1px solid #e7dcc0;font-size:12px;color:#6a5436;">既有正统 <b style="color:#4a3820;">' + escHtml(p.label) + '</b> · 存量约 ' + p.stock + '</div>';
+  });
+  if (data.tendencies && data.tendencies.length) {
+    s += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;">';
+    s += '<span style="font-size:11px;color:#8a754a;">风气倾向：</span>';
+    data.tendencies.forEach(function (t) {
+      s += '<em style="font-style:normal;font-size:11px;padding:1px 6px;border-radius:4px;background:#ede2c4;color:#5a4326;">' + escHtml(t.key) + ' +' + (t.value * 100).toFixed(1) + '%</em>';
+    });
+    s += '</div>';
+  }
+  if (data.backlash > 0.001 || data.unrest > 0.02) {
+    var bl = data.backlash > 0.05 ? '强' : (data.backlash > 0.01 ? '渐起' : '微');
+    var ur = data.unrest > 0.3 ? '高' : (data.unrest > 0.1 ? '渐起' : '微');
+    s += '<div style="font-size:11px;color:#9a4a3a;margin-top:4px;">阻力：旧势力反扑 ' + bl + ' · 失业动荡 ' + ur + (data.unemployed > 0 ? '（失业约 ' + data.unemployed + ' 人）' : '') + '</div>';
+  }
+  s += '</div>';
+  return s;
+}
+
 /** 修建建筑弹窗——御案宣纸皮·剧本工籍 + 自拟营造（推诏令建议库·不直改账面） */
 var _DF_BUILD_CAT_CN = { economic: '经济', military: '军事', cultural: '文化', administrative: '行政', religious: '宗教', infrastructure: '基础设施' };
 function _dfBuildModal(divName) {
@@ -1197,9 +1279,14 @@ function _dfBuildModal(divName) {
   Object.keys(_DF_BUILD_CAT_CN).forEach(function(k) { html += '<option value="' + k + '">' + _DF_BUILD_CAT_CN[k] + '</option>'; });
   html += '</select></div>';
   html += '<div class="tmjz-field"><label>规 制 与 所 求（告示有司：欲修何物、预期何效）</label><textarea id="_bmCustDesc" rows="4" placeholder="例：修文馆以藏书刀版，供士子入内议事，以兴文风、安士心。"></textarea></div>';
-  html += '<div class="tmjz-rule"><b>有司核定之制：</b>自拟工役颁行后，由有司核其<b>合理性三档</b>（合理／勉强／不合理），定实际费用与工期；其效用只许落在<b>白名单账目</b>（田亩、商贸、盐铁、城防、驿路、解额、募兵、民心、吏治等），且以费用为度——小费小效，大费大效，断无十两银修出雄关之理。</div>';
+  html += '<div class="tmjz-rule"><b>有司核定之制：</b>自拟工役颁行后，由有司核其<b>合理性三档</b>（合理／勉强／不合理），定实际费用与工期；其效用只许落在<b>白名单账目</b>（田亩、商贸、盐铁、城防、驿路、解额、募兵、民心、吏治等），且以费用为度——小费小效，大费大效，断无十两银修出雄关之理。凡变更制度、风气、学统者（如实学馆、译书馆），更可立<b>「国是·风气」</b>之持续全局之制，潜移国是、育才兴业，然必招既得群体之阻力。</div>';
   html += '<div id="_bmAppraiseResult" style="display:none;margin-top:10px;"></div>';  // A1·有司核议结果区
   html += '</div>';
+
+  // B4·国是·风气（已立全局之制）一览——置于 body 末·两页签共见
+  html += _dfGlobalRulesHtml();
+  // S6·人才与风气（学统格局·学校育才渐渗）一览——与国是·风气并列·flag 关/无范式则自动隐藏
+  html += _dfTalentCohortsHtml();
 
   html += '</div>';
   // A1·自拟营建 agent：开关开 + 有 API key 时，自拟页提供「请有司核议」即时核定（玩家点按钮才调·无则回落原录入路径）
@@ -1330,7 +1417,7 @@ function _dfApproveBuild() {
   toast('已准奏兴造「' + pend.req.name + '」·出帑 ' + ((r.spent && r.spent.money) || 0) + ' 两' + def + '·' + (r.building && r.building.remainingTurns) + ' 回合工成');
   window._dfPendingAppraisal = null;
   var m = document.getElementById('_dfBuildModal'); if (m) m.remove();
-  try { document.dispatchEvent(new CustomEvent('tm-yingzao-submitted', { detail: { divName: pend.divName } })); } catch (_e2) {}
+  try { document.dispatchEvent(new CustomEvent('tm-yingzao-submitted', { detail: { divName: pend.divName, building: r.building } })); } catch (_e2) {}
 }
 
 /** 非直辖区划——中国化操作路径弹窗 */

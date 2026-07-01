@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天命 · 启幕卷轴（主界面 预览 v2 · AI 水墨美术）</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   天命 · 启幕卷轴 v2 — 主菜单 / 剧本择 / 剧本览 / 著卷
+   v1 纯 CSS 占位美术  →  v2 接入 Codex 生成的真水墨大图
+   美术：宣纸·墨韵·朱砂·赭金·苍山
+   图源：preview-launch-assets/  (hero-bg / scn-*.png)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --ink-900:#0a0908; --ink-800:#12100e; --ink-700:#1c1914; --ink-600:#2a2520;
+  --ink-500:#3a3530; --ink-400:#6b5d4f; --ink-300:#9d917d; --ink-200:#d4c9b0;
+  --ink-100:#ede5d0; --ink-50:#f8f3e8;
+  --gold-300:#d4be7a; --gold-400:#b89a53; --gold-500:#8a6d2b; --gold-600:#6b5010;
+  --vermillion-300:#d4706a; --vermillion-400:#c04030; --vermillion-500:#8b2e25;
+  --celadon-300:#a3d4c7; --celadon-400:#7eb8a7; --celadon-500:#5a8f7f;
+  --indigo-400:#4a6fa5; --indigo-500:#3a5580;
+  --purple-400:#8e6aa8; --amber-400:#c9a84c;
+  --bg-paper:#241e18; --bg-ink:#1a1510; --bg-deep:#12100e;
+  --font-serif:"Noto Serif SC","Source Han Serif CN","STKaiti","KaiTi","楷体",serif;
+  --font-kai:"STKaiti","KaiTi","楷体",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg-deep);color:var(--ink-100);font-family:var(--font-serif);min-height:100vh;overflow-x:hidden;}
+
+/* ─── 顶部切换 ─── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,rgba(10,9,8,0.95),rgba(26,21,16,0.7));backdrop-filter:blur(10px);border-bottom:1px solid rgba(184,154,83,0.2);padding:10px 24px;display:flex;align-items:center;gap:12px;font-size:13px;letter-spacing:0.1em;}
+#nav .n-title{color:var(--gold-400);font-weight:600;margin-right:16px;}
+#nav button{background:transparent;border:1px solid rgba(184,154,83,0.3);color:var(--ink-200);font-family:inherit;padding:5px 12px;border-radius:3px;cursor:pointer;transition:all 0.2s;font-size:12px;letter-spacing:0.08em;}
+#nav button:hover{background:rgba(184,154,83,0.1);border-color:var(--gold-400);color:var(--gold-300);}
+#nav button.on{background:linear-gradient(135deg,rgba(184,154,83,0.2),rgba(138,109,43,0.18));border-color:var(--gold-400);color:var(--gold-300);}
+#nav .n-sp{flex:1;}
+#nav .n-hint{color:var(--celadon-400);font-size:11px;letter-spacing:0.06em;opacity:0.85;}
+
+/* ─── 页面容器 ─── */
+.page{display:none;min-height:100vh;position:relative;}
+.page.on{display:block;}
+
+/* ═══════════════════════════════════════════════════════
+   页 1 · 启幕主菜单 —— 真水墨山河 hero
+   ═══════════════════════════════════════════════════════ */
+#page-home{min-height:100vh;overflow:hidden;}
+.home-stage{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:96px 20px 80px;isolation:isolate;}
+
+/* 真水墨大图层（缓慢电影推镜） */
+.home-hero-img{position:absolute;inset:0;z-index:0;
+  background:url('preview-launch-assets/hero-bg.png') center 32%/cover no-repeat;
+  transform-origin:50% 42%;animation:hero-drift 34s ease-in-out infinite alternate;}
+@keyframes hero-drift{from{transform:scale(1.05);}to{transform:scale(1.15) translateY(-2%);}}
+
+/* 墨色蒙版：上中通透留住山河，四边与底部压暗保证文字可读 */
+.home-hero-veil{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 78% 56% at 50% 40%, rgba(10,9,8,0) 0%, rgba(10,9,8,0.18) 60%, rgba(10,9,8,0.5) 100%),
+    linear-gradient(180deg, rgba(10,9,8,0.6) 0%, rgba(10,9,8,0.12) 26%, rgba(10,9,8,0.3) 60%, rgba(10,9,8,0.78) 86%, rgba(10,9,8,0.96) 100%);}
+/* 纸纹微光叠在图上，统一质感 */
+.home-hero-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0.5;mix-blend-mode:overlay;
+  background:
+    repeating-linear-gradient(90deg,transparent,transparent 4em,rgba(184,154,83,0.04) 4em,rgba(184,154,83,0.04) calc(4em + 1px)),
+    repeating-linear-gradient(0deg,transparent,transparent 6em,rgba(107,93,79,0.035) 6em,rgba(107,93,79,0.035) calc(6em + 1px));}
+
+/* 左右楹联（古诗竖排） */
+.home-ylian{position:absolute;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-family:var(--font-kai);font-size:13px;color:var(--ink-200);letter-spacing:0.8em;line-height:2.2;opacity:0.5;pointer-events:none;user-select:none;z-index:2;text-shadow:0 1px 10px rgba(0,0,0,0.8);}
+.home-ylian.l{left:42px;}
+.home-ylian.r{right:42px;}
+.home-ylian .s{color:var(--gold-400);font-size:11px;letter-spacing:0.3em;margin-top:12px;display:block;}
+
+/* 中轴标题块 */
+.home-axis{position:relative;z-index:3;text-align:center;}
+.home-deco-top{color:var(--gold-400);font-size:11px;letter-spacing:1em;margin-bottom:10px;opacity:0.8;text-shadow:0 1px 8px rgba(0,0,0,0.7);}
+.home-deco-top::before{content:"◆　　◇　　◆";}
+
+/* 天命大字 */
+.home-title{font-family:var(--font-kai);font-weight:900;font-size:96px;letter-spacing:0.28em;line-height:1;
+  background:linear-gradient(160deg,#6b5010 0%,#8a6d2b 22%,#b89a53 44%,#e8d398 54%,#f3e3ad 58%,#d4be7a 66%,#b89a53 84%,#8a6d2b 100%);
+  background-size:200% 200%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 4px 24px rgba(0,0,0,0.85)) drop-shadow(0 0 50px rgba(184,154,83,0.25));
+  animation:gold-shift 8s ease-in-out infinite alternate;
+  position:relative;padding:0 24px;}
+@keyframes gold-shift{from{background-position:0% 50%;}to{background-position:100% 50%;}}
+.home-title::before,.home-title::after{content:"";position:absolute;top:50%;width:48px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-400));opacity:0.7;}
+.home-title::before{right:100%;}
+.home-title::after{left:100%;background:linear-gradient(270deg,transparent,var(--gold-400));}
+
+/* 朱砂印 + 诏曰 */
+.home-seal-wrap{margin:20px auto 0;display:flex;align-items:center;justify-content:center;gap:14px;}
+.home-seal-lbl{font-family:var(--font-kai);color:var(--ink-100);font-size:16px;letter-spacing:0.35em;font-weight:500;text-shadow:0 1px 8px rgba(0,0,0,0.85);}
+.home-seal{width:46px;height:46px;border-radius:6px;background:radial-gradient(circle at 35% 32%,rgba(214,116,110,0.97),rgba(139,46,37,0.95));display:flex;align-items:center;justify-content:center;color:#fef4e8;font-family:var(--font-kai);font-size:19px;font-weight:bold;transform:rotate(-6deg);box-shadow:0 3px 12px rgba(139,46,37,0.55),inset 0 0 0 1.5px rgba(255,220,200,0.35);}
+
+.home-sub{font-family:var(--font-kai);font-size:15px;color:var(--gold-300);letter-spacing:0.85em;margin-top:24px;font-weight:400;text-shadow:0 1px 10px rgba(0,0,0,0.8);}
+.home-div{width:340px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-500) 20%,var(--gold-300) 50%,var(--gold-500) 80%,transparent);margin:30px auto 0;position:relative;}
+.home-div::before,.home-div::after{content:"";position:absolute;top:50%;width:6px;height:6px;border:1px solid var(--gold-400);transform:translateY(-50%) rotate(45deg);background:var(--bg-deep);}
+.home-div::before{left:-3px;}
+.home-div::after{right:-3px;}
+
+/* 4 菜单项：磨砂玻璃浮于山河 */
+.home-menu{display:grid;grid-template-columns:repeat(2,minmax(248px,1fr));gap:16px;max-width:600px;width:100%;margin:40px auto 0;position:relative;z-index:3;}
+.home-card{position:relative;
+  background:linear-gradient(160deg,rgba(28,23,18,0.62),rgba(16,13,10,0.7));
+  backdrop-filter:blur(9px) saturate(1.15);-webkit-backdrop-filter:blur(9px) saturate(1.15);
+  border:1px solid rgba(184,154,83,0.28);border-left:2px solid rgba(184,154,83,0.7);border-radius:4px;
+  padding:18px 20px;cursor:pointer;transition:all 0.28s cubic-bezier(0.22,1,0.36,1);text-align:left;font-family:inherit;color:inherit;overflow:hidden;
+  box-shadow:0 6px 22px rgba(0,0,0,0.4);}
+.home-card::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-300),transparent);opacity:0;transition:opacity 0.3s;}
+.home-card::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-500),transparent);opacity:0;transition:opacity 0.3s;}
+.home-card:hover{transform:translateY(-3px);border-color:var(--gold-400);border-left-color:var(--gold-300);background:linear-gradient(160deg,rgba(36,30,24,0.72),rgba(20,16,12,0.78));box-shadow:0 14px 36px rgba(0,0,0,0.55),0 0 26px rgba(184,154,83,0.14);}
+.home-card:hover::before,.home-card:hover::after{opacity:1;}
+.home-card-hd{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.home-card-icon{width:40px;height:40px;border-radius:50%;border:1px solid var(--ic-c,var(--gold-400));background:linear-gradient(135deg,rgba(184,154,83,0.16),rgba(26,21,16,0.3));display:flex;align-items:center;justify-content:center;font-family:var(--font-kai);font-size:19px;color:var(--ic-c,var(--gold-300));flex-shrink:0;transition:all 0.25s;}
+.home-card:hover .home-card-icon{background:linear-gradient(135deg,rgba(184,154,83,0.26),rgba(140,109,43,0.14));box-shadow:0 0 14px var(--ic-c,var(--gold-400));}
+.home-card.c-new{--ic-c:var(--gold-300);}
+.home-card.c-load{--ic-c:var(--celadon-400);}
+.home-card.c-edit{--ic-c:var(--purple-400);}
+.home-card.c-set{--ic-c:var(--amber-400);}
+.home-card-cn{font-family:var(--font-kai);font-size:20px;color:var(--ic-c,var(--gold-300));letter-spacing:0.35em;line-height:1.1;margin-bottom:3px;text-indent:0.35em;font-weight:600;}
+.home-card-ti{font-family:var(--font-kai);font-size:12px;color:var(--ink-300);letter-spacing:0.22em;font-weight:400;line-height:1.3;}
+.home-card-desc{font-family:var(--font-kai);font-size:11.5px;color:var(--ink-200);letter-spacing:0.08em;line-height:1.55;margin-top:4px;opacity:0.82;}
+.home-card-meta{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(184,154,83,0.18);font-family:var(--font-kai);font-size:11px;color:var(--gold-400);letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;}
+.home-card-meta .mt-dot{width:5px;height:5px;border-radius:50%;background:var(--celadon-400);box-shadow:0 0 5px var(--celadon-400);margin-right:4px;vertical-align:middle;display:inline-block;}
+
+/* 底部栏 */
+.home-foot{position:fixed;bottom:0;left:0;right:0;padding:10px 24px;background:linear-gradient(0deg,rgba(10,9,8,0.95),rgba(26,21,16,0.1));border-top:1px solid rgba(184,154,83,0.14);display:flex;align-items:center;justify-content:space-between;font-family:var(--font-kai);font-size:11px;color:var(--ink-300);letter-spacing:0.1em;z-index:6;backdrop-filter:blur(4px);}
+.home-foot .f-ver{color:var(--gold-400);letter-spacing:0.2em;}
+.home-foot .f-mid .dot{color:var(--vermillion-400);margin:0 6px;}
+.home-foot .f-right{display:flex;gap:18px;align-items:center;}
+.home-foot kbd{background:rgba(184,154,83,0.1);border:1px solid rgba(184,154,83,0.32);padding:0 6px;border-radius:2px;font-size:10px;color:var(--gold-300);font-family:monospace;}
+
+/* ═══════════════════════════════════════════════════════
+   页 2 · 剧本选择 —— 海报式真水墨卡
+   ═══════════════════════════════════════════════════════ */
+#page-scn{padding-top:54px;min-height:100vh;background:linear-gradient(180deg,var(--bg-deep),var(--bg-ink));position:relative;}
+#page-scn::before{content:"";position:fixed;inset:54px 0 0 0;background:repeating-linear-gradient(90deg,transparent,transparent 4em,rgba(184,154,83,0.015) 4em,rgba(184,154,83,0.015) calc(4em + 1px));pointer-events:none;}
+.scn-stage{max-width:1120px;margin:0 auto;padding:34px 24px 70px;position:relative;z-index:2;}
+.scn-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.scn-back{font-family:var(--font-kai);font-size:13px;color:var(--ink-300);background:transparent;border:1px solid rgba(184,154,83,0.3);padding:8px 16px;border-radius:3px;cursor:pointer;letter-spacing:0.15em;}
+.scn-back:hover{border-color:var(--gold-400);color:var(--gold-300);}
+.scn-title{font-family:var(--font-kai);font-size:28px;color:var(--gold-300);letter-spacing:0.4em;text-align:center;font-weight:500;flex:1;}
+.scn-title::before{content:"〔 ";color:var(--gold-500);font-size:22px;}
+.scn-title::after{content:" 〕";color:var(--gold-500);font-size:22px;}
+.scn-sub{font-family:var(--font-kai);font-size:12px;color:var(--ink-400);letter-spacing:0.3em;text-align:center;margin-bottom:26px;font-style:italic;}
+
+.scn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.scn-card{position:relative;height:236px;border:1px solid rgba(184,154,83,0.22);border-radius:4px;cursor:pointer;overflow:hidden;transition:all 0.28s cubic-bezier(0.22,1,0.36,1);box-shadow:0 6px 20px rgba(0,0,0,0.4);}
+.scn-card .scn-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.6s ease;}
+.scn-card:hover .scn-img{transform:scale(1.07);}
+.scn-card .scn-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,0.12) 0%,rgba(10,9,8,0.05) 34%,rgba(10,9,8,0.6) 66%,rgba(10,9,8,0.92) 100%);}
+.scn-card .scn-edge{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold-500),var(--gold-300) 30%,var(--gold-300) 70%,var(--gold-500));opacity:0.85;z-index:3;}
+.scn-card .scn-seal{position:absolute;right:12px;top:12px;width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(214,116,110,0.85),rgba(139,46,37,0.9));z-index:3;transform:rotate(-6deg);box-shadow:0 0 0 1px rgba(255,220,200,0.18);}
+.scn-card .scn-body{position:absolute;left:0;right:0;bottom:0;padding:14px 16px 16px;z-index:3;}
+.scn-card .scn-era{font-family:var(--font-kai);font-size:11px;color:var(--gold-300);letter-spacing:0.2em;margin-bottom:4px;text-shadow:0 1px 6px rgba(0,0,0,0.9);}
+.scn-card .scn-name{font-family:var(--font-kai);font-size:20px;color:#fff;letter-spacing:0.12em;font-weight:700;margin-bottom:3px;line-height:1.2;text-shadow:0 2px 10px rgba(0,0,0,0.95);}
+.scn-card .scn-role{font-family:var(--font-kai);font-size:12.5px;color:var(--celadon-300);letter-spacing:0.08em;margin-bottom:8px;text-shadow:0 1px 6px rgba(0,0,0,0.9);}
+.scn-card .scn-meta{display:flex;gap:12px;font-family:var(--font-kai);font-size:10.5px;color:var(--ink-200);letter-spacing:0.05em;text-shadow:0 1px 6px rgba(0,0,0,0.9);}
+.scn-card .scn-meta span{color:var(--gold-300);}
+.scn-card .scn-tag{position:absolute;left:14px;top:12px;padding:2px 8px;background:rgba(10,9,8,0.6);border:0.5px solid rgba(184,154,83,0.4);color:var(--gold-300);font-family:var(--font-kai);font-size:10px;letter-spacing:0.1em;border-radius:2px;z-index:3;backdrop-filter:blur(3px);}
+.scn-card.custom .scn-tag{border-color:rgba(142,106,168,0.5);color:var(--purple-400);}
+.scn-card:hover{border-color:var(--gold-400);transform:translateY(-4px);box-shadow:0 16px 34px rgba(0,0,0,0.55),0 0 20px rgba(184,154,83,0.12);}
+
+/* 新建 "空卷" 特殊卡 */
+.scn-card.empty{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;border:1.5px dashed rgba(184,154,83,0.35);background:linear-gradient(160deg,rgba(28,23,18,0.5),rgba(16,13,10,0.4));height:236px;}
+.scn-card.empty:hover{border-color:var(--gold-400);background:rgba(184,154,83,0.04);transform:translateY(-4px);}
+.scn-card.empty .ne-ic{font-family:var(--font-kai);font-size:30px;color:var(--gold-400);margin-bottom:6px;}
+.scn-card.empty .ne-tx{font-family:var(--font-kai);font-size:15px;color:var(--gold-300);letter-spacing:0.3em;margin-bottom:4px;}
+.scn-card.empty .ne-sb{font-family:var(--font-kai);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;font-style:italic;}
+
+/* ═══════════════════════════════════════════════════════
+   页 3 · 剧本预览弹窗 —— 顶部水墨横幅
+   ═══════════════════════════════════════════════════════ */
+#page-prev{padding-top:54px;min-height:100vh;position:relative;background:linear-gradient(180deg,rgba(10,9,8,0.85),rgba(10,9,8,0.97));}
+.prev-stage{position:relative;z-index:3;display:flex;align-items:flex-start;justify-content:center;padding:38px 20px 60px;min-height:calc(100vh - 54px);}
+.prev-modal{width:100%;max-width:700px;background:linear-gradient(160deg,#2a231c,#1a140f);border:1px solid var(--gold-500);border-radius:5px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.7),0 0 90px rgba(184,154,83,0.08);overflow:hidden;}
+.prev-banner{position:relative;height:180px;background:url('preview-launch-assets/scn-anshi.png') center 35%/cover no-repeat;}
+.prev-banner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,20,15,0.25) 0%,rgba(26,20,15,0.1) 30%,rgba(26,20,15,0.75) 78%,rgba(26,20,15,0.98) 100%);}
+.prev-banner .pb-cap{position:absolute;left:0;right:0;bottom:14px;text-align:center;z-index:2;}
+.prev-banner .pb-era{font-family:var(--font-kai);font-size:13px;color:var(--gold-300);letter-spacing:0.4em;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,0.9);}
+.prev-banner .pb-name{font-family:var(--font-kai);font-size:34px;color:#fff;letter-spacing:0.3em;font-weight:700;text-shadow:0 2px 14px rgba(0,0,0,0.95);}
+.prev-banner .pb-role{font-family:var(--font-kai);font-size:13px;color:var(--celadon-300);letter-spacing:0.2em;margin-top:4px;text-shadow:0 2px 8px rgba(0,0,0,0.9);}
+.prev-inner{padding:24px 32px 28px;}
+.prev-close{position:absolute;top:14px;right:18px;width:30px;height:30px;background:rgba(10,9,8,0.5);border:1px solid rgba(184,154,83,0.4);color:var(--gold-300);font-size:16px;cursor:pointer;border-radius:50%;line-height:0;z-index:5;backdrop-filter:blur(3px);}
+.prev-close:hover{border-color:var(--vermillion-400);color:var(--vermillion-300);}
+
+.prev-overview{background:rgba(10,9,8,0.5);border-left:3px solid var(--gold-400);padding:13px 16px;font-family:var(--font-kai);font-size:13px;color:var(--ink-200);letter-spacing:0.06em;line-height:1.95;margin-bottom:18px;border-radius:0 3px 3px 0;position:relative;}
+.prev-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.prev-stat{background:rgba(36,30,24,0.6);border:1px solid rgba(184,154,83,0.18);border-radius:3px;padding:10px 6px;text-align:center;position:relative;}
+.prev-stat::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--s-c,var(--gold-400)),transparent);opacity:0.7;}
+.prev-stat.s-char{--s-c:var(--celadon-400);} .prev-stat.s-fac{--s-c:var(--indigo-400);}
+.prev-stat.s-party{--s-c:var(--purple-400);} .prev-stat.s-event{--s-c:var(--amber-400);}
+.prev-stat .pv-n{font-family:var(--font-kai);font-size:23px;color:var(--s-c,var(--gold-300));font-weight:600;line-height:1;}
+.prev-stat .pv-l{font-family:var(--font-kai);font-size:11px;color:var(--ink-300);letter-spacing:0.2em;margin-top:4px;}
+.prev-identity{background:linear-gradient(160deg,rgba(74,111,165,0.14),rgba(58,85,128,0.08));border:1px solid rgba(74,111,165,0.3);border-radius:3px;padding:12px 16px;margin-bottom:14px;position:relative;}
+.prev-id-hd{font-family:var(--font-kai);font-size:11px;color:var(--indigo-400);letter-spacing:0.3em;margin-bottom:6px;}
+.prev-id-role{font-family:var(--font-kai);font-size:15px;color:var(--ink-100);letter-spacing:0.1em;margin-bottom:3px;}
+.prev-id-fac{font-family:var(--font-kai);font-size:12px;color:var(--ink-300);letter-spacing:0.05em;}
+.prev-contrad{background:linear-gradient(160deg,rgba(192,64,48,0.08),rgba(140,40,30,0.05));border:1px solid rgba(192,64,48,0.22);border-radius:3px;padding:12px 16px;margin-bottom:18px;}
+.prev-ct-hd{font-family:var(--font-kai);font-size:11px;color:var(--vermillion-400);letter-spacing:0.3em;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.prev-ct-hd::before{content:"";width:6px;height:6px;background:var(--vermillion-400);border-radius:50%;}
+.prev-ct-row{display:flex;gap:8px;padding:4px 0 4px 10px;border-left:3px solid var(--ct-c,var(--vermillion-400));margin-bottom:4px;font-family:var(--font-kai);font-size:12px;color:var(--ink-200);letter-spacing:0.05em;}
+.prev-ct-row.dim-pol{--ct-c:var(--indigo-400);} .prev-ct-row.dim-eco{--ct-c:var(--gold-400);}
+.prev-ct-row.dim-mil{--ct-c:var(--vermillion-400);} .prev-ct-row.dim-soc{--ct-c:var(--celadon-400);}
+.prev-ct-row .ct-dim{font-size:10px;letter-spacing:0.2em;color:var(--ct-c);min-width:28px;}
+.prev-diff{margin-bottom:18px;}
+.prev-diff-hd{font-family:var(--font-kai);font-size:11px;color:var(--ink-400);letter-spacing:0.3em;text-align:center;margin-bottom:8px;}
+.prev-diff-row{display:flex;gap:8px;}
+.prev-diff-btn{flex:1;padding:10px 8px;background:rgba(36,30,24,0.6);border:1px solid rgba(184,154,83,0.2);border-radius:3px;cursor:pointer;font-family:var(--font-kai);color:var(--ink-300);text-align:center;transition:all 0.2s;}
+.prev-diff-btn:hover{border-color:var(--gold-400);color:var(--gold-300);}
+.prev-diff-btn.on{background:linear-gradient(135deg,rgba(184,154,83,0.18),rgba(140,109,43,0.1));border-color:var(--gold-400);color:var(--gold-300);box-shadow:inset 0 0 12px rgba(184,154,83,0.1);}
+.prev-diff-btn .dn{font-size:14px;letter-spacing:0.2em;font-weight:500;margin-bottom:3px;}
+.prev-diff-btn .dd{font-size:10.5px;color:var(--ink-400);letter-spacing:0.04em;font-style:italic;}
+.prev-diff-btn.on .dd{color:var(--ink-300);}
+.prev-diff-desc{margin-top:8px;padding:6px 12px;background:rgba(10,9,8,0.5);border-radius:3px;font-family:var(--font-kai);font-size:11px;color:var(--ink-300);letter-spacing:0.05em;text-align:center;font-style:italic;}
+.prev-actions{display:flex;gap:10px;margin-top:18px;}
+.prev-btn{padding:13px 20px;border-radius:3px;font-family:var(--font-kai);cursor:pointer;letter-spacing:0.25em;font-size:14px;transition:all 0.25s;border:1px solid transparent;}
+.prev-btn.primary{flex:2;background:linear-gradient(135deg,var(--gold-500),var(--gold-300));border-color:var(--gold-300);color:#1a1410;font-weight:700;box-shadow:0 4px 14px rgba(184,154,83,0.3);}
+.prev-btn.primary:hover{box-shadow:0 7px 20px rgba(184,154,83,0.45);transform:translateY(-1px);}
+.prev-btn.primary .sub{display:block;font-size:10px;letter-spacing:0.15em;font-weight:400;margin-top:3px;opacity:0.72;}
+.prev-btn.ghost{flex:1;background:transparent;border-color:rgba(184,154,83,0.3);color:var(--ink-300);}
+.prev-btn.ghost:hover{border-color:var(--gold-400);color:var(--gold-300);}
+
+/* ═══════════════════════════════════════════════════════
+   页 4 · 著卷（编辑器入口）
+   ═══════════════════════════════════════════════════════ */
+#page-edit{padding-top:54px;min-height:100vh;background:linear-gradient(180deg,var(--bg-deep),#18130e);position:relative;}
+#page-edit::before{content:"";position:fixed;inset:54px 0 0 0;background:repeating-linear-gradient(90deg,transparent,transparent 4em,rgba(142,106,168,0.015) 4em,rgba(142,106,168,0.015) calc(4em + 1px));pointer-events:none;}
+.edit-stage{max-width:1080px;margin:0 auto;padding:34px 24px 60px;position:relative;z-index:2;}
+.edit-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.edit-title{font-family:var(--font-kai);font-size:28px;color:var(--purple-400);letter-spacing:0.4em;text-align:center;flex:1;font-weight:500;}
+.edit-title::before{content:"〔 ";color:rgba(142,106,168,0.5);} .edit-title::after{content:" 〕";color:rgba(142,106,168,0.5);}
+.edit-sub{font-family:var(--font-kai);font-size:12px;color:var(--ink-400);letter-spacing:0.3em;text-align:center;margin-bottom:22px;font-style:italic;}
+.edit-ops{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
+.edit-op{padding:9px 16px;background:linear-gradient(135deg,rgba(142,106,168,0.15),rgba(142,106,168,0.05));border:1px solid rgba(142,106,168,0.3);border-radius:3px;font-family:var(--font-kai);font-size:12.5px;color:var(--purple-400);letter-spacing:0.15em;cursor:pointer;transition:all 0.2s;}
+.edit-op:hover{border-color:var(--purple-400);color:#b08bc8;background:linear-gradient(135deg,rgba(142,106,168,0.25),rgba(142,106,168,0.1));}
+.edit-op.ai{background:linear-gradient(135deg,rgba(126,184,167,0.15),rgba(126,184,167,0.05));border-color:rgba(126,184,167,0.3);color:var(--celadon-400);}
+.edit-op.ai:hover{border-color:var(--celadon-400);color:var(--celadon-300);}
+.edit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.edit-card{position:relative;background:linear-gradient(160deg,rgba(36,30,24,0.92),rgba(26,21,16,0.88));border:1px solid rgba(142,106,168,0.25);border-radius:3px;padding:14px 16px;cursor:pointer;overflow:hidden;transition:all 0.25s;min-height:140px;}
+.edit-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,rgba(142,106,168,0.6),rgba(176,139,200,0.5),rgba(142,106,168,0.6));opacity:0.9;}
+.edit-card::after{content:"编";position:absolute;right:10px;top:10px;width:22px;height:22px;border-radius:3px;background:linear-gradient(135deg,rgba(142,106,168,0.8),rgba(176,139,200,0.6));color:#f4eadd;text-align:center;line-height:22px;font-family:var(--font-kai);font-size:11px;font-weight:600;box-shadow:0 2px 4px rgba(142,106,168,0.3);transform:rotate(-5deg);}
+.edit-card:hover{border-color:var(--purple-400);transform:translateY(-3px);box-shadow:0 10px 22px rgba(10,9,8,0.5),0 0 16px rgba(142,106,168,0.15);}
+.edit-card .ec-era{font-family:var(--font-kai);font-size:11px;color:var(--purple-400);letter-spacing:0.2em;margin-bottom:4px;}
+.edit-card .ec-name{font-family:var(--font-kai);font-size:17px;color:var(--ink-100);letter-spacing:0.1em;font-weight:600;margin-bottom:3px;line-height:1.25;}
+.edit-card .ec-role{font-family:var(--font-kai);font-size:12px;color:var(--ink-200);letter-spacing:0.05em;margin-bottom:8px;}
+.edit-card .ec-bg{font-family:var(--font-kai);font-size:11px;color:var(--ink-300);letter-spacing:0.04em;line-height:1.65;font-style:italic;opacity:0.88;}
+.edit-card .ec-meta{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(142,106,168,0.2);display:flex;gap:10px;font-family:var(--font-kai);font-size:10.5px;color:var(--ink-400);letter-spacing:0.05em;}
+.edit-card .ec-meta span{color:var(--purple-400);}
+.edit-card .ec-status{position:absolute;bottom:10px;right:12px;padding:1.5px 6px;background:rgba(126,184,167,0.12);border:0.5px solid rgba(126,184,167,0.35);color:var(--celadon-400);font-family:var(--font-kai);font-size:9.5px;letter-spacing:0.1em;border-radius:2px;}
+.edit-card.draft .ec-status{background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.4);color:var(--amber-400);}
+.edit-card.empty{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;border:1.5px dashed rgba(142,106,168,0.4);background:linear-gradient(160deg,rgba(142,106,168,0.05),transparent);padding:26px 14px;}
+.edit-card.empty::before,.edit-card.empty::after{display:none;}
+.edit-card.empty:hover{border-color:var(--purple-400);background:linear-gradient(160deg,rgba(142,106,168,0.1),transparent);}
+.edit-card.empty .ne-ic{font-family:var(--font-kai);font-size:26px;color:var(--purple-400);margin-bottom:4px;}
+.edit-card.empty .ne-tx{font-family:var(--font-kai);font-size:14px;color:#b08bc8;letter-spacing:0.3em;margin-bottom:3px;}
+.edit-card.empty .ne-sb{font-family:var(--font-kai);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;font-style:italic;}
+.edit-footer{margin-top:36px;padding:16px;background:linear-gradient(160deg,rgba(36,30,24,0.8),rgba(26,21,16,0.6));border:1px solid rgba(142,106,168,0.2);border-radius:3px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-family:var(--font-kai);font-size:12px;color:var(--ink-300);letter-spacing:0.08em;}
+.edit-footer .ef-ic{width:28px;height:28px;border-radius:50%;border:1px solid var(--purple-400);display:flex;align-items:center;justify-content:center;color:var(--purple-400);font-size:14px;}
+.edit-footer .ef-tx{flex:1;} .edit-footer .ef-tx b{color:var(--gold-300);letter-spacing:0.15em;}
+.edit-footer .ef-btn{padding:6px 14px;background:transparent;border:1px solid rgba(142,106,168,0.4);color:var(--purple-400);border-radius:3px;cursor:pointer;font-family:inherit;font-size:11.5px;letter-spacing:0.1em;}
+.edit-footer .ef-btn:hover{border-color:#b08bc8;color:#b08bc8;}
+
+/* 图缺省占位（图未生成时仍可看版式） */
+.scn-img{background-color:#1a1510;}
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div id="nav">
+  <span class="n-title">天命 · 启幕卷轴　预览 v2</span>
+  <button data-p="home" class="on">启 幕</button>
+  <button data-p="scn">剧 本 择</button>
+  <button data-p="prev">剧 本 览</button>
+  <button data-p="edit">著 卷</button>
+  <span class="n-sp"></span>
+  <span class="n-hint">✦ 已接入 AI 水墨美术（Codex image_generation）</span>
+</div>
+
+<!-- ═══════════════ 页 1 · 启幕主菜单 ═══════════════ -->
+<div class="page on" id="page-home">
+  <div class="home-stage">
+    <div class="home-hero-img"></div>
+    <div class="home-hero-veil"></div>
+    <div class="home-hero-grain"></div>
+
+    <div class="home-ylian l">天行健 · 君子以自强不息<span class="s">—— 周易</span></div>
+    <div class="home-ylian r">地势坤 · 君子以厚德载物<span class="s">—— 周易</span></div>
+
+    <div class="home-axis">
+      <div class="home-deco-top"></div>
+      <div class="home-title">天　命</div>
+      <div class="home-seal-wrap">
+        <span class="home-seal-lbl">奉 天 承 运 　 皇 帝 诏 曰</span>
+        <div class="home-seal">玺</div>
+      </div>
+      <div class="home-sub">A I　历　史　模　拟　推　演</div>
+      <div class="home-div"></div>
+    </div>
+
+    <div class="home-menu">
+      <button class="home-card c-new" onclick="go('scn')">
+        <div class="home-card-hd">
+          <div class="home-card-icon">卷</div>
+          <div><div class="home-card-cn">开　卷</div><div class="home-card-ti">开 始 新 游 戏</div></div>
+        </div>
+        <div class="home-card-desc">选择剧本 · 载入世界 · 敕定天命</div>
+        <div class="home-card-meta"><span>5 官方剧本 · 3 自定义</span><span>↵ Enter</span></div>
+      </button>
+
+      <button class="home-card c-load">
+        <div class="home-card-hd">
+          <div class="home-card-icon">续</div>
+          <div><div class="home-card-cn">续　卷</div><div class="home-card-ti">读 取 存 档</div></div>
+        </div>
+        <div class="home-card-desc">启封卷宗 · 抄录副本 · 承续推演</div>
+        <div class="home-card-meta"><span><span class="mt-dot"></span>最新 · 第42回合 · 咸通八年秋</span><span>Ctrl+L</span></div>
+      </button>
+
+      <button class="home-card c-edit" onclick="go('edit')">
+        <div class="home-card-hd">
+          <div class="home-card-icon">著</div>
+          <div><div class="home-card-cn">著　卷</div><div class="home-card-ti">创 作 新 剧 本</div></div>
+        </div>
+        <div class="home-card-desc">开炉鼓铸 · 立言成卷 · 遗之后人</div>
+        <div class="home-card-meta"><span>史笔未动</span><span>Ctrl+E</span></div>
+      </button>
+
+      <button class="home-card c-set">
+        <div class="home-card-hd">
+          <div class="home-card-icon">典</div>
+          <div><div class="home-card-cn">典　章</div><div class="home-card-ti">游 戏 设 置</div></div>
+        </div>
+        <div class="home-card-desc">A P I · 字数 · 文风 · 音声</div>
+        <div class="home-card-meta"><span>Anthropic · 3000字 · 沉郁</span><span>Ctrl+,</span></div>
+      </button>
+    </div>
+  </div>
+
+  <div class="home-foot">
+    <div class="f-ver">天 命　v0.9-β</div>
+    <div class="f-mid">四月廿十 · 春分<span class="dot">◆</span>太平<span class="dot">◆</span>河清海晏</div>
+    <div class="f-right">
+      <span><kbd>↵</kbd> 开 卷</span><span><kbd>?</kbd> 帮 助</span><span><kbd>Esc</kbd> 退 出</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 页 2 · 剧本选择 ═══════════════ -->
+<div class="page" id="page-scn">
+  <div class="scn-stage">
+    <div class="scn-hdr">
+      <button class="scn-back" onclick="go('home')">◁ 返回启幕</button>
+      <div class="scn-title">选 择 剧 本</div>
+      <span style="width:100px;"></span>
+    </div>
+    <div class="scn-sub">—— 择一段时日，入其世界 ——</div>
+
+    <div class="scn-grid">
+      <div class="scn-card" onclick="go('prev')">
+        <div class="scn-img" style="background-image:url('preview-launch-assets/scn-anshi.png')"></div>
+        <div class="scn-shade"></div><div class="scn-edge"></div><div class="scn-seal"></div>
+        <div class="scn-tag">官方</div>
+        <div class="scn-body">
+          <div class="scn-era">大唐 · 安史之乱</div>
+          <div class="scn-name">天宝十四载</div>
+          <div class="scn-role">唐玄宗 · 李隆基</div>
+          <div class="scn-meta"><span>12 人物</span><span>5 势力</span><span>4 党派</span></div>
+        </div>
+      </div>
+
+      <div class="scn-card" onclick="go('prev')">
+        <div class="scn-img" style="background-image:url('preview-launch-assets/scn-chongzhen.png')"></div>
+        <div class="scn-shade"></div><div class="scn-edge"></div><div class="scn-seal"></div>
+        <div class="scn-tag">官方</div>
+        <div class="scn-body">
+          <div class="scn-era">明末 · 风雨飘摇</div>
+          <div class="scn-name">崇祯元年</div>
+          <div class="scn-role">明思宗 · 朱由检</div>
+          <div class="scn-meta"><span>28 人物</span><span>9 势力</span><span>6 党派</span></div>
+        </div>
+      </div>
+
+      <div class="scn-card" onclick="go('prev')">
+        <div class="scn-img" style="background-image:url('preview-launch-assets/scn-hanwu.png')"></div>
+        <div class="scn-shade"></div><div class="scn-edge"></div><div class="scn-seal"></div>
+        <div class="scn-tag">官方</div>
+        <div class="scn-body">
+          <div class="scn-era">汉武 · 开疆之始</div>
+          <div class="scn-name">元狩二年</div>
+          <div class="scn-role">汉武帝 · 刘彻</div>
+          <div class="scn-meta"><span>18 人物</span><span>4 势力</span><span>5 党派</span></div>
+        </div>
+      </div>
+
+      <div class="scn-card custom" onclick="go('prev')">
+        <div class="scn-img" style="background-image:url('preview-launch-assets/scn-kongkong.png')"></div>
+        <div class="scn-shade"></div><div class="scn-edge"></div><div class="scn-seal"></div>
+        <div class="scn-tag">自制</div>
+        <div class="scn-body">
+          <div class="scn-era">自定 · 架空历史</div>
+          <div class="scn-name">神历元年</div>
+          <div class="scn-role">开国雄主 · 李元吉</div>
+          <div class="scn-meta"><span>6 人物</span><span>2 势力</span><span>1 党派</span></div>
+        </div>
+      </div>
+
+      <div class="scn-card empty" onclick="go('edit')">
+        <div class="ne-ic">✦</div>
+        <div class="ne-tx">著 新 卷</div>
+        <div class="ne-sb">开炉 · 立言 · 造世</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 页 3 · 剧本预览弹窗 ═══════════════ -->
+<div class="page" id="page-prev">
+  <div class="prev-stage">
+    <div class="prev-modal">
+      <button class="prev-close" onclick="go('scn')">×</button>
+      <div class="prev-banner">
+        <div class="pb-cap">
+          <div class="pb-era">大 唐 · 安 史 之 乱</div>
+          <div class="pb-name">天 宝 十 四 载</div>
+          <div class="pb-role">唐玄宗 · 李隆基</div>
+        </div>
+      </div>
+      <div class="prev-inner">
+        <div class="prev-overview">
+          天宝十四载仲冬，范阳节度使安禄山以"清君侧"之名起兵，率十五万精兵，号二十万，破关南下。朝廷闻讯始惊，调兵遣将，然承平日久，武备废弛；宰相杨国忠专权，诸将离心。是役也，长安危矣，开元之治将毁于一旦——朕当何以力挽狂澜？
+        </div>
+        <div class="prev-stats">
+          <div class="prev-stat s-char"><div class="pv-n">12</div><div class="pv-l">人 物</div></div>
+          <div class="prev-stat s-fac"><div class="pv-n">5</div><div class="pv-l">势 力</div></div>
+          <div class="prev-stat s-party"><div class="pv-n">4</div><div class="pv-l">党 派</div></div>
+          <div class="prev-stat s-event"><div class="pv-n">37</div><div class="pv-l">事 件</div></div>
+        </div>
+        <div class="prev-identity">
+          <div class="prev-id-hd">〘  玩 家 身 份  〙</div>
+          <div class="prev-id-role">李隆基「唐玄宗 · 开元天子」</div>
+          <div class="prev-id-fac">势力：大唐 · 长安朝廷</div>
+        </div>
+        <div class="prev-contrad">
+          <div class="prev-ct-hd">显 著 矛 盾</div>
+          <div class="prev-ct-row dim-mil"><span class="ct-dim">军</span>范阳十五万叛军压境，潼关守将哥舒翰病卧</div>
+          <div class="prev-ct-row dim-pol"><span class="ct-dim">政</span>杨国忠专权跋扈，太子李亨离心</div>
+          <div class="prev-ct-row dim-eco"><span class="ct-dim">财</span>府库空虚，军费难继，岁入不足以供关中</div>
+          <div class="prev-ct-row dim-soc"><span class="ct-dim">民</span>长安米价腾贵，流民涌入</div>
+        </div>
+        <div class="prev-diff">
+          <div class="prev-diff-hd">难  度  之  选</div>
+          <div class="prev-diff-row">
+            <div class="prev-diff-btn"><div class="dn">叙 事</div><div class="dd">温和·AI留情</div></div>
+            <div class="prev-diff-btn on"><div class="dn">标 准</div><div class="dd">平衡·史迹所宜</div></div>
+            <div class="prev-diff-btn"><div class="dn">硬 核</div><div class="dd">AI激进·多灾变</div></div>
+          </div>
+          <div class="prev-diff-desc">平衡的 AI 推演体验 · 大致贴合史实走向</div>
+        </div>
+        <div class="prev-actions">
+          <button class="prev-btn primary">诏 起 天 命<span class="sub">朕 意 已 决　启 此 新 局</span></button>
+          <button class="prev-btn ghost" onclick="go('scn')">搁 置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 页 4 · 著卷（编辑器入口）═══════════════ -->
+<div class="page" id="page-edit">
+  <div class="edit-stage">
+    <div class="edit-hdr">
+      <button class="scn-back" onclick="go('home')">◁ 返回启幕</button>
+      <div class="edit-title">著 卷 · 编 辑 器</div>
+      <span style="width:100px;"></span>
+    </div>
+    <div class="edit-sub">—— 开炉立言，造化一世 ——</div>
+    <div class="edit-ops">
+      <button class="edit-op">＋ 新 建 空 卷</button>
+      <button class="edit-op">✎ 基 于 官 方 剧 本</button>
+      <button class="edit-op">⇪ 导 入 卷 宗</button>
+      <button class="edit-op ai">✨ AI 一 键 造 卷</button>
+    </div>
+    <div class="edit-grid">
+      <div class="edit-card empty">
+        <div class="ne-ic">＋</div><div class="ne-tx">新 建 空 卷</div><div class="ne-sb">从零创世 · 手书一纸山河</div>
+      </div>
+      <div class="edit-card draft">
+        <div class="ec-era">架空 · 草稿</div><div class="ec-name">九州列国志</div><div class="ec-role">待设定</div>
+        <div class="ec-bg">春秋战国式架空世界，十二列国争雄。初稿 68% · 最后修订 三日前……</div>
+        <div class="ec-meta"><span>8 人物</span><span>3 势力</span><span>0 事件</span></div><div class="ec-status">草 稿</div>
+      </div>
+      <div class="edit-card">
+        <div class="ec-era">自制 · 完稿</div><div class="ec-name">开元拾遗</div><div class="ec-role">张九龄 · 盛唐名相</div>
+        <div class="ec-bg">补官方开元剧本之遗。以宰相视角体验：吏治、科举、藩镇……</div>
+        <div class="ec-meta"><span>24 人物</span><span>7 势力</span><span>42 事件</span></div><div class="ec-status">可 玩</div>
+      </div>
+      <div class="edit-card">
+        <div class="ec-era">AI · 待校</div><div class="ec-name">贞观长歌</div><div class="ec-role">魏徵 · 谏议直臣</div>
+        <div class="ec-bg">AI 基于《贞观政要》自动生成。事件表与人物关系已就，待人工复核……</div>
+        <div class="ec-meta"><span>19 人物</span><span>4 势力</span><span>26 事件</span></div><div class="ec-status">待 校</div>
+      </div>
+    </div>
+    <div class="edit-footer">
+      <div class="ef-ic">?</div>
+      <div class="ef-tx">编辑器支持 <b>基础信息 / 人物 / 势力 / 党派 / 官制 / 行政区划 / 财政 / 军事 / 事件</b> 等十余大类字段编辑，亦可 <b>一键 AI 生成</b> 空缺字段，再由你逐项润色。</div>
+      <button class="ef-btn">查看文档</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function go(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.p)));
+</script>
+</body>
+</html>

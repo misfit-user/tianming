@@ -89,5 +89,48 @@ const eqArmy = [{ id: 'eq', name: '简陋军', faction: '宋', commander: '某',
 const eqCfg = ADP.buildBattleConfig(eqArmy, enemy, { GM: GM });
 ok(eqCfg.armies.ming[0].quality === '精兵', '⑪ unitToToken 按 equipmentCondition 降兵牌品质(简陋·精锐→精兵)');
 
+/* ⑫ 复合地形标签(Phase4:"平原/山地"取已知子标签 dens 均值·biome 取首个已知) */
+ok(ADP.terrainProfile('山地').dens === 0.52 && ADP.terrainProfile('山地').biome === 'verdant', '⑫ 单标签 山地→dens0.52/verdant(不变)');
+const cp = ADP.terrainProfile('平原/山地');
+ok(cp && cp.dens === 0.35 && cp.biome === 'plain', '⑫ 复合 平原/山地→dens均值0.35·biome取首个(plain)·实=' + JSON.stringify(cp));
+ok(ADP.terrainProfile('沿海/海域').dens === 0.22 && ADP.terrainProfile('沿海/海域').biome === 'verdant', '⑫ 复合 沿海/海域→忽略未知海域·取沿海0.22');
+ok(ADP.terrainProfile('高原/边塞').biome === 'plain', '⑫ 复合 高原/边塞→biome取首个高原(plain)');
+ok(ADP.terrainProfile('汪洋大海') === null && ADP.terrainProfile('') === null, '⑫ 全未知/空→null(原型用默认随机感)');
+ok(ADP.terrainProfile('漠南草原').dens === 0.10, '⑫ 数据新标签 漠南草原→0.10');
+
+/* ⑬ resolveTerrainTag:军队所在省 → 地形标签(读 adminHierarchy·府州继承省地形·永不崩) */
+const GM3 = { adminHierarchy: { player: { factionName: '明', divisions: [
+  { name: '北直隶', level: 'province', terrain: '平原', mapRegionId: 'ming-01', children: [
+    { name: '蓟州', level: 'prefecture' }, { name: '顺天府', level: 'prefecture' } ] },   // 子节点无 terrain·须继承省
+  { name: '云南', level: 'province', terrain: '山地', mapRegionId: 'ming-20', children: [] },
+  { name: '蒙古高原', level: 'province', terrain: '草原/漠南草原', mapRegionId: 'mon-01', children: [] } ] } } };
+ok(ADP.resolveTerrainTag(GM3, { mapRegionId: 'ming-20' }) === '山地', '⑬ regionId 直配→山地');
+ok(ADP.resolveTerrainTag(GM3, { location: '云南' }) === '山地', '⑬ location 全等省名→山地');
+ok(ADP.resolveTerrainTag(GM3, { location: '蓟州/丰润', garrison: '蓟州' }) === '平原', '⑬ 军驻府州(蓟州)→继承省(北直隶)平原');
+ok(ADP.resolveTerrainTag(GM3, { location: '不存在之地' }) === '', '⑬ 无匹配→\'\'(原型用默认)');
+ok(ADP.resolveTerrainTag({}, { location: '云南' }) === '' && ADP.resolveTerrainTag(GM3, null) === '', '⑬ 无 adminHierarchy/无军→\'\'(永不崩)');
+ok(ADP.resolveTerrainTag(GM3, { regionHint: '蒙古高原' }) === '草原/漠南草原', '⑬ regionHint→复合标签原样返回(交 terrainProfile 拆)');
+ok(ADP.resolveTerrainTag(GM3, { location: '蓟州-遵化' }) === '平原', '⑬ 连字符位置(蓟州-遵化)→拆出蓟州→省平原(真数据"宁远-锦州"式)');
+ok(ADP.resolveTerrainTag(GM3, { location: '北直·通州' }) === '平原', '⑬ 间隔号位置(北直·通州)→北直含于北直隶→平原(真数据式)');
+ok(ADP.resolveTerrainTag(GM3, { location: '福建沿海' }) === '沿海', '⑬ 末级兜底:无省匹配→位置文本含地形词(沿海)直接采用(真数据水师式)');
+ok(ADP.resolveTerrainTag(GM3, { location: '某地漠南草原' }) === '漠南草原', '⑬ 地形词兜底:长词优先(漠南草原 先于 草原)');
+ok(ADP.resolveTerrainTag(GM3, { location: '全国 329 卫' }) === '', '⑬ 无省无地形词(全国聚合军)→\'\'(优雅回退默认地形)');
+
+/* ⑭ deriveWeather / seasonOf:全局回合→季节→天候(确定性·冬→雪) */
+ok(ADP.seasonOf({ turn: 1 }) === '春' && ADP.seasonOf({ turn: 4 }) === '冬', '⑭ turn 四回合周期:1春/4冬');
+ok(ADP.deriveWeather({ turn: 4 }) === 'snow' && ADP.deriveWeather({ turn: 2 }) === 'clear', '⑭ 冬→snow·夏→clear');
+ok(ADP.seasonOf({ dateText: '天启七年腊月' }) === '冬' && ADP.deriveWeather({ dateText: '天启七年腊月' }) === 'snow', '⑭ 纪年文本 腊月→冬→snow(优先月份)');
+ok(ADP.seasonOf({ time: '崇祯二年九月' }) === '秋' && ADP.seasonOf({ turn: 99, monthText: '三月' }) === '春', '⑭ 九月→秋·三月→春(月份优先于turn)');
+ok(ADP.deriveWeather({}) === 'clear' && ADP.deriveWeather(null) === 'clear', '⑭ 无回合/空→clear(永不崩)');
+
+/* ⑮ buildBattleConfig 自解析:未显式传 terrainTag/weather → 由 GM+主军所在省/季节推导 */
+const winterArmy = [{ id: 'wa', name: '蓟镇军', faction: '明', commander: '某', morale: 70, training: 60, location: '蓟州', composition: [{ type: '长枪兵', count: 2000 }] }];
+const acfg = ADP.buildBattleConfig(winterArmy, enemy, { GM: GM3, playerFactionName: '明军' });   // 无 terrainTag/weather/provinceName
+ok(acfg.terrainProfile && acfg.terrainProfile.dens === 0.18, '⑮ 自解析:蓟州→省平原→dens0.18(未显式传 terrainTag)');
+ok(acfg.meta.terrainTag === '平原', '⑮ meta 记解析出的 terrainTag=平原');
+ok(acfg.mapSeed === ADP.provinceSeed('蓟州'), '⑮ 自解析:provinceName 缺→取主军 location(蓟州)当种子');
+const acfg2 = ADP.buildBattleConfig(winterArmy, enemy, { GM: { turn: 4 }, terrainTag: '草原' });   // 显式 terrainTag 覆盖·GM 冬
+ok(acfg2.terrainProfile.biome === 'plain' && acfg2.weather === 'snow', '⑮ 显式 terrainTag 优先·weather 仍由冬季自解析→snow');
+
 console.log('\n结果: ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

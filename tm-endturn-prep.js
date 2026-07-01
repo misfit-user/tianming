@@ -206,15 +206,8 @@ function _endTurn_init() {
   AccountingSystem.resetLedger();
   var queueStats = ChangeQueue.getStats();
   _dbg('[endTurn] 变动队列状态:', queueStats);
-  _dbg('[endTurn] 构建 NpcContext 快照...');
-  var npcContext = buildNpcContext();
-  _dbg('[endTurn] NpcContext 快照构建完成:', {
-    characterCount: npcContext.characters.length,
-    factionCount: npcContext.factions.length,
-    variableCount: Object.keys(npcContext.variables).length,
-    cacheSize: Object.keys(npcContext.cache).length
-  });
-  return npcContext;
+  // npcContext 死流已移除(buildNpcContext + 决策驱动 vestigial·ctx.input.npcContext 全库零功能读取)
+  return null;
 }
 
 /** NPC 对玩家诏令的即时反应 */

@@ -312,10 +312,11 @@ async function _cc3_buildAgendaFromGM() {
     try {
       const gk = (typeof GM !== 'undefined' && GM.guoku) || {};
       const nc = (typeof GM !== 'undefined' && (GM.neitang || GM.neicang)) || {};
+      const _mu = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两';
       const finParts = [];
-      if (typeof gk.money === 'number') finParts.push('帑银 ' + Math.round(gk.money));
+      if (typeof gk.money === 'number') finParts.push('国帑 ' + Math.round(gk.money) + ' ' + _mu);
       if (typeof gk.grain === 'number') finParts.push('粮 ' + Math.round(gk.grain));
-      if (typeof nc.money === 'number') finParts.push('内帑 ' + Math.round(nc.money));
+      if (typeof nc.money === 'number') finParts.push('内帑 ' + Math.round(nc.money) + ' ' + _mu);
       if (finParts.length) prompt += '\n【国帑现状】' + finParts.join('·') + '·议程可针对吃紧/盈余生成相应（请帑/请赈/加征/裁冗等）';
       if (typeof GM !== 'undefined' && Array.isArray(GM.activeWars) && GM.activeWars.length) {
         const wars = GM.activeWars.slice(0, 3).map(w => (w.enemy || w.opponent || '?') + (w.frontline ? '@' + w.frontline : '') + (w.status ? '(' + w.status + ')' : ''));
@@ -636,7 +637,9 @@ function _cc3_buildSystemPromptStable() {
 
   let s = '【常朝系统说明】你正在为「天命」朝议系统生成对话·须严守以下设定：\n\n';
   s += '【时代】' + dynasty + (sc.name ? '·剧本《' + sc.name + '》' : '') + (sc.startYear ? '·公元 ' + sc.startYear + ' 年' : '') + '\n';
-  s += '【玩家】' + playerName + '·' + playerFaction + '·皇帝（自称"朕"·臣下称"陛下"或"皇上"）\n';
+  s += '【玩家】' + playerName + '·' + playerFaction + '·君主（自称与臣下对其称谓一律依下【称谓感知】所示本朝语境·勿套他朝/现代·勿一味"陛下"）\n';
+  // 注入君上称谓感知(单一真相源·带 era 包具体称谓·如宋→官家)·补齐常朝此前缺失的感知行
+  try { if (typeof _sovereignLanguagePromptLine === 'function') { var _sovLine = _sovereignLanguagePromptLine(typeof GM !== 'undefined' ? GM : null); if (_sovLine) s += _sovLine + '  · 下文范例/候选辞令中若出现"陛下"仅为占位·须按本朝君上称谓替换(如宋作官家)\n'; } } catch (e) {}
   // 当前是早朝(月内·五更三点)还是朔朝(月初·post-turn)·优先读 state._isPostTurn（_cc3_open 入口已捕获）
   const isPostTurn = (typeof state !== 'undefined' && state._isPostTurn != null)
                      ? !!state._isPostTurn
@@ -652,8 +655,8 @@ function _cc3_buildSystemPromptStable() {
 
   s += '\n【通用规约】\n';
   s += '· 臣下发言以"臣……"开头·半文言·朝堂奏对体·字句精当\n';
-  s += '· 不可用现代汉语·不可空泛附和"陛下圣明"·必须有具体观点和理由\n';
-  s += '· 立场基于角色档案推导（派系/性格/忠诚/记忆/与陛下关系）·不可机械随机\n';
+  s += '· 不可用现代汉语·不可空泛附和"君上圣明"之类套话·必须有具体观点和理由\n';
+  s += '· 立场基于角色档案推导（派系/性格/忠诚/记忆/与君上关系）·不可机械随机\n';
   s += '· 紧扣议题具体内容·不重复他臣已表态·要有差异和进展\n';
   s += '· 涉及自身利害则语气强烈·涉及记忆则态度连贯\n';
   s += '\n【发言信息源】NPC 发言可引用以下游戏状态作为论据（自下文 sysVariable 段读）：\n';
@@ -726,11 +729,12 @@ function _cc3_buildSystemPromptVariable() {
   if (typeof GM !== 'undefined') {
     const gk = GM.guoku || {};
     const nc = GM.neitang || GM.neicang || {};
+    const _mu = (typeof CurrencyUnit !== 'undefined' && CurrencyUnit.unitOf) ? (CurrencyUnit.unitOf('money') || '两') : '两';
     const finParts = [];
-    if (typeof gk.money === 'number')  finParts.push('帑银 ' + Math.round(gk.money) + ' 两');
+    if (typeof gk.money === 'number')  finParts.push('国帑 ' + Math.round(gk.money) + ' ' + _mu);
     if (typeof gk.grain === 'number')  finParts.push('粮 ' + Math.round(gk.grain) + ' 石');
     if (typeof gk.cloth === 'number')  finParts.push('布 ' + Math.round(gk.cloth) + ' 匹');
-    if (typeof nc.money === 'number')  finParts.push('内帑 ' + Math.round(nc.money) + ' 两');
+    if (typeof nc.money === 'number')  finParts.push('内帑 ' + Math.round(nc.money) + ' ' + _mu);
     if (finParts.length) s += '【国帑】' + finParts.join('·') + '\n';
   }
   // 军事·活跃战争
@@ -900,6 +904,15 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
       if (_rec) p += _rec;
     } catch (_) {}
   }
+
+  // 【sc07 升级·S3 消费打通】注入 sc07 NPC 认知画像(自我画像/口吻/知与不知/对陛下态度/恩怨/所求/朝局判断/风闻未证)——
+  //   让常朝大臣发言据此立体、像本人、守信息不对称。此前朝议完全没接 sc07 认知(docstring 声称是消费方却缺口)。
+  try {
+    if (typeof getNpcCognitionSnippet === 'function') {
+      const _cogSnip07 = getNpcCognitionSnippet(name);
+      if (_cogSnip07) p += _cogSnip07;
+    }
+  } catch (_) {}
 
   // 该 NPC 的最近行为（起居注+NPC 行动日志中相关条目）·让 AI 知道"前几日 X 干了什么"以保持连贯
   let actLines = [];
@@ -1409,7 +1422,7 @@ function addBubble(opts) {
     const sysCls = opts.sysKind ? (' ' + opts.sysKind) : '';
     inner = `<div class="cy-bubble-content"><div class="cy-bubble-text${sysCls}">${opts.text}</div></div>`;
   } else if (opts.kind === 'player') {
-    inner = `<div class="cy-bubble-content"><div class="cy-bubble-meta">陛下</div><div class="cy-bubble-text">${escHtml(opts.text)}</div></div>`;
+    inner = `<div class="cy-bubble-content"><div class="cy-bubble-meta">${(typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下')}</div><div class="cy-bubble-text">${escHtml(opts.text)}</div></div>`;
   } else {
     const ch = CHARS[opts.name] || {};
     const stance = opts.stance ? `<span class="stance stance-${opts.stance}">${stanceLbl(opts.stance)}</span>` : '';
@@ -1432,7 +1445,7 @@ function addBubble(opts) {
   try {
     if (!state._transcript) state._transcript = [];
     let role, speaker, text;
-    if (opts.kind === 'player') { role = 'player'; speaker = '陛下'; text = opts.text; }
+    if (opts.kind === 'player') { role = 'player'; speaker = (typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下'); text = opts.text; }
     else if (opts.kind === 'system') { role = 'system'; speaker = '内侍'; text = opts.text; }
     else if (opts.name) { role = 'npc'; speaker = opts.name; text = opts.text; }
     if (text && (role === 'player' || role === 'npc')) {
@@ -1472,7 +1485,7 @@ async function onPlayerSpeak(text) {
 
   if (state.done) {
     addBubble({ kind: 'player', text });
-    addBubble({ kind: 'system', text: '（朝会已散 · 陛下回乾清宫。）' });
+    addBubble({ kind: 'system', text: '（朝会已散 · ' + (typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下') + '还宫。）' });
     return;
   }
   if (state.phase === 'opening' || state.phase === 'closing') {
@@ -1506,7 +1519,7 @@ async function onSpeakAnnounce(text) {
   addBubble({ kind: 'player', text });
   await delay(320);
   const item = AGENDA[state.currentIdx];
-  addBubble({ name: item.presenter, text: '陛下圣意未明 · 容臣再启：' + item.announceLine });
+  addBubble({ name: item.presenter, text: (typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下') + '圣意未明 · 容臣再启：' + item.announceLine });
 }
 
 async function onSpeakDetail(text) {
@@ -1531,7 +1544,7 @@ async function onSpeakDebateLive(text) {
   }
   // 否则·入队列·让 runDebate 循环消化
   state.pendingPlayerInput = text;
-  addBubble({ kind: 'system', text: '（陛下举笏 · 待此官言毕即接陛下之意。）' });
+  addBubble({ kind: 'system', text: (function(){ var _s = (typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下'); return '（' + _s + '举笏 · 待此官言毕即接' + _s + '之意。）'; })() });
 }
 
 function parseDetailKeyword(text) {
@@ -1915,9 +1928,11 @@ function _cc3_analyzeDebate(item, speakerName, gmCh) {
   const myStance = _cc3_computeStanceFromChar(speakerName, item, item._lastEmperorIntent || 'neutral');
 
   if (!prior.length) {
+    const _pn0 = (item && item.presenter) || null, _pu0 = _pn0 && _pn0 !== speakerName;
     return {
       priorCount: 0,
       lastSpeaker: null,
+      presenterName: _pn0, refSame: _pu0 ? _pn0 : null, refOpp: _pu0 ? _pn0 : null,
       lastStance: null,
       lastSamePartyAsMe: false,
       myStance,
@@ -1953,9 +1968,27 @@ function _cc3_analyzeDebate(item, speakerName, gmCh) {
   else if (last3Opp >= 2) momentum = 'consensus-against-me';
   else momentum = 'split';
 
+  // 参照锚(修「附议/驳斥」张冠李戴):朝议围绕主奏人[presenter]之议·second(附议)指向与我同立场者·rebut/soften/confront(驳斥)指向异己者·均优先主奏人·兜底沿用 lastSpeaker(不劣旧行为)
+  const presenterName = (item && item.presenter) || null;
+  const _presUsable = presenterName && presenterName !== speakerName;
+  let refSame = null, refOpp = null;
+  if (_presUsable) {
+    if (myStance === 'oppose') refOpp = presenterName;   // 我反对本议→驳斥锚=主奏人(其奏)
+    else refSame = presenterName;                        // 我支持/折中/中立→附议锚=主奏人
+  }
+  for (let _i = prior.length - 1; _i >= 0; _i--) {        // prior 补:最近的同/异立场发言者
+    const _r = prior[_i]; if (!_r) continue;
+    if (!refSame && _r.stance === myStance) refSame = _r.name;
+    if (!refOpp && _cc3_oppositeStance(_r.stance, myStance)) refOpp = _r.name;
+    if (refSame && refOpp) break;
+  }
+  refSame = refSame || last.name || presenterName || null;
+  refOpp = refOpp || last.name || presenterName || null;
+
   return {
     priorCount: prior.length,
     lastSpeaker: last.name,
+    presenterName, refSame, refOpp,
     lastStance: last.stance,
     lastSamePartyAsMe: _cc3_sameParty((typeof CHARS !== 'undefined') ? CHARS[last.name] : null, gmCh),
     myStance,
@@ -2123,11 +2156,11 @@ const _CC3_PHRASE_POOLS = {
     opens: ['"陛下·臣窃以为..."', '"陛下·臣有一议·愿陈之..."', '"启奏陛下·臣谨议..."'],
     closes: ['"伏乞圣裁"', '"伏惟陛下察焉"', '"臣谨奏闻"'],
     structure: '开门见山·提出你的主张并给出 1 条理由',
-    requireWords: ['臣', '陛下'],
+    requireWords: ['臣'],   // 不再强制"陛下"·君上称谓依【称谓感知】本朝语境(宋→官家)
     requireEither: ['窃以为', '有一议', '谨议', '愚以为'],
     requireClose: ['圣裁', '察焉', '奏闻', '俯纳'],
     example: '陛下·臣窃以为辽东之危·非一日之积。若不即拨饷增兵·恐有崩溃之患。伏乞圣裁。',
-    selfCheck: ['是否含"臣"+"陛下"', '是否以"窃以为/有一议/谨议"之类开题', '是否给出 1 条具体理由 (非空泛)', '结句是否含"圣裁/察焉/奏闻"'],
+    selfCheck: ['是否含"臣"+本朝君上称谓(依称谓感知·如宋作官家·勿硬套陛下)', '是否以"窃以为/有一议/谨议"之类开题', '是否给出 1 条具体理由 (非空泛)', '结句是否含"圣裁/察焉/奏闻"'],
   },
   second: {
     opens: ['"臣附 X 之议·"', '"X 公所言甚是·臣亦以为..."', '"X 公已具陈·臣略补一条..."'],
@@ -2389,7 +2422,13 @@ function _cc3_buildModeInstruction(modeResult, tone, state, gmCh) {
   const toneHint = _CC3_TONE_HINTS[tone] || _CC3_TONE_HINTS.default;
 
   // mode-specific opener·若 state 含 lastSpeaker·替换 X
-  const lastName = state && state.lastSpeaker ? state.lastSpeaker : '前位';
+  // ★修张冠李戴:参照人按 mode 选·second(附议)→同立场锚 refSame·rebut/soften/confront(驳斥)→异己锚 refOpp(均优先主奏人)·余 mode 沿用 lastSpeaker
+  let _refName = state && state.lastSpeaker ? state.lastSpeaker : '前位';
+  if (state) {
+    if (mode === 'second' && state.refSame) _refName = state.refSame;
+    else if ((mode === 'rebut' || mode === 'soften' || mode === 'confront') && state.refOpp) _refName = state.refOpp;
+  }
+  const lastName = _refName;
   // v2.6 polish·Round 5·clientelism mode·{mentorName} 真替换·非 literal text 留 prompt
   const mentorName = (gmCh && gmCh.mentor) || (state && state.mentorName) || '先师';
   const _swap = function(s) { return String(s || '').replace(/X/g, lastName).replace(/\{mentorName\}/g, mentorName); };
@@ -2426,6 +2465,10 @@ function _cc3_buildModeInstruction(modeResult, tone, state, gmCh) {
   // ── 候选开头/结句池 (示例·非强制) ──
   p += '朝堂语开头候选·' + opens + '\n';
   p += '朝堂语结句候选·' + closes + '\n';
+  // ★引名务确·防张冠李戴(second/rebut/soften/confront 会点名对方)
+  if (state && (mode === 'second' || mode === 'rebut' || mode === 'soften' || mode === 'confront') && lastName && lastName !== '前位') {
+    p += '【引名务确】本议主奏为「' + (state.presenterName || '') + '」·你' + (mode === 'second' ? '附议(同调)' : '驳斥(异议)') + '的对象是「' + lastName + '」·凡引某人之言必系于其本人·切勿张冠李戴（勿把甲之奏折/原话安到乙头上）\n';
+  }
 
   // ── few-shot example (1 句完整结构) ──
   if (example) {
@@ -2813,10 +2856,14 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
   const family = (gmCh && gmCh.family) || '';
   const officialTitle = (gmCh && (gmCh.officialTitle || gmCh.title)) || ch.title || '';
   const stance2Player = (gmCh && gmCh.stanceToPlayer) || '';
-  // NPC 历史记忆（最近 3 条）
+  // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏/廷议同源·含心绪/人生底色/要事/印象/伤疤)·
+  //   而非 recall(3) 浅切片——同一人在常朝/问对读到同一份记忆与心性·人格一致。缓存·token 可控·无则回退旧切片。
   let memorySnippet = '';
   try {
-    if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.recall) {
+    if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) {
+      memorySnippet = NpcMemorySystem.getMemoryContext(name) || '';
+    }
+    if (!memorySnippet && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.recall) {
       const memList = NpcMemorySystem.recall(name, 3);
       if (Array.isArray(memList) && memList.length) {
         memorySnippet = memList.map(m => '  - ' + (m.text || m.event || JSON.stringify(m).slice(0, 60))).join('\n');

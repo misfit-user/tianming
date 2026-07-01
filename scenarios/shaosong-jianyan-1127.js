@@ -128392,12 +128392,26 @@
    "officeTree": false
   },
   "startYear": 1127,
-  "startMonth": 8,
+  "startMonth": 9,
   "startDay": 1,
   "enableGanzhi": true,
   "enableGanzhiDay": false,
   "enableEraName": true,
   "eraName": "建炎",
+  "eraNames": [
+   {
+    "name": "建炎",
+    "startYear": 1127,
+    "startMonth": 5,
+    "startDay": 1
+   },
+   {
+    "name": "绍兴",
+    "startYear": 1131,
+    "startMonth": 1,
+    "startDay": 1
+   }
+  ],
   "eraStartYear": 1127,
   "daysPerTurn": 30,
   "difficulty": "硬核",

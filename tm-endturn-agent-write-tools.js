@@ -249,14 +249,47 @@
   }
 
   // 区划树查找(adminHierarchy 递归·按名/id)·返回 {div, parentArr, idx}
-  function _walkDiv(gm, name) {
-    var ah = gm && gm.adminHierarchy; if (!ah || typeof ah !== 'object') return null;
-    var key = String(name); var found = null;
-    function rec(list) {
-      if (!Array.isArray(list) || found) return;
-      for (var i = 0; i < list.length; i++) { var d = list[i]; if (!d) continue; if (String(d.name) === key || String(d.id) === key) { found = { div: d, parentArr: list, idx: i }; return; } rec(d.children || d.divisions || d.subDivisions); if (found) return; }
+  // P/GM 双源并存：BuildingWorks.tick 消费 P.adminHierarchy，而部分旧/agent 路径只给 GM.adminHierarchy。
+  // 写工具优先落 P 树，避免 agent 兴工写到建筑 tick 看不到的镜像树。
+  function _adminSources(gm) {
+    var srcs = [];
+    function add(ah, label) {
+      if (!ah || typeof ah !== 'object' || !Object.keys(ah).length) return;
+      if (srcs.some(function (s) { return s.ah === ah; })) return;
+      srcs.push({ ah: ah, label: label });
     }
-    Object.keys(ah).forEach(function (fk) { if (found) return; var node = ah[fk]; rec(node && (node.divisions || node.children)); });
+    add(root.P && root.P.adminHierarchy, 'P.adminHierarchy');
+    add(gm && gm.adminHierarchy, 'GM.adminHierarchy');
+    add(root.GM && root.GM.adminHierarchy, 'root.GM.adminHierarchy');
+    return srcs;
+  }
+  function _walkDiv(gm, name) {
+    var key = String(name); var found = null;
+    function rec(list, label) {
+      if (!Array.isArray(list) || found) return;
+      for (var i = 0; i < list.length; i++) {
+        var d = list[i]; if (!d) continue;
+        if (String(d.name) === key || String(d.id) === key) { found = { div: d, parentArr: list, idx: i, source: label }; return; }
+        rec(d.children || d.divisions || d.subDivisions, label); if (found) return;
+      }
+    }
+    function walkRoot(ah, label) {
+      if (found) return;
+      if (Array.isArray(ah)) { rec(ah, label); return; }
+      if (ah && (ah.name || ah.id || ah.divisions || ah.children || ah.subDivisions || ah.subs)) {
+        if (String(ah.name) === key || String(ah.id) === key) { found = { div: ah, parentArr: null, idx: -1, source: label }; return; }
+        rec(ah.divisions || ah.children || ah.subDivisions || ah.subs, label);
+        return;
+      }
+      Object.keys(ah).forEach(function (fk) {
+        if (found) return;
+        var node = ah[fk];
+        rec(node && (node.divisions || node.children || node.subDivisions || node.subs), label);
+      });
+    }
+    _adminSources(gm).forEach(function (src) {
+      walkRoot(src.ah, src.label);
+    });
     return found;
   }
 

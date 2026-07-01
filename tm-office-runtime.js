@@ -367,7 +367,33 @@ function _ogpRenderPosCard(p, deptName, pathArr) {
   html += _offDutyBadge(p);
   html += '</div>';
   html += '<div class="ogp-pos-dept-sub">' + escHtml(deptName||'') + '</div>';
-  html += '</div>' + mainBtn + '</div>';
+  // S5·荫子按钮：本朝高官(非异党·达三品 level≤6·未荫过) → 门荫一子入仕(候选)
+  var yinBtn = '';
+  if (!isVacant && holder && !holder.isPlayer && !holder._menyinGranted) {
+    var _ylv = (typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(holder, GM) : 99;
+    var _hpf = ''; var _hpfFac = (GM.facs || []).find(function (f) { return f.isPlayer; }); if (_hpfFac) _hpf = _hpfFac.name; if (!_hpf) _hpf = (P.playerInfo && P.playerInfo.factionName) || '';
+    if (!(_hpf && holder.faction && holder.faction !== _hpf) && _ylv > 0 && _ylv <= 6) {
+      yinBtn = '<button class="ogp-pos-btn" style="margin-left:4px;" onclick="event.stopPropagation();_offMenyin(\'' + safeHolder + '\')" title="门荫·荫一子入仕(候选)">荫 子</button>';
+    }
+  }
+  // S5·荐贤按钮：本朝官(非异党·达五品 level≤8·未荐过) → 荐辟布衣入仕(候选)
+  var jianBtn = '';
+  if (!isVacant && holder && !holder.isPlayer && !holder._jianbiGranted) {
+    var _jlv = (typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(holder, GM) : 99;
+    var _jpf = ''; var _jpfFac = (GM.facs || []).find(function (f) { return f.isPlayer; }); if (_jpfFac) _jpf = _jpfFac.name; if (!_jpf) _jpf = (P.playerInfo && P.playerInfo.factionName) || '';
+    if (!(_jpf && holder.faction && holder.faction !== _jpf) && _jlv > 0 && _jlv <= 8) {
+      jianBtn = '<button class="ogp-pos-btn" style="margin-left:4px;" onclick="event.stopPropagation();_offJianbi(\'' + safeHolder + '\')" title="荐辟·荐布衣贤才入仕(候选)">荐 贤</button>';
+    }
+  }
+  // S1d·罢免按钮：本朝自家官(非异党·非君主) → 免职诏书建议(独立罢免动作·区别于弹劾[问罪]/改换[顶替])
+  var dismBtn = '';
+  if (!isVacant && holder && !holder.isPlayer) {
+    var _dpf = ''; var _dpfFac = (GM.facs || []).find(function (f) { return f.isPlayer; }); if (_dpfFac) _dpf = _dpfFac.name; if (!_dpf) _dpf = (P.playerInfo && P.playerInfo.factionName) || '';
+    if (!(_dpf && holder.faction && holder.faction !== _dpf)) {
+      dismBtn = '<button class="ogp-pos-btn" style="margin-left:4px;opacity:0.82;" onclick="event.stopPropagation();_offDismissToEdict(\'' + safeHolder + '\',\'' + safeDept + '\',\'' + safePos + '\')" title="罢免·免去其职(录诏书建议·下旨生效)">罢 免</button>';
+    }
+  }
+  html += '</div>' + mainBtn + yinBtn + jianBtn + dismBtn + '</div>';
 
   if (isVacant) {
     html += '<div class="ogp-pos-holder"></div>';
@@ -1400,11 +1426,12 @@ function _ogRenderPosCardV10(fi, courtKey) {
   html += '<div class="og-v10-pos-title">' + escHtml(nd.name||'?') + ' <span class="og-v10-rank-seal ' + _sealCls + '">' + escHtml(nd.rank||'') + '</span>' + _offDutyBadge(nd) + '</div>';
   html += '<div class="og-v10-pos-sub">' + escHtml(_deptName) + (nd.duties ? ' \u00B7 ' + escHtml(String(nd.duties).slice(0, 24)) : '') + '</div>';
   html += '</div>';
+  var _actionsHtml = '';   // \u64cd\u4f5c\u6309\u94ae\u79fb\u5230\u5361\u7247\u5e95\u90e8\u72ec\u7acb\u884c\u00b7\u89e3\u653e\u6807\u9898(\u4e0d\u518d\u88ab\u6324\u6210\u7ad6\u6392)\u00b72026-07-01
   var btnLabel = '\u6539 \u6362', btnCls = '';
   if (_isVacant) { btnLabel = '\u4EFB \u547D'; btnCls = ' appoint'; }
   else if (_state === 'acting') btnLabel = '\u6B63 \u6388';
   else if (_state === 'mourning') { btnLabel = '\u6743 \u7F72'; btnCls = ' appoint'; }
-  html += '<button class="og-v10-pos-btn' + btnCls + '" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + _safeHolder + '\')">' + btnLabel + '</button>';
+  _actionsHtml += '<button class="og-v10-pos-btn' + btnCls + '" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + _safeHolder + '\')">' + btnLabel + '</button>';
   // 弹劾按钮：仅针对 NPC 派系 + 非玩家角色（异己党派或异势力高官）
   if (!_isVacant && _holder) {
     var _playerFacN = '';
@@ -1414,7 +1441,21 @@ function _ogRenderPosCardV10(fi, courtKey) {
     var _isForeign = _playerFacN && _holder.faction && _holder.faction !== _playerFacN;
     var _isHostile = _holder.loyalty != null && _holder.loyalty < 40;
     if (_isForeign || _isHostile) {
-      html += '<button class="og-v10-pos-btn impeach" style="background:rgba(192,64,48,0.14);border-color:rgba(192,64,48,0.5);color:var(--vermillion-300,#d97b6b);margin-left:4px;" onclick="event.stopPropagation();_offImpeach(\'' + _safeHolder + '\',\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u5F39\u52BE">\u5F39 \u52BE</button>';
+      _actionsHtml += '<button class="og-v10-pos-btn impeach" style="background:rgba(192,64,48,0.14);border-color:rgba(192,64,48,0.5);color:var(--vermillion-300,#d97b6b);margin-left:4px;" onclick="event.stopPropagation();_offImpeach(\'' + _safeHolder + '\',\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u5F39\u52BE">\u5F39 \u52BE</button>';
+    }
+    // S5\u00B7\u836B\u5B50\u6309\u94AE\uFF1A\u672C\u671D\u9AD8\u5B98(\u975E\u5F02\u515A\u00B7\u8FBE\u4E09\u54C1 level\u22646\u00B7\u672A\u836B\u8FC7) \u2192 \u95E8\u836B\u4E00\u5B50\u5165\u4ED5(\u5019\u9009)
+    var _menyinLv = (!_isForeign && !_holder.isPlayer && !_holder._menyinGranted && typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(_holder, GM) : 0;
+    if (_menyinLv > 0 && _menyinLv <= 6) {
+      _actionsHtml += '<button class="og-v10-pos-btn" style="margin-left:4px;" onclick="event.stopPropagation();_offMenyin(\'' + _safeHolder + '\')" title="\u95E8\u836B\u00B7\u836B\u4E00\u5B50\u5165\u4ED5(\u5019\u9009\u5F85\u4EFB\u547D)">\u836B \u5B50</button>';
+    }
+    // S5\u00B7\u8350\u8D24\u6309\u94AE\uFF1A\u672C\u671D\u5B98(\u975E\u5F02\u515A\u00B7\u8FBE\u4E94\u54C1 level\u22648\u00B7\u672A\u8350\u8FC7) \u2192 \u8350\u8F9F\u5E03\u8863\u5165\u4ED5(\u5019\u9009)
+    var _jianbiLv = (!_isForeign && !_holder.isPlayer && !_holder._jianbiGranted && typeof TMPromotion !== 'undefined' && TMPromotion.resolveRankLevel) ? TMPromotion.resolveRankLevel(_holder, GM) : 0;
+    if (_jianbiLv > 0 && _jianbiLv <= 8) {
+      _actionsHtml += '<button class="og-v10-pos-btn" style="margin-left:4px;" onclick="event.stopPropagation();_offJianbi(\'' + _safeHolder + '\')" title="\u8350\u8F9F\u00B7\u8350\u5E03\u8863\u8D24\u624D\u5165\u4ED5(\u5019\u9009)">\u8350 \u8D24</button>';
+    }
+    // S1d\u00B7\u7F62\u514D\u6309\u94AE\uFF1A\u672C\u671D\u81EA\u5BB6\u5B98(\u975E\u5F02\u515A\u00B7\u975E\u541B\u4E3B) \u2192 \u514D\u804C\u8BCF\u4E66\u5EFA\u8BAE(\u72EC\u7ACB\u7F62\u514D\u52A8\u4F5C)
+    if (!_isForeign && !_holder.isPlayer) {
+      _actionsHtml += '<button class="og-v10-pos-btn" style="margin-left:4px;opacity:0.82;" onclick="event.stopPropagation();_offDismissToEdict(\'' + _safeHolder + '\',\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u7F62\u514D\u00B7\u514D\u53BB\u5176\u804C(\u5F55\u8BCF\u4E66\u5EFA\u8BAE\u00B7\u4E0B\u65E8\u751F\u6548)">\u7F62 \u514D</button>';
     }
   }
   html += '</div>';
@@ -1517,6 +1558,7 @@ function _ogRenderPosCardV10(fi, courtKey) {
     }
   }
 
+  if (_actionsHtml) html += '<div class="og-v10-pos-actions">' + _actionsHtml + '</div>';   // 操作按钮独立底行
   html += '</div>';
   return html;
 }
@@ -1962,6 +2004,13 @@ function _renderOfficeSummary() {
       _powerHolders.sort(function(a,b){return b.power - a.power;});
       var ph = _powerHolders[0];
       alerts.push({type:'danger', ic:'\u8B66', lbl:'\u6743\u81E3\u9884\u8B66\uFF1A', txt:escHtml(ph.name) + '\u00B7' + escHtml(ph.pos) + '\u00B7\u6240\u5C5E\u6D3E\u7CFB\u5C45<strong>' + ph.partyCnt + '</strong>\u804C\u00B7\u5B9E\u6743\u6307\u6570<strong>' + ph.power + '</strong>\u00B7\u6050\u6709\u4E13\u6743\u4E4B\u865E'});
+    }
+
+    // 人才流失预警：才高位卑萌去意的能臣（_seeksRemoval·S1d 才不配位反哺产出·officeSatisfactionFeedbackEnabled 关时恒空不预警·2026-07-01）
+    var _disaffElite = (GM.chars || []).filter(function (c) { return c && c.alive !== false && c._seeksRemoval; });
+    if (_disaffElite.length > 0) {
+      var _deNames = _disaffElite.slice(0, 5).map(function (c) { return escHtml(c.name) + (c.officialTitle ? '·' + escHtml(c.officialTitle) : ''); });
+      alerts.push({ type: 'warn', ic: '才', lbl: '人才流失预警：', txt: _deNames.join('、') + (_disaffElite.length > 5 ? '等' : '') + '·才高位卑久郁·忠诚渐衰萌去意·<strong>' + _disaffElite.length + '</strong> 员待拔擢留贤，否则恐挂冠而去' });
     }
 
     // 职位空缺

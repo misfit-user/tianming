@@ -708,8 +708,24 @@
       key: src.key || '',
       url: (src.url || '').replace(/\/+$/, ''),
       model: src.model || 'gpt-4o',
+      model2: src.model2 || '',   // 次要模型(杂活分工:会审两官/前情摘要等·空=同主模型)
       temp: (src.temp != null) ? src.temp : 0.7
     };
+  }
+  // 生图 API 配置(全游戏共用 tm_api_image·与工坊生图面板同源)——agent 的 generateImage 工具用
+  function _loadImageApiConfig() {
+    try {
+      var t = JSON.parse((global.localStorage && global.localStorage.getItem('tm_api_image')) || '{}') || {};
+      return { key: t.key || '', url: (t.url || '').replace(/\/+$/, ''), model: t.model || 'dall-e-3' };
+    } catch (e) { return { key: '', url: '', model: 'dall-e-3' }; }
+  }
+  // 次要模型配置：同 API 换便宜模型干杂活(三堂会审的史官/谏官·宏压缩摘要)——未配则返回 null(用主模型)
+  function _secondaryCfg() {
+    try {
+      var c = loadEditorApiConfig();
+      if (!c.model2 || c.model2 === c.model) return null;
+      return { key: c.key, url: c.url, model: c.model2, temp: c.temp };
+    } catch (e) { return null; }
   }
 
   // 方向B · 剧本记忆：持久「剧本约定」（玩家写的创作偏好·等价 CLAUDE.md），每次 run 注入提示词。
@@ -721,6 +737,256 @@
   function saveConventions(text) {
     try { global.localStorage && global.localStorage.setItem(CONVENTIONS_KEY, String(text == null ? '' : text).slice(0, 4000)); return true; }
     catch (e) { return false; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     CC 对照移植 · 记忆 / 技能 / 能力包 三件套（2026-07-03）
+     - 记忆(≈CC memdir)：四型条目(user/feedback/project/reference)·localStorage 当
+       文件系统·清单≈MEMORY.md 索引·run 首轮用次要模型按需求召回≤5条(失败回退关键词)。
+       与「约定」分工：约定=显式规范·每轮全文注入；记忆=背景上下文·按需召回。
+     - 技能(≈CC SkillTool)：{name,description,whenToUse,body} 指令包·清单注入系统词·
+       agent 经 useSkill 按需展开全文照做·saveSkill 沉淀可复用做法。
+     - 能力包(≈CC plugin)：技能+约定的打包分发单元·可启停·JSON 导入导出(像剧本包
+       一样跨玩家分享)。启停/装卸=玩家权限·不设 agent 工具·只挂 API 供 UI/console。
+     ═══════════════════════════════════════════════════════════════════ */
+  var MEMDIR_KEY = 'tm_aa_memdir';
+  var MEMORY_TYPES = ['user', 'feedback', 'project', 'reference'];
+  function _loadMemories() {
+    try { var a = JSON.parse((global.localStorage && global.localStorage.getItem(MEMDIR_KEY)) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function _saveMemoriesArr(arr) {
+    try { global.localStorage && global.localStorage.setItem(MEMDIR_KEY, JSON.stringify(arr.slice(0, 60))); return true; }
+    catch (e) { return false; }
+  }
+  function saveMemoryEntry(m) {
+    m = m || {};
+    var name = String(m.name || '').trim().slice(0, 60);
+    var type = MEMORY_TYPES.indexOf(m.type) >= 0 ? m.type : 'project';
+    var description = String(m.description || '').trim().slice(0, 160);
+    var body = String(m.body || '').trim().slice(0, 1500);
+    if (!name || !description || !body) return { ok: false, error: 'name/description/body 均必填' };
+    var arr = _loadMemories();
+    var i = arr.findIndex(function (x) { return x && x.name === name; });
+    var entry = { id: i >= 0 ? arr[i].id : ('mem_' + Date.now().toString(36)), name: name, type: type, description: description, body: body, ts: Date.now() };
+    if (i >= 0) arr[i] = entry; else arr.unshift(entry);
+    _saveMemoriesArr(arr);
+    return { ok: true, saved: name, type: type, total: Math.min(arr.length, 60), updated: i >= 0 };
+  }
+  function deleteMemory(idOrName) {
+    var arr = _loadMemories(), n = arr.length;
+    arr = arr.filter(function (x) { return x && x.id !== idOrName && x.name !== idOrName; });
+    _saveMemoriesArr(arr);
+    return { ok: arr.length < n, removed: n - arr.length };
+  }
+  var _RECALL_TOOL = [{
+    name: 'selectMemories',
+    description: '从记忆清单中选出对处理当前需求明确有用的记忆名（≤5 个；不确定就不选；没有就传空数组）。',
+    parameters: { type: 'object', properties: { names: { type: 'array', items: { type: 'string' } } }, required: ['names'] }
+  }];
+  /* 关键词回退：次要模型不可用/失败时·按需求词面在 name/description 上计分取 top */
+  function _recallByKeywords(query, mems) {
+    var terms = [];
+    String(query || '').replace(/[一-鿿]{2,}|[A-Za-z]{3,}/g, function (w) {
+      if (/[一-鿿]/.test(w)) { for (var i = 0; i + 1 < w.length && i < 8; i++) terms.push(w.slice(i, i + 2)); }
+      else terms.push(w.toLowerCase());
+      return w;
+    });
+    if (!terms.length) return [];
+    return mems.map(function (m) {
+      var hay = (m.name + ' ' + m.description).toLowerCase(), score = 0;
+      terms.forEach(function (t) { if (hay.indexOf(t) >= 0) score++; });
+      return { m: m, score: score };
+    }).filter(function (x) { return x.score > 0; })
+      .sort(function (a, b) { return b.score - a.score; })
+      .slice(0, 5).map(function (x) { return x.m; });
+  }
+  function _memBlock(sel) {
+    if (!sel.length) return '';
+    return '【相关记忆·你此前与该玩家/剧本共事时存下的背景】（参考用·非当前指令；与玩家当前要求冲突时以当前要求为准）\n'
+      + sel.map(function (m) { return '· [' + m.type + '] ' + m.name + '：' + m.body; }).join('\n');
+  }
+  /* 召回：≤3 条全注入免调用；>3 条用次要模型(未配则主模型)选≤5；调用失败回退关键词。
+     callerFn 可注入(mock 测试·与 runAuthoringLoop 的 opts.caller 同型)。 */
+  function _recallMemories(query, cfgMain, callerFn) {
+    var mems = _loadMemories();
+    if (!mems.length) return Promise.resolve('');
+    if (mems.length <= 3) return Promise.resolve(_memBlock(mems));
+    var manifest = mems.map(function (m) { return '- ' + m.name + ' [' + m.type + '] ' + m.description; }).join('\n');
+    var sys = '你在为一个剧本编辑 agent 挑选背景记忆。根据用户需求，从清单中选出明确有用的记忆名（≤5 个）。拿不准的不选；没有就空数组。只调用 selectMemories 工具。';
+    var ask = '【用户需求】\n' + String(query || '').slice(0, 600) + '\n\n【记忆清单】\n' + manifest;
+    return Promise.resolve((callerFn || callWithTools)([{ role: 'user', text: ask }], _RECALL_TOOL, { maxTok: 300, maxRetries: 1, cfg: _secondaryCfg() || cfgMain, system: sys }))
+      .then(function (r) {
+        var call = r && r.toolCalls && r.toolCalls[0];
+        var names = (call && call.input && Array.isArray(call.input.names)) ? call.input.names : null;
+        if (!names) return _memBlock(_recallByKeywords(query, mems));
+        var sel = mems.filter(function (m) { return names.indexOf(m.name) >= 0; }).slice(0, 5);
+        return _memBlock(sel);
+      })
+      .catch(function () { return _memBlock(_recallByKeywords(query, mems)); });
+  }
+
+  /* ── 技能：内置 + 用户 + 启用能力包（同名后者不覆盖先者·builtin 最先） ── */
+  var SKILLS_KEY = 'tm_aa_skills';
+  var BUILTIN_SKILLS = [
+    {
+      name: '人物塑造章法', builtin: true,
+      description: '把人物做成有血肉、可入局的完整实体',
+      whenToUse: '新增人物或丰满既有人物时',
+      body: [
+        '1. 先 searchEntities 看 1-2 个剧本已有同类人物，以其字段集与丰满度为基线（勿低于官方实体）。',
+        '2. 身份链：姓名/表字/官衔/品级/所属势力(用已存在势力)/年龄/籍贯，一个不缺。',
+        '3. 数值：能力(智谋/武勇/军事/政务/管理/魅力等)+忠诚/野心，按人物定位落在设定区间内、彼此自洽（权臣≠全能，名将常短于政务）。',
+        '4. 血肉：小传 100-200 字（出身→关键经历→当下处境）、性格、外貌、言辞风格。',
+        '5. 关系网：至少 2 条与既有人物的关系（同党/政敌/师生/姻亲），双向自洽。',
+        '6. AI 人格：核心动机+底线+处世方式，让 NPC 行为可预期且有个性。',
+        '7. 史实人物先 checkHistory 核生卒/官衔；虚构人物名字要贴时代（避免现代感用字）。'
+      ].join('\n')
+    }
+  ];
+  function _loadUserSkills() {
+    try { var a = JSON.parse((global.localStorage && global.localStorage.getItem(SKILLS_KEY)) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function _saveUserSkills(arr) {
+    try { global.localStorage && global.localStorage.setItem(SKILLS_KEY, JSON.stringify(arr.slice(0, 40))); return true; }
+    catch (e) { return false; }
+  }
+  function saveSkillEntry(s) {
+    s = s || {};
+    var name = String(s.name || '').trim().slice(0, 60);
+    var description = String(s.description || '').trim().slice(0, 160);
+    var whenToUse = String(s.whenToUse || '').trim().slice(0, 120);
+    var body = String(s.body || '').trim().slice(0, 4000);
+    if (!name || !body) return { ok: false, error: 'name/body 必填' };
+    if (BUILTIN_SKILLS.some(function (b) { return b.name === name; })) return { ok: false, error: '「' + name + '」是内置技能，换个名字' };
+    var arr = _loadUserSkills();
+    var i = arr.findIndex(function (x) { return x && x.name === name; });
+    var entry = { name: name, description: description, whenToUse: whenToUse, body: body, ts: Date.now() };
+    if (i >= 0) arr[i] = entry; else arr.unshift(entry);
+    _saveUserSkills(arr);
+    return { ok: true, saved: name, updated: i >= 0 };
+  }
+  function deleteSkill(name) {
+    var arr = _loadUserSkills(), n = arr.length;
+    arr = arr.filter(function (x) { return x && x.name !== name; });
+    _saveUserSkills(arr);
+    return { ok: arr.length < n };
+  }
+  function listAllSkills() {
+    var seen = {}, out = [];
+    BUILTIN_SKILLS.concat(_enabledPackSkills(), _loadUserSkills()).forEach(function (s) {
+      if (!s || !s.name || seen[s.name]) return;
+      seen[s.name] = 1; out.push(s);
+    });
+    return out;
+  }
+  function _skillsBlock() {
+    var all = listAllSkills();
+    if (!all.length) return '';
+    return '【可用技能】以下技能是打磨过的操作指令包。做对应事情时，先调 useSkill(name) 展开全文再照做：\n'
+      + all.slice(0, 14).map(function (s) { return '- ' + s.name + '：' + (s.whenToUse || s.description || ''); }).join('\n')
+      + '\n（做完某类事发现值得沉淀的做法，可 saveSkill 存成技能供下次复用。）';
+  }
+
+  /* ── 能力包：技能+约定打包·启停·导入导出（启停装卸=玩家权限·无 agent 工具） ── */
+  var PACKS_KEY = 'tm_aa_packs';
+  var PACKS_STATE_KEY = 'tm_aa_packs_state';
+  var BUILTIN_PACKS = [
+    {
+      name: '立绘工坊', version: '1.0', builtin: true,
+      description: '人物立绘/势力旗徽的生成规范与提示词模板（配合 generateImage）',
+      conventions: '立绘统一写 characters.N.portrait；剧本里已有的有效立绘视为玩家资产，除非玩家明确要求替换，绝不覆盖。',
+      skills: [{
+        name: '人物立绘生成规范',
+        description: '历史向人物立绘的提示词章法与安全边界',
+        whenToUse: '给人物生成立绘/画像或给势力生成旗徽时',
+        body: [
+          '1. 先 getField 读该人物的 age/gender/faction/role/officialTitle/appearance/bio——立绘必须长在人设上。',
+          '2. 用 generateImage 写入 characters.N.portrait。提示词按此模板填充：',
+          '   「历史策略游戏人物立绘·竖版3:4·单人·腰部以上四分之三侧身·<年龄><性别><族属>·<官职/身份/势力处境>·外貌：<appearance>·<时代>考据服饰：<按身份定>·背景：<身份相称场景·无他人>·写实中国历史插画·工笔线条·墨彩质感·宣纸色调·电影感自然光·五官与织物高细节」。',
+          '3. 一律追加禁则：无文字/无水印/无现代物/无奇幻元素。',
+          '4. 北族(女真/契丹/党项/草原)人物追加：避免清代辫发剃额、避免无据的蒙元装束、避免角盔与奇幻甲。',
+          '5. 女性/未成年/俘虏等人物追加：庄重肖像、不性化、不羞辱、不血腥。',
+          '6. 剧本已有有效立绘的绝不覆盖（除非玩家点名要换）；玩家未配生图 API 时报错即停，改为把 appearance 文字描述写丰满。'
+        ].join('\n')
+      }]
+    },
+    {
+      name: '疆域工坊', version: '1.0', builtin: true,
+      description: '地图疆域/归属/名称调整的稳妥操作法',
+      conventions: '',
+      skills: [{
+        name: '疆域与地图调整法',
+        description: '改地块归属/疆域/省名的标准流程',
+        whenToUse: '划地块给某势力、调整疆域归属、地块或省改名时',
+        body: [
+          '1. 先 mapOverview 看清现有地块/归属/势力全局，再动手；大批调整先 todoWrite 列清单逐块核对。',
+          '2. 改归属用 mapAssignOwner(地块名+势力名)——自动上色并同步 map/mapData 双镜像，别绕道 applyEdit 拼路径。',
+          '3. 地块/省改名用 renameRegion（同步双镜像）；若剧本其他文字还引用旧名，再补 renameEntity(旧名,新名) 联动。',
+          '4. 行政区划(adminHierarchy)与地图是两层：区划改了归属/名称，要检查地图侧是否呼应，反之亦然。',
+          '5. 收尾 validateDraft + 抽查 2-3 个改过的地块归属确认落地。'
+        ].join('\n')
+      }]
+    }
+  ];
+  function _loadUserPacks() {
+    try { var a = JSON.parse((global.localStorage && global.localStorage.getItem(PACKS_KEY)) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function _packsState() {
+    try { return JSON.parse((global.localStorage && global.localStorage.getItem(PACKS_STATE_KEY)) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function _packEnabled(name) {
+    var st = _packsState();
+    return st[name] !== false;   /* 默认启用·显式 false 才停 */
+  }
+  function listPacks() {
+    return BUILTIN_PACKS.concat(_loadUserPacks()).map(function (p) {
+      return { name: p.name, version: p.version || '', description: p.description || '', builtin: !!p.builtin, enabled: _packEnabled(p.name), skills: (p.skills || []).length };
+    });
+  }
+  function setPackEnabled(name, on) {
+    var st = _packsState(); st[name] = !!on;
+    try { global.localStorage && global.localStorage.setItem(PACKS_STATE_KEY, JSON.stringify(st)); } catch (e) {}
+    return { ok: true, name: name, enabled: !!on };
+  }
+  function _enabledPacks() {
+    return BUILTIN_PACKS.concat(_loadUserPacks()).filter(function (p) { return p && _packEnabled(p.name); });
+  }
+  function _enabledPackSkills() {
+    var out = [];
+    _enabledPacks().forEach(function (p) { (p.skills || []).forEach(function (s) { out.push(s); }); });
+    return out;
+  }
+  function _packsConventions() {
+    return _enabledPacks().map(function (p) { return String(p.conventions || '').trim(); })
+      .filter(Boolean).join('\n');
+  }
+  function importPackJSON(json) {
+    try {
+      var p = typeof json === 'string' ? JSON.parse(json) : json;
+      if (!p || !p.name || !Array.isArray(p.skills)) return { ok: false, error: '能力包需含 name 与 skills[]' };
+      if (BUILTIN_PACKS.some(function (b) { return b.name === p.name; })) return { ok: false, error: '与内置包同名' };
+      var clean = { name: String(p.name).slice(0, 60), version: String(p.version || '1.0').slice(0, 20), description: String(p.description || '').slice(0, 200), conventions: String(p.conventions || '').slice(0, 1500), skills: p.skills.slice(0, 10).map(function (s) { return { name: String(s.name || '').slice(0, 60), description: String(s.description || '').slice(0, 160), whenToUse: String(s.whenToUse || '').slice(0, 120), body: String(s.body || '').slice(0, 4000) }; }).filter(function (s) { return s.name && s.body; }) };
+      var arr = _loadUserPacks();
+      var i = arr.findIndex(function (x) { return x && x.name === clean.name; });
+      if (i >= 0) arr[i] = clean; else arr.unshift(clean);
+      try { global.localStorage && global.localStorage.setItem(PACKS_KEY, JSON.stringify(arr.slice(0, 20))); } catch (e2) {}
+      return { ok: true, imported: clean.name, skills: clean.skills.length };
+    } catch (e) { return { ok: false, error: String(e && e.message || e) }; }
+  }
+  function exportPackJSON(name) {
+    var p = BUILTIN_PACKS.concat(_loadUserPacks()).find(function (x) { return x && x.name === name; });
+    if (!p) return null;
+    return JSON.stringify({ name: p.name, version: p.version || '1.0', description: p.description || '', conventions: p.conventions || '', skills: p.skills || [] }, null, 2);
+  }
+  function removePack(name) {
+    var arr = _loadUserPacks(), n = arr.length;
+    arr = arr.filter(function (x) { return x && x.name !== name; });
+    try { global.localStorage && global.localStorage.setItem(PACKS_KEY, JSON.stringify(arr)); } catch (e) {}
+    return { ok: arr.length < n };
   }
 
   function _isAnthropic(url) {
@@ -750,12 +1016,24 @@
   }
 
   // ── 抽象 conversation → provider 消息 ──
-  // conversation 项：{role:'user',text} | {role:'assistant',text,toolCalls:[{id,name,input}]} | {role:'tool',toolResults:[{id,name,content}]}
+  // conversation 项：{role:'user',text,images?:[dataURL]} | {role:'assistant',text,toolCalls:[{id,name,input}]} | {role:'tool',toolResults:[{id,name,content}]}
   function _genId(i) { return 'call_' + Date.now().toString(36) + '_' + i; }
+  // S2 · 视觉附件：user 消息可带 images[](dataURL)——三家 provider 各自映射为多模态 content
+  function _imgParts(images) { return (Array.isArray(images) ? images : []).filter(function (u) { return /^data:image\//.test(String(u || '')); }).slice(0, 4); }
+  function _splitDataUrl(u) { var m = String(u).match(/^data:(image\/[a-z+.-]+);base64,(.*)$/i); return m ? { mime: m[1], b64: m[2] } : null; }
 
   function _toAnthropic(conversation, system, tools, maxTok, model) {
     var messages = conversation.map(function(turn) {
-      if (turn.role === 'user') return { role: 'user', content: turn.text || '' };
+      if (turn.role === 'user') {
+        var imgs = _imgParts(turn.images);
+        if (imgs.length) {
+          var blocks = [];
+          imgs.forEach(function (u) { var p = _splitDataUrl(u); if (p) blocks.push({ type: 'image', source: { type: 'base64', media_type: p.mime, data: p.b64 } }); });
+          blocks.push({ type: 'text', text: turn.text || '' });
+          return { role: 'user', content: blocks };
+        }
+        return { role: 'user', content: turn.text || '' };
+      }
       if (turn.role === 'assistant') {
         var content = [];
         if (turn.text) content.push({ type: 'text', text: turn.text });
@@ -778,7 +1056,14 @@
     var messages = [];
     if (system) messages.push({ role: 'system', content: system });
     conversation.forEach(function(turn) {
-      if (turn.role === 'user') messages.push({ role: 'user', content: turn.text || '' });
+      if (turn.role === 'user') {
+        var imgs = _imgParts(turn.images);
+        if (imgs.length) {
+          var parts = [{ type: 'text', text: turn.text || '' }];
+          imgs.forEach(function (u) { parts.push({ type: 'image_url', image_url: { url: u } }); });
+          messages.push({ role: 'user', content: parts });
+        } else messages.push({ role: 'user', content: turn.text || '' });
+      }
       else if (turn.role === 'assistant') {
         var m = { role: 'assistant', content: turn.text || null };
         if (turn.toolCalls && turn.toolCalls.length) {
@@ -796,6 +1081,9 @@
     };
   }
 
+  // 刀H1(CC max_tokens 动态调整对照) · 三 provider parse 层 surfacing 输出截断:
+  //   truncated=输出被 maxTok 腰斩(finish_reason)·badToolJson=toolCall 入参 JSON 被斩断解析失败
+  //   (此前 catch{} 吞成空入参静默执行——比"没调工具"更糟)。loop 据此提升输出上限重试本轮。
   function _parseAnthropic(data) {
     var text = '', toolCalls = [];
     if (Array.isArray(data.content)) {
@@ -804,22 +1092,23 @@
         else if (b.type === 'tool_use' && b.name) toolCalls.push({ id: b.id || _genId(i), name: b.name, input: b.input || {} });
       });
     }
-    return { text: text, toolCalls: toolCalls };
+    return { text: text, toolCalls: toolCalls, truncated: data.stop_reason === 'max_tokens' };
   }
 
   function _parseOpenAI(data) {
-    var text = '', toolCalls = [];
+    var text = '', toolCalls = [], badToolJson = false;
     if (data.choices && data.choices[0] && data.choices[0].message) {
       var msg = data.choices[0].message;
       if (msg.content) text = msg.content;
       (msg.tool_calls || []).forEach(function(tc, i) {
-        var fn = tc.function || {}, input = {};
-        try { input = JSON.parse(fn.arguments || '{}'); } catch (e) {}
-        if (fn.name) toolCalls.push({ id: tc.id || _genId(i), name: fn.name, input: input });
+        var fn = tc.function || {}, input = {}, parsedOk = true;
+        try { input = JSON.parse(fn.arguments || '{}'); } catch (e) { parsedOk = false; badToolJson = true; }
+        if (fn.name && parsedOk) toolCalls.push({ id: tc.id || _genId(i), name: fn.name, input: input });   // 斩断的调用不执行(勿以空入参乱跑)
       });
     }
-    if (!toolCalls.length && Array.isArray(data.content)) return _parseAnthropic(data); // 代理直吐 anthropic content[]
-    return { text: text, toolCalls: toolCalls };
+    if (!toolCalls.length && !badToolJson && Array.isArray(data.content)) return _parseAnthropic(data); // 代理直吐 anthropic content[]
+    var fr = data.choices && data.choices[0] && (data.choices[0].finish_reason || data.choices[0].stop_reason);
+    return { text: text, toolCalls: toolCalls, truncated: fr === 'length' || fr === 'max_tokens', badToolJson: badToolJson };
   }
 
   // ── 刀C · gemini 原生 provider（对标游戏 tm-ai-infra·第三方中转走 openai-compat 不受影响） ──
@@ -832,7 +1121,11 @@
   }
   function _toGemini(conversation, system, tools, maxTok, temp) {
     var contents = conversation.map(function(turn) {
-      if (turn.role === 'user') return { role: 'user', parts: [{ text: turn.text || '' }] };
+      if (turn.role === 'user') {
+        var uParts = [{ text: turn.text || '' }];
+        _imgParts(turn.images).forEach(function (u) { var p = _splitDataUrl(u); if (p) uParts.push({ inline_data: { mime_type: p.mime, data: p.b64 } }); });
+        return { role: 'user', parts: uParts };
+      }
       if (turn.role === 'assistant') {
         var parts = [];
         if (turn.text) parts.push({ text: turn.text });
@@ -860,7 +1153,7 @@
         if (p.functionCall && p.functionCall.name) toolCalls.push({ id: _genId(i), name: p.functionCall.name, input: p.functionCall.args || {} });
       });
     }
-    return { text: text, toolCalls: toolCalls };
+    return { text: text, toolCalls: toolCalls, truncated: !!(cand && cand.finishReason === 'MAX_TOKENS') };   // 刀H1 · 截断 surfacing
   }
 
   // 抠掉 ```json``` 围栏 / <json> 标签，便于从被包裹文本里解析工具调用（中转/模型常这么吐）。
@@ -942,6 +1235,9 @@
     return attempt(0);
   }
 
+  // 刀G8(CC context-overflow 对照) · 超限识别:各 provider 的"上下文超窗"400 文案(OpenAI兼容/DeepSeek/Anthropic/Gemini)
+  var _OVERFLOW_RE = /context[_\s-]?length|maximum context|context limit|context window|prompt is too long|input (length|token count)|exceeds? the maximum number of tokens|too many total tokens|max.?input.?tokens/i;
+
   /**
    * 自包含 tool-calling 调用（多轮 conversation·retry·无-tool 端点 JSON 兜底·system 缓存）。
    * @param {string|Array} conversation - 字符串(单轮)或抽象消息数组
@@ -1000,9 +1296,19 @@
       if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true };
       return parsed; // 纯文本无工具 → 交给 loop 判 noToolCalls
     }).catch(function(e) {
-      if (e && e.status === 400) return fallbackTextCall(); // 端点多半拒绝 tools 参数 → 文本兜底
-      var err = new Error(_classifyApiError(e));            // 网络/CORS/鉴权/路径 → 可操作中文提示
+      // 刀G8 · 超限识别:400+超窗文案 → 不做注定失败的文本兜底(更长)·标 overflow 供 loop 压缩自救
+      var _msg0 = String((e && e.message) || '');
+      var _ovf0 = !!(e && e.status === 400 && _OVERFLOW_RE.test(_msg0));
+      if (e && e.status === 400 && !_ovf0) {
+        return fallbackTextCall().catch(function (e2) {   // 兜底自身撞超限(拍平后更长)也标 overflow
+          var _m2 = String((e2 && e2.message) || '');
+          if (e2 && e2.status === 400 && _OVERFLOW_RE.test(_m2)) { var ef = new Error('上下文超限（对话+工具已超过模型窗口）：' + _m2.slice(0, 160)); ef.status = 400; ef.overflow = true; ef.cause = e2; throw ef; }
+          throw e2;
+        });
+      }
+      var err = new Error(_ovf0 ? ('上下文超限（对话+工具已超过模型窗口）：' + _msg0.slice(0, 160)) : _classifyApiError(e));   // 网络/CORS/鉴权/路径 → 可操作中文提示
       err.status = e && e.status; err.cause = e;
+      err.overflow = _ovf0;
       // 韧性：标记可重试的瞬态错误（429/5xx/网络/超时）；鉴权(401/403)/路径(404)等非瞬态不重试
       var s = err.status;
       var networkish = !s && e && (e.name === 'TypeError' || /failed to fetch|networkerror|err_|load failed|aborted|timeout/i.test(String(e.message || '')));
@@ -1187,6 +1493,15 @@
       }, required: ['collection', 'items'] }
     },
     {
+      name: 'generateImage',
+      description: '调用玩家配置的生图 API（tm_api_image·全游戏共用）生成一张图并写入指定字段（data URL）。适合人物画像（characters.N.portrait）、势力旗徽、场景意象。玩家未配生图 API 时会明确报错并引导配置——届时改用文字描述代替。',
+      parameters: { type: 'object', properties: {
+        path: { type: 'string', description: '写入路径·如 characters.3.portrait' },
+        prompt: { type: 'string', description: '画面描述（中文可·写清人物气质/服制/构图）' },
+        size: { type: 'string', description: '尺寸·默认 1024x1024' }
+      }, required: ['path', 'prompt'] }
+    },
+    {
       name: 'multiEdit',
       description: '一次施加多处改动（省往返）。edits[]，每项 {path, value, reason?}。',
       parameters: { type: 'object', properties: {
@@ -1195,8 +1510,44 @@
     },
     {
       name: 'note',
-      description: '记录一条计划/进度备注（不改剧本，只写进过程记录，便于多步任务自我规划、也让用户看到思路）。',
+      description: '记录一条计划/进度备注（不改剧本，只写进过程记录，便于多步任务自我规划、也让用户看到思路）。单条杂感用这个；≥3 步的任务改用 todoWrite。',
       parameters: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] }
+    },
+    {
+      name: 'saveMemory',
+      description: '存一条跨会话记忆（背景上下文·下次共事按需召回）。只存从当前剧本/对话推导不出来的信息：user=玩家是谁与偏好；feedback=玩家给过的做法反馈(含为什么)；project=创作中的长线目标/未尽事宜；reference=玩家提过的外部资料指引。剧本里本来就有的数据、本次改动明细(有历史记录)不要存。与 recordConvention 分工：约定=每次都要遵守的显式规范；记忆=帮下次更懂上下文的背景。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: '短横线风格短名(≤60字)·同名覆盖更新' },
+        type: { type: 'string', enum: ['user', 'feedback', 'project', 'reference'] },
+        description: { type: 'string', description: '一行摘要(召回时据此判断相关性·≤160字)' },
+        body: { type: 'string', description: '记忆正文(≤1500字·写清事实与来龙去脉)' }
+      }, required: ['name', 'type', 'description', 'body'] }
+    },
+    {
+      name: 'useSkill',
+      description: '展开一个技能(打磨过的操作指令包)的全文。系统提示里列了可用技能清单——要做对应事情时先展开再照做，别凭印象。',
+      parameters: { type: 'object', properties: { name: { type: 'string', description: '技能名(照清单原文)' } }, required: ['name'] }
+    },
+    {
+      name: 'saveSkill',
+      description: '把一套可复用的做法沉淀成技能（下次同类任务可 useSkill 直接展开）。body 写成可照做的分步指令；只在做法确实打磨成型、值得复用时存，别把一次性方案存进来。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string' },
+        description: { type: 'string', description: '一行说明这技能做什么' },
+        whenToUse: { type: 'string', description: '什么时候该用它(清单里显示这句)' },
+        body: { type: 'string', description: '分步操作指令全文(≤4000字)' }
+      }, required: ['name', 'body'] }
+    },
+    {
+      name: 'todoWrite',
+      description: '结构化任务表（整表替换·不改剧本）。≥3 步的任务先用它列计划，每完成一步立即把该项标 completed（勿囤到最后一起标），恰保持一项 in_progress。全部 completed 时表自动清空。计划有变直接重写整表。单步小事别用。',
+      parameters: { type: 'object', properties: {
+        todos: { type: 'array', description: '整张任务表(替换式)', items: { type: 'object', properties: {
+          content: { type: 'string', description: '祈使句·做什么(如「补齐辽东三将的属性」)' },
+          status: { type: 'string', enum: ['pending', 'in_progress', 'completed'] },
+          activeForm: { type: 'string', description: '进行时短语(如「正在补齐辽东三将」)·选填' }
+        }, required: ['content', 'status'] } }
+      }, required: ['todos'] }
     },
     {
       name: 'askClarification',
@@ -1463,10 +1814,15 @@
   }
 
   // 工具D · 上下文瘦身：把"早先轮次"的工具结果内容压成占位·只留最近 keepRecent 轮详尽·控上下文窗口(保 id/name·provider 配对不破)
-  function _compactOldToolResults(conv, keepRecent) {
+  // 刀G2(2026-07-02·CC microcompact 对照)：同界限内连 assistant 的 toolCalls.input 一并压——
+  //   bulkAdd(造30人)/multiEdit/大 applyEdit 的巨型入参此前永驻上下文·恰是最占体量的部分没被清。
+  //   改动早已落进草稿·入参占位后如需现值 getField 即可·id/name 保留 provider 配对不破。
+  function _compactOldToolResults(conv, keepRecent, inputMax) {
     if (!Array.isArray(conv)) return;
+    inputMax = inputMax || 200;
     var idxs = []; for (var i = 0; i < conv.length; i++) if (conv[i] && conv[i].role === 'tool') idxs.push(i);
     var cut = idxs.length - keepRecent;
+    if (cut <= 0) return;
     for (var j = 0; j < cut; j++) {
       var trs = conv[idxs[j]].toolResults || [];
       for (var k = 0; k < trs.length; k++) {
@@ -1474,10 +1830,97 @@
         if (tr && typeof tr.content === 'string' && tr.content.length > 80 && tr.content.indexOf('[已省略') !== 0) tr.content = '[已省略·早先轮次结果·需要可重新查询]';
       }
     }
+    var keepFrom = idxs[cut];   // 首个保留详尽的 tool 消息
+    if (conv[keepFrom - 1] && conv[keepFrom - 1].role === 'assistant') keepFrom = keepFrom - 1;   // 其配对 assistant 入参一并保留(压结果与压入参界限对齐)
+    for (var a = 0; a < keepFrom; a++) {
+      var m = conv[a];
+      if (!m || m.role !== 'assistant' || !Array.isArray(m.toolCalls)) continue;
+      for (var b = 0; b < m.toolCalls.length; b++) {
+        var tc = m.toolCalls[b];
+        if (!tc || !tc.input || typeof tc.input !== 'object' || tc.input._compacted) continue;
+        try {
+          var sIn = JSON.stringify(tc.input);
+          if (sIn.length > inputMax) tc.input = { _compacted: '[已省略·早先轮次入参·原' + sIn.length + '字·改动已落草稿·需要现值可 getField 查询]' };
+        } catch (eIn) {}
+      }
+    }
+  }
+
+  // 刀G8(CC autocompact 对照) · 宏压缩两助手（微压缩不够/上下文超窗时·把旧对话换成结构化前情摘要）
+  // 尾部保留切片：从末尾保 keepMsgs 条·起点对齐轮边界(落在 tool 消息上就前挪含入其配对 assistant·不孤儿化)
+  function _compactTailSlice(conv, keepMsgs) {
+    if (!Array.isArray(conv)) return [];
+    if (keepMsgs <= 0) return [];
+    if (conv.length <= keepMsgs) return conv.slice();
+    var start = conv.length - keepMsgs;
+    while (start > 0 && conv[start] && conv[start].role === 'tool') start--;
+    return conv.slice(start);
+  }
+  // 拍平对话供摘要请求：逐条限长(防单条巨型)·超预算时保头 25% + 尾 75%(近事优先)·frac=相对当前体量的目标比例
+  function _flattenForSummary(conv, frac) {
+    var lines = [];
+    for (var i = 0; i < (conv || []).length; i++) {
+      var m = conv[i]; if (!m) continue;
+      if (m.role === 'user') lines.push('[用户] ' + String(m.text || '').slice(0, 1500));
+      else if (m.role === 'assistant') {
+        var cs = (m.toolCalls || []).map(function (c) { var inp = ''; try { inp = JSON.stringify(c.input).slice(0, 280); } catch (e2) {} return c.name + inp; }).join(' · ');
+        lines.push('[助手] ' + String(m.text || '').slice(0, 1200) + (cs ? ' 【调用】' + cs : ''));
+      } else if (m.role === 'tool') {
+        lines.push('[工具结果] ' + (m.toolResults || []).map(function (tr) { return String((tr && tr.content) || '').slice(0, 500); }).join(' | '));
+      }
+    }
+    var s = lines.join('\n');
+    var budget = Math.max(20000, Math.floor(s.length * (frac || 0.45)));
+    if (s.length > budget) {
+      var headKeep = Math.floor(budget * 0.25), tailKeep = budget - headKeep;
+      s = s.slice(0, headKeep) + '\n……【中段 ' + (s.length - budget) + ' 字已略·以头尾与摘要要求为准】……\n' + s.slice(s.length - tailKeep);
+    }
+    return s;
   }
 
   // 工具B · 写后回读：写类工具结果回挂"变更后当前值"·agent 不必再 getField 确认·减重复读
-  var _WRITE_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1 };
+  var _WRITE_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1, generateImage: 1 };
+  // 刀G3(2026-07-02·CC 对照) · 只读/致变工具表：重复读去重与"纯勘察打转"检测共用。
+  //   validateDraft/preflight 亦只读——结果随草稿变·但去重有"期间零写入"守卫·天然安全。
+  var _READ_TOOLS = { getField: 1, getFields: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listCollection: 1, describeSchema: 1, listGaps: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, mapOverview: 1, checkHistory: 1, validateDraft: 1, preflight: 1 };
+  var _MUT_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1, renameEntity: 1, generateImage: 1 };
+  // 刀G4(2026-07-02·CC read-before-edit 新鲜度对照) · 外部修改防护:agent 运行期间用户可能在编辑器里
+  //   手改草稿——按顶层区段留指纹·写前对照·外部改过则拒写要求重读(agent 自己的读/写都会刷新指纹)。
+  //   注:CC 的"先读后写"门有意不搬——国师初始消息自带草稿摘要+写后有 nowValue 回读·硬加会拦正常流程。
+  function _pathRoot(p) { return String(p || '').split('.')[0].split('[')[0]; }
+  function _fpOf(v) {
+    if (v === undefined) return '∅';
+    try {
+      var s = JSON.stringify(v); if (s == null) return '∅';
+      var h = 0, stepN = Math.max(1, Math.floor(s.length / 97));
+      for (var i = 0; i < s.length; i += stepN) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+      return s.length + ':' + h;
+    } catch (e) { return 'err'; }
+  }
+  function _mutRoots(name, input) {
+    input = input || {};
+    var roots;
+    switch (name) {
+      case 'applyEdit': case 'applyPush': case 'removeEntity': case 'generateImage': roots = [_pathRoot(input.path)]; break;
+      case 'multiEdit': roots = (Array.isArray(input.edits) ? input.edits : []).map(function (e) { return _pathRoot(e && e.path); }); break;
+      case 'bulkAdd': roots = [_pathRoot(input.collection)]; break;
+      case 'mapAssignOwner': case 'renameRegion': roots = ['map', 'mapData']; break;
+      default: return null;   // renameEntity 等跨区段·不做写前对照(写后全量刷新)
+    }
+    // map↔mapData 同步镜像:写一个连带另一个(_mapSyncMirror)·指纹须成双·否则自家写误报外部修改
+    if (roots.indexOf('map') >= 0 || roots.indexOf('mapData') >= 0) { if (roots.indexOf('map') < 0) roots.push('map'); if (roots.indexOf('mapData') < 0) roots.push('mapData'); }
+    return roots;
+  }
+  function _readRootsOf(name, input) {
+    input = input || {};
+    switch (name) {
+      case 'getField': return [_pathRoot(input.path)];
+      case 'getFields': return (Array.isArray(input.paths) ? input.paths : []).map(_pathRoot);
+      case 'listCollection': return [_pathRoot(input.collection || input.path)];
+      case 'mapOverview': return ['map', 'mapData'];
+      default: return [];
+    }
+  }
   function _attachWriteVerify(draft, name, input, result) {
     if (!result || result.ok === false || !_WRITE_TOOLS[name]) return result;
     try {
@@ -1501,6 +1944,24 @@
       case 'applyEdit': return applyEdit(draft, input.path, input.value, { reason: input.reason });
       case 'applyPush': return applyPush(draft, input.path, input.value);
       case 'removeEntity': return applyRemove(draft, input.path);
+      case 'generateImage': {   // S4 · 生图模型为国师工作:tm_api_image 生成 → 复用 applyEdit 写回(享权限/指纹/回读全套)
+        var _icfg = _loadImageApiConfig();
+        if (!_icfg.key || !_icfg.url) return { ok: false, errorCode: 'image-api-missing', reason: '生图 API 未配置：请玩家在「API 设置 → 生图」里填好（存 tm_api_image）后再试；当前请改用文字描述该形象并写入相邻描述字段。' };
+        if (!input.path || !input.prompt) return { ok: false, reason: '需要 path（写入字段·如 characters.3.portrait）与 prompt（画面描述）' };
+        var _ibase = String(_icfg.url).replace(/\/+$/, ''); if (!/\/v\d+(beta)?$/i.test(_ibase)) _ibase += '/v1';
+        return _fetchJSON(_ibase + '/images/generations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _icfg.key },
+          body: JSON.stringify({ model: _icfg.model || 'dall-e-3', prompt: String(input.prompt).slice(0, 1800), n: 1, size: input.size || '1024x1024', response_format: 'b64_json' })
+        }, { maxRetries: 1, timeoutMs: 150000 }).then(function (d) {
+          var _it = d && d.data && d.data[0];
+          var _val = (_it && _it.b64_json) ? ('data:image/png;base64,' + _it.b64_json) : (_it && _it.url);
+          if (!_val) return { ok: false, reason: '生图 API 未返回图片（b64_json/url 皆空）' };
+          var _w = applyEdit(draft, input.path, _val, { reason: '生图：' + String(input.prompt).slice(0, 40) });
+          if (_w && _w.ok === false) return _w;
+          return { ok: true, path: input.path, image: (_it && _it.b64_json) ? ('base64·约' + Math.round(_it.b64_json.length * 3 / 4 / 1024) + 'KB') : ('url·' + String(_it.url).slice(0, 60)), model: _icfg.model || 'dall-e-3' };
+        }).catch(function (eG) { return { ok: false, reason: '生图失败：' + ((eG && eG.message) || eG) + '（可稍后重试或改用文字描述）' }; });
+      }
       case 'getField': {
         var rr = _resolvePath(draft, input.path);
         if (!rr.parent) return { ok: false, reason: 'path not found: ' + input.path };
@@ -1641,6 +2102,32 @@
         return { ok: fails.length === 0, applied: done, failures: fails.slice(0, 5) };
       }
       case 'note': return { ok: true, note: String(input.text || '').slice(0, 500) };
+      case 'saveMemory': return saveMemoryEntry(input);
+      case 'saveSkill': return saveSkillEntry(input);
+      case 'useSkill': {
+        var _sk = listAllSkills().find(function (s) { return s.name === String(input.name || '').trim(); });
+        if (!_sk) return { ok: false, error: '无此技能', available: listAllSkills().map(function (s) { return s.name; }) };
+        return { ok: true, skill: _sk.name, instructions: '【技能·' + _sk.name + '】以下是该技能的操作指令，按步骤照做：\n' + _sk.body };
+      }
+      case 'todoWrite': {   // 刀G5(2026-07-02·CC TodoWrite 对照) · 结构化任务表:整表替换·全完成自动清·成功消息自带用法再教育
+        var _tds = Array.isArray(input.todos) ? input.todos : null;
+        if (!_tds) return { ok: false, reason: 'todos 必须是数组(整表替换)·每项 {content, status, activeForm?}' };
+        var _norm = [], _inProg = 0;
+        for (var _ti = 0; _ti < _tds.length && _ti < 20; _ti++) {
+          var _td = _tds[_ti];
+          if (!_td || !_td.content || !_td.status) return { ok: false, reason: '第 ' + (_ti + 1) + ' 项缺 content/status·status 只能是 pending/in_progress/completed' };
+          if (['pending', 'in_progress', 'completed'].indexOf(_td.status) < 0) return { ok: false, reason: '第 ' + (_ti + 1) + ' 项 status 非法「' + _td.status + '」·只能是 pending/in_progress/completed' };
+          if (_td.status === 'in_progress') _inProg++;
+          _norm.push({ content: String(_td.content).slice(0, 120), status: _td.status, activeForm: _td.activeForm ? String(_td.activeForm).slice(0, 60) : '' });
+        }
+        var _allDone = _norm.length > 0 && _norm.every(function (t) { return t.status === 'completed'; });
+        _todoState.list = _allDone ? [] : _norm;
+        var _tdMsg = _allDone
+          ? '任务表全部完成·已自动清空。'
+          : ('任务表已更新(' + _norm.length + ' 项·' + _inProg + ' 项进行中)。继续用它跟踪进度：每完成一步立即标 completed(勿囤批)·恰保持一项 in_progress。'
+            + (_inProg > 1 ? '⚠ 当前 ' + _inProg + ' 项同时 in_progress·请收敛为一项。' : (_inProg === 0 ? '⚠ 没有 in_progress 项·请把正在做的那项标上。' : '')));
+        return { ok: true, todos: _todoState.list.length, message: _tdMsg };
+      }
       case 'askClarification': return { ok: true, clarify: true, questions: (Array.isArray(input.questions) ? input.questions : []).filter(Boolean).slice(0, 3) };
       case 'remonstrate': return { ok: true, remonstrate: true, concern: String(input.concern || ''), severity: String(input.severity || ''), suggestion: String(input.suggestion || '') };
       case 'flagUncertain': return { ok: true, flagged: String(input.path || ''), reason: String(input.reason || '') };
@@ -1696,7 +2183,7 @@
   function _resultToText(result) {
     if (!result) return '';
     if (result.violations && result.violations.length) return 'ok:false 违规: ' + result.violations.slice(0, 8).join('; ');
-    if (result.ok === false) return 'ok:false ' + (result.reason || '');
+    if (result.ok === false) return 'ok:false ' + (result.errorCode ? '[' + result.errorCode + '] ' : '') + (result.reason || '');   // 刀G9 · errorCode 让模型可见(错误分类可模式化自纠)
     return JSON.stringify(result).slice(0, 1200);
   }
 
@@ -1730,7 +2217,8 @@
     }, required: ['findings'] }
   };
   function _reviewTools() {
-    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, validateDraft: 1, preflight: 1 };
+    // S11 · recordConvention 入审阅工具集：只产建议不动剧本·「/初始化约定」(Codex /init 对照)靠它总结剧本惯例
+    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, validateDraft: 1, preflight: 1, recordConvention: 1 };
     return AGENT_TOOLS.filter(function(t) { return readNames[t.name]; }).concat([SUBMIT_REVIEW_TOOL]);
   }
   // 方向L · 剧本问答：只读工具 + submitAnswer（查清后直接回答，不动剧本）
@@ -1764,8 +2252,10 @@
   // 方向B · 把玩家的「剧本约定」拼成系统提示词里的一段（空则不注入）
   function _conventionsBlock(conventions) {
     var c = String(conventions || '').trim();
+    var pc = _packsConventions();   /* P刀 · 启用能力包自带的约定并入(所有模式统一生效) */
+    if (pc) c = (c ? c + '\n' : '') + pc;
     if (!c) return '';
-    return '\n【玩家的剧本创作约定·务必遵守】\n' + c.slice(0, 4000) + '\n（以上是该玩家一贯的创作偏好/规范，本次编辑须始终遵循；与具体需求冲突时以本次需求为准。）';
+    return '\n【玩家的剧本创作约定·务必遵守】\n' + c.slice(0, 4600) + '\n（以上是该玩家一贯的创作偏好/规范，本次编辑须始终遵循；与具体需求冲突时以本次需求为准。）';
   }
 
   function _buildPlanSystemPrompt(conventions) {
@@ -1852,6 +2342,68 @@
     ].join('\n');
   }
 
+  // ── 刀G8/S10 共用 · 宏压缩文案构件：循环内自动压缩与「/压缩前情」手动压缩同一套（勿两处漂移） ──
+  var _MACRO_SUM_TOOLS = [{ name: 'submitSummary', description: '提交结构化前情摘要', parameters: { type: 'object', properties: { summary: { type: 'string', description: '按七段结构写全的摘要正文' } }, required: ['summary'] } }];
+  var _MACRO_SUM_SYS = '你是对话压缩器：只输出忠实、具体、结构化的前情摘要，不评论不建议。';
+  function _macroSummaryAsk(flat) {
+    return '以下是一段「剧本编辑 agent」与用户/工具的工作对话记录。请把它压缩成结构化前情摘要，供同一 agent 在新上下文里无缝续作。必须涵盖七段：\n'
+      + '①用户各轮请求与意图(逐条·含意图变化与纠偏) ②已完成的改动(实体/字段级·关键新值) ③任务表现状(未完项) ④已查明的关键事实(字段结构/约定/引用关系) ⑤遇到的错误与修正 ⑥正在进行的工作 ⑦下一步(必须与用户最近请求直接一致·勿开新任务)\n'
+      + '要具体：实体名/字段路径/关键值逐一点名，宁详勿略。调用 submitSummary 提交；若无法调用工具，直接以纯文本输出摘要正文。\n\n【对话记录】\n' + flat;
+  }
+  // U1(Codex COMPACT_USER_MESSAGE_MAX_TOKENS 对照) · 压缩时逐字保留用户各轮原话：摘要难免失真·
+  //   玩家的具体指令/设定是续作的地面真值。从后往前收(最新优先·tail 已保留的不重复)·剥构建附文
+  //   (【用户需求】标记头/草稿现状等)只留原话·每条截 600 字·总额 userKeep(默认 6000)字。
+  function _macroUserLines(conv, tailLen, userKeep) {
+    userKeep = userKeep || 6000;
+    var upto = Math.max(0, (conv || []).length - (tailLen || 0));
+    var out = [], used = 0;
+    for (var i = upto - 1; i >= 0; i--) {
+      var m = conv[i]; if (!m || m.role !== 'user') continue;
+      var t = String(m.text || '').replace(/^【曾附图 \d+ 张】/, '').trim();
+      if (!t || /^【前情摘要/.test(t) || /^（预算提示/.test(t) || /^⚠ 已连续/.test(t)) continue;   // 注入类消息非玩家原话
+      var mm = t.match(/^【[^】]{1,14}】\n?([\s\S]*)$/);
+      var body = mm ? mm[1] : t;
+      var cut = body.search(/\n【|\n（在上面已改|\n（当前编辑上下文|\n（提示：/);
+      if (cut > 0) body = body.slice(0, cut);
+      body = body.trim().slice(0, 600);
+      if (!body) continue;
+      if (used + body.length > userKeep) break;
+      used += body.length;
+      out.push(body);
+    }
+    return out.reverse();
+  }
+  function _macroHead(summary, draft, surfaces, tailLen, userLines) {
+    var gaps = null; try { gaps = _computeGaps(draft, surfaces || []); } catch (eG) {}
+    return '【前情摘要·上下文已压缩】此前对话过长已压缩为以下摘要（覆盖此前全部工作）：\n\n' + summary
+      + ((userLines && userLines.length) ? '\n\n【用户各轮原话·逐字保留（时间序·地面真值·摘要与此冲突以此为准）】\n' + userLines.map(function (u, i) { return (i + 1) + '. ' + u; }).join('\n') : '')
+      + '\n\n【当前草稿最新状态·压缩后重读】\n' + _draftSummary(draft)
+      + ((gaps && gaps.requiredMissing.length) ? '\n（仍有必需缺口 ' + gaps.requiredMissing.length + ' 项：' + gaps.requiredMissing.slice(0, 12).join('、') + '）' : '')
+      + '\n\n请从中断处直接继续当前任务：不要复述摘要、不要重新确认、不要说「我继续」——当中断从未发生。任务表(todoWrite)与已落地的草稿改动均仍有效'
+      + (tailLen ? '；最近 ' + tailLen + ' 条原始消息保留在后。' : '。');
+  }
+  function _macroPickSummary(r) {
+    try { var tc0 = ((r && r.toolCalls) || []).filter(function (t) { return t && t.name === 'submitSummary'; })[0]; return String((tc0 && tc0.input && tc0.input.summary) || (r && r.text) || ''); }
+    catch (eS) { return String((r && r.text) || ''); }
+  }
+  /** S10(Codex /compact·CC /compact 对照) · 手动前情压缩：跑的间隙把会话线程压成七段摘要+近尾原文。
+   *  一次小结调用（优先次要模型）·摘要太薄按失败处理（原对话不动）。返回 {ok, conversation?, before, after, reason?}。 */
+  function compactConversation(conversation, draft, opts) {
+    opts = opts || {};
+    if (!Array.isArray(conversation) || conversation.length < 4) return Promise.resolve({ ok: false, reason: 'too-small' });
+    var beforeN = conversation.length;
+    var flat = _flattenForSummary(conversation, opts.frac != null ? opts.frac : 0.45);
+    var cfg = opts.cfg || loadEditorApiConfig();
+    return callWithTools([{ role: 'user', text: _macroSummaryAsk(flat) }], _MACRO_SUM_TOOLS, { maxTok: 4000, maxRetries: 1, cfg: opts.cfg2 || _secondaryCfg() || cfg, system: _MACRO_SUM_SYS })
+      .then(function (r) {
+        var s = _macroPickSummary(r);
+        if (s.length < 200) return { ok: false, reason: 'thin' };
+        var tail = _compactTailSlice(conversation, opts.keepTail != null ? opts.keepTail : 6);
+        var out = [{ role: 'user', text: _macroHead(s, draft, opts.surfaces || [], tail.length, _macroUserLines(conversation, tail.length, opts.userKeep)) }].concat(tail);
+        return { ok: true, conversation: out, before: beforeN, after: out.length, summaryChars: s.length };
+      });
+  }
+
   function _buildSystemPrompt(conventions, worldKind) {
     var fiction = worldKind === 'fictional';
     // 世界类型分支：虚构世界观（奇幻/武侠/未来/异世界/架空历史等原创设定）下，去掉「违背史实即硬伤」的史实锚定，
@@ -1867,15 +2419,18 @@
       : '⑫【先核后写·自查证】新增/改写涉及具体史实的内容（年号纪年、人物生卒与年龄、职官名称品级、重大事件时间地点）前，先用 checkHistory 把你将依据的关键史实逐条列出并自评把握：把握高的照写；把握低/拿不准的，落字用保守措辞（约/相传/据载）并对该路径 flagUncertain，绝不把存疑当确定口吻硬写。这是「国师」对硬核可信的本分。注意：无外部资料时这是自我审视，治"自信地编"，但变不出你本就不知道的事——真拿不准就老实标出来交玩家定夺。';
     return [
       head,
-      '⓪ 多步/复杂任务先用 note 记一句计划（1. 2. 3.）再动手；用 listCollection/describeSchema 看清现状与字段、bulkAdd/multiEdit 一次多改提效。若需求含糊到无法动手（缺关键信息），先用 askClarification 问 1-3 个具体问题再继续；需求清楚就直接做。',
+      '⓪ ≥3 步的任务先用 todoWrite 列任务表再动手（每完成一步立即标 completed·恰保持一项 in_progress·计划变了重写整表）；finish 前任务表要么全部完成、要么如实更新掉确不需要的项（带着未完项收尾会被顶回）。单条杂感用 note。若需求含糊到无法动手（缺关键信息），先用 askClarification 问 1-3 个具体问题再继续；需求清楚就直接做。',
       '规则：① 只用工具修改/查询，不要直接输出 JSON 剧本正文。② 中文显示名（人物/势力/地名）保持中文，禁止英译。',
-      '③ 先用 getField（单路径）/getFields（批量·一次读多个路径，省往返，需同时核对多处状态时优先用它，别一个个 getField）/searchEntities/listGaps 查看现状与规格缺口再改；不确定东西在哪个集合时用 globalSearch 全局检索定位。想确认正式游戏怎么读某字段、读不读它，用 fieldContract 查契约（按需查，别凭印象）。想看游戏 UI/逻辑的源码实现，用 listSource 找文件、readSource 读、grepSource 全局搜——可直接读整个代码库。生成或大改某部分(人物/势力/经济/官制/封臣…)前，先 genReference 看老编辑器对该部分的生成范式(设定深度/字段形状/朝代逻辑/参数区间)，借鉴后再动手。改地图归属（把某地块划给某势力、调整疆域归属）时，先 mapOverview 看清现有地块/归属/势力，再 mapAssignOwner 按地块名+势力名改（自动上色、同步 map/mapData）。与用户需求相关的必需缺口顺手补齐，让剧本完整可玩。④ 每改完一批用 validateDraft 自查，有违规继续修（写类工具 applyEdit/applyPush/multiEdit/bulkAdd 的返回已回挂变更后的当前值 nowValue/nowValues/collectionLength，据此确认改动已落地，无需再 getField 重读确认）。⑤ 改好后用 preflight 跑运行时体检（确保游戏能正常加载），有 blockers 继续修到 bootable，再调用 finish——summary 要向玩家说清「改了什么、为什么这么改」（具体到关键实体/字段，2-4 句中文），不要只写"完成"。',
-      '⑥ 若发现该玩家/剧本有值得长期沿用的约定（命名规律、文风、设定惯例），可调 recordConvention 记一条（仅在确有发现时，别凑数）。⑦ 改名优先用 renameEntity（联动所有引用、不留死链）；删除实体前先 findReferences 查谁引用了它。⑧ 对没把握的改动（史实存疑、靠推测填充）调 flagUncertain 标一下路径，提醒玩家重点复核（只标真没把握的）。',
+      '③【勘察】先查后改：getField（单路径）/getFields（批量·一次读多个路径省往返，需同时核对多处时优先用它）/listCollection/describeSchema 看清现状与字段；searchEntities/listGaps 查实体与规格缺口；不确定东西在哪个集合时用 globalSearch 全局检索定位。想确认正式游戏怎么读某字段、读不读它，用 fieldContract 查契约（按需查，别凭印象）；想看游戏 UI/逻辑的源码实现，用 listSource 找文件、readSource 读、grepSource 全局搜——可直接读整个代码库。生成或大改某部分(人物/势力/经济/官制/封臣…)前，先 genReference 看老编辑器对该部分的生成范式(设定深度/字段形状/朝代逻辑/参数区间)，借鉴后再动手。',
+      '④【落改】bulkAdd/multiEdit 一次多改提效。改名优先 renameEntity（联动所有引用、不留死链）；地图地块/省名改名用 renameRegion（同步 map/mapData 双镜像·如需联动其他引用再补 renameEntity）；删除实体前先 findReferences 查谁引用了它，再 removeEntity。改地图归属（把某地块划给某势力、调整疆域）先 mapOverview 看清地块/归属/势力，再 mapAssignOwner 按地块名+势力名改（自动上色、同步双镜像）。玩家配了生图 API 时，可用 generateImage 给人物立绘(characters.N.portrait)/势力旗徽生成图像（未配置会明确报错，届时用文字描述代替，不要反复重试）。与用户需求相关的必需缺口顺手补齐，让剧本完整可玩。',
+      '⑤【自查与收尾】每改完一批用 validateDraft 自查，有违规继续修（写类工具的返回已回挂变更后的当前值 nowValue/nowValues/collectionLength，据此确认改动已落地，无需再 getField 重读确认）。改好后用 preflight 跑运行时体检（确保游戏能正常加载），有 blockers 继续修到 bootable，再调用 finish——summary 要向玩家说清「改了什么、为什么这么改」（具体到关键实体/字段，2-4 句中文），不要只写"完成"。',
+      '⑥ 若发现该玩家/剧本有值得长期沿用的约定（命名规律、文风、设定惯例），可调 recordConvention 记一条（仅在确有发现时，别凑数）；从对话中了解到**推导不出来的背景**（玩家是谁与偏好/玩家给的做法反馈/创作长线目标/外部资料指引），用 saveMemory 存对应类型的记忆供下次共事召回——剧本里本就有的数据与本次改动明细不要存。⑦ 用户消息可能附图（编辑器截图/史料素材/手绘草图）——图即需求的一部分，按图中信息办。⑧ 对没把握的改动（史实存疑、靠推测填充）调 flagUncertain 标一下路径，提醒玩家重点复核（只标真没把握的）；运行中若在工具结果里收到「（插话）」注入，那是玩家的实时补充指令——完成当前一步后必须优先处理它，勿忽略。',
       '⑨【填实·禁空内容·铁律】新增或改写实体必须填到可直接用的质量，绝不留空：先用 listCollection / searchEntities 看一两个剧本里已有的同类实体（或 genReference 看生成范式），照着它们的字段集与丰满度，把新实体的所有相关字段都填上有意义的中文内容——身份/官衔/数值(能力/人口/兵力等)/背景小传/性格/目标/关系/履历等该有的都要有，数值要符合设定区间、彼此自洽。禁止留空字符串、0 占位（除非数值确为 0）、"待补/TODO/未知/暂无"之类占位词，也禁止只填 name 就交差。createEntity 模板只是最小骨架，拿到后必须逐字段补全。宁可少加一个实体，也要把加的每个都填实、达到与官方实体同等的完整度。',
       '⑩【高权限·可写任意字段】你对剧本草稿有完全的写入权限：applyEdit/applyPush 可以创建任意新字段、新嵌套结构，包括剧本编辑器当前没有专门面板/不在结构速查/fieldContract 查不到的"非标准/自定义"字段——编辑器会自动吸收并展示这些字段，不会丢。fieldContract 返回"不在游戏字段契约中"只表示它是扩展/自定义字段（正式游戏不直接读），并不代表禁止写；只要对实现用户需求有用就大胆写。唯一不可改的是：剧本唯一 id、下划线开头的内部字段、ai/conf/meta 等配置（改这些会损坏剧本）。其余一切随需求自由创建与修改。',
       ruleRemonstrate,
       ruleSelfCheck,
       _conventionsBlock(conventions),
+      _skillsBlock(),   /* S刀 · 技能清单(useSkill 按需展开·≈CC SkillTool 的技能目录注入) */
       '',
       buildSchemaGuide(worldKind)
     ].join('\n');
@@ -2021,7 +2576,7 @@
   function _toolCollections(name, input) {   // 该工具会改的顶层集合；null=全局(无法限定·如 renameEntity 跨集合联动)
     input = input || {};
     switch (name) {
-      case 'applyEdit': case 'applyPush': case 'removeEntity': return [_topOf(input.path)];
+      case 'applyEdit': case 'applyPush': case 'removeEntity': case 'generateImage': return [_topOf(input.path)];
       case 'bulkAdd': return [_topOf(input.collection)];
       case 'multiEdit': return (Array.isArray(input.edits) ? input.edits : []).map(function(e) { return _topOf(e && e.path); });
       case 'renameEntity': return null;
@@ -2046,6 +2601,16 @@
   // 刀E · 可中断：模块级当前运行句柄 + abort()。Claude code 式"随时停"（轮间中断，干净收尾）。
   var _activeRun = null;
   function abort() { if (_activeRun) _activeRun.aborted = true; return !!_activeRun; }
+  // 刀G9(CC message queue 对照) · 运行中插话：agent 跑着时用户可继续发话——排队·本轮工具结果落定后
+  //   作为 user 消息注入(下一轮模型即见)·不打断当前轮(CC "先干完手头这步·必须处理·勿忽略"语义)。
+  function steer(text) {
+    var t = String(text == null ? '' : text).trim();
+    if (!_activeRun || _activeRun.aborted || !t) return false;
+    _activeRun.steers.push(t);
+    return true;
+  }
+  // 刀G5 · todoWrite 任务表(模块级·每次 runAuthoringLoop 起跑重置·dispatch 写入·loop 读它做节流提醒)
+  var _todoState = { list: [] };
 
   function runAuthoringLoop(draft, userRequest, opts) {
     opts = opts || {};
@@ -2069,16 +2634,30 @@
     var editorContext = opts.editorContext || '';   // 上下文感知：编辑器当前焦点（模块/集合/选中实体）
     var exemplars = opts.exemplars || '';   // 方向J · few-shot 范例（开关式·编辑官方剧本时即官方范例）
     var conversation, _priorTokens = 0;   // 维度1 · 对话式追问：有 priorConversation 则接着上轮线程改
+    var _turnImages = (Array.isArray(opts.images) && opts.images.length) ? opts.images.slice(0, 4) : null;   // S2 · 本轮视觉附件(截图/图片·dataURL)
     if (Array.isArray(opts.priorConversation) && opts.priorConversation.length) {
       conversation = opts.priorConversation.slice();
-      conversation.push({ role: 'user', text: _buildFollowUpUser(draft, userRequest, surfaces, editorContext) });
+      var _fu = { role: 'user', text: _buildFollowUpUser(draft, userRequest, surfaces, editorContext) };
+      if (_turnImages) _fu.images = _turnImages;
+      conversation.push(_fu);
       try { _priorTokens = _estimateTokens(JSON.stringify(opts.priorConversation)); } catch (e) {}
     } else {
-      conversation = [{ role: 'user', text: explainOnly ? _buildExplainUser(draft, userRequest, surfaces, editorContext) : (qaOnly ? _buildQaUser(draft, userRequest, surfaces, editorContext) : (reviewOnly ? _buildReviewUser(draft, userRequest, surfaces, editorContext) : _buildInitialUser(draft, userRequest, surfaces, editorContext, exemplars, opts.memory || ''))) }];
+      var _iu = { role: 'user', text: explainOnly ? _buildExplainUser(draft, userRequest, surfaces, editorContext) : (qaOnly ? _buildQaUser(draft, userRequest, surfaces, editorContext) : (reviewOnly ? _buildReviewUser(draft, userRequest, surfaces, editorContext) : _buildInitialUser(draft, userRequest, surfaces, editorContext, exemplars, opts.memory || ''))) };
+      if (_turnImages) _iu.images = _turnImages;
+      conversation = [_iu];
     }
     var transcript = [];
     var iterations = 0, finishAttempts = 0;
-    var tokensUsed = _estimateTokens(system) + _priorTokens + _estimateTokens(conversation[conversation.length - 1].text);
+    // 刀G1(2026-07-02·CC QueryEngine 对照) · 预算核算修真：tokensUsed = 「下一次请求的真实上下文体量」
+    //   = system + 工具schema(每轮全量重发·旧口径从不计入) + 全对话(含 assistant 的 toolCalls 入参·旧口径漏算)。
+    //   旧口径只零星累加响应文本与工具结果 ≈ 真实体量的零头 → 260k 闸与 70/90% 提醒形同虚设、压缩触发迟到。
+    var _sysTok = _estimateTokens(system);
+    var _toolsTok = 0; try { _toolsTok = _estimateTokens(JSON.stringify(tools)); } catch (eTt) {}
+    var _convTok = 0;
+    function _convRecount() { try { _convTok = _estimateTokens(JSON.stringify(conversation)); } catch (eCr) {} }
+    function _reqTokens() { return _sysTok + _toolsTok + _convTok; }
+    _convRecount();
+    var tokensUsed = _reqTokens();
     var finished = false, stopReason = 'maxIterations';
     var _planResult = null;   // 计划模式产出（proposePlan 的步骤）
     var _reviewResult = null;   // 方向D · 审阅模式产出（submitReview 的报告）
@@ -2087,41 +2666,132 @@
     var _clarifyResult = null;   // 方向K · 交互式澄清产出（askClarification 的问题）
     var _remonstrateResult = null;   // 刀1 · 国师进谏产出（remonstrate 的异议+替代方案）
     var _finishSummary = '';   // 改动说明：finish 时 agent 给的"做了什么+为什么"
-    var control = { aborted: false };   // 刀E · 本次运行的中断句柄
+    var control = { aborted: false, steers: [] };   // 刀E · 本次运行的中断句柄；刀G9 · 运行中插话队列
     _activeRun = control;
+    // 刀G9 · 排空插话队列 → 包装成一条 user 消息注入(CC wrapCommandText 语义:必须处理·勿忽略)
+    var _steeredCount = 0;
+    function _drainSteers() {
+      if (!control.steers.length || control.aborted) return false;
+      var _stB = control.steers.splice(0, control.steers.length);
+      conversation.push({ role: 'user', text: '【用户在你工作期间发来新指示】\n' + _stB.map(function (s, si) { return (_stB.length > 1 ? (si + 1) + '. ' : '') + s; }).join('\n') + '\n（必须处理：完成当前这一步后立即按上述指示调整——它可能改变或追加原需求；处理完再 finish，勿忽略。）' });
+      _steeredCount += _stB.length;
+      record('steer', { texts: _stB }, { ok: true, queued: _stB.length });
+      return true;
+    }
     // 方向A · 鲁棒自愈：noToolCalls 先 nudge 再放弃；caller 瞬态错误退避重试
     var noToolNudges = 0, maxNoToolNudges = (opts.maxNoToolNudges != null ? opts.maxNoToolNudges : 2);
     var stepRetries = 0, maxStepRetries = (opts.maxStepRetries != null ? opts.maxStepRetries : 2);
     var retryBaseMs = opts.retryBaseMs || 800;
+    var _curMaxTok = 0, _tokBumps = 0;   // 刀H1 · 输出截断自愈:检测到腰斩则输出上限×2重试(≤2次·bump后全程沿用)
     var _budgetWarned = 0;   // 工具D · 预算反馈：分级提醒收尾(70%/90%)·避免硬撞 tokenBudget 半途而废
+    // 刀G3(CC「File unchanged since last read」对照) · 重复读去重 + 纯勘察防打转
+    var _seenReads = {};        // key=name|JSON(input) → {iter, writes}(写世代号=新鲜度)
+    var _writeCount = 0;        // 累计成功写入笔数·任何写入即令全部旧读记录过期
+    var _readOnlyStreak = 0, _spinWarned = 0;
+    var _editingMode = !planOnly && !reviewOnly && !qaOnly && !explainOnly;   // 只读模式纯勘察是本分·豁免
+    // 刀G5(CC TodoWrite 对照) · 任务表:起跑重置·节流提醒(≥3轮未更新且有未完项·折叠进工具结果不伪造独立轮)
+    _todoState.list = [];
+    if (Array.isArray(opts.initialTodos)) {   // 刀H3(CC resume 恢复 TodoWrite 对照) · 会话恢复:续接时回灌上次任务表(未完项接着干)
+      _todoState.list = opts.initialTodos.filter(function (t0) { return t0 && t0.content && /^(pending|in_progress|completed)$/.test(t0.status || ''); }).slice(0, 20).map(function (t0) { return { content: String(t0.content).slice(0, 200), status: t0.status }; });
+    }
+    var _todoLastRound = 0, _todoRemindedAt = 0;
+    var _todoFinishBounced = false;   // 刀G7(CC verification nudge 对照) · finish 时任务表有未完项→顶回一次(仅一次·防死循环)
+    // 刀G4 · 外部修改防护:起跑对全部顶层区段留指纹·agent 读/写都刷新·写前对照揪外部改动
+    var _extSnap = {};
+    try { Object.keys(draft || {}).forEach(function (rk) { _extSnap[rk] = _fpOf(draft[rk]); }); } catch (eSn) {}
+    function _refreshSnap(roots) {
+      if (!roots) { try { Object.keys(draft || {}).forEach(function (rk2) { _extSnap[rk2] = _fpOf(draft[rk2]); }); } catch (eR) {} return; }
+      roots.forEach(function (r0) { if (r0) { try { _extSnap[r0] = _fpOf(draft[r0]); } catch (eR2) {} } });
+    }
+    // 刀G8(CC autocompact 对照) · 宏压缩:微压缩不够(预算高水位)或上下文超窗时·让模型把旧对话写成
+    //   七段结构化前情摘要·替换旧对话(保留近尾原文)·续跑对话(priorConversation 无限增长)与小窗口模型最受益。
+    //   熔断:每次运行最多 2 次尝试·失败不重试不阻断(继续不压)。对话太小(压了也救不了)不尝试。
+    var _macroTries = 0, _macroDone = 0;
+    var _macroAt = (opts.macroCompactAt != null ? opts.macroCompactAt : 0.85);   // 主动触发水位(×maxTokens)
+    var _macroKeepTail = (opts.macroKeepTail != null ? opts.macroKeepTail : 6);  // 压缩后保留的近尾原文条数
+    function _applyMacroResult(summary, reasonTag) {
+      var tail = _compactTailSlice(conversation, _macroKeepTail);
+      var head = _macroHead(summary, draft, surfaces, tail.length, _macroUserLines(conversation, tail.length, opts.macroUserKeep));
+      conversation.length = 0;
+      conversation.push({ role: 'user', text: head });
+      for (var ti = 0; ti < tail.length; ti++) conversation.push(tail[ti]);
+      _seenReads = {};   // "与第N轮相同"的轮次引用随压缩失效·全部作废
+      _convRecount(); tokensUsed = _reqTokens();
+      _macroDone++;
+      record('macroCompact', { trigger: reasonTag, attempt: _macroTries }, { ok: true, summaryChars: summary.length, keptTail: tail.length, tokensAfter: tokensUsed });
+    }
+    function _macroCompact(reasonTag) {
+      if (_macroTries >= 2 || _convTok < 6000) return Promise.resolve(false);   // 熔断 + 对话太小不救
+      _macroTries++;
+      var flat = _flattenForSummary(conversation, _macroTries === 1 ? 0.45 : 0.2);   // 二次尝试再砍半(摘要请求自身超限的退路)
+      if (typeof opts.onText === 'function') { try { opts.onText('（上下文过长，正在压缩前情摘要…）', iterations); } catch (eOt) {} }
+      return Promise.resolve(caller([{ role: 'user', text: _macroSummaryAsk(flat) }], _MACRO_SUM_TOOLS, { maxTok: Math.max(4000, opts.maxTok || 0), maxRetries: 1, cfg: opts.cfg2 || _secondaryCfg() || opts.cfg, system: _MACRO_SUM_SYS }))   // 刀H1 · 后台请求不放大重试(CC 对照)·S3 · 摘要=杂活走次要模型
+        .then(function (r) {
+          var s = _macroPickSummary(r);
+          if (s.length < 200) return false;   // 摘要太薄不可信·按失败处理(不替换对话)
+          _applyMacroResult(s, reasonTag);
+          return true;
+        })
+        .catch(function (eM) {
+          try { console.warn('[authoring-agent] 宏压缩失败(继续不压)', eM); } catch (eW) {}
+          return false;
+        });
+    }
+    // 刀G8 · 终局失败保留已完成工作(CC「错误不炸掉会话」对照):reject 前把过程状态挂上错误对象·调用方可续
+    function _fail(e) {
+      try { e.partial = { conversation: conversation, transcript: transcript, todos: _todoState.list.slice(), draft: draft, tokensUsed: tokensUsed, iterations: iterations }; } catch (eP) {}
+      throw e;
+    }
 
     function record(name, input, result) {
       transcript.push({ name: name, input: input, result: result });
       if (typeof opts.onStep === 'function') {
-        try { opts.onStep({ name: name, input: input, result: result, iteration: iterations, tokensUsed: tokensUsed }); } catch (e) {}
+        try { opts.onStep({ name: name, input: input, result: result, iteration: iterations, tokensUsed: tokensUsed, budget: maxTokens }); } catch (e) {}   // S10 · budget=预算上限(UI 上下文余量表)
       }
     }
 
     function step() {
       if (control.aborted) { stopReason = 'aborted'; return Promise.resolve(); }   // 刀E · 轮间中断
       if (iterations >= maxIterations) { stopReason = 'maxIterations'; return Promise.resolve(); }
-      if (tokensUsed >= maxTokens) { stopReason = 'tokenBudget'; return Promise.resolve(); }
-      if (tokensUsed > maxTokens * 0.5) { try { _compactOldToolResults(conversation, 6); } catch (e) {} }   // 工具D · 半程后压旧工具结果·控窗口
+      _convRecount(); tokensUsed = _reqTokens();   // 刀G1 · 每轮真算(体量小·全量重估防漂移)
+      if (tokensUsed > maxTokens * 0.5) {   // 工具D · 半程后压旧工具结果+旧入参·控窗口(压后重算)
+        try { _compactOldToolResults(conversation, 6); _convRecount(); tokensUsed = _reqTokens(); } catch (e) {}
+      }
+      // 刀G8 · 预算高水位主动宏压缩:微压缩后仍超水位 → 压成前情摘要后重入本轮(硬撞 tokenBudget 前自救)。
+      //   条件与 _macroCompact 内部守卫严格一致(压必推进 _macroTries)·不会无限重入。
+      if (tokensUsed >= maxTokens * _macroAt && _macroTries < 2 && _convTok >= 6000) {
+        return _macroCompact('budget-high').then(step);
+      }
+      if (tokensUsed >= maxTokens) { stopReason = 'tokenBudget'; return Promise.resolve(); }   // 刀G8 · 硬停挪到压缩之后(先自救再认命)
       iterations++;
-      return Promise.resolve(caller(conversation, tools, { maxTok: opts.maxTok, cfg: opts.cfg, system: system }))
+      return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system }))
         .then(function(resp) {
           stepRetries = 0;   // 成功一轮即重置：每个停顿点各容忍 maxStepRetries 次抖动
           var text = (resp && resp.text) || '';
           var calls = (resp && resp.toolCalls) || [];
-          tokensUsed += _estimateTokens(text) + 200;
+          // 刀H1(CC max_tokens 动态调整对照) · 输出截断自愈:被 maxTok 腰斩(没调成工具/入参 JSON 斩断)
+          //   → 输出上限×2重试本轮。斩断的响应整体弃置(完好的调用也未执行·重试无双跑)。
+          if (resp && resp.truncated && (!calls.length || resp.badToolJson) && _tokBumps < 2 && !control.aborted) {
+            _tokBumps++;
+            _curMaxTok = Math.min(16000, (_curMaxTok || opts.maxTok || 3000) * 2);
+            if (typeof opts.onText === 'function') { try { opts.onText('（输出被截断·提升输出上限至 ' + _curMaxTok + ' 重试本轮…）', iterations); } catch (eB) {} }
+            iterations--;
+            return step();
+          }
+          // 刀G1 · 不再零星累加(响应文本随消息入对话后由 _reqTokens 全量重估)
           if (text && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
           if (control.aborted) { conversation.push({ role: 'assistant', text: text, toolCalls: [] }); stopReason = 'aborted'; return; }   // 刀E · API 返回后即停，不再施改
           if (!calls.length) {
             conversation.push({ role: 'assistant', text: text, toolCalls: [] });
+            // 刀G9 · 卡壳时若有用户插话:新指示本身就是推动力·直接注入重启(不耗 nudge 配额)
+            if (_drainSteers()) return step();
             // 韧性：没调工具不直接放弃，先 nudge 推一把（卡住 → 重新发起）
             if (noToolNudges < maxNoToolNudges && !control.aborted) {
               noToolNudges++;
-              conversation.push({ role: 'user', text: '你刚才没有调用任何工具。若已按要求改完，请调用 finish 并写明改动说明；若还没改完，请继续用工具（applyEdit/applyPush/multiEdit/...）修改后再 finish。' });
+              // 刀G7 · nudge 感知任务表:有未完项就点名(比泛泛"继续"更有的放矢)
+              var _pNt = _todoState.list.filter(function (t) { return t.status !== 'completed'; });
+              var _pNtTxt = _pNt.length ? '任务表尚有 ' + _pNt.length + ' 项未完成（如「' + _pNt[0].content + '」）。' : '';
+              conversation.push({ role: 'user', text: '你刚才没有调用任何工具。' + _pNtTxt + '若已按要求改完，请调用 finish 并写明改动说明；若还没改完，请继续用工具（applyEdit/applyPush/multiEdit/...）修改后再 finish。' });
               if (typeof opts.onText === 'function') { try { opts.onText('（未检测到工具调用，正在提示 agent 继续…）', iterations); } catch (e) {} }
               return step();
             }
@@ -2136,14 +2806,53 @@
             var c = calls[_ci++];
             return Promise.resolve().then(function () {
               if (c.name === 'finish') {
+                // 刀G9 · 有未处理的用户插话 → 不许收尾(新指示可能改变需求·队列随轮末注入·处理完自然放行)
+                if (control.steers.length) {
+                  return { ok: false, finish: false, errorCode: 'steer-pending', reason: '用户在你工作期间发来了新指示（见下一条消息）。请先按新指示处理，再重新 finish。' };
+                }
+                // 刀G7 · 收尾闸:任务表尚有未完项 → 顶回一次(完成或先 todoWrite 更新表·仅顶一次不计入 finishAttempts)
+                var _pTd = _todoState.list.filter(function (t) { return t.status !== 'completed'; });
+                if (_pTd.length && !_todoFinishBounced) {
+                  _todoFinishBounced = true;
+                  return { ok: false, finish: false, errorCode: 'todos-pending', reason: '任务表尚有 ' + _pTd.length + ' 项未完成：' + _pTd.slice(0, 3).map(function (t) { return '「' + t.content + '」'; }).join('、') + (_pTd.length > 3 ? ' 等' : '') + '。请逐项完成并用 todoWrite 标 completed 后再 finish；若某项经查确实不需要做，先用 todoWrite 更新任务表（移除或改写该项）再 finish。' };
+                }
                 var blocking = _blockingViolations(validateDraft(draft), blockingChecks);
                 if (!blocking.length) { _finishSummary = (c.input && c.input.summary) || ''; finishAccepted = true; return { ok: true, finish: true, summary: _finishSummary }; }
                 finishAttempts++; return { ok: false, finish: false, reason: '\u8349\u7a3f\u4ecd\u6709 ' + blocking.length + ' \u9879\u5fc5\u4fee\u8fdd\u89c4\uff0c\u7981\u6b62\u7ed3\u675f\uff0c\u8bf7\u5148\u4fee\u590d', violations: blocking };
               }
               var deny = _permCheck(c.name, c.input, perms);
               if (deny) return { ok: false, reason: deny };
+              // \u5200G3 \u00b7 \u91cd\u590d\u8bfb\u53bb\u91cd:\u540c\u540d\u540c\u53c2\u4e14\u671f\u95f4\u96f6\u5199\u5165 \u2192 \u77ed\u5b58\u6839(\u7701\u4e0a\u4e0b\u6587\u00b7\u9632\u539f\u5730\u6253\u8f6c\u00b7\u4e0d\u91cd\u8dd1)
+              if (_READ_TOOLS[c.name]) {
+                var _rk = c.name + '|' + (function () { try { return JSON.stringify(c.input || {}); } catch (eRk) { return String(c.input); } })();
+                var _prevRead = _seenReads[_rk];
+                if (_prevRead && _prevRead.writes === _writeCount) {
+                  return { ok: true, unchanged: true, seenAtIteration: _prevRead.iter, reason: '\u7ed3\u679c\u4e0e\u7b2c ' + _prevRead.iter + ' \u8f6e\u5b8c\u5168\u76f8\u540c(\u671f\u95f4\u65e0\u4efb\u4f55\u5199\u5165)\u00b7\u8bf7\u76f4\u63a5\u5f15\u7528\u5148\u524d\u7ed3\u679c\u00b7\u52ff\u91cd\u590d\u67e5\u8be2' };
+                }
+                c._readKey = _rk;
+              }
+              // \u5200G4 \u00b7 \u5199\u524d\u65b0\u9c9c\u5ea6\u5bf9\u7167:\u76ee\u6807\u533a\u6bb5\u6307\u7eb9\u2260\u4e0a\u6b21\u6240\u89c1 \u2192 \u5916\u90e8(\u7f16\u8f91\u5668/\u7528\u6237)\u6539\u8fc7\u00b7\u62d2\u5199\u8981\u6c42\u91cd\u8bfb(\u52ff\u8986\u76d6\u7528\u6237\u6539\u52a8)
+              if (_MUT_TOOLS[c.name]) {
+                var _mr = _mutRoots(c.name, c.input);
+                if (_mr) {
+                  for (var _mi = 0; _mi < _mr.length; _mi++) {
+                    var _r0 = _mr[_mi];
+                    if (_r0 && _extSnap[_r0] !== undefined && _extSnap[_r0] !== _fpOf(draft[_r0])) {
+                      return { ok: false, errorCode: 'external-modified', reason: '\u533a\u6bb5\u300c' + _r0 + '\u300d\u5728\u4f60\u4e0a\u6b21\u67e5\u770b\u540e\u88ab\u5916\u90e8\u4fee\u6539(\u5f88\u53ef\u80fd\u662f\u7528\u6237\u6b63\u5728\u7f16\u8f91\u5668\u91cc\u6539\u52a8)\u3002\u672c\u6b21\u5199\u5165\u5df2\u4e2d\u6b62\u2014\u2014\u8bf7\u5148 getFields \u91cd\u65b0\u8bfb\u53d6\u8be5\u533a\u6bb5\u6700\u65b0\u503c\u00b7\u5728\u65b0\u503c\u57fa\u7840\u4e0a\u518d\u6539\u00b7\u52ff\u8986\u76d6\u7528\u6237\u6539\u52a8\u3002' };
+                    }
+                  }
+                }
+              }
               return Promise.resolve().then(function () { return dispatchTool(draft, c.name, c.input, surfaces); }).catch(function (te) { return { ok: false, reason: '\u5de5\u5177\u6267\u884c\u51fa\u9519\uff1a' + ((te && te.message) || te) + '\uff08\u8bf7\u68c0\u67e5\u53c2\u6570\u540e\u91cd\u8bd5\uff0c\u6216\u6362\u4e2a\u5de5\u5177/\u65b9\u5f0f\uff09' }; });
             }).then(function (result) {
+              // \u5200G3 \u00b7 \u8bfb/\u5199\u8bb0\u8d26:\u6210\u529f\u8bfb\u8bb0\u5165 _seenReads(\u5e26\u5f53\u524d\u5199\u4e16\u4ee3)\u00b7\u6210\u529f\u5199\u63a8\u8fdb\u4e16\u4ee3\u53f7(\u5176\u540e\u540c\u53c2\u8bfb\u653e\u884c)
+              if (result && result.ok !== false) {
+                if (c._readKey && !result.unchanged) _seenReads[c._readKey] = { iter: iterations, writes: _writeCount };
+                if (_MUT_TOOLS[c.name]) _writeCount++;
+                // \u5200G4 \u00b7 \u6307\u7eb9\u5237\u65b0:\u8bfb\u5230\u4ec0\u4e48/\u5199\u6210\u4ec0\u4e48\u90fd\u7b97"\u6700\u65b0\u6240\u89c1"(renameEntity \u8de8\u533a\u6bb5\u2192\u5168\u91cf\u5237\u65b0)
+                if (_MUT_TOOLS[c.name]) _refreshSnap(c.name === 'renameEntity' ? null : _mutRoots(c.name, c.input));
+                else if (_READ_TOOLS[c.name] && !result.unchanged) { var _rr0 = _readRootsOf(c.name, c.input); if (_rr0.length) _refreshSnap(_rr0); }
+              }
               if (c.name === 'proposePlan' && result && result.plan) { _planResult = { steps: result.steps, summary: result.summary }; finishAccepted = true; }
               if (c.name === 'submitReview' && result && result.review) { _reviewResult = { findings: result.findings, summary: result.summary }; finishAccepted = true; }
               if (c.name === 'submitAnswer' && result && result.answered) { _qaResult = { answer: result.answer }; finishAccepted = true; }
@@ -2159,12 +2868,39 @@
           return _procCall().then(function () {
             conversation.push({ role: 'assistant', text: text, toolCalls: calls });
             conversation.push({ role: 'tool', toolResults: toolResults });
-            tokensUsed += _estimateTokens(JSON.stringify(toolResults));
+            _convRecount(); tokensUsed = _reqTokens();   // 刀G1 · 本轮消息已入对话·重算真实体量(70/90%提醒按真口径)
+            // 刀G9 · 运行中插话:本轮工具结果落定后注入(下一轮模型即见)。finish 刚被接受的瞬间来了新话
+            //   → 撤回收尾继续处理(收尾后的新指示等价"追问"·同一循环内直接续·不丢话)
+            if (control.steers.length && !control.aborted) {
+              _drainSteers();
+              if (finishAccepted) finishAccepted = false;
+            }
             // 工具D · 预算反馈：接近上限分级提醒收尾(让 agent 自控节奏·别非必要检索)
             if (!finishAccepted && !control.aborted) {
               var _frac = tokensUsed / maxTokens;
               if (_frac >= 0.9 && _budgetWarned < 2) { _budgetWarned = 2; conversation.push({ role: 'user', text: '⚠ 预算已用约 ' + Math.round(_frac * 100) + '%·即将耗尽。请立刻完成最关键的改动并调用 finish·停止一切非必要的检索/校验。' }); }
               else if (_frac >= 0.7 && _budgetWarned < 1) { _budgetWarned = 1; conversation.push({ role: 'user', text: '（预算提示：已用约 ' + Math.round(_frac * 100) + '%·剩余有限。请优先收尾核心改动·非必要的 globalSearch/preflight 可省·尽快 finish。）' }); }
+            }
+            // 刀G3 · 防打转:编辑模式连续纯勘察(无写/无澄清/无计划) → 3/6 轮两级催动手(只读模式豁免)
+            if (!finishAccepted && !control.aborted && _editingMode) {
+              var _hadProgress = calls.some(function (cc) { return cc && (_MUT_TOOLS[cc.name] || cc.name === 'note' || cc.name === 'todoWrite' || cc.name === 'askClarification' || cc.name === 'remonstrate' || cc.name === 'flagUncertain' || cc.name === 'recordConvention'); });
+              if (_hadProgress) { _readOnlyStreak = 0; _spinWarned = 0; }
+              else {
+                _readOnlyStreak++;
+                if (_readOnlyStreak >= 6 && _spinWarned < 2) { _spinWarned = 2; conversation.push({ role: 'user', text: '⚠ 已连续 ' + _readOnlyStreak + ' 轮纯勘察·零改动。立即停止检索：要么用 applyEdit/multiEdit/bulkAdd 落实修改·要么 askClarification 说明卡在哪·要么 finish。' }); }
+                else if (_readOnlyStreak >= 3 && _spinWarned < 1) { _spinWarned = 1; conversation.push({ role: 'user', text: '（你已连续 ' + _readOnlyStreak + ' 轮纯勘察未动手。信息应已足够——请开始落实修改；确有疑问用 askClarification·认为不该改用 remonstrate·勿再重复检索。）' }); }
+              }
+            }
+            // 刀G5 · todo 节流提醒:任务表有未完项且 ≥3 轮没更新 → 折叠进本轮末条工具结果(CC 对照:不独立成消息·不伪造轮边界)
+            if (!finishAccepted && !control.aborted) {
+              if (calls.some(function (cc) { return cc && cc.name === 'todoWrite'; })) { _todoLastRound = iterations; }
+              else {
+                var _pendTd = _todoState.list.filter(function (t) { return t.status !== 'completed'; });
+                if (_pendTd.length && toolResults.length && iterations - _todoLastRound >= 3 && iterations - _todoRemindedAt >= 3) {
+                  _todoRemindedAt = iterations;
+                  toolResults[toolResults.length - 1].content += '\n<系统提醒>任务表已 ' + (iterations - _todoLastRound) + ' 轮未更新·尚有 ' + _pendTd.length + ' 项未完(如「' + _pendTd[0].content + '」)。完成即标 completed·计划变了就重写整表·此提醒勿向用户提及。</系统提醒>';
+                }
+              }
             }
             if (finishAccepted) { finished = true; stopReason = _clarifyResult ? 'needsClarification' : (_remonstrateResult ? 'needsConfirmation' : (_explainResult ? 'explained' : (_qaResult ? 'answered' : (_reviewResult ? 'reviewed' : (_planResult ? 'planned' : 'finish'))))); return; }
             if (finishAttempts >= maxFinishAttempts) { stopReason = 'finishBlocked'; return; }
@@ -2173,23 +2909,45 @@
         })
         .catch(function(e) {
           if (control.aborted) { stopReason = 'aborted'; return; }
+          if (e && e.overflow) {   // 刀G8 · 超限自愈(CC 两层恢复的层二):压缩前情后重试本轮·不计迭代
+            iterations--;
+            return _macroCompact('overflow').then(function (did) {
+              if (did) return step();
+              iterations++;   // 压不成(熔断/对话太小/摘要失败) → 恢复计数走原失败路径
+              return _fail(e);
+            });
+          }
           if (e && e.transient && stepRetries < maxStepRetries) {   // 韧性：瞬态错误（429/5xx/网络）退避重试本轮
             stepRetries++;
             if (typeof opts.onText === 'function') { try { opts.onText('（网络/服务抖动，正在重试 ' + stepRetries + '/' + maxStepRetries + '…）', iterations); } catch (er) {} }
             iterations--;   // 重试不计入迭代预算
             return _delay(retryBaseMs * Math.pow(2, stepRetries - 1)).then(step);
           }
-          throw e;   // 非瞬态 / 重试耗尽 → 维持原 reject 语义（UI 显示失败）
+          return _fail(e);   // 非瞬态 / 重试耗尽 → 维持 reject 语义(UI 显示失败)·刀G8:partial 挂已完成工作供调用方续
         });
     }
 
-    return Promise.resolve().then(step).then(function() {
+    return Promise.resolve().then(function () {
+      /* M刀(CC memdir 对照) · 记忆召回：仅新会话首轮·6s 超时·失败静默跳过不阻塞主流程 */
+      if (Array.isArray(opts.priorConversation) && opts.priorConversation.length) return '';
+      if (opts.noMemoryRecall) return '';
+      return Promise.race([_recallMemories(userRequest, opts.cfg, opts.caller), _delay(6000)]).catch(function () { return ''; });
+    }).then(function (memBlk) {
+      if (memBlk && conversation.length && conversation[0] && conversation[0].role === 'user') {
+        conversation[0].text += '\n\n' + memBlk;
+        _convRecount(); tokensUsed = _reqTokens();
+      }
+    }).then(step).then(function() {
       if (_activeRun === control) _activeRun = null;   // 刀E · 收尾清句柄
       return {
         draft: draft, transcript: transcript, conversation: conversation,
         iterations: iterations, finished: finished, plan: _planResult, review: _reviewResult, answer: _qaResult, explanation: _explainResult, clarification: _clarifyResult, remonstrance: _remonstrateResult,
         finalValidation: validateDraft(draft), stopReason: stopReason,
         tokensUsed: tokensUsed, finishAttempts: finishAttempts,
+        tokensBreakdown: { system: _sysTok, tools: _toolsTok, conversation: _convTok },   // 刀G1 · 真口径构成(UI/诊断用)
+        macroCompactions: _macroDone,   // 刀G8 · 本次运行发生的宏压缩次数(诊断/UI 可提示"前情已压缩")
+        steered: _steeredCount,   // 刀G9 · 本次运行注入的用户插话条数
+        todos: _todoState.list.slice(),   // 刀G5 · 收尾时的任务表(全完成则已自动清空·UI 可渲染)
         summary: _finishSummary,   // 改动说明：做了什么+为什么
         notes: transcript.filter(function(t) { return t.name === 'note'; }).map(function(t) { return (t.input && t.input.text) || ''; }).filter(Boolean),
         // 方向B · agent 回写：发现的可长期沿用约定（交玩家「记住」）
@@ -2304,9 +3062,10 @@
       var histReq = userRequest + (lowConf.length
         ? '\n\n【国师自核时把握不足、请你重点查证的史实】：\n' + lowConf.map(function (f) { return '· ' + f.claim + (f.note ? '（' + f.note + '）' : ''); }).join('\n')
         : '');
+      var _c2 = opts.cfg2 || _secondaryCfg();   // S3 · 两官审阅=杂活·配了次要模型就分工给它(省主模型钱)
       return Promise.all([
-        runAuthoringLoop(draft, histReq, baseClean({ reviewOnly: true, reviewFocus: 'history' })),
-        runAuthoringLoop(draft, userRequest, baseClean({ reviewOnly: true, reviewFocus: 'balance' }))
+        runAuthoringLoop(draft, histReq, baseClean(_c2 ? { reviewOnly: true, reviewFocus: 'history', cfg: _c2 } : { reviewOnly: true, reviewFocus: 'history' })),
+        runAuthoringLoop(draft, userRequest, baseClean(_c2 ? { reviewOnly: true, reviewFocus: 'balance', cfg: _c2 } : { reviewOnly: true, reviewFocus: 'balance' }))
       ]).then(function (revs) {
         var histR = revs[0], balR = revs[1];
         steps.push({ role: '史官·史实审', result: histR });
@@ -2425,11 +3184,16 @@
   /** 旧编辑器（editor.html）：body = 全局 scriptData。 */
   function makeOldEditorAdapter(g) {
     g = g || global;
+    // S5 · 文件身份（CC session↔cwd 对照）：旧编辑器一页一剧本·无库可切，openFile 仅同键命中。
+    function _fileKey() { try { var sc = g.scriptData; return 'file:' + String((sc && (sc.id || sc.name)) || 'default'); } catch (e) { return 'file:default'; } }
     return {
       id: 'legacy-editor',
       label: '剧本编辑器',
       isAvailable: function() { return typeof g.scriptData !== 'undefined' && g.scriptData && typeof g.saveScript === 'function'; },
       getScenario: function() { return g.scriptData; },
+      getFileKey: _fileKey,
+      getFileLabel: function() { try { var sc = g.scriptData; return String((sc && sc.name) || '当前剧本'); } catch (e) { return '当前剧本'; } },
+      openFile: function(key) { return Promise.resolve(String(key || '') === _fileKey()); },
       getContext: function() { return ''; },   // 旧编辑器 state 结构不同·暂不提供焦点上下文
       commit: function(draft) {
         var sd = g.scriptData;
@@ -2447,11 +3211,35 @@
   function makeResetEditorAdapter(g) {
     g = g || global;
     function app() { return g.TM_SCENARIO_EDITOR_RESET_APP; }
+    // S5 · 文件身份（CC session↔cwd 对照）：入库案卷用 proj:<案卷id>（改名不漂移·可按键重开）；
+    //   未入库/官方直载的用 name:<剧本名>（弱键·只有恰好还开着才命中）。
+    function _fileKey() {
+      try {
+        var a = app(), st = a && a.state;
+        if (st && st.currentProjectId) return 'proj:' + String(st.currentProjectId);
+        var sc = st && st.scenario;
+        return 'name:' + String((sc && sc.name) || '未命名剧本');
+      } catch (e) { return 'name:未命名剧本'; }
+    }
     return {
       id: 'scenario-editor-reset',
       label: '剧本编辑器（新）',
       isAvailable: function() { var a = app(); return !!(a && a.state && typeof a.applyImportedScenario === 'function'); },
       getScenario: function() { return app().state.scenario; },
+      getFileKey: _fileKey,
+      getFileLabel: function() { try { var sc = app().state.scenario; return String((sc && sc.name) || '未命名剧本'); } catch (e) { return '未命名剧本'; } },
+      // 会话切剧本（CC resume 切项目对照）：proj: 键走案卷库真载入；载不到（已删/库不可用）返回 false 交 UI 降级只读。
+      openFile: function(key) {
+        key = String(key || '');
+        if (key === _fileKey()) return Promise.resolve(true);
+        if (/^proj:/.test(key)) {
+          var a = app();
+          if (!a || typeof a.loadProjectSnapshot !== 'function') return Promise.resolve(false);
+          try { return Promise.resolve(a.loadProjectSnapshot(key.slice(5))).then(function(snap) { return !!snap; }).catch(function() { return false; }); }
+          catch (e) { return Promise.resolve(false); }
+        }
+        return Promise.resolve(false);
+      },
       // 上下文感知（像 Claude code 知道你打开的文件）：读编辑器当前焦点——模块/集合/选中实体。
       getContext: function() {
         try {
@@ -2507,12 +3295,23 @@
     loadConventions: loadConventions,
     saveConventions: saveConventions,
     callWithTools: callWithTools,
+    // CC 对照三件套（2026-07-03）：记忆/技能/能力包——启停装卸=玩家权限走此 API(非 agent 工具)
+    memories: { list: _loadMemories, save: saveMemoryEntry, remove: deleteMemory, recall: _recallMemories },
+    skills: { list: listAllSkills, save: saveSkillEntry, remove: deleteSkill, builtin: BUILTIN_SKILLS },
+    packs: { list: listPacks, setEnabled: setPackEnabled, importJSON: importPackJSON, exportJSON: exportPackJSON, remove: removePack },
     testConnection: testConnection,
     abort: abort,
+    steer: steer,   // 刀G9 · 运行中插话(排队·下一轮注入·无活跃运行返回 false)
     estimateRun: estimateRun,
     AGENT_TOOLS: AGENT_TOOLS,
     dispatchTool: dispatchTool,
     _compactOldToolResults: _compactOldToolResults,
+    _compactTailSlice: _compactTailSlice,   // 刀G8 · 宏压缩尾部切片(smoke)
+    _flattenForSummary: _flattenForSummary,   // 刀G8 · 摘要请求拍平(smoke)
+    _OVERFLOW_RE: _OVERFLOW_RE,   // 刀G8 · 超限文案识别(smoke)
+    _parseOpenAI: _parseOpenAI, _parseAnthropic: _parseAnthropic, _parseGemini: _parseGemini,   // 刀H1 · 截断 surfacing(smoke)
+    _toOpenAI: _toOpenAI, _toAnthropic: _toAnthropic, _toGemini: _toGemini,   // S2 · 多模态映射(smoke)
+    compactConversation: compactConversation,   // S10 · 手动前情压缩(Codex·CC /compact 对照)
     computeGaps: _computeGaps,
     preflight: preflight,
     ensureCharFactionId: ensureCharFactionId,

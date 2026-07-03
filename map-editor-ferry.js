@@ -339,7 +339,7 @@
       var sel = EDITOR.selectedFeature;
       if (sel && sel.kind === 'ferry' && sel.id === f.id){
         ctx.lineWidth = 4 / z;
-        ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+        ctx.strokeStyle = 'rgba(217,181,102,0.5)';
         ctx.beginPath();
         ctx.moveTo(f.p1[0], f.p1[1]);
         ctx.lineTo(f.p2[0], f.p2[1]);

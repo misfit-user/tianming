@@ -334,7 +334,7 @@
       <div style="border:1px solid #3a3530; border-radius:4px; padding:10px; margin-bottom:10px;">\
         <div style="color:#c9a96e; margin-bottom:6px;">扰直边 (irregularize)</div>\
         <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; font-size:11px;">\
-          <span>每边概率</span><input id="pp-chance" type="range" min="0" max="100" value="40" style="accent-color:#ffd700;" />\
+          <span>每边概率</span><input id="pp-chance" type="range" min="0" max="100" value="40" style="accent-color:#d9b566;" />\
           <span>每边插点</span><select id="pp-subdiv" style="background:#26262d; border:1px solid #3a3530; color:#e8ddc8; padding:4px 8px; border-radius:3px; font-family:inherit;"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>\
           <span>最大扰幅 (px)</span><input id="pp-maxOff" type="number" value="6" style="background:#26262d; border:1px solid #3a3530; color:#e8ddc8; padding:4px 8px; border-radius:3px; font-family:inherit;" />\
           <span>仅 axis-aligned</span><input id="pp-onlyAxis" type="checkbox" />\

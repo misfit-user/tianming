@@ -21,20 +21,20 @@
   --ink-4:#2f2922;   /* hover·焦灯 */
   --ink-5:#3a322a;   /* active border·火苗 */
 
-  /* 纸 paper·前景层·古纸色调 */
-  --paper-0:#f5e8c8;  /* highest contrast·白霜 */
-  --paper-1:#d8c8a0;  /* default text·茧黄 */
-  --paper-2:#a89878;  /* secondary·土黄 */
-  --paper-3:#7a6c52;  /* tertiary·烟 */
-  --paper-4:#4d4538;  /* disabled·朽 */
+  /* 纸 paper·前景层·暖灰纸 (玄墨对齐·2026-07-03·去琥珀·随国师/工坊暖墨系) */
+  --paper-0:#f0e9d9;  /* highest contrast·白霜 */
+  --paper-1:#d6ccb6;  /* default text·茧色 */
+  --paper-2:#a89d89;  /* secondary·土 */
+  --paper-3:#7d7361;  /* tertiary·烟 */
+  --paper-4:#4f483c;  /* disabled·朽 */
 
-  /* 金 gold·主 accent·primary action */
-  --gold-0:#fff3a8;   /* highlight */
-  --gold-1:#ffd700;   /* default·正 */
-  --gold-2:#c9a96e;   /* muted·副 */
-  --gold-3:#8b7355;   /* deep·深 */
-  --gold-4:#5a4a25;   /* tint bg */
-  --gold-5:#3a2f10;   /* dark fill */
+  /* 金 gold·主 accent·鎏金 (玄墨对齐·纯街机金退役·锚工坊鎏金#b89a53族) */
+  --gold-0:#f2dfa8;   /* highlight */
+  --gold-1:#d9b566;   /* default·正 */
+  --gold-2:#b89a53;   /* muted·副 */
+  --gold-3:#8a6f42;   /* deep·深 */
+  --gold-4:#4a3d20;   /* tint bg */
+  --gold-5:#322a12;   /* dark fill */
 
   /* 朱 vermilion·warning / danger·主帝色 */
   --vmln-0:#ff8a78;   /* light */
@@ -104,7 +104,7 @@
   --sh-1:0 1px 2px rgba(0,0,0,0.45);
   --sh-2:0 4px 10px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.3);
   --sh-3:0 12px 32px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4);
-  --sh-glow:0 0 0 1px var(--gold-1), 0 0 14px rgba(255,215,0,0.35);
+  --sh-glow:0 0 0 1px var(--gold-1), 0 0 14px rgba(217,181,102,0.3);
   --sh-inset:inset 0 1px 0 rgba(255,255,255,0.04);
 
   /* z-index 层 */
@@ -257,7 +257,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background:linear-gradient(180deg, var(--gold-5), var(--gold-4));
   border-color:var(--gold-1);
   color:var(--gold-0);
-  box-shadow:var(--sh-inset), 0 0 12px rgba(255,215,0,0.18);
+  box-shadow:var(--sh-inset), 0 0 12px rgba(217,181,102,0.16);
 }
 .me-tool.active .me-tk{ color:var(--gold-1); }
 .me-tool.disabled{ opacity:0.35; cursor:not-allowed; pointer-events:none; }
@@ -742,7 +742,7 @@ textarea{
 .me-perm-row input[type=text]{ font-size:var(--fs-xxs); padding:3px 5px; margin-top:3px; }
 
 .me-batch-section{
-  background:rgba(255,215,0,0.045);
+  background:rgba(217,181,102,0.05);
   border:1px solid var(--gold-4);
   border-radius:var(--rd-3);
   padding:var(--sp-3);
@@ -1277,7 +1277,7 @@ textarea{
 .me-dtab.active{
   color:var(--gold-1);
   border-bottom-color:var(--gold-1);
-  background:linear-gradient(180deg, transparent 60%, rgba(255,215,0,0.04));
+  background:linear-gradient(180deg, transparent 60%, rgba(217,181,102,0.05));
 }
 
 .me-drawer-body{
@@ -1405,6 +1405,38 @@ textarea{
   white-space:nowrap; border:0;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   玄墨舆图·家族对齐终局层 (2026-07-03·追加段·回滚 = 删本段)
+   与国师玄墨面板 / 工坊玄墨案头同宗：鎏金克制·家族字体·题匾质感
+   ════════════════════════════════════════════════════════════════ */
+@font-face{
+  font-family:"ME-XiaoWei";
+  src:url("assets/fonts/ZCOOLXiaoWei-Regular.ttf") format("truetype");
+  font-display:swap;
+}
+@font-face{
+  font-family:"ME-MaShanZheng";
+  src:url("assets/fonts/MaShanZheng-Regular.ttf") format("truetype");
+  font-display:swap;
+}
+/* 题匾·家族显示字 */
+.me-brand-text{
+  font-family:"ME-XiaoWei", var(--font-serif);
+  font-size:var(--fs-lg);
+  letter-spacing:0.1em;
+  color:var(--gold-2);
+}
+.me-brand-seal{ font-family:"ME-MaShanZheng", var(--font-seal); }
+/* 弹窗题·抽屉 tab·空态题 同字 */
+.me-modal-title, .me-empty-title{ font-family:"ME-XiaoWei", var(--font-serif); letter-spacing:0.08em; }
+.me-dtab{ font-family:"ME-XiaoWei", var(--font-serif); letter-spacing:0.12em; }
+/* 顶栏菜单·分组隔线 */
+.me-msep{
+  width:1px; height:18px; flex:none;
+  background:linear-gradient(180deg, transparent, var(--bd-1) 25%, var(--bd-1) 75%, transparent);
+  margin:0 var(--sp-1);
+}
+
 /* Phase 23.8·玩家显模式·隐编辑栏 */
 body.me-player-mode .me-title-menu,
 body.me-player-mode .me-rail-l,
@@ -1434,12 +1466,15 @@ body.me-player-mode #map-canvas {
 
     <div class="me-title-menu" id="title-menu">
       <button class="me-mbtn" id="btn-new">新建</button>
+      <span class="me-msep"></span>
       <button class="me-mbtn" id="btn-import-bitmap">载图</button>
       <button class="me-mbtn" id="btn-clear-bitmap" title="清空底图·polygon / 字注 / 等保留·绘制完成后用">清底</button>
       <button class="me-mbtn" id="btn-reset-bitmap-xform" title="重置底图变换·位置 / 缩放 / 旋转回 identity">底归位</button>
       <button class="me-mbtn" id="btn-rotate-bitmap" title="设底图旋角·度数·正 = 顺时针 (X 工具下 Shift+滚轮也可旋·Ctrl+Shift 微调)">底旋</button>
+      <span class="me-msep"></span>
       <button class="me-mbtn" id="btn-import-json" title="JSON / GeoJSON·自动识别">载剧</button>
       <button class="me-mbtn" id="btn-import-shp" title="Shapefile (.shp)·真实 GIS 数据·自动 lon/lat 投影 + 抽稀">载形</button>
+      <span class="me-msep"></span>
       <button class="me-mbtn" id="btn-export-json" title="导出当前剧本">导出</button>
       <select class="me-tb-select" id="export-format" title="导出格式">
         <option value="json">JSON (本编辑器)</option>

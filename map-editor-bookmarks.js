@@ -165,7 +165,7 @@
         'font-family:var(--font-serif)',
         'font-size:var(--fs-xs)',
         'font-weight:var(--fw-sb)',
-        'box-shadow:' + (active ? '0 0 8px rgba(255,215,0,0.4)' : '0 1px 3px rgba(0,0,0,0.4)'),
+        'box-shadow:' + (active ? '0 0 8px rgba(217,181,102,0.4)' : '0 1px 3px rgba(0,0,0,0.4)'),
         'transition:all var(--t-fast)',
         'user-select:none',
         'position:relative'

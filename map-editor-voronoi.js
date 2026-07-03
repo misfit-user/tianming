@@ -256,7 +256,7 @@
         var hue = (i * 137) % 360;
         ctx.fillStyle = 'hsla(' + hue + ',45%,40%,0.25)';
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,215,0,0.4)';
+        ctx.strokeStyle = 'rgba(217,181,102,0.4)';
         ctx.lineWidth = 1 / camera.zoom;
         ctx.stroke();
       });
@@ -269,10 +269,10 @@
       ctx.fillStyle = '#dc4f3a';
       ctx.fill();
       ctx.lineWidth = 1.5 / camera.zoom;
-      ctx.strokeStyle = '#ffd700';
+      ctx.strokeStyle = '#d9b566';
       ctx.stroke();
       ctx.font = (10 / camera.zoom) + 'px Menlo, monospace';
-      ctx.fillStyle = '#ffd700';
+      ctx.fillStyle = '#d9b566';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillText(String(i + 1), s[0], s[1] + 6 / camera.zoom);
@@ -306,7 +306,7 @@
       \
       <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 10px; margin-bottom:14px; align-items:center;">\
         <span style="font-size:11px; color:#6a6560;">Lloyd 松弛</span>\
-        <input type="range" id="vor-lloyd" min="0" max="20" step="1" value="5" style="accent-color:#ffd700;" />\
+        <input type="range" id="vor-lloyd" min="0" max="20" step="1" value="5" style="accent-color:#d9b566;" />\
         <span style="font-size:11px; color:#6a6560;">·</span>\
         <span style="font-size:10px; color:#a8a098;"><b id="vor-lloyd-val">5</b> iter·0=无松·5 中等·20=极均</span>\
         <span style="font-size:11px; color:#6a6560;">导入策略</span>\

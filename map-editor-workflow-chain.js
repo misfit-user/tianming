@@ -137,7 +137,7 @@
       'background:linear-gradient(180deg, var(--ink-3), var(--ink-2))',
       'border:1px solid var(--gold-3)',
       'border-radius:var(--rd-3)',
-      'box-shadow:0 6px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.1)',
+      'box-shadow:0 6px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(217,181,102,0.1)',
       'padding:var(--sp-3) var(--sp-4)',
       'z-index:900',
       'display:none',
@@ -153,8 +153,9 @@
     if (!chain){ console.warn('[workflow-chain] unknown', chainId); return; }
     _activeChain = chain;
     _stepIdx = 0;
+    ensureBar(); /* 须先建 bar 再 render·首次 _bar 为 null 时 render 早退→空壳 bar */
     render();
-    ensureBar().style.display = 'block';
+    _bar.style.display = 'block';
   }
 
   function startVoronoiPolish(){ start('voronoiPolish'); }

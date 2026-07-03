@@ -35,7 +35,7 @@
       <div style="font-size:13px; color:#c9a96e; margin-bottom:8px;">自动识省进行中</div>\
       <div id="bm-progress-msg" style="font-size:11px; color:#a8a098; margin-bottom:8px;">准备...</div>\
       <div style="height:6px; background:#26262d; border-radius:3px; overflow:hidden;">\
-        <div id="bm-progress-bar" style="height:100%; background:linear-gradient(90deg,#c9a96e,#ffd700); width:0%; transition:width 0.2s;"></div>\
+        <div id="bm-progress-bar" style="height:100%; background:linear-gradient(90deg,#c9a96e,#d9b566); width:0%; transition:width 0.2s;"></div>\
       </div>\
       <div style="display:flex; gap:8px; margin-top:10px;">\
         <button class="me-btn me-btn-danger" id="bm-cancel" style="margin-left:auto;">取消</button>\

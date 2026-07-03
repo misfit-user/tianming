@@ -727,7 +727,7 @@
       fillMainWithHoles(ctx, mainPoly, holes, fillColor);
 
       var mainW   = (isSelected ? 2.5 : 1.2) / z;
-      var mainCol = isSelected ? '#ffd700' : (isHover ? '#fff7c2' : '#3a3530');
+      var mainCol = isSelected ? '#d9b566' : (isHover ? '#efdfb2' : '#3a3530');
       var holeW   = 1.5 / z;
       var holeCol = isSelected ? '#dc4f3a' : '#5a3a30';
       var holeDash = [2 / z, 2 / z];
@@ -925,7 +925,7 @@
       sel.forEach(function(d){
         var rings = getAllRings(d);
         rings.forEach(function(ring){
-          var color = ring.kind === 'main' ? '#ffd700' :
+          var color = ring.kind === 'main' ? '#d9b566' :
                       ring.kind === 'extra' ? '#e08020' :
                       '#dc4f3a';  // hole
           for (var i = 0; i < ring.points.length; i++){
@@ -955,7 +955,7 @@
               ctx.beginPath();
               ctx.arc(p[0], p[1], r + 4 / z, 0, Math.PI * 2);
               ctx.lineWidth = 1.5 / z;
-              ctx.strokeStyle = 'rgba(255,215,0,0.7)';
+              ctx.strokeStyle = 'rgba(217,181,102,0.7)';
               ctx.stroke();
             }
           }
@@ -996,11 +996,11 @@
           for (var _k = 1; _k < _rg.length; _k++){ ctx.lineTo(_rg[_k][0], _rg[_k][1]); }
           ctx.closePath();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = 'rgba(255,215,0,0.07)';
+          ctx.fillStyle = 'rgba(217,181,102,0.07)';
           ctx.fill();
           ctx.lineWidth = 3 / _pz;
-          ctx.strokeStyle = 'rgba(255,215,0,0.95)';
-          ctx.shadowColor = 'rgba(255,215,0,0.85)';
+          ctx.strokeStyle = 'rgba(217,181,102,0.95)';
+          ctx.shadowColor = 'rgba(217,181,102,0.85)';
           ctx.shadowBlur = 12 / _pz;
           ctx.stroke();
         });
@@ -1181,7 +1181,7 @@
       } else if (n === 2){
         r = 4 / z; fill = '#c9a96e'; stroke = '#1a1a1f';
       } else {
-        r = 5.5 / z; fill = '#ffd700'; stroke = '#3a2f10';
+        r = 5.5 / z; fill = '#d9b566'; stroke = '#3a2f10';
       }
       ctx.beginPath();
       ctx.arc(v[0], v[1], r, 0, Math.PI * 2);

@@ -306,7 +306,7 @@ function showRecognitionProgress(message, progress) {
 
     overlay.innerHTML = `
         <div style="text-align: center; color: #e0e0e0;">
-            <div style="width: 60px; height: 60px; border: 4px solid #333; border-top-color: #ffd700; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <div style="width: 60px; height: 60px; border: 4px solid #333; border-top-color: #d9b566; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
             <div style="font-size: 18px; margin-bottom: 10px;">${message}</div>
             ${progress !== undefined ? `<div style="font-size: 14px; color: #aaa;">${progress}%</div>` : ''}
         </div>

@@ -49,7 +49,7 @@
       'background:linear-gradient(180deg, var(--ink-3), var(--ink-2))',
       'border:1px solid var(--gold-3)',
       'border-radius:var(--rd-3)',
-      'box-shadow:0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,215,0,0.1)',
+      'box-shadow:0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(217,181,102,0.1)',
       'padding:var(--sp-5)',
       'color:var(--paper-1)'
     ].join(';');
@@ -64,7 +64,7 @@
     barWrap.style.cssText = 'position:relative; height:14px; background:var(--ink-1); border:1px solid var(--bd-1); border-radius:var(--rd-2); overflow:hidden; margin-bottom:var(--sp-2);';
 
     _bar = document.createElement('div');
-    _bar.style.cssText = 'height:100%; width:0%; background:linear-gradient(90deg, var(--gold-3), var(--gold-1)); transition:width 0.18s ease-out; box-shadow:0 0 8px rgba(255,215,0,0.4);';
+    _bar.style.cssText = 'height:100%; width:0%; background:linear-gradient(90deg, var(--gold-3), var(--gold-1)); transition:width 0.18s ease-out; box-shadow:0 0 8px rgba(217,181,102,0.4);';
     barWrap.appendChild(_bar);
 
     _pctEl = document.createElement('div');

@@ -53,10 +53,10 @@
           ctx.strokeStyle = 'rgba(181,58,44,' + (0.85 + pulse * 0.15) + ')';
           ctx.stroke();
         } else {
-          ctx.shadowColor = '#ffd700';
+          ctx.shadowColor = '#d9b566';
           ctx.shadowBlur = 12 + pulse * 8;
           ctx.lineWidth = (3 + pulse * 1.5) / z;
-          ctx.strokeStyle = 'rgba(255,215,0,' + (0.85 + pulse * 0.15) + ')';
+          ctx.strokeStyle = 'rgba(217,181,102,' + (0.85 + pulse * 0.15) + ')';
           ctx.stroke();
         }
       } else if (isHov){

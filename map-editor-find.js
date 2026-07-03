@@ -35,7 +35,7 @@
       'background:linear-gradient(180deg, var(--ink-3), var(--ink-2))',
       'border:1px solid var(--gold-3)',
       'border-radius:var(--rd-3)',
-      'box-shadow:0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,215,0,0.1)',
+      'box-shadow:0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(217,181,102,0.1)',
       'z-index:1000',
       'display:none',
       'font-family:var(--font-serif)',

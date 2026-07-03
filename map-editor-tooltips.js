@@ -93,7 +93,7 @@
       'border-radius:var(--rd-2)',
       'padding:8px 12px',
       'max-width:320px',
-      'box-shadow:0 4px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,215,0,0.08)',
+      'box-shadow:0 4px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(217,181,102,0.08)',
       'font-family:var(--font-serif)',
       'font-size:var(--fs-xs)',
       'color:var(--paper-1)',

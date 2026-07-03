@@ -289,12 +289,12 @@
       var sel = ME.EDITOR.selectedFeature;
       if (sel && sel.kind === 'road' && sel.id === r.id){
         ctx.lineWidth = t.width + 4 / z;
-        ctx.strokeStyle = 'rgba(255,215,0,0.6)';
+        ctx.strokeStyle = 'rgba(217,181,102,0.6)';
         ctx.stroke();
         r.points.forEach(function(p){
           ctx.beginPath();
           ctx.arc(p[0], p[1], 4 / z, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffd700';
+          ctx.fillStyle = '#d9b566';
           ctx.fill();
           ctx.lineWidth = 1 / z;
           ctx.strokeStyle = '#1a1a1f';

@@ -201,7 +201,7 @@
         ctx.beginPath();
         ctx.arc(s.x, s.y, r + 2 / z, 0, Math.PI * 2);
         ctx.lineWidth = 1.5 / z;
-        ctx.strokeStyle = '#ffd700';
+        ctx.strokeStyle = '#d9b566';
         ctx.stroke();
       }
       if (s.tier >= 3){
@@ -226,7 +226,7 @@
         ctx.beginPath();
         ctx.arc(s.x, s.y, r + 5 / z, 0, Math.PI * 2);
         ctx.lineWidth = 2 / z;
-        ctx.strokeStyle = '#ffd700';
+        ctx.strokeStyle = '#d9b566';
         ctx.stroke();
       }
 

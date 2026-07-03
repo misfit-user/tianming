@@ -23,6 +23,16 @@
 
   var AA = global.TM && global.TM.AuthoringAgent;
   var PANEL_ID = 'tm-aa-panel';
+  /* 字体基址按脚本自身位置解析（须在顶层求值·injectStyles 运行时 currentScript 已是 null）：
+     宿主页面可能在子目录（剧本工坊 preview/），页面相对 "assets/fonts/…" 会 404 → 面板字体一直在回退。
+     editor.html 在根目录引用，脚本相对 == 页面相对，行为不变；无 src（内联）时回退旧相对路径。 */
+  var FONT_BASE = (function () {
+    try {
+      var s = document.currentScript;
+      var src = s && s.src ? String(s.src) : '';
+      return src ? src.replace(/[^\/]*(?:[?#].*)?$/, '') : '';
+    } catch (e) { return ''; }
+  })();
   var ui = { adapter: null, draft: null, running: false, els: null, _checkpoints: [], _ckptSeq: 0 };
   var MAX_CKPT = 15;   // 方向G · 检查点栈上限（session 内存态·满则淘汰最旧）
 
@@ -353,6 +363,7 @@
     if (!cands.length) { _hideAtPop(); return; }
     ui._atActive = true; ui._atRange = at;
     ui.els.atpop.hidden = false;
+    _popPlace(ui.els.atpop);   // composer 在面板上部时翻到下方（否则飞出面板顶）
     ui.els.atpop.innerHTML = cands.map(function (c) { return '<button type="button" class="tm-aa-atitem" data-label="' + esc(c.label) + '"><span class="tm-aa-atkind">' + esc(c.kind) + '</span>' + esc(c.label) + '</button>'; }).join('');
   }
   function _selectMention(label) {
@@ -370,9 +381,10 @@
       if (ev.key === 'Escape' && ui._atActive) { ev.stopPropagation(); _hideAtPop(); return; }
       // Enter 发送 · Shift+Enter 换行（输入法合成中 / @提及浮层激活时不触发；Ctrl/⌘+Enter 亦发送）
       var _isEnter = (ev.key === 'Enter' || ev.keyCode === 13);
-      if (_isEnter && !ev.isComposing && !ui._atActive && (!ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+      if (_isEnter && !ev.isComposing && !ui._atActive && !ui._cmdActive && (!ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
         ev.preventDefault();
         if (!ui.running && typeof onGoClick === 'function') onGoClick();
+        else if (ui.running && typeof onSteer === 'function') onSteer();   // 刀G9 · 运行中回车=插话(排队注入下一轮·不打断)
       }
     });
     if (ui.els.atpop) ui.els.atpop.addEventListener('mousedown', function (ev) { var b = ev.target && ev.target.closest ? ev.target.closest('.tm-aa-atitem') : null; if (b) { ev.preventDefault(); _selectMention(b.getAttribute('data-label')); } });
@@ -409,181 +421,395 @@
     _refreshCtxChip();
   }
 
+  // ── 单色描边 SVG 图标集（去 emoji·随 currentColor 融入双主题） ──
+  var _ICON_PATHS = {
+    bars: '<path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>',
+    contrast: '<circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11"/>',
+    pen: '<path d="M9.6 3.4l3 3L6.2 12.8 3 13l.2-3.2z"/>',
+    expand: '<path d="M6 3H3v3M10 3h3v3M3 10v3h3M13 10v3h-3"/>',
+    restore: '<path d="M5.5 3v2.5H3M10.5 3v2.5H13M3 10.5h2.5V13M13 10.5h-2.5V13"/>',
+    close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+    pulse: '<path d="M2 8.5h2.6L6.6 4l2.6 8 1.6-3.5H14"/>',
+    search: '<circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2l3.2 3.2"/>',
+    chat: '<path d="M3 4.5h10V11H8.2L5 13.5V11H3z"/>',
+    book: '<path d="M8 4c-1.2-.9-3.2-1-5-.4V12c1.8-.6 3.8-.5 5 .4 1.2-.9 3.2-1 5-.4V3.6C11.2 3 9.2 3.1 8 4z"/><path d="M8 4v8.4"/>',
+    route: '<circle cx="4.5" cy="4" r="1.7"/><circle cx="11.5" cy="12" r="1.7"/><path d="M4.5 5.7V8a3 3 0 0 0 3 3h2.3"/>',
+    scale: '<path d="M8 3v10M4.5 5h7M4.5 5 3 8.2a1.9 1.9 0 0 0 3 0zM11.5 5 10 8.2a1.9 1.9 0 0 0 3 0z"/>',
+    save: '<path d="M3.5 3.5h7l2 2v7h-9z"/><path d="M5.5 3.5V7h5V3.5M5.5 12.5V9.5h5v3"/>',
+    image: '<rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><path d="m4.5 10.5 2.5-3 2 2.2L11 7l2.5 3.5"/><circle cx="6" cy="6.2" r="1"/>',
+    undo: '<path d="M4.5 6.5H10a3 3 0 0 1 0 6H7"/><path d="M6.8 4 4.5 6.5 6.8 9"/>',
+    check: '<path d="M3 8.5 6.5 12 13 4.5"/>',
+    clip: '<path d="M12.4 7.6 7.8 12.2a3.1 3.1 0 0 1-4.4-4.4l5.2-5.2a2.1 2.1 0 0 1 3 3L6.4 10.8a1.05 1.05 0 0 1-1.5-1.5l4.3-4.3"/>'
+  };
+  // 工作过程 · 步骤行的工具类别图标（写/读/校/记/完成）
+  var _TOOL_ICON = {
+    applyEdit: 'pen', applyPush: 'pen', multiEdit: 'pen', bulkAdd: 'pen', renameEntity: 'pen', removeEntity: 'pen', mapAssignOwner: 'pen', renameRegion: 'pen',
+    getField: 'search', getFields: 'search', searchEntities: 'search', globalSearch: 'search', findReferences: 'search', listCollection: 'search', describeSchema: 'search', listGaps: 'search', readSource: 'search', grepSource: 'search', listSource: 'search', mapOverview: 'search', genReference: 'search', checkHistory: 'search', fieldContract: 'search',
+    validateDraft: 'pulse', preflight: 'pulse', generateImage: 'image',
+    note: 'book', todoWrite: 'book', recordConvention: 'book', flagUncertain: 'book', steer: 'chat', macroCompact: 'undo',
+    finish: 'check'
+  };
+  function _icon(name) {
+    return '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (_ICON_PATHS[name] || '') + '</svg>';
+  }
+
   function injectStyles() {
     if (document.getElementById('tm-aa-style')) return;
     var css = [
-      // 世界类型选择器（史实/虚构）
-      '#tm-aa-worldkind{display:flex;align-items:center;gap:6px;margin:0 0 6px;font-size:11px;color:#b8b4a6}',
-      '#tm-aa-worldkind .tm-aa-wk-lab{opacity:.75;letter-spacing:.05em}',
-      '#tm-aa-worldkind .tm-aa-wk-opt{background:#34322d;color:#b8b4a6;border:1px solid #46433c;border-radius:11px;padding:2px 11px;font-size:11px;cursor:pointer;font-family:inherit;line-height:1.5}',
-      '#tm-aa-worldkind .tm-aa-wk-opt:hover{background:#3c3933;color:#ecebe2}',
-      '#tm-aa-worldkind .tm-aa-wk-opt.on{background:#d97757;color:#fff;border-color:#d97757}',
-      '#tm-aa-fab{position:fixed;right:18px;bottom:18px;z-index:99998;background:#d97757;color:#fff;border:none;',
-      'border-radius:24px;padding:10px 16px;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);font-family:inherit}',
-      '#tm-aa-fab:hover{background:#e08a6b}',
-      '#' + PANEL_ID + '{position:fixed;right:18px;bottom:64px;z-index:99999;width:380px;max-width:calc(100vw - 36px);',
-      'height:78vh;display:none;flex-direction:column;background:#2a2926;color:#ecebe2;border:1px solid #3c3933;',
-      'border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.5);font-family:inherit;font-size:13px;overflow:hidden}',
-      '#' + PANEL_ID + '.open{display:flex}',
-      '#tm-aa-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#34322d;border-bottom:1px solid #3c3933}',
+      // ── 自带美术字体（editor.html 未链主 styles.css·面板自声明 @font-face·同名文件随游戏分发）──
+      //    站酷小薇=文艺宋体风(显示+回复正文·SIL OFL)·马善政=毛笔楷(朱印「师」)。Windows 无思源宋时不再砸到 SimSun 锯齿。
+      '@font-face{font-family:"GS-XiaoWei";src:url("' + FONT_BASE + 'assets/fonts/ZCOOLXiaoWei-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}',
+      '@font-face{font-family:"GS-MaShanZheng";src:url("' + FONT_BASE + 'assets/fonts/MaShanZheng-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}',
+      // 面板域内钉死盒模型与表单字体继承（宿主 editor.html 有 *{box-sizing:border-box}·此处显式声明保证任何宿主下渲染一致）
+      '#' + PANEL_ID + ',#' + PANEL_ID + ' *,#' + PANEL_ID + ' *::before,#' + PANEL_ID + ' *::after{box-sizing:border-box}',
+      '#' + PANEL_ID + ' button,#' + PANEL_ID + ' input,#' + PANEL_ID + ' textarea{font-family:inherit;font-size:inherit;line-height:inherit}',
+      '#tm-aa-fab,#tm-aa-fab *{box-sizing:border-box}',
+      // ── 主题变量（调研自 claude.ai 真 token：珊瑚 #cc785c/激活 #a9583e·画布 #faf9f5·暗面 #181715/#1f1e1b·发丝线 #e6dfd8·墨 #141413）──
+      '#' + PANEL_ID + '{--bg:#262624;--surface:#30302e;--sunken:#1f1e1b;--code:#181715;--bubble:#3a3833;',
+      '--bd:rgba(250,249,245,.08);--bd2:rgba(250,249,245,.16);--ink:#faf9f5;--tx:#f0eee6;--tx2:#a09d96;--tx3:#807d75;',
+      '--ac:#cc785c;--ac-hi:#dd8a6e;--ok:#72c88a;--warn:#d9ad4b;--bad:#e07a72;--danger:#c64545;',
+      '--serif:"GS-XiaoWei","TM-ZCOOL-XiaoWei","Noto Serif SC","Source Han Serif SC","KaiTi","楷体",Georgia,serif;',   // 自带小薇打头·思源宋次之·再退楷体(CN Windows 预装·远优于 SimSun)
+      '--seal:"GS-MaShanZheng","TM-MaShanZheng","KaiTi","楷体",var(--serif);',   // 朱印「师」=毛笔楷
+      '--mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;',
+      '--shadow:0 18px 60px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.35)}',
+      '#' + PANEL_ID + '[data-theme="light"]{--bg:#faf9f5;--surface:#fdfdfb;--sunken:#f5f0e8;--code:#f5f0e8;--bubble:#efe9de;',
+      '--bd:#ebe6df;--bd2:#e6dfd8;--ink:#141413;--tx:#3d3d3a;--tx2:#6c6a64;--tx3:#8e8b82;',
+      '--ac:#cc785c;--ac-hi:#a9583e;--ok:#3f9e58;--warn:#a67c12;--bad:#c64545;--danger:#c64545;',
+      '--shadow:0 18px 60px rgba(60,50,35,.18),0 2px 10px rgba(60,50,35,.10)}',
+      // 世界类型选择器（史实/虚构·标签隐于气泡提示·药丸自明）
+      '#tm-aa-worldkind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3)}',
+      '#tm-aa-worldkind .tm-aa-wk-lab{display:none}',
+      '#tm-aa-worldkind .tm-aa-wk-opt{background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:2px 11px;font-size:11px;cursor:pointer;font-family:inherit;line-height:1.5;transition:background .12s,color .12s,border-color .12s}',
+      '#tm-aa-worldkind .tm-aa-wk-opt:hover{background:var(--surface);color:var(--tx)}',
+      '#tm-aa-worldkind .tm-aa-wk-opt.on{background:var(--ac);color:#fff;border-color:var(--ac)}',
+      // 呼出按钮（朱印徽记 + 文字）
+      '#tm-aa-fab{position:fixed;right:18px;bottom:18px;z-index:99998;display:inline-flex;align-items:center;gap:8px;background:#2f2d2a;color:#f0eee6;border:1px solid rgba(255,255,255,.14);',
+      'border-radius:999px;padding:8px 16px 8px 9px;font-size:13px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);font-family:inherit;letter-spacing:.06em;transition:transform .12s,box-shadow .12s,background .12s,border-color .12s}',
+      '#tm-aa-fab:hover{background:#3a3833;border-color:rgba(217,119,87,.6);transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.4)}',
+      '#tm-aa-fab .fab-seal{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:linear-gradient(140deg,#cc785c,#a9583e);color:#fff;font-family:"GS-MaShanZheng","TM-MaShanZheng","KaiTi","楷体",serif;font-weight:400;font-size:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}',
+      // 面板窗体（应用级窗口感·开场淡入）
+      '#' + PANEL_ID + '{position:fixed;right:18px;bottom:64px;z-index:99999;width:560px;max-width:calc(100vw - 36px);',
+      'height:86vh;display:none;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd2);',
+      'border-radius:16px;box-shadow:var(--shadow);font-family:-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;overflow:hidden}',
+      '#' + PANEL_ID + '.open{display:flex;animation:tm-aa-in .18s ease-out}',
+      '@keyframes tm-aa-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}',
+      '#' + PANEL_ID + ' ::-webkit-scrollbar{width:8px;height:8px}',
+      '#' + PANEL_ID + ' ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px;border:2px solid transparent;background-clip:content-box}',
+      '#' + PANEL_ID + ' ::-webkit-scrollbar-track{background:transparent}',
+      // 顶栏（纤薄·同底色·发丝线）
+      '#tm-aa-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 9px 14px;background:var(--bg);border-bottom:1px solid var(--bd);flex:0 0 auto}',
+      '#tm-aa-hd .tm-aa-hdbtns{display:flex;align-items:center;gap:2px}',
       '.tm-aa-resize{position:absolute;left:0;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:5}.tm-aa-resize:hover{background:rgba(217,119,87,.3)}',
-      '.tm-aa-search{position:sticky;top:-10px;z-index:6;display:flex;align-items:center;gap:4px;margin:-4px -2px 2px;padding:4px 6px;background:#1f1d1a;border:1px solid #3c3933;border-radius:7px}',
+      '.tm-aa-search{position:sticky;top:-10px;z-index:6;display:flex;align-items:center;gap:4px;margin:-4px -2px 2px;padding:4px 6px;background:var(--sunken);border:1px solid var(--bd);border-radius:9px}',
       '.tm-aa-search[hidden]{display:none}',
-      '.tm-aa-search input{flex:1;min-width:0;background:#181613;color:#ecebe2;border:1px solid #322f2a;border-radius:5px;padding:3px 6px;font-size:11px;font-family:inherit}',
-      '.tm-aa-search .tm-aa-search-n{color:#8f8a7e;font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums}',
-      '.tm-aa-search button{background:#322f2a;color:#b4afa2;border:none;border-radius:5px;padding:2px 7px;font-size:11px;cursor:pointer;line-height:1.4}.tm-aa-search button:hover{background:#3c3933;color:#ecebe2}',
-      '.tm-aa-hl{background:rgba(232,200,106,.32);color:inherit;border-radius:2px}.tm-aa-hl.active{background:#e8c86a;color:#1a1206}',
-      '#tm-aa-fs{background:none;border:none;color:#8f8a7e;font-size:13px;cursor:pointer;line-height:1;padding:0 3px}#tm-aa-fs:hover{color:#ecebe2}',
-      '#tm-aa-preflight{background:none;border:none;color:#8f8a7e;font-size:13px;cursor:pointer;line-height:1;padding:0 3px}#tm-aa-preflight:hover{color:#7fe0a0}',
-      '#tm-aa-hd b{font-size:13px}',
-      '.tm-aa-ava{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#d97757,#bf5f3f);font-size:13px;margin-right:7px;vertical-align:middle;box-shadow:0 1px 4px rgba(217,119,87,.45)}',
-      '#tm-aa-hd .sub{font-size:11px;color:#8f8a7e;margin-left:6px}',
-      '#tm-aa-x{background:none;border:none;color:#8f8a7e;font-size:18px;cursor:pointer;line-height:1}',
-      '#tm-aa-body{padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;gap:10px;position:relative;flex:1 1 auto;min-height:0}',
-      '#tm-aa-composer{display:flex;flex-direction:column;gap:9px;order:80;flex:0 0 auto;z-index:7;background:#2a2926;margin-left:-14px;margin-right:-14px;padding:9px 14px 4px;border-top:1px solid #322f2a}',
-      '#tm-aa-req{width:100%;box-sizing:border-box;background:transparent;color:#ecebe2;border:none;',
-      'border-radius:14px;padding:10px 44px 10px 13px;font-family:inherit;font-size:13px;resize:none;min-height:56px;max-height:180px;overflow:auto;display:block;outline:none}',
-      '.tm-aa-charcount{position:absolute;top:6px;right:12px;font-size:10px;color:#726d62;pointer-events:none;background:rgba(31,29,26,.82);padding:0 4px;border-radius:4px;z-index:1}',
+      '.tm-aa-search input{flex:1;min-width:0;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:3px 7px;font-size:11px;font-family:inherit;outline:none}',
+      '.tm-aa-search .tm-aa-search-n{color:var(--tx3);font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums}',
+      '.tm-aa-search button{background:var(--surface);color:var(--tx2);border:none;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4}.tm-aa-search button:hover{color:var(--tx)}',
+      '.tm-aa-hl{background:rgba(229,192,123,.35);color:inherit;border-radius:2px}.tm-aa-hl.active{background:#e5c07b;color:#1a1206}',
+      '#tm-aa-hd button{display:inline-flex;align-items:center;justify-content:center;background:none;border:none;color:var(--tx3);cursor:pointer;line-height:1;padding:6px;border-radius:8px;transition:background .12s,color .12s}',
+      '#tm-aa-hd button:hover{background:var(--surface);color:var(--tx)}',
+      '#tm-aa-hd button svg{display:block}',
+      '#tm-aa-hd b{font-size:15px;font-family:var(--serif);font-weight:600;letter-spacing:-0.2px;color:var(--ink)}',   // 显示衬线负字距（Copernicus 规范）
+      // 朱印徽记「师」：方印形制（印章为方·非圆）·衬线白文·随处替代 emoji 头像
+      '.tm-aa-ava{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:linear-gradient(140deg,#cc785c,#a9583e);color:#fff;font-family:var(--seal);font-weight:400;font-size:16px;margin-right:9px;vertical-align:middle;box-shadow:0 1px 5px rgba(204,120,92,.4),inset 0 0 0 1px rgba(255,255,255,.14);text-shadow:0 1px 1px rgba(0,0,0,.2)}',
+      '#tm-aa-hd .sub{font-size:11.5px;color:var(--tx3);margin-left:8px;font-family:inherit;letter-spacing:0}',
+      // 侧栏（Claude 桌面端式·全屏下的会话历史栏）
+      '#tm-aa-rail{position:absolute;left:0;top:45px;bottom:0;width:236px;display:none;flex-direction:column;gap:4px;background:var(--sunken);border-right:1px solid var(--bd);padding:10px 9px;box-sizing:border-box;z-index:6}',
+      '#' + PANEL_ID + '.railon #tm-aa-rail{display:flex}',
+      '#' + PANEL_ID + '.railon #tm-aa-body{margin-left:236px}',
+      '#tm-aa-railnew{display:flex;align-items:center;gap:7px;background:transparent;color:var(--tx);border:1px solid var(--bd2);border-radius:10px;padding:8px 11px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}',
+      '#tm-aa-railnew:hover{background:var(--surface);border-color:var(--ac)}',
+      '#tm-aa-rail .rail-sec{font-size:11px;color:var(--tx3);letter-spacing:.06em;margin:10px 4px 3px}',
+      '#tm-aa-raillist{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}',
+      '.rail-item{position:relative;padding:7px 24px 7px 9px;border-radius:9px;cursor:pointer;transition:background .12s}',
+      '.rail-item:hover{background:var(--surface)}',
+      '.rail-item.on{background:var(--surface);box-shadow:inset 2px 0 0 var(--ac)}',   // S5 · 当前会话高亮（Claude 桌面端式左缘线）
+      '.rail-item .ri-req{font-size:12.5px;color:var(--tx);line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.rail-item .ri-meta{font-size:10.5px;color:var(--tx3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.rail-item .ri-meta .ri-ok{color:var(--ok)}',
+      '.rail-item .ri-meta .ri-file{color:var(--ac)}',   // S5 · 属别的剧本 → 切换徽记
+      '.rail-item .ri-del,.rail-item .ri-ren,.rail-item .ri-fork{position:absolute;right:5px;top:6px;display:none;background:none;border:none;color:var(--tx3);font-size:13px;line-height:1;padding:2px 4px;border-radius:6px;cursor:pointer}',
+      '.rail-item .ri-ren{right:24px;font-size:11px;top:7px}',
+      '.rail-item .ri-fork{right:43px;font-size:11px;top:7px}',
+      '.rail-item:hover .ri-del,.rail-item:hover .ri-ren,.rail-item:hover .ri-fork{display:block}',
+      '.rail-item .ri-del:hover{color:var(--bad);background:var(--sunken)}',
+      '.rail-item .ri-ren:hover,.rail-item .ri-fork:hover{color:var(--tx);background:var(--sunken)}',
+      '.rail-empty{font-size:11.5px;color:var(--tx3);padding:8px 6px;line-height:1.6}',
+      '#tm-aa-railclear{background:none;border:none;color:var(--tx3);font-size:11px;cursor:pointer;padding:6px;border-radius:8px;font-family:inherit}#tm-aa-railclear:hover{color:var(--bad);background:var(--surface)}',
+      '#tm-aa-body{padding:10px 20px 14px;overflow:hidden;display:flex;flex-direction:column;gap:10px;position:relative;flex:1 1 auto;min-height:0;transition:margin-left .15s ease-out;',
+      'background:radial-gradient(900px 380px at 82% -6%,rgba(217,119,87,.06),transparent 62%)}',   // 氛围：右上暖光晕·纵深而非平涂
+      '#' + PANEL_ID + '[data-theme="light"] #tm-aa-body{background:radial-gradient(900px 380px at 82% -6%,rgba(201,100,66,.05),transparent 62%)}',
+      '#' + PANEL_ID + ' button:focus-visible,#' + PANEL_ID + ' textarea:focus-visible{outline:2px solid var(--ac);outline-offset:2px}',
+      // 空态（Claude 桌面端招牌）：问候语 + composer 一起居中于画布·有内容后 composer 落底
+      '#tm-aa-body.tm-aa-blank{justify-content:center}',
+      '#tm-aa-body.tm-aa-blank #tm-aa-composer{order:5;margin-top:6px}',
+      '#tm-aa-body.tm-aa-blank .tm-aa-empty{margin:0}',
+      // Composer（Claude 式：圆角大卡片·内嵌底行）
+      '#tm-aa-composer{display:flex;flex-direction:column;gap:7px;order:80;flex:0 0 auto;z-index:7;background:var(--bg);margin-left:-20px;margin-right:-20px;padding:8px 20px 10px;position:relative}',
+      '#tm-aa-req{width:100%;box-sizing:border-box;background:transparent;color:var(--tx);border:none;',
+      'border-radius:16px;padding:13px 15px 6px;font-family:inherit;font-size:14px;line-height:1.65;resize:none;min-height:56px;max-height:200px;overflow:auto;display:block;outline:none}',
+      '#tm-aa-req::placeholder{color:var(--tx3)}',
+      '.tm-aa-charcount{position:absolute;top:6px;right:12px;font-size:10px;color:var(--tx3);pointer-events:none;background:var(--surface);padding:0 5px;border-radius:5px;z-index:1;opacity:.9}',
       '.tm-aa-charcount[hidden]{display:none}',
-      '#tm-aa-field{position:relative;background:#1f1d1a;border:1px solid #3c3933;border-radius:14px;transition:border-color .12s,box-shadow .12s}',
-      '#tm-aa-field:focus-within{border-color:#d97757;box-shadow:0 0 0 3px rgba(217,119,87,.16)}',
-      '#tm-aa-go{position:absolute;right:7px;bottom:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#d97757;color:#fff;border:none;border-radius:50%;padding:0;cursor:pointer;font-size:15px;line-height:1;transition:background .12s,transform .08s}',
-      '#tm-aa-go:hover{background:#e08a6b}#tm-aa-go:active{transform:scale(.92)}',
+      '#tm-aa-field{position:relative;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;background:var(--surface);border:1px solid var(--bd2);border-radius:16px;transition:border-color .15s,box-shadow .15s;box-shadow:0 2px 12px rgba(0,0,0,.10)}',
+      '#tm-aa-field:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px rgba(204,120,92,.15),0 2px 14px rgba(0,0,0,.12)}',
+      // 输入卡内嵌底行：＋能力菜单 · 世界类型 · 发送
+      '.tm-aa-fieldbar{display:flex;align-items:center;gap:7px;padding:5px 7px 7px 8px;flex-wrap:wrap}',
+      // 权限模式 pill（问策/共审/放行·CC permission modes 对照）
+      '#tm-aa-perm{flex:0 0 auto;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:2px 12px;font-size:11px;cursor:pointer;font-family:inherit;line-height:1.5;transition:color .12s,border-color .12s,background .12s}',
+      '#tm-aa-perm:hover{color:var(--tx);background:var(--sunken)}',
+      '#tm-aa-perm.pm-auto{color:#fff;background:var(--ac);border-color:var(--ac)}',   // 放行=高权·实底提示
+      '#tm-aa-perm.pm-plan{color:var(--ok);border-color:rgba(132,216,165,.45)}',        // 问策=只读·青提示
+      '#tm-aa-permpop{position:absolute;left:8px;bottom:calc(100% + 6px);z-index:12;width:300px;max-width:calc(100vw - 40px);background:var(--surface);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 14px 44px rgba(0,0,0,.35);padding:9px 8px}',
+      '#tm-aa-permpop[hidden]{display:none}',
+      '#tm-aa-permpop .mp-h{font-size:12px;color:var(--tx);font-weight:600;margin:2px 5px 7px;letter-spacing:.04em}',
+      '.tm-aa-pm{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;color:var(--tx);cursor:pointer;font-size:12.5px;padding:7px 9px;border-radius:9px;font-family:inherit;line-height:1.45}',
+      '.tm-aa-pm:hover{background:rgba(204,120,92,.12)}',
+      '.tm-aa-pm.on{border-color:var(--ac);background:rgba(204,120,92,.10)}',
+      '.tm-aa-pm b{font-weight:600}',
+      '.tm-aa-pm .pm-d{display:block;font-size:10.5px;color:var(--tx3);margin-top:1px}',
+      '#tm-aa-permpop .pm-danger{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--tx2);margin:8px 6px 2px;cursor:pointer}',
+      '#tm-aa-permpop .pm-danger input{cursor:pointer}',
+      '#tm-aa-permpop .mp-hint{font-size:10.5px;color:var(--tx3);line-height:1.6;margin:8px 6px 2px;border-top:1px solid var(--bd);padding-top:7px}',
+      '.tm-aa-flex{flex:1 1 auto}',
+      '#tm-aa-plus{flex:0 0 auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:50%;padding:0;cursor:pointer;font-size:16px;line-height:1;transition:background .12s,color .12s,transform .12s}',
+      '#tm-aa-plus:hover{background:var(--sunken);color:var(--tx)}',
+      '#tm-aa-plus.on{background:var(--ac);border-color:var(--ac);color:#fff;transform:rotate(45deg)}',
+      '#tm-aa-attach-btn{flex:0 0 auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:50%;padding:0;cursor:pointer;transition:background .12s,color .12s}',
+      '#tm-aa-attach-btn:hover{background:var(--sunken);color:var(--tx)}',
+      // 附件签行（图片缩略 + 文件名签·发送时随需求交付）
+      '#tm-aa-attach{display:flex;flex-wrap:wrap;gap:6px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
+      '#tm-aa-attach[hidden]{display:none}',
+      '.att-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--bd2);border-radius:9px;padding:3px 6px 3px 8px;font-size:11px;color:var(--tx2);max-width:230px}',
+      '.att-chip .att-ic{display:inline-flex;color:var(--tx3)}',
+      '.att-chip .att-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}',
+      '.att-chip .att-sz{color:var(--tx3);font-size:10px}',
+      '.att-chip.att-img{padding:3px}',
+      '.att-chip.att-img img{width:40px;height:40px;object-fit:cover;border-radius:6px;display:block}',
+      '.att-x{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;line-height:1;padding:0 3px}.att-x:hover{color:var(--bad)}',
+      '#' + PANEL_ID + '.tm-aa-drag{outline:2px dashed var(--ac);outline-offset:-6px}',
+      '#' + PANEL_ID + '.tm-aa-drag::before{content:"松手把文件 / 截图交给国师";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(204,120,92,.10);color:var(--ac);font-size:15px;font-family:var(--serif);z-index:99;pointer-events:none}',
+      '#tm-aa-plusmenu{position:absolute;left:8px;bottom:calc(100% + 6px);z-index:12;min-width:230px;background:var(--surface);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 14px 44px rgba(0,0,0,.35);padding:5px;max-height:min(460px,62vh);overflow:auto}',
+      '#tm-aa-plusmenu[hidden]{display:none}',
+      '.tm-aa-mi{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--tx);cursor:pointer;font-size:12.5px;padding:7px 9px;border-radius:8px;font-family:inherit;line-height:1.4}',
+      '.tm-aa-mi:hover{background:rgba(217,119,87,.14)}',
+      '.tm-aa-mi .mi-ic{flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;color:var(--tx3)}',
+      '.tm-aa-mi:hover .mi-ic{color:var(--ac)}',
+      '.tm-aa-mi .mi-ic svg{display:block}',
+      '.tm-aa-mi .mi-d{display:block;font-size:10.5px;color:var(--tx3);margin-top:1px}',
+      '.tm-aa-mi-sep{height:1px;background:var(--bd);margin:4px 8px}',
+      '#tm-aa-go{flex:0 0 auto;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--ac);color:#fff;border:none;border-radius:10px;padding:0;cursor:pointer;font-size:15px;line-height:1;transition:background .12s,transform .08s}',   // 圆角方（claude.ai 发送钮形制·非正圆）
+      '#tm-aa-go:hover{background:var(--ac-hi)}#tm-aa-go:active{transform:scale(.92)}',
       '#tm-aa-go:disabled{opacity:.5;cursor:default}',
-      '#tm-aa-go.stopbtn{background:#c0413b}#tm-aa-go.stopbtn:hover{background:#d2554f}',
-      '#tm-aa-status{font-size:12px;color:#9b968a;min-height:16px}',
-      '#tm-aa-ctx{display:flex;align-items:center;gap:6px;font-size:11px;color:#b4afa2;background:rgba(217,119,87,.10);border:1px solid rgba(217,119,87,.32);border-radius:6px;padding:3px 8px;margin-bottom:2px}',
+      '#tm-aa-go.stopbtn{background:var(--danger)}#tm-aa-go.stopbtn:hover{background:#d2554f}',
+      '#tm-aa-status{font-size:11.5px;color:var(--tx3);min-height:15px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;padding:0 4px;line-height:1.5}',
+      '.tm-aa-running #tm-aa-status{color:var(--tx2)}',
+      '.tm-aa-running #tm-aa-status::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ac);margin-right:7px;vertical-align:1px;animation:tm-aa-pulse 1.5s ease-in-out infinite}',   // 呼吸朱点（纯 CSS·非 emoji）
+      '@keyframes tm-aa-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}',
+      '#tm-aa-ctx{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);background:rgba(217,119,87,.09);border:1px solid rgba(217,119,87,.3);border-radius:8px;padding:3px 9px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
       '#tm-aa-ctx[hidden]{display:none}',
       '.tm-aa-ctx-txt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.tm-aa-ctx-ico{flex:0 0 auto;opacity:.85}',
       '.tm-aa-ctx-pin{flex:0 0 auto;background:none;border:none;cursor:pointer;font-size:12px;opacity:.6;padding:0 2px;line-height:1}',
       '.tm-aa-ctx-pin:hover,.tm-aa-ctx-pin.on{opacity:1}',
-      '#tm-aa-mentions{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px}',
+      '#tm-aa-mentions{display:flex;flex-wrap:wrap;gap:4px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
       '#tm-aa-mentions[hidden]{display:none}',
-      '.tm-aa-mchip{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#cfe6dd;background:rgba(126,184,167,.14);border:1px solid rgba(126,184,167,.4);border-radius:10px;padding:1px 4px 1px 7px}',
-      '.tm-aa-mx{background:none;border:none;color:#cfe6dd;cursor:pointer;font-size:13px;line-height:1;padding:0 2px;opacity:.7}.tm-aa-mx:hover{opacity:1}',
-      '#tm-aa-atpop{position:absolute;left:12px;right:12px;bottom:calc(100% + 4px);z-index:9;max-height:210px;overflow:auto;background:#1f1d1a;border:1px solid #3c3933;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);padding:4px}',
+      '.tm-aa-mchip{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--tx2);background:var(--surface);border:1px solid var(--bd2);border-radius:999px;padding:1px 4px 1px 8px}',
+      '.tm-aa-mx{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;opacity:.7}.tm-aa-mx:hover{opacity:1}',
+      '#tm-aa-atpop{position:absolute;left:50%;transform:translateX(-50%);width:min(728px,calc(100% - 40px));bottom:calc(100% + 4px);z-index:13;max-height:210px;overflow:auto;background:var(--surface);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,.4);padding:4px}',
       '#tm-aa-atpop[hidden]{display:none}',
-      '.tm-aa-atitem{display:flex;align-items:center;gap:7px;width:100%;text-align:left;background:none;border:none;color:#ecebe2;cursor:pointer;font-size:12px;padding:5px 8px;border-radius:6px;font-family:inherit}',
-      '.tm-aa-atitem:hover{background:rgba(217,119,87,.18)}',
-      '.tm-aa-atkind{flex:0 0 auto;font-size:10px;color:#9b968a;background:rgba(255,255,255,.06);border-radius:4px;padding:1px 5px}',
-      '.tm-aa-diff-jump{cursor:pointer;border-bottom:1px dashed rgba(126,184,167,.5)}',
-      '.tm-aa-diff-jump:hover{color:#a7e0cf}',
-      '#tm-aa-meter{font-size:11px;color:#e8a98c;font-variant-numeric:tabular-nums;padding:2px 0}',
-      '.tm-aa-empty{order:4;margin:auto 0;background:none;border:none;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}',
-      '.tm-aa-empty .emp-hi{font-size:30px;line-height:1.1}',
-      '.tm-aa-empty .emp-title{color:#cec9bb;font-size:16px;font-weight:bold;line-height:1.2}',
-      '.tm-aa-empty .emp-sub{color:#8f8a7e;font-size:11px;margin-bottom:9px;line-height:1.5}',
-      '.tm-aa-empty .emp-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:300px}',
-      '.tm-aa-empty .emp-chip{background:#34322d;color:#dedacb;border:1px solid #3c3933;border-radius:13px;padding:4px 11px;font-size:11px;cursor:pointer;font-family:inherit}.tm-aa-empty .emp-chip:hover{background:#403d37;border-color:#56514a}',
+      // composer 位于面板上部（空态/无消息）时浮层翻到下方，否则飞出面板顶（@ 与 / 同治·JS 量空间挂 below）
+      '#tm-aa-atpop.below,#tm-aa-cmdpop.below{bottom:auto;top:calc(100% + 4px)}',
+      '.tm-aa-atitem{display:flex;align-items:center;gap:7px;width:100%;text-align:left;background:none;border:none;color:var(--tx);cursor:pointer;font-size:12px;padding:5px 8px;border-radius:8px;font-family:inherit}',
+      '.tm-aa-atitem:hover{background:rgba(217,119,87,.16)}',
+      // S6 · / 命令面板（CC slash commands 对照·与 @提及同一浮层语言）
+      '#tm-aa-cmdpop{position:absolute;left:50%;transform:translateX(-50%);width:min(728px,calc(100% - 40px));bottom:calc(100% + 4px);z-index:14;max-height:280px;overflow:auto;background:var(--surface);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,.4);padding:4px}',
+      '#tm-aa-cmdpop[hidden]{display:none}',
+      '.tm-aa-cmdhd{font-size:10.5px;color:var(--tx3);padding:4px 8px 5px;letter-spacing:.04em}',
+      '.tm-aa-cmditem{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;background:none;border:none;color:var(--tx);cursor:pointer;font-size:12.5px;padding:6px 8px;border-radius:8px;font-family:inherit}',
+      '.tm-aa-cmditem b{font-weight:600;white-space:nowrap}',
+      '.tm-aa-cmditem .cmd-d{color:var(--tx3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.tm-aa-cmditem:hover,.tm-aa-cmditem.on{background:rgba(217,119,87,.16)}',
+      '.tm-aa-atkind{flex:0 0 auto;font-size:10px;color:var(--tx3);background:var(--sunken);border-radius:5px;padding:1px 5px}',
+      '.tm-aa-diff-jump{cursor:pointer;border-bottom:1px dashed rgba(132,216,165,.5)}',
+      '.tm-aa-diff-jump:hover{color:var(--ok)}',
+      '#tm-aa-meter{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;padding:0 4px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
+      // 欢迎屏（朱印徽记 + 衬线问候·级联入场·与 composer 一同居中）
+      '.tm-aa-empty{order:4;margin:auto 0;background:none;border:none;padding:10px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}',
+      '.tm-aa-empty>*{animation:tm-aa-rise .34s ease-out both}',
+      '.tm-aa-empty .emp-title{animation-delay:.05s}.tm-aa-empty .emp-sub{animation-delay:.11s}.tm-aa-empty .emp-chips{animation-delay:.17s}',
+      '.tm-aa-empty .emp-seal{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:linear-gradient(140deg,#cc785c,#a9583e);color:#fff;font-family:var(--seal);font-weight:400;font-size:34px;box-shadow:0 6px 24px rgba(217,119,87,.35),inset 0 0 0 1.5px rgba(255,255,255,.16);text-shadow:0 1px 2px rgba(0,0,0,.25);margin-bottom:4px}',
+      '.tm-aa-empty .emp-title{color:var(--ink);font-size:28px;font-family:var(--serif);font-weight:500;letter-spacing:-0.5px;line-height:1.3}',   // display-sm 负字距
+      '.tm-aa-empty .emp-sub{color:var(--tx3);font-size:13px;margin-bottom:10px;line-height:1.6}',
+      '.tm-aa-empty .emp-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:440px}',
+      '.tm-aa-empty .emp-chip{background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:6px 15px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .12s,color .12s,border-color .12s,transform .12s}.tm-aa-empty .emp-chip:hover{background:var(--surface);color:var(--tx);border-color:var(--ac);transform:translateY(-1px)}',
+      '@keyframes tm-aa-rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}',
+      '.tm-aa-msg-user,.tm-aa-reply,.tm-aa-think,.tm-aa-msg-ai{animation:tm-aa-rise .22s ease-out}',   // 消息入场微动
+      // 会话流（居中栏·Claude 式）
       '.tm-aa-logwrap{position:relative;flex:1 1 0;min-height:0;overflow-y:auto}',
-      '.tm-aa-log{padding:2px 0;font-size:11px;line-height:1.5}',
-      '.tm-aa-tobottom{position:absolute;right:9px;bottom:7px;background:#322f2a;color:#dedacb;border:1px solid #48443d;border-radius:11px;padding:2px 9px;font-size:10px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);z-index:2}.tm-aa-tobottom:hover{background:#423e37}',
+      '.tm-aa-log{padding:4px 2px;font-size:13px;line-height:1.7;max-width:760px;margin:0 auto}',
+      '.tm-aa-tobottom{position:absolute;right:9px;bottom:7px;background:var(--surface);color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:3px 11px;font-size:10.5px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:2}.tm-aa-tobottom:hover{color:var(--tx)}',
       '.tm-aa-tobottom[hidden]{display:none}',
-      '.tm-aa-log .ln{color:#b4afa2}.tm-aa-log .bad{color:#ff8f8f}.tm-aa-log .fin{color:#7fe0a0}',
-      '.tm-aa-step{margin:1px 0}.tm-aa-step>summary{cursor:pointer;list-style:none;padding:1px 0;line-height:1.5;outline:none}',
-      '.tm-aa-step>summary::-webkit-details-marker{display:none}.tm-aa-step>summary::before{content:"▸ ";color:#8f8a7e}.tm-aa-step[open]>summary::before{content:"▾ "}',
-      '.tm-aa-step.fin>summary{color:#7fe0a0}.tm-aa-step.ln>summary{color:#b4afa2}.tm-aa-step.bad>summary{color:#ff8f8f}',
+      '.tm-aa-log .ln{color:var(--tx2)}.tm-aa-log .bad{color:var(--bad)}.tm-aa-log .fin{color:var(--ok)}',
+      // 工具执行卡（Claude 式折叠 chip·带工具类别图标）
+      '.tm-aa-step{margin:2px 0}.tm-aa-step>summary{cursor:pointer;list-style:none;padding:3px 5px;line-height:1.55;outline:none;border-radius:7px;font-size:11.5px;display:flex;align-items:baseline;gap:6px}',
+      '.tm-aa-step>summary:hover{background:var(--sunken)}',
+      '.tm-aa-step>summary::-webkit-details-marker{display:none}.tm-aa-step>summary::before{content:"▸";color:var(--tx3);flex:0 0 auto}.tm-aa-step[open]>summary::before{content:"▾"}',
+      '.tm-aa-step .st-ic{flex:0 0 auto;display:inline-flex;align-self:center;color:var(--tx3)}',
+      '.tm-aa-step .st-ic svg{display:block;width:12px;height:12px}',
+      '.tm-aa-step .st-tx{flex:1 1 auto;min-width:0}',
+      '.tm-aa-step.fin>summary{color:var(--ok)}.tm-aa-step.fin .st-ic{color:var(--ok)}.tm-aa-step.ln>summary{color:var(--tx2)}.tm-aa-step.bad>summary{color:var(--bad)}.tm-aa-step.bad .st-ic{color:var(--bad)}',
       '.tm-aa-step:not([open])>.tm-aa-step-body{display:none}',
-      '.tm-aa-think{margin:2px 0}.tm-aa-think>summary{cursor:pointer;list-style:none;color:#9b968a;font-style:italic;font-size:11px;padding:1px 0;outline:none}',
-      '.tm-aa-think>summary::-webkit-details-marker{display:none}.tm-aa-think>summary::before{content:"▸ ";font-style:normal;color:#8f8a7e}.tm-aa-think[open]>summary::before{content:"▾ "}',
+      // 工作过程 · 实时活动行（当前在做什么·转环+最新动作/思考）
+      '.tm-aa-live{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:6px 11px;background:var(--surface);border:1px solid var(--bd);border-radius:11px;font-size:12px;color:var(--tx2);width:fit-content;max-width:100%;box-sizing:border-box}',
+      '.tm-aa-live .lv-spin{flex:0 0 auto;width:12px;height:12px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:tm-aa-spin .8s linear infinite}',
+      '.tm-aa-live .lv-tx{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:560px}',
+      '.tm-aa-live .lv-tx.think{font-family:var(--serif);font-style:italic;color:var(--tx3)}',
+      '@keyframes tm-aa-spin{to{transform:rotate(360deg)}}',
+      // 工作过程 · 顶栏活动条（不确定进度·滑光）
+      '#tm-aa-progress{height:2px;background:transparent;position:relative;overflow:hidden;flex:0 0 auto}',
+      '.tm-aa-running #tm-aa-progress::after{content:"";position:absolute;left:-30%;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,var(--ac),transparent);animation:tm-aa-slide 1.3s ease-in-out infinite}',
+      '@keyframes tm-aa-slide{to{left:100%}}',
+      '.tm-aa-think{margin:10px auto 10px 0;background:var(--surface);border:1px solid var(--bd);border-radius:11px;padding:3px 12px;width:fit-content;max-width:100%;box-sizing:border-box}',
+      '.tm-aa-think[open]{width:100%}',
+      '.tm-aa-think>summary{cursor:pointer;list-style:none;color:var(--tx2);font-size:12px;padding:4px 0;outline:none;white-space:nowrap}',
+      '.tm-aa-think>summary::-webkit-details-marker{display:none}.tm-aa-think>summary::before{content:"▸ ";font-style:normal;color:var(--tx3)}.tm-aa-think[open]>summary::before{content:"▾ "}',
+      '.tm-aa-running .tm-aa-think:last-of-type>summary .tk-label{background:linear-gradient(90deg,var(--tx3),var(--tx),var(--tx3));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:tm-aa-sheen 2s linear infinite}',
+      '@keyframes tm-aa-sheen{0%{background-position:180% 0}100%{background-position:-20% 0}}',
       '.tm-aa-think:not([open])>.tm-aa-think-body{display:none}',
-      '.tm-aa-think-body{padding:2px 0 3px 14px;border-left:1px solid #322f2a;margin:2px 0 2px 3px}',
-      '.tm-aa-think-body .tk-line{color:#9b968a;font-style:italic;font-size:11px;line-height:1.5;margin:1px 0;white-space:pre-wrap;word-break:break-word}',
-      '.tm-aa-step-body{padding:2px 0 4px 12px;border-left:1px solid #322f2a;margin:2px 0 2px 3px}',
-      '.tm-aa-step-body .sb-row{margin:2px 0}.tm-aa-step-body .sb-k{display:inline-block;color:#8f8a7e;font-size:10px;margin-right:4px}',
-      '.tm-aa-step-body pre{margin:1px 0;white-space:pre-wrap;word-break:break-all;font-family:ui-monospace,Consolas,monospace;font-size:10px;line-height:1.45;color:#9b968a;max-height:120px;overflow:auto}',
-      '.tm-aa-checklist{background:#23211e;border:1px solid #3c3933;border-radius:8px;padding:6px 8px;margin-bottom:6px}',
-      '.tm-aa-checklist .cl-head{font-size:11px;color:#e8a98c;font-weight:bold;margin-bottom:3px}',
-      '.tm-aa-checklist .cl-item{font-size:11px;line-height:1.7;color:#9b968a;display:flex;gap:6px;align-items:baseline}',
+      '.tm-aa-think-body{padding:2px 0 6px 13px;border-left:2px solid var(--bd2);margin:2px 0 2px 4px}',
+      '.tm-aa-think-body .tk-line{color:var(--tx3);font-style:italic;font-size:12px;line-height:1.7;margin:3px 0;white-space:pre-wrap;word-break:break-word;font-family:var(--serif)}',   // 思考=衬线斜体（与回复正文同族）
+      '.tm-aa-think[open]>.tm-aa-think-body{max-height:42vh;overflow-y:auto}',   // 长跑不撑爆视口·块内滚
+      '.tm-aa-step-body{padding:2px 0 5px 12px;border-left:2px solid var(--bd);margin:2px 0 2px 4px}',
+      '.tm-aa-step-body .sb-row{margin:2px 0}.tm-aa-step-body .sb-k{display:inline-block;color:var(--tx3);font-size:10px;margin-right:4px}',
+      '.tm-aa-step-body pre{margin:1px 0;white-space:pre-wrap;word-break:break-all;font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--tx3);max-height:120px;overflow:auto;background:var(--code);border-radius:6px;padding:4px 6px}',
+      '.tm-aa-checklist{background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:7px 10px;margin-bottom:6px}',
+      '.tm-aa-checklist .cl-head{font-size:11px;color:var(--tx2);font-weight:bold;margin-bottom:3px}',
+      '.tm-aa-checklist .cl-item{font-size:11.5px;line-height:1.75;color:var(--tx3);display:flex;gap:6px;align-items:baseline}',
       '.tm-aa-checklist .cl-item .cl-ic{width:12px;text-align:center;flex:none}',
-      '.tm-aa-checklist .cl-item.done{color:#7fe0a0}.tm-aa-checklist .cl-item.done .cl-ic{color:#7fe0a0}',
-      '.tm-aa-checklist .cl-item.run{color:#e8c86a}.tm-aa-checklist .cl-item.run .cl-ic{color:#e8c86a}',
-      '.tm-aa-checklist .cl-item.pend{color:#726d62}',
-      '.tm-aa-msg-user{position:relative;margin:8px 0 6px auto;max-width:88%;width:fit-content;padding:5px 9px;background:rgba(217,119,87,.16);border:1px solid rgba(217,119,87,.32);border-radius:9px 9px 3px 9px;font-size:11px;line-height:1.55;color:#ece4d8}',
-      '.tm-aa-msg-user .mu-who{color:#e8a98c;font-weight:bold;margin-right:6px;font-size:10px}',
-      '.tm-aa-msg-acts{position:absolute;top:-11px;right:6px;display:none;gap:1px;background:#34322d;border:1px solid #3c3933;border-radius:6px;padding:1px 2px;box-shadow:0 2px 6px rgba(0,0,0,.3)}',
+      '.tm-aa-checklist .cl-item.done{color:var(--ok)}.tm-aa-checklist .cl-item.done .cl-ic{color:var(--ok)}',
+      '.tm-aa-checklist .cl-item.run{color:var(--warn)}.tm-aa-checklist .cl-item.run .cl-ic{color:var(--warn);display:inline-block;animation:tm-aa-spin 1.1s linear infinite}',   // 进行中 ⟳ 真转
+      '.tm-aa-checklist .cl-item.pend{color:var(--tx3)}',
+      // 用户消息（软卡片·右对齐）与助手正文（Claude 式：无气泡·直接书于底色上）
+      '.tm-aa-msg-user{position:relative;margin:16px 0 12px auto;max-width:82%;width:fit-content;padding:9px 15px;background:var(--bubble);border:none;border-radius:18px 18px 6px 18px;font-size:13.5px;line-height:1.7;color:var(--tx);box-shadow:0 1px 5px rgba(0,0,0,.1)}',
+      '.tm-aa-msg-user .mu-who{display:none}',
+      '.tm-aa-msg-acts{position:absolute;top:-13px;right:6px;display:none;gap:1px;background:var(--surface);border:1px solid var(--bd2);border-radius:8px;padding:1px 2px;box-shadow:0 4px 12px rgba(0,0,0,.3)}',
       '.tm-aa-msg-user:hover .tm-aa-msg-acts{display:inline-flex}',
-      '.tm-aa-msg-ai{position:relative;margin:8px auto 6px 0;max-width:90%;width:fit-content;padding:6px 10px;background:#23211e;border:1px solid #3c3933;border-radius:9px 9px 9px 3px;font-size:11px;line-height:1.6;color:#dbd8cb}',
-      '.tm-aa-msg-ai .ai-who{color:#e8a98c;font-weight:bold;font-size:10px;display:block;margin-bottom:3px}',
-      '.tm-aa-msg-ai .ai-sev{display:inline-block;background:rgba(232,200,106,.18);color:#e8c86a;border-radius:4px;padding:0 5px;font-size:10px;margin-right:5px}',
-      '.tm-aa-msg-ai .ai-sug{color:#a7e0cf;margin-top:4px}',
-      '.tm-aa-msg-ai .ai-qs{margin-top:3px}.tm-aa-msg-ai .ai-q{line-height:1.7}',
-      '.tm-aa-msg-ai .ai-hint{color:#8f8a7e;font-size:10px;margin-top:5px;border-top:1px solid #322f2a;padding-top:4px}',
-      '.tm-aa-reply{margin:6px 0;padding:8px 10px;background:#1c1a17;border:1px solid #322f2a;border-radius:9px 9px 9px 3px}',
-      '.tm-aa-reply .reply-who{display:flex;align-items:center;gap:5px;margin-bottom:4px}',
-      '.tm-aa-reply .reply-who .reply-ava{font-size:13px;line-height:1}',
-      '.tm-aa-reply .reply-who b{color:#e8a98c;font-size:11px;font-weight:bold}',
+      '.tm-aa-msg-ai{position:relative;margin:14px auto 12px 0;max-width:96%;width:fit-content;padding:2px 2px 2px 0;background:none;border:none;font-size:15px;line-height:1.85;color:var(--tx);font-family:var(--serif)}',   // 回复正文=衬线（Tiempos 语义·Claude 签名）
+      '.tm-aa-msg-ai .ai-who{color:var(--ac);font-weight:600;font-size:11.5px;display:block;margin-bottom:4px;font-family:var(--serif);letter-spacing:0}',
+      '.tm-aa-msg-ai .ai-sev{display:inline-block;background:rgba(229,192,123,.16);color:var(--warn);border-radius:5px;padding:0 6px;font-size:10.5px;margin-right:5px}',
+      '.tm-aa-msg-ai .ai-sug{color:var(--ok);margin-top:4px}',
+      '.tm-aa-msg-ai .ai-qs{margin-top:3px}.tm-aa-msg-ai .ai-q{line-height:1.8}',
+      '.tm-aa-msg-ai .ai-hint{color:var(--tx3);font-size:11px;margin-top:6px;border-top:1px solid var(--bd);padding-top:5px}',
+      '.tm-aa-reply{margin:14px 0 12px;padding:0 2px;background:none;border:none;border-radius:0}',
+      '.tm-aa-reply .reply-who{display:flex;align-items:center;gap:7px;margin-bottom:7px}',
+      '.tm-aa-reply .reply-who .reply-ava{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:linear-gradient(140deg,#cc785c,#a9583e);color:#fff;font-family:var(--seal);font-weight:400;font-size:14px;line-height:1;box-shadow:0 1px 4px rgba(217,119,87,.35),inset 0 0 0 1px rgba(255,255,255,.14);text-shadow:0 1px 1px rgba(0,0,0,.2)}',
+      '.tm-aa-reply .reply-who b{color:var(--ac);font-size:12px;font-weight:600;font-family:var(--serif);letter-spacing:0}',
+      '.tm-aa-reply .reply-copy{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px;padding:2px 7px;border-radius:6px;opacity:0;transition:opacity .12s,color .12s,background .12s;line-height:1.4}',
+      '.tm-aa-reply:hover .reply-copy{opacity:1}.tm-aa-reply .reply-copy:hover{color:var(--tx);background:var(--sunken)}',
       '.tm-aa-reply .tm-aa-summary{background:none;padding:0;border-radius:0}',
       '.tm-aa-reply .tm-aa-summary::before{display:none}',
-      '.tm-aa-reply.frozen{opacity:.66}',
-      '.tm-aa-reply .reply-actions{display:flex;gap:6px;margin-top:8px}',
-      '.tm-aa-reply .reply-actions button{flex:1;font-size:11px;padding:5px 6px;border-radius:6px;cursor:pointer;border:1px solid #3c3933;background:#2a2824;color:#ece4d8}',
-      '.tm-aa-reply .reply-actions button:hover{background:#3c3933}',
-      '.tm-aa-reply .reply-actions button:first-child{flex:2;background:rgba(127,224,160,.16);border-color:rgba(127,224,160,.4);color:#bfe8cf}',
-      '.tm-aa-reply .reply-actions button:first-child.warn{background:rgba(232,200,106,.16);border-color:rgba(232,200,106,.4);color:#e8c86a}',
-      '.tm-aa-reply.applied{border-color:rgba(127,224,160,.35)}',
-      '.tm-aa-reply .reply-tag{font-size:10px;margin-top:6px;display:none}.tm-aa-reply.applied .reply-tag{display:block;color:#7fe0a0}.tm-aa-reply.discarded .reply-tag{display:block;color:#8f8a7e}',
-      '.mu-act{background:none;border:none;color:#b4afa2;cursor:pointer;font-size:11px;padding:1px 5px;border-radius:4px;line-height:1.5}.mu-act:hover{background:#3c3933;color:#ecebe2}',
-      '.tm-aa-sec{font-size:11px;color:#8f8a7e;text-transform:none;margin-top:2px}',
-      '.tm-aa-diff{background:#1f1d1a;border:1px solid #322f2a;border-radius:8px;padding:6px 8px;max-height:180px;overflow:auto;font-size:11px;line-height:1.5}',
-      '.tm-aa-diff .add{color:#7fe0a0}.tm-aa-diff .rm{color:#ff8f8f}.tm-aa-diff .ch{color:#e8c86a}',
-      '.tm-aa-diff .uncertain{background:rgba(232,200,106,.10);border-left:2px solid #e8c86a;padding-left:5px;margin-left:-7px}',
-      '.tm-aa-diff .tm-aa-unc{display:block;color:#e8c86a;font-size:10px;margin-top:1px}',
-      '.tm-aa-summary{background:#23211e;border:none;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.65;color:#dbd8cb}',
-      '.tm-aa-summary::before{content:"🧙 国师";display:block;font-size:10px;color:#9b968a;font-weight:bold;margin-bottom:4px;opacity:.85}',
-      '.tm-aa-summary b{color:#e8a98c;font-size:11px;display:block;margin-bottom:3px}',
-      '.tm-aa-summary .note{color:#9b968a;font-size:11px;margin-top:3px}',
+      '.tm-aa-reply.frozen{opacity:.62}',
+      '.tm-aa-reply .reply-actions{display:flex;gap:7px;margin-top:10px}',
+      '.tm-aa-reply .reply-actions button{flex:1;font-size:12px;padding:7px 8px;border-radius:9px;cursor:pointer;border:1px solid var(--bd2);background:transparent;color:var(--tx2);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;transition:background .12s,color .12s,border-color .12s}',
+      '.tm-aa-reply .reply-actions button:hover{background:var(--surface);color:var(--tx)}',
+      '.tm-aa-reply .reply-actions button:first-child{flex:2;background:var(--ac);border-color:var(--ac);color:#fff}',
+      '.tm-aa-reply .reply-actions button:first-child:hover{background:var(--ac-hi)}',
+      '.tm-aa-reply .reply-actions button:first-child.warn{background:transparent;border-color:var(--warn);color:var(--warn)}',
+      '.tm-aa-reply.applied .reply-actions button:first-child{background:transparent;border-color:var(--ok);color:var(--ok)}',
+      '.tm-aa-reply .reply-tag{font-size:10.5px;margin-top:6px;display:none}.tm-aa-reply.applied .reply-tag{display:block;color:var(--ok)}.tm-aa-reply.discarded .reply-tag{display:block;color:var(--tx3)}',
+      '.mu-act{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:6px;line-height:1.5}.mu-act:hover{background:var(--sunken);color:var(--tx)}',
+      '.tm-aa-sec{font-size:11px;color:var(--tx3);letter-spacing:.06em;margin-top:2px;width:100%;max-width:760px;margin-left:auto;margin-right:auto;box-sizing:border-box;padding:0 2px}',
+      '.tm-aa-sec[data-sec="log"]{display:none}',   // Claude 式：会话流不设小节标（执行块自带「执行过程 · N 步」标签）
+      // 改动预览 / 校验 / 动作条（居中栏）
+      '.tm-aa-diff{background:var(--surface);border:1px solid var(--bd);border-radius:12px;padding:8px 10px;max-height:190px;overflow:auto;font-size:11.5px;line-height:1.6;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
+      '.tm-aa-diff .add{color:var(--ok)}.tm-aa-diff .rm{color:var(--bad)}.tm-aa-diff .ch{color:var(--warn)}',
+      '.tm-aa-diff .uncertain{background:rgba(229,192,123,.08);border-left:2px solid var(--warn);padding-left:5px;margin-left:-7px}',
+      '.tm-aa-diff .tm-aa-unc{display:block;color:var(--warn);font-size:10px;margin-top:1px}',
+      '.tm-aa-summary{background:none;border:none;border-radius:0;padding:1px 2px;font-size:15px;line-height:1.85;color:var(--tx);width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;font-family:var(--serif)}',   // 回复正文=衬线（Tiempos 语义）
+      '.tm-aa-summary::before{content:"国师";display:block;font-size:11px;color:var(--ac);font-weight:600;margin-bottom:5px;font-family:var(--serif);letter-spacing:0}',
+      '.tm-aa-summary b{color:var(--tx3);font-size:11px;display:block;margin-bottom:4px;font-weight:600;letter-spacing:.5px;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}',   // caption 小标回归 sans（正文衬线的对照层）
+      '.tm-aa-summary .note{color:var(--tx3);font-size:12px;margin-top:5px}',
       '.tm-aa-summary.tm-aa-clamped{max-height:var(--clamp-max,280px);overflow:hidden;position:relative;flex:0 0 auto}',
-      '.tm-aa-summary.tm-aa-clamped::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44px;background:linear-gradient(rgba(35,33,30,0),#23211e);pointer-events:none}',
+      '.tm-aa-summary.tm-aa-clamped::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44px;background:linear-gradient(transparent,var(--bg));pointer-events:none}',
       '.tm-aa-summary.tm-aa-clamp-open{max-height:none;overflow:visible}.tm-aa-summary.tm-aa-clamp-open::after{display:none}',
-      '.tm-aa-clamp-btn{align-self:flex-start;background:none;border:none;color:#e8a98c;font-size:11px;cursor:pointer;padding:2px 0;margin-top:-4px}.tm-aa-clamp-btn:hover{text-decoration:underline}',
-      '.tm-aa-errcard{background:rgba(192,65,59,.10);border:1px solid #5d3a3a;border-left:3px solid #c0413b;border-radius:8px;padding:8px 10px}',
-      '.tm-aa-errcard .ec-head{color:#ff8f8f;font-weight:bold;font-size:11px;margin-bottom:3px}',
-      '.tm-aa-errcard .ec-msg{color:#e2c0c0;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word}',
-      '.tm-aa-errcard .ec-acts{display:flex;gap:6px;margin-top:7px}',
-      '.tm-aa-errcard .ec-retry{background:#c0413b;color:#fff;border:none;border-radius:6px;padding:3px 12px;font-size:11px;cursor:pointer}.tm-aa-errcard .ec-retry:hover{background:#d2554f}',
-      '.tm-aa-errcard .ec-copy{background:#3c3933;color:#dedacb;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer}.tm-aa-errcard .ec-copy:hover{background:#48443d}',
-      '.md-p{margin:2px 0;line-height:1.6}.md-h{font-weight:bold;color:#cec9bb;margin:4px 0 2px}.md-h1{font-size:13px}.md-h2,.md-h3,.md-h4{font-size:12px}',
-      '.md-list{margin:3px 0;padding-left:18px}.md-list li{margin:1px 0;line-height:1.6}',
-      '.md-ic{background:rgba(184,154,83,.14);color:#e8c86a;padding:0 4px;border-radius:3px;font-family:ui-monospace,Consolas,monospace;font-size:11px}',
-      '.md-code{background:#181613;border:1px solid #322f2a;border-radius:0 0 6px 6px;border-top:none;padding:6px 8px;margin:0;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;color:#d2cdbd}',
-      '.md-codewrap{margin:4px 0;position:relative}',
-      '.md-codebar{display:flex;align-items:center;justify-content:space-between;background:#1f1d1a;border:1px solid #322f2a;border-radius:6px 6px 0 0;padding:2px 6px 2px 8px}',
-      '.md-codebar .md-lang{color:#8f8a7e;font-size:10px;font-family:ui-monospace,Consolas,monospace;text-transform:lowercase}',
-      '.md-codebar .md-copy{background:none;border:none;color:#9b968a;cursor:pointer;font-size:10px;padding:1px 5px;border-radius:4px;opacity:0;transition:opacity .12s}',
-      '.md-codewrap:hover .md-copy{opacity:1}.md-codebar .md-copy:hover{background:#322f2a;color:#ecebe2}',
-      '.md-code .tok-str{color:#9ad6a0}.md-code .tok-key{color:#7fb4e8}.md-code .tok-num{color:#e0b863}.md-code .tok-kw{color:#c98ad6}.md-code .tok-punct{color:#8f8a7e}',
-      '.md-p strong{color:#ecebe2}.md-p em{color:#cec9bb}',
-      '.md-table{border-collapse:collapse;margin:5px 0;font-size:11px;max-width:100%;display:block;overflow:auto}',
-      '.md-table th,.md-table td{border:1px solid #322f2a;padding:3px 7px;text-align:left;line-height:1.5}',
-      '.md-table th{background:#23211e;color:#cec9bb;font-weight:bold;white-space:nowrap}',
-      '.md-table td{color:#dbd8cb}.md-table tbody tr:nth-child(even) td{background:rgba(255,255,255,.025)}',
+      '.tm-aa-clamp-btn{align-self:center;background:none;border:none;color:var(--ac);font-size:11.5px;cursor:pointer;padding:2px 0;margin-top:-4px;font-family:inherit}.tm-aa-clamp-btn:hover{text-decoration:underline}',
+      '.tm-aa-errcard{background:rgba(192,65,59,.08);border:1px solid rgba(192,65,59,.35);border-left:3px solid var(--danger);border-radius:10px;padding:9px 12px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
+      '.tm-aa-errcard .ec-head{color:var(--bad);font-weight:bold;font-size:11.5px;margin-bottom:3px}',
+      '.tm-aa-errcard .ec-msg{color:var(--tx2);font-size:11.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}',
+      '.tm-aa-errcard .ec-acts{display:flex;gap:7px;margin-top:8px}',
+      '.tm-aa-errcard .ec-retry{background:var(--danger);color:#fff;border:none;border-radius:999px;padding:4px 14px;font-size:11.5px;cursor:pointer}.tm-aa-errcard .ec-retry:hover{background:#d2554f}',
+      '.tm-aa-errcard .ec-copy{background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:4px 12px;font-size:11.5px;cursor:pointer}.tm-aa-errcard .ec-copy:hover{color:var(--tx)}',
+      // markdown 渲染
+      '.md-p{margin:3px 0;line-height:1.75}.md-h{font-weight:600;color:var(--tx);margin:7px 0 3px;font-family:var(--serif);letter-spacing:.03em}.md-h1{font-size:15px}.md-h2{font-size:14px}.md-h3,.md-h4{font-size:13px}',
+      '.md-list{margin:3px 0;padding-left:19px}.md-list li{margin:2px 0;line-height:1.7}',
+      '.md-ic{background:rgba(229,192,123,.13);color:var(--warn);padding:0 5px;border-radius:4px;font-family:var(--mono);font-size:11px}',
+      '.md-code{background:var(--code);border:1px solid var(--bd);border-radius:0 0 8px 8px;border-top:none;padding:7px 9px;margin:0;overflow:auto;font-family:var(--mono);font-size:11px;line-height:1.55;white-space:pre-wrap;color:var(--tx2)}',
+      '.md-codewrap{margin:5px 0;position:relative}',
+      '.md-codebar{display:flex;align-items:center;justify-content:space-between;background:var(--sunken);border:1px solid var(--bd);border-radius:8px 8px 0 0;padding:2px 6px 2px 9px}',
+      '.md-codebar .md-lang{color:var(--tx3);font-size:10px;font-family:var(--mono);text-transform:lowercase}',
+      '.md-codebar .md-copy{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:10px;padding:1px 6px;border-radius:5px;opacity:0;transition:opacity .12s}',
+      '.md-codewrap:hover .md-copy{opacity:1}.md-codebar .md-copy:hover{background:var(--surface);color:var(--tx)}',
+      '.md-code .tok-str{color:#9ad6a0}.md-code .tok-key{color:#7fb4e8}.md-code .tok-num{color:#e0b863}.md-code .tok-kw{color:#c98ad6}.md-code .tok-punct{color:var(--tx3)}',
+      '.md-p strong{color:var(--tx);font-weight:600}.md-p em{color:var(--tx2)}',
+      '.md-table{border-collapse:collapse;margin:6px 0;font-size:11.5px;max-width:100%;display:block;overflow:auto}',
+      '.md-table th,.md-table td{border:1px solid var(--bd);padding:4px 8px;text-align:left;line-height:1.55}',
+      '.md-table th{background:var(--sunken);color:var(--tx);font-weight:600;white-space:nowrap}',
+      '.md-table td{color:var(--tx2)}.md-table tbody tr:nth-child(even) td{background:rgba(128,128,128,.04)}',
       '.tm-aa-stream{display:block}',
-      '.je-entity-ref{color:#e8a98c;text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer}.je-entity-ref:hover{color:#f0c4ad;text-decoration-style:solid;background:rgba(217,119,87,.12);border-radius:3px}',
-      '.tm-aa-caret{display:inline-block;color:#e8a98c;font-weight:400;margin-left:1px;animation:tm-aa-blink 1.05s step-end infinite}',
+      '.je-entity-ref{color:var(--ac);text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer}.je-entity-ref:hover{color:var(--ac-hi);text-decoration-style:solid;background:rgba(217,119,87,.1);border-radius:3px}',
+      '.tm-aa-caret{display:inline-block;color:var(--ac);font-weight:400;margin-left:1px;animation:tm-aa-blink 1.05s step-end infinite}',
       '@keyframes tm-aa-blink{50%{opacity:0}}',
-      '.tm-aa-summary .tm-aa-cl-copy{margin-left:8px;background:#3c3933;color:#ecebe2;border:none;border-radius:6px;padding:1px 8px;font-size:10px;cursor:pointer}',
-      '.tm-aa-summary pre.tm-aa-cl{white-space:pre-wrap;margin:5px 0 0;font-family:inherit;font-size:11px;line-height:1.6;color:#dbd8cb;max-height:200px;overflow:auto}',
-      '.tm-aa-sug{margin-top:6px;padding-top:5px;border-top:1px solid #3c3933}.tm-aa-sug b{color:#e8c86a}',
-      '.tm-aa-sug .sug-row{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:#dbd8cb}.tm-aa-sug .sug-row span{flex:1}',
-      '.tm-aa-sug .sug-keep{background:#3c3933;color:#ecebe2;border:none;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer}.tm-aa-sug .sug-keep:disabled{opacity:.6;cursor:default}',
-      '.tm-aa-finding{margin-bottom:6px;padding:5px 7px;background:#1f1d1a;border:1px solid #322f2a;border-left:3px solid #3c3933;border-radius:6px}',
-      '.tm-aa-finding .sev{font-weight:bold;font-size:11px}.tm-aa-finding .sev.rm{color:#ff8f8f}.tm-aa-finding .sev.ch{color:#e8c86a}.tm-aa-finding .sev.add{color:#7fe0a0}',
-      '.tm-aa-finding b{color:#cec9bb;font-size:12px}.tm-aa-finding .loc{color:#8f8a7e;font-size:10px}',
-      '.tm-aa-finding .iss{color:#dbd8cb;font-size:11px;margin-top:2px;line-height:1.5}.tm-aa-finding .sug{color:#9b968a;font-size:11px;margin-top:2px;line-height:1.5}',
-      '.tm-aa-diff-group{margin-bottom:6px;border-bottom:1px solid #322f2a;padding-bottom:4px}.tm-aa-diff-head{display:flex;align-items:center;gap:6px;color:#ecebe2;padding:2px 0;font-size:12px}',
-      '.tm-aa-diff-head .grp-tog{margin-left:auto;background:#322f2a;color:#b4afa2;border:none;border-radius:5px;padding:1px 7px;font-size:10px;cursor:pointer}.tm-aa-diff-head .grp-tog:hover{background:#3c3933}',
-      '.tm-aa-hunk{display:flex;align-items:flex-start;gap:6px;margin:2px 0}',
-      '.tm-aa-hunk .hunk-tog{flex:0 0 auto;width:18px;height:18px;line-height:16px;text-align:center;border-radius:5px;border:1px solid #3a4d3a;background:rgba(127,224,160,.14);color:#7fe0a0;cursor:pointer;font-size:11px;padding:0}',
+      '.tm-aa-summary .tm-aa-cl-copy{margin-left:8px;background:var(--sunken);color:var(--tx);border:none;border-radius:6px;padding:1px 9px;font-size:10px;cursor:pointer}',
+      '.tm-aa-summary .tm-aa-conv-clear{display:inline-block;margin-top:6px;background:var(--sunken);color:var(--tx2);border:1px solid var(--bd2);border-radius:6px;padding:2px 10px;font-size:10.5px;cursor:pointer;font-family:inherit}',
+      '.tm-aa-summary .tm-aa-conv-clear:hover{color:var(--bad);border-color:var(--bad)}',
+      '.tm-aa-summary pre.tm-aa-cl{white-space:pre-wrap;margin:5px 0 0;font-family:inherit;font-size:11.5px;line-height:1.65;color:var(--tx2);max-height:200px;overflow:auto}',
+      '.tm-aa-sug{margin-top:7px;padding-top:6px;border-top:1px solid var(--bd)}.tm-aa-sug b{color:var(--warn)}',
+      '.tm-aa-sug .sug-row{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11.5px;color:var(--tx2)}.tm-aa-sug .sug-row span{flex:1}',
+      '.tm-aa-sug .sug-keep{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:2px 10px;font-size:11px;cursor:pointer}.tm-aa-sug .sug-keep:hover{color:var(--tx)}.tm-aa-sug .sug-keep:disabled{opacity:.6;cursor:default}',
+      '.tm-aa-finding{margin-bottom:7px;padding:6px 9px;background:var(--surface);border:1px solid var(--bd);border-left:3px solid var(--bd2);border-radius:8px}',
+      '.tm-aa-finding .sev{font-weight:bold;font-size:11px}.tm-aa-finding .sev.rm{color:var(--bad)}.tm-aa-finding .sev.ch{color:var(--warn)}.tm-aa-finding .sev.add{color:var(--ok)}',
+      '.tm-aa-finding b{color:var(--tx);font-size:12px}.tm-aa-finding .loc{color:var(--tx3);font-size:10px}',
+      '.tm-aa-finding .iss{color:var(--tx2);font-size:11.5px;margin-top:2px;line-height:1.55}.tm-aa-finding .sug{color:var(--tx3);font-size:11.5px;margin-top:2px;line-height:1.55}',
+      '.tm-aa-diff-group{margin-bottom:7px;border-bottom:1px solid var(--bd);padding-bottom:4px}.tm-aa-diff-head{display:flex;align-items:center;gap:6px;color:var(--tx);padding:2px 0;font-size:12px}',
+      '.tm-aa-diff-head .grp-tog{margin-left:auto;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:999px;padding:1px 9px;font-size:10px;cursor:pointer}.tm-aa-diff-head .grp-tog:hover{color:var(--tx)}',
+      '.tm-aa-hunk{display:flex;align-items:flex-start;gap:6px;margin:3px 0}',
+      '.tm-aa-hunk .hunk-tog{flex:0 0 auto;width:18px;height:18px;line-height:16px;text-align:center;border-radius:6px;border:1px solid rgba(132,216,165,.4);background:rgba(132,216,165,.12);color:var(--ok);cursor:pointer;font-size:11px;padding:0}',
       '.tm-aa-hunk .hunk-body{flex:1;min-width:0}',
-      '.tm-aa-hunk.rejected .hunk-tog{border-color:#5d3a3a;background:rgba(255,143,143,.14);color:#ff8f8f}',
+      '.tm-aa-hunk.rejected .hunk-tog{border-color:rgba(239,143,143,.4);background:rgba(239,143,143,.12);color:var(--bad)}',
       '.tm-aa-hunk.rejected .hunk-body{opacity:.42;text-decoration:line-through}',
-      '.tm-aa-val.ok{color:#7fe0a0}.tm-aa-val.bad{color:#ff8f8f}',
-      '#tm-aa-actions{display:flex;gap:8px}',
-      '#tm-aa-apply{flex:1;background:#2e9e5b;color:#fff;border:none;border-radius:8px;padding:8px;cursor:pointer}',
-      '#tm-aa-apply.warn{background:#b5872e}',
-      '#tm-aa-discard{flex:1;background:#3c3933;color:#ecebe2;border:none;border-radius:8px;padding:8px;cursor:pointer}'
+      '.tm-aa-val{width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;font-size:12px}',
+      '.tm-aa-val.ok{color:var(--ok)}.tm-aa-val.bad{color:var(--bad)}',
+      '#tm-aa-actions{display:flex;gap:8px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box}',
+      '#tm-aa-apply{flex:1;background:var(--ac);color:#fff;border:none;border-radius:10px;padding:9px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;transition:background .12s}',   // 主按钮=圆角方（claude.ai 按钮 8-10px 形制·非药丸）
+      '#tm-aa-apply:hover{background:var(--ac-hi)}',
+      '#tm-aa-apply.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}',
+      '#tm-aa-discard{flex:1;background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:10px;padding:9px;cursor:pointer;font-family:inherit;font-size:13px}',
+      '#tm-aa-discard:hover{color:var(--tx);background:var(--surface)}',
+      // composer 模型徽（claude.ai 形制：模型选择器在输入卡内右下）——点开 API 连接·模型弹层
+      '#tm-aa-model{flex:0 0 auto;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;color:var(--tx3);background:transparent;border:1px solid var(--bd);border-radius:7px;padding:3px 9px;line-height:1.4;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s,background .12s}',
+      '#tm-aa-model::after{content:" ▾";font-size:8px;color:var(--tx3)}',
+      '#tm-aa-model:hover{color:var(--tx);border-color:var(--bd2);background:var(--sunken)}',
+      '#tm-aa-model.warn{color:var(--ac);border-color:rgba(204,120,92,.5)}',
+      // API 连接·模型弹层（右对齐·与＋菜单同族）
+      '#tm-aa-modelpop{position:absolute;right:8px;bottom:calc(100% + 6px);z-index:12;width:320px;max-width:calc(100vw - 40px);background:var(--surface);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 14px 44px rgba(0,0,0,.35);padding:11px 13px}',
+      '#tm-aa-modelpop[hidden]{display:none}',
+      '#tm-aa-modelpop .mp-h{font-size:12px;color:var(--tx);font-weight:600;margin-bottom:6px;letter-spacing:.04em}',
+      '#tm-aa-modelpop .mp-lab{display:block;font-size:11px;color:var(--tx3);margin:8px 0 0}',
+      '#tm-aa-modelpop input,#tm-aa-modelpop select{display:block;width:100%;box-sizing:border-box;margin-top:4px;background:var(--sunken);color:var(--tx);border:1px solid var(--bd2);border-radius:8px;padding:7px 9px;font-size:12px;font-family:inherit;outline:none;transition:border-color .12s}',
+      '#tm-aa-modelpop input:focus,#tm-aa-modelpop select:focus{border-color:var(--ac)}',
+      '#tm-aa-modelpop .mp-row{display:flex;align-items:center;gap:8px;margin-top:10px}',
+      '#tm-aa-modelpop .mp-row.mp-end{justify-content:flex-end;margin-top:12px}',
+      '#tm-aa-api-detect{background:transparent;color:var(--tx2);border:1px solid var(--bd2);border-radius:8px;padding:6px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s}',
+      '#tm-aa-api-detect:hover{color:var(--tx);border-color:var(--ac)}',
+      '#tm-aa-api-save{background:var(--ac);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .12s}',
+      '#tm-aa-api-save:hover{background:var(--ac-hi)}',
+      '#tm-aa-modelpop .mp-st{font-size:11px;color:var(--tx3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#tm-aa-modelpop .mp-hint{font-size:10.5px;color:var(--tx3);line-height:1.65;margin-top:10px;border-top:1px solid var(--bd);padding-top:8px}',
+      // 侧栏搜索与日期分组
+      '#tm-aa-railq{width:100%;box-sizing:border-box;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;margin-top:2px}',
+      '#tm-aa-railq:focus{border-color:var(--ac)}',
+      '#tm-aa-railq::placeholder{color:var(--tx3)}'
     ].join('');
     var st = document.createElement('style');
     st.id = 'tm-aa-style';
@@ -598,23 +824,54 @@
     panel.setAttribute('aria-label', '国师 · AI 剧本助手');
     panel.innerHTML = [
       '<div class="tm-aa-resize" id="tm-aa-resize" title="拖动调整宽度"></div>',   // UI·AI · 左缘拖拽调宽
-      '<div id="tm-aa-hd"><span><span class="tm-aa-ava">🧙</span><b>国师</b><span class="sub">' + esc(ui.adapter.label || '') + '</span></span>',
-      '<button id="tm-aa-preflight" aria-label="运行时体检" title="运行时体检（确定性·免 API）：检查会影响加载的阻塞问题，随时可重跑">🩺</button><button id="tm-aa-newchat" aria-label="开始新对话" title="开始新对话（清空当前会话线程与消息·上一会话已入历史/记忆）">✎</button><button id="tm-aa-fs" aria-label="全屏或还原" title="全屏 / 还原">⛶</button><button id="tm-aa-x" aria-label="关闭" title="关闭">×</button></div>',
+      '<div id="tm-aa-hd"><span><button id="tm-aa-rail-tg" aria-label="会话历史侧栏" title="会话历史（全屏侧栏）">' + _icon('bars') + '</button><span class="tm-aa-ava">师</span><b>国师</b><span class="sub">' + esc(ui.adapter.label || '') + '</span></span>',
+      '<span class="tm-aa-hdbtns"><button id="tm-aa-theme" aria-label="切换明暗主题" title="明暗主题切换">' + _icon('contrast') + '</button><button id="tm-aa-newchat" aria-label="开始新对话" title="开始新对话（清空当前会话线程与消息·上一会话已入历史/记忆）">' + _icon('pen') + '</button><button id="tm-aa-fs" aria-label="全屏或还原" title="全屏 / 还原">' + _icon('expand') + '</button><button id="tm-aa-x" aria-label="关闭" title="关闭">' + _icon('close') + '</button></span></div>',
+      '<div id="tm-aa-progress" aria-hidden="true"></div>',
+      '<div id="tm-aa-rail"><button id="tm-aa-railnew" type="button">＋ 新对话</button><input id="tm-aa-railq" type="text" placeholder="搜索会话…" aria-label="搜索会话"><div id="tm-aa-raillist"></div><button id="tm-aa-railclear" type="button" title="清空全部会话（运行审计/版本说明不受影响）">清空会话</button></div>',
       '<div id="tm-aa-body">',
       '<div class="tm-aa-search" id="tm-aa-search" hidden><input type="text" id="tm-aa-search-in" placeholder="在结果里查找…"><span class="tm-aa-search-n" id="tm-aa-search-n">0/0</span><button type="button" id="tm-aa-search-prev" title="上一个">↑</button><button type="button" id="tm-aa-search-next" title="下一个">↓</button><button type="button" id="tm-aa-search-x" title="关闭 (Esc)">×</button></div>',
-      '<div id="tm-aa-composer">',   // UI iteration2 · 输入区聚成一块（docked 下 sticky 钉底）
+      '<div id="tm-aa-composer">',   // Claude 桌面端式 composer：圆角大卡片·内嵌底行（＋能力菜单 · 世界类型 · 发送）
       '<div id="tm-aa-ctx" hidden></div>',
       '<div id="tm-aa-mentions" hidden></div>',
       '<div id="tm-aa-atpop" hidden></div>',
+      '<div id="tm-aa-cmdpop" hidden></div>',
       '<div id="tm-aa-status" aria-live="polite"></div>',
-      '<div id="tm-aa-worldkind"><span class="tm-aa-wk-lab">世界类型</span><button type="button" class="tm-aa-wk-opt" data-wk="historical" title="史实剧本·全考据：年号/生卒/职官/事件与正史相符，遇硬伤进谏">史实</button><button type="button" class="tm-aa-wk-opt" data-wk="fictional" title="虚构/架空世界观·奇幻/武侠/仙侠/未来/异世界等原创设定，不受真实历史约束，国师只管设定自洽与平衡">虚构</button></div>',
+      '<div id="tm-aa-meter" style="display:none"></div>',
+      '<div id="tm-aa-attach" hidden></div>',
       '<div id="tm-aa-field">',
       '<textarea id="tm-aa-req" placeholder="描述你想要的修改，例如：把主角势力改名为「西凉军」并补两个文官"></textarea>',
       '<span class="tm-aa-charcount" id="tm-aa-charcount" hidden></span>',
+      '<div class="tm-aa-fieldbar">',
+      '<button type="button" id="tm-aa-plus" aria-label="更多能力" title="更多能力：体检 / 审阅 / 问答 / 讲解 / 分解编排 / 三堂会审 / 检查点">＋</button>',
+      '<button type="button" id="tm-aa-perm" aria-label="权限模式" title="权限模式：问策(只读出计划) / 共审(改动经你审后应用) / 放行(校验通过自动应用)"></button>',
+      '<button type="button" id="tm-aa-attach-btn" aria-label="添加附件" title="添加附件：文本文件(txt/md/json/csv…)作参考上下文·图片/截图走视觉(需主模型支持)。也可直接拖进面板或在输入框粘贴截图">' + _icon('clip') + '</button>',
+      '<input type="file" id="tm-aa-file" multiple hidden accept="image/*,.txt,.md,.json,.csv,.tsv,.js,.yml,.yaml,.xml,.html">',
+      '<div id="tm-aa-worldkind"><span class="tm-aa-wk-lab">世界类型</span><button type="button" class="tm-aa-wk-opt" data-wk="historical" title="史实剧本·全考据：年号/生卒/职官/事件与正史相符，遇硬伤进谏">史实</button><button type="button" class="tm-aa-wk-opt" data-wk="fictional" title="虚构/架空世界观·奇幻/武侠/仙侠/未来/异世界等原创设定，不受真实历史约束，国师只管设定自洽与平衡">虚构</button></div>',
+      '<span class="tm-aa-flex"></span>',
+      '<button type="button" id="tm-aa-model" title="API 连接与模型选择" aria-label="API 连接与模型选择"></button>',
       '<button id="tm-aa-go" title="Enter 发送 · Shift+Enter 换行" aria-label="发送">↑</button>',
       '</div>',
+      '<div id="tm-aa-plusmenu" hidden></div>',
+      '<div id="tm-aa-permpop" hidden>',
+      '<div class="mp-h">权限模式</div>',
+      '<button type="button" class="tm-aa-pm" data-pm="plan"><b>问策</b><span class="pm-d">只读勘察·出编号计划交你批准·绝不动剧本（对应 Claude Code 的 Plan）</span></button>',
+      '<button type="button" class="tm-aa-pm" data-pm="review"><b>共审</b><span class="pm-d">国师起草改动·你逐条审 diff 后应用（默认·最稳）</span></button>',
+      '<button type="button" class="tm-aa-pm" data-pm="auto"><b>放行</b><span class="pm-d">校验通过即自动应用到剧本·适合信得过的批量活（对应 Accept Edits）</span></button>',
+      '<label class="pm-danger"><input type="checkbox" id="tm-aa-perm-danger">允许危险操作（删除实体 / 改名联动等破坏性写入）</label>',
+      '<div class="mp-hint">模式与开关会记住。范围沙箱（只许改某几类集合）在＋菜单的分解编排/会审同样生效。</div>',
       '</div>',
-      '<div id="tm-aa-meter" style="display:none"></div>',
+      '<div id="tm-aa-modelpop" hidden>',
+      '<div class="mp-h">API 连接 · 模型</div>',
+      '<label class="mp-lab">API 地址<input id="tm-aa-api-url" type="text" placeholder="https://api.deepseek.com 或第三方中转地址" autocomplete="off" spellcheck="false"></label>',
+      '<label class="mp-lab">API Key<input id="tm-aa-api-key" type="password" placeholder="sk-…" autocomplete="off"></label>',
+      '<div class="mp-row"><button type="button" id="tm-aa-api-detect">检测模型</button><span class="mp-st" id="tm-aa-api-st"></span></div>',
+      '<label class="mp-lab">主模型<select id="tm-aa-api-model"></select></label>',
+      '<label class="mp-lab">次要模型（杂活分工：三堂会审两官 / 前情摘要·可省主模型开销）<select id="tm-aa-api-model2"><option value="">不用 · 都走主模型</option></select></label>',
+      '<div class="mp-row mp-end"><button type="button" id="tm-aa-api-save">保存并使用</button></div>',
+      '<div class="mp-hint">与正式游戏共用一份（存 tm_api · 国师 / 生图同源）。「检测模型」会真调该 API 的模型清单接口，选到的模型即刻用于下一次运行。</div>',
+      '</div>',
+      '</div>',
+      '</div>',
       '<div class="tm-aa-empty" id="tm-aa-empty" style="display:none"></div>',
       '<div class="tm-aa-sec" data-sec="log" style="display:none">执行过程</div>',
       '<div class="tm-aa-logwrap" id="tm-aa-logwrap" style="display:none"><div class="tm-aa-log" id="tm-aa-loglist"></div><button type="button" class="tm-aa-tobottom" id="tm-aa-tobottom" hidden>↓ 最新</button></div>',
@@ -638,6 +895,7 @@
       ctx: panel.querySelector('#tm-aa-ctx'),
       mentions: panel.querySelector('#tm-aa-mentions'),
       atpop: panel.querySelector('#tm-aa-atpop'),
+      cmdpop: panel.querySelector('#tm-aa-cmdpop'),   // S6 · / 命令面板
       meter: panel.querySelector('#tm-aa-meter'),
       empty: panel.querySelector('#tm-aa-empty'),
       logSec: panel.querySelector('[data-sec="log"]'),
@@ -657,20 +915,38 @@
       composer: panel.querySelector('#tm-aa-composer'),
       search: panel.querySelector('#tm-aa-search'),
       searchIn: panel.querySelector('#tm-aa-search-in'),
-      searchCount: panel.querySelector('#tm-aa-search-n')
+      searchCount: panel.querySelector('#tm-aa-search-n'),
+      theme: panel.querySelector('#tm-aa-theme'),       // Claude 桌面端式 · 明暗主题切换
+      plus: panel.querySelector('#tm-aa-plus'),         // Claude 桌面端式 · ＋能力菜单
+      plusmenu: panel.querySelector('#tm-aa-plusmenu'),
+      model: panel.querySelector('#tm-aa-model'),       // API 连接·模型选择（弹层）
+      modelpop: panel.querySelector('#tm-aa-modelpop'),
+      perm: panel.querySelector('#tm-aa-perm'),         // 权限模式（问策/共审/放行·CC 对照）
+      permpop: panel.querySelector('#tm-aa-permpop'),
+      attach: panel.querySelector('#tm-aa-attach'),     // S2 · 附件签行
+      rail: panel.querySelector('#tm-aa-rail'),         // Claude 桌面端式 · 会话历史侧栏（全屏）
+      raillist: panel.querySelector('#tm-aa-raillist'),
+      railTg: panel.querySelector('#tm-aa-rail-tg')
     };
     panel.querySelector('#tm-aa-x').addEventListener('click', function() { if (panel._fs) _toggleFullscreen(); panel.classList.remove('open'); });
     var _nc = panel.querySelector('#tm-aa-newchat'); if (_nc) _nc.addEventListener('click', newConversation);   // 真·连续会话：另起新对话
     var _pf = panel.querySelector('#tm-aa-preflight'); if (_pf) _pf.addEventListener('click', function () { runPreflightUI(); });   // 常驻·运行时体检(确定性免API·随时重跑·不止空状态)
-    if (ui.els.fs) ui.els.fs.addEventListener('click', _toggleFullscreen);   // UI·AI · 全屏切换
+    if (ui.els.fs) ui.els.fs.addEventListener('click', function () { _toggleFullscreen('user'); });   // UI·AI · 全屏切换
     _ensurePanelResize();   // UI·AI · 左缘拖拽调宽 + 载入持久宽度
     _ensureSearch();   // UI·AJ · 过程区内搜索（⌘F）
     _ensureCtxChip();   // N1 焦点上下文 chip
     _ensureAtMention();   // N3 @提及作用域上下文
+    _ensureCmdPal();      // S6 · / 命令面板（CC slash commands 对照·⌘K 唤起）
     ui.els.go.addEventListener('click', onGoClick);   // UI·Q · 运行中此键=停止
     ui.els.apply.addEventListener('click', onApply);
     ui.els.discard.addEventListener('click', onDiscard);
     _ensureWorldKind();   // 刀2 · 世界类型选择器（史实/虚构）绑定 + 初始反映
+    _ensureTheme();       // Claude 桌面端式 · 明暗主题（持久）
+    _ensurePlusMenu();    // Claude 桌面端式 · ＋能力菜单（体检/审阅/问答/讲解/编排/会审/检查点/撤销）
+    _ensureRail();        // Claude 桌面端式 · 会话历史侧栏（全屏下展开）
+    _ensureModelPop();    // API 连接·模型选择弹层（模型徽即入口·检测该 API 的真实模型清单）
+    _ensurePermPop();     // 权限模式（问策/共审/放行·持久·CC permission modes 对照）
+    _ensureAttach();      // S2 · 附件：曲别针/拖拽/粘贴截图 → 文本内联+图片视觉通道
     _ensureLogFollow();   // UI·AB · 滚动跟随 + 回到底部
     _renderEmpty();   // UI·AD · 空状态欢迎 + 建议提示
     ui.els.req.addEventListener('input', _syncEmpty);   // 有字则隐欢迎态
@@ -723,25 +999,522 @@
     _reflectWorldKind();   // 初始反映剧本当前 worldKind
   }
 
+  // ── Claude 桌面端式 · 明暗主题（暖炭黑默认 / 象牙白·持久） ──
+  var THEME_KEY = 'tm_aa_theme';
+  function _ensureTheme() {
+    var p = ui.els && ui.els.panel; if (!p) return;
+    var saved = 'dark';
+    try { saved = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch (e) {}
+    p.setAttribute('data-theme', saved);
+    if (ui.els.theme) ui.els.theme.addEventListener('click', function () {
+      var next = p.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      p.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      setStatus(next === 'light' ? '已切换为浅色主题' : '已切换为深色主题');
+    });
+  }
+
+  // ── Claude 桌面端式 · ＋能力菜单：把散落的高级能力收进输入卡左下角（全部走既有运行器·零新行为） ──
+  var _PLUS_ITEMS = [
+    { act: 'preflight', ic: 'pulse', t: '运行时体检', d: '确定性检查·免 API·查会影响加载的阻塞' },
+    { act: 'review', ic: 'search', t: '审阅出报告', d: '全面体检剧本（输入框可写审阅重点）' },
+    { act: 'qa', ic: 'chat', t: '剧本问答', d: '就剧本提问（先在输入框写问题）' },
+    { act: 'explain', ic: 'book', t: '讲解剧本', d: '给接手的人做 onboarding 式讲解' },
+    { act: 'orchestrate', ic: 'route', t: '分解编排', d: '大需求拆成子任务逐个执行' },
+    { act: 'critics', ic: 'scale', t: '三堂会审', d: '国师拟稿·史官查史实·谏官批平衡' },
+    { act: 'sep' },
+    { act: 'checkpoint', ic: 'save', t: '存检查点', d: '把当前剧本存为可回退的存档点' },
+    { act: 'undo', ic: 'undo', t: '撤销上次应用', d: '回到上次应用前的快照' }
+  ];
+  function _plusClose() { if (ui.els && ui.els.plusmenu) { ui.els.plusmenu.hidden = true; ui.els.plus.classList.remove('on'); } }
+  // ＋菜单与 / 命令面板共用的能力派发（S6·CC slash commands 对照）
+  function _plusAct(act) {
+    if (act === 'preflight') runPreflightUI();
+    else if (act === 'review') runReview();
+    else if (act === 'qa') runQaUI();
+    else if (act === 'explain') runExplainUI();
+    else if (act === 'orchestrate') runOrchestratedUI();
+    else if (act === 'critics') _armCritics();
+    else if (act === 'checkpoint') manualCheckpoint();
+    else if (act === 'undo') undoLastApply();
+  }
+
+  // ── S6 · / 命令面板（CC slash commands 对照）：输入框开头敲 / 即出面板·边敲边过滤·↑↓ 选·
+  //    Enter 执行·「/审阅 平衡性」式参数会回填输入框再跑对应模式·Ctrl/⌘+K 亦可唤起
+  //    （工坊 dock 顶栏的「⌘K 命令」提示至此成真）。全部命令走既有运行器·零新行为。 ──
+  function _cmdDefs() {
+    return [
+      { k: 'new', t: '新对话', d: '另起新会话（旧会话留侧栏可切回）', run: function () { newConversation(); } },
+      { k: 'sessions', t: '会话侧栏', d: '打开/收起会话历史（全屏侧栏）', run: function () { if (ui.els.railTg) ui.els.railTg.click(); } },
+      { k: 'review', t: '审阅出报告', d: '全面体检·可带重点：/审阅 平衡性', run: function () { _plusAct('review'); } },
+      { k: 'qa', t: '剧本问答', d: '就剧本提问：/剧本问答 谁掌兵权', run: function () { _plusAct('qa'); } },
+      { k: 'explain', t: '讲解剧本', d: '给接手的人做 onboarding 式讲解', run: function () { _plusAct('explain'); } },
+      { k: 'orchestrate', t: '分解编排', d: '大需求拆子任务：/分解编排 重做经济', run: function () { _plusAct('orchestrate'); } },
+      { k: 'critics', t: '三堂会审', d: '拟稿+史官+谏官（武装下一轮生成）', run: function () { _plusAct('critics'); } },
+      { k: 'preflight', t: '运行时体检', d: '确定性检查·免 API', run: function () { _plusAct('preflight'); } },
+      { k: 'changelog', t: '版本说明', d: '汇总已应用改动·零 token', run: function () { runChangelogUI(); } },
+      { k: 'fork', t: '分叉会话', d: '把当前会话复制成分支再演化（原线不动）', run: function () { if (ui._sessId) forkSession(ui._sessId); else setStatus('当前没有活动会话（先跑一轮，或从侧栏选中一条）'); } },
+      { k: 'conv', t: '创作约定', d: '查看全局+本剧本两层约定（等价 CLAUDE.md）', run: function () { showConventionsUI(); } },
+      { k: 'memories', t: '记忆册', d: '国师存下的跨会话记忆（四型·可删）', run: function () { showMemoriesUI(); } },
+      { k: 'skills', t: '技能册', d: '可用技能清单（内置+能力包+自存·可删自存）', run: function () { showSkillsUI(); } },
+      { k: 'packs', t: '能力包', d: '技能+约定的打包单元（启停/导入/导出）', run: function () { showPacksUI(); } },
+      { k: 'usage', t: '用量·上下文', d: '本轮 token 构成与上下文窗口占比', run: function () { showUsageUI(); } },
+      { k: 'initconv', t: '初始化约定', d: '通读剧本·总结值得沿用的创作约定（可逐条记住）', run: function () { ui.els.req.value = '【梳理创作约定】通读剧本，总结 5-10 条值得长期沿用的创作约定（命名规律、文风与称谓、数值区间、结构惯例、世界观基调）。每确认一条就调用 recordConvention 记录一条；报告 findings 也逐条列出这些约定及其依据。不评质量问题，只提炼惯例。'; runReview(); } },
+      { k: 'compact', t: '压缩前情', d: '把长对话压成前情摘要（省上下文·续接不断）', run: function () { runCompactUI(); } },
+      { k: 'notify', t: '完成通知', d: '页面切后台时跑完弹系统通知（开/关）', run: function () { _toggleNotify(); } },
+      { k: 'checkpoint', t: '存检查点', d: '当前剧本存为可回退存档点', run: function () { _plusAct('checkpoint'); } },
+      { k: 'undo', t: '撤销上次应用', d: '回到上次应用前快照', run: function () { _plusAct('undo'); } },
+      { k: 'perm-plan', t: '权限·问策', d: '只读出计划·绝不动剧本', run: function () { var p = _loadPerm(); p.mode = 'plan'; _applyPerm(p); setStatus('权限已切到「问策」· 只读出计划'); } },
+      { k: 'perm-review', t: '权限·共审', d: '改动经你审后应用（默认）', run: function () { var p = _loadPerm(); p.mode = 'review'; _applyPerm(p); setStatus('权限已切到「共审」· 改动经你审后应用'); } },
+      { k: 'perm-auto', t: '权限·放行', d: '校验通过自动应用', run: function () { var p = _loadPerm(); p.mode = 'auto'; _applyPerm(p); setStatus('权限已切到「放行」· 校验通过自动应用'); } },
+      { k: 'theme', t: '切换主题', d: '深色 / 浅色', run: function () { if (ui.els.theme) ui.els.theme.click(); } }
+    ];
+  }
+  function _cmdQuery() {
+    var v = (ui.els && ui.els.req ? ui.els.req.value : '') || '';
+    if (v.charAt(0) !== '/') return null;
+    var sp = v.indexOf(' ');
+    return { cmd: (sp > 0 ? v.slice(1, sp) : v.slice(1)).trim().toLowerCase(), arg: sp > 0 ? v.slice(sp + 1) : '' };
+  }
+  // 浮层上下自适应：composer 上方空间不足（空态/无消息时 composer 贴顶）→ 翻到 composer 下方
+  function _popPlace(pop) {
+    function place() {
+      try {
+        var pb = ui.els.panel.getBoundingClientRect(), cb = pop.parentElement.getBoundingClientRect();
+        pop.classList.toggle('below', (cb.top - pb.top) < 300);
+      } catch (e) {}
+    }
+    place();
+    // 同一输入事件里 _syncEmpty 可能撤掉空态居中（composer 从屏中跳到贴顶）——布局稳定后复测一次
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(place);
+  }
+  function _hideCmdPop() { ui._cmdActive = false; ui._cmdIdx = 0; if (ui.els && ui.els.cmdpop) ui.els.cmdpop.hidden = true; }
+  function _showCmdPop() {
+    var pop = ui.els && ui.els.cmdpop; if (!pop) return;
+    var pq = _cmdQuery();
+    if (pq == null) { if (ui._cmdActive) _hideCmdPop(); return; }
+    var list = _cmdDefs().filter(function (c) { return !pq.cmd || (c.t + ' ' + c.d + ' ' + c.k).toLowerCase().indexOf(pq.cmd) >= 0; });
+    if (!list.length) { _hideCmdPop(); return; }
+    ui._cmdActive = true;
+    if (!ui._cmdIdx || ui._cmdIdx >= list.length) ui._cmdIdx = 0;
+    pop.innerHTML = '<div class="tm-aa-cmdhd">命令 · ↑↓ 选 · Enter 执行 · Esc 关</div>' + list.map(function (c, i) {
+      return '<button type="button" class="tm-aa-cmditem' + (i === ui._cmdIdx ? ' on' : '') + '" data-k="' + esc(c.k) + '"><b>/' + esc(c.t) + '</b><span class="cmd-d">' + esc(c.d) + '</span></button>';
+    }).join('');
+    pop.hidden = false;
+    _popPlace(pop);
+  }
+  function _execCmd(k) {
+    var pq = _cmdQuery() || { arg: '' };
+    var def = null;
+    _cmdDefs().forEach(function (c) { if (!def && c.k === k) def = c; });
+    _hideCmdPop();
+    if (!def) return;
+    if (ui.running && k !== 'sessions' && k !== 'theme') { setStatus('运行中 · 先点「■」停止，再用「' + def.t + '」'); return; }
+    ui.els.req.value = pq.arg || '';   // 「/命令 参数」→ 参数回填输入框供运行器取用
+    _autoGrowReq();
+    def.run();
+  }
+  function _ensureCmdPal() {
+    if (ui._cmdWired || !ui.els || !ui.els.req) return;
+    ui._cmdWired = true;
+    ui._cmdIdx = 0;
+    ui.els.req.addEventListener('input', _showCmdPop);
+    ui.els.req.addEventListener('keydown', function (ev) {
+      if (!ui._cmdActive) return;
+      var items = ui.els.cmdpop ? ui.els.cmdpop.querySelectorAll('.tm-aa-cmditem') : [];
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (!items.length) return;
+        ui._cmdIdx = (ui._cmdIdx + (ev.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length;
+        for (var i = 0; i < items.length; i++) items[i].classList.toggle('on', i === ui._cmdIdx);
+        try { items[ui._cmdIdx].scrollIntoView({ block: 'nearest' }); } catch (e) {}
+        return;
+      }
+      if ((ev.key === 'Enter' || ev.keyCode === 13) && !ev.isComposing) {
+        ev.preventDefault();
+        var el = items[ui._cmdIdx];
+        if (el) _execCmd(el.getAttribute('data-k'));
+        return;
+      }
+      if (ev.key === 'Escape') { ev.stopPropagation(); _hideCmdPop(); }
+    });
+    if (ui.els.cmdpop) ui.els.cmdpop.addEventListener('mousedown', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.tm-aa-cmditem') : null;
+      if (b) { ev.preventDefault(); _execCmd(b.getAttribute('data-k')); }
+    });
+    document.addEventListener('keydown', function (ev) {   // Ctrl/⌘+K 唤起
+      if ((ev.ctrlKey || ev.metaKey) && (ev.key === 'k' || ev.key === 'K')) {
+        var p = ui.els.panel; if (!p || !p.classList.contains('open')) return;
+        ev.preventDefault();
+        ui.els.req.value = '/'; _autoGrowReq();
+        try { ui.els.req.focus(); ui.els.req.setSelectionRange(1, 1); } catch (e) {}
+        ui._cmdIdx = 0; _showCmdPop();
+      }
+    });
+    document.addEventListener('click', function (ev) { if (ui._cmdActive && ui.els.cmdpop && !ui.els.cmdpop.contains(ev.target) && ev.target !== ui.els.req) _hideCmdPop(); });
+  }
+  function _ensurePlusMenu() {
+    var btn = ui.els && ui.els.plus, menu = ui.els && ui.els.plusmenu;
+    if (!btn || !menu || ui._plusBound) return;
+    ui._plusBound = true;
+    menu.innerHTML = _PLUS_ITEMS.map(function (it, i) {
+      if (it.act === 'sep') return '<div class="tm-aa-mi-sep"></div>';
+      return '<button type="button" class="tm-aa-mi" data-act="' + it.act + '"><span class="mi-ic">' + _icon(it.ic) + '</span><span><span>' + esc(it.t) + '</span><span class="mi-d">' + esc(it.d) + '</span></span></button>';
+    }).join('');
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      menu.hidden = !menu.hidden;
+      btn.classList.toggle('on', !menu.hidden);
+    });
+    menu.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.tm-aa-mi') : null;
+      if (!b) return;
+      _plusClose();
+      var act = b.getAttribute('data-act');
+      if (ui.running) { setStatus('运行中 · 先点「■」停止，再使用「' + (b.textContent || '').slice(0, 6) + '…」'); return; }
+      _plusAct(act);
+    });
+    document.addEventListener('click', function (ev) {
+      if (!menu.hidden && !menu.contains(ev.target) && ev.target !== btn) _plusClose();
+    });
+    document.addEventListener('keydown', function (ev) {   // Esc 关能力菜单
+      if (ev.key === 'Escape' && !menu.hidden) { _plusClose(); ev.stopPropagation(); }
+    });
+  }
+
+  // ── Claude 桌面端式 · 会话历史侧栏：全屏下左侧展开（数据=既有 listHistory 持久历史·点击回填输入框）
+  //    调研对齐：桌面端侧栏 = 搜索框 + 按日期分组的会话列表（今天/昨天/七日内/更早） ──
+  function _railGroupOf(ts) {
+    var d = new Date(); d.setHours(0, 0, 0, 0);
+    var day0 = d.getTime();
+    if (ts >= day0) return '今天';
+    if (ts >= day0 - 86400000) return '昨天';
+    if (ts >= day0 - 6 * 86400000) return '七日内';
+    return '更早';
+  }
+  // S5 · 侧栏=会话列表（CC/Claude 桌面端对照）：按日期分组·点击切换会话（跨剧本自动切剧本）·
+  //   悬停 × 删除·当前会话高亮·会话属别的剧本时显剧本徽记。
+  function _renderRail(query) {
+    var list = ui.els && ui.els.raillist; if (!list) return;
+    var l = listSessions(query).slice(0, 40), fk = _fileKey();
+    if (!l.length) { list.innerHTML = '<div class="rail-empty">' + (query ? '没有匹配「' + esc(String(query).slice(0, 20)) + '」的会话。' : '还没有会话——发出第一条需求后，这里会按日期列出会话，点击可随时切回（连剧本一起切）。') + '</div>'; return; }
+    var out = [], lastGrp = null;
+    l.forEach(function (m) {
+      if (!m || !m.id) return;
+      var g = _railGroupOf(m.ts || 0);
+      if (g !== lastGrp) { out.push('<div class="rail-sec">' + g + '</div>'); lastGrp = g; }
+      var other = m.fileKey && m.fileKey !== fk;
+      var noBody = !_sessBody(m.id);
+      out.push('<div class="rail-item' + (m.id === ui._sessId ? ' on' : '') + '" data-sess="' + esc(m.id) + '" title="'
+        + (other ? '点击切换到剧本「' + esc(m.fileLabel || '') + '」并续接该会话' : '点击续接该会话') + (noBody ? '（正文已按容量清理·只余档卡）' : '') + '">'
+        + '<div class="ri-req">' + esc(m.title || '（未命名会话）') + '</div>'
+        + '<div class="ri-meta">' + (other ? '<span class="ri-file">⇄ ' + esc(m.fileLabel || '?') + '</span> · ' : (m.fileLabel ? esc(m.fileLabel) + ' · ' : ''))
+        + (m.msgs || 0) + ' 条 · ' + esc(m.kind || '') + '</div>'
+        + '<button type="button" class="ri-fork" data-fork="' + esc(m.id) + '" title="分叉该会话（复制成新会话·从这里分头演化）">⎇</button>'
+        + '<button type="button" class="ri-ren" data-ren="' + esc(m.id) + '" title="重命名会话">✎</button>'
+        + '<button type="button" class="ri-del" data-del="' + esc(m.id) + '" title="删除该会话">×</button>'
+        + '</div>');
+    });
+    list.innerHTML = out.join('');
+  }
+  function _ensureRail() {
+    if (!ui.els || !ui.els.railTg || ui._railBound) return;
+    ui._railBound = true;
+    ui.els.railTg.addEventListener('click', function () {
+      var p = ui.els.panel;
+      if (!p.classList.contains('railon') && !p._fs) _toggleFullscreen('user');   // 侧栏是全屏版式的一部分：未全屏先进全屏
+      p.classList.toggle('railon');
+      if (p.classList.contains('railon')) _renderRail(ui._railQ || '');
+    });
+    var _rq = ui.els.panel.querySelector('#tm-aa-railq');
+    if (_rq) _rq.addEventListener('input', function () { ui._railQ = _rq.value.trim(); _renderRail(ui._railQ); });
+    var _rn = ui.els.panel.querySelector('#tm-aa-railnew');
+    if (_rn) _rn.addEventListener('click', function () { newConversation(); _renderRail(ui._railQ || ''); });
+    var _rc = ui.els.panel.querySelector('#tm-aa-railclear');
+    if (_rc) _rc.addEventListener('click', function () { clearSessions(); _renderRail(ui._railQ || ''); setStatus('会话历史已清空（运行审计与版本说明不受影响）'); });
+    if (ui.els.raillist) ui.els.raillist.addEventListener('click', function (ev) {
+      var del = ev.target && ev.target.closest ? ev.target.closest('.ri-del') : null;
+      if (del) { deleteSession(del.getAttribute('data-del')); _renderRail(ui._railQ || ''); return; }
+      var fk8 = ev.target && ev.target.closest ? ev.target.closest('.ri-fork') : null;
+      if (fk8) { if (ui.running) { setStatus('运行中 · 先停止再分叉'); return; } forkSession(fk8.getAttribute('data-fork')); _renderRail(ui._railQ || ''); return; }
+      var ren = ev.target && ev.target.closest ? ev.target.closest('.ri-ren') : null;
+      if (ren) {
+        var rid = ren.getAttribute('data-ren'), row = ren.closest('.rail-item');
+        var cur = (row && row.querySelector('.ri-req') || {}).textContent || '';
+        var nv = null; try { nv = window.prompt('重命名会话', cur); } catch (e) {}
+        if (nv != null && renameSession(rid, nv)) { _renderRail(ui._railQ || ''); setStatus('已重命名会话'); }
+        return;
+      }
+      var it = ev.target && ev.target.closest ? ev.target.closest('.rail-item') : null;
+      if (!it) return;
+      switchSession(it.getAttribute('data-sess'));
+      _renderRail(ui._railQ || '');
+    });
+    ui._onSessionsChange = function () { if (ui.els.panel.classList.contains('railon')) _renderRail(ui._railQ || ''); };   // 会话落盘/删除 → 侧栏活刷新
+    ui._onHistoryChange = function () { if (ui.els.panel.classList.contains('railon')) _renderRail(ui._railQ || ''); };    // 兼容旧钩子(标记已应用等)
+  }
+
+  // ── API 连接 · 模型选择（模型徽即入口·owner 定案）：地址+Key → 真调该 API 的模型清单接口 → 下拉选定即用。
+  //    存全游戏共用 tm_api·并 best-effort 镜像回游戏存档 P.ai(tm_P_lite/tm_P·与工坊 API 模态同构——
+  //    loadEditorApiConfig 以「游戏存档有 key」为优先源·不镜像则此处新配置会被存档压掉)。 ──
+  function _loadApiCfg() { try { return (AA && typeof AA.loadEditorApiConfig === 'function') ? AA.loadEditorApiConfig() : {}; } catch (e) { return {}; } }
+  function _saveApiCfg(url, key, model, model2) {
+    try {
+      var cur = {}; try { cur = JSON.parse(localStorage.getItem('tm_api') || '{}') || {}; } catch (e0) {}
+      cur.url = url; cur.key = key; if (model) cur.model = model; cur.model2 = model2 || '';
+      localStorage.setItem('tm_api', JSON.stringify(cur));
+      ['tm_P_lite', 'tm_P'].forEach(function (k) {
+        try {
+          var o = JSON.parse(localStorage.getItem(k) || 'null');
+          if (o && o.ai) { o.ai.url = url; o.ai.key = key; if (model) o.ai.model = model; o.ai.model2 = model2 || ''; localStorage.setItem(k, JSON.stringify(o)); }
+        } catch (e1) {}
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+  // 检测模型清单：OpenAI 兼容(含 DeepSeek/一切中转) GET {base}/models · Anthropic /v1/models · Gemini /v1beta/models
+  function _detectModels(url, key) {
+    url = String(url || '').replace(/\/+$/, '');
+    var gemini = /generativelanguage\.googleapis\.com/i.test(url) && !/\/v1beta\/openai\//i.test(url);
+    var anthropic = !gemini && /api\.anthropic\.com/i.test(url);
+    var endpoint, headers = {};
+    if (gemini) { endpoint = url.replace(/\/v1beta.*$/i, '') + '/v1beta/models?key=' + encodeURIComponent(key || ''); }
+    else if (anthropic) { endpoint = url + '/v1/models'; headers = { 'x-api-key': key || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }; }
+    else {
+      var base = url.replace(/\/chat\/completions\/?$/i, '');
+      if (!/\/v\d+(beta)?$/i.test(base)) base += '/v1';
+      endpoint = base + '/models'; headers = { 'Authorization': 'Bearer ' + (key || '') };
+    }
+    return fetch(endpoint, { headers: headers }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + '：' + String(t).slice(0, 120)); });
+      return r.json();
+    }).then(function (d) {
+      var ids;
+      if (gemini) ids = ((d && d.models) || []).map(function (m) { return String((m && m.name) || '').replace(/^models\//, ''); });
+      else ids = (((d && d.data) || (d && d.models)) || []).map(function (m) { return m && (m.id || m.name); });
+      ids = (ids || []).filter(Boolean).map(String); ids.sort();
+      if (!ids.length) throw new Error('该 API 未返回模型列表（可手填模型名后直接保存）');
+      return ids;
+    });
+  }
+  function _refreshModelChip() {
+    var el = ui.els && ui.els.model; if (!el) return;
+    var cfg = _loadApiCfg();
+    var ok = !!(cfg.key && cfg.url);
+    el.textContent = ok ? (String(cfg.model || '').slice(0, 40) || '选择模型') : '配置 API';
+    el.classList.toggle('warn', !ok);
+  }
+  function _modelPopClose() { if (ui.els && ui.els.modelpop) ui.els.modelpop.hidden = true; }
+
+  // ── S2 · 附件（Claude 桌面端式）：曲别针/拖拽入面板/输入框粘贴截图 → 签行预览 → 发送时
+  //    文本文件内联为【附件】上下文·图片走视觉通道（user 消息 images[]·主模型须支持视觉）。 ──
+  var _ATT_TEXT_RE = /\.(txt|md|json|csv|tsv|js|yml|yaml|xml|html?)$/i;
+  function _attState() { if (!ui._att) ui._att = { files: [], images: [] }; return ui._att; }
+  function _renderAttach() {
+    var box = ui.els && ui.els.attach; if (!box) return;
+    var a = _attState();
+    if (!a.files.length && !a.images.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = a.images.map(function (u, i) {
+      return '<span class="att-chip att-img"><img src="' + u + '" alt="附图"><button type="button" class="att-x" data-k="img" data-i="' + i + '" title="移除">×</button></span>';
+    }).join('') + a.files.map(function (f, i) {
+      return '<span class="att-chip"><span class="att-ic">' + _icon('book') + '</span><span class="att-nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="att-sz">' + Math.ceil(f.text.length / 1000) + 'k字</span><button type="button" class="att-x" data-k="file" data-i="' + i + '" title="移除">×</button></span>';
+    }).join('');
+  }
+  function _ingestFiles(list) {
+    var a = _attState();
+    Array.prototype.forEach.call(list || [], function (f) {
+      if (!f) return;
+      if (/^image\//.test(f.type)) {
+        if (a.images.length >= 3) { setStatus('图片最多 3 张（已忽略「' + f.name + '」）'); return; }
+        if (f.size > 4 * 1024 * 1024) { setStatus('图片过大（>4MB）：' + f.name + ' 已忽略·请截小一点'); return; }
+        var rd = new FileReader();
+        rd.onload = function () { a.images.push(String(rd.result)); _renderAttach(); };
+        rd.readAsDataURL(f);
+      } else if (_ATT_TEXT_RE.test(f.name) || /^text\//.test(f.type) || f.type === 'application/json') {
+        if (a.files.length >= 4) { setStatus('文本附件最多 4 个（已忽略「' + f.name + '」）'); return; }
+        if (f.size > 300 * 1024) { setStatus('文件过大（>300KB）：' + f.name + ' 已忽略'); return; }
+        var rt = new FileReader();
+        rt.onload = function () { a.files.push({ name: f.name, text: String(rt.result || '').slice(0, 12000) }); _renderAttach(); };
+        rt.readAsText(f);
+      } else setStatus('暂不支持该类型附件：' + f.name + '（支持文本类与图片）');
+    });
+  }
+  function _attachPrefix() {   // 发送时把文本附件内联进需求（各 12k 上限·总量再由预算/压缩管）
+    var a = _attState();
+    if (!a.files.length) return '';
+    return a.files.map(function (f) { return '\n\n【附件 · ' + f.name + '】\n' + f.text; }).join('') + '\n\n（以上为玩家提供的参考附件·按需取用）';
+  }
+  function _takeImages() { var a = _attState(); var im = a.images.slice(0, 3); return im.length ? im : null; }
+  function _clearAttach() { ui._att = { files: [], images: [] }; _renderAttach(); }
+  function _ensureAttach() {
+    if (!ui.els || ui._attBound) return;
+    ui._attBound = true;
+    var btn = ui.els.panel.querySelector('#tm-aa-attach-btn'), fin = ui.els.panel.querySelector('#tm-aa-file');
+    if (btn && fin) {
+      btn.addEventListener('click', function () { fin.click(); });
+      fin.addEventListener('change', function () { _ingestFiles(fin.files); fin.value = ''; });
+    }
+    if (ui.els.attach) ui.els.attach.addEventListener('click', function (ev) {
+      var x = ev.target && ev.target.closest ? ev.target.closest('.att-x') : null;
+      if (!x) return;
+      var a = _attState();
+      if (x.getAttribute('data-k') === 'img') a.images.splice(+x.getAttribute('data-i'), 1); else a.files.splice(+x.getAttribute('data-i'), 1);
+      _renderAttach();
+    });
+    var p = ui.els.panel;
+    p.addEventListener('dragover', function (ev) { ev.preventDefault(); p.classList.add('tm-aa-drag'); });
+    p.addEventListener('dragleave', function (ev) { if (ev.target === p) p.classList.remove('tm-aa-drag'); });
+    p.addEventListener('drop', function (ev) {
+      ev.preventDefault(); p.classList.remove('tm-aa-drag');
+      if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length) { _ingestFiles(ev.dataTransfer.files); setStatus('附件已加入（发送时随需求一起交给国师）'); }
+    });
+    if (ui.els.req) ui.els.req.addEventListener('paste', function (ev) {
+      var fs = ev.clipboardData && ev.clipboardData.files;
+      if (fs && fs.length) { ev.preventDefault(); _ingestFiles(fs); setStatus('截图已加入附件（发送时走视觉通道·需主模型支持）'); }
+    });
+  }
+
+  // ── 权限模式（owner 点名的缺失件·CC permission modes 对照）：问策=Plan(只读出计划)·共审=默认(diff 审后应用)·
+  //    放行=Accept Edits(校验通过自动应用)。持久 tm_aa_perm·映射到既有引擎旗标(planMode/autonomy/allowDestructive)。 ──
+  var PERM_KEY = 'tm_aa_perm';
+  var _PM_LABEL = { plan: '问策', review: '共审', auto: '放行' };
+  function _loadPerm() {
+    var p = { mode: 'review', allowDestructive: true };
+    try { var s = JSON.parse(localStorage.getItem(PERM_KEY) || 'null'); if (s && _PM_LABEL[s.mode]) { p.mode = s.mode; p.allowDestructive = s.allowDestructive !== false; } } catch (e) {}
+    return p;
+  }
+  function _applyPerm(p) {
+    ui.planMode = p.mode === 'plan';
+    ui.autonomy = p.mode === 'auto' ? 'auto' : 'review';
+    ui.allowDestructive = p.allowDestructive !== false;
+    try { localStorage.setItem(PERM_KEY, JSON.stringify({ mode: p.mode, allowDestructive: p.allowDestructive !== false })); } catch (e) {}
+    _refreshPermChip();
+  }
+  function _refreshPermChip() {
+    var el = ui.els && ui.els.perm; if (!el) return;
+    var p = _loadPerm();
+    el.textContent = _PM_LABEL[p.mode] || '共审';
+    el.classList.toggle('pm-auto', p.mode === 'auto');
+    el.classList.toggle('pm-plan', p.mode === 'plan');
+    if (ui.els.permpop) {
+      Array.prototype.forEach.call(ui.els.permpop.querySelectorAll('.tm-aa-pm'), function (b) { b.classList.toggle('on', b.getAttribute('data-pm') === p.mode); });
+      var dg = ui.els.permpop.querySelector('#tm-aa-perm-danger'); if (dg) dg.checked = p.allowDestructive !== false;
+    }
+  }
+  function _permPopClose() { if (ui.els && ui.els.permpop) ui.els.permpop.hidden = true; }
+  function _ensurePermPop() {
+    var btn = ui.els && ui.els.perm, pop = ui.els && ui.els.permpop;
+    if (!btn || !pop || ui._permBound) return;
+    ui._permBound = true;
+    _applyPerm(_loadPerm());   // 启动即按持久模式布防（含引擎旗标）
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      pop.hidden = !pop.hidden;
+      if (!pop.hidden) { _plusClose(); _modelPopClose(); _refreshPermChip(); }
+    });
+    pop.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.tm-aa-pm') : null;
+      if (!b) return;
+      var p = _loadPerm(); p.mode = b.getAttribute('data-pm');
+      _applyPerm(p); _permPopClose();
+      setStatus(p.mode === 'plan' ? '已切「问策」——国师只读勘察出计划·批准后才会执行'
+        : (p.mode === 'auto' ? '已切「放行」——校验通过的改动将自动应用到剧本（可随时切回共审）'
+          : '已切「共审」——改动出 diff·由你逐条审后应用'));
+    });
+    var dg = pop.querySelector('#tm-aa-perm-danger');
+    if (dg) dg.addEventListener('change', function () { var p = _loadPerm(); p.allowDestructive = !!dg.checked; _applyPerm(p); setStatus(dg.checked ? '已允许危险操作（删除/改名联动等）' : '已禁止危险操作——删除类写入会被权限闸拦下'); });
+    document.addEventListener('click', function (ev) { if (!pop.hidden && !pop.contains(ev.target) && ev.target !== btn) _permPopClose(); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !pop.hidden) { _permPopClose(); ev.stopPropagation(); } });
+    _refreshPermChip();
+  }
+  function _ensureModelPop() {
+    var btn = ui.els && ui.els.model, pop = ui.els && ui.els.modelpop;
+    if (!btn || !pop || ui._modelPopBound) return;
+    ui._modelPopBound = true;
+    var q = function (s) { return pop.querySelector(s); };
+    var inUrl = q('#tm-aa-api-url'), inKey = q('#tm-aa-api-key'), sel = q('#tm-aa-api-model'), sel2 = q('#tm-aa-api-model2'), st = q('#tm-aa-api-st');
+    function _fill2(ids, cur2) {   // 次要模型下拉:首项恒「不用」·清单同主
+      sel2.innerHTML = '<option value="">不用 · 都走主模型</option>';
+      (ids || []).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = id; sel2.appendChild(o); });
+      sel2.value = (cur2 && (ids || []).indexOf(cur2) >= 0) ? cur2 : (cur2 || '');
+      if (cur2 && sel2.value !== cur2) { var ox = document.createElement('option'); ox.value = cur2; ox.textContent = cur2 + '（当前）'; sel2.appendChild(ox); sel2.value = cur2; }
+    }
+    function _seed() {
+      var cfg = _loadApiCfg();
+      inUrl.value = cfg.url || ''; inKey.value = cfg.key || '';
+      sel.innerHTML = '';
+      if (cfg.model) { var o0 = document.createElement('option'); o0.value = cfg.model; o0.textContent = cfg.model + '（当前）'; sel.appendChild(o0); }
+      _fill2([], cfg.model2 || '');
+      st.textContent = '';
+    }
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      pop.hidden = !pop.hidden;
+      if (!pop.hidden) { _plusClose(); _seed(); try { inUrl.focus(); } catch (eF) {} }
+    });
+    q('#tm-aa-api-detect').addEventListener('click', function () {
+      var u = inUrl.value.trim(), k = inKey.value.trim();
+      if (!u) { st.textContent = '先填 API 地址'; return; }
+      st.textContent = '检测中…';
+      _detectModels(u, k).then(function (ids) {
+        var cur = sel.value || _loadApiCfg().model || '';
+        var cur2 = sel2.value || _loadApiCfg().model2 || '';
+        sel.innerHTML = '';
+        ids.slice(0, 300).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = id; sel.appendChild(o); });
+        if (cur && ids.indexOf(cur) >= 0) sel.value = cur;
+        _fill2(ids.slice(0, 300), cur2);
+        st.textContent = '✓ 检测到 ' + ids.length + ' 个模型';
+      }).catch(function (e) { st.textContent = '✗ ' + ((e && e.message) || e); });
+    });
+    q('#tm-aa-api-save').addEventListener('click', function () {
+      var u = inUrl.value.trim(), k = inKey.value.trim(), m = (sel.value || '').trim(), m2 = (sel2.value || '').trim();
+      if (!u || !k) { st.textContent = 'API 地址与 Key 都要填'; return; }
+      if (_saveApiCfg(u, k, m, m2)) {
+        _refreshModelChip(); _modelPopClose();
+        setStatus('API 已保存（全游戏共用 · 国师 / 生图同源）' + (m ? ' · 主模型：' + m : '') + (m2 ? ' · 次模：' + m2 + '（会审两官/摘要分工）' : '') + ' · 下一次运行即生效');
+      } else st.textContent = '保存失败（localStorage 不可用）';
+    });
+    document.addEventListener('click', function (ev) { if (!pop.hidden && !pop.contains(ev.target) && ev.target !== btn) _modelPopClose(); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !pop.hidden) { _modelPopClose(); ev.stopPropagation(); } });
+    _refreshModelChip();
+  }
+
   function setStatus(t) { if (ui.els) ui.els.status.textContent = t || ''; }
 
   // 方向I · 可观测性：运行中实时 token / 耗时 / 轮次计量条。
   function _fmtTok(n) { n = n || 0; return n >= 1000 ? (Math.round(n / 100) / 10) + 'k' : String(n); }
   function _renderMeter(done) {
     if (!ui.els || !ui.els.meter) return;
-    if (!ui._runStart) { ui.els.meter.style.display = 'none'; return; }
+    if (!ui._runStart || done) { ui.els.meter.style.display = 'none'; return; }   // Claude 式：只在运行中显示（收尾由状态行汇总·不重复）
     var sec = Math.round((Date.now() - ui._runStart) / 1000);
     var tok = ui._lastTokens || 0, iter = ui._lastIter || 0;
+    // S10(Codex context-left 对照) · 上下文余量：预算越吃越紧时玩家能看见（≤30% 时着色提醒·撞线前引擎会自动宏压缩）
+    var left = (ui._budget && tok) ? Math.max(0, 100 - Math.round(tok * 100 / ui._budget)) : null;
     ui.els.meter.style.display = '';
-    ui.els.meter.textContent = (done ? '✓ 用时 ' : '⏱ ') + sec + 's · ' + (done ? '约 ' : '~') + _fmtTok(tok) + ' tokens' + (iter ? ' · ' + iter + ' 轮' : '');
+    ui.els.meter.textContent = '⏱ ' + sec + 's · ~' + _fmtTok(tok) + ' tokens' + (iter ? ' · ' + iter + ' 轮' : '') + (left != null ? ' · 上下文余 ' + left + '%' : '');
+    ui.els.meter.style.color = (left != null && left <= 15) ? 'var(--bad)' : ((left != null && left <= 30) ? 'var(--warn)' : '');
   }
   // 集中管理运行态：切换 running/禁用生成键 + 启停实时计量
   function setRunning(on) {
     ui.running = on;
     ui._stopping = false;
+    if (ui.els && ui.els.panel) ui.els.panel.classList.toggle('tm-aa-running', on);   // Claude 式 · 运行态（✳ 状态脉动 + 执行标签流光）
+    if (on) _plusClose();   // 开跑收起能力菜单
     if (on && ui.els && ui.els.empty) ui.els.empty.style.display = 'none';   // UI·AD · 一跑就隐欢迎态
     // UI·Q · 运行中「生成」键变形为「■ 停止」(不禁用·桌面端范式)；收尾恢复「生成」
-    if (ui.els && ui.els.go) { ui.els.go.disabled = false; ui.els.go.textContent = on ? '■' : '↑'; ui.els.go.setAttribute('aria-label', on ? '停止' : '发送'); ui.els.go.classList.toggle('stopbtn', on); }
+    if (ui.els && ui.els.go) { ui.els.go.disabled = false; ui.els.go.textContent = on ? '■' : '↑'; ui.els.go.style.fontSize = ''; ui.els.go.setAttribute('aria-label', on ? '停止' : '发送'); ui.els.go.title = on ? '停止（本轮 API 返回后干净收尾·不施未完成的改动）' : 'Enter 发送 · Shift+Enter 换行'; ui.els.go.classList.toggle('stopbtn', on); }
+    if (!on) {   // 工作过程 · 收尾：活动行移除·执行块自动折叠并定格标签
+      _maybeNotify();   // S12 · 页面切后台时跑完弹系统通知(Codex notify 对照·先于 _runStart 清理)
+      _removeLive();
+      if (ui._thinkEl && ui._thinkEl.isConnected) {
+        ui._thinkEl.open = false;
+        var _lbl = ui._thinkEl.querySelector('.tk-label');
+        if (_lbl && ui._thinkCount) _lbl.textContent = '执行过程 · ' + ui._thinkCount + ' 步';
+      }
+    }
+    // 刀G9 · 运行中输入框保持可用·占位提示"回车可插话"(收尾恢复常规提示)
+    if (ui.els && ui.els.req) ui.els.req.placeholder = on ? '运行中 · 输入新指示并回车可随时插话（agent 完成当前一步后处理，不打断）' : _REQ_PLACEHOLDER;
     if (on) {
       ui._runStart = Date.now(); ui._lastTokens = 0; ui._lastIter = 0;
       if (ui._meterTimer) clearInterval(ui._meterTimer);
@@ -751,6 +1524,492 @@
       if (ui._meterTimer) { clearInterval(ui._meterTimer); ui._meterTimer = null; }
       _renderMeter(true);   // 收尾定格总用时/tokens
     }
+  }
+
+  // S5(CC sessions 对照) · 会话体系：会话=独立线程·绑定剧本文件（fileKey）·切会话即切剧本。
+  //   索引 tm_aa_sessions（meta·新→旧·cap 20）+ 正文 tm_aa_sessbody_<id>（只保最新 10 条·护 quota）·
+  //   活动指针 tm_aa_sess_active{fileKey,sessId}（「＋ 新对话」把 sessId 置空 → 开面板不再拉回旧线程·
+  //   对应 CC --continue 取「当前项目最近会话」的语义）·旧单线程 tm_aa_thread 首次开面板迁移成一条会话。
+  var THREAD_KEY = 'tm_aa_thread';   // 旧单线程键·仅迁移用
+  var SESS_KEY = 'tm_aa_sessions', SESS_BODY = 'tm_aa_sessbody_', SESS_PTR = 'tm_aa_sess_active';
+  var SESS_MAX = 20, SESS_BODY_KEEP = 10, SESS_FRESH_MS = 48 * 3600 * 1000;
+  function _scenKey() {
+    try { var sc = ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : null; return String((sc && (sc.id || sc.editingScenarioId || sc.name)) || 'default'); }
+    catch (e) { return 'default'; }
+  }
+  function _fileKey() {
+    try { return (ui.adapter && typeof ui.adapter.getFileKey === 'function') ? String(ui.adapter.getFileKey()) : ('name:' + _scenKey()); }
+    catch (e) { return 'name:' + _scenKey(); }
+  }
+  function _fileLabel() {
+    try {
+      if (ui.adapter && typeof ui.adapter.getFileLabel === 'function') return String(ui.adapter.getFileLabel());
+      var sc = ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : null;
+      return String((sc && sc.name) || '');
+    } catch (e) { return ''; }
+  }
+  function _sessIndex() { try { var v = JSON.parse(localStorage.getItem(SESS_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function _sessIndexSave(list) { try { localStorage.setItem(SESS_KEY, JSON.stringify(list.slice(0, SESS_MAX))); } catch (e) {} }
+  function _sessBody(id) { try { var v = JSON.parse(localStorage.getItem(SESS_BODY + id) || 'null'); return (v && Array.isArray(v.conversation) && v.conversation.length) ? v : null; } catch (e) { return null; } }
+  function _sessPtr() { try { return JSON.parse(localStorage.getItem(SESS_PTR) || 'null') || {}; } catch (e) { return {}; } }
+  function _sessPtrSet(fileKey, sessId) { try { localStorage.setItem(SESS_PTR, JSON.stringify({ fileKey: fileKey, sessId: sessId || null, ts: Date.now() })); } catch (e) {} }
+  // 从「构建后的 user 消息」提取玩家原话（回放气泡/会话标题用）：剥掉【用户需求】等标记头与草稿现状等附文
+  function _rawReq(text) {
+    var t = String(text || '').replace(/^【曾附图 \d+ 张】/, '').trim();
+    var m = t.match(/^【[^】]{1,14}】\n?([\s\S]*)$/);
+    var body = m ? m[1] : t;
+    var cut = body.search(/\n【|\n（在上面已改|\n（当前编辑上下文|\n（提示：/);
+    if (cut > 0) body = body.slice(0, cut);
+    return body.trim().slice(0, 300);
+  }
+  // 正文只保最新 N 条（quota）·索引之外的孤儿正文一并清（SESS_PTR 不带 SESS_BODY 前缀·不会被误清）
+  function _evictSessBodies(extra) {
+    try {
+      var keep = {};
+      _sessIndex().slice(0, Math.max(0, SESS_BODY_KEEP - (extra || 0))).forEach(function (m) { if (m && m.id) keep[SESS_BODY + m.id] = 1; });
+      var kill = [];
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(SESS_BODY) === 0 && !keep[k]) kill.push(k); }
+      kill.forEach(function (k) { try { localStorage.removeItem(k); } catch (e0) {} });
+    } catch (e) {}
+  }
+  function _migrateLegacyThread() {
+    try {
+      var raw = localStorage.getItem(THREAD_KEY); if (!raw) return;
+      localStorage.removeItem(THREAD_KEY);
+      var pack = JSON.parse(raw);
+      if (!pack || !Array.isArray(pack.conversation) || !pack.conversation.length) return;
+      var same = pack.sid && pack.sid === _scenKey();
+      var id = 's' + (pack.ts || Date.now()) + '-mig';
+      var meta = { id: id, ts: pack.ts || Date.now(), created: pack.ts || Date.now(),
+        fileKey: same ? _fileKey() : ('name:' + (pack.sid || 'default')), fileLabel: same ? _fileLabel() : String(pack.sid || ''),
+        title: _rawReq(pack.conversation[0] && pack.conversation[0].text) || '上次会话', msgs: pack.conversation.length, tokens: 0, kind: '编辑', summary: '' };
+      localStorage.setItem(SESS_BODY + id, JSON.stringify({ id: id, ts: meta.ts, todos: pack.todos || [], conversation: pack.conversation }));
+      var idx = _sessIndex(); idx.unshift(meta); _sessIndexSave(idx);
+    } catch (e) {}
+  }
+  // 每轮跑完落盘到当前会话（无则新建）：meta 进索引·正文分键存（压缩副本·体量上限护 quota）
+  function _saveSession(res, request, kind) {
+    try {
+      if (!res || !Array.isArray(res.conversation) || !res.conversation.length) return;
+      var copy = JSON.parse(JSON.stringify(res.conversation));
+      copy.forEach(function (m) { if (m && m.images && m.images.length) { m.text = '【曾附图 ' + m.images.length + ' 张】' + (m.text || ''); delete m.images; } });   // S2 · 像素不进 localStorage(体量)
+      try { AA._compactOldToolResults(copy, 4); } catch (e0) {}
+      ui._sessSeq = (ui._sessSeq || 0) + 1;
+      var id = ui._sessId || ('s' + Date.now() + '-' + ui._sessSeq);
+      ui._sessId = id;
+      var body = { id: id, ts: Date.now(), todos: (res.todos || []).slice(0, 20), conversation: copy };
+      var s = JSON.stringify(body);
+      if (s.length > 900000) { try { AA._compactOldToolResults(copy, 1); } catch (e1) {} s = JSON.stringify(body); }
+      var all = _sessIndex();
+      var old = null, rest = [];
+      all.forEach(function (m) { if (m && m.id === id) old = m; else if (m) rest.push(m); });
+      var meta = {
+        id: id, ts: Date.now(), created: old ? (old.created || old.ts) : Date.now(),
+        fileKey: _fileKey(), fileLabel: _fileLabel(),
+        title: (old && old.title) || _rawReq(String(request || '')) || _rawReq(copy[0] && copy[0].text) || '（未命名会话）',
+        msgs: copy.length, tokens: ((old && old.tokens) || 0) + ((res && res.tokensUsed) || 0),
+        kind: kind || (old && old.kind) || '编辑',
+        summary: String(_runSummaryOf(res) || '').slice(0, 240)
+      };
+      rest.unshift(meta); _sessIndexSave(rest);
+      if (s.length <= 900000) {
+        try { localStorage.setItem(SESS_BODY + id, s); }
+        catch (eq) { _evictSessBodies(3); try { localStorage.setItem(SESS_BODY + id, s); } catch (eq2) {} }   // quota 满：先腾再存
+      } else { try { localStorage.removeItem(SESS_BODY + id); } catch (e2) {} }   // 仍过大：留档卡·正文宁缺毋 quota 爆
+      _evictSessBodies(0);
+      _sessPtrSet(meta.fileKey, id);
+      if (!old) _autoTitle(id, request, meta.summary);   // S8 · 新会话首存后异步起短标题(CC ai-title)
+      if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e3) {} }
+    } catch (e) {}
+  }
+  // 把会话正文回放进消息流（CC 恢复会话即见完整往来对照）：user 气泡=玩家原话；
+  //   assistant/tool 段聚合成一张只读回应卡（取该轮最后一条有文字的 assistant·统计工具数）。
+  function _renderConversation(conv, meta) {
+    if (!ui.els || !Array.isArray(conv)) return;
+    resetResults(false);
+    if (ui.els.empty) ui.els.empty.style.display = 'none';
+    var i = 0;
+    while (i < conv.length) {
+      var turn = conv[i];
+      if (turn && turn.role === 'user') { var t = _rawReq(turn.text); if (t) _appendUserMsg(t, { input: t }); i++; continue; }
+      var lastTxt = '', tools = 0;
+      while (i < conv.length && conv[i] && conv[i].role !== 'user') {
+        var a = conv[i];
+        if (a.role === 'assistant') {
+          if (String(a.text || '').trim()) lastTxt = String(a.text).trim();
+          tools += Array.isArray(a.toolCalls) ? a.toolCalls.length : 0;
+        }
+        i++;
+      }
+      if (lastTxt || tools) {
+        _beginReplyCard();
+        if (ui.els.summary) { ui.els.summary.innerHTML = lastTxt ? _md(lastTxt.slice(0, 4000)) : '<span class="tm-aa-stream">（该轮以工具操作为主）</span>'; ui.els.summary.style.display = ''; }
+        var tag = ui._reply && ui._reply.querySelector('.reply-tag'); if (tag && tools) tag.textContent = '— 本轮执行 ' + tools + ' 个工具';
+        _freezeLastReply();
+      }
+    }
+    if (meta && meta.summary) {   // 收尾档卡：当轮 finish 的改动说明存在 meta 里（正文里只有工具调用）
+      _beginReplyCard();
+      if (ui.els.summary) { ui.els.summary.innerHTML = _md(String(meta.summary)); ui.els.summary.style.display = ''; }
+      _freezeLastReply();
+    }
+    ui._logPinned = true;
+    if (ui.els.logWrap) { try { ui.els.logWrap.scrollTop = ui.els.logWrap.scrollHeight; } catch (e) {} }
+  }
+  // 开面板自动续接（CC --continue 语义）：优先活动指针指的会话·否则本剧本最新会话；
+  //   玩家点过「＋ 新对话」（指针 sessId=null）或过陈(48h)则不拉回。
+  function _maybeRestoreThread() {
+    try {
+      if (ui.running || (ui.conversation && ui.conversation.length)) return false;
+      _migrateLegacyThread();
+      var fk = _fileKey(), ptr = _sessPtr(), idx = _sessIndex();
+      if (ptr && ptr.fileKey === fk && !ptr.sessId && Date.now() - (ptr.ts || 0) < SESS_FRESH_MS) return false;
+      var cand = null;
+      if (ptr && ptr.fileKey === fk && ptr.sessId) idx.forEach(function (m) { if (!cand && m && m.id === ptr.sessId) cand = m; });
+      if (!cand) idx.forEach(function (m) { if (!cand && m && m.fileKey === fk) cand = m; });
+      if (!cand || Date.now() - (cand.ts || 0) > SESS_FRESH_MS) return false;
+      var body = _sessBody(cand.id); if (!body) return false;
+      ui.conversation = body.conversation;
+      ui._restoredTodos = Array.isArray(body.todos) ? body.todos : null;
+      ui._sessId = cand.id;
+      _renderConversation(body.conversation, cand);
+      var pend = (ui._restoredTodos || []).filter(function (t) { return t && t.status !== 'completed'; }).length;
+      setStatus('已续上会话「' + (cand.title || '') + '」（' + body.conversation.length + ' 条消息' + (pend ? '·' + pend + ' 项任务未完' : '') + '）· 直接输入续接；不需要就点「＋ 新对话」');
+      return true;
+    } catch (e) { return false; }
+  }
+  // 跨剧本切换后刷新顶栏副标题（仅当副标题仍是我方默认值/带「 · 」分隔时才动——工坊 dock 的自定义 sub 不碰）
+  function _refreshFileSub() {
+    try {
+      var sub = ui.els && ui.els.panel ? ui.els.panel.querySelector('#tm-aa-hd .sub') : null;
+      if (!sub) return;
+      var cur = sub.textContent || '', lbl = String((ui.adapter && ui.adapter.label) || '');
+      if (cur !== lbl && cur.indexOf(' · ') < 0) return;
+      var fl = _fileLabel();
+      sub.textContent = fl ? (lbl.split(' · ')[0] + ' · ' + fl) : lbl;
+    } catch (e) {}
+  }
+  // 切换会话（CC resume 对照）：绑定的剧本≠当前 → 先让宿主按键打开那个剧本（案卷库），成功才续接；
+  //   打不开（已删/未入库/宿主不支持）→ 只读回看正文，不绑定，防止把 A 剧本的会话续在 B 剧本上。
+  function switchSession(id) {
+    if (ui.running) { setStatus('运行中 · 先停止再切换会话'); return; }
+    var meta = null;
+    _sessIndex().forEach(function (m) { if (!meta && m && m.id === id) meta = m; });
+    if (!meta) { setStatus('该会话已不存在'); return; }
+    var body = _sessBody(id), fk = _fileKey();
+    function bind(viewOnly) {
+      ui._pendingPlan = false; ui._pendingClarify = false; ui.draft = null; ui._autoCont = 0;
+      if (ui._criticsArmed) _disarmCriticsVisual();
+      if (body && !viewOnly) {
+        ui.conversation = body.conversation;
+        ui._restoredTodos = Array.isArray(body.todos) ? body.todos : null;
+        ui._sessId = id;
+        _sessPtrSet(meta.fileKey, id);
+        _renderConversation(body.conversation, meta);
+        setStatus('已切到会话「' + (meta.title || '') + '」· 剧本「' + (meta.fileLabel || '') + '」· 直接输入续接');
+      } else if (body && viewOnly) {
+        ui.conversation = null; ui._restoredTodos = null; ui._sessId = null;
+        _renderConversation(body.conversation, meta);
+        setStatus('只读回看：会话绑定的剧本「' + (meta.fileLabel || '') + '」当前打不开（可能已删或未入案卷库）· 未续接，输入会对当前打开的剧本生效');
+      } else {
+        ui.conversation = null; ui._restoredTodos = null; ui._sessId = viewOnly ? null : id;
+        resetResults(false); _syncEmpty();
+        if (!viewOnly) _sessPtrSet(meta.fileKey, id);
+        setStatus('该会话正文已按容量清理（只余档卡）' + (viewOnly ? '·且其剧本打不开' : ' · 已就位，直接输入开新一轮'));
+      }
+      if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e) {} }
+    }
+    if (meta.fileKey && meta.fileKey !== fk && ui.adapter && typeof ui.adapter.openFile === 'function') {
+      setStatus('正在切换到剧本「' + (meta.fileLabel || '') + '」…');
+      try {
+        ui.adapter.openFile(meta.fileKey).then(function (okv) {
+          if (okv) { try { _reflectWorldKind(); } catch (e0) {} _refreshFileSub(); bind(false); }
+          else bind(true);
+        }, function () { bind(true); });
+      } catch (e) { bind(true); }
+    } else if (meta.fileKey && meta.fileKey !== fk) {
+      bind(true);   // 宿主没有 openFile（旧适配器/极端环境）
+    } else bind(false);
+  }
+  function deleteSession(id) {
+    var idx = _sessIndex(), meta = null;
+    idx.forEach(function (m) { if (!meta && m && m.id === id) meta = m; });
+    _sessIndexSave(idx.filter(function (m) { return m && m.id !== id; }));
+    try { localStorage.removeItem(SESS_BODY + id); } catch (e) {}
+    if (ui._sessId === id) { ui._sessId = null; ui.conversation = null; ui._restoredTodos = null; }
+    var p = _sessPtr(); if (p && p.sessId === id) _sessPtrSet(p.fileKey, null);
+    setStatus('已删除会话' + (meta && meta.title ? '「' + String(meta.title).slice(0, 24) + '」' : ''));
+    if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e2) {} }
+  }
+  function listSessions(query) {
+    var l = _sessIndex().slice();
+    var q = String(query || '').trim().toLowerCase();
+    if (q) l = l.filter(function (m) { return ((m.title || '') + ' ' + (m.fileLabel || '') + ' ' + (m.kind || '') + ' ' + (m.summary || '')).toLowerCase().indexOf(q) >= 0; });
+    return l;
+  }
+  // CC custom-title 对照：玩家改名永远压过自动标题（titleKind=custom·AI 标题不再覆盖）
+  function renameSession(id, title) {
+    title = String(title || '').trim().slice(0, 60);
+    if (!title) return false;
+    var idx = _sessIndex(), hit = false;
+    idx.forEach(function (m) { if (m && m.id === id) { m.title = title; m.titleKind = 'custom'; hit = true; } });
+    if (hit) { _sessIndexSave(idx); if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e) {} } }
+    return hit;
+  }
+  // S8(CC /branch + --fork-session 对照) · 会话分叉：正文快照复制成新会话（新 id·同剧本绑定），
+  //   从这一点分头演化——原会话不动，试两种改法/保底探索都不怕弄脏原线。
+  function forkSession(id) {
+    var src = null;
+    _sessIndex().forEach(function (m) { if (!src && m && m.id === id) src = m; });
+    if (!src) { setStatus('该会话已不存在'); return null; }
+    var body = _sessBody(id);
+    if (!body) { setStatus('该会话正文已按容量清理·无从分叉'); return null; }
+    ui._sessSeq = (ui._sessSeq || 0) + 1;
+    var nid = 's' + Date.now() + '-' + ui._sessSeq + 'f';
+    try { localStorage.setItem(SESS_BODY + nid, JSON.stringify({ id: nid, ts: Date.now(), todos: body.todos || [], conversation: body.conversation })); }
+    catch (e) { setStatus('分叉失败（本地空间不足·可先删几条旧会话）'); return null; }
+    var meta = { id: nid, ts: Date.now(), created: Date.now(), fileKey: src.fileKey, fileLabel: src.fileLabel,
+      title: String(src.title || '会话').slice(0, 52) + '·分支', titleKind: src.titleKind === 'custom' ? 'custom' : 'auto',
+      msgs: src.msgs, tokens: 0, kind: src.kind, summary: src.summary || '' };
+    var idx = _sessIndex(); idx.unshift(meta); _sessIndexSave(idx);
+    _evictSessBodies(0);
+    setStatus('已从「' + String(src.title || '').slice(0, 20) + '」分叉 · 正切换到分支');
+    switchSession(nid);
+    return nid;
+  }
+  // S8(CC ai-title 对照) · 会话首轮跑完后异步起短标题：走次要模型（没配则主模型）·一次结构化小调用·
+  //   静默失败保持首句标题·玩家改过名(titleKind=custom)绝不覆盖。
+  function _autoTitle(id, request, summary) {
+    try {
+      if (!AA || typeof AA.callWithTools !== 'function' || typeof AA.loadEditorApiConfig !== 'function') return;
+      var cfg = AA.loadEditorApiConfig() || {};
+      if (!cfg.key || !cfg.url) return;
+      if (cfg.model2 && cfg.model2 !== cfg.model) { cfg = JSON.parse(JSON.stringify(cfg)); cfg.model = cfg.model2; }
+      var tools = [{ name: 'setTitle', description: '提交会话标题', parameters: { type: 'object', properties: { title: { type: 'string', description: '不超过 12 个字的中文标题·名词短语·不带引号句号' } }, required: ['title'] } }];
+      AA.callWithTools([{ role: 'user', text: '给这轮剧本编辑会话起一个不超过 12 个字的中文短标题（概括意图·名词短语），调用 setTitle 提交。\n玩家需求：' + String(request || '').slice(0, 300) + (summary ? '\n完成摘要：' + String(summary).slice(0, 200) : '') }], tools, { cfg: cfg, maxTok: 260, system: '你只负责起标题。必须调用 setTitle 工具提交，不要输出其他内容。' })
+        .then(function (r) {
+          var tc = r && Array.isArray(r.toolCalls) ? r.toolCalls.filter(function (c) { return c && c.name === 'setTitle'; })[0] : null;
+          var t = tc && tc.input && String(tc.input.title || '').trim().replace(/^["'「『]+|["'」』。]+$/g, '').slice(0, 16);
+          if (!t) return;
+          var idx = _sessIndex(), hit = false;
+          idx.forEach(function (m) { if (m && m.id === id && m.titleKind !== 'custom') { m.title = t; m.titleKind = 'ai'; hit = true; } });
+          if (hit) { _sessIndexSave(idx); if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e0) {} } }
+        }, function () {});
+    } catch (e) {}
+  }
+  function clearSessions() {
+    try { _sessIndex().forEach(function (m) { if (m && m.id) { try { localStorage.removeItem(SESS_BODY + m.id); } catch (e0) {} } }); localStorage.removeItem(SESS_KEY); } catch (e) {}
+    ui._sessId = null;
+    if (typeof ui._onSessionsChange === 'function') { try { ui._onSessionsChange(); } catch (e2) {} }
+  }
+
+  // ── S9 · 约定分层（CC CLAUDE.md 层级对照：~/.claude/CLAUDE.md=全局·项目 CLAUDE.md=本剧本）：
+  //    全局约定 tm_aa_conventions（工坊「剧本约定」抽屉继续管）+ 本剧本约定 tm_aa_conv_s::<fileKey>。
+  //    每轮 run 注入两层合并；「记住」与国师 recordConvention 的建议默认记到本剧本层
+  //    （CC 默认记进项目 CLAUDE.md 同款）——绍宋的文风约定不再灌进天启。 ──
+  function _scenConvKey() { return 'tm_aa_conv_s::' + _fileKey(); }
+  function _loadScenConv() { try { return String(localStorage.getItem(_scenConvKey()) || '').slice(0, 2600); } catch (e) { return ''; } }
+  function _saveScenConv(text) { try { localStorage.setItem(_scenConvKey(), String(text == null ? '' : text).slice(0, 2600)); return true; } catch (e) { return false; } }
+  function _convForRun() {
+    var g = '', s = _loadScenConv();
+    try { g = (AA.loadConventions && AA.loadConventions()) || ''; } catch (e) {}
+    if (g && s) return '【全局约定·所有剧本通用】\n' + g + '\n\n【本剧本约定·仅当前剧本】\n' + s;
+    return s ? ('【本剧本约定】\n' + s) : g;
+  }
+  function rememberConvention(conv) {   // 建议/手记 → 本剧本层（同句去重）
+    conv = String(conv || '').trim();
+    if (!conv) return false;
+    var cur = _loadScenConv(), lines = cur ? cur.split('\n') : [];
+    if (lines.indexOf(conv) >= 0) return true;
+    lines.push(conv);
+    return _saveScenConv(lines.join('\n'));
+  }
+  // S11 · 审阅报告尾追加「发现的约定」记住签（复用本剧本层落点）
+  function _renderConvSuggest(sug) {
+    if (!Array.isArray(sug) || !sug.length || !ui.els || !ui.els.summary) return;
+    var box = document.createElement('div');
+    box.className = 'tm-aa-cl-md';
+    box.innerHTML = '<b>发现的创作约定</b>' + sug.slice(0, 12).map(function (c, i) {
+      return '<div>· ' + esc(c) + ' <button type="button" class="tm-aa-cl-copy" data-ci="' + i + '">记住</button></div>';
+    }).join('');
+    box.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-ci]') : null;
+      if (!b || b.disabled) return;
+      if (rememberConvention(sug[+b.getAttribute('data-ci')])) { b.textContent = '已记住 ✓（本剧本）'; b.disabled = true; }
+    });
+    ui.els.summary.appendChild(box);
+  }
+  // S10(Codex·CC /compact 对照) · 手动压缩前情：跑的间隙把当前会话线程压成七段摘要（一次小结调用·优先次模）
+  function runCompactUI() {
+    if (ui.running) { setStatus('运行中 · 等本轮结束再压缩'); return; }
+    if (!ui.conversation || ui.conversation.length < 6) { setStatus('当前会话不长 · 无需压缩'); return; }
+    var draft = ui.draft || (AA.makeDraft && ui.adapter && ui.adapter.getScenario ? AA.makeDraft(ui.adapter.getScenario()) : null);
+    if (!draft || typeof AA.compactConversation !== 'function') { setStatus('压缩不可用'); return; }
+    var beforeN = ui.conversation.length;
+    setStatus('正在压缩前情…（一次小结调用 · 优先走次要模型）');
+    AA.compactConversation(ui.conversation, draft, {}).then(function (r) {
+      if (!r || !r.ok) { setStatus(r && r.reason === 'too-small' ? '对话太短 · 无需压缩' : '压缩失败（模型没给出可信摘要）· 原对话未动'); return; }
+      ui.conversation = r.conversation;
+      _saveSession({ conversation: r.conversation, todos: ui._restoredTodos || [], tokensUsed: 0 }, '压缩前情', null);
+      resetResults(true);
+      _beginReplyCard();
+      if (ui.els.summary) { ui.els.summary.innerHTML = '<b>前情已压缩</b><span class="tm-aa-stream">' + beforeN + ' 条 → ' + r.after + ' 条（摘要 ' + Math.round(r.summaryChars / 100) / 10 + 'k 字 · 近尾原文保留）。续接不断片，后续轮次省上下文。</span>'; ui.els.summary.style.display = ''; }
+      _freezeLastReply();
+      setStatus('前情压缩完成：' + beforeN + ' → ' + r.after + ' 条 · 直接输入续接');
+    }, function (e) { setStatus('压缩失败：' + ((e && e.message) || e) + ' · 原对话未动'); });
+  }
+  // S12(Codex notify 对照) · 完成通知：页面切后台时跑完弹系统通知（palette 开/关·授权在开启时申请）
+  function _toggleNotify() {
+    try {
+      if (localStorage.getItem('tm_aa_notify') === '1') { localStorage.removeItem('tm_aa_notify'); setStatus('完成通知已关'); return; }
+      if (typeof Notification === 'undefined') { setStatus('此环境不支持系统通知'); return; }
+      if (Notification.permission === 'granted') { localStorage.setItem('tm_aa_notify', '1'); setStatus('完成通知已开 · 页面切后台时跑完会弹通知'); }
+      else Notification.requestPermission().then(function (p) {
+        if (p === 'granted') { localStorage.setItem('tm_aa_notify', '1'); setStatus('完成通知已开 · 页面切后台时跑完会弹通知'); }
+        else setStatus('浏览器未授权通知 · 未开启');
+      });
+    } catch (e) { setStatus('通知开启失败'); }
+  }
+  function _maybeNotify() {
+    try {
+      if (localStorage.getItem('tm_aa_notify') !== '1') return;
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+      if (typeof document === 'undefined' || !document.hidden) return;   // 页面可见就不打扰
+      var dur = ui._runStart ? Math.round((Date.now() - ui._runStart) / 1000) : 0;
+      if (dur < 12) return;   // 快跑不值一条系统通知
+      new Notification('国师', { body: '本轮已完成（用时 ' + (dur >= 60 ? Math.floor(dur / 60) + ' 分 ' + (dur % 60) + ' 秒' : dur + ' 秒') + '）· 回来看看结果', tag: 'tm-aa-run' });
+    } catch (e) {}
+  }
+  function showConventionsUI() {   // /创作约定 · 两层透视（CC /memory 对照）
+    if (ui.running) { setStatus('请等当前运行结束'); return; }
+    resetResults(true);
+    _beginReplyCard();
+    var g = ''; try { g = (AA.loadConventions && AA.loadConventions()) || ''; } catch (e) {}
+    var s = _loadScenConv(), fl = _fileLabel();
+    if (ui.els.summary) {
+      ui.els.summary.innerHTML = '<b>创作约定（等价 CLAUDE.md · 每轮注入提示词）</b>'
+        + '<div class="tm-aa-cl-md"><b>全局 · 所有剧本通用</b>' + (g ? _md(g) : '<div style="color:var(--tx3)">（空 · 可在工坊「剧本约定」里编辑）</div>')
+        + '<b>本剧本 · ' + esc(fl || '当前剧本') + '</b>' + (s ? _md(s) : '<div style="color:var(--tx3)">（空 · 「记住」按钮与国师自记的约定会落在这里）</div>')
+        + (s ? '<button type="button" class="tm-aa-conv-clear">清空本剧本约定</button>' : '') + '</div>';
+      ui.els.summary.style.display = '';
+      var cb = ui.els.summary.querySelector('.tm-aa-conv-clear');
+      if (cb) cb.addEventListener('click', function () { _saveScenConv(''); cb.textContent = '已清空 ✓'; cb.disabled = true; setStatus('本剧本约定已清空'); });
+    }
+    _freezeLastReply();
+    setStatus('约定两层：全局' + (g ? ' ' + g.split('\n').filter(Boolean).length + ' 条' : '空') + ' · 本剧本' + (s ? ' ' + s.split('\n').filter(Boolean).length + ' 条' : '空'));
+  }
+
+  /* ═══ CC 三件套 UI 曝光（2026-07-03·记忆册/技能册/能力包）+ 用量·上下文卡 ═══ */
+  function _mgmtCard(title, bodyHtml, status) {
+    if (ui.running) { setStatus('请等当前运行结束'); return null; }
+    resetResults(true);
+    _beginReplyCard();
+    if (!ui.els.summary) return null;
+    ui.els.summary.innerHTML = '<b>' + title + '</b><div class="tm-aa-cl-md">' + bodyHtml + '</div>';
+    ui.els.summary.style.display = '';
+    _freezeLastReply();
+    if (status) setStatus(status);
+    return ui.els.summary;
+  }
+  function showMemoriesUI() {   // /记忆册 · ≈CC /memory 的记忆目录视图
+    var ms = []; try { ms = (AA.memories && AA.memories.list()) || []; } catch (e) {}
+    var TYPE_ZH = { user: '玩家', feedback: '反馈', project: '进行中', reference: '资料' };
+    var body = ms.length
+      ? ms.map(function (m) {
+          return '<div style="border-bottom:1px solid var(--bd);padding:6px 0"><b>' + esc(m.name) + '</b> <span style="color:var(--tx3);font-size:11px">[' + (TYPE_ZH[m.type] || m.type) + '] ' + esc(m.description || '') + '</span>'
+            + '<div style="color:var(--tx2);font-size:12px;margin-top:2px;white-space:pre-wrap">' + esc(m.body || '') + '</div>'
+            + '<button type="button" class="tm-aa-conv-clear" data-mem-del="' + esc(m.name) + '">删除</button></div>';
+        }).join('')
+      : '<div style="color:var(--tx3)">（空 · 国师在共事中了解到推导不出的背景时会自动存；也可让它「把XX记住」）</div>';
+    var host = _mgmtCard('记忆册（跨会话背景 · 按需求召回注入 · 存 ' + ms.length + ' 条）', body, '记忆 ' + ms.length + ' 条');
+    if (host) host.querySelectorAll('[data-mem-del]').forEach(function (b) {
+      b.addEventListener('click', function () { try { AA.memories.remove(b.getAttribute('data-mem-del')); } catch (e) {} b.closest('div').style.opacity = '.35'; b.textContent = '已删 ✓'; b.disabled = true; });
+    });
+  }
+  function showSkillsUI() {   // /技能册 · ≈CC Skill 目录
+    var sk = []; try { sk = (AA.skills && AA.skills.list()) || []; } catch (e) {}
+    var userNames = {}; try { JSON.parse(localStorage.getItem('tm_aa_skills') || '[]').forEach(function (s) { userNames[s.name] = 1; }); } catch (e) {}
+    var biNames = {}; try { (AA.skills.builtin || []).forEach(function (s) { biNames[s.name] = 1; }); } catch (e) {}
+    var body = sk.length
+      ? sk.map(function (s) {
+          var src = biNames[s.name] ? '内置' : (userNames[s.name] ? '自存' : '能力包');
+          return '<div style="border-bottom:1px solid var(--bd);padding:6px 0"><b>' + esc(s.name) + '</b> <span style="color:var(--tx3);font-size:11px">[' + src + '] ' + esc(s.whenToUse || s.description || '') + '</span>'
+            + '<details style="margin-top:2px"><summary style="cursor:pointer;color:var(--tx3);font-size:11px">展开指令全文</summary><div style="color:var(--tx2);font-size:12px;white-space:pre-wrap">' + esc(s.body || '') + '</div></details>'
+            + (userNames[s.name] ? '<button type="button" class="tm-aa-conv-clear" data-skill-del="' + esc(s.name) + '">删除</button>' : '') + '</div>';
+        }).join('')
+      : '<div style="color:var(--tx3)">（空）</div>';
+    var host = _mgmtCard('技能册（打磨过的操作指令包 · 国师做对应事时自动展开照做 · ' + sk.length + ' 项）', body, '技能 ' + sk.length + ' 项');
+    if (host) host.querySelectorAll('[data-skill-del]').forEach(function (b) {
+      b.addEventListener('click', function () { try { AA.skills.remove(b.getAttribute('data-skill-del')); } catch (e) {} b.closest('div').style.opacity = '.35'; b.textContent = '已删 ✓'; b.disabled = true; });
+    });
+  }
+  function showPacksUI() {   // /能力包 · ≈CC /plugin（启停/导入/导出）
+    var ps = []; try { ps = (AA.packs && AA.packs.list()) || []; } catch (e) {}
+    var body = ps.map(function (p) {
+      return '<div style="border-bottom:1px solid var(--bd);padding:6px 0"><b>' + esc(p.name) + '</b> <span style="color:var(--tx3);font-size:11px">v' + esc(p.version || '1.0') + (p.builtin ? ' · 内置' : ' · 玩家装') + ' · ' + p.skills + ' 技能</span>'
+        + '<div style="color:var(--tx2);font-size:12px">' + esc(p.description || '') + '</div>'
+        + '<button type="button" class="tm-aa-conv-clear" data-pack-tg="' + esc(p.name) + '">' + (p.enabled ? '停用' : '启用') + '</button>'
+        + '<button type="button" class="tm-aa-conv-clear" data-pack-exp="' + esc(p.name) + '">导出 JSON</button>'
+        + (!p.builtin ? '<button type="button" class="tm-aa-conv-clear" data-pack-rm="' + esc(p.name) + '">卸载</button>' : '') + '</div>';
+    }).join('') + '<div style="margin-top:6px"><button type="button" class="tm-aa-conv-clear" data-pack-imp="1">导入能力包 JSON（粘贴）</button></div>';
+    var host = _mgmtCard('能力包（技能+约定的打包单元 · 可跨玩家分享 · ' + ps.length + ' 个）', body, '能力包 ' + ps.length + ' 个');
+    if (!host) return;
+    host.querySelectorAll('[data-pack-tg]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var n = b.getAttribute('data-pack-tg'), now = b.textContent === '停用' ? false : true;
+        try { AA.packs.setEnabled(n, now); } catch (e) {}
+        b.textContent = now ? '停用' : '启用'; setStatus('「' + n + '」已' + (now ? '启用' : '停用') + '（下轮生效）');
+      });
+    });
+    host.querySelectorAll('[data-pack-exp]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var j = ''; try { j = AA.packs.exportJSON(b.getAttribute('data-pack-exp')) || ''; } catch (e) {}
+        if (j && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(j); b.textContent = '已复制 ✓'; }
+        else if (j) { window.prompt('复制此 JSON 分享给其他玩家：', j); }
+      });
+    });
+    host.querySelectorAll('[data-pack-rm]').forEach(function (b) {
+      b.addEventListener('click', function () { try { AA.packs.remove(b.getAttribute('data-pack-rm')); } catch (e) {} b.closest('div').style.opacity = '.35'; b.textContent = '已卸 ✓'; b.disabled = true; });
+    });
+    var ib = host.querySelector('[data-pack-imp]');
+    if (ib) ib.addEventListener('click', function () {
+      var j = window.prompt('粘贴能力包 JSON：', '');
+      if (!j) return;
+      var r = null; try { r = AA.packs.importJSON(j); } catch (e) { r = { ok: false, error: String(e && e.message || e) }; }
+      setStatus(r && r.ok ? '已导入「' + r.imported + '」（' + r.skills + ' 技能·下轮生效）' : '导入失败：' + ((r && r.error) || '未知'));
+      if (r && r.ok) showPacksUI();
+    });
+  }
+  function showUsageUI() {   // /用量·上下文 · CC /context+/cost 对照（本地 codex-token-usage / claude-hud 思路）
+    function fmt(n) { return n >= 10000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n || 0)); }
+    function bar(part, total, color, label) {
+      var pct = total > 0 ? Math.min(100, Math.round(part * 100 / total)) : 0;
+      return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:2px 0"><span style="flex:0 0 92px;color:var(--tx2)">' + label + '</span>'
+        + '<span style="flex:1;height:8px;background:var(--sunken);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:' + pct + '%;background:' + color + '"></i></span>'
+        + '<span style="flex:0 0 88px;text-align:right;color:var(--tx3)">' + fmt(part) + ' · ' + pct + '%</span></div>';
+    }
+    var m = ui._lastRunMeta, budget = ui._budget || 260000;
+    var est = function (o) { try { return Math.ceil(((JSON.stringify(o) || '').replace(/[^一-鿿]/g, '').length) * 1.3 + ((JSON.stringify(o) || '').replace(/[一-鿿]/g, '').length) * 0.25); } catch (e) { return 0; } };
+    var convTok = ui.conversation && ui.conversation.length ? est(ui.conversation) : 0;
+    var memTok = 0, skillTok = 0;
+    try { memTok = est((AA.memories.list() || []).map(function (x) { return x.name + x.description; })); } catch (e) {}
+    try { skillTok = est((AA.skills.list() || []).map(function (x) { return x.name + (x.whenToUse || ''); })); } catch (e) {}
+    var body = '';
+    if (m && m.tokensBreakdown) {
+      var b = m.tokensBreakdown, tot = m.tokensUsed || (b.system + b.tools + b.conversation);
+      body += '<b style="font-size:12px">最近一轮（' + esc(m.kind || '') + ' · ' + m.iterations + ' 轮迭代' + (m.macroCompactions ? ' · 宏压缩×' + m.macroCompactions : '') + (m.steered ? ' · 插话×' + m.steered : '') + '）</b>'
+        + bar(b.system, tot, 'var(--ac)', '系统词')
+        + bar(b.tools, tot, 'var(--warn)', '工具schema')
+        + bar(b.conversation, tot, 'var(--ok)', '对话与结果')
+        + '<div style="font-size:12px;color:var(--tx2);margin:4px 0 10px">合计（=下次请求真实体量）：<b>' + fmt(tot) + '</b> tokens · 占预算上限 ' + Math.round(tot * 100 / budget) + '%（上限 ' + fmt(budget) + '·撞 85% 会自动宏压缩）</div>';
+    } else {
+      body += '<div style="color:var(--tx3);font-size:12px;margin-bottom:8px">（本会话还没跑过——跑一轮后这里显示真口径构成）</div>';
+    }
+    body += '<b style="font-size:12px">当前会话线程</b>'
+      + '<div style="font-size:12px;color:var(--tx2)">消息 ' + ((ui.conversation && ui.conversation.length) || 0) + ' 条 · 线程体量约 ' + fmt(convTok) + ' tokens（续跑时计入下轮请求）</div>'
+      + '<b style="font-size:12px;display:block;margin-top:8px">常驻注入面（每轮都发）</b>'
+      + '<div style="font-size:12px;color:var(--tx2)">记忆清单候选 ~' + fmt(memTok) + ' · 技能清单 ~' + fmt(skillTok) + ' tokens（记忆正文只在被召回时注入·技能全文只在 useSkill 时展开）</div>';
+    _mgmtCard('用量 · 上下文（真口径 = 系统词 + 工具 schema + 全对话）', body, m ? ('最近一轮 ' + fmt(m.tokensUsed) + ' tokens · 占上限 ' + Math.round((m.tokensUsed || 0) * 100 / budget) + '%') : '暂无运行数据');
   }
 
   // 方向M · 运行历史/审计日志（持久·可搜·跨刷新存活·不存大快照避 quota·cap 50）
@@ -780,6 +2039,8 @@
       stopReason: (res && res.stopReason) || '',
       applied: false
     };
+    /* 用量卡数据：最近一轮的真口径构成(G1)与压缩/插话计数(所有模式都经此汇点) */
+    if (res && res.tokensUsed != null) ui._lastRunMeta = { kind: kind, tokensUsed: res.tokensUsed || 0, tokensBreakdown: res.tokensBreakdown || null, iterations: res.iterations || 0, macroCompactions: res.macroCompactions || 0, steered: res.steered || 0, ts: Date.now() };
     var h = _loadHistory(); h.push(rec); _saveHistory(h);
     ui._lastRunId = rec.id;
     if (typeof ui._onHistoryChange === 'function') { try { ui._onHistoryChange(); } catch (e) {} }
@@ -865,7 +2126,7 @@
     if (ui.els.logWrap) ui.els.logWrap.style.display = '';
     var card = document.createElement('div');
     card.className = 'tm-aa-reply';
-    card.innerHTML = '<div class="reply-who"><span class="reply-ava">🧙</span><b>国师</b></div>'
+    card.innerHTML = '<div class="reply-who"><span class="reply-ava">师</span><b>国师</b><span class="tm-aa-flex"></span><button type="button" class="reply-copy" title="复制这条回复">⧉</button></div>'
       + '<div class="tm-aa-summary" style="display:none"></div>'
       + '<div class="tm-aa-sec" data-sec="diff" style="display:none">改动预览</div>'
       + '<div class="tm-aa-diff" style="display:none"></div>'
@@ -883,6 +2144,13 @@
     ui.els.discard = card.querySelector('.reply-discard');
     ui.els.apply.addEventListener('click', onApply);
     ui.els.discard.addEventListener('click', onDiscard);
+    var _cp = card.querySelector('.reply-copy');   // Claude 式 · 回复悬停复制
+    if (_cp) _cp.addEventListener('click', function () {
+      var _sm = card.querySelector('.tm-aa-summary');
+      var _txt = (_sm && _sm.innerText) || card.innerText || '';
+      try { navigator.clipboard.writeText(_txt.trim()).then(function () { _cp.textContent = '✓'; setTimeout(function () { _cp.textContent = '⧉'; }, 900); }, function () { setStatus('复制失败（浏览器限制）'); }); }
+      catch (e) { setStatus('复制失败'); }
+    });
     ui._reply = card;
     ui._clampBtn = null;   // 长总结折叠按钮归属新卡
     _logScrollMaybe(true);   // 设 pinned·生成中跟随
@@ -993,20 +2261,35 @@
     document.addEventListener('mousemove', function(e) { if (!dragging) return; _applyPanelWidth(Math.round(ui.els.panel.getBoundingClientRect().right - e.clientX)); });
     document.addEventListener('mouseup', function() { if (dragging) { dragging = false; document.body.style.userSelect = ''; } });
   }
-  function _toggleFullscreen() {
+  function _toggleFullscreen(origin) {
     var p = ui.els && ui.els.panel; if (!p) return;
     if (p._fs) {
       p.style.cssText = p._fsPrev || ''; p._fs = false;
+      p.classList.remove('railon');   // 侧栏是全屏版式的一部分·退全屏一并收起
       if (ui.els.resize) ui.els.resize.style.display = '';
-      if (ui.els.fs) ui.els.fs.textContent = '⛶';
+      if (ui.els.fs) ui.els.fs.innerHTML = _icon('expand');
+      if (origin === 'user') { try { localStorage.setItem('tm_aa_winmode', 'dock'); } catch (e) {} }   // 只记用户亲手的选择（关闭面板等内部退全屏不算）
     } else {
       p._fsPrev = p.style.cssText;
       p.style.position = 'fixed'; p.style.left = '14px'; p.style.top = '14px'; p.style.right = '14px'; p.style.bottom = '14px';
       p.style.width = 'auto'; p.style.height = 'auto'; p.style.maxWidth = 'none'; p.style.maxHeight = 'none'; p.style.zIndex = '100000';
       p._fs = true;
       if (ui.els.resize) ui.els.resize.style.display = 'none';
-      if (ui.els.fs) ui.els.fs.textContent = '🗗';
+      if (ui.els.fs) ui.els.fs.innerHTML = _icon('restore');
+      if (origin === 'user') { try { localStorage.setItem('tm_aa_winmode', 'fs'); } catch (e) {} }
     }
+  }
+  // 首开默认全屏窗（应用感·Claude 桌面端即窗口）·此后尊重用户上次亲手选择的窗态。
+  // 剧本工坊(reset)把面板钉成案侧常驻坞(body.je-guoshi-docked)——坞即窗态·不再叠加全屏。
+  function _autoWinMode() {
+    setTimeout(function () {   // 推迟一拍：宿主坞胶水在 fab.click() 之后才挂 je-guoshi-docked·同步检查会扑空
+      try {
+        if (document.body.classList.contains('je-guoshi-docked')) return;
+        if (!ui.els || !ui.els.panel || !ui.els.panel.classList.contains('open')) return;
+        var m = localStorage.getItem('tm_aa_winmode');
+        if ((m === 'fs' || !m) && !ui.els.panel._fs) _toggleFullscreen();
+      } catch (e) {}
+    }, 0);
   }
 
   // UI·AJ · 过程区内搜索（⌘F）：在结果/过程区里查关键词，高亮 + 上下跳（浏览器 find 的面板版）。
@@ -1086,19 +2369,22 @@
   // UI·AD · 空状态欢迎 + 建议提示（Claude.ai/ChatGPT 新会话招牌）：面板刚开、还没跑时给个上手引导 + 可点 chips。
   //   fill 类 → 回填输入框让玩家审阅再发；act 类（体检/审阅/讲解）→ 直接跑对应运行器。
   var _EMPTY_CHIPS = [
-    { label: '🩺 体检（免 API）', act: 'preflight' },
+    { label: '体检（免 API）', act: 'preflight' },
     { label: '补齐缺失字段', fill: '请用 listGaps 找出游戏运行时必需但缺失的字段，逐一补齐，让剧本完整可玩；改完用 validateDraft 自查。' },
     { label: '校验并列问题', fill: '请用 validateDraft 全面校验本剧本，列出所有引用冲突、人口/区划不一致等问题（先只报告，不要改）。' },
-    { label: '加 3 个人物', fill: '请新增 3 名贴合本剧本背景的人物：含姓名、势力归属、官职、性格与 AI 人格；势力名必须用剧本里已存在的势力。' },
-    { label: '🔍 审阅出报告', act: 'review' },
-    { label: '📖 讲解剧本', act: 'explain' },
-    { label: '🏛️ 三堂会审', act: 'critics' }
+    { label: '加 3 个人物', fill: '请按「人物塑造章法」技能（useSkill 展开）新增 3 名贴合本剧本背景的人物：含姓名、势力归属、官职、性格与 AI 人格；势力名必须用剧本里已存在的势力。' },
+    { label: '生成人物立绘', fill: '请按「人物立绘生成规范」技能（useSkill 展开）给主角与 2-3 名核心人物生成立绘：先读各自人设字段再生成；已有立绘的跳过不覆盖；未配生图 API 就告诉我怎么配。' },
+    { label: '审阅出报告', act: 'review' },
+    { label: '讲解剧本', act: 'explain' },
+    { label: '三堂会审', act: 'critics' }
   ];
   function _renderEmpty() {
     if (!ui.els || !ui.els.empty || ui._emptyBuilt) return;
     ui._emptyBuilt = true;
     var chips = _EMPTY_CHIPS.map(function(c, i) { return '<button type="button" class="emp-chip" data-i="' + i + '">' + esc(c.label) + '</button>'; }).join('');
-    ui.els.empty.innerHTML = '<div class="emp-hi">🧙</div><div class="emp-title">国师在此</div><div class="emp-sub">把想改什么告诉国师，或试试：</div><div class="emp-chips">' + chips + '</div>';
+    var _hr = new Date().getHours();   // Claude 桌面端式 · 按时辰问安
+    var _greet = _hr < 5 ? '夜深了' : (_hr < 11 ? '早上好' : (_hr < 13 ? '午安' : (_hr < 18 ? '下午好' : '晚上好')));
+    ui.els.empty.innerHTML = '<div class="emp-seal">师</div><div class="emp-title">' + _greet + '，陛下。国师在此</div><div class="emp-sub">把想改什么告诉国师，或试试：</div><div class="emp-chips">' + chips + '</div>';
     ui.els.empty.addEventListener('click', function(ev) {
       var btn = ev.target && ev.target.closest ? ev.target.closest('.emp-chip') : null;
       if (!btn) return;
@@ -1126,7 +2412,7 @@
       cc.style.top = (el.offsetTop + el.offsetHeight - 18) + 'px';   // 贴输入框右下（body 为定位容器）
     }
   }
-  // 仅在「面板空闲、什么都没跑」时显示欢迎态
+  // 仅在「面板空闲、什么都没跑」时显示欢迎态（Claude 式：此时问候语与 composer 一同居中）
   function _syncEmpty() {
     if (!ui.els || !ui.els.empty) return;
     var blank = !ui.running
@@ -1135,6 +2421,7 @@
       && ui.els.actions.style.display === 'none'
       && !(ui.els.req && ui.els.req.value.trim());
     ui.els.empty.style.display = blank ? '' : 'none';
+    if (ui.els.body) ui.els.body.classList.toggle('tm-aa-blank', blank);
   }
 
   // 改动说明：把 agent 的 finish summary（做了什么+为什么）+ 计划备注醒目展示在 diff 之上；
@@ -1152,7 +2439,7 @@
       }
     }
     if (sug.length) {
-      html += '<div class="tm-aa-sug"><b>💡 建议记住的约定</b>' + sug.slice(0, 5).map(function(c, i) {
+      html += '<div class="tm-aa-sug"><b>建议记住的约定</b>' + sug.slice(0, 5).map(function(c, i) {
         return '<div class="sug-row"><span>' + esc(String(c).slice(0, 120)) + '</span><button type="button" class="sug-keep" data-i="' + i + '">记住</button></div>';
       }).join('') + '</div>';
     }
@@ -1161,10 +2448,8 @@
     Array.prototype.forEach.call(ui.els.summary.querySelectorAll('.sug-keep'), function(btn) {
       btn.addEventListener('click', function() {
         var idx = +btn.getAttribute('data-i'), conv = sug[idx];
-        if (conv && AA && AA.saveConventions && AA.loadConventions) {
-          var cur = AA.loadConventions(), lines = cur ? cur.split('\n') : [];
-          if (lines.indexOf(conv) < 0) { lines.push(conv); AA.saveConventions(lines.join('\n')); }
-          btn.textContent = '已记住 ✓'; btn.disabled = true;
+        if (conv && rememberConvention(conv)) {   // S9 · 记到本剧本层(CC 默认记进项目 CLAUDE.md 同款)
+          btn.textContent = '已记住 ✓（本剧本）'; btn.disabled = true;
         }
       });
     });
@@ -1181,11 +2466,36 @@
       if (ui.els) { ui.els.logSec.style.display = ''; ui.els.logWrap.style.display = ''; }
       blk = document.createElement('details');
       blk.className = 'tm-aa-think';
-      blk.innerHTML = '<summary class="tm-aa-think-sum">⚙ <span class="tk-label">执行中…</span></summary><div class="tm-aa-think-body"></div>';
+      blk.open = !!ui.running;   // 工作过程 · 运行中默认展开（实时看步骤流入）·收尾自动折叠
+      blk.innerHTML = '<summary class="tm-aa-think-sum"><span class="tk-label">执行中…</span></summary><div class="tm-aa-think-body"></div>';
       if (ui.els) ui.els.log.appendChild(blk);
       ui._thinkEl = blk; ui._thinkCount = 0;
     }
     return blk;
+  }
+  // 工作过程 · 实时活动行：转环 + 当前动作/思考（贴在执行块下方·收尾移除）
+  function _ensureLive() {
+    if (!ui.running) return null;
+    var lv = ui._liveEl;
+    if (!lv || !lv.isConnected) {
+      lv = document.createElement('div');
+      lv.className = 'tm-aa-live';
+      lv.innerHTML = '<span class="lv-spin"></span><span class="lv-tx">国师正在斟酌…</span>';
+      if (ui.els) ui.els.log.appendChild(lv);
+      ui._liveEl = lv;
+    } else if (ui.els && ui.els.log.lastElementChild !== lv) {
+      ui.els.log.appendChild(lv);   // 保持在流式尾部（执行块内新增步骤不影响·回应卡插入后仍殿后）
+    }
+    return lv;
+  }
+  function _setLive(text, isThink) {
+    var lv = _ensureLive(); if (!lv) return;
+    var tx = lv.querySelector('.lv-tx');
+    if (tx) { tx.textContent = String(text || '').slice(0, 90); tx.classList.toggle('think', !!isThink); }
+    _logScrollMaybe();
+  }
+  function _removeLive() {
+    if (ui._liveEl) { try { ui._liveEl.remove(); } catch (e) {} ui._liveEl = null; }
   }
   function _bumpExecLabel(blk) {
     ui._thinkCount = (ui._thinkCount || 0) + 1;
@@ -1196,9 +2506,10 @@
     var blk = _ensureExecBlock();
     var line = document.createElement('div');
     line.className = 'tk-line';
-    line.textContent = '💭 ' + String(text).slice(0, 400);
+    line.textContent = String(text).slice(0, 400);
     blk.querySelector('.tm-aa-think-body').appendChild(line);
     _bumpExecLabel(blk);
+    _setLive(String(text).slice(0, 90), true);   // 工作过程 · 最新思考进活动行（衬线斜体）
     _logScrollMaybe();
   }
 
@@ -1219,24 +2530,26 @@
     var n = step.name, i = step.input || {}, r = step.result || {};
     switch (n) {
       case 'applyEdit': return '改 ' + _friendlyPath(i.path) + ' ＝ ' + _shortVal(i.value);
+      case 'getFields': return '查看 ' + ((i.paths || []).slice(0, 3).map(_friendlyPath).join('、') || '(多路径)') + ((i.paths || []).length > 3 ? ' 等 ' + i.paths.length + ' 处' : '');
       case 'applyPush': return '新增一项到 ' + (_COLL_CN[i.path] || _friendlyPath(i.path)) + '：' + _shortVal(i.value);
       case 'removeEntity': return '删除 ' + _friendlyPath(i.path);
       case 'getField': return '查看 ' + _friendlyPath(i.path);
       case 'searchEntities': return '搜索 ' + (_COLL_CN[i.collection] || i.collection || '') + (i.query ? '「' + i.query + '」' : '');
-      case 'globalSearch': return '🔎 全局检索「' + (i.query || '') + '」' + (r.total != null ? '（命中 ' + r.total + '）' : '');
-      case 'findReferences': return '🔗 查引用「' + (i.name || '') + '」' + (r.exactCount != null ? '（精确 ' + r.exactCount + '·提及 ' + (r.mentionCount || 0) + '）' : '');
+      case 'globalSearch': return '全局检索「' + (i.query || '') + '」' + (r.total != null ? '（命中 ' + r.total + '）' : '');
+      case 'findReferences': return '查引用「' + (i.name || '') + '」' + (r.exactCount != null ? '（精确 ' + r.exactCount + '·提及 ' + (r.mentionCount || 0) + '）' : '');
       case 'renameEntity': return '✎ 改名「' + (i.oldName || '') + '」→「' + (i.newName || '') + '」' + (r.changed != null ? '（联动 ' + r.changed + ' 处）' : '');
       case 'listCollection': return '浏览 ' + (_COLL_CN[i.collection] || i.collection || '') + (r.count != null ? '（共 ' + r.count + '）' : '');
       case 'describeSchema': return '查字段形状 ' + (i.kind || '(全部)');
       case 'listGaps': return '查规格缺口' + (r.requiredMissing ? '（必需缺 ' + r.requiredMissing.length + '）' : '');
       case 'validateDraft': return '校验' + (r.ok === false ? '：发现 ' + ((r.violations || []).length) + ' 处问题' : '：通过');
-      case 'preflight': return '🩺 运行时体检' + (r.bootable === false ? '：' + ((r.blockers || []).length) + ' 处阻塞' : (r.bootable === true ? '：可运行' : ''));
+      case 'preflight': return '运行时体检' + (r.bootable === false ? '：' + ((r.blockers || []).length) + ' 处阻塞' : (r.bootable === true ? '：可运行' : ''));
       case 'bulkAdd': return '批量新增 ' + (r.added != null ? r.added : '') + ' 项到 ' + (_COLL_CN[i.collection] || i.collection || '');
       case 'multiEdit': return '一次改 ' + (r.applied != null ? r.applied : (i.edits || []).length) + ' 处';
-      case 'note': return '📝 ' + _shortVal(i.text);
-      case 'flagUncertain': return '⚠ 标记待核 ' + _friendlyPath(i.path) + (i.reason ? '（' + _shortVal(i.reason) + '）' : '');
-      case 'recordConvention': return '📌 记下约定：' + _shortVal(i.convention);
-      case 'finish': return '✓ 完成：' + (i.summary || '');
+      case 'note': return '备注：' + _shortVal(i.text);
+      case 'flagUncertain': return '标记待核 ' + _friendlyPath(i.path) + (i.reason ? '（' + _shortVal(i.reason) + '）' : '');
+      case 'recordConvention': return '记下约定：' + _shortVal(i.convention);
+      case 'generateImage': return '生图 → ' + _friendlyPath(i.path) + (r.model ? '（' + r.model + '）' : '') + (r.image ? ' · ' + r.image : '');
+      case 'finish': return '完成：' + (i.summary || '');
       default: return n + '(' + JSON.stringify(i).slice(0, 60) + ')';
     }
   }
@@ -1244,6 +2557,7 @@
   function appendLog(step) {
     if (!ui.els) return;
     if (step && step.tokensUsed != null) ui._lastTokens = step.tokensUsed;   // 方向I · 实时计量
+    if (step && step.budget) ui._budget = step.budget;   // S10 · 预算上限(上下文余量表)
     if (step && step.iteration != null) ui._lastIter = step.iteration;
     var execBlk = _ensureExecBlock();   // UI·Z2 · 工具卡收进同一个「执行过程」折叠块
     var r = step.result || {};
@@ -1255,13 +2569,14 @@
     var resultStr = ''; try { resultStr = JSON.stringify(step.result); } catch (e) { resultStr = String(step.result == null ? '' : step.result); }
     var card = document.createElement('details');
     card.className = 'tm-aa-step ' + cls;
-    card.innerHTML = '<summary>#' + step.iteration + ' ' + esc(_friendlyStep(step)) + detail + '</summary>'
+    card.innerHTML = '<summary><span class="st-ic">' + _icon(_TOOL_ICON[step.name] || 'route') + '</span><span class="st-tx">#' + step.iteration + ' ' + esc(_friendlyStep(step)) + detail + '</span></summary>'
       + '<div class="tm-aa-step-body">'
       + (inputStr && inputStr !== '{}' ? '<div class="sb-row"><span class="sb-k">输入</span><pre>' + esc(inputStr.slice(0, 600)) + (inputStr.length > 600 ? '…' : '') + '</pre></div>' : '')
       + (resultStr && resultStr !== '{}' ? '<div class="sb-row"><span class="sb-k">结果</span><pre>' + esc(resultStr.slice(0, 600)) + (resultStr.length > 600 ? '…' : '') + '</pre></div>' : '')
       + '</div>';
     var body = execBlk.querySelector('.tm-aa-think-body'); if (body) body.appendChild(card); else ui.els.log.appendChild(card);
     _bumpExecLabel(execBlk);
+    _setLive('刚完成：' + _friendlyStep(step) + ' · 继续推演中…');   // 工作过程 · 最新动作进活动行
     _logScrollMaybe();
   }
 
@@ -1269,7 +2584,7 @@
   function _diffEntryHtml(d, uncReason, idx) {
     var p = _friendlyPath(d.path);
     var pj = '<span class="tm-aa-diff-jump" data-reveal-path="' + esc(d.path || '') + '" title="在折子里精确定位此处">' + esc(p) + '</span>';
-    var warn = uncReason ? '<span class="tm-aa-unc">⚠ 待核：' + esc(uncReason) + '</span>' : '';
+    var warn = uncReason ? '<span class="tm-aa-unc">待核：' + esc(uncReason) + '</span>' : '';
     var cls = uncReason ? ' uncertain' : '';
     var body;
     if (d.type === 'added') body = '<span class="hunk-body add' + cls + '">＋ 新增 ' + pj + '：' + esc(_shortVal(d.after)) + warn + '</span>';
@@ -1313,7 +2628,7 @@
     var totalUnc = diffs.filter(function(d) { return _uncReasonFor(d.path, ui._lastUnc); }).length;
     if (!diffs.length) return '改动预览';
     var acc = diffs.length - rej.size;
-    return '改动预览 · 接受 ' + acc + '/' + diffs.length + ' 处' + (rej.size ? '（✗' + rej.size + '）' : '') + (totalUnc ? ' · ⚠ ' + totalUnc + ' 待核' : '');
+    return '改动预览 · 接受 ' + acc + '/' + diffs.length + ' 处' + (rej.size ? '（✗' + rej.size + '）' : '') + (totalUnc ? ' · ' + totalUnc + ' 处待核' : '');
   }
   function _paintDiff() {
     var diffs = ui._lastDiffs || [], unc = ui._lastUnc || [];
@@ -1329,7 +2644,7 @@
       var idxs = es.slice(0, 40).map(function(d) { return d.__idx; });
       var allRej = idxs.every(function(i) { return ui._diffRejected.has(i); });
       var firstPath = (es[0] && es[0].path) || field;
-      return '<div class="tm-aa-diff-group" data-group="' + esc(field) + '"><div class="tm-aa-diff-head"><b class="tm-aa-diff-jump" data-reveal-field="' + esc(field) + '" data-first-path="' + esc(firstPath) + '" title="在折子里定位此字段（跳首处改动）">' + esc(_COLL_CN[field] || field) + ' \u2197</b> <span style="color:#8f8a7e">(' + es.length + ' 处' + (gUnc ? ' · ⚠' + gUnc : '') + ')</span><button type="button" class="grp-tog" data-group-idxs="' + idxs.join(',') + '">' + (allRej ? '全收' : '全拒') + '</button></div>' + inner + '</div>';
+      return '<div class="tm-aa-diff-group" data-group="' + esc(field) + '"><div class="tm-aa-diff-head"><b class="tm-aa-diff-jump" data-reveal-field="' + esc(field) + '" data-first-path="' + esc(firstPath) + '" title="在折子里定位此字段（跳首处改动）">' + esc(_COLL_CN[field] || field) + ' \u2197</b> <span style="color:#8f8a7e">(' + es.length + ' 处' + (gUnc ? ' · 待核' + gUnc : '') + ')</span><button type="button" class="grp-tog" data-group-idxs="' + idxs.join(',') + '">' + (allRej ? '全收' : '全拒') + '</button></div>' + inner + '</div>';
     }).join('');
   }
   function _toggleHunk(idx) {
@@ -1351,7 +2666,7 @@
     v.style.display = '';
     if (report.ok) { v.className = 'tm-aa-val ok'; v.textContent = '✓ 校验通过'; return; }
     v.className = 'tm-aa-val bad';
-    v.textContent = '⚠ 仍有 ' + report.violations.length + ' 项校验问题：' + report.violations.slice(0, 4).join('；');
+    v.textContent = '仍有 ' + report.violations.length + ' 项校验问题：' + report.violations.slice(0, 4).join('；');
   }
 
   // 方向D · 审阅报告：总评进 summary 块、findings 按严重度排序着色进 diff 区（只读·无应用）
@@ -1386,7 +2701,7 @@
     var qs = questions.map(function(q, i) {
       return '<div class="ai-q">' + (i + 1) + '. ' + esc(typeof q === 'string' ? q : JSON.stringify(q)) + '</div>';
     }).join('') || '<div class="ai-q">（未列出具体问题）</div>';
-    _appendGuoshiMsg('<span class="ai-who">🧙 国师 · 请教</span>要改得准，我需要先弄清几点：<div class="ai-qs">' + qs + '</div><div class="ai-hint">在下方输入框作答后发送即可继续</div>');
+    _appendGuoshiMsg('<span class="ai-who">国师 · 请教</span>要改得准，我需要先弄清几点：<div class="ai-qs">' + qs + '</div><div class="ai-hint">在下方输入框作答后发送即可继续</div>');
   }
 
   // 国师的对话消息气泡（进谏/澄清走它·像聊天而非塞进改动预览区）—— 追加到对话流，不碰 summary/diff
@@ -1405,7 +2720,7 @@
     if (!ui.els) return;
     r = r || {};
     var sevMap = { '史实': '史实存疑', '平衡': '数值失衡', '机制': '跨朝代机制' };
-    var html = '<span class="ai-who">🧙 国师 · 进谏</span>'
+    var html = '<span class="ai-who">国师 · 进谏</span>'
       + '<span class="ai-sev">' + esc(sevMap[r.severity] || r.severity || '谏') + '</span>'
       + esc(r.concern || '（此举我以为不妥，恕未及细陈）')
       + (r.suggestion ? '<div class="ai-sug">↳ 建议：' + esc(r.suggestion) + '</div>' : '')
@@ -1433,6 +2748,7 @@
     setRunning(true);
     setStatus('正在按计划执行…');
     AA.runAuthoringLoop(ui.draft, '按上面的计划执行这些改动；改完用 validateDraft 自查后调用 finish。', {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       priorConversation: ui.conversation,
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
@@ -1462,12 +2778,13 @@
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     var focus = (ui.els.req.value || '').trim();
-    _appendUserMsg(focus || '🔍 审阅整个剧本', { kind: 'review', input: focus });   // UI·B 会话流 + UI·Y 重试派发
+    _appendUserMsg(focus || '审阅整个剧本', { kind: 'review', input: focus });   // UI·B 会话流 + UI·Y 重试派发
     ui.draft = AA.makeDraft(ui.adapter.getScenario());   // 只读快照（审阅不改它）
     ui.conversation = null; ui._pendingPlan = false;
     setRunning(true);
     setStatus('正在审阅剧本…（agent 只读巡查，出体检报告，可能需要数十秒）');
     AA.runAuthoringLoop(ui.draft, focus, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       reviewOnly: true,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('审阅中·第 ' + step.iteration + ' 轮…'); },
@@ -1480,6 +2797,7 @@
       if (res.review) {
         _beginReplyCard();
         renderReview(res.review, true);   // UI·P · 流式
+        _renderConvSuggest(res.suggestedConventions);   // S11 · 审阅中发现的约定 → 记住(本剧本层)
         setStatus('审阅完成（' + res.iterations + ' 轮·约 ' + res.tokensUsed + ' tokens）· 仅诊断，未改动剧本');
       } else {
         setStatus('审阅结束（' + (res.stopReason || '') + '）· 未生成报告，可重试');
@@ -1564,6 +2882,7 @@
     setRunning(true);
     setStatus('正在查证并回答…（只读，不改剧本）');
     AA.runAuthoringLoop(ui.draft, question, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       qaOnly: true,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('查证中·第 ' + step.iteration + ' 轮…'); },
@@ -1594,12 +2913,13 @@
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
     var focus = (ui.els.req.value || '').trim();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
-    _appendUserMsg(focus || '📖 讲解剧本', { kind: 'explain', input: focus });   // UI·B 会话流 + UI·Y 重试派发
+    _appendUserMsg(focus || '讲解剧本', { kind: 'explain', input: focus });   // UI·B 会话流 + UI·Y 重试派发
     ui.draft = AA.makeDraft(ui.adapter.getScenario());   // 只读快照
     ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     setRunning(true);
     setStatus('正在通读剧本并讲解…（只读，不改剧本）');
     AA.runAuthoringLoop(ui.draft, focus, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       explainOnly: true,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('通读中·第 ' + step.iteration + ' 轮…'); },
@@ -1642,7 +2962,7 @@
     _beginReplyCard();   // 聊天化：错误也作为对话流里一张卡
     if (!ui.els.summary) { setStatus('失败：' + ui._lastErr.message); return; }
     ui.els.summary.innerHTML = '<div class="tm-aa-errcard">'
-      + '<div class="ec-head">⚠ 运行失败</div>'
+      + '<div class="ec-head">运行失败</div>'
       + '<div class="ec-msg">' + esc(ui._lastErr.message) + '</div>'
       + '<div class="ec-acts"><button type="button" class="ec-retry">↻ 重试</button><button type="button" class="ec-copy">复制错误</button></div>'
       + '</div>';
@@ -1693,13 +3013,14 @@
         ui.els.logSec.style.display = ''; ui.els.logWrap.style.display = '';
         ui.els.log.insertBefore(_clEl, ui.els.log.firstChild);
       }
-      _clEl.innerHTML = '<div class="cl-head">🧩 分解为 ' + _clSteps.length + ' 个子任务' + (allDone ? '（已完成）' : '') + '</div>' + _clSteps.map(function(s, k) {
+      _clEl.innerHTML = '<div class="cl-head">分解为 ' + _clSteps.length + ' 个子任务' + (allDone ? '（已完成）' : '') + '</div>' + _clSteps.map(function(s, k) {
         var st = (allDone || k < currentIdx) ? 'done' : (k === currentIdx ? 'run' : 'pend');
         var ic = st === 'done' ? '✓' : (st === 'run' ? '⟳' : '○');
         return '<div class="cl-item ' + st + '"><span class="cl-ic">' + ic + '</span>' + esc((k + 1) + '. ' + s) + '</div>';
       }).join('');
     }
     AA.runOrchestrated(ui.draft, request, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
       allowDestructive: ui.allowDestructive !== false,
@@ -1739,13 +3060,13 @@
   var _REQ_PLACEHOLDER = '描述你想要的修改，例如：把主角势力改名为「西凉军」并补两个文官';
   function _armCritics() {
     ui._criticsArmed = true;
-    if (ui.els && ui.els.go && !ui.running) { ui.els.go.textContent = '🏛'; ui.els.go.title = '三堂会审：拟稿→史官查史+谏官批平衡→据谏修订'; }
+    if (ui.els && ui.els.go && !ui.running) { ui.els.go.textContent = '审'; ui.els.go.style.fontSize = '13px'; ui.els.go.title = '三堂会审：拟稿→史官查史+谏官批平衡→据谏修订'; }
     if (ui.els && ui.els.req) { ui.els.req.placeholder = '【三堂会审】写下要新增/修改什么——国师拟稿，再由史官查史实、谏官批平衡，据谏修订后交你审'; ui.els.req.focus(); }
     setStatus('已开启三堂会审 · 写下需求后点发送：拟稿 → 史官+谏官会审 → 据谏修订（比普通生成多 2~3 次调用）');
   }
   function _disarmCriticsVisual() {
     ui._criticsArmed = false;
-    if (ui.els && ui.els.go && !ui.running) { ui.els.go.textContent = '↑'; ui.els.go.title = 'Enter 发送 · Shift+Enter 换行'; }
+    if (ui.els && ui.els.go && !ui.running) { ui.els.go.textContent = '↑'; ui.els.go.style.fontSize = ''; ui.els.go.title = 'Enter 发送 · Shift+Enter 换行'; }
     if (ui.els && ui.els.req) ui.els.req.placeholder = _REQ_PLACEHOLDER;
   }
   function runWithCriticsUI() {
@@ -1767,11 +3088,12 @@
       if (!_el) { _el = document.createElement('div'); _el.className = 'tm-aa-checklist'; var _anchor = _card && _card.querySelector('.tm-aa-summary'); if (_card && _anchor) _card.insertBefore(_el, _anchor); else if (ui.els.log) ui.els.log.insertBefore(_el, ui.els.log.firstChild); }
       function row(st, label) { var ic = st === 'done' ? '✓' : (st === 'run' ? '⟳' : '○'); return '<div class="cl-item ' + st + '"><span class="cl-ic">' + ic + '</span>' + label + '</div>'; }
       var rv = (_info.hist != null) ? ('（史官 ' + _info.hist + ' 条 · 谏官 ' + _info.bal + ' 条）') : '';
-      _el.innerHTML = '<div class="cl-head">🏛 三堂会审' + (done ? '（已完成）' : '') + '</div>'
+      _el.innerHTML = '<div class="cl-head">三堂会审' + (done ? '（已完成）' : '') + '</div>'
         + row(_phase.draft, '① 国师拟稿') + row(_phase.review, '② 史官查史实 + 谏官批平衡' + rv) + row(_phase.revise, '③ 国师据谏修订');
     }
     _render(false);
     AA.runWithCritics(ui.draft, request, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
       allowDestructive: ui.allowDestructive !== false,
@@ -1815,7 +3137,7 @@
     if (!ui.els || !ui.els.summary) return;
     function block(icon, title, rev) {
       var fs = (rev && rev.findings) || [];
-      var head = '<div class="cl-head">' + icon + ' ' + title + '（' + fs.length + ' 条' + (rev && rev.summary ? '·' + esc(rev.summary) : '') + '）</div>';
+      var head = '<div class="cl-head">' + (icon ? icon + ' ' : '') + title + '（' + fs.length + ' 条' + (rev && rev.summary ? '·' + esc(rev.summary) : '') + '）</div>';
       if (!fs.length) return head + '<div class="ln" style="color:#7fe0a0">✓ 无异议</div>';
       var sevRank = { '高': 0, '中': 1, '低': 2 };
       fs = fs.slice().sort(function(a, b) { return (sevRank[a && a.severity] != null ? sevRank[a.severity] : 3) - (sevRank[b && b.severity] != null ? sevRank[b.severity] : 3); });
@@ -1829,8 +3151,8 @@
     }
     var hist = (res.critiques && res.critiques.history) || null;
     var bal = (res.critiques && res.critiques.balance) || null;
-    ui.els.summary.innerHTML = '<b>🏛 三堂会审报告</b><span class="tm-aa-stream">' + esc(res.summary || '') + '</span>'
-      + block('📜', '史官·史实核查', hist) + block('⚖', '谏官·平衡可玩', bal)
+    ui.els.summary.innerHTML = '<b>三堂会审报告</b><span class="tm-aa-stream">' + esc(res.summary || '') + '</span>'
+      + block('', '史官·史实核查', hist) + block('', '谏官·平衡可玩', bal)
       + (res.revised ? '<div class="ln" style="color:#a7e0cf;margin-top:6px">下方 diff 是国师据两官意见修订后的终稿，审阅后决定应用。</div>'
                      : '<div class="ln" style="color:#8f8a7e;margin-top:6px">两官未提需修订的问题，下方即拟稿终稿。</div>');
     ui.els.summary.style.display = '';
@@ -1850,6 +3172,20 @@
   // 「生成」键的统一入口：运行中→停止，空闲→生成
   function onGoClick() { if (ui.running) onStop(); else onGenerate(); }
 
+  // 刀G9(CC message queue 对照) · 运行中插话：agent 跑着时在输入框回车 → 新指示排队·
+  //   本轮工具结果落定后注入(agent 下一轮即见·"完成当前一步后必须处理")·不打断当前轮。
+  function onSteer() {
+    if (!ui.running || ui._stopping) return;
+    var t = (ui.els.req.value || '').trim();
+    if (!t) return;
+    var okQ = false;
+    try { okQ = !!(AA && typeof AA.steer === 'function' && AA.steer(t)); } catch (e) {}
+    if (!okQ) { setStatus('插话未送达（运行正在收尾）· 可等本轮结束后作为追加需求发送'); return; }
+    _appendUserMsg('（插话）' + t, { kind: 'steer', input: t });   // 气泡回显·retry 时按普通需求重发
+    ui.els.req.value = ''; _autoGrowReq();
+    setStatus('已插话 · agent 完成当前一步后会按你的新指示调整');
+  }
+
   function onGenerate() {
     if (ui.running) return;
     if (ui._criticsArmed) { _disarmCriticsVisual(); runWithCriticsUI(); return; }   // 刀3 · 已武装会审 → 改走三堂会审
@@ -1861,15 +3197,24 @@
     // 真·连续会话：只要对话线程还在就续接（哪怕上一轮已应用·draft 已清）。计划模式总从当前剧本起新计划。
     //   ——治「每发一条指令都是新对话」：之前续接还要求 ui.draft，应用后 draft 没了就被迫重置；现在线程贯穿整个会话。
     var continuing = !planOnly && !!(ui.conversation && ui.conversation.length && !ui._pendingPlan);
+    var _attTxt = _attachPrefix();   // S2 · 文本附件内联为参考上下文
+    var _imgs = _takeImages();       // S2 · 图片走视觉通道
+    var _attN = (_imgs ? _imgs.length : 0) + _attState().files.length;
     resetResults(continuing);   // UI·B · 会话流：续接保留线程+消息流、新对话清空
-    _appendUserMsg(request);    // 回显用户消息气泡
+    _appendUserMsg(request + (_attN ? '（附 ' + _attN + ' 件）' : ''), { input: request });    // 回显用户消息气泡
     setRunning(true);
     setStatus(planOnly ? '正在规划…（agent 先只读、出计划）' : '正在生成…（agent 多轮编辑+自校验，可能需要数十秒）');
     if (!continuing) { ui.draft = AA.makeDraft(ui.adapter.getScenario()); if (!planOnly) ui.conversation = null; }
     else if (!ui.draft) { ui.draft = AA.makeDraft(ui.adapter.getScenario()); }   // 续接但上轮已应用 → 从当前(已更新)剧本新建 draft，对话线程保留
 
-    AA.runAuthoringLoop(ui.draft, request, {
+    var _rtd = (continuing && ui._restoredTodos && ui._restoredTodos.length) ? ui._restoredTodos : null;   // 刀H3 · 恢复的任务表一次性回灌
+    ui._restoredTodos = null;
+    _clearAttach();   // S2 · 附件随本轮发出·签行清空
+    AA.runAuthoringLoop(ui.draft, request + _attTxt, {
+      conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       planOnly: planOnly,
+      images: _imgs,
+      initialTodos: _rtd,
       priorConversation: continuing ? ui.conversation : null,
       memory: continuing ? '' : _buildMemory(),             // 跨会话记忆：新对话才注入历史；续接已在线程里
       editorContext: _editorContext(),
@@ -1881,6 +3226,7 @@
     }).then(function(res) {
       setRunning(false);
       ui.conversation = res.conversation;   // 维度1 · 存住线程
+      _saveSession(res, request, res.remonstrance ? '进谏' : (res.clarification ? '澄清' : (res.plan ? '计划' : '编辑')));   // S5 · 落盘到当前会话(跨刷新/跨剧本可切回)
       // 自动续接：未完成且因轮次/token 上限停 → 自动发「继续」续接（复用连续会话线程·持续调用直到完整·安全上限 3 次）。
       if (!planOnly && !res.finished && (res.stopReason === 'maxIterations' || res.stopReason === 'tokenBudget') && (ui._autoCont || 0) < 3) {
         ui._autoCont = (ui._autoCont || 0) + 1;
@@ -2001,6 +3347,7 @@
   function newConversation() {
     if (ui.running) { setStatus('运行中，请先停止再新开对话'); return; }
     ui.draft = null; ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
+    ui._restoredTodos = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 新对话=新会话·旧会话留侧栏可切回·指针置空(开面板不再拉回)
     if (ui._criticsArmed) _disarmCriticsVisual();   // 刀3 · 新对话清掉未用的会审武装
     resetResults(false);
     _syncEmpty();
@@ -2023,7 +3370,7 @@
     try {
       var cp = ui._checkpoints.pop();
       ui.adapter.commit(cp.snapshot);
-      ui.draft = null; ui.conversation = null;
+      ui.draft = null; ui.conversation = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 剧本已回退·脱离当前会话(旧会话留档不删)
       if (typeof ui._onCheckpointsChange === 'function') { try { ui._onCheckpointsChange(); } catch (e) {} }
       setStatus('已撤销，回到「' + cp.label + '」(' + cp.when + ') ↩');
       return true;
@@ -2043,7 +3390,7 @@
     try {
       _pushCheckpoint('回退前 ' + _ckptTime());
       ui.adapter.commit(_clone(cp.snapshot));
-      ui.draft = null; ui.conversation = null;
+      ui.draft = null; ui.conversation = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 同上·回退后脱离会话(留档)
       setStatus('已回到检查点「' + cp.label + '」(' + cp.when + ')');
       return true;
     } catch (e) { setStatus('回退失败：' + (e && e.message || e)); return false; }
@@ -2057,11 +3404,11 @@
     if (document.getElementById('tm-aa-fab')) return;
     var fab = document.createElement('button');
     fab.id = 'tm-aa-fab';
-    fab.textContent = '🧙 国师';
+    fab.innerHTML = '<span class="fab-seal">师</span>国师';
     fab.addEventListener('click', function() {
       var p = ensurePanel();
       p.classList.toggle('open');
-      if (p.classList.contains('open')) { _syncEmpty(); _reflectWorldKind(); }   // UI·AD · 开面板时按需显欢迎态 + 反映当前世界类型
+      if (p.classList.contains('open')) { _syncEmpty(); _reflectWorldKind(); _maybeRestoreThread(); _autoWinMode(); }   // UI·AD · 开面板时按需显欢迎态 + 反映当前世界类型；刀H3 · 同剧本自动恢复上次线程
     });
     document.body.appendChild(fab);
   }
@@ -2084,5 +3431,6 @@
   else init();
 
   // 暴露给测试/调试
-  global.TM_AuthoringAgentUI = { init: init, _ui: ui, undo: undoLastApply, stop: onStop, review: runReview, orchestrate: runOrchestratedUI, preflight: runPreflightUI, qa: runQaUI, explain: runExplainUI, checkpoint: manualCheckpoint, checkpoints: listCheckpoints, restore: restoreCheckpoint, history: listHistory, clearHistory: clearHistory, changelog: buildChangelog, runChangelog: runChangelogUI, macros: listMacros, saveMacro: saveMacro, deleteMacro: deleteMacro, applyMacro: applyMacro, exportBundle: exportBundle, importBundle: importBundle };
+  global.TM_AuthoringAgentUI = { init: init, _ui: ui, undo: undoLastApply, stop: onStop, review: runReview, orchestrate: runOrchestratedUI, preflight: runPreflightUI, qa: runQaUI, explain: runExplainUI, checkpoint: manualCheckpoint, checkpoints: listCheckpoints, restore: restoreCheckpoint, history: listHistory, clearHistory: clearHistory, changelog: buildChangelog, runChangelog: runChangelogUI, macros: listMacros, saveMacro: saveMacro, deleteMacro: deleteMacro, applyMacro: applyMacro, exportBundle: exportBundle, importBundle: importBundle, detectModels: _detectModels, saveApiCfg: _saveApiCfg, permMode: function (m) { if (m && _PM_LABEL[m]) { var p = _loadPerm(); p.mode = m; _applyPerm(p); } return _loadPerm().mode; }, attachIngest: _ingestFiles, showMemories: showMemoriesUI, showSkills: showSkillsUI, showPacks: showPacksUI, showUsage: showUsageUI,
+    listSessions: listSessions, switchSession: switchSession, deleteSession: deleteSession, renameSession: renameSession, forkSession: forkSession, rememberConvention: rememberConvention };
 })(typeof window !== 'undefined' ? window : this);

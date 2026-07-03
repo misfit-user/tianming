@@ -153,7 +153,13 @@
           state.mapScale = scale.dataset.mapScale || 'region';
           // 联动:按钮切层 → 缩放到该层 band(层级与缩放一致·CK3)·_syncScaleLevelFromZoom 见同 band 不会切回
           state.mapView = state.mapView || { scale: 1, tx: 0, ty: 0 };
-          state.mapView.scale = bandToScale(state.mapScale);
+          // 以视口中心为锚重算平移(2026-07-03)：原先只改 scale 留 tx/ty 残余→切档后画面甩向左上/漂出纸面
+          var _s1 = Number(state.mapView.scale) || 1;
+          var _s2 = bandToScale(state.mapScale);
+          var _cw = (Number(state._mapVBW) || 1200) / 2, _ch = (Number(state._mapVBH) || 720) / 2;
+          state.mapView.tx = _cw - (_cw - (Number(state.mapView.tx) || 0)) * (_s2 / _s1);
+          state.mapView.ty = _ch - (_ch - (Number(state.mapView.ty) || 0)) * (_s2 / _s1);
+          state.mapView.scale = _s2;
           applyMapTransform();
           updateMapChrome();
           renderFormalMap();
@@ -1167,7 +1173,13 @@
     if (!want) return regions;
     if (!regions.some(function(r){ return regionTier(r); })) return regions;  // 老剧本无层级数据→全量
     var filtered = regions.filter(function(r){ return want.indexOf(regionTier(r)) >= 0; });
-    return filtered.length ? filtered : regions;  // 该级无地块→回落全量(不空屏)
+    if (!filtered.length) return regions;  // 该级无地块→回落全量(不空屏)
+    // 稀疏回落(2026-07-03)：该级只有零星几块(如天启图府州层仅个别碎块)时，只画它们=近空图。
+    // 回落全量做底·稀疏层排到末尾后画在上——不空屏也不丢局部细节。
+    if (filtered.length < Math.max(4, regions.length * 0.25)) {
+      return regions.filter(function(r){ return want.indexOf(regionTier(r)) < 0; }).concat(filtered);
+    }
+    return filtered;
   }
   function renderFormalMap(){
     var shell = document.getElementById('tm-phase8-main-shell');
@@ -1207,6 +1219,7 @@
     state.mapLoadRetry = 0;
     var width = Number(map.width || 1200);
     var height = Number(map.height || 720);
+    state._mapVBW = width; state._mapVBH = height; /* clampMapView 用·viewBox 尺寸单一来源 */
     var oceans = Array.isArray(map.oceans) ? map.oceans : [];
     var mapId = mapIdentity(map);
     var basemap = resolveBasemap(map);
@@ -1371,10 +1384,23 @@
     return ({ owner:'势力', tax:'财赋', mood:'民情', army:'军务', office:'官守', yizheng:'役政' })[state.mapMode] || '势力';
   }
 
+  // 视口夹取（2026-07-03·治「府州往返后地图漂去左上」）：切档只改 scale 不动 tx/ty·又无越界夹取，
+  // 残留平移在低倍下把画面甩出纸面。单点收口在 applyMapTransform：所有路径(切档/滚轮/拖拽)同受益。
+  function clampMapView(v){
+    var W = Number(state._mapVBW) || 1200, H = Number(state._mapVBH) || 720;
+    var s = Number(v.scale) || 1;
+    if (s >= 1) {
+      v.tx = Math.min(0, Math.max(W * (1 - s), Number(v.tx) || 0));
+      v.ty = Math.min(0, Math.max(H * (1 - s), Number(v.ty) || 0));
+    } else {
+      v.tx = W * (1 - s) / 2; v.ty = H * (1 - s) / 2; /* 图小于窗→居中 */
+    }
+    return v;
+  }
   function applyMapTransform(){
     var world = document.getElementById('tmf-map-world');
     if (!world) return;
-    var v = state.mapView || { scale: 1, tx: 0, ty: 0 };
+    var v = clampMapView(state.mapView || { scale: 1, tx: 0, ty: 0 });
     world.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
     var stage = mapStage();
     if (stage) stage.classList.toggle('zoomed', v.scale > 1.35);
@@ -1928,7 +1954,7 @@
       landRegionCount: '陆地数量', oceanRegionCount: '海域数量',
       unboundLandRegions: '未绑定陆地', affectedSubDivisions: '受影响子区',
       populationDetail: '人口明细', mouths: '口数', households: '户数', ding: '丁口',
-      fugitives: '逃户', hiddenCount: '隐户数', sexRatio: '性别比例',
+      fugitives: '逃户', hiddenCount: '隐户数', sexRatio: '性别比例', registerAccuracy: '造册精度',
       byGender: '按性别', byAge: '按年龄', byEthnicity: '按族群', byFaith: '按信仰',
       bySettlement: '按聚落', actualRevenue: '实收税额', claimedRevenue: '应征税额',
       remittedToCenter: '起运中枢', retainedBudget: '留用地方', compliance: '合规率',
@@ -3762,7 +3788,7 @@
     try { issues = typeof getIssues === 'function' ? getIssues() : []; } catch(_) { issues = []; }
     var urgent = issues.filter(function(x){ return x && String(x.status || 'pending') !== 'done'; }).slice(0, 2);
     var buttons = urgent.map(function(x, i){
-      return '<button type="button" class="map-alert ' + (i === 0 ? 'hot' : '') + '" onclick="TMPhase8FormalBridge.openModule(\'memorial\')" title="' + attr(x.title || '') + '">' + esc(shortText(x.title || '待批奏疏', 10)) + '</button>';
+      return '<button type="button" class="map-alert ' + (i === 0 ? 'hot' : '') + '" onclick="TMPhase8FormalBridge.openModule(\'memorial\')" title="' + attr(x.title || '') + '">' + esc(shortText(x.title || '待批奏疏', 14)) + '</button>'; /* 2026-07-03 10→14·配 CSS 放宽·治「陕西大饥荒·告…」双重截 */
     });
     if (buttons.length < 2) buttons.push('<button type="button" class="map-alert" onclick="TMPhase8FormalBridge.openPanel(\'issue\')">朝议待核</button>');
     buttons.push('<button type="button" class="map-alert ok" onclick="TMPhase8FormalBridge.openPanel(\'finance\')">财赋入库</button>');

@@ -184,7 +184,7 @@
     // bitmap 边
     var p0 = w2m(0, 0);
     var p1 = w2m(ME.EDITOR.map.bitmapWidth || 1280, ME.EDITOR.map.bitmapHeight || 800);
-    ctx.strokeStyle = 'rgba(255,215,0,0.15)';
+    ctx.strokeStyle = 'rgba(217,181,102,0.15)';
     ctx.lineWidth = 1;
     ctx.strokeRect(p0[0], p0[1], p1[0] - p0[0], p1[1] - p0[1]);
 
@@ -205,7 +205,7 @@
       // 色·选中金·否则按 colorKey / autonomy
       var color;
       if (sel[d.id]){
-        color = 'rgba(255,215,0,0.85)';
+        color = 'rgba(217,181,102,0.85)';
       } else if (typeof d.colorKey === 'number'){
         var r = (d.colorKey >> 16) & 0xff;
         var g = (d.colorKey >> 8) & 0xff;
@@ -244,8 +244,8 @@
     var p1 = w2m(minX + w, minY + h);
     ctx.save();
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#ffd700';
-    ctx.fillStyle = 'rgba(255,215,0,0.08)';
+    ctx.strokeStyle = '#d9b566';
+    ctx.fillStyle = 'rgba(217,181,102,0.08)';
     var rx = p0[0], ry = p0[1], rw = p1[0] - p0[0], rh = p1[1] - p0[1];
     ctx.fillRect(rx, ry, rw, rh);
     ctx.strokeRect(rx, ry, rw, rh);
@@ -256,7 +256,7 @@
     var cx = rx + rw/2, cy = ry + rh/2;
     ctx.moveTo(cx - 4, cy); ctx.lineTo(cx + 4, cy);
     ctx.moveTo(cx, cy - 4); ctx.lineTo(cx, cy + 4);
-    ctx.strokeStyle = '#ffd700';
+    ctx.strokeStyle = '#d9b566';
     ctx.lineWidth = 1;
     ctx.stroke();
   }

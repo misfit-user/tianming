@@ -30,7 +30,7 @@
     hint.style.cssText = [
       'position:absolute',
       'inset:0',
-      'background:rgba(255,215,0,0.08)',
+      'background:rgba(217,181,102,0.08)',
       'border:3px dashed var(--gold-1)',
       'border-radius:var(--rd-3)',
       'display:none',

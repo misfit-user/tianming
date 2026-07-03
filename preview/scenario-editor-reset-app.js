@@ -1,6 +1,47 @@
 (function(global) {
   'use strict';
 
+  /* ════════════════════════════════════════════════════════════════════════
+     剧本工坊 app.js · 架构目录（2026-07-03 整备 R3·纯注释·定位用 grep 锚词，行号会漂不写死）
+
+     ◆ 四文件分工：
+       scenario-editor-reset-preview.html   静态骨架(三列grid/rail九章tile/JSON原型)+外链清单
+       scenario-editor-reset-style.css      全量样式(内联外提·追加层惯例:后来居上·回滚=删段)
+       scenario-editor-reset-adapters.js    九个页内适配IIFE(总览开关/国师坞dock/引擎合并/M2/M7/N2/P1/P2P3/boolsw)
+       scenario-editor-reset-app.js(本文件) 编辑器本体(state/渲染/命令/存档)
+
+     ◆ 主区段（按锚词 grep 定位）：
+       常量与存储 key ················ grep "STORAGE_KEY ="
+       字段字典与来源徽 ·············· grep "FIELD_DESCRIPTIONS = {"（字典总目录见下）
+       state 与模块蓝图 ·············· grep "selectedModuleId"
+       中心渲染(单模块聚焦) ·········· grep "function renderDetailApp"（渲进 #module-detail）
+       深度工作台 40 路分发 ·········· grep "function renderStructuredWorkbench"
+       完成度收口(slice5) ············ grep "重设 slice 5"
+       字段组中层(slice3b) ··········· grep "重设 slice 3b"
+       人物列传/势力图谱 ············· grep "可视化编辑 POC①" / "可视化编辑 B"
+       通用实体渲染 genDetail ········ grep "通用实体渲染基建"
+       各章 Folio(事件/财政/开篇/军事/官制/规则/区划) · grep "───────── XX章"
+       通用树状图(行政/官制共用) ····· grep "通用树状图(org-chart)"
+       运行时字段审计 ················ grep "function renderRuntimeFieldAudit"
+       顶栏/控制台注入 ··············· grep "bootstrapChrome"
+       编辑器命令分发 ················ grep "data-editor-command 分发" 或 "command === '"
+       全局点击委托(rail换章等) ······ grep "closest('[data-module-id]')"
+
+     ◆ 标签字典总目录（★补翻译先对号——同一模块的裸英文键可能分属不同渲染链，补错表不生效）：
+       FIELD_DESCRIPTIONS      剧本【顶层字段】·「字段名 · 描述」格式·folioFieldLabel 取「·」前头·
+                               同喂字段搜索(Slice85/跨章命中)·高级折子「其他字段」组走此表
+       GAMESET_LABELS/_SUB     gameSettings 对象内键（开局设置·时间历法组）
+       PLAYERINFO_LABELS       playerInfo 对象内键（玩家入口组）
+       SPECIALIST_FIELD_LABELS specialist 专业表单(M13)·能力值用游戏官方名
+       CHAR_NEST_LABELS/_SUB   人物列传嵌套区(关系网/家族/价值观…)
+       TRAIT_LABELS/WUCHANG_LABELS  特质 / 五常
+       FAC_LABELS/_SUB         势力折子；OA_KEY/OA_VAL_LABELS=对象数组键/值美化(通用)
+       EVENT_LABELS            事件章；MIL_LABELS/_SUB=军事章；ADMIN_DIV_LABELS=行政区划章
+       FISCAL/CORRUPT/ECON_LABELS(+_SUB)  财政·吏治·经济章
+       PROVENANCE_LABELS       字段来源徽(启/宋/编)
+       （官制章官职树无字典·placeholder 直书·对象值走 oftObjChip 只读结构签）
+     ════════════════════════════════════════════════════════════════════════ */
+
   var DATA = global.TM_SCENARIO_EDITOR_RESET_DATA || {};
   var STORAGE_KEY = 'tm.scenarioEditorReset.previewDraft.v1';
   // 修 quota：超过此字符数的草稿不再写 localStorage（大剧本如天启 3.7M 字符会超浏览器配额）。
@@ -809,6 +850,15 @@
     return state.modules.find(function(module) { return module.id === id; }) || state.modules[0] || { id: 'scenarioOpening', title: '剧本总览', topLevelKeys: Object.keys(state.scenario || {}) };
   }
 
+  /* 重做W4 · 换章翻页动效：给 #module-detail 重触发一次入场动画（CSS 类 je-page-turn·reduced-motion 由全局规则豁免） */
+  function jePageTurn() {
+    var det = document.getElementById('module-detail');
+    if (!det) return;
+    det.classList.remove('je-page-turn');
+    void det.offsetWidth;
+    det.classList.add('je-page-turn');
+  }
+
   function runtimeSurfaceForField(field) {
     return RUNTIME_FIELD_SURFACES.find(function(surface) { return surface.field === field; }) || null;
   }
@@ -1111,7 +1161,28 @@
     'modelRequirements': 'AI 模型要求 · 最小能力 / 上下文长度',
     'aiAutoEnrich': 'AI 自动补全开关',
     'aiPersonaText': 'AI 人格描述 · 描述此角色的语气、价值观、行为偏好',
-    'aiBehaviorPolicy': 'AI 行为边界 · 不可做、必须做的事'
+    'aiBehaviorPolicy': 'AI 行为边界 · 不可做、必须做的事',
+    /* 2026-07-03 · 补齐绍宋等剧本顶层漏网键（缺条目时「其他字段」组回退英文 key 裸露；描述同喂字段搜索） */
+    'minxin': '民心 · 开局民心值',
+    'huangquan': '皇权 · 开局皇权值',
+    'huangwei': '皇威 · 开局皇威值',
+    'currentIssues': '开局议题 · 摆在案头的时弊与急务',
+    'memorials': '开局奏疏 · 进入剧本时已在御案的奏疏',
+    'openingAudiences': '开局召对 · 预置的开局召对场次',
+    'tianjiEnabled': '启用天机 · 剧本授权天机系统',
+    'junqingBriefEnabled': '启用军情简报 · 剧本授权军情简报',
+    'xinjunObserveEnabled': '启用新君观政 · 观政引导期开关',
+    'xinjunObserveTurns': '新君观政回合 · 观政引导期时长',
+    'suggestions': '开局建议 · 给玩家的开局提示',
+    'isShaosongHeightened': '绍宋强化版 · 强化版内容标记',
+    'shaosongNote': '剧本备注 · 制作者备注',
+    /* 2026-07-03 · 内容整备：蓝图 102 字段与本字典做差集·补齐最后 6 个缺描述字段（据 runtimeSurface 运行时证据） */
+    'presetRelations': '预置关系 · 开局初始化的人物/势力关系',
+    'adminConfig': '行政配置 · 区划体系的运行时配置',
+    'worldview': '世界观 · 供 AI 与叙事生成的世界观设定',
+    'mechanics': '机制说明 · 剧本专属机制的规则说明',
+    'influenceGroups': '影响集团 · 可施加朝野影响的利益集团',
+    'offendGroups': '得罪集团 · 决策可能触怒的利益集团'
   };
 
   function describeField(field) {
@@ -1453,56 +1524,9 @@
     return String(value).slice(0, 4) + '…' + String(value).slice(-4);
   }
 
-  function gmApiVal(id) { var e = document.getElementById(id); return e ? e.value : ''; }
-  function gmApiCollect() { return { main: { key: gmApiVal('gm-api-key'), url: gmApiVal('gm-api-url'), model: gmApiVal('gm-api-model') }, image: { key: gmApiVal('gm-img-key'), url: gmApiVal('gm-img-url'), model: gmApiVal('gm-img-model') } }; }
-  function closeApiSettingsModal() { var m = document.getElementById('gm-api-modal'); if (m && m.parentNode) m.parentNode.removeChild(m); }
-  function openApiSettingsModal() {
-    closeApiSettingsModal();
-    var s = readApiSettings();
-    var ov = document.createElement('div');
-    ov.id = 'gm-api-modal';
-    ov.setAttribute('style', 'position:fixed;inset:0;z-index:4000;background:rgba(30,22,12,.55);display:flex;align-items:center;justify-content:center');
-    ov.innerHTML = '<style>' +
-      '#gm-api-modal .gm-card{width:min(560px,94vw);max-height:90vh;overflow:auto;background:linear-gradient(160deg,#fffdf3,#f6efda);border:1px solid #c9a84c;border-radius:14px;box-shadow:0 12px 40px rgba(30,20,10,.4);font-family:"KaiTi","STKaiti","Noto Serif SC",serif;color:#241d15}' +
-      '#gm-api-modal .gm-h{display:flex;align-items:baseline;gap:10px;padding:14px 18px 10px;border-bottom:1px solid rgba(168,131,58,.3)}' +
-      '#gm-api-modal .gm-h b{font-size:17px;color:#7a2018}#gm-api-modal .gm-h span{font-size:11px;color:#9c8b6b;flex:1;line-height:1.4}' +
-      '#gm-api-modal .gm-x{cursor:pointer;border:none;background:none;font-size:20px;color:#9c8b6b;line-height:1}' +
-      '#gm-api-modal .gm-b{padding:12px 18px;display:flex;flex-direction:column;gap:9px}' +
-      '#gm-api-modal .gm-b label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#574733}' +
-      '#gm-api-modal .gm-b input{border:1px solid #dcc99c;border-radius:6px;background:rgba(255,252,242,.9);font:inherit;font-size:13px;color:#241d15;padding:5px 8px}' +
-      '#gm-api-modal .gm-b input:focus{border-color:#a8833a;outline:none}' +
-      '#gm-api-modal .gm-sub{margin-top:6px;font-size:11px;font-weight:700;color:#a8833a;border-left:3px solid #a8833a;padding-left:7px}' +
-      '#gm-api-modal .gm-f{display:flex;align-items:center;gap:8px;padding:10px 18px 16px;border-top:1px solid rgba(168,131,58,.3)}' +
-      '#gm-api-modal .gm-status{flex:1;font-size:11px;color:#574733;min-height:1em}' +
-      '#gm-api-modal .gm-save{cursor:pointer;border:1px solid #a8833a;background:#a8833a;color:#fff;border-radius:7px;padding:5px 16px;font:inherit;font-size:13px}' +
-      '#gm-api-modal .gm-mini{cursor:pointer;border:1px solid #c9a84c;background:transparent;color:#7d5e22;border-radius:7px;padding:5px 12px;font:inherit;font-size:12px}' +
-    '</style>' +
-    '<div class="gm-card">' +
-      '<div class="gm-h"><b>API 设置</b><span>全游戏通用主 API · 与正式游戏共用一份（存 tm_api）· 国师助手 / 生图都用它</span><button class="gm-x" data-editor-command="close-api-settings-modal" aria-label="关闭">×</button></div>' +
-      '<div class="gm-b">' +
-        '<label>主 API · 地址（URL）<input id="gm-api-url" value="' + escapeHtml(s.main.url || 'https://api.openai.com/v1/chat/completions') + '" placeholder="https://api.openai.com/v1/chat/completions 或中转站地址"></label>' +
-        '<label>主 API · 模型<input id="gm-api-model" value="' + escapeHtml(s.main.model || 'gpt-4o') + '" placeholder="gpt-4o / claude-sonnet-4 / deepseek-chat …"></label>' +
-        '<label>主 API · Key<input id="gm-api-key" type="password" value="' + escapeHtml(s.main.key || '') + '" placeholder="sk-…（仅存本机，不写进剧本包）"></label>' +
-        '<div class="gm-sub">生图 API（留空则复用主 API）</div>' +
-        '<label>生图 · 地址<input id="gm-img-url" value="' + escapeHtml(s.image.url || '') + '" placeholder="https://api.openai.com/v1/images/generations"></label>' +
-        '<label>生图 · 模型<input id="gm-img-model" value="' + escapeHtml(s.image.model || '') + '" placeholder="dall-e-3 / gpt-image-1"></label>' +
-        '<label>生图 · Key<input id="gm-img-key" type="password" value="' + escapeHtml(s.image.key || '') + '" placeholder="留空复用主 API"></label>' +
-      '</div>' +
-      '<div class="gm-f"><span class="gm-status" id="gm-api-status"></span><button class="gm-mini" data-editor-command="test-api-settings-modal">测试连接</button><button class="gm-save" data-editor-command="save-api-settings-modal">保存</button><button class="gm-mini" data-editor-command="close-api-settings-modal">关闭</button></div>' +
-    '</div>';
-    ov.addEventListener('click', function (e) { if (e.target === ov) closeApiSettingsModal(); });
-    document.body.appendChild(ov);
-  }
-  function saveApiSettingsModal() { saveApiSettings(gmApiCollect()); closeApiSettingsModal(); setStatus('API 设置已保存（全游戏通用主 API · 国师 / 生图共用）', 'good'); }
-  function testApiSettingsModal() {
-    var st = document.getElementById('gm-api-status'); if (st) { st.textContent = '测试中…'; st.style.color = '#574733'; }
-    saveApiSettings(gmApiCollect());
-    var AA = global.TM && global.TM.AuthoringAgent;
-    if (!AA || typeof AA.testConnection !== 'function') { if (st) st.textContent = '测试不可用（国师助手未加载）'; return; }
-    AA.testConnection().then(function (r) { var s2 = document.getElementById('gm-api-status'); if (s2) { s2.textContent = (r && r.ok ? '✓ ' : '✗ ') + ((r && r.detail) || (r && r.ok ? '连通' : '失败')); s2.style.color = (r && r.ok) ? '#2d5848' : '#a83228'; } })
-      .catch(function (e) { var s2 = document.getElementById('gm-api-status'); if (s2) { s2.textContent = '✗ ' + (e && e.message || e); s2.style.color = '#a83228'; } });
-  }
-
+  /* 2026-07-03 · 顶栏 ⚙「API 设置」模态退役（owner 指认重复）：主 API(tm_api) 的配置已移驻
+     国师面板 composer 模型徽弹层（同写 tm_api·带真实模型清单检测），此模态纯重复。
+     生图 API(tm_api_image) 配置仍由规则AI章的 api-settings-workbench 面板承担，不受影响。 */
   function renderApiSettingsWorkbench() {
     var mount = document.querySelector('[data-panel="api-settings-workbench"]');
     var settings = state.apiSettings || readApiSettings();
@@ -14395,9 +14419,20 @@
   }
 
   // ───────── 开篇章 ─────────
-  var GAMESET_LABELS = { enabledSystems: '启用系统', startYear: '起始年', startMonth: '起始月', startDay: '起始日', enableGanzhi: '干支纪年', enableGanzhiDay: '干支纪日', enableEraName: '用年号', eraName: '年号', eraNames: '年号表', daysPerTurn: '每回合天数', turnDuration: '回合时长', turnUnit: '回合单位' };
+  var GAMESET_LABELS = { enabledSystems: '启用系统', startYear: '起始年', startMonth: '起始月', startDay: '起始日', enableGanzhi: '干支纪年', enableGanzhiDay: '干支纪日', enableEraName: '用年号', eraName: '年号', eraNames: '年号表', daysPerTurn: '每回合天数', turnDuration: '回合时长', turnUnit: '回合单位',
+    /* 2026-07-03 · 补齐绍宋等剧本 gameSettings 漏网键（缺条目回退英文 key 裸露在开局折子） */
+    eraStartYear: '年号起始年', difficulty: '难度', recommendedDifficulty: '建议难度', forcedDifficulty: '锁定难度',
+    minxin: '民心', huangquan: '皇权', huangwei: '皇威', currentIssues: '开局议题', memorials: '开局奏疏',
+    openingAudiences: '开局召对', tianjiEnabled: '启用天机', junqingBriefEnabled: '启用军情简报',
+    xinjunObserveEnabled: '启用新君观政', xinjunObserveTurns: '新君观政回合', suggestions: '开局建议',
+    isShaosongHeightened: '绍宋强化版', shaosongNote: '剧本备注' };
   var GAMESET_SUB = { enabledSystems: { items: '物品', military: '军事', techTree: '科技树', civicTree: '民政树', events: '事件', map: '地图', characters: '人物', factions: '势力', classes: '阶层', rules: '规则', officeTree: '官制', parties: '党派', variables: '变量', timeline: '时间线', economy: '经济', diplomacy: '外交', tinyi: '廷议', keju: '科举' } };
-  var PLAYERINFO_LABELS = { playerRole: '玩家身份', playerRoleCustom: '自定身份', leaderIsPlayer: '首领即玩家', factionName: '势力名', factionType: '势力类型', factionLeader: '势力首领', factionLeaderTitle: '首领头衔', factionTerritory: '疆域', factionStrength: '实力', factionCulture: '文化', factionGoal: '目标', factionResources: '资源', factionDesc: '势力简述', characterName: '角色名', characterTitle: '角色头衔', characterFaction: '所属势力', characterAge: '年龄', characterGender: '性别', characterPersonality: '性格', characterFaith: '信仰', characterCulture: '文化', characterBio: '小传', characterDesc: '角色简述', characterAppearance: '角色外貌', characterCharisma: '魅力', loyalty: '忠诚', ambition: '野心', intelligence: '智谋', valor: '武勇', military: '军事', benevolence: '仁德', administration: '政务', management: '管理', integrity: '廉节', diplomacy: '外交' };
+  var PLAYERINFO_LABELS = { playerRole: '玩家身份', playerRoleCustom: '自定身份', leaderIsPlayer: '首领即玩家', factionName: '势力名', factionType: '势力类型', factionLeader: '势力首领', factionLeaderTitle: '首领头衔', factionTerritory: '疆域', factionStrength: '实力', factionCulture: '文化', factionGoal: '目标', factionResources: '资源', factionDesc: '势力简述', characterName: '角色名', characterTitle: '角色头衔', characterFaction: '所属势力', characterAge: '年龄', characterGender: '性别', characterPersonality: '性格', characterFaith: '信仰', characterCulture: '文化', characterBio: '小传', characterDesc: '角色简述', characterAppearance: '角色外貌', characterCharisma: '魅力', loyalty: '忠诚', ambition: '野心', intelligence: '智谋', valor: '武勇', military: '军事', benevolence: '仁德', administration: '政务', management: '管理', integrity: '廉节', diplomacy: '外交',
+    /* 2026-07-03 · 补齐绍宋等剧本 playerInfo 漏网键（开局状态/授权 flag·缺条目回退英文 key 裸露） */
+    minxin: '民心', huangquan: '皇权', huangwei: '皇威', currentIssues: '开局议题', memorials: '开局奏疏',
+    openingAudiences: '开局召对', tianjiEnabled: '启用天机', junqingBriefEnabled: '启用军情简报',
+    xinjunObserveEnabled: '启用新君观政', xinjunObserveTurns: '新君观政回合', suggestions: '开局建议',
+    isShaosongHeightened: '绍宋强化版', shaosongNote: '剧本备注' };
   // 玩家入口·从已有势力/角色下拉选→一键导入字段（照搬老编辑器 pickFactionForPlayer/pickCharacterForPlayer 范式）·2026-06-05
   function playerPickerOptions(list, cur, ph) {
     var opts = '<option value="">' + ph + '</option>';
@@ -14527,13 +14562,22 @@
     '.oft-pos2 .rwf2-ctl{font-size:11px;padding:1px 4px;flex:1;min-width:60px}' +
     '.oft-duties{display:flex;gap:4px;align-items:center;margin:1px 0 3px}.oft-duties .rwf2-ctl{font-size:11px;padding:1px 4px}' +
     '.oft-l{font-size:10px;color:#9c8b6b;flex:0 0 auto}' +
+    '.oft-obj{display:inline-block;border:1px dashed #cbb98e;background:rgba(168,131,58,.06);color:#8b7d66;cursor:default;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
   '</style>';
+  /* 2026-07-03 · 官职字段值为对象/数组时(绍宋 holder/duties 等结构值)不再 String() 成
+     "[object Object]" 塞进可回写 input——那会在用户一编辑时把字符串写回毁掉结构。
+     渲染为只读结构签(无 data-office-path·不参与回写)，引导去深度编辑台按 JSON 改。 */
+  function oftObjChip(val) {
+    if (val === null || typeof val !== 'object') return '';
+    var summ = Array.isArray(val) ? '[' + val.length + ' 项]' : '{' + Object.keys(val).length + ' 键}';
+    return '<span class="rwf2-ctl oft-obj" title="结构值 · 请在下方深度编辑台按 JSON 编辑">' + escapeHtml(summ) + '</span>';
+  }
   function officeNodeHtml(node, nodePath) {
     var posRows = (node.positions || []).map(function (pos, j) {
       var base = nodePath.concat(['positions', j]).join('.');
-      function ctl(field, val, ph, num) { return '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (field === 'vacancyCount' && Number(val) > 0 ? ' style="color:#a83228"' : '') + '>'; }
+      function ctl(field, val, ph, num) { return oftObjChip(val) || '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (field === 'vacancyCount' && Number(val) > 0 ? ' style="color:#a83228"' : '') + '>'; }
       var row1 = '<div class="oft-pos">' + ctl('name', pos.name, '官职') + ctl('rank', pos.rank, '品级') + ctl('holder', pos.holder, '现任(空缺则留白)') + ctl('establishedCount', pos.establishedCount, '员额', true) + ctl('vacancyCount', pos.vacancyCount, '缺员', true) + '</div>';
-      function ctl2(field, val, ph, num) { return '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '" placeholder="' + ph + '">'; }
+      function ctl2(field, val, ph, num) { return oftObjChip(val) || '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '" placeholder="' + ph + '">'; }
       var hasExtra = ('salary' in pos) || ('perPersonSalary' in pos) || ('duties' in pos) || ('authority' in pos) || ('succession' in pos) || ('powers' in pos) || ('privateIncome' in pos);
       var row2 = hasExtra ? '<div class="oft-pos2"><span class="oft-l">俸</span>' + ctl2('salary', pos.salary, '俸禄', true) + ctl2('perPersonSalary', pos.perPersonSalary, '俸注') + '<span class="oft-l">权</span>' + ctl2('authority', pos.authority, '权限') + ctl2('succession', pos.succession, '继任') + ('powers' in pos ? ctl2('powers', pos.powers, '权责') : '') + ('privateIncome' in pos ? ctl2('privateIncome', pos.privateIncome, '灰收') : '') + '</div>' + ('duties' in pos ? '<div class="oft-duties"><span class="oft-l">职责</span>' + ctl2('duties', pos.duties, '职责') + '</div>' : '') : '';
       return row1 + row2;
@@ -15030,16 +15074,28 @@
       if (!chars[charIndex].wuchang || typeof chars[charIndex].wuchang !== 'object') chars[charIndex].wuchang = {};
       chars[charIndex].wuchang[sub] = Math.max(0, Math.min(100, num));
       recordHistory('列传编辑', (chars[charIndex].name || ('#' + charIndex)) + ' · 五常·' + sub);
-      reRenderModulePrimary();
-      var pnl = document.querySelector('[data-panel="renwu-folio"]'); if (pnl) pnl.innerHTML = renderCharacterFolio();
+      rebuildCharFolioKeepScroll();
       return;
     }
     setEntityProp(chars[charIndex], field, raw, 'characters');
     recordHistory('列传编辑', (chars[charIndex].name || ('#' + charIndex)) + ' · ' + field);
+    rebuildCharFolioKeepScroll();
+  }
+  // 列传字段编辑会整块重建 folio（含左侧名录）；重建前记下名录 scrollTop、重建后复位，
+  // 免得连录多人时每次保存都被弹回名录顶部（右侧详情仍随 selectedCharIndex 走）。
+  function rebuildCharFolioKeepScroll() {
     var html = renderCharacterFolio();
     var hosts = [document.getElementById('module-primary-view'), document.querySelector('[data-panel="renwu-folio"]')];
     var any = false;
-    hosts.forEach(function(h) { if (h) { h.innerHTML = html; any = true; } });
+    hosts.forEach(function(h) {
+      if (!h) return;
+      var prev = h.querySelector('.rwf2-roster');
+      var top = prev ? prev.scrollTop : 0;
+      h.innerHTML = html;
+      var next = h.querySelector('.rwf2-roster');
+      if (next && top) next.scrollTop = top;
+      any = true;
+    });
     if (!any) renderAll();
   }
 
@@ -15119,6 +15175,19 @@
       }
       return true;
     });
+    // 重做W4 · 跨模块搜索：单模块聚焦后，筛选词命中其他章的字段时给「他章命中」跳转签，
+    // 点击=切章+选中该字段（保留筛选词，落地后字段云已按词过滤）。
+    var crossHits = [];
+    if (textFilter) {
+      (state.modules || []).forEach(function(m) {
+        if (!m || m.id === state.selectedModuleId || crossHits.length >= 18) return;
+        (moduleFieldsForDetail(m) || []).forEach(function(field) {
+          if (crossHits.length >= 18) return;
+          var hay2 = (field + ' ' + describeField(field)).toLowerCase();
+          if (hay2.indexOf(textFilter) >= 0) crossHits.push({ m: m, f: field });
+        });
+      });
+    }
     var provOptions = [
       { id: 'all', label: '全部' },
       { id: 'both', label: '共 (两个剧本)' },
@@ -15167,6 +15236,10 @@
       multiBar,
       multiActions,
       '</div>',
+      /* 重做W4 · 他章命中跳转签 */
+      crossHits.length ? '<div class="field-cross-hits"><span class="fch-cap">他章命中 ' + crossHits.length + '</span>' + crossHits.map(function(h) {
+        return '<button type="button" class="fch-chip" data-cross-jump="' + escapeHtml(h.m.id + '::' + h.f) + '" title="跳到 ' + escapeHtml((h.m.title || h.m.id) + ' · ' + h.f) + '">' + escapeHtml(h.m.title || h.m.id) + ' · ' + escapeHtml(folioFieldLabel(h.f)) + '</button>';
+      }).join('') + '</div>' : '',
       '<div class="field-cloud">',
       // Slice 3b · 字段组中层：按模块字段组把 chip 折叠成 <details> 分区。
       // 单个 chip 的渲染抽到 renderFieldChip()（保留原 chipTitle/字段 chip 结构）。
@@ -21212,7 +21285,7 @@
         '<button type="button" class="icon-btn" data-editor-command="return-to-formal-runtime" title="写回正式游戏" aria-label="把当前剧本写回正式游戏运行时">回</button>',
         '<button type="button" class="icon-btn" data-editor-command="reset" title="重置编辑器" aria-label="重置编辑器到官方基线">归</button>',
         '<button type="button" class="icon-btn" data-editor-command="copy-share-url" title="复制分享链接" aria-label="复制剧本分享链接到剪贴板">链</button>',
-        '<button type="button" class="icon-btn" data-editor-command="open-api-settings-modal" title="API 设置 · 全游戏通用主 API（国师 / 生图共用·存 tm_api）" aria-label="API 设置">⚙</button>',
+        /* ⚙ API 设置钮已退役(2026-07-03·主API配置移驻国师面板模型徽弹层·生图API在规则AI章面板) */
         '<button type="button" class="icon-btn" data-editor-command="open-shortcut-cheatsheet" title="键盘快捷键 (Shift+?)" aria-label="查看键盘快捷键参考" aria-keyshortcuts="Shift+?">帮</button>',
         '<input id="scenario-import-input" type="file" accept=".json,application/json" hidden>',
         '<input id="project-package-import-input" type="file" accept=".json,application/json" hidden>'
@@ -21488,10 +21561,7 @@
       if (expAll) { var ah0 = state.scenario.adminHierarchy || {}; var fk0 = (state._adminFaction && ah0[state._adminFaction]) ? state._adminFaction : Object.keys(ah0)[0]; (function dig(ds) { (ds || []).forEach(function (d) { if (d && d.children && d.children.length) { state._adminExpanded[d.id] = 1; dig(d.children); } }); })(((ah0[fk0] || {}).divisions) || []); }
       reRenderModulePrimary(); return;
     }
-    if (command === 'open-api-settings-modal') openApiSettingsModal();
-    if (command === 'close-api-settings-modal') closeApiSettingsModal();
-    if (command === 'save-api-settings-modal') saveApiSettingsModal();
-    if (command === 'test-api-settings-modal') testApiSettingsModal();
+    /* api-settings-modal 四命令已随 ⚙ 模态退役(2026-07-03) */
     if (command === 'clear-selected-map-bindings') clearSelectedMapBindings();
     if (command === 'create-missing-field') createMissingField(state.selectedField);
     if (command === 'save-field-note') {
@@ -21854,13 +21924,29 @@
           return;
         }
       }
+      var crossJump = event.target.closest('[data-cross-jump]');
+      if (crossJump) {
+        /* 重做W4 · 他章命中签：切章+选中命中字段（保留筛选词） */
+        event.preventDefault();
+        var cj = String(crossJump.dataset.crossJump || '').split('::');
+        if (cj[0] && cj[0] !== state.selectedModuleId) {
+          state.selectedModuleId = cj[0];
+          state.selectedField = cj[1] || (findModule(cj[0]).topLevelKeys || [])[0];
+          state.selectedEntityIndex = 0;
+          jePageTurn();
+          renderAll();
+        }
+        return;
+      }
       var moduleTile = event.target.closest('[data-module-id]');
       if (moduleTile) {
         event.preventDefault();
+        var jeSwitched = state.selectedModuleId !== moduleTile.dataset.moduleId;
         state.selectedModuleId = moduleTile.dataset.moduleId;
         state.selectedField = (findModule(state.selectedModuleId).topLevelKeys || [])[0];
         state.selectedEntityIndex = 0;
         state.search = '';
+        if (jeSwitched) jePageTurn();   /* 重做W4 · 换章翻页动效（重选同章不闪） */
         renderAll();
         return;
       }
@@ -21917,6 +22003,9 @@
       saveFactionRelationField(Number(rel.dataset.frelEdit), rel.dataset.frelField, rel.value);
     });
     document.addEventListener('input', function(event) {
+      // 输入法组词进行中不重渲染，否则每个拼音键都会重建输入框、打断 IME（搜索框打不了中文）；
+      // compositionend 时下面的监听会补发一次 input（isComposing=false）完成最终渲染。
+      if (event.isComposing) return;
       var csr = event.target && event.target.closest && event.target.closest('[data-roster-search]');
       if (csr) {
         var rkind = csr.getAttribute('data-roster-search');
@@ -21968,6 +22057,12 @@
           if (raw === '' || Number.isFinite(raw)) sibling.value = raw;
         }
       }
+    });
+    // 输入法组词结束后补发一次 input，让上面的 input 处理器（此时 isComposing=false）完成最终渲染，
+    // 收尾搜索框过滤（组词中被 isComposing 门控跳过了）。
+    document.addEventListener('compositionend', function(event) {
+      var t = event.target;
+      if (t && t.dispatchEvent) t.dispatchEvent(new Event('input', { bubbles: true }));
     });
     document.addEventListener('change', function(event) {
       if (event.target && event.target.dataset && event.target.dataset.folioField) {

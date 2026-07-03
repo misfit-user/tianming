@@ -268,10 +268,10 @@
       var w = Math.abs(s.endX - s.startX);
       var h = Math.abs(s.endY - s.startY);
       ctx.save();
-      ctx.fillStyle = 'rgba(255,215,0,0.08)';
+      ctx.fillStyle = 'rgba(217,181,102,0.08)';
       ctx.fillRect(x, y, w, h);
       ctx.lineWidth = 1 / z;
-      ctx.strokeStyle = '#ffd700';
+      ctx.strokeStyle = '#d9b566';
       ctx.setLineDash([5 / z, 4 / z]);
       ctx.strokeRect(x, y, w, h);
       ctx.setLineDash([]);
@@ -285,10 +285,10 @@
       }
       // 闭线·viewport 显
       ctx.lineTo(s.path[0][0], s.path[0][1]);
-      ctx.fillStyle = 'rgba(255,215,0,0.08)';
+      ctx.fillStyle = 'rgba(217,181,102,0.08)';
       ctx.fill();
       ctx.lineWidth = 1.5 / z;
-      ctx.strokeStyle = '#ffd700';
+      ctx.strokeStyle = '#d9b566';
       ctx.setLineDash([5 / z, 4 / z]);
       ctx.stroke();
       ctx.setLineDash([]);

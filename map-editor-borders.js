@@ -63,10 +63,10 @@
       var isSelected = EDITOR.selectedIds.indexOf(d.id) !== -1;
       var isHover = EDITOR.hoverId === d.id;
 
-      var outerColor = isSelected ? 'rgba(255,215,0,0.95)' :
+      var outerColor = isSelected ? 'rgba(217,181,102,0.95)' :
                        isHover ? 'rgba(58,42,28,0.85)' :
                        'rgba(58,42,28,0.75)';
-      var innerColor = isSelected ? '#fff7c2' :
+      var innerColor = isSelected ? '#efdfb2' :
                        isHover ? '#c9a96e' :
                        'rgba(184,147,42,0.65)';
 

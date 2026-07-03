@@ -367,13 +367,13 @@
       var sel = ME.EDITOR.selectedFeature;
       if (sel && sel.kind === 'river' && sel.id === r.id){
         ctx.lineWidth = (w + 4 / z);
-        ctx.strokeStyle = 'rgba(255,215,0,0.6)';
+        ctx.strokeStyle = 'rgba(217,181,102,0.6)';
         ctx.stroke();
         // 顶点点
         r.points.forEach(function(p, i){
           ctx.beginPath();
           ctx.arc(p[0], p[1], 4 / z, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffd700';
+          ctx.fillStyle = '#d9b566';
           ctx.fill();
           ctx.lineWidth = 1 / z;
           ctx.strokeStyle = '#1a1a1f';

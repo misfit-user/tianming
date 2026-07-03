@@ -775,6 +775,36 @@ function _ty3_initialStanceFromDimsCore(ch, topic, tags) {
   return { stance: 'neutral', intensity: 0.4 };
 }
 
+// 党争归属 → initial 立场先验（通用·非朝代专名·2026-07-03）：
+// scan 的党议/民情/运动议题都带 sourceParty/opposingParties——但旧版 initial 全靠性格 8D·
+// 「此议由本党所倡还是敌党所倡」对起始立场零影响·党争只活在 LLM 嘴上。
+// 规则：本党所倡→倾支持·名列反对方/倡者是本党runtime敌党→倾反对；党纪强度随凝聚升；
+// 巨猾低忠者不受党纪拘（全由性格）；死硬性格(强度≥0.9 且相反)可压过党纪——性格与党争真实拉扯。
+function _ty3_partyStanceBias(ch, meta) {
+  if (!ch || !ch.party || !meta) return null;
+  var myParty = ch.party;
+  var dims = (typeof _ty3_getDims === 'function') ? _ty3_getDims(ch) : {};
+  if ((dims.cunning || 0) >= 0.8 && (dims.loyalty || 0) <= 0.3) return null;
+  var coh = (typeof _ty3_partyCohesion === 'function') ? (Number(_ty3_partyCohesion(myParty)) || 50) : 50;
+  var discipline = Math.min(0.85, Math.max(0.5, 0.5 + (coh - 30) / 150));
+  if (meta.sourceParty && meta.sourceParty === myParty) return { stance: 'support', intensity: discipline };
+  var opp = Array.isArray(meta.opposingParties) ? meta.opposingParties : [];
+  for (var i = 0; i < opp.length; i += 1) {
+    var on = (opp[i] && typeof opp[i] === 'object') ? (opp[i].name || '') : String(opp[i] || '');
+    if (on === myParty) return { stance: 'oppose', intensity: discipline };
+  }
+  if (meta.sourceParty && typeof _ty3_getOpposingParties === 'function') {
+    try {
+      var foes = _ty3_getOpposingParties(myParty) || [];
+      for (var j = 0; j < foes.length; j += 1) {
+        var fn = (foes[j] && typeof foes[j] === 'object') ? foes[j].name : foes[j];
+        if (fn === meta.sourceParty) return { stance: 'oppose', intensity: Math.max(0.5, discipline - 0.1) };
+      }
+    } catch (_pbE) {}
+  }
+  return null;
+}
+
 // expose
 if (typeof window !== 'undefined') {
   window.TRAIT_TO_DIMS_BIAS = TRAIT_TO_DIMS_BIAS;
@@ -785,6 +815,7 @@ if (typeof window !== 'undefined') {
   // L4·c·expose
   window._ty3_initialStanceFromDimsCore = _ty3_initialStanceFromDimsCore;
   window._ty3_applyReformLeanModulator = _ty3_applyReformLeanModulator;
+  window._ty3_partyStanceBias = _ty3_partyStanceBias;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1575,17 +1606,41 @@ function _ty3_npcProposeTinyiTopicsTick() {
     if (!type) return;
     var urgency = _ty3_calcUrgency(ch, type);
     if (urgency < 4) return;  // 阈值
-    // push topic·实际 topic 文本由 LLM 生成 (此处 stub)·entry 入队
     var existing = GM._pendingTinyiTopics.some(function(t) { return t.proposer === ch.name && (GM.turn - t.turn) < 3; });
     if (existing) return;
-    GM._pendingTinyiTopics.push({
-      topic: '【' + ch.name + ' 上书】关于 ' + ((type === 'request_tinyi_yanguan') ? '言路 / 弹劾' : (type === 'request_tinyi_inge') ? '阁议 / 时政' : '党议 / 政策') + '·urgency ' + urgency,
-      proposer: ch.name,
-      type: type,
-      urgency: urgency,
-      turn: GM.turn || 0,
-      expiresAt: (GM.turn || 0) + 5
-    });
+    // 真文本+真meta（2026-07-03·去 stub）：旧版标题是「【X 上书】关于 言路/弹劾·urgency 9」占位——
+    // urgency 数字直接写进标题·且无 sourceParty/goal meta·下游的阶层/党争 prompt 注入全拿不到料。
+    // 现按上书人身份取真实事由：党魁=本党当前目标·阁臣=御案时政·言官=吏治浊则纠劾/否则开言路。
+    var entry = { proposer: ch.name, type: type, urgency: urgency, turn: GM.turn || 0, expiresAt: (GM.turn || 0) + 5 };
+    var dedupKey = '';
+    if (type === 'request_tinyi_party') {
+      var pObj = GM.parties.find(function(x) { return x && x.name === ch.party; });
+      var goalE = (pObj && typeof _ty3_partyGoalEntries === 'function') ? (_ty3_partyGoalEntries(pObj) || [])[0] : null;
+      var gTxt = goalE ? goalE.text : ((pObj && (pObj.currentAgenda || pObj.shortGoal)) || '本党要务');
+      gTxt = String(gTxt).slice(0, 30);
+      entry.topic = '【' + ch.name + ' 上书】党议·' + gTxt + '·请付廷议';
+      entry.sourceType = 'party_goal';
+      entry.party = ch.party;
+      entry.sourceParty = ch.party;
+      if (goalE) { entry.goalId = goalE.id || ''; entry.goalText = goalE.text; entry.goalKind = goalE.kind; }
+      if (pObj && typeof _ty3_normalizePartyNames === 'function') {
+        entry.opposingParties = _ty3_normalizePartyNames([pObj.rivalParty, pObj.rival].concat(pObj.enemies || []).concat(pObj.rivals || []));
+      }
+      dedupKey = ch.party + '·' + gTxt;
+    } else if (type === 'request_tinyi_inge') {
+      var ci = GM.currentIssues;
+      var firstIssue = Array.isArray(ci) ? ci[0] : (ci && typeof ci === 'object' ? ci[Object.keys(ci)[0]] : null);
+      var issueTxt = firstIssue ? ((typeof _ty3_topicText === 'function') ? _ty3_topicText(firstIssue, 28) : String(firstIssue).slice(0, 28)) : '';
+      entry.topic = '【' + ch.name + ' 上书】阁议·' + (issueTxt || '时政得失') + '·请付廷议';
+      dedupKey = issueTxt || '时政得失';
+    } else {
+      var perceived = (GM.corruption && Number(GM.corruption.perceivedIndex)) || 0;
+      entry.topic = '【' + ch.name + ' 上书】' + (perceived >= 50 ? '纠劾·吏治积浊·请肃纲纪' : '言路·请广开言路·纳谏修省');
+      dedupKey = perceived >= 50 ? '请肃纲纪' : '广开言路';
+    }
+    // 主题级去重（治两套去重互不通气：同主题 scan 已出则 NPC 不再重复上书）
+    if (dedupKey && typeof _ty3_alreadyHasTopic === 'function' && _ty3_alreadyHasTopic(dedupKey)) return;
+    GM._pendingTinyiTopics.push(entry);
     // memorial.type 'request_tinyi'·若 GM.memorials 存
     if (Array.isArray(GM.memorials)) {
       GM.memorials.push({
@@ -2621,6 +2676,16 @@ function _ty3_normalizePartyNames(list) {
   return out;
 }
 
+// 清誉账（reputationBalance）：此前全项目只初始化为 0 无任何写者·却一直被喂进 prompt/UI 当「清名/恶名」。
+// 写者=廷议政策胜负/弹劾定罪；消费=弹劾判级(清流难扳)+公推票权；每回合 _updatePartyState 侧向 0 缓归。
+function _ty3_bumpPartyReputation(ps, delta) {
+  if (!ps || typeof ps !== 'object') return;
+  var d = Math.max(-4, Math.min(4, Number(delta) || 0));
+  if (!d) return;
+  var cur = Number(ps.reputationBalance) || 0;
+  ps.reputationBalance = Math.max(-60, Math.min(60, Math.round((cur + d) * 100) / 100));
+}
+
 function _ty3_applyPolicyPartyResult(sourceParty, opposingParties, grade, mode, blockerParty) {
   var sanction = _ty3_policySanctionByGrade(grade);
   var source = sourceParty ? _ty3_getPartyStateWritable(sourceParty) : null;
@@ -2644,6 +2709,7 @@ function _ty3_applyPolicyPartyResult(sourceParty, opposingParties, grade, mode, 
   if (source) {
     source.recentPolicyWin = Math.round((source.recentPolicyWin + sourceWin) * 100) / 100;
     source.recentPolicyLose = Math.round((source.recentPolicyLose + sourceLose) * 100) / 100;
+    _ty3_bumpPartyReputation(source, (sourceWin - sourceLose) * 0.8);
     _ty3_syncPartyStateMirror(sourceParty);
   }
   if (blockerParty) opposers = _ty3_normalizePartyNames([blockerParty].concat(opposers));
@@ -2653,6 +2719,7 @@ function _ty3_applyPolicyPartyResult(sourceParty, opposingParties, grade, mode, 
     if (!ps) return;
     ps.recentPolicyWin = Math.round((ps.recentPolicyWin + oppWin) * 100) / 100;
     ps.recentPolicyLose = Math.round((ps.recentPolicyLose + oppLose) * 100) / 100;
+    _ty3_bumpPartyReputation(ps, (oppWin - oppLose) * 0.8);
     _ty3_syncPartyStateMirror(pn);
   });
   return { sourceWin: sourceWin, sourceLose: sourceLose, opposingWin: oppWin, opposingLose: oppLose };
@@ -2746,6 +2813,9 @@ function _ty3_impeachmentVerdictGrade(charges, partyMetrics, inquiryBody, accuse
   // 名望防弹劾(设计-角色经济·资源三)：高名望者清誉难扳·名声已坏则更易定罪·fame≠prestige
   var _fameIm = (accusedCh && accusedCh.resources && typeof accusedCh.resources.fame === 'number') ? accusedCh.resources.fame : 0;
   if (_fameIm) score -= Math.round(_fameIm / 25);   // fame +100→-4 难成案 · -100→+4 易成案
+  // 党清誉防弹劾：清流之党难扳·恶名之党易罪（reputationBalance∈[-60,60] → ∓2.4 分）
+  var _repIm = (partyMetrics && partyMetrics.state && typeof partyMetrics.state.reputationBalance === 'number') ? partyMetrics.state.reputationBalance : 0;
+  if (_repIm) score -= Math.round(_repIm / 25);
   if (score >= 15) return 'S';
   if (score >= 12) return 'A';
   if (score >= 9) return 'B';
@@ -3773,9 +3843,12 @@ function _ty3_renderRegaliaList() {
         var meta = (window._ty3_publicMeta) || (CY._ty3 && CY._ty3.meta);
         if (meta && meta.isAccusation && meta.accusationType === 'clique' && meta.accused) {
           var counts = (typeof _ty2_countStances === 'function') ? _ty2_countStances() : { support: 0, oppose: 0 };
+          // 与众议方向同步：按加权票（人头为体·党势为衡）·无权重字段回退人头
+          var _wS = (typeof counts.supportW === 'number') ? counts.supportW : counts.support;
+          var _wO = (typeof counts.opposeW === 'number') ? counts.opposeW : counts.oppose;
           var wasApproved = false;
-          if (mode === 'majority') wasApproved = counts.support >= counts.oppose;
-          else if (mode === 'override') wasApproved = counts.support < counts.oppose;
+          if (mode === 'majority') wasApproved = _wS >= _wO;
+          else if (mode === 'override') wasApproved = _wS < _wO;
           else if (mode === 'mediation') wasApproved = false;
 
           var accuMemo = null;
@@ -4191,16 +4264,26 @@ async function _ty3_phase2_run() {
       var tags = (typeof _ty3_inferTopicTags === 'function')
         ? _ty3_inferTopicTags((CY._ty3.meta && CY._ty3.meta.topicType) || (CY._ty2 && CY._ty2.topicType), CY._ty3.topic)
         : [];
+      var _initMeta = (CY._ty3 && CY._ty3.meta) || ((typeof _ty3_currentTinyiMeta === 'function') ? _ty3_currentTinyiMeta() : null);
       CY._ty3.attendees.forEach(function(name) {
         var ch = (typeof findCharByName === 'function') ? findCharByName(name) : null;
         if (!ch) return;
         var st = CY._ty2.stances[name] || (CY._ty2.stances[name] = {});
         var init = _ty3_initialStanceFromDims(ch, CY._ty3.topic, tags);
-        st.initial = init.stance;      // 锁·不可变
-        st.current = st.current || init.stance;
-        st.confidence = (st.confidence != null) ? st.confidence : Math.round(init.intensity * 100);
+        // 党争先验（2026-07-03）：本党所倡倾支持·敌党所倡倾反对——除非性格死硬(≥0.9)顶牛
+        var bias = (typeof _ty3_partyStanceBias === 'function') ? _ty3_partyStanceBias(ch, _initMeta) : null;
+        if (bias && !(init.intensity >= 0.9 && init.stance !== 'neutral' && init.stance !== bias.stance)) {
+          st.initial = bias.stance;
+          st.current = st.current || bias.stance;
+          st.confidence = (st.confidence != null) ? st.confidence : Math.round(bias.intensity * 100);
+          st.source = 'party-initial';
+        } else {
+          st.initial = init.stance;      // 锁·不可变
+          st.current = st.current || init.stance;
+          st.confidence = (st.confidence != null) ? st.confidence : Math.round(init.intensity * 100);
+          st.source = 'dims-initial';
+        }
         st.history = st.history || [];
-        st.source = 'dims-initial';
       });
     }
   } catch (_initStE) {
@@ -4451,8 +4534,16 @@ function _ty3_renderContinueBtn() {
   body.appendChild(div);
 }
 
-function _ty3_phase2_finalize(prevSpeeches) {
+async function _ty3_phase2_finalize(prevSpeeches) {
+  var _wasAborted = !!CY._abortChaoyi;
   CY._abortChaoyi = false;
+  // 立场迁移判定接入活路径（2026-07-03）：v2 的被说服判定(含党争格局/性格顽固趋附·LLM 判谁被说动)
+  // 此前只挂在 v2 startDebate——v3 活路径立场全靠发言者自报·无人被人说服。轮末补判·判毕再收束。
+  if (!_wasAborted && prevSpeeches && prevSpeeches.length >= 2 && typeof _ty2_judgeStanceShifts === 'function') {
+    try { await _ty2_judgeStanceShifts(prevSpeeches); } catch (_jsE) {
+      try { window.TM && TM.errors && TM.errors.captureSilent(_jsE, 'ty3-stance-shift'); } catch (_) {}
+    }
+  }
   // 修复 2·人事议题先进廷推·再进决议
   var topic = (CY._ty3 && CY._ty3.topic) || (CY._ty2 && CY._ty2.topic) || '';
   var meta = (CY._ty3 && CY._ty3.meta) || null;
@@ -4968,7 +5059,9 @@ function _ty3_phase3_doPublicVote() {
   var pool = [];
   Object.values(CY._ty3_phase3_byParty || {}).forEach(function(info) {
     info.candidates.forEach(function(c) {
-      var weight = (info.party.influence || 50) + (c.prestige || 50) * 0.5;
+      // 公推票权 = 党势 + 候选名望 + 党清誉（清流之党所荐更易见用）
+      var _pvRep = (GM.partyState && GM.partyState[info.party.name] && typeof GM.partyState[info.party.name].reputationBalance === 'number') ? GM.partyState[info.party.name].reputationBalance : 0;
+      var weight = Math.max(5, (info.party.influence || 50) + (c.prestige || 50) * 0.5 + _pvRep * 0.5);
       pool.push({ name: c.name, party: info.party.name, weight: weight });
     });
   });
@@ -5342,6 +5435,8 @@ function _ty3_phase6_recordSeal(status, ctx, detail) {
           origin: seal.origin || null,
           relationEvidence: seal.relationEvidence || []
         }, { turn: GM.turn || 0, source: 'tinyi-stage6-blocked' });
+        // 销单：v2 decide 侧挂起的粗账落账意向（双写收口·退朝兜底不再补落）
+        if (CY._ty3) { CY._ty3._classOutcomeApplied = true; CY._ty3._classOutcomePending = null; }
       }
     } catch (_pcBlockedE) {
       try { window.TM && TM.errors && TM.errors.captureSilent(_pcBlockedE, 'tinyi-stage6-party-class-blocked'); } catch (_) {}
@@ -5391,6 +5486,8 @@ function _ty3_phase6_recordSeal(status, ctx, detail) {
           origin: seal.origin || null,
           relationEvidence: seal.relationEvidence || []
         }, { turn: GM.turn || 0, source: 'tinyi-stage6-issued' });
+        // 销单：v2 decide 侧挂起的粗账落账意向（双写收口·退朝兜底不再补落）
+        if (CY._ty3) { CY._ty3._classOutcomeApplied = true; CY._ty3._classOutcomePending = null; }
       }
     } catch (_pcIssuedE) {
       try { window.TM && TM.errors && TM.errors.captureSilent(_pcIssuedE, 'tinyi-stage6-party-class-issued'); } catch (_) {}
@@ -5516,6 +5613,14 @@ function _ty3_phase6_findHostileSealHolder(decision, opts) {
     if (!matched) return;
     var prob = Math.max(0, Math.min(0.95, (infl - 50) / 50));
     prob = _ty3_phase6_adjustBlockProb(prob, p.name, dynasty, !!matched);
+    // 国是之制硬通道（2026-07-03）：变法类议题·「改革推行」之制已成风者·反对党留中不发更难
+    try {
+      var _grIsReform = ((CY._ty3 && CY._ty3.meta && CY._ty3.meta.topicType) || (CY._ty2 && CY._ty2.topicType)) === 'reform';
+      var _GRty = (typeof GlobalRules !== 'undefined' && GlobalRules) || (typeof window !== 'undefined' && window.GlobalRules);
+      if (_grIsReform && _GRty && typeof _GRty.mod === 'function') {
+        prob = Math.max(0, prob - Math.min(0.25, Number(_GRty.mod('reform_success')) || 0));
+      }
+    } catch (_grtyE) {}
     if (!best || prob > best.holdProb) best = { partyName: p.name, influence: infl, officePos: matched, holdProb: prob };
   });
   return best;
@@ -5717,8 +5822,14 @@ function _ty3_phase12_onAccusationApproved(topic, accusedNames, accuser, topicMe
   if (sourceParty && GM.partyState && GM.partyState[sourceParty]) {
     var ps = GM.partyState[sourceParty];
     ps.recentImpeachLose = (ps.recentImpeachLose || 0) + 1;
+    // 罢官压力档位断链修：officeApplyDismissalPressure 读这三个 grade 字段定罢黜档位·
+    // 此前全项目无写者→恒退化 C 档·S/A 档重罚从不触发
+    ps.lastImpeachGrade = verdictGrade;
+    ps.recentImpeachGrade = verdictGrade;
+    ps.lastVerdictGrade = verdictGrade;
     ps.cohesion = Math.max(0, (parseInt(ps.cohesion, 10) || 50) - Math.max(1, Math.round(sanction / 2)));
     ps.influence = Math.max(0, (parseInt(ps.influence, 10) || 30) - Math.max(1, Math.round(sanction / 3)));
+    _ty3_bumpPartyReputation(ps, -sanction / 2);
   }
   var base = sourceParty ? (sourceParty + ' Trial Faction') : 'Impeached Faction';
   var newName = base;
@@ -6698,9 +6809,26 @@ function _ty3_pushPendingTinyiTopic(topicObj, keyword, spawned) {
   topicObj.topicDisplay = _ty3_topicDisplayText(topicObj);
   if (topicObj.goalText && !topicObj.goalTextDisplay) topicObj.goalTextDisplay = _ty3_localizeCourtTopicText(topicObj.goalText);
   if (topicObj.demandText && !topicObj.demandTextDisplay) topicObj.demandTextDisplay = _ty3_localizeCourtTopicText(topicObj.demandText);
+  // 议题保鲜（2026-07-03）：scan 议题此前不设 expiresAt→永不过期·池只进不出。
+  // 统一给 10 回合寿限（到期走 _ty3_checkExpiredTopics 留中/再提），池封顶 24 淘最老。
+  if (!topicObj.expiresAt) topicObj.expiresAt = (GM.turn || 0) + 10;
   GM._pendingTinyiTopics.push(topicObj);
+  if (GM._pendingTinyiTopics.length > 24) GM._pendingTinyiTopics = GM._pendingTinyiTopics.slice(-24);
   if (Array.isArray(spawned)) spawned.push(topicObj.topicDisplay || topicObj.topic);
   return true;
+}
+
+// 薄分支冷却（2026-07-03）：调停党争/民心低迷/国帑亏空这类「条件持续成立」的议题·
+// 被玩家消费出池后下回合即再刷——补 per-key 冷却（成功入池才盖戳）。
+function _ty3_spawnCooldownReady(key, turns) {
+  if (!GM._ty3_spawnCooldowns) GM._ty3_spawnCooldowns = {};
+  var last = parseInt(GM._ty3_spawnCooldowns[key], 10) || 0;
+  var now = GM.turn || 0;
+  return !last || (now - last) >= (turns || 4);
+}
+function _ty3_spawnCooldownStamp(key) {
+  if (!GM._ty3_spawnCooldowns) GM._ty3_spawnCooldowns = {};
+  GM._ty3_spawnCooldowns[key] = GM.turn || 0;
 }
 
 function _ty3_phase15_scanAndSpawnTopics() {
@@ -6713,11 +6841,11 @@ function _ty3_phase15_scanAndSpawnTopics() {
   } catch (_pgDeriveE) {
     try { window.TM && TM.errors && TM.errors.captureSilent(_pgDeriveE, 'tinyi-phase15-class-demand'); } catch (_) {}
   }
-  if (typeof GM.partyStrife === 'number' && GM.partyStrife >= 70) {
+  if (typeof GM.partyStrife === 'number' && GM.partyStrife >= 70 && _ty3_spawnCooldownReady('party-strife', 4)) {
     var prop1 = _ty3_pickProposer({ fallbackTitle: '\u5FA1\u53F2|\u90FD\u5BDF|\u8A00\u5B98|censor' });
     var t1 = { topic: '\u8C03\u505C\u515A\u4E89\u00B7\u6050\u751F\u5927\u53D8', from: 'ty3-spawn-party-strife', turn: GM.turn, severity: GM.partyStrife };
     _ty3_attachProposer(t1, prop1, '\u515A\u4E89\u5DF2\u70BD\u00B7\u9700\u5148\u8BAE\u7EA6\u675F');
-    _ty3_pushPendingTinyiTopic(t1, '\u8C03\u505C\u515A\u4E89', spawned);
+    if (_ty3_pushPendingTinyiTopic(t1, '\u8C03\u505C\u515A\u4E89', spawned)) _ty3_spawnCooldownStamp('party-strife');
   }
   _ty3_getParties().forEach(function(p) {
     if (!p || _ty3_isInactivePartyStatus(p.status)) return;
@@ -6796,23 +6924,51 @@ function _ty3_phase15_scanAndSpawnTopics() {
     _ty3_attachProposer(t4, _ty3_pickClassProposer(cls), '\u9636\u5C42\u8BC9\u6C42\u4E0E\u6C11\u60C5\u538B\u529B\u5DF2\u4E0A\u8FBE');
     if (_ty3_pushPendingTinyiTopic(t4, className + '\u00B7' + pressure.demandText, spawned)) cls._lastPressureTinyiTurn = classTurn;
   });
+  // \u653F\u6CBB\u8FD0\u52A8\u4ED8\u5EF7\u8BAE\uFF08V3\u5F0F\u00B7SocialFoundation \u00A7\u4E09E \u6D88\u8D39\u7AEF\u00B72026-07-03\uFF09\uFF1A\u6210\u52BF/\u9F0E\u6CB8\u4E4B\u8FD0\u52A8\u9876\u4E0A\u671D\u5802\u2014\u2014
+  // \u5E26\u5168\u5957\u9636\u5C42 meta\uFF08\u53D1\u8A00\u6CE8\u5165/\u7ACB\u573A\u5148\u9A8C/\u843D\u8D26\u90FD\u5403\u5F97\u5230\uFF09\u00B7per-\u8FD0\u52A8 3 \u56DE\u5408\u51B7\u5374
+  if (Array.isArray(GM._politicalMovements)) {
+    GM._politicalMovements.forEach(function(mv) {
+      if (!mv || !(Number(mv.support) >= 40)) return;
+      var mvTurn = GM.turn || 0;
+      var lastMvTurn = parseInt(mv._lastTinyiTurn, 10) || 0;
+      if (lastMvTurn && mvTurn - lastMvTurn < 3) return;
+      var mvCls = _ty3_getScenarioClasses().find(function(c) { return c && (c.name === mv.className || c.className === mv.className); });
+      var tM = {
+        topic: '\u6C11\u60C5\u6C79\u6C79\u00B7' + mv.className + '\u00B7' + mv.label + '\u00B7\u8BF7\u4ED8\u5EF7\u8BAE',
+        from: 'ty3-spawn-movement',
+        sourceType: 'movement',
+        turn: GM.turn,
+        className: mv.className,
+        sourceClass: mv.className,
+        demandText: mv.label,
+        movementKey: mv.key,
+        movementSupport: mv.support,
+        movementPhase: mv.phase,
+        origin: _ty3_topicOrigin('movement', mv.key, mv.className),
+        relationEvidence: _ty3_relationEvidenceFor('', [mv.className]),
+        supportingParties: mvCls ? _ty3_supportingPartyNamesForClass(mvCls) : []
+      };
+      _ty3_attachProposer(tM, mvCls ? _ty3_pickClassProposer(mvCls) : _ty3_pickProposer({ fallbackTitle: '\u5FA1\u53F2|\u90FD\u5BDF|\u8A00\u5B98|censor' }), '\u6C11\u95F4\u8FD0\u52A8\u5DF2' + (mv.phase || '\u6210\u52BF') + '\u00B7\u6050\u917F\u4E8B\u7AEF');
+      if (_ty3_pushPendingTinyiTopic(tM, mv.className + '\u00B7' + mv.label, spawned)) mv._lastTinyiTurn = mvTurn;
+    });
+  }
   var minXin = (typeof GM.minxin === 'number') ? GM.minxin :
     (GM.minxin && (typeof GM.minxin.trueIndex === 'number' ? GM.minxin.trueIndex : GM.minxin.value));
-  if (typeof minXin === 'number' && minXin <= 30) {
+  if (typeof minXin === 'number' && minXin <= 30 && _ty3_spawnCooldownReady('popular-unrest', 4)) {
     var prop3 = _ty3_pickProposer({ fallbackTitle: '\u6237\u90E8|\u6C11\u653F|censor' });
     var t3 = { topic: '\u6C11\u5FC3\u4F4E\u8FF7\u00B7\u8BAE\u8D48\u6D4E\u4E0E\u5B89\u629A', from: 'ty3-spawn-popular-unrest', turn: GM.turn, minxin: minXin };
     _ty3_attachProposer(t3, prop3, '\u5730\u65B9\u544A\u6025\u00B7\u5B98\u6C11\u76F8\u7591');
-    _ty3_pushPendingTinyiTopic(t3, '\u6C11\u5FC3\u4F4E\u8FF7', spawned);
+    if (_ty3_pushPendingTinyiTopic(t3, '\u6C11\u5FC3\u4F4E\u8FF7', spawned)) _ty3_spawnCooldownStamp('popular-unrest');
   }
   var fiscal = GM.fiscal || GM.economy;
   var deficit = false;
   if (fiscal && typeof fiscal.deficitRatio === 'number' && fiscal.deficitRatio >= 0.3) deficit = true;
   if (GM.tanglian && typeof GM.tanglian.silver === 'number' && GM.tanglian.silver < 0) deficit = true;
-  if (deficit) {
+  if (deficit && _ty3_spawnCooldownReady('fiscal-deficit', 4)) {
     var prop6 = _ty3_pickProposer({ fallbackTitle: '\u6237\u90E8|\u8D22\u653F|censor' });
     var t6 = { topic: '\u56FD\u5E11\u4E8F\u7A7A\u00B7\u8BAE\u589E\u6536\u8282\u7528', from: 'ty3-spawn-fiscal', turn: GM.turn };
     _ty3_attachProposer(t6, prop6, '\u56FD\u5E11\u627F\u538B\u5DF2\u9AD8');
-    _ty3_pushPendingTinyiTopic(t6, '\u56FD\u5E11\u4E8F\u7A7A', spawned);
+    if (_ty3_pushPendingTinyiTopic(t6, '\u56FD\u5E11\u4E8F\u7A7A', spawned)) _ty3_spawnCooldownStamp('fiscal-deficit');
   }
   var censorTarget = (GM.chars || []).filter(function(c) {
     if (!c || c.alive === false || c.isPlayer) return false;

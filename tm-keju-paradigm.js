@@ -785,10 +785,40 @@
     lines.push('  tiers (' + p.tiers.length + '): ' +
       p.tiers.map(function(t) { return t.name; }).join(' → '));
     lines.push('  quota: ' + p.quota.total + ' (geo=' + p.quota.ratios.geo.enabled + ')');
+    // 营建解额入闱(2026-07-03·死账接活)：叶 economyBase.kejuQuota(剧本解额+书院/学宫营建所增)原全 runtime
+    // 无消费者——建了书院不影响取士。科举取中为范式+AI 驱动·quota 的唯一消费链=本描述喂 AI，
+    // 故把地域解额分布写进范式描述(南北中桶用书院网络 §19 同款地域正则·两处保持一致)。
+    try {
+      var _geoQ = _kjpGeoQuotaFromDivisions();
+      if (_geoQ) lines.push('  regionQuota(解额·含营建): 南' + _geoQ['南'] + '·北' + _geoQ['北'] + '·中' + _geoQ['中']);
+    } catch (_e) {}
     lines.push('  graduateTitle: ' + p.graduateTitle);
     lines.push('  mentorBond: ' + p.examinerRules.mentorBondStrength);
     lines.push('  history: ' + (p.history.length) + ' reform(s)');
     return lines.join('\n');
+  }
+
+  // 地域解额分布：走 player 子树叶 economyBase.kejuQuota 按南北中桶累加(总和为 0 → null 不出行)
+  function _kjpGeoQuotaFromDivisions() {
+    var GMx = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
+    var ahp = GMx && GMx.adminHierarchy && GMx.adminHierarchy.player;
+    if (!ahp || !ahp.divisions) return null;
+    var south = /南|江|杭|无锡|苏|长沙|庐山|商丘/;
+    var north = /北|京|燕|蓟|关中|西安|登封/;
+    var acc = { '南': 0, '北': 0, '中': 0 };
+    var total = 0;
+    ahp.divisions.forEach(function (top) {
+      var tn = String((top && (top.name || top.id)) || '');
+      var bucket = south.test(tn) ? '南' : (north.test(tn) ? '北' : '中');
+      (function walk(d) {
+        if (!d) return;
+        var kids = d.children || d.divisions;
+        if (kids && kids.length) { kids.forEach(walk); return; }
+        var q = Number(d.economyBase && d.economyBase.kejuQuota);
+        if (isFinite(q) && q > 0) { acc[bucket] += Math.round(q); total += q; }
+      })(top);
+    });
+    return total > 0 ? acc : null;
   }
 
   // ════════════════════════════════════════════════════════════════

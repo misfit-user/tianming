@@ -140,19 +140,30 @@
       militaryStability = fb.noArmies;
     }
 
-    var overall = Math.round((courtCohesion + militaryControl + personnelHealth + militaryStability) / 4);
+    // territorialControl(2026-07-03·断链B)：4指标原对地块全盲——失土动荡/民变四起不动健康度。
+    // FactionIndex rebuild 产 metrics.territoryStress(省均动荡·0-100 高=糟)·有账才入第五指标·无账维持四指标均值(老存档零回归)。
+    var territorialControl = (typeof metrics.territoryStress === 'number')
+      ? _clamp(Math.round(100 - metrics.territoryStress), 0, 100)
+      : null;
+    var _comps = [courtCohesion, militaryControl, personnelHealth, militaryStability];
+    if (territorialControl !== null) _comps.push(territorialControl);
+    var _sum = 0;
+    for (var _ci = 0; _ci < _comps.length; _ci += 1) _sum += _comps[_ci];
+    var overall = Math.round(_sum / _comps.length);
 
     return {
       courtCohesion: courtCohesion,
       militaryControl: militaryControl,
       personnelHealth: personnelHealth,
       militaryStability: militaryStability,
+      territorialControl: territorialControl,
       overall: overall,
       labels: {
         courtCohesion: _label(courtCohesion, cfg),
         militaryControl: _label(militaryControl, cfg),
         personnelHealth: _label(personnelHealth, cfg),
         militaryStability: _label(militaryStability, cfg),
+        territorialControl: territorialControl !== null ? _label(territorialControl, cfg) : '未记',
         overall: _label(overall, cfg)
       },
       // 来源指标·便于 UI tooltip / 调试
@@ -162,7 +173,8 @@
         privatizedRatio: metrics.privatizedRatio || 0,
         avgMutinyRisk: metrics.avgMutinyRisk || 0,
         arrearsArmies: metrics.arrearsArmies || 0,
-        armyCount: metrics.armyCount || 0
+        armyCount: metrics.armyCount || 0,
+        territoryStress: (typeof metrics.territoryStress === 'number') ? metrics.territoryStress : null
       }
     };
   }

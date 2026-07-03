@@ -399,6 +399,9 @@
       ps.recentImpeachLose = Math.max(0, (ps.recentImpeachLose || 0) * 0.7);
       ps.recentPolicyWin = Math.max(0, (ps.recentPolicyWin || 0) * 0.7);
       ps.recentPolicyLose = Math.max(0, (ps.recentPolicyLose || 0) * 0.7);
+      // 清誉向 0 缓归（清名/恶名随时间淡忘·写者在廷议政策胜负/弹劾定罪）
+      var _repDecay = Number(ps.reputationBalance) || 0;
+      ps.reputationBalance = Math.abs(_repDecay) < 0.25 ? 0 : Math.round(_repDecay * 0.92 * 100) / 100;
       // 回传 p.influence 以供旧 UI 读取
       p.influence = ps.influence;
       // cohesion：反弹·如果内部冲突多则下降
@@ -406,6 +409,73 @@
         ps.cohesion = Math.max(0, ps.cohesion - 3);
       }
       p.cohesion = ps.cohesion;
+    });
+
+    // 3. 政柄格局（V3式·2026-07-03）：从占官+影响力派生 秉政(governing)/在野(opposition)/边缘(marginal)。
+    //    此前党派只有数值没有「朝局地位」——占官最多也不过 influence±3·在野边缘化无任何后果。
+    //    齿①：秉政党的基础阶层「朝中有人」小幅缓升（走 gateSatisfaction 总闸·<70 才升不推顶）；
+    //    齿②：边缘党的基础阶层戳 _marginalPatronTurn·由 SocialFoundation.tickClassRadical ⑦ 项抬离心。
+    var maxOffice = 0;
+    GM.parties.forEach(function(p) {
+      if (!p || !p.name || !GM.partyState[p.name]) return;
+      var c = GM.partyState[p.name].officeCount || 0;
+      if (c > maxOffice) maxOffice = c;
+    });
+    GM.parties.forEach(function(p) {
+      if (!p || !p.name) return;
+      var ps = GM.partyState[p.name];
+      if (!ps) return;
+      var oc = ps.officeCount || 0;
+      var standing;
+      if (maxOffice > 0 && oc > 0 && oc >= maxOffice * 0.7) standing = 'governing';
+      else if (oc > 0 || (ps.influence || 0) >= 25) standing = 'opposition';
+      else standing = 'marginal';
+      if (ps.standing && ps.standing !== standing) {
+        ps.historyLog = ps.historyLog || [];
+        ps.historyLog.push({ turn: turn, type: 'standing', from: ps.standing, to: standing, reason: '朝局更迭' });
+        if (ps.historyLog.length > 20) ps.historyLog = ps.historyLog.slice(-20);
+        // ★2026-07-04 方向B·政柄更迭入党人记忆：秉政/失柄是党人身家大事·党魁+核心党人须记得·
+        //   否则推演/问对里党人对自家进退毫无知觉。仅 standing 真变时写(本块即变更闸)·党魁重要度+1·至多5人。
+        try {
+          if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember && Array.isArray(GM.chars)) {
+            var _smFrom = ps.standing, _smTxt, _smEmo, _smImp;
+            if (standing === 'governing') { _smTxt = '吾党秉政·朝中要职过半在握'; _smEmo = '喜'; _smImp = 7; }
+            else if (_smFrom === 'governing') { _smTxt = '吾党失柄·见逐于朝堂中枢'; _smEmo = '怒'; _smImp = 8; }
+            else if (standing === 'marginal') { _smTxt = '吾党于朝中日渐边缘·同志零落'; _smEmo = '忧'; _smImp = 6; }
+            else { _smTxt = '吾党重列朝堂·渐有声势'; _smEmo = '喜'; _smImp = 5; }
+            var _smMembers = GM.chars.filter(function(mc) {
+              return mc && mc.alive !== false && !mc.isPlayer && (mc.party === p.name || (p.leader && mc.name === p.leader));
+            }).sort(function(x, y) {
+              return ((p.leader && y.name === p.leader) ? 1 : 0) - ((p.leader && x.name === p.leader) ? 1 : 0);
+            }).slice(0, 5);
+            _smMembers.forEach(function(mc) {
+              var _isLd = p.leader && mc.name === p.leader;
+              NpcMemorySystem.remember(mc.name, _smTxt + '（' + p.name + '）', _smEmo, _isLd ? Math.min(9, _smImp + 1) : _smImp, '朝局', { type: 'political' });
+            });
+          }
+        } catch (_smE) {}
+      }
+      ps.standing = standing;
+      p.standing = standing;
+      var sb = p.socialBase || p.social_base || p.baseClasses;
+      var sbList = Array.isArray(sb) ? sb : (typeof sb === 'string' ? sb.split(/[、,，\/]/) : []);
+      var baseNames = [];
+      sbList.forEach(function(b) {
+        var bn = (b && typeof b === 'object') ? String(b.name || b.className || '') : String(b || '');
+        bn = bn.trim();
+        if (bn) baseNames.push(bn);
+      });
+      if (!baseNames.length || !Array.isArray(GM.classes)) return;
+      GM.classes.forEach(function(cls) {
+        if (!cls || !cls.name) return;
+        var hit = baseNames.some(function(bn) { return cls.name.indexOf(bn) >= 0 || bn.indexOf(cls.name) >= 0; });
+        if (!hit) return;
+        if (standing === 'governing' && (Number(cls.satisfaction) || 50) < 70
+            && global.TM && global.TM.ClassEngine && typeof global.TM.ClassEngine.gateSatisfaction === 'function') {
+          global.TM.ClassEngine.gateSatisfaction(GM, cls, 0.5, { turn: turn, source: 'party-standing', reason: p.name + '秉政·朝中有人' });
+        }
+        if (standing === 'marginal') cls._marginalPatronTurn = turn;
+      });
     });
   }
 

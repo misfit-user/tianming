@@ -171,7 +171,11 @@
     if (!GM.classes || !Array.isArray(GM.classes)) return;
     var cls = GM.classes.find(function(c){ return c.name === className; });
     if (cls) {
-      cls.satisfaction = Math.max(0, Math.min(100, (cls.satisfaction || 50) + delta));
+      if (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function') {
+        TM.ClassEngine.gateSatisfaction(GM, cls, delta, { turn: GM.turn, source: 'keju', reason: reason || '科举立制' });
+      } else {
+        cls.satisfaction = Math.max(0, Math.min(100, (cls.satisfaction || 50) + delta));
+      }
       if (typeof addEB === 'function') addEB('阶层', className + (delta >= 0 ? '+' : '') + delta + '·' + (reason || ''));
     }
   }

@@ -3182,8 +3182,14 @@ function finishKeju() {
       Object.entries(stats.classRatio).forEach(function(e) {
         if (clsName.indexOf(e[0]) >= 0 || e[0].indexOf(clsName) >= 0) {
           var share = e[1] || 0;
-          if (share > 0.4) cls.satisfaction = Math.min(100, (parseInt(cls.satisfaction)||50) + 3);
-          else if (share < 0.15) cls.satisfaction = Math.max(0, (parseInt(cls.satisfaction)||50) - 2);
+          var _krGate = (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function');
+          if (share > 0.4) {
+            if (_krGate) TM.ClassEngine.gateSatisfaction(GM, cls, 3, { turn: GM.turn, source: 'keju', reason: '本阶层考生占比厚' });
+            else cls.satisfaction = Math.min(100, (parseInt(cls.satisfaction)||50) + 3);
+          } else if (share < 0.15) {
+            if (_krGate) TM.ClassEngine.gateSatisfaction(GM, cls, -2, { turn: GM.turn, source: 'keju', reason: '本阶层考生占比薄' });
+            else cls.satisfaction = Math.max(0, (parseInt(cls.satisfaction)||50) - 2);
+          }
         }
       });
     });
@@ -3620,8 +3626,14 @@ function _kejuAggregateGradsEffect(allGrads, exam) {
       var share = classBreakdown[clsName] / total;
       var match = GM.classes.find(function(cl){ return cl.name === clsName || (cl.name.indexOf(clsName)>=0 || clsName.indexOf(cl.name)>=0); });
       if (match) {
-        if (share > 0.4) match.satisfaction = Math.min(100, (match.satisfaction||50) + 3);
-        else if (share < 0.15) match.satisfaction = Math.max(0, (match.satisfaction||50) - 2);
+        var _kgGate = (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function');
+        if (share > 0.4) {
+          if (_kgGate) TM.ClassEngine.gateSatisfaction(GM, match, 3, { turn: GM.turn, source: 'keju', reason: '登科同侪占比厚' });
+          else match.satisfaction = Math.min(100, (match.satisfaction||50) + 3);
+        } else if (share < 0.15) {
+          if (_kgGate) TM.ClassEngine.gateSatisfaction(GM, match, -2, { turn: GM.turn, source: 'keju', reason: '登科同侪占比薄' });
+          else match.satisfaction = Math.max(0, (match.satisfaction||50) - 2);
+        }
       }
     });
   }

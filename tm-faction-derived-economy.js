@@ -146,6 +146,33 @@
     var taxGrain = territoryCount * taxCoef.grain;
     var annualTaxIncome = taxMoney + _grainToMoney(taxGrain);
 
+    // 地块治理修正(2026-07-03·断链A)：旧账只数省份个数×系数——民心崩/税基萎缩/腐败横行(归属不变)完全不动收入。
+    // 修：势力名下省在 GM.provinceStats 有活账时·按 稳定/财富/腐败/民乱 均值折算系数·夹[0.6,1.15]防爆。
+    // 经 npcFiscalLedger 消费·地块恶化→NPC 钱账吃紧→economyHealth→实力·全链贯通。
+    var governanceFactor = 1;
+    (function () {
+      var GMx = (typeof global !== 'undefined' && global.GM) ? global.GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
+      var ps = GMx && GMx.provinceStats;
+      if (!ps) return;
+      var sum = 0, n = 0;
+      (entry.provinces || []).forEach(function (p) {
+        var st = ps[p];
+        if (!st) return;
+        var f = 1;
+        if (isFinite(Number(st.stability))) f += (Number(st.stability) - 55) / 100 * 0.25;
+        if (isFinite(Number(st.wealth))) f += (Number(st.wealth) - 55) / 100 * 0.25;
+        if (isFinite(Number(st.corruption))) f -= Math.max(0, Number(st.corruption) - 30) / 100 * 0.20;
+        if (isFinite(Number(st.unrest))) f -= Math.max(0, Number(st.unrest) - 30) / 100 * 0.25;
+        sum += f; n += 1;
+      });
+      if (n > 0) governanceFactor = _clamp(sum / n, 0.6, 1.15);
+    })();
+    if (governanceFactor !== 1) {
+      taxMoney = Math.round(taxMoney * governanceFactor);
+      taxGrain = Math.round(taxGrain * governanceFactor);
+      annualTaxIncome = Math.round(annualTaxIncome * governanceFactor);
+    }
+
     // 4. netFlow·收支差 (年)
     var netFlow = annualTaxIncome - annualMilitaryCost;
 
@@ -170,6 +197,7 @@
       netFlow: netFlow,
       fiscalStress: fiscalStress,
       economyHealth: economyHealth,
+      governanceFactor: governanceFactor,
       labels: {
         economyHealth: _label(economyHealth)
       },

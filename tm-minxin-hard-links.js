@@ -227,7 +227,13 @@
     var pressure = clamp((45 - truth) / 45, 0, 1);
     var unrest = clamp((35 - truth) / 35, 0, 1);
     var skimming = clamp((Number(fd.skimmingRate) || 0) + corr / 100 * 0.18, 0, 0.62);
-    var collection = clamp(0.35 + truth / 100 * 0.72 - (factor - 1) * 0.22 - hiddenRatio * 0.28, 0.18, 1.08);
+    // 分省分化(2026-07-03)：豪强把持+灾情入实征——旧公式只吃 truth/factor/hidden·剧本种子平→舆图财赋全省一色。
+    // 新项只做省间重排·全国总额由 tick 末 claimed 加权归一 K 守恒(不动中央月入观感)。
+    var _mag = clamp(Number(div._mxhlMagnate) || 0, 0, 100);
+    var _disaster = clamp(Number(div._disasterEconomyReduce) || 0, 0, 0.6);
+    var collectionBase = clamp(0.35 + truth / 100 * 0.72 - (factor - 1) * 0.22 - hiddenRatio * 0.28, 0.18, 1.08);
+    var collection = clamp(collectionBase - _mag / 100 * 0.10 - _disaster * 0.25, 0.18, 1.08);
+    div._mxhlRatios = { base: collectionBase * (1 - skimming * 0.18), next: collection * (1 - skimming * 0.18) };
     var claimed = claimedRevenue(div, pd, factor);
     var actual = Math.max(0, Math.round(claimed * collection * (1 - skimming * 0.18)));
     var remitted = Math.max(0, Math.round(actual * (1 - skimming)));
@@ -329,13 +335,71 @@
     return { fiscal: fiscal, military: military, hukou: hukou, localExecution: local };
   }
 
+  // 豪强戳(2026-07-03)：把省级 provinceStats.magnatePower 沿 player 子树盖到叶(_mxhlMagnate·每 tick 重盖)，
+  // 供 calcRegion 分省分化用。省名与 provinceStats 键做宽松包含匹配(地基 findDivision fuzzy 教训)。
+  function _stampMagnate(root) {
+    var ps = root && root.provinceStats;
+    var ah = root && root.adminHierarchy && root.adminHierarchy.player;
+    if (!ps || !ah || !ah.divisions) return;
+    var keys = Object.keys(ps);
+    function magOf(topName) {
+      if (!topName) return 0;
+      var hit = ps[topName];
+      if (hit && typeof hit.magnatePower === 'number') return hit.magnatePower;
+      for (var i = 0; i < keys.length; i += 1) {
+        var k = keys[i];
+        if (k && (k.indexOf(topName) >= 0 || String(topName).indexOf(k) >= 0)) {
+          var v = ps[k] && ps[k].magnatePower;
+          if (typeof v === 'number') return v;
+        }
+      }
+      return 0;
+    }
+    ah.divisions.forEach(function (top) {
+      var mag = magOf(top && (top.name || top.id));
+      (function walk(d) {
+        if (!d) return;
+        var kids = d.children || d.divisions;
+        if (kids && kids.length) { kids.forEach(walk); return; }
+        d._mxhlMagnate = mag;
+      })(top);
+    });
+  }
+
   function tick(root, options) {
     root = pickRoot(root);
     options = options || {};
     var store = ensureStore(root);
     var turn = Number(options.turn != null ? options.turn : root.turn) || 0;
+    try { _stampMagnate(root); } catch (_e) {}
     var leaves = getLeafDivisions(root).filter(function(div) { return div && typeof div === 'object'; });
     var impacts = leaves.map(function(div) { return calcRegion(root, div, { turn: turn }); });
+    // 守恒归一(2026-07-03)：新分化项(豪强/灾情)单边压实征·会系统性拉低全国总额。
+    // 按 claimed 加权把总额校回旧公式水平：K=Σ(claimed·base)/Σ(claimed·next)·夹[0.85,1.18]·
+    // 善治省实征高于均值·劣治省低于——只重排不减总。
+    var sBase = 0, sNext = 0;
+    leaves.forEach(function (l) {
+      var r = l._mxhlRatios; var fd = l.fiscalDetail;
+      if (!r || !fd) return;
+      var c = Number(fd.claimedRevenue) || 0;
+      sBase += c * r.base; sNext += c * r.next;
+    });
+    var K = (sBase > 0 && sNext > 0) ? clamp(sBase / sNext, 0.85, 1.18) : 1;
+    if (Math.abs(K - 1) > 0.0005) {
+      leaves.forEach(function (l) {
+        var fd = l.fiscalDetail; if (!fd || !l._mxhlRatios) return;
+        fd.actualRevenue = Math.max(0, Math.round((Number(fd.actualRevenue) || 0) * K));
+        fd.remittedToCenter = Math.max(0, Math.round((Number(fd.remittedToCenter) || 0) * K));
+        fd.retainedBudget = Math.max(0, fd.actualRevenue - fd.remittedToCenter);
+        if (isFinite(Number(fd.compliance))) fd.compliance = round2(clamp(Number(fd.compliance) * K, 0, 120));
+        if (isFinite(Number(fd.minxinCollectionMultiplier))) fd.minxinCollectionMultiplier = round2(clamp(Number(fd.minxinCollectionMultiplier) * K, 0, 1.2));
+      });
+      impacts.forEach(function (row) {
+        if (!row || !row.fiscal) return;
+        row.fiscal.actualRevenue = Math.max(0, Math.round((Number(row.fiscal.actualRevenue) || 0) * K));
+        row.fiscal.remittedToCenter = Math.max(0, Math.round((Number(row.fiscal.remittedToCenter) || 0) * K));
+      });
+    }
     store.turn = turn;
     store.regionImpacts = impacts;
     store.summary = aggregate(root, impacts);

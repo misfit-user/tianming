@@ -598,7 +598,7 @@ function filtered(){
   var kw=state.q?String(state.q).trim().toLowerCase():'';
   if(kw){
     // 检索:全局找人——跨全部人物(含已殁)·不被身份/党派/含已殁筛选拦截(原 bug:搜在剔除已殁之后·搜死者搜不到)
-    list=list.filter(function(p){return (p.name+''+(p.zi||'')+''+(p.officialTitle||'')+''+(p.title||'')+''+(p.faction||'')+''+(p.party||'')).toLowerCase().indexOf(kw)>=0;});
+    list=list.filter(function(p){return (p.name+'\u0001'+(p.zi||'')+'\u0001'+(p.officialTitle||'')+'\u0001'+(p.title||'')+'\u0001'+(p.faction||'')+'\u0001'+(p.party||'')).toLowerCase().indexOf(kw)>=0;});
   }else{
     // 身份快筛:已殁=只看殁者·其余=只看在世(原 bug:state.dead latch 后死者泄入身份视图·与计数对不上)
     if(state.roleStat==='dead'){
@@ -822,7 +822,8 @@ function tabPov(p){
 }
 /* ===================== 朝局全景 + 群臣排行 ===================== */
 function realFacStrength(name){
-  try{var GM=_g();var f=(GM.facs||[]).find(function(x){return x.name===name;});if(f){if(typeof f.derivedStrength==='number')return f.derivedStrength;if(typeof f.strength==='number')return f.strength;if(typeof f.renown==='number')return f.renown;}if(window.TM&&TM.FactionIndex&&TM.FactionIndex.get){var fi=TM.FactionIndex.get(name);if(fi&&typeof fi.derivedStrength==='number')return fi.derivedStrength;}}catch(e){}
+  /* 2026-07-03 死链修：derivedStrength 是对象{value,label}·旧判 typeof==='number' 恒 false→谱牒实力永远回落静态账 */
+  try{var GM=_g();var f=(GM.facs||[]).find(function(x){return x.name===name;});if(f){if(f.derivedStrength&&typeof f.derivedStrength.value==='number')return f.derivedStrength.value;if(typeof f.derivedStrength==='number')return f.derivedStrength;if(typeof f.strength==='number')return f.strength;if(typeof f.renown==='number')return f.renown;}if(window.TM&&TM.FactionIndex&&TM.FactionIndex.get){var fi=TM.FactionIndex.get(name);if(fi&&fi.derivedStrength&&typeof fi.derivedStrength.value==='number')return fi.derivedStrength.value;if(fi&&typeof fi.derivedStrength==='number')return fi.derivedStrength;}}catch(e){}
   return null;
 }
 function factionData(){

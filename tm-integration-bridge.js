@@ -512,28 +512,47 @@
   }
 
   // 人口自然增长（每回合月度漂移；战争/瘟疫/灾荒由 AI 叠加）
+  // 2026-07-03 三重错位根治：旧版①只扫顶层一层不递归——嵌套树增的是省父节点，
+  // 随后 _reconcileParentToChildren 把父=Σ子(未增长)覆盖回去→增长被抹平；
+  // ②只写 div.population 而 aggregate 优先读 div.populationDetail→全国总数不动；
+  // ③households/ding 按 5/0.25 硬比率重算·抹掉剧本自设户丁结构。
+  // 修：递归到叶(无 children 才施增)·population 与 populationDetail 双账同写·
+  // 户/丁按本叶既有数等比缩放；顺带按人口/承载重算 environment.currentLoad(活承载·旧版恒静)。
   function _naturalPopulationGrowth() {
     var G = global.GM;
     if (!G || !G.adminHierarchy) return;
-    // 月度增长率 ~0.08%（年 ~1%）—— 取决于民心/腐败/环境负载
+    function growLeaf(div) {
+      if (!div) return;
+      var kids = div.children || div.divisions;
+      if (kids && kids.length) { kids.forEach(growLeaf); return; }
+      var pop = (div.population && typeof div.population === 'object') ? div.population : null;
+      var pd = (div.populationDetail && typeof div.populationDetail === 'object') ? div.populationDetail : null;
+      var mouths = (pd && pd.mouths > 0) ? pd.mouths : (pop && pop.mouths > 0 ? pop.mouths : 0);
+      if (!(mouths > 0)) return;
+      var base = 0.0008;  // 0.08% / 月（年 ~1%）
+      var mx = (typeof div.minxin === 'number') ? div.minxin : 60;
+      var cr = (typeof div.corruption === 'number') ? div.corruption : 30;
+      var load = div.environment && typeof div.environment.currentLoad === 'number' ? div.environment.currentLoad : 0.5;
+      // 民心高 +0.0004，腐败高 -0.0003，负载 >0.9 -0.0005
+      var adj = (mx - 50) / 100 * 0.0004 - (cr - 30) / 100 * 0.0003 - (load > 0.9 ? 0.0005 : 0);
+      var rate = Math.max(-0.003, Math.min(0.003, base + adj));
+      [pop, pd].forEach(function (acc) {
+        if (!acc || !(acc.mouths > 0)) return;
+        acc.mouths = Math.max(0, acc.mouths + Math.round(acc.mouths * rate));
+        if (acc.households > 0) acc.households = Math.max(0, acc.households + Math.round(acc.households * rate));
+        if (acc.ding > 0) acc.ding = Math.max(0, acc.ding + Math.round(acc.ding * rate));
+      });
+      // 活承载：负载随人口重算·容量以 environment.carrying / 历史上限为准·无账不动
+      var cc = (div.carryingCapacity && typeof div.carryingCapacity === 'object') ? div.carryingCapacity : null;
+      var cap = Number(div.environment && div.environment.carrying) || Number(cc && cc.historicalCap) || 0;
+      if (cap > 0 && div.environment && typeof div.environment === 'object') {
+        var mNow = (pd && pd.mouths > 0) ? pd.mouths : (pop ? pop.mouths : 0);
+        div.environment.currentLoad = Math.max(0, Math.min(1.5, mNow / cap));
+      }
+    }
     Object.keys(G.adminHierarchy).forEach(function(fk) {
       var divs = G.adminHierarchy[fk] && G.adminHierarchy[fk].divisions || [];
-      divs.forEach(function(div) {
-        if (!div.population || typeof div.population !== 'object') return;
-        var base = 0.0008;  // 0.08% / 月
-        var mx = (typeof div.minxin === 'number') ? div.minxin : 60;
-        var cr = (typeof div.corruption === 'number') ? div.corruption : 30;
-        var load = div.environment && typeof div.environment.currentLoad === 'number' ? div.environment.currentLoad : 0.5;
-        // 民心高 +0.0004，腐败高 -0.0003，负载 >0.9 -0.0005
-        var adj = (mx - 50) / 100 * 0.0004 - (cr - 30) / 100 * 0.0003 - (load > 0.9 ? 0.0005 : 0);
-        var rate = Math.max(-0.003, Math.min(0.003, base + adj));
-        if (div.population.mouths > 0) {
-          var dm = Math.round(div.population.mouths * rate);
-          div.population.mouths += dm;
-          div.population.households = Math.max(0, Math.round(div.population.mouths / 5));
-          div.population.ding = Math.max(0, Math.round(div.population.mouths * 0.25));
-        }
-      });
+      divs.forEach(growLeaf);
     });
   }
 

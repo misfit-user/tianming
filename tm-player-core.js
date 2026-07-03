@@ -249,6 +249,12 @@ function _shijiDownload(txt){
     if (c.rules != null) P.ai.rules = c.rules;
   }
   if(window.tianming&&window.tianming.isDesktop){
+    // ★2026-07-03·修「桌面(Electron)重启后主 API key 丢·其余 API 设置尚在」:
+    //   autoSave 经 _tmStripAiKeyView 故意剥掉 key(不进可分享存档·安全)·key 真源在设备本地
+    //   localStorage.tm_api(sSaveAPI 保存时写入)。原桌面分支只读被剥 key 的 autoSave 后即 return·
+    //   从不回落 tm_api·故 key 只活内存、重启即失。此处先从 tm_api 补回 key(与浏览器路径、
+    //   tm-save-lifecycle _preservedAi 同范式)·随后 autoSave 再覆盖 url/model 等(_applyAiCfg 以 || 回落·key 不被空值冲掉)。
+    try{var _tmApiRaw=localStorage.getItem("tm_api");if(_tmApiRaw){_applyAiCfg(JSON.parse(_tmApiRaw));}}catch(_e){ console.warn("[catch] tm_api 回落主 key:", _e.message||_e); }
     window.tianming.loadAutoSave().then(function(res){
       if(res&&res.success&&res.data&&res.data.ai) _applyAiCfg(res.data.ai);
     }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });

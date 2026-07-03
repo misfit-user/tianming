@@ -43,8 +43,13 @@
     if (!className || !GM || !GM.classes) return false;
     var cls = GM.classes.find(function (c) { return c && c.name === className; });
     if (!cls) return false;
-    var cur = (typeof cls.satisfaction === 'number') ? cls.satisfaction : 50;
-    cls.satisfaction = Math.max(0, Math.min(100, cur + delta));
+    var TMx = (typeof window !== 'undefined' && window.TM) || (typeof global !== 'undefined' && global.TM);
+    if (TMx && TMx.ClassEngine && typeof TMx.ClassEngine.gateSatisfaction === 'function') {
+      TMx.ClassEngine.gateSatisfaction(GM, cls, delta, { turn: GM.turn, source: 'keju', reason: reason || '殿试' });
+    } else {
+      var cur = (typeof cls.satisfaction === 'number') ? cls.satisfaction : 50;
+      cls.satisfaction = Math.max(0, Math.min(100, cur + delta));
+    }
     if (typeof addEB === 'function') {
       addEB('阶层', className + (delta >= 0 ? '+' : '') + delta + '·' + (reason || ''));
     }

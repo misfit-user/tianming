@@ -546,6 +546,30 @@
         st[key] = p[key];
         st['_synced_' + key] = p[key];
       });
+      // 盟敌单源对账：AI 运行时盟敌只写 partyState.alliedWith/conflictWith，
+      // 而反对目标派生(opposingPartyNames)读 parties[].allies/enemies——旧版只剩剧本 seed·runtime 漂移读不到。
+      // 并账：runtime 盟约/敌意并回 canonical·同名冲突以 runtime 为准。
+      var runtimeAlly = toArray(st.alliedWith);
+      var runtimeFoe = toArray(st.conflictWith);
+      if (runtimeAlly.length || runtimeFoe.length) {
+        var entryName = function(v) { return (v && typeof v === 'object') ? String(v.name || v.party || '') : String(v || ''); };
+        var allies = toArray(p.allies).slice();
+        var enemies = toArray(p.enemies).slice();
+        runtimeAlly.forEach(function(v) {
+          var nm = entryName(v);
+          if (!nm || nm === p.name) return;
+          if (allies.map(entryName).indexOf(nm) < 0) allies.push(nm);
+          enemies = enemies.filter(function(e) { return entryName(e) !== nm; });
+        });
+        runtimeFoe.forEach(function(v) {
+          var nm = entryName(v);
+          if (!nm || nm === p.name) return;
+          if (enemies.map(entryName).indexOf(nm) < 0) enemies.push(nm);
+          allies = allies.filter(function(a) { return entryName(a) !== nm; });
+        });
+        p.allies = allies;
+        p.enemies = enemies;
+      }
       // 议程保鲜：8 回合无鲜议程且有活跃目标 → 由 top 目标派生
       var agendaTurn = Number(p._agendaTurn);
       var stale = !isFinite(agendaTurn) || (turn - agendaTurn) >= 8;
@@ -593,7 +617,9 @@
     // ④ 墙头草/士绅离心：皇威低（王朝可见倾危）→ 激进加速，高 clout 阶层（权贵）离心更烈（树倒猢狲散·闭合死亡螺旋）
     var hw = (GM && GM.huangwei && isFinite(Number(GM.huangwei.index))) ? Number(GM.huangwei.index) : 100;
     var bandwagon = hw < 45 ? clamp((45 - hw) / 45, 0, 1) * 0.5 * ((CLOUT_BUCKET_W[bucketOf(cls)] || 1.0) / 2.2) : 0;
-    var pressure = clamp(satComp * 0.7 + worsenComp + agendaComp + bandwagon + aspirationComp, 0, 1);
+    var movementComp = classMovementLoad(GM, cls);                       // ⑥ 政治运动成势/鼎沸（§三E）
+    var marginalComp = (cls._marginalPatronTurn != null && (turn - Number(cls._marginalPatronTurn)) <= 1) ? 0.05 : 0;  // ⑦ 奥援边缘化（所倚党派被逐出朝局·three-systems-ext 政柄格局戳）
+    var pressure = clamp(satComp * 0.7 + worsenComp + agendaComp + bandwagon + aspirationComp + movementComp + marginalComp, 0, 1);
     var cur = Number(cls._radicalFrac);
     if (!isFinite(cur)) cur = round2(clamp(satComp * 0.4, 0, 1));        // 首回合播种（苦难阶层非0）
     var d = pressure - cur;
@@ -602,6 +628,98 @@
     cls._radicalPressure = round2(pressure);
     if (cls._aspirationBlock) cls._aspirationBlock = round2(Math.max(0, (Number(cls._aspirationBlock) || 0) - 0.04));  // 受阻怨望随时间自平复（不被新一科再塞则消退）
     return cls._radicalFrac;
+  }
+
+  // ── §三E·政治运动（V3式·2026-07-03）──
+  // 阶层的结构性诉求（struct:*议程项）高急且持续未偿 → 凝成「政治运动」实体（初起<40/成势≥40/鼎沸≥70）。
+  // 未偿则壮大（天命权重失衡·|divergence|≥25 时更快=合法性接机制）；诉求得偿/消失则退潮消散
+  // （得偿的 +2 满意已在 tickClassAgenda·此处不重赏）。成势/鼎沸经 tickClassRadical ⑥ 项压激进；
+  // 廷议议题生成与 AI prompt 另行消费 GM._politicalMovements。只用既有账本·不造平行系统。
+  var MOVEMENT_CAP = 12;
+  function tickMovements(GM, classes, turn) {
+    if (!Array.isArray(GM._politicalMovements)) GM._politicalMovements = [];
+    var moves = GM._politicalMovements;
+    var alive = {};
+    var leg = GM._legitimacy;
+    var imbalance = !!(leg && isFinite(Number(leg.divergence)) && Math.abs(Number(leg.divergence)) >= 25);
+    classes.forEach(function(cls) {
+      var name = cls && (cls.name || cls.className);
+      if (!name) return;
+      var items = cls._agenda && Array.isArray(cls._agenda.items) ? cls._agenda.items : [];
+      items.forEach(function(it) {
+        if (!it || it.kind === 'ai' || String(it.kind).indexOf('seed') === 0) return;   // 只有结构性诉求会凝成运动
+        var u = Number(it.urgency) || 1;
+        var dur = turn - (Number(it.sinceTurn) || turn);
+        var key = name + '·' + it.kind;
+        var m = null;
+        for (var j = 0; j < moves.length; j += 1) { if (moves[j] && moves[j].key === key) { m = moves[j]; break; } }
+        if (!m && u >= 3 && dur >= 4 && moves.length < MOVEMENT_CAP) {
+          m = { key: key, className: name, kind: String(it.kind), label: compact(it.text, 40), support: 20, sinceTurn: turn, phase: '初起' };
+          moves.push(m);
+        }
+        if (m) {
+          alive[key] = true;
+          if (it.text) m.label = compact(it.text, 40);
+          m.support = clamp(round2((Number(m.support) || 0) + (u >= 3 ? 6 : 3) + (imbalance ? 4 : 0)), 0, 100);
+        }
+      });
+    });
+    var PHASE_RANK = { '初起': 0, '成势': 1, '鼎沸': 2 };
+    for (var i = moves.length - 1; i >= 0; i -= 1) {
+      var mv = moves[i];
+      if (!mv || !mv.key) { moves.splice(i, 1); continue; }
+      if (!alive[mv.key]) {
+        mv.support = round2((Number(mv.support) || 0) - 18);
+        if (mv.support <= 0) { moves.splice(i, 1); continue; }
+      }
+      var oldPhase = mv.phase || '初起';
+      mv.phase = mv.support >= 70 ? '鼎沸' : (mv.support >= 40 ? '成势' : '初起');
+      // ★2026-07-04 方向B·运动升相入党魁记忆(仅升相·退潮降相不写)——民情从此在人的脑子里
+      if (mv.phase !== oldPhase && (PHASE_RANK[mv.phase] || 0) > (PHASE_RANK[oldPhase] || 0) && mv.phase !== '初起') {
+        _movementMemory(GM, mv);
+      }
+    }
+    return moves.length;
+  }
+  // ★2026-07-04 方向B·运动入党魁记忆：民间运动成势/鼎沸→社会基础相合的党魁记「根基之民可为请命」·
+  //   秉政党魁记「朝局承压」——否则推演/问对里党魁对自家根基的民间运动无知无觉。至多4人/次·
+  //   NpcMemorySystem 缺位(如引擎单测)静默跳过·不触碰 support 数学。
+  function _movementMemory(GM, mv) {
+    try {
+      if (typeof NpcMemorySystem === 'undefined' || !NpcMemorySystem.remember) return;
+      var hot = mv.phase === '鼎沸';
+      var n = 0;
+      toArray(GM.parties).forEach(function(p) {
+        if (n >= 4 || !p || !p.leader) return;
+        var lc = null;
+        (GM.chars || []).some(function(c) { if (c && c.name === p.leader) { lc = c; return true; } return false; });
+        if (!lc || lc.alive === false || lc.isPlayer) return;
+        var sb = p.socialBase || p.social_base || p.baseClasses;
+        var sbStr = Array.isArray(sb) ? sb.map(function(b) { return (b && typeof b === 'object') ? (b.name || b.className || '') : b; }).join('、') : String(sb || '');
+        var isBase = sbStr && mv.className && sbStr.indexOf(mv.className) >= 0;
+        var isGov = p.standing === 'governing';
+        if (isBase) {
+          NpcMemorySystem.remember(p.leader, '民间「' + (mv.label || mv.kind) + '」之请' + mv.phase + '·此乃吾党根基之民·可为请命亦须善抚', hot ? '忧' : '喜', hot ? 8 : 7, mv.className, { type: 'political' });
+          n += 1;
+        } else if (isGov) {
+          NpcMemorySystem.remember(p.leader, '民间「' + (mv.label || mv.kind) + '」之请' + mv.phase + '·朝局承压·当筹应对', hot ? '惧' : '忧', hot ? 8 : 6, mv.className, { type: 'political' });
+          n += 1;
+        }
+      });
+    } catch (_mmE) {}
+  }
+  function classMovementLoad(GM, cls) {
+    var name = cls && (cls.name || cls.className);
+    if (!name || !GM || !Array.isArray(GM._politicalMovements)) return 0;
+    var top = 0;
+    GM._politicalMovements.forEach(function(m) {
+      if (m && m.className === name && Number(m.support) > top) top = Number(m.support);
+    });
+    return top >= 70 ? 0.15 : (top >= 40 ? 0.07 : 0);
+  }
+  function movementsForClass(GM, className) {
+    if (!className || !GM || !Array.isArray(GM._politicalMovements)) return [];
+    return GM._politicalMovements.filter(function(m) { return m && m.className === className; });
   }
 
   // ── §三D·合法性 clout 加权读模型（2026-06-16）──
@@ -642,6 +760,7 @@
     var classes = toArray(GM.classes).filter(function(c) { return c && typeof c === 'object' && (c.name || c.className); });
     if (classes.length) {
       var inputs = structuralInputs(GM, P);
+      out.movements = tickMovements(GM, classes, turn);   // §三E·先于逐阶层过账（读上回合议程态·运动是慢实体·本回合 radical ⑥ 项即读最新 support）
       classes.forEach(function(cls) {
         out.classes++;
         if (!cls.descriptor || !cls.descriptor._reconciled) reconcileClassDescriptor(cls, GM);   // E·描述符对账（sticky·首遇固化·补缺）
@@ -670,6 +789,9 @@
     applyRegionalDelta: applyRegionalDelta,
     syncPartyTruth: syncPartyTruth,
     tickClassRadical: tickClassRadical,
+    tickMovements: tickMovements,
+    movementsForClass: movementsForClass,
+    classMovementLoad: classMovementLoad,
     computeLegitimacy: computeLegitimacy,
     reconcileClassDescriptor: reconcileClassDescriptor,
     applyAdjudicatedDescriptor: applyAdjudicatedDescriptor,

@@ -994,22 +994,48 @@ async function _wtSend() {
     if (_wtForceCategory === 'edictSubstitute') forceHint += '（必填 edictText 和 edictChannel·将玩家意图改写为正式诏令措辞）';
   }
   ctx += forceHint;
+  // agent 模式（2026-07-03·P.conf.wentianAgentMode!==false 默认开·设置→性能可关）：先查证后裁定——
+  // AI 用只读工具（查字段/搜档案/细查实体）核实对象在档真名与现值再提交（治「凭指令文本猜路径→直改失败/改错人」）。
+  // 基建缺位（无 callAIWithTools/AgentReadTools）或 agent 失败 → 自动落回下方旧单发·问天永不断。
+  if (typeof TM !== 'undefined' && TM.WentianAgent && typeof TM.WentianAgent.enabled === 'function' && TM.WentianAgent.enabled()) {
+    try {
+      var _agRes = await TM.WentianAgent.run(content, {
+        teaching: _wtParseTeachingText(),
+        ctx: ctx,
+        onProgress: function (toolName) {
+          var tb = _$('wt-thinking');
+          if (tb) tb.innerHTML = '<div style="max-width:85%;background:var(--color-elevated);border-left:3px solid var(--gold-500);padding:0.4rem 0.6rem;font-size:var(--text-xs);color:var(--ink-300);font-style:italic;">问天查证中·' + escHtml(String(toolName || '')) + '…</div>';
+        }
+      });
+      if (_agRes && _agRes.ok && _agRes.result) {
+        var _r = _agRes.result;
+        var _thA = _$('wt-thinking'); if (_thA) _thA.remove();
+        var _hcs = Array.isArray(_r.hardChanges) ? _r.hardChanges.filter(function (x) { return x && x.path; }) : [];
+        _wtPending = {
+          raw: content,
+          type: _r.type || type,
+          category: _wtForceCategory || _r.category || 'narrative',
+          _forcedByPlayer: !!_wtForceCategory,
+          structured: _r.structured || {},
+          hardChange: _hcs[0] || null,
+          hardChanges: _hcs.length ? _hcs : null,
+          edictText: _r.edictText || '',
+          edictChannel: _r.edictChannel || '',
+          interpretation: _r.interpretation || '',
+          ambiguity: Array.isArray(_r.ambiguity) ? _r.ambiguity : [],
+          plan: _r.plan || '',
+          turn: GM.turn,
+          _agentTrace: Array.isArray(_agRes.trace) ? _agRes.trace : []
+        };
+        _wtShowPendingConfirmation();
+        return;
+      }
+      // agent 未产出（轮尽/超时）→ 落回单发
+    } catch (_agE) { try { window.TM && TM.errors && TM.errors.captureSilent(_agE, 'wentian-agent'); } catch (_) {} }
+  }
+
   var prompt = '你是天命AI推演系统的元指令解析器。玩家刚对你说了一条指令，请：\n'
-    + '1. 判断类型 type: rule(持久规则·每回合遵守) / correction(纠正·本回合调整) / content(背景/设定补充) / directive(一次性指令)\n'
-    + '2. 判断分类 category（重要）：\n'
-    + '   · narrative — 叙事/规则控制：让剧情走向X、让AI行为Y、保护某人、禁止某事发生（例："不要让袁崇焕被处决"、"AI多写诗词"）\n'
-    + '   · setting — 世界背景/设定注入：补充剧本的背景信息/状态/历史（例："此时倭寇已平"、"北方去年大旱未记入"）\n'
-    + '   · hardChange — 直接修改数值或字段：要求直接改具体数值/字段（例："帑廪+1000万两"、"某NPC忠诚设为100"、"袁崇焕所在地改为京师"、"皇威+10"）\n'
-    + '       ★【识别规则】只要指令提到：具体金额(万两/石/匹)、具体数值(+N/-N/设为N)、具体字段(国库/帑廪/内帑/忠诚/所在地/位置/皇威/皇权/民心/阶层满意度/阶层影响力等)——必须归入 hardChange。不要误判为 narrative/directive。\n'
-    + '       ★【常见路径】白银=guoku.money·粮=guoku.grain·布=guoku.cloth·军备库甲胄=guoku.armory.甲胄.stock(兵刃/弓弩/火器/战马同式)·原料库铁=guoku.materials.铁.stock(硝石/皮革/木同式)·内帑银=neitang.money·皇威=huangwei.index·皇权=huangquan.index·腐败/吏治=corruption.trueIndex·民心=minxin.trueIndex·人物忠诚=chars[人物名].loyalty·人物所在地=chars[人物名].location·军队兵力=armies[军名].soldiers·军队主帅=armies[军名].commander·军队士气=armies[军名].morale·军队忠诚=armies[军名].loyalty·军队欠饷月数=armies[军名].payArrearsMonths·阶层满意度=classes[阶层名].satisfaction·阶层影响力=classes[阶层名].influence·阶层人口=classes[阶层名].population·势力实力=facs[势力名].strength·势力经济=facs[势力名].economy·势力对玩家关系=facs[势力名].playerRelation·党派影响力=parties[党派名].influence·党派凝聚力=parties[党派名].cohesion\n'
-    + '       ★【操作符】"加/增/+"→op:add · "减/扣/-"→op:add(负数) · "设为/改为/="→op:set · "翻倍/x2"→op:mul\n'
-    + '       ★【单位换算】1 万两=10000·50 万两=500000·100 万石=1000000·玩家说"100 万"一律写成 1000000 数字不要保留"万"字\n'
-    + '   · edictSubstitute — 等同诏令：玩家实际想下诏令的事（例："拨银赈灾"、"罢某某官"、"遣使某国"——这些本该走诏令而非问天）\n'
-    + '   · absolute — 天意/至高意志：玩家明确以"天意"、"绝对"、"必须"、"神谕"、"不论如何"、"强制"等词修饰·或语气极强要求无条件落实（例："天意让北虏此回合覆灭"、"必须让此人变心"）——此类由世界法则直接生效·AI 无推辞空间·须在叙事中让其字面发生\n'
-    + '3. 解析为结构化约束 structured:{target, action, scope, forbidden, measurable, condition}\n'
-    + '4. 若 category=hardChange，或 category=absolute 且玩家要求直改字段/数值 → 必填 hardChange:{path:"GM/P 字段路径(如 guoku.money)", op:"set|add|mul", value:数字或要写入的内容}\n'
-    + '5. 若 category=edictSubstitute → 必填 edictText:"改写成诏令正式措辞(30-80字)", edictChannel:"pol|mil|dip|eco|oth"\n'
-    + '6. 给出 interpretation（30-80字复述）、ambiguity（歧义数组，可空）、plan（一句话下回合怎样落实）\n'
+    + _wtParseTeachingText()
     + '\n【上下文】\n' + ctx
     + '\n【玩家指令】\n' + content
     + '\n\n返回 JSON：{"type":"rule|correction|content|directive","category":"narrative|setting|hardChange|edictSubstitute|absolute","structured":{"target":"","action":"","scope":"","forbidden":"","measurable":"","condition":""},"hardChange":{"path":"","op":"set|add|mul","value":null},"edictText":"","edictChannel":"","interpretation":"...","ambiguity":["..."],"plan":"..."}';
@@ -1047,6 +1073,25 @@ async function _wtSend() {
   }
 }
 
+// 解析教学核心（单发解析与 agent 模式共源·勿两处各写一份致漂移）
+function _wtParseTeachingText() {
+  return '1. 判断类型 type: rule(持久规则·每回合遵守) / correction(纠正·本回合调整) / content(背景/设定补充) / directive(一次性指令)\n'
+    + '2. 判断分类 category（重要）：\n'
+    + '   · narrative — 叙事/规则控制：让剧情走向X、让AI行为Y、保护某人、禁止某事发生（例："不要让袁崇焕被处决"、"AI多写诗词"）\n'
+    + '   · setting — 世界背景/设定注入：补充剧本的背景信息/状态/历史（例："此时倭寇已平"、"北方去年大旱未记入"）\n'
+    + '   · hardChange — 直接修改数值或字段：要求直接改具体数值/字段（例："帑廪+1000万两"、"某NPC忠诚设为100"、"袁崇焕所在地改为京师"、"皇威+10"）\n'
+    + '       ★【识别规则】只要指令提到：具体金额(万两/石/匹)、具体数值(+N/-N/设为N)、具体字段(国库/帑廪/内帑/忠诚/所在地/位置/皇威/皇权/民心/阶层满意度/阶层影响力/区划田亩/官职公库等)——必须归入 hardChange。不要误判为 narrative/directive。\n'
+    + '       ★【常见路径】白银=guoku.money·粮=guoku.grain·布=guoku.cloth·军备库甲胄=guoku.armory.甲胄.stock(兵刃/弓弩/火器/战马同式)·原料库铁=guoku.materials.铁.stock(硝石/皮革/木同式)·内帑银=neitang.money·皇威=huangwei.index·皇权=huangquan.index·腐败/吏治=corruption.trueIndex·民心=minxin.trueIndex·人物忠诚=chars[人物名].loyalty·人物所在地=chars[人物名].location·军队兵力=armies[军名].soldiers·军队主帅=armies[军名].commander·军队士气=armies[军名].morale·军队忠诚=armies[军名].loyalty·军队欠饷月数=armies[军名].payArrearsMonths·阶层满意度=classes[阶层名].satisfaction·阶层影响力=classes[阶层名].influence·阶层人口=classes[阶层名].population·势力实力=facs[势力名].strength·势力经济=facs[势力名].economy·势力对玩家关系=facs[势力名].playerRelation·党派影响力=parties[党派名].influence·党派凝聚力=parties[党派名].cohesion·区划民心=divisions[府州名].minxin·区划吏治=divisions[府州名].corruption·区划田亩=divisions[府州名].economyBase.farmland(商业额commerceVolume/盐产saltProduction/矿产mineralProduction/渔获fishingProduction/马政horseProduction/解额kejuQuota同式)·官职公库=office[官职名].publicTreasury\n'
+    + '       ★【操作符】"加/增/+"→op:add · "减/扣/-"→op:add(负数) · "设为/改为/="→op:set · "翻倍/x2"→op:mul\n'
+    + '       ★【单位换算】1 万两=10000·50 万两=500000·100 万石=1000000·玩家说"100 万"一律写成 1000000 数字不要保留"万"字\n'
+    + '   · edictSubstitute — 等同诏令：玩家实际想下诏令的事（例："拨银赈灾"、"罢某某官"、"遣使某国"——这些本该走诏令而非问天）\n'
+    + '   · absolute — 天意/至高意志：玩家明确以"天意"、"绝对"、"必须"、"神谕"、"不论如何"、"强制"等词修饰·或语气极强要求无条件落实（例："天意让北虏此回合覆灭"、"必须让此人变心"）——此类由世界法则直接生效·AI 无推辞空间·须在叙事中让其字面发生\n'
+    + '3. 解析为结构化约束 structured:{target, action, scope, forbidden, measurable, condition}\n'
+    + '4. 若 category=hardChange，或 category=absolute 且玩家要求直改字段/数值 → 必填 hardChange:{path:"GM/P 字段路径(如 guoku.money)", op:"set|add|mul", value:数字或要写入的内容}\n'
+    + '5. 若 category=edictSubstitute → 必填 edictText:"改写成诏令正式措辞(30-80字)", edictChannel:"pol|mil|dip|eco|oth"\n'
+    + '6. 给出 interpretation（30-80字复述）、ambiguity（歧义数组，可空）、plan（一句话下回合怎样落实）\n';
+}
+
 /** 展示 AI 解读 + 玩家确认按钮 */
 function _wtShowPendingConfirmation() {
   if (!_wtPending) return;
@@ -1082,9 +1127,15 @@ function _wtShowPendingConfirmation() {
   }
   if (sParts.length > 0) h += '<div style="font-size:0.68rem;color:var(--ink-200);padding:4px 6px;background:rgba(10,9,8,0.35);border-radius:3px;margin-bottom:4px;">' + sParts.join('\u3000') + '</div>';
   // hardChange 预览
-  if ((p.category === 'hardChange' || p.category === 'absolute') && p.hardChange && p.hardChange.path) {
-    var hc = p.hardChange;
-    h += '<div style="font-size:0.68rem;color:var(--vermillion-300);padding:4px 6px;background:rgba(192,64,48,0.1);border:1px solid rgba(192,64,48,0.3);border-radius:3px;margin-bottom:4px;font-family:monospace;">\u2696\ufe0e <b>' + escHtml(hc.path) + '</b> <span style="color:var(--ink-200);">' + escHtml(hc.op||'set') + '</span> <b>' + escHtml(String(hc.value)) + '</b></div>';
+  if (p.category === 'hardChange' || p.category === 'absolute') {
+    var _hcList = (p.hardChanges && p.hardChanges.length) ? p.hardChanges : (p.hardChange && p.hardChange.path ? [p.hardChange] : []);
+    _hcList.forEach(function (hc) {
+      if (!hc || !hc.path) return;
+      h += '<div style="font-size:0.68rem;color:var(--vermillion-300);padding:4px 6px;background:rgba(192,64,48,0.1);border:1px solid rgba(192,64,48,0.3);border-radius:3px;margin-bottom:4px;font-family:monospace;">\u2696\ufe0e <b>' + escHtml(hc.path) + '</b> <span style="color:var(--ink-200);">' + escHtml(hc.op||'set') + '</span> <b>' + escHtml(String(hc.value)) + '</b>' + (hc.note ? ' <span style="color:var(--ink-300);font-family:inherit;">\u00b7' + escHtml(String(hc.note).slice(0, 30)) + '</span>' : '') + '</div>';
+    });
+    if (p._agentTrace && p._agentTrace.length) {
+      h += '<div style="font-size:0.62rem;color:var(--celadon-400);margin-bottom:4px;">\u2634 \u5df2\u67e5\u8bc1\uff1a' + escHtml(p._agentTrace.join(' \u2192 ')) + '</div>';
+    }
   }
   // edictText 预览
   if (p.category === 'edictSubstitute' && p.edictText) {
@@ -1134,36 +1185,54 @@ function _wtConfirmPending() {
   };
   var sysMsg = '';
 
+  // 多改批量（agent 模式可提交多条 hardChanges·单条契约照旧）
+  var _wtHcList = (p.hardChanges && p.hardChanges.length) ? p.hardChanges : ((p.hardChange && p.hardChange.path) ? [p.hardChange] : []);
+
   if (p.category === 'absolute') {
     // 天意·至高意志：标记为 absolute, rule 性质（每回合生效至玩家移除）, 永不 ignore
     dir.type = 'rule';
     dir._absolute = true;
-    if (p.hardChange && p.hardChange.path) {
-      var ahc = p.hardChange;
-      var aPath = _wtNormalizeHardChangePath(ahc.path);
-      var aok = _wtApplyHardChange(ahc.path, ahc.op || 'set', ahc.value);
-      dir.hardChange = Object.assign({}, ahc, { path: aPath });
-      dir._immediatelyApplied = !!aok;
-      dir._lastStatus = aok ? 'followed' : 'ignored';
-      dir._lastReason = aok ? '天意直改即时生效' : '天意直改路径未找到/无法修改';
+    if (_wtHcList.length) {
+      var aOkN = 0;
+      var aDone = _wtHcList.map(function (ahc) {
+        var aPath1 = _wtNormalizeHardChangePath(ahc.path);
+        var aok1 = _wtApplyHardChange(ahc.path, ahc.op || 'set', ahc.value);
+        if (aok1) aOkN++;
+        return Object.assign({}, ahc, { path: aPath1, _applied: !!aok1 });
+      });
+      dir.hardChange = aDone[0] || null;
+      if (aDone.length > 1) dir.hardChanges = aDone;
+      dir._immediatelyApplied = aOkN > 0;
+      dir._lastStatus = aOkN > 0 ? 'followed' : 'ignored';
+      dir._lastReason = aOkN === aDone.length ? '天意直改即时生效' : (aOkN > 0 ? '天意直改部分生效(' + aOkN + '/' + aDone.length + ')' : '天意直改路径未找到/无法修改');
       dir._lastCheckTurn = GM.turn;
-      sysMsg = aok
-        ? ('★ 天 意 已 降 并 写 入：' + aPath + ' ' + (ahc.op||'set') + ' ' + ahc.value + ' [id=' + did + ']')
-        : ('★ 天 意 已 入 库，但直改失败：' + aPath + ' [id=' + did + ']');
+      sysMsg = aOkN === aDone.length
+        ? ('★ 天 意 已 降 并 写 入 ' + aOkN + ' 笔：' + aDone.map(function (x) { return x.path + ' ' + (x.op || 'set') + ' ' + x.value; }).join('；') + ' [id=' + did + ']')
+        : ('★ 天 意 已 入 库·直改 ' + aOkN + '/' + aDone.length + ' 笔生效：' + aDone.map(function (x) { return (x._applied ? '✓' : '✗') + x.path; }).join('；') + ' [id=' + did + ']');
     } else {
       sysMsg = '\u2605 \u5929 \u610F \u5DF2 \u5929 \u5B9A [id=' + did + ']\u00B7\u4E16\u754C\u6CD5\u5219\u76F4\u63A5\u751F\u6548\u00B7AI \u65E0\u63A8\u8FAD';
     }
     GM._playerDirectives.push(dir);
     GM._wentianHistory.push({ role: 'system', content: sysMsg });
     toast(dir._immediatelyApplied ? '★ 天意已写入' : '\u2605 \u5929\u610F\u5DF2\u964D');
-  } else if (p.category === 'hardChange' && p.hardChange && p.hardChange.path) {
-    // 立即写入 GM/P 数值
-    var hc = p.hardChange;
-    var ok = _wtApplyHardChange(hc.path, hc.op || 'set', hc.value);
-    dir.hardChange = hc;
-    dir._immediatelyApplied = !!ok;
-    dir._lastStatus = ok ? 'followed' : 'ignored';
-    dir._lastReason = ok ? '问天直改即时生效' : '路径未找到/无法修改';
+  } else if (p.category === 'hardChange' && _wtHcList.length) {
+    // 立即写入 GM/P 数值（agent 模式可多笔·hc/ok 沿旧语义=首笔·多笔另补一条批量汇总历史行）
+    var hOkN = 0;
+    var hDone = _wtHcList.map(function (hc1) {
+      var ok1 = _wtApplyHardChange(hc1.path, hc1.op || 'set', hc1.value);
+      if (ok1) hOkN++;
+      return Object.assign({}, hc1, { _applied: !!ok1 });
+    });
+    var hc = hDone[0] || {};
+    var ok = !!(hDone[0] && hDone[0]._applied);
+    dir.hardChange = hDone[0] || null;
+    if (hDone.length > 1) {
+      dir.hardChanges = hDone;
+      GM._wentianHistory.push({ role: 'system', content: '⚖︎ 批量直改 ' + hOkN + '/' + hDone.length + ' 笔：' + hDone.map(function (x) { return (x._applied ? '✓' : '✗') + x.path; }).join('；') });
+    }
+    dir._immediatelyApplied = hOkN > 0;
+    dir._lastStatus = hOkN > 0 ? 'followed' : 'ignored';
+    dir._lastReason = hOkN === hDone.length ? '问天直改即时生效' : (hOkN > 0 ? '部分生效(' + hOkN + '/' + hDone.length + ')' : '路径未找到/无法修改');
     dir._lastCheckTurn = GM.turn;
     sysMsg = ok
       ? ('\u2696\ufe0e \u5DF2\u5199\u5165\uFF1A' + hc.path + ' ' + (hc.op||'set') + ' ' + hc.value + ' [id=' + did + ']')
@@ -1864,6 +1933,106 @@ function _wtResolvePartyHardChange(parts) {
   return { party: hit.party, index: hit.index, field: field };
 }
 
+// 区划 hardChange 字段规范化（民心/吏治/田亩/商业/盐矿渔马/解额等 中文别名 → 真实字段路径）
+function _wtCanonicalDivisionHardChangeField(field) {
+  var f = String(field || '').trim().replace(/\s+/g, '');
+  var aliases = {
+    '民心': 'minxin', 'minxin': 'minxin',
+    '吏治': 'corruption', '腐败': 'corruption', '腐敗': 'corruption', 'corruption': 'corruption',
+    '募兵': 'militaryRecruits', '募兵上限': 'militaryRecruits', 'militaryRecruits': 'militaryRecruits',
+    '田亩': 'economyBase.farmland', '田畝': 'economyBase.farmland', '耕地': 'economyBase.farmland', 'farmland': 'economyBase.farmland',
+    '商业': 'economyBase.commerceVolume', '商業': 'economyBase.commerceVolume', '商业额': 'economyBase.commerceVolume', '商業額': 'economyBase.commerceVolume', 'commerceVolume': 'economyBase.commerceVolume',
+    '盐产': 'economyBase.saltProduction', '鹽產': 'economyBase.saltProduction', 'saltProduction': 'economyBase.saltProduction',
+    '矿产': 'economyBase.mineralProduction', '礦產': 'economyBase.mineralProduction', 'mineralProduction': 'economyBase.mineralProduction',
+    '渔获': 'economyBase.fishingProduction', '漁獲': 'economyBase.fishingProduction', 'fishingProduction': 'economyBase.fishingProduction',
+    '马政': 'economyBase.horseProduction', '馬政': 'economyBase.horseProduction', 'horseProduction': 'economyBase.horseProduction',
+    '解额': 'economyBase.kejuQuota', '解額': 'economyBase.kejuQuota', 'kejuQuota': 'economyBase.kejuQuota',
+    '驿站': 'economyBase.postRelays', '驛站': 'economyBase.postRelays', 'postRelays': 'economyBase.postRelays',
+    '道路': 'economyBase.roadQuality', 'roadQuality': 'economyBase.roadQuality'
+  };
+  if (aliases[f]) return aliases[f];
+  if (/^economyBase\./.test(f)) return f;
+  return f;
+}
+
+// 按名查区划（GM.adminHierarchy 全势力树·精确优先·唯一模糊命中兜底·镜像人物/军队/党派查找范式）
+function _wtFindDivisionHardChangeTarget(name) {
+  if (typeof GM === 'undefined' || !GM || !GM.adminHierarchy || typeof GM.adminHierarchy !== 'object' || !name) return null;
+  var t = _wtNormalizeCharacterLookupToken(name);
+  if (!t) return null;
+  var exact = null, loose = null, looseCount = 0;
+  Object.keys(GM.adminHierarchy).forEach(function (fk) {
+    var rootNode = GM.adminHierarchy[fk];
+    (function walk(list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (d) {
+        if (!d || typeof d !== 'object') return;
+        var k = _wtNormalizeCharacterLookupToken(d.name);
+        if (k) {
+          if (k === t) { if (!exact) exact = d; }
+          else if (k.indexOf(t) >= 0 || t.indexOf(k) >= 0) { loose = d; looseCount++; }
+        }
+        walk(d.divisions || d.children);
+      });
+    })((rootNode && (rootNode.divisions || rootNode.children)) || []);
+  });
+  if (exact) return { div: exact };
+  return (looseCount === 1) ? { div: loose } : null;
+}
+
+// 解析区划 hardChange 路径：divisions/区划/州府 前缀【必须带前缀·区划名太杂不做裸名接管】。
+// 治"问天改 divisions[顺天府].economyBase.farmland → 通用导航写 GM.economyBase 幽灵对象、真区划不动"
+// 的静默失败（与人物/军队/阶层/势力/党派同根·区划一直是缺口）。
+function _wtResolveDivisionHardChange(parts) {
+  if (!parts || parts.length < 3) return null;
+  var prefixes = /^(divisions|division|区划|區劃|州府|府州|府县|府縣|地方|辖区|轄區)$/i;
+  if (!prefixes.test(String(parts[0] || ''))) return null;
+  var name = parts[1];
+  var field = _wtCanonicalDivisionHardChangeField(parts.slice(2).join('.'));
+  if (!name || !field) return null;
+  var okField = (field === 'minxin' || field === 'corruption' || field === 'militaryRecruits' || /^economyBase\.[A-Za-z]+$/.test(field));
+  if (!okField) return null;
+  var hit = _wtFindDivisionHardChangeTarget(name);
+  if (!hit || !hit.div) return null;
+  return { div: hit.div, field: field };
+}
+
+// 按名查官职席位（GM.officeTree·递归 positions·精确优先·唯一模糊兜底）
+function _wtFindOfficeHardChangeTarget(name) {
+  if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.officeTree) || !name) return null;
+  var t = _wtNormalizeCharacterLookupToken(name);
+  if (!t) return null;
+  var exact = null, loose = null, looseCount = 0;
+  (function walk(nodes) {
+    if (!Array.isArray(nodes)) return;
+    nodes.forEach(function (n) {
+      if (!n) return;
+      (n.positions || []).forEach(function (pos) {
+        if (!pos || !pos.name) return;
+        var k = _wtNormalizeCharacterLookupToken(pos.name);
+        if (!k) return;
+        if (k === t) { if (!exact) exact = pos; }
+        else if (k.indexOf(t) >= 0 || t.indexOf(k) >= 0) { loose = pos; looseCount++; }
+      });
+      walk(n.subs);
+    });
+  })(GM.officeTree);
+  if (exact) return { pos: exact };
+  return (looseCount === 1) ? { pos: loose } : null;
+}
+
+// 解析官职 hardChange 路径：office/官职 前缀·只认公库 publicTreasury（任免走官制系统·不在问天直改）
+function _wtResolveOfficeHardChange(parts) {
+  if (!parts || parts.length < 3) return null;
+  var prefixes = /^(office|offices|officeTree|官职|官職|职官|職官)$/i;
+  if (!prefixes.test(String(parts[0] || ''))) return null;
+  var fld = String(parts.slice(2).join('.') || '').trim();
+  if (!/^(publicTreasury|公库|公庫)$/.test(fld)) return null;
+  var hit = _wtFindOfficeHardChangeTarget(parts[1]);
+  if (!hit || !hit.pos) return null;
+  return { pos: hit.pos };
+}
+
 function _wtApplyHardChange(path, op, value) {
   if (!path) return false;
   // 根据路径前缀决定 root
@@ -1969,6 +2138,39 @@ function _wtApplyHardChange(path, op, value) {
       var _pnv = Math.max(0, Math.min(100, Math.round(Number(_pscalar.value) || 0))); // influence/cohesion 0-100
       _pty[_pf] = _pnv;
       _wtAfterHardChange(_ptyPath, _oldP, _pnv);
+      return true;
+    }
+    // 区划按名解析（治"问天改 divisions[顺天府].economyBase.farmland → 通用导航写 GM.economyBase 幽灵对象、真区划不动"）
+    var divChange = _wtResolveDivisionHardChange(parts);
+    if (divChange && divChange.div) {
+      var _dvo = divChange.div, _dfp = divChange.field.split('.');
+      var _dCur = _dvo;
+      for (var _di = 0; _di < _dfp.length - 1; _di++) {
+        var _dk = _dfp[_di];
+        if (_dCur[_dk] == null || typeof _dCur[_dk] !== 'object') _dCur[_dk] = {};
+        _dCur = _dCur[_dk];
+      }
+      var _dLast = _dfp[_dfp.length - 1];
+      var _dOld = _dCur[_dLast];
+      var _dscalar = _wtApplyScalarHardChange(_dOld, op || 'set', value);
+      if (!_dscalar.ok) return false;
+      var _dnv = _dscalar.value;
+      if (divChange.field === 'minxin' || divChange.field === 'corruption') _dnv = Math.max(0, Math.min(100, Math.round(Number(_dnv) || 0)));
+      else if (isFinite(Number(_dnv))) _dnv = Math.max(0, Math.round(Number(_dnv) || 0));
+      _dCur[_dLast] = _dnv;
+      _wtAfterHardChange('divisions.' + (_dvo.name || '') + '.' + divChange.field, _dOld, _dnv);
+      return true;
+    }
+    // 官职公库按名解析（officeTree 按职名找席位·只认 publicTreasury·任免归官制系统）
+    var offChange = _wtResolveOfficeHardChange(parts);
+    if (offChange && offChange.pos) {
+      var _opos = offChange.pos;
+      var _oOld = Number(_opos.publicTreasury) || 0;
+      var _oscalar = _wtApplyScalarHardChange(_oOld, op || 'set', value);
+      if (!_oscalar.ok) return false;
+      var _onv = Math.max(0, Math.round(Number(_oscalar.value) || 0));
+      _opos.publicTreasury = _onv;
+      _wtAfterHardChange('officeTree.' + (_opos.name || '') + '.publicTreasury', _oOld, _onv);
       return true;
     }
     // 人力/徭役农政 god-mode（R5·镜像阶层/军队·治"问天改丁/田/役写数组幽灵属性、真账不动"静默失败·逻辑在 tm-renli）

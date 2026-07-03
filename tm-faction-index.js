@@ -168,6 +168,26 @@
       });
     }
 
+    // 4b. territoryStress(2026-07-03·断链B)：省均动荡度(0-100 高=糟)·取 max(unrest, 100-stability) 均值。
+    // 供 derivedHealth 第五指标 territorialControl——民变四起/治安崩坏真牵动政权健康度。无省或无账不写(健康度自动回落四指标·老存档零回归)。
+    (function () {
+      var ps = GM.provinceStats;
+      if (!ps) return;
+      Object.keys(index).forEach(function (name) {
+        var entry = index[name];
+        var sum = 0, n = 0;
+        (entry.provinces || []).forEach(function (p) {
+          var st = ps[p];
+          if (!st) return;
+          var unrest = isFinite(Number(st.unrest)) ? Number(st.unrest) : null;
+          var instab = isFinite(Number(st.stability)) ? 100 - Number(st.stability) : null;
+          var v = Math.max(unrest === null ? -1 : unrest, instab === null ? -1 : instab);
+          if (v >= 0) { sum += Math.max(0, Math.min(100, v)); n += 1; }
+        });
+        if (n > 0) entry.metrics.territoryStress = Math.round(sum / n);
+      });
+    })();
+
     // 5. 党派 dominant + imbalance + leader (该党 + 该势力 charisma 最高)
     Object.keys(index).forEach(function(name) {
       var entry = index[name];

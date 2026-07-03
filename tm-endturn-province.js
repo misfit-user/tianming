@@ -283,7 +283,26 @@ function updateProvinceEconomy() {
     // 计算可征兵数（基于人口和稳定度 + 军事建筑）
     var baseRecruits = Math.floor(province.population / 100);
     var stabilityMultiplier = province.stability / 100;
-    province.militaryRecruits = Math.floor(baseRecruits * stabilityMultiplier) + _bldLevy;
+    // 营建募兵入主池(2026-07-03·死账接活)：BuildingWorks 白名单写叶 div.militaryRecruits(卫所/校场·剧本零预置=纯营建增量)，
+    // 旧只有 _bldLevy(旧式建筑账)入池·自拟营建的募兵上限从未进主募兵池。按省名宽松匹配叶归属累加。
+    var _builtRecruits = 0;
+    try {
+      var _ahp = GM.adminHierarchy && GM.adminHierarchy.player;
+      if (_ahp && _ahp.divisions) {
+        _ahp.divisions.forEach(function (top) {
+          var tn = String((top && (top.name || top.id)) || '');
+          if (!tn || (tn.indexOf(provinceName) < 0 && provinceName.indexOf(tn) < 0)) return;
+          (function walk(d) {
+            if (!d) return;
+            var kids = d.children || d.divisions;
+            if (kids && kids.length) { kids.forEach(walk); return; }
+            var n = Number(d.militaryRecruits);
+            if (isFinite(n) && n > 0) _builtRecruits += Math.round(n);
+          })(top);
+        });
+      }
+    } catch (_e) {}
+    province.militaryRecruits = Math.floor(baseRecruits * stabilityMultiplier) + _bldLevy + _builtRecruits;
 
     // 民变自然衰减
     province.unrest = Math.max(0, province.unrest - 0.5 * _ms);

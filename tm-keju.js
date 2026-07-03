@@ -790,7 +790,13 @@ function _pickDianshiDelegate(name) {
   } else if (lbl === '宗室') {
     // 宗室满意+10·100% 保留 v5 paradigm
     var zs = (GM.classes||[]).find(function(cl){ return cl.name === '宗室'; });
-    if (zs) zs.satisfaction = Math.min(100, (zs.satisfaction||50) + 10);
+    if (zs) {
+      if (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function') {
+        TM.ClassEngine.gateSatisfaction(GM, zs, 10, { turn: GM.turn, source: 'keju', reason: '宗室代主殿试' });
+      } else {
+        zs.satisfaction = Math.min(100, (zs.satisfaction||50) + 10);
+      }
+    }
   } else if (lbl === '权臣') {
     // 权臣代主·皇威-3·若有党·tension+5
     if (typeof _adjustHuangwei === 'function') _adjustHuangwei(-3, '代主权臣·私相授受');
@@ -838,8 +844,12 @@ function _bumpKejuSatisfaction(prefer, delta, reason) {
     var nm = GM.classes[i].name || '';
     for (var j = 0; j < keywords.length; j++) {
       if (nm.indexOf(keywords[j]) >= 0) {
-        var cur = GM.classes[i].satisfaction || 50;
-        GM.classes[i].satisfaction = Math.max(0, Math.min(100, cur + delta));
+        if (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function') {
+          TM.ClassEngine.gateSatisfaction(GM, GM.classes[i], delta, { turn: GM.turn, source: 'keju', reason: reason || '科举' });
+        } else {
+          var cur = GM.classes[i].satisfaction || 50;
+          GM.classes[i].satisfaction = Math.max(0, Math.min(100, cur + delta));
+        }
         if (typeof addEB === 'function') {
           var sign = delta >= 0 ? '+' : '';
           addEB('阶层', nm + sign + delta + '·' + (reason || ''));

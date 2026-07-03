@@ -264,6 +264,9 @@
       // 候选上奏者·非 ruler 的 court/general/clan·loyalty < 95 (满忠不上奏·防 noise)
       var candidates = alive.filter(function(c){
         if (c === ruler) return false;
+        // 受限者不上奏(玩家报:已下狱/罢官者仍上奏)·下狱/流放/逃亡/致仕/失踪
+        if (c._imprisoned || c.imprisoned || c._inPrison || c._exiled || c.exiled ||
+            c._banished || c._fled || c.fled || c._missing || c._retired || c.retired) return false;
         var role = _classifyChar(c);
         return role === 'court' || role === 'general' || role === 'clan';
       });

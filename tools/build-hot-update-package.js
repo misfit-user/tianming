@@ -31,7 +31,8 @@ const DEFAULT_MIN_APP_VERSION = '';
 const ALLOWED_EXTS = new Set([
   '.html', '.htm', '.js', '.mjs', '.css', '.json', '.geojson', '.png', '.jpg', '.jpeg', '.webp',
   '.bmp', '.svg', '.ico', '.mp3', '.ogg', '.wav', '.md', '.txt', '.csv', '.woff', '.woff2',
-  '.ttf', '.wasm', '.map'
+  '.ttf', '.wasm', '.map',
+  '.glb'   // 御驾亲征战术战斗 3D 兵模(web/battle/assets/models/)·缺则线上端静默回退程序化兵模
 ]);
 const KNOWN_WEB_TOP_DIRS = [
   'assets',

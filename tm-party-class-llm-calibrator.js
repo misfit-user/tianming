@@ -193,11 +193,44 @@
     };
   }
 
-  function snapshotClass(cls) {
+  function snapshotClass(cls, root) {
+    // 政治运动（V3式·GM._politicalMovements·SocialFoundation §三E）：取本阶层最盛一支
+    var movement;
+    if (root && Array.isArray(root._politicalMovements) && cls && cls.name) {
+      root._politicalMovements.forEach(function(m) {
+        if (m && m.className === cls.name && (!movement || Number(m.support) > Number(movement.support))) {
+          movement = { label: String(m.label || m.kind || '').slice(0, 30), phase: m.phase || '', support: Math.round(Number(m.support) || 0) };
+        }
+      });
+      if (movement && movement.support < 40) movement = undefined;
+    }
+    // 满意度近势：_satLedger 最近一个回合的净变动（主推演正册同款信号·此前校准器全盲）
+    var satTrend;
+    var ledger = toArray(cls && cls._satLedger);
+    if (ledger.length) {
+      var maxT = ledger.reduce(function(m, e) { return Math.max(m, Number(e && e.t) || 0); }, 0);
+      var sum = 0;
+      ledger.forEach(function(e) { if (e && Number(e.t) === maxT) sum += Number(e.d) || 0; });
+      if (sum) satTrend = Math.round(sum * 100) / 100;
+    }
+    // 最艰地域：地域分账中满意度最低的一地
+    var worstRegion;
+    toArray(cls && cls.regionalVariants).forEach(function(rv) {
+      if (!rv || typeof rv.satisfaction !== 'number') return;
+      if (!worstRegion || rv.satisfaction < worstRegion.satisfaction) {
+        worstRegion = { region: rv.region || rv.name || '', satisfaction: Math.round(rv.satisfaction) };
+      }
+    });
     return {
       name: classNameOf(cls),
       satisfaction: cls && cls.satisfaction,
       influence: cls && cls.influence,
+      structBaseline: (cls && typeof cls._structBaseline === 'number') ? Math.round(cls._structBaseline) : undefined,
+      satTrend: satTrend,
+      radicalFrac: (cls && typeof cls._radicalFrac === 'number' && cls._radicalFrac > 0.01) ? Math.round(cls._radicalFrac * 100) / 100 : undefined,
+      revoltPhase: (cls && cls.revoltState && cls.revoltState.phase) || undefined,
+      movement: movement,
+      worstRegion: worstRegion,
       demands: clone(cls && (cls.demands || cls.currentDemand || cls.currentAgenda || cls.shortGoal)),
       unrestLevels: clone(cls && cls.unrestLevels),
       supportingParties: clone(cls && (cls.supportingParties || cls.supporting_parties)),
@@ -206,11 +239,21 @@
     };
   }
 
-  function snapshotParty(party) {
+  function snapshotParty(party, root) {
+    // 引擎账补注：占官/清誉/弹劾胜负/运行时盟敌（partyState 侧·主推演有喂而校准器此前全盲）
+    var ps = (root && root.partyState && party) ? root.partyState[partyNameOf(party)] : null;
     return {
       name: partyNameOf(party),
       influence: party && party.influence,
       cohesion: party && party.cohesion,
+      standing: (ps && ps.standing) || (party && party.standing) || undefined,
+      officeCount: (ps && typeof ps.officeCount === 'number' && ps.officeCount > 0) ? ps.officeCount : undefined,
+      reputation: (ps && typeof ps.reputationBalance === 'number' && ps.reputationBalance !== 0) ? ps.reputationBalance : undefined,
+      recentImpeach: (ps && ((ps.recentImpeachWin || 0) >= 0.5 || (ps.recentImpeachLose || 0) >= 0.5))
+        ? { win: Math.round((ps.recentImpeachWin || 0) * 10) / 10, lose: Math.round((ps.recentImpeachLose || 0) * 10) / 10 }
+        : undefined,
+      alliedWith: (ps && Array.isArray(ps.alliedWith) && ps.alliedWith.length) ? clone(ps.alliedWith) : undefined,
+      conflictWith: (ps && Array.isArray(ps.conflictWith) && ps.conflictWith.length) ? clone(ps.conflictWith) : undefined,
       currentAgenda: party && party.currentAgenda,
       shortGoal: party && party.shortGoal,
       policyStance: clone(party && party.policyStance),
@@ -439,8 +482,10 @@
         name: source.scenarioName || source.scenario || '',
         eraName: source.eraName || ''
       },
-      classes: getClasses(source).map(snapshotClass).filter(function(x) { return !!x.name; }),
-      parties: getParties(source).map(snapshotParty).filter(function(x) { return !!x.name; }),
+      classes: getClasses(source).map(function(c) { return snapshotClass(c, source); }).filter(function(x) { return !!x.name; }),
+      parties: getParties(source).map(function(p) { return snapshotParty(p, source); }).filter(function(x) { return !!x.name; }),
+      legitimacy: (source._legitimacy && typeof source._legitimacy === 'object') ? clone(source._legitimacy) : undefined,
+      fiscalNote: (typeof source.stateTreasury === 'number') ? { stateTreasury: Math.round(source.stateTreasury) } : undefined,
       factions: getFactions(source).map(snapshotFaction).filter(function(x) { return !!x.name; }),
       relations: snapshotRelations(source),
       classCharacterRelations: (TM.ClassCharacterRelations && typeof TM.ClassCharacterRelations.snapshot === 'function')
@@ -504,7 +549,8 @@
       'Never return absolute satisfaction values; use satisfactionDelta only. Class mood must move gradually with evidence.',
       'All demands/agenda/goal texts must be written in Chinese, concise and concrete. Each class has distinct interests rooted in its own economic role and grievances - never reuse the same demand wording across different classes. Only include demands for a class when the evidence shows a genuinely new or shifted demand; omit otherwise.',
       'For class-character relation updates use fractional deltas between -0.25 and 0.25 and keep evidence short.',
-      'For new or uncertain party-class links set emergent:true and keep affinityDelta small.'
+      'For new or uncertain party-class links set emergent:true and keep affinityDelta small.',
+      'Snapshot field semantics: class.structBaseline = structural equilibrium satisfaction (satisfaction far below it means pressure to recover, far above means drift down); class.satTrend = last-turn net satisfaction drift; class.radicalFrac = radicalized fraction 0-1 (>=0.4 is dangerous); class.revoltPhase = current unrest phase; class.movement = political movement condensed from a long-unmet demand (support 0-100; >=70 is boiling and destabilizing); class.worstRegion = hardest-hit regional account. party.standing = governing/opposition/marginal court position; party.officeCount = offices held; party.reputation = public repute -60..60 (positive = clean-stream prestige); party.recentImpeach = recent impeachment wins/losses; party.alliedWith/conflictWith = live alliances/feuds. legitimacy = mandate weighting; fiscalNote.stateTreasury = court treasury. Ground your deltas in these accounts.'
     ].join('\n');
     var user = [
       'Snapshot JSON:',
@@ -741,9 +787,11 @@
     var faction = findFaction(root, update.faction || update.factionName || update.name);
     if (!faction) return false;
     var changed = false;
-    changed = adjustNumberField(faction, 'strength', update.strengthDelta != null ? update.strengthDelta : update.strength_delta, 0, 100, 50) || changed;
-    changed = adjustNumberField(faction, 'economy', update.economyDelta != null ? update.economyDelta : update.economy_delta, 0, 100, 50) || changed;
-    changed = adjustNumberField(faction, 'playerRelation', update.playerRelationDelta != null ? update.playerRelationDelta : update.playerRelation_delta, -100, 100, 0) || changed;
+    // faction delta 幅度闸：system 提示口头约 ±8 但此前代码零强制——LLM 一条 strengthDelta:90 就能把势力从 50 拉满
+    function fdClamp(v) { v = Number(v); return isFinite(v) ? clamp(v, -8, 8) : v; }
+    changed = adjustNumberField(faction, 'strength', fdClamp(update.strengthDelta != null ? update.strengthDelta : update.strength_delta), 0, 100, 50) || changed;
+    changed = adjustNumberField(faction, 'economy', fdClamp(update.economyDelta != null ? update.economyDelta : update.economy_delta), 0, 100, 50) || changed;
+    changed = adjustNumberField(faction, 'playerRelation', fdClamp(update.playerRelationDelta != null ? update.playerRelationDelta : update.playerRelation_delta), -100, 100, 0) || changed;
     if (update.attitude || update.stance) {
       faction.attitude = textOf(update.attitude || update.stance).slice(0, 40);
       changed = true;
@@ -768,8 +816,15 @@
     return changed;
   }
 
+  // 批内 refs 缓存：applyResult 一批 N 条 court_issue_updates/issue_goal_links 原本每条全量重扫
+  // 全部议题集合（currentIssues/pendingTinyi/held/courtRecords/tinyiSeals/…）= O(N×M) 残留热点。
+  // 缓存按 root 引用命中·applyResult 进出与影子议题 push 时失效。
+  var _cirCache = null;
+  function _invalidateCourtIssueRefs() { _cirCache = null; }
+
   function collectCourtIssueRefs(root) {
     root = pickRoot(root);
+    if (_cirCache && _cirCache.root === root) return _cirCache.refs;
     var refs = [];
     function add(item, type, idx) {
       if (item && typeof item === 'object') refs.push({ item: item, type: type, idx: idx, id: issueIdOf(item, type, idx), topic: issueTextOf(item) });
@@ -784,6 +839,7 @@
     toArray(root.tinyiSeals).forEach(function(x, i) { add(x, 'tinyiSeal', i); });
     toArray(root.tinyi && root.tinyi.followUpQueue).forEach(function(x, i) { add(x, 'tinyiFollowUp', i); });
     toArray(root._partyClassCourtIssues).forEach(function(x, i) { add(x, 'calibratedCourtIssue', i); });
+    _cirCache = { root: root, refs: refs };
     return refs;
   }
 
@@ -819,6 +875,7 @@
     };
     root._partyClassCourtIssues.push(issue);
     if (root._partyClassCourtIssues.length > 40) root._partyClassCourtIssues = root._partyClassCourtIssues.slice(-40);
+    _invalidateCourtIssueRefs();
     return issue;
   }
 
@@ -1016,6 +1073,7 @@
     result = normalizeResponse(result);
     var turn = Number(options.turn != null ? options.turn : source.turn) || 0;
     var sourceName = options.source || 'party-class-llm-calibration';
+    _invalidateCourtIssueRefs();  // 批开始：外部（廷议/信号）可能已改议题集合·不能吃陈缓存
     var applied = { relations: 0, classes: 0, parties: 0, factions: 0, courtIssues: 0, issueGoalLinks: 0, classCharacterRelations: 0, goals: 0 };
     result.relation_adjustments.forEach(function(adj) {
       if (!TM.PartyGoals || typeof TM.PartyGoals.applyDynamicRelationAdjustment !== 'function') return;
@@ -1061,9 +1119,9 @@
     if (_ccrTouched && TM.ClassCharacterRelations && typeof TM.ClassCharacterRelations.syncMirrors === 'function') {
       try { TM.ClassCharacterRelations.syncMirrors(source); } catch (_ccrSyncE) {}
     }
-    try {
-      if (TM.PartyGoals && typeof TM.PartyGoals.buildScenarioRelationIndex === 'function') TM.PartyGoals.buildScenarioRelationIndex(source, { turn: turn, source: sourceName });
-    } catch (_) {}
+    _invalidateCourtIssueRefs();  // 批结束：缓存不跨批存活（回合间外部系统会改议题集合）
+    // 关系索引重建收敛：旧版此处显式 buildScenarioRelationIndex 一次·紧接着 deriveFromClassDemands
+    // 内部又无条件重建一次（tm-party-goals.js deriveFromClassDemands 首行）——纯白跑·删显式那次
     try {
       if (TM.PartyGoals && typeof TM.PartyGoals.deriveFromClassDemands === 'function') {
         var derived = TM.PartyGoals.deriveFromClassDemands(source, { turn: turn, source: sourceName + '-derive' });

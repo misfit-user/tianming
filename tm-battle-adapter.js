@@ -45,9 +45,11 @@
     var i = _QTIERS.indexOf(q); if (i < 0) i = 1;
     return _QTIERS[Math.max(0, i - drop)];
   }
-  /* 队 → 兵牌(原型 roster 单位形状:type/sub/name/soldiers/mor/training/quality/supply/gen/id/parentArmyId) */
+  /* 原型 flag 覆盖层认的修饰位(与 proto hasFlag 注入点对齐·§3"LLM直出flag拼装") */
+  var TOKEN_FLAGS = { elite: 1, heavy: 1, shield: 1, baggage: 1, shock: 1, scare: 1, slow: 1, antiCav: 1 };
+  /* 队 → 兵牌(原型 roster 单位形状:type/sub/name/soldiers/mor/training/quality/supply/gen/id/parentArmyId[/flags]) */
   function unitToToken(u, army, gen) {
-    return {
+    var tok = {
       id: u.id, parentArmyId: u.parentArmyId != null ? u.parentArmyId : (army && army.id) || null,
       type: u.arm || 'step', sub: u.sub || 'sword',
       name: u['番号'] || u.name || (army && army.name) || '队',
@@ -58,6 +60,11 @@
       supply: Math.round((army && army.supply) || 80),
       gen: gen
     };
+    if (Array.isArray(u.flags) && u.flags.length) {   // 修饰位透传(识别瀑布正则+LLM词典直出)·原型 spread 进 sim 单位·hasFlag 消费
+      var fl = u.flags.filter(function (f) { return TOKEN_FLAGS[f]; });
+      if (fl.length) tok.flags = fl;
+    }
+    return tok;
   }
 
   function armyUnits(a) {

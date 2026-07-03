@@ -38,7 +38,10 @@
   --font-serif:"STKaiti","KaiTi","楷体","Noto Serif SC","Source Han Serif CN","SimSun","STSong",serif;
   --font-mono:"LXGW WenKai Mono","Noto Sans Mono",monospace;
 }
-@font-face{font-family:"TM-ZCOOL-XiaoWei";src:url("assets/fonts/ZCOOLXiaoWei-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
+/* 小薇字库外科（2026-07-03）：所携 TTF 有九个绕向损坏的实心字形（回圃圄圊崮徊愀淋蛔·内框填死成墨块·
+   全游戏正文凡「回合」皆成豆腐）。unicode-range 白名单剔除九字·坏字自然回退楷体（cmap 有映射浏览器不回退·
+   只能从声明侧圈走）。九字码点：56DE/5703/5704/570A/5D2E/5F8A/6100/6DCB/86D4。 */
+@font-face{font-family:"TM-ZCOOL-XiaoWei";src:url("assets/fonts/ZCOOLXiaoWei-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0000-56DD,U+56DF-5702,U+5705-5709,U+570B-5D2D,U+5D2F-5F89,U+5F8B-60FF,U+6101-6DCA,U+6DCC-86D3,U+86D5-10FFFF;}
 @font-face{font-family:"TM-ZCOOL-QingKe";src:url("assets/fonts/ZCOOLQingKeHuangYou-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:"TM-MaShanZheng";src:url("assets/fonts/MaShanZheng-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:"TM-LongCang";src:url("assets/fonts/LongCang-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
@@ -4279,6 +4282,13 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;o
 .settings-savebar .bt{margin:0;}
 .settings-section{margin-bottom:1.4rem;padding:0.8rem;background:var(--bg-2);border-radius:var(--r);border:1px solid var(--bdr);}
 .settings-pane .settings-section{margin-bottom:0;}
+.settings-pane .settings-section + .settings-section{margin-top:1rem;}   /* 稀签合并后同页多节的节间距 */
+.settings-box input[type=checkbox],.settings-box input[type=radio],.settings-box input[type=range]{accent-color:var(--gold);}
+.settings-search{flex:1;max-width:300px;margin:0 1rem;padding:0.35rem 0.7rem;background:var(--bg-3);border:1px solid var(--bdr);border-radius:6px;color:var(--txt);font-family:inherit;font-size:0.8rem;}
+.settings-search:focus{outline:none;border-color:var(--gold-d);box-shadow:0 0 0 2px rgba(184,154,83,0.15);}
+.settings-search::placeholder{color:var(--txt-d);}
+.settings-tab.search-miss{display:none;}
+.settings-tab-group.search-miss{display:none;}
 .settings-section h4{color:var(--gold);font-size:0.88rem;margin-bottom:0.7rem;border-bottom:1px solid var(--bdr);padding-bottom:0.4rem;letter-spacing:0.05em;}
 .tm-settings-sub{font-size:0.72rem;color:var(--txt-d);margin:-0.25rem 0 0.7rem;line-height:1.55;}
 .tm-settings-two{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.65rem;}

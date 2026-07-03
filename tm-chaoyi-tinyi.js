@@ -24,7 +24,7 @@ function _ty2_openSetup() {
     if (!c) return true;
     if (c.alive === false || c.dead) return true;
     if (c.isPlayer) return true;
-    if (c._imprisoned || c.imprisoned || c._inPrison) return true;
+    if (c._imprisoned || c.imprisoned || c._inPrison || c._jailed || c._inJail) return true;
     if (c._exiled || c.exiled || c._banished) return true;
     if (c._status === 'imprisoned' || c._status === 'exiled' || c._status === 'fled' || c._status === 'retired' || c._status === 'mourning' || c._status === 'sick_grave') return true;
     if (c._retired || c.retired) return true;  // 致仕
@@ -92,6 +92,7 @@ function _ty2_openSetup() {
   // 额外召人：仅同势力 & 在玩家所在地（外邦使臣/远地官员不入廷议）
   var extraPool = (GM.chars||[]).filter(function(c){
     if (c.alive === false || c.isPlayer) return false;
+    if (_cannotAttend(c)) return false;   // 下狱/流放/致仕/逃亡/丁忧/病危者不得被额外召入廷议(玩家报:下狱还能上朝)
     if (!_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
     if (defaultAttendees.some(function(d){return d.name===c.name;})) return false;
     return true;
@@ -496,6 +497,7 @@ async function _ty2_phaseInitialRound() {
 
 /** 生成一位与议者的一轮发言 */
 async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
+  if (CY._ty2) CY._ty2._lastSpeaker = name;  // 记上一发言者·供玩家插言"卿/你说"代词消解
   if (!P.ai || !P.ai.key) {
     addCYBubble(name, '（臣以为……）', false);
     _cy_jishiAdd('tinyi', CY._ty2.topic, name, '（臣以为……）', { round: roundNum });
@@ -579,6 +581,36 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
       }
     }
   }
+  // 议题真账注入（阶层/党派⇄廷议关联·2026-07-03）：此前发言者对阶层系统全盲（只有 5 类语气提示）、
+  // 对议题的党争归属（谁倡谁反）也不知情——民情议题连当事阶层的满意度/诉求都不给发言者。
+  try {
+    var _tyMeta = (typeof _ty3_currentTinyiMeta === 'function') ? _ty3_currentTinyiMeta() : null;
+    var _srcClsName = _tyMeta && (_tyMeta.sourceClass || _tyMeta.className);
+    if (_srcClsName && typeof GM !== 'undefined' && Array.isArray(GM.classes)) {
+      var _srcCls = GM.classes.find(function(c){ return c && c.name === _srcClsName; });
+      if (_srcCls) {
+        var _clsBits = ['满意' + Math.round(Number(_srcCls.satisfaction) || 50)];
+        if (typeof _srcCls._structBaseline === 'number') _clsBits.push('势位' + Math.round(_srcCls._structBaseline));
+        if (typeof _srcCls._radicalFrac === 'number' && _srcCls._radicalFrac >= 0.05) _clsBits.push('乱民' + Math.round(_srcCls._radicalFrac * 10) + '成');
+        if (_srcCls.revoltState && _srcCls.revoltState.phase && _srcCls.revoltState.phase !== 'calm') _clsBits.push('态·' + _srcCls.revoltState.phase);
+        var _demand = String((_tyMeta && _tyMeta.demandText) || _srcCls.currentDemand || _srcCls.demands || '').slice(0, 60);
+        prompt += '  当事阶层(' + _srcClsName + ')：' + _clsBits.join('·') + (_demand ? '｜所求：' + _demand : '') + '\n';
+      }
+    }
+    if (_tyMeta && ch && ch.party) {
+      if (_tyMeta.sourceParty && _tyMeta.sourceParty === ch.party) prompt += '  此议由本党所倡·关乎本党成败\n';
+      else if (Array.isArray(_tyMeta.opposingParties) && _tyMeta.opposingParties.indexOf(ch.party) >= 0) prompt += '  本党素反此议·让步须有分量的事由\n';
+      else if (_tyMeta.sourceParty && _tyMeta.sourceParty !== ch.party) prompt += '  此议由' + _tyMeta.sourceParty + '所倡·先思本党利害再定言辞\n';
+    }
+    if (ch && ch.party && typeof GM !== 'undefined' && GM.partyState && GM.partyState[ch.party]) {
+      var _psSp = GM.partyState[ch.party];
+      var _spBits = [];
+      if (typeof _psSp.officeCount === 'number' && _psSp.officeCount > 0) _spBits.push('占官' + _psSp.officeCount);
+      if (typeof _psSp.reputationBalance === 'number' && _psSp.reputationBalance) _spBits.push('清誉' + (_psSp.reputationBalance > 0 ? '+' : '') + Math.round(_psSp.reputationBalance));
+      if ((_psSp.recentImpeachLose || 0) >= 1) _spBits.push('新遭弹劾之挫');
+      if (_spBits.length) prompt += '  本党处境：' + _spBits.join('·') + '\n';
+    }
+  } catch (_tyMetaE) {}
   // 跨对话上下文·近 3 条对话历史
   try {
     var _dh = (typeof GM !== 'undefined' && GM.dialogueHistory && GM.dialogueHistory[name]) || [];
@@ -780,29 +812,14 @@ async function _ty2_playerInterjectEarly() {
 
 async function _ty2_playerTriggeredResponse(playerText) {
   if (!CY._ty2) return;
-  // 挑 2-3 人回应
-  var responders = CY._ty2.attendees.slice().sort(function(){return Math.random()-0.5;}).slice(0, Math.min(3, CY._ty2.attendees.length));
-  var prevSpeeches = [];
-  for (var i = 0; i < responders.length; i++) {
-    var prompt = '皇帝在廷议中插言：「' + playerText + '」\n';
-    prompt += '议题：' + CY._ty2.topic + '\n';
-    var ch = findCharByName(responders[i]);
-    prompt += '你扮演' + responders[i] + '（' + (ch && ch.officialTitle || '') + '），当前立场:' + CY._ty2.stances[responders[i]].current + '\n';
-    prompt += '性格：' + (ch && ch.personality || '') + '，忠' + ((ch && ch.loyalty)||50) + '\n';
-    prompt += '请回应皇帝此言，可能：顺帝意/进谏/转移话题/重申立场' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n';
-    prompt += '返回 JSON：{"newStance":"...(可能因此轮变化)","line":"..."}';
-    try {
-      var raw = await callAI(prompt, (typeof _aiDialogueTok==='function'?_aiDialogueTok("cy", 1):400), null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 廷议走次 API
-      var obj = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
-      if (obj && obj.line) {
-        addCYBubble(responders[i], '〔回言〕' + escHtml(obj.line), false, true);
-        if (obj.newStance && CY._ty2.stances[responders[i]]) {
-          CY._ty2.stances[responders[i]].current = obj.newStance;
-        }
-        _cy_jishiAdd('tinyi', CY._ty2.topic, responders[i], obj.line, { round: CY._ty2.roundNum });
-      }
-    } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
-  }
+  // 智能选人回应(点名 > 代词指上一发言者 > 相关者)·走共享 _cyInterjectRespond·非随机挑人
+  try {
+    await _cyInterjectRespond(playerText, {
+      kind: 'tinyi', topic: CY._ty2.topic,
+      attendees: CY._ty2.attendees, stances: CY._ty2.stances,
+      lastSpeaker: CY._ty2._lastSpeaker, round: CY._ty2.roundNum
+    });
+  } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
   _ty2_render();
 }
 
@@ -823,6 +840,15 @@ async function _ty2_startDebate() {
 
   var prevSpeeches = [];
   for (var i = 0; i < speakers.length; i++) {
+    if (CY._abortChaoyi) { CY._abortChaoyi = false; break; }
+    // 玩家中途插言·辩论阶段也可插话(治"只有第一阶段能插")
+    if (CY._pendingPlayerLine) {
+      var _pl = CY._pendingPlayerLine; CY._pendingPlayerLine = null;
+      addCYBubble('皇帝', _pl, false);
+      _cy_jishiAdd('tinyi', CY._ty2.topic, '皇帝', _pl, { round: CY._ty2.roundNum, playerInterject: true });
+      if (Array.isArray(CY._ty2._playerInterjects)) CY._ty2._playerInterjects.push({ round: CY._ty2.roundNum, text: _pl });
+      try { await _ty2_playerTriggeredResponse(_pl); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
+    }
     var r = await _ty2_genOneSpeech(speakers[i], CY._ty2.roundNum, prevSpeeches);
     if (r) prevSpeeches.push({ name: speakers[i], stance: r.stance, line: r.line });
   }
@@ -856,6 +882,14 @@ async function _ty2_judgeStanceShifts(speechesThisRound) {
     if (ch) prompt += ' 性:' + (ch.personality||'').slice(0,12) + ' 党:' + (ch.party||'无');
     prompt += '\n';
   });
+  try {
+    var _sjMeta = (typeof _ty3_currentTinyiMeta === 'function') ? _ty3_currentTinyiMeta() : null;
+    if (_sjMeta && (_sjMeta.sourceParty || (Array.isArray(_sjMeta.opposingParties) && _sjMeta.opposingParties.length))) {
+      prompt += '\n党争格局：' + (_sjMeta.sourceParty ? '倡议方=' + _sjMeta.sourceParty : '')
+        + (Array.isArray(_sjMeta.opposingParties) && _sjMeta.opposingParties.length ? '·反对方=' + _sjMeta.opposingParties.join('、') : '')
+        + '（同党难倒戈·敌党难转圜·倒戈须有过硬事由）\n';
+    }
+  } catch (_sjME) {}
   prompt += '\n根据本轮发言的说服力、人物性格（顽固者难变；趋附者易变；deceitful 随风倒）、党派、利害，判断哪些人本轮立场发生变化。\n';
   prompt += '只返回确实变化的。返回 JSON：[{"name":"","newStance":"","confidenceDelta":-20到+20,"reason":"简述"}]';
   try {
@@ -894,6 +928,20 @@ async function _ty2_offerMediation() {
   var prompt = '你扮演' + mediator + '，廷议议题：' + CY._ty2.topic + '\n';
   prompt += '当前立场分布：\n';
   Object.keys(CY._ty2.stances).forEach(function(n){ prompt += '  ' + n + '：' + CY._ty2.stances[n].current + '\n'; });
+  try {
+    var _mdMeta = (typeof _ty3_currentTinyiMeta === 'function') ? _ty3_currentTinyiMeta() : null;
+    if (_mdMeta) {
+      var _mdBits = [];
+      if (_mdMeta.sourceParty) _mdBits.push('倡议方：' + _mdMeta.sourceParty);
+      if (Array.isArray(_mdMeta.opposingParties) && _mdMeta.opposingParties.length) _mdBits.push('反对方：' + _mdMeta.opposingParties.join('、'));
+      var _mdCls = _mdMeta.sourceClass || _mdMeta.className;
+      if (_mdCls) {
+        var _mdClsObj = (typeof GM !== 'undefined' && Array.isArray(GM.classes)) ? GM.classes.find(function(c){ return c && c.name === _mdCls; }) : null;
+        _mdBits.push('所涉民情：' + _mdCls + (_mdClsObj ? '(满意' + Math.round(Number(_mdClsObj.satisfaction) || 50) + ')' : '') + (_mdMeta.demandText ? '·所求' + String(_mdMeta.demandText).slice(0, 40) : ''));
+      }
+      if (_mdBits.length) prompt += '局中利害：' + _mdBits.join('；') + '\n';
+    }
+  } catch (_mdME) {}
   prompt += '请提出一个折中方案（文言/半文言）——兼顾各方、可操作。' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n返回纯文本。';
   try {
     var raw = await callAI(prompt, (typeof _aiDialogueTok==='function'?_aiDialogueTok("cy", 1):500), null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 廷议走次 API
@@ -909,6 +957,9 @@ function _ty2_enterDecide() {
   var footer = _$('cy-footer');
   var counts = _ty2_countStances();
   var line = '裁决——当前：支持 ' + counts.support + ' / 反对 ' + counts.oppose + ' / 中立 ' + counts.neutral + (counts.mediate?' / 折中 '+counts.mediate:'');
+  if (counts.supportW !== counts.support || counts.opposeW !== counts.oppose) {
+    line += '｜衡以党势名望：支持 ' + counts.supportW + ' · 反对 ' + counts.opposeW;
+  }
   var html = '<div style="text-align:center;font-size:0.72rem;color:var(--gold-400);margin-bottom:6px;">' + line + '</div>';
   html += '<div style="display:flex;gap:var(--space-1);justify-content:center;flex-wrap:wrap;">';
   html += '<button class="bt bp bsm" onclick="_ty2_decide(\'majority\')">从众议</button>';
@@ -929,15 +980,39 @@ async function _ty2_playerInterjectMidDecide() {
   _ty2_enterDecide();
 }
 
+// 票权：人头为体·党势名望为衡（阶层党派⇄廷议关联·2026-07-03）——
+// 此前党派影响力只决定谁上场·完全不进计票=「影响力无票面后果」死账。
+// 有界 [0.6,1.6]：普通朝臣≈1·巨党魁首至多顶 1.6 人·不至一党堵死朝议。
+function _ty2_stanceWeight(name) {
+  var w = 1;
+  try {
+    var ch = findCharByName(name);
+    if (ch) {
+      w += Math.max(-0.2, Math.min(0.2, ((Number(ch.prestige) || 50) - 50) / 200));
+      var pn = ch.party;
+      if (pn && typeof GM !== 'undefined' && Array.isArray(GM.parties)) {
+        var po = GM.parties.find(function(p){ return p && p.name === pn; });
+        if (po) w += Math.max(-0.3, Math.min(0.3, ((Number(po.influence) || 50) - 50) / 150));
+        var ps = GM.partyState && GM.partyState[pn];
+        if (ps && typeof ps.reputationBalance === 'number' && ps.reputationBalance) w += Math.max(-0.1, Math.min(0.1, ps.reputationBalance / 400));
+      }
+    }
+  } catch (_swE) {}
+  return Math.max(0.6, Math.min(1.6, w));
+}
+
 function _ty2_countStances() {
-  var c = { support: 0, oppose: 0, neutral: 0, mediate: 0 };
+  var c = { support: 0, oppose: 0, neutral: 0, mediate: 0, supportW: 0, opposeW: 0 };
   Object.keys(CY._ty2.stances).forEach(function(n) {
     var s = CY._ty2.stances[n].current;
-    if (s==='极力支持'||s==='支持'||s==='倾向支持') c.support++;
-    else if (s==='极力反对'||s==='反对'||s==='倾向反对') c.oppose++;
+    var w = _ty2_stanceWeight(n);
+    if (s==='极力支持'||s==='支持'||s==='倾向支持') { c.support++; c.supportW += w; }
+    else if (s==='极力反对'||s==='反对'||s==='倾向反对') { c.oppose++; c.opposeW += w; }
     else if (s==='折中') c.mediate++;
     else c.neutral++;
   });
+  c.supportW = Math.round(c.supportW * 10) / 10;
+  c.opposeW = Math.round(c.opposeW * 10) / 10;
   return c;
 }
 
@@ -990,15 +1065,18 @@ async function _ty2_decide(mode) {
   var decision = { mode: mode, counts: counts };
   var actualDirection = '';
 
+  // 众议方向按加权票（人头为体·党势为衡）·无权重字段时回退人头
+  var _wSup = (typeof counts.supportW === 'number') ? counts.supportW : counts.support;
+  var _wOpp = (typeof counts.opposeW === 'number') ? counts.opposeW : counts.oppose;
   if (mode === 'majority') {
-    if (counts.support > counts.oppose) actualDirection = '允行';
-    else if (counts.oppose > counts.support) actualDirection = '否决';
+    if (_wSup > _wOpp) actualDirection = '允行';
+    else if (_wOpp > _wSup) actualDirection = '否决';
     else actualDirection = '折中观望';
     decision.direction = actualDirection;
     decision.followedMajority = true;
     addCYBubble('皇帝', '朕从公议：' + actualDirection + '。', false);
   } else if (mode === 'override') {
-    var majDir = counts.support > counts.oppose ? '允行' : '否决';
+    var majDir = _wSup > _wOpp ? '允行' : '否决';
     actualDirection = majDir === '允行' ? '否决' : '允行';
     decision.direction = actualDirection;
     decision.followedMajority = false;
@@ -1096,7 +1174,7 @@ async function _ty2_decide(mode) {
       topicType: CY._ty2.topicType,
       followedMajority: decision.followedMajority !== false,
       stanceCounts: counts,
-      minorityDissent: mode === 'override' ? _ty2_groupByStance()[counts.support > counts.oppose ? 'oppose' : 'support'].map(function(g){return g.name;}) : []
+      minorityDissent: mode === 'override' ? _ty2_groupByStance()[_wSup > _wOpp ? 'oppose' : 'support'].map(function(g){return g.name;}) : []
     });
   }
 
@@ -1127,7 +1205,10 @@ async function _ty2_decide(mode) {
     }
   } catch (_chrE) { try { window.TM && TM.errors && TM.errors.captureSilent(_chrE, 'v2-tinyi-chronicle'); } catch (_) {} }
 
-  // Patch 2·ClassEngine 集成·class 层传播 (v3 phase6_recordSeal L2818 同等调用)
+  // Patch 2·ClassEngine 集成·class 层传播 (v3 phase6_recordSeal 同等调用)
+  // 双写收口（2026-07-03）：v3 编排时（CY._ty3 在）用印阶段会带真实 sourceParty/opposingParties/钦定档位
+  // 调同一函数——此处再调=同一裁决对阶层账双写·且 proposer 取 attendees[0] 瞎猜常记错党。
+  // 改为挂起：v3 用印落账后销单；玩家跳过用印径直退朝则 _ty2_finalEnd 兜底补落（宁可粗账不可漏账）。
   try {
     if (typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.applyPartyOutcomeToClasses === 'function' && mode !== 'defer') {
       // v2 没有 proposerParty 字段·从 attendees 第 1 个推断·或留 null
@@ -1136,14 +1217,20 @@ async function _ty2_decide(mode) {
       var _v2ProposerParty = _v2ProposerCh ? (_v2ProposerCh.party || '') : '';
       var _v2OutcomeMap = { 'majority':'fulfilled', 'override':'contested', 'mediation':'partial', 'defer':'pending' };
       var _v2Outcome = _v2OutcomeMap[mode] || 'partial';
-      TM.ClassEngine.applyPartyOutcomeToClasses(GM, {
+      var _v2Payload = {
         sealStatus: actualDirection,
         outcome: _v2Outcome,
         grade: mode === 'majority' ? 'B' : (mode === 'override' ? 'D' : 'C'),  // v2 无 archon grade·按 mode 推
         sourceParty: _v2ProposerParty,
         opposingParties: [],
         blockerParty: ''
-      }, { turn: GM.turn || 0, source: 'tinyi2-decide' });
+      };
+      if (CY._ty3) {
+        CY._ty3._classOutcomePending = { payload: _v2Payload, turn: GM.turn || 0 };
+        CY._ty3._classOutcomeApplied = false;
+      } else {
+        TM.ClassEngine.applyPartyOutcomeToClasses(GM, _v2Payload, { turn: GM.turn || 0, source: 'tinyi2-decide' });
+      }
     }
   } catch (_clsE) { try { window.TM && TM.errors && TM.errors.captureSilent(_clsE, 'v2-tinyi-classengine'); } catch (_) {} }
 
@@ -1215,6 +1302,15 @@ async function _ty2_afterOverride(groups, direction) {
 }
 
 function _ty2_finalEnd() {
+  // 双写收口兜底：v3 编排但玩家跳过用印径直退朝→裁决的阶层落账被挂起未销·此处补落（粗账好过漏账）
+  try {
+    var _pend = CY._ty3 && CY._ty3._classOutcomePending;
+    if (_pend && _pend.payload && !CY._ty3._classOutcomeApplied
+        && typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.applyPartyOutcomeToClasses === 'function') {
+      TM.ClassEngine.applyPartyOutcomeToClasses(GM, _pend.payload, { turn: _pend.turn, source: 'tinyi2-final-fallback' });
+    }
+    if (CY._ty3) { CY._ty3._classOutcomePending = null; CY._ty3._classOutcomeApplied = false; }
+  } catch (_feE) {}
   CY._ty2 = null;
   if (typeof closeChaoyi === 'function') closeChaoyi();
 }

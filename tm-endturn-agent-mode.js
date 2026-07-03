@@ -174,7 +174,7 @@
     var sys = '你是史识判官。判断君上本回合举措是否「非常规」——突破常规施政惯例、创造性、或历史上罕见之举(相对寻常的任免/赏罚/常规诏令而言)。只返回 JSON。';
     var u = '【君上本回合举措】\n' + acts.map(function (a) { return '· ' + a; }).join('\n') + '\n\n返回 JSON:{"unusual":true/false,"aspect":"非常规之处(≤30字·寻常则空)","precedentQuery":"可深查的史例检索词(≤20字·如『权臣夺兵权』『迁都』『裁撤冗官』)"}·寻常举措 unusual:false。';
     var raw;
-    try { raw = await root.callAIMessages([{ role: 'system', content: sys }, { role: 'user', content: u }], 600, null, 'primary', { priority: 'normal', timeoutMs: 30000, maxRetries: 1, id: 'agent_anomaly_scan' }); }
+    try { raw = await root.callAIMessages([{ role: 'system', content: sys }, { role: 'user', content: u }], 600, null, 'secondary', { priority: 'normal', timeoutMs: 30000, maxRetries: 1, id: 'agent_anomaly_scan' }); }   /* T2(审计②) · 二分类=机械活下 secondary(未配自动回落 primary) */
     catch (e) { return null; }
     var p = _safeJSON(raw);
     if (!p || !p.unusual) return null;
@@ -487,7 +487,7 @@
     var raw;
     try {
       _show('⟨执政⟩单发裁断·落地诏令…', 70);
-      raw = await root.callAIMessages([{ role: 'system', content: sys }, { role: 'user', content: user }], 2800, null, 'primary');
+      raw = await root.callAIMessages([{ role: 'system', content: sys }, { role: 'user', content: user }], 2800, null, 'secondary');   /* T2(审计②) · 动作清单抽取=机械活下 secondary(未配自动回落 primary) */
     } catch (e) { try { console.warn('[agent-mode] 动作脚手架调用失败', e); } catch (_) {} return 0; }
     var parsed = _safeJSON(raw);
     var acts = (parsed && Array.isArray(parsed.actions)) ? parsed.actions : [];
@@ -704,13 +704,26 @@
     if (v && typeof v === 'object' && typeof v.balance === 'number') return !isFinite(v.balance); // 对象形:查 .balance
     return false;                                                                    // 其它(对象无 balance/缺失)→ 保守不判坏
   }
-  function _selfCheck(gm) {
+  // 刀E2(2026-07-02·对照 CC 收尾保护) · 自检语义加深:原版只查结构合法(turn数字/数组形/报告非空)——
+  //   「结构合法但语义损坏」的脏回合(名册坏条目/NaN 扩散/玩家被误删/回合数漂移)可蒙混提交。
+  //   opts 可选(旧单参调用全兼容):expectTurn=engine-first 后应有的回合数·hadPlayer=快照时是否有玩家角色。
+  function _selfCheck(gm, opts) {
+    opts = opts || {};
     var problems = [];
     if (!gm) return { ok: false, problems: ['无存档'] };
     if (typeof gm.turn !== 'number' || !isFinite(gm.turn)) problems.push('turn 非法');
+    if (typeof opts.expectTurn === 'number' && gm.turn !== opts.expectTurn) problems.push('turn 漂移(应 ' + opts.expectTurn + ' 实 ' + gm.turn + ')');
     ['guoku', 'neitang'].forEach(function (k) { if (gm[k] != null && _numFieldBad(gm[k])) problems.push(k + ' 数值异常'); });
     ['chars', 'facs'].forEach(function (k) { if (gm[k] != null && !Array.isArray(gm[k])) problems.push(k + ' 被毁(非数组)'); });
+    if (Array.isArray(gm.chars) && gm.chars.some(function (c) { return !c || typeof c.name !== 'string' || !c.name; })) problems.push('chars 含坏条目(null/缺name)');
+    if (Array.isArray(gm.facs) && gm.facs.some(function (f) { return !f || typeof f.name !== 'string' || !f.name; })) problems.push('facs 含坏条目');
+    if (opts.hadPlayer === true && Array.isArray(gm.chars) && !gm.chars.some(function (c) { return c && c.isPlayer; })) problems.push('玩家角色消失(快照有·收尾无)');
+    try { var _vs = gm.vars || {}; Object.keys(_vs).some(function (k) { var v = _vs[k]; if (v && typeof v.value === 'number' && !isFinite(v.value)) { problems.push('vars.' + k + ' NaN'); return true; } return false; }); } catch (_e1) {}
+    try { (Array.isArray(gm.classes) ? gm.classes : []).some(function (cl) { if (cl && typeof cl.satisfaction === 'number' && !isFinite(cl.satisfaction)) { problems.push('阶层满意度 NaN(' + (cl.name || '?') + ')'); return true; } return false; }); } catch (_e2) {}
+    try { if (gm.huangwei && typeof gm.huangwei.index === 'number' && !isFinite(gm.huangwei.index)) problems.push('皇威 NaN'); } catch (_e3) {}
+    try { var _pss = gm.provinceStats || {}; Object.keys(_pss).some(function (pk) { var pv = _pss[pk]; if (pv && ((typeof pv.unrest === 'number' && !isFinite(pv.unrest)) || (typeof pv.wealth === 'number' && !isFinite(pv.wealth)))) { problems.push('省况 NaN(' + pk + ')'); return true; } return false; }); } catch (_e4) {}
     if (!Array.isArray(gm._turnReport) || gm._turnReport.length === 0) problems.push('_turnReport 空(无产出)');
+    else if (gm._turnReport.some(function (e) { return !e || typeof e !== 'object'; })) problems.push('_turnReport 含坏条目');
     return { ok: problems.length === 0, problems: problems };
   }
 
@@ -731,6 +744,7 @@
     var _extSnap = _snapshotExternals();   // S8·结算前一并快照 GM 外的 module 单例(账本/耦合基线)·供回滚补全
     var engineRan = false;
     var engineDims = {};
+    var _turnAfterEngine = null;   // 刀E2 · engine-first 后的实测回合数(而非假设引擎必turn++·stub/异种引擎语义都稳)
     // 回落兜底:engineRan 时先回滚再回落(让 mode a 在干净态重跑)
     function bail(reason) { if (engineRan && snapshot) _rollback(gm, snapshot, ctx, _extSnap); return { ok: false, fallback: true, reason: reason }; }
 
@@ -743,6 +757,7 @@
         engineDims = _engineDiffDims(snapshot, gm);
         if (ctx && ctx.input) ctx.input._systemsRan = true;  // 让后续 systems 步幂等跳过引擎 tick(防双跑)
         engineRan = true;
+        _turnAfterEngine = gm.turn;   // 刀E2 · 记实测:engine-first 之后任何人(agent写工具/深化)不得再动 gm.turn(收尾自检契约)
       } catch (engErr) {
         // 引擎在 await 中抛错:engineRan 尚未置 true·但引擎可能已部分 mutate(turn++ + 账本/耦合单例累加)→显式回滚(含单例)
         if (snapshot) _rollback(gm, snapshot, ctx, _extSnap);
@@ -778,9 +793,44 @@
     var _anomalyN = '';
     try { if (_agentAnomalyOn(P)) { var _anRes = await _anomalyScan(ctx, gm); if (_anRes) { _anomalyN = _anomalyNudge(_anRes); gm._agentAnomaly = _anRes; } } } catch (_anE) {}
     var _timeCtx = _timeContext(gm, resolutionTurn);   // 本回合时间(纪元年月+历时+时间相关后果指引)·显要处·让 agent 推演不脱离时间
-    var baseTranscript = _buildSystemPrompt() + (_biasInject ? '\n' + _biasInject : '') + (_timeCtx ? '\n' + _timeCtx : '') + '\n\n' + (gm._turnPlayerOps ? gm._turnPlayerOps + '\n\n' : '') + (_anomalyN ? _anomalyN + '\n\n' : '') + (_memDossier ? _memDossier + '\n\n' : '') + (_edictDossier ? _edictDossier + '\n\n' : '') + basis; // 常量基线(系统词+偏差校正+本回合时间+玩家操作+冷门深查+跨回合记忆+在办诏令+依据)·不随轮数膨胀
-    var state = { finalized: false, summary: '', narrative: '', writeAttempts: 0, writeOk: 0, rounds: 0, depthTools: {}, depthFailed: [], finalizeRejects: 0, engineDims: engineDims };
+    // 基线组装抽成可重拼的份件——T1 预算护栏按份裁剪后重拼(常量基线:系统词+偏差校正+本回合时间+玩家操作+冷门深查+跨回合记忆+在办诏令+依据·不随轮数膨胀)
+    var _bParts = { sys: _buildSystemPrompt(), bias: _biasInject, time: _timeCtx, ops: gm._turnPlayerOps || '', anomaly: _anomalyN, mem: _memDossier, edicts: _edictDossier, basis: basis };
+    function _assembleBase() {
+      return _bParts.sys + (_bParts.bias ? '\n' + _bParts.bias : '') + (_bParts.time ? '\n' + _bParts.time : '') + '\n\n' + (_bParts.ops ? _bParts.ops + '\n\n' : '') + (_bParts.anomaly ? _bParts.anomaly + '\n\n' : '') + (_bParts.mem ? _bParts.mem + '\n\n' : '') + (_bParts.edicts ? _bParts.edicts + '\n\n' : '') + _bParts.basis;
+    }
+    var baseTranscript = _assembleBase();
+    var state = { finalized: false, summary: '', narrative: '', writeAttempts: 0, writeOk: 0, rounds: 0, depthTools: {}, depthFailed: [], finalizeRejects: 0, engineDims: engineDims, t0: Date.now() };
+    gm._agentJsonReasks = 0;   // T4/T6 · 本回合 JSON 重问计数(深化工具累加·meta 收口)
+    // T1(审计①·Codex/CC 上下文预算对照) · 基线预算护栏:basis(全量依据)+记忆卷宗(~15K字)此前零核算·
+    //   大存档+小窗口模型静默超窗(服务端截尾→产出劣化/失败)。按 getPromptBudget 收敛:超预算先砍
+    //   记忆卷宗尾·再砍 basis 尾(头部保留·系统词/玩家操作/时间是推演命门不动)·细节 agent 可用读工具按需查回。
+    try {
+      if (typeof estimateTokens === 'function' && typeof getPromptBudget === 'function') {
+        var _bgT = getPromptBudget();
+        var _capT = Math.floor(_bgT.budget * 0.9);   // 基线只许占 90%·余量留轮日志+催办+工具schema
+        var _est0 = estimateTokens(baseTranscript);
+        if (_est0 > _capT) {
+          var _mark = '\n…（超上下文预算已截·后续细节可用读工具按需查）';
+          var _cuts = [
+            function () { if (_bParts.mem.length > 2400) _bParts.mem = _bParts.mem.slice(0, Math.floor(_bParts.mem.length / 2)) + _mark; },
+            function () { if (_bParts.basis.length > 6000) _bParts.basis = _bParts.basis.slice(0, Math.floor(_bParts.basis.length * 0.7)) + _mark; },
+            function () { if (_bParts.mem.length > 1400) _bParts.mem = _bParts.mem.slice(0, 1200) + _mark; },
+            function () { if (_bParts.basis.length > 4000) _bParts.basis = _bParts.basis.slice(0, Math.floor(_bParts.basis.length * 0.7)) + _mark; }
+          ];
+          for (var _ci = 0; _ci < _cuts.length; _ci++) {
+            _cuts[_ci]();
+            baseTranscript = _assembleBase();
+            if (estimateTokens(baseTranscript) <= _capT) break;
+          }
+          var _est1 = estimateTokens(baseTranscript);
+          state.promptTrim = { from: _est0, to: _est1, budget: _bgT.budget, contextK: _bgT.contextK };
+          try { console.warn('[agent-mode] T1 基线超预算已收敛:' + _est0 + '→' + _est1 + ' tok(预算 ' + _capT + '·窗口 ' + _bgT.contextK + 'K)'); } catch (_) {}
+        }
+      }
+    } catch (_bgE) { try { console.warn('[agent-mode] T1 预算护栏异常(不阻断)', _bgE); } catch (_) {} }
     var _stall = 0;  // 连续"只察看不动手"轮数·防空转(真机逮弱模型重复 get_overview 原地打转)
+    var _mtBase = (P.conf && P.conf.agentModeMaxTok) || 2400;  // 刀H2 · 输出上限基数
+    var _tokBump = 0;  // 刀H2 · 输出截断自愈:被腰斩且没调成工具 → 上限×2重试本轮(≤2次·封顶9600)
     var roundLog = [];  // 上下文瘦身:滚动存每轮工具结果·call 时只带最近 2 轮全文 + 更早轮 1 行摘要(token 不随轮数膨胀)
     var _kRecent = (P.conf && P.conf.agentTranscriptRecentRounds) || 2;  // 带全文的近轮数(可配)
 
@@ -811,7 +861,7 @@
         var resp;
         try {
           resp = await cawt(callTranscript, tools, {
-            maxTok: (P.conf && P.conf.agentModeMaxTok) || 2400,
+            maxTok: Math.min(9600, _mtBase * Math.pow(2, _tokBump)),   // 刀H2 · 截断后已提升的上限
             tier: 'primary', priority: 'normal', timeoutMs: 180000, maxRetries: 1, id: 'agent_turn:r' + round
           });
         } catch (e) {
@@ -819,6 +869,13 @@
           break;
         }
         if (!resp) { if (round === 1) return bail('agent 无响应(首轮)·回落 LLM'); break; }
+        // 刀H2(CC max_tokens 动态调整对照) · 输出截断自愈:被输出上限腰斩且没调成任何工具 → 上限×2
+        //   重试本轮(≤2次·infra 纯增量 truncated 字段)·置于 narrative 赋值前(截断的叙事不污染产出)
+        if (resp.truncated && !(Array.isArray(resp.toolCalls) && resp.toolCalls.length) && _tokBump < 2) {
+          _tokBump++;
+          try { console.warn('[agent-mode] 第' + round + '轮输出被截断·提升输出上限至 ' + Math.min(9600, _mtBase * Math.pow(2, _tokBump)) + ' 重试'); } catch (_) {}
+          round--; continue;
+        }
         if (resp.text && !state.narrative) state.narrative = resp.text;
         var calls = Array.isArray(resp.toolCalls) ? resp.toolCalls.slice(0, perRoundCap) : [];
         if (!calls.length) break;
@@ -841,6 +898,10 @@
       }
     } catch (loopErr) {
       if (state.writeOk === 0 && Object.keys(state.depthTools || {}).length === 0) return bail('agent 循环异常且无实质落地·回落 LLM:' + (loopErr && loopErr.message));
+      // 刀E1(2026-07-02) · 已有实质落地→继续降级完成(auto-suite 补齐+收尾自检把关提交)·但异常必须留痕——
+      //   此前静默吞掉·脏回合成因无从追查。留痕进 _agentTurnMeta.loopError 供诊断/UI。
+      state.loopError = String((loopErr && loopErr.message) || loopErr).slice(0, 200);
+      try { console.warn('[agent-mode] 循环中途异常·已降级续跑(收尾自检把关)', loopErr); } catch (_) {}
     }
 
     // ── 弱模型动作脚手架兜底(2026-06·着重加强弱模型)──
@@ -865,11 +926,11 @@
       var _DTac = TM.Endturn.AgentDepthTools;
       if (_DTac) {
         // 顺序:先记忆固化(状态盘供叙事)→ 各维度深析(势力/经济/军事/NPC/世界·覆盖脊柱)→ 最后史记(综合成文)
-        var _suite = ['recall_consolidate', 'deepen_factions', 'deepen_economy', 'deepen_military', 'deepen_npcs', 'deepen_relations', 'deepen_letters', 'deepen_court', 'deepen_world', 'deepen_narrative'];
+        var _suite = ['recall_consolidate', 'deepen_factions', 'deepen_economy', 'deepen_military', 'deepen_npcs', 'deepen_cognition', 'deepen_relations', 'deepen_letters', 'deepen_court', 'deepen_world', 'deepen_narrative'];   /* T3(审计⑤) · deepen_cognition 此前不在 suite 也不在循环工具→agent 模式永不触发·NPC 认知层每回合静默缺失 */
         // 自适应:地板工具(记忆/NPC/世界/史记/朝务)永远跑;维度专项(势力/经济/军事/关系/书信)仅本回合该维度真有活动才跑。agentAdaptiveDeepen=false 关回全跑。
         //   deepen_court(御案时政+求见)入地板——世界向案头汇聚的待决事务每回合都该演化(无则返回空·不强凑);deepen_letters 门控 relations(人际有动静才生书信)。
         var _floorDeepen = { recall_consolidate: 1, deepen_npcs: 1, deepen_world: 1, deepen_narrative: 1, deepen_court: 1 };
-        var _gateDim = { deepen_factions: 'faction', deepen_economy: 'fiscal', deepen_military: 'military', deepen_relations: 'relations', deepen_letters: 'relations' };
+        var _gateDim = { deepen_factions: 'faction', deepen_economy: 'fiscal', deepen_military: 'military', deepen_relations: 'relations', deepen_letters: 'relations', deepen_cognition: 'relations' };   /* T3 · 认知随人际动静演化(死维度不空转) */
         var _adaptiveDeepen = !(P.conf && P.conf.agentAdaptiveDeepen === false);
         var _activeD = _adaptiveDeepen ? _activeDims(gm, state) : null;
         state.deepenSkipped = [];
@@ -929,7 +990,12 @@
     }
 
     // ── S5 状态自检 → 过则提交·崩则回滚回落 LLM ──
-    var chk = _selfCheck(gm);
+    // 刀E2 · 传语义契约:engine-first 之后任何人不得再动 gm.turn(用引擎跑完的实测值·不假设引擎必turn++);
+    //   快照时有玩家角色则收尾必须还在
+    var chk = _selfCheck(gm, {
+      expectTurn: (engineRan && typeof _turnAfterEngine === 'number') ? _turnAfterEngine : null,
+      hadPlayer: snapshot ? (Array.isArray(snapshot.chars) && snapshot.chars.some(function (c) { return c && c.isPlayer; })) : null
+    });
     if (!chk.ok) {
       return bail('状态自检未过·回滚回落 LLM:' + chk.problems.join('；'));
     }
@@ -941,7 +1007,7 @@
     var gaps = _detectSpineGaps(gm, state);
     gm._agentSpineGaps = gaps;
     gm._agentResolutionTurn = resolutionTurn;
-    gm._agentTurnMeta = { rounds: state.rounds, writeOk: state.writeOk, writeAttempts: state.writeAttempts, finalized: state.finalized, autoClosed: !!state.autoClosed, scaffolded: !!state.scaffolded, scaffoldActions: state.scaffoldActions || 0, engineFirst: engineRan, resolutionTurn: resolutionTurn, spineGaps: gaps, turn: gm.turn || 0, finalizeRejects: state.finalizeRejects || 0, depthTools: state.depthTools || {}, deepenSkipped: state.deepenSkipped || [], deepenFailed: state.depthFailed || [], engineDims: state.engineDims || {}, depthOk: !!state.depthOk, depthIncomplete: state.depthIncomplete || null };
+    gm._agentTurnMeta = { rounds: state.rounds, writeOk: state.writeOk, writeAttempts: state.writeAttempts, finalized: state.finalized, autoClosed: !!state.autoClosed, scaffolded: !!state.scaffolded, scaffoldActions: state.scaffoldActions || 0, engineFirst: engineRan, resolutionTurn: resolutionTurn, spineGaps: gaps, turn: gm.turn || 0, finalizeRejects: state.finalizeRejects || 0, depthTools: state.depthTools || {}, deepenSkipped: state.deepenSkipped || [], deepenFailed: state.depthFailed || [], engineDims: state.engineDims || {}, depthOk: !!state.depthOk, depthIncomplete: state.depthIncomplete || null, loopError: state.loopError || null, promptTrim: state.promptTrim || null, jsonReasks: gm._agentJsonReasks || 0, durMs: state.t0 ? (Date.now() - state.t0) : null };   /* T6 · 观测补口:T1 收敛痕/T4 重问数/整回合耗时 */
     try { console.log('[agent-mode] 回合 ' + resolutionTurn + '→' + (gm.turn || 0) + ' 完成 · 引擎先=' + engineRan + ' · 轮' + state.rounds + ' · 落地' + state.writeOk + '/' + state.writeAttempts + ' · 脊柱缺口[' + gaps.join('、') + ']'); } catch (_) {}
 
     // ── D7 产出焊缝:把 agent 产出映射成史记弹窗渲染器(_endTurn_render)期望的富结构 ──

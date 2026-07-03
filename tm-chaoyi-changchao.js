@@ -1107,12 +1107,22 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
     try { raw = await callAI(p, tok, signal, 'secondary'); } catch (e) { return null; }
   }
 
-  // 解析 JSON
+  // 解析 JSON（截断/畸形→抢救已流式吐出的 line·避免"完整陈述塌缩成 mock 一句"·2026-07-03）
+  //   line 过长触 token 顶未闭合 JSON 时·流式已按 extractLineFromPartial 吐出完整发言·此处用同法抢救之。
+  function _salvageFromRaw() {
+    let ln = extractLineFromPartial(raw);
+    if (ln) ln = ln.replace(/[\s"]+$/, '').trim();   // 去截断尾部残引号/空白
+    if (!ln || ln.length < 6) return null;
+    const sm = raw.match(/"stance"\s*:\s*"(support|oppose|mediate|neutral)"/);
+    const salv = { stance: sm ? sm[1] : 'neutral', line: ln, _salvaged: true };
+    if (_modeTrace) salv._modeTrace = _modeTrace;
+    return salv;
+  }
   try {
     const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) return null;
+    if (!m) return _salvageFromRaw();
     const obj = JSON.parse(m[0]);
-    if (!obj || typeof obj.line !== 'string' || obj.line.length < 6) return null;
+    if (!obj || typeof obj.line !== 'string' || obj.line.length < 6) return _salvageFromRaw();
     const validStances = ['support', 'oppose', 'mediate', 'neutral'];
     const validModes   = ['lead', 'second', 'rebut', 'soften', 'pivot', 'augment'];
     const stance = validStances.indexOf(obj.stance) >= 0 ? obj.stance : 'neutral';
@@ -1129,8 +1139,8 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
     if (_modeTrace) result._modeTrace = _modeTrace;  // Slice 7·peer 可读已推之 mode
     return result;
   } catch (e) {
-    console.warn('[cc3·react] JSON 解析失败·原文:', raw && raw.slice(0, 200));
-    return null;
+    console.warn('[cc3·react] JSON 解析失败·抢救流式 line·原文:', raw && raw.slice(0, 200));
+    return _salvageFromRaw();
   }
 }
 
@@ -1174,8 +1184,13 @@ async function _cc3_streamReactBubble(npc, item, role) {
       } catch (_) {}
     }
   } else {
-    // mock 回退
-    if (textEl) textEl.textContent = npc.line || '臣随议·伏听圣裁。';
+    // AI 失败回退：若流式已吐出实质内容·保留已陈之言（勿用 mock 短句覆盖玩家已看到的完整陈述）·仅无实质流式时才用 mock
+    const _streamed = textEl ? String(textEl.textContent || '').trim() : '';
+    if (!_streamed || _streamed === '…' || _streamed.length < 6) {
+      if (textEl) textEl.textContent = npc.line || '臣随议·伏听圣裁。';
+    } else {
+      npc.line = _streamed;   // 保留流式内容并同步 npc.line·下游引用一致
+    }
   }
   if (main) main.scrollTop = main.scrollHeight;
 }
@@ -1606,9 +1621,10 @@ async function npcRespondToPlayer(playerText, count) {
       }
     });
   }
-  if ((intent === 'mediate' || intent === 'doubt') && CHARS['韩爌'] && !seen.has('韩爌')) {
-    // 折中疑虑·首辅出来调和
-    candidates.unshift('韩爌'); seen.add('韩爌');
+  if (intent === 'mediate' || intent === 'doubt') {
+    // 折中疑虑·首辅/资深重臣出来调和(取当前局在朝重臣·不写死天启韩爌)
+    var _med = _cc3_seniorOfficial('');
+    if (_med && !seen.has(_med)) { candidates.unshift(_med); seen.add(_med); }
   }
 
   // 3) 主奏者
@@ -1628,8 +1644,8 @@ async function npcRespondToPlayer(playerText, count) {
     }
   });
 
-  // 5) 闲人兜底
-  ['韩爌', '王永光', '黄宗周', '倪元璐'].forEach(n => {
+  // 5) 闲人兜底·从当前局在朝者补(不写死天启韩爌/王永光/黄宗周等·别的剧本改补本朝人)
+  _cc3_ambientNames(4).forEach(n => {
     if (CHARS[n] && !CHARS[n].absent && !seen.has(n)) {
       candidates.push(n); seen.add(n);
     }
@@ -2159,7 +2175,7 @@ const _CC3_PHRASE_POOLS = {
     requireWords: ['臣'],   // 不再强制"陛下"·君上称谓依【称谓感知】本朝语境(宋→官家)
     requireEither: ['窃以为', '有一议', '谨议', '愚以为'],
     requireClose: ['圣裁', '察焉', '奏闻', '俯纳'],
-    example: '陛下·臣窃以为辽东之危·非一日之积。若不即拨饷增兵·恐有崩溃之患。伏乞圣裁。',
+    example: '陛下·臣窃以为边镇之危·非一日之积。若不即拨饷增兵·恐有崩溃之患。伏乞圣裁。',
     selfCheck: ['是否含"臣"+本朝君上称谓(依称谓感知·如宋作官家·勿硬套陛下)', '是否以"窃以为/有一议/谨议"之类开题', '是否给出 1 条具体理由 (非空泛)', '结句是否含"圣裁/察焉/奏闻"'],
   },
   second: {
@@ -2220,11 +2236,11 @@ const _CC3_PHRASE_POOLS = {
     ],
     // 5 example 分发
     example: [
-      '此议尚有一端未及·御营兵粮可支几日尚未勘明。请陛下命兵部户部详议·俟有定论·再呈陛下。',
-      '案此·尚有一节未明·辽东三镇近月催饷三次·宜专责户部勘报·再议。',
-      '事关九边·或可交兵部 + 户部会议·勘明各镇粮草余存·再定优先次序。伏乞陛下命有司详议。',
+      '此议尚有一端未及·禁旅兵粮可支几日尚未勘明。请陛下命兵部户部详议·俟有定论·再呈陛下。',
+      '案此·尚有一节未明·某镇近月催饷三次·宜专责户部勘报·再议。',
+      '事关诸边·或可交兵部 + 户部会议·勘明各镇粮草余存·再定优先次序。伏乞陛下命有司详议。',
       '臣愚以为·此议宜分两节·先勘明各部欠饷数·再议如何补给。伏祈陛下察议。',
-      '前议甚详·然有一节·宜专责锦衣卫先按察江南漕运实情·再议海运是否可行。俟有定论·再呈陛下。'
+      '前议甚详·然有一节·宜专责有司先按察漕运实情·再议海运是否可行。俟有定论·再呈陛下。'
     ],
     selfCheck: [
       '是否含 "尚有 / 未及 / 另有 / 专议 / 专责" 提新侧面',
@@ -2266,11 +2282,11 @@ const _CC3_PHRASE_POOLS = {
     ],
     // 5 example 按 topic 分发·避全 LLM 学同 1 个
     example: [
-      '臣窃见·辽东兵粮可支三月·然山海关粮仓近罄·若延误半月·军心必乱。臣略陈此一议。伏惟陛下察焉。',
-      '前议甚详·然臣仍有一议·袁崇焕本月内三次催饷·若不应·恐将士寒心。伏惟陛下察焉。',
-      '诸公论已尽·臣略陈一隅·北京城内米价已涨三倍·宫廷开支若不收缩·恐生民变。伏惟陛下察焉。',
-      '案此事·尚有一隅未及·言官张瑞图近日所上「诛戮魏珰」疏·与本议有关·宜并审之。伏祈陛下俯察。',
-      '臣略备一议·与诸公参·东南漕运近来缺船·若海运不通·三月内江南粮不能至京。伏请陛下圣裁。'
+      '臣窃见·边镇兵粮可支三月·然要塞粮仓近罄·若延误半月·军心必乱。臣略陈此一议。伏惟陛下察焉。',
+      '前议甚详·然臣仍有一议·某镇守将本月内三次催饷·若不应·恐将士寒心。伏惟陛下察焉。',
+      '诸公论已尽·臣略陈一隅·京师米价已涨三倍·用度若不收缩·恐生民变。伏惟陛下察焉。',
+      '案此事·尚有一隅未及·某言官近日所上劾权幸一疏·与本议有关·宜并审之。伏祈陛下俯察。',
+      '臣略备一议·与诸公参·漕运近来缺船·若转输不通·三月内南粮不能至京。伏请陛下圣裁。'
     ],
     selfCheck: [
       '是否提供 1+ 具体名词 (兵 / 粮 / 钱 / 边镇名 / 人名 / 数字)·非纯虚词',
@@ -2304,11 +2320,11 @@ const _CC3_PHRASE_POOLS = {
     requireClose: ['察', '圣鉴', '裁断', '听臣此辩'],
     forbidden: ['空泛附议', '不指名', '我亦如是', '诸臣所议皆有理'],
     example: [
-      '许显纯方才言重狱有功·然臣按律考之·东厂三月狱中有 12 人无供而毙·此非"有功"·乃失驭。伏请陛下察。',
-      '袁公方才论应据守锦州·然臣观舆图·锦州孤悬·若无后军接应·恐重蹈萨尔浒之覆辙。伏惟圣鉴。',
-      '黄潜善公议主和·然臣观金主之意·非和也·乃缓我备战。绍兴元年金兵已三次南下·岂可再信。惟陛下裁断。',
-      '韩公方才言宜宽魏珰旧党·然魏当政时·东林死狱者凡 6 人·此仇未报·何谈宽宥。伏请陛下察。',
-      '李公此议虽出公心·然臣以为不可·辽东每月饷银 12 万·若再加调·京师月入仅 18 万·恐有断粮之危。敢请陛下听臣此辩。'
+      '某公方才言重狱有功·然臣按律考之·三月狱中有 12 人无供而毙·此非"有功"·乃失驭。伏请陛下察。',
+      '某公方才论宜据守孤城·然臣观舆图·此城孤悬·若无后军接应·恐重蹈前役覆辙。伏惟圣鉴。',
+      '某公议主和·然臣观敌意·非真和也·乃缓我备战。岁内强敌已三次南下·岂可再信。惟陛下裁断。',
+      '某公方才言宜宽权幸旧党·然彼当政时·横死诏狱者凡 6 人·此仇未报·何谈宽宥。伏请陛下察。',
+      '某公此议虽出公心·然臣以为不可·边镇每月饷银 12 万·若再加调·京师月入仅 18 万·恐有断粮之危。敢请陛下听臣此辩。'
     ],
     selfCheck: ['是否真点名对方', '是否含 1+ 具体论点反驳 (数 / 例 / 后果)', '是否避空泛附议', '是否非"我亦如是"套话']
   },
@@ -2334,9 +2350,9 @@ const _CC3_PHRASE_POOLS = {
     requireClose: ['鉴此', '取法', '追述', '为鉴'],
     forbidden: ['现代词汇', '无书名', '无出处', '空白引经'],
     example: [
-      '《尚书·洪范》云：唯辟作福·唯辟作威。陛下若委此权于厂臣·乃辟权下移·非治道也。伏祈陛下鉴此古训。',
-      '昔诸葛武侯出师·誓诛奸佞·正风纪。今魏珰之罪·甚于司马师·岂可不诛。愿陛下取法古人。',
-      '《孟子》尝言：民为贵·社稷次之·君为轻。今河南大旱·百姓菜色·若再加征赋·恐失民心。伏请陛下追述。',
+      '《尚书·洪范》云：唯辟作福·唯辟作威。陛下若委此权于近幸·乃辟权下移·非治道也。伏祈陛下鉴此古训。',
+      '昔诸葛武侯出师·誓诛奸佞·正风纪。今用事之权阉·蠹国已甚·其罪岂可不诛。愿陛下取法古人。',
+      '《孟子》尝言：民为贵·社稷次之·君为轻。今近畿大旱·百姓菜色·若再加征赋·恐失民心。伏请陛下追述。',
       '昔魏徵之于太宗·有言：兼听则明·偏信则暗。今独委权一党·有偏信之嫌。以古为鉴。',
       '《通鉴》载汉宣帝中兴·先举贤良·后行变法。今宜先选官·勿急于改制。伏祈陛下鉴此古训。'
     ],
@@ -2362,11 +2378,11 @@ const _CC3_PHRASE_POOLS = {
     requireClose: ['再拜', '察先师', '有他议', '听门生'],
     forbidden: ['直接反驳师', '"先师此议恐未尽" 之类否定', '立独议'],
     example: [
-      '先师赵南星论东林之党议·门生不敢异。今诛魏珰·先师所未及·然以先师风骨·必应主严办。门生再拜。',
-      '先师韩爌方才所陈钱粮事·门人但奉所授·略附数语·辽东兵饷今急·宜按先师议先调七万。惟陛下察先师之心。',
-      '先师宗泽北望中原·门生岂敢与异。今金人南下·必战不可和·门生奉师议。门人不敢有他议。',
-      '先师叶向高之论考成法·门生服膺·今宜复其旧·以察吏治。门生再拜。',
-      '门生既受先师李纲之教·岂敢违·主战之议·实先师旧训·门人附议而已。伏请陛下听门生此附。'
+      '先师某公尝论朋党之弊·门生不敢异。今所议·先师所未及·然以先师风骨·必应主严办。门生再拜。',
+      '先师方才所陈钱粮事·门人但奉所授·略附数语·边镇兵饷今急·宜按先师议先调其半。惟陛下察先师之心。',
+      '先师素以恢复为志·门生岂敢与异。今强敌压境·必战不可和·门生奉师议。门人不敢有他议。',
+      '先师之论考课之法·门生服膺·今宜复其旧·以察吏治。门生再拜。',
+      '门生既受先师之教·岂敢违·此议实先师旧训·门人附议而已。伏请陛下听门生此附。'
     ],
     selfCheck: ['是否含 mentor 名 (替换 {mentorName})', '是否含 "门生" 或 "门人"', '是否避直接反驳师', '结句是否含 "再拜" / "察先师" 之类']
   },
@@ -2392,11 +2408,11 @@ const _CC3_PHRASE_POOLS = {
     requireClose: ['吾往矣', '不惧斧钺', '取臣首', '万死'],
     forbidden: ['含糊', '迂回', '"伏惟陛下察焉" 等温和套话', '空骂无据'],
     example: [
-      '臣愿伏阙·陛下用魏阉乱政·必致天下倾覆。若不诛魏珰·则天下士心尽失·宁可碎首·不肯顺非·虽千万人吾往矣。',
-      '臣冒死直谏·陛下偏听阉党·已三月不见东林。臣此言出·必触陛下怒·然不言则负士林。宁可碎首·惟陛下取臣首。',
-      '臣以血书此疏·辽东之败·非将不效命·乃饷不及时·责在户部。陛下若再迟·边军必反·臣不惧斧钺·乞陛下察。',
-      '陛下若不听臣此谏·愿撞死阶下。今魏珰党羽布满六部·岂可再容。臣以此万死·乞陛下察。',
-      '臣闻直臣不避死·愿冒万死一谏。和议必失中原·绍兴之耻·遗千载之恨·虽千万人吾往矣。'
+      '臣愿伏阙·陛下委权近幸·必致天下倾覆。若不去此奸·则士心尽失·宁可碎首·不肯顺非·虽千万人吾往矣。',
+      '臣冒死直谏·陛下偏听私党·已三月不纳直言。臣此言出·必触陛下怒·然不言则负士林。宁可碎首·惟陛下取臣首。',
+      '臣以血书此疏·边镇之败·非将不效命·乃饷不及时·责在有司。陛下若再迟·边军必反·臣不惧斧钺·乞陛下察。',
+      '陛下若不听臣此谏·愿撞死阶下。今奸党羽翼布满诸曹·岂可再容。臣以此万死·乞陛下察。',
+      '臣闻直臣不避死·愿冒万死一谏。和议必失故土·此耻遗千载之恨·虽千万人吾往矣。'
     ],
     selfCheck: ['是否含死字 / 诛字 / 万死 / 斧钺', '是否直陈陛下错 (非含糊)', '是否避温和套话 (察焉 / 共商)', 'cooldown·1 议题 1 次 (Slice 6 RULES 强制)']
   }
@@ -3028,26 +3044,65 @@ function showAIConfigModal() {
 }
 
 function pickResponder(item, exclude) {
-  const debaters = (item.debate || []).map(d => d.name);
-  const candidates = ['韩爌', '黄宗周', '倪元璐', ...debaters];
-  return candidates.find(n => n !== exclude && CHARS[n] && !CHARS[n].absent) || '韩爌';
+  const debaters = (item.debate || []).map(d => d.name).filter(Boolean);
+  // 候选=本议辩者 + 当前局在朝百官·不写死天启人名(旧版兜底 '韩爌' 会串到别的剧本·玩家报"死字段")
+  const present = Object.keys(CHARS || {}).filter(n => CHARS[n] && !CHARS[n].absent);
+  const candidates = [...debaters, ...present];
+  return candidates.find(n => n !== exclude && CHARS[n] && !CHARS[n].absent)
+      || debaters.find(n => n !== exclude) || present[0] || debaters[0] || '';
+}
+
+// 取当前局在朝、非缺席、非玩家的角色名(氛围气泡/调停者发言用·保证串本剧本的人·不写死天启)
+function _cc3_ambientNames(n) {
+  var names = Object.keys(CHARS || {}).filter(function(k){ return CHARS[k] && !CHARS[k].absent && !CHARS[k].isPlayer; });
+  for (var i = names.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = names[i]; names[i] = names[j]; names[j] = t; }
+  return names.slice(0, n || 1);
+}
+// 取一位资深在朝重臣(充"首辅/调停/谏阻"发言)·优先阁/尚书/都御史衔者·无则任取在朝者·再无返 ''
+function _cc3_seniorOfficial(exclude) {
+  var names = Object.keys(CHARS || {}).filter(function(n){ return n !== exclude && CHARS[n] && !CHARS[n].absent && !CHARS[n].isPlayer; });
+  if (!names.length) return '';
+  var senior = names.filter(function(n){ var t = (CHARS[n] && (CHARS[n].title || CHARS[n].officialTitle)) || ''; return /首辅|次辅|大学士|阁|太师|太傅|少师|少傅|尚书|侍郎|都御史|总宪|正卿/.test(t); });
+  var pool = senior.length ? senior : names;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+// 资深重臣发一言·无在朝重臣则退成无名系统气泡(避免写死天启人名串场)
+function _cc3_officialBubble(stance, text, exclude) {
+  var nm = _cc3_seniorOfficial(exclude || '');
+  if (nm) addBubble({ name: nm, stance: stance, text: text });
+  else addBubble({ kind: 'system', text: '（有大臣出班：「' + text + '」）' });
 }
 
 // 朝堂氛围气泡·不影响逻辑·仅渲染殿中活力
-const AMBIENT_LINES = [
+// ★不写死人名(旧版硬编码天启满桂/黄宗周/韩爌/温体仁/毕自严·别的剧本串场·玩家报"死字段非常多")·
+//   带名句改用当前局在朝者(_cc3_ambientNames)填充·无在朝者则退无名通用句
+const AMBIENT_LINES = [   // 无人名·任何朝代/剧本通用
   '（殿中有低声议论。）',
-  '（黄宗周与王在晋目光交触。）',
-  '（满桂凝视前方 · 面无表情。）',
-  '（韩爌捻须 · 略有沉思。）',
   '（殿中有人微微叹息。）',
-  '（温体仁扶笏 · 目光低垂。）',
-  '（毕自严捏紧手中奏疏。）',
   '（科道几员低声相商。）',
-  '（远处似有内官传旨之声。）'
+  '（远处似有内官传旨之声。）',
+  '（殿角铜漏 · 滴答有声。）',
+  '（班列之间 · 目光交触。）',
+  '（有人扶笏 · 略有沉思。）'
+];
+const AMBIENT_TEMPLATES = [   // {n}/{n2} 由当前局在朝角色随机填充
+  '（{n}凝视前方 · 面无表情。）',
+  '（{n}捻须 · 略有沉思。）',
+  '（{n}扶笏 · 目光低垂。）',
+  '（{n}捏紧手中奏疏。）',
+  '（{n}微微颔首。）',
+  '（{n}与{n2}目光交触。）'
 ];
 function maybeAmbient(prob) {
   if (Math.random() > (prob == null ? 0.2 : prob)) return;
-  const line = AMBIENT_LINES[Math.floor(Math.random() * AMBIENT_LINES.length)];
+  var names = _cc3_ambientNames(2);
+  var line;
+  if (names.length && Math.random() < 0.5) {
+    var pool = names.length >= 2 ? AMBIENT_TEMPLATES : AMBIENT_TEMPLATES.filter(function(t){ return t.indexOf('{n2}') < 0; });
+    line = pool[Math.floor(Math.random() * pool.length)].replace('{n2}', names[1] || names[0]).replace('{n}', names[0]);
+  } else {
+    line = AMBIENT_LINES[Math.floor(Math.random() * AMBIENT_LINES.length)];
+  }
   addBubble({ kind: 'system', text: line });
 }
 
@@ -4709,7 +4764,7 @@ async function runActionReactions(action, item, extra) {
   if (action === 'escalate') {
     addBubble({ name: presenter, text: '陛下圣裁·此事确兹事体大·宜下廷议。' });
     await delay(380);
-    addBubble({ name: '韩爌', stance: 'mediate', text: '陛下圣明·下廷议方可服众。臣即拟召集名单。' });
+    _cc3_officialBubble('mediate', '陛下圣明·下廷议方可服众。臣即拟召集名单。', presenter);
     await delay(380);
     maybeAmbient(0.3);
     addBubble({ kind: 'system', text: '（议题转入廷议待议册·下次廷议菜单可见。）' });
@@ -4916,14 +4971,14 @@ async function runDecreeFlow(extra) {
     addBubble({ kind: 'system', text: '（百官有低声议论 · 终是奉旨。）' });
     addBubble({ kind: 'system', text: '（诏令奉行·派系记仇。loyalty 略降。）' });
   } else if (tier === 'C') {
-    addBubble({ name: '韩爌', stance: 'oppose', text: '陛下！此事关乎民心 · 臣等以为可议而行 · 不宜独断！' });
+    _cc3_officialBubble('oppose', '陛下！此事关乎民心 · 臣等以为可议而行 · 不宜独断！', '');
     addBubble({ kind: 'system', text: '（诏令全效但民心 -2 · 暴名 +1 · 该回合后续奏报激进度↑）' });
   } else if (tier === 'D') {
     if (t.code === 'D' && t.name === '危诏激变') {
-      addBubble({ name: '黄景昉', stance: 'oppose', text: '陛下不可！臣愿以死谏！（伏地不起）' });
+      _cc3_officialBubble('oppose', '陛下不可！臣愿以死谏！（伏地不起）', '');
       addBubble({ kind: 'system', text: '（殿中数员跪谏 · 诏令 blocked · 皇威 -3 · 权威 -2 · 派系叛意 +。）' });
     } else {
-      addBubble({ name: '黄景昉', stance: 'oppose', text: '陛下 · 此诏诚有未当 · 臣谨封驳。' });
+      _cc3_officialBubble('oppose', '陛下 · 此诏诚有未当 · 臣谨封驳。', '');
       addBubble({ kind: 'system', text: '（诏令打 50% 折 · 进诏令追踪标"半行" · AI 推演时部门怠工。皇权 -1。）' });
     }
   }

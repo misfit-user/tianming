@@ -553,11 +553,20 @@ async function _endTurnCore(){
   // 回合末·按统帅死活校正各军主帅引用：摘掉挂着死人(赐死/AI死/战死各路)的帅、留空缺待补任。须在赐死(applyEdictActions)+AI死(applyCharacterDeaths)都跑完之后
   try { if (typeof TM !== 'undefined' && TM.AIChange && TM.AIChange.Army && typeof TM.AIChange.Army.reconcileArmyCommanders === 'function') TM.AIChange.Army.reconcileArmyCommanders(); } catch(_recACE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_recACE, 'endTurn] reconcileArmyCommanders') : console.warn('[endTurn] reconcileArmyCommanders', _recACE); }
 
+  // 亡国终局（2026-07-02）：消费民变改朝/权臣篡位/起义颠覆的终局信号（此前只写不读）→「天命已绝」终局屏。
+  // 软终局：置于全部结算 tick 之后不打断管线，关屏后可继续观史/存档。新鲜度护栏在 _consumeDynastyEndSignal 内。
+  try {
+    var _dynEnd = (typeof _consumeDynastyEndSignal === 'function') ? _consumeDynastyEndSignal() : null;
+    if (_dynEnd && typeof _showEndgameScreen === 'function') setTimeout(function(){ _showEndgameScreen('defeat', _dynEnd); }, 600);
+  } catch(_dynE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dynE, 'endTurn] dynasty endgame') : console.warn('[endTurn] dynasty endgame', _dynE); }
+
   GM.busy=false;
   GM._endTurnBusy=false;
   } catch (error) {
     console.error('endTurn error:', error);
-    toast('回合处理出错: ' + error.message);
+    // 失败态人话化（2026-07-02）：认得出的 AI 类故障给「哪坏了+去哪修」，认不出回退原文
+    var _ehuman = (typeof _tmAiErrHuman === 'function') ? _tmAiErrHuman(error) : null;
+    toast(_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message));
     GM.busy = false;
     GM._endTurnBusy=false;
     var btn = _$("btn-end")||_$("btn-end-turn");

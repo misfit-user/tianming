@@ -62,6 +62,20 @@
   function _parse(text) {
     try { if (typeof root.robustParseJSON === 'function') return root.robustParseJSON(text); var m = String(text || '').match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; } catch (e) { return null; }
   }
+  // T4(审计③·Codex 韧性对照) · 关键站 JSON 自纠：parse+正则抢救双败才带错重问一次·输出上限×1.5
+  //   (截断与格式错一石二鸟·不动共享网关)。只用于质量命门站(记忆固化/史记主体)——机械深析失败本就
+  //   不阻断、不值得重问。失败静默返空·调用方按原失败路走。
+  async function _reaskJSON(gm, msgs, maxTok, tier) {
+    if (typeof root.callAIMessages !== 'function') return '';
+    try {
+      var sys0 = (msgs[0] && msgs[0].role === 'system') ? String(msgs[0].content || '') : '';
+      var rest = (msgs[0] && msgs[0].role === 'system') ? msgs.slice(1) : msgs;
+      var sys2 = sys0 + '\n\n⚠ 你上次的输出无法解析为合法 JSON（可能被截断或夹带说明文字）。这次只返回完整合法的 JSON 本体：不要 markdown 围栏、不要 JSON 之外的任何文字、字符串内换行用 \\n 转义、确保末尾闭合。';
+      if (gm) gm._agentJsonReasks = (gm._agentJsonReasks || 0) + 1;
+      var raw = await root.callAIMessages([{ role: 'system', content: sys2 }].concat(rest), Math.round(maxTok * 1.5), null, tier);
+      return (typeof raw === 'string') ? raw : ((raw && (raw.content || raw.text)) || '');
+    } catch (e) { return ''; }
+  }
 
   // ── deepen_world:复用 sc28·世界态势快照(写 _aiMemory snapshot + _foreshadows seeds + _lastSc28Snapshot 跨回合锚) ──
   async function _deepenWorld(gm, input) {
@@ -225,20 +239,27 @@
     catch (e) { return { ok: false, text: '(整合调用失败:' + (e && e.message) + ')' }; }
     var text = (typeof raw === 'string') ? raw : ((raw && (raw.content || raw.text)) || '');
     var p = _parse(text);
-    if (!p || (!p.memory && !p.state_board)) return { ok: false, text: '(整合解析失败/空)' };
+    if (!p || (!p.memory && !p.state_board)) {   // T4 · 记忆固化=跨回合连续性命门·双败才重问一次(提额防截断)
+      var text2 = await _reaskJSON(gm, [{ role: 'system', content: sys }, { role: 'user', content: tp }], 2000, 'secondary');
+      if (text2) p = _parse(text2);
+    }
+    if (!p || (!p.memory && !p.state_board)) return { ok: false, text: '(整合解析失败/空·已重问一次)' };
     var did = [];
     if (p.memory) {
       if (!Array.isArray(gm._aiMemory)) gm._aiMemory = [];
       gm._aiMemory.push({ turn: turn, text: String(p.memory), priority: 'high' });
       if (!Array.isArray(gm._consolidatedMemory)) gm._consolidatedMemory = [];
-      gm._consolidatedMemory.push({ turn: turn, summary: String(p.memory).slice(0, 300) });
+      // 刀F(2026-07-02)·形状调和:LLM 管线写 {consolidated,...}·此处原只写 {summary}——跨模式互读各自扑空
+      //   (管线的滚动续写读 .consolidated·agent 的记忆档读 .summary)。双键并写·两边消费者都能读。
+      gm._consolidatedMemory.push({ turn: turn, summary: String(p.memory).slice(0, 300), consolidated: String(p.memory).slice(0, 300) });
       if (gm._consolidatedMemory.length > 50) gm._consolidatedMemory = gm._consolidatedMemory.slice(-50);
       did.push('记忆');
     }
     if (p.saga) { gm._sagaMemory = { turn: turn, text: String(p.saga).slice(0, 600) }; did.push('多回合脉络'); }  // 综合多回合·滚动更新
     if (p.state_board) {
       var sb = p.state_board;
-      gm._stateBoard = { turn: turn, mood: String(sb.mood || '').slice(0, 60), recent_summary: String(sb.recent_summary || '').slice(0, 250), open_loops: Array.isArray(sb.open_loops) ? sb.open_loops.slice(0, 5) : [], unfulfilled_promises: Array.isArray(sb.unfulfilled_promises) ? sb.unfulfilled_promises.slice(0, 5) : [], _agent: true };
+      // 刀F(2026-07-02)·形状调和:补 ts/expiresAt(LLM 管线同款·§6.5 R3 五回合失效)——原缺 expiresAt·agent 写的状态盘在消费端永不过期·老悬念误导后续回合
+      gm._stateBoard = { turn: turn, ts: Date.now(), expiresAt: (turn + 5), mood: String(sb.mood || '').slice(0, 60), recent_summary: String(sb.recent_summary || '').slice(0, 250), open_loops: Array.isArray(sb.open_loops) ? sb.open_loops.slice(0, 5) : [], unfulfilled_promises: Array.isArray(sb.unfulfilled_promises) ? sb.unfulfilled_promises.slice(0, 5) : [], _agent: true };
       did.push('状态盘');
     }
     if (Array.isArray(p.plot_updates) && p.plot_updates.length) {
@@ -480,12 +501,18 @@
   }
 
   // ── D3 deepen_narrative:复用 sc2 链·叙事多遍打磨(纲要→正文·两遍)·替单遍 finalize 叙事 ──
+  // T2(审计②·模型分工修正) · 史记正文是玩家逐字读的质量命门·此前错落 secondary(与机械深析同档)——
+  //   默认回 primary·P.conf.agentNarrativeTier 可改(如明确要省钱)。未配 secondary 时两值等价·零变化。
+  function _narrTier() {
+    try { var pc = (root.P && root.P.conf) || (typeof P !== 'undefined' && P && P.conf) || {}; return pc.agentNarrativeTier || 'primary'; }
+    catch (e) { return 'primary'; }
+  }
   async function _deepenNarrative(gm, input) {
     if (!gm) return { ok: false, text: '(无存档)' };
     if (typeof root.callAIMessages !== 'function') return { ok: false, text: '(callAIMessages 未加载)' };
     var turn = gm.turn || 0; var digest = _turnDigest(gm); var memCtx = _memoryContext(gm);   // memCtx:跨回合记忆·史记须接前文
     // 第1遍·纲要
-    var raw1; try { raw1 = await root.callAIMessages([{ role: 'system', content: '你是天命史官。先列本回合史记的关键脉络(不写正文)。只返回 JSON:{"beats":["要点1","要点2"],"tone":"基调"}' }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n列出本回合史记应涵盖的关键脉络(3-6 点·须呼应跨回合记忆中的情节线与伏笔)。' }], 900, null, 'secondary'); } catch (e) { return { ok: false, text: '(叙事纲要失败:' + (e && e.message) + ')' }; }
+    var raw1; try { raw1 = await root.callAIMessages([{ role: 'system', content: '你是天命史官。先列本回合史记的关键脉络(不写正文)。只返回 JSON:{"beats":["要点1","要点2"],"tone":"基调"}' }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n列出本回合史记应涵盖的关键脉络(3-6 点·须呼应跨回合记忆中的情节线与伏笔)。' }], 900, null, _narrTier()); } catch (e) { return { ok: false, text: '(叙事纲要失败:' + (e && e.message) + ')' }; }
     var t1 = (typeof raw1 === 'string') ? raw1 : ((raw1 && (raw1.content || raw1.text)) || ''); var o = _parse(t1);
     var beats = (o && Array.isArray(o.beats)) ? o.beats.join('；') : '';
     // 第2遍·据纲要成正文
@@ -520,34 +547,41 @@
     // ★工具调用优化(2026-06):后人戏说(raw3·_tokHouren≤24k)与史记主体(raw2·_tokRecord≤16k)均只依赖 raw1 纲要 beats、彼此独立·又是系统最大两次调用→**并行**(先 kick off raw3·再 await raw2·省 1 次最大调用墙钟·AI 队列自限真并发)。raw3 .catch 返 null·不阻断史记主体。
     var _hsFn = (root.TM && root.TM.Endturn && root.TM.Endturn.AI && root.TM.Endturn.AI.prompt && root.TM.Endturn.AI.prompt.hourenSpec);
     var _raw3P = _hsFn
-      ? root.callAIMessages([{ role: 'system', content: '你是天命史官·撰写《后人戏说》——把本回合还原为可感知的生活场景(具体人物/对话/动作/画面·与"政文"宏观政论文风迥异·勿写成评论摘要)。只返回 JSON。' }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n纲要:' + (beats || '(自拟)') + _hsFn({}) + _xinshi }], _tokHouren, null, 'secondary').catch(function () { return null; })
+      ? root.callAIMessages([{ role: 'system', content: '你是天命史官·撰写《后人戏说》——把本回合还原为可感知的生活场景(具体人物/对话/动作/画面·与"政文"宏观政论文风迥异·勿写成评论摘要)。只返回 JSON。' }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n纲要:' + (beats || '(自拟)') + _hsFn({}) + _xinshi }], _tokHouren, null, _narrTier()).catch(function () { return null; })
       : Promise.resolve(null);
-    var raw2; try { raw2 = await root.callAIMessages([{ role: 'system', content: '你是天命史官·产出本回合史记主体记录(对齐 LLM 管线 ctx.record 契约·各文体风格有别·后人戏说另由专项 pass 出)。' + _schema }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n纲要:' + (beats || '(自拟)') + '\n\n据此产出完整史记记录(时政记/实录/政文 + 君上状态/主角内心/宰辅进言 + 标题/摘要)·各体文风须别·须达字数下限·须续接跨回合记忆(呼应过往与情节线·勿失忆重起)·**人物言行须与其本回合在问对/朝议/书信中的表现一致(勿矛盾·勿人格分裂)**。' + _xinshi }], _tokRecord, null, 'secondary'); } catch (e) { return { ok: false, text: '(史记记录失败:' + (e && e.message) + ')' }; }
-    var t2 = (typeof raw2 === 'string') ? raw2 : ((raw2 && (raw2.content || raw2.text)) || ''); var p = _parse(t2);
+    var _recMsgs = [{ role: 'system', content: '你是天命史官·产出本回合史记主体记录(对齐 LLM 管线 ctx.record 契约·各文体风格有别·后人戏说另由专项 pass 出)。' + _schema }, { role: 'user', content: '本回合发生:\n' + digest + memCtx + '\n\n纲要:' + (beats || '(自拟)') + '\n\n据此产出完整史记记录(时政记/实录/政文 + 君上状态/主角内心/宰辅进言 + 标题/摘要)·各体文风须别·须达字数下限·须续接跨回合记忆(呼应过往与情节线·勿失忆重起)·**人物言行须与其本回合在问对/朝议/书信中的表现一致(勿矛盾·勿人格分裂)**。' + _xinshi }];
+    var raw2; try { raw2 = await root.callAIMessages(_recMsgs, _tokRecord, null, _narrTier()); } catch (e) { return { ok: false, text: '(史记记录失败:' + (e && e.message) + ')' }; }
+    var t2 = (typeof raw2 === 'string') ? raw2 : ((raw2 && (raw2.content || raw2.text)) || '');
     // ★2026-07-01·健壮兜底(镜像下方 houren 兜底·根治"实录/政文直接没了"):史记主体是长 prose(时政记+实录+政文
     //   动辄数千字)·内部真换行/未转义引号极易致 JSON.parse 失败→p 空→**整个史记四体丢弃**→renderer 回落
     //   finalize 生的粗叙事(带字面 \n\n)·且实录/政文全空。故 parse 失败或缺 shizhengji 时·正则逐字段抽值
-    //   (容转义引号与换行·带 \\n→\n 归一)salvage 各体·尽力保住实录/政文/时政记。
-    if (!p || !p.shizhengji) {
-      var _cl2 = String(t2 || '').replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    //   (容转义引号与换行·带 \\n→\n 归一)salvage 各体·尽力保住实录/政文/时政记。T4 抽成函数供重问后复用。
+    function _salvRecord(tx, p0) {
+      if (p0 && p0.shizhengji) return p0;
+      var _cl2 = String(tx || '').replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
       var _xField = function (key) {
         var _m = _cl2.match(new RegExp('"' + key + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"'));
         return (_m && _m[1]) ? _m[1].replace(/\\n/g, '\n').replace(/\\t/g, '  ').replace(/\\"/g, '"').replace(/\\\\/g, '\\') : '';
       };
       var _szSalvage = _xField('shizhengji') || _xField('narrative');
-      if (_szSalvage) {
-        p = p || {};
-        p.shizhengji  = p.shizhengji  || _szSalvage;
-        p.shilu       = p.shilu       || _xField('shilu');
-        p.zhengwen    = p.zhengwen    || _xField('zhengwen');
-        p.playerStatus= p.playerStatus|| _xField('playerStatus');
-        p.playerInner = p.playerInner || _xField('playerInner');
-        p.title       = p.title       || _xField('title');
-        p.summary     = p.summary     || _xField('summary');
-      }
+      if (!_szSalvage) return p0;
+      var p1 = p0 || {};
+      p1.shizhengji  = p1.shizhengji  || _szSalvage;
+      p1.shilu       = p1.shilu       || _xField('shilu');
+      p1.zhengwen    = p1.zhengwen    || _xField('zhengwen');
+      p1.playerStatus= p1.playerStatus|| _xField('playerStatus');
+      p1.playerInner = p1.playerInner || _xField('playerInner');
+      p1.title       = p1.title       || _xField('title');
+      p1.summary     = p1.summary     || _xField('summary');
+      return p1;
+    }
+    var p = _salvRecord(t2, _parse(t2));
+    if (!p || !(p.shizhengji || p.narrative)) {   // T4 · 史记四体=玩家逐字读的产出·parse+抢救双败才重问一次(提额防截断)
+      var _t2b = await _reaskJSON(gm, _recMsgs, _tokRecord, _narrTier());
+      if (_t2b) { t2 = _t2b; p = _salvRecord(_t2b, _parse(_t2b)); }
     }
     var _main = (p && (p.shizhengji || p.narrative)) || '';
-    if (!p || !_main) return { ok: false, text: '(史记四体解析失败/空)' };
+    if (!p || !_main) return { ok: false, text: '(史记四体解析失败/空·已重问一次)' };
     // DA-Q2b·后人戏说(已并行 in-flight·此 await 取结果)·镜像管线 sc2·富场景叙事·失败/空不阻断史记主体
     var _houren = '';
     try {

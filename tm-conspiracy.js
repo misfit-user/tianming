@@ -48,7 +48,11 @@
     secrecyDecayPerAlly: 1.5, // 人越多越难保密(2.5→1.5·更难走漏)
     exposureBase: 3,          // 每月基础败露增量(调难:6→3·阴谋更隐秘·更久不被发现)
     exposurePerAlly: 2.5,     // 每名同谋附加泄露面(4→2.5)
-    exposeThreshold: 100      // 败露度≥此·事泄被擒(不变·保玩家查案+48仍有效)
+    exposeThreshold: 100,     // 败露度≥此·事泄被擒(不变·保玩家查案+48仍有效)
+    // —— 密探常侦(S4·2026-07-02·flag agencyWatchEnabled 默认关) ——
+    agencyBase: 6,            // 单个满效密探机构每回合基础侦缉强度(远弱于具名查办48/人工泛缉18)
+    agencyCap: 16,            // 多机构叠加封顶·常侦不强过陛下亲自下诏泛缉
+    agencyIndepMax: 30        // 机构独立性≤此才算「直属天子之密探」·台谏(独立性高)不做暗侦
   };
 
   // ─── 工具 ───
@@ -357,6 +361,9 @@
     // 1) 玩家反制(读既有通道原文·推高目标败露·先于本回合结算)
     applyPlayerCounterIntel(G);
 
+    // 1.5) 密探常侦(S4·flag 默认关·零回归): 常设直属天子的密探机构暗中侦缉·确定性推高在酿阴谋败露
+    _agencyWatch(G);
+
     // 2) 萌发
     _spawn(G, rng, monthRatio);
 
@@ -486,6 +493,55 @@
     return parts.join('\n');
   }
 
+  // ─── 密探常侦(S4·2026-07-02) ───
+  // 常设的直属天子密探机构(读 GM.corruption.supervision.institutions·独立性≤agencyIndepMax 者)逐回合暗中侦缉·
+  //   确定性推高全部在酿阴谋败露(纯加法不触 rng·flag 关返 0 = 零回归·同 _officeConspiracyBonus 范式)。
+  //   效力=覆达radius×(1-腐败×0.7)×(1-缺员)·机构烂了侦缉自然打折;特务坐大反噬由腐败引擎既有累加器制衡。
+  //   不置 _knownToPlayer(常侦静默积累·非向玩家亮牌)·不落事件簿——密探事泄被擒时自会显形。
+  //   启用:P.conf.agencyWatchEnabled = true(设置面板「玩法机制·深化」有开关)。
+  function _agencyWatchOn() {
+    try {
+      var P = global.P || {};
+      var ai = P.ai || {}, conf = P.conf || {};
+      return !!(ai.agencyWatchEnabled || conf.agencyWatchEnabled);
+    } catch (e) { return false; }
+  }
+  function _agencyWatch(G) {
+    G = G || _G(); if (!G || !_agencyWatchOn()) return 0;
+    var sup = G.corruption && G.corruption.supervision;
+    var insts = sup && sup.institutions;
+    if (!Array.isArray(insts) || !insts.length) return 0;
+    var eff = 0;
+    insts.forEach(function (i) {
+      if (!i || typeof i !== 'object') return;
+      if ((i.independence == null ? 100 : i.independence) > CFG.agencyIndepMax) return;
+      var reach = clamp((i.radius == null ? 60 : i.radius), 0, 100) / 100;
+      var rot = clamp(i.corruption || 0, 0, 100) / 100;
+      var vac = clamp(i.vacancies || 0, 0, 1);
+      eff += reach * (1 - rot * 0.7) * (1 - vac);
+    });
+    if (eff <= 0) return 0;
+    var intensity = Math.min(CFG.agencyCap, Math.round(CFG.agencyBase * eff));
+    if (intensity <= 0) return 0;
+    activePlots(G).forEach(function (p) { p.exposure = clamp(p.exposure + intensity, 0, 130); });
+    // S2·密探回禀：衙门既已在职常侦·凡露端倪(_knownToPlayer·过55亮牌线或经查办)之在酿阴谋·
+    //   递密报入御案时政(每谋一报·plot._agencyReported 防重)·玩家可循报下诏查办(走既有反制扫描)。
+    //   措辞留白(渐炽/将发)不给真值——密探只报行迹·真相要玩家自己穷治。
+    activePlots(G).forEach(function (p) {
+      if (!p || !p._knownToPlayer || p._agencyReported) return;
+      p._agencyReported = true;
+      if (!Array.isArray(G.currentIssues)) return;
+      var vague = p.momentum >= 70 ? '事似将发·不可不察' : (p.momentum >= 35 ? '其谋渐炽' : '尚在酝酿');
+      G.currentIssues.push({
+        id: 'iss_spy_' + (p.id || p.ringleader),
+        title: '密探回禀 · ' + p.ringleader + ' 行迹诡秘',
+        description: '密探侦得：' + p.ringleader + ((p.conspirators && p.conspirators.length) ? ' 与 ' + p.conspirators.length + ' 人过从诡秘' : ' 近来行迹诡秘') + '，' + vague + '。若欲穷治，可下诏命有司查办其人。',
+        category: '朝局', status: 'pending', raisedTurn: G.turn || 0, _info: true, _spyReport: true
+      });
+    });
+    return intensity;
+  }
+
   // 玩家反制总入口(tick 内调·每回合一次)
   function applyPlayerCounterIntel(G) {
     G = G || _G(); if (!G) return { targeted: 0, swept: 0 };
@@ -519,6 +575,8 @@
     _cap: _cap,
     _officeConspiracyBonus: _officeConspiracyBonus,
     _officeConspiracyOn: _officeConspiracyOn,
+    _agencyWatch: _agencyWatch,
+    _agencyWatchOn: _agencyWatchOn,
     ensure: ensure
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.ConspiracyEngine;

@@ -585,6 +585,35 @@ function _showVictoryScreen() { _showEndgameScreen('victory'); }
 /** 失败终局画面 */
 function _showDefeatScreen(failGoal) { _showEndgameScreen('defeat', failGoal); }
 
+/** 亡国终局信号消费（2026-07-02）：读 GM._gameOver / GM._gameOverPending（民变改朝/权臣篡位/起义颠覆——此前只写不读，王朝亡不了国），
+ *  返回可供 _showEndgameScreen('defeat', ·) 使用的败因对象；无新信号返回 null。
+ *  新鲜度护栏：这些标志位历史上从未被消费，老存档可能躺着陈年信号——只认 turn >= GM.turn-1 的新事，陈年者标 _stale 留档不爆。
+ *  消费即标 _shown，防跨回合/读档重复弹屏。 */
+function _consumeDynastyEndSignal() {
+  try {
+    var sigs = [];
+    if (GM._gameOver && typeof GM._gameOver === 'object' && !GM._gameOver._stale && !GM._gameOver._shown) sigs.push(GM._gameOver);
+    if (GM._gameOverPending && typeof GM._gameOverPending === 'object' && !GM._gameOverPending._stale && !GM._gameOverPending._shown) sigs.push(GM._gameOverPending);
+    if (!sigs.length) return null;
+    var fresh = null;
+    for (var i = 0; i < sigs.length; i++) {
+      var st = sigs[i].turn;
+      // _gameOverPending 写入时未记 turn → 视为本回合新事
+      if (typeof st === 'number' && st < GM.turn - 1) { sigs[i]._stale = true; continue; }
+      fresh = sigs[i]; break;
+    }
+    if (!fresh) return null;
+    fresh._shown = true;
+    var t = fresh.type || fresh.reason || '';
+    var title, desc;
+    if (t === 'dynasty_change') { title = '民变席卷 · 改朝换代'; desc = '烽火燎原，义军问鼎中原。旧朝天命已移，社稷倾覆。'; }
+    else if (t === 'usurped_by_power_minister') { title = '权臣篡位 · 神器易主'; desc = (fresh.name ? fresh.name + ' ' : '') + '窃据大宝，禅代之局已成。'; }
+    else if (t === 'dynasty_replaced_by_revolt') { title = '义军颠覆 · 鼎革之变'; desc = fresh.narrative || ((fresh.newDynasty || '新朝') + ' 立，旧朝祚终。'); }
+    else { title = '天命已移'; desc = fresh.narrative || fresh.reason || '社稷倾覆，国祚告终。'; }
+    return { title: title, description: desc, _dynastyEnd: true, _signal: t };
+  } catch (e) { return null; }
+}
+
 /** 9.4: 统一终局画面（含数据回顾） */
 function _showEndgameScreen(type, failGoal) {
   var isVictory = type === 'victory';

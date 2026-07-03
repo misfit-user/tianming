@@ -173,7 +173,11 @@
     }); })(G.officeTree || []);
 
     var list = G.chars.filter(function(c) {
-      return c && c.alive !== false && (c.officialTitle || (c.rank && c.rank <= 5));
+      if (!c || c.alive === false || !(c.officialTitle || (c.rank && c.rank <= 5))) return false;
+      // 受限者不列为"可上奏/可弹劾"候选喂给 AI(玩家报:下狱/罢官者仍上奏)
+      if (c._imprisoned || c.imprisoned || c._inPrison || c._exiled || c.exiled ||
+          c._banished || c._fled || c.fled || c._missing || c._retired || c.retired) return false;
+      return true;
     }).slice(0, 20);
     var lines = [];
     list.forEach(function(c) {

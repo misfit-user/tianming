@@ -15,8 +15,8 @@
 // ============================================================
 
 function extractEdictActions(edictText) {
-  if (!edictText || edictText.length < 4) return { appointments: [], dismissals: [], deaths: [], rewards: [], armyBuilds: [], payArrears: [] };
-  var actions = { appointments: [], dismissals: [], deaths: [], rewards: [], armyBuilds: [], payArrears: [] };
+  if (!edictText || edictText.length < 4) return { appointments: [], dismissals: [], deaths: [], rewards: [], armyBuilds: [], payArrears: [], pardons: [] };
+  var actions = { appointments: [], dismissals: [], deaths: [], rewards: [], armyBuilds: [], payArrears: [], pardons: [] };
   var text = edictText.replace(/\s+/g, '');
 
   // 预构建已知姓名集（含字号）——用于扫名优先
@@ -129,6 +129,45 @@ function extractEdictActions(edictText) {
     var _appointedNames = {};
     actions.appointments.forEach(function(a){ if (a && a.character) _appointedNames[a.character] = true; });
     actions.dismissals = actions.dismissals.filter(function(d){ return !(d && d.character && _appointedNames[d.character]); });
+  }
+
+  // ═══ 赦免/起复/官复原职 模式（治玩家报"下诏放人/官复原职没用"·此前诏令解析无释放类→全靠 LLM）═══
+  //   release: 释放/赦免/开释/出狱/昭雪/平反 → 确定性清 _imprisoned/_exiled 等羁束
+  //   restore: 官复原职/复职/起复/复用 → 额外从下狱时保存的 _origOfficialTitle 复官并回座 officeTree
+  //   只认已知在册人物(避免"大赦天下"把"天下"当人)
+  var _pardonReleaseVerbs = '(?:无罪开释|赦免释放|昭雪平反|赦免|大赦|开释|释放|昭雪|平反|雪冤|宽宥|宥免|免罪|出狱|省释|贷罪)';
+  var _pardonRestoreVerbs = '(?:官复原职|官复原任|复其原官|复原官|仍任原职|照旧供职|起复任用|起复|复职|复用)';
+  var _pardonPatterns = [
+    { restore: false, rx: new RegExp(_pardonReleaseVerbs + '([\\u4e00-\\u9fa5]{2,6})', 'g') },
+    { restore: false, rx: new RegExp('([\\u4e00-\\u9fa5]{2,6}?)(?:无罪开释|昭雪平反|昭雪|平反|获释|开释|出狱|获赦)', 'g') },
+    { restore: true,  rx: new RegExp(_pardonRestoreVerbs + '([\\u4e00-\\u9fa5]{2,6})', 'g') },
+    { restore: true,  rx: new RegExp('([\\u4e00-\\u9fa5]{2,6}?)(?:官复原职|官复原任|复其原官|复原官|复职|起复)', 'g') }
+  ];
+  var _pardonSet = {};
+  _pardonPatterns.forEach(function(pp) {
+    var m;
+    while ((m = pp.rx.exec(text)) !== null) {
+      var rawName = m[1].replace(/[，。、的之]/g, '');
+      var char = rawName;
+      if (knownChars.length) {
+        for (var i=0; i<knownChars.length; i++) {
+          if (rawName.indexOf(knownChars[i]) >= 0) { char = knownMap[knownChars[i]]; break; }
+        }
+      }
+      if (char.length < 2) continue;
+      // 只对在册真实人物记赦免(避免"大赦天下"等误捕)
+      if (!(GM.chars || []).some(function(c){ return c && c.name === char; })) continue;
+      if (_pardonSet[char]) { if (pp.restore) _pardonSet[char].restore = true; continue; }
+      var rec = { character: char, restore: !!pp.restore };
+      _pardonSet[char] = rec;
+      actions.pardons.push(rec);
+    }
+  });
+  // "赦免X，官复原职"中"官复原职"常不紧跟人名(指代前文)→仅当【全诏只赦免一人】时才整体升级为复职·
+  //   多人诏(如"释放魏忠贤，起复卢象升，官复原职")不整体升级·免把只求释放的魏忠贤也误复官·
+  //   多人各自的复职由上面 pattern3/4(动词紧邻人名·如"起复卢象升")精确绑定。
+  if (actions.pardons.length === 1 && /官复原职|官复原任|复其原官|复原官|复职|起复|复用|仍任原职|照旧供职/.test(text)) {
+    actions.pardons[0].restore = true;
   }
 
   // ═══ 赏赐/犒赏/封赏/加俸 模式（玩家亲自施恩·确定性抬该员 loyalty+affinity·不靠 AI 心情）═══
@@ -554,6 +593,39 @@ function applyEdictActions(actions) {
         TM.AIChange.Army.vacateArmiesByCommander(a.character, { moraleHit: 10, markLost: true, eb: '{army}主帅{name}奉诏去职、兵权交卸，军中暂缺主将，待下诏补任' });
       }
     } catch (_vcE) {}
+  });
+  // 赦免/起复——清羁押/流放/致仕/逃亡·按需从 _origOfficialTitle 复官回座(治"下诏放人/官复原职没用")
+  if (Array.isArray(actions.pardons)) actions.pardons.forEach(function(a) {
+    var char = findCharByName(a.character);
+    if (!char) return;
+    // 清一切羁束状态·并盖 _releasedTurn/_recalledTurn 令叙事校验器 2 回合内不再复述关押
+    char._imprisoned = false; char.imprisoned = false; char._inPrison = false;
+    char._exiled = false; char.exiled = false; char._banished = false;
+    char._fled = false; char.fled = false; char._missing = false;
+    char._retired = false; char.retired = false;
+    char._releasedTurn = GM.turn;
+    char._recalledTurn = GM.turn;
+    char._releaseReason = a.restore ? '奉诏起复·官复原职' : '奉诏赦免开释';
+    var _restoredTitle = '';
+    // 官复原职:从下狱时保存的 _origOfficialTitle 复位并回座 officeTree(仅当前无官职·免覆盖同回合新任命)
+    if (a.restore && char._origOfficialTitle && !char.officialTitle) {
+      var _orig = char._origOfficialTitle;
+      var _hit = (typeof _findPositionInOfficeTree === 'function') ? _findPositionInOfficeTree(_orig) : null;
+      if (_hit && _hit.pos && typeof _offSeatPersonInPosition === 'function') {
+        try { _offSeatPersonInPosition(_hit.pos, char.name, { replace: false }); } catch(_seatE){}
+      }
+      if (typeof _offAddCharOfficeTitle === 'function') {
+        try { _offAddCharOfficeTitle(char, _orig, {}); } catch(_atE){ char.officialTitle = _orig; char.position = _orig; }
+      } else { char.officialTitle = _orig; char.position = _orig; }
+      if (!char.officialTitle) { char.officialTitle = _orig; char.position = _orig; }
+      char.title = char.officialTitle || _orig;
+      _restoredTitle = char.officialTitle || _orig;
+    }
+    if (!char.careerHistory) char.careerHistory = [];
+    char.careerHistory.push({ turn: GM.turn, event: a.restore ? ('奉诏起复' + (_restoredTitle ? '·复任' + _restoredTitle : '·官复原职')) : '奉诏赦免开释' });
+    if (typeof recordCharacterArc === 'function') { try { recordCharacterArc(a.character, 'recall', char._releaseReason); } catch(_arcE){} }
+    if (typeof addEB === 'function') addEB('人事', a.character + '·' + char._releaseReason + (_restoredTitle ? '（复任' + _restoredTitle + '）' : ''), { credibility: 'high' });
+    if (typeof AffinityMap !== 'undefined') { try { AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 12, a.restore ? '被起复复职·感恩' : '蒙赦释放·感恩'); } catch(_afE){} }
   });
   // 赐死
   actions.deaths.forEach(function(a) {

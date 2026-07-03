@@ -754,6 +754,8 @@
     reconcileArmyCommanders: reconcileArmyCommanders,
     vacateArmiesByCommander: vacateArmiesByCommander,
     bindCommanderFromAppointment: bindCommanderFromAppointment,
+    chargeRecruitment: _chargeRecruitment,       // 单一募兵扣费点(银粮/防双扣/武库支取/欠饷士气挫)·御驾亲征战后补员复用
+    recruitUnitCost: _recruitUnitCost,           // 兵种单价表查询(补员报价 UI 用)
   };
 
   if (typeof module !== 'undefined' && module.exports) {

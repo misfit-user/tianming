@@ -605,6 +605,12 @@
     if (opts.chancellorIntelligence) successRate += (opts.chancellorIntelligence - 60) / 200;
     var _hw3 = (G.huangwei && typeof G.huangwei === 'object') ? (G.huangwei.index || 50) : (G.huangwei || 50);
     successRate += (_hw3 - 50) / 400;
+    // 国是之制硬通道（2026-07-03·mod('reform_success') 首批真消费者）：
+    // 「改革推行」之制已立且扎根者·央地变法成功率随之上抬（封顶 +0.12·随扎根度打折·suppressed 不计）
+    try {
+      var _GRcl = (typeof GlobalRules !== 'undefined' && GlobalRules) || (typeof window !== 'undefined' && window.GlobalRules);
+      if (_GRcl && typeof _GRcl.mod === 'function') successRate += Math.min(0.12, Number(_GRcl.mod('reform_success')) || 0);
+    } catch (_grclE) {}
     successRate = Math.max(0.1, Math.min(0.95, successRate));
     var success = (opts.forceSuccess !== undefined) ? opts.forceSuccess : (Math.random() < successRate);
     var result = { ok: true, reformId: id, success: success, name: preset.name };

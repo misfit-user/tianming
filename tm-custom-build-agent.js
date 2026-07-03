@@ -561,20 +561,20 @@
     div.buildings.push(building);
     out.building = building;
 
-    // 全局之制登记（B2·如实学馆→「改革推行/实学推广」之持续全局规则·配套阻力）。
-    //   判断在核议自由，落账走硬门：register 内倾向配额裁档 + 阻力规整。建筑挂名以备溯源。
+    // 全局之制（B2·如实学馆→「改革推行/实学推广」之持续全局规则·配套阻力）。
+    //   增强三（2026-07-03）：立制改「工竣立制」——准奏只存 spec 于建筑之上，
+    //   完工时 BuildingWorks.applyCompletion 统一 register（制未成先立制不合理·
+    //   且 AI 推演/NPC 营建等其他路径完工也走同一钩子=全路径立制）。
     try {
-      var GR = root.GlobalRules;
       var grIn = appraisal.globalRule || appraisal.globalRuleRaw;
-      if (GR && typeof GR.register === 'function' && grIn && typeof grIn === 'object' && grIn.tendencies) {
-        var enacted = GR.register({
+      if (grIn && typeof grIn === 'object' && grIn.tendencies) {
+        building._globalRuleSpec = {
           name: grIn.name || ((req.name || '此') + '之制'),
           source: 'building',
           sourceRef: { div: divName, bld: building.name },
           tendencies: grIn.tendencies,
           resistance: grIn.resistance
-        });
-        if (enacted) building._globalRule = enacted.name;
+        };
       }
     } catch (eReg) {}
 

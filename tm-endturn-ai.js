@@ -282,7 +282,8 @@
         if (expectedKeys.length) {
           var _fieldDesc = [];
           // 命中已知 schema 的字段类型·从 tm-ai-schema 推断 (若可用)·否则 fallback 启发式
-          var _schemaTbl = (typeof window !== 'undefined' && window.TM && TM.AISchema && TM.AISchema.S) || null;
+          // 修死引用·TM.AISchema 从不存在(tm-ai-schema.js 真实导出是 window.TM_AI_SCHEMA.raw)·此前恒 null 静默走 fallback 启发式
+          var _schemaTbl = (typeof window !== 'undefined' && window.TM_AI_SCHEMA && window.TM_AI_SCHEMA.raw) || null;
           expectedKeys.forEach(function(k) {
             var def = _schemaTbl && _schemaTbl[k];
             var ty = def && def.type ? def.type : (
@@ -4157,11 +4158,13 @@
         // G3·SC1b 文事创意类·温度调高促生诗文情志的发散
         var _sc1bTemp = Math.min(1.0, _modelTemp + 0.15);
         // 缓存·走统一 _maybeCacheSys（与 sc0/sc1/sc1d 同闸：含走中转 Claude 扩展 + 400 自愈停用）
-        var _sc1bMsgs = [{role:'system',content:_maybeCacheSys(sysP)},{role:'user',content:tp1b}];
+        // [sysP分级·2026-07-02] 补漏斗：此前硬拿整条 sysP 绕过 sysPFor·profile 表对 sc1b 无效（默认FULL=字节恒等）
+        var _sc1bSys = sysPFor('sc1b');
+        var _sc1bMsgs = [{role:'system',content:_maybeCacheSys(_sc1bSys)},{role:'user',content:tp1b}];
         // ★ Token 预算监控·SC1b
         try {
           if (typeof checkPromptTokenBudget === 'function') {
-            var _sc1bFullPrompt = (sysP || '') + '\n' + (tp1b || '');
+            var _sc1bFullPrompt = (_sc1bSys || '') + '\n' + (tp1b || '');
             var _sc1bTokRes = checkPromptTokenBudget(_sc1bFullPrompt, function(status, tokens, bg) {
               if (typeof toast === 'function') toast('[SC1b] prompt ' + status + '·' + tokens + ' tokens');
             });
@@ -4535,17 +4538,19 @@
         // G3·SC1c 势力博弈·温度略降·求稳不求怪
         var _sc1cTemp = Math.max(0.3, _modelTemp - 0.15);
         // M4·Anthropic 原生 API 且 sys 长·加 cache_control
-        var _sc1cMsgs = [{role:'system',content:sysP},{role:'user',content:tp1c}];
+        // [sysP分级·2026-07-02] 补漏斗：走 sysPFor 纳入 profile 表（默认FULL=字节恒等）·缓存包装沿用原生判定
+        var _sc1cSys = sysPFor('sc1c');
+        var _sc1cMsgs = [{role:'system',content:_sc1cSys},{role:'user',content:tp1c}];
         try {
           var _isNativeAnth1c = (P.ai && P.ai.url && /api\.anthropic\.com/i.test(P.ai.url));
-          if (_modelFamily === 'anthropic' && _isNativeAnth1c && sysP.length > 1500) {
-            _sc1cMsgs = [{role:'system', content:[{type:'text', text:sysP, cache_control:{type:'ephemeral'}}]}, {role:'user',content:tp1c}];
+          if (_modelFamily === 'anthropic' && _isNativeAnth1c && _sc1cSys.length > 1500) {
+            _sc1cMsgs = [{role:'system', content:[{type:'text', text:_sc1cSys, cache_control:{type:'ephemeral'}}]}, {role:'user',content:tp1c}];
           }
         } catch(_){}
         // ★ Token 预算监控·SC1c
         try {
           if (typeof checkPromptTokenBudget === 'function') {
-            var _sc1cFullPrompt = (sysP || '') + '\n' + (tp1c || '');
+            var _sc1cFullPrompt = (_sc1cSys || '') + '\n' + (tp1c || '');
             var _sc1cTokRes = checkPromptTokenBudget(_sc1cFullPrompt, function(status, tokens, bg) {
               if (typeof toast === 'function') toast('[SC1c] prompt ' + status + '·' + tokens + ' tokens');
             });

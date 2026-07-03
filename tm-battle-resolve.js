@@ -65,7 +65,12 @@
       if (pIds[aid]) { sideTacLoss.p += loss; sideOrig.p += orig; } else { sideTacLoss.e += loss; sideOrig.e += orig; }
     });
     /* 夹带:decisive→把每边总损夹进带×原兵力·按军比例缩放;swing+flipped→战术实况(翻盘越带) */
-    var flipped = !!(band.swing && tac.flipped);
+    var playerWonTac = (tac.outcome === 'win');
+    var predictedPlayerWin = band.winner != null ? (band.winner === 'player') : null;
+    /* flipped 自主判定(§6):原型恒回 flipped:false(其不知预测胜方)·须由带预测拿捏——swing 且战术胜负≠预测胜负 */
+    var flipped = !!(band.swing && (predictedPlayerWin != null ? (playerWonTac !== predictedPlayerWin) : tac.flipped));
+    /* 决定性仗胜负预定·不可翻(§6):战术只在带内拨惨胜/完胜·胜负方以预测为准 */
+    var playerWon = (band.decisive && predictedPlayerWin != null) ? predictedPlayerWin : playerWonTac;
     function sideScale(side) {
       if (flipped) return 1;
       var lossBand = side === 'p' ? (band.playerLoss || { min: 0.03, max: 0.9 }) : (band.enemyLoss || { min: 0.03, max: 0.9 });
@@ -88,8 +93,7 @@
         if (out !== 'survived') commanderFates.push({ name: a.commander, outcome: out, armyId: a.id });
       }
     });
-    var playerWon = (tac.outcome === 'win');
-    return {
+    var out = {
       affectedArmies: affected,
       commanderFate: commanderFates[0] || null,        // 主咽喉吃单个·余 commanderFates 备多将
       commanderFates: commanderFates,
@@ -98,8 +102,40 @@
       objectiveHolder: tac.objective && tac.objective.holder || null,
       emperorSafe: tac.emperorSafe !== false,
       flipped: flipped,
+      tacticalOutcome: tac.outcome || null,            // 战术实际胜负(决定性不可翻时与 winner 可异·战报透明用)
       _fromTactical: true                              // 标:战术战果(回填时清 _battleResultTurn 防双扣·见 §13.3)
     };
+    /* 抽象 br 战略字段透传(§5/§6 下游·ctx.abstractBr=AI step 原产 battleResult):
+     * 身份字段恒承接;胜负相关字段(翻省 occupiedCityIds/战后效应/warScore 幅度)仅当抽象胜负方与战术落定一致时承接——
+     * 翻盘则剥除(原胜方的占领不再发生·翻盘方的领土后果走下回合正常战略传导·O1)。 */
+    var ab = ctx.abstractBr || null;
+    if (ab && typeof ab === 'object') {
+      var abBattleId = ab.battleId != null ? ab.battleId : ab.id;
+      if (abBattleId != null) out.battleId = abBattleId;
+      var atkId = ab.attackerArmyId || ab.attackerArmy || ab.attacker;
+      var defId = ab.defenderArmyId || ab.defenderArmy || ab.defender;
+      if (atkId != null) out.attackerArmyId = atkId;
+      if (defId != null) out.defenderArmyId = defId;
+      var abW = String(ab.winnerFactionId || ab.winnerFaction || ab.winner || '');
+      var abL = String(ab.loserFactionId || ab.loserFaction || ab.loser || '');
+      var pf = String(ctx.playerFactionName || '');
+      var abPlayerWon = (pf && abW === pf) ? true : ((pf && abL === pf) ? false : null);
+      if (abPlayerWon != null && abPlayerWon === playerWon) {
+        if (Array.isArray(ab.occupiedCityIds) && ab.occupiedCityIds.length) out.occupiedCityIds = ab.occupiedCityIds.slice();
+        if (Array.isArray(ab.postBattleEffects) && ab.postBattleEffects.length) out.postBattleEffects = ab.postBattleEffects.slice();
+        var mag = Number(ab.warScoreDelta != null ? ab.warScoreDelta : ab.decisiveness);
+        if (isFinite(mag) && mag > 0) out.warScoreDelta = mag;
+      }
+      /* casualties(攻守视角)·由战术缩放后分边损失映射(warScore 幅度派生/战报对账·须知攻方属哪边) */
+      if (atkId != null && origById[atkId] != null) {
+        var atkIsPlayer = !!pIds[atkId];
+        out.casualties = {
+          attacker: Math.round(sideTacLoss[atkIsPlayer ? 'p' : 'e'] * (atkIsPlayer ? scaleP : scaleE)),
+          defender: Math.round(sideTacLoss[atkIsPlayer ? 'e' : 'p'] * (atkIsPlayer ? scaleE : scaleP))
+        };
+      }
+    }
+    return out;
   }
 
   var API = { predictBattleBand: predictBattleBand, tacticalToBattleResult: tacticalToBattleResult, armyStrength: armyStrength, sideStrength: sideStrength };

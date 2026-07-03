@@ -4000,7 +4000,7 @@ inst._imprisonedTurn = GM.turn||0;
                     if (_feasibility === '不合理') {
                       addEB('\u5EFA\u8BBE', bc.territory + '拟建 ' + _bcDisp + ' 因不合理未能实施');
                     } else {
-                      _targetDiv.buildings.push({
+                      var _newBld = {
                         name: bc.type,
                         level: bc.level || 1,
                         isCustom: _isCustom,
@@ -4012,7 +4012,16 @@ inst._imprisonedTurn = GM.turn||0;
                         status: (bc.timeActual && bc.timeActual > 0) ? 'building' : 'completed',
                         remainingTurns: bc.timeActual || 0,
                         startTurn: GM.turn
-                      });
+                      };
+                      _targetDiv.buildings.push(_newBld);
+                      // 完工入账缺口修（2026-07-03）：timeActual≤0 直落 completed 的建筑绕过 tick→
+                      // applyCompletion 永不触发·效果从不入账（也进不了工竣立制钩）。此处即时补入账。
+                      if (_newBld.status === 'completed') {
+                        try {
+                          var _BW = (typeof TM !== 'undefined' && TM.BuildingWorks) || (typeof window !== 'undefined' && window.TM && window.TM.BuildingWorks);
+                          if (_BW && typeof _BW.applyCompletion === 'function') _BW.applyCompletion(_targetDiv, _newBld, P, GM);
+                        } catch (_bwcE) {}
+                      }
                       addEB('\u5EFA\u8BBE', bc.territory + (_isCustom?'自定义建造 ':'建造 ') + _bcDisp + (_feasibility!=='合理'?('('+_feasibility+')'):'') + (bc.reason?' —— '+bc.reason:''));
                     }
                   }
@@ -4998,10 +5007,16 @@ inst._imprisonedTurn = GM.turn||0;
                 var impact = parseFloat(info.impact) || 0;
                 var clsObj = (GM.classes || []).find(function(c) { return c.name === cls; });
                 if (clsObj) {
-                  clsObj.satisfaction = Math.max(0, Math.min(100, (clsObj.satisfaction || 50) + impact));
-                  if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassPartyCoupling === 'function' && impact) {
+                  var _uaOldSat = Number(clsObj.satisfaction || 50) || 50;
+                  if (TM && TM.ClassEngine && typeof TM.ClassEngine.gateSatisfaction === 'function') {
+                    TM.ClassEngine.gateSatisfaction(GM, clsObj, impact, { turn: GM.turn, source: 'unlock-effect', reason: info.reason || '解锁影响' });
+                  } else {
+                    clsObj.satisfaction = Math.max(0, Math.min(100, _uaOldSat + impact));
+                  }
+                  var _uaApplied = (Number(clsObj.satisfaction) || _uaOldSat) - _uaOldSat;
+                  if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassPartyCoupling === 'function' && _uaApplied) {
                     try {
-                      TM.ClassEngine.applyClassPartyCoupling(GM, clsObj, impact, { turn: GM.turn, source: 'endturn-ai-infer', reason: info.reason || '' });
+                      TM.ClassEngine.applyClassPartyCoupling(GM, clsObj, _uaApplied, { turn: GM.turn, source: 'endturn-ai-infer', reason: info.reason || '' });
                     } catch(_classCoupleImpactE) {
                       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_classCoupleImpactE, 'endturn] class party impact coupling:') : console.warn('[endturn] class party impact coupling:', _classCoupleImpactE);
                     }
@@ -5814,6 +5829,28 @@ inst._imprisonedTurn = GM.turn||0;
     ctx.record.szjSummary = szjSummary || "";
     ctx.record.personnelChanges = Array.isArray(personnelChanges) ? personnelChanges : [];
     ctx.record.hourenXishuo = hourenXishuo || "";
+    // ★存近回合时政记/实录原文·供下一回合推演承接(治"叙事与推演断裂":旧仅 chronicleAfterwords 存 2 句/200 字·丢尽情节线/未决伏笔·
+    //   AI 每回合几乎接不上上回合真实叙事)·环形缓冲留最近 2 回合·限长(注入侧再按上下文预算截断)·随存档序列化。
+    try {
+      var _szjFull = String(shizhengji || ''), _shiluFull = String(shiluText || '');
+      if ((_szjFull + _shiluFull).replace(/\s/g, '').length >= 20) {
+        if (!Array.isArray(GM._recentNarrative)) GM._recentNarrative = [];
+        // 压缩摘要:AI 的 szjSummary 优先·否则确定性提取(首句…末句)·供超窗后折入长线综述
+        var _szjSum = String(szjSummary || '').trim();
+        if (!_szjSum) {
+          var _ss = _szjFull.split(/[。！？\n]/).map(function(x){ return x.trim(); }).filter(function(x){ return x.length >= 4; });
+          if (_ss.length) _szjSum = _ss[0] + (_ss.length > 1 ? '…' + _ss[_ss.length - 1] : '');
+        }
+        GM._recentNarrative.push({ turn: GM.turn, shizhengji: _szjFull.slice(0, 2600), shilu: _shiluFull.slice(0, 1300), summary: _szjSum.slice(0, 200) });
+        // 超出 6 回合原文窗口→最老回合折入"长线叙事综述"(压缩·每回合更新·封顶 15 回合梗概)
+        if (!Array.isArray(GM._narrativeDigest)) GM._narrativeDigest = [];
+        while (GM._recentNarrative.length > 6) {
+          var _evNarr = GM._recentNarrative.shift();
+          if (_evNarr && _evNarr.summary) GM._narrativeDigest.push({ turn: _evNarr.turn, summary: _evNarr.summary });
+        }
+        if (GM._narrativeDigest.length > 15) GM._narrativeDigest = GM._narrativeDigest.slice(-15);
+      }
+    } catch (_rnStoreE) {}
     _applied.chars = _applied.chars || {
       char_updates: p1 && Array.isArray(p1.char_updates) ? p1.char_updates.length : 0,
       character_deaths: p1 && Array.isArray(p1.character_deaths) ? p1.character_deaths.length : 0

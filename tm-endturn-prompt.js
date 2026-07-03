@@ -68,18 +68,53 @@
   //   下次开游戏的会话据「各 profile 实际字数 log」逐个启用：sc17/27/28/25/07→LITE、sc16/18→FAC，
   //   跑一回合冒烟看无幻觉告警后再扩。改这张表即调，不动 build()/调用点。
   global.TM.Endturn.AI.prompt.SYS_PROFILES = {
-    NPC:  { base:1, worldState:1, events:1, context:1, player:1, npcDeep:1, letters:1, socialRules:1, roster:1, digest:1, tail:1 },
-    FAC:  { base:1, worldState:1, events:1, context:1, roster:1, tail:1 },
-    LITE: { base:1, worldState:1, context:1, roster:1, tail:1 }
+    NPC:  { base:1, worldPlan:1, worldSocial:1, worldGov:1, worldLifecycle:1, events:1, context:1, player:1, npcDeep:1, letters:1, socialRules:1, roster:1, digest:1, tail:1 },
+    FAC:  { base:1, worldPlan:1, worldSocial:1, events:1, context:1, roster:1, tail:1 },
+    LITE: { base:1, worldGov:1, context:1, roster:1, tail:1 },
+    // [sysP分级·2026-07-02] 定制档——测绘修正原计划两处坑：sc27 用 LITE 会丢 personnel 桶(current_issues/输出字段目录·
+    //   诏令推进靠它)；sc07 用 LITE 会丢 npcDeep(性格/弧线/记忆一致性规则)与 digest(称谓系统/人物关系网)。
+    // [二批·拆worldState四子段] worldPlan(预演规划/关系矩阵·半静态)+worldSocial(势力自治规则/党派阶层/矛盾/历史地理)+
+    //   worldGov(诏令执行环境/营造经济/国策/区划/提案预警)+worldLifecycle(社会生灭schema·产生灭字段者才需·实际仅sc1=FULL带)。
+    //   分配原则=该调用产什么字段/读什么域：FAC(战略军事)要Plan+Social不要Gov细账；LITE/EDICT(财政/诏令)要Gov不要Plan/Social；
+    //   SNAP(快照)要Social+Gov当前态不要Plan规划meta；COG(认知)要Plan(隐藏议程)+Social(党派)不要Gov。
+    EDICT: { base:1, worldGov:1, context:1, personnel:1, roster:1, tail:1 },
+    SNAP:  { base:1, worldSocial:1, worldGov:1, digest:1, context:1, roster:1, tail:1 },
+    COG:   { base:1, worldPlan:1, worldSocial:1, player:1, npcDeep:1, digest:1, context:1, roster:1, tail:1 },
+    // [三批·谨慎区·2026-07-02] 逐调用点实审后定档(callsite 语义而非成本文档名)：
+    //   NARR(叙事大纲/成文):事实面已由 _buildSc2FactsCore 同源喂 user prompt·sysP 供史观/口吻(base)+
+    //     前情(context/digest)+人物(player/npcDeep/worldSocial 党派阶层背景)+roster 防火墙·不需 Gov 细账/Plan 规划meta;
+    //   REVIEW(大纲审查/叙事审查):只查时代错乱/人名/节拍·base(史观)+roster(名单)+context 即可·最薄;
+    //   NPCDEEP(sc15/sc15n):全库最宽域调用·产心理/关系/阴谋/阶层/党争·仅舍 worldGov 细账/生灭schema/personnel;
+    //   MEMW(记忆回写):事实全在 user prompt·sysP 供身份接地(npcDeep)+roster;
+    //   MEMC(记忆合成 scTac/scStr/sc25):综述主线/势力向量·要 Social+digest·不需 Plan/Gov;
+    //   ENRICH(sc19 丰化):补人物党派身世·要 Social(党派阶层背景)+base(史观数值基准)+roster(防撞名)。
+    NARR:    { base:1, events:1, digest:1, context:1, player:1, npcDeep:1, worldSocial:1, roster:1, tail:1 },
+    REVIEW:  { base:1, context:1, roster:1, tail:1 },
+    NPCDEEP: { base:1, worldPlan:1, worldSocial:1, events:1, context:1, player:1, npcDeep:1, letters:1, socialRules:1, digest:1, roster:1, tail:1 },
+    MEMW:    { base:1, context:1, npcDeep:1, roster:1, tail:1 },
+    MEMC:    { base:1, worldSocial:1, digest:1, context:1, roster:1, tail:1 },
+    ENRICH:  { base:1, worldSocial:1, context:1, roster:1, tail:1 }
   };
   global.TM.Endturn.AI.prompt.SYS_PROFILE_OF = {
-    // ★ 当前全注释 = 全 FULL = 零行为变更。下次开游戏：先看 DebugLog 各 profile 实际字数，
-    //   再逐批去掉 // 启用，每启用一批跑一回合冒烟（无幻觉人名地名告警 / 无 [sysBlocks] RECON MISMATCH）后再扩。
-    // —— LITE（财政/诏令/快照/体检·不产新人名地名；仅保 base+worldState+context+roster+tail）——
-    // sc17:'LITE', sc27:'LITE', sc28:'LITE', sc07:'LITE', sc25:'LITE',
-    // —— FAC（势力/军事·保 worldState+roster+events；丢 digest/npcDeep/letters/personnel/socialRules/player）——
-    // sc16:'FAC', sc16L:'FAC', sc18:'FAC', sc18L:'FAC',
-    // —— 谨慎区（语义未定·先 FULL，验过再降）：scOl/scR/scP/scTac/scStr/memwrite/sc15/sc15n/sc0/sc05 ——
+    // [sysP分级·2026-07-02] 首批启用——受总闸 P.conf.sysPTieringEnabled 门控(默认关=全FULL=零行为变更·
+    //   设置「玩法机制·深化」有开关)。依据:2026-05-29 全回合实测(docs/ai-relay-fullturn-analysis.md·
+    //   18调用×54.8K sysP=全回合69%输入)+测绘逐调用必需段表。
+    //   保守原则:主线(sc0/sc1/sc1q/sc1b/sc1c/sc1d/sc2/sc05)全FULL不动;
+    //   谨慎区(scOl/scR/scP/scTac/scStr/memwrite/sc15/sc15n/sc19/sc25)留FULL待第二批验后再降。
+    sc17: 'LITE',                 // 财政:账目全在tp17·不产新人名(roster仍在)
+    sc28: 'SNAP',                 // 世界快照:需digest(称谓/关系网基线)
+    sc27: 'REVIEW',               // ★三批纠错:sc27 唯一调用点=legacy 叙事审查(followup·查时代错/人名·默认关)·
+                                  //   首批按成本文档名误判为"诏令"配了 EDICT·实审 callsite 改 REVIEW(EDICT 档保留备用)
+    sc07: 'COG',                  // NPC认知:需npcDeep+player+digest
+    sc16: 'FAC', sc16L: 'FAC',    // 势力战略:动态关系矩阵在worldState·静态factionBalance可舍
+    sc18: 'FAC', sc18L: 'FAC',    // 军事:军情明细在tp18·worldState有势力态
+    // [三批·谨慎区·2026-07-02] 10 个 id 逐调用点实审后启用(同受总闸门控·默认关):
+    scOl: 'NARR', scP: 'NARR',    // 叙事大纲/成文:事实已同源喂 user prompt(_buildSc2FactsCore)
+    scR: 'REVIEW',                // 大纲审查:时代错/人名/节拍·最薄档
+    sc15: 'NPCDEEP', sc15n: 'NPCDEEP',   // NPC深度:全库最宽域·仅舍Gov细账/生灭/personnel
+    memwrite: 'MEMW',             // 记忆回写:事实全在tpMW·sysP只供身份接地
+    scTac: 'MEMC', scStr: 'MEMC', sc25: 'MEMC',   // 记忆合成:综述主线要Social+digest
+    sc19: 'ENRICH'                // 新实体丰化:党派阶层背景+史观数值基准+防撞名
   };
 
   /**
@@ -833,6 +868,43 @@
       if (_chrArch && _chrArch !== _lastAft) tp += "\u3010\u65E9\u671F\u53D9\u4E8B\u5F52\u6863\u3011\n" + _chrArch.summary + "\n";
       if (_lastAft) tp += "\u3010\u4E0A\u56DE\u56DE\u987E\u3011\n" + _lastAft.summary + "\n";
     }
+    // \u2605\u4E0A\u56DE\u5408\u65F6\u653F\u8BB0/\u5B9E\u5F55\u539F\u6587\u00B7\u4EE4\u672C\u56DE\u5408\u53D9\u4E8B\u627F\u63A5\u5B9E\u9645\u60C5\u8282(\u975E\u4EC5 200 \u5B57\u6458\u8981)\u00B7\u6CBB"\u65F6\u653F\u8BB0/\u5B9E\u5F55\u4E0E\u63A8\u6F14\u65AD\u88C2"\u00B7
+    //   AI \u987B\u5EF6\u7EED\u672A\u51B3\u4E4B\u4E8B/\u60C5\u8282\u7EBF\u00B7\u4E0D\u5F97\u51ED\u7A7A\u9057\u5FD8\u6216\u524D\u540E\u77DB\u76FE\u3002\u6309\u4E0A\u4E0B\u6587\u9884\u7B97\u622A\u65AD(\u5C0F\u4E0A\u4E0B\u6587\u5C11\u7ED9\u00B7\u5927\u4E0A\u4E0B\u6587\u591A\u7ED9)\u3002
+    if ((Array.isArray(GM._recentNarrative) && GM._recentNarrative.length > 0) || (Array.isArray(GM._narrativeDigest) && GM._narrativeDigest.length > 0)) {
+      var _rnCp = (typeof getCompressionParams === 'function') ? getCompressionParams() : null;
+      var _rnScale = (_rnCp && _rnCp.scale) ? _rnCp.scale : 1;
+      var _rnBudget = Math.max(700, Math.min(2000, Math.round(1100 * _rnScale)));
+      // \u957F\u7EBF\u53D9\u4E8B\u7EFC\u8FF0\u00B7\u538B\u7F29\u6897\u6982\u00B7\u628A\u63E1\u957F\u671F\u8D70\u5411\u4E0E\u672A\u4E86\u4E4B\u5C40\u00B7\u9632\u957F\u5F27\u65AD\u88C2\u3002\u6765\u6E90\u4E24\u6BB5\u00B7\u65E9\u2192\u8FD1\u8FDE\u7EED\u8986\u76D6"\u8D85\u51FA\u8FD13\u56DE\u5408\u5168\u6587\u6CE8\u5165"\u7684\u5168\u90E8\u56DE\u5408(\u4E0D\u7559\u7A7A\u6863)\uFF1A
+      //   \u2460digest(\u66F4\u65E9\u00B7\u5DF2\u6324\u51FA6\u56DE\u5408\u539F\u6587\u7A97) \u2461\u539F\u6587\u7A97\u5185\u4F46\u8D85\u51FA\u8FD13\u5168\u6587\u6CE8\u5165\u7684\u56DE\u5408(N-4~N-6)\u53D6\u5176 summary\u00B7\u7D27\u63A5\u5168\u6587\u00B7\u65E0\u7F1D\u8854\u63A5\u3002
+      var _digSrc = (GM._narrativeDigest || []).slice();
+      var _rnMid = (GM._recentNarrative || []).slice(0, -3);   // \u5B58\u4E86\u539F\u6587\u4F46\u672A\u5168\u6587\u6CE8\u5165\u7684\u8F83\u8FD1\u56DE\u5408\u2192\u7528\u6458\u8981\u8865\u8FDB\u7EFC\u8FF0
+      for (var _mi = 0; _mi < _rnMid.length; _mi++) { if (_rnMid[_mi]) _digSrc.push({ turn: _rnMid[_mi].turn, summary: _rnMid[_mi].summary || '' }); }
+      if (_digSrc.length > 0) {
+        var _digTxt = _digSrc.map(function(d){ return 'T' + (d.turn || '?') + '\uFF1A' + (d.summary || ''); }).join('\uFF1B');
+        var _digBud = Math.max(500, Math.min(1600, Math.round(800 * _rnScale + 300)));
+        // \u9884\u7B97\u4E0D\u8DB3\u65F6\u4FDD\u7559\u5C3E\u90E8(\u8F83\u8FD1\u00B7\u7D27\u63A5\u5168\u6587\u66F4\u8FDE\u8D2F)
+        var _digOut = _digTxt.length > _digBud ? _digTxt.slice(-_digBud) : _digTxt;
+        tp += '\n\u3010\u957F\u7EBF\u53D9\u4E8B\u7EFC\u8FF0\uFF08\u66F4\u65E9\u5404\u56DE\u5408\u6897\u6982\u00B7\u628A\u63E1\u957F\u671F\u8D70\u5411\u4E0E\u672A\u4E86\u4E4B\u5C40\uFF0C\u672C\u56DE\u5408\u53D9\u4E8B\u52FF\u4E0E\u4E4B\u77DB\u76FE\uFF09\u3011\n' + _digOut + '\n';
+      }
+      // \u8FD1\u6700\u591A 3 \u56DE\u5408\u539F\u6587(\u6700\u65B0\u56DE\u5408\u5168\u989D\u00B7\u524D\u4E24\u56DE\u5408\u5404\u534A\u989D)\u00B7\u4EE4 AI \u770B\u5230\u8DE8\u56DE\u5408\u53D9\u4E8B\u5F27\u00B7\u60C5\u8282\u5EF6\u7EED\u66F4\u4E0D\u65AD\u88C2
+      if (Array.isArray(GM._recentNarrative) && GM._recentNarrative.length > 0) {
+        var _rnSlice = GM._recentNarrative.slice(-3);
+        var _rnBlocks = [];
+        for (var _rni = _rnSlice.length - 1; _rni >= 0; _rni--) {   // \u4ECE\u6700\u65B0\u5F80\u56DE\u6392
+          var _rnItem = _rnSlice[_rni];
+          if (!_rnItem || !(_rnItem.shizhengji || _rnItem.shilu)) continue;
+          var _isLatest = (_rni === _rnSlice.length - 1);
+          var _bud = _isLatest ? _rnBudget : Math.round(_rnBudget / 2);
+          var _rnT = String(_rnItem.shizhengji || '').slice(0, _bud);
+          if (_rnItem.shilu && _isLatest) _rnT += '\n\u3014\u5B9E\u5F55\u3015' + String(_rnItem.shilu).slice(0, Math.round(_bud / 2));
+          var _rnLbl = _isLatest ? '\u00B7\u4E0A\u56DE\u5408' : ('\u00B7\u524D' + (_rnSlice.length - 1 - _rni) + '\u56DE\u5408');
+          _rnBlocks.push('\u3016T' + (_rnItem.turn || '?') + _rnLbl + '\u3017\n' + _rnT);
+        }
+        if (_rnBlocks.length) {
+          tp += '\n\u3010\u8FD1\u56DE\u5408\u65F6\u653F\u8BB0\u00B7\u5B9E\u5F55\u539F\u6587\uFF08\u672C\u56DE\u5408\u53D9\u4E8B\u987B\u627F\u63A5\u5176\u4E2D\u672A\u51B3\u4E4B\u4E8B\u3001\u5EF6\u7EED\u60C5\u8282\u7EBF\u4E0E\u4EBA\u7269\u52A8\u5411\uFF0C\u6536\u675F\u6216\u63A8\u8FDB\u5DF2\u5F00\u4E4B\u4F0F\u7B14\uFF0C\u4E0D\u5F97\u51ED\u7A7A\u9057\u5FD8\u6216\u524D\u540E\u77DB\u76FE\uFF09\u3011\n' + _rnBlocks.join('\n') + '\n';
+        }
+      }
+    }
 
     // —— 层4: 辅助信息（宰辅建言 + 官制 + 科举 + 地图 + 参考）——
     var suggestions = generateChancellorSuggestions();
@@ -887,13 +959,25 @@
       var impMin = _hcp.heartsImportanceMin != null ? _hcp.heartsImportanceMin : 6;
       var totalCap = _hcp.heartsTotalCap != null ? _hcp.heartsTotalCap : 12;
 
+      // 受限状态(下狱/流放/在逃/致仕)标签·令这些人不被当活跃在职官员注入(玩家报:下狱者仍上朝上奏)
+      function _restStatus(c){
+        if (!c) return '';
+        if (c._imprisoned) return '在狱';
+        if (c._exiled) return '流放';
+        if (c._fled || c._missing) return '在逃';
+        if (c._retired || c.retired) return '致仕';
+        return '';
+      }
+      // ★2026-07-04 方向A·点名必入：本回合玩家诏令/指令点到名的 NPC 大幅加权——玩家正对其行事·AI 必须深演其反应
+      var _edictHay = '';
+      try { if (typeof edicts !== 'undefined' && edicts) _edictHay = [edicts.decree, edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other].filter(Boolean).join(' '); } catch (_ehE) {}
       var candidates = [];
       (GM.chars || []).forEach(function(c){
         if (!c || c.alive === false || c._fakeDeath) return;
         if (!Array.isArray(c._memory) || c._memory.length === 0) return;
         if (c.isPlayer) return; // 玩家本人不生成 NPC 行为·不占用深度心声名额(2026-06-13)
         var weight = (c.historicalImportance || 0);
-        if (c.officialTitle) weight += 20;
+        if (c.officialTitle && !_restStatus(c)) weight += 20;  // 受限者不享在职加权·免挤占活跃官员名额
         // 品级抬升(朝代中立·c.rank 多未设令旧 +15 恒哑·改走运行时 rank 解析器·越高品权重越大·2026-06-13)
         var _rk = null;
         try { if (window.TMPromotion && typeof window.TMPromotion.resolveRankLevel === 'function') _rk = window.TMPromotion.resolveRankLevel(c, GM); } catch (_rkE) {}
@@ -909,17 +993,27 @@
         if (Array.isArray(c._arcs) && c._arcs.some(function(_a){ return _a && _a.phase !== 'resolved'; })) _heat += 12;
         if (/[怒惧悲恨惊狂]/.test(c._mood || '平')) _heat += 8;
         if (Array.isArray(c._memory)) {
-          for (var _hi = c._memory.length - 1; _hi >= 0 && _hi >= c._memory.length - 4; _hi--) {
+          // 近忆热度按最近2回合内记忆的最高重要度分档(不止 imp>=8)·令刚经历中等事件者也升入深度名额·
+          // 闭合"经历→被选中→反应"环(补强1保证选中后最近记忆必进·此处保证刚经历者更易被选中·2026-07-03)
+          var _freshImp = 0;
+          for (var _hi = c._memory.length - 1; _hi >= 0 && _hi >= c._memory.length - 6; _hi--) {
             var _hmem = c._memory[_hi];
-            if (_hmem && (_hmem.importance || 0) >= 8 && ((GM.turn || 0) - (_hmem.turn || 0)) <= 2) { _heat += 10; break; }
+            if (_hmem && ((GM.turn || 0) - (_hmem.turn || 0)) <= 2 && (_hmem.importance || 0) > _freshImp) _freshImp = (_hmem.importance || 0);
           }
+          if (_freshImp >= 8) _heat += 10;
+          else if (_freshImp >= 5) _heat += 6;
+          else if (_freshImp >= 3) _heat += 3;
         }
         weight += (_heat > 25 ? 25 : _heat);
+        if (_edictHay && c.name && String(c.name).length >= 2 && _edictHay.indexOf(c.name) >= 0) weight += 40;  // 点名必入(2字以上名才查·防单字误中)
         candidates.push({ ch: c, weight: weight, rk: _rk });
       });
       candidates.sort(function(a,b){ return b.weight - a.weight; });
       var _allScored = candidates.slice(); // 全量已排序·供「实权重臣未入深度名额」配额(slice B)
       candidates = candidates.slice(0, maxChars);
+      // 同场深度名额名单——供相关性选忆/在场恩怨对照(方向A·2026-07-04)
+      var _present = {};
+      candidates.forEach(function(cd) { if (cd && cd.ch && cd.ch.name) _present[cd.ch.name] = 1; });
 
       if (candidates.length === 0) return;
 
@@ -928,12 +1022,16 @@
 
       var xmlLines = ['<npc-hearts ctx="' + ((_hcp.contextK||'?')+'K') + '">'];
       var heartCount = 0;
+      var _withCount = 0;  // 在场恩怨对照条数(方向A·2026-07-04)
       candidates.forEach(function(cand){
         if (heartCount >= totalCap) return;
         var c = cand.ch;
         var mood = c._mood || '平';
         // 完整官职（主⊕兼·走 office-system 真源·治"AI 只认主职、漏兼任高职"症状B）
         var curTitle = (typeof _offFormatCharTitles === 'function') ? (_offFormatCharTitles(c, { fallback: c.officialTitle || c.title || '' }) || c.officialTitle || c.title || '') : (c.officialTitle || c.title || '');
+        // 受限者:官衔改标为「原任X·现在狱/流放…」·令 AI 勿把其写成如常视事的在职官员
+        var _rst = _restStatus(c);
+        if (_rst) curTitle = (curTitle ? '原任' + curTitle + '·' : '') + '现' + _rst + '(不预朝政)';
         var activeArcs = (c._arcs || []).filter(function(a){ return a.phase !== 'resolved'; });
         var arcAttr = activeArcs.length ? ' active_arcs="' + _xE(activeArcs.slice(0,3).map(function(a){return a.title;}).join('·')) + '"' : '';
         var _gmAttr = '';
@@ -960,7 +1058,17 @@
             xmlLines.push('    <goal ' + _gAttrs.join(' ') + '>' + _xE(_gtxt.substring(0, 100)) + '</goal>');
           }
         }
-        var sorted = c._memory.slice().sort(function(a,b){ return (b.importance||0) - (a.importance||0); });
+        // ★2026-07-04 方向A·相关性选忆：重要度之上叠加对手戏/点名加分——涉同场深度 NPC 的记忆(+2.5)、
+        //   涉本回合诏令点到之人的记忆(+2)优先出线。门槛过滤仍按原 importance(impMin/recency)·只改出线顺序不放水质量闸。
+        var _memScore = function(m) {
+          var s = (m.importance || 0), w = (m && m.who) || '';
+          if (w && w !== c.name) {
+            if (_present[w]) s += 2.5;
+            if (_edictHay && String(w).length >= 2 && _edictHay.indexOf(w) >= 0) s += 2;
+          }
+          return s;
+        };
+        var sorted = c._memory.slice().sort(function(a,b){ return _memScore(b) - _memScore(a); });
         // ★2026-07-01 codex-fix S1:hearts 门槛 impMin 随模型上下文动态(3~9·见 tm-ai-infra heartsImportanceMin)·中/小上下文可到 7~8·
         //   会把 imp6 的正式问对记忆挡在推演外。额外放行「近2回合内 importance>=6」的记忆(典型=刚发生的问对/奏疏交谈)·
         //   令新近君臣交谈无论动态门槛多高都能进推演·不改其 importance(避伤疤膨胀)。先过滤后截断·以保其入选。
@@ -968,6 +1076,19 @@
         var top = sorted.filter(function(m){
           return (m.importance||0) >= impMin || ((m.importance||0) >= 6 && (m.turn||0) >= _recentTurnGate);
         }).slice(0, perChar);
+        // ★2026-07-03 闭合「经历→记忆→推演→反应」环:保证"最近1回合的经历"必进推演(哪怕低 importance·如叙事兜底 imp4)。
+        //   否则低上下文(impMin 6-8)+recency 仅放行 imp>=6 会把新近轻记忆挡在推演外·NPC 对上回合的事毫无反应=停在开局。
+        //   取最近回合中(turn 最新、同 turn 取 importance 最高)一条·若未入选则占最后 1 槽(perChar<=1 时独占·定义性伤疤已在 <self>)。
+        var _lastTurnGate = (GM.turn || 0) - 1;
+        var _freshest = null;
+        for (var _fi = 0; _fi < c._memory.length; _fi++) {
+          var _fm = c._memory[_fi];
+          if (!_fm || (_fm.turn||0) < _lastTurnGate) continue;
+          if (!_freshest || (_fm.turn||0) > (_freshest.turn||0) || ((_fm.turn||0) === (_freshest.turn||0) && (_fm.importance||0) > (_freshest.importance||0))) _freshest = _fm;
+        }
+        if (_freshest && top.indexOf(_freshest) < 0) {
+          top = (perChar <= 1) ? [_freshest] : top.slice(0, perChar - 1).concat([_freshest]);
+        }
         top.forEach(function(m){
           if (heartCount >= totalCap) return;
           var attrs = [
@@ -1013,10 +1134,27 @@
             }
           }
         } catch (_tiesE) {}
+        // ★2026-07-04 方向A·在场恩怨对照：与同场深度 NPC 之间的定义性旧账(每对取最高重要度一条·imp>=5·
+        //   已入上方 <memory> 的不重挂)显式挂 <with>·令两人同场时 AI 见得到"他们之间发生过什么"·对手戏不靠猜。
+        try {
+          var _gBest = {};
+          (c._memory || []).forEach(function(m) {
+            var w = m && m.who;
+            if (!w || w === c.name || !_present[w] || (m.importance || 0) < 5) return;
+            if (top.indexOf(m) >= 0) return;  // 已作 <memory> 注入·不重挂
+            if (!_gBest[w] || (m.importance || 0) > (_gBest[w].importance || 0)) _gBest[w] = m;
+          });
+          Object.keys(_gBest).sort(function(x, y) { return (_gBest[y].importance || 0) - (_gBest[x].importance || 0); }).slice(0, 2).forEach(function(w) {
+            var gm = _gBest[w];
+            xmlLines.push('    <with name="' + _xE(w) + '" emotion="' + _xE(gm.emotion || '平') + '">' + _xE(String(gm.event || '').slice(0, 50)) + '</with>');
+            _withCount++;
+          });
+        } catch (_gwE) {}
         xmlLines.push('  </heart>');
       });
       xmlLines.push('</npc-hearts>');
       tp += '\n' + xmlLines.join('\n') + '\n';
+      if (_withCount > 0) tp += '※ <with> 为在场者之间的旧怨宿谊——同朝有旧账者·其言行/npc_actions 须演出这段关系(或明争、或暗防、或修好)·对手戏优先于独角戏·勿各说各话。\n';
       // 实权重臣行止配额(朝代中立·纯按品级 rk·防高品官员长期在叙事中沉寂/封疆边事静止·2026-06-13)
       (function _injectNeglectedAuthority() {
         var _NL = String.fromCharCode(10);
@@ -1034,7 +1172,18 @@
         _neg.forEach(function(_cd2) {
           var c2 = _cd2.ch;
           var t2 = (typeof _offFormatCharTitles === 'function') ? (_offFormatCharTitles(c2, { fallback: c2.officialTitle || c2.title || '' }) || c2.officialTitle || c2.title || '') : (c2.officialTitle || c2.title || '');
-          _nl.push('  · ' + c2.name + (t2 ? '（' + t2 + '）' : '') + '·' + (c2.faction || '') + '·心绪' + (c2._mood || '平'));
+          // 附一条定义性记忆(顶级伤疤 or 最高重要度近忆)·令 AI 知其心结·不至于停在开局人设(治方向A 名额饥饿·重臣即便未入深度名额也带记忆)
+          var _defMem = '';
+          try {
+            if (Array.isArray(c2._scars) && c2._scars.length) {
+              var _sc = c2._scars[c2._scars.length - 1];
+              if (_sc) _defMem = String(_sc.event || '').slice(0, 26) + (_sc.emotion ? '[' + _sc.emotion + ']' : '');
+            } else if (Array.isArray(c2._memory) && c2._memory.length) {
+              var _mm = c2._memory.slice().sort(function(a, b){ return (b.importance || 0) - (a.importance || 0); })[0];
+              if (_mm && _mm.event) _defMem = String(_mm.event).slice(0, 26);
+            }
+          } catch (_dmE) {}
+          _nl.push('  · ' + c2.name + (t2 ? '（' + t2 + '）' : '') + '·' + (c2.faction || '') + '·心绪' + (c2._mood || '平') + (_defMem ? '·记忆「' + _defMem + '」' : ''));
         });
         tp += _nl.join(_NL) + _NL;
       })();
@@ -2403,7 +2552,8 @@
     // 注入·首回合候选事件（仅 Turn 1-3 时·未触发的）
     }
 
-    _mark('worldState');
+    // [sysP分级二批·2026-07-02] worldState 拆四子段：worldPlan(预演规划/关系矩阵·半静态)
+    _mark('worldPlan');
     if (GM.turn <= 3 && Array.isArray(GM._candidateEvents) && GM._candidateEvents.length > 0) {
       var _unfired = GM._candidateEvents.filter(function(e) { return e && !e._fired; });
       if (_unfired.length > 0) {
@@ -2833,11 +2983,13 @@
         sysP += '\n- party_changes反映影响力涨跌；对立党派暗斗、弹劾、排挤';
         sysP += '\n- 党派之间的斗争通过npc_actions体现——党A成员弹劾党B成员等';
         sysP += '\n- 被压制党派可能暗中活动、投靠外部势力、甚至策动兵变';
+        sysP += '\n- 政柄格局（【党派数值】的政柄=秉政/在野/边缘）是推演输入：秉政党揽权用事、其官员奉行诏令更卖力也更遭忌；边缘党怨望结交外援；政柄更迭当有 npc_actions/叙事回响';
       }
       if (GM.classes && GM.classes.length > 0) {
         sysP += '\n社会阶层各有本位诉求与当下议程（见【阶层正册】）：';
         sysP += '\n- class_changes 只在本回合确有事件牵动该阶层时输出；惠政（蠲赈减免）让受害最深的阶层受惠最大，苛政（加征摊派）反向同理';
         sysP += '\n- 叙事须与正册一致：满意度极低的阶层应表现出抗税、骚乱、流民乃至起义的迹象；诉求得偿的阶层应有称颂之声';
+        sysP += '\n- 正册带「运动」者（民间请愿运动·成势/鼎沸）是活火山：推演须回应——或有司安抚、或言官代奏、或酿成聚众之事；时政记【民生】段须记其起伏，勿视而不见';
       }
     }
     try {
@@ -3097,7 +3249,8 @@
       }
     }
     sysP += '\n- 物品可被获取/失去：通过战争缴获、外交赠送、盗窃等方式。在叙事中适时让角色获取或丢失物品。';
-    _mark('worldState');
+    // [sysP分级二批] worldSocial(势力自治规则/党派阶层/矛盾/历史地理/跨系统)
+    _mark('worldSocial');
     sysP += '\n\n【你的全部权力——可在JSON中修改的内容】';
     sysP += '\n你可以通过返回JSON中的对应字段修改游戏中的一切：';
     sysP += '\n- resource_changes: 修改任何资源变量';
@@ -3422,7 +3575,8 @@
       });
     }
 
-    _mark('worldState');
+    // [sysP分级二批] worldGov(诏令执行环境/营造经济/国策/区划/NPC提案/健康预警)
+    _mark('worldGov');
     sysP += '\n\n【官制职能——推演原则】';
     sysP += '\n本朝官制中每个部门有职能分工（见tp中【官制职能分工】）。推演时注意：';
     sysP += '\n  · 事务应优先由对口部门处理——但"对口"看职能内容，不看部门名称';
@@ -3527,7 +3681,8 @@
     sysP += '\n    · 势力覆灭必须与战争/bigyear 事件呼应，不得凭空消失';
     sysP += '\n    · 阶层兴替跨度长——通常数十回合渐变，非一日之功；除非诏令明确废止（如"永禁贱籍"）才立即生效';
     sysP += '\n    · 新建时 leader/首脑须指向现有角色；不得在回合推演中自动创建新角色';
-    _mark('worldState');
+    // [sysP分级二批] worldLifecycle(社会生灭周期 schema·产 party/faction/class 生灭字段者才需)
+    _mark('worldLifecycle');
     sysP += '\n【官制人事·扩展动作】';
     sysP += '\n  promote: 晋升——填newRank(新品级)，可选newDept+newPosition(升任新职)';
     sysP += '\n  demote: 降级——填newRank';
@@ -3831,6 +3986,31 @@
         sysP += '\n\n【玩家亲自策名·已在场的合法角色（务必认作真实在场·可正常参与推演与叙事·不得当作虚构或时代错乱）】';
         sysP += '\n' + _cemingNames.join('、');
       }
+      // 受限人员现状名册·治「下狱者仍上朝/上奏、罢官者仍被称旧衔」(玩家报)·
+      //   旧防火墙只挡死人·不知谁在狱/流放/罢官→AI 继续把他们写成活跃官员。此处明列现状 + 硬约束。
+      var _restricted = { imprison: [], exile: [], flee: [], retire: [], dismiss: [] };
+      var _curTurnR = GM.turn || 0;
+      (GM.chars || []).forEach(function(c){
+        if (!c || c.alive === false || !c.name) return;
+        if (c._imprisoned) _restricted.imprison.push(c.name);
+        else if (c._exiled) _restricted.exile.push(c.name);
+        else if (c._fled || c._missing) _restricted.flee.push(c.name);
+        else if (c._retired || c.retired) _restricted.retire.push(c.name);
+        else if (c._removedFromOfficeTurn != null && !c.officialTitle && (_curTurnR - c._removedFromOfficeTurn) <= 6) _restricted.dismiss.push(c.name);
+      });
+      var _restLines = [];
+      if (_restricted.imprison.length) _restLines.push('【已下狱·候勘/待决】' + _restricted.imprison.join('、'));
+      if (_restricted.exile.length)    _restLines.push('【已流放/发配】' + _restricted.exile.join('、'));
+      if (_restricted.flee.length)     _restLines.push('【逃亡/失踪】' + _restricted.flee.join('、'));
+      if (_restricted.retire.length)   _restLines.push('【已致仕归乡】' + _restricted.retire.join('、'));
+      if (_restricted.dismiss.length)  _restLines.push('【已罢官免职·现无官职】' + _restricted.dismiss.join('、'));
+      if (_restLines.length) {
+        sysP += '\n\n【受限人员现状名册·硬约束】';
+        sysP += '\n以下人员本回合处于下列状态·除非玩家诏令明确赦免/释放/起复/复职·否则严格遵守：';
+        sysP += '\n· 下狱/流放/逃亡者：不得上朝、不得上奏题本、不得参与朝议廷议、不得在外任职理事；叙事只可写其身陷囹圄/在流放/在逃之情形，不得写其如常视事。';
+        sysP += '\n· 已罢官/致仕者：现无官职，严禁再以旧官衔（如「X尚书」「X巡抚」）称呼或令其行使职权；确需提及只可称其人名或「原任X」。';
+        sysP += '\n' + _restLines.join('\n');
+      }
       // 有效地名白名单（从行政区划收集）
       if (P.adminHierarchy) {
         var _placeNames = [];
@@ -3872,19 +4052,47 @@
       GM._lastSysPHash = _fixedHash;
     }
 
-    // 安全检查：sysP长度过大时截断低优先级段落（每字符约0.5 token，sysP超过contextK*512字符则需截断）
+    // 安全检查（2026-07-02 重做·分段感知）：旧实现是「笨尾切」——注释说"截断低优先级段落"·代码却 substring 砍尾。
+    //   真 sysP 已 >65K 字：contextK≤128 的模型(64K/128K 窗口)尾部被静默砍——被砍的恰是 roster 幻觉防火墙名单
+    //   (全调用实体对齐锚)与输出字段目录·且分块 recon 必失配(sysPFor 分级永退化)。
+    //   现改为：分块一致时按低优先级整段省略(events→letters→digest→socialRules→npcDeep→player→worldLifecycle→personnel·
+    //   绝不整丢 base/worldPlan/worldSocial/worldGov/context/roster/tail)·仍超则对 world 子段/base 中段截除保头尾；分块失配时才退旧式尾切兜底。
     var _sysPMaxChars = _tokCp.contextK * 512;
-    if (sysP.length > _sysPMaxChars) {
-      _dbg('[Prompt] sysP过长(' + sysP.length + '字符)，截断到' + _sysPMaxChars);
-      sysP = sysP.substring(0, _sysPMaxChars) + '\n...(系统提示过长，部分参考信息已截断)';
-    }
 
     // ===== 写入 ctx.prompt =====
     // [1A·sysBlocks·2026-06-02] 收尾：闭合最后一段 + 组装 sysBlocks + 运行时 diff=0 自检。
-    // 截断分支(L~3391 sysP 整体重赋值)或任何失配 → 放弃分块、回退整条 sysP(1B/1C 见 _segs=null 即用全量·不省字但安全)。
+    // 任何失配 → 放弃分块、回退整条 sysP(1B/1C 见 _segs=null 即用全量·不省字但安全)。
     _mark('tail');
     var _recon = _segs.map(function(_s){ return _s.text; }).join('');
     if (_recon === sysP) {
+      if (sysP.length > _sysPMaxChars) {
+        var _ovDropOrder = ['events', 'letters', 'digest', 'socialRules', 'npcDeep', 'player', 'worldLifecycle', 'personnel'];
+        for (var _ovI = 0; _ovI < _ovDropOrder.length && sysP.length > _sysPMaxChars; _ovI++) {
+          var _ovN = _ovDropOrder[_ovI], _ovLen = 0;
+          _segs.forEach(function(_s){ if (_s.name === _ovN) { _ovLen += _s.text.length; _s.text = ''; } });
+          if (_ovLen) {
+            sysP = _segs.map(function(_s){ return _s.text; }).join('');
+            _dbg('[Prompt] sysP超预算·省略段 ' + _ovN + '(' + _ovLen + '字) → ' + sysP.length);
+          }
+        }
+        // 仍超（极小窗口模型）→ 对 world 子段/base 中段截除·保段首尾（roster 幻觉防火墙全程不动）
+        var _ovMidCut = ['worldSocial', 'worldGov', 'worldPlan', 'base'];
+        for (var _ovJ = 0; _ovJ < _ovMidCut.length && sysP.length > _sysPMaxChars; _ovJ++) {
+          for (var _ovK = 0; _ovK < _segs.length && sysP.length > _sysPMaxChars; _ovK++) {
+            var _sg = _segs[_ovK];
+            if (_sg.name !== _ovMidCut[_ovJ] || _sg.text.length < 1200) continue;
+            var _ovNeed = sysP.length - _sysPMaxChars;
+            var _cut = Math.min(_ovNeed, _sg.text.length - 800);
+            var _keepHead = Math.ceil((_sg.text.length - _cut) * 0.6);
+            var _keepTail = (_sg.text.length - _cut) - _keepHead;
+            _sg.text = _sg.text.slice(0, _keepHead) + '\n…(此段中部因超预算省略)…\n' + (_keepTail > 0 ? _sg.text.slice(-_keepTail) : '');
+            sysP = _segs.map(function(_s2){ return _s2.text; }).join('');
+          }
+        }
+        _segs[_segs.length - 1].text += '\n...(系统提示超预算·低优先级段落已省略)';
+        sysP = _segs.map(function(_s){ return _s.text; }).join('');
+        _dbg('[Prompt] sysP分段感知收束 → ' + sysP.length + '/' + _sysPMaxChars);
+      }
       var sysBlocks = {};
       _segs.forEach(function(_s){ sysBlocks[_s.name] = (sysBlocks[_s.name] || '') + _s.text; });
       ctx.prompt.sysBlocks = sysBlocks;
@@ -3907,12 +4115,21 @@
     } else {
       ctx.prompt.sysBlocks = null;
       ctx.prompt._segs = null;
-      if (typeof DebugLog !== 'undefined') DebugLog.log('ai', '[sysBlocks] 分块回退(截断/失配) recon=' + _recon.length + ' sysP=' + sysP.length);
+      // 分块失配 → 无法分段省略·退旧式尾切兜底(行为同 2026-07-02 前)
+      if (sysP.length > _sysPMaxChars) {
+        _dbg('[Prompt] sysP过长(' + sysP.length + '字符)·分块失配·旧式截断到' + _sysPMaxChars);
+        sysP = sysP.substring(0, _sysPMaxChars) + '\n...(系统提示过长，部分参考信息已截断)';
+      }
+      if (typeof DebugLog !== 'undefined') DebugLog.log('ai', '[sysBlocks] 分块回退(失配) recon=' + _recon.length + ' sysP=' + sysP.length);
     }
     // [1B·sysBlocks·2026-06-02] sysPFor(scId)：按 profile 选段拼接(代码序)。FULL/缺省/无分块/未知 → 整条 sysP(安全)。
+    // [sysP分级·2026-07-02] 总闸 sysPTieringEnabled(默认关=恒返整条=零行为变更)·开后按 SYS_PROFILE_OF 分级省流。
     ctx.prompt.sysPFor = function(scId){
       var _segsL = ctx.prompt._segs;
       if (!_segsL) return ctx.prompt.sysP;
+      var _tierOn = false;
+      try { var _Pf = global.P || {}; _tierOn = !!((_Pf.conf && _Pf.conf.sysPTieringEnabled) || (_Pf.ai && _Pf.ai.sysPTieringEnabled)); } catch (_te) {}
+      if (!_tierOn) return ctx.prompt.sysP;
       var _prof = (global.TM.Endturn.AI.prompt.SYS_PROFILE_OF || {})[scId] || 'FULL';
       if (_prof === 'FULL') return ctx.prompt.sysP;
       var _keep = (global.TM.Endturn.AI.prompt.SYS_PROFILES || {})[_prof];

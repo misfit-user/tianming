@@ -58,6 +58,20 @@ function _cyShowInputRow(show){
   row.style.display = show ? 'flex' : 'none';
 }
 
+/** 共享·某人是否不能与朝议(下狱/流放/致仕/逃亡/丁忧/病危等全变体·统一各界面受限过滤·不含 isPlayer·调用方自理) */
+function _cyCannotAttend(c){
+  if(!c) return true;
+  if(c.alive === false || c.dead || c.health === 'dead') return true;
+  if(c._imprisoned || c.imprisoned || c._inPrison || c._jailed || c._inJail || c.health === 'imprisoned') return true;
+  if(c._exiled || c.exiled || c._banished) return true;
+  if(c._retired || c.retired) return true;
+  if(c._fled || c.fled || c._missing) return true;
+  if(c._mourning) return true;
+  if(c._graveIll || (typeof c.health === 'number' && c.health <= 10)) return true;
+  if(c._status === 'imprisoned' || c._status === 'exiled' || c._status === 'fled' || c._status === 'retired' || c._status === 'mourning' || c._status === 'sick_grave') return true;
+  return false;
+}
+
 /** 玩家回车或点击"插言"：将发言缓存，下一轮 AI 生成前会被读取并插入对话 */
 function _cySubmitPlayerLine(){
   var inp=_$("cy-player-input"); if(!inp) return;
@@ -76,6 +90,62 @@ function _cyAbortChaoyi(){
   CY._abortChaoyi = true;
   if(CY.abortCtrl){ try { CY.abortCtrl.abort(); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}} }
   try { if(typeof addCYBubble==='function') addCYBubble('内侍','（陛下拊案——群臣噤声。）', true); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
+}
+
+/** 共享·玩家插言的 NPC 智能响应器（廷议/御前/任意议事循环通用·令中途插话像常朝一样有的放矢）
+ *  选人：点名(话中提到的在场者) > 代词(你/卿→上一发言者) > 相关者(随机 1-2·诸卿则 3)。
+ *  opts: { kind:'tinyi'|'yuqian', topic, attendees:[name], stances?:{name:{current}}, lastSpeaker?, round?, max?, noJishi? }
+ */
+async function _cyInterjectRespond(playerText, opts){
+  opts = opts || {};
+  if(!CY || !CY.open) return;
+  var attendees = (opts.attendees || []).filter(Boolean);
+  if(!attendees.length) return;
+  var txt = String(playerText || '');
+  // 1) 点名·话里提到的在场者(长名优先·并剔除被更长命中名包含的短名·免"王安石"同时命中"王安")
+  var _hits = attendees.filter(function(n){ return n && n.length >= 2 && txt.indexOf(n) >= 0; })
+                       .sort(function(a,b){ return b.length - a.length; });
+  var mentioned = [];
+  _hits.forEach(function(n){ if(!mentioned.some(function(a){ return a.indexOf(n) >= 0; })) mentioned.push(n); });
+  // 2) 群体·诸卿/你们(须先于代词判定·免"你们"被 ^你 当成单指上一发言者)
+  var plural = /诸卿|众卿|诸公|列位|众爱卿|大家|尔等|你们/.test(txt);
+  // 3) 代词·你/卿/爱卿→上一发言者(排除"你们")
+  var pronounSelf = /(你|卿|爱卿|汝|尔)(说|言|意|以为|之见|奏|对|如何|意下|所奏|所议)/.test(txt) || /^(你|卿|爱卿)(?!们)/.test(txt);
+  var responders;
+  function _shuf(a){ for(var s = a.length - 1; s > 0; s--){ var j = Math.floor(Math.random()*(s+1)); var t = a[s]; a[s] = a[j]; a[j] = t; } return a; }
+  if(mentioned.length){
+    responders = mentioned.slice(0, opts.max || 3);
+  } else if(plural){
+    responders = _shuf(attendees.slice()).slice(0, Math.min(3, attendees.length));
+  } else if(pronounSelf && opts.lastSpeaker && attendees.indexOf(opts.lastSpeaker) >= 0){
+    responders = [opts.lastSpeaker];
+  } else {
+    responders = _shuf(attendees.slice()).slice(0, Math.min(2, attendees.length));
+  }
+  var yuqian = (opts.kind === 'yuqian');
+  for(var i = 0; i < responders.length; i++){
+    if(!CY.open || CY._abortChaoyi) break;
+    var nm = responders[i];
+    var ch = (typeof findCharByName === 'function') ? findCharByName(nm) : null;
+    var stance = (opts.stances && opts.stances[nm] && opts.stances[nm].current) || '';
+    var p = '皇帝在' + (yuqian ? '御前密议' : '廷议') + '中发话：「' + txt + '」\n';
+    p += '议题：' + (opts.topic || '') + '\n';
+    p += '你扮演' + nm + '（' + ((ch && (ch.officialTitle || ch.title)) || '') + '）' + (stance ? ('，当前立场：' + stance) : '') + '\n';
+    p += '性格：' + ((ch && ch.personality) || '') + '，忠诚' + ((ch && ch.loyalty) || 50) + (ch && ch.party ? ('，党：' + ch.party) : '') + '\n';
+    if(mentioned.indexOf(nm) >= 0) p += '（陛下点名问你，须正面回应，勿顾左右。）\n';
+    p += '请以臣子口吻简短回应陛下此言：可顺旨/进谏/剖白/转圜/重申立场，须切合你的性格' + (stance ? '与立场' : '') + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n';
+    p += '返回 JSON：{"newStance":"…(如因此改变立场则填，否则留空)","line":"…"}';
+    try {
+      var raw = await callAI(p, (typeof _aiDialogueTok === 'function' ? _aiDialogueTok('cy', 1) : 400), null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);
+      if(!CY || !CY.open || CY._abortChaoyi) return;  // await 期间玩家退朝/打断→勿写已销毁 DOM、勿再续
+      var obj = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
+      if(obj && obj.line){
+        addCYBubble(nm, '〔回言〕' + escHtml(obj.line), false, true);
+        if(obj.newStance && opts.stances && opts.stances[nm]) opts.stances[nm].current = obj.newStance;
+        if(!opts.noJishi){ try { _cy_jishiAdd(opts.kind || 'tinyi', opts.topic, nm, obj.line, { round: opts.round || 0, playerResponse: true }); } catch(_){} }
+      }
+    } catch(e){ try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'cy-interject-respond');}catch(_){} }
+  }
 }
 
 /**

@@ -38,13 +38,15 @@
   };
 
   /* ── 兵种识别第4层:已学词典(learnUnknownTypes 用次级 LLM 归类生僻名·记忆化沉淀·同步命中)── */
-  var _LEX = {};                                    // normKey → {arm,sub}·会话内活缓存(_syncLexicon 从 GM._unitLexicon 水合)
+  var _LEX = {};                                    // normKey → {arm,sub[,flags]}·会话内活缓存(_syncLexicon 从 GM._unitLexicon 水合)
   var _VALID_ARM = { step: 1, cav: 1, bow: 1, art: 1, guard: 1 };
+  var _VALID_FLAGS = { elite: 1, heavy: 1, shield: 1, baggage: 1, shock: 1, scare: 1, slow: 1, antiCav: 1 };   // 原型 flag 覆盖层认的修饰位(§3 LLM直出flag拼装)
   function _normType(s) { return String(s == null ? '' : s).replace(/\s+/g, ''); }
   function _defSub(arm) { return arm === 'cav' ? 'horse' : arm === 'bow' ? 'bow' : arm === 'art' ? 'cannon' : arm === 'guard' ? 'guard' : 'sword'; }
+  function _validFlags(a) { return Array.isArray(a) ? a.filter(function (f) { return _VALID_FLAGS[f]; }) : []; }
   /* 从 GM._unitLexicon(持久·随存档)水合活缓存·载入/学习后调 */
   function _syncLexicon(g) {
-    try { var lx = g && g._unitLexicon; if (lx && typeof lx === 'object') { for (var k in lx) { if (lx[k] && _VALID_ARM[lx[k].arm]) _LEX[k] = { arm: lx[k].arm, sub: lx[k].sub || _defSub(lx[k].arm) }; } } } catch (e) {}
+    try { var lx = g && g._unitLexicon; if (lx && typeof lx === 'object') { for (var k in lx) { if (lx[k] && _VALID_ARM[lx[k].arm]) { var _e = { arm: lx[k].arm, sub: lx[k].sub || _defSub(lx[k].arm) }; var _f = _validFlags(lx[k].flags); if (_f.length) _e.flags = _f; _LEX[k] = _e; } } } } catch (e) {}
   }
   /* BYOK 就绪(读全局 localStorage.tm_api 的 key·无 key→不触发失败 LLM 调用) */
   function _aiReady() {
@@ -102,9 +104,13 @@
       if (RX.spear.test(ej))         return { arm: 'step', sub: 'spear',    flags: flags, src: 'equipment' };
     }
 
-    /* level4:已学词典(learnUnknownTypes 沉淀·次级 LLM 归类生僻名·同步命中·前三层接不住的开放词) */
+    /* level4:已学词典(learnUnknownTypes 沉淀·次级 LLM 归类生僻名·同步命中·前三层接不住的开放词)·词典 flags 与修饰位正则 flags 合并去重(LLM直出拼装·§3) */
     var _lk = _LEX[_normType(s)];
-    if (_lk && _VALID_ARM[_lk.arm]) return { arm: _lk.arm, sub: _lk.sub || _defSub(_lk.arm), flags: flags, src: 'lexicon' };
+    if (_lk && _VALID_ARM[_lk.arm]) {
+      var _fl = flags.slice();
+      if (Array.isArray(_lk.flags)) _lk.flags.forEach(function (f) { if (_fl.indexOf(f) < 0) _fl.push(f); });
+      return { arm: _lk.arm, sub: _lk.sub || _defSub(_lk.arm), flags: _fl, src: 'lexicon' };
+    }
 
     /* level5:杂兵兜底(中庸近战·无专长 flag)·永不崩 */
     flags.push('miscellaneous');
@@ -281,8 +287,10 @@
     return '你是兵种归类器。把下列（前几层字根/装备规则接不住的）生僻/架空/近代兵种名，各归入一个基础兵种。\n'
       + '【arm 枚举】step(步兵) cav(骑兵) bow(远程) art(火炮) guard(禁卫/精锐护卫)\n'
       + '【sub 枚举】sword(刀盾/短兵) spear(长枪/矛) halberd(戟镋钯) bow(弓) crossbow(弩) musket(火铳/火枪) horse(骑乘) heavy(重甲骑) shock(冲击骑) cannon(炮) guard(禁卫)\n'
-      + '规则:按名字语义与武器/机动特征归类·朝代中立(古今中外架空皆可)·拿不准就归最接近的桶。\n'
-      + '只输出 JSON 数组,每项 {"name":"原名","arm":"...","sub":"..."},不要解释。\n'
+      + '【flags 枚举·可选0-3个·仅当名字明确蕴含时给】elite(精锐敢战) heavy(重甲坚固) shield(持盾护身) baggage(辎重非战斗) shock(冲击凶猛) scare(骇敌慑阵·如巨兽战象) slow(笨重迟缓) antiCav(长柄拒马·克骑)\n'
+      + '规则:按名字语义与武器/机动特征归类·朝代中立(古今中外架空皆可)·拿不准就归最接近的桶·flags 宁缺毋滥。\n'
+      + '例:象兵→{"name":"象兵","arm":"cav","sub":"shock","flags":["shock","scare","slow"]};藤甲兵→{"name":"藤甲兵","arm":"step","sub":"sword","flags":["shield"]}。\n'
+      + '只输出 JSON 数组,每项 {"name":"原名","arm":"...","sub":"...","flags":[]},不要解释。\n'
       + '待归类:\n' + names.map(function (n, i) { return (i + 1) + '. ' + n; }).join('\n');
   }
   /* 解析回复 → {normKey: {arm,sub}}(robust·剥 code fence·容错) */
@@ -293,7 +301,14 @@
     var arr = null;
     try { arr = JSON.parse(t); } catch (e) { var m = t.match(/\[[\s\S]*\]/); if (m) { try { arr = JSON.parse(m[0]); } catch (e2) {} } }
     if (!Array.isArray(arr)) return out;
-    arr.forEach(function (o) { if (o && o.name && _VALID_ARM[o.arm]) out[_normType(o.name)] = { arm: o.arm, sub: o.sub || _defSub(o.arm) }; });
+    arr.forEach(function (o) {
+      if (o && o.name && _VALID_ARM[o.arm]) {
+        var e = { arm: o.arm, sub: o.sub || _defSub(o.arm) };
+        var f = _validFlags(o.flags);
+        if (f.length) e.flags = f.slice(0, 3);   // 宁缺毋滥·至多3个修饰位
+        out[_normType(o.name)] = e;
+      }
+    });
     return out;
   }
   /* 第4层活线:扫兜底(fallback)兵种名 → 次级 LLM 归类 → 写持久词典 GM._unitLexicon+活缓存 → 标受影响军 _unitsStale
@@ -328,7 +343,7 @@
         var parsed = _parseLexiconReply(raw), learned = 0, affected = {};
         batch.forEach(function (typeStr) {
           var key = _normType(typeStr), r = parsed[key];
-          if (r && _VALID_ARM[r.arm]) { var e = { arm: r.arm, sub: r.sub || _defSub(r.arm) }; g._unitLexicon[key] = e; _LEX[key] = e; affected[key] = 1; learned++; }
+          if (r && _VALID_ARM[r.arm]) { var e = { arm: r.arm, sub: r.sub || _defSub(r.arm) }; if (Array.isArray(r.flags) && r.flags.length) e.flags = r.flags.slice(); g._unitLexicon[key] = e; _LEX[key] = e; affected[key] = 1; learned++; }
           else { g._unitLexiconMiss[key] = 1; }        // 归不了→负缓存·不再问
         });
         if (learned) g.armies.forEach(function (a) { if (a && Array.isArray(a.composition) && a.composition.some(function (c) { return affected[_normType((c && (c.type || c.unitTypeId)) || '')]; })) a._unitsStale = true; });

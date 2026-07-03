@@ -161,13 +161,25 @@
       // 已故：清除
       G.huangquan.powerMinister = null;
     }
-    // 候选：长期在宰相/首辅位，野心高
+    // 候选：长期在宰相/首辅位，野心高；
+    // 宦官专权(2026-07-02)：内廷近侍(role==='eunuch'·引擎通用字段)居高品要职(三四品以上·品级经 TMPromotion 解析·
+    //   掌印/秉笔等专名归剧本数据)亦可坐大——与外朝权臣同闸(powerMinisterEnabled)同弧(截留/自拟/篡位)·事件文案区分内竖。
     var candidates = G.chars.filter(function(c) {
       if (c.alive === false) return false;
       var title = c.officialTitle || '';
-      if (!/宰相|丞相|首辅|摄政|大将军|太师/.test(title)) return false;
+      var outer = /宰相|丞相|首辅|摄政|大将军|太师/.test(title);
+      var inner = false;
+      if (!outer && c.role === 'eunuch' && title && !_OFF_TENURE_RETIRE_RE.test(title)) {
+        try {
+          var lv = (global.TMPromotion && typeof global.TMPromotion.resolveRankLevel === 'function')
+            ? global.TMPromotion.resolveRankLevel(c, G) : (c.rankLevel || 0);
+          inner = (lv > 0 && lv <= 4);
+        } catch (e) { inner = false; }
+      }
+      if (!outer && !inner) return false;
       if ((c._tenureMonths || 0) < 24) return false;
       if ((c.ambition || 50) < 65) return false;
+      c._pmInnerCourt = inner && !outer;   // 供事件文案与后续内廷特有机制区分
       return true;
     });
     if (candidates.length === 0) return null;
@@ -180,9 +192,10 @@
       controlLevel: 0.3,
       faction: [],
       interceptions: 0,
-      counterEdicts: 0
+      counterEdicts: 0,
+      innerCourt: !!pm._pmInnerCourt
     };
-    if (global.addEB) global.addEB('皇权', pm.name + ' 坐大为权臣（皇权旁落征兆）');
+    if (global.addEB) global.addEB('皇权', pm._pmInnerCourt ? (pm.name + ' 内竖弄权（内廷窃柄·皇权旁落征兆）') : (pm.name + ' 坐大为权臣（皇权旁落征兆）'));
     return G.huangquan.powerMinister;
   }
 

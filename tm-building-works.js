@@ -251,6 +251,29 @@
     return cur[leaf];
   }
 
+  // 增强二·物产 gate（2026-07-03）：产出类效果须当地确有其产——内陆无盐之地建「盐场」不再凭空产盐。
+  // 判定源三层并取（宽松·避免误杀）：剧本 tags 布尔(saltRegion/产盐…) > economyBase 既有产出>0 > specialResources 文本。
+  // 区划无任何物产数据（tags/economyBase/specialResources 全缺·如极简自制剧本）则放行不判。
+  // 缺产不阻完工·只掐该键正向入账（负向灾损照记）·记 bld._fxGated 供 UI/推演知情。
+  var _PRODUCT_GATE = {
+    'economyBase.saltProduction':      { tags: ['saltRegion', '产盐'], eb: 'saltProduction', re: /盐/ },
+    'economyBase.mineralProduction':   { tags: ['mineralRegion', '产矿'], eb: 'mineralProduction', re: /矿|煤|铁|铜|银|锡/ },
+    'economyBase.fishingProduction':   { tags: ['fishingRegion', 'hasPort'], eb: 'fishingProduction', re: /渔|海|江|湖|水泽/ },
+    'economyBase.horseProduction':     { tags: ['horseRegion', '产马'], eb: 'horseProduction', re: /马|牧/ },
+    'economyBase.maritimeTradeVolume': { tags: ['hasPort'], eb: 'maritimeTradeVolume', re: /海|港|市舶|舶/ }
+  };
+  function productGateOk(div, path) {
+    var g = _PRODUCT_GATE[path];
+    if (!g || !div) return true;
+    if (!div.tags && !div.economyBase && !div.specialResources) return true;   // 数据贫剧本不判
+    var tags = div.tags || {};
+    for (var i = 0; i < g.tags.length; i += 1) { if (tags[g.tags[i]]) return true; }
+    if (num(div.economyBase && div.economyBase[g.eb], 0) > 0) return true;
+    var sr = String(div.specialResources || '');
+    if (sr && g.re.test(sr)) return true;
+    return false;
+  }
+
   // 摊民心到该区划叶子（封顶 |cap|）——叶子是 aggregate 的源头
   function spreadMinxin(div, delta, cap) {
     var d = Math.max(-Math.abs(cap), Math.min(Math.abs(cap), delta));
@@ -273,6 +296,16 @@
     var _typeDef = typeDefFor(bld.name, P);
     var fx = resolveEffects(bld, _typeDef);
     bld.appliedTurn = (GM && GM.turn) || 0;
+    // 增强三·工竣立制（2026-07-03·全路径）：带 _globalRuleSpec 的建筑完工即登记「国是·风气」之制。
+    // 旧版在自拟营建准奏时立制（制未成先立制·且只覆盖那一条路径）——现凡经完工钩子者同待。
+    // 必须在 !fx 早退之前：制度性建筑（实学馆等）恰是「纯叙事无效果账」的那类。
+    try {
+      var _GRC = (typeof GlobalRules !== 'undefined' && GlobalRules) || (typeof window !== 'undefined' && window.GlobalRules);
+      if (bld._globalRuleSpec && !bld._globalRule && _GRC && typeof _GRC.register === 'function') {
+        var _enacted = _GRC.register(bld._globalRuleSpec);
+        if (_enacted) bld._globalRule = _enacted.name;
+      }
+    } catch (_grcE) {}
     if (!fx) return false; // 纯叙事建筑（烽燧等）：完工但不入账，AI prompt 可见其名
     // Boost only fixed-source effects (preset/inferred); AI custom_build already went through
     // fxCostCaps (cost-scaled), so do not double-scale it.
@@ -280,9 +313,11 @@
     var _costBoost = _fromStructured ? 1 : _costReturnBoost(bld, _typeDef);
     var applied = {};
     var dropped = [];
+    var gated = [];
     function addEntry(path, delta) {
       if (!WHITELIST[path]) { dropped.push(path); return; }
       if (!delta) return;
+      if (delta > 0 && !productGateOk(div, path)) { gated.push(path); return; }   // 增强二·本地无其产·正向产出不入账
       addPath(div, path, delta);
       applied[path] = num(applied[path], 0) + delta;
     }
@@ -312,6 +347,11 @@
     bld.appliedDelta = applied;
     if (dropped.length) {
       try { console.warn('[building-works] 白名单外效果已丢弃:', bld.name, dropped.join(',')); } catch (_) {}
+    }
+    if (gated.length) {
+      bld._fxGated = gated.slice();
+      try { console.warn('[building-works] 本地无其产·产出效果未入账:', bld.name, gated.join(',')); } catch (_) {}
+      try { if (typeof addEB === 'function') addEB('营建', '「' + bld.name + '」工成·然本地不产其物·所期之利未见'); } catch (_) {}
     }
     // S7 近账：完工入账写 _fieldLedger（因果签「近账」消费·FieldPipes 可缺位）
     try {
@@ -450,15 +490,26 @@
   // 每回合确定性步（挂 endTurn 收尾、final aggregate 之前·恰一次）：
   // 在建递减→完工入账；完好扣维护；连欠 3 回合失修（效果存量不动·由叙事与玩家整修接手）。
   function tick(GM, P) {
-    if (!GM || !P || !P.adminHierarchy) return { completed: 0, building: 0, neglected: 0, upkeepPaid: 0, damaged: 0, repaired: 0 };
+    if (!GM || !P) return { completed: 0, building: 0, neglected: 0, upkeepPaid: 0, damaged: 0, repaired: 0 };
     var stat = { completed: 0, building: 0, neglected: 0, upkeepPaid: 0, damaged: 0, repaired: 0 };
     var _hazardOn = !(P.conf && P.conf.buildingHazardEnabled === false);   // S6·灾损·默认开·显式 false 可关
-    Object.keys(P.adminHierarchy).forEach(function (fk) {
-      var fh = P.adminHierarchy[fk];
-      if (!fh || !fh.divisions) return;
+    // 2026-07-03·工期不推进根治：历史 P/GM 双 admin 树并存(开局 GM.adminHierarchy=deepClone(P)·独立对象·
+    //   运行时活树多为 GM·P 树可能为空{})。自拟营建/写工具经 _adminSources 双源搜索落库·P 树空时工程落 GM 树·
+    //   而本 tick 旧只扫 P.adminHierarchy 单树→落 GM 树的在建工程 remainingTurns 永不递减「永远工役中」。
+    //   修：遍历 P+GM 双源(镜像 _adminSources 范式)·按 div 对象引用去重(防同一 div 被递减两次)。
+    var _roots = [];
+    if (P.adminHierarchy && typeof P.adminHierarchy === 'object') _roots.push(P.adminHierarchy);
+    if (GM.adminHierarchy && typeof GM.adminHierarchy === 'object' && GM.adminHierarchy !== P.adminHierarchy) _roots.push(GM.adminHierarchy);
+    var _seenDiv = (typeof Set !== 'undefined') ? new Set() : null;
+    function _divSeen(d) { if (!_seenDiv) return false; if (_seenDiv.has(d)) return true; _seenDiv.add(d); return false; }
+    _roots.forEach(function (ah) {
+    Object.keys(ah).forEach(function (fk) {
+      var fh = ah[fk];
+      var ds0 = fh && (fh.divisions || fh.children);
+      if (!ds0 || !ds0.length) return;
       (function walk(ds) {
         ds.forEach(function (div) {
-          if (!div) return;
+          if (!div || _divSeen(div)) return;
           if (Array.isArray(div.buildings) && div.buildings.length) {
             var money = div.publicTreasury && div.publicTreasury.money;
             var _freshSev = _hazardOn ? _freshDisasterSeverity(div, GM && GM.turn) : 0;   // S6·本回合该叶灾情(0/1/2/3·读 disasterRecord)
@@ -529,7 +580,8 @@
           var kids = div.children || div.divisions;
           if (kids && kids.length) walk(kids);
         });
-      })(fh.divisions);
+      })(ds0);
+    });
     });
     return stat;
   }

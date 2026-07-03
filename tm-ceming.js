@@ -97,6 +97,44 @@
    * @param {string} profileId
    * @returns {Promise<{existed: boolean, char: Object}>}
    */
+  // ── 入局接线（2026-07-03·治「策名人是孤魂」三断链）──────────────
+  // D5 归朝：AI 路 historicalFaction 撞现存敌势力会被分去敌营→问对/朝会全召不到=真孤魂。
+  //          策名语义是「召入此世为我所用」·一律归玩家朝廷·原属记 _historicalFaction 供叙事。
+  // D3 有党：本地路 party 恒空——按 profile/card 的 historicalFaction 与当前局党派名模糊配·配不上则无党（白身合理）。
+  // D2 有忆：本地路零记忆种子——确定性 remember 两笔（蒙召入朝·跨时空另记时空之惑）·NPC 不再「空白人」。
+  // 注意：不授官不占编制（工具/系统不混搭铁律·授官走征召/任命的政治代价路）。
+  function _cmIntegrateSummoned(ch, profileLike) {
+    if (!ch) return;
+    try {
+      var playerFac = (typeof P !== 'undefined' && P.playerInfo && P.playerInfo.factionName) || '';
+      if (playerFac && ch.faction && ch.faction !== playerFac) {
+        ch._historicalFaction = ch._historicalFaction || ch.faction;
+        ch.faction = playerFac;
+      } else if (playerFac && !ch.faction) {
+        ch.faction = playerFac;
+      }
+      if (!ch.party && typeof GM !== 'undefined' && Array.isArray(GM.parties)) {
+        var hint = String((profileLike && (profileLike.historicalFaction || profileLike.faction || profileLike.party)) || '');
+        if (hint) {
+          var hit = GM.parties.find(function(p) {
+            if (!p || !p.name || p.status === '已解散') return false;
+            if (hint.indexOf(p.name) >= 0 || p.name.indexOf(hint) >= 0) return true;
+            var core = p.name.replace(/[党派系社团]+$/, '');   // 「东林党」核心词「东林」配「东林书院清流」
+            return core.length >= 2 && hint.indexOf(core) >= 0;
+          });
+          if (hit) ch.party = hit.name;
+        }
+      }
+      if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember && (!Array.isArray(ch._memory) || ch._memory.length === 0)) {
+        var who = (typeof P !== 'undefined' && P.playerInfo && P.playerInfo.characterName) || '陛下';
+        NpcMemorySystem.remember(ch.name, '蒙' + who + '策名入朝·录名于册·感遇之恩未敢忘', '志', 7, who);
+        if (ch.displacement) {
+          NpcMemorySystem.remember(ch.name, '此世非吾世·山川人物皆异·唯持所学以事新主', '忧', 6);
+        }
+      }
+    } catch (_cmiE) { try { console.warn('[策名] 入局接线失败:', _cmiE); } catch (_) {} }
+  }
+
   TM.ceming.summonByProfile = async function(profileId) {
     var profiles = (typeof global.HISTORICAL_CHAR_PROFILES === 'object') ? global.HISTORICAL_CHAR_PROFILES : null;
     if (!profiles) throw new Error('档案库未加载');
@@ -153,6 +191,7 @@
         newChar.cemingMode = check.mode || 'yanyi';
         newChar.alternateNames = profile.alternateNames ? profile.alternateNames.slice() : (newChar.alternateNames || []);
         newChar._fromProfile = profileId;
+        _cmIntegrateSummoned(newChar, profile);
       }
       return { existed: false, char: newChar };
     }
@@ -194,6 +233,7 @@
         GM._indices.charByName.set(ch.name, ch);
       }
     }
+    _cmIntegrateSummoned(ch, profile);
 
     return { existed: false, char: ch };
   };
@@ -433,6 +473,7 @@
     newChar.alternateNames = card.alternateNames ? card.alternateNames.slice() : (newChar.alternateNames || []);
     newChar.historicalFate = newChar.historicalFate || card.historicalFate;
     newChar.famousQuote = newChar.famousQuote || card.famousQuote;
+    _cmIntegrateSummoned(newChar, card);
 
     return { existed: false, char: newChar };
   };
@@ -826,7 +867,7 @@
         msg = charName + ' 应召而至';
       }
 
-      if (typeof toast === 'function') toast('📜 ' + msg);
+      if (typeof toast === 'function') toast('📜 ' + msg + (result.existed ? '' : '·已入名册（欲授官职可另行任命/征召）'));
       TM.ceming.closeDialog();
 
       // 触发人物志重渲染

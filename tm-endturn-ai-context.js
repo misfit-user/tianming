@@ -106,7 +106,9 @@
         _pKeys.forEach(function(pn) {
           var ps = GM.partyState[pn];
           if (!ps) return;
+          var _pStand = ps.standing === 'governing' ? '秉政' : (ps.standing === 'marginal' ? '边缘' : (ps.standing === 'opposition' ? '在野' : ''));
           stateLines.push('  - ' + pn +
+            (_pStand ? ' 政柄=' + _pStand : '') +
             ' 影响=' + (ps.influence || 0) +
             ' 凝聚=' + (ps.cohesion || 0) +
             ' 占官=' + (ps.officeCount || 0) +
@@ -135,11 +137,17 @@
             c.regionalVariants.forEach(function(v) { if (v && v.region && isFinite(Number(v.satisfaction)) && (!_wv || Number(v.satisfaction) < Number(_wv.satisfaction))) _wv = v; });
             if (_wv && Number(_wv.satisfaction) <= _cSat - 8) _cWorst = '·最艰:' + String(_wv.region).slice(0, 6) + Math.round(Number(_wv.satisfaction));
           }
-          stateLines.push('  - ' + c.name + '·满意' + _cSat + (_cTrend ? ('(' + (_cTrend > 0 ? '+' : '') + _cTrend + ')') : '') + '·影响' + Math.round(Number(c.influence) || 0) + (c._structBaseline != null ? ('·势位' + Math.round(c._structBaseline)) : '') + _cPhase + _cRadical + _cWorst + (_cDm ? ('·求:' + _cDm) : ''));
+          var _cMove = '';
+          if (Array.isArray(GM._politicalMovements)) {
+            var _mv = null;
+            GM._politicalMovements.forEach(function(m) { if (m && m.className === c.name && (!_mv || Number(m.support) > Number(_mv.support))) _mv = m; });
+            if (_mv && Number(_mv.support) >= 40) _cMove = '·运动:' + String(_mv.label || '').slice(0, 16) + '(' + (_mv.phase || '') + Math.round(Number(_mv.support)) + ')';
+          }
+          stateLines.push('  - ' + c.name + '·满意' + _cSat + (_cTrend ? ('(' + (_cTrend > 0 ? '+' : '') + _cTrend + ')') : '') + '·影响' + Math.round(Number(c.influence) || 0) + (c._structBaseline != null ? ('·势位' + Math.round(c._structBaseline)) : '') + _cPhase + _cRadical + _cMove + _cWorst + (_cDm ? ('·求:' + _cDm) : ''));
         });
         var _leg = GM._legitimacy;
         if (_leg && _leg.flag && _leg.flag !== '相安') stateLines.push('  〔天命权重〕权贵满意(clout)' + _leg.clout + ' vs 民心(人口)' + _leg.pop + '·' + _leg.flag);
-        stateLines.push('  （满意=当下·势位=结构应然·乱民=激进民情(汹涌则近民变)·求=当前诉求——class_changes 须以正册为准）');
+        stateLines.push('  （满意=当下·势位=结构应然·乱民=激进民情(汹涌则近民变)·运动=持续未偿诉求所凝(成势/鼎沸则朝野震动)·求=当前诉求——class_changes 须以正册为准）');
       }
       // ①·C4 流寇威胁喂 LLM（朝廷据此叙事/下旨剿抚·出 roving_actions）
       if (Array.isArray(GM.rovingRebels)) {

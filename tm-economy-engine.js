@@ -699,6 +699,11 @@
     successRate += (chancellorInt - 60) / 200;
     var _hwC = (global.GM.huangwei && typeof global.GM.huangwei === 'object') ? (global.GM.huangwei.index || 50) : (global.GM.huangwei || 50);
     successRate += (_hwC - 50) / 500;
+    // 国是之制硬通道（2026-07-03）：「改革推行」之制已立且扎根者·币制财政变法成功率上抬（封顶 +0.12）
+    try {
+      var _GRec = (typeof GlobalRules !== 'undefined' && GlobalRules) || (typeof window !== 'undefined' && window.GlobalRules);
+      if (_GRec && typeof _GRec.mod === 'function') successRate += Math.min(0.12, Number(_GRec.mod('reform_success')) || 0);
+    } catch (_grecE) {}
     successRate = Math.max(0.05, Math.min(0.95, successRate));
     var success = (opts.forceSuccess !== undefined) ? opts.forceSuccess : (Math.random() < successRate);
     var result = { ok: true, reformId: id, success: success, name: preset.name };

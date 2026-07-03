@@ -27,6 +27,8 @@ function _yq2_openSetup() {
   // 候选：同势力 + 高忠诚 + 在玩家所在地（御前密议·异族不入）
   var candidates = (GM.chars||[]).filter(function(c) {
     if (c.alive === false || c.isPlayer || !_isAtCapital(c) || !_isPlayerFactionChar(c)) return false;
+    // 受限者不得入御前密议(玩家报:下狱者仍能上朝议事)·下狱/流放/逃亡/致仕/丁忧/病危·走共享全变体谓词
+    if (typeof _cyCannotAttend === 'function' && _cyCannotAttend(c)) return false;
     return (c.loyalty||50) >= 50; // 至少中等忠诚可入密议
   }).sort(function(a,b) {
     // 按"机密适合度"排序：忠*0.5 + 品*0.3 + 恩遇*0.2
@@ -212,6 +214,8 @@ async function _yq2_startRoundQuery() {
         _yq2_emp(_pl);
         if (CY._yq2.record !== 'secret') _cy_jishiAdd('yuqian', CY._yq2.topic, '皇帝', _pl, { playerInterject: true, round: _rd });
         CY._yq2._transcript += '\n皇帝：' + _pl;
+        // 令心腹应答皇帝插言(治御前只塞 transcript 无人回应)·智能选人·秘议不入纪事
+        try { await _cyInterjectRespond(_pl, { kind: 'yuqian', topic: CY._yq2.topic, attendees: CY._yq2.advisors, lastSpeaker: CY._yq2._lastSpeaker, round: _rd, noJishi: CY._yq2.record === 'secret' }); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
       }
       var nm = CY._yq2.advisors[i];
       await _yq2_oneAdvisorSpeak(nm, _rd);
@@ -224,6 +228,7 @@ async function _yq2_startRoundQuery() {
 
 async function _yq2_oneAdvisorSpeak(name, roundNum) {
   roundNum = roundNum || 1;
+  if (CY._yq2) CY._yq2._lastSpeaker = name;  // 记上一发言者·供玩家插言"卿/你说"代词消解
   var ch = findCharByName(name);
   if (!ch) return;
   // B3·坦白度从预计算表取·无则兜底
@@ -250,6 +255,18 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
   prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '）。\n';
   prompt += '性格：' + (ch.personality||'') + '\n';
   prompt += '忠' + (ch.loyalty||50) + ' 野' + (ch.ambition||40) + ' 学识:' + (ch.learning||'') + ' 党:' + (ch.party||'无') + '\n';
+  // 御前补注（2026-07-03·对齐常朝/廷议 prompt 成色）：势力/对陛下心迹/皇威皇权 cue/本党所谋
+  prompt += '势力：' + (ch.faction||'?') + (ch.stanceToPlayer ? ('｜对陛下：' + String(ch.stanceToPlayer).slice(0, 20)) : '') + '\n';
+  if (typeof GM !== 'undefined') {
+    var _yqHw = (GM.huangwei && typeof GM.huangwei.index === 'number') ? GM.huangwei.index : 50;
+    var _yqHq = (GM.huangquan && typeof GM.huangquan.index === 'number') ? GM.huangquan.index : 50;
+    prompt += '当前皇威：' + Math.round(_yqHw) + '·皇权：' + Math.round(_yqHq) + (_yqHq < 30 ? '（皇权弱·直言可肆）' : (_yqHq > 70 ? '（皇权盛·然密议许直言）' : '')) + '\n';
+  }
+  if (ch.party && typeof GM !== 'undefined' && Array.isArray(GM.parties)) {
+    var _yqPo = GM.parties.find(function(pp){ return pp && pp.name === ch.party; });
+    var _yqAg = _yqPo && (_yqPo.currentAgenda || _yqPo.shortGoal);
+    if (_yqAg) prompt += '本党近期所谋：' + String(_yqAg).replace(/\s+/g, ' ').slice(0, 60) + '（密议中亦不忘本党利害）\n';
+  }
   // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏/廷议/常朝同源·含心绪/人生底色/要事/印象/伤疤)·而非 slice(-3) 浅切片·人格一致·无则回退
   var _yqMem = '';
   try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _yqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_yqmE) {}
@@ -347,7 +364,11 @@ async function _yq2_doAskAdvisor(name, question) {
   if (!ch) return;
   var candor = (CY._yq2.opinions[name] && CY._yq2.opinions[name].candor) || 70;
   var prompt = '御前密议·深入问答。议题：' + CY._yq2.topic + '\n';
-  prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '，性格' + (ch.personality||'') + '，忠' + (ch.loyalty||50) + '）\n';
+  prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '，性格' + (ch.personality||'') + '，忠' + (ch.loyalty||50) + '，党:' + (ch.party||'无') + '）\n';
+  // 深问补记忆（2026-07-03）：此前深问 prompt 无记忆无党——密谈本该是最见心性处
+  var _dqMem = '';
+  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _dqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_dqmE) {}
+  if (_dqMem) prompt += '【此人记忆与心性】' + String(_dqMem).slice(0, 500) + '\n';
   prompt += '之前你已陈言：' + ((CY._yq2.opinions[name]&&CY._yq2.opinions[name].line) || '尚未发言') + '\n';
   prompt += '皇帝再深问：' + question + '\n';
   prompt += '坦白度:' + candor + '，' + (candor>80?'推心置腹':candor>50?'大致坦言':'揣摩圣意') + '\n';
@@ -382,9 +403,24 @@ async function _yq2_doAskAdvisor(name, question) {
   _yq2_offerFollowUp();
 }
 
+// 心腹之见聚合（2026-07-03）：此前决断阶段完全不读 opinions 立场——四按钮平铺盲选
+function _yq2_opinionCounts() {
+  var c = { approve: 0, oppose: 0, hedge: 0 };
+  var ops = (CY._yq2 && CY._yq2.opinions) || {};
+  Object.keys(ops).forEach(function(n) {
+    var s = String((ops[n] && ops[n].stance) || '');
+    if (/支持/.test(s)) c.approve++;
+    else if (/反对/.test(s)) c.oppose++;
+    else c.hedge++;
+  });
+  return c;
+}
+
 function _yq2_enterDecide() {
   CY._yq2.currentPhase = 'decide';
   var footer = _$('cy-footer');
+  var _opC = _yq2_opinionCounts();
+  var _opRow = '<div style="text-align:center;font-size:0.72rem;color:var(--gold-400);margin-bottom:4px;">心腹之见——赞同 ' + _opC.approve + ' · 谏阻 ' + _opC.oppose + ' · 持重 ' + _opC.hedge + '</div>';
   // 决断区·起居注录否 + 泄密风险条（对齐预览 rec-row·record 已在筹备选定·此处只读展示）
   var _rec = (CY._yq2.record === 'secret');
   var _lkSum = 0; (CY._yq2.advisors || []).forEach(function(_n) { var _c = findCharByName(_n); if (_c) _lkSum += Math.max(0, 100 - (_c.loyalty || 50)); });
@@ -394,7 +430,7 @@ function _yq2_enterDecide() {
     + '<span class="yq-rec-opt' + (_rec ? '' : ' sel keep') + '">📜 记</span>'
     + '<span class="yq-rec-opt' + (_rec ? ' sel secret' : '') + '">🤐 不录</span>'
     + '<span class="yq-leak2">泄密风险 <i class="yq-leak-bar"><em style="width:' + _lkAvg + '%"></em></i> <b>' + _lkLvl + '</b></span></div>';
-  footer.innerHTML = _recRow + '<div style="display:flex;gap:var(--space-1);justify-content:center;flex-wrap:wrap;">'
+  footer.innerHTML = _opRow + _recRow + '<div style="display:flex;gap:var(--space-1);justify-content:center;flex-wrap:wrap;">'
     + '<button class="bt bp bsm" onclick="_yq2_decide(\'approve\')">准行</button>'
     + '<button class="bt bsm" style="color:var(--vermillion-400);" onclick="_yq2_decide(\'reject\')">驳否</button>'
     + '<button class="bt bsm" onclick="_yq2_decide(\'defer\')">再议</button>'
@@ -412,6 +448,41 @@ function _yq2_decide(mode) {
   var line = mode === 'approve' ? '准此事' : mode === 'reject' ? '此事勿议' : mode === 'defer' ? '再议' : customText;
   _yq2_emp('朕决：' + line);
   CY._yq2.decision = { mode: mode, custom: customText };
+
+  // 御前落账（2026-07-03）：此前决断后不写 _courtRecords——AI 推演的高权威决议源看不见御前决议·
+  // 「开完白开」。密议亦入（带 secret 标·推演本就经 _secretMeetings 知情·此处补结构化决议面）。
+  try {
+    if (!GM._courtRecords) GM._courtRecords = [];
+    var _isPostTurnYq = !!GM._isPostTurnCourt;
+    var _yqStances = {};
+    Object.keys(CY._yq2.opinions || {}).forEach(function(n) {
+      _yqStances[n] = { current: String((CY._yq2.opinions[n] && CY._yq2.opinions[n].stance) || '') };
+    });
+    GM._courtRecords.push({
+      turn: GM.turn,
+      targetTurn: _isPostTurnYq ? (GM.turn + 1) : GM.turn,
+      phase: _isPostTurnYq ? 'post-turn' : 'in-turn',
+      topic: CY._yq2.topic, mode: 'yuqian',
+      topicType: CY._yq2.topicType, participants: CY._yq2.advisors,
+      stances: _yqStances,
+      decision: { mode: mode, direction: line, custom: customText },
+      secret: CY._yq2.record === 'secret'
+    });
+    if (GM._courtRecords.length > 8) GM._courtRecords.shift();
+  } catch (_yqCrE) { try { window.TM && TM.errors && TM.errors.captureSilent(_yqCrE, 'yuqian-courtrecord'); } catch (_) {} }
+
+  // 违众而断（2026-07-03）：心腹多数谏阻仍准行（或多数赞同仍驳否）→ 异见心腹各记一笔（密议无遗祸·但人心有账）
+  try {
+    var _yqC2 = _yq2_opinionCounts();
+    var _againstMajority = (mode === 'approve' && _yqC2.oppose > _yqC2.approve) || (mode === 'reject' && _yqC2.approve > _yqC2.oppose);
+    if (_againstMajority && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
+      Object.keys(CY._yq2.opinions || {}).forEach(function(nm) {
+        var s = String((CY._yq2.opinions[nm] && CY._yq2.opinions[nm].stance) || '');
+        var dissent = (mode === 'approve' && /反对/.test(s)) || (mode === 'reject' && /支持/.test(s));
+        if (dissent) NpcMemorySystem.remember(nm, '御前密议「' + String(CY._yq2.topic || '').slice(0, 15) + '」·吾谏未纳·帝违众见而行', '忧', 5);
+      });
+    }
+  } catch (_yqDsE) {}
 
   // 保密等级写入
   if (CY._yq2.record === 'keep') {
@@ -467,6 +538,22 @@ function _yq2_decide(mode) {
         secretOrigin: CY._yq2.record === 'secret'
       });
       addEB('御前', CY._yq2.topic + '：' + decisionLine);
+      // 待落实卡（2026-07-03·对齐常朝/廷议）：公开御前决议挂 ChronicleTracker·后续推演有账可追
+      try {
+        if (typeof ChronicleTracker !== 'undefined' && typeof ChronicleTracker.upsert === 'function') {
+          ChronicleTracker.upsert({
+            type: 'yuqian_pending', sourceType: 'yuqian_pending',
+            sourceId: JSON.stringify(['yuqian2', GM.turn || 0, String(CY._yq2.topic || '')]),
+            title: String(CY._yq2.topic || '').slice(0, 60),
+            actor: '', stakeholders: (CY._yq2.advisors || []).slice(0, 8),
+            currentStage: '决断', progress: 50,
+            narrative: ('御前议决「' + CY._yq2.topic + '」——' + decisionLine).slice(0, 160),
+            startTurn: GM.turn || 0, expectedEndTurn: (GM.turn || 0) + 6,
+            hidden: false, priority: 'medium', status: 'active',
+            sealStatus: line, shortTermBalance: '御前新决·待落实', longTermBalance: CY._yq2.topic
+          });
+        }
+      } catch (_yqChrE) { try { window.TM && TM.errors && TM.errors.captureSilent(_yqChrE, 'yuqian-chronicle'); } catch (_) {} }
     }
   }
 
@@ -519,6 +606,17 @@ async function _yq2_evaluateLeak() {
       if (obj && obj.leaker) {
         addCYBubble('内侍', '（机密外泄——' + obj.leaker + ' 经 ' + obj.channel + ' 传出。）', true);
         if (typeof addEB === 'function') addEB('机密', '御前密议外泄：' + obj.leaker);
+        // 泄密硬后果（2026-07-03·有据可预见渐进=政治账非天罚）：重度外泄→中外哗然·皇威微损+党争升温；泄密者自记其事
+        try {
+          if (/severe|重/.test(String(obj.severity || ''))) {
+            var _AEyq = (typeof AuthorityEngines !== 'undefined' && AuthorityEngines) || (typeof window !== 'undefined' && window.AuthorityEngines);
+            if (_AEyq && typeof _AEyq.adjustHuangwei === 'function') _AEyq.adjustHuangwei('memorialObjection', -1, '御前密议外泄·中外哗然');
+            if (typeof GM.partyStrife === 'number') GM.partyStrife = Math.max(0, Math.min(100, GM.partyStrife + 2));
+          }
+          if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
+            NpcMemorySystem.remember(obj.leaker, '吾将御前密议「' + String(CY._yq2.topic || '').slice(0, 15) + '」泄于外·惴惴不安', '忧', 6);
+          }
+        } catch (_lkCsqE) {}
         // 若之前密议选择"不录"，此时反而入纪事（丑闻）
         if (CY._yq2.record === 'secret') {
           _cy_jishiAdd('yuqian', CY._yq2.topic, obj.leaker, '【泄密】' + (obj.channel||'') + '：' + (obj.consequence||''), { secret: true, leaked: true });

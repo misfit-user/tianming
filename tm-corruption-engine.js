@@ -2167,6 +2167,50 @@
     });
   }
 
+  // 叶级吏治连账（2026-07-03）：CorruptionEngine 动态原只写 GM.corruption.byRegion(城账·mapData.cities 键)，
+  // 而区划叶 div.corruption 有读(aggregate 上汇/官守图层/实征输入)无常写——「活树上的静叶」。
+  // 修：与城账同驱动源的确定性漂移——目标=全国吏治基线+本叶稳定 variance(名字哈希)+豪强抬升(勾结州县)，
+  // 每月 6% 收敛(略缓于城账 8%)。肃贪诏令降基线→叶子跟着收敛·两账同源演化不再脱钩。只走 player 子树(外邦不吃明廷吏治基线)。
+  function updateLeafCorruption() {
+    if (!GM || !GM.adminHierarchy) return;
+    var pcNow = GM.corruption && GM.corruption.subDepts && (GM.corruption.subDepts.provincial || {}).true;
+    if (typeof pcNow !== 'number') return;
+    var mr = (typeof CorruptionEngine.getMonthRatio === 'function') ? CorruptionEngine.getMonthRatio()
+           : (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() / 30 : 1);
+    var retain = Math.pow(0.94, mr);
+    var regress = 1 - retain;
+    var ps = GM.provinceStats || {};
+    function provinceMagnate(topName) {
+      if (!topName) return 0;
+      var hit = ps[topName];
+      if (hit && typeof hit.magnatePower === 'number') return hit.magnatePower;
+      var keys = Object.keys(ps);
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (k && (k.indexOf(topName) >= 0 || String(topName).indexOf(k) >= 0)) {
+          var v = ps[k] && ps[k].magnatePower;
+          if (typeof v === 'number') return v;
+        }
+      }
+      return 0;
+    }
+    function hashVar(s) { var h = 0; s = String(s || ''); for (var i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i); return (h % 31) - 15; }
+    var root = GM.adminHierarchy.player;
+    var tops = (root && root.divisions) || [];
+    tops.forEach(function (top) {
+      var mag = provinceMagnate(top && (top.name || top.id));
+      (function walk(d) {
+        if (!d) return;
+        var kids = d.children || d.divisions;
+        if (kids && kids.length) { kids.forEach(walk); return; }
+        var target = clamp(pcNow + hashVar(d.name || d.id) + Math.min(10, mag * 0.1), 0, 100);
+        var cur = (typeof d.corruption === 'number') ? d.corruption
+                : (typeof d.corruptionLocal === 'number' ? d.corruptionLocal : target);
+        d.corruption = clamp(cur * retain + target * regress, 0, 100);
+      })(top);
+    });
+  }
+
   function getCorruptionColor(value) {
     // 0-25 清明：青玉
     // 25-50 尚可：金
@@ -2357,6 +2401,7 @@
     try { applyJuannaMonthly(context); }       catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'corruption-p4] juanna:') : console.error('[corruption-p4] juanna:', e); }
     try { syncIndexFromSubDepts('\u8150\u8d25\u540e\u7eed\u8054\u52a8', { record: false }); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'corruption-p4] sync:') : console.error('[corruption-p4] sync:', e); }
     try { updateRegionalCorruption(); }        catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'corruption-p4] region:') : console.error('[corruption-p4] region:', e); }
+    try { updateLeafCorruption(); }            catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'corruption-p4] leaf:') : console.error('[corruption-p4] leaf:', e); }
   };
 
   // 扩展 updatePerceived 以应用模式调节
@@ -2393,6 +2438,7 @@
   CorruptionEngine.enrichCaseWithAI = enrichCaseWithAI;
   CorruptionEngine.toggleMapCorruptionOverlay = toggleMapCorruptionOverlay;
   CorruptionEngine.updateRegionalCorruption = updateRegionalCorruption;
+  CorruptionEngine.updateLeafCorruption = updateLeafCorruption;
   CorruptionEngine.getCorruptionColor = getCorruptionColor;
   CorruptionEngine.renderEditorPanel = renderEditorCorruptionPanel;
   CorruptionEngine.applyJuannaMonthly = applyJuannaMonthly;

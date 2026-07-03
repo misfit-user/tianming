@@ -506,8 +506,10 @@
     var G = global.GM;
     var ch = _findChar(charName);
     if (!ch) return { ok: false, reason: '未找到 ' + charName };
+    // 重复抄家(reason 含抄/查抄且此人已被抄)·跳过移交/追亏·免二次进账(与下方抄家三标记守卫一致)
+    var _repeatConfisc = /抄|籍没|没官|查抄/.test(String(reason || '')) && (ch._confiscated || ch.confiscated || ch._confiscatedTurn != null);
     var binding = ch.resources && ch.resources.publicTreasury && ch.resources.publicTreasury.binding;
-    if (binding) {
+    if (binding && !_repeatConfisc) {
       var entity = _resolveBinding(binding);
       if (entity) {
         _ensurePublicTreasury(entity);
@@ -539,7 +541,7 @@
     // 2026-05-21·bug fix·原 regex 含单字「押」「拘」「逃」「遁」「匿」过宽·
     //   误判·押解/押粮/押司/签押/押韵/拘谨/拘泥/拘束/逃避/隐遁/匿名 等 → false positive
     //   改用必须的入狱/流放/逃亡 compound·并加 release/起复路径清 _imprisoned/_exiled/_fled
-    if (/处决|斩首|诛杀|赐死|execute|凌迟|绞刑|死刑|枭首/.test(_reasonStr)) {
+    if (/处决|处斩|处死|斩首|斩决|斩杀|戮杀|正法|明正典刑|诛杀|诛戮|诛九族|凌迟|腰斩|弃市|枭首|枭示|问斩|赐死|赐自尽|绞刑|绞死|伏诛|伏法|就戮|授首|自尽|自缢|自刎|自裁|自杀|服毒自尽|畏罪自尽|磔|execute|死刑/.test(_reasonStr)) {
       ch.alive = false;
       ch._deathCause = _reasonStr;
       ch._deathTurn = G.turn || 0;
@@ -582,12 +584,15 @@
     var _confKey = _reasonStr;
     if (_confKey === '抄家' || /抄|籍没|没官|抄没|查抄|抄家/.test(_confKey)) {
       try {
-        if (global.EconomyLinkage && typeof global.EconomyLinkage.triggerConfiscationByName === 'function' && !ch._confiscated) {
+        // 幂等守卫统一三套抄家实现的标记(applier._confiscated / engine.confiscated / fiscal-ui._confiscatedTurn)·
+        // 防"下回合叙事复述抄家→校验器又调一次→另一套引擎照抄"重复进账(玩家报+900万又抄一次)
+        if (global.EconomyLinkage && typeof global.EconomyLinkage.triggerConfiscationByName === 'function' && !(ch._confiscated || ch.confiscated || ch._confiscatedTurn != null)) {
           // 默认入内帑·intensity 0.6（中度挖掘+轻度株连）·若 reason 含「重抄」「严抄」则提级
           var _intense = /重抄|严抄|彻查|连坐|株连/.test(_confKey) ? 0.85 : 0.6;
           var _confR = global.EconomyLinkage.triggerConfiscationByName(charName, 'neitang', _intense);
           if (_confR && _confR.success) {
             ch._confiscated = true;
+            ch.confiscated = true;  // 与引擎(tm-char-economy-engine:1363)标记统一·令引擎按钮/校验器二次调用都被挡
             if (global.addEB) {
               var _wan = Math.round((_confR.total||0)/10000);
               global.addEB('惩罚', '抄' + charName + '家·明 ' + Math.round((_confR.visible||0)/10000) + ' 万 + 暗 ' + Math.round((_confR.hidden||0)/10000) + ' 万 = 共 ' + _wan + ' 万两入内帑');
@@ -644,8 +649,31 @@
     ch.officialTitles = [];
     ch.concurrentTitles = [];
     ch.concurrentTitle = '';
+    // 记去职标记·供推演 prompt「受限人员现状名册」识别罢官者·令 AI 勿再称旧衔/勿令其理事
+    // (下狱/流放另有 _imprisoned/_exiled·此标记主要覆盖纯罢官免职;再任命后 officialTitle 非空即不再判罢官)
+    ch._removedFromOfficeTurn = G.turn || 0;
+    ch._removedReason = _reasonStr || '免职';
     if (global.addEB) global.addEB('任免', charName + ' ' + (reason || '免职'));
     return { ok: true };
+  }
+
+  // 叙事校验器补录前的幂等判定·防"AI 每回合复述旧状态→重复施加"(玩家报:放了又被关/抄两次/莫名重复)·
+  // 返回 true = 已在此状态或玩家本回合已反向处置(释放/召回)·不应再补调 onDismissal
+  function _alreadyResolvedState(ch, action, G) {
+    if (!ch) return true;
+    var t = (G && G.turn) || 0;
+    // 释放/召回后 2 回合内·不被 AI 叙事复述重新关押/流放(叙事多为陈述旧态·真·新逮捕可待窗口后)·
+    // 治玩家报"下诏放人·下回合又被关"(仅"本回合已释放"不够·次回合叙事仍会复述在狱)
+    var _pardoned = (ch._releasedTurn != null && (t - ch._releasedTurn) <= 2) ||
+                    (ch._recalledTurn != null && (t - ch._recalledTurn) <= 2);
+    if ((action === 'imprison' || action === 'arrest') && (ch._imprisoned === true || _pardoned)) return true;
+    if (action === 'exile'  && (ch._exiled === true  || _pardoned)) return true;
+    if (action === 'retire' && (ch._retired === true || ch.retired === true || _pardoned)) return true;
+    if (action === 'flee'   && (ch._fled === true || ch._missing === true || _pardoned)) return true;
+    if (action === 'confiscate' && (ch._confiscated === true || ch.confiscated === true || ch._confiscatedTurn != null)) return true;
+    if (action === 'dismiss' && (!ch.officialTitle && !ch.position)) return true; // 已无官职·勿重复免职
+    if (action === 'execute' && ch.alive === false) return true;
+    return false;
   }
 
   function onTransfer(charName, fromPosition, toPosition, toBinding) {
@@ -2085,9 +2113,11 @@
     }
     if (!narrativeText) return;
 
-    // 状态动词字典·区分 7 大动作类型
+    // 状态动词字典·区分动作类型
+    // 注: execute(处决)已移出此通用循环·改由下方 _scanExecutions 受事锚定扫描器处理·
+    //     因及物处决动词走"名前动词"通用匹配会误杀施事者(如"孙传庭斩获甚众"把孙传庭当被斩)·
+    //     且"把X砍了"会被 {2,4} 贪婪捕获吞掉"把"字而漏抓。(2026-07-02)
     var statusVerbs = {
-      execute:    ['处决', '赐死', '诛戮', '凌迟', '腰斩', '弃市', '绞刑', '斩首', '诛九族'],
       imprison:   ['诏狱', '下诏狱', '入诏狱', '下狱', '入狱', '系狱', '收押', '收监', '关押', '囚禁', '拿问', '逮治', '槛车', '捉拿下狱', '逮捕下狱', '锁拿'],
       arrest:     ['捉拿', '逮捕', '抓捕', '缉拿', '锁拿'],   // 不一定下狱·区分对待
       exile:      ['流放', '发配', '戍边', '充军', '远谪', '贬谪边远'],
@@ -2128,6 +2158,50 @@
       });
     });
 
+    // ── 处决/自尽·受事锚定专用扫描器 (2026-07-02) ──────────────────────
+    //  处决类动词及物·"名前动词"(如"孙传庭斩获")会误杀施事者·故不走上面的通用 pat1/pat2·
+    //  改为只在命名者明确为『受事』时判死:
+    //    被动 X被斩/X为贼所杀 · 处置式 把X砍了 · 动宾 斩X/赐死X · 自戕类 X自尽(名前即受事)
+    //  既能抓 LLM 口语"把胡廷晏砍了"·又不误杀"斩获甚众/杀敌三千"的将领
+    (function _scanExecutions(){
+      // 及物处决动词·命名者须为受事(被动/处置/动宾)·长词在前(正则择序·免"斩首"被"斩"抢先)
+      var KILL_TRANS = ['明正典刑','就地正法','诛九族','斩杀','斩首','斩决','诛杀','诛戮','戮杀',
+                        '处决','处斩','处死','正法','凌迟','腰斩','枭首','枭示','问斩','绞刑','绞死',
+                        '赐死','赐自尽','斩','杀','砍','戮','诛'];
+      // 不及物/自戕·命名者即受事(名前动词安全)
+      var KILL_INTRANS = ['服毒自尽','畏罪自尽','畏罪自缢','阖门自尽','投缳自尽','伏诛','伏法','弃市',
+                          '就戮','授首','自尽','自缢','自刎','自裁','自杀','磔'];
+      function alt(list){ return list.slice().sort(function(a,b){return b.length-a.length;}).join('|'); }
+      var transAlt = alt(KILL_TRANS), intransAlt = alt(KILL_INTRANS);
+      var NP = '[^。！？；;.!?，,、\\n]{0,6}';  // 同句内窗口·不跨标点
+      function esc(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+      Object.keys(charNameSet).forEach(function(nm){
+        if (!nm || nm.length < 2 || narrativeText.indexOf(nm) < 0) return;
+        var e = esc(nm), m = null, hit = null;
+        // 被动: X被处死 / X坐罪事发，被斩 / X为贼所杀
+        //  允许同句内隔一分句·但『被/为』须紧接姓名或逗号后·
+        //  这样"孙传庭破贼，贼首被斩"里"被"前是"贼首"(非逗号非姓名)→不误挂到孙传庭·
+        //  ★"被"后接命/令/派/遣等受命词=施事者(如"孙传庭被命令斩杀叛军")→负向前瞻排除·免误杀施事者
+        var reP = new RegExp(e + '(?:[^。！？；;.!?\\n]{0,12}[，,、])?(?:(?:旋|竟|遂|已|终|卒)?被(?!命|令|饬|派|遣|敕|诏|委|差|使|着)|为' + NP + '所)' + NP + '(?:' + transAlt + ')');
+        // 处置式: 把X…砍了 (只认"把"·"将"歧义[将领/将要]不用·"命/令X…"是施事者故排除)
+        var reB = new RegExp('把\\s*' + e + NP + '(?:' + transAlt + ')');
+        // 动宾: 斩首X / 斩X / 赐死X / 斩杀叛将X (动词紧邻名前·名为受事·允许一个受害者身份词窗口)
+        var _victimRole = '(?:叛将|叛臣|叛贼|逆贼|逆臣|逆首|逆酋|贼首|贼酋|反贼|首恶|元凶|巨魁|渠魁|巨寇|渠帅|奸党|逆党|逆犯|要犯|钦犯)?';
+        var reV = new RegExp('(?:' + transAlt + ')(?:了|之|讫|于[^。！？；，、\\n]{0,4})?' + _victimRole + '\\s*' + e);
+        // 自戕/受事名前: X自尽 / X伏诛
+        var reI = new RegExp(e + '[^。！？；;，,、\\n]{0,4}(?:' + intransAlt + ')');
+        if ((m = reP.exec(narrativeText))) hit = m[0];
+        else if ((m = reB.exec(narrativeText))) hit = m[0];
+        else if ((m = reV.exec(narrativeText))) hit = m[0];
+        else if ((m = reI.exec(narrativeText))) hit = m[0];
+        if (!hit) return;
+        var key = nm + '_execute';
+        if (mentioned.find(function(x){return x.key===key;})) return;
+        // reason 统一带『处决』令 onDismissal 置 alive=false·原文附于死因便于追溯
+        mentioned.push({ key: key, name: nm, action: 'execute', verb: '处决·据叙事「' + hit + '」', raw: hit });
+      });
+    })();
+
     if (!mentioned.length) return;
 
     // 已在结构化数据中处理的人·跳过
@@ -2141,11 +2215,22 @@
     (aiOutput.char_updates || []).forEach(function(cu) {
       if (cu && cu.name && cu.updates) {
         var u = cu.updates;
-        if (u.alive === false || u._imprisoned || u._exiled || u._retired || u._fled) handled[cu.name] = true;
+        // AI 本回合动过任一状态字段(设或清·含释放_imprisoned:false)就交给它·校验器不再从叙事覆盖
+        if (u.alive !== undefined || u._imprisoned !== undefined || u._exiled !== undefined ||
+            u._retired !== undefined || u._fled !== undefined || u._confiscated !== undefined) handled[cu.name] = true;
       }
     });
+    // AI 已正经填结构化死亡的·由 applyCharacterDeaths 落地·此处不再从叙事重复补录
+    (aiOutput.character_deaths || []).forEach(function(cd) {
+      if (cd && cd.name) handled[cd.name] = true;
+    });
 
-    var missing = mentioned.filter(function(m){ return !handled[m.name]; });
+    var missing = mentioned.filter(function(m){
+      if (handled[m.name]) return false;
+      // 幂等·防叙事复述重复施加(放了又被关/抄两次/莫名重复)
+      if (_alreadyResolvedState(charNameSet[m.name], m.action, G)) return false;
+      return true;
+    });
     if (!missing.length) return;
 
     // 直接补调 onDismissal·让其状态字段写入·不修改 aiOutput.personnel_changes(已处理过)

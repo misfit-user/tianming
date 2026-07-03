@@ -453,10 +453,13 @@ const CSTAT={
  guard   :{atk:48,eva:.28,chg:20, base:17,ap:3, hp:11},
 };
 function defaultSub(t){return {step:"spear",cav:"shock",bow:"bow",art:"cannon",guard:"guard"}[t]||"spear";}
+/* ★接入·per-unit flag 覆盖层(主游戏识别第4层 LLM 直出修饰位·集成 spec §3):elite精锐/heavy重装/shield盾/baggage辎重/shock冲击/scare致惧/slow笨重/antiCav克骑。
+   原型自有名册不带 flags→hasFlag 恒 false→所有注入点数学恒等(×1/+0/max恒等)·确定性哈希不变;仅注入战(startBattle config)生效。 */
+function hasFlag(u,f){const a=u&&u.flags;return Array.isArray(a)&&a.indexOf(f)>=0;}
 function isShooterSub(sub){const s=SUB[sub];return !!s&&(s.base==="bow"||s.base==="art"||s.ranged);}
 function isShooter(u){return isShooterSub(u.sub)||u.type==="bow"||u.type==="art";}
 function ammoCapSub(sub){const s=SUB[sub]||{};return s.ammoN||(s.base==="art"?14:22);}
-function unitSpd(u){return CFG.spd[u.type]*((SUB[u.sub]&&SUB[u.sub].spd)||1);}
+function unitSpd(u){return CFG.spd[u.type]*((SUB[u.sub]&&SUB[u.sub].spd)||1)*(hasFlag(u,"slow")?0.84:1)*(hasFlag(u,"baggage")?0.72:1)*(hasFlag(u,"heavy")?0.94:1);}
 function glyphOf(u){return u._hero?"将":(SUB[u.sub]&&SUB[u.sub].gl)||GLY[u.type];}
 function subName(u){return u._hero?"主将":(SUB[u.sub]&&SUB[u.sub].cn)||TYPECN[u.type];}
 function assignSub(u,i){if(u.sub)return u.sub;const n=u.name||"",q=u.quality||"";
@@ -470,6 +473,7 @@ function assignSub(u,i){if(u.sub)return u.sub;const n=u.name||"",q=u.quality||""
 /* 近战相克倍率：粗粒度走 MELEE 表 × 精细子兵种修正(克骑/刀克枪/镋克步/弓骑近战弱/甲减伤) */
 function meleeMul(a,b,noArmor){let m=MELEE[a.type][b.type];const sa=SUB[a.sub]||{},sb=SUB[b.sub]||{};
   if(b.type==="cav"&&sa.antiCav)m*=sa.antiCav;
+  if(b.type==="cav"&&hasFlag(a,"antiCav"))m*=1.35;   // ★flag克骑(长柄拒马类·LLM直出)·与sub固有antiCav可叠
   if(b.sub==="spear"&&sa.vsSpear)m*=sa.vsSpear;
   if(b.sub==="sword"&&sa.vsSword)m*=sa.vsSword;
   if(b.type==="step"&&sa.antiInf)m*=sa.antiInf;
@@ -933,7 +937,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ang=(a,b)=>Math.atan2(b.y-a.y,b.x-
 const fighting=s=>units.filter(u=>u.alive&&u.side===s&&u.state!=="rout");
 const foes=s=>units.filter(u=>u.alive&&u.side!==s&&u.state!=="rout");
 const visibleFoes=s=>foes(s).filter(u=>!u.hidden);
-const ctrlSel=()=>[...sel].map(byId).filter(u=>u&&u.alive&&u.side==="ming"&&u.state!=="rout"&&!u._balk);
+const ctrlSel=()=>(state&&state.observe)?[]:[...sel].map(byId).filter(u=>u&&u.alive&&u.side==="ming"&&u.state!=="rout"&&!u._balk);   // ★旁观(O12):observe 态封全部玩家指挥(下令/结阵/战法全走此选集)·镜头照常
 function armyMorale(s){const a=fighting(s);if(!a.length)return 0;let w=0,m=0;for(const u of a){w+=u.soldiers;m+=u.mor*u.soldiers;}return w?Math.round(m/w):0;}
 const armyPower=s=>fighting(s).reduce((t,u)=>t+effStr(u),0);   // 现存战力总和(含兵力·士气·体力·地利)→形势天平
 function fmtK(n){n=Math.round(n||0);return n>=1000?(n/1000).toFixed(1)+"k":String(n);}
@@ -962,9 +966,9 @@ function computeAuras(){   // ★将领与部队分开:每位将领一道指挥�
     const boss=g._marshal||g.emperor,R=auraRange(g),R2=R*R,sB=(g.gen.mil||60)/100*0.40*(boss?1.25:1),mB=(g.gen.mil||60)/100*3.6*(boss?1.4:1);   // 军事→战力增益+士气回复(光环源变少·略加强以撑住麾下)
     for(const a of units){if(!a.alive||a.side!==g.side||a.state==="rout")continue;const dx=a.x-g.x,dy=a.y-g.y;if(dx*dx+dy*dy<=R2){if(sB>a._lead)a._lead=sB;if(mB>a._auraM)a._auraM=mB;}}}
 }
-function scareVal(u){if(u.state==="rout")return 0;if(u.emperor)return 2.8;if(u._hero&&u.gen&&(u.gen.valor||0)>=85)return 2.2;const sb=u.sub;if(sb==="heavy")return 2.2;if(sb==="shock"&&u._charging)return 1.6;if(/精锐|百战|劲旅/.test(u.quality||"")&&u.type==="cav")return 1.3;return 0;}   // ★威慑值(全战 scare/terror):铁骑/猛将/御营慑临近之敌
+function scareVal(u){if(u.state==="rout")return 0;if(u.emperor)return 2.8;if(u._hero&&u.gen&&(u.gen.valor||0)>=85)return 2.2;if(hasFlag(u,"scare"))return 1.9;const sb=u.sub;if(sb==="heavy")return 2.2;if(sb==="shock"&&u._charging)return 1.6;if(/精锐|百战|劲旅/.test(u.quality||"")&&u.type==="cav")return 1.3;return 0;}   // ★威慑值(全战 scare/terror):铁骑/猛将/御营/致惧flag(战象类)慑临近之敌
 function computeScare(){state._scare=null;const scary=[];for(const u of units)if(u.alive&&scareVal(u)>0)scary.push(u);if(!scary.length)return;const map={};
-  for(const u of units){if(!u.alive||u.state==="rout"||u.emperor||u._hero||/精锐|百战|劲旅/.test(u.quality||""))continue;   // 御营/将领/百战之师免于恐惧
+  for(const u of units){if(!u.alive||u.state==="rout"||u.emperor||u._hero||/精锐|百战|劲旅/.test(u.quality||"")||hasFlag(u,"elite"))continue;   // 御营/将领/百战之师/精锐flag免于恐惧
     let f=0;for(const s of scary){if(s.side===u.side)continue;const dd=dist(s,u);if(dd<165)f+=scareVal(s)*(1-dd/165);}
     if(f>0.3)map[u.id]=Math.min(f,3.0);}   // 临近敌重骑/猛将→持续夺气(上限~3/秒)
   state._scare=map;}
@@ -1022,10 +1026,12 @@ function cstats(u){
   const vetB=1+clamp((u.vet||0)-(u.vet0||0),0,60)/60*0.12;
   const heroM=u._hero&&u.gen?1+(u.gen.valor-50)/100*0.8:1;
   const fat=0.72+0.28*clamp((u.sta!=null?u.sta:100)/100,0,1);   // 疲劳削近战攻击(全战:疲则攻减)
-  const armour=clamp((s.armor||0)+(s.shield?s.shield*0.3:0)+(u.type==="guard"?0.15:0),0,0.7);
-  const _sf=clamp((u.sta!=null?u.sta:100)/100,0,1),eva=clamp((c.eva+(s.shield?s.shield*0.16:0)+(u.stance==="square"?0.06:u.stance==="loose"?-0.04:0))*(0.84+0.16*_sf),0.05,0.62);   // ★疲劳亦削闪避/防御(全战:疲则攻防皆减·此前只削攻击)
-  const mass=({heavy:2.4,shock:1.8,horse:1.3,halberd:1.6,guard:1.5,spear:1.2,sword:1.1,bow:.9,crossbow:.9,musket:.9,cannon:1.0}[u.sub]||1.2)*(u._hero?1.1:1);   // 质量→冲锋击退/抗击退
-  return {atk:c.atk*q*vetB*heroM*fat, eva, chg:c.chg*heroM*(0.8+0.2*clamp((u.sta!=null?u.sta:100)/100,0,1)), armour, base:c.base*q*heroM, ap:c.ap*q*heroM, hp:c.hp, vsCav:s.antiCav||1, lead:u.leadership||60, mass};   // 疲劳亦削冲锋
+  const shv=Math.max(s.shield||0,hasFlag(u,"shield")?0.35:0);   // ★盾等效值:sub固有或shield flag(LLM直出·藤甲/持盾类)取大
+  const bagM=hasFlag(u,"baggage")?0.72:1;                        // ★辎重非战斗:攻减
+  const armour=clamp((s.armor||0)+(hasFlag(u,"heavy")?0.2:0)+(shv?shv*0.3:0)+(u.type==="guard"?0.15:0),0,0.7);
+  const _sf=clamp((u.sta!=null?u.sta:100)/100,0,1),eva=clamp((c.eva+(shv?shv*0.16:0)+(u.stance==="square"?0.06:u.stance==="loose"?-0.04:0))*(0.84+0.16*_sf),0.05,0.62);   // ★疲劳亦削闪避/防御(全战:疲则攻防皆减·此前只削攻击)
+  const mass=({heavy:2.4,shock:1.8,horse:1.3,halberd:1.6,guard:1.5,spear:1.2,sword:1.1,bow:.9,crossbow:.9,musket:.9,cannon:1.0}[u.sub]||1.2)*(u._hero?1.1:1)+(hasFlag(u,"heavy")?0.5:0)+(hasFlag(u,"scare")?0.8:0);   // 质量→冲锋击退/抗击退(重装/战象类更沉)
+  return {atk:c.atk*q*vetB*heroM*fat*bagM, eva, chg:c.chg*heroM*(0.8+0.2*clamp((u.sta!=null?u.sta:100)/100,0,1)), armour, base:c.base*q*heroM*(bagM===1?1:0.8), ap:c.ap*q*heroM, hp:c.hp, vsCav:s.antiCav||1, lead:u.leadership||60, mass};   // 疲劳亦削冲锋
 }
 function shake(mag){state.shake={t:performance.now(),mag};}
 function tfr(u){return clamp(0.62+0.38*u.soldiers/(u.soldiers0||1000),0.62,1);}    // 兵牌随伤亡缩编比例(单一真相源)
@@ -1142,7 +1148,7 @@ function meleePair(a,b,dt){
   if(a.state!=="rout")a._inMelee=true;if(b.state!=="rout")b._inMelee=true;a._meleers=(a._meleers||0)+1;b._meleers=(b._meleers||0)+1;
   for(const[atk,def]of[[a,b],[b,a]]){
     if(atk._charging&&atk.type==="cav"&&atk._chargedOn!==def.id&&def.state!=="rout"){atk._chargedOn=def.id;const arc=hitArc(def,atk);
-      const sa=SUB[atk.sub]||{},sd=SUB[def.sub]||{},run=clamp(atk._chargeRun||0,0,CFG.chargeRunMax),mom=((run<CFG.chargeMinRun?0.55:1)+(run/CFG.chargeRunMax)*CFG.chargeRunBonus)*(sa.chargeMul||1)*(atk._xianzhenUntil>state.time?1.35:1)*(1+((terrainAt(atk.x,atk.y)==="hill"?1:0)-(terrainAt(def.x,def.y)==="hill"?1:0))*0.2)*(1-CFG.gallopImpact*0.5+(atk._gallop||0)*CFG.gallopImpact); // 动量×子兵种×陷阵×坡度(下坡+/上坡-)×奔驰蓄速(全程galloped-in撞更狠)
+      const sa=SUB[atk.sub]||{},sd=SUB[def.sub]||{},run=clamp(atk._chargeRun||0,0,CFG.chargeRunMax),mom=((run<CFG.chargeMinRun?0.55:1)+(run/CFG.chargeRunMax)*CFG.chargeRunBonus)*(sa.chargeMul||1)*(hasFlag(atk,"shock")?1.3:1)*(atk._xianzhenUntil>state.time?1.35:1)*(1+((terrainAt(atk.x,atk.y)==="hill"?1:0)-(terrainAt(def.x,def.y)==="hill"?1:0))*0.2)*(1-CFG.gallopImpact*0.5+(atk._gallop||0)*CFG.gallopImpact); // 动量×子兵种×冲击flag×陷阵×坡度(下坡+/上坡-)×奔驰蓄速(全程galloped-in撞更狠)
       const canBrace=(def.type==="step"&&(sd.wall||sd.antiCav))&&(def.stance==="hold"||def.stance==="square"||def._wallUntil>state.time);
       const braced=canBrace&&(arc==="front"||def.stance==="square");playSfx("charge");   // 长枪/镋钯·方阵全向或正面拒马
       if(braced){const refl=1+(sd.antiCav?(sd.antiCav-1)*1.2:0.4),d=Math.round(atk.soldiers*0.06*mom*refl);addKia(atk.side,d);atk.soldiers-=d;atk.mor=clamp(atk.mor-CFG.chargeShock*(0.7+mom*0.4),0,100);floater(atk.x,atk.y,"冲阵不破！","#e07a5a");spawnFx("impact",atk.x,atk.y);shake(7);log(`${def.name}列${def.stance==="square"?"方阵":"长枪"}拒马，${atk.name}冲而不破，反为所挫！`,"big");}
@@ -1160,7 +1166,7 @@ function meleePair(a,b,dt){
   const sca=cstats(a),scb=cstats(b),chgA=a._chgHitT!=null&&state.time-a._chgHitT<0.6,chgB=b._chgHitT!=null&&state.time-b._chgHitT<0.6;
   const engA=clamp(a.soldiers*0.2,8,200),engB=clamp(b.soldiers*0.2,8,200);
   const hitA=clamp(0.42+(sca.atk-40)/130,0.1,0.96)*(1-(chgA?0:scb.eva)),hitB=clamp(0.42+(scb.atk-40)/130,0.1,0.96)*(1-(chgB?0:sca.eva));
-  const shA=((SUB[a.sub]&&SUB[a.sub].shield)||0)*0.3,shB=((SUB[b.sub]&&SUB[b.sub].shield)||0)*0.3,armB=clamp(scb.armour-(arcA!=="front"?shB:0),0,0.7),armA=clamp(sca.armour-(arcB!=="front"?shA:0),0,0.7);   // ★盾的近战减伤仅正面有效(全战:侧背绕过盾)·侧翼/背刺连盾带甲一起破
+  const shA=Math.max((SUB[a.sub]&&SUB[a.sub].shield)||0,hasFlag(a,"shield")?0.35:0)*0.3,shB=Math.max((SUB[b.sub]&&SUB[b.sub].shield)||0,hasFlag(b,"shield")?0.35:0)*0.3,armB=clamp(scb.armour-(arcA!=="front"?shB:0),0,0.7),armA=clamp(sca.armour-(arcB!=="front"?shA:0),0,0.7);   // ★盾(sub固有或flag)的近战减伤仅正面有效(全战:侧背绕过盾)·侧翼/背刺连盾带甲一起破
   const dphA=sca.base*(1-armB)+sca.ap+(chgA?sca.chg*0.16:0),dphB=scb.base*(1-armA)+scb.ap+(chgB?scb.chg*0.16:0);
   const tmA=terrMelee(a),tmB=terrMelee(b);   // ★地形真入近战伤亡
   const rawB=engA*hitA*dphA/scb.hp*CFG.meleeRate*dt*cA*mulA*rfA*puA*tmA*(a.form==="wide"?1.1:a.form==="column"?0.9:1),rawA=engB*hitB*dphB/sca.hp*CFG.meleeRate*dt*cB*mulB*rfB*puB*tmB*(b.form==="wide"?1.1:b.form==="column"?0.9:1);
@@ -2291,7 +2297,7 @@ function start(opts){opts=opts||{};
   const mapId=$("scene")?$("scene").value:"hunhe";loadMap(mapId);
   if(opts.sideName)MAP.sideName=opts.sideName;if(opts.lead)MAP.lead=opts.lead;   // ★接入:攻守 faction 名/敌帅覆盖(朝代中立)
   units=scenario(opts.armies?{M:opts.armies.ming,J:opts.armies.jin}:null).map((u,i)=>{const sub=u.sub||assignSub(u,i);return {...u,_srcId:(u.id!=null?u.id:null),id:"u"+i,sub,soldiers0:u.soldiers,leadership:u.mor,training:u.training||60,supply:u.supply||80,quality:u.quality||"普通",vet:vetInit(u.quality),vet0:vetInit(u.quality),sta:100,ammo:isShooterSub(sub)?ammoCapSub(sub):999,_inspireCd:0,_duelCd:0,_archeryCd:0,_chargeRun:0,_skillCd:0,_field:true,_holdFire:false,_prio:"near",facing:u.side==="ming"?-Math.PI/2:Math.PI/2,state:"steady",stance:"line",order:null,tx:null,ty:null,target:null,hidden:false,alive:true,_fcd:0,_meleeT:0};});
-  units.forEach(u=>{if(u.emperor)u._marshal=true;});const _jm=units.find(u=>u.side==="jin"&&u.gen&&PERSONA[$("persona").value]&&u.gen.n===PERSONA[$("persona").value].label)||units.filter(u=>u.side==="jin").sort((a,b)=>(b.gen?b.gen.mil:0)-(a.gen?a.gen.mil:0))[0];if(_jm)_jm._marshal=true;
+  units.forEach(u=>{if(u.emperor)u._marshal=true;if(hasFlag(u,"elite")){u.mor=clamp((u.mor||70)+8,0,100);u.leadership=u.mor;}});const _jm=units.find(u=>u.side==="jin"&&u.gen&&PERSONA[$("persona").value]&&u.gen.n===PERSONA[$("persona").value].label)||units.filter(u=>u.side==="jin").sort((a,b)=>(b.gen?b.gen.mil:0)-(a.gen?a.gen.mil:0))[0];if(_jm)_jm._marshal=true;
   spawnGenerals();   // ★抽出将领英雄单位·源阵列降麾下
   _battleUnits0=units.map(u=>({id:u.id,_srcId:u._srcId,parentArmyId:u.parentArmyId!=null?u.parentArmyId:null,side:u.side,genName:u.gen?u.gen.n:null,emperor:!!u.emperor}));   // ★接入:开局花名册快照(结算回填·含战中被全歼移除者)
   start0={ming:units.filter(u=>u.side==="ming").reduce((s,u)=>s+u.soldiers,0),jin:units.filter(u=>u.side==="jin").reduce((s,u)=>s+u.soldiers,0)};
@@ -2313,6 +2319,7 @@ function startBattle(config){config=config||{};_activeBattleConfig=config;   // 
   if($("scene"))$("scene").value=config.mapId||"proc";                        // proc=genMap(_GENSEED)·或固定图id(hunhe/songjin/yaoshan)
   if(config.weather&&$("weather"))$("weather").value=config.weather;
   start({armies:config.armies,sideName:config.sideName,lead:config.lead,emperorSide:config.emperorSide});
+  if(config.observe&&typeof state!=="undefined"&&state){state.observe=true;try{banner("旁观战事","此战非御驾所将·天命自定·唯观之","aid");}catch(_o){}}   // ★旁观(O12·战况重演):封指挥·战果主游戏侧丢弃
   if(config.reserves&&typeof state!=="undefined"&&state){   // ★溢出队(>35/方)→援军波次涌入(接 reinf·从友方后缘·分波抱团)
     var waves=[];["ming","jin"].forEach(function(side){var res=config.reserves[side]||[];if(!res.length)return;
       var per=12,ey=side==="ming"?WORLD.h*0.97:WORLD.h*0.03;

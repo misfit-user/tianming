@@ -234,7 +234,7 @@
       _disciples:        [],
       _academyLifecycle: 'founding'
     };
-    GM.chars.push(shanzhang);
+    (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(shanzhang);
     return shanzhang;
   }
 
@@ -302,7 +302,7 @@
 
     // chronicle
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_founding',
         text: year + '年·' + academy.name + ' 立·主讲 ' + (academy.learning || '杂学') +
@@ -342,7 +342,7 @@
 
     // chronicle
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_banned',
         text: _getCurYear() + '年·' + academyName + '·禁讲学·' + (reason || ''),
@@ -389,7 +389,7 @@
     if (!Array.isArray(academy.events)) academy.events = [];
     academy.events.push({ year: _getCurYear(), type: 'restored' });
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_restored',
         text: _getCurYear() + '年·' + academyName + '·复立',
@@ -411,7 +411,7 @@
     if (!Array.isArray(academy.events)) academy.events = [];
     academy.events.push({ year: _getCurYear(), type: 'officialized' });
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_officialized',
         text: _getCurYear() + '年·' + academyName + '·官化·山长朝廷指派',
@@ -455,7 +455,7 @@
     if (GM._kjpHTierChangeFiredTurn === curTurn) return;
     GM._kjpHTierChangeFiredTurn = curTurn;
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_tier_change',
         text: _getCurYear() + '·书院网络·tier ' + oldTier + ' → ' + newTier,
@@ -587,7 +587,7 @@
         GM.parties.push(newParty);
         // H3·fallback 也补 chronicle 一笔 (跟 _ty3_partySpawn paradigm 一致)
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: '党祸·新党生',
             text: '新党·' + newParty.name + (newParty.leader ? '·' + newParty.leader : '') + '·' + (newParty.desc || ''),
@@ -857,7 +857,7 @@
     GM._kjpHPendingParadigmShifts.push(entry);
     // chronicle
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_paradigm_shift_enqueued',
         text: _getCurYear() + '·' + topicLabel + ' (待议政)',
@@ -996,7 +996,7 @@
       }
       var body = record || _kjpHGenLectureMeetingFallback(liveAcademy || { name: pending.academyName }, liveOpposing, template);
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'lecture_meeting',
           text: pending.year + '·' + pending.academyName + '·讲会·' + template.topic,
@@ -1065,7 +1065,7 @@
       var staleTurns = curTurn - (pending.startTurn || 0);
       if (staleTurns > LECTURE_QUEUE_TIMEOUT_TURNS) {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: curTurn,
             type: 'lecture_meeting',
             text: pending.year + '·' + pending.academyName + '·讲会 (记略散佚·LLM 失败)',
@@ -1237,7 +1237,7 @@
       });
     }
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_wendui_close',
         text: _getCurYear() + '·' + leader.name + '·议书院·stance=' + stance,
@@ -1346,7 +1346,7 @@
         }
         ax.influence = Math.min(100, (ax.influence || 30) + 10);
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'school_promoted',
             text: _getCurYear() + '·议·扶' + school + '·influence +10',
             tags: ['书院', '扶'], academyName: school
@@ -1357,7 +1357,7 @@
     // tolerate (容)·noop·chronicle 一笔
     else if (outcome === 'tolerate' || method === 'tolerate' || method === 'council') {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1, type: 'school_tolerated',
           text: _getCurYear() + '·议·容' + school + '·维持现状',
           tags: ['书院', '容'], academyName: school
@@ -1422,7 +1422,7 @@
     }
     // fallback chronicle
     if (!fired && Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'shanzhang_impeached',
         text: _getCurYear() + '·' + shanzhangName + '·被押 (' + (reason || '禁讲学') + ')·' + party + '·清议',
@@ -1443,7 +1443,7 @@
     ch.alive = false;
     var party = ch.party || '';
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'shanzhang_martyred',
         text: _getCurYear() + '·' + shanzhangName + '·狱死·' + party,
@@ -1494,7 +1494,7 @@
       };
       GM.parties.push(rebelParty);
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: '党祸·遗党生',
           text: _getCurYear() + '·' + rebelName + ' 起·' + shanzhangName + ' 殉党',
@@ -1622,7 +1622,7 @@
           influence: 25
         });
         if (spawnedAcademy && Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'feedback_literati_rise',
             text: curY + '·朝政腐·士林讥·民间书院兴 (corruption ' + corruption + ', tension ' + tension + ')',
             tags: ['书院', '反馈', '腐败', '党争']
@@ -1673,7 +1673,7 @@
   function _kjpHApplyWatershed(ws) {
     var curY = _getCurYear();
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_watershed',
         text: curY + '·watershed·' + ws.name,

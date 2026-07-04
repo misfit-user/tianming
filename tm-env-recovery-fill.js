@@ -37,8 +37,10 @@
     var cost = policy.cost || {};
     if (cost.money && global.GM.guoku && (global.GM.guoku.money || 0) < cost.money) return { ok: false, reason: '帑廪不足' };
     if (cost.grain && global.GM.guoku && (global.GM.guoku.grain || 0) < cost.grain) return { ok: false, reason: '粮库不足' };
-    if (cost.money && global.GM.guoku) global.GM.guoku.money -= cost.money;
-    if (cost.grain && global.GM.guoku) global.GM.guoku.grain -= cost.grain;
+    // 国库支出走 FiscalEngine 真账(2026-07-04 收口)
+    if ((cost.money || cost.grain) && global.FiscalEngine && global.FiscalEngine.spendFromGuoku) {
+      global.FiscalEngine.spendFromGuoku({ money: cost.money || 0, grain: cost.grain || 0 }, '生态复育');
+    }
     if (!E.activeRecoveries) E.activeRecoveries = [];
     E.activeRecoveries.push({
       policyId: policyId,

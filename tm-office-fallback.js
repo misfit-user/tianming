@@ -64,7 +64,7 @@
             if (pos.actualCount == null || pos.actualCount < tot) pos.actualCount = tot;
             // 造角色(默认属性·略低于均值的庸常之吏)
             if (!Array.isArray(GM.chars)) GM.chars = [];
-            GM.chars.push({
+            (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })({
               name: nm, title: (n.name || '') + pos.name, officialTitle: pos.name, age: 38, gender: 'male',
               faction: (P && P.playerInfo && P.playerInfo.factionName) || '', stance: '中立', loyalty: 50,
               intelligence: 48, administration: 52, military: 40, valor: 40, charisma: 48, diplomacy: 50, benevolence: 50,

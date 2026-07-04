@@ -300,6 +300,8 @@ function generateChancellorSuggestions() {
   GM.chars.forEach(function(c) {
     if (c.isPlayer) return;
     if (!c.alive && c.alive !== undefined) return;
+    // 阵营闸(2026-07-04)：宰辅=本朝首臣·外邦君主(皇太极/德川氏等)品级再高也不得为玩家"宰相"进言——其言喂入回合推演会被放大成敌国首脑向玩家奏请的叙事污染。只拦明确标了异势力者·空 faction 朝臣放行
+    if (typeof _tmIsForeignCourtChar === 'function' && _tmIsForeignCourtChar(c)) return;
     if (!chancellor || (c.rankLevel || 99) < (chancellor.rankLevel || 99)) chancellor = c;
   });
   if (!chancellor) return [];
@@ -805,7 +807,7 @@ if (typeof GameEventBus !== 'undefined') {
           // 起居注登记每个空缺
           if (!GM._chronicle) GM._chronicle = [];
           _vr.vacated.forEach(function(v){
-            GM._chronicle.push({
+            if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
               turn: GM.turn || 0, date: GM._gameDate || '',
               type: '官缺',
               text: v.chain + '·' + v.pos + '\u00B7\u56E0 ' + data.name + ' \u6B83\u800C\u7F3A\u5458',
@@ -1533,6 +1535,8 @@ async function _chooseIssueOption(issueId, choiceIdx) {
   _tmNormIssueChoices(issue);   // label→text·consequence→desc 兼容归一(否则 AI 裁定/民心归因/chosenText 拿到空文本)
   var ch = issue.choices[choiceIdx];
   if (!ch) return;
+  if (issue.status === 'resolved' || issue._resolving) return; // AI 裁定 await 窗口(数秒)连点曾双裁定双落账(2026-07-04 审查定罪)
+  issue._resolving = true;
   // 命门(v0.2·事件并入御案时政):开关开 → AI 据当前国势裁即时硬核连锁后果(applyAITurnChanges);固定 effect 降兜底。
   //   edictTracker 长期追踪不变(见下)。开关关 = 原固定 effect 查表(零回归)。
   var _adj = false;
@@ -1583,7 +1587,7 @@ async function _chooseIssueOption(issueId, choiceIdx) {
   issue.chosenText = ch.text;
   // 写编年
   if (!GM._chronicle) GM._chronicle = [];
-  GM._chronicle.push({
+  if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
     turn: GM.turn || 1, date: GM._gameDate || '',
     type: '要务决断',
     text: '【' + (issue.title||'') + '】陛下决：' + (ch.text||'') + (ch.desc?' ·'+ch.desc:''),

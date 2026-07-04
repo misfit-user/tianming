@@ -23,6 +23,16 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, def) { return (v === undefined || v === null) ? (def || 0) : v; }
 
+  // 民心走 MinxinLedger 总闸(2026-07-04 收口)：delta 落叶子+按源封顶。
+  // 直写 GM.minxin.trueIndex 是死路——它只是聚合缓存·下次 aggregateTrue 按叶子人口加权重算即冲掉。
+  function _mxApply(delta, reason, kind) {
+    if (!delta) return;
+    try {
+      var L = (typeof TM !== 'undefined' && TM.MinxinLedger) || global.MinxinLedger;
+      if (L && L.recordAndApply) L.recordAndApply(global.GM, { sourceSystem: 'corruption-engine', kind: kind || 'corruption', delta: delta, reason: reason });
+    } catch (_e) {}
+  }
+
   function hasCatalogKeyOffice(grp) {
     var offices = Array.isArray(grp && grp.keyOffices) ? grp.keyOffices : [];
     if (!offices.length) return false;
@@ -272,19 +282,19 @@
     // 3.7 内帑侵吞 → 每月扣内帑
     if (GM.neitang) {
       var leak = Consequences.calcInnerTreasuryLeak();
-      // leak 是年度值（见 calcInnerTreasuryLeak），转回合：× mr / 12
-      var monthlyLeak = leak * mr / 12;
-      GM.neitang.balance = Math.max(0, safe(GM.neitang.balance, 0) - monthlyLeak);
+      // calcInnerTreasuryLeak 基于 neitang.monthlyIncome=本就是月度值·再/12 曾把 imperial 侵吞削到设计值 1/12·
+      // 内帑腐败近乎无感(2026-07-04 审查定罪)。转回合只乘 mr。
+      var monthlyLeak = leak * mr;
+      if (monthlyLeak > 0 && typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromNeitang) FiscalEngine.spendFromNeitang({ money: monthlyLeak }, '内帑侵吞'); // 收口·走真账(sink 可查)
+      else GM.neitang.balance = Math.max(0, safe(GM.neitang.balance, 0) - monthlyLeak); // 沙箱兜底
       if (!GM._corrStats) GM._corrStats = {};
       GM._corrStats.lastMonthInnerLeak = monthlyLeak;
     }
 
     // 3.4 司法不公 → 民心
-    if (GM.minxin) {
+    {
       var ji = Consequences.calcJudicialImpact();
-      GM.minxin.trueIndex = clamp(
-        safe(GM.minxin.trueIndex, 50) - ji.civilUnrestContribution * 0.05 * mr,
-        0, 100);
+      _mxApply(-(ji.civilUnrestContribution * 0.05 * mr), '司法不公·民有冤抑', 'judicialFairness');
     }
 
     // 其他（空额率/工程质量）留待军事/工程系统实现时调用 Consequences.calcXxx()
@@ -573,7 +583,8 @@
       if (GM.guoku && GM.guoku.balance < cost) {
         return { success: false, reason: '帑廪不足' };
       }
-      if (GM.guoku) GM.guoku.balance -= cost;
+      // 国库支出走 FiscalEngine 真账(2026-07-04 收口)
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: cost }, '肃贪运动');
       // 集中压一个部门腐败
       var dept = opts.targetDept || 'provincial';
       if (GM.corruption.subDepts[dept]) {
@@ -600,7 +611,7 @@
           GM.corruption.subDepts[k].true - reduction);
       });
       // 副作用
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 5);
+      _mxApply(-5, '肃贪株连·地方震荡');
       GM.corruption.countermeasures.purgeCampaign = {
         active: true, scale: scale, startTurn: GM.turn, turnsLeft: 6
       };
@@ -668,7 +679,7 @@
       GM.corruption.countermeasures.harshPunishment = Math.min(1,
         GM.corruption.countermeasures.harshPunishment + 0.5);
       // 民心↓
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 8);
+      _mxApply(-8, '酷吏肃贪·滥刑及众', 'judicialFairness');
       if (typeof addEB === 'function') addEB('朝代', '陛下以酷吏肃贪，朝野肃然', { credibility: 'high' });
       syncIndexFromSubDepts('\u9177\u540f\u8083\u8d2a');
       return { success: true };
@@ -685,7 +696,7 @@
       }[type] || null;
       if (!template) return { success: false, reason: '未知机构类型' };
       if (GM.guoku && GM.guoku.balance < template.cost) return { success: false, reason: '帑廪不足' };
-      if (GM.guoku) GM.guoku.balance -= template.cost;
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: template.cost }, '设监察机构'); // 收口·走真账
       GM.corruption.supervision.institutions.push(Object.assign({}, template, {
         id: 'inst_' + GM.turn + '_' + Math.random().toString(36).slice(2,7),
         establishedTurn: GM.turn,
@@ -943,8 +954,10 @@
           function() {
             GM.corruption.subDepts.judicial.true += 15;
             GM.corruption.countermeasures.harshPunishment = 0;
-            if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + 5);
-            if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8);
+            _mxApply(5, '清算酷吏·冤狱得雪', 'judicialFairness');
+            if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+              global.AuthorityEngines.adjustHuangwei('lostVirtueRumor', -8, '清算酷吏·冤狱曝于朝野');
+            } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8); // 沙箱回退
           });
         counters.harshAccum = 0;
       }
@@ -963,7 +976,7 @@
             if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
               global.AuthorityEngines.adjustHuangquan('factionConsuming', -10, '\u53cd\u8150\u515a\u4e89\u5931\u63a7');
             } else if (GM.huangquan) GM.huangquan.index = Math.max(0, GM.huangquan.index - 10);
-            if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 8);
+            _mxApply(-8, '反腐沦为党争·朝局动荡');
             // 清流大批辞官
             if (GM.chars) {
               var quit = 0;
@@ -1076,11 +1089,15 @@
       }
     }
 
-    // 腐败 → 皇威（每月扣 0.2 → 按月数）
+    // 腐败 → 皇威（每月扣 0.2 → 按月数）·收口走写口(按源封顶+phase迁移·手搓drains台账退役为沙箱回退)
     if (GM.huangwei && c.trueIndex > 75) {
-      GM.huangwei.index = Math.max(0, GM.huangwei.index - 0.2 * mr);
-      if (!GM.huangwei.drains) GM.huangwei.drains = {};
-      GM.huangwei.drains.lostVirtueRumor = (GM.huangwei.drains.lostVirtueRumor || 0) + 0.2 * mr;
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('lostVirtueRumor', -0.2 * mr, '腐败侵蚀圣德');
+      } else {
+        GM.huangwei.index = Math.max(0, GM.huangwei.index - 0.2 * mr);
+        if (!GM.huangwei.drains) GM.huangwei.drains = {};
+        GM.huangwei.drains.lostVirtueRumor = (GM.huangwei.drains.lostVirtueRumor || 0) + 0.2 * mr;
+      }
     }
 
     // 冗官和卖官导致新官能力衰减（每月扣 → 按月数）
@@ -1163,6 +1180,15 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, def) { return (v === undefined || v === null) ? (def || 0) : v; }
+
+  // 民心走 MinxinLedger 总闸(2026-07-04 收口)·同 p1 的 _mxApply(多 IIFE 各一份·作用域隔离)
+  function _mxApply(delta, reason, kind) {
+    if (!delta) return;
+    try {
+      var L = (typeof TM !== 'undefined' && TM.MinxinLedger) || global.MinxinLedger;
+      if (L && L.recordAndApply) L.recordAndApply(global.GM, { sourceSystem: 'corruption-engine', kind: kind || 'corruption', delta: delta, reason: reason });
+    } catch (_e) {}
+  }
 
   // ═════════════════════════════════════════════════════════════
   // §6.1 揭发事件库（25 条）
@@ -1497,9 +1523,13 @@
         GM.huangquan.index = Math.max(0, GM.huangquan.index - Math.abs(cost.huangquan));
       }
     }
-    if (cost.huangwei  && GM.huangwei)  GM.huangwei.index  = Math.max(0, GM.huangwei.index  - Math.abs(cost.huangwei));
-    if (cost.minxin    && GM.minxin)    GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - Math.abs(cost.minxin));
-    if (cost.guoku     && GM.guoku)     GM.guoku.balance -= Math.abs(cost.guoku);
+    if (cost.huangwei && GM.huangwei) {
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('courtScandal', -Math.abs(cost.huangwei), '整肃代价·朝局震动');
+      } else GM.huangwei.index = Math.max(0, GM.huangwei.index - Math.abs(cost.huangwei)); // 沙箱回退
+    }
+    if (cost.minxin) _mxApply(-Math.abs(cost.minxin), '惩贪行动波及地方');
+    if (cost.guoku && typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: Math.abs(cost.guoku) }, '惩贪行动'); // 收口·走真账
     if (cost.stress) { /* player stress — hook */ }
 
     // 应用收益
@@ -1507,8 +1537,12 @@
       GM.corruption.subDepts[caseObj.dept].true = Math.max(0,
         GM.corruption.subDepts[caseObj.dept].true + ben.corruption);
     }
-    if (ben.minxin   && GM.minxin)   GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + ben.minxin);
-    if (ben.huangwei && GM.huangwei) GM.huangwei.index   = Math.min(100, GM.huangwei.index   + ben.huangwei);
+    if (ben.minxin) _mxApply(ben.minxin, '惩贪见效·民心称快');
+    if (ben.huangwei && GM.huangwei) {
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('executeRebelMinister', ben.huangwei, '惩贪奏效·朝纲肃然');
+      } else GM.huangwei.index = Math.min(100, GM.huangwei.index + ben.huangwei); // 沙箱回退
+    }
     if (ben.huangquan && GM.huangquan) {
       if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
         global.AuthorityEngines.adjustHuangquan('personalRule', ben.huangquan, '\u6574\u8083\u594f\u6548');
@@ -1516,8 +1550,11 @@
         GM.huangquan.index = Math.min(100, GM.huangquan.index + ben.huangquan);
       }
     }
-    if (ben.guoku    && GM.guoku)    GM.guoku.balance   += ben.guoku;
-    if (ben.neitang  && GM.neitang)  GM.neitang.balance += ben.neitang;
+    if (ben.guoku && typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) FiscalEngine.addToGuoku({ money: ben.guoku }, '追赃入库'); // 收口·走真账
+    if (ben.neitang && GM.neitang) {
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToNeitang) FiscalEngine.addToNeitang({ money: ben.neitang }, '追赃入帑'); // 收口·走真账
+      else GM.neitang.balance += ben.neitang; // 沙箱兜底
+    }
     if (ben.partyStrife && GM.partyStrife !== undefined) GM.partyStrife = Math.max(0, GM.partyStrife + ben.partyStrife);
     if (ben.armyMorale && GM.armies) {
       GM.armies.forEach(function(a) { a.morale = Math.min(100, (a.morale || 50) + ben.armyMorale); });
@@ -1551,8 +1588,10 @@
         c.status = 'expired';
         c.resolvedTurn = GM.turn;
         // 不处理的后果：民心 -2，皇威 -1，腐败略升
-        if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 2);
-        if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 1);
+        _mxApply(-2, '贪案悬而不决·民怨积');
+        if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+          global.AuthorityEngines.adjustHuangwei('idleGovern', -1, '贪案悬而不决');
+        } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 1); // 沙箱回退
         if (c.dept && GM.corruption.subDepts[c.dept]) {
           GM.corruption.subDepts[c.dept].true = Math.min(100, GM.corruption.subDepts[c.dept].true + 3);
         }
@@ -1633,8 +1672,8 @@
 
     GM.corruption.lumpSumIncidents.push(incident);
 
-    if (incident.directPeopleBurden && GM.minxin) {
-      GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - ratio * 15);
+    if (incident.directPeopleBurden) {
+      _mxApply(-(ratio * 15), '贪弊直取于民');
     }
 
     if (typeof addEB === 'function') {
@@ -1977,8 +2016,8 @@
     var mr = (context && context._monthRatio) ||
              (typeof CorruptionEngine.getMonthRatio === 'function' ? CorruptionEngine.getMonthRatio()
               : (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn()/30 : 1));
-    // monthlyIncome 是月入 → 按月数入账
-    if (GM.guoku) GM.guoku.balance += j.monthlyIncome * mr;
+    // monthlyIncome 是月入 → 按月数入账·走 FiscalEngine 真账(2026-07-04 收口)
+    if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) FiscalEngine.addToGuoku({ money: j.monthlyIncome * mr }, '鬻爵月入');
     j.cumulativeSold = (j.cumulativeSold || 0) + mr;
     // 按月速率加剧部门腐败
     if (GM.corruption) {

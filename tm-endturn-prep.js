@@ -509,7 +509,7 @@ function _endTurn_collectInput() {
       if (typeof recordPlayerDecision === 'function') recordPlayerDecision('edict', '颁行诏书:' + _decreeText.substring(0, 80));
     }
   }
-  GM.qijuHistory.push({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
+  if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
   resetTurnChanges();
   // 注意：不在此处清空 _couplingReport/_edictExecutionReport/_buildingOutputReport/_npcIntents/_healthAlerts/_decisionAlerts
   // 这些字段由上一回合的 SettlementPipeline 设置，在本回合 AI prompt 中读取（"上回合发生了什么"）

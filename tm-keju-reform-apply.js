@@ -64,7 +64,7 @@
           // overlap cancel·early return·非"改革失败"·只是 user 取消·不 punish chars
           try {
             if (Array.isArray(GM._chronicle)) {
-              GM._chronicle.push({
+              if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
                 turn: GM.turn || 1,
                 type: 'keju-reform-cancel-overlap',
                 text: '改革议·' + (ctx.topicData.topic || '').slice(0, 40) + '·user 取消叠加 (前改未稳)',
@@ -260,7 +260,7 @@
     if (!lintResult.ok) {
       try {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'keju-reform-lint-fail',
             text: '改革议过·但 lint 不通·' + (lintResult.warnings || []).map(function(w) { return w.msg; }).join('·').slice(0, 200),
@@ -611,7 +611,7 @@
         if (Array.isArray(GM._chronicle)) {
           // RBB·BB-D3·chronicle text 中文化·非英文 ID·"X 年改科举"
           var startYearLbl = entry.year ? (entry.year + '年') : '';
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-active',
             text: startYearLbl + '改科举·' + (entry.magnitudeDescriptor || '') + '·已稳定施行',
             tags: ['科举', 'reform', 'active'],
@@ -668,7 +668,7 @@
         if (Array.isArray(GM._chronicle)) {
           // RBB·BB-D3·中文化
           var matureLbl = entry.year ? (entry.year + '年') : '';
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-matured',
             text: matureLbl + '改科举·' + (entry.magnitudeDescriptor || '') + '·施行 30 年·朝野稳·名望 +' + (entry._maturedBonus || 0),
             tags: ['科举', 'reform', 'matured'],
@@ -750,7 +750,7 @@
           try {
             if (Array.isArray(GM._chronicle)) {
               // RBB·BB-D3·中文化·非英文 reformId·留内部 ref
-              GM._chronicle.push({
+              if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
                 turn: turn, type: 'reform-retirement',
                 text: ch.name + '·' + (ch.officialTitle || ch.title || '') + '·致仕·疏曰"老臣不忍见祖制更易"',
                 tags: ['科举', 'reform', 'retirement'],
@@ -862,7 +862,7 @@
     }
     var text = voice + '·' + verb + '·' + verbPrefix +
                rawMag + '·' + _kjpL7MethodLabel(histEntry.method);
-    GM._chronicle.push({
+    if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
       turn: GM.turn || 1,
       date: GM._gameDate || '',
       type: histEntry.outcome && histEntry.outcome.passed ? 'keju-reform-applied' : 'keju-reform-rejected',

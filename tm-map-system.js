@@ -1513,7 +1513,7 @@ function showCityInfo(cityId) {
 
   var overlay = document.createElement('div');
   overlay.id = 'city-info-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10001;'; // 须压过 map-viewer-overlay(10000)·旧9999令城市详情被压在地图下(2026-07-04 审查定罪)
   overlay.innerHTML = html;
 
   document.body.appendChild(overlay);
@@ -1969,6 +1969,9 @@ function openMapViewer() {
   document.body.appendChild(overlay);
 
   renderMap();
+  // 交互监听补挂(2026-07-04 审查定罪)：initMapInteraction 原只在开局被调·彼时 #mapCanvas 未在文档即 return——
+  // 查看器曾是死图：滚轮/拖拽/点城全失效·底部却写着操作提示。canvas 随 overlay 每次重建·不叠监听。
+  if (typeof initMapInteraction === 'function') { try { initMapInteraction(); } catch (_miE) {} }
 }
 
 /**

@@ -728,7 +728,8 @@
     if (c.fullyCommuted) {
       // 一条鞭法后：所有役折银
       var commuteMoney = effectiveDing * c.annualCorveeDays * c.commutationRate * mr / 12;
-      if (global.GM.guoku) global.GM.guoku.money = (global.GM.guoku.money || 0) + commuteMoney;
+      // 役折银入库走 FiscalEngine 真账(2026-07-04 收口)
+      if (global.FiscalEngine && global.FiscalEngine.addToGuoku) global.FiscalEngine.addToGuoku({ money: commuteMoney }, '役折银');
       return;
     }
     // 常役按 10 类分配
@@ -974,7 +975,8 @@
     // 触发造册
     var cost = Math.round(P.national.households * 0.05);
     if (global.GM.guoku && global.GM.guoku.money !== undefined && global.GM.guoku.money >= cost) {
-      global.GM.guoku.money -= cost;
+      // 造册经费走 FiscalEngine 真账(2026-07-04 收口)
+      if (global.FiscalEngine && global.FiscalEngine.spendFromGuoku) global.FiscalEngine.spendFromGuoku({ money: cost }, '户籍造册');
       P.meta.lastRegistrationTurn = ctx.turn || 0;
       // 更新准确度——腐败降低
       var corrObj = global.GM.corruption;

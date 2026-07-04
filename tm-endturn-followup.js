@@ -111,7 +111,7 @@
             try { if (typeof GM !== 'undefined' && Array.isArray(GM.chars)) GM.chars.some(function(c) { if (c && c.name === wn) { wc = c; return true; } return false; }); } catch (_wfE) {}
             if (!wc || wc.alive === false || wc.isPlayer) return;
             NpcMemorySystem.remember(wn, '亲见：' + String(mw.event).slice(0, 60), mw.emotion || '忧', Math.max(3, (mw.importance || 5) - 2), mw.char,
-              { type: 'witnessed', source: 'witnessed', location: mw.location });
+              { type: 'witnessed', source: 'witnessed', location: mw.location, _noMirror: true }); // _noMirror:当事人已有原始记忆·每个目击者再镜像回弹=同事件重复灌水(2026-07-04 审查定罪)
             witTotal++;
           });
         }
@@ -566,7 +566,9 @@
             if (rc.reason && String(rc.reason).trim() && Math.abs(_rcD) >= 4
                 && typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
               var _rcEmo = _rcD <= -8 ? '恨' : _rcD < 0 ? '忧' : _rcD >= 8 ? '敬' : '喜';
-              var _rcImp = Math.abs(_rcD) >= 10 ? 5 : 4;
+              // ★2026-07-04 交互双向性·大幅关系变动抬 imp·令自动镜像给对方(B)的记忆(imp-1)也过 <npc-hearts> 推演门槛(6-8)·
+              //   |delta|>=8→A imp7→B 镜像 imp6(两侧推演皆可见);6-7→A imp6(A过·B镜像imp5暂不入);4-5→imp4 只留痕。
+              var _rcImp = Math.abs(_rcD) >= 8 ? 7 : Math.abs(_rcD) >= 6 ? 6 : 4;
               try { NpcMemorySystem.remember(rc.a, String(rc.reason).slice(0, 40), _rcEmo, _rcImp, rc.b, { source: 'intuition', type: 'general', _relShift: true }); } catch(_rcE) {}
             }
           });
@@ -751,7 +753,9 @@
               // ★2026-07-02 应用同源:走与 sc15 相同的 _applyNpcDeepResult——此前 sc15n 只存结果不应用·
               //   开着 sc15n 时 mood/忠诚/压力/关系网/暗流事件簿/阴谋台账全部静默停摆(半成品替代)。
               //   faction_undercurrents 亦由共享函数接管(历史归档+势力strength+事件簿·比原 append 版语义全)。
-              _applyNpcDeepResult(p15n);
+              // 应用错误不外抛(2026-07-04 审查定罪)：外层 _runSubcall 重试会整段重跑·已落的 delta 再落一次=双记账。
+              // 应用中断=部分落地不回滚(可容)·但绝不因应用错误触发 AI 重调重应用。
+              try { _applyNpcDeepResult(p15n); } catch (_apE15n) { console.warn('[sc15n] 应用中断(不重试防双记):', _apE15n); }
               if (Array.isArray(p15n.npc_cognition)) {
                 if (!GM._npcCognition || typeof GM._npcCognition !== 'object') GM._npcCognition = {};
                 p15n.npc_cognition.forEach(function(nc) {
@@ -896,7 +900,8 @@
           var p15 = _p15Parse ? _p15Parse.parsed : null;
           if (p15) {
             // ★2026-07-02 应用逻辑抽出 _applyNpcDeepResult(见 Branch A 顶部)与 sc15n 共享·内容与原内联一致
-            _applyNpcDeepResult(p15);
+            // 应用错误不外抛(同 sc15n·重试整段重跑=已落 delta 双记账·2026-07-04 审查定罪)
+            try { _applyNpcDeepResult(p15); } catch (_apE15) { console.warn('[sc15] 应用中断(不重试防双记):', _apE15); }
 
             GM._turnAiResults.subcall15 = p15;
             // Phase 4·sc15n API surface mirror (Slice 3 scaffold)·下游可读 subcall15n 而非分散 subcall15/subcall07
@@ -3630,7 +3635,7 @@
         var _stewardOn = !!(window.TM && window.TM.MemorySteward && window.TM.MemorySteward.shouldHandle(GM));
         if (_stewardOn) {
           _queuePostTurnSubcall('memory_steward', function(){ return _runSubcall('memory_steward', '记忆管家固化', 'lite', async function(){
-            await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28', 'sc_consolidate']);
+            await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc25c', 'sc28', 'sc_consolidate']); // sc25c=现役默认记忆写手·漏await曾与压缩并发·整数组替换把本回合turn_memory静默蒸发(2026-07-04 审查定罪)
             try { var _msr = await window.TM.MemorySteward.run(GM, {}); _dbg('[memory_steward] ' + JSON.stringify(_msr)); }
             catch(_mse){ _dbg('[memory_steward] fail:', _mse); }
           }); });
@@ -3642,7 +3647,7 @@
         // 压缩AI记忆
         if (!_stewardOn && GM._aiMemory && GM._aiMemory.length > _memCompressThreshold) {
           _queuePostTurnSubcall('compress_ai_memory', function(){ return _runSubcall('compress_ai_memory', '压缩AI记忆', 'lite', async function() {
-          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28', 'sc_consolidate']);
+          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc25c', 'sc28', 'sc_consolidate']); // sc25c=现役默认记忆写手·漏await曾与压缩并发·整数组替换把本回合turn_memory静默蒸发(2026-07-04 审查定罪)
           if (!GM._aiMemory || GM._aiMemory.length <= _memCompressThreshold) return;
           _needCompress = true;
           var _oldMem = GM._aiMemory.slice(0, GM._aiMemory.length - _memKeepRecent);
@@ -3680,7 +3685,7 @@
         // 压缩伏笔
         if (!_stewardOn && GM._foreshadows && GM._foreshadows.length > _foreCompressThreshold) {
           _queuePostTurnSubcall('compress_foreshadows', function(){ return _runSubcall('compress_foreshadows', '整理伏笔', 'lite', async function() {
-          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc28', 'sc_consolidate']);
+          await _awaitQueuedPostTurnSubcallsById(['sc25', 'sc25c', 'sc28', 'sc_consolidate']); // sc25c=现役默认记忆写手·漏await曾与压缩并发·整数组替换把本回合turn_memory静默蒸发(2026-07-04 审查定罪)
           if (!GM._foreshadows || GM._foreshadows.length <= _foreCompressThreshold) return;
           var _oldFore = GM._foreshadows.slice(0, GM._foreshadows.length - _foreKeepRecent);
           var _keepFore = GM._foreshadows.slice(-_foreKeepRecent);

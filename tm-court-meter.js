@@ -48,8 +48,12 @@ function _settleCourtMeter() {
   }
   // 阈值触发（连续 3 回合）
   if (m.missedStreak >= 3 && !m._missedAlerted) {
-    if (GM.vars) {
-      if (GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') GM.vars['皇威'].value = Math.max(0, GM.vars['皇威'].value - 5);
+    // 皇威走 AuthorityEngines 写口(2026-07-04 守卫v3.1定罪)：vars['皇威']=死镜像·真值在 GM.huangwei.index——
+    // 「连三月不视朝→皇威-5」机制此前从未真正生效
+    if (typeof AuthorityEngines !== 'undefined' && AuthorityEngines.adjustHuangwei) {
+      try { AuthorityEngines.adjustHuangwei('courtDiligence', -5, '连三月不视朝'); } catch (_e) {}
+    } else if (GM.vars && GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') { // 沙箱兜底
+      GM.vars['皇威'].value = Math.max(0, GM.vars['皇威'].value - 5);
     }
     (GM.chars || []).forEach(function(c) {
       if (c && c.alive !== false && (c.wuchang && (c.wuchang['义'] || 0) > 60)) {
@@ -66,8 +70,11 @@ function _settleCourtMeter() {
     m._missedAlerted = true;
     m._diligentAlerted = false;
   } else if (m.diligentStreak >= 3 && !m._diligentAlerted) {
-    if (GM.vars) {
-      if (GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') GM.vars['皇威'].value = Math.min(100, GM.vars['皇威'].value + 3);
+    // 同上·走写口(「连三月勤政→皇威+3」此前同样从未生效)
+    if (typeof AuthorityEngines !== 'undefined' && AuthorityEngines.adjustHuangwei) {
+      try { AuthorityEngines.adjustHuangwei('courtDiligence', 3, '连三月勤政视朝'); } catch (_e) {}
+    } else if (GM.vars && GM.vars['皇威'] && typeof GM.vars['皇威'].value === 'number') { // 沙箱兜底
+      GM.vars['皇威'].value = Math.min(100, GM.vars['皇威'].value + 3);
     }
     (GM.chars || []).forEach(function(c) {
       if (c && c.alive !== false && (c.integrity || 50) > 60) {

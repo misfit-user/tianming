@@ -269,8 +269,13 @@ async function endTurn(){
   } catch(_npcInTurnCancelE) {
     try { console.warn('[endTurn] NPC in-turn timer cancel failed', _npcInTurnCancelE); } catch(_){}
   }
-  await _runPreSubmitPartyClassCalibration();
-  _showPostTurnCourtPromptAndStartEndTurn();
+  // 重入闸：校准 await(BYOK 下可达数十秒)期间 GM.busy 尚未置位·连点曾双跑 pre-submit 按回合维护+叠出第二个朔朝弹窗(2026-07-04 审查定罪)
+  if (endTurn._preSubmitInFlight) return;
+  endTurn._preSubmitInFlight = true;
+  try {
+    await _runPreSubmitPartyClassCalibration();
+    _showPostTurnCourtPromptAndStartEndTurn();
+  } finally { endTurn._preSubmitInFlight = false; }
 }
 
 async function _endTurnCore(){
@@ -1198,11 +1203,13 @@ EndTurnHooks.registerFragment('party-class-calibration', function(ctx) {
 EndTurnHooks.registerFragment('qiju-history', function(ctx) {
   if (!(P.ai.key && GM.conv && GM.conv.length > 0)) return null;
   var qijuLb = (P.conf && P.conf.qijuLookback) || 5;
-  var recentQ = (GM.qijuHistory || []).slice(-qijuLb);
+  // qijuHistory 收口后 unshift(newest-first)·「近N回合」= 头部取·且只取带 edicts/xinglu 的回合主记录
+  // （旧写法 slice(-N) 在 newest-first 下取到的是全库最老条目·杂类条目还会打出空头行）
+  var recentQ = (GM.qijuHistory || []).filter(function(q){ return q && (q.edicts || q.xinglu); }).slice(0, qijuLb).reverse();
   if (recentQ.length === 0) return null;
   var qijuText = "\n\n=== 近" + qijuLb + "回合起居注 ===\n";
   recentQ.forEach(function(q){
-    qijuText += "T" + q.turn + " " + q.time + ":\n";
+    qijuText += "T" + q.turn + " " + (q.time || q.date || '') + ":\n";
     if (q.edicts) {
       if (q.edicts.decree) qijuText += "  颁行诏书: " + q.edicts.decree + "\n";
       if (q.edicts.political) qijuText += "  政: " + q.edicts.political + "\n";

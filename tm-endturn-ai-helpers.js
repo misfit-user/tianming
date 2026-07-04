@@ -430,7 +430,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     var pa = parsed.reports.filter(function(r){return r.status==='partial';}).length;
     var dl = parsed.reports.filter(function(r){return r.status==='delayed';}).length;
     var ig = parsed.reports.filter(function(r){return r.status==='ignored';}).length;
-    GM._chronicle.push({
+    if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
       turn: GM.turn - 1, date: GM._gameDate || '',
       type: '御批回听',
       text: '本回合 ' + edictLines.length + ' 条诏令·完全执行 ' + ex + '·部分 ' + pa + '·延宕 ' + dl + '·忽略 ' + ig + '·效能 ' + (parsed.overallEfficacy || 0) + '%',

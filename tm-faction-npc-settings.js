@@ -97,6 +97,8 @@
     } else if (global.TM && global.TM.FactionNpcInTurnDriver && typeof global.TM.FactionNpcInTurnDriver.cancelInTurnTimers === 'function') {
       global.TM.FactionNpcInTurnDriver.cancelInTurnTimers();
     }
+    // 设置写必随存(2026-07-04 p:conf 收口)·不存则重启蒸发（「设置不持久」bug族）
+    try { if (typeof global.saveP === 'function') global.saveP(); } catch (_e) {}
     return true;
   }
 
@@ -104,6 +106,7 @@
     if (!global.P) return false;
     if (!global.P.conf) global.P.conf = {};
     global.P.conf.npcAiCosmeticEnrich = !!on;
+    try { if (typeof global.saveP === 'function') global.saveP(); } catch (_e) {} // 写必随存(2026-07-04)
     return true;
   }
 

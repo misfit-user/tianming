@@ -248,7 +248,9 @@
       if (!region) return;
       var weight = Number(r.weight != null ? r.weight : r.share);
       if (!isFinite(weight) || weight <= 0) weight = 1;
-      var delta = Number(r.deltaTrue != null ? r.deltaTrue : (r.delta != null ? r.delta : raw.deltaTrue));
+      // 行未显式给 delta 就留 null → apply 端按权重摊「削顶后」的信号 delta。
+      // （旧写法回退到 raw.deltaTrue：每个命中区各吃全额未封顶原始值·权重拆分成死路·P-ZV7 封顶被架空·2026-07-04 审查定罪）
+      var delta = Number(r.deltaTrue != null ? r.deltaTrue : (r.delta != null ? r.delta : NaN));
       rows.push({ region: region, weight: weight, deltaTrue: isFinite(delta) ? delta : null });
     });
     return rows;
@@ -361,7 +363,7 @@
     return null;
   }
 
-  function applyToMatrix(root, signal, regionDivs) {
+  function applyToMatrix(root, signal, regionDivs, gatedDelta) {
     var mx = ensureMinxin(root);
     if (!mx.matrix || typeof mx.matrix !== 'object') mx.matrix = {};
     var classes = signal.targetClasses.length ? signal.targetClasses : getClasses(root).slice(0, 12).map(function(cls) {
@@ -378,7 +380,8 @@
         var base = Number(prev.true != null ? prev.true : (prev.index != null ? prev.index : div.minxin));
         if (!isFinite(base)) base = Number(div.minxin);
         if (!isFinite(base)) base = mx.trueIndex;
-        var next = round2(clamp(base + signal.deltaTrue, 0, 100));
+        // 矩阵细项与叶子同口径：吃「削顶后」delta（旧写法吃原始 signal.deltaTrue·越触顶越漂移·2026-07-04 审查定罪）
+        var next = round2(clamp(base + (gatedDelta != null ? gatedDelta : signal.deltaTrue), 0, 100));
         mx.matrix[rid][ck] = {
           regionId: rid,
           regionName: regionNameOf(div),
@@ -414,7 +417,11 @@
       var _zvCap = MINXIN_SOURCE_CAP[_zvKey] || MINXIN_SOURCE_CAP._default;
       if (_zvCap) {
         var _zvCur = Number(mx.sources[_zvKey]) || 0;
-        delta = round2(clamp(_zvCur + delta, _zvCap[0], _zvCap[1]) - _zvCur);
+        var _zvGd = round2(clamp(_zvCur + delta, _zvCap[0], _zvCap[1]) - _zvCur);
+        // 越界旧账防翻转：削顶只许缩量/归零·不许把小额同号 delta 翻成拉回边界的大额反号 delta(2026-07-04 审查定罪)
+        if (_zvGd !== 0 && (_zvGd > 0) !== (delta > 0)) _zvGd = 0;
+        else if (Math.abs(_zvGd) > Math.abs(delta)) _zvGd = delta;
+        delta = _zvGd;
       }
     }
     if (delta) {
@@ -430,6 +437,15 @@
             affected.push({ region: regionNameOf(div), regionId: regionIdOf(div), before: round2(before), after: round2(div.minxin), delta: round2(div.minxin - before) });
           });
         });
+        if (!affected.length) {
+          // 目标区域全失配（跨剧本别名/AI 生成地名）：全国兜底摊布——旧行为是静默丢弃效果却仍烧封顶额度(2026-07-04 审查定罪)
+          leaves.forEach(function(div) {
+            var before = Number(div.minxin != null ? div.minxin : div.minxinLocal);
+            if (!isFinite(before)) return;
+            writeDivisionMinxin(div, before + delta);
+            affected.push({ region: regionNameOf(div), regionId: regionIdOf(div), before: round2(before), after: round2(div.minxin), delta: round2(div.minxin - before) });
+          });
+        }
       } else if (leaves.length) {
         leaves.forEach(function(div) {
           var before = Number(div.minxin != null ? div.minxin : div.minxinLocal);
@@ -685,6 +701,7 @@
     var level = raw.level || levelForTruth(raw.true, momentum);
     if (!found) {
       found = {
+        _touchedTurn: Number(options.turn) || 0,
         id: id,
         turn: Number(options.turn) || 0,
         region: raw.region || '',
@@ -707,6 +724,7 @@
       found.cause = compact(raw.cause || raw.reason || found.cause, 180);
       found.linkedIssue = raw.linkedIssue || found.linkedIssue || '';
       found.lastTurn = Number(options.turn) || found.lastTurn || 0;
+      found._touchedTurn = Number(options.turn) || 0; // 本回合被压力刷新·免于衰减
     }
     return found;
   }
@@ -716,9 +734,12 @@
     if (!chain || chain.level < 3) return null;
     var existing = mx.revolts.filter(function(r) { return r && r.sourceChainId === chain.id && r.status === 'ongoing'; })[0];
     if (existing) return existing;
+    var _t = Number(root.turn) || 0;
+    // 复燃冷却：同链上一场民变结束后 12 回合内不自动补位——旧行为=镇压次回合原地复活成永动民变(2026-07-04 审查定罪)
+    if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < 12) return null;
     var scale = chain.level >= 4 ? 200000 : 30000;
     var revolt = {
-      id: 'revolt-' + chain.id,
+      id: 'revolt-' + chain.id + '-t' + _t, // 带回合号唯一 id·旧写法复用同 id 令镇压 find 命中旧尸体(按 id 镇不掉复燃场)
       turn: chain.turn || root.turn || 0,
       region: chain.region || 'unknown',
       className: chain.className || '',
@@ -730,12 +751,14 @@
       sourceChainId: chain.id
     };
     mx.revolts.push(revolt);
+    chain._lastSpawnTurn = _t;
     return revolt;
   }
 
   function advanceUprisingChain(root, options) {
     root = pickRoot(root);
     options = options || {};
+    if (options.turn == null) options.turn = Number(root.turn) || 0; // 统一回合锚·upsert 的 _touchedTurn 与下方衰减判据同源
     var mx = ensureMinxin(root);
     if (!Array.isArray(mx.uprisingChain)) mx.uprisingChain = [];
     toArray(mx.uprisingCandidates).forEach(function(c) {
@@ -766,6 +789,19 @@
         cause: 'low regional minxin',
         sourceType: 'regional_minxin'
       }, options);
+    });
+    // 链条衰减/退场：本回合未被压力刷新(候选与低民心区皆无)的链·势头逐回合消退·消尽除名——
+    // 旧行为 momentum/level 只涨不落+每回合补 ongoing=民心恢复后民变仍永动(2026-07-04 审查定罪)
+    var _nowTurn = Number(options.turn) || 0;
+    mx.uprisingChain = mx.uprisingChain.filter(function(chain) {
+      if (!chain) return false;
+      if (chain._touchedTurn === _nowTurn) return true;
+      chain.momentum = round2(Math.max(0, (Number(chain.momentum) || 0) - 12));
+      if (chain.momentum < 30 && (chain.level || 1) > 1) {
+        chain.level = (chain.level || 1) - 1;
+        chain.stage = (UPRISING_LEVELS[chain.level - 1] || UPRISING_LEVELS[0]).name;
+      }
+      return chain.momentum > 0;
     });
     mx.uprisingChain = mx.uprisingChain.slice(-80);
     mx.uprisingChain.forEach(function(chain) { syncRevoltFromChain(root, chain); });
@@ -893,7 +929,7 @@
     var src = root.minxin.sources;
     var out = [];
     Object.keys(src).forEach(function(key) {
-      var cap = MINXIN_SOURCE_CAP[key];
+      var cap = MINXIN_SOURCE_CAP[key] || MINXIN_SOURCE_CAP._default; // 表外源同样按 _default 削平·否则越界旧账永不规整
       if (!cap) return;
       var cur = Number(src[key]) || 0;
       var target = clamp(cur, cap[0], cap[1]);

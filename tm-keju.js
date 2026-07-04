@@ -426,8 +426,9 @@ function _adjustMinxin(delta, reason) {
       if (typeof addEB === 'function') addEB('\u6C11\u5FC3', (delta > 0 ? '+' : '') + delta + '\u00B7' + (reason || ''));
       return;
     }
-    if (GM.minxin && typeof GM.minxin === 'object') {
-      GM.minxin.trueIndex = Math.max(0, Math.min(100, (typeof GM.minxin.trueIndex === 'number' ? GM.minxin.trueIndex : 50) + delta));
+    // \u515C\u5E95\u4E5F\u8D70 MinxinLedger \u603B\u95F8(2026-07-04 \u6536\u53E3\u00B7\u76F4\u5199 trueIndex \u4F1A\u88AB aggregateTrue \u51B2\u6389)
+    if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju', kind: 'socialMobility', delta: delta, reason: reason || '\u79D1\u4E3E\u4E8B\u00B7\u58EB\u6797\u6240\u611F' });
       if (typeof addEB === 'function') addEB('\u6C11\u5FC3', (delta > 0 ? '+' : '') + delta + '\u00B7' + (reason || ''));
     }
   } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-chaoyi-keju');}catch(_){}}
@@ -906,7 +907,7 @@ function _kejuNotifyUrgentStage(exam, stage) {
   }
   if (typeof addEB === 'function') addEB('\u79D1\u4E3E\u00B7\u5F85\u529E', c.title, {important:true});
   if (GM.qijuHistory) {
-    GM.qijuHistory.unshift({
+    if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
       turn: GM.turn,
       date: (typeof getTSText === 'function') ? getTSText(GM.turn) : 'T'+(GM.turn||0),
       content: '\u3010\u79D1\u4E3E\u00B7\u5F85\u529E\u3011' + c.title + '\u3002' + c.urgency
@@ -1078,6 +1079,10 @@ if (typeof window !== 'undefined') {
 
 /** D2·中央经费（考官仪仗+会试+殿试）·不足问玩家内帑补贴 */
 function _kejuSettleCentralCost(exam, stage) {
+  // 按阶段幂等(2026-07-04 审查定罪)：timed finalize 与手动按钮两条路径都会到达同一结算·
+  // 无标记曾双扣(finalize重入/先自动后手动)或漏扣(全手动通关中央0扣·经手动路径补调后此门保平)
+  if (!exam.costsPaid) exam.costsPaid = {};
+  if (exam.costsPaid['_stage_' + stage]) return { paid: 0, skipped: 'already-settled' };
   var costs = P.keju.costs || {};
   var multiplier = exam.type === 'enke' ? (costs.enkeMultiplier || 1.3) : 1.0;
   var amount = 0;
@@ -1088,8 +1093,10 @@ function _kejuSettleCentralCost(exam, stage) {
 
   var guokuMoney = (GM.guoku && GM.guoku.money) || 0;
   if (guokuMoney >= amount) {
-    if (GM.guoku) GM.guoku.money = Math.max(0, guokuMoney - amount);
+    // 科举经费走 FiscalEngine 真账(2026-07-04 收口)
+    if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: amount }, '科举经费');
     exam.costsPaid.central = (exam.costsPaid.central || 0) + amount;
+    exam.costsPaid['_stage_' + stage] = true;
     if (typeof addEB === 'function') addEB('\u79D1\u4E3E\u7ECF\u8D39', '\u5E11\u5EAA\u6263 ' + amount + ' \u4E24\u00B7' + stage);
     return { paid: amount, source: 'guoku' };
   }
@@ -1097,8 +1104,11 @@ function _kejuSettleCentralCost(exam, stage) {
   var neitangMoney = (GM.neitang && GM.neitang.money) || 0;
   if (neitangMoney >= amount) {
     // 默认自动内帑补贴（避免阻塞时间线·可改为弹窗确认）
-    GM.neitang.money = Math.max(0, neitangMoney - amount);
+    // 内帑走 FiscalEngine 写口(2026-07-04 收口)·直改标量=ledger 不知情两本账
+    if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromNeitang) FiscalEngine.spendFromNeitang({ money: amount }, '科举经费');
+    else GM.neitang.money = Math.max(0, neitangMoney - amount); // 沙箱兜底
     exam.costsPaid.central = (exam.costsPaid.central || 0) + amount;
+    exam.costsPaid['_stage_' + stage] = true;
     // C4\u00B7toast/EB \u6587\u6848\u00B7\u965B\u4E0B\u6177\u6168\u00B7\u5185\u5E11\u8865\u8D34 X \u4E24\u00B7\u58EB\u6797\u611F\u5FF5 (paradigm 0 \u6539\u00B7huangwei+2 \u4E0D\u52A8)
     if (typeof addEB === 'function') addEB('\u79D1\u4E3E\u7ECF\u8D39', '\u965B\u4E0B\u6177\u6168\u00B7\u5185\u5E11\u8865\u8D34 ' + amount + ' \u4E24\u00B7\u58EB\u6797\u611F\u5FF5\u00B7' + stage);
     if (typeof toast === 'function') toast('\uD83D\uDCDC \u965B\u4E0B\u6177\u6168\u00B7\u5185\u5E11\u8865\u8D34 ' + amount + ' \u4E24\u00B7\u58EB\u6797\u611F\u5FF5', 'info');

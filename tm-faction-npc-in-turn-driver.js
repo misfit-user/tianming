@@ -224,7 +224,7 @@
       if (global.TM.FactionNpcNewsBridge) {
         try {
           if (!Array.isArray(global.GM.qijuHistory)) global.GM.qijuHistory = [];
-          global.GM.qijuHistory.unshift({
+          if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
             category: '鸿雁',
             content: '【' + fac.name + '】回合内推演·主君考量: ' + (ret.rationale || '').slice(0, 50),
             time: '回' + turn,
@@ -232,7 +232,7 @@
             _source: 'npc-in-turn-llm',
             _facName: fac.name
           });
-          if (global.GM.qijuHistory.length > 200) global.GM.qijuHistory = global.GM.qijuHistory.slice(0, 200);
+          // cap 归 TM.Qiju.CAP 单一真相(2026-07-04 收口)·原地 200 trim 退役
         } catch(_){}
       }
       try { console.log('[npc-in-turn] turn ' + turn + ' attempt ' + attempt + ' applied to ' + fac.name); } catch(_){}
@@ -295,6 +295,7 @@
     global.P.conf.npcInTurnFirstDelayMs = preset.first;
     global.P.conf.npcInTurnRepeatDelayMs = preset.repeat;
     // 已经排好的旧 timer 没影响·下一回合 reschedule 用新值
+    try { if (typeof global.saveP === 'function') global.saveP(); } catch (_e) {} // 写必随存(2026-07-04 p:conf 收口)
     return { ok: true, preset: name, first: preset.first, repeat: preset.repeat };
   }
 

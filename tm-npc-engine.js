@@ -279,6 +279,7 @@ var CentralizationSystem = (function() {
 
     (GM.chars || []).forEach(function(char) {
       if (!char || typeof char !== 'object') return;
+      if (char.alive === false || char.dead === true) return; // 死者不入贡赋树·死领主曾继续收贡累积收入(2026-07-04 审查定罪)
       _ensureFinance(char);
       if (!char.overlordId) {
         // 没有上级，是根节点

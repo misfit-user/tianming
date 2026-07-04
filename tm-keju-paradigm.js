@@ -206,7 +206,7 @@
         var verb = (ib === 'migration') ? '已迁 (旧存档自动升级)' :
                    (ib === 'reset')     ? '已重置' :
                                           '立';
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
           type: 'keju-paradigm-' + (ib === 'init' ? 'init' : ib),
@@ -532,7 +532,7 @@
 
     try {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           date: GM._gameDate || '',
           type: 'keju-paradigm-import',

@@ -154,7 +154,7 @@ SettlementPipeline.register('npcEpochRefine', '早年概略精炼', function() {
           if (rng() > (sameParty ? 0.5 : 0.35)) continue;
           var text = Gossip._distort(fact.text, seed, false);
           if (typeof NpcMemorySystem !== 'undefined') {
-            NpcMemorySystem.remember(ch.name, '风闻·' + seeds[s] + '言及：' + text.slice(0, 40), '察', Math.max(2, (fact.importance || 3) - 1), subject || undefined, { source: 'rumor', credibility: 45 });   // ★codex-fix W3:传meta·风闻=二手低可信·否则默认 witnessed/95 被当亲历高可信
+            NpcMemorySystem.remember(ch.name, '风闻·' + seeds[s] + '言及：' + text.slice(0, 40), '察', Math.max(2, (fact.importance || 3) - 1), subject || undefined, { source: 'rumor', credibility: 45, _noMirror: true });   // ★codex-fix W3:传meta·风闻=二手低可信·否则默认 witnessed/95 被当亲历高可信 ★_noMirror:subject=被议论者·镜像回写曾让背后议论对当事人全透明+记忆灌水(2026-07-04 审查定罪)
           }
           told++;
         }
@@ -1834,7 +1834,7 @@ var ContradictionSystem = (function() {
         c.phase = 'crisis';
         c.lastEscalation = GM.turn;
         if (typeof addEB === 'function') addEB('矛盾爆发', '〔' + c.title + '〕已升级为危机！');
-        if (GM.qijuHistory) GM.qijuHistory.unshift({ turn: GM.turn, date: typeof getTSText === 'function' ? getTSText(GM.turn) : '', content: '【矛盾危机】' + c.title + '已全面激化，朝野震动。' });
+        if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText === 'function' ? getTSText(GM.turn) : '', content: '【矛盾危机】' + c.title + '已全面激化，朝野震动。' });
       } else if (c.intensity >= 70 && c.phase === 'latent') {
         c.phase = 'escalating';
         c.lastEscalation = GM.turn;

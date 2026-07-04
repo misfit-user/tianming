@@ -22,6 +22,16 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
 
+  // 民心走 MinxinLedger 总闸(2026-07-04 收口)：delta 落叶子+按源封顶。
+  // 直写 GM.minxin.trueIndex 是死路——它只是聚合缓存·下次 aggregateTrue 按叶子人口加权重算即冲掉。
+  function _mxApply(delta, reason, kind) {
+    if (!delta) return;
+    try {
+      var L = (typeof TM !== 'undefined' && TM.MinxinLedger) || global.MinxinLedger;
+      if (L && L.recordAndApply) L.recordAndApply(global.GM, { sourceSystem: 'guoku-engine', kind: kind || 'guokuFiscal', delta: delta, reason: reason });
+    } catch (_e) {}
+  }
+
   function getMonthRatio() {
     if (typeof _getDaysPerTurn === 'function') return _getDaysPerTurn() / 30;
     return 1;
@@ -629,10 +639,19 @@
           ledger.sources[label] = (Number(ledger.sources[label]) || 0) + amount;
           if (resource === 'money') result.moneyIn += amount;
         } else {
-          ledger.stock = (Number(ledger.stock) || 0) - amount;
-          ledger.thisTurnOut = (Number(ledger.thisTurnOut) || 0) + amount;
-          ledger.sinks[label] = (Number(ledger.sinks[label]) || 0) + amount;
-          if (resource === 'money') result.moneyOut += amount;
+          // 扣账不打负·落0+记欠(与 deductFromLedger 同语义)——旧写法直打负余额·同一国库账里
+          // 年例欠账走负余额而俸饷欠账走 deficit·破产判据双轨不一致(2026-07-04 审查定罪)
+          var _have = Number(ledger.stock) || 0;
+          var _ded = Math.min(_have, amount);
+          var _short = amount - _ded;
+          ledger.stock = _have - _ded;
+          ledger.thisTurnOut = (Number(ledger.thisTurnOut) || 0) + _ded;
+          ledger.sinks[label] = (Number(ledger.sinks[label]) || 0) + _ded;
+          if (_short > 0) {
+            ledger.sinks[label + '_欠'] = (Number(ledger.sinks[label + '_欠']) || 0) + _short;
+            ledger.deficit = (Number(ledger.deficit) || 0) + _short;
+          }
+          if (resource === 'money') result.moneyOut += _ded;
         }
         if (resource === 'money') {
           container.balance = ledger.stock;
@@ -813,8 +832,10 @@
     // 破产检查
     checkBankruptcy(mr);
 
-    // 借款月付
-    if (g.emergency.loan.active && g.emergency.loan.monthsLeft > 0) {
+    // 借款月付（legacy 2%/月）——新账 emergency.loans[] 存在时由 processLoansMonthly 本息摊还·
+    // 此腿须让位：takeLoanBySource 双写新旧账·两腿同扣曾令一笔借款每月双重还款(+24%·2026-07-04 审查定罪)
+    var _newLoansActive = Array.isArray(g.emergency.loans) && g.emergency.loans.length > 0;
+    if (!_newLoansActive && g.emergency.loan.active && g.emergency.loan.monthsLeft > 0) {
       var payment = (g.emergency.loan.amount || 0) * 0.02 * mr;  // 本息 2%/月
       g.balance -= payment;
       g.emergency.loan.monthsLeft -= mr;
@@ -1004,7 +1025,9 @@
         GM.huangquan.index = Math.max(0, GM.huangquan.index - 10);
       }
     }
-    if (GM.huangwei)  GM.huangwei.index = Math.max(0, GM.huangwei.index - 15);
+    if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+      global.AuthorityEngines.adjustHuangwei('brokenPromise', -15, '国库破产·朝廷失信天下');
+    } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 15); // 沙箱回退
     if (GM.corruption && GM.corruption.sources) {
       GM.corruption.sources.lowSalary = (GM.corruption.sources.lowSalary || 0) + 15;
     }
@@ -1019,11 +1042,11 @@
   function triggerMutinyOrFamine() {
     if (GM.activeWars && GM.activeWars.length > 0) {
       if (typeof addEB === 'function') addEB('军事', '军饷断绝，兵变四起', { credibility: 'high' });
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 10);
+      _mxApply(-10, '军饷断绝，兵变四起');
     }
     if (GM.activeDisasters && GM.activeDisasters.length > 0) {
       if (typeof addEB === 'function') addEB('朝代', '赈济不继，饥民暴起', { credibility: 'high' });
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 15);
+      _mxApply(-15, '赈济不继，饥民暴起', 'disasterRelief');
     }
   }
 
@@ -1111,7 +1134,7 @@
         GM.corruption.sources.emergencyLevy = (GM.corruption.sources.emergencyLevy || 0) + rate * 10;
       }
       // 民心大损
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - rate * 15);
+      _mxApply(-(rate * 15), '加派' + Math.round(rate*100) + '%，民怨骤起', 'taxation');
       if (typeof addEB === 'function') addEB('朝代', '加派' + Math.round(rate*100) + '%，民怨骤起', { credibility: 'high' });
       return { success: true };
     },
@@ -1138,7 +1161,7 @@
       var minxinGain = scale === 'national' ? 15 :
                        scale === 'regional' ? 8 : 3;
       if (relieved === 0) minxinGain = Math.round(minxinGain / 2);
-      if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + minxinGain);
+      _mxApply(minxinGain, '开仓赈济·民得食', 'disasterRelief');
       // 刀五·赈济→灾民回迁：开仓得食→流亡之民复归编户(减既有逃户池=釜底抽流寇之薪)。与刀B粮荒欠征(扣库粮)不同轴·非双算。
       //   不碰 hukou.fugitives(每回合由 aggregatePopulation 从叶子重算·改之无效)·只动 byLegalStatus 流亡池→编户(守恒·持久)。
       var resettled = 0;
@@ -1171,7 +1194,9 @@
       g.emergency.loan.amount = amount;
       g.emergency.loan.monthsLeft = term;
       // 皇威代价
-      if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 3);
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('brokenPromise', -3, '举债应急·有损天威');
+      } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 3); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '借银 ' + Math.round(amount/10000) + ' 万两，限 ' + term + ' 月归还', { credibility: 'high' });
       return { success: true };
     },
@@ -1192,7 +1217,7 @@
         }
       }
       // 民心微升（节俭）
-      if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + 2);
+      _mxApply(2, '裁冗员省俸禄·朝廷示俭');
       if (typeof addEB === 'function') addEB('朝代', '裁冗员 ' + cut + ' 名，省俸禄', { credibility: 'high' });
       return { success: true };
     },
@@ -1204,8 +1229,10 @@
       // 通过调整 taxRateMultiplier
       if (!GM.hukou) GM.hukou = {};
       GM.hukou.taxRateMultiplier = (GM.hukou.taxRateMultiplier || 1) * (1 - percent);
-      if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + percent * 30);
-      if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + percent * 8);
+      _mxApply(percent * 30, '减税' + Math.round(percent*100) + '%·民困得纾', 'taxation');
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('benevolence', percent * 8, '减赋施仁');
+      } else if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + percent * 8); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '减赋 ' + Math.round(percent*100) + '%，民感圣恩', { credibility: 'high' });
       return { success: true };
     },
@@ -1216,8 +1243,10 @@
       amount = amount || 500000;
       GM.guoku.balance += amount;
       // 立即后果：通胀、皇威损
-      if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8);
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 5);
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('brokenPromise', -8, '滥发纸钞·钱法失信');
+      } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8); // 沙箱回退
+      _mxApply(-5, '朝廷敛财应急·物议沸腾');
       // 粮价/物价浮动留 hook 给货币系统
       if (GM.currency) GM.currency.inflationPressure = (GM.currency.inflationPressure || 0) + amount / 1000000;
       if (typeof addEB === 'function') addEB('朝代', '发行纸钞 ' + Math.round(amount/10000) + ' 万，市面疑虑', { credibility: 'high' });
@@ -1388,7 +1417,7 @@
       impact = 2 * (0.7 - ratio) * mr;
     }
     if (Math.abs(impact) > 0.1) {
-      GM.minxin.trueIndex = clamp(GM.minxin.trueIndex + impact, 0, 100);
+      _mxApply(impact, impact < 0 ? '农户税负过重·民力不支' : '税负轻省·民得休息', 'taxation');
     }
     if (GM.fiscal && GM.fiscal.floatingCollectionRate > 0) {
       GM.fiscal.floatingCollectionRate = Math.max(0, GM.fiscal.floatingCollectionRate - 0.02 * mr);
@@ -1592,8 +1621,12 @@
           GM.hukou.registeredTotal += Math.floor(found);
         }
         if (eff.populationGrowthBonus && GM.hukou) GM.hukou.growthBonus = (GM.hukou.growthBonus || 0) + eff.populationGrowthBonus;
-        if (eff.minxinDelta && GM.minxin) GM.minxin.trueIndex = clamp(GM.minxin.trueIndex + eff.minxinDelta, 0, 100);
-        if (eff.huangweiDelta && GM.huangwei) GM.huangwei.index = clamp(GM.huangwei.index + eff.huangweiDelta, 0, 100);
+        if (eff.minxinDelta) _mxApply(eff.minxinDelta, '财政改革奏效及民');
+        if (eff.huangweiDelta && GM.huangwei) {
+          if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+            global.AuthorityEngines.adjustHuangwei('structuralReform', eff.huangweiDelta, '财政改革之效');
+          } else GM.huangwei.index = clamp(GM.huangwei.index + eff.huangweiDelta, 0, 100); // 沙箱回退
+        }
         GM.guoku.completedReforms.push(o.id);
         if (typeof addEB === 'function') addEB('朝代', r.name + ' 施行既毕，' + eff.note, { credibility: 'high' });
       } else {
@@ -1622,7 +1655,7 @@
     else GM.guoku._militaryCostMultiplier = 1;
     if (GM.prices.grain > 2.0 && GM.minxin) {
       var impact = -(GM.prices.grain - 2.0) * 3 * mr;
-      GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex + impact);
+      _mxApply(impact, '粮价' + GM.prices.grain.toFixed(2) + '倍·民生艰难', 'priceStability');
       if (Math.random() < 0.1 * mr && typeof addEB === 'function') addEB('事件', '粮价涨至 ' + GM.prices.grain.toFixed(2) + ' 倍，民生艰难', { credibility: 'high' });
     }
   }
@@ -1655,8 +1688,10 @@
       g.balance += boost;
       if (!GM.currency) GM.currency = {};
       GM.currency.inflationPressure = (GM.currency.inflationPressure || 0) + reduction * 0.5;
-      if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - reduction * 15);
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - reduction * 8);
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('brokenPromise', -reduction * 15, '减重改铸·钱法失信');
+      } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - reduction * 15); // 沙箱回退
+      _mxApply(-(reduction * 8), '减重改铸·新钱成色降·市面疑虑');
       if (typeof addEB === 'function') addEB('朝代', '减重改铸：新钱成色降 ' + Math.round(reduction*100) + '%，市面疑虑', { credibility: 'high' });
       return { success: true, revenue: boost };
     },
@@ -1674,7 +1709,9 @@
       GM.currency.latestCoin = name;
       var cost = 100000;
       if (GM.guoku) GM.guoku.balance -= cost;
-      if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 5);
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('benevolence', 5, '新钱精良·民信渐复');
+      } else if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 5); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '新铸"' + name + '"钱，成色精良，民信渐复', { credibility: 'high' });
       return { success: true, cost: cost };
     }
@@ -1792,7 +1829,7 @@
     ];
     var txt = events[Math.floor(Math.random() * events.length)];
     if (typeof addEB === 'function') addEB('事件', '漕弊：' + txt, { credibility: 'high' });
-    if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 2);
+    _mxApply(-2, '漕弊扰民');
     if (GM.guoku && GM.guoku.ledgers && GM.guoku.ledgers.grain) {
       GM.guoku.ledgers.grain.stock = Math.max(0, GM.guoku.ledgers.grain.stock * 0.95);
     }
@@ -1830,8 +1867,12 @@
         GM.huangquan.index = clamp(GM.huangquan.index + se.huangquan, 0, 100);
       }
     }
-    if (se.huangwei && GM.huangwei) GM.huangwei.index = clamp(GM.huangwei.index + se.huangwei, 0, 100);
-    if (se.minxin && GM.minxin) GM.minxin.trueIndex = clamp(GM.minxin.trueIndex + se.minxin, 0, 100);
+    if (se.huangwei && GM.huangwei) {
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei(se.huangwei > 0 ? 'benevolence' : 'brokenPromise', se.huangwei, '借贷来源副作用');
+      } else GM.huangwei.index = clamp(GM.huangwei.index + se.huangwei, 0, 100); // 沙箱回退
+    }
+    if (se.minxin) _mxApply(se.minxin, '应急借贷·市面所感');
     if (se.foreign && GM.huangwei && GM.huangwei.subDims && GM.huangwei.subDims.foreign) {
       GM.huangwei.subDims.foreign.value = clamp(GM.huangwei.subDims.foreign.value + se.foreign, 0, 100);
     }
@@ -2114,6 +2155,30 @@
   // 主 tick
   // ═════════════════════════════════════════════════════════════
 
+  // 清偿旧欠：库有余则按月偿还 ledgers.money.deficit（欠俸/欠饷累欠）。
+  // deficit 此前全仓只进不出——一次欠账=永久 inCrisis·破产链棘轮升满永不解除(2026-07-04 审查定罪)。
+  // 节奏：每月最多偿 月入25%×mr·且不动用库藏最后一成(留缓冲)·清讫发邸报。
+  function _repayDeficit(mr) {
+    var g = GM.guoku;
+    var led = g && g.ledgers && g.ledgers.money;
+    if (!led) return 0;
+    var owed = Math.max(0, safe(led.deficit, 0));
+    if (!owed) return 0;
+    var avail = Math.max(0, safe(g.balance, 0));
+    if (avail <= 0) return 0;
+    var monthly = Math.max(0, safe(g.monthlyIncome, 0));
+    var cap = monthly > 0 ? monthly * 0.25 * mr : avail * 0.25;
+    var pay = Math.round(Math.min(owed, avail * 0.9, cap));
+    if (pay <= 0) return 0;
+    led.stock = Math.max(0, safe(led.stock, 0) - pay);
+    g.balance = led.stock;
+    led.deficit = Math.round(Math.max(0, owed - pay));
+    if (!led.sinks) led.sinks = {};
+    led.sinks['清偿旧欠'] = safe(led.sinks['清偿旧欠'], 0) + pay;
+    if (led.deficit === 0 && typeof addEB === 'function') addEB('财政', '累年积欠清讫，帑藏归于常度', { credibility: 'high' });
+    return pay;
+  }
+
   function tick(context) {
     ensureGuokuModel();
     var mr = (context && context._monthRatio) || getMonthRatio();
@@ -2133,6 +2198,7 @@
     try { processLoansMonthly(mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'guoku] loans:') : console.error('[guoku] loans:', e); }
     // ── p6 inline (R9d)·tick add-ons ──
     try { processFixedDeductions(mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'guoku] fixedDed:') : console.error('[guoku] fixedDed:', e); }
+    try { _repayDeficit(mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'guoku] repayDeficit:') : console.error('[guoku] repayDeficit:', e); }
 
     // 年末决算（每年一次，简化：若当前 turn 跨越年）
     var dpt = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;

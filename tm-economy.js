@@ -698,7 +698,7 @@ async function handleInheritance(deadChar) {
                 speechStyle: "",
                 rels: []
               };
-              GM.chars.push(newHeir);
+              (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(newHeir);
               // 维护索引
               addToIndex('char', newHeir.name, newHeir);
               addEB('\u4EBA\u7269', heir + '\u51FA\u73B0\uFF0C\u7EE7\u627F' + deadChar.name + '\u7684\u5B98\u804C\u3002');

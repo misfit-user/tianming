@@ -231,7 +231,7 @@
           if (_napR && _napR.appointed && _napR.appointed.length > 0) {
             if (!GM._chronicle) GM._chronicle = [];
             _napR.appointed.forEach(function(a){
-              GM._chronicle.push({
+              if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
                 turn: GM.turn || 0, date: GM._gameDate || '',
                 type: 'NPC任命',
                 text: a.faction + ' 内部任命：' + a.dept + '·' + a.pos + ' 以 ' + a.charName + ' 充。',

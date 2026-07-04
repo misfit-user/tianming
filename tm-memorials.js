@@ -968,6 +968,8 @@ function _referMemorial(idx) {
   // 弹窗选择批转对象
   var _playerLoc = (typeof _getPlayerLocation === 'function') ? _getPlayerLocation() : (GM._capital||'京城');
   var _candidates = (GM.chars||[]).filter(function(c) {
+    // 阵营闸(2026-07-04)：批转对象=承旨议事的本朝臣工·外邦君主/异势力不入候选(空 location 兜底原会放行无位置的外邦人物)·转对产出喂推演·同宰辅进言/求见队列守卫·只拦明确标了异势力者
+    if (typeof _tmIsForeignCourtChar === 'function' && _tmIsForeignCourtChar(c)) return false;
     return c.alive !== false && !c.isPlayer && c.name !== m.from && (!c.location || _isSameLocation(c.location, _playerLoc));
   });
   // 按品级排序
@@ -1072,10 +1074,10 @@ function _commitMemorialDecisions() {
       if (status !== 'annotated' && m.reply) memText += '\uFF0C\u6731\u6279\uFF1A' + String(m.reply).slice(0, 240);
       // \u26052026-07-01\u00B7\u56E0\u679C\u4E32\u8054\u300C\u4E0B\u573A\u300D\u2014\u2014\u6279\u590D\u5BF9\u4E0A\u594F\u8005\u7684\u5904\u5883/\u5FC3\u5883(\u51C6/\u9A73/\u6279\u6CE8/\u8F6C\u4EA4/\u5EF7\u8BAE\u5404\u5F02)\u00B7\u8BA9\u8BB0\u5FC6\u6210\u300C\u6211\u4E0A\u594F\u3014\u9898\u3015\u300EX\u300F\u2192\u7EC8\u5F97Y\u2192\u6731\u6279Z\u2192\u6211\u5904\u5883\u5982\u4F55\u300D\u5B8C\u6574\u56E0\u679C\u5F27\u00B7\u4F9B\u63A8\u6F14\u7EED\u63A5\u4E0D\u5931\u5FC6
       memText += (status === 'approved' ? '\u2014\u2014\u6240\u8BF7\u5F97\u884C\u00B7\u5FD7\u5F97\u610F\u8212' : status === 'rejected' ? '\u2014\u2014\u6240\u8BF7\u89C1\u683C\u00B7\u5FD7\u90C1\u96BE\u7533' : status === 'annotated' ? '\u2014\u2014\u8499\u5723\u7B14\u4EB2\u88C1\u00B7\u656C\u51DB\u53D7\u4E4B' : status === 'referred' ? '\u2014\u2014\u4E8B\u4E0B\u6709\u53F8\u00B7\u60AC\u800C\u5F85\u51B3' : '\u2014\u2014\u4ED8\u8BF8\u5EF7\u8BAE\u00B7\u53EF\u5426\u672A\u535C');
-      try { NpcMemorySystem.remember(m.from, memText, fx.emo, 5); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
+      try { NpcMemorySystem.remember(m.from, memText, fx.emo, 6); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
       // referred 也给被转交者留一条记忆
       if (status === 'referred' && m._referredTo) {
-        try { NpcMemorySystem.remember(m._referredTo, '\u7687\u5E1D\u5C06' + (m.from||'某人') + '\u7684\u594F\u758F\u6279\u8F6C\u7ED9\u81EA\u5DF1\u8BAE\u5904', '\u5E73', 4); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
+        try { NpcMemorySystem.remember(m._referredTo, '\u7687\u5E1D\u5C06' + (m.from||'某人') + '\u7684\u594F\u758F\u6279\u8F6C\u7ED9\u81EA\u5DF1\u8BAE\u5904', '\u5E73', 6); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
       }
     }
     try { if (typeof _memorialSendReply === 'function') _memorialSendReply(m, actionLbl); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-index-world');}catch(_){}}
@@ -1148,8 +1150,8 @@ function _summonRecall(name) {
   if (!GM.letters) GM.letters = [];
   GM.letters.push(letter);
   // 编年·召回启程
-  if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
-  GM._chronicle.unshift({
+  // 编年史走 TM.Chronicle 写口(2026-07-04 收口)·时序 push 归一(原 unshift 混写破序)
+  if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
     turn: GM.turn,
     date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
     type: '\u5FB4\u53EC\u56DE\u4EAC',
@@ -1158,7 +1160,7 @@ function _summonRecall(name) {
     category: '\u4EBA\u4E8B', tags: ['人事', '召回', '启程', name]
   });
   if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
-  GM.qijuHistory.unshift({
+  if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
     turn: GM.turn, date: GM._gameDate || '',
     content: '\u3010\u5FB4\u53EC\u3011' + name + ' \u5956\u65E8\u81EA' + ch.location + ' \u56DE\u4EAC\u00B7\u9884\u8BA1 ' + Math.ceil(travelTurns * dpv) + ' \u65E5\u62B5\u8FBE\u3002'
   });

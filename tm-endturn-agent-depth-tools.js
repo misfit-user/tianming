@@ -377,10 +377,12 @@
     });
     // —— 求见:→ _pendingAudiences(镜像 apply:5051·tm-wendui「阶下待见」消费)——
     if (!Array.isArray(gm._pendingAudiences)) gm._pendingAudiences = [];
-    var names = {}; (gm.chars || []).forEach(function (c) { if (c && c.name && c.alive !== false) names[c.name] = 1; });
+    var names = {}; (gm.chars || []).forEach(function (c) { if (c && c.name && c.alive !== false) names[c.name] = c; });
     var audN = 0;
     ((p && Array.isArray(p.audiences)) ? p.audiences : []).forEach(function (a) {
       if (!a || !a.name || !names[a.name]) return;                                        // 须真实存活人物
+      // 阵营闸(2026-07-04)：求见=臣候阶下·须本朝人物·外邦君主/异势力不入(镜像 apply 私访分支同款守卫·只拦明确标了异势力者)
+      if (typeof root._tmIsForeignCourtChar === 'function' && root._tmIsForeignCourtChar(names[a.name])) return;
       if (gm._pendingAudiences.some(function (q) { return q && q.name === a.name; })) return; // 去重(已在队列不重复)
       gm._pendingAudiences.push({ name: a.name, reason: String(a.reason || '求见').slice(0, 60), turn: turn, _agent: true });
       audN++;

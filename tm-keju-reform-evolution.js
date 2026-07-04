@@ -349,7 +349,7 @@
       _kjpL8ApplyEvolutionDeltas(entry, evo);
       try {
         if (Array.isArray(GM._chronicle) && evo.text) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-evolution',
             text: year + '年·改革志·' + evo.text.slice(0, 60) + '…',
             tags: ['科举', 'reform', 'evolution'],
@@ -390,10 +390,9 @@
         GM.corruption.trueIndex = Math.max(0, Math.min(100,
           GM.corruption.trueIndex + d.corruptionAccum));
       }
-      // RAA·C5·真路径·GM.minxin.trueIndex
-      if (d.civilianReact && GM.minxin && typeof GM.minxin.trueIndex === 'number') {
-        GM.minxin.trueIndex = Math.max(0, Math.min(100,
-          GM.minxin.trueIndex + d.civilianReact));
+      // RAA·C5·真路径已改走 MinxinLedger 总闸(2026-07-04 收口·直写 trueIndex 会被 aggregateTrue 冲掉)
+      if (d.civilianReact && typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+        try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-reform-evolution', kind: 'socialMobility', delta: d.civilianReact, reason: '科举改革·民间所感' }); } catch (_e) {}
       }
       // RAA·C4·_factionTension 是 number·直加·clamp -100~100
       if (d.factionTension) {
@@ -531,7 +530,7 @@
       var added = newLen - prevLen;
       try {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-inheritance',
             text: '新朝承前·' + verdict.mode + '·' + (verdict.edict || '').slice(0, 60) + '…',
             tags: ['科举', 'reform', 'inheritance'],
@@ -836,7 +835,7 @@
       entry.historicalEvaluation = named.historicalEvaluation;
       try {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-named',
             text: '改革命名·' + named.canonicalName + (named.historicalEvaluation ? '·' + named.historicalEvaluation.slice(0, 40) + '…' : ''),
             tags: ['科举', 'reform', 'named'], reformId: entry.id
@@ -907,9 +906,8 @@
           GM.corruption.trueIndex = Math.max(0, Math.min(100,
             GM.corruption.trueIndex + d.corruption));
         }
-        if (d.civilianReact && GM.minxin && typeof GM.minxin.trueIndex === 'number') {
-          GM.minxin.trueIndex = Math.max(0, Math.min(100,
-            GM.minxin.trueIndex + d.civilianReact));
+        if (d.civilianReact && typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+          try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-reform-evolution', kind: 'socialMobility', delta: d.civilianReact, reason: '科举改革·民间所感' }); } catch (_e) {}
         }
         if (d.factionTension) {
           var ft2 = parseInt(GM._factionTension, 10) || 0;
@@ -985,7 +983,7 @@
     // 4·push GM._chronicle 邸报可见
     try {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1, type: 'keju-reform-blackswan',
           text: year + '年·改革黑天鹅·' + (BLACK_SWAN_TYPE_LABEL[event.type] || event.type) +
                 '·' + (event.narrative || '').slice(0, 40) + '…',

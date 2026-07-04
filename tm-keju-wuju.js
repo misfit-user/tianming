@@ -431,7 +431,7 @@
     wujinshi.officialTitle = depot.name + rank;
     wujinshi.stance = '保边·' + depot.region;
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_depot_assignment',
         text: _getCurYear() + '年·' + wujinshi.name + '·' + wujinshi.graduateTitle +
@@ -616,7 +616,7 @@
         wujinshi.resources.fame = 50 + Math.floor(rng() * 20);
       }
       _kjG3MarkWujinshi(wujinshi, examYear, examiner, td, exteriorScores);
-      GM.chars.push(wujinshi);
+      (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(wujinshi);
       wujinshiList.push(wujinshi);
     }
     return wujinshiList;
@@ -682,7 +682,7 @@
       }
       if (Array.isArray(GM._chronicle)) {
         var body = memorial || _kjG3GenWuJiaoyueDaFallback(liveList, examiner, td);
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_jiaoyueda',
           text: pending.year + '年·' + (pending.historyPath || '武举') + '·校阅大典·' +
@@ -727,7 +727,7 @@
       var staleTurns = curTurn - (pending.startTurn || 0);
       if (staleTurns > XIEENDA_TIMEOUT_TURNS) {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: curTurn,
             type: 'wuju_jiaoyueda',
             text: pending.year + '年·' + (pending.historyPath || '武举') + '·校阅大典 (记略散佚)',
@@ -824,7 +824,7 @@
     if (!fired) {
       // fallback chronicle (即视为 fire·进度状态变)
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_military_coup_risk',
           text: _getCurYear() + '年·武勋派威胁带兵进京·清议讥滥',
@@ -893,7 +893,7 @@
     var examiner = _kjG3PickWujuChiefExaminer();
     if (!examiner) {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_abort',
           text: curYear + '年·欲开 ' + (td.historyPath || '武举') + '·朝中无主兵部之将·罢',
@@ -933,7 +933,7 @@
         edict:         '陛下下诏',
         keyi:          '议政通过'
       })[entry.initiative] || '';
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_open',
         text: curYear + '年·' + (entry.historyPath || '武举') + '·' + initiativeLabel + '·' +
@@ -962,7 +962,7 @@
     td = td || {};
     var curYear = _getCurYear();
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_rejected',
         text: curYear + '年·议罢' + (td.historyPath || '武举') + '·军心动摇·边镇怒',
@@ -1024,7 +1024,7 @@
           });
         }
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'martial_clan_formed',
             text: (GM.year || 0) + '年·' + clanName + '将形成·' + bySurname[s].length + ' 人·' +
@@ -1086,7 +1086,7 @@
       _kjG3MaybeUpdatePartyTier();   // H4 fix
     }
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_battle_achievement',
         text: (GM.year || 0) + '年·' + (wujinshi._assignedDepot || '') + '·' +
@@ -1102,7 +1102,7 @@
         _kjG3MaybeUpdatePartyTier();   // H4 fix
       }
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_famous_general',
           text: (GM.year || 0) + '年·名将·' + wujinshi.name + '·累战功 ' + wujinshi._battleRecord.length + ' 次·' + (wujinshi._assignedDepot || '') + '威震',
@@ -1129,7 +1129,7 @@
       if (ch.resources.health <= 0) {
         ch.alive = false;
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'wuju_battle_death',
             text: (GM.year || 0) + '年·' + (ch._assignedDepot || '') + '·' +
@@ -1176,9 +1176,9 @@
       alive:     true
     };
     if (!Array.isArray(GM.chars)) GM.chars = [];
-    GM.chars.push(son);
+    (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(son);
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_inherit',
         text: (GM.year || 0) + '年·' + deadWujinshi._wuPartyLineage + '·荫袭·' + sonName + '·' + son.officialTitle,
@@ -1221,7 +1221,7 @@
     if (outcome === 'approve') {
       GM._wujuAbolished = true;
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_abolished',
           text: (GM.year || 0) + '年·废武举·设新军',
@@ -1330,7 +1330,7 @@
       GM._wujuParty.tier = newTier;
       // L3 fix·tier promotion chronicle
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_party_tier_change',
           text: (GM.year || 0) + '·武勋派 tier ' + prev + ' → ' + newTier +
@@ -1367,7 +1367,7 @@
       GM.vars['边事'].value = Math.max(0, warVal - Math.round(ac['军'] * 0.2));
     }
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_lifecycle_cost',
         text: _getCurYear() + '年·诏令·武举·apply lifecycle cost (军+15·士林-3·国库-15)',
@@ -1536,7 +1536,7 @@
       }
     } else if (stance === 'oppose') {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_bingbu_oppose',
           text: _getCurYear() + '年·兵部 ' + bingbuLeader.name + ' 劝阻开武举·affinity -10',
@@ -1615,7 +1615,7 @@
     GM._specialExamCalendar.spawned = GM._specialExamCalendar.spawned.filter(function(e) {
       if (e && e.type === 'wuju') {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'wuju_yuan_skip',
             text: '元朝无武举制·G1 spawn 之 wuju entry 清除',

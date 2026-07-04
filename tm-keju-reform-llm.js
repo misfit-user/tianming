@@ -1342,7 +1342,7 @@
             existing.text = '改革议·' + existing.spawnCount + ' 条反对奏疏入「百官奏疏」' +
                             (existing.firstReformId ? '·涉 ' + existing.firstReformId : '');
           } else {
-            GM._chronicle.push({
+            if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
               turn: turn,
               type: 'keju-objection-memorial-spawn',
               text: '改革议·' + spawnCount + ' 条反对奏疏入「百官奏疏」' + (firstReformId ? '·涉 ' + firstReformId : ''),

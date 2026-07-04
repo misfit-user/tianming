@@ -399,7 +399,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
   // ── 势力动态（faction_events）展示 ──
   var factionEvtHtml = '';
   if (GM.factionEvents && GM.factionEvents.length > 0) {
-    var _recentFE = GM.factionEvents.filter(function(e) { return e.turn === GM.turn; });
+    var _recentFE = GM.factionEvents.filter(function(e) { return e.turn === GM.turn - 1; }); // render 在 turn++ 之后跑·本回合事件戳=GM.turn-1(旧判 ===GM.turn 恒空·「天下势力动态」板块从未显示过·2026-07-04 审查定罪·同文件322/686同口径)
     if (_recentFE.length > 0) {
       factionEvtHtml = '<div class="turn-section"><h3>\u2694\uFE0F \u5929\u4E0B\u52BF\u529B\u52A8\u6001</h3><div style="font-size:0.75rem;color:var(--txt-d);margin-bottom:0.3rem;">\u672C\u56DE\u5408\u5404\u65B9\u52BF\u529B\u7684\u81EA\u4E3B\u884C\u52A8</div>';
       _recentFE.forEach(function(fe) {
@@ -745,7 +745,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       if (side === 'defender') return '守方';
       return '';
     }
-    function _battleInferFate(row, liveArmy) {
+    function _battleInferFate(row, liveArmy, battle) {
       row = row || {};
       var explicit = _battleText(row.fate || row.destiny || row.result || row.outcome);
       if (explicit) return explicit;
@@ -762,8 +762,11 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       if (loss > 0) return '受创';
       var side = _battleText(row.side).toLowerCase();
       var faction = _battleText(row.faction || row.owner || (liveArmy && (liveArmy.faction || liveArmy.owner)));
-      if (faction && _battleSame(faction, b.winner || b.winnerFactionId || b.winnerFaction)) return '胜后保全';
-      if (faction && _battleSame(faction, b.loser || b.loserFactionId || b.loserFaction)) return '败后整顿';
+      // battle 经参数传入——旧代码引用词法作用域外的 b·无损获胜军走到这两行即 ReferenceError·
+      // 整个史记渲染崩+本回合 shijiHistory/autosave 全在崩溃点之后(2026-07-04 审查定罪)
+      var _bt = battle || {};
+      if (faction && _battleSame(faction, _bt.winner || _bt.winnerFactionId || _bt.winnerFaction)) return '胜后保全';
+      if (faction && _battleSame(faction, _bt.loser || _bt.loserFactionId || _bt.loserFaction)) return '败后整顿';
       if (side === 'attacker' || side === 'defender') return _battleSideLabel(side) + '保全';
       return '在阵';
     }
@@ -845,7 +848,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
                          _battleText(liveArmy && (liveArmy.name || liveArmy.army || liveArmy.armyName || liveArmy.label)) ||
                          _battleArmyName(army) || _battleArmyName(liveArmy) || '未识别军队';
           var commanderName = _battleText(army.commander || (army.commanderFate && army.commanderFate.name)) || _battleArmyCommander(liveArmy);
-          var fate = _battleInferFate(army, liveArmy);
+          var fate = _battleInferFate(army, liveArmy, b);
           var fateColor = fate.indexOf('\u6E83\u706D') >= 0 ? 'var(--vermillion-500,#dc2626)' :
                           fate.indexOf('\u6E83') >= 0 ? 'var(--vermillion-400,#ef4444)' :
                           fate.indexOf('\u4F24') >= 0 ? 'var(--amber-400,#f59e0b)' :
@@ -1431,7 +1434,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       });
     }
   } catch(_) { _qijuMeta = null; }
-  GM.qijuHistory.push({
+  if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
     id: _qijuMeta && _qijuMeta.id,
     turn:GM.turn-1,time:getTSText(GM.turn-1),zhengwen:zhengwen,
     sourceType: 'official_record',
@@ -1543,7 +1546,12 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       eraName: GM.eraName || ''
     };
     // 写入 autosave（页面刷新恢复用）+ slot_0（案卷目录显示用）
-    TM_SaveDB.save('autosave', _autoState, _autoMeta).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e); });
+    TM_SaveDB.save('autosave', _autoState, _autoMeta).then(function() {
+      // ★ 推演成功且本回合 autosave 已落库·才清 pre_endturn 崩溃标记——旧写法在 async IIFE 外同步删·
+      // 等后台 job+落库的数十秒窗口内闪退=mark 已删而新档未写·重启不弹恢复·静默回滚上一回合
+      // (安卓 OOM 闪退史正踩此窗·2026-07-04 审查定罪)。写失败则 mark 留着·下次启动照常弹恢复=保守正确。
+      try { localStorage.removeItem('tm_pre_endturn_mark'); } catch(_rmE){}
+    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e); });
     TM_SaveDB.save('slot_0', _autoState, _autoMeta).then(function() {
       if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
       // 同时写轻量标记到localStorage（用于页面刷新检测）
@@ -1559,6 +1567,8 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     // IDB 中的 pre_endturn 不删·下次回合开始时自动覆盖·留作"上回合操作快照"应急
       } catch(e) { console.warn('[AutoSave] post-turn save failed:', e); }
     })();
+  } else {
+    // 无 IDB 环境保留旧语义：mark 在此环境本也不会被 core 设置·同步清掉防误弹
     try { localStorage.removeItem('tm_pre_endturn_mark'); } catch(_rmE){}
   }
 

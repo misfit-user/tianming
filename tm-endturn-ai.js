@@ -269,7 +269,8 @@
       var finishReason = _jsonFinishReason(data);
       var truncated = finishReason === "length" || finishReason === "max_tokens" || _looksJsonUnclosed(raw);
       var valid = _hasExpectedJsonKey(parsed, expectedKeys);
-      if (valid && !truncated) return { parsed: parsed, raw: raw, repaired: false, truncated: false };
+      // valid 即用本地解析：extractJSON 已把截断 JSON 尽量补全·9000 字符头尾窗口的修复产物只会更糟(中段账目蒸发·2026-07-04 审查定罪)
+      if (valid) return { parsed: parsed, raw: raw, repaired: false, truncated: truncated };
       if (opts.repair === false || !opts.url || !opts.key || !opts.body) {
         return { parsed: valid ? parsed : null, raw: raw, repaired: false, truncated: truncated, failed: !valid };
       }

@@ -36,9 +36,8 @@
       _source: 'npc-bridge',
       _facName: facName
     };
-    global.GM.qijuHistory.unshift(item);
-    // cap 200·近事快报只读前 30·这里多保留些供其它系统
-    if (global.GM.qijuHistory.length > 200) global.GM.qijuHistory = global.GM.qijuHistory.slice(0, 200);
+    if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry(item);
+    // cap 归 TM.Qiju.CAP 单一真相(2026-07-04 收口)·原地 200 trim 与写口 240 互搏已退役
     return true;
   }
 

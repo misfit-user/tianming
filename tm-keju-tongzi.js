@@ -49,7 +49,7 @@
     }
     if (typeof GM !== 'undefined' && GM) {
       GM._chronicle = GM._chronicle || [];
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: entry.type || 'tongzi',
         text: entry.text || '',
@@ -387,7 +387,7 @@
         _tongziArchetype: initArchetype
       };
       _kjG5MarkTongzijinshi(tj, examYear, examiner, td, scores);
-      GM.chars.push(tj);
+      (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(tj);
       pool.push(tj);
     }
     GM._tongziHistory = GM._tongziHistory || [];
@@ -755,11 +755,14 @@
 
   /** spawn 时·民心 +3·跟 H7 paradigm 同 (天降祥瑞·儒林感) */
   function _kjG5ApplyMinxinBoostOnSpawn(poolSize) {
-    if (typeof GM === 'undefined' || !GM || !GM.vars) return;
-    var v = GM.vars['民心'];
-    if (!v) return;
+    if (typeof GM === 'undefined' || !GM) return;
     var delta = 3 * Math.min(poolSize, 3);   // 1 童子 +3·2 童子 +6·max +9
-    v.value = Math.min(100, (parseInt(v.value, 10) || 50) + delta);
+    // 民心走总闸(2026-07-04 守卫v3.1定罪)：vars['民心'].value=已退役镜像·直写被 aggregateTrue 冲掉=祥瑞从未落地
+    if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-tongzi', kind: 'socialMobility', delta: delta, reason: '童子科开·天降祥瑞·儒林感' }); } catch (_e) {}
+    } else if (GM.vars && GM.vars['民心']) { // 沙箱兜底
+      GM.vars['民心'].value = Math.min(100, (parseInt(GM.vars['民心'].value, 10) || 50) + delta);
+    }
     _logChronicleSafe({
       type: 'tongzi_minxin_boost',
       text: _getCurYear() + '年·童子科开·天降祥瑞·民心 +' + delta + '·儒林感'
@@ -769,7 +772,10 @@
   /** 殁时·民心 -3·礼部 affinity -5·1% F4c 言官 "天意" event */
   function _kjG5OnTongziMartyred(c) {
     if (typeof GM === 'undefined' || !GM) return;
-    if (GM.vars && GM.vars['民心']) {
+    // 同上·走总闸
+    if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-tongzi', kind: 'socialMobility', delta: -3, reason: '神童早殁·朝野恸惜' }); } catch (_e) {}
+    } else if (GM.vars && GM.vars['民心']) { // 沙箱兜底
       GM.vars['民心'].value = Math.max(0, (parseInt(GM.vars['民心'].value, 10) || 50) - 3);
     }
     // 礼部 affinity -5

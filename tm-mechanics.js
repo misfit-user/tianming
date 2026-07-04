@@ -1456,7 +1456,7 @@ var StressTraitSystem = {
         }
         if (typeof addEB === 'function') addEB('崩溃', c.name + '精神崩溃！忠诚度骤降');
         if (GM.qijuHistory) {
-          GM.qijuHistory.unshift({
+          if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
             turn: GM.turn,
             date: typeof getTSText === 'function' ? getTSText(GM.turn) : '',
             content: '【精神崩溃】' + c.name + '因压力过大精神崩溃，朝中震动。'
@@ -1701,6 +1701,7 @@ var NpcMemorySystem = {
         var _monthScale = (typeof getTimeRatio === 'function') ? getTimeRatio() * 12 : 1;
         ch._memory.forEach(function(m) {
           if (m.turn >= GM.turn) return;
+          if ((m.importance || 5) >= 7) return; // imp\u22657=\u523b\u9aa8\u5927\u4e8b\u00b7\u5951\u7ea6(\u89c1L2110\u6ce8\u91ca)\u6c38\u4e0d\u81ea\u52a8\u6de1\u5fd8\u53ea\u538b\u7f29\u6210\u4f24\u75a4\u2014\u2014\u8870\u51cf\u66fe\u628a\u4f24\u75a4\u7ea7\u6084\u7136\u964d\u683c(2026-07-04 \u5ba1\u67e5\u5b9a\u7f6a)
           var baseRate = (m.emotion === '\u6012' || m.emotion === '\u6068') ? 0.02 : 0.05;
           m.importance = Math.max(0.1, Math.min(10, (m.importance || 5) - baseRate * _monthScale));
         });
@@ -1933,8 +1934,9 @@ var NpcMemorySystem = {
   _memCache: {}, _memCacheTurn: -1,
   getMemoryContext: function(charName) {
     charName = _tmMemoryCanonName(charName);
-    // 6.2: 每回合缓存——同一回合内同一角色只构建一次
-    if (this._memCacheTurn !== GM.turn) { this._memCache = {}; this._memCacheTurn = GM.turn; }
+    // 6.2: 每回合缓存——同一回合内同一角色只构建一次（读档代际参与失效·读同turn档曾把旧局记忆注入新局prompt·2026-07-04 审查定罪）
+    var _mcGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
+    if (this._memCacheTurn !== GM.turn || this._memCacheGen !== _mcGen) { this._memCache = {}; this._memCacheTurn = GM.turn; this._memCacheGen = _mcGen; }
     if (this._memCache[charName]) return this._memCache[charName];
     if (!GM.chars) return '';
     charName = _tmMemoryCanonName(charName);

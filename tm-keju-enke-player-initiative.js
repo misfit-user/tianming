@@ -442,7 +442,7 @@
       libuLeader._enkeAffinity -= 10;
       // chronicle (push 到 GM._chronicle·跟 L7 paradigm 一致)
       if (typeof GM !== 'undefined' && GM && Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'enke_libu_oppose',
           text: _getCurYear() + '年·礼部 ' + libuLeader.name + ' 劝阻开恩科·affinity -10',

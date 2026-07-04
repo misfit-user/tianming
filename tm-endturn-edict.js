@@ -267,7 +267,9 @@ function extractEdictActions(edictText) {
   // ═══ 补饷/发饷 模式（确定性结算欠饷·apply 时走 settleArmyArrears 真扣国库）═══
   //   只认明确"发/补/拨…饷"动宾·避免把"欠饷三月"这种纯陈述误判成补饷指令。target：点名某军 / 全军·九边·边军 等泛指。
   var _payIntentRx = /(?:补发|补给|补|发放|发|拨给|拨发|拨|关给|关|给|清还|清偿|清)[一-龥]{0,4}?(?:欠饷|积欠军饷|积欠饷银|军饷|饷银|月饷|饷)/;
-  if (_payIntentRx.test(text)) {
+  // 否定门(2026-07-04 审查定罪)：「暂停发放军饷」的"发…饷"曾被裸匹配成给全军结清欠饷
+  var _payNeg = /(暂停|停发|缓发|停放|不发|停支|缓支|欠着)[一-龥]{0,4}?(欠饷|军饷|饷银|月饷|饷)/;
+  if (_payIntentRx.test(text) && !_payNeg.test(text)) {
     var _payAll = /九边|全军|各军|诸军|三军|各镇|诸镇|边军|各营|众军|诸营/.test(text);
     // 点名军：roster-anchored——只认确实在册、且名字出现在诏书里的军（避免从动词/连词里抠出假军名）
     var _payNames = {};
@@ -402,6 +404,8 @@ function applyEdictActions(actions) {
         // 官职公库 currentHead 跟着换
         if (hit.pos.publicTreasury) hit.pos.publicTreasury.currentHead = a.character;
         if (typeof recordCharacterArc === 'function') recordCharacterArc(a.character, 'appointment', '奉诏就任' + a.position);
+        // ★2026-07-04 交互双向性·受任者留一条"奉诏就任"知情记忆(imp7)·此前只进 careerHistory/arc/AffinityMap 不入 _memory→推演看不到这桩定义性擢升。relatedPerson=天子(玩家)
+        if (typeof NpcMemorySystem !== 'undefined') { try { NpcMemorySystem.remember(a.character, '奉诏' + (isConcurrent ? '加兼' : '就任') + a.position, '敬', 7, (P.playerInfo && P.playerInfo.characterName) || '天子', { source: 'witnessed', type: 'career', _noMirror: true }); } catch(_apM) {} }
         if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) CorruptionEngine.markAsRecentAppointment(char);
         addEB('人事', a.character + (isConcurrent ? '奉诏加兼' : '奉诏就任') + a.position + '（' + hit.deptPath + '）', { credibility: 'high' });
         if (typeof AffinityMap !== 'undefined') AffinityMap.add(a.character, P.playerInfo.characterName || '玩家', 5, '被委以重任');
@@ -423,15 +427,15 @@ function applyEdictActions(actions) {
             char._travelReason = '奉诏赴任 ' + a.position;
             char._travelAssignPost = (hit.deptPath || '') + '/' + a.position;
             char._travelAssignConcurrent = !!isConcurrent;
-            if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
-            GM._chronicle.unshift({
+            // 编年史走 TM.Chronicle 写口(2026-07-04 收口)·时序 push 归一(原 unshift 混写破序)
+            if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
               turn: GM.turn, date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
               type: '赴任启程', title: a.character + ' 赴 ' + _destE,
               content: a.character + ' 自' + char.location + ' 启程赴' + _destE + '·就任 ' + a.position + '·预计 ' + _daysE + ' 日抵任。',
               category: '人事', tags: ['人事', '赴任', '启程', a.character]
             });
             if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
-            GM.qijuHistory.unshift({
+            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
               turn: GM.turn, date: GM._gameDate || '',
               content: '【启程】' + a.character + ' 自' + char.location + ' 赴 ' + _destE + ' 就任 ' + a.position
             });
@@ -581,6 +585,8 @@ function applyEdictActions(actions) {
       char.officialTitles = [];
       char.concurrentTitles = [];
       char.concurrentTitle = '';
+      // 免职须斩在途赴任链(同 onDismissal)：否则到期自动就任翻案
+      delete char._travelAssignPost; delete char._travelTo; delete char._travelRemainingDays;
       if (!char.careerHistory) char.careerHistory = [];
       char.careerHistory.push({ turn: GM.turn, event: '奉诏免职' });
     }
@@ -799,7 +805,9 @@ function extractEdictFiscalActions(edictText) {
   var out = [];
   var CN = { '一':0.1,'二':0.2,'两':0.2,'三':0.3,'四':0.4,'五':0.5,'六':0.6,'七':0.7,'八':0.8,'九':0.9,'十':1.0 };
   // 加派赋税（一次性临时加征）
-  if (/加派|三饷|辽饷|剿饷|练饷/.test(text)) {
+  // 否定门(2026-07-04 审查定罪)：「蠲免辽饷/罢三饷/停加派」是减免非开征·裸关键词曾把玩家减税诏反向执行成加征
+  var _fisNeg = /(蠲免|蠲除|豁免|减免|免征|罢停|停征|停派|停止|裁撤|裁革|废止|废除|罢|停|免|减)[^。；！\n]{0,8}(加派|三饷|辽饷|剿饷|练饷)|(加派|三饷|辽饷|剿饷|练饷)[^。；！\n]{0,8}(蠲免|蠲除|豁免|减免|免征|停征|停派|裁撤|裁革|废止|废除|尽罢|悉罢|皆罢|俱免|尽免)/;
+  if (/加派|三饷|辽饷|剿饷|练饷/.test(text) && !_fisNeg.test(text)) {
     var rate = 0.5;
     var rm = text.match(/([一二两三四五六七八九十])成/);
     if (rm && CN[rm[1]] != null) rate = CN[rm[1]];

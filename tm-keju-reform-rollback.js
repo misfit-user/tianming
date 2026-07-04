@@ -528,7 +528,7 @@
           ch._retiredTurn = turn;
           try {
             if (Array.isArray(GM._chronicle)) {
-              GM._chronicle.push({
+              if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
                 turn: turn, type: 'reform-rollback-retirement',
                 text: ch.name + '·致仕·疏曰"前改罢·老臣心已死"',
                 tags: ['科举', 'rollback', 'retirement'],

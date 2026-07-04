@@ -4011,6 +4011,27 @@
         sysP += '\n· 已罢官/致仕者：现无官职，严禁再以旧官衔（如「X尚书」「X巡抚」）称呼或令其行使职权；确需提及只可称其人名或「原任X」。';
         sysP += '\n' + _restLines.join('\n');
       }
+      // 赴任在途·尚未到任名册·硬约束(玩家报"孙传庭赴任途中·AI叙事却写他已在陕西赈灾")·
+      //   根因:任命当回合即完整就任(设 officialTitle+officeTree holder)→所有确定性名册立刻显示其为在任官员·
+      //   而"仍在途"信号此前只在被 AI 重新概括、后台 race-prone 的长期摘要里·非硬约束。此处列为确定性硬名册。
+      var _enRoute = [];
+      (GM.chars || []).forEach(function(c){
+        if (!c || c.alive === false || !c.name || !c._travelTo) return;
+        var _eta = '';
+        if (typeof c._travelRemainingDays === 'number' && c._travelRemainingDays > 0) _eta = '·约剩' + c._travelRemainingDays + '日抵';
+        else if (typeof c._travelArrival === 'number') _eta = '·预计T' + c._travelArrival + '抵';
+        var _post = c._travelAssignPost ? '·将就任' + String(c._travelAssignPost).replace('/', ' ') : (c.officialTitle ? '·已授' + c.officialTitle : '');
+        _enRoute.push('· ' + c.name + '：自' + (c._travelFrom || '原任所') + '赴' + c._travelTo + _post + _eta + '（在途·尚未到任）');
+      });
+      if (_enRoute.length) {
+        sysP += '\n\n【赴任在途·尚未到任名册·硬约束】';
+        sysP += '\n以下人员已受任命但仍在赴任途中、尚未抵达目的地就任·本回合严格遵守：';
+        sysP += '\n· 不得叙事其已在目的地视事、理政、赈灾、剿抚、坐镇、升堂或参与当地事务——其人尚在路上。';
+        sysP += '\n· 不得令其上朝、出席朝议廷议、在京视事（他不在京也不在任所）。';
+        sysP += '\n· 可叙其旅途见闻、沿途地方迎送、信使追及、抵达前的准备与观望；其治所职事本回合暂由原任者署理或空悬。';
+        sysP += '\n· 若确需其到任理事，须待其行程走满、系统播报"抵达就任"后的回合方可。';
+        sysP += '\n' + _enRoute.join('\n');
+      }
       // 有效地名白名单（从行政区划收集）
       if (P.adminHierarchy) {
         var _placeNames = [];

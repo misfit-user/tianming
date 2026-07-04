@@ -262,7 +262,9 @@
         if (global.addEB) global.addEB('破产', '民不堪命，处处起事');
     } },
     { id:7, name:'朝廷崩溃',    effect:function(G){
-        if (typeof G.huangwei === 'object') G.huangwei.index = Math.max(0, G.huangwei.index - 20);
+        if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+          global.AuthorityEngines.adjustHuangwei('capitalFall', -20, '朝廷崩溃');
+        } else if (typeof G.huangwei === 'object') G.huangwei.index = Math.max(0, G.huangwei.index - 20); // 沙箱回退
         if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
           global.AuthorityEngines.adjustHuangquan('idleGovern', -15, '\u671d\u5ef7\u5d29\u6e83');
         } else if (typeof G.huangquan === 'object') G.huangquan.index = Math.max(0, G.huangquan.index - 15);

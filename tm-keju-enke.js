@@ -122,7 +122,7 @@
     }
     // F4c 未 ship 或 cooldown 内·退化 chronicle 记一笔
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'enke_yanguan_protest',
         text: _getCurYear() + '年·言官 ' + n + ' 次恩科·清议讥滥',
@@ -241,7 +241,7 @@
       if (enkeThisYear) {
         // chronicle 记一笔·tesuoming 推迟
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'tesuoming_defer',
             text: curYear + '年·宋特奏名议·因本年已开恩科·礼部推迟特奏名至明岁',
@@ -280,7 +280,7 @@
 
     // chronicle
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'tesuoming_open',
         text: curYear + '年·宋特奏名·' + (td.reason || '安抚老举子') +
@@ -726,7 +726,7 @@
         isHistorical:  false
       };
       _kjG2MarkEnkeJinshi(jinshi, examYear, examiner, td);
-      GM.chars.push(jinshi);
+      (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(jinshi);
       jinshiList.push(jinshi);
     }
     return jinshiList;
@@ -791,7 +791,7 @@
         if (xeStyle.tier !== 'pious') {
           xeBody = xeBody + '\n\n(' + xeStyle.bodyTone + ')';
         }
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'enke_xieenda',
           text: pending.year + '年·' +
@@ -852,7 +852,7 @@
       var staleTurns = curTurn - (pending.startTurn || 0);
       if (staleTurns > XIEENDA_TIMEOUT_TURNS) {
         if (Array.isArray(GM._chronicle)) {
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: curTurn,
             type: 'enke_xieenda',
             text: pending.year + '年·' + (pending.historyPath || '恩科') + '·谢恩大典 (奏疏散佚)',
@@ -886,7 +886,7 @@
     if (!examiner) {
       // 朝中无主礼部之人·拒开·写 chronicle
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'enke_abort',
           text: curYear + '年·欲开 ' + (td.historyPath || '恩科') + '·朝中无主礼部之人·罢',
@@ -950,7 +950,7 @@
       })[entry.initiative] || '';
       var openStyle = _kjG2GetEnkeChronicleStyle();
       var openSuffix = openStyle.tier === 'pious' ? '' : '·' + openStyle.bodyTone;
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'enke_open',
         text: curYear + '年·' + (entry.historyPath || '恩科') + (openStyle.titleSuffix || '') + '·' +
@@ -982,7 +982,7 @@
     td = td || {};
     var curYear = _getCurYear();
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'enke_rejected',
         text: curYear + '年·议罢' + (td.historyPath || '恩科') + '·陛下吝赏·士林失望',
@@ -998,8 +998,7 @@
     if (td.subtype === 'reign-change') {
       var _AEk1 = (typeof window !== 'undefined' && window.AuthorityEngines) || (typeof global !== 'undefined' && global.AuthorityEngines) || null;
       if (_AEk1 && _AEk1.adjustMinxin) _AEk1.adjustMinxin('socialMobility', -3, '改元恩科·士林失望', { persist: true });
-      else if (GM.minxin && typeof GM.minxin.trueIndex === 'number') GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 3);
-      else if (typeof GM.minxin === 'number') GM.minxin -= 3;
+      else if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-enke', kind: 'socialMobility', delta: -3, reason: '改元恩科未开·士林失望' }); // 收口·直写死路(聚合冲掉)·兜底也走闸
     }
   }
 
@@ -1023,13 +1022,12 @@
       var _dMx = Math.round(ac['士林'] * 0.3); // 士林 +10 → minxin +3 (士林是 minxin subset)
       var _AEk2 = (typeof window !== 'undefined' && window.AuthorityEngines) || (typeof global !== 'undefined' && global.AuthorityEngines) || null;
       if (_AEk2 && _AEk2.adjustMinxin) _AEk2.adjustMinxin('socialMobility', _dMx, '恩科·士林感念', { persist: true });
-      else if (GM.minxin && typeof GM.minxin.trueIndex === 'number') GM.minxin.trueIndex = Math.max(0, Math.min(100, GM.minxin.trueIndex + _dMx));
-      else if (typeof GM.minxin === 'number') GM.minxin += _dMx;
+      else if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'keju-enke', kind: 'socialMobility', delta: _dMx, reason: '恩科开科·士林感念' }); // 收口·直写死路(聚合冲掉)·兜底也走闸
     }
     // 不 apply 官僚 / lizhi·避跟其他 system 重复
     // chronicle 记 cost apply
     if (Array.isArray(GM._chronicle)) {
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'enke_lifecycle_cost',
         text: _getCurYear() + '年·诏令·恩科·apply lifecycle cost (士林+10·国库-8)',
@@ -1044,7 +1042,7 @@
         GM._enkeAbuseCounter && GM._enkeAbuseCounter.enkeCount >= 4 &&
         Math.random() < 0.05) {
       if (Array.isArray(GM._chronicle)) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'enke_unintended_risk',
           text: _getCurYear() + '年·恩科党尾大不掉·部分恩科党人结社·士林讥之',

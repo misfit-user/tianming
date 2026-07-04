@@ -19,6 +19,15 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
 
+  // 民心走 MinxinLedger 总闸(2026-07-04 收口)：delta 落叶子+按源封顶。直写 trueIndex 会被 aggregateTrue 冲掉。
+  function _mxApply(delta, reason, kind) {
+    if (!delta) return;
+    try {
+      var L = (typeof TM !== 'undefined' && TM.MinxinLedger) || global.MinxinLedger;
+      if (L && L.recordAndApply) L.recordAndApply(global.GM, { sourceSystem: 'neitang-engine', kind: kind || 'neitangPalace', delta: delta, reason: reason });
+    } catch (_e) {}
+  }
+
   function getMonthRatio() {
     if (typeof _getDaysPerTurn === 'function') return _getDaysPerTurn() / 30;
     return 1;
@@ -412,11 +421,9 @@
     // 内帑接济帑廪：把 guokuRescue 实际加给国库（之前只算数字未入账）
     var rescueAnnual = safe(expBreakdown.guokuRescue, 0);
     var rescueThisPeriod = (rescueAnnual / 12) * mr;
-    if (rescueThisPeriod > 0 && GM.guoku) {
-      GM.guoku.balance = (GM.guoku.balance || 0) + rescueThisPeriod;
-      if (GM.guoku.ledgers && GM.guoku.ledgers.money) {
-        GM.guoku.ledgers.money.stock = (GM.guoku.ledgers.money.stock || 0) + rescueThisPeriod;
-      }
+    if (rescueThisPeriod > 0 && typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) {
+      // 入库走 FiscalEngine 真账(2026-07-04 收口)·手工双账同步退役
+      FiscalEngine.addToGuoku({ money: rescueThisPeriod }, '内帑济国用');
       n._annualRescueAmount = 0;  // 重置一次性接济额
     }
 
@@ -554,7 +561,9 @@
       addEB('朝代', '内帑不足以赡宫廷，皇家体面难维', { credibility: 'high' });
     }
     // 连锁：皇威下降 + 皇家地位减损
-    if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 5);
+    if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+      global.AuthorityEngines.adjustHuangwei('familyScandal', -5, '内帑匮乏·皇家体面难维');
+    } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 5); // 沙箱回退
     if (GM.huangquan && GM.huangquan.subDims && GM.huangquan.subDims.imperial) {
       GM.huangquan.subDims.imperial.value = Math.max(0, GM.huangquan.subDims.imperial.value - 8);
     }
@@ -574,7 +583,8 @@
       amount = amount || 100000;
       if (!GM.guoku) return { success: false, reason: '帑廪未就绪' };
       if (GM.guoku.balance < amount) return { success: false, reason: '帑廪不足' };
-      GM.guoku.balance -= amount;
+      // 国库侧走 FiscalEngine 真账(2026-07-04 收口)
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: amount }, '拨入内帑');
       GM.neitang.balance += amount;
       if (typeof addEB === 'function') addEB('朝代', '帑廪调拨 ' + Math.round(amount/10000) + ' 万两入内帑', { credibility: 'high' });
       return { success: true };
@@ -587,11 +597,13 @@
       if (GM.neitang.balance < amount) return { success: false, reason: '内帑不足' };
       if (!GM.guoku) return { success: false, reason: '帑廪未就绪' };
       GM.neitang.balance -= amount;
-      GM.guoku.balance += amount;
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) FiscalEngine.addToGuoku({ money: amount }, '内帑济国用'); // 收口·走真账
       GM.neitang._annualRescueAmount = (GM.neitang._annualRescueAmount || 0) + amount;
       // 皇家德政 → 皇威+ 民心+
-      if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 3);
-      if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + 2);
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('benevolence', 3, '罄内帑济国用·皇家德政');
+      } else if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 3); // 沙箱回退
+      _mxApply(2, '罄内帑济国用·皇家德政', 'imperialVirtue');
       if (typeof addEB === 'function') addEB('朝代', '陛下罄内帑 ' + Math.round(amount/10000) + ' 万两济国用，群臣感泣', { credibility: 'high' });
       return { success: true };
     },
@@ -605,8 +617,10 @@
       GM.neitang.specialTaxType = type;
       GM.neitang.specialTaxMonthly = monthly;
       // 民心损（历史上矿税害民）
-      if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 5);
-      if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 3);
+      _mxApply(-5, '开征' + (type || '特税') + '·中官四出害民', 'taxation');
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('lostVirtueRumor', -3, '中官税使四出·天下侧目');
+      } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 3); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '开' + type + '，月收 ' + Math.round(monthly/1000) + ' 千两入内帑', { credibility: 'high' });
       return { success: true };
     },
@@ -616,8 +630,10 @@
       ensureNeitangModel();
       if (!GM.neitang.specialTaxActive) return { success: false, reason: '未开启' };
       GM.neitang.specialTaxActive = false;
-      if (GM.minxin) GM.minxin.trueIndex = Math.min(100, GM.minxin.trueIndex + 3);
-      if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 2);
+      _mxApply(3, '罢特税·民困得苏', 'taxation');
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('benevolence', 2, '罢特税·民感圣德');
+      } else if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + 2); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '罢' + (GM.neitang.specialTaxType || '特别税') + '，民感圣德', { credibility: 'high' });
       return { success: true };
     },
@@ -636,7 +652,9 @@
       if (GM.neitang.balance < cost) return { success: false, reason: '内帑不足' };
       GM.neitang.balance -= cost;
       GM.neitang._thisYearCeremonyBudget = (GM.neitang._thisYearCeremonyBudget || 0) + cost;
-      if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + (gains[type] || 8));
+      if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+        global.AuthorityEngines.adjustHuangwei('grandCeremony', gains[type] || 8, '大典彰威');
+      } else if (GM.huangwei) GM.huangwei.index = Math.min(100, GM.huangwei.index + (gains[type] || 8)); // 沙箱回退
       if (typeof addEB === 'function') addEB('朝代', '行大典，费内帑 ' + Math.round(cost/10000) + ' 万两', { credibility: 'high' });
       return { success: true };
     },
@@ -816,6 +834,15 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
+
+  // 民心走 MinxinLedger 总闸(2026-07-04 收口)·同 p1 的 _mxApply(两 IIFE 各一份·作用域隔离)
+  function _mxApply(delta, reason, kind) {
+    if (!delta) return;
+    try {
+      var L = (typeof TM !== 'undefined' && TM.MinxinLedger) || global.MinxinLedger;
+      if (L && L.recordAndApply) L.recordAndApply(global.GM, { sourceSystem: 'neitang-engine', kind: kind || 'neitangPalace', delta: delta, reason: reason });
+    } catch (_e) {}
+  }
   function rng(min, max) { return min + Math.random() * (max - min); }
 
   // ═════════════════════════════════════════════════════════════
@@ -916,7 +943,7 @@
             GM.huangquan.index = clamp(GM.huangquan.index + side.huangquan * mr, 0, 100);
           }
         }
-        if (side.minxin && GM.minxin) GM.minxin.trueIndex = clamp(GM.minxin.trueIndex + side.minxin * mr, 0, 100);
+        if (side.minxin) _mxApply(side.minxin * mr, '内帑举措及民');
         if (side.corruption_imperial && GM.corruption && GM.corruption.subDepts.imperial) {
           GM.corruption.subDepts.imperial.true = clamp(GM.corruption.subDepts.imperial.true + side.corruption_imperial * mr, 0, 100);
         }
@@ -1122,11 +1149,16 @@
 
     // 默认出帑廪粮（明代）
     var dest = rcp.destination || 'guoku.grain';
-    if (dest === 'guoku.grain' && GM.guoku && GM.guoku.ledgers && GM.guoku.ledgers.grain) {
-      GM.guoku.ledgers.grain.stock = Math.max(0, GM.guoku.ledgers.grain.stock - monthlyCost / 5);
-      // 粮价 5 两/石，等价金额
-    } else if (GM.guoku) {
-      GM.guoku.balance -= monthlyCost;
+    // 宗禄出账判权(2026-07-04 审查定罪)：rcp.annualStipendPaid 已配则 FixedExpense.calcRoyalStipend
+    // 按年额扣同一 sink「宗禄」——本引擎同回合再按人口扣一遍=双扣。FixedExpense 本回合已跑即让位(人口演化照跑)。
+    var _fixedOwnsStipend = (Number(rcp.annualStipendPaid) > 0) && (GM._lastFixedExpenseTurn === GM.turn);
+    if (!_fixedOwnsStipend) {
+      // 宗禄支出走 FiscalEngine 真账(2026-07-04 收口)·粮价 5 两/石等价折算
+      if (dest === 'guoku.grain' && typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) {
+        FiscalEngine.spendFromGuoku({ grain: monthlyCost / 5 }, '宗禄');
+      } else if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) {
+        FiscalEngine.spendFromGuoku({ money: monthlyCost }, '宗禄');
+      }
     }
 
     // 崩溃触发
@@ -1147,8 +1179,10 @@
       addEB('朝代', '宗室子孙繁衍数十倍，朝廷难以供养，藩王贫极殴夺民产',
         { credibility: 'high' });
     }
-    if (GM.minxin) GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 10);
-    if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8);
+    _mxApply(-10, '宗室繁衍难供·藩王殴夺民产');
+    if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
+      global.AuthorityEngines.adjustHuangwei('familyScandal', -8, '宗禄难支·藩王夺民产');
+    } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8); // 沙箱回退
     if (GM.neitang.history) GM.neitang.history.events.push({
       turn: GM.turn, type: 'royal_clan_bankruptcy'
     });
@@ -1259,10 +1293,8 @@
       return path === 'neitang.money' || path === 'neicang.money';
     }
     function syncCashMirrors() {
-      if (GM.guoku && typeof GM.guoku.balance === 'number') {
-        GM.guoku.money = GM.guoku.balance;
-        if (GM.guoku.ledgers && GM.guoku.ledgers.money) GM.guoku.ledgers.money.stock = GM.guoku.balance;
-      }
+      // 国库侧对账走 FiscalEngine(2026-07-04 收口)·空扣账=纯 reconcile(ledger↔balance 单一真相)
+      try { if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({}, '对账'); } catch (_e) {}
       if (GM.neitang && typeof GM.neitang.balance === 'number') {
         GM.neitang.money = GM.neitang.balance;
         if (GM.neitang.ledgers && GM.neitang.ledgers.money) GM.neitang.ledgers.money.stock = GM.neitang.balance;
@@ -1284,13 +1316,14 @@
         if (tr.mode === 'fixed') amt = (tr.amount || 0) * mr;
         else if (tr.mode === 'percent') amt = (tr.percent || 0) * ((GM.guoku && GM.guoku.monthlyIncome) || 0) * mr;
         if (amt > 0 && GM.guoku && GM.guoku.balance > amt) {
+          // 国库侧走 FiscalEngine 真账(2026-07-04 收口)·内帑侧仍本引擎自账
           if (tr.from === 'guoku.money' && isNeitangMoneyPath(tr.to)) {
-            GM.guoku.balance -= amt;
+            if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: amt }, '定拨内帑');
             GM.neitang.balance += amt;
           } else if (isNeitangMoneyPath(tr.from) && tr.to === 'guoku.money') {
             if (GM.neitang.balance > amt) {
               GM.neitang.balance -= amt;
-              GM.guoku.balance += amt;
+              if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) FiscalEngine.addToGuoku({ money: amt }, '内帑定拨入库');
             }
           }
         }

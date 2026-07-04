@@ -46,7 +46,7 @@
     });
     // 编年
     if (!GM._chronicle) GM._chronicle = [];
-    GM._chronicle.push({
+    if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
       turn: GM.turn || 0, date: GM._gameDate || '',
       type: category || '诏书',
       text: content.slice(0, 120),

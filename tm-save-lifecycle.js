@@ -820,13 +820,19 @@ function fullLoadGame(data){
     // 格式B：SaveManager格式
     P = data.gameState.P;
     GM = data.gameState.GM;
+    if (P && P.gameState) delete P.gameState; // 嵌套僵尸(旧档遗留)一并斩
   } else {
     // 格式A：标准格式
     P = data;
     if (data.gameState) {
       GM = data.gameState;
+      // P=data·不删则整棵旧局 GM 挂在 P 上随每次 saveP/autoSave 序列化——换剧本后恢复档
+      // 弹的是已放弃旧局(串局回滚)+配额爆炸的直接推手(2026-07-04 审查定罪)。GM 已持引用·删键不失数据。
+      delete data.gameState;
     }
   }
+  if (typeof _tmInstallScenarioGetter === 'function') _tmInstallScenarioGetter(); // P 整体重赋值后重装 P.scenario 派生 getter
+  try { if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1; } catch (_lg) {} // 读档代际++·按GM.turn失效的模块级缓存(officeIndex/memCache)读同turn档曾泄漏旧局数据(2026-07-04 审查定罪)
   // 恢复被存档冲掉的 API 配置（key/url/model 等都从 localStorage 拉回）
   if (_preservedAi && typeof _preservedAi === 'object' && (_preservedAi.key || _preservedAi.url)) {
     if (!P.ai) P.ai = {};
@@ -956,6 +962,17 @@ function fullLoadGame(data){
       }
     } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'fullLoadGame] RelGraph.syncCharRefs 失败:') : console.error('[fullLoadGame] RelGraph.syncCharRefs 失败:', e); }
 
+    // 影子条目存量清障(2026-07-04)：历史版本 AI 落建造在 BUILDING_TYPES 反查失败时铸的「未知建筑」
+    // 死条目(无描述/无 status/无效果)随档累积·且按 territory|type 键位把营造志真记录挤出合并清单
+    // (地块面板全显「未知建筑·完好」病根之一)。读档一次性清·随后 buildIndices 重建索引保持一致。
+    try {
+      if (Array.isArray(GM.buildings) && typeof BUILDING_TYPES !== 'undefined') {
+        var _shadowN = GM.buildings.length;
+        GM.buildings = GM.buildings.filter(function(b){ return b && !(b.name === '未知建筑' && !BUILDING_TYPES[b.type]); });   // arch-ok:读档迁移·影子死账一次性清障(非游戏内业务直写)
+        _shadowN -= GM.buildings.length;
+        if (_shadowN > 0) console.log('[fullLoadGame] 清除「未知建筑」影子条目 ' + _shadowN + ' 条(历史AI落建造反查失败所铸)');
+      }
+    } catch(_shadowPurgeE) {}
     // 重建索引
     if (typeof buildIndices === 'function') buildIndices();
     // 2026-06-10·_facIndex 已不入存档(autoSave SKIP·派生索引)·读档后在 chars/官衔/迁移全就绪处重建·

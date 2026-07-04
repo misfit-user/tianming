@@ -1457,6 +1457,14 @@ function _tmIsPlayerFactionCharLoose(ch) {
   return false;
 }
 
+/** 阵营硬闸(2026-07-04)：仅拦「明确标了非本朝势力」的角色——faction 类字段全空者视为本朝放行(散官/编辑器剧本常不填势力·loose 守卫对空字段判非本朝会误杀·与 _wdIsPlayerSideChar 空字段兜底语义对齐)。用于宰辅进言/求见队列/转对候选等臣→君产出口·防外邦君主(皇太极/德川氏等·其 faction 必有值)混入喂推演。 */
+function _tmIsForeignCourtChar(ch) {
+  if (!ch) return false;
+  var explicit = _tmCharacterFactionValues(ch);
+  if (!explicit.length) return false;
+  return !_tmIsPlayerFactionCharLoose(ch);
+}
+
 function _tmIsPlayerConsort(ch) {
   if (!ch || ch.alive === false || ch.dead) return false;
   var playerNames = _tmPlayerNames().map(_tmCleanIdentityName).filter(Boolean);
@@ -1695,6 +1703,10 @@ function _trDownloadTxt(txt, turn){
   if (typeof toast === 'function') toast('\u5DF2\u5BFC\u51FA');
 }
 function saveP(){
+  // P 永不该拥有 gameState——合法附带只发生在 60s autosave 的克隆件上(save-lifecycle:1327)。
+  // 存量僵尸(旧 fullLoadGame 格式A遗留·整棵旧局 GM 挂 P 随每次持久化序列化=配额爆炸+启动误恢复已弃旧局)
+  // 在写入咽喉一律斩除(2026-07-04 审查定罪)
+  try { if (P && P.gameState) delete P.gameState; } catch(_zg) {} // arch-ok 僵尸字段斩除·裁定见上
   // 1. 写入 IndexedDB（主存储，无容量限制）
   if (typeof TM_SaveDB !== 'undefined') {
     TM_SaveDB.saveProject(_tmStripAiKeyInPlace(deepClone(P))).catch(function(e) {
@@ -1715,7 +1727,10 @@ function saveP(){
     localStorage.removeItem('tm_P');
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] localStorage骨架写入失败:') : console.warn('[saveP] localStorage骨架写入失败:', e); }
   // 3. 桌面端额外保存
-  if (window.tianming && window.tianming.isDesktop) {
+  //    GM.running 时不写：此写与 60s 崩溃恢复档同写 __autosave__.json(last-writer-wins)——对局中改一次设置
+  //    曾把恢复档降级成纯 P 无 gameState·随后崩溃=本局进度静默丢且无恢复弹窗(2026-07-04 审查定罪)。
+  //    对局中 P 已由上方 IDB+lite 即时持久化·桌面档由 60s 周期档(P+gameState 全量)接力·至多 60s 滞后。
+  if (window.tianming && window.tianming.isDesktop && !(typeof GM !== 'undefined' && GM && GM.running)) {
     window.tianming.autoSave(_tmStripAiKeyView(P)).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveP] desktop failed:') : console.warn('[saveP] desktop failed:', e); });
   }
 }
@@ -1790,13 +1805,13 @@ function _tmMergeCustomScenariosFromProject(project) {
     var have = {};
     for (var h = 0; h < P[key].length; h++) {
       var er = P[key][h];
-      if (er && er.sid != null && er.id != null) have[er.sid + '' + er.id] = true;
+      if (er && er.sid != null && er.id != null) have[er.sid + '\u0001' + er.id] = true;
     }
     for (var r = 0; r < srcRows.length; r++) {
       var row = srcRows[r];
       if (!row || row.sid == null || !customIds[row.sid]) continue;   // 只收自建剧本的行·不碰官方行
       if (row.id != null) {
-        var dk = row.sid + '' + row.id;
+        var dk = row.sid + '\u0001' + row.id;
         if (have[dk]) continue;
         have[dk] = true;
       }
@@ -1839,13 +1854,14 @@ function _tmEmitPRestored(source) {
           if (saved.hasOwnProperty(key)) P[key] = saved[key];
         }
         console.log('[restoreP] 从localStorage(tm_P)恢复, scenarios:', P.scenarios.length);
-        // 迁移：旧格式存在则写入IndexedDB并清理
-        if (typeof TM_SaveDB !== 'undefined') {
+        // 迁移：旧格式存在则写入IndexedDB并清理（tm-storage 后载·短轮询等就位·原 typeof 一次性检查恒 false=迁移死代码）
+        (function _tmMigrateTmPWhenReady(tries) {
+          if (typeof TM_SaveDB === 'undefined') { if (tries < 100 && typeof setTimeout === 'function') setTimeout(function() { _tmMigrateTmPWhenReady(tries + 1); }, 100); return; }
           TM_SaveDB.saveProject(_tmStripAiKeyInPlace(deepClone(P))).then(function() {
             try { localStorage.removeItem('tm_P'); } catch(e) {}
             console.log('[restoreP] 已迁移tm_P到IndexedDB');
           });
-        }
+        })(0);
       }
     } else {
       // 新格式：从lite骨架恢复API配置 (R153 包内 try·防嵌套被外层 catch 误吞)
@@ -1867,7 +1883,15 @@ function _tmEmitPRestored(source) {
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] localStorage恢复失败:') : console.warn('[restoreP] localStorage恢复失败:', e); }
 
   // 层2: IndexedDB 完整数据（异步，覆盖骨架）
-  if (typeof TM_SaveDB !== 'undefined') {
+  // 2026-07-04 审查定罪：tm-utils(index.html:490)先于 tm-storage(:592)加载·原 typeof 一次性检查恒 false——
+  // saveP 的主存储(IDB current_project)只写不读·网页/安卓端自建剧本重启即丢(桌面被 autoSave 层3掩盖)。
+  // 改为短轮询等 TM_SaveDB 就位(≤10s)·loadProject 本就是异步晚到语义·与原设计一致。
+  (function _tmIdbRestoreWhenReady(tries) {
+    if (typeof TM_SaveDB === 'undefined') {
+      if (tries < 100 && typeof setTimeout === 'function') setTimeout(function() { _tmIdbRestoreWhenReady(tries + 1); }, 100); // vm 沙箱无 timer 则放弃(沙箱本就无 IDB)
+      else if (tries >= 100) console.warn('[restoreP] TM_SaveDB 10s 未就位·IndexedDB 恢复层跳过');
+      return;
+    }
     TM_SaveDB.loadProject().then(function(fullP) {
       if (fullP && fullP.scenarios) {
         if (_tmIsIncompleteOfficialProject(fullP)) {
@@ -1882,7 +1906,7 @@ function _tmEmitPRestored(source) {
           return;
         }
         for (var key in fullP) {
-          if (fullP.hasOwnProperty(key)) P[key] = fullP[key];
+          if (fullP.hasOwnProperty(key) && key !== 'gameState' && key !== '_saveMeta') P[key] = fullP[key]; // 跳僵尸键·与层3同口径
         }
         console.log('[restoreP] 从IndexedDB恢复完整P, scenarios:', P.scenarios.length);
         // 如果已在剧本管理页，刷新显示
@@ -1892,7 +1916,7 @@ function _tmEmitPRestored(source) {
         _tmEmitPRestored('indexeddb');
       }
     }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e); });
-  }
+  })(0);
 
   // 层3: 桌面端 autoSave
   if (window.tianming && window.tianming.isDesktop) {
@@ -1968,3 +1992,31 @@ function _tmStripAiKeyView(o){ // 用于直接序列化运行时 P：返回浅�
   v.ai=ai; return v;
 }
 if(typeof window!=='undefined'){ window._tmStripAiKeyInPlace=_tmStripAiKeyInPlace; window._tmStripAiKeyView=_tmStripAiKeyView; }
+
+// ── P.scenario 接线（2026-07-04 审查定罪）────────────────────────────────
+// 全库约 40 处读 P.scenario(单数·科举朝代范式/宋特奏名/恩科名额/朝议/策命/称谓语言包)·
+// 而运行时从无赋值——朝代特化逻辑整族静默落默认。正源 = P.scenarios.find(id===GM.sid)。
+// 做成不可枚举 getter：不入 saveP/JSON 序列化(P 不翻倍)·P 被整体重赋值后须重装(见 fullLoadGame/SaveManager)。
+// setter 允许显式赋值顶掉 getter(smoke 沙箱直接喂 P.scenario 的用法保持可用)。
+function _tmInstallScenarioGetter(){
+  try{
+    if(typeof P==='undefined'||!P||typeof Object.defineProperty!=='function') return;
+    var d=Object.getOwnPropertyDescriptor(P,'scenario');
+    if(d&&d.get) return; // 已装
+    Object.defineProperty(P,'scenario',{
+      configurable:true,
+      enumerable:false,
+      get:function(){
+        try{
+          var g=(typeof GM!=='undefined')?GM:null;
+          if(!g||!g.sid||!Array.isArray(P.scenarios)) return null;
+          for(var i=0;i<P.scenarios.length;i++){var s=P.scenarios[i];if(s&&s.id===g.sid) return s;}
+        }catch(_e){}
+        return null;
+      },
+      set:function(v){ Object.defineProperty(P,'scenario',{value:v,writable:true,configurable:true,enumerable:false}); }
+    });
+  }catch(_e){}
+}
+if(typeof window!=='undefined') window._tmInstallScenarioGetter=_tmInstallScenarioGetter;
+_tmInstallScenarioGetter();

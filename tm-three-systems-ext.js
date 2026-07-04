@@ -328,7 +328,7 @@
       if (newPhase !== prevPhase) {
         f.lifePhase = newPhase;
         if (!GM._chronicle) GM._chronicle = [];
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: turn, date: GM._gameDate || '',
           type: '势力阶段',
           text: f.name + '·' + prevPhase + '→' + newPhase + '·strength=' + s + '·leg=' + leg,
@@ -404,11 +404,13 @@
       ps.reputationBalance = Math.abs(_repDecay) < 0.25 ? 0 : Math.round(_repDecay * 0.92 * 100) / 100;
       // 回传 p.influence 以供旧 UI 读取
       p.influence = ps.influence;
+      ps._synced_influence = ps.influence; // 镜像即已并账·同步水位——否则 syncPartyTruth 按水位差把同笔 delta 再入一次(双倍入账·2026-07-04 审查定罪)
       // cohesion：反弹·如果内部冲突多则下降
       if ((ps.recentPolicyLose || 0) > 2 && (ps.recentImpeachLose || 0) > 1) {
         ps.cohesion = Math.max(0, ps.cohesion - 3);
       }
       p.cohesion = ps.cohesion;
+      ps._synced_cohesion = ps.cohesion; // 同上·防二次并账
     });
 
     // 3. 政柄格局（V3式·2026-07-03）：从占官+影响力派生 秉政(governing)/在野(opposition)/边缘(marginal)。
@@ -546,7 +548,7 @@
       if (a.mutinyRisk >= 80 && !a._mutinyTriggered) {
         a._mutinyTriggered = true;
         if (!GM._chronicle) GM._chronicle = [];
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 0, date: GM._gameDate || '',
           type: '兵变警讯',
           text: a.name + ' 军心大乱·兵变风险极高·士气' + a.morale + '·欠饷' + a.payArrearsMonths + '月',
@@ -822,7 +824,7 @@
       if (!GM._chronicle) GM._chronicle = [];
       var total = GM._npcDecisions.factionActions.length + GM._npcDecisions.partyActions.length + GM._npcDecisions.generalActions.length;
       if (total > 0) {
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: turn, date: GM._gameDate || '',
           type: 'NPC 预规划',
           text: 'NPC 预规划·势力 ' + GM._npcDecisions.factionActions.length + ' 条·党派 ' + GM._npcDecisions.partyActions.length + ' 条·将领 ' + GM._npcDecisions.generalActions.length + ' 条(生效于未来推演)',
@@ -926,7 +928,7 @@
         f.legitimacy = Math.max(0, (f.legitimacy||0) - 3);
         f.morale = Math.max(0, (f.morale||0) - 8);
         if (!GM._chronicle) GM._chronicle = [];
-        GM._chronicle.push({
+        if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn||0, date: GM._gameDate||'',
           type: '军事↔势力',
           text: data.owner + ' 战败·strength-5·legitimacy-3·morale-8',
@@ -980,7 +982,7 @@
           ps.cohesion = Math.max(0, ps.cohesion - 30);
           ps.influence = Math.max(0, ps.influence - 20);
           if (!GM._chronicle) GM._chronicle = [];
-          GM._chronicle.push({
+          if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn||0, date: GM._gameDate||'',
             type: '势力↔党派',
             text: data.faction + ' 崩溃·'+pn+' 失根 cohesion-30·influence-20',
@@ -1147,7 +1149,7 @@
       if (typeof addEB === 'function') addEB('传书', (tpl.from||'') + ' 来信·' + (tpl.subjectLine || '').slice(0, 30));
       // 写编年
       if (!GM._chronicle) GM._chronicle = [];
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: 1, date: GM._gameDate || '',
         type: '开局来信',
         text: '【开局·鸿雁】' + tpl.from + ' 自 ' + (tpl.fromLocation||'远方') + ' 来书：' + (tpl.subjectLine || '').slice(0, 40),
@@ -1199,7 +1201,7 @@
       e.triggered = true;
       // 同步写入编年
       if (!GM._chronicle) GM._chronicle = [];
-      GM._chronicle.push({
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: 1, date: GM._gameDate || '',
         type: '开局要务',
         text: '【' + (e.name || '') + '】' + (e.description || e.narrative || '').slice(0, 120),

@@ -31,8 +31,9 @@ const DEFAULT_MIN_APP_VERSION = '';
 const ALLOWED_EXTS = new Set([
   '.html', '.htm', '.js', '.mjs', '.css', '.json', '.geojson', '.png', '.jpg', '.jpeg', '.webp',
   '.bmp', '.svg', '.ico', '.mp3', '.ogg', '.wav', '.md', '.txt', '.csv', '.woff', '.woff2',
-  '.ttf', '.wasm', '.map',
-  '.glb'   // 御驾亲征战术战斗 3D 兵模(web/battle/assets/models/)·缺则线上端静默回退程序化兵模
+  '.ttf', '.wasm', '.map'
+  // '.glb' 暂不放行：存量壳 ALLOWED_HOT_UPDATE_EXTS(main-impl.js:624)不认 glb，带上会整包拒收（1.3.4.5 已炸过）。
+  // 兵模缺失时线上端静默回退程序化兵模，无功能损失。等放宽白名单的新安装包铺开后再加回。
 ]);
 const KNOWN_WEB_TOP_DIRS = [
   'assets',

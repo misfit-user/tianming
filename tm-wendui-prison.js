@@ -283,18 +283,22 @@
       if (!global.confirm(cmsg)) return;
     }
 
-    // 精力检查
-    if (action.energy && typeof global._spendEnergy === 'function') {
-      if (!global._spendEnergy(action.energy, '狱中问对·' + action.label + '·' + charName)) return;
-    }
-
     // chat 不算正式"亲狱"·跳频率 + 跳 _incTotalVisit (避免无限聊提升 favoritism)
+    // 频率检查须在扣精力之前——旧序第 3 次动作精力白扣不回滚(2026-07-04 审查定罪)
     if (actionKey !== 'chat') {
       var visitsTurn = _turnVisitCount(charName);
       if (visitsTurn >= 2) {
         if (typeof global.toast === 'function') global.toast(charName + ' 本回合已亲狱 2 次·过密');
         return;
       }
+    }
+
+    // 精力检查
+    if (action.energy && typeof global._spendEnergy === 'function') {
+      if (!global._spendEnergy(action.energy, '狱中问对·' + action.label + '·' + charName)) return;
+    }
+
+    if (actionKey !== 'chat') {
       _incTurnVisit(charName);
       _incTotalVisit(charName);
     }
@@ -337,7 +341,7 @@
     // 近事快报·chat 不入 (太频繁会刷屏)
     if (actionKey !== 'chat' && typeof global.GM !== 'undefined' && global.GM.qijuHistory) {
       var qjContent = '【诏狱】陛下亲临·' + action.label + ' ' + charName + (freeText ? '·谕示:「' + freeText.slice(0, 32) + '」' : '');
-      global.GM.qijuHistory.unshift({
+      if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
         category: '人事',
         content: qjContent,
         time: typeof global.getTSText === 'function' ? global.getTSText(GM.turn) : 'T' + (GM.turn || 0),
@@ -368,13 +372,18 @@
   function _applyEffects(eff, ch) {
     var GM = global.GM;
     if (!GM) return;
-    if (eff.minxin && GM.minxin) {
-      if (typeof GM.minxin.trueIndex === 'number') GM.minxin.trueIndex = Math.max(0, Math.min(100, GM.minxin.trueIndex + eff.minxin));
-      if (typeof GM.minxin.value === 'number') GM.minxin.value = GM.minxin.trueIndex;
+    // 民心走 MinxinLedger 总闸(2026-07-04 收口)·直写 trueIndex 会被 aggregateTrue 冲掉·value 镜像随之退役
+    if (eff.minxin && typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'wendui-prison', kind: 'judicialFairness', delta: eff.minxin, reason: '狱案处置·朝野所感' }); } catch (_e) {}
     }
-    if (eff.huangwei && GM.huangwei) {
-      if (typeof GM.huangwei.index === 'number') GM.huangwei.index = Math.max(0, Math.min(100, GM.huangwei.index + eff.huangwei));
-      if (typeof GM.huangwei.value === 'number') GM.huangwei.value = GM.huangwei.index;
+    if (eff.huangwei) {
+      // 皇威走 AuthorityEngines 写口(按源封顶+sources/drains 台账+phase 迁移)——直写曾令台账与 phase 发散(2026-07-04 审查定罪)
+      if (global.AuthorityEngines && typeof global.AuthorityEngines.adjustHuangwei === 'function') {
+        try { global.AuthorityEngines.adjustHuangwei('judicialAction', eff.huangwei, '狱案处置', { source: 'wendui-prison' }); } catch (_e) {}
+      } else if (GM.huangwei) { // 沙箱兜底
+        if (typeof GM.huangwei.index === 'number') GM.huangwei.index = Math.max(0, Math.min(100, GM.huangwei.index + eff.huangwei));
+        if (typeof GM.huangwei.value === 'number') GM.huangwei.value = GM.huangwei.index;
+      }
     }
     if (eff.loyalty && ch && typeof global.adjustCharacterLoyalty === 'function') {
       global.adjustCharacterLoyalty(ch, eff.loyalty, '狱中问对', { source: 'wendui-prison', ai: true });
@@ -400,10 +409,29 @@
     ch._deathCause = '狱中卒于' + (ch._imprisonReason || '严讯');
     ch._deathTurn = GM.turn || 0;
     ch._imprisoned = false;  // 既已死·清入狱标记
+    // 接正典死亡管道(与 tm-ai-apply-deaths 同契约·2026-07-04 审查定罪)：只写 alive/私有字段曾绕过
+    // 已殁名单(filter deathTurn!=null)/图志死因/官职统帅级联——死人挂职·AI 继续当活人写
+    ch.dead = true;
+    ch.deathTurn = GM.turn || 0;
+    ch.deathReason = ch._deathCause;
+    if (typeof global.recordCharacterArc === 'function') { try { global.recordCharacterArc(ch.name, 'death', ch._deathCause); } catch (_e) {} }
+    if (global.PostTransfer && typeof global.PostTransfer.cascadeVacate === 'function') { try { global.PostTransfer.cascadeVacate(ch.name); } catch (_e) {} }
+    if (GM.officeTree && typeof global._offDismissPerson === 'function') {
+      try {
+        (function _clearDead(ns) {
+          ns.forEach(function(n) {
+            if (n.positions) n.positions.forEach(function(p) {
+              if (p.holder === ch.name || (Array.isArray(p.actualHolders) && p.actualHolders.some(function(h) { return h && h.name === ch.name; }))) global._offDismissPerson(p, ch.name);
+            });
+            if (n.subs) _clearDead(n.subs);
+          });
+        })(GM.officeTree);
+      } catch (_e) {}
+    }
 
     // 近事快报
     if (GM.qijuHistory) {
-      GM.qijuHistory.unshift({
+      if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
         category: '人事',
         content: '【诏狱】' + ch.name + '体魄不支·瘐死狱中。罪名·' + (ch._imprisonReason || '原因不详'),
         time: typeof global.getTSText === 'function' ? global.getTSText(GM.turn) : 'T' + (GM.turn || 0),
@@ -560,7 +588,8 @@
       label: '家书',
       weight: function(ch, heldMonths) { return ch.loyalty > 50 ? 6 : 3; },
       apply: function(ch, GM) {
-        ch.loyalty = Math.min(100, (ch.loyalty || 50) + 3);
+        if (typeof global.adjustCharacterLoyalty === 'function') global.adjustCharacterLoyalty(ch, 3, '狱中得家书', { source: 'wendui-prison' }); // 走口·镜像同步+台账(2026-07-04 审查定罪)
+        else ch.loyalty = Math.min(100, (ch.loyalty || 50) + 3);
         return { qiju: '【诏狱】' + ch.name + ' 得家书·暂忘忧·忠诚 +3。' };
       }
     },
@@ -568,11 +597,11 @@
       label: '同党告发',
       weight: function(ch, heldMonths) { return ch.loyalty < 40 ? 6 : 2; },
       apply: function(ch, GM) {
-        ch.loyalty = Math.max(0, (ch.loyalty || 50) - 5);
+        if (typeof global.adjustCharacterLoyalty === 'function') global.adjustCharacterLoyalty(ch, -5, '狱中遭同党告发', { source: 'wendui-prison' }); // 走口(2026-07-04 审查定罪)
+        else ch.loyalty = Math.max(0, (ch.loyalty || 50) - 5);
         // 2026-05-21·原"党争 +1"·官方剧本未初始化 partyStrife·改民心 -1 (朝野非议)
-        if (GM.minxin && typeof GM.minxin.trueIndex === 'number') {
-          GM.minxin.trueIndex = Math.max(0, GM.minxin.trueIndex - 1);
-          if (typeof GM.minxin.value === 'number') GM.minxin.value = GM.minxin.trueIndex;
+        if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+          try { TM.MinxinLedger.recordAndApply(GM, { sourceSystem: 'wendui-prison', kind: 'judicialFairness', delta: -1, reason: '诏狱攀供·朝野非议' }); } catch (_e) {}
         }
         return { qiju: '【诏狱】' + ch.name + ' 为攀供·咬出同党·朝野有议·忠诚 -5·民心 -1。' };
       }
@@ -604,7 +633,7 @@
         var res = ev.apply(ch, GM) || {};
         triggered++;
         if (res.qiju && GM.qijuHistory) {
-          GM.qijuHistory.unshift({
+          if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
             category: '人事', content: res.qiju,
             time: typeof global.getTSText === 'function' ? global.getTSText(GM.turn) : 'T' + (GM.turn || 0),
             turn: GM.turn || 0, _source: 'prison-event-' + pick, _facName: ch.name

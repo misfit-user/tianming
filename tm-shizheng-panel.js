@@ -576,7 +576,7 @@ function _mzEndDialogue() {
     // 3. 起居注（简短记录召对事实）
     if (!GM.qijuHistory) GM.qijuHistory = [];
     var _tsT = (typeof getTSText === 'function') ? getTSText(GM.turn || 1) : '';
-    GM.qijuHistory.unshift({
+    if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
       turn: GM.turn || 1,
       date: _tsT,
       category: '问对',
@@ -869,7 +869,7 @@ function _mzShowSummary() {
   var tasks = d.chars.map(function(c){
     var replies = d.perMinisterReplies[c.name] || [];
     if (replies.length === 0) return null;
-    var containerId = 'mz-sum-' + c.name.replace(/[^a-zA-Z0-9]/g,'_');
+    var containerId = 'mz-sum-' + encodeURIComponent(c.name).replace(/[^a-zA-Z0-9]/g,'_'); // 旧写法中文名逐字变_·同字数大臣全撞同一id·归纳张冠李戴(2026-07-04 审查定罪)
     body.insertAdjacentHTML('beforeend', _mzRenderSummaryBlock(c, containerId, replies.length));
     return { ch: c, replies: replies, containerId: containerId };
   }).filter(Boolean);

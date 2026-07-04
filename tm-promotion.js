@@ -265,8 +265,8 @@
         var lv = (gRL && p.rank) ? gRL(p.rank) : 99;
         if (lv < 99 && p.name) nameRank.push({ name: String(p.name).replace(/[（(].*?[)）]/g, ''), level: lv });
         var isH = p.holder === ch.name
-          || (Array.isArray(p.actualHolders) && p.actualHolders.indexOf(ch.name) >= 0)
-          || (Array.isArray(p.additionalHolders) && p.additionalHolders.indexOf(ch.name) >= 0);
+          || (Array.isArray(p.actualHolders) && p.actualHolders.some(function (h) { return h && (h === ch.name || h.name === ch.name); })) // actualHolders 是 {name,generated} 对象数组·indexOf(串)恒 miss=兜底源死代码(2026-07-04 审查定罪)
+          || (Array.isArray(p.additionalHolders) && p.additionalHolders.some(function (h) { return h && (h === ch.name || h.name === ch.name); }));
         if (isH && lv < best) best = lv;
       });
     }
@@ -327,7 +327,17 @@
       var merit = ch.resources.virtueMerit || 0;
       if (lv >= 7 && lv <= 17) {
         var fl = meritFloor(lv), pf = meritFloor(Math.min(18, lv + 1));
-        if (merit < fl - (fl - pf) * 0.5) { ch.rankLevel = Math.min(18, (ch.rankLevel || lv) + 1); demoted.push({ name: ch.name, from: lv, to: lv + 1 }); continue; }
+        if (merit < fl - (fl - pf) * 0.5) {
+          // 降叙幂等(2026-07-04 审查定罪)：实职衔锁定 lv 时 rankLevel+1 不改有效品级·条件持续成立曾
+          // 每回合重复刷「功微降叙」邸报并把散阶一路推到 18 清空累积晋升。一年(12回合)至多降一次·只在有效品级真降时记事。
+          if ((G.turn || 0) - (ch._lastDemoteTurn || -99) >= 12) {
+            ch.rankLevel = Math.min(18, (ch.rankLevel || lv) + 1);
+            ch._lastDemoteTurn = G.turn || 0;
+            var _lvAfter = resolveRankLevel(ch, G);
+            if (_lvAfter > lv) demoted.push({ name: ch.name, from: lv, to: _lvAfter });
+          }
+          continue;
+        }
       }
       if (promoted.length >= cap) continue;
       // 出身天花板：循资自动升迁不得逾出身典型上限(举人/监生/生员/捐纳止步·须特简恩擢方破)

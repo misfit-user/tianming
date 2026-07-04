@@ -159,7 +159,12 @@
     for (var j = 0; j < list.length; j++) { var v2 = list[j]; if (v2 && v2.dept === item.dept) return v2; }
     return null;
   }
-  function _applyHuangweiCost(GM, cost) { cost = Math.round(cost || 0); if (!cost) return; if (GM.huangwei && typeof GM.huangwei.index === 'number') GM.huangwei.index = Math.max(0, Math.min(100, GM.huangwei.index - cost)); }
+  function _applyHuangweiCost(GM, cost) {
+    cost = Math.round(cost || 0); if (!cost) return;
+    // 2026-07-04 收口走写口(按源封顶+台账+phase 迁移)·改制代价记朝论反弹
+    if (typeof AuthorityEngines !== 'undefined' && AuthorityEngines.adjustHuangwei) { AuthorityEngines.adjustHuangwei('memorialObjection', -cost, '改制之议·朝论汹汹'); return; }
+    if (GM.huangwei && typeof GM.huangwei.index === 'number') GM.huangwei.index = Math.max(0, Math.min(100, GM.huangwei.index - cost)); // 沙箱回退
+  }
 
   // 玩家改制诏入拟制态队列（去重·不即落）
   function enqueuePendingReform(GM, oc, turn) {

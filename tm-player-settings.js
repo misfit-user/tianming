@@ -95,6 +95,14 @@ function _renderModelProbePanel(tier) {
     h += '<div style="color:var(--txt-d);font-size:0.7rem;">' + (evidence.passed || 0) + '/' + (evidence.total || 0) + '项通过' + (evidence.responseModel ? '·' + escHtml(String(evidence.responseModel).slice(0,18)) : '') + (evidence.elapsedMs ? '·' + Math.round(evidence.elapsedMs/1000) + '秒' : '') + '</div>';
   }
   h += '</div>';
+  // 2026-07-04 连接快检联动（测试连接自动写入·此处回显最近一次）
+  var _qc = isSec ? probe.quickCheck_secondary : probe.quickCheck;
+  if (_qc) {
+    var _qEcho = _qc.echo === 'match' ? '回声一致' : _qc.echo === 'family' ? '同族异名' : _qc.echo === 'mismatch' ? '回声不符' : '回声未知';
+    h += '<div style="margin-top:0.35rem;font-size:0.72rem;color:var(--txt-d);">连接快检：' + Math.round(_qc.latencyMs || 0) + 'ms · ' +
+      '<span style="color:' + (_qc.echo === 'mismatch' ? 'var(--vermillion-400,#c04030)' : 'inherit') + ';">' + _qEcho + (_qc.responseModel ? '（' + escHtml(_qc.responseModel) + '）' : '') + '</span>' +
+      ' · 流式' + (_qc.stream && _qc.stream.ok ? '✓' : '✕') + ' · 严格JSON' + (_qc.json && _qc.json.ok ? '✓' : '✕') + ' · usage' + (_qc.usageSeen ? '✓' : '✕') + '</div>';
+  }
   if (evidence) h += _renderEvidenceDetails(evidence);
 
   h += '<div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.35rem;">';
@@ -399,7 +407,8 @@ async function _saveAPIAndAutoProbe() {
   if (window.tianming && window.tianming.isDesktop) { try { window.tianming.autoSave(_tmStripAiKeyView(P)).catch(function(){}); } catch(_){} }
   if (!_changed) { toast('\u2705 \u5DF2\u4FDD\u5B58\uFF08\u914D\u7F6E\u672A\u53D8\uFF09'); return; }
   // 配置变化·清旧缓存·跑新探测
-  delete P.conf._detectedContextK; delete P.conf._detectedMaxOutput; delete P.conf._measuredMaxOutput; delete P.conf._ctxCacheKey; delete P.conf._ctxDetectLayer; delete P.conf._probeHistory;
+  delete P.conf._detectedContextK; delete P.conf._detectedMaxOutput; delete P.conf._measuredMaxOutput; delete P.conf._ctxCacheKey; delete P.conf._ctxDetectLayer;
+  // _probeHistory 按 model@url 键存档·主API换配置无须整删——整删曾把次API烧真金跑出的证据一并销毁(2026-07-04 审查定罪)
   if (!newKey) { toast('\u2705 \u5DF2\u4FDD\u5B58\uFF08\u672A\u914D key\u00B7\u8DF3\u8FC7\u81EA\u52A8\u6821\u9A8C\uFF09'); return; }
   toast('\u2705 \u5DF2\u4FDD\u5B58\u00B7\u6B63\u5728\u81EA\u52A8\u6821\u9A8C\u6A21\u578B\u00B7\u7A0D\u5019\u2026');
   try {
@@ -423,6 +432,12 @@ function _probeClearCache() {
   delete P.conf._ctxCacheKey;
   delete P.conf._ctxDetectLayer;
   delete P.conf._probeHistory;
+  // 「清除所有」须连 _secondary 族一起清——漏掉曾令次API永读死缓存不重探(2026-07-04 审查定罪)
+  delete P.conf._detectedContextK_secondary; // arch-ok 设置面板conf本职写·随后saveP
+  delete P.conf._detectedMaxOutput_secondary; // arch-ok
+  delete P.conf._measuredMaxOutput_secondary; // arch-ok
+  delete P.conf._ctxCacheKey_secondary; // arch-ok
+  delete P.conf._ctxDetectLayer_secondary; // arch-ok
   if (typeof saveP === 'function') saveP();
   toast('\u5DF2\u6E05\u9664\u63A2\u6D4B\u7F13\u5B58');
   _refreshBothProbePanels();

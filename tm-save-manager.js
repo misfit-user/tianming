@@ -121,6 +121,8 @@ var SaveManager = {
         var gs = record.gameState;
         GM = deepClone(gs.GM || gs);
         P = deepClone(gs.P || P);
+        if (typeof _tmInstallScenarioGetter === 'function') _tmInstallScenarioGetter(); // P 重赋值后重装 P.scenario getter
+        try { if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1; } catch (_lg2) {} // 读档代际++(同 fullLoadGame)
         GM.running = true;
         if (typeof buildIndices === 'function') buildIndices();
         if (typeof enterGame === 'function') enterGame();

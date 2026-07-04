@@ -451,8 +451,8 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
       newChar._travelAssignPost = deptName + '/' + posName;
 
       // 编年·启程条
-      if (!Array.isArray(GM._chronicle)) GM._chronicle = [];
-      GM._chronicle.unshift({
+      // 编年史走 TM.Chronicle 写口(2026-07-04 收口)·时序 push 归一(原 unshift 混写破序)
+      if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn,
         date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
         type: '赴任启程',
@@ -464,7 +464,7 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
 
       // 起居注·启程条
       if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
-      GM.qijuHistory.unshift({
+      if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
         turn: GM.turn,
         date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
         content: '【启程】' + charName + ' 自' + newChar.location + ' 赴 ' + _travelDestination + '·就任 ' + deptName + posName + '·预计 ' + _trvDays + ' 日'
@@ -594,6 +594,7 @@ function _offRecruitSubmit() {
     }
     // 生成成功·重开 picker（新人已在候选池中）
     if (typeof toast === 'function') toast(_capName + ' \u5E94\u8BCF\u800C\u81F3\u00B7\u8BF7\u9009\u4EFB');
+    if (!_OFF_PICKER) return; // 异步等待期玩家已关拣选器·裸取曾TypeError被吞成「征召出错」(2026-07-04 审查定罪)·新人已入池·重开面板可见
     var _path = _OFF_PICKER.pathArr;
     var _dept = _OFF_PICKER.deptName;
     var _pos = _OFF_PICKER.posName;
@@ -862,9 +863,17 @@ function _offUndoAppointment(deptName, posName) {
         if (_ci2 >= 0) newChar.concurrentTitles.splice(_ci2, 1);
       }
     } else {
-      // 辞旧就新撤销·恢复原主职
-      if (newChar.officialTitle === pe.posName) newChar.officialTitle = pe._snapPrevMainTitle || '';
-      if (newChar.position === pe.posName) newChar.position = pe._snapPrevMainTitle || '';
+      // 辞旧就新撤销·恢复原主职——须连 officialTitles 数组 claim 一并撤：残留 claim 曾令
+      // 派生引擎(renderOfficeTree→_offSyncHoldersFromChars)下次渲染把人精确匹配重新坐回·撤销自我失效(2026-07-04 审查定罪)
+      var _wasNewMain = (newChar.officialTitle === pe.posName);
+      if (typeof _offRemoveCharOfficeTitle === 'function') _offRemoveCharOfficeTitle(newChar, pe.posName);
+      else if (Array.isArray(newChar.officialTitles)) newChar.officialTitles = newChar.officialTitles.filter(function(t){ return t !== pe.posName; });
+      if (_wasNewMain || newChar.officialTitle === pe.posName) newChar.officialTitle = pe._snapPrevMainTitle || '';
+      if (_wasNewMain || newChar.position === pe.posName) newChar.position = pe._snapPrevMainTitle || '';
+      // 撤销亦须斩 Step4b 已启动的赴任行程(与免职同理·否则到期照样自动就任)
+      if (newChar._travelAssignPost && String(newChar._travelAssignPost).split('/').pop() === pe.posName) {
+        delete newChar._travelAssignPost; delete newChar._travelTo; delete newChar._travelRemainingDays;
+      }
     }
     if (pe._snapNewCharCareerPushed && Array.isArray(newChar.careerHistory) && newChar.careerHistory.length > 0) {
       newChar.careerHistory.pop();
@@ -1101,7 +1110,7 @@ function _offShowCareer(charName) {
   bg.style.cssText = 'position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
   var html = '<div style="background:var(--color-surface);border:1px solid var(--gold-500);border-radius:var(--radius-lg);padding:1.2rem 1.5rem;max-width:450px;max-height:80vh;overflow-y:auto;">';
   html += '<div style="font-size:var(--text-md);color:var(--color-primary);margin-bottom:var(--space-2);letter-spacing:0.1em;">' + escHtml(charName) + ' \u4ED5\u9014</div>';
-  html += '<div style="font-size:0.7rem;color:var(--color-foreground-muted);margin-bottom:var(--space-2);">\5FE0' + (typeof _fmtNum1==='function'?_fmtNum1(ch.loyalty||50):(ch.loyalty||50)) + ' \u667A' + (ch.intelligence||50) + ' \u653F' + (ch.administration||50) + ' \u519B' + (ch.military||50) + ' \u91CE\u5FC3' + (ch.ambition||50) + '</div>';
+  html += '<div style="font-size:0.7rem;color:var(--color-foreground-muted);margin-bottom:var(--space-2);">忠' + (typeof _fmtNum1==='function'?_fmtNum1(ch.loyalty||50):(ch.loyalty||50)) + ' \u667A' + (ch.intelligence||50) + ' \u653F' + (ch.administration||50) + ' \u519B' + (ch.military||50) + ' \u91CE\u5FC3' + (ch.ambition||50) + '</div>';
   html += _offRenderCareerHTML(charName);
   html += '<div style="text-align:center;margin-top:var(--space-2);"><button class="bt" onclick="this.closest(\'div[style*=fixed]\').remove();">\u5173\u95ED</button></div>';
   html += '</div>';
@@ -1188,14 +1197,14 @@ function _offMenyin(officialName) {
   if (typeof CharFullSchema !== 'undefined' && CharFullSchema.ensureFullFields) { try { CharFullSchema.ensureFullFields(son); } catch (e) {} }
   son.officialTitle = '';   // 候选·未授官(ensureFullFields 后再确保空)
   if (!Array.isArray(GM.chars)) GM.chars = [];
-  GM.chars.push(son);
+  (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(son);
   if (typeof TMGongming !== 'undefined' && TMGongming.grantPreset) { try { TMGongming.grantPreset(son, 'menyin', { turn: GM.turn }, GM); } catch (e) {} }
   ch._menyinGranted = { son: sonName, turn: GM.turn || 0 };
   if (!Array.isArray(ch.children)) ch.children = [];
   ch.children.push(sonName);
   try { if (GM.minxin && GM.minxin.byClass && GM.minxin.byClass.shi && typeof GM.minxin.byClass.shi.true === 'number') GM.minxin.byClass.shi.true = Math.max(0, GM.minxin.byClass.shi.true - 0.15); } catch (e) {}
   if (typeof addEB === 'function') addEB('功名', ch.name + ' 荫一子 ' + sonName + ' 入仕（荫生·待铨)');
-  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; GM._chronicle.push({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行门荫·' + sonName + ' 以荫生入仕候铨（恩荫世禄）', tags: ['联动', '官制'] }); } catch (e) {}
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行门荫·' + sonName + ' 以荫生入仕候铨（恩荫世禄）', tags: ['联动', '官制'] }); } catch (e) {}
   if (typeof toast === 'function') toast('已荫 ' + ch.name + ' 之子 ' + sonName + '（荫生·入候选池·可于任命中授官）');
   if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
 }
@@ -1229,11 +1238,11 @@ function _offJianbi(officialName) {
   if (typeof CharFullSchema !== 'undefined' && CharFullSchema.ensureFullFields) { try { CharFullSchema.ensureFullFields(person); } catch (e) {} }
   person.officialTitle = '';
   if (!Array.isArray(GM.chars)) GM.chars = [];
-  GM.chars.push(person);
+  (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(person);
   if (typeof TMGongming !== 'undefined' && TMGongming.grant) { try { TMGongming.grant(person, { path: 'jianxuan', tier: '荐辟', source: 'edict', turn: GM.turn }, GM); } catch (e) {} }
   ch._jianbiGranted = { person: name, turn: GM.turn || 0 };
   if (typeof addEB === 'function') addEB('功名', ch.name + ' 荐布衣 ' + name + ' 入仕（荐辟·待铨)');
-  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; GM._chronicle.push({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行荐辟·布衣 ' + name + ' 以荐贤入仕候铨（野有遗贤·结知遇）', tags: ['联动', '官制'] }); } catch (e) {}
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行荐辟·布衣 ' + name + ' 以荐贤入仕候铨（野有遗贤·结知遇）', tags: ['联动', '官制'] }); } catch (e) {}
   if (typeof toast === 'function') toast('已荐 ' + ch.name + ' 所举布衣 ' + name + '（荐辟·入候选池·可于任命中授官）');
   if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
 }
@@ -1545,7 +1554,7 @@ function processBiannian(){
     if (typeof addEB === 'function') addEB('\u5B8C\u6210', item.name||item.title);
     if (item.effect) Object.entries(item.effect).forEach(function(e) { if (GM.vars[e[0]]) GM.vars[e[0]].value = clamp(GM.vars[e[0]].value + e[1], GM.vars[e[0]].min, GM.vars[e[0]].max); });
     // 归入编年
-    GM._chronicle.push({
+    if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
       title: (item.title||item.name||'') + '（已毕）',
       content: item.content||item.desc||'',
       date: item.date || (typeof getTSText === 'function' ? getTSText(item.startTurn||item.turn||GM.turn) : ''),
@@ -1570,7 +1579,7 @@ function _bnExtractFromShiji() {
   if (_alreadyExtracted) return;
   // 提取turn_summary作为一行编年条目
   if (latest.turnSummary) {
-    GM._chronicle.push({
+    if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
       title: latest.turnSummary,
       content: '',
       date: latest.time || (typeof getTSText === 'function' ? getTSText(latest.turn) : ''),

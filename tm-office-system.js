@@ -556,7 +556,7 @@ async function _offMaterialize(deptName, posName) {
     if (parsed && parsed.name) {
       if (!GM.chars) GM.chars = [];
       if (!GM.chars.find(function(ch){ return ch.name === parsed.name; })) {
-        GM.chars.push({
+        (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })({
           name: parsed.name, title: posName, officialTitle: posName,
           personality: parsed.personality||'', intelligence: parsed.intelligence||55,
           administration: parsed.administration||55, military: parsed.military||40,
@@ -1427,13 +1427,16 @@ function _officePersonnelTurnoverOn() {
   } catch (e) { return false; }
 }
 function _officeChronLink(type, text) {
-  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; GM._chronicle.push({ turn: GM.turn || 0, date: GM._gameDate || '', type: type, text: text, tags: ['联动', '官制'] }); } catch (e) {}
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: type, text: text, tags: ['联动', '官制'] }); } catch (e) {}
 }
 function _engineRetireOfficial(c, reason) {
   if (!c) return;
   c._preRetireTitle = c._preRetireTitle || c.officialTitle || '';
   c._retired = true; c.retired = true; c._retireTurn = (GM.turn || 0); c._seeksRetirement = null;
   if (c.officialTitle && !_OFF_RETIRE_RE.test(c.officialTitle)) c.officialTitle = c.officialTitle + '·致仕';
+  // 数组 claim 一并撤(2026-07-04 审查定罪)：officialTitles/concurrentTitles 里未带后缀的旧衔仍是活 claim·
+  // 派生同步(claims 过滤只滤带致仕后缀的 officialTitle)会把致仕者原座坐回=致仕自我还原。_preRetireTitle 已留起复凭据。
+  c.officialTitles = []; c.concurrentTitles = []; c.concurrentTitle = '';
   if (typeof _offVacateByCharName === 'function') { try { _offVacateByCharName(c.name, reason); } catch (e) {} }
   if (typeof addEB === 'function') addEB('人事', c.name + ' ' + reason + '·致仕去位（官缺待补·可诏起复）');
   _officeChronLink('官制↔人事', c.name + ' ' + reason + '·准致仕去位（新陈代谢·官缺待补）');

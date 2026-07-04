@@ -1103,6 +1103,28 @@ async function _ty2_decide(mode) {
     : (mode === 'defer') ? '廷议·延议，留待再议'
     : ('廷议：' + actualDirection);
   _cy_jishiAdd('tinyi', CY._ty2.topic, '皇帝', '裁决：' + actualDirection, { final: true, stances: counts, outcome: _tyOutcome });
+  // ★2026-07-04 交互双向性·廷议采纳结果回写:此前只记各臣立场(imp5)·无"吾议见纳"结果记忆→采纳某臣之议·该臣事后失忆穿帮。
+  //   给"胜方"立场之臣补一条 imp6 见纳记忆(过推演门槛)。败方:override 逆众议已由下方少数派反应路径 imp7 处理·此处只补胜方正向·不重复。
+  try {
+    // ★winDir 从权威裁决 actualDirection 推(它已含加权票 _wSup/_wOpp + override 逆众翻转)·
+    //   不再用人头票 counts.support/oppose 重算(codex 审:人头票≠加权票时会把胜负判反·且与 override 少数派反应路径撞车)。
+    var _winDir = (actualDirection === '允行') ? 'support'
+      : (actualDirection === '否决') ? 'oppose'
+      : (actualDirection === '从折中') ? 'mediate'
+      : '';  // 折中观望/留待再议→无明确胜方·不写见纳
+    if (typeof NpcMemorySystem !== 'undefined' && CY._ty2 && CY._ty2.stances && _winDir) {
+      var _tyTopicShort = String(CY._ty2.topic || '').slice(0, 20);
+      var _tyPlayer = (P.playerInfo && P.playerInfo.characterName) || '天子';
+      Object.keys(CY._ty2.stances).forEach(function(_sn) {
+        if (!_sn || _sn === '皇帝' || _sn === _tyPlayer) return;
+        var _st = String((CY._ty2.stances[_sn] && CY._ty2.stances[_sn].current) || '');
+        var _sd = /反对/.test(_st) ? 'oppose' : (/折中|另提议/.test(_st) ? 'mediate' : (/支持/.test(_st) ? 'support' : 'neutral'));
+        if (_sd !== 'neutral' && _sd === _winDir) {
+          try { NpcMemorySystem.remember(_sn, '廷议「' + _tyTopicShort + '」吾议见纳（' + actualDirection + '）', '喜', 6, _tyPlayer, { source: 'witnessed', type: 'political', _noMirror: true }); } catch(_wmE) {}
+        }
+      });
+    }
+  } catch(_tyWinE) {}
   // B方案 S1·廷议博弈摘要沉淀到跨场景记忆 GM._chaoyiMemory（开关控制·供 S2 势力决策读·保留最近 8 条）
   if ((typeof agentFlagOn==='function' ? agentFlagOn('courtDebateEnabled') : (P.conf && P.conf.courtDebateEnabled)) && typeof _ty2_buildDebateMemory === 'function') {
     try {
@@ -1141,7 +1163,7 @@ async function _ty2_decide(mode) {
   if (GM._courtRecords.length > 8) GM._courtRecords.shift();
   // 事件板
   if (typeof addEB === 'function') addEB('廷议', CY._ty2.topic + '：' + actualDirection);
-  if (GM.qijuHistory) GM.qijuHistory.unshift({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【廷议】' + CY._ty2.topic + '——' + actualDirection });
+  if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【廷议】' + CY._ty2.topic + '——' + actualDirection });
 
   // ★ 将廷议裁决转为诏令进入 _edictTracker，驱动后续推演
   if (mode !== 'defer') {

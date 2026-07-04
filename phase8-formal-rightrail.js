@@ -476,7 +476,16 @@
     var rawPendingAudiences = Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : [];
     var pendingAudiences = rawPendingAudiences.filter(function(q){
       if (!q || !q.name) return false;
-      if (!q.isConsort) return true;
+      if (!q.isConsort) {
+        // 阵营闸(2026-07-04)：滤除旧版混入的明确异势力求见者(外邦君主)·使节/剧本预置/空 faction 者放行·与 tm-wendui 渲染清洗同款
+        if (q.isEnvoy || q.fromFaction || q._sid || q._opening) return true;
+        var pc = findPerson(q.name);
+        if (!pc && typeof window.findCharByName === 'function') {
+          try { pc = window.findCharByName(q.name); } catch(_) {}
+        }
+        if (pc && typeof window._tmIsForeignCourtChar === 'function' && window._tmIsForeignCourtChar(pc)) return false;
+        return true;
+      }
       var p = findPerson(q.name);
       if (!p && typeof window.findCharByName === 'function') {
         try { p = window.findCharByName(q.name); } catch(_) {}
@@ -3998,7 +4007,7 @@
       var r = rightRecordChaoyi(rightChaoyiModeLabel(state.rightChaoyiMode || 'changchao'), '记起居注', line);
       if (window.GM) {
         if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
-        GM.qijuHistory.unshift({
+        if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
           turn: GM.turn || 1,
           date: r.date,
           content: '【' + r.kind + '】议「' + r.topic + '」' + (line ? '。上谕：' + line : '。')

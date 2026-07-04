@@ -1514,6 +1514,8 @@
       'body.tm-phase8-formal .edict-xingzhi-head b{display:block;color:#f0d892;font-size:13px;} body.tm-phase8-formal .edict-xingzhi-head span{display:block;margin:4px 0 8px;color:rgba(232,220,187,.58);font-size:12px;}',
       'body.tm-phase8-formal .edict-old-archive{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
       'body.tm-phase8-formal .edict-sug-v2{display:grid;grid-template-columns:44px minmax(0,1fr);gap:9px;margin-bottom:9px;padding:9px;border:1px solid rgba(201,160,69,.16);border-radius:4px;background:linear-gradient(180deg,rgba(255,246,216,.055),rgba(255,246,216,.025)),rgba(0,0,0,.14);}',
+      /* 空态无立绘列：单列铺满·治「暂无御案建议」落进 44px 头像列被竖挤成一字一行（2026-07-04）*/
+      'body.tm-phase8-formal .edict-sug-v2.edict-sug-empty{grid-template-columns:minmax(0,1fr)!important;}',
       'body.tm-phase8-formal .edict-sug-portrait-wrap{width:42px;height:52px;display:grid;place-items:center;position:relative;overflow:hidden;border:1px solid rgba(201,160,69,.22);background:radial-gradient(circle at 50% 28%,rgba(201,160,69,.20),rgba(0,0,0,.26));color:#efd990;font-size:18px;}',
       'body.tm-phase8-formal .edict-sug-portrait-wrap:after{content:attr(data-glyph);display:none;font-family:"STKaiti","KaiTi",serif;text-shadow:0 1px 8px rgba(0,0,0,.55);}',
       'body.tm-phase8-formal .edict-sug-portrait-wrap.fallback:after{display:block;}',
@@ -2280,7 +2282,7 @@
     html += '<div class="silk-body">';
     // 左：议事清册 (常驻·复用 renderEdictSuggestionItem·含立绘/纳入选类/删除)
     html += '<aside class="col-sug"><div class="col-sug-t">议 事 清 册 <small>' + esc(suggestions.length) + ' 条</small></div><div class="sug-list">';
-    html += suggestions.map(renderEdictSuggestionItem).join('') || '<article class="edict-sug-v2"><div><b>暂无御案建议</b><p>召开朝议、问对或处理奏疏后，可摘入诏书草拟。</p></div></article>';
+    html += suggestions.map(renderEdictSuggestionItem).join('') || '<article class="edict-sug-v2 edict-sug-empty"><div><b>暂无御案建议</b><p>召开朝议、问对或处理奏疏后，可摘入诏书草拟。</p></div></article>';
     html += '</div></aside>';
     // 中：拟诏 / 主角行止
     html += '<div class="col-main">';
@@ -2318,7 +2320,7 @@
     html += '<div class="ed-tab-panel xinglu">';
     html += '<div class="xinglu-main"><div class="xm-hd"><span class="xm-title">本 回 合 行 动</span><span class="xm-desc">—— 私事不入诏书·仅影响人物·皇威·民心</span></div>';
     html += '<textarea id="xinglu-pub" class="x-field" data-desk-player-action="1" placeholder="如：召见某臣、校阅三军、微服私访、夜读史书、祖庙祭祀、宴请群臣、命人查办旧案……" oninput="(window.TM_PHASE8_FORMAL||(window.TM_PHASE8_FORMAL={})).playerAction=this.value">' + esc(deskValue('#xinglu-pub', state.playerAction || '')) + '</textarea></div>';
-    var recentXinglu = firstArray(gm.qijuHistory).filter(function(q){ return q && q.xinglu && Number(q.turn || 0) < Number(gm.turn || 1); }).slice(-6).reverse();
+    var recentXinglu = firstArray(gm.qijuHistory).filter(function(q){ return q && q.xinglu && Number(q.turn || 0) < Number(gm.turn || 1); }).slice(0, 6); // qijuHistory 已 newest-first·头 6 条即最近·无需再 reverse
     html += '<div class="xinglu-hist"><div class="xh-t">近 期 行 止 记 录 · ' + esc(recentXinglu.length) + ' 条</div><div class="xh-list">';
     if (recentXinglu.length) {
       recentXinglu.forEach(function(q){ html += '<div class="x-hist-item"><span class="t">T' + esc(q.turn) + '</span>' + esc(q.xinglu) + '</div>'; });

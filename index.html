@@ -15,7 +15,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 正在运行的包版本·与代码同包同发·footer 与在线版更新提示都读这里（发版工具自动盖戳） -->
-<meta name="tm-version" content="1.3.4.5">
+<meta name="tm-version" content="1.3.4.6">
 <title>天命 · AI历史模拟</title>
 <script>
 (function(){
@@ -106,7 +106,7 @@
           <span class="home-card-copy">
             <span class="home-card-cn">开　卷</span>
             <span class="home-card-ti">开 始 新 游 戏</span>
-            <span class="home-card-desc">选择剧本，载入世界，敕定天命。保留正式页面的剧本选择入口。</span>
+            <span class="home-card-desc">择一剧本，载入世界，敕定天命，御极临朝。</span>
           </span>
           <span class="home-card-key" id="_home_meta_new">Enter</span>
         </button>
@@ -115,16 +115,16 @@
           <span class="home-card-copy">
             <span class="home-card-cn">续　卷</span>
             <span class="home-card-ti">读 取 存 档</span>
-            <span class="home-card-desc">读取存档，启封卷宗，承续推演；对应正式游戏的存档管理。</span>
+            <span class="home-card-desc">启封旧卷，承续前局，重理天下万机。</span>
           </span>
           <span class="home-card-key" id="_home_meta_load">Ctrl+L</span>
         </button>
-        <button class="home-card c-edit" id="btn-editor" title="打开新版剧本工坊：制作剧本结构、人物初始配置、势力关系、AI 修复与正式沙盒测试。旧版编辑器仍可从剧本管理卡片进入。">
+        <button class="home-card c-edit" id="btn-editor" title="剧本工坊：制作时代、人物、势力与规则，可沙盒试演。旧版编辑器可从剧本管理进入。">
           <span class="home-card-icon"><span id="_ico_edit">著</span></span>
           <span class="home-card-copy">
             <span class="home-card-cn">著　卷</span>
             <span class="home-card-ti">创 作 新 剧 本</span>
-            <span class="home-card-desc">进入新版剧本工坊，制作时代、人物、势力、规则并启动正式沙盒测试。</span>
+            <span class="home-card-desc">入剧本工坊，自撰时代、人物、势力与规程，开一方世界。</span>
           </span>
           <span class="home-card-key">Ctrl+E</span>
         </button>
@@ -133,7 +133,7 @@
           <span class="home-card-copy">
             <span class="home-card-cn">典　章</span>
             <span class="home-card-ti">游 戏 设 置</span>
-            <span class="home-card-desc">游戏设置、API、字数、文风、音声与偏好调度。</span>
+            <span class="home-card-desc">文风字数、音声密钥、界面与诸般偏好，皆于此调度。</span>
           </span>
           <span class="home-card-key">Ctrl+,</span>
         </button>
@@ -145,20 +145,14 @@
           <div class="home-recent" id="home-recent">
             <div class="r-empty" id="home-recent-empty">未 见 封 卷 · 启 新 纪 元</div>
           </div>
-          <div class="home-state-grid">
-            <div class="home-state"><span>节令</span><b>春分</b></div>
-            <div class="home-state"><span>世态</span><b>太平</b></div>
-            <div class="home-state"><span>剧本源</span><b>官方 / 自定</b></div>
-            <div class="home-state"><span>地图</span><b>可载入</b></div>
-          </div>
         </section>
 
         <section class="home-panel home-tools-panel">
-          <div class="home-panel-title"><strong>案　具</strong><span>底栏职能上移</span></div>
+          <div class="home-panel-title"><strong>案　具</strong><span>随手取用</span></div>
           <div class="home-tools">
-            <button type="button" onclick="if(window.TM_Changelog)TM_Changelog.show();" title="查看更新公告">邸报</button>
+            <button type="button" onclick="if(window.TM_Changelog)TM_Changelog.show();" title="查看更新公告">邸报<span class="tm-cl-dot" id="tm-cl-dot" style="display:none;"></span></button>
             <button type="button" onclick="window.openContentManager&&window.openContentManager();" title="管理在线更新与创意工坊内容">工坊</button>
-            <button type="button" onclick="window._loadMapEditorJSON&&window._loadMapEditorJSON();" title="载入 map-editor 导出的 JSON·装入 P.map·开卷时复用">载图</button>
+            <button type="button" onclick="window._loadMapEditorJSON&&window._loadMapEditorJSON();" title="载入地图编辑器导出的自制舆图，开卷时自动装用">载图</button>
             <button type="button" onclick="if(typeof openHelp==='function'){openHelp('overview');}else{alert('帮助系统加载中，请稍候再试。');}" title="查看游戏帮助·含「如何配置 AI 密钥」">帮助</button>
             <button type="button" onclick="if(confirm('确定退出天命？未保存的进度将丢失。')){ if(window.tianming&&window.tianming.quitApp){ window.tianming.quitApp(); } else { window.close(); } }">退出</button>
           </div>
@@ -182,6 +176,10 @@
           if (!label.trim()) label = s.name || '案卷';
           var meta = s.name || (isAuto ? '自动存档' : '手动存档');
           span.innerHTML = '<span class="r-seal">'+seal+'</span><span><span class="r-name">'+label+'</span><span class="r-meta">'+meta+'</span></span>';
+          // 近事卡可点：进存档管理续卷（纯漏斗·走既有续卷入口）
+          span.setAttribute('role','button');
+          span.title = '启封此卷 · 打开存档管理';
+          span.onclick = function(){ var b = document.getElementById('btn-load-save'); if (b) b.click(); };
           host.appendChild(span);
         });
       }catch(e){}
@@ -225,12 +223,9 @@
   </div>
   <!-- 底部栏 -->
   <div class="home-foot">
-    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.4.5</span></div>
+    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.4.6</span></div>
     <div class="f-mid" id="home-foot-mid">春 分<span class="dot">◆</span>太 平<span class="dot">◆</span>河 清 海 晏</div>
     <div class="f-right">
-      <span class="lt-dibao-btn" style="cursor:pointer;" onclick="if(window.TM_Changelog)TM_Changelog.show();" title="查看更新公告"><kbd>报</kbd> 邸 报<span class="tm-cl-dot" id="tm-cl-dot" style="display:none;"></span></span>
-      <span class="lt-dibao-btn" style="cursor:pointer;" onclick="window.openContentManager&&window.openContentManager();" title="管理在线更新与创意工坊内容"><kbd>坊</kbd> 工 坊</span>
-      <span class="lt-dibao-btn" style="cursor:pointer;" onclick="window._loadMapEditorJSON&&window._loadMapEditorJSON();" title="载入 map-editor 导出的 JSON·装入 P.map·开卷时复用"><kbd>图</kbd> 载图</span>
       <span><kbd>↵</kbd> 开 卷</span>
       <span><kbd>?</kbd> 帮 助</span>
       <span><kbd>Esc</kbd> 退 出</span>
@@ -488,6 +483,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-data-model.js"></script>
 <!-- R135 (2026-04-25) tm-utils 拆分 → utils + ai-infra -->
 <script src="tm-utils.js?v=2026050702"></script>
+<!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
+<script src="tm-qiju-ledger.js?v=2026070401"></script>
 <script src="tm-prompt-composer.js?v=2026052201"></script>
 <script src="tm-ai-infra.js?v=2026052201"></script>
 <script src="tm-memory-trace.js?v=20260531-traceonly"></script>
@@ -547,7 +544,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-indices.js?v=2026042714"></script>
 <script src="tm-world.js?v=20260621-renownfix"></script>
 <script src="tm-memorials.js?v=2026050105"></script>
-<script src="tm-wendui.js?v=20260521-prison"></script>
+<script src="tm-wendui.js?v=2026070401"></script>
+<script src="tm-wendui-persona-views.js?v=2026070401"></script>
 <!-- 2026-05-21·狱中问对模式·6 动作 + AI 解析 + 频率限制 + 朝议反应 -->
 <script src="tm-wendui-prison.js?v=20260521-prison"></script>
 <!-- R161 R6 (2026-05-03) tm-office-system 从 tm-hongyan-office 拆出·官制 system (~700 行) -->
@@ -568,7 +566,8 @@ console.log('天命游戏脚本开始加载...');
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
 <script src="tm-npc-engine.js?v=2026050701"></script>
 <script src="tm-npc-action-ledger.js?v=2026051701"></script>
-<script src="tm-npc-decision.js?v=2026050701"></script>
+<script src="tm-npc-decision.js?v=2026070401"></script>
+<script src="tm-npc-decision-ai-driven.js?v=2026070401"></script>
 <!-- R111+R127 拆分 tm-game-engine.js → launch + player-settings + player-core + hongyan-office + game-loop -->
 <script src="tm-promotion.js?v=20260604-gongming"></script>
 <script src="tm-gongming.js?v=20260613-gongming-sys"></script>
@@ -667,6 +666,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-loading.js?v=20260620-agentbeats"></script>
 <script src="tm-theme-font.js?v=20260520-theme-font-scopes"></script>
 <script src="tm-patches.js?v=20260623-liveworld"></script>
+<script src="tm-patches-start.js?v=2026070401"></script><!-- 立项拆分：剧本启动链(_tmStart*/开场仪典/startGame/doActualStart)·紧挨 patches 之后保序·勿动位置 -->
 <!-- R17-R22: 从 tm-patches.js 抽离的子模块（加载在 patches 之后覆盖原版） -->
 <script src="tm-military-ui.js?v=2026042714"></script>
 <script src="tm-world-view.js?v=2026042714"></script>
@@ -731,6 +731,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-keju-paradigm-presets.js?v=20260523-L1"></script>
 <script src="tm-keju-paradigm.js?v=20260523-L1"></script>
 <script src="tm-keju-reform-llm.js?v=20260524-L3"></script>
+<script src="tm-keju-paradigm-panel-render.js?v=2026070401"></script><!-- 立项拆分alias首例：渲染族+常量表·须紧挨 panel 之前(alias 装载期解析)·勿动位置 -->
 <script src="tm-keju-paradigm-panel.js?v=20260524-L3"></script>
 <script src="tm-keju-topic-router.js?v=2026052303"></script>
 <script src="tm-keju-examiner-view.js?v=2026052304"></script>
@@ -765,11 +766,17 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-chaoyi.js?v=2026052202"></script>
 <script src="tm-official-scenario-seeder.js?v=20260620-armory-materials"></script>
 <script src="tm-electron.js?v=20260522-focus-fix"></script>
-<script src="tm-keju-runtime.js?v=2026052303"></script>
+<script src="tm-keju-runtime.js?v=2026070401"></script>
+<script src="tm-keju-runtime-keyi.js?v=2026070401"></script>
 <script src="tm-chaoyi-tinyi.js?v=2026052803"></script>
 <script src="tm-chaoyi-yuqian.js?v=2026052803"></script>
-<script src="tm-chaoyi-changchao.js?v=2026052310"></script>
-<script src="tm-tinyi-v3.js?v=20260523-2200"></script>
+<script src="tm-chaoyi-changchao-adapter.js?v=2026070401"></script>
+<script src="tm-chaoyi-changchao.js?v=2026070401"></script>
+<script src="tm-chaoyi-changchao-flows.js?v=2026070401"></script>
+<script src="tm-tinyi-v3-persona.js?v=2026070401"></script>
+<script src="tm-tinyi-v3.js?v=2026070401"></script>
+<script src="tm-tinyi-v3-edict-personnel.js?v=2026070401"></script><!-- 立项拆分二切：§9草诏拟旨+§10廷推·须在 origin 与 -parties 之间保序·勿动位置 -->
+<script src="tm-tinyi-v3-parties.js?v=2026070401"></script>
 <script src="tm-char-autogen.js?v=20260528-chardelete"></script>
 <script src="tm-bgm-config.js?v=2026051201"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
@@ -806,6 +813,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ceming.js?v=2026042817"></script>
 <script src="tm-char-economy-ui.js?v=2026042714"></script>
 <script src="tm-char-full-schema.js?v=2026042714"></script>
+<script src="tm-economy-engine-currency.js?v=2026070401"></script><!-- 立项拆分：§A CurrencyUnit+§B CurrencyEngine 两整IIFE·紧挨 economy-engine 之前保序·勿动位置 -->
 <script src="tm-economy-engine.js?v=2026050301"></script>
 <script src="tm-central-local-engine.js"></script>
 <script src="tm-huji-engine.js"></script>
@@ -929,10 +937,12 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-zip-store.js?v=20260604-zip-s2c"></script>
 <script src="tm-content-manager.js?v=20260519-update-apply"></script>
 <script src="preview/img/east-asia-basemap-data.js?v=20260514-formal-map"></script>
-<script src="phase8-formal-bridge.js?v=20260621-optland"></script>
+<script src="phase8-formal-bridge.js?v=20260705-maplabels"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260621-optland"></script>
-<script src="phase8-formal-map.js?v=20260621-s7-ledger"></script>
+<script src="tm-map-label-geo.js?v=20260705-maplabels-p1"></script>
+<script src="tm-map-label-collide.js?v=20260705-maplabels-p1"></script>
+<script src="phase8-formal-map.js?v=20260705-maplabels-p1"></script>
 <script src="phase8-formal-modules.js?v=20260527-issuecard-aliases"></script>
 <script src="phase8-formal-drafts.js?v=20260526-split-skeleton"></script>
 <script src="phase8-formal-records.js?v=20260526-split-skeleton"></script>

@@ -474,7 +474,9 @@
         ts.active = false;
         if (hw.history && Array.isArray(hw.history.tyrantPeriods)) hw.history.tyrantPeriods.push({ start: ts.activatedTurn || 0, end: G.turn || 0, resolvedBy: action });
       }
-      if (G.minxin && typeof G.minxin.trueIndex === 'number') G.minxin.trueIndex = _authorityClamp(G.minxin.trueIndex + (req.minxinRecovery || 5));
+      if (typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+        try { TM.MinxinLedger.recordAndApply(G, { sourceSystem: 'tyrant-mitigation', kind: 'imperialVirtue', delta: (req.minxinRecovery || 5), reason: '罪己改革·民心恢复' }); } catch (_e) {}
+      } else if (G.minxin && typeof G.minxin.trueIndex === 'number') G.minxin.trueIndex = _authorityClamp(G.minxin.trueIndex + (req.minxinRecovery || 5)); // 沙箱兜底·真机直写会被 aggregateTrue 冲掉
       if (!Array.isArray(G._tyrantMitigations)) G._tyrantMitigations = [];
       G._tyrantMitigations.push({ turn: G.turn || 0, action: action, oldIndex: old, newIndex: hw.index, text: req.text || '' });
       return { ok: true, oldIndex: old, newIndex: hw.index };
@@ -777,7 +779,10 @@
     // 皇威骤降，隐藏代价兑现
     hw.index = Math.max(0, hw.index - 25);
     var G = global.GM;
-    if (G.minxin) G.minxin.trueIndex = Math.max(0, G.minxin.trueIndex - (ts.hiddenDamage.unreportedMinxinDrop || 0));
+    var _hidDrop = ts.hiddenDamage.unreportedMinxinDrop || 0;
+    if (_hidDrop && typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      try { TM.MinxinLedger.recordAndApply(G, { sourceSystem: 'tyrant-awakening', kind: 'tyrantHiddenDamage', delta: -_hidDrop, reason: '暴君觉醒·隐伤兑现' }); } catch (_e) {}
+    } else if (_hidDrop && G.minxin) G.minxin.trueIndex = Math.max(0, G.minxin.trueIndex - _hidDrop); // 沙箱兜底·真机直写会被 aggregateTrue 冲掉
     if (G.corruption && typeof G.corruption === 'object') {
       _addCorrIndex(G, ts.hiddenDamage.concealedCorruption || 0);
     }

@@ -1351,10 +1351,15 @@
     // 按 destination 分账（默认入帑廪·"籍没入官"传统）
     var dest = opts.destination || 'guoku';
     if (dest === 'neitang' && GM.neitang) {
-      GM.neitang.balance = num(GM.neitang.balance) + total;
+      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToNeitang) FiscalEngine.addToNeitang({ money: total }, '抄没'); // 收口·走真账
+      else GM.neitang.balance = num(GM.neitang.balance) + total; // 沙箱兜底
       GM.neitang._recentConfiscation = (GM.neitang._recentConfiscation || 0) + total;
     } else if (GM.guoku) {
-      GM.guoku.balance = num(GM.guoku.balance) + total;
+      // 抄没入官走 FiscalEngine 真账(2026-07-04 收口)
+      try {
+        var _F = (typeof FiscalEngine !== 'undefined' && FiscalEngine) || (typeof window !== 'undefined' && window.FiscalEngine) || null;
+        if (_F && _F.addToGuoku) _F.addToGuoku({ money: total }, '抄没入官');
+      } catch (_e) {}
       dest = 'guoku';
     }
 
@@ -1405,7 +1410,10 @@
     var heirs = heirIds.map(function(id) { return (GM.chars || []).find(function(c) { return c.id === id; }); }).filter(Boolean);
     if (heirs.length === 0) {
       // 入内帑（无嗣财产归公）
-      if (GM.neitang) GM.neitang.balance += total * 0.5;
+      if (GM.neitang) {
+        if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToNeitang) FiscalEngine.addToNeitang({ money: total * 0.5 }, '无嗣归公'); // 收口·走真账
+        else GM.neitang.balance += total * 0.5; // 沙箱兜底
+      }
       return;
     }
     // 继承规则：clanRules.inheritance(eldest_son 嫡长 / equal 均分 / merit_based 按贤)·clan/family 覆盖·默认均分

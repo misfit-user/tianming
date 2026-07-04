@@ -42,6 +42,16 @@ function openChaoyi(){
 }
 
 function closeChaoyi(){
+  // 双写收口兜底(2026-07-04 审查定罪)：右上✕退朝直走此处不经 _ty2_finalEnd·裁决后未用印的阶层挂起账
+  // 曾整笔蒸发(漏账)。与 finalEnd 同款消费·幂等(先消费者置 null·后到者跳过)。
+  try {
+    var _ccPend = (typeof CY !== 'undefined') && CY._ty3 && CY._ty3._classOutcomePending;
+    if (_ccPend && _ccPend.payload && !CY._ty3._classOutcomeApplied
+        && typeof TM !== 'undefined' && TM.ClassEngine && typeof TM.ClassEngine.applyPartyOutcomeToClasses === 'function') {
+      TM.ClassEngine.applyPartyOutcomeToClasses(GM, _ccPend.payload, { turn: _ccPend.turn, source: 'close-chaoyi-fallback' });
+    }
+    if (typeof CY !== 'undefined' && CY._ty3) { CY._ty3._classOutcomePending = null; CY._ty3._classOutcomeApplied = false; }
+  } catch (_ccE) {}
   CY.open=false;CY.phase='setup';CY._pendingPlayerLine=null;CY._abortChaoyi=true;
   if(CY.abortCtrl){try{CY.abortCtrl.abort();}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }}
   var m=_$("chaoyi-modal");if(m)m.remove();
@@ -203,7 +213,7 @@ function _cy_jishiAdd(kind, topic, speaker, line, meta) {
       } else {
         content = '【' + modeLbl + '】' + topicStr + '·陛下：' + lineStr.slice(0, 60);
       }
-      GM.qijuHistory.unshift({
+      if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
         turn: turn,
         date: date,
         category: modeLbl,

@@ -802,10 +802,10 @@
     scenarioObj.historicalChars.forEach(function(pid) {
       if (typeof pid === 'string') {
         var ch = createCharFromProfile(pid);
-        if (ch) { GM.chars.push(ch); loaded++; }
+        if (ch) { (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(ch); loaded++; }
       } else if (typeof pid === 'object' && pid.id) {
         var ch2 = createCharFromProfile(pid.id, pid);
-        if (ch2) { GM.chars.push(ch2); loaded++; }
+        if (ch2) { (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(ch2); loaded++; }
       }
     });
     return loaded;

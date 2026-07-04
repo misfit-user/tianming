@@ -1476,6 +1476,13 @@
     if (name === 'huangquan') {
       return adjustHuangquan((opts && opts.source) || 'legacy-adj-authority', delta, reason, opts);
     }
+    // 民心走总闸：trueIndex 是叶子聚合缓存·直写会被 aggregateTrue 冲掉——
+    // 此 legacy 入口曾让 31 处调用点(饥荒/赈济/赋税反馈/环境联动…)的民心效果静默蒸发(2026-07-04 审查定罪)
+    if (name === 'minxin' && typeof TM !== 'undefined' && TM.MinxinLedger && TM.MinxinLedger.recordAndApply) {
+      try {
+        return TM.MinxinLedger.recordAndApply(G, { sourceSystem: (opts && opts.source) || 'legacy-adj-authority', kind: (opts && opts.kind) || undefined, delta: delta, reason: reason || 'legacy-adj-authority' });
+      } catch (_mxE) { /* 走闸失败才落缓存兜底(沙箱等) */ }
+    }
     var v = G[name];
     if (v === undefined || v === null) return;
     if (typeof v === 'number') {

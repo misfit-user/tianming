@@ -472,7 +472,7 @@
         };
       }
       var oldC = parseTurnNumber(ps.cohesion);
-      if (!isFinite(oldC) || oldC === 0) oldC = 50;
+      if (!isFinite(oldC)) oldC = 50; // cohesion=0 是合法值(被弹劾/压制打空)·不可当缺省复活到 50(2026-07-04 审查定罪)
       var nextC = clamp(oldC + partyDelta, 0, 100);
       ps.cohesion = nextC;
       ps.lastShift = {
@@ -499,7 +499,7 @@
       if (ps.historyLog.length > 20) ps.historyLog = ps.historyLog.slice(-20); // 与其余5个写入口一致·防长局无界增长
       if (Array.isArray(source.parties)) {
         var partyObj = source.parties.find(function(p) { return p && p.name === partyName; });
-        if (partyObj) partyObj.cohesion = nextC;
+        if (partyObj) { partyObj.cohesion = nextC; ps._synced_cohesion = nextC; } // 已直达 canonical·同步水位防 syncPartyTruth 二次并账
       }
       if (!Array.isArray(source._classPartyCouplingLog)) source._classPartyCouplingLog = [];
       source._classPartyCouplingLog.push({

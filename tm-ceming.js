@@ -107,11 +107,11 @@
     if (!ch) return;
     try {
       var playerFac = (typeof P !== 'undefined' && P.playerInfo && P.playerInfo.factionName) || '';
-      if (playerFac && ch.faction && ch.faction !== playerFac) {
-        ch._historicalFaction = ch._historicalFaction || ch.faction;
-        ch.faction = playerFac;
-      } else if (playerFac && !ch.faction) {
-        ch.faction = playerFac;
+      // 转籍走 FactionMembership 单一写口（审计/_factionHistory/索引增量/事件总线一处即全）·禁直写 ch.faction
+      if (playerFac && ch.faction !== playerFac &&
+          typeof TM !== 'undefined' && TM.FactionMembership && TM.FactionMembership.assignChar) {
+        if (ch.faction) ch._historicalFaction = ch._historicalFaction || ch.faction;
+        TM.FactionMembership.assignChar(ch, playerFac, { reason: '策名征辟·入仕玩家势力' });
       }
       if (!ch.party && typeof GM !== 'undefined' && Array.isArray(GM.parties)) {
         var hint = String((profileLike && (profileLike.historicalFaction || profileLike.faction || profileLike.party)) || '');
@@ -228,10 +228,8 @@
 
     if (typeof GM !== 'undefined') {
       if (!GM.chars) GM.chars = [];
-      GM.chars.push(ch);
-      if (GM._indices && GM._indices.charByName && typeof GM._indices.charByName.set === 'function') {
-        GM._indices.charByName.set(ch.name, ch);
-      }
+      // TM.Roster 写口一站收齐 push+charByName 索引+图志缓存失效(2026-07-04 收口·原三步手工配套随之退役)
+      (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(ch);
     }
     _cmIntegrateSummoned(ch, profile);
 

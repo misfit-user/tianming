@@ -36,6 +36,18 @@ function applyCharacterDeaths(p1) {
             ch.dead = true;
             ch.deathTurn = GM.turn;
             ch.deathReason = cd.reason;
+            // ★ 死者不再任职·须清官衔(2026-07-04)：此前只摘 officeTree holder(下方 42-53)却留 ch.officialTitle
+            //   → 任何读 officialTitle 又不滤 alive 的 UI/名册把死者显示成"现任陕西巡抚"(玩家报"死人还在任")。
+            //   与 onDismissal(tm-ai-change-applier.js:646-651)对齐；殁前官衔存 positionAtDeath 供墓志铭/图志「原任X」。
+            if (ch.officialTitle && !ch.positionAtDeath) ch.positionAtDeath = ch.officialTitle;
+            ch.officialTitle = null;
+            ch.position = '';
+            ch.title = '';
+            ch.officialTitles = [];
+            ch.concurrentTitles = [];
+            ch.concurrentTitle = '';
+            ch._removedFromOfficeTurn = GM.turn || 0;
+            ch._removedReason = '身故';
             if (typeof recordCharacterArc === 'function') recordCharacterArc(cd.name, 'death', cd.reason);
             if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(cd.name);
             // 官制同步：将死者从所有 actualHolders 中移除（留占位）

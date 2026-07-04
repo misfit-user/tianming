@@ -526,7 +526,13 @@
 
   function _isPathBlocked(path) {
     if (!path) return true;
-    return BLOCKED_PATHS.some(function(re) { return re.test(path); });
+    // 归一化后再对禁区：apply 端在检查之后才剥 GM./vars./空白前缀·裸测原始串可被「GM.turn」这类写法穿透(2026-07-04 审查定罪)
+    var probes = [String(path)];
+    try {
+      var _norm = _normalizeCoreVarPath(String(path));
+      if (_norm && probes.indexOf(_norm) < 0) probes.push(_norm);
+    } catch (_e) { return true; }
+    return BLOCKED_PATHS.some(function(re) { return probes.some(function(p) { return re.test(p); }); });
   }
 
   // ── Export ──

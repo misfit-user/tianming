@@ -135,6 +135,8 @@ var AudioSystem = {
 
   loadPlaylist: function() {
     var tracks = Array.isArray(window.TM_BGM_TRACKS) ? window.TM_BGM_TRACKS : [];
+    // 2026-07-04 重建内置列表时保导入轨（原先硬替换→设置声乐页每次渲染调本函数·把本会话导入轨从曲库冲掉）
+    var userTracks = Array.isArray(this.playlist) ? this.playlist.filter(function(t) { return t && t.user; }) : [];
     this.playlist = tracks.filter(function(track) {
       return track && track.src;
     }).map(function(track, idx) {
@@ -146,6 +148,7 @@ var AudioSystem = {
         src: track.src
       };
     });
+    if (userTracks.length) this.playlist = this.playlist.concat(userTracks);
     if (!this.currentTrackId && this.playlist.length) {
       this.currentTrackId = this.playlist[0].id;
     }

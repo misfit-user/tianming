@@ -760,7 +760,7 @@
         };
 
         if (!GM.chars) GM.chars = [];
-        GM.chars.push(newChar);
+        (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(newChar);
 
         // 直接注册索引·O(1) 而非 O(N) 重建（previous envoy 场景的同类修）
         if (GM._indices && GM._indices.charByName) {
@@ -866,7 +866,7 @@
       _memorySeeds: [{ turn: GM.turn, event: (opts.reason||'\u5165\u671D') + '\u00B7\u6A21\u677F\u751F\u6210', emotion: '\u5E73' }]
     };
     if (!GM.chars) GM.chars = [];
-    GM.chars.push(newChar);
+    (typeof TM !== 'undefined' && TM.Roster ? TM.Roster.addChar : function(_c){ GM.chars.push(_c); })(newChar);
     if (opts.assignPost && GM.officeTree) _tryAssignPost(name, opts.assignPost);
     if (typeof buildIndices === 'function') { try { buildIndices(); } catch(_){} }
     return newChar;

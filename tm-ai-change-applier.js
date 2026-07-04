@@ -541,10 +541,12 @@
     // 2026-05-21·bug fix·原 regex 含单字「押」「拘」「逃」「遁」「匿」过宽·
     //   误判·押解/押粮/押司/签押/押韵/拘谨/拘泥/拘束/逃避/隐遁/匿名 等 → false positive
     //   改用必须的入狱/流放/逃亡 compound·并加 release/起复路径清 _imprisoned/_exiled/_fled
-    if (/处决|处斩|处死|斩首|斩决|斩杀|戮杀|正法|明正典刑|诛杀|诛戮|诛九族|凌迟|腰斩|弃市|枭首|枭示|问斩|赐死|赐自尽|绞刑|绞死|伏诛|伏法|就戮|授首|自尽|自缢|自刎|自裁|自杀|服毒自尽|畏罪自尽|磔|execute|死刑/.test(_reasonStr)) {
+    if (/处决|处斩|处死|斩首|斩决|斩杀|戮杀|正法|明正典刑|诛杀|诛戮|诛九族|凌迟|腰斩|弃市|枭首|枭示|问斩|赐死|赐自尽|绞刑|绞死|伏诛|伏法|就戮|授首|自尽|自缢|自刎|自裁|自杀|服毒自尽|畏罪自尽|磔|execute|死刑|身故|病故|病逝|病殁|病卒|病亡|亡故|暴毙|暴卒|暴亡|猝死|物故|殒命|毙命|殉国|殉难|殉城|殉职|罹难|遇害|遇难|遭难|薨逝|溘逝|寿终|城破身死/.test(_reasonStr)) {
       ch.alive = false;
       ch._deathCause = _reasonStr;
       ch._deathTurn = G.turn || 0;
+      // 预存殁前官衔(供墓志铭 positionAtDeath / 图志「原任X」)·随后 646 行统一清 officialTitle
+      if (ch.officialTitle && !ch.positionAtDeath) ch.positionAtDeath = ch.officialTitle;
     } else if (/释放|开释|赦免|大赦|无罪|平反|昭雪|宽释|保释|出狱|赦出/.test(_reasonStr)) {
       // ★ 释放 / 赦免·清入狱状态
       ch._imprisoned = false;
@@ -599,7 +601,7 @@
             }
             if (global.GM && global.GM.qijuHistory) {
               var _qd = (typeof getTSText === 'function') ? getTSText(global.GM.turn) : '';
-              global.GM.qijuHistory.unshift({ turn: global.GM.turn, date: _qd, content: '【抄家】抄' + charName + '家产·得银 ' + Math.round((_confR.total||0)/10000) + ' 万两·解内帑。' });
+              if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: global.GM.turn, date: _qd, content: '【抄家】抄' + charName + '家产·得银 ' + Math.round((_confR.total||0)/10000) + ' 万两·解内帑。' });
             }
           }
         }
@@ -649,6 +651,8 @@
     ch.officialTitles = [];
     ch.concurrentTitles = [];
     ch.concurrentTitle = '';
+    // 免职须斩在途赴任链：否则 _arriveCharNow 到期无条件 onAppointment·被免者「抵达即复职」翻案(2026-07-04 审查定罪)
+    delete ch._travelAssignPost; delete ch._travelTo; delete ch._travelRemainingDays;
     // 记去职标记·供推演 prompt「受限人员现状名册」识别罢官者·令 AI 勿再称旧衔/勿令其理事
     // (下狱/流放另有 _imprisoned/_exiled·此标记主要覆盖纯罢官免职;再任命后 officialTitle 非空即不再判罢官)
     ch._removedFromOfficeTurn = G.turn || 0;
@@ -2101,6 +2105,10 @@
     var narrativeText = '';
     if (aiOutput.shilu_text) narrativeText += String(aiOutput.shilu_text) + '\n';
     if (aiOutput.shizhengji) narrativeText += String(aiOutput.shizhengji) + '\n';
+    // zhengwen(邸报/政闻)也是真实 AI 叙事输出字段·此前漏扫→AI 只在 zhengwen 里写"某巡抚被杀"
+    //   时兜底器看不到→死亡永不落库→下月名册照旧当活人喂 AI(玩家报"死人还在任")。与
+    //   tm-ai-narrative-guards.js:_collectNarrative 同源字段对齐。(2026-07-04)
+    if (aiOutput.zhengwen) narrativeText += String(aiOutput.zhengwen) + '\n';
     if (aiOutput.yupiHuiting) narrativeText += String(aiOutput.yupiHuiting) + '\n';
     if (aiOutput.qijuHistory) narrativeText += String(aiOutput.qijuHistory) + '\n';
     if (Array.isArray(aiOutput.events)) {
@@ -2171,8 +2179,16 @@
       // 不及物/自戕·命名者即受事(名前动词安全)
       var KILL_INTRANS = ['服毒自尽','畏罪自尽','畏罪自缢','阖门自尽','投缳自尽','伏诛','伏法','弃市',
                           '就戮','授首','自尽','自缢','自刎','自裁','自杀','磔'];
+      // 自然/含糊死亡词·名前即受事(非处决非自戕)·治巡抚死于民变常被叙作"遇害/病故/城破身死"
+      //   而非处决词→旧扫描器全漏(玩家报"死人下月还在任")。只收多字不歧义词·避开单字 卒/死/薨/殁。
+      var KILL_NATURAL = ['溘然长逝','城破身死','城陷而死','以身殉国','为国捐躯',
+                          '病故','病逝','病殁','病卒','病亡','亡故','暴毙','暴卒','暴亡','猝死','物故','身故',
+                          '殒命','毙命','殉国','殉难','殉城','殉职','罹难','遇害','遇难','遭难',
+                          '薨逝','溘逝','寿终','谢世','辞世','弃世','长逝'];
       function alt(list){ return list.slice().sort(function(a,b){return b.length-a.length;}).join('|'); }
-      var transAlt = alt(KILL_TRANS), intransAlt = alt(KILL_INTRANS);
+      var transAlt = alt(KILL_TRANS), intransAlt = alt(KILL_INTRANS), natAlt = alt(KILL_NATURAL);
+      // 名与死亡词之间夹关系词→死的是亲属非本人(如"胡廷晏之子病故")·跳过防误杀
+      var _relRe = /之|其|亲|眷|属|族|子|女|父|母|妻|夫|弟|兄|孙|侄|甥|婿|妾|嗣|叔|伯|舅|姑|姊|妹/;
       var NP = '[^。！？；;.!?，,、\\n]{0,6}';  // 同句内窗口·不跨标点
       function esc(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
       Object.keys(charNameSet).forEach(function(nm){
@@ -2182,7 +2198,10 @@
         //  允许同句内隔一分句·但『被/为』须紧接姓名或逗号后·
         //  这样"孙传庭破贼，贼首被斩"里"被"前是"贼首"(非逗号非姓名)→不误挂到孙传庭·
         //  ★"被"后接命/令/派/遣等受命词=施事者(如"孙传庭被命令斩杀叛军")→负向前瞻排除·免误杀施事者
-        var reP = new RegExp(e + '(?:[^。！？；;.!?\\n]{0,12}[，,、])?(?:(?:旋|竟|遂|已|终|卒)?被(?!命|令|饬|派|遣|敕|诏|委|差|使|着)|为' + NP + '所)' + NP + '(?:' + transAlt + ')');
+        //  『被』分支只认 transAlt(含杀/斩/诛/戮/砍)·不加"害"——防"被陷害/被迫害/被诬害"(构陷≠死)误杀
+        var reP = new RegExp(e + '(?:[^。！？；;.!?\\n]{0,12}[，,、])?(?:旋|竟|遂|已|终|卒)?被(?!命|令|饬|派|遣|敕|诏|委|差|使|着)' + NP + '(?:' + transAlt + ')');
+        // 『为…所』被动分支·此结构无歧义(为乱兵所杀/所害/所弑/所戕=被杀)·补收"害/弑/戕"及前置副词
+        var reW = new RegExp(e + '(?:[^。！？；;.!?\\n]{0,12}[，,、])?(?:旋|竟|遂|已|终|卒)?为' + NP + '所' + NP + '(?:' + transAlt + '|害|弑|戕|毙|殒)');
         // 处置式: 把X…砍了 (只认"把"·"将"歧义[将领/将要]不用·"命/令X…"是施事者故排除)
         var reB = new RegExp('把\\s*' + e + NP + '(?:' + transAlt + ')');
         // 动宾: 斩首X / 斩X / 赐死X / 斩杀叛将X (动词紧邻名前·名为受事·允许一个受害者身份词窗口)
@@ -2190,15 +2209,20 @@
         var reV = new RegExp('(?:' + transAlt + ')(?:了|之|讫|于[^。！？；，、\\n]{0,4})?' + _victimRole + '\\s*' + e);
         // 自戕/受事名前: X自尽 / X伏诛
         var reI = new RegExp(e + '[^。！？；;，,、\\n]{0,4}(?:' + intransAlt + ')');
+        // 自然/含糊死亡·名前即受事(病故/薨逝/遇害/城破身死…)·捕窗口·夹关系词则跳过
+        var reN = new RegExp(e + '([^。！？；;，,、\\n]{0,4})(?:' + natAlt + ')');
+        var _vpref = '处决';
         if ((m = reP.exec(narrativeText))) hit = m[0];
+        else if ((m = reW.exec(narrativeText))) hit = m[0];
         else if ((m = reB.exec(narrativeText))) hit = m[0];
         else if ((m = reV.exec(narrativeText))) hit = m[0];
         else if ((m = reI.exec(narrativeText))) hit = m[0];
+        else if ((m = reN.exec(narrativeText)) && !_relRe.test(m[1] || '')) { hit = m[0]; _vpref = '身故'; }
         if (!hit) return;
         var key = nm + '_execute';
         if (mentioned.find(function(x){return x.key===key;})) return;
-        // reason 统一带『处决』令 onDismissal 置 alive=false·原文附于死因便于追溯
-        mentioned.push({ key: key, name: nm, action: 'execute', verb: '处决·据叙事「' + hit + '」', raw: hit });
+        // reason 带『处决』(处决/自戕)或『身故』(自然死)令 onDismissal 置 alive=false·原文附死因便追溯
+        mentioned.push({ key: key, name: nm, action: 'execute', verb: _vpref + '·据叙事「' + hit + '」', raw: hit });
       });
     })();
 
@@ -3294,7 +3318,7 @@
       diedTurn: curTurn,
       diedAt: ch.diedAt || (G.eraState && G.eraState.yearLabel) || '',
       reason: reason || ch._deathReason || '',
-      positionAtDeath: ch.officialTitle || '',
+      positionAtDeath: ch.positionAtDeath || ch.officialTitle || '',  // 死亡应用已清 officialTitle·殁前官衔存于 positionAtDeath
       summary: snippets.slice(0, 10).join(' | ') || ('T'+curTurn+' '+name+'薨'),
       importance: (ch.historicalImportance || 0) + (ch._memory ? ch._memory.length : 0)
     };
@@ -4529,6 +4553,7 @@
 
     G.chars.forEach(function(ch) {
       if (!ch || !ch._travelTo) return;
+      if (ch.alive === false || ch.dead === true) return; // 死者不赶路·不「抵达就任」(2026-07-04 审查定罪)
       // ★赴任硬上限·按"天"计(与每回合天数刻度无关·1回合=1天的剧本不会被误伤)：
       //  逐 tick 累计实耗天数(AI 重发同终点不清此计数→剩余天数被重置也兜得住)·
       //  首 tick 锚定应耗天数(此后不被 AI 重置缩小)·实耗超「应耗×2 且 ≥40 天」即判卡死强制抵达。

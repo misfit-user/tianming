@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.9",
   "entry": "index.html",
-  "generatedAt": "2026-07-20T02:47:12.515Z",
+  "generatedAt": "2026-07-20T02:59:50.021Z",
   "files": [
     {
       "path": "_app_main.js",
@@ -1886,8 +1886,8 @@
     },
     {
       "path": "changelog.json",
-      "sha256": "75b22245cd97ef77863e0bdfdd5707c038829986769741f79a8375965dffea4b",
-      "size": 1001353
+      "sha256": "1079725630728848a79d6d94ff294216f0b3957152f02870a7b4c4ffbe3d2234",
+      "size": 1003121
     },
     {
       "path": "data/maps/default-map.json",

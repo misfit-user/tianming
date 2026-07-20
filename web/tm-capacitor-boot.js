@@ -9,6 +9,11 @@
 //     → set（下次启动生效）。下载过程把 Capgo 的 download 进度事件接到屏幕上的
 //     「下载进度卡」：百分比 + 已下载/总大小 + 实时速度 + 剩余时间，下完弹「重启生效」。
 //  ③ 仅 capacitor 原生端执行；桌面/web 整模块 no-op。
+//  ④ 健壮性（2026-07-20·玩家真机「卡在10%不动」实案）：停滞看门狗（长时间无进度→卡面如实
+//     示「下载停滞」·进度恢复自动回正常态）+ 下载失败有界自动重试（15s/45s 退避·共 3 次）+
+//     彻底失败 10 分钟后自动再查一次；下载中手动「检查更新」不再被 busy 旗静默吞掉。
+//     Capgo v6 无取消下载 API·原生下载挂死时 JS 杀不掉它——故停滞只做诚实提示与恢复自愈，
+//     绝不假装取消；promise 真拒绝（断网/写盘失败）才走自动重试。
 // ============================================================
 
 (function () {
@@ -242,6 +247,15 @@
       var eta = (bps && totalBytes) ? (totalBytes - doneBytes) / bps : 0;
       etaEl.textContent = eta ? fmtEta(eta) : '';
     }
+    function stalled(pct, sec) {
+      ensure();
+      root.classList.remove('tm-ota-done');
+      root.classList.add('tm-ota-settled'); // 停扫光·别再假装在动
+      titleEl.textContent = '下载停滞';
+      spdEl.textContent = '已停滞 ' + Math.max(0, sec || 0) + ' 秒';
+      etaEl.textContent = '网络无响应·恢复后自动继续';
+      // 百分比与已下大小保留不清——诚实呈现卡在哪
+    }
     function done(ver) {
       clearDismiss();
       ensure();
@@ -283,7 +297,7 @@
       setTimeout(function () { if (root && root.parentNode) { root.parentNode.removeChild(root); } root = null; }, 380);
     }
 
-    return { show: show, progress: progress, done: done, toast: toast, fail: fail, hide: hide };
+    return { show: show, progress: progress, stalled: stalled, done: done, toast: toast, fail: fail, hide: hide };
   })();
 
   // ── 拿 zip 总大小（算速度/ETA 用）：优先 latest.size，否则 HEAD content-length ──
@@ -297,6 +311,21 @@
     }).catch(function () { return 0; });
   }
 
+  // ── 停滞侦测 + 有界自动重试（2026-07-20·玩家「卡在10%不动」实案）──────────
+  var STALL_MS = 90000;               // 90s 无进度前进→判停滞（850MB 级大包·percent 事件粒度粗·阈值放宽防慢网误报）
+  var STALL_POLL_MS = 5000;
+  var MAX_ATTEMPTS = 3;               // 首次 + 自动重试 2 次
+  var RETRY_DELAY_MS = [15000, 45000];
+  var RECHECK_AFTER_FAIL_MS = 600000; // 彻底失败后 10 分钟整体再查一次（单发·不无限轮询）
+
+  var dl = { active: false, stalled: false, attempts: 0, lastPct: 0, lastAdvanceAt: 0, version: '' };
+  var recheckArmed = false;
+  function scheduleRecheck() {
+    if (recheckArmed) return;
+    recheckArmed = true;
+    setTimeout(function () { recheckArmed = false; runCheck(false); }, RECHECK_AFTER_FAIL_MS);
+  }
+
   // ── 主流程：检查 → （有更新则）可视化下载 → set ───────────────────────────
   var busy = false;
   function runCheck(verbose) {
@@ -305,7 +334,15 @@
       if (verbose) ui.fail('更新组件不可用');
       return Promise.resolve();
     }
-    if (busy) return Promise.resolve();
+    if (busy) {
+      // busy 泄漏修复：下载进行中玩家手动点「检查更新」不再被静默吞掉——把卡重新亮出来·如实反映状态
+      if (verbose) {
+        if (dl.active && dl.stalled) ui.stalled(dl.lastPct, Math.round((now() - dl.lastAdvanceAt) / 1000));
+        else if (dl.active) ui.show('正在下载更新', dl.version);
+        else ui.toast('正在检查更新…', '', 2500);
+      }
+      return Promise.resolve();
+    }
     if (typeof fetch !== 'function') return Promise.resolve();
     busy = true;
     if (verbose) ui.show('正在检查更新…');
@@ -339,6 +376,8 @@
 
   function startDownload(U, latest) {
     ui.show('正在下载更新', latest.version);
+    dl.active = true; dl.stalled = false; dl.attempts = 0;
+    dl.lastPct = 0; dl.lastAdvanceAt = now(); dl.version = latest.version;
     return resolveTotal(latest).then(function (total) {
       // 速度采样（滚动 2.5s 窗口）
       var samples = [];
@@ -356,42 +395,76 @@
       var lastPaint = 0;
       function onPercent(pct) {
         pct = Math.max(0, Math.min(100, pct || 0));
+        if (pct > dl.lastPct) {              // 只认真前进·停滞计时随之清零
+          dl.lastPct = pct; dl.lastAdvanceAt = now();
+          if (dl.stalled) { dl.stalled = false; ui.show('正在下载更新', latest.version); } // 停滞恢复→回正常态
+        }
         var bytes = total ? total * pct / 100 : 0;
         if (total) pushSample(bytes);
         var t = now();
         if (t - lastPaint < 200 && pct < 100) return;   // 限频，避免过度重绘
         lastPaint = t;
-        ui.progress(pct, bytes, total, total ? speed() : 0);
-      }
-
-      // 接 download 进度事件
-      var handle = null;
-      try {
-        if (typeof U.addListener === 'function') {
-          handle = U.addListener('download', function (e) {
-            onPercent(e && typeof e.percent === 'number' ? e.percent : 0);
-          });
-        }
-      } catch (_) {}
-      function removeListener() {
-        try { Promise.resolve(handle).then(function (h) { if (h && h.remove) h.remove(); }); } catch (_) {}
+        if (!dl.stalled) ui.progress(pct, bytes, total, total ? speed() : 0);
       }
 
       var opt = { version: latest.version, url: latest.url || '' };
       if (latest.manifest && latest.manifest.length) opt.manifest = latest.manifest;
 
-      ui.progress(0, 0, total, 0);
-      return Promise.resolve(U.download(opt)).then(function (b) {
-        removeListener();
-        if (b && b.id && U.set) {
-          return Promise.resolve(U.set({ id: b.id })).then(function () { ui.done(latest.version); });
+      function attempt() {
+        dl.attempts++;
+        dl.stalled = false; dl.lastAdvanceAt = now();
+        // 接 download 进度事件（每次尝试各自挂/摘·避免旧监听器窜台）
+        var handle = null;
+        try {
+          if (typeof U.addListener === 'function') {
+            handle = U.addListener('download', function (e) {
+              onPercent(e && typeof e.percent === 'number' ? e.percent : 0);
+            });
+          }
+        } catch (_) {}
+        function removeListener() {
+          try { Promise.resolve(handle).then(function (h) { if (h && h.remove) h.remove(); }); } catch (_) {}
         }
-        ui.done(latest.version);
-      }).catch(function (err) {
-        removeListener();
-        try { console.warn('[tm-capacitor-boot] 下载失败', err); } catch (_) {}
-        ui.fail('下载失败，稍后重试');
-      });
+        // 停滞看门狗：percent 长时间不前进→卡面如实亮「下载停滞」·进度一恢复自动回正常态
+        var watchdog = setInterval(function () {
+          if (!dl.active) return;
+          var idle = now() - dl.lastAdvanceAt;
+          if (idle > STALL_MS) {
+            if (!dl.stalled) {
+              dl.stalled = true;
+              try { console.warn('[tm-capacitor-boot] 下载停滞 ' + Math.round(idle / 1000) + 's @' + dl.lastPct + '%'); } catch (_) {}
+            }
+            ui.stalled(dl.lastPct, Math.round(idle / 1000));
+          }
+        }, STALL_POLL_MS);
+        function cleanup() {
+          removeListener();
+          try { clearInterval(watchdog); } catch (_) {}
+        }
+
+        ui.progress(dl.lastPct, total ? total * dl.lastPct / 100 : 0, total, 0);
+        return Promise.resolve(U.download(opt)).then(function (b) {
+          cleanup(); dl.active = false; dl.stalled = false;
+          if (b && b.id && U.set) {
+            return Promise.resolve(U.set({ id: b.id })).then(function () { ui.done(latest.version); });
+          }
+          ui.done(latest.version);
+        }).catch(function (err) {
+          cleanup();
+          try { console.warn('[tm-capacitor-boot] 下载失败(第' + dl.attempts + '/' + MAX_ATTEMPTS + '次)', err); } catch (_) {}
+          if (dl.attempts < MAX_ATTEMPTS) {
+            var wait = RETRY_DELAY_MS[dl.attempts - 1] || 45000;
+            ui.toast('下载失败·' + Math.round(wait / 1000) + ' 秒后自动重试（第 ' + (dl.attempts + 1) + '/' + MAX_ATTEMPTS + ' 次）', latest.version, 0);
+            return new Promise(function (res) {
+              setTimeout(function () { ui.show('正在下载更新', latest.version); res(attempt()); }, wait);
+            });
+          }
+          dl.active = false; dl.stalled = false;
+          ui.fail('下载失败·10 分钟后自动再查·也可在设置里手动检查');
+          scheduleRecheck();
+        });
+      }
+      return attempt();
     });
   }
 
@@ -418,6 +491,10 @@
         var U = updater();
         if (U && typeof U.reload === 'function') return U.reload();
         return Promise.resolve();
+      },
+      // 调试/测试探针：下载状态快照（smoke 与真机排查用·非游戏 API）
+      _dl: function () {
+        return { busy: busy, active: dl.active, stalled: dl.stalled, attempts: dl.attempts, lastPct: dl.lastPct, version: dl.version };
       }
     };
   } catch (_) {}

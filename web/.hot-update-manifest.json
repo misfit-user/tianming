@@ -3606,8 +3606,8 @@
     },
     {
       "path": "tm-capacitor-boot.js",
-      "sha256": "3e53de57f04cd152aada0e4955cd8765502b9f30cb7d3a72d0cc746c43e93b2e",
-      "size": 23148
+      "sha256": "f9c65ba9af91e8162acb4491e3875a32747a5d71734f0c722ce022085d287e93",
+      "size": 27836
     },
     {
       "path": "tm-ceming.js",

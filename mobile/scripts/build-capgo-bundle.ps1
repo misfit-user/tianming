@@ -54,7 +54,7 @@ $officialSync = Join-Path $repoRoot 'web\scripts\sync-official-scenarios.js'
 Write-Host "复制 web → staging（统一 release-tree）..." -ForegroundColor Cyan
 & node $officialSync
 if ($LASTEXITCODE -ne 0) { throw "官方剧本生成失败·exit=$LASTEXITCODE" }
-& node $stageScript --repo-root $repoRoot --source $WebDir --target $stage --label capgo --tracked-only
+& node $stageScript --repo-root $repoRoot --source $WebDir --target $stage --label capgo
 if ($LASTEXITCODE -ne 0) { throw "Capgo staging 闸失败·exit=$LASTEXITCODE" }
 $sz = [math]::Round((Get-ChildItem $stage -Recurse -File | Measure-Object Length -Sum).Sum/1MB,1)
 Write-Host "  staging = $sz MB" -ForegroundColor Gray

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.9",
   "entry": "index.html",
-  "generatedAt": "2026-07-19T17:20:28.563Z",
+  "generatedAt": "2026-07-20T02:47:12.515Z",
   "files": [
     {
       "path": "_app_main.js",
@@ -13,6 +13,31 @@
       "path": "_app_preload.js",
       "sha256": "bc697bf24532f9331df50cc653d6c2c5a3841fc73baf1b0cff09ecf6f2e769ba",
       "size": 7576
+    },
+    {
+      "path": "_game-entry-shot.png",
+      "sha256": "a3aa287c6bb1db320629fcba420e46e87ce7d6880303e0790c32809ae0494ab3",
+      "size": 500113
+    },
+    {
+      "path": "_ingame-full.png",
+      "sha256": "aa966364c9bcce87a9cca5d55fa3aaa068c8c4c9a63709fca61318adfbda93f5",
+      "size": 429359
+    },
+    {
+      "path": "_ingame-panel.png",
+      "sha256": "1f33f3761fb1d4b23dc65813ca7e8363ddd394ac8eb66bfb7c1d23e8aa8991c4",
+      "size": 868974
+    },
+    {
+      "path": "_ingame-time.png",
+      "sha256": "d55310553f50771aaaf0da97d8de9ecd9e2c3b429396718b20d2faac848bcb3b",
+      "size": 434100
+    },
+    {
+      "path": "_ingame-topbar.png",
+      "sha256": "a34f6b4fedf4f929d34cdc2a5d7af74f937d84ebfc07b72d424fbc09d206191c",
+      "size": 60636
     },
     {
       "path": "_preview_map.json",
@@ -30,9 +55,29 @@
       "size": 5028
     },
     {
+      "path": ".claude/launch.json",
+      "sha256": "f495403b685e527c3d52b3453e8f38fe1271b18e89b70e9d714b7da3fc8e3000",
+      "size": 256
+    },
+    {
       "path": "ARCHITECTURE.md",
       "sha256": "0acbcda11886f8f8c861c02be866db8b6a40fe5a04f6215f455f55f330742ab5",
       "size": 18452
+    },
+    {
+      "path": "assets/audio/bgm/changhe-zhangu.mp3",
+      "sha256": "d556aac0ac333f7d1daf2918c1fd858b9a93b286f26bd4115c1126812e7f5b0f",
+      "size": 3599354
+    },
+    {
+      "path": "assets/audio/bgm/gucheng-junqi.mp3",
+      "sha256": "629cb169c90527f2f54ccbca50d5ba1f05a4bdc31a099f5f60b1a5a1fd3857fa",
+      "size": 4638815
+    },
+    {
+      "path": "assets/audio/bgm/hanwei-fengyun.mp3",
+      "sha256": "d0d0d2fe85af1f7543b994704f569b379f42e28a0c1113b66ebe5f87291a8c2c",
+      "size": 3028284
     },
     {
       "path": "assets/audio/bgm/README.md",
@@ -40,9 +85,1769 @@
       "size": 254
     },
     {
+      "path": "assets/audio/bgm/tianming-hegui.mp3",
+      "sha256": "72fb0bacbbe1fd08130a1e9c05bb9033e41b6f86feb6534eded0b825ed24e5c1",
+      "size": 7415591
+    },
+    {
+      "path": "assets/audio/bgm/yunkai-wanli.mp3",
+      "sha256": "d4fa3f0fcb86f5f85f2cae3e0943d9fba38dd824e4904cbf55b65e830fb1de84",
+      "size": 3765898
+    },
+    {
+      "path": "assets/etl-scenes/etl-01.jpg",
+      "sha256": "dc10ca365b7ea7c84807c4faa0a0659c6fa24f765ceb97f98f911b62d91acea3",
+      "size": 347706
+    },
+    {
+      "path": "assets/etl-scenes/etl-02.jpg",
+      "sha256": "185c8361fd7c1ca78cc74833e820121fffe665568f5cc7c72a108f05d71f41ae",
+      "size": 292295
+    },
+    {
+      "path": "assets/etl-scenes/etl-03.jpg",
+      "sha256": "e306098ed6ea563f3ddb8f903e096d3e755d35810c4ae266157852149f59ffa4",
+      "size": 321917
+    },
+    {
+      "path": "assets/etl-scenes/etl-04.jpg",
+      "sha256": "c1820095481646fb9c02ffc19b2872b4c425657823f251afc2370c7fc0721abc",
+      "size": 264781
+    },
+    {
+      "path": "assets/etl-scenes/etl-05.jpg",
+      "sha256": "e306098ed6ea563f3ddb8f903e096d3e755d35810c4ae266157852149f59ffa4",
+      "size": 321917
+    },
+    {
+      "path": "assets/etl-scenes/etl-06.jpg",
+      "sha256": "c1820095481646fb9c02ffc19b2872b4c425657823f251afc2370c7fc0721abc",
+      "size": 264781
+    },
+    {
+      "path": "assets/etl-scenes/etl-07.jpg",
+      "sha256": "c3bdfbc0c2e46aabf40585e03d215e49762748c0d877be872b081a5bb2441f4c",
+      "size": 275432
+    },
+    {
+      "path": "assets/etl-scenes/etl-08.jpg",
+      "sha256": "330a5b204e51fc3190bfc0fdbd31c02f4248b73ca2cc5961bffd39a5798945ee",
+      "size": 329029
+    },
+    {
+      "path": "assets/etl-scenes/etl-09.jpg",
+      "sha256": "73a202ccffc1d790ec038be3153dbce05079ef97ce3eb5f81d62f9fc591f0f7f",
+      "size": 391177
+    },
+    {
+      "path": "assets/etl-scenes/etl-10.jpg",
+      "sha256": "d35c2e5c21953834bc1e6e2195fcb0e244586a56567d7f8cc6c16403a2f6074c",
+      "size": 293365
+    },
+    {
+      "path": "assets/etl-scenes/etl-11.jpg",
+      "sha256": "3254043ede9befb66416e3623073c232e15e310c671ead0bfa7310ae338197bd",
+      "size": 258282
+    },
+    {
+      "path": "assets/etl-scenes/etl-12.jpg",
+      "sha256": "fcc9664e0e76b8c48a1f6c3a8ff6cdc39d245a0b86cf761964f549996ca95c46",
+      "size": 291987
+    },
+    {
+      "path": "assets/etl-scenes/etl-13.jpg",
+      "sha256": "1169311231d25139b14c92efc480fcb925bd870f9b42762fd897ac80e5302e5b",
+      "size": 335846
+    },
+    {
+      "path": "assets/etl-scenes/etl-14.jpg",
+      "sha256": "8596922607db934c3728d7fd0cfa97b9436e0aa5faf2be0f0d2528c90d26b57e",
+      "size": 296919
+    },
+    {
+      "path": "assets/etl-scenes/etl-15.jpg",
+      "sha256": "a5f8674cd16d105735b60255160edd9e7b31e78caa4da3a96b97b885a01d11e6",
+      "size": 260224
+    },
+    {
+      "path": "assets/etl-scenes/etl-16.jpg",
+      "sha256": "a29a780cfd70aed3f9f881deffa5badd92f875a206c04bc7a6138f9dfa77bb52",
+      "size": 277699
+    },
+    {
+      "path": "assets/etl-scenes/etl-17.jpg",
+      "sha256": "47bddc6c993d85bccc88fbca41b0274c063f5e8af87b293cdfd42fa630bc4f3e",
+      "size": 279044
+    },
+    {
+      "path": "assets/etl-scenes/etl-18.jpg",
+      "sha256": "512dc1e13a044a38ca78522d244a6794e92a1e27c26879a3322a3c9f6efb5737",
+      "size": 301332
+    },
+    {
+      "path": "assets/etl-scenes/etl-19.jpg",
+      "sha256": "6e8d89d1dbf0a38c3074767f6c6a4cca24800547e3fc5b806418d542058a3cc6",
+      "size": 275722
+    },
+    {
+      "path": "assets/etl-scenes/etl-20.jpg",
+      "sha256": "8cc81ee36dc32f4844b70dca51b0ded57a3f3ec2b3f10343ff19a8b4e1ce12d7",
+      "size": 312350
+    },
+    {
+      "path": "assets/etl-scenes/etl-21.jpg",
+      "sha256": "0a621c9ba4dac329dc9a54b3381b4368a19c354d3029b7fdba2f96d064498849",
+      "size": 315715
+    },
+    {
+      "path": "assets/etl-scenes/etl-22.jpg",
+      "sha256": "bb268f696ff5c09a0a90650c7c0e5c9e7d6b3b5a4149310f074f2be5cc7cc405",
+      "size": 279837
+    },
+    {
+      "path": "assets/etl-scenes/etl-23.jpg",
+      "sha256": "a605c77c054b7694a59f5a51733ca0715fdd91320ee9352f5b045138f7cf99f6",
+      "size": 338711
+    },
+    {
+      "path": "assets/etl-scenes/etl-24.jpg",
+      "sha256": "f489128256a79503860d4380955c7f5386a120e2f75eb86d1642435f5fabbc5e",
+      "size": 305000
+    },
+    {
+      "path": "assets/etl-scenes/etl-25.jpg",
+      "sha256": "60fdccea05d6da8a69ba02d26c6d397d638c19f044edca7d38a1176243b8478a",
+      "size": 339637
+    },
+    {
+      "path": "assets/etl-scenes/etl-26.jpg",
+      "sha256": "a204b1a94657c1cb25276ce2c03c54236aef2acfa68fd62b66d05339a1146e8f",
+      "size": 326605
+    },
+    {
+      "path": "assets/etl-scenes/etl-27.jpg",
+      "sha256": "fe848539f9a26d5bc2d5a699fe6675c3a08592920ec3fda4d8bd4c49421bd9ce",
+      "size": 334155
+    },
+    {
+      "path": "assets/etl-scenes/etl-28.jpg",
+      "sha256": "1d697d24501e4d52013265f2ad805194cea977a82220946cb77e383c2ed1855c",
+      "size": 360757
+    },
+    {
+      "path": "assets/etl-scenes/etl-29.jpg",
+      "sha256": "786a0d0eaba8952738a191d12b5513feed8747a607f4d3aa794f0c6d9a5691bd",
+      "size": 401034
+    },
+    {
+      "path": "assets/etl-scenes/etl-30.jpg",
+      "sha256": "6ccba369807ff9f24165ca0e90bdb87e29b965c856ed6ad1d4811a84b6b2612b",
+      "size": 267794
+    },
+    {
+      "path": "assets/etl-scenes/etl-31.jpg",
+      "sha256": "2ad90a60e09e3f9091f7bb781fe3b4f80f1750bfa88e80c106f1b310fa50a781",
+      "size": 338766
+    },
+    {
+      "path": "assets/etl-scenes/etl-32.jpg",
+      "sha256": "a2a370f9c26bf55cd2a4572ba5992799541e5166045920f318a0fe1233eaf10e",
+      "size": 274261
+    },
+    {
+      "path": "assets/etl-scenes/etl-33.jpg",
+      "sha256": "e4815f34589b39cc0748c0b316e59180909a9302e1a9c5e33ab3e10e30116c76",
+      "size": 328725
+    },
+    {
+      "path": "assets/etl-scenes/etl-34.jpg",
+      "sha256": "8f56ff3f4e76b133d3f9505195213773989384796534df093e161d514affe1fc",
+      "size": 273401
+    },
+    {
+      "path": "assets/fonts/LongCang-Regular.ttf",
+      "sha256": "e5bf2c3f24ef2327c6f136d8f73e2f9dfdf44896fdbeb35a9515f44777bb91bc",
+      "size": 5162508
+    },
+    {
+      "path": "assets/fonts/MaShanZheng-Regular.ttf",
+      "sha256": "b844c59bf20bf530e41c20d6ff12b383b23a2e553b9b68cc89f070869213155d",
+      "size": 5858048
+    },
+    {
       "path": "assets/fonts/README.md",
       "sha256": "4be0f58f9221e03af968f7511c1e44d247b4cadc2401f6f94b2268bc1428bea8",
       "size": 636
+    },
+    {
+      "path": "assets/fonts/ZCOOLQingKeHuangYou-Regular.ttf",
+      "sha256": "54f0c0df4308cd74cd0f2fd3494ae054dbc4a1fd6fa7d71f4807eb4cdd8b4136",
+      "size": 8328684
+    },
+    {
+      "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf",
+      "sha256": "a42b620140f493db42f741351dfbf343c0936d58588ee8004b8b2a218d997ff1",
+      "size": 6313808
+    },
+    {
+      "path": "assets/portraits/shaosong/俺巴孩.png",
+      "sha256": "3d153e87a754ab9992b5e6f080cf586b5bfc0271187ae36a67cc7b9e7e1afe2a",
+      "size": 3946186
+    },
+    {
+      "path": "assets/portraits/shaosong/把儿坛.png",
+      "sha256": "e0c31a205089d810c8c95c450824d06fa98d3120dfc13baff595b92123688fca",
+      "size": 3468085
+    },
+    {
+      "path": "assets/portraits/shaosong/蔡松年.png",
+      "sha256": "80d6b1d677d83d6bf06851dae0e6eff2b983f3763b9a8d8a7acd9de883069fbd",
+      "size": 3622187
+    },
+    {
+      "path": "assets/portraits/shaosong/察哥.png",
+      "sha256": "9fbefe4542d069181be02932906098fe010e83a69b9579670c506d2006ba93c9",
+      "size": 3729126
+    },
+    {
+      "path": "assets/portraits/shaosong/陈规.png",
+      "sha256": "fcd5af84cbb19cbc9c1bb8abccced999a212bbc537e2ffeb88d8099e1c2882f2",
+      "size": 3387502
+    },
+    {
+      "path": "assets/portraits/shaosong/陈与义.png",
+      "sha256": "ac2715a55f16ba58cdbba3d7bfbf392c1cf7c2a58dd7a09387fef7958b771e8a",
+      "size": 3476610
+    },
+    {
+      "path": "assets/portraits/shaosong/董先.png",
+      "sha256": "ce173c4771279986d4efc3cc2cc5b0fce0f1b2b6d0500087d7ee729e9793acab",
+      "size": 3791854
+    },
+    {
+      "path": "assets/portraits/shaosong/杜充.png",
+      "sha256": "41fdcb1ff3f63b0feb66e9bde517d9d3f761414cd15fe1ff46bd5016c9712033",
+      "size": 3422596
+    },
+    {
+      "path": "assets/portraits/shaosong/段正严.png",
+      "sha256": "ca53d0635732b7def931adc3e2ce4e751c39af94bac6dace6fdfd1d11f6e4ee7",
+      "size": 2847410
+    },
+    {
+      "path": "assets/portraits/shaosong/范致虚.png",
+      "sha256": "c0f1f235c2e3b9ab231a50a061e46548109cd17f7aab7462499950def6b1173c",
+      "size": 3512382
+    },
+    {
+      "path": "assets/portraits/shaosong/傅亮.png",
+      "sha256": "527f6f741c116b89cfa45ec7d880597adc9da1a5c69968268e4f634ade386428",
+      "size": 3867123
+    },
+    {
+      "path": "assets/portraits/shaosong/富直柔.png",
+      "sha256": "1f2a32aa775b2e07f55e122c3d96b9605ac96ff75783042e456ad36e45d70846",
+      "size": 3508607
+    },
+    {
+      "path": "assets/portraits/shaosong/高量成.png",
+      "sha256": "beed03b5d5ce6bc9beed01d47903dc10a28f74642d8ef0544fc5c036ed10e5a5",
+      "size": 3859725
+    },
+    {
+      "path": "assets/portraits/shaosong/高令则.png",
+      "sha256": "a344e4e0547bcdb3c30d6b7ef6113343753cb586a1a95ee7f6b15b60e0e6e7ef",
+      "size": 3811724
+    },
+    {
+      "path": "assets/portraits/shaosong/高庆裔.png",
+      "sha256": "48942fab6e8003d1b635bbe8599a963c0aa08f036fac546c31709cdf39db6c6b",
+      "size": 3380896
+    },
+    {
+      "path": "assets/portraits/shaosong/高桢.png",
+      "sha256": "7be3bfcc978ec9f1e5699804a2dbeaaa606f268069d8fa81fc3b716380cf6ba2",
+      "size": 3214544
+    },
+    {
+      "path": "assets/portraits/shaosong/贡噶宁布.png",
+      "sha256": "d31b3e1dc806cad57f25cdf635e68c20c28febb2fbb1c531e7a75f60f47eee29",
+      "size": 3407825
+    },
+    {
+      "path": "assets/portraits/shaosong/关师古.png",
+      "sha256": "da64edcd29e82b845249d8bde1b17e3300a5654c0fdeac7d5c200797e3c61f80",
+      "size": 3851755
+    },
+    {
+      "path": "assets/portraits/shaosong/郭浩.png",
+      "sha256": "5ab8ecdab863e364d9acf4d6a21abfc605d0ee98d3de393a1de96b23067dc6e6",
+      "size": 3443744
+    },
+    {
+      "path": "assets/portraits/shaosong/韩昉.png",
+      "sha256": "179695be9e0cee2c52fe0fdddaca53e9c9c8a1d222b97b183051d556b001864d",
+      "size": 2357677
+    },
+    {
+      "path": "assets/portraits/shaosong/韩企先.png",
+      "sha256": "f287297cb0fce34ecd83caea977afa31c9d19d20edb7261aebc774409928ebc6",
+      "size": 2359216
+    },
+    {
+      "path": "assets/portraits/shaosong/韩世忠.png",
+      "sha256": "f542c5813794de4a20023bf88133c1a01fea34b6ccc9385d9300988c12048cff",
+      "size": 2926317
+    },
+    {
+      "path": "assets/portraits/shaosong/韩肖胄.png",
+      "sha256": "ae6809ea2368840c99a2c889a1c276b160d195cb9709b7bb153c2e6ad52d6630",
+      "size": 3384366
+    },
+    {
+      "path": "assets/portraits/shaosong/郝晸.png",
+      "sha256": "d3495bf73f463543acd36b22748f8fb4a95195a2cd4c75caeefdc588ca8af6b5",
+      "size": 3607262
+    },
+    {
+      "path": "assets/portraits/shaosong/洪皓.png",
+      "sha256": "f75905288f96f66f64e94cf4598a0ea9b9328c708280c8a61514bd860ecb65ef",
+      "size": 3412582
+    },
+    {
+      "path": "assets/portraits/shaosong/呼延通.png",
+      "sha256": "6b1f9b7062a2b6da5220025aec33dd4118b4c8db80ed191b8e85e370a6182ffb",
+      "size": 3687319
+    },
+    {
+      "path": "assets/portraits/shaosong/忽图剌.png",
+      "sha256": "94f3e1c8152edf1977ba826d2f7f29c6440fe030da04923622ab8d69d11da01f",
+      "size": 3645000
+    },
+    {
+      "path": "assets/portraits/shaosong/胡安国.png",
+      "sha256": "3303e1717a52688774feb9f843b4a7a2bdb13a4026923b0239cae796313ae841",
+      "size": 3196513
+    },
+    {
+      "path": "assets/portraits/shaosong/胡闳休.png",
+      "sha256": "102e3cd83b2e0707e21f835955241b0434698145573e5eb5a5741c5642d56622",
+      "size": 2704480
+    },
+    {
+      "path": "assets/portraits/shaosong/黄潜善.png",
+      "sha256": "401f041adb923d1e529be405d4c1fd8dd3a96af2d9121f770c58844db17822b8",
+      "size": 2746972
+    },
+    {
+      "path": "assets/portraits/shaosong/解元.png",
+      "sha256": "741eff668b70abe1e77f2dec414e539dce72f828760f43909d2c13a481f578d4",
+      "size": 3558974
+    },
+    {
+      "path": "assets/portraits/shaosong/金富轼.png",
+      "sha256": "747d313bc3325808b30333d73daacd4e775ae4644ee0e885236b1b3877d4c273",
+      "size": 2456293
+    },
+    {
+      "path": "assets/portraits/shaosong/金富仪.png",
+      "sha256": "6cd35ced605446b6ae987551bb9ae501cf62f7b1f0f9cc83de8f819fdeef53d2",
+      "size": 3342890
+    },
+    {
+      "path": "assets/portraits/shaosong/巨师古.png",
+      "sha256": "ef17621de9859a5973f769782f9ef2203c4fe9c5d193a3c43c9418f27b4f539c",
+      "size": 3270823
+    },
+    {
+      "path": "assets/portraits/shaosong/康履.png",
+      "sha256": "4168bad54db4ce4485ffd2d4997b8ba798734af62ce5903e71fdd3e4506cf741",
+      "size": 2371488
+    },
+    {
+      "path": "assets/portraits/shaosong/黎伯玉.png",
+      "sha256": "61e96c1821c211052d5a328bc71e9f03290efc5a09c1924b438dd564441707c2",
+      "size": 3525600
+    },
+    {
+      "path": "assets/portraits/shaosong/李纲.png",
+      "sha256": "dc35dabc9d60b1f15198e1a8c9473483733535aca7290a154be1beb7521c9406",
+      "size": 2559701
+    },
+    {
+      "path": "assets/portraits/shaosong/李横.png",
+      "sha256": "2fbff1596a5e64c26ea85442223ace0786f7b7020c0d0548140aaa361cf7be95",
+      "size": 3604708
+    },
+    {
+      "path": "assets/portraits/shaosong/李乾顺.png",
+      "sha256": "3757c4e4c0d104c7a4d56a978cacec019adfcb523856573507855d276ba98b14",
+      "size": 2785954
+    },
+    {
+      "path": "assets/portraits/shaosong/李仁礼.png",
+      "sha256": "d44a01c4cee5495aa4fd9c77797cf9eed9e5f093c0f679318db5c44aa35dcf77",
+      "size": 3648964
+    },
+    {
+      "path": "assets/portraits/shaosong/李仁忠.png",
+      "sha256": "5ed4895d6975c171ce0870b65f6af8593cf3bf616db44ddf78347cbf60ba29bf",
+      "size": 3483678
+    },
+    {
+      "path": "assets/portraits/shaosong/李彦仙.png",
+      "sha256": "abc61fe6b70756eb70cdad108182b35f9604d4704d7e8785890bace2931c2207",
+      "size": 2915084
+    },
+    {
+      "path": "assets/portraits/shaosong/梁红玉.png",
+      "sha256": "64b1754261f68e26878f6c6e376990697888c7efc0733a0aa43f3c94f23db2b1",
+      "size": 2837985
+    },
+    {
+      "path": "assets/portraits/shaosong/林景默.png",
+      "sha256": "aeb615474808262388bbdde0cf3f906aa414e3a32b99c40fa6ca22f3faa2c481",
+      "size": 2546141
+    },
+    {
+      "path": "assets/portraits/shaosong/刘光世.png",
+      "sha256": "8c6a9b1f1f61aab77cc1dbbbfd0ad3d4338ae4930b512f25a7df5bb9a06265e8",
+      "size": 3624296
+    },
+    {
+      "path": "assets/portraits/shaosong/刘锜.png",
+      "sha256": "d6bab33e52d128c55c615f43acee1993cdc7c52762d6e7955ab332938f704377",
+      "size": 2945549
+    },
+    {
+      "path": "assets/portraits/shaosong/刘庆覃.png",
+      "sha256": "cdaed8dafe3e7e4b2303170004506b97e993f4231d15271e9493359cae48b22b",
+      "size": 3595119
+    },
+    {
+      "path": "assets/portraits/shaosong/刘锡.png",
+      "sha256": "7fee2b5c24fa841eba367132e0ea2cb3726a3f637e155c4e9139419daa01925e",
+      "size": 3367450
+    },
+    {
+      "path": "assets/portraits/shaosong/刘晏.png",
+      "sha256": "c3422ce70d30c031b5f5efa41b4bfd006a7ad5588f287d6dbc10cffc435a1288",
+      "size": 2362319
+    },
+    {
+      "path": "assets/portraits/shaosong/刘豫.png",
+      "sha256": "84191e1fa81adc87d0b46cfd2e0c677ff4d891ba0ae122a38acb5b33284e51aa",
+      "size": 3184638
+    },
+    {
+      "path": "assets/portraits/shaosong/刘正彦.png",
+      "sha256": "97aa63790b372c35f474d7cf8c66a60c3ad52eeb2a4c8c59b75cc7b5b0fc4ba5",
+      "size": 2687046
+    },
+    {
+      "path": "assets/portraits/shaosong/卢益.png",
+      "sha256": "3a0dc27aae0aec64ca1c7dd095630efd066d2ce40952486a00121db334e3c5f7",
+      "size": 3475836
+    },
+    {
+      "path": "assets/portraits/shaosong/路允迪.png",
+      "sha256": "0bbeef279eeb6b61fce10470bd16f0c74af2c9897775db5aaf5a03a66d886993",
+      "size": 3420284
+    },
+    {
+      "path": "assets/portraits/shaosong/吕好问.png",
+      "sha256": "fb938e7de93f4427d9be9cf7624b1d0fb572d57241d85ee39592e1e698197fb4",
+      "size": 3522410
+    },
+    {
+      "path": "assets/portraits/shaosong/吕颐浩.png",
+      "sha256": "0a3d0fb9e3d7ab62a7bd05ea83928a746a0b0a7a29b1a9c8ece681b25855aa8c",
+      "size": 2829127
+    },
+    {
+      "path": "assets/portraits/shaosong/孟皇后.png",
+      "sha256": "86ffb475bf4e1b7b1cbae6e31d1a7e99a89f7e9b7c8aedbe0e08064ff5a83a00",
+      "size": 2600579
+    },
+    {
+      "path": "assets/portraits/shaosong/孟忠厚.png",
+      "sha256": "8e3dec051efece5cea83cdacc7179555c523ede9b50d2e47ff2204d28c6f9c30",
+      "size": 3335716
+    },
+    {
+      "path": "assets/portraits/shaosong/苗傅.png",
+      "sha256": "abf86f957c9308ca2e92f042743224d1a3dfd87e81c24d331330517638c39585",
+      "size": 2883694
+    },
+    {
+      "path": "assets/portraits/shaosong/妙清.png",
+      "sha256": "ea8e85f47331144f76af349bda31caf90b692bc043d794bb81497a84db817588",
+      "size": 3354769
+    },
+    {
+      "path": "assets/portraits/shaosong/牛皋.png",
+      "sha256": "138e2cf28373d05498e06e202c3fc6a1cfdefb7525fd241c394e241738a3db9e",
+      "size": 3532230
+    },
+    {
+      "path": "assets/portraits/shaosong/潘贤妃.png",
+      "sha256": "fcf1915eea30449cf83bbb0c173217b07d569935c17f127156ec2c865f38151b",
+      "size": 2350890
+    },
+    {
+      "path": "assets/portraits/shaosong/庞荣.png",
+      "sha256": "d6d147cfc470e28004eb4d8bfcfa90804aaf047b1ab5186ae677085609bfdfc1",
+      "size": 3313208
+    },
+    {
+      "path": "assets/portraits/shaosong/平忠盛.png",
+      "sha256": "63970499aa93776735ceb42f0ee37d4f875cbebdd252954da9ece9ecce596883",
+      "size": 3665728
+    },
+    {
+      "path": "assets/portraits/shaosong/秦桧.png",
+      "sha256": "d152840c92da52a6ef1b6d2c4830c5bf88dc12114e59a4aafa7b4d89c1d1bf3f",
+      "size": 2544998
+    },
+    {
+      "path": "assets/portraits/shaosong/曲端.png",
+      "sha256": "09c1f9f7396e639b6b4558926b4773563a4330900a75d6d52abca2b2ae6f5d51",
+      "size": 2938483
+    },
+    {
+      "path": "assets/portraits/shaosong/任得敬.png",
+      "sha256": "5cbb37bf6084190da1f0bf1c64631dd1c12812c6e5d01a9b72fe55acf3fe48d9",
+      "size": 3554932
+    },
+    {
+      "path": "assets/portraits/shaosong/柔福帝姬.png",
+      "sha256": "98c9ea92a37b9ecb87314839a7eb073f2af61a392d1a76aa4ca9de06309a4e4c",
+      "size": 3654464
+    },
+    {
+      "path": "assets/portraits/shaosong/时立爱.png",
+      "sha256": "7ba508d6f0619738c813cfc4adfa53e3e04cd46f34b3b0131d60b7d72fd401b4",
+      "size": 3271455
+    },
+    {
+      "path": "assets/portraits/shaosong/滕康.png",
+      "sha256": "a97e91567419679c639294d26ea4aada4bead0f37a990b5b1c4eb2ced44b126b",
+      "size": 3476861
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜拔离速.png",
+      "sha256": "86ef89efc24464f133e88ba4954f15b20e0d6192f9433354a2eafc7e6ab2fbf0",
+      "size": 3546034
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜阇母.png",
+      "sha256": "3d4e47e092de1a8e001993e1ecb14566aabb725576df0004e733e59414ef1928",
+      "size": 3511287
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜杲(撒离喝).png",
+      "sha256": "614c017cb2b969c7527bdd7e169ba26cbeb5e7480cec39cd7016f4eb3ddd3554",
+      "size": 3490365
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜活女.png",
+      "sha256": "996512b8fc00b102c379cc20f4291984c2a15f1df8765a8f05b36958444b5c4f",
+      "size": 3583843
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜娄室.png",
+      "sha256": "a9ea2f7d78c070c13962d6d92ae42feb68ed5eb7b70cbc85cd69e0dc2dc1930c",
+      "size": 2663895
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜蒲鲁虎.png",
+      "sha256": "6c45128803da1e4d5d8d6295396dd6ff3f2aa69937cf6b7d1fb9da61ddcdd285",
+      "size": 3522530
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜挞懒.png",
+      "sha256": "b0d96ac022e0c9a16371689cd3aa1653b44f5cf84c49281c1b87f6eb0d385b4b",
+      "size": 2443253
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜吴乞买.png",
+      "sha256": "a01280aab5117a84ff00d49e700a30319ed21d1ae3a2e47c0d5aef7e7192a895",
+      "size": 2431130
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜希尹.png",
+      "sha256": "cd0c1fb7c7f1d9ac1d41fcaf97e354141a74bb16178b0712e0fad8df0981d7c7",
+      "size": 2386100
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜斜也.png",
+      "sha256": "b775acc4d299d1dbbce7e28f466085e4b50c760d85cb013061c5582051a6d942",
+      "size": 3186067
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜银术可.png",
+      "sha256": "2fee66ef128740c61314be4e1f6ce30773c3371ba1a3d1a1c2517963815d8853",
+      "size": 3637545
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜宗弼.png",
+      "sha256": "50e5ac23e1c4ece2731f5233dc357c5c20f5daae632275aee11945e0f13f6838",
+      "size": 2489196
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜宗辅.png",
+      "sha256": "1050f79905c678ab0fd61eb0c64f9eb0e5b2d76278fb5b6c67c3b76ec4770975",
+      "size": 2655499
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜宗翰.png",
+      "sha256": "849590ce7ab84c5373c93c1be5c69d985f409a5c80cfd0f42f536e380de59c8b",
+      "size": 3002352
+    },
+    {
+      "path": "assets/portraits/shaosong/完颜宗望.png",
+      "sha256": "464ef318d6fc1b76a8dd5a50d7c4f3fa538865b917c6550552d7167c81ec1d71",
+      "size": 2597393
+    },
+    {
+      "path": "assets/portraits/shaosong/汪伯彦.png",
+      "sha256": "dc0a1323529ec9836870024554199ba7b1228886a38e255a3f747dadb2bad4d9",
+      "size": 2627695
+    },
+    {
+      "path": "assets/portraits/shaosong/王贵.png",
+      "sha256": "4a78323fe0d29f82d96e447cf546c1d7ae02943b216ad40a2a5e8001da57a72c",
+      "size": 3645887
+    },
+    {
+      "path": "assets/portraits/shaosong/王楷.png",
+      "sha256": "f428b7c0c023e98177b594916b6cb47bccb06f9bffd03df0f38a2b2ac074485b",
+      "size": 2727631
+    },
+    {
+      "path": "assets/portraits/shaosong/王时雍.png",
+      "sha256": "d0c7363210ef290c191a5d477d9b95d9d36fc99f3bd55d144997433e00bef5f6",
+      "size": 3398066
+    },
+    {
+      "path": "assets/portraits/shaosong/王庶.png",
+      "sha256": "34b6c12f5bed024cefc8ce1572bc0c871a1a021c706d60242d68f495038f29f8",
+      "size": 3545441
+    },
+    {
+      "path": "assets/portraits/shaosong/王彦.png",
+      "sha256": "10cfbfca331e0b97324af318b8ee06c1d6289fd8f0e11bb650c981c19e7373d8",
+      "size": 2822704
+    },
+    {
+      "path": "assets/portraits/shaosong/王渊.png",
+      "sha256": "e0f9193ccd689b156261f6939f008d8087af9980f0909fb4d0cf34a31eae6dc8",
+      "size": 2896208
+    },
+    {
+      "path": "assets/portraits/shaosong/韦氏.png",
+      "sha256": "f9e2f51d5fd93a5ffc2ca3ba0e738ad1fde209f34ab491278d290b1d87d4dc15",
+      "size": 2553209
+    },
+    {
+      "path": "assets/portraits/shaosong/斡道冲.png",
+      "sha256": "fa3f3c65ab98ea18b104098c865ae8f93c056a9c6401a0823216f52aa0e87969",
+      "size": 3423837
+    },
+    {
+      "path": "assets/portraits/shaosong/吴玠.png",
+      "sha256": "aaa9fd99384d792232e1e437ebff98bafadb4679587c69263437df05ab8129ec",
+      "size": 2956787
+    },
+    {
+      "path": "assets/portraits/shaosong/吴氏.png",
+      "sha256": "a7b7499e295928b3a9964d31e3d91704c53b646abaa736b965d3df45a6e79feb",
+      "size": 2352290
+    },
+    {
+      "path": "assets/portraits/shaosong/萧查剌阿不.png",
+      "sha256": "b94a88784617dd6f9538db7fdf88a80cd1c74e9ae67fabf54d558d1bc57d77a1",
+      "size": 3515000
+    },
+    {
+      "path": "assets/portraits/shaosong/萧高六.png",
+      "sha256": "8c9f3f7bab01e9a6485b5b294d24d89d991b2f3ba31c2030ddb0c6939a426d4f",
+      "size": 3152880
+    },
+    {
+      "path": "assets/portraits/shaosong/萧合达.png",
+      "sha256": "09608ac145f935fe89e368eb8936a0e4826128f7e69827eab0fbb8acfc9ba497",
+      "size": 3637472
+    },
+    {
+      "path": "assets/portraits/shaosong/萧庆.png",
+      "sha256": "cb7c6d8a614c8851527944eec3dbab09377c894c5d781934b6b5326ce8ed82be",
+      "size": 2385990
+    },
+    {
+      "path": "assets/portraits/shaosong/萧特谋.png",
+      "sha256": "7498b9e46f769977ee5752a77349e06548853d8c629764ff8693992f381d44de",
+      "size": 3377677
+    },
+    {
+      "path": "assets/portraits/shaosong/邢秉懿.png",
+      "sha256": "a0680d0399870d7c6c4d97aca8e09cd2985487dbb757b796c4665dc9d6eb5317",
+      "size": 2392712
+    },
+    {
+      "path": "assets/portraits/shaosong/徐庆.png",
+      "sha256": "de5f6b78ffe346b9b4fc059a473427ddf34c1edbe53ebac514781c0f6cd9a473",
+      "size": 3390026
+    },
+    {
+      "path": "assets/portraits/shaosong/许翰.png",
+      "sha256": "3bf560e1b13be00bfa73fcefbce128c6115ab7f2c2e74930698ea76071a02aed",
+      "size": 3528535
+    },
+    {
+      "path": "assets/portraits/shaosong/颜岐.png",
+      "sha256": "cbb28e5811f6634f49c66a49fb66fc9b7522cb1627ce129125dc152674ed5a8b",
+      "size": 3141011
+    },
+    {
+      "path": "assets/portraits/shaosong/杨时.png",
+      "sha256": "4d4968a7a6caa347f83d8012ef5cfcbd8919031f90510629db8e7282aa41b74a",
+      "size": 2406745
+    },
+    {
+      "path": "assets/portraits/shaosong/杨惟忠.png",
+      "sha256": "67542fd5fb9b8a10a6a56508bf86ed5879fd0c2fc395160cba307c4a6f0b8dc4",
+      "size": 3611263
+    },
+    {
+      "path": "assets/portraits/shaosong/杨沂中.png",
+      "sha256": "a509b0dbab14410a81d40e2c6424f4da666c1c4f44eb52781b51b9295638e8a1",
+      "size": 2826122
+    },
+    {
+      "path": "assets/portraits/shaosong/杨政.png",
+      "sha256": "7a9ed5ff772556c1aae0ce719df0f48b514305457dd76344b96502f95a9eb468",
+      "size": 3545446
+    },
+    {
+      "path": "assets/portraits/shaosong/姚端.png",
+      "sha256": "f612e4c303ab51d2d53c26fe8105599bde6081b0111bcbc01176ee7d7dc802ec",
+      "size": 3450644
+    },
+    {
+      "path": "assets/portraits/shaosong/耶律南仙.png",
+      "sha256": "c02d09462c71e242e5f320962dd05ee753a86e2574f0778d7ae075420e596f7a",
+      "size": 3659976
+    },
+    {
+      "path": "assets/portraits/shaosong/耶律余睹.png",
+      "sha256": "c805e2d134112577fdfe029d06303fd7c52230f2a0c54579c6ea95d7f460bb78",
+      "size": 2638812
+    },
+    {
+      "path": "assets/portraits/shaosong/叶梦得.png",
+      "sha256": "e6f5deafd19da5600a32b54a7afdce449f93c007d08b510c9ae4daa231377187",
+      "size": 3480567
+    },
+    {
+      "path": "assets/portraits/shaosong/源为义.png",
+      "sha256": "74c09c0dec9f7448516e4157164d96f1360a34674e1d839d93b05ca834b3af30",
+      "size": 3431127
+    },
+    {
+      "path": "assets/portraits/shaosong/岳飞.png",
+      "sha256": "2f48af512a08b17ac411e171f5e36dace96dcecbb01a137a9cd031615489145e",
+      "size": 2712460
+    },
+    {
+      "path": "assets/portraits/shaosong/张邦昌.png",
+      "sha256": "b2f2b92b1ac8f8d72abe2aeda71628366a4d90c80fbf772e6aab760762f4cbf4",
+      "size": 2322241
+    },
+    {
+      "path": "assets/portraits/shaosong/张九成.png",
+      "sha256": "db72ee4c8e61c1ad852fa3367a4666ec33f8b2b425c23b26af0ca7ea5eae2a1f",
+      "size": 3587215
+    },
+    {
+      "path": "assets/portraits/shaosong/张俊.png",
+      "sha256": "564b09da3c226065120ad7a84c4334dd259c60d4b8666024a4339cf3a21ea24b",
+      "size": 2960939
+    },
+    {
+      "path": "assets/portraits/shaosong/张浚.png",
+      "sha256": "1f6b2f0e6d38ad5c5a6b82358c95aaf735bfcd80e57992faf00468d67b4f0b9c",
+      "size": 2619959
+    },
+    {
+      "path": "assets/portraits/shaosong/张悫.png",
+      "sha256": "f1519fce2b0da0eaee6130c240312e82fb16cca4a381a048efa7dd12e067ce09",
+      "size": 3431309
+    },
+    {
+      "path": "assets/portraits/shaosong/张氏(婕妤).png",
+      "sha256": "9d5d7e2ff616ef591a3c4bdee4a99f5516126249a173c2d744833545afc0bb7b",
+      "size": 3672684
+    },
+    {
+      "path": "assets/portraits/shaosong/张所.png",
+      "sha256": "c9a50677d6131f6c1af1ee6d673c831b082f2d662fa78ef5ba660542c537b285",
+      "size": 2801645
+    },
+    {
+      "path": "assets/portraits/shaosong/张宪.png",
+      "sha256": "1e3fac3ce360d24bf04dfceb028f223a896711884ac853fe9c9c060a96a1e12d",
+      "size": 3486989
+    },
+    {
+      "path": "assets/portraits/shaosong/张孝纯.png",
+      "sha256": "0d0ed77a120d72607da8235976ce8286b31e06230548a63ebf8458f41b0134dc",
+      "size": 3319675
+    },
+    {
+      "path": "assets/portraits/shaosong/张中孚.png",
+      "sha256": "188157a97450a942defce9d2af1d366580cf3c791e922f1e2ea94cd2201ba3ad",
+      "size": 3502850
+    },
+    {
+      "path": "assets/portraits/shaosong/赵谌.png",
+      "sha256": "93a589987a8dc22472b9e950adf8e430783cce238a075725d39ffab50b7bc6a2",
+      "size": 2386925
+    },
+    {
+      "path": "assets/portraits/shaosong/赵鼎.png",
+      "sha256": "ad0253a50b50326fecc113848f9fd4f9b6d9333cc77d93a8e9e4926c6de957ac",
+      "size": 2622662
+    },
+    {
+      "path": "assets/portraits/shaosong/赵构.png",
+      "sha256": "17aaab61e4df0fa8585cc354cd0f2afa61f0d76e95278381f0a0dc3867d42b61",
+      "size": 2628871
+    },
+    {
+      "path": "assets/portraits/shaosong/赵桓.png",
+      "sha256": "37e85a1d47196d413f852969c8a6db0ea6c39bd29121431dc0b42f6c7908fd41",
+      "size": 2345337
+    },
+    {
+      "path": "assets/portraits/shaosong/赵佶.png",
+      "sha256": "85fee084a5af80da6d2f5a11305c13086ea53961d4bba084a9108e75bcb1eca4",
+      "size": 2728498
+    },
+    {
+      "path": "assets/portraits/shaosong/赵令畤.png",
+      "sha256": "5eb5031a0cc01eb8b9f8586b62cad8535cb6beff0f5f8381d047379d4e6a56f2",
+      "size": 2421743
+    },
+    {
+      "path": "assets/portraits/shaosong/赵哲.png",
+      "sha256": "d124745b7c8794cce7dbd31e0f2b297934463cff0e1eff09e836e5ed52ee9e32",
+      "size": 3406353
+    },
+    {
+      "path": "assets/portraits/shaosong/赵榛.png",
+      "sha256": "9eabd12e072fb21785b5d957a894eeabf8b7dddff41f707d53ba64768fb9ef5f",
+      "size": 2476879
+    },
+    {
+      "path": "assets/portraits/shaosong/折可求.png",
+      "sha256": "592196318acf454f6552ee87dfa57bb1f8fcc59e3d09f23ca9d5ccf79649bad6",
+      "size": 3488748
+    },
+    {
+      "path": "assets/portraits/shaosong/折彦质.png",
+      "sha256": "55785837c1686badf6d20c3d63de5b6f51e736ac34916b93889681f0ae475d9c",
+      "size": 3416400
+    },
+    {
+      "path": "assets/portraits/shaosong/郑知常.png",
+      "sha256": "05b2ed231108b43d549e316774b7115a3a75335f585af630a2d4a0fc9e551929",
+      "size": 3606417
+    },
+    {
+      "path": "assets/portraits/shaosong/周望.png",
+      "sha256": "a65c4e104bd10c4bdf415017bce062b0bf3fef47030ec42e05944521383fe0a0",
+      "size": 3450758
+    },
+    {
+      "path": "assets/portraits/shaosong/朱凤英.png",
+      "sha256": "64d3f171319098d63e94ae20840420aa32424863f3892d2f0de48fde96cea390",
+      "size": 2678009
+    },
+    {
+      "path": "assets/portraits/shaosong/朱琏.png",
+      "sha256": "cf08feed005229e42952bc8a87ba619afbde63fec41c1ddb8ccc11f4febbb883",
+      "size": 2313419
+    },
+    {
+      "path": "assets/portraits/shaosong/朱胜非.png",
+      "sha256": "526e907f4ffa8d07d73a3f5c461efb6e1da74749c5928b1abed838544689ed04",
+      "size": 2424863
+    },
+    {
+      "path": "assets/portraits/shaosong/朱松.png",
+      "sha256": "5c89fdb4d8b992c084e7124048d119b40737e60782dbd4d0a0167c4f7b1179a1",
+      "size": 3693931
+    },
+    {
+      "path": "assets/portraits/shaosong/宗泽.png",
+      "sha256": "b91638af38b07c75a376ea226f69b29f76ce0d4e25e002856051afbbe80f58c6",
+      "size": 2788814
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_bandit_rebel.png",
+      "sha256": "8372986e612ea0b4e1f56c02e882bbd2f0f1a00a0f86a832a381e7993cf28b82",
+      "size": 3670769
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_east_asian_foreign_civil.png",
+      "sha256": "3009333107fae0b7fadb169f11bcf45c2e28e14a570eca940a6d3e3e78775ab4",
+      "size": 3528676
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_east_asian_foreign_lady.png",
+      "sha256": "35c793d052a11fd538440c8a0363d2f1d02a3d05749c813a53046fdefb39c2c3",
+      "size": 3692200
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_east_asian_foreign_military.png",
+      "sha256": "39788cba853c524a447b7f0dd3006f519c62194e57ca65aabfe00b0b25158967",
+      "size": 3399478
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_east_asian_foreign_monk.png",
+      "sha256": "1161592f639ec57c796a34b398b793af9f99a70df9fec0028ecbf14fd8b560e8",
+      "size": 3492563
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_jin_han_official_defector.png",
+      "sha256": "78185d4db92e82e3c5c1fa3516dd3cd4c55498ffe6b33b5d0e3201f7c8630453",
+      "size": 3369841
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_jin_jurchen_commander.png",
+      "sha256": "0a67c23ff2bc60f594138cdc76719204587aa020bf61c29ee32d4b6f7b018dd0",
+      "size": 3626088
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_jin_jurchen_noble.png",
+      "sha256": "4529751e5dd08f57dc14b7f8edc8f63e2e6cbdcb1cd5ce75ef812fd0746ec5ce",
+      "size": 3204648
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_liao_khitan_exile_commander.png",
+      "sha256": "034c69304b6a9d21a213ed4e4db8e283d7e3abf6290422e9332621fedc9f75ed",
+      "size": 3558506
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_maritime_island_chief_merchant.png",
+      "sha256": "8065467a11a795dadbc47933cca98921e3310b9ae00c1e1ad48fcb410b1f0bbc",
+      "size": 3859457
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_maritime_island_elite_woman_priest.png",
+      "sha256": "0f31911b6031558f85a3360813d877f365320342170f00e19b6579b489e061e0",
+      "size": 3712173
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_maritime_island_warrior.png",
+      "sha256": "a027d9d1692c141bde6cf5cf925e556247d6ecd299bf018db1ba7230b717366c",
+      "size": 3756165
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_misc_male_official.png",
+      "sha256": "fb0c40e6c911b70929732df9dec9b5b34da9bae461d361aa446de98ee7ca82ac",
+      "size": 3429519
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_outer_northeast_hunter_chief.png",
+      "sha256": "74d1adb25c599a32b52960c66a80ccdc7385f420b637076515af4e5e0af671c1",
+      "size": 3899942
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_silkroad_cleric_scholar.png",
+      "sha256": "119b8c461ddadd51ca52f3b5087297746c13bfab2fc8fdbedfe114ac25a90c6c",
+      "size": 3748229
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_silkroad_merchant_official.png",
+      "sha256": "af764c552ea0af2ff19853b7504d4779741b53482a0948ce1c16f79f91f269ad",
+      "size": 3885741
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_silkroad_turkic_warrior.png",
+      "sha256": "6aa457ee218a987abbf64bbe0b8467e65aa4574d6dee6c658f58ee30ee680812",
+      "size": 3737856
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_civil_official.png",
+      "sha256": "000d2ce523f3ae162d623f565c50f866576e1b9b599c1bc0b7fe92294574fd88",
+      "size": 3266932
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_eunuch_attendant.png",
+      "sha256": "bbe2e2a44eae021743a4fc88721b0f3bfc12847ba3dd82359f2a4b8333e1afe0",
+      "size": 3097311
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_female_elite.png",
+      "sha256": "77ced28fb59ea5b5903337c6e1f407ba3d902c99abb776119fcd52fe0be5e43e",
+      "size": 3453997
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_field_officer.png",
+      "sha256": "614d6cd36e2f4f3e24145139bec6c3ba48c3d98330edd5d75f84970a8d0ed092",
+      "size": 3181358
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_loyalist_commander.png",
+      "sha256": "30200c583c9c79da4d61ab93c1034b9314e040b10ba20437f85749dc2dd6fa71",
+      "size": 3566061
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_song_scholar.png",
+      "sha256": "ec17caa9dc8a427165c0d64cce17f2d95bf62e52f5bfb767c64ea6a12cc44969",
+      "size": 3499710
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_southeast_asian_court_chief.png",
+      "sha256": "972d93f1ca3d4b3ea450012d39b5bc657b58c6a0f5f0a795ec9695111637577f",
+      "size": 4019476
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_southwest_chieftain_envoy.png",
+      "sha256": "c4fcb2629de3c4730ce44345bd4b20f8952d5fe6483a842eb4d29daaf8b9eb06",
+      "size": 3555186
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_southwest_female_chieftain.png",
+      "sha256": "5f41cacfb6b561b426df731fed464313084dddd1a63586fdc24e2aac655e5e30",
+      "size": 3544673
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_southwest_priest.png",
+      "sha256": "9c7e7f53c3e2dcf856a07f0b59984a9b986955d586783c3a8f021154e8072ed5",
+      "size": 3429674
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_southwest_warrior_chief.png",
+      "sha256": "7e20393146a4525147045301b2d54d7711f362f758ae7c01fb759a8c6a2a440c",
+      "size": 3685837
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_steppe_noblewoman.png",
+      "sha256": "181070506d57ec4d51625fcb6380cdd282b3d834ffbc60822e658f1af7b447ee",
+      "size": 3786619
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_steppe_scribe_envoy.png",
+      "sha256": "b94bf2389e2185fe91fc34b0ea67e9b7e40f524a4cdb4ea85f068251cb62dc48",
+      "size": 3531446
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_steppe_shaman.png",
+      "sha256": "fb455596e22c78dfb98a91d1813b07de55858905943b08a9695f4c18a7c602f6",
+      "size": 3345777
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_steppe_warrior_chieftain.png",
+      "sha256": "6a5d5c34d2cde8f73f13e8d9f9e538e98cef23af2844c2c035ba28b28b49680d",
+      "size": 3499021
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_tibetan_chieftain.png",
+      "sha256": "83331166542f9bdbc7ab942860d39da80b0583d7349ccca0d33fb77130125faa",
+      "size": 3765548
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_tibetan_monk_priest.png",
+      "sha256": "86903acb3ce8e9e22d0750c5607962b2eb58db18e977b5762756988a02ed9b90",
+      "size": 3240367
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_xixia_frontier_officer.png",
+      "sha256": "6e17497d514f326986cf38bb10e5cafa0ed1e64058d756f36b68305295684e15",
+      "size": 3471593
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_xixia_official.png",
+      "sha256": "fbed73d2db1d06165aa3acf5b530583a993d57fdd1b7a060104b7aba5ebb101b",
+      "size": 3380723
+    },
+    {
+      "path": "assets/portraits/shaosong/generic/generic_young_noble_male.png",
+      "sha256": "fec92607bc9cdded9d51250e3afb1156a0e5c751ffe5858b23b0ea5cfefae2d2",
+      "size": 3561652
+    },
+    {
+      "path": "assets/portraits/tianqi7/阿济格.png",
+      "sha256": "9bd8a200bb1f9cd5a67705eddb5a5be764be8e078631f0d74a29a53c808aa27a",
+      "size": 803203
+    },
+    {
+      "path": "assets/portraits/tianqi7/阿敏.png",
+      "sha256": "54b3d89ea20d68933a8a15b7f71fb915562860ea04b502b6520b1698fbaa2b23",
+      "size": 799674
+    },
+    {
+      "path": "assets/portraits/tianqi7/毕自严.png",
+      "sha256": "9849a62b42dd55817436acec783b1100cbc39101a9db70070f3a61e627e3acfe",
+      "size": 815313
+    },
+    {
+      "path": "assets/portraits/tianqi7/布木布泰.png",
+      "sha256": "3f54da75bd88b0589560435f90957a7571fbad2f6f3f42b81a84a2d26e36975c",
+      "size": 554713
+    },
+    {
+      "path": "assets/portraits/tianqi7/曹变蛟.png",
+      "sha256": "560ecbe38b833f8f4b8e9f44180950c533aa4e0f0cbfe786fba7d72bf247362d",
+      "size": 923983
+    },
+    {
+      "path": "assets/portraits/tianqi7/曹文诏.png",
+      "sha256": "3320083beb6bea47add10b8c5b45def0bfe441d1911a03f341de4290522156b2",
+      "size": 922232
+    },
+    {
+      "path": "assets/portraits/tianqi7/陈新甲.png",
+      "sha256": "1a81082dc58f9a64e9eb19833c0ed0b6a55a3d355afaedbd5f8be2d58fe11a83",
+      "size": 818313
+    },
+    {
+      "path": "assets/portraits/tianqi7/成基命.png",
+      "sha256": "689d77c37984dca8d5bbd42c7ea6fcc5b8bf242a8286fd50c16b2bc0848d166d",
+      "size": 807239
+    },
+    {
+      "path": "assets/portraits/tianqi7/崇祯.png",
+      "sha256": "f923b25a85d4d46ac86ee3eb866b32ce6fb6a2dcbf746b28472923f451e21d64",
+      "size": 699637
+    },
+    {
+      "path": "assets/portraits/tianqi7/春日局.png",
+      "sha256": "92891172adb258ef35c6f69b5b0f64c2235880f1a7ccef0a5f43ff2980db2663",
+      "size": 654406
+    },
+    {
+      "path": "assets/portraits/tianqi7/崔呈秀.png",
+      "sha256": "11d02b1f296400b722777120e2d1dafb460bdc4923ace70ac3068bd08e2e565b",
+      "size": 771473
+    },
+    {
+      "path": "assets/portraits/tianqi7/代善.png",
+      "sha256": "fd1937a1f8f918572b68aa24de984a2acbcba6ef4bfe25b40b1825a3fb3cb9ac",
+      "size": 782787
+    },
+    {
+      "path": "assets/portraits/tianqi7/杜文焕.png",
+      "sha256": "27e7bbc5e55dca2a886a0a2e060819bacba8d2f9f93a00e34e103c52636716f8",
+      "size": 788790
+    },
+    {
+      "path": "assets/portraits/tianqi7/多铎.png",
+      "sha256": "367af106893f4b47623ceb5773695272b680d4ca01df88e10fb3eee7d9702218",
+      "size": 797637
+    },
+    {
+      "path": "assets/portraits/tianqi7/多尔衮.png",
+      "sha256": "235fa3cf70ccc5a5812724fc954c64781441be7539cd40012b7d31fca441c6fc",
+      "size": 755589
+    },
+    {
+      "path": "assets/portraits/tianqi7/范文程.png",
+      "sha256": "4c2ee451e2faef8e0ccf0ccbd21403eba9dd53c2e9c0d7cc78037d468d28010f",
+      "size": 763517
+    },
+    {
+      "path": "assets/portraits/tianqi7/冯铨.png",
+      "sha256": "09892fa60a3ddce520b18c79ff0fa571a390d687edf140e5c11d3f9741a76e7f",
+      "size": 646925
+    },
+    {
+      "path": "assets/portraits/tianqi7/高迎祥.png",
+      "sha256": "a1f83d82bf373d6ae461de9c19d8369712f4d22c15ff83083df247e56def09c5",
+      "size": 653912
+    },
+    {
+      "path": "assets/portraits/tianqi7/郭允厚.png",
+      "sha256": "551d60bc26ffc358d5d0b291fb69df80e271ca33c188f4134d18a88ce2b93b4e",
+      "size": 802533
+    },
+    {
+      "path": "assets/portraits/tianqi7/海兰珠.png",
+      "sha256": "1eb21e8cbdb87249f2f5de19c747a7bfe517d9b15eb5a34581b034bb434fbe52",
+      "size": 701803
+    },
+    {
+      "path": "assets/portraits/tianqi7/韩爌.png",
+      "sha256": "7ec524de605f5968921f85ff2edeffc0d76150f0b7d531b2d70b1d761058c570",
+      "size": 805964
+    },
+    {
+      "path": "assets/portraits/tianqi7/豪格.png",
+      "sha256": "34821486520d8ab04c76ab0661ab9415afe64994eb21d52f160b18f1e550ec79",
+      "size": 809306
+    },
+    {
+      "path": "assets/portraits/tianqi7/洪承畴.png",
+      "sha256": "9dba0530f3667159a3e6510b066fd6add46931f9265210b2133ab25f5a0d302b",
+      "size": 750530
+    },
+    {
+      "path": "assets/portraits/tianqi7/侯世禄.png",
+      "sha256": "748d07580007662e68d0731551171187dbcb9ec0c68991d2dc0069c46074f4a5",
+      "size": 778921
+    },
+    {
+      "path": "assets/portraits/tianqi7/胡廷宴.png",
+      "sha256": "e1a742611db3e977d46fc07a6a9bbb55b3d95e7f38515150e737527496c00a4a",
+      "size": 764301
+    },
+    {
+      "path": "assets/portraits/tianqi7/皇太极.png",
+      "sha256": "dc6b94a01d987e5d35e5784022b71d655557dd6bab56b520829ce968cf844e74",
+      "size": 837926
+    },
+    {
+      "path": "assets/portraits/tianqi7/黄立极.png",
+      "sha256": "a0c52358d135248cfa08662846a0808bd6f5b8249bbe04c22a14fa264328eb0d",
+      "size": 661732
+    },
+    {
+      "path": "assets/portraits/tianqi7/济尔哈朗.png",
+      "sha256": "ced536f34ee8d495418e9d514447609f813b607fa766b3d618786c712fca8408",
+      "size": 750756
+    },
+    {
+      "path": "assets/portraits/tianqi7/客氏.png",
+      "sha256": "58df2ae09a7e9ef65b412d933a1269ac0f9a8aa6d58b3be4f2bbf058ba48107a",
+      "size": 785690
+    },
+    {
+      "path": "assets/portraits/tianqi7/来宗道.png",
+      "sha256": "f242eb55da92ce05c81e02c677f80841b93fd3ab9c5ffdb497e178ff9e493a95",
+      "size": 832692
+    },
+    {
+      "path": "assets/portraits/tianqi7/李标.png",
+      "sha256": "05b41bf0f9fc7ac372fe1bf488cb5fffb360b5dfa76722cdf7c6d438a6ee6dbf",
+      "size": 802043
+    },
+    {
+      "path": "assets/portraits/tianqi7/李国普.png",
+      "sha256": "163c9b69c73ad47c2c9763730a1fca028a7256ae25450e717b6bb136e0f305b3",
+      "size": 605318
+    },
+    {
+      "path": "assets/portraits/tianqi7/李选侍.png",
+      "sha256": "5c0410115135b695f82c278957cd41e490d440c5dbc55b25cd3c86cf609b891b",
+      "size": 652746
+    },
+    {
+      "path": "assets/portraits/tianqi7/李养正.png",
+      "sha256": "37d649e2a79db2d8cdd922a6d504fc6a5f9efe7de5454a87775f5d68ec1c83b1",
+      "size": 775740
+    },
+    {
+      "path": "assets/portraits/tianqi7/李永芳.png",
+      "sha256": "b42f03453af2fe80d9e25ba6a41877910af1320f37a7961eb017edf35163ad0b",
+      "size": 791909
+    },
+    {
+      "path": "assets/portraits/tianqi7/李永贞.png",
+      "sha256": "3f68812e7a2ef2194c87daa1829736c0fa37381f2bfd1dcab74d60c7d7d9f6af",
+      "size": 647414
+    },
+    {
+      "path": "assets/portraits/tianqi7/李自成.png",
+      "sha256": "d039e47bdc9e97961c2b5795fa63abbd23009dc5c1fd88637e723d3620e741fd",
+      "size": 779638
+    },
+    {
+      "path": "assets/portraits/tianqi7/林丹汗.png",
+      "sha256": "6d8c05a1e16c908a5078e798627a43e58a8d91c09d692fb6fdfb827f8be9e099",
+      "size": 835445
+    },
+    {
+      "path": "assets/portraits/tianqi7/林尧俞.png",
+      "sha256": "918e40c6603d1c330a7b29efd5c384f7fb0e3a3a95eae14dde50bce86544bf84",
+      "size": 782289
+    },
+    {
+      "path": "assets/portraits/tianqi7/刘鸿训.png",
+      "sha256": "7e1dfb154d4a4a36bca9c13118af2464dec3ba21b01777d37ece1e31c615e983",
+      "size": 805710
+    },
+    {
+      "path": "assets/portraits/tianqi7/刘诏.png",
+      "sha256": "ffba7794965609bcc1470972935f723070bd1a433c573ad25278d4b75a9c6ae8",
+      "size": 765909
+    },
+    {
+      "path": "assets/portraits/tianqi7/卢象升.png",
+      "sha256": "6e9fcd9880420207916c4e5485d05b664126e99562f5c80e4a3452aa7d2e2017",
+      "size": 795886
+    },
+    {
+      "path": "assets/portraits/tianqi7/满桂.png",
+      "sha256": "73f6791962a8558d8d07e40e0bbfd2677b468a11b4c4756aec630f712d1958a0",
+      "size": 618523
+    },
+    {
+      "path": "assets/portraits/tianqi7/莽古尔泰.png",
+      "sha256": "1e7c5461f4b754bab28ec2d480439cb504d2ed5078d0664460fd21d400b53bb2",
+      "size": 832678
+    },
+    {
+      "path": "assets/portraits/tianqi7/毛文龙.png",
+      "sha256": "c57704dfc9168f961c14e283edeb82932e29b3f5757edae8bab73ef4b4638244",
+      "size": 805615
+    },
+    {
+      "path": "assets/portraits/tianqi7/毛一鹭.png",
+      "sha256": "938056031c5c4c3aa75d60317cef50121950650ef909414b419617139f6edf11",
+      "size": 639852
+    },
+    {
+      "path": "assets/portraits/tianqi7/囊囊太后.png",
+      "sha256": "0208faba7548e2cb325ae4d4f5e04e2c645fc3f6e3f2736e480446d6599440c0",
+      "size": 688264
+    },
+    {
+      "path": "assets/portraits/tianqi7/宁完我.png",
+      "sha256": "fcbf8c20d355bac5b2b4c6bbbf7e58802d1d2dc83d4318a79b70719f28425f63",
+      "size": 809149
+    },
+    {
+      "path": "assets/portraits/tianqi7/潘汝桢.png",
+      "sha256": "2e5e49b3dcb31290b3ead39738df947ab7839b332e5336288fabb47ca18b2cef",
+      "size": 799899
+    },
+    {
+      "path": "assets/portraits/tianqi7/钱龙锡.png",
+      "sha256": "c4f49d7f48dc127054cca22d588740db96e5eae30be006bfffbc801279dd7546",
+      "size": 774100
+    },
+    {
+      "path": "assets/portraits/tianqi7/秦良玉.png",
+      "sha256": "a74decd5774e98bfa9bb4ff904f570dfc340923e3d098a4d09004a7a9cb8dcc9",
+      "size": 796093
+    },
+    {
+      "path": "assets/portraits/tianqi7/渠家祯.png",
+      "sha256": "db243de5c65568b0cf55a4f5ee211432d217c38543e381cc3c1128d8dd2de326",
+      "size": 772865
+    },
+    {
+      "path": "assets/portraits/tianqi7/仁祖李倧.png",
+      "sha256": "9911c6cfa36da9665fc91f87e0b2b0c5c9c5be49a9a907861879dd0e390d8927",
+      "size": 765288
+    },
+    {
+      "path": "assets/portraits/tianqi7/奢崇明.png",
+      "sha256": "9c4c7e5f7c57c40fd598786419695cc7ab8ef09e166680a47abaf7d2d8ebed05",
+      "size": 859403
+    },
+    {
+      "path": "assets/portraits/tianqi7/施凤来.png",
+      "sha256": "2a4243ff80343d9f981384191e725a5780903d0e857d068d769360a2ff7c70d4",
+      "size": 631769
+    },
+    {
+      "path": "assets/portraits/tianqi7/苏泰太后.png",
+      "sha256": "ce705b470261ce05efafc7513b65442988b5127e1d2accbd93e81d4083d140f2",
+      "size": 674462
+    },
+    {
+      "path": "assets/portraits/tianqi7/孙承宗.png",
+      "sha256": "3f363a8a4a5e8eb78e4e6b98b731d928628887bb01f066f2f16af537669c0a5d",
+      "size": 763555
+    },
+    {
+      "path": "assets/portraits/tianqi7/田川松.png",
+      "sha256": "24cdc9103029676fb8b6c0b8825fc33800a53610b8d32e5d02f3f86a80da8128",
+      "size": 672268
+    },
+    {
+      "path": "assets/portraits/tianqi7/田尔耕.png",
+      "sha256": "01e63a1bdab711624e01b1db52eb8be81b61d8803bcc81977f9f90d08da50135",
+      "size": 853516
+    },
+    {
+      "path": "assets/portraits/tianqi7/田贵妃.png",
+      "sha256": "651d591fcc49e348c8e61019cc199485ec571ae748367b046663133ce1cc0784",
+      "size": 690894
+    },
+    {
+      "path": "assets/portraits/tianqi7/佟养性.png",
+      "sha256": "4776ab2d0aa9c036d9680c0e7ebe04fe2fd0396cbda058fa5daab23ca5ba44e0",
+      "size": 799218
+    },
+    {
+      "path": "assets/portraits/tianqi7/涂文辅.png",
+      "sha256": "28f1e524bcf17d1e88e2e003d9a994b153c8e7afc894186055b92d593e565657",
+      "size": 652050
+    },
+    {
+      "path": "assets/portraits/tianqi7/王嘉胤.png",
+      "sha256": "3b446fba97966c79ef7a2bfc9fe9de1e8242a5940428c2317e3bd2f55ae542bc",
+      "size": 622510
+    },
+    {
+      "path": "assets/portraits/tianqi7/王体乾.png",
+      "sha256": "ccecc03294fdbfcd66496d1cbe2190adfbbdcc4d96b4a48c2a6ddabd65a466f6",
+      "size": 644792
+    },
+    {
+      "path": "assets/portraits/tianqi7/王在晋.png",
+      "sha256": "6c6b8232923bb4a56bdb670499aa40fc438b8e2cef13effa7e0d2b32c4d36d0e",
+      "size": 806673
+    },
+    {
+      "path": "assets/portraits/tianqi7/魏忠贤.png",
+      "sha256": "7230526dcadd442efff1459d7a283bb326cc0a6499794e9ecee7d10258fe1cc0",
+      "size": 789274
+    },
+    {
+      "path": "assets/portraits/tianqi7/温体仁.png",
+      "sha256": "fc73eeb59682d0c5772f7ffc996e7d29830d7b18a69aa8342c8ba2e691fdd938",
+      "size": 785347
+    },
+    {
+      "path": "assets/portraits/tianqi7/吴三桂.png",
+      "sha256": "a749de198ded0662b4f998f2ac141946468bdba81f4cfcf1f81ec087e87dacca",
+      "size": 795945
+    },
+    {
+      "path": "assets/portraits/tianqi7/武之望.png",
+      "sha256": "4894bdd9f4beeae4bb3aea53d95c3f44c465ad83661c1073ed5fd7048ee6fddc",
+      "size": 640757
+    },
+    {
+      "path": "assets/portraits/tianqi7/徐光启.png",
+      "sha256": "6b7377dfead5bc17f04a6ca5b10532c66b0e2ed6124c779096d38f3e079bc72c",
+      "size": 767223
+    },
+    {
+      "path": "assets/portraits/tianqi7/许显纯.png",
+      "sha256": "c013c18206c34f1698842303f5d4035c14fff7d31b9051f7c3db8d561a466608",
+      "size": 592712
+    },
+    {
+      "path": "assets/portraits/tianqi7/薛凤翔.png",
+      "sha256": "acf01b6f602e241bfa0e98c14315e8f2880fd60deec713e5f92d8198f919b973",
+      "size": 830406
+    },
+    {
+      "path": "assets/portraits/tianqi7/薛贞.png",
+      "sha256": "f613ac117e27652e6392fb1d30a495d7b5462705b5b6dd10a18412baff8b12ae",
+      "size": 811513
+    },
+    {
+      "path": "assets/portraits/tianqi7/阎鸣泰.png",
+      "sha256": "34442c5f605eaad692840cea33205b0898f6e42e764406082fd8f77285d4745f",
+      "size": 640964
+    },
+    {
+      "path": "assets/portraits/tianqi7/杨鹤.png",
+      "sha256": "5702df8b7771acacfd1262d999d6e3800488a9ac9379e0a68aa4a9c31a84a86e",
+      "size": 669898
+    },
+    {
+      "path": "assets/portraits/tianqi7/杨所修.png",
+      "sha256": "f760e8c3898ef1f2804e340a19e0c4ea5778cec53212a5a5c94d8a6f98f1c309",
+      "size": 788882
+    },
+    {
+      "path": "assets/portraits/tianqi7/袁崇焕.png",
+      "sha256": "646c3f150585d76cabddd9ea89ab3fa708876bc6e3f67abe63e9b98d35632e4e",
+      "size": 795296
+    },
+    {
+      "path": "assets/portraits/tianqi7/袁贵妃.png",
+      "sha256": "20d6ce236332525f9e4c861a4957b63ad9de2167967b0a8215a19c4582e736ce",
+      "size": 630834
+    },
+    {
+      "path": "assets/portraits/tianqi7/张瑞图.png",
+      "sha256": "22c6db7e9568fb6f872ab3b4be2a41f1ab9c78b9708e4883126fdd34f39ebbd5",
+      "size": 636068
+    },
+    {
+      "path": "assets/portraits/tianqi7/张献忠.png",
+      "sha256": "211f25cc1d6dae8da6eeed5b5995d9ec953cf3be2affca6fee2ff937978eba75",
+      "size": 805775
+    },
+    {
+      "path": "assets/portraits/tianqi7/张懿安.png",
+      "sha256": "25baf115f0c7904c5edf90697e5665d3d5a435da1a705280a93cba5b8543e5b7",
+      "size": 682527
+    },
+    {
+      "path": "assets/portraits/tianqi7/赵率教.png",
+      "sha256": "a0727312e0f09fae3a91e3ae53ea94abe33632c9898b627539c98a5f1c509233",
+      "size": 830894
+    },
+    {
+      "path": "assets/portraits/tianqi7/哲哲.png",
+      "sha256": "ed25a40a15f6887e83c294aa0a0a0bb06e66354dfdea03b4ea1c520665c5f844",
+      "size": 689007
+    },
+    {
+      "path": "assets/portraits/tianqi7/郑芝龙.png",
+      "sha256": "2ab20c65f85e2c899bb6a77796990f258ddf3ee9ee4a040d6534d24431c3ad4a",
+      "size": 812158
+    },
+    {
+      "path": "assets/portraits/tianqi7/周皇后.png",
+      "sha256": "6171d7f1bc6c3cad124034e5ec288c3fe6f229b2354e7e09ba3711d5034bc156",
+      "size": 742746
+    },
+    {
+      "path": "assets/portraits/tianqi7/周延儒.png",
+      "sha256": "404a02c4f7fa8647629ef64bbc5d78547bcfccd0a20b3559e145b3bfb8c30ed4",
+      "size": 777764
+    },
+    {
+      "path": "assets/portraits/tianqi7/周应秋.png",
+      "sha256": "a851b5b203d47c9154c101ade0994c03c69859580a1d5876d2b2db84e1926fe2",
+      "size": 680155
+    },
+    {
+      "path": "assets/portraits/tianqi7/朱梅.png",
+      "sha256": "a4fc64f8bd1c8e58f78ddd59186bd20b2ac6e37d4a57231e51c417899ab9cd27",
+      "size": 819926
+    },
+    {
+      "path": "assets/portraits/tianqi7/朱由检.png",
+      "sha256": "cee86f00ce7be6e6f8b9ffece00b5eb3c5d4291fd742ec23bd6e09f358bba667",
+      "size": 684555
+    },
+    {
+      "path": "assets/portraits/tianqi7/祖大寿.png",
+      "sha256": "dbf0905b5bbefc5869851adcb572d007580dcbc2033d27422a3c9af2e3c472fe",
+      "size": 632348
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-court-woman-01.png",
+      "sha256": "044afeb05c34dac2d93f6779af91d0831f5d1bcd696f9b1b0224676f7265afaa",
+      "size": 965699
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-court-woman-02.png",
+      "sha256": "37293b33fb7a4aa885c5cea6a6272615df91b68b76b058ea29b471cf217ee28d",
+      "size": 958779
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-european-contact-01.png",
+      "sha256": "9f58b11479c371fe42a8f4cfb60c45e7122b37532f0623374251cba1c8d64a34",
+      "size": 881126
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-frontier-foreign-01.png",
+      "sha256": "66806335af1d08fda78ae0cc7a53315361181d4cbec169f36ee6262278765bff",
+      "size": 991188
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-japan-ainu-01.png",
+      "sha256": "0da9aee8cd74a93687f49a48b1b437fbaa7cd9e1a16fc155da101a2d0d4eecbe",
+      "size": 901200
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-joseon-court-01.png",
+      "sha256": "e6f3376ea19de98e92b19e1ebb3577b91d4ce380ec79644f231c6ce9efcb7126",
+      "size": 886606
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-joseon-court-02.png",
+      "sha256": "f4c8b91d27a318aa2b2a0f96a9c18970e4eede71f5e61be0747755074ef9386a",
+      "size": 875530
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-later-jin-manchu-mongol-01.png",
+      "sha256": "12e5a1f6ce5597941d0e4e9db4ed245654c608f0caacd37bd2c5183eccc74931",
+      "size": 931747
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-later-jin-manchu-mongol-02.png",
+      "sha256": "4e0b4a9c4687eeffaeaf7262b2c1c76d5fa33f5f8540af0d4f4005fa5b808cf3",
+      "size": 920157
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-maritime-zheng-01.png",
+      "sha256": "2d09e3a2a65734f6670d5a434fb98e7e34d0bf397d09981a1dde13f3a3153f81",
+      "size": 948219
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-maritime-zheng-02.png",
+      "sha256": "3a399ac6eb74f8c985d7a0a43bc9776e8a7d4f7fec23765134c50d1719fe07c9",
+      "size": 970888
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-civil-official-01.png",
+      "sha256": "4a1a4a92c7f5772d9244a8f5a4bfcc0a3cec2f8e3c0b83653cc20bacb2c18d94",
+      "size": 860790
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-civil-official-02.png",
+      "sha256": "26666db5d11877246b0c47352b9fb3b763cc5563d441bd311e09d03739ce39d2",
+      "size": 889035
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-eunuch-01.png",
+      "sha256": "db50e5569b330f5d782a7ebe9d27e76163a477c71d7a183b8e0ffbdcaff581f4",
+      "size": 804778
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-eunuch-02.png",
+      "sha256": "06d5b4ecf9a2db667ac3f9ecf62a1aa8ca724956a43c9223694f7fda73d5b31b",
+      "size": 875628
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-general-01.png",
+      "sha256": "3320083beb6bea47add10b8c5b45def0bfe441d1911a03f341de4290522156b2",
+      "size": 922232
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-general-02.png",
+      "sha256": "560ecbe38b833f8f4b8e9f44180950c533aa4e0f0cbfe786fba7d72bf247362d",
+      "size": 923983
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-scholar-official-01.png",
+      "sha256": "2ad79f533e9bf008caa06976633587eccdecd6333f6c72c94937b55c1762a09b",
+      "size": 941842
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-scholar-official-02.png",
+      "sha256": "15edaa015515295ecc43080ab3b1322bc6203fb6329ef37848d97c741903eba3",
+      "size": 889341
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-yandang-official-01.png",
+      "sha256": "6b5ffeffd14681053abc2f06a7fd5eb8a04eb15c4ab078dbd961b12c8165a0d5",
+      "size": 834441
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-ming-yandang-official-02.png",
+      "sha256": "ba2fc7ae4f1444ae59a345bb8597c28ddc43e19a7020e20d5621a654e829cec0",
+      "size": 805845
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-rebel-tusi-bandit-01.png",
+      "sha256": "1bff27be742bf44ffe3cb83cdb49b7f436b16d8435be0e03a7d8d950303a4050",
+      "size": 958117
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-rebel-tusi-bandit-02.png",
+      "sha256": "c67016531643e9a927e341902a8ad1421b02e43d53537e804130df03d7dfeea1",
+      "size": 975565
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-steppe-khan-noble-01.png",
+      "sha256": "ed757d9f43c57c5ef8ddccfa196ba17b56dece98db90b844dcbf6e6273d2c343",
+      "size": 992600
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/generic-steppe-khan-noble-02.png",
+      "sha256": "0587203b63e3c44e7e149d8c43b749d03c2427790ccdbdd41453c7ef63966b3c",
+      "size": 980490
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-civil-ai.png",
+      "sha256": "6a8bfd96752ddd6faf7b13e5ba152de28b59c15fca7e98c2f3e098024498e942",
+      "size": 644699
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-emperor-ai.png",
+      "sha256": "54c3836aaf35f93db5b90210bd810a8f01ad6f987c65cc2565fb8852120bd4cd",
+      "size": 695338
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-empress-ai.png",
+      "sha256": "232df49b718bcb8e2c4b070541b8dcbc1248fc3d89be3af3394bb6f507146bb1",
+      "size": 687207
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-eunuch-ai.png",
+      "sha256": "3669fda66ed06c9db23171b09c971b616703df4cfc61c9c5e9af18a88f04e9d2",
+      "size": 640832
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-general-ai.png",
+      "sha256": "01d58f5e24c379b1e77b32843ced6e740b14ed9f99631f98c943b0f609c039c3",
+      "size": 684043
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/ming-scholar-ai.png",
+      "sha256": "5c2a28692f69c2e224d156bc533723e030575b3228aa7d4042ebb6be3758a5da",
+      "size": 652189
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-01.png",
+      "sha256": "e834bb3c5fa1067711344249078003fe3538a6700e3d39e6acf101b3481c6fd1",
+      "size": 630579
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-02.png",
+      "sha256": "9108124bc865a6f562fc487daf0aaf795bdcc8e078ca7ee6129260c5b11e2c57",
+      "size": 635450
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-03.png",
+      "sha256": "9e1208775832f7bf044ebfc5310d97ea7dcf50a3540ffd573277285a51c9911d",
+      "size": 614305
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-04.png",
+      "sha256": "f5212639d29164aececcd1398a07ea67f4fa9921d58629a516342509c6067cc5",
+      "size": 620109
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-05.png",
+      "sha256": "7b8c8e6791c03405702dd6519c860904688a356ad69d309f61e14f12f3f16fdb",
+      "size": 635517
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-06.png",
+      "sha256": "226df503d9f29bc70e87a1cef4c0a60f179fe08969781a5a2324934a040460d8",
+      "size": 613792
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-07.png",
+      "sha256": "a723b09df442905a430a5d3729a00c6a1584f78ae66cd423f7ddcef873bb248f",
+      "size": 632751
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-08.png",
+      "sha256": "d0500105f10e17fda655ec419215c53b71dd5771164472dc20503ca406a66a57",
+      "size": 592424
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-generic-09.png",
+      "sha256": "7e02d79eb89521bbd326324671e5d14b331dda2f30fd3821f016160fab1ac21c",
+      "size": 616993
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-grid-01-emperor.png",
+      "sha256": "67c123174436f00216aeb7df9b80e5820e93521bf953533cf9ceede8f914ddf0",
+      "size": 1013527
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user-grid-02-official.png",
+      "sha256": "2b539d6d5d2e87b59733ca2b8ab1d1126232fa14352ad03abc046394e7eb8b90",
+      "size": 937033
+    },
+    {
+      "path": "assets/portraits/tianqi7/generic/user.png",
+      "sha256": "9c196969c9db89658fdf8b660d8a04cd8f939463ebe8740bafd45b4d80530ec7",
+      "size": 793602
+    },
+    {
+      "path": "assets/ui/home/home-menu-imperial-study-v1.png",
+      "sha256": "6394fb98e17f3bccc745ea2b3c50552db56204dfead09989cb2f93271f9164b6",
+      "size": 2408674
     },
     {
       "path": "audit-report.txt",
@@ -115,6 +1920,11 @@
       "size": 1460
     },
     {
+      "path": "data/maps/tianqi-ming2/tianqi-ming2.preview-data.js",
+      "sha256": "235c049cb35969c86c848c4c3fe547c2a109e7763ecba940a277e966326ddeca",
+      "size": 3090431
+    },
+    {
       "path": "data/maps/tianqi-ming2/tianqi-ming2.scenario-fragment.json",
       "sha256": "45fc61d7a08c8d2f25e41f4a31bc3be3590c110515b64704d56e29a1841fd2ae",
       "size": 3813920
@@ -133,6 +1943,11 @@
       "path": "demo-guoshi.html",
       "sha256": "e8ab0f9e606069fdebadbc4cecba01e8a0c10862ed666f2d2f37a19e4d1adfb5",
       "size": 741
+    },
+    {
+      "path": "detect_globals.js",
+      "sha256": "3052591df39ddb37005c6b94312518995aacb66275a3b664dbf97d67e85fb309",
+      "size": 5151
     },
     {
       "path": "editor-administration.js",
@@ -288,6 +2103,11 @@
       "path": "editor.js",
       "sha256": "86ababfd0515b0fe43817b27eb77cd5df454e27e2ea7de81680603bb09d0e51c",
       "size": 111649
+    },
+    {
+      "path": "icon.png",
+      "sha256": "8a2c8ae36d6b4665f16cd53e64f4f365c022d07b318d32998996f87e79cecbf4",
+      "size": 12525
     },
     {
       "path": "index.html",
@@ -700,6 +2520,81 @@
       "size": 67149
     },
     {
+      "path": "maps/asia-map.png",
+      "sha256": "b4527bd08c90c1ac6543d376975118a4e15e653e657d6b2586f3cbc96ac32b2b",
+      "size": 1082922
+    },
+    {
+      "path": "maps/china-map.jpg",
+      "sha256": "1864c98bbdce926c9691bb5c219b4349695603c2a907e359676883eb3e7b84b3",
+      "size": 205695
+    },
+    {
+      "path": "maps/lishiyouxi.png",
+      "sha256": "b4527bd08c90c1ac6543d376975118a4e15e653e657d6b2586f3cbc96ac32b2b",
+      "size": 1082922
+    },
+    {
+      "path": "maps/MapChart_Map (1).png",
+      "sha256": "4ebe575a6cbd861655db712c2e4da0537776e9301f32250ab9fd3c423dc01a95",
+      "size": 3290267
+    },
+    {
+      "path": "maps/MapChart_Map.png",
+      "sha256": "9e2313a7df26e77e314b3633d506e86085b2248b9a44384a4e2071f8d31568b8",
+      "size": 3465801
+    },
+    {
+      "path": "maps/vic3-map.jpg",
+      "sha256": "1864c98bbdce926c9691bb5c219b4349695603c2a907e359676883eb3e7b84b3",
+      "size": 205695
+    },
+    {
+      "path": "output/playwright/A_main_yuan.png",
+      "sha256": "98a188321a2868b3943c676a16488ed8d1a0583ec3b6c96d162b398ce847aa03",
+      "size": 1110668
+    },
+    {
+      "path": "output/playwright/B_office_bianzhiwai.png",
+      "sha256": "e99c2fd941694578a646bda84b1d2bb3757c5a84d8ca35beb7d81ee403a0ff3c",
+      "size": 230973
+    },
+    {
+      "path": "output/playwright/B_office_list_bzw.png",
+      "sha256": "636d147aeec75c77ab67e486828f2cf03d8de106a94275346ef590b56668a011",
+      "size": 234452
+    },
+    {
+      "path": "output/playwright/B_office_panel.png",
+      "sha256": "e17faf86e741a2f850d34e2cd2a776634a3e3761d2b7566c3ba06c0a1223fef1",
+      "size": 872719
+    },
+    {
+      "path": "output/playwright/B_office_tree.png",
+      "sha256": "a1c97906b69586000a6809345c8b364cd6bc4c197b72b2651ac14ce37d4b90d4",
+      "size": 267414
+    },
+    {
+      "path": "output/playwright/C_zhi_linyaoyu.png",
+      "sha256": "f31d777a0be014c57569585260ad2a3431f031376fe679047ec536e272b15b5a",
+      "size": 713084
+    },
+    {
+      "path": "output/playwright/D_office_after_bzw.png",
+      "sha256": "733bbede2be1dba700b9c25a8eefd9b2bbd466f75cb5383665b03bd61ca5f737",
+      "size": 274912
+    },
+    {
+      "path": "output/playwright/D_office_tianergeng_formal.png",
+      "sha256": "3527875a288bcecc4d5fa28bb45760fd209d2c3023f3fd3064d2cc1bab3bf741",
+      "size": 713550
+    },
+    {
+      "path": "output/playwright/D_zhi_tianergeng_after.png",
+      "sha256": "39f5d99500b049592badfa15743c0be0772e9d316d06735a419f7f2c6cc3ea64",
+      "size": 713544
+    },
+    {
       "path": "package.json",
       "sha256": "c7a2d06338f1251662f3c886f1966ca51c77a893af6d1622b4d185615a7bbf11",
       "size": 1528
@@ -813,6 +2708,51 @@
       "path": "preview-jishi.html",
       "sha256": "040257a1fcde768f047e19bc4b3925ff110f03940ceaae60bf181de65651da38",
       "size": 47281
+    },
+    {
+      "path": "preview-launch-assets/bg-archive.png",
+      "sha256": "398456dac94f86ff9bcafc44ac580cba751f246bad176583f0e4672677d65411",
+      "size": 2032115
+    },
+    {
+      "path": "preview-launch-assets/bg-workshop.png",
+      "sha256": "40a5aaf6388f0fb9778f3e1fe3ac4ddaaeed9d16ca604233484e31d4039dd1ad",
+      "size": 2351630
+    },
+    {
+      "path": "preview-launch-assets/hero-bg.png",
+      "sha256": "c9ffbf0d8e731d6d4e3b2110232cd786edd1b8eced867142cc8a6de4d0ec9d67",
+      "size": 2113362
+    },
+    {
+      "path": "preview-launch-assets/scn-anshi.png",
+      "sha256": "5f535c4f2c3aa8bcaa23e217d841ea48171295aad123fa1ef11f1c9e09144443",
+      "size": 2388380
+    },
+    {
+      "path": "preview-launch-assets/scn-chongzhen.png",
+      "sha256": "3b1d8fe5cc74d1e204fd56d6527aa0e59992560df278d3132ce59860a0dd9190",
+      "size": 2513182
+    },
+    {
+      "path": "preview-launch-assets/scn-hanwu.png",
+      "sha256": "6a2df44502c2731526378412d3a5b019d6494d189e3442317f3dd4600d74d88f",
+      "size": 2704851
+    },
+    {
+      "path": "preview-launch-assets/scn-kongkong.png",
+      "sha256": "b6ba6408bd4503cd7232904a60b1a503bca9009552391b04d908ae86310cb9f6",
+      "size": 2319570
+    },
+    {
+      "path": "preview-launch-assets/scn-shaosong.png",
+      "sha256": "63a07b3d1db7be5fabaa1855b138df7cc63b3cbb25627a5d14ac8bd4967b2c31",
+      "size": 2466679
+    },
+    {
+      "path": "preview-launch-assets/scn-tianqi.png",
+      "sha256": "9e2c585c3c16b98a82317714a5af8647cbff0145bb033a6579dff0098ce3003d",
+      "size": 2396074
     },
     {
       "path": "preview-launch-v2.html",
@@ -1035,9 +2975,59 @@
       "size": 61165
     },
     {
+      "path": "preview/img/action-annals-card.png",
+      "sha256": "db5cb3a11a893306276881e22bf97274083fe9b0b64c60a4dfcf9b3737dc076b",
+      "size": 732106
+    },
+    {
+      "path": "preview/img/action-edict-card.png",
+      "sha256": "b8e893536d57bfce1ed1efccee46949a22dc29492e9a6a3ee64e6f982ed607f5",
+      "size": 730667
+    },
+    {
+      "path": "preview/img/action-letter-card.png",
+      "sha256": "294f21c0948b1c8bf34ac3ef1c5175b51748e67ba57b5ff94745f9e0b10be381",
+      "size": 767130
+    },
+    {
+      "path": "preview/img/action-memorial-card.png",
+      "sha256": "5c2574340646e670eacf2417b835bfdfed7dd19ed6c60661d9885654a70e8b09",
+      "size": 828076
+    },
+    {
+      "path": "preview/img/ancient-tabletop-board.png",
+      "sha256": "448ef3d2905bca74a2c259140d17cfb52b8df505e646c1c89d0d5f4730155b56",
+      "size": 2801467
+    },
+    {
+      "path": "preview/img/chaoyi-changchao-scene-v1.png",
+      "sha256": "ced93c007cf5ffe87b892033fad8dfdd8f35f037c4d50fadf359c660d1a1ae7b",
+      "size": 2574480
+    },
+    {
+      "path": "preview/img/chaoyi-tingyi-scene-v1.png",
+      "sha256": "bc8f2be8e1a07f2ad82221901345b2f40cf504363a250ecc42abe1e8dc07e7e3",
+      "size": 2534486
+    },
+    {
+      "path": "preview/img/chaoyi-yuqian-scene-v1.png",
+      "sha256": "1e45ff361ce9aee53ae3e4bc76b9f6a862118b44543f5cf6d5bb982302d92f26",
+      "size": 2147937
+    },
+    {
       "path": "preview/img/east-asia-basemap-data.js",
       "sha256": "ee797484e61126f24304dff3f690dc648d8ad8f250389681be0e1cad7820f7bf",
       "size": 173485
+    },
+    {
+      "path": "preview/img/hongyan-btn-cut.png",
+      "sha256": "5f3daa466ba9b2c66555b9c269a2ce833ab17465147b5e9aa3dee59c82084278",
+      "size": 1481638
+    },
+    {
+      "path": "preview/img/hongyan-btn.png",
+      "sha256": "84cc52fbc730bc48eb8e9c8f5519f6fcb723adea6e184c39c2e8454dda532658",
+      "size": 1582023
     },
     {
       "path": "preview/img/ming-1582-map-data.js",
@@ -1048,6 +3038,146 @@
       "path": "preview/img/ming-1582-map.svg",
       "sha256": "3c5089fad60411310261f0965f6255f03f499f159dd4ee38bb6ef5bec465089a",
       "size": 110231
+    },
+    {
+      "path": "preview/img/ming-territory-basemap.png",
+      "sha256": "d090ec781ec2331a2136d14533fbba676d198b6ab0887ece04b7cd7e7d060b8f",
+      "size": 2368346
+    },
+    {
+      "path": "preview/img/panel-faction-dossier-frame-v1.png",
+      "sha256": "b23497a29bde90b16726b4b3d1c777e5478f6de8710344f256304df68e433704",
+      "size": 2275543
+    },
+    {
+      "path": "preview/img/panel-region-dossier-frame-v1.png",
+      "sha256": "2b2255d6cc230c25f1ef6addc1daf1ecc4a699ba57e17056604b1fc0fc677af1",
+      "size": 2370430
+    },
+    {
+      "path": "preview/img/portraits/ming-civil-ai.png",
+      "sha256": "6a8bfd96752ddd6faf7b13e5ba152de28b59c15fca7e98c2f3e098024498e942",
+      "size": 644699
+    },
+    {
+      "path": "preview/img/portraits/ming-emperor-ai.png",
+      "sha256": "54c3836aaf35f93db5b90210bd810a8f01ad6f987c65cc2565fb8852120bd4cd",
+      "size": 695338
+    },
+    {
+      "path": "preview/img/portraits/ming-empress-ai.png",
+      "sha256": "232df49b718bcb8e2c4b070541b8dcbc1248fc3d89be3af3394bb6f507146bb1",
+      "size": 687207
+    },
+    {
+      "path": "preview/img/portraits/ming-eunuch-ai.png",
+      "sha256": "3669fda66ed06c9db23171b09c971b616703df4cfc61c9c5e9af18a88f04e9d2",
+      "size": 640832
+    },
+    {
+      "path": "preview/img/portraits/ming-general-ai.png",
+      "sha256": "01d58f5e24c379b1e77b32843ced6e740b14ed9f99631f98c943b0f609c039c3",
+      "size": 684043
+    },
+    {
+      "path": "preview/img/portraits/ming-scholar-ai.png",
+      "sha256": "5c2a28692f69c2e224d156bc533723e030575b3228aa7d4042ebb6be3758a5da",
+      "size": 652189
+    },
+    {
+      "path": "preview/img/renwu-tuzhi-card-ui.png",
+      "sha256": "23038e2575c74abd0dd394c0509ddeade0b5673492db3a95ab97c09e47e5b342",
+      "size": 1092869
+    },
+    {
+      "path": "preview/img/shilu-btn-cut.png",
+      "sha256": "9c2b71988f478388434922d9bcf8917ae404c53c8d049075cb879d5ce458dace",
+      "size": 2306260
+    },
+    {
+      "path": "preview/img/shizheng-command-plaque.png",
+      "sha256": "f25a1818b67e73dee32fc4530ce62766278b2d261085b58a0687118fd1d0dbb8",
+      "size": 459358
+    },
+    {
+      "path": "preview/img/topbar-imperial-rail.png",
+      "sha256": "51fa98e6d1ce6993d3140361c07071bd976bb08484b74d791d539fa2ae19f1eb",
+      "size": 400556
+    },
+    {
+      "path": "preview/img/topbar-left-identity-underlay-v1.png",
+      "sha256": "d5c73a889a84ccfe161538b6b73c1df1afa21874000960603e1d8a5ecdddfc14",
+      "size": 142783
+    },
+    {
+      "path": "preview/img/topbar-material-generated-v1.png",
+      "sha256": "b78a7b3a2af14838c285bdbd82da0af62d5bba91624c634f4d30a5f1e7f5bcfa",
+      "size": 470837
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-compact.png",
+      "sha256": "6800ddb37ce44c030db5a6343e84882a290dfdfe5858a2087d8aaf59406a67f1",
+      "size": 35676
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-narrow.png",
+      "sha256": "8419c4bd6309fc3c5d15d8c193a1db00ae619ad14e60dae4f05b55ec0a4a34a5",
+      "size": 32068
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-wide.png",
+      "sha256": "5d5ac9bdf9ca4180165dab16be4c0c3758b71ffef356b2df4bd76b25f4331b51",
+      "size": 49794
+    },
+    {
+      "path": "preview/img/topbar-resource-underlay-v1.png",
+      "sha256": "8cf6757291df8ab2d2162307a7da57972620e3f1db8fb65aac1fecf5dfa2f995",
+      "size": 119647
+    },
+    {
+      "path": "preview/img/topbar-right-date-underlay-v1.png",
+      "sha256": "aa6e647454898099956e3ac43aea5b80b95f50119440177d74ce72a40a666450",
+      "size": 128149
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-compact.png",
+      "sha256": "deb1ab7660c77fe930c92b05e2cdc7ed6a4bb4b79f3481efe98235c2f18b6072",
+      "size": 13587
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-narrow.png",
+      "sha256": "a127548eaf9392400dea15838e04afde9a7a5150860d0bad812a0b8355731177",
+      "size": 7628
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-wide.png",
+      "sha256": "e72f77e339a67d56ccd801d222cf09d74ce3c8d441738e90b3a2f8ccd0846675",
+      "size": 17859
+    },
+    {
+      "path": "preview/img/topbar-right-time-underlay-v2.png",
+      "sha256": "34e4dca39e033a448497a4f4c2201e43e08db946b2af79aacdc516950b54d790",
+      "size": 848929
+    },
+    {
+      "path": "preview/img/zhao-btn-cut.png",
+      "sha256": "fd34806c71ae4dd7f80627670d5c842f7bdf557c13430a5e8fcc462bfacb7601",
+      "size": 1092807
+    },
+    {
+      "path": "preview/img/zhao-btn.png",
+      "sha256": "f49989884be72b1be9aa83ad2d6f05e76322e6352401c11c3e097cbd911d6d92",
+      "size": 1304668
+    },
+    {
+      "path": "preview/img/zou-btn-cut.png",
+      "sha256": "e363e09d8587ef0387dae4d2f169a769f5159f39463e815563c865cb718bbfb3",
+      "size": 1429047
+    },
+    {
+      "path": "preview/img/zou-btn.png",
+      "sha256": "ebde33aa1e6fe9d69d85a73c53d3832223aaeb0c01f46b6bedf79acc8de2ed55",
+      "size": 1667085
     },
     {
       "path": "preview/map-dossier-redesign-preview.html",
@@ -1263,6 +3393,11 @@
       "path": "README.md",
       "sha256": "39963a454311ab8a4373b76bd9320e003b3641fe6845f8986fed7efaf5da84b9",
       "size": 24119
+    },
+    {
+      "path": "scan_globals.js",
+      "sha256": "8b3f481d96409a4bf5c1ae9b8043ea3ccb7242f1357ea3618162aa958280400d",
+      "size": 2334
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
@@ -3248,6 +5383,31 @@
       "path": "vendor/models/README.md",
       "sha256": "25aeeab18c7a0415d580ed70a0f3fb8638402ba07f1e4f5585bbceb2ca755800",
       "size": 1689
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/config.json",
+      "sha256": "d4193ead3a810fd694fa8a31d7fc72fbaebc0668b603e398734bf2f6538ff42f",
+      "size": 716
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/special_tokens_map.json",
+      "sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+      "size": 125
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/tokenizer_config.json",
+      "sha256": "e6f3b96db926a37d4039995fbf5ad17de158dfb8f6343d607e4dbaad18d75f5a",
+      "size": 367
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/tokenizer.json",
+      "sha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+      "size": 439125
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/vocab.txt",
+      "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+      "size": 109540
     },
     {
       "path": "vendor/transformers/jinja.esm.js",

@@ -74,8 +74,20 @@ function main() {
   const canonical = fs.existsSync(target) ? readJson(target) : null;
   const problems = canonical ? manifestProblems(canonical, actual) : ['canonical baseline missing'];
   if (check) {
-    if (problems.length) throw new Error('canonical hot baseline stale (' + problems.length + ')\n' + problems.slice(0, 30).join('\n'));
-    console.log('PASS canonical hot baseline files=' + actual.files.length + ' version=' + version);
+    // 2026-07-20·基线是仓主全量热更树（含未跟踪游戏资产 web/assets/* 等）的真相。OTA(桌面热更+capgo)
+    // 是整包替换·必须自带这些资产（1.3.4.8 及以前 OTA 恒含·~828MB）。但 CI / 部分 checkout 只有 git
+    // 跟踪文件、磁盘上没有这些资产，generate() 自然不含它们 → 会把「基线有、本 checkout 磁盘无」的资产
+    // 条目误报 obsolete。故 --check 容忍：基线里指向「本地磁盘不存在」的条目（=此 checkout 缺席的未跟踪
+    // 资产）不算 stale。仍严格校验：在场文件的 hash/size 必须对齐（stale）、且 generate 不得含基线外的多余
+    // 文件（missing）。据此恢复含资产 OTA 后·CI(无 assets)仍绿·仓主本机(有 assets)全量逐文件校验。
+    const effective = problems.filter(p => {
+      const m = /^obsolete canonical path: (.+)$/.exec(p);
+      if (!m) return true; // stale/missing/remove-list 等一律照旧严格
+      return fs.existsSync(path.join(root, 'web', m[1])); // 文件在场却被 generate 漏掉=真问题；磁盘缺席=此 checkout 无该未跟踪资产·容忍
+    });
+    if (effective.length) throw new Error('canonical hot baseline stale (' + effective.length + ')\n' + effective.slice(0, 30).join('\n'));
+    console.log('PASS canonical hot baseline files=' + actual.files.length + ' version=' + version
+      + (effective.length !== problems.length ? '（容忍 ' + (problems.length - effective.length) + ' 条本 checkout 缺席的未跟踪资产条目）' : ''));
     return;
   }
   if (!problems.length && JSON.stringify(comparable(canonical)) === JSON.stringify(comparable(actual))) {

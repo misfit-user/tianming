@@ -64,15 +64,6 @@ function _isExcludedDir(name) {
   return EXCLUDED_DIR_PREFIXES.some(prefix => name.startsWith(prefix));
 }
 
-// 2026-07-20·OTA 只收 git 跟踪文件。本机 web 树散落着未跟踪的游戏媒体/preview/vendor/截图/dev 脚本，
-// 走全量安装包(exe/apk/Pages)、绝不进热更；否则收集器会把本机污染打进包→与纯跟踪的 canonical
-// 基线(web/.hot-update-manifest.json)对不上→sync-hot-baseline/verify-release-contract 本机 die。
-// 跟踪集为 WEB_ROOT 下 git ls-files（相对 WEB_ROOT 的正斜杠路径·同 normalizeRel 口径）。
-// 取不到（合成 --web-root 测试树非 git 仓 / git 缺失）→ null → 不过滤，保留旧行为不误伤 S7 闸门测试。
-// 注意：_app_main.js / _app_preload.js / bundled-scenarios/* 是「源跟踪、改名/换根」的特殊件，
-// 由独立收集器(walkAppMainImpl/walkBundledScenarios 等)加入、不经此 walk，故不受本过滤影响。
-const TRACKED_SET = RELEASE_TREE.trackedRelSet(WEB_ROOT);
-
 function arg(name, fallback) {
   const idx = process.argv.indexOf('--' + name);
   if (idx >= 0 && idx + 1 < process.argv.length) return process.argv[idx + 1];
@@ -188,7 +179,6 @@ function walk(dir, out) {
     }
     if (!entry.isFile()) return;
     const releaseRel = normalizeRel(abs);
-    if (TRACKED_SET && !TRACKED_SET.has(releaseRel)) return; // OTA 只收 git 跟踪文件·跳过本机未跟踪散落资产/dev 产物
     if (RELEASE_TREE.excludedReason(releaseRel, RELEASE_EXCLUDES)) return;
     // 安装包专用的「首装增量基线」清单·不入热更包(apply 时 finalize 会写当版真 manifest)·避免自引用/陈旧
     if (entry.name === '.hot-update-manifest.json') return;

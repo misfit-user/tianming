@@ -1,6 +1,6 @@
 {
   "name": "tianming",
-  "version": "1.3.409",
+  "version": "1.3.410",
   "description": "天命 AI历史模拟推演",
   "main": "main.js",
   "scripts": {
@@ -27,10 +27,10 @@
   "build": {
     "appId": "com.tianming.history",
     "productName": "天命",
-    "buildVersion": "1.3.4.9",
-    "artifactName": "天命-1.3.4.9-${arch}.${ext}",
+    "buildVersion": "1.3.4.10",
+    "artifactName": "天命-1.3.4.10-${arch}.${ext}",
     "directories": {
-      "output": "E:\\版本\\测试版1.3.4.9"
+      "output": "E:\\版本\\测试版1.3.4.10"
     },
     "publish": [
       {

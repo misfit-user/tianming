@@ -890,7 +890,22 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
   }
   const headers = Object.assign({}, opts.headers || {});
   if (resume && startByte > 0) headers.Range = 'bytes=' + startByte + '-';
-  const resp = await net.fetch(url, { bypassCustomProtocolHandlers: true, headers });
+  // 2026-07-20·停滞超时：连接挂起但不断流（socket 不断、数据不来·Cloudflare/弱网极常见）时，
+  //   reader.read() 会永久阻塞、不报错 → 上层重试（只在抛错时触发）永不启动 → UI「莫名卡住」。
+  //   用 AbortController + 空闲计时器：每次等新数据块超过 idleTimeoutMs（默认 30s·首字节/续读通用）
+  //   就 abort → 抛错 → 走 downloadRemoteFile 的可续传重试（从 .part 断点续）。
+  const IDLE_MS = Math.max(5000, Number(opts.idleTimeoutMs || 30000));
+  const _ac = new AbortController();
+  let _idleTimer = null;
+  const _armIdle = () => { if (_idleTimer) clearTimeout(_idleTimer); _idleTimer = setTimeout(() => { try { _ac.abort(); } catch (_) {} }, IDLE_MS); };
+  const _disarmIdle = () => { if (_idleTimer) { clearTimeout(_idleTimer); _idleTimer = null; } };
+  _armIdle();
+  let resp;
+  try {
+    resp = await net.fetch(url, { bypassCustomProtocolHandlers: true, headers, signal: _ac.signal });
+  } finally {
+    _disarmIdle();
+  }
   if (resp.status === 416) {
     const err = new Error('HTTP 416 Range Not Satisfiable（本地半成品与远端不符）');
     err._httpStatus = 416;
@@ -922,7 +937,9 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
     const out = fs.createWriteStream(partPath, { flags: writeFlags });
     try {
       while (true) {
+        _armIdle();                 // 等下一数据块·超过 IDLE_MS 无数据即 abort
         const chunk = await reader.read();
+        _disarmIdle();              // 已拿到响应（块/结束）·写盘期间不误触发超时
         if (chunk.done) break;
         const buf = Buffer.from(chunk.value);
         received += buf.length;
@@ -938,6 +955,7 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
         if (typeof onProgress === 'function') onProgress({ received, total, percent: total ? (received / total * 100) : 0 });
       }
     } finally {
+      _disarmIdle();
       await new Promise(resolve => out.end(resolve));
       // 中断时取消 body·让底层 HTTP 请求真正中止（不取消会泄漏挂起连接）
       try { reader.cancel().catch(() => {}); } catch (e) {}
@@ -953,7 +971,9 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
     return { path: dest, size: received, sha256: inlineHash.digest('hex') };
   }
 
-  const ab = await resp.arrayBuffer();
+  _armIdle();
+  let ab;
+  try { ab = await resp.arrayBuffer(); } finally { _disarmIdle(); }
   const buf = Buffer.from(ab);
   if (buf.length > maxBytes) {
     const err = new Error('下载文件超过大小上限');

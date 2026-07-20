@@ -110,4 +110,4 @@ CI（push main 触发 `guards` + `mobile-release-contracts`；ship-* release 触
 
 ---
 
-**一句话**：打包发版**全程走 `scripts/release.js`**，别手搓任何一步；改派生物必 sync 且落相对路径；OTA 只发跟踪代码、assets 走全量包；改完本机跑绿第五节全部门禁再报完成。
+**一句话**：打包发版**全程走 `scripts/release.js`（两阶段 prepare/publish）**，别手搓任何一步；改派生物必 sync 且落相对路径；**OTA 必须自带全部 `web/assets`（~800MB+·绝不收敛成"只发跟踪码"·见第三节血泪教训）**；改完本机跑绿第五节全部门禁再报完成。

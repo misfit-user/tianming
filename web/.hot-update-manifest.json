@@ -2,12 +2,12 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.10",
   "entry": "index.html",
-  "generatedAt": "2026-07-20T03:01:05.357Z",
+  "generatedAt": "2026-07-20T08:22:09.067Z",
   "files": [
     {
       "path": "_app_main.js",
-      "sha256": "553ff7924bd27c719f86f9cdf8a4131ee8cfb8cca9cc04671d3df2e2475985ff",
-      "size": 137080
+      "sha256": "b1cbe79162f7204e9caa2c657520671f91c936c16bde05a3f09d4c86383d3451",
+      "size": 138308
     },
     {
       "path": "_app_preload.js",

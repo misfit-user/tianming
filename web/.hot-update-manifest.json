@@ -4061,8 +4061,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "4913ab0736cef49f1fa3676bfd4a3ddb864f0ce09f1941100f82e1c17a74d3da",
-      "size": 362120
+      "sha256": "7df93589397da04131f2b1d8be158c9426b96264b7837ab8a18d355bf967235d",
+      "size": 363225
     },
     {
       "path": "tm-endturn-province.js",
@@ -4301,13 +4301,13 @@
     },
     {
       "path": "tm-game-loop-wentian-hardchange.js",
-      "sha256": "11783df70d44dac8ea240f47313f8b2e8632d7773caf00e1940421a2568f5f9e",
-      "size": 66524
+      "sha256": "bc68b4ac4315c8dc0539c54b7ad8550c417bb7caf61010ea497764e2040ed5a2",
+      "size": 67074
     },
     {
       "path": "tm-game-loop.js",
-      "sha256": "dbb59c1ed1338d8d6fba32a9c620d49ccea50cbf516e6c231422cac01b5cd4da",
-      "size": 105049
+      "sha256": "5a335596705bc5fa7be6c593c7ac5b77a2f7c58390adb8aac9615d63840ba260",
+      "size": 106320
     },
     {
       "path": "tm-game-ui-shell.js",

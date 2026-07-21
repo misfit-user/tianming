@@ -1190,6 +1190,7 @@ function _wtRunFulfillAudit() {
     var stamps = [];
     GM._playerDirectives.forEach(function (d) {
       if (!d || !d._watch || !Array.isArray(d._watch.items) || !d._watch.items.length) return;
+      if (d._watchClosed) return;  // 问天二期·已核销工单不再对账（徽章留档）
       if (d._watch.registeredTurn === turn) return;  // 注册当回合不对账（推演还没跑）
       var met = 0, parts = [];
       d._watch.items.forEach(function (it) {
@@ -1207,6 +1208,13 @@ function _wtRunFulfillAudit() {
       if (prev !== status) {
         stamps.push('《' + String(d.content || '').slice(0, 18) + '》' + met + '/' + d._watch.items.length
           + (status === 'followed' ? ' 已兑现' : status === 'partial' ? ' 部分兑现' : ' 未见兑现'));
+      }
+      // 问天二期·工单核销：非规则类连续两回合全中→闭单(停止对账·规则类常青恒审)
+      if (status === 'followed') d._watch._streakOk = (d._watch._streakOk || 0) + 1;
+      else d._watch._streakOk = 0;
+      if (d.type !== 'rule' && d._watch._streakOk >= 2 && !d._watchClosed) {
+        d._watchClosed = true;
+        stamps.push('《' + String(d.content || '').slice(0, 18) + '》工单核销·兑现毕');
       }
     });
     if (stamps.length) {

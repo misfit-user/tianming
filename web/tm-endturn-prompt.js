@@ -300,6 +300,10 @@
           } else if (r._lastStatus === 'partial') {
             tp += '      ⚠️【上回合仅部分遵守·本回合须完整落实】\n';
           }
+          // 问天二期·工单供奉：兑现对账指标(回合末引擎按在档真值核验·非自报作业)——让 AI 确知「怎样才算落实」
+          if (r._watch && Array.isArray(r._watch.items) && r._watch.items.length && !r._watchClosed) {
+            tp += '      ⚖工单指标(引擎核验·勿虚报)：' + r._watch.items.map(function(w){ return (w.note || w.path) + '·' + w.expect + (w.value != null && w.value !== '' ? '·' + w.value : ''); }).join('；') + (r._watch.lastStatus ? '·上回合核验=' + r._watch.lastStatus : '') + '\n';
+          }
         });
       }
       if (_corrections.length > 0) {
@@ -316,6 +320,10 @@
         _others.forEach(function(o) {
           tp += '  · [id=' + o.id + '] ' + o.content + '\n';
           if (o.structured) tp += '      解析：' + JSON.stringify(o.structured).slice(0, 200) + '\n';
+          // 问天二期·工单供奉(同上·directive 类连续兑现两回合自动核销)
+          if (o._watch && Array.isArray(o._watch.items) && o._watch.items.length && !o._watchClosed) {
+            tp += '      ⚖工单指标(引擎核验·勿虚报)：' + o._watch.items.map(function(w){ return (w.note || w.path) + '·' + w.expect + (w.value != null && w.value !== '' ? '·' + w.value : ''); }).join('；') + (o._watch.lastStatus ? '·上回合核验=' + o._watch.lastStatus : '') + '\n';
+          }
         });
       }
       tp += '═══════════════════════════════════════════════════════════\n\n';

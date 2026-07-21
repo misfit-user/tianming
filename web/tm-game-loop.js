@@ -905,9 +905,15 @@ function _wtRenderHistory() {
       // \u5200A\u00B7\u5151\u73B0\u5BF9\u8D26\u5728\u518C\u6807\u8BB0\uFF08title \u5217\u6307\u6807\uFF09
       var watchChip = (d._watch && d._watch.items && d._watch.items.length)
         ? '<span style="display:inline-block;padding:1px 5px;background:rgba(126,160,200,0.16);color:var(--ink-200,#cbb);border-radius:2px;font-size:0.62rem;margin-left:4px;" title="' + escHtml(d._watch.items.map(function(w){return (w.note||w.path)+'\u00B7'+w.expect;}).join('\uFF1B')) + '">\u2696\u5BF9\u8D26' + d._watch.items.length + '</span>' : '';
+      // \u95EE\u5929\u4E8C\u671F\u00B7\u6CBB\u7406\u5217\uFF1A\u5DE5\u5355\u6838\u9500\u7AE0 / \u6700\u8FD1\u6838\u9A8C\u56DE\u5408 / \u4E45\u672A\u9075\u88C1\u64A4\u63D0\u793A
+      if (d._watchClosed) watchChip = '<span style="display:inline-block;padding:1px 5px;background:rgba(126,184,167,0.18);color:var(--celadon-400);border-radius:2px;font-size:0.62rem;margin-left:4px;" title="\u8FDE\u7EED\u4E24\u56DE\u5408\u5151\u73B0\u00B7\u5DE5\u5355\u5DF2\u6838\u9500">\u2696\u5DF2\u6838\u9500</span>';
+      var checkChip = (d._lastCheckTurn != null)
+        ? '<span style="display:inline-block;padding:1px 4px;color:var(--ink-300);font-size:0.6rem;margin-left:3px;" title="\u6700\u8FD1\u6838\u9A8C\u56DE\u5408">T' + d._lastCheckTurn + '</span>' : '';
+      var adviceChip = (d._lastStatus === 'ignored' && (d._ignoredCount || 0) >= 3)
+        ? '<span style="display:inline-block;padding:1px 5px;background:rgba(192,64,48,0.14);color:var(--vermillion-400);border:1px dotted rgba(192,64,48,0.4);border-radius:2px;font-size:0.6rem;margin-left:4px;" title="\u8FDE\u7EED\u591A\u56DE\u5408\u672A\u88AB\u9075\u5B88\u00B7\u6216\u5DF2\u4E0D\u5408\u65F6\u5B9C\u00B7\u53EF\u70B9\u2715\u88C1\u64A4">\u4E45\u672A\u9075\u00B7\u5B9C\u88C1\u64A4</span>' : '';
       html += '<div style="display:flex;justify-content:flex-end;margin-bottom:0.4rem;">';
       html += '<div style="max-width:85%;background:var(--color-accent-subtle);border-right:3px solid ' + borderCol + ';border-radius:var(--radius-md) 2px 2px var(--radius-md);padding:0.4rem 0.6rem;font-size:var(--text-xs);">';
-      html += '<div style="font-size:0.66rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + absChip + statusChip + watchChip + '</div>';
+      html += '<div style="font-size:0.66rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + absChip + statusChip + watchChip + checkChip + adviceChip + '</div>';
       html += escHtml(d.content);
       if (d.structured) {
         var sParts = [];

@@ -313,7 +313,40 @@
     } catch (_eB) {}
   }
 
-  var API = { schedule: schedule, forgeIdentity: forgeIdentity, tickInference: tickInference, _applyActions: _applyActions, _recentPacifyEdicts: _recentPacifyEdicts, _spendSilver: _spendSilver, enabled: enabled, MAX_STOCKS: MAX_STOCKS };
+  // ── 批四·破京定命场景（AI 演场景+择命·结构化结果喂宪法层 _applyBreachOutcome·死亡仍只走裁决器）──
+  async function breachScene(G, r) {
+    var RE = global.TM && global.TM.RevoltEntity;
+    if (!RE || typeof RE._applyBreachOutcome !== 'function') return;
+    var idy = r._identity || {};
+    var facName = (idy.banner) || ((r.region || '') + '义军');
+    var player = null;
+    for (var i = 0; i < (G.chars || []).length; i++) { var c = G.chars[i]; if (c && c.isPlayer && c.alive !== false) { player = c; break; } }
+    var prompt = '你是天命推演引擎的国变演绎官。京师已陷——「' + facName + '」(渠帅' + (idy.leaderName || r.leader || '?') + '·纲领「' + (idy.creed || '?') + '」)入据宫阙。'
+      + '君上' + ((player && player.name) || '?') + '身在城中·' + (G.eraName || '') + '。\n'
+      + '按该股纲领性情与君上处境·演绎君上定命一幕(乱军之中何去何从·义军如何处置)。三择其一：\n'
+      + 'death=殉国或城破被弑；captured=被执北狩(受辱而生·社稷仍悬)；escaped=乘乱出走·驻跸于外诏勤王。\n'
+      + '只返回 JSON：{"fate":"death|captured|escaped","scene":"定命场景≤120字·据实而书如史笔"}';
+    var outcome = { fate: 'death' };
+    try {
+      var resp = await global.callAI(prompt, 500, null, (typeof global._useSecondaryTier === 'function' && global._useSecondaryTier()) ? 'secondary' : undefined, { id: 'breach-scene' });
+      var text = (resp && typeof resp === 'object') ? (resp.text || resp.content || '') : String(resp || '');
+      var j = (typeof global.robustParseJSON === 'function') ? global.robustParseJSON(text) : JSON.parse(text);
+      if (j && (j.fate === 'death' || j.fate === 'captured' || j.fate === 'escaped')) {
+        outcome = { fate: j.fate, narrative: String(j.scene || '').slice(0, 160) };
+      }
+    } catch (_eBS) {}
+    try { RE._applyBreachOutcome(G, r, outcome); } catch (_eAO) { try { RE._applyBreachOutcome(G, r, { fate: 'death' }); } catch (_eF) {} }
+  }
+  function scheduleBreachScene(G, r) {
+    if (!r || r._breachScenePending != null) return;
+    r._breachScenePending = (G.turn || 0);
+    var job = function () { return breachScene(G, r); };
+    if (typeof global._enqueuePostTurnJob === 'function') global._enqueuePostTurnJob('breachScene_' + r.id, job);
+    else job();
+  }
+  function aiOn() { return _aiOn(); }
+
+  var API = { schedule: schedule, forgeIdentity: forgeIdentity, tickInference: tickInference, breachScene: breachScene, scheduleBreachScene: scheduleBreachScene, aiOn: aiOn, _applyActions: _applyActions, _recentPacifyEdicts: _recentPacifyEdicts, _spendSilver: _spendSilver, enabled: enabled, MAX_STOCKS: MAX_STOCKS };
   global.TM = global.TM || {};
   global.TM.RevoltInference = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

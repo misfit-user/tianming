@@ -213,10 +213,51 @@ function _tickBreach(G, r) {
   r._breachDone = true;
   G._capitalFallen = true;  // 破京链首个真写入者·皇威 capitalFall 信号端(tm-authority-complete)既有消费
   _eb('京师陷落！「' + facName + '」入据宫阙·社稷倾覆在即');
+  // 批四·定命场景交 AI（殉国/被俘北狩/出走勤王·场景与抉择由演绎层 subcall 定·AI 缺席=兜底旧行为死亡裁决）
+  var RI2 = global.TM && global.TM.RevoltInference;
+  if (RI2 && typeof RI2.scheduleBreachScene === 'function' && typeof RI2.aiOn === 'function' && RI2.aiOn()) {
+    RI2.scheduleBreachScene(G, r);
+    return;
+  }
+  _applyBreachOutcome(G, r, { fate: 'death' });
+}
+
+// ── 批四·破京定命落账（宪法层：三态菜单·菜单外一律按 death 兜底·死亡仍只走裁决器）──
+// fate: 'death'(殉国/城破被弑→裁决器 regicide·有储君继统) | 'captured'(被俘北狩·_captured 续玩·
+//   endturn _capturedSovereign 段既有消费) | 'escaped'(乘乱出走·驻跸于外续玩·勤王残局)。
+function _applyBreachOutcome(G, r, o) {
+  o = o || {};
+  var turn = G.turn || 0;
+  var facName = (function () { var f = _findBySource(G.facs, r.id); return (f && f.name) || ((r.region || '') + '义军'); })();
+  if (o.narrative) {
+    try {
+      if (!Array.isArray(G._chronicle)) G._chronicle = [];
+      G._chronicle.push({ turn: turn, date: G._gameDate || '', type: '国变', text: String(o.narrative).slice(0, 160), tags: ['破京', 'AI演绎'] });
+    } catch (_eN) {}
+  }
   var player = null;
   for (var i = 0; i < (G.chars || []).length; i++) {
     var ch = G.chars[i];
     if (ch && ch.isPlayer && ch.alive !== false) { player = ch; break; }
+  }
+  function fallInfo(fateStr) {
+    G._dynastyFallInfo = {  // 终局富屏/本纪增强(新字段·无旧消费端契约风险)
+      revolt: r.id, turn: turn, region: r.region || '',
+      leader: r.leader || r.leaderName || r._entityLeaderName || '',
+      facName: facName, breach: true, fate: fateStr
+    };
+  }
+  var f0 = String(o.fate || 'death');
+  if (player && f0 === 'captured') {
+    player._captured = true; player._capturedBy = facName;  // 北狩态·花名册/推演既有 _captured 消费
+    fallInfo('captured');
+    _eb('君上蒙尘·为「' + facName + '」所执·社稷存亡悬于一线');
+    return;
+  }
+  if (player && f0 === 'escaped') {
+    fallInfo('escaped');
+    _eb('君上乘乱出走·驻跸于外·诏天下兵马勤王');
+    return;
   }
   var fate = null;
   try {
@@ -224,12 +265,7 @@ function _tickBreach(G, r) {
       fate = global.adjudicatePlayerDeath(player, '京师陷落·殁于社稷', { kind: 'regicide', deadReason: '京师陷落·殁于社稷' });
     }
   } catch (_eA) {}
-  G._dynastyFallInfo = {  // 终局富屏/本纪增强(新字段·无旧消费端契约风险)
-    revolt: r.id, turn: turn, region: r.region || '',
-    leader: r.leader || r.leaderName || r._entityLeaderName || '',
-    facName: facName, breach: true,
-    fate: fate ? fate.outcome : 'no-adjudicator'
-  };
+  fallInfo(fate ? fate.outcome : 'no-adjudicator');
   if (fate && fate.outcome === 'succession') {
     _eb('嗣君于乱军之外继统·社稷不绝如线·天下事犹未可知');
     return;  // 续玩残局：实体留场·_capitalFallen 持续·爬梯照走
@@ -280,6 +316,7 @@ function _tickBreach(G, r) {
   var API = {
     sync: sync,
     enabled: enabled,
+    _applyBreachOutcome: _applyBreachOutcome,
     SOLDIERS_BY_LEVEL: SOLDIERS_BY_LEVEL,
     STRENGTH_BY_LEVEL: STRENGTH_BY_LEVEL
   };

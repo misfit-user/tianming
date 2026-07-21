@@ -698,7 +698,7 @@ openSettings=function(){
               '<input type="checkbox" id="s-revolt-entity" ' + (_revEntOn?'checked ':'') + 'onchange="_togglePConf(\'revoltEntityEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
               '<div style="flex:1;">' +
                 '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">民变实体化（默认关闭·实验）</div>' +
-                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">民变闹到「暴动」及以上时具象化为<b>真实体</b>：义军势力入势力档·渠帅入人物档·义军军队上军事帐——全游戏系统与 AI 推演自然看见它们；被剿/瓦解则军散档除。开启后民变打到顶级不再瞬间终局·而是<b>兵临京师三拍</b>：进军→破京→社稷定命（有储君则继统续玩残局）。关闭时维持原五级抽象台账。</div>' +
+                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">民变闹到「暴动」及以上时具象化为<b>真实体</b>并交 <b>AI 演绎</b>：起真旗号·立有名有姓的渠帅·定纲领；此后每回合由 AI 决断攻守/裹挟/分裂合流/僭号建国·并按你的招抚旨意<b>真谈判</b>（讨价/诈许/真降皆有可能·银子真扣）。占据的府县真易手。被剿/瓦解则军散档除；打到顶级=<b>兵临京师三拍</b>（有储君则继统续玩残局）。无 AI 时落确定性兜底。每回合约多 1-2 次轻量调用（走次要 API）。关闭时维持原五级抽象台账。</div>' +
               '</div>' +
             '</label>' +
             '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +

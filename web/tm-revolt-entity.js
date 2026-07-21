@@ -31,7 +31,9 @@
   }
 
   function _factionName(G, r) {
-    var base = (r.region ? String(r.region) : '流民') + '义军';
+    // 批三·AI 锻造的真旗号优先(owner重批：禁「XX义军」式模板)·模板仅为 AI 缺席兜底(双轨)
+    var base = (r._identity && r._identity.banner) ? String(r._identity.banner)
+      : ((r.region ? String(r.region) : '流民') + '义军');
     // 同区第二股民变→缀序防重名（按已在档的其他 _revoltEntity 势力计数）
     var clash = (G.facs || []).filter(function (f) {
       return f && f._revoltEntity && f.sourceRevoltId !== r.id && String(f.name || '').indexOf(base) === 0;
@@ -40,7 +42,7 @@
   }
 
   function _leaderName(G, r) {
-    var name = String(r.leader || r.leaderName || '').trim();
+    var name = String((r._identity && r._identity.leaderName) || r.leader || r.leaderName || '').trim();
     if (name) return name;
     return (r.region ? String(r.region) : '') + '义军渠帅';
   }
@@ -143,9 +145,11 @@
     }
   }
 
-  // 覆灭：民变被剿/瓦解 → 军散·势力除档·渠帅溃散流亡（不碰 alive·避开死亡系统）
-  function _teardown(G, fac) {
+  // 覆灭/受抚：民变被剿/瓦解→军散·势力除档·渠帅溃散流亡；受抚(批三·AI 谈判成局)→遣散罢兵·
+  // 渠帅得授讨来的官职或归顺·真人首领复原籍。皆不碰 alive(避开死亡系统)。
+  function _teardown(G, fac, src) {
     var rid = fac.sourceRevoltId;
+    var pac = (src && src._pacified) || null;
     var army = _findBySource(G.armies, rid);
     if (army && !army.disbanded) {
       army.disbanded = true; army.state = 'disbanded';
@@ -153,17 +157,34 @@
     }
     for (var c = 0; c < G.chars.length; c++) {
       var ch = G.chars[c];
-      if (!ch || ch.sourceRevoltId !== rid || ch._revoltDefeated) continue;
-      if (ch._revoltEntity) {
+      if (!ch || ch.sourceRevoltId !== rid || ch._revoltDefeated || ch._revoltPacified) continue;
+      if (pac) {
+        ch._revoltPacified = true;
+        ch.officialTitle = pac.officeTitle || '受抚归顺';
+        _setCharFaction(ch, ch._preRevoltFaction || '');  // 真人招安复原籍·草莽渠帅无所属
+      } else if (ch._revoltEntity) {
         ch._revoltDefeated = true; ch.officialTitle = '溃散流亡';
+        _setCharFaction(ch, '');  // 退籍走正门
       } else {
         ch._revoltDefeated = true;  // 真人首领：败后无所依·原职衔不动(去留归后续系统)
+        _setCharFaction(ch, '');
       }
-      _setCharFaction(ch, '');  // 退籍走正门
     }
+    // 受抚/覆灭皆解占据(批三·occupiedBy 归还)
+    try {
+      (fac._occupiedDivs || []).forEach(function (dn) {
+        var div = null;
+        try {
+          var PU = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+          var fn = PU && ((typeof PU.findDivisionByNameFuzzy === 'function') ? PU.findDivisionByNameFuzzy : PU.findDivisionByNameOrId);
+          div = fn ? fn(G, dn) : null;
+        } catch (_eDv) {}
+        if (div && div.occupiedBy === fac.name) { delete div.occupiedBy; delete div._occupiedTurn; }
+      });
+    } catch (_eOc) {}
     var idx = G.facs.indexOf(fac);
     if (idx >= 0) G.facs.splice(idx, 1);  // arch-ok 民变实体唯一写口·自建势力对称除档
-    _eb('「' + (fac.name || '义军') + '」烟消云散·余党四散');
+    _eb(pac ? ('「' + (fac.name || '义军') + '」受抚罢兵·遣散归农') : ('「' + (fac.name || '义军') + '」烟消云散·余党四散'));
   }
 
 
@@ -230,12 +251,19 @@ function _tickBreach(G, r) {
     G = G || global.GM;
     if (!G || !G.minxin || !Array.isArray(G.minxin.revolts)) return;
     if (!Array.isArray(G.facs)) return;
+    // 批三·演绎层排程(AI 起号立领袖+逐回合行为·AI 缺席时本层模板/静默=双轨)
+    try { if (global.TM && global.TM.RevoltInference && typeof global.TM.RevoltInference.schedule === 'function') global.TM.RevoltInference.schedule(G); } catch (_eI) {}
     var byId = {};
     G.minxin.revolts.forEach(function (r) { if (r && r.id != null) byId[r.id] = r; });
     // ① 具象化/更新在场者
     G.minxin.revolts.forEach(function (r) {
       if (!r || r.status !== 'ongoing') return;
       if ((r.level || 0) < 3) return;
+      // 批三·身份锻造中缓拍(subcall 起号立领袖·失败/超时自动落模板=双轨)
+      if (r._identityPending != null && !r._identity) {
+        if (r._identityPending >= (G.turn || 0) - 1) return;
+        delete r._identityPending;
+      }
       try { _ensureTrio(G, r); } catch (_eT) {}
       if ((r.level || 0) >= 5) { try { _tickBreach(G, r); } catch (_eB) {} }  // 破京链三拍(批二刀1)
     });
@@ -244,8 +272,8 @@ function _tickBreach(G, r) {
       if (!fac || !fac._revoltEntity) return;
       var src = byId[fac.sourceRevoltId];
       if (src && src.status === 'ongoing') return;
-      if (src && (src.level || 0) >= 5) return;
-      try { _teardown(G, fac); } catch (_eD) {}
+      if (src && (src.level || 0) >= 5 && src.status !== 'pacified') return;  // 级5留场·但受抚仍清账(批三)
+      try { _teardown(G, fac, src); } catch (_eD) {}
     });
   }
 

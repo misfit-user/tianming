@@ -4,6 +4,7 @@
       "tm-border-invasion.js",
       "tm-indices.js",
       "tm-revolt-entity.js",
+      "tm-revolt-inference.js",
       "tm-save-lifecycle.js"
     ],
     "gmFactories": [

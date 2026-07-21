@@ -1848,6 +1848,7 @@
     var isFiscalYear = (typeof global.isYearBoundary === 'function') ? global.isYearBoundary(ctx.turn || G.turn || 0) : ((G.month || 1) === 1 && G.turn > 0);
     G.dynamicInstitutions.forEach(function(inst) {
       if (inst.stage === 'abolished') return;
+      if (inst._migratedToTree) return;   // 批四·已归官制树→岁支旧账停走(俸给改循官制 calcSalary·flag 关时无此标记=零回归)
       if (isFiscalYear && G.guoku) {
         if (G.guoku.money >= inst.annualBudget) {
           G.guoku.money -= inst.annualBudget;

@@ -811,6 +811,13 @@
     if (_diList.length > 0 || _pendInst.length > 0) {
       var dh = '';
       _diList.forEach(function(inst) {
+        // 批四·已迁官制树者：账面改标(岁支停走·员额俸给循官制)·留痕不隐(可查旧账)
+        if (inst._migratedToTree) {
+          dh += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px solid #6aa88a;margin-bottom:3px;font-size:0.74rem;">';
+          dh += '<b style="color:#6aa88a;">' + _esc(inst.name) + '</b> · <span style="color:var(--txt-d);">已归官制树·著为定制（员额俸给循官制·详见官制册页）</span>';
+          dh += '</div>';
+          return;
+        }
         var stCol = inst.stage === 'abolished' ? 'var(--vermillion-400)' : inst.stage === 'running' ? '#6aa88a' : 'var(--gold)';
         dh += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px solid ' + stCol + ';margin-bottom:3px;font-size:0.74rem;">';
         dh += '<b style="color:' + stCol + ';">' + _esc(inst.name) + '</b> · 品 ' + (inst.rank!=null?inst.rank:'—') + ' · ' + _esc(inst.stage) + ' · 员额 ' + (inst.staffSize||0) + ' · 岁支 ' + _fmt(inst.annualBudget||0);

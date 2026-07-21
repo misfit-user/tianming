@@ -3931,8 +3931,8 @@
     },
     {
       "path": "tm-edict-parser.js",
-      "sha256": "596b68ef69ecd6ce017c7d22ff22cb3372ed6b54ee5a39181cd52eeacc7e9aaa",
-      "size": 108531
+      "sha256": "de38adec81f94b9113d441b9fe4afbe0fe052628ef09c761b690c35e51dfe2ee",
+      "size": 108687
     },
     {
       "path": "tm-edict-thresholds.js",
@@ -4886,8 +4886,8 @@
     },
     {
       "path": "tm-office-charter.js",
-      "sha256": "70dd02506895a805798ce920dad85ee89158419188fc4176de769ca201d29746",
-      "size": 17936
+      "sha256": "a993a75c630cc63ac916ba7b709fb70db29e326def55b9af135886d828ecb9dd",
+      "size": 22821
     },
     {
       "path": "tm-office-dutystate.js",
@@ -4906,8 +4906,8 @@
     },
     {
       "path": "tm-office-flags.js",
-      "sha256": "b13474c9e809ccb7e01679adeddaf5fe525391a645170ffe1028c283458b5dda",
-      "size": 3119
+      "sha256": "7e11573471ff09ced006145a749c7fca3a6244116e60b9a0128202d0f6128f09",
+      "size": 3307
     },
     {
       "path": "tm-office-panel.js",
@@ -4926,8 +4926,8 @@
     },
     {
       "path": "tm-office-reform.js",
-      "sha256": "4d7343619e9c7aece2adf66347c47f3694962265cd2f74fc3d4d75dd46b5e68a",
-      "size": 25351
+      "sha256": "5cb29fe03b27188e359454ca506458faed8971ec638cd681d4175e265d8b307d",
+      "size": 25487
     },
     {
       "path": "tm-office-runtime-summary-appoint.js",
@@ -5021,8 +5021,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "18172bbb50fc2292d0b5470098d537ffb32fcb06f51e1f8ad233f2def4327bb3",
-      "size": 182246
+      "sha256": "1a3b0fd63fd14848cec262e936ff32adaf01b541b86eb2a4c7c0b5b90b05f707",
+      "size": 182563
     },
     {
       "path": "tm-pause-fab.js",
@@ -5336,8 +5336,8 @@
     },
     {
       "path": "tm-var-drawers.js",
-      "sha256": "364ee0f6e5d27f83eca3226e19875de6ded5be524b38adcefd7a753b76909d31",
-      "size": 118591
+      "sha256": "6c653bf31ca901ae033f9a29bbdd047504653f92693ee5fe83cfd74b99622b2e",
+      "size": 119132
     },
     {
       "path": "tm-wendui-persona-views.js",

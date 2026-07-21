@@ -143,7 +143,7 @@
       + '{"name":"正名","desc":"职掌≤40字","positions":[{"name":"职名","rank":"品级","count":1,"powers":["键名"],"authority":"decision|execution|advisory|supervision","salary":38,"duties":"≤30字"}],"heads":[{"position":"职名","name":"人名","reason":"≤30字"}],"setupCost":3000}';
   }
 
-  async function forgeCharter(G, item) {
+  async function forgeCharter(G, item, opts) {
     if (!_aiOn() || !item) return null;
     try {
       var resp = await global.callAI(_buildPrompt(G, item), 1200, null, (typeof global._useSecondaryTier === 'function' && global._useSecondaryTier()) ? 'secondary' : undefined, { id: 'office-charter' });
@@ -153,12 +153,81 @@
       if (v) {
         item._charter = v;
         delete item._charterPending;
-        _eb('«' + v.name + '»开衙章程已拟：' + v.positions.map(function (p) { return p.name + '(' + p.rank + '×' + p.count + ')'; }).join('·') + '·开办约' + v.setupCost + '两·待廷议裁定');
+        if (!(opts && opts.silent)) _eb('«' + v.name + '»开衙章程已拟：' + v.positions.map(function (p) { return p.name + '(' + p.rank + '×' + p.count + ')'; }).join('·') + '·开办约' + v.setupCost + '两·待廷议裁定');
         return v;
       }
     } catch (_eF) {}
     delete item._charterPending;   // 失败→裁定时裸壳落树(双轨)
     return null;
+  }
+
+  // ── 批四·旧账收口：dynamicInstitutions 一次性迁入官制树（owner 拍板分叉③）──────
+  // 权设台账衙门(浅账·永长不成真衙)→经 applyReformToTree 正门落 officeTree 真节点·著为定制。
+  // 岁支旧账停走(tm-edict-parser tick 见 _migratedToTree 即跳)·俸给改循官制 calcSalary。
+  // 有 AI 则补章程充实职官表(俸循品级·失败留裸节点亦成体统)·旧掌其事者荐正授入建议库。
+  // flag officeDynMigrationEnabled 默认关·幂等(逐 inst 标记)·同名并账不重立。
+  function migEnabled() {
+    try { return typeof global.officeFlagOn === 'function' && global.officeFlagOn('officeDynMigrationEnabled'); }
+    catch (_) { return false; }
+  }
+  function _findTreeNode(G, name) {
+    var hit = null;
+    (function walk(ns) {
+      (ns || []).forEach(function (n) { if (!hit && n) { if (n.name === name) { hit = n; return; } walk(n.subs); } });
+    })(G.officeTree);
+    return hit;
+  }
+  async function _furnishMigratedNode(G, inst) {
+    var node = _findTreeNode(G, inst.name);
+    if (!node || (node.positions && node.positions.length)) return;   // 已有职官(并账/他途充实)→不动
+    var synth = { reformDetail: '增设', dept: inst.name, reason: inst.duties || '' };
+    var v = await forgeCharter(G, synth, { silent: true });
+    if (!v || typeof global._offCharterPositions !== 'function') return;
+    node = _findTreeNode(G, inst.name);                               // 异步窗口后重找(防树已变)
+    if (!node || (node.positions && node.positions.length)) return;
+    node.positions = global._offCharterPositions(v, false);
+    if (!node.desc && v.desc) node.desc = v.desc;
+    _eb('«' + inst.name + '»迁制补章：定' + node.positions.map(function (p) { return p.name + '(' + p.rank + '×' + (p.establishedCount || 1) + ')'; }).join('·') + '·俸给循品级入官俸');
+    (v.heads || []).forEach(function (h) {
+      if (!Array.isArray(G._edictSuggestions)) G._edictSuggestions = [];   // arch-ok 迁制荐单入建议库·只荐不任守五渠道
+      G._edictSuggestions.push({ source: '章程', from: '铨曹', content: '授' + h.name + '为' + inst.name + h.position + (h.reason ? '（' + h.reason + '）' : ''), turn: G.turn, used: false });   // arch-ok 同上
+    });
+  }
+  function migrateDynInstitutions(G) {
+    if (!migEnabled()) return;
+    G = G || global.GM;
+    if (!G || !Array.isArray(G.dynamicInstitutions) || !G.dynamicInstitutions.length) return;
+    if (typeof global.applyReformToTree !== 'function' || !Array.isArray(G.officeTree)) return;
+    G.dynamicInstitutions.forEach(function (inst) {
+      if (!inst || inst._migratedToTree || inst.stage === 'abolished' || inst._viaReform) return;
+      var name = String(inst.name || '').trim();
+      if (!name) { inst._migratedToTree = true; return; }
+      var existed = !!_findTreeNode(G, name);
+      if (!existed) {
+        var reform = (inst.subordinateTo && _findTreeNode(G, inst.subordinateTo))
+          ? { reformDetail: '增设', dept: inst.subordinateTo, newDept: name, reason: inst.duties || '权设之衙·迁制归树' }
+          : { reformDetail: '增设', dept: name, reason: inst.duties || '权设之衙·迁制归树' };
+        var ap = global.applyReformToTree(G, reform);
+        if (!ap || !ap.applied) return;   // 落树未成(异形树等)→下回合再试·不标记
+      }
+      inst._migratedToTree = true;
+      inst.stage = 'migrated';
+      _eb('«' + name + '»由权设台账归入官制树·著为定制' + (existed ? '（同名衙门已在树·并账不重立）' : ''));
+      // 旧掌其事者·荐正授(确定性·不赖 AI)
+      if (inst.headOfficial) {
+        var hc = _findChar(String(inst.headOfficial));
+        if (hc && hc.alive !== false && !hc.isPlayer) {
+          if (!Array.isArray(G._edictSuggestions)) G._edictSuggestions = [];   // arch-ok 迁制正授荐单·只荐不任守五渠道
+          G._edictSuggestions.push({ source: '章程', from: '铨曹', content: '授' + hc.name + '为«' + name + '»主官（旧掌其事·迁制正名）', turn: G.turn, used: false });   // arch-ok 同上
+        }
+      }
+      // AI 补章程充实职官表(新落的裸节点才需要·失败留裸=亦成体统)
+      if (!existed && _aiOn()) {
+        var job = function () { return _furnishMigratedNode(G, inst); };
+        if (typeof global._enqueuePostTurnJob === 'function') global._enqueuePostTurnJob('officeDynMig_' + name, job);
+        else job();
+      }
+    });
   }
 
   // ── 批红修改（批二·owner 拍板：章程进廷议前玩家可改品级/编制/职权）────────────
@@ -261,7 +330,7 @@
     });
   }
 
-  var API = { tick: tick, forgeCharter: forgeCharter, _validateCharter: _validateCharter, _applyCharterRevision: _applyCharterRevision, _buildPrompt: _buildPrompt, enabled: enabled, POWER_KEYS: POWER_KEYS, MAX_POSITIONS: MAX_POSITIONS, SETUP_COST_MIN: SETUP_COST_MIN, SETUP_COST_MAX: SETUP_COST_MAX };
+  var API = { tick: tick, forgeCharter: forgeCharter, _validateCharter: _validateCharter, _applyCharterRevision: _applyCharterRevision, migrateDynInstitutions: migrateDynInstitutions, _furnishMigratedNode: _furnishMigratedNode, migEnabled: migEnabled, _buildPrompt: _buildPrompt, enabled: enabled, POWER_KEYS: POWER_KEYS, MAX_POSITIONS: MAX_POSITIONS, SETUP_COST_MIN: SETUP_COST_MIN, SETUP_COST_MAX: SETUP_COST_MAX };
   global._charterReviewOpen = _charterReviewOpen;
   global.TM = global.TM || {};
   global.TM.OfficeCharter = API;
@@ -272,6 +341,9 @@
       global.SettlementPipeline.register('officeCharter', '章程演绎', function () {
         try { tick(global.GM); } catch (_eT) {}
       }, 93, 'perturn');
+      global.SettlementPipeline.register('officeDynMigration', '旧衙归树', function () {
+        try { migrateDynInstitutions(global.GM); } catch (_eM) {}
+      }, 94, 'perturn');
     }
   } catch (_eR) {}
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -9,6 +9,7 @@
 //   officeAuthorityGateEnabled      Slice③ 权限门控（接活 canPerformAction）
 //   officeReformAdjudicationEnabled Slice④ AI 裁定式改制闭环
 //   officeCharterEnabled            设衙门批一·拟制期 AI 拟开衙章程（职掌/官职表/首任荐单/开办费·须④开才有拟制态可拟）
+//   officeDynMigrationEnabled       设衙门批四·dynamicInstitutions 权设台账一次性迁入官制树（岁支停走俸循官制·有 AI 补章程）
 //   officeRecallAgentEnabled        #1 主推演 office-recall 子调用（按需取数·走次要 API）
 //
 // 语义：组闸 || 各独立开关。
@@ -39,7 +40,7 @@
   var TM = global.TM = global.TM || {};
   TM.OfficeFlags = {
     MASTER: 'officeActivationEnabled',
-    LIST: ['officePowerPerceptionEnabled', 'officeDutyStateEnabled', 'officeAuthorityGateEnabled', 'officeReformAdjudicationEnabled', 'officeCharterEnabled', 'officeRecallAgentEnabled'],
+    LIST: ['officePowerPerceptionEnabled', 'officeDutyStateEnabled', 'officeAuthorityGateEnabled', 'officeReformAdjudicationEnabled', 'officeCharterEnabled', 'officeDynMigrationEnabled', 'officeRecallAgentEnabled'],
     on: officeFlagOn,
     setMaster: function (v) { var P = global.P; if (P) { P.conf = P.conf || {}; P.conf.officeActivationEnabled = !!v; } return !!v; },
     masterOn: function () { var P = global.P || {}; return !!((P.ai && P.ai.officeActivationEnabled) || (P.conf && P.conf.officeActivationEnabled)); },

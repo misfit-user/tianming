@@ -328,6 +328,7 @@
 
   global.computeReformResistance = computeReformResistance;
   global.applyReformToTree = applyReformToTree;
+  global._offCharterPositions = _charterPositions;   // 批四·旧账迁树充实职官表复用同一转换(章程→position 形状)
   global.enqueuePendingReform = enqueuePendingReform;
   global.adjudicatePendingReforms = adjudicatePendingReforms;
   if (typeof module !== 'undefined' && module.exports) module.exports = { computeReformResistance: computeReformResistance, applyReformToTree: applyReformToTree, enqueuePendingReform: enqueuePendingReform, adjudicatePendingReforms: adjudicatePendingReforms, FORCE: FORCE };

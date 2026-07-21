@@ -162,6 +162,15 @@
         ch._revoltPacified = true;
         ch.officialTitle = pac.officeTitle || '受抚归顺';
         _setCharFaction(ch, ch._preRevoltFaction || '');  // 真人招安复原籍·草莽渠帅无所属
+        // 批五·受抚渠帅接问对/记忆：授官者落位京师(问对在京判定即可召对)·举旗往事入 NPC 记忆(召对 AI 有据可依)
+        if (pac.officeTitle) ch.location = (G._capital || '京师');
+        ch._revoltPast = { banner: fac.name, silver: pac.silver || 0, officeTitle: pac.officeTitle || '' };
+        try {
+          if (typeof global.NpcMemorySystem !== 'undefined' && typeof global.NpcMemorySystem.addMemory === 'function') {
+            global.NpcMemorySystem.addMemory(ch.name, '曾举「' + (fac.name || '义旗') + '」聚众抗命·后受抚归朝' + (pac.officeTitle ? '·得授' + pac.officeTitle : '') + (pac.silver ? '·抚银' + pac.silver + '两' : ''), 10, 'career');
+            global.NpcMemorySystem.addMemory(ch.name, '旧账与招安之恩并存·居朝如履薄冰·防猜忌亦存桀骜', 8, 'political');
+          }
+        } catch (_eMem) {}
       } else if (ch._revoltEntity) {
         ch._revoltDefeated = true; ch.officialTitle = '溃散流亡';
         _setCharFaction(ch, '');  // 退籍走正门
@@ -250,6 +259,7 @@ function _applyBreachOutcome(G, r, o) {
   var f0 = String(o.fate || 'death');
   if (player && f0 === 'captured') {
     player._captured = true; player._capturedBy = facName;  // 北狩态·花名册/推演既有 _captured 消费
+    player._capturedLocation = facName + '军中';  // 批五·endturn「社稷悬议」段读此落位
     fallInfo('captured');
     _eb('君上蒙尘·为「' + facName + '」所执·社稷存亡悬于一线');
     return;

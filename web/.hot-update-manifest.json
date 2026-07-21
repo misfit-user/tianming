@@ -4661,8 +4661,8 @@
     },
     {
       "path": "tm-map-system.js",
-      "sha256": "1fab78c94f6f395a6855b9cb12e826625865223b3c21c55d1c3bbf455a3399d1",
-      "size": 81036
+      "sha256": "9b15f6b966591253138e5b47b3606e8ad8d2cd61e5e6bc65fd73d69664f92895",
+      "size": 82555
     },
     {
       "path": "tm-mapeditor-fit.js",
@@ -5141,13 +5141,13 @@
     },
     {
       "path": "tm-revolt-entity.js",
-      "sha256": "b3e285b3a7b9848469da1b7b7a9f0da86cf6f09dd469039df31fc5dc79623602",
-      "size": 16925
+      "sha256": "327cf67891d9248c6942dd063b9f487e781364216719275bde0f5268583592f0",
+      "size": 17935
     },
     {
       "path": "tm-revolt-inference.js",
-      "sha256": "f24cd79f0d32b9a2a2e993d1be2b8208728924399263380d0f3c74f8bd71e283",
-      "size": 23527
+      "sha256": "daa6440d37eb1a52e2e711eb090208aac4fffe2720a6403c230908eabcfc962e",
+      "size": 27168
     },
     {
       "path": "tm-save-lifecycle.js",

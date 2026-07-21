@@ -705,6 +705,27 @@ function updateMapColors() {
       })(fh.divisions);
     });
   }
+
+  // 批五·义军占据覆色：region.id → 占据者（民变演绎层写 div.occupiedBy·此处渲染层消费）。
+  // 双树防御走查：P 与 GM 的 adminHierarchy 通常同引用·若分叉则以任一侧有 occupiedBy 为准（占据只由
+  // tm-revolt-inference 写在 GM 叶上·P 侧缺失=静默无覆色·安全失效不破图）。
+  var _regionOccupiedMap = {};
+  [P.adminHierarchy, (typeof GM !== 'undefined' && GM && GM.adminHierarchy !== P.adminHierarchy) ? GM.adminHierarchy : null].forEach(function(ah) {
+    if (!ah) return;
+    Object.keys(ah).forEach(function(fk) {
+      var fh = ah[fk]; if (!fh || !fh.divisions) return;
+      (function _wOcc(ds) {
+        ds.forEach(function(d) {
+          if (!d) return;
+          if (d.occupiedBy && Array.isArray(d.mappedRegions)) {
+            d.mappedRegions.forEach(function(rid) { _regionOccupiedMap[rid] = d.occupiedBy; });
+          }
+          if (d.children) _wOcc(d.children);
+          if (d.divisions) _wOcc(d.divisions);
+        });
+      })(fh.divisions);
+    });
+  });
   // 按管辖类型给地块着色修正——直辖用势力主色；非直辖用"势力主色+autonomy类型色调"混合
   var _AUTONOMY_COLORS = { fanguo:'#9a7bd8', fanzhen:'#f87171', jimi:'#66bb6a', chaogong:'#f59e0b' };
 
@@ -737,6 +758,14 @@ function updateMapColors() {
       } else {
         region.color = baseColor;
         region.autonomyType = 'zhixia';
+      }
+      // 批五·义军占据覆色压轴（占据是既成军事事实·压过 autonomy 显示·退据即自动还色）
+      var _occ = _regionOccupiedMap[region.id];
+      if (_occ) {
+        var _occC = (GM.mapData && GM.mapData.factionColors && GM.mapData.factionColors[_occ]) || null;
+        if (_occC && _occC.main) { region.color = _occC.main; region.occupiedBy = _occ; }
+      } else if (region.occupiedBy) {
+        delete region.occupiedBy;
       }
       updateCount++;
     });

@@ -60,13 +60,19 @@
     try { if (typeof global.addEB === 'function') global.addEB('朝代', label + '·帑出 ' + amount + ' 两'); } catch (_) {}
     return true;
   }
+  function _hexRgb(h) {
+    h = String(h || '').replace('#', '');
+    return parseInt(h.slice(0, 2), 16) + ', ' + parseInt(h.slice(2, 4), 16) + ', ' + parseInt(h.slice(4, 6), 16);
+  }
   function _ensureColor(G, facName) {
     try {
       if (!G.mapData) return;
       if (!G.mapData.factionColors) G.mapData.factionColors = {};
       if (!G.mapData.factionColors[facName]) {
         var used = Object.keys(G.mapData.factionColors).length;
-        G.mapData.factionColors[facName] = REBEL_COLORS[used % REBEL_COLORS.length];
+        var c = REBEL_COLORS[used % REBEL_COLORS.length];
+        // 形状对齐 updateMapColors 消费端({main/highlight/dark/alpha}·裸字符串取 .main 会渲成灰)
+        G.mapData.factionColors[facName] = { main: c, highlight: c, dark: c, alpha: 'rgba(' + _hexRgb(c) + ', 0.7)' };
       }
     } catch (_) {}
   }
@@ -100,6 +106,23 @@
       if (hit || t.indexOf('流贼') >= 0 || t.indexOf('义军') >= 0 || t.indexOf('乱民') >= 0) out.push(t.slice(0, 120));
     });
     return out;
+  }
+  // 批五·赎驾旨匹配（北狩残局：迎归/迎銮/赎驾类旨意）
+  function _recentRansomEdicts(G) {
+    var kw = ['赎', '迎归', '迎銮', '迎驾', '奉还', '还驾'];
+    return (Array.isArray(G._edictTracker) ? G._edictTracker.slice(-8) : []).map(function (e) {
+      return String((e && (e.content || e.title)) || '');
+    }).filter(function (t) {
+      return t && kw.some(function (k) { return t.indexOf(k) >= 0; });
+    }).map(function (t) { return t.slice(0, 120); });
+  }
+  // 该股是否挟有被俘君上（批四破京 captured 态·_capturedBy=股旗号）
+  function _capturedPlayerOf(G, facName) {
+    for (var i = 0; i < (G.chars || []).length; i++) {
+      var c = G.chars[i];
+      if (c && c.isPlayer && c._captured && c._capturedBy === facName) return c;
+    }
+    return null;
   }
 
   // ── subcall A·起号立领袖（具象化时一次·owner 拍板①）────────────────────────
@@ -148,11 +171,18 @@
         + '·已据：' + occ + '·声势级「' + (s.r ? (s.r.level || '?') : '?') + '」');
       var eds = _recentPacifyEdicts(G, s);
       if (eds.length) lines.push('  ↳朝廷近旨(与本股相关·据 stance/agenda 决定受抚/拒抚/讨价·亦可诈许)：' + eds.join('｜'));
+      // 批五·挟君在营：赎驾博弈段（北狩残局）
+      if (_capturedPlayerOf(G, s.fac.name)) {
+        lines.push('  ↳★本股挟被俘君上在营——奇货可居：可 ransom_demand 索赎要挟·朝廷下赎驾旨且银足可 release_captive 放还·亦可继续奇货自重。');
+        var reds = _recentRansomEdicts(G);
+        if (reds.length) lines.push('  ↳朝廷赎驾近旨：' + reds.join('｜'));
+      }
     });
     lines.push('【可用动作】move(target=府县名)·occupy(target=府县名·须军已至且兵力足)·recruit(delta=裹挟人数)·'
       + 'split(banner/leaderName/creed/target=分裂新股)·merge(target=并入的股id)·proclaim(stateName=国号·僭号建国·时机自断)·'
-      + 'pacify_accept(silverDemand=受抚索银·officeTitle=讨的官职)·pacify_refuse(reason)·pacify_counter(silverDemand/officeTitle=还价)。');
-    lines.push('【铁则】没有朝廷招抚旨不得 pacify_*；占府会被引擎验兵力·虚占无效；裹挟有上限；行动须合乎各股纲领与处境·宁少勿滥(每股1-3个)。');
+      + 'pacify_accept(silverDemand=受抚索银·officeTitle=讨的官职)·pacify_refuse(reason)·pacify_counter(silverDemand/officeTitle=还价)·'
+      + 'ransom_demand(silverDemand/terms=挟君索赎·须真挟有君上)·release_captive(silverDemand=放还君上·须朝廷有赎驾旨且银足)。');
+    lines.push('【铁则】没有朝廷招抚旨不得 pacify_*；没有赎驾旨不得 release_captive；不挟君不得 ransom_*；占府会被引擎验兵力·虚占无效；裹挟有上限；行动须合乎各股纲领与处境·宁少勿滥(每股1-3个)。');
     lines.push('只返回 JSON：{"stocks":[{"id":"股id","narrative":"本回合作为叙事≤60字","actions":[{"type":"...","target":"","delta":0,"banner":"","leaderName":"","creed":"","silverDemand":0,"officeTitle":"","stateName":"","reason":""}]}]}');
     return lines.join('\n');
   }
@@ -258,6 +288,31 @@
               if (!_recentPacifyEdicts(G, s).length) { blocked++; return; }
               _eb('「' + s.fac.name + '」讨价：索银 ' + (Number(act.silverDemand) || 0) + ' 两' + (act.officeTitle ? '·求授' + act.officeTitle : '') + '·抚局未定'); applied++;
               return;
+            }
+            case 'ransom_demand': {
+              // 批五·挟君索赎（宪法：真挟有被俘君上才可挟）
+              var cap1 = _capturedPlayerOf(G, s.fac.name);
+              if (!cap1) { blocked++; return; }
+              _eb('「' + s.fac.name + '」挟君上以令朝廷：索赎银 ' + (Number(act.silverDemand) || 0) + ' 两' + (act.terms ? '·' + String(act.terms).slice(0, 40) : '') + '·社稷之重悬于贼手');
+              _chron(G, '「' + s.fac.name + '」挟君索赎：' + (Number(act.silverDemand) || 0) + ' 两' + (act.terms ? '·' + String(act.terms).slice(0, 50) : ''));
+              applied++; return;
+            }
+            case 'release_captive': {
+              // 批五·放还君上（宪法三闸：真挟有君上+朝廷真有赎驾旨+帑廪真拿得出银）
+              var cap2 = _capturedPlayerOf(G, s.fac.name);
+              if (!cap2) { blocked++; return; }
+              if (!_recentRansomEdicts(G).length) { blocked++; return; }
+              var ask2 = Math.max(0, Math.round(Number(act.silverDemand) || 0));
+              if (ask2 > 0 && !_spendSilver(G, ask2, '赎驾于「' + s.fac.name + '」')) {
+                _eb('「' + s.fac.name + '」许还驾而帑廪不给·赎局遂败·君上仍陷贼营'); blocked++;
+                return;
+              }
+              cap2._captured = false;
+              delete cap2._capturedBy;
+              delete cap2._capturedLocation;
+              _eb('★銮驾得还！' + (cap2.name || '君上') + '自「' + s.fac.name + '」营中归' + (ask2 ? '·赎银 ' + ask2 + ' 两' : ''));
+              _chron(G, '銮驾自贼营得还·天下额手·' + (ask2 ? '赎银' + ask2 + '两' : '未费一金'));
+              applied++; return;
             }
             default: blocked++;
           }

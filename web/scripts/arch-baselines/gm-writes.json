@@ -1,8 +1,9 @@
 {
   "config": {
     "owners": [
-      "tm-save-lifecycle.js",
-      "tm-indices.js"
+      "tm-indices.js",
+      "tm-revolt-entity.js",
+      "tm-save-lifecycle.js"
     ],
     "gmFactories": [
       "getGame"

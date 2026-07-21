@@ -2111,8 +2111,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "e3576a540fb986d89e715eb1ea81a476d554305aa87e71183bc83e7ae510e021",
-      "size": 64267
+      "sha256": "6f0c180a655da7370f28d60a4dea88de9c5ffcd83e70a22c62f4410a335bafd3",
+      "size": 64442
     },
     {
       "path": "INDEX.md",
@@ -5006,8 +5006,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "c0c345ef5df90f13ea9546038e40522f664749bfe52f3893846e656f2fa9c0df",
-      "size": 179547
+      "sha256": "6c6bbb6f2369c857f362f21a2edf09a8566ca5dd54f770c7184a85d3b836dd3c",
+      "size": 180619
     },
     {
       "path": "tm-pause-fab.js",
@@ -5133,6 +5133,11 @@
       "path": "tm-resume-point.js",
       "sha256": "f6fbcf670f1e1b147115baea149a28ef5c7dfde19ef13982ff279b366db146c0",
       "size": 9890
+    },
+    {
+      "path": "tm-revolt-entity.js",
+      "sha256": "9e8c7bd63f953120e0a3954550257d5cfed6e58b745629a67616c6b4f621f35f",
+      "size": 9655
     },
     {
       "path": "tm-save-lifecycle.js",

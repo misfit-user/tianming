@@ -971,6 +971,7 @@ openSettings=function(){
               ['officeDutyStateEnabled','官员履职度','官员履职度(才+五常)·失职衰减·与主动行动耦合(影响 balance)。',false],
               ['officeAuthorityGateEnabled','权限门控','掌“征税”等权者出缺/失职→实征打折·腐败涨(影响 balance)。',false],
               ['officeReformAdjudicationEnabled','改制裁定','玩家自由改官制→官僚抵抗·拟制两回合·AI 裁定准驳。',false],
+              ['officeCharterEnabled','设衙章程','下诏设新衙门时 AI 拟开衙章程：正名·职掌·官职表(品级/编制/职权/月俸)·首任荐单·开办费(国库真扣)，廷议裁定后按章开衙。须同开「改制裁定」方有拟制态可拟(增 AI 子调用)。',false],
               ['officeRecallAgentEnabled','官署按需细查','主推演对焦点衙门发 agent 子调用取职责细节(走次要 API·增调用)。',false],
               ['officeVacancyEnabled','出缺补员（默认开）','官员亡故/致仕留缺→按建制走出缺·可被补员(关则不自动出缺)。',true]
             ];

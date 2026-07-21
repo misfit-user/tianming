@@ -2111,8 +2111,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "58a628fe259345a8a4f307faa33ac1399a78a4de8746c3046828dbb56ec7ef26",
-      "size": 65072
+      "sha256": "a12f9c6682347f98e0505c4b01960a2d4e8f330cfad997790921d1f278634868",
+      "size": 65296
     },
     {
       "path": "INDEX.md",
@@ -4066,8 +4066,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "7df93589397da04131f2b1d8be158c9426b96264b7837ab8a18d355bf967235d",
-      "size": 363225
+      "sha256": "700cb2aad80ab96bc0a64130f191400d4cae301cbaabfe586bef64183e5f721a",
+      "size": 363839
     },
     {
       "path": "tm-endturn-province.js",
@@ -4885,6 +4885,11 @@
       "size": 5745
     },
     {
+      "path": "tm-office-charter.js",
+      "sha256": "7395954a6bc6d3b5489dc01a1f67da831472ad03ba35e5c90b2fd6a36e537815",
+      "size": 11724
+    },
+    {
       "path": "tm-office-dutystate.js",
       "sha256": "6ca7979f02960b305d4e7f9a24d881978d5b5fb16366083a86f437cc09e5dd42",
       "size": 9336
@@ -4901,8 +4906,8 @@
     },
     {
       "path": "tm-office-flags.js",
-      "sha256": "6044838abd3de9ffd07fadc44916691e6126dd5a1b63de84a051d1fb2871d295",
-      "size": 2935
+      "sha256": "b13474c9e809ccb7e01679adeddaf5fe525391a645170ffe1028c283458b5dda",
+      "size": 3119
     },
     {
       "path": "tm-office-panel.js",
@@ -4921,8 +4926,8 @@
     },
     {
       "path": "tm-office-reform.js",
-      "sha256": "5315e7434cb0b06058b8c4e5593ca212f2b985c9e06b6064941244e1ce999bb0",
-      "size": 19588
+      "sha256": "4d7343619e9c7aece2adf66347c47f3694962265cd2f74fc3d4d75dd46b5e68a",
+      "size": 25351
     },
     {
       "path": "tm-office-runtime-summary-appoint.js",
@@ -5016,8 +5021,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "b93cfb9c109cc359655c543d16b6a2b8a2c3b3780c480edda9ac07d52f09e624",
-      "size": 181944
+      "sha256": "18172bbb50fc2292d0b5470098d537ffb32fcb06f51e1f8ad233f2def4327bb3",
+      "size": 182246
     },
     {
       "path": "tm-pause-fab.js",
@@ -5331,8 +5336,8 @@
     },
     {
       "path": "tm-var-drawers.js",
-      "sha256": "f1d699eff1344eef2f4cfed54378d27e1013671bba09986519d8f9fa2fffb63e",
-      "size": 117489
+      "sha256": "a98ba1af93cc0819cc97f09a9fa6d63506f8f3136c468c9e63a0e34d3ebc7e14",
+      "size": 118201
     },
     {
       "path": "tm-wendui-persona-views.js",

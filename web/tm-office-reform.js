@@ -118,6 +118,38 @@
     else { ch.officialTitle = ''; ch.title = ''; }
   }
   function _walkTree(ns, fn) { (ns || []).forEach(function (n) { fn(n); if (n.subs) _walkTree(n.subs, fn); }); }
+  function _treeHasName(tree, name) { var hit = false; _walkTree(tree, function (n) { if (n.name === name) hit = true; }); return hit; }
+
+  // ── 章程落树三件套（设衙门批一·演绎层 tm-office-charter 拟的全结构·宪法侧只搬运不再产）──
+  // 开办费国库真扣（镜像 GuokuEngine.Actions.openGranary 范式：balance 直扣+money.stock 同步·不足=false）
+  function _spendGuoku(GM, amount, label) {
+    amount = Math.max(0, Math.round(Number(amount) || 0));
+    if (!amount) return true;
+    try { if (typeof global.GuokuEngine !== 'undefined' && typeof global.GuokuEngine.ensureModel === 'function') global.GuokuEngine.ensureModel(); } catch (e) {}
+    var g = GM.guoku;
+    if (!g || (Number(g.balance) || 0) < amount) return false;
+    g.balance -= amount;   // arch-ok 开办费国库真扣·镜像 GuokuEngine.Actions.openGranary 支出范式(与 tm-revolt-inference._spendSilver 同款裁定)
+    try { if (g.ledgers && g.ledgers.money) g.ledgers.money.stock = g.balance; } catch (e) {}   // arch-ok 同上·账本 stock 同步
+    try { if (typeof global.addEB === 'function') global.addEB('朝代', label + '·帑出 ' + amount + ' 两'); } catch (e) {}
+    return true;
+  }
+  // 章程官职表→officeTree position 形状（双层编制模型两套字段齐给·与 _offMigratePosition 约定对齐）。
+  // discounted=「部分」band 打折：职数减半(主官居首必留)·员额减半(至少1)。
+  function _charterPositions(charter, discounted) {
+    var list = charter.positions || [];
+    if (discounted && list.length > 1) list = list.slice(0, Math.ceil(list.length / 2));
+    return list.map(function (cp) {
+      var cnt = discounted ? Math.max(1, Math.floor(cp.count / 2)) : cp.count;
+      var pos = { name: cp.name, rank: cp.rank, holder: '', desc: cp.duties || '', headCount: cnt, actualCount: 0, additionalHolders: [], establishedCount: cnt, vacancyCount: cnt, actualHolders: [], salary: cp.salary, perPersonSalary: '月俸 ' + cp.salary + ' 石' };
+      if (cp.duties) pos.duties = cp.duties;
+      if (cp.powers && cp.powers.length) {
+        var pw = {}; cp.powers.forEach(function (k) { pw[k] = true; });
+        pos.powers = pw;
+        if (cp.authority) pos.authority = cp.authority;
+      }
+      return pos;
+    });
+  }
 
   /**
    * 把一项改制落到 GM.officeTree（镜像 3340 的增设/裁撤/改名/合并·但全类型可达）。
@@ -134,10 +166,24 @@
         if (added) _recordDz(GM, dept + '/' + pos, dept + '·' + pos);   // 增设职位→典章种子
         return { applied: added, summary: added ? (dept + '增设' + pos) : ('未找到部门' + dept) };
       }
-      if (newDept) { var ok = false; _walkTree(tree, function (n) { if (n.name === dept) { if (!n.subs) n.subs = []; n.subs.push({ name: newDept, desc: reform.reason || '', positions: [], subs: [], functions: [] }); ok = true; } }); if (ok) _recordDz(GM, newDept, newDept); return { applied: ok, summary: ok ? (dept + '下增设' + newDept) : ('未找到部门' + dept) }; }
-      tree.push({ name: dept || '新设部门', desc: reform.reason || '', positions: [], subs: [], functions: [] });
-      _recordDz(GM, dept || '新设部门', dept || '新设部门');   // 增设部门→典章种子
-      return { applied: true, summary: '增设' + (dept || '新设部门') };
+      // 衙门级增设：有章程(演绎层已拟)→按章落全结构；无章程→裸壳(双轨零回归)
+      var _ch = reform._charter || null;
+      var _disc = !!(reform._charterDiscount && _ch);
+      var _chPoss = _ch ? _charterPositions(_ch, _disc) : [];
+      if (_ch) reform._charterLanded = _chPoss.map(function (p) { return p.name; });   // 荐单按实落职位过滤(部分band砍掉的职不荐)
+      if (newDept) {
+        var _lnS = newDept;
+        if (_ch && _ch.name && _ch.name !== newDept && !_treeHasName(tree, _ch.name)) { _lnS = _ch.name; reform.newDept = _lnS; }   // 正名落定(重名回退玩家原名)
+        var ok = false;
+        _walkTree(tree, function (n) { if (n.name === dept) { if (!n.subs) n.subs = []; n.subs.push({ name: _lnS, desc: (_ch && _ch.desc) || reform.reason || '', positions: _chPoss, subs: [], functions: [] }); ok = true; } });
+        if (ok) _recordDz(GM, _lnS, _lnS);
+        return { applied: ok, summary: ok ? (dept + '下增设' + _lnS + (_ch ? ('·章程' + _chPoss.length + '职' + (_disc ? '(部分得行·打折开衙)' : '')) : '')) : ('未找到部门' + dept) };
+      }
+      var _lnT = dept || '新设部门';
+      if (_ch && _ch.name && _ch.name !== _lnT && !_treeHasName(tree, _ch.name)) { _lnT = _ch.name; reform.dept = _lnT; }   // 正名落定
+      tree.push({ name: _lnT, desc: (_ch && _ch.desc) || reform.reason || '', positions: _chPoss, subs: [], functions: [] });
+      _recordDz(GM, _lnT, _lnT);   // 增设部门→典章种子
+      return { applied: true, summary: '增设' + _lnT + (_ch ? ('·章程' + _chPoss.length + '职' + (_disc ? '(部分得行·打折开衙)' : '')) : '') };
     }
     if (kind === 'abolishPos') {
       var removed = false;
@@ -228,11 +274,37 @@
         else aiNote = '·廷议无异议';                                                                                                                                          // AI 更宽则被机械护栏吞(不放水)
       }
       var who = r.affected.map(function (a) { return a.holder; }).join('、');
+      // 章程开办费国库闸(设衙门批一)：裁定虽准·帑廪不支→按拖处置(有司执奏·拖满则寝)·树不动银不扣
+      if ((band === '准' || band === '部分') && item._charter && item._charter.setupCost && !_spendGuoku(GM, item._charter.setupCost, '开衙·' + (item._charter.name || item.dept))) {
+        item.stalls = (item.stalls || 0) + 1;
+        if (item.stalls >= maxStalls) {
+          item.status = '驳'; var cGk = Math.round(r.costHuangwei * 0.5); _applyHuangweiCost(GM, cGk);
+          if (addEB) addEB('官制改革', '开衙之议因帑廪不支而寝·' + item.dept + '（开办约需' + item._charter.setupCost + '两·有司执奏·耗皇威' + cGk + '）');
+          results.push({ item: item, band: '驳', applied: false, resistance: r.resistance, guokuShort: true });
+        } else {
+          if (addEB) addEB('官制改革', '开衙之议因帑廪不支而缓·' + item.dept + '（开办约需' + item._charter.setupCost + '两·有司执奏·俟府库稍充）');
+          keep.push(item); results.push({ item: item, band: '拖', applied: false, resistance: r.resistance, guokuShort: true });
+        }
+        return;
+      }
       if (band === '准' || band === '部分') {
+        if (band === '部分' && item._charter) item._charterDiscount = true;   // 章程打折开衙(职减半·员额减半)
         var ap = applyReformToTree(GM, item); item.status = band;
         var cost = Math.round(r.costHuangwei * (band === '部分' ? 1.5 : 1));
         _applyHuangweiCost(GM, cost);
         if (addEB) addEB('官制改革', '改制' + (band === '准' ? '准行' : '勉强部分得行') + '·' + ap.summary + '（抵抗' + r.resistance + '·威权' + Math.round(authority) + '·耗皇威' + cost + (who ? '·' + who + (band === '部分' ? '力阻' : '终见裁') : '') + aiNote + '）');
+        // 章程首任荐单→诏书建议库(玩家下旨才任命·守五渠道·部分band砍掉的职不荐)
+        if (ap.applied && item._charter && Array.isArray(item._charter.heads) && item._charter.heads.length) {
+          var _landed = item._charterLanded || [];
+          var _pushed = [];
+          if (!Array.isArray(GM._edictSuggestions)) GM._edictSuggestions = [];   // arch-ok 章程荐单入建议库·玩家操作仍走五渠道
+          item._charter.heads.forEach(function (h) {
+            if (_landed.length && _landed.indexOf(h.position) < 0) return;       // 部分band砍掉的职不荐
+            GM._edictSuggestions.push({ source: '章程', from: '铨曹', content: '授' + h.name + '为' + (item.dept || '') + h.position + (h.reason ? '（' + h.reason + '）' : ''), turn: GM.turn, used: false });   // arch-ok 同上·荐单只荐不任
+            _pushed.push(h.name);
+          });
+          if (addEB && _pushed.length) addEB('官制改革', '«' + (item.dept || '') + '»开衙·铨曹以章程所荐首任入诏书建议库（' + _pushed.join('、') + '）——下旨方成任命');
+        }
         results.push({ item: item, band: band, applied: ap.applied, resistance: r.resistance });
       } else if (band === '拖') {
         item.stalls = (item.stalls || 0) + 1;

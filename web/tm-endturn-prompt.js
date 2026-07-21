@@ -1735,6 +1735,10 @@
             var _rr = computeReformResistance(GM, it, { authority: _raAuth, difficulty: _raDiff });
             var _rw = _rr.affected.map(function (a) { return a.holder; }).join('、');
             tp += '  · ' + (it.reformDetail || '') + ' ' + it.dept + (it.position ? ('·' + it.position) : '') + '：机械抵抗' + _rr.resistance + '·威权' + Math.round(_raAuth) + ' → 机械band【' + _rr.band + '】' + (_rw ? ('·触动' + _rw) : '·无人失权') + '\n';
+            // 设衙章程已拟(officeCharterEnabled·演绎层产)→廷议裁定可参酌章程职权之侵夺(占何权·几职几员·糜几两)
+            if (it._charter && Array.isArray(it._charter.positions)) {
+              tp += '    ↳章程已拟：«' + (it._charter.name || it.dept) + '»' + it._charter.positions.map(function (cp) { return cp.name + '(' + cp.rank + '×' + cp.count + (cp.powers && cp.powers.length ? '·权' + cp.powers.length + '项' : '') + ')'; }).join('·') + '·开办约' + it._charter.setupCost + '两——所侵之权谁家旧掌·裁定时并叙\n';
+            }
           });
           tp += '  格式：reform_verdicts:[{dept,position?,verdict,reason}]\n';
         }

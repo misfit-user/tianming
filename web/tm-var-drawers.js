@@ -824,11 +824,14 @@
         dh += '<div style="padding:5px 8px;background:var(--bg-2);border-left:3px dashed var(--gold);margin-bottom:3px;font-size:0.74rem;">';
         dh += '<b style="color:var(--gold);">' + _esc((it.reformDetail || '改制') + ' ' + (it.dept || '')) + '</b> · <span style="color:var(--txt-d);">待廷议裁定</span>';
         if (it.reason) dh += '<br><span style="font-size:0.7rem;color:var(--txt-d);">' + _esc(String(it.reason).slice(0,40)) + '</span>';
-        // 设衙章程御览(officeCharterEnabled·演绎层已拟·批二再做批红修改)
+        // 设衙章程御览(officeCharterEnabled·演绎层已拟)·批二：批红修改钮(改品级/编制/职权·同一宪法闸再验)
         if (it._charter && Array.isArray(it._charter.positions)) {
-          dh += '<br><span style="font-size:0.7rem;color:var(--gold);">章程已拟·«' + _esc(it._charter.name || it.dept || '') + '»</span>';
+          dh += '<br><span style="font-size:0.7rem;color:var(--gold);">章程已拟' + (it._charterRevised ? '·御笔批红改定' : '') + '·«' + _esc(it._charter.name || it.dept || '') + '»</span>';
           if (it._charter.desc) dh += '<span style="font-size:0.7rem;color:var(--txt-d);"> · ' + _esc(it._charter.desc) + '</span>';
           dh += '<br><span style="font-size:0.7rem;color:var(--txt-d);">' + _esc(it._charter.positions.map(function(cp){ return cp.name + '(' + cp.rank + '×' + cp.count + ')'; }).join('·')) + ' · 开办 ' + _fmt(it._charter.setupCost || 0) + ' 两</span>';
+          if (typeof _charterReviewOpen === 'function' && it._key) {
+            dh += ' <button class="bt" style="font-size:0.66rem;padding:0.1rem 0.45rem;" onclick="_charterReviewOpen(decodeURIComponent(\'' + encodeURIComponent(it._key) + '\'))">批红修改</button>';
+          }
         }
         dh += '</div>';
       });

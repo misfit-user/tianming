@@ -4066,8 +4066,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "700cb2aad80ab96bc0a64130f191400d4cae301cbaabfe586bef64183e5f721a",
-      "size": 363839
+      "sha256": "3b5e2337d834a86b95ef4ad684ba9a32adaf36a776565c6192e935aa4f31e91a",
+      "size": 363925
     },
     {
       "path": "tm-endturn-province.js",
@@ -4886,8 +4886,8 @@
     },
     {
       "path": "tm-office-charter.js",
-      "sha256": "7395954a6bc6d3b5489dc01a1f67da831472ad03ba35e5c90b2fd6a36e537815",
-      "size": 11724
+      "sha256": "70dd02506895a805798ce920dad85ee89158419188fc4176de769ca201d29746",
+      "size": 17936
     },
     {
       "path": "tm-office-dutystate.js",
@@ -5336,8 +5336,8 @@
     },
     {
       "path": "tm-var-drawers.js",
-      "sha256": "a98ba1af93cc0819cc97f09a9fa6d63506f8f3136c468c9e63a0e34d3ebc7e14",
-      "size": 118201
+      "sha256": "364ee0f6e5d27f83eca3226e19875de6ded5be524b38adcefd7a753b76909d31",
+      "size": 118591
     },
     {
       "path": "tm-wendui-persona-views.js",

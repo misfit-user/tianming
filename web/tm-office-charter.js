@@ -161,6 +161,90 @@
     return null;
   }
 
+  // ── 批红修改（批二·owner 拍板：章程进廷议前玩家可改品级/编制/职权）────────────
+  // edits.positions=[{name(锚·不可改),rank,count,powers[]}]·改后整章重过 _validateCharter=同一宪法闸
+  // (换品级→月俸自动随新品级俸 band 重夹取·野键照滤·员额照夹)·首任荐单过滤到幸存职位·开办费不动。
+  function _applyCharterRevision(G, item, edits) {
+    if (!item || item.status !== '拟制中' || !item._charter) return { ok: false, reason: '此议已决或无章程可批' };
+    var ch = item._charter;
+    var byName = {};
+    (Array.isArray(edits && edits.positions) ? edits.positions : []).forEach(function (e) { if (e && e.name) byName[e.name] = e; });
+    var raw = {
+      name: ch.name, desc: ch.desc, setupCost: ch.setupCost,
+      heads: (ch.heads || []).map(function (h) { return { position: h.position, name: h.name, reason: h.reason }; }),
+      positions: (ch.positions || []).map(function (p) {
+        var e = byName[p.name] || {};
+        return {
+          name: p.name,
+          rank: (e.rank != null ? e.rank : p.rank),
+          count: (e.count != null ? e.count : p.count),
+          powers: (Array.isArray(e.powers) ? e.powers : p.powers),
+          authority: p.authority, salary: p.salary, duties: p.duties
+        };
+      })
+    };
+    var v = _validateCharter(G, raw, item);
+    if (!v) return { ok: false, reason: '批红后章程无一职合式(品级须在本朝品级表)·未收' };
+    v.setupCost = ch.setupCost;   // 开办费照旧案(批红不改钱·防边改边压价)
+    item._charter = v;
+    item._charterRevised = true;
+    _eb('«' + v.name + '»章程御笔批红改定：' + v.positions.map(function (p) { return p.name + '(' + p.rank + '×' + p.count + ')'; }).join('·') + '·仍待廷议裁定');
+    return { ok: true, charter: v };
+  }
+
+  // 批红弹窗（浏览器侧·smoke 不走 DOM 只验 _applyCharterRevision）
+  function _charterReviewOpen(itemKey) {
+    if (typeof document === 'undefined') return;
+    var G = global.GM;
+    if (!G || !Array.isArray(G._pendingReforms)) return;
+    var item = null;
+    for (var i = 0; i < G._pendingReforms.length; i++) {
+      var it = G._pendingReforms[i];
+      if (it && it._key === itemKey && it.status === '拟制中' && it._charter) { item = it; break; }
+    }
+    if (!item) { try { if (typeof global.toast === 'function') global.toast('此议已决或章程未拟'); } catch (_) {} return; }
+    var ch = item._charter;
+    var H = _rankTable() || [];
+    var esc = (typeof global.escHtml === 'function') ? global.escHtml : function (s) { return String(s).replace(/</g, '&lt;'); };
+    var bg = document.createElement('div');
+    bg.style.cssText = 'position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+    var html = '<div style="background:var(--color-surface,#1c1917);border:1px solid var(--gold-500,#b08d3f);border-radius:8px;padding:1.1rem 1.3rem;max-width:560px;max-height:82vh;overflow-y:auto;">';
+    html += '<div style="font-size:0.95rem;color:var(--gold,#c9a227);letter-spacing:0.08em;margin-bottom:0.35rem;">批红·«' + esc(ch.name) + '»开衙章程</div>';
+    html += '<div style="font-size:0.7rem;color:var(--txt-d,#8a8378);margin-bottom:0.6rem;">' + esc(ch.desc || '') + ' · 开办 ' + ch.setupCost + ' 两（批红不改）· 改品级则月俸随品自正</div>';
+    ch.positions.forEach(function (p, pi) {
+      html += '<div data-pos="' + esc(p.name) + '" style="border-top:1px dotted var(--bdr,#3a352d);padding:0.45rem 0;">';
+      html += '<b style="font-size:0.8rem;color:var(--gold,#c9a227);">' + esc(p.name) + '</b> ';
+      html += '<select data-f="rank" style="font-size:0.72rem;background:transparent;color:inherit;border:1px solid var(--bdr,#3a352d);">';
+      H.forEach(function (r) { html += '<option value="' + esc(r.label) + '"' + (p.rank.indexOf(r.label) >= 0 ? ' selected' : '') + '>' + esc(r.label) + '</option>'; });
+      html += '</select> 员额<input data-f="count" type="number" min="1" max="' + MAX_HEADCOUNT + '" value="' + p.count + '" style="width:3em;font-size:0.72rem;background:transparent;color:inherit;border:1px solid var(--bdr,#3a352d);">';
+      html += '<div style="margin-top:0.25rem;font-size:0.7rem;">';
+      POWER_KEYS.forEach(function (k) {
+        html += '<label style="margin-right:0.55rem;white-space:nowrap;cursor:pointer;"><input data-f="pw" data-k="' + k + '" type="checkbox"' + (p.powers.indexOf(k) >= 0 ? ' checked' : '') + ' style="vertical-align:-2px;">' + POWER_CN[k] + '</label>';
+      });
+      html += '</div></div>';
+    });
+    html += '<div style="text-align:right;margin-top:0.7rem;"><button class="bt" data-act="ok">批红定案</button> <button class="bt" data-act="close">罢</button></div>';
+    html += '</div>';
+    bg.innerHTML = html;
+    bg.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (t === bg || (t && t.getAttribute && t.getAttribute('data-act') === 'close')) { bg.remove(); return; }
+      if (t && t.getAttribute && t.getAttribute('data-act') === 'ok') {
+        var edits = { positions: [] };
+        bg.querySelectorAll('[data-pos]').forEach(function (row) {
+          var powers = [];
+          row.querySelectorAll('[data-f="pw"]').forEach(function (cb) { if (cb.checked) powers.push(cb.getAttribute('data-k')); });
+          var cntEl = row.querySelector('[data-f="count"]'), rkEl = row.querySelector('[data-f="rank"]');
+          edits.positions.push({ name: row.getAttribute('data-pos'), rank: rkEl ? rkEl.value : '', count: cntEl ? parseInt(cntEl.value, 10) : 1, powers: powers });
+        });
+        var r = _applyCharterRevision(G, item, edits);
+        try { if (typeof global.toast === 'function') global.toast(r.ok ? '章程批红已定·仍待廷议' : ('未收：' + r.reason)); } catch (_) {}
+        if (r.ok) { bg.remove(); try { if (typeof global.renderVarDrawers === 'function') global.renderVarDrawers(); } catch (_) {} }
+      }
+    });
+    document.body.appendChild(bg);
+  }
+
   // ── 每回合 tick：给拟制中的衙门级增设派章程锻造(一次·幂等) ──────────────────
   function tick(G) {
     if (!enabled()) return;
@@ -177,7 +261,8 @@
     });
   }
 
-  var API = { tick: tick, forgeCharter: forgeCharter, _validateCharter: _validateCharter, _buildPrompt: _buildPrompt, enabled: enabled, POWER_KEYS: POWER_KEYS, MAX_POSITIONS: MAX_POSITIONS, SETUP_COST_MIN: SETUP_COST_MIN, SETUP_COST_MAX: SETUP_COST_MAX };
+  var API = { tick: tick, forgeCharter: forgeCharter, _validateCharter: _validateCharter, _applyCharterRevision: _applyCharterRevision, _buildPrompt: _buildPrompt, enabled: enabled, POWER_KEYS: POWER_KEYS, MAX_POSITIONS: MAX_POSITIONS, SETUP_COST_MIN: SETUP_COST_MIN, SETUP_COST_MAX: SETUP_COST_MAX };
+  global._charterReviewOpen = _charterReviewOpen;
   global.TM = global.TM || {};
   global.TM.OfficeCharter = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

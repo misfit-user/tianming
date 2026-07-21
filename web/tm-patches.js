@@ -698,7 +698,14 @@ openSettings=function(){
               '<input type="checkbox" id="s-revolt-entity" ' + (_revEntOn?'checked ':'') + 'onchange="_togglePConf(\'revoltEntityEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
               '<div style="flex:1;">' +
                 '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">民变实体化（默认关闭·实验）</div>' +
-                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">民变闹到「暴动」及以上时具象化为<b>真实体</b>：义军势力入势力档·渠帅入人物档·义军军队上军事帐——全游戏系统与 AI 推演自然看见它们；被剿/瓦解则军散档除。关闭时维持原五级抽象台账。</div>' +
+                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">民变闹到「暴动」及以上时具象化为<b>真实体</b>：义军势力入势力档·渠帅入人物档·义军军队上军事帐——全游戏系统与 AI 推演自然看见它们；被剿/瓦解则军散档除。开启后民变打到顶级不再瞬间终局·而是<b>兵临京师三拍</b>：进军→破京→社稷定命（有储君则继统续玩残局）。关闭时维持原五级抽象台账。</div>' +
+              '</div>' +
+            '</label>' +
+            '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+              '<input type="checkbox" id="s-border-invasion" ' + ((P.conf && P.conf.borderInvasionEnabled === true)?'checked ':'') + 'onchange="_togglePConf(\'borderInvasionEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+              '<div style="flex:1;">' +
+                '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">边患·真实入侵（默认关闭·实验）</div>' +
+                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">边境风险持续高压（边军空虚+强敌在侧连续三回合）时·敌对势力<b>真的出兵</b>：一支入侵军出现在最危急的州府·军事系统照常接战；风险回落或击破则退兵（六回合内不再犯）。关闭时边患仅停留在数值与文案。</div>' +
               '</div>' +
             '</label>';
           })() +

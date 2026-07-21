@@ -2111,8 +2111,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "6f0c180a655da7370f28d60a4dea88de9c5ffcd83e70a22c62f4410a335bafd3",
-      "size": 64442
+      "sha256": "2553e94ba0f828503cdc75b231aece71660d5dce299269e5716423183becb719",
+      "size": 64621
     },
     {
       "path": "INDEX.md",
@@ -3546,8 +3546,8 @@
     },
     {
       "path": "tm-authority-complete.js",
-      "sha256": "a5d6fb7c76ca4b3c09c838ba82d25933244abc1aaa00874492c30e9c373ae7b5",
-      "size": 82294
+      "sha256": "7a581de94be59d08b35356a36a00b8c428dace785ae8872067bc33e50d361366",
+      "size": 82954
     },
     {
       "path": "tm-authority-deep.js",
@@ -3593,6 +3593,11 @@
       "path": "tm-bgm-config.js",
       "sha256": "205e6746b1b1b01e2d01a30c6081dab654230b5a9dce2deffc181dd64f64c8a2",
       "size": 1297
+    },
+    {
+      "path": "tm-border-invasion.js",
+      "sha256": "be2854bcde32b8fc2680352e94ed40918893fb7950a76b1895c5a4f6f03590bc",
+      "size": 6689
     },
     {
       "path": "tm-border-risk.js",
@@ -5006,8 +5011,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "6c6bbb6f2369c857f362f21a2edf09a8566ca5dd54f770c7184a85d3b836dd3c",
-      "size": 180619
+      "sha256": "cd38978ffd8fb9908b4df9c6535149f4b65667d547ede348b75f3d7dbf93e810",
+      "size": 181788
     },
     {
       "path": "tm-pause-fab.js",
@@ -5136,8 +5141,8 @@
     },
     {
       "path": "tm-revolt-entity.js",
-      "sha256": "9e8c7bd63f953120e0a3954550257d5cfed6e58b745629a67616c6b4f621f35f",
-      "size": 9655
+      "sha256": "bd902fd33c4200f4722368a0c8c87c637eda2cefcab3729c45a9fd28d78eed2b",
+      "size": 13126
     },
     {
       "path": "tm-save-lifecycle.js",

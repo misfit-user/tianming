@@ -374,6 +374,14 @@
             } else if (typeof global.GM.huangwei === 'object') global.GM.huangwei.index = Math.max(0, global.GM.huangwei.index - 8);
           }
           if (r.level === 5) {
+            // R2破京链(2026-07-21·owner铁律「终局=玩家角色被杀」)：实体链开启时不再瞬时 _gameOver——
+            // 改为兵临京师三拍(进军→破京→裁决器定命·tm-revolt-entity 接力·有储君=继统续玩残局)。
+            // flag 关=下方旧轨字节级不动。
+            var _r2On = !!(global.P && global.P.conf && global.P.conf.revoltEntityEnabled === true);
+            if (_r2On) {
+              r._breachMarch = { started: ctx.turn };
+              if (global.addEB) global.addEB('民变', (r.region || '') + '义军号称百万·旌旗蔽野·剑指京师');
+            } else {
             // 真亡因随信号走(第七轮·2026-07-07)：此前只带 type/revolt-id/turn·消费端(_consumeDynastyEndSignal)
             // 拿不到亡在何省何级·终局屏与太史公评语只能写套话。region/level/levelName 皆 revolt 真数据。
             global.GM._gameOver = {
@@ -383,6 +391,7 @@
               leader: r.leader || r.leaderName || ''
             };
             if (global.addEB) global.addEB('民变', '改朝换代！天命已移');
+            }
           }
         }
       }

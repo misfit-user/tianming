@@ -15,6 +15,7 @@
     headHigh: 30, headMid: 15, perPower: 10,
     disloyalBelow: 40, disloyalAdd: 20, loyalAbove: 70, loyalSub: 10,
     mergeMul: 0.5,                                  // 合并比裁撤温和(职位转移非清退)
+    addOverlapMul: 0.6, addOverlapCap: 60,          // 批三·增设分权比裁撤温和(权被摊薄非剥夺)·总加成封顶防满朝皆抵一切议废
     difficultyMul: { narrative: 0.7, standard: 1.0, hardcore: 1.3 },
     passBelow: 0, partialBelow: 20, delayBelow: 40,
     costFactor: 0.12, costCap: 8
@@ -71,6 +72,37 @@
     var kind = _reformKind(reform);
     var resistance = (F.base[kind] != null) ? F.base[kind] : F.base.other;
     var affected = [];
+    // 批三·增设的抵抗不再是死基础分：新衙章程所掌之权与在任官旧掌重叠→旧掌其权者具名抵抗
+    // (设西厂分监察之权·都察院与东厂岂能无声)。无章程/章程无权=原基础分·字节级零回归。
+    if (kind === 'add' && reform._charter && Array.isArray(reform._charter.positions) && GM && GM.officeTree) {
+      var newPw = {};
+      reform._charter.positions.forEach(function (cp) { (cp.powers || []).forEach(function (k) { newPw[k] = 1; }); });
+      var newKeys = Object.keys(newPw);
+      if (newKeys.length) {
+        var overlapSum = 0;
+        (function walkOv(ns) {
+          (ns || []).forEach(function (n) {
+            (n.positions || []).forEach(function (p) {
+              if (!p || !p.holder || !p.powers) return;
+              var taken = newKeys.filter(function (k) { return p.powers[k]; });
+              if (!taken.length) return;
+              var ch = _holderChar(GM, p.holder), w = 0;
+              var lvl = _rankLvl(p); if (lvl <= 3) w += F.headHigh; else if (lvl <= 6) w += F.headMid;
+              w += taken.length * F.perPower;
+              var loy = ch && ch.loyalty;
+              if (loy != null && loy < F.disloyalBelow) w += F.disloyalAdd;
+              else if (loy != null && loy > F.loyalAbove) w -= F.loyalSub;
+              w = Math.round(w * F.addOverlapMul);
+              if (w <= 0) return;
+              overlapSum += w;
+              affected.push({ dept: n.name, pos: p.name, holder: p.holder, weight: w, powersTaken: taken });
+            });
+            if (n.subs) walkOv(n.subs);
+          });
+        })(GM.officeTree);
+        resistance += Math.min(F.addOverlapCap, overlapSum);
+      }
+    }
     if (kind === 'abolishPos' || kind === 'abolishDept' || kind === 'merge') {
       var mul = (kind === 'merge') ? F.mergeMul : 1;
       _affectedHolders(GM, reform, kind).forEach(function (it) {

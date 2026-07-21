@@ -44,6 +44,20 @@
         edictChannel: { type: 'string', enum: ['pol', 'mil', 'dip', 'eco', 'oth'] },
         structured: { type: 'object', description: '{target,action,scope,forbidden,measurable,condition}' },
         ambiguity: { type: 'array', items: { type: 'string' } },
+        watch: {
+          type: 'array',
+          description: '(可选·仅当裁定含可量化的后续目标时填·最多6条)兑现对账指标——回合结束后引擎按在档真值自动核验并回报玩家。path 用与 hardChanges 相同的路径式·★须先用工具核实在档真名·勿凭空猜。expect: increase/decrease=相对现值方向·gte/lte/eq=与 value 比较·change=只要变动。',
+          items: {
+            type: 'object',
+            properties: {
+              path: { type: 'string' },
+              expect: { type: 'string', enum: ['increase', 'decrease', 'gte', 'lte', 'eq', 'change'] },
+              value: { description: 'gte/lte/eq 时的比较值' },
+              note: { type: 'string', description: '指标短名(给玩家看·如「袁崇焕忠诚」)' }
+            },
+            required: ['path', 'expect']
+          }
+        },
         clarify: { type: 'object', description: '仅当对象指代/意图拿不准且影响裁定时才填：向玩家提一个澄清问题·确认框会给可点选项·玩家一点即带澄清重裁。拿得准就不要填。', properties: { question: { type: 'string', description: '一句话问题' }, options: { type: 'array', items: { type: 'string' }, description: '2-4个候选短语(如两个同名人的身份区分)' } } }
       },
       required: ['category', 'interpretation']
@@ -99,9 +113,17 @@
     opts = opts || {};
     var rt = _readTools();
     if (!rt || typeof root.callAIWithTools !== 'function') return { ok: false };
+    // 兑现对账 flag OFF 时从 submit schema 剥掉 watch（省 token·真 OFF 零行为）
+    var submitDef = SUBMIT_TOOL;
+    try {
+      if (!(root.P && P.conf && P.conf.wentianFulfillAudit === true)) {
+        submitDef = JSON.parse(JSON.stringify(SUBMIT_TOOL));
+        delete submitDef.parameters.properties.watch;
+      }
+    } catch (_wtWsE) {}
     var tools = (typeof rt.defs === 'function' ? rt.defs() : []).filter(function (d) {
       return d && READ_TOOL_NAMES.indexOf(d.name) >= 0;
-    }).concat([SUBMIT_TOOL]);
+    }).concat([submitDef]);
 
     var transcript = '你是天命AI推演系统的元指令裁定官（agent 模式）。玩家对「问天」通道说了一条指令。\n'
       + '你的职责：①先用只读工具查证——指令涉及的人/军/阶层/党派/势力/区划在档真名是什么、现值多少（玩家可能写错字、用绰号、记错现状）；'

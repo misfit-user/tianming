@@ -422,6 +422,8 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
       try {
         if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
         if (!_endturnSaveStillCurrent()) return;
+        // 问天·兑现对账（刀A·flag 默认 OFF·同回合幂等）——放推演各 pass 落定后、autosave 前·结果随档入库
+        try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
         _prepareGMForSave();
         if (!_endturnSaveStillCurrent()) return;
     // A-1·端回合自动封存·统一 snapshot builder·保持 IDB {GM,P} 格式

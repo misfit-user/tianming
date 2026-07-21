@@ -674,6 +674,24 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })() +
+        (function(){
+          var _wtFaOn = !!(P.conf && P.conf.wentianFulfillAudit === true);
+          var _wtUdOn = !!(P.conf && P.conf.wentianUndo === true);
+          return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-wentian-audit" ' + (_wtFaOn?'checked ':'') + 'onchange="_togglePConf(\'wentianFulfillAudit\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">问天·兑现对账（默认关闭·实验）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">问天裁定可附带量化指标·回合结束后引擎按在档真值<b>确定性核验</b>是否兑现（AI 说「已遵」而数字没动时·账本说了算）·结果盖进指令徽章并入问天历史。零额外 AI 调用。</div>' +
+            '</div>' +
+          '</label>' +
+          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-wentian-undo" ' + (_wtUdOn?'checked ':'') + 'onchange="_togglePConf(\'wentianUndo\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">问天·直改可撤销（默认关闭·实验）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">问天数值直改落笔时快照原值·<b>当回合内</b>可在活跃指令列表一键回滚（↩撤）。过回合后推演已消化改动·不可再撤。天意造物类不可撤。</div>' +
+            '</div>' +
+          '</label>';
+        })() +
         '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
           '<input type="checkbox" id="s-consol" ' + (_consolOn?'checked ':'') + 'onchange="_togglePConf(\'memorySynthesisEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
           '<div style="flex:1;">' +

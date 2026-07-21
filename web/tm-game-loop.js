@@ -902,9 +902,12 @@ function _wtRenderHistory() {
       else statusChip = '<span style="display:inline-block;padding:1px 5px;background:rgba(184,154,83,0.12);color:var(--gold-300);border-radius:2px;font-size:0.62rem;margin-left:4px;">\u65B0\u5F55</span>';
       var borderCol = d._absolute ? '#b08bc8' : d._lastStatus === 'ignored' ? 'var(--vermillion-400)' : d._lastStatus === 'partial' ? 'var(--amber-400)' : d._lastStatus === 'followed' ? 'var(--celadon-400)' : 'var(--gold-400)';
       var absChip = d._absolute ? '<span style="display:inline-block;padding:1px 6px;background:linear-gradient(135deg,#8e6aa8,#b08bc8);color:#fff;border-radius:2px;font-size:0.62rem;margin-left:4px;font-weight:700;">\u2605\u5929\u610F</span>' : '';
+      // \u5200A\u00B7\u5151\u73B0\u5BF9\u8D26\u5728\u518C\u6807\u8BB0\uFF08title \u5217\u6307\u6807\uFF09
+      var watchChip = (d._watch && d._watch.items && d._watch.items.length)
+        ? '<span style="display:inline-block;padding:1px 5px;background:rgba(126,160,200,0.16);color:var(--ink-200,#cbb);border-radius:2px;font-size:0.62rem;margin-left:4px;" title="' + escHtml(d._watch.items.map(function(w){return (w.note||w.path)+'\u00B7'+w.expect;}).join('\uFF1B')) + '">\u2696\u5BF9\u8D26' + d._watch.items.length + '</span>' : '';
       html += '<div style="display:flex;justify-content:flex-end;margin-bottom:0.4rem;">';
       html += '<div style="max-width:85%;background:var(--color-accent-subtle);border-right:3px solid ' + borderCol + ';border-radius:var(--radius-md) 2px 2px var(--radius-md);padding:0.4rem 0.6rem;font-size:var(--text-xs);">';
-      html += '<div style="font-size:0.66rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + absChip + statusChip + '</div>';
+      html += '<div style="font-size:0.66rem;color:var(--gold-400);margin-bottom:2px;">T' + (d.turn||'?') + ' ' + (d.type === 'rule' ? '\u89C4\u5219' : d.type === 'correction' ? '\u7EA0\u6B63' : d.type === 'content' ? '\u5185\u5BB9' : '\u6307\u4EE4') + absChip + statusChip + watchChip + '</div>';
       html += escHtml(d.content);
       if (d.structured) {
         var sParts = [];
@@ -915,6 +918,10 @@ function _wtRenderHistory() {
         if (sParts.length > 0) html += '<div style="font-size:0.62rem;color:var(--ink-300);margin-top:2px;font-style:italic;">' + escHtml(sParts.join(' \u00B7 ')) + '</div>';
       }
       if (d._lastEvidence) html += '<div style="font-size:0.62rem;color:var(--celadon-400);margin-top:2px;">\u4E0A\u56DE\u5408\u6267\u884C\uFF1A' + escHtml(d._lastEvidence.slice(0, 60)) + '</div>';
+      // \u5200B\u00b7\u5f53\u56de\u5408\u5185\u53ef\u64a4\u9500\u76f4\u6539\uff08flag \u5f00 + \u6709\u5feb\u7167 + \u672a\u64a4 + \u540c\u56de\u5408\uff09
+      if (d._undoSnapshot && !d._undone && GM.turn === d._undoSnapshot.turn && (P.conf && P.conf.wentianUndo === true)) {
+        html += '<button style="font-size:0.62rem;color:var(--amber-400);background:none;border:1px solid rgba(201,168,76,0.35);border-radius:2px;cursor:pointer;margin-left:4px;padding:0 4px;" title="\u56de\u6eda\u672c\u6761\u76f4\u6539\uff08\u4ec5\u9650\u5f53\u56de\u5408\uff09" onclick="_wtUndoHardChange(\'' + d.id + '\')">\u21a9\u64a4</button>';
+      }
       html += '<button style="font-size:0.62rem;color:var(--vermillion-400);background:none;border:none;cursor:pointer;margin-left:4px;" onclick="GM._playerDirectives.splice(' + i + ',1);_wtRenderHistory();">\u2715</button>';
       html += '</div></div>';
     });
@@ -1209,6 +1216,14 @@ function _wtConfirmPending() {
     category: p.category,
     structured: p.structured, interpretation: p.interpretation, plan: p.plan
   };
+  // 刀A·兑现对账 watch 注册（flag OFF 或指标全不可读→静默不挂账·诚实原则）
+  try {
+    if (typeof P !== 'undefined' && P && P.conf && P.conf.wentianFulfillAudit === true
+        && typeof _wtRegisterWatch === 'function' && Array.isArray(p.watch)) {
+      var _wtW = _wtRegisterWatch(p.watch);
+      if (_wtW) dir._watch = _wtW;
+    }
+  } catch (_wtWE) {}
   var sysMsg = '';
 
   // 多改批量（agent 模式可提交多条 hardChanges·单条契约照旧）
@@ -1246,8 +1261,22 @@ function _wtConfirmPending() {
   } else if (p.category === 'hardChange' && _wtHcList.length) {
     // 立即写入 GM/P 数值（agent 模式可多笔·hc/ok 沿旧语义=首笔·多笔另补一条批量汇总历史行）
     var hOkN = 0;
+    // 刀B·撤销快照：flag 开时每笔 apply 各自武装捕获窗（一笔恰一次 _wtAfterHardChange）
+    var _wtUndoOn = (typeof P !== 'undefined' && P && P.conf && P.conf.wentianUndo === true && typeof _wtBeginUndoCapture === 'function');
+    var _wtUndoSnaps = [];
     var hDone = _wtHcList.map(function (hc1) {
-      var ok1 = _wtApplyHardChange(hc1.path, hc1.op || 'set', hc1.value);
+      var ok1;
+      if (_wtUndoOn) {
+        _wtBeginUndoCapture();
+        ok1 = _wtApplyHardChange(hc1.path, hc1.op || 'set', hc1.value);
+        var _cap = _wtEndUndoCapture();
+        // old 为对象/undefined 不可靠回滚→该笔不入快照（快照不全则整条不给撤销钮·拒绝部分撤销）
+        if (ok1 && _cap.length === 1 && _cap[0].old !== undefined && (_cap[0].old === null || typeof _cap[0].old !== 'object')) {
+          _wtUndoSnaps.push({ reqPath: hc1.path, old: _cap[0].old });
+        }
+      } else {
+        ok1 = _wtApplyHardChange(hc1.path, hc1.op || 'set', hc1.value);
+      }
       if (ok1) hOkN++;
       var hRec = Object.assign({}, hc1, { _applied: !!ok1 });
       delete hRec._dryRun;  // 预标只服务确认框·不入存档
@@ -1264,6 +1293,10 @@ function _wtConfirmPending() {
     dir._lastStatus = hOkN > 0 ? 'followed' : 'ignored';
     dir._lastReason = hOkN === hDone.length ? '问天直改即时生效' : (hOkN > 0 ? '部分生效(' + hOkN + '/' + hDone.length + ')' : '路径未找到/无法修改');
     dir._lastCheckTurn = GM.turn;
+    // 刀B·全部生效笔均有可靠快照才挂撤销（当回合内 _wtUndoHardChange 可回滚）
+    if (_wtUndoOn && hOkN > 0 && _wtUndoSnaps.length === hOkN) {
+      dir._undoSnapshot = { turn: GM.turn, changes: _wtUndoSnaps };
+    }
     sysMsg = ok
       ? ('\u2696\ufe0e \u5DF2\u5199\u5165\uFF1A' + hc.path + ' ' + (hc.op||'set') + ' ' + hc.value + ' [id=' + did + ']')
       : ('\u26A0 \u8DEF\u5F84\u672A\u627E\u5230\uFF1A' + hc.path);

@@ -331,6 +331,8 @@ function _wtScheduleHardChangeRefresh(normalizedPath, oldVal, newVal) {
 }
 
 function _wtAfterHardChange(normalizedPath, oldVal, newVal) {
+  // \u64A4\u9500\u5FEB\u7167\u7A97\u53E3\uFF08\u5200B\u00B7\u4EC5\u786E\u8BA4\u73B0\u573A\u6B66\u88C5\uFF09\u00B7typeof \u5B88\u536B\uFF1A\u90E8\u5206 smoke \u6309\u7A97\u53E3\u5207\u7247\u88C5\u8F7D\u672C\u6587\u4EF6\u00B7\u58F0\u660E\u53EF\u80FD\u4E0D\u5728\u5207\u7247\u5185
+  try { if (typeof _wtUndoCaptureBuf !== 'undefined' && _wtUndoCaptureBuf) _wtUndoCaptureBuf.push({ path: normalizedPath, old: oldVal, nv: newVal }); } catch (_wtCapE) {}
   _wtScheduleHardChangeRefresh(normalizedPath, oldVal, newVal);
   if (typeof addEB === 'function') addEB('\u95EE\u5929', '\u76F4\u6539 ' + normalizedPath + ' \u00B7 ' + oldVal + '\u2192' + newVal);
 }
@@ -868,12 +870,13 @@ function _wtApplyHardChange(path, op, value, opts) {
       var _armyPath = 'armies.' + armyChange.index + '.' + _f;
       if (_f === 'commander') {
         var _cmdVal = String(value == null ? '' : value).trim();
+        var _oldCmd = String(_a.commander == null ? '' : _a.commander);  // 真 old（原传 ''·撤销快照/变更日志都需要真值）
         try {
           if (typeof TM !== 'undefined' && TM.AIChange && TM.AIChange.Army && typeof TM.AIChange.Army.applyAIArmyChange === 'function') {
             TM.AIChange.Army.applyAIArmyChange({ armyName: _a.name, commander: _cmdVal, reason: '问天直改主帅' }, { source: 'wentian.hardChange' });
           } else { _a.commander = _cmdVal; }
         } catch (_wtCmdE) { _a.commander = _cmdVal; }
-        _wtAfterHardChange(_armyPath, '', _cmdVal);
+        _wtAfterHardChange(_armyPath, _oldCmd, _cmdVal);
         return true;
       }
       var _oldA = _a[_f];
@@ -1091,4 +1094,157 @@ function _wtClearDirectives() {
   GM._wentianHistory.push({ role: 'system', content: '\u6240\u6709\u6307\u4EE4\u5DF2\u6E05\u9664\u3002' });
   _wtRenderHistory();
   toast('\u6307\u4EE4\u5DF2\u6E05\u9664');
+}
+
+// ═══ 问天升级批（2026-07-21·两刀·flag 默认 OFF·设置→性能可开）════════════════════
+// 刀A 兑现对账：推演 AI 的合规回报(directive_compliance)是自报作业——本刀在回合末用在档真值
+//   对 watch 指标做确定性复核·盖进既有 _lastStatus 徽章体系（_lastReason 带「⚖︎对账」前缀·
+//   与 AI 自报可区分且能纠正它）。P.conf.wentianFulfillAudit === true 才启用。
+// 刀B 直改撤销：hardChange 档落笔时经 _wtAfterHardChange 快照 before 值·当回合内一键回滚
+//   （replay 走同一 _wtApplyHardChange·别名/镜像/UI 刷新随之复原）。天意 allowCreate 造物不可撤。
+//   P.conf.wentianUndo === true 才启用。
+
+// ── 只读取值（对账基线/现值用·复用七类 resolver·绝不创建任何字段）──
+function _wtReadHardChangeValue(path) {
+  try {
+    var normalizedPath = _wtNormalizeHardChangePath(path);
+    var parts = String(normalizedPath).split('.');
+    var root;
+    if (parts[0] === 'GM' || parts[0] === 'gm') { parts.shift(); root = (typeof GM !== 'undefined') ? GM : null; }
+    else if (parts[0] === 'P' || parts[0] === 'p') { parts.shift(); root = (typeof P !== 'undefined') ? P : null; }
+    else root = (typeof GM !== 'undefined') ? GM : null;
+    if (!root || !parts.length || !parts[0]) return { ok: false };
+    if (typeof GM !== 'undefined' && root === GM) {
+      var r;
+      if ((r = _wtResolveCharacterHardChange(parts)) && r.ch) {
+        var v = (r.field === 'location')
+          ? (r.ch.location || r.ch.place || r.ch.currentLocation || r.ch.loc || '')
+          : r.ch[r.field];
+        return { ok: true, value: v };
+      }
+      if ((r = _wtResolveArmyHardChange(parts)) && r.army) return { ok: true, value: r.army[r.field] };
+      if ((r = _wtResolveClassHardChange(parts)) && r.cls) return { ok: true, value: r.cls[r.field] };
+      if ((r = _wtResolveFacHardChange(parts)) && r.fac) return { ok: true, value: r.fac[r.field] };
+      if ((r = _wtResolvePartyHardChange(parts)) && r.party) return { ok: true, value: r.party[r.field] };
+      if ((r = _wtResolveDivisionHardChange(parts)) && r.div) {
+        var cur = r.div, fp = r.field.split('.');
+        for (var i = 0; i < fp.length; i++) {
+          if (cur == null || typeof cur !== 'object') return { ok: false };
+          cur = cur[fp[i]];
+        }
+        return { ok: true, value: cur };
+      }
+      if ((r = _wtResolveOfficeHardChange(parts)) && r.pos) return { ok: true, value: Number(r.pos.publicTreasury) || 0 };
+      if (/^(region|地域|丁口|田|田土|役|役政)$/i.test(String(parts[0]))) return { ok: false };  // renli 无只读探针·不入对账
+    }
+    // generic 只读导航（'in' 逐级核在·绝不创建）
+    var cur2 = root;
+    for (var j = 0; j < parts.length; j++) {
+      if (cur2 == null || typeof cur2 !== 'object' || !(parts[j] in cur2)) return { ok: false };
+      cur2 = cur2[parts[j]];
+    }
+    return { ok: true, value: cur2 };
+  } catch (_) { return { ok: false }; }
+}
+
+// ── 刀A·watch 注册（确认入库前调）：逐条校验可读性并快照基线·全不可读→null（诚实：不做假对账）──
+function _wtRegisterWatch(watchArr) {
+  if (!Array.isArray(watchArr) || !watchArr.length) return null;
+  var okExpect = { increase: 1, decrease: 1, gte: 1, lte: 1, eq: 1, change: 1 };
+  var items = [], baseline = {};
+  for (var i = 0; i < watchArr.length && items.length < 6; i++) {
+    var w = watchArr[i];
+    if (!w || !w.path || !okExpect[String(w.expect || '')]) continue;
+    var cur = _wtReadHardChangeValue(w.path);
+    if (!cur.ok) continue;
+    items.push({ path: String(w.path), expect: String(w.expect), value: (w.value != null ? w.value : null), note: String(w.note || '').slice(0, 40) });
+    baseline[String(w.path)] = cur.value;
+  }
+  if (!items.length) return null;
+  return { items: items, baseline: baseline, registeredTurn: (typeof GM !== 'undefined' && GM && GM.turn) || 0 };
+}
+
+function _wtJudgeWatchItem(item, baseVal, curOk, curVal) {
+  if (!curOk) return { met: false, text: '读不到现值' };
+  var nb = Number(baseVal), nc = Number(curVal), nv = Number(item.value);
+  var text = String(baseVal) + '→' + String(curVal);
+  switch (item.expect) {
+    case 'increase': return { met: isFinite(nc) && isFinite(nb) && nc > nb, text: text };
+    case 'decrease': return { met: isFinite(nc) && isFinite(nb) && nc < nb, text: text };
+    case 'gte': return { met: isFinite(nc) && isFinite(nv) && nc >= nv, text: '现' + String(curVal) + '/须≥' + String(item.value) };
+    case 'lte': return { met: isFinite(nc) && isFinite(nv) && nc <= nv, text: '现' + String(curVal) + '/须≤' + String(item.value) };
+    case 'eq': return { met: (isFinite(nc) && isFinite(nv)) ? nc === nv : String(curVal) === String(item.value), text: '现' + String(curVal) + '/须=' + String(item.value) };
+    case 'change': return { met: String(curVal) !== String(baseVal), text: text };
+  }
+  return { met: false, text: text };
+}
+
+// ── 刀A·回合末对账（tm-endturn-render 收尾调·同回合幂等·多 pass 结算安全）──
+function _wtRunFulfillAudit() {
+  try {
+    if (typeof GM === 'undefined' || !GM || !Array.isArray(GM._playerDirectives)) return;
+    if (!(typeof P !== 'undefined' && P && P.conf && P.conf.wentianFulfillAudit === true)) return;  // 默认 OFF
+    var turn = GM.turn || 0;
+    if (GM._wtAuditTurn === turn) return;  // arch-ok 问天对账回合戳·同回合多 pass 只审一次(与 _directivesAppliedTurn 同范式)
+    GM._wtAuditTurn = turn;  // arch-ok 同上
+    var stamps = [];
+    GM._playerDirectives.forEach(function (d) {
+      if (!d || !d._watch || !Array.isArray(d._watch.items) || !d._watch.items.length) return;
+      if (d._watch.registeredTurn === turn) return;  // 注册当回合不对账（推演还没跑）
+      var met = 0, parts = [];
+      d._watch.items.forEach(function (it) {
+        var cur = _wtReadHardChangeValue(it.path);
+        var j = _wtJudgeWatchItem(it, d._watch.baseline[it.path], cur.ok, cur.ok ? cur.value : null);
+        if (j.met) met++;
+        parts.push((j.met ? '✓' : '✗') + (it.note || it.path) + '(' + j.text + ')');
+      });
+      var status = met === d._watch.items.length ? 'followed' : (met > 0 ? 'partial' : 'ignored');
+      var prev = d._watch.lastStatus;
+      d._lastStatus = status;
+      d._lastReason = '⚖︎对账 ' + met + '/' + d._watch.items.length + '：' + parts.join('；');
+      d._lastCheckTurn = turn;
+      d._watch.lastStatus = status;
+      if (prev !== status) {
+        stamps.push('《' + String(d.content || '').slice(0, 18) + '》' + met + '/' + d._watch.items.length
+          + (status === 'followed' ? ' 已兑现' : status === 'partial' ? ' 部分兑现' : ' 未见兑现'));
+      }
+    });
+    if (stamps.length) {
+      if (!GM._wentianHistory) GM._wentianHistory = [];  // arch-ok 问天历史容器惰性初始化·与本文件既有范式同
+      var _faLine = '⚖︎ 兑现对账·T' + turn + '：' + stamps.join('；');
+      GM._wentianHistory.push({ role: 'system', content: _faLine });  // arch-ok 问天历史行·与本文件既有 _wentianHistory push 同容器同性质(刀A对账戳)
+    }
+  } catch (_wtFaErr) {}
+}
+
+// ── 刀B·撤销快照窗口 + 一键回滚 ──
+var _wtUndoCaptureBuf = null;
+function _wtBeginUndoCapture() { _wtUndoCaptureBuf = []; }
+function _wtEndUndoCapture() { var r = _wtUndoCaptureBuf; _wtUndoCaptureBuf = null; return r || []; }
+
+function _wtUndoHardChange(did) {
+  try {
+    if (!(typeof P !== 'undefined' && P && P.conf && P.conf.wentianUndo === true)) return;
+    if (typeof GM === 'undefined' || !GM || !Array.isArray(GM._playerDirectives)) return;
+    var d = null;
+    for (var i = 0; i < GM._playerDirectives.length; i++) {
+      if (GM._playerDirectives[i] && GM._playerDirectives[i].id === did) { d = GM._playerDirectives[i]; break; }
+    }
+    if (!d || !d._undoSnapshot || d._undone) return;
+    if ((GM.turn || 0) !== d._undoSnapshot.turn) {
+      if (typeof toast === 'function') toast('已过回合·不可撤销');
+      return;
+    }
+    var cs = d._undoSnapshot.changes || [], okN = 0;
+    for (var k = cs.length - 1; k >= 0; k--) {  // 逆序回滚
+      if (_wtApplyHardChange(cs[k].reqPath, 'set', cs[k].old)) okN++;
+    }
+    d._undone = true;
+    d._lastReason = '玩家已撤销(' + okN + '/' + cs.length + ')';
+    if (!GM._wentianHistory) GM._wentianHistory = [];  // arch-ok 问天历史容器惰性初始化·与本文件既有范式同
+    var _udLine = '↩ 已撤销直改 ' + okN + '/' + cs.length + ' 笔：' + cs.map(function (c2) { return c2.reqPath + '→' + c2.old; }).join('；') + ' [id=' + did + ']';
+    GM._wentianHistory.push({ role: 'system', content: _udLine });  // arch-ok 问天历史行·与本文件既有 _wentianHistory push 同容器同性质(刀B撤销记录)
+    if (typeof _wtRenderHistory === 'function') _wtRenderHistory();
+    if (typeof toast === 'function') toast('已撤销 ' + okN + ' 笔直改');
+  } catch (_wtUndoErr) {}
 }

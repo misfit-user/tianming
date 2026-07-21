@@ -4081,8 +4081,8 @@
     },
     {
       "path": "tm-endturn-render.js",
-      "sha256": "3e7ad57aef3675c22946763813d33c8c41b966e6f6d203b39e0c9690437609d1",
-      "size": 29774
+      "sha256": "bd9f8db1d7d7739716e0d9dc74e4eb9dd0056a1c6b1cb68157aa8785f78fd2bc",
+      "size": 30022
     },
     {
       "path": "tm-endturn-shiji-compose.js",
@@ -4296,13 +4296,13 @@
     },
     {
       "path": "tm-game-loop-wentian-hardchange.js",
-      "sha256": "8d26025c6850d85fbb9e55d07197fd7d91239f45b579ccf573a271ee86843d9a",
-      "size": 56796
+      "sha256": "11783df70d44dac8ea240f47313f8b2e8632d7773caf00e1940421a2568f5f9e",
+      "size": 66524
     },
     {
       "path": "tm-game-loop.js",
-      "sha256": "ae52d82435baddba8aa624463da4213eeca9f7e27d66043b9e3846cb3adb181e",
-      "size": 102409
+      "sha256": "dbb59c1ed1338d8d6fba32a9c620d49ccea50cbf516e6c231422cac01b5cd4da",
+      "size": 105049
     },
     {
       "path": "tm-game-ui-shell.js",
@@ -5006,8 +5006,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "0f9990c6ec0760a2116bcd6ecb7f56d4f7f8bf4b0aced466d57dc7c4f132b1b1",
-      "size": 177600
+      "sha256": "c0c345ef5df90f13ea9546038e40522f664749bfe52f3893846e656f2fa9c0df",
+      "size": 179547
     },
     {
       "path": "tm-pause-fab.js",
@@ -5331,8 +5331,8 @@
     },
     {
       "path": "tm-wentian-agent.js",
-      "sha256": "60382dc6fa2040ab680a879be1f6dc2ad5514070b1a21b7ae211b7f49aa6f775",
-      "size": 10905
+      "sha256": "7103c9fc9e93f1915e719dcd59c8016b4995b403c27ae8c8748cf2ab2ce9b9a3",
+      "size": 12154
     },
     {
       "path": "tm-worker.js",

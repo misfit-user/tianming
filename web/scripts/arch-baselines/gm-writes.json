@@ -2,6 +2,7 @@
   "config": {
     "owners": [
       "tm-border-invasion.js",
+      "tm-captive-court.js",
       "tm-indices.js",
       "tm-revolt-entity.js",
       "tm-revolt-inference.js",

@@ -230,6 +230,23 @@ function renderLetterPanel() {
         return 'hy-c-normal';
       }
 
+      // 卡死修(2026-07-21·玩家报「点送信卡死」)：原卡片循环每人 5 次全量 GM.letters 扫描——
+      // 硬核档几百人×积年数千封信=每次重建百万级谓词调用·手机端秒级同步冻死(点送信必触发本渲染)。
+      // → 单趟预扫成计数表·卡片循环查表。语义与 _ltCountUnread/Transit/Lost/NpcNew 逐一等价(smoke 钉)。
+      var _cnt = {};
+      var _lateTh = _hyTurnsForMonths(1);
+      (GM.letters || []).forEach(function(l) {
+        if (!l) return;
+        if (l.from) {
+          var cf = _cnt[l.from] || (_cnt[l.from] = { unread: 0, transit: 0, lost: 0, npcNew: 0 });
+          if (!l._playerRead) { cf.unread++; if (l.status === 'returned') cf.npcNew++; }
+        }
+        if (l.to) {
+          var ct = _cnt[l.to] || (_cnt[l.to] = { unread: 0, transit: 0, lost: 0, npcNew: 0 });
+          if (l.status === 'traveling' || l.status === 'replying') ct.transit++;
+          if (l.status === 'intercepted' || (l.status === 'traveling' && GM.turn > l.deliveryTurn + _lateTh)) ct.lost++;
+        }
+      });
       var cardsHtml = '';
       _grpOrder.forEach(function(g) {
         if (!_groups[g] || _groups[g].length === 0) return;
@@ -239,10 +256,11 @@ function renderLetterPanel() {
           var sel = (GM._ltMultiMode ? (isMulti ? ' active' : '') : (GM._pendingLetterTo === ch.name ? ' active' : ''));
           var safeName = ch.name.replace(/'/g, "\\'");
           var _cls = _cardClass(ch);
-          var unreadCount = _ltCountUnread(ch.name);
-          var transitCount = _ltCountTransit(ch.name);
-          var lostCount = _ltCountLost(ch.name);
-          var npcNewCount = _ltCountNpcNew(ch.name);
+          var _cc = _cnt[ch.name] || { unread: 0, transit: 0, lost: 0, npcNew: 0 };
+          var unreadCount = _cc.unread;
+          var transitCount = _cc.transit;
+          var lostCount = _cc.lost;
+          var npcNewCount = _cc.npcNew;
           var _isRouteBlocked = _ltIsRouteBlocked(capital, ch.location);
           var _inds = '';
           if (unreadCount > 0) _inds += '<div class="hy-ind hy-ind-unread" title="' + unreadCount + ' \u5C01\u672A\u8BFB">' + unreadCount + '</div>';
@@ -328,6 +346,11 @@ function renderLetterPanel() {
     html += '<div class="hy-hist-empty">' + (_filter==='all' ? '\u5C1A\u65E0\u5F80\u6765\u4E66\u4FE1' : '\u65E0\u5339\u914D\u4FE1\u4EF6') + '</div>';
   } else {
     letters.sort(function(a,b) { return (a.sentTurn||0) - (b.sentTurn||0); });
+    // 卡死修·同刀：信史区逐封建卡无上限(多产臣子数百封=数百卡同步 innerHTML)→只铺最近 120 封·更早收卷注明
+    if (letters.length > 120) {
+      html += '<div class="hy-hist-empty" style="padding:6px 14px;">更早 ' + (letters.length - 120) + ' 封已收卷·只铺近 120 封</div>';
+      letters = letters.slice(-120);
+    }
     letters.forEach(function(l) { html += _ltRenderLetterCard(l, target); });
   }
   html += '</div>';
@@ -827,7 +850,8 @@ function sendLetter() {
   GM._ltMultiMode = false;
   GM._ltMultiTargets = [];
   toast(targets.length > 1 ? '已群发' + targets.length + '函' : '信函已发出（' + (urgLabels[urgency]||'驿递') + '）');
-  renderLetterPanel();
+  // 卡死修·防线：信已发出落账·渲染若炸不得把发送观感拖成「点了卡死」——面板下次打开自愈
+  try { renderLetterPanel(); } catch (_eRp) { try { console.warn('[鸿雁] 发送后面板渲染异常(信已发出):', _eRp); } catch (_) {} }
 }
 
 /** 查找宰相/中书令 */

@@ -68,6 +68,34 @@ jsFiles.forEach(f => {
   });
 });
 
+// 官方剧本采用 manifest 驱动的按需 <script> 注入：index.html 只静态加载
+// bundled-scenarios/manifest.js + tm-official-scenario-loader.js，真正的 7-8MB 剧本脚本
+// 由 loader 在玩家选中剧本后读取 entry.scriptUrl/builtinScript 再挂载。它们不是传统
+// import/src 字面量，不能按孤岛处理；直接把大剧本塞回 index.html 又会破坏首屏懒加载。
+const officialManifestPath = path.join(ROOT, 'bundled-scenarios', 'manifest.json');
+if (fs.existsSync(officialManifestPath)) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(officialManifestPath, 'utf8'));
+    const entries = manifest && Array.isArray(manifest.entries) ? manifest.entries : [];
+    entries.forEach(entry => {
+      ['scriptUrl', 'builtinScript'].forEach(key => {
+        if (!entry || typeof entry[key] !== 'string') return;
+        const rel = entry[key].split(/[?#]/, 1)[0].replace(/\\/g, '/').replace(/^\/+/, '');
+        if (!rel || /^https?:/i.test(rel)) return;
+        const abs = path.resolve(ROOT, rel);
+        const inside = path.relative(ROOT, abs);
+        if (inside.startsWith('..') || path.isAbsolute(inside)) {
+          console.warn('[find-orphans] 官方剧本清单路径越界，已忽略:', entry[key]);
+          return;
+        }
+        referencedSrcs.add(abs);
+      });
+    });
+  } catch (e) {
+    console.warn('[find-orphans] 官方剧本清单扫描失败:', e.message);
+  }
+}
+
 // package.json scripts 里的 Node 工具入口也是有效引用，例如:
 //   "prepare-vendor": "node tools/download-bge-model.js"
 const packageJsonPath = path.join(ROOT, 'package.json');

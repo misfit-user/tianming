@@ -666,6 +666,8 @@
                 try { await checkKejuTrigger(); }
                 catch(e) { try { console.warn('[deferred·phase5] keju trigger', e); } catch(_){} }
               }
+              try { if (typeof _kjUpdateIndicators === 'function') _kjUpdateIndicators(_dctx || ctx); }
+              catch(e) { try { console.warn('[deferred·phase5] J1 indicators', e); } catch(_){} }
               // v7.1·F2/F3/F4c·D1 长尾 endTurn hooks·flag gate by P.conf.useNewKejuD1
               if (typeof _kjCheckDiscipleMemorialTriggers === 'function') {
                 try { _kjCheckDiscipleMemorialTriggers(); }
@@ -811,6 +813,8 @@
         if (P.keju && P.keju.enabled && !P.keju.currentExam && typeof checkKejuTrigger === 'function') {
           await checkKejuTrigger();
         }
+        try { if (typeof _kjUpdateIndicators === 'function') _kjUpdateIndicators(ctx); }
+        catch(e) { try { console.warn('[pipeline.render-finalize] J1 indicators', e); } catch(_){} }
         // v7.1·F2/F3/F4c·D1 长尾 endTurn hooks·flag gate by P.conf.useNewKejuD1
         try { if (typeof _kjCheckDiscipleMemorialTriggers === 'function') _kjCheckDiscipleMemorialTriggers(); }
         catch(e) { try { console.warn('[pipeline.render-finalize] F2 disciple memorial', e); } catch(_){} }

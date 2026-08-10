@@ -10,9 +10,13 @@
  * §G·keju 未启用 / 缺 P.keju·安全 no-op·公式纯性
  * §H·reader 真源采集·gongming(path/tier)/_cohortYear/_cc3 fallback (备考/士人/官员/新进士)
  * §I·解额公平·真源 adminHierarchy division.economyBase.kejuQuota 区划均匀度
+ * §J·生产接线·index 注册 + normal/deferred 回合结算路径
  *
  * 运行·node web/scripts/smoke-keju-indicators.js   (本会话无 node·须回真仓跑)
  */
+
+const fs = require('fs');
+const path = require('path');
 
 global.window = {};
 require('../tm-keju-indicators.js');   // 模块挂 global.window
@@ -151,6 +155,22 @@ check('I2·全集中一省(100/0) → fairness=0', approx(I._kjGatherIndicatorSi
 global.GM = { year: 1600 };   // 无 adminHierarchy → 中性 0.5
 check('I3·无解额数据 → fairness=0.5', I._kjGatherIndicatorSignals({}).quotaFairness === 0.5);
 delete global.P; delete global.GM;
+
+// ═══════════ §J·生产接线 ═══════════
+console.log('=== §J·生产接线·index + normal/deferred endTurn ===');
+const webRoot = path.resolve(__dirname, '..');
+const indexHtml = fs.readFileSync(path.join(webRoot, 'index.html'), 'utf8');
+const pipelineJs = fs.readFileSync(path.join(webRoot, 'tm-endturn-pipeline-steps.js'), 'utf8');
+const indicatorsScriptPos = indexHtml.indexOf('tm-keju-indicators.js');
+const kejuScriptPos = indexHtml.indexOf('tm-keju.js');
+check('J1·index 注册 tm-keju-indicators.js', indicatorsScriptPos >= 0);
+check('J2·指标模块先于 tm-keju.js 加载', indicatorsScriptPos >= 0 && kejuScriptPos >= 0 && indicatorsScriptPos < kejuScriptPos);
+const indicatorCalls = pipelineJs.match(/_kjUpdateIndicators\s*\(/g) || [];
+check('J3·回合管道恰有 normal/deferred 两个更新入口', indicatorCalls.length === 2);
+check('J4·deferred 路径传入 deferred ctx 并有独立诊断',
+      pipelineJs.includes('_kjUpdateIndicators(_dctx || ctx)') && pipelineJs.includes('[deferred·phase5] J1 indicators'));
+check('J5·normal 路径传入 ctx 并有独立诊断',
+      pipelineJs.includes('_kjUpdateIndicators(ctx)') && pipelineJs.includes('[pipeline.render-finalize] J1 indicators'));
 
 // ═══════════ summary ═══════════
 console.log('\n========================================');

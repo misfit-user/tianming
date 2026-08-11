@@ -383,7 +383,7 @@ input,textarea,select{pointer-events:auto!important;position:relative;z-index:10
 #launch{padding:0;justify-content:flex-start;overflow:hidden;background:#070604;}
 #launch::before,#launch::after{display:none;}
 .home-stage{position:relative;min-height:100vh;width:100%;overflow:hidden;padding:34px 22px 68px;background:#070604;color:#f3e7bd;font-family:"LXGW WenKai","STKaiti","KaiTi","Microsoft YaHei",sans-serif;box-sizing:border-box;}
-.home-stage::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0.48),rgba(0,0,0,0.28) 32%,rgba(0,0,0,0.72)),radial-gradient(circle at 52% 46%,rgba(252,222,147,0.1),transparent 34%),url("assets/ui/home/home-menu-imperial-study-v1-ambient.gif") center/cover no-repeat;transform:scale(1.012);}
+.home-stage::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0.48),rgba(0,0,0,0.28) 32%,rgba(0,0,0,0.72)),radial-gradient(circle at 52% 46%,rgba(252,222,147,0.1),transparent 34%),url("assets/ui/home/home-menu-imperial-study-v1.png") center/cover no-repeat;transform:scale(1.012);}
 .home-stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 34%,rgba(0,0,0,0.46) 88%),linear-gradient(90deg,rgba(0,0,0,0.74),transparent 17%,transparent 83%,rgba(0,0,0,0.72));mix-blend-mode:multiply;}
 .home-ylian{position:absolute;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-family:"STKaiti","KaiTi","楷体",serif;font-size:15px;color:rgba(215,185,104,0.42);letter-spacing:0.72em;line-height:2.45;text-shadow:0 0 18px rgba(0,0,0,0.82);pointer-events:none;user-select:none;z-index:2;}
 /* 2026-07-04 菜单重做：clamp 防出界（1500 宽下 calc(50%-755px) 为负·笔记本上对联被裁） */

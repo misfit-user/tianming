@@ -642,6 +642,7 @@
         // 暂存 payload + 用 ctx.deferredSteps 显式登记 phase5·替代闭包模式 (audit 决定 2)
         // 兼容性：仍 mirror 到 _pendingShijiModal.deferredPhase5·让 legacy 触发器继续工作
         if (typeof GM !== 'undefined' && GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false) {
+          ctx.meta.deferEndTurnSave = true;
           GM._pendingShijiModal.aiReady = true;
           GM._pendingShijiModal.payload = _renderArgs;
           if (typeof _updatePostTurnCourtBanner === 'function') _updatePostTurnCourtBanner('aiReady');
@@ -728,13 +729,19 @@
           });
           // 兼容 legacy 触发器·把 ctx.deferredSteps 'court-close' 登记的 fn 包装成单 closure (slice 7 时移除)
           GM._pendingShijiModal.deferredPhase5 = async function() {
-            for (var i = 0; i < ctx.deferredSteps.length; i++) {
-              var step = ctx.deferredSteps[i];
-              if (step.when === 'court-close') {
-                try { await step.fn(ctx); } catch(e) { try { console.warn('[deferred·legacy bridge] step ' + step.name + ' failed', e); } catch(_){} }
+            try {
+              for (var i = 0; i < ctx.deferredSteps.length; i++) {
+                var step = ctx.deferredSteps[i];
+                if (step.when === 'court-close') {
+                  try { await step.fn(ctx); } catch(e) { try { console.warn('[deferred·legacy bridge] step ' + step.name + ' failed', e); } catch(_){} }
+                }
+              }
+              await _runPostRenderTurnOpeners(ctx);
+            } finally {
+              if (!ctx.meta.endTurnSavePromise && typeof _endTurn_saveSnapshot === 'function') {
+                ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot();
               }
             }
-            await _runPostRenderTurnOpeners(ctx);
           };
           return ctx; // deferred 路径完成
         }
@@ -983,6 +990,20 @@
       onError: 'continue',
       reads: ['ctx.results.aiResult', 'ctx.results.queueResult', 'ctx.results.tyrantResult', 'ctx.input.edicts', 'ctx.input.xinglu', 'ctx.input.oldVars', 'GM._pendingShijiModal'],
       writes: ['GM.shijiHistory', 'GM.eraName', 'GM._pendingToasts', 'GM._lastFixedExpense', 'GM._facIndex', 'GM.facs[*].derivedHealth', 'ctx.input._renderFinalizeRan']
+    },
+    {
+      name: 'save-finalized-turn',
+      fn: function(ctx) {
+        // 朝会路径由 court-close 的 deferredPhase5 finally 触发；此处不得提前保存。
+        if (ctx.meta && ctx.meta.deferEndTurnSave) return ctx;
+        if (!ctx.meta.endTurnSavePromise && typeof _endTurn_saveSnapshot === 'function') {
+          ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot();
+        }
+        return ctx;
+      },
+      onError: 'continue',
+      reads: ['ctx.meta.deferEndTurnSave', 'GM.turn', 'GM.sid'],
+      writes: ['ctx.meta.endTurnSavePromise', 'TM_SaveDB.autosave', 'TM_SaveDB.slot_0']
     }
   ];
 

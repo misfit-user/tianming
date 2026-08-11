@@ -176,6 +176,7 @@ var SaveManager = {
         GM = deepClone(gs.GM || gs);
         P = deepClone(gs.P || P);
         if (typeof _tmInstallScenarioGetter === 'function') _tmInstallScenarioGetter(); // P 重赋值后重装 P.scenario getter
+        try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn || 1); } catch (_calendarFallbackE) {}
         try { if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1; } catch (_lg2) {} // 读档代际++(同 fullLoadGame)
         GM.running = true;
         if (typeof buildIndices === 'function') buildIndices();

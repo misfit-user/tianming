@@ -634,7 +634,8 @@ const ALLOWED_HOT_UPDATE_EXTS = new Set([
   '.html', '.htm', '.js', '.mjs', '.css', '.json', '.geojson', '.png', '.jpg', '.jpeg', '.webp',
   '.bmp', '.svg', '.ico', '.mp3', '.ogg', '.wav', '.md', '.txt', '.csv', '.woff', '.woff2',
   '.ttf', '.wasm', '.map',
-  '.glb', '.gltf', '.bin' // 3D 资产（御驾亲征兵模等）。此名单在壳层、热更改不到，放宽只能随安装包发布
+  '.glb', '.gltf', '.bin', // 3D 资产（御驾亲征兵模等）
+  '.onnx' // 本地语义模型；壳层能力自 1.3.4.12 起，发布器会自动抬高 minAppVersion
 ]);
 
 function walkPackFiles(root) {

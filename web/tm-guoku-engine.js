@@ -1448,7 +1448,7 @@
     if (scenarioOverride) {
       var _goC = scenarioOverride.guoku || {};
       var _fcC = scenarioOverride.fiscalConfig || {};
-      var _pickFiscalNum = function () { for (var _i = 0; _i < arguments.length; _i++) { var _v = Number(arguments[_i]); if (isFinite(_v) && _v >= 0) return _v; } return null; };
+      var _pickFiscalNum = function () { for (var _i = 0; _i < arguments.length; _i++) { var _raw = arguments[_i]; if (_raw === null || _raw === undefined || (typeof _raw === 'string' && _raw.trim() === '')) continue; var _v = Number(_raw); if (isFinite(_v) && _v >= 0) return _v; } return null; };
       if (_goC.initialMoney === undefined && _goC.balance === undefined) {
         var _legacyStock = _pickFiscalNum(_goC.money, _goC['库存折贯'], _fcC.treasury);
         if (_legacyStock !== null) { GM.guoku.balance = _legacyStock; GM.guoku.ledgers.money.stock = _legacyStock; } // arch-ok：本函数即 guoku 模型初始化写口（与上方剧本覆盖块同类）

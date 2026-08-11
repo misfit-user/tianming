@@ -53,6 +53,26 @@
 
   function _readGM() { try { return (typeof GM !== 'undefined' && GM) ? GM : null; } catch (_) { return null; } }
   function _readP()  { try { return (typeof P  !== 'undefined' && P)  ? P  : null; } catch (_) { return null; } }
+  function _finiteYear(value) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return null;
+    var n = Number(value);
+    return isFinite(n) ? n : null;
+  }
+  function _readCurrentYear() {
+    var G = _readGM();
+    var Pp = _readP();
+    try {
+      if (Pp && Pp.time && global && typeof global.calcDateFromTurn === 'function') {
+        var di = global.calcDateFromTurn((G && G.turn) || 1);
+        var derivedYear = di && _finiteYear(di.adYear);
+        if (derivedYear !== null) return derivedYear;
+      }
+    } catch (_) {}
+    var legacyYear = G && _finiteYear(G.year);
+    if (legacyYear !== null) return legacyYear;
+    var configuredYear = Pp && Pp.time && _finiteYear(Pp.time.year);
+    return configuredYear !== null ? configuredYear : 0;
+  }
 
   // ════════════════════════════════════════════════════════════════
   // §1·三公式·纯函数 (仅依 signals·零朝代专名·零 IO)
@@ -229,8 +249,7 @@
   }
   // 近 9 年新进士·真字段 ch._cohortYear (登科年·recruit 恒写) + 进士判定·char 优先·history 兜底
   function _readNewJinshi9y() {
-    var G = _readGM();
-    var curYear = (G && isFinite(Number(G.year))) ? Number(G.year) : NaN;
+    var curYear = _readCurrentYear();
     var cutoff = curYear - 9;
     var byChars = _countChars(function(c) {
       if (!_isJinshi(c)) return false;
@@ -337,9 +356,9 @@
     var sig = _kjGatherIndicatorSignals(ctx);
     var F1 = _kjCalcF1(sig), F2 = _kjCalcF2(sig), F3 = _kjCalcF3(sig);
 
-    var G = _readGM();
-    var year = (ctx && isFinite(Number(ctx.year))) ? Number(ctx.year)
-             : (G && isFinite(Number(G.year))) ? Number(G.year) : 0;
+    var explicitYear = ctx && _finiteYear(ctx.year);
+    var year = explicitYear !== null ? explicitYear
+             : _readCurrentYear();
 
     // 写 keju 子系统自有 namespace·不进 GM.vars 顶栏 (计划 §J1/§K1)·
     // 派生只读量·同现有 keju 直写惯例 (activation 写 P.keju.*·paradigm 写 GM._kejuParadigm·无 mutator)

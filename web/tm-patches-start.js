@@ -60,6 +60,62 @@ function _tmStartVariableRows(source) {
   return out;
 }
 
+function _tmStartFirstFiniteNumber() {
+  for (var i = 0; i < arguments.length; i++) {
+    var raw = arguments[i];
+    if (raw === null || raw === undefined || (typeof raw === 'string' && raw.trim() === '')) continue;
+    var n = Number(raw);
+    if (isFinite(n)) return n;
+  }
+  return null;
+}
+
+// 玩家行政树解析：显式 player 优先，其次按玩家势力名/玩家角色/势力标记匹配；
+// 只有唯一树时才可兜底。多树而无法确认时返回 null，禁止静默把敌方第一项当玩家。
+function _tmResolvePlayerAdminKey(adminHierarchy, sc) {
+  if (!adminHierarchy || typeof adminHierarchy !== 'object' || Array.isArray(adminHierarchy)) return null;
+  if (adminHierarchy.player && (Array.isArray(adminHierarchy.player) || Array.isArray(adminHierarchy.player.divisions))) return 'player';
+  if (Array.isArray(adminHierarchy.divisions)) return 'divisions';
+  var keys = Object.keys(adminHierarchy).filter(function(k) {
+    var tree = adminHierarchy[k];
+    return Array.isArray(tree) || (tree && typeof tree === 'object' && Array.isArray(tree.divisions));
+  });
+  if (!keys.length) return null;
+  var candidates = [];
+  function add(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (s && candidates.indexOf(s) < 0) candidates.push(s);
+  }
+  try {
+    if (typeof P !== 'undefined' && P) {
+      add(P.playerInfo && P.playerInfo.factionName);
+      add(P.playerFaction);
+    }
+  } catch (_) {}
+  add(sc && sc.playerInfo && sc.playerInfo.factionName);
+  add(sc && sc.playerFaction);
+  try {
+    var G = (typeof GM !== 'undefined' && GM) ? GM : null;
+    add(G && G.playerFaction);
+    (G && Array.isArray(G.facs) ? G.facs : []).forEach(function(f) {
+      if (f && f.isPlayer) { add(f.name); add(f.id); add(f.key); }
+    });
+    (G && Array.isArray(G.chars) ? G.chars : []).forEach(function(c) {
+      if (c && c.isPlayer) { add(c.faction); add(c.factionName); add(c.factionId); }
+    });
+  } catch (_) {}
+  function norm(v) { return String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase(); }
+  for (var i = 0; i < candidates.length; i++) {
+    var want = norm(candidates[i]);
+    for (var j = 0; j < keys.length; j++) {
+      var key = keys[j], tree = adminHierarchy[key] || {};
+      var aliases = [key, tree && tree.name, tree && tree.faction, tree && tree.factionName, tree && tree.id, tree && tree.key, tree && tree.owner];
+      if (aliases.some(function(v) { return norm(v) === want; })) return key;
+    }
+  }
+  return keys.length === 1 ? keys[0] : null;
+}
+
 function _tmStartLoadVars(sid, sc) {
   if (typeof GM === 'undefined' || !GM || typeof P === 'undefined' || !P) return 0;
   var rows = _tmStartVariableRows(P.variables).filter(function(v) { return v && (!v.sid || v.sid === sid); });
@@ -74,8 +130,9 @@ function _tmStartLoadVars(sid, sc) {
   rows.forEach(function(v) {
     if (!v || !v.name) return;
     var gv = _tmStartClone(v);
-    if (gv.value === undefined) gv.value = parseFloat(gv.defaultValue) || parseFloat(gv.initial) || parseFloat(gv.default) || 0;
-    gv.value = parseFloat(gv.value) || 0;
+    if (gv.value === undefined) gv.value = _tmStartFirstFiniteNumber(gv.defaultValue, gv.initial, gv.default);
+    gv.value = _tmStartFirstFiniteNumber(gv.value);
+    if (gv.value === null) gv.value = 0;
     if (gv.min === undefined && gv.minimum !== undefined) gv.min = gv.minimum;
     if (gv.max === undefined && gv.maximum !== undefined) gv.max = gv.maximum;
     // range:[min,max] 数组写法此前被忽略(如绍宋「金军威胁等级」range:[0,100]→max 兜底成750·clamp 界失真)
@@ -99,23 +156,31 @@ function _tmStartLoadVars(sid, sc) {
 // 仅新开局生效（GM.turn>1 跳过·防读档后覆盖回合内已漂移的叶子民心）。
 function _tmStartPinMinxinFromVars(sc) {
   try {
-    if (!sc || !Array.isArray(sc.variables)) return false;
+    if (!sc || !sc.variables) return false;
     if (typeof GM !== 'undefined' && GM && (GM.turn || 1) > 1) return false;
     var pin = null;
-    sc.variables.forEach(function (v) { if (v && v.name === '民心' && isFinite(parseFloat(v.value))) pin = parseFloat(v.value); });
+    _tmStartVariableRows(sc.variables).forEach(function (v) {
+      if (!v || v.name !== '民心') return;
+      var n = _tmStartFirstFiniteNumber(v.value, v.defaultValue, v.initial, v.default);
+      if (n !== null) pin = n;
+    });
     if (pin === null) return false;
     pin = Math.max(0, Math.min(100, pin));
     function _pinLeaves(ah) {
       if (!ah || typeof ah !== 'object') return 0;
-      // 与 IntegrationBridge.getTopLevelDivisions 同一解析：player 键缺省时取第一势力——保证 pin 的集合正是聚合的集合
-      var fac = ah.player || ah[Object.keys(ah)[0]];
+      var key = _tmResolvePlayerAdminKey(ah, sc);
+      var fac = Array.isArray(ah.divisions) ? ah : (key ? ah[key] : null);
+      if (!fac) return 0;
       var leaves = [];
       (function walk(ns) {
         (ns || []).forEach(function (n) {
           if (!n || typeof n !== 'object') return;
-          if (Array.isArray(n.children) && n.children.length) walk(n.children); else leaves.push(n);
+          var kids = Array.isArray(n.children) ? n.children
+            : Array.isArray(n.divisions) ? n.divisions
+            : Array.isArray(n.subRegions) ? n.subRegions : [];
+          if (kids.length) walk(kids); else leaves.push(n);
         });
-      })(fac && fac.divisions);
+      })(Array.isArray(fac) ? fac : (fac && fac.divisions));
       leaves.forEach(function (d) { d.minxin = pin; d.minxinLocal = pin; });
       return leaves.length;
     }
@@ -1100,6 +1165,8 @@ function doActualStart(sid, requestToken){
   if (_gs.eraNames && _gs.eraNames.length > 0 && (!P.time.eraNames || P.time.eraNames.length === 0)) {
     P.time.eraNames = deepClone(_gs.eraNames);
   }
+  // GM.year/month/day 是旧子系统兼容镜像；权威始终是 GM.turn + P.time。
+  try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn || 1); } catch (_calStartE) {}
   // dynastyPhaseHint → GM.eraState.dynastyPhase（如果eraState未显式设置phase）
   if(sc.dynastyPhaseHint && GM.eraState && (!GM.eraState.dynastyPhase || GM.eraState.dynastyPhase === 'peak')) {
     GM.eraState.dynastyPhase = sc.dynastyPhaseHint;

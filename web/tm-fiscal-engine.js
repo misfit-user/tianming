@@ -556,8 +556,11 @@
   var DEFAULT_IMPERIAL_MONTHLY = { money: 20000, grain: 5000, cloth: 1000 };
 
   function safeNumber(value, fallback) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+      return fallback !== undefined ? fallback : 0;
+    }
     var n = Number(value);
-    return isFinite(n) ? n : (fallback || 0);
+    return isFinite(n) ? n : (fallback !== undefined ? fallback : 0);
   }
 
   function copyFields(target, source) {
@@ -739,9 +742,9 @@
       if (_facKeys.indexOf(opts.faction) >= 0) {
         _facKeys = [opts.faction];
       } else if (opts.faction === 'player' && _facKeys.length) {
-        // 2026-08 玩家剧本事故：国师导出以势力名（如「楚」）为键、无 'player' 键 → strict 匹配走 0 个区、中央月入被抹成 0。
-        // 与 IntegrationBridge.getTopLevelDivisions 同一解析：'player' 键缺省时取第一势力。
-        _facKeys = [_facKeys[0]];
+        var _playerKey = (typeof global._tmResolvePlayerAdminKey === 'function')
+          ? global._tmResolvePlayerAdminKey(G.adminHierarchy) : (_facKeys.length === 1 ? _facKeys[0] : null);
+        _facKeys = _playerKey && _facKeys.indexOf(_playerKey) >= 0 ? [_playerKey] : [];
       } else {
         _facKeys = [];
       }

@@ -116,7 +116,9 @@ function runSendDm(src) {
   var sent = null;
   var TM = { OnlineClient: { sendMessage: function (to, text) { sent = { to: to, text: text }; return { then: function () { return { catch: function () {} }; } }; } } };
   var state = { dmPeer: { id: 7 }, onlineApiUrl: '' };
-  var sendDm = new Function('document', 'state', 'TM', 'loadConversation', 'render', src + '\nreturn sendDm;')(document, state, TM, function () {}, function () {});
+  var sendDm = new Function('document', 'state', 'TM', 'loadConversation', 'render', '_accountEpoch', '_sameAccountEpoch', src + '\nreturn sendDm;')(
+    document, state, TM, function () {}, function () {}, function () { return 0; }, function (epoch) { return epoch === 0; }
+  );
   sendDm();
   return { document: document, body: body, input: input, sent: sent };
 }

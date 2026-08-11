@@ -13,6 +13,12 @@ const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..', '..');
 const BUILDER = path.join(ROOT, 'web', 'tools', 'build-hot-update-package.js');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-verify-gates-'));
+const MODULE_ROOTS = [path.join(ROOT, 'node_modules')];
+const COMMON_DIR = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: ROOT, encoding: 'utf8' });
+if (COMMON_DIR.status === 0 && String(COMMON_DIR.stdout || '').trim()) {
+  MODULE_ROOTS.push(path.join(path.dirname(path.resolve(ROOT, String(COMMON_DIR.stdout).trim())), 'node_modules'));
+}
+if (process.env.NODE_PATH) MODULE_ROOTS.push(process.env.NODE_PATH);
 
 let assertions = 0;
 function assert(cond, label) {
@@ -42,7 +48,10 @@ function resetTree(ver) {
   fs.writeFileSync(path.join(APP, 'scenarios', '绍宋_182区草案.json'), '{"id":"draft-must-not-ship"}');
 }
 function build(args) {
-  return spawnSync('node', [BUILDER].concat(args, ['--web-root', WEB, '--app-root', APP]), { encoding: 'utf-8' });
+  return spawnSync('node', [BUILDER].concat(args, ['--web-root', WEB, '--app-root', APP]), {
+    encoding: 'utf-8',
+    env: Object.assign({}, process.env, { NODE_PATH: MODULE_ROOTS.filter(fs.existsSync).join(path.delimiter) })
+  });
 }
 
 // ── A·健康全量构建通过·zip↔manifest 对账一致 ──
@@ -57,6 +66,24 @@ const paths = manifestA.files.map(f => f.path);
 ['index.html', 'a.js', 'b.js', 'styles.css', 'changelog.json', 'version.json', '_app_main.js', '_app_preload.js', 'bundled-scenarios/合成（官方）.json']
   .forEach(p => assert(paths.indexOf(p) !== -1, 'A·清单含 ' + p));
 assert(paths.indexOf('bundled-scenarios/绍宋_182区草案.json') === -1, 'A·草案/自用剧本不进入热更');
+
+// ── A2·运行资产扩展名 + 旧壳能力门 ──
+resetTree('9.0.0.2');
+fs.writeFileSync(path.join(WEB, 'unit.glb'), Buffer.from([1, 2, 3]));
+r = build(['--version', '9.0.0.2', '--out', path.join(TMP, 'outA2-glb')]);
+assert(r.status === 0, 'A2·GLB 运行资产可进入热更');
+const feedGlb = JSON.parse(fs.readFileSync(path.join(TMP, 'outA2-glb', 'hot-latest.json'), 'utf8'));
+assert(feedGlb.minAppVersion === '1.3.4.10', 'A2·GLB 自动要求 1.3.4.10 壳层');
+resetTree('1.3.4.11');
+fs.writeFileSync(path.join(WEB, 'model.onnx'), Buffer.from([4, 5, 6]));
+r = build(['--version', '1.3.4.11', '--out', path.join(TMP, 'outA2-onnx-old')]);
+assert(r.status !== 0 && /GATE-7/.test(r.stderr), 'A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝');
+resetTree('1.3.4.12');
+fs.writeFileSync(path.join(WEB, 'model.onnx'), Buffer.from([4, 5, 6]));
+r = build(['--version', '1.3.4.12', '--out', path.join(TMP, 'outA2-onnx-new')]);
+assert(r.status === 0, 'A2·1.3.4.12 可发布 ONNX 运行资产');
+const feedOnnx = JSON.parse(fs.readFileSync(path.join(TMP, 'outA2-onnx-new', 'hot-latest.json'), 'utf8'));
+assert(feedOnnx.minAppVersion === '1.3.4.12', 'A2·ONNX 自动要求 1.3.4.12 壳层');
 
 // ── B·GATE-0·--files 部分包默认禁 ──
 r = build(['--version', '9.0.0.2', '--files', 'a.js', '--out', path.join(TMP, 'outB')]);

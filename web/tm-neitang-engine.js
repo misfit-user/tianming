@@ -779,7 +779,7 @@
     // 内帑恒为 国库×朝代ratio。显式 neitang.initialMoney/balance 优先，本兼容仅作兜底。
     if (scenarioOverride && !(scenarioOverride.neitang && (scenarioOverride.neitang.initialMoney !== undefined || scenarioOverride.neitang.balance !== undefined))) {
       var _itC = scenarioOverride.guoku_advanced && scenarioOverride.guoku_advanced.innerTreasury;
-      var _itPick = function () { for (var _i = 0; _i < arguments.length; _i++) { var _v = Number(arguments[_i]); if (isFinite(_v) && _v >= 0) return _v; } return null; };
+      var _itPick = function () { for (var _i = 0; _i < arguments.length; _i++) { var _raw = arguments[_i]; if (_raw === null || _raw === undefined || (typeof _raw === 'string' && _raw.trim() === '')) continue; var _v = Number(_raw); if (isFinite(_v) && _v >= 0) return _v; } return null; };
       var _itMoney = _itC ? _itPick(_itC.money, _itC['存银']) : null;
       if (_itMoney !== null) { GM.neitang.balance = _itMoney; GM.neitang.ledgers.money.stock = _itMoney; } // arch-ok：本函数即 neitang 模型初始化写口（与上方剧本覆盖块同类）
     }

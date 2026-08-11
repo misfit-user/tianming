@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const releaseTree = require('./lib/release-tree.js');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf('--' + name);
@@ -36,14 +37,64 @@ function manifestProblems(expected, actual) {
   return problems;
 }
 
-function generate(root, version) {
+function supplementUntrackedAssets(root, assetRoot, overlayWeb) {
+  const tracked = releaseTree.trackedRelSet(assetRoot);
+  if (!tracked) throw new Error('asset-root is not a readable git checkout: ' + assetRoot);
+  const sourceWeb = path.join(assetRoot, 'web');
+  if (!fs.existsSync(sourceWeb) || !fs.statSync(sourceWeb).isDirectory()) throw new Error('asset-root/web missing: ' + sourceWeb);
+  const config = releaseTree.loadConfig(root).config;
+  let copiedFiles = 0;
+  let copiedBytes = 0;
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, entry.name);
+      const rel = path.relative(sourceWeb, abs).replace(/\\/g, '/');
+      if (releaseTree.excludedReason(rel + (entry.isDirectory() ? '/directory' : ''), config)) continue;
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) { walk(abs); continue; }
+      if (!entry.isFile() || tracked.has('web/' + rel)) continue;
+      const dest = path.join(overlayWeb, rel.replace(/\//g, path.sep));
+      if (fs.existsSync(dest)) continue; // current worktree always wins
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.copyFileSync(abs, dest);
+      copiedFiles++;
+      copiedBytes += fs.statSync(abs).size;
+    }
+  }
+  walk(sourceWeb);
+  return { copiedFiles, copiedBytes };
+}
+
+function generate(root, version, assetRoot) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-hot-baseline-'));
   const manifestPath = path.join(tmp, 'manifest.json');
   try {
+    let webRoot = path.join(root, 'web');
+    if (assetRoot && path.resolve(assetRoot) !== path.resolve(root)) {
+      const overlayWeb = path.join(tmp, 'web-overlay');
+      fs.cpSync(webRoot, overlayWeb, { recursive: true, force: false, errorOnExist: false });
+      const supplement = supplementUntrackedAssets(root, path.resolve(assetRoot), overlayWeb);
+      webRoot = overlayWeb;
+      console.log('[hot-baseline] asset-root overlay files=' + supplement.copiedFiles + ' bytes=' + supplement.copiedBytes);
+    }
     const builder = path.join(root, 'web', 'tools', 'build-hot-update-package.js');
     const args = [builder, '--version', version, '--out', path.join(tmp, 'out'), '--manifest-only', '--manifest-out', manifestPath,
-      '--include-preview', '--web-root', path.join(root, 'web'), '--app-root', root, '--allow-same-version'];
-    const result = spawnSync(process.execPath, args, { cwd: root, encoding: 'utf8' });
+      '--include-preview', '--web-root', webRoot, '--app-root', root, '--allow-same-version'];
+    const moduleRoots = [path.join(root, 'node_modules')];
+    if (assetRoot) moduleRoots.push(path.join(path.resolve(assetRoot), 'node_modules'));
+    const commonDir = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], {
+      cwd: root, encoding: 'utf8'
+    });
+    if (commonDir.status === 0 && String(commonDir.stdout || '').trim()) {
+      moduleRoots.push(path.join(path.dirname(path.resolve(root, String(commonDir.stdout).trim())), 'node_modules'));
+    }
+    const inheritedNodePath = String(process.env.NODE_PATH || '').trim();
+    if (inheritedNodePath) moduleRoots.push(inheritedNodePath);
+    const result = spawnSync(process.execPath, args, {
+      cwd: root,
+      encoding: 'utf8',
+      env: Object.assign({}, process.env, { NODE_PATH: moduleRoots.filter(fs.existsSync).join(path.delimiter) })
+    });
     if (result.status !== 0) throw new Error('hot manifest collector failed\n' + String(result.stdout || '') + String(result.stderr || ''));
     return readJson(manifestPath);
   } finally {
@@ -66,11 +117,13 @@ function main() {
   const check = flag('check');
   if ((write ? 1 : 0) + (check ? 1 : 0) !== 1) throw new Error('choose exactly one of --check or --write');
   const root = path.resolve(arg('root', path.resolve(__dirname, '..')));
+  const assetRootValue = String(arg('asset-root', '') || '').trim();
+  const assetRoot = assetRootValue ? path.resolve(assetRootValue) : '';
   const pkg = readJson(path.join(root, 'package.json'));
   const version = String(arg('version', pkg.build && pkg.build.buildVersion || '')).trim();
   if (!/^\d+\.\d+\.\d+\.\d+$/.test(version)) throw new Error('invalid four-part version: ' + version);
   const target = path.join(root, 'web', '.hot-update-manifest.json');
-  const actual = generate(root, version);
+  const actual = generate(root, version, assetRoot);
   const canonical = fs.existsSync(target) ? readJson(target) : null;
   const problems = canonical ? manifestProblems(canonical, actual) : ['canonical baseline missing'];
   if (check) {
@@ -103,4 +156,4 @@ if (require.main === module) {
   catch (err) { console.error('FAIL ' + (err && err.stack || err)); process.exit(1); }
 }
 
-module.exports = { comparable, manifestProblems, generate, main };
+module.exports = { comparable, manifestProblems, supplementUntrackedAssets, generate, main };

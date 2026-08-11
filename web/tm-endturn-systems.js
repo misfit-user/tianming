@@ -60,6 +60,9 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
 
   // 6. 推进回合
   GM.turn++;
+  // 同步旧子系统读取的年月日镜像；不得另算第二套时钟。
+  try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn); }
+  catch (_calendarSyncE) { try { console.warn('[endTurn] calendar sync failed:', _calendarSyncE); } catch (_) {} }
 
   // 6.01 腐败引擎回合演化（九源累积/衰减/真实感知更新/后果传导/揭发概率）
   try {

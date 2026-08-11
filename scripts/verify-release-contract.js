@@ -34,6 +34,17 @@ function main() {
   ok(!sourcePaths.has('_game-entry-shot.png') && !Array.from(sourcePaths).some((rel) => /^_ingame.*\.png$/i.test(rel)), '发布树排除根目录游戏截图');
   const rootDevFiles = ['_audit_deadhandlers.py', 'analyze_globals.py', 'final_scan.sh', 'scan.sh', 'start-server.bat', 'tm-tools.d.ts', 'types.d.ts'];
   ok(rootDevFiles.every((rel) => !sourcePaths.has(rel)), '发布树排除根目录开发脚本与类型声明');
+  const strayReleaseFiles = [
+    'detect_globals.js', 'scan_globals.js', 'preview-launch.html', 'preview-launch-v2.html', 'preview-launch-v3.html',
+    'data/maps/tianqi-ming2/tianqi-ming2.preview-data.js', 'assets/ui/home/home-menu-imperial-study-v1-ambient.gif'
+  ];
+  ok(strayReleaseFiles.every((rel) => !sourcePaths.has(rel)), '发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF');
+  ['.claude/launch.json', 'output/playwright/shot.png', 'maps/asia-map.png', 'preview-launch-assets/hero-bg.png'].forEach((rel) => {
+    ok(!!releaseTree.excludedReason(rel, config), '发布树明确排除本机开发产物:' + rel);
+  });
+  ['preview/img/topbar-imperial-rail.png', 'battle/assets/models/unit_lod.glb', 'vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx'].forEach((rel) => {
+    ok(!releaseTree.excludedReason(rel, config), '发布树不误杀运行资产:' + rel);
+  });
 
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const mobileVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'mobile', 'release-version.json'), 'utf8'));
@@ -57,6 +68,14 @@ function main() {
 
   const hotSource = fs.readFileSync(path.join(ROOT, 'web', 'tools', 'build-hot-update-package.js'), 'utf8');
   ok(hotSource.includes("scripts/lib/release-tree.js") && hotSource.includes('excludedReason'), 'hot builder 消费共享 release-tree');
+  ok(["'.glb'", "'.gltf'", "'.bin'", "'.onnx'"].every((ext) => hotSource.includes(ext)), 'hot builder 收集战斗模型与本地语义模型扩展名');
+  ok(hotSource.includes('HOT_EXT_MIN_APP_VERSION') && hotSource.includes("'.glb': '1.3.4.10'")
+    && hotSource.includes("'.onnx': '1.3.4.12'") && hotSource.includes('minAppVersion 自动抬升'),
+  '新扩展名自动携带旧壳阻断所需 minAppVersion');
+  const shellSource = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
+  ok(shellSource.includes("'.glb', '.gltf', '.bin'") && shellSource.includes("'.onnx'"), '桌面壳层放行 collector 会发出的运行资产扩展名');
+  const semanticSource = fs.readFileSync(path.join(ROOT, 'web', 'tm-semantic-recall.js'), 'utf8');
+  ok(semanticSource.includes("probeSemanticAsset(localModelPath + 'onnx/model_quantized.onnx')"), '本地模型完整性探针包含 ONNX 主体，拒绝半包误判');
   const capgoSource = fs.readFileSync(path.join(ROOT, 'mobile', 'scripts', 'build-capgo-bundle.ps1'), 'utf8');
   const mobileStage = fs.readFileSync(path.join(ROOT, 'mobile', 'scripts', 'stage-web-for-cap.ps1'), 'utf8');
   ok(capgoSource.includes('stage-web-release.js') && mobileStage.includes('stage-web-release.js'), 'Capgo/APK 消费共享 release-tree');
@@ -93,6 +112,14 @@ function main() {
   ok(!ignoreLines.includes('.hot-update-manifest.json') && !ignoreLines.includes('web/.hot-update-manifest.json'), 'web canonical 热更基线未被 ignore');
   const baseline = readJson(path.join(ROOT, 'web', '.hot-update-manifest.json'));
   ok(baseline.type === 'tianming-hot-update' && baseline.version === pkg.build.buildVersion && Array.isArray(baseline.files), 'canonical 热更基线存在且与 buildVersion 同版');
+  const baselinePaths = new Set(baseline.files.map((row) => row.path));
+  ok(['assets/ui/home/home-menu-imperial-study-v1.png', 'preview/img/topbar-imperial-rail.png',
+    'battle/assets/models/unit_lod.glb', 'vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx']
+    .every((rel) => baselinePaths.has(rel)), 'canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产');
+  ok(['detect_globals.js', 'scan_globals.js', 'preview-launch.html', 'preview-launch-v2.html', 'preview-launch-v3.html',
+    'maps/asia-map.png', 'output/playwright/A_main_yuan.png', '.claude/launch.json',
+    'data/maps/tianqi-ming2/tianqi-ming2.preview-data.js', 'assets/ui/home/home-menu-imperial-study-v1-ambient.gif']
+    .every((rel) => !baselinePaths.has(rel)), 'canonical 基线不夹带开发产物、旧设计稿与无引用大文件');
   const baselineCheck = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'sync-hot-baseline.js'), '--check'], { cwd: ROOT, encoding: 'utf8' });
   ok(baselineCheck.status === 0, 'canonical 基线逐路径/hash/size 对齐当前 production hot tree：' + String(baselineCheck.stderr || baselineCheck.stdout || '').trim().slice(0, 800));
   const webRoot = path.join(ROOT, 'web');

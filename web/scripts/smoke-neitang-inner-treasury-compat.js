@@ -49,4 +49,9 @@ reset();
 NeitangEngine.initFromDynasty('楚', 'peak', {});
 assertions += 1; assert(ctx.GM.neitang.balance === Math.round(480000 * 0.12), 'no compat key should keep 国库×0.12 fallback');
 
+// ── case 5·空主别名不得遮蔽后续有效中文别名 ──
+reset();
+NeitangEngine.initFromDynasty('明', 'peak', { guoku_advanced: { innerTreasury: { money: null, '存银': 600000 } } });
+assertions += 1; assert(ctx.GM.neitang.balance === 600000, 'null innerTreasury.money must not shadow valid 存银');
+
 console.log('[smoke-neitang-inner-treasury-compat] pass assertions=' + assertions);

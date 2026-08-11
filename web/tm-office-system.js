@@ -141,7 +141,11 @@ function _offNormalizeTreeShape(tree) {
     var subs = Array.isArray(n.subs) ? n.subs.slice() : [];
     (Array.isArray(n.children) ? n.children : []).forEach(function (c) {
       if (!c || typeof c !== 'object') return;
-      if (Array.isArray(c.children) && c.children.length > 0) { subs.push(c); return; }
+      var structuralChild = (Array.isArray(c.children) && c.children.length > 0)
+        // canonical 部门即使当前编制为空，也仍由 positions/subs 键标识，不能降格成职位。
+        || Array.isArray(c.subs)
+        || Array.isArray(c.positions);
+      if (structuralChild) { subs.push(c); return; }
       out.positions.push({
         name: c.name || '', rank: c.rank || c.level || '',
         holder: _vacant(c.holder) ? '' : String(c.holder),

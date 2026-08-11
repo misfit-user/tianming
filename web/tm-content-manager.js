@@ -70,6 +70,7 @@
     onlineStatus: null,
     onlineMessage: '',
     accountSession: null,
+    accountSessionEpoch: 0,
     accountMessage: '',
     changelogEntries: [],
     applyUpdate: {
@@ -151,6 +152,12 @@
   function toggleCircleJoin(){ return __cmP.toggleCircleJoin.apply(this, arguments); }
   function toggleFavorite(){ return __cmP.toggleFavorite.apply(this, arguments); }
   function updateApplyState(){ return __cmP.updateApplyState.apply(this, arguments); }
+  function accountRefresh(){ return __cmP.accountRefresh.apply(this, arguments); }
+  function accountSetEmail(){ return __cmP.accountSetEmail.apply(this, arguments); }
+  function accountLogout(){ return __cmP.accountLogout.apply(this, arguments); }
+  function refreshAccountSession(){ return __cmP.refreshAccountSession.apply(this, arguments); }
+  function replaceAccountSession(){ return __cmP.replaceAccountSession.apply(this, arguments); }
+  function resetAccountRemoteState(){ return __cmP.resetAccountRemoteState.apply(this, arguments); }
   //>>CM-SPLIT20-PLUMBING-A-END
 
   function desktop() {
@@ -1243,7 +1250,7 @@
       if (!state.defaultCatalogUrl && webApi) state.defaultCatalogUrl = webApi + 'workshop/catalog';
       if (!state.onlineApiUrl) state.onlineApiUrl = loadOnlineApiUrl();
       if (!state.catalogUrl) state.catalogUrl = loadCatalogUrl();
-      if (window.TM && TM.OnlineClient) state.accountSession = TM.OnlineClient.getSession();
+      if (window.TM && TM.OnlineClient) replaceAccountSession(TM.OnlineClient.getSession(), false);
       state.status = { error: '网页版：本体更新与本地落盘装包为桌面专属功能。' };
       state.hotMessage = '网页版：前端热更为桌面专属；网页本身始终是最新在线版本。';
       state.onlineMessage = '';
@@ -1268,7 +1275,7 @@
         if (!state.onlineApiUrl) state.onlineApiUrl = loadOnlineApiUrl();
         // 账号统一走 TM.OnlineClient（渲染层 localStorage）。优先它；旧 IPC session 仅作兜底。
         var ocSess = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : null;
-        state.accountSession = (ocSess && ocSess.token) ? ocSess : (status.account || state.accountSession || null);
+        replaceAccountSession((ocSess && ocSess.token) ? ocSess : (status.account || state.accountSession || null), false);
         state.status = { currentVersion: status.currentVersion };
       }
     } catch(e) {
@@ -1276,12 +1283,6 @@
     }
     render();
     refreshWorkshopSources(false);
-  }
-
-  async function refreshAccountSession() {
-    // 统一走 TM.OnlineClient（渲染层，桌面/网页同源）。CORS 修好后桌面 renderer 直连 API 即可。
-    state.accountSession = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : state.accountSession;
-    return state.accountSession;
   }
 
   async function checkGameUpdate() {
@@ -2033,19 +2034,6 @@
     }
   }
 
-  async function accountRefresh() {
-    state.accountMessage = '正在刷新账号身份...';
-    render();
-    try {
-      var me = await TM.OnlineClient.me(state.onlineApiUrl || undefined);
-      state.accountSession = TM.OnlineClient.getSession();
-      state.accountMessage = (me && me.loggedIn) ? '账号身份已刷新。' : '尚未登录。';
-    } catch (e) {
-      state.accountMessage = '刷新账号身份失败：' + (e && e.message || '未知错误');
-    }
-    render();
-  }
-
   async function accountEmailCodeRequest() {
     var el = document.getElementById('tm-elogin-email');
     var email = el ? el.value.trim() : '';
@@ -2187,41 +2175,6 @@
     } catch (e) {
       state.accountResetMessage = '重置失败：' + (e && e.message || '未知错误');
     }
-    render();
-  }
-
-  async function accountSetEmail() {
-    var el = document.getElementById('tm-setemail');
-    var email = el ? el.value.trim() : '';
-    if (!email) { state.accountMessage = '请填写邮箱。'; render(); return; }
-    state.accountMessage = '正在保存邮箱...';
-    render();
-    try {
-      var res = await TM.OnlineClient.setEmail(email, state.onlineApiUrl || undefined);
-      if (res && res.success) {
-        state.accountSession = TM.OnlineClient.getSession();
-        state.accountMessage = '邮箱已保存，可用于找回密码。';
-      } else {
-        state.accountMessage = '保存邮箱失败：' + ((res && res.error) || '未知错误');
-      }
-    } catch (e) {
-      state.accountMessage = '保存邮箱失败：' + (e && e.message || '未知错误');
-    }
-    render();
-  }
-
-  async function accountLogout() {
-    state.accountMessage = '正在退出登录...';
-    state.friendsLoaded = false; state.friendsData = null; state.friendMessage = '';
-    state.notifLoaded = false; state.notifData = null; state.dmOpen = false; state.dmInbox = []; state.dmMessages = [];
-    render();
-    try {
-      await TM.OnlineClient.logout(state.onlineApiUrl || undefined);
-      state.accountMessage = '已退出登录。';
-    } catch (e) {
-      state.accountMessage = '退出登录失败：' + (e && e.message || '未知错误');
-    }
-    state.accountSession = null;
     render();
   }
 
@@ -2809,6 +2762,7 @@
     addFriend: addFriend,
     respondFriend: respondFriendUI,
     removeFriend: removeFriendUI,
+    refreshFriends: function(){ state.friendsLoaded = false; state.friendsLoading = false; loadFriends(); },
     openDmInbox: openDmInbox,
     openDm: openDm,
     openDmFromNotif: openDmFromNotif,

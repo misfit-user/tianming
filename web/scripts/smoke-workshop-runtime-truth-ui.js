@@ -88,9 +88,12 @@ check(css.includes('overflow-x:hidden') && manager.includes('renderWorkshopSideb
 check(css.includes('.tm-pack-detail-sheet') && css.includes('place-items:stretch end'), '桌面详情采用右侧卷宗');
 check(css.includes('@media(prefers-reduced-motion:reduce)'), '尊重减少动态效果偏好');
 
-check(index.includes('tm-online-client.js?v=20260722-baigong-runtime'), '在线客户端缓存戳已刷新');
+check(index.includes('tm-online-client.js?v=20260811-auditfix1'), '在线客户端缓存戳已刷新');
 check(index.includes('tm-online-mall.css?v=20260722-baigong-landscape'), '百工谱阁横屏同构样式缓存戳已刷新');
-check(index.includes('tm-content-manager.js?v=20260722-baigong-landscape') && index.includes('tm-content-manager-community.js?v=20260722-baigong-landscape'), '拆分脚本成对刷新且保持相邻');
+const managerScript = 'tm-content-manager.js?v=20260811-auditfix1';
+const communityScript = 'tm-content-manager-community.js?v=20260811-auditfix1';
+check(index.includes(managerScript) && index.includes(communityScript)
+  && index.indexOf(managerScript) < index.indexOf(communityScript), '拆分脚本成对刷新且保持相邻');
 
 console.log('smoke-workshop-runtime-truth-ui ' + (failed ? 'FAIL' : 'PASS') + ' ' + passed + '/' + (passed + failed));
 process.exit(failed ? 1 : 0);

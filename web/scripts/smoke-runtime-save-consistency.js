@@ -17,6 +17,7 @@ function sliceFn(src, marker) {
 const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const core = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
+const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
 const manager = fs.readFileSync(path.join(ROOT, 'tm-save-manager.js'), 'utf8');
 const storage = fs.readFileSync(path.join(ROOT, 'tm-storage.js'), 'utf8');
 const office = fs.readFileSync(path.join(ROOT, 'tm-office-editor.js'), 'utf8');
@@ -74,9 +75,21 @@ ok(/_autoSaveResult\s*=\s*await window\.tianming\.autoSave\(saveData\);[\s\S]*?i
 ok(/_autoSaveLastSavedTurn=\(saveData\._saveMeta[\s\S]*?saveData\._saveMeta\.turn/.test(lifecycle), 'Electron 闲置跳存基线锚定已写快照 turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
-ok(/await _awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return;[\s\S]*?_buildSaveState\(\{format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台等待后先验租约·builder 只读捕获局');
+ok(/await _awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台等待后先验租约·builder 只读捕获局');
 ok(/TM_SaveDB\.save\('autosave', _autoState, _autoMeta, _autoWriteOptions\)/.test(render)
   && /TM_SaveDB\.save\('slot_0', _autoState, _autoMeta, _autoWriteOptions\)/.test(render), 'autosave/slot_0 写事务共用代际租约');
+{
+  const renderFn = sliceFn(render, 'function _endTurn_render(');
+  const saveStepAt = pipeline.indexOf("name: 'save-finalized-turn'");
+  const normalIndicatorAt = pipeline.indexOf('_kjUpdateIndicators(ctx)');
+  const deferredOpenersAt = pipeline.indexOf('await _runPostRenderTurnOpeners(ctx)');
+  const deferredSaveAt = pipeline.indexOf('_endTurn_saveSnapshot()', deferredOpenersAt);
+  ok(!/_endTurn_saveSnapshot\s*\(/.test(renderFn), '_endTurn_render 只渲染·不再在 Phase5 前启动存档');
+  ok(saveStepAt > normalIndicatorAt && normalIndicatorAt >= 0, 'normal 路径 save-finalized-turn 严格位于 Phase5/J1 后');
+  ok(deferredSaveAt > deferredOpenersAt && /finally\s*\{[\s\S]*?_endTurn_saveSnapshot\(\)/.test(pipeline.slice(deferredOpenersAt, deferredSaveAt + 80)), 'deferred 路径在 Phase5/openers 的 finally 中触发存档');
+  ok(/ctx\.meta\.deferEndTurnSave\s*=\s*true/.test(pipeline) && /if \(ctx\.meta && ctx\.meta\.deferEndTurnSave\) return ctx;/.test(pipeline), 'deferred 路径显式阻止普通 save step 提前落库');
+  ok((pipeline.match(/!ctx\.meta\.endTurnSavePromise && typeof _endTurn_saveSnapshot/g) || []).length === 2, 'normal/deferred 两条路径共享幂等存档 promise，重复关朝不会二次落库');
+}
 ok(/function save\(id, gameState, meta, options\)[\s\S]*?_writeStillAllowed\(\)[\s\S]*?SaveCompression\.compress[\s\S]*?if \(!_writeStillAllowed\(\)\) return false;[\s\S]*?return _put/.test(storage), 'SaveDB 在压缩前及真正 put 前复验 writeGuard');
 ok(/_autoSaveSourceLoadGen[\s\S]*?_autoSaveResult=await window\.tianming\.autoSave\(saveData\);[\s\S]*?写盘完成时已跨档[\s\S]*?return;[\s\S]*?_autoSaveLastDoneMs=Date\.now\(\)/.test(lifecycle), '60s Electron IPC 跨档回包不推进闲置跳存基线');
 ok(/let autoSaveWriteQueue = Promise\.resolve\(\);[\s\S]*?const task = autoSaveWriteQueue\.then[\s\S]*?autoSaveWriteQueue = task\.then/.test(mainImpl), '主进程串行化固定 .tmp 的所有 auto-save IPC');
@@ -147,6 +160,25 @@ ok(/setInterval\(async function\(\)\{[\s\S]*?if\(!GM \|\| !GM\.running\) return;
 
 async function runDynamicLeaseSmokes() {
   console.log('=== 4. dynamic write lease regressions ===');
+  {
+    const writes = [], order = [];
+    const ls = new Map([['tm_pre_endturn_mark', JSON.stringify({ snapshotId: 'pre-9' })]]);
+    const ctx = {
+      GM: { turn: 9, sid: 's1', phase5Value: 'after', eraName: '某年号' }, P: { marker: 'p1' },
+      window: { _tmLoadGen: 2, _tmActivePreEndturnSnapshotId: 'pre-9', TM: { errors: { capture() {}, captureSilent() {} } } },
+      TM: { errors: { capture() {}, captureSilent() {} } }, console, Promise, Date, JSON, Math, Error, setTimeout,
+      localStorage: { getItem: k => ls.get(k) || null, setItem: (k, v) => ls.set(k, v), removeItem: k => ls.delete(k) },
+      _awaitPostTurnJobsForSave: async () => { order.push('jobs'); }, _prepareGMForSave: () => { order.push('prepare'); },
+      _buildSaveState: opts => { order.push('snapshot:' + opts.gm.phase5Value); return { GM: { phase5Value: opts.gm.phase5Value }, P: opts.p }; },
+      findScenarioById: () => ({ name: '测试剧本' }), getTSText: () => '某日',
+      TM_SaveDB: { save: async (id, state) => { writes.push([id, state.GM.phase5Value]); return true; } }
+    };
+    ctx.window.window = ctx.window;
+    vm.createContext(ctx); vm.runInContext(render, ctx);
+    order.push('phase5');
+    const saved = await ctx._endTurn_saveSnapshot();
+    ok(saved === true && order.indexOf('phase5') < order.indexOf('snapshot:after') && writes.length === 2 && writes.every(w => w[1] === 'after'), '真实 save helper 只快照 Phase5 后状态并同时写 autosave/slot_0');
+  }
   {
     let src = storage;
     const bootAt = src.lastIndexOf('\nTM_SaveDB.open().then');

@@ -2,12 +2,12 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-08-10T16:09:11.226Z",
+  "generatedAt": "2026-08-11T06:35:09.165Z",
   "files": [
     {
       "path": "_app_main.js",
-      "sha256": "038b602ef7c2cabaa4f161b4264a1522766235cf3eccf0d08887f82eef1b0f10",
-      "size": 143400
+      "sha256": "b852e2216984bdc5c158bd82a6dd9281be4e26ba2626cca23387261b68ae2a77",
+      "size": 143433
     },
     {
       "path": "_app_preload.js",
@@ -1880,6 +1880,46 @@
       "size": 135
     },
     {
+      "path": "battle/assets/models/soldier_v3_opt.glb",
+      "sha256": "c9304b94c37268f6717c09b524786f05b342866f0394b65586f534fd591e06b1",
+      "size": 1725972
+    },
+    {
+      "path": "battle/assets/models/unit_bow.glb",
+      "sha256": "9f93491843518873cb2f5388dc35b0f4f5dbf730ba950858a0246209dba11f0e",
+      "size": 209760
+    },
+    {
+      "path": "battle/assets/models/unit_cav.glb",
+      "sha256": "8970571f9e62d9e785fcdb05d52f6b0a475fbee323771722dd8074b34a066755",
+      "size": 459636
+    },
+    {
+      "path": "battle/assets/models/unit_cavbow.glb",
+      "sha256": "aca33cff9808fb1709be2f7a024ca40d6341855d497d6d7654f4fd9489c7838f",
+      "size": 415592
+    },
+    {
+      "path": "battle/assets/models/unit_crossbow.glb",
+      "sha256": "b1fb67379588fb4bc8fe8f7df650a892e5d190acafd109d1c71f1d8dae7450a5",
+      "size": 265208
+    },
+    {
+      "path": "battle/assets/models/unit_dead.glb",
+      "sha256": "1d3fe88a2713b114c2e6d9cd15058143b3dccb001195f045a214a83fb136ffea",
+      "size": 211580
+    },
+    {
+      "path": "battle/assets/models/unit_gun.glb",
+      "sha256": "52079fa6d9501df490a2c9481b46b08d93e6ff778074d97025e108a8b3137600",
+      "size": 208692
+    },
+    {
+      "path": "battle/assets/models/unit_lod.glb",
+      "sha256": "aeb1146dd264f022596422baad40ec47f611d8f0b622bc92c14f39731ec3b9ff",
+      "size": 237956
+    },
+    {
       "path": "battle/index.html",
       "sha256": "ae01d313d80799156fe40dc7cb4bf0f6ad9291b2ed507dcbd0936d51d4bd342d",
       "size": 364292
@@ -2115,9 +2155,14 @@
       "size": 111649
     },
     {
+      "path": "icon.png",
+      "sha256": "8a2c8ae36d6b4665f16cd53e64f4f365c022d07b318d32998996f87e79cecbf4",
+      "size": 12525
+    },
+    {
       "path": "index.html",
-      "sha256": "3050ee5acc89745b46420e8960ea69340e19e29308e4d32df81d5ad9618f8398",
-      "size": 67491
+      "sha256": "bd436fd6630b67224a31feba60de01f88e9866e6bb951adecb390cbd56a91f10",
+      "size": 67585
     },
     {
       "path": "INDEX.md",
@@ -2640,21 +2685,6 @@
       "size": 47281
     },
     {
-      "path": "preview-launch-v2.html",
-      "sha256": "7235d59c39c076593c85efb338261c273968155feea2a69706f1bbc340afe963",
-      "size": 42628
-    },
-    {
-      "path": "preview-launch-v3.html",
-      "sha256": "bbf8565cc49b9abf124ec696721b7a0a2d80669bf4c6cd17920ddf4cc1a1fa03",
-      "size": 85522
-    },
-    {
-      "path": "preview-launch.html",
-      "sha256": "97c3b3c03d0255bdd7cc4b5fa57f9a6dbcf5ffefe607f998420ddd66d9f4b9f4",
-      "size": 46461
-    },
-    {
       "path": "preview-letter.html",
       "sha256": "607ee3b062ba43a2ef19c1df5408829668baea64fdf9ee830babf0e863c21df2",
       "size": 36568
@@ -2831,8 +2861,8 @@
     },
     {
       "path": "preview/home-ui-redesign-preview.html",
-      "sha256": "b33e2cd2b98d38e4218441fe833d0b96a163b8d939dbc2a706461c584255c7d0",
-      "size": 23109
+      "sha256": "d9d9282b0a1a3cf2073ecc4ec801e589e820d59f3aeeae7c29ada3343fc5704f",
+      "size": 23093
     },
     {
       "path": "preview/hongyan-concept-A-dark.html",
@@ -2860,9 +2890,59 @@
       "size": 61165
     },
     {
+      "path": "preview/img/action-annals-card.png",
+      "sha256": "db5cb3a11a893306276881e22bf97274083fe9b0b64c60a4dfcf9b3737dc076b",
+      "size": 732106
+    },
+    {
+      "path": "preview/img/action-edict-card.png",
+      "sha256": "b8e893536d57bfce1ed1efccee46949a22dc29492e9a6a3ee64e6f982ed607f5",
+      "size": 730667
+    },
+    {
+      "path": "preview/img/action-letter-card.png",
+      "sha256": "294f21c0948b1c8bf34ac3ef1c5175b51748e67ba57b5ff94745f9e0b10be381",
+      "size": 767130
+    },
+    {
+      "path": "preview/img/action-memorial-card.png",
+      "sha256": "5c2574340646e670eacf2417b835bfdfed7dd19ed6c60661d9885654a70e8b09",
+      "size": 828076
+    },
+    {
+      "path": "preview/img/ancient-tabletop-board.png",
+      "sha256": "448ef3d2905bca74a2c259140d17cfb52b8df505e646c1c89d0d5f4730155b56",
+      "size": 2801467
+    },
+    {
+      "path": "preview/img/chaoyi-changchao-scene-v1.png",
+      "sha256": "ced93c007cf5ffe87b892033fad8dfdd8f35f037c4d50fadf359c660d1a1ae7b",
+      "size": 2574480
+    },
+    {
+      "path": "preview/img/chaoyi-tingyi-scene-v1.png",
+      "sha256": "bc8f2be8e1a07f2ad82221901345b2f40cf504363a250ecc42abe1e8dc07e7e3",
+      "size": 2534486
+    },
+    {
+      "path": "preview/img/chaoyi-yuqian-scene-v1.png",
+      "sha256": "1e45ff361ce9aee53ae3e4bc76b9f6a862118b44543f5cf6d5bb982302d92f26",
+      "size": 2147937
+    },
+    {
       "path": "preview/img/east-asia-basemap-data.js",
       "sha256": "ee797484e61126f24304dff3f690dc648d8ad8f250389681be0e1cad7820f7bf",
       "size": 173485
+    },
+    {
+      "path": "preview/img/hongyan-btn-cut.png",
+      "sha256": "5f3daa466ba9b2c66555b9c269a2ce833ab17465147b5e9aa3dee59c82084278",
+      "size": 1481638
+    },
+    {
+      "path": "preview/img/hongyan-btn.png",
+      "sha256": "84cc52fbc730bc48eb8e9c8f5519f6fcb723adea6e184c39c2e8454dda532658",
+      "size": 1582023
     },
     {
       "path": "preview/img/ming-1582-map-data.js",
@@ -2873,6 +2953,146 @@
       "path": "preview/img/ming-1582-map.svg",
       "sha256": "3c5089fad60411310261f0965f6255f03f499f159dd4ee38bb6ef5bec465089a",
       "size": 110231
+    },
+    {
+      "path": "preview/img/ming-territory-basemap.png",
+      "sha256": "d090ec781ec2331a2136d14533fbba676d198b6ab0887ece04b7cd7e7d060b8f",
+      "size": 2368346
+    },
+    {
+      "path": "preview/img/panel-faction-dossier-frame-v1.png",
+      "sha256": "b23497a29bde90b16726b4b3d1c777e5478f6de8710344f256304df68e433704",
+      "size": 2275543
+    },
+    {
+      "path": "preview/img/panel-region-dossier-frame-v1.png",
+      "sha256": "2b2255d6cc230c25f1ef6addc1daf1ecc4a699ba57e17056604b1fc0fc677af1",
+      "size": 2370430
+    },
+    {
+      "path": "preview/img/portraits/ming-civil-ai.png",
+      "sha256": "6a8bfd96752ddd6faf7b13e5ba152de28b59c15fca7e98c2f3e098024498e942",
+      "size": 644699
+    },
+    {
+      "path": "preview/img/portraits/ming-emperor-ai.png",
+      "sha256": "54c3836aaf35f93db5b90210bd810a8f01ad6f987c65cc2565fb8852120bd4cd",
+      "size": 695338
+    },
+    {
+      "path": "preview/img/portraits/ming-empress-ai.png",
+      "sha256": "232df49b718bcb8e2c4b070541b8dcbc1248fc3d89be3af3394bb6f507146bb1",
+      "size": 687207
+    },
+    {
+      "path": "preview/img/portraits/ming-eunuch-ai.png",
+      "sha256": "3669fda66ed06c9db23171b09c971b616703df4cfc61c9c5e9af18a88f04e9d2",
+      "size": 640832
+    },
+    {
+      "path": "preview/img/portraits/ming-general-ai.png",
+      "sha256": "01d58f5e24c379b1e77b32843ced6e740b14ed9f99631f98c943b0f609c039c3",
+      "size": 684043
+    },
+    {
+      "path": "preview/img/portraits/ming-scholar-ai.png",
+      "sha256": "5c2a28692f69c2e224d156bc533723e030575b3228aa7d4042ebb6be3758a5da",
+      "size": 652189
+    },
+    {
+      "path": "preview/img/renwu-tuzhi-card-ui.png",
+      "sha256": "23038e2575c74abd0dd394c0509ddeade0b5673492db3a95ab97c09e47e5b342",
+      "size": 1092869
+    },
+    {
+      "path": "preview/img/shilu-btn-cut.png",
+      "sha256": "9c2b71988f478388434922d9bcf8917ae404c53c8d049075cb879d5ce458dace",
+      "size": 2306260
+    },
+    {
+      "path": "preview/img/shizheng-command-plaque.png",
+      "sha256": "f25a1818b67e73dee32fc4530ce62766278b2d261085b58a0687118fd1d0dbb8",
+      "size": 459358
+    },
+    {
+      "path": "preview/img/topbar-imperial-rail.png",
+      "sha256": "51fa98e6d1ce6993d3140361c07071bd976bb08484b74d791d539fa2ae19f1eb",
+      "size": 400556
+    },
+    {
+      "path": "preview/img/topbar-left-identity-underlay-v1.png",
+      "sha256": "d5c73a889a84ccfe161538b6b73c1df1afa21874000960603e1d8a5ecdddfc14",
+      "size": 142783
+    },
+    {
+      "path": "preview/img/topbar-material-generated-v1.png",
+      "sha256": "b78a7b3a2af14838c285bdbd82da0af62d5bba91624c634f4d30a5f1e7f5bcfa",
+      "size": 470837
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-compact.png",
+      "sha256": "6800ddb37ce44c030db5a6343e84882a290dfdfe5858a2087d8aaf59406a67f1",
+      "size": 35676
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-narrow.png",
+      "sha256": "8419c4bd6309fc3c5d15d8c193a1db00ae619ad14e60dae4f05b55ec0a4a34a5",
+      "size": 32068
+    },
+    {
+      "path": "preview/img/topbar-resource-fieldrail-v2-wide.png",
+      "sha256": "5d5ac9bdf9ca4180165dab16be4c0c3758b71ffef356b2df4bd76b25f4331b51",
+      "size": 49794
+    },
+    {
+      "path": "preview/img/topbar-resource-underlay-v1.png",
+      "sha256": "8cf6757291df8ab2d2162307a7da57972620e3f1db8fb65aac1fecf5dfa2f995",
+      "size": 119647
+    },
+    {
+      "path": "preview/img/topbar-right-date-underlay-v1.png",
+      "sha256": "aa6e647454898099956e3ac43aea5b80b95f50119440177d74ce72a40a666450",
+      "size": 128149
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-compact.png",
+      "sha256": "deb1ab7660c77fe930c92b05e2cdc7ed6a4bb4b79f3481efe98235c2f18b6072",
+      "size": 13587
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-narrow.png",
+      "sha256": "a127548eaf9392400dea15838e04afde9a7a5150860d0bad812a0b8355731177",
+      "size": 7628
+    },
+    {
+      "path": "preview/img/topbar-right-fieldtime-v3-wide.png",
+      "sha256": "e72f77e339a67d56ccd801d222cf09d74ce3c8d441738e90b3a2f8ccd0846675",
+      "size": 17859
+    },
+    {
+      "path": "preview/img/topbar-right-time-underlay-v2.png",
+      "sha256": "34e4dca39e033a448497a4f4c2201e43e08db946b2af79aacdc516950b54d790",
+      "size": 848929
+    },
+    {
+      "path": "preview/img/zhao-btn-cut.png",
+      "sha256": "fd34806c71ae4dd7f80627670d5c842f7bdf557c13430a5e8fcc462bfacb7601",
+      "size": 1092807
+    },
+    {
+      "path": "preview/img/zhao-btn.png",
+      "sha256": "f49989884be72b1be9aa83ad2d6f05e76322e6352401c11c3e097cbd911d6d92",
+      "size": 1304668
+    },
+    {
+      "path": "preview/img/zou-btn-cut.png",
+      "sha256": "e363e09d8587ef0387dae4d2f169a769f5159f39463e815563c865cb718bbfb3",
+      "size": 1429047
+    },
+    {
+      "path": "preview/img/zou-btn.png",
+      "sha256": "ebde33aa1e6fe9d69d85a73c53d3832223aaeb0c01f46b6bedf79acc8de2ed55",
+      "size": 1667085
     },
     {
       "path": "preview/map-dossier-redesign-preview.html",
@@ -3126,8 +3346,8 @@
     },
     {
       "path": "styles.css",
-      "sha256": "87998c2b28079c07240ff5d941a3792d0dc479138f31334ce8b46aa2d06c6e1a",
-      "size": 675929
+      "sha256": "f1d375793560d57d7c3db82c2b7d664a46b7e4b951b3c31cae322eb95dc1d518",
+      "size": 675921
     },
     {
       "path": "tm-agent-flags.js",
@@ -3181,8 +3401,8 @@
     },
     {
       "path": "tm-ai-infra.js",
-      "sha256": "8d13e7c0ded383ea9f6cd755ba1c8386282022d418008c86de23e444a47248c2",
-      "size": 159539
+      "sha256": "7bf78f65592b09ec14fc0e59948deec1ab195088e9fa06784390926657df5d3f",
+      "size": 160334
     },
     {
       "path": "tm-ai-narrative-guards.js",
@@ -3506,13 +3726,13 @@
     },
     {
       "path": "tm-content-manager-community.js",
-      "sha256": "a380486da6dc22dba253bb99ac8180286af8496951a808b07ee281deba1abe97",
-      "size": 179976
+      "sha256": "252fe4fc7f19115befc0ff0ece245bd8507369b7826b39d15ededbcc5d34b223",
+      "size": 189924
     },
     {
       "path": "tm-content-manager.js",
-      "sha256": "b816f94ba9830141c40c71b2b3cf06c72bed90397725ebe9ba819e8a47b93ac2",
-      "size": 187903
+      "sha256": "036120562037e878bc4f92745babb03690a25e54f53b02411b6f6407009ae6a8",
+      "size": 186338
     },
     {
       "path": "tm-context-zones.js",
@@ -3736,8 +3956,8 @@
     },
     {
       "path": "tm-endturn-pipeline-steps.js",
-      "sha256": "9027610f56485972523b990f506cd032f6e21763fb17d698d1b11f3580e38ac5",
-      "size": 62501
+      "sha256": "0ac4f73764fb6917d36796f06606ecf19527ffcbf7c2396618d446b9674347ab",
+      "size": 63807
     },
     {
       "path": "tm-endturn-pipeline-types.js",
@@ -3781,8 +4001,8 @@
     },
     {
       "path": "tm-endturn-render.js",
-      "sha256": "bd9f8db1d7d7739716e0d9dc74e4eb9dd0056a1c6b1cb68157aa8785f78fd2bc",
-      "size": 30022
+      "sha256": "7743ab46601744afb79dfc59e362ed02d6209150f381fb7d72d8201968249847",
+      "size": 29103
     },
     {
       "path": "tm-endturn-shiji-compose.js",
@@ -3791,8 +4011,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "8da33314a5e23078f7852d0c3de0174832ba03695e332639ac061dc60d41a76e",
-      "size": 38515
+      "sha256": "f068efdc216780aa97eb8656fde647fb715e042580cc8d94af069612b0a6184f",
+      "size": 38798
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -3981,8 +4201,8 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "fe6c17796cef6d188677f24cfc1825ff41f393273dae93363ccec50f8dc0972a",
-      "size": 106182
+      "sha256": "14617a79ba45dd09e809425ddc4e51dc20b4bc19fee7f62ced3a15b5cea274cd",
+      "size": 106336
     },
     {
       "path": "tm-fiscal-ui.js",
@@ -4021,8 +4241,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "800ae9c585d1c52a048d9ef9a011746d52b5cf2bcf1c10f18f44f03e2a4d6e83",
-      "size": 133455
+      "sha256": "d4f6e25646349b59241ccc83f8e40d7aa82293b7e5a29e7d07f5d3be3f54e407",
+      "size": 133575
     },
     {
       "path": "tm-guoku-panel.js",
@@ -4116,8 +4336,8 @@
     },
     {
       "path": "tm-integration-bridge.js",
-      "sha256": "3ebcab94b50759239ef34f8296663a0701f8bc805022406bd5c94acbe300365f",
-      "size": 41497
+      "sha256": "17a52a72bda3090b03eef032331cceb2028d4c849159a2d3306444a26d8672e1",
+      "size": 43535
     },
     {
       "path": "tm-invariants.js",
@@ -4191,8 +4411,8 @@
     },
     {
       "path": "tm-keju-indicators.js",
-      "sha256": "ca2e810eab4f9a55d784b6cc3c84830b5dbd49b33bdc3dff7ac79b6db5d027fb",
-      "size": 21892
+      "sha256": "af6a1b77e4a685400222f943d9087a88e16eb75015236b4cefec4e4c6e72143b",
+      "size": 22621
     },
     {
       "path": "tm-keju-learning-traits.js",
@@ -4556,8 +4776,8 @@
     },
     {
       "path": "tm-neitang-engine.js",
-      "sha256": "a9510c48e6bfdd372e18fb04973ac93381a0117cf11721d7447c3875290dcbbf",
-      "size": 69817
+      "sha256": "63e55bb38e3805c767e09f0e09a498ed4b4748ea9c8a572a8b4556463b56d90f",
+      "size": 69937
     },
     {
       "path": "tm-neitang-panel.js",
@@ -4646,8 +4866,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "ab6b31af08604de75d0373641d52956638fe3bc2bd49025e5ee72a8f1858fa01",
-      "size": 81310
+      "sha256": "aa4e861ff78eaa01b563620e7c84774009300d099a3cb05e1abc0147dd0da888",
+      "size": 81544
     },
     {
       "path": "tm-office-vacancy.js",
@@ -4676,8 +4896,8 @@
     },
     {
       "path": "tm-online-client.js",
-      "sha256": "44543537f86706fc3a6662be02abdc2da69382075f35125e3fe4d32c9c2eb87b",
-      "size": 38749
+      "sha256": "2b0bc02f1153682b79a14b7cfe476250764523eab349173300c0a0b7a9583667",
+      "size": 39079
     },
     {
       "path": "tm-online-mall.css",
@@ -4726,8 +4946,8 @@
     },
     {
       "path": "tm-patches-start.js",
-      "sha256": "aaf236c5df7d6e8d746ce275d070393dc6bc739cc6da063fc981e0263aa5ebbc",
-      "size": 109696
+      "sha256": "d48d774fb964091a83156c4cdf98b68fc8ff796fad4a2ccec3b236b02096a331",
+      "size": 112642
     },
     {
       "path": "tm-patches.js",
@@ -4871,18 +5091,18 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "50a01802fd80dae1d02dfffc2ebaa5ec80e293f8c9ef7dc28ce8fa3228c1584c",
-      "size": 104173
+      "sha256": "8d6ef46f157b4dea45db4f7a2348206cafb6501bc1e879d61c3e76ff93a1350c",
+      "size": 104399
     },
     {
       "path": "tm-save-manager.js",
-      "sha256": "3568bfcd90d40dd13235ab5dc6bad8984e21e2bca0b31e0dcd6c0bf0c6515812",
-      "size": 48384
+      "sha256": "2843e975f0bce398ce30582163477dd469b5df899863846ffb5a168b51defd90",
+      "size": 48512
     },
     {
       "path": "tm-semantic-recall.js",
-      "sha256": "0544b690d2cc1c9a4b3539e4097740ecabf0b4b0daf39810c217b43dc1f50f81",
-      "size": 24046
+      "sha256": "e1708ec99620bd72da6acd7b0a82f32099d0020115a446f998b2616e6cd370e8",
+      "size": 24148
     },
     {
       "path": "tm-semantic-worker.js",
@@ -5118,6 +5338,36 @@
       "path": "vendor/models/README.md",
       "sha256": "25aeeab18c7a0415d580ed70a0f3fb8638402ba07f1e4f5585bbceb2ca755800",
       "size": 1689
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/config.json",
+      "sha256": "d4193ead3a810fd694fa8a31d7fc72fbaebc0668b603e398734bf2f6538ff42f",
+      "size": 716
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx",
+      "sha256": "15b717c382bcb518ba457b93ea6850ede7f4f1cd8937454aa06972366cd19bcc",
+      "size": 24010842
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/special_tokens_map.json",
+      "sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+      "size": 125
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/tokenizer_config.json",
+      "sha256": "e6f3b96db926a37d4039995fbf5ad17de158dfb8f6343d607e4dbaad18d75f5a",
+      "size": 367
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/tokenizer.json",
+      "sha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+      "size": 439125
+    },
+    {
+      "path": "vendor/models/Xenova/bge-small-zh-v1.5/vocab.txt",
+      "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+      "size": 109540
     },
     {
       "path": "vendor/transformers/jinja.esm.js",

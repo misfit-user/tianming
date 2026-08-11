@@ -53,9 +53,39 @@
   // 顶级区划（第一层，如"江南省/河北省"）
   function getTopLevelDivisions(adminHierarchy, factionId) {
     if (!adminHierarchy) return [];
-    var fac = adminHierarchy[factionId || 'player'] || Object.values(adminHierarchy)[0];
-    if (!fac || !fac.divisions) return [];
+    if (Array.isArray(adminHierarchy.divisions)) return adminHierarchy.divisions;
+    var requested = factionId || 'player';
+    var fac = adminHierarchy[requested] || null;
+    if (fac && !Array.isArray(fac) && !Array.isArray(fac.divisions)) fac = null;
+    if (!fac && requested === 'player' && typeof _tmResolvePlayerAdminKey === 'function') {
+      var resolved = _tmResolvePlayerAdminKey(adminHierarchy);
+      if (resolved) fac = adminHierarchy[resolved];
+    }
+    if (!fac && requested === 'player') {
+      var keys = Object.keys(adminHierarchy).filter(function(key) {
+        var tree = adminHierarchy[key];
+        return Array.isArray(tree) || (tree && Array.isArray(tree.divisions));
+      });
+      if (keys.length === 1) fac = adminHierarchy[keys[0]];
+    }
+    if (Array.isArray(fac)) return fac;
+    if (!fac || !Array.isArray(fac.divisions)) return [];
     return fac.divisions;
+  }
+
+  function _bridgeFiniteNumber(value, fallback) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return fallback;
+    var n = Number(value);
+    return isFinite(n) ? n : fallback;
+  }
+
+  function _divisionPopulationWeight(div) {
+    var pd = div && div.populationDetail;
+    if (pd && typeof pd === 'object' && (pd.mouths || pd.households)) return Number(pd.mouths) || 0;
+    var pop = div && div.population;
+    if (pop && typeof pop === 'object') return Number(pop.mouths) || 0;
+    if (typeof pop === 'number') return pop;
+    return 1;
   }
 
   // 所有叶子区划（递归 —— 无 children 或 children 空）
@@ -170,8 +200,10 @@
         carryingRegime: div.carryingCapacity.carryingRegime || 'balanced'
       };
     }
-    if (div.minxinLocal !== undefined && div.minxin === undefined) div.minxin = div.minxinLocal;
-    if (div.corruptionLocal !== undefined && div.corruption === undefined) div.corruption = div.corruptionLocal;
+    var localMx = _bridgeFiniteNumber(div.minxinLocal, null);
+    var localCorr = _bridgeFiniteNumber(div.corruptionLocal, null);
+    if (_bridgeFiniteNumber(div.minxin, null) === null && localMx !== null) div.minxin = localMx;
+    if (_bridgeFiniteNumber(div.corruption, null) === null && localCorr !== null) div.corruption = localCorr;
     // 户口
     if (!div.population) {
       div.population = {
@@ -184,12 +216,12 @@
       };
     }
     // 民心
-    if (div.minxin === undefined) {
-      div.minxin = (defaultsFromParent && defaultsFromParent.mx) || 60;
+    if (_bridgeFiniteNumber(div.minxin, null) === null) {
+      div.minxin = _bridgeFiniteNumber(defaultsFromParent && defaultsFromParent.mx, 60);
     }
     if (!div.minxinDetails) div.minxinDetails = { trueIndex: div.minxin, perceivedIndex: div.minxin, trend: 'stable' };
     // 腐败（地方吏治）
-    if (div.corruption === undefined) div.corruption = 30;
+    if (_bridgeFiniteNumber(div.corruption, null) === null) div.corruption = 30;
     // 财政（公库）
     if (!div.publicTreasury) {
       div.publicTreasury = {
@@ -386,10 +418,11 @@
       // minxin byRegion 必须包含 .index（热力图读此字段）
       if (div.minxinDetails) {
         if (div.minxinDetails.index === undefined) {
-          div.minxinDetails.index = div.minxinDetails.trueIndex !== undefined ? div.minxinDetails.trueIndex : (div.minxin || 60);
+          div.minxinDetails.index = _bridgeFiniteNumber(div.minxinDetails.trueIndex, _bridgeFiniteNumber(div.minxin, 60));
         }
       } else {
-        div.minxinDetails = { index: div.minxin || 60, trueIndex: div.minxin || 60, perceivedIndex: div.minxin || 60, trend: 'stable' };
+        var initialMx = _bridgeFiniteNumber(div.minxin, _bridgeFiniteNumber(div.minxinLocal, 60));
+        div.minxinDetails = { index: initialMx, trueIndex: initialMx, perceivedIndex: initialMx, trend: 'stable' };
       }
       G.minxin.byRegion[div.id] = div.minxinDetails;
       G.fiscal.regions[div.id] = div.fiscal;
@@ -460,7 +493,13 @@
       var claimed=0, actual=0, remit=0, retain=0;
       var pubM=0, pubG=0, pubC=0;
       n.children.forEach(function(c) {
-        if (c.population && typeof c.population === 'object') {
+        if (c.populationDetail && typeof c.populationDetail === 'object' && (c.populationDetail.mouths || c.populationDetail.households)) {
+          hh += c.populationDetail.households || 0;
+          mo += c.populationDetail.mouths || 0;
+          ding += c.populationDetail.ding || 0;
+          fug += c.populationDetail.fugitives || 0;
+          hid += c.populationDetail.hiddenCount || 0;
+        } else if (c.population && typeof c.population === 'object') {
           hh += c.population.households || 0;
           mo += c.population.mouths || 0;
           ding += c.population.ding || 0;
@@ -471,9 +510,9 @@
           hh += Math.floor(c.population / 5);
           ding += Math.floor(c.population * 0.25);
         }
-        var w = (c.population && c.population.mouths) || (typeof c.population === 'number' ? c.population : 1);
-        mxW += (typeof c.minxin === 'number' ? c.minxin : 60) * w;
-        cxW += (typeof c.corruption === 'number' ? c.corruption : 30) * w;
+        var w = _divisionPopulationWeight(c);
+        mxW += _bridgeFiniteNumber(c.minxin, _bridgeFiniteNumber(c.minxinLocal, 60)) * w;
+        cxW += _bridgeFiniteNumber(c.corruption, _bridgeFiniteNumber(c.corruptionLocal, 30)) * w;
         wSum += w;
         if (c.fiscal) {
           claimed += c.fiscal.claimedRevenue || 0;
@@ -530,7 +569,7 @@
       var mouths = (pd && pd.mouths > 0) ? pd.mouths : (pop && pop.mouths > 0 ? pop.mouths : 0);
       if (!(mouths > 0)) return;
       var base = 0.0008;  // 0.08% / 月（年 ~1%）
-      var mx = (typeof div.minxin === 'number') ? div.minxin : 60;
+      var mx = _bridgeFiniteNumber(div.minxin, _bridgeFiniteNumber(div.minxinLocal, 60));
       var cr = (typeof div.corruption === 'number') ? div.corruption : 30;
       var load = div.environment && typeof div.environment.currentLoad === 'number' ? div.environment.currentLoad : 0.5;
       // 民心高 +0.0004，腐败高 -0.0003，负载 >0.9 -0.0005
@@ -568,7 +607,6 @@
     // 改用叶子聚合（修父子不对齐问题）——若无子则顶层即叶子
     var leaves = getLeafDivisions(G.adminHierarchy, 'player');
     if (leaves.length === 0) leaves = topLevel;
-
     // 同时把顶层节点的 population 同步为其叶子之和（"父 = 子之和"约束）
     _reconcileParentToChildren(topLevel);
 
@@ -624,8 +662,9 @@
     // 2. 民心 = 叶子按人口加权平均
     var weightedMx = 0;
     leaves.forEach(function(div) {
-      var w = (div.population && div.population.mouths) || (typeof div.population === 'number' ? div.population : 1);
-      weightedMx += (div.minxin || 60) * w;
+      var w = _divisionPopulationWeight(div);
+      var localMx = _bridgeFiniteNumber(div.minxin, _bridgeFiniteNumber(div.minxinLocal, 60));
+      weightedMx += localMx * w;
     });
     if (totalMouths > 0) {
       var avgMx = weightedMx / totalMouths;
@@ -648,8 +687,8 @@
     // 3. 吏治 = 叶子按人口加权平均地方腐败 + 中央/县/军/内廷/技术五部门（6 部门融合）
     var weightedCorr = 0;
     leaves.forEach(function(div) {
-      var w = (div.population && div.population.mouths) || (typeof div.population === 'number' ? div.population : 1);
-      weightedCorr += (div.corruption || 30) * w;
+      var w = _divisionPopulationWeight(div);
+      weightedCorr += _bridgeFiniteNumber(div.corruption, _bridgeFiniteNumber(div.corruptionLocal, 30)) * w;
     });
     if (totalMouths > 0) {
       var avgProvCorr = weightedCorr / totalMouths;
@@ -720,18 +759,18 @@
     // P-UIMX·回合末把各省 minxinDetails.index（UI「天下民情图」热力图读此字段·var-drawers r.index）刷成该省叶子的人口加权 div.minxin。
     //   治本 adjustMinxin 摊的是叶子 div.minxin、聚合 trueIndex 也读叶子(本函数上方)，但 byRegion 上挂的顶层省 minxinDetails.index
     //   只在 init/_updateLegacyProxies 当 .index===undefined 时写过一次、之后从不刷新 → 滞留开局值（玩家看到各省四五十、实际已治到八九十）。
-    //   与段位 phase 滞留同病同治：真值变了、UI 读的派生缓存得跟上。flat（省即叶子）与嵌套（省下府县）都走加权 walk；|| 60 与上方 trueIndex 同语义。
+    //   与段位 phase 滞留同病同治：真值变了、UI 读的派生缓存得跟上。flat（省即叶子）与嵌套（省下府县）都走加权 walk。
     try {
       topLevel.forEach(function(prov) {
         var _num = 0, _den = 0;
         (function walk(node) {
           if (!node) return;
           if (!node.children || node.children.length === 0) {
-            var w = (node.population && node.population.mouths) || (typeof node.population === 'number' ? node.population : 1);
-            _num += (node.minxin || 60) * w; _den += w;
+            var w = _divisionPopulationWeight(node);
+            _num += _bridgeFiniteNumber(node.minxin, _bridgeFiniteNumber(node.minxinLocal, 60)) * w; _den += w;
           } else { node.children.forEach(walk); }
         })(prov);
-        var _v = _den > 0 ? _num / _den : (prov.minxin || 60);
+        var _v = _den > 0 ? _num / _den : _bridgeFiniteNumber(prov.minxin, _bridgeFiniteNumber(prov.minxinLocal, 60));
         if (!prov.minxinDetails) prov.minxinDetails = {};
         prov.minxinDetails.index = _v;
         prov.minxinDetails.trueIndex = _v;

@@ -30,6 +30,81 @@ function _clearPreEndturnMarkerAfterSave(expectedId) {
   } catch (_) { return false; }
 }
 
+// 回合存档唯一入口：必须由 pipeline 在 Phase5 全部状态写入后触发。
+// 函数保持 detached 语义，但先绑定局/回合/loadGen 租约；后台等待结束后仍会复验，旧局绝不落库。
+function _endTurn_saveSnapshot() {
+  if (typeof TM_SaveDB === 'undefined' || typeof _prepareGMForSave !== 'function') {
+    _clearPreEndturnMarkerAfterSave();
+    return Promise.resolve(false);
+  }
+  var _endturnSaveGM = GM;
+  var _endturnSaveP = P;
+  var _endturnSaveLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
+  var _endturnSaveTurn = GM.turn;
+  var _endturnSaveSid = GM.sid;
+  var _endturnSavePreId = (typeof window !== 'undefined' && window._tmActivePreEndturnSnapshotId) || '';
+  var _endturnSaveStillCurrent = function() {
+    var _liveGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
+    var _livePreId = (typeof window !== 'undefined' && window._tmActivePreEndturnSnapshotId) || '';
+    return GM === _endturnSaveGM && P === _endturnSaveP
+      && _liveGen === _endturnSaveLoadGen
+      && GM.turn === _endturnSaveTurn && GM.sid === _endturnSaveSid
+      && (!_livePreId || _livePreId === _endturnSavePreId);
+  };
+  return (async function() {
+    try {
+      if (typeof _awaitPostTurnJobsForSave === 'function') {
+        await _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
+      }
+      if (!_endturnSaveStillCurrent()) return false;
+      try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
+      _prepareGMForSave();
+      if (!_endturnSaveStillCurrent()) return false;
+
+      var _autoT0 = Date.now();
+      var _autoState = _buildSaveState({format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP});
+      var _autoSnapMs = Date.now() - _autoT0;
+      if (_autoSnapMs > 800) console.warn('[AutoSave] 端回合 snapshot 耗 '+_autoSnapMs+'ms·考虑 A-2');
+      var _sc3 = typeof findScenarioById === 'function' ? findScenarioById(_endturnSaveSid) : null;
+      var _autoMeta = {
+        name: '自动封存·' + (typeof getTSText==='function'?getTSText(_endturnSaveTurn):'T'+_endturnSaveTurn),
+        type: 'auto', turn: _endturnSaveTurn,
+        scenarioName: _sc3 ? _sc3.name : '', eraName: _endturnSaveGM.eraName || ''
+      };
+      var _autoWriteOptions = { writeGuard: _endturnSaveStillCurrent };
+      var _autoWrite = TM_SaveDB.save('autosave', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
+        if (ok !== true) throw new Error('autosave 未落库·保留 pre_endturn 恢复标记');
+        if (!_endturnSaveStillCurrent()) return false;
+        if (!_clearPreEndturnMarkerAfterSave(_endturnSavePreId)) return false;
+        try {
+          localStorage.setItem('tm_autosave_mark', JSON.stringify({
+            turn: _autoMeta.turn, timestamp: Date.now(),
+            scenarioName: _autoMeta.scenarioName, eraName: _autoMeta.eraName
+          }));
+        } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-render');}catch(_){}}
+        return true;
+      }).catch(function(e) {
+        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e);
+        return false;
+      });
+      var _slotWrite = TM_SaveDB.save('slot_0', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
+        if (ok !== true) throw new Error('slot_0 未落库·不更新案卷索引');
+        if (!_endturnSaveStillCurrent()) return false;
+        if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
+        return true;
+      }).catch(function(e) {
+        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] slot_0写入失败:') : console.warn('[AutoSave] slot_0写入失败:', e);
+        return false;
+      });
+      var _writeResults = await Promise.all([_autoWrite, _slotWrite]);
+      return _writeResults[0] === true;
+    } catch(e) {
+      console.warn('[AutoSave] post-turn save failed:', e);
+      return false;
+    }
+  })();
+}
+
 // 世界态变更摘要——把本回合 turnChanges（已满）+ 当下势力虚实压成一小段纯文本，
 // 存 GM._lastTurnDigest，供下回合 tm-endturn-prompt.js 层1 注入给 AI。
 // 朝代中立：只读 name/owner/strength/morale/soldiers 等通用运行时字段，不写死任何朝代专名。
@@ -400,77 +475,7 @@ function _endTurn_render(shizhengji, zhengwen, playerStatus, playerInner, edicts
     GM._pendingToasts = [];
   }
 
-  // 13a. 每回合自动存档到IndexedDB（静默，不弹toast）
-  if (typeof TM_SaveDB !== 'undefined' && typeof _prepareGMForSave === 'function') {
-    // detached save 任务必须绑定发起它的局/回合/pre_endturn 快照；读档或下一回合开始后，旧任务不得再落库/改 marker/index。
-    var _endturnSaveGM = GM;
-    var _endturnSaveP = P;
-    var _endturnSaveLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
-    var _endturnSaveTurn = GM.turn;
-    var _endturnSaveSid = GM.sid;
-    var _endturnSavePreId = (typeof window !== 'undefined' && window._tmActivePreEndturnSnapshotId) || '';
-    var _endturnSaveStillCurrent = function() {
-      var _liveGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
-      var _livePreId = (typeof window !== 'undefined' && window._tmActivePreEndturnSnapshotId) || '';
-      return GM === _endturnSaveGM && P === _endturnSaveP
-        && _liveGen === _endturnSaveLoadGen
-        && GM.turn === _endturnSaveTurn && GM.sid === _endturnSaveSid
-        // autosave 成功清 marker 后 active id 为空仍属本任务；后起回合会换成另一个非空 id。
-        && (!_livePreId || _livePreId === _endturnSavePreId);
-    };
-    (async function() {
-      try {
-        if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
-        if (!_endturnSaveStillCurrent()) return;
-        // 问天·兑现对账（刀A·flag 默认 OFF·同回合幂等）——放推演各 pass 落定后、autosave 前·结果随档入库
-        try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
-        _prepareGMForSave();
-        if (!_endturnSaveStillCurrent()) return;
-    // A-1·端回合自动封存·统一 snapshot builder·保持 IDB {GM,P} 格式
-    var _autoT0 = Date.now();
-    var _autoState = _buildSaveState({format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP});
-    var _autoSnapMs = Date.now() - _autoT0;
-    if (_autoSnapMs > 800) console.warn('[AutoSave] 端回合 snapshot 耗 '+_autoSnapMs+'ms·考虑 A-2');
-    var _sc3 = typeof findScenarioById === 'function' ? findScenarioById(_endturnSaveSid) : null;
-    var _autoMeta = {
-      name: '自动封存·' + (typeof getTSText==='function'?getTSText(_endturnSaveTurn):'T'+_endturnSaveTurn),
-      type: 'auto',
-      turn: _endturnSaveTurn,
-      scenarioName: _sc3 ? _sc3.name : '',
-      eraName: _endturnSaveGM.eraName || ''
-    };
-    var _autoWriteOptions = { writeGuard: _endturnSaveStillCurrent };
-    // 写入 autosave（页面刷新恢复用）+ slot_0（案卷目录显示用）
-    TM_SaveDB.save('autosave', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
-      // ★ 推演成功且本回合 autosave 已落库·才清 pre_endturn 崩溃标记——旧写法在 async IIFE 外同步删·
-      // 等后台 job+落库的数十秒窗口内闪退=mark 已删而新档未写·重启不弹恢复·静默回滚上一回合
-      // (安卓 OOM 闪退史正踩此窗·2026-07-04 审查定罪)。写失败则 mark 留着·下次启动照常弹恢复=保守正确。
-      // SaveDB 以 resolve(false) 表示 IDB/localStorage/quota/事务失败，并不会 reject；必须显式判真。
-      if (ok !== true) throw new Error('autosave 未落库·保留 pre_endturn 恢复标记');
-      if (!_endturnSaveStillCurrent()) return;
-      if (!_clearPreEndturnMarkerAfterSave(_endturnSavePreId)) return;
-      // 轻量刷新标记必须描述已经落库的 autosave，且使用本次快照元数据，不能读取晚到回调时的 live GM。
-      try {
-        localStorage.setItem('tm_autosave_mark', JSON.stringify({
-          turn: _autoMeta.turn, timestamp: Date.now(),
-          scenarioName: _autoMeta.scenarioName,
-          eraName: _autoMeta.eraName
-        }));
-      } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-render');}catch(_){}}
-    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e); });
-    TM_SaveDB.save('slot_0', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
-      if (ok !== true) throw new Error('slot_0 未落库·不更新案卷索引');
-      if (!_endturnSaveStillCurrent()) return;
-      if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
-    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] slot_0写入失败:') : console.warn('[AutoSave] slot_0写入失败:', e); });
-    // ★ 推演成功完成·清除 pre_endturn 标记(标记存在=崩溃信号·见 tm-endturn-core.js)
-    // IDB 中的 pre_endturn 不删·下次回合开始时自动覆盖·留作"上回合操作快照"应急
-      } catch(e) { console.warn('[AutoSave] post-turn save failed:', e); }
-    })();
-  } else {
-    // 无 IDB 环境保留旧语义：mark 在此环境本也不会被 core 设置·同步清掉防误弹
-    _clearPreEndturnMarkerAfterSave();
-  }
+  // 13a. 自动存档已移至 pipeline 的 save-finalized-turn：必须晚于 normal/deferred Phase5 全部写入。
 
   // 13b. 写入每回合完整数据（多文件结构）
   if(window.tianming&&window.tianming.isDesktop&&GM.saveName){

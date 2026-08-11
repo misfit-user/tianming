@@ -104,9 +104,10 @@ assert(threatVar && threatVar.linkedFaction === 'fac_jin', '⑭b 绍宋真源「
 
 // ── loader range 修（切片直驱 _tmStartLoadVars）──
 const psSrc = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
+const na = psSrc.indexOf('function _tmStartFirstFiniteNumber');
 const la = psSrc.indexOf('function _tmStartLoadVars');
 const lb = psSrc.indexOf('function _tmStartMapSource');
-assert(la > 0 && lb > la, '⑭ loader 切片锚在位');
+assert(na > 0 && la > na && lb > la, '⑭ loader 与数值解析 helper 切片锚在位');
 var lc = {
   console: console, Math: Math, JSON: JSON, Object: Object, Array: Array, Number: Number,
   String: String, isFinite: isFinite, isNaN: isNaN, parseFloat: parseFloat,
@@ -116,7 +117,7 @@ var lc = {
 };
 lc.window = lc; lc.global = lc; lc.globalThis = lc;
 vm.createContext(lc);
-vm.runInContext(psSrc.slice(la, lb), lc, { filename: 'loadvars-slice.js' });
+vm.runInContext(psSrc.slice(na, psSrc.indexOf('function _tmResolvePlayerAdminKey', na)) + '\n' + psSrc.slice(la, lb), lc, { filename: 'loadvars-slice.js' });
 lc._tmStartLoadVars('s1', { variables: { other: [{ id: 'v1', name: '金军威胁等级', initial: 75, range: [0, 100], linkedFaction: 'fac_jin' }] } });
 var lv = lc.GM.vars['金军威胁等级'];
 assert(lv && lv.value === 75 && lv.min === 0 && lv.max === 100, '⑮ range:[0,100] 进 min/max(此前 max 兜底750)');

@@ -2147,6 +2147,13 @@ function calcDateFromTurn(turn){
   };
 }
 
+/** turn + P.time 是权威日期；GM.year/month/day 仅为旧读者兼容镜像。 */ function _tmSyncGMCalendar(targetGM, turn){
+  var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null), timeConfig = null; try { timeConfig = (typeof P !== 'undefined' && P) ? P.time : null; } catch (_) {}
+  if (!G || typeof calcDateFromTurn !== 'function' || !timeConfig) return null; // 缺 P.time 时保留旧档镜像，不写 adYear=0 占位
+  var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
+  G.year = Number(di.adYear); G.month = isFinite(Number(di.solarMonth)) ? Number(di.solarMonth) : 1; G.day = isFinite(Number(di.solarDay)) ? Number(di.solarDay) : 1; return { year: G.year, month: G.month, day: G.day };
+}
+
 /**
  * 获取回合时间显示（主显示函数）
  * @returns {string} HTML字符串，包含tooltip

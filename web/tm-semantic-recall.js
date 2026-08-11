@@ -182,7 +182,8 @@
       var localModelRoot = './vendor/models/';
       var localModelPath = localModelRoot + STATE.modelName + '/';
       var hasLocalModel = await probeSemanticAsset(localModelPath + 'config.json') &&
-                           await probeSemanticAsset(localModelPath + 'tokenizer.json');
+                           await probeSemanticAsset(localModelPath + 'tokenizer.json') &&
+                           await probeSemanticAsset(localModelPath + 'onnx/model_quantized.onnx');
       if (!hasLocalModel && !semanticRemoteFallbackAllowed()) {
         return setSemanticUnavailable('local semantic model assets not reachable; remote fallback disabled');
       }

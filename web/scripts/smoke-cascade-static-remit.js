@@ -23,6 +23,7 @@ function load(file) {
 }
 function assert(cond, msg) { if (!cond) throw new Error('[smoke-cascade-static-remit] ' + msg); }
 
+load('tm-patches-start.js'); // 提供生产同源 _tmResolvePlayerAdminKey
 load('tm-fiscal-engine.js');
 
 const CascadeTax = ctx.CascadeTax;
@@ -68,5 +69,25 @@ const res2 = CascadeTax.collect({ faction: 'player', turnDays: 30, force: true }
 assertions += 1; assert(res2 && res2.ok !== false, 'case2 collect should return ok!==false, got ' + JSON.stringify(res2));
 assertions += 1; assert(leaf2.fiscal.claimedRevenue > 0 && leaf2.fiscal.claimedRevenue !== 200000, 'case2 authored 税制应走计算路径覆写 claimedRevenue(≠静态 200000), got ' + leaf2.fiscal.claimedRevenue);
 assertions += 1; assert(ctx.GM.guoku.monthlyIncome !== EXPECT_TURN_REMIT, 'case2 monthlyIncome 不应等于静态兜底值 ' + EXPECT_TURN_REMIT + ', got ' + ctx.GM.guoku.monthlyIncome);
+
+// ── case 3·多势力无 literal player：按 P.playerInfo 选 own，绝不取第一键 enemy ──
+ctx.P = { playerInfo: { factionName: 'own' } };
+const enemyLeaf = makeLeaf(); enemyLeaf.name = '敌州'; enemyLeaf.fiscalDetail.remittedToCenter = 12000000;
+const ownLeaf = makeLeaf(); ownLeaf.name = '我州';
+ctx.GM = { turn: 0, adminHierarchy: { enemy: { divisions: [enemyLeaf] }, own: { divisions: [ownLeaf] } } };
+const res3 = CascadeTax.collect({ faction: 'player', turnDays: 30, force: true });
+assertions += 1; assert(res3 && res3.ok !== false, 'case3 collect should succeed with resolved player faction');
+assertions += 1; assert(ctx.GM.guoku.monthlyIncome === EXPECT_TURN_REMIT, 'case3 should collect own 1200000 annual remit, not enemy first key');
+assertions += 1; assert(!enemyLeaf.fiscal || !enemyLeaf.fiscal._thisTurnRemitMoney, 'case3 enemy division must not be settled as player');
+
+// ── case 4·空 fiscalDetail 主值不得遮蔽 fiscal 有效兜底 ──
+ctx.P = {};
+const nullPrimary = makeLeaf();
+nullPrimary.fiscalDetail.remittedToCenter = null;
+nullPrimary.fiscal = { remittedToCenter: STATIC_REMIT_ANNUAL };
+ctx.GM = { turn: 0, adminHierarchy: { player: { divisions: [nullPrimary] } } };
+const res4 = CascadeTax.collect({ faction: 'player', turnDays: 30, force: true });
+assertions += 1; assert(res4 && res4.ok !== false, 'case4 collect should succeed with fallback remit');
+assertions += 1; assert(ctx.GM.guoku.monthlyIncome === EXPECT_TURN_REMIT, 'case4 null fiscalDetail must fall through to fiscal.remittedToCenter');
 
 console.log('[smoke-cascade-static-remit] pass assertions=' + assertions);

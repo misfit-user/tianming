@@ -498,10 +498,16 @@
 
     function logout(apiUrl) {
       var session = readSession();
-      var done = function () { clearSession(); return { success: true }; };
+      // 登出请求可能晚于一次新登录返回；只允许清理发起登出时捕获的同一 token。
+      // 否则旧账号的网络回包会把新账号刚写入 localStorage 的会话一并删掉。
+      var done = function () {
+        var current = readSession();
+        if (!current.token || current.token === session.token) clearSession();
+        return { success: true };
+      };
       if (!session.token) return Promise.resolve(done());
       return request('POST', 'account/logout', { body: {}, apiUrl: apiUrl || session.apiUrl, token: session.token })
-        .then(done, function (e) { clearSession(); return { success: true, warning: e && e.message }; });
+        .then(done, function (e) { var result = done(); result.warning = e && e.message; return result; });
     }
 
     // ---- workshop catalog (read) ------------------------------------------

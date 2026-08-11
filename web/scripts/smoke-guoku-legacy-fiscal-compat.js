@@ -56,4 +56,9 @@ GuokuEngine.initFromDynasty('明', 'peak');
 assertions += 1; assert(ctx.GM.guoku.monthlyIncome === Math.round(80000 * 1.8), 'no compat keys·monthlyIncome should stay dynasty default');
 assertions += 1; assert(ctx.GM.guoku.balance === Math.round(80000 * 1.8 * 6), 'no compat keys·balance should stay dynasty default');
 
+// ── case 6·空主别名不得遮蔽后续有效中文别名 ──
+ctx.GM.guoku = undefined;
+GuokuEngine.initFromDynasty('明', 'peak', { guoku: { money: null, '库存折贯': 2500000 } });
+assertions += 1; assert(ctx.GM.guoku.balance === 2500000, 'null guoku.money must not shadow valid 库存折贯');
+
 console.log('[smoke-guoku-legacy-fiscal-compat] pass assertions=' + assertions);

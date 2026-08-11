@@ -888,6 +888,8 @@ function fullLoadGame(data, loadOptions){
 
   if(GM){
     GM.running=true;
+    // 旧档可能没有或带着陈旧 GM.year/month/day；读档后按 turn + P.time 重新派生。
+    try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn || 1); } catch (_calendarLoadE) {}
     // 读档时强制重置busy——若存档时推演未完成（例如自动存档在endTurn中途触发），busy可能遗留为true导致"静待时变"失效
     GM.busy = false;
     GM._endTurnBusy = false;

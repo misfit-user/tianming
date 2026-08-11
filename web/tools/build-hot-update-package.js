@@ -32,10 +32,16 @@ const DEFAULT_MIN_APP_VERSION = '';
 const ALLOWED_EXTS = new Set([
   '.html', '.htm', '.js', '.mjs', '.css', '.json', '.geojson', '.png', '.jpg', '.jpeg', '.webp',
   '.bmp', '.svg', '.ico', '.mp3', '.ogg', '.wav', '.md', '.txt', '.csv', '.woff', '.woff2',
-  '.ttf', '.wasm', '.map'
-  // '.glb' 暂不放行：存量壳 ALLOWED_HOT_UPDATE_EXTS(main-impl.js:624)不认 glb，带上会整包拒收（1.3.4.5 已炸过）。
-  // 兵模缺失时线上端静默回退程序化兵模，无功能损失。等放宽白名单的新安装包铺开后再加回。
+  '.ttf', '.wasm', '.map', '.glb', '.gltf', '.bin', '.onnx'
 ]);
+// 新文件类型必须同时受「安装包壳层能力」约束。发布器自动把 feed/manifest 的
+// minAppVersion 抬到所需下限，避免旧壳下载后才因扩展名白名单拒包。
+const HOT_EXT_MIN_APP_VERSION = Object.freeze({
+  '.glb': '1.3.4.10',
+  '.gltf': '1.3.4.10',
+  '.bin': '1.3.4.10',
+  '.onnx': '1.3.4.12'
+});
 const KNOWN_WEB_TOP_DIRS = [
   'assets',
   'css',
@@ -274,7 +280,7 @@ function main() {
   }
   const outDir = path.resolve(APP_ROOT, arg('out', 'release-hot'));
   const notes = String(arg('notes', '') || '');
-  const minAppVersion = String(arg('min-app-version', DEFAULT_MIN_APP_VERSION) || '');
+  const requestedMinAppVersion = String(arg('min-app-version', DEFAULT_MIN_APP_VERSION) || '');
   const packageName = arg('package-name', 'tianming-hot-' + version + '.zip');
   const packageUrl = arg('package-url', packageName);
   const includePreview = flag('include-preview');
@@ -410,6 +416,29 @@ function main() {
     .map(entry => ({ path: entry.path, sha256: entry.sha256, size: entry.size, absPath: entry.absPath }))
     .sort((a, b) => a.path.localeCompare(b.path))
     .map(entry => ({ path: entry.path, sha256: entry.sha256, size: entry.size }));
+
+  let requiredMinAppVersion = '';
+  let requiredByExt = '';
+  finalManifestFiles.forEach(function (entry) {
+    const ext = path.extname(entry.path).toLowerCase();
+    const floor = HOT_EXT_MIN_APP_VERSION[ext] || '';
+    if (floor && (!requiredMinAppVersion || cmpVersions(floor, requiredMinAppVersion) > 0)) {
+      requiredMinAppVersion = floor;
+      requiredByExt = ext;
+    }
+  });
+  // canonical baseline is only a file/hash ledger and is not installed, so capability floors
+  // belong to real package/feed generation only.
+  let minAppVersion = requestedMinAppVersion;
+  if (!manifestOnly && requiredMinAppVersion && (!minAppVersion || cmpVersions(requiredMinAppVersion, minAppVersion) > 0)) {
+    minAppVersion = requiredMinAppVersion;
+    console.log('[hot-update] minAppVersion 自动抬升至 ' + minAppVersion + '（' + requiredByExt + ' 壳层能力门）');
+  }
+  if (!manifestOnly && minAppVersion && cmpVersions(version, minAppVersion) < 0) {
+    console.error('[GATE-7] 热更版本 ' + version + ' 低于其文件类型要求的最低本体 ' + minAppVersion + '，该包无人可安装。');
+    console.error('         请先用 scripts/release.js --prepare 盖到不低于该能力门的版本，禁止同版重打绕过。');
+    process.exit(1);
+  }
 
   // GATE-2·必含文件 + index.html 引用闭包 ⊆ 清单（1.3.3.4 的病灶正是 index 引的脚本不在清单里）
   if (!explicitFiles.length) {

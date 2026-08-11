@@ -139,6 +139,24 @@ check('H2·备考池=2 (丁戊·己入仕排除·进士排除)',        sigH.pre
 check('H3·总官员=5 (甲乙丙己庚·无衔丁戊辛排除·死者壬排除)', sigH.totalOfficials === 5);
 check('H4·近9年新进士=3 (甲1600 乙1595 庚1599·丙1580超窗排除)', sigH.newJinshi9y === 3);
 
+// 真实运行态 GM 不自带 year：必须从 calcDateFromTurn(GM.turn) 读权威年，不能把全部 cohort 算进近 9 年。
+I.calcDateFromTurn = function(turn) { return { adYear: 1600, solarMonth: 1, solarDay: 1 }; };
+global.GM = { turn: 25, chars: [
+  { name: '旧科', alive: true, resources: { gongming: { path: 'keju', tier: '进士' } }, _cohortYear: 1580, officialTitle: '主事' },
+  { name: '新科', alive: true, resources: { gongming: { path: 'keju', tier: '进士' } }, _cohortYear: 1599, officialTitle: '主事' }
+] };
+for (let hi = 0; hi < 98; hi++) global.GM.chars.push({ name: '官' + hi, alive: true, officialTitle: '主事' });
+global.P = { time: { year: 1500 }, keju: { enabled: true } };
+const noLegacyClock = I._kjUpdateIndicators({});
+check('H5·无 GM.year 时按权威 1600 年排除 1580 旧科', noLegacyClock.signals.newJinshi9y === 1);
+check('H6·100 官员/1 新科 → F2=4', noLegacyClock.F2 === 4);
+check('H7·history 年份取权威日期 1600 而非 0/P.time 开局年', noLegacyClock.year === 1600 && global.P.keju.indicators.history[0].year === 1600);
+global.GM = { turn: 25, year: 1590, chars: [] };
+global.P = { keju: { enabled: true } };
+const legacyYearWithoutTime = I._kjUpdateIndicators({});
+check('H8·旧档缺 P.time 时退回 GM.year，不采用 calcDateFromTurn 的 0 年占位', legacyYearWithoutTime.year === 1590);
+delete I.calcDateFromTurn;
+
 // ═══════════ §I·解额公平·真源 adminHierarchy economyBase.kejuQuota ═══════════
 console.log('=== §I·解额公平·区划均匀度 ===');
 global.GM = { year: 1600, adminHierarchy: { player: { divisions: [

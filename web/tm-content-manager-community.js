@@ -695,16 +695,129 @@
   }
 
   // P2-S1 好友区（poll-based）：加好友 + 收到的申请 + 我的好友。
+  function resetAccountRemoteState() {
+    // 使旧身份发出的未决请求失效；异步回调只可写回启动时的同一 epoch。
+    state.accountSessionEpoch = (Number(state.accountSessionEpoch) || 0) + 1;
+    state.friendsLoaded = false; state.friendsLoading = false; state.friendsStatus = 'idle'; state.friendsError = ''; state.friendsData = null; state.friendMessage = '';
+    state.notifLoaded = false; state.notifLoading = false; state.notifStatus = 'idle'; state.notifError = ''; state.notifData = null; state.notifMsg = '';
+    state.dmOpen = false; state.dmView = 'inbox'; state.dmPeer = null; state.dmInbox = []; state.dmMessages = []; state.dmLoadStatus = 'idle'; state.dmLoadError = ''; state.dmMsg = '';
+  }
+  function accountSessionIdentity(session) {
+    if (!session) return '';
+    if (session.token) return 'token:' + String(session.token);
+    var user = session.user || session;
+    var userKey = user && user.id != null ? user.id : (user && user.username);
+    return 'user:' + String(userKey == null ? '' : userKey);
+  }
+  function replaceAccountSession(session, forceReset) {
+    var next = session || null;
+    var changed = accountSessionIdentity(state.accountSession) !== accountSessionIdentity(next);
+    state.accountSession = next;
+    if (forceReset || changed) resetAccountRemoteState();
+    return state.accountSession;
+  }
+  function invalidateAccountSession(message) {
+    try { if (window.TM && TM.OnlineClient && TM.OnlineClient.clearSession) TM.OnlineClient.clearSession(); } catch (_) {}
+    state.accountSession = null;
+    resetAccountRemoteState();
+    state.accountMessage = message || '登录已失效，请重新登录。';
+  }
+  async function refreshAccountSession() {
+    var session = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : state.accountSession;
+    session = session && session.token ? session : null;
+    return replaceAccountSession(session, true);
+  }
+  async function accountRefresh() {
+    state.accountMessage = '正在刷新账号身份...'; render();
+    var requestEpoch = _accountEpoch();
+    try {
+      var me = await TM.OnlineClient.me(state.onlineApiUrl || undefined);
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (me && me.loggedIn) { await refreshAccountSession(); state.accountMessage = '账号身份已刷新。'; }
+      else invalidateAccountSession('登录已失效，请重新登录。');
+    } catch (e) {
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      var msg = String((e && e.message) || '未知错误');
+      var status = Number(e && (e.status || e.statusCode || e.httpStatus));
+      if (status === 401 || _sessionExpiredError(e)) invalidateAccountSession('登录已失效，请重新登录。');
+      else state.accountMessage = '刷新账号身份失败：' + msg;
+    }
+    render();
+  }
+  async function accountSetEmail() {
+    var el = document.getElementById('tm-setemail');
+    var email = el ? el.value.trim() : '';
+    if (!email) { state.accountMessage = '请填写邮箱。'; render(); return; }
+    state.accountMessage = '正在保存邮箱...'; render();
+    var requestEpoch = _accountEpoch();
+    try {
+      var res = await TM.OnlineClient.setEmail(email, state.onlineApiUrl || undefined);
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (res && res.success) {
+        replaceAccountSession(TM.OnlineClient.getSession(), false);
+        state.accountMessage = '邮箱已保存，可用于找回密码。';
+      } else if (_sessionExpiredError(res)) {
+        invalidateAccountSession('登录已失效，请重新登录。');
+      } else {
+        state.accountMessage = '保存邮箱失败：' + ((res && res.error) || '未知错误');
+      }
+    } catch (e) {
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (_sessionExpiredError(e)) invalidateAccountSession('登录已失效，请重新登录。');
+      else state.accountMessage = '保存邮箱失败：' + (e && e.message || '未知错误');
+    }
+    render();
+  }
+  async function accountLogout() {
+    var logoutIdentity = accountSessionIdentity(state.accountSession);
+    state.accountMessage = '正在退出登录...';
+    resetAccountRemoteState();
+    var logoutEpoch = _accountEpoch();
+    render();
+    var warning = '';
+    try {
+      var res = await TM.OnlineClient.logout(state.onlineApiUrl || undefined);
+      warning = String((res && res.warning) || '');
+    } catch (e) {
+      warning = String((e && e.message) || '网络错误');
+    }
+    if (!_sameAccountEpoch(logoutEpoch)) return;
+    var currentSession = TM.OnlineClient.getSession ? TM.OnlineClient.getSession() : null;
+    if (currentSession && currentSession.token && accountSessionIdentity(currentSession) !== logoutIdentity) {
+      replaceAccountSession(currentSession, false);
+      state.accountMessage = '账号已在退出期间切换，已保留新的登录。';
+      render();
+      return;
+    }
+    replaceAccountSession(null, false);
+    state.accountMessage = warning ? ('已退出登录（服务器通知失败：' + warning + '）。') : '已退出登录。';
+    render();
+  }
+  function _sessionExpiredError(error) {
+    var status = Number(error && (error.status || error.statusCode || error.httpStatus));
+    var msg = String((error && (error.message || error.error)) || '');
+    return status === 401 || /(?:^|\D)401(?:\D|$)|登录.*(?:失效|过期)|请先登录|未授权|unauthori[sz]ed|authentication\s+required|invalid\s*token|token.*expired/i.test(msg);
+  }
+  function _accountEpoch() { return Number(state.accountSessionEpoch) || 0; }
+  function _sameAccountEpoch(epoch) { return _accountEpoch() === epoch; }
+  function _invalidateExpiredAtEpoch(error, epoch) {
+    if (!_sameAccountEpoch(epoch) || !_sessionExpiredError(error)) return false;
+    invalidateAccountSession('登录已失效，请重新登录。');
+    render();
+    return true;
+  }
   function loadFriends() {
     if (!(window.TM && TM.OnlineClient && TM.OnlineClient.isLoggedIn && TM.OnlineClient.isLoggedIn())) {
-      state.friendsStatus = 'idle'; state.friendsError = ''; return;
+      state.friendsLoading = false; state.friendsStatus = 'idle'; state.friendsError = ''; return;
     }
     state.friendsLoading = true;
     state.friendsStatus = 'loading'; state.friendsError = '';
+    var requestEpoch = _accountEpoch();
     Promise.all([
       TM.OnlineClient.friends(state.onlineApiUrl || undefined),
       TM.OnlineClient.friendRequests(state.onlineApiUrl || undefined)
     ]).then(function(r){
+      if (!_sameAccountEpoch(requestEpoch)) return;
       var fr = r[0] || {}, rq = r[1] || {};
       if (fr.success === false || rq.success === false) throw new Error(fr.error || rq.error || '正式好友接口返回失败');
       state.friendsData = { friends: fr.friends || [], incoming: rq.incoming || [], outgoing: rq.outgoing || [] };
@@ -713,6 +826,11 @@
       state.friendsStatus = 'ok'; state.friendsError = '';
       render();
     }).catch(function(error){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (_sessionExpiredError(error)) {
+        if (typeof invalidateAccountSession === 'function') invalidateAccountSession('登录已失效，请重新登录。');
+        render(); return;
+      }
       state.friendsData = { friends: [], incoming: [], outgoing: [] }; state.friendsLoaded = true; state.friendsLoading = false;
       state.friendsStatus = 'error'; state.friendsError = (error && error.message) || '正式好友接口不可用'; render();
     });
@@ -735,7 +853,7 @@
           '<button class="tm-action danger" onclick="TMContentManager.removeFriend(' + Number(f.id) + ')">删除</button>' +
         '</div></div>';
     }).join('') : (state.friendsLoading ? '<div class="tm-empty">正在读取正式好友列表…</div>' : (state.friendsStatus === 'error'
-      ? '<div class="tm-empty">好友接口不可用：' + esc(state.friendsError || '读取失败') + '</div>'
+      ? '<div class="tm-empty">好友接口不可用：' + esc(state.friendsError || '读取失败') + ' <button class="tm-action" onclick="TMContentManager.refreshFriends()">重试</button></div>'
       : '<div class="tm-empty">好友列表为空，可按用户名发送申请。</div>'));
     return '<section class="tm-panel" style="margin-top:.8rem;">' +
       '<h4>好友' + (d.friends.length ? ' · ' + d.friends.length : '') + '</h4>' +
@@ -754,40 +872,58 @@
     if (!(window.TM && TM.OnlineClient && TM.OnlineClient.isLoggedIn())) { state.friendMessage = '请先登录。'; render(); return; }
     if (!to) { state.friendMessage = '请输入对方用户名。'; render(); return; }
     state.friendMessage = '正在发送申请...'; render();
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.requestFriend(to, state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
       if (res && res.success) state.friendMessage = res.status === 'accepted' ? ('已与「' + (res.nickname || to) + '」结为好友。') : ('已向「' + (res.nickname || to) + '」发送好友申请。');
+      else if (_invalidateExpiredAtEpoch(res, requestEpoch)) return;
       else state.friendMessage = '申请失败：' + ((res && res.error) || '未知错误');
       state.friendsLoaded = false; loadFriends();
-    }).catch(function(e){ state.friendMessage = '申请失败：' + (e && e.message || '网络错误'); render(); });
+    }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.friendMessage = '申请失败：' + (e && e.message || '网络错误'); render(); });
   }
   function respondFriendUI(userId, action) {
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.respondFriend(userId, action, state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (res && res.success === false && _invalidateExpiredAtEpoch(res, requestEpoch)) return;
       state.friendMessage = (res && res.success) ? (action === 'accept' ? '已接受好友申请。' : '已拒绝申请。') : ('操作失败：' + ((res && res.error) || ''));
       state.friendsLoaded = false; loadFriends();
-    }).catch(function(){ state.friendMessage = '操作失败。'; render(); });
+    }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.friendMessage = '操作失败。'; render(); });
   }
   function removeFriendUI(userId) {
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.removeFriend(userId, state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (res && res.success === false && _invalidateExpiredAtEpoch(res, requestEpoch)) return;
       state.friendMessage = (res && res.success) ? '已删除好友。' : '操作失败。';
       state.friendsLoaded = false; loadFriends();
-    }).catch(function(){ state.friendMessage = '操作失败。'; render(); });
+    }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.friendMessage = '操作失败。'; render(); });
   }
 
   // P2-S3 通知中心。
   function loadNotifs() {
-    if (!(window.TM && TM.OnlineClient && TM.OnlineClient.isLoggedIn && TM.OnlineClient.isLoggedIn())) return;
+    if (!(window.TM && TM.OnlineClient && TM.OnlineClient.isLoggedIn && TM.OnlineClient.isLoggedIn())) {
+      state.notifLoading = false; state.notifStatus = 'idle'; return;
+    }
     if (!(TM.OnlineClient && TM.OnlineClient.notifications)) {
       state.notifData = { notifications: [], unread: null }; state.notifLoaded = true; state.notifLoading = false;
       state.notifStatus = 'error'; state.notifError = '正式通知接口未加载'; render(); return;
     }
     state.notifLoading = true;
     state.notifStatus = 'loading'; state.notifError = '';
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.notifications(state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
       if (!res || res.success === false || !Array.isArray(res.notifications)) throw new Error((res && res.error) || '正式通知接口返回无效');
       var unread = hasMetric(res, 'unread') ? Number(res.unread) : res.notifications.filter(function(n){ return !n.read; }).length;
       state.notifData = { notifications: res.notifications, unread: unread };
       state.notifLoaded = true; state.notifLoading = false; state.notifStatus = 'ok'; state.notifError = ''; render();
     }).catch(function(error){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (_sessionExpiredError(error)) {
+        if (typeof invalidateAccountSession === 'function') invalidateAccountSession('登录已失效，请重新登录。');
+        render(); return;
+      }
       state.notifData = { notifications: [], unread: null }; state.notifLoaded = true; state.notifLoading = false;
       state.notifStatus = 'error'; state.notifError = (error && error.message) || '正式通知接口不可用'; render();
     });
@@ -830,10 +966,12 @@
     '</section>';
   }
   function markNotif(id) {
-    TM.OnlineClient.markNotificationRead(id, state.onlineApiUrl || undefined).then(function(){ state.notifMsg = ''; state.notifLoaded = false; loadNotifs(); }).catch(function(e){ state.notifMsg = '操作失败：' + (e && e.message || '网络错误'); render(); });
+    var requestEpoch = _accountEpoch();
+    TM.OnlineClient.markNotificationRead(id, state.onlineApiUrl || undefined).then(function(res){ if (!_sameAccountEpoch(requestEpoch)) return; if (res && res.success === false && _invalidateExpiredAtEpoch(res, requestEpoch)) return; state.notifMsg = ''; state.notifLoaded = false; loadNotifs(); }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.notifMsg = '操作失败：' + (e && e.message || '网络错误'); render(); });
   }
   function markAllNotif() {
-    TM.OnlineClient.markNotificationRead(true, state.onlineApiUrl || undefined).then(function(){ state.notifMsg = ''; state.notifLoaded = false; loadNotifs(); }).catch(function(e){ state.notifMsg = '操作失败：' + (e && e.message || '网络错误'); render(); });
+    var requestEpoch = _accountEpoch();
+    TM.OnlineClient.markNotificationRead(true, state.onlineApiUrl || undefined).then(function(res){ if (!_sameAccountEpoch(requestEpoch)) return; if (res && res.success === false && _invalidateExpiredAtEpoch(res, requestEpoch)) return; state.notifMsg = ''; state.notifLoaded = false; loadNotifs(); }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.notifMsg = '操作失败：' + (e && e.message || '网络错误'); render(); });
   }
   function refreshNotifs() { state.notifLoaded = false; loadNotifs(); }
 
@@ -844,12 +982,19 @@
     if (!(window.TM && TM.OnlineClient && TM.OnlineClient.inbox)) {
       state.dmLoadStatus = 'error'; state.dmLoadError = '正式私信接口未加载'; render(); return;
     }
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.inbox(state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
       if (!res || res.success === false || !Array.isArray(res.conversations)) throw new Error((res && res.error) || '正式私信接口返回无效');
       if (state.dmOpen && state.dmView === 'inbox') {
         state.dmInbox = res.conversations; state.dmLoadStatus = 'ok'; state.dmLoadError = ''; render();
       }
     }).catch(function(error){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (_sessionExpiredError(error)) {
+        if (typeof invalidateAccountSession === 'function') invalidateAccountSession('登录已失效，请重新登录。');
+        render(); return;
+      }
       if (!state.dmOpen || state.dmView !== 'inbox') return;
       state.dmInbox = []; state.dmLoadStatus = 'error'; state.dmLoadError = (error && error.message) || '正式私信接口不可用'; render();
     });
@@ -860,7 +1005,10 @@
     loadConversation(userId);
   }
   function openDmFromNotif(userId, nickname, notifId) {
-    if (notifId) { TM.OnlineClient.markNotificationRead(notifId, state.onlineApiUrl || undefined).then(function(){ state.notifLoaded = false; loadNotifs(); }).catch(function(){}); }
+    if (notifId) {
+      var requestEpoch = _accountEpoch();
+      TM.OnlineClient.markNotificationRead(notifId, state.onlineApiUrl || undefined).then(function(res){ if (!_sameAccountEpoch(requestEpoch)) return; if (res && res.success === false && _invalidateExpiredAtEpoch(res, requestEpoch)) return; state.notifLoaded = false; loadNotifs(); }).catch(function(e){ _invalidateExpiredAtEpoch(e, requestEpoch); });
+    }
     openDm(userId, nickname);
   }
   function loadConversation(userId) {
@@ -868,7 +1016,9 @@
       state.dmLoadStatus = 'error'; state.dmLoadError = '正式对话接口未加载'; render(); return;
     }
     state.dmLoadStatus = 'loading'; state.dmLoadError = '';
+    var requestEpoch = _accountEpoch();
     TM.OnlineClient.conversation(userId, state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
       if (!res || res.success === false || !Array.isArray(res.messages)) throw new Error((res && res.error) || '正式对话接口返回无效');
       if (state.dmOpen && state.dmPeer && Number(state.dmPeer.id) === Number(userId)) {
         state.dmMessages = res.messages;
@@ -877,6 +1027,11 @@
         render();
       }
     }).catch(function(error){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (_sessionExpiredError(error)) {
+        if (typeof invalidateAccountSession === 'function') invalidateAccountSession('登录已失效，请重新登录。');
+        render(); return;
+      }
       if (!state.dmOpen || !state.dmPeer || Number(state.dmPeer.id) !== Number(userId)) return;
       state.dmMessages = []; state.dmLoadStatus = 'error'; state.dmLoadError = (error && error.message) || '正式对话接口不可用'; render();
     });
@@ -886,12 +1041,16 @@
     var el = document.getElementById('tm-dm-input');
     var text = el ? el.value.trim() : '';
     if (!text || !state.dmPeer) return;
+    var requestEpoch = _accountEpoch();
+    var peerId = state.dmPeer.id;
     if (el && el.blur) el.blur();   // F1·发送即失焦：sendDm 后经两跳异步才 render·失焦令重渲快照不命中该框→已发文本不被回填盖回（清空保留·不再误重发）。
     state.dmMsg = '';
-    TM.OnlineClient.sendMessage(state.dmPeer.id, text, state.onlineApiUrl || undefined).then(function(res){
-      if (res && res.success) { loadConversation(state.dmPeer.id); }
+    TM.OnlineClient.sendMessage(peerId, text, state.onlineApiUrl || undefined).then(function(res){
+      if (!_sameAccountEpoch(requestEpoch)) return;
+      if (res && res.success) { loadConversation(peerId); }
+      else if (_invalidateExpiredAtEpoch(res, requestEpoch)) return;
       else { state.dmMsg = '发送失败：' + ((res && res.error) || ''); render(); }
-    }).catch(function(){ state.dmMsg = '发送失败。'; render(); });
+    }).catch(function(e){ if (_invalidateExpiredAtEpoch(e, requestEpoch) || !_sameAccountEpoch(requestEpoch)) return; state.dmMsg = '发送失败。'; render(); });
   }
   function renderDmLayer() {
     if (!state.dmOpen) return '';
@@ -1069,7 +1228,8 @@
       state.defaultCatalogUrl = status.defaultWorkshopCatalogUrl || state.defaultCatalogUrl || '';
       state.defaultOnlineApiUrl = status.defaultOnlineApiUrl || state.defaultOnlineApiUrl || '';
       state.hotStatus = status.hotUpdate || state.hotStatus || null;
-      state.accountSession = status.account || state.accountSession || null;
+      var onlineSession = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : null;
+      replaceAccountSession((onlineSession && onlineSession.token) ? onlineSession : (status.account || state.accountSession || null), false);
       if (!state.feedUrl) state.feedUrl = loadFeedUrl();
       if (!state.hotFeedUrl) state.hotFeedUrl = loadHotFeedUrl();
       if (!state.catalogUrl) state.catalogUrl = loadCatalogUrl();
@@ -1812,7 +1972,7 @@
       return '<div class="friend">' + av(f.nickname) + '<div><b>' + esc(f.nickname) + '</b><small>@' + esc(f.username) + '</small></div>' +
         '<div style="display:flex;gap:6px;"><button class="btn sm" onclick="TMContentManager.openDm(' + Number(f.id) + ', ' + jsArg(f.nickname || '') + ')">私信</button><button class="btn sm" onclick="TMContentManager.removeFriend(' + Number(f.id) + ')">删除</button></div></div>';
     }).join('') : (state.friendsLoading ? mallSkeleton(3) : (state.friendsStatus === 'error'
-      ? truthEmpty('友', '正式好友接口不可用', state.friendsError || '无法读取好友列表。')
+      ? truthEmpty('友', '正式好友接口不可用', state.friendsError || '无法读取好友列表。', '<button class="btn primary sm" onclick="TMContentManager.refreshFriends()">重试好友接口</button>')
       : truthEmpty('友', '好友列表当前为空', '正式接口返回 0 位好友；可按用户名发送申请。')));
     return '<div class="sec-h"><h3>好友' + (d.friends.length ? ' · ' + d.friends.length : '') + '</h3><span class="more" onclick="TMContentManager.openDmInbox()">私信箱 ›</span></div>' +
       '<div style="display:flex;gap:8px;max-width:480px;"><input id="tm-friend-add" class="input" placeholder="对方用户名"><button class="btn primary" onclick="TMContentManager.addFriend()">申请</button></div>' +
@@ -2219,7 +2379,7 @@
   }
   //>>CM-SPLIT20-BODY-END
   // ── forward 回填：本片 §2-§5 成员 → bucket（origin 委托 shim 调用期解析）──
-  __cmP.ARENA_METRIC = ARENA_METRIC; __cmP.COMM_KIND = COMM_KIND; __cmP.FAV_KEY = FAV_KEY; __cmP.FEED_TYPE_LABEL = FEED_TYPE_LABEL; __cmP.SOCIAL_RANKS = SOCIAL_RANKS; __cmP.accountSeal = accountSeal;
+  __cmP.ARENA_METRIC = ARENA_METRIC; __cmP.COMM_KIND = COMM_KIND; __cmP.FAV_KEY = FAV_KEY; __cmP.FEED_TYPE_LABEL = FEED_TYPE_LABEL; __cmP.SOCIAL_RANKS = SOCIAL_RANKS; __cmP.accountLogout = accountLogout; __cmP.accountRefresh = accountRefresh; __cmP.accountSeal = accountSeal; __cmP.accountSetEmail = accountSetEmail;
   __cmP.addFriend = addFriend; __cmP.applyLog = applyLog; __cmP.autoPostPublish = autoPostPublish; __cmP.capturePublishDraft = capturePublishDraft; __cmP.closeApplyUpdate = closeApplyUpdate; __cmP.closeArena = closeArena;
   __cmP.closeCircle = closeCircle; __cmP.closeCollection = closeCollection; __cmP.closeCollectionPicker = closeCollectionPicker; __cmP.closeCommissionUI = closeCommissionUI; __cmP.closeDm = closeDm; __cmP.computeReputation = computeReputation;
   __cmP.createArenaUI = createArenaUI; __cmP.createCircleUI = createCircleUI; __cmP.createCollectionUI = createCollectionUI; __cmP.createMyCollectionUI = createMyCollectionUI; __cmP.ensureApplyLayer = ensureApplyLayer; __cmP.favoritePacks = favoritePacks;
@@ -2232,7 +2392,7 @@
   __cmP.openCollection = openCollection; __cmP.openCollectionPicker = openCollectionPicker; __cmP.openDm = openDm; __cmP.openDmFromNotif = openDmFromNotif; __cmP.openDmInbox = openDmInbox; __cmP.packCoverUrl = packCoverUrl;
   __cmP.packGalleryImages = packGalleryImages; __cmP.pickCollection = pickCollection; __cmP.postCommissionUI = postCommissionUI; __cmP.postToCircle = postToCircle; __cmP.prepareOnlineDefaults = prepareOnlineDefaults; __cmP.promoCard = promoCard;
   __cmP.promoScene = promoScene; __cmP.proposeRevisionUI = proposeRevisionUI; __cmP.publishCoverHtml = publishCoverHtml; __cmP.publishDraft = publishDraft; __cmP.publishGalleryHtml = publishGalleryHtml; __cmP.publishPackageReady = publishPackageReady;
-  __cmP.publishStatusHtml = publishStatusHtml; __cmP.publishStep = publishStep; __cmP.publishStoreReady = publishStoreReady; __cmP.quickCreateCollection = quickCreateCollection; __cmP.refreshNotifs = refreshNotifs; __cmP.reloadAppliedUpdate = reloadAppliedUpdate;
+  __cmP.publishStatusHtml = publishStatusHtml; __cmP.publishStep = publishStep; __cmP.publishStoreReady = publishStoreReady; __cmP.quickCreateCollection = quickCreateCollection; __cmP.refreshAccountSession = refreshAccountSession; __cmP.refreshNotifs = refreshNotifs; __cmP.reloadAppliedUpdate = reloadAppliedUpdate;
   __cmP.removeFriendUI = removeFriendUI; __cmP.renderAccountAside = renderAccountAside; __cmP.renderAccountLoggedIn = renderAccountLoggedIn; __cmP.renderAccountLoggedOut = renderAccountLoggedOut; __cmP.renderAccountTabV2 = renderAccountTabV2; __cmP.renderApplyEntries = renderApplyEntries;
   __cmP.renderApplyUpdateModal = renderApplyUpdateModal; __cmP.renderArenaLayer = renderArenaLayer; __cmP.renderArenaSection = renderArenaSection; __cmP.renderBadges = renderBadges; __cmP.renderBrowsePane = renderBrowsePane; __cmP.renderCircleLayer = renderCircleLayer;
   __cmP.renderCirclesPane = renderCirclesPane; __cmP.renderCollectionLayer = renderCollectionLayer; __cmP.renderCollectionPicker = renderCollectionPicker; __cmP.renderCollectionSection = renderCollectionSection; __cmP.renderCommissionSection = renderCommissionSection; __cmP.renderDiscover = renderDiscover;
@@ -2240,6 +2400,6 @@
   __cmP.renderLocalWorkshopSection = renderLocalWorkshopSection; __cmP.renderMallPane = renderMallPane; __cmP.renderMePane = renderMePane; __cmP.renderMyCollections = renderMyCollections; __cmP.renderNotifSection = renderNotifSection; __cmP.renderRanksPane = renderRanksPane;
   __cmP.renderResetPanel = renderResetPanel; __cmP.renderRevisionSection = renderRevisionSection; __cmP.renderStudioPane = renderStudioPane; __cmP.renderTopicsPane = renderTopicsPane; __cmP.renderUpdatesPaneMall = renderUpdatesPaneMall; __cmP.renderUrlPublishSection = renderUrlPublishSection;
   __cmP.renderWarRecords = renderWarRecords; __cmP.renderWebPublishSection = renderWebPublishSection; __cmP.renderWorkshopTabV2 = renderWorkshopTabV2; __cmP.respondFriendUI = respondFriendUI; __cmP.respondRevisionUI = respondRevisionUI; __cmP.runApplyUpdateFlow = runApplyUpdateFlow;
-  __cmP.selfId = selfId; __cmP.sendDm = sendDm; __cmP.socialRankFor = socialRankFor; __cmP.submitArenaUI = submitArenaUI; __cmP.submitFeedPost = submitFeedPost; __cmP.syncServerFavorites = syncServerFavorites;
+  __cmP.replaceAccountSession = replaceAccountSession; __cmP.resetAccountRemoteState = resetAccountRemoteState; __cmP.selfId = selfId; __cmP.sendDm = sendDm; __cmP.socialRankFor = socialRankFor; __cmP.submitArenaUI = submitArenaUI; __cmP.submitFeedPost = submitFeedPost; __cmP.syncServerFavorites = syncServerFavorites;
   __cmP.toggleCircleJoin = toggleCircleJoin; __cmP.toggleFavorite = toggleFavorite; __cmP.updateApplyState = updateApplyState; __cmP.webInstalledRow = webInstalledRow;
 })();

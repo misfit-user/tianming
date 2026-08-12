@@ -1310,7 +1310,7 @@
     },
     {
       name: 'describeSchema',
-      description: '查某类实体的完整字段形状（不填 kind 则列出所有可用类型）。kind 如 character/faction/troop/division/event/variable。',
+      description: '查某类实体的完整字段形状（不填 kind 则列出所有可用类型）。kind 如 character/faction/troop/division/office/officePosition/event/variable；官制/官署/officeTree/官职图会自动映射到官方 officeTree 形状。',
       parameters: { type: 'object', properties: { kind: { type: 'string' } } }
     },
     {
@@ -1474,9 +1474,66 @@
     class: { name: '', desc: '' },
     troop: { name: '', commander: '', faction: '', location: '', soldiers: 10000, type: '' },
     division: { name: '', level: '', governor: '', population: { mouths: 0, households: 0 }, divisions: [] },
+    // 官制节点是 officeTree[] 的元素，不是行政区划 division。官方天启剧本的
+    // 形状以「部门 → positions[] → subs[]」为主，position 的 holder/员额/权责
+    // 也属于可编辑数据；把它单列出来，避免模型把官制误套成 division。
+    office: {
+      id: '', name: '', desc: '',
+      positions: [{
+        name: '', rank: '', holder: '', establishedCount: 1, vacancyCount: 0,
+        authority: '', succession: 'appointment', duties: '',
+        perPersonSalary: '', salary: 0,
+        bindingHint: '',
+        publicTreasuryInit: { money: 0, grain: 0, cloth: 0, quotaMoney: 0, quotaGrain: 0, quotaCloth: 0 },
+        privateIncome: { bonusType: '', illicitRisk: '' },
+        powers: { appointment: false, impeach: false, supervise: false }
+      }],
+      subs: []
+    },
+    officePosition: {
+      name: '', rank: '', holder: '', establishedCount: 1, vacancyCount: 0,
+      authority: '', succession: 'appointment', duties: '',
+      perPersonSalary: '', salary: 0,
+      bindingHint: '',
+      publicTreasuryInit: { money: 0, grain: 0, cloth: 0, quotaMoney: 0, quotaGrain: 0, quotaCloth: 0 },
+      privateIncome: { bonusType: '', illicitRisk: '' },
+      powers: { appointment: false, impeach: false, supervise: false }
+    },
     event: { name: '', type: 'historical', trigger: '', desc: '' },
     variable: { name: '', defaultValue: 0, min: 0, max: 100, description: '' }
   };
+
+  // 模型常把用户说的「官职图/官制」压缩成 office，或把 officeTree 当作实体
+  // 类型传给 describeSchema。保留原始 kind 供 UI 显示，但统一映射到可用形状。
+  var ENTITY_KIND_ALIASES = {
+    office: 'office', offices: 'office', officetree: 'office', officeTree: 'office',
+    department: 'office', departments: 'office',
+    '官制': 'office', '官署': 'office', '官职图': 'office', '部门': 'office',
+    position: 'officePosition', officeposition: 'officePosition',
+    '官职': 'officePosition', '官位': 'officePosition', '职位': 'officePosition'
+  };
+  function _resolveEntityKind(kind) {
+    var raw = String(kind == null ? '' : kind).trim();
+    if (!raw) return '';
+    if (ENTITY_TEMPLATES[raw]) return raw;
+    var lower = raw.toLowerCase();
+    return ENTITY_KIND_ALIASES[raw] || ENTITY_KIND_ALIASES[lower] || '';
+  }
+
+  // fieldContract 的输入是运行时字段名，而不是实体 kind。对常见官制说法做
+  // 保守别名，只在原字段不存在时落到权威的 officeTree，避免把自定义 office
+  // 字段静默改写掉。
+  var FIELD_ALIASES = {
+    office: 'officeTree', offices: 'officeTree', officetree: 'officeTree',
+    '官制': 'officeTree', '官署': 'officeTree', '官职图': 'officeTree', '官职树': 'officeTree'
+  };
+  function _fieldCandidates(field) {
+    var raw = String(field == null ? '' : field).trim();
+    if (!raw) return [];
+    var out = [raw], lower = raw.toLowerCase(), alias = FIELD_ALIASES[raw] || FIELD_ALIASES[lower];
+    if (alias && out.indexOf(alias) < 0) out.push(alias);
+    return out;
+  }
 
   /** 剧本结构速查（注入 loop prompt·让模型用对字段名与形状、守硬约束）。 */
   function buildSchemaGuide(worldKind) {
@@ -1497,6 +1554,7 @@
       '- parties[]（党派）: ' + JSON.stringify(T.party) + ' / classes[]（阶层）: ' + JSON.stringify(T['class']),
       '- military.initialTroops[]（开局部队）: ' + JSON.stringify(T.troop) + '  ← commander=人物名, faction=势力名',
       '- adminHierarchy{ "势力名":{ divisions:[ 区划 ] } }，区划递归含 .divisions；区划形如 ' + JSON.stringify(T.division),
+      '- officeTree[]（官制部门）: 每项是 ' + JSON.stringify(T.office) + '；官方天启格式以 .positions[]（官职，含 holder/rank/员额/俸禄/bindingHint/公帑/私入/权责）和 .subs[]（下级部门）递归，官制节点不要套用 division',
       '- mapData.regions[]（地图区域，每个有 .name）；末级区划的 name 应能对上某个 region.name',
       '- variables.base[]（变量）: ' + JSON.stringify(T.variable),
       '- events.historical[]/random[]（事件）: ' + JSON.stringify(T.event),
@@ -1539,27 +1597,117 @@
   // 双通道「伪 Response」：桌面有 preload 桥（window.tianming.readWebFile·主进程代读热更感知的 web 根）就走 IPC
   // （编辑器跑在 file:// origin·Chromium fetch 机制性失败）；浏览器走相对路径 fetch（兼治 Pages 子路径托管 404）。
   // 返回 { ok, status, text(), json() } 最小 Response 形状，四个源码工具内部逻辑两通道共用。
-  function _srcFetchLike(rel) {
-    if (typeof window !== 'undefined' && window.tianming && typeof window.tianming.readWebFile === 'function') {
-      return window.tianming.readWebFile(rel).then(function (res) {
-        var ok = !!(res && res.success);
-        var text = ok ? String(res.text || '') : '';
-        return {
-          ok: ok,
-          status: ok ? 200 : 404,
-          text: function () { return Promise.resolve(text); },
-          json: function () { return Promise.resolve(JSON.parse(text)); }
-        };
+  // 注意：新版剧本工坊在 preview/ 子目录。浏览器通道不能直接 fetch(rel)，否则
+  // 会请求 preview/<rel>；先探测当前目录，再逐级回到 web 根。桌面端若 preload
+  // 与 renderer 版本暂时不一致，也会在 IPC 失败后尝试浏览器通道，避免整组工具装死。
+  var _sourceRootPrefix = null;
+  var _sourceRootContext = '';
+  function _sourceHasChannel() {
+    return (typeof window !== 'undefined' && window.tianming && typeof window.tianming.readWebFile === 'function') || typeof fetch === 'function';
+  }
+  function _sourcePageBase() {
+    try {
+      if (typeof document !== 'undefined' && document.baseURI) return String(document.baseURI);
+      if (typeof location !== 'undefined' && location.href) return String(location.href);
+    } catch (_) {}
+    return '';
+  }
+  function _sourcePageContext() {
+    var base = _sourcePageBase();
+    try {
+      var u = new URL(base);
+      u.search = '';
+      u.hash = '';
+      u.pathname = u.pathname.replace(/[^/]*$/, '');
+      return u.toString();
+    } catch (_) { return base; }
+  }
+  function _sourceBrowserPrefixes() {
+    var out = [];
+    var context = _sourcePageContext();
+    if (_sourceRootPrefix != null && _sourceRootContext === context) return [_sourceRootPrefix];
+    var base = _sourcePageBase();
+    var pathName = '';
+    try { pathName = new URL(base).pathname || ''; } catch (_) {}
+    // 当前页面文件所在目录的深度；最多回退 4 层，避免把任意用户路径当作源码根。
+    var depth = pathName.split('/').filter(Boolean).length;
+    var maxUp = Math.min(4, Math.max(0, depth - 1));
+    // 剧本工坊固定在 preview/ 下，源码清单在 web 根；优先试父目录，避免每次
+    // 先请求一个必然不存在的 preview/source-manifest.json。其它托管布局仍保留
+    // 当前目录与逐级回退候选。
+    var preferredUp = pathName.indexOf('/preview/') >= 0 ? 1 : 0;
+    if (preferredUp <= maxUp) out.push(new Array(preferredUp + 1).join('../'));
+    for (var i = 0; i <= maxUp; i++) {
+      var prefix = new Array(i + 1).join('../');
+      if (out.indexOf(prefix) < 0) out.push(prefix);
+    }
+    if (!out.length) out.push('');
+    return out;
+  }
+  function _sourceUnavailable(rel, causes) {
+    var protocol = '';
+    try { protocol = (new URL(_sourcePageBase()).protocol || '').toLowerCase(); } catch (_) {}
+    var msg = protocol === 'file:'
+      ? '源码读取不可用：当前工坊以 file:// 打开且桌面源码桥未加载。请从天命桌面客户端进入剧本工坊，或用 HTTP(S) 站点打开。'
+      : '源码读取不可用：请检查工坊页面是否完整加载 source-manifest.json，以及当前网络/站点路径。';
+    var e = new Error(msg + (causes ? '（' + causes + '）' : ''));
+    e.code = 'TM_SOURCE_UNAVAILABLE';
+    e.path = rel;
+    return e;
+  }
+  function _sourceBrowserUrl(prefix, rel) {
+    var base = _sourcePageBase();
+    try { return new URL(prefix + rel, base || undefined).toString(); } catch (_) { return prefix + rel; }
+  }
+  function _sourceFetchBrowser(rel) {
+    if (typeof fetch !== 'function') return Promise.reject(_sourceUnavailable(rel, '浏览器 fetch 不存在'));
+    var prefixes = _sourceBrowserPrefixes(), failures = [];
+    function attempt(i) {
+      if (i >= prefixes.length) return Promise.reject(_sourceUnavailable(rel, failures.slice(0, 3).join('；')));
+      var prefix = prefixes[i], url = _sourceBrowserUrl(prefix, rel);
+      return Promise.resolve().then(function () { return fetch(url); }).then(function (r) {
+        if (r && r.ok) { _sourceRootPrefix = prefix; _sourceRootContext = _sourcePageContext(); return r; }
+        failures.push(url + ' HTTP ' + (r && r.status || 0));
+        return attempt(i + 1);
+      }, function (e) {
+        failures.push((e && e.message) || String(e));
+        return attempt(i + 1);
       });
     }
-    return fetch(rel);
+    return attempt(0);
+  }
+  function _sourceBridgeResponse(rel, res) {
+    var ok = !!(res && res.success), text = ok ? String(res.text || '') : '';
+    return {
+      ok: ok,
+      status: ok ? 200 : Number(res && res.status) || 404,
+      error: ok ? '' : String((res && (res.error || res.reason)) || '桌面源码桥未返回文件'),
+      text: function () { return Promise.resolve(text); },
+      json: function () { return Promise.resolve(JSON.parse(text)); }
+    };
+  }
+  function _srcFetchLike(rel) {
+    if (typeof window !== 'undefined' && window.tianming && typeof window.tianming.readWebFile === 'function') {
+      return Promise.resolve().then(function () { return window.tianming.readWebFile(rel); }).then(function (res) {
+        var bridged = _sourceBridgeResponse(rel, res);
+        // 404/旧 preload handler 缺失时再试浏览器通道；真实成功直接走 IPC，
+        // 避免读取热更目录时相对 URL 指向错误。
+        if (bridged.ok) return bridged;
+        return _sourceFetchBrowser(rel).catch(function () { return bridged; });
+      }).catch(function (bridgeError) {
+        return _sourceFetchBrowser(rel).catch(function (browserError) {
+          throw _sourceUnavailable(rel, [bridgeError && bridgeError.message, browserError && browserError.message].filter(Boolean).join('；'));
+        });
+      });
+    }
+    return _sourceFetchBrowser(rel);
   }
   function _readSourceTool(p, offset, limit) {
-    if (typeof fetch !== 'function') return Promise.resolve({ ok: false, reason: '\u5f53\u524d\u73af\u5883\u4e0d\u652f\u6301\u8bfb\u6e90\u7801\uff08\u4ec5\u7f16\u8f91\u5668\u6d4f\u89c8\u5668\u5185\u53ef\u7528\uff09' });
+    if (!_sourceHasChannel()) return Promise.resolve({ ok: false, reason: '\u5f53\u524d\u73af\u5883\u4e0d\u652f\u6301\u8bfb\u6e90\u7801\uff08\u8bf7\u5728\u684c\u9762\u5ba2\u6237\u7aef\u6216 HTTP(S) \u5de5\u574a\u4e2d\u6253\u5f00\uff09' });
     var safe = _safeSrcPath(p);
     if (!safe) return Promise.resolve({ ok: false, reason: '\u9700\u8981 path' });
     return _srcFetchLike(safe).then(function (r) {
-      if (!r.ok) return { ok: false, reason: '\u8bfb\u53d6\u5931\u8d25 HTTP ' + r.status + '\uff1a' + safe };
+      if (!r.ok) return { ok: false, reason: '\u8bfb\u53d6\u5931\u8d25 HTTP ' + r.status + '\uff1a' + safe + (r.error ? '（' + r.error + '）' : '') };
       return r.text().then(function (txt) {
         var lines = txt.split('\n');
         var off = Math.max(0, Number(offset) || 0);
@@ -1570,9 +1718,9 @@
     }).catch(function (e) { return { ok: false, reason: '\u8bfb\u53d6\u51fa\u9519\uff1a' + ((e && e.message) || e) }; });
   }
   function _listSourceTool(filter) {
-    if (typeof fetch !== 'function') return Promise.resolve({ ok: false, reason: '\u4ec5\u6d4f\u89c8\u5668\u5185\u53ef\u7528' });
+    if (!_sourceHasChannel()) return Promise.resolve({ ok: false, reason: '\u5f53\u524d\u73af\u5883\u4e0d\u652f\u6301\u8bfb\u6e90\u7801\uff08\u8bf7\u5728\u684c\u9762\u5ba2\u6237\u7aef\u6216 HTTP(S) \u5de5\u574a\u4e2d\u6253\u5f00\uff09' });
     return _srcFetchLike('source-manifest.json').then(function (r) {
-      if (!r.ok) return { ok: false, reason: '\u65e0\u6e90\u7801\u6e05\u5355\uff08source-manifest.json \u7f3a\u5931\uff09' };
+      if (!r.ok) return { ok: false, reason: '\u65e0\u6e90\u7801\u6e05\u5355\uff08source-manifest.json \u7f3a\u5931\uff1a' + (r.error || 'HTTP ' + r.status) + '\uff09' };
       return r.json().then(function (m) {
         var files = (m && m.files) || [];
         if (filter) { var lf = String(filter).toLowerCase(); files = files.filter(function (f) { return f.toLowerCase().indexOf(lf) >= 0; }); }
@@ -1580,32 +1728,94 @@
       });
     }).catch(function (e) { return { ok: false, reason: '\u6e05\u5355\u8bfb\u53d6\u51fa\u9519\uff1a' + ((e && e.message) || e) }; });
   }
+  function _sourceIsDevPath(file) {
+    return /^(?:dev-tools|scripts|tools)\//i.test(String(file || ''));
+  }
+  function _sourceIsReleaseExcludedPath(file) {
+    var f = String(file || '');
+    return _sourceIsDevPath(f) || /^test-results\//i.test(f) || /^(?:detect_globals|scan_globals|tm-test)\.js$/i.test(f);
+  }
+  function _sourceCandidateScore(file, query) {
+    var f = String(file || '').toLowerCase();
+    var rawQuery = String(query || '');
+    var q = rawQuery.toLowerCase();
+    var score = 0;
+    if (!f || !q) return 0;
+    if (f.indexOf(q) >= 0) score += 100;
+    // camelCase/标点查询（如 GM.officeTree）按词拆开，优先能从文件名判断
+    // 相关性的运行时代码；避免按 manifest 的历史字母序先扫大量旧工具脚本。
+    var tokens = rawQuery.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z0-9\u4e00-\u9fff]+/).filter(Boolean);
+    tokens.forEach(function (token) {
+      if (f.indexOf(token) >= 0) score += 20;
+    });
+    if (f.indexOf('editor-authoring-agent') >= 0) score += 8;
+    if (_sourceIsDevPath(String(file))) score -= 90;
+    return score;
+  }
   function _grepSourceTool(query, opts) {
     opts = opts || {};
-    if (typeof fetch !== 'function') return Promise.resolve({ ok: false, reason: '\u4ec5\u6d4f\u89c8\u5668\u5185\u53ef\u7528' });
+    if (!_sourceHasChannel()) return Promise.resolve({ ok: false, reason: '\u5f53\u524d\u73af\u5883\u4e0d\u652f\u6301\u8bfb\u6e90\u7801\uff08\u8bf7\u5728\u684c\u9762\u5ba2\u6237\u7aef\u6216 HTTP(S) \u5de5\u574a\u4e2d\u6253\u5f00\uff09' });
     if (!query) return Promise.resolve({ ok: false, reason: '\u9700\u8981 query' });
     var maxFiles = Math.min(80, Math.max(1, Number(opts.maxFiles) || 40));
     var glob = opts.glob ? String(opts.glob).toLowerCase() : '';
     var q = String(query);
-    return _srcFetchLike('source-manifest.json').then(function (r) { return r.ok ? r.json() : { files: [] }; }).then(function (m) {
-      var files = ((m && m.files) || []);
+    return _srcFetchLike('source-manifest.json').then(function (r) {
+      if (!r.ok) return Promise.reject(new Error('\u65e0\u6e90\u7801\u6e05\u5355\uff1a' + (r.error || 'HTTP ' + r.status)));
+      return r.json();
+    }).then(function (m) {
+      var files = ((m && m.files) || []).filter(function (f) {
+        return typeof f === 'string' && !!_safeSrcPath(f);
+      });
       if (glob) files = files.filter(function (f) { return f.toLowerCase().indexOf(glob) >= 0; });
-      var scan = files.slice(0, maxFiles), hits = [];
+      var explicitExcludedGlob = /^(?:dev-tools|scripts|tools|test-results)\//i.test(glob);
+      var scanFiles = explicitExcludedGlob ? files : files.filter(function (f) { return !_sourceIsReleaseExcludedPath(f); });
+      // 兼容只含开发文件的定制清单：过滤后为空才回退全清单，不让工具失去可读性。
+      if (!scanFiles.length) scanFiles = files;
+      var ranked = scanFiles.map(function (f, index) {
+        return { file: f, index: index, score: _sourceCandidateScore(f, q) };
+      });
+      var preferred = ranked.some(function (row) { return row.score > 0 && !_sourceIsDevPath(row.file); });
+      ranked.sort(function (a, b) {
+        var as = a.score, bs = b.score;
+        if (preferred) {
+          if (_sourceIsDevPath(a.file)) as -= 25;
+          if (_sourceIsDevPath(b.file)) bs -= 25;
+        }
+        return bs - as || a.index - b.index;
+      });
+      var scan = ranked.slice(0, maxFiles).map(function (row) { return row.file; });
+      var hits = [], attemptedFiles = 0, scannedFiles = 0, failedFiles = [];
       return scan.reduce(function (chain, f) {
         return chain.then(function () {
           if (hits.length >= 50) return;
-          return _srcFetchLike(f).then(function (rr) { return rr.ok ? rr.text() : ''; }).then(function (txt) {
+          attemptedFiles++;
+          return _srcFetchLike(f).then(function (rr) {
+            if (!rr || !rr.ok) { failedFiles.push(f); return ''; }
+            scannedFiles++;
+            return rr.text();
+          }).then(function (txt) {
             var ls = txt.split('\n');
             for (var i = 0; i < ls.length && hits.length < 50; i++) { if (ls[i].indexOf(q) >= 0) hits.push({ file: f, line: i + 1, text: ls[i].trim().slice(0, 180) }); }
-          }).catch(function () {});
+          }).catch(function () {
+            if (failedFiles.indexOf(f) < 0) failedFiles.push(f);
+          });
         });
-      }, Promise.resolve()).then(function () { return { ok: true, query: q, scannedFiles: scan.length, matchedTotal: files.length, hits: hits }; });
+      }, Promise.resolve()).then(function () {
+        if (!scannedFiles && attemptedFiles) {
+          var unavailable = _sourceUnavailable('source-manifest.json', '清单中的源码文件均无法读取');
+          return { ok: false, errorCode: unavailable.code, query: q, attemptedFiles: attemptedFiles, failedFiles: failedFiles, reason: unavailable.message };
+        }
+        return { ok: true, query: q, scannedFiles: scannedFiles, attemptedFiles: attemptedFiles, failedFiles: failedFiles, matchedTotal: files.length, candidateFiles: scanFiles.length, hits: hits };
+      });
     }).catch(function (e) { return { ok: false, reason: 'grep \u51fa\u9519\uff1a' + ((e && e.message) || e) }; });
   }
 
   // D1 \u00b7 \u8001\u7f16\u8f91\u5668\u5404\u90e8\u5206 AI \u751f\u6210\u8303\u5f0f\uff08\u5b9e\u65f6\u8bfb editor-fullgen.js \u7684 33 \u4e2a\u751f\u6210\u6b65\uff0c\u96f6\u590d\u5236\u96f6\u6f02\u79fb\uff09\u3002
   function _genReferenceTool(part, worldKind) {
-    if (typeof fetch !== 'function') return Promise.resolve({ ok: false, reason: '\u4ec5\u6d4f\u89c8\u5668\u5185\u53ef\u7528' });
+    if (!_sourceHasChannel()) {
+      var unavailable = _sourceUnavailable('source-manifest.json', '当前页面没有可用的桌面文件桥或 HTTP(S) 源码通道');
+      return Promise.resolve({ ok: false, errorCode: unavailable.code, path: unavailable.path, reason: unavailable.message });
+    }
     // \u865a\u6784/\u67b6\u7a7a\u4e16\u754c\u89c2\uff1a\u8001\u7f16\u8f91\u5668\u8303\u5f0f\u6309\u53f2\u5b9e\u5267\u672c\u5199\u5c31\uff0c\u4ec5\u501f\u9274\u5b57\u6bb5\u5f62\u72b6/\u8bbe\u5b9a\u6df1\u5ea6\uff0c\u53f2\u5b9e\u8003\u636e\u8981\u6c42\u987b\u4e2d\u548c\u3002
     var fictionNote = worldKind === 'fictional'
       ? '\uff08\u6ce8\u610f\uff1a\u672c\u5267\u672c\u662f\u3010\u865a\u6784/\u67b6\u7a7a\u4e16\u754c\u89c2\u3011\u3002\u4ee5\u4e0a\u8303\u5f0f\u6309\u53f2\u5b9e\u5267\u672c\u5199\u5c31\uff0c\u4f60\u53ea\u501f\u9274\u5176\u5b57\u6bb5\u5f62\u72b6\u3001\u8bbe\u5b9a\u6df1\u5ea6\u3001\u6570\u503c\u533a\u95f4\uff1b\u5176\u4e2d\u300c\u51e1\u300a\u4e8c\u5341\u56db\u53f2\u300b\u6709\u4f20\u2192type\u5fc5\u987bhistorical\u300d\u300cbio\u987b\u5f15\u6b63\u53f2\u53f2\u6599\u300d\u300c\u6570\u503c\u5fc5\u987b\u57fa\u4e8e\u53f2\u5b9e\u300d\u7b49\u771f\u5b9e\u5386\u53f2\u8003\u636e\u8981\u6c42\u4e00\u5f8b\u5ffd\u7565\u2014\u2014\u4eba\u7269\u6309\u539f\u521b\u521b\u4f5c\u3001type \u4e00\u5f8b\u586b "fictional"\u3001\u6570\u503c\u6309\u8be5\u4e16\u754c\u8bbe\u5b9a\u81ea\u6d3d\u8bc4\u4f30\u3001bio \u5199\u539f\u521b\u5c0f\u4f20\u4e0d\u5fc5\u5f15\u53f2\u6599\u3002\uff09'
@@ -2058,9 +2268,12 @@
         var sv = surfaces || _getFieldSurfaces();
         if (!sv.length) return { ok: false, reason: '\u5f53\u524d\u73af\u5883\u65e0\u6e38\u620f\u5b57\u6bb5\u5951\u7ea6\uff08RUNTIME_FIELD_SURFACES \u672a\u66b4\u9732\uff09' };
         if (input.field) {
-          var hit = sv.filter(function (s) { return s && s.field === input.field; });
-          if (!hit.length) return { ok: true, field: input.field, inContract: false, note: '\u5b57\u6bb5\u300c' + input.field + '\u300d\u4e0d\u5728\u6e38\u620f\u5b57\u6bb5\u5951\u7ea6\u4e2d\u2014\u2014\u53ef\u80fd\u662f\u81ea\u5b9a\u4e49/\u6269\u5c55\u5b57\u6bb5\uff0c\u6b63\u5f0f\u6e38\u620f\u4e0d\u76f4\u63a5\u8bfb\u53d6\u3002' };
-          return { ok: true, field: input.field, inContract: true, contracts: hit.map(function (s) { return { name: s.title, required: !!s.required, module: s.moduleId, gameUse: s.detail || '', usedByScenarios: s.sources || [] }; }) };
+          var requestedField = String(input.field).trim();
+          var candidates = _fieldCandidates(requestedField);
+          var canonicalField = candidates.filter(function (f) { return sv.some(function (s) { return s && s.field === f; }); })[0] || requestedField;
+          var hit = sv.filter(function (s) { return s && s.field === canonicalField; });
+          if (!hit.length) return { ok: true, field: requestedField, inContract: false, note: '\u5b57\u6bb5\u300c' + requestedField + '\u300d\u4e0d\u5728\u6e38\u620f\u5b57\u6bb5\u5951\u7ea6\u4e2d\u2014\u2014\u53ef\u80fd\u662f\u81ea\u5b9a\u4e49/\u6269\u5c55\u5b57\u6bb5\uff0c\u6b63\u5f0f\u6e38\u620f\u4e0d\u76f4\u63a5\u8bfb\u53d6\u3002' };
+          return { ok: true, field: canonicalField, requestedField: requestedField, canonicalField: canonicalField, inContract: true, contracts: hit.map(function (s) { return { name: s.title, required: !!s.required, module: s.moduleId, gameUse: s.detail || '', usedByScenarios: s.sources || [] }; }) };
         }
         return { ok: true, count: sv.length, fields: sv.map(function (s) { return s.field + (s.title ? '(' + s.title + ')' : '') + (s.required ? '\u00b7\u5fc5\u9700' : ''); }) };
       }
@@ -2138,9 +2351,16 @@
       }
       case 'describeSchema': {
         if (!input.kind) return { ok: true, availableKinds: Object.keys(ENTITY_TEMPLATES) };
-        var tmpl = ENTITY_TEMPLATES[input.kind];
-        if (!tmpl) return { ok: false, reason: '未知实体类型: ' + input.kind + '（可选: ' + Object.keys(ENTITY_TEMPLATES).join('/') + '）' };
-        return { ok: true, kind: input.kind, template: tmpl, fields: Object.keys(tmpl) };
+        var requestedKind = String(input.kind).trim();
+        var canonicalKind = _resolveEntityKind(requestedKind);
+        var tmpl = canonicalKind && ENTITY_TEMPLATES[canonicalKind];
+        if (!tmpl) return { ok: false, reason: '未知实体类型: ' + requestedKind + '（可选: ' + Object.keys(ENTITY_TEMPLATES).join('/') + '；官制可用 office/officeTree/官职图）' };
+        var note = canonicalKind === 'office'
+          ? 'officeTree 是数组；此处返回一个官方部门节点形状，positions[] 是官职，subs[] 是下级部门。'
+          : (canonicalKind === 'officePosition' ? 'officeTree[].positions[] 的官方官职条目形状。' : '');
+        var outSchema = { ok: true, kind: requestedKind, canonicalKind: canonicalKind, template: tmpl, fields: Object.keys(tmpl) };
+        if (note) outSchema.note = note;
+        return outSchema;
       }
       case 'bulkAdd': {
         var items = Array.isArray(input.items) ? input.items : [];

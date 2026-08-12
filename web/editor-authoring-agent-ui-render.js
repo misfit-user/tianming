@@ -102,7 +102,7 @@
   }
 
   // 维度2 · 把工具调用 / diff 渲染成玩家看得懂的中文（rendering only · 两编辑器同享）。
-  var _COLL_CN = { characters: '人物', factions: '势力', parties: '党派', classes: '阶层', items: '物品', events: '事件', families: '家族', cities: '城市', traitDefinitions: '特质', adminHierarchy: '行政区划', military: '军务', variables: '变量', relations: '关系', openingLetters: '开场信', government: '官制', goals: '目标' };
+  var _COLL_CN = { characters: '人物', factions: '势力', parties: '党派', classes: '阶层', items: '物品', events: '事件', families: '家族', cities: '城市', traitDefinitions: '特质', adminHierarchy: '行政区划', military: '军务', variables: '变量', relations: '关系', openingLetters: '开场信', government: '官制', officeTree: '官职树', officeConfig: '官制成本', goals: '目标' };
   function _shortVal(v) {
     if (v == null) return '空';
     if (typeof v === 'object') return String(v.name || v.id || v.title || (Array.isArray(v) ? (v.length + ' 项') : JSON.stringify(v))).slice(0, 40);
@@ -128,6 +128,11 @@
       case 'renameEntity': return '✎ 改名「' + (i.oldName || '') + '」→「' + (i.newName || '') + '」' + (r.changed != null ? '（联动 ' + r.changed + ' 处）' : '');
       case 'listCollection': return '浏览 ' + (_COLL_CN[i.collection] || i.collection || '') + (r.count != null ? '（共 ' + r.count + '）' : '');
       case 'describeSchema': return '查字段形状 ' + (i.kind || '(全部)');
+      case 'fieldContract': return '查运行契约 ' + (_COLL_CN[i.field] || i.field || '(全部)') + (r.canonicalField && r.canonicalField !== i.field ? '（按 ' + r.canonicalField + '）' : '');
+      case 'listSource': return '列源码清单' + (i.filter ? '「' + i.filter + '」' : '') + (r.matched != null ? '（命中 ' + r.matched + '）' : '');
+      case 'grepSource': return '搜源码「' + (i.query || '') + '」' + (r.hits ? '（命中 ' + r.hits.length + '）' : '');
+      case 'readSource': return '读源码 ' + (i.path || '');
+      case 'genReference': return '查生成范式 ' + (i.part || '(全部)');
       case 'listGaps': return '查规格缺口' + (r.requiredMissing ? '（必需缺 ' + r.requiredMissing.length + '）' : '');
       case 'validateDraft': return '校验' + (r.ok === false ? '：发现 ' + ((r.violations || []).length) + ' 处问题' : '：通过');
       case 'preflight': return '运行时体检' + (r.bootable === false ? '：' + ((r.blockers || []).length) + ' 处阻塞' : (r.bootable === true ? '：可运行' : ''));

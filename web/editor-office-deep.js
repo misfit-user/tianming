@@ -234,7 +234,7 @@
     callFn({ prompt: prompt, expectJson: true }).then(function(res) {
       try {
         var txt = (typeof res === 'string') ? res : (res.text || res.content || JSON.stringify(res));
-        var m = txt.match(/\{[\s\S]*\}/);
+        var m = extractJSONMatch(txt, 'object');
         var data = JSON.parse(m ? m[0] : txt);
         // 回填
         var set = function(id, v){ var el = document.getElementById(id); if (el && v !== undefined && v !== null) el.value = v; };

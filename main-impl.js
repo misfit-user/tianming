@@ -6,12 +6,14 @@
  */
 
 // 引入 Electron 和 Node.js 的模块
-const { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol, net, session } = require('electron');
+const { app, BrowserWindow, ipcMain: electronIpcMain, dialog, shell, Menu, protocol, net, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
-const { pathToFileURL } = require('url');
+const dns = require('dns').promises;
+const nodeNet = require('net');
+const { pathToFileURL, fileURLToPath } = require('url');
 const AdmZip = require('adm-zip');
 const { autoUpdater } = require('electron-updater');
 
@@ -20,7 +22,7 @@ const { autoUpdater } = require('electron-updater');
 // ============================================================
 
 // 存档保存位置（项目目录下）
-// 2026-06-10·热更 main (_app_main.js) 下 __dirname = 热更版本目录·安装包资源须锚 app.getAppPath()
+// 安装包资源始终锚定 app.getAppPath()，不依赖进程工作目录。
 //   （app 模块 require 时即可用·函数声明提升使 bundledAppRoot 在此可调）
 const APP_ROOT_DIR = (function () {
   try {
@@ -55,6 +57,10 @@ const ACCOUNT_SESSION_FILE = path.join(CONTENT_DIR, 'account-session.json');
 const DEFAULT_HOT_UPDATE_FEED_URL = 'https://api.themisfitserspeople.top/tianming/hot/hot-latest.json';
 const DEFAULT_WORKSHOP_CATALOG_URL = 'https://api.themisfitserspeople.top/tianming-api/workshop/catalog';
 const DEFAULT_ONLINE_API_URL = 'https://api.themisfitserspeople.top/tianming-api/';
+const HOT_UPDATE_APP_ID = 'com.tianming.history';
+const HOT_UPDATE_CHANNEL = 'stable';
+const HOT_UPDATE_PUBLIC_KEY_FILE = path.join(APP_ROOT_DIR, 'resources', 'hot-update-public-key.pem');
+const WORKSHOP_CATALOG_AUTHORIZATIONS = new Map();
 
 // ============================================================
 //  调试日志 (debug logger)·2026-05-28
@@ -149,19 +155,63 @@ function sanitize(name) {
   return /^\.+$/.test(s) ? '_' : s;
 }
 
-// 回合号段消毒：只允许数字·防 '../' 路径穿越（saveName 已 sanitize·turn 之前漏网，见审核报告 P1）
+function stableStorageKey(name) {
+  const raw = String(name == null ? '' : name);
+  if (!raw.trim()) throw new Error('名称不能为空');
+  const stem = sanitize(raw).replace(/[. ]+$/g, '_').substring(0, 72) || '_';
+  const digest = crypto.createHash('sha256').update(raw, 'utf8').digest('hex').slice(0, 16);
+  return stem + '--' + digest;
+}
+
+function isSafeStorageKey(key) {
+  key = String(key == null ? '' : key);
+  return key.length > 18 && key.length <= 100 && /^[^<>:"/\\|?*]+--[0-9a-f]{16}$/.test(key)
+    && path.basename(key) === key && key !== '.' && key !== '..';
+}
+
+function saveFileRef(ref) {
+  const storageKey = ref && typeof ref === 'object' ? String(ref.storageKey || '') : '';
+  if (storageKey) {
+    if (!isSafeStorageKey(storageKey)) throw new Error('存档标识非法');
+    return { key: storageKey, path: path.join(SAVE_DIR, storageKey + '.json'), legacy: false };
+  }
+  const displayName = String(ref == null ? '' : ref);
+  const key = stableStorageKey(displayName);
+  const canonical = path.join(SAVE_DIR, key + '.json');
+  if (fs.existsSync(canonical)) return { key, path: canonical, legacy: false };
+  // 只读兼容旧版无 hash 文件；新写入一律使用 canonical key，消除 sanitize 碰撞。
+  const legacy = path.join(SAVE_DIR, sanitize(displayName) + '.json');
+  if (fs.existsSync(legacy)) return { key: path.basename(legacy, '.json'), path: legacy, legacy: true };
+  return { key, path: canonical, legacy: false };
+}
+
+function turnDataRoot(saveName, forWrite) {
+  const canonical = path.join(TURN_DATA_DIR, stableStorageKey(saveName));
+  if (forWrite || fs.existsSync(canonical)) return canonical;
+  const legacy = path.join(TURN_DATA_DIR, sanitize(saveName));
+  return fs.existsSync(legacy) ? legacy : canonical;
+}
+
+// 回合号段严格规范化：拒绝负数、浮点、指数、前导零和混入字符，
+// 防止 -3→3、"3.5"→35 一类不同输入别名到同一目录。
 function turnSeg(turn) {
-  const s = String(turn).replace(/[^0-9]/g, '');
-  if (!s) throw new Error('非法回合号: ' + turn);
-  return s;
+  const raw = typeof turn === 'number' ? turn : String(turn == null ? '' : turn).trim();
+  if (typeof raw === 'number') {
+    if (!Number.isSafeInteger(raw) || raw < 0 || raw > 10000000) throw new Error('非法回合号: ' + turn);
+    return String(raw);
+  }
+  if (!/^(0|[1-9][0-9]*)$/.test(raw)) throw new Error('非法回合号: ' + turn);
+  const n = Number(raw);
+  if (!Number.isSafeInteger(n) || n > 10000000) throw new Error('非法回合号: ' + turn);
+  return String(n);
 }
 
 function readJsonSafe(file, fallback) {
   try {
-    if (!fs.existsSync(file)) return fallback;
     return JSON.parse(fs.readFileSync(file, 'utf-8'));
   } catch (e) {
-    return fallback;
+    if (e && e.code === 'ENOENT') return fallback;
+    throw e;
   }
 }
 
@@ -173,9 +223,25 @@ function writeJson(file, data) {
 // 2026-06-10·原子写（tmp + rename·同目录 NTFS 原子）·热更状态文件写一半掉电不再损毁
 function writeJsonAtomic(file, data) {
   ensureWritableDir(path.dirname(file));
-  const tmp = file + '.tmp-' + process.pid;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf-8');
-  fs.renameSync(tmp, file);
+  writeFileAtomic(file, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+function writeFileAtomic(file, data, encoding) {
+  ensureWritableDir(path.dirname(file));
+  const tmp = file + '.tmp-' + process.pid + '-' + crypto.randomUUID();
+  let fd = null;
+  try {
+    fd = fs.openSync(tmp, 'wx');
+    fs.writeFileSync(fd, data, encoding);
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+    fd = null;
+    fs.renameSync(tmp, file);
+  } catch (e) {
+    if (fd !== null) { try { fs.closeSync(fd); } catch (_) {} }
+    try { fs.rmSync(tmp, { force: true }); } catch (_) {}
+    throw e;
+  }
 }
 
 function scenarioFileName(filename) {
@@ -268,6 +334,54 @@ function isInsideDir(parent, target) {
   return rel === '' || (!!rel && !rel.startsWith('..') && !path.isAbsolute(rel));
 }
 
+function isTrustedRendererUrl(rawUrl) {
+  try {
+    const parsed = new URL(String(rawUrl || ''));
+    if (parsed.protocol !== 'file:') return false;
+    const target = fileURLToPath(parsed);
+    const roots = [getBaseWebRoot(), getActiveWebRoot()].filter(Boolean);
+    return roots.some(root => isInsideDir(root, target));
+  } catch (_) {
+    return false;
+  }
+}
+
+function assertTrustedIpcSender(event) {
+  const frame = event && event.senderFrame;
+  const sender = event && event.sender;
+  if (!frame || !sender || frame !== sender.mainFrame || frame.parent) {
+    throw new Error('IPC rejected: sender must be the trusted top-level renderer frame');
+  }
+  if (!isTrustedRendererUrl(frame.url)) {
+    throw new Error('IPC rejected: untrusted renderer URL');
+  }
+}
+
+function createTrustedIpcMain(rawIpcMain) {
+  return {
+    handle(channel, listener) {
+      return rawIpcMain.handle(channel, function (event) {
+        assertTrustedIpcSender(event);
+        return listener.apply(null, arguments);
+      });
+    },
+    on(channel, listener) {
+      return rawIpcMain.on(channel, function (event) {
+        try {
+          assertTrustedIpcSender(event);
+          return listener.apply(null, arguments);
+        } catch (error) {
+          console.warn('[ipc-security] rejected sync IPC ' + channel + '·' + (error && error.message || error));
+          event.returnValue = { success: false, error: 'IPC source rejected' };
+        }
+      });
+    }
+  };
+}
+
+// Every registered IPC entry point goes through the same sender-frame gate.
+const ipcMain = createTrustedIpcMain(electronIpcMain);
+
 function safeRmDir(target, root) {
   if (!isInsideDir(root, target)) throw new Error('Refuse to remove path outside managed directory');
   fs.rmSync(target, { recursive: true, force: true });
@@ -286,10 +400,57 @@ function compareVersions(a, b) {
   return 0;
 }
 
-// 2026-06-10·安装包根锚点·热更 main (_app_main.js) 下 __dirname = 热更版本目录·
-//   安装包内资源（web/、preload.js shim、package.json、scenarios/）必须锚到 app.getAppPath()
-//   （= 启动入口 main.js shim 所在的 asar/app 根·无论 main 实现从哪加载都不变）·
-//   否则热更 main 一上线·zip 兜底基线 / preload shim / 版本读取 / stale 回退全部断链
+let _hotUpdatePublicKey = null;
+function getHotUpdatePublicKey() {
+  if (_hotUpdatePublicKey) return _hotUpdatePublicKey;
+  const override = process.env.TIANMING_TEST_EXPORTS && process.env.TIANMING_HOT_UPDATE_PUBLIC_KEY
+    ? path.resolve(process.env.TIANMING_HOT_UPDATE_PUBLIC_KEY)
+    : HOT_UPDATE_PUBLIC_KEY_FILE;
+  if (!fs.existsSync(override)) throw new Error('应用缺少固定热更新公钥');
+  _hotUpdatePublicKey = crypto.createPublicKey(fs.readFileSync(override));
+  return _hotUpdatePublicKey;
+}
+
+function getHotUpdateKeyId(key) {
+  const der = key.export({ type: 'spki', format: 'der' });
+  return crypto.createHash('sha256').update(der).digest('hex').slice(0, 24);
+}
+
+function verifyAuthenticatedUpdateDocument(document, expectedType) {
+  const allowUnsignedTest = !!process.env.TIANMING_TEST_EXPORTS
+    || (!app.isPackaged && process.env.TIANMING_ALLOW_UNSIGNED_HOT_UPDATE === '1');
+  const auth = document && document.auth;
+  if (!auth) {
+    if (allowUnsignedTest) return document;
+    throw new Error('热更新文档缺少 Ed25519 发布者签名');
+  }
+  if (auth.algorithm !== 'Ed25519') throw new Error('热更新签名算法不受信任');
+  if (typeof auth.payload !== 'string' || typeof auth.signature !== 'string') throw new Error('热更新签名字段不完整');
+  const payloadBytes = Buffer.from(auth.payload, 'base64');
+  const signature = Buffer.from(auth.signature, 'base64');
+  if (!payloadBytes.length || signature.length !== 64
+      || payloadBytes.toString('base64') !== auth.payload
+      || signature.toString('base64') !== auth.signature) {
+    throw new Error('热更新签名编码非法');
+  }
+  const publicKey = getHotUpdatePublicKey();
+  if (auth.keyId !== getHotUpdateKeyId(publicKey)) throw new Error('热更新签名 keyId 不匹配');
+  if (!crypto.verify(null, payloadBytes, publicKey, signature)) throw new Error('热更新发布者签名验证失败');
+  let payload;
+  try { payload = JSON.parse(payloadBytes.toString('utf8')); }
+  catch (_) { throw new Error('热更新已签名载荷不是有效 JSON'); }
+  if (!payload || payload.type !== expectedType) throw new Error('热更新已签名载荷 type 不匹配');
+  if (payload.appId !== HOT_UPDATE_APP_ID) throw new Error('热更新 appId 不匹配');
+  if (payload.channel !== HOT_UPDATE_CHANNEL) throw new Error('热更新 channel 不匹配');
+  const expiresAt = Date.parse(payload.expiresAt || '');
+  if (!Number.isFinite(expiresAt) || expiresAt < Date.now() - 5 * 60 * 1000) throw new Error('热更新签名已过期或缺少有效期');
+  const outer = Object.assign({}, document);
+  delete outer.auth;
+  if (JSON.stringify(outer) !== JSON.stringify(payload)) throw new Error('热更新签名外层字段与载荷不一致');
+  return payload;
+}
+
+// 安装包根锚点：web、preload、package.json 与 scenarios 均从 app 根读取。
 function bundledAppRoot() {
   try {
     const p = app.getAppPath && app.getAppPath();
@@ -429,19 +590,6 @@ function isStrictRendererUpgrade(remoteVersion) {
 function getActiveWebRoot() {
   const active = getActiveHotUpdate();
   return active.active ? active.root : getBaseWebRoot();
-}
-
-// 2026-05-23·preload 也可热更·从 active hot dir 找 _app_preload.js·main shim 通过 additionalArguments 传给 preload shim
-//   active hot 判定与 getActiveHotUpdate 一致 (gate enabled + version > buildVersion)
-//   返回·string·有 hot _app_preload.js 时 absolute path·没 hot 时 ''
-function getHotPreloadCandidate() {
-  try {
-    const active = getActiveHotUpdate();
-    if (!active.active || !active.root) return '';
-    const candidate = path.join(active.root, '_app_preload.js');
-    if (fs.existsSync(candidate)) return candidate;
-  } catch (_) {}
-  return '';
 }
 
 function getHotUpdatePublicStatus() {
@@ -810,7 +958,9 @@ function registerContentProtocol() {
 function isAllowedRemoteUrl(rawUrl) {
   const parsed = new URL(rawUrl);
   const isLocalHttp = parsed.protocol === 'http:' && /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(parsed.hostname);
-  return parsed.protocol === 'https:' || isLocalHttp;
+  if (parsed.username || parsed.password) return false;
+  if (parsed.protocol === 'https:' && parsed.port && parsed.port !== '443') return false;
+  return parsed.protocol === 'https:' || (isLocalHttp && (!app.isPackaged || !!process.env.TIANMING_TEST_EXPORTS));
 }
 
 function resolveRemoteUrl(rawUrl, baseUrl) {
@@ -819,28 +969,173 @@ function resolveRemoteUrl(rawUrl, baseUrl) {
   return resolved;
 }
 
+function remoteHostname(parsed) {
+  return String(parsed && parsed.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+}
+
+function isPrivateNetworkAddress(address) {
+  const raw = String(address || '').toLowerCase().split('%')[0];
+  if (nodeNet.isIPv4(raw)) {
+    const p = raw.split('.').map(Number);
+    return p[0] === 0 || p[0] === 10 || p[0] === 127
+      || (p[0] === 100 && p[1] >= 64 && p[1] <= 127)
+      || (p[0] === 169 && p[1] === 254)
+      || (p[0] === 172 && p[1] >= 16 && p[1] <= 31)
+      || (p[0] === 192 && (p[1] === 0 || p[1] === 168))
+      || (p[0] === 198 && (p[1] === 18 || p[1] === 19 || (p[1] === 51 && p[2] === 100)))
+      || (p[0] === 203 && p[1] === 0 && p[2] === 113)
+      || p[0] >= 224
+      || raw === '168.63.129.16';
+  }
+  if (nodeNet.isIPv6(raw)) {
+    if (raw === '::' || raw === '::1') return true;
+    if (/^(fc|fd|fe8|fe9|fea|feb|ff)/.test(raw) || raw.startsWith('2001:db8:')) return true;
+    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(raw);
+    return !!(mapped && isPrivateNetworkAddress(mapped[1]));
+  }
+  return true;
+}
+
+async function assertSafeRemoteUrl(rawUrl) {
+  const resolved = resolveRemoteUrl(rawUrl);
+  const parsed = new URL(resolved);
+  const hostname = remoteHostname(parsed);
+  const localDev = !app.isPackaged && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname);
+  if (localDev || (process.env.TIANMING_TEST_EXPORTS && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname))) return resolved;
+  // 生产网络能力不接受 IP literal。域名需经过下方全部 A/AAAA 记录检查，
+  // 避免 127.0.0.1、metadata 与保留网段通过十六进制/IPv6 写法绕过。
+  if (nodeNet.isIP(hostname)) throw new Error('远程地址不允许直接使用 IP，已拒绝');
+  let records;
+  try { records = await dns.lookup(hostname, { all: true, verbatim: true }); }
+  catch (error) { throw new Error('远程地址 DNS 解析失败: ' + (error && error.message || error)); }
+  if (!records.length || records.some(record => isPrivateNetworkAddress(record.address))) {
+    throw new Error('远程地址 DNS 解析到私网或保留地址，已拒绝');
+  }
+  return resolved;
+}
+
+async function fetchRemoteResponse(rawUrl, init = {}, maxRedirects = 5) {
+  let current = resolveRemoteUrl(rawUrl);
+  const originalMethod = String(init.method || 'GET').toUpperCase();
+  const initialOrigin = new URL(current).origin;
+  for (let hop = 0; hop <= maxRedirects; hop++) {
+    current = await assertSafeRemoteUrl(current);
+    const requestInit = Object.assign({}, init);
+    const timeoutMs = Math.max(1000, Math.min(120000, Number(requestInit.timeoutMs || 30000)));
+    delete requestInit.timeoutMs;
+    const externalSignal = requestInit.signal;
+    const controller = new AbortController();
+    let externalAbort = null;
+    let requestSignal = controller.signal;
+    if (externalSignal) {
+      if (externalSignal.aborted) controller.abort();
+      else if (typeof AbortSignal.any === 'function') {
+        // Keep the caller's signal attached for the entire response-body lifetime.
+        // Removing a hand-wired listener as soon as headers arrive makes download
+        // idle-timeout aborts unable to stop a stalled body stream.
+        requestSignal = AbortSignal.any([controller.signal, externalSignal]);
+      } else {
+        externalAbort = () => controller.abort();
+        externalSignal.addEventListener('abort', externalAbort, { once: true });
+      }
+    }
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let response;
+    try {
+      response = await net.fetch(current, Object.assign(requestInit, {
+        signal: requestSignal,
+        redirect: 'manual',
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        bypassCustomProtocolHandlers: true
+      }));
+    } finally {
+      clearTimeout(timer);
+      // Electron 33 provides AbortSignal.any. The fallback listener is one-shot
+      // and intentionally remains through body consumption so caller aborts work.
+    }
+    if (![301, 302, 303, 307, 308].includes(response.status)) return { response, url: current };
+    if (hop === maxRedirects) throw new Error('远程地址重定向次数超过上限');
+    if (originalMethod !== 'GET' && originalMethod !== 'HEAD') throw new Error('非只读请求不允许重定向');
+    const location = response.headers.get('location');
+    if (!location) throw new Error('远程响应缺少重定向地址');
+    const next = resolveRemoteUrl(location, current);
+    if (new URL(next).origin !== initialOrigin) {
+      const headers = requestInit.headers || {};
+      const names = typeof headers.keys === 'function'
+        ? Array.from(headers.keys())
+        : (Array.isArray(headers) ? headers.map(row => row && row[0]) : Object.keys(headers));
+      if (names.some(name => /^(?:authorization|proxy-authorization|cookie|x-api-key)$/i.test(String(name || '')))) {
+        throw new Error('带凭据请求不允许跨源重定向');
+      }
+    }
+    current = next;
+  }
+  throw new Error('远程请求失败');
+}
+
+async function readRemoteTextLimited(resp, maxBytes, idleTimeoutMs = 30000) {
+  const limit = Math.max(1, Number(maxBytes) || 1);
+  const declared = Number(resp.headers && resp.headers.get && resp.headers.get('content-length') || 0);
+  if (declared > limit) throw new Error('远程响应超过大小上限');
+  if (!resp.body || typeof resp.body.getReader !== 'function') {
+    let timer;
+    const ab = await Promise.race([
+      resp.arrayBuffer(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('远程响应读取超时')), idleTimeoutMs); })
+    ]).finally(() => { if (timer) clearTimeout(timer); });
+    const buf = Buffer.from(ab);
+    if (buf.length > limit) throw new Error('远程响应超过大小上限');
+    return buf.toString('utf8');
+  }
+  const reader = resp.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      let timer;
+      const chunk = await Promise.race([
+        reader.read(),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('远程响应读取超时')), idleTimeoutMs); })
+      ]).finally(() => { if (timer) clearTimeout(timer); });
+      if (chunk.done) break;
+      const buf = Buffer.from(chunk.value);
+      total += buf.length;
+      if (total > limit) throw new Error('远程响应超过大小上限');
+      chunks.push(buf);
+    }
+  } finally {
+    try { await reader.cancel(); } catch (_) {}
+    try { reader.releaseLock(); } catch (_) {}
+  }
+  return Buffer.concat(chunks, total).toString('utf8');
+}
+
 async function fetchJsonRemote(rawUrl, maxBytes = 2 * 1024 * 1024) {
   const url = resolveRemoteUrl(rawUrl);
-  const resp = await net.fetch(url, { bypassCustomProtocolHandlers: true });
+  const fetched = await fetchRemoteResponse(url);
+  const resp = fetched.response;
   if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
-  const text = await resp.text();
-  if (Buffer.byteLength(text, 'utf-8') > maxBytes) throw new Error('远程 JSON 超过大小上限');
+  const text = await readRemoteTextLimited(resp, maxBytes);
   return JSON.parse(text);
 }
 
 async function requestJsonRemote(rawUrl, options = {}) {
   const url = resolveRemoteUrl(rawUrl);
   const method = String(options.method || 'GET').toUpperCase();
+  if (!/^(?:GET|HEAD|POST|PUT|PATCH|DELETE)$/.test(method)) throw new Error('远程请求方法不受允许');
   const headers = Object.assign({ Accept: 'application/json' }, options.headers || {});
-  const init = { method, headers, bypassCustomProtocolHandlers: true };
+  const init = { method, headers };
   if (options.body !== undefined) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
     init.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+    if (Buffer.byteLength(init.body, 'utf8') > 4 * 1024 * 1024) throw new Error('远程请求正文超过大小上限');
   }
-  const resp = await net.fetch(url, init);
-  const text = await resp.text();
+  const fetched = await fetchRemoteResponse(url, init);
+  const resp = fetched.response;
   const maxBytes = options.maxBytes || 2 * 1024 * 1024;
-  if (Buffer.byteLength(text || '', 'utf-8') > maxBytes) throw new Error('远程 JSON 超过大小上限');
+  const text = await readRemoteTextLimited(resp, maxBytes);
   let data = null;
   try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { raw: text }; }
   if (!resp.ok) {
@@ -903,7 +1198,8 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
   _armIdle();
   let resp;
   try {
-    resp = await net.fetch(url, { bypassCustomProtocolHandlers: true, headers, signal: _ac.signal });
+    const fetched = await fetchRemoteResponse(url, { headers, signal: _ac.signal });
+    resp = fetched.response;
   } finally {
     _disarmIdle();
   }
@@ -987,8 +1283,8 @@ async function _downloadRemoteFileOnce(url, dest, maxBytes, onProgress, opts = {
   return { path: dest, size: buf.length, sha256: sha256File(dest) };
 }
 
-function getOnlineApiUrl(options = {}) {
-  const raw = String(options.apiUrl || options.url || DEFAULT_ONLINE_API_URL || '').trim();
+function getOnlineApiUrl() {
+  const raw = String(DEFAULT_ONLINE_API_URL || '').trim();
   if (!raw) return '';
   const resolved = resolveRemoteUrl(raw);
   return resolved.endsWith('/') ? resolved : resolved + '/';
@@ -1006,7 +1302,7 @@ function readAccountSession() {
   const session = readJsonSafe(ACCOUNT_SESSION_FILE, {});
   return {
     token: String(session.token || ''),
-    apiUrl: String(session.apiUrl || DEFAULT_ONLINE_API_URL),
+    apiUrl: String(DEFAULT_ONLINE_API_URL),
     user: session.user && typeof session.user === 'object' ? session.user : null,
     loggedInAt: session.loggedInAt || ''
   };
@@ -1016,7 +1312,7 @@ function writeAccountSession(session) {
   ensureSaveDir();
   writeJson(ACCOUNT_SESSION_FILE, {
     token: String(session.token || ''),
-    apiUrl: String(session.apiUrl || DEFAULT_ONLINE_API_URL),
+    apiUrl: String(DEFAULT_ONLINE_API_URL),
     user: session.user || null,
     loggedInAt: session.loggedInAt || new Date().toISOString()
   });
@@ -1028,9 +1324,8 @@ function clearAccountSession() {
   } catch (e) {}
 }
 
-function getAccountApiUrl(options = {}) {
-  const session = readAccountSession();
-  return getOnlineApiUrl({ apiUrl: options.apiUrl || session.apiUrl || DEFAULT_ONLINE_API_URL });
+function getAccountApiUrl() {
+  return getOnlineApiUrl();
 }
 
 function getAccountAuthHeaders(options = {}) {
@@ -1062,7 +1357,8 @@ function updateInfoSize(info) {
 function validateHotUpdateBundle(bundleDir) {
   const manifestPath = path.join(bundleDir, 'manifest.json');
   if (!fs.existsSync(manifestPath)) throw new Error('热更新包缺少 manifest.json');
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  const manifestDocument = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  const manifest = verifyAuthenticatedUpdateDocument(manifestDocument, 'tianming-hot-update');
   if (manifest.type !== 'tianming-hot-update') throw new Error('manifest.type 必须是 tianming-hot-update');
   const version = String(manifest.version || '').trim();
   if (!version) throw new Error('热更新包缺少 version');
@@ -1079,6 +1375,11 @@ function validateHotUpdateBundle(bundleDir) {
   files.forEach(item => {
     const rel = String(item.path || '').replace(/\\/g, '/');
     if (!rel || rel.startsWith('/') || rel.includes('..')) throw new Error('热更新文件路径非法: ' + rel);
+    if (/^(?:_app_main\.js|_app_preload\.js)$/i.test(rel)
+      || /(^|\/)node_modules(\/|$)/i.test(rel)
+      || /\.(?:node|exe|dll|msi|bat|cmd|ps1|vbs|com|scr|dylib|so)$/i.test(rel)) {
+      throw new Error('热更新不得包含 Electron/原生可执行代码: ' + rel);
+    }
     const ext = path.extname(rel).toLowerCase();
     if (!ALLOWED_HOT_UPDATE_EXTS.has(ext)) throw new Error('热更新包含未允许的文件类型: ' + rel);
     const src = path.resolve(bundleDir, rel);
@@ -1161,12 +1462,13 @@ async function _fetchIncrementalManifest(feedInfo) {
   // resolveRemoteUrl 把相对路径解析到 feed 同一目录·确保结尾 /
   let filesBaseUrl = resolveRemoteUrl(filesBaseUrlRaw, feedInfo.feedUrl);
   if (!filesBaseUrl.endsWith('/')) filesBaseUrl += '/';
-  const newManifest = await fetchJsonRemote(manifestUrl, 5 * 1024 * 1024);
+  const manifestDocument = await fetchJsonRemote(manifestUrl, 5 * 1024 * 1024);
+  const newManifest = verifyAuthenticatedUpdateDocument(manifestDocument, 'tianming-hot-update');
   if (newManifest.type !== 'tianming-hot-update') throw new Error('manifest type mismatch');
   if (String(newManifest.version || '').trim() !== feedInfo.version) throw new Error('manifest version != feed version');
   const newFiles = Array.isArray(newManifest.files) ? newManifest.files : [];
   if (!newFiles.length) throw new Error('manifest.files 空');
-  return { manifestUrl, filesBaseUrl, newManifest, newFiles };
+  return { manifestUrl, filesBaseUrl, manifestDocument, newManifest, newFiles };
 }
 
 async function installHotUpdate_incremental(feedInfo, currentState) {
@@ -1235,7 +1537,7 @@ async function installHotUpdate_rebaseline(feedInfo, currentState) {
 }
 
 async function _incrementalSyncFromReuseMap(feedInfo, plan, reuseSrcByPath, installedFrom) {
-  const { manifestUrl, filesBaseUrl, newManifest, newFiles } = plan;
+  const { manifestUrl, filesBaseUrl, manifestDocument, newManifest, newFiles } = plan;
   const toFetch = newFiles.filter(f => {
     const sha = String(f.sha256 || '').toLowerCase();
     return !sha || !reuseSrcByPath[String(f.path)];
@@ -1321,7 +1623,7 @@ async function _incrementalSyncFromReuseMap(feedInfo, plan, reuseSrcByPath, inst
     });
 
     // write manifest.json (required by validate)
-    writeJson(path.join(staging, 'manifest.json'), newManifest);
+    writeJson(path.join(staging, 'manifest.json'), manifestDocument);
 
     // validate + finalize·validate 会 sha-check 每个文件·hardlinked + fetched 都过一遍·安全
     const hot = validateHotUpdateBundle(staging);
@@ -1342,13 +1644,15 @@ async function _incrementalSyncFromReuseMap(feedInfo, plan, reuseSrcByPath, inst
   }
 }
 
-function getHotUpdateFeedUrl(options = {}) {
-  return String(options.feedUrl || options.url || DEFAULT_HOT_UPDATE_FEED_URL || '').trim();
+function getHotUpdateFeedUrl() {
+  const devOverride = !app.isPackaged ? String(process.env.TIANMING_DEV_HOT_UPDATE_FEED_URL || '').trim() : '';
+  return devOverride || String(DEFAULT_HOT_UPDATE_FEED_URL || '').trim();
 }
 
 async function readHotUpdateFeed(options = {}) {
   const feedUrl = resolveRemoteUrl(getHotUpdateFeedUrl(options));
-  const feed = await fetchJsonRemote(feedUrl, 1024 * 1024);
+  const feedDocument = await fetchJsonRemote(feedUrl, 1024 * 1024);
+  const feed = verifyAuthenticatedUpdateDocument(feedDocument, 'tianming-hot-update-feed');
   if (feed.type && feed.type !== 'tianming-hot-update-feed') throw new Error('hot update feed type mismatch');
   const version = String(feed.version || '').trim();
   if (!version) throw new Error('hot update feed missing version');
@@ -1751,24 +2055,25 @@ function createWindow() {
     fullscreen: true,
     autoHideMenuBar: true,
     webPreferences: {
-      // 2026-06-10·preload shim 只在安装包里（热更包只带 _app_preload.js）·热更 main 下 __dirname 指错地方
+      // preload 属于安装包信任边界，内容 OTA 不可替换。
       preload: path.join(bundledAppRoot(), 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      // 2026-05-23·sandbox: false·让 preload shim 能 require 外部文件 (hot dir 的 _app_preload.js / bundled preload-impl.js)
-      //   contextIsolation 仍 true·renderer 仍无法访问 preload 全局·安全模型仅 preload 信任域扩大
-      sandbox: false,
+      sandbox: true,
       spellcheck: false,
-      backgroundThrottling: false,
-      // 2026-05-23·把 hot _app_preload.js 路径 (有则) 透传给 preload shim·preload 进程读 process.argv 取
-      additionalArguments: (function(){
-        var hp = getHotPreloadCandidate();
-        return hp ? ['--hot-preload=' + hp] : [];
-      })()
+      backgroundThrottling: false
     },
     show: false,
     focusable: true,
     icon: path.join(bundledAppRoot(), 'web', 'icon.png'),
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-navigate', (event, targetUrl) => {
+    if (!isTrustedRendererUrl(targetUrl)) event.preventDefault();
+  });
+  mainWindow.webContents.on('will-redirect', (event, targetUrl) => {
+    if (!isTrustedRendererUrl(targetUrl)) event.preventDefault();
   });
 
   // 加载游戏网页：热更新启用时优先加载用户目录中已校验的 web 前端。
@@ -2048,10 +2353,11 @@ async function handleMenuImport() {
 ipcMain.handle('save-project', async (event, { filename, data }) => {
   try {
     ensureSaveDir();
-    const filepath = path.join(SAVE_DIR, sanitize(filename) + '.json');
+    const key = stableStorageKey(filename);
+    const filepath = path.join(SAVE_DIR, key + '.json');
     // 2026-06-10·紧凑写盘:同 auto-save·缩进占体积 55%·手动存档同步砍半
-    fs.writeFileSync(filepath, JSON.stringify(data), 'utf-8');
-    return { success: true, path: filepath };
+    writeFileAtomic(filepath, JSON.stringify(data), 'utf-8');
+    return { success: true, path: filepath, storageKey: key };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -2060,10 +2366,10 @@ ipcMain.handle('save-project', async (event, { filename, data }) => {
 // --- 存档：读取 ---
 ipcMain.handle('load-project', async (event, filename) => {
   try {
-    const filepath = path.join(SAVE_DIR, sanitize(filename) + '.json');
-    if (!fs.existsSync(filepath)) return { success: false, error: '文件不存在' };
-    const data = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-    return { success: true, data };
+    const ref = saveFileRef(filename);
+    if (!fs.existsSync(ref.path)) return { success: false, error: '文件不存在' };
+    const data = JSON.parse(fs.readFileSync(ref.path, 'utf-8'));
+    return { success: true, data, storageKey: ref.key };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -2079,17 +2385,23 @@ ipcMain.handle('list-saves', async () => {
         const fp = path.join(SAVE_DIR, f);
         const stats = fs.statSync(fp);
         let _saveMeta = null;
+        let parseError = '';
         try {
           const raw = fs.readFileSync(fp, 'utf-8');
           const parsed = JSON.parse(raw);
           if (parsed._saveMeta) _saveMeta = parsed._saveMeta;
-        } catch (e) {}
+        } catch (e) { parseError = String(e && e.message || e); }
+        const storageKey = f.replace(/\.json$/i, '');
         return {
-          name: f.replace('.json', ''),
+          name: (_saveMeta && typeof _saveMeta.name === 'string' && _saveMeta.name) || storageKey,
+          storageKey,
           size: stats.size,
           modified: stats.mtimeMs,
           modifiedStr: new Date(stats.mtimeMs).toLocaleString('zh-CN'),
-          _saveMeta
+          _saveMeta,
+          meta: _saveMeta,
+          corrupt: !!parseError,
+          error: parseError
         };
       })
       .sort((a, b) => b.modified - a.modified);
@@ -2102,8 +2414,8 @@ ipcMain.handle('list-saves', async () => {
 // --- 存档：删除 ---
 ipcMain.handle('delete-save', async (event, filename) => {
   try {
-    const filepath = path.join(SAVE_DIR, sanitize(filename) + '.json');
-    if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+    const ref = saveFileRef(filename);
+    if (fs.existsSync(ref.path)) fs.unlinkSync(ref.path);
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
@@ -2487,38 +2799,45 @@ ipcMain.handle('open-scenarios-dir', () => {
 ipcMain.handle('write-turn-data', async (event, { saveName, turn, data }) => {
   try {
     ensureSaveDir();
-    const saveRoot = path.join(TURN_DATA_DIR, sanitize(saveName));
+    const saveRoot = turnDataRoot(saveName, true);
     const turnDir = path.join(saveRoot, turnSeg(turn));
-    fs.mkdirSync(turnDir, { recursive: true });
+    const staging = turnDir + '.tmp-' + process.pid + '-' + crypto.randomUUID();
+    fs.mkdirSync(staging, { recursive: true });
 
-    // 1. 主上下文文件（兼容旧格式：如果data没有子结构，直接写入）
-    if (data.context) {
-      fs.writeFileSync(path.join(turnDir, 'context.json'), JSON.stringify(data.context, null, 2), 'utf-8');
-    } else {
-      // 兼容旧调用方式
-      fs.writeFileSync(path.join(turnDir, 'context.json'), JSON.stringify(data, null, 2), 'utf-8');
-    }
+    try {
+      // 1. 主上下文文件（兼容旧格式：如果data没有子结构，直接写入）
+      writeJson(path.join(staging, 'context.json'), data.context || data);
 
-    // 2. 玩家操作记录
-    if (data.playerInput) {
-      fs.writeFileSync(path.join(turnDir, 'player-input.json'), JSON.stringify(data.playerInput, null, 2), 'utf-8');
-    }
+      // 2. 玩家操作记录
+      if (data.playerInput) writeJson(path.join(staging, 'player-input.json'), data.playerInput);
 
-    // 3. AI推演全部结果（各Sub-call的原始返回值）
-    if (data.aiResults) {
-      fs.writeFileSync(path.join(turnDir, 'ai-results.json'), JSON.stringify(data.aiResults, null, 2), 'utf-8');
-    }
+      // 3. AI推演全部结果（各Sub-call的原始返回值）
+      if (data.aiResults) writeJson(path.join(staging, 'ai-results.json'), data.aiResults);
 
-    // 4. 变量资源变化文件
-    if (data.varChanges) {
-      fs.writeFileSync(path.join(turnDir, 'var-changes.json'), JSON.stringify(data.varChanges, null, 2), 'utf-8');
+      // 4. 变量资源变化文件
+      if (data.varChanges) writeJson(path.join(staging, 'var-changes.json'), data.varChanges);
+
+      // 整回合目录一次提交；失败时旧目录保持不变。
+      const backup = turnDir + '.bak-' + process.pid + '-' + crypto.randomUUID();
+      let movedOld = false;
+      try {
+        if (fs.existsSync(turnDir)) { fs.renameSync(turnDir, backup); movedOld = true; }
+        fs.renameSync(staging, turnDir);
+        if (movedOld) fs.rmSync(backup, { recursive: true, force: true });
+      } catch (commitErr) {
+        try { if (movedOld && !fs.existsSync(turnDir) && fs.existsSync(backup)) fs.renameSync(backup, turnDir); } catch (_) {}
+        throw commitErr;
+      }
+    } catch (stageErr) {
+      try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
+      throw stageErr;
     }
 
     // 5. 剧本快照（仅首回合或指定时保存）
     if (data.scenario) {
       const scenarioFile = path.join(saveRoot, 'scenario.json');
       if (!fs.existsSync(scenarioFile)) {
-        fs.writeFileSync(scenarioFile, JSON.stringify(data.scenario, null, 2), 'utf-8');
+        writeJsonAtomic(scenarioFile, data.scenario);
       }
     }
 
@@ -2526,7 +2845,7 @@ ipcMain.handle('write-turn-data', async (event, { saveName, turn, data }) => {
     if (data.refText) {
       const refFile = path.join(saveRoot, 'reference.txt');
       if (!fs.existsSync(refFile)) {
-        fs.writeFileSync(refFile, data.refText, 'utf-8');
+        writeFileAtomic(refFile, data.refText, 'utf-8');
       }
     }
 
@@ -2539,7 +2858,7 @@ ipcMain.handle('write-turn-data', async (event, { saveName, turn, data }) => {
 // 读取某存档某回合数据（返回该回合目录下所有文件）
 ipcMain.handle('read-turn-data', async (event, { saveName, turn }) => {
   try {
-    const turnDir = path.join(TURN_DATA_DIR, sanitize(saveName), turnSeg(turn));
+    const turnDir = path.join(turnDataRoot(saveName, false), turnSeg(turn));
     if (!fs.existsSync(turnDir)) return { success: false, error: '数据不存在' };
     const result = {};
     const files = fs.readdirSync(turnDir).filter(f => f.endsWith('.json'));
@@ -2558,16 +2877,16 @@ ipcMain.handle('read-turn-data', async (event, { saveName, turn }) => {
 // 批量读取多回合数据摘要（供AI打包推演用）
 ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn }) => {
   try {
-    const saveDir = path.join(TURN_DATA_DIR, sanitize(saveName));
+    const saveDir = turnDataRoot(saveName, false);
     if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
     const turns = [];
-    let _from = Math.floor(Number(fromTurn)), _to = Math.floor(Number(toTurn));
-    if (!Number.isFinite(_from) || !Number.isFinite(_to)) return { success: true, turns: [] };
+    let _from, _to;
+    try { _from = Number(turnSeg(fromTurn)); _to = Number(turnSeg(toTurn)); }
+    catch (_) { return { success: true, turns: [] }; }
     // 2026-07-09·加固：钳安全整数域 + 回合上限 + 跨度封顶
     //   防 (a) toTurn≫fromTurn 十亿级循环冻结主进程·(b) ≥2^53 时 t++ 自增停滞死循环·
     //   (c) 负 fromTurn 经 turnSeg 别名读错回合。上限 1e7 远超任何真实对局。
     if (!Number.isSafeInteger(_from) || !Number.isSafeInteger(_to)) return { success: true, turns: [] };
-    if (_from < 0) _from = 0;
     if (_to < _from) return { success: true, turns: [] };
     _from = Math.min(_from, 10000000);
     _to   = Math.min(_to, _from + 20000, 10000000);
@@ -2597,7 +2916,7 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
 // 列出某存档的所有回合
 ipcMain.handle('list-turn-data', async (event, saveName) => {
   try {
-    const saveDir = path.join(TURN_DATA_DIR, sanitize(saveName));
+    const saveDir = turnDataRoot(saveName, false);
     if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
     const turns = fs.readdirSync(saveDir)
       .filter(d => /^\d+$/.test(d))
@@ -2641,15 +2960,10 @@ ipcMain.handle('debug-log-info', () => ({ success: true, dir: LOG_DIR, file: _lo
 //  在线更新 IPC
 // ============================================================
 
-ipcMain.handle('update-check', async (event, options = {}) => {
+ipcMain.handle('update-check', async () => {
   try {
-    const feedUrl = String(options.feedUrl || options.url || getDefaultUpdateFeedUrl() || '').trim();
-    if (!feedUrl) return { success: false, error: '请先填写更新源地址（latest.yml 所在目录）。' };
-    const parsed = new URL(feedUrl);
-    const isLocalHttp = parsed.protocol === 'http:' && /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(parsed.hostname);
-    if (parsed.protocol !== 'https:' && !isLocalHttp) {
-      return { success: false, error: '更新源必须使用 HTTPS；本机调试允许 localhost HTTP。' };
-    }
+    const devOverride = !app.isPackaged ? String(process.env.TIANMING_DEV_INSTALLER_FEED_URL || '').trim() : '';
+    const feedUrl = resolveRemoteUrl(devOverride || getDefaultUpdateFeedUrl());
     ensureSaveDir();
     lastUpdateInfo = null;
     autoUpdater.setFeedURL({ provider: 'generic', url: feedUrl });
@@ -2789,9 +3103,7 @@ ipcMain.handle('hot-update-rollback', async () => {
 });
 
 ipcMain.handle('hot-update-reload', async () => {
-  // 2026-05-23·B1 修·main + preload 也热更后·loadFile 只重 renderer·main/preload 不换 (module cache 锁死)
-  //   必须完整重启 app·main shim 重新 detect hot _app_main / _app_preload·三层都新
-  //   游戏 state 全在 disk (saves / localStorage / IndexedDB)·重启安全·user 看 app 闪一下
+  // 重新启动确保 renderer 从刚安装的已验签内容目录加载；main/preload 始终使用安装包版本。
   try {
     setTimeout(() => {  // 让 IPC return 先发回去·renderer 拿到 ack 再被关
       try { app.relaunch(); app.exit(0); }
@@ -2920,29 +3232,37 @@ function installWorkshopPackFromDir(sourceDir, options = {}) {
 }
 
 async function readWorkshopCatalog(options = {}) {
-  const catalogUrl = resolveRemoteUrl(String(options.catalogUrl || options.url || DEFAULT_WORKSHOP_CATALOG_URL || '').trim());
+  const base = new URL(DEFAULT_WORKSHOP_CATALOG_URL);
+  const requested = new URL(String(options.catalogUrl || options.url || base.toString()).trim(), base);
+  if (requested.origin !== base.origin || requested.pathname !== base.pathname) {
+    throw new Error('工坊目录地址由应用固定，renderer 只能提交查询参数');
+  }
+  const catalogUrl = resolveRemoteUrl(requested.toString());
   const catalog = await fetchJsonRemote(catalogUrl, 4 * 1024 * 1024);
   if (catalog.type && catalog.type !== 'tianming-workshop-catalog') throw new Error('workshop catalog type mismatch');
   const packs = Array.isArray(catalog.packs) ? catalog.packs : [];
+  const publicPacks = packs.map(item => {
+    const packageRef = item.packageUrl || item.url || item.file || item.pack;
+    return {
+      id: normalizePackId(item.id || item.name || item.title || packageRef),
+      title: String(item.title || item.name || item.id || '未命名工坊包'),
+      version: String(item.version || '1.0.0'),
+      author: String(item.author || ''),
+      description: String(item.description || ''),
+      tags: Array.isArray(item.tags) ? item.tags.slice(0, 20).map(String) : [],
+      type: String(item.type || 'scenario'),
+      size: Number(item.size || item.bytes || 0) || 0,
+      sha256: String(item.sha256 || item.hash || '').toLowerCase(),
+      packageUrl: packageRef ? resolveRemoteUrl(String(packageRef), catalogUrl) : ''
+    };
+  }).filter(item => item.packageUrl && /^[0-9a-f]{64}$/.test(item.sha256));
+  WORKSHOP_CATALOG_AUTHORIZATIONS.clear();
+  publicPacks.forEach(item => WORKSHOP_CATALOG_AUTHORIZATIONS.set(item.packageUrl, item.sha256));
   return {
     catalogUrl,
     title: String(catalog.title || '天命创意工坊'),
     updatedAt: catalog.updatedAt || '',
-    packs: packs.map(item => {
-      const packageRef = item.packageUrl || item.url || item.file || item.pack;
-      return {
-        id: normalizePackId(item.id || item.name || item.title || packageRef),
-        title: String(item.title || item.name || item.id || '未命名工坊包'),
-        version: String(item.version || '1.0.0'),
-        author: String(item.author || ''),
-        description: String(item.description || ''),
-        tags: Array.isArray(item.tags) ? item.tags.slice(0, 20).map(String) : [],
-        type: String(item.type || 'scenario'),
-        size: Number(item.size || item.bytes || 0) || 0,
-        sha256: String(item.sha256 || item.hash || '').toLowerCase(),
-        packageUrl: packageRef ? resolveRemoteUrl(String(packageRef), catalogUrl) : ''
-      };
-    }).filter(item => item.packageUrl)
+    packs: publicPacks
   };
 }
 
@@ -2983,10 +3303,13 @@ ipcMain.handle('workshop-install-from-url', async (event, options = {}) => {
     ensureSaveDir();
     const packageUrl = resolveRemoteUrl(String(options.packageUrl || options.url || '').trim());
     if (!packageUrl) return { success: false, error: '缺少工坊包下载地址。' };
-    zipPath = path.join(WORKSHOP_DIR, 'downloads', 'tianming-workshop-' + Date.now() + '.tm-pack');
-    const fileInfo = await downloadRemoteFile(packageUrl, zipPath, 250 * 1024 * 1024);
+    const authorizedHash = WORKSHOP_CATALOG_AUTHORIZATIONS.get(packageUrl);
+    if (!authorizedHash) throw new Error('工坊包地址未获官方目录授权，请先刷新在线目录');
     const expectedHash = String(options.sha256 || options.hash || '').toLowerCase();
     if (!/^[0-9a-f]{64}$/.test(expectedHash)) throw new Error('工坊包缺少 sha256 校验值，拒绝安装（请更新工坊目录使其携带 hash）。');
+    if (expectedHash !== authorizedHash) throw new Error('工坊包 sha256 与官方目录不一致');
+    zipPath = path.join(WORKSHOP_DIR, 'downloads', 'tianming-workshop-' + Date.now() + '.tm-pack');
+    const fileInfo = await downloadRemoteFile(packageUrl, zipPath, 250 * 1024 * 1024);
     if (expectedHash !== fileInfo.sha256.toLowerCase()) throw new Error('工坊包 sha256 不一致');
     tempDir = extractZipToTemp(zipPath);
     return installWorkshopPackFromDir(tempDir, { overwrite: !!options.overwrite, source: packageUrl });
@@ -3143,113 +3466,8 @@ ipcMain.handle('get-app-info', () => ({
   platform: process.platform,
 }));
 
-// ============================================================
-//  不安全 TLS·中转站证书放行（2026-06-11）
-//  ── 背景 ──
-//   玩家 BYOK 用的第三方 API 中转站常证书配错（域名与访问地址不匹配 /
-//   自签名 / 证书链不全）→ Chromium 网络栈拒绝 → 渲染层 fetch 失败 →
-//   「所有有反代的中转站都用不了」。
-//  ── 设计（owner 拍板：开关 + 只放行玩家填的 API 地址）──
-//   • 默认严格（callback(false)）。仅当玩家在设置里开启开关、且请求 host
-//     精确命中玩家配置的中转站 host 时才放行（event.preventDefault + callback(true)）。
-//   • 官方域名（热更/账号/工坊）写死永不放行——纵深防御·杜绝 MITM 推恶意热更。
-//   • 配置经 IPC set-insecure-tls-config 由渲染层下发·并落盘 CONTENT_DIR·
-//     下次启动先读盘（覆盖渲染层尚未下发的启动窗口）。
-// ============================================================
-const INSECURE_TLS_FILE = path.join(CONTENT_DIR, 'insecure-tls-config.json');
-// 官方服务域名永不放行（即便白名单误含也拒绝）
-const INSECURE_TLS_OFFICIAL_DENY = ['api.themisfitserspeople.top', 'themisfitserspeople.top'];
-let _insecureTlsState = { enabled: false, hosts: [] };
-
-function _insecureTlsHostOf(u) {
-  try {
-    if (!u) return '';
-    var s = String(u).trim();
-    if (!s) return '';
-    // 已是裸 host（无协议/路径/端口分隔）直接用
-    if (s.indexOf('://') < 0 && s.indexOf('/') < 0 && s.indexOf(':') < 0) return s.toLowerCase();
-    var parsed = new URL(s.indexOf('://') >= 0 ? s : ('https://' + s));
-    return (parsed.hostname || '').toLowerCase();
-  } catch (e) { return ''; }
-}
-
-function _insecureTlsShouldBypass(url) {
-  var st = _insecureTlsState;
-  if (!st || !st.enabled || !st.hosts || !st.hosts.length) return false;
-  var host = _insecureTlsHostOf(url);
-  if (!host) return false;
-  if (INSECURE_TLS_OFFICIAL_DENY.indexOf(host) >= 0) return false;  // 官方域名永不放行
-  for (var i = 0; i < st.hosts.length; i++) {
-    if (host === st.hosts[i]) return true;
-  }
-  return false;
-}
-
-// 启动先读盘·让渲染层尚未下发前的早期请求也按上次配置
-try {
-  if (fs.existsSync(INSECURE_TLS_FILE)) {
-    var _itRaw = JSON.parse(fs.readFileSync(INSECURE_TLS_FILE, 'utf-8'));
-    if (_itRaw && typeof _itRaw === 'object') {
-      _insecureTlsState = {
-        enabled: !!_itRaw.enabled,
-        hosts: Array.isArray(_itRaw.hosts) ? _itRaw.hosts.filter(function (h) { return typeof h === 'string' && h; }) : []
-      };
-    }
-  }
-} catch (e) { console.warn('[insecure-tls] 读盘失败(忽略)·' + (e && e.message || e)); }
-
-// 渲染层下发：{ enabled:boolean, hosts:string[] }
-ipcMain.handle('set-insecure-tls-config', async (event, options = {}) => {
-  try {
-    var enabled = !!(options && options.enabled);
-    var hosts = [];
-    if (options && Array.isArray(options.hosts)) {
-      options.hosts.forEach(function (h) {
-        var hh = _insecureTlsHostOf(h);
-        if (hh && INSECURE_TLS_OFFICIAL_DENY.indexOf(hh) < 0 && hosts.indexOf(hh) < 0) hosts.push(hh);
-      });
-    }
-    _insecureTlsState = { enabled: enabled, hosts: hosts };
-    try { fs.writeFileSync(INSECURE_TLS_FILE, JSON.stringify(_insecureTlsState), 'utf-8'); } catch (_) {}
-    console.log('[insecure-tls] 配置更新·enabled=' + enabled + '·hosts=[' + hosts.join(',') + ']');
-    return { success: true, enabled: enabled, hosts: hosts };
-  } catch (e) {
-    return { success: false, error: e && e.message || String(e) };
-  }
-});
-
-// 证书校验失败时·仅对玩家显式放行的中转站 host 放行·其余一律严格拒绝
-app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-  try {
-    if (_insecureTlsShouldBypass(url)) {
-      console.warn('[insecure-tls] 放行证书错误·host=' + _insecureTlsHostOf(url) + '·err=' + error);
-      event.preventDefault();
-      callback(true);
-      return;
-    }
-  } catch (e) {
-    console.warn('[insecure-tls] certificate-error 处理异常·' + (e && e.message || e));
-  }
-  callback(false);  // 默认严格（官方通道防 MITM）
-});
-
-// 更可靠的拦截：Electron 33(network service) 下 certificate-error 对渲染层 fetch 触发不稳，
-// setCertificateVerifyProc 在握手期对每个请求生效。放行 host 返回 0(接受)，
-// 其余返回 -3(用 Chromium 默认校验结果·保持严格)——绝不返回 0 以免弱化全局。
-function _installCertVerifyProc() {
-  try {
-    var ses = session && session.defaultSession;
-    if (!ses || typeof ses.setCertificateVerifyProc !== 'function') return;
-    ses.setCertificateVerifyProc(function (request, callback) {
-      try {
-        if (_insecureTlsShouldBypass(request && request.hostname)) { callback(0); return; }
-      } catch (e) { /* 落到默认严格 */ }
-      callback(-3);  // -3 = 用 Chromium 默认验证结果（严格）
-    });
-  } catch (e) {
-    console.warn('[insecure-tls] setCertificateVerifyProc 安装失败(忽略)·' + (e && e.message || e));
-  }
-}
+// TLS certificate validation uses Chromium's strict default. There is no
+// renderer-controlled or persisted bypass.
 
 // ============================================================
 //  应用生命周期
@@ -3257,8 +3475,11 @@ function _installCertVerifyProc() {
 
 // 应用准备好后创建窗口
 app.whenReady().then(() => {
-  // 2026-06-11·中转站证书放行·握手期拦截器（defaultSession 在 ready 后可用）
-  try { _installCertVerifyProc(); } catch (_) {}
+  const defaultSession = session.defaultSession;
+  defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+  if (typeof defaultSession.setPermissionCheckHandler === 'function') {
+    defaultSession.setPermissionCheckHandler(() => false);
+  }
   // 2026-06-10·热更自愈三连·修状态 → 崩溃环检测 → 建窗·磁盘清理延后 15s 不占启动关键路径
   try { repairHotUpdateState(); } catch (_) {}
   try { _bootHealthCheckOnStartup(); } catch (_) {}
@@ -3285,6 +3506,14 @@ app.on('activate', () => {
 if (process.env.TIANMING_TEST_EXPORTS) {
   module.exports.__test = {
     compareVersions,
+    isAllowedRemoteUrl,
+    assertSafeRemoteUrl,
+    fetchRemoteResponse,
+    readRemoteTextLimited,
+    isPrivateNetworkAddress,
+    isTrustedRendererUrl,
+    assertTrustedIpcSender,
+    verifyAuthenticatedUpdateDocument,
     getCurrentComparableVersion,
     getPackageBuildVersion,
     isStrictUpgrade,
@@ -3310,13 +3539,6 @@ if (process.env.TIANMING_TEST_EXPORTS) {
     cleanupHotUpdateArtifacts,
     _bootHealthCheckOnStartup,
     getActiveHotUpdate,
-    _insecureTls: {
-      hostOf: _insecureTlsHostOf,
-      shouldBypass: _insecureTlsShouldBypass,
-      setState: function (s) { _insecureTlsState = s; },
-      installCertVerifyProc: _installCertVerifyProc,
-      officialDeny: INSECURE_TLS_OFFICIAL_DENY
-    },
     paths: {
       HOT_UPDATE_DIR,
       HOT_UPDATE_VERSIONS_DIR,

@@ -45,19 +45,13 @@ ok(Number.isNaN(gOld._conscriptEffMult), '★swap-test:旧逻辑无 trueIndex �
 
 // ── #4 路径数组非数字键幽灵守卫 ──
 const pu = read('tm-ai-change-pathutils.js');
-ok((pu.match(/Array\.isArray\(cur\) && !\/\^\\d\+\$\/\.test\(keys\[i\]\)/g)||[]).length >= 2, '★两处路径建构都加数组非数字键守卫');
-// 复刻:数组上非数字键 → 拒绝(不写幽灵属性)
-function guardBuild(arr, key){
-  const cur = arr;
-  if (Array.isArray(cur) && !/^\d+$/.test(key)) return { ok:false, reason:'array-non-numeric-key:'+key };
-  if (cur[key] === undefined) cur[key] = {};
-  return { ok:true };
-}
-const arr = [{morale:50}];
-const r1 = guardBuild(arr, '名字');
-ok(r1.ok === false && arr['名字'] === undefined, '★数组上非数字键被拒(无幽灵属性 arr[名字])');
-const r2 = guardBuild(arr, '0');
-ok(r2.ok === true, '数组上数字键放行(真索引)');
+ok(/!r\.parent \|\| \(!r\.exists && !declaredDynamic\)/.test(pu), '★路径写口仅允许更新已存在或显式声明的 schema 路径');
+const PathUtils = require(path.join(ROOT, 'tm-ai-change-pathutils.js'));
+const holder = { rows: [{ morale: 50 }] };
+const r1 = PathUtils.applyPathSet(holder, 'rows.名字.morale', 60);
+ok(r1.ok === false && holder.rows['名字'] === undefined, '★未知数组名键被拒(无幽灵属性 arr[名字])');
+const r2 = PathUtils.applyPathSet(holder, 'rows.0.morale', 60);
+ok(r2.ok === true && holder.rows[0].morale === 60, '数组上已存数字索引放行');
 
 // ── #5 伏笔 Set 化 + 上限 ──
 const ea = read('tm-endturn-apply.js');

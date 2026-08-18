@@ -922,7 +922,7 @@
       if (!_callFn) throw new Error('AI调用不可用');
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var m = content.match(/\{[\s\S]*\}/);
+      var m = extractJSONMatch(content, 'object');
       if (!m) throw new Error('无法解析JSON');
       var result = JSON.parse(m[0]);
       if (!result.rankSystem || !Array.isArray(result.rankSystem)) throw new Error('格式不正确');
@@ -1188,7 +1188,7 @@
       if (!_callFn) throw new Error('AI调用不可用');
       var content = await _callFn(prompt, 6000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var m = content.match(/\{[\s\S]*\}/);
+      var m = extractJSONMatch(content, 'object');
       if (!m) throw new Error('无法解析JSON');
       var result = JSON.parse(m[0]);
       if (!scriptData.palaceSystem) scriptData.palaceSystem = {enabled:true, palaces:[]};
@@ -1362,7 +1362,7 @@
       if (!response.ok) throw new Error('API请求失败：' + response.status);
       var data = await response.json();
       var content = data.choices[0].message.content.trim().replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析JSON');
       var result = JSON.parse(jsonMatch[0]);
 

@@ -15,7 +15,7 @@ assert(/function saveFormalDraftsToGM\(captureOpen\)/.test(code), 'phase8 draft 
 assert(/function restoreFormalDraftsFromGM\(force\)/.test(code), 'phase8 draft restore helper is missing');
 assert(/saveDraftsToGM:\s*saveFormalDraftsToGM/.test(code), 'TMPhase8FormalBridge saveDraftsToGM hook is missing');
 assert(/restoreDraftsFromGM:\s*restoreFormalDraftsFromGM/.test(code), 'TMPhase8FormalBridge restoreDraftsFromGM hook is missing');
-assert(/saveDraftsToGM\(true\)/.test(saveLifecycle), 'save lifecycle must capture phase8 drafts before cloning GM');
+assert(/saveDraftsToGM\(true,\s*GM\)/.test(saveLifecycle), 'save lifecycle must capture phase8 drafts directly into the isolated GM snapshot before cloning');
 assert(/restoreDraftsFromGM\(true\)/.test(saveLifecycle), 'load lifecycle must restore phase8 drafts after GM restore');
 
 assert(/function updateFormalMemorialReply\(\w+\)/.test(code), 'memorial reply draft updater is missing');

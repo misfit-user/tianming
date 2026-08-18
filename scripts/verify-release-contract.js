@@ -5,10 +5,12 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const releaseTree = require('./lib/release-tree.js');
 const official = require('../web/scripts/sync-official-scenarios.js');
 const releaseWorkflow = require('./verify-release-workflow-contract.js');
+const windowsSigning = require('./lib/windows-signing.js');
 
 const ROOT = path.resolve(__dirname, '..');
 let assertions = 0;
@@ -47,7 +49,10 @@ function main() {
   });
 
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const pkgLock = JSON.parse(fs.readFileSync(path.join(ROOT, 'package-lock.json'), 'utf8'));
   const mobileVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'mobile', 'release-version.json'), 'utf8'));
+  ok(pkgLock.version === pkg.version && pkgLock.packages && pkgLock.packages[''] && pkgLock.packages[''].version === pkg.version,
+    'package-lock 根版本两处与 package.json 同版');
   ok(mobileVersion.version === pkg.build.buildVersion && Number.isInteger(mobileVersion.versionCode), 'tracked mobile canonical version 与 buildVersion 同版');
   const files = new Set(pkg.build && pkg.build.files || []);
   for (const dir of config.dirs) ok(files.has('!web/**/' + dir + '/**/*'), 'electron-builder 消费 dir:' + dir);
@@ -60,6 +65,32 @@ function main() {
     ok(files.has('!web/' + normalized), 'electron-builder 消费 glob:' + glob);
   }
   ok(files.has('!web/preview/**/*.{png,jpg,jpeg,webp,gif,bmp}') && files.has('web/preview/img/**/*'), 'electron-builder 消费 previewMockup 例外');
+  const publicKeyRel = 'resources/hot-update-public-key.pem';
+  const publicKeyPath = path.join(ROOT, publicKeyRel);
+  ok(files.has(publicKeyRel) && fs.existsSync(publicKeyPath), 'installer 固定携带热更新发布者公钥');
+  const publicKey = crypto.createPublicKey(fs.readFileSync(publicKeyPath));
+  ok(publicKey.asymmetricKeyType === 'ed25519', '热更新固定公钥类型为 Ed25519');
+  ok(['win', 'mac', 'linux'].every(platform => String(pkg.scripts['build:' + platform] || '').includes('scripts/build-electron.js --platform ' + platform)
+    && String(pkg.scripts['build:' + platform + ':nomodel'] || '').includes('scripts/build-electron.js --platform ' + platform)),
+  '三平台构建统一走受检 build-electron wrapper');
+  ok(pkg.build.win && pkg.build.win.forceCodeSigning === true && pkg.build.win.signAndEditExecutable === true
+    && pkg.build.win.verifyUpdateCodeSignature === true, 'Windows builder 强制签名、编辑签名与更新发布者验证');
+  ok(assertThrows(() => windowsSigning.platformBuildConfig(pkg, 'win', {})), 'Windows 构建缺发布者/证书时 fail-closed');
+  const syntheticSigningEnv = {
+    TIANMING_WINDOWS_PUBLISHER: 'CN=Tianming Contract Test',
+    TIANMING_WINDOWS_CERTIFICATE_SHA1: 'a'.repeat(40)
+  };
+  const winPolicy = windowsSigning.platformBuildConfig(pkg, 'win', syntheticSigningEnv);
+  ok(winPolicy.config.directories.output === pkg.build.directories.output
+    && winPolicy.config.win.publisherName[0] === syntheticSigningEnv.TIANMING_WINDOWS_PUBLISHER
+    && winPolicy.config.win.signtoolOptions.certificateSha1 === syntheticSigningEnv.TIANMING_WINDOWS_CERTIFICATE_SHA1,
+  'Windows 保留仓主输出目录并锁定发布者/证书身份');
+  ['mac', 'linux'].forEach(platform => {
+    const policy = windowsSigning.platformBuildConfig(pkg, platform, {});
+    ok(!path.isAbsolute(policy.config.directories.output) && !/^[A-Za-z]:/.test(policy.config.directories.output)
+      && policy.config.directories.output === 'dist/' + platform + '/测试版' + pkg.build.buildVersion,
+    platform + ' 使用平台本地可移植输出目录');
+  });
 
   const discovered = fs.readdirSync(path.join(ROOT, 'scenarios')).filter((name) => /（官方）\.json$/.test(name)).sort();
   const declared = official.ENTRIES.map((entry) => entry.filename).sort();
@@ -72,6 +103,10 @@ function main() {
   ok(hotSource.includes('HOT_EXT_MIN_APP_VERSION') && hotSource.includes("'.glb': '1.3.4.10'")
     && hotSource.includes("'.onnx': '1.3.4.12'") && hotSource.includes('minAppVersion 自动抬升'),
   '新扩展名自动携带旧壳阻断所需 minAppVersion');
+  ok(!hotSource.includes("addLocalFile(path.join(APP_ROOT, 'main") && !hotSource.includes("addLocalFile(path.join(APP_ROOT, 'preload"),
+    '内容 OTA 构建器不再收集 main/preload 主进程代码');
+  ok(hotSource.includes('authenticateReleaseDocument') && hotSource.includes("algorithm: 'Ed25519'")
+    && hotSource.includes('TIANMING_HOT_UPDATE_SIGNING_KEY'), '热更新 manifest/feed 强制 Ed25519 发布者签名');
   const shellSource = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
   ok(shellSource.includes("'.glb', '.gltf', '.bin'") && shellSource.includes("'.onnx'"), '桌面壳层放行 collector 会发出的运行资产扩展名');
   const semanticSource = fs.readFileSync(path.join(ROOT, 'web', 'tm-semantic-recall.js'), 'utf8');
@@ -113,6 +148,7 @@ function main() {
   const baseline = readJson(path.join(ROOT, 'web', '.hot-update-manifest.json'));
   ok(baseline.type === 'tianming-hot-update' && baseline.version === pkg.build.buildVersion && Array.isArray(baseline.files), 'canonical 热更基线存在且与 buildVersion 同版');
   const baselinePaths = new Set(baseline.files.map((row) => row.path));
+  ok(!baselinePaths.has('_app_main.js') && !baselinePaths.has('_app_preload.js'), 'canonical 热更基线不含 main/preload 可执行桥');
   ok(['assets/ui/home/home-menu-imperial-study-v1.png', 'preview/img/topbar-imperial-rail.png',
     'battle/assets/models/unit_lod.glb', 'vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx']
     .every((rel) => baselinePaths.has(rel)), 'canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产');
@@ -126,6 +162,9 @@ function main() {
   ok(assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(webRoot, '_unsafe-stage'))), 'staging 拒绝清空 web 源码子目录');
   ok(assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(ROOT, 'scripts'))), 'staging 拒绝清空已有普通目录');
   ok(!assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(ROOT, 'mobile', 'www'))), 'staging 仅放行已知 mobile/www 派生目录');
+  const releaseSource = fs.readFileSync(path.join(ROOT, 'scripts', 'release.js'), 'utf8');
+  ok(releaseSource.includes("require('./lib/windows-signing.js')") && releaseSource.includes('verifyAuthenticode(exe, publisher)'),
+    'publish 在上传 installer 前复验 Authenticode 发布者与时间戳');
   ok(releaseWorkflow.main() > 0, '两阶段 release/Pages 静态契约');
   console.log('PASS assertions=' + assertions + ' files=' + sourceTree.kept.length + ' bytes=' + limits.totalBytes);
 }

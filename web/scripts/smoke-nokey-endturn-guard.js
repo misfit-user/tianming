@@ -16,13 +16,13 @@ const coreSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 let passed = 0;
 function assert(cond, msg) { if (!cond) throw new Error('[assert] ' + msg); passed++; }
 
-// ── 抽取真 endTurn 函数源（async function endTurn(){...} 到下一个函数 _endTurnCore） ──
+// ── 抽取真 endTurn 函数源（到紧随其后的事务快照 helper） ──
 const startMarker = 'async function endTurn(){';
-const endMarker = 'async function _endTurnCore(){';
+const endMarker = 'function _tmCaptureEndTurnObject(';
 const si = coreSrc.indexOf(startMarker);
 const ei = coreSrc.indexOf(endMarker, si);
 assert(si >= 0, 'endTurn 函数存在于源码');
-assert(ei > si, '_endTurnCore 标记在 endTurn 之后');
+assert(ei > si, '事务快照 helper 标记在 endTurn 之后');
 const endTurnSrc = coreSrc.slice(si, ei).trim();
 
 // ── 源契约：守卫在 court prompt 之前 ──

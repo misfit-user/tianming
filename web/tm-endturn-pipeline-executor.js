@@ -76,18 +76,10 @@
       entry.error = e;
       entry.ms = _now() - t0;
       if (policy === 'retry') {
-        try {
-          await step.fn(ctx);
-          entry.ms = _now() - t0;
-          entry.ok = true;
-          entry.retried = true;
-          delete entry.error;
-          return entry;
-        } catch (e2) {
-          entry.error = e2;
-          entry.retried = true;
-          return entry;
-        }
+        // endTurn step 不是幂等纯函数；盲重试可能重复扣款、伤亡和事件。需要重试的
+        // 网络调用必须在各自适配器内部完成，事务步骤一律按 abort 处理。
+        entry.error = new Error('unsafe pipeline retry rejected for step: ' + step.name + '; cause: ' + String(e && (e.message || e) || 'unknown'));
+        entry.retryRejected = true;
       }
       return entry;
     }

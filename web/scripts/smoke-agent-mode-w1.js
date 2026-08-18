@@ -25,7 +25,7 @@ const AM = globalThis.TM.Endturn.AgentMode;
 assert(AM && typeof AM.run === 'function', 'AgentMode.run 已导出');
 
 function makeGM() {
-  return { turn: 7, eraName: '建炎元年', guoku: 12000, neitang: 3000, minxin: 50, chars: [{ id: 'c1', name: '张三', mood: '平' }], facs: [{ name: '北府' }], evtLog: [], memorials: [] };
+  return { turn: 7, eraName: '建炎元年', guoku: 12000, neitang: 3000, minxin: 50, chars: [{ id: 'c1', name: '张三', mood: '平', note: '' }], facs: [{ name: '北府' }], evtLog: [], memorials: [] };
 }
 
 // 脚手架 + 自动收尾深化套件共用的 callAIMessages stub

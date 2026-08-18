@@ -26,16 +26,20 @@ self.onmessage = function(e) {
   }
 };
 
+function _finiteNumberOr(value, fallback) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 // 省份经济批量计算（纯函数，不依赖GM）
 function _calcProvinceEconomyBatch(provinces, config, timeRatio) {
   var results = {};
   var monthScale = timeRatio * 12;
   Object.keys(provinces).forEach(function(name) {
     var p = provinces[name];
-    var pop = p.population || 10000;
-    var prosperity = p.prosperity || 50;
-    var corruption = p.corruption || 0;
-    var taxRate = p.taxRate || 0.1;
+    var pop = _finiteNumberOr(p.population, 10000);
+    var prosperity = _finiteNumberOr(p.prosperity, 50);
+    var corruption = _finiteNumberOr(p.corruption, 0);
+    var taxRate = _finiteNumberOr(p.taxRate, 0.1);
 
     // 基础税收
     var baseTax = pop * taxRate * (prosperity / 100) * monthScale;
@@ -58,8 +62,8 @@ function _calcProvinceEconomyBatch(provinces, config, timeRatio) {
 
 // 战斗结算（纯函数）
 function _calcBattleResult(attacker, defender, context) {
-  var atkStr = (attacker.soldiers || 0) * (attacker.morale || 50) / 50 * (attacker.training || 50) / 50;
-  var defStr = (defender.soldiers || 0) * (defender.morale || 50) / 50 * (defender.training || 50) / 50;
+  var atkStr = _finiteNumberOr(attacker.soldiers, 0) * _finiteNumberOr(attacker.morale, 50) / 50 * _finiteNumberOr(attacker.training, 50) / 50;
+  var defStr = _finiteNumberOr(defender.soldiers, 0) * _finiteNumberOr(defender.morale, 50) / 50 * _finiteNumberOr(defender.training, 50) / 50;
   var ratio = atkStr / Math.max(defStr, 1);
   var verdict = ratio >= 1.5 ? 'decisive_victory' : ratio >= 1.0 ? 'victory' : ratio >= 0.7 ? 'stalemate' : 'defeat';
   return {

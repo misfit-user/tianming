@@ -803,13 +803,9 @@
 
       if (!result) return;
       var text = typeof result === 'string' ? result : (result.text || result.content || JSON.stringify(result));
-      var parsed;
-      try {
-        // 提取 JSON
-        var m = text.match(/\{[\s\S]*\}/);
-        parsed = m ? JSON.parse(m[0]) : JSON.parse(text);
-      } catch(e) {
-        console.warn('[NPC 决策器] JSON 解析失败', e, text.slice(0, 200));
+      var parsed = (typeof extractJSON === 'function') ? extractJSON(text) : null;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        console.warn('[NPC 决策器] JSON 解析失败', text.slice(0, 200));
         return;
       }
 

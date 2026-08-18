@@ -9,7 +9,21 @@
  */
 
 const { contextBridge, ipcRenderer } = require('electron');
-const { randomUUID } = require('crypto');
+
+function _newSessionToken() {
+  try {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID();
+    if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+      const bytes = new Uint8Array(16);
+      globalThis.crypto.getRandomValues(bytes);
+      bytes[6] = (bytes[6] & 15) | 64;
+      bytes[8] = (bytes[8] & 63) | 128;
+      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+    }
+  } catch (_) {}
+  throw new Error('secure random generator unavailable');
+}
 
 let _autoSaveSessionToken = '';
 try {
@@ -18,7 +32,7 @@ try {
 } catch (_) {}
 // sidecar 尚不存在时先在 preload 固定一个非空 token（暂不持久化）；这样首个写请求即使排队期间
 // 遇到读档/新局 rotate，也携带旧 token 而不会被主进程误收编进新 session。
-if (!_autoSaveSessionToken) _autoSaveSessionToken = randomUUID();
+if (!_autoSaveSessionToken) _autoSaveSessionToken = _newSessionToken();
 
 function _invokeAutoSave(data) {
   return ipcRenderer.invoke('auto-save', {
@@ -118,26 +132,26 @@ contextBridge.exposeInMainWorld('tianming', {
     ipcRenderer.invoke('debug-log-info'),
 
   // === 在线更新 ===
-  onlineServiceStatus: (apiUrl) =>
-    ipcRenderer.invoke('online-service-status', { apiUrl }),
+  onlineServiceStatus: () =>
+    ipcRenderer.invoke('online-service-status'),
 
   accountSession: () =>
     ipcRenderer.invoke('account-session'),
 
-  accountRegister: (apiUrl, username, password, nickname) =>
-    ipcRenderer.invoke('account-register', { apiUrl, username, password, nickname }),
+  accountRegister: (username, password, nickname) =>
+    ipcRenderer.invoke('account-register', { username, password, nickname }),
 
-  accountLogin: (apiUrl, username, password) =>
-    ipcRenderer.invoke('account-login', { apiUrl, username, password }),
+  accountLogin: (username, password) =>
+    ipcRenderer.invoke('account-login', { username, password }),
 
-  accountMe: (apiUrl) =>
-    ipcRenderer.invoke('account-me', { apiUrl }),
+  accountMe: () =>
+    ipcRenderer.invoke('account-me'),
 
-  accountLogout: (apiUrl) =>
-    ipcRenderer.invoke('account-logout', { apiUrl }),
+  accountLogout: () =>
+    ipcRenderer.invoke('account-logout'),
 
-  checkForUpdate: (feedUrl) =>
-    ipcRenderer.invoke('update-check', { feedUrl }),
+  checkForUpdate: () =>
+    ipcRenderer.invoke('update-check'),
 
   downloadUpdate: () =>
     ipcRenderer.invoke('update-download'),
@@ -152,11 +166,11 @@ contextBridge.exposeInMainWorld('tianming', {
   hotUpdateStatus: () =>
     ipcRenderer.invoke('hot-update-status'),
 
-  checkHotUpdate: (feedUrl) =>
-    ipcRenderer.invoke('hot-update-check', { feedUrl }),
+  checkHotUpdate: () =>
+    ipcRenderer.invoke('hot-update-check'),
 
-  installHotUpdate: (feedUrl) =>
-    ipcRenderer.invoke('hot-update-download-install', { feedUrl }),
+  installHotUpdate: () =>
+    ipcRenderer.invoke('hot-update-download-install'),
 
   setHotUpdateEnabled: (enabled) =>
     ipcRenderer.invoke('hot-update-set-enabled', !!enabled),
@@ -235,10 +249,6 @@ contextBridge.exposeInMainWorld('tianming', {
 
   openTurnDataDir: () =>
     ipcRenderer.invoke('open-turn-data-dir'),
-
-  // === 不安全 TLS·中转站证书放行（仅对玩家显式配置的 API 地址生效）===
-  setInsecureTlsConfig: (config) =>
-    ipcRenderer.invoke('set-insecure-tls-config', config || {}),
 
   // === 接收主进程发来的消息 ===
   onMenuAction: (callback) =>

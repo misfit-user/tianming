@@ -210,6 +210,11 @@ function _postTurnCourtShowRenderFallback(error) {
   } catch(_btnE) {}
 }
 
+function _finishPostTurnCourtState() {
+  GM._isPostTurnCourt = false;
+  if (GM._pendingShijiModal) GM._pendingShijiModal.courtDone = true;
+}
+
 // 朝会结束时调用——顺序：先弹史记，其他模态（keju/事件等）排队其后
 async function _onPostTurnCourtEnd() {
   if (!GM._pendingShijiModal) { GM._isPostTurnCourt = false; return; }
@@ -246,12 +251,17 @@ async function _onPostTurnCourtEnd() {
   // 2) 重新启用"队列模式"，让 phase5 产生的模态都进队列·不立即弹
   GM._pendingShijiModal.courtDone = false; // 假装朝会还在
   if (typeof _deferredPhase5 === 'function') {
-    try { await _deferredPhase5(); } catch(_ph5){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ph5, 'postTurnCourt] deferredPhase5:') : console.warn('[postTurnCourt] deferredPhase5:', _ph5); }
+    try { await _deferredPhase5(); }
+    catch(_ph5){
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ph5, 'postTurnCourt] deferredPhase5:') : console.warn('[postTurnCourt] deferredPhase5:', _ph5);
+      try { if (typeof toast === 'function') toast('回合收官失败，已回滚到推演前；请检查存储空间后重试'); } catch (_) {}
+      _finishPostTurnCourtState();
+      return;
+    }
   }
 
   // 3) 收官：恢复正常状态 + 延迟 1s 后按队列依次弹出其他模态（给用户看史记的时间）
-  GM._isPostTurnCourt = false;
-  GM._pendingShijiModal.courtDone = true;
+  _finishPostTurnCourtState();
   setTimeout(function(){
     try { if (typeof _flushPostTurnModalQueue === 'function') _flushPostTurnModalQueue(); } catch(_fq){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_fq, 'postTurnCourt] flush:') : console.warn('[postTurnCourt] flush:', _fq); }
   }, 1000);

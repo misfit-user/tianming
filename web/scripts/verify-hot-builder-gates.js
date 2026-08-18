@@ -48,7 +48,7 @@ function resetTree(ver) {
   fs.writeFileSync(path.join(APP, 'scenarios', '绍宋_182区草案.json'), '{"id":"draft-must-not-ship"}');
 }
 function build(args) {
-  return spawnSync('node', [BUILDER].concat(args, ['--web-root', WEB, '--app-root', APP]), {
+  return spawnSync('node', [BUILDER].concat(args, ['--web-root', WEB, '--app-root', APP, '--unsigned-test-only']), {
     encoding: 'utf-8',
     env: Object.assign({}, process.env, { NODE_PATH: MODULE_ROOTS.filter(fs.existsSync).join(path.delimiter) })
   });
@@ -63,7 +63,7 @@ const feedA = JSON.parse(fs.readFileSync(path.join(outA, 'hot-latest.json'), 'ut
 assert(feedA.version === '9.0.0.1', 'A·feed 版本正确');
 const manifestA = JSON.parse(fs.readFileSync(path.join(outA, 'manifests', '9.0.0.1.json'), 'utf-8'));
 const paths = manifestA.files.map(f => f.path);
-['index.html', 'a.js', 'b.js', 'styles.css', 'changelog.json', 'version.json', '_app_main.js', '_app_preload.js', 'bundled-scenarios/合成（官方）.json']
+['index.html', 'a.js', 'b.js', 'styles.css', 'changelog.json', 'version.json', 'bundled-scenarios/合成（官方）.json']
   .forEach(p => assert(paths.indexOf(p) !== -1, 'A·清单含 ' + p));
 assert(paths.indexOf('bundled-scenarios/绍宋_182区草案.json') === -1, 'A·草案/自用剧本不进入热更');
 

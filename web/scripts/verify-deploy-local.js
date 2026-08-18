@@ -52,7 +52,7 @@ fs.writeFileSync(path.join(WEB, 'version.json'), JSON.stringify({ version: VER }
 fs.writeFileSync(path.join(APP, 'main-impl.js'), '// main');
 fs.writeFileSync(path.join(APP, 'preload-impl.js'), '// preload');
 let r = spawnSync('node', [HOT_BUILDER, '--version', VER, '--out', ASSETS, '--notes', 'deploy-verify',
-  '--web-root', WEB, '--app-root', APP], { encoding: 'utf-8' });
+  '--web-root', WEB, '--app-root', APP, '--unsigned-test-only'], { encoding: 'utf-8' });
 assert(r.status === 0, '制品·桌面热更构建（' + (r.status === 0 ? 'ok' : r.stderr) + '）');
 fs.copyFileSync(path.join(WEB, 'changelog.json'), path.join(ASSETS, 'changelog.json'));
 

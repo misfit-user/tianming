@@ -68,11 +68,14 @@ function assert(cond, label) {
   const srv = createTestUpdateServer({ root: srvRoot });
   await srv.listen(0);
   const FEED = 'http://127.0.0.1:' + srv.port + '/hot-latest.json';
+  // 生产 renderer 已不能传 feed URL；合成服务器只能通过显式开发环境变量注入。
+  process.env.TIANMING_DEV_HOT_UPDATE_FEED_URL = FEED;
 
   // ── A·minAppVersion 高于本体（1.3.3.5）→ readHotUpdateFeed 透出 + install 前置拒绝 ──
   writeFeed({ minAppVersion: '9.0.0.0' });
-  const infoA = await T.readHotUpdateFeed({ feedUrl: FEED });
+  const infoA = await T.readHotUpdateFeed({ feedUrl: 'https://attacker.invalid/hot-latest.json' });
   assert(infoA.minAppVersion === '9.0.0.0', 'A·feed.minAppVersion 透出');
+  assert(srv.requests.some(function(row){ return row.path === '/hot-latest.json'; }), 'A·renderer feedUrl 被忽略·只访问主进程开发配置');
   const resA = await T.installHotUpdateFromFeed({ feedUrl: FEED });
   assert(resA.success === false && resA.needsInstaller === true, 'A·install 前置拒绝·needsInstaller=true');
   assert(/先更新本体/.test(resA.message), 'A·拒绝文案友好');
@@ -106,7 +109,8 @@ function assert(cond, label) {
       '--allow-partial-DANGEROUS', // S7 GATE-0·部分包仅限调试·此处为验证 feed 字段
       '--min-app-version', '2.0.0.0',
       '--out', outDir,
-      '--notes', 'decision-tree-verify'
+      '--notes', 'decision-tree-verify',
+      '--unsigned-test-only'
     ], { cwd: ROOT, stdio: 'pipe' });
     const feed = JSON.parse(fs.readFileSync(path.join(outDir, 'hot-latest.json'), 'utf-8'));
     assert(feed.minAppVersion === '2.0.0.0', 'E·构建器把 minAppVersion 写进 feed');

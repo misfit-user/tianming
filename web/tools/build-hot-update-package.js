@@ -11,6 +11,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const AdmZip = require('adm-zip');
@@ -88,6 +89,42 @@ function listArg(name) {
 
 function sha256Buffer(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
+function publicKeyFingerprint(key) {
+  const der = crypto.createPublicKey(key).export({ type: 'spki', format: 'der' });
+  return sha256Buffer(der).slice(0, 24);
+}
+
+function authenticateReleaseDocument(payload) {
+  if (flag('unsigned-test-only')) {
+    console.warn('[SECURITY] unsigned-test-only·仅供合成测试；正式客户端会拒绝此文档');
+    return payload;
+  }
+  const defaultPrivate = path.join(os.homedir(), '.tianming', 'release-secrets', 'hot-update-ed25519-private.pem');
+  const privatePath = path.resolve(arg('signing-key', process.env.TIANMING_HOT_UPDATE_SIGNING_KEY || defaultPrivate));
+  const publicPath = path.resolve(arg('public-key', path.join(APP_ROOT, 'resources', 'hot-update-public-key.pem')));
+  if (!fs.existsSync(privatePath)) {
+    throw new Error('缺少热更新 Ed25519 私钥·设置 TIANMING_HOT_UPDATE_SIGNING_KEY 或放到 ' + defaultPrivate);
+  }
+  if (!fs.existsSync(publicPath)) throw new Error('缺少固定热更新公钥·' + publicPath);
+  const privateKey = crypto.createPrivateKey(fs.readFileSync(privatePath));
+  const derivedPublic = crypto.createPublicKey(privateKey);
+  const configuredPublic = crypto.createPublicKey(fs.readFileSync(publicPath));
+  const derivedDer = derivedPublic.export({ type: 'spki', format: 'der' });
+  const configuredDer = configuredPublic.export({ type: 'spki', format: 'der' });
+  if (derivedDer.length !== configuredDer.length || !crypto.timingSafeEqual(derivedDer, configuredDer)) {
+    throw new Error('热更新签名私钥与应用内固定公钥不匹配');
+  }
+  const payloadBytes = Buffer.from(JSON.stringify(payload), 'utf8');
+  return Object.assign({}, payload, {
+    auth: {
+      algorithm: 'Ed25519',
+      keyId: publicKeyFingerprint(configuredPublic),
+      payload: payloadBytes.toString('base64'),
+      signature: crypto.sign(null, payloadBytes, privateKey).toString('base64')
+    }
+  });
 }
 
 // 2026-06-11·S7·4 段数值版本比较（与 main-impl compareVersions 同语义）
@@ -195,8 +232,7 @@ function walk(dir, out) {
   });
 }
 
-// 2026-05-23·主进程实现热更·把 APP_ROOT/main-impl.js 打到 zip 根·命名 _app_main.js
-// installer 里的 main.js shim 会优先 require hot dir 的 _app_main.js·让 main 实现也能 hot ship
+// Renderer content references only. Electron main/preload code is installer-only.
 function collectIndexReferencedLocalFiles() {
   const indexPath = path.join(WEB_ROOT, 'index.html');
   if (!fs.existsSync(indexPath)) return new Set();
@@ -234,20 +270,6 @@ function isPreviewMockup(p) {
   }
   if (/\.(log|txt|ya?ml)$/i.test(base)) return true;               // 杂项·剔
   return false;                                                    // 其余 js/html/css(含剧本工坊 scenario-editor-*、bundle、御案img数据)保留
-}
-
-function walkAppMainImpl() {
-  const APP_MAIN_IMPL = path.join(APP_ROOT, 'main-impl.js');
-  if (!fs.existsSync(APP_MAIN_IMPL)) return [];
-  return [{ abs: APP_MAIN_IMPL, zipPath: '_app_main.js' }];
-}
-
-// 2026-05-23·preload 也热更·APP_ROOT/preload-impl.js → zip 根 _app_preload.js
-// installer 里的 preload.js shim 通过 process.argv (main 透传) 找 hot _app_preload.js·失败 fallback bundled
-function walkAppPreloadImpl() {
-  const APP_PRELOAD_IMPL = path.join(APP_ROOT, 'preload-impl.js');
-  if (!fs.existsSync(APP_PRELOAD_IMPL)) return [];
-  return [{ abs: APP_PRELOAD_IMPL, zipPath: '_app_preload.js' }];
 }
 
 // 2026-05-22·扫 APP_ROOT/scenarios·把官方剧本 JSON 也打进 zip·路径 bundled-scenarios/<file>
@@ -382,32 +404,6 @@ function main() {
     console.log('[hot-update] bundled scenarios·' + bundledScenarios.length + ' file(s)·' + bundledScenarios.map(e => path.basename(e.abs)).join(', '));
   }
 
-  // 2026-05-23·主进程实现·main-impl.js → _app_main.js·shim 会找
-  const appMains = walkAppMainImpl();
-  appMains.forEach(entry => {
-    const stat = fs.statSync(entry.abs);
-    if (zip) zip.addLocalFile(entry.abs, '', '_app_main.js');
-    addManifestEntry(manifestEntries, entry.abs, stat.size, sha256File(entry.abs), '_app_main.js');
-  });
-  if (appMains.length) {
-    console.log('[hot-update] app main impl·_app_main.js·' + (fs.statSync(appMains[0].abs).size/1024).toFixed(1) + ' KB');
-  } else {
-    console.warn('[hot-update] WARN·APP_ROOT/main-impl.js 不存在·main shim 将无 hot 实现可加载·只能 fallback bundled');
-  }
-
-  // 2026-05-23·preload 实现·preload-impl.js → _app_preload.js·shim 会找 (sandbox: false 在 main-impl webPreferences)
-  const appPreloads = walkAppPreloadImpl();
-  appPreloads.forEach(entry => {
-    const stat = fs.statSync(entry.abs);
-    if (zip) zip.addLocalFile(entry.abs, '', '_app_preload.js');
-    addManifestEntry(manifestEntries, entry.abs, stat.size, sha256File(entry.abs), '_app_preload.js');
-  });
-  if (appPreloads.length) {
-    console.log('[hot-update] app preload impl·_app_preload.js·' + (fs.statSync(appPreloads[0].abs).size/1024).toFixed(1) + ' KB');
-  } else {
-    console.warn('[hot-update] WARN·APP_ROOT/preload-impl.js 不存在·preload shim 将无 hot 实现可加载·只能 fallback bundled');
-  }
-
   // manifest must list ONLY files that are actually in the package (zip archive built from `filtered`).
   // mirror the archive's preview filter (line ~242) so the manifest never advertises preview/ files that
   // aren't shipped — otherwise applyHotUpdateBundle's per-file existence check throws '热更新文件不存在'.
@@ -445,8 +441,6 @@ function main() {
     const manifestPathSet = new Set(finalManifestFiles.map(f => f.path));
     const problems = [];
     const required = ['index.html', 'changelog.json', 'styles.css', 'version.json'];
-    if (fs.existsSync(path.join(APP_ROOT, 'main-impl.js'))) required.push('_app_main.js');
-    if (fs.existsSync(path.join(APP_ROOT, 'preload-impl.js'))) required.push('_app_preload.js');
     required.forEach(p => { if (!manifestPathSet.has(p)) problems.push('必含文件缺失·' + p); });
     indexRefs.forEach(ref => {
       if (!manifestPathSet.has(ref)) problems.push('index.html 引用不在清单·' + ref);
@@ -476,7 +470,15 @@ function main() {
     console.log('[hot-update] files:', finalManifestFiles.length);
     return;
   }
-  zip.addFile('manifest.json', Buffer.from(JSON.stringify(manifest, null, 2), 'utf-8'));
+  const channel = String(arg('channel', 'stable') || 'stable').trim();
+  if (!/^(stable|beta)$/.test(channel)) throw new Error('热更新 channel 仅允许 stable/beta');
+  const expiresDays = Number(arg('expires-days', '180'));
+  if (!Number.isFinite(expiresDays) || expiresDays < 1 || expiresDays > 366) throw new Error('expires-days 必须是 1..366');
+  manifest.appId = 'com.tianming.history';
+  manifest.channel = channel;
+  manifest.expiresAt = new Date(Date.now() + Math.round(expiresDays * 86400000)).toISOString();
+  const signedManifest = authenticateReleaseDocument(manifest);
+  zip.addFile('manifest.json', Buffer.from(JSON.stringify(signedManifest, null, 2), 'utf-8'));
   zip.writeZip(zipPath);
 
   // GATE-4·zip ↔ manifest 双向一致·重开写好的 zip 对账（结构性堵死「打进包但没记账/记了账没打包」）
@@ -507,6 +509,8 @@ function main() {
   //   filesBaseUrl·sha-content-addressable file store·客户端按 `${filesBaseUrl}<sha2>/<sha-rest>/<basename>` 取
   const feed = {
     type: 'tianming-hot-update-feed',
+    appId: manifest.appId,
+    channel: manifest.channel,
     version,
     packageUrl,
     manifestUrl: 'manifests/' + version + '.json',
@@ -514,7 +518,8 @@ function main() {
     sha256: sha256File(zipPath),
     size: zipStat.size,
     notes,
-    generatedAt: manifest.generatedAt
+    generatedAt: manifest.generatedAt,
+    expiresAt: manifest.expiresAt
   };
   // 2026-06-11·minAppVersion 提升到 feed 层·客户端「下载前」即可判定要不要先升本体（needsInstaller）
   //   旧客户端忽略未知字段·manifest 内同名字段仍是装前最后防线
@@ -524,10 +529,11 @@ function main() {
   feed.packageUrlMirrors = [
     'https://github.com/misfit-user/tianming/releases/download/ship-' + version + '/' + packageName
   ];
-  fs.writeFileSync(path.join(outDir, 'hot-latest.json'), JSON.stringify(feed, null, 2), 'utf-8');
+  const signedFeed = authenticateReleaseDocument(feed);
+  fs.writeFileSync(path.join(outDir, 'hot-latest.json'), JSON.stringify(signedFeed, null, 2), 'utf-8');
   // 同步把 manifest 单独写到 outDir·upload-hot.py 直接拾·SCP 到 server hot/manifests/<ver>.json
   fs.mkdirSync(path.join(outDir, 'manifests'), { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'manifests', version + '.json'), JSON.stringify(manifest, null, 2), 'utf-8');
+  fs.writeFileSync(path.join(outDir, 'manifests', version + '.json'), JSON.stringify(signedManifest, null, 2), 'utf-8');
 
   console.log('[hot-update] package:', zipPath);
   console.log('[hot-update] feed:', path.join(outDir, 'hot-latest.json'));

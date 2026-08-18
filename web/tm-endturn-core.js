@@ -278,6 +278,115 @@ async function endTurn(){
   } finally { endTurn._preSubmitInFlight = false; }
 }
 
+function _tmCaptureEndTurnObject(obj, runtimeKeys) {
+  var data = deepClone(obj);
+  var descriptors = {};
+  Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
+    var d = Object.getOwnPropertyDescriptor(obj, key);
+    if (!d) return;
+    // 索引是派生 Map 缓存，不属于回合事务快照；回滚后由索引模块重建。
+    if (key === '_indices') { try { delete data[key]; } catch (_) {} return; }
+    var keepRuntime = runtimeKeys && runtimeKeys.indexOf(key) >= 0;
+    if (keepRuntime || d.get || d.set || (Object.prototype.hasOwnProperty.call(d, 'value') && typeof d.value === 'function') || !Object.prototype.hasOwnProperty.call(data, key)) {
+      descriptors[key] = d;
+      try { delete data[key]; } catch (_) {}
+    }
+  });
+  return { data: data, descriptors: descriptors };
+}
+
+function _tmRestoreEndTurnObject(target, snapshot) {
+  if (!target || !snapshot) return;
+  Object.getOwnPropertyNames(target).forEach(function(key) {
+    try { delete target[key]; } catch (_) {}
+  });
+  Object.keys(snapshot.data || {}).forEach(function(key) { target[key] = snapshot.data[key]; });
+  Object.keys(snapshot.descriptors || {}).forEach(function(key) {
+    try { Object.defineProperty(target, key, snapshot.descriptors[key]); }
+    catch (_) { if (Object.prototype.hasOwnProperty.call(snapshot.descriptors[key], 'value')) target[key] = snapshot.descriptors[key].value; }
+  });
+}
+
+function _tmCaptureEndTurnTransaction() {
+  var gmRef = GM, pRef = P;
+  return {
+    gmRef: gmRef,
+    pRef: pRef,
+    loadGen: (typeof window !== 'undefined' && window._tmLoadGen) || 0,
+    campaignId: gmRef && gmRef._campaignId || '',
+    turn: gmRef && gmRef.turn,
+    gm: _tmCaptureEndTurnObject(gmRef, ['_postTurnJobs', '_postTurnDetachedJobs', '_indices']),
+    p: _tmCaptureEndTurnObject(pRef, ['scenario', '_indices']),
+    committed: false,
+    rolledBack: false
+  };
+}
+
+function _tmEndTurnTransactionCurrent(txn) {
+  return !!txn && !txn.committed && !txn.rolledBack && GM === txn.gmRef && P === txn.pRef &&
+    (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === txn.loadGen) &&
+    String((GM && GM._campaignId) || '') === String(txn.campaignId || '');
+}
+
+function _tmMaybeStageTurnResult(html, idx) {
+  if (!GM || !GM._endTurnCommitPending) return false;
+  GM._pendingCommittedTurnResult = { html: html, idx: idx }; // arch-ok end-turn transaction owns its commit-barrier payload
+  return true;
+}
+
+function _tmCommitEndTurnTransaction(txn) {
+  if (!_tmEndTurnTransactionCurrent(txn)) return false;
+  txn.committed = true;
+  GM._endTurnCommitPending = false; // arch-ok end-turn transaction owns its commit barrier
+  var pendingResult = GM._pendingCommittedTurnResult;
+  try { delete GM._pendingCommittedTurnResult; } catch (_) {} // arch-ok end-turn transaction owns its staged result
+  if (pendingResult && typeof showTurnResult === 'function') showTurnResult(pendingResult.html, pendingResult.idx);
+  return true;
+}
+
+function _tmRollbackEndTurnTransaction(txn, reason) {
+  if (!_tmEndTurnTransactionCurrent(txn)) return false;
+  try { if (typeof closeTurnResult === 'function') closeTurnResult(); } catch (_) {}
+  _tmRestoreEndTurnObject(txn.pRef, txn.p);
+  _tmRestoreEndTurnObject(txn.gmRef, txn.gm);
+  try {
+    if (typeof buildIndices === 'function') buildIndices();
+    else if (typeof TM !== 'undefined' && TM.Indices && typeof TM.Indices.invalidate === 'function') TM.Indices.invalidate(txn.gmRef, txn.pRef);
+  } catch (_) {
+    try { if (typeof TM !== 'undefined' && TM.Indices && typeof TM.Indices.invalidate === 'function') TM.Indices.invalidate(txn.gmRef, txn.pRef); } catch (_) {}
+  }
+  txn.rolledBack = true;
+  try { if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1; } catch (_) {}
+  try {
+    GM.busy = false; // arch-ok end-turn transaction owns rollback cleanup
+    GM._endTurnBusy = false; // arch-ok end-turn transaction owns rollback cleanup
+    GM._lastEndTurnRollback = { at: Date.now(), turn: txn.turn, reason: String(reason && (reason.message || reason) || 'unknown') }; // arch-ok end-turn transaction owns rollback diagnostics
+  } catch (_) {}
+  try { if (typeof renderGameState === 'function') renderGameState(); } catch (_) {}
+  return true;
+}
+
+async function _tmFinalizeEndTurnTransaction(ctx, txn) {
+  ctx = ctx || { meta: {} };
+  ctx.meta = ctx.meta || {};
+  ctx.meta.transaction = txn;
+  if (ctx.meta.deferEndTurnSave) return true;
+  if (!ctx.meta.endTurnSavePromise && typeof _endTurn_saveSnapshot === 'function') {
+    ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot();
+  }
+  if (!ctx.meta.endTurnSavePromise) throw new Error('回合最终存档入口缺失');
+  var saved = await ctx.meta.endTurnSavePromise;
+  if (saved !== true) throw new Error('回合最终存档失败，已回滚本回合');
+  if (!_tmCommitEndTurnTransaction(txn)) throw new Error('回合提交时世界身份已变化');
+  return true;
+}
+
+if (typeof window !== 'undefined') {
+  window._tmMaybeStageTurnResult = _tmMaybeStageTurnResult;
+  window._tmCommitEndTurnTransaction = _tmCommitEndTurnTransaction;
+  window._tmRollbackEndTurnTransaction = _tmRollbackEndTurnTransaction;
+}
+
 async function _endTurnCore(){
   // [slice 7c·2026-05-08] pipeline 是 endturn 唯一执行路径
   // P.flags.useNewPipeline 已废止·观察者 try/catch fallback 已删·step.onError 接管错误
@@ -285,10 +394,13 @@ async function _endTurnCore(){
   //   原因：systems step 等需要看到 before-hooks 的 GM mutation (钩子 1 mutate officeTree·钩子 2 push jishiRecords)
   // 见 web/docs/endturn-data-flow.md
   var _obsCtx = null;
+  var _turnTxn = null;
   try{
   // 兼容新旧UI：老诏令面板按钮是btn-end，新UI右侧按钮是btn-end-turn
   var btn=_$("btn-end")||_$("btn-end-turn");
   if(GM.busy)return;
+  _turnTxn = _tmCaptureEndTurnTransaction();
+  GM._endTurnCommitPending = true; // arch-ok end-turn transaction owns its commit barrier
   GM.busy=true;
   GM._endTurnBusy=true;
   if(btn){ btn.textContent="\u63A8\u6F14\u4E2D...";btn.style.opacity="0.6"; }
@@ -303,13 +415,12 @@ async function _endTurnCore(){
   // ★ 过回合前自动存档·防 AI 长推演崩溃丢失本回合操作(诏令/奏疏批复/对话/调动)
   // 写入独立 IDB key 'pre_endturn'·与正常 autosave/slot_0 分离·不污染案卷目录
   // 写入 localStorage 标记 tm_pre_endturn_mark·页面刷新后可检测
-  // 异步·失败静默·不阻塞推演
+  // 恢复点是事务的 prepare 阶段：必须先完整提交，才允许进入有副作用的推演。
   try {
-    if (typeof TM_SaveDB !== 'undefined' && typeof _prepareGMForSave === 'function') {
+    if (typeof TM_SaveDB !== 'undefined' && typeof _buildSaveState === 'function') {
       var _preSaveGM = GM;
       var _preSaveP = P;
       var _preSaveLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
-      _prepareGMForSave();
       var _preSnapshotId = (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
         : ('pre_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10));
@@ -323,7 +434,7 @@ async function _endTurnCore(){
           && GM.turn === _preTurn && GM.sid === _preSid
           && _liveSnapshotId === _preSnapshotId;
       };
-      var _preState = _buildSaveState({ format: 'idb', prepare: false });
+      var _preState = _buildSaveState({ format: 'idb', gm: _preSaveGM, p: _preSaveP });
       _preState._preEndturn = { snapshotId: _preSnapshotId, turn: _preTurn, commitState: 'committed' };
       var _scPre = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
       var _preMeta = {
@@ -349,27 +460,23 @@ async function _endTurnCore(){
         }));
       } catch(_lsE){try{window.TM&&TM.errors&&TM.errors.captureSilent(_lsE,'pre_endturn ls mark');}catch(_){}}
       try { window._tmActivePreEndturnSnapshotId = _preSnapshotId; } catch(_preIdE) {}
-      TM_SaveDB.save('pre_endturn', _preState, _preMeta, { writeGuard: _preWriteStillCurrent }).then(function(ok){
-        if (!ok) throw new Error('pre_endturn IndexedDB commit failed');
-        if (!_preWriteStillCurrent()) return;
-        try {
-          var _rawPreMark = localStorage.getItem('tm_pre_endturn_mark');
-          var _livePreMark = _rawPreMark ? JSON.parse(_rawPreMark) : null;
-          // 旧异步完成不得覆盖后起回合的新 marker。
-          if (!_livePreMark || _livePreMark.snapshotId !== _preSnapshotId || _livePreMark.turn !== _preTurn) return;
-          _livePreMark.commitState = 'committed';
-          _livePreMark.committedAt = Date.now();
-          localStorage.setItem('tm_pre_endturn_mark', JSON.stringify(_livePreMark));
-        } catch(_markCommitE) {
-          // marker 未能提交时不可信；启动恢复会按 pending/缺字段安全回退 autosave。
-          try { window.TM&&TM.errors&&TM.errors.captureSilent(_markCommitE,'pre_endturn mark commit'); } catch(_) {}
-        }
-      }).catch(function(e){
-        (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'PreEndTurnSave]') : console.warn('[PreEndTurnSave]', e);
-      });
+      var _preSaved = await TM_SaveDB.save('pre_endturn', _preState, _preMeta, { writeGuard: _preWriteStillCurrent });
+      if (_preSaved !== true) throw new Error('pre_endturn IndexedDB commit failed');
+      if (!_preWriteStillCurrent()) throw new Error('pre_endturn world lease expired');
+      var _rawPreMark = localStorage.getItem('tm_pre_endturn_mark');
+      var _livePreMark = _rawPreMark ? JSON.parse(_rawPreMark) : null;
+      if (!_livePreMark || _livePreMark.snapshotId !== _preSnapshotId || _livePreMark.turn !== _preTurn) {
+        throw new Error('pre_endturn marker mismatch');
+      }
+      _livePreMark.commitState = 'committed';
+      _livePreMark.committedAt = Date.now();
+      localStorage.setItem('tm_pre_endturn_mark', JSON.stringify(_livePreMark));
+    } else {
+      throw new Error('pre_endturn storage unavailable');
     }
   } catch(_psE) {
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_psE, 'PreEndTurnSave outer') : console.warn('[PreEndTurnSave outer]', _psE);
+    throw _psE;
   }
 
   await EndTurnHooks.execute('before');
@@ -381,6 +488,7 @@ async function _endTurnCore(){
     throw new Error('[endTurn] TM.Endturn.Pipeline missing — boot order broken?');
   }
   _obsCtx = TM.Endturn.Pipeline.buildCtx();
+  _obsCtx.meta.transaction = _turnTxn;
   await TM.Endturn.Pipeline.run(_obsCtx);
 
   // [slice 7b·2026-05-08] 6 phase legacy 块全删·下游只剩 pipeline 不接的 5.3+ tail
@@ -412,14 +520,18 @@ async function _endTurnCore(){
     // 使用callAI而非raw fetch——自动适配所有模型（OpenAI/Anthropic/本地）
     // 后台摘要不应抢占玩家正在等待的前台推演通道。
     if (typeof callAI === 'function') {
+      var _memoryLease = (typeof _tmCaptureWorldLease === 'function') ? _tmCaptureWorldLease() : null;
+      var _memoryTargetGM = GM;
+      var _memoryTurn = GM.turn;
       callAI(_compressPrompt, 500, null, 'primary', {
         priority: 'background',
         timeoutMs: 45000,
         maxRetries: 1
       }).then(function(txt) {
+        if (_memoryLease && typeof _tmWorldLeaseCurrent === 'function' && !_tmWorldLeaseCurrent(_memoryLease)) return;
         if (txt && txt.length > 30) {
-          GM._aiMemorySummaries.push({ turn: GM.turn, summary: txt.substring(0, 400) });
-          if (GM._aiMemorySummaries.length > 10) GM._aiMemorySummaries = GM._aiMemorySummaries.slice(-10);
+          _memoryTargetGM._aiMemorySummaries.push({ turn: _memoryTurn, summary: txt.substring(0, 400) });
+          if (_memoryTargetGM._aiMemorySummaries.length > 10) _memoryTargetGM._aiMemorySummaries = _memoryTargetGM._aiMemorySummaries.slice(-10);
           DebugLog.log('ai', '记忆摘要生成完成:', txt.length, '字');
         }
       }).catch(function(err) { DebugLog.warn('ai', '记忆摘要生成失败:', err.message); });
@@ -485,6 +597,9 @@ async function _endTurnCore(){
 
     // 异步调用，不await——不阻塞后续逻辑；必须走共享 AI 队列，避免绕过并发控制。
     if (typeof callAIMessages !== 'function') return;
+    var _monthlyLease = (typeof _tmCaptureWorldLease === 'function') ? _tmCaptureWorldLease() : null;
+    var _monthlyTargetGM = GM;
+    var _monthlyTurn = GM.turn;
     callAIMessages([
       { role: 'system', content: '你是' + (P.dynasty || '') + _narrator },
       { role: 'user', content: _mPrompt }
@@ -493,26 +608,28 @@ async function _endTurnCore(){
       timeoutMs: 45000,
       maxRetries: 1
     }).then(function(txt) {
+      if (_monthlyLease && typeof _tmWorldLeaseCurrent === 'function' && !_tmWorldLeaseCurrent(_monthlyLease)) return;
       if (txt && txt.length > 20) {
-        if (!GM.monthlyChronicles) GM.monthlyChronicles = [];
-        GM.monthlyChronicles.push({
-          turn: GM.turn,
-          date: (typeof getTSText === 'function') ? getTSText(GM.turn) : 'T' + GM.turn,
+        if (!_monthlyTargetGM.monthlyChronicles) _monthlyTargetGM.monthlyChronicles = [];
+        _monthlyTargetGM.monthlyChronicles.push({
+          turn: _monthlyTurn,
+          date: (typeof getTSText === 'function') ? getTSText(_monthlyTurn) : 'T' + _monthlyTurn,
           text: txt.substring(0, _wordLimit * 2),
           generatedAt: Date.now()
         });
         // 保留最近24个月
-        if (GM.monthlyChronicles.length > 24) GM.monthlyChronicles = GM.monthlyChronicles.slice(-24);
+        if (_monthlyTargetGM.monthlyChronicles.length > 24) _monthlyTargetGM.monthlyChronicles = _monthlyTargetGM.monthlyChronicles.slice(-24);
         DebugLog.log('settlement', '月度纪事生成完成:', txt.length, '字');
       }
     }).catch(function(err) {
+      if (_monthlyLease && typeof _tmWorldLeaseCurrent === 'function' && !_tmWorldLeaseCurrent(_monthlyLease)) return;
       // 失败fallback：用事件日志直接拼接
       DebugLog.warn('settlement', '月度纪事AI生成失败，使用事件拼接:', err.message);
-      if (!GM.monthlyChronicles) GM.monthlyChronicles = [];
+      if (!_monthlyTargetGM.monthlyChronicles) _monthlyTargetGM.monthlyChronicles = [];
       var fallbackText = _monthEvents.map(function(e) { return e.text; }).join('\u3002') + '\u3002';
-      GM.monthlyChronicles.push({
-        turn: GM.turn,
-        date: (typeof getTSText === 'function') ? getTSText(GM.turn) : 'T' + GM.turn,
+      _monthlyTargetGM.monthlyChronicles.push({
+        turn: _monthlyTurn,
+        date: (typeof getTSText === 'function') ? getTSText(_monthlyTurn) : 'T' + _monthlyTurn,
         text: fallbackText.substring(0, _wordLimit),
         generatedAt: Date.now(),
         isFallback: true
@@ -568,6 +685,7 @@ async function _endTurnCore(){
       _pdHtml += '</div></div>';
       showTurnResult(_pdHtml);
     }
+    await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
     return;
   }
 
@@ -618,10 +736,12 @@ async function _endTurnCore(){
     if (_dynEnd && typeof _showEndgameScreen === 'function') setTimeout(function(){ _showEndgameScreen('defeat', _dynEnd); }, 600);
   } catch(_dynE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dynE, 'endTurn] dynasty endgame') : console.warn('[endTurn] dynasty endgame', _dynE); }
 
+  await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
   GM.busy=false;
   GM._endTurnBusy=false;
   } catch (error) {
     console.error('endTurn error:', error);
+    if (_turnTxn) _tmRollbackEndTurnTransaction(_turnTxn, error);
     // 失败态人话化（2026-07-02）：认得出的 AI 类故障给「哪坏了+去哪修」，认不出回退原文
     var _ehuman = (typeof _tmAiErrHuman === 'function') ? _tmAiErrHuman(error) : null;
     toast(_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message));

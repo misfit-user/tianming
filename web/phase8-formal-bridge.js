@@ -41,8 +41,8 @@
     }
   }
 
-  function formalDraftStore(create){
-    var gm = window.GM;
+  function formalDraftStore(create, targetGM){
+    var gm = targetGM || window.GM;
     if (!gm || typeof gm !== 'object') return null;
     if (!gm._phase8FormalDrafts || typeof gm._phase8FormalDrafts !== 'object' || Array.isArray(gm._phase8FormalDrafts)) {
       if (!create) return null;
@@ -62,9 +62,9 @@
     state.memorialReplies = {};
   }
 
-  function saveFormalDraftsToGM(captureOpen){
+  function saveFormalDraftsToGM(captureOpen, targetGM){
     if (state._savingFormalDrafts) return;
-    var store = formalDraftStore(true);
+    var store = formalDraftStore(true, targetGM);
     if (!store) return;
     state._savingFormalDrafts = true;
     try {
@@ -81,7 +81,7 @@
       store.letterFilter = String(state.letterFilter || 'all');
       store.letterSearch = String(state.letterSearch || '');
       store.memorialReplies = cloneDraftValue(state.memorialReplies || {});
-      store.turn = window.GM && GM.turn || 1;
+      store.turn = (targetGM && targetGM.turn) || (window.GM && GM.turn) || 1;
       store.updatedAt = Date.now();
       store.version = 1;
     } finally {

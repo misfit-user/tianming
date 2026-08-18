@@ -282,8 +282,10 @@ async function aiDeepReadScenario(options) {
         }).then(function(j){
           if (!_tmPlanningSessionCurrent(_session)) throw _staleSessionError();
           var raw = (j.choices&&j.choices[0]&&j.choices[0].message) ? j.choices[0].message.content : '';
-          try { finish(resolve, JSON.parse(raw.match(/\{[\s\S]*\}/)[0])); }
-          catch(e) { finish(resolve, {_raw: raw}); }
+          try {
+            var parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(raw) : JSON.parse(raw);
+            finish(resolve, parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {_raw: raw});
+          } catch(e) { finish(resolve, {_raw: raw}); }
         }, function(error){
           if (!_tmPlanningSessionCurrent(_session)) finish(reject, _staleSessionError());
           else finish(reject, error);

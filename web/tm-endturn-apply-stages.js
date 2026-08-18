@@ -144,6 +144,7 @@ inst._imprisonedTurn = GM.turn||0;
         try {
           if (typeof applyAITurnChanges === 'function') {
             var _applyRes1 = applyAITurnChanges({
+              _strictValidation: true,
               narrative: p1.shizhengji || '',
               changes: Array.isArray(p1.changes) ? p1.changes : [],
               appointments: Array.isArray(p1.appointments) ? p1.appointments : [],
@@ -186,8 +187,14 @@ inst._imprisonedTurn = GM.turn||0;
               Array.prototype.push.apply(_applyRes1.applied.failed, _deathNorm1.failed);
             }
             _surfaceUnappliedChanges(_applyRes1, 'sc1主应用');  // 【落地核对】接住失败清单·让静默 #1 可见
+            if (!_applyRes1 || _applyRes1.ok !== true || (_applyRes1.applied && _applyRes1.applied.failed && _applyRes1.applied.failed.length)) {
+              throw new Error('AI 主写回未能原子提交');
+            }
           }
-        } catch(_applyErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr); }
+        } catch(_applyErr) {
+          (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr);
+          throw _applyErr;
+        }
 
         // 【落地核对·Slice3·2026-06】province_changes 是无 handler 的冗余自由字段(省级意图应走 population_adjustments/central_local_actions/localActions/fiscal 等有 handler 字段)·原本被收集喂下回合却从不 mutate state→纯静默落空。此处显式 surface·让真机从 GM._unappliedChanges 看到 AI 实际往里塞什么·据此再决定补 handler 还是删 schema(不盲改)。
         try {
@@ -214,7 +221,7 @@ inst._imprisonedTurn = GM.turn||0;
               var _niyiRaw = await callAI(_niyiPrompt, 900, undefined, 'secondary', { priority: 'low', timeoutMs: 45000, maxRetries: 1 });
               if (_niyiRaw) {
                 var _niyiArr = null;
-                try { var _nm = String(_niyiRaw).match(/\[[\s\S]*\]/); if (_nm) _niyiArr = JSON.parse(_nm[0]); } catch(_nje) {}
+                try { var _np = (typeof robustParseJSON === 'function') ? robustParseJSON(String(_niyiRaw)) : JSON.parse(String(_niyiRaw)); if (Array.isArray(_np)) _niyiArr = _np; } catch(_nje) {}
                 if (Array.isArray(_niyiArr)) {
                   _niyiArr.forEach(function(o){ if (!o || o.niyi == null) return; var _ix = Number(o.i) - 1; if (_ix >= 0 && _ix < _niyiPend.length) _niyiPend[_ix]._fuchenNiyi = String(o.niyi).slice(0, 120); });
                 }
@@ -235,7 +242,7 @@ inst._imprisonedTurn = GM.turn||0;
               var _zsRaw = await callAI(_zsPrompt, 2400, undefined, 'secondary', { priority: 'low', timeoutMs: 50000, maxRetries: 1 });
               if (_zsRaw) {
                 var _zsArr = null;
-                try { var _zm = String(_zsRaw).match(/\[[\s\S]*\]/); if (_zm) _zsArr = JSON.parse(_zm[0]); } catch (_zje) {}
+                try { var _zp = (typeof robustParseJSON === 'function') ? robustParseJSON(String(_zsRaw)) : JSON.parse(String(_zsRaw)); if (Array.isArray(_zp)) _zsArr = _zp; } catch (_zje) {}
                 if (Array.isArray(_zsArr)) {
                   _zsArr.forEach(function(o){ if (!o || o.body == null) return; var _ix = Number(o.i) - 1; if (_ix < 0 || _ix >= _zsDraft.length) return; var _b = String(o.body).trim(); if (_b.length >= 20 && !/[a-zA-Z]{4,}/.test(_b)) { _zsDraft[_ix].content = _b; _zsDraft[_ix].text = _b; _zsDraft[_ix]._aiBodyDone = true; } });
                 }
@@ -700,6 +707,9 @@ inst._imprisonedTurn = GM.turn||0;
                 shizhengji: ''
               });
               _surfaceUnappliedChanges(_applyRes2, 'reconcile补录');  // 【落地核对】二审补录也接住失败清单
+              if (!_applyRes2 || _applyRes2.ok !== true || (_applyRes2.applied && _applyRes2.applied.failed && _applyRes2.applied.failed.length)) {
+                throw new Error('AI 二审补录未能原子提交');
+              }
               if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
               GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });
               if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);

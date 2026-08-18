@@ -100,13 +100,12 @@ var SaveManager = {
       return false;
     }
 
-    // 序列化全局系统到 GM
+    // 等待保存所需后台任务；序列化只发生在隔离快照上。
     if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave();
-    if (typeof _prepareGMForSave === 'function') _prepareGMForSave();
 
     var _sc = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
     if (typeof _buildSaveState !== 'function') throw new Error('存档快照构造器未就绪');
-    var gameState = _buildSaveState({ format: 'idb', prepare: false });
+    var gameState = _buildSaveState({ format: 'idb' });
     // 打上存档版本号，避免旧存档被误判为 v1 触发全链迁移
     if (typeof SaveMigrations !== 'undefined' && typeof SaveMigrations.stamp === 'function') {
       SaveMigrations.stamp(gameState);
@@ -386,6 +385,13 @@ var SaveManager = {
 
 var _SCROLL_NUMS = ['自动','甲字壹号','甲字贰号','甲字叁号','甲字肆号','甲字伍号','甲字陆号','甲字柒号','甲字捌号','甲字玖号'];
 
+function _saveEsc(value) {
+  if (typeof escHtml === 'function') return escHtml(value);
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function _scrollInkAge(timestamp) {
   var h = (Date.now() - (timestamp||0)) / 3600000;
   if (h < 1) return { cls: 'ink-fresh', label: '墨迹未干' };
@@ -503,7 +509,7 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
   // 当前游戏信息
   if (GM.running) {
     html += '<div style="margin-bottom:var(--space-3);padding:var(--space-2) var(--space-3);background:var(--color-elevated);border-left:3px solid var(--celadon-400);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">';
-    html += _ic('scroll',14) + ' 当前推演：' + (sc ? sc.name : '未知') + ' · 第' + GM.turn + '回合 · ' + (typeof getTSText==='function'?getTSText(GM.turn):'');
+    html += _ic('scroll',14) + ' 当前推演：' + _saveEsc(sc ? sc.name : '未知') + ' · 第' + _saveEsc(GM.turn) + '回合 · ' + _saveEsc(typeof getTSText==='function'?getTSText(GM.turn):'');
     html += '</div>';
   }
 
@@ -514,9 +520,9 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
     html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);">';
     html += '<div>';
     html += '<span style="color:var(--vermillion-400, #c04030);font-weight:700;">⚑ 过回合前快照</span>';
-    html += ' · 第' + preEndturnRec.turn + '回合 · ' + (preEndturnRec.scenarioName || '');
-    if (preEndturnRec.eraName) html += ' · ' + preEndturnRec.eraName;
-    html += '<br><span style="font-size:var(--text-xs);color:var(--color-foreground-muted);">' + _preTime + ' · 崩溃恢复用·正常推演完成后自动覆盖</span>';
+    html += ' · 第' + _saveEsc(preEndturnRec.turn) + '回合 · ' + _saveEsc(preEndturnRec.scenarioName || '');
+    if (preEndturnRec.eraName) html += ' · ' + _saveEsc(preEndturnRec.eraName);
+    html += '<br><span style="font-size:var(--text-xs);color:var(--color-foreground-muted);">' + _saveEsc(_preTime) + ' · 崩溃恢复用·正常推演完成后自动覆盖</span>';
     html += '</div>';
     html += '<button class="bt bs bsm" onclick="loadPreEndturnSnapshot()" style="white-space:nowrap;">启封此卷</button>';
     html += '</div>';
@@ -540,15 +546,15 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
 
       html += '<div class="scroll-save-card ' + ink.cls + freshCls + '" style="--ribbon-h:' + ribbon.h + ';--ribbon-c:' + ribbon.c + ';" onclick="event.stopPropagation();">';
       // 归档编号
-      html += '<div class="scroll-archive-id">' + archiveId + '</div>';
+      html += '<div class="scroll-archive-id">' + _saveEsc(archiveId) + '</div>';
       // 标题：玩家自取名优先(escHtml 防 XSS)·无名字时回退自动生成的卷宗标题
-      html += '<div class="scroll-title">' + (save.name ? (typeof escHtml==='function'?escHtml(save.name):save.name) : title) + '</div>';
+      html += '<div class="scroll-title">' + _saveEsc(save.name || title) + '</div>';
       // 元数据 + P11: 存档预览增强
       html += '<div class="scroll-meta">';
-      html += save.scenarioName + ' · 第' + save.turn + '回合';
-      if (save.eraName) html += ' · ' + save.eraName;
+      html += _saveEsc(save.scenarioName) + ' · 第' + _saveEsc(save.turn) + '回合';
+      if (save.eraName) html += ' · ' + _saveEsc(save.eraName);
       html += '<br>';
-      html += '<span style="font-size:0.66rem;">' + ink.label + ' · ' + new Date(save.timestamp).toLocaleString('zh-CN') + '</span>';
+      html += '<span style="font-size:0.66rem;">' + _saveEsc(ink.label) + ' · ' + _saveEsc(new Date(save.timestamp).toLocaleString('zh-CN')) + '</span>';
       html += '</div>';
       // 朱印
       html += '<div class="save-seal' + sealType + sealAnim + '">' + (isAuto ? '自' : '封') + '</div>';
@@ -564,7 +570,7 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
       // 空卷·增本卡位直接「调入外卷」按钮
       html += '<div class="scroll-save-card" style="--ribbon-h:0%;--ribbon-c:transparent;" onclick="event.stopPropagation();">';
       html += '<div class="scroll-empty">';
-      html += '<div class="scroll-archive-id">' + archiveId + '</div>';
+      html += '<div class="scroll-archive-id">' + _saveEsc(archiveId) + '</div>';
       html += '<div style="font-size:var(--text-sm);color:var(--color-foreground-muted);">此卷暂缺</div>';
       html += '<div class="scroll-empty-hint">轻触归档</div>';
       html += '<div style="display:flex;flex-direction:column;gap:var(--space-1);margin-top:var(--space-2);">';
@@ -623,10 +629,10 @@ function openSaveCompare() {
     html += '<h3 style="color:var(--gold-400);margin-bottom:1rem;">\u2696 \u5377\u5B97\u5BF9\u6BD4</h3>';
     html += '<div style="display:flex;gap:1rem;margin-bottom:1rem;">';
     html += '<div style="flex:1;"><label style="font-size:0.8rem;color:var(--color-foreground-muted);">卷宗A</label><select id="cmp-a" style="width:100%;padding:0.4rem;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:4px;">';
-    validSaves.forEach(function(s) { html += '<option value="' + s.id + '">' + (s.name||s.id) + ' (T' + s.turn + ')</option>'; });
+    validSaves.forEach(function(s) { html += '<option value="' + _saveEsc(s.id) + '">' + _saveEsc(s.name||s.id) + ' (T' + _saveEsc(s.turn) + ')</option>'; });
     html += '</select></div>';
     html += '<div style="flex:1;"><label style="font-size:0.8rem;color:var(--color-foreground-muted);">卷宗B</label><select id="cmp-b" style="width:100%;padding:0.4rem;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);border-radius:4px;">';
-    validSaves.forEach(function(s, i) { html += '<option value="' + s.id + '"' + (i === 1 ? ' selected' : '') + '>' + (s.name||s.id) + ' (T' + s.turn + ')</option>'; });
+    validSaves.forEach(function(s, i) { html += '<option value="' + _saveEsc(s.id) + '"' + (i === 1 ? ' selected' : '') + '>' + _saveEsc(s.name||s.id) + ' (T' + _saveEsc(s.turn) + ')</option>'; });
     html += '</select></div></div>';
     html += '<button class="bt bp" style="width:100%;" onclick="_doSaveCompare()">开始对比</button>';
     html += '<div id="cmp-result" style="margin-top:1rem;"></div>';
@@ -673,11 +679,11 @@ function _doSaveCompare() {
     // 朝代阶段对比
     var phaseA = (gA.eraState || {}).dynastyPhase || '?', phaseB = (gB.eraState || {}).dynastyPhase || '?';
     if (phaseA !== phaseB) {
-      html += '<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--gold-400);">朝代阶段：' + phaseA + ' → ' + phaseB + '</div>';
+      html += '<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--gold-400);">朝代阶段：' + _saveEsc(phaseA) + ' → ' + _saveEsc(phaseB) + '</div>';
     }
     result.innerHTML = html;
   }).catch(function(err) {
-    result.innerHTML = '<div style="color:var(--vermillion-400);">加载失败: ' + err.message + '</div>';
+    result.innerHTML = '<div style="color:var(--vermillion-400);">加载失败: ' + _saveEsc(err && err.message || err) + '</div>';
   });
 }
 
@@ -688,11 +694,11 @@ function showScrollConfirm(opts) {
   var boxCls = 'rice-paper-box' + (opts.danger ? ' danger' : '');
   var okCls = opts.danger ? 'bt bd' : 'bt bp';
   ov.innerHTML = '<div class="' + boxCls + '">' +
-    '<div class="rice-paper-title">' + (opts.title || '请再斟酌') + '</div>' +
-    '<div class="rice-paper-body">' + (opts.body || '') + '</div>' +
+    '<div class="rice-paper-title">' + _saveEsc(opts.title || '请再斟酌') + '</div>' +
+    '<div class="rice-paper-body">' + (opts.bodyHtml || _saveEsc(opts.body || '')) + '</div>' +
     '<div class="rice-paper-actions">' +
-    '<button class="bt bs bsm" id="_rpc_cancel">' + (opts.cancelText || '搁置') + '</button>' +
-    '<button class="' + okCls + ' bsm" id="_rpc_ok">' + (opts.okText || '确认') + '</button>' +
+    '<button class="bt bs bsm" id="_rpc_cancel">' + _saveEsc(opts.cancelText || '搁置') + '</button>' +
+    '<button class="' + okCls + ' bsm" id="_rpc_ok">' + _saveEsc(opts.okText || '确认') + '</button>' +
     '</div></div>';
   document.body.appendChild(ov);
   var cleanup = function() { ov.remove(); };
@@ -709,7 +715,7 @@ function _playJadeSealAnimation(glyph) {
   var g = glyph || '封';
   var ov = document.createElement('div');
   ov.className = 'jade-seal-overlay';
-  ov.innerHTML = '<div class="jade-seal-glyph">' + g + '</div>';
+  ov.innerHTML = '<div class="jade-seal-glyph">' + _saveEsc(g) + '</div>';
   document.body.appendChild(ov);
   setTimeout(function() { if (ov.parentNode) ov.remove(); }, 900);
 }
@@ -754,7 +760,7 @@ function saveToSlot(slotId) {
 function loadSaveSlot(slotId) {
   showScrollConfirm({
     title: '启封此卷？',
-    body: '一经启封，当前推演进度将被覆盖<span class="rice-paper-emphasis">（若未封存）</span>。史官将抄录副本，恭迎御览。',
+    bodyHtml: '一经启封，当前推演进度将被覆盖<span class="rice-paper-emphasis">（若未封存）</span>。史官将抄录副本，恭迎御览。',
     okText: '启封御览',
     onOk: function() {
       toast('史官正在抄录副本……');
@@ -770,7 +776,7 @@ function loadSaveSlot(slotId) {
 function loadPreEndturnSnapshot() {
   showScrollConfirm({
     title: '启封过回合前快照？',
-    body: '回到本回合<span class="rice-paper-emphasis">推演开始前</span>·诏令/批复/对话/调动保留·AI 推演需重新执行。',
+    bodyHtml: '回到本回合<span class="rice-paper-emphasis">推演开始前</span>·诏令/批复/对话/调动保留·AI 推演需重新执行。',
     okText: '启封御览',
     onOk: function() {
       toast('史官正在抄录副本……');
@@ -803,7 +809,7 @@ function loadPreEndturnSnapshot() {
 function deleteSaveSlot(slotId) {
   showScrollConfirm({
     title: '将此案卷付之丙火？',
-    body: '此举<span class="rice-paper-emphasis">不可逆</span>。卷成灰烬，再难追寻。',
+    bodyHtml: '此举<span class="rice-paper-emphasis">不可逆</span>。卷成灰烬，再难追寻。',
     okText: '付之丙火',
     danger: true,
     onOk: function() {

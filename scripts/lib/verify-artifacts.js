@@ -35,6 +35,51 @@ function sha256Buffer(buf) {
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
+function verifyAuthenticatedDocument(document, expectedType, publicKeyPath) {
+  const problems = [];
+  const auth = document && document.auth;
+  if (!auth || auth.algorithm !== 'Ed25519') return { ok: false, problems: ['缺少 Ed25519 发布者签名'], payload: null };
+  if (typeof auth.payload !== 'string' || typeof auth.signature !== 'string') {
+    return { ok: false, problems: ['签名字段不完整'], payload: null };
+  }
+  let payloadBytes;
+  let signature;
+  try {
+    payloadBytes = Buffer.from(auth.payload, 'base64');
+    signature = Buffer.from(auth.signature, 'base64');
+  } catch (_) {
+    return { ok: false, problems: ['签名不是有效 base64'], payload: null };
+  }
+  if (!payloadBytes.length || signature.length !== 64
+      || payloadBytes.toString('base64') !== auth.payload
+      || signature.toString('base64') !== auth.signature) {
+    problems.push('签名编码不是规范 Ed25519/base64');
+  }
+  const keyFile = path.resolve(publicKeyPath || path.join(__dirname, '..', '..', 'resources', 'hot-update-public-key.pem'));
+  if (!fs.existsSync(keyFile)) return { ok: false, problems: problems.concat(['固定热更新公钥缺失']), payload: null };
+  let publicKey;
+  try { publicKey = crypto.createPublicKey(fs.readFileSync(keyFile)); }
+  catch (error) { return { ok: false, problems: problems.concat(['固定热更新公钥不可解析·' + error.message]), payload: null }; }
+  const der = publicKey.export({ type: 'spki', format: 'der' });
+  const keyId = crypto.createHash('sha256').update(der).digest('hex').slice(0, 24);
+  if (auth.keyId !== keyId) problems.push('签名 keyId 与固定公钥不匹配');
+  if (signature.length === 64 && !crypto.verify(null, payloadBytes, publicKey, signature)) problems.push('Ed25519 发布者签名无效');
+  let payload = null;
+  try { payload = JSON.parse(payloadBytes.toString('utf8')); }
+  catch (_) { problems.push('已签名载荷不是有效 JSON'); }
+  if (payload) {
+    if (payload.type !== expectedType) problems.push('已签名载荷 type 异常·' + payload.type);
+    if (payload.appId !== 'com.tianming.history') problems.push('已签名载荷 appId 异常·' + payload.appId);
+    if (!/^(stable|beta)$/.test(String(payload.channel || ''))) problems.push('已签名载荷 channel 异常·' + payload.channel);
+    const expiry = Date.parse(payload.expiresAt || '');
+    if (!Number.isFinite(expiry) || expiry < Date.now() - 5 * 60 * 1000) problems.push('已签名载荷已过期或无有效期');
+    const outer = Object.assign({}, document);
+    delete outer.auth;
+    if (JSON.stringify(outer) !== JSON.stringify(payload)) problems.push('签名外层字段与已签名载荷不一致');
+  }
+  return { ok: problems.length === 0, problems, payload };
+}
+
 // ── capgo 差量制品复验 ────────────────────────────────────────────────────────
 // opts: { manifestPath, zipPath?, filesDir?, filesZipPath?, baselinePath?, baseUrl?, version?, sampleN? }
 function verifyCapgo(opts) {
@@ -124,8 +169,14 @@ function verifyDesktop(opts) {
   const problems = [];
   const stats = {};
   const AdmZip = require('adm-zip');
-  const feed = readJson(opts.feedPath);
-  const manifest = readJson(opts.manifestPath);
+  const feedDocument = readJson(opts.feedPath);
+  const manifestDocument = readJson(opts.manifestPath);
+  const feedAuth = verifyAuthenticatedDocument(feedDocument, 'tianming-hot-update-feed', opts.publicKeyPath);
+  const manifestAuth = verifyAuthenticatedDocument(manifestDocument, 'tianming-hot-update', opts.publicKeyPath);
+  feedAuth.problems.forEach(problem => problems.push('feed auth·' + problem));
+  manifestAuth.problems.forEach(problem => problems.push('manifest auth·' + problem));
+  const feed = feedAuth.payload || feedDocument;
+  const manifest = manifestAuth.payload || manifestDocument;
 
   if (feed.type !== 'tianming-hot-update-feed') problems.push('feed.type 异常·' + feed.type);
   if (manifest.type !== 'tianming-hot-update') problems.push('manifest.type 异常·' + manifest.type);
@@ -137,6 +188,18 @@ function verifyDesktop(opts) {
   if (String(feed.sha256 || '').toLowerCase() !== actualSha) problems.push('feed.sha256 与 zip 实际不符');
 
   const zip = new AdmZip(opts.zipPath);
+  const embeddedEntry = zip.getEntry('manifest.json');
+  if (!embeddedEntry) problems.push('zip 缺 manifest.json');
+  else {
+    try {
+      const embeddedDocument = JSON.parse(embeddedEntry.getData().toString('utf8'));
+      const embeddedAuth = verifyAuthenticatedDocument(embeddedDocument, 'tianming-hot-update', opts.publicKeyPath);
+      embeddedAuth.problems.forEach(problem => problems.push('zip manifest auth·' + problem));
+      if (JSON.stringify(embeddedDocument) !== JSON.stringify(manifestDocument)) problems.push('zip manifest 与独立 manifest 不同字节语义');
+    } catch (error) {
+      problems.push('zip manifest 不可解析·' + error.message);
+    }
+  }
   const zipSet = new Set(zip.getEntries().filter(e => !e.isDirectory).map(e => e.entryName.replace(/\\/g, '/')));
   zipSet.delete('manifest.json');
   const mSet = new Set((manifest.files || []).map(f => f.path));
@@ -148,14 +211,17 @@ function verifyDesktop(opts) {
   onlyManifest.slice(0, 10).forEach(p => problems.push('仅在清单·' + p));
   if (onlyZip.length > 10 || onlyManifest.length > 10) problems.push('…对账差异共 ' + (onlyZip.length + onlyManifest.length) + ' 处');
 
-  ['index.html', '_app_main.js', '_app_preload.js', 'changelog.json'].forEach(p => {
+  ['index.html', 'changelog.json'].forEach(p => {
     if (!mSet.has(p)) problems.push('必含文件缺失·' + p);
+  });
+  ['_app_main.js', '_app_preload.js'].forEach(p => {
+    if (mSet.has(p) || zipSet.has(p)) problems.push('内容 OTA 禁止携带 Electron 可执行代码·' + p);
   });
 
   return { ok: problems.length === 0, problems, stats };
 }
 
-module.exports = { verifyCapgo, verifyDesktop, readJson, sha256File, sha256Buffer };
+module.exports = { verifyCapgo, verifyDesktop, verifyAuthenticatedDocument, readJson, sha256File, sha256Buffer };
 
 // ── CLI ──
 if (require.main === module) {

@@ -350,7 +350,9 @@ function applyAIMapChanges(aiResponse, mapData) {
     if (!aiResponse.map_changes) return;
 
     if (typeof TMMapRuntime !== 'undefined' && TMMapRuntime && typeof TMMapRuntime.applyAIMapChanges === 'function') {
-        TMMapRuntime.applyAIMapChanges(aiResponse, mapData);
+        // TMMapRuntime owns the live GM map.  Do not forward legacy P.map
+        // references, which are immutable scenario templates after game start.
+        TMMapRuntime.applyAIMapChanges(aiResponse);
         return;
     }
 

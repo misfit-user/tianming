@@ -146,6 +146,10 @@ function loadGame() {
     P.ai.model = 'mock-model';
     if (!P.conf) P.conf = {};
     P.conf.npcAiPrecision = false;
+    // 本集成用例验证完整回合事务，不验证 IndexedDB 驱动；给前置恢复点提供确定性成功写口。
+    if (typeof TM_SaveDB !== 'undefined' && TM_SaveDB) {
+      TM_SaveDB.save = async function(){ window.__flow.preEndTurnSave = (window.__flow.preEndTurnSave || 0) + 1; return true; };
+    }
   `, sandbox);
 
   sandbox.__flow = flow;
@@ -450,10 +454,14 @@ async function main() {
   // ci-smokes 走 run-smokes --no-retry·最多 8 路并行(单脚本硬杀 120s)·CPU 争抢下本段墙钟被拉长
   //   (实测隔离 10-11s → 8 路并行 22.7s)·原 20s 软死线正卡在争抢边缘·重负载偶超 → 假红
   //   "timeout waiting for deferred AI payload"。放宽到 60s(远低于 120s 硬杀)吸收并行争抢·不改断言/逻辑。
-  await waitFor('deferred AI payload', () => {
-    const p = sandbox.GM && sandbox.GM._pendingShijiModal;
-    return p && p.aiReady && p.payload;
-  }, 60000);
+  try {
+    await waitFor('deferred AI payload', () => {
+      const p = sandbox.GM && sandbox.GM._pendingShijiModal;
+      return p && p.aiReady && p.payload;
+    }, 60000);
+  } catch (e) {
+    throw new Error(e.message + '\nstate=' + summarize(sandbox));
+  }
 
   assert(sandbox.GM.turn === startTurn + 1, 'end-turn systems should advance exactly one turn');
   const logBeforeCourtEnd = sandbox.TM.Endturn.Pipeline.lastRun();
@@ -481,6 +489,8 @@ async function main() {
     'in-turn court should count for current turn');
   assert(summary.courtMeter && summary.courtMeter.byTurn && summary.courtMeter.byTurn[String(startTurn + 1)] >= 1,
     'post-turn court should count for next turn');
+  assert(!summary.warns.some((line) => /deep.*mobility|yearlyTransitions/.test(line)),
+    'HujiDeepFill should initialize or repair the class mobility ledger before ticking');
 
   console.log('[full-turn-flow] PASS');
   console.log(JSON.stringify(summary, null, 2));

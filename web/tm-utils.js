@@ -1294,6 +1294,10 @@ function escHtml(s){
   if(s===null||s===undefined)return'';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+/** 数值默认值：只在值不是有限 number 时回退；显式 0 必须原样保留。 */
+function finiteNumberOr(value, fallback){
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
 /**
  * 所在地别名表：同一城市/宫城的多种叫法。
  * 用于 _isSameLocation 匹配——"紫禁城·乾清宫"/"坤宁宫"/"京师·文渊阁"视为同城。
@@ -1531,9 +1535,63 @@ function _fuzzyFindFac(name) {
   return GM.facs.find(function(f) { return f.name.replace(/[\s·\-—]/g, '') === cl; }) || null;
 }
 
-/** 从 AI 响应文本中提取 JSON（4级降级解析，借鉴 ChongzhenSim） */
+/**
+ * 从 AI 响应文本中提取唯一 JSON 值。
+ *
+ * 正式游戏稍后由 tm-ai-infra.js 安装带修复层的同名实现；编辑器不会加载
+ * tm-ai-infra.js，因此这里必须有一个严格、平衡括号、拒绝多值歧义的基础实现。
+ */
+function robustParseJSON(text) {
+  if (text == null) return null;
+  var raw = String(text).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (_) {}
+
+  function balancedAt(start) {
+    var first = raw[start];
+    if (first !== '{' && first !== '[') return null;
+    var stack = [], inString = false, escaped = false;
+    for (var i = start; i < raw.length; i++) {
+      var ch = raw[i];
+      if (escaped) { escaped = false; continue; }
+      if (ch === '\\') { escaped = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === '{' || ch === '[') stack.push(ch);
+      else if (ch === '}' || ch === ']') {
+        var expected = ch === '}' ? '{' : '[';
+        if (!stack.length || stack.pop() !== expected) return null;
+        if (!stack.length) return { end: i, value: raw.slice(start, i + 1) };
+      }
+    }
+    return null;
+  }
+
+  var parsed = null, found = 0;
+  for (var at = 0; at < raw.length; at++) {
+    if (raw[at] !== '{' && raw[at] !== '[') continue;
+    var block = balancedAt(at);
+    if (!block) continue;
+    try {
+      var value = JSON.parse(block.value);
+      parsed = value;
+      found++;
+      if (found > 1) return null;
+      at = block.end;
+    } catch (_) {}
+  }
+  return found === 1 ? parsed : null;
+}
 /** extractJSON —— 保留为 robustParseJSON 的别名（向后兼容） */
 function extractJSON(text) { return robustParseJSON(text); }
+/** 兼容仍以 RegExp match 数组消费解析结果的旧编辑器调用点；不再执行贪婪截取。 */
+function extractJSONMatch(text, expectedType) {
+  var value = extractJSON(text);
+  if (value == null) return null;
+  if (expectedType === 'array' && !Array.isArray(value)) return null;
+  if (expectedType === 'object' && (Array.isArray(value) || typeof value !== 'object')) return null;
+  return [JSON.stringify(value)];
+}
 /** 调试日志：仅在 P.conf.debugLog 为 true 时输出（兼容旧调用，新代码用 DebugLog.log） */
 function _dbg(){if(P&&P.conf&&P.conf.debugLog)console.log.apply(console,arguments);}
 function gSid(s){var el=_$(s);return el?el.value:(P.scenarios[0]?P.scenarios[0].id:"");}
@@ -1598,6 +1656,9 @@ function _flushPostTurnModalQueue() {
 }
 
 function showTurnResult(html, idx){
+  // 结束回合仍在事务 commit barrier 内时只暂存结果。最终 autosave + slot_0 都成功后
+  // 由 _tmCommitEndTurnTransaction 放出；失败回滚时丢弃，避免 UI 先宣告一个未提交回合。
+  if (typeof _tmMaybeStageTurnResult === 'function' && _tmMaybeStageTurnResult(html, idx)) return;
   // 后朝进行中·排队延后（朝会结束后再弹）
   if (typeof _isPostTurnActive === 'function' && _isPostTurnActive()) {
     _queuePostTurnModal(function(){ showTurnResult(html, idx); }, '史记');

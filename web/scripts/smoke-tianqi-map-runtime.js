@@ -95,8 +95,8 @@ function main() {
   assert(ctx.TMMapRuntime, 'TMMapRuntime missing');
   ctx.TMMapRuntime.bind(ctx.P.map);
   assert(ctx.GM.mapData && ctx.GM.mapData.regions.length === 43, 'GM.mapData did not receive live map');
-  assert(ctx.P.map === ctx.GM.mapData, 'P.map is not aliased to GM.mapData');
-  assert(ctx.P.mapData === ctx.GM.mapData, 'P.mapData is not aliased to GM.mapData');
+  assert(ctx.P.map !== ctx.GM.mapData, 'P.map template must not alias live GM.mapData');
+  assert(ctx.P.mapData !== ctx.GM.mapData, 'P.mapData template must not alias live GM.mapData');
 
   const aiContext = ctx.generateMapContextForAI(ctx.P.map, ctx.P);
   assert(/地图总览/.test(aiContext) && /43/.test(aiContext), 'AI map context missing overview');
@@ -123,6 +123,9 @@ function main() {
   assert(changed.ownerKey === (laterJin.key || laterJin.id), `ownerKey did not mirror Later Jin key: ${changed.ownerKey} (expect ${laterJin.key || laterJin.id})`);
   assert(changed.development === Math.min(100, oldDevelopment + 7), `development did not change: ${changed.development}`);
   assert(changed.troops === oldTroops + 1200, `troops did not change: ${changed.troops}`);
+  const templateTarget = ctx.P.map.regions.find(r => r.id === 'ming-28');
+  assert(templateTarget.owner !== laterJin.id && templateTarget.development === oldDevelopment && templateTarget.troops === oldTroops,
+    'live map mutation leaked back into scenario template P.map');
   assert(ctx.GM.turnChanges.map.length >= 3, 'map changes were not recorded in GM.turnChanges.map');
 
   ctx.TMMapRuntime.updateRegion('ming-28', { data: { smokeMutableField: 1 }, prosperity: 66 }, { reason: 'smoke test data patch' });

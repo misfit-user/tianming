@@ -78,7 +78,7 @@ function openAbdication() {
   }).sort(function(a, b) {
     var _d = _abdRank(b) - _abdRank(a);
     if (_d) return _d;
-    return (b.rankLevel || 9) - (a.rankLevel || 9);
+    return finiteNumberOr(b.rankLevel, 9) - finiteNumberOr(a.rankLevel, 9);
   });
   var html = '<div style="padding:1.5rem;max-width:480px;">';
   html += '<div style="text-align:center;margin-bottom:1rem;"><div style="font-size:1.2rem;color:var(--gold);font-weight:700;">\u7985\u8BA9\u9000\u4F4D</div>';
@@ -88,7 +88,7 @@ function openAbdication() {
   } else {
     html += '<div style="max-height:250px;overflow-y:auto;">';
     candidates.slice(0, 10).forEach(function(c, i) {
-      var intel = c.intelligence || 50, admin = c.administration || 50;
+      var intel = finiteNumberOr(c.intelligence, 50), admin = finiteNumberOr(c.administration, 50);
       var _safeName = escHtml(c.name).replace(/'/g, '&#39;').replace(/\\/g, '\\\\');
       html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;margin-bottom:0.3rem;background:var(--bg-2);border-radius:6px;cursor:pointer;" onclick="_confirmAbdication(\'' + _safeName + '\')">';
       var _kinTag = c.name === _cpName ? '<span style="color:var(--gold);font-size:0.7rem;margin-left:4px;">\u3010\u50A8\u541B\u3011</span>' : (_kidSet[c.name] || c._royalChild) ? '<span style="color:var(--gold);font-size:0.7rem;margin-left:4px;">\u3010\u7687\u55E3\u3011</span>' : '';
@@ -207,7 +207,7 @@ function _historyCompare() {
   }).join('\n');
   var currentState = '';
   if (GM.eraState) currentState += '阶段：' + (GM.eraState.dynastyPhase || '?');
-  var factions = (GM.facs || []).map(function(f) { return f.name + '(实力' + (f.strength||50) + ')'; }).join('、');
+  var factions = (GM.facs || []).map(function(f) { return f.name + '(实力' + finiteNumberOr(f.strength, 50) + ')'; }).join('、');
 
   var prompt = '你是一位历史学家。以下是一个' + dynasty + (era ? '·' + era : '') + '时期的历史模拟游戏当前状态（' + turnInfo + '，第' + GM.turn + '回合）：\n\n'
     + '【当前国势】' + currentState + '\n'
@@ -251,9 +251,9 @@ function _shijiDownload(txt){
     P.ai.key   = c.key   || P.ai.key   || "";
     P.ai.url   = c.url   || P.ai.url   || "";
     P.ai.model = c.model || P.ai.model || "";
-    if (c.temp != null) P.ai.temp = parseFloat(c.temp) || 0.8;
-    if (c.tok != null) P.ai.tok = parseInt(c.tok, 10) || 2000;
-    if (c.mem != null) P.ai.mem = parseInt(c.mem, 10) || 20;
+    if (c.temp != null) P.ai.temp = finiteNumberOr(parseFloat(c.temp), 0.8);
+    if (c.tok != null) P.ai.tok = finiteNumberOr(parseInt(c.tok, 10), 2000);
+    if (c.mem != null) P.ai.mem = finiteNumberOr(parseInt(c.mem, 10), 20);
     if (c.prompt != null) P.ai.prompt = c.prompt;
     if (c.rules != null) P.ai.rules = c.rules;
   }
@@ -747,10 +747,10 @@ function _renderDifangPanel(force) {
       acc.fugitives += sub.fugitives; acc.hiddenCount += sub.hiddenCount;
       acc.remit += sub.remit; acc.actual += sub.actual;
       acc.pubMoney += sub.pubMoney; acc.pubGrain += sub.pubGrain; acc.pubCloth += sub.pubCloth;
-      var w = sub.mouths || 1;
+      var w = finiteNumberOr(sub.mouths, 1);
       if (sub.minxin != null) acc.minxinW += sub.minxin * w;
       if (sub.corruption != null) acc.corrW += sub.corruption * w;
-      acc.envLoadSum += (sub.envLoad || 0) * (sub.count||1);
+      acc.envLoadSum += finiteNumberOr(sub.envLoad, 0) * finiteNumberOr(sub.count, 1);
       acc.count += sub.count;
     });
     var totalW = acc.mouths || 1;
@@ -774,11 +774,11 @@ function _renderDifangPanel(force) {
     var _agg = _dfRecurseAggregate(d);
     // 新字段：population 是对象
     if (d.population && typeof d.population === 'object' && d.population.mouths > 0) {
-      item.pop = d.population.mouths || 0;
-      item.households = d.population.households || 0;
-      item.ding = d.population.ding || 0;
-      item.fugitives = d.population.fugitives || 0;
-      item.hiddenCount = d.population.hiddenCount || 0;
+      item.pop = finiteNumberOr(d.population.mouths, 0);
+      item.households = finiteNumberOr(d.population.households, 0);
+      item.ding = finiteNumberOr(d.population.ding, 0);
+      item.fugitives = finiteNumberOr(d.population.fugitives, 0);
+      item.hiddenCount = finiteNumberOr(d.population.hiddenCount, 0);
     } else if (_agg && _agg.mouths > 0) {
       // 顶级没自身人口 → 用叶子聚合
       item.pop = _agg.mouths;
@@ -787,8 +787,9 @@ function _renderDifangPanel(force) {
       item.fugitives = _agg.fugitives;
       item.hiddenCount = _agg.hiddenCount;
     } else {
-      item.pop = (typeof d.population === 'number' ? d.population : 0) || (ps ? ps.population : 0) || 0;
-      item.households = d.households || (ps ? ps.households : 0) || Math.floor(item.pop/5);
+      item.pop = typeof d.population === 'number' && Number.isFinite(d.population)
+        ? d.population : finiteNumberOr(ps && ps.population, 0);
+      item.households = finiteNumberOr(d.households, finiteNumberOr(ps && ps.households, Math.floor(item.pop/5)));
       item.ding = Math.floor(item.pop*0.25);
       item.fugitives = 0; item.hiddenCount = 0;
     }
@@ -796,7 +797,7 @@ function _renderDifangPanel(force) {
     item.minxin = (typeof d.minxin === 'number') ? d.minxin : (_agg && _agg.minxin != null ? _agg.minxin : null);
     item.corruption = (typeof d.corruption === 'number') ? d.corruption : (_agg && _agg.corruption != null ? _agg.corruption : ((ps && ps.corruption) || 0));
     item.unrest = item.minxin != null ? Math.max(0, 100 - item.minxin) : ((ps && ps.unrest) || 0);
-    item.prosperity = d.prosperity || (ps ? (ps.prosperity||ps.development) : 0) || 0;
+    item.prosperity = finiteNumberOr(d.prosperity, finiteNumberOr(ps && ps.prosperity, finiteNumberOr(ps && ps.development, 0)));
     item.remit = (d.fiscal && d.fiscal.remittedToCenter) || (_agg && _agg.remit) || 0;
     item.actualRevenue = (d.fiscal && d.fiscal.actualRevenue) || (_agg && _agg.actual) || 0;
     item.taxRevenue = item.remit || item.actualRevenue || (ps ? ps.taxRevenue : 0) || 0;
@@ -812,14 +813,16 @@ function _renderDifangPanel(force) {
       item.stability = item.minxin;
     } else {
       var localChars = (GM.chars || []).filter(function(c) { return c.alive !== false && _isSameLocation(c.location, d.name); });
-      var avgLoy = localChars.length > 0 ? Math.round(localChars.reduce(function(s,c){ return s+(c.loyalty||50); },0)/localChars.length) : 50;
+      var avgLoy = localChars.length > 0 ? Math.round(localChars.reduce(function(s,c){ return s + finiteNumberOr(c.loyalty, 50); },0)/localChars.length) : 50;
       item.stability = Math.max(0, Math.min(100, avgLoy - item.unrest * 0.5));
     }
     // 趋势
     var prev = GM._prevProvinceStats && GM._prevProvinceStats[d.name];
     item.trend = {};
     if (prev) {
-      item.trend.prosperity = (item.prosperity||0) > (prev.prosperity||prev.development||0) ? '\u2191' : (item.prosperity||0) < (prev.prosperity||prev.development||0) ? '\u2193' : '';
+      var _curProsperity = finiteNumberOr(item.prosperity, 0);
+      var _prevProsperity = finiteNumberOr(prev.prosperity, finiteNumberOr(prev.development, 0));
+      item.trend.prosperity = _curProsperity > _prevProsperity ? '\u2191' : _curProsperity < _prevProsperity ? '\u2193' : '';
       item.trend.corruption = (item.corruption||0) > (prev.corruption||0) ? '\u2191' : (item.corruption||0) < (prev.corruption||0) ? '\u2193' : '';
       item.trend.unrest = (item.unrest||0) > (prev.unrest||0) ? '\u2191' : (item.unrest||0) < (prev.unrest||0) ? '\u2193' : '';
     }
@@ -838,7 +841,7 @@ function _renderDifangPanel(force) {
   _allDivs.sort(function(a,b) {
     if (_dfSort === 'unrest') return (b.unrest||0) - (a.unrest||0);
     if (_dfSort === 'corruption') return (b.corruption||0) - (a.corruption||0);
-    if (_dfSort === 'population') return (b.pop||0) - (a.pop||0);
+    if (_dfSort === 'population') return finiteNumberOr(b.pop, 0) - finiteNumberOr(a.pop, 0);
     if (_dfSort === 'tax') return (b.taxRevenue||b.tax||0) - (a.taxRevenue||a.tax||0);
     return a.name.localeCompare(b.name);
   });
@@ -951,7 +954,7 @@ function _renderDifangPanel(force) {
     var _mxVal = item.minxin != null ? Math.round(item.minxin) : null;
     var _crCls = item.corruption >= 60 ? ' hi' : item.corruption >= 40 ? ' mid' : '';
     var _crVal = Math.round(item.corruption||0);
-    var _prVal = Math.round(item.prosperity||0);
+    var _prVal = Math.round(finiteNumberOr(item.prosperity, 0));
     var _unCls = item.unrest >= 60 ? ' hi' : item.unrest >= 35 ? ' mid' : '';
     var _unVal = Math.round(item.unrest||0);
     html += '<div class="df-bars">';
@@ -1044,7 +1047,7 @@ function _renderDifangPanel(force) {
       var _hasWar = GM.activeWars.some(function(w) { return (w.location||'').indexOf(item.name) >= 0 || (w.province||'') === item.name; });
       if (_hasWar) _evChips.push({ cls:'war', txt:'\u6218\u4E8B' });
     }
-    if ((item.yearOutput||1) > 1.2 && !isCrisis) _evChips.push({ cls:'bumper', txt:'\u4E30\u79BB' });
+    if (finiteNumberOr(item.yearOutput, 1) > 1.2 && !isCrisis) _evChips.push({ cls:'bumper', txt:'\u4E30\u79BB' });
     if (_evChips.length) {
       html += '<div class="df-events">';
       _evChips.slice(0, 5).forEach(function(e) { html += '<span class="df-event-chip ' + e.cls + '">' + escHtml(e.txt) + '</span>'; });
@@ -1057,7 +1060,7 @@ function _renderDifangPanel(force) {
       var _portChar = item.governor ? item.governor.charAt(0) : '?';
       var _portImg = (item.govCh && item.govCh.portrait) ? '<img src="' + escHtml(item.govCh.portrait) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">' : escHtml(_portChar);
       html += '<div class="df-gov-portrait">' + _portImg + '</div>';
-      var _loy = item.govCh ? (item.govCh.loyalty || 50) : 50;
+      var _loy = item.govCh ? finiteNumberOr(item.govCh.loyalty, 50) : 50;
       var _loyCls = _loy >= 70 ? '' : _loy >= 40 ? 'mid' : 'lo';
       var _gTitle = _isDirect ? '\u5DE1\u629A' : (t === 'fanzhen' ? '\u603B\u5175\u5B98' : t === 'jimi' ? '\u5BA3\u6170\u4F7F' : '\u957F\u5B98');
       html += '<div class="df-gov-info"><div class="df-gov-title">' + _gTitle + '</div><div class="df-gov-name">' + escHtml(item.governor) + '<span class="loyalty ' + _loyCls + '">\u5FE0 ' + _loy + '</span></div></div>';
@@ -1281,7 +1284,7 @@ function _dfBuildModal(divName) {
       if (b.description) html += '<p>' + escHtml(b.description.substring(0, 110)) + (b.description.length > 110 ? '…' : '') + '</p>';
       if (fx.length) html += '<div class="ji-fx">' + fx.slice(0, 4).map(function(x) { return '<em>' + escHtml(x) + '</em>'; }).join('') + '</div>';
       html += '</div>';
-      html += '<div class="ji-meta">基费 <i>' + (b.baseCost || 0) + '</i> 两<br>工期 <i>' + (b.buildTime || 3) + '</i> 回合 · 至 ' + (b.maxLevel || 5) + ' 级</div>';
+      html += '<div class="ji-meta">基费 <i>' + finiteNumberOr(b.baseCost, 0) + '</i> 两<br>工期 <i>' + finiteNumberOr(b.buildTime, 3) + '</i> 回合 · 至 ' + finiteNumberOr(b.maxLevel, 5) + ' 级</div>';
       html += '</div>';
     });
   }
@@ -1347,7 +1350,7 @@ function _dfSubmitBuild(divNameEnc, typeIdx, isCustom) {
   } else {
     var types = (P.buildingSystem && P.buildingSystem.buildingTypes) || [];
     var b = types[typeIdx]; if (!b) return;
-    content = '于 ' + divName + ' 修建 ' + b.name + (b.baseCost?'（预计费用 '+b.baseCost+' 两，工期 '+(b.buildTime||3)+' 回合）':'') + '。——请AI按其描述综合判定实际效果。';
+    content = '于 ' + divName + ' 修建 ' + b.name + (finiteNumberOr(b.baseCost, 0) > 0 ? '（预计费用 '+b.baseCost+' 两，工期 '+finiteNumberOr(b.buildTime, 3)+' 回合）' : '') + '。——请AI按其描述综合判定实际效果。';
   }
   if (!GM._edictSuggestions) GM._edictSuggestions = [];
   GM._edictSuggestions.push({ source: '工程', from: divName, content: content, turn: GM.turn, used: false });
@@ -1648,15 +1651,15 @@ function renderLeftPanel(){
     phDiv.style.cssText="text-align:center;margin-bottom:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-2);border-radius:6px;border:1px solid var(--bdr);";
     phDiv.innerHTML='<span style="font-size:0.9rem;">'+_pi.icon+'</span> <span style="font-size:0.78rem;color:'+_pi.color+';font-weight:700;">'+_pi.label+'</span>';
     var _es=GM.eraState;
-    var _stability=Math.round((_es.socialStability||0.5)*100);
-    var _economy=Math.round((_es.economicProsperity||0.5)*100);
-    var _central=Math.round((_es.centralControl||0.5)*100);
+    var _stability=Math.round(finiteNumberOr(_es.socialStability,0.5)*100);
+    var _economy=Math.round(finiteNumberOr(_es.economicProsperity,0.5)*100);
+    var _central=Math.round(finiteNumberOr(_es.centralControl,0.5)*100);
     phDiv.innerHTML+=' <span style="font-size:0.71rem;color:var(--txt-d);">\u7A33'+_stability+'% \u7ECF'+_economy+'% \u6743'+_central+'%</span>';
     // 可展开的详细参数
-    var _unity=Math.round((_es.politicalUnity||0.5)*100);
-    var _culture=Math.round((_es.culturalVibrancy||0.5)*100);
-    var _bureau=Math.round((_es.bureaucracyStrength||0.5)*100);
-    var _mil=Math.round((_es.militaryProfessionalism||0.5)*100);
+    var _unity=Math.round(finiteNumberOr(_es.politicalUnity,0.5)*100);
+    var _culture=Math.round(finiteNumberOr(_es.culturalVibrancy,0.5)*100);
+    var _bureau=Math.round(finiteNumberOr(_es.bureaucracyStrength,0.5)*100);
+    var _mil=Math.round(finiteNumberOr(_es.militaryProfessionalism,0.5)*100);
     phDiv.innerHTML+='<div style="font-size:0.66rem;color:var(--txt-d);margin-top:2px;">\u7EDF\u4E00'+_unity+'% \u6587\u5316'+_culture+'% \u5B98\u50DA'+_bureau+'% \u519B\u4E13'+_mil+'%</div>';
     gl.appendChild(phDiv);
     // 1.8: 时代双进度条
@@ -1679,7 +1682,7 @@ function renderLeftPanel(){
     var _btDiv = document.createElement("div");
     _btDiv.style.cssText = "margin-bottom:0.4rem;font-size:0.7rem;";
     var _btThresh = (P.mechanicsConfig && P.mechanicsConfig.borderThreat) || {};
-    var _btCol = GM.borderThreat >= (_btThresh.criticalThreshold || 80) ? 'var(--vermillion-400)' : GM.borderThreat >= (_btThresh.warningThreshold || 60) ? '#e67e22' : 'var(--txt-d)';
+    var _btCol = GM.borderThreat >= finiteNumberOr(_btThresh.criticalThreshold, 80) ? 'var(--vermillion-400)' : GM.borderThreat >= finiteNumberOr(_btThresh.warningThreshold, 60) ? '#e67e22' : 'var(--txt-d)';
     _btDiv.innerHTML = '<span style="color:' + _btCol + ';">\u8FB9\u60A3 ' + GM.borderThreat + '</span>';
     gl.appendChild(_btDiv);
   }
@@ -1711,7 +1714,7 @@ function renderLeftPanel(){
   // 资源
   var resDiv=document.createElement("div");resDiv.className="pt";resDiv.innerHTML=tmIcon('treasury',12)+' \u8D44\u6E90';gl.appendChild(resDiv);
   Object.entries(GM.vars).forEach(function(e){
-    var v=e[1];var _range=(v.max||100)-(v.min||0);var pct=_range>0?Math.round(((v.value||0)-(v.min||0))/_range*100):50;
+    var v=e[1];var _vMin=finiteNumberOr(v.min,0),_vMax=finiteNumberOr(v.max,100);var _range=_vMax-_vMin;var pct=_range>0?Math.round((finiteNumberOr(v.value,0)-_vMin)/_range*100):50;
     var _crit=pct>85||pct<15?' critical':'';
     var rd=document.createElement("div");rd.style.cssText="margin-bottom:0.5rem;";
     rd.innerHTML='<div class="res-label"><span class="res-name">'+(v.icon||"")+e[0]+'</span><span class="res-value stat-number" style="color:'+(v.color||"var(--gold-400)")+'">'+(v.value||0)+'</span></div><div class="rb"><div class="rf'+_crit+'" style="width:'+pct+'%;background:'+(v.color||"var(--gold-400)")+';"></div></div>';
@@ -1730,7 +1733,7 @@ function renderLeftPanel(){
       var _ecLbl = {prosperity:'\u7E41\u8363',stable:'\u7A33\u5B9A',recession:'\u8870\u9000',depression:'\u8427\u6761'}[ec.economicCycle] || '';
       ecHtml += ' <span style="color:' + _ecClr + ';">' + _ecLbl + '</span>';
     }
-    ecHtml += ' \u7A0E' + Math.round((ec.taxRate || 0.1) * 100) + '%';
+    ecHtml += ' \u7A0E' + Math.round(finiteNumberOr(ec.taxRate, 0.1) * 100) + '%';
     if (ec.inflationRate > 0.03) ecHtml += ' \u901A\u80C0' + Math.round(ec.inflationRate * 100) + '%';
     ecDiv.innerHTML = ecHtml;
     gl.appendChild(ecDiv);
@@ -1904,7 +1907,7 @@ function openGaiyuanModal(){
   var cur=GM.eraName||"";
   var t=P.time||{};
   var di=(typeof calcDateFromTurn==='function')?calcDateFromTurn(GM.turn||1):null;
-  var y=di&&typeof di.adYear!=='undefined'?di.adYear:((typeof getCurrentYear==='function')?getCurrentYear():(t.year||1));
+  var y=di&&typeof di.adYear!=='undefined'?di.adYear:((typeof getCurrentYear==='function')?getCurrentYear():finiteNumberOr(t.year,1));
   var mo=di&&(di.lunarMonth||di.solarMonth)?(di.lunarMonth||di.solarMonth):((typeof getCurrentMonth==='function')?getCurrentMonth():(t.startMonth||1));
   var day=di&&(di.lunarDay||di.solarDay)?(di.lunarDay||di.solarDay):1;
   var html="<div style='padding:1rem'>"+
@@ -2129,14 +2132,14 @@ function _rwpHeartVerdict(loy, amb) {
 function _rwpRenderRadar(ch) {
   // 8维：智武军政管魅交仁
   var abilities = [
-    { key: 'intelligence', label: '智', val: ch.intelligence || 50 },
-    { key: 'valor', label: '武', val: ch.valor || 50 },
-    { key: 'military', label: '军', val: ch.military || 50 },
-    { key: 'administration', label: '政', val: ch.administration || 50 },
-    { key: 'management', label: '管', val: ch.management || ch.administration || 50 },
-    { key: 'charisma', label: '魅', val: ch.charisma || 50 },
-    { key: 'diplomacy', label: '交', val: ch.diplomacy || 50 },
-    { key: 'benevolence', label: '仁', val: ch.benevolence || 50 }
+    { key: 'intelligence', label: '智', val: finiteNumberOr(ch.intelligence, 50) },
+    { key: 'valor', label: '武', val: finiteNumberOr(ch.valor, 50) },
+    { key: 'military', label: '军', val: finiteNumberOr(ch.military, 50) },
+    { key: 'administration', label: '政', val: finiteNumberOr(ch.administration, 50) },
+    { key: 'management', label: '管', val: finiteNumberOr(ch.management, finiteNumberOr(ch.administration, 50)) },
+    { key: 'charisma', label: '魅', val: finiteNumberOr(ch.charisma, 50) },
+    { key: 'diplomacy', label: '交', val: finiteNumberOr(ch.diplomacy, 50) },
+    { key: 'benevolence', label: '仁', val: finiteNumberOr(ch.benevolence, 50) }
   ];
   var cx = 110, cy = 110, rMax = 80;
   // 生成数据多边形点
@@ -2258,8 +2261,8 @@ function openCharDetail(charName) {
   }
   var panel = document.getElementById('_charDetailPanel');
 
-  var loy = Math.round(ch.loyalty || 50);
-  var amb = Math.round(ch.ambition || 50);
+  var loy = Math.round(finiteNumberOr(ch.loyalty, 50));
+  var amb = Math.round(finiteNumberOr(ch.ambition, 50));
   var res = ch.resources || {};
   var pub = res.publicPurse || res.publicTreasury || {};
   var priv = res.privateWealth || {};
@@ -2537,7 +2540,7 @@ function deleteCharacterByPlayer(name) {
   }
   // 8. 后宫继承人 / 孕期引用
   if (GM.harem) {
-    if (Array.isArray(GM.harem.heirs)) GM.harem.heirs = GM.harem.heirs.filter(function(h){ return h !== realName; });
+    if (Array.isArray(GM.harem.heirs)) GM.harem.heirs = GM.harem.heirs.filter(function(h){ return !(h === realName || (h && h.name === realName)); });
     if (Array.isArray(GM.harem.pregnancies)) GM.harem.pregnancies = GM.harem.pregnancies.filter(function(pg){ return pg && pg.mother !== realName; });
   }
   // 9. 写入黑名单 (随存档持久化)·AI 撞同名永不重生
@@ -2601,8 +2604,8 @@ function openCharRenwuPage(charName) {
   var panel = document.getElementById('_renwuPageContainer');
 
   // ─── 数据预备 ───
-  var loy = Math.round(ch.loyalty || 50);
-  var amb = Math.round(ch.ambition || 50);
+  var loy = Math.round(finiteNumberOr(ch.loyalty, 50));
+  var amb = Math.round(finiteNumberOr(ch.ambition, 50));
   var res = (ch.resources || {});
   var pub = res.publicPurse || res.publicCoffers || {};
   var priv = res.privateWealth || {};
@@ -3399,14 +3402,14 @@ function calcPromotionChance(char) {
   if (TP.isPoliticalZone(nextLv)) return 0;        // 从三品及上=政治擢升·不自动
   var needed = TP.meritFloor(nextLv);
   if (merit < needed) return 0;                     // 功名未达下一阶门槛
-  var hq = (G && G.huangquan && G.huangquan.index) || 55;
-  var hw = (G && G.huangwei && G.huangwei.index) || 50;
+  var hq = finiteNumberOr(G && G.huangquan && G.huangquan.index, 55);
+  var hw = finiteNumberOr(G && G.huangwei && G.huangwei.index, 50);
   var span = Math.max(1, needed - TP.meritFloor(lv));
   var over = (merit - needed) / span;               // 超出门槛程度(相对本阶跨度)
   var base = 0.10 + Math.min(0.30, over * 0.30);
   if (hq > 70) base *= 1.3; else if (hq < 40) base *= 0.6;
   if (hw < 30) base *= 0.5;
-  if ((char.loyalty || 50) < 40) base *= 0.4;
+  if (finiteNumberOr(char.loyalty, 50) < 40) base *= 0.4;
   return Math.max(0, Math.min(0.6, base));
 }
 

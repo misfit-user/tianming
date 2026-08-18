@@ -14,6 +14,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' https: http://127.0.0.1:* http://localhost:*; media-src 'self' data: blob: https: http:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <!-- 正在运行的包版本·与代码同包同发·footer 与在线版更新提示都读这里（发版工具自动盖戳） -->
 <meta name="tm-version" content="1.3.4.11">
 <title>天命 · AI历史模拟</title>
@@ -194,7 +195,20 @@
           var label = (s.eraName||s.date||'') + (s.turn?(' 第'+s.turn+'回'):'');
           if (!label.trim()) label = s.name || '案卷';
           var meta = s.name || (isAuto ? '自动存档' : '手动存档');
-          span.innerHTML = '<span class="r-seal">'+seal+'</span><span><span class="r-name">'+label+'</span><span class="r-meta">'+meta+'</span></span>';
+          var sealNode = document.createElement('span');
+          sealNode.className = 'r-seal';
+          sealNode.textContent = seal;
+          var textWrap = document.createElement('span');
+          var nameNode = document.createElement('span');
+          nameNode.className = 'r-name';
+          nameNode.textContent = label;
+          var metaNode = document.createElement('span');
+          metaNode.className = 'r-meta';
+          metaNode.textContent = meta;
+          textWrap.appendChild(nameNode);
+          textWrap.appendChild(metaNode);
+          span.appendChild(sealNode);
+          span.appendChild(textWrap);
           // 近事卡可点：进存档管理续卷（纯漏斗·走既有续卷入口）
           span.setAttribute('role','button');
           span.title = '启封此卷 · 打开存档管理';
@@ -505,9 +519,10 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
 <script src="tm-qiju-ledger.js?v=2026070401"></script>
 <script src="tm-prompt-composer.js?v=2026052201"></script>
-<script src="tm-ai-infra.js?v=20260811-auditfix1"></script>
-<!-- 勿动位置·第二十三拆：tm-ai-infra-model-detect.js 必须紧接 tm-ai-infra.js 之后装载(顶层函数型中段切·保序切割) -->
-<script src="tm-ai-infra-model-detect.js?v=20260811-auditfix1"></script>
+<script src="tm-ai-infra-json.js?v=20260819-auditfix2"></script>
+<script src="tm-ai-infra.js?v=20260819-auditfix2"></script>
+<!-- 勿动位置·第二十三拆：json → infra → model-detect 必须连续按序装载(顶层函数型保序切割) -->
+<script src="tm-ai-infra-model-detect.js?v=20260819-auditfix2"></script>
 <script src="tm-memory-trace.js?v=20260531-traceonly"></script>
 <script src="tm-memory-evidence-registry.js?v=20260531-evidence"></script>
 <script src="tm-memory-source-bound.js?v=20260601-sourcebound"></script>
@@ -914,10 +929,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-change-pathutils.js?v=20260521-slice1"></script>
 <script src="tm-ai-change-army.js?v=20260521-slice2"></script>
 <script src="tm-ai-change-narrative.js?v=20260521-slice3"></script>
-<script src="tm-ai-change-applier.js?v=20260706-split22"></script>
+<script src="tm-ai-change-applier.js?v=20260819-auditfix2"></script>
 <!-- 勿动位置·第二十二拆(IIFE 型·origin-first 双向 bucket TM.__acaParts)：validators/reconcile 两分片须【紧随 applier 之后】按此序连续装载·错序=bucket 缺失崩·契约见 scripts/lint-split-contracts.js -->
-<script src="tm-ai-change-applier-validators.js?v=20260706-split22"></script>
-<script src="tm-ai-change-applier-reconcile.js?v=20260706-split22"></script>
+<script src="tm-ai-change-applier-validators.js?v=20260819-auditfix2"></script>
+<script src="tm-ai-change-applier-reconcile.js?v=20260819-auditfix2"></script>
 <script src="tm-ai-npc-memorials.js?v=20260709"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=2026042714"></script>

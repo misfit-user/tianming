@@ -105,7 +105,7 @@ function applyOneDeath(cd) {
       if (army.commander === cd.name) {
         army.commander = '';
         army.commanderTitle = '';
-        army.morale = Math.max(0, (army.morale || 50) - 15); // 主帅阵亡士气骤降
+        army.morale = Math.max(0, (army.morale != null && isFinite(Number(army.morale)) ? Number(army.morale) : 50) - 15); // 主帅阵亡士气骤降
         addEB('\u519B\u4E8B', army.name + '\u4E3B\u5E05' + cd.name + '\u9635\u4EA1\uFF0C\u58EB\u6C14\u9AA4\u964D');
       }
     });
@@ -115,12 +115,17 @@ function applyOneDeath(cd) {
   (GM.chars||[]).forEach(function(c3) {
     if (c3.alive === false || c3.isPlayer) return;
     // 检查是否是死者子女（通过family/father/mother字段）
-    var _isChild = (c3.father === _deadName || c3.mother === _deadName);
-    if (!_isChild && ch.children && Array.isArray(ch.children)) _isChild = ch.children.indexOf(c3.name) >= 0;
+    var _isChild = (c3.father === _deadName || c3.mother === _deadName || c3.fatherId === ch.id || c3.fatherId === _deadName || c3.motherId === ch.id || c3.motherId === _deadName);
+    var _childRefs = [].concat(ch.childrenIds || [], ch.children || []);
+    if (!_isChild) _isChild = _childRefs.some(function(ref) { var key = ref && typeof ref === 'object' ? (ref.id || ref.characterId || ref.name) : ref; return key === c3.id || key === c3.name; });
     if (!_isChild) return;
     // 此NPC是死者子女→标记丁忧
     if (c3.officialTitle) {
-      c3._mourning = { since: GM.turn, until: GM.turn + 9, parent: _deadName }; // 9回合守丧
+      var _mourningDays = Number(P && P.mechanicsConfig && P.mechanicsConfig.mourningDays);
+      if (!isFinite(_mourningDays) || _mourningDays <= 0) _mourningDays = 270; // 兼容旧默认 9×30 日，但不再绑定回合长度
+      var _currentDay = (typeof getCurrentGameDay === 'function') ? Number(getCurrentGameDay()) : ((GM.turn - 1) * ((P.time && Number(P.time.daysPerTurn)) || 30));
+      var _dpt = (typeof _getDaysPerTurn === 'function') ? Number(_getDaysPerTurn()) : ((P.time && Number(P.time.daysPerTurn)) || 30);
+      c3._mourning = { since: GM.turn, sinceDay: _currentDay, untilDay: _currentDay + _mourningDays, until: GM.turn + Math.max(1, Math.ceil(_mourningDays / Math.max(1, _dpt))), parent: _deadName, durationDays: _mourningDays };
       addEB('丁忧', c3.name + '因' + _deadName + '去世而丁忧离职');
       if (typeof NpcMemorySystem !== 'undefined') {
         NpcMemorySystem.remember(c3.name, '父/母' + _deadName + '去世，丁忧守丧', '悲', 10, _deadName);
@@ -131,7 +136,7 @@ function applyOneDeath(cd) {
           id: 'issue_mourning_' + c3.name,
           title: c3.name + '丁忧——是否夺情？',
           category: '人事',
-          description: c3.name + '（' + (c3.officialTitle||'') + '）因' + _deadName + '去世须离职守丧约9回合。可通过诏令"夺情"强令其留任，但恐引起朝臣非议。',
+          description: c3.name + '（' + (c3.officialTitle||'') + '）因' + _deadName + '去世须离职守丧约' + _mourningDays + '日。可通过诏令"夺情"强令其留任，但恐引起朝臣非议。',
           status: 'pending', raisedTurn: GM.turn,
           raisedDate: typeof getTSText === 'function' ? getTSText(GM.turn) : ''
         });
@@ -144,7 +149,7 @@ function applyOneDeath(cd) {
       if (fac.leader !== cd.name) return;
       fac.leader = '';
       addEB('\u52BF\u529B\u52A8\u6001', fac.name + '\u9996\u9886' + cd.name + '\u6B7B\u4EA1\uFF0C\u52BF\u529B\u52A8\u8361');
-      fac.strength = Math.max(0, (fac.strength || 50) - 10);
+      fac.strength = Math.max(0, (fac.strength != null && isFinite(Number(fac.strength)) ? Number(fac.strength) : 50) - 10);
 
       // 封臣级联：宗主首领死亡→所有封臣忠诚度下降
       if (fac.vassals && fac.vassals.length > 0) {
@@ -201,10 +206,10 @@ function applyOneDeath(cd) {
     });
   }
   // 级联清理：行政区划 governor 免职
-  if (P.adminHierarchy) {
-    var _akDeath = Object.keys(P.adminHierarchy);
+  if (GM.adminHierarchy) {
+    var _akDeath = Object.keys(GM.adminHierarchy);
     _akDeath.forEach(function(k) {
-      var _ahd = P.adminHierarchy[k];
+      var _ahd = GM.adminHierarchy[k];
       if (!_ahd || !_ahd.divisions) return;
       function _removeGov(divs) {
         divs.forEach(function(d) {
@@ -238,8 +243,7 @@ function applyOneDeath(cd) {
   }
   // 级联清理：继承人死亡→从继承人列表中移除
   if (GM.harem && Array.isArray(GM.harem.heirs) && GM.harem.heirs.some(function(h) { return h === cd.name || (h && h.name === cd.name); })) {
-    GM.harem.heirs.forEach(function(h) { if (h && h.name === cd.name) h.alive = false; });
-    GM.harem.heirs = GM.harem.heirs.filter(function(h) { return h !== cd.name; });
+    GM.harem.heirs = GM.harem.heirs.filter(function(h) { return !(h === cd.name || (h && h.name === cd.name)); });
     addEB('\u7EE7\u627F', cd.name + '\u53BB\u4E16\uFF0C\u5DF2\u4ECE\u7EE7\u627F\u4EBA\u5E8F\u5217\u4E2D\u79FB\u9664');
   }
   if (GM.harem && GM.harem.crownPrince === cd.name) {
@@ -253,7 +257,7 @@ function applyOneDeath(cd) {
 // E10: 玩家角色死亡 → 统一走玩家之死裁决器（鼎革R1a·2026-07-07）：
   //   原地内联的世代传承镜像已收拢进 adjudicatePlayerDeath@tm-endturn-helpers
   //   （行为等价：有嗣继统续玩/无嗣 _playerDead 终局/异常回落）。
-  if (ch.isPlayer || (P.playerInfo && P.playerInfo.characterName === cd.name)) {
+  if (ch.isPlayer || (GM.playerInfo && GM.playerInfo.characterName === cd.name) || (P.playerInfo && P.playerInfo.characterName === cd.name)) {
     if (typeof adjudicatePlayerDeath === 'function') {
       adjudicatePlayerDeath(ch, cd.reason, { kind: 'narrative' });
     } else {

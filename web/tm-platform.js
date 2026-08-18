@@ -114,15 +114,15 @@
     },
     hot: {
       status:     function ()        { return call('hotUpdateStatus', []); },
-      check:      function (feedUrl) { return call('checkHotUpdate', [feedUrl]); },
-      install:    function (feedUrl) { return call('installHotUpdate', [feedUrl]); },
+      check:      function ()        { return call('checkHotUpdate', []); },
+      install:    function ()        { return call('installHotUpdate', []); },
       setEnabled: function (enabled) { return call('setHotUpdateEnabled', [enabled]); },
       rollback:   function ()        { return call('rollbackHotUpdate', []); },
       reload:     function ()        { return call('reloadAfterHotUpdate', []); },
       onStatus:   function (cb)      { if (wt && wt.onHotUpdateStatus) wt.onHotUpdateStatus(cb); }
     },
     installer: {
-      check:    function (feedUrl) { return call('checkForUpdate', [feedUrl]); },
+      check:    function ()        { return call('checkForUpdate', []); },
       download: function ()        { return call('downloadUpdate', []); },
       install:  function ()        { return call('installUpdate', []); },
       onStatus: function (cb)      { if (wt && wt.onUpdateStatus) wt.onUpdateStatus(cb); }

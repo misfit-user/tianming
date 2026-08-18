@@ -176,7 +176,7 @@
         return parties.indexOf(a) >= 0 && parties.indexOf(b) >= 0;
       });
       if (dup) return;
-      G.treaties.push({ id: 'ftr-' + (turn || _turn()) + '-' + _norm(a).slice(0, 6) + '-' + _norm(b).slice(0, 6), type: type, typeName: typeName, mutual_defense: mutual, parties: [{ name: a }, { name: b }], startTurn: (turn || _turn()), active: true, _source: 'faction-diplomacy' });   // arch-ok: F2 结盟落 GM.treaties(战争引擎盟友参战消费面)
+      G.treaties.push({ id: 'ftr-' + (turn || _turn()) + '-' + _norm(type).slice(0, 10) + '-' + _dipSeq(), type: type, typeName: typeName, mutual_defense: mutual, parties: [{ name: a }, { name: b }], startTurn: (turn || _turn()), active: true, _source: 'faction-diplomacy' });   // arch-ok: F2 结盟落 GM.treaties(战争引擎消费面)·全局序号防同回合跨类型碰撞
       if (G.treaties.length > 80) G.treaties = G.treaties.slice(-80);   // arch-ok: F2 结盟落账截断(GM.treaties 既有子树·战争引擎消费面)
     } catch (e) {}
   }
@@ -191,9 +191,18 @@
       ts.grudges = ts.grudges.filter(function (g) { return _norm(g) !== _norm(proposer.name); });
       _lodgeTreaty(proposer.name, target.name, prop.type, prop.turn);   // B3·落 GM.treaties·让战争盟友参战真读到
     } else if (prop.type === 'peace') {
-      // 媾和：消解宿怨(不必结盟)
+      // 媾和必须走唯一战争终结入口；只消宿怨不等于结束战争。
       ps.grudges = ps.grudges.filter(function (g) { return _norm(g) !== _norm(target.name); });
       ts.grudges = ts.grudges.filter(function (g) { return _norm(g) !== _norm(proposer.name); });
+      var G = global.GM || {};
+      var wars = Array.isArray(G.activeWars) ? G.activeWars.slice() : [];
+      wars.forEach(function (war) {
+        if (!war) return;
+        var wa = _norm(war.attacker || war.from || war.sideA), wd = _norm(war.defender || war.to || war.sideB);
+        var pa = _norm(proposer.name), ta = _norm(target.name);
+        if (!((wa === pa && wd === ta) || (wa === ta && wd === pa))) return;
+        if (global.CasusBelliSystem && typeof global.CasusBelliSystem.endWar === 'function') global.CasusBelliSystem.endWar(war.id);
+      });
     }
     // deal/ultimatum 接受：记入双方 currentPlan 提示·不强改 alliances
   }

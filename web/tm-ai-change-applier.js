@@ -1094,11 +1094,16 @@
   //  主应用函数：applyAITurnChanges
   // ═══════════════════════════════════════════════════════════════════
 
-  function applyAITurnChanges(aiOutput) {
+  function _captureValidatorBaseline(G){ return __acaP._captureValidatorBaseline.apply(this, arguments); }
+  function _collectValidatorFailures(G, baseline){ return __acaP._collectValidatorFailures.apply(this, arguments); }
+  function _runConsistencyValidator(applied, aiOutput, name, fn){ return __acaP._runConsistencyValidator.apply(this, arguments); }
+
+  function _applyAITurnChangesUnsafe(aiOutput) {
     var G = global.GM;
     if (!G) return { ok: false };
     if (!aiOutput || typeof aiOutput !== 'object') return { ok: false };
 
+    var _validatorBaseline = _captureValidatorBaseline(G);
     // 先把 char_updates.alive/dead 规范化；end-turn dispatcher 会预先在原 p1 上做同一步并延后
     // 给既有 applyCharacterDeaths。直接调用本 applier 时，下面只消费本次新合成的 death 条目。
     var _deathNormalization = (typeof global.normalizeAIWriteBackDeaths === 'function')
@@ -1219,12 +1224,14 @@
         turn: G.turn || 0
       });
       // 扣地方公库钱（若公库不足则部分扣）
+      var _localPaid = 0;
       if (div.publicTreasury && div.publicTreasury.money) {
         var cost = Math.max(0, Math.round(la.amount||0));
-        div.publicTreasury.money.stock = Math.max(0, (div.publicTreasury.money.stock||0) - cost);
-        if (div.publicTreasury.money.stock === 0 && cost > 0) {
-          div.publicTreasury.money.deficit = (div.publicTreasury.money.deficit||0) + (cost - (div.publicTreasury.money.stock||0));
-        }
+        var _localBefore = Math.max(0, Number(div.publicTreasury.money.stock) || 0);
+        _localPaid = Math.min(_localBefore, cost);
+        div.publicTreasury.money.stock = _localBefore - _localPaid;
+        var _localDeficit = cost - _localPaid;
+        if (_localDeficit > 0) div.publicTreasury.money.deficit = (Number(div.publicTreasury.money.deficit) || 0) + _localDeficit;
       }
       // illicit 进主官私产
       if (la.type === 'illicit' && div.governor) {
@@ -1232,7 +1239,7 @@
         if (ch) {
           if (!ch.resources) ch.resources = {};
           if (!ch.resources.privateWealth) ch.resources.privateWealth = { money:0, grain:0, cloth:0 };
-          ch.resources.privateWealth.money = (ch.resources.privateWealth.money||0) + Math.round((la.amount||0) * 0.6);
+          ch.resources.privateWealth.money = (ch.resources.privateWealth.money||0) + Math.round(_localPaid * 0.6);
         }
       }
       if (global.addEB) global.addEB('地方', (div.name||la.region) + '·' + (div.governor||'地方官') + ' ' + ({disaster_relief:'赈灾',public_works_water:'修水利',public_works_road:'修路',education:'兴学',granary_stockpile:'平籴备荒',military_prep:'备边',charity_local:'恤民',illicit:'中饱私囊',supernatural_disaster_relief:'禳灾'}[la.type]||la.type) + ' ' + (la.amount||0) + (la.reason?' (' + la.reason + ')':''));
@@ -2183,70 +2190,77 @@
     try { _applyBattleResult(G, aiOutput, applied); } catch(_brE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_brE, 'applier] battle result:') : console.warn('[applier] battle result:', _brE); }
 
     // ── 14. 财务一致性校验：扫描叙事中的金额 vs fiscal_adjustments 总量 ──
-    try { _validateFiscalConsistency(G, aiOutput, applied); } catch(_fvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_fvE, 'applier] fiscal validator:') : console.warn('[applier] fiscal validator:', _fvE); }
+    _runConsistencyValidator(applied, aiOutput, 'fiscal', function() { _validateFiscalConsistency(G, aiOutput, applied); });
 
     // ── 14a. 人事一致性校验·扫描叙事中『某某下狱/赐死/抄家/流放』vs 结构化数据 ──
-    try { _validatePersonnelConsistency(G, aiOutput, applied); } catch(_pvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pvE, 'applier] personnel validator:') : console.warn('[applier] personnel validator:', _pvE); }
+    _runConsistencyValidator(applied, aiOutput, 'personnel', function() { _validatePersonnelConsistency(G, aiOutput, applied); });
 
     // ── 14b. 军事一致性校验·扫描『扩军/裁汰 N 万』vs GM.armies 真实变化 ──
-    try { _validateMilitaryConsistency(G, aiOutput, applied); } catch(_mvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_mvE, 'applier] military validator:') : console.warn('[applier] military validator:', _mvE); }
+    _runConsistencyValidator(applied, aiOutput, 'military', function() { _validateMilitaryConsistency(G, aiOutput, applied); });
 
     // ── 14c. 民心/皇威一致性校验·扫描『民心大振/民怨沸腾/朝野失望』vs turnChanges ──
-    try { _validateSentimentConsistency(G, aiOutput, applied); } catch(_svE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_svE, 'applier] sentiment validator:') : console.warn('[applier] sentiment validator:', _svE); }
+    _runConsistencyValidator(applied, aiOutput, 'sentiment', function() { _validateSentimentConsistency(G, aiOutput, applied); });
 
     // ── 14d. 户口一致性校验·扫描『饥荒死 N/逃户 M/迁徙 X』vs GM.population ──
-    try { _validatePopulationConsistency(G, aiOutput, applied); } catch(_uvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_uvE, 'applier] population validator:') : console.warn('[applier] population validator:', _uvE); }
+    _runConsistencyValidator(applied, aiOutput, 'population', function() { _validatePopulationConsistency(G, aiOutput, applied); });
 
     // ── 14e. 官职任免一致性校验·扫描『拜 X 为 Y/擢 X 为 Y/迁』vs office_assignments ──
-    try { _validateOfficeConsistency(G, aiOutput, applied); } catch(_ovE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ovE, 'applier] office validator:') : console.warn('[applier] office validator:', _ovE); }
+    _runConsistencyValidator(applied, aiOutput, 'office', function() { _validateOfficeConsistency(G, aiOutput, applied); });
 
     // ── 14f-1. 战争一致性校验·扫描『起兵/北伐/议和/陷落』vs GM.activeWars ──
-    try { _validateWarConsistency(G, aiOutput, applied); } catch(_wvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_wvE, 'applier] war validator:') : console.warn('[applier] war validator:', _wvE); }
+    _runConsistencyValidator(applied, aiOutput, 'war', function() { _validateWarConsistency(G, aiOutput, applied); });
 
     // ── 14f-2. 民变一致性校验·扫描『起事/聚众/平定/招抚』vs GM.minxin.revolts ──
-    try { _validateRevoltConsistency(G, aiOutput, applied); } catch(_rvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rvE, 'applier] revolt validator:') : console.warn('[applier] revolt validator:', _rvE); }
+    _runConsistencyValidator(applied, aiOutput, 'revolt', function() { _validateRevoltConsistency(G, aiOutput, applied); });
 
     // ── 14f-3. 天灾一致性校验·扫描『大旱/洪/蝗/瘟疫/地震』vs GM.activeDisasters ──
-    try { _validateDisasterConsistency(G, aiOutput, applied); } catch(_dvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dvE, 'applier] disaster validator:') : console.warn('[applier] disaster validator:', _dvE); }
+    _runConsistencyValidator(applied, aiOutput, 'disaster', function() { _validateDisasterConsistency(G, aiOutput, applied); });
 
     // ── 14f-4. 外交一致性校验·扫『通使/朝贡/绝交/羁縻』 vs GM.facs[].relations ──
-    try { _validateDiplomacyConsistency(G, aiOutput, applied); } catch(_diE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_diE, 'applier] diplomacy validator:') : console.warn('[applier] diplomacy validator:', _diE); }
+    _runConsistencyValidator(applied, aiOutput, 'diplomacy', function() { _validateDiplomacyConsistency(G, aiOutput, applied); });
 
     // ── 14f-5. 科举一致性校验·扫『开科/会试/殿试/放榜/赐进士』 vs P.keju ──
-    try { _validateKejuConsistency(G, aiOutput, applied); } catch(_kjE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_kjE, 'applier] keju validator:') : console.warn('[applier] keju validator:', _kjE); }
+    _runConsistencyValidator(applied, aiOutput, 'keju', function() { _validateKejuConsistency(G, aiOutput, applied); });
 
     // ── 14f-6. 党派一致性校验·扫『结社/立党/解散/瓦解』 vs GM.parties ──
-    try { _validatePartyConsistency(G, aiOutput, applied); } catch(_pyE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pyE, 'applier] party validator:') : console.warn('[applier] party validator:', _pyE); }
+    _runConsistencyValidator(applied, aiOutput, 'party', function() { _validatePartyConsistency(G, aiOutput, applied); });
 
     // ── 14f-7. 法令效力一致性校验·扫『颁诏/降旨/敕谕/废制』 vs GM.activeEdicts ──
-    try { _validateEdictEffectConsistency(G, aiOutput, applied); } catch(_edE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_edE, 'applier] edictEffect validator:') : console.warn('[applier] edictEffect validator:', _edE); }
+    _runConsistencyValidator(applied, aiOutput, 'edictEffect', function() { _validateEdictEffectConsistency(G, aiOutput, applied); });
 
     // ── 14f-8. 朝廷礼仪一致性校验·扫『迁都/晋爵/谥/册立/废后』 vs char_updates 内 title/posthumous/spouse ──
-    try { _validateCourtCeremonyConsistency(G, aiOutput, applied); } catch(_ccE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_ccE, 'applier] courtCeremony validator:') : console.warn('[applier] courtCeremony validator:', _ccE); }
+    _runConsistencyValidator(applied, aiOutput, 'courtCeremony', function() { _validateCourtCeremonyConsistency(G, aiOutput, applied); });
 
     // ── 14f-9. 工程·物品·建筑一致性校验·扫『兴工/督造/烧毁/铸器』 vs changes 路径 ──
-    try { _validateConstructionConsistency(G, aiOutput, applied); } catch(_csE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_csE, 'applier] construction validator:') : console.warn('[applier] construction validator:', _csE); }
+    _runConsistencyValidator(applied, aiOutput, 'construction', function() { _validateConstructionConsistency(G, aiOutput, applied); });
 
     // ── 14f-10. 异象·谶语一致性校验·扫『彗见/日蚀/瑞兽/谶/谣』 vs GM.omens ──
-    try { _validateOmenConsistency(G, aiOutput, applied); } catch(_omE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_omE, 'applier] omen validator:') : console.warn('[applier] omen validator:', _omE); }
+    _runConsistencyValidator(applied, aiOutput, 'omen', function() { _validateOmenConsistency(G, aiOutput, applied); });
 
     // ── 14f-11. 婚姻·生育·继承一致性校验·扫『嫁/娶/诞生/夭折/即位/承嗣』 ──
-    try { _validateMarriageBirthConsistency(G, aiOutput, applied); } catch(_mbE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_mbE, 'applier] marriageBirth validator:') : console.warn('[applier] marriageBirth validator:', _mbE); }
+    _runConsistencyValidator(applied, aiOutput, 'marriageBirth', function() { _validateMarriageBirthConsistency(G, aiOutput, applied); });
 
     // ── 14f-12. 谋反·政变·弑君一致性校验·扫『谋反/弑君/宫变/篡位』 ──
-    try { _validateConspiracyConsistency(G, aiOutput, applied); } catch(_cyE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_cyE, 'applier] conspiracy validator:') : console.warn('[applier] conspiracy validator:', _cyE); }
+    _runConsistencyValidator(applied, aiOutput, 'conspiracy', function() { _validateConspiracyConsistency(G, aiOutput, applied); });
 
     // ── 14f-13. 货币·币值·银荒一致性校验·扫『银荒/钱荒/通胀/币改』 ──
-    try { _validateCurrencyConsistency(G, aiOutput, applied); } catch(_cuE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_cuE, 'applier] currency validator:') : console.warn('[applier] currency validator:', _cuE); }
+    _runConsistencyValidator(applied, aiOutput, 'currency', function() { _validateCurrencyConsistency(G, aiOutput, applied); });
 
     // ── 14f-14. 宗教·教派一致性校验·扫『立教/灭佛/白莲/天主/邪教』 ──
-    try { _validateReligionConsistency(G, aiOutput, applied); } catch(_rgE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rgE, 'applier] religion validator:') : console.warn('[applier] religion validator:', _rgE); }
-    try { if (typeof window !== 'undefined' && typeof window._validateLivingActorConsistency === 'function') window._validateLivingActorConsistency(G, aiOutput); } catch(_laE) { console.warn('[applier] livingActor guard:', _laE); }
-    try { if (typeof window !== 'undefined' && typeof window._validateNarrativeAnachronism === 'function') window._validateNarrativeAnachronism(G, aiOutput); } catch(_anE) { console.warn('[applier] anachronism guard:', _anE); }
+    _runConsistencyValidator(applied, aiOutput, 'religion', function() { _validateReligionConsistency(G, aiOutput, applied); });
+    _runConsistencyValidator(applied, aiOutput, 'livingActor', function() {
+      if (typeof window !== 'undefined' && typeof window._validateLivingActorConsistency === 'function') window._validateLivingActorConsistency(G, aiOutput);
+    });
+    _runConsistencyValidator(applied, aiOutput, 'anachronism', function() {
+      if (typeof window !== 'undefined' && typeof window._validateNarrativeAnachronism === 'function') window._validateNarrativeAnachronism(G, aiOutput);
+    });
 
-    // ── 14g. 二次 AI 自审·若多个 validator 报警·调一次 AI 让其自查 narrative-vs-structured ──
-    // 仅当本回合校验器累计补录 > 5 条时触发·避免每回合都额外烧 token
-    try { _maybeReconcileWithAI(G, aiOutput, applied); } catch(_rvE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rvE, 'applier] ai reconcile:') : console.warn('[applier] ai reconcile:', _rvE); }
+    // validator 命中即属于结构化写回不完整。旧逻辑只 warning 后继续，并另起后台 AI
+    // 补录，导致本批先以成功状态部分提交；现改为失败清单，由外层草稿事务整体回滚。
+    // 只有完整 endTurn 主写回携带 strictValidation。独立的确定性补丁/测试调用常无完整
+    // narrative，上下文不足时不能把“缺叙事证据”误判为状态失败。
+    var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline) : [];
+    if (_validatorFailures.length) Array.prototype.push.apply(applied.failed, _validatorFailures);
 
     // ── 15. 死亡墓志铭 & 诈死holding ──
     try { _processDeathEpitaphs(G, aiOutput); } catch(_deE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_deE, 'applier] death epitaph:') : console.warn('[applier] death epitaph:', _deE); }
@@ -2258,33 +2272,8 @@
     return { ok: true, applied: applied };
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  财政三字段同步守卫·确保 GM.guoku/neitang 的 money/balance/ledgers.stock 三字段一致
-  //  策略：以 ledgers.stock 为权威源（applier 内 fiscal_adjustments 同时更新它和 .money）·向后写 .money 和 .balance
-  //  若 ledger 不存在则以 .money 为准·补全 .balance
-  // ═══════════════════════════════════════════════════════════════════
-  function _syncFiscalScalars(G) {
-    if (!G) return;
-    ['guoku', 'neitang'].forEach(function(target) {
-      var t = G[target];
-      if (!t) return;
-      ['money','grain','cloth'].forEach(function(res) {
-        var ledStock = (t.ledgers && t.ledgers[res] && typeof t.ledgers[res].stock === 'number') ? t.ledgers[res].stock : null;
-        var scalar = (typeof t[res] === 'number') ? t[res] : null;
-        // 取权威值：ledger 优先·否则 scalar·否则 0
-        var canon = (ledStock != null) ? ledStock : (scalar != null ? scalar : 0);
-        // 写回三处
-        t[res] = canon;
-        if (t.ledgers && t.ledgers[res]) t.ledgers[res].stock = canon;
-        if (res === 'money') t.balance = canon;  // balance 仅对 money 有意义
-      });
-      // 若有 ledger 但 .money 与 stock 之前就不一致·留一条警告
-      if (t.ledgers && t.ledgers.money && typeof t.ledgers.money.stock === 'number' && typeof t.money === 'number') {
-        // 此时已对齐·不再需要警告
-      }
-    });
-  }
-  // 暴露给 window·让 endTurn / renderGameState 可调用兜底
+  function applyAITurnChanges(aiOutput){ return __acaP.applyAITurnChangesAtomic.apply(this, arguments); }
+  function _syncFiscalScalars(G){ return __acaP._syncFiscalScalars.apply(this, arguments); }
   if (typeof window !== 'undefined') window._syncFiscalScalars = _syncFiscalScalars;
 
   //>>ACA-SPLIT22-SHIMS-START  (巨石拆分第二十二拆 20260706·脚本生成·勿手改)
@@ -2993,6 +2982,7 @@
   //>>ACA-SPLIT22-EXPORT-START  (reverse：origin→分片·全部 kept 成员已定义于此点之前)
   __acaP._alreadyResolvedState = _alreadyResolvedState; __acaP._readFiscalStock = _readFiscalStock; __acaP._writeFiscalStock = _writeFiscalStock; __acaP.onAppointment = onAppointment; __acaP.onDismissal = onDismissal; __acaP._findEntity = _findEntity;
   __acaP._estimateTravelDays = _estimateTravelDays; __acaP._arriveCharNow = _arriveCharNow; __acaP._sameTravelLocation = _sameTravelLocation; __acaP._travelMirrorFields = _travelMirrorFields; __acaP._syncCharacterLocationMirrors = _syncCharacterLocationMirrors; __acaP._refreshCharacterLocationUiAfterTravel = _refreshCharacterLocationUiAfterTravel;
+  __acaP._applyAITurnChangesUnsafe = _applyAITurnChangesUnsafe;
   //>>ACA-SPLIT22-EXPORT-END
 
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

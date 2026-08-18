@@ -14,6 +14,10 @@
 /**
  * 初始化地图数据结构
  */
+function _mapSystemFiniteNumberOr(value, fallback) {
+  return (typeof value === 'number' && Number.isFinite(value)) ? value : fallback;
+}
+
 function initMapSystem() {
   if (!GM.mapData) {
     GM.mapData = {
@@ -258,7 +262,7 @@ function normalizeGameMapRuntime(mapData) {
         owner: region.owner || '',
         characters: region.characters || [],
         troops: region.troops || 0,
-        development: region.development || 50,
+        development: _mapSystemFiniteNumberOr(region.development, 50),
         events: region.events || '',
         color: region.color || '#cccccc'
       };
@@ -272,10 +276,6 @@ function bindRuntimeMapState(sourceMap) {
   var liveMap = cloneMapValue(sourceMap);
   normalizeGameMapRuntime(liveMap);
   if (typeof GM !== 'undefined' && GM) GM.mapData = liveMap;
-  if (typeof P !== 'undefined' && P) {
-    P.map = liveMap;
-    P.mapData = liveMap;
-  }
   return liveMap;
 }
 
@@ -355,6 +355,11 @@ function updateMapRegionFields(regionRef, patch, opts) {
 
 function applyRuntimeAIMapChanges(aiResponse, mapData) {
   if (!aiResponse || !aiResponse.map_changes) return;
+  // Once a game has bound its live map, renderer callers must never be able to
+  // steer mutations back into the scenario template by passing P.map.
+  var liveMap = getLiveMapData();
+  if (typeof GM !== 'undefined' && GM && GM.mapData && GM.mapData.regions) mapData = liveMap;
+  else mapData = mapData || liveMap;
   var changes = aiResponse.map_changes;
   (changes.ownership_changes || []).forEach(function(change) {
     setMapRegionOwner(change.region_id || change.region_name, change.new_owner, { mapData: mapData, reason: change.reason || 'AI推演领地易主' });
@@ -365,7 +370,7 @@ function applyRuntimeAIMapChanges(aiResponse, mapData) {
   });
   (changes.development_changes || []).forEach(function(change) {
     var region = findMapRegion(mapData, change.region_id || change.region_name);
-    if (region) updateMapRegionFields(region.id, { development: clamp(Number(region.development || 50) + Number(change.delta || 0), 0, 100) }, { mapData: mapData, reason: change.reason || 'AI推演发展度变化' });
+    if (region) updateMapRegionFields(region.id, { development: clamp(_mapSystemFiniteNumberOr(region.development, 50) + _mapSystemFiniteNumberOr(change.delta, 0), 0, 100) }, { mapData: mapData, reason: change.reason || 'AI推演发展度变化' });
   });
   (changes.events || []).forEach(function(event) {
     var region = findMapRegion(mapData, event.region_id || event.region_name);
@@ -1465,7 +1470,7 @@ function showCityInfo(cityId) {
   var html = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:2px solid var(--gold);border-radius:0.5rem;padding:1.5rem;min-width:300px;z-index:10000;">';
   html += '<h3 style="color:var(--gold);margin-bottom:1rem;">' + city.name + '</h3>';
   html += '<div style="margin-bottom:0.5rem;"><strong>归属：</strong>' + city.owner + '</div>';
-  html += '<div style="margin-bottom:0.5rem;"><strong>人口：</strong>' + (city.population||0).toLocaleString() + '</div>';
+    html += '<div style="margin-bottom:0.5rem;"><strong>人口：</strong>' + _mapSystemFiniteNumberOr(city.population, 0).toLocaleString() + '</div>';
   html += '<div style="margin-bottom:0.5rem;"><strong>收入：</strong>' + (city.income||0).toLocaleString() + ' 金/月</div>';
   var _cgv = Number(city.garrison || 0);
   if (_cgv > 0) {
@@ -1615,7 +1620,7 @@ function createSampleMapData() {
  */
 function initGameMap() {
   // AI地理志模式：跳过地图初始化
-  if (P.map && P.map.enabled === false) {
+  if ((GM && GM._useAIGeo) || (P.map && P.map.enabled === false)) {
     console.log('[initGameMap] 地图已禁用（AI地理志模式），跳过初始化');
     return;
   }
@@ -1623,8 +1628,6 @@ function initGameMap() {
   // 同步地图数据格式（确保两种格式都可用）
   if (GM.mapData && GM.mapData.regions && GM.mapData.regions.length > 0) {
     normalizeGameMapRuntime(GM.mapData);
-    P.map = GM.mapData;
-    P.mapData = GM.mapData;
   } else if (P.map && P.map.regions && P.map.regions.length > 0) {
     bindRuntimeMapState(P.map);
   } else if (P.mapData && P.mapData.regions && P.mapData.regions.length > 0) {
@@ -1702,7 +1705,7 @@ function syncGameMapData() {
         owner: region.owner || '',
         characters: region.characters || [],
         troops: region.troops || 0,
-        development: region.development || 50,
+        development: _mapSystemFiniteNumberOr(region.development, 50),
         events: '',
         color: region.color || '#cccccc'
       };
@@ -1726,7 +1729,7 @@ function syncGameMapData() {
         owner: item.owner || '',
         characters: item.characters || [],
         troops: item.troops || 0,
-        development: item.development || 50,
+        development: _mapSystemFiniteNumberOr(item.development, 50),
         color: item.color || '#cccccc'
       };
     });
@@ -1760,15 +1763,15 @@ function updateMapState() {
   Object.values(GM.mapData.cities).forEach(function(city) {
     var faction = findFacByName(city.owner);
     if (faction) {
-      if (faction.population) {
+      if (faction.population !== undefined) {
         city.population = faction.population;
       }
 
-      if (faction.income) {
+      if (faction.income !== undefined) {
         city.income = faction.income;
       }
 
-      if (faction.military) {
+      if (faction.military !== undefined) {
         city.garrison = faction.military;
       }
     }
@@ -1799,29 +1802,32 @@ function syncArmiesToMap() {
   GM.mapData.armies = [];
 
   GM.armies.forEach(function(army) {
-    // 获取军队所在城市的坐标
-    var city = GM.mapData.cities[army.location] || findCityByName(army.location);
-    if (!city) return;
+    // location 兼容旧城市名，也接受稳定节点引用/locationId/regionId/mapRegionId。
+    var node = resolveMapNode(army.locationNode || army.locationId || army.regionId || army.mapRegionId || army.location);
+    if (!node) return;
 
     var mapArmy = {
       id: army.id,
       faction: army.faction,
       size: army.soldiers || 0,
-      x: city.x,
-      y: city.y,
+      x: node.x,
+      y: node.y,
       location: army.location,
+      locationNodeId: node.id,
+      locationNodeType: node.type,
       moving: false,
       moveProgress: 0
     };
 
     // 如果军队正在移动，设置目标位置
-    if (army.targetLocation) {
-      var targetCity = GM.mapData.cities[army.targetLocation] || findCityByName(army.targetLocation);
-      if (targetCity) {
+    if (army.targetLocation || army.targetLocationNode || army.targetLocationId || army.targetRegionId) {
+      var targetNode = resolveMapNode(army.targetLocationNode || army.targetLocationId || army.targetRegionId || army.targetLocation);
+      if (targetNode) {
         mapArmy.moving = true;
-        mapArmy.targetX = targetCity.x;
-        mapArmy.targetY = targetCity.y;
-        mapArmy.moveProgress = army.moveProgress || 0;
+        mapArmy.targetX = targetNode.x;
+        mapArmy.targetY = targetNode.y;
+        mapArmy.targetNodeId = targetNode.id;
+        mapArmy.moveProgress = army.moveProgress != null ? army.moveProgress : 0;
       }
     }
 
@@ -1834,41 +1840,80 @@ function syncArmiesToMap() {
  */
 function syncBattlesToMap() {
   if (!GM.mapData) return;
-  GM.mapData.battles = [];
-
-  // 从事件日志中查找正在进行的战斗
-  if (GM.evtLog && GM.evtLog.length > 0) {
-    var recentEvents = GM.evtLog.slice(-10); // 最近10条事件
-    recentEvents.forEach(function(evt) {
-      if (evt.type === '战争' && evt.text && evt.text.indexOf('战斗') !== -1) {
-        // 解析战斗信息
-        var match = evt.text.match(/(.+?)与(.+?)在(.+?)发生战斗/);
-        if (match) {
-          var attacker = match[1];
-          var defender = match[2];
-          var location = match[3];
-
-          var city = GM.mapData.cities[location] || findCityByName(location);
-          if (city) {
-            GM.mapData.battles.push({
-              attacker: attacker,
-              defender: defender,
-              location: location,
-              x: city.x,
-              y: city.y,
-              turn: GM.turn
-            });
-          }
-        }
-      }
+  var mapped = [], seen = {};
+  function addStructuredBattle(battle, active) {
+    if (!battle) return;
+    var id = battle.id || battle.battleId || ('battle-' + (battle.turn || GM.turn || 0) + '-' + mapped.length);
+    if (seen[id]) return;
+    var locationRef = battle.locationNode || battle.locationNodeId || battle.regionId || battle.mapRegionId || battle.location || battle.province;
+    var node = resolveMapNode(locationRef);
+    if (!node) return;
+    seen[id] = true;
+    mapped.push({
+      id: id,
+      attacker: battle.attackerFaction || battle.attackerArmy || battle.attacker || '',
+      defender: battle.defenderFaction || battle.defenderArmy || battle.defender || '',
+      location: (locationRef && locationRef.nodeId) || locationRef || node.name,
+      locationNodeId: node.id,
+      locationNodeType: node.type,
+      x: node.x,
+      y: node.y,
+      turn: battle.turn != null ? battle.turn : (GM.turn || 0),
+      active: !!active
     });
   }
+  (GM.activeBattles || []).forEach(function(b) { addStructuredBattle(b, b && b.phase !== 'resolved'); });
+  (GM._turnBattleResults || []).forEach(function(b) { addStructuredBattle(b, false); });
+  (GM.battleHistory || []).slice(-20).forEach(function(b) { addStructuredBattle(b, false); });
+  GM.mapData.battles = mapped;
 
   // 清理旧战斗（超过3回合的）
   var battleKeepTurns = (typeof turnsForMonths === 'function') ? turnsForMonths(3) : 3;
   GM.mapData.battles = GM.mapData.battles.filter(function(battle) {
-    return GM.turn - battle.turn <= battleKeepTurns;
+    return battle.active || GM.turn - battle.turn <= battleKeepTurns;
   });
+}
+
+/** 将城市/地区/港口/海域/野外节点的稳定引用解析成统一地图坐标。 */
+function resolveMapNode(ref) {
+  if (!GM.mapData || ref == null) return null;
+  var raw = ref;
+  if (raw && typeof raw === 'object') raw = raw.nodeId || raw.id || raw.regionId || raw.mapRegionId || raw.name;
+  if (raw == null || raw === '') return null;
+  var key = String(raw);
+  function xy(row, id, type) {
+    if (!row) return null;
+    var center = row.center || row.centroid;
+    var x = row.x, y = row.y;
+    if (Array.isArray(center)) { x = center[0]; y = center[1]; }
+    else if (center && typeof center === 'object') { x = center.x; y = center.y; }
+    x = Number(x); y = Number(y);
+    if (!isFinite(x) || !isFinite(y)) return null;
+    return { id: String(id || row.id || row.name || key), name: row.name || row.title || key, type: type, x: x, y: y, row: row };
+  }
+  var cities = GM.mapData.cities || {};
+  if (cities[key]) { var directCity = xy(cities[key], key, 'city'); if (directCity) return directCity; }
+  for (var cityId in cities) {
+    if (!Object.prototype.hasOwnProperty.call(cities, cityId)) continue;
+    if (cities[cityId] && (String(cities[cityId].id) === key || cities[cityId].name === key)) {
+      var namedCity = xy(cities[cityId], cityId, 'city'); if (namedCity) return namedCity;
+    }
+  }
+  var groups = [
+    { rows: GM.mapData.regions, type: 'region' }, { rows: GM.mapData.items, type: 'item' },
+    { rows: GM.mapData.ports, type: 'port' }, { rows: GM.mapData.oceans, type: 'ocean' },
+    { rows: GM.mapData.nodes, type: 'node' }
+  ];
+  for (var gi = 0; gi < groups.length; gi++) {
+    var rows = Array.isArray(groups[gi].rows) ? groups[gi].rows : [];
+    for (var ri = 0; ri < rows.length; ri++) {
+      var row = rows[ri];
+      if (row && (String(row.id) === key || row.name === key || row.mapRegionId === key || row.regionId === key)) {
+        var found = xy(row, row.id || key, groups[gi].type); if (found) return found;
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -2081,26 +2126,26 @@ function findPath(from, to, options) {
       var edge = edges[i];
       if (closed[edge.target]) continue;
 
-      // 关隘阻断：敌方控制的关隘不可通过
-      if (edge.passLevel > 0 && options.avoidEnemy) {
-        var region = (P.map.regions || []).find(function(r) { return (r.id || r.name) === edge.target; });
+      if (options.waterOnly && edge.type !== 'water') continue;
+
+      // avoidEnemy 是全节点约束，不只作用于关隘。
+      if (options.avoidEnemy) {
+        var runtimeMap = GM.mapData || {};
+        var region = (runtimeMap.regions || []).find(function(r) { return (r.id || r.name) === edge.target; });
         if (region) {
-          var regionOwner = region.occupiedBy || region.owner || '';
+          var regionOwner = region.occupiedBy || region.controller || region.owner || '';
           if (regionOwner && options.faction && regionOwner !== options.faction) {
-            continue; // 敌占关隘，跳过
+            continue;
           }
         }
       }
 
-      // 计算移动消耗
-      var g = current.g + edge.distance * edge.movementCost;
-
-      // 水路加速
-      if (edge.type === 'water') g *= 0.3;
-      // 栈道减速
-      if (edge.type === 'mountain_pass') g *= 1.5;
-      // 驿道加速
-      if (edge.hasPostRoad) g *= 0.7;
+      // 只调整当前边成本；累计 g 绝不能因向前走一条正成本边而下降。
+      var edgeCost = Math.max(0, Number(edge.distance) || 0) * Math.max(0, Number(edge.movementCost) || 0);
+      if (edge.type === 'water') edgeCost *= 0.3;
+      if (edge.type === 'mountain_pass') edgeCost *= 1.5;
+      if (edge.hasPostRoad) edgeCost *= 0.7;
+      var g = current.g + edgeCost;
 
       var newTerrains = current.terrains.concat(edge.terrain);
       var hasRoad = current.postRoad || edge.hasPostRoad;

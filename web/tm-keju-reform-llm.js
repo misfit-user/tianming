@@ -32,10 +32,7 @@
   function _kjpParseJson(raw) {
     if (!raw) return null;
     try {
-      var s = String(raw).replace(/```json|```/g, '').trim();
-      var jm = s.match(/[\{\[][\s\S]*[\}\]]/);
-      if (jm) s = jm[0];
-      return JSON.parse(s);
+      return (typeof robustParseJSON === 'function') ? robustParseJSON(String(raw)) : null;
     } catch (e) {
       try { console.warn('[L3·llm] JSON parse fail·raw=', String(raw).slice(0, 200), e); } catch(_){}
       return null;

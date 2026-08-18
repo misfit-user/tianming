@@ -17,7 +17,7 @@ const mi = src.indexOf(marker);
 assert(mi > 0, '① 消费块锚在位');
 let j = mi + marker.length - 1, d = 0;
 for (let k = j; k < src.length; k++) { const c = src[k]; if (c === '{') d++; else if (c === '}') { d--; if (d === 0) { j = k + 1; break; } } }
-const blockSrc = 'function consumePlayerDead() { ' + src.slice(mi, j) + ' }';
+const blockSrc = 'async function consumePlayerDead() { ' + src.slice(mi, j) + ' }';
 
 function mk(over) {
   const ctx = { console: { log() {}, warn() {}, error() {} }, Math, JSON, String, Number, Array, Object, parseInt, parseFloat, isFinite, isNaN };
@@ -28,11 +28,14 @@ function mk(over) {
   ctx.showTurnResult = (html) => ctx._simple.push(html);
   ctx.escHtml = (s) => String(s == null ? '' : s);
   ctx.getTSText = () => '天启十年';
+  ctx._obsCtx = {};
+  ctx._turnTxn = {};
+  ctx._tmFinalizeEndTurnTransaction = async () => {};
   ctx.GM = Object.assign({ busy: true, running: true, turn: 40, _playerDead: true, _playerDeathReason: '御驾亲征，崩于军中', _playerDeathKind: 'battle' }, (over && over.GM) || {});
   ctx.P = { playerInfo: { characterName: '天子' } };
   vm.createContext(ctx);
   vm.runInContext(blockSrc, ctx, { filename: 'playerdead-slice.js' });
-  ctx.consumePlayerDead();
+  void ctx.consumePlayerDead();
   return ctx;
 }
 

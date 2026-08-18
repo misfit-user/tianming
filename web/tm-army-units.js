@@ -297,9 +297,15 @@
   function _parseLexiconReply(raw) {
     var out = {};
     if (!raw) return out;
-    var t = String(raw).replace(/```json/gi, '').replace(/```/g, '').trim();
     var arr = null;
-    try { arr = JSON.parse(t); } catch (e) { var m = t.match(/\[[\s\S]*\]/); if (m) { try { arr = JSON.parse(m[0]); } catch (e2) {} } }
+    var text = String(raw);
+    try {
+      if (typeof extractJSON === 'function') arr = extractJSON(text);
+      else {
+        var fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+        arr = JSON.parse(fence ? fence[1] : text);
+      }
+    } catch (_) { arr = null; }
     if (!Array.isArray(arr)) return out;
     arr.forEach(function (o) {
       if (o && o.name && _VALID_ARM[o.arm]) {

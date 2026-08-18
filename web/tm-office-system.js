@@ -633,7 +633,11 @@ function _settleOfficeMourning() {
   // 1. 丁忧中的官员——在丁忧期间从官制树中标记空缺（但不删除holder，保留恢复）
   (GM.chars||[]).forEach(function(c) {
     if (!c._mourning || c.alive === false) return;
-    if (GM.turn >= c._mourning.until) {
+    var _mourningNowDay = (typeof getCurrentGameDay === 'function') ? Number(getCurrentGameDay()) : null;
+    var _mourningDone = c._mourning.untilDay != null && _mourningNowDay != null && isFinite(_mourningNowDay)
+      ? _mourningNowDay >= Number(c._mourning.untilDay)
+      : GM.turn >= c._mourning.until;
+    if (_mourningDone) {
       // 丁忧期满——可复职
       c._mourning = null;
       if (typeof addEB === 'function') addEB('人事', c.name + '丁忧期满，可重新起用');

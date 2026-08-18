@@ -1129,7 +1129,10 @@
   function _validateEdictEffectConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var promulgateKw = _firstHit(narrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
+    // “下诏狱”中的“下诏”是司法动作，不是颁布诏令。先遮蔽这一固定词组，
+    // 避免把“某人下诏狱”误判为新增 activeEdicts 缺失并回滚整笔 AI 写入。
+    var edictNarrative = narrative.replace(/下诏狱/g, '下狱');
+    var promulgateKw = _firstHit(edictNarrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
     var revokeKw = _firstHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
     if (!promulgateKw && !revokeKw) return;
     var existingEdicts = Array.isArray(G.activeEdicts) ? G.activeEdicts : [];

@@ -9,7 +9,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const code = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
 
 const sandbox = {
   console: console,
@@ -24,7 +24,7 @@ sandbox.global = sandbox;
 sandbox.self = sandbox;
 sandbox.window.TM = sandbox.TM;
 
-vm.runInNewContext(code, sandbox, { filename: 'tm-ai-infra.js' });
+vm.runInNewContext(code, sandbox, { filename: 'tm-ai-infra-json.js' });
 
 const rp = sandbox.robustParseJSON;
 if (typeof rp !== 'function') {
@@ -48,9 +48,10 @@ const TESTS = [
     requires: ['shilu_text']
   },
   {
-    name: 'L2.5·重复逗号 + 缺逗号 }{',
+    name: '歧义闸·两个顶层 JSON 明确拒绝',
     input: '{"a":1,,"b":2}{"c":3}',
-    requires: ['a']  // 只能抢救最外层第一块
+    reject: true,
+    requires: []
   },
   {
     name: 'L2.5·max_tokens 截断·尾部不完整 (string 中)',
@@ -78,7 +79,7 @@ let pass = 0, fail = 0;
 TESTS.forEach(function(t) {
   let r = null;
   try { r = rp(t.input); } catch(e) {}
-  const ok = r && t.requires.every(function(k) {
+  const ok = t.reject ? r === null : r && t.requires.every(function(k) {
     if (!(k in r)) return false;
     const v = r[k];
     if (v == null) return false;

@@ -187,20 +187,18 @@
   }
 
   function loadFeedUrl() {
-    try { return localStorage.getItem('tm_update_feed_url') || state.defaultFeedUrl || ''; } catch(e) { return state.defaultFeedUrl || ''; }
+    try { localStorage.removeItem('tm_update_feed_url'); } catch(e) {}
+    return state.defaultFeedUrl || '';
   }
 
-  function saveFeedUrl(url) {
-    try { localStorage.setItem('tm_update_feed_url', url || ''); } catch(e) {}
-  }
+  function saveFeedUrl() {}
 
   function loadHotFeedUrl() {
-    try { return localStorage.getItem('tm_hot_update_feed_url') || state.defaultHotFeedUrl || ''; } catch(e) { return state.defaultHotFeedUrl || ''; }
+    try { localStorage.removeItem('tm_hot_update_feed_url'); } catch(e) {}
+    return state.defaultHotFeedUrl || '';
   }
 
-  function saveHotFeedUrl(url) {
-    try { localStorage.setItem('tm_hot_update_feed_url', url || ''); } catch(e) {}
-  }
+  function saveHotFeedUrl() {}
 
   function loadCatalogUrl() {
     try { return localStorage.getItem('tm_workshop_catalog_url') || state.defaultCatalogUrl || ''; } catch(e) { return state.defaultCatalogUrl || ''; }
@@ -1286,28 +1284,14 @@
   }
 
   async function checkGameUpdate() {
-    var hotInput = document.getElementById('tm-hot-feed');
-    if (hotInput) {
-      var hotVal = hotInput.value.trim();
-      if (hotVal) { state.hotFeedUrl = hotVal; saveHotFeedUrl(hotVal); }
-    }
-    var feedInput = document.getElementById('tm-update-feed');
-    if (feedInput) {
-      var feedVal = feedInput.value.trim();
-      if (feedVal) { state.feedUrl = feedVal; saveFeedUrl(feedVal); }
-    }
     await checkHotUpdate();
     await checkUpdate();
   }
 
   async function checkUpdate() {
-    var input = document.getElementById('tm-update-feed');
-    state.feedUrl = input ? input.value.trim() : state.feedUrl;
-    if (!state.feedUrl) state.feedUrl = state.defaultFeedUrl || '';
-    saveFeedUrl(state.feedUrl);
     state.status = { message: '正在检查更新...' };
     render();
-    var res = await window.tianming.checkForUpdate(state.feedUrl);
+    var res = await window.tianming.checkForUpdate();
     state.status = res || { error: '检查失败' };
     render();
   }
@@ -1361,13 +1345,9 @@
   }
 
   async function checkHotUpdate() {
-    var input = document.getElementById('tm-hot-feed');
-    state.hotFeedUrl = input ? input.value.trim() : state.hotFeedUrl;
-    if (!state.hotFeedUrl) state.hotFeedUrl = state.defaultHotFeedUrl || '';
-    saveHotFeedUrl(state.hotFeedUrl);
     state.hotMessage = '正在检查热更新...';
     render();
-    var res = await window.tianming.checkHotUpdate(state.hotFeedUrl);
+    var res = await window.tianming.checkHotUpdate();
     state.hotCheck = res || null;
     if (res && res.success) {
       state.hotStatus = res.status || state.hotStatus;
@@ -1381,13 +1361,9 @@
   }
 
   async function installHotUpdate() {
-    var input = document.getElementById('tm-hot-feed');
-    state.hotFeedUrl = input ? input.value.trim() : state.hotFeedUrl;
-    if (!state.hotFeedUrl) state.hotFeedUrl = state.defaultHotFeedUrl || '';
-    saveHotFeedUrl(state.hotFeedUrl);
     state.hotMessage = '正在下载并安装热更新...';
     render();
-    var res = await window.tianming.installHotUpdate(state.hotFeedUrl);
+    var res = await window.tianming.installHotUpdate();
     if (res && res.success) {
       state.hotStatus = res.status || state.hotStatus;
       state.hotCheck = Object.assign({}, state.hotCheck || {}, { hasUpdate: false });

@@ -75,7 +75,7 @@ function aiGenerateGoals() {
   callAIEditor(prompt, 2000).then(function(c) {
     hideLoading();
     try {
-      var arr = JSON.parse(c.match(/\[[\s\S]*\]/)[0]);
+      var arr = JSON.parse(extractJSONMatch(c, 'array')[0]);
       if (Array.isArray(arr)) { scriptData.goals = (scriptData.goals || []).concat(arr); renderGoalsList(); showToast('已生成 ' + arr.length + ' 个目标条件'); if (typeof autoSave === 'function') autoSave(); }
     } catch(e) { showToast('解析失败'); }
   }).catch(function(e) { hideLoading(); showToast('生成失败: ' + e.message); });

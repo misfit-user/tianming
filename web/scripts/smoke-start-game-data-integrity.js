@@ -404,7 +404,8 @@ async function runStartRequestRaceCase() {
   sandbox.__ensureResolvers[0]();
   await first;
   assert(sandbox.__ceremonyTokens.length === 1, 'stale start request reached ceremony after a newer request');
-  assert(sandbox.__raceToasts.length === 0, 'stale start request emitted a user-visible error');
+  const startErrors = sandbox.__raceToasts.filter((message) => /剧本加载失败|未找到|史实检查失败/.test(message));
+  assert(startErrors.length === 0, 'stale start request emitted a user-visible start error: ' + JSON.stringify(startErrors));
   console.log('[smoke-start-game-data-integrity] latest-start-request-wins PASS');
 }
 

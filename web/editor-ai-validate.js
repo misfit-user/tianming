@@ -792,20 +792,18 @@
       setProgress(60, '正在应用修复...');
       var json = (resp || '').trim();
       json = json.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var m = json.match(/\[\s*\{[\s\S]*\}\s*\]/);
       // 尝试解析为新格式{generates, patches}或旧格式[patches]
-      var jObj = json.match(/\{[\s\S]*\}/);
-      var jArr = json.match(/\[\s*\{[\s\S]*\}\s*\]/);
       var generates = [];
       var patches = [];
       try {
-        if (jObj) {
-          var parsed = JSON.parse(jObj[0]);
+        var parsed = extractJSON(json);
+        if (parsed && !Array.isArray(parsed)) {
           generates = parsed.generates || [];
           patches = parsed.patches || [];
-          if (!patches.length && Array.isArray(parsed)) patches = parsed; // 兼容旧格式
-        } else if (jArr) {
-          patches = JSON.parse(jArr[0]); // 旧格式纯patch数组
+        } else if (Array.isArray(parsed)) {
+          patches = parsed; // 旧格式纯patch数组
+        } else {
+          throw new Error('未找到唯一 JSON 对象或数组');
         }
       } catch(e) {
         hideProgress();
@@ -1116,9 +1114,7 @@
       hideLoading();
       try {
         // 清理markdown包装
-        raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-        var m = raw.match(/\[\s*\{[\s\S]*\]/);
-        var suggestions = JSON.parse(m ? m[0] : raw);
+        var suggestions = extractJSON(raw);
         if (!Array.isArray(suggestions) || suggestions.length === 0) {
           showToast('AI\u672A\u8FD4\u56DE\u6709\u6548\u5EFA\u8BAE');
           return;
@@ -1183,7 +1179,7 @@
     try {
       var dispResp = await callAIEditor(dispatchPrompt, 1500);
       dispResp = dispResp.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jmD = dispResp.match(/\[[\s\S]*\]/);
+      var jmD = extractJSONMatch(dispResp, 'array');
       var dispatches = jmD ? JSON.parse(jmD[0]) : [];
 
       var fgp = document.getElementById('fullGenProgress');
@@ -1231,7 +1227,7 @@
           try {
             var resp = await callAIEditor(fixP, 1500);
             resp = resp.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var jm = resp.match(/\{[\s\S]*\}/);
+            var jm = extractJSONMatch(resp, 'object');
             if (jm) {
               var fix = JSON.parse(jm[0]);
               if (fix.changes && Array.isArray(fix.changes)) {
@@ -1261,4 +1257,3 @@
       console.error('[Polish dispatch]', e);
     }
   };
-

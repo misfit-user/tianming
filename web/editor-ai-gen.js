@@ -99,8 +99,7 @@
         // Try to parse as JSON array
         if (minItems > 0) {
           try {
-            var match = result.match(/\[\s*\{[\s\S]*\]/);
-            var parsed = JSON.parse(match ? match[0] : result);
+            var parsed = extractJSON(result);
             if (Array.isArray(parsed)) {
               // Merge with existing results (avoid duplicates by name)
               parsed.forEach(function(item) {
@@ -969,7 +968,7 @@
       try {
         // 优先处理返回对象（非数组）的目标
         if (target === 'haremConfig') {
-          var hcMatch = raw.match(/\{[\s\S]*\}/);
+          var hcMatch = extractJSONMatch(raw, 'object');
           if (hcMatch) {
             var hcObj = JSON.parse(hcMatch[0]);
             if (hcObj && hcObj.rankSystem) {
@@ -990,7 +989,7 @@
           }
         }
         if (target === 'worldSettings') {
-          var wsMatch = raw.match(/\{[\s\S]*\}/);
+          var wsMatch = extractJSONMatch(raw, 'object');
           if (wsMatch) {
             var wsObj = JSON.parse(wsMatch[0]);
             if (!scriptData.worldSettings) scriptData.worldSettings = {culture:'',weather:'',religion:'',economy:'',technology:'',diplomacy:''};
@@ -1025,17 +1024,9 @@
         }
         // 尝试1：直接解析整个响应
         if (!arr) try { var _p = JSON.parse(cleaned); if (Array.isArray(_p)) arr = _p; else if (typeof _p === 'object') { _rawParsed = _p; for (var _wk in _p) { if (Array.isArray(_p[_wk])) { arr = _p[_wk]; break; } } } } catch(e1) {}
-        // 尝试2：匹配数组模式 [{...}]
-        if (!arr) {
-          var m = cleaned.match(/\[\s*\{[\s\S]*\]/);
-          if (m) try { arr = JSON.parse(m[0]); } catch(e2) {
-            // 尝试修复尾逗号
-            try { arr = JSON.parse(m[0].replace(/,\s*([}\]])/g, '$1')); } catch(e2b){}
-          }
-        }
         // 尝试3：匹配对象模式 {...}（包含子数组）
         if (!arr) {
-          var objMatch = cleaned.match(/\{[\s\S]*\}/);
+          var objMatch = extractJSONMatch(cleaned, 'object');
           if (objMatch) {
             try {
               var obj = JSON.parse(objMatch[0]);
@@ -1052,18 +1043,6 @@
                 for (var wk2 in obj2) { if (Array.isArray(obj2[wk2])) { arr = obj2[wk2]; break; } }
                 if (!arr && obj2.name) arr = [obj2];
               } catch(e3b){}
-            }
-          }
-        }
-        // 尝试4：截断恢复——从最后一个 "}," 前截，重组为完整数组
-        if (!arr) {
-          var truncMatch = cleaned.match(/\[\s*\{[\s\S]*?\}(?:\s*,\s*\{[\s\S]*?\})*/);
-          if (truncMatch) {
-            var truncated = truncMatch[0];
-            var lastValid = truncated.lastIndexOf('}');
-            if (lastValid > 0) {
-              var candidate = truncated.substring(0, lastValid + 1) + ']';
-              try { arr = JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1')); } catch(e4){}
             }
           }
         }
@@ -1479,7 +1458,7 @@
     try {
       showLoading('正在生成玩家势力...');
       var result = await callAIEditor(prompt, 1000);
-      var jsonMatch = result.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(result, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var data = JSON.parse(jsonMatch[0]);
@@ -1591,7 +1570,7 @@
     try {
       showLoading('正在生成玩家角色...');
       var result = await callAIEditor(prompt, 1000);
-      var jsonMatch = result.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(result, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var data = JSON.parse(jsonMatch[0]);

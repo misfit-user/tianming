@@ -33,17 +33,64 @@
     return 30;
   }
 
-  // 读起始年（剧本起始年·没有则用回合 1 = 公元 1 年作占位）
-  function _getStartYear() {
-    if (typeof P !== 'undefined' && P && P.time && P.time.startYear) return P.time.startYear;
-    if (typeof GM !== 'undefined' && GM && GM._startYear) return GM._startYear;
+  // 读起始日期（P.time.year 是当前运行时 canonical；startYear 兼容旧格式）。
+  // 不使用 Date(year,...)：JavaScript 会把 0..99 年偷偷映射成 1900..1999。
+  function _getStartDate() {
+    if (typeof P !== 'undefined' && P && P.time) {
+      var pt = P.time;
+      var py = pt.startYear != null ? Number(pt.startYear) : Number(pt.year);
+      if (isFinite(py)) return { year: py, month: _validMonth(pt.startMonth), day: _validDay(pt.startDay) };
+    }
+    if (typeof GM !== 'undefined' && GM && GM._startYear != null && isFinite(Number(GM._startYear))) {
+      return { year: Number(GM._startYear), month: _validMonth(GM._startMonth), day: _validDay(GM._startDay) };
+    }
     if (typeof findScenarioById === 'function' && typeof GM !== 'undefined' && GM && GM.sid) {
       try {
         var sc = findScenarioById(GM.sid);
-        if (sc && sc.startYear) return sc.startYear;
+        if (sc) {
+          var gs = sc.gameSettings || {}, st = sc.time || {};
+          var sy = gs.startYear != null ? Number(gs.startYear) : (st.year != null ? Number(st.year) : Number(sc.startYear));
+          if (isFinite(sy)) return { year: sy, month: _validMonth(gs.startMonth != null ? gs.startMonth : st.startMonth), day: _validDay(gs.startDay != null ? gs.startDay : st.startDay) };
+        }
       } catch(_e){}
     }
-    return 1;
+    return { year: 1, month: 1, day: 1 };
+  }
+
+  function _validMonth(value) {
+    var n = Math.floor(Number(value));
+    return isFinite(n) && n >= 1 && n <= 12 ? n : 1;
+  }
+  function _isLeapYear(year) { return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0; }
+  function _daysInMonth(year, month) {
+    if (month === 2) return _isLeapYear(year) ? 29 : 28;
+    return [4, 6, 9, 11].indexOf(month) >= 0 ? 30 : 31;
+  }
+  function _validDay(value, year, month) {
+    var n = Math.floor(Number(value));
+    var max = (year != null && month != null) ? _daysInMonth(year, month) : 31;
+    return isFinite(n) && n >= 1 && n <= max ? n : 1;
+  }
+  // Howard Hinnant civil calendar conversion；支持负年、0 年及 0..99 年。
+  function _daysFromCivil(year, month, day) {
+    year -= month <= 2 ? 1 : 0;
+    var era = Math.floor(year / 400);
+    var yoe = year - era * 400;
+    var mp = month + (month > 2 ? -3 : 9);
+    var doy = Math.floor((153 * mp + 2) / 5) + day - 1;
+    return era * 146097 + yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy;
+  }
+  function _civilFromDays(days) {
+    var era = Math.floor(days / 146097);
+    var doe = days - era * 146097;
+    var yoe = Math.floor((doe - Math.floor(doe / 1460) + Math.floor(doe / 36524) - Math.floor(doe / 146096)) / 365);
+    var year = yoe + era * 400;
+    var doy = doe - (365 * yoe + Math.floor(yoe / 4) - Math.floor(yoe / 100));
+    var mp = Math.floor((5 * doy + 2) / 153);
+    var day = doy - Math.floor((153 * mp + 2) / 5) + 1;
+    var month = mp + (mp < 10 ? 3 : -9);
+    year += month <= 2 ? 1 : 0;
+    return { year: year, month: month, day: day };
   }
 
   // ────── 1. 回合 → 绝对日期 ──────
@@ -51,14 +98,15 @@
   function turnToDate(turn) {
     if (turn == null) turn = (typeof GM !== 'undefined' && GM && GM.turn) || 1;
     var dpv = _getDaysPerTurn_();
-    var startYear = _getStartYear();
+    var start = _getStartDate();
+    start.day = _validDay(start.day, start.year, start.month);
     // 回合开始那天·距离剧本起点的天数
-    var daysFromStart = (turn - 1) * dpv;
-    var startDateMs = new Date(startYear, 0, 1).getTime();
-    var d = new Date(startDateMs + daysFromStart * 86400000);
-    var year = d.getFullYear();
-    var month = d.getMonth() + 1;
-    var day = d.getDate();
+    var daysFromStart = Math.floor((Number(turn) - 1) * dpv);
+    if (!isFinite(daysFromStart)) daysFromStart = 0;
+    var d = _civilFromDays(_daysFromCivil(start.year, start.month, start.day) + daysFromStart);
+    var year = d.year;
+    var month = d.month;
+    var day = d.day;
     var ganIdx = ((year - 4) % 10 + 10) % 10;
     var zhiIdx = ((year - 4) % 12 + 12) % 12;
     return {
@@ -92,8 +140,8 @@
     if (diffDays <= 2) return future ? '后日' : '前日';
     if (diffDays <= 3) return future ? '三日后' : '三日前';
     if (diffDays <= 7) return future ? Math.round(diffDays) + '日后' : Math.round(diffDays) + '日前';
-    // 7 < diffDays <= 14
-    if (diffDays <= 14) return future ? '下旬' : '上旬';
+    // 旬是月内位置，不是持续时长；8—14 天仍按天数表达。
+    if (diffDays <= 14) return future ? Math.round(diffDays) + '日后' : Math.round(diffDays) + '日前';
     // 14 < diffDays <= 60
     if (diffDays <= 60) {
       var months = Math.round(diffDays / 30);
@@ -164,7 +212,7 @@
     if (nowTurn > 3) refs.push({ t: nowTurn - 3, label: '三回合前' });
     var dpv = _getDaysPerTurn_();
     var monthsPerTurn = dpv / 30;
-    var turnsPerYear = Math.max(1, Math.round(360 / dpv));
+    var turnsPerYear = Math.max(1, Math.round(365 / dpv));
     if (turnsPerYear < nowTurn) refs.push({ t: nowTurn - turnsPerYear, label: '一年前' });
     if (turnsPerYear * 3 < nowTurn) refs.push({ t: nowTurn - turnsPerYear * 3, label: '三年前' });
     if (turnsPerYear * 5 < nowTurn) refs.push({ t: nowTurn - turnsPerYear * 5, label: '五年前' });

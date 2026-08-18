@@ -1,7 +1,7 @@
 // ============================================================
 //  verify-hotupdate-selfheal.js — S2 自愈+卫生验证
 //  覆盖：状态原子写 / 损坏修复(promote previous·清空·留尸) / stale 清理 /
-//  崩溃环计数与自禁(含 disableSelfHeal 旗标) / 目录清理 / main.js shim 版本闸
+//  崩溃环计数与自禁(含 disableSelfHeal 旗标) / 目录清理 / 安装包代码边界
 //  运行：node web/scripts/verify-hotupdate-selfheal.js
 // ============================================================
 'use strict';
@@ -12,7 +12,6 @@ const Module = require('module');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-verify-heal-'));
@@ -177,36 +176,12 @@ function readState() { return JSON.parse(fs.readFileSync(P.HOT_UPDATE_STATE_FILE
   assert(!fs.existsSync(path.join(dl, 'a.zip')), 'J·完整 zip 清');
   assert(fs.existsSync(path.join(dl, 'b.part')) && !fs.existsSync(path.join(dl, 'c.part')), 'J·新 .part 留·7 天 .part 清');
 
-  // ── K·main.js shim 版本闸（源码切片 + vm） ──
+  // ── K·main/preload 固定在安装包信任边界 ──
   {
-    const src = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf-8');
-    const sliceStart = src.indexOf('// 2026-06-11·版本比较');
-    const sliceEnd = src.indexOf('// dev / `npm start`');
-    assert(sliceStart !== -1 && sliceEnd > sliceStart, 'K·shim 函数切片成功');
-    const m = [src.slice(sliceStart, sliceEnd)];
-    const shimUserData = path.join(TMP, 'shimUserData');
-    const hotDir = path.join(shimUserData, 'content', 'hot-updates', 'versions', 'X');
-    fs.mkdirSync(hotDir, { recursive: true });
-    fs.writeFileSync(path.join(hotDir, '_app_main.js'), '// hot main');
-    const stateFile = path.join(shimUserData, 'content', 'hot-updates', 'hot-update-state.json');
-    const sandbox = {
-      require, console,
-      path, fs,
-      app: { getPath: () => shimUserData },
-      __dirname: ROOT,
-      module: { exports: {} }
-    };
-    vm.createContext(sandbox);
-    vm.runInContext(m[0] + '\nthis._detectHotMain = _detectHotMain;', sandbox);
-    // stale·1.2.8.9 < buildVersion(1.3.3.5) → ''
-    fs.writeFileSync(stateFile, JSON.stringify({ enabled: true, currentVersion: '1.2.8.9', currentDir: hotDir }));
-    assert(sandbox._detectHotMain() === '', 'K·stale 热更被 shim 拒载');
-    // 非 stale·9.9.9.9 → 返回 _app_main.js 路径
-    fs.writeFileSync(stateFile, JSON.stringify({ enabled: true, currentVersion: '9.9.9.9', currentDir: hotDir }));
-    assert(sandbox._detectHotMain() === path.join(hotDir, '_app_main.js'), 'K·正常热更照常加载');
-    // enabled false → ''
-    fs.writeFileSync(stateFile, JSON.stringify({ enabled: false, currentVersion: '9.9.9.9', currentDir: hotDir }));
-    assert(sandbox._detectHotMain() === '', 'K·enabled:false 拒载（自禁机制的承接点）');
+    const mainShim = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf-8');
+    const preloadShim = fs.readFileSync(path.join(ROOT, 'preload.js'), 'utf-8');
+    assert(mainShim.includes("require('./main-impl.js')") && !/_detectHotMain|_app_main\.js/.test(mainShim), 'K·main 只加载安装包内实现');
+    assert(preloadShim.includes("require('./preload-impl.js')") && !/hot-preload|_app_preload\.js/.test(preloadShim), 'K·preload 只加载安装包内实现');
   }
 
   console.log('PASS assertions=' + assertions);

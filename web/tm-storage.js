@@ -9,6 +9,7 @@
 // 7.1: 存档压缩——使用CompressionStream(gzip)
 var SaveCompression = {
   supported: typeof CompressionStream !== 'undefined',
+  decompressionSupported: typeof DecompressionStream !== 'undefined',
 
   compress: async function(jsonStr) {
     if (!this.supported) return jsonStr;
@@ -22,32 +23,28 @@ var SaveCompression = {
   },
 
   decompress: async function(data) {
-    if (data == null) return '{}';
+    if (data == null) throw new Error('存档数据为空');
     if (typeof data === 'string') return data; // 未压缩的旧存档（字符串）
     // Blob·ArrayBuffer·Uint8Array 等
-    if (!this.supported) {
-      // 浏览器不支持 gzip解压·尝试直接读文本
-      try { return typeof data.text === 'function' ? await data.text() : String(data); }
-      catch(e) { console.error('[SaveCompression] decompress-no-gzip failed:', e); return '{}'; }
-    }
     // 检查是否是 gzip 压缩（前两字节 0x1f 0x8b）
     var blob = data instanceof Blob ? data : new Blob([data]);
-    try {
-      var headBuf = await blob.slice(0, 2).arrayBuffer();
-      var head = new Uint8Array(headBuf);
-      var isGzip = head.length >= 2 && head[0] === 0x1f && head[1] === 0x8b;
-      if (isGzip) {
-        var ds = new DecompressionStream('gzip');
-        var stream = blob.stream().pipeThrough(ds);
-        return await new Response(stream).text();
+    var headBuf = await blob.slice(0, 2).arrayBuffer();
+    var head = new Uint8Array(headBuf);
+    var isGzip = head.length >= 2 && head[0] === 0x1f && head[1] === 0x8b;
+    if (isGzip) {
+      if (!this.decompressionSupported) {
+        throw new Error('当前浏览器不支持 gzip 解压，无法读取该压缩存档');
       }
-      // 不是 gzip·当作纯文本
-      return await blob.text();
-    } catch(e) {
-      console.error('[SaveCompression] decompress failed:', e);
-      // 最后尝试：直接读 text
-      try { return await blob.text(); } catch(e2) { return '{}'; }
+      var ds = new DecompressionStream('gzip');
+      var stream = blob.stream().pipeThrough(ds);
+      return await new Response(stream).text();
     }
+    // 非 gzip 的 Blob/ArrayBuffer 是 UTF-8 文本旧档。严禁 String(ArrayBuffer)
+    // 产生 "[object ArrayBuffer]" 后再被当成有效内容。
+    if (typeof blob.text === 'function') return await blob.text();
+    var bytes = new Uint8Array(await blob.arrayBuffer());
+    if (typeof TextDecoder === 'undefined') throw new Error('当前环境缺少 UTF-8 解码器');
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   }
 };
 
@@ -67,7 +64,7 @@ var TM_SaveDB = (function() {
     if (_db) return Promise.resolve(_db);
     if (_openPromise) return _openPromise;
 
-    _openPromise = new Promise(function(resolve) {
+    _openPromise = new Promise(function(resolve, reject) {
       if (!window.indexedDB) {
         console.warn('[SaveDB] IndexedDB不可用，回退localStorage');
         _available = false;
@@ -93,10 +90,16 @@ var TM_SaveDB = (function() {
         resolve(_db);
       };
       req.onerror = function(e) {
-        console.warn('[SaveDB] IndexedDB打开失败:', e.target.error);
+        var err = e.target && e.target.error || new Error('IndexedDB 打开失败');
+        console.error('[SaveDB] IndexedDB打开失败:', err);
         _available = false;
         _openPromise = null;
-        resolve(null);
+        reject(err);
+      };
+      req.onblocked = function() {
+        _available = false;
+        _openPromise = null;
+        reject(new Error('IndexedDB 升级被其他页面阻塞'));
       };
     });
     return _openPromise;
@@ -135,15 +138,18 @@ var TM_SaveDB = (function() {
         return Promise.resolve(true);
       } catch(e) {
         console.error('[SaveDB] localStorage写入失败:', e.message);
-        return Promise.resolve(false);
+        return Promise.reject(e);
       }
     }
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       try {
         var tx = _db.transaction(storeName, 'readwrite');
+        var settled = false;
         tx.objectStore(storeName).put(record);
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function(e) {
+        tx.oncomplete = function() { if (!settled) { settled = true; resolve(true); } };
+        function handleWriteFailure(e) {
+          if (settled) return;
+          settled = true;
           var err = e.target && e.target.error;
           var isQuota = err && (err.name === 'QuotaExceededError' || err.name === 'QuotaExceededError');
           if (isQuota && storeName === SAVE_STORE && !_retryCount) {
@@ -153,7 +159,7 @@ var TM_SaveDB = (function() {
               if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
               if (dropped) {
                 // 重试（带 flag 防止无限递归）
-                _put(storeName, record, 1, writeGuard).then(resolve);
+                _put(storeName, record, 1, writeGuard).then(resolve, reject);
               } else {
                 // 没 auto 可清·通知用户手动清理
                 if (typeof window.toast === 'function') {
@@ -161,13 +167,51 @@ var TM_SaveDB = (function() {
                 }
                 resolve(false);
               }
-            });
+            }).catch(reject);
           } else {
             console.error('[SaveDB] 写入失败:', err ? err.name + ':' + err.message : e);
-            resolve(false);
+            reject(err || new Error('IndexedDB 写入失败'));
           }
-        };
-      } catch(e) { console.error('[SaveDB] 事务失败:', e); resolve(false); }
+        }
+        tx.onerror = handleWriteFailure;
+        tx.onabort = handleWriteFailure;
+      } catch(e) { console.error('[SaveDB] 事务失败:', e); reject(e); }
+    });
+  }
+
+  // 多记录同事务提交；迁移只有在这一事务完整成功后才允许删除旧源。
+  function _putManyAtomic(storeName, records) {
+    records = Array.isArray(records) ? records : [];
+    if (!records.length) return Promise.resolve(0);
+    if (!_available || !_db) {
+      var written = [];
+      try {
+        records.forEach(function(record) {
+          var key = 'tm_idb_' + storeName + '_' + record.id;
+          var previous = localStorage.getItem(key);
+          localStorage.setItem(key, JSON.stringify(record));
+          written.push({ key: key, previous: previous });
+        });
+        return Promise.resolve(records.length);
+      } catch (e) {
+        written.reverse().forEach(function(item) {
+          try {
+            if (item.previous == null) localStorage.removeItem(item.key);
+            else localStorage.setItem(item.key, item.previous);
+          } catch (_) {}
+        });
+        return Promise.reject(e);
+      }
+    }
+    return new Promise(function(resolve, reject) {
+      try {
+        var tx = _db.transaction(storeName, 'readwrite');
+        var store = tx.objectStore(storeName);
+        records.forEach(function(record) { store.put(record); });
+        tx.oncomplete = function() { resolve(records.length); };
+        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 批量写入失败')); };
+        tx.onabort = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 批量写入已中止')); };
+      } catch (e) { reject(e); }
     });
   }
 
@@ -177,31 +221,33 @@ var TM_SaveDB = (function() {
       try {
         var raw = localStorage.getItem('tm_idb_' + storeName + '_' + id);
         return Promise.resolve(raw ? JSON.parse(raw) : null);
-      } catch(e) { return Promise.resolve(null); }
+      } catch(e) { return Promise.reject(e); }
     }
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       try {
         var tx = _db.transaction(storeName, 'readonly');
         var req = tx.objectStore(storeName).get(id);
         req.onsuccess = function() { resolve(req.result || null); };
-        req.onerror = function() { resolve(null); };
-      } catch(e) { resolve(null); }
+        req.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 读取失败')); };
+        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 读取事务已中止')); };
+      } catch(e) { reject(e); }
     });
   }
 
   // ── 通用删除 ──
   function _del(storeName, id) {
     if (!_available || !_db) {
-      try { localStorage.removeItem('tm_idb_' + storeName + '_' + id); } catch(e) {}
+      try { localStorage.removeItem('tm_idb_' + storeName + '_' + id); } catch(e) { return Promise.reject(e); }
       return Promise.resolve(true);
     }
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       try {
         var tx = _db.transaction(storeName, 'readwrite');
         tx.objectStore(storeName).delete(id);
         tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function() { resolve(false); };
-      } catch(e) { resolve(false); }
+        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 删除失败')); };
+        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 删除事务已中止')); };
+      } catch(e) { reject(e); }
     });
   }
 
@@ -218,16 +264,17 @@ var TM_SaveDB = (function() {
             if (raw) results.push(JSON.parse(raw));
           }
         }
-      } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-storage');}catch(_){}}
+      } catch(e){ return Promise.reject(e); }
       return Promise.resolve(results);
     }
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       try {
         var tx = _db.transaction(storeName, 'readonly');
         var req = tx.objectStore(storeName).getAll();
         req.onsuccess = function() { resolve(req.result || []); };
-        req.onerror = function() { resolve([]); };
-      } catch(e) { resolve([]); }
+        req.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 列表读取失败')); };
+        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 列表事务已中止')); };
+      } catch(e) { reject(e); }
     });
   }
 
@@ -263,7 +310,7 @@ var TM_SaveDB = (function() {
           type: (meta && meta.type) || 'manual',
           name: (meta && meta.name) || id,
           timestamp: Date.now(),
-          turn: (meta && meta.turn) || 0,
+          turn: (meta && meta.turn != null) ? meta.turn : 0,
           scenarioName: (meta && meta.scenarioName) || '',
           eraName: (meta && meta.eraName) || '',
           date: (meta && meta.date) || '',
@@ -294,14 +341,7 @@ var TM_SaveDB = (function() {
       // 7.1: 解压压缩的gameState
       if (record._compressed && record.gameState) {
         return SaveCompression.decompress(record.gameState).then(function(jsonStr) {
-          try { record.gameState = JSON.parse(jsonStr); }
-          catch(e) {
-            // 纵深防御：历史上写了半截的坏档解压后无法解析。显式把 gameState 置空并标错，
-            // 别让残留的压缩 Blob 冒充 gameState 继续下传——下游读到 Blob 会二次崩溃。
-            record.gameState = null;
-            record._loadError = 'parse_failed';
-            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'SaveDB] 解压后JSON解析失败:') : console.error('[SaveDB] 解压后JSON解析失败:', e);
-          }
+          record.gameState = JSON.parse(jsonStr);
           delete record._compressed;
           return record;
         });
@@ -350,33 +390,27 @@ var TM_SaveDB = (function() {
 
   function migrateFromLocalStorage() {
     if (!_available || !_db) return Promise.resolve(0);
-    var migrated = 0;
-    var promises = [];
-    try {
-      for (var i = 0; i < 10; i++) {
-        var key = 'tm_save_' + i;
-        var raw = localStorage.getItem(key);
-        if (raw) {
-          (function(k, r) {
-            try {
-              var data = JSON.parse(r);
-              var slotId = 'slot_' + k.replace('tm_save_', '');
-              promises.push(save(slotId, data.gameState || data, {
-                name: data.name || ('存档' + k.replace('tm_save_', '')),
-                type: 'migrated',
-                turn: (data.gameState && data.gameState.turn) || (data.GM && data.GM.turn) || 0,
-                scenarioName: (data.scenarioName || '')
-              }).then(function(ok) {
-                if (ok) { migrated++; localStorage.removeItem(k); }
-              }));
-            } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-storage');}catch(_){}}
-          })(key, raw);
-        }
-      }
-    } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-storage');}catch(_){}}
-    return Promise.all(promises).then(function() {
-      if (migrated > 0) console.log('[SaveDB] 迁移了' + migrated + '个旧存档');
-      return migrated;
+    var candidates = [];
+    for (var i = 0; i < 10; i++) {
+      var key = 'tm_save_' + i;
+      var raw = localStorage.getItem(key);
+      if (!raw) continue;
+      var data = JSON.parse(raw); // 任一源损坏即整体停止，绝不删除其他旧档。
+      candidates.push({ key: key, data: data, index: i });
+    }
+    return Promise.all(candidates.map(function(item) {
+      var data = item.data;
+      return save('slot_' + item.index, data.gameState || data, {
+        name: data.name || ('存档' + item.index),
+        type: 'migrated',
+        turn: (data.gameState && data.gameState.turn) || (data.GM && data.GM.turn) || 0,
+        scenarioName: (data.scenarioName || '')
+      });
+    })).then(function(results) {
+      if (results.some(function(ok) { return ok !== true; })) throw new Error('旧 localStorage 存档迁移未完整提交');
+      candidates.forEach(function(item) { localStorage.removeItem(item.key); });
+      if (candidates.length > 0) console.log('[SaveDB] 迁移了' + candidates.length + '个旧存档');
+      return candidates.length;
     });
   }
 
@@ -385,7 +419,7 @@ var TM_SaveDB = (function() {
     if (!_available || !_db) return Promise.resolve(0);
     var OLD_DB = 'tianming_saves';
     if (OLD_DB === DB_NAME) return Promise.resolve(0); // 同名，无需迁移
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve, reject) {
       var req = indexedDB.open(OLD_DB);
       req.onsuccess = function(e) {
         var oldDb = e.target.result;
@@ -395,23 +429,19 @@ var TM_SaveDB = (function() {
         getAll.onsuccess = function() {
           var records = getAll.result || [];
           if (!records.length) { oldDb.close(); resolve(0); return; }
-          var migrated = 0;
-          var tasks = records.map(function(r) {
-            return _put(SAVE_STORE, r).then(function(ok) { if (ok) migrated++; });
-          });
-          Promise.all(tasks).then(function() {
+          _putManyAtomic(SAVE_STORE, records).then(function(migrated) {
             oldDb.close();
-            if (migrated > 0) {
-              console.log('[SaveDB] 从旧数据库迁移了' + migrated + '条记录');
-              // 删除旧数据库
-              indexedDB.deleteDatabase(OLD_DB);
-            }
-            resolve(migrated);
-          });
+            console.log('[SaveDB] 从旧数据库迁移了' + migrated + '条记录');
+            var delReq = indexedDB.deleteDatabase(OLD_DB);
+            delReq.onsuccess = function() { resolve(migrated); };
+            delReq.onerror = function(e2) { reject(e2.target && e2.target.error || new Error('旧数据库删除失败')); };
+            delReq.onblocked = function() { reject(new Error('旧数据库删除被其他页面阻塞')); };
+          }).catch(function(err) { oldDb.close(); reject(err); });
         };
-        getAll.onerror = function() { oldDb.close(); resolve(0); };
+        getAll.onerror = function(e2) { oldDb.close(); reject(e2.target && e2.target.error || new Error('旧数据库读取失败')); };
       };
-      req.onerror = function() { resolve(0); };
+      req.onerror = function(e) { reject(e.target && e.target.error || new Error('旧数据库打开失败')); };
+      req.onblocked = function() { reject(new Error('旧数据库打开被其他页面阻塞')); };
     });
   }
 
@@ -479,8 +509,14 @@ var TM_SaveDB = (function() {
 // 页面加载时立即打开数据库并迁移旧存档
 TM_SaveDB.open().then(function() {
   if (TM_SaveDB.isAvailable()) {
-    TM_SaveDB.migrateFromLocalStorage();
-    TM_SaveDB.migrateFromOldDB(); // 从旧数据库名(tianming_saves)迁移
+    Promise.all([
+      TM_SaveDB.migrateFromLocalStorage(),
+      TM_SaveDB.migrateFromOldDB() // 从旧数据库名(tianming_saves)迁移
+    ]).catch(function(e) {
+      console.error('[SaveDB] 迁移失败·旧源已保留:', e);
+      try { if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(e, 'SaveDB migration'); } catch (_) {}
+      try { if (typeof window.toast === 'function') window.toast('⚠️ 旧存档迁移失败，原数据已保留'); } catch (_) {}
+    });
     // R104·自动申请持久化存储，扩大实际可用配额（从"best-effort"到"persistent"）
     TM_SaveDB.requestPersistent().then(function(r) {
       if (r.granted) {
@@ -494,4 +530,7 @@ TM_SaveDB.open().then(function() {
       if (e.supported && !e.error) console.log('[SaveDB] 存储: ' + e.summary);
     });
   }
+}).catch(function(e) {
+  console.error('[SaveDB] 初始化失败:', e);
+  try { if (typeof window.toast === 'function') window.toast('❌ 存档数据库初始化失败：' + (e && e.message || e)); } catch (_) {}
 });

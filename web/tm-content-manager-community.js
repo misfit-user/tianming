@@ -1264,7 +1264,7 @@
       }
       await prepareOnlineDefaults();
       updateApplyState({ stage: 'checking-hot', message: '正在检查前端热更...', progress: 10 }, '检查前端热更清单。');
-      var hot = await window.tianming.checkHotUpdate(state.hotFeedUrl || state.defaultHotFeedUrl || '');
+      var hot = await window.tianming.checkHotUpdate();
       state.hotCheck = hot || null;
       // 2026-06-11·needsInstaller=热更要求更高本体版本·别在注定失败的热更上空转·直落本体安装包分支
       if (hot && hot.success && hot.hasUpdate && !hot.needsInstaller) {
@@ -1275,7 +1275,7 @@
           message: '发现前端热更 ' + hot.remoteVersion + '，开始下载。',
           progress: 18
         }, '前端热更：' + hot.currentVersion + ' → ' + hot.remoteVersion + '，大小 ' + formatBytes(hot.size));
-        var installed = await window.tianming.installHotUpdate(state.hotFeedUrl || state.defaultHotFeedUrl || '');
+        var installed = await window.tianming.installHotUpdate();
         if (installed && installed.success) {
           state.hotStatus = installed.status || state.hotStatus;
           updateApplyState({ busy: false, stage: 'installed-hot', message: '前端热更已安装，重载前端后生效。', progress: 100, canReload: true }, '前端热更安装完成。');
@@ -1286,7 +1286,7 @@
       }
 
       updateApplyState({ stage: 'checking-installer', message: '未发现可用前端热更，正在检查本体安装包...', progress: 35 }, hot && hot.message ? hot.message : '前端热更未命中。');
-      var installer = await window.tianming.checkForUpdate(state.feedUrl || state.defaultFeedUrl || '');
+      var installer = await window.tianming.checkForUpdate();
       state.status = installer || state.status;
       if (installer && installer.success && installer.hasUpdate) {
         updateApplyState({

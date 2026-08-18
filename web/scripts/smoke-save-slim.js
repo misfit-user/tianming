@@ -50,7 +50,9 @@ MUST_KEEP.forEach(function(k){ ok(skipBlock.indexOf(k)<0, '案二·SKIP 不含�
 
 // 每个去重镜像的 restore 都是条件式(缺席时活字段原样生效)
 const restoreSrc = sliceFn(save, 'function _restoreSavedFields(');
+const hasOwnSrc = sliceFn(save, 'function _tmHasOwn(');
 ok(!!restoreSrc, '案二·恢复函数抽取成功');
+ok(!!hasOwnSrc, '案二·安全自有字段判定函数抽取成功');
 DEDUP.forEach(function(k){ ok(new RegExp('if\\s*\\(\\s*GM\\.'+k+'\\b').test(restoreSrc), '案二·'+k+' 恢复为条件式'); });
 
 // ─────────────────────────────────────────────────────────
@@ -88,7 +90,7 @@ function restoreOn(gm){
   const c = { GM: JSON.parse(JSON.stringify(gm)), P: {}, setTimeout:function(){}, clearTimeout:function(){} };
   c.window = c; c.global = c;
   vm.createContext(c);
-  vm.runInContext(restoreSrc + '\n_restoreSavedFields();\nthis.RES = GM;', c);
+  vm.runInContext(hasOwnSrc + '\n' + restoreSrc + '\n_restoreSavedFields();\nthis.RES = GM;', c);
   return c.RES;
 }
 const liveVal = { _convArchive:[{c:1},{c:2}], letters:[{l:9}], _courtRecords:[{r:1}] };

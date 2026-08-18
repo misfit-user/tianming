@@ -471,79 +471,14 @@ function _probeClearCache() {
   _refreshBothProbePanels();
 }
 
-// ============================================================
-//  \u4E2D\u8F6C\u7AD9\u4E0D\u5B89\u5168\u8BC1\u4E66\u653E\u884C\uFF082026-06-11\uFF09
-//  \u73A9\u5BB6 BYOK \u7528\u7684\u53CD\u4EE3/\u4E2D\u8F6C\u7AD9\u5E38\u8BC1\u4E66\u57DF\u540D\u4E0D\u5339\u914D\u6216\u81EA\u7B7E\u540D \u2192 \u5BA2\u6237\u7AEF\u62D2\u7EDD\u8FDE\u63A5\u3002
-//  \u5F00\u5173 P.conf.insecureTlsRelay \u5F00\u542F\u540E\uFF0C\u628A\u73A9\u5BB6\u914D\u7F6E\u7684 API host\uFF08\u4E3B/\u6B21/\u751F\u56FE\uFF09
-//  \u4E0B\u53D1\u7ED9\u684C\u9762 Electron(certificate-error \u653E\u884C) \u4E0E\u5B89\u5353 Capacitor(InsecureTls \u63D2\u4EF6)\uFF0C
-//  \u4EC5\u5BF9\u8FD9\u4E9B host \u8DF3\u8FC7\u6821\u9A8C\u3002\u5B98\u65B9\u670D\u52A1\u5668\u57DF\u540D\u6C38\u4E0D\u653E\u884C\uFF08\u9632 MITM \u63A8\u6076\u610F\u70ED\u66F4\uFF09\u3002
-//  \u5728\u7EBF\u7F51\u9875\u7248\u53D7\u6D4F\u89C8\u5668\u9650\u5236\u65E0\u6CD5\u7ED5\u8FC7\u2014\u2014\u5F00\u5173\u5BF9\u5176\u65E0\u6548\uFF08\u9759\u9ED8\uFF09\u3002
-// ============================================================
-var TM_INSECURE_TLS_OFFICIAL = ['api.themisfitserspeople.top', 'themisfitserspeople.top'];
-
-function _tmInsecureHostOf(u) {
-  try {
-    if (!u) return '';
-    var s = String(u).trim();
-    if (!s) return '';
-    if (s.indexOf('://') < 0 && s.indexOf('/') < 0 && s.indexOf(':') < 0) return s.toLowerCase();
-    var p = new URL(s.indexOf('://') >= 0 ? s : ('https://' + s));
-    return (p.hostname || '').toLowerCase();
-  } catch (e) { return ''; }
-}
-
-function _tmGatherRelayHosts() {
-  var hosts = [];
-  function add(u) {
-    var h = _tmInsecureHostOf(u);
-    if (h && TM_INSECURE_TLS_OFFICIAL.indexOf(h) < 0 && hosts.indexOf(h) < 0) hosts.push(h);
-  }
-  try {
-    var ai = (typeof P !== 'undefined' && P && P.ai) || {};
-    add(ai.url);
-    if (ai.secondary) add(ai.secondary.url);
-    try { var img = JSON.parse(localStorage.getItem('tm_api_image') || '{}'); if (img && img.url) add(img.url); } catch (e) {}
-  } catch (e) {}
-  return hosts;
-}
-
-// \u628A\u5F53\u524D\u5F00\u5173+host \u4E0B\u53D1\u5230\u539F\u751F\u7AEF\uFF08Electron / Capacitor\uFF09\u00B7\u5E42\u7B49\u00B7\u968F\u65F6\u53EF\u8C03
+// Compatibility no-op: desktop and native clients always use strict TLS.
 function tmApplyInsecureTlsConfig() {
-  try {
-    var enabled = !!(typeof P !== 'undefined' && P && P.conf && P.conf.insecureTlsRelay === true);
-    var hosts = enabled ? _tmGatherRelayHosts() : [];
-    var cfg = { enabled: enabled, hosts: hosts };
-    if (window.tianming && typeof window.tianming.setInsecureTlsConfig === 'function') {
-      try { window.tianming.setInsecureTlsConfig(cfg); } catch (e) {}
-    }
-    try {
-      var cap = window.Capacitor;
-      if (cap && cap.Plugins && cap.Plugins.InsecureTls && typeof cap.Plugins.InsecureTls.setConfig === 'function') {
-        cap.Plugins.InsecureTls.setConfig(cfg);
-      }
-    } catch (e) {}
-    return cfg;
-  } catch (e) { return { enabled: false, hosts: [] }; }
+  try { if (P && P.conf) delete P.conf.insecureTlsRelay; } catch (e) {}
+  return { enabled: false, hosts: [] };
 }
 
-// \u5F00\u5173\u5207\u6362\uFF08\u8BBE\u7F6E\u9762\u677F\u590D\u9009\u6846 onchange\uFF09
-function sToggleInsecureTlsRelay(on) {
-  if (typeof P === 'undefined' || !P) return;
-  if (!P.conf) P.conf = {};
-  P.conf.insecureTlsRelay = !!on;
-  if (typeof saveP === 'function') saveP();
+function sToggleInsecureTlsRelay() {
   tmApplyInsecureTlsConfig();
-  if (typeof toast === 'function') {
-    toast(on
-      ? '\u26A0 \u5DF2\u5141\u8BB8\u4E2D\u8F6C\u7AD9\u4E0D\u5B89\u5168\u8BC1\u4E66\u00B7\u4EC5\u5BF9\u4F60\u586B\u5199\u7684 API \u5730\u5740\u751F\u6548'
-      : '\u2705 \u5DF2\u6062\u590D\u4E25\u683C\u8BC1\u4E66\u6821\u9A8C');
-  }
+  if (typeof saveP === 'function') saveP();
+  if (typeof toast === 'function') toast('\u5B89\u5168\u8BBE\u5B9A\uFF1A\u8BC1\u4E66\u6821\u9A8C\u59CB\u7EC8\u4E25\u683C\u542F\u7528');
 }
-
-// \u542F\u52A8\u6062\u590D\u540E\u4E0B\u53D1\u4E00\u6B21\uFF1BP \u5F02\u6B65\u6062\u590D\u53EF\u80FD\u665A\u4E8E DOMContentLoaded\uFF0C\u6545\u540C\u65F6\u542C tm:p-restored
-try {
-  if (typeof window !== 'undefined' && window.addEventListener) {
-    window.addEventListener('tm:p-restored', function () { try { tmApplyInsecureTlsConfig(); } catch (e) {} });
-    window.addEventListener('load', function () { setTimeout(function () { try { tmApplyInsecureTlsConfig(); } catch (e) {} }, 1200); });
-  }
-} catch (e) {}

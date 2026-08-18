@@ -40,6 +40,31 @@ var _POST_TURN_SAVE_REQUIRED_IDS = {
   sc25c: true
 };
 
+function _tmCaptureWorldLease() {
+  return {
+    gmRef: (typeof GM !== 'undefined') ? GM : null,
+    pRef: (typeof P !== 'undefined') ? P : null,
+    campaignId: (typeof GM !== 'undefined' && GM && GM._campaignId) || '',
+    sid: (typeof GM !== 'undefined' && GM && GM.sid) || '',
+    turn: (typeof GM !== 'undefined' && GM && GM.turn) || 0,
+    loadGen: (typeof window !== 'undefined' && window._tmLoadGen) || 0
+  };
+}
+
+function _tmWorldLeaseCurrent(lease) {
+  if (!lease || typeof GM === 'undefined' || typeof P === 'undefined') return false;
+  return GM === lease.gmRef && P === lease.pRef &&
+    String((GM && GM._campaignId) || '') === String(lease.campaignId || '') &&
+    String((GM && GM.sid) || '') === String(lease.sid || '') &&
+    Number((GM && GM.turn) || 0) === Number(lease.turn || 0) &&
+    (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === lease.loadGen);
+}
+
+if (typeof window !== 'undefined') {
+  window._tmCaptureWorldLease = _tmCaptureWorldLease;
+  window._tmWorldLeaseCurrent = _tmWorldLeaseCurrent;
+}
+
 function _isCriticalPostTurnJob(job) {
   return !!(job && _POST_TURN_CRITICAL_IDS[job.id]);
 }
@@ -62,7 +87,7 @@ function _snapshotTurnAiResultsForPostTurn() {
 }
 
 /** 方向 8：SC_L2_AI·每 5 回合 AI 语义化情景摘要 */
-async function _scL2AIGenerate(turnOverride) {
+async function _scL2AIGenerate(turnOverride, lease) {
   if (!GM || !P || !P.ai || !P.ai.key) return;
   // 【记忆管家 agent·S2/S4】开关开且未回落时 L2 rollup 由记忆管家接管·此 pass 跳过(shouldHandle 每回合缓存决策·与 followup 两处一致·模块缺失/连失回落则仍跑)
   if (typeof TM !== 'undefined' && TM.MemorySteward && TM.MemorySteward.shouldHandle(GM)) return;
@@ -109,6 +134,7 @@ async function _scL2AIGenerate(turnOverride) {
       { role: 'system', content: '你是天命游戏的史官·专长将散乱事件压缩为精炼的情景纲要·保留因果与情绪而非堆砌细节。' },
       { role: 'user', content: tpL2 }
     ], 3000, null, 'primary', { priority: 'background' });
+    if (lease && !_tmWorldLeaseCurrent(lease)) return;
     var parsedL2 = extractJSON(respL2);
     if (parsedL2 && parsedL2.summary) {
       // 替换或新增
@@ -166,7 +192,7 @@ async function _scL2AIGenerate(turnOverride) {
 }
 
 /** 方向 9：SC_L3_CONDENSE·每 30 回合 AI 年代纲要 */
-async function _scL3Condense(turnOverride) {
+async function _scL3Condense(turnOverride, lease) {
   if (!GM || !P || !P.ai || !P.ai.key) return;
   // 【记忆管家 agent·S2/S4】开关开且未回落时 L3 rollup 由记忆管家接管·此 pass 跳过(shouldHandle 每回合缓存决策·与 followup 两处一致·模块缺失/连失回落则仍跑)
   if (typeof TM !== 'undefined' && TM.MemorySteward && TM.MemorySteward.shouldHandle(GM)) return;
@@ -199,6 +225,7 @@ async function _scL3Condense(turnOverride) {
       { role: 'system', content: '你是天命游戏的编年史官·写年代纲要如《资治通鉴》综述·提炼主题与因果·非流水记事。' },
       { role: 'user', content: tpL3 }
     ], 4000, null, 'primary', { priority: 'background' });
+    if (lease && !_tmWorldLeaseCurrent(lease)) return;
     var parsedL3 = extractJSON(respL3);
     if (parsedL3 && parsedL3.theme) {
       var _l3Meta = null;
@@ -253,7 +280,7 @@ async function _scL3Condense(turnOverride) {
 }
 
 /** 方向 12：SC_REFLECT·对比上回合预测 vs 本回合实际·生成反省记录 */
-async function _scReflect(turnOverride, turnResultsOverride) {
+async function _scReflect(turnOverride, turnResultsOverride, lease) {
   if (!GM || !P || !P.ai || !P.ai.key) return;
   var jobTurn = turnOverride || (GM._postTurnJobs && GM._postTurnJobs.turn) || GM.turn || 0;
   var _turnResults = turnResultsOverride || GM._turnAiResults || {};
@@ -288,6 +315,7 @@ async function _scReflect(turnOverride, turnResultsOverride) {
       { role: 'system', content: '你是一个自省的 AI·客观比较预测与实际·提炼教训·不避讳自己的错误。' },
       { role: 'user', content: tpR }
     ], 1500, null, 'primary', { priority: 'background' });
+    if (lease && !_tmWorldLeaseCurrent(lease)) return;
     var parsedR = extractJSON(respR);
     if (parsedR && parsedR.lesson) {
       if (!GM._aiReflections) GM._aiReflections = [];
@@ -392,16 +420,20 @@ function _ensurePostTurnJobQueue() {
 function _enqueuePostTurnJob(id, fn, opts) {
   var q = _ensurePostTurnJobQueue();
   if (!q || typeof fn !== 'function') return null;
+  var lease = _tmCaptureWorldLease();
   var dependsOn = (opts && Array.isArray(opts.dependsOn)) ? opts.dependsOn : null;
-  var wrappedFn = dependsOn ? async function() {
-    try { await _awaitPostTurnJobsById(dependsOn); } catch(_dE) { _dbg('[PostTurn DAG] await deps fail for ' + id + ':', _dE); }
-    return fn();
-  } : fn;
+  var wrappedFn = async function() {
+    if (dependsOn) {
+      try { await _awaitPostTurnJobsById(dependsOn); } catch(_dE) { _dbg('[PostTurn DAG] await deps fail for ' + id + ':', _dE); }
+    }
+    if (!_tmWorldLeaseCurrent(lease)) return { stale: true };
+    return fn(lease);
+  };
   var p = Promise.resolve().then(wrappedFn).catch(function(e){
     try { if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('post_turn_job', { id: id, status: 'fail', error: String(e && e.message || e) }); } catch(_) {}
     _dbg('[PostTurn]' + id + ' failed:', e);
   });
-  q.pending.push({ id: id, promise: p, dependsOn: dependsOn });
+  q.pending.push({ id: id, promise: p, dependsOn: dependsOn, lease: lease });
   return p;
 }
 
@@ -425,23 +457,26 @@ function _launchPostTurnJobs() {
   // 同步任务（不涉及 AI 调用）
   try { _updateFactionArcs(); } catch(e) { _dbg('[PostTurn] factionArcs:', e); }
   // 异步 AI 任务
-  if (jobTurn % 5 === 0) jobs.push({ id: 'l2_ai', fn: async function() {
+  if (jobTurn % 5 === 0) jobs.push({ id: 'l2_ai', fn: async function(lease) {
     await _awaitPostTurnJobsById(['sc25', 'sc28']);
-    return _scL2AIGenerate(jobTurn);
+    if (!_tmWorldLeaseCurrent(lease)) return;
+    return _scL2AIGenerate(jobTurn, lease);
   } });
-  if (jobTurn % 30 === 0) jobs.push({ id: 'l3_condense', fn: async function() {
+  if (jobTurn % 30 === 0) jobs.push({ id: 'l3_condense', fn: async function(lease) {
     await _awaitPostTurnJobsById(['l2_ai']);
-    return _scL3Condense(jobTurn);
+    if (!_tmWorldLeaseCurrent(lease)) return;
+    return _scL3Condense(jobTurn, lease);
   } });
   // 【调用优化·Cut1·降本】自省降频:偏差画像 GM._aiReflections(留 30 条)持久注入 sc0·不必每回合新增·
   //   默认每 3 回合反省一次(比对「距上次反省的预测 vs 现在」=多回合视角·noise 更低)·省 ~2/3 后台反省调用。
   //   P.conf.reflectIntervalTurns 可调(设 1 恢复每回合)。
   var _reflectItv = (typeof P !== 'undefined' && P && P.conf && Number(P.conf.reflectIntervalTurns) > 0) ? Number(P.conf.reflectIntervalTurns) : 3;
-  if (jobTurn % _reflectItv === 0) jobs.push({ id: 'reflect', fn: async function() {
+  if (jobTurn % _reflectItv === 0) jobs.push({ id: 'reflect', fn: async function(lease) {
     await _awaitPostTurnJobsById(['sc25']);
+    if (!_tmWorldLeaseCurrent(lease)) return;
     // 【自我反思 agent·S2】开关开且未回落时 agent 接管(比对 + 维护滚动偏差画像→sc0 注入)·此写死 pass 跳；默认关 / 连失回落 → _scReflect 原样跑零回归
     if (typeof TM !== 'undefined' && TM.ReflectionAgent && TM.ReflectionAgent.shouldHandle(GM)) return TM.ReflectionAgent.run(GM);
-    return _scReflect(jobTurn, turnResultsSnapshot);
+    return _scReflect(jobTurn, turnResultsSnapshot, lease);
   } });
   jobs.forEach(function(j) { _enqueuePostTurnJob(j.id, j.fn); });
   try {
@@ -534,8 +569,10 @@ function _compressOldArchives(limit) {
 
   // 异步 AI 压缩（不阻塞游戏，后台生成更好的摘要替换）
   if (P.ai.key) {
+    var _archiveLease = _tmCaptureWorldLease();
     var prompt = '请将以下历史纪要压缩为一段100字以内的综述：\n' + overflow.map(function(a){ return a.content; }).join('\n');
     callAI(prompt, 300, null, 'primary', { priority: 'background' }).then(function(result) {
+      if (!_tmWorldLeaseCurrent(_archiveLease)) return;
       if (result && GM.memoryArchive[0] && GM.memoryArchive[0].compressed) {
         GM.memoryArchive[0].content = result.substring(0, 200);
         GM.memoryArchive[0].aiCompressed = true;

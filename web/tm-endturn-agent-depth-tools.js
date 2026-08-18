@@ -72,7 +72,11 @@
   }
 
   function _parse(text) {
-    try { if (typeof root.robustParseJSON === 'function') return root.robustParseJSON(text); var m = String(text || '').match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; } catch (e) { return null; }
+    try {
+      return typeof root.robustParseJSON === 'function'
+        ? root.robustParseJSON(text)
+        : JSON.parse(String(text || ''));
+    } catch (e) { return null; }
   }
   // T4(审计③·Codex 韧性对照) · 关键站 JSON 自纠：parse+正则抢救双败才带错重问一次·输出上限×1.5
   //   (截断与格式错一石二鸟·不动共享网关)。只用于质量命门站(记忆固化/史记主体)——机械深析失败本就

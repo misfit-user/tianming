@@ -212,10 +212,6 @@ function _tmStartBindMap(sourceMap) {
   if (!_tmStartHasRegions(live)) {
     live = _tmStartClone(sourceMap);
     if (typeof GM !== 'undefined' && GM) GM.mapData = live;
-    if (typeof P !== 'undefined' && P) {
-      P.map = live;
-      P.mapData = live;
-    }
   }
   if (live) live.enabled = true;
   return live;
@@ -237,15 +233,6 @@ function _tmStartConsumeMapChoice(sid) {
 function _tmStartApplyMapChoice(sid, sc) {
   var useMap = _tmStartConsumeMapChoice(sid);
   if (useMap === false) {
-    if (typeof P !== 'undefined' && P) {
-      P.map = P.map || {};
-      P.map.enabled = false;
-      P.map.regions = [];
-      P.map.roads = [];
-      P.mapData = P.mapData || {};
-      P.mapData.enabled = false;
-      P.mapData.regions = [];
-    }
     if (typeof GM !== 'undefined' && GM) {
       GM.mapData = null;
       GM._useAIGeo = true;
@@ -298,9 +285,6 @@ function _tmStartRepairRuntimeData(sid, sc, reason) {
     var mapSource = _tmStartMapSource(sc, true);
     var live = _tmStartBindMap(mapSource);
     if (_tmStartHasRegions(live) && live.regions.length >= minRegions) report.fixed.push('map');
-  } else if (_tmStartHasRegions(GM.mapData)) {
-    P.map = GM.mapData;
-    P.mapData = GM.mapData;
   }
 
   report.chars = Array.isArray(GM.chars) ? GM.chars.length : 0;
@@ -986,6 +970,47 @@ function _tmStartLaunchBackgroundPrewarm(sc, session) {
   });
 }
 
+// P 同时承载设备级配置/剧本库与当前剧本配置。开新局时只保留前两类，
+// 当前剧本字段必须先恢复到确定默认值，随后再由 sc 完整覆盖；否则 B 剧本
+// 缺失的字段会悄悄继承 A 剧本的值。
+function _tmResetScenarioScopedConfig(target) {
+  if (!target || typeof target !== 'object') return target;
+  [
+    'goals','offendGroups','keju','playerInfo','engineConstants','influenceGroups',
+    'economyConfig','gameSettings','time','eraState','military','rules','timeline',
+    'map','mapData','mapRuntimeContract','worldSettings','government','adminHierarchy',
+    'officeTree','officeConfig','techTree','civicTree','variables','_varFormulas',
+    'openingText','globalRules','buildingSystem','battleConfig','mechanicsConfig',
+    'militaryConfig','adminConfig','chronicleConfig','eventConstraints','warConfig',
+    'diplomacyConfig','schemeConfig','decisionConfig','vassalSystem','titleSystem',
+    'officialVassalMapping','factionRelations','unitSystem','supplySystem'
+  ].forEach(function(key) {
+    try { delete target[key]; } catch (_) { target[key] = undefined; }
+  });
+  target.goals = [];
+  target.offendGroups = [];
+  target.playerInfo = {};
+  target.economyConfig = { redistributionRate: 0.3, baseIncome: 100 };
+  target.gameSettings = {};
+  target.time = {
+    year: -356, prefix: '公元前', suffix: '年', perTurn: '1s', customDays: 90,
+    varSpeed: false, seasons: ['春','夏','秋','冬'], startS: 2, sEffects: [],
+    reign: '', reignY: 1, display: 'year_season', template: '{reign}{ry}年 {season}',
+    startMonth: 1, startDay: 1, startLunarMonth: 0, startLunarDay: 0,
+    enableGanzhi: true, enableGanzhiDay: true, enableEraName: true, eraNames: [], daysPerTurn: 90
+  };
+  target.officeTree = [];
+  target.techTree = [];
+  target.civicTree = [];
+  target.variables = [];
+  target._varFormulas = [];
+  target.openingText = '';
+  target.globalRules = '';
+  target.mechanicsConfig = {};
+  return target;
+}
+if (typeof window !== 'undefined') window._tmResetScenarioScopedConfig = _tmResetScenarioScopedConfig;
+
 function doActualStart(sid, requestToken){
   if (!_tmStartRequestCurrent(requestToken)) return;
   // 每次开新局先废止上一局仍在飞行中的 AI 预热结果。
@@ -1001,11 +1026,10 @@ function doActualStart(sid, requestToken){
   // 初始化GM（完整版，包含所有必要属性）
   var sc=_tmStartFindScenario(sid, 'doActualStart-find') || findScenarioById(sid);
   if(!sc){toast("\u672A\u627E\u5230");return;}
-  // 治剧本数据串台(漏洞):P 为跨剧本复用的全局配置,下方 if(sc.X) P.X=... 只在新剧本含该字段时覆盖,缺字段则残留上一个剧本的值。
-  // 绍宋无 government/military/map/mapData/mapRuntimeContract → 会漏天启的官制官员/军队/地图。故应用新剧本前先清空这些
-  // 非 sid 隔离的「整个世界」字段,缺则保持空,绝不继承别的剧本(sid 隔离的 characters/factions/... 已自带过滤,不在此列)。
-  ['government','military','map','mapData','mapRuntimeContract'].forEach(function(_lk){ try { delete P[_lk]; } catch(_le) { P[_lk] = undefined; } });
-  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};if(_prevSaveName)GM.saveName=_prevSaveName;
+  _tmResetScenarioScopedConfig(P);
+  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};GM._campaignId=(typeof window._tmNewCampaignId==='function')?window._tmNewCampaignId():('tmc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14));if(_prevSaveName)GM.saveName=_prevSaveName; // arch-ok new-game constructor owns campaign identity and the initial GM aggregate
+  GM.playerInfo = deepClone(sc.playerInfo || P.playerInfo || {}); // arch-ok new-game constructor owns initial live player snapshot
+  GM._isFreshNewGame = true; // arch-ok new-game constructor owns fresh-game lifecycle flag
   try { if (typeof _tmRotateDesktopAutoSaveSession === 'function') _tmRotateDesktopAutoSaveSession('new-game'); }
   catch (_asStartE) { try { console.warn('[autoSave] 新局 session 切换失败:', _asStartE); } catch (_) {} }
 
@@ -1045,6 +1069,8 @@ function doActualStart(sid, requestToken){
     GM.influenceGroups = deepClone(sc.influenceGroups);
     P.influenceGroups = deepClone(sc.influenceGroups);
   }
+  if (sc.eraState) P.eraState = deepClone(sc.eraState); // arch-ok scenario reset owns immutable scenario template hydration
+  if (Array.isArray(sc.factionRelations)) P.factionRelations = deepClone(sc.factionRelations); // arch-ok scenario reset owns immutable scenario template hydration
 
   // 初始皇命（钉子条目 + 隐藏天机）写入 12 表系统的 imperialEdict（玩家锁·AI 永读不写）
   if (sc.imperialEdicts && sc.imperialEdicts.length > 0 && window.MemTables) {
@@ -1080,11 +1106,6 @@ function doActualStart(sid, requestToken){
   // 加载经济配置
   if (sc.economyConfig) {
     P.economyConfig = deepClone(sc.economyConfig);
-  } else if (!P.economyConfig) {
-    P.economyConfig = {
-      redistributionRate: 0.3,
-      baseIncome: 100
-    };
   }
 
   // 加载岗位系统配置
@@ -1128,7 +1149,7 @@ function doActualStart(sid, requestToken){
   }
 
   var _gs=(typeof sc!=="undefined"&&sc.gameSettings)||{};
-  P.gameSettings = _gs; // 保存到P供运行时系统查询enabledSystems
+  P.gameSettings = deepClone(_gs); // 保存到P供运行时系统查询enabledSystems
   if(_gs.eraName)GM.eraName=_gs.eraName;
   if(_gs.eraNames&&_gs.eraNames.length)GM.eraNames=_gs.eraNames.slice();
 
@@ -1141,14 +1162,14 @@ function doActualStart(sid, requestToken){
   //   见 tm-launch 注释「引擎权威读 gameSettings.startYear/startMonth（仅设 scn.time 会致公元前）」。剧本未设 gameSettings 相应字段则保留 sc.time 原值。
   if(_gs.startMonth)P.time.startMonth=_gs.startMonth;
   if(_gs.startDay)P.time.startDay=_gs.startDay;
-  var _gsStartYear = (_gs.startYear!==undefined && _gs.startYear!=='' && !isNaN(Number(_gs.startYear)) && Number(_gs.startYear)!==0) ? Number(_gs.startYear) : null;
+  var _gsStartYear = (_gs.startYear!==undefined && _gs.startYear!=='' && !isNaN(Number(_gs.startYear))) ? Number(_gs.startYear) : null;
   if(_gsStartYear !== null) {
     P.time.year = _gsStartYear;                       // gameSettings.startYear 权威（编辑器改开局年的字段）
-  } else if(!sc.time && sc.startYear) {
+  } else if(!sc.time && sc.startYear !== undefined && sc.startYear !== '' && !isNaN(Number(sc.startYear))) {
     // 兜底：无 sc.time 且无有效 gameSettings.startYear → 用剧本元数据顶层 startYear。
     // 不用 `!P.time.year` 判空——P.time 默认 year 为 -356（公元前356·真值），会漏掉此兜底（见 tm-data-model 默认）。
     // 有 sc.time 时保留 sc.time.year（不误伤纯 sc.time 剧本，含合法的公元前年份）。
-    P.time.year = sc.startYear;
+    P.time.year = Number(sc.startYear);
   }
   // 标准化回合时长：gameSettings.daysPerTurn 是编辑器权威字段，perTurn/customDays 只作旧系统兼容。
   if (typeof normalizeTimeConfigFromGameSettings === 'function') {
@@ -1220,23 +1241,23 @@ function doActualStart(sid, requestToken){
   if(sc.openingText) P.openingText = sc.openingText;
   if(sc.globalRules) P.globalRules = sc.globalRules;
   if(sc.mapData) P.mapData = deepClone(sc.mapData);
-  // 剧本地图进入可变运行态：GM.mapData 为唯一 live state，P.map/P.mapData 同步引用它。
-  // 这样 AI 的 map_changes、存档和地图系统读到的是同一份地块所有者/占领状态。
+  // 剧本地图进入可变运行态：GM.mapData 为唯一 live state；P.map/P.mapData
+  // 始终保留不可变模板，防止运行时变化污染下一局。
   if ((P.map && P.map.regions && P.map.regions.length > 0) || (P.mapData && P.mapData.regions && P.mapData.regions.length > 0)) {
     var _runtimeMapSource = (P.map && P.map.regions && P.map.regions.length > 0) ? P.map : P.mapData;
     if (typeof bindRuntimeMapState === 'function') {
       bindRuntimeMapState(_runtimeMapSource);
     } else {
       GM.mapData = deepClone(_runtimeMapSource);
-      P.map = GM.mapData;
-      P.mapData = GM.mapData;
     }
   }
   _tmStartApplyMapChoice(sid, sc);
   if(sc.buildingSystem) P.buildingSystem = deepClone(sc.buildingSystem);
   if(sc.battleConfig) P.battleConfig = deepClone(sc.battleConfig);
-  if(sc.mechanicsConfig) { if(!P.mechanicsConfig) P.mechanicsConfig={}; Object.assign(P.mechanicsConfig, deepClone(sc.mechanicsConfig)); }
+  if(sc.mechanicsConfig) P.mechanicsConfig = deepClone(sc.mechanicsConfig);
   if(sc.militaryConfig) P.militaryConfig = deepClone(sc.militaryConfig);
+  if(sc.unitSystem) P.unitSystem = deepClone(sc.unitSystem); // arch-ok scenario reset owns immutable scenario template hydration
+  if(sc.supplySystem) P.supplySystem = deepClone(sc.supplySystem);
   // 加载初始恩怨/门生到GM
   if (sc.initialEnYuan && sc.initialEnYuan.length > 0 && typeof EnYuanSystem !== 'undefined') {
     sc.initialEnYuan.forEach(function(ey) {

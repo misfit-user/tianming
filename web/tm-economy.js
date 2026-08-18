@@ -75,8 +75,8 @@ function calculateMonthlyIncome(region, eraState) {
   if (GM.classes && GM.classes.length > 0) {
     var classMod = 1.0;
     GM.classes.forEach(function(cls) {
-      var sat = parseInt(cls.satisfaction) || 50;
-      var inf = parseInt(cls.influence || cls.classInfluence) || 50;
+      var sat = finiteNumberOr(parseInt(cls.satisfaction, 10), 50);
+      var inf = finiteNumberOr(parseInt(cls.influence, 10), finiteNumberOr(parseInt(cls.classInfluence, 10), 50));
       if (sat < 30 && inf > 20) {
         classMod -= (30 - sat) / 300 * (inf / 100);
       }
@@ -92,7 +92,7 @@ function updateEconomy(timeRatio) {
   if (!GM.eraState) return;
 
   var es = GM.eraState;
-  var centralControl = es.centralControl || 0.5;
+  var centralControl = finiteNumberOr(es.centralControl, 0.5);
 
   // 1. 计算各地区的收入和贡奉
   var totalTribute = 0;
@@ -117,7 +117,7 @@ function updateEconomy(timeRatio) {
       // 层级乘数：根据区域对应的行政层级调整贡赋
       if (typeof getTierRule === 'function' && region.adminLevel) {
         var _tierRule = getTierRule(region.adminLevel);
-        tributeRatio *= (_tierRule.tributeMultiplier || 1.0);
+        tributeRatio *= finiteNumberOr(_tierRule.tributeMultiplier, 1.0);
       }
       var tribute = Math.floor(income * tributeRatio);
 
@@ -142,7 +142,7 @@ function updateEconomy(timeRatio) {
       var prov = GM.provinceStats[provName];
       if (!prov) return;
       var income = prov.taxRevenue || 0;
-      var tributeRatio = (es.centralControl || 0.5) * 0.8; // 简化：集权度×0.8
+      var tributeRatio = finiteNumberOr(es.centralControl, 0.5) * 0.8; // 简化：集权度×0.8
       var tribute = Math.floor(income * tributeRatio);
       totalTribute += tribute;
       tributeByRegion[provName] = { income: income, tribute: tribute, ratio: tributeRatio, type: 'civil' };
@@ -152,9 +152,7 @@ function updateEconomy(timeRatio) {
 
   // 2. 中央收到贡奉后，按比例回拨
   // 从配置读取回拨比例，默认 0.3
-  var redistributionRate = (P.economyConfig && P.economyConfig.redistributionRate !== undefined)
-    ? P.economyConfig.redistributionRate
-    : 0.3;
+  var redistributionRate = finiteNumberOr(P.economyConfig && P.economyConfig.redistributionRate, 0.3);
   var redistributed = Math.floor(totalTribute * redistributionRate);
 
   // 3. 按贡献占比分配回拨
@@ -174,7 +172,7 @@ function updateEconomy(timeRatio) {
   var netRevenue = totalTribute - redistributed;
   var ecCfg = P.economyConfig || {};
   var dualTreasury = ecCfg.dualTreasury === true;
-  var privateRatio = ecCfg.privateIncomeRatio || 0.15;
+  var privateRatio = finiteNumberOr(ecCfg.privateIncomeRatio, 0.15);
 
   if (dualTreasury) {
     // ═══ 双层国库模式 ═══
@@ -204,7 +202,7 @@ function updateEconomy(timeRatio) {
         addEB('财政', '连续三回合国库空虚，引发兵变/辞官潮！');
         // 军队士气下降
         (GM.armies || []).forEach(function(a) {
-          if (a.soldiers > 0) a.morale = Math.max(0, (a.morale || 70) - 15);
+          if (a.soldiers > 0) a.morale = Math.max(0, finiteNumberOr(a.morale, 70) - 15);
         });
       }
     } else {
@@ -214,7 +212,7 @@ function updateEconomy(timeRatio) {
     // 同步到传统fiscal变量（向后兼容——旧的经济变量仍可用）
     var _fiscalKey = typeof _findVarByType === 'function' ? _findVarByType('economy') : null;
     if (GM.vars && _fiscalKey && GM.vars[_fiscalKey]) {
-      GM.vars[_fiscalKey].value = clamp(GM.stateTreasury, GM.vars[_fiscalKey].min || 0, GM.vars[_fiscalKey].max || 100000);
+      GM.vars[_fiscalKey].value = clamp(GM.stateTreasury, finiteNumberOr(GM.vars[_fiscalKey].min, 0), finiteNumberOr(GM.vars[_fiscalKey].max, 100000));
     }
 
   } else {
@@ -222,7 +220,7 @@ function updateEconomy(timeRatio) {
     var _fiscalKey = typeof _findVarByType === 'function' ? _findVarByType('economy') : null;
     if (GM.vars && _fiscalKey && GM.vars[_fiscalKey]) {
       var oldValue = GM.vars[_fiscalKey].value;
-      GM.vars[_fiscalKey].value = clamp(oldValue + netRevenue, GM.vars[_fiscalKey].min || 0, GM.vars[_fiscalKey].max || 100000);
+      GM.vars[_fiscalKey].value = clamp(oldValue + netRevenue, finiteNumberOr(GM.vars[_fiscalKey].min, 0), finiteNumberOr(GM.vars[_fiscalKey].max, 100000));
       if (netRevenue !== 0) {
         recordChange('resources', _fiscalKey, 'value', oldValue, GM.vars[_fiscalKey].value,
           '\u8D21\u5949\u6536\u5165' + totalTribute + '\uFF0C\u56DE\u62E8' + redistributed);
@@ -256,7 +254,8 @@ function updateEconomy(timeRatio) {
   var _fiscalKey2 = typeof _findVarByType === 'function' ? _findVarByType('economy') : null;
   if (GM.vars && _fiscalKey2 && GM.vars[_fiscalKey2]) {
     var _ms3 = (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30) / 30;
-    var fiscalHealth = GM.vars[_fiscalKey2].value / (GM.vars[_fiscalKey2].max || 10000);
+    var fiscalMax = finiteNumberOr(GM.vars[_fiscalKey2].max, 10000);
+    var fiscalHealth = fiscalMax > 0 ? finiteNumberOr(GM.vars[_fiscalKey2].value, 0) / fiscalMax : 0;
     if (fiscalHealth > 0.7) {
       es.economicProsperity = Math.min(1.0, es.economicProsperity + 0.02 * _ms3);
     } else if (fiscalHealth < 0.3) {
@@ -409,13 +408,13 @@ function updateCharacters(timeRatio) {
 function calculateInheritanceScore(candidate, eraState, deadChar) {
   if (!candidate || !eraState) return 0;
 
-  var legitimacy = candidate.legitimacy || 0.5;
-  var ability = candidate.ability || 0.5;
+  var legitimacy = finiteNumberOr(candidate.legitimacy, 0.5);
+  var ability = finiteNumberOr(candidate.ability, 0.5);
   var supportCount = (candidate.support || []).length;
   var oppositionCount = (candidate.opposition || []).length;
 
   // 根据时代状态调整权重
-  var centralControl = eraState.centralControl || 0.5;
+  var centralControl = finiteNumberOr(eraState.centralControl, 0.5);
   var legitimacySource = eraState.legitimacySource || '血统';
   var dynastyPhase = eraState.dynastyPhase || '盛期';
 
@@ -514,8 +513,9 @@ function applyInheritanceOutcome(inheritanceData, deadChar, deadCharOffices, off
         if (candidateChar) {
           // 落选候选人的忠诚度下降
           var oldLoyalty = (typeof candidateChar.loyalty === 'number' && isFinite(candidateChar.loyalty)) ? candidateChar.loyalty : 50;
-          var heirLegitimacy = (inheritanceData.candidates.find(function(c) { return c.name === heir; }) || {legitimacy: 0.5}).legitimacy;
-          var legitimacyGap = (candidate.legitimacy || 0.5) - heirLegitimacy;
+          var heirCandidate = inheritanceData.candidates.find(function(c) { return c.name === heir; });
+          var heirLegitimacy = finiteNumberOr(heirCandidate && heirCandidate.legitimacy, 0.5);
+          var legitimacyGap = finiteNumberOr(candidate.legitimacy, 0.5) - heirLegitimacy;
           var loyaltyDrop = -Math.max(1, Math.round((0.2 + Math.max(0, legitimacyGap)) * 20)); // 资格越强却落选，不满越大
           if (typeof adjustCharacterLoyalty === 'function') {
             adjustCharacterLoyalty(candidateChar, loyaltyDrop, '\u7EE7\u627F\u843D\u9009\u4E0D\u6EE1\uFF1A' + deadChar.name, { source:'inheritance-candidate-lost' });
@@ -543,7 +543,7 @@ function applyInheritanceOutcome(inheritanceData, deadChar, deadCharOffices, off
       // 继承后的忠诚变化改为可解释：正统性越高越感激，野心过高则转为自恃。
       var heirCandidate = inheritanceData.candidates.find(function(c) { return c.name === heir; }) || {legitimacy: 0.5};
       var ambition = (typeof heirChar.ambition === 'number' && isFinite(heirChar.ambition)) ? heirChar.ambition : 50;
-      var loyaltyChange = Math.round(((heirCandidate.legitimacy || 0.5) - 0.5) * 16) + (ambition > 75 ? -4 : (ambition < 35 ? 4 : 1));
+      var loyaltyChange = Math.round((finiteNumberOr(heirCandidate.legitimacy, 0.5) - 0.5) * 16) + (ambition > 75 ? -4 : (ambition < 35 ? 4 : 1));
       loyaltyChange = Math.max(-6, Math.min(12, loyaltyChange));
       if (typeof adjustCharacterLoyalty === 'function') {
         adjustCharacterLoyalty(heirChar, loyaltyChange, '\u7EE7\u627F' + deadChar.name + '\u9057\u7F3A', { source:'inheritance-heir-result' });
@@ -634,6 +634,15 @@ async function handleInheritance(deadChar) {
 
   // 无指定继承人时，使用 AI 生成继承候选人和推演后果
   if (P.ai.key) {
+    var _inheritLease = (typeof _tmCaptureWorldLease === 'function') ? _tmCaptureWorldLease() : {
+      gmRef: GM, pRef: P, turn: GM.turn, sid: GM.sid,
+      loadGen: (typeof window !== 'undefined' && window._tmLoadGen) || 0
+    };
+    function _inheritLeaseCurrent() {
+      if (typeof _tmWorldLeaseCurrent === 'function') return _tmWorldLeaseCurrent(_inheritLease);
+      return GM === _inheritLease.gmRef && P === _inheritLease.pRef && GM.turn === _inheritLease.turn && GM.sid === _inheritLease.sid &&
+        (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === _inheritLease.loadGen);
+    }
     try {
       var officeList = deadCharOffices.map(function(o) {
         return o.deptName + ' ' + o.posName + '(' + o.rank + ')';
@@ -642,17 +651,17 @@ async function handleInheritance(deadChar) {
       var eraContext = '';
       if (GM.eraState && GM.eraState.contextDescription) {
         eraContext = '时代背景：' + GM.eraState.contextDescription + '\n' +
-          '政治统一度：' + (GM.eraState.politicalUnity || 0.5) + '（0=分裂，1=统一）\n' +
-          '中央集权度：' + (GM.eraState.centralControl || 0.5) + '（0=地方割据，1=高度集权）\n' +
-          '社会稳定度：' + (GM.eraState.socialStability || 0.5) + '（0=动荡，1=稳定）\n' +
-          '官僚体系强度：' + (GM.eraState.bureaucracyStrength || 0.5) + '（0=人治，1=制度化）\n' +
+          '政治统一度：' + finiteNumberOr(GM.eraState.politicalUnity, 0.5) + '（0=分裂，1=统一）\n' +
+          '中央集权度：' + finiteNumberOr(GM.eraState.centralControl, 0.5) + '（0=地方割据，1=高度集权）\n' +
+          '社会稳定度：' + finiteNumberOr(GM.eraState.socialStability, 0.5) + '（0=动荡，1=稳定）\n' +
+          '官僚体系强度：' + finiteNumberOr(GM.eraState.bureaucracyStrength, 0.5) + '（0=人治，1=制度化）\n' +
           '正统性来源：' + (GM.eraState.legitimacySource || '血统') + '\n' +
           '王朝阶段：' + (GM.eraState.dynastyPhase || '盛期') + '\n';
       }
 
       var prompt = deadChar.name + '去世，任' + officeList + '。\n' +
         eraContext +
-        '死者信息：年龄' + (deadChar.age || '?') + '岁，忠诚度' + (deadChar.loyalty || 50) + '，派系' + (deadChar.faction || '无') + '\n' +
+        '死者信息：年龄' + (deadChar.age || '?') + '岁，忠诚度' + finiteNumberOr(deadChar.loyalty, 50) + '，派系' + (deadChar.faction || '无') + '\n' +
         '其他人物：' + JSON.stringify(GM.chars.filter(function(c) {
           return c.alive !== false && c.name !== deadChar.name;
         }).map(function(c) {
@@ -689,40 +698,24 @@ async function handleInheritance(deadChar) {
         '   - 其他候选人反应（接受/不满/反叛）\n' +
         '   - 对局势的影响（稳定/动荡/战争）';
 
-      var url = P.ai.url;
-      if (url.indexOf('/chat/completions') < 0) url = url.replace(/\/+$/, '') + '/chat/completions';
-
-      var response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + P.ai.key
-        },
-        body: JSON.stringify({
-          model: P.ai.model || 'gpt-4o',
-          messages: [{role: 'user', content: prompt}],
-          temperature: 0.7,
-          max_tokens: Math.round(1000 * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0))
-        })
+      if (typeof callAIMessages !== 'function') throw new Error('统一 AI 适配器不可用');
+      var content = await callAIMessages([
+        { role: 'system', content: '你是历史制度与官职继承顾问。严格按用户给定时代背景推演，并只输出指定 JSON。' },
+        { role: 'user', content: prompt }
+      ], Math.round(1000 * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0)), null, 'primary', {
+        priority: 'normal', timeoutMs: 60000, maxRetries: 2
       });
-
-      if (!response.ok) {
-        throw new Error('AI \u8C03\u7528\u5931\u8D25');
+      if (!_inheritLeaseCurrent()) return;
+      var inheritanceData = (typeof robustParseJSON === 'function') ? robustParseJSON(content || '') : JSON.parse(content || '');
+      if (!inheritanceData || typeof inheritanceData !== 'object' || Array.isArray(inheritanceData) ||
+          !Array.isArray(inheritanceData.candidates) || typeof inheritanceData.recommendation !== 'string') {
+        throw new Error('继承 AI 返回结构不合法');
       }
-
-      var data = await response.json();
-      var content = (data.choices&&data.choices[0]&&data.choices[0].message)?data.choices[0].message.content:'';
-
-      // 提取 JSON
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        var inheritanceData = JSON.parse(jsonMatch[0]);
-
-        applyInheritanceOutcome(inheritanceData, deadChar, deadCharOffices, officeList);
-      }
+      applyInheritanceOutcome(inheritanceData, deadChar, deadCharOffices, officeList);
 
     } catch (error) {
       console.error('\u7EE7\u627F AI \u63A8\u6F14\u5931\u8D25:', error);
+      if (!_inheritLeaseCurrent()) return;
       // AI 失败时，简单处理：官职空缺
       deadCharOffices.forEach(function(office) {
         office.position.holder = '';

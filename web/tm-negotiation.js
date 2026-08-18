@@ -59,7 +59,7 @@
     var sv = Number(o.silver);
     if (isFinite(sv) && sv > 0) offer.silver = Math.round(sv);
     if (o.office) offer.office = String(o.office).slice(0, 16);
-    return offer;
+    return offer.terms || offer.silver || offer.office ? offer : null;
   }
 
   // ── open(spec)：同 sourceRef 已有 open 会话则复用追加 offer 不重开 ──
@@ -121,7 +121,8 @@
     if (!ng || ng.status !== 'open') return null;   // fail-closed·未命中/已决→不回价
     if (ng.round >= MAX_ROUND) return null;         // round≥3 后不再允许 counter
     var off = _normOffer({ by: 'player', terms: terms, silver: silver }, _turn(G));
-    if (off) ng.offers.push(off);
+    if (!off) return null;
+    ng.offers.push(off);
     ng.round++;
     ng.expireTurn = _turn(G) + EXPIRE_TURNS;
     return ng;
@@ -130,7 +131,7 @@
   // ── resolve(id, status)：置终局态（accepted/rejected/lapsed） ──
   function resolve(id, status) {
     var ng = get(id);
-    if (!ng) return null;
+    if (!ng || ng.status !== 'open') return null;
     if (status === 'accepted' || status === 'rejected' || status === 'lapsed') ng.status = status;
     return ng;
   }

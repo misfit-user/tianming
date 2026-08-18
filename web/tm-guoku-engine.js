@@ -21,6 +21,9 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
+  function finiteNumberOr(value, fallback) {
+    return (typeof value === 'number' && Number.isFinite(value)) ? value : fallback;
+  }
 
   // 民心走 MinxinLedger 总闸(2026-07-04 收口)：delta 落叶子+按源封顶。
   // 直写 GM.minxin.trueIndex 是死路——它只是聚合缓存·下次 aggregateTrue 按叶子人口加权重算即冲掉。
@@ -144,8 +147,8 @@
       var regTotal = safe(hukou.registeredTotal, 10000000);
       // 全国总耕地（亩）·退化兜底=人口×0.3 户均田
       var totalFarmland = _sumEB('farmland', regTotal * 0.3);
-      var landTaxRate = (GM.policies && GM.policies.landTaxRate) || 0.04;  // 4% 田税
-      var taxMult = (hukou.taxRateMultiplier || 1);
+      var landTaxRate = finiteNumberOr(GM.policies && GM.policies.landTaxRate, 0.04);  // 4% 田税
+      var taxMult = finiteNumberOr(hukou.taxRateMultiplier, 1);
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = totalFarmland * landTaxRate * taxMult * actualRate;
       _setSubs('tianfu', [
@@ -159,7 +162,7 @@
       var hukou = GM.hukou || {};
       var regTotal = safe(hukou.registeredTotal, 10000000);
       var dingCount = safe(hukou.ding, regTotal * 0.25);
-      var pollTax = (GM.policies && GM.policies.pollTaxPerCapita) || 0.03;
+      var pollTax = finiteNumberOr(GM.policies && GM.policies.pollTaxPerCapita, 0.03);
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = dingCount * pollTax * actualRate;
       _setSubs('dingshui', [
@@ -170,7 +173,7 @@
     // 漕粮（折银）—— 漕粮按户口估算（漕户）·绝对量与户口正相关
     caoliang: function() {
       var regTotal = safe((GM.hukou || {}).registeredTotal, 10000000);
-      var grainPrice = ((GM.currency || {}).market && GM.currency.market.grainPrice) || 100;
+      var grainPrice = finiteNumberOr((GM.currency || {}).market && GM.currency.market.grainPrice, 100);
       var grainAmount = regTotal * 0.005;  // 漕粮石数 ~人口×0.5%
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = grainAmount * grainPrice / 100 * actualRate;  // 折银 × 实征率
@@ -188,8 +191,8 @@
       var regTotal = safe(hukou.registeredTotal, 10000000);
       // 盐课：按全国 saltProduction 求和（产盐区有·普通区为 0）
       var saltProd = _sumEB('saltProduction', 0);
-      var saltPrice = (GM.policies && GM.policies.saltPrice) || 0.05;  // 单价 文/斤
-      var saltRate = (GM.policies && GM.policies.saltTaxRate) || 0.40; // 盐课税率
+      var saltPrice = finiteNumberOr(GM.policies && GM.policies.saltPrice, 0.05);  // 单价 文/斤
+      var saltRate = finiteNumberOr(GM.policies && GM.policies.saltTaxRate, 0.40); // 盐课税率
       var saltTax = saltProd * saltPrice * saltRate;
       // 若 saltProduction 全为 0（剧本未配产盐区），退化按人口
       if (saltProd <= 0) saltTax = regTotal * 0.015;
@@ -214,7 +217,7 @@
         if (!GM.hasMaritimePort) { _setSubs('shipaiShui', []); return 0; }
         maritimeTotal = safe(GM.maritimeTradeVolume, 0);
       }
-      var maritimeRate = (GM.policies && GM.policies.maritimeTaxRate) || 0.08;
+      var maritimeRate = finiteNumberOr(GM.policies && GM.policies.maritimeTaxRate, 0.08);
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = maritimeTotal * maritimeRate * actualRate;
       _setSubs('shipaiShui', [
@@ -229,7 +232,7 @@
       var regTotal = safe(hukou.registeredTotal, 10000000);
       // 退化：若 division 没配·按户口估
       if (commerceTotal <= 0) commerceTotal = regTotal * 0.05;
-      var commerceRate = (GM.policies && GM.policies.commerceTaxRate) || 0.03;
+      var commerceRate = finiteNumberOr(GM.policies && GM.policies.commerceTaxRate, 0.03);
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = commerceTotal * commerceRate * actualRate;
       _setSubs('quanShui', [
@@ -250,7 +253,7 @@
     // ★ 矿冶·新增类·按 division.mineralProduction 求和（mineralRegion）
     mining: function() {
       var mineralTotal = _sumEB('mineralProduction', 0);
-      var mineralRate = (GM.policies && GM.policies.mineralTaxRate) || 0.20;
+      var mineralRate = finiteNumberOr(GM.policies && GM.policies.mineralTaxRate, 0.20);
       var miningTax = mineralTotal * mineralRate;
       // 铸钱息（若货币系统启用）·按粗估
       var mintBonus = 0;
@@ -269,7 +272,7 @@
     // ★ 渔课·新增类·按 division.fishingProduction 求和（fishingRegion）
     fishingTax: function() {
       var fishingTotal = _sumEB('fishingProduction', 0);
-      var fishingRate = (GM.policies && GM.policies.fishingTaxRate) || 0.10;
+      var fishingRate = finiteNumberOr(GM.policies && GM.policies.fishingTaxRate, 0.10);
       var actualRate = safe((GM.guoku || {}).actualTaxRate, 1);
       var total = fishingTotal * fishingRate * actualRate;
       _setSubs('fishingTax', [
@@ -357,9 +360,9 @@
       var threeFees = 0;
       var threeFeesNote = [];
       var pol = GM.policies || {};
-      if (pol.liaoXiang) { var lx = pol.liaoXiangAmount || 5200000; threeFees += lx; threeFeesNote.push('辽 ' + Math.round(lx/10000) + '万'); }
-      if (pol.jiaoXiang) { var jx = pol.jiaoXiangAmount || 3300000; threeFees += jx; threeFeesNote.push('剿 ' + Math.round(jx/10000) + '万'); }
-      if (pol.lianXiang) { var lnx = pol.lianXiangAmount || 7300000; threeFees += lnx; threeFeesNote.push('练 ' + Math.round(lnx/10000) + '万'); }
+      if (pol.liaoXiang) { var lx = finiteNumberOr(pol.liaoXiangAmount, 5200000); threeFees += lx; threeFeesNote.push('辽 ' + Math.round(lx/10000) + '万'); }
+      if (pol.jiaoXiang) { var jx = finiteNumberOr(pol.jiaoXiangAmount, 3300000); threeFees += jx; threeFeesNote.push('剿 ' + Math.round(jx/10000) + '万'); }
+      if (pol.lianXiang) { var lnx = finiteNumberOr(pol.lianXiangAmount, 7300000); threeFees += lnx; threeFeesNote.push('练 ' + Math.round(lnx/10000) + '万'); }
       // 武学训练·小项
       var wuxue = totalSoldiers * 0.5;  // 0.5两/兵·年
       // 营葬犒赏·按近期阵亡数（兜底小额）
@@ -434,7 +437,7 @@
       var quality = 1, qualityMult = 1;
       try {
         if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.Consequences) {
-          quality = CorruptionEngine.Consequences.calcConstructionQuality() || 1;
+          quality = finiteNumberOr(CorruptionEngine.Consequences.calcConstructionQuality(), 1);
           qualityMult = quality > 0.5 ? (1 / quality) : 2;  // cap at 2x
         }
       } catch(_){}
@@ -461,7 +464,7 @@
       var monthly = 8000;  // 月祀祠+节庆祀年支
       var shidian = 6000;  // 太学释奠(春秋两次祀孔)
       // 帝陵岁祭·按 GM.imperialClan.tombsCount 算
-      var tombs = (GM.imperialClan && GM.imperialClan.tombsCount) || 12;
+      var tombs = finiteNumberOr(GM.imperialClan && GM.imperialClan.tombsCount, 12);
       var lingji = tombs * 1500;  // 单陵岁祭 1500 两
       var total = yearly + grand + monthly + shidian + lingji;
       _setSubsExp('jisi', [
@@ -523,8 +526,8 @@
       // 杂支兜底
       var miscCost = safe((GM.guoku || {}).otherExpense, 0);
       // 救荒社仓·按全国户数粗估（100 户一仓，年支 0.5 两）
-      var householdsTotal = (GM.hukou && GM.hukou.households) || 0;
-      if (householdsTotal === 0) householdsTotal = (GM.hukou && GM.hukou.registeredTotal) || 10000000;
+      var householdsTotal = finiteNumberOr(GM.hukou && GM.hukou.households, 0);
+      if (householdsTotal === 0) householdsTotal = finiteNumberOr(GM.hukou && GM.hukou.registeredTotal, 10000000);
       if (householdsTotal > 1e8) householdsTotal = householdsTotal / 5;  // 防止误传 mouths
       var sheCang = Math.round(householdsTotal / 100 * 0.5);
       // 修史印典·年常支
@@ -566,8 +569,8 @@
 
     // 通胀购买力系数·grainPrice 越高·购买力越低（实征银两的实际购买力衰减）
     var purchasingPower = 1.0;
-    var grainIdx = (GM.currency && GM.currency.market && GM.currency.market.grainPrice) ||
-                   (GM.prices && GM.prices.grain) || 1.0;
+    var grainIdx = finiteNumberOr(GM.currency && GM.currency.market && GM.currency.market.grainPrice,
+                   finiteNumberOr(GM.prices && GM.prices.grain, 1.0));
     purchasingPower = Math.max(0.5, 1 / Math.max(0.7, grainIdx));
 
     // ── p2 inline (R9a 2026-05-04)·民心顺从度 + 皇权可支配性 ──
@@ -1188,7 +1191,7 @@
     extraTax: function(rate) {
       ensureGuokuModel();
       var g = GM.guoku;
-      rate = clamp(rate || 0.3, 0, 1.0);
+      rate = clamp(finiteNumberOr(rate, 0.3), 0, 1.0);
       g.emergency.extraTax.active = true;
       g.emergency.extraTax.rate = rate;
       // 立即效果：腐败+（地方乘机浮收）
@@ -1250,8 +1253,8 @@
     takeLoan: function(amount, term) {
       ensureGuokuModel();
       var g = GM.guoku;
-      amount = amount || 200000;
-      term = term || 12;  // 默认12月
+      amount = finiteNumberOr(amount, 200000);
+      term = finiteNumberOr(term, 12);  // 默认12月
       g.balance += amount;
       g.emergency.loan.active = true;
       g.emergency.loan.amount = amount;
@@ -1267,8 +1270,8 @@
     // 裁冗员（节流）
     cutOfficials: function(percent) {
       ensureGuokuModel();
-      percent = percent || 0.1;  // 默认裁 10%
-      if (!GM.totalOfficials) GM.totalOfficials = 500;
+      percent = finiteNumberOr(percent, 0.1);  // 默认裁 10%
+      if (typeof GM.totalOfficials !== 'number' || !Number.isFinite(GM.totalOfficials)) GM.totalOfficials = 500;
       var cut = Math.floor(GM.totalOfficials * percent);
       GM.totalOfficials -= cut;
       // 皇权代价（官员离心）
@@ -1288,10 +1291,10 @@
     // 减赋（长线惠民）
     reduceTax: function(percent) {
       ensureGuokuModel();
-      percent = percent || 0.2;
+      percent = finiteNumberOr(percent, 0.2);
       // 通过调整 taxRateMultiplier
       if (!GM.hukou) GM.hukou = {};
-      GM.hukou.taxRateMultiplier = (GM.hukou.taxRateMultiplier || 1) * (1 - percent);
+      GM.hukou.taxRateMultiplier = finiteNumberOr(GM.hukou.taxRateMultiplier, 1) * (1 - percent);
       _mxApply(percent * 30, '减税' + Math.round(percent*100) + '%·民困得纾', 'taxation');
       if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
         global.AuthorityEngines.adjustHuangwei('benevolence', percent * 8, '减赋施仁');
@@ -1303,7 +1306,7 @@
     // 发行纸币（历代险招）
     issuePaperCurrency: function(amount) {
       ensureGuokuModel();
-      amount = amount || 500000;
+      amount = finiteNumberOr(amount, 500000);
       GM.guoku.balance += amount;
       // 立即后果：通胀、皇威损
       if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
@@ -1521,7 +1524,7 @@
     if (GM.mapData && GM.mapData.cities) {
       return Object.keys(GM.mapData.cities).map(function(cid) {
         var c = GM.mapData.cities[cid];
-        return { id: cid, name: c.name || cid, population: c.population || 0 };
+      return { id: cid, name: c.name || cid, population: finiteNumberOr(c.population, 0) };
       });
     }
     return [{ id: 'national', name: '全境', population: safe((GM.hukou||{}).registeredTotal, 1e7) }];
@@ -1558,10 +1561,10 @@
     }
     var regions = getRegions();
     var totalPop = 0;
-    regions.forEach(function(r) { totalPop += r.population || 1; });
-    if (totalPop === 0) totalPop = 1;
+    regions.forEach(function(r) { totalPop += Math.max(0, finiteNumberOr(r.population, 0)); });
+    var equalShare = totalPop <= 0 ? (1 / Math.max(1, regions.length)) : 0;
     regions.forEach(function(r) {
-      var share = (r.population || 1) / totalPop;
+      var share = totalPop > 0 ? Math.max(0, finiteNumberOr(r.population, 0)) / totalPop : equalShare;
       if (!GM.guoku.byRegion[r.id]) {
         GM.guoku.byRegion[r.id] = {
           name: r.name,
@@ -1713,7 +1716,7 @@
           var found = -(GM.hukou.estimatedHidden || 0) * eff.hiddenHouseholdDelta;
           GM.hukou.registeredTotal += Math.floor(found);
         }
-        if (eff.populationGrowthBonus && GM.hukou) GM.hukou.growthBonus = (GM.hukou.growthBonus || 0) + eff.populationGrowthBonus;
+        if (eff.populationGrowthBonus && GM.hukou) GM.hukou.growthBonus = finiteNumberOr(GM.hukou.growthBonus, 0) + eff.populationGrowthBonus;
         if (eff.minxinDelta) _mxApply(eff.minxinDelta, '财政改革奏效及民');
         if (eff.huangweiDelta && GM.huangwei) {
           if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
@@ -1734,7 +1737,7 @@
     if (!GM.prices) GM.prices = { grain:1.0, cloth:1.0, general:1.0 };
     var g = GM.guoku;
     var grainStock = (g.ledgers.grain && g.ledgers.grain.stock) || 0;
-    var annualNeed = ((GM.hukou || {}).registeredTotal || 1e7) * 0.6;
+    var annualNeed = finiteNumberOr((GM.hukou || {}).registeredTotal, 1e7) * 0.6;
     var stockRatio = grainStock / Math.max(1, annualNeed);
     var stockFactor = stockRatio < 0.3 ? 1.8 : stockRatio < 0.6 ? 1.3 : stockRatio < 1.0 ? 1.0 : 0.9;
     var inflationFactor = 1.0;
@@ -1771,15 +1774,14 @@
     var prompt = '你是财政辅政大臣。玩家颁下诏令："' + decreeText + '"。请' + hint + '。以 JSON 回复：{"amount":数值, "reason":"短解释"}。只输出 JSON。';
     try {
       var resp = await callAI(prompt, 200);
-      var m = (resp || '').match(/\{[\s\S]*\}/);
-      if (!m) return null;
-      return JSON.parse(m[0]);
+      var parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(resp || '') : JSON.parse(resp || '');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
     } catch(e) { console.warn('[guoku] aiParseFiscalDecree:', e.message); return null; }
   }
 
   var MintingActions = {
     lightCoining: function(reduction) {
-      reduction = reduction || 0.2;
+      reduction = finiteNumberOr(reduction, 0.2);
       var g = GM.guoku;
       var boost = (g.monthlyIncome || 0) * 3 * reduction;
       g.balance += boost;
@@ -1852,7 +1854,7 @@
     var _origJunxiang = Expenses.junxiang;
     Expenses.junxiang = function() {
       var base = _origJunxiang() || 0;
-      var mult = (GM.guoku && GM.guoku._militaryCostMultiplier) || 1;
+      var mult = finiteNumberOr(GM.guoku && GM.guoku._militaryCostMultiplier, 1);
       return base * mult;
     };
   })();
@@ -2014,11 +2016,11 @@
     var prompt = '你扮演户部尚书，为陛下参议财政大计。以奏疏体（200 字内，文言雅训），分析三项：1) 帑廪现况断言（岁有余/岁亏/危殆）2) 当务之急：加派/开仓/借贷/减赋/裁员/发钞/改革，择一二。3) 副作用预警。\n\n当前时局：'
       + '\n- 帑廪 ' + Math.round(g.balance || 0) + ' 两（年入 ' + Math.round(g.annualIncome || 0) + '）'
       + '\n- 月入 ' + Math.round(g.monthlyIncome || 0) + '，月支 ' + Math.round(g.monthlyExpense || 0)
-      + '\n- 实征率 ' + Math.round((g.actualTaxRate || 1) * 100) + '%'
+      + '\n- 实征率 ' + Math.round(finiteNumberOr(g.actualTaxRate, 1) * 100) + '%'
       + '\n- 内帑 ' + Math.round(n.balance || 0) + ' 两'
-      + '\n- 皇权 ' + Math.round((GM.huangquan || {}).index || 50) + '，皇威 ' + Math.round((GM.huangwei || {}).index || 50)
-      + '\n- 民心 ' + Math.round((GM.minxin || {}).trueIndex || 50)
-      + '\n- 粮价 ' + (((GM.prices || {}).grain) || 1).toFixed(2) + ' ×'
+      + '\n- 皇权 ' + Math.round(finiteNumberOr((GM.huangquan || {}).index, 50)) + '，皇威 ' + Math.round(finiteNumberOr((GM.huangwei || {}).index, 50))
+      + '\n- 民心 ' + Math.round(finiteNumberOr((GM.minxin || {}).trueIndex, 50))
+      + '\n- 粮价 ' + finiteNumberOr((GM.prices || {}).grain, 1).toFixed(2) + ' ×'
       + '\n- 施行中改革：' + reform + '；已完成：' + completed
       + '\n- 腐败集团：' + cabal
       + '\n- 破产：' + (g.bankruptcy && g.bankruptcy.active ? '已连续 ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月' : '否')
@@ -2029,10 +2031,10 @@
 
   function _ruleBasedFiscalAdvisor() {
     var g = GM.guoku || {};
-    var balance = g.balance || 0, annual = g.annualIncome || 1;
-    var h = (GM.huangquan || {}).index || 50;
-    var m = (GM.minxin || {}).trueIndex || 50;
-    var grainPrice = ((GM.prices || {}).grain) || 1;
+    var balance = finiteNumberOr(g.balance, 0), annual = finiteNumberOr(g.annualIncome, 1);
+    var h = finiteNumberOr((GM.huangquan || {}).index, 50);
+    var m = finiteNumberOr((GM.minxin || {}).trueIndex, 50);
+    var grainPrice = finiteNumberOr((GM.prices || {}).grain, 1);
     var lines = [];
     if (g.bankruptcy && g.bankruptcy.active) lines.push('【断言】帑廪已破，' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月连亏，危殆。');
     else if (balance < annual * 0.2) lines.push('【断言】帑廪不足年入二成，近于危境。');
@@ -2070,11 +2072,11 @@
       var val = 0;
       var regTotal = safe((GM.hukou || {}).registeredTotal, 1e7);
       try {
-        if (tax.formulaType === 'perCapita') val = regTotal * (tax.rate || 0.01);
+        if (tax.formulaType === 'perCapita') val = regTotal * finiteNumberOr(tax.rate, 0.01);
         else if (tax.formulaType === 'flat') val = tax.amount || 0;
         else if (tax.formulaType === 'percent') {
           var baseVal = tax.base === 'commerce' ? regTotal * 0.1 : tax.base === 'land' ? regTotal * 0.05 : regTotal;
-          val = baseVal * (tax.rate || 0.01);
+          val = baseVal * finiteNumberOr(tax.rate, 0.01);
         }
       } catch(e) { val = 0; }
       results[tax.id] = { amount: val, name: tax.name || tax.id };
@@ -2215,7 +2217,7 @@
     var srcLines = [];
     var srcLabels = { tianfu:'田赋', dingshui:'丁税', caoliang:'漕粮', yanlizhuan:'专卖', shipaiShui:'市舶', quanShui:'榷税', juanNa:'捐纳', qita:'其他' };
     for (var k in sources) srcLines.push((srcLabels[k]||k) + ' ' + Math.round(sources[k]||0));
-    var prompt = '你扮演户部左侍郎，奏疏体（200 字内）为陛下分析税种结构并建议：\n- 本岁各税：' + srcLines.join('，') + '\n- 民心 ' + Math.round((GM.minxin||{}).trueIndex || 50) + '，粮价 ' + (((GM.prices||{}).grain)||1).toFixed(2) + '倍\n- 改革：' + (((g.completedReforms||[]).length ? '已' : '未') + '行大改') + '\n\n请指出当今税制弊端（如税种单一/重农轻商/丁税过重等），并建议增减/改革。直接输出奏疏。';
+    var prompt = '你扮演户部左侍郎，奏疏体（200 字内）为陛下分析税种结构并建议：\n- 本岁各税：' + srcLines.join('，') + '\n- 民心 ' + Math.round(finiteNumberOr((GM.minxin||{}).trueIndex, 50)) + '，粮价 ' + finiteNumberOr((GM.prices||{}).grain, 1).toFixed(2) + '倍\n- 改革：' + (((g.completedReforms||[]).length ? '已' : '未') + '行大改') + '\n\n请指出当今税制弊端（如税种单一/重农轻商/丁税过重等），并建议增减/改革。直接输出奏疏。';
     try { var text = await callAI(prompt, 500); return { available: true, analysis: (text || '').trim() }; }
     catch(e) { return { available: false, analysis: _ruleTaxAdvisor(), error: e.message }; }
   }

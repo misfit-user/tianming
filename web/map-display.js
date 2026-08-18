@@ -5,6 +5,16 @@
 // 简化地图渲染器（用于游戏内显示）
 // ============================================================
 
+function _mapEsc(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _mapFiniteNumberOr(value, fallback) {
+    return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 /**
  * 在游戏中显示地图
  * @param {string} containerId - 容器元素ID
@@ -78,7 +88,7 @@ function renderGameMap(containerId, mapData, options) {
             }
             ctx.fillStyle = _ownerColor;
         } else if (mode === 'development') {
-            const dev = region.development || 50;
+            const dev = _mapFiniteNumberOr(region.development, 50);
             const hue = (dev / 100) * 120;
             ctx.fillStyle = `hsl(${hue}, 70%, 40%)`;
         } else if (mode === 'troops') {
@@ -144,7 +154,7 @@ function renderGameMap(containerId, mapData, options) {
             ctx.stroke();
             ctx.restore();
             // 兵力数字
-            var _armySoldiers = army.soldiers || army.strength || 0;
+            var _armySoldiers = _mapFiniteNumberOr(army.soldiers, _mapFiniteNumberOr(army.strength, 0));
             if (_armySoldiers) {
                 ctx.fillStyle = '#fff';
                 ctx.font = '9px sans-serif';
@@ -216,10 +226,10 @@ function showProvinceDetails(region) {
         var ps = GM.provinceStats[region.name];
         _provStats = '<div style="margin-top:8px; padding-top:8px; border-top:1px solid #444;">' +
             '<strong>\u7ECF\u6D4E\u6570\u636E</strong>' +
-            '<div>\u4EBA\u53E3\uFF1A' + ((ps.population||0) >= 10000 ? Math.round((ps.population||0)/10000)+'\u4E07' : (ps.population||0)) + '</div>' +
-            '<div>\u7E41\u8363\u5EA6\uFF1A' + Math.round(ps.prosperity||50) + '/100</div>' +
-            '<div>\u7A0E\u6536\uFF1A' + Math.round(ps.taxRevenue||0) + '</div>' +
-            (ps.governor ? '<div>\u592A\u5B88\uFF1A' + ps.governor + '</div>' : '') +
+            '<div>\u4EBA\u53E3\uFF1A' + (_mapFiniteNumberOr(ps.population, 0) >= 10000 ? Math.round(_mapFiniteNumberOr(ps.population, 0)/10000)+'\u4E07' : _mapFiniteNumberOr(ps.population, 0)) + '</div>' +
+            '<div>\u7E41\u8363\u5EA6\uFF1A' + Math.round(_mapFiniteNumberOr(ps.prosperity, 50)) + '/100</div>' +
+            '<div>\u7A0E\u6536\uFF1A' + Math.round(_mapFiniteNumberOr(ps.taxRevenue, 0)) + '</div>' +
+            (ps.governor ? '<div>\u592A\u5B88\uFF1A' + _mapEsc(ps.governor) + '</div>' : '') +
             '</div>';
     }
     // 驻地角色
@@ -227,27 +237,35 @@ function showProvinceDetails(region) {
     if (typeof GM !== 'undefined' && GM.chars) {
         var _lc = GM.chars.filter(function(c){return c.alive!==false && _isSameLocation(c.location, region.name);});
         if (_lc.length > 0) {
-            _localChars = '<div style="margin-top:4px;"><strong>\u9A7B\u5730\u4EBA\u7269\uFF1A</strong>' + _lc.map(function(c){return c.name;}).join('\u3001') + '</div>';
+            _localChars = '<div style="margin-top:4px;"><strong>\u9A7B\u5730\u4EBA\u7269\uFF1A</strong>' + _lc.map(function(c){return _mapEsc(c.name);}).join('\u3001') + '</div>';
         }
     }
     var _resources = '';
-    try { _resources = region.resources ? (Array.isArray(region.resources) ? region.resources.join('\u3001') : region.resources) : '\u65E0'; } catch(e) { _resources = '\u65E0'; }
+    try { _resources = region.resources ? (Array.isArray(region.resources) ? region.resources.map(_mapEsc).join('\u3001') : _mapEsc(region.resources)) : '\u65E0'; } catch(e) { _resources = '\u65E0'; }
+
+    var _regionName = _mapEsc(region.name);
+    var _ownerName = _mapEsc(region.owner || '\u65E0\u4E3B');
+    var _terrainName = _mapEsc(getTerrainName(region.terrain));
+    var _development = _mapFiniteNumberOr(region.development, 50);
+    var _troops = _mapFiniteNumberOr(region.troops, 0);
+    var _regionCharacters = region.characters && region.characters.length > 0
+        ? `<div><strong>\u9A7B\u5B88\u4EBA\u7269\uFF1A</strong>${region.characters.map(_mapEsc).join('\u3001')}</div>` : '';
+    var _events = region.events
+        ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #444;"><strong>\u5386\u53F2\uFF1A</strong><br>${_mapEsc(region.events).replace(/\r?\n/g, '<br>')}</div>` : '';
 
     const html = `
         <div style="background:#2a2a2a; border:1px solid #444; border-radius:8px; padding:16px; color:#e0e0e0;">
-            <h3 style="margin:0 0 12px 0; color:#ffd700;">${region.name}</h3>
+            <h3 style="margin:0 0 12px 0; color:#ffd700;">${_regionName}</h3>
             <div style="font-size:13px; line-height:1.8;">
-                <div><strong>\u6240\u5C5E\uFF1A</strong>${region.owner || '\u65E0\u4E3B'}</div>
-                <div><strong>\u5730\u5F62\uFF1A</strong>${getTerrainName(region.terrain)}</div>
+                <div><strong>\u6240\u5C5E\uFF1A</strong>${_ownerName}</div>
+                <div><strong>\u5730\u5F62\uFF1A</strong>${_terrainName}</div>
                 <div><strong>\u8D44\u6E90\uFF1A</strong>${_resources}</div>
-                <div><strong>\u53D1\u5C55\u5EA6\uFF1A</strong>${region.development || 50}/100</div>
-                <div><strong>\u9A7B\u519B\uFF1A</strong>${region.troops || 0}\u4EBA</div>
-                ${region.characters && region.characters.length > 0 ?
-                    `<div><strong>\u9A7B\u5B88\u4EBA\u7269\uFF1A</strong>${region.characters.join('\u3001')}</div>` : ''}
+                <div><strong>\u53D1\u5C55\u5EA6\uFF1A</strong>${_development}/100</div>
+                <div><strong>\u9A7B\u519B\uFF1A</strong>${_troops}\u4EBA</div>
+                ${_regionCharacters}
                 ${_localChars}
                 ${_provStats}
-                ${region.events ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #444;">
-                    <strong>\u5386\u53F2\uFF1A</strong><br>${region.events.replace(/\n/g, '<br>')}</div>` : ''}
+                ${_events}
             </div>
         </div>
     `;

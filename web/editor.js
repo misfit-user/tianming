@@ -91,7 +91,7 @@
     if (t === 'city') {
       extraHTML =
         '<div class="form-group"><label>\u5c5e\u65bc</label><input id="gm_owner" value="' + escHtml(item.owner||'') + '"></div>' +
-        '<div class="form-group"><label>\u4eba\u53e3</label><input id="gm_population" value="' + escHtml(item.population||'') + '"></div>' +
+        '<div class="form-group"><label>\u4eba\u53e3</label><input id="gm_population" value="' + escHtml(item.population == null ? '' : item.population) + '"></div>' +
         '<div class="form-group"><label>\u8d44\u6e90</label><input id="gm_resources" value="' + escHtml(item.resources||'') + '"></div>' +
         '<div class="form-group"><label>\u9632\u5fa1</label><input id="gm_defenses" value="' + escHtml(item.defenses||'') + '"></div>';
     } else if (t === 'strategic') {
@@ -315,17 +315,21 @@
 
     // 更新滑块和数值显示
     var el;
-    if (el = document.getElementById('economy-redistribution')) el.value = (ec.redistributionRate || ec.tributeRatio || 0.3) * 100;
-    if (el = document.getElementById('economy-redistribution-value')) el.textContent = Math.round((ec.redistributionRate || ec.tributeRatio || 0.3) * 100) + '%';
-    if (el = document.getElementById('economy-baseIncome')) el.value = ec.baseIncome || 10000;
-    if (el = document.getElementById('economy-taxRate')) el.value = (ec.taxRate || 0.1) * 100;
-    if (el = document.getElementById('economy-taxRate-value')) el.textContent = Math.round((ec.taxRate || 0.1) * 100) + '%';
-    if (el = document.getElementById('economy-inflation')) el.value = (ec.inflationRate || 0.02) * 100;
-    if (el = document.getElementById('economy-inflation-value')) el.textContent = Math.round((ec.inflationRate || 0.02) * 100) + '%';
-    if (el = document.getElementById('economy-tradeBonus')) el.value = (ec.tradeBonus || 0.1) * 100;
-    if (el = document.getElementById('economy-tradeBonus-value')) el.textContent = Math.round((ec.tradeBonus || 0.1) * 100) + '%';
-    if (el = document.getElementById('economy-agricultureMultiplier')) el.value = ec.agricultureMultiplier || 1.0;
-    if (el = document.getElementById('economy-commerceMultiplier')) el.value = ec.commerceMultiplier || 1.0;
+    var redistributionRate = finiteNumberOr(ec.redistributionRate, finiteNumberOr(ec.tributeRatio, 0.3));
+    if (el = document.getElementById('economy-redistribution')) el.value = redistributionRate * 100;
+    if (el = document.getElementById('economy-redistribution-value')) el.textContent = Math.round(redistributionRate * 100) + '%';
+    if (el = document.getElementById('economy-baseIncome')) el.value = finiteNumberOr(ec.baseIncome, 10000);
+    var taxRate = finiteNumberOr(ec.taxRate, 0.1);
+    var inflationRate = finiteNumberOr(ec.inflationRate, 0.02);
+    var tradeBonus = finiteNumberOr(ec.tradeBonus, 0.1);
+    if (el = document.getElementById('economy-taxRate')) el.value = taxRate * 100;
+    if (el = document.getElementById('economy-taxRate-value')) el.textContent = Math.round(taxRate * 100) + '%';
+    if (el = document.getElementById('economy-inflation')) el.value = inflationRate * 100;
+    if (el = document.getElementById('economy-inflation-value')) el.textContent = Math.round(inflationRate * 100) + '%';
+    if (el = document.getElementById('economy-tradeBonus')) el.value = tradeBonus * 100;
+    if (el = document.getElementById('economy-tradeBonus-value')) el.textContent = Math.round(tradeBonus * 100) + '%';
+    if (el = document.getElementById('economy-agricultureMultiplier')) el.value = finiteNumberOr(ec.agricultureMultiplier, 1.0);
+    if (el = document.getElementById('economy-commerceMultiplier')) el.value = finiteNumberOr(ec.commerceMultiplier, 1.0);
 
     // 更新新增字段
     if (el = document.getElementById('economy-currency')) el.value = ec.currency || '贯';
@@ -340,12 +344,12 @@
       + '剧本概述：' + (scriptData.overview || '无') + '\n'
       + '朝代：' + (scriptData.dynasty || '未知') + '\n'
       + '皇帝：' + (scriptData.emperor || '未知') + '\n'
-      + '开始年份：' + (scriptData.gameSettings.startYear || 1) + '\n';
+      + '开始年份：' + finiteNumberOr(scriptData.gameSettings.startYear, 1) + '\n';
 
     if (scriptData.eraState && scriptData.eraState.contextDescription) {
       context += '时代状态：' + scriptData.eraState.contextDescription + '\n';
-      context += '集权度：' + (scriptData.eraState.centralControl || 0.5) + '\n';
-      context += '经济繁荣度：' + (scriptData.eraState.economicProsperity || 0.5) + '\n';
+      context += '集权度：' + finiteNumberOr(scriptData.eraState.centralControl, 0.5) + '\n';
+      context += '经济繁荣度：' + finiteNumberOr(scriptData.eraState.economicProsperity, 0.5) + '\n';
     }
 
     var prompt = '你是一个历史经济专家。根据以下剧本背景，为游戏设计合理的经济配置参数：\n\n'
@@ -385,24 +389,24 @@
     try {
       showLoading('正在生成经济配置...');
       var result = await callAIEditor(prompt, 1200);
-      var jsonMatch = result.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(result, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var data = JSON.parse(jsonMatch[0]);
       if (!scriptData.economyConfig) scriptData.economyConfig = {};
 
       scriptData.economyConfig.currency = data.currency || '贯';
-      scriptData.economyConfig.baseIncome = data.baseIncome || 10000;
-      scriptData.economyConfig.tributeRatio = data.tributeRatio || 0.3;
-      scriptData.economyConfig.redistributionRate = data.redistributionRate || 0.3;
-      scriptData.economyConfig.taxRate = data.taxRate || 0.1;
-      scriptData.economyConfig.inflationRate = data.inflationRate || 0.02;
+      scriptData.economyConfig.baseIncome = finiteNumberOr(data.baseIncome, 10000);
+      scriptData.economyConfig.tributeRatio = finiteNumberOr(data.tributeRatio, 0.3);
+      scriptData.economyConfig.redistributionRate = finiteNumberOr(data.redistributionRate, 0.3);
+      scriptData.economyConfig.taxRate = finiteNumberOr(data.taxRate, 0.1);
+      scriptData.economyConfig.inflationRate = finiteNumberOr(data.inflationRate, 0.02);
       scriptData.economyConfig.economicCycle = data.economicCycle || 'stable';
       scriptData.economyConfig.specialResources = data.specialResources || '';
       scriptData.economyConfig.tradeSystem = data.tradeSystem || '';
-      scriptData.economyConfig.tradeBonus = data.tradeBonus || 0.1;
-      scriptData.economyConfig.agricultureMultiplier = data.agricultureMultiplier || 1.0;
-      scriptData.economyConfig.commerceMultiplier = data.commerceMultiplier || 1.0;
+      scriptData.economyConfig.tradeBonus = finiteNumberOr(data.tradeBonus, 0.1);
+      scriptData.economyConfig.agricultureMultiplier = finiteNumberOr(data.agricultureMultiplier, 1.0);
+      scriptData.economyConfig.commerceMultiplier = finiteNumberOr(data.commerceMultiplier, 1.0);
       scriptData.economyConfig.description = data.description || '';
 
       renderEconomyConfig();
@@ -598,13 +602,13 @@
 
     var dynasty = scriptData.dynasty || '未知朝代';
     var emperor = scriptData.emperor || '未知皇帝';
-    var year = scriptData.gameSettings.startYear || 1;
+    var year = finiteNumberOr(scriptData.gameSettings.startYear, 1);
     var overview = scriptData.overview || '';
 
     var _esP = scriptData.eraState || {};
     var postEraCtx = '';
-    if (_esP.centralControl) postEraCtx += '集权度：' + Math.round((_esP.centralControl||0.5)*100) + '%\n';
-    if (_esP.bureaucracyStrength) postEraCtx += '官僚体系强度：' + Math.round((_esP.bureaucracyStrength||0.5)*100) + '%\n';
+    if (typeof _esP.centralControl === 'number' && Number.isFinite(_esP.centralControl)) postEraCtx += '集权度：' + Math.round(_esP.centralControl*100) + '%\n';
+    if (typeof _esP.bureaucracyStrength === 'number' && Number.isFinite(_esP.bureaucracyStrength)) postEraCtx += '官僚体系强度：' + Math.round(_esP.bureaucracyStrength*100) + '%\n';
     if (_esP.legitimacySource) postEraCtx += '正统来源：' + _esP.legitimacySource + '\n';
 
     var prompt = '你是一个中国古代历史和官制专家。根据以下剧本信息，生成该朝代的官职运作规则：\n\n'
@@ -660,13 +664,13 @@
       if (!_callFn) throw new Error('AI调用函数不可用');
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
       var result = JSON.parse(jsonMatch[0]);
 
       if (!result.postRules || !Array.isArray(result.postRules)) {
         // 兜底：如果返回的是数组而非对象
-        var arrMatch = content.match(/\[\s*\{[\s\S]*\]/);
+        var arrMatch = extractJSONMatch(content, 'array');
         if (arrMatch) result = { postRules: JSON.parse(arrMatch[0]) };
         else throw new Error('\u8FD4\u56DE\u7684\u6570\u636E\u683C\u5F0F\u4E0D\u6B63\u786E');
       }
@@ -815,7 +819,7 @@
         h += '<span style="color:var(--text-dim);">→ 臣属于 →</span>';
         h += '<span style="color:var(--gold, #d4a);">' + escHtml(r.liege || '') + '</span>';
         if (r.vassalType) h += ' <span class="card-tag" style="font-size:10px;">' + escHtml(r.vassalType) + '</span>';
-        h += ' <span style="font-size:11px;color:var(--text-secondary);">贡' + Math.round((r.tributeRate || 0.3) * 100) + '% 忠' + (r.loyalty || 50) + '</span>';
+        h += ' <span style="font-size:11px;color:var(--text-secondary);">贡' + Math.round(finiteNumberOr(r.tributeRate, 0.3) * 100) + '% 忠' + finiteNumberOr(r.loyalty, 50) + '</span>';
         h += '<button class="btn" style="padding:1px 6px;font-size:10px;margin-left:auto;" onclick="deleteVassalRelation(' + idx + ')">×</button>';
         h += '</div>';
       });
@@ -835,8 +839,8 @@
 
     var vtNames = (scriptData.vassalSystem.vassalTypes || []).map(function(v){return v.name;});
     var vtName = vtNames.length > 0 ? prompt('封臣类型（可选）：\n可选：' + vtNames.join('、')) || '' : '';
-    var tribute = parseFloat(prompt('贡奉比例（0-1，默认0.3）：') || '0.3') || 0.3;
-    var loyalty = parseInt(prompt('初始忠诚度（0-100，默认60）：') || '60') || 60;
+    var tribute = finiteNumberOr(parseFloat(prompt('贡奉比例（0-1，默认0.3）：') || '0.3'), 0.3);
+    var loyalty = finiteNumberOr(parseInt(prompt('初始忠诚度（0-100，默认60）：') || '60'), 60);
 
     if (!scriptData.vassalSystem.vassalRelations) scriptData.vassalSystem.vassalRelations = [];
     scriptData.vassalSystem.vassalRelations.push({
@@ -890,9 +894,9 @@
     document.getElementById('vassalType-rights').value = vt.rights || '';
     document.getElementById('vassalType-succession').value = vt.succession || '世袭罔替';
     document.getElementById('vassalType-controlLevel').value = vt.controlLevel || '高度自治';
-    var trEl = document.getElementById('vassalType-tributeRate'); if (trEl) trEl.value = vt.tributeRate || 0.3;
-    var lrEl = document.getElementById('vassalType-levyRate'); if (lrEl) lrEl.value = vt.levyRate || 0.5;
-    var rbEl = document.getElementById('vassalType-rebellionThreshold'); if (rbEl) rbEl.value = vt.rebellionThreshold || 25;
+    var trEl = document.getElementById('vassalType-tributeRate'); if (trEl) trEl.value = finiteNumberOr(vt.tributeRate, 0.3);
+    var lrEl = document.getElementById('vassalType-levyRate'); if (lrEl) lrEl.value = finiteNumberOr(vt.levyRate, 0.5);
+    var rbEl = document.getElementById('vassalType-rebellionThreshold'); if (rbEl) rbEl.value = finiteNumberOr(vt.rebellionThreshold, 25);
     var afEl = document.getElementById('vassalType-autonomyFields'); if (afEl) afEl.value = Array.isArray(vt.autonomyFields) ? vt.autonomyFields.join('、') : '';
     document.getElementById('vassalType-era').value = vt.era || '';
     document.getElementById('vassalType-relatedOfficials').value = Array.isArray(vt.relatedOfficials) ? vt.relatedOfficials.join(',') : (vt.relatedOfficials || '');
@@ -922,9 +926,9 @@
       rights: document.getElementById('vassalType-rights').value,
       succession: document.getElementById('vassalType-succession').value,
       controlLevel: document.getElementById('vassalType-controlLevel').value,
-      tributeRate: parseFloat((document.getElementById('vassalType-tributeRate') || {}).value) || 0.3,
-      levyRate: parseFloat((document.getElementById('vassalType-levyRate') || {}).value) || 0.5,
-      rebellionThreshold: parseInt((document.getElementById('vassalType-rebellionThreshold') || {}).value) || 25,
+      tributeRate: finiteNumberOr(parseFloat((document.getElementById('vassalType-tributeRate') || {}).value), 0.3),
+      levyRate: finiteNumberOr(parseFloat((document.getElementById('vassalType-levyRate') || {}).value), 0.5),
+      rebellionThreshold: finiteNumberOr(parseInt((document.getElementById('vassalType-rebellionThreshold') || {}).value, 10), 25),
       autonomyFields: autonomyFields,
       era: document.getElementById('vassalType-era').value,
       relatedOfficials: relatedOfficials,
@@ -1024,7 +1028,7 @@
 
     var dynasty = scriptData.dynasty || '未知朝代';
     var emperor = scriptData.emperor || '未知皇帝';
-    var year = scriptData.gameSettings.startYear || 1;
+    var year = finiteNumberOr(scriptData.gameSettings.startYear, 1);
     var overview = scriptData.overview || '';
 
     var prompt = '你是一个中国古代历史和封建制度专家。根据以下剧本信息，生成该朝代的封臣/藩属类型列表：\n\n'
@@ -1074,7 +1078,7 @@
     // 已有势力信息（让AI根据实际势力格局生成）
     if (scriptData.factions && scriptData.factions.length > 0) {
       prompt += '\n\n【已有势���】\n' + scriptData.factions.map(function(f) {
-        return '- ' + f.name + (f.type ? '(' + f.type + ')' : '') + (f.leader ? ' 首领:' + f.leader : '') + ' 实力:' + (f.strength || 50);
+        return '- ' + f.name + (f.type ? '(' + f.type + ')' : '') + (f.leader ? ' 首领:' + f.leader : '') + ' 实力:' + finiteNumberOr(f.strength, 50);
       }).join('\n') + '\n请考虑这些势力间可能存在的封臣关系。';
     }
 
@@ -1098,7 +1102,7 @@
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
 
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var result = JSON.parse(jsonMatch[0]);
@@ -1168,7 +1172,7 @@
       + '朝代：' + dynasty + '\n'
       + '剧本概述：' + overview + '\n\n'
       + '【势力列表】\n' + factions.map(function(f) {
-        return '- ' + f.name + (f.type ? '(' + f.type + ')' : '') + ' 实力:' + (f.strength || 50) + (f.leader ? ' 首领:' + f.leader : '') + (f.territory ? ' 领地:' + f.territory : '');
+        return '- ' + f.name + (f.type ? '(' + f.type + ')' : '') + ' 实力:' + finiteNumberOr(f.strength, 50) + (f.leader ? ' 首领:' + f.leader : '') + (f.territory ? ' 领地:' + f.territory : '');
       }).join('\n') + '\n';
 
     if (vtNames.length > 0) {
@@ -1184,7 +1188,7 @@
       if (!_callFn) throw new Error('AI调用函数不可用');
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
       var result = JSON.parse(jsonMatch[0]);
 
@@ -1198,8 +1202,8 @@
             scriptData.vassalSystem.vassalRelations.push({
               vassal: r.vassal, liege: r.liege,
               vassalType: r.vassalType || '',
-              tributeRate: Math.max(0.05, Math.min(0.8, r.tributeRate || 0.3)),
-              loyalty: Math.max(0, Math.min(100, r.loyalty || 60))
+              tributeRate: Math.max(0, Math.min(0.8, finiteNumberOr(r.tributeRate, 0.3))),
+              loyalty: Math.max(0, Math.min(100, finiteNumberOr(r.loyalty, 60)))
             });
           }
         });
@@ -1405,7 +1409,7 @@
 
     var dynasty = scriptData.dynasty || '未知朝代';
     var emperor = scriptData.emperor || '未知皇帝';
-    var year = scriptData.gameSettings.startYear || 1;
+    var year = finiteNumberOr(scriptData.gameSettings.startYear, 1);
     var overview = scriptData.overview || '';
 
     var prompt = '你是一个中国古代历史和爵位制度专家。根据以下剧本信息，生成该朝代的头衔等级列表：\n\n'
@@ -1472,7 +1476,7 @@
       if (!_callFn) throw new Error('AI调用函数不可用');
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
       var result = JSON.parse(jsonMatch[0]);
 
@@ -1526,7 +1530,7 @@
     var ctx = '朝代：' + dynasty + '\n皇帝：' + emperor + '\n年份：' + year + '\n剧本概述：' + overview + '\n';
     if (scriptData.factions && scriptData.factions.length > 0) {
       ctx += '\n【已有势力】\n' + scriptData.factions.map(function(f) {
-        return '- ' + f.name + (f.territory ? ' 领地:' + f.territory : '') + ' 实力:' + (f.strength || 50);
+        return '- ' + f.name + (f.territory ? ' 领地:' + f.territory : '') + ' 实力:' + finiteNumberOr(f.strength, 50);
       }).join('\n') + '\n';
     }
     if (scriptData.characters && scriptData.characters.length > 0) {
@@ -1684,7 +1688,7 @@
 
       try {
         var content = await callAIEditor(prompt, 4000);
-        var jsonMatch = content.match(/\{[\s\S]*\}/);
+        var jsonMatch = extractJSONMatch(content, 'object');
         if (!jsonMatch) throw new Error('无法提取JSON');
         var result = JSON.parse(jsonMatch[0]);
 
@@ -1702,7 +1706,7 @@
             var _rhMatch = d.registeredHouseholds.match(/(\d+)\s*户.*?(\d+)\s*口/);
             if (_rhMatch) {
               d.households = parseInt(_rhMatch[1]) || 0;
-              d.population = parseInt(_rhMatch[2]) || 0;
+          d.population = finiteNumberOr(parseInt(_rhMatch[2], 10), 0);
             }
           }
           if (!d.population && d.households) d.population = d.households * 5;
@@ -1717,8 +1721,8 @@
               d.autonomy.subtype = null; d.autonomy.holder = null;
               d.autonomy.loyalty = 100; d.autonomy.tributeRate = 0;
             } else {
-              d.autonomy.loyalty = parseInt(d.autonomy.loyalty) || 70;
-              d.autonomy.tributeRate = parseFloat(d.autonomy.tributeRate) || (d.autonomy.type === 'chaogong' ? 0.05 : d.autonomy.type === 'jimi' ? 0.1 : 0.3);
+              d.autonomy.loyalty = finiteNumberOr(parseInt(d.autonomy.loyalty), 70);
+              d.autonomy.tributeRate = finiteNumberOr(parseFloat(d.autonomy.tributeRate), d.autonomy.type === 'chaogong' ? 0.05 : d.autonomy.type === 'jimi' ? 0.1 : 0.3);
             }
           }
           // 主官→自动创建角色
@@ -1835,7 +1839,7 @@
 
     try {
       var content = await callAIEditor(prompt, 4000);
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法提取JSON');
       var result = JSON.parse(jsonMatch[0]);
 
@@ -1850,7 +1854,7 @@
         // 解析registeredHouseholds
         if (d.registeredHouseholds && typeof d.registeredHouseholds === 'string') {
           var _rhM = d.registeredHouseholds.match(/(\d+)\s*户.*?(\d+)\s*口/);
-          if (_rhM) { d.households = parseInt(_rhM[1])||0; d.population = parseInt(_rhM[2])||0; }
+          if (_rhM) { d.households = finiteNumberOr(parseInt(_rhM[1], 10), 0); d.population = finiteNumberOr(parseInt(_rhM[2], 10), 0); }
         }
         if (!d.population && d.households) d.population = d.households * 5;
         if (!d.households && d.population) d.households = Math.round(d.population / 5);
@@ -1862,15 +1866,15 @@
             subtype: _parentAut.subtype || null,
             holder: _parentAut.holder || null,
             suzerain: _parentAut.suzerain || null,
-            loyalty: _parentAut.loyalty || 100,
-            tributeRate: _parentAut.tributeRate || 0
+            loyalty: finiteNumberOr(_parentAut.loyalty, 100),
+            tributeRate: finiteNumberOr(_parentAut.tributeRate, 0)
           };
         } else {
           var _vT = ['zhixia','fanguo','fanzhen','jimi','chaogong'];
           if (_vT.indexOf(d.autonomy.type) < 0) d.autonomy.type = (target.autonomy && target.autonomy.type) || 'zhixia';
           if (d.autonomy.type !== 'zhixia') {
-            d.autonomy.loyalty = parseInt(d.autonomy.loyalty) || 70;
-            d.autonomy.tributeRate = parseFloat(d.autonomy.tributeRate) || 0.2;
+            d.autonomy.loyalty = finiteNumberOr(parseInt(d.autonomy.loyalty), 70);
+            d.autonomy.tributeRate = finiteNumberOr(parseFloat(d.autonomy.tributeRate), 0.2);
           }
         }
         // 主官→角色
@@ -2012,9 +2016,9 @@
     document.getElementById('buildingTypeName').value = bt.name || '';
     document.getElementById('buildingTypeCategory').value = bt.category || 'military';
     document.getElementById('buildingTypeDescription').value = bt.description || '';
-    var ml = document.getElementById('buildingTypeMaxLevel'); if (ml) ml.value = bt.maxLevel || 5;
-    var bc = document.getElementById('buildingTypeBaseCost'); if (bc) bc.value = bt.baseCost || 1000;
-    var btm = document.getElementById('buildingTypeBuildTime'); if (btm) btm.value = bt.buildTime || 3;
+    var ml = document.getElementById('buildingTypeMaxLevel'); if (ml) ml.value = finiteNumberOr(bt.maxLevel, 5);
+    var bc = document.getElementById('buildingTypeBaseCost'); if (bc) bc.value = finiteNumberOr(bt.baseCost, 1000);
+    var btm = document.getElementById('buildingTypeBuildTime'); if (btm) btm.value = finiteNumberOr(bt.buildTime, 3);
     document.getElementById('buildingTypeModal').classList.add('show');
   }
 
@@ -2044,9 +2048,9 @@
       name: name,
       category: category,
       description: description,
-      maxLevel: parseInt((document.getElementById('buildingTypeMaxLevel') || {}).value) || 5,
-      baseCost: parseInt((document.getElementById('buildingTypeBaseCost') || {}).value) || 1000,
-      buildTime: parseInt((document.getElementById('buildingTypeBuildTime') || {}).value) || 3
+      maxLevel: finiteNumberOr(parseInt((document.getElementById('buildingTypeMaxLevel') || {}).value, 10), 5),
+      baseCost: finiteNumberOr(parseInt((document.getElementById('buildingTypeBaseCost') || {}).value, 10), 1000),
+      buildTime: finiteNumberOr(parseInt((document.getElementById('buildingTypeBuildTime') || {}).value, 10), 3)
       // 效果由AI根据描述自行判断——不存结构化字段
     };
 
@@ -2090,13 +2094,13 @@
 
     var dynasty = scriptData.dynasty || '未知朝代';
     var emperor = scriptData.emperor || '未知皇帝';
-    var year = scriptData.gameSettings.startYear || 1;
+    var year = finiteNumberOr(scriptData.gameSettings.startYear, 1);
     var overview = scriptData.overview || '';
 
     var _es = scriptData.eraState || {};
     var eraCtx = '';
     if (_es.dynastyPhase) eraCtx += '阶段：' + _es.dynastyPhase + '\n';
-    if (_es.economicProsperity) eraCtx += '经济繁荣度：' + Math.round((_es.economicProsperity||0.5)*100) + '%\n';
+    if (typeof _es.economicProsperity === 'number' && Number.isFinite(_es.economicProsperity)) eraCtx += '经济繁荣度：' + Math.round(_es.economicProsperity*100) + '%\n';
     if (_es.landSystemType) eraCtx += '土地制度：' + _es.landSystemType + '\n';
 
     var prompt = '你是一个中国古代历史和建筑文化专家。根据以下剧本信息，生成该朝代的典型建筑类型列表：\n\n'
@@ -2165,7 +2169,7 @@
       var content = await _callFn(prompt, 4000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
 
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var result = JSON.parse(jsonMatch[0]);
@@ -2195,9 +2199,9 @@
           name: b.name || '',
           category: b.category || 'economic',
           description: b.description || '',
-          maxLevel: parseInt(b.maxLevel) || 5,
-          baseCost: parseInt(b.baseCost) || 1000,
-          buildTime: parseInt(b.buildTime) || 3
+          maxLevel: finiteNumberOr(parseInt(b.maxLevel, 10), 5),
+          baseCost: finiteNumberOr(parseInt(b.baseCost, 10), 1000),
+          buildTime: finiteNumberOr(parseInt(b.buildTime, 10), 3)
         });
       });
 
@@ -2235,7 +2239,7 @@
 
     var dynasty = scriptData.dynasty || '\u672A\u77E5\u671D\u4EE3';
     var emperor = scriptData.emperor || '\u672A\u77E5\u7687\u5E1D';
-    var year = scriptData.gameSettings.startYear || 1;
+    var year = finiteNumberOr(scriptData.gameSettings.startYear, 1);
     var overview = scriptData.overview || '';
 
     var prompt = '\u4F60\u662F\u4E00\u4E2A\u4E2D\u56FD\u53F2\u4E13\u5BB6\u3002\u6839\u636E\u4EE5\u4E0B\u4FE1\u606F\uFF0C\u63A8\u65AD\u5F53\u524D\u5386\u53F2\u65F6\u671F\u7684\u65F6\u4EE3\u72B6\u6001\uFF1A\n\n'
@@ -2277,7 +2281,7 @@
       if (!_callFn) throw new Error('AI调用函数不可用');
       var content = await _callFn(prompt, 2000);
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jsonMatch = content.match(/\{[\s\S]*\}/);
+      var jsonMatch = extractJSONMatch(content, 'object');
       if (!jsonMatch) throw new Error('无法解析AI返回的JSON');
 
       var eraState = JSON.parse(jsonMatch[0]);
@@ -2317,4 +2321,3 @@
     };
     input.click();
   }
-

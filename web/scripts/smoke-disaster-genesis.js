@@ -128,6 +128,9 @@ console.log('— §b · 平粜/开仓压粮价指数 —');
         _grainReleaseTurn: releaseTurn
       },
       turnsForMonths: function (m) { return m; },
+      finiteNumberOr: function (value, fallback) {
+        return (typeof value === 'number' && Number.isFinite(value)) ? value : fallback;
+      },
       _mxApply: function () {}, addEB: function () {},
       Math: Math, console: console
     };

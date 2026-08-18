@@ -449,22 +449,9 @@
     if (!valueGate.ok) return { ok: false, path: path, reason: valueGate.reason };
     var pathKey = String(path || '').replace(/^GM\./, '');
     var r = _resolvePath(obj, path);
-    if (!r.parent) {
-      // 尝试创建路径
-      var keys = String(path).split('.');
-      var cur = obj;
-      for (var i = 0; i < keys.length - 1; i++) {
-        // 防御:数组上用非数字键 autovivify 会写幽灵属性(arr['名字']·真元素不动·静默失败)→拒绝建路径。
-        if (Array.isArray(cur) && !/^\d+$/.test(keys[i])) return { ok: false, path: path, reason: 'array-non-numeric-key:' + keys[i] };
-        if (cur[keys[i]] === undefined) cur[keys[i]] = {};
-        cur = cur[keys[i]];
-      }
-      cur[keys[keys.length-1]] = value;
-      _syncCoreVarSideEffects(path, value, { op: 'set', reason: reason });
-      _recordToTurnChanges(path, undefined, value, reason);
-      if (pathKey === 'armies' && Array.isArray(value)) _callArmyRefresh(obj);
-      return { ok: true, path: path, old: undefined, new: value, reason: reason };
-    }
+    // 明确列出的动态 map 键属于 schema；除此之外 set 只能修改已存在叶子，禁止幽灵字段。
+    var declaredDynamic = /^corruption\.byDept\.(central|provincial|county|military|palace|technical)$/.test(path);
+    if (!r.parent || (!r.exists && !declaredDynamic)) return { ok: false, path: path, reason: 'path not declared in state schema' };
     var old = r.value;
     if (/^chars\.[^.]+\.loyalty$/.test(String(path)) && typeof global.setCharacterLoyalty === 'function') {
       var loySet = global.setCharacterLoyalty(r.parent, value, reason, {
@@ -500,19 +487,8 @@
       return _callArmyChange(change, { source: 'path_push.armies' });
     }
     var r = _resolvePath(obj, path);
-    if (!r.parent) {
-      var keys = String(path).split('.');
-      var cur = obj;
-      for (var i = 0; i < keys.length - 1; i++) {
-        // 防御:数组上用非数字键 autovivify 会写幽灵属性(arr['名字']·真元素不动·静默失败)→拒绝建路径。
-        if (Array.isArray(cur) && !/^\d+$/.test(keys[i])) return { ok: false, path: path, reason: 'array-non-numeric-key:' + keys[i] };
-        if (cur[keys[i]] === undefined) cur[keys[i]] = {};
-        cur = cur[keys[i]];
-      }
-      cur[keys[keys.length-1]] = [value];
-      return { ok: true };
-    }
-    if (!Array.isArray(r.parent[r.key])) r.parent[r.key] = [];
+    if (!r.parent || !r.exists) return { ok: false, path: path, reason: 'push target not declared in state schema' };
+    if (!Array.isArray(r.parent[r.key])) return { ok: false, path: path, reason: 'push target must be an array' };
     r.parent[r.key].push(value);
     if (pathKey === 'armies') _callArmyRefresh(obj);
     return { ok: true };
@@ -567,6 +543,23 @@
     return target;
   }
 
+  function _validateMergeShape(target, patch, basePath) {
+    if (!_isPlainObject(target)) return { ok: false, reason: 'merge target must be a plain object' };
+    var keys = Object.keys(patch);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var childPath = basePath ? (basePath + '.' + key) : key;
+      if (!Object.prototype.hasOwnProperty.call(target, key)) {
+        return { ok: false, reason: 'merge field not declared in state schema: ' + childPath };
+      }
+      if (_isPlainObject(patch[key])) {
+        var nested = _validateMergeShape(target[key], patch[key], childPath);
+        if (!nested.ok) return nested;
+      }
+    }
+    return { ok: true };
+  }
+
   /**
    * anyPathChanges.op="merge" 的明确语义：仅对普通对象做深 merge；数组/标量叶子替换，
    * 目标不存在时创建普通对象。先完整校验 payload，再一次性落账，避免半写入与原型污染。
@@ -577,12 +570,10 @@
     var gate = _validateMergePatch(path, patch, 0);
     if (!gate.ok) return { ok: false, path: path, reason: gate.reason };
     var r = _resolvePath(obj, path);
-    if (!r.parent) {
-      var created = {};
-      _mergePlainObject(created, patch);
-      return _applyPathSet(obj, path, created, reason);
-    }
+    if (!r.parent || !r.exists) return { ok: false, path: path, reason: 'merge target not declared in state schema' };
     if (!_isPlainObject(r.value)) return { ok: false, path: path, reason: 'merge target must be a plain object' };
+    var shapeGate = _validateMergeShape(r.value, patch, path);
+    if (!shapeGate.ok) return { ok: false, path: path, reason: shapeGate.reason };
     var old = {};
     _mergePlainObject(old, r.value);
     _mergePlainObject(r.value, patch);

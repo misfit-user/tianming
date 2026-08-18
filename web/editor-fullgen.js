@@ -237,7 +237,7 @@
           + '\n\n只输出JSON。',
         validator: function(raw) {
           try {
-            var m = raw.match(/\{[\s\S]*\}/);
+            var m = extractJSONMatch(raw, 'object');
             if (!m) return {valid: false, reason: '未找到JSON对象'};
             var obj = JSON.parse(m[0]);
             if (!obj.initialTroops || !Array.isArray(obj.initialTroops)) {
@@ -383,7 +383,7 @@
       var cl = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
       try { var p = JSON.parse(cl); if (Array.isArray(p)) return p; if (typeof p === 'object') { for (var k in p) { if (Array.isArray(p[k])) return p[k]; } } } catch(e) {}
       var m = _reArr(cl); if (m) try { return JSON.parse(m[0]); } catch(e) {}
-      var om = cl.match(/\{[\s\S]*\}/); if (om) try { var o = JSON.parse(om[0]); for (var k2 in o) { if (Array.isArray(o[k2])) return o[k2]; } if (o.name) return [o]; } catch(e) {}
+      var om = extractJSONMatch(cl, 'object'); if (om) try { var o = JSON.parse(om[0]); for (var k2 in o) { if (Array.isArray(o[k2])) return o[k2]; } if (o.name) return [o]; } catch(e) {}
       return null;
     }
 
@@ -531,7 +531,7 @@
         raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
         try {
           if (s.key === 'scriptInfo') {
-            var m = raw.match(/\{[\s\S]*\}/);
+            var m = extractJSONMatch(raw, 'object');
             var obj = JSON.parse(m ? m[0] : raw);
             if (obj.name) { scriptData.name = obj.name; var _el = document.getElementById('scriptName'); if (_el) _el.value = obj.name; }
             if (obj.dynasty) { scriptData.dynasty = obj.dynasty; var _el2 = document.getElementById('scriptDynasty'); if (_el2) _el2.value = obj.dynasty; }
@@ -540,33 +540,33 @@
             if (obj.openingText) { scriptData.openingText = obj.openingText; var _el5 = document.getElementById('scriptOpeningText'); if (_el5) _el5.value = obj.openingText; }
             if (obj.globalRules) { scriptData.globalRules = obj.globalRules; var _el6 = document.getElementById('gs-globalRules'); if (_el6) _el6.value = obj.globalRules; }
           } else if (s.key === 'playerInfo') {
-            var mpi = raw.match(/\{[\s\S]*\}/);
+            var mpi = extractJSONMatch(raw, 'object');
             var pi = JSON.parse(mpi ? mpi[0] : raw);
             if (!scriptData.playerInfo) scriptData.playerInfo = {};
             ['factionName','factionType','factionLeader','factionLeaderTitle','factionTerritory','factionStrength','factionCulture','factionGoal','factionResources','factionDesc','characterName','characterTitle','characterFaction','characterAge','characterGender','characterPersonality','characterFaith','characterCulture','characterBio','characterDesc'].forEach(function(k) {
               if (pi[k]) scriptData.playerInfo[k] = pi[k];
             });
           } else if (s.key === 'eraState') {
-            var mes = raw.match(/\{[\s\S]*\}/);
+            var mes = extractJSONMatch(raw, 'object');
             var es = JSON.parse(mes ? mes[0] : raw);
             ['politicalUnity','centralControl','legitimacySource','socialStability','economicProsperity','culturalVibrancy','bureaucracyStrength','militaryProfessionalism','landSystemType','dynastyPhase','contextDescription'].forEach(function(k) {
               if (es[k] !== undefined) scriptData.eraState[k] = es[k];
             });
           } else if (s.key === 'worldSettings') {
-            var mws = raw.match(/\{[\s\S]*\}/);
+            var mws = extractJSONMatch(raw, 'object');
             var ws = JSON.parse(mws ? mws[0] : raw);
             ['culture','weather','religion','economy','technology','diplomacy'].forEach(function(k) {
               if (ws[k]) scriptData.worldSettings[k] = ws[k];
             });
           } else if (s.key === 'government') {
-            var mgov = raw.match(/\{[\s\S]*\}/);
+            var mgov = extractJSONMatch(raw, 'object');
             var gov = JSON.parse(mgov ? mgov[0] : raw);
             ['name','description','selectionSystem','promotionSystem'].forEach(function(k) {
               if (gov[k]) scriptData.government[k] = gov[k];
             });
           } else if (s.key === 'economyConfig') {
             var _ecClean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var mec = _ecClean.match(/\{[\s\S]*\}/);
+            var mec = extractJSONMatch(_ecClean, 'object');
             var ec = JSON.parse(mec ? mec[0] : _ecClean);
             if (!scriptData.economyConfig) scriptData.economyConfig = {};
             ['redistributionRate','baseIncome','taxRate','inflationRate','tradeBonus','agricultureMultiplier','commerceMultiplier'].forEach(function(k) {
@@ -574,7 +574,7 @@
             });
           } else if (s.key === 'buildingSystem') {
             var _bsClean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var mbs = _bsClean.match(/\{[\s\S]*\}/);
+            var mbs = extractJSONMatch(_bsClean, 'object');
             var bs = null;
             try { bs = JSON.parse(mbs ? mbs[0] : _bsClean); } catch(e) { var _bsArr = _robustParseArray(raw); if (_bsArr) bs = {buildingTypes: _bsArr}; }
             if (!scriptData.buildingSystem) scriptData.buildingSystem = { enabled: false, buildingTypes: [] };
@@ -584,7 +584,7 @@
             }
           } else if (s.key === 'postSystem') {
             var _psClean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var mps = _psClean.match(/\{[\s\S]*\}/);
+            var mps = extractJSONMatch(_psClean, 'object');
             var ps = null;
             try { ps = JSON.parse(mps ? mps[0] : _psClean); } catch(e) { var _psArr = _robustParseArray(raw); if (_psArr) ps = {postRules: _psArr}; }
             if (!scriptData.postSystem) scriptData.postSystem = { enabled: false, postRules: [] };
@@ -596,7 +596,7 @@
             _applyVassalSystem(raw);
           } else if (s.key === 'titleSystem') {
             var _tsClean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var mts = _tsClean.match(/\{[\s\S]*\}/);
+            var mts = extractJSONMatch(_tsClean, 'object');
             var ts = null;
             try { ts = JSON.parse(mts ? mts[0] : _tsClean); } catch(e) { var _tsArr = _robustParseArray(raw); if (_tsArr) ts = {titleRanks: _tsArr}; }
             if (!scriptData.titleSystem) scriptData.titleSystem = { enabled: false, titleRanks: [] };
@@ -742,7 +742,7 @@
               });
             }
           } else if (s.key === 'haremConfig') {
-            var mhc = raw.match(/\{[\s\S]*\}/);
+            var mhc = extractJSONMatch(raw, 'object');
             var hcObj = JSON.parse(mhc ? mhc[0] : raw);
             if (hcObj && hcObj.rankSystem) {
               scriptData.haremConfig = hcObj;
@@ -761,7 +761,7 @@
               if (typeof renderContradictions === 'function') renderContradictions();
             }
           } else if (s.key === 'keju') {
-            var mkj = raw.match(/\{[\s\S]*\}/);
+            var mkj = extractJSONMatch(raw, 'object');
             var kjObj = JSON.parse(mkj ? mkj[0] : raw);
             if (kjObj) {
               if (!scriptData.keju) scriptData.keju = {};
@@ -798,7 +798,7 @@
             var arr = null;
             try { var _pp = JSON.parse(_cl); if (Array.isArray(_pp)) arr = _pp; else if (typeof _pp === 'object') { for (var _ww in _pp) { if (Array.isArray(_pp[_ww])) { arr = _pp[_ww]; break; } } } } catch(e0) {}
             if (!arr) { var m2 = _reArr(_cl); if (m2) try { arr = JSON.parse(m2[0]); } catch(e1) {} }
-            if (!arr) { var _om = _cl.match(/\{[\s\S]*\}/); if (_om) try { var _oo = JSON.parse(_om[0]); for (var _kk in _oo) { if (Array.isArray(_oo[_kk])) { arr = _oo[_kk]; break; } } if (!arr && _oo.name) arr = [_oo]; } catch(e2) {} }
+            if (!arr) { var _om = extractJSONMatch(_cl, 'object'); if (_om) try { var _oo = JSON.parse(_om[0]); for (var _kk in _oo) { if (Array.isArray(_oo[_kk])) { arr = _oo[_kk]; break; } } if (!arr && _oo.name) arr = [_oo]; } catch(e2) {} }
             if (Array.isArray(arr)) {
               if (!Array.isArray(scriptData[s.key])) scriptData[s.key] = [];
 
@@ -900,7 +900,7 @@
   }
 
   function _applyVassalSystem(raw) {
-    var mvs = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().match(/\{[\s\S]*\}/);
+    var mvs = extractJSONMatch(raw, 'object');
     var vs = JSON.parse(mvs ? mvs[0] : raw);
     if (!scriptData.vassalSystem) scriptData.vassalSystem = { enabled: false, vassalTypes: [], officialVassalMapping: {} };
     if (!scriptData.vassalSystem.officialVassalMapping) scriptData.vassalSystem.officialVassalMapping = {};
@@ -925,7 +925,7 @@
   }
 
   function _applyMilitary(raw) {
-    var mmil = raw.match(/\{[\s\S]*\}/);
+    var mmil = extractJSONMatch(raw, 'object');
     var mil = JSON.parse(mmil ? mmil[0] : raw);
     if (!scriptData.military) scriptData.military = {troops:[],facilities:[],organization:[],campaigns:[],initialTroops:[],militarySystem:[]};
     var addedTroops = 0, addedSystems = 0;
@@ -2273,4 +2273,4 @@
 
   // R140-nestflat: single exit for the array-JSON extraction regex; keeps the
   // /[...]/ brace out of doFullGenerate. Pure behavior-equivalent expression extraction.
-  function _reArr(s) { return s.match(/\[\s*\{[\s\S]*\]/); }
+  function _reArr(s) { return extractJSONMatch(s, 'array'); }

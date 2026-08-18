@@ -381,6 +381,8 @@
     var regionId = payload.regionId || payload.region || payload.targetRegionId || payload.toRegion || payload.target || null;
     var targetRegion = resolveRegionById(G, regionId);
     var target = targetRegion || G;
+    var cost = Math.max(0, safeNumber(effect.cost, 0));
+    var payment = cost > 0 ? spendFromGuoku({ money: cost }, '地方行动:' + type, G) : { ok: true, money: { deducted: 0, deficit: 0 } };
 
     if (effect.refMinxin !== undefined && typeof global._adjAuthority === 'function') {
       global._adjAuthority('minxin', effect.refMinxin);
@@ -419,14 +421,16 @@
       type: type,
       turn: G.turn || 0,
       regionId: regionId || null,
-      cost: effect.cost || 0
+      cost: cost,
+      paid: payment && payment.money ? payment.money.deducted : 0,
+      deficit: payment && payment.money ? payment.money.deficit : 0
     };
 
     if (typeof global.addEB === 'function') {
       try { global.addEB('fiscal-action', type); } catch (_e) {}
     }
 
-    return { ok: true, type: type, effect: clone(effect), regionId: regionId || null };
+    return { ok: true, type: type, effect: clone(effect), regionId: regionId || null, payment: payment };
   }
 
   function createTransferOrderAtomic(from, toRegion, amount) {
@@ -1451,15 +1455,37 @@
     return affected;
   }
 
+  function _captureFiscalTransaction(G, keys) {
+    var out = {};
+    (keys || []).forEach(function(key) {
+      out[key] = {
+        exists: Object.prototype.hasOwnProperty.call(G, key),
+        value: Object.prototype.hasOwnProperty.call(G, key)
+          ? ((typeof global.deepClone === 'function') ? global.deepClone(G[key]) : JSON.parse(JSON.stringify(G[key])))
+          : undefined
+      };
+    });
+    return out;
+  }
+
+  function _restoreFiscalTransaction(G, snapshot) {
+    Object.keys(snapshot || {}).forEach(function(key) {
+      if (!snapshot[key].exists) { try { delete G[key]; } catch (_) {} } // arch-ok fiscal transaction restores its declared ledger keys
+      else G[key] = snapshot[key].value; // arch-ok fiscal transaction restores its declared ledger keys
+    });
+  }
+
   function cascadeCollect(opts) {
     var G = getGame();
     if (!G || !G.adminHierarchy) return { ok: false, reason: 'no adminHierarchy' };
     // 回合幂等(2026-07-04 审查定罪)：征税埋在 sc1 体内·推演失败重试整段重跑=同回合双征。
-    // 非 force 且本回合已开征即跳过；旗标开征即置(宁少征一回合·不双征)。
+    // 非 force 且本回合已成功结算即跳过。幂等标记必须和账簿同一提交点；
+    // 过去在开头置位会令中途异常永久漏征。
     if (!(opts && opts.force) && G._lastCascadeTaxTurn != null && G._lastCascadeTaxTurn === (G.turn || 0)) {
       return { ok: false, skipped: 'already-collected-this-turn' };
     }
-    G._lastCascadeTaxTurn = G.turn || 0;
+    var _cascadeTxn = _captureFiscalTransaction(G, ['adminHierarchy','guoku','turnChanges','_lastCascadeTaxTurn','_lastCascadeSummary','_lastCascadeTurn']);
+    try {
     applyDisasterEconomyReduction(G); // 每回合刷新受灾区税基折减(清-设·幂等)·须在 per-division 征税前
 
     opts = opts || {};
@@ -1500,6 +1526,7 @@
 
     walkAdminDivisions(G, function(div) {
       cascadeDivision(div, taxes, ctx, ledgers, totals, G);
+      if (opts && typeof opts._faultInjector === 'function') opts._faultInjector('division', div, totals);
     }, { faction: opts.faction || 'player', leafOnly: true });
 
     aggregateParentFiscal(G);
@@ -1565,7 +1592,12 @@
     G._lastCascadeSummary = totals;
     G._lastCascadeTurn = G.turn || 0;
     pushCascadeTurnChanges(G, totals);
+    G._lastCascadeTaxTurn = G.turn || 0;
     return { ok: true, totals: totals };
+    } catch (e) {
+      _restoreFiscalTransaction(G, _cascadeTxn);
+      throw e;
+    }
   }
 
   function cascadeTick(ctx) {
@@ -1929,6 +1961,8 @@
     if (!(ctx && ctx.force) && G._lastFixedExpenseTurn != null && G._lastFixedExpenseTurn === (G.turn || 0)) {
       return { ok: false, skipped: 'already-collected-this-turn' };
     }
+    var _fixedTxn = _captureFiscalTransaction(G, ['guoku','neitang','_lastFixedExpense','_lastFixedExpenseTurn']);
+    try {
     var guokuLedgers = ensureGuoku(G);
     var neitangLedgers = ensureNeitang(G);
     reconcileLedgerScalar(guokuLedgers.money, G.guoku.money, G.guoku.balance);
@@ -1963,6 +1997,7 @@
       grain: deductFromLedger(neitangLedgers.grain, imperial.total.grain, '宫廷'),
       cloth: deductFromLedger(neitangLedgers.cloth, imperial.total.cloth, '宫廷')
     };
+    if (ctx && typeof ctx._faultInjector === 'function') ctx._faultInjector('after-deductions', { salary: salaryDed, royal: royalDed, army: armyDed, imperial: imperialDed });
 
     ['money', 'grain', 'cloth'].forEach(function(kind) {
       var shortfall = safeNumber(imperialDed[kind].deficit, 0);
@@ -2005,12 +2040,16 @@
       deducted: { salary: salaryDed, royal: royalDed, army: armyDed, imperial: imperialDed },
       turnExpense: turnExpense
     };
+    } catch (e) {
+      _restoreFiscalTransaction(G, _fixedTxn);
+      throw e;
+    }
   }
 
   // 从国库确定性支出·走 ledger（扣 stock + 回写标量·面板即时反映）。amounts:{money,grain,cloth}。
   //   供"建军招募开销/补饷"等复用——AI 定额、此处落账，绝不让花费飘在叙事里；国库不足则尽扣并记欠（deficit）。
-  function spendFromGuoku(amounts, sinkTag) {
-    var G = getGame();
+  function spendFromGuoku(amounts, sinkTag, gameRef) {
+    var G = getGame(gameRef);
     if (!G) return { ok: false, reason: 'no GM' };
     amounts = amounts || {};
     var L = ensureGuoku(G);

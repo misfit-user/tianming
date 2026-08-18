@@ -40,6 +40,13 @@ function makeCtx() {
   const realAOD = ctx.applyOneDeath;
   ctx._deathCalls = [];
   ctx.applyOneDeath = function (cd) { ctx._deathCalls.push(cd && cd.name); return realAOD ? realAOD(cd) : undefined; };
+  const realApply = ctx.applyAITurnChanges;
+  ctx._applyResults = [];
+  ctx.applyAITurnChanges = function (output) {
+    const result = realApply(output);
+    ctx._applyResults.push(result);
+    return result;
+  };
   return ctx;
 }
 
@@ -63,16 +70,22 @@ const stage = (ctx) => ctx.TM.Endturn.AI.apply.stages._applyCore_reconcile;
     ctx.GM = baseGM([{ name: '孙传庭', alive: true, faction: '明朝廷', resources: {} },
                      { name: '王安', position: '巡抚', officialTitle: '巡抚', alive: true, faction: '明朝廷', resources: {} }]);
     ctx.P = { playerInfo: { factionName: '明朝廷' }, adminHierarchy: {} };
-    await stage(ctx)({ results: { sc1: { shizhengji: '王安伏诛，朝野称快。' } } });   // 主叙事·无 character_deaths·无源
-    ok(hints(ctx.GM).indexOf('王安') >= 0, 'T1a 真stage链·validator 经 narrative 键扫到主叙事裸死亡(此前漏扫 0/0)');
+    let rejected = false;
+    try {
+      await stage(ctx)({ results: { sc1: { shizhengji: '王安伏诛，朝野称快。' } } });   // 主叙事·无 character_deaths·无源
+    } catch (e) {
+      rejected = /AI 主写回未能原子提交/.test(String(e && e.message || e));
+    }
+    ok(rejected, 'T1a 真stage链·validator 经 narrative 键扫到主叙事裸死亡并拒绝整批提交');
     ok(ctx._deathCalls.indexOf('王安') < 0 && ctx.GM.chars.find(c => c.name === '王安').alive === true, 'T1b 无源→不落库(未死·未走死亡 sink)');
+    ok(hints(ctx.GM).indexOf('王安') < 0, 'T1c 原子回滚后 GM 不留未提交的弱提示');
   }
   {
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '王安', position: '巡抚', alive: true, faction: '明朝廷', resources: {} }]);
     ctx.P = { playerInfo: {}, adminHierarchy: {} };
     await stage(ctx)({ results: { sc1: { shizhengji: '王安伏诛。', character_deaths: [{ name: '王安', reason: '处决' }] } } });
-    ok(hints(ctx.GM).indexOf('王安') < 0, 'T1c 真stage链·结构化 character_deaths+叙事→进 handled·不误记无源/无垃圾弱提示');
+    ok(hints(ctx.GM).indexOf('王安') < 0, 'T1d 真stage链·结构化 character_deaths+叙事→进 handled·不误记无源/无垃圾弱提示');
   }
 
   // ── T2·fix2·标准 character_deaths 键对照法(墓志铭消费者不漏·真死亡唯一落库) ──
@@ -85,7 +98,11 @@ const stage = (ctx) => ctx.TM.Endturn.AI.apply.stages._applyCore_reconcile;
     ctx.GM = baseGM([{ name: '魏忠贤', position: '司礼', officialTitle: '司礼', alive: true, faction: '明朝廷', _imprisoned: true, resources: {} }]);
     ctx.P = { playerInfo: {}, adminHierarchy: {} };
     const p1 = { shizhengji: '魏忠贤下诏狱究问，旋病笃薨逝于狱。', character_deaths: [{ name: '魏忠贤', reason: '狱中病笃' }] };
-    await stage(ctx)({ results: { sc1: p1 } });
+    try {
+      await stage(ctx)({ results: { sc1: p1 } });
+    } catch (e) {
+      throw new Error(String(e && e.message || e) + '·apply=' + JSON.stringify(ctx._applyResults));
+    }
     ok(epitaphCount(ctx.GM, '魏忠贤') === 1, 'T2a applier后·_processDeathEpitaphs 生成墓志铭=1(advisory影子键会漏为0)');
     ok(ctx._deathCalls.indexOf('魏忠贤') < 0 && ctx.GM.chars.find(c => c.name === '魏忠贤').alive === true, 'T2b applier后·死亡 sink=0(不双落库·真死亡另由真管线)');
     ctx.applyCharacterDeaths(p1);   // 真死亡管线·唯一落库

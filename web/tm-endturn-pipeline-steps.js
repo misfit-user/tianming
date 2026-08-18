@@ -192,8 +192,8 @@
       fn: async function(ctx) {
         ctx.input._completedPrepPhases = ctx.input._completedPrepPhases || [];
         function _runPhase(name, body) {
-          try { body(); ctx.input._completedPrepPhases.push(name); }
-          catch(e) { try { console.warn('[pipeline.prep] ' + name + ' failed', e); } catch(_){} }
+          body();
+          ctx.input._completedPrepPhases.push(name);
         }
 
         _runPhase('0-A', function(){
@@ -265,6 +265,7 @@
             ctx.input._completedPrepPhases.push('0-1');
           } catch(e) {
             try { console.warn('[pipeline.prep] 0-1 init+collect failed', e); } catch(_){}
+            throw e;
           }
         }
 
@@ -733,14 +734,22 @@
               for (var i = 0; i < ctx.deferredSteps.length; i++) {
                 var step = ctx.deferredSteps[i];
                 if (step.when === 'court-close') {
-                  try { await step.fn(ctx); } catch(e) { try { console.warn('[deferred·legacy bridge] step ' + step.name + ' failed', e); } catch(_){} }
+                  await step.fn(ctx);
                 }
               }
               await _runPostRenderTurnOpeners(ctx);
-            } finally {
               if (!ctx.meta.endTurnSavePromise && typeof _endTurn_saveSnapshot === 'function') {
                 ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot();
               }
+              if (!ctx.meta.endTurnSavePromise || await ctx.meta.endTurnSavePromise !== true) {
+                throw new Error('朝会收官存档失败');
+              }
+              if (typeof _tmCommitEndTurnTransaction !== 'function' || !_tmCommitEndTurnTransaction(ctx.meta.transaction)) {
+                throw new Error('朝会收官提交时世界身份已变化');
+              }
+            } catch (e) {
+              try { if (typeof _tmRollbackEndTurnTransaction === 'function') _tmRollbackEndTurnTransaction(ctx.meta.transaction, e); } catch (_) {}
+              throw e;
             }
           };
           return ctx; // deferred 路径完成
@@ -992,18 +1001,15 @@
       writes: ['GM.shijiHistory', 'GM.eraName', 'GM._pendingToasts', 'GM._lastFixedExpense', 'GM._facIndex', 'GM.facs[*].derivedHealth', 'ctx.input._renderFinalizeRan']
     },
     {
-      name: 'save-finalized-turn',
+      name: 'prepare-commit-barrier',
       fn: function(ctx) {
-        // 朝会路径由 court-close 的 deferredPhase5 finally 触发；此处不得提前保存。
-        if (ctx.meta && ctx.meta.deferEndTurnSave) return ctx;
-        if (!ctx.meta.endTurnSavePromise && typeof _endTurn_saveSnapshot === 'function') {
-          ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot();
-        }
+        // 真正存档必须晚于 core 的全部 5.3+ tail；这里只声明必须经过 commit barrier。
+        ctx.meta.finalSaveRequired = true;
         return ctx;
       },
-      onError: 'continue',
+      onError: 'abort',
       reads: ['ctx.meta.deferEndTurnSave', 'GM.turn', 'GM.sid'],
-      writes: ['ctx.meta.endTurnSavePromise', 'TM_SaveDB.autosave', 'TM_SaveDB.slot_0']
+      writes: ['ctx.meta.finalSaveRequired']
     }
   ];
 

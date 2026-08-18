@@ -26,7 +26,7 @@ assert(!WT.isToolName('get_field'), 'isToolName 拒读工具');
 function makeGM() {
   return {
     turn: 7, guoku: 12000, neitang: 3000,
-    agentTest: { counter: 10, list: [] },
+    agentTest: { flag: 'off', counter: 10, list: [] },
     chars: [{ id: 'c1', name: '张三', mood: '平' }],
     _secret: 1, playerCharId: 'c1', evtLog: []
   };

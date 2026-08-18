@@ -193,7 +193,7 @@ try {
   assert(/conf:\s*_tmLiteSafeConf\(P\.conf\)/.test(utilsSrc), 'C·fix-A(原路径同修)：tm-utils saveP lite 写口 conf 走 _tmLiteSafeConf');
   assert(/conf:_tmLiteSafeConf\(P\.conf\)/.test(slSrc), 'C·fix-A：tm-save-lifecycle 桌面 autoSave lite 写口 conf 走 _tmLiteSafeConf');
   assert(slSrc.indexOf("addEventListener('tm:p-restored'") >= 0 && /_tmReconcileFactionLivingWorld\(GM, \(typeof P/.test(slSrc), 'C·fix2：tm:p-restored 自愈监听已挂 + 调单一真源 _tmReconcileFactionLivingWorld');
-  assert((slSrc.match(/_tmReconcileFactionLivingWorld\(GM, \(typeof P/g) || []).length >= 2, 'C·单一真源：normalizer 与自愈监听两处同调 _tmReconcileFactionLivingWorld(无逻辑分叉)');
+  assert(/_tmReconcileFactionLivingWorld\(GM, \(typeof P/.test(slSrc) && /_tmReconcileFactionLivingWorld\(GM, P\)/.test(slSrc), 'C·单一真源：normalizer 与自愈监听两处同调 _tmReconcileFactionLivingWorld(无逻辑分叉)');
 
   console.log('— C2 总纲勾选推导：真源 _tmSyncLivingWorldMaster·vm 实跑(stub document) —');
   var psSrc = fs.readFileSync(path.join(ROOT, 'tm-player-settings.js'), 'utf8');

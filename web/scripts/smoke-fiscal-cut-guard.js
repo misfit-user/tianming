@@ -73,17 +73,19 @@ function run(fiscal) {
     assert(G.neitang.money === 2000000, '案1 内帑库存分文未动（原病=直接扣穿）');
     assert(G.neitang.extraExpense.length === 0, '案1 无支出条目入账');
     const rej = G._turnReport.filter(e => e.type === 'fiscal_adj_rejected');
-    assert(rej.length === 1 && rej[0].requested === 13000000 && rej[0].executionStatus === 'rejected_semantic', '案1 turnReport 记 fiscal_adj_rejected(requested=1300万)');
+    assert(rej.length === 0, '案1 原子回滚后不在 GM 遗留未提交的 rejection 记录');
     assert(G._turnReport.every(e => e.type !== 'fiscal_adj'), '案1 无 fiscal_adj 条目（agent 写工具将正确得 ok:false）');
+    assert(res.ok === false && res.rolledBack === true, '案1 语义守卫拒绝整批并原子回滚');
     assert(res.applied && res.applied.failed.some(f => f.fiscal_adjustment && /裁减/.test(String(f.reason))), '案1 applied.failed 留痕');
   }
 
   // ── 案2 复现原病·国库侧：节省银两 income 1300 万 → 拦截·不凭空进账 ──
   {
-    const { G } = run([{ target: 'guoku', kind: 'income', name: '裁减后宫用度节省银两', amount: 13000000, reason: '节省用度解入太仓' }]);
+    const { G, res } = run([{ target: 'guoku', kind: 'income', name: '裁减后宫用度节省银两', amount: 13000000, reason: '节省用度解入太仓' }]);
     assert(G.guoku.money === 5000000, '案2 国库分文未增（原病=凭空+1300万）');
     assert(G.guoku.extraIncome.length === 0, '案2 无收入条目入账');
-    assert(G._turnReport.some(e => e.type === 'fiscal_adj_rejected'), '案2 记 fiscal_adj_rejected');
+    assert(G._turnReport.length === 0 && res.ok === false && res.rolledBack === true, '案2 拒绝证据随返回值交付，GM 回到原状');
+    assert(res.applied.failed.some(f => f.fiscal_adjustment && /裁减/.test(String(f.reason))), '案2 applied.failed 留存语义拒绝证据');
   }
 
   // ── 案3 正常支出不受扰：犒军银 5 万 ──

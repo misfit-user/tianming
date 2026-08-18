@@ -188,7 +188,7 @@ async function _multiPassGovernmentGen(ctx, existingContent, existingNote, maxTo
           + '返回 JSON 对象：{"部门名":[{name,desc,positions:[{name,rank,duties,succession,authority,establishedCount,vacancyCount,actualHolders:[{name,generated}],perPersonSalary,historicalRecord}],subs:[]}]}';
         try {
           var r2 = await callAIEditor(p2, maxTok);
-          var o2 = JSON.parse(r2.match(/\{[\s\S]*\}/)[0]);
+          var o2 = JSON.parse(extractJSONMatch(r2, 'object')[0]);
           Object.keys(o2).forEach(function(dn) {
             var par = nodes.find(function(n) { return n.name === dn; });
             if (par && Array.isArray(o2[dn])) {
@@ -244,7 +244,7 @@ async function _multiPassGovernmentGen(ctx, existingContent, existingNote, maxTo
 
       try {
         var r3 = await callAIEditor(p3, maxTok);
-        var jm3 = r3.match(/\[[\s\S]*\]/);
+        var jm3 = extractJSONMatch(r3, 'array');
         if (jm3) {
           var appts = JSON.parse(jm3[0]);
           var appointed = 0;
@@ -363,7 +363,7 @@ async function _multiPassAdminGen(ctx, existingContent, existingNote, maxTok) {
           + '每个需含governor(主官姓名，从现有角色选或留空)、capital(首府名)。\n'
           + '返回JSON对象：{"顶层区名":[{id,name,level,officialPosition,governor,capital,description,population,prosperity,terrain,specialResources,taxLevel,children:[]}]}';
         var r2 = await callAIEditor(p2, maxTok);
-        try { var o2 = JSON.parse(r2.match(/\{[\s\S]*\}/)[0]); Object.keys(o2).forEach(function(pn) { var par = divs.find(function(d) { return d.name === pn; }); if (par && Array.isArray(o2[pn])) { o2[pn].forEach(function(ch) { ensD(ch); if (!_allNames[ch.name]) { par.children.push(ch); _allNames[ch.name] = true; } }); } }); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AdminGen P2') : console.warn('[AdminGen P2]', e); }
+        try { var o2 = JSON.parse(extractJSONMatch(r2, 'object')[0]); Object.keys(o2).forEach(function(pn) { var par = divs.find(function(d) { return d.name === pn; }); if (par && Array.isArray(o2[pn])) { o2[pn].forEach(function(ch) { ensD(ch); if (!_allNames[ch.name]) { par.children.push(ch); _allNames[ch.name] = true; } }); } }); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AdminGen P2') : console.warn('[AdminGen P2]', e); }
       }
     }
 
@@ -386,7 +386,7 @@ async function _multiPassAdminGen(ctx, existingContent, existingNote, maxTok) {
           + '\u8FD4\u56DEJSON\u5BF9\u8C61\uFF1A{"\u7236\u7EA7\u533A\u540D/\u5E9C\u540D":[{id,name,level,officialPosition,description,population,prosperity,terrain,specialResources,taxLevel,children:[]}]}';
         var r3 = await callAIEditor(p3, maxTok);
         try {
-          var o3 = JSON.parse(r3.match(/\{[\s\S]*\}/)[0]);
+          var o3 = JSON.parse(extractJSONMatch(r3, 'object')[0]);
           Object.keys(o3).forEach(function(key) {
             var parts = key.split('/');
             var prefName = parts.length > 1 ? parts[1] : parts[0];
@@ -435,7 +435,7 @@ async function _multiPassAdminGen(ctx, existingContent, existingNote, maxTok) {
           + '返回JSON：[{"division":"行政区名","governor":"角色名","officialPosition":"职位名(如节度使/知府/刺史)"}]\n一人一地。只返回JSON。';
         try {
           var r4 = await callAIEditor(p4, maxTok);
-          var jm4 = r4.match(/\[[\s\S]*\]/);
+          var jm4 = extractJSONMatch(r4, 'array');
           if (jm4) {
             var govAppts = JSON.parse(jm4[0]);
             var appointed = 0;
@@ -685,7 +685,7 @@ async function aiGenFactionRelations() {
 
     var result = await callAIEditor(prompt, 3000);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\[[\s\S]*\]/);
+    var match = extractJSONMatch(cleaned, 'array');
     if (!match) throw new Error('无法解析JSON');
     var arr = JSON.parse(match[0]);
     if (!Array.isArray(arr) || arr.length === 0) throw new Error('返回为空');
@@ -735,7 +735,7 @@ async function aiGenFiscalConfig() {
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 1500);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\{[\s\S]*\}/);
+    var match = extractJSONMatch(cleaned, 'object');
     if (!match) throw new Error('无法解析');
     var parsed = JSON.parse(match[0]);
     if (parsed.guoku) scriptData.guoku = Object.assign(scriptData.guoku || {}, parsed.guoku);
@@ -768,7 +768,7 @@ async function aiGenTaxList() {
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 1800);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\[[\s\S]*\]/);
+    var match = extractJSONMatch(cleaned, 'array');
     if (!match) throw new Error('无法解析');
     var parsed = JSON.parse(match[0]);
     if (!Array.isArray(parsed) || !parsed.length) throw new Error('未得到税制数组');
@@ -808,7 +808,7 @@ async function aiGenPopulationConfig() {
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 1500);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\{[\s\S]*\}/);
+    var match = extractJSONMatch(cleaned, 'object');
     if (!match) throw new Error('无法解析');
     var parsed = JSON.parse(match[0]);
     if (!scriptData.populationConfig) scriptData.populationConfig = {};
@@ -843,7 +843,7 @@ async function aiGenEnvironmentConfig() {
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 2500);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\{[\s\S]*\}/);
+    var match = extractJSONMatch(cleaned, 'object');
     if (!match) throw new Error('无法解析');
     var parsed = JSON.parse(match[0]);
     if (!scriptData.environmentConfig) scriptData.environmentConfig = {};
@@ -882,7 +882,7 @@ async function aiGenAuthorityConfig() {
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 800);
     var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/\{[\s\S]*\}/);
+    var match = extractJSONMatch(cleaned, 'object');
     if (!match) throw new Error('无法解析');
     var parsed = JSON.parse(match[0]);
     if (!scriptData.authorityConfig) scriptData.authorityConfig = {};
@@ -927,10 +927,8 @@ async function aiPolishStructuredField(fieldPath, description, context) {
       + '只输出 JSON，不要说明，不要 markdown。';
     prompt += _getEditorAIHints().suffix;
     var result = await callAIEditor(prompt, 4000);
-    var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var match = cleaned.match(/^[\[{][\s\S]*[\]}]$/);
-    if (!match) { match = cleaned.match(/[\[{][\s\S]*[\]}]/); if (match) cleaned = match[0]; }
-    var parsed = JSON.parse(cleaned);
+    var parsed = extractJSON(result);
+    if (parsed == null) throw new Error('AI 未返回唯一 JSON 值');
     // 回写
     var target = scriptData;
     for (var j = 0; j < parts.length - 1; j++) target = target[parts[j]];
@@ -1011,4 +1009,3 @@ async function aiGenWorldSettingField(fieldKey, fieldLabel) {
   } catch(e) { showToast('生成失败: ' + e.message); }
   hideLoading();
 }
-

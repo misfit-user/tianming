@@ -1063,12 +1063,9 @@ async function executeNpcBehavior(npc, context) {
     var data = await response.json();
     var content = (data.choices&&data.choices[0]&&data.choices[0].message)?data.choices[0].message.content:'';
 
-    // 提取 JSON
-    var jsonMatch = content.match(/\{[\s\S]*\}/);
-    var behavior = null;
+    var behavior = (typeof robustParseJSON === 'function') ? robustParseJSON(content) : JSON.parse(content);
 
-    if (jsonMatch) {
-      behavior = JSON.parse(jsonMatch[0]);
+    if (behavior && typeof behavior === 'object' && !Array.isArray(behavior)) {
 
       if (behavior && behavior.action) {
         // 记录 NPC 行为到事件簿
@@ -1077,7 +1074,7 @@ async function executeNpcBehavior(npc, context) {
         // 缓存结果
         AICache.set(npc, context, behavior);
       }
-    }
+    } else behavior = null;
 
     // 记录性能
     var duration = Date.now() - startTime;

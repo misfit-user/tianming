@@ -22,7 +22,7 @@ function mkCtx(chars) {
   ctx._emits = []; ctx.GameEventBus = { emit: (t) => ctx._emits.push(t), on: () => {} };
   ctx.getTSText = () => ''; ctx.escHtml = (s) => String(s == null ? '' : s);
   ctx.findCharByName = (n) => (ctx.GM.chars || []).find(c => c && c.name === n) || null;
-  ctx.GM = { running: true, turn: 40, chars: chars, harem: {}, vars: {}, deptTasks: [], currentIssues: [] };
+  ctx.GM = { running: true, turn: 40, chars: chars, harem: {}, vars: {}, deptTasks: [], currentIssues: [], playerInfo: { characterName: '天子' } };
   ctx.P = { conf: {}, playerInfo: { characterName: '天子' } };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8'), ctx, { filename: 'tm-endturn-helpers.js' });
@@ -36,7 +36,7 @@ var c1 = mkCtx([emperor, heir, { name: '权臣', alive: true, faction: '明朝�
 var r1 = c1.adjudicatePlayerDeath(emperor, '为乱兵所弑', { kind: 'regicide' });
 assert(r1.outcome === 'succession' && r1.heir === '皇长子', '① 有储君被弑→继统续玩(owner 裁定①)');
 assert(emperor.isPlayer === false && heir.isPlayer === true, '② isPlayer 转移');
-assert(c1.P.playerInfo.characterName === '皇长子', '③ playerInfo 随继位');
+assert(c1.GM.playerInfo.characterName === '皇长子' && c1.P.playerInfo.characterName === '天子', '③ 继位只更新运行态 GM.playerInfo，不污染剧本模板 P');
 assert(!c1.GM._playerDead, '④ 继统不触终局');
 assert(c1.GM._successionEvent && c1.GM._successionEvent.from === '天子' && c1.GM._successionEvent.causeKind === 'regicide', '⑤ 继承事件带死因分类');
 assert(c1._emits.indexOf('succession') >= 0, '⑥ GameEventBus succession');

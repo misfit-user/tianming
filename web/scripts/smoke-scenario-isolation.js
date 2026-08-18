@@ -97,6 +97,30 @@ const noRawLib = [
   ['tm-military-ui.js', /\(P\.factions\s*\|\|\s*P\.facs\s*\|\|\s*\[\]\)\.filter/, '裸 P.factions 势力下拉(应走 GM.facs)']
 ];
 noRawLib.forEach(([f, re, what]) => assert(!re.test(read(f)), '根治防回归: ' + f + ' 不得再 ' + what));
+
+// ── 7b. 全量剧本配置重置：A 有而 B 缺的字段不得残留，设备配置/剧本库不得误删 ──
+const resetStart = patchesSrc.indexOf('function _tmResetScenarioScopedConfig');
+const resetEnd = patchesSrc.indexOf('\nfunction doActualStart', resetStart);
+assert(resetStart >= 0 && resetEnd > resetStart, '找到剧本作用域 P 重置器');
+(0, eval)(patchesSrc.slice(resetStart, resetEnd).replace(
+  'function _tmResetScenarioScopedConfig(target) {',
+  'globalThis._tmResetScenarioScopedConfig = function(target) {'
+).replace(/\n}\nif \(typeof window[\s\S]*$/, '\n};'));
+const scopedP = {
+  conf: { difficulty: 'hard' }, ai: { model: 'keep' }, scenarios: [{ id: 'keep' }],
+  government: { stale: true }, mechanicsConfig: { stale: true }, goals: ['stale'],
+  playerInfo: { characterName: '旧主角' }, time: { year: 999 }, officeTree: [{ stale: true }],
+  factionRelations: [{ stale: true }], supplySystem: { enabled: true }
+};
+globalThis._tmResetScenarioScopedConfig(scopedP);
+assert(scopedP.conf.difficulty === 'hard' && scopedP.ai.model === 'keep' && scopedP.scenarios.length === 1,
+  '剧本重置不得删除设备配置/AI配置/剧本库');
+assert(!scopedP.government && !scopedP.factionRelations && !scopedP.supplySystem,
+  'B 缺失的世界/外交/补给配置不得继承 A');
+assert(scopedP.goals.length === 0 && Object.keys(scopedP.playerInfo).length === 0 && scopedP.officeTree.length === 0,
+  'B 缺失的目标/玩家/官制配置恢复为空');
+assert(scopedP.time.year === -356 && scopedP.mechanicsConfig && Object.keys(scopedP.mechanicsConfig).length === 0,
+  '时间和机制配置恢复确定默认值而非沿用 A');
 //   ④ 这 3 处补漏确实改走 GM/收口
 assert(/Array\.isArray\(GM\.facs\)\s*&&\s*GM\.facs\.length/.test(read('tm-military-ui.js')), '根治: 军务势力下拉读 GM.facs');
 assert(/_rigids\s*=\s*\(GM\s*&&\s*Array\.isArray\(GM\.rigidHistoryEvents\)\)/.test(read('tm-history-events.js')) && /_rigids\.find\(/.test(read('tm-history-events.js')), '根治: applyEventBranch 从 GM.rigidHistoryEvents 查');

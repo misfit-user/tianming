@@ -55,10 +55,8 @@
   function _parseJson(raw) {
     if (!raw) return null;
     try {
-      var s = String(raw).replace(/```json|```/g, '').trim();
-      var jm = s.match(/[\{\[][\s\S]*[\}\]]/);
-      if (jm) s = jm[0];
-      return JSON.parse(s);
+      var text = String(raw).replace(/```json|```/gi, '').trim();
+      return (typeof robustParseJSON === 'function') ? robustParseJSON(text) : JSON.parse(text);
     } catch (e) { return null; }
   }
 

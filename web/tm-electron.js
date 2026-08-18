@@ -671,10 +671,10 @@ async function aiGenMapRegions(){
   try{
     showLoading("\u751F\u6210\u533A\u57DF...",20);
     var ctx=findScenarioById(editingScenarioId);
-    var _map=P.map||{};var existMap=[].concat(_map.city||[]).concat(_map.strategic||[]).concat(_map.geo||[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteMap=existMap.length?"已有地图地点（不得重复）："+existMap.join("、")+"\n":"";var c=await callAISmart("\u4E3A\u5267\u672C\""+(ctx?ctx.name:"")+"\"("+(ctx?ctx.era:"")+") \u5EFA\u8BAE5-8\u4E2A\u5730\u56FE\u533A\u57DF\u3002"+existNoteMap+"\u8FD4\u56DEJSON:\n[{\"name\":\"\",\"owner\":\"\",\"terrain\":\"\u5E73\u539F/\u5C71\u5730/\u6CB3\u6D41/\u57CE\u6C60/\u5173\u9698\",\"population\":0,\"resources\":50,\"defense\":50,\"desc\":\"\",\"adjacent\":[]}]",1500,{minLength:300,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
-    var jm=c.match(/\[[\s\S]*\]/);
-    if(jm){
-      JSON.parse(jm[0]).forEach(function(d,i){
+    var _map=P.map||{};var existMap=[].concat(_map.city||[]).concat(_map.strategic||[]).concat(_map.geo||[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteMap=existMap.length?"已有地图地点（不得重复）："+existMap.join("、")+"\n":"";var c=await callAISmart("\u4E3A\u5267\u672C\""+(ctx?ctx.name:"")+"\"("+(ctx?ctx.era:"")+") \u5EFA\u8BAE5-8\u4E2A\u5730\u56FE\u533A\u57DF\u3002"+existNoteMap+"\u8FD4\u56DEJSON:\n[{\"name\":\"\",\"owner\":\"\",\"terrain\":\"\u5E73\u539F/\u5C71\u5730/\u6CB3\u6D41/\u57CE\u6C60/\u5173\u9698\",\"population\":0,\"resources\":50,\"defense\":50,\"desc\":\"\",\"adjacent\":[]}]",1500,{minLength:300,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
+    var generatedMap=extractJSON(c);
+    if(Array.isArray(generatedMap)){
+      generatedMap.forEach(function(d,i){
         P.mapData.regions.push({
           id:uid(),name:d.name||"\u533A\u57DF",type:"rect",
           rect:{x:50+i*120,y:50+Math.floor(i/5)*100,w:100,h:80},

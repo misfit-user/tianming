@@ -55,9 +55,6 @@
     var dt = (z.t - a.t) / 1000;
     return dt > 0 ? Math.max(0, (z.b - a.b) / dt) : 0;
   }
-  function feedUrl() {
-    try { return localStorage.getItem('tm_hot_update_feed_url') || ''; } catch (_) { return ''; }
-  }
   function modalInWay() {
     try {
       return !!(document.getElementById('tm-changelog-ov')
@@ -88,7 +85,7 @@
     _fetchTotalBytes = 0;
     c.show({ title: '正在下载更新', version: check.remoteVersion });
     c.progress({ percent: 0, doneBytes: 0, totalBytes: check.size || 0, bps: 0 });
-    window.tianming.installHotUpdate(feedUrl()).then(function (res) {
+    window.tianming.installHotUpdate().then(function (res) {
       if (res && res.success) return; // 'installed' 事件已接管 UI
       _sessionActive = false;
       _busy = false;
@@ -120,9 +117,6 @@
   var INSTALLER_NOTICE_KEY = 'tm.update.installerNoticeVer';
   var _installerActive = false;
 
-  function installerFeedUrl() {
-    try { return localStorage.getItem('tm_update_feed_url') || ''; } catch (_) { return ''; }
-  }
   function fmtMB(c, bytes) {
     try { return c._fmt ? c._fmt.fmtMB(bytes) : Math.round(bytes / 1048576) + ' MB'; } catch (_) { return ''; }
   }
@@ -159,7 +153,7 @@
   function installerFlow(check) {
     var c = card();
     if (!c) { _busy = false; return; }
-    window.tianming.checkForUpdate(installerFeedUrl()).then(function (res) {
+    window.tianming.checkForUpdate().then(function (res) {
       if (!res || !res.success || !res.hasUpdate) {
         _busy = false;
         // 热更已出但安装包还没放上服务器·一版只提示一次（手动检查不受限）
@@ -295,7 +289,7 @@
         try { console.log('[tm-desktop-update] dev 模式·跳过自动检查（TMDesktopUpdate.check(true) 可手动）'); } catch (_) {}
         return;
       }
-      return window.tianming.checkHotUpdate(feedUrl()).then(function (check) {
+      return window.tianming.checkHotUpdate().then(function (check) {
         if (!check || !check.success) {
           _busy = false;
           if (_verbose) { var c0 = card(); if (c0) c0.fail((check && check.error) || '网络异常，稍后自动重试'); }

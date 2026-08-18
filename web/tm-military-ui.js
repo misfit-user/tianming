@@ -137,10 +137,9 @@ async function aiGenMil(){
     var c=await callAISmart("为\""+(ctx?ctx.name:"")+"\"("+(ctx?ctx.era:"")+") 生成军事体系。"+existNoteM+existArmiesNote+
       "\n\nJSON格式：{\"systemDesc\":\"\",\"supplyDesc\":\"\",\"battleDesc\":\"\",\"troops\":[{\"name\":\"\",\"type\":\"\",\"description\":\"\"}],\"facilities\":[{\"name\":\"\",\"type\":\"\",\"description\":\"\"}],\"organization\":[{\"name\":\"\",\"type\":\"\",\"description\":\"\"}],\"campaigns\":[{\"name\":\"\",\"type\":\"\",\"description\":\"\"}],\"armies\":[{\"name\":\"\",\"commander\":\"\",\"location\":\"\",\"morale\":70,\"supply\":80,\"size\":10000,\"type\":\"\",\"equipment\":[]}]}\n\n要求：\n1. troops/facilities/organization/campaigns各至少3项\n2. armies为实际部队（5-8支），每支部队必须包含：\n   - name: 部队名称（如\"禁军\"、\"羽林军\"等）\n   - type: 兵种（如\"步兵\"、\"骑兵\"、\"水军\"等）\n   - size: 部队人数（3000-50000之间的具体数字，禁军8000-15000，地方军3000-8000，主力军15000-50000）\n   - commander: 统帅姓名（真实历史人物）\n   - location: 驻地\n   - equipment: 装备数组，至少2-3项（如[\"铁甲\",\"长矛\",\"弓弩\"]）\n   - morale: 士气（60-90）\n   - supply: 补给（60-90）\n\n只输出JSON。",
       2500,
-      {minLength:800,validator:function(c){try{var jm=c.match(/\{[\s\S]*\}/);if(!jm)return false;var d=JSON.parse(jm[0]);return d.armies&&Array.isArray(d.armies)&&d.armies.length>=5&&d.armies.every(function(a){return a.size&&a.size>0;});}catch(e){return false;}}});
-    var jm=c.match(/\{[\s\S]*\}/);
-    if(jm){
-      var d=JSON.parse(jm[0]);
+      {minLength:800,validator:function(c){try{var d=extractJSON(c);return !!(d&&d.armies&&Array.isArray(d.armies)&&d.armies.length>=5&&d.armies.every(function(a){return a.size&&a.size>0;}));}catch(e){return false;}}});
+    var d=extractJSON(c);
+    if(d&&typeof d==='object'&&!Array.isArray(d)){
       if(d.systemDesc)P.military.systemDesc=d.systemDesc;
       if(d.supplyDesc)P.military.supplyDesc=d.supplyDesc;
       if(d.battleDesc)P.military.battleDesc=d.battleDesc;

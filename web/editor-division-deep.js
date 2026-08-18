@@ -438,7 +438,7 @@
         '}\n\n必须符合历史：朝代族群（如唐西域有胡人羌人，宋江南以汉人为主，元有四等人，明清有满蒙回等）；宗教（唐佛道并盛，宋新儒学兴，元藏传佛教；外族地有伊斯兰/萨满）；边疆自治度高；繁荣地合规高；经济基础按地理特征（淮南/长芦/河东产盐；甘陕青草场；闽粤江浙渔区+沿海港；云贵川铜矿银矿）；commerceCoefficient 京师 4-5/江南苏扬 3-4/普通 1.0/边远 0.4-0.7。只输出 JSON。';
 
       var resp = await global.callAI(prompt, 1800);
-      var jm = resp.match(/\{[\s\S]*\}/);
+      var jm = extractJSONMatch(resp, 'object');
       if (!jm) throw new Error('未返回有效 JSON');
       var data = JSON.parse(jm[0]);
 

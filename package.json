@@ -13,12 +13,12 @@
     "verify:pages-artifact": "node scripts/verify-pages-artifact.js",
     "prepare-vendor": "cd web && node tools/download-bge-model.js",
     "prepare-vendor-hf": "cd web && node tools/download-bge-model.js --hf",
-    "build:win": "npm run verify:release-contract && npm run prepare-vendor && electron-builder --win",
-    "build:mac": "npm run verify:release-contract && npm run prepare-vendor && electron-builder --mac",
-    "build:linux": "npm run verify:release-contract && npm run prepare-vendor && electron-builder --linux",
-    "build:win:nomodel": "npm run verify:release-contract && electron-builder --win",
-    "build:mac:nomodel": "npm run verify:release-contract && electron-builder --mac",
-    "build:linux:nomodel": "npm run verify:release-contract && electron-builder --linux"
+    "build:win": "npm run verify:release-contract && npm run prepare-vendor && node scripts/build-electron.js --platform win",
+    "build:mac": "npm run verify:release-contract && npm run prepare-vendor && node scripts/build-electron.js --platform mac",
+    "build:linux": "npm run verify:release-contract && npm run prepare-vendor && node scripts/build-electron.js --platform linux",
+    "build:win:nomodel": "npm run verify:release-contract && node scripts/build-electron.js --platform win",
+    "build:mac:nomodel": "npm run verify:release-contract && node scripts/build-electron.js --platform mac",
+    "build:linux:nomodel": "npm run verify:release-contract && node scripts/build-electron.js --platform linux"
   },
   "_build_notes": {
     "prepare-vendor": "构建前自动跑·下载 bge-small-zh 量化模型 ~23MB 到 web/vendor/models/。CN 友好镜像。",
@@ -43,6 +43,7 @@
       "main-impl.js",
       "preload.js",
       "preload-impl.js",
+      "resources/hot-update-public-key.pem",
       "web/**/*",
       "web/.hot-update-manifest.json",
       "!web/**/_archive/**/*",
@@ -135,7 +136,9 @@
         }
       ],
       "icon": "web/icon.png",
-      "signAndEditExecutable": false
+      "forceCodeSigning": true,
+      "signAndEditExecutable": true,
+      "verifyUpdateCodeSignature": true
     },
     "nsis": {
       "oneClick": false,

@@ -127,8 +127,8 @@
       if (global.hideLoading) global.hideLoading();
       try {
         var txt = (typeof res === 'string') ? res : (res.text || res.content || JSON.stringify(res));
-        var m = txt.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
-        var data = JSON.parse(m ? m[0] : txt);
+        var data = extractJSON(txt);
+        if (data == null) throw new Error('AI 未返回唯一 JSON 值');
         if (!sd.customPresets) sd.customPresets = {};
         sd.customPresets[key] = data;
         if (global.autoSave) global.autoSave();

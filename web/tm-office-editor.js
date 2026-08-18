@@ -669,10 +669,10 @@ window.aiGenChr = async function() {
           var histReq = '\u300a\u8981\u6c42\u300b\u4eba\u7269\u5fc5\u987b\u662f' + era + '\u65f6\u671f\u5b9e\u9645\u5b58\u5728\u7684\u5386\u53f2\u4eba\u7269\uff0c\u4e0d\u5f97\u865a\u6784\u3002';
           promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002' + histReq + '\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62125\u4e2a\u5386\u53f2\u4eba\u7269\uff0c\u4e25\u683c\u6309\u6b63\u53f2\u8fd8\u539f\u3002\u8fd4\u56dejson:[{"name":"","title":"","desc":"","personality":"","stats":{},"loyalty":70,"ambition":50,"benevolence":50,"intelligence":70,"valor":60,"morale":75,"stance":"","faction":"","isHistorical":true}]';
         }
-        var content = await callAISmart(prefix + promptBody, 2500,{minLength:200,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
-        var jm = content.match(/\[[\s\S]*\]/);
-        if (jm) {
-          JSON.parse(jm[0]).forEach(function(c) {
+        var content = await callAISmart(prefix + promptBody, 2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
+        var generatedCharacters = extractJSON(content);
+        if (Array.isArray(generatedCharacters)) {
+          generatedCharacters.forEach(function(c) {
             P.characters.push({sid:editingScenarioId,name:c.name||'',title:c.title||'',desc:c.desc||'',stats:c.stats||{},stance:c.stance||'',playable:false,personality:c.personality||'',appearance:'',skills:[],loyalty:c.loyalty!=null?c.loyalty:70,morale:c.morale!=null?c.morale:75,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:70,valor:c.valor!=null?c.valor:60,dialogues:[],secret:'',faction:c.faction||'',aiPersonaText:'',behaviorMode:'',valueSystem:'',speechStyle:'',rels:[],isHistorical:c.isHistorical||false,age:30,gender:'\u7537'});
           });
           renderEdTab('t-chr'); hideLoading(); toast('\u2705 \u5df2\u751f\u6210');
@@ -708,10 +708,10 @@ window.aiGenFac = async function() {
           var histReq = '\u300a\u8981\u6c42\u300b\u6d3e\u7cfb\u5fc5\u987b\u662f' + era + '\u65f6\u671f\u771f\u5b9e\u5b58\u5728\u7684\u5386\u53f2\u6d3e\u7cfb\u3001\u5355\u8425\u6216\u653f\u6cbb\u96c6\u56e2\uff0c\u9886\u8896\u4eba\u7269\u5fc5\u987b\u662f\u8be5\u65f6\u671f\u5b9e\u6709\u5176\u4eba\uff0c\u4e0d\u5f97\u865a\u6784\u3002';
           promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002' + histReq + '\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5386\u53f2\u4e0a\u5b9e\u9645\u5b58\u5728\u7684\u6d3e\u7cfb\u6216\u653f\u6cbb\u96c6\u56e2\uff0c\u4e25\u683c\u6309\u6b63\u53f2\u8fd8\u539f\u3002\u8fd4\u56dejson:[{"name":"","leader":"","desc":"","strength":50,"ideology":"","territory":"","traits":[]}]';
         }
-        var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-        var jm = c.match(/\[[\s\S]*\]/);
-        if (jm) {
-          JSON.parse(jm[0]).forEach(function(f) {
+        var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+        var generatedFactions = extractJSON(c);
+        if (Array.isArray(generatedFactions)) {
+          generatedFactions.forEach(function(f) {
             P.factions.push({sid:editingScenarioId,name:f.name||'',leader:f.leader||'',desc:f.desc||'',color:'#'+Math.floor(random()*16777215).toString(16).padStart(6,'0'),traits:f.traits||[],strength:f.strength||50,territory:f.territory||'',ideology:f.ideology||''});
           });
           renderEdTab('t-fac'); hideLoading(); toast('\u2705 \u5386\u53f2\u6d3e\u7cfb\u5df2\u751f\u6210');
@@ -790,10 +790,10 @@ window.aiGenTech = async function() {
         } else {
           promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62128\u4e2a\u8be5\u65f6\u671f\u5b9e\u9645\u5b58\u5728\u7684\u5386\u53f2\u79d1\u6280\u6216\u5236\u5ea6\u521b\u65b0\u3002\u8fd4\u56dejson:[{"name":"","desc":"","prereqs":[],"costs":[{"variable":"\u7ecf\u6d4e\u5b9e\u529b","amount":20}],"effect":{},"era":"\u521d\u7ea7/\u4e2d\u7ea7/\u9ad8\u7ea7"}]';
         }
-        var c = await callAISmart(prefix + promptBody, 2000,{minLength:200,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=8;}catch(e){return false;}}});
-        var jm = c.match(/\[[\s\S]*\]/);
-        if (jm) {
-          JSON.parse(jm[0]).forEach(function(t) {
+        var c = await callAISmart(prefix + promptBody, 2000,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=8;}catch(e){return false;}}});
+        var generatedTechs = extractJSON(c);
+        if (Array.isArray(generatedTechs)) {
+          generatedTechs.forEach(function(t) {
             P.techTree.push({sid:editingScenarioId,name:t.name||'',desc:t.desc||'',prereqs:t.prereqs||[],costs:t.costs||[],effect:t.effect||{},era:t.era||'\u521d\u7ea7',unlocked:false});
           });
           renderEdTab('t-tech'); hideLoading(); toast('\u2705 \u79d1\u6280\u5df2\u751f\u6210');
@@ -828,10 +828,10 @@ window.aiGenCivic = async function() {
         } else {
           promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5e02\u653f\u6b63\u7b56\u6216\u5236\u5ea6\uff0c\u5fc5\u987b\u662f\u8be5\u65f6\u671f\u5386\u53f2\u4e0a\u5b9e\u9645\u5b58\u5728\u7684\u3002\u8fd4\u56dejson:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]';
         }
-        var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-        var jm = c.match(/\[[\s\S]*\]/);
-        if (jm) {
-          JSON.parse(jm[0]).forEach(function(v) {
+        var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+        var generatedCivics = extractJSON(c);
+        if (Array.isArray(generatedCivics)) {
+          generatedCivics.forEach(function(v) {
             P.civicTree.push({sid:editingScenarioId,name:v.name||'',desc:v.desc||'',era:v.era||era,prereqs:v.prereqs||[],costs:v.costs||[],effect:v.effect||{},adopted:false});
           });
           renderEdTab('t-civic'); hideLoading(); toast('\u2705 \u5e02\u653f\u5df2\u751f\u6210');
@@ -866,10 +866,10 @@ window.aiGenItems = async function() {
         } else {
           promptBody = '\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5177\u6709\u5386\u53f2\u611f\u7684\u7269\u54c1\u6216\u5b9d\u7269\u3002\u8fd4\u56dejson:[{"name":"","type":"item","desc":"","effect":{},"prerequisite":""}]';
         }
-        var c = await callAISmart(prefix + promptBody, 1500,{minLength:100,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-        var jm = c.match(/\[[\s\S]*\]/);
-        if (jm) {
-          JSON.parse(jm[0]).forEach(function(t) {
+        var c = await callAISmart(prefix + promptBody, 1500,{minLength:100,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+        var generatedItems = extractJSON(c);
+        if (Array.isArray(generatedItems)) {
+          generatedItems.forEach(function(t) {
             P.items.push({sid:editingScenarioId,name:t.name||'',type:t.type||'item',desc:t.desc||'',effect:t.effect||{},prereq:t.prerequisite||'',acquired:false});
           });
           renderEdTab('t-itm'); hideLoading(); toast('\u2705 \u7269\u54c1\u5df2\u751f\u6210');
@@ -2020,14 +2020,11 @@ function aiGenOfficeEd() {
           var c = await callAISmart(promptA, 8000, {
             minLength: 500, maxRetries: 2,
             validator: function(ct) {
-              try { var jm = ct.match(/\[[\s\S]*\]/); if (!jm) return false; var arr = JSON.parse(jm[0]); return Array.isArray(arr) && arr.length >= 1; } catch(e) { return false; }
+              try { var arr = extractJSON(ct); return Array.isArray(arr) && arr.length >= 1; } catch(e) { return false; }
             }
           });
-          var cleaned = c.replace(/```json|```/g,'').trim();
-          var jm = cleaned.match(/\[[\s\S]*?\](?=\s*$)/) || cleaned.match(/\[[\s\S]*\]/);
-          if (jm) {
-            var newDepts;
-            try { newDepts = JSON.parse(jm[0]); } catch(pe) { newDepts = JSON.parse(jm[0].replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}')); }
+          var newDepts = extractJSON(c);
+          if (Array.isArray(newDepts)) {
             // 合并——不覆盖已有部门
             newDepts.forEach(function(nd) {
               var existing = P.officeTree.find(function(d) { return d.name === nd.name; });
@@ -2084,13 +2081,10 @@ function aiGenOfficeEd() {
             + '\n\n返回JSON数组：[{"dept":"部门","pos":"官职","holder":"人名（空缺则空）","vacant":false,"historical":true,"personality":"性格简述","intelligence":65,"administration":70,"loyalty":60,"ambition":50}]';
           var c2 = await callAISmart(promptB, 6000, {
             minLength: 200, maxRetries: 2,
-            validator: function(ct) { try { var jm = ct.match(/\[[\s\S]*\]/); return jm && JSON.parse(jm[0]).length >= 1; } catch(e) { return false; } }
+            validator: function(ct) { try { var arr = extractJSON(ct); return Array.isArray(arr) && arr.length >= 1; } catch(e) { return false; } }
           });
-          var cleaned2 = c2.replace(/```json|```/g,'').trim();
-          var jm2 = cleaned2.match(/\[[\s\S]*?\](?=\s*$)/) || cleaned2.match(/\[[\s\S]*\]/);
-          if (jm2) {
-            var appointments;
-            try { appointments = JSON.parse(jm2[0]); } catch(pe2) { appointments = JSON.parse(jm2[0].replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}')); }
+          var appointments = extractJSON(c2);
+          if (Array.isArray(appointments)) {
             var _assigned = 0;
             appointments.forEach(function(a) {
               if (!a.holder || a.vacant) return;
@@ -2168,8 +2162,8 @@ function aiGenOfficeStaff(deptPath) {
         }).join('\n')
         + '\n返回JSON：[{"pos":"官职名","name":"人名","personality":"性格","intelligence":60,"administration":60,"loyalty":60}]';
       var c = await callAISmart(prompt, 4000, { minLength: 100, maxRetries: 2 });
-      var jm = (c.replace(/```json|```/g,'').trim().match(/\[[\s\S]*\]/) || ['[]'])[0];
-      var chars = JSON.parse(jm.replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}'));
+      var chars = extractJSON(c);
+      if (!Array.isArray(chars)) throw new Error('AI 返回的补员数据不是唯一 JSON 数组');
       var added = 0;
       chars.forEach(function(ch) {
         if (!ch.name || !ch.pos) return;
@@ -2284,6 +2278,6 @@ if (document.readyState === 'loading') {
 // Byte-equal to the former inline logic; hoisted to file tail so the nesting scanner
 // stops mis-counting the inline fence-regex backticks as a brace-depth phantom.
 function _osmExtractOfficeArrText(content){
-  var cleaned=content.replace(/```json|```/g,'').trim();var jm=cleaned.match(/\[[\s\S]*?\](?=\s*$)/);if(!jm){jm=cleaned.match(/\[[\s\S]*\]/);}
-  return jm;
+  var parsed=extractJSON(content);
+  return Array.isArray(parsed)?[JSON.stringify(parsed)]:null;
 }

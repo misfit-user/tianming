@@ -65,8 +65,19 @@ function supplementUntrackedAssets(root, assetRoot, overlayWeb) {
   return { copiedFiles, copiedBytes };
 }
 
-function generate(root, version, assetRoot) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-hot-baseline-'));
+function assertSafeTempTarget(tempRoot, target) {
+  const base = path.resolve(tempRoot);
+  const resolved = path.resolve(target);
+  if (path.dirname(resolved) !== base || !path.basename(resolved).startsWith('tm-hot-baseline-')) {
+    throw new Error('refusing unsafe hot-baseline temp target: ' + resolved);
+  }
+  return resolved;
+}
+
+function generate(root, version, assetRoot, tempRoot) {
+  const tmpBase = path.resolve(tempRoot || os.tmpdir());
+  fs.mkdirSync(tmpBase, { recursive: true });
+  const tmp = assertSafeTempTarget(tmpBase, fs.mkdtempSync(path.join(tmpBase, 'tm-hot-baseline-')));
   const manifestPath = path.join(tmp, 'manifest.json');
   try {
     let webRoot = path.join(root, 'web');
@@ -98,7 +109,7 @@ function generate(root, version, assetRoot) {
     if (result.status !== 0) throw new Error('hot manifest collector failed\n' + String(result.stdout || '') + String(result.stderr || ''));
     return readJson(manifestPath);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(assertSafeTempTarget(tmpBase, tmp), { recursive: true, force: true });
   }
 }
 
@@ -110,7 +121,12 @@ function main() {
     const changed = Object.assign({}, timeOnly, { files: [{ path: 'a.js', size: 1, sha256: 'bb' }, { path: 'b.js', size: 2, sha256: 'cc' }] });
     const p = manifestProblems(base, changed);
     if (!p.some(x => x.includes('stale canonical')) || !p.some(x => x.includes('missing canonical'))) throw new Error('self-test stale/missing paths not detected');
-    console.log('PASS assertions=3');
+    const syntheticBase = path.resolve('synthetic-temp-root');
+    assertSafeTempTarget(syntheticBase, path.join(syntheticBase, 'tm-hot-baseline-abc123'));
+    let rejectedUnsafe = false;
+    try { assertSafeTempTarget(syntheticBase, path.join(syntheticBase, '..', 'outside')); } catch (_) { rejectedUnsafe = true; }
+    if (!rejectedUnsafe) throw new Error('self-test unsafe temp target was accepted');
+    console.log('PASS assertions=5');
     return;
   }
   const write = flag('write');
@@ -119,11 +135,13 @@ function main() {
   const root = path.resolve(arg('root', path.resolve(__dirname, '..')));
   const assetRootValue = String(arg('asset-root', '') || '').trim();
   const assetRoot = assetRootValue ? path.resolve(assetRootValue) : '';
+  const tempRootValue = String(arg('temp-root', process.env.TIANMING_RELEASE_TEMP_ROOT || '') || '').trim();
+  const tempRoot = tempRootValue ? path.resolve(tempRootValue) : '';
   const pkg = readJson(path.join(root, 'package.json'));
   const version = String(arg('version', pkg.build && pkg.build.buildVersion || '')).trim();
   if (!/^\d+\.\d+\.\d+\.\d+$/.test(version)) throw new Error('invalid four-part version: ' + version);
   const target = path.join(root, 'web', '.hot-update-manifest.json');
-  const actual = generate(root, version, assetRoot);
+  const actual = generate(root, version, assetRoot, tempRoot);
   const canonical = fs.existsSync(target) ? readJson(target) : null;
   const problems = canonical ? manifestProblems(canonical, actual) : ['canonical baseline missing'];
   if (check) {
@@ -156,4 +174,4 @@ if (require.main === module) {
   catch (err) { console.error('FAIL ' + (err && err.stack || err)); process.exit(1); }
 }
 
-module.exports = { comparable, manifestProblems, supplementUntrackedAssets, generate, main };
+module.exports = { comparable, manifestProblems, supplementUntrackedAssets, assertSafeTempTarget, generate, main };

@@ -152,7 +152,7 @@ function showScnSelect(){
     "<div class=\"scn-grid\">"+
     P.scenarios.map(function(s){
       var srcBadge = s._workshopPackId ? "<div style=\"position:absolute;right:0.55rem;top:0.55rem;border:1px solid var(--gold-d);color:var(--gold);background:rgba(0,0,0,0.35);font-size:0.7rem;padding:0.08rem 0.35rem;letter-spacing:0.08em;\">工坊</div>" : "";
-      return "<div class=\"scn-card\" style=\"position:relative;\" onclick=\"previewScenario('"+escHtml(s.id)+"')\">"+
+      return "<div class=\"scn-card\" style=\"position:relative;\" data-scenario-id=\""+escHtml(s.id)+"\">"+
         srcBadge+
         "<div class=\"scn-era\">"+escHtml(s.era)+"</div>"+
         "<div class=\"scn-name\">"+escHtml(s.name)+"</div>"+
@@ -161,6 +161,9 @@ function showScnSelect(){
     }).join("")+
     (P.scenarios.length===0?"<div style=\"color:var(--ink-400);text-align:center;padding:2rem;grid-column:1/-1;font-style:italic;font-family:'STKaiti','KaiTi','楷体',serif;letter-spacing:0.2em;\">\u6682\u65E0\u5267\u672C\uFF0C\u8BF7\u5148\u521B\u4F5C</div>":"")+
     "</div>";
+  page.querySelectorAll('.scn-card[data-scenario-id]').forEach(function(card) {
+    card.addEventListener('click', function() { previewScenario(card.getAttribute('data-scenario-id') || ''); });
+  });
 }
 
 // 剧本预览模态框
@@ -189,16 +192,16 @@ function previewScenario(sid) {
 
   // 标题
   h += '<div style="text-align:center;margin-bottom:var(--space-4);">';
-  h += '<div style="font-size:var(--text-xs);color:var(--gold-400);letter-spacing:0.15em;">' + (sc.era||'') + '</div>';
-  h += '<div style="font-size:var(--text-2xl);font-weight:var(--weight-bold);color:var(--color-primary);letter-spacing:0.2em;margin:var(--space-1) 0;">〔' + (sc.name||'') + '〕</div>';
-  if (sc.role) h += '<div style="font-size:var(--text-sm);color:var(--color-foreground-secondary);margin-top:var(--space-1);">' + sc.role + '</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--gold-400);letter-spacing:0.15em;">' + escHtml(sc.era||'') + '</div>';
+  h += '<div style="font-size:var(--text-2xl);font-weight:var(--weight-bold);color:var(--color-primary);letter-spacing:0.2em;margin:var(--space-1) 0;">〔' + escHtml(sc.name||'') + '〕</div>';
+  if (sc.role) h += '<div style="font-size:var(--text-sm);color:var(--color-foreground-secondary);margin-top:var(--space-1);">' + escHtml(sc.role) + '</div>';
   if (sc._workshopPackId) h += '<div style="font-size:var(--text-xs);color:var(--gold-400);margin-top:var(--space-1);">工坊包：' + escHtml(sc._workshopTitle || sc._workshopPackId) + '</div>';
   h += '</div>';
 
   // 剧本概述
   if (sc.overview || sc.background) {
     h += '<div class="narrative-text" style="margin-bottom:var(--space-4);font-size:var(--text-sm);padding:var(--space-3);background:var(--color-sunken);border-radius:var(--radius-md);border-left:3px solid var(--gold-400);">';
-    h += (sc.overview || sc.background || '').substring(0, 300);
+    h += escHtml((sc.overview || sc.background || '').substring(0, 300));
     if ((sc.overview||sc.background||'').length > 300) h += '……';
     h += '</div>';
   }
@@ -217,8 +220,8 @@ function previewScenario(sid) {
   if (pi.characterName || pi.factionName) {
     h += '<div style="padding:var(--space-3);background:rgba(120,81,169,0.1);border:1px solid rgba(120,81,169,0.2);border-radius:var(--radius-md);margin-bottom:var(--space-3);">';
     h += '<div style="font-size:var(--text-xs);color:var(--indigo-400);font-weight:var(--weight-bold);margin-bottom:var(--space-1);letter-spacing:0.08em;">'+tmIcon('person',12)+' \u73A9\u5BB6\u8EAB\u4EFD</div>';
-    if (pi.characterName) h += '<div style="font-size:var(--text-sm);color:var(--color-foreground);">\u89D2\u8272\uFF1A' + pi.characterName + (pi.characterTitle ? ' \u300C' + pi.characterTitle + '\u300D' : '') + '</div>';
-    if (pi.factionName) h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);">\u52BF\u529B\uFF1A' + pi.factionName + '</div>';
+    if (pi.characterName) h += '<div style="font-size:var(--text-sm);color:var(--color-foreground);">\u89D2\u8272\uFF1A' + escHtml(pi.characterName) + (pi.characterTitle ? ' \u300C' + escHtml(pi.characterTitle) + '\u300D' : '') + '</div>';
+    if (pi.factionName) h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);">\u52BF\u529B\uFF1A' + escHtml(pi.factionName) + '</div>';
     h += '</div>';
   }
 
@@ -228,7 +231,7 @@ function previewScenario(sid) {
     h += '<div style="font-size:var(--text-xs);color:var(--vermillion-400);font-weight:var(--weight-bold);margin-bottom:var(--space-2);letter-spacing:0.08em;">'+tmIcon('strife',12)+' \u663E\u8457\u77DB\u76FE</div>';
     var dimC = {political:'var(--indigo-400)',economic:'var(--gold-400)',military:'var(--vermillion-400)',social:'var(--celadon-400)'};
     contradictions.slice(0, 4).forEach(function(c) {
-      h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);padding:2px 0;border-left:3px solid ' + (dimC[c.dimension]||'var(--color-foreground-muted)') + ';padding-left:var(--space-2);margin-bottom:3px;">' + (c.title||'') + '</div>';
+      h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);padding:2px 0;border-left:3px solid ' + (dimC[c.dimension]||'var(--color-foreground-muted)') + ';padding-left:var(--space-2);margin-bottom:3px;">' + escHtml(c.title||'') + '</div>';
     });
     h += '</div>';
   }
@@ -249,7 +252,7 @@ function previewScenario(sid) {
 
   // 按钮
   h += '<div class="tm-setup-actions" style="display:flex;gap:var(--space-3);">';
-  h += '<button class="bt bp" style="flex:2;padding:var(--space-3);font-size:var(--text-base);font-weight:var(--weight-bold);letter-spacing:0.1em;" onclick="document.getElementById(\'_scnPreview\').remove();_startWithDifficulty(\'' + sid + '\')">'+tmIcon('scroll',16)+' \u5F00\u59CB\u6E38\u620F</button>';
+  h += '<button id="_scnStartButton" class="bt bp" style="flex:2;padding:var(--space-3);font-size:var(--text-base);font-weight:var(--weight-bold);letter-spacing:0.1em;">'+tmIcon('scroll',16)+' \u5F00\u59CB\u6E38\u620F</button>';
   h += '<button class="bt bs" style="flex:1;padding:var(--space-3);" onclick="document.getElementById(\'_scnPreview\').remove();">\u6401\u7F6E</button>';
   h += '</div>';
 
@@ -258,6 +261,12 @@ function previewScenario(sid) {
 
   h += '</div></div>';
   document.body.insertAdjacentHTML('beforeend', h);
+  var startButton = document.getElementById('_scnStartButton');
+  if (startButton) startButton.addEventListener('click', function() {
+    var preview = document.getElementById('_scnPreview');
+    if (preview) preview.remove();
+    _startWithDifficulty(sid);
+  });
 }
 
 var _selectedDifficulty = 'standard';
@@ -303,7 +312,7 @@ function _showMapModeChoice(sid, hasMapData) {
   if (!mapDisabled) {
     h += 'onmouseover="this.style.borderColor=\'var(--gold-500)\';this.style.boxShadow=\'var(--shadow-sm)\'" ';
     h += 'onmouseout="this.style.borderColor=\'var(--color-border-subtle)\';this.style.boxShadow=\'none\'" ';
-    h += 'onclick="_confirmMapMode(\'' + sid + '\',true)">';
+    h += 'id="_mapModeUseScenario">';
   } else {
     h += '>';
   }
@@ -321,7 +330,7 @@ function _showMapModeChoice(sid, hasMapData) {
   h += '<div style="flex:1;background:var(--color-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:var(--space-3);cursor:pointer;transition:all 0.2s;" ';
   h += 'onmouseover="this.style.borderColor=\'var(--gold-500)\';this.style.boxShadow=\'var(--shadow-sm)\'" ';
   h += 'onmouseout="this.style.borderColor=\'var(--color-border-subtle)\';this.style.boxShadow=\'none\'" ';
-  h += 'onclick="_confirmMapMode(\'' + sid + '\',false)">';
+  h += 'id="_mapModeUseAi">';
   h += '<div style="font-size:2rem;margin-bottom:var(--space-2);">' + tmIcon('scroll', 28) + '</div>';
   h += '<div style="font-size:var(--text-base);font-weight:var(--weight-bold);color:var(--gold-400);margin-bottom:var(--space-1);">AI 地理志</div>';
   h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-muted);line-height:var(--leading-normal);">';
@@ -333,6 +342,10 @@ function _showMapModeChoice(sid, hasMapData) {
   h += '<div style="height:1px;background:linear-gradient(90deg,transparent,var(--gold-500),transparent);"></div>';
   h += '</div></div>';
   document.body.insertAdjacentHTML('beforeend', h);
+  var scenarioMapButton = document.getElementById('_mapModeUseScenario');
+  if (scenarioMapButton) scenarioMapButton.addEventListener('click', function() { _confirmMapMode(sid, true); });
+  var aiMapButton = document.getElementById('_mapModeUseAi');
+  if (aiMapButton) aiMapButton.addEventListener('click', function() { _confirmMapMode(sid, false); });
 }
 
 function _confirmMapMode(sid, useMap) {
@@ -429,14 +442,23 @@ function _showGameSetupModal(sid) {
 
   // 按钮
   h += '<div class="tm-setup-actions" style="display:flex;gap:var(--space-3);">';
-  h += '<button class="bt bp" style="flex:2;padding:var(--space-3);font-size:var(--text-base);font-weight:var(--weight-bold);letter-spacing:0.1em;" onclick="_finalizeStartGame(\''+sid+'\')">'+tmIcon('scroll',16)+' 开卷推演</button>';
-  h += '<button class="bt bs" style="flex:1;padding:var(--space-3);" onclick="document.getElementById(\'_gameSetupModal\').remove();_startWithDifficulty(\''+sid+'\');">返回</button>';
+  h += '<button id="_gameSetupStart" class="bt bp" style="flex:2;padding:var(--space-3);font-size:var(--text-base);font-weight:var(--weight-bold);letter-spacing:0.1em;">'+tmIcon('scroll',16)+' 开卷推演</button>';
+  h += '<button id="_gameSetupBack" class="bt bs" style="flex:1;padding:var(--space-3);">返回</button>';
   h += '</div>';
 
   h += '<div style="height:1px;background:linear-gradient(90deg,transparent,var(--gold-500),transparent);margin-top:var(--space-4);"></div>';
 
   h += '</div></div>';
   document.body.insertAdjacentHTML('beforeend', h);
+
+  var setupStart = document.getElementById('_gameSetupStart');
+  if (setupStart) setupStart.addEventListener('click', function() { _finalizeStartGame(sid); });
+  var setupBack = document.getElementById('_gameSetupBack');
+  if (setupBack) setupBack.addEventListener('click', function() {
+    var modal = document.getElementById('_gameSetupModal');
+    if (modal) modal.remove();
+    _startWithDifficulty(sid);
+  });
 
   // 聚焦存档名
   setTimeout(function(){var inp=document.getElementById('_gs_saveName');if(inp){inp.focus();inp.select();}},100);
@@ -506,13 +528,37 @@ function showScnManage(){
     "<div class=\"scn-card scn-card-new\" onclick=\"createNewScn()\">\uFF0B \u65B0 \u5EFA \u7A7A \u5377</div>"+
     "<div class=\"scn-card scn-card-new\" onclick=\"importScnFromFile()\">\u21EA \u5BFC \u5165 \u5267 \u672C</div>"+
     P.scenarios.map(function(s,i){
-      return "<div class=\"scn-card\" onclick=\"(window.openScenarioResetEditor||openEditorHtml)('"+s.id+"')\">"+
-        "<div class=\"scn-era\">"+s.era+"</div>"+
-        "<div class=\"scn-name\">"+s.name+"</div>"+
-        "<div class=\"scn-role\">"+s.role+"</div>"+
-        "<div style=\"display:flex;gap:0.4rem;justify-content:flex-end;margin-top:0.5rem;flex-wrap:wrap;\"><button class=\"bd bsm\" onclick=\"event.stopPropagation();(window.openScenarioResetEditor||openEditorHtml)('"+s.id+"')\">\u65B0\u5DE5\u574A</button><button class=\"bd bsm\" onclick=\"event.stopPropagation();openEditorHtml('"+s.id+"')\">\u65E7\u7F16\u8F91</button><button class=\"bd bsm\" onclick=\"event.stopPropagation();if(confirm('\u5220\u9664?')){P.scenarios.splice("+i+",1);saveP();showScnManage();}\">\u5220\u9664</button></div></div>";
+      return "<div class=\"scn-card tm-managed-scenario\" data-scenario-id=\""+escHtml(s.id)+"\">"+
+        "<div class=\"scn-era\">"+escHtml(s.era)+"</div>"+
+        "<div class=\"scn-name\">"+escHtml(s.name)+"</div>"+
+        "<div class=\"scn-role\">"+escHtml(s.role)+"</div>"+
+        "<div style=\"display:flex;gap:0.4rem;justify-content:flex-end;margin-top:0.5rem;flex-wrap:wrap;\"><button class=\"bd bsm tm-open-reset\">\u65B0\u5DE5\u574A</button><button class=\"bd bsm tm-open-legacy\">\u65E7\u7F16\u8F91</button><button class=\"bd bsm tm-delete-scenario\" data-scenario-index=\""+i+"\">\u5220\u9664</button></div></div>";
     }).join("")+
     "</div>";
+  page.querySelectorAll('.tm-managed-scenario').forEach(function(card) {
+    var scenarioId = card.getAttribute('data-scenario-id') || '';
+    card.addEventListener('click', function() { (window.openScenarioResetEditor||openEditorHtml)(scenarioId); });
+    var resetButton = card.querySelector('.tm-open-reset');
+    if (resetButton) resetButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+      (window.openScenarioResetEditor||openEditorHtml)(scenarioId);
+    });
+    var legacyButton = card.querySelector('.tm-open-legacy');
+    if (legacyButton) legacyButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+      openEditorHtml(scenarioId);
+    });
+    var deleteButton = card.querySelector('.tm-delete-scenario');
+    if (deleteButton) deleteButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+      var index = Number(deleteButton.getAttribute('data-scenario-index'));
+      if (Number.isInteger(index) && index >= 0 && index < P.scenarios.length && confirm('\u5220\u9664?')) {
+        P.scenarios.splice(index, 1);
+        saveP();
+        showScnManage();
+      }
+    });
+  });
 }
 
 function backToLaunch(){_cleanupOverlays();resetLaunchRuntimeShell();_$("scn-page").classList.remove("show");_$("scn-page").innerHTML="";_$("bar").style.display="none";_$("E").style.display="none";_$("G").style.display="none";_$("launch").style.display="flex";
@@ -601,7 +647,7 @@ function enterEditor(sid){
   var sc=findScenarioById(sid);
 
   // 顶部栏按钮
-  _$("bar-btns").innerHTML="<span style=\"font-size:0.78rem;color:var(--gold);background:rgba(201,168,76,0.1);padding:0.2rem 0.6rem;border-radius:8px;border:1px solid var(--gold-d);\">\u7F16\u8F91: "+(sc?sc.name:"")+"</span>"+
+  _$("bar-btns").innerHTML="<span style=\"font-size:0.78rem;color:var(--gold);background:rgba(201,168,76,0.1);padding:0.2rem 0.6rem;border-radius:8px;border:1px solid var(--gold-d);\">\u7F16\u8F91: "+escHtml(sc?sc.name:"")+"</span>"+
     "<button class=\"bt bp\" onclick=\"saveAndBack()\">\uD83D\uDCBE \u4FDD\u5B58\u5E76\u8FD4\u56DE</button>"+
     "<button class=\"tb\" onclick=\"if(confirm('\u8FD4\u56DE?'))backToLaunch()\">\u2190 \u8FD4\u56DE</button>";
 
@@ -678,7 +724,7 @@ function renderChrTab(em,sid){
   var list=P.characters.filter(function(c){return c.sid===sid;});
   em.innerHTML="<h4 style=\"color:var(--gold);\">\uD83D\uDC64 \u89D2\u8272 ("+list.length+")</h4>"+
     "<div style=\"display:flex;gap:0.3rem;margin-bottom:0.8rem;\"><button class=\"bt bp\" onclick=\"addChr()\">\uFF0B \u65B0\u589E</button><button class=\"bai\" onclick=\"aiGenChr()\">\uD83E\uDD16 AI\u751F\u6210</button></div>"+
-    list.map(function(ch){var i=P.characters.indexOf(ch);return "<div class=\"cd\"><div style=\"display:flex;justify-content:space-between;\"><div><strong style=\"color:var(--gold-l);\">"+ch.name+"</strong> <span style=\"color:var(--txt-d);font-size:0.8rem;\">"+ch.title+"</span></div><div><button class=\"bs bsm\" onclick=\"editChr("+i+")\">\u7F16\u8F91</button> <button class=\"bd bsm\" onclick=\"P.characters.splice("+i+",1);renderEdTab('t-chr');\">\u2715</button></div></div><div style=\"font-size:0.78rem;color:var(--txt-s);\">"+ch.desc+"</div></div>";}).join("")||"<div style=\"color:var(--txt-d);\">\u6682\u65E0</div>";
+    list.map(function(ch){var i=P.characters.indexOf(ch);return "<div class=\"cd\"><div style=\"display:flex;justify-content:space-between;\"><div><strong style=\"color:var(--gold-l);\">"+escHtml(ch.name)+"</strong> <span style=\"color:var(--txt-d);font-size:0.8rem;\">"+escHtml(ch.title)+"</span></div><div><button class=\"bs bsm\" onclick=\"editChr("+i+")\">\u7F16\u8F91</button> <button class=\"bd bsm\" onclick=\"P.characters.splice("+i+",1);renderEdTab('t-chr');\">\u2715</button></div></div><div style=\"font-size:0.78rem;color:var(--txt-s);\">"+escHtml(ch.desc)+"</div></div>";}).join("")||"<div style=\"color:var(--txt-d);\">\u6682\u65E0</div>";
 }
 function addChr(){P.characters.push({sid:editingScenarioId,name:"\u65B0\u89D2\u8272",title:"",desc:"",stats:{},stance:"",playable:false,personality:"",appearance:"",skills:[],loyalty:70,morale:70,ambition:50,benevolence:50,intelligence:50,valor:50,dialogues:[],secret:"",faction:"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:false,age:30,gender:"\u7537"});renderEdTab("t-chr");}
 function editChr(i){
@@ -696,10 +742,10 @@ function editChr(i){
   var valor = ch.valor!=null?ch.valor:50;
   var morale = ch.morale!=null?ch.morale:70;
   _$("em").innerHTML="<div class=\"cd\"><h4>\u7F16\u8F91\u89D2\u8272</h4>"+
-    "<div class=\"rw\"><div class=\"fd\"><label>\u540D\u79F0</label><input value=\""+ch.name+"\" onchange=\"P.characters["+i+"].name=this.value\"></div><div class=\"fd\"><label>\u5934\u8854</label><input value=\""+ch.title+"\" onchange=\"P.characters["+i+"].title=this.value\"></div></div>"+
-    "<div class=\"rw\"><div class=\"fd\"><label>\u7ACB\u573A</label><input value=\""+(ch.stance||"")+"\" onchange=\"P.characters["+i+"].stance=this.value\"></div><div class=\"fd\"><label>\u6D3E\u7CFB</label><input value=\""+(ch.faction||"")+"\" onchange=\"P.characters["+i+"].faction=this.value\"></div></div>"+
-    "<div class=\"fd full\"><label>\u63CF\u8FF0</label><textarea rows=\"2\" onchange=\"P.characters["+i+"].desc=this.value\">"+(ch.desc||"")+"</textarea></div>"+
-    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>\u6027\u683C</label><input value=\""+(ch.personality||"")+"\" onchange=\"P.characters["+i+"].personality=this.value\"></div>"+
+    "<div class=\"rw\"><div class=\"fd\"><label>\u540D\u79F0</label><input value=\""+escHtml(ch.name)+"\" onchange=\"P.characters["+i+"].name=this.value\"></div><div class=\"fd\"><label>\u5934\u8854</label><input value=\""+escHtml(ch.title)+"\" onchange=\"P.characters["+i+"].title=this.value\"></div></div>"+
+    "<div class=\"rw\"><div class=\"fd\"><label>\u7ACB\u573A</label><input value=\""+escHtml(ch.stance||"")+"\" onchange=\"P.characters["+i+"].stance=this.value\"></div><div class=\"fd\"><label>\u6D3E\u7CFB</label><input value=\""+escHtml(ch.faction||"")+"\" onchange=\"P.characters["+i+"].faction=this.value\"></div></div>"+
+    "<div class=\"fd full\"><label>\u63CF\u8FF0</label><textarea rows=\"2\" onchange=\"P.characters["+i+"].desc=this.value\">"+escHtml(ch.desc||"")+"</textarea></div>"+
+    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>\u6027\u683C</label><input value=\""+escHtml(ch.personality||"")+"\" onchange=\"P.characters["+i+"].personality=this.value\"></div>"+
     "<div class=\"fd full\" style=\"margin-top:0.5rem;\"><label style=\"margin-bottom:4px;display:block;\">\u4E94\u7EF4\u5C5E\u6027</label>"+
     sl('loyalty','\u5FE0\u8BDA',loyalty,i)+
     sl('ambition','\u91CE\u5FC3',ambition,i)+
@@ -708,7 +754,7 @@ function editChr(i){
     sl('valor','\u6B66\u52C7',valor,i)+
     sl('morale','\u58EB\u6C14',morale,i)+
     "</div>"+
-    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>AI\u4EBA\u8BBE\u6587\u672C</label><textarea rows=\"3\" onchange=\"P.characters["+i+"].aiPersonaText=this.value\" placeholder=\"\u8BE6\u7EC6\u63CF\u8FF0\u4F9BAI\u5224\u65AD\u89D2\u8272\u884C\u4E3A\">"+(ch.aiPersonaText||"")+"</textarea></div>"+
+    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>AI\u4EBA\u8BBE\u6587\u672C</label><textarea rows=\"3\" onchange=\"P.characters["+i+"].aiPersonaText=this.value\" placeholder=\"\u8BE6\u7EC6\u63CF\u8FF0\u4F9BAI\u5224\u65AD\u89D2\u8272\u884C\u4E3A\">"+escHtml(ch.aiPersonaText||"")+"</textarea></div>"+
     "<button class=\"bt bp\" onclick=\"renderEdTab('t-chr');toast('\u5DF2\u4FDD\u5B58')\" style=\"margin-top:0.5rem;\">\u5B8C\u6210</button></div>";
 }
 
@@ -717,14 +763,14 @@ async function aiGenChr(){
   try{var ctx=findScenarioById(editingScenarioId);
     var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";
     var histReq="\u3010\u8981\u6C42\u3011\u4EBA\u7269\u5FC5\u987B\u662F"+era+"\u65F6\u671F\u5B9E\u9645\u5B58\u5728\u7684\u5386\u53F2\u4EBA\u7269\uff0c\u4E0D\u5F97\u865A\u6784\u3002";
-    var existChr=P.characters.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote1=existChr.length?"已有人物（不得重复）："+existChr.join("、")+"\n":"";var content=await callAISmart("\u4F60\u662F\u4E2D\u56FD\u5386\u53F2\u4E13\u5BB6\u3002"+histReq+existNote1+"\u8BF7\u4E3A\u5267\u672C\u300A"+scnName+"\u300B("+era+")\u751F\u62125\u4E2A\u65B0\u5386\u53F2\u4EBA\u7269\uff0c\u4E25\u683C\u6309\u6B63\u53F2\u8FD8\u539F\u3002\u8FD4\u56DEJSON:\n[{\"name\":\"\",\"title\":\"\",\"desc\":\"\",\"personality\":\"\",\"stats\":{},\"loyalty\":70,\"ambition\":50,\"benevolence\":50,\"intelligence\":70,\"valor\":60,\"morale\":75,\"stance\":\"\",\"faction\":\"\",\"isHistorical\":true}]",2500,{minLength:200,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
-    var jm=content.match(/\[[\s\S]*\]/);if(jm){JSON.parse(jm[0]).forEach(function(c){P.characters.push({sid:editingScenarioId,name:c.name||"",title:c.title||"",desc:c.desc||"",stats:c.stats||{},stance:c.stance||"",playable:false,personality:c.personality||"",appearance:"",skills:[],loyalty:c.loyalty!=null?c.loyalty:70,morale:c.morale!=null?c.morale:75,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:70,valor:c.valor!=null?c.valor:60,dialogues:[],secret:"",faction:c.faction||"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:c.isHistorical||true,age:30,gender:"\u7537"});});renderEdTab("t-chr");toast("\u2705 \u5DF2\u751F\u6210");}
+    var existChr=P.characters.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote1=existChr.length?"已有人物（不得重复）："+existChr.join("、")+"\n":"";var content=await callAISmart("\u4F60\u662F\u4E2D\u56FD\u5386\u53F2\u4E13\u5BB6\u3002"+histReq+existNote1+"\u8BF7\u4E3A\u5267\u672C\u300A"+scnName+"\u300B("+era+")\u751F\u62125\u4E2A\u65B0\u5386\u53F2\u4EBA\u7269\uff0c\u4E25\u683C\u6309\u6B63\u53F2\u8FD8\u539F\u3002\u8FD4\u56DEJSON:\n[{\"name\":\"\",\"title\":\"\",\"desc\":\"\",\"personality\":\"\",\"stats\":{},\"loyalty\":70,\"ambition\":50,\"benevolence\":50,\"intelligence\":70,\"valor\":60,\"morale\":75,\"stance\":\"\",\"faction\":\"\",\"isHistorical\":true}]",2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
+    var generatedChars=extractJSON(content);if(Array.isArray(generatedChars)){generatedChars.forEach(function(c){P.characters.push({sid:editingScenarioId,name:c.name||"",title:c.title||"",desc:c.desc||"",stats:c.stats||{},stance:c.stance||"",playable:false,personality:c.personality||"",appearance:"",skills:[],loyalty:c.loyalty!=null?c.loyalty:70,morale:c.morale!=null?c.morale:75,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:70,valor:c.valor!=null?c.valor:60,dialogues:[],secret:"",faction:c.faction||"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:c.isHistorical!==false,age:30,gender:"\u7537"});});renderEdTab("t-chr");toast("\u2705 \u5DF2\u751F\u6210");}
   }catch(err){toast("\u5931\u8D25: "+err.message);}
   finally{hideLoading();}
 }
 
 // renderFacTab 已在后面（约22128行）定义增强版本，此处不再重复
-async function aiGenFac(){showLoading("生成党派中...",20);try{var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";var histReq="《要求》派系必须是"+era+"时期真实存在的历史派系、震营或政治集团，领袖人物必须是该时期实有其人，不得虚构。";var existFac=P.factions.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote2=existFac.length?"已有势力（不得重复）："+existFac.join("、")+"\n":"";var c=await callAISmart("你是中国历史专家。"+histReq+existNote2+"请为剧本《"+scnName+"》("+era+")生成3-5个历史上实际存在的派系或政治集团，严格按正史还原。返回JSON:[{\"name\":\"\",\"leader\":\"\",\"desc\":\"\",\"strength\":50,\"ideology\":\"\",\"territory\":\"\",\"traits\":[]}]",2000,{minLength:150,maxRetries:3,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});var jm=c.match(/\[[\s\S]*\]/);if(jm){JSON.parse(jm[0]).forEach(function(f){P.factions.push({sid:editingScenarioId,name:f.name||"",leader:f.leader||"",desc:f.desc||"",color:"#"+Math.floor(random()*16777215).toString(16).padStart(6,"0"),traits:f.traits||[],strength:f.strength||50,territory:f.territory||"",ideology:f.ideology||""});});renderEdTab("t-fac");toast("历史派系已生成");}}catch(e){toast("失败: "+e.message);}finally{hideLoading();}}
+async function aiGenFac(){showLoading("生成党派中...",20);try{var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";var histReq="《要求》派系必须是"+era+"时期真实存在的历史派系、震营或政治集团，领袖人物必须是该时期实有其人，不得虚构。";var existFac=P.factions.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote2=existFac.length?"已有势力（不得重复）："+existFac.join("、")+"\n":"";var c=await callAISmart("你是中国历史专家。"+histReq+existNote2+"请为剧本《"+scnName+"》("+era+")生成3-5个历史上实际存在的派系或政治集团，严格按正史还原。返回JSON:[{\"name\":\"\",\"leader\":\"\",\"desc\":\"\",\"strength\":50,\"ideology\":\"\",\"territory\":\"\",\"traits\":[]}]",2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});var generatedFacs=extractJSON(c);if(Array.isArray(generatedFacs)){generatedFacs.forEach(function(f){P.factions.push({sid:editingScenarioId,name:f.name||"",leader:f.leader||"",desc:f.desc||"",color:"#"+Math.floor(random()*16777215).toString(16).padStart(6,"0"),traits:f.traits||[],strength:f.strength!=null?f.strength:50,territory:f.territory||"",ideology:f.ideology||""});});renderEdTab("t-fac");toast("历史派系已生成");}}catch(e){toast("失败: "+e.message);}finally{hideLoading();}}
 
 // --- 阶层 ---
 // --- 外部势力 ---
@@ -735,9 +781,9 @@ function renderVarTab(em,sid){
   var rels=P.relations.filter(function(r){return r.sid===sid;});
   em.innerHTML="<h4 style=\"color:var(--gold);\">\uD83D\uDCCA \u53D8\u91CF ("+vars.length+") \u00B7 \u5173\u7CFB ("+rels.length+")</h4>"+
     "<div style=\"display:flex;gap:0.3rem;margin-bottom:0.8rem;\"><button class=\"bt bp bsm\" onclick=\"P.variables.push({sid:editingScenarioId,name:'\u65B0\u53D8\u91CF',value:50,min:0,max:100,color:'#c9a84c',icon:'',cat:'',visible:true,desc:''});renderEdTab('t-var');\">\uFF0B\u53D8\u91CF</button><button class=\"bt bp bsm\" onclick=\"P.relations.push({sid:editingScenarioId,name:'\u65B0\u5173\u7CFB',value:0,desc:''});renderEdTab('t-var');\">\uFF0B\u5173\u7CFB</button><button class=\'bt bg bsm\' onclick=\'aiGenVar()\'>AI\u751f\u6210</button></div>"+
-    vars.map(function(v){var i=P.variables.indexOf(v);return "<div class=\"cd\" style=\"padding:0.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;\"><input value=\""+v.name+"\" style=\"width:90px;font-weight:700;\" onchange=\"P.variables["+i+"].name=this.value\"><input type=\"number\" value=\""+v.value+"\" style=\"width:42px;\" onchange=\"P.variables["+i+"].value=+this.value\"><input type=\"color\" value=\""+(v.color||"#c9a84c")+"\" style=\"width:22px;height:20px;padding:0;border:none;\" onchange=\"P.variables["+i+"].color=this.value\"><button class=\"bd bsm\" onclick=\"P.variables.splice("+i+",1);renderEdTab('t-var');\">\u2715</button></div>";}).join("")+
+    vars.map(function(v){var i=P.variables.indexOf(v);return "<div class=\"cd\" style=\"padding:0.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;\"><input value=\""+escHtml(v.name)+"\" style=\"width:90px;font-weight:700;\" onchange=\"P.variables["+i+"].name=this.value\"><input type=\"number\" value=\""+escHtml(v.value)+"\" style=\"width:42px;\" onchange=\"P.variables["+i+"].value=+this.value\"><input type=\"color\" value=\""+escHtml(v.color||"#c9a84c")+"\" style=\"width:22px;height:20px;padding:0;border:none;\" onchange=\"P.variables["+i+"].color=this.value\"><button class=\"bd bsm\" onclick=\"P.variables.splice("+i+",1);renderEdTab('t-var');\">\u2715</button></div>";}).join("")+
     "<hr class=\"dv\"><div style=\"font-weight:700;color:var(--gold);margin-bottom:0.5rem;\">\u5173\u7CFB</div>"+
-    rels.map(function(r){var i=P.relations.indexOf(r);return "<div class=\"cd\" style=\"display:flex;gap:0.4rem;align-items:center;padding:0.5rem;\"><input value=\""+r.name+"\" style=\"flex:1;\" onchange=\"P.relations["+i+"].name=this.value\"><input type=\"number\" value=\""+r.value+"\" style=\"width:50px;\" onchange=\"P.relations["+i+"].value=+this.value\"><button class=\"bd bsm\" onclick=\"P.relations.splice("+i+",1);renderEdTab('t-var');\">\u2715</button></div>";}).join("");
+    rels.map(function(r){var i=P.relations.indexOf(r);return "<div class=\"cd\" style=\"display:flex;gap:0.4rem;align-items:center;padding:0.5rem;\"><input value=\""+escHtml(r.name)+"\" style=\"flex:1;\" onchange=\"P.relations["+i+"].name=this.value\"><input type=\"number\" value=\""+escHtml(r.value)+"\" style=\"width:50px;\" onchange=\"P.relations["+i+"].value=+this.value\"><button class=\"bd bsm\" onclick=\"P.relations.splice("+i+",1);renderEdTab('t-var');\">\u2715</button></div>";}).join("");
 }
 
 // --- 规则/事件/军事/科技/市政/时间/地图/世界/官制 ---
@@ -791,7 +837,7 @@ function editMilItem(k,i){
   openGenericModal('\u7F16\u8F91'+({'troops':'\u5175\u79CD','facilities':'\u8BBE\u65BD','organization':'\u7F16\u5236','campaigns':'\u6218\u5F79'}[k]||k),
     '<div class="form-group"><label>\u540D\u79F0</label><input id="gmf-name" value="'+escHtml(u.name||'')+'"></div>'+
     '<div class="form-group"><label>\u7C7B\u578B</label><input id="gmf-type" value="'+escHtml(u.type||'')+'"></div>'+
-    '<div class="form-group"><label>\u63CF\u8FF0</label><textarea id="gmf-desc" rows="2">'+(u.desc||'')+'</textarea></div>',
+    '<div class="form-group"><label>\u63CF\u8FF0</label><textarea id="gmf-desc" rows="2">'+escHtml(u.desc||'')+'</textarea></div>',
     function(){
       P.military[k][i].name=gv('gmf-name');
       P.military[k][i].type=gv('gmf-type');
@@ -811,7 +857,7 @@ function editCivic(i){
   var c=P.civicTree[i];
   openGenericModal('编辑市政',
     '<div class="form-group"><label>名称</label><input id="gmf-name" value="'+escHtml(c.name||'')+'"></div>'+
-    '<div class="form-group"><label>描述</label><textarea id="gmf-desc" rows="2">'+(c.desc||'')+'</textarea></div>'+
+    '<div class="form-group"><label>描述</label><textarea id="gmf-desc" rows="2">'+escHtml(c.desc||'')+'</textarea></div>'+
     '<div class="form-group"><label>时代</label><input id="gmf-era" value="'+escHtml(c.era||'')+'"></div>'+
     '<div class="form-group"><label>前置条件(逗号分隔)</label><input id="gmf-prereqs" value="'+escHtml((c.prereqs||[]).join(','))+'"></div>'+
     '<div class="form-group"><label>效果(JSON)</label><input id="gmf-effect" value="'+escHtml(JSON.stringify(c.effect||{}))+'"></div>',
@@ -832,16 +878,39 @@ async function aiGenCivic(){
   try{
     var ctx=findScenarioById(editingScenarioId);
     var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";
-    var existCiv=(P.civicTree&&P.civicTree.policies?P.civicTree.policies:[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteC=existCiv.length?"已有政策（不得重复）："+existCiv.join("、")+"\n":"";var c=await callAISmart('你是中国历史专家。请为剧本《'+scnName+'》('+era+')生成3-5个市政正策或制度，必须是该时期历史上实际存在的。'+existNoteC+'返回JSON:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]',2000,{minLength:100,maxRetries:3,validator:function(content){try{var jm=content.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-    var jm=c.match(/\[[\s\S]*\]/);
-    if(jm){JSON.parse(jm[0]).forEach(function(v){
+    var existCiv=(P.civicTree&&P.civicTree.policies?P.civicTree.policies:[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteC=existCiv.length?"已有政策（不得重复）："+existCiv.join("、")+"\n":"";var c=await callAISmart('你是中国历史专家。请为剧本《'+scnName+'》('+era+')生成3-5个市政正策或制度，必须是该时期历史上实际存在的。'+existNoteC+'返回JSON:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]',2000,{minLength:100,maxRetries:3,validator:function(content){try{var arr=extractJSON(content);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+    var generatedCivics=extractJSON(c);
+    if(Array.isArray(generatedCivics)){generatedCivics.forEach(function(v){
       P.civicTree.push({sid:editingScenarioId,name:v.name||'',desc:v.desc||'',era:v.era||era,prereqs:v.prereqs||[],costs:v.costs||[],effect:v.effect||{},adopted:false});
     });renderEdTab('t-civic');toast('市政已生成');}
   }catch(e){toast('失败: '+e.message);}
   finally{hideLoading();}
 }
 
-function renderTimTab(em){var t=P.time;var eraList=(t.eraNames||[]);var eraRows=eraList.map(function(e,i){return "<div style=\"display:flex;gap:6px;align-items:center;margin-bottom:3px;\">"+"<input id=\"t-era-n-"+i+"\" value=\""+e.name+"\" placeholder=\"\u5E74\u53F7\u540D\" style=\"width:80px\">"+"<input type=\"number\" id=\"t-era-y-"+i+"\" value=\""+e.startYear+"\" placeholder=\"\u5E74\" style=\"width:60px\">"+"<input type=\"number\" id=\"t-era-m-"+i+"\" value=\""+e.startMonth+"\" placeholder=\"\u6708\" style=\"width:44px\">"+"<button class=\"bd bsm\" onclick=\"_eraUpd("+i+")\">\u4FDD</button>"+"<button class=\"bd bsm\" onclick=\"_eraDel("+i+")\">\u5220</button>"+"</div>";}).join("");em.innerHTML="<h4 style=\"color:var(--gold);\">\u65F6\u95F4</h4>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u5E74</label>"+"<input type=\"number\" id=\"t-year\" value=\""+t.year+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u524D\u7F00</label>"+"<input id=\"t-prefix\" value=\""+( t.prefix||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u540E\u7F00</label>"+"<input id=\"t-suffix\" value=\""+( t.suffix||"")+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u6BCF\u56DE\u5408</label>"+"<select id=\"t-per-turn\" onchange=\"saveT()\">"+"<option value=\"1s\" "+(t.perTurn==="1s"?"selected":"")+">\u5B63</option>"+"<option value=\"1m\" "+(t.perTurn==="1m"?"selected":"")+">\u6708</option>"+"<option value=\"1y\" "+(t.perTurn==="1y"?"selected":"")+">\u5E74</option>"+"</select></div>"+"<div class=\"fd\"><label>\u5B63\u8282(\u9017\u53F7)</label>"+"<input id=\"t-seasons\" value=\""+( t.seasons||[]).join(",")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u5B63\u8282</label>"+"<input type=\"number\" id=\"t-start-s\" value=\""+( t.startS||0)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u5E74\u53F7</label>"+"<input id=\"t-reign\" value=\""+( t.reign||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u5E74\u53F7\u8D77\u59CB</label>"+"<input type=\"number\" id=\"t-reign-y\" value=\""+( t.reignY||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u663E\u793A</label>"+"<select id=\"t-display\" onchange=\"saveT()\">"+"<option value=\"year_season\" "+(t.display==="year_season"?"selected":"")+">\u5E74+\u5B63</option>"+"<option value=\"reign\" "+(t.display==="reign"?"selected":"")+">\u5E74\u53F7</option>"+"</select></div>"+"</div>"+"<hr style=\"border-color:var(--bg-4);margin:8px 0;\">"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u6708</label>"+"<input type=\"number\" id=\"t-start-month\" min=\"1\" max=\"12\" value=\""+( t.startMonth||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u65E5</label>"+"<input type=\"number\" id=\"t-start-day\" min=\"1\" max=\"30\" value=\""+( t.startDay||1)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi\" "+(t.enableGanzhi?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u5E74\u4EFD</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi-day\" "+(t.enableGanzhiDay?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u65E5\u671F</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-era-name\" "+(t.enableEraName?"checked":"")+" onchange=\"saveT()\">"+" \u6539\u5143\u5E74\u53F7</label></div>"+"</div>"+"<div style=\"margin-top:8px;\">"+"<strong style=\"color:var(--gold-dim);\">\u5E74\u53F7\u5217\u8868</strong>"+" <button class=\"bt bsm\" onclick=\"_eraAdd()\">+\u6DFB\u52A0</button>"+"<div id=\"t-era-list\" style=\"margin-top:6px;\">"+eraRows+"</div></div>";window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;saveT();};}
+function renderTimTab(em,timeView){var t=timeView||P.time;var eraList=(t.eraNames||[]);var eraRows=eraList.map(function(e,i){return "<div style=\"display:flex;gap:6px;align-items:center;margin-bottom:3px;\">"+"<input id=\"t-era-n-"+i+"\" value=\""+e.name+"\" placeholder=\"\u5E74\u53F7\u540D\" style=\"width:80px\">"+"<input type=\"number\" id=\"t-era-y-"+i+"\" value=\""+e.startYear+"\" placeholder=\"\u5E74\" style=\"width:60px\">"+"<input type=\"number\" id=\"t-era-m-"+i+"\" value=\""+e.startMonth+"\" placeholder=\"\u6708\" style=\"width:44px\">"+"<button class=\"bd bsm\" onclick=\"_eraUpd("+i+")\">\u4FDD</button>"+"<button class=\"bd bsm\" onclick=\"_eraDel("+i+")\">\u5220</button>"+"</div>";}).join("");em.innerHTML="<h4 style=\"color:var(--gold);\">\u65F6\u95F4</h4>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u5E74</label>"+"<input type=\"number\" id=\"t-year\" value=\""+t.year+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u524D\u7F00</label>"+"<input id=\"t-prefix\" value=\""+( t.prefix||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u540E\u7F00</label>"+"<input id=\"t-suffix\" value=\""+( t.suffix||"")+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u6BCF\u56DE\u5408</label>"+"<select id=\"t-per-turn\" onchange=\"saveT()\">"+"<option value=\"1s\" "+(t.perTurn==="1s"?"selected":"")+">\u5B63</option>"+"<option value=\"1m\" "+(t.perTurn==="1m"?"selected":"")+">\u6708</option>"+"<option value=\"1y\" "+(t.perTurn==="1y"?"selected":"")+">\u5E74</option>"+"</select></div>"+"<div class=\"fd\"><label>\u5B63\u8282(\u9017\u53F7)</label>"+"<input id=\"t-seasons\" value=\""+( t.seasons||[]).join(",")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u5B63\u8282</label>"+"<input type=\"number\" id=\"t-start-s\" value=\""+( t.startS||0)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u5E74\u53F7</label>"+"<input id=\"t-reign\" value=\""+( t.reign||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u5E74\u53F7\u8D77\u59CB</label>"+"<input type=\"number\" id=\"t-reign-y\" value=\""+( t.reignY||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u663E\u793A</label>"+"<select id=\"t-display\" onchange=\"saveT()\">"+"<option value=\"year_season\" "+(t.display==="year_season"?"selected":"")+">\u5E74+\u5B63</option>"+"<option value=\"reign\" "+(t.display==="reign"?"selected":"")+">\u5E74\u53F7</option>"+"</select></div>"+"</div>"+"<hr style=\"border-color:var(--bg-4);margin:8px 0;\">"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u6708</label>"+"<input type=\"number\" id=\"t-start-month\" min=\"1\" max=\"12\" value=\""+( t.startMonth||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u65E5</label>"+"<input type=\"number\" id=\"t-start-day\" min=\"1\" max=\"30\" value=\""+( t.startDay||1)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi\" "+(t.enableGanzhi?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u5E74\u4EFD</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi-day\" "+(t.enableGanzhiDay?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u65E5\u671F</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-era-name\" "+(t.enableEraName?"checked":"")+" onchange=\"saveT()\">"+" \u6539\u5143\u5E74\u53F7</label></div>"+"</div>"+"<div style=\"margin-top:8px;\">"+"<strong style=\"color:var(--gold-dim);\">\u5E74\u53F7\u5217\u8868</strong>"+" <button class=\"bt bsm\" onclick=\"_eraAdd()\">+\u6DFB\u52A0</button>"+"<div id=\"t-era-list\" style=\"margin-top:6px;\">"+eraRows+"</div></div>";window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;saveT();};}
+// 历史单行模板保留兼容结构；调用前只给它临时的已转义视图，绝不改写 P.time 真值。
+var _renderTimTabTemplate = renderTimTab;
+renderTimTab = function(em) {
+  var source = P.time || {};
+  var safeTime = Object.assign({}, source);
+  safeTime.prefix = escHtml(source.prefix || '');
+  safeTime.suffix = escHtml(source.suffix || '');
+  safeTime.reign = escHtml(source.reign || '');
+  safeTime.seasons = (source.seasons || []).map(function(value) { return escHtml(value); });
+  safeTime.year = finiteNumberOr(source.year, 1);
+  safeTime.startS = finiteNumberOr(source.startS, 0);
+  safeTime.reignY = finiteNumberOr(source.reignY, 1);
+  safeTime.startMonth = finiteNumberOr(source.startMonth, 1);
+  safeTime.startDay = finiteNumberOr(source.startDay, 1);
+  safeTime.eraNames = (source.eraNames || []).map(function(era) {
+    return Object.assign({}, era, {
+      name: escHtml(era && era.name || ''),
+      startYear: finiteNumberOr(era && era.startYear, safeTime.year),
+      startMonth: finiteNumberOr(era && era.startMonth, 1)
+    });
+  });
+  _renderTimTabTemplate(em, safeTime);
+};
 // renderOfficeTab 已在后面（约22464行）定义SVG树形版本，此处不再重复
 
 // ============================================================

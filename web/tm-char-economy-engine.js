@@ -921,9 +921,11 @@
       }
     }
     if (incomeDetail.embezzle && r.publicTreasury) {
-      r.publicTreasury.balance = Math.max(0, r.publicTreasury.balance - incomeDetail.embezzle);
-      r.privateWealth.money += incomeDetail.embezzle;
-      r.hiddenWealth += incomeDetail.embezzle * 0.5;
+      var _publicBefore = Math.max(0, Number(r.publicTreasury.balance) || 0);
+      var _stolen = Math.min(_publicBefore, Math.max(0, Number(incomeDetail.embezzle) || 0));
+      r.publicTreasury.balance = _publicBefore - _stolen;
+      r.privateWealth.money += _stolen;
+      r.hiddenWealth += _stolen * 0.5;
       ch.integrity = Math.max(0, ch.integrity - 0.3 * mr);
     }
     // 正当收入入 money

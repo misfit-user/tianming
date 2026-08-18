@@ -381,8 +381,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     if (!raw) return;
     var parsed;
     try {
-      var m = raw.match(/\{[\s\S]*\}/);
-      parsed = m ? JSON.parse(m[0]) : JSON.parse(raw);
+      parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(raw) : JSON.parse(raw);
     } catch(e) {
       console.warn('[御批回听] JSON 解析失败', e);
       return;

@@ -18,8 +18,8 @@ assert(/SAVE_SCHEMA_VERSION\s*=\s*'1\.3\.0-ai-upgrade'/.test(saveSrc),
   'SAVE_SCHEMA_VERSION 常量·1.3.0-ai-upgrade');
 assert(/_MIGRATIONS\s*=\s*\[/.test(saveSrc),
   '_MIGRATIONS array·迁移规则');
-assert(/function\s+runMigrations\s*\(\s*\)/.test(saveSrc),
-  'runMigrations() 函数');
+assert(/function\s+runMigrations\s*\(\s*P\s*,\s*GM\s*\)/.test(saveSrc),
+  'runMigrations(P, GM) 在 incoming/snapshot 上运行');
 assert(/_saveSchemaVersion/.test(saveSrc),
   'P.conf._saveSchemaVersion 持久版本号');
 assert(/_migrationLog/.test(saveSrc),
@@ -37,8 +37,10 @@ assert(/consolidationEnabled[\s\S]{0,300}memorySynthesisEnabled\s*=\s*P\.conf\.c
   '老字段 mirror 到新字段·删旧');
 
 // ─── runMigrations 自动调用 ───
-assert(/runMigrations\(\)/.test(saveSrc),
+assert(/runMigrations\(P, GM\)/.test(saveSrc),
   '_ensurePDefaults 内调 runMigrations');
+assert(/if \(failure\)[\s\S]*?throw failure;[\s\S]*?P\.conf\._saveSchemaVersion = SAVE_SCHEMA_VERSION/.test(saveSrc),
+  '迁移失败先抛错，成功后才盖 schema version');
 
 // ─── 新 P.conf defaults ───
 ['dialogueRecallTurns', 'costAlertThreshold', 'strictSchemaEnabled'].forEach(function(k) {

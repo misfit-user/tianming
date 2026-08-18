@@ -145,7 +145,7 @@ function buildCharacterCard(char) {
     name: char.name,
     title: char.title || char.position || '',
     faction: char.faction || '',
-    loyalty: char.loyalty || 50,
+    loyalty: finiteNumberOr(char.loyalty, 50),
     age: char.age || '',
     traits: []
   };
@@ -188,9 +188,9 @@ function buildCharacterCard(char) {
   if (char.rankLevel) card.rank = char.rankLevel;
   // 关键属性（取最突出的2个）
   var attrs = [];
-  var effInt = typeof getEffectiveAttr === 'function' ? getEffectiveAttr(char, 'intelligence') : (char.intelligence || 0);
+  var effInt = typeof getEffectiveAttr === 'function' ? getEffectiveAttr(char, 'intelligence') : finiteNumberOr(char.intelligence, 0);
   var effVal = typeof getEffectiveAttr === 'function' ? getEffectiveAttr(char, 'valor') : (char.valor || 0);
-  var effAdm = typeof getEffectiveAttr === 'function' ? getEffectiveAttr(char, 'administration') : (char.administration || 0);
+  var effAdm = typeof getEffectiveAttr === 'function' ? getEffectiveAttr(char, 'administration') : finiteNumberOr(char.administration, 0);
   if (effInt > 70) attrs.push('智' + effInt);
   if (effVal > 70) attrs.push('武' + effVal);
   if (effAdm > 70) attrs.push('政' + effAdm);
@@ -228,7 +228,7 @@ function formatCharacterCard(card) {
 /** 选择关键人物（按重要度排序，取前N个） */
 function selectKeyCharacters(chars, maxCount) {
   if (!chars || chars.length === 0) return [];
-  maxCount = maxCount || 8;
+  maxCount = finiteNumberOr(maxCount, 8);
   var scored = chars.filter(function(c) { return c.alive !== false; }).map(function(c) {
     var score = 0;
     if (c.isPlayer) score += 100;
@@ -251,9 +251,9 @@ function freezeWorldSnapshot() {
   // Top 5 势力
   if (GM.facs && GM.facs.length) {
     snapshot.topFactions = GM.facs.slice().sort(function(a, b) {
-      return (b.strength || 0) - (a.strength || 0);
+      return finiteNumberOr(b.strength, 0) - finiteNumberOr(a.strength, 0);
     }).slice(0, 5).map(function(f) {
-      return { name: f.name, strength: f.strength || 0, militaryStrength: f.militaryStrength || 0, leader: f.leader || '', type: f.type || '', attitude: f.attitude || '', territory: f.territory || '', goal: f.goal || '' };
+    return { name: f.name, strength: finiteNumberOr(f.strength, 0), militaryStrength: finiteNumberOr(f.militaryStrength, 0), leader: f.leader || '', type: f.type || '', attitude: f.attitude || '', territory: f.territory || '', goal: f.goal || '' };
     });
   }
   // 关键人物卡片
@@ -383,7 +383,7 @@ function buildHardFacts() {
   // 阶层满意度极低→硬性警告
   if (GM.classes) {
     GM.classes.forEach(function(cls) {
-      var sat = parseInt(cls.satisfaction) || 50;
+      var sat = finiteNumberOr(parseInt(cls.satisfaction, 10), 50);
       if (sat < 15) {
         facts.push('\u9636\u5C42"' + cls.name + '"\u6EE1\u610F\u5EA6\u6781\u4F4E(' + sat + ')\uFF0C\u5DF2\u5904\u4E8E\u66B4\u52A8\u8FB9\u7F18\uFF0CAI\u5FC5\u987B\u5728\u53D9\u4E8B\u4E2D\u4F53\u73B0\u793E\u4F1A\u52A8\u8361\u3002');
       }
@@ -408,7 +408,7 @@ function buildInformationCocoon() {
     contradictions.push({
       official: '户部称税赋按期征收，国库尚可维持。',
       intel: '查实：多处税银被截留，实际入库不足奏报之半。',
-      metric: '经济', value: Math.round((GM.eraState.economicProsperity || 0) * 100)
+        metric: '经济', value: Math.round(finiteNumberOr(GM.eraState.economicProsperity, 0) * 100)
     });
   }
 
@@ -417,7 +417,7 @@ function buildInformationCocoon() {
     contradictions.push({
       official: '前线奏报守备稳固，将士用命。',
       intel: '实则兵员空额严重，军械朽坏，士气低迷。',
-      metric: '军事', value: Math.round((GM.eraState.militaryProfessionalism || 0) * 100)
+        metric: '军事', value: Math.round(finiteNumberOr(GM.eraState.militaryProfessionalism, 0) * 100)
     });
   }
 
@@ -435,12 +435,12 @@ function buildInformationCocoon() {
 
   // 边将可能夸大战果
   if (GM.armies && GM.armies.length > 0) {
-    var weakArmy = GM.armies.find(function(a) { return (a.morale || 50) < 40 || (a.soldiers || a.troops || 0) < 3000; });
+    var weakArmy = GM.armies.find(function(a) { return finiteNumberOr(a.morale, 50) < 40 || finiteNumberOr(a.soldiers, finiteNumberOr(a.troops, 0)) < 3000; });
     if (weakArmy) {
       contradictions.push({
         official: (weakArmy.commander || '前线') + '奏报：我军严阵以待，士气高昂，粮草充足。',
         intel: '暗探查实：该部兵额空虚，士卒逃亡甚众，军粮已不足月余。',
-        metric: '军情', value: weakArmy.morale || 30
+        metric: '军情', value: finiteNumberOr(weakArmy.morale, 30)
       });
     }
   }
@@ -448,25 +448,25 @@ function buildInformationCocoon() {
   // NPC利益驱动的信息扭曲——找到忠诚度低或野心高的官员
   if (GM.chars) {
     // 野心家的自利汇报
-    var schemer = GM.chars.find(function(c) { return c.alive !== false && (c.ambition || 50) > 75 && (c.loyalty || 50) < 50; });
+    var schemer = GM.chars.find(function(c) { return c.alive !== false && finiteNumberOr(c.ambition, 50) > 75 && finiteNumberOr(c.loyalty, 50) < 50; });
     if (schemer) {
       var _office = typeof findNpcOffice === 'function' ? findNpcOffice(schemer.name) : null;
       if (_office) {
         contradictions.push({
           official: schemer.name + '奏称其辖区政绩卓著，请求嘉奖升迁。',
           intel: '查核：其所辖实际政绩平庸，多有虚饰之嫌。此人野心('+schemer.ambition+')远超忠诚('+schemer.loyalty+')。',
-          metric: '官员诚信', value: schemer.loyalty || 30
+          metric: '官员诚信', value: finiteNumberOr(schemer.loyalty, 30)
         });
       }
     }
 
     // 忠臣的有限视野——忠心≠正确
-    var loyalist = GM.chars.find(function(c) { return c.alive !== false && (c.loyalty || 50) > 85 && (c.intelligence || 50) < 45; });
+    var loyalist = GM.chars.find(function(c) { return c.alive !== false && finiteNumberOr(c.loyalty, 50) > 85 && finiteNumberOr(c.intelligence, 50) < 45; });
     if (loyalist && GM.eraState && GM.eraState.socialStability < 0.5) {
       contradictions.push({
         official: loyalist.name + '（忠' + loyalist.loyalty + '）进言：当下局势并无大碍，只需严刑峻法即可。',
-        intel: '此人虽忠心耿耿，但智识有限(智' + (loyalist.intelligence || 40) + ')，可能误判形势。实际局势恐非如此乐观。',
-        metric: '忠臣盲区', value: loyalist.intelligence || 40
+        intel: '此人虽忠心耿耿，但智识有限(智' + finiteNumberOr(loyalist.intelligence, 40) + ')，可能误判形势。实际局势恐非如此乐观。',
+        metric: '忠臣盲区', value: finiteNumberOr(loyalist.intelligence, 40)
       });
     }
   }
@@ -693,11 +693,11 @@ function buildAIContext(deepMode) {
 
   // 党派动态（影响力和状态）
   if (GM.parties && GM.parties.length > 0) {
-    var activeParties = GM.parties.filter(function(p) { return (p.influence||0) > 10 || p.status === '\u6D3B\u8DC3'; });
+    var activeParties = GM.parties.filter(function(p) { return finiteNumberOr(p.influence, 0) > 10 || p.status === '\u6D3B\u8DC3'; });
     if (activeParties.length > 0) {
       ctx += '【党派格局】\n';
       activeParties.slice(0, 6).forEach(function(p) {
-        var pInfo = '  ' + p.name + '：影响' + (p.influence || 0) + (p.status ? '(' + p.status + ')' : '');
+      var pInfo = '  ' + p.name + '：影响' + finiteNumberOr(p.influence, 0) + (p.status ? '(' + p.status + ')' : '');
         if (p.leader) pInfo += '，领袖' + p.leader;
         if (p.ideology) pInfo += '，主张:' + String(p.ideology).slice(0, 20);
         if (p.currentAgenda) pInfo += '\n    当前议程:' + String(p.currentAgenda).slice(0, 30);
@@ -787,13 +787,13 @@ function buildAIContext(deepMode) {
     var landLabels = {state:'\u56FD\u6709\u5236',private:'\u79C1\u6709\u5236',mixed:'\u6DF7\u5408\u5236'};
     ctx += '\u3010\u65F6\u4EE3\u72B6\u6001\u3011\n';
     ctx += '  \u738B\u671D\u9636\u6BB5:' + (phaseLabels[es.dynastyPhase]||es.dynastyPhase||'\u672A\u77E5');
-    ctx += ' \u653F\u6CBB\u7EDF\u4E00:' + Math.round((es.politicalUnity||0.5)*100) + '%';
-    ctx += ' \u4E2D\u592E\u96C6\u6743:' + Math.round((es.centralControl||0.5)*100) + '%';
-    ctx += ' \u793E\u4F1A\u7A33\u5B9A:' + Math.round((es.socialStability||0.5)*100) + '%\n';
-    ctx += '  \u7ECF\u6D4E\u7E41\u8363:' + Math.round((es.economicProsperity||0.5)*100) + '%';
-    ctx += ' \u6587\u5316\u6D3B\u529B:' + Math.round((es.culturalVibrancy||0.5)*100) + '%';
-    ctx += ' \u5B98\u50DA\u6548\u7387:' + Math.round((es.bureaucracyStrength||0.5)*100) + '%';
-    ctx += ' \u519B\u4E8B\u4E13\u4E1A:' + Math.round((es.militaryProfessionalism||0.5)*100) + '%\n';
+    ctx += ' \u653F\u6CBB\u7EDF\u4E00:' + Math.round(finiteNumberOr(es.politicalUnity, 0.5)*100) + '%';
+    ctx += ' \u4E2D\u592E\u96C6\u6743:' + Math.round(finiteNumberOr(es.centralControl, 0.5)*100) + '%';
+    ctx += ' \u793E\u4F1A\u7A33\u5B9A:' + Math.round(finiteNumberOr(es.socialStability, 0.5)*100) + '%\n';
+    ctx += '  \u7ECF\u6D4E\u7E41\u8363:' + Math.round(finiteNumberOr(es.economicProsperity, 0.5)*100) + '%';
+    ctx += ' \u6587\u5316\u6D3B\u529B:' + Math.round(finiteNumberOr(es.culturalVibrancy, 0.5)*100) + '%';
+    ctx += ' \u5B98\u50DA\u6548\u7387:' + Math.round(finiteNumberOr(es.bureaucracyStrength, 0.5)*100) + '%';
+    ctx += ' \u519B\u4E8B\u4E13\u4E1A:' + Math.round(finiteNumberOr(es.militaryProfessionalism, 0.5)*100) + '%\n';
     if (es.legitimacySource) ctx += '  \u6B63\u7EDF\u6027:' + (legLabels[es.legitimacySource]||es.legitimacySource);
     if (es.landSystemType) ctx += ' \u571F\u5730\u5236\u5EA6:' + (landLabels[es.landSystemType]||es.landSystemType);
     ctx += '\n';
@@ -805,8 +805,8 @@ function buildAIContext(deepMode) {
   if (P.economyConfig && P.economyConfig.enabled !== false) {
     var ec = P.economyConfig;
     ctx += '\u3010\u7ECF\u6D4E\u4F53\u5236\u3011\n';
-    ctx += '  \u8D27\u5E01:' + (ec.currency||'\u8D2F') + ' \u57FA\u7840\u6536\u5165:' + (ec.baseIncome||100);
-    ctx += ' \u7A0E\u7387:' + Math.round((ec.taxRate||0.1)*100) + '%';
+    ctx += '  \u8D27\u5E01:' + (ec.currency||'\u8D2F') + ' \u57FA\u7840\u6536\u5165:' + finiteNumberOr(ec.baseIncome, 100);
+    ctx += ' \u7A0E\u7387:' + Math.round(finiteNumberOr(ec.taxRate, 0.1)*100) + '%';
     if (ec.inflationRate > 0.03) ctx += ' \u901A\u80C0:' + Math.round(ec.inflationRate*100) + '%';
     var cycleLabels = {prosperity:'\u7E41\u8363',stable:'\u7A33\u5B9A',recession:'\u8870\u9000',depression:'\u8427\u6761'};
     if (ec.economicCycle) ctx += ' \u5468\u671F:' + (cycleLabels[ec.economicCycle]||ec.economicCycle);
@@ -908,8 +908,8 @@ function buildAIContext(deepMode) {
           var vf = GM._indices.facByName ? GM._indices.facByName.get(vn) : null;
           if (!vf) return vn;
           var ruler = GM.chars ? GM.chars.find(function(c) { return c.faction === vn && (c.position === '\u541B\u4E3B' || c.position === '\u9996\u9886'); }) : null;
-          var loyStr = ruler ? '\u5FE0' + (ruler.loyalty || 50) : '';
-          var tribStr = '\u8D21' + Math.round((vf.tributeRate || 0.3) * 100) + '%';
+          var loyStr = ruler ? '\u5FE0' + finiteNumberOr(ruler.loyalty, 50) : '';
+          var tribStr = '\u8D21' + Math.round(finiteNumberOr(vf.tributeRate, 0.3) * 100) + '%';
           var warn = (ruler && ruler.loyalty < 35) ? '\u26A0' : '';
           return vn + '(' + tribStr + ' ' + loyStr + warn + ')';
         });
@@ -967,8 +967,8 @@ function buildAIContext(deepMode) {
   if (GM.classes && GM.classes.length > 0) {
     ctx += '【社会阶层】\n';
     GM.classes.forEach(function(c) {
-      var sat = parseInt(c.satisfaction) || 50;
-      var inf = parseInt(c.influence || c.classInfluence) || 0;
+      var sat = finiteNumberOr(parseInt(c.satisfaction, 10), 50);
+      var inf = finiteNumberOr(parseInt(c.influence, 10), finiteNumberOr(parseInt(c.classInfluence, 10), 0));
       var cInfo = '  ' + c.name;
       if (c.size || c.population) cInfo += '(' + (c.size || c.population) + ')';
       cInfo += ' 满意' + sat + ' 影响' + inf;
@@ -976,7 +976,7 @@ function buildAIContext(deepMode) {
       if (c.mobility) cInfo += ' 流动:' + c.mobility;
       if (c.demands) cInfo += '\n    诉求:' + String(c.demands).slice(0, 30);
       // 不满警告
-      var threshold = c.unrestThreshold || 30;
+      var threshold = finiteNumberOr(c.unrestThreshold, 30);
       if (sat < threshold) cInfo += '\n    ⚠ 满意度低于阈值(' + threshold + ')，社会动荡风险!';
       // 得罪分数
       var offScore = GM.offendGroupScores && GM.offendGroupScores['class_' + c.name];
@@ -1094,7 +1094,7 @@ function buildAIContext(deepMode) {
       var _recentJs = _allJinshi.filter(function(c) { return c.recruitTurn >= GM.turn - 3; });
       if (_recentJs.length > 0) {
         ctx += '\u3010\u65B0\u79D1\u8FDB\u58EB\u3011' + _recentJs.map(function(j) {
-          return j.name + '(' + (j.title||'') + ' \u667A' + (j.intelligence||0) + ' \u6CBB' + (j.administration||0) + (j.party && j.party!=='\u65E0\u515A\u6D3E'?' \u515A:'+j.party:'') + ')';
+      return j.name + '(' + (j.title||'') + ' \u667A' + finiteNumberOr(j.intelligence, 0) + ' \u6CBB' + finiteNumberOr(j.administration, 0) + (j.party && j.party!=='\u65E0\u515A\u6D3E'?' \u515A:'+j.party:'') + ')';
         }).join('\u3001') + '\n';
       }
       // 门生-座主网络
@@ -1116,7 +1116,7 @@ function buildAIContext(deepMode) {
       var _tierOrder = {'imperial':0,'noble':1,'gentry':2,'common':3};
       _famKeys.sort(function(a, b) {
         var fa = GM.families[a], fb = GM.families[b];
-        var ta = _tierOrder[fa.tier] || 3, tb = _tierOrder[fb.tier] || 3;
+        var ta = finiteNumberOr(_tierOrder[fa.tier], 3), tb = finiteNumberOr(_tierOrder[fb.tier], 3);
         if (ta !== tb) return ta - tb;
         return (fb.renown || 0) - (fa.renown || 0);
       });
@@ -1203,7 +1203,7 @@ function buildAIContext(deepMode) {
       ctx += '\u3010\u540E\u5BAB/\u59BB\u5BA4\u3011\n';
       // 按位份排序
       var _rankOrder = {'empress':0,'queen':0,'consort':1,'concubine':2,'attendant':3};
-      _spouses.sort(function(a, b) { return (_rankOrder[a.spouseRank] || 9) - (_rankOrder[b.spouseRank] || 9); });
+      _spouses.sort(function(a, b) { return finiteNumberOr(_rankOrder[a.spouseRank], 9) - finiteNumberOr(_rankOrder[b.spouseRank], 9); });
       _spouses.forEach(function(sp) {
         var parts = ['  ' + sp.name];
         if (sp.spouseRank) {
@@ -1240,7 +1240,7 @@ function buildAIContext(deepMode) {
           if (!sp.motherClan) return;
           var fac = (GM.facs || []).find(function(f) { return f.name && f.name.indexOf(sp.motherClan) >= 0; });
           var party = !fac && GM.parties ? GM.parties.find(function(p) { return p.name && p.name.indexOf(sp.motherClan) >= 0; }) : null;
-          var power = fac ? (fac.strength || 50) : (party ? (party.influence || 50) : 0);
+          var power = fac ? finiteNumberOr(fac.strength, 50) : (party ? finiteNumberOr(party.influence, 50) : 0);
           if (power > 0) {
             _clanInfo.push(sp.motherClan + '(' + (typeof getHaremRankName === 'function' ? getHaremRankName(sp.spouseRank) : '') + sp.name + '\u6BCD\u65CF,\u52BF\u529B' + power + ')');
           }
@@ -1519,7 +1519,7 @@ function buildAIContext(deepMode) {
           if (d.terrain) ctx += ' ' + d.terrain;
           // 深化字段（简洁显示）
           if (d.population && typeof d.population === 'object') {
-            var mo = d.population.mouths || 0, ho = d.population.households || 0;
+      var mo = finiteNumberOr(d.population.mouths, 0), ho = finiteNumberOr(d.population.households, 0);
             if (mo > 10000) ctx += ' \u53E3' + Math.round(mo/10000) + '\u4E07';
             if (d.population.fugitives > 0) ctx += ' \u9003' + d.population.fugitives;
           }

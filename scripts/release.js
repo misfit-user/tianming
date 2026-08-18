@@ -30,6 +30,7 @@ const { mapBuildToSemver } = require('./version-map');
 const os = require('os');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
+const windowsSigning = require('./lib/windows-signing.js');
 
 const REAL_ROOT = path.resolve(__dirname, '..');
 
@@ -93,6 +94,7 @@ const CFG = {
 };
 const P = {
   pkg: () => path.join(CFG.root, 'package.json'),
+  pkgLock: () => path.join(CFG.root, 'package-lock.json'),
   gradle: () => path.join(CFG.root, 'mobile', 'android', 'app', 'build.gradle'),
   mobileReleaseVersion: () => path.join(CFG.root, 'mobile', 'release-version.json'),
   web: () => path.join(CFG.root, 'web'),
@@ -265,6 +267,12 @@ function preparedVersionProblems(code, requireBaseline) {
   const pkg = readJson(P.pkg());
   if (!pkg.build || pkg.build.buildVersion !== CFG.version) problems.push('package.json buildVersion 未盖戳');
   if (pkg.version !== mapBuildToSemver(CFG.version)) problems.push('package.json semver 未按四段版本映射');
+  if (!fs.existsSync(P.pkgLock())) problems.push('缺 package-lock.json');
+  else {
+    const lock = readJson(P.pkgLock());
+    const lockRootVersion = lock.packages && lock.packages[''] && lock.packages[''].version;
+    if (lock.version !== pkg.version || lockRootVersion !== pkg.version) problems.push('package-lock.json 根版本未与 package.json 同步');
+  }
   if (pkg.build && pkg.build.directories && !String(pkg.build.directories.output || '').endsWith('测试版' + CFG.version)) problems.push('package.json output 未盖戳');
   if (pkg.build && typeof pkg.build.artifactName === 'string' && !pkg.build.artifactName.includes(CFG.version)) problems.push('package.json artifactName 未盖戳');
   if (!fs.existsSync(P.mobileReleaseVersion())) problems.push('缺 mobile/release-version.json');
@@ -358,6 +366,24 @@ function fanOutVersions(code) {
     const back = readJson(file);
     if (back.build.buildVersion !== CFG.version) die('扇出回读失败·package.json buildVersion');
     edits.push('package.json·version/buildVersion/output/artifactName');
+  }
+  // npm lockfile 的项目版本也是 canonical metadata。若 prepare 只改 package.json，
+  // npm ci/打包元数据会继续携带旧版本，且下一版 prepare 会重复制造漂移。
+  {
+    const file = P.pkgLock();
+    if (!fs.existsSync(file)) die('扇出失败·缺 package-lock.json');
+    const lock = readJson(file);
+    if (!lock.packages || !lock.packages['']) die('扇出失败·package-lock.json 缺 packages[""]');
+    backup(file);
+    const semver = mapBuildToSemver(CFG.version);
+    lock.version = semver;
+    lock.packages[''].version = semver;
+    fs.writeFileSync(file, JSON.stringify(lock, null, 2) + '\n', 'utf-8');
+    const back = readJson(file);
+    if (back.version !== semver || !back.packages || !back.packages[''] || back.packages[''].version !== semver) {
+      die('扇出回读失败·package-lock.json 根版本');
+    }
+    edits.push('package-lock.json·version/packages[""]');
   }
   {
     const file = P.mobileReleaseVersion();
@@ -619,6 +645,13 @@ function stageInstaller(stagingDir) {
   if (!fs.existsSync(exe)) die('latest.yml path 指向的安装包不存在·' + exe);
   const actual = crypto.createHash('sha512').update(fs.readFileSync(exe)).digest('base64');
   if (actual !== ysha.trim()) die('安装包 sha512 与 latest.yml 不符（构建后被改动？）');
+  let signature;
+  try {
+    const publisher = windowsSigning.requirePublisher(process.env);
+    signature = windowsSigning.verifyAuthenticode(exe, publisher);
+  } catch (error) {
+    die('安装包 Authenticode 发布者/时间戳闸失败·' + (error && error.message || error));
+  }
   const alias = 'tianming-setup-' + CFG.version + '-x64.exe';   // gh 资产 ASCII 别名·deploy.py 按 yml path 还原中文名
   fs.copyFileSync(path.join(dir, 'latest.yml'), path.join(stagingDir, 'latest.yml'));
   const out = [
@@ -627,7 +660,7 @@ function stageInstaller(stagingDir) {
   ];
   const bm = exe + '.blockmap';
   if (fs.existsSync(bm)) out.push({ name: alias + '.blockmap', path: ensureAlias(bm, path.join(dir, alias + '.blockmap')) });
-  log('⑨ 安装包就位·' + ypath.trim() + ' → ' + alias + '（sha512 ✓·同卷别名零拷贝）');
+  log('⑨ 安装包就位·' + ypath.trim() + ' → ' + alias + '（sha512 ✓·Authenticode ' + signature.subject + ' ✓·时间戳 ✓·同卷别名零拷贝）');
   return out;
 }
 
@@ -793,6 +826,9 @@ function selfTest() {
   fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({
     version: '1.3.3', build: { buildVersion: '1.3.3.5', directories: { output: 'E:\\版本\\测试版1.3.3.5' }, artifactName: '天命-1.3.3.5-${arch}.${ext}' }
   }, null, 2));
+  fs.writeFileSync(path.join(tmp, 'package-lock.json'), JSON.stringify({
+    name: 'tianming', version: '1.3.3', lockfileVersion: 3, packages: { '': { name: 'tianming', version: '1.3.3' } }
+  }, null, 2));
   fs.writeFileSync(path.join(tmp, 'mobile', 'android', 'app', 'build.gradle'),
     'android {\n  defaultConfig {\n        versionCode 1335\n        versionName "1.3.3.5"\n  }\n}\n');
   fs.writeFileSync(path.join(tmp, 'mobile', 'release-version.json'), JSON.stringify({ version: '1.3.3.5', versionCode: 1335 }, null, 2));
@@ -842,6 +878,8 @@ function selfTest() {
   ok(verifyBuiltBaseline(true), 'fresh tree·publish 重建基线语义全等');
   const pkg = readJson(path.join(tmp, 'package.json'));
   ok(pkg.version === '9.9.909', 'pkg.version 三段 semver·映射自四段(9.9.9.9→9.9.909·每版递增·不再截断冻结)');
+  const lock = readJson(path.join(tmp, 'package-lock.json'));
+  ok(lock.version === pkg.version && lock.packages[''].version === pkg.version, 'package-lock 两处根版本与 package.json 同步');
   ok(pkg.build.buildVersion === '9.9.9.9', 'buildVersion 4 段');
   ok(pkg.build.directories.output.endsWith('测试版9.9.9.9'), 'output 目录');
   ok(pkg.build.artifactName === '天命-9.9.9.9-${arch}.${ext}', 'artifactName');

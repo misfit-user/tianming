@@ -1045,10 +1045,6 @@ async function pickHistoricalCandidates(exam) {
     // 时空约束·不适用：此口为史实检索器·契约要求返回真实名臣+史料原文摘引且只取应考(在世)候选·注入平行时空约束(别信史实记忆)会与其契约直接冲突并诱发虚构·targeted书卒/时间线既成之害在此口不成立·故不注入
     var raw = await callAISmart(prompt, _tokBudget, { maxRetries: 2 });
     var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
-    if (!parsed) {
-      var m = (raw||'').match(/\[[\s\S]*\]/);
-      if (m) try { parsed = JSON.parse(m[0]); } catch(_){}
-    }
     if (!Array.isArray(parsed)) return [];
 
     // 条1·判定口径：GM 人物册有明确死亡记录者(alive===false||dead)一律剔除防复活；不在册的史实名臣按 prompt 硬规则(应试年龄20-55+year前后活跃 era-gate)视为应考在世·GM 无据判其死·不在此后置硬闸内。

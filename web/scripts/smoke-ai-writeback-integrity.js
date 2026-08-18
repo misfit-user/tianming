@@ -121,6 +121,8 @@ async function main() {
     chars: [{ name: '真人', alive: true, officialTitle: '旧职' }],
     custom: { score: 40, label: '甲', settings: { a: 1, nested: { x: 1 } } }
   });
+  ctx.GM._indices = { charByName: new Map([['真人', ctx.GM.chars[0]]]) };
+  ctx.P._indices = { scenarioById: new Map() };
   const pathRes = ctx.applyAITurnChanges({
     changes: [
       { path: 'custom.score', delta: '5', reason: '字符串不得通过' },
@@ -137,11 +139,13 @@ async function main() {
       { path: 'custom.score', op: 'delta', value: '7' }
     ]
   });
-  check(ctx.GM.custom.score === 45 && typeof ctx.GM.custom.score === 'number', 'only finite numeric delta may apply');
-  check(ctx.GM.custom.settings.a === 1 && ctx.GM.custom.settings.b === 2 &&
-    ctx.GM.custom.settings.nested.x === 1 && ctx.GM.custom.settings.nested.y === 3, 'merge must deep-merge plain objects without replacing siblings');
+  check(pathRes.ok === false && pathRes.rolledBack === true, 'one rejected operation must reject and roll back the whole AI batch');
+  check(ctx.GM.custom.score === 40 && typeof ctx.GM.custom.score === 'number', 'valid siblings must not survive a rejected batch');
+  check(ctx.GM.custom.settings.a === 1 && !Object.prototype.hasOwnProperty.call(ctx.GM.custom.settings, 'b') &&
+    ctx.GM.custom.settings.nested.x === 1 && !Object.prototype.hasOwnProperty.call(ctx.GM.custom.settings.nested, 'y'), 'merge may not invent unknown schema fields and rejected batch must leave the object unchanged');
   check(ctx.GM.chars[0].alive === true && ctx.GM.chars[0].officialTitle === '旧职' && !ctx.GM.chars[0]._fakeDeath, 'death/office/internal paths must be blocked');
   check(!ctx.GM.P && Object.prototype.polluted === undefined, 'P root and prototype pollution must be blocked');
+  check(!Object.prototype.hasOwnProperty.call(ctx.GM, '_indices') && !Object.prototype.hasOwnProperty.call(ctx.P, '_indices'), 'rollback without buildIndices must discard non-serializable index caches instead of restoring malformed plain objects');
   check(pathRes.applied.failed.length >= 7, 'every rejected path operation must surface in applied.failed');
   const directBlocked = ctx.TM.AIChange.PathUtils.applyPathSet(ctx.GM, 'chars.真人.alive', false, 'direct sink probe');
   check(!directBlocked.ok && ctx.GM.chars[0].alive === true, 'PathUtils sink itself must reject sensitive paths even without dispatcher precheck');
@@ -161,7 +165,7 @@ async function main() {
   check(Object.getPrototypeOf(attackedChar) === originalProto && Object.prototype.polluted === undefined && appendAttackRes.applied.failed.some((f) => f.updateKey === '+__proto__'), '+__proto__ must not alter the character prototype and must fail visibly');
 
   const allowedAppendRes = ctx.applyAITurnChanges({ char_updates: [{ name: '真人', updates: { '+careerHistory': { title: '合法履历追加' } } }] });
-  check(Array.isArray(attackedChar.careerHistory) && attackedChar.careerHistory.length === 1 && allowedAppendRes.applied.failed.length === 0, 'only explicitly allowed careerHistory array append may apply');
+  check(Array.isArray(ctx.GM.chars[0].careerHistory) && ctx.GM.chars[0].careerHistory.length === 1 && allowedAppendRes.applied.failed.length === 0, 'only explicitly allowed careerHistory array append may apply');
 
   // C. faction leader 与 army commander 的最终 sink 只接受真实活人，并同步所有镜像。
   ctx.GM = baseGM({
@@ -199,6 +203,20 @@ async function main() {
   });
   check(fac.leader === '韩旷' && army.commander === '韩旷', 'ghost/dead leader or commander must leave prior valid state intact');
   check(invalidRes.applied.failed.length === 5, 'ghost/dead/conflicting leader and commander rejections must all be observable');
+
+  // C1. validator 抛异常不能再被 catch 后吞掉：严格回合写回必须整批回滚。
+  ctx.GM = baseGM({ custom: { score: 10 } });
+  ctx._validateLivingActorConsistency = function() { throw new Error('synthetic validator crash'); };
+  const validatorCrash = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    changes: [{ path: 'custom.score', delta: 5, reason: 'validator rollback probe' }]
+  });
+  check(validatorCrash.ok === false && validatorCrash.rolledBack === true, 'strict validator exception must reject the whole AI transaction');
+  check(ctx.GM.custom.score === 10, 'strict validator exception must restore writes made before validation');
+  check(validatorCrash.applied.failed.some((row) => row.validator === 'livingActor' && row.reason === 'validator exception'
+    && Array.isArray(row.details) && row.details.some((detail) => /synthetic validator crash/.test(detail))),
+  'validator exception must be observable with validator identity and error detail');
+  delete ctx._validateLivingActorConsistency;
 
   // C2. party leader/head 同样只走真实活人 sink，合法 ID 归一并同步镜像。
   ctx.GM = baseGM({

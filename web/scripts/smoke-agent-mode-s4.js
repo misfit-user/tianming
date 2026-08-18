@@ -73,7 +73,7 @@ function setScript(arr) {
   globalThis.callAIWithTools = async function (prompt, tools, opts) { return arr[i++] || { toolCalls: [], text: '' }; };
 }
 function makeGM() {
-  return { turn: 7, eraName: '建炎元年', guoku: 12000, neitang: 3000, chars: [{ id: 'c1', name: '张三' }], facs: [{ name: '北府' }], evtLog: [], memorials: [] };
+  return { turn: 7, eraName: '建炎元年', guoku: 12000, neitang: 3000, chars: [{ id: 'c1', name: '张三', mood: '' }], facs: [{ name: '北府' }], evtLog: [], memorials: [] };
 }
 
 (async function () {

@@ -17,7 +17,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-const aiInfra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const aiInfraJson = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
 
 let passed = 0;
 function assert(cond, msg) {
@@ -47,7 +47,7 @@ assert(cap.indexOf('if (_capIsCap &&') >= 0, 'toast 须 gated on 安卓(_capIsCa
 assert(/已拦截防闪退/.test(cap), 'toast 文案须说明已拦截防闪退');
 
 // ── ③ robustParseJSON 解析上限安卓收紧 ───────────────────────────────────────
-const rpj = slice(aiInfra, 'function robustParseJSON(raw)', 'Layer 1');
+const rpj = slice(aiInfraJson, 'function robustParseJSON(raw)', 'Layer 1');
 assert(/MAX_PARSE_LEN\s*=\s*_rpjIsCap\s*\?\s*262144\s*:\s*500000/.test(rpj), 'MAX_PARSE_LEN 须安卓 256KB(262144)·桌面 500KB(500000)');
 assert(/window\.TM\s*&&\s*window\.TM\.platform/.test(rpj), 'robustParseJSON 平台探测须经 window.TM.platform 并防 window 未定义');
 

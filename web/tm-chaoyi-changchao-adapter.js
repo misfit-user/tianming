@@ -1110,9 +1110,8 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
     return salv;
   }
   try {
-    const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) return _salvageFromRaw();
-    const obj = JSON.parse(m[0]);
+    const obj = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
+    if (!obj) return _salvageFromRaw();
     if (!obj || typeof obj.line !== 'string' || obj.line.length < 6) return _salvageFromRaw();
     const validStances = ['support', 'oppose', 'mediate', 'neutral'];
     const validModes   = ['lead', 'second', 'rebut', 'soften', 'pivot', 'augment'];

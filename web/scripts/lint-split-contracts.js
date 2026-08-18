@@ -50,7 +50,7 @@ const CONTRACTS = [
   ['tm-content-manager.js', 'tm-content-manager-community.js'],
   // 第二十三拆(顶层函数型中段切·保序切割)：tm-ai-infra 模型探测系统 中段切出·model-detect 须【紧随 origin 之后】
   //   经典 <script>(非 module)·顶层 var/function 全局互见·无 bucket；origin 对本片函数引用全在函数体内(运行时·typeof 守卫)·故本片载于 origin 之后安全
-  ['tm-ai-infra.js', 'tm-ai-infra-model-detect.js'],
+  ['tm-ai-infra-json.js', 'tm-ai-infra.js', 'tm-ai-infra-model-detect.js'],
   // 第二十四拆(IIFE 型·origin-first 双向 bucket)：phase8-formal-rightrail 社会层/阶层党派观测中段(行1359-3113)切出·social 须【紧随 origin 之后】
   //   origin 装载期向 bucket TM.__p8RailParts 导出 5 kept body 函数→social 闭包捕获；social 回填 13 社会层/面板函数→origin 委托 shim(renderers[kind]()/flyout/handler)调用期解析·错序即崩
   ['phase8-formal-rightrail.js', 'phase8-formal-rightrail-social.js'],

@@ -57,38 +57,41 @@ ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽�
   ok(!ctx.IDB.P.ai.key && !ctx.IDB.P.ai.secondary.key && !ctx.PROJ.ai.key, '两种外壳均剥离主/次 API key');
   ok(!('_aiTelemetry' in ctx.IDB.GM) && !('_aiTelemetry' in ctx.PROJ.gameState), '两种外壳复用 selective GM snapshot');
 }
-ok(/saveData2=_buildSaveState\(\{format:'project',prepare:false\}\)/.test(lifecycle), '浏览器导出走统一 builder');
-ok(/saveData=_buildSaveState\(\{format:'project',prepare:false\}\)/.test(lifecycle), '桌面手动存档走统一 builder');
-ok(/_preState = _buildSaveState\(\{ format: 'idb', prepare: false \}\)/.test(core), 'pre_endturn 走统一 builder');
-ok(/global\._buildSaveState\(\{ format: 'idb', prepare: false, detach: true, gm: GM, p: P \|\| \{\} \}\)/.test(resume), '残局发布以 detached 模式复用统一 builder');
+ok(/saveData2=_buildSaveState\(\{format:'project'\}\)/.test(lifecycle), '浏览器导出走统一纯 builder');
+ok(/saveData=_buildSaveState\(\{format:'project'\}\)/.test(lifecycle), '桌面手动存档走统一纯 builder');
+ok(/_preState = _buildSaveState\(\{ format: 'idb', gm: _preSaveGM, p: _preSaveP \}\)/.test(core), 'pre_endturn 走统一纯 builder');
+ok(/global\._buildSaveState\(\{ format: 'idb', detach: true, gm: GM, p: P \|\| \{\} \}\)/.test(resume), '残局发布以 detached 模式复用统一 builder');
 ok(!/gameState\s*=\s*deepClone\(GM\)|GM\s*:\s*deepClone\(GM\)/.test(lifecycle + '\n' + core + '\n' + manager), '生产存档写口无裸 deepClone(GM)');
 ok(!/SaveManager\.autoSave\(\)/.test(render), '端回合不再重复调用 SaveManager.autoSave 覆盖 slot_0');
-ok(/TM_SaveDB\.save\('autosave',[\s\S]*?\.then\(function\(ok\)\s*\{[\s\S]*?if\s*\(ok\s*!==\s*true\)\s*throw[\s\S]*?_clearPreEndturnMarkerAfterSave\(_endturnSavePreId\)/.test(render), 'autosave resolve(false) 保留 pre_endturn 恢复标记');
-ok(/TM_SaveDB\.save\('slot_0',[\s\S]*?\.then\(function\(ok\)\s*\{[\s\S]*?if\s*\(ok\s*!==\s*true\)\s*throw[\s\S]*?_updateSaveIndex/.test(render), 'slot_0 resolve(false) 不伪造案卷索引');
+ok(/TM_SaveDB\.save\('autosave',[\s\S]*?if\s*\(ok\s*!==\s*true\)\s*throw[\s\S]*?Promise\.all\(\[_autoWrite, _slotWrite\]\)[\s\S]*?_clearPreEndturnMarkerAfterSave\(_endturnSavePreId\)/.test(render), 'autosave resolve(false) 保留 pre_endturn 恢复标记');
+ok(/TM_SaveDB\.save\('slot_0',[\s\S]*?if\s*\(ok\s*!==\s*true\)\s*throw[\s\S]*?Promise\.all\(\[_autoWrite, _slotWrite\]\)[\s\S]*?_updateSaveIndex/.test(render), 'slot_0 resolve(false) 不伪造案卷索引');
 {
   const autosaveAt = render.indexOf("TM_SaveDB.save('autosave'");
   const slotAt = render.indexOf("TM_SaveDB.save('slot_0'");
+  const writesDoneAt = render.indexOf('var _writeResults = await Promise.all', slotAt);
   const markerAt = render.indexOf("localStorage.setItem('tm_autosave_mark'", autosaveAt);
-  ok(markerAt > autosaveAt && markerAt < slotAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, slotAt)), 'tm_autosave_mark 仅由成功 autosave 写入并锚定快照 turn');
+  ok(markerAt > writesDoneAt && writesDoneAt > slotAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, markerAt + 300)), 'tm_autosave_mark 仅在两个槽位成功后写入并锚定快照 turn');
 }
 ok(/_autoSaveResult\s*=\s*await window\.tianming\.autoSave\(saveData\);[\s\S]*?if\s*\(!_tmDesktopAutoSaveResultOk\(_autoSaveResult\)\)\s*throw[\s\S]*?_autoSaveLastDoneMs=Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
 ok(/_autoSaveLastSavedTurn=\(saveData\._saveMeta[\s\S]*?saveData\._saveMeta\.turn/.test(lifecycle), 'Electron 闲置跳存基线锚定已写快照 turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
-ok(/await _awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台等待后先验租约·builder 只读捕获局');
+ok(/await _awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台等待后先验租约·builder 在 detached snapshot 上准备');
 ok(/TM_SaveDB\.save\('autosave', _autoState, _autoMeta, _autoWriteOptions\)/.test(render)
   && /TM_SaveDB\.save\('slot_0', _autoState, _autoMeta, _autoWriteOptions\)/.test(render), 'autosave/slot_0 写事务共用代际租约');
 {
   const renderFn = sliceFn(render, 'function _endTurn_render(');
-  const saveStepAt = pipeline.indexOf("name: 'save-finalized-turn'");
+  const barrierStepAt = pipeline.indexOf("name: 'prepare-commit-barrier'");
   const normalIndicatorAt = pipeline.indexOf('_kjUpdateIndicators(ctx)');
   const deferredOpenersAt = pipeline.indexOf('await _runPostRenderTurnOpeners(ctx)');
   const deferredSaveAt = pipeline.indexOf('_endTurn_saveSnapshot()', deferredOpenersAt);
   ok(!/_endTurn_saveSnapshot\s*\(/.test(renderFn), '_endTurn_render 只渲染·不再在 Phase5 前启动存档');
-  ok(saveStepAt > normalIndicatorAt && normalIndicatorAt >= 0, 'normal 路径 save-finalized-turn 严格位于 Phase5/J1 后');
-  ok(deferredSaveAt > deferredOpenersAt && /finally\s*\{[\s\S]*?_endTurn_saveSnapshot\(\)/.test(pipeline.slice(deferredOpenersAt, deferredSaveAt + 80)), 'deferred 路径在 Phase5/openers 的 finally 中触发存档');
-  ok(/ctx\.meta\.deferEndTurnSave\s*=\s*true/.test(pipeline) && /if \(ctx\.meta && ctx\.meta\.deferEndTurnSave\) return ctx;/.test(pipeline), 'deferred 路径显式阻止普通 save step 提前落库');
-  ok((pipeline.match(/!ctx\.meta\.endTurnSavePromise && typeof _endTurn_saveSnapshot/g) || []).length === 2, 'normal/deferred 两条路径共享幂等存档 promise，重复关朝不会二次落库');
+  ok(barrierStepAt > normalIndicatorAt && normalIndicatorAt >= 0 && /finalSaveRequired\s*=\s*true/.test(pipeline.slice(barrierStepAt)), 'normal 路径在 Phase5/J1 后只声明提交屏障');
+  ok(deferredSaveAt > deferredOpenersAt && /await ctx\.meta\.endTurnSavePromise\s*!==\s*true/.test(pipeline.slice(deferredOpenersAt, deferredSaveAt + 500)), 'deferred 路径在 Phase5/openers 后等待存档成功');
+  ok(/ctx\.meta\.deferEndTurnSave\s*=\s*true/.test(pipeline) && /if \(ctx\.meta\.deferEndTurnSave\) return true;/.test(core), 'deferred 路径显式阻止 core 提前落库');
+  ok(/!ctx\.meta\.endTurnSavePromise && typeof _endTurn_saveSnapshot/.test(core)
+    && /!ctx\.meta\.endTurnSavePromise && typeof _endTurn_saveSnapshot/.test(pipeline), 'normal/deferred 两条路径各自复用同一幂等存档 promise');
+  ok(/var saved = await ctx\.meta\.endTurnSavePromise;[\s\S]*?saved !== true[\s\S]*?_tmCommitEndTurnTransaction/.test(core), 'normal 提交屏障严格等待最终存档后才 commit');
 }
 ok(/function save\(id, gameState, meta, options\)[\s\S]*?_writeStillAllowed\(\)[\s\S]*?SaveCompression\.compress[\s\S]*?if \(!_writeStillAllowed\(\)\) return false;[\s\S]*?return _put/.test(storage), 'SaveDB 在压缩前及真正 put 前复验 writeGuard');
 ok(/_autoSaveSourceLoadGen[\s\S]*?_autoSaveResult=await window\.tianming\.autoSave\(saveData\);[\s\S]*?写盘完成时已跨档[\s\S]*?return;[\s\S]*?_autoSaveLastDoneMs=Date\.now\(\)/.test(lifecycle), '60s Electron IPC 跨档回包不推进闲置跳存基线');
@@ -216,8 +219,8 @@ async function runDynamicLeaseSmokes() {
   }
   {
     const a = core.indexOf('var _preSaveGM = GM;');
-    const b = core.indexOf('\n    }\n  } catch(_psE)', a);
-    const src = '(function(){\n' + core.slice(a, b) + '\n})();';
+    const b = core.indexOf('\n    } else {', a);
+    const src = '(async function(){\n' + core.slice(a, b) + '\n})();';
     const store = new Map(), ls = new Map();
     let releaseSave, rawSave;
     const ctx = {
@@ -243,7 +246,8 @@ async function runDynamicLeaseSmokes() {
       }
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(src, ctx);
+    vm.createContext(ctx); const preSaveRun = vm.runInContext(src, ctx);
+    await Promise.resolve();
     ls.set('tm_pre_endturn_mark', JSON.stringify({ turn: 21, snapshotId: 'pre-snapshot-new', commitState: 'pending' }));
     ctx.window._tmActivePreEndturnSnapshotId = 'pre-snapshot-new';
     ctx.window._tmLoadGen = 4;
@@ -251,9 +255,10 @@ async function runDynamicLeaseSmokes() {
     ctx.P = { id: 'new-p' };
     releaseSave();
     await rawSave;
-    await Promise.resolve();
+    let preSaveError = null;
+    try { await preSaveRun; } catch (e) { preSaveError = e; }
     const marker = JSON.parse(ls.get('tm_pre_endturn_mark'));
-    ok(!store.has('pre_endturn') && marker.snapshotId === 'pre-snapshot-new' && marker.commitState === 'pending', 'stale pre_endturn completion cannot overwrite the newer record or marker');
+    ok(!!preSaveError && !store.has('pre_endturn') && marker.snapshotId === 'pre-snapshot-new' && marker.commitState === 'pending', 'stale pre_endturn completion fails closed and cannot overwrite the newer record or marker');
   }
   {
     const a = mainImpl.indexOf('const AUTO_SAVE_FILE =');

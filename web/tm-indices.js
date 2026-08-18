@@ -120,6 +120,20 @@ function _tmGetCurrentScenarioRaw() {
   return null;
 }
 
+// 索引是派生缓存；回滚/换局只能通过索引模块统一失效，调用方不得跨模块直删。
+function invalidateGameIndices(gmRef, pRef) {
+  var G = gmRef || (typeof GM !== 'undefined' ? GM : null);
+  var scenarioState = pRef || (typeof P !== 'undefined' ? P : null);
+  if (G) { try { delete G._indices; } catch (_) {} }
+  if (scenarioState) { try { delete scenarioState._indices; } catch (_) {} }
+}
+
+(function(global) {
+  var TM = global.TM = global.TM || {};
+  TM.Indices = TM.Indices || {};
+  TM.Indices.invalidate = invalidateGameIndices;
+})(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this));
+
 // 建筑双账只读兼容层：旧账 GM.buildings 仍服务老经济结算；新账 division.buildings[] 是现行营造主链。
 // 展示/AI 上下文读取时合并两者，避免新建筑在旧面板里“隐身”；不把新账喂给旧建筑产出公式，防止重复收益。
 function _tmAdminBuildingSources() {
@@ -645,7 +659,7 @@ function removeScenarioFromIndex(id) {
 /** @param {string} name @returns {Object|undefined} 角色对象 */
 function findCharByName(name) {
   if (!name) return undefined;
-  if (!GM._indices || !GM._indices.charByName) {
+  if (!GM._indices || !GM._indices.charByName || typeof GM._indices.charByName.get !== 'function') {
     buildIndices();
   }
   var rawName = _tmCleanCharLookupName(name);
@@ -694,35 +708,35 @@ function findCharByName(name) {
 
 /** @param {string} name @returns {Object|undefined} 势力对象 */
 function findFacByName(name) {
-  if (!GM._indices || !GM._indices.facByName) {
+  if (!GM._indices || !GM._indices.facByName || typeof GM._indices.facByName.get !== 'function') {
     buildIndices();
   }
   return GM._indices.facByName.get(name);
 }
 
 function findPartyByName(name) {
-  if (!GM._indices || !GM._indices.partyByName) {
+  if (!GM._indices || !GM._indices.partyByName || typeof GM._indices.partyByName.get !== 'function') {
     buildIndices();
   }
   return GM._indices.partyByName.get(name);
 }
 
 function findClassByName(name) {
-  if (!GM._indices || !GM._indices.classByName) {
+  if (!GM._indices || !GM._indices.classByName || typeof GM._indices.classByName.get !== 'function') {
     buildIndices();
   }
   return GM._indices.classByName.get(name);
 }
 
 function findTechByName(name) {
-  if (!GM._indices || !GM._indices.techByName) {
+  if (!GM._indices || !GM._indices.techByName || typeof GM._indices.techByName.get !== 'function') {
     buildIndices();
   }
   return GM._indices.techByName.get(name);
 }
 
 function findArmyByName(name) {
-  if (!GM._indices || !GM._indices.armyByName) {
+  if (!GM._indices || !GM._indices.armyByName || typeof GM._indices.armyByName.get !== 'function') {
     buildIndices();
   }
   return GM._indices.armyByName.get(name);

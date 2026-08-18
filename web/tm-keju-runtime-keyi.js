@@ -604,7 +604,6 @@ async function _keyiGenAllStances() {
       if (typeof _buildTemporalConstraint === 'function') { try { var _tcMVote = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames((ctx || ''), [], 10) : []; prompt += _buildTemporalConstraint(null, { clauseOnly: true, mentionedNames: _tcMVote }); } catch (_tcE) {} }
       var raw = await callAISmart(prompt, _tokBudget, { maxRetries: 1, tier: _keyiVoteTier });
       var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
-      if (!parsed) { var m = raw.match(/\[[\s\S]*\]/); if (m) try { parsed = JSON.parse(m[0]); } catch(_){} }
       if (Array.isArray(parsed)) {
         parsed.forEach(function(r){
           if (r && r.name && KEYI_STATE.stances[r.name]) {

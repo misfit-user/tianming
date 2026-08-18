@@ -123,8 +123,8 @@
       var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});
       var existItm=P.items.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});
       var existNoteI=existItm.length?"已有道具（不得重复）："+existItm.join("、")+"\n":"";
-      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成3-5物品/科技。"+existNoteI+"JSON:[{\"name\":\"\",\"type\":\"item/tech/policy\",\"desc\":\"\",\"effect\":{},\"prerequisite\":\"\"}]",1500,{minLength:200,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成3-5物品/科技。"+existNoteI+"JSON:[{\"name\":\"\",\"type\":\"item/tech/policy\",\"desc\":\"\",\"effect\":{},\"prerequisite\":\"\"}]",1500,{minLength:200,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         JSON.parse(jm[0]).forEach(function(t){
           P.items.push({sid:editingScenarioId,name:t.name||"",type:t.type||"item",desc:t.desc||"",effect:t.effect||{},prereq:t.prerequisite||"",acquired:false});
@@ -159,8 +159,8 @@
     try{
       var existRul=(Array.isArray(P.rules)?P.rules:[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});
       var existNoteR=existRul.length?"已有规则（不得重复）："+existRul.join("、")+"\n":"";
-      var c=await callAISmart("生成3规则。"+existNoteR+"JSON:[{\"name\":\"\",\"trigger\":{\"type\":\"threshold\",\"variable\":\"\",\"op\":\"<\",\"value\":20},\"effect\":{\"narrative\":\"\"}}]",1500,{minLength:150,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("生成3规则。"+existNoteR+"JSON:[{\"name\":\"\",\"trigger\":{\"type\":\"threshold\",\"variable\":\"\",\"op\":\"<\",\"value\":20},\"effect\":{\"narrative\":\"\"}}]",1500,{minLength:150,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         JSON.parse(jm[0]).forEach(function(r){P.rules.push({sid:editingScenarioId,name:r.name||"",enabled:true,trigger:r.trigger||{type:"threshold"},effect:r.effect||{}});});
         renderEdTab("t-rul");toast("✅");
@@ -185,8 +185,8 @@
       var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});
       var existEvt=(P.events||[]).filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});
       var existNoteE=existEvt.length?"已有事件（不得重复）："+existEvt.join("、")+"\n":"";
-      var c=await callAISmart("为\""+(ctx?ctx.name:"")+"\" 生成3事件。"+existNoteE+"JSON:[{\"name\":\"\",\"narrative\":\"事件200字\",\"triggerTurn\":0,\"oneTime\":true,\"choices\":[{\"text\":\"\",\"effect\":{}}]}]",2000,{minLength:400,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("为\""+(ctx?ctx.name:"")+"\" 生成3事件。"+existNoteE+"JSON:[{\"name\":\"\",\"narrative\":\"事件200字\",\"triggerTurn\":0,\"oneTime\":true,\"choices\":[{\"text\":\"\",\"effect\":{}}]}]",2000,{minLength:400,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         JSON.parse(jm[0]).forEach(function(ev){P.events.push({sid:editingScenarioId,id:uid(),name:ev.name||"",type:"scripted",triggerTurn:ev.triggerTurn||0,oneTime:true,triggered:false,narrative:ev.narrative||"",choices:ev.choices||[]});});
         renderEdTab("t-evt");hideLoading();toast("✅");
@@ -230,8 +230,8 @@
       var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});
       var existCls=P.classes.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});
       var existNoteCl=existCls.length?"已有阶层（不得重复）："+existCls.join("、")+"\n":"";
-      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成3-6阶层。"+existNoteCl+"JSON:[{\"name\":\"\",\"desc\":\"\",\"privileges\":\"\",\"restrictions\":\"\",\"population\":\"\",\"influence\":50}]",1500,{minLength:200,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成3-6阶层。"+existNoteCl+"JSON:[{\"name\":\"\",\"desc\":\"\",\"privileges\":\"\",\"restrictions\":\"\",\"population\":\"\",\"influence\":50}]",1500,{minLength:200,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         JSON.parse(jm[0]).forEach(function(cl){P.classes.push({sid:editingScenarioId,name:cl.name||"",desc:cl.desc||"",privileges:cl.privileges||"",restrictions:cl.restrictions||"",population:cl.population||"",influence:cl.influence||50});});
         renderEdTab("t-class");toast("✅");
@@ -264,8 +264,8 @@
       var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});
       var existWld=(P.worldEvents||[]).filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name||x.title||"";});
       var existNoteW=existWld.length?"已有世界设定（不得重复）："+existWld.join("、")+"\n":"";
-      var c=await callAISmart("为\""+(ctx?ctx.name:"")+"\" 生成世界观。"+existNoteW+"JSON:[{\"category\":\"\",\"content\":\"详细200-400字\"}]\n6个分类",3000,{minLength:800,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=6;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("为\""+(ctx?ctx.name:"")+"\" 生成世界观。"+existNoteW+"JSON:[{\"category\":\"\",\"content\":\"详细200-400字\"}]\n6个分类",3000,{minLength:800,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=6;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         if(!P.world.entries)P.world.entries=[];
         JSON.parse(jm[0]).forEach(function(e){P.world.entries.push({sid:editingScenarioId,category:e.category||"",content:e.content||"",tags:[]});});
@@ -306,8 +306,8 @@
       var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});
       var existTech=[].concat(P.techTree&&P.techTree.military?P.techTree.military:[]).concat(P.techTree&&P.techTree.civil?P.techTree.civil:[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});
       var existNoteT=existTech.length?"已有科技（不得重复）："+existTech.join("、")+"\n":"";
-      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成8科技。"+existNoteT+"JSON:[{\"name\":\"\",\"desc\":\"\",\"prereqs\":[],\"costs\":[{\"variable\":\"经济实力\",\"amount\":20}],\"effect\":{},\"era\":\"初级/中级/高级\"}]",2000,{minLength:400,validator:function(c){try{var jm=c.match(/\[[\s\S]*\]/);if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=8;}catch(e){return false;}}});
-      var jm=c.match(/\[[\s\S]*\]/);
+      var c=await callAISmart("为"+(ctx?ctx.name:"")+"生成8科技。"+existNoteT+"JSON:[{\"name\":\"\",\"desc\":\"\",\"prereqs\":[],\"costs\":[{\"variable\":\"经济实力\",\"amount\":20}],\"effect\":{},\"era\":\"初级/中级/高级\"}]",2000,{minLength:400,validator:function(c){try{var jm=extractJSONMatch(c,'array');if(!jm)return false;var arr=JSON.parse(jm[0]);return Array.isArray(arr)&&arr.length>=8;}catch(e){return false;}}});
+      var jm=extractJSONMatch(c,'array');
       if(jm){
         JSON.parse(jm[0]).forEach(function(t){P.techTree.push({sid:editingScenarioId,name:t.name||"",desc:t.desc||"",prereqs:t.prereqs||[],costs:t.costs||[],effect:t.effect||{},era:t.era||"初级",unlocked:false});});
         renderEdTab("t-tech");toast("✅");

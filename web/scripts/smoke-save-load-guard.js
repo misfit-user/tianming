@@ -2,8 +2,8 @@
 'use strict';
 // smoke-save-load-guard — 存档读口纵深防御（写口 bug 已由 de430926 收敛·本刀补读口报损）
 //   覆盖三件事：
-//   ① tm-storage.js load()：解压后 JSON.parse 失败 → gameState 置 null + record._loadError='parse_failed'
-//      （不把残留压缩 Blob 冒充 gameState 下传）；健康压缩档正常解析；未压缩旧档原样返回·均无 _loadError。
+//   ① tm-storage.js load()：解压或 JSON.parse 失败必须 reject，绝不把损坏档伪装成空槽或半有效 record；
+//      健康压缩档正常解析；未压缩旧档原样返回。
 //   ② tm-save-manager.js loadFromSlot：交给 SaveMigrations/fullLoadGame 前先验形状，坏形状/畸形嵌套
 //      （_loadError / Blob / 字符串 / 空对象 / {GM}缺P / gameState=null）明确报损并 return·不下传；
 //      真空槽唯一判据 = record===null（走「该槽位没有存档」）。
@@ -36,9 +36,9 @@ function sliceFn(src, marker) {
 console.log('=== 1. 源码契约 ===');
 {
   const loadFn = sliceFn(storageSrc, 'function load(id)');
-  ok(/record\.gameState = null;/.test(loadFn), 'storage.load() 解析失败把 gameState 置 null');
-  ok(/record\._loadError = 'parse_failed';/.test(loadFn), "storage.load() 标 _loadError='parse_failed'");
-  ok(loadFn.indexOf("_loadError = 'parse_failed'") < loadFn.indexOf('delete record._compressed'), '置空标错在 delete _compressed 之前');
+  ok(/record\.gameState = JSON\.parse\(jsonStr\)/.test(loadFn), 'storage.load() 解析压缩档');
+  ok(!/parse_failed|record\.gameState\s*=\s*null/.test(loadFn), '解析失败不再降级成半有效 record');
+  ok(!/\.catch\s*\([^)]*\)\s*\{[\s\S]*?return record/.test(loadFn), '解压/解析错误沿 Promise 拒绝向上传递');
 }
 {
   ok(/function _isLoadableGameState\(gs\)/.test(managerSrc), 'manager 定义 _isLoadableGameState 形状守卫');
@@ -75,6 +75,7 @@ function makeStorageCtx() {
     window: { indexedDB: undefined },
     indexedDB: undefined,
     localStorage, console, Promise, JSON, Date, Math, Blob, Response,
+    TextDecoder, Uint8Array, ArrayBuffer,
     navigator: { storage: {} }, setTimeout, clearTimeout
   };
   ctx.window.window = ctx.window; ctx.window.localStorage = localStorage; ctx.window.console = console;
@@ -87,15 +88,14 @@ function makeStorageCtx() {
 }
 
 (async () => {
-  // 2a. 坏档：解压后是非法 JSON → 置空 + 标错
+  // 2a. 坏档：解压后是非法 JSON → reject，调用方明确报损
   {
     const { ctx, store } = makeStorageCtx();
     store.set('tm_idb_saves_slot_bad', JSON.stringify({ id: 'slot_bad', _compressed: true, gameState: 'BLOB_PLACEHOLDER' }));
     ctx.SaveCompression.decompress = function () { return Promise.resolve('{ this is: not valid json ]'); };
-    const rec = await ctx.TM_SaveDB.load('slot_bad');
-    ok(rec && rec.gameState === null, '解析失败：record.gameState 显式置 null（不残留 Blob/字符串）');
-    ok(rec && rec._loadError === 'parse_failed', "解析失败：record._loadError='parse_failed'");
-    ok(rec && !('_compressed' in rec), '解析失败后仍清掉 _compressed 标记');
+    let rejected = false;
+    try { await ctx.TM_SaveDB.load('slot_bad'); } catch (e) { rejected = e instanceof SyntaxError || /JSON|position|property/i.test(String(e)); }
+    ok(rejected, '解析失败：load() reject，不返回半有效 record');
   }
   // 2b. 健康压缩档：正常解析·无 _loadError
   {
@@ -115,6 +115,22 @@ function makeStorageCtx() {
     const rec = await ctx.TM_SaveDB.load('slot_legacy');
     ok(rec && rec.gameState && rec.gameState.GM && rec.gameState.GM.turn === 3, '未压缩旧档：gameState 原样返回');
     ok(rec && !rec._loadError && decompressCalled === false, '未压缩旧档：不走解压、不标 _loadError');
+  }
+  // 2d. 非 gzip Blob 旧档按 UTF-8 解码；不允许 String(ArrayBuffer) 腐化
+  {
+    const { ctx } = makeStorageCtx();
+    const text = JSON.stringify({ GM: { turn: 9 }, P: { conf: {} } });
+    const decoded = await ctx.SaveCompression.decompress(new Blob([text]));
+    ok(decoded === text, '非 gzip Blob 旧档按 UTF-8 原文解码');
+  }
+  // 2e. gzip 数据在缺少 DecompressionStream 时明确拒绝
+  {
+    const { ctx } = makeStorageCtx();
+    ctx.SaveCompression.decompressionSupported = false;
+    let rejected = false;
+    try { await ctx.SaveCompression.decompress(new Blob([new Uint8Array([0x1f, 0x8b, 0x00])])); }
+    catch (e) { rejected = /不支持 gzip 解压/.test(String(e && e.message || e)); }
+    ok(rejected, '缺少 gzip 解压能力时明确 reject');
   }
 
   // ============================================================

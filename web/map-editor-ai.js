@@ -161,15 +161,36 @@
 
   function parseAIResponse(txt){
     if (!txt) return null;
-    // 找 JSON block
-    var m = txt.match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    try {
-      return JSON.parse(m[0]);
-    } catch(e){
-      console.error('[ai] parse fail:', e, txt.slice(0, 200));
-      return null;
+    var raw = String(txt).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    try { return JSON.parse(raw); } catch (_) {}
+    var found = null, count = 0;
+    for (var start = 0; start < raw.length; start++) {
+      if (raw[start] !== '{' && raw[start] !== '[') continue;
+      var stack = [], inString = false, escaped = false, end = -1;
+      for (var i = start; i < raw.length; i++) {
+        var ch = raw[i];
+        if (escaped) { escaped = false; continue; }
+        if (ch === '\\') { escaped = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{' || ch === '[') stack.push(ch);
+        else if (ch === '}' || ch === ']') {
+          var expected = ch === '}' ? '{' : '[';
+          if (!stack.length || stack.pop() !== expected) break;
+          if (!stack.length) { end = i; break; }
+        }
+      }
+      if (end < 0) continue;
+      try {
+        found = JSON.parse(raw.slice(start, end + 1));
+        count++;
+        if (count > 1) return null;
+        start = end;
+      } catch (_) {}
     }
+    if (count === 1) return found;
+    console.error('[ai] parse fail:', raw.slice(0, 200));
+    return null;
   }
 
   // ─── apply patch ────────────────────────────────────────

@@ -33,10 +33,7 @@ function _clearPreEndturnMarkerAfterSave(expectedId) {
 // 回合存档唯一入口：必须由 pipeline 在 Phase5 全部状态写入后触发。
 // 函数保持 detached 语义，但先绑定局/回合/loadGen 租约；后台等待结束后仍会复验，旧局绝不落库。
 function _endTurn_saveSnapshot() {
-  if (typeof TM_SaveDB === 'undefined' || typeof _prepareGMForSave !== 'function') {
-    _clearPreEndturnMarkerAfterSave();
-    return Promise.resolve(false);
-  }
+  if (typeof TM_SaveDB === 'undefined' || typeof _buildSaveState !== 'function') return Promise.resolve(false);
   var _endturnSaveGM = GM;
   var _endturnSaveP = P;
   var _endturnSaveLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
@@ -58,11 +55,8 @@ function _endTurn_saveSnapshot() {
       }
       if (!_endturnSaveStillCurrent()) return false;
       try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
-      _prepareGMForSave();
-      if (!_endturnSaveStillCurrent()) return false;
-
       var _autoT0 = Date.now();
-      var _autoState = _buildSaveState({format:'idb',prepare:false,gm:_endturnSaveGM,p:_endturnSaveP});
+      var _autoState = _buildSaveState({format:'idb',gm:_endturnSaveGM,p:_endturnSaveP});
       var _autoSnapMs = Date.now() - _autoT0;
       if (_autoSnapMs > 800) console.warn('[AutoSave] 端回合 snapshot 耗 '+_autoSnapMs+'ms·考虑 A-2');
       var _sc3 = typeof findScenarioById === 'function' ? findScenarioById(_endturnSaveSid) : null;
@@ -74,30 +68,33 @@ function _endTurn_saveSnapshot() {
       var _autoWriteOptions = { writeGuard: _endturnSaveStillCurrent };
       var _autoWrite = TM_SaveDB.save('autosave', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
         if (ok !== true) throw new Error('autosave 未落库·保留 pre_endturn 恢复标记');
-        if (!_endturnSaveStillCurrent()) return false;
-        if (!_clearPreEndturnMarkerAfterSave(_endturnSavePreId)) return false;
-        try {
-          localStorage.setItem('tm_autosave_mark', JSON.stringify({
-            turn: _autoMeta.turn, timestamp: Date.now(),
-            scenarioName: _autoMeta.scenarioName, eraName: _autoMeta.eraName
-          }));
-        } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-render');}catch(_){}}
-        return true;
+        return _endturnSaveStillCurrent();
       }).catch(function(e) {
         (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] autosave写入失败:') : console.warn('[AutoSave] autosave写入失败:', e);
         return false;
       });
       var _slotWrite = TM_SaveDB.save('slot_0', _autoState, _autoMeta, _autoWriteOptions).then(function(ok) {
         if (ok !== true) throw new Error('slot_0 未落库·不更新案卷索引');
-        if (!_endturnSaveStillCurrent()) return false;
-        if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
-        return true;
+        return _endturnSaveStillCurrent();
       }).catch(function(e) {
         (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'AutoSave] slot_0写入失败:') : console.warn('[AutoSave] slot_0写入失败:', e);
         return false;
       });
       var _writeResults = await Promise.all([_autoWrite, _slotWrite]);
-      return _writeResults[0] === true;
+      if (_writeResults[0] !== true || _writeResults[1] !== true || !_endturnSaveStillCurrent()) return false;
+      // 两个 canonical 槽位都提交后，才清恢复点并发布“已安全保存”标志。
+      if (!_clearPreEndturnMarkerAfterSave(_endturnSavePreId)) return false;
+      if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta);
+      try {
+        localStorage.setItem('tm_autosave_mark', JSON.stringify({
+          turn: _autoMeta.turn, timestamp: Date.now(),
+          scenarioName: _autoMeta.scenarioName, eraName: _autoMeta.eraName
+        }));
+      } catch(e) {
+        try { window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-render'); } catch(_) {}
+        return false;
+      }
+      return true;
     } catch(e) {
       console.warn('[AutoSave] post-turn save failed:', e);
       return false;

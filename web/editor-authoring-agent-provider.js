@@ -190,7 +190,10 @@
   function _parseJsonToolCalls(text) {
     if (!text) return [];
     var parsed = null;
-    try { var m = _stripJsonWrappers(text).match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); } catch (e) { return []; }
+    try {
+      var unwrapped = _stripJsonWrappers(text);
+      parsed = (typeof extractJSON === 'function') ? extractJSON(unwrapped) : JSON.parse(unwrapped);
+    } catch (e) { return []; }
     var calls = [];
     if (parsed && Array.isArray(parsed.tool_calls)) {
       parsed.tool_calls.forEach(function(c, i) { if (c && c.name) calls.push({ id: _genId(i), name: c.name, input: c.input || c.arguments || {} }); });

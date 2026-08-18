@@ -1516,13 +1516,6 @@ function _parseJsonArr(raw) {
     if (parsed && Array.isArray(parsed.candidates)) return parsed.candidates;
     if (parsed && Array.isArray(parsed.results)) return parsed.results;
   } catch(_){}
-  var cleaned = raw.replace(/```json|```/g, '').trim();
-  var jm = cleaned.match(/\[[\s\S]*\]/);
-  if (jm) {
-    try { return JSON.parse(jm[0]); } catch(_){
-      try { return JSON.parse(jm[0].replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}')); } catch(_){}
-    }
-  }
   return null;
 }
 
@@ -1609,7 +1602,6 @@ async function _kejuGenExaminerSuggestions(exam) {
       if (typeof _buildTemporalConstraint === 'function') { try { var _tcMSug = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(((exam && exam.playerQuestion) || ''), (ex && ex.name ? [ex.name] : []), 10) : []; prompt += _buildTemporalConstraint(null, { clauseOnly: true, mentionedNames: _tcMSug }); } catch (_tcE) {} }
       var raw = await callAISmart(prompt, 3000, { maxRetries: 1 });
       var parsed = (typeof extractJSON === 'function') ? extractJSON(raw) : null;
-      if (!parsed) { var m = raw.match(/\[[\s\S]*\]/); if (m) try { parsed = JSON.parse(m[0]); } catch(_){} }
       if (Array.isArray(parsed)) {
         suggestions[ex.name + '(' + (ex.party||'\u65E0\u515A') + ')'] = parsed;
       }

@@ -362,22 +362,56 @@ function resolveHeir(deadChar) {
 
   function _genderOk(c) {
     if (genderFilter === 'none') return true;
-    return (c.gender || '') === genderFilter;
+    var want = String(genderFilter || '').toLowerCase();
+    var actual = String(c && c.gender || '').toLowerCase();
+    if (actual === '男' || actual === '男性' || actual === 'm') actual = 'male';
+    if (actual === '女' || actual === '女性' || actual === 'f') actual = 'female';
+    if (want === '男' || want === '男性' || want === 'm') want = 'male';
+    if (want === '女' || want === '女性' || want === 'f') want = 'female';
+    return actual === want;
   }
+  function _findRef(ref) {
+    if (ref == null) return null;
+    var key = typeof ref === 'object' ? (ref.id || ref.characterId || ref.name) : ref;
+    var rows = (GM && GM.chars) || [];
+    return rows.find(function(c) { return c && (c.id === key || c.name === key); })
+      || (typeof findCharByName === 'function' ? findCharByName(key) : null);
+  }
+  function _childRefs() {
+    var refs = [], seen = {};
+    function add(v) {
+      var c = _findRef(v); if (!c) return;
+      var k = c.id || c.name; if (!k || seen[k]) return;
+      seen[k] = true; refs.push(c);
+    }
+    (deadChar.childrenIds || []).forEach(add);
+    (deadChar.children || []).forEach(add);
+    (deadChar.familyMembers || []).forEach(function(m) {
+      if (m && /^(子|女|儿|child|son|daughter)/i.test(String(m.relation || m.relationship || ''))) add(m);
+    });
+    ((GM && GM.chars) || []).forEach(function(c) {
+      if (!c) return;
+      var father = c.fatherId || c.father, mother = c.motherId || c.mother;
+      var matchesFather = father != null && ((deadChar.id != null && father === deadChar.id) || father === deadChar.name);
+      var matchesMother = mother != null && ((deadChar.id != null && mother === deadChar.id) || mother === deadChar.name);
+      if (matchesFather || matchesMother) add(c);
+    });
+    return refs;
+  }
+  var childRows = _childRefs();
 
   // 1. designated：指定继承人（所有法类型共享最高优先级）
   if (deadChar.designatedHeirId) {
-    var heir = findCharByName(deadChar.designatedHeirId);
+    var heir = _findRef(deadChar.designatedHeirId);
     if (heir && heir.alive !== false) return heir;
   }
 
   // 2. 根据继承法类型分支
   // 帝制默认嫡长(2026-07-07·国本刀)：未配继承法但有子嗣→按嫡长处理——否则分支2被跳过·
   //   fallback3「同势力最强者」抢先继统(亲子在而权臣继)。显式配 seniority/elective 的剧本不受影响。
-  if ((law === 'primogeniture' || (!law && deadChar.childrenIds && deadChar.childrenIds.length > 0)) && deadChar.childrenIds && deadChar.childrenIds.length > 0) {
+  if ((law === 'primogeniture' || (!law && childRows.length > 0)) && childRows.length > 0) {
     // 嫡长子继承——年龄最大的符合性别限制的子嗣
-    var children = deadChar.childrenIds.map(function(id) { return findCharByName(id); })
-      .filter(function(c) { return c && c.alive !== false && _genderOk(c); })
+    var children = childRows.filter(function(c) { return c && c.alive !== false && _genderOk(c); })
       .sort(function(a, b) { return (b.age || 0) - (a.age || 0); });
     if (children.length > 0) return children[0];
   }
@@ -431,7 +465,9 @@ function resolveHeir(deadChar) {
 function _heirBasisOf(deadChar, heir) {
   if (!deadChar || !heir) return 'none';
   if (deadChar.designatedHeirId && (heir.name === deadChar.designatedHeirId || heir.id === deadChar.designatedHeirId)) return 'designated';
-  if (Array.isArray(deadChar.childrenIds) && (deadChar.childrenIds.indexOf(heir.name) >= 0 || deadChar.childrenIds.indexOf(heir.id) >= 0)) return 'blood';
+  var _refs = [].concat(deadChar.childrenIds || [], deadChar.children || []);
+  if (_refs.some(function(ref) { var key = ref && typeof ref === 'object' ? (ref.id || ref.characterId || ref.name) : ref; return key === heir.name || key === heir.id; })) return 'blood';
+  if (heir.father === deadChar.name || heir.fatherId === deadChar.id || heir.fatherId === deadChar.name || heir.mother === deadChar.name || heir.motherId === deadChar.id || heir.motherId === deadChar.name) return 'blood';
   var law = deadChar.successionLaw || '';
   if (!law && deadChar.faction && GM.facs) {
     var _bf = GM.facs.find(function (f) { return f && f.name === deadChar.faction; });
@@ -458,7 +494,7 @@ function adjudicatePlayerDeath(ch, cause, opts) {
     if (heir && heir.alive !== false && !heir.dead) {
       ch.isPlayer = false;
       heir.isPlayer = true; // arch-ok: 世代传承唯一裁决口(R1a 收拢两镜像·2026-07-07)
-      if (typeof P !== 'undefined' && P && P.playerInfo) P.playerInfo.characterName = heir.name; // arch-ok: 同上
+      GM.playerInfo = Object.assign({}, (GM.playerInfo || (typeof P !== 'undefined' && P && P.playerInfo) || {}), { characterName: heir.name }); // arch-ok: 运行期继位只写 GM，不污染剧本配置 P
       if (typeof addEB === 'function') { try { addEB('继承', ch.name + '驾崩，' + heir.name + '继位'); } catch (_) {} }
       if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.addMemory) {
         try {

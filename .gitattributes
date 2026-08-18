@@ -45,6 +45,23 @@ web/tm-save-lifecycle.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,c
 web/tm-faction-action-engine.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 批甲「开闸醒世界」(2026-07-22·Codex 三轮 A)触及的历史 CRLF(mixed) 文件：新增 lite conf 净化器 _tmLiteSafeConf + 两 lite 写口接线·同上契约(检查真行尾空格·不把 CR 误报为 trailing)。
 web/tm-utils.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# 三轮审计（2026-08-18）触及的历史 CRLF 文件：保留原始字节，并让 diff 检查忽略 CR 本身。
+web/editor-form-goals.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/editor-form-offend-groups.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/editor-fullgen.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/editor-game-systems.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/phase8-formal-bridge.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-json-repair-layers.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-old-save-compat.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-ai-infra.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-chaoyi-changchao-adapter.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-content-manager-community.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-content-manager.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-military.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-player-core.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-post-turn-jobs.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-state-snapshot.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-time-utils.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 批丙「涟漪跨线」(2026-07-22)触及的历史 CRLF 文件：army:defeat 死链裁定注释(由 world-reactors 承载·保持退役)·同上契约(检查真行尾空格·不把 CR 误报为 trailing)。
 web/tm-three-systems-ext.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 批辛「NPC 交互活动丰富」(2026-07-22)触及的历史 CRLF 文件：sc1b 文事鸿雁人际专项 prompt·关系网/囚者至交/前瞻注入 + 新交互型路由提示·同上契约(检查真行尾空格·不把 CR 误报为 trailing)。

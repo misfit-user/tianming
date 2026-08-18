@@ -5,6 +5,9 @@
  */
 const path = require('path');
 global.window = { TMArmyUnits: require(path.resolve(__dirname, '..', 'tm-army-units.js')) };
+global.P = { time: { startYear: 1600, startMonth: 1, startDay: 1 } };
+global._getDaysPerTurn = () => 30;
+require(path.resolve(__dirname, '..', 'tm-time-utils.js'));
 const ADP = require(path.resolve(__dirname, '..', 'tm-battle-adapter.js'));
 let A = 0, F = 0;
 function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
@@ -116,12 +119,12 @@ ok(ADP.resolveTerrainTag(GM3, { location: '福建沿海' }) === '沿海', '⑬ �
 ok(ADP.resolveTerrainTag(GM3, { location: '某地漠南草原' }) === '漠南草原', '⑬ 地形词兜底:长词优先(漠南草原 先于 草原)');
 ok(ADP.resolveTerrainTag(GM3, { location: '全国 329 卫' }) === '', '⑬ 无省无地形词(全国聚合军)→\'\'(优雅回退默认地形)');
 
-/* ⑭ deriveWeather / seasonOf:全局回合→季节→天候(确定性·冬→雪) */
-ok(ADP.seasonOf({ turn: 1 }) === '春' && ADP.seasonOf({ turn: 4 }) === '冬', '⑭ turn 四回合周期:1春/4冬');
-ok(ADP.deriveWeather({ turn: 4 }) === 'snow' && ADP.deriveWeather({ turn: 2 }) === 'clear', '⑭ 冬→snow·夏→clear');
+/* ⑭ deriveWeather / seasonOf:统一历法日期→季节→天候(确定性·冬→雪) */
+ok(ADP.seasonOf({ turn: 1 }) === '冬' && ADP.seasonOf({ turn: 3 }) === '春', '⑭ 回合按统一历法日期判季节，不再四回合硬轮转');
+ok(ADP.deriveWeather({ turn: 12 }) === 'snow' && ADP.deriveWeather({ turn: 6 }) === 'clear', '⑭ 冬→snow·夏→clear');
 ok(ADP.seasonOf({ dateText: '天启七年腊月' }) === '冬' && ADP.deriveWeather({ dateText: '天启七年腊月' }) === 'snow', '⑭ 纪年文本 腊月→冬→snow(优先月份)');
 ok(ADP.seasonOf({ time: '崇祯二年九月' }) === '秋' && ADP.seasonOf({ turn: 99, monthText: '三月' }) === '春', '⑭ 九月→秋·三月→春(月份优先于turn)');
-ok(ADP.deriveWeather({}) === 'clear' && ADP.deriveWeather(null) === 'clear', '⑭ 无回合/空→clear(永不崩)');
+ok(ADP.deriveWeather({}) === 'snow' && ADP.deriveWeather(null) === 'snow', '⑭ 无回合时按统一历法起始日判季节且不崩');
 
 /* ⑮ buildBattleConfig 自解析:未显式传 terrainTag/weather → 由 GM+主军所在省/季节推导 */
 const winterArmy = [{ id: 'wa', name: '蓟镇军', faction: '明', commander: '某', morale: 70, training: 60, location: '蓟州', composition: [{ type: '长枪兵', count: 2000 }] }];
@@ -129,7 +132,7 @@ const acfg = ADP.buildBattleConfig(winterArmy, enemy, { GM: GM3, playerFactionNa
 ok(acfg.terrainProfile && acfg.terrainProfile.dens === 0.18, '⑮ 自解析:蓟州→省平原→dens0.18(未显式传 terrainTag)');
 ok(acfg.meta.terrainTag === '平原', '⑮ meta 记解析出的 terrainTag=平原');
 ok(acfg.mapSeed === ADP.provinceSeed('蓟州'), '⑮ 自解析:provinceName 缺→取主军 location(蓟州)当种子');
-const acfg2 = ADP.buildBattleConfig(winterArmy, enemy, { GM: { turn: 4 }, terrainTag: '草原' });   // 显式 terrainTag 覆盖·GM 冬
+const acfg2 = ADP.buildBattleConfig(winterArmy, enemy, { GM: { turn: 12 }, terrainTag: '草原' });   // 显式 terrainTag 覆盖·GM 冬
 ok(acfg2.terrainProfile.biome === 'plain' && acfg2.weather === 'snow', '⑮ 显式 terrainTag 优先·weather 仍由冬季自解析→snow');
 
 /* ⑯ 修饰位 flags 透传(§3 v2 LLM直出flag拼装):队 flags→token flags(白名单滤)·无 flags 不加字段 */
@@ -158,15 +161,15 @@ ok(ADP.terrainProfile('水乡').biome === 'wetland' && ADP.terrainProfile('水�
 ok(!ADP.terrainProfile('山地').coast && !ADP.terrainProfile('平原').fort, '⑱ 无语义位地貌不误报(山地非coast·平原非fort)');
 
 /* ⑲ deriveWeather 加雾:春秋按省址+回合确定性小概率雾(非 Math.random)·冬雪优先·空省名不起雾 */
-ok(ADP.deriveWeather({ turn: 1 }, '开封') === 'fog', '⑲ 春·开封→fog(确定性派生)');
-ok(ADP.deriveWeather({ turn: 1 }, '开封') === ADP.deriveWeather({ turn: 1 }, '开封'), '⑲ 同省+同回合→恒一致(确定性·非随机)');
-ok(ADP.deriveWeather({ turn: 1 }, '蓟州') === 'clear', '⑲ 春·蓟州→clear(未中雾概率)');
-ok(ADP.deriveWeather({ turn: 4 }, '开封') === 'snow', '⑲ 冬雪优先于雾(即便省址会起雾)');
-ok(ADP.deriveWeather({ turn: 2 }, '开封') === 'clear', '⑲ 夏无雾(仅春秋)');
-ok(ADP.deriveWeather({ turn: 1 }) === 'clear' && ADP.deriveWeather({ turn: 3 }) === 'clear', '⑲ 裸调无省名→不起雾(需真实战场上下文)');
-ok(ADP.deriveWeather({ turn: 7 }, '   ') === 'clear' && ADP.deriveWeather({ turn: 3 }, '\t ') === 'clear', '⑲ 纯空白省名(trim后空)→不起雾(边界)');
-ok(ADP.deriveWeather({ turn: 3 }, ' 开封 ') === ADP.deriveWeather({ turn: 3 }, '开封'), '⑲ 首尾空格 trim 标准化(" 开封 "≡"开封")');
-const fogScan = ['宁远', '广州', '南京', '开封', '兰州', '昆明', '长沙', '蓟州', '大同', '福州'].map(p => ADP.deriveWeather({ turn: 3 }, p));
+ok(ADP.deriveWeather({ turn: 3 }, '开封') === 'fog', '⑲ 春·开封→fog(确定性派生)');
+ok(ADP.deriveWeather({ turn: 3 }, '开封') === ADP.deriveWeather({ turn: 3 }, '开封'), '⑲ 同省+同回合→恒一致(确定性·非随机)');
+ok(ADP.deriveWeather({ turn: 3 }, '蓟州') === 'clear', '⑲ 春·蓟州→clear(未中雾概率)');
+ok(ADP.deriveWeather({ turn: 12 }, '开封') === 'snow', '⑲ 冬雪优先于雾(即便省址会起雾)');
+ok(ADP.deriveWeather({ turn: 6 }, '开封') === 'clear', '⑲ 夏无雾(仅春秋)');
+ok(ADP.deriveWeather({ turn: 3 }) === 'clear' && ADP.deriveWeather({ turn: 9 }) === 'clear', '⑲ 裸调无省名→不起雾(需真实战场上下文)');
+ok(ADP.deriveWeather({ turn: 9 }, '   ') === 'clear' && ADP.deriveWeather({ turn: 3 }, '\t ') === 'clear', '⑲ 纯空白省名(trim后空)→不起雾(边界)');
+ok(ADP.deriveWeather({ turn: 9 }, ' 开封 ') === ADP.deriveWeather({ turn: 9 }, '开封'), '⑲ 首尾空格 trim 标准化(" 开封 "≡"开封")');
+const fogScan = ['宁远', '广州', '南京', '开封', '兰州', '昆明', '长沙', '蓟州', '大同', '福州'].map(p => ADP.deriveWeather({ turn: 9 }, p));
 ok(fogScan.includes('fog') && fogScan.includes('clear'), '⑲ 秋季省份雾/晴皆可达(概率roll生效·非全雾/全晴)');
 /* buildBattleConfig 端到端:春季军队→terrainProfile 带语义位透传 config */
 const seaArmy = [{ id: 'sea', name: '水师', faction: '明', commander: '某', morale: 70, training: 60, composition: [{ type: '水兵', count: 2000 }] }];

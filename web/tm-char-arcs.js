@@ -172,8 +172,7 @@
       if (!raw) return;
       var parsed;
       try {
-        var m = raw.match(/\{[\s\S]*\}/);
-        parsed = m ? JSON.parse(m[0]) : JSON.parse(raw);
+        parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(raw) : JSON.parse(raw);
       } catch(e) {
         console.warn('[情节弧] JSON 解析失败', e, raw.slice(0, 150));
         return;

@@ -19,7 +19,8 @@ function makeCtx() {
     console: { log() {}, warn() {}, info() {}, error() {} },
     Math, Date, JSON, Object, Array, Number, String, Boolean, RegExp,
     isFinite, isNaN, parseInt, parseFloat, Promise, Symbol, Map, Set,
-    setTimeout: () => 0, clearTimeout: () => {}, Error, TypeError, RangeError
+    setTimeout: () => 0, clearTimeout: () => {}, Error, TypeError, RangeError,
+    P: {}
   };
   ctx.window = ctx; ctx.global = ctx; ctx.globalThis = ctx;
   ctx.TM = { errors: { capture() {}, captureSilent() {} } };
@@ -34,7 +35,7 @@ function makeCtx() {
   ['tm-time-utils.js', 'tm-ai-change-pathutils.js', 'tm-ai-change-army.js', 'tm-ai-change-narrative.js',
    'tm-ai-change-applier.js', 'tm-ai-change-applier-validators.js', 'tm-ai-change-applier-reconcile.js',
    'tm-ai-apply-deaths.js', 'tm-endturn-apply-stages.js', 'tm-endturn-agent-write-tools.js']
-    .forEach(f => { try { vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f }); } catch (_) {} });
+    .forEach(f => { vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f }); });
   // C4·当前游戏年权威=calcDateFromTurn(真机读 P.time.year 真开局年+按 turn 推进)。此 stub 同款语义：有 P.time.year 则据其推进·否则 adYear=0(回落 GM.year)。
   ctx.calcDateFromTurn = function (t) {
     if (!(ctx.P && ctx.P.time && ctx.P.time.year)) return { adYear: 0 };
@@ -53,6 +54,9 @@ function baseGM(chars, extra) {
 function hintNames(GM) { return (GM._aiWeakWriteHints || []).map(h => h && h.itemName); }
 function hintCount(GM) { return (GM._aiWeakWriteHints || []).length; }
 function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
+function transactionRejected(res) {
+  return !!(res && res.ok === false && res.rolledBack === true && res.applied && Array.isArray(res.applied.failed) && res.applied.failed.length);
+}
 
 (function () {
   console.log('smoke-write-gate-expansion');
@@ -107,9 +111,9 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
   {
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '魏忠贤', position: '司礼', officialTitle: '司礼', alive: true, faction: '明朝廷', resources: {} }]);
-    ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '下狱究问' }] });
+    const res = ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '下狱究问' }] });
     ok(!findCh(ctx.GM, '魏忠贤')._imprisoned, 'C2-neg 下诏狱无源→不执行(魏忠贤未下狱)');
-    ok(hintNames(ctx.GM).indexOf('魏忠贤') >= 0, 'C2-neg 拒写降级→弱自查纸条留痕');
+    ok(transactionRejected(res), 'C2-neg 拒写证据由原子事务返回值交付，GM 不留未提交纸条');
   }
   // C2-pos·玩家诏令点名(有源) → 照常执行(已下狱)·无 C2 弱提示
   {
@@ -186,9 +190,9 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
   {
     const ctx = makeCtx();
     ctx.GM = baseGM([], { year: 1626 });
-    ctx.applyAITurnChanges({ events: [{ title: '己巳之变', year: 1700, text: '后金破关而入，京师戒严。' }] });
+    const res = ctx.applyAITurnChanges({ events: [{ title: '己巳之变', year: 1700, text: '后金破关而入，京师戒严。' }] });
     ok(eventReportCount(ctx.GM) === 0, 'C4-neg 未来年份(1700>1626)事件→硬拒(不落 turnReport 播报)');
-    ok((ctx.GM._aiWeakWriteHints || []).some(h => h && h.label === '未来时点事件'), 'C4-neg 拒写降级→弱自查纸条留痕');
+    ok(transactionRejected(res), 'C4-neg 未来事件拒写证据保留在事务返回值');
   }
   // C4-pos·当年/过去年份事件→照常播报·无弱提示
   {
@@ -249,8 +253,8 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
   {
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '杨涟', position: '都御史', officialTitle: '都御史', alive: true, faction: '明朝廷', resources: {} }]);
-    ctx.applyAITurnChanges({ personnel_changes: [{ name: '杨涟', change: '下狱究问' }] });
-    ok(!findCh(ctx.GM, '杨涟')._imprisoned && hintNames(ctx.GM).indexOf('杨涟') >= 0, 'issue3-neg 无朝议裁决·下狱被拦(对照)');
+    const res = ctx.applyAITurnChanges({ personnel_changes: [{ name: '杨涟', change: '下狱究问' }] });
+    ok(!findCh(ctx.GM, '杨涟')._imprisoned && transactionRejected(res), 'issue3-neg 无朝议裁决·下狱被拦并整批回滚(对照)');
   }
   // issue3-pos·本回合常朝裁决(_lastChangchaoDecisions)点名→有源放行
   {
@@ -308,9 +312,9 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '祖大寿', alive: true, faction: '明朝廷', resources: {} }],
       { facs: [{ name: '明朝廷' }, { name: '后金' }] });
-    ctx.applyAITurnChanges({ allegiance_changes: [{ character: '祖大寿', newFaction: '后金', reason: '' }] });
+    const res = ctx.applyAITurnChanges({ allegiance_changes: [{ character: '祖大寿', newFaction: '后金', reason: '' }] });
     ok(facOf(ctx.GM, '祖大寿') === '明朝廷', 'issue5-neg 无诱因无来源→改换门庭被拦(faction 不变)');
-    ok(hintNames(ctx.GM).indexOf('祖大寿') >= 0, 'issue5-neg 拒写降级→弱自查纸条留痕');
+    ok(transactionRejected(res), 'issue5-neg 拒写证据由事务返回值交付');
   }
   // issue5-pos·reason 含军政诱因(战败/力屈而降)→有源放行
   {
@@ -339,9 +343,9 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
   {
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '魏忠贤', position: '司礼', officialTitle: '司礼', alive: true, faction: '明朝廷', resources: {} }]);
-    ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '暴毙于府' }] });
+    const res = ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '暴毙于府' }] });
     ok(aliveOf(ctx.GM, '魏忠贤') === true, 'issue4-neg-A personnel『暴毙』无源→不落死(此前零提示落死)');
-    ok(hintNames(ctx.GM).indexOf('魏忠贤') >= 0, 'issue4-neg-A 拒写降级→弱自查纸条留痕');
+    ok(transactionRejected(res), 'issue4-neg-A 拒写证据由事务返回值交付');
   }
   // issue4-neg-B·appointments dismiss+reason『病故』无源→onDismissal 收口拦(不死)+弱提示
   {
@@ -349,9 +353,9 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
     ctx.GM = baseGM([{ name: '孙传庭', isPlayer: true, alive: true, faction: '明朝廷', resources: {} },
                      { name: '某巡抚', officialTitle: '巡抚', alive: true, faction: '明朝廷', resources: {} }]);
     ctx.P = { playerInfo: { characterName: '孙传庭' }, adminHierarchy: {} };
-    ctx.applyAITurnChanges({ appointments: [{ charName: '某巡抚', action: 'dismiss', reason: '病故' }] });
+    const res = ctx.applyAITurnChanges({ appointments: [{ charName: '某巡抚', action: 'dismiss', reason: '病故' }] });
     ok(aliveOf(ctx.GM, '某巡抚') === true, 'issue4-neg-B appointments dismiss+病故 无源→死亡管线收口拦(不死)');
-    ok(hintNames(ctx.GM).indexOf('某巡抚') >= 0, 'issue4-neg-B 拒写降级→弱自查纸条留痕');
+    ok(transactionRejected(res), 'issue4-neg-B 拒写证据由事务返回值交付');
   }
   // issue4-neg-C·office_assignments dismiss+reason『病故』无源→收口拦(不死)
   {
@@ -366,8 +370,8 @@ function findCh(GM, n) { return (GM.chars || []).find(c => c && c.name === n); }
     const ctx = makeCtx();
     ctx.GM = baseGM([{ name: '魏忠贤', position: '司礼', officialTitle: '司礼', alive: true, faction: '明朝廷', resources: {} }],
       { _playerDirectives: [{ id: 'd1', content: '究治魏忠贤诸罪，勿使漏网' }] });
-    ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '暴毙于狱' }] });
-    ok(aliveOf(ctx.GM, '魏忠贤') === false && hintCount(ctx.GM) === 0, 'issue4-pos-A personnel暴毙+玩家诏令=有源→照常落死(不误拦)');
+    const res = ctx.applyAITurnChanges({ personnel_changes: [{ name: '魏忠贤', change: '暴毙于狱' }] });
+    ok(aliveOf(ctx.GM, '魏忠贤') === false && hintCount(ctx.GM) === 0 && res && res.ok === true, 'issue4-pos-A personnel暴毙+玩家诏令=有源→照常落死(不误拦)·' + JSON.stringify(res));
   }
   // issue4-pos-B·appointments dismiss+reason『奉旨处决』(active·含本局事由)→照常落死(不误拦)
   {

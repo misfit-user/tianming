@@ -294,11 +294,8 @@ async function npcDecisionLayer(npc, context) {
     var data = await response.json();
     var content = (data.choices&&data.choices[0]&&data.choices[0].message)?data.choices[0].message.content:'';
 
-    // 提取 JSON
-    var jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
+    var parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(content) : JSON.parse(content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
   } catch (error) {
     console.error('NPC 决策推演失败:', error);
   }

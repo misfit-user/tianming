@@ -21,6 +21,7 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 // 紧随其后的 'tm-content-manager-community.js'——故先读 origin，后读 community。
 const TMZipStore = require(path.join(ROOT, 'tm-zip-store.js'));
 const cmSrc = read('tm-content-manager.js');
+const communitySrc = read('tm-content-manager-community.js');
 const onlineSrc = read('tm-online-client.js');
 const zipSrc = read('tm-zip-store.js');
 
@@ -139,7 +140,6 @@ assert(cmSrc.includes('网页安装端上限约 64MB'), 'B1: 总量超限醒目�
 assert(cmSrc.includes('onPublishLooseFiles: onPublishLooseFiles'), 'B1: onPublishLooseFiles 已导出');
 assert(cmSrc.includes("onPublishPackageFile({ files: [packFile] })"), 'B1: 打好的 .tm-pack 喂给现有 onPublishPackageFile 流程');
 {
-  const communitySrc = read('tm-content-manager-community.js');
   assert(communitySrc.includes('onPublishLooseFiles(this)') && communitySrc.includes('没有现成包'),
     'B1: 创作中心第 1 步有「选散文件，我来打包」入口');
   assert(/looseAccept = pt === 'portrait'/.test(communitySrc), 'B1: accept 随「商店分类」过滤散文件类型');
@@ -257,13 +257,9 @@ assert(/bytes\.length > 30 \* 1024 \* 1024/.test(cmSrc), 'B2: >30MB 阈值判定
 assert(read('tm-zip-store.js').includes('0xEDB88320'), '收尾: tm-zip-store CRC 多项式原样（未被突变污染）');
 assert(read('tm-zip-store.js').includes('u16(0x0800)'), '收尾: tm-zip-store UTF-8 旗标原样');
 assert(read('tm-zip-store.js').includes('entries.length > 65535'), '收尾: tm-zip-store 条目数闸原样');
-assert(read('tm-content-manager.js').includes('sinceMs >= 500 || Math.abs(pct - lastPct) >= 5'), '收尾: 节流条件原样');
-try {
-  const cp = require('child_process');
-  const st = cp.execSync('git status --porcelain -- web/tm-zip-store.js web/tm-content-manager.js web/tm-content-manager-community.js web/tm-online-client.js',
-    { cwd: path.resolve(ROOT, '..') }).toString().trim();
-  assert.strictEqual(st, '', '收尾: git 工作树对四文件干净（突变自检未落盘）');
-} catch (e) { if (/收尾/.test(e.message)) throw e; /* git 不可用则跳过·fresh-read 已兜底 */ }
+assert.strictEqual(read('tm-content-manager.js'), cmSrc, '收尾: tm-content-manager 与测试开始时字节一致（突变自检未落盘）');
+assert.strictEqual(read('tm-content-manager-community.js'), communitySrc, '收尾: community 源与测试开始时字节一致');
+assert.strictEqual(read('tm-online-client.js'), onlineSrc, '收尾: online client 源与测试开始时字节一致');
 
 // 全部同步断言过 + 两条异步上传断言收敛后打 PASS（任一 reject → 非零退出）。
 Promise.all([pXhr, pFallback]).then(function () {

@@ -63,7 +63,7 @@ const context = {
   },
   addEB(type, text) { context.GM.evtLog.push({ type, text }); },
   preflightAIWriteBack(output) { return output; },
-  applyAITurnChanges() {},
+  applyAITurnChanges() { return { ok: true, applied: { failed: [] } }; },
   applyCharacterDeaths() {},
   _dbg() {},
   toast() {},

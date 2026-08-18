@@ -97,24 +97,37 @@
   function _initClassSystem() {
     var G = global.GM;
     if (!G.population) return;
-    if (G.population.byClass) return;
-    G.population.byClass = {};
-    Object.keys(SOCIAL_CLASSES).forEach(function(k) {
-      var params = SOCIAL_CLASSES[k];
-      G.population.byClass[k] = {
-        households: Math.round(G.population.national.households * params.baseRatio),
-        mouths: Math.round(G.population.national.mouths * params.baseRatio),
-        ding: Math.round(G.population.national.ding * params.baseRatio),
-        wealth: 0,
-        growthRate: 0
-      };
-    });
-    G.population.classMobility = { yearlyTransitions: [] };
+    if (!G.population.byClass) {
+      G.population.byClass = {};
+      Object.keys(SOCIAL_CLASSES).forEach(function(k) {
+        var params = SOCIAL_CLASSES[k];
+        G.population.byClass[k] = {
+          households: Math.round(G.population.national.households * params.baseRatio),
+          mouths: Math.round(G.population.national.mouths * params.baseRatio),
+          ding: Math.round(G.population.national.ding * params.baseRatio),
+          wealth: 0,
+          growthRate: 0
+        };
+      });
+    }
+    _ensureClassMobilityLedger(G);
+  }
+
+  function _ensureClassMobilityLedger(G) {
+    if (!G || !G.population) return null;
+    var mobility = G.population.classMobility;
+    if (!mobility || typeof mobility !== 'object' || Array.isArray(mobility)) {
+      mobility = {};
+      G.population.classMobility = mobility;
+    }
+    if (!Array.isArray(mobility.yearlyTransitions)) mobility.yearlyTransitions = [];
+    return mobility.yearlyTransitions;
   }
 
   function _tickClassMobility(mr) {
     var G = global.GM;
     if (!G.population || !G.population.byClass) return;
+    var yearlyTransitions = _ensureClassMobilityLedger(G);
     Object.keys(CLASS_MOBILITY_PATHS).forEach(function(pathKey) {
       var path = CLASS_MOBILITY_PATHS[pathKey];
       // 触发条件检查
@@ -141,13 +154,13 @@
           dst.mouths += transfer;
           dst.households += Math.round(transfer / 5);
           dst.ding += Math.round(transfer * 0.3);
-          G.population.classMobility.yearlyTransitions.push({ turn: G.turn, from: fromClass, to: path.to, count: transfer, path: pathKey });
+          yearlyTransitions.push({ turn: G.turn, from: fromClass, to: path.to, count: transfer, path: pathKey });
         }
       });
     });
     // 限制记录
-    if (G.population.classMobility.yearlyTransitions.length > 100) {
-      G.population.classMobility.yearlyTransitions.splice(0, G.population.classMobility.yearlyTransitions.length - 100);
+    if (yearlyTransitions.length > 100) {
+      yearlyTransitions.splice(0, yearlyTransitions.length - 100);
     }
   }
 

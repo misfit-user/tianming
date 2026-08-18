@@ -1376,6 +1376,7 @@ var BattleEngine = (function() {
         if (structured && structured.ok) {
           battle.phase = 'resolved';
           battle.result = structured.result;
+          window.TMBattleAdapter.stampResultContext(structured.result, battle, GM);
           GM._turnBattleResults.push(structured.result);
         }
         return;
@@ -1403,6 +1404,7 @@ var BattleEngine = (function() {
       });
 
       if (result) {
+        window.TMBattleAdapter.stampResultContext(result, battle, GM);
         // 应用伤亡到军队
         attackerArmy.soldiers = Math.max(0, (attackerArmy.soldiers || 0) - result.attackerLoss);
         defenderArmy.soldiers = Math.max(0, (defenderArmy.soldiers || 0) - result.defenderLoss);

@@ -12,6 +12,7 @@
   var __acaP = (function(){ var t = global.TM = global.TM || {}; return t.__acaParts = t.__acaParts || {}; })();
   // ── reverse 捕获：origin 成员（origin 装载期已 __acaP.X=X 导出；本地名与迁出体一致·体内 0 改字节）──
   var _findEntity = __acaP._findEntity, _estimateTravelDays = __acaP._estimateTravelDays, _arriveCharNow = __acaP._arriveCharNow, _sameTravelLocation = __acaP._sameTravelLocation, _travelMirrorFields = __acaP._travelMirrorFields, _syncCharacterLocationMirrors = __acaP._syncCharacterLocationMirrors, _refreshCharacterLocationUiAfterTravel = __acaP._refreshCharacterLocationUiAfterTravel;
+  var _applyAITurnChangesUnsafe = __acaP._applyAITurnChangesUnsafe;
   //>>ACA-SPLIT22-RECONCILE-BODY-START
   // ═══════════════════════════════════════════════════════════════════
   //  AI 人物死亡写回完整性：char_updates 敏感键 → character_deaths → 唯一死亡 sink
@@ -1039,8 +1040,172 @@
   }
   global._applyFiscalDeficitPenalties = _applyFiscalDeficitPenalties;
   global._resetDeficitStreakIfHealthy = _resetDeficitStreakIfHealthy;
+  // AI writeback validation and rollback transaction (split from the origin to keep the runtime shard bounded).
+  var _AI_VALIDATOR_LOG_KEYS = [
+    '_fiscalValidatorLog','_personnelValidatorLog','_militaryValidatorLog','_sentimentValidatorLog',
+    '_populationValidatorLog','_officeValidatorLog','_warValidatorLog','_revoltValidatorLog',
+    '_disasterValidatorLog','_diplomacyValidatorLog','_kejuValidatorLog','_partyValidatorLog',
+    '_edictEffectValidatorLog','_courtCeremonyValidatorLog','_constructionValidatorLog','_omenValidatorLog',
+    '_marriageBirthValidatorLog','_conspiracyValidatorLog','_currencyValidatorLog','_religionValidatorLog'
+  ];
+
+  function _captureValidatorBaseline(G) {
+    var out = {};
+    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) { out[key] = Array.isArray(G && G[key]) ? G[key].length : 0; });
+    return out;
+  }
+
+  function _collectValidatorFailures(G, baseline) {
+    var failures = [];
+    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
+      var rows = Array.isArray(G && G[key]) ? G[key].slice(baseline[key] || 0) : [];
+      rows.forEach(function(row) {
+        if (!row || Number(row.turn || 0) !== Number((G && G.turn) || 0)) return;
+        var details = [];
+        ['warnings','missing','skipped','errors'].forEach(function(field) {
+          if (Array.isArray(row[field]) && row[field].length) details = details.concat(row[field]);
+        });
+        if (details.length) failures.push({ validator: key, reason: 'consistency validation failed', details: details.slice(0, 8) });
+      });
+    });
+    return failures;
+  }
+
+  function _runConsistencyValidator(applied, aiOutput, name, fn) {
+    try {
+      fn();
+      return true;
+    } catch (error) {
+      var message = String(error && (error.message || error) || 'validator exception');
+      if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
+      else console.warn('[applier] ' + name + ' validator:', error);
+      if (aiOutput && aiOutput._strictValidation === true) {
+        if (!Array.isArray(applied.failed)) applied.failed = [];
+        applied.failed.push({ validator: name, reason: 'validator exception', details: [message] });
+      }
+      return false;
+    }
+  }
+  function _refreshAIIndices(G, P0) {
+    try {
+      if (typeof global.buildIndices === 'function') global.buildIndices();
+      else if (global.TM && global.TM.Indices && typeof global.TM.Indices.invalidate === 'function') global.TM.Indices.invalidate(G, P0);
+    } catch (_) {
+      try { if (global.TM && global.TM.Indices && typeof global.TM.Indices.invalidate === 'function') global.TM.Indices.invalidate(G, P0); } catch (_) {}
+    }
+  }
+
+  function _captureAIStateObject(obj, runtimeKeys) {
+    var data = (typeof global.deepClone === 'function') ? global.deepClone(obj) : JSON.parse(JSON.stringify(obj));
+    var descriptors = {};
+    Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
+      var d = Object.getOwnPropertyDescriptor(obj, key);
+      if (!d) return;
+      // _indices is a derived Map cache, never transaction state. Restoring its
+      // descriptor can resurrect stale object references (or JSON-cloned {}).
+      if (key === '_indices') { try { delete data[key]; } catch (_) {} return; }
+      if ((runtimeKeys && runtimeKeys.indexOf(key) >= 0) || d.get || d.set ||
+          (Object.prototype.hasOwnProperty.call(d, 'value') && typeof d.value === 'function') ||
+          !Object.prototype.hasOwnProperty.call(data, key)) {
+        descriptors[key] = d;
+        try { delete data[key]; } catch (_) {}
+      }
+    });
+    return { data: data, descriptors: descriptors };
+  }
+
+  function _restoreAIStateObject(target, snapshot) {
+    Object.getOwnPropertyNames(target || {}).forEach(function(key) { try { delete target[key]; } catch (_) {} });
+    Object.keys(snapshot.data || {}).forEach(function(key) { target[key] = snapshot.data[key]; });
+    Object.keys(snapshot.descriptors || {}).forEach(function(key) {
+      try { Object.defineProperty(target, key, snapshot.descriptors[key]); }
+      catch (_) { if (Object.prototype.hasOwnProperty.call(snapshot.descriptors[key], 'value')) target[key] = snapshot.descriptors[key].value; }
+    });
+  }
+
+  function _validateAIResultState(G) {
+    var failures = [];
+    if (!G || typeof G !== 'object' || Array.isArray(G)) failures.push({ reason: 'GM must remain an object' });
+    ['chars','facs','armies'].forEach(function(key) {
+      if (G && Object.prototype.hasOwnProperty.call(G, key) && !Array.isArray(G[key])) failures.push({ path: key, reason: key + ' must remain an array' });
+    });
+    ['guoku','neitang'].forEach(function(key) {
+      var box = G && G[key];
+      if (!box) return;
+      ['money','grain','cloth'].forEach(function(res) {
+        if (Object.prototype.hasOwnProperty.call(box, res) && (typeof box[res] !== 'number' || !isFinite(box[res]))) {
+          failures.push({ path: key + '.' + res, reason: 'fiscal scalar must be finite' });
+        }
+      });
+    });
+    return failures;
+  }
+
+  /**
+   * AI 写回原子边界：所有 handler 只在可回滚草稿窗口内执行；任一显式失败、
+   * validator 命中或全局形状破坏都恢复 GM/P 原状并返回 ok:false。
+   */
+  function applyAITurnChangesAtomic(aiOutput) {
+    var G = global.GM;
+    var P0 = global.P;
+    if (!G || !aiOutput || typeof aiOutput !== 'object') return { ok: false, applied: { failed: [{ reason: 'invalid GM/AI output' }] } };
+    var gSnapshot, pSnapshot;
+    try {
+      gSnapshot = _captureAIStateObject(G, ['_postTurnJobs', '_postTurnDetachedJobs', '_indices']);
+      if (P0 && typeof P0 === 'object') pSnapshot = _captureAIStateObject(P0, ['scenario', '_indices']);
+      var result = _applyAITurnChangesUnsafe(aiOutput);
+      result = result && typeof result === 'object' ? result : { ok: false, applied: { failed: [{ reason: 'applier returned no result' }] } };
+      result.applied = result.applied || { failed: [] };
+      result.applied.failed = Array.isArray(result.applied.failed) ? result.applied.failed : [];
+      var stateFailures = _validateAIResultState(G);
+      if (stateFailures.length) Array.prototype.push.apply(result.applied.failed, stateFailures);
+      if (result.ok !== true || result.applied.failed.length) {
+        _restoreAIStateObject(G, gSnapshot);
+        if (P0 && pSnapshot) _restoreAIStateObject(P0, pSnapshot);
+        _refreshAIIndices(G, P0);
+        return { ok: false, applied: result.applied, rolledBack: true, error: 'AI writeback transaction rejected' };
+      }
+      return result;
+    } catch (e) {
+      try { if (gSnapshot) _restoreAIStateObject(G, gSnapshot); } catch (_) {}
+      try { if (P0 && pSnapshot) _restoreAIStateObject(P0, pSnapshot); } catch (_) {}
+      _refreshAIIndices(G, P0);
+      return { ok: false, applied: { failed: [{ reason: String(e && (e.message || e) || 'AI writeback exception') }] }, rolledBack: true, error: e };
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  财政三字段同步守卫·确保 GM.guoku/neitang 的 money/balance/ledgers.stock 三字段一致
+  //  策略：以 ledgers.stock 为权威源（applier 内 fiscal_adjustments 同时更新它和 .money）·向后写 .money 和 .balance
+  //  若 ledger 不存在则以 .money 为准·补全 .balance
+  // ═══════════════════════════════════════════════════════════════════
+  function _syncFiscalScalars(G) {
+    if (!G) return;
+    ['guoku', 'neitang'].forEach(function(target) {
+      var t = G[target];
+      if (!t) return;
+      ['money','grain','cloth'].forEach(function(res) {
+        var ledStock = (t.ledgers && t.ledgers[res] && typeof t.ledgers[res].stock === 'number') ? t.ledgers[res].stock : null;
+        var scalar = (typeof t[res] === 'number') ? t[res] : null;
+        // 取权威值：ledger 优先·否则 scalar·否则 0
+        var canon = (ledStock != null) ? ledStock : (scalar != null ? scalar : 0);
+        // 写回三处
+        t[res] = canon;
+        if (t.ledgers && t.ledgers[res]) t.ledgers[res].stock = canon;
+        if (res === 'money') t.balance = canon;  // balance 仅对 money 有意义
+      });
+      // 若有 ledger 但 .money 与 stock 之前就不一致·留一条警告
+      if (t.ledgers && t.ledgers.money && typeof t.ledgers.money.stock === 'number' && typeof t.money === 'number') {
+        // 此时已对齐·不再需要警告
+      }
+    });
+  }
+  // 暴露给 window·让 endTurn / renderGameState 可调用兜底
+  if (typeof window !== 'undefined') window._syncFiscalScalars = _syncFiscalScalars;
   //>>ACA-SPLIT22-RECONCILE-BODY-END
   // ── forward 回填：本片复核/善后族 → bucket（origin 委托 shim 调用期解析）──
   __acaP._processDeathEpitaphs = _processDeathEpitaphs; __acaP._reconcilePlayerMovements = _reconcilePlayerMovements; __acaP._reconcilePlayerFiscalReforms = _reconcilePlayerFiscalReforms; __acaP._applyOfficeDutyTick = _applyOfficeDutyTick; __acaP._applyTaxAuthorityGate = _applyTaxAuthorityGate; __acaP._applyDirectiveCompliance = _applyDirectiveCompliance;
   __acaP._applyRegentDecisions = _applyRegentDecisions; __acaP.preflightAIWriteBack = preflightAIWriteBack; __acaP._applyBattleResult = _applyBattleResult; __acaP._applyFiscalDeficitPenalties = _applyFiscalDeficitPenalties; __acaP._hasInstantArrivalRule = _hasInstantArrivalRule;
+  __acaP._captureValidatorBaseline = _captureValidatorBaseline; __acaP._collectValidatorFailures = _collectValidatorFailures; __acaP._runConsistencyValidator = _runConsistencyValidator;
+  __acaP.applyAITurnChangesAtomic = applyAITurnChangesAtomic; __acaP._syncFiscalScalars = _syncFiscalScalars;
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

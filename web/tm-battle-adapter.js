@@ -53,11 +53,11 @@
       id: u.id, parentArmyId: u.parentArmyId != null ? u.parentArmyId : (army && army.id) || null,
       type: u.arm || 'step', sub: u.sub || 'sword',
       name: u['番号'] || u.name || (army && army.name) || '队',
-      soldiers: Math.max(1, Math.round(u.men || 0)),
-      mor: Math.round((army && army.morale) || 60),
-      training: Math.round((army && army.training) || 50),
+      soldiers: Math.max(0, Math.round(Number(u.men) || 0)),
+      mor: Math.round(army && army.morale != null ? Number(army.morale) : 60),
+      training: Math.round(army && army.training != null ? Number(army.training) : 50),
       quality: degradeQualityByEquip(qualityFromVet(u['历练']), army && army.equipmentCondition),
-      supply: Math.round((army && army.supply) || 80),
+      supply: Math.round(army && army.supply != null ? Number(army.supply) : 80),
       gen: gen
     };
     if (Array.isArray(u.flags) && u.flags.length) {   // 修饰位透传(识别瀑布正则+LLM词典直出)·原型 spread 进 sim 单位·hasFlag 消费
@@ -79,7 +79,7 @@
       if (!a) return;
       var us = armyUnits(a), gen = genFor(a.commander, GMref), dep = deputyGen(gen);
       var isEmp = emperorArmyId != null && (a.id === emperorArmyId);
-      us.forEach(function (u, i) {
+      us.filter(function (u) { return u && Number(u.men) > 0; }).forEach(function (u, i) {
         var tok = unitToToken(u, a, i === 0 ? gen : dep);
         if (isEmp && i === 0) tok.emperor = true;   // 御营=御驾亲征者所在军的首队(天子亲临·护住御营)
         out.push(tok);
@@ -192,14 +192,26 @@
     if (s.length === 2 && s.charAt(0) === '十' && map[s.charAt(1)]) return 10 + map[s.charAt(1)];
     return map[s] || 0;
   }
-  /* GM → 季节(优先纪年文本月份·回退 turn 四回合周期·确定性无随机) */
+  /* GM → 季节(优先纪年文本月份·回退统一历法·确定性无随机) */
   function seasonOf(GMref) {
     var g = GMref || (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
     var t = g && (g.dateText || g.date || g.time || g.monthText || (g.gameTime && g.gameTime.text));
     var m = t ? String(t).match(/([正腊冬一二三四五六七八九十有]+)月/) : null;
     if (m) { var mn = _cnMonth(m[1]); if (mn >= 1) return mn <= 3 ? '春' : mn <= 6 ? '夏' : mn <= 9 ? '秋' : '冬'; }
     var turn = Number(g && g.turn) || 1;
-    return ['春', '夏', '秋', '冬'][(((turn - 1) % 4) + 4) % 4] || '春';
+    try {
+      var cal = (typeof window !== 'undefined' && window.TimeUtils) || (typeof TimeUtils !== 'undefined' ? TimeUtils : null);
+      var di = cal && typeof cal.turnToDate === 'function' ? cal.turnToDate(turn)
+        : (typeof calcDateFromTurn === 'function' ? calcDateFromTurn(turn) : null);
+      // TimeUtils owns the calendar-to-season contract.  Its season field may
+      // intentionally follow the scenario's historical calendar boundaries,
+      // so do not reinterpret its numeric month with a second, conflicting
+      // four-quarter table here.
+      if (di && /^(春|夏|秋|冬)$/.test(di.season || '')) return di.season;
+      var month = di && Number(di.month || di.solarMonth || di.lunarMonth);
+      if (month >= 1 && month <= 12) return (month === 12 || month <= 2) ? '冬' : month <= 5 ? '春' : month <= 8 ? '夏' : '秋';
+    } catch (_calE) {}
+    return '春';
   }
   /* 确定性单步 roll(mulberry32 一步·→[0,1))·喂 fog 概率·非 Math.random */
   function _detRoll(seed) {
@@ -344,11 +356,19 @@
     };
   }
 
+  function stampResultContext(result, battle, GMref) {
+    if (!result || !battle) return result;
+    result.location = result.location || battle.location || battle.province || '';
+    result.locationNodeId = result.locationNodeId || battle.locationNodeId || battle.regionId || battle.mapRegionId || '';
+    result.turn = result.turn != null ? result.turn : ((GMref && GMref.turn) || 0);
+    return result;
+  }
+
   var API = {
     buildBattleConfig: buildBattleConfig, sideTokens: sideTokens, unitToToken: unitToToken, selectOnField: selectOnField, degradeQualityByEquip: degradeQualityByEquip,
     genFor: genFor, qualityFromVet: qualityFromVet, provinceSeed: provinceSeed, terrainProfile: terrainProfile,
     resolveTerrainTag: resolveTerrainTag, deriveWeather: deriveWeather, seasonOf: seasonOf,
-    provinceMeta: provinceMeta,
+    provinceMeta: provinceMeta, stampResultContext: stampResultContext,
     ONFIELD_CAP: ONFIELD_CAP
   };
   if (typeof window !== 'undefined') window.TMBattleAdapter = API;

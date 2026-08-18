@@ -90,6 +90,7 @@ web/vendor/models/Xenova/
 # ── 敏感：密钥 / 凭据 / 用户数据（绝不入库）──
 *.key
 *.pem
+!resources/hot-update-public-key.pem
 *.p12
 .env
 .env.*

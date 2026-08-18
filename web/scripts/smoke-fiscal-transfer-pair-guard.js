@@ -70,7 +70,7 @@ function pairWarns(eb) { return eb.filter(e => e.cat === '财政❗' && /转账�
 
   // ── 案2·事由不同源不误伤：同额一进一出跨两库·但缘由无关(脂粉钱 vs 盐课) → 不判 ──
   {
-    const { G, eb } = run([
+    const { G, res, eb } = run([
       { target: 'neitang', kind: 'expense', name: '后宫脂粉', amount: 1500000, reason: '宫中脂粉钱' },
       { target: 'guoku',   kind: 'income',  name: '盐课增收', amount: 1500000, reason: '两淮盐课新增' }
     ]);
@@ -120,12 +120,13 @@ function pairWarns(eb) { return eb.filter(e => e.cat === '财政❗' && /转账�
 
   // ── 案7·与既有闸1(裁减语义守卫)不打架：含裁减+用度关键字的对被闸1先拦·不再重复走转账对分支 ──
   {
-    const { G, eb } = run([
+    const { G, res, eb } = run([
       { target: 'neitang', kind: 'expense', name: '裁减后宫用度', amount: 1500000, reason: '裁减后宫用度' },
       { target: 'guoku',   kind: 'income',  name: '裁减用度节省银两', amount: 1500000, reason: '裁减用度节省解太仓' }
     ]);
     const rej = (G._turnReport || []).filter(e => e.type === 'fiscal_adj_rejected');
-    assert(rej.length === 2, '案7 裁减用度对被闸1(裁减语义守卫)拦下(两条 rejected)');
+    assert(rej.length === 0 && res.ok === false && res.rolledBack === true, '案7 裁减用度对使整批原子回滚，GM 不留未提交记录');
+    assert(res.applied.failed.filter(e => e.fiscal_adjustment && /裁减/.test(String(e.reason))).length === 2, '案7 两条语义拒绝均在 applied.failed 中可观测');
     assert(suspects(G).length === 0 && pairWarns(eb).length === 0, '案7 闸1 已拦→不再走转账对分支(无重复处置)');
     assert(G.neitang.money === 2000000 && G.guoku.money === 5000000, '案7 库存分文未动(闸1 原样)');
   }

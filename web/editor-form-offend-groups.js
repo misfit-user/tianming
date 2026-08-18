@@ -80,7 +80,7 @@ function aiGenerateOffendGroups() {
   callAIEditor(prompt, 2000).then(function(c) {
     hideLoading();
     try {
-      var arr = JSON.parse(c.match(/\[[\s\S]*\]/)[0]);
+      var arr = JSON.parse(extractJSONMatch(c, 'array')[0]);
       if (Array.isArray(arr)) { scriptData.offendGroups.groups = (scriptData.offendGroups.groups || []).concat(arr); scriptData.offendGroups.enabled = true; var chk = document.getElementById('offendGroups-enabled'); if (chk) chk.checked = true; renderOffendGroupsList(); showToast('已生成 ' + arr.length + ' 个利益集团'); if (typeof autoSave === 'function') autoSave(); }
     } catch(e) { showToast('解析失败'); }
   }).catch(function(e) { hideLoading(); showToast('生成失败: ' + e.message); });

@@ -154,7 +154,7 @@
     "electron-builder": "^25.1.8"
   },
   "dependencies": {
-    "adm-zip": "^0.5.17",
+    "adm-zip": "^0.6.0",
     "electron-updater": "^6.8.3"
   }
 }

@@ -37,6 +37,19 @@ ok(t0.parentArmyId === 'pa1', '② parentArmyId 回填母军');
 const yf = cfg.armies.ming.find(u => u.gen && u.gen.n === '岳飞');
 ok(yf && yf.gen.valor === 95 && yf.gen.mil === 92 && yf.gen.int === 88, '③ 主将岳飞 valor95/mil92/int88(翻GM.chars)');
 ok(cfg.armies.ming.some(u => u.gen.n === '裨将'), '③ 麾下分队挂裨将(非全具名英雄)');
+const duplicateGM = { chars: [
+  { id: 'same-a', name: '同名将', valor: 99, military: 98, intelligence: 97 },
+  { id: 'same-b', name: '同名将', valor: 41, military: 42, intelligence: 43 }
+] };
+const duplicateById = ADP.genFor('同名将', duplicateGM, 'same-b');
+const duplicateWithoutId = ADP.genFor('同名将', duplicateGM);
+ok(duplicateById.valor === 41 && duplicateById.mil === 42 && duplicateById.int === 43, '③b 同名主将按稳定人物 ID 绑定正确角色');
+ok(duplicateWithoutId.valor === 60 && duplicateWithoutId.mil === 62 && duplicateWithoutId.int === 55,
+  '③b 同名且缺 ID 时使用中庸默认，不再误取数组首人');
+const sameNameArmy = [{ id: 'same-army', name: '同名军', commander: '同名将', commanderId: 'same-b', morale: 70, training: 60,
+  composition: [{ type: '步兵', count: 1000 }] }];
+const sameNameCfg = ADP.buildBattleConfig(sameNameArmy, [], { GM: duplicateGM });
+ok(sameNameCfg.armies.ming[0].gen.valor === 41, '③b 军队适配链透传 commanderId');
 
 /* ④ 兵种识别(经 units[] 派生) */
 ok(cfg.armies.ming.some(u => u.type === 'cav'), '④ 背嵬铁骑→cav');

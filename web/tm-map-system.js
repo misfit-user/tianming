@@ -2102,38 +2102,90 @@ function findPath(from, to, options) {
   if (from === to) return { path: [from], cost: 0, distance: 0, hasPostRoad: false, terrainTypes: [] };
 
   options = options || {};
-  var openSet = [{ node: from, g: 0, f: 0, path: [from], terrains: [], postRoad: false }];
-  var closed = {};
+  var heap = [];
+  var sequence = 0;
+  var bestG = Object.create(null);
+  var previous = Object.create(null);
+  var regionByNode = Object.create(null);
+  if (options.avoidEnemy) {
+    var runtimeMap = getLiveMapData() || {};
+    (runtimeMap.regions || []).forEach(function(region) {
+      if (!region) return;
+      var id = region.id || region.name;
+      if (id != null) regionByNode[id] = region;
+    });
+  }
+  function less(a, b) { return a.f < b.f || (a.f === b.f && a.order < b.order); }
+  function heapPush(item) {
+    heap.push(item);
+    var index = heap.length - 1;
+    while (index > 0) {
+      var parent = Math.floor((index - 1) / 2);
+      if (!less(heap[index], heap[parent])) break;
+      var swap = heap[parent]; heap[parent] = heap[index]; heap[index] = swap;
+      index = parent;
+    }
+  }
+  function heapPop() {
+    if (!heap.length) return null;
+    var first = heap[0];
+    var last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      var index = 0;
+      while (true) {
+        var left = index * 2 + 1;
+        var right = left + 1;
+        var smallest = index;
+        if (left < heap.length && less(heap[left], heap[smallest])) smallest = left;
+        if (right < heap.length && less(heap[right], heap[smallest])) smallest = right;
+        if (smallest === index) break;
+        var swap = heap[index]; heap[index] = heap[smallest]; heap[smallest] = swap;
+        index = smallest;
+      }
+    }
+    return first;
+  }
+  bestG[from] = 0;
+  heapPush({ node: from, g: 0, f: 0, order: sequence++ });
 
-  while (openSet.length > 0) {
-    // 取f值最小的节点
-    openSet.sort(function(a, b) { return a.f - b.f; });
-    var current = openSet.shift();
+  while (heap.length > 0) {
+    var current = heapPop();
+    if (!current || current.g !== bestG[current.node]) continue;
 
     if (current.node === to) {
+      var path = [to];
+      var terrains = [];
+      var hasPostRoad = false;
+      var cursor = to;
+      while (cursor !== from) {
+        var step = previous[cursor];
+        if (!step) return null;
+        terrains.push(step.terrain);
+        hasPostRoad = hasPostRoad || step.hasPostRoad;
+        cursor = step.node;
+        path.push(cursor);
+      }
+      path.reverse();
+      terrains.reverse();
       return {
-        path: current.path,
+        path: path,
         cost: current.g,
-        distance: current.path.length - 1,
-        hasPostRoad: current.postRoad,
-        terrainTypes: current.terrains
+        distance: path.length - 1,
+        hasPostRoad: hasPostRoad,
+        terrainTypes: terrains
       };
     }
-
-    if (closed[current.node]) continue;
-    closed[current.node] = true;
 
     var edges = graph[current.node] || [];
     for (var i = 0; i < edges.length; i++) {
       var edge = edges[i];
-      if (closed[edge.target]) continue;
 
       if (options.waterOnly && edge.type !== 'water') continue;
 
       // avoidEnemy 是全节点约束，不只作用于关隘。
       if (options.avoidEnemy) {
-        var runtimeMap = GM.mapData || {};
-        var region = (runtimeMap.regions || []).find(function(r) { return (r.id || r.name) === edge.target; });
+        var region = regionByNode[edge.target];
         if (region) {
           var regionOwner = region.occupiedBy || region.controller || region.owner || '';
           if (regionOwner && options.faction && regionOwner !== options.faction) {
@@ -2148,18 +2200,14 @@ function findPath(from, to, options) {
       if (edge.type === 'mountain_pass') edgeCost *= 1.5;
       if (edge.hasPostRoad) edgeCost *= 0.7;
       var g = current.g + edgeCost;
-
-      var newTerrains = current.terrains.concat(edge.terrain);
-      var hasRoad = current.postRoad || edge.hasPostRoad;
-
-      openSet.push({
-        node: edge.target,
-        g: g,
-        f: g, // 无启发式（退化为Dijkstra，保证最优）
-        path: current.path.concat(edge.target),
-        terrains: newTerrains,
-        postRoad: hasRoad
-      });
+      if (bestG[edge.target] != null && g >= bestG[edge.target]) continue;
+      bestG[edge.target] = g;
+      previous[edge.target] = {
+        node: current.node,
+        terrain: edge.terrain,
+        hasPostRoad: !!edge.hasPostRoad
+      };
+      heapPush({ node: edge.target, g: g, f: g, order: sequence++ }); // Dijkstra·保证非负边最优
     }
   }
 

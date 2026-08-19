@@ -27,14 +27,35 @@
 
   function _dbg() { try { if (global.DebugLog && typeof global.DebugLog.log === 'function') global.DebugLog.log.apply(global.DebugLog, ['ai'].concat(Array.prototype.slice.call(arguments))); } catch (e) {} }
   function _norm(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
-  function _facByName(name) { var G = global.GM || {}; if (!Array.isArray(G.facs)) return null; var k = _norm(name); for (var i = 0; i < G.facs.length; i++) { if (G.facs[i] && _norm(G.facs[i].name) === k) return G.facs[i]; } return null; }
-  function _isPlayerName(name) {
-    var P = global.P || {}, k = _norm(name);
-    if (!k) return false;
+  function _facId(fac) { return fac && (fac.id || fac.factionId || fac.facId || fac.key) != null ? String(fac.id || fac.factionId || fac.facId || fac.key) : ''; }
+  function _facName(fac) { return String(fac && (fac.name || fac.title) || ''); }
+  function _facByRef(ref) {
+    var G = global.GM || {};
+    if (!Array.isArray(G.facs) || ref == null) return null;
+    var refId = typeof ref === 'object' ? String(ref.id || ref.factionId || ref.facId || ref.key || '') : String(ref);
+    var refName = typeof ref === 'object' ? String(ref.name || ref.title || '') : String(ref);
+    if (refId) {
+      var idMatches = G.facs.filter(function (fac) { return fac && _facId(fac) === refId; });
+      if (idMatches.length === 1) return idMatches[0];
+      // 显式 ID 未命中时不可降级按同名猜测。
+      if (typeof ref === 'object' && (ref.id || ref.factionId || ref.facId || ref.key)) return null;
+    }
+    var k = _norm(refName);
+    if (!k) return null;
+    var nameMatches = G.facs.filter(function (fac) { return fac && _norm(_facName(fac)) === k; });
+    return nameMatches.length === 1 ? nameMatches[0] : null;
+  }
+  function _isPlayerRef(ref) {
+    var P = global.P || {};
     var pi = P.playerInfo || {};
+    var refId = typeof ref === 'object' ? String(ref.id || ref.factionId || '') : '';
+    if (refId && [pi.factionId, P.playerFactionId, global.GM && global.GM.playerFactionId].some(function (id) { return id != null && String(id) === refId; })) return true;
+    var refName = typeof ref === 'object' ? ref.name : ref;
+    var k = _norm(refName);
+    if (!k) return false;
     return [pi.factionName, P.playerFactionName, P.playerFaction, (global.GM && global.GM.playerFaction)].some(function (n) { return n && _norm(n) === k; });
   }
-  function _strat(fac) { if (!fac.aiStrategy || typeof fac.aiStrategy !== 'object') fac.aiStrategy = {}; var s = fac.aiStrategy; if (!Array.isArray(s.alliances)) s.alliances = []; if (!Array.isArray(s.grudges)) s.grudges = []; return s; }
+  function _strat(fac) { if (!fac.aiStrategy || typeof fac.aiStrategy !== 'object') fac.aiStrategy = {}; var s = fac.aiStrategy; if (!Array.isArray(s.alliances)) s.alliances = []; if (!Array.isArray(s.grudges)) s.grudges = []; if (!Array.isArray(s.allianceIds)) s.allianceIds = []; if (!Array.isArray(s.grudgeIds)) s.grudgeIds = []; return s; }
   function _pushUniq(arr, v) { if (v && arr.indexOf(v) < 0) arr.push(v); }
   function _log(entry) { try { var G = global.GM; if (!G) return; if (!Array.isArray(G._factionDiplomacyLog)) G._factionDiplomacyLog = []; G._factionDiplomacyLog.push(entry); if (G._factionDiplomacyLog.length > 40) G._factionDiplomacyLog = G._factionDiplomacyLog.slice(-40); } catch (e) {} }
 
@@ -60,7 +81,7 @@
     G._pendingAudiences.push({
       name: fromName + '使节', reason: '【' + (TYPE_CN[item.type] || item.type) + '】' + (item.terms || '') + (item.rationale ? '（' + item.rationale + '）' : ''),
       turn: item.turn, isEnvoy: true, fromFaction: fromName, interactionType: (_DIP2ENVOY[item.type] || 'faction_proposal'),
-      _factionProposalId: item.id, _diplomacyType: item.type, _negotiationId: _ngId
+      _fromFactionId: item.fromId || '', _factionProposalId: item.id, _diplomacyType: item.type, _negotiationId: _ngId
     });
     if (typeof _wdCapPendingAudiences === 'function' && typeof GM !== 'undefined' && G === GM) _wdCapPendingAudiences(20);   // 唯一去顶写口
     else if (G._pendingAudiences.length > 20) G._pendingAudiences = G._pendingAudiences.slice(-20);
@@ -70,14 +91,22 @@
   // ── ① 存提议：A 的 proposals → 目标派 _incomingProposals(玩家目标入 player 队·留 S2) ──
   // B2②·全局递增序号(GM 级)·防同回合多次 recordProposals 的本地 n 重置 → id 碰撞(dp-5-a-0 撞 dp-5-a-0)
   function _dipSeq() { var G = global.GM; if (!G) return Date.now(); var v = Number(G._factionDiplomacySeq); G._factionDiplomacySeq = (isFinite(v) ? v : 0) + 1; return G._factionDiplomacySeq; }   // arch-ok: F2 外交提案全局递增序号(GM 级·防 id 碰撞)
-  function recordProposals(fromName, proposals, turn) {
+  function recordProposals(fromRef, proposals, turn) {
     if (!Array.isArray(proposals) || !proposals.length) return { recorded: 0, toPlayer: 0 };
+    var fromFac = _facByRef(fromRef);
+    var fromName = fromFac ? _facName(fromFac) : String(fromRef && (fromRef.name || fromRef.title) || fromRef || '');
+    var fromId = _facId(fromFac);
+    if (!fromName && !fromId) return { recorded: 0, toPlayer: 0 };
     var recorded = 0, toPlayer = 0;
     proposals.slice(0, 4).forEach(function (p) {
       if (!p || !p.toFaction || !p.type || !TYPES[p.type]) return;
-      if (_norm(p.toFaction) === _norm(fromName)) return; // 不向自己提
-      var item = { id: 'dp-' + turn + '-' + _norm(fromName).slice(0, 6) + '-' + _dipSeq(), from: String(fromName).slice(0, 30), type: p.type, terms: String(p.terms || '').slice(0, 60), rationale: String(p.rationale || '').slice(0, 50), turn: turn, status: 'pending' };
-      if (_isPlayerName(p.toFaction)) {
+      var targetRef = { id: p.toFactionId || p.toId || '', name: p.toFaction };
+      var target = _facByRef(targetRef);
+      var targetId = _facId(target) || String(targetRef.id || '');
+      var targetName = target ? _facName(target) : String(p.toFaction || '');
+      if ((fromFac && target && fromFac === target) || (fromId && targetId && fromId === targetId) || (!fromId && !targetId && _norm(targetName) === _norm(fromName))) return;
+      var item = { id: 'dp-' + turn + '-' + _norm(fromId || fromName).slice(0, 12) + '-' + _dipSeq(), from: String(fromName).slice(0, 30), fromId: fromId, to: String(targetName).slice(0, 30), toId: targetId, type: p.type, terms: String(p.terms || '').slice(0, 60), rationale: String(p.rationale || '').slice(0, 50), turn: turn, status: 'pending' };
+      if (_isPlayerRef(targetRef)) {
         // 目标=玩家：①入队(供观测/反馈) ②【S2】路由成「势力使节」求见(复用现有 envoy audience·surface 到问对)
         var G = global.GM; if (!G) return;
         if (!Array.isArray(G._pendingFactionProposalsToPlayer)) G._pendingFactionProposalsToPlayer = [];
@@ -87,14 +116,16 @@
         toPlayer++;
         return;
       }
-      var target = _facByName(p.toFaction);
       if (!target) return; // 目标势力不存在
       if (!Array.isArray(target._incomingProposals)) target._incomingProposals = [];
       // B2①·去重键加 terms 摘要：仅【同 from+type+条款】的重复才合并·真正不同条款的两提案都保留(不再丢第一条)
-      target._incomingProposals = target._incomingProposals.filter(function (x) { return !(x.status === 'pending' && _norm(x.from) === _norm(item.from) && x.type === item.type && _norm(x.terms) === _norm(item.terms)); });
+      target._incomingProposals = target._incomingProposals.filter(function (x) {
+        var sameFrom = x.fromId && item.fromId ? String(x.fromId) === String(item.fromId) : _norm(x.from) === _norm(item.from);
+        return !(x.status === 'pending' && sameFrom && x.type === item.type && _norm(x.terms) === _norm(item.terms));
+      });
       target._incomingProposals.push(item);
       if (target._incomingProposals.length > MAX_PENDING) target._incomingProposals = target._incomingProposals.slice(-MAX_PENDING);
-      _log({ turn: turn, kind: 'propose', from: item.from, to: p.toFaction, type: p.type, terms: item.terms });
+      _log({ turn: turn, kind: 'propose', from: item.from, fromId: item.fromId, to: targetName, toId: targetId, type: p.type, terms: item.terms });
       recorded++;
     });
     return { recorded: recorded, toPlayer: toPlayer };
@@ -129,12 +160,13 @@
         if (!prop) return;   // 带 id 未命中 → fail-closed·保持未决
       } else {
         var cand = pendAll;
-        if (r.from) cand = cand.filter(function (p) { return _norm(p.from) === _norm(r.from); });
+        if (r.fromId) cand = cand.filter(function (p) { return p.fromId && String(p.fromId) === String(r.fromId); });
+        else if (r.from) cand = cand.filter(function (p) { return _norm(p.from) === _norm(r.from); });
         if (r.type) { var rt = _norm(r.type); cand = cand.filter(function (p) { return _norm(p.type) === rt || _norm(TYPE_CN[p.type]) === rt; }); }
         if (cand.length !== 1) return;   // 无候选/歧义 → 保持未决(不错配)
         prop = cand[0];
       }
-      var proposer = _facByName(prop.from);
+      var proposer = _facByRef({ id: prop.fromId || '', name: prop.from });
       var dec = _norm(r.decision);
       if (dec === 'accept') {
         prop.status = 'accepted';
@@ -144,7 +176,7 @@
         prop.status = 'countered';
         // 反向新提议：fac → proposer(还价)
         if (proposer) {
-          recordProposals(fac.name, [{ toFaction: prop.from, type: prop.type, terms: String(r.counterTerms || r.reason || '').slice(0, 60), rationale: '对「' + prop.from + '」原议的还价' }], turn);
+          recordProposals(fac, [{ toFaction: prop.from, toFactionId: prop.fromId || '', type: prop.type, terms: String(r.counterTerms || r.reason || '').slice(0, 60), rationale: '对「' + prop.from + '」原议的还价' }], turn);
         }
         _log({ turn: turn, kind: 'counter', from: prop.from, to: fac.name, type: prop.type, counter: String(r.counterTerms || '').slice(0, 50) });
       } else { // reject
@@ -152,6 +184,7 @@
         // 提议被拒·提议方可能结怨被拒方(尤其最后通牒/结盟被拒)
         if (proposer && (prop.type === 'ultimatum' || prop.type === 'alliance' || prop.type === 'joint_action')) {
           _pushUniq(_strat(proposer).grudges, fac.name);
+          _pushUniq(_strat(proposer).grudgeIds, _facId(fac));
         }
         _log({ turn: turn, kind: 'reject', from: prop.from, to: fac.name, type: prop.type, reason: String(r.reason || '').slice(0, 50) });
       }
@@ -167,16 +200,19 @@
   function _lodgeTreaty(a, b, type, turn) {
     try {
       var G = global.GM; if (!G) return;
+      var aName = _facName(a), bName = _facName(b), aId = _facId(a), bId = _facId(b);
+      var aKey = aId ? 'id:' + aId : 'name:' + _norm(aName);
+      var bKey = bId ? 'id:' + bId : 'name:' + _norm(bName);
       if (!Array.isArray(G.treaties)) G.treaties = [];   // arch-ok: F2 势力社会结盟落账(GM.treaties 既有子树·战争引擎消费面)
       var mutual = (type === 'alliance');
       var typeName = ({ alliance: '同盟', nonaggression: '互不侵犯', joint_action: '共同行动' })[type] || type;
       var dup = G.treaties.some(function (t) {
         if (!t || t.active === false || t.type !== type) return false;
-        var parties = Array.isArray(t.parties) ? t.parties.map(function (p) { return (p && p.name) || p; }) : [];
-        return parties.indexOf(a) >= 0 && parties.indexOf(b) >= 0;
+        var parties = Array.isArray(t.parties) ? t.parties.map(function (p) { return p && p.id ? 'id:' + p.id : 'name:' + _norm((p && p.name) || p); }) : [];
+        return parties.indexOf(aKey) >= 0 && parties.indexOf(bKey) >= 0;
       });
       if (dup) return;
-      G.treaties.push({ id: 'ftr-' + (turn || _turn()) + '-' + _norm(type).slice(0, 10) + '-' + _dipSeq(), type: type, typeName: typeName, mutual_defense: mutual, parties: [{ name: a }, { name: b }], startTurn: (turn || _turn()), active: true, _source: 'faction-diplomacy' });   // arch-ok: F2 结盟落 GM.treaties(战争引擎消费面)·全局序号防同回合跨类型碰撞
+      G.treaties.push({ id: 'ftr-' + (turn || _turn()) + '-' + _norm(type).slice(0, 10) + '-' + _dipSeq(), type: type, typeName: typeName, mutual_defense: mutual, parties: [{ id: aId, name: aName }, { id: bId, name: bName }], startTurn: (turn || _turn()), active: true, _source: 'faction-diplomacy' });   // arch-ok: F2 结盟落 GM.treaties(战争引擎消费面)·全局序号防同回合跨类型碰撞
       if (G.treaties.length > 80) G.treaties = G.treaties.slice(-80);   // arch-ok: F2 结盟落账截断(GM.treaties 既有子树·战争引擎消费面)
     } catch (e) {}
   }
@@ -186,10 +222,11 @@
     var ps = _strat(proposer), ts = _strat(target);
     if (prop.type === 'alliance' || prop.type === 'nonaggression' || prop.type === 'joint_action') {
       _pushUniq(ps.alliances, target.name); _pushUniq(ts.alliances, proposer.name);
+      _pushUniq(ps.allianceIds, _facId(target)); _pushUniq(ts.allianceIds, _facId(proposer));
       // 结盟→消解彼此宿怨
       ps.grudges = ps.grudges.filter(function (g) { return _norm(g) !== _norm(target.name); });
       ts.grudges = ts.grudges.filter(function (g) { return _norm(g) !== _norm(proposer.name); });
-      _lodgeTreaty(proposer.name, target.name, prop.type, prop.turn);   // B3·落 GM.treaties·让战争盟友参战真读到
+      _lodgeTreaty(proposer, target, prop.type, prop.turn);   // B3·落 GM.treaties·让战争盟友参战真读到
     } else if (prop.type === 'peace') {
       // 媾和必须走唯一战争终结入口；只消宿怨不等于结束战争。
       ps.grudges = ps.grudges.filter(function (g) { return _norm(g) !== _norm(target.name); });
@@ -224,7 +261,7 @@
   // ── ⑥【S3】玩家对「我的提议」的答复 → 回写发起势力持久记忆(aiStrategy)·供其下回合决策显式感知(非仅邦交 delta 间接推) ──
   function recordPlayerResponse(fromName, info) {
     info = info || {};
-    var fac = _facByName(fromName); if (!fac) return false;
+    var fac = _facByRef(fromName); if (!fac) return false;
     if (!fac.aiStrategy) fac.aiStrategy = {};
     var arr = Array.isArray(fac.aiStrategy.playerProposalOutcomes) ? fac.aiStrategy.playerProposalOutcomes : [];
     arr = arr.filter(function (o) { return o && o.id !== info.id; }); // 同提议只留一条结果

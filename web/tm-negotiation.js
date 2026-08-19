@@ -35,9 +35,17 @@
   }
   function _turn(G) { return (G && G.turn) || 0; }
   function _norm(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+  function _normalizeRef(ref) {
+    if (!ref) return null;
+    var kind = String(ref.kind == null ? '' : ref.kind).trim();
+    var refId = String(ref.refId == null ? '' : ref.refId).trim();
+    return kind && refId ? { kind: kind, refId: refId } : null;
+  }
   function _sameRef(a, b) {
-    if (!a || !b) return false;
-    return _norm(a.kind) === _norm(b.kind) && _norm(a.refId) === _norm(b.refId);
+    var left = _normalizeRef(a);
+    var right = _normalizeRef(b);
+    if (!left || !right) return false;
+    return _norm(left.kind) === _norm(right.kind) && _norm(left.refId) === _norm(right.refId);
   }
   // 全局递增序号（GM 级·照 tm-faction-diplomacy._dipSeq 范式·防同回合多次 open 的本地 n 重置→id 碰撞）
   function _seq(G) {
@@ -68,7 +76,8 @@
     var G = _G();
     if (!G || !enabled()) return null;
     var turn = _turn(G);
-    var ref = spec.sourceRef || {};
+    var ref = _normalizeRef(spec.sourceRef);
+    if (!ref) return null; // 缺稳定来源时拒绝建会话，绝不把两个空引用误并为同一谈判。
     var list = _list(G);
     var existing = null;
     for (var i = 0; i < list.length; i++) {
@@ -83,7 +92,7 @@
       id: 'ng-' + turn + '-' + _seq(G),
       parties: { initiator: String(spec.initiator || ref.refId || '').slice(0, 40), responder: 'player' },
       topic: spec.topic || 'diplomacy',
-      sourceRef: { kind: String(ref.kind || ''), refId: String(ref.refId || '') },
+      sourceRef: { kind: ref.kind, refId: ref.refId },
       offers: off ? [off] : [],
       round: 1,
       status: 'open',
@@ -106,9 +115,11 @@
   function findOpenByRef(kind, refId) {
     var G = _G();
     if (!G) return null;
+    var ref = _normalizeRef({ kind: kind, refId: refId });
+    if (!ref) return null;
     var list = Array.isArray(G._negotiations) ? G._negotiations : [];
     for (var i = 0; i < list.length; i++) {
-      if (list[i] && list[i].status === 'open' && _sameRef(list[i].sourceRef, { kind: kind, refId: refId })) return list[i];
+      if (list[i] && list[i].status === 'open' && _sameRef(list[i].sourceRef, ref)) return list[i];
     }
     return null;
   }
@@ -132,7 +143,8 @@
   function resolve(id, status) {
     var ng = get(id);
     if (!ng || ng.status !== 'open') return null;
-    if (status === 'accepted' || status === 'rejected' || status === 'lapsed') ng.status = status;
+    if (status !== 'accepted' && status !== 'rejected' && status !== 'lapsed') return null;
+    ng.status = status;
     return ng;
   }
 

@@ -53,12 +53,19 @@ assert((GA._negotiations || []).length === 1, '会话账本仍只一条(复用�
 
 var s2 = N.open({ topic: 'peace', initiator: '后金', sourceRef: { kind: 'invasion', refId: '后金' }, offer: { by: 'them', terms: '岁币二十万' }, turn: 5 });
 assert(s2 !== s1 && (GA._negotiations || []).length === 2, '异 sourceRef → 新开会话');
+var beforeMissingRef = (GA._negotiations || []).length;
+assert(N.open({ topic: 'diplomacy', initiator: '无引用甲', offer: { by: 'them', terms: '空引用一' } }) === null
+  && N.open({ topic: 'diplomacy', initiator: '无引用乙', sourceRef: { kind: '', refId: '' }, offer: { by: 'them', terms: '空引用二' } }) === null,
+  '缺失/空 sourceRef 必须拒绝创建，不能把两个无关谈判误并');
+assert((GA._negotiations || []).length === beforeMissingRef, '拒绝空 sourceRef 不得污染会话账本');
+assert(N.findOpenByRef('', '') === null, '空来源查找 fail-closed');
 
 console.log('§A2 fail-closed get / playerCounter round 封3');
 assert(N.get(s1.id) === s1, 'get 命中返会话');
 assert(N.get('ng-999-999') === null, 'fail-closed·带 id 未命中返 null(绝不模糊猜)');
 assert(N.get(null) === null, 'get(null) 返 null');
 assert(N.playerCounter('ng-nope', '还价', 0) === null, 'playerCounter 未命中 id → null');
+assert(N.resolve(s2.id, 'unknown-status') === null && s2.status === 'open', 'resolve 非法状态返回 null 且不改变会话');
 
 var pc1 = N.playerCounter(s1.id, '许银八万', 80000);
 assert(pc1 === s1 && s1.round === 2 && s1.offers.length === 3, '玩家回价1 → round2·追 player offer');

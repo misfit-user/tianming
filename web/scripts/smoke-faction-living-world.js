@@ -52,10 +52,10 @@ function installCasusBelli(ctx) {
 
 function baseGM(ctx, opts) {
   opts = opts || {};
-  ctx.P = { playerInfo: { factionName: '玩家朝廷' }, conf: { npcAiPrecision: true }, ai: { key: 'fake' } };
+  ctx.P = { playerInfo: { factionId: 'fac-player', factionName: '玩家朝廷' }, conf: { npcAiPrecision: true }, ai: { key: 'fake' } };
   ctx.GM = {
     turn: 5,
-    facs: [ { name: '甲势力', treasury: { money: 100000 } }, { name: '乙势力', treasury: { money: 100000 } }, { name: '玩家朝廷', isPlayer: true } ],
+    facs: [ { id: 'fac-a', name: '甲势力', treasury: { money: 100000 } }, { id: 'fac-b', name: '乙势力', treasury: { money: 100000 } }, { id: 'fac-player', name: '玩家朝廷', isPlayer: true } ],
     chars: [],
     _facIndex: { '甲势力': { chars: [], parties: {}, metrics: {} }, '乙势力': { chars: [], parties: {}, metrics: {} } },
     activeWars: [], factionRelations: []
@@ -359,6 +359,30 @@ function b3AllianceTreatyTest() {
   });
   assert(tr, 'B3: accepted alliance lodges a real GM.treaties entry (not just aiStrategy.alliances)');
   assert(tr.mutual_defense === true && tr.active === true, 'B3: alliance treaty carries mutual_defense + active (feudal-warfare _ty_callAlliesToWar consumes these)');
+  assert(tr.parties[0].id === 'fac-a' && tr.parties[1].id === 'fac-b', 'B3: treaty parties carry stable faction ids alongside display names');
+}
+
+// B3b·同名势力必须按 ID 路由；缺 ID 的歧义名称 fail-closed。
+function b3bStableFactionIdentityTest() {
+  const ctx = buildContext(); installCasusBelli(ctx);
+  ctx.P = { playerInfo: { factionId: 'fac-player', factionName: '玩家朝廷' }, conf: { npcAiPrecision: true }, ai: { key: 'fake' } };
+  const from = { id: 'fac-from', name: '发议方' };
+  const sameA = { id: 'fac-same-a', name: '同名势力' };
+  const sameB = { id: 'fac-same-b', name: '同名势力' };
+  ctx.GM = { turn: 5, _factionLivingWorld: true, facs: [from, sameA, sameB], activeWars: [], factionRelations: [] };
+  const dip = ctx.TM.FactionDiplomacy;
+  const routed = dip.recordProposals(from, [{ toFaction: '同名势力', toFactionId: 'fac-same-b', type: 'alliance', terms: '凭 ID 缔盟' }], 5);
+  assert(routed.recorded === 1 && !sameA._incomingProposals && sameB._incomingProposals.length === 1,
+    'B3b: explicit toFactionId routes a proposal to the correct same-name faction only');
+  const proposal = sameB._incomingProposals[0];
+  assert(proposal.fromId === 'fac-from' && proposal.toId === 'fac-same-b', 'B3b: proposal persists stable from/to ids');
+  dip.applyResponses(sameB, [{ proposalId: proposal.id, decision: 'accept' }], 5);
+  assert(from.aiStrategy.allianceIds[0] === 'fac-same-b' && sameB.aiStrategy.allianceIds[0] === 'fac-from',
+    'B3b: accepted alliance canonical relation arrays use stable ids');
+  assert(ctx.GM.treaties[0].parties.some(function(p){ return p.id === 'fac-same-b'; }), 'B3b: same-name treaty preserves the selected faction id');
+  const ambiguous = dip.recordProposals(from, [{ toFaction: '同名势力', type: 'deal', terms: '无 ID 歧义' }], 6);
+  assert(ambiguous.recorded === 0 && (sameA._incomingProposals || []).length === 0,
+    'B3b: ambiguous same-name target without id is rejected instead of selecting array-first');
 }
 
 // B4·目标契约不撞车：goal-stack 激活时 s.goals 纯结构对象·字符串标签落 recentActionLabels
@@ -556,6 +580,7 @@ function main() {
   b8OffContractFilterTest();
   b2ResponseIdMatchTest();
   b3AllianceTreatyTest();
+  b3bStableFactionIdentityTest();
   b4GoalStructureTest();
   b5JoinWarParentTest();
   b6PlayerCbFailClosedTest();

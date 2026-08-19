@@ -2608,7 +2608,7 @@
       try {
         if (Array.isArray(decision.proposalResponses) && decision.proposalResponses.length) global.TM.FactionDiplomacy.applyResponses(fac, decision.proposalResponses, _currentTurn());
         if (Array.isArray(decision.proposals) && decision.proposals.length) {
-          var _dp = global.TM.FactionDiplomacy.recordProposals(fac.name, decision.proposals, _currentTurn());
+          var _dp = global.TM.FactionDiplomacy.recordProposals(fac, decision.proposals, _currentTurn());
           if (summary && typeof summary === 'object') summary.diplomacy = _dp;
         }
       } catch (_dpE) {}

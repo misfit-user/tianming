@@ -13,19 +13,26 @@
   }
 
   /* 主将名 → 战斗 gen{n,valor,mil,int}(翻 GM.chars·缺则中庸默认·永不崩) */
-  function genFor(commander, GMref) {
+  function genFor(commander, GMref, commanderId) {
     var name = commander || '';
     var g = GMref || (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
     var c = null;
-    if (g && Array.isArray(g.chars) && name) {
-      for (var i = 0; i < g.chars.length; i++) {
-        var ch = g.chars[i];
-        if (ch && (ch.name === name || ch['姓名'] === name)) { c = ch; break; }
+    if (g && Array.isArray(g.chars) && (name || commanderId)) {
+      var stableRef = commanderId || name;
+      var idMatches = g.chars.filter(function(ch) {
+        if (!ch) return false;
+        return [ch.id, ch.characterId, ch.charId].some(function(id) { return id != null && String(id) === String(stableRef); });
+      });
+      if (idMatches.length === 1) c = idMatches[0];
+      if (!c && !commanderId && name) {
+        var nameMatches = g.chars.filter(function(ch) { return ch && (ch.name === name || ch['姓名'] === name); });
+        // 同名人物没有稳定 ID 时宁可使用中庸默认，也不能绑定到数组中的第一个人。
+        if (nameMatches.length === 1) c = nameMatches[0];
       }
     }
     function pick(o, keys, d) { for (var k = 0; k < keys.length; k++) { if (o && o[keys[k]] != null) return o[keys[k]]; } return d; }
     return {
-      n: name || '裨将',
+      n: (c && (c.name || c['姓名'])) || name || '裨将',
       valor: c ? Math.round(pick(c, ['valor', '武力', '勇武'], 60)) : 60,
       mil: c ? Math.round(pick(c, ['military', '军事', '统率', '将略'], 62)) : 62,
       int: c ? Math.round(pick(c, ['intelligence', '智力', '智'], 55)) : 55
@@ -77,7 +84,8 @@
     var out = [];
     (armies || []).forEach(function (a) {
       if (!a) return;
-      var us = armyUnits(a), gen = genFor(a.commander, GMref), dep = deputyGen(gen);
+      var commanderId = a.commanderId || a.commanderCharacterId || a.generalId || a.leaderId || '';
+      var us = armyUnits(a), gen = genFor(a.commander, GMref, commanderId), dep = deputyGen(gen);
       var isEmp = emperorArmyId != null && (a.id === emperorArmyId);
       us.filter(function (u) { return u && Number(u.men) > 0; }).forEach(function (u, i) {
         var tok = unitToToken(u, a, i === 0 ? gen : dep);

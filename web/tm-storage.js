@@ -285,7 +285,14 @@ var TM_SaveDB = (function() {
   /** 确保DB就绪后执行操作 */
   function _ensureOpen() {
     if (_db) return Promise.resolve();
-    return open();
+    return open().catch(function(error) {
+      // IndexedDB 被禁用、打开失败或升级被阻塞时，公开 API 仍应兑现
+      // “回退 localStorage”的契约；失败原因保留在控制台供诊断。
+      console.warn('[SaveDB] IndexedDB打开不可用，回退localStorage:', error);
+      _available = false;
+      _db = null;
+      return null;
+    });
   }
 
   /** 保存游戏存档（7.1: 支持gzip压缩） */
@@ -304,7 +311,9 @@ var TM_SaveDB = (function() {
     if (!_writeStillAllowed()) return Promise.resolve(false);
     return _ensureOpen().then(function() {
       return SaveCompression.compress(jsonStr).then(function(compressed) {
-        var isCompressed = compressed !== jsonStr; // Blob vs string
+        // Blob 只能由 IndexedDB 结构化克隆安全保存。localStorage 的 JSON.stringify
+        // 会把 Blob 变成 {}，因此降级路径必须保留原始 JSON 字符串。
+        var isCompressed = !!(_available && _db && compressed !== jsonStr);
         var record = {
           id: id,
           type: (meta && meta.type) || 'manual',
@@ -318,7 +327,7 @@ var TM_SaveDB = (function() {
           // pre_endturn 两阶段恢复校验元数据；普通/旧存档保持空值兼容。
           snapshotId: (meta && meta.snapshotId) || '',
           commitState: (meta && meta.commitState) || '',
-          gameState: compressed,
+          gameState: isCompressed ? compressed : jsonStr,
           _compressed: isCompressed
         };
         if (isCompressed) {
@@ -346,6 +355,12 @@ var TM_SaveDB = (function() {
           return record;
         });
       }
+      // 未压缩存档（包括 localStorage fallback）以 JSON 字符串保存；统一还原成对象，
+      // 避免调用方把一个合法降级存档误判为损坏。
+      if (typeof record.gameState === 'string') {
+        record.gameState = JSON.parse(record.gameState);
+      }
+      delete record._compressed;
       // 旧存档：gameState已经是对象，直接返回
       return record;
     });

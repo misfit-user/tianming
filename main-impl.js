@@ -422,8 +422,7 @@ function getHotUpdateKeyId(key) {
 }
 
 function verifyAuthenticatedUpdateDocument(document, expectedType) {
-  const allowUnsignedTest = TEST_MODE
-    || (!app.isPackaged && process.env.TIANMING_ALLOW_UNSIGNED_HOT_UPDATE === '1');
+  const allowUnsignedTest = TEST_MODE;
   const auth = document && document.auth;
   if (!auth) {
     if (allowUnsignedTest) return document;
@@ -1190,12 +1189,12 @@ function isAllowedRemoteUrl(rawUrl) {
   const isLocalHttp = parsed.protocol === 'http:' && /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(parsed.hostname);
   if (parsed.username || parsed.password) return false;
   if (parsed.protocol === 'https:' && parsed.port && parsed.port !== '443') return false;
-  return parsed.protocol === 'https:' || (isLocalHttp && !app.isPackaged);
+  return parsed.protocol === 'https:' || (isLocalHttp && TEST_MODE);
 }
 
 function resolveRemoteUrl(rawUrl, baseUrl) {
   const resolved = new URL(rawUrl, baseUrl || undefined).toString();
-  if (!isAllowedRemoteUrl(resolved)) throw new Error('远程地址必须使用 HTTPS；本机调试允许 localhost HTTP。');
+  if (!isAllowedRemoteUrl(resolved)) throw new Error('远程地址必须使用 HTTPS；显式测试模式才允许 localhost HTTP。');
   return resolved;
 }
 
@@ -1230,7 +1229,7 @@ async function assertSafeRemoteUrl(rawUrl) {
   const resolved = resolveRemoteUrl(rawUrl);
   const parsed = new URL(resolved);
   const hostname = remoteHostname(parsed);
-  const localDev = !app.isPackaged && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname);
+  const localDev = TEST_MODE && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname);
   if (localDev) return resolved;
   // 生产网络能力不接受 IP literal。域名需经过下方全部 A/AAAA 记录检查，
   // 避免 127.0.0.1、metadata 与保留网段通过十六进制/IPv6 写法绕过。

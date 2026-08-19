@@ -7,11 +7,32 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(ROOT, 'tm-economy.js'), 'utf8');
+const mapSource = fs.readFileSync(path.join(ROOT, 'tm-map-system.js'), 'utf8');
 let assertions = 0;
 
 function check(condition, message) {
   if (!condition) throw new Error('[smoke-runtime-map-economy] ' + message);
   assertions += 1;
+}
+
+function extractFunction(text, name) {
+  const start = text.indexOf('function ' + name + '(');
+  if (start < 0) throw new Error('missing function ' + name);
+  const brace = text.indexOf('{', start);
+  let depth = 0, quote = null, escaped = false;
+  for (let i = brace; i < text.length; i++) {
+    const ch = text[i];
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+    if (ch === '{') depth += 1;
+    else if (ch === '}' && --depth === 0) return text.slice(start, i + 1);
+  }
+  throw new Error('unterminated function ' + name);
 }
 
 const changes = [];
@@ -60,5 +81,23 @@ check(tributeRows[0][4] === 35 && tributeRows[1][4] === 35,
 check(allocationRows.length === 2, 'stable region ids must prevent same-name redistribution ledger collisions');
 check(context.P.map.regions[0].population === 1000000 && context.GM.mapData.regions[0].population === 1000,
   'template and runtime fixtures must remain isolated');
+
+const mapContext = {
+  P: { adminHierarchy: null, map: { regions: [{ id: 'r1', name: '模板地区', owner: '旧主', color: '#111111' }], items: [] } },
+  GM: {
+    adminHierarchy: null,
+    facs: [{ id: 'new-owner', name: '新主', color: '#abcdef' }],
+    mapData: { regions: [{ id: 'r1', name: '运行地区', owner: 'new-owner', color: '#222222' }], items: [], factionColors: {} }
+  },
+  _dbg() {}
+};
+mapContext.getLiveMapData = () => mapContext.GM.mapData;
+mapContext.window = mapContext;
+mapContext.globalThis = mapContext;
+vm.createContext(mapContext);
+vm.runInContext(extractFunction(mapSource, 'updateMapColors'), mapContext, { filename: 'updateMapColors.js' });
+mapContext.updateMapColors();
+check(mapContext.GM.mapData.regions[0].color === '#abcdef', 'map color refresh must update the runtime GM region');
+check(mapContext.P.map.regions[0].color === '#111111', 'map color refresh must not mutate or display the scenario template region');
 
 console.log('[smoke-runtime-map-economy] PASS assertions=' + assertions);

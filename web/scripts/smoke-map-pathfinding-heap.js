@@ -35,10 +35,11 @@ function extractFunction(text, name) {
   throw new Error('unterminated function ' + name);
 }
 
-const context = { GM: { mapData: { adjacencyGraph: {}, regions: [] } } };
+const context = { GM: { mapData: { adjacencyGraph: {}, regions: [] } }, P: { battleConfig: { supplyConfig: {} }, map: { regions: [] } } };
 context.getLiveMapData = () => context.GM.mapData;
 vm.createContext(context);
 vm.runInContext(extractFunction(source, 'findPath'), context, { filename: 'findPath.js' });
+vm.runInContext(extractFunction(source, 'calculateSupplyLine'), context, { filename: 'calculateSupplyLine.js' });
 
 context.GM.mapData.adjacencyGraph = {
   A: [
@@ -80,6 +81,22 @@ context.GM.mapData.adjacencyGraph = {
 };
 result = context.findPath('A', 'B', { avoidEnemy: true, faction: '我军' });
 check(JSON.stringify(result.path) === JSON.stringify(['A', 'D', 'B']), 'avoidEnemy must consult live runtime ownership');
+
+context.P.map.regions = [{ id: 'C', owner: '我军' }];
+context.GM.mapData.regions = [{ id: 'C', owner: '敌军' }, { id: 'B', owner: '我军' }];
+context.GM.mapData.adjacencyGraph = {
+  A: [{ target: 'C', distance: 1, movementCost: 1, type: 'land' }],
+  C: [{ target: 'B', distance: 1, movementCost: 1, type: 'land' }],
+  B: []
+};
+let supply = context.calculateSupplyLine('A', 'B', '我军');
+check(supply.isCut === true && supply.efficiency === 0.1,
+  'supply occupation must use hostile GM runtime state even when P template still says friendly');
+context.GM.mapData.regions[0].owner = '我军';
+context.P.battleConfig.supplyConfig.distanceDecay = 0;
+supply = context.calculateSupplyLine('A', 'B', '我军');
+check(supply.isCut === false && supply.efficiency === 1,
+  'explicit distanceDecay=0 must remain zero instead of reverting to the default');
 
 const graph = Object.create(null);
 const count = 4000;

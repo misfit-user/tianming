@@ -689,7 +689,9 @@ function createTerrainPattern(ctx, patternType) {
  * 实际游戏推演以行政区划（cities/territories）为准
  */
 function updateMapColors() {
-  if (!P.map) return;
+  var runtimeMap = getLiveMapData();
+  if (!runtimeMap) return;
+  var runtimeGM = (typeof GM !== 'undefined' && GM) ? GM : null;
 
   _dbg('[Map] 更新地图颜色...');
 
@@ -697,9 +699,10 @@ function updateMapColors() {
 
   // 建立 region.id → autonomy 类型 映射（若该地块映射了行政区划）
   var _regionAutonomyMap = {};
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(fk) {
-      var fh = P.adminHierarchy[fk]; if (!fh || !fh.divisions) return;
+  var runtimeAdminHierarchy = (runtimeGM && runtimeGM.adminHierarchy) || P.adminHierarchy;
+  if (runtimeAdminHierarchy) {
+    Object.keys(runtimeAdminHierarchy).forEach(function(fk) {
+      var fh = runtimeAdminHierarchy[fk]; if (!fh || !fh.divisions) return;
       (function _walk(ds) {
         ds.forEach(function(d) {
           if (d.mappedRegions && d.autonomy && d.autonomy.type) {
@@ -716,7 +719,8 @@ function updateMapColors() {
   // 双树防御走查：P 与 GM 的 adminHierarchy 通常同引用·若分叉则以任一侧有 occupiedBy 为准（占据只由
   // tm-revolt-inference 写在 GM 叶上·P 侧缺失=静默无覆色·安全失效不破图）。
   var _regionOccupiedMap = {};
-  [P.adminHierarchy, (typeof GM !== 'undefined' && GM && GM.adminHierarchy !== P.adminHierarchy) ? GM.adminHierarchy : null].forEach(function(ah) {
+  [runtimeGM ? runtimeGM.adminHierarchy : null,
+    (P.adminHierarchy && (!runtimeGM || runtimeGM.adminHierarchy !== P.adminHierarchy)) ? P.adminHierarchy : null].forEach(function(ah) {
     if (!ah) return;
     Object.keys(ah).forEach(function(fk) {
       var fh = ah[fk]; if (!fh || !fh.divisions) return;
@@ -736,8 +740,8 @@ function updateMapColors() {
   var _AUTONOMY_COLORS = { fanguo:'#9a7bd8', fanzhen:'#f87171', jimi:'#66bb6a', chaogong:'#f59e0b' };
 
   // 更新智能格式地块颜色
-  if (P.map.regions && Array.isArray(P.map.regions)) {
-    P.map.regions.forEach(function(region) {
+  if (runtimeMap.regions && Array.isArray(runtimeMap.regions)) {
+    runtimeMap.regions.forEach(function(region) {
       if (!region) return;
 
       // 根据 owner/currentOwner/ownerKey 查找对应势力
@@ -748,12 +752,12 @@ function updateMapColors() {
       }
 
       // 查找势力
-      var faction = GM.facs ? GM.facs.find(function(f) { return f.name === owner || f.id === owner || f.name === region.factionName || f.id === region.factionId; }) : null;
+      var faction = runtimeGM && runtimeGM.facs ? runtimeGM.facs.find(function(f) { return f.name === owner || f.id === owner || f.name === region.factionName || f.id === region.factionId; }) : null;
       var baseColor = null;
       if (faction && faction.color) baseColor = faction.color;
-      else if (GM.mapData && GM.mapData.factionColors && GM.mapData.factionColors[owner]) baseColor = GM.mapData.factionColors[owner].main;
-      else if (GM.mapData && GM.mapData.factionColors && region.factionName && GM.mapData.factionColors[region.factionName]) baseColor = GM.mapData.factionColors[region.factionName].main;
-      else if (GM.mapData && GM.mapData.factions && region.ownerKey && GM.mapData.factions[region.ownerKey]) baseColor = GM.mapData.factions[region.ownerKey].color;
+      else if (runtimeMap.factionColors && runtimeMap.factionColors[owner]) baseColor = runtimeMap.factionColors[owner].main;
+      else if (runtimeMap.factionColors && region.factionName && runtimeMap.factionColors[region.factionName]) baseColor = runtimeMap.factionColors[region.factionName].main;
+      else if (runtimeMap.factions && region.ownerKey && runtimeMap.factions[region.ownerKey]) baseColor = runtimeMap.factions[region.ownerKey].color;
       else if (region.factionColor) baseColor = region.factionColor;
       if (!baseColor) { region.color = '#cccccc'; return; }
       // 按 autonomy 覆盖或混合——非直辖显示管辖类型色
@@ -768,7 +772,7 @@ function updateMapColors() {
       // 批五·义军占据覆色压轴（占据是既成军事事实·压过 autonomy 显示·退据即自动还色）
       var _occ = _regionOccupiedMap[region.id];
       if (_occ) {
-        var _occC = (GM.mapData && GM.mapData.factionColors && GM.mapData.factionColors[_occ]) || null;
+        var _occC = (runtimeMap.factionColors && runtimeMap.factionColors[_occ]) || null;
         if (_occC && _occC.main) { region.color = _occC.main; region.occupiedBy = _occ; }
       } else if (region.occupiedBy) {
         delete region.occupiedBy;
@@ -778,8 +782,8 @@ function updateMapColors() {
   }
 
   // 更新传统格式地块颜色
-  if (P.map.items && Array.isArray(P.map.items)) {
-    P.map.items.forEach(function(item) {
+  if (runtimeMap.items && Array.isArray(runtimeMap.items)) {
+    runtimeMap.items.forEach(function(item) {
       if (!item) return;
 
       var owner = item.currentOwner || item.owner || item.factionId || item.ownerKey;
@@ -788,15 +792,15 @@ function updateMapColors() {
         return;
       }
 
-      var faction = GM.facs ? GM.facs.find(function(f) { return f.name === owner || f.id === owner || f.name === item.factionName || f.id === item.factionId; }) : null;
+      var faction = runtimeGM && runtimeGM.facs ? runtimeGM.facs.find(function(f) { return f.name === owner || f.id === owner || f.name === item.factionName || f.id === item.factionId; }) : null;
       if (faction && faction.color) {
         item.color = faction.color;
         updateCount++;
-      } else if (GM.mapData && GM.mapData.factionColors && GM.mapData.factionColors[owner]) {
-        item.color = GM.mapData.factionColors[owner].main;
+      } else if (runtimeMap.factionColors && runtimeMap.factionColors[owner]) {
+        item.color = runtimeMap.factionColors[owner].main;
         updateCount++;
-      } else if (GM.mapData && GM.mapData.factions && item.ownerKey && GM.mapData.factions[item.ownerKey]) {
-        item.color = GM.mapData.factions[item.ownerKey].color;
+      } else if (runtimeMap.factions && item.ownerKey && runtimeMap.factions[item.ownerKey]) {
+        item.color = runtimeMap.factions[item.ownerKey].color;
         updateCount++;
       } else if (item.factionColor) {
         item.color = item.factionColor;

@@ -118,6 +118,8 @@ async function main() {
   check(bodyAbortObserved && /aborted/.test(String(stalledError && stalledError.message)), 'caller abort remains connected after response headers and stops a stalled body');
   check(T.verifyAuthenticatedUpdateDocument(payload, 'tianming-hot-update-feed') === payload,
     'unsigned fixtures are allowed only inside explicit unpackaged test mode');
+  check(T.isAllowedRemoteUrl('http://127.0.0.1/test') === true,
+    'localhost HTTP is available inside explicit unpackaged test mode');
 
   const trustedUrl = pathToFileURL(path.join(ROOT, 'web', 'index.html')).toString();
   const mainFrame = { url: trustedUrl, parent: null };
@@ -198,6 +200,10 @@ async function main() {
   delete require.cache[require.resolve(path.join(ROOT, 'main-impl.js'))];
   const packagedModule = require(path.join(ROOT, 'main-impl.js'));
   check(!packagedModule.__test, 'packaged build ignores TIANMING_TEST_EXPORTS and exposes no test internals');
+  check(/const allowUnsignedTest = TEST_MODE;/.test(mainSource)
+    && /isLocalHttp && TEST_MODE/.test(mainSource)
+    && /const localDev = TEST_MODE/.test(mainSource),
+    'unsigned updates, localhost HTTP and test exports share the same unpackaged TEST_MODE gate');
 
   console.log('[smoke-security-trust-boundary] PASS assertions=' + assertions);
 }

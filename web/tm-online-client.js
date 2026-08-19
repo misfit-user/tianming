@@ -65,12 +65,41 @@
   function createOnlineClient(opts) {
     opts = opts || {};
     var storage = makeStorage(opts.storage);
+    var desktopBridge = opts.desktopBridge || (typeof window !== 'undefined' && window.tianming && typeof window.tianming.onlineRequest === 'function' ? window.tianming : null);
+    var desktopSession = { loggedIn: false, user: null, loggedInAt: '' };
     var doFetch = opts.fetch || (typeof fetch !== 'undefined' ? fetch.bind(typeof window !== 'undefined' ? window : null) : null);
     // B2（批B）：上传进度需 XMLHttpRequest（fetch 无原生上传进度事件）。可注入便于测试。
     var XHR = opts.XMLHttpRequest || (typeof XMLHttpRequest !== 'undefined' ? XMLHttpRequest : null);
     var defaultApiUrl = normalizeApiUrl(opts.apiUrl || DEFAULT_API_URL);
 
+    function setDesktopSession(session) {
+      session = session && session.session ? session.session : session;
+      desktopSession = {
+        loggedIn: !!(session && (session.loggedIn || session.user)),
+        user: session && session.user && typeof session.user === 'object' ? session.user : null,
+        loggedInAt: session && session.loggedInAt || ''
+      };
+      return desktopSession;
+    }
+
+    if (desktopBridge && typeof desktopBridge.accountSession === 'function') {
+      // 清除旧版曾落在 renderer localStorage 的真实 token；桌面端今后只保留主进程会话。
+      try { storage.removeItem(SESSION_KEY); storage.removeItem(API_URL_KEY); } catch (e) {}
+      Promise.resolve(desktopBridge.accountSession()).then(function (res) {
+        if (res && res.success) setDesktopSession(res.session);
+      }).catch(function () {});
+    }
+
     function readSession() {
+      if (desktopBridge) {
+        return {
+          token: desktopSession.loggedIn ? '__main_process_session__' : '',
+          apiUrl: defaultApiUrl,
+          user: desktopSession.user,
+          loggedInAt: desktopSession.loggedInAt,
+          loggedIn: desktopSession.loggedIn
+        };
+      }
       try {
         var raw = storage.getItem(SESSION_KEY);
         if (!raw) return { token: '', apiUrl: getApiUrl(), user: null };
@@ -87,6 +116,10 @@
     }
 
     function writeSession(session) {
+      if (desktopBridge) {
+        setDesktopSession(session);
+        return getSession();
+      }
       var payload = {
         token: String((session && session.token) || ''),
         apiUrl: normalizeApiUrl((session && session.apiUrl) || getApiUrl()),
@@ -97,11 +130,20 @@
       return payload;
     }
 
-    function clearSession() {
+    function clearSession(localOnly) {
+      if (desktopBridge) {
+        setDesktopSession(null);
+        try { storage.removeItem(SESSION_KEY); } catch (e) {}
+        if (!localOnly && typeof desktopBridge.accountLogout === 'function') {
+          Promise.resolve(desktopBridge.accountLogout()).catch(function () {});
+        }
+        return;
+      }
       try { storage.removeItem(SESSION_KEY); } catch (e) {}
     }
 
     function getApiUrl() {
+      if (desktopBridge) return defaultApiUrl;
       try {
         var saved = storage.getItem(API_URL_KEY);
         if (saved) return normalizeApiUrl(saved);
@@ -110,20 +152,25 @@
     }
 
     function setApiUrl(url) {
+      if (desktopBridge) return defaultApiUrl;
       var norm = normalizeApiUrl(url) || defaultApiUrl;
       try { storage.setItem(API_URL_KEY, norm); } catch (e) {}
       return norm;
     }
 
-    function getToken() { return readSession().token; }
-    function getSession() { return readSession(); }
-    function isLoggedIn() { return !!readSession().token; }
+    function getToken() { return desktopBridge ? '' : readSession().token; }
+    function getSession() {
+      if (!desktopBridge) return readSession();
+      return { loggedIn: desktopSession.loggedIn, user: desktopSession.user, loggedInAt: desktopSession.loggedInAt };
+    }
+    function isLoggedIn() { return desktopBridge ? desktopSession.loggedIn : !!readSession().token; }
 
     // ---- core request ------------------------------------------------------
     // Returns parsed JSON (incl. { success:false, error } on handled 4xx).
     // Throws only on network failure or an unparseable error response.
     function request(method, pathname, reqOpts) {
       reqOpts = reqOpts || {};
+      if (desktopBridge) return Promise.resolve(desktopBridge.onlineRequest(method, pathname, reqOpts.body));
       if (!doFetch) return Promise.reject(new Error('当前环境不支持 fetch'));
       var apiUrl = normalizeApiUrl(reqOpts.apiUrl || readSession().apiUrl || getApiUrl());
       if (!apiUrl) return Promise.reject(new Error('缺少在线服务地址'));
@@ -161,7 +208,7 @@
         email: String(info.email || '').trim()
       };
       return request('POST', 'account/register', { body: payload, token: '', apiUrl: apiUrl }).then(function (res) {
-        if (res && res.success && res.token) writeSession({ token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null });
+        if (res && res.success && (res.token || desktopBridge)) writeSession(res.session || { token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null, loggedIn: true });
         return Object.assign({ success: false }, res || {});
       });
     }
@@ -174,7 +221,7 @@
     function emailLogin(email, code, apiUrl) {
       return request('POST', 'account/email-login', { body: { email: String(email || '').trim(), code: String(code || '').trim() }, token: '', apiUrl: apiUrl })
         .then(function (res) {
-          if (res && res.success && res.token) writeSession({ token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null });
+          if (res && res.success && (res.token || desktopBridge)) writeSession(res.session || { token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null, loggedIn: true });
           return Object.assign({ success: false }, res || {});
         });
     }
@@ -482,17 +529,17 @@
       info = info || {};
       var payload = { username: String(info.username || '').trim(), password: String(info.password || '') };
       return request('POST', 'account/login', { body: payload, token: '', apiUrl: apiUrl }).then(function (res) {
-        if (res && res.success && res.token) writeSession({ token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null });
+        if (res && res.success && (res.token || desktopBridge)) writeSession(res.session || { token: res.token, apiUrl: normalizeApiUrl(apiUrl || getApiUrl()), user: res.user || null, loggedIn: true });
         return Object.assign({ success: false }, res || {});
       });
     }
 
     function me(apiUrl) {
       var session = readSession();
-      if (!session.token) return Promise.resolve({ success: true, loggedIn: false, user: null, session: session });
+      if (!session.token && !desktopBridge) return Promise.resolve({ success: true, loggedIn: false, user: null, session: getSession() });
       return request('GET', 'account/me', { apiUrl: apiUrl || session.apiUrl, token: session.token }).then(function (res) {
-        if (res && res.success && res.user) writeSession({ token: session.token, apiUrl: normalizeApiUrl(apiUrl || session.apiUrl), user: res.user });
-        return Object.assign({ loggedIn: !!(res && res.user) }, res || {}, { session: readSession() });
+        if (res && res.success && res.user) writeSession(res.session || { token: session.token, apiUrl: normalizeApiUrl(apiUrl || session.apiUrl), user: res.user, loggedIn: true });
+        return Object.assign({ loggedIn: !!(res && res.user) }, res || {}, { session: getSession() });
       });
     }
 
@@ -502,10 +549,10 @@
       // 否则旧账号的网络回包会把新账号刚写入 localStorage 的会话一并删掉。
       var done = function () {
         var current = readSession();
-        if (!current.token || current.token === session.token) clearSession();
+        if (!current.token || current.token === session.token) clearSession(true);
         return { success: true };
       };
-      if (!session.token) return Promise.resolve(done());
+      if (!session.token && !desktopBridge) return Promise.resolve(done());
       return request('POST', 'account/logout', { body: {}, apiUrl: apiUrl || session.apiUrl, token: session.token })
         .then(done, function (e) { var result = done(); result.warning = e && e.message; return result; });
     }
@@ -514,7 +561,7 @@
     function catalog(catalogUrl) {
       var apiUrl = readSession().apiUrl || getApiUrl();
       var url = String(catalogUrl || '').trim();
-      if (url) {
+      if (url && !desktopBridge) {
         // full catalog URL given — fetch directly
         if (!doFetch) return Promise.reject(new Error('当前环境不支持 fetch'));
         return doFetch(url, { method: 'GET', mode: 'cors', cache: 'no-store', headers: { 'Accept': 'application/json' } })
@@ -563,6 +610,13 @@
     // 进度（xhr.upload.onprogress 的 loaded/total）；否则回落 request() 的 fetch 路（行为
     // 不变）。鉴权头/URL/body 构造与 request() 逐字一致（Accept + Content-Type + Bearer）。
     function sendUpload(payload, apiUrl, token, onProgress) {
+      if (desktopBridge) {
+        if (typeof onProgress === 'function') { try { onProgress({ loaded: 0, total: 1 }); } catch (_) {} }
+        return request('POST', 'workshop/upload', { body: payload }).then(function (res) {
+          if (typeof onProgress === 'function') { try { onProgress({ loaded: 1, total: 1 }); } catch (_) {} }
+          return res;
+        });
+      }
       if (typeof onProgress === 'function' && XHR) {
         var base = normalizeApiUrl(apiUrl || getApiUrl());
         if (!base) return Promise.reject(new Error('缺少在线服务地址'));

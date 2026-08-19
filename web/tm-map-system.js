@@ -103,6 +103,7 @@ function ensureMapDataScaffold(mapData) {
 
 function getLiveMapData() {
   if (typeof GM !== 'undefined' && GM && GM.mapData && GM.mapData.regions) return GM.mapData;
+  if (typeof GM !== 'undefined' && GM && GM.map && GM.map.regions) return GM.map;
   if (typeof P !== 'undefined' && P && P.map && P.map.regions) return P.map;
   if (typeof P !== 'undefined' && P && P.mapData && P.mapData.regions) return P.mapData;
   return null;
@@ -2033,12 +2034,13 @@ function closeMapViewer() {
  * 在doActualStart中调用（地图启用时）
  */
 function buildAdjacencyGraph() {
-  if (!P.map || !P.map.regions || !P.map.regions.length) return;
+  var runtimeMap = getLiveMapData();
+  if (!runtimeMap || !runtimeMap.regions || !runtimeMap.regions.length) return;
   if (!GM.mapData) GM.mapData = {};
 
   var graph = {};
-  var regions = P.map.regions;
-  var roads = P.map.roads || [];
+  var regions = runtimeMap.regions;
+  var roads = runtimeMap.roads || [];
 
   // 构建road索引（双向查找）
   var roadMap = {};
@@ -2178,14 +2180,16 @@ function calculateSupplyLine(baseCityId, armyCityId, factionName) {
   }
 
   // 效率随距离递减
-  var distanceDecay = (P.battleConfig && P.battleConfig.supplyConfig && P.battleConfig.supplyConfig.distanceDecay) || 0.08;
+  var configuredDecay = P.battleConfig && P.battleConfig.supplyConfig && P.battleConfig.supplyConfig.distanceDecay;
+  var distanceDecay = configuredDecay == null ? 0.08 : Math.max(0, Number(configuredDecay) || 0);
   var efficiency = Math.max(0.1, 1.0 - pathResult.distance * distanceDecay);
 
   // 检查路径上是否有敌方占领的节点（补给线被截断）
   var isCut = false;
+  var runtimeMap = getLiveMapData() || {};
   for (var i = 1; i < pathResult.path.length - 1; i++) {
     var node = pathResult.path[i];
-    var region = (P.map.regions || []).find(function(r) { return (r.id || r.name) === node; });
+    var region = (runtimeMap.regions || []).find(function(r) { return (r.id || r.name) === node; });
     if (region) {
       var nodeOwner = region.occupiedBy || region.owner || '';
       if (nodeOwner && factionName && nodeOwner !== factionName) {
@@ -2206,11 +2210,12 @@ function calculateSupplyLine(baseCityId, armyCityId, factionName) {
 // ============================================================
 function drawMinimap(){
   var c=_$("g-minimap");if(!c)return;
-  if(!P.mapData || !P.mapData.regions || P.mapData.regions.length === 0) return;
+  var liveMap=getLiveMapData();
+  if(!liveMap || !liveMap.regions || liveMap.regions.length === 0) return;
   var ctx=c.getContext("2d");
   ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,c.width,c.height);
-  var scale=c.width/(P.mapData.width||800);
-  P.mapData.regions.forEach(function(r){
+  var scale=c.width/(liveMap.width||800);
+  liveMap.regions.forEach(function(r){
     ctx.save();ctx.globalAlpha=0.35;ctx.fillStyle=r.color||"#c9a84c";
     if(r.type==="rect"&&r.rect){
       ctx.fillRect(r.rect.x*scale,r.rect.y*scale,r.rect.w*scale,r.rect.h*scale);
@@ -2244,6 +2249,7 @@ var InteractiveMap = {
   dragStartY: 0,
   selectedRegion: null,
   hoveredRegion: null,
+  mapData: null,
 
   // 初始化
   init: function(canvas) {
@@ -2252,6 +2258,7 @@ var InteractiveMap = {
     this.scale = 1;
     this.offsetX = 0;
     this.offsetY = 0;
+    this.mapData = getLiveMapData();
 
     // 绑定事件
     this.bindEvents();
@@ -2337,10 +2344,11 @@ var InteractiveMap = {
 
   // 获取指定坐标的区域
   getRegionAt: function(x, y) {
-    if (!P.mapData || !P.mapData.regions) return null;
+    var mapData = this.mapData || getLiveMapData();
+    if (!mapData || !mapData.regions) return null;
 
-    for (var i = P.mapData.regions.length - 1; i >= 0; i--) {
-      var r = P.mapData.regions[i];
+    for (var i = mapData.regions.length - 1; i >= 0; i--) {
+      var r = mapData.regions[i];
 
       if (r.type === 'rect' && r.rect) {
         if (x >= r.rect.x && x <= r.rect.x + r.rect.w &&
@@ -2374,7 +2382,8 @@ var InteractiveMap = {
 
   // 绘制地图
   draw: function() {
-    if (!this.ctx || !P.mapData || !P.mapData.regions) return;
+    var mapData = this.mapData || getLiveMapData();
+    if (!this.ctx || !mapData || !mapData.regions) return;
 
     var ctx = this.ctx;
     var w = this.canvas.width;
@@ -2390,7 +2399,7 @@ var InteractiveMap = {
     ctx.scale(this.scale, this.scale);
 
     // 绘制所有区域
-    P.mapData.regions.forEach(function(r) {
+    mapData.regions.forEach(function(r) {
       var isSelected = this.selectedRegion && this.selectedRegion.name === r.name;
       var isHovered = this.hoveredRegion && this.hoveredRegion.name === r.name;
 
@@ -2475,36 +2484,40 @@ var InteractiveMap = {
   showRegionInfo: function(region) {
     var infoDiv = document.getElementById('map-region-info');
     if (!infoDiv) return;
+    infoDiv.replaceChildren();
 
-    var html = '<h4 style="color:var(--gold);margin-bottom:0.5rem;">' + region.name + '</h4>';
+    var title = document.createElement('h4');
+    title.style.cssText = 'color:var(--gold);margin-bottom:0.5rem;';
+    title.textContent = String(region && region.name != null ? region.name : '');
+    infoDiv.appendChild(title);
 
-    // 显示控制者
-    if (region.controller) {
-      html += '<div style="margin-bottom:0.3rem;"><strong>控制者:</strong> ' + region.controller + '</div>';
+    function appendInfoRow(label, value) {
+      var row = document.createElement('div');
+      row.style.cssText = 'margin-bottom:0.3rem;';
+      var strong = document.createElement('strong');
+      strong.textContent = label + ': ';
+      row.appendChild(strong);
+      row.appendChild(document.createTextNode(String(value)));
+      infoDiv.appendChild(row);
     }
 
-    // 显示人口
-    if (region.population) {
-      html += '<div style="margin-bottom:0.3rem;"><strong>人口:</strong> ' + region.population + '</div>';
-    }
+    if (region && region.controller != null) appendInfoRow('控制者', region.controller);
+    if (region && region.population != null) appendInfoRow('人口', region.population);
+    if (region && region.income != null) appendInfoRow('收入', region.income);
 
-    // 显示收入
-    if (region.income) {
-      html += '<div style="margin-bottom:0.3rem;"><strong>收入:</strong> ' + region.income + '</div>';
+    if (region && region.desc != null && region.desc !== '') {
+      var description = document.createElement('div');
+      description.style.cssText = 'margin-top:0.5rem;color:var(--txt-d);font-size:0.85rem;';
+      description.textContent = String(region.desc);
+      infoDiv.appendChild(description);
     }
-
-    // 显示描述
-    if (region.desc) {
-      html += '<div style="margin-top:0.5rem;color:var(--txt-d);font-size:0.85rem;">' + region.desc + '</div>';
-    }
-
-    infoDiv.innerHTML = html;
   }
 };
 
 // 打开交互式地图
 function openInteractiveMap() {
-  if (!P.mapData || !P.mapData.regions || P.mapData.regions.length === 0) {
+  var runtimeMap = getLiveMapData();
+  if (!runtimeMap || !runtimeMap.regions || runtimeMap.regions.length === 0) {
     toast('❌ 当前剧本没有地图数据');
     return;
   }

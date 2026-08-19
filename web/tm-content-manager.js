@@ -1271,9 +1271,9 @@
         if (!state.hotFeedUrl) state.hotFeedUrl = loadHotFeedUrl();
         if (!state.catalogUrl) state.catalogUrl = loadCatalogUrl();
         if (!state.onlineApiUrl) state.onlineApiUrl = loadOnlineApiUrl();
-        // 账号统一走 TM.OnlineClient（渲染层 localStorage）。优先它；旧 IPC session 仅作兜底。
+        // 账号统一走 TM.OnlineClient；Electron 会话与 Bearer Token 只保存在主进程。
         var ocSess = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : null;
-        replaceAccountSession((ocSess && ocSess.token) ? ocSess : (status.account || state.accountSession || null), false);
+        replaceAccountSession((ocSess && (ocSess.loggedIn || ocSess.user)) ? ocSess : (status.account || state.accountSession || null), false);
         state.status = { currentVersion: status.currentVersion };
       }
     } catch(e) {

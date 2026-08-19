@@ -135,6 +135,10 @@ contextBridge.exposeInMainWorld('tianming', {
   onlineServiceStatus: () =>
     ipcRenderer.invoke('online-service-status'),
 
+  // 在线账号与社区请求由主进程固定域名、固定路由代发；Bearer Token 永不进入 renderer。
+  onlineRequest: (method, pathname, body) =>
+    ipcRenderer.invoke('online-request', { method, pathname, body }),
+
   accountSession: () =>
     ipcRenderer.invoke('account-session'),
 

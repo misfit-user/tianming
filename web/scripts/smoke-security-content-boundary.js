@@ -8,6 +8,7 @@ const vm = require('vm');
 const WEB = path.resolve(__dirname, '..');
 const indexSource = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
 const mapSource = fs.readFileSync(path.join(WEB, 'map-display.js'), 'utf8');
+const interactiveMapSource = fs.readFileSync(path.join(WEB, 'tm-map-system.js'), 'utf8');
 const saveSource = fs.readFileSync(path.join(WEB, 'tm-save-manager.js'), 'utf8');
 const launchSource = fs.readFileSync(path.join(WEB, 'tm-launch.js'), 'utf8');
 let assertions = 0;
@@ -102,6 +103,43 @@ function runMapDetailsProbe() {
   ok(html.includes('&lt;script&gt;owned()&lt;/script&gt;<br>次行'), '历史换行只在转义后转换为 br');
 }
 
+function runInteractiveMapProbe() {
+  let htmlWrites = 0;
+  const createdTags = [];
+  function makeNode(tag, text) {
+    const node = {
+      tagName: String(tag || '').toUpperCase(),
+      textContent: text == null ? '' : String(text),
+      children: [],
+      style: {},
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren() { this.children = Array.prototype.slice.call(arguments); }
+    };
+    Object.defineProperty(node, 'innerHTML', { set() { htmlWrites++; }, get() { return ''; } });
+    if (tag) createdTags.push(node.tagName);
+    return node;
+  }
+  const info = makeNode('section');
+  const document = {
+    getElementById(id) { return id === 'map-region-info' ? info : null; },
+    createElement(tag) { return makeNode(tag); },
+    createTextNode(text) { return makeNode('', text); }
+  };
+  const start = interactiveMapSource.indexOf('var InteractiveMap = {');
+  const end = interactiveMapSource.indexOf('\n};\n\n// 打开交互式地图', start);
+  ok(start >= 0 && end > start, '交互地图对象可定位');
+  const ctx = { document, getLiveMapData: () => ({ regions: [] }), Math, String };
+  vm.runInNewContext(interactiveMapSource.slice(start, end + 3), ctx);
+  const marker = '<img src=x onerror="globalThis.__owned=1">';
+  ctx.InteractiveMap.showRegionInfo({ name: marker, controller: '<script>owned()</script>', population: 0, income: 0, desc: marker });
+  function flatten(node) { return node.textContent + node.children.map(flatten).join(''); }
+  const rendered = flatten(info);
+  ok(htmlWrites === 0, '交互地图地区详情不写动态 innerHTML');
+  ok(rendered.includes(marker) && rendered.includes('<script>owned()</script>'), '恶意地区字段只作为文本显示');
+  ok(rendered.includes('人口: 0') && rendered.includes('收入: 0'), '交互地图保留人口和收入零值');
+  ok(createdTags.every(tag => ['SECTION', 'H4', 'DIV', 'STRONG'].includes(tag)), '地区字段不会创建活动 DOM 标签');
+}
+
 ok(/http-equiv=["']Content-Security-Policy["']/i.test(indexSource)
   && /object-src 'none'/.test(indexSource) && /base-uri 'none'/.test(indexSource), '首页声明 CSP 基础纵深防护');
 ok(!/span\.innerHTML\s*=/.test(indexSource.slice(indexSource.indexOf('(function fillHomeRecent(){'), indexSource.indexOf('})();', indexSource.indexOf('(function fillHomeRecent(){')))),
@@ -113,5 +151,6 @@ ok(/data-scenario-id/.test(launchSource) && /addEventListener\(['"]click['"]/.te
 
 runRecentSaveCardProbe();
 runMapDetailsProbe();
+runInteractiveMapProbe();
 
 console.log('[smoke-security-content-boundary] PASS assertions=' + assertions);

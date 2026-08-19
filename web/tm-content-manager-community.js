@@ -704,7 +704,6 @@
   }
   function accountSessionIdentity(session) {
     if (!session) return '';
-    if (session.token) return 'token:' + String(session.token);
     var user = session.user || session;
     var userKey = user && user.id != null ? user.id : (user && user.username);
     return 'user:' + String(userKey == null ? '' : userKey);
@@ -724,7 +723,7 @@
   }
   async function refreshAccountSession() {
     var session = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : state.accountSession;
-    session = session && session.token ? session : null;
+    session = session && (session.loggedIn || session.user) ? session : null;
     return replaceAccountSession(session, true);
   }
   async function accountRefresh() {
@@ -783,7 +782,7 @@
     }
     if (!_sameAccountEpoch(logoutEpoch)) return;
     var currentSession = TM.OnlineClient.getSession ? TM.OnlineClient.getSession() : null;
-    if (currentSession && currentSession.token && accountSessionIdentity(currentSession) !== logoutIdentity) {
+    if (currentSession && (currentSession.loggedIn || currentSession.user) && accountSessionIdentity(currentSession) !== logoutIdentity) {
       replaceAccountSession(currentSession, false);
       state.accountMessage = '账号已在退出期间切换，已保留新的登录。';
       render();
@@ -1229,7 +1228,7 @@
       state.defaultOnlineApiUrl = status.defaultOnlineApiUrl || state.defaultOnlineApiUrl || '';
       state.hotStatus = status.hotUpdate || state.hotStatus || null;
       var onlineSession = (window.TM && TM.OnlineClient) ? TM.OnlineClient.getSession() : null;
-      replaceAccountSession((onlineSession && onlineSession.token) ? onlineSession : (status.account || state.accountSession || null), false);
+      replaceAccountSession((onlineSession && (onlineSession.loggedIn || onlineSession.user)) ? onlineSession : (status.account || state.accountSession || null), false);
       if (!state.feedUrl) state.feedUrl = loadFeedUrl();
       if (!state.hotFeedUrl) state.hotFeedUrl = loadHotFeedUrl();
       if (!state.catalogUrl) state.catalogUrl = loadCatalogUrl();

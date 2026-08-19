@@ -7,6 +7,7 @@ const Module = require('module');
 const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
+const AdmZip = require('adm-zip');
 const { verifyAuthenticatedDocument: verifyArtifactDocument } = require(path.resolve(__dirname, '..', '..', 'scripts', 'lib', 'verify-artifacts.js'));
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -157,6 +158,28 @@ async function main() {
   try { await T.readRemoteTextLimited({ headers: actualHeaders, arrayBuffer: async () => Buffer.from('01234567890') }, 10, 50); }
   catch (error) { bodyError = error; }
   check(bodyError && /大小上限/.test(bodyError.message), 'undeclared oversized response is rejected after bounded read');
+
+  const bombPath = path.join(TMP, 'workshop-bomb.tm-pack');
+  const bombZip = new AdmZip();
+  bombZip.addFile('manifest.json', Buffer.from('{"id":"bomb","type":"scenario","entry":"payload.json"}'));
+  bombZip.addFile('payload.json', Buffer.alloc(2 * 1024 * 1024, 0x41));
+  bombZip.writeZip(bombPath);
+  const tempNamesBefore = new Set(fs.readdirSync(os.tmpdir()).filter(name => name.startsWith('tianming-pack-')));
+  let bombError = null;
+  try { await T.extractZipToTemp(bombPath); } catch (error) { bombError = error; }
+  const tempNamesAfter = fs.readdirSync(os.tmpdir()).filter(name => name.startsWith('tianming-pack-'));
+  check(bombError && /压缩比异常|ZIP 炸弹/.test(bombError.message), 'high-ratio workshop ZIP is rejected during central-directory preflight');
+  check(tempNamesAfter.every(name => tempNamesBefore.has(name)), 'rejected ZIP creates no extraction directory and writes no expanded payload');
+
+  const safeZipPath = path.join(TMP, 'workshop-safe.tm-pack');
+  const safeZip = new AdmZip();
+  safeZip.addFile('manifest.json', Buffer.from('{"id":"safe","type":"scenario","entry":"scenario.json"}'));
+  safeZip.addFile('scenario.json', Buffer.from('{"id":"safe-scenario","name":"安全测试"}'));
+  safeZip.writeZip(safeZipPath);
+  const extractedSafe = await T.extractZipToTemp(safeZipPath);
+  check(JSON.parse(fs.readFileSync(path.join(extractedSafe, 'scenario.json'), 'utf8')).id === 'safe-scenario',
+    'valid workshop ZIP is extracted entry-by-entry after preflight');
+  fs.rmSync(extractedSafe, { recursive: true, force: true });
 
   const mainSource = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
   const preloadSource = fs.readFileSync(path.join(ROOT, 'preload-impl.js'), 'utf8');

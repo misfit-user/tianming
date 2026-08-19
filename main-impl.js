@@ -15,6 +15,8 @@ const dns = require('dns').promises;
 const nodeNet = require('net');
 const { pathToFileURL, fileURLToPath } = require('url');
 const AdmZip = require('adm-zip');
+const yauzl = require('yauzl');
+const { pipeline } = require('stream');
 const { autoUpdater } = require('electron-updater');
 
 // ============================================================
@@ -788,6 +790,15 @@ const ALLOWED_HOT_UPDATE_EXTS = new Set([
   '.glb', '.gltf', '.bin', // 3D 资产（御驾亲征兵模等）
   '.onnx' // 本地语义模型；壳层能力自 1.3.4.12 起，发布器会自动抬高 minAppVersion
 ]);
+const WORKSHOP_ZIP_LIMITS = Object.freeze({
+  maxEntries: 4096,
+  maxTotalBytes: 250 * 1024 * 1024,
+  maxFileBytes: 128 * 1024 * 1024,
+  maxCompressionRatio: 250,
+  compressionRatioMinBytes: 1024 * 1024,
+  maxNameBytes: 240,
+  maxDepth: 16
+});
 
 function walkPackFiles(root) {
   const out = [];
@@ -868,15 +879,231 @@ function createTempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-function extractZipToTemp(zipPath) {
-  const temp = createTempDir('tianming-pack-');
-  const zip = new AdmZip(zipPath);
-  zip.getEntries().forEach(entry => {
-    const target = path.resolve(temp, entry.entryName);
-    if (!isInsideDir(temp, target)) throw new Error('压缩包包含越界路径: ' + entry.entryName);
+function openWorkshopZip(zipPath) {
+  return new Promise((resolve, reject) => {
+    yauzl.open(zipPath, {
+      lazyEntries: true,
+      autoClose: false,
+      decodeStrings: true,
+      validateEntrySizes: true,
+      strictFileNames: true
+    }, (error, zip) => error ? reject(error) : resolve(zip));
   });
-  zip.extractAllTo(temp, true);
-  return temp;
+}
+
+function validateWorkshopZipEntry(entry, seenPaths) {
+  const rawName = String(entry && entry.fileName || '');
+  if (!rawName || rawName.indexOf('\0') >= 0) throw new Error('压缩包包含空文件名或 NUL 字节');
+  if (rawName.indexOf('\\') >= 0 || rawName[0] === '/' || /^[a-zA-Z]:/.test(rawName)) {
+    throw new Error('压缩包包含绝对或非规范路径: ' + rawName);
+  }
+  if (Buffer.byteLength(rawName, 'utf8') > WORKSHOP_ZIP_LIMITS.maxNameBytes) {
+    throw new Error('压缩包文件名过长: ' + rawName.slice(0, 80));
+  }
+  const isDirectory = /\/$/.test(rawName);
+  const normalized = isDirectory ? rawName.slice(0, -1) : rawName;
+  const segments = normalized.split('/');
+  if (!normalized || segments.some(part => !part || part === '.' || part === '..')) {
+    throw new Error('压缩包包含越界或非规范路径: ' + rawName);
+  }
+  if (segments.length > WORKSHOP_ZIP_LIMITS.maxDepth) {
+    throw new Error('压缩包目录层级过深: ' + rawName);
+  }
+  const canonical = segments.join('/');
+  const duplicateKey = canonical.toLocaleLowerCase('en-US');
+  if (seenPaths && seenPaths.has(duplicateKey)) throw new Error('压缩包包含重复路径: ' + rawName);
+  if (seenPaths) seenPaths.add(duplicateKey);
+
+  const mode = (Number(entry.externalFileAttributes) >>> 16) & 0xffff;
+  if ((mode & 0xf000) === 0xa000) throw new Error('工坊包不允许包含符号链接: ' + rawName);
+  if ((Number(entry.generalPurposeBitFlag) & 1) !== 0) throw new Error('工坊包不允许加密条目: ' + rawName);
+
+  const compressedSize = Number(entry.compressedSize);
+  const uncompressedSize = Number(entry.uncompressedSize);
+  if (!Number.isSafeInteger(compressedSize) || compressedSize < 0 ||
+      !Number.isSafeInteger(uncompressedSize) || uncompressedSize < 0) {
+    throw new Error('压缩包条目大小非法: ' + rawName);
+  }
+  if (uncompressedSize > WORKSHOP_ZIP_LIMITS.maxFileBytes) {
+    throw new Error('工坊包单文件超过 128MB 上限: ' + rawName);
+  }
+  if (!isDirectory && uncompressedSize >= WORKSHOP_ZIP_LIMITS.compressionRatioMinBytes) {
+    const ratio = compressedSize > 0 ? uncompressedSize / compressedSize : Infinity;
+    if (ratio > WORKSHOP_ZIP_LIMITS.maxCompressionRatio) {
+      throw new Error('工坊包条目压缩比异常，疑似 ZIP 炸弹: ' + rawName);
+    }
+  }
+  if (!isDirectory) {
+    const ext = path.posix.extname(canonical).toLowerCase();
+    if (BLOCKED_PACK_EXTS.has(ext)) throw new Error('工坊包含有禁止类型文件: ' + rawName);
+    if (!ALLOWED_PACK_EXTS.has(ext)) throw new Error('工坊包含有未允许的文件类型: ' + rawName);
+  }
+  return { rawName, canonical, isDirectory, compressedSize, uncompressedSize };
+}
+
+async function preflightWorkshopZip(zipPath) {
+  const archiveStat = fs.statSync(zipPath);
+  if (!archiveStat.isFile()) throw new Error('工坊压缩包不是普通文件');
+  const zip = await openWorkshopZip(zipPath);
+  return new Promise((resolve, reject) => {
+    const seenPaths = new Set();
+    let entries = 0;
+    let files = 0;
+    let totalBytes = 0;
+    let settled = false;
+    function closeQuietly() { try { zip.close(); } catch (_) {} }
+    function fail(error) {
+      if (settled) return;
+      settled = true;
+      closeQuietly();
+      reject(error);
+    }
+    function finish() {
+      if (settled) return;
+      settled = true;
+      closeQuietly();
+      resolve({
+        entries,
+        files,
+        totalBytes,
+        archiveSize: archiveStat.size,
+        archiveMtimeMs: archiveStat.mtimeMs
+      });
+    }
+    zip.on('error', fail);
+    zip.on('entry', entry => {
+      try {
+        entries += 1;
+        if (entries > WORKSHOP_ZIP_LIMITS.maxEntries) throw new Error('工坊包文件数量超过 4096 上限');
+        const info = validateWorkshopZipEntry(entry, seenPaths);
+        if (!info.isDirectory) {
+          files += 1;
+          totalBytes += info.uncompressedSize;
+          if (!Number.isSafeInteger(totalBytes) || totalBytes > WORKSHOP_ZIP_LIMITS.maxTotalBytes) {
+            throw new Error('工坊包声明解压体积超过 250MB 上限');
+          }
+        }
+        zip.readEntry();
+      } catch (error) {
+        fail(error);
+      }
+    });
+    zip.on('end', finish);
+    if (Number(zip.entryCount) > WORKSHOP_ZIP_LIMITS.maxEntries) {
+      fail(new Error('工坊包文件数量超过 4096 上限'));
+      return;
+    }
+    zip.readEntry();
+  });
+}
+
+function streamWorkshopEntry(zip, entry, target, counters) {
+  return new Promise((resolve, reject) => {
+    zip.openReadStream(entry, (openError, readStream) => {
+      if (openError) { reject(openError); return; }
+      let entryBytes = 0;
+      let quotaError = null;
+      const writeStream = fs.createWriteStream(target, { flags: 'wx', mode: 0o600 });
+      readStream.on('data', chunk => {
+        entryBytes += chunk.length;
+        counters.totalBytes += chunk.length;
+        if (entryBytes > WORKSHOP_ZIP_LIMITS.maxFileBytes ||
+            counters.totalBytes > WORKSHOP_ZIP_LIMITS.maxTotalBytes ||
+            entryBytes > Number(entry.uncompressedSize)) {
+          quotaError = new Error('工坊包实际解压体积超过配额: ' + entry.fileName);
+          readStream.destroy(quotaError);
+        }
+      });
+      pipeline(readStream, writeStream, error => {
+        const finalError = quotaError || error;
+        if (finalError) {
+          try { fs.rmSync(target, { force: true }); } catch (_) {}
+          reject(finalError);
+          return;
+        }
+        if (entryBytes !== Number(entry.uncompressedSize)) {
+          try { fs.rmSync(target, { force: true }); } catch (_) {}
+          reject(new Error('工坊包条目解压大小与中央目录不一致: ' + entry.fileName));
+          return;
+        }
+        resolve(entryBytes);
+      });
+    });
+  });
+}
+
+async function extractWorkshopZipStreamed(zipPath, temp, expected) {
+  const zip = await openWorkshopZip(zipPath);
+  return new Promise((resolve, reject) => {
+    const seenPaths = new Set();
+    const counters = { entries: 0, files: 0, totalBytes: 0 };
+    let settled = false;
+    function closeQuietly() { try { zip.close(); } catch (_) {} }
+    function fail(error) {
+      if (settled) return;
+      settled = true;
+      closeQuietly();
+      reject(error);
+    }
+    function finish() {
+      if (settled) return;
+      if (counters.entries !== expected.entries || counters.files !== expected.files ||
+          counters.totalBytes !== expected.totalBytes) {
+        fail(new Error('工坊包在预检后发生变化，拒绝安装'));
+        return;
+      }
+      settled = true;
+      closeQuietly();
+      resolve(counters);
+    }
+    zip.on('error', fail);
+    zip.on('entry', entry => {
+      if (settled) return;
+      let info;
+      try {
+        counters.entries += 1;
+        if (counters.entries > WORKSHOP_ZIP_LIMITS.maxEntries) throw new Error('工坊包文件数量超过 4096 上限');
+        info = validateWorkshopZipEntry(entry, seenPaths);
+        const target = path.resolve(temp, info.canonical);
+        if (!isInsideDir(temp, target)) throw new Error('压缩包包含越界路径: ' + info.rawName);
+        if (info.isDirectory) {
+          fs.mkdirSync(target, { recursive: true });
+          zip.readEntry();
+          return;
+        }
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        counters.files += 1;
+        streamWorkshopEntry(zip, entry, target, counters).then(() => {
+          if (!settled) zip.readEntry();
+        }, fail);
+      } catch (error) {
+        fail(error);
+      }
+    });
+    zip.on('end', finish);
+    zip.readEntry();
+  });
+}
+
+async function extractZipToTemp(zipPath) {
+  // 中央目录配额、路径、类型和压缩比必须在创建输出目录及写出任何条目前全部通过。
+  const preflight = await preflightWorkshopZip(zipPath);
+  const currentStat = fs.statSync(zipPath);
+  if (currentStat.size !== preflight.archiveSize || currentStat.mtimeMs !== preflight.archiveMtimeMs) {
+    throw new Error('工坊包在预检后发生变化，拒绝安装');
+  }
+  const temp = createTempDir('tianming-pack-');
+  try {
+    await extractWorkshopZipStreamed(zipPath, temp, preflight);
+    return temp;
+  } catch (error) {
+    try {
+      if (isInsideDir(os.tmpdir(), temp) && path.basename(temp).indexOf('tianming-pack-') === 0) {
+        fs.rmSync(temp, { recursive: true, force: true });
+      }
+    } catch (_) {}
+    throw error;
+  }
 }
 
 function extractZipToTempChecked(zipPath, prefix) {
@@ -3423,7 +3650,7 @@ ipcMain.handle('workshop-install-from-url', async (event, options = {}) => {
     zipPath = path.join(WORKSHOP_DIR, 'downloads', 'tianming-workshop-' + Date.now() + '.tm-pack');
     const fileInfo = await downloadRemoteFile(packageUrl, zipPath, 250 * 1024 * 1024);
     if (expectedHash !== fileInfo.sha256.toLowerCase()) throw new Error('工坊包 sha256 不一致');
-    tempDir = extractZipToTemp(zipPath);
+    tempDir = await extractZipToTemp(zipPath);
     return installWorkshopPackFromDir(tempDir, { overwrite: !!options.overwrite, source: packageUrl });
   } catch (e) {
     return { success: false, error: e.message };
@@ -3481,7 +3708,7 @@ ipcMain.handle('workshop-import-pack', async (event, options = {}) => {
     if (!stat.isDirectory()) {
       const ext = path.extname(selected).toLowerCase();
       if (ext === '.zip' || ext === '.tm-pack') {
-        tempDir = extractZipToTemp(selected);
+        tempDir = await extractZipToTemp(selected);
         sourceDir = tempDir;
       } else if (ext === '.json') {
         tempDir = createScenarioPackFromJson(selected);
@@ -3628,6 +3855,9 @@ if (TEST_MODE) {
     toPublicAccountSession,
     sanitizeOnlineResponse,
     normalizeOnlineRendererRoute,
+    preflightWorkshopZip,
+    extractZipToTemp,
+    WORKSHOP_ZIP_LIMITS,
     verifyAuthenticatedUpdateDocument,
     getCurrentComparableVersion,
     getPackageBuildVersion,

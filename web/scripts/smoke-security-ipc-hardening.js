@@ -167,8 +167,10 @@ assert(/if\s*\(!\/\^\[0-9a-f\]\{64\}\$\/\.test\(expectedHash\)\)\s*throw/.test(S
   'src· 工坊安装仍强制 /^[0-9a-f]{64}$/ hash 格式门（修B 未回退）');
 assert(/expectedHash !== fileInfo\.sha256/.test(SRC),
   'src· 工坊安装仍比对 expectedHash 与本地 fileInfo.sha256（修B 未回退）');
-assert(/function extractZipToTemp\(zipPath\)\s*\{[\s\S]*?isInsideDir\(temp, target\)[\s\S]*?throw/.test(SRC),
-  'src· extractZipToTemp 仍做 zip-slip 越界检查（工坊解压纵深防护）');
+assert(/async function extractZipToTemp\(zipPath\)\s*\{[\s\S]*?await preflightWorkshopZip\(zipPath\)[\s\S]*?createTempDir\('tianming-pack-'\)/.test(SRC)
+  && SRC.includes('WORKSHOP_ZIP_LIMITS.maxCompressionRatio') && SRC.includes('压缩包包含重复路径')
+  && /extractWorkshopZipStreamed[\s\S]*?isInsideDir\(temp, target\)/.test(SRC),
+  'src· 工坊 ZIP 在创建输出目录前预检总量/压缩比/重复路径，并在流式解压时复验 zip-slip');
 assert(/BLOCKED_PACK_EXTS\.has\(ext\)[\s\S]*?ALLOWED_PACK_EXTS\.has\(ext\)/.test(SRC),
   'src· validateWorkshopPack 仍走 BLOCKED+ALLOWED 双白名单（hash 只保完整性·安全靠此层）');
 assert(/sha256:\s*inlineHash\.digest\('hex'\)/.test(SRC) && /sha256FileStream\(dest\)/.test(SRC) && /sha256:\s*sha256File\(dest\)/.test(SRC),

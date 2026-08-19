@@ -12,6 +12,7 @@ const ROOT = path.resolve(__dirname, '..');
 const promptSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 const changchaoSrc = (fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao-adapter.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao-flows.js'), 'utf8'));
 const courtSrc = fs.readFileSync(path.join(ROOT, 'tm-court-meter.js'), 'utf8');
+const coreSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const chaoyiSrc = fs.readFileSync(path.join(ROOT, 'tm-chaoyi.js'), 'utf8');
 
 let passed = 0;
@@ -49,12 +50,16 @@ assert(closeMatch[1].indexOf('GM._isPostTurnCourt') < 0, 'manual Changchao close
 
 const openBranch = courtSrc.match(/function _postTurnCourtChoose\(openCourt\)\s*\{([\s\S]*?)\}\s*else\s*\{/);
 assert(!!openBranch, 'post-turn court open branch found');
-const startIdx = openBranch[1].indexOf('_endTurnInternal();');
+const startIdx = openBranch[1].indexOf('_endTurnInternal({ postTurnCourt: true });');
 const courtUiIdx = openBranch[1].indexOf('setTimeout(function(){');
 assert(startIdx >= 0, 'opening Shuochao starts end-turn pipeline');
 assert(courtUiIdx >= 0, 'opening Shuochao schedules court UI');
 assert(startIdx < courtUiIdx, 'end-turn pipeline starts before Shuochao UI schedule');
-assert(openBranch[1].indexOf('courtDone: false') >= 0 && openBranch[1].indexOf('GM._isPostTurnCourt = true') >= 0, 'Shuochao marks deferred Shiji modal state before pipeline');
+const txnIdx = coreSrc.indexOf('_turnTxn = _tmCaptureEndTurnTransaction();');
+const courtStateIdx = coreSrc.indexOf("Object.prototype.hasOwnProperty.call(options, 'postTurnCourt')");
+const calibrationIdx = coreSrc.indexOf('await _runPreSubmitPartyClassCalibration();');
+assert(txnIdx >= 0 && courtStateIdx > txnIdx && calibrationIdx > courtStateIdx,
+  'court flags and mutating pre-submit calibration begin only after the transaction snapshot');
 
 const postTurnGM = {
   turn: 1,

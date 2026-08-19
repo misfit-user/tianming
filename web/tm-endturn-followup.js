@@ -2233,6 +2233,9 @@
           var _pS = await _parseOrRepairJsonResult(_sCall.raw || '', _sCall.data, 'sc25c.strategic', { url: url, key: P.ai.key, body: _bodyS, expectedKeys: ['consolidated', 'key_threads', 'npc_trajectories'], priority: 'normal' });
           pS = _pS && _pS.parsed;
         }
+        if (!pT || !pS) {
+          throw new Error('sc25c 双调用未完整产出：tactical=' + (pT ? 'ok' : 'failed') + ' strategic=' + (pS ? 'ok' : 'failed'));
+        }
 
         // 写回 GM·tactical → 旧 sc25 流向 (_stateBoard / _foreshadows / imperial_candidates) ; strategic → 旧 sc_consolidate 流向 (_consolidatedMemory)
         if (pT) {
@@ -2332,7 +2335,7 @@
           _ptQ25c.results.sc_consolidate = pS;
         }
         _dbg('[sc25c] dual-call done·tactical:' + (pT ? 'ok' : 'fail') + ' strategic:' + (pS ? 'ok' : 'fail'));
-      } catch(_25cErr) { _dbg('[sc25c] fail:', _25cErr); if (typeof recordSubcallError === 'function') recordSubcallError('sc25c', 'execute', _25cErr); }
+      } catch(_25cErr) { _dbg('[sc25c] fail:', _25cErr); if (typeof recordSubcallError === 'function') recordSubcallError('sc25c', 'execute', _25cErr); throw _25cErr; }
       }); });
 
       // --- Sub-call 2.5: 深度伏笔种植 + 回合记忆压缩 + NPC情绪快照 ---

@@ -25,6 +25,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_partyClassSchedulerE) {
       try { console.warn('[endTurn] pre-submit party/class action scheduler failed', _partyClassSchedulerE); } catch(_){}
+      throw _partyClassSchedulerE;
     }
     if (!_pcSchedulerRan && typeof window !== 'undefined' && window.TM && TM.SocialPoliticalSignals) {
       try {
@@ -53,6 +54,7 @@ async function _runPreSubmitPartyClassCalibration() {
         }
       } catch(_socialPoliticalE) {
         try { console.warn('[endTurn] pre-submit social/political signal bridge failed', _socialPoliticalE); } catch(_){}
+        throw _socialPoliticalE;
       }
     }
     try {
@@ -64,6 +66,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_classCharacterRelationsE) {
       try { console.warn('[endTurn] pre-submit class/character relations failed', _classCharacterRelationsE); } catch(_){}
+      throw _classCharacterRelationsE;
     }
     if (!_pcSchedulerRan) try {
       if (typeof window !== 'undefined' && window.TM && TM.PartyClassActors && typeof TM.PartyClassActors.run === 'function') {
@@ -80,6 +83,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_partyClassActorsE) {
       try { console.warn('[endTurn] pre-submit party/class actors failed', _partyClassActorsE); } catch(_){}
+      throw _partyClassActorsE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.ClassMinxinBridge && typeof TM.ClassMinxinBridge.maintain === 'function') {
@@ -90,6 +94,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_classMinxinMaintainE) {
       try { console.warn('[endTurn] pre-submit class/minxin bridge failed', _classMinxinMaintainE); } catch(_){}
+      throw _classMinxinMaintainE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinLedger && typeof TM.MinxinLedger.maintain === 'function') {
@@ -100,6 +105,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinLedgerMaintainE) {
       try { console.warn('[endTurn] pre-submit minxin ledger failed', _minxinLedgerMaintainE); } catch(_){}
+      throw _minxinLedgerMaintainE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinPressureActions && typeof TM.MinxinPressureActions.maintain === 'function') {
@@ -110,6 +116,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinPressureActionsE) {
       try { console.warn('[endTurn] pre-submit minxin pressure actions failed', _minxinPressureActionsE); } catch(_){}
+      throw _minxinPressureActionsE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinCommitmentTracker && typeof TM.MinxinCommitmentTracker.tick === 'function') {
@@ -120,6 +127,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinCommitmentsE) {
       try { console.warn('[endTurn] pre-submit minxin commitments failed', _minxinCommitmentsE); } catch(_){}
+      throw _minxinCommitmentsE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinResponsibilityChain && typeof TM.MinxinResponsibilityChain.tick === 'function') {
@@ -130,6 +138,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinResponsibilityE) {
       try { console.warn('[endTurn] pre-submit minxin responsibility failed', _minxinResponsibilityE); } catch(_){}
+      throw _minxinResponsibilityE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.HujiGovernanceLoop && typeof TM.HujiGovernanceLoop.ingestPlayerSignals === 'function') {
@@ -146,6 +155,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_hujiGovernanceE) {
       try { console.warn('[endTurn] pre-submit huji governance loop failed', _hujiGovernanceE); } catch(_){}
+      throw _hujiGovernanceE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.HujiRuntimeBridge && typeof TM.HujiRuntimeBridge.maintain === 'function') {
@@ -157,6 +167,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_hujiRuntimeBridgeE) {
       try { console.warn('[endTurn] pre-submit huji runtime bridge failed', _hujiRuntimeBridgeE); } catch(_){}
+      throw _hujiRuntimeBridgeE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinHardLinks && typeof TM.MinxinHardLinks.tick === 'function') {
@@ -167,6 +178,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinHardLinksE) {
       try { console.warn('[endTurn] pre-submit minxin hard links failed', _minxinHardLinksE); } catch(_){}
+      throw _minxinHardLinksE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.MinxinHardLinkConsumers && typeof TM.MinxinHardLinkConsumers.consume === 'function') {
@@ -177,6 +189,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_minxinHardLinkConsumersE) {
       try { console.warn('[endTurn] pre-submit minxin hard-link consumers failed', _minxinHardLinkConsumersE); } catch(_){}
+      throw _minxinHardLinkConsumersE;
     }
     try {
       if (typeof window !== 'undefined' && window.TM && TM.HujiRuntimeBridge && typeof TM.HujiRuntimeBridge.maintain === 'function') {
@@ -187,6 +200,7 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_hujiRuntimeBridgeAfterE) {
       try { console.warn('[endTurn] post-consumer huji runtime bridge failed', _hujiRuntimeBridgeAfterE); } catch(_){}
+      throw _hujiRuntimeBridgeAfterE;
     }
     if (typeof window === 'undefined' || !window.TM || !TM.PartyClassLlmCalibrator || typeof TM.PartyClassLlmCalibrator.flushBeforeSubmit !== 'function') return;
     if (GM && GM._partyClassPreSubmitBusy) return;
@@ -224,22 +238,24 @@ async function _runPreSubmitPartyClassCalibration() {
       }
     } catch(_partyClassActorsAfterE) {
       try { console.warn('[endTurn] post-calibration party/class actors failed', _partyClassActorsAfterE); } catch(_){}
+      throw _partyClassActorsAfterE;
     }
   } catch(_partyClassLlmE) {
     try { console.warn('[endTurn] pre-submit party/class LLM calibration failed', _partyClassLlmE); } catch(_){}
+    throw _partyClassLlmE;
   } finally {
     try { if (GM) GM._partyClassPreSubmitBusy = false; } catch(_){}
   }
 }
 
-async function _endTurnInternal() {
+async function _endTurnInternal(options) {
   try {
     if (typeof _cancelNpcIdleAutonomyLoop === 'function') _cancelNpcIdleAutonomyLoop('endturn_start');
   } catch(_idleCancelE) {
     try { console.warn('[endTurn] NPC idle autonomy cancel failed', _idleCancelE); } catch(_){}
   }
   // 原 endTurn 的完整内容移入此处，方便并发调用
-  return await _endTurnCore();
+  return await _endTurnCore(options);
 }
 
 async function endTurn(){
@@ -273,9 +289,11 @@ async function endTurn(){
   if (endTurn._preSubmitInFlight) return;
   endTurn._preSubmitInFlight = true;
   try {
-    await _runPreSubmitPartyClassCalibration();
     _showPostTurnCourtPromptAndStartEndTurn();
-  } finally { endTurn._preSubmitInFlight = false; }
+  } catch (error) {
+    endTurn._preSubmitInFlight = false;
+    throw error;
+  }
 }
 
 function _tmCaptureEndTurnObject(obj, runtimeKeys) {
@@ -387,7 +405,7 @@ if (typeof window !== 'undefined') {
   window._tmRollbackEndTurnTransaction = _tmRollbackEndTurnTransaction;
 }
 
-async function _endTurnCore(){
+async function _endTurnCore(options){
   // [slice 7c·2026-05-08] pipeline 是 endturn 唯一执行路径
   // P.flags.useNewPipeline 已废止·观察者 try/catch fallback 已删·step.onError 接管错误
   // pipeline.run 必须在 'await EndTurnHooks.execute(before)' 之后(slice 5 落地)
@@ -400,6 +418,17 @@ async function _endTurnCore(){
   var btn=_$("btn-end")||_$("btn-end-turn");
   if(GM.busy)return;
   _turnTxn = _tmCaptureEndTurnTransaction();
+  if (options && Object.prototype.hasOwnProperty.call(options, 'postTurnCourt')) {
+    var _openPostTurnCourt = !!options.postTurnCourt;
+    GM._pendingShijiModal = {
+      aiReady: false,
+      courtDone: !_openPostTurnCourt,
+      payload: null,
+      source: _openPostTurnCourt ? 'post-turn-court' : 'post-turn-skip',
+      startedTurn: GM.turn || 0
+    };
+    GM._isPostTurnCourt = _openPostTurnCourt;
+  }
   GM._endTurnCommitPending = true; // arch-ok end-turn transaction owns its commit barrier
   GM.busy=true;
   GM._endTurnBusy=true;
@@ -408,6 +437,10 @@ async function _endTurnCore(){
   if (!(GM._pendingShijiModal && GM._pendingShijiModal.courtDone === false)) {
     showLoading("\u65F6\u79FB\u4E8B\u53BB",10);
   }
+
+  // 预提交校准会修改党派、阶层、民心和户籍，必须位于事务快照之后。
+  // 任一关键校准失败都抛到本函数外层，恢复到玩家点击过回合前的完整状态。
+  await _runPreSubmitPartyClassCalibration();
 
   // 上回合 post-turn 任务改到 AI prompt 构造前兜底等待。
   // 入口不硬等，让 prep / 存档快照 / plan-prefetch 与上回合后台债务重叠。

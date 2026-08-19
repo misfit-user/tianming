@@ -424,14 +424,17 @@ function _enqueuePostTurnJob(id, fn, opts) {
   var dependsOn = (opts && Array.isArray(opts.dependsOn)) ? opts.dependsOn : null;
   var wrappedFn = async function() {
     if (dependsOn) {
-      try { await _awaitPostTurnJobsById(dependsOn); } catch(_dE) { _dbg('[PostTurn DAG] await deps fail for ' + id + ':', _dE); }
+      await _awaitPostTurnJobsById(dependsOn);
     }
     if (!_tmWorldLeaseCurrent(lease)) return { stale: true };
     return fn(lease);
   };
-  var p = Promise.resolve().then(wrappedFn).catch(function(e){
+  var p = Promise.resolve().then(wrappedFn).then(function(value) {
+    return { ok: true, value: value };
+  }, function(e) {
     try { if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('post_turn_job', { id: id, status: 'fail', error: String(e && e.message || e) }); } catch(_) {}
     _dbg('[PostTurn]' + id + ' failed:', e);
+    return { ok: false, error: e };
   });
   q.pending.push({ id: id, promise: p, dependsOn: dependsOn, lease: lease });
   return p;
@@ -444,7 +447,17 @@ async function _awaitPostTurnJobsById(ids) {
     return job && ids.indexOf(job.id) >= 0;
   });
   if (!waiting.length) return;
-  await Promise.all(waiting.map(function(job) { return job.promise; }));
+  var results = await Promise.all(waiting.map(function(job) { return job.promise; }));
+  var failed = [];
+  results.forEach(function(result, index) {
+    if (result && result.ok === false) failed.push({ id: waiting[index].id, error: result.error });
+  });
+  if (failed.length) {
+    var error = new Error('关键后台任务失败：' + failed.map(function(item) { return item.id; }).join(', '));
+    error.postTurnFailures = failed;
+    throw error;
+  }
+  return results;
 }
 
 function _launchPostTurnJobs() {
@@ -508,9 +521,24 @@ async function _awaitPostTurnJobs(opts) {
   var waiting = criticalOnly ? pending.filter(_isCriticalPostTurnJob) : pending.slice();
   var remaining = criticalOnly ? pending.filter(function(job) { return !_isCriticalPostTurnJob(job); }) : [];
   _dbg('[PostTurn] wait', waiting.length, criticalOnly ? 'critical jobs' : 'jobs', 'detach', remaining.length);
-  try {
-    if (waiting.length) await Promise.all(waiting.map(function(job) { return job.promise; }));
-  } catch(_e) {}
+  var results = waiting.length ? await Promise.all(waiting.map(function(job) { return job.promise; })) : [];
+  var failed = [];
+  results.forEach(function(result, index) {
+    if (result && result.ok === false) failed.push({ id: waiting[index].id, error: result.error });
+  });
+  if (failed.length) {
+    try {
+      if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('post_turn_await', {
+        status: 'failed',
+        count: waiting.length,
+        criticalOnly: criticalOnly,
+        failed: failed.map(function(item) { return item.id; })
+      });
+    } catch(_) {}
+    var failure = new Error('关键后台任务失败：' + failed.map(function(item) { return item.id; }).join(', '));
+    failure.postTurnFailures = failed;
+    throw failure;
+  }
   try {
     if (typeof recordMemoryDiagnostic === 'function') {
       recordMemoryDiagnostic('post_turn_await', {
@@ -539,7 +567,16 @@ async function _awaitPostTurnJobsForSave(ids) {
   }
   if (!wanted.length) return;
   _dbg('[PostTurn] wait before save:', wanted.map(function(job) { return job.id || '?'; }).join(','));
-  await Promise.all(wanted.map(function(job) { return job.promise; }));
+  var results = await Promise.all(wanted.map(function(job) { return job.promise; }));
+  var failed = [];
+  results.forEach(function(result, index) {
+    if (result && result.ok === false) failed.push({ id: wanted[index].id, error: result.error });
+  });
+  if (failed.length) {
+    var error = new Error('保存前关键后台任务失败：' + failed.map(function(item) { return item.id; }).join(', '));
+    error.postTurnFailures = failed;
+    throw error;
+  }
   if (!Array.isArray(ids) || !ids.length) {
     var saveIds = _postTurnSaveRequiredIds();
     if (Array.isArray(GM._postTurnDetachedJobs)) {

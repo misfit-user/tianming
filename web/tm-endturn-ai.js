@@ -978,6 +978,7 @@
               try {
                 if (typeof setAIBranchDiagnostic === 'function') setAIBranchDiagnostic(id, 'failed', _errInfo.message);
               } catch(_branchFailErr) { try { console.warn('[AIDiagnostic] branch failed failed:', _branchFailErr); } catch(_) {} }
+              if (typeof _isCriticalPostTurnJob === 'function' && _isCriticalPostTurnJob({ id: id })) throw _scErr;
             }
           }
         }
@@ -1218,7 +1219,12 @@
       }
       function _enqueueLocalPostTurnJob(id, fn) {
         if (!GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) GM._postTurnJobs = { pending: [], launchedAt: Date.now(), results: {} };
-        var p = Promise.resolve().then(fn).catch(function(e){ _dbg('[PostTurn]' + id + ' failed:', e); });
+        var p = Promise.resolve().then(fn).then(function(value) {
+          return { ok: true, value: value };
+        }, function(e) {
+          _dbg('[PostTurn]' + id + ' failed:', e);
+          return { ok: false, error: e };
+        });
         GM._postTurnJobs.pending.push({ id: id, promise: p });
         return p;
       }
@@ -1232,7 +1238,11 @@
         var waiting = GM._postTurnJobs.pending.filter(function(job) {
           return job && ids.indexOf(job.id) >= 0 && job.promise;
         });
-        if (waiting.length) await Promise.all(waiting.map(function(job) { return job.promise; }));
+        if (waiting.length) {
+          var results = await Promise.all(waiting.map(function(job) { return job.promise; }));
+          var failed = results.filter(function(result) { return result && result.ok === false; });
+          if (failed.length) throw failed[0].error || new Error('关键后台任务失败');
+        }
       }
 
       // --- 预处理：等待上回合 post-turn 任务 + 同步本地记忆保鲜 ---
@@ -1240,7 +1250,7 @@
         if (typeof _awaitPostTurnJobs === 'function') await _awaitPostTurnJobs();
         if (typeof _ensureMemoryFreshness === 'function') _ensureMemoryFreshness(GM);
         if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('turn_start', { stage: 'after_post_turn_jobs', snapshot: (typeof buildMemoryDiagnosticSnapshot === 'function' ? buildMemoryDiagnosticSnapshot(GM) : null) });
-      } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); }
+      } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); throw _emfE; }
 
       // ═══════════════════════════════════════════════════════════
       // §3 Sub-calls sc0/sc05/sc1/sc1b/sc1c（深度思考·记忆·主推演·文事·势力）

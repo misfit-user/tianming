@@ -3,7 +3,7 @@
 // smoke-nokey-endturn-guard — 验证「无 AI 密钥前置守卫」(2026-06-14)
 // 抽取真 endTurn() 函数源在 vm 沙箱实跑（非重新实现）：
 //   · 无 key / 空白 key → 弹 notifyUrgent + 中止过回合（不进 court prompt）+ 确认跳设置
-//   · 有效 key → 不弹 + 正常进入 pre-submit 校准 + court prompt
+//   · 有效 key → 不弹 + 只进入纯 UI court prompt；pre-submit 校准留在事务快照之后
 //   · 源契约：守卫必须在 court prompt 之前（否则拦不住）
 
 const fs = require('fs');
@@ -77,8 +77,12 @@ async function run(key) {
   // C. 有效 key → 放行
   c = await run('sk-test-123');
   assert(c.notifyUrgent === 0, 'C 有效key：不弹通知');
-  assert(c.calibration === 1, 'C 有效key：进入 pre-submit 校准');
+  assert(c.calibration === 0, 'C 有效key：court 选择前不得运行会修改 GM 的 pre-submit 校准');
   assert(c.court === 1, 'C 有效key：进入 court prompt');
+
+  const captureIdx = coreSrc.indexOf('_turnTxn = _tmCaptureEndTurnTransaction()', ei);
+  const calibrationIdx = coreSrc.indexOf('await _runPreSubmitPartyClassCalibration()', captureIdx);
+  assert(captureIdx >= 0 && calibrationIdx > captureIdx, 'pre-submit 校准只在事务快照创建后执行');
 
   console.log('PASS smoke-nokey-endturn-guard · ' + passed + ' 断言');
 })().catch(e => { console.error('FAIL smoke-nokey-endturn-guard'); console.error(e); process.exit(1); });

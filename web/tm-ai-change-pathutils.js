@@ -453,6 +453,14 @@
     var declaredDynamic = /^corruption\.byDept\.(central|provincial|county|military|palace|technical)$/.test(path);
     if (!r.parent || (!r.exists && !declaredDynamic)) return { ok: false, path: path, reason: 'path not declared in state schema' };
     var old = r.value;
+    function valueType(input) {
+      if (Array.isArray(input)) return 'array';
+      if (input === null) return 'null';
+      return typeof input;
+    }
+    if (r.exists && valueType(old) !== valueType(value)) {
+      return { ok: false, path: path, reason: 'set value type does not match existing schema' };
+    }
     if (/^chars\.[^.]+\.loyalty$/.test(String(path)) && typeof global.setCharacterLoyalty === 'function') {
       var loySet = global.setCharacterLoyalty(r.parent, value, reason, {
         source: 'ai-anypath-loyalty-set',

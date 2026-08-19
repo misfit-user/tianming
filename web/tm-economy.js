@@ -98,10 +98,19 @@ function updateEconomy(timeRatio) {
   var totalTribute = 0;
   var tributeByRegion = {}; // 记录各地区贡奉
 
+  // 运行局以 GM 地图为唯一事实来源；P 仅是新局前/旧档缺少运行地图时的模板回退。
+  var runtimeMap = null;
+  if (typeof getLiveMapData === 'function') runtimeMap = getLiveMapData();
+  if (!runtimeMap && GM) runtimeMap = GM.mapData || GM.map || null;
+  if (!runtimeMap && P) runtimeMap = P.mapData || P.map || null;
+  var runtimeRegions = runtimeMap && Array.isArray(runtimeMap.regions) ? runtimeMap.regions : [];
+
   // 如果有地图系统
-  if (P.map && P.map.regions && P.map.regions.length > 0) {
-    P.map.regions.forEach(function(region) {
-      if (!region || !region.name) return;
+  if (runtimeRegions.length > 0) {
+    runtimeRegions.forEach(function(region) {
+      if (!region || (!region.id && !region.name)) return;
+      var regionKey = String(region.id || region.name);
+      var regionName = String(region.name || region.id);
 
       // 计算月度收入
       var income = calculateMonthlyIncome(region, es);
@@ -122,7 +131,9 @@ function updateEconomy(timeRatio) {
       var tribute = Math.floor(income * tributeRatio);
 
       totalTribute += tribute;
-      tributeByRegion[region.name] = {
+      tributeByRegion[regionKey] = {
+        id: region.id || '',
+        name: regionName,
         income: income,
         tribute: tribute,
         ratio: tributeRatio,
@@ -131,7 +142,7 @@ function updateEconomy(timeRatio) {
 
       // 记录变化
       if (tribute > 0) {
-        recordChange('economy', region.name, 'tribute', 0, tribute, '向中央贡奉');
+        recordChange('economy', regionName, 'tribute', 0, tribute, '向中央贡奉');
       }
     });
   }
@@ -157,13 +168,13 @@ function updateEconomy(timeRatio) {
 
   // 3. 按贡献占比分配回拨
   if (totalTribute > 0 && redistributed > 0) {
-    Object.keys(tributeByRegion).forEach(function(regionName) {
-      var regionData = tributeByRegion[regionName];
+    Object.keys(tributeByRegion).forEach(function(regionKey) {
+      var regionData = tributeByRegion[regionKey];
       var share = regionData.tribute / totalTribute;
       var allocation = Math.floor(redistributed * share);
 
       if (allocation > 0) {
-        recordChange('economy', regionName, 'allocation', 0, allocation, '中央回拨');
+        recordChange('economy', regionData.name || regionKey, 'allocation', 0, allocation, '中央回拨');
       }
     });
   }

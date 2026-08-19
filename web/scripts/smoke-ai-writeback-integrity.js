@@ -167,6 +167,22 @@ async function main() {
   const allowedAppendRes = ctx.applyAITurnChanges({ char_updates: [{ name: '真人', updates: { '+careerHistory': { title: '合法履历追加' } } }] });
   check(Array.isArray(ctx.GM.chars[0].careerHistory) && ctx.GM.chars[0].careerHistory.length === 1 && allowedAppendRes.applied.failed.length === 0, 'only explicitly allowed careerHistory array append may apply');
 
+  // B3. 已声明字段也不能被 set 成不兼容类型；任一类型漂移必须触发整批回滚。
+  ctx.GM = baseGM({ custom: { score: 40, rows: [1], settings: { enabled: true } } });
+  const typeMismatch = ctx.applyAITurnChanges({
+    changes: [
+      { path: 'custom.score', op: 'delta', delta: 5, reason: '合法兄弟项也须回滚' },
+      { path: 'custom.score', op: 'set', value: { unexpected: true } },
+      { path: 'custom.rows', op: 'set', value: 'not-an-array' },
+      { path: 'custom.settings', op: 'set', value: [] }
+    ]
+  });
+  check(typeMismatch.ok === false && typeMismatch.rolledBack === true, 'schema-incompatible set must reject the whole AI batch');
+  check(ctx.GM.custom.score === 40 && Array.isArray(ctx.GM.custom.rows) && !Array.isArray(ctx.GM.custom.settings),
+    'type mismatch rollback must restore number/array/object fields exactly');
+  check(typeMismatch.applied.failed.filter((row) => /type does not match existing schema/.test(row.reason || '')).length === 3,
+    'each schema type mismatch must be visible in applied.failed');
+
   // C. faction leader 与 army commander 的最终 sink 只接受真实活人，并同步所有镜像。
   ctx.GM = baseGM({
     chars: [{ name: '韩旷', id: 'char_hankuang', alive: true }, { name: '亡将', alive: false, dead: true }],

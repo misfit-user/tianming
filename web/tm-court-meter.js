@@ -153,6 +153,19 @@ function _postTurnCourtChoose(openCourt) {
   }
 }
 
+// 后朝状态只由朝会子系统写入；end-turn core 在事务快照后调用本写口。
+function _beginPostTurnCourtState(openCourt) {
+  var shouldOpen = !!openCourt;
+  GM._pendingShijiModal = {
+    aiReady: false,
+    courtDone: !shouldOpen,
+    payload: null,
+    source: shouldOpen ? 'post-turn-court' : 'post-turn-skip',
+    startedTurn: GM.turn || 0
+  };
+  GM._isPostTurnCourt = shouldOpen;
+}
+
 // 底栏进度 banner（朝会期间常驻）
 function _showPostTurnCourtBanner() {
   var _existing = _$('post-turn-court-banner');

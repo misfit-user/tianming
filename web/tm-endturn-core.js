@@ -419,15 +419,8 @@ async function _endTurnCore(options){
   if(GM.busy)return;
   _turnTxn = _tmCaptureEndTurnTransaction();
   if (options && Object.prototype.hasOwnProperty.call(options, 'postTurnCourt')) {
-    var _openPostTurnCourt = !!options.postTurnCourt;
-    GM._pendingShijiModal = {
-      aiReady: false,
-      courtDone: !_openPostTurnCourt,
-      payload: null,
-      source: _openPostTurnCourt ? 'post-turn-court' : 'post-turn-skip',
-      startedTurn: GM.turn || 0
-    };
-    GM._isPostTurnCourt = _openPostTurnCourt;
+    if (typeof _beginPostTurnCourtState !== 'function') throw new Error('后朝状态写口未加载');
+    _beginPostTurnCourtState(!!options.postTurnCourt);
   }
   GM._endTurnCommitPending = true; // arch-ok end-turn transaction owns its commit barrier
   GM.busy=true;

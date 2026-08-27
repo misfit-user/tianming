@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-08-25T20:10:12.571Z",
+  "generatedAt": "2026-08-27T17:34:37.160Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2171,8 +2171,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "b59fefd20a499d5d63c33df2445a8e4c7990ff4bc2012c7c0606951169236a05",
-      "size": 69148
+      "sha256": "9281f386efd220be924dff284509c11e9f85e3969a8ce4de2da19402bbc807de",
+      "size": 69163
     },
     {
       "path": "INDEX.md",
@@ -3856,8 +3856,8 @@
     },
     {
       "path": "tm-economy-engine.js",
-      "sha256": "3c69b648b92181e6c84efad8756aa8dc4bbecdb4b85fa5c1e7f9726c0b1c811d",
-      "size": 138561
+      "sha256": "7687b091bcb80c02fb3af7435664af072fe66f63db71f33cba3a013b91db6ee6",
+      "size": 139069
     },
     {
       "path": "tm-economy.js",
@@ -3881,8 +3881,8 @@
     },
     {
       "path": "tm-edict-parser.js",
-      "sha256": "6fac2321555a9f6e00990cb907e7f27f03f44fe773e0c6d21c183845c116df56",
-      "size": 114270
+      "sha256": "8643bb4a23cb25358b620dfcac2c038a9c87cd373632d2879ccec8e2e3292be4",
+      "size": 115345
     },
     {
       "path": "tm-edict-thresholds.js",
@@ -4251,8 +4251,8 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "1d6bc470b9af356ccd605f221c3ce30c18b5417f8080873f6e8be3d9e7d50643",
-      "size": 109093
+      "sha256": "24783e9d6b3817f5b8722f1a31d1807d4a3c08bafdf573002aaf1a771df991a4",
+      "size": 116253
     },
     {
       "path": "tm-fiscal-ui.js",

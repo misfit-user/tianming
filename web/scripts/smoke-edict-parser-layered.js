@@ -54,7 +54,8 @@ function load(file) {
   vm.runInContext(src, ctx, { filename: file });
 }
 
-// R12b 后·tm-phase-c-patches.js 已 inline 入 tm-edict-parser.js·只 load v1
+// R12b 后·tm-phase-c-patches.js 已 inline 入 tm-edict-parser.js；机构拨款走 production FiscalEngine。
+load('tm-fiscal-engine.js');
 load('tm-edict-parser.js');
 
 // PhaseC.init() 现在是 no-op (OVERRIDEs 已 inline 入 v1)·调用兼容性保持

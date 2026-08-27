@@ -2555,9 +2555,21 @@
     var rf = G.fiscal.regions[regionId];
     if (!rf) return { ok: false };
     var region = _getRegionsArray(G).find(function(r) { return r.id === regionId; });
-    var realAmount = Math.min(amount, (rf.ledgers.money || 0) + amount * 0.5); // 最多搜刮到本地留存 + 强拿 50%
-    rf.ledgers.money = Math.max(0, rf.ledgers.money - realAmount);
-    if (G.guoku) G.guoku.money = (G.guoku.money || 0) + realAmount * 0.8; // 20% 损耗
+    var fiscal = global.FiscalEngine;
+    if (!fiscal || typeof fiscal.transferRegionToGuokuAtomic !== 'function') {
+      return { ok: false, code: 'fiscal-engine-unavailable' };
+    }
+    var transfer = fiscal.transferRegionToGuokuAtomic({
+      regionId: regionId,
+      amount: amount,
+      sourceTag: '诏令·地方强征',
+      gameRef: G
+    });
+    if (!transfer || transfer.ok !== true) return transfer || { ok: false, code: 'force-levy-transfer-failed' };
+    var realAmount = Number(transfer.actualAmount || 0);
+    if (!(realAmount > 0)) {
+      return { ok: false, code: 'insufficient-region-funds', requested: Number(amount || 0), available: 0 };
+    }
     // 合规率重挫
     rf.compliance = Math.max(0.05, rf.compliance - 0.2);
     // 连续强征计数
@@ -2577,7 +2589,13 @@
     if (global.EconomyEventBus && typeof global.EconomyEventBus.emit === 'function') {
       global.EconomyEventBus.emit('central_local.force_levy', { regionId: regionId, amount: realAmount, newCompliance: rf.compliance });
     }
-    return { ok: true, actualAmount: realAmount, newCompliance: rf.compliance };
+    return {
+      ok: true,
+      actualAmount: realAmount,
+      requestedAmount: transfer.requested,
+      limitedBySource: !!transfer.limitedBySource,
+      newCompliance: rf.compliance
+    };
   }
 
   /** 每年重置 recent force levy 计数 */

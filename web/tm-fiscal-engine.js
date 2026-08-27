@@ -2082,9 +2082,176 @@
     return { ok: true, deducted: out };
   }
 
+  function _readFiniteNonNegativeAmount(value, field) {
+    if (value == null || value === '') return { ok: true, value: 0 };
+    var parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return { ok: false, code: 'invalid-fiscal-amount', field: field, value: value };
+    }
+    return { ok: true, value: parsed };
+  }
+
+  // 固定支出入口：先验证全部资源和余额，再一次性落账。资金不足时不发生“有多少扣多少”。
+  function trySpendFromGuoku(spec) {
+    spec = spec || {};
+    var G = getGame(spec.gameRef);
+    if (!G) return { ok: false, code: 'no-game-state' };
+    var requested = spec.amounts || {};
+    var normalized = {};
+    var kinds = ['money', 'grain', 'cloth'];
+    for (var i = 0; i < kinds.length; i++) {
+      var parsed = _readFiniteNonNegativeAmount(requested[kinds[i]], 'amounts.' + kinds[i]);
+      if (!parsed.ok) return parsed;
+      normalized[kinds[i]] = parsed.value;
+    }
+
+    var snapshot = _captureFiscalTransaction(G, ['guoku']);
+    try {
+      var L = ensureGuoku(G);
+      reconcileLedgerScalar(L.money, G.guoku.money, G.guoku.balance);
+      reconcileLedgerScalar(L.grain, G.guoku.grain, null);
+      reconcileLedgerScalar(L.cloth, G.guoku.cloth, null);
+      var available = {
+        money: safeNumber(L.money.stock, 0),
+        grain: safeNumber(L.grain.stock, 0),
+        cloth: safeNumber(L.cloth.stock, 0)
+      };
+      if (spec.requireFullAmount !== false) {
+        for (var a = 0; a < kinds.length; a++) {
+          var kind = kinds[a];
+          if (available[kind] < normalized[kind]) {
+            _restoreFiscalTransaction(G, snapshot);
+            return {
+              ok: false,
+              code: 'insufficient-guoku-' + kind,
+              resource: kind,
+              required: normalized[kind],
+              available: available[kind]
+            };
+          }
+        }
+      }
+
+      var deducted = {};
+      var deficits = {};
+      for (var d = 0; d < kinds.length; d++) {
+        var resource = kinds[d];
+        var result = normalized[resource] > 0
+          ? deductFromLedger(L[resource], normalized[resource], spec.sinkTag || '支出')
+          : { deducted: 0, deficit: 0 };
+        deducted[resource] = result.deducted;
+        deficits[resource] = result.deficit;
+      }
+      if (typeof spec._faultInjector === 'function') spec._faultInjector('after-deduct', G, deducted);
+      syncAccountScalars(G.guoku, L);
+      if (typeof spec._faultInjector === 'function') spec._faultInjector('after-sync', G, deducted);
+      return { ok: true, deducted: deducted, deficits: deficits };
+    } catch (error) {
+      _restoreFiscalTransaction(G, snapshot);
+      return {
+        ok: false,
+        code: 'guoku-spend-transaction-failed',
+        error: error && error.message ? error.message : String(error)
+      };
+    }
+  }
+
+  function _ensureRegionTransferAudit(regionFiscal) {
+    if (!regionFiscal.ledgerAudit || typeof regionFiscal.ledgerAudit !== 'object') regionFiscal.ledgerAudit = {};
+    if (!regionFiscal.ledgerAudit.money || typeof regionFiscal.ledgerAudit.money !== 'object') {
+      regionFiscal.ledgerAudit.money = { thisTurnIn: 0, thisTurnOut: 0, sources: {}, sinks: {}, history: [] };
+    }
+    var audit = regionFiscal.ledgerAudit.money;
+    if (!Number.isFinite(Number(audit.thisTurnIn))) audit.thisTurnIn = 0;
+    if (!Number.isFinite(Number(audit.thisTurnOut))) audit.thisTurnOut = 0;
+    if (!audit.sources || typeof audit.sources !== 'object') audit.sources = {};
+    if (!audit.sinks || typeof audit.sinks !== 'object') audit.sinks = {};
+    if (!Array.isArray(audit.history)) audit.history = [];
+    return audit;
+  }
+
+  function _restoreObjectInPlace(target, snapshot) {
+    Object.keys(target || {}).forEach(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(snapshot || {}, key)) delete target[key];
+    });
+    Object.keys(snapshot || {}).forEach(function(key) {
+      target[key] = snapshot[key];
+    });
+  }
+
+  // 地方留存 → 中央国库原子转账。地方仍保留旧式 numeric ledger，审计明细另存 ledgerAudit。
+  function transferRegionToGuokuAtomic(spec) {
+    spec = spec || {};
+    var G = getGame(spec.gameRef);
+    if (!G) return { ok: false, code: 'no-game-state' };
+    var regionId = String(spec.regionId || '').trim();
+    if (!regionId) return { ok: false, code: 'region-id-required' };
+    var amountResult = _readFiniteNonNegativeAmount(spec.amount, 'amount');
+    if (!amountResult.ok) return amountResult;
+    if (!G.fiscal || !G.fiscal.regions || !G.fiscal.regions[regionId]) {
+      return { ok: false, code: 'region-fiscal-not-found', regionId: regionId };
+    }
+    var rf = G.fiscal.regions[regionId];
+    if (!rf.ledgers || typeof rf.ledgers !== 'object') {
+      return { ok: false, code: 'region-ledger-missing', regionId: regionId };
+    }
+    var availableResult = _readFiniteNonNegativeAmount(rf.ledgers.money, 'region.' + regionId + '.ledgers.money');
+    if (!availableResult.ok) return availableResult;
+
+    var requested = amountResult.value;
+    var actual = Math.min(requested, availableResult.value);
+    if (requested === 0) {
+      return { ok: true, changed: false, requested: 0, actual: 0, actualAmount: 0, limitedBySource: false };
+    }
+
+    var guokuSnapshot = _captureFiscalTransaction(G, ['guoku']);
+    var regionSnapshot = clone(rf);
+    var sourceTag = spec.sourceTag || '地方上解';
+    try {
+      rf.ledgers.money = availableResult.value - actual;
+      var audit = _ensureRegionTransferAudit(rf);
+      audit.thisTurnOut = safeNumber(audit.thisTurnOut, 0) + actual;
+      audit.sinks[sourceTag] = safeNumber(audit.sinks[sourceTag], 0) + actual;
+      audit.history.push({
+        turn: Number(G.turn || 0),
+        direction: 'to-guoku',
+        amount: actual,
+        tag: sourceTag
+      });
+      if (audit.history.length > 60) audit.history.splice(0, audit.history.length - 60);
+      if (rf.annualReport && typeof rf.annualReport === 'object') {
+        rf.annualReport.remitted = safeNumber(rf.annualReport.remitted, 0) + actual;
+      }
+      if (typeof spec._faultInjector === 'function') spec._faultInjector('after-region-deduct', G, rf);
+
+      var credit = addToGuoku({ money: actual }, sourceTag, G);
+      if (!credit || credit.ok !== true) throw new Error('guoku credit failed');
+      if (typeof spec._faultInjector === 'function') spec._faultInjector('after-guoku-credit', G, rf);
+      return {
+        ok: true,
+        changed: actual > 0,
+        requested: requested,
+        actual: actual,
+        actualAmount: actual,
+        limitedBySource: actual < requested,
+        deducted: { money: actual },
+        credited: { money: actual }
+      };
+    } catch (error) {
+      _restoreFiscalTransaction(G, guokuSnapshot);
+      _restoreObjectInPlace(rf, regionSnapshot);
+      return {
+        ok: false,
+        code: 'region-guoku-transfer-failed',
+        regionId: regionId,
+        error: error && error.message ? error.message : String(error)
+      };
+    }
+  }
+
   // 入账（#25·外交收贡/赔款/互市之利等 → 国库）·镜像 spendFromGuoku·走 ledger.stock + thisTurnIn + sources + 同步 balance/money
-  function addToGuoku(amounts, sourceTag) {
-    var G = getGame();
+  function addToGuoku(amounts, sourceTag, gameRef) {
+    var G = getGame(gameRef);
     if (!G) return { ok: false, reason: 'no GM' };
     amounts = amounts || {};
     var L = ensureGuoku(G);
@@ -2214,7 +2381,9 @@
     adjustPlayerDivisionCorruption: adjustPlayerDivisionCorruption,
     triggerPlayerSurvey: triggerPlayerSurvey,
     spendFromGuoku: spendFromGuoku,
+    trySpendFromGuoku: trySpendFromGuoku,
     addToGuoku: addToGuoku,
+    transferRegionToGuokuAtomic: transferRegionToGuokuAtomic,
     spendFromNeitang: spendFromNeitang,
     addToNeitang: addToNeitang,
     applyPlayerTaxReform: applyPlayerTaxReform,

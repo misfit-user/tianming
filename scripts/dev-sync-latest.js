@@ -24,6 +24,54 @@ var MAXBUF = 64 * 1024 * 1024;
 function git(args) {
   return childProcess.execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: MAXBUF });
 }
+function gitBuffer(args) {
+  return childProcess.execFileSync('git', args, { cwd: ROOT, encoding: 'buffer', maxBuffer: MAXBUF });
+}
+function nulFields(buffer) {
+  var fields = Buffer.isBuffer(buffer) ? buffer.toString('utf8').split('\0') : String(buffer || '').split('\0');
+  if (fields.length && fields[fields.length - 1] === '') fields.pop();
+  return fields;
+}
+// `git status --porcelain=v1 -z`: rename/copy is `XY newPath\0oldPath\0`.
+function parseStatusZ(buffer) {
+  var fields = nulFields(buffer);
+  var rows = [];
+  for (var i = 0; i < fields.length;) {
+    var record = fields[i++];
+    if (!record || record.length < 3 || record.charAt(2) !== ' ') {
+      throw new Error('invalid git status -z record');
+    }
+    var xy = record.slice(0, 2);
+    var row = { x:xy.charAt(0), y:xy.charAt(1), status:xy, path:record.slice(3), originalPath:null };
+    if (/[RC]/.test(xy)) {
+      if (i >= fields.length) throw new Error('truncated git status rename/copy record');
+      row.originalPath = fields[i++];
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+// `git diff --name-status -z`: `status\0path\0`, rename/copy adds old + new paths.
+function parseNameStatusZ(buffer) {
+  var fields = nulFields(buffer);
+  var rows = [];
+  for (var i = 0; i < fields.length;) {
+    var status = fields[i++];
+    if (!status || !/^[A-Z]/.test(status) || i >= fields.length) {
+      throw new Error('invalid git diff --name-status -z record');
+    }
+    var kind = status.charAt(0);
+    var firstPath = fields[i++];
+    var row = { status:status, kind:kind, path:firstPath, originalPath:null };
+    if (kind === 'R' || kind === 'C') {
+      if (i >= fields.length) throw new Error('truncated git diff rename/copy record');
+      row.originalPath = firstPath;
+      row.path = fields[i++];
+    }
+    rows.push(row);
+  }
+  return rows;
+}
 function sha(buf) { return crypto.createHash('sha256').update(buf).digest('hex'); }
 function loadState() {
   try { return JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) || { files: {} }; } catch (_e) { return { files: {} }; }
@@ -75,17 +123,16 @@ function main() {
   if (!state.files) state.files = {};
   // 本地有账的跟踪文件（暂存或未暂存）·untracked 与同步无关
   var dirty = {};
-  git(['status', '--porcelain']).split('\n').forEach(function (l) {
-    if (!l || l.indexOf('??') === 0) return;
-    var p = l.slice(3).trim().replace(/^"|"$/g, '');
-    if (p) dirty[p] = 1;
+  parseStatusZ(gitBuffer(['status', '--porcelain=v1', '-z', '--untracked-files=all'])).forEach(function (row) {
+    if (row.status === '??' || row.status === '!!') return;
+    if (row.path) dirty[row.path] = 1;
+    if (row.originalPath) dirty[row.originalPath] = 1;
   });
-  var diff = git(['diff', '--name-status', 'HEAD', target]).split('\n').filter(Boolean);
+  var diff = parseNameStatusZ(gitBuffer(['diff', '--name-status', '-z', 'HEAD', target]));
   var updated = 0, advanced = 0, same = 0, skippedWip = [], removedUpstream = 0;
-  diff.forEach(function (line) {
-    var parts = line.split('\t');
-    var st = parts[0].charAt(0);
-    var p = parts[parts.length - 1];   // rename 行取新路径·旧路径按「不删」原则原地保留
+  diff.forEach(function (row) {
+    var st = row.kind;
+    var p = row.path;   // rename/copy 行取新路径·旧路径按「不删」原则原地保留
     if (st === 'D') { removedUpstream++; return; }
     var blob = childProcess.spawnSync('git', ['show', target + ':' + p], { cwd: ROOT, maxBuffer: MAXBUF });
     if (blob.status !== 0 || blob.stdout == null) return;
@@ -119,6 +166,13 @@ function main() {
   if (skippedWip.length > 12) console.log('  [wip-kept] ... and ' + (skippedWip.length - 12) + ' more');
 }
 
-try { main(); } catch (e) {
-  console.log('[sync] error (game will launch anyway): ' + (e && e.message ? e.message.split('\n')[0] : e));
+module.exports = {
+  parseStatusZ: parseStatusZ,
+  parseNameStatusZ: parseNameStatusZ
+};
+
+if (require.main === module) {
+  try { main(); } catch (e) {
+    console.log('[sync] error (game will launch anyway): ' + (e && e.message ? e.message.split('\n')[0] : e));
+  }
 }

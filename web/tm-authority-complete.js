@@ -1392,14 +1392,46 @@
     return applied;
   }
 
+  function _populationForFullLinkage(G) {
+    var schema = global.TM && global.TM.PopulationSchema;
+    var validation;
+    if (schema && typeof schema.validate === 'function') {
+      validation = schema.validate(G);
+    } else {
+      var population = G && G.population;
+      var national = population && population.national;
+      var fields = [
+        population && population.hiddenCount,
+        population && population.fugitives,
+        national && national.mouths,
+        national && national.households
+      ];
+      var ok = !!(population && typeof population === 'object' && national && typeof national === 'object' &&
+        population.byCategory && typeof population.byCategory === 'object' &&
+        fields.every(function(value) { return typeof value === 'number' && Number.isFinite(value) && value >= 0; }));
+      validation = ok ? { ok: true, population: population, failures: [] } : {
+        ok: false,
+        failures: [{ code: 'population-schema-invalid', field: 'population.national' }]
+      };
+    }
+    if (!validation.ok) {
+      if (schema && typeof schema.reportRuntimeFailure === 'function') {
+        schema.reportRuntimeFailure(G, 'authority-linkage', validation);
+      }
+      return null;
+    }
+    return validation.population;
+  }
+
   function _tickFullLinkage(ctx, mr) {
     var G = global.GM;
+    var population = _populationForFullLinkage(G);
 
     // 内帑 → 户口（内帑充盈可赐廪，户增）
-    if (G.neitang && G.neitang.money > 3000000 && G.population && G.population.national) {
+    if (G.neitang && G.neitang.money > 3000000 && population) {
       var benefit = G.neitang.money * 0.001 * mr / 12;
       _linkageFiscalFlow(G.neitang, -benefit, '赐廪养民');
-      G.population.national.mouths = Math.min(500000000, G.population.national.mouths + benefit * 0.1);
+      population.national.mouths = Math.min(500000000, Math.floor(population.national.mouths + benefit * 0.1));
     }
     // 内帑 → 皇权（丰厚时内帑支持宦官）
     if (G.neitang && G.neitang.money > 5000000 && G.huangquan) {
@@ -1411,17 +1443,17 @@
     }
 
     // 户口 → 内帑（皇庄进项）
-    if (G.population && G.population.byCategory && G.population.byCategory.huangzhuang && G.neitang) {
-      var huangzhuangMouths = G.population.byCategory.huangzhuang.mouths || 0;
+    if (population && population.byCategory.huangzhuang && G.neitang) {
+      var huangzhuangMouths = population.byCategory.huangzhuang.mouths;
       _linkageFiscalFlow(G.neitang, huangzhuangMouths * 0.3 * mr / 12, '皇庄进项');
     }
     // 户口 → 腐败（冗员多则腐败增）
-    if (G.population && G.population.byCategory && G.population.byCategory.ruhu && G.corruption && typeof G.corruption === 'object') {
-      var ruhu = G.population.byCategory.ruhu.mouths || 0;
+    if (population && population.byCategory.ruhu && G.corruption && typeof G.corruption === 'object') {
+      var ruhu = population.byCategory.ruhu.mouths;
       if (ruhu > 1000000) _addCorrIndex(G, 0.03 * mr);
     }
     // 户口 → 皇权（大人口需强管制）
-    if (G.population && G.population.national && G.population.national.mouths > 200000000) {
+    if (population && population.national.mouths > 200000000) {
       if (typeof global.AuthorityEngines !== 'undefined') global.AuthorityEngines.adjustHuangquan('idleGovern', -0.05 * mr, '人口繁巨');
     }
 
@@ -1432,8 +1464,8 @@
     }
 
     // 民心 → 户口（高民心 → 户口繁盛）
-    if (G.minxin && G.minxin.trueIndex > 70 && G.population && G.population.national) {
-      G.population.national.households = Math.round(G.population.national.households * (1 + 0.0003 * mr / 12));
+    if (G.minxin && G.minxin.trueIndex > 70 && population) {
+      population.national.households = Math.round(population.national.households * (1 + 0.0003 * mr / 12));
     }
     // 民心 → 腐败（高民心 → 举报多 → 腐败曝光）
     if (G.minxin && G.minxin.trueIndex > 80 && G.corruption && typeof G.corruption === 'object') {
@@ -1449,8 +1481,8 @@
       _linkageFiscalFlow(G.neitang, Math.max(0, (G.huangquan.index - 70)) * 50 * mr / 12, '皇权·内帑充实');
     }
     // 皇权 → 户口（弱皇权 → 户口失控）
-    if (G.huangquan && G.huangquan.index < 40 && G.population) {
-      G.population.hiddenCount = (G.population.hiddenCount || 0) + Math.round(G.population.national.households * 0.0002 * mr);
+    if (G.huangquan && G.huangquan.index < 40 && population) {
+      population.hiddenCount += Math.round(population.national.households * 0.0002 * mr);
     }
 
     // 皇威 → 帑廪（威远 → 朝贡增）
@@ -1462,8 +1494,8 @@
       _linkageFiscalFlow(G.neitang, -(10000 * mr), '暴君挥霍');
     }
     // 皇威 → 户口（威严 → 民附）
-    if (G.huangwei && G.huangwei.index > 80 && G.population) {
-      G.population.fugitives = Math.max(0, (G.population.fugitives || 0) - Math.round(G.population.national.mouths * 0.00002 * mr));
+    if (G.huangwei && G.huangwei.index > 80 && population) {
+      population.fugitives = Math.max(0, population.fugitives - Math.round(population.national.mouths * 0.00002 * mr));
     }
     // 皇威 → 腐败（失威段 → 腐败公开化）
     if (G.huangwei && G.huangwei.phase === 'lost' && G.corruption && typeof G.corruption === 'object') {

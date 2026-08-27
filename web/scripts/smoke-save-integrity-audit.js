@@ -11,6 +11,7 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..', '..');
 const main = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
 const lifecycle = fs.readFileSync(path.join(ROOT, 'web', 'tm-save-lifecycle.js'), 'utf8');
+const huji = fs.readFileSync(path.join(ROOT, 'web', 'tm-huji-engine.js'), 'utf8');
 const storage = fs.readFileSync(path.join(ROOT, 'web', 'tm-storage.js'), 'utf8');
 let pass = 0;
 function ok(cond, msg) { if (!cond) throw new Error('FAIL: ' + msg); pass++; console.log('  ok - ' + msg); }
@@ -108,7 +109,13 @@ console.log('=== save integrity audit ===');
   const gmBefore = JSON.stringify(ctx.GM);
   const pBefore = JSON.stringify(ctx.P);
   vm.createContext(ctx);
-  vm.runInContext(stableIdHelpers + '\n' + lifecycle.slice(blockStart, blockEnd) + '\n' + snapshot + '\n' + builder
+  const populationSchemaStart = huji.indexOf('function _populationSchemaFailure(');
+  const populationSchemaEnd = huji.indexOf('// ═══════════════════════════════════════════════════════════════════', populationSchemaStart);
+  ok(populationSchemaStart >= 0 && populationSchemaEnd > populationSchemaStart,
+    '存档审计加载 production PopulationSchema provider');
+  const populationSchema = '(function(global){"use strict";\n'
+    + huji.slice(populationSchemaStart, populationSchemaEnd) + '\n})(window);';
+  vm.runInContext(populationSchema + '\n' + stableIdHelpers + '\n' + lifecycle.slice(blockStart, blockEnd) + '\n' + snapshot + '\n' + builder
     + '\nthis.OUT=_buildSaveState({format:"idb"});', ctx);
   ok(JSON.stringify(ctx.GM) === gmBefore && JSON.stringify(ctx.P) === pBefore, '完整存档准备不修改 live GM/P');
   ok(!('_postTurnJobs' in ctx.OUT.GM) && ctx.GM._postTurnJobs.pending === true, '临时任务只从快照删除');

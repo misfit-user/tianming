@@ -180,6 +180,17 @@ function _ensureGMDefaults(GM, P) {
   P = P || (typeof window !== 'undefined' ? window.P : null);
   if (!GM) return;
   _tmNormalizeCoreWorldCollections(GM);
+  var populationSchema = typeof window !== 'undefined' && window.TM && window.TM.PopulationSchema;
+  if (!populationSchema || typeof populationSchema.normalize !== 'function') {
+    var populationSchemaError = new Error('人口 schema provider 未加载，拒绝规范化世界');
+    populationSchemaError.code = 'population-schema-unavailable';
+    throw populationSchemaError;
+  }
+  populationSchema.normalize(GM, {
+    source: 'load-or-save-boundary',
+    allowLegacyNumericStrings: true,
+    p: P
+  });
   _tmEnsureCampaignId(GM);
   _tmEnsureTimelineIdentity(GM);
   _tmMigrateCoreStableIds(GM);

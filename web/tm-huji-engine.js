@@ -23,6 +23,270 @@
 (function(global) {
   'use strict';
 
+  function _populationSchemaFailure(code, field, value) {
+    return { ok:false, code:code || 'invalid-population-value', field:field || '', value:value };
+  }
+
+  function _finiteNonNegativePopulation(value, field, options) {
+    options = options || {};
+    var candidate = value;
+    if (typeof candidate === 'string') {
+      if (options.allowLegacyNumericStrings !== true || candidate.trim() === '') {
+        return _populationSchemaFailure('invalid-population-value', field, value);
+      }
+      candidate = Number(candidate);
+    }
+    if (typeof candidate !== 'number' || !Number.isFinite(candidate) || candidate < 0) {
+      return _populationSchemaFailure('invalid-population-value', field, value);
+    }
+    return { ok:true, value:Math.floor(candidate), changed:candidate !== value };
+  }
+
+  function _populationSchemaError(failure, source) {
+    var error = new Error('人口 schema 无法安全迁移：' + failure.field);
+    error.code = failure.code || 'population-schema-invalid';
+    error.field = failure.field;
+    error.value = failure.value;
+    error.source = source || '';
+    return error;
+  }
+
+  function _populationInitialDefaults(gm, p) {
+    var config = p && p.populationConfig;
+    if (!config && p && p.scenario && p.scenario.populationConfig) config = p.scenario.populationConfig;
+    if (!config && typeof global.findScenarioById === 'function' && gm && gm.sid) {
+      try {
+        var scenario = global.findScenarioById(gm.sid);
+        config = scenario && scenario.populationConfig;
+      } catch (_) {}
+    }
+    return (config && config.initial && typeof config.initial === 'object') ? config.initial : {};
+  }
+
+  function _recordPopulationSchemaDiagnostics(gm, diagnostics) {
+    if (!gm || !diagnostics || !diagnostics.length) return;
+    if (!Array.isArray(gm._schemaNormalizationDiagnostics)) gm._schemaNormalizationDiagnostics = [];
+    Array.prototype.push.apply(gm._schemaNormalizationDiagnostics, diagnostics.map(function(row) {
+      return {
+        turn:Number(gm.turn) || 0,
+        field:row.field,
+        action:row.action,
+        source:row.source || 'population-schema'
+      };
+    }));
+    if (gm._schemaNormalizationDiagnostics.length > 50) {
+      gm._schemaNormalizationDiagnostics = gm._schemaNormalizationDiagnostics.slice(-50);
+    }
+  }
+
+  function _normalizePopulationSchema(gm, options) {
+    options = options || {};
+    if (!gm || typeof gm !== 'object' || Array.isArray(gm)) {
+      throw _populationSchemaError(_populationSchemaFailure('population-schema-invalid', 'GM', gm), options.source);
+    }
+    var diagnostics = [];
+    var defaults = options.defaults || _populationInitialDefaults(gm, options.p);
+    var population = gm.population;
+    if (population === undefined || population === null) {
+      population = gm.population = {};
+      diagnostics.push({ field:'population', action:'default-object', source:options.source });
+    } else if (typeof population !== 'object' || Array.isArray(population)) {
+      throw _populationSchemaError(_populationSchemaFailure('population-schema-invalid', 'population', population), options.source);
+    }
+
+    var byCategory = population.byCategory;
+    if (byCategory === undefined || byCategory === null) {
+      byCategory = population.byCategory = {};
+      diagnostics.push({ field:'population.byCategory', action:'default-object', source:options.source });
+    } else if (typeof byCategory !== 'object' || Array.isArray(byCategory)) {
+      throw _populationSchemaError(_populationSchemaFailure('population-schema-invalid', 'population.byCategory', byCategory), options.source);
+    }
+
+    var categoryMouths = 0;
+    var categoryHouseholds = 0;
+    var categoryKeys = Object.keys(byCategory);
+    categoryKeys.forEach(function(key) {
+      var row = byCategory[key];
+      var baseField = 'population.byCategory.' + key;
+      if (!row || typeof row !== 'object' || Array.isArray(row)) {
+        throw _populationSchemaError(_populationSchemaFailure('population-schema-invalid', baseField, row), options.source);
+      }
+      if (row.mouths === undefined || row.mouths === null) {
+        row.mouths = 0;
+        diagnostics.push({ field:baseField + '.mouths', action:'default-zero', source:options.source });
+      } else {
+        var mouthsResult = _finiteNonNegativePopulation(row.mouths, baseField + '.mouths', options);
+        if (!mouthsResult.ok) throw _populationSchemaError(mouthsResult, options.source);
+        if (row.mouths !== mouthsResult.value) {
+          row.mouths = mouthsResult.value;
+          diagnostics.push({ field:baseField + '.mouths', action:'normalize-number', source:options.source });
+        }
+      }
+      categoryMouths += row.mouths;
+      if (row.households !== undefined && row.households !== null) {
+        var householdsResult = _finiteNonNegativePopulation(row.households, baseField + '.households', options);
+        if (!householdsResult.ok) throw _populationSchemaError(householdsResult, options.source);
+        if (row.households !== householdsResult.value) {
+          row.households = householdsResult.value;
+          diagnostics.push({ field:baseField + '.households', action:'normalize-number', source:options.source });
+        }
+        categoryHouseholds += row.households;
+      }
+    });
+
+    var national = population.national;
+    if (national === undefined || national === null) {
+      national = population.national = {};
+      diagnostics.push({ field:'population.national', action:'default-object', source:options.source });
+    } else if (typeof national !== 'object' || Array.isArray(national)) {
+      throw _populationSchemaError(_populationSchemaFailure('population-schema-invalid', 'population.national', national), options.source);
+    }
+
+    function normalizeRequired(target, key, field, fallback) {
+      if (target[key] === undefined || target[key] === null) {
+        var fallbackResult = _finiteNonNegativePopulation(fallback, field, { allowLegacyNumericStrings:true });
+        target[key] = fallbackResult.ok ? fallbackResult.value : 0;
+        diagnostics.push({ field:field, action:'default-number', source:options.source });
+        return;
+      }
+      var result = _finiteNonNegativePopulation(target[key], field, options);
+      if (!result.ok) throw _populationSchemaError(result, options.source);
+      if (target[key] !== result.value) {
+        target[key] = result.value;
+        diagnostics.push({ field:field, action:'normalize-number', source:options.source });
+      }
+    }
+
+    var fallbackMouths = categoryKeys.length ? categoryMouths : defaults.nationalMouths;
+    normalizeRequired(national, 'mouths', 'population.national.mouths', fallbackMouths || 0);
+    var fallbackHouseholds = categoryHouseholds || defaults.nationalHouseholds;
+    if (fallbackHouseholds === undefined || fallbackHouseholds === null) {
+      fallbackHouseholds = Math.floor(national.mouths / 5.2);
+    }
+    normalizeRequired(national, 'households', 'population.national.households', fallbackHouseholds);
+    normalizeRequired(population, 'hiddenCount', 'population.hiddenCount', defaults.hiddenPopulation || 0);
+    normalizeRequired(population, 'fugitives', 'population.fugitives', defaults.nationalFugitives || 0);
+    _recordPopulationSchemaDiagnostics(gm, diagnostics);
+    return { ok:true, population:population, diagnostics:diagnostics };
+  }
+
+  function _validatePopulationSchema(gm, options) {
+    options = options || {};
+    var failures = [];
+    var population = gm && gm.population;
+    if (!population || typeof population !== 'object' || Array.isArray(population)) {
+      failures.push(_populationSchemaFailure('population-missing', 'population', population));
+    } else {
+      var national = population.national;
+      if (!national || typeof national !== 'object' || Array.isArray(national)) {
+        failures.push(_populationSchemaFailure('population-national-missing', 'population.national', national));
+      } else {
+        ['mouths', 'households'].forEach(function(key) {
+          var result = _finiteNonNegativePopulation(national[key], 'population.national.' + key, options);
+          if (!result.ok) failures.push(result);
+        });
+      }
+      ['hiddenCount', 'fugitives'].forEach(function(key) {
+        var result = _finiteNonNegativePopulation(population[key], 'population.' + key, options);
+        if (!result.ok) failures.push(result);
+      });
+      if (!population.byCategory || typeof population.byCategory !== 'object' || Array.isArray(population.byCategory)) {
+        failures.push(_populationSchemaFailure('population-categories-invalid', 'population.byCategory', population.byCategory));
+      } else {
+        Object.keys(population.byCategory).forEach(function(key) {
+          var row = population.byCategory[key];
+          if (!row || typeof row !== 'object' || Array.isArray(row)) {
+            failures.push(_populationSchemaFailure('population-category-invalid', 'population.byCategory.' + key, row));
+            return;
+          }
+          var result = _finiteNonNegativePopulation(row.mouths, 'population.byCategory.' + key + '.mouths', options);
+          if (!result.ok) failures.push(result);
+          if (row.households !== undefined && row.households !== null) {
+            var householdsResult = _finiteNonNegativePopulation(
+              row.households,
+              'population.byCategory.' + key + '.households',
+              options
+            );
+            if (!householdsResult.ok) failures.push(householdsResult);
+          }
+        });
+      }
+    }
+    return { ok:failures.length === 0, population:failures.length ? null : population, failures:failures };
+  }
+
+  function _reportPopulationSchemaFailure(gm, operation, validation) {
+    if (!validation || validation.ok) return;
+    var first = validation.failures && validation.failures[0] || validation;
+    var diagnostic = {
+      turn:Number(gm && gm.turn) || 0,
+      operation:String(operation || 'runtime'),
+      code:first.code || 'population-schema-invalid',
+      field:first.field || ''
+    };
+    if (gm) {
+      if (!Array.isArray(gm._populationSchemaDiagnostics)) gm._populationSchemaDiagnostics = [];
+      gm._populationSchemaDiagnostics.push(diagnostic);
+      if (gm._populationSchemaDiagnostics.length > 50) gm._populationSchemaDiagnostics = gm._populationSchemaDiagnostics.slice(-50);
+    }
+    try {
+      if (global.TM && global.TM.errors && typeof global.TM.errors.capture === 'function') {
+        global.TM.errors.capture(_populationSchemaError(first, operation), 'population-schema.' + diagnostic.operation, diagnostic);
+      }
+    } catch (_) {}
+  }
+
+  function _transferCategoryPopulation(population, options) {
+    options = options || {};
+    if (!population || typeof population !== 'object' || Array.isArray(population) ||
+        !population.byCategory || typeof population.byCategory !== 'object' || Array.isArray(population.byCategory)) {
+      return _populationSchemaFailure('population-categories-invalid', 'population.byCategory', population && population.byCategory);
+    }
+    var from = String(options.from || '');
+    var to = String(options.to || '');
+    var sourceRow = population.byCategory[from];
+    var targetRow = population.byCategory[to];
+    if (!sourceRow || typeof sourceRow !== 'object' || Array.isArray(sourceRow)) {
+      return _populationSchemaFailure('population-category-not-found', 'population.byCategory.' + from, sourceRow);
+    }
+    if (!targetRow || typeof targetRow !== 'object' || Array.isArray(targetRow)) {
+      return _populationSchemaFailure('population-category-not-found', 'population.byCategory.' + to, targetRow);
+    }
+    var readOptions = { allowLegacyNumericStrings:options.allowLegacyNumericStrings === true };
+    var source = _finiteNonNegativePopulation(sourceRow.mouths, 'population.byCategory.' + from + '.mouths', readOptions);
+    var target = _finiteNonNegativePopulation(targetRow.mouths, 'population.byCategory.' + to + '.mouths', readOptions);
+    var requested = _finiteNonNegativePopulation(options.count, 'count', readOptions);
+    if (!source.ok || !target.ok || !requested.ok) {
+      return {
+        ok:false,
+        code:'invalid-category-transfer-data',
+        failures:[source, target, requested].filter(function(result) { return !result.ok; })
+      };
+    }
+    if (from === to) return { ok:true, changed:false, requested:requested.value, actual:0, limitedBySource:false };
+    var actual = Math.min(source.value, requested.value);
+    sourceRow.mouths = source.value - actual;
+    targetRow.mouths = target.value + actual;
+    return {
+      ok:true,
+      changed:actual > 0,
+      requested:requested.value,
+      actual:actual,
+      limitedBySource:actual < requested.value,
+      from:from,
+      to:to
+    };
+  }
+
+  global.TM = global.TM || {};
+  global.TM.PopulationSchema = {
+    finiteNonNegative:_finiteNonNegativePopulation,
+    normalize:_normalizePopulationSchema,
+    validate:_validatePopulationSchema,
+    reportRuntimeFailure:_reportPopulationSchemaFailure,
+    transferCategory:_transferCategoryPopulation
+  };
+
   // ═══════════════════════════════════════════════════════════════════
   //  朝代默认参数
   // ═══════════════════════════════════════════════════════════════════
@@ -139,6 +403,31 @@
   //  初始化
   // ═══════════════════════════════════════════════════════════════════
 
+  function _initialPopulationNumber(value, fallback, field) {
+    if (value === undefined || value === null) return Math.floor(Number(fallback) || 0);
+    var schema = global.TM && global.TM.PopulationSchema;
+    var result = schema && typeof schema.finiteNonNegative === 'function'
+      ? schema.finiteNonNegative(value, field, { allowLegacyNumericStrings: true })
+      : { ok: typeof value === 'number' && Number.isFinite(value) && value >= 0, value: Math.floor(Number(value)) };
+    if (!result.ok) {
+      var error = new Error('户籍初始人口字段非法：' + field);
+      error.code = 'population-schema-invalid';
+      error.field = field;
+      throw error;
+    }
+    return result.value;
+  }
+
+  function _normalizePopulationBoundary(G, source, sc) {
+    var schema = global.TM && global.TM.PopulationSchema;
+    if (!schema || typeof schema.normalize !== 'function') return null;
+    return schema.normalize(G, {
+      source: source,
+      allowLegacyNumericStrings: true,
+      defaults: sc && sc.populationConfig && sc.populationConfig.initial || {}
+    });
+  }
+
   function init(sc) {
     var G = global.GM;
     if (!G) return;
@@ -164,6 +453,7 @@
         }
       });
       _ensureDeepDemographics(G.population);
+      _normalizePopulationBoundary(G, 'huji-existing-world', sc);
       return;
     }
 
@@ -171,11 +461,11 @@
     var config = (sc && sc.populationConfig) || {};
 
     var initial = config.initial || {};
-    var households = initial.nationalHouseholds || 1000000;
+    var households = _initialPopulationNumber(initial.nationalHouseholds, 1000000, 'populationConfig.initial.nationalHouseholds');
     var mouthsPerHh = DYNASTY_MOUTHS_PER_HOUSEHOLD[dynasty] || DYNASTY_MOUTHS_PER_HOUSEHOLD.default;
-    var mouths = initial.nationalMouths || Math.round(households * mouthsPerHh);
+    var mouths = _initialPopulationNumber(initial.nationalMouths, Math.round(households * mouthsPerHh), 'populationConfig.initial.nationalMouths');
     var dingRatio = DYNASTY_DING_PER_MOUTHS[dynasty] || DYNASTY_DING_PER_MOUTHS.default;
-    var ding = initial.nationalDing || Math.round(mouths * dingRatio);
+    var ding = _initialPopulationNumber(initial.nationalDing, Math.round(mouths * dingRatio), 'populationConfig.initial.nationalDing');
 
     var dingAge = config.dingAgeRange || DYNASTY_DING_AGE[dynasty] || DYNASTY_DING_AGE.default;
 
@@ -201,6 +491,7 @@
       triggeredMigrationEventIds: []
     };
     _ensureDeepDemographics(G.population);
+    _normalizePopulationBoundary(G, 'huji-new-game', sc);
   }
 
   function _inferDynasty(sc) {

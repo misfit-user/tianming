@@ -497,6 +497,12 @@ var AccountingSystem = (function() {
 
 var REACTIVE_QUEUE_BATCH_LIMIT = 1000;
 var REACTIVE_QUEUE_HARD_LIMIT = 4096;
+var REACTIVE_CASCADE_MAX_EVENTS = 10000;
+var REACTIVE_CASCADE_MAX_BATCHES = 64;
+var REACTIVE_CASCADE_MAX_SAME_KEY = 64;
+var REACTIVE_CASCADE_DIAGNOSTIC_LIMIT = 128;
+var REACTIVE_YIELD_EVERY_BATCHES = 4;
+var _reactiveCascadeSequence = 0;
 
 function ensureReactiveQueueState(targetGM) {
   var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null);
@@ -519,10 +525,138 @@ function _setReactiveQueueScheduled(G, value) {
   }
 }
 
-function _scheduleReactiveQueue(G) {
-  if (!G || _reactiveQueueScheduled(G)) return;
+function _setReactiveHiddenState(G, propertyName, value) {
+  if (!G) return;
+  try {
+    Object.defineProperty(G, propertyName, { value:value, writable:true, configurable:true, enumerable:false });
+  } catch (error) {
+    G[propertyName] = value;
+  }
+}
+
+function _reactiveQueueProcessing(G) {
+  return !!(G && G._reactiveQueueProcessing);
+}
+
+function _setReactiveQueueProcessing(G, value) {
+  _setReactiveHiddenState(G, '_reactiveQueueProcessing', !!value);
+}
+
+function _getReactiveCascade(G, create) {
+  var cascade = G && G._reactiveCascade;
+  if (cascade && typeof cascade === 'object') return cascade;
+  if (!create || !G) return null;
+  cascade = {
+    id:'reactive-cascade-' + (++_reactiveCascadeSequence),
+    batches:0,
+    processedEvents:0,
+    startedAt:Date.now(),
+    perKeyCounts:Object.create(null),
+    trace:[],
+    nextEntityId:0,
+    entityIds:typeof WeakMap === 'function' ? new WeakMap() : null
+  };
+  _setReactiveHiddenState(G, '_reactiveCascade', cascade);
+  return cascade;
+}
+
+function _clearReactiveCascade(G) {
+  _setReactiveHiddenState(G, '_reactiveCascade', null);
+}
+
+function _reactiveChangeKey(cascade, change) {
+  var entity = change && change.entity;
+  var identity = '';
+  if (entity && typeof entity === 'object') {
+    if (entity.id !== undefined && entity.id !== null && String(entity.id)) identity = 'id:' + String(entity.id);
+    else if (cascade.entityIds) {
+      identity = cascade.entityIds.get(entity);
+      if (!identity) {
+        identity = 'object:' + (++cascade.nextEntityId);
+        cascade.entityIds.set(entity, identity);
+      }
+    }
+  }
+  if (!identity) identity = 'value:' + String(entity);
+  return String(change && change.entityType || '') + '|' + identity + '|' + String(change && change.propertyName || '');
+}
+
+function _recordReactiveCascadeDiagnostics(G, cascade, reason, pending) {
+  var diagnostics = Array.isArray(G._reactiveCascadeDiagnostics) ? G._reactiveCascadeDiagnostics : [];
+  (pending.length ? pending : [null]).forEach(function(change) {
+    diagnostics.push({
+      cascadeId:cascade.id,
+      reason:reason,
+      entityType:change && change.entityType || '',
+      propertyName:change && change.propertyName || '',
+      droppedAt:Date.now()
+    });
+  });
+  if (diagnostics.length > REACTIVE_CASCADE_DIAGNOSTIC_LIMIT) {
+    diagnostics.splice(0, diagnostics.length - REACTIVE_CASCADE_DIAGNOSTIC_LIMIT);
+  }
+  _setReactiveHiddenState(G, '_reactiveCascadeDiagnostics', diagnostics);
+}
+
+function _abortReactiveCascade(G, cascade, reason, pending, listenerFailures) {
+  pending = Array.isArray(pending) ? pending : [];
+  _recordReactiveCascadeDiagnostics(G, cascade, reason, pending);
+  G._changeQueue.length = 0;
+  _setReactiveQueueScheduled(G, false);
+  _setReactiveQueueProcessing(G, false);
+  _clearReactiveCascade(G);
+  var trace = cascade.trace.slice(-64);
+  var error = new Error('响应式属性级联超过安全上限: ' + reason);
+  error.code = 'reactive-cascade-limit';
+  try {
+    if (typeof TM !== 'undefined' && TM && TM.errors && typeof TM.errors.capture === 'function') {
+      TM.errors.capture(error, 'reactive-property-cascade', {
+        cascadeId:cascade.id,
+        reason:reason,
+        batches:cascade.batches,
+        processedEvents:cascade.processedEvents,
+        droppedEvents:pending.length,
+        propertyChain:trace
+      });
+    }
+  } catch (_captureError) {
+    if (typeof _dbg === 'function') _dbg('[ReactivePropertyQueue] diagnostic capture failed:', _captureError);
+  }
+  console.error('[ReactivePropertyQueue] cascade aborted:', reason, trace.join(' -> '));
+  return {
+    ok:false,
+    code:'reactive-cascade-limit',
+    reason:reason,
+    cascadeId:cascade.id,
+    batches:cascade.batches,
+    processedEvents:cascade.processedEvents,
+    listenerFailures:listenerFailures || 0,
+    droppedEvents:pending.length,
+    pendingCount:0
+  };
+}
+
+function getReactiveQueueDiagnostics(targetGM) {
+  var G = ensureReactiveQueueState(targetGM);
+  if (!G || !Array.isArray(G._reactiveCascadeDiagnostics)) return [];
+  return G._reactiveCascadeDiagnostics.map(function(row) {
+    return {
+      cascadeId:row.cascadeId,
+      reason:row.reason,
+      entityType:row.entityType,
+      propertyName:row.propertyName,
+      droppedAt:row.droppedAt
+    };
+  });
+}
+
+function _scheduleReactiveQueue(G, useMacrotask) {
+  if (!G || _reactiveQueueScheduled(G) || _reactiveQueueProcessing(G)) return;
+  _getReactiveCascade(G, true);
   _setReactiveQueueScheduled(G, true);
-  var schedule = typeof queueMicrotask === 'function' ? queueMicrotask : function(fn){ Promise.resolve().then(fn); };
+  var schedule = useMacrotask && typeof setTimeout === 'function'
+    ? function(fn){ setTimeout(fn, 0); }
+    : (typeof queueMicrotask === 'function' ? queueMicrotask : function(fn){ Promise.resolve().then(fn); });
   schedule(function(){
     _setReactiveQueueScheduled(G, false);
     processChangeQueue(G);
@@ -572,22 +706,71 @@ function triggerPropertyChange(entityType, entity, propertyName, oldValue, newVa
 // 独立消费响应式属性事件；从不读取或调用 ChangeQueue 的闭包队列。
 function processChangeQueue(targetGM) {
   var G = ensureReactiveQueueState(targetGM);
-  if (!G || G._changeQueue.length === 0) return { ok:true, processedEvents:0, listenerFailures:0, pendingCount:0 };
+  if (!G || G._changeQueue.length === 0) {
+    if (G) _clearReactiveCascade(G);
+    return { ok:true, processedEvents:0, listenerFailures:0, pendingCount:0 };
+  }
+  if (_reactiveQueueProcessing(G)) {
+    return { ok:false, code:'reactive-queue-reentrant', processedEvents:0, listenerFailures:0, pendingCount:G._changeQueue.length };
+  }
+  var cascade = _getReactiveCascade(G, true);
+  if (cascade.batches >= REACTIVE_CASCADE_MAX_BATCHES) {
+    return _abortReactiveCascade(G, cascade, 'max-batches', G._changeQueue.slice(), 0);
+  }
+  cascade.batches++;
   var batch = G._changeQueue.splice(0, REACTIVE_QUEUE_BATCH_LIMIT);
   var listenerFailures = 0;
-  batch.forEach(function(change) {
-    (Array.isArray(change.listeners) ? change.listeners : []).forEach(function(listener) {
-      if (!listener || typeof listener.callback !== 'function') return;
-      try {
-        listener.callback(change.entity, change.propertyName, change.oldValue, change.newValue);
-      } catch (error) {
-        listenerFailures++;
-        console.error('[ReactivePropertyQueue] listener failed:', error);
+  _setReactiveQueueProcessing(G, true);
+  try {
+    for (var batchIndex=0;batchIndex<batch.length;batchIndex++) {
+      var change = batch[batchIndex];
+      if (cascade.processedEvents >= REACTIVE_CASCADE_MAX_EVENTS) {
+        return _abortReactiveCascade(G, cascade, 'max-events', batch.slice(batchIndex).concat(G._changeQueue), listenerFailures);
       }
-    });
-  });
-  if (G._changeQueue.length > 0) _scheduleReactiveQueue(G);
-  return { ok:listenerFailures===0, processedEvents:batch.length, listenerFailures:listenerFailures, pendingCount:G._changeQueue.length };
+      var cascadeKey = _reactiveChangeKey(cascade, change);
+      var sameKeyCount = cascade.perKeyCounts[cascadeKey] || 0;
+      if (sameKeyCount >= REACTIVE_CASCADE_MAX_SAME_KEY) {
+        return _abortReactiveCascade(G, cascade, 'max-same-key', batch.slice(batchIndex).concat(G._changeQueue), listenerFailures);
+      }
+      cascade.perKeyCounts[cascadeKey] = sameKeyCount + 1;
+      cascade.processedEvents++;
+      cascade.trace.push(String(change.entityType || '') + '.' + String(change.propertyName || ''));
+      if (cascade.trace.length > 128) cascade.trace.splice(0, cascade.trace.length - 128);
+      (Array.isArray(change.listeners) ? change.listeners : []).forEach(function(listener) {
+        if (!listener || typeof listener.callback !== 'function') return;
+        try {
+          listener.callback(change.entity, change.propertyName, change.oldValue, change.newValue);
+        } catch (error) {
+          listenerFailures++;
+          console.error('[ReactivePropertyQueue] listener failed:', error);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('[ReactivePropertyQueue] internal processing failed:', error);
+    return _abortReactiveCascade(
+      G,
+      cascade,
+      'internal-exception',
+      batch.slice(batchIndex).concat(G._changeQueue),
+      listenerFailures
+    );
+  } finally {
+    if (_reactiveQueueProcessing(G)) _setReactiveQueueProcessing(G, false);
+  }
+  if (G._changeQueue.length > 0) {
+    _scheduleReactiveQueue(G, cascade.batches % REACTIVE_YIELD_EVERY_BATCHES === 0);
+  } else {
+    _clearReactiveCascade(G);
+  }
+  return {
+    ok:listenerFailures===0,
+    processedEvents:batch.length,
+    cascadeProcessedEvents:cascade.processedEvents,
+    cascadeBatches:cascade.batches,
+    listenerFailures:listenerFailures,
+    pendingCount:G._changeQueue.length
+  };
 }
 
 // 创建响应式属性（自动触发监听）

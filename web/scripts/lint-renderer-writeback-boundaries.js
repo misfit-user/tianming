@@ -120,6 +120,14 @@ const internalQueueSource = queueSource.slice(changeQueueStart, changeQueueEnd);
 check(!/processChangeQueue\s*\(/.test(internalQueueSource), 'internal ChangeQueue must not consume the reactive GM._changeQueue');
 const reactiveFn = queueFunctions.get('processChangeQueue');
 check(!!reactiveFn && !/\bChangeQueue\b/.test(queueSource.slice(reactiveFn.start, reactiveFn.end)), 'reactive queue consumer must not call internal ChangeQueue');
+if (reactiveFn) {
+  const reactiveSource = queueSource.slice(reactiveFn.start, reactiveFn.end);
+  check(/_abortReactiveCascade/.test(reactiveSource) && /REACTIVE_CASCADE_MAX_BATCHES/.test(reactiveSource)
+    && /REACTIVE_CASCADE_MAX_EVENTS/.test(reactiveSource), 'reactive queue must terminate cross-microtask cascades with batch/event epochs');
+  check(/REACTIVE_YIELD_EVERY_BATCHES/.test(reactiveSource) && /_scheduleReactiveQueue/.test(reactiveSource), 'reactive queue must yield long cascades to the macrotask queue');
+}
+check(/REACTIVE_CASCADE_DIAGNOSTIC_LIMIT\s*=\s*128/.test(queueSource) && /function getReactiveQueueDiagnostics/.test(queueSource),
+  'reactive cascade abort diagnostics must remain bounded and inspectable');
 check(!/Number\s*\([^)]*\)\s*\|\|\s*0/.test(internalQueueSource), 'internal ChangeQueue must not coerce invalid numbers to zero');
 check(/_finalizeQueuedFailure\s*\(originalQueue,\s*change,\s*exceptionFailure/.test(internalQueueSource), 'ChangeQueue exception path must settle attempts through the shared retry/dead-letter boundary');
 ['_handlerTreasury', '_handlerVariable', '_handlerCharacter', '_handlerFaction', '_handlerProvince', '_handlerNation'].forEach((name) => {

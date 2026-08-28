@@ -621,13 +621,15 @@
       if (!params.regionId || !params.amount) return { ok: false, reason: '缺少强征区域或金额' };
       if (global.EconomyGapFill && typeof global.EconomyGapFill.forceLevy === 'function') {
         result = global.EconomyGapFill.forceLevy(params.regionId, params.amount, params.reason || 'edict');
-      } else if (G.fiscal && G.fiscal.regions && G.fiscal.regions[params.regionId]) {
-        var rf = G.fiscal.regions[params.regionId];
-        var actual = Math.min(params.amount, (rf.ledgers && rf.ledgers.money) || params.amount);
-        if (rf.ledgers) rf.ledgers.money = Math.max(0, (rf.ledgers.money || 0) - actual);
-        if (G.guoku) G.guoku.balance = (G.guoku.balance || 0) + actual;
-        rf.compliance = Math.max(0.05, (rf.compliance || 0.8) - 0.2);
-        result = { ok: true, actualAmount: actual, fallback: true };
+      } else if (global.FiscalEngine && typeof global.FiscalEngine.transferRegionToGuokuAtomic === 'function') {
+        result = global.FiscalEngine.transferRegionToGuokuAtomic({
+          regionId: params.regionId,
+          amount: params.amount,
+          sourceTag: '诏令·地方强征',
+          gameRef: G
+        });
+      } else {
+        result = { ok: false, code: 'fiscal-engine-unavailable' };
       }
     } else if (action === 'dispatch_censor') {
       if (!params.regionId) return { ok: false, reason: '缺少监察区域' };
@@ -1696,6 +1698,19 @@
       return { ok: true, status: 'redraft_pending' };
     }
     if (action === 'investigate') {
+      var fiscal = global.FiscalEngine;
+      if (!fiscal || typeof fiscal.trySpendFromGuoku !== 'function') {
+        return { ok: false, code: 'fiscal-engine-unavailable', reason: '财政账本未就绪' };
+      }
+      var payment = fiscal.trySpendFromGuoku({
+        amounts: { money: 5000 },
+        sinkTag: '诏令·御史核查',
+        gameRef: G,
+        requireFullAmount: true
+      });
+      if (!payment || payment.ok !== true) {
+        return Object.assign({ ok: false, reason: '国库不足，无法派御史核查' }, payment || {});
+      }
       if (!G._investigations) G._investigations = [];
       G._investigations.push({
         id: 'invest_' + (G.turn||0) + '_' + Math.floor(Math.random()*10000),
@@ -1705,7 +1720,6 @@
         expectedReturnTurn: (G.turn || 0) + 2,
         cost: 5000
       });
-      if (G.guoku) G.guoku.money = Math.max(0, G.guoku.money - 5000);
       memo.status = 'under_investigation';
       if (global.addEB) global.addEB('监察', '派御史核查 ' + memo.drafter + ' 奏疏');
       return { ok: true, status: 'investigating' };
@@ -1921,9 +1935,16 @@
         G.huangquan.index = Math.max(0, G.huangquan.index - 5);
       }
     }
-    if (G.guoku && G.guoku.money >= inst.annualBudget) {
-      G.guoku.money -= inst.annualBudget;
-    } else {
+    var fiscal = global.FiscalEngine;
+    var initialPayment = fiscal && typeof fiscal.trySpendFromGuoku === 'function'
+      ? fiscal.trySpendFromGuoku({
+          amounts: { money: inst.annualBudget },
+          sinkTag: '诏令·新设机构·' + inst.name,
+          gameRef: G,
+          requireFullAmount: true
+        })
+      : { ok: false, code: 'fiscal-engine-unavailable' };
+    if (!initialPayment || initialPayment.ok !== true) {
       inst.stage = 'underfunded';
       inst.effectiveness *= 0.5;
     }
@@ -1940,9 +1961,17 @@
     G.dynamicInstitutions.forEach(function(inst) {
       if (inst.stage === 'abolished') return;
       if (inst._migratedToTree) return;   // 批四·已归官制树→岁支旧账停走(俸给改循官制 calcSalary·flag 关时无此标记=零回归)
-      if (isFiscalYear && G.guoku) {
-        if (G.guoku.money >= inst.annualBudget) {
-          G.guoku.money -= inst.annualBudget;
+      if (isFiscalYear) {
+        var fiscal = global.FiscalEngine;
+        var annualPayment = fiscal && typeof fiscal.trySpendFromGuoku === 'function'
+          ? fiscal.trySpendFromGuoku({
+              amounts: { money: inst.annualBudget },
+              sinkTag: '诏令·机构年度拨款·' + inst.name,
+              gameRef: G,
+              requireFullAmount: true
+            })
+          : { ok: false, code: 'fiscal-engine-unavailable' };
+        if (annualPayment && annualPayment.ok === true) {
           inst.stage = 'running';
         } else {
           inst.stage = 'underfunded';

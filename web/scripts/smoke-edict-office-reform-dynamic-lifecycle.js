@@ -47,9 +47,12 @@ ctx.globalThis = ctx;
 vm.createContext(ctx);
 
 (function main() {
+  load(ctx, 'tm-fiscal-engine.js');
   load(ctx, 'tm-edict-parser.js');
 
   assert(ctx.EdictParser && typeof ctx.EdictParser.tryExecute === 'function', 'EdictParser.tryExecute should load');
+  assert(ctx.FiscalEngine && typeof ctx.FiscalEngine.trySpendFromGuoku === 'function',
+    'office reform smoke uses the same canonical fiscal provider as production');
 
   const result = ctx.EdictParser.tryExecute('诏令：设文书司，正五品，掌诏令档案，司典籍校雠。', {}, {});
   assert(result && result.ok, 'direct office reform edict should execute');

@@ -20,6 +20,9 @@ const HOT_BUILDER = path.join(ROOT, 'web', 'tools', 'build-hot-update-package.js
 const CAPGO_BUILDER = path.join(ROOT, 'mobile', 'scripts', 'build-capgo-bundle.ps1');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-verify-deploy-'));
 const VER = '9.0.0.1';
+const POWERSHELL = spawnSync('pwsh', ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'], {
+  encoding: 'utf8'
+}).status === 0 ? 'pwsh' : 'powershell';
 
 let assertions = 0;
 function assert(cond, label) {
@@ -49,6 +52,16 @@ fs.writeFileSync(path.join(WEB, 'a.js'), 'var a=1;');
 fs.writeFileSync(path.join(WEB, 'styles.css'), 'body{}');
 fs.writeFileSync(path.join(WEB, 'changelog.json'), JSON.stringify({ entries: [{ date: '2026-06-11', module: VER + '·更新功能升级测试', title: 't', items: [] }] }));
 fs.writeFileSync(path.join(WEB, 'version.json'), JSON.stringify({ version: VER }));
+fs.mkdirSync(path.join(WEB, 'bundled-scenarios'), { recursive: true });
+fs.writeFileSync(path.join(WEB, '.hot-update-manifest.json'), JSON.stringify({ version: VER, files: [] }));
+fs.writeFileSync(path.join(WEB, 'bundled-scenarios', 'manifest.json'), JSON.stringify({ scenarios: [] }));
+fs.writeFileSync(path.join(WEB, 'bundled-scenarios', 'manifest.js'), 'window.TM_BUNDLED_SCENARIO_MANIFEST={scenarios:[]};\n');
+// Keep the synthetic release tree above the same production safety floor enforced by stage-web-release.
+fs.mkdirSync(path.join(WEB, 'fixture-runtime'), { recursive: true });
+for (let i = 0; i < 300; i++) {
+  fs.writeFileSync(path.join(WEB, 'fixture-runtime', 'part-' + String(i).padStart(3, '0') + '.js'),
+    'window.__deployFixture' + i + '=' + i + ';\n');
+}
 fs.writeFileSync(path.join(APP, 'main-impl.js'), '// main');
 fs.writeFileSync(path.join(APP, 'preload-impl.js'), '// preload');
 let r = spawnSync('node', [HOT_BUILDER, '--version', VER, '--out', ASSETS, '--notes', 'deploy-verify',
@@ -57,7 +70,7 @@ assert(r.status === 0, '制品·桌面热更构建（' + (r.status === 0 ? 'ok' 
 fs.copyFileSync(path.join(WEB, 'changelog.json'), path.join(ASSETS, 'changelog.json'));
 
 // 安卓侧·真构建器产全量 zip + manifest + 对象包
-r = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', CAPGO_BUILDER,
+r = spawnSync(POWERSHELL, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', CAPGO_BUILDER,
   '-Version', VER, '-WebDir', WEB, '-OutDir', ASSETS, '-Manifest', '-PackFiles'], { encoding: 'utf-8' });
 assert(r.status === 0, '制品·capgo 构建（' + (r.status === 0 ? 'ok' : (r.stderr || r.stdout)) + '）');
 const capgoManifest = readJson(path.join(ASSETS, VER + '-manifest.json'));

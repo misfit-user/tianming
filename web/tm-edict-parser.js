@@ -963,13 +963,24 @@
         if (action === 'change_category' || action === '转色目') {
           var from = params.fromCategory || 'bianhu';
           var to = params.toCategory;
-          var count = params.count || 10000;
-          if (P.byCategory[from] && P.byCategory[to]) {
-            P.byCategory[from].mouths = Math.max(0, P.byCategory[from].mouths - count);
-            P.byCategory[to].mouths += count;
-            if (global.addEB) global.addEB('户籍', count + ' 口由 ' + from + ' 转 ' + to);
-            return true;
+          var count = params.count === undefined || params.count === null ? 10000 : params.count;
+          var populationSchema = global.TM && global.TM.PopulationSchema;
+          if (!populationSchema || typeof populationSchema.transferCategory !== 'function') {
+            return { ok: false, code: 'population-schema-unavailable' };
           }
+          var transfer = populationSchema.transferCategory(P, {
+            from: from,
+            to: to,
+            count: count,
+            allowLegacyNumericStrings: true
+          });
+          if (transfer.ok) {
+            if (global.addEB && transfer.changed) {
+              global.addEB('户籍', transfer.actual + ' 口由 ' + from + ' 转 ' + to);
+            }
+            return transfer;
+          }
+          return transfer;
         }
         // 清查隐户
         if (action === 'purge_hidden' || action === '清查隐户') {
@@ -1338,12 +1349,15 @@
     var type = EDICT_TYPES[cls.typeKey];
     if (!type || !type.aiEntry) return { ok: false, reason: '类型无执行入口' };
     var exec = false;
+    var execOk = false;
     try {
       var execParams = Object.assign({ _edictText: text, _edictContext: ctx || {}, _classification: cls }, params || {});
       exec = type.aiEntry(execParams);
-      if (exec && cls.typeKey === 'huji_reform') _recordEdictPolicyAction('huji', execParams.action || cls.typeKey, exec, text);
-    } catch(e) { console.error('[edict] exec', e); exec = false; }
-    return { ok: exec, pathway: 'direct', classification: cls };
+      execOk = exec && typeof exec === 'object' && Object.prototype.hasOwnProperty.call(exec, 'ok')
+        ? exec.ok === true : !!exec;
+      if (execOk && cls.typeKey === 'huji_reform') _recordEdictPolicyAction('huji', execParams.action || cls.typeKey, exec, text);
+    } catch(e) { console.error('[edict] exec', e); exec = false; execOk = false; }
+    return { ok: execOk, pathway: 'direct', classification: cls, executionResult: exec };
   }
 
   /** 将意图明确但细节不足的诏书转奏疏（二阶段） */

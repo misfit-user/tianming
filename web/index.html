@@ -847,7 +847,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-bgm-config.js?v=2026051201"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260710-fontscale"></script>
-<script src="tm-save-lifecycle.js?v=20260823-auditfix18-autosave"></script>
+<script src="tm-save-lifecycle.js?v=20260828-population-schema"></script>
 <script src="tm-save-close-flush.js?v=20260825-close-drain"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260707-nestflat2"></script>
 <script src="tm-topbar-vars.js?v=20260514-phase8-vars-2"></script>
@@ -885,8 +885,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-economy-engine-currency.js?v=20260828-edictledger"></script><!-- 立项拆分：§A CurrencyUnit+§B CurrencyEngine 两整IIFE·紧挨 economy-engine 之前保序·勿动位置 -->
 <script src="tm-economy-engine.js?v=20260828-edictledger"></script>
 <script src="tm-central-local-engine.js?v=20260709"></script>
-<script src="tm-huji-engine.js?v=20260822-auditfix16"></script>
-<script src="tm-edict-parser.js?v=20260828-edictledger"></script>
+<script src="tm-huji-engine.js?v=20260828-population-schema"></script>
+<script src="tm-edict-parser.js?v=20260828-population-schema"></script>
 <script src="tm-huji-deep-fill.js?v=20260822-auditfix14"></script>
 <script src="tm-huji-runtime-bridge.js?v=20260822-auditfix17"></script>
 <script src="tm-huji-governance-loop.js?v=20260602-huji-governance-loop"></script>
@@ -903,7 +903,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-renli.js?v=20260616"></script>
 <script src="tm-reported-view.js?v=20260711"></script><!-- 奏报失真层核心引擎(S1·真值vs据奏·纯推导不落库·严格史实+开关双gate·docs/design-reported-view-2026-07.md) -->
 <script src="tm-social-foundation.js?v=20260612"></script>
-<script src="tm-authority-complete.js?v=20260623-ledgerflow"></script>
+<script src="tm-authority-complete.js?v=20260828-population-schema"></script>
 <script src="tm-revolt-entity.js?v=20260721"></script><!-- R2民变实体镜像·flag revoltEntityEnabled 默认OFF·爬梯level≥3具象化势力/渠帅/军队三件套 -->
 <script src="tm-revolt-inference.js?v=20260721b"></script><!-- 批三·民变演绎层(AI主导)·起号立领袖subcall+逐回合行为subcall(打/占/分合/建国/招抚谈判)·宪法闸落账·AI缺席模板兜底 -->
 <script src="tm-party-inference.js?v=20260722"></script><!-- 批乙·党派/阶层演绎层(AI主导)·forgeIdentity立身份+tickInference逐回合党派行动(联名/清议/杯葛/结盟交恶/议程转向/倒阁/煽动阶层)·宪法闸落账·flag partyInferenceEnabled默认ON·AI缺席模板兜底 -->

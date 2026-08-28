@@ -9036,7 +9036,8 @@
       "platform": "any",
       "sideEffects": "legacy-unknown",
       "provides": [
-        "HujiEngine"
+        "HujiEngine",
+        "TM"
       ],
       "consumes": [],
       "dependsOn": [],

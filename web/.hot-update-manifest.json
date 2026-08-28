@@ -3391,8 +3391,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "b717430904971dd1f8d1599192ec98c81e01386b1e36cff637526aab794fa1ee",
-      "size": 345220
+      "sha256": "2589a6825ab4fe8c9bd184bd121c2129548efb65a5f60c070c205093f835a876",
+      "size": 345234
     },
     {
       "path": "styles.css",

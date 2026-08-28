@@ -256,6 +256,16 @@ check(/ipcMain\.handle\('app-quit',\s*\(\)\s*=>\s*requestApplicationQuit\(/.test
   'renderer quit requests must pass through the background-save close handshake');
 check(/mainWindow\.on\('close',\s*event\s*=>[\s\S]*?event\.preventDefault\(\)[\s\S]*?requestApplicationQuit\('window-close'\)/.test(mainSource),
   'native window close must be intercepted until the renderer flush acknowledgement completes');
+const appExitStart = mainSource.indexOf('function _requestApplicationExit(');
+const appExitEnd = mainSource.indexOf('function requestApplicationQuit(', appExitStart);
+const appExitSource = mainSource.slice(appExitStart, appExitEnd);
+check(appExitStart >= 0
+  && appExitSource.indexOf('requestRendererCloseFlush(') < appExitSource.indexOf('_persistWindowBoundsForExit(')
+  && appExitSource.indexOf('_persistWindowBoundsForExit(') < appExitSource.indexOf('_allowAppClose = true'),
+  'application exit must flush renderer saves, atomically persist bounds, then permit close in that order');
+check(!/fs\.writeFileSync\(\s*CONFIG_FILE/.test(mainSource)
+  && /writeJsonAtomic\(CONFIG_FILE/.test(mainSource),
+  'app_config writes must use the shared atomic JSON writer');
 check(/app-close-flush-request/.test(mainSource) && /app-close-flush-complete/.test(mainSource),
   'main process must retain the bounded close-flush request/ack protocol');
 check(/onAppCloseFlushRequest[\s\S]*?_subscribeAppCloseFlush/.test(preloadSource)

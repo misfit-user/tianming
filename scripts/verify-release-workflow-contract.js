@@ -40,6 +40,21 @@ function main() {
   ok(release.includes('gateGitHubOwner()') && release.includes('validateGitHubOwnerFacts'), '正式外写前验证 gh 当前账号为仓库 owner');
   ok(release.includes("facts.branch === 'main'") && release.includes('!facts.originMainAncestor'), 'prepare 拒绝 main 与陈旧分支');
   ok(release.includes("--offline 仅可与 --publish --no-upload 合用"), 'offline 不能绕过正式发布线上闸');
+  const fanOutStart = release.indexOf('function planVersionFanOut(');
+  const fanOutEnd = release.indexOf('function syncGeneratedAndroidVersion(', fanOutStart);
+  const fanOut = release.slice(fanOutStart, fanOutEnd);
+  ok(fanOutStart >= 0
+    && fanOut.includes('function validateVersionFanOutPlan(')
+    && fanOut.includes('function applyVersionFanOutPlanAtomically('),
+  '版本扇出采用只读规划、全量验证和原子应用三阶段');
+  ok(fanOut.indexOf('validateVersionFanOutPlan(plan)') < fanOut.indexOf("edit.path + '.bak-release-'")
+    && fanOut.includes("fs.fsyncSync(fd)")
+    && fanOut.includes("fs.renameSync(tmp, file)"),
+  '版本文件与备份均经同目录 fsync+rename 原子提交');
+  ok(fanOut.includes("plan.edits.slice().reverse()")
+    && fanOut.includes("_writeReleaseFileAtomic(edit.path, edit.original)")
+    && !fanOut.includes('die('),
+  '版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚');
 
   // 在线版只经 workflow_dispatch 从 main 部署（github-pages 环境不放行 ship-* tag）·安全=actor==owner + ref 在 origin/main
   ok(!pages.includes('release:\n    types: [published]') && !pages.includes("github.event.release"), 'Pages 无 release/tag 触发（改 workflow_dispatch/main）');

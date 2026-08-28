@@ -251,6 +251,59 @@ function writeFileAtomic(file, data, encoding) {
   }
 }
 
+function _readAppConfigForAtomicUpdate() {
+  if (!fs.existsSync(CONFIG_FILE)) return {};
+  const original = fs.readFileSync(CONFIG_FILE);
+  try {
+    const parsed = JSON.parse(original.toString('utf-8'));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('app_config.json 根节点必须是对象');
+    }
+    return parsed;
+  } catch (error) {
+    const stamp = new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 17);
+    const backup = CONFIG_FILE + '.corrupt-' + stamp + '-' + process.pid + '-' + crypto.randomUUID();
+    writeFileAtomic(backup, original);
+    console.warn('[config] app_config.json 无法解析·已原字节备份后重建·'
+      + path.basename(backup) + '·' + (error && error.message || error));
+    return {};
+  }
+}
+
+function _normalizeWindowBounds(bounds) {
+  if (!bounds || typeof bounds !== 'object') throw new Error('窗口位置数据缺失');
+  const normalized = {};
+  ['x', 'y', 'width', 'height'].forEach(key => {
+    const value = Number(bounds[key]);
+    if (!Number.isFinite(value) || ((key === 'width' || key === 'height') && value <= 0)) {
+      throw new Error('窗口位置字段非法·' + key);
+    }
+    normalized[key] = value;
+  });
+  return normalized;
+}
+
+function _persistWindowBoundsForExit(targetWindow) {
+  try {
+    if (!targetWindow
+      || (typeof targetWindow.isDestroyed === 'function' && targetWindow.isDestroyed())
+      || typeof targetWindow.getBounds !== 'function') {
+      return { ok: true, skipped: true };
+    }
+    const bounds = _normalizeWindowBounds(targetWindow.getBounds());
+    const previous = _readAppConfigForAtomicUpdate();
+    writeJsonAtomic(CONFIG_FILE, Object.assign({}, previous, { window: bounds }));
+    return { ok: true, bounds };
+  } catch (error) {
+    console.warn('[config] 关闭前窗口配置原子写入失败·' + (error && error.message || error));
+    return {
+      ok: false,
+      code: 'window-config-write-failed',
+      reason: error && error.message || String(error)
+    };
+  }
+}
+
 function desktopSaveMetadataPath(storageKey) {
   storageKey = String(storageKey == null ? '' : storageKey);
   if (!storageKey || storageKey.length > 140 || path.basename(storageKey) !== storageKey || /[<>:"/\\|?*]/.test(storageKey)) {
@@ -2730,10 +2783,19 @@ function _requestApplicationExit(kind, reason, exitAction, winOverride) {
         error: String(result && result.reason || '后台保存未安全完成')
       };
     }
+    const configResult = _persistWindowBoundsForExit(targetWindow);
+    if (!(configResult && configResult.ok === true)) {
+      _resetApplicationExitRequest();
+      return {
+        success: false,
+        code: String(configResult && configResult.code || 'window-config-write-failed'),
+        error: String(configResult && configResult.reason || '窗口配置未安全写入')
+      };
+    }
     try {
       _allowAppClose = true;
       exitAction();
-      return { success: true, kind, flush: result };
+      return { success: true, kind, flush: result, config: configResult };
     } catch (error) {
       _allowAppClose = false;
       _resetApplicationExitRequest();
@@ -2774,6 +2836,11 @@ function requestApplicationUpdateInstall(reason, winOverride) {
   return _requestApplicationExit('update-install', reason, () => {
     autoUpdater.quitAndInstall(false, true);
   }, arguments.length >= 2 ? winOverride : mainWindow);
+}
+
+function _resetApplicationExitStateForTest() {
+  _allowAppClose = false;
+  _resetApplicationExitRequest();
 }
 
 function createWindow() {
@@ -2854,13 +2921,8 @@ function createWindow() {
     mainWindow.webContents.focus();
   });
 
-  // 窗口关闭前，保存窗口的位置和大小·merge 进 CONFIG_FILE 而不是覆盖 (保 webRootOverride 等字段)
+  // 第一次 close 先阻止退出；renderer 存档握手成功后，统一入口再原子保存最新窗口位置。
   mainWindow.on('close', event => {
-    try {
-      const bounds = mainWindow.getBounds();
-      const prev = readJsonSafe(CONFIG_FILE, {});
-      fs.writeFileSync(CONFIG_FILE, JSON.stringify(Object.assign({}, prev, { window: bounds }), null, 2), 'utf-8');
-    } catch (e) { /* 忽略 */ }
     if (!_allowAppClose && event && typeof event.preventDefault === 'function') {
       event.preventDefault();
       requestApplicationQuit('window-close').catch(error => {
@@ -3004,8 +3066,7 @@ function createMenu() {
             }
             try {
               const prev = readJsonSafe(CONFIG_FILE, {});
-              fs.writeFileSync(CONFIG_FILE, JSON.stringify(
-                Object.assign({}, prev, { webRootOverride: picked }), null, 2), 'utf-8');
+              writeJsonAtomic(CONFIG_FILE, Object.assign({}, prev, { webRootOverride: picked }));
               const choice = await dialog.showMessageBox(mainWindow, {
                 type: 'info', title: 'dev web override 已保存',
                 message: '已保存·' + picked,
@@ -3030,7 +3091,7 @@ function createMenu() {
                 return;
               }
               delete prev.webRootOverride;
-              fs.writeFileSync(CONFIG_FILE, JSON.stringify(prev, null, 2), 'utf-8');
+              writeJsonAtomic(CONFIG_FILE, prev);
               const choice = await dialog.showMessageBox(mainWindow, {
                 type: 'info', title: '已清除',
                 message: '已清除 web 目录覆盖·回到 bundled web',
@@ -4322,6 +4383,8 @@ if (TEST_MODE) {
     requestApplicationQuit,
     requestApplicationRelaunch,
     requestApplicationUpdateInstall,
+    persistWindowBoundsForExit: _persistWindowBoundsForExit,
+    resetApplicationExitStateForTest: _resetApplicationExitStateForTest,
     APP_CLOSE_FLUSH_TIMEOUT_MS,
     preflightWorkshopZip,
     extractZipToTemp,
@@ -4364,7 +4427,8 @@ if (TEST_MODE) {
       HOT_UPDATE_DIR,
       HOT_UPDATE_VERSIONS_DIR,
       HOT_UPDATE_STATE_FILE,
-      BOOT_ATTEMPT_FILE
+      BOOT_ATTEMPT_FILE,
+      CONFIG_FILE
     }
   };
 }

@@ -330,78 +330,189 @@ async function gateLive() {
   return { capgoManifest: capgo && Array.isArray(capgo.manifest) ? capgo.manifest : null };
 }
 
-// ── ④ 版本扇出盖戳（全部带「恰一处匹配」断言 + .bak 备份 + 写后回读复核） ────
+// ── ④ 版本扇出盖戳（只读规划 → 全量验证 → 原子写入；任一步失败恢复全部原字节） ──
+function _fanOutError(message, cause) {
+  const error = new Error(message);
+  error.code = 'release-version-fanout-failed';
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function _readFanOutFile(file, description) {
+  if (!fs.existsSync(file)) throw _fanOutError('扇出失败·缺 ' + description + '（' + file + '）');
+  return fs.readFileSync(file);
+}
+
+function _parseFanOutJson(buffer, description) {
+  let raw = buffer.toString('utf-8');
+  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw _fanOutError('扇出失败·' + description + ' 不是合法 JSON', error);
+  }
+}
+
+function _replaceFanOutAnchor(source, description, expression, replacement) {
+  const flags = expression.flags.indexOf('g') >= 0 ? expression.flags : expression.flags + 'g';
+  const matches = source.match(new RegExp(expression.source, flags)) || [];
+  if (matches.length !== 1) {
+    throw _fanOutError('扇出失败·' + description + '·期望恰 1 处匹配·实得 ' + matches.length);
+  }
+  return source.replace(expression, replacement);
+}
+
+function planVersionFanOut(code) {
+  const semver = mapBuildToSemver(CFG.version);
+  const packageFile = P.pkg();
+  const packageOriginal = _readFanOutFile(packageFile, 'package.json');
+  const pkg = _parseFanOutJson(packageOriginal, 'package.json');
+  // ★2026-07-04·四段 buildVersion 映射为 a.b.(c*100+d)，避免连续安装包共享三段版本。
+  pkg.version = semver;
+  pkg.build = pkg.build || {};
+  pkg.build.buildVersion = CFG.version;
+  if (pkg.build.directories && /测试版[\d.]+$/.test(String(pkg.build.directories.output || ''))) {
+    pkg.build.directories.output = String(pkg.build.directories.output).replace(/测试版[\d.]+$/, '测试版' + CFG.version);
+  }
+  if (typeof pkg.build.artifactName === 'string' && /[\d]+(\.[\d]+){2,3}/.test(pkg.build.artifactName)) {
+    pkg.build.artifactName = pkg.build.artifactName.replace(/[\d]+(\.[\d]+){2,3}/, CFG.version);
+  }
+
+  const lockFile = P.pkgLock();
+  const lockOriginal = _readFanOutFile(lockFile, 'package-lock.json');
+  const lock = _parseFanOutJson(lockOriginal, 'package-lock.json');
+  if (!lock.packages || !lock.packages['']) {
+    throw _fanOutError('扇出失败·package-lock.json 缺 packages[""]');
+  }
+  lock.version = semver;
+  lock.packages[''].version = semver;
+
+  const mobileFile = P.mobileReleaseVersion();
+  const mobileOriginal = _readFanOutFile(mobileFile, 'mobile/release-version.json');
+  _parseFanOutJson(mobileOriginal, 'mobile/release-version.json');
+
+  const versionFile = P.versionJson();
+  const versionOriginal = _readFanOutFile(versionFile, 'web/version.json');
+  _parseFanOutJson(versionOriginal, 'web/version.json');
+
+  const indexFile = P.indexHtml();
+  const indexOriginal = _readFanOutFile(indexFile, 'web/index.html');
+  let indexNext = indexOriginal.toString('utf-8');
+  indexNext = _replaceFanOutAnchor(indexNext, 'index.html meta tm-version',
+    /(<meta\s+name="tm-version"\s+content=")[\d.]+(")/, '$1' + CFG.version + '$2');
+  indexNext = _replaceFanOutAnchor(indexNext, 'index.html footer 版本号',
+    /(<span id="tm-foot-ver">)[\d.]+(<\/span>)/, '$1' + CFG.version + '$2');
+
+  return {
+    version: CFG.version,
+    versionCode: code,
+    semver,
+    descriptions: [
+      'package.json·version/buildVersion/output/artifactName',
+      'package-lock.json·version/packages[""]',
+      'mobile/release-version.json·version/versionCode',
+      'web/version.json',
+      'index.html meta tm-version',
+      'index.html footer 版本号'
+    ],
+    edits: [
+      { path: packageFile, original: packageOriginal, content: Buffer.from(JSON.stringify(pkg, null, 2) + '\n') },
+      { path: lockFile, original: lockOriginal, content: Buffer.from(JSON.stringify(lock, null, 2) + '\n') },
+      { path: mobileFile, original: mobileOriginal, content: Buffer.from(JSON.stringify({ version: CFG.version, versionCode: code }, null, 2) + '\n') },
+      { path: versionFile, original: versionOriginal, content: Buffer.from(JSON.stringify({ version: CFG.version, date: today(), notes: CFG.notes || '' }, null, 2) + '\n') },
+      { path: indexFile, original: indexOriginal, content: Buffer.from(indexNext) }
+    ]
+  };
+}
+
+function validateVersionFanOutPlan(plan) {
+  if (!plan || !Array.isArray(plan.edits) || plan.edits.length !== 5) {
+    throw _fanOutError('扇出计划必须完整包含 5 个目标文件');
+  }
+  const paths = new Set();
+  plan.edits.forEach(edit => {
+    if (!edit || !edit.path || !Buffer.isBuffer(edit.original) || !Buffer.isBuffer(edit.content)) {
+      throw _fanOutError('扇出计划包含非法编辑项');
+    }
+    const resolved = path.resolve(edit.path);
+    if (paths.has(resolved)) throw _fanOutError('扇出计划重复目标·' + resolved);
+    paths.add(resolved);
+  });
+  const byPath = new Map(plan.edits.map(edit => [path.resolve(edit.path), edit.content]));
+  const pkg = _parseFanOutJson(byPath.get(path.resolve(P.pkg())), '计划 package.json');
+  if (!pkg.build || pkg.build.buildVersion !== plan.version || pkg.version !== plan.semver) {
+    throw _fanOutError('扇出计划校验失败·package.json 版本');
+  }
+  const lock = _parseFanOutJson(byPath.get(path.resolve(P.pkgLock())), '计划 package-lock.json');
+  if (lock.version !== plan.semver || !lock.packages || !lock.packages[''] || lock.packages[''].version !== plan.semver) {
+    throw _fanOutError('扇出计划校验失败·package-lock.json 根版本');
+  }
+  const mobile = _parseFanOutJson(byPath.get(path.resolve(P.mobileReleaseVersion())), '计划 mobile/release-version.json');
+  if (mobile.version !== plan.version || Number(mobile.versionCode) !== Number(plan.versionCode)) {
+    throw _fanOutError('扇出计划校验失败·mobile/release-version.json');
+  }
+  const webVersion = _parseFanOutJson(byPath.get(path.resolve(P.versionJson())), '计划 web/version.json');
+  if (webVersion.version !== plan.version) throw _fanOutError('扇出计划校验失败·web/version.json');
+  const html = byPath.get(path.resolve(P.indexHtml())).toString('utf-8');
+  const escaped = plan.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!(new RegExp('<meta\\s+name="tm-version"\\s+content="' + escaped + '"')).test(html)
+    || !(new RegExp('<span id="tm-foot-ver">' + escaped + '<\\/span>')).test(html)) {
+    throw _fanOutError('扇出计划校验失败·index.html 版本锚点');
+  }
+  return plan;
+}
+
+function _writeReleaseFileAtomic(file, content) {
+  const tmp = file + '.tmp-release-' + process.pid + '-' + crypto.randomUUID();
+  let fd = null;
+  try {
+    fd = fs.openSync(tmp, 'wx');
+    fs.writeFileSync(fd, content);
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+    fd = null;
+    fs.renameSync(tmp, file);
+  } catch (error) {
+    if (fd !== null) { try { fs.closeSync(fd); } catch (_) {} }
+    try { fs.rmSync(tmp, { force: true }); } catch (_) {}
+    throw error;
+  }
+}
+
+function applyVersionFanOutPlanAtomically(plan) {
+  validateVersionFanOutPlan(plan);
+  plan.edits.forEach(edit => {
+    const current = fs.readFileSync(edit.path);
+    if (!current.equals(edit.original)) {
+      throw _fanOutError('扇出源文件在规划后发生变化·' + edit.path);
+    }
+  });
+  try {
+    plan.edits.forEach(edit => {
+      _writeReleaseFileAtomic(edit.path + '.bak-release-' + CFG.ts, edit.original);
+      _writeReleaseFileAtomic(edit.path, edit.content);
+    });
+    plan.edits.forEach(edit => {
+      const written = fs.readFileSync(edit.path);
+      if (!written.equals(edit.content)) throw _fanOutError('扇出写后回读不一致·' + edit.path);
+    });
+    return plan;
+  } catch (error) {
+    const rollbackFailures = [];
+    plan.edits.slice().reverse().forEach(edit => {
+      try { _writeReleaseFileAtomic(edit.path, edit.original); }
+      catch (rollbackError) { rollbackFailures.push(edit.path + '·' + (rollbackError && rollbackError.message || rollbackError)); }
+    });
+    const failure = _fanOutError('版本扇出已回滚·' + (error && error.message || error), error);
+    if (rollbackFailures.length) failure.rollbackFailures = rollbackFailures;
+    throw failure;
+  }
+}
+
 function fanOutVersions(code) {
-  const edits = [];
-  function backup(file) { fs.copyFileSync(file, file + '.bak-release-' + CFG.ts); }
-  function regexEdit(file, desc, re, replacement) {
-    const src = fs.readFileSync(file, 'utf-8');
-    const matches = src.match(new RegExp(re.source, re.flags.replace('g', '') + 'g')) || [];
-    if (matches.length !== 1) die('扇出失败·' + desc + '·期望恰 1 处匹配·实得 ' + matches.length + '（' + file + '）');
-    backup(file);
-    const next = src.replace(re, replacement);
-    fs.writeFileSync(file, next, 'utf-8');
-    const verify = fs.readFileSync(file, 'utf-8');
-    if (verify.indexOf(typeof replacement === 'string' ? replacement.replace(/\$\d/g, '') : '') === -1 && !re.test(verify) === false) { /* 回读由具体调用断言 */ }
-    edits.push(desc);
-  }
-  // package.json·JSON round-trip（保键序·无注释·安全）
-  {
-    const file = P.pkg();
-    const pkg = readJson(file);
-    backup(file);
-    // ★2026-07-04·根治「新安装包打开仍旧版」：旧实现 `CFG.version.split('.').slice(0,3)` 把四段
-    //   1.3.4.5/1.3.4.6 一律截成 "1.3.4" → electron-builder/NSIS/electron-updater 认它·连续版同版本号
-    //   → 新安装包不当升级。改用映射 a.b.(c*100+d)·每版随 buildVersion 递增(见 scripts/version-map.js)。
-    pkg.version = mapBuildToSemver(CFG.version);
-    pkg.build = pkg.build || {};
-    pkg.build.buildVersion = CFG.version;
-    if (pkg.build.directories && /测试版[\d.]+$/.test(String(pkg.build.directories.output || ''))) {
-      pkg.build.directories.output = String(pkg.build.directories.output).replace(/测试版[\d.]+$/, '测试版' + CFG.version);
-    }
-    if (typeof pkg.build.artifactName === 'string' && /[\d]+(\.[\d]+){2,3}/.test(pkg.build.artifactName)) {
-      pkg.build.artifactName = pkg.build.artifactName.replace(/[\d]+(\.[\d]+){2,3}/, CFG.version);
-    }
-    fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
-    const back = readJson(file);
-    if (back.build.buildVersion !== CFG.version) die('扇出回读失败·package.json buildVersion');
-    edits.push('package.json·version/buildVersion/output/artifactName');
-  }
-  // npm lockfile 的项目版本也是 canonical metadata。若 prepare 只改 package.json，
-  // npm ci/打包元数据会继续携带旧版本，且下一版 prepare 会重复制造漂移。
-  {
-    const file = P.pkgLock();
-    if (!fs.existsSync(file)) die('扇出失败·缺 package-lock.json');
-    const lock = readJson(file);
-    if (!lock.packages || !lock.packages['']) die('扇出失败·package-lock.json 缺 packages[""]');
-    backup(file);
-    const semver = mapBuildToSemver(CFG.version);
-    lock.version = semver;
-    lock.packages[''].version = semver;
-    fs.writeFileSync(file, JSON.stringify(lock, null, 2) + '\n', 'utf-8');
-    const back = readJson(file);
-    if (back.version !== semver || !back.packages || !back.packages[''] || back.packages[''].version !== semver) {
-      die('扇出回读失败·package-lock.json 根版本');
-    }
-    edits.push('package-lock.json·version/packages[""]');
-  }
-  {
-    const file = P.mobileReleaseVersion();
-    if (fs.existsSync(file)) backup(file);
-    fs.writeFileSync(file, JSON.stringify({ version: CFG.version, versionCode: code }, null, 2) + '\n', 'utf-8');
-    const back = readJson(file);
-    if (back.version !== CFG.version || Number(back.versionCode) !== code) die('扇出回读失败·mobile/release-version.json');
-    edits.push('mobile/release-version.json·version/versionCode');
-  }
-  {
-    const file = P.versionJson();
-    if (fs.existsSync(file)) backup(file);
-    fs.writeFileSync(file, JSON.stringify({ version: CFG.version, date: today(), notes: CFG.notes || '' }, null, 2) + '\n', 'utf-8');
-    edits.push('web/version.json');
-  }
-  regexEdit(P.indexHtml(), 'index.html meta tm-version', /(<meta\s+name="tm-version"\s+content=")[\d.]+(")/, '$1' + CFG.version + '$2');
-  regexEdit(P.indexHtml(), 'index.html footer 版本号', /(<span id="tm-foot-ver">)[\d.]+(<\/span>)/, '$1' + CFG.version + '$2');
-  log('④ 版本扇出·' + edits.length + ' 处盖戳完成（各留 .bak-release-' + CFG.ts + '）');
+  const plan = planVersionFanOut(code);
+  applyVersionFanOutPlanAtomically(plan);
+  log('④ 版本扇出·' + plan.descriptions.length + ' 处盖戳完成（各文件留 .bak-release-' + CFG.ts + '）');
 }
 
 function syncGeneratedAndroidVersion() {
@@ -861,7 +972,43 @@ function selfTest() {
   const code = gatePrepareVersion();
   ok(code === 9999, 'versionCode 显式');
   gateChangelog();
+  const transactionPlan = planVersionFanOut(code);
+  const originalFanOutBytes = new Map(transactionPlan.edits.map(edit => [edit.path, Buffer.from(edit.original)]));
+  let injectedFanOutFailure = null;
+  const originalRenameSync = fs.renameSync;
+  let injectedThirdWrite = false;
+  fs.renameSync = function (source, destination) {
+    if (!injectedThirdWrite && path.resolve(destination) === path.resolve(transactionPlan.edits[2].path)) {
+      injectedThirdWrite = true;
+      throw new Error('injected third-file write failure');
+    }
+    return originalRenameSync.apply(this, arguments);
+  };
+  try {
+    applyVersionFanOutPlanAtomically(transactionPlan);
+  } catch (error) {
+    injectedFanOutFailure = error;
+  } finally {
+    fs.renameSync = originalRenameSync;
+  }
+  ok(injectedFanOutFailure && injectedFanOutFailure.code === 'release-version-fanout-failed',
+    'fanOut·第三文件故障返回结构化事务错误');
+  ok(transactionPlan.edits.every(edit => fs.readFileSync(edit.path).equals(originalFanOutBytes.get(edit.path))),
+    'fanOut·中途失败后五个目标恢复原字节');
+  ok(transactionPlan.edits.every(edit => {
+    const backup = edit.path + '.bak-release-' + CFG.ts;
+    return !fs.existsSync(backup) || fs.readFileSync(backup).equals(originalFanOutBytes.get(edit.path));
+  }), 'fanOut·故障后现存备份与真实原状态一致');
+  const releaseTemps = [];
+  transactionPlan.edits.forEach(edit => {
+    fs.readdirSync(path.dirname(edit.path)).forEach(name => {
+      if (name.indexOf(path.basename(edit.path) + '.tmp-release-') === 0) releaseTemps.push(name);
+    });
+  });
+  ok(releaseTemps.length === 0, 'fanOut·失败回滚不遗留原子写临时文件');
   fanOutVersions(code);
+  ok(transactionPlan.edits.every(edit => !fs.readFileSync(edit.path).equals(originalFanOutBytes.get(edit.path))),
+    'fanOut·回滚后第二次执行可完整成功');
   ok(preparedVersionProblems(code, false).length === 0, 'publish 读取已盖戳版本·不再 fanOut');
   ok(!fs.existsSync(P.hotBaseline()), 'fresh tree·prepare 前可无 canonical 基线');
   fs.mkdirSync(path.join(tmp, 'release-hot', 'manifests'), { recursive: true });

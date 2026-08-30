@@ -25,16 +25,6 @@
       "size": 18779
     },
     {
-      "path": "assets/assets-isolated/audio/bgm/README.md",
-      "sha256": "dd105ddcae0a55801c69d4a589a319096c04533959b59498c6480e48f374815b",
-      "size": 254
-    },
-    {
-      "path": "assets/assets-isolated/fonts/README.md",
-      "sha256": "4be0f58f9221e03af968f7511c1e44d247b4cadc2401f6f94b2268bc1428bea8",
-      "size": 636
-    },
-    {
       "path": "assets/audio/bgm/changhe-zhangu.mp3",
       "sha256": "d556aac0ac333f7d1daf2918c1fd858b9a93b286f26bd4115c1126812e7f5b0f",
       "size": 3599354

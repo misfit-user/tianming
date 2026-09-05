@@ -77,7 +77,7 @@ if (LIST_ONLY) {
   smokes.forEach(n => console.log('  ' + n));
   process.exit(0);
 }
-if (!smokes.length) { console.log('[run-smokes] 没有匹配的 smoke'); process.exit(0); }
+if (!smokes.length) { console.error('[run-smokes] FAIL：没有匹配的 smoke，不能作为回归通过'); process.exit(1); }
 
 // ---- 执行 ----
 function runOne(name) {

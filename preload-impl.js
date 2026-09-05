@@ -318,6 +318,7 @@ contextBridge.exposeInMainWorld('tianming', {
     ipcRenderer.invoke('open-scenarios-dir'),
 
   // === 每回合数据 ===
+  turnDataProtocolVersion: 2,
   stageTurnData: (payload) =>
     ipcRenderer.invoke('stage-turn-data', payload),
 
@@ -333,14 +334,16 @@ contextBridge.exposeInMainWorld('tianming', {
   writeTurnData: (saveName, turn, data) =>
     ipcRenderer.invoke('write-turn-data', { saveName, turn, data }),
 
-  readTurnData: (saveName, turn) =>
-    ipcRenderer.invoke('read-turn-data', { saveName, turn }),
+  readTurnData: (identity, turn) =>
+    ipcRenderer.invoke('read-turn-data', Object.assign({}, identity, { turn })),
 
-  listTurnData: (saveName) =>
-    ipcRenderer.invoke('list-turn-data', saveName),
+  listTurnData: (identity) =>
+    ipcRenderer.invoke('list-turn-data', identity),
 
-  readTurnsSummary: (saveName, fromTurn, toTurn) =>
-    ipcRenderer.invoke('read-turns-summary', { saveName, fromTurn, toTurn }),
+  readTurnsSummary: (identity, fromTurn, toTurn) =>
+    ipcRenderer.invoke('read-turns-summary', Object.assign({}, identity, { fromTurn, toTurn })),
+
+  deleteTurnData: (identity) => ipcRenderer.invoke('delete-turn-data', identity),
 
   openTurnDataDir: () =>
     ipcRenderer.invoke('open-turn-data-dir'),

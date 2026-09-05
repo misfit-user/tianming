@@ -12,7 +12,6 @@ function createTurnDataCommitter(deps) {
   const turnDataRoot = deps.turnDataRoot;
   const turnSeg = deps.turnSeg;
   const ensureWritableDir = deps.ensureWritableDir;
-  const writeJson = deps.writeJson;
   const writeJsonAtomic = deps.writeJsonAtomic;
   const writeFileAtomic = deps.writeFileAtomic;
   const stagingRoot = path.join(turnDataDir, '.staging');
@@ -23,6 +22,10 @@ function createTurnDataCommitter(deps) {
     const prefix = rootResolved.endsWith(path.sep) ? rootResolved : rootResolved + path.sep;
     if (targetResolved !== rootResolved && !targetResolved.startsWith(prefix)) {
       throw new Error('回合分卷路径越界');
+    }
+    for (let cursor = targetResolved; cursor.length >= rootResolved.length; cursor = path.dirname(cursor)) {
+      if (fs.existsSync(cursor) && fs.lstatSync(cursor).isSymbolicLink()) throw new Error('回合分卷路径不允许符号链接');
+      if (cursor === rootResolved) break;
     }
     return targetResolved;
   }
@@ -37,15 +40,104 @@ function createTurnDataCommitter(deps) {
     input = input || {};
     const saveName = String(input.saveName == null ? '' : input.saveName);
     if (!saveName) throw new Error('缺少存档名称');
-    const saveRoot = assertInside(turnDataDir, turnDataRoot(saveName, true));
-    const saveKey = path.basename(saveRoot);
+    const saveRoot = rootFor(input);
+    const saveKey = crypto.createHash('sha256').update(JSON.stringify([input.campaignId, input.timelineId])).digest('hex');
     const txId = transactionId(input.transactionId);
     const turn = turnSeg(input.turn);
     const stageDir = assertInside(stagingRoot, path.join(stagingRoot, saveKey, txId));
-    return { saveName, saveRoot, saveKey, transactionId: txId, turn, stageDir };
+    return { saveName, saveRoot, saveKey, campaignId: input.campaignId, timelineId: input.timelineId, transactionId: txId, turn, stageDir };
+  }
+
+  function rootFor(input) {
+    if (!input || !['campaignId', 'timelineId'].every(key => typeof input[key] === 'string' && /^[A-Za-z0-9._-]{1,160}$/.test(input[key]))) {
+      throw new Error('turn-data-identity-required: 需要稳定 campaignId/timelineId，旧桥接须升级');
+    }
+    const hash = value => crypto.createHash('sha256').update(value, 'utf8').digest('hex');
+    return assertInside(turnDataDir, path.join(turnDataDir, 'v2', hash(input.campaignId), hash(input.timelineId)));
+  }
+
+  function matches(candidate, input) {
+    return !!candidate && String(candidate.turn) === String(input.turn)
+      && candidate.campaignId === input.campaignId && candidate.timelineId === input.timelineId
+      && (!input.transactionId || candidate.transactionId === input.transactionId)
+      && (input.stateChecksum == null || candidate.stateChecksum === input.stateChecksum);
+  }
+
+  // Copy-only migration: the old manifest must prove ownership. Unknown originals stay untouched.
+  // Staging + rename is retryable after interruption, and never replaces an existing v2 transaction.
+  function migrateLegacy(input) {
+    const ref = descriptor(input);
+    const legacyRoot = assertInside(turnDataDir, turnDataRoot(ref.saveName, false));
+    const legacyStage = assertInside(stagingRoot, path.join(stagingRoot, path.basename(turnDataRoot(ref.saveName, true)), ref.transactionId));
+    const candidates = [path.join(legacyStage, 'turn'), path.join(legacyRoot, ref.turn)];
+    for (const source of candidates) {
+      assertInside(turnDataDir, source);
+      const oldManifest = readJsonIfPresent(path.join(source, 'transaction.json'));
+      if (!matches(oldManifest, input)) continue;
+      if (fs.existsSync(ref.stageDir)) {
+        const prior = readJsonIfPresent(path.join(ref.stageDir, 'manifest.json'));
+        if (matches(prior, input)) return true;
+        removeStage(ref.stageDir); // incomplete owned copy from an interrupted migration
+      }
+      ensureWritableDir(ref.stageDir);
+      fs.cpSync(source, path.join(ref.stageDir, 'turn'), { recursive: true, filter(src) { assertInside(turnDataDir, src); return true; } });
+      // Only staged auxiliary files have per-transaction provenance. Shared legacy files are retained.
+      if (source === candidates[0]) {
+        for (const file of ['scenario.json', 'reference.txt']) {
+          const from = assertInside(turnDataDir, path.join(legacyStage, file));
+          if (fs.existsSync(from)) fs.copyFileSync(from, path.join(ref.stageDir, file));
+        }
+      }
+      writeJsonAtomic(path.join(ref.stageDir, 'manifest.json'), Object.assign({}, oldManifest, { version: 2, saveKey: ref.saveKey }));
+      return true;
+    }
+    return false;
+  }
+
+  function read(input) {
+    const root = rootFor(input);
+    const turn = turnSeg(input.turn);
+    let dir = assertInside(root, path.join(root, turn));
+    if (!fs.existsSync(dir)) {
+      const legacy = assertInside(turnDataDir, path.join(turnDataRoot(input.saveName, false), turn));
+      const manifest = readJsonIfPresent(path.join(legacy, 'transaction.json'));
+      if (!matches(manifest, input)) throw new Error('turn-data-unproven-legacy-identity');
+      publish(Object.assign({}, input, { transactionId: manifest.transactionId, stateChecksum: manifest.stateChecksum }));
+    }
+    if (!matches(readJsonIfPresent(path.join(dir, 'transaction.json')), input)) throw new Error('turn-data-identity-conflict');
+    const data = {};
+    for (const file of fs.readdirSync(dir).filter(file => file.endsWith('.json'))) {
+      data[file.slice(0, -5)] = readJsonIfPresent(assertInside(root, path.join(dir, file)));
+    }
+    return { success: true, data };
+  }
+
+  function list(input) {
+    const root = rootFor(input);
+    const turns = new Set();
+    const warnings = [];
+    for (const base of [root, assertInside(turnDataDir, turnDataRoot(input.saveName, false))]) {
+      if (!fs.existsSync(base)) continue;
+      for (const turn of fs.readdirSync(base).filter(value => /^(0|[1-9][0-9]*)$/.test(value))) {
+        const manifest = readJsonIfPresent(assertInside(turnDataDir, path.join(base, turn, 'transaction.json')));
+        if (matches(manifest, Object.assign({}, input, { turn }))) turns.add(Number(turn));
+        else if (base !== root) warnings.push({ code: 'legacy-identity-unproven', turn: Number(turn) });
+      }
+    }
+    return { success: true, turns: Array.from(turns).sort((a, b) => a - b), warnings };
+  }
+
+  function remove(input) {
+    const root = rootFor(input);
+    const stageKey = crypto.createHash('sha256').update(JSON.stringify([input.campaignId, input.timelineId])).digest('hex');
+    const pending = assertInside(stagingRoot, path.join(stagingRoot, stageKey));
+    if (fs.existsSync(pending) && fs.readdirSync(pending).length) throw new Error('turn-data-cleanup-pending-transaction');
+    if (fs.existsSync(root)) fs.rmSync(root, { recursive: true });
+    return { success: true, legacyRetained: true };
   }
 
   function readJsonIfPresent(file) {
+    assertInside(turnDataDir, file);
     if (!fs.existsSync(file)) return null;
     return JSON.parse(fs.readFileSync(file, 'utf-8'));
   }
@@ -59,10 +151,10 @@ function createTurnDataCommitter(deps) {
 
   function writeTurnFiles(turnDir, data, manifest) {
     ensureWritableDir(turnDir);
-    writeJson(path.join(turnDir, 'context.json'), data.context || data);
-    if (data.playerInput) writeJson(path.join(turnDir, 'player-input.json'), data.playerInput);
-    if (data.aiResults) writeJson(path.join(turnDir, 'ai-results.json'), data.aiResults);
-    if (data.varChanges) writeJson(path.join(turnDir, 'var-changes.json'), data.varChanges);
+    writeJsonAtomic(path.join(turnDir, 'context.json'), data.context || data);
+    if (data.playerInput) writeJsonAtomic(path.join(turnDir, 'player-input.json'), data.playerInput);
+    if (data.aiResults) writeJsonAtomic(path.join(turnDir, 'ai-results.json'), data.aiResults);
+    if (data.varChanges) writeJsonAtomic(path.join(turnDir, 'var-changes.json'), data.varChanges);
     writeJsonAtomic(path.join(turnDir, 'transaction.json'), manifest);
   }
 
@@ -70,10 +162,22 @@ function createTurnDataCommitter(deps) {
     const ref = descriptor(input);
     const data = input && input.data;
     if (!data || typeof data !== 'object') throw new Error('回合分卷数据为空');
-    removeStage(ref.stageDir);
+    const prior = readJsonIfPresent(path.join(ref.stageDir, 'manifest.json'));
+    const contentHash = crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+    const published = readJsonIfPresent(path.join(ref.saveRoot, ref.turn, 'transaction.json'));
+    if (published) {
+      if (!matches(published, input) || published.contentHash !== contentHash) throw new Error('turn-data-stage-conflict');
+      return Object.assign({ success: true }, published);
+    }
+    if (prior) {
+      if (!matches(prior, input) || prior.contentHash !== contentHash) throw new Error('turn-data-stage-conflict');
+      return Object.assign({ success: true }, prior);
+    }
+    if (fs.existsSync(ref.stageDir)) removeStage(ref.stageDir);
     ensureWritableDir(ref.stageDir);
     const manifest = {
-      version: 1,
+      version: 2,
+      contentHash,
       status: 'prepared',
       saveKey: ref.saveKey,
       campaignId: String(input.campaignId || ''),
@@ -96,23 +200,15 @@ function createTurnDataCommitter(deps) {
   }
 
   function replaceTurnDirectory(stagedTurn, finalTurn) {
-    const backup = finalTurn + '.bak-' + process.pid + '-' + crypto.randomUUID();
-    let movedOld = false;
-    try {
-      ensureWritableDir(path.dirname(finalTurn));
-      if (fs.existsSync(finalTurn)) { fs.renameSync(finalTurn, backup); movedOld = true; }
-      fs.renameSync(stagedTurn, finalTurn);
-      if (movedOld) fs.rmSync(backup, { recursive: true, force: true });
-    } catch (error) {
-      try { if (movedOld && !fs.existsSync(finalTurn) && fs.existsSync(backup)) fs.renameSync(backup, finalTurn); } catch (_) {}
-      throw error;
-    }
+    ensureWritableDir(path.dirname(finalTurn));
+    if (fs.existsSync(finalTurn)) throw new Error('turn-data-transaction-conflict');
+    fs.renameSync(stagedTurn, finalTurn);
   }
 
   function publish(input) {
     const ref = descriptor(input);
     const manifestFile = path.join(ref.stageDir, 'manifest.json');
-    const manifest = readJsonIfPresent(manifestFile);
+    let manifest = readJsonIfPresent(manifestFile);
     const finalTurn = assertInside(ref.saveRoot, path.join(ref.saveRoot, ref.turn));
     const finalManifestFile = path.join(finalTurn, 'transaction.json');
     const existing = readJsonIfPresent(finalManifestFile);
@@ -126,6 +222,9 @@ function createTurnDataCommitter(deps) {
     if (!manifest && matchesDescriptor(existing)) {
       return { success: true, recovered: true, path: finalTurn, transactionId: ref.transactionId };
     }
+    if (existing && !matchesDescriptor(existing)) throw new Error('turn-data-transaction-conflict');
+    if (existing && manifest && existing.contentHash !== manifest.contentHash) throw new Error('turn-data-content-conflict');
+    if (!manifest && migrateLegacy(input)) manifest = readJsonIfPresent(manifestFile);
     if (!matchesDescriptor(manifest)) {
       throw new Error('回合分卷暂存记录不存在或不匹配');
     }
@@ -147,18 +246,17 @@ function createTurnDataCommitter(deps) {
 
   function discard(input) {
     const ref = descriptor(input);
+    const manifest = readJsonIfPresent(path.join(ref.stageDir, 'manifest.json'));
+    if (manifest && !matches(manifest, input)) throw new Error('turn-data-discard-conflict');
     removeStage(ref.stageDir);
     return { success: true, transactionId: ref.transactionId };
   }
 
   function writeLegacy(input) {
-    input = input || {};
-    const txId = 'legacy-' + Date.now() + '-' + crypto.randomUUID();
-    const staged = stage(Object.assign({}, input, { transactionId: txId }));
-    return publish({ saveName: input.saveName, turn: input.turn, transactionId: staged.transactionId });
+    throw new Error('turn-data-protocol-upgrade-required: 请使用 canonical receipt 两阶段协议');
   }
 
-  return { stage, publish, recover: publish, discard, writeLegacy };
+  return { stage, publish, recover: publish, discard, writeLegacy, rootFor, descriptor, read, list, remove };
 }
 
 module.exports = { createTurnDataCommitter };

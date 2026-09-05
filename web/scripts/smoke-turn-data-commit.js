@@ -44,9 +44,9 @@ try {
     data: { context: { turn: 50 }, playerInput: { edicts: ['甲'] }, aiResults: { sc1: 'ok' }, varChanges: { money: -1 } }
   };
   const staged = committer.stage(descriptor);
-  const finalDir = path.join(turnDataRoot(descriptor.saveName), '50');
+  const finalDir = path.join(committer.rootFor(descriptor), '50');
   check(staged.success === true && !fs.existsSync(finalDir), 'stage must not expose an uncommitted turn directory');
-  check(fs.existsSync(path.join(root, '.staging', path.basename(turnDataRoot(descriptor.saveName)), descriptor.transactionId, 'turn', 'context.json')),
+  check(fs.existsSync(path.join(committer.descriptor(descriptor).stageDir, 'turn', 'context.json')),
     'stage persists the complete turn payload for recovery');
 
   const published = committer.publish(descriptor);
@@ -66,7 +66,7 @@ try {
   });
   committer.stage(second);
   committer.discard(second);
-  check(!fs.existsSync(path.join(turnDataRoot(second.saveName), '51')),
+  check(!fs.existsSync(path.join(committer.rootFor(second), '51')),
     'discard removes only staged data and never creates a formal turn directory');
 
   const interrupted = Object.assign({}, descriptor, {
@@ -76,7 +76,7 @@ try {
   });
   committer.stage(interrupted);
   const recoveredFromStage = committer.recover(interrupted);
-  check(recoveredFromStage.success === true && fs.existsSync(path.join(turnDataRoot(interrupted.saveName), '52', 'player-input.json')),
+  check(recoveredFromStage.success === true && fs.existsSync(path.join(committer.rootFor(interrupted), '52', 'player-input.json')),
     'next-start recovery publishes a committed save descriptor left in staging');
 
   const mainSource = fs.readFileSync(path.join(REPO_ROOT, 'main-impl.js'), 'utf8');
@@ -95,7 +95,7 @@ try {
   let mismatchRejected = false;
   try { committer.publish(Object.assign({}, bound, { stateChecksum: 'wrong-world' })); }
   catch (_) { mismatchRejected = true; }
-  check(mismatchRejected && !fs.existsSync(path.join(turnDataRoot(bound.saveName), '53')),
+  check(mismatchRejected && !fs.existsSync(path.join(committer.rootFor(bound), '53')),
     'publish rejects a descriptor whose world checksum does not match staging');
   check(committer.publish(bound).success === true, 'matching campaign/turn/checksum descriptor can publish after a rejected mismatch');
 

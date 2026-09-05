@@ -1600,6 +1600,9 @@ function _tmValidateLoadedWorld(targetP, targetGM) {
 }
 
 function _recoverPendingTurnDataPublish() {
+  if (GM && window.tianming && window.tianming.isDesktop && (window.tianming.turnDataProtocolVersion !== 2 || typeof window.tianming.recoverTurnData !== 'function')) {
+    return Promise.resolve({ ok: false, error: new Error('分卷恢复需要更新桌面安装包') });
+  }
   if (!(GM && window.tianming && typeof window.tianming.recoverTurnData === 'function')) return Promise.resolve({ ok: true, skipped: true });
   var targetGM = GM;
   var targetP = P;
@@ -1614,6 +1617,7 @@ function _recoverPendingTurnDataPublish() {
   }
 
   return Promise.resolve().then(async function() {
+    if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷恢复需要更新桌面安装包');
     // v4 以前的存档把 marker 烘进两个大世界正文；仅在兼容迁移时做一次全量清理。
     if (targetGM._pendingTurnDataPublish) {
       var legacyMarker = deepClone(targetGM._pendingTurnDataPublish);

@@ -3709,29 +3709,19 @@ ipcMain.handle('discard-turn-data', (event, payload) => runTurnDataCommit('disca
 ipcMain.handle('write-turn-data', (event, payload) => runTurnDataCommit('writeLegacy', payload));
 
 // 读取某存档某回合数据（返回该回合目录下所有文件）
-ipcMain.handle('read-turn-data', async (event, { saveName, turn }) => {
+ipcMain.handle('read-turn-data', async (event, input) => {
   try {
-    const turnDir = path.join(turnDataRoot(saveName, false), turnSeg(turn));
-    if (!fs.existsSync(turnDir)) return { success: false, error: '数据不存在' };
-    const result = {};
-    const files = fs.readdirSync(turnDir).filter(f => f.endsWith('.json'));
-    files.forEach(f => {
-      try {
-        const key = f.replace('.json', '');
-        result[key] = JSON.parse(fs.readFileSync(path.join(turnDir, f), 'utf-8'));
-      } catch (e) { /* skip corrupt files */ }
-    });
-    return { success: true, data: result };
+    return turnDataCommitter.read(input);
   } catch (e) {
     return { success: false, error: e.message };
   }
 });
 
 // 批量读取多回合数据摘要（供AI打包推演用）
-ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn }) => {
+ipcMain.handle('read-turns-summary', async (event, input) => {
   try {
-    const saveDir = turnDataRoot(saveName, false);
-    if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
+    const { fromTurn, toTurn } = input;
+    const available = turnDataCommitter.list(input);
     const turns = [];
     let _from, _to;
     try { _from = Number(turnSeg(fromTurn)); _to = Number(turnSeg(toTurn)); }
@@ -3745,10 +3735,8 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
     _to   = Math.min(_to, _from + 20000, 10000000);
     if (_to < _from) return { success: true, turns: [] };
     for (let t = _from; t <= _to; t++) {
-      const contextFile = path.join(saveDir, turnSeg(t), 'context.json');
-      if (fs.existsSync(contextFile)) {
-        try {
-          const ctx = JSON.parse(fs.readFileSync(contextFile, 'utf-8'));
+      if (available.turns.includes(t)) {
+          const ctx = turnDataCommitter.read(Object.assign({}, input, { turn: t })).data.context;
           // 只提取摘要级别的数据（控制大小）
           turns.push({
             turn: t,
@@ -3757,7 +3745,6 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
             playerStatus: ctx.playerStatus || '',
             playerInner: ctx.playerInner || ''
           });
-        } catch (e) { /* skip */ }
       }
     }
     return { success: true, turns };
@@ -3767,21 +3754,16 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
 });
 
 // 列出某存档的所有回合
-ipcMain.handle('list-turn-data', async (event, saveName) => {
+ipcMain.handle('list-turn-data', async (event, input) => {
   try {
-    const saveDir = turnDataRoot(saveName, false);
-    if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
-    const turns = fs.readdirSync(saveDir)
-      .filter(d => /^\d+$/.test(d))
-      .map(d => parseInt(d))
-      .sort((a, b) => a - b);
-    return { success: true, turns };
+    return turnDataCommitter.list(input);
   } catch (e) {
     return { success: false, error: e.message };
   }
 });
 
 // 打开回合数据目录
+ipcMain.handle('delete-turn-data', (event, input) => runTurnDataCommit('remove', input));
 ipcMain.handle('open-turn-data-dir', () => {
   ensureSaveDir();
   shell.openPath(TURN_DATA_DIR);

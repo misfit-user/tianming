@@ -64,8 +64,10 @@ async function _endTurn_stageTurnData(ctx, snapshot, canonicalPayload) {
   var presentation = ctx.meta.turnPresentation;
   if (!(window.tianming && window.tianming.isDesktop && GM.saveName && presentation && presentation.turnData)) return true;
   if (typeof window.tianming.stageTurnData !== 'function') throw new Error('桌面回合分卷暂存接口缺失');
+  if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷时间线协议需要更新桌面安装包');
   var checksum = await _endTurn_stateChecksum(snapshot, canonicalPayload);
   var marker = {
+    protocolVersion: 2,
     saveName: GM.saveName,
     turn: GM.turn - 1,
     campaignId: String(GM._campaignId || ''),

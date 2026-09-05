@@ -1,0 +1,52 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const crypto = require('crypto');
+const { createTurnDataCommitter } = require('../../main-turn-data-commit');
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-audit-turn-'));
+let injected = false;
+const io = Object.create(fs);
+io.cpSync = (...args) => { if (injected) { injected = false; throw new Error('migration interrupted'); } return fs.cpSync(...args); };
+const mkdir = dir => fs.mkdirSync(dir, { recursive: true });
+const write = (file, data) => { mkdir(path.dirname(file)); fs.writeFileSync(file, data); };
+const deps = { fs: io, path, crypto, turnDataDir: root, turnDataRoot: name => path.join(root, name), turnSeg: turn => { assert.match(String(turn), /^(0|[1-9][0-9]*)$/); return String(turn); }, ensureWritableDir: mkdir,
+  writeJson: (file, data) => write(file, JSON.stringify(data)), writeJsonAtomic: (file, data) => write(file, JSON.stringify(data)), writeFileAtomic: write };
+const make = () => createTurnDataCommitter(deps);
+const a = { saveName: '同名档', turn: 5, campaignId: 'campaign-A', timelineId: 'timeline-A', transactionId: 'transaction-A', stateChecksum: 'A', data: { context: { value: 'A' }, scenario: { name: 'A' }, refText: 'A' } };
+try {
+  let c = make();
+  const b = { ...a, timelineId: 'timeline-B', transactionId: 'transaction-B', stateChecksum: 'B', data: { context: { value: 'B' }, scenario: { name: 'B' }, refText: 'B' } };
+  const d = { ...a, campaignId: 'campaign-B', data: { context: { value: 'C' } } };
+  for (const item of [a, b, d]) { c.stage(item); c.publish(item); }
+  for (const [item, value] of [[a, 'A'], [b, 'B'], [d, 'C']]) assert.equal(c.read(item).data.context.value, value);
+  assert.equal(fs.readFileSync(path.join(c.rootFor(a), 'reference.txt'), 'utf8'), 'A');
+  assert.equal(fs.readFileSync(path.join(c.rootFor(b), 'reference.txt'), 'utf8'), 'B');
+  assert.equal(c.publish(a).recovered, true);
+  assert.equal(c.stage(a).success, true, 'committed transaction can be restaged idempotently');
+  assert.throws(() => c.stage({ ...a, data: { context: { value: 'overwritten' } } }), /conflict/);
+  const conflict = { ...a, transactionId: 'different-transaction' };
+  assert.throws(() => c.stage(conflict), /conflict/); assert.throws(() => c.publish(conflict), /conflict/);
+  assert.equal(c.read(a).data.context.value, 'A');
+  const stagedConflict = { ...conflict, turn: 9 }; c.stage(stagedConflict);
+  assert.throws(() => c.discard({ ...stagedConflict, stateChecksum: 'mismatch' }), /conflict/);
+  const pending = { ...a, turn: 6 }; c.stage(pending); c = make();
+  assert.equal(c.recover(pending).success, true); assert.equal(c.read(pending).data.context.value, 'A');
+  const legacy = { ...a, turn: 7 };
+  deps.writeJson(path.join(root, a.saveName, '7', 'transaction.json'), legacy);
+  deps.writeJson(path.join(root, a.saveName, '7', 'context.json'), { value: 'legacy' });
+  injected = true; assert.throws(() => c.recover(legacy), /interrupted/);
+  assert.equal(make().recover(legacy).success, true);
+  assert.equal(c.read(legacy).data.context.value, 'legacy');
+  assert.ok(fs.existsSync(path.join(root, a.saveName, '7', 'context.json')));
+  deps.writeJson(path.join(root, a.saveName, '8', 'context.json'), { value: 'unknown' });
+  assert.throws(() => c.read({ ...a, turn: 8 }), /unproven/);
+  assert.ok(c.list(a).warnings.some(item => item.turn === 8));
+  assert.throws(() => c.remove(a), /pending-transaction/);
+  c.discard(stagedConflict);
+  c.remove(a); assert.equal(c.read(b).data.context.value, 'B'); assert.equal(c.read(d).data.context.value, 'C');
+  assert.throws(() => c.rootFor({ saveName: 'no-identity' }), /identity-required/);
+  assert.throws(() => c.writeLegacy(a), /upgrade-required/);
+  console.log('PASS audit turn namespaces: isolation, conflicts, restart, interrupted migration, scoped cleanup');
+} finally { fs.rmSync(root, { recursive: true, force: true }); }

@@ -439,6 +439,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async publishTurnData() { published++; return { success: true }; }
         }
@@ -477,7 +478,7 @@ async function runDynamicLeaseSmokes() {
       GM: { turn: 51, _campaignId: 'campaign-recover', _timelineId: 'tml_recover_12345678' }, P: { id: 'p-recover' },
       window: {
         _tmLoadGen: 4,
-        tianming: { async recoverTurnData(marker) { recovered++; return { success: marker.transactionId === receipt.transactionId }; } },
+        tianming: { turnDataProtocolVersion: 2, async recoverTurnData(marker) { recovered++; return { success: marker.transactionId === receipt.transactionId }; } },
         TM: { errors: { capture() {} } }
       },
       TM: { errors: { capture() {} } }, Promise, JSON, Error, console,
@@ -516,6 +517,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async discardTurnData() { discarded++; return { success: true }; }
         }
@@ -545,6 +547,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async discardTurnData() { discarded++; return { success: true }; }
         }

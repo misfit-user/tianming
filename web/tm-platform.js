@@ -132,6 +132,7 @@
     files: {
       exportSave:  function (data) { return call('dialogExport', [data]); },
       importSave:  function ()     { return call('dialogImport', []); },
+      cancelImports: function ()   { return call('cancelFileImports', []); },
       pickImage:   function ()     { return call('dialogLoadImage', []); },
       pickGeoJSON: function ()     { return call('dialogLoadGeoJSON', []); }
     },

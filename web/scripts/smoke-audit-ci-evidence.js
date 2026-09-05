@@ -21,6 +21,10 @@ assert.throws(() => validateReport(waived, expected, { existsSync: () => true })
 const invalid = structuredClone(waived); invalid.results[0].waivers[0].path = 'some-business-check'; assert.throws(() => validateReport(invalid, expected, absent));
 assert.throws(() => assetExists(tests[0], 'assets/unapproved', absent));
 assert(discover().includes(path.basename(__filename)));
+const emptyRun = require('child_process').spawnSync(process.execPath,
+  [path.join(__dirname, 'run-smokes.js'), '--grep', '__audit-no-matching-test__', '--all'], { encoding: 'utf8', windowsHide: true });
+assert.equal(emptyRun.status, 1, 'standalone runner must not green an empty selection either');
+assert.match(emptyRun.stderr, /没有匹配/);
 // Execute the actual CI entry in a controlled FS/process surface: it must never consume a legacy report.
 const source = fs.readFileSync(path.join(__dirname, 'ci-smokes.js'), 'utf8');
 let serial = 0;

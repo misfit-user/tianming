@@ -8,6 +8,7 @@
 var fs = require('fs');
 var path = require('path');
 var ROOT = path.resolve(__dirname, '..');
+var assetExists = relative => require('./lib-smoke-evidence').assetExists('smoke-mapeditor-ui.js', relative);
 var P = 0, F = 0;
 function ok(c, m) { if (c) { P++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 function read(p) { return fs.readFileSync(path.join(ROOT, p), 'utf8'); }
@@ -24,8 +25,8 @@ ok(/玄墨舆图·家族对齐终局层/.test(html), '追加终局层段落标�
 
 console.log('— M1 · 家族字体与题栏 —');
 ok(/font-family:"ME-XiaoWei"/.test(html) && /ZCOOLXiaoWei-Regular\.ttf/.test(html), '@font-face ME-XiaoWei 声明在');
-ok(fs.existsSync(path.join(ROOT, 'assets', 'fonts', 'ZCOOLXiaoWei-Regular.ttf')), '字体文件在 assets/fonts');
-ok(fs.existsSync(path.join(ROOT, 'assets', 'fonts', 'MaShanZheng-Regular.ttf')), 'MaShanZheng 字体文件在');
+ok(assetExists('assets/fonts/ZCOOLXiaoWei-Regular.ttf'), '字体文件在 assets/fonts');
+ok(assetExists('assets/fonts/MaShanZheng-Regular.ttf'), 'MaShanZheng 字体文件在');
 ok((html.match(/class="me-msep"/g) || []).length >= 3 && /\.me-msep\{/.test(html), '顶栏菜单分组隔线(≥3 处+定义)');
 
 console.log('— M2 · canvas 侧 UI 高亮统一(19 live 模块) —');

@@ -161,7 +161,8 @@ console.log('\n— 轨2·main-impl.js 源码在位守卫 —');
 assert(SRC.includes("if (!/^(0|[1-9][0-9]*)$/.test(raw))")
   && /function turnSeg\(turn\)[\s\S]*?Number\.isSafeInteger\(raw\)[\s\S]*?raw < 0[\s\S]*?raw > 10000000/.test(SRC),
   'src· turnSeg 强制唯一的 0..1e7 安全整数表示');
-assert(/'read-turns-summary'[\s\S]*?Number\(turnSeg\(fromTurn\)\)[\s\S]*?Number\.isSafeInteger\(_from\)[\s\S]*?_from \+ 20000[\s\S]*?turnSeg\(t\)/.test(SRC),
+assert(/'read-turns-summary'[\s\S]*?Number\(turnSeg\(fromTurn\)\)[\s\S]*?Number\.isSafeInteger\(_from\)[\s\S]*?_from \+ 20000[\s\S]*?turnDataCommitter\.read\(/.test(SRC)
+  && /const turn = turnSeg\(input.turn\)/.test(fs.readFileSync(path.join(ROOT, 'main-turn-data-commit.js'), 'utf8')),
   'src· read-turns-summary 复用严格 turnSeg，并保留 safe-integer/跨度门');
 assert(/if\s*\(!\/\^\[0-9a-f\]\{64\}\$\/\.test\(expectedHash\)\)\s*throw/.test(SRC),
   'src· 工坊安装仍强制 /^[0-9a-f]{64}$/ hash 格式门（修B 未回退）');

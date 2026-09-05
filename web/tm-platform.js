@@ -92,9 +92,10 @@
     },
     turnData: {
       write:   function (saveName, turn, data)   { return call('writeTurnData', [saveName, turn, data]); },
-      read:    function (saveName, turn)         { return call('readTurnData', [saveName, turn]); },
-      list:    function (saveName)               { return call('listTurnData', [saveName]); },
-      summary: function (saveName, from, to)     { return call('readTurnsSummary', [saveName, from, to]); }
+      read:    function (identity, turn)         { return call('readTurnData', [identity, turn]); },
+      list:    function (identity)               { return call('listTurnData', [identity]); },
+      remove:  function (identity)               { return call('deleteTurnData', [identity]); },
+      summary: function (identity, from, to)     { return call('readTurnsSummary', [identity, from, to]); }
     },
     account: {
       session:  function ()                          { return call('accountSession', []); },

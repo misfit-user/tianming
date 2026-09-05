@@ -18,6 +18,7 @@ const yauzl = require('yauzl');
 const { pipeline } = require('stream');
 const { autoUpdater } = require('electron-updater');
 const { createTurnDataCommitter } = require('./main-turn-data-commit.js');
+const { createWorkshopTransactions } = require('./main-workshop-transaction.js');
 const { readJsonFileOffMainThread } = require('./main-json-file.js');
 
 // ============================================================
@@ -1420,7 +1421,7 @@ function readWorkshopIndex() {
 
 function writeWorkshopIndex(idx) {
   idx.updatedAt = new Date().toISOString();
-  writeJson(WORKSHOP_INDEX_FILE, idx);
+  writeJsonAtomic(WORKSHOP_INDEX_FILE, idx);
 }
 
 function packPublicInfo(pack, installPath, enabled) {
@@ -1448,6 +1449,9 @@ function registerContentProtocol() {
       const rawParts = url.pathname.split('/').filter(Boolean).map(part => decodeURIComponent(part));
       const packId = normalizePackId(rawParts.shift() || '');
       if (!packId || !rawParts.length) return new Response('not found', { status: 404 });
+      // A renderer may request an installed asset before opening the workshop list after a crash.
+      // Recover the directory/index transaction before exposing either side of it.
+      workshopTransactions.recover();
       const packRoot = path.join(WORKSHOP_PACKS_DIR, packId);
       const filePath = path.resolve(packRoot, rawParts.join(path.sep));
       if (!isInsideDir(packRoot, filePath) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
@@ -4047,7 +4051,7 @@ ipcMain.handle('account-logout', async (event, options = {}) => {
 
 function listWorkshopPacksInternal() {
   ensureSaveDir();
-  const idx = readWorkshopIndex();
+  const idx = workshopTransactions.read();
   return idx.packs.map(item => {
     const installPath = path.join(WORKSHOP_PACKS_DIR, normalizePackId(item.id));
     return Object.assign({}, item, { enabled: item.enabled !== false, installed: fs.existsSync(installPath), path: installPath });
@@ -4055,23 +4059,12 @@ function listWorkshopPacksInternal() {
 }
 
 function installWorkshopPackFromDir(sourceDir, options = {}) {
-  const pack = validateWorkshopPack(sourceDir);
-  const target = path.join(WORKSHOP_PACKS_DIR, pack.id);
-  if (fs.existsSync(target) && !options.overwrite) {
-    return { success: false, error: '已存在同 ID 工坊包：' + pack.id, exists: true, pack: packPublicInfo(pack, target, true) };
-  }
-  if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-  copyDirRecursive(sourceDir, target);
-  const installed = validateWorkshopPack(target);
-  const idx = readWorkshopIndex();
-  idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== installed.id);
-  idx.packs.push(Object.assign(packPublicInfo(installed, target, true), {
-    installedAt: new Date().toISOString(),
-    source: options.source || ''
-  }));
-  writeWorkshopIndex(idx);
-  return { success: true, pack: packPublicInfo(installed, target, true) };
+  return workshopTransactions.install(sourceDir, options);
 }
+
+const workshopTransactions = createWorkshopTransactions({ fs, path, crypto, root: WORKSHOP_DIR,
+  packsRoot: WORKSHOP_PACKS_DIR, indexFile: WORKSHOP_INDEX_FILE, writeJsonAtomic,
+  validate: validateWorkshopPack, publicInfo: packPublicInfo, normalizeId: normalizePackId });
 
 async function readWorkshopCatalog(options = {}) {
   const base = new URL(DEFAULT_WORKSHOP_CATALOG_URL);
@@ -4219,17 +4212,7 @@ ipcMain.handle('workshop-import-pack', async (event, options = {}) => {
         return { success: false, error: '不支持的工坊包格式。' };
       }
     }
-    const pack = validateWorkshopPack(sourceDir);
-    const target = path.join(WORKSHOP_PACKS_DIR, pack.id);
-    if (fs.existsSync(target) && !options.overwrite) return { success: false, error: '已存在同 ID 工坊包：' + pack.id, exists: true, pack: packPublicInfo(pack, target, true) };
-    if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-    copyDirRecursive(sourceDir, target);
-    const installed = validateWorkshopPack(target);
-    const idx = readWorkshopIndex();
-    idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== installed.id);
-    idx.packs.push(Object.assign(packPublicInfo(installed, target, true), { installedAt: new Date().toISOString() }));
-    writeWorkshopIndex(idx);
-    return { success: true, pack: packPublicInfo(installed, target, true) };
+    return installWorkshopPackFromDir(sourceDir, options);
   } catch (e) {
     return { success: false, error: e.message };
   } finally {
@@ -4240,12 +4223,7 @@ ipcMain.handle('workshop-import-pack', async (event, options = {}) => {
 ipcMain.handle('workshop-set-enabled', async (event, { id, enabled }) => {
   try {
     const packId = normalizePackId(id);
-    const idx = readWorkshopIndex();
-    const item = idx.packs.find(p => normalizePackId(p.id) === packId);
-    if (!item) return { success: false, error: '找不到工坊包：' + packId };
-    item.enabled = !!enabled;
-    writeWorkshopIndex(idx);
-    return { success: true, pack: item };
+    return workshopTransactions.setEnabled(packId, enabled);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4254,12 +4232,7 @@ ipcMain.handle('workshop-set-enabled', async (event, { id, enabled }) => {
 ipcMain.handle('workshop-uninstall', async (event, id) => {
   try {
     const packId = normalizePackId(id);
-    const target = path.join(WORKSHOP_PACKS_DIR, packId);
-    if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-    const idx = readWorkshopIndex();
-    idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== packId);
-    writeWorkshopIndex(idx);
-    return { success: true };
+    return workshopTransactions.remove(packId);
   } catch (e) {
     return { success: false, error: e.message };
   }

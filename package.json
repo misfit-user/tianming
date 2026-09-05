@@ -45,6 +45,7 @@
       "main-impl.js",
       "main-json-file.js",
       "main-turn-data-commit.js",
+      "main-workshop-transaction.js",
       "preload.js",
       "preload-impl.js",
       "resources/hot-update-public-key.pem",

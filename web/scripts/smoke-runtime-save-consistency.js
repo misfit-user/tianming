@@ -144,7 +144,7 @@ ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[
   ok(/GM\.busy = true;[\s\S]*?GM\._loadHydrationPending = true;/.test(loadImpl)
     && /function _tmAwaitLoadBarrier\(\)[\s\S]*?result !== true[\s\S]*?throw new Error/.test(lifecycle)
     && /doSaveGame=async function\(\)\{\s*await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
-    && /desktopDoSave=async function\(\)\{\s*await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
+    && /desktopDoSave=async function\(\)\{[\s\S]*?_tmCaptureWorldLease\(\)[\s\S]*?await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
     && /saveToSlot:\s*async function[\s\S]*?await _tmAwaitLoadBarrier\(\)/.test(manager),
   'hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障');
 }

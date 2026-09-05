@@ -21,6 +21,7 @@ const { createTurnDataCommitter } = require('./main-turn-data-commit.js');
 const { createWorkshopTransactions } = require('./main-workshop-transaction.js');
 const { createAccountRequests } = require('./main-account-requests.js');
 const { readJsonFileOffMainThread } = require('./main-json-file.js');
+const { readImageFile } = require('./main-image-file.js');
 
 // ============================================================
 //  基本配置
@@ -3057,6 +3058,24 @@ function createMenu() {
 }
 
 // 从菜单触发导入
+const fileImports = new WeakMap();
+async function runFileImport(event, task) {
+  const sender = event.sender;
+  const controller = new AbortController();
+  let pending = fileImports.get(sender);
+  if (!pending) { pending = new Set(); fileImports.set(sender, pending); }
+  if (pending.size >= 10) throw new Error('待处理导入过多');
+  pending.add(controller);
+  const abort = () => controller.abort();
+  if (typeof sender.once === 'function') sender.once('destroyed', abort);
+  try { return await task(controller.signal); }
+  finally { pending.delete(controller); if (!pending.size) fileImports.delete(sender); if (typeof sender.removeListener === 'function') sender.removeListener('destroyed', abort); }
+}
+ipcMain.handle('cancel-file-imports', event => {
+  const pending = fileImports.get(event.sender);
+  if (pending) for (const controller of pending) controller.abort();
+  return { success: true, cancelled: pending ? pending.size : 0 };
+});
 async function handleMenuImport() {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',
@@ -3065,8 +3084,7 @@ async function handleMenuImport() {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      const data = JSON.parse(raw);
+      const data = await runFileImport({ sender: mainWindow.webContents }, signal => readJsonFileOffMainThread(result.filePaths[0], { signal }));
       mainWindow.webContents.send('import-project-data', data);
     } catch (e) {
       dialog.showErrorBox('导入失败', e.message);
@@ -3361,7 +3379,7 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
 });
 
 // --- 系统对话框：导入 ---
-ipcMain.handle('dialog-import', async () => {
+ipcMain.handle('dialog-import', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',
     filters: [
@@ -3372,8 +3390,7 @@ ipcMain.handle('dialog-import', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      const data = JSON.parse(raw);
+      const data = await runFileImport(event, signal => readJsonFileOffMainThread(result.filePaths[0], { signal }));
       return { success: true, data, path: result.filePaths[0] };
     } catch (e) {
       return { success: false, error: '文件解析失败: ' + e.message };
@@ -3383,7 +3400,7 @@ ipcMain.handle('dialog-import', async () => {
 });
 
 // --- 系统对话框：选择地图图片 ---
-ipcMain.handle('dialog-load-image', async () => {
+ipcMain.handle('dialog-load-image', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '选择地图图片',
     filters: [
@@ -3393,11 +3410,7 @@ ipcMain.handle('dialog-load-image', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const buffer = fs.readFileSync(result.filePaths[0]);
-      const ext = path.extname(result.filePaths[0]).toLowerCase().replace('.', '');
-      const mimeMap = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp' };
-      const dataUrl = `data:${mimeMap[ext]||'image/png'};base64,${buffer.toString('base64')}`;
-      return { success: true, dataUrl };
+      return { success: true, ...await runFileImport(event, signal => readImageFile(result.filePaths[0], { signal })) };
     } catch (e) {
       return { success: false, error: e.message };
     }
@@ -3406,7 +3419,7 @@ ipcMain.handle('dialog-load-image', async () => {
 });
 
 // --- 系统对话框：选择 GeoJSON ---
-ipcMain.handle('dialog-load-geojson', async () => {
+ipcMain.handle('dialog-load-geojson', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入 GeoJSON 地图数据',
     filters: [{ name: 'GeoJSON', extensions: ['json', 'geojson'] }],
@@ -3414,8 +3427,7 @@ ipcMain.handle('dialog-load-geojson', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      return { success: true, data: JSON.parse(raw) };
+      return { success: true, data: await runFileImport(event, signal => readJsonFileOffMainThread(result.filePaths[0], { kind: 'geojson', signal })) };
     } catch (e) {
       return { success: false, error: e.message };
     }

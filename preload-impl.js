@@ -165,6 +165,7 @@ contextBridge.exposeInMainWorld('tianming', {
 
   dialogImport: () =>
     ipcRenderer.invoke('dialog-import'),
+  cancelFileImports: () => ipcRenderer.invoke('cancel-file-imports'),
 
   dialogLoadImage: () =>
     ipcRenderer.invoke('dialog-load-image'),

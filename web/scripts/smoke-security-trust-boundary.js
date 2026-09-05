@@ -89,34 +89,25 @@ async function main() {
   check(throws(() => T.verifyAuthenticatedUpdateDocument(badEncoding, 'tianming-hot-update-feed'), /编码非法/), 'non-canonical base64 is rejected');
   check(!verifyArtifactDocument(Object.assign({}, signed, { version: '9.9.9.8' }), 'tianming-hot-update-feed', publicKeyPath).ok,
     'independent artifact verifier rejects outer-field tampering');
-  const originalNetFetch = electronStub.net.fetch;
+  // Exercise the actual pinned Node transport with an isolated ephemeral server.
+  const http = require('http');
   let bodyAbortObserved = false;
-  electronStub.net.fetch = async function(_url, init) {
-    return {
-      ok: true, status: 200, statusText: 'OK', headers: { get: () => null },
-      body: {
-        getReader() {
-          return {
-            read() {
-              return new Promise((resolve, reject) => {
-                if (init.signal.aborted) return reject(new Error('aborted'));
-                init.signal.addEventListener('abort', () => { bodyAbortObserved = true; reject(new Error('aborted')); }, { once: true });
-              });
-            },
-            async cancel() {},
-            releaseLock() {}
-          };
-        }
-      }
-    };
-  };
-  const callerAbort = new AbortController();
-  const stalled = await T.fetchRemoteResponse('http://127.0.0.1/stalled', { signal: callerAbort.signal, timeoutMs: 10000 });
-  const stalledRead = T.readRemoteTextLimited(stalled.response, 100, 1000).catch(error => error);
-  setTimeout(() => callerAbort.abort(), 5);
-  const stalledError = await stalledRead;
-  electronStub.net.fetch = originalNetFetch;
-  check(bodyAbortObserved && /aborted/.test(String(stalledError && stalledError.message)), 'caller abort remains connected after response headers and stops a stalled body');
+  let observeClose;
+  const closedBody = new Promise(resolve => { observeClose = resolve; });
+  const server = http.createServer((req, res) => {
+    res.on('close', () => { bodyAbortObserved = true; observeClose(); });
+    res.writeHead(200); res.flushHeaders();
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  let stalledError;
+  try {
+    const callerAbort = new AbortController();
+    const stalled = await T.fetchRemoteResponse('http://127.0.0.1:' + server.address().port + '/stalled', { signal: callerAbort.signal, timeoutMs: 10000 });
+    const stalledRead = T.readRemoteTextLimited(stalled.response, 100, 1000).catch(error => error);
+    setTimeout(() => callerAbort.abort(), 5);
+    stalledError = await stalledRead;
+  } finally { await new Promise(resolve => server.close(resolve)); await closedBody; }
+  check(bodyAbortObserved && /abort/i.test(String(stalledError && stalledError.message)), 'caller abort remains connected after response headers and stops a stalled body: ' + bodyAbortObserved + ' / ' + String(stalledError && stalledError.message));
   check(T.verifyAuthenticatedUpdateDocument(payload, 'tianming-hot-update-feed') === payload,
     'unsigned fixtures are allowed only inside explicit unpackaged test mode');
   check(T.isAllowedRemoteUrl('http://127.0.0.1/test') === true,
@@ -398,8 +389,10 @@ async function main() {
   check(fs.readFileSync(legacyAutoPath).equals(legacyAutoBytes)
     && legacyAutoStatAfter.mtimeMs === legacyAutoStat.mtimeMs,
   'loading a legacy autosave preserves its payload bytes and modification time');
-  check(mainSource.includes("redirect: 'manual'") && mainSource.includes('dns.lookup(hostname, { all: true')
-    && mainSource.includes("credentials: 'omit'") && mainSource.includes("referrerPolicy: 'no-referrer'"), 'network proxy revalidates DNS/redirects and omits ambient credentials');
+  const remoteSource = fs.readFileSync(path.join(ROOT, 'main-safe-remote.js'), 'utf8');
+  check(mainSource.includes('safeRemote.fetchRemoteResponse') && remoteSource.includes('await validate(current)')
+    && remoteSource.includes('lookup(hostname, options, callback)') && remoteSource.includes('agent: false')
+    && remoteSource.includes('proxyEnv: {}') && !remoteSource.includes('net.fetch('), 'network transport validates every hop and uses pinned direct sockets without browser credentials or proxy agents');
   check(mainSource.includes('WORKSHOP_CATALOG_AUTHORIZATIONS.get(packageUrl)')
     && mainSource.includes('工坊包地址未获官方目录授权'), 'remote workshop install is bound to the last official catalog snapshot');
   check(!/checkHotUpdate:\s*\([^)]*feedUrl/.test(preloadSource) && !/installHotUpdate:\s*\([^)]*feedUrl/.test(preloadSource)
@@ -427,7 +420,7 @@ async function main() {
   check(!packagedModule.__test, 'packaged build ignores TIANMING_TEST_EXPORTS and exposes no test internals');
   check(/const allowUnsignedTest = TEST_MODE;/.test(mainSource)
     && /isLocalHttp && TEST_MODE/.test(mainSource)
-    && /const localDev = TEST_MODE/.test(mainSource),
+    && /allowLocal: TEST_MODE/.test(mainSource) && /deps.allowLocal === true/.test(remoteSource),
     'unsigned updates, localhost HTTP and test exports share the same unpackaged TEST_MODE gate');
 
   console.log('[smoke-security-trust-boundary] PASS assertions=' + assertions);

@@ -43,7 +43,7 @@ console.log('=== 1. 源码契约 ===');
 {
   ok(/function _isLoadableGameState\(gs\)/.test(managerSrc), 'manager 定义 _isLoadableGameState 形状守卫');
   ok(/window\._isLoadableGameState = _isLoadableGameState/.test(managerSrc), '_isLoadableGameState 挂 window');
-  const loadFromSlot = sliceFn(managerSrc, 'loadFromSlot: function(slotId)');
+  const loadFromSlot = sliceFn(managerSrc, 'loadFromSlot: async function(slotId)');
   const guardAt = loadFromSlot.indexOf('if (!_isLoadableGameState(record.gameState))');
   const loadErrAt = loadFromSlot.indexOf('if (record._loadError)');
   const wrapAt = loadFromSlot.indexOf('var saveWrapper = { gameState: record.gameState };');
@@ -53,7 +53,7 @@ console.log('=== 1. 源码契约 ===');
   // 假绿防回归：真空槽文案只允许由 record===null 触发（不得再用 !record.gameState 把坏档当空槽）
   ok(!/if \(!record\.gameState\)\s*\{\s*toast\('该槽位没有存档'\)/.test(loadFromSlot), 'loadFromSlot 不再以 !record.gameState 静默当空槽（坏档归报损）');
   const emptyMsgCount = (loadFromSlot.match(/该槽位没有存档/g) || []).length;
-  ok(emptyMsgCount === 1 && /if \(!record\) \{ toast\('该槽位没有存档'\); return; \}/.test(loadFromSlot), '「该槽位没有存档」仅一处·且由 record===null 守卫');
+  ok(emptyMsgCount === 1 && /if \(!record\) \{ toast\('该槽位没有存档'\); return false; \}/.test(loadFromSlot), '「该槽位没有存档」仅一处·且由 record===null 守卫');
 }
 {
   ok(/data\.gameState && data\.gameState\.GM && data\.gameState\.P/.test(lifecycleSrc), 'fullLoadGame 格式B 判别（GM && P）存在·作对齐基准');

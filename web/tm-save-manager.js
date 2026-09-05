@@ -100,6 +100,7 @@ var SaveManager = {
       return false;
     }
 
+    try {
     // 读档 hydration 未完成时不得构造一个时序不确定的存档快照。
     if (typeof _tmAwaitLoadBarrier === 'function') await _tmAwaitLoadBarrier();
     // 等待保存所需后台任务；序列化只发生在隔离快照上。
@@ -125,39 +126,45 @@ var SaveManager = {
     // 写入 IndexedDB（异步）·返回 Promise 让调用方等待 commit 再刷新 UI(修两次保存才生效 bug)
     var slotKey = 'slot_' + slotId;
     console.log('[saveToSlot] 保存到:', slotKey, 'IDB available:', TM_SaveDB.isAvailable());
-    return TM_SaveDB.save(slotKey, gameState, meta).then(function(ok) {
+    return await TM_SaveDB.save(slotKey, gameState, meta).then(function(ok) {
       console.log('[saveToSlot] 保存结果:', ok);
-      if (ok) {
+      if (ok === true) {
         toast('\u2705 \u5DF2\u4FDD\u5B58\u5230\u69FD\u4F4D ' + (slotId + 1));
         _updateSaveIndex(slotId, meta);
       } else {
         toast('\u274C \u4FDD\u5B58\u5931\u8D25');
       }
-    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveToSlot') : console.error('[saveToSlot] 存档异常:', e); toast('\u274C \u5B58\u6863\u5F02\u5E38'); });
+      return ok === true;
+    });
+    } catch (e) {
+      try { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'saveToSlot') : console.error('[saveToSlot] 存档异常:', e); } catch (_) { /* diagnostic only */ }
+      toast('\u274C \u5B58\u6863\u5F02\u5E38');
+      return false;
+    }
   },
 
   // 从指定槽位加载游戏（异步）
-  loadFromSlot: function(slotId) {
-    if (slotId < 0 || slotId >= this.maxSlots) { toast('无效的存档槽位'); return; }
+  loadFromSlot: async function(slotId) {
+    if (slotId < 0 || slotId >= this.maxSlots) { toast('无效的存档槽位'); return false; }
 
     var slotKey = 'slot_' + slotId;
     console.log('[loadFromSlot] 尝试加载:', slotKey, 'IDB available:', TM_SaveDB.isAvailable());
     showLoading('展卷中……', 30);
-    TM_SaveDB.load(slotKey).then(async function(record) {
+    return TM_SaveDB.load(slotKey).then(async function(record) {
       console.log('[loadFromSlot] 加载结果:', record ? ('有数据, keys:' + Object.keys(record).join(',')) : 'null');
       // 真空槽（IndexedDB 无此记录）唯一判据 = TM_SaveDB.load 返回 null。
       // record 存在即「有记录」：gameState 缺失/为 null（含解出合法 JSON null）/形状损坏一律报损，
       // 绝不静默当空槽（否则坏档看起来像从未存过·玩家以为没存丢进度）。半损档不下传·防二次崩溃。
-      if (!record) { toast('该槽位没有存档'); return; }
+      if (!record) { toast('该槽位没有存档'); return false; }
       if (record._loadError) {
         toast('❌ 存档已损坏，无法读取（' + (record._loadError === 'parse_failed' ? '存档数据解析失败' : record._loadError) + '）');
         console.error('[loadFromSlot] 存档报损·slot=' + slotKey + '·_loadError=' + record._loadError);
-        return;
+        return false;
       }
       if (!_isLoadableGameState(record.gameState)) {
         toast('❌ 存档已损坏，无法读取');
         console.error('[loadFromSlot] 存档形状校验失败·slot=' + slotKey + '·gameState=' + (record.gameState instanceof Blob ? 'Blob' : (record.gameState == null ? String(record.gameState) : typeof record.gameState)));
-        return;
+        return false;
       }
 
       // record.gameState = {GM, P}
@@ -165,9 +172,6 @@ var SaveManager = {
       // 需要包装一层让它识别
       var saveWrapper = { gameState: record.gameState };
       if (typeof SaveMigrations !== 'undefined') saveWrapper = SaveMigrations.run(saveWrapper);
-
-      // 关闭案卷目录
-      if (typeof closeSaveManager === 'function') closeSaveManager();
 
       if (typeof fullLoadGame === 'function') {
         await fullLoadGame(saveWrapper, { source: 'slot-' + slotId });
@@ -184,19 +188,24 @@ var SaveManager = {
         if (typeof renderGameState === 'function') renderGameState();
       }
       toast('已加载：' + (record.name || '存档'));
+      if (typeof closeSaveManager === 'function') closeSaveManager();
+      return true;
     }).catch(function(e) {
       toast('加载失败：' + e.message);
+      return false;
     }).finally(function() { hideLoading(); });
   },
 
   // 删除指定槽位
-  deleteSlot: function(slotId) {
+  deleteSlot: async function(slotId) {
     if (slotId < 0 || slotId >= this.maxSlots) return false;
-    TM_SaveDB.delete('slot_' + slotId).then(function() {
+    try {
+      var deleted = await TM_SaveDB.delete('slot_' + slotId);
+      if (deleted !== true) { toast('删除存档失败'); return false; }
       _updateSaveIndex(slotId, null); // 清除索引
       toast('已删除存档');
-    });
-    return true;
+      return true;
+    } catch (e) { toast('删除存档失败：' + (e.message || e)); return false; }
   },
 
   // 兼容入口：核心端回合不再调用它（由 tm-endturn-render 统一写 autosave + slot_0）；
@@ -721,6 +730,7 @@ function _playJadeSealAnimation(glyph) {
 }
 
 function saveToSlot(slotId) {
+  return new Promise(function(resolve) {
   // 自动生成卷宗标题
   var defaultName = '案卷';
   if (GM.running && typeof getTSText === 'function') {
@@ -728,7 +738,7 @@ function saveToSlot(slotId) {
   }
   showPrompt('为此卷命名：', defaultName, function(saveName) {
     // 取消(saveName=null) 或空字符串都跳过；玩家保留默认名也走这里
-    if (saveName == null) return;
+    if (saveName == null) { resolve(false); return; }
     var trimmedName = String(saveName).trim() || defaultName;
     // 玉玺按压动画
     _playJadeSealAnimation(slotId === 0 ? '自' : '封');
@@ -745,15 +755,17 @@ function saveToSlot(slotId) {
       })() : slotId;
       // 等待 IDB commit 完成再 close+open·避免上一次的存档没刷出来导致需要存两次的 bug
       var p = SaveManager.saveToSlot(actualSlotId, trimmedName);
-      var afterSave = function() {
+      var afterSave = function(ok) {
+        if (ok !== true) { resolve(false); return; }
         toast('已载入编年');
         window._scrollJustSavedSlot = slotId === -1 ? -2 : actualSlotId;
         closeSaveManager();
         openSaveManager();
+        resolve(true);
       };
-      if (p && typeof p.then === 'function') p.then(afterSave).catch(afterSave);
-      else afterSave();
+      Promise.resolve(p).then(afterSave, function() { resolve(false); });
     }, 450);
+  });
   });
 }
 
@@ -765,8 +777,7 @@ function loadSaveSlot(slotId) {
     onOk: function() {
       toast('史官正在抄录副本……');
       setTimeout(function() {
-        SaveManager.loadFromSlot(slotId);
-        closeSaveManager();
+        SaveManager.loadFromSlot(slotId); // provider closes the view only after successful load
       }, 300);
     }
   });
@@ -821,10 +832,10 @@ function deleteSaveSlot(slotId) {
         if (btn) target = c;
       });
       if (target) target.classList.add('burning');
-      setTimeout(function() {
-        SaveManager.deleteSlot(slotId);
-        closeSaveManager();
-        openSaveManager();
+      setTimeout(async function() {
+        var deleted = await SaveManager.deleteSlot(slotId);
+        if (deleted === true) { closeSaveManager(); openSaveManager(); }
+        else if (target) target.classList.remove('burning');
       }, 420);
     }
   });

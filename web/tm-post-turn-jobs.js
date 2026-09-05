@@ -45,6 +45,7 @@ function _tmCaptureWorldLease() {
     gmRef: (typeof GM !== 'undefined') ? GM : null,
     pRef: (typeof P !== 'undefined') ? P : null,
     campaignId: (typeof GM !== 'undefined' && GM && GM._campaignId) || '',
+    timelineId: (typeof GM !== 'undefined' && GM && GM._timelineId) || '',
     sid: (typeof GM !== 'undefined' && GM && GM.sid) || '',
     turn: (typeof GM !== 'undefined' && GM && GM.turn) || 0,
     loadGen: (typeof window !== 'undefined' && window._tmLoadGen) || 0
@@ -55,6 +56,7 @@ function _tmWorldLeaseCurrent(lease) {
   if (!lease || typeof GM === 'undefined' || typeof P === 'undefined') return false;
   return GM === lease.gmRef && P === lease.pRef &&
     String((GM && GM._campaignId) || '') === String(lease.campaignId || '') &&
+    String((GM && GM._timelineId) || '') === String(lease.timelineId || '') &&
     String((GM && GM.sid) || '') === String(lease.sid || '') &&
     Number((GM && GM.turn) || 0) === Number(lease.turn || 0) &&
     (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === lease.loadGen);

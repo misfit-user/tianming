@@ -179,19 +179,29 @@ function isSafeStorageKey(key) {
 }
 
 function saveFileRef(ref) {
+  function exactFile(key) {
+    // Legacy keys are literal filenames, never sanitized aliases or paths.
+    if (!key || key.length > 240 || /[<>:"/\\|?*\x00-\x1f]/.test(key) || /[. ]$/.test(key)
+        || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(key)) throw new Error('存档标识非法');
+    const file = path.join(SAVE_DIR, key + '.json');
+    if (fs.existsSync(file) && (!fs.lstatSync(file).isFile() || fs.lstatSync(file).isSymbolicLink())) throw new Error('存档不是普通文件');
+    return { key, path: file, legacy: !isSafeStorageKey(key) };
+  }
   const storageKey = ref && typeof ref === 'object' ? String(ref.storageKey || '') : '';
   if (storageKey) {
-    if (!isSafeStorageKey(storageKey)) throw new Error('存档标识非法');
-    return { key: storageKey, path: path.join(SAVE_DIR, storageKey + '.json'), legacy: false };
+    return exactFile(storageKey);
   }
-  const displayName = String(ref == null ? '' : ref);
+  const displayName = String(ref && typeof ref === 'object' ? ref.name || '' : ref == null ? '' : ref);
+  if (!displayName || /[\/\\\x00-\x1f]/.test(displayName)) throw new Error('存档名称不是安全引用');
   const key = stableStorageKey(displayName);
   const canonical = path.join(SAVE_DIR, key + '.json');
-  if (fs.existsSync(canonical)) return { key, path: canonical, legacy: false };
+  if (fs.existsSync(canonical)) return exactFile(key);
   // 只读兼容旧版无 hash 文件；新写入一律使用 canonical key，消除 sanitize 碰撞。
-  const legacy = path.join(SAVE_DIR, sanitize(displayName) + '.json');
-  if (fs.existsSync(legacy)) return { key: path.basename(legacy, '.json'), path: legacy, legacy: true };
-  return { key, path: canonical, legacy: false };
+  if (!/[<>:"|?*]/.test(displayName)) {
+    const legacy = exactFile(displayName);
+    if (fs.existsSync(legacy.path)) return legacy;
+  }
+  return exactFile(key);
 }
 
 function turnDataRoot(saveName, forWrite) {
@@ -3126,6 +3136,8 @@ ipcMain.handle('list-saves', async () => {
         return {
           name: (sidecarCurrent && typeof sidecar.name === 'string' && sidecar.name) || fallbackDesktopSaveName(storageKey),
           storageKey,
+          referenceVersion: 2,
+          legacy: !isSafeStorageKey(storageKey),
           size: stats.size,
           modified: stats.mtimeMs,
           modifiedStr: new Date(stats.mtimeMs).toLocaleString('zh-CN'),
@@ -3339,7 +3351,7 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
   });
   if (!result.canceled && result.filePath) {
     try {
-      fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
+      writeFileAtomic(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
       return { success: true, path: result.filePath };
     } catch (e) {
       return { success: false, error: e.message };
@@ -4222,6 +4234,9 @@ if (TEST_MODE) {
     isStrictUpgrade,
     isStrictRendererUpgrade,
     sanitize,
+    saveFileRef,
+    stableStorageKey,
+    writeFileAtomic,
     desktopSaveMetadataFromData,
     prepareDesktopSavePayload,
     desktopSavePayloadStampMatches,
@@ -4248,6 +4263,7 @@ if (TEST_MODE) {
     _bootHealthCheckOnStartup,
     getActiveHotUpdate,
     paths: {
+      SAVE_DIR,
       HOT_UPDATE_DIR,
       HOT_UPDATE_VERSIONS_DIR,
       HOT_UPDATE_STATE_FILE,

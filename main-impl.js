@@ -19,6 +19,7 @@ const { pipeline } = require('stream');
 const { autoUpdater } = require('electron-updater');
 const { createTurnDataCommitter } = require('./main-turn-data-commit.js');
 const { createWorkshopTransactions } = require('./main-workshop-transaction.js');
+const { createAccountRequests } = require('./main-account-requests.js');
 const { readJsonFileOffMainThread } = require('./main-json-file.js');
 
 // ============================================================
@@ -1484,106 +1485,15 @@ function remoteHostname(parsed) {
   return String(parsed && parsed.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
 }
 
+const safeRemote = require('./main-safe-remote.js').createSafeRemote({
+  resolveUrl: resolveRemoteUrl, lookup: (host, options) => dns.lookup(host, options), allowLocal: TEST_MODE
+});
 function isPrivateNetworkAddress(address) {
-  const raw = String(address || '').toLowerCase().split('%')[0];
-  if (nodeNet.isIPv4(raw)) {
-    const p = raw.split('.').map(Number);
-    return p[0] === 0 || p[0] === 10 || p[0] === 127
-      || (p[0] === 100 && p[1] >= 64 && p[1] <= 127)
-      || (p[0] === 169 && p[1] === 254)
-      || (p[0] === 172 && p[1] >= 16 && p[1] <= 31)
-      || (p[0] === 192 && (p[1] === 0 || p[1] === 168))
-      || (p[0] === 198 && (p[1] === 18 || p[1] === 19 || (p[1] === 51 && p[2] === 100)))
-      || (p[0] === 203 && p[1] === 0 && p[2] === 113)
-      || p[0] >= 224
-      || raw === '168.63.129.16';
-  }
-  if (nodeNet.isIPv6(raw)) {
-    if (raw === '::' || raw === '::1') return true;
-    if (/^(fc|fd|fe8|fe9|fea|feb|ff)/.test(raw) || raw.startsWith('2001:db8:')) return true;
-    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(raw);
-    return !!(mapped && isPrivateNetworkAddress(mapped[1]));
-  }
-  return true;
+  return require('./main-safe-remote.js').isPrivateNetworkAddress(address);
 }
-
-async function assertSafeRemoteUrl(rawUrl) {
-  const resolved = resolveRemoteUrl(rawUrl);
-  const parsed = new URL(resolved);
-  const hostname = remoteHostname(parsed);
-  const localDev = TEST_MODE && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname);
-  if (localDev) return resolved;
-  // 生产网络能力不接受 IP literal。域名需经过下方全部 A/AAAA 记录检查，
-  // 避免 127.0.0.1、metadata 与保留网段通过十六进制/IPv6 写法绕过。
-  if (nodeNet.isIP(hostname)) throw new Error('远程地址不允许直接使用 IP，已拒绝');
-  let records;
-  try { records = await dns.lookup(hostname, { all: true, verbatim: true }); }
-  catch (error) { throw new Error('远程地址 DNS 解析失败: ' + (error && error.message || error)); }
-  if (!records.length || records.some(record => isPrivateNetworkAddress(record.address))) {
-    throw new Error('远程地址 DNS 解析到私网或保留地址，已拒绝');
-  }
-  return resolved;
-}
-
+async function assertSafeRemoteUrl(rawUrl) { return safeRemote.assertSafeRemoteUrl(rawUrl); }
 async function fetchRemoteResponse(rawUrl, init = {}, maxRedirects = 5) {
-  let current = resolveRemoteUrl(rawUrl);
-  const originalMethod = String(init.method || 'GET').toUpperCase();
-  const initialOrigin = new URL(current).origin;
-  for (let hop = 0; hop <= maxRedirects; hop++) {
-    current = await assertSafeRemoteUrl(current);
-    const requestInit = Object.assign({}, init);
-    const timeoutMs = Math.max(1000, Math.min(120000, Number(requestInit.timeoutMs || 30000)));
-    delete requestInit.timeoutMs;
-    const externalSignal = requestInit.signal;
-    const controller = new AbortController();
-    let externalAbort = null;
-    let requestSignal = controller.signal;
-    if (externalSignal) {
-      if (externalSignal.aborted) controller.abort();
-      else if (typeof AbortSignal.any === 'function') {
-        // Keep the caller's signal attached for the entire response-body lifetime.
-        // Removing a hand-wired listener as soon as headers arrive makes download
-        // idle-timeout aborts unable to stop a stalled body stream.
-        requestSignal = AbortSignal.any([controller.signal, externalSignal]);
-      } else {
-        externalAbort = () => controller.abort();
-        externalSignal.addEventListener('abort', externalAbort, { once: true });
-      }
-    }
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let response;
-    try {
-      response = await net.fetch(current, Object.assign(requestInit, {
-        signal: requestSignal,
-        redirect: 'manual',
-        credentials: 'omit',
-        cache: 'no-store',
-        referrerPolicy: 'no-referrer',
-        bypassCustomProtocolHandlers: true
-      }));
-    } finally {
-      clearTimeout(timer);
-      // Electron 33 provides AbortSignal.any. The fallback listener is one-shot
-      // and intentionally remains through body consumption so caller aborts work.
-    }
-    if (![301, 302, 303, 307, 308].includes(response.status)) return { response, url: current };
-    if (hop === maxRedirects) throw new Error('远程地址重定向次数超过上限');
-    if (originalMethod !== 'GET' && originalMethod !== 'HEAD') throw new Error('非只读请求不允许重定向');
-    const location = response.headers.get('location');
-    if (!location) throw new Error('远程响应缺少重定向地址');
-    const next = resolveRemoteUrl(location, current);
-    if (new URL(next).origin !== initialOrigin) {
-      const headers = requestInit.headers || {};
-      const names = typeof headers.keys === 'function'
-        ? Array.from(headers.keys())
-        : (Array.isArray(headers) ? headers.map(row => row && row[0]) : Object.keys(headers));
-      if (names.some(name => /^(?:authorization|proxy-authorization|cookie|x-api-key)$/i.test(String(name || '')))) {
-        throw new Error('带凭据请求不允许跨源重定向');
-      }
-    }
-    current = next;
-  }
-  throw new Error('远程请求失败');
+  return safeRemote.fetchRemoteResponse(rawUrl, init, maxRedirects);
 }
 
 async function readRemoteTextLimited(resp, maxBytes, idleTimeoutMs = 30000) {
@@ -1864,7 +1774,7 @@ function sanitizeAccountOnlineResponse(value) {
 
 function writeAccountSession(session) {
   ensureSaveDir();
-  writeJson(ACCOUNT_SESSION_FILE, {
+  writeJsonAtomic(ACCOUNT_SESSION_FILE, {
     token: String(session.token || ''),
     apiUrl: String(DEFAULT_ONLINE_API_URL),
     user: session.user || null,
@@ -1873,9 +1783,7 @@ function writeAccountSession(session) {
 }
 
 function clearAccountSession() {
-  try {
-    if (fs.existsSync(ACCOUNT_SESSION_FILE)) fs.rmSync(ACCOUNT_SESSION_FILE, { force: true });
-  } catch (e) {}
+  if (fs.existsSync(ACCOUNT_SESSION_FILE)) fs.rmSync(ACCOUNT_SESSION_FILE);
 }
 
 function getAccountApiUrl() {
@@ -1967,40 +1875,17 @@ function normalizeOnlineRendererRoute(method, rawPathname) {
 async function handleOnlineRendererRequest(method, pathname, body) {
   const req = normalizeOnlineRendererRoute(method, pathname);
   assertOnlineRendererBodySize(req.route, body);
-  const noAuth = new Set([
-    'health', 'account/email-code', 'account/email-login', 'account/login',
-    'account/register', 'account/request-reset', 'account/reset'
-  ]);
-  const options = noAuth.has(req.route) ? { token: '' } : {};
-  let response;
-  if (req.route === 'account/logout') {
-    try { response = await postOnlineApi(req.pathname, body || {}, options); }
-    finally { clearAccountSession(); }
-  } else if (req.method === 'GET') {
-    response = await getOnlineApi(req.pathname, options);
-  } else {
-    response = await postOnlineApi(req.pathname, body == null ? {} : body, options);
-  }
-
-  if (response && response.success && response.token
-      && (req.route === 'account/register' || req.route === 'account/login' || req.route === 'account/email-login')) {
-    writeAccountSession({ token: response.token, user: response.user || null });
-  } else if (response && response.success && response.user
-      && (req.route === 'account/me' || req.route === 'account/set-email')) {
-    const current = readAccountSession();
-    if (current.token) writeAccountSession({ token: current.token, user: response.user });
-  }
-
-  const publicResponse = Object.assign(
-    { success: false },
-    /^account\//.test(req.route) ? sanitizeAccountOnlineResponse(response || {}) : sanitizeOnlineResponse(response || {})
-  );
-  if (/^account\//.test(req.route)) {
-    publicResponse.session = toPublicAccountSession();
-    publicResponse.loggedIn = publicResponse.session.loggedIn;
-  }
-  return publicResponse;
+  if (/^account\//.test(req.route)) return accountRequests.request(req, body);
+  // Non-account routes do not own session state and retain their existing response contract.
+  const options = req.route === 'health' ? { token: '' } : {};
+  const response = req.method === 'GET' ? await getOnlineApi(req.pathname, options)
+    : await postOnlineApi(req.pathname, body == null ? {} : body, options);
+  return Object.assign({ success: false }, sanitizeOnlineResponse(response || {}));
 }
+
+const accountRequests = createAccountRequests({ read: readAccountSession, write: writeAccountSession,
+  clear: clearAccountSession, publicSession: toPublicAccountSession, sanitize: sanitizeAccountOnlineResponse,
+  send: (req, body, options) => req.method === 'GET' ? getOnlineApi(req.pathname, options) : postOnlineApi(req.pathname, body == null ? {} : body, options) });
 
 function updateInfoSize(info) {
   if (!info) return 0;
@@ -3993,11 +3878,7 @@ ipcMain.handle('account-register', async (event, options = {}) => {
       password: String(options.password || ''),
       nickname: String(options.nickname || '').trim()
     };
-    const res = await postOnlineApi('account/register', payload, { apiUrl: options.apiUrl });
-    if (res && res.success && res.token) {
-      writeAccountSession({ token: res.token, apiUrl: getAccountApiUrl(options), user: res.user || null });
-    }
-    return Object.assign({ success: false }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('POST', 'account/register', payload);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4009,11 +3890,7 @@ ipcMain.handle('account-login', async (event, options = {}) => {
       username: String(options.username || '').trim(),
       password: String(options.password || '')
     };
-    const res = await postOnlineApi('account/login', payload, { apiUrl: options.apiUrl });
-    if (res && res.success && res.token) {
-      writeAccountSession({ token: res.token, apiUrl: getAccountApiUrl(options), user: res.user || null });
-    }
-    return Object.assign({ success: false }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('POST', 'account/login', payload);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4023,9 +3900,7 @@ ipcMain.handle('account-me', async (event, options = {}) => {
   try {
     const session = readAccountSession();
     if (!session.token) return { success: true, loggedIn: false, session: toPublicAccountSession(session) };
-    const res = await getOnlineApi('account/me', { apiUrl: options.apiUrl || session.apiUrl, token: session.token });
-    if (res && res.success && res.user) writeAccountSession({ token: session.token, apiUrl: options.apiUrl || session.apiUrl, user: res.user });
-    return Object.assign({ loggedIn: !!(res && res.user) }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('GET', 'account/me');
   } catch (e) {
     return { success: false, error: e.message, session: toPublicAccountSession() };
   }
@@ -4033,15 +3908,9 @@ ipcMain.handle('account-me', async (event, options = {}) => {
 
 ipcMain.handle('account-logout', async (event, options = {}) => {
   try {
-    const session = readAccountSession();
-    if (session.token) {
-      try { await postOnlineApi('account/logout', {}, { apiUrl: options.apiUrl || session.apiUrl, token: session.token }); } catch (e) {}
-    }
-    clearAccountSession();
-    return { success: true };
+    return await handleOnlineRendererRequest('POST', 'account/logout', {});
   } catch (e) {
-    clearAccountSession();
-    return { success: true, warning: e.message };
+    return { success: false, error: e.message };
   }
 });
 

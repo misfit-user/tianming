@@ -26,7 +26,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const SRC = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf-8');
 const MAIN_SHIM = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf-8');
-const PRELOAD_SHIM = fs.readFileSync(path.join(ROOT, 'preload.js'), 'utf-8');
+const PRELOAD_SOURCE = fs.readFileSync(path.join(ROOT, 'preload-impl.js'), 'utf-8');
 const HOT_BUILDER = fs.readFileSync(path.join(ROOT, 'web', 'tools', 'build-hot-update-package.js'), 'utf-8');
 const PACKAGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
@@ -185,8 +185,9 @@ assert(!/sha256:\s*[^,\n}]*headers\.get/.test(SRC),
 assert(/function isAllowedRemoteUrl[\s\S]*?protocol === 'https:'/.test(SRC),
   'src· 远程地址强制 HTTPS（localhost 例外）→ MITM 无法改 catalog 里的 hash');
 assert(/require\(['"]\.\/main-impl\.js['"]\)/.test(MAIN_SHIM) && !MAIN_SHIM.includes('_app_main.js')
-  && /require\(['"]\.\/preload-impl\.js['"]\)/.test(PRELOAD_SHIM) && !PRELOAD_SHIM.includes('_app_preload.js'),
-  'src· main/preload 启动桥只加载安装包内固定实现');
+  && /preload:\s*path\.join\(bundledAppRoot\(\), 'preload-impl\.js'\)/.test(SRC)
+  && !/require\(['"]\./.test(PRELOAD_SOURCE) && !PRELOAD_SOURCE.includes('_app_preload.js'),
+  'src· main/preload 只加载安装包内固定实现，沙箱桥不使用相对 require');
 assert(!HOT_BUILDER.includes("addLocalFile(path.join(APP_ROOT, 'main")
   && !HOT_BUILDER.includes("addLocalFile(path.join(APP_ROOT, 'preload")
   && /authenticateReleaseDocument/.test(HOT_BUILDER) && /Ed25519/.test(HOT_BUILDER),

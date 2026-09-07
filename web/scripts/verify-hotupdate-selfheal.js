@@ -179,9 +179,11 @@ function readState() { return JSON.parse(fs.readFileSync(P.HOT_UPDATE_STATE_FILE
   // ── K·main/preload 固定在安装包信任边界 ──
   {
     const mainShim = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf-8');
-    const preloadShim = fs.readFileSync(path.join(ROOT, 'preload.js'), 'utf-8');
+    const preloadSource = fs.readFileSync(path.join(ROOT, 'preload-impl.js'), 'utf-8');
+    const mainSource = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf-8');
     assert(mainShim.includes("require('./main-impl.js')") && !/_detectHotMain|_app_main\.js/.test(mainShim), 'K·main 只加载安装包内实现');
-    assert(preloadShim.includes("require('./preload-impl.js')") && !/hot-preload|_app_preload\.js/.test(preloadShim), 'K·preload 只加载安装包内实现');
+    assert(mainSource.includes("preload: path.join(bundledAppRoot(), 'preload-impl.js')")
+      && !/require\(['"]\.|hot-preload|_app_preload\.js/.test(preloadSource), 'K·preload 直接加载安装包内单文件实现');
   }
 
   console.log('PASS assertions=' + assertions);

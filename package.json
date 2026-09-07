@@ -49,7 +49,6 @@
       "main-workshop-transaction.js",
       "main-account-requests.js",
       "main-safe-remote.js",
-      "preload.js",
       "preload-impl.js",
       "resources/hot-update-public-key.pem",
       "web/**/*",

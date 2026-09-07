@@ -2787,7 +2787,9 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       // preload 属于安装包信任边界，内容 OTA 不可替换。
-      preload: path.join(bundledAppRoot(), 'preload.js'),
+      // Sandboxed preload cannot require relative CommonJS files. Load the single
+      // self-contained bridge from the signed installation, never the content OTA.
+      preload: path.join(bundledAppRoot(), 'preload-impl.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -3094,7 +3096,7 @@ async function handleMenuImport() {
 
 // ============================================================
 //  IPC：响应网页发来的请求
-//  网页通过 preload.js 桥接调用这些函数
+//  网页通过 preload-impl.js 单文件桥接调用这些函数
 // ============================================================
 
 // --- 存档：保存 ---

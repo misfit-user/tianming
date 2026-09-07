@@ -73,7 +73,7 @@ console.log('=== save integrity audit ===');
 {
   const blockStart = lifecycle.indexOf('function _safeClone(');
   const blockEnd = lifecycle.indexOf('\ndoSaveGame=async function', blockStart);
-  const snapshot = sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
+  const snapshot = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
   const builder = sliceFn(lifecycle, 'function _buildSaveState(');
   const stableIdHelpers = [
     'function _tmStableIdMissing(',

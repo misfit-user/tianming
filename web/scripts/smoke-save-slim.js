@@ -38,15 +38,16 @@ const DEDUP = ['_savedConvArchive','_savedMemoryArchiveFull','_savedLetters','_s
   '_savedProvinceStats','_savedHistoryIndex','_savedFactionRelationsMap','_savedNpcCommitments',
   '_savedCharacterArcs','_savedEdictLifecycle','_savedCourtRecords','_savedNpcFactionAiTurnLedger',
   '_savedFamilies','_savedCausalGraph','_savedMemoryLayers','_savedBattleHistory','_savedFactionArcs'];
-const snapSrc = sliceFn(save, 'function _autoSaveSnapshotGM(');
+const skipSrc = sliceFn(save, 'function _tmSaveSnapshotSkipKeys(');
+const snapSrc = skipSrc + '\n' + sliceFn(save, 'function _autoSaveSnapshotGM(');
 ok(!!snapSrc, '案二·快照函数抽取成功');
-// SKIP 对象文本(取 var SKIP = { ... };)
-const skipBlock = (snapSrc.match(/var SKIP = \{[\s\S]*?\};/) || [''])[0];
-DEDUP.forEach(function(k){ ok(skipBlock.indexOf(k+':1')>=0, '案二·SKIP 含去重镜像 '+k); });
+// Canonical preparation and snapshot share this exact production policy.
+const skipPolicy = vm.runInNewContext('(' + skipSrc + ')()');
+DEDUP.forEach(function(k){ ok(skipPolicy[k] === 1, '案二·SKIP 含去重镜像 '+k); });
 // 刻意排除者绝不能进 SKIP(否则丢数据)
 const MUST_KEEP = ['_savedEventOpinions','_savedEventBus','_savedEdictDrafts','_savedCharMemExt',
   '_savedCharOfficeFields','_savedVassalSystem','_savedGovernment','_savedNpcDecisionDiagnostics','_savedRenli'];
-MUST_KEEP.forEach(function(k){ ok(skipBlock.indexOf(k)<0, '案二·SKIP 不含须保留者 '+k); });
+MUST_KEEP.forEach(function(k){ ok(!Object.prototype.hasOwnProperty.call(skipPolicy,k), '案二·SKIP 不含须保留者 '+k); });
 
 // 每个去重镜像的 restore 都是条件式(缺席时活字段原样生效)
 const restoreSrc = sliceFn(save, 'function _restoreSavedFields(');

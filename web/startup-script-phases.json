@@ -8193,6 +8193,7 @@
         "_tmRunDegradableLoadStepAsync",
         "_tmRunDesktopAutoSaveTick",
         "_tmRuntimeMapSourceForWorld",
+        "_tmSaveSnapshotSkipKeys",
         "_tmScheduleBackgroundSave",
         "_tmShowDesktopLoadFallback",
         "_tmShowDesktopSavePanel",

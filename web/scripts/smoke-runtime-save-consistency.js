@@ -33,7 +33,7 @@ const integrationBridge = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge
 const hujiEngine = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
 
 console.log('=== 1. unified save snapshot builder ===');
-const snapshotSrc = sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
+const snapshotSrc = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
 const builderSrc = sliceFn(lifecycle, 'function _buildSaveState(');
 const desktopResultSrc = sliceFn(lifecycle, 'function _tmDesktopAutoSaveResultOk(');
 ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽取');

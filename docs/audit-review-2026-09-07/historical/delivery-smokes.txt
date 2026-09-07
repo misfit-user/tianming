@@ -1,0 +1,59 @@
+{"executable":"node","args":["web/scripts/ci-smokes.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T17:11:39.850Z","head":"e890eeb83c2f85bfae6a5c9146f2833edb53d13e"}
+[ci-smokes] run=c87ff441-24e8-49db-b7ad-72b69bfa0ed4 HEAD=e890eeb83c2f85bfae6a5c9146f2833edb53d13e report=<USER_HOME>\Desktop\tianming\web\dev-tools\arch-guard\ci-QrYrBT\smoke-report.json
+[run-smokes] 共 910 个 smoke · 选中 910 · 跳过 0 · 并发 8 · 超时 120s
+  [25/910] PASS    smoke-agent-mode-s13.js (0.3s)
+  [50/910] PASS    smoke-ai-structured-policy-actions.js (0.2s)
+  [75/910] PASS    smoke-audit-manual-save-lease.js (0.2s)
+  [100/910] PASS    smoke-battle-retreat.js (0.2s)
+  [125/910] PASS    smoke-changchao-ambient-isolation.js (0.2s)
+  [150/910] PASS    smoke-class-character-ui.js (0.2s)
+  [175/910] PASS    smoke-content-manager-account-session.js (0.2s)
+  [200/910] PASS    smoke-currency-dynasty-fallback.js (0.1s)
+  [225/910] PASS    smoke-diplo-consequence.js (0.2s)
+  [250/910] PASS    smoke-edict-parser-layered.js (0.2s)
+  [275/910] PASS    smoke-endturn-performance-optimizations.js (0.3s)
+  [300/910] PASS    smoke-faction-derived-cohesion.js (0.5s)
+  [325/910] PASS    smoke-faction-npc-llm-ledger.js (0.2s)
+  [350/910] PASS    smoke-fiscal-transaction-atomicity.js (0.2s)
+  [375/910] PASS    smoke-globalrules-resist.js (0.2s)
+  [400/910] PASS    smoke-h-school.js (0.3s)
+  [425/910] PASS    smoke-invasion-ai.js (0.2s)
+  [450/910] PASS    smoke-map-label-spatial-index.js (0.3s)
+  [475/910] PASS    smoke-memory-controls-actions.js (0.2s)
+  [500/910] PASS    smoke-memory-procedural-lessons.js (0.2s)
+  [525/910] PASS    smoke-memory-trace-core.js (0.2s)
+  [550/910] PASS    smoke-memory-workshop-preinference.js (0.6s)
+  [575/910] PASS    smoke-no-source-death-guard.js (0.6s)
+  [600/910] PASS    smoke-office-charter.js (0.5s)
+  [625/910] PASS    smoke-official-scenario-lazy-loader.js (0.9s)
+  [650/910] PASS    smoke-phase3-deep-refactor.js (0.3s)
+  [675/910] PASS    smoke-pop-bottomup-s4.js (0.3s)
+  [700/910] PASS    smoke-rank-display-sources.js (0.2s)
+  [725/910] PASS    smoke-renli-reported-value-fn.js (0.3s)
+  [750/910] PASS    smoke-revolt-entity.js (0.3s)
+  [775/910] PASS    smoke-sc1-stream-final-budget.js (0.3s)
+  [800/910] PASS    smoke-scenario-isolation.js (1.7s)
+  [825/910] PASS    smoke-storage-migration-collisions.js (0.4s)
+  [850/910] PASS    smoke-tinyi-v3-full.js (1.0s)
+  [875/910] PASS    smoke-wentian-agent.js (0.3s)
+  [900/910] PASS    smoke-tinyi-reissued.js (6.6s)
+  [910/910] PASS    smoke-start-game-data-integrity.js (29.8s)
+
+[run-smokes] 完成：910 PASS · 0 FAIL · 0 SKIP · 0 WAIVED / 910 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 543s(并行墙钟更短)
+
+--- 最慢 Top 10 ---
+  60.6s  smoke-full-turn-flow.js
+  29.8s  smoke-start-game-data-integrity.js
+  29.0s  smoke-deploy-manifest-atomicity.js
+  11.1s  smoke-character-location-travel.js
+  6.8s  smoke-party-goals-lifecycle.js
+  6.6s  smoke-class-demand-party-goals.js
+  6.6s  smoke-tinyi-reissued.js
+  6.5s  smoke-tinyi-party-class-agenda.js
+  6.5s  smoke-tinyi-scenario-class-source.js
+  6.4s  smoke-guoshi-cc-port.js
+
+[run-smokes] 报告 → dev-tools/arch-guard/ci-QrYrBT/smoke-report.json
+[ci-smokes] PASS gate {"pass":910,"fail":0,"skip":0,"waived":0,"waivedChecks":0,"total":910}
+
+{"name":"delivery-smokes","executable":"node","args":["web/scripts/ci-smokes.js"],"exitCode":0,"signal":null,"durationMs":84570,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\delivery-smokes.log"}

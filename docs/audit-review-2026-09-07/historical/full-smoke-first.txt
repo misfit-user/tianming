@@ -1,0 +1,73 @@
+{"executable":"node","args":["web/scripts/ci-smokes.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:28:32.132Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+[ci-smokes] run=474c65cd-90ee-4cb8-a8bc-831c50d6141d HEAD=6ce797ae032857ff99722482768844c2e6d4a4c9 report=<USER_HOME>\Desktop\tianming\web\dev-tools\arch-guard\ci-c5qfJi\smoke-report.json
+[run-smokes] 共 909 个 smoke · 选中 909 · 跳过 0 · 并发 8 · 超时 120s
+  [25/909] PASS    smoke-agent-mode-s2.js (0.3s)
+  [50/909] PASS    smoke-android-endturn-oom-guard.js (0.2s)
+  [75/909] PASS    smoke-audit-account-generation.js (0.2s)
+  [100/909] PASS    smoke-battle-terrain-clamp.js (0.2s)
+  [125/909] PASS    smoke-changchao-line-salvage.js (0.2s)
+  [150/909] PASS    smoke-class-descriptor-adjudicate.js (0.2s)
+  [175/909] PASS    smoke-content-manager-workshop-fullpage.js (0.2s)
+  [200/909] PASS    smoke-currency-precision-contract.js (0.2s)
+  [225/909] PASS    smoke-disaster-lifecycle.js (0.2s)
+  [250/909] PASS    smoke-edict-recruit-parse.js (0.2s)
+  [275/909] PASS    smoke-endturn-policy-bridges.js (0.3s)
+  [300/909] PASS    smoke-faction-derived-economy.js (0.5s)
+  [325/909] PASS    smoke-faction-npc-multiturn-e2e.js (0.2s)
+  [350/909] PASS    smoke-fixed-fit-modern-viewport-units.js (0.2s)
+  [375/909] PASS    smoke-gongming-aiface.js (0.2s)
+  [400/909] PASS    smoke-history-trigger.js (0.3s)
+  [425/909] PASS    smoke-invasion-ai.js (0.3s)
+  [450/909] PASS    smoke-map-label-feature-late-binding.js (0.2s)
+  [475/909] PASS    smoke-memory-court-record-envelope.js (0.2s)
+  [500/909] PASS    smoke-memory-read-contract.js (0.2s)
+  [525/909] PASS    smoke-memory-trace-integration.js (0.3s)
+  [550/909] PASS    smoke-memory-relation-index.js (2.6s)
+  [575/909] PASS    smoke-non-dead-retention-guards.js (0.2s)
+  [600/909] PASS    smoke-office-derive-contract.js (0.3s)
+  [625/909] PASS    smoke-official-scenario-lazy-loader.js (0.8s)
+  [650/909] PASS    smoke-deploy-manifest-atomicity.js (27.9s)
+  [675/909] PASS    smoke-pop-bottomup-s5.js (0.2s)
+  [700/909] PASS    smoke-rank-resolve.js (0.2s)
+  [725/909] PASS    smoke-renli-tanding.js (0.2s)
+  [750/909] PASS    smoke-rightrail-datasource.js (0.2s)
+  [755/909] FAIL    smoke-runtime-save-consistency.js (0.4s)
+  [771/909] FAIL    smoke-save-load-guard.js (0.6s)
+  [775/909] PASS    smoke-s4-office-retirement.js (2.5s)
+  [789/909] FAIL    smoke-security-ipc-hardening.js (0.2s)
+  [792/909] FAIL    smoke-security-trust-boundary.js (0.4s)
+  [800/909] PASS    smoke-settlement-reentrant-rollback.js (0.2s)
+  [825/909] PASS    smoke-talent-s2.js (0.1s)
+  [850/909] PASS    smoke-tinyi-verdict-l10n.js (0.1s)
+  [875/909] PASS    smoke-wentian-class-hardchange.js (0.2s)
+  [900/909] PASS    smoke-zero-value-contract.js (0.3s)
+  [909/909] PASS    smoke-start-game-data-integrity.js (29.0s)
+
+[run-smokes] 完成：905/909 PASS · 4 FAIL · 0 suspect(退出码0但输出FAIL) · 总耗时 493s(并行墙钟更短)
+
+--- 失败聚类（4 簇）---
+  ×1  [smoke-runtime-save-consistency] # passed / # failed
+      smoke-runtime-save-consistency.js
+  ×1  [smoke-save-load-guard] # passed / # failed · assertions=#
+      smoke-save-load-guard.js
+  ×1  FAIL· src· read-turns-summary 复用严格 turnSeg，并保留 safe-integer/跨度门
+      smoke-security-ipc-hardening.js
+  ×1  Error: connect ECONNREFUSED #.#.#.#:#
+      smoke-security-trust-boundary.js
+
+--- 最慢 Top 10 ---
+  51.6s  smoke-full-turn-flow.js
+  29.0s  smoke-start-game-data-integrity.js
+  27.9s  smoke-deploy-manifest-atomicity.js
+  16.3s  smoke-encoding-check.js
+  11.0s  smoke-character-location-travel.js
+  6.6s  smoke-tinyi-reissued.js
+  6.6s  smoke-tinyi-scenario-class-source.js
+  6.6s  smoke-class-demand-party-goals.js
+  6.6s  smoke-party-goals-lifecycle.js
+  6.6s  smoke-tinyi-party-class-agenda.js
+
+[run-smokes] 报告 → dev-tools/arch-guard/ci-c5qfJi/smoke-report.json
+[ci-smokes] FAIL smoke-evidence-runner-failed
+
+{"name":"full-smoke-first","executable":"node","args":["web/scripts/ci-smokes.js"],"exitCode":1,"signal":null,"durationMs":78319,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\full-smoke-first.log"}

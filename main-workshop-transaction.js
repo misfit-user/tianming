@@ -1,11 +1,14 @@
 'use strict';
 
+const { createWorkshopLock } = require('./main-workshop-lock');
+
 // All directory and shared-index mutations are synchronous under one process/file lock.
 // The index transaction ID is the commit point; the durable journal resolves interrupted renames.
 function createWorkshopTransactions(d) {
   const { fs, path, crypto, root, packsRoot, indexFile, writeJsonAtomic, validate, publicInfo, normalizeId } = d;
   const journalFile = path.join(root, '.transaction.json');
   const lockFile = path.join(root, '.transaction.lock');
+  const lock = createWorkshopLock({ fs, path, crypto, root, safe });
   let active = false;
   function safe(target) {
     const full = path.resolve(target);
@@ -41,34 +44,16 @@ function createWorkshopTransactions(d) {
   }
   function exclusive(fn) {
     if (active) throw new Error('workshop-operation-in-progress');
-    safe(root); safe(packsRoot); safe(lockFile); safe(journalFile); safe(indexFile);
+    safe(root); safe(packsRoot);
     fs.mkdirSync(root, { recursive: true });
-    let fd;
-    try { fd = fs.openSync(lockFile, 'wx'); }
-    catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-      // Serialize stale-lock reclamation too. A second process must not unlink a newly acquired lock.
-      const recovery = safe(path.join(root, '.lock-recovery'));
-      let guard;
-      try { guard = fs.openSync(recovery, 'wx'); } catch (_) { throw new Error('workshop-lock-recovery-required'); }
-      try {
-        if (fs.existsSync(lockFile)) {
-          const pid = Number(fs.readFileSync(lockFile, 'utf8'));
-          if (!Number.isSafeInteger(pid) || pid < 1) throw new Error('workshop-lock-unproven');
-          try { process.kill(pid, 0); throw new Error('workshop-operation-in-progress'); }
-          catch (probe) { if (probe.code !== 'ESRCH') throw probe; }
-          fs.unlinkSync(lockFile);
-        }
-        fd = fs.openSync(lockFile, 'wx');
-      } finally { fs.closeSync(guard); fs.unlinkSync(recovery); }
-    }
+    const lease = lock.acquire();
     active = true;
     let result, failure, cleanupError;
-    try { fs.writeFileSync(fd, String(process.pid)); fs.fsyncSync(fd); recoverLocked(); result = fn(); }
+    try { safe(lockFile); safe(journalFile); safe(indexFile); recoverLocked(); result = fn(); }
     catch (error) { failure = error; }
     finally {
       active = false;
-      try { fs.closeSync(fd); fs.unlinkSync(lockFile); } catch (error) { cleanupError = error; }
+      try { lease.release(); } catch (error) { cleanupError = error; }
     }
     if (failure) { if (cleanupError) failure.cleanupError = cleanupError.message; throw failure; }
     if (cleanupError) result.warning = [result.warning, '工坊操作已完成，锁文件清理失败：' + cleanupError.message].filter(Boolean).join('; ');

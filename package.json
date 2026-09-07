@@ -47,6 +47,7 @@
       "main-image-file.js",
       "main-turn-data-commit.js",
       "main-workshop-transaction.js",
+      "main-workshop-lock.js",
       "main-account-requests.js",
       "main-safe-remote.js",
       "preload-impl.js",

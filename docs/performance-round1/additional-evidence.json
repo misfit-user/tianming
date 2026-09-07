@@ -1,0 +1,27 @@
+{
+  "smoke-final.json": {
+    "source": "web\\dev-tools\\arch-guard\\ci-7jW7Ep\\smoke-report.json",
+    "sourceSha256": "3b01db1e48da5a2357b581e3f3fb4277b7630d7fb8d097e5e955f3dce00936fe",
+    "exportedSha256": "aedc9ff61385cacc7a1490c3cd59a2b1c26af7d1b075005dccf8867c5ff4b137"
+  },
+  "electron-bridge-final.json": {
+    "source": "web\\dev-tools\\electron-bridge\\ade70bf3-afcc-4ecf-bd65-04702a3e8ec5\\report.json",
+    "sourceSha256": "d2741078ad19f969a2dadebb5bbbfa488e35cd9fb9451cde5d620df6a19ba749",
+    "exportedSha256": "925d0239f7eec55a6abf42941dd299d3e86a0cdc910ffc3a9adab83450d1a15a"
+  },
+  "computer-use-trace.json": {
+    "source": "web\\dev-tools\\perf-round1\\inspect-1ab3ba2e-466e-49c9-a02e-b785654f8fa7\\trace.json",
+    "sourceSha256": "d4a53f32c2f5877ca2f59e55d2a9c15017f323634a6bf6dcf30dbf1282036da8",
+    "exportedSha256": "dffc4ab2cca2032f8dcf5fc60576da6955ec67142f70b6f1cf6b6a2b92b7b733"
+  },
+  "computer-use-source.json": {
+    "source": "web\\dev-tools\\perf-round1\\inspect-1ab3ba2e-466e-49c9-a02e-b785654f8fa7\\source.json",
+    "sourceSha256": "883a808038bca9253a06b189ae9a57d6b3c7db42f0852015759eec66eaf6c95a",
+    "exportedSha256": "516d24363c4949d62ffaa561fa106fcb970d7896222158828ff3e1a269a27e34"
+  },
+  "computer-use-report.json": {
+    "source": "web\\dev-tools\\perf-round1\\inspect-1ab3ba2e-466e-49c9-a02e-b785654f8fa7\\report.json",
+    "sourceSha256": "c96c82675d03768e4a1ee59dde894ecec3dcb95d82951e7de808939505820f97",
+    "exportedSha256": "59adb1191ea55400067407db0dcc5c3e62feeaadb9d653049255b43862bd7a10"
+  }
+}

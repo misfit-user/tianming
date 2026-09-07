@@ -20,7 +20,7 @@ function dist(values) {
 const sum = a => a.reduce((n, v) => n + v, 0), max = a => a.length ? Math.max(...a) : 0;
 function sanitize(value, key) {
   if (key === 'temporaryUserData') return '<isolated-user-data>';
-  if (typeof value === 'string') return value.replaceAll(os.homedir(), '<user-profile>').replaceAll(os.homedir().replace(/\\/g, '/'), '<user-profile>');
+  if (typeof value === 'string') return value.replaceAll(os.homedir().replace(/\\/g, '\\\\'), '<user-profile>').replaceAll(os.homedir(), '<user-profile>').replaceAll(os.homedir().replace(/\\/g, '/'), '<user-profile>');
   if (Array.isArray(value)) return value.map(v => sanitize(v));
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sanitize(v, k)]));
   return value;
@@ -77,16 +77,19 @@ const summary = {
 const out = path.join(root, 'docs/performance-round1'); fs.mkdirSync(out, { recursive: true });
 for (const [name, value] of [['summary.json', summary], ['microbench-raw.json', micro], ['electron-raw.json', electron]]) fs.writeFileSync(path.join(out, name), JSON.stringify(sanitize(value), null, 2) + '\n');
 const evidenceRoot = path.join(root, 'web/dev-tools/perf-round1');
+const exportedLogs = {};
 const executions = fs.readdirSync(evidenceRoot, { withFileTypes: true }).filter(e => e.isDirectory() && fs.existsSync(path.join(evidenceRoot, e.name, 'run.json'))).map(e => {
   const dir = path.join(evidenceRoot, e.name), run = read(path.join(dir, 'run.json'));
-  const logDir = path.join(out, 'logs', e.name); fs.mkdirSync(logDir, { recursive: true });
+  exportedLogs[e.name] = {};
   return { ...run, evidenceDirectory: path.relative(root, dir), logs: Object.fromEntries(['stdout.log', 'stderr.log'].map(name => {
-    const source = path.join(dir, name), exported = path.join(logDir, name + '.txt');
-    fs.writeFileSync(exported, sanitize(fs.readFileSync(source, 'utf8')));
-    return [name, { sha256: sha(source), bytes: fs.statSync(source).size, exported: path.relative(out, exported).replace(/\\/g, '/'), exportedSha256: sha(exported) }];
+    const source = path.join(dir, name), exportedText = sanitize(fs.readFileSync(source, 'utf8'));
+    exportedLogs[e.name][name] = exportedText;
+    return [name, { sha256: sha(source), bytes: fs.statSync(source).size, exported: 'logs.json', key: [e.name, name], exportedTextSha256: crypto.createHash('sha256').update(exportedText).digest('hex') }];
   })) };
 }).sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 fs.writeFileSync(path.join(out, 'execution-index.json'), JSON.stringify(sanitize(executions), null, 2) + '\n');
+// JSON preserves original newlines/trailing whitespace without making them source-code diff errors.
+fs.writeFileSync(path.join(out, 'logs.json'), JSON.stringify(exportedLogs, null, 2) + '\n');
 const additionalEvidence = {};
 for (const [flag, name] of [['--smoke', 'smoke-final.json'], ['--bridge', 'electron-bridge-final.json']]) {
   if (!arg(flag)) continue;

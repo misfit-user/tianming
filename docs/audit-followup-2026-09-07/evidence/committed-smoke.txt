@@ -1,0 +1,57 @@
+[ci-smokes] run=8dea82db-6c51-43da-ab7e-417cbcb3e175 HEAD=03ec98c9bd3968eed69dc05f8e8adfe38637d056 report=<USER_HOME>\Desktop\tianming-audit-review\web\dev-tools\arch-guard\ci-CsUcJI\smoke-report.json
+[run-smokes] 共 911 个 smoke · 选中 911 · 跳过 0 · 并发 8 · 超时 120s
+  [25/911] PASS    smoke-agent-mode-s13.js (0.2s)
+  [50/911] PASS    smoke-ai-structured-policy-actions.js (0.2s)
+  [75/911] PASS    smoke-audit-manual-save-lease.js (0.2s)
+  [100/911] PASS    smoke-battle-retreat.js (0.1s)
+  [125/911] PASS    smoke-changchao-line-salvage.js (0.1s)
+  [150/911] PASS    smoke-class-descriptor-adjudicate.js (0.1s)
+  [175/911] PASS    smoke-content-manager-account-session.js (0.2s)
+  [200/911] PASS    smoke-currency-dynasty-fallback.js (0.2s)
+  [225/911] PASS    smoke-diplo-consequence.js (0.2s)
+  [250/911] PASS    smoke-edict-parser-layered.js (0.2s)
+  [275/911] PASS    smoke-endturn-performance-optimizations.js (0.3s)
+  [300/911] PASS    smoke-faction-derived-cohesion.js (0.6s)
+  [325/911] PASS    smoke-encoding-check.js (5.9s)
+  [350/911] PASS    smoke-fiscal-transaction-atomicity.js (0.3s)
+  [375/911] PASS    smoke-globalrules-resist.js (0.3s)
+  [400/911] PASS    smoke-h-school.js (0.3s)
+  [425/911] PASS    smoke-institution-lifecycle-player-chain.js (0.5s)
+  [450/911] PASS    smoke-map-label-spatial-index.js (0.3s)
+  [475/911] PASS    smoke-memory-context-compiler.js (0.2s)
+  [500/911] PASS    smoke-memory-procedural-lessons.js (0.3s)
+  [525/911] PASS    smoke-memory-trace-core.js (0.2s)
+  [550/911] PASS    smoke-memory-writegate-flush.js (0.2s)
+  [575/911] PASS    smoke-no-source-death-guard.js (0.3s)
+  [600/911] PASS    smoke-office-charter-review.js (0.2s)
+  [625/911] PASS    smoke-p5-alpha-namespaces.js (0.2s)
+  [650/911] PASS    smoke-performance-optimization-guards.js (0.2s)
+  [675/911] PASS    smoke-pop-bottomup-s5.js (0.2s)
+  [700/911] PASS    smoke-rank-age-invariants.js (0.2s)
+  [725/911] PASS    smoke-renli-satisfaction-flight.js (0.2s)
+  [750/911] PASS    smoke-right-panel-lag-guards.js (0.2s)
+  [775/911] PASS    smoke-sc1-stream-final-budget.js (0.3s)
+  [800/911] PASS    smoke-settlement-reentrant-rollback.js (0.3s)
+  [825/911] PASS    smoke-storage-migration-collisions.js (0.5s)
+  [850/911] PASS    smoke-tinyi-v3-full.js (1.0s)
+  [875/911] PASS    smoke-wentian-agent.js (0.2s)
+  [900/911] PASS    smoke-yuqian-open-frequency.js (0.1s)
+  [911/911] PASS    smoke-start-game-data-integrity.js (32.1s)
+
+[run-smokes] 完成：909 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 911 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 536s(并行墙钟更短)
+
+--- 最慢 Top 10 ---
+  59.1s  smoke-full-turn-flow.js
+  32.1s  smoke-start-game-data-integrity.js
+  27.3s  smoke-deploy-manifest-atomicity.js
+  15.4s  smoke-workshop-lock-recovery.js
+  11.2s  smoke-character-location-travel.js
+  6.7s  smoke-party-goals-lifecycle.js
+  6.7s  smoke-tinyi-reissued.js
+  6.6s  smoke-tinyi-party-class-agenda.js
+  6.6s  smoke-tinyi-scenario-class-source.js
+  6.6s  smoke-class-demand-party-goals.js
+
+[run-smokes] 报告 → dev-tools/arch-guard/ci-CsUcJI/smoke-report.json
+[ci-smokes] PASS gate {"pass":909,"fail":0,"skip":0,"waived":2,"waivedChecks":7,"total":911}
+[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。

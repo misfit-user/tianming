@@ -1,0 +1,50 @@
+{
+  "repo": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "moduleBlob": "81576d9392b691e2c4e756056ba5afa982df423f",
+  "results": [
+    {
+      "window": "owner",
+      "childExit": 86,
+      "marker": "INTERRUPTED .transaction.lock",
+      "retries": [
+        {
+          "ok": false,
+          "error": "workshop-lock-unproven"
+        },
+        {
+          "ok": false,
+          "error": "workshop-lock-unproven"
+        }
+      ],
+      "indexUnchanged": true
+    },
+    {
+      "window": "recovery",
+      "childExit": 86,
+      "marker": "INTERRUPTED .lock-recovery",
+      "retries": [
+        {
+          "ok": false,
+          "error": "workshop-lock-recovery-required"
+        },
+        {
+          "ok": false,
+          "error": "workshop-lock-recovery-required"
+        }
+      ],
+      "indexUnchanged": true
+    },
+    {
+      "control": "ordinary-read-release",
+      "ok": true
+    },
+    {
+      "control": "proven-dead-pid",
+      "ok": true
+    },
+    {
+      "control": "live-pid",
+      "ok": true
+    }
+  ]
+}

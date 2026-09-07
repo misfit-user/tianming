@@ -1,0 +1,6 @@
+{
+  "path": "evidence/full-smoke-report.json",
+  "originalSha256": "43a29f6b7f6f6492b84f66cb948b6760e700d47a8f08b045ee6fbbb2b6c877e0",
+  "publishedSha256": "d40f4eafaba942512ab0e9dbdc56967087062d3ea5fc3d7998560d4a0961d1bc",
+  "redacted": true
+}

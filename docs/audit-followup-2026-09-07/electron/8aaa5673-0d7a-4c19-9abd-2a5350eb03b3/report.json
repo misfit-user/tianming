@@ -1,0 +1,109 @@
+{
+  "runId": "8aaa5673-0d7a-4c19-9abd-2a5350eb03b3",
+  "repo": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "head": "7a70588c001ce3e9e6c0fdb398cd1f0b88db8948",
+  "status": "M .github/workflows/ci.yml\n M PROJECT-STRUCTURE.md\n M main-impl.js\n M package.json\n D preload.js\n M web/docs/hot-update-format.md\n M web/scripts/smoke-security-ipc-hardening.js\n M web/scripts/verify-hotupdate-selfheal.js\n?? docs/audit-followup-2026-09-07/\n?? scripts/electron/\n?? scripts/verify-electron-bridge.js",
+  "platform": "win32",
+  "node": "v24.14.0",
+  "baseline": false,
+  "complete": true,
+  "results": [
+    {
+      "mode": "production",
+      "ok": false,
+      "exitCode": 1,
+      "detail": {
+        "complete": true,
+        "ok": false,
+        "mode": "production",
+        "baseline": false,
+        "versions": {
+          "node": "20.18.3",
+          "acorn": "8.14.0",
+          "ada": "2.9.2",
+          "ares": "1.34.4",
+          "base64": "0.5.2",
+          "brotli": "1.0.9",
+          "cjs_module_lexer": "1.4.1",
+          "cldr": "44.1",
+          "icu": "74.2",
+          "llhttp": "8.1.2",
+          "modules": "130",
+          "napi": "9",
+          "nghttp2": "1.61.0",
+          "openssl": "0.0.0",
+          "simdutf": "5.6.4",
+          "tz": "2024a",
+          "undici": "6.21.1",
+          "unicode": "15.1",
+          "uv": "1.46.0",
+          "uvwasi": "0.0.21",
+          "v8": "13.0.245.25-electron.0",
+          "zlib": "1.3.0.1-motley",
+          "electron": "33.4.11",
+          "chrome": "130.0.6723.191"
+        },
+        "results": [
+          {
+            "name": "locked-electron-runtime",
+            "status": "PASS"
+          }
+        ],
+        "failures": [
+          "TypeError [ERR_INVALID_ARG_TYPE]: The \"path\" argument must be of type string. Received undefined\n    at Object.dirname (node:path:740:5)\n    at <USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:42:27\n    at check (<USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:28:40)\n    at WebContents.<anonymous> (<USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:39:13)"
+        ],
+        "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data",
+        "temporaryUserData": "<USER_HOME>\\AppData\\Local\\Temp\\tm-bridge-gate-NP3G7q"
+      }
+    },
+    {
+      "mode": "test-exports",
+      "ok": false,
+      "exitCode": 1,
+      "detail": {
+        "complete": true,
+        "ok": false,
+        "mode": "test-exports",
+        "baseline": false,
+        "versions": {
+          "node": "20.18.3",
+          "acorn": "8.14.0",
+          "ada": "2.9.2",
+          "ares": "1.34.4",
+          "base64": "0.5.2",
+          "brotli": "1.0.9",
+          "cjs_module_lexer": "1.4.1",
+          "cldr": "44.1",
+          "icu": "74.2",
+          "llhttp": "8.1.2",
+          "modules": "130",
+          "napi": "9",
+          "nghttp2": "1.61.0",
+          "openssl": "0.0.0",
+          "simdutf": "5.6.4",
+          "tz": "2024a",
+          "undici": "6.21.1",
+          "unicode": "15.1",
+          "uv": "1.46.0",
+          "uvwasi": "0.0.21",
+          "v8": "13.0.245.25-electron.0",
+          "zlib": "1.3.0.1-motley",
+          "electron": "33.4.11",
+          "chrome": "130.0.6723.191"
+        },
+        "results": [
+          {
+            "name": "locked-electron-runtime",
+            "status": "PASS"
+          }
+        ],
+        "failures": [
+          "TypeError [ERR_INVALID_ARG_TYPE]: The \"path\" argument must be of type string. Received undefined\n    at Object.dirname (node:path:740:5)\n    at <USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:42:27\n    at check (<USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:28:40)\n    at WebContents.<anonymous> (<USER_HOME>\\Desktop\\tianming-audit-review\\scripts\\electron\\bridge-main.cjs:39:13)"
+        ],
+        "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data",
+        "temporaryUserData": "<USER_HOME>\\AppData\\Local\\Temp\\tm-bridge-gate-B6fZEb"
+      }
+    }
+  ],
+  "ok": false
+}

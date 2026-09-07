@@ -1,0 +1,32 @@
+[
+  {
+    "path": "electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/report.json",
+    "originalSha256": "b2307897d6fe3cb5b66b050201a961f91fba9d492151fe64666ba01479ee6dd7",
+    "publishedSha256": "6fa269debab3e2fd0853bd6144ea43cdc274ba5adaba19224ceef14b16a6f33b",
+    "redacted": true
+  },
+  {
+    "path": "electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/production.json",
+    "originalSha256": "1decc528684ebf59e29aa6fdf13f31083fb9b15c5c0bc317e1d44f37a5ab6fd8",
+    "publishedSha256": "eb3fd3e53f9fb5bf41b4f4933c2a16997b8873c5b3c25a013eca09de8fcc1f0c",
+    "redacted": true
+  },
+  {
+    "path": "electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/production.txt",
+    "originalSha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "publishedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "redacted": true
+  },
+  {
+    "path": "electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/test-exports.json",
+    "originalSha256": "7708392b91b0627b184e7ecd4834e96e80bad094055b6b0af2a5cc6fd0f2cbba",
+    "publishedSha256": "3e630e0d0ad0f44733ca859bfb147c26891dda82321baccfce509f1247a4d2f4",
+    "redacted": true
+  },
+  {
+    "path": "electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/test-exports.txt",
+    "originalSha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "publishedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "redacted": true
+  }
+]

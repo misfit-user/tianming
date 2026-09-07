@@ -1,0 +1,27 @@
+{
+  "label": "dependencies-audit",
+  "command": "node",
+  "args": [
+    "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+    "audit",
+    "--omit=dev",
+    "--audit-level=high",
+    "--registry=https://registry.npmjs.org"
+  ],
+  "before": {
+    "head": "7a70588c001ce3e9e6c0fdb398cd1f0b88db8948",
+    "tree": "a04c1b99e0cf7f36e3692a3cef039ed73e8ad953",
+    "status": "M .github/workflows/ci.yml\n M PROJECT-STRUCTURE.md\n M main-impl.js\n M main-workshop-transaction.js\n M package.json\n D preload.js\n M web/docs/hot-update-format.md\n M web/scripts/smoke-security-ipc-hardening.js\n M web/scripts/verify-hotupdate-selfheal.js\n?? docs/audit-followup-2026-09-07/\n?? main-workshop-lock.js\n?? scripts/electron/\n?? scripts/verify-electron-bridge.js\n?? scripts/verify-remote-tls.js\n?? web/scripts/smoke-workshop-lock-recovery.js"
+  },
+  "after": {
+    "head": "7a70588c001ce3e9e6c0fdb398cd1f0b88db8948",
+    "status": "M .github/workflows/ci.yml\n M PROJECT-STRUCTURE.md\n M main-impl.js\n M main-workshop-transaction.js\n M package.json\n D preload.js\n M web/docs/hot-update-format.md\n M web/scripts/smoke-security-ipc-hardening.js\n M web/scripts/verify-hotupdate-selfheal.js\n?? docs/audit-followup-2026-09-07/\n?? main-workshop-lock.js\n?? scripts/electron/\n?? scripts/verify-electron-bridge.js\n?? scripts/verify-remote-tls.js\n?? web/scripts/smoke-workshop-lock-recovery.js"
+  },
+  "platform": "win32",
+  "os": "10.0.26200",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T10:23:15.989Z",
+  "durationMs": 5126,
+  "exitCode": 0,
+  "signal": null
+}

@@ -2818,7 +2818,13 @@ async function _tmRunDesktopAutoSaveTick(options){
   var operation=Promise.resolve().then(async function(){
     try {
       _autoSaveSkipCount = 0;
-      var result = await window.tianming.autoSave(saveData);
+      // Optional shell capability: avoid contextBridge deep-copy/freeze of the
+      // large object graph. No persistent cache, changed frequency or live-world
+      // reads. Old shells keep their existing transport; errors never fall back
+      // to a second write. The main session/queue/rename protocol is unchanged.
+      var result = typeof window.tianming.autoSaveJson === 'function'
+        ? await window.tianming.autoSaveJson(JSON.stringify(saveData))
+        : await window.tianming.autoSave(saveData);
       if (!_tmDesktopAutoSaveResultOk(result)) throw _tmDesktopAutoSaveFailure(result);
       if (lastCommittedSnapshot !== sourceSnapshot || _lastCommittedSnapshotIdentity !== sourceIdentity
           || !_tmCommittedSnapshotMatchesLive()) {

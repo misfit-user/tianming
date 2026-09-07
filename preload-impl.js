@@ -66,6 +66,20 @@ function _invokeAutoSave(data) {
   });
 }
 
+function _invokeAutoSaveJson(json) {
+  // A string crosses contextBridge without recursively copying/freezing every
+  // node of the committed world. Parse inside the isolated preload, then reuse
+  // the exact same session envelope, trusted IPC channel and main write queue.
+  // Keep this synchronous up to invoke so a later session rotation cannot adopt
+  // an earlier request. Do not accept arbitrary renderer IPC channels or options.
+  if (typeof json !== 'string') throw new TypeError('自动存档 JSON 必须是文本');
+  var data;
+  try { data = JSON.parse(json); }
+  catch (_) { throw new Error('自动存档 JSON 无效'); }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError('自动存档正文必须是对象');
+  return _invokeAutoSave(data);
+}
+
 function _rotateAutoSaveSession(token) {
   try {
     const result = ipcRenderer.sendSync('auto-save-session-rotate', String(token || ''));
@@ -149,6 +163,9 @@ contextBridge.exposeInMainWorld('tianming', {
   // === 自动存档 ===
   autoSave: (data) =>
     _invokeAutoSave(data),
+
+  autoSaveJson: (json) =>
+    _invokeAutoSaveJson(json),
 
   rotateAutoSaveSession: (token) =>
     _rotateAutoSaveSession(token),

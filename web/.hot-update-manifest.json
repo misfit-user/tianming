@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-07T14:23:18.294Z",
+  "generatedAt": "2026-09-07T16:38:04.472Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -5141,8 +5141,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
-      "size": 168939
+      "sha256": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+      "size": 169395
     },
     {
       "path": "tm-save-manager.js",

@@ -31,9 +31,11 @@ const os = require('os');
 
 const SCRIPTS_DIR = __dirname;
 const SKIP_FILE = path.join(lib.BASELINE_DIR, 'smoke-skip.json');
-const REPORT_FILE = path.join(lib.REPORT_DIR, 'smoke-report.json');
 
 const args = process.argv.slice(2);
+const REPORT_FILE = path.resolve(flagVal('--report', path.join(lib.REPORT_DIR, 'smoke-report.json')));
+const RUN_ID = flagVal('--run-id', require('crypto').randomUUID());
+const HEAD = cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: SCRIPTS_DIR, encoding: 'utf8' }).trim();
 function flagVal(name, dflt) {
   const i = args.indexOf(name);
   return i !== -1 ? args[i + 1] : dflt;
@@ -75,7 +77,7 @@ if (LIST_ONLY) {
   smokes.forEach(n => console.log('  ' + n));
   process.exit(0);
 }
-if (!smokes.length) { console.log('[run-smokes] 没有匹配的 smoke'); process.exit(0); }
+if (!smokes.length) { console.error('[run-smokes] FAIL：没有匹配的 smoke，不能作为回归通过'); process.exit(1); }
 
 // ---- 执行 ----
 function runOne(name) {
@@ -114,6 +116,10 @@ function signature(r) {
       const r = await runOne(name);
       r.pass = r.exit === 0 && !r.timedOut;
       r.suspect = r.pass && /^\s*FAIL\b/m.test(r.out);
+      r.waivers = [];
+      for (const line of r.out.split(/\r?\n/).filter(line => line.startsWith('TM_SMOKE_WAIVER '))) {
+        try { r.waivers.push(JSON.parse(line.slice(16))); } catch (_) { r.pass = false; }
+      }
       results.push(r);
       done++;
       const mark = r.timedOut ? 'TIMEOUT' : r.pass ? (r.suspect ? 'PASS?' : 'PASS') : 'FAIL';
@@ -148,6 +154,8 @@ function signature(r) {
   const fails = results.filter(r => !r.pass);
   const flakies = results.filter(r => r.flaky);
   const suspects = results.filter(r => r.suspect);
+  const waived = results.filter(r => r.pass && !r.suspect && r.waivers.length);
+  const cleanPasses = results.length - fails.length - suspects.length - waived.length;
   const slowest = [...results].sort((a, b) => b.ms - a.ms).slice(0, 10);
 
   // 聚类
@@ -158,7 +166,7 @@ function signature(r) {
     clusters.get(sig).push(r.name);
   }
 
-  console.log(`\n[run-smokes] 完成：${results.length - fails.length}/${results.length} PASS · ${fails.length} FAIL${flakies.length ? ` · ${flakies.length} flaky(首跑败·串行重跑过)` : ''} · ${suspects.length} suspect(退出码0但输出FAIL) · 总耗时 ${(results.reduce((s, r) => s + r.ms, 0) / 1000).toFixed(0)}s(并行墙钟更短)`);
+  console.log(`\n[run-smokes] 完成：${cleanPasses} PASS · ${fails.length + suspects.length} FAIL · ${skipped.length} SKIP · ${waived.length} WAIVED / ${results.length} executed${flakies.length ? ` · ${flakies.length} flaky(首跑败·串行重跑过)` : ''} · ${suspects.length} suspect(退出码0但输出FAIL) · 总耗时 ${(results.reduce((s, r) => s + r.ms, 0) / 1000).toFixed(0)}s(并行墙钟更短)`);
   if (flakies.length) {
     console.log('\n--- flaky（并行负载嫌疑·反复上榜再查真因）---');
     flakies.forEach(r => console.log(`  ${r.name}（首跑 ${(r.ms / 1000).toFixed(1)}s → 重跑 ${(r.retryMs / 1000).toFixed(1)}s PASS）`));
@@ -179,13 +187,14 @@ function signature(r) {
   slowest.forEach(r => console.log(`  ${(r.ms / 1000).toFixed(1)}s  ${r.name}`));
 
   lib.saveJSON(REPORT_FILE, {
+    version: 2, complete: true, runId: RUN_ID, head: HEAD, expected: smokes,
     generatedAt: new Date().toISOString(),
     args: process.argv.slice(2),
-    summary: { selected: smokes.length, pass: results.length - fails.length, fail: fails.length, flaky: flakies.length, suspect: suspects.length, skipped: skipped.length },
+    summary: { selected: smokes.length, pass: cleanPasses, fail: fails.length + suspects.length, waived: waived.length, flaky: flakies.length, suspect: suspects.length, skipped: skipped.length },
     clusters: [...clusters.entries()].map(([sig, names]) => ({ sig, names })),
-    results: results.map(r => ({ name: r.name, pass: r.pass, flaky: !!r.flaky, suspect: r.suspect, exit: r.exit, ms: r.ms, timedOut: r.timedOut })).sort((a, b) => a.name.localeCompare(b.name)),
+    results: results.map(r => ({ name: r.name, pass: r.pass, flaky: !!r.flaky, suspect: r.suspect, exit: r.exit, ms: r.ms, timedOut: r.timedOut, waivers: r.waivers, output: r.out })).sort((a, b) => a.name.localeCompare(b.name)),
     skipped
   });
   console.log(`\n[run-smokes] 报告 → ${lib.rel(REPORT_FILE)}`);
-  process.exit(fails.length ? 1 : 0);
-})();
+  process.exit(fails.length || suspects.length ? 1 : 0);
+})().catch(error => { console.error(error); process.exitCode = 1; });

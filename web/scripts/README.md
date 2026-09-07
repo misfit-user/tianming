@@ -8,6 +8,14 @@ npm ci --ignore-scripts
 
 不安装依赖直接运行 AST 守卫时会得到明确的安装提示；正式 CI 也始终先执行上述命令。
 
+## 完整 CI Smoke 的证据契约（2026-09-05）
+
+仓根执行 `node web/scripts/ci-smokes.js`。每次使用独立报告目录，验证 runId、HEAD、实际发现的测试集合、每项唯一结果和完成标记。runner 启动失败、崩溃、报告缺失/陈旧/不完整一律失败；数量不再依赖手写总数。输出区分 PASS / FAIL / SKIP / WAIVED。
+
+已取消整文件 `ci-smoke-allowlist.json`。音频与地图编辑器仅对 `lib-smoke-evidence.js` 中明确列出的缺席资产存在性检查输出结构化 waiver，其他断言继续执行，SyntaxError 和业务失败仍阻断。资产在场时不能豁免。
+
+审计附件的工作树适配器：`node web/scripts/audit-repro.cjs --repo <repo> --expect-clean`。它保持原 11 个缺陷判据及两个对照不变，仅适配生产模块依赖和故障注入接口；原附件的固定旧夹具不作修改。`smoke-audit-*.js` 另行验证正常行为和恢复不变量，包括原附件没有覆盖的大文件导入。
+
 ## 一键检查（最常用）
 
 ```bash

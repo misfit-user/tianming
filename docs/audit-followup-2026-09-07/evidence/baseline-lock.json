@@ -1,0 +1,26 @@
+{
+  "label": "baseline-lock",
+  "command": "node",
+  "args": [
+    "docs/audit-followup-2026-09-07/lock-window-probe.cjs",
+    "--repo",
+    "<USER_HOME>\\Desktop\\tianming-audit-review",
+    "--expect-clean"
+  ],
+  "before": {
+    "head": "7a70588c001ce3e9e6c0fdb398cd1f0b88db8948",
+    "tree": "a04c1b99e0cf7f36e3692a3cef039ed73e8ad953",
+    "status": "?? docs/audit-followup-2026-09-07/\n?? scripts/electron/\n?? scripts/verify-electron-bridge.js"
+  },
+  "after": {
+    "head": "7a70588c001ce3e9e6c0fdb398cd1f0b88db8948",
+    "status": "?? docs/audit-followup-2026-09-07/\n?? scripts/electron/\n?? scripts/verify-electron-bridge.js"
+  },
+  "platform": "win32",
+  "os": "10.0.26200",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T09:55:10.995Z",
+  "durationMs": 725,
+  "exitCode": 86,
+  "signal": null
+}

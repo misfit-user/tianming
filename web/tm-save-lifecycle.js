@@ -857,18 +857,32 @@ doSaveGame=async function(){
 };
 
 window.desktopDoSave=async function(){
-  await _tmAwaitLoadBarrier();
-  var name=(_$("save-name-inp").value||"").trim();
-  if(!name){toast("\u8BF7\u8F93\u5165\u5B58\u6863\u540D");return;}
-  var sc=findScenarioById(GM.sid);
-  if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave();
-  var saveData=_buildSaveState({format:'project'}); // 在隔离快照上序列化，不修改 live GM/P
-  saveData._saveMeta={name:name,turn:GM.turn,time:getTSText(GM.turn),scenario:sc?sc.name:"",date:new Date().toISOString(),version:P.meta.v};
+  var operation = window.desktopDoSave;
+  var sequence = operation._sequence = (operation._sequence || 0) + 1;
+  var lease = _tmCaptureWorldLease();
+  function current(){return operation._sequence === sequence && _tmWorldLeaseCurrent(lease);}
   try{
-    var r=await window.tianming.saveProject(name,saveData);
-    if(r.success){GM.saveName=name;toast("\u2705 \u5DF2\u4FDD\u5B58");enterGame();}
-    else toast("\u5931\u8D25: "+(r.error||""));
-  }catch(e){toast("\u5931\u8D25: "+e.message);}
+    var name=(_$("save-name-inp").value||"").trim();
+    if(!name){toast("\u8BF7\u8F93\u5165\u5B58\u6863\u540D");return false;}
+    await _tmAwaitLoadBarrier();
+    if(!current()) return false;
+    if (typeof _awaitPostTurnJobsForSave === 'function') await _awaitPostTurnJobsForSave();
+    if(!current()) return false;
+    var sc=findScenarioById(lease.gmRef.sid);
+    var saveData=_buildSaveState({format:'project'}); // 在隔离快照上序列化，不修改 live GM/P
+    saveData._saveMeta={name:name,turn:lease.turn,time:getTSText(lease.turn),scenario:sc?sc.name:"",date:new Date().toISOString(),version:lease.pRef.meta.v};
+    // Serial disk commits; a newer intent owns UI even when an earlier detached write has started.
+    var previous = operation._queue || Promise.resolve();
+    var pending = previous.catch(function(){}).then(function(){
+      if(!current()) return {success:false,stale:true};
+      return window.tianming.saveProject(name,saveData);
+    });
+    operation._queue = pending;
+    var r=await pending;
+    if(!current()) return false;
+    if(r && r.success){GM.saveName=name;toast("\u2705 \u5DF2\u4FDD\u5B58");enterGame();return true;}
+    toast("\u5931\u8D25: "+(r&&r.error||""));return false;
+  }catch(e){if(current()) toast("\u5931\u8D25: "+e.message);return false;}
 };
 
 // 2. 读档：完整恢复所有状态
@@ -1600,6 +1614,9 @@ function _tmValidateLoadedWorld(targetP, targetGM) {
 }
 
 function _recoverPendingTurnDataPublish() {
+  if (GM && window.tianming && window.tianming.isDesktop && (window.tianming.turnDataProtocolVersion !== 2 || typeof window.tianming.recoverTurnData !== 'function')) {
+    return Promise.resolve({ ok: false, error: new Error('分卷恢复需要更新桌面安装包') });
+  }
   if (!(GM && window.tianming && typeof window.tianming.recoverTurnData === 'function')) return Promise.resolve({ ok: true, skipped: true });
   var targetGM = GM;
   var targetP = P;
@@ -1614,6 +1631,7 @@ function _recoverPendingTurnDataPublish() {
   }
 
   return Promise.resolve().then(async function() {
+    if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷恢复需要更新桌面安装包');
     // v4 以前的存档把 marker 烘进两个大世界正文；仅在兼容迁移时做一次全量清理。
     if (targetGM._pendingTurnDataPublish) {
       var legacyMarker = deepClone(targetGM._pendingTurnDataPublish);

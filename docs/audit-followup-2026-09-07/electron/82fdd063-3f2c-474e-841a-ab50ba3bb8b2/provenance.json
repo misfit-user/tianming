@@ -1,0 +1,44 @@
+[
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/report.json",
+    "originalSha256": "1589f23ec360419d6d1f9d67bb8c7cbdd22e1f4346d977a0951e6b37094cd244",
+    "publishedSha256": "1604aeb922d1eca29be35c2dec900fc875cbcfcba834a2a0ae024023bd68992a",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/production.json",
+    "originalSha256": "59e62f5341513c7a68545d40fddc57fe9d021352483b3e8165b736e2e1833580",
+    "publishedSha256": "f7e668d510c9c0525e639a28e5d995c4e68328e7ebca281c931007dfea459221",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/production.txt",
+    "originalSha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "publishedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/test-exports.json",
+    "originalSha256": "77e4df93654dc993d453e0a00c3f82ceb0232edae6a19db86a93ea5ad574aca3",
+    "publishedSha256": "b8a5754a8f424615aa9b4c01e72da659f51e74ed46a03ec87689f9d97c15081a",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/test-exports.txt",
+    "originalSha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "publishedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/restart.json",
+    "originalSha256": "6098bf022a092060bb5c0bef09d3fbd4c7ff0eb521d66a694a96f4aba67985f6",
+    "publishedSha256": "622a133930adb741de97b6fdda9a41c3e8d58da6eb1e5f041917ce6f07a848ce",
+    "redacted": true
+  },
+  {
+    "path": "electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/restart.txt",
+    "originalSha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "publishedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "redacted": true
+  }
+]

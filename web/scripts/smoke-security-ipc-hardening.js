@@ -26,7 +26,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const SRC = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf-8');
 const MAIN_SHIM = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf-8');
-const PRELOAD_SHIM = fs.readFileSync(path.join(ROOT, 'preload.js'), 'utf-8');
+const PRELOAD_SOURCE = fs.readFileSync(path.join(ROOT, 'preload-impl.js'), 'utf-8');
 const HOT_BUILDER = fs.readFileSync(path.join(ROOT, 'web', 'tools', 'build-hot-update-package.js'), 'utf-8');
 const PACKAGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
@@ -161,7 +161,8 @@ console.log('\n— 轨2·main-impl.js 源码在位守卫 —');
 assert(SRC.includes("if (!/^(0|[1-9][0-9]*)$/.test(raw))")
   && /function turnSeg\(turn\)[\s\S]*?Number\.isSafeInteger\(raw\)[\s\S]*?raw < 0[\s\S]*?raw > 10000000/.test(SRC),
   'src· turnSeg 强制唯一的 0..1e7 安全整数表示');
-assert(/'read-turns-summary'[\s\S]*?Number\(turnSeg\(fromTurn\)\)[\s\S]*?Number\.isSafeInteger\(_from\)[\s\S]*?_from \+ 20000[\s\S]*?turnSeg\(t\)/.test(SRC),
+assert(/'read-turns-summary'[\s\S]*?Number\(turnSeg\(fromTurn\)\)[\s\S]*?Number\.isSafeInteger\(_from\)[\s\S]*?_from \+ 20000[\s\S]*?turnDataCommitter\.read\(/.test(SRC)
+  && /const turn = turnSeg\(input.turn\)/.test(fs.readFileSync(path.join(ROOT, 'main-turn-data-commit.js'), 'utf8')),
   'src· read-turns-summary 复用严格 turnSeg，并保留 safe-integer/跨度门');
 assert(/if\s*\(!\/\^\[0-9a-f\]\{64\}\$\/\.test\(expectedHash\)\)\s*throw/.test(SRC),
   'src· 工坊安装仍强制 /^[0-9a-f]{64}$/ hash 格式门（修B 未回退）');
@@ -184,8 +185,9 @@ assert(!/sha256:\s*[^,\n}]*headers\.get/.test(SRC),
 assert(/function isAllowedRemoteUrl[\s\S]*?protocol === 'https:'/.test(SRC),
   'src· 远程地址强制 HTTPS（localhost 例外）→ MITM 无法改 catalog 里的 hash');
 assert(/require\(['"]\.\/main-impl\.js['"]\)/.test(MAIN_SHIM) && !MAIN_SHIM.includes('_app_main.js')
-  && /require\(['"]\.\/preload-impl\.js['"]\)/.test(PRELOAD_SHIM) && !PRELOAD_SHIM.includes('_app_preload.js'),
-  'src· main/preload 启动桥只加载安装包内固定实现');
+  && /preload:\s*path\.join\(bundledAppRoot\(\), 'preload-impl\.js'\)/.test(SRC)
+  && !/require\(['"]\./.test(PRELOAD_SOURCE) && !PRELOAD_SOURCE.includes('_app_preload.js'),
+  'src· main/preload 只加载安装包内固定实现，沙箱桥不使用相对 require');
 assert(!HOT_BUILDER.includes("addLocalFile(path.join(APP_ROOT, 'main")
   && !HOT_BUILDER.includes("addLocalFile(path.join(APP_ROOT, 'preload")
   && /authenticateReleaseDocument/.test(HOT_BUILDER) && /Ed25519/.test(HOT_BUILDER),

@@ -1,0 +1,18 @@
+{"executable":"node","args":["web/scripts/lint-arch-all.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T17:11:40.445Z","head":"e890eeb83c2f85bfae6a5c9146f2833edb53d13e"}
+[lint-arch-all] PASS  lint-gm-writes (4.1s)
+[lint-arch-all] PASS  lint-dep-graph (1.6s)
+[lint-arch-all] PASS  lint-global-providers (6.1s)
+[lint-arch-all] PASS  lint-feature-boundaries (0.3s)
+[lint-arch-all] PASS  lint-runtime-template-immutability (0.4s)
+[lint-arch-all] PASS  lint-renderer-writeback-boundaries (11.2s)
+[lint-arch-all] PASS  lint-renderer-module-boundaries (1.0s)
+[lint-arch-all] PASS  lint-file-size (0.7s)
+[lint-arch-all] PASS  lint-control-bytes (0.6s)
+[lint-arch-all] PASS  lint-split-contracts (0.3s)
+[lint-arch-all] PASS  lint-split-stamps (0.2s)
+[lint-arch-all] PASS  lint-smoke-family-order (1.1s)
+[lint-arch-all] PASS  ref-check (2.9s)
+
+[lint-arch-all] PASS — 架构守卫全绿
+
+{"name":"delivery-arch","executable":"node","args":["web/scripts/lint-arch-all.js"],"exitCode":0,"signal":null,"durationMs":30703,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\delivery-arch.log"}

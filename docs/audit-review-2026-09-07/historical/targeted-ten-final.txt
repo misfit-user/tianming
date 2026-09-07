@@ -1,0 +1,21 @@
+{"executable":"node","args":["web/scripts/run-smokes.js","--grep","smoke-audit-","--all","--no-retry","--report","web/dev-tools/audit-2026-09-05/targeted-ten-final-report.json"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T17:11:12.094Z","head":"da13419118801552f270387e9708e526af18eca0"}
+[run-smokes] 共 910 个 smoke · 选中 10 · 跳过 0 · 并发 8 · 超时 120s
+  [10/10] PASS    smoke-audit-workshop-transactions.js (3.3s)
+
+[run-smokes] 完成：10 PASS · 0 FAIL · 0 SKIP · 0 WAIVED / 10 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 8s(并行墙钟更短)
+
+--- 最慢 Top 10 ---
+  3.3s  smoke-audit-workshop-transactions.js
+  0.9s  smoke-audit-turn-namespaces.js
+  0.7s  smoke-audit-file-import.js
+  0.6s  smoke-audit-turn-ipc.js
+  0.6s  smoke-audit-ci-evidence.js
+  0.5s  smoke-audit-save-files.js
+  0.4s  smoke-audit-account-generation.js
+  0.4s  smoke-audit-safe-remote.js
+  0.2s  smoke-audit-manual-save-lease.js
+  0.2s  smoke-audit-save-slot-results.js
+
+[run-smokes] 报告 → dev-tools/audit-2026-09-05/targeted-ten-final-report.json
+
+{"name":"targeted-ten-final","executable":"node","args":["web/scripts/run-smokes.js","--grep","smoke-audit-","--all","--no-retry","--report","web/dev-tools/audit-2026-09-05/targeted-ten-final-report.json"],"exitCode":0,"signal":null,"durationMs":4009,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\targeted-ten-final.log"}

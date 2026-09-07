@@ -1,0 +1,21 @@
+{
+  "command": [
+    "node",
+    "web/scripts/ci-smokes.js"
+  ],
+  "cwd": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "head": "14130f77ef1976f9b3cd8b311b4aef77636e7d90",
+  "tree": "1be7372436c0a86f35946b1ba99579b6fa3eb0d6",
+  "statusBefore": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "arch": "x64",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T06:27:18.258Z",
+  "exitCode": 0,
+  "signal": null,
+  "durationMs": 90377,
+  "statusAfter": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "rawSha256": "7de3d1ab8b808466b2687c53839cbc135d12fe8ab7a8399f07b0a72cc5a0ebf1",
+  "publishedSha256": "39aac8d72162ff0f2d07ac4176e2a155cb5fdf32b0859f2a34500f6d92a24fd2"
+}

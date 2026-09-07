@@ -18,7 +18,10 @@ const yauzl = require('yauzl');
 const { pipeline } = require('stream');
 const { autoUpdater } = require('electron-updater');
 const { createTurnDataCommitter } = require('./main-turn-data-commit.js');
+const { createWorkshopTransactions } = require('./main-workshop-transaction.js');
+const { createAccountRequests } = require('./main-account-requests.js');
 const { readJsonFileOffMainThread } = require('./main-json-file.js');
+const { readImageFile } = require('./main-image-file.js');
 
 // ============================================================
 //  基本配置
@@ -177,19 +180,29 @@ function isSafeStorageKey(key) {
 }
 
 function saveFileRef(ref) {
+  function exactFile(key) {
+    // Legacy keys are literal filenames, never sanitized aliases or paths.
+    if (!key || key.length > 240 || /[<>:"/\\|?*\x00-\x1f]/.test(key) || /[. ]$/.test(key)
+        || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(key)) throw new Error('存档标识非法');
+    const file = path.join(SAVE_DIR, key + '.json');
+    if (fs.existsSync(file) && (!fs.lstatSync(file).isFile() || fs.lstatSync(file).isSymbolicLink())) throw new Error('存档不是普通文件');
+    return { key, path: file, legacy: !isSafeStorageKey(key) };
+  }
   const storageKey = ref && typeof ref === 'object' ? String(ref.storageKey || '') : '';
   if (storageKey) {
-    if (!isSafeStorageKey(storageKey)) throw new Error('存档标识非法');
-    return { key: storageKey, path: path.join(SAVE_DIR, storageKey + '.json'), legacy: false };
+    return exactFile(storageKey);
   }
-  const displayName = String(ref == null ? '' : ref);
+  const displayName = String(ref && typeof ref === 'object' ? ref.name || '' : ref == null ? '' : ref);
+  if (!displayName || /[\/\\\x00-\x1f]/.test(displayName)) throw new Error('存档名称不是安全引用');
   const key = stableStorageKey(displayName);
   const canonical = path.join(SAVE_DIR, key + '.json');
-  if (fs.existsSync(canonical)) return { key, path: canonical, legacy: false };
+  if (fs.existsSync(canonical)) return exactFile(key);
   // 只读兼容旧版无 hash 文件；新写入一律使用 canonical key，消除 sanitize 碰撞。
-  const legacy = path.join(SAVE_DIR, sanitize(displayName) + '.json');
-  if (fs.existsSync(legacy)) return { key: path.basename(legacy, '.json'), path: legacy, legacy: true };
-  return { key, path: canonical, legacy: false };
+  if (!/[<>:"|?*]/.test(displayName)) {
+    const legacy = exactFile(displayName);
+    if (fs.existsSync(legacy.path)) return legacy;
+  }
+  return exactFile(key);
 }
 
 function turnDataRoot(saveName, forWrite) {
@@ -1420,7 +1433,7 @@ function readWorkshopIndex() {
 
 function writeWorkshopIndex(idx) {
   idx.updatedAt = new Date().toISOString();
-  writeJson(WORKSHOP_INDEX_FILE, idx);
+  writeJsonAtomic(WORKSHOP_INDEX_FILE, idx);
 }
 
 function packPublicInfo(pack, installPath, enabled) {
@@ -1448,6 +1461,9 @@ function registerContentProtocol() {
       const rawParts = url.pathname.split('/').filter(Boolean).map(part => decodeURIComponent(part));
       const packId = normalizePackId(rawParts.shift() || '');
       if (!packId || !rawParts.length) return new Response('not found', { status: 404 });
+      // A renderer may request an installed asset before opening the workshop list after a crash.
+      // Recover the directory/index transaction before exposing either side of it.
+      workshopTransactions.recover();
       const packRoot = path.join(WORKSHOP_PACKS_DIR, packId);
       const filePath = path.resolve(packRoot, rawParts.join(path.sep));
       if (!isInsideDir(packRoot, filePath) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
@@ -1480,106 +1496,15 @@ function remoteHostname(parsed) {
   return String(parsed && parsed.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
 }
 
+const safeRemote = require('./main-safe-remote.js').createSafeRemote({
+  resolveUrl: resolveRemoteUrl, lookup: (host, options) => dns.lookup(host, options), allowLocal: TEST_MODE
+});
 function isPrivateNetworkAddress(address) {
-  const raw = String(address || '').toLowerCase().split('%')[0];
-  if (nodeNet.isIPv4(raw)) {
-    const p = raw.split('.').map(Number);
-    return p[0] === 0 || p[0] === 10 || p[0] === 127
-      || (p[0] === 100 && p[1] >= 64 && p[1] <= 127)
-      || (p[0] === 169 && p[1] === 254)
-      || (p[0] === 172 && p[1] >= 16 && p[1] <= 31)
-      || (p[0] === 192 && (p[1] === 0 || p[1] === 168))
-      || (p[0] === 198 && (p[1] === 18 || p[1] === 19 || (p[1] === 51 && p[2] === 100)))
-      || (p[0] === 203 && p[1] === 0 && p[2] === 113)
-      || p[0] >= 224
-      || raw === '168.63.129.16';
-  }
-  if (nodeNet.isIPv6(raw)) {
-    if (raw === '::' || raw === '::1') return true;
-    if (/^(fc|fd|fe8|fe9|fea|feb|ff)/.test(raw) || raw.startsWith('2001:db8:')) return true;
-    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(raw);
-    return !!(mapped && isPrivateNetworkAddress(mapped[1]));
-  }
-  return true;
+  return require('./main-safe-remote.js').isPrivateNetworkAddress(address);
 }
-
-async function assertSafeRemoteUrl(rawUrl) {
-  const resolved = resolveRemoteUrl(rawUrl);
-  const parsed = new URL(resolved);
-  const hostname = remoteHostname(parsed);
-  const localDev = TEST_MODE && /^(localhost|127\.0\.0\.1|::1)$/i.test(hostname);
-  if (localDev) return resolved;
-  // 生产网络能力不接受 IP literal。域名需经过下方全部 A/AAAA 记录检查，
-  // 避免 127.0.0.1、metadata 与保留网段通过十六进制/IPv6 写法绕过。
-  if (nodeNet.isIP(hostname)) throw new Error('远程地址不允许直接使用 IP，已拒绝');
-  let records;
-  try { records = await dns.lookup(hostname, { all: true, verbatim: true }); }
-  catch (error) { throw new Error('远程地址 DNS 解析失败: ' + (error && error.message || error)); }
-  if (!records.length || records.some(record => isPrivateNetworkAddress(record.address))) {
-    throw new Error('远程地址 DNS 解析到私网或保留地址，已拒绝');
-  }
-  return resolved;
-}
-
+async function assertSafeRemoteUrl(rawUrl) { return safeRemote.assertSafeRemoteUrl(rawUrl); }
 async function fetchRemoteResponse(rawUrl, init = {}, maxRedirects = 5) {
-  let current = resolveRemoteUrl(rawUrl);
-  const originalMethod = String(init.method || 'GET').toUpperCase();
-  const initialOrigin = new URL(current).origin;
-  for (let hop = 0; hop <= maxRedirects; hop++) {
-    current = await assertSafeRemoteUrl(current);
-    const requestInit = Object.assign({}, init);
-    const timeoutMs = Math.max(1000, Math.min(120000, Number(requestInit.timeoutMs || 30000)));
-    delete requestInit.timeoutMs;
-    const externalSignal = requestInit.signal;
-    const controller = new AbortController();
-    let externalAbort = null;
-    let requestSignal = controller.signal;
-    if (externalSignal) {
-      if (externalSignal.aborted) controller.abort();
-      else if (typeof AbortSignal.any === 'function') {
-        // Keep the caller's signal attached for the entire response-body lifetime.
-        // Removing a hand-wired listener as soon as headers arrive makes download
-        // idle-timeout aborts unable to stop a stalled body stream.
-        requestSignal = AbortSignal.any([controller.signal, externalSignal]);
-      } else {
-        externalAbort = () => controller.abort();
-        externalSignal.addEventListener('abort', externalAbort, { once: true });
-      }
-    }
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let response;
-    try {
-      response = await net.fetch(current, Object.assign(requestInit, {
-        signal: requestSignal,
-        redirect: 'manual',
-        credentials: 'omit',
-        cache: 'no-store',
-        referrerPolicy: 'no-referrer',
-        bypassCustomProtocolHandlers: true
-      }));
-    } finally {
-      clearTimeout(timer);
-      // Electron 33 provides AbortSignal.any. The fallback listener is one-shot
-      // and intentionally remains through body consumption so caller aborts work.
-    }
-    if (![301, 302, 303, 307, 308].includes(response.status)) return { response, url: current };
-    if (hop === maxRedirects) throw new Error('远程地址重定向次数超过上限');
-    if (originalMethod !== 'GET' && originalMethod !== 'HEAD') throw new Error('非只读请求不允许重定向');
-    const location = response.headers.get('location');
-    if (!location) throw new Error('远程响应缺少重定向地址');
-    const next = resolveRemoteUrl(location, current);
-    if (new URL(next).origin !== initialOrigin) {
-      const headers = requestInit.headers || {};
-      const names = typeof headers.keys === 'function'
-        ? Array.from(headers.keys())
-        : (Array.isArray(headers) ? headers.map(row => row && row[0]) : Object.keys(headers));
-      if (names.some(name => /^(?:authorization|proxy-authorization|cookie|x-api-key)$/i.test(String(name || '')))) {
-        throw new Error('带凭据请求不允许跨源重定向');
-      }
-    }
-    current = next;
-  }
-  throw new Error('远程请求失败');
+  return safeRemote.fetchRemoteResponse(rawUrl, init, maxRedirects);
 }
 
 async function readRemoteTextLimited(resp, maxBytes, idleTimeoutMs = 30000) {
@@ -1860,7 +1785,7 @@ function sanitizeAccountOnlineResponse(value) {
 
 function writeAccountSession(session) {
   ensureSaveDir();
-  writeJson(ACCOUNT_SESSION_FILE, {
+  writeJsonAtomic(ACCOUNT_SESSION_FILE, {
     token: String(session.token || ''),
     apiUrl: String(DEFAULT_ONLINE_API_URL),
     user: session.user || null,
@@ -1869,9 +1794,7 @@ function writeAccountSession(session) {
 }
 
 function clearAccountSession() {
-  try {
-    if (fs.existsSync(ACCOUNT_SESSION_FILE)) fs.rmSync(ACCOUNT_SESSION_FILE, { force: true });
-  } catch (e) {}
+  if (fs.existsSync(ACCOUNT_SESSION_FILE)) fs.rmSync(ACCOUNT_SESSION_FILE);
 }
 
 function getAccountApiUrl() {
@@ -1963,40 +1886,17 @@ function normalizeOnlineRendererRoute(method, rawPathname) {
 async function handleOnlineRendererRequest(method, pathname, body) {
   const req = normalizeOnlineRendererRoute(method, pathname);
   assertOnlineRendererBodySize(req.route, body);
-  const noAuth = new Set([
-    'health', 'account/email-code', 'account/email-login', 'account/login',
-    'account/register', 'account/request-reset', 'account/reset'
-  ]);
-  const options = noAuth.has(req.route) ? { token: '' } : {};
-  let response;
-  if (req.route === 'account/logout') {
-    try { response = await postOnlineApi(req.pathname, body || {}, options); }
-    finally { clearAccountSession(); }
-  } else if (req.method === 'GET') {
-    response = await getOnlineApi(req.pathname, options);
-  } else {
-    response = await postOnlineApi(req.pathname, body == null ? {} : body, options);
-  }
-
-  if (response && response.success && response.token
-      && (req.route === 'account/register' || req.route === 'account/login' || req.route === 'account/email-login')) {
-    writeAccountSession({ token: response.token, user: response.user || null });
-  } else if (response && response.success && response.user
-      && (req.route === 'account/me' || req.route === 'account/set-email')) {
-    const current = readAccountSession();
-    if (current.token) writeAccountSession({ token: current.token, user: response.user });
-  }
-
-  const publicResponse = Object.assign(
-    { success: false },
-    /^account\//.test(req.route) ? sanitizeAccountOnlineResponse(response || {}) : sanitizeOnlineResponse(response || {})
-  );
-  if (/^account\//.test(req.route)) {
-    publicResponse.session = toPublicAccountSession();
-    publicResponse.loggedIn = publicResponse.session.loggedIn;
-  }
-  return publicResponse;
+  if (/^account\//.test(req.route)) return accountRequests.request(req, body);
+  // Non-account routes do not own session state and retain their existing response contract.
+  const options = req.route === 'health' ? { token: '' } : {};
+  const response = req.method === 'GET' ? await getOnlineApi(req.pathname, options)
+    : await postOnlineApi(req.pathname, body == null ? {} : body, options);
+  return Object.assign({ success: false }, sanitizeOnlineResponse(response || {}));
 }
+
+const accountRequests = createAccountRequests({ read: readAccountSession, write: writeAccountSession,
+  clear: clearAccountSession, publicSession: toPublicAccountSession, sanitize: sanitizeAccountOnlineResponse,
+  send: (req, body, options) => req.method === 'GET' ? getOnlineApi(req.pathname, options) : postOnlineApi(req.pathname, body == null ? {} : body, options) });
 
 function updateInfoSize(info) {
   if (!info) return 0;
@@ -2887,7 +2787,9 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       // preload 属于安装包信任边界，内容 OTA 不可替换。
-      preload: path.join(bundledAppRoot(), 'preload.js'),
+      // Sandboxed preload cannot require relative CommonJS files. Load the single
+      // self-contained bridge from the signed installation, never the content OTA.
+      preload: path.join(bundledAppRoot(), 'preload-impl.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -3158,6 +3060,24 @@ function createMenu() {
 }
 
 // 从菜单触发导入
+const fileImports = new WeakMap();
+async function runFileImport(event, task) {
+  const sender = event.sender;
+  const controller = new AbortController();
+  let pending = fileImports.get(sender);
+  if (!pending) { pending = new Set(); fileImports.set(sender, pending); }
+  if (pending.size >= 10) throw new Error('待处理导入过多');
+  pending.add(controller);
+  const abort = () => controller.abort();
+  if (typeof sender.once === 'function') sender.once('destroyed', abort);
+  try { return await task(controller.signal); }
+  finally { pending.delete(controller); if (!pending.size) fileImports.delete(sender); if (typeof sender.removeListener === 'function') sender.removeListener('destroyed', abort); }
+}
+ipcMain.handle('cancel-file-imports', event => {
+  const pending = fileImports.get(event.sender);
+  if (pending) for (const controller of pending) controller.abort();
+  return { success: true, cancelled: pending ? pending.size : 0 };
+});
 async function handleMenuImport() {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',
@@ -3166,8 +3086,7 @@ async function handleMenuImport() {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      const data = JSON.parse(raw);
+      const data = await runFileImport({ sender: mainWindow.webContents }, signal => readJsonFileOffMainThread(result.filePaths[0], { signal }));
       mainWindow.webContents.send('import-project-data', data);
     } catch (e) {
       dialog.showErrorBox('导入失败', e.message);
@@ -3177,7 +3096,7 @@ async function handleMenuImport() {
 
 // ============================================================
 //  IPC：响应网页发来的请求
-//  网页通过 preload.js 桥接调用这些函数
+//  网页通过 preload-impl.js 单文件桥接调用这些函数
 // ============================================================
 
 // --- 存档：保存 ---
@@ -3237,6 +3156,8 @@ ipcMain.handle('list-saves', async () => {
         return {
           name: (sidecarCurrent && typeof sidecar.name === 'string' && sidecar.name) || fallbackDesktopSaveName(storageKey),
           storageKey,
+          referenceVersion: 2,
+          legacy: !isSafeStorageKey(storageKey),
           size: stats.size,
           modified: stats.mtimeMs,
           modifiedStr: new Date(stats.mtimeMs).toLocaleString('zh-CN'),
@@ -3450,7 +3371,7 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
   });
   if (!result.canceled && result.filePath) {
     try {
-      fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
+      writeFileAtomic(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
       return { success: true, path: result.filePath };
     } catch (e) {
       return { success: false, error: e.message };
@@ -3460,7 +3381,7 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
 });
 
 // --- 系统对话框：导入 ---
-ipcMain.handle('dialog-import', async () => {
+ipcMain.handle('dialog-import', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',
     filters: [
@@ -3471,8 +3392,7 @@ ipcMain.handle('dialog-import', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      const data = JSON.parse(raw);
+      const data = await runFileImport(event, signal => readJsonFileOffMainThread(result.filePaths[0], { signal }));
       return { success: true, data, path: result.filePaths[0] };
     } catch (e) {
       return { success: false, error: '文件解析失败: ' + e.message };
@@ -3482,7 +3402,7 @@ ipcMain.handle('dialog-import', async () => {
 });
 
 // --- 系统对话框：选择地图图片 ---
-ipcMain.handle('dialog-load-image', async () => {
+ipcMain.handle('dialog-load-image', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '选择地图图片',
     filters: [
@@ -3492,11 +3412,7 @@ ipcMain.handle('dialog-load-image', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const buffer = fs.readFileSync(result.filePaths[0]);
-      const ext = path.extname(result.filePaths[0]).toLowerCase().replace('.', '');
-      const mimeMap = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp' };
-      const dataUrl = `data:${mimeMap[ext]||'image/png'};base64,${buffer.toString('base64')}`;
-      return { success: true, dataUrl };
+      return { success: true, ...await runFileImport(event, signal => readImageFile(result.filePaths[0], { signal })) };
     } catch (e) {
       return { success: false, error: e.message };
     }
@@ -3505,7 +3421,7 @@ ipcMain.handle('dialog-load-image', async () => {
 });
 
 // --- 系统对话框：选择 GeoJSON ---
-ipcMain.handle('dialog-load-geojson', async () => {
+ipcMain.handle('dialog-load-geojson', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入 GeoJSON 地图数据',
     filters: [{ name: 'GeoJSON', extensions: ['json', 'geojson'] }],
@@ -3513,8 +3429,7 @@ ipcMain.handle('dialog-load-geojson', async () => {
   });
   if (!result.canceled && result.filePaths.length > 0) {
     try {
-      const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
-      return { success: true, data: JSON.parse(raw) };
+      return { success: true, data: await runFileImport(event, signal => readJsonFileOffMainThread(result.filePaths[0], { kind: 'geojson', signal })) };
     } catch (e) {
       return { success: false, error: e.message };
     }
@@ -3709,29 +3624,19 @@ ipcMain.handle('discard-turn-data', (event, payload) => runTurnDataCommit('disca
 ipcMain.handle('write-turn-data', (event, payload) => runTurnDataCommit('writeLegacy', payload));
 
 // 读取某存档某回合数据（返回该回合目录下所有文件）
-ipcMain.handle('read-turn-data', async (event, { saveName, turn }) => {
+ipcMain.handle('read-turn-data', async (event, input) => {
   try {
-    const turnDir = path.join(turnDataRoot(saveName, false), turnSeg(turn));
-    if (!fs.existsSync(turnDir)) return { success: false, error: '数据不存在' };
-    const result = {};
-    const files = fs.readdirSync(turnDir).filter(f => f.endsWith('.json'));
-    files.forEach(f => {
-      try {
-        const key = f.replace('.json', '');
-        result[key] = JSON.parse(fs.readFileSync(path.join(turnDir, f), 'utf-8'));
-      } catch (e) { /* skip corrupt files */ }
-    });
-    return { success: true, data: result };
+    return turnDataCommitter.read(input);
   } catch (e) {
     return { success: false, error: e.message };
   }
 });
 
 // 批量读取多回合数据摘要（供AI打包推演用）
-ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn }) => {
+ipcMain.handle('read-turns-summary', async (event, input) => {
   try {
-    const saveDir = turnDataRoot(saveName, false);
-    if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
+    const { fromTurn, toTurn } = input;
+    const available = turnDataCommitter.list(input);
     const turns = [];
     let _from, _to;
     try { _from = Number(turnSeg(fromTurn)); _to = Number(turnSeg(toTurn)); }
@@ -3745,10 +3650,8 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
     _to   = Math.min(_to, _from + 20000, 10000000);
     if (_to < _from) return { success: true, turns: [] };
     for (let t = _from; t <= _to; t++) {
-      const contextFile = path.join(saveDir, turnSeg(t), 'context.json');
-      if (fs.existsSync(contextFile)) {
-        try {
-          const ctx = JSON.parse(fs.readFileSync(contextFile, 'utf-8'));
+      if (available.turns.includes(t)) {
+          const ctx = turnDataCommitter.read(Object.assign({}, input, { turn: t })).data.context;
           // 只提取摘要级别的数据（控制大小）
           turns.push({
             turn: t,
@@ -3757,7 +3660,6 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
             playerStatus: ctx.playerStatus || '',
             playerInner: ctx.playerInner || ''
           });
-        } catch (e) { /* skip */ }
       }
     }
     return { success: true, turns };
@@ -3767,21 +3669,16 @@ ipcMain.handle('read-turns-summary', async (event, { saveName, fromTurn, toTurn 
 });
 
 // 列出某存档的所有回合
-ipcMain.handle('list-turn-data', async (event, saveName) => {
+ipcMain.handle('list-turn-data', async (event, input) => {
   try {
-    const saveDir = turnDataRoot(saveName, false);
-    if (!fs.existsSync(saveDir)) return { success: true, turns: [] };
-    const turns = fs.readdirSync(saveDir)
-      .filter(d => /^\d+$/.test(d))
-      .map(d => parseInt(d))
-      .sort((a, b) => a - b);
-    return { success: true, turns };
+    return turnDataCommitter.list(input);
   } catch (e) {
     return { success: false, error: e.message };
   }
 });
 
 // 打开回合数据目录
+ipcMain.handle('delete-turn-data', (event, input) => runTurnDataCommit('remove', input));
 ipcMain.handle('open-turn-data-dir', () => {
   ensureSaveDir();
   shell.openPath(TURN_DATA_DIR);
@@ -4007,11 +3904,7 @@ ipcMain.handle('account-register', async (event, options = {}) => {
       password: String(options.password || ''),
       nickname: String(options.nickname || '').trim()
     };
-    const res = await postOnlineApi('account/register', payload, { apiUrl: options.apiUrl });
-    if (res && res.success && res.token) {
-      writeAccountSession({ token: res.token, apiUrl: getAccountApiUrl(options), user: res.user || null });
-    }
-    return Object.assign({ success: false }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('POST', 'account/register', payload);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4023,11 +3916,7 @@ ipcMain.handle('account-login', async (event, options = {}) => {
       username: String(options.username || '').trim(),
       password: String(options.password || '')
     };
-    const res = await postOnlineApi('account/login', payload, { apiUrl: options.apiUrl });
-    if (res && res.success && res.token) {
-      writeAccountSession({ token: res.token, apiUrl: getAccountApiUrl(options), user: res.user || null });
-    }
-    return Object.assign({ success: false }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('POST', 'account/login', payload);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4037,9 +3926,7 @@ ipcMain.handle('account-me', async (event, options = {}) => {
   try {
     const session = readAccountSession();
     if (!session.token) return { success: true, loggedIn: false, session: toPublicAccountSession(session) };
-    const res = await getOnlineApi('account/me', { apiUrl: options.apiUrl || session.apiUrl, token: session.token });
-    if (res && res.success && res.user) writeAccountSession({ token: session.token, apiUrl: options.apiUrl || session.apiUrl, user: res.user });
-    return Object.assign({ loggedIn: !!(res && res.user) }, sanitizeAccountOnlineResponse(res || {}), { session: toPublicAccountSession() });
+    return await handleOnlineRendererRequest('GET', 'account/me');
   } catch (e) {
     return { success: false, error: e.message, session: toPublicAccountSession() };
   }
@@ -4047,15 +3934,9 @@ ipcMain.handle('account-me', async (event, options = {}) => {
 
 ipcMain.handle('account-logout', async (event, options = {}) => {
   try {
-    const session = readAccountSession();
-    if (session.token) {
-      try { await postOnlineApi('account/logout', {}, { apiUrl: options.apiUrl || session.apiUrl, token: session.token }); } catch (e) {}
-    }
-    clearAccountSession();
-    return { success: true };
+    return await handleOnlineRendererRequest('POST', 'account/logout', {});
   } catch (e) {
-    clearAccountSession();
-    return { success: true, warning: e.message };
+    return { success: false, error: e.message };
   }
 });
 
@@ -4065,7 +3946,7 @@ ipcMain.handle('account-logout', async (event, options = {}) => {
 
 function listWorkshopPacksInternal() {
   ensureSaveDir();
-  const idx = readWorkshopIndex();
+  const idx = workshopTransactions.read();
   return idx.packs.map(item => {
     const installPath = path.join(WORKSHOP_PACKS_DIR, normalizePackId(item.id));
     return Object.assign({}, item, { enabled: item.enabled !== false, installed: fs.existsSync(installPath), path: installPath });
@@ -4073,23 +3954,12 @@ function listWorkshopPacksInternal() {
 }
 
 function installWorkshopPackFromDir(sourceDir, options = {}) {
-  const pack = validateWorkshopPack(sourceDir);
-  const target = path.join(WORKSHOP_PACKS_DIR, pack.id);
-  if (fs.existsSync(target) && !options.overwrite) {
-    return { success: false, error: '已存在同 ID 工坊包：' + pack.id, exists: true, pack: packPublicInfo(pack, target, true) };
-  }
-  if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-  copyDirRecursive(sourceDir, target);
-  const installed = validateWorkshopPack(target);
-  const idx = readWorkshopIndex();
-  idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== installed.id);
-  idx.packs.push(Object.assign(packPublicInfo(installed, target, true), {
-    installedAt: new Date().toISOString(),
-    source: options.source || ''
-  }));
-  writeWorkshopIndex(idx);
-  return { success: true, pack: packPublicInfo(installed, target, true) };
+  return workshopTransactions.install(sourceDir, options);
 }
+
+const workshopTransactions = createWorkshopTransactions({ fs, path, crypto, root: WORKSHOP_DIR,
+  packsRoot: WORKSHOP_PACKS_DIR, indexFile: WORKSHOP_INDEX_FILE, writeJsonAtomic,
+  validate: validateWorkshopPack, publicInfo: packPublicInfo, normalizeId: normalizePackId });
 
 async function readWorkshopCatalog(options = {}) {
   const base = new URL(DEFAULT_WORKSHOP_CATALOG_URL);
@@ -4237,17 +4107,7 @@ ipcMain.handle('workshop-import-pack', async (event, options = {}) => {
         return { success: false, error: '不支持的工坊包格式。' };
       }
     }
-    const pack = validateWorkshopPack(sourceDir);
-    const target = path.join(WORKSHOP_PACKS_DIR, pack.id);
-    if (fs.existsSync(target) && !options.overwrite) return { success: false, error: '已存在同 ID 工坊包：' + pack.id, exists: true, pack: packPublicInfo(pack, target, true) };
-    if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-    copyDirRecursive(sourceDir, target);
-    const installed = validateWorkshopPack(target);
-    const idx = readWorkshopIndex();
-    idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== installed.id);
-    idx.packs.push(Object.assign(packPublicInfo(installed, target, true), { installedAt: new Date().toISOString() }));
-    writeWorkshopIndex(idx);
-    return { success: true, pack: packPublicInfo(installed, target, true) };
+    return installWorkshopPackFromDir(sourceDir, options);
   } catch (e) {
     return { success: false, error: e.message };
   } finally {
@@ -4258,12 +4118,7 @@ ipcMain.handle('workshop-import-pack', async (event, options = {}) => {
 ipcMain.handle('workshop-set-enabled', async (event, { id, enabled }) => {
   try {
     const packId = normalizePackId(id);
-    const idx = readWorkshopIndex();
-    const item = idx.packs.find(p => normalizePackId(p.id) === packId);
-    if (!item) return { success: false, error: '找不到工坊包：' + packId };
-    item.enabled = !!enabled;
-    writeWorkshopIndex(idx);
-    return { success: true, pack: item };
+    return workshopTransactions.setEnabled(packId, enabled);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4272,12 +4127,7 @@ ipcMain.handle('workshop-set-enabled', async (event, { id, enabled }) => {
 ipcMain.handle('workshop-uninstall', async (event, id) => {
   try {
     const packId = normalizePackId(id);
-    const target = path.join(WORKSHOP_PACKS_DIR, packId);
-    if (fs.existsSync(target)) safeRmDir(target, WORKSHOP_PACKS_DIR);
-    const idx = readWorkshopIndex();
-    idx.packs = idx.packs.filter(item => normalizePackId(item.id) !== packId);
-    writeWorkshopIndex(idx);
-    return { success: true };
+    return workshopTransactions.remove(packId);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -4398,6 +4248,9 @@ if (TEST_MODE) {
     isStrictUpgrade,
     isStrictRendererUpgrade,
     sanitize,
+    saveFileRef,
+    stableStorageKey,
+    writeFileAtomic,
     desktopSaveMetadataFromData,
     prepareDesktopSavePayload,
     desktopSavePayloadStampMatches,
@@ -4424,6 +4277,7 @@ if (TEST_MODE) {
     _bootHealthCheckOnStartup,
     getActiveHotUpdate,
     paths: {
+      SAVE_DIR,
       HOT_UPDATE_DIR,
       HOT_UPDATE_VERSIONS_DIR,
       HOT_UPDATE_STATE_FILE,

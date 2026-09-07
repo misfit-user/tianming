@@ -1,0 +1,37 @@
+{
+  "beforeVersion": "1.3.4.11",
+  "afterVersion": "1.3.4.11",
+  "beforeCount": 1094,
+  "afterCount": 1094,
+  "removed": [],
+  "added": [],
+  "changed": [
+    {
+      "path": "tm-endturn-render.js",
+      "sha256": "46fe24bc5fc730777ded2dbf43ae3eb08cadf5c3eddfcdb40feb60dd9f077e07",
+      "size": 38410
+    },
+    {
+      "path": "tm-platform.js",
+      "sha256": "fbcff53dab1b69e3ff562f198bcb431ebe595b7044efe29213a7e24cd28b3e98",
+      "size": 12849
+    },
+    {
+      "path": "tm-post-turn-jobs.js",
+      "sha256": "359b3a778d5d25a3e29c8e391c721e1bbf39f01deb3e3a675ea7dfa5fbc7c89d",
+      "size": 34279
+    },
+    {
+      "path": "tm-save-lifecycle.js",
+      "sha256": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d",
+      "size": 167790
+    },
+    {
+      "path": "tm-save-manager.js",
+      "sha256": "09bc09cca6a82fba8321d11f0af7ab045f2e1036e5527948ad7f752100faf68b",
+      "size": 49827
+    }
+  ],
+  "officialSourceAndVersionDiff": "",
+  "packageDiff": "diff --git a/package.json b/package.json\nindex f0726674..5e7b9e19 100644\n--- a/package.json\n+++ b/package.json\n@@ -44,7 +44,11 @@\n       \"main.js\",\n       \"main-impl.js\",\n       \"main-json-file.js\",\n+      \"main-image-file.js\",\n       \"main-turn-data-commit.js\",\n+      \"main-workshop-transaction.js\",\n+      \"main-account-requests.js\",\n+      \"main-safe-remote.js\",\n       \"preload.js\",\n       \"preload-impl.js\",\n       \"resources/hot-update-public-key.pem\",\n"
+}

@@ -1,0 +1,25 @@
+{
+  "label": "committed-architecture",
+  "command": "node",
+  "args": [
+    "web/scripts/lint-arch-all.js"
+  ],
+  "before": {
+    "head": "03ec98c9bd3968eed69dc05f8e8adfe38637d056",
+    "tree": "0bc7c1bf09566ac6ed54c950f1c7c3dd1c827ad7",
+    "status": "?? docs/audit-followup-2026-09-07/"
+  },
+  "after": {
+    "head": "03ec98c9bd3968eed69dc05f8e8adfe38637d056",
+    "status": "?? docs/audit-followup-2026-09-07/"
+  },
+  "platform": "win32",
+  "os": "10.0.26200",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T10:29:24.808Z",
+  "durationMs": 20990,
+  "rawPath": "web\\dev-tools\\audit-followup\\committed-architecture.raw.txt",
+  "rawSha256": "957ecfc93e3515f0ef069556b773f7a60b06a507b437d4a0742f3c9d95149e23",
+  "exitCode": 0,
+  "signal": null
+}

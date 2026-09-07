@@ -144,7 +144,7 @@ ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[
   ok(/GM\.busy = true;[\s\S]*?GM\._loadHydrationPending = true;/.test(loadImpl)
     && /function _tmAwaitLoadBarrier\(\)[\s\S]*?result !== true[\s\S]*?throw new Error/.test(lifecycle)
     && /doSaveGame=async function\(\)\{\s*await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
-    && /desktopDoSave=async function\(\)\{\s*await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
+    && /desktopDoSave=async function\(\)\{[\s\S]*?_tmCaptureWorldLease\(\)[\s\S]*?await _tmAwaitLoadBarrier\(\)/.test(lifecycle)
     && /saveToSlot:\s*async function[\s\S]*?await _tmAwaitLoadBarrier\(\)/.test(manager),
   'hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障');
 }
@@ -439,6 +439,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async publishTurnData() { published++; return { success: true }; }
         }
@@ -477,7 +478,7 @@ async function runDynamicLeaseSmokes() {
       GM: { turn: 51, _campaignId: 'campaign-recover', _timelineId: 'tml_recover_12345678' }, P: { id: 'p-recover' },
       window: {
         _tmLoadGen: 4,
-        tianming: { async recoverTurnData(marker) { recovered++; return { success: marker.transactionId === receipt.transactionId }; } },
+        tianming: { turnDataProtocolVersion: 2, async recoverTurnData(marker) { recovered++; return { success: marker.transactionId === receipt.transactionId }; } },
         TM: { errors: { capture() {} } }
       },
       TM: { errors: { capture() {} } }, Promise, JSON, Error, console,
@@ -516,6 +517,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async discardTurnData() { discarded++; return { success: true }; }
         }
@@ -545,6 +547,7 @@ async function runDynamicLeaseSmokes() {
         TM: { errors: { capture() {}, captureSilent() {} } },
         tianming: {
           isDesktop: true,
+          turnDataProtocolVersion: 2,
           async stageTurnData() { staged++; return { success: true }; },
           async discardTurnData() { discarded++; return { success: true }; }
         }

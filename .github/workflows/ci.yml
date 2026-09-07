@@ -24,6 +24,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Record tested checkout identity
+        run: |
+          git rev-parse HEAD
+          git status --short
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})'
       - name: Install release-gate dependencies
         run: npm ci --ignore-scripts
       - name: Audit production dependencies
@@ -44,6 +49,18 @@ jobs:
       - name: Full smoke suite
         working-directory: web
         run: node scripts/ci-smokes.js
+      - name: Audit checkout probes
+        run: node web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-evidence-${{ github.sha }}
+          path: |
+            web/dev-tools/arch-guard/ci-*/smoke-report.json
+            web/dev-tools/audit-2026-09-05/repro-adapted-results.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Stage main preview artifact
         if: github.event_name == 'push'
         run: node scripts/stage-web-release.js --target "${{ runner.temp }}/tianming-main-preview" --label main-preview
@@ -57,6 +74,34 @@ jobs:
           path: ${{ runner.temp }}/tianming-main-preview
           include-hidden-files: true
           retention-days: 7
+
+  electron-bridge:
+    name: electron-bridge
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies and Electron runtime
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node node_modules/electron/install.js
+      - name: Real sandbox bridge, desktop IPC and restart recovery
+        run: node scripts/verify-electron-bridge.js
+      - name: Controlled TLS address binding and redirects
+        run: node scripts/verify-remote-tls.js
+      - name: Preserve Electron evidence (including startup failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-bridge-${{ github.sha }}
+          path: web/dev-tools/electron-bridge/**
+          if-no-files-found: error
+          retention-days: 30
 
   mobile-release-contracts:
     name: mobile-release-contracts

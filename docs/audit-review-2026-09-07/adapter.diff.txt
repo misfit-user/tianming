@@ -1,0 +1,135 @@
+diff --git "a/<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\repro-original\\audit-repro.cjs" "b/<USER_HOME>\\Desktop\\tianming-audit-review\\web\\scripts\\audit-repro.cjs"
+index 70fe7845..cf31276b 100644
+--- "a/<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\repro-original\\audit-repro.cjs"
++++ "b/<USER_HOME>\\Desktop\\tianming-audit-review\\web\\scripts\\audit-repro.cjs"
+@@ -5,7 +5,8 @@
+  * node audit-repro.cjs
+  * node audit-repro.cjs --repo /absolute/path/to/trusted/tianming --expect-clean
+  *
+- * Default: verified copies/excerpts of 3f8065cb...; only temp files and the JSON report are written.
++ * Checkout adapter for the supplied 2026-09-05 reproduction package. Original fixtures are NOT changed.
++ * This copy requires --repo; the original attachment retains its fixed-fixture default behavior.
+  * --repo: extracts corresponding functions from a trusted checkout; DOES NOT run npm or its CI suite.
+  * DEFECT_PRESENT means the undesired behavior was observed, not that a correctness test passed.
+  * New implementations may need additional harness dependencies; HARNESS_ERROR is never a clean pass.
+@@ -27,6 +28,7 @@ if (repoIndex >= 0 && (!args[repoIndex + 1] || args[repoIndex + 1].startsWith('-
+ }
+ const repo = repoIndex < 0 ? null : path.resolve(args[repoIndex + 1]);
+ const expectClean = args.includes('--expect-clean');
++if (!repo) throw new Error('This checkout adapter requires --repo /absolute/tianming --expect-clean; use the original attachment for fixed fixtures.');
+ const fixtures = path.join(__dirname, 'fixtures');
+ const getSource = (real, fixture) => fs.readFileSync(repo ? path.join(repo, real) : path.join(fixtures, fixture), 'utf8');
+ const mainSource = getSource('main-impl.js', 'main-excerpts.js');
+@@ -76,7 +78,7 @@ function namedFunction(source, name) {
+   return expressionAt(source, m.index);
+ }
+ function loadMain(names, dependencies = {}) {
+-  const context = vm.createContext(Object.assign({ fs, path, crypto, process, nodeNet, console: quiet }, dependencies));
++  const context = vm.createContext(Object.assign({ fs, path, crypto, process, nodeNet, console: quiet, require: require('module').createRequire(path.join(repo, 'main-impl.js')) }, dependencies));
+   for (const name of names) new vm.Script(namedFunction(mainSource, name)).runInContext(context, { timeout: 2000 });
+   return context;
+ }
+@@ -117,25 +119,35 @@ function accountHarness() {
+     sanitizeOnlineResponse: response => ({ success: response.success }),
+     toPublicAccountSession: () => ({ loggedIn: !!session.token, user: session.user })
+   });
++  c.accountRequests = require(path.join(repo, 'main-account-requests')).createAccountRequests({
++    read: c.readAccountSession, write: c.writeAccountSession, clear: c.clearAccountSession,
++    publicSession: c.toPublicAccountSession, sanitize: c.sanitizeAccountOnlineResponse,
++    send: (req, body) => req.method === 'GET' ? c.getOnlineApi() : c.postOnlineApi(req.route, body)
++  });
+   return { c, pendingMe, pendingLogin, read: () => structuredClone(session) };
+ }
+ function runCi(report) {
+   let exitCode = 0;
+-  const messages = [];
++  const messages = [], module = { exports: {} };
++  const tests = ['smoke-audio-bgm.js'];
++  const expectedReport = { version: 2, complete: true, runId: 'current', head: 'test-head', expected: tests, skipped: [],
++    results: (report.results || []).map(row => ({ ...row, exit: row.pass ? 0 : 1, suspect: false, timedOut: false, waivers: [] })) };
++  const evidence = require(path.join(repo, 'web/scripts/lib-smoke-evidence'));
+   const context = vm.createContext({
+-    __dirname: '/audit-fixture/web/scripts',
++    __dirname: path.join(repo, 'web/scripts'), module,
+     require(name) {
+-      if (name === 'child_process') return { execSync() { throw new Error('Injected smoke runner failure'); } };
++      if (name === './lib-smoke-evidence') return { discover: () => tests, validateReport: evidence.validateReport };
++      if (name === 'crypto') return { randomUUID: () => 'current' };
++      if (name === 'child_process') return { execFileSync: () => 'test-head', spawnSync: () => ({ status: report.results.length ? 0 : 1 }) };
+       if (name === 'path') return path;
+-      if (name === 'fs') return { readFileSync(file) {
+-        return JSON.stringify(String(file).includes('ci-smoke-allowlist') ? ['smoke-audio-bgm.js'] : report);
+-      }};
++      if (name === 'fs') return { mkdirSync() {}, mkdtempSync: p => p + 'unique', readFileSync: () => JSON.stringify(expectedReport) };
+       throw new Error('Unexpected CI dependency: ' + name);
+     },
+     console: { log: (...v) => messages.push(v.join(' ')), error: (...v) => messages.push(v.join(' ')) },
+-    process: { exit(code) { exitCode = code; const e = new Error('exit'); e.testExit = true; throw e; } }
++    process: { execPath: process.execPath }
+   });
+-  try { new vm.Script(ciSource).runInContext(context, { timeout: 2000 }); } catch (e) { if (!e.testExit) throw e; }
++  new vm.Script(ciSource).runInContext(context, { timeout: 2000 });
++  try { module.exports.main(); } catch (error) { exitCode = 1; messages.push(error.message); }
+   return { exitCode, messages };
+ }
+
+@@ -171,7 +183,7 @@ function runCi(report) {
+   });
+
+   await probe('TM-AUD-02', 'workshop overwrite loses old package when copying fails', async () => {
+-    const root = tempCase(), packs = path.join(root, 'packs'), source = path.join(root, 'incoming'), target = path.join(packs, 'audit-pack');
++    const root = tempCase(), managed = path.join(root, 'managed'), packs = path.join(managed, 'packs'), source = path.join(root, 'incoming'), target = path.join(packs, 'audit-pack');
+     fs.mkdirSync(target, { recursive: true }); fs.mkdirSync(source, { recursive: true });
+     fs.writeFileSync(path.join(target, 'old-proof.txt'), 'OLD-CONTENT');
+     fs.writeFileSync(path.join(source, 'new.txt'), 'NEW-CONTENT');
+@@ -185,7 +197,17 @@ function runCi(report) {
+       readWorkshopIndex: () => ({ packs: [{ id: 'audit-pack', version: 'old' }] }),
+       writeWorkshopIndex: () => { indexWritten = true; }
+     });
++    const indexFile = path.join(managed, 'index.json');
++    fs.writeFileSync(indexFile, JSON.stringify({ packs: [{ id: 'audit-pack', version: 'old' }] }));
++    const io = Object.create(fs);
++    io.copyFileSync = (_source, dest) => { fs.writeFileSync(dest, 'PARTIAL'); throw Object.assign(new Error('Injected copy ENOSPC'), { code: 'ENOSPC' }); };
++    c.workshopTransactions = require(path.join(repo, 'main-workshop-transaction')).createWorkshopTransactions({
++      fs: io, path, crypto, root: managed, packsRoot: packs, indexFile,
++      validate: c.validateWorkshopPack, publicInfo: c.packPublicInfo, normalizeId: id => id,
++      writeJsonAtomic: (file, data) => { if (file === indexFile) indexWritten = true; const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(data)); fs.renameSync(tmp, file); }
++    });
+     let error; try { c.installWorkshopPackFromDir(source, { overwrite: true }); } catch (e) { error = e.message; }
++    assert.match(error || '', /Injected copy/, 'The copy fault must actually execute, not a missing harness dependency');
+     const oldPreserved = fs.existsSync(path.join(target, 'old-proof.txt'));
+     return { defect: !!error && !oldPreserved, error, oldPreserved, partialNewTree: fs.existsSync(path.join(target, 'partial.txt')), indexWritten };
+   });
+@@ -223,6 +245,8 @@ function runCi(report) {
+     c.tianming = { saveProject: () => { started.resolve(); return io.promise; } };
+     c.window = c;
+     vm.createContext(c);
++    const leaseSource = fs.readFileSync(path.join(repo, 'web/tm-post-turn-jobs.js'), 'utf8');
++    for (const name of ['_tmCaptureWorldLease', '_tmWorldLeaseCurrent']) new vm.Script(namedFunction(leaseSource, name)).runInContext(c);
+     const marker = lifecycleSource.indexOf('window.desktopDoSave=async function');
+     if (marker < 0) throw new Error('desktopDoSave marker changed; adapt extraction');
+     const expr = expressionAt(lifecycleSource, lifecycleSource.indexOf('async function', marker));
+@@ -267,11 +291,11 @@ function runCi(report) {
+     fs.writeFileSync(dest, '{"old":"preserve-me"}');
+     const original = fs.readFileSync(dest, 'utf8');
+     const faultyFs = Object.assign({}, fs, { writeFileSync(file, ...rest) {
+-      if (file === dest) { fs.writeFileSync(dest, '{'); throw Object.assign(new Error('Injected partial write ENOSPC'), { code: 'ENOSPC' }); }
++      if (file === dest || typeof file === 'number') { fs.writeFileSync(file, '{'); throw Object.assign(new Error('Injected partial write ENOSPC'), { code: 'ENOSPC' }); }
+       return fs.writeFileSync(file, ...rest);
+     }});
+     const handlers = {};
+-    const c = vm.createContext({ fs: faultyFs, mainWindow: {},
++    const c = loadMain(['ensureWritableDir', 'writeFileAtomic'], { fs: faultyFs, mainWindow: {},
+       dialog: { showSaveDialog: async () => ({ canceled: false, filePath: dest }) } });
+     const marker = mainSource.indexOf("ipcMain.handle('dialog-export',");
+     const expr = expressionAt(mainSource, mainSource.indexOf('async (', marker));
+@@ -308,7 +332,8 @@ function runCi(report) {
+       defectsPresent: results.filter(r => r.status === 'DEFECT_PRESENT').length,
+       controlsPassed: results.filter(r => r.status === 'CONTROL_PASS').length,
+       harnessErrors: results.filter(r => r.status === 'HARNESS_ERROR').length }, results };
+-  fs.writeFileSync(path.join(__dirname, 'repro-results.json'), JSON.stringify(output, null, 2) + '\n');
++  const evidenceDir = path.join(repo, 'web/dev-tools/audit-2026-09-05'); fs.mkdirSync(evidenceDir, { recursive: true });
++  fs.writeFileSync(path.join(evidenceDir, 'repro-adapted-results.json'), JSON.stringify(output, null, 2) + '\n');
+   console.log('\nSUMMARY ' + JSON.stringify(output.summary));
+   fs.rmSync(testRoot, { recursive: true, force: true });
+   if (output.summary.harnessErrors || results.some(r => r.status === 'CONTROL_FAIL') || (expectClean && output.summary.defectsPresent)) process.exitCode = 1;

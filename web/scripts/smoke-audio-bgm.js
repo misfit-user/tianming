@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const assetExists = relative => require('./lib-smoke-evidence').assetExists('smoke-audio-bgm.js', relative);
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -75,10 +76,10 @@ assert(context.TM_BGM_PLAYLIST_VERSION === 'theme-quartet-20260513', 'BGM playli
 assert(context.TM_BGM_DEFAULT_LOOP === 'sequence', 'default loop mode should cycle through the theme playlist');
 assert(context.TM_MENU_BGM && context.TM_MENU_BGM.src, 'TM_MENU_BGM should define the launch/menu track');
 assert(context.TM_MENU_BGM.id === 'tianming-hegui', 'TM_MENU_BGM should use the dedicated launch song');
-assert(fs.existsSync(path.join(ROOT, context.TM_MENU_BGM.src)), 'menu BGM file missing: ' + context.TM_MENU_BGM.src);
+assert(assetExists(context.TM_MENU_BGM.src), 'menu BGM file missing: ' + context.TM_MENU_BGM.src);
 context.TM_BGM_TRACKS.forEach(track => {
   assert(track.id && track.title && track.src, 'each BGM track should have id, title and src');
-  assert(fs.existsSync(path.join(ROOT, track.src)), 'BGM file missing: ' + track.src);
+  assert(assetExists(track.src), 'BGM file missing: ' + track.src);
 });
 
 const audioThemeSource = fs.readFileSync(path.join(ROOT, 'tm-audio-theme.js'), 'utf8');

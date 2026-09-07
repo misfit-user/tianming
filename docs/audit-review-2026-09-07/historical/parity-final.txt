@@ -1,0 +1,32 @@
+{"executable":"node","args":["web/scripts/verify-official-scenario-parity.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:54:55.121Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+[official-sync] parity PASS · sources=2 artifacts=9
+  ok·seeder/preview/reset artifacts registered
+  ok·tianqi7 builtin embeds the complete root JSON
+  ok·tianqi7 builtin remains reviewable compact output
+  ok·tianqi7 seeder embeds the complete root JSON
+  ok·tianqi7 editor preview embeds the complete root JSON
+  ok·editor reset embeds the complete Tianqi root JSON (embedded=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, root=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, differingKeys=)
+  ok·tianqi7 bundled JSON is byte-identical to root JSON
+  ok·shaosong builtin embeds the complete root JSON
+  ok·shaosong builtin remains reviewable compact output
+  ok·shaosong seeder embeds the complete root JSON
+  ok·shaosong editor preview embeds the complete root JSON
+  ok·shaosong bundled JSON is byte-identical to root JSON
+  ok·manifest.js equals manifest.json
+  ok·tianqi7 metadata exists
+  ok·tianqi7 metadata script sha256 is correct
+  ok·tianqi7 metadata script bytes is correct
+  ok·tianqi7 metadata source sha256 is correct
+  ok·tianqi7 metadata source bytes is correct
+  ok·tianqi7 metadata loader path is correct
+  ok·tianqi7 metadata counts are correct
+  ok·shaosong metadata exists
+  ok·shaosong metadata script sha256 is correct
+  ok·shaosong metadata script bytes is correct
+  ok·shaosong metadata source sha256 is correct
+  ok·shaosong metadata source bytes is correct
+  ok·shaosong metadata loader path is correct
+  ok·shaosong metadata counts are correct
+PASS assertions=27
+
+{"name":"parity-final","executable":"node","args":["web/scripts/verify-official-scenario-parity.js"],"exitCode":0,"signal":null,"durationMs":5120,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\parity-final.log"}

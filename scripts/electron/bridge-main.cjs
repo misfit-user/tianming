@@ -6,6 +6,7 @@ const { app, session, net } = require('electron');
 const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
+const visiblePerformance = mode === 'performance' || mode === 'performance-inspect';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -15,6 +16,7 @@ for (const name of ['http', 'https']) { require(name).request = deny; require(na
 net.request = deny; net.fetch = deny; global.fetch = deny;
 const results = [], failures = [];
 const controls = {};
+let performanceReport;
 const windowOptions = [];
 // Electron 33's getLastWebPreferences omits preload. Observe, do not alter, the
 // options sent by production createWindow to the real native constructor.
@@ -36,6 +38,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
   } });
   if (key !== 'BrowserWindow') return target[key];
   return new Proxy(target.BrowserWindow, { construct(Window, args) {
+    if (visiblePerformance) args[0] = { ...args[0], width: 1280, height: 800, fullscreen: false };
     windowOptions.push(args[0]); return Reflect.construct(Window, args);
   } });
 } });
@@ -54,17 +57,18 @@ function finish(error) {
   if (finished) return; finished = true;
   if (error) failures.push(String(error.stack || error));
   const report = { complete: true, ok: failures.length === 0, mode, baseline, versions: process.versions, results, failures,
-    securityScope: 'real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data',
-    temporaryUserData: temp };
+    securityScope: 'real unpackaged production main/preload; '+(visiblePerformance ? 'visible' : 'hidden')+' window; temporary userData; external network denied; no player data',
+    temporaryUserData: temp, performance: performanceReport };
   fs.writeFileSync(process.env.TM_BRIDGE_TEST_REPORT, JSON.stringify(report, null, 2) + '\n');
   // This exits the disposable gate process, not the application's production quit path.
   app.exit(report.ok ? 0 : 1);
 }
 async function check(name, fn) { await fn(); results.push({ name, status: 'PASS' }); }
-setTimeout(() => finish(new Error('electron-bridge-timeout')), 75000);
+setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'performance-inspect' ? 1800000 : mode === 'performance' ? 240000 : 75000);
 process.on('uncaughtException', finish); process.on('unhandledRejection', finish);
 app.on('browser-window-created', (_event, win) => {
-  win.show = () => {}; win.setFullScreen = () => {};
+  if (!visiblePerformance) win.show = () => {};
+  win.setFullScreen = () => {};
   win.webContents.on('preload-error', (_event, file, error) => finish(new Error('production-preload-failed: ' + file + ': ' + error.message)));
   win.webContents.on('render-process-gone', (_event, details) => finish(new Error('render-process-gone: ' + JSON.stringify(details))));
   win.webContents.on('did-fail-load', (_event, code, description, url, mainFrame) => { if (mainFrame) finish(new Error('did-fail-load: ' + code + ' ' + description + ' ' + url)); });
@@ -99,7 +103,9 @@ app.on('browser-window-created', (_event, win) => {
         const exports = require(path.join(root, 'main-impl.js'));
         assert.equal(!!exports.__test, mode === 'test-exports');
       });
-      if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
+      if (mode === 'performance') performanceReport = await require('../perf/round1-electron-cases.cjs')({ win, root, temp, controls, check, recordPerformance: report => { performanceReport = report; } });
+      else if (mode === 'performance-inspect') performanceReport = await require('../perf/inspect-electron-cases.cjs')({ win, root, temp, check });
+      else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
       finish();
     } catch (error) { finish(error); }
   });

@@ -1,0 +1,45 @@
+'use strict';
+const fs = require('fs'), assert = require('assert/strict'), crypto = require('crypto');
+module.exports = async function({ win, root, check }) {
+  const js = code => win.webContents.executeJavaScript(code);
+  const sid = process.env.TM_PERF_INSPECT_SCENARIO;
+  await js(`(async()=>{if(P.ai&&P.ai.key)throw Error('unexpected API credential');await TMOfficialScenarioLoader.ensure(${JSON.stringify(sid)});P.conf.fixedSeed='perf-round1';doActualStart(${JSON.stringify(sid)});await _tmAwaitLoadBarrier();return true;})()`);
+  const file = process.env.TM_PERF_INSPECT_SAMPLE;
+  let sampleHash = null;
+  if (file) {
+    const bytes = fs.readFileSync(file); sampleHash = crypto.createHash('sha256').update(bytes).digest('hex');
+    await js(`(async()=>{await fullLoadGame(${bytes.toString('utf8')});await _tmAwaitLoadBarrier();return true;})()`);
+  }
+  await check('interactive-isolated-world', async () => assert.equal(await js(`!!GM&&GM.sid===${JSON.stringify(sid)}&&!!tianming.isDesktop&&!(P.ai&&P.ai.key)`), true));
+  await js(`(()=>{
+    document.title='天命 · 性能隔离观察';
+    const trace=window.__perfInspection={events:[],longTasks:[],timings:{},started:performance.now(),complete:false};
+    // Bounded metadata only: no input text, actor names, API credentials or saved world.
+    const push=(arr,value)=>{if(arr.length<2048)arr.push(value);};
+    for(const name of ['click','input','wheel','pointerup'])document.addEventListener(name,e=>{
+      const t=performance.now(),target=e.target,entry={type:name,at:t,tag:target&&target.tagName,id:target&&target.id||'',trusted:e.isTrusted};
+      push(trace.events,entry);requestAnimationFrame(()=>{entry.nextFrameMs=performance.now()-t;});
+    },true);
+    new PerformanceObserver(list=>{for(const e of list.getEntries())push(trace.longTasks,{start:e.startTime,duration:e.duration});}).observe({type:'longtask',buffered:false});
+    for(const name of ['renderGameState','_buildSaveState','_prepareGMForSave']){const original=window[name];if(typeof original!=='function')throw Error('missing '+name);
+      window[name]=function(...args){const start=performance.now();try{return original.apply(this,args);}finally{push(trace.timings[name]||(trace.timings[name]=[]),{start,ms:performance.now()-start});}};}
+    TM.perf.reset();return true;
+  })()`);
+  win.setTitle('天命 · 性能隔离观察'); win.show();
+  let stopped = false, sampling = false;
+  const report = { scope: 'Computer Use observation; real production main/preload, isolated public state, external network denied. Tool observation intervals are NOT input latency or FPS.',
+    sampleHash, scenario: sid, root: root.replace(require('os').homedir(), '<user-profile>') };
+  async function snapshot() {
+    if (sampling || stopped) return;
+    sampling = true;
+    try { report.trace = await js('JSON.parse(JSON.stringify({...__perfInspection,perf:TM.perf.report(),work:TM.perf.workReport()}))'); fs.writeFileSync(process.env.TM_PERF_INSPECT_TRACE, JSON.stringify(report, null, 2)); }
+    finally { sampling = false; }
+  }
+  await snapshot();
+  const timer = setInterval(() => { snapshot().catch(error => { report.sampleError = String(error.message); }); }, 3000);
+  console.log('INTERACTIVE_READY');
+  await new Promise(resolve => win.on('closed', resolve));
+  stopped = true; clearInterval(timer); report.complete = true;
+  fs.writeFileSync(process.env.TM_PERF_INSPECT_TRACE, JSON.stringify(report, null, 2));
+  return report;
+};

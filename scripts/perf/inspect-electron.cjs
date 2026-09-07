@@ -11,7 +11,8 @@ const out = path.join(root, 'web/dev-tools/perf-round1/inspect-' + crypto.random
 const env = { ...process.env, TM_BRIDGE_TEST_ROOT: repo, TM_BRIDGE_TEST_MODE: 'performance-inspect',
   TM_BRIDGE_TEST_REPORT: path.join(out, 'report.json'), TM_BRIDGE_TEST_USERDATA: temporary,
   TM_PERF_INSPECT_SAMPLE: arg('--sample', ''), TM_PERF_INSPECT_TRACE: path.join(out, 'trace.json'),
-  TM_PERF_INSPECT_SCENARIO: arg('--scenario', 'sc-jianyan1-1127-shaosong') };
+  TM_PERF_INSPECT_SCENARIO: arg('--scenario', 'sc-jianyan1-1127-shaosong'),
+  TM_PERF_INSPECT_CPU: args.includes('--cpu-profile') ? '1' : '' };
 delete env.ELECTRON_RUN_AS_NODE; delete env.TIANMING_TEST_EXPORTS;
 fs.writeFileSync(path.join(out, 'source.json'), JSON.stringify({ head: cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim(),
   sourceHashes: Object.fromEntries(['web/tm-storage.js','web/tm-save-lifecycle.js','web/phase8-formal-map.js'].map(p => [p, crypto.createHash('sha256').update(fs.readFileSync(path.join(repo, p))).digest('hex')])) }, null, 2));

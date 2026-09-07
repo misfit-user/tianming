@@ -29,6 +29,27 @@ module.exports = async function({ win, root, check }) {
   let stopped = false, sampling = false;
   const report = { scope: 'Computer Use observation; real production main/preload, isolated public state, external network denied. Tool observation intervals are NOT input latency or FPS.',
     sampleHash, scenario: sid, root: root.replace(require('os').homedir(), '<user-profile>') };
+  let profileTimer, profileBusy = false, profileIndex = 0;
+  if (process.env.TM_PERF_INSPECT_CPU === '1') {
+    win.webContents.debugger.attach('1.3');
+    await win.webContents.debugger.sendCommand('Profiler.enable');
+    await win.webContents.debugger.sendCommand('Profiler.setSamplingInterval', { interval: 1000 });
+    await win.webContents.debugger.sendCommand('Profiler.start');
+    report.cpuProfiles = [];
+    profileTimer = setInterval(async () => {
+      if (profileBusy || stopped || profileIndex >= 12) return;
+      profileBusy = true;
+      try {
+        const { profile } = await win.webContents.debugger.sendCommand('Profiler.stop');
+        const name = 'cpu-' + (++profileIndex) + '.json';
+        const at = await js('performance.now()');
+        fs.writeFileSync(require('path').join(require('path').dirname(process.env.TM_PERF_INSPECT_TRACE), name), JSON.stringify(profile));
+        report.cpuProfiles.push({ name, rendererEndMs: at, samples: profile.samples?.length });
+        if (profileIndex < 12) await win.webContents.debugger.sendCommand('Profiler.start');
+      } catch (error) { report.cpuProfileError = String(error.message); }
+      finally { profileBusy = false; }
+    }, 20000);
+  }
   async function snapshot() {
     if (sampling || stopped) return;
     sampling = true;
@@ -39,7 +60,7 @@ module.exports = async function({ win, root, check }) {
   const timer = setInterval(() => { snapshot().catch(error => { report.sampleError = String(error.message); }); }, 3000);
   console.log('INTERACTIVE_READY');
   await new Promise(resolve => win.on('closed', resolve));
-  stopped = true; clearInterval(timer); report.complete = true;
+  stopped = true; clearInterval(timer); clearInterval(profileTimer); report.complete = true;
   fs.writeFileSync(process.env.TM_PERF_INSPECT_TRACE, JSON.stringify(report, null, 2));
   return report;
 };

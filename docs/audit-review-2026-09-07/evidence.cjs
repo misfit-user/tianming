@@ -5,9 +5,10 @@ const root = path.resolve(__dirname, '../..');
 const sha = data => crypto.createHash('sha256').update(data).digest('hex');
 const git = args => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
 function sanitize(text) {
-  // Redact workstation paths only. Outcomes, test names, hashes and errors remain unchanged.
+  // Render logs with portable whitespace; original bytes remain in the local logs and hashes.
   return String(text).replace(/C:(?:\\\\|\\|\/)Users(?:\\\\|\\|\/)37814/g, '<USER_HOME>')
-    .replace(/E:(?:\\\\|\\|\/)MovedFromC/g, '<MOVED_WORKSPACES>');
+    .replace(/E:(?:\\\\|\\|\/)MovedFromC/g, '<MOVED_WORKSPACES>')
+    .replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').replace(/\s*$/, '') + '\n';
 }
 function rejectSecrets(text) {
   if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{25,}|github_pat_[A-Za-z0-9_]{25,}|sk-[A-Za-z0-9]{30,}/.test(text)) throw new Error('Potential secret in evidence; stop for inspection');
@@ -28,7 +29,7 @@ function historic(source) {
     'workshop-transactions', 'workshop-transactions-retest', 'save-files', 'save-files-retest', 'safe-remote', 'safe-remote-retest'];
   const index = { provenance: 'Previous local execution, not a remote CI run', platform: 'win32', node: 'v24.14.0',
     workspaceStatus: 'Not captured per historical command. Do not infer clean status from HEAD alone.',
-    privacy: 'Workstation user paths redacted; original and published SHA256 included.', files: [] };
+    privacy: 'Workstation user paths redacted; display line endings/trailing whitespace normalized. Original and published SHA256 included; original fixtures untouched.', files: [] };
   function copy(src, dest, redact = true) {
     const data = fs.readFileSync(src); rejectSecrets(data.toString('utf8'));
     const target = path.join(__dirname, dest); fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -44,6 +45,8 @@ function historic(source) {
   const diff = cp.spawnSync('git', ['diff', '--no-index', '--', path.join(original, 'audit-repro.cjs'), path.join(root, 'web/scripts/audit-repro.cjs')], { encoding: 'utf8', windowsHide: true });
   if (diff.status !== 1) throw new Error('Expected adapter diff, got ' + diff.status);
   write('adapter.diff.txt', diff.stdout);
+  write('adapter.diff.json', { purpose: 'Exact diff text (except user path redaction), escaped to preserve whitespace',
+    text: diff.stdout.replaceAll(source.replace(/\\/g, '/'), '<LOCAL_EVIDENCE>') });
   write('historical/index.json', index);
   console.log('Collected ' + index.files.length + ' explicit historical evidence files');
 }
@@ -80,6 +83,20 @@ function current() {
     write('current/' + dst, JSON.parse(fs.readFileSync(path.join(root, src), 'utf8')));
   }
 }
+function refreshPresentation() {
+  for (const name of fs.readdirSync(path.join(__dirname, 'current')).filter(f => f.endsWith('.json'))) {
+    const meta = JSON.parse(fs.readFileSync(path.join(__dirname, 'current', name), 'utf8'));
+    if (!meta.command) continue;
+    const raw = path.join(root, 'web/dev-tools/audit-review', name.replace(/\.json$/, '.raw.txt'));
+    if (!fs.existsSync(raw)) throw new Error('Original local output missing: ' + name);
+    const data = fs.readFileSync(raw, 'utf8');
+    if (sha(data) !== meta.rawSha256) throw new Error('Original local output changed: ' + name);
+    meta.publishedSha256 = sha(sanitize(data));
+    const header = { ...meta }; delete header.rawSha256; delete header.publishedSha256;
+    write('current/' + name.replace(/\.json$/, '.txt'), JSON.stringify(header) + '\n' + data);
+    write('current/' + name, meta);
+  }
+}
 function record(name, executable, args) {
   if (!/^[a-z0-9-]+$/.test(name) || !executable) throw new Error('record NAME EXECUTABLE ARGS required');
   const started = Date.now(), head = git(['rev-parse', 'HEAD']).trim();
@@ -103,5 +120,6 @@ const [mode, ...args] = process.argv.slice(2);
 if (mode === 'historic') historic(args[0]);
 else if (mode === 'baseline') baseline();
 else if (mode === 'current') current();
+else if (mode === 'refresh-presentation') refreshPresentation();
 else if (mode === 'record') record(args[0], args[1], args.slice(2));
 else throw new Error('Expected historic SOURCE | baseline | record NAME EXECUTABLE ARGS');

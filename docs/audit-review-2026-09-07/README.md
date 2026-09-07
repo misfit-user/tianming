@@ -69,7 +69,7 @@
 
 ## 4. 外部可读的执行证据
 
-- [历史命令与原/脱敏文件 SHA256](historical/index.json)、[历史执行索引](historical/runs.jsonl)。仅替换工作站用户绝对路径，保留 stdout/stderr、错误、计数和退出码；历史日志没有逐次记录 dirty 状态，**不补造历史 clean 证明**。历史报告仍是本地证据。
+- [历史命令与原/脱敏文件 SHA256](historical/index.json)、[历史执行索引](historical/runs.jsonl)。替换工作站用户绝对路径，并把日志展示的混合 CRLF/末尾空白规范为可移植文本；保留 stdout/stderr 内容、错误、计数和退出码，原脚本/夹具字节不变。原始与展示 SHA 分开记录；原 diff 空白可从 [JSON 转义版本](adapter.diff.json) 还原。首次证据提交的 `git diff --check` 指出了日志/diff 的展示空白，后续仅整理证据表示，不改被测源码或结果。历史日志没有逐次记录 dirty 状态，**不补造历史 clean 证明**。历史报告仍是本地证据。
 - [历史最终 910 项结构化报告](historical/full-smoke-report.json)，执行代码 HEAD 为 `e890eeb8…`；之后 `5ed032af…` 只加原报告。
 - [首次全量失败](historical/full-smoke-first.txt)：905/909、4 FAIL；[零选择误用](historical/committed-targeted.txt)不是通过；旧包适配器失配、Windows fd/故障桩修正等失败均保留。
 - [当前全量报告](current/full-smoke-report.json)、[当前十个专项报告](current/targeted-report.json)。当前每份 `.txt`/`.json` 都记录命令、HEAD/tree、前后 status、Node/platform、退出码和耗时。

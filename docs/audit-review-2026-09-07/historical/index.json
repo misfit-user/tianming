@@ -3,7 +3,7 @@
   "platform": "win32",
   "node": "v24.14.0",
   "workspaceStatus": "Not captured per historical command. Do not infer clean status from HEAD alone.",
-  "privacy": "Workstation user paths redacted; original and published SHA256 included.",
+  "privacy": "Workstation user paths redacted; display line endings/trailing whitespace normalized. Original and published SHA256 included; original fixtures untouched.",
   "files": [
     {
       "path": "historical/baseline-fixture.txt",
@@ -20,7 +20,7 @@
     {
       "path": "historical/repro-current-original.txt",
       "originalSha256": "76c83f1b0a9c6b856398aaaa595fc21be32fb875ef78db8306f7a325118abb62",
-      "publishedSha256": "479650c7a751269ad2b7db857a9b61ee0c343ef28f90846a1e8126bad29c4b87",
+      "publishedSha256": "1a1214ef8e9983b5ca816f6d7e88c3e1219ed43e30bd16853f24fefa1f85fd92",
       "redacted": true
     },
     {
@@ -182,7 +182,7 @@
     {
       "path": "historical/safe-remote.txt",
       "originalSha256": "deacb1dfbce0e7819bf3fdb3d63def7af8f3481b9e2012a5221bede23503ec3b",
-      "publishedSha256": "81a780b7f6b2438e86ce2e092eb74df90eeb988e5f235c64c00d539cab662b77",
+      "publishedSha256": "274d02627573fbb23ec3211d4dcf52c7c50787113d916fac15c52c6879871d65",
       "redacted": true
     },
     {

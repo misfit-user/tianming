@@ -19,5 +19,5 @@
   "durationMs": 3378,
   "statusAfter": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
   "rawSha256": "3567f64db43af4a836c61e92bec1ca84b4267cc9886dc3d69767f71889743572",
-  "publishedSha256": "9e60659bf43985c0918ba72b9a79cd78eb566a85899bb05cf8231c10ec703644"
+  "publishedSha256": "448d14fc61a87065eb7833ff6f322bd3d21dddd419e448e5c64df092da94ec05"
 }

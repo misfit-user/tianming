@@ -72,10 +72,10 @@ index 70fe7845..cf31276b 100644
 +  try { module.exports.main(); } catch (error) { exitCode = 1; messages.push(error.message); }
    return { exitCode, messages };
  }
- 
+
 @@ -171,7 +183,7 @@ function runCi(report) {
    });
- 
+
    await probe('TM-AUD-02', 'workshop overwrite loses old package when copying fails', async () => {
 -    const root = tempCase(), packs = path.join(root, 'packs'), source = path.join(root, 'incoming'), target = path.join(packs, 'audit-pack');
 +    const root = tempCase(), managed = path.join(root, 'managed'), packs = path.join(managed, 'packs'), source = path.join(root, 'incoming'), target = path.join(packs, 'audit-pack');

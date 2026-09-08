@@ -58,7 +58,7 @@ function finish(error) {
   if (finished) return; finished = true;
   if (error) failures.push(String(error.stack || error));
   const report = { complete: true, ok: failures.length === 0, mode, baseline, versions: process.versions, results, failures,
-    securityScope: 'real unpackaged production main/preload; '+(visibleWindow ? 'visible' : 'hidden')+' window; temporary userData; external network denied; no player data',
+    securityScope: 'real unpackaged production main/preload; '+(visibleWindow ? 'visible' : 'hidden')+' window; temporary userData; external network denied; '+(mode === 'authoring-regions' && process.env.TM_AUTHORING_REGION_FIXTURE ? 'read-only user-supplied scenario clone' : 'no player data'),
     temporaryUserData: temp, performance: performanceReport };
   fs.writeFileSync(process.env.TM_BRIDGE_TEST_REPORT, JSON.stringify(report, null, 2) + '\n');
   // This exits the disposable gate process, not the application's production quit path.
@@ -110,6 +110,7 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'performance-panels') performanceReport = await require('../perf/panels-electron-cases.cjs')({ win, root, temp, check, recordPerformance: report => { performanceReport = report; } });
       else if (mode === 'building-appraisal') await require('./building-appraisal-cases.cjs')({ win, temp, check });
       else if (mode === 'edict-polish') await require('./edict-polish-cases.cjs')({ win, temp, check });
+      else if (mode === 'authoring-regions') await require('./authoring-region-cases.cjs')({ win, root, temp, check });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
       finish();
     } catch (error) { finish(error); }

@@ -46,49 +46,58 @@
   var _UNSAFE_PATH_SEGMENTS = { '__proto__': 1, 'prototype': 1, 'constructor': 1 };
   function _hasOwn(obj, key) { return obj != null && Object.prototype.hasOwnProperty.call(obj, key); }
   function _hasUnsafePathSegment(path) {
-    return String(path == null ? '' : path).split('.').some(function(raw) {
+    return String(path == null ? '' : path).replace(/\[(\d+)\]/g, '.$1').split('.').some(function(raw) {
       var seg = String(raw).replace(/\[\d+\]$/, '').toLowerCase();
       return !!_UNSAFE_PATH_SEGMENTS[seg];
     });
   }
-  function _resolvePath(obj, path) {
-    if (!obj || !path || _hasUnsafePathSegment(path)) return { parent: null, key: null, exists: false, value: undefined };
-    var keys = String(path).split('.');
-    var parent = obj;
-    for (var i = 0; i < keys.length - 1; i++) {
-      var k = keys[i];
-      var m = k.match(/^(\w+)\[(\d+)\]$/);
-      if (m) {
-        if (!_hasOwn(parent, m[1]) || !parent[m[1]]) return { parent: null, key: null, exists: false, value: undefined };
-        parent = parent[m[1]][Number(m[2])];
-      } else if (Array.isArray(parent) && isNaN(Number(k))) {
-        var nextParent = parent.find(function(it) { return it && ((_hasOwn(it, 'name') && it.name === k) || (_hasOwn(it, 'id') && it.id === k)); });
-        if (!nextParent) return { parent: null, key: null, exists: false, value: undefined };
-        parent = nextParent;
-      } else if (Array.isArray(parent) && !isNaN(Number(k))) {
-        if (!_hasOwn(parent, Number(k))) return { parent: null, key: null, exists: false, value: undefined };
-        parent = parent[Number(k)];
-      } else {
-        if (!_hasOwn(parent, k) || parent[k] === undefined || parent[k] === null) return { parent: null, key: null, exists: false, value: undefined };
-        parent = parent[k];
+  function _resolvePath(obj, path, createParents) {
+    function fail(code, reason) { return { parent: null, key: null, exists: false, value: undefined, code: code, reason: reason + ': ' + path }; }
+    if (!obj || !path || _hasUnsafePathSegment(path)) return fail('authoring-path-invalid', '无效或不安全的路径');
+    var keys = String(path).replace(/\[(\d+)\]/g, '.$&').split('.');
+    if (keys.some(function(k) { return !k || (/[\[\]]/.test(k) && !/^\[\d+\]$/.test(k)); })) return fail('authoring-path-invalid', '无效的路径语法');
+    var parent = obj, attach = null;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i], indexed = /^\[(\d+)\]$/.exec(k), readOnly = false;
+      if (indexed) k = indexed[1];
+      if (!parent || typeof parent !== 'object') return fail('authoring-path-not-found', '路径中间段不是对象');
+      if (indexed && !Array.isArray(parent)) return fail('authoring-path-not-found', '数组索引前不是数组');
+      if (Array.isArray(parent)) {
+        if (!indexed && k === 'length') readOnly = true;
+        else if (/^(0|[1-9]\d*)$/.test(k)) {
+          k = Number(k);
+          if (!_hasOwn(parent, k)) return fail('authoring-array-reference-not-found', '数组索引不存在；新增实体请用 applyPush');
+        } else {
+          var ids = [], names = [];
+          parent.forEach(function(it, index) {
+            if (it && _hasOwn(it, 'id') && it.id === k) ids.push(index);
+            if (it && _hasOwn(it, 'name') && it.name === k) names.push(index);
+          });
+          var matches = ids.length ? ids : names;
+          if (!matches.length) return fail('authoring-array-reference-not-found', '未找到数组中的实体；请先搜索实际 ID/名称，新增实体请用 applyPush');
+          if (matches.length !== 1) return fail('ambiguous-reference', '实体匹配不唯一；请使用唯一 ID 或明确索引');
+          k = matches[0];
+        }
       }
-      if (parent === undefined || parent === null) return { parent: null, key: null, exists: false, value: undefined };
-    }
-    var lastKey = keys[keys.length - 1];
-    var lastIndexed = lastKey.match(/^(\w+)\[(\d+)\]$/);
-    if (lastIndexed) {
-      if (!_hasOwn(parent, lastIndexed[1]) || !Array.isArray(parent[lastIndexed[1]])) return { parent: null, key: null, exists: false, value: undefined };
-      var lastArray = parent[lastIndexed[1]], lastIndex = Number(lastIndexed[2]);
-      return { parent: lastArray, key: lastIndex, exists: _hasOwn(lastArray, lastIndex), value: lastArray[lastIndex] };
-    }
-    if (Array.isArray(parent) && isNaN(Number(lastKey))) {
-      var target = parent.find(function(it) { return it && ((_hasOwn(it, 'name') && it.name === lastKey) || (_hasOwn(it, 'id') && it.id === lastKey)); });
-      if (target !== undefined) {
-        return { parent: parent, key: parent.indexOf(target), exists: true, value: target };
+      var exists = _hasOwn(parent, k), value = exists ? parent[k] : undefined;
+      if (i === keys.length - 1) return { parent: parent, key: k, exists: exists, value: value, attach: attach, readOnly: readOnly };
+      if (!exists || value == null) {
+        if (!createParents || Array.isArray(parent)) return fail('authoring-path-not-found', '路径不存在');
+        // 缺失对象链先在脱离草稿的分支上构造；后续索引/实体校验失败时不留下半截字段。
+        value = {};
+        if (!attach) attach = { parent: parent, key: k, value: value };
+        else parent[k] = value;
       }
+      parent = value;
     }
-    var resolvedKey = (Array.isArray(parent) && !isNaN(Number(lastKey))) ? Number(lastKey) : lastKey;
-    return { parent: parent, key: resolvedKey, exists: _hasOwn(parent, resolvedKey), value: _hasOwn(parent, resolvedKey) ? parent[resolvedKey] : undefined };
+  }
+
+  function _pathWriteFailure(r, path) {
+    return { ok: false, code: r.code || 'authoring-path-read-only', reason: r.reason || ('只读数组属性: ' + path) };
+  }
+  function _setResolvedPath(r, value) {
+    r.parent[r.key] = value;
+    if (r.attach) r.attach.parent[r.attach.key] = r.attach.value;
   }
 
   function _agentClone(x) {
@@ -183,26 +192,11 @@
       } else { value = [value]; }
     }
 
-    var r = _resolvePath(draft, path);
-    if (!r.parent) {
-      // 创建缺失路径（仅纯对象路径；数组按名创建不支持）
-      var keys = String(path).split('.');
-      var cur = draft;
-      for (var i = 0; i < keys.length - 1; i++) {
-        var k = keys[i];
-        if (/[\[\]]/.test(k)) return { ok: false, reason: '无法创建数组索引路径: ' + path };
-        if (!_hasOwn(cur, k) || cur[k] === undefined || cur[k] === null) cur[k] = {};
-        if (!cur[k] || typeof cur[k] !== 'object') return { ok: false, reason: '路径中间段不是对象: ' + k };
-        cur = cur[k];
-      }
-      var last = keys[keys.length - 1];
-      var oldCreated = cur[last];
-      cur[last] = value;
-      return { ok: true, path: path, old: oldCreated, new: value, created: true };
-    }
+    var r = _resolvePath(draft, path, true);
+    if (!r.parent || r.readOnly) return _pathWriteFailure(r, path);
     var old = r.exists ? r.value : undefined;
-    r.parent[r.key] = value;
-    return { ok: true, path: path, old: old, new: value };
+    _setResolvedPath(r, value);
+    return { ok: true, path: path, old: old, new: value, created: !!r.attach || !r.exists };
   }
 
   /** 在 draft 上按 path 向数组追加元素（同样旁路副作用）。 */
@@ -222,21 +216,12 @@
     }
     var _vals = Array.isArray(value) ? value : [value];   // 出数组→逐条入列（LLM 常把整批塞进一个值·不当单元素嵌套）
 
-    var r = _resolvePath(draft, path);
-    if (!r.parent) {
-      var keys = String(path).split('.');
-      var cur = draft;
-      for (var i = 0; i < keys.length - 1; i++) {
-        if (!_hasOwn(cur, keys[i]) || cur[keys[i]] === undefined || cur[keys[i]] === null) cur[keys[i]] = {};
-        if (!cur[keys[i]] || typeof cur[keys[i]] !== 'object') return { ok: false, reason: '路径中间段不是对象: ' + keys[i] };
-        cur = cur[keys[i]];
-      }
-      cur[keys[keys.length - 1]] = _vals.slice();
-      return { ok: true, path: path, pushed: value, pushedCount: _vals.length, created: true };
-    }
-    if (!Array.isArray(r.parent[r.key])) r.parent[r.key] = [];
-    for (var _pi = 0; _pi < _vals.length; _pi++) r.parent[r.key].push(_vals[_pi]);
-    return { ok: true, path: path, pushed: value, pushedCount: _vals.length };
+    var r = _resolvePath(draft, path, true);
+    if (!r.parent || r.readOnly) return _pathWriteFailure(r, path);
+    var arr = Array.isArray(r.value) ? r.value : [];
+    for (var _pi = 0; _pi < _vals.length; _pi++) arr.push(_vals[_pi]);
+    if (arr !== r.value) _setResolvedPath(r, arr);
+    return { ok: true, path: path, pushed: value, pushedCount: _vals.length, created: !!r.attach || !r.exists };
   }
 
   /** 删除 draft 某路径的元素（数组按索引 splice·对象 delete）。同样旁路副作用。 */
@@ -247,7 +232,7 @@
     if (_hasUnsafePathSegment(path)) return { ok: false, reason: 'unsafe path: ' + path };
     if (!opts.force && isBlocked(path)) return { ok: false, reason: 'blocked path: ' + path };
     var r = _resolvePath(draft, path);
-    if (!r.parent) return { ok: false, reason: 'path not found: ' + path };
+    if (!r.parent || r.readOnly) return _pathWriteFailure(r, path);
     if (Array.isArray(r.parent) && typeof r.key === 'number') {
       var removed = r.parent.splice(r.key, 1);
       return { ok: true, path: path, removed: removed[0] };
@@ -260,19 +245,20 @@
 
   /** 在 draft 某数组集合里按关键词查实体（读工具·让 agent 不盲改）。 */
   function _searchEntities(draft, collection, query) {
-    var arr = draft && draft[collection];
+    var resolved = _resolvePath(draft, collection), arr = resolved.value;
     // 虚拟集合：地图地块不在顶层数组，映射到 map.regions（mapData.regions 为镜像）
     if (!Array.isArray(arr) && (collection === 'regions' || collection === '省' || collection === '地块')) {
-      var _m = (draft && draft.map) || (draft && draft.mapData) || {};
-      if (Array.isArray(_m.regions)) { arr = _m.regions; collection = 'map.regions'; }
+      var _mapField = draft && draft.map ? 'map' : 'mapData';
+      var _m = (draft && draft[_mapField]) || {};
+      if (Array.isArray(_m.regions)) { arr = _m.regions; collection = _mapField + '.regions'; }
     }
-    if (!Array.isArray(arr)) return { ok: false, reason: collection + ' 不是数组或不存在' };
+    if (!Array.isArray(arr)) return { ok: false, code: resolved.code || 'authoring-collection-not-found', reason: resolved.reason || (collection + ' 不是数组或不存在') };
     var q = String(query == null ? '' : query).trim();
     var matches = [];
     arr.forEach(function(it, i) {
       if (!it || typeof it !== 'object') return;
       var hay = [it.name, it.faction, it.id, it.title, it.leader, it.adminBinding].filter(Boolean).join(' ');
-      if (!q || hay.indexOf(q) >= 0) matches.push({ index: i, name: it.name, faction: it.faction, fields: Object.keys(it).slice(0, 8) });
+      if (!q || hay.indexOf(q) >= 0) matches.push({ index: i, id: it.id, path: collection + '[' + i + ']', name: it.name, faction: it.faction, fields: Object.keys(it).slice(0, 8) });
     });
     return { ok: true, collection: collection, count: matches.length, matches: matches.slice(0, 40) };
   }
@@ -1224,7 +1210,7 @@
     },
     {
       name: 'applyEdit',
-      description: '在剧本草稿上按 path 设值。path 形如 "name" / "factions.明.leader" / "playerInfo.factionName"。',
+      description: '在剧本草稿上按 path 设值。可用搜索返回的完整路径，或以唯一 ID 定位数组实体。支持给已存在的实体新增对象字段；找不到实体或同名歧义会失败，不会自动新增地区。新增实体请用 applyPush。改地区民心/经济应先查 adminHierarchy 中实际字段，不是只改地图显示数据。',
       parameters: { type: 'object', properties: {
         path: { type: 'string', description: '字段路径' },
         value: { type: ['string', 'number', 'boolean', 'object', 'array', 'null'], description: '要设置的值' },
@@ -1251,7 +1237,7 @@
     },
     {
       name: 'searchEntities',
-      description: '在某集合按关键词查实体。collection 如 characters/factions/parties；query 匹配 name/faction/id/title 包含（留空=全部）。',
+      description: '在数组集合按关键词查实体，支持 characters/factions/parties、map.regions、adminHierarchy.势力名.divisions 等完整嵌套路径。query 匹配 name/faction/id/title/adminBinding 包含（留空=全部）。返回 id 和可直接用于 getField/applyEdit 的 path；同名实体必须按唯一 ID 或明确索引定位。',
       parameters: { type: 'object', properties: {
         collection: { type: 'string' }, query: { type: 'string' }
       }, required: ['collection'] }
@@ -2177,7 +2163,7 @@
       }
       case 'bulkUpdate': {   // 刀②(2026-07-10 智能升级C)：按条件批量改·逐条复用 applyEdit 享权限/指纹/落账
         var _buDraft = _agentClone(draft);
-        var _buArr = _buDraft ? _buDraft[input.collection] : null;
+        var _buArr = _resolvePath(_buDraft, input.collection).value;
         if (!Array.isArray(_buArr)) return { ok: false, reason: '集合不存在或非数组: ' + input.collection };
         if (!input.where || typeof input.where !== 'object') return { ok: false, reason: '需要 where 筛选条件(全集也须显式给空对象·防误伤)' };
         if (!input.field || ['set', 'add', 'mul'].indexOf(input.op) < 0) return { ok: false, reason: '需要 field 与合法 op(set/add/mul)' };
@@ -2232,7 +2218,7 @@
         });
       }
       case 'statsAggregate': {   // 刀②：确定性数值聚合·平衡审读真账而非 LLM 目测
-        var _saArr = draft ? draft[input.collection] : null;
+        var _saArr = _resolvePath(draft, input.collection).value;
         if (!Array.isArray(_saArr)) return { ok: false, reason: '集合不存在或非数组: ' + input.collection };
         var _saMetrics = Array.isArray(input.metrics) ? input.metrics.slice(0, 8) : [];
         if (!_saMetrics.length) return { ok: false, reason: '需要 metrics 数值字段列表' };
@@ -2261,7 +2247,7 @@
       }
       case 'getField': {
         var rr = _resolvePath(draft, input.path);
-        if (!rr.parent) return { ok: false, reason: 'path not found: ' + input.path };
+        if (!rr.parent || !rr.exists) return { ok: false, code: rr.code || 'authoring-path-not-found', reason: rr.reason || ('path not found: ' + input.path) };
         return { ok: true, path: input.path, value: rr.value };
       }
       case 'getFields': {
@@ -2269,7 +2255,7 @@
         if (!_gpaths.length) return { ok: false, reason: '需要非空 paths[]（路径数组）' };
         var _gvals = _gpaths.slice(0, 40).map(function (p) {
           var rr2 = _resolvePath(draft, p);
-          if (!rr2.parent) return { path: p, found: false };
+          if (!rr2.parent || !rr2.exists) return { path: p, found: false, code: rr2.code || 'authoring-path-not-found' };
           return { path: p, found: true, value: _truncForLLM(rr2.value, 600) };
         });
         return { ok: true, count: _gvals.length, values: _gvals };

@@ -13,13 +13,15 @@ module.exports = async function({ win, root, check }) {
   await check('interactive-isolated-world', async () => assert.equal(await js(`!!GM&&GM.sid===${JSON.stringify(sid)}&&!!tianming.isDesktop&&!(P.ai&&P.ai.key)`), true));
   await js(`(()=>{
     document.title='天命 · 性能隔离观察';
-    const trace=window.__perfInspection={events:[],longTasks:[],timings:{},started:performance.now(),complete:false};
+    const trace=window.__perfInspection={events:[],eventTiming:[],longTasks:[],timings:{},started:performance.now(),complete:false};
     // Bounded metadata only: no input text, actor names, API credentials or saved world.
     const push=(arr,value)=>{if(arr.length<2048)arr.push(value);};
-    for(const name of ['click','input','wheel','pointerup'])document.addEventListener(name,e=>{
-      const t=performance.now(),target=e.target,entry={type:name,at:t,tag:target&&target.tagName,id:target&&target.id||'',trusted:e.isTrusted};
-      push(trace.events,entry);requestAnimationFrame(()=>{entry.nextFrameMs=performance.now()-t;});
+    for(const name of ['click','input','wheel','pointerdown','pointerup'])document.addEventListener(name,e=>{
+      const t=performance.now(),target=e.target,control=target&&target.closest&&target.closest('button,[role="button"]'),overlay=document.querySelector('.tm-desk-overlay');
+      const entry={type:name,at:t,eventAt:e.timeStamp,tag:target&&target.tagName,id:target&&target.id||'',control:control&&(control.id||control.className)||'',overlayBefore:overlay&&overlay.id||'',trusted:e.isTrusted};
+      push(trace.events,entry);requestAnimationFrame(()=>{entry.nextFrameMs=performance.now()-t;requestAnimationFrame(()=>{entry.secondFrameMs=performance.now()-t;const ov=document.querySelector('.tm-desk-overlay');entry.overlayAfter=ov&&ov.id||'';});});
     },true);
+    if(PerformanceObserver.supportedEntryTypes.includes('event'))new PerformanceObserver(list=>{for(const e of list.getEntries())push(trace.eventTiming,{name:e.name,start:e.startTime,duration:e.duration,processingStart:e.processingStart,processingEnd:e.processingEnd,interactionId:e.interactionId,id:e.target&&e.target.id||''});}).observe({type:'event',durationThreshold:16});
     new PerformanceObserver(list=>{for(const e of list.getEntries())push(trace.longTasks,{start:e.startTime,duration:e.duration});}).observe({type:'longtask',buffered:false});
     for(const name of ['renderGameState','_buildSaveState','_prepareGMForSave']){const original=window[name];if(typeof original!=='function')throw Error('missing '+name);
       window[name]=function(...args){const start=performance.now();try{return original.apply(this,args);}finally{push(trace.timings[name]||(trace.timings[name]=[]),{start,ms:performance.now()-start});}};}

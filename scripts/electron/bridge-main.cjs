@@ -6,7 +6,7 @@ const { app, session, net } = require('electron');
 const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
-const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave';
+const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -106,6 +106,7 @@ app.on('browser-window-created', (_event, win) => {
       if (mode === 'performance') performanceReport = await require('../perf/round1-electron-cases.cjs')({ win, root, temp, controls, check, recordPerformance: report => { performanceReport = report; } });
       else if (mode === 'performance-inspect') performanceReport = await require('../perf/inspect-electron-cases.cjs')({ win, root, temp, check });
       else if (mode === 'performance-autosave') performanceReport = await require('../perf/autosave-electron-cases.cjs')({ win, root, temp, check, recordPerformance: report => { performanceReport = report; } });
+      else if (mode === 'performance-panels') performanceReport = await require('../perf/panels-electron-cases.cjs')({ win, root, temp, check, recordPerformance: report => { performanceReport = report; } });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
       finish();
     } catch (error) { finish(error); }

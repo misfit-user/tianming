@@ -67,7 +67,11 @@
   function openShizhengPreviewPanel(){ return bridge._openShizhengPreviewPanel(); }
   function closeModule(){ return bridge._closeModule(); }
   function returnFormalHomeSoon(){ return bridge._returnFormalHomeSoon(); }
-  function saveFormalDraftsToGM(captureOpen){ return bridge._saveFormalDraftsToGM(captureOpen); }
+  var deskDraftCaptureDepth = 0;
+  function saveFormalDraftsToGM(captureOpen){
+    if (deskDraftCaptureDepth) return;
+    return bridge._saveFormalDraftsToGM(captureOpen);
+  }
   function restoreFormalDraftsFromGM(force){ return bridge._restoreFormalDraftsFromGM(force); }
   function handleModuleAction(action, data){ return bridge._handleModuleAction(action, data); }
   function updateRailBadges(){ return bridge._updateRailBadges(); }
@@ -150,9 +154,22 @@
     ov.id = id;
     ov.className = 'tm-desk-overlay tm-bridge-overlay show';
     ov.innerHTML = '<div class="tm-bridge-scrim" data-close-bridge="1"></div>' + html;
+    var overlayWorld = window.GM;
     ov.addEventListener('click', function(e){
       if (e.target === ov || (e.target && e.target.closest && e.target.closest('[data-close-bridge]'))) {
         closeDeskOverlay();
+        return;
+      }
+      if (e.target && e.target.closest && e.target.closest('[data-desk-edict-archive]')) {
+        if (window.GM !== overlayWorld) return;
+        var archive = ov.querySelector('.arc-modal');
+        var archiveBody = ov.querySelector('.arc-body');
+        if (archive && archiveBody) {
+          var archiveScroll = archiveBody.scrollTop;
+          archiveBody.innerHTML = renderFormalEdictArchive();
+          archive.classList.add('show');
+          archiveBody.scrollTop = archiveScroll;
+        }
         return;
       }
       var btn = e.target && e.target.closest ? e.target.closest('[data-desk-action],[data-module-action]') : null;
@@ -270,9 +287,17 @@
 
   function captureDeskOverlayState(root){
     if (!root || !root.querySelectorAll) return;
-    Array.prototype.forEach.call(root.querySelectorAll('[data-letter-draft-field]'), updateFormalLetterDraft);
-    Array.prototype.forEach.call(root.querySelectorAll('[data-desk-memorial-reply]'), updateFormalMemorialReply);
-    Array.prototype.forEach.call(root.querySelectorAll('[data-desk-edict-cat],[data-desk-edict-body],[data-desk-player-action],#edict-pol,#edict-mil,#edict-dip,#edict-eco,#edict-oth,#xinglu-pub'), updateFormalEdictDraft);
+    // Collect all fields before cloning/publishing the same aggregate once.
+    // Ordinary input/change still persists immediately; nesting and errors must
+    // not leave later input trapped in a suspended-persistence state.
+    deskDraftCaptureDepth++;
+    try {
+      Array.prototype.forEach.call(root.querySelectorAll('[data-letter-draft-field]'), updateFormalLetterDraft);
+      Array.prototype.forEach.call(root.querySelectorAll('[data-desk-memorial-reply]'), updateFormalMemorialReply);
+      Array.prototype.forEach.call(root.querySelectorAll('[data-desk-edict-cat],[data-desk-edict-body],[data-desk-player-action],#edict-pol,#edict-mil,#edict-dip,#edict-eco,#edict-oth,#xinglu-pub'), updateFormalEdictDraft);
+    } finally {
+      deskDraftCaptureDepth--;
+    }
     saveFormalDraftsToGM(false);
   }
 
@@ -2224,30 +2249,11 @@
 + 'body.tm-phase8-formal .ed-yuan .edict-sug-delete{display:inline-flex !important;align-items:center;justify-content:center;flex:0 0 auto;width:28px !important;white-space:nowrap;}'; if (st.__tmCss !== __css) { st.__tmCss = __css; st.textContent = __css; }
   }
 
-  function renderFormalEdictPanel(){
-    restoreFormalDraftsFromGM(false);
-    installEdictYuanStyles();
+  function renderFormalEdictArchive(){
     var gm = window.GM || {};
-    var role = '天子';
-    var sc = (typeof window.findScenarioById === 'function') ? window.findScenarioById(gm.sid) : null;
-    if (sc && sc.role) role = sc.role;
-    var icon = typeof window.tmIcon === 'function' ? window.tmIcon : function(){ return ''; };
-    var cats = [
-      {id:'edict-pol', keys:['policy','political'], cat:'政', cs1:'政', cs2:'令', hint:'朝政·吏治', placeholder:'请输入政令诏书内容……\n例如：着吏部澄清铨选、起复废籍贤良、纠劾贪墨之吏，以正朝纲。'},
-      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：诏蓟辽督师整饬关宁防务、缮治城堡、核实兵额，毋得虚冒。'},
-      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：谕宣大抚镇羁縻插汉诸部、慎启边衅，以市赏怀远人。'},
-      {id:'edict-eco', keys:['finance','economic','economy'], cat:'经', cs1:'经', cs2:'济', hint:'税赋·漕运', placeholder:'请输入经济诏书内容……\n例如：诏免被灾州县积逋钱粮、开常平仓平粜、停不急之征。'},
-      {id:'edict-oth', keys:['other','private'], cat:'他', cs1:'其', cs2:'他', hint:'礼制·恩典', placeholder:'请输入其他诏书内容……\n例如：诏修两朝实录、旌表忠孝节义、蠲免逋负、肆赦天下。'}
-    ];
-    var suggestions = getEdictSuggestionRows();
-    var nf = '奉天承运皇帝<i class="hc-sep"></i>诏曰：';
-    var subDate = (typeof window.getTSText === 'function') ? window.getTSText(Number(gm.turn || 1)) : ('第 ' + (gm.turn || 1) + ' 回合');
-    // 往期诏令档案 → 历史诏书弹窗 (与议事清册拆开·删 details 改 modal)
     var archiveHtml = '';
-    var archiveCount = 0;
     if (gm._edictTracker && gm._edictTracker.length > 0) {
       var allEdicts = gm._edictTracker.filter(function(e){ return e && Number(e.turn || 0) < Number(gm.turn || 1); });
-      archiveCount = allEdicts.length;
       if (allEdicts.length > 0) {
         var byTurn = {};
         allEdicts.forEach(function(e){ (byTurn[e.turn] || (byTurn[e.turn] = [])).push(e); });
@@ -2267,6 +2273,33 @@
       }
     }
     if (!archiveHtml) archiveHtml = '<div class="arc-turn">尚无往期诏令</div><div class="arc-item" style="--st-c:#9c8b6b;">诏付有司、过回合后，历次诏令的承办与回执将归档于此。</div>';
+    return archiveHtml;
+  }
+
+  function renderFormalEdictPanel(){
+    restoreFormalDraftsFromGM(false);
+    installEdictYuanStyles();
+    var gm = window.GM || {};
+    var role = '天子';
+    var sc = (typeof window.findScenarioById === 'function') ? window.findScenarioById(gm.sid) : null;
+    if (sc && sc.role) role = sc.role;
+    var icon = typeof window.tmIcon === 'function' ? window.tmIcon : function(){ return ''; };
+    var cats = [
+      {id:'edict-pol', keys:['policy','political'], cat:'政', cs1:'政', cs2:'令', hint:'朝政·吏治', placeholder:'请输入政令诏书内容……\n例如：着吏部澄清铨选、起复废籍贤良、纠劾贪墨之吏，以正朝纲。'},
+      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：诏蓟辽督师整饬关宁防务、缮治城堡、核实兵额，毋得虚冒。'},
+      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：谕宣大抚镇羁縻插汉诸部、慎启边衅，以市赏怀远人。'},
+      {id:'edict-eco', keys:['finance','economic','economy'], cat:'经', cs1:'经', cs2:'济', hint:'税赋·漕运', placeholder:'请输入经济诏书内容……\n例如：诏免被灾州县积逋钱粮、开常平仓平粜、停不急之征。'},
+      {id:'edict-oth', keys:['other','private'], cat:'他', cs1:'其', cs2:'他', hint:'礼制·恩典', placeholder:'请输入其他诏书内容……\n例如：诏修两朝实录、旌表忠孝节义、蠲免逋负、肆赦天下。'}
+    ];
+    var suggestions = getEdictSuggestionRows();
+    var nf = '奉天承运皇帝<i class="hc-sep"></i>诏曰：';
+    var subDate = (typeof window.getTSText === 'function') ? window.getTSText(Number(gm.turn || 1)) : ('第 ' + (gm.turn || 1) + ' 回合');
+    // Hidden history only needs a count here. Build its complete original markup
+    // on the explicit archive action, using current data rather than a stale cache.
+    var archiveCount = 0;
+    if (gm._edictTracker && gm._edictTracker.length > 0) {
+      archiveCount = gm._edictTracker.filter(function(e){ return e && Number(e.turn || 0) < Number(gm.turn || 1); }).length;
+    }
 
     var html = '<section class="ed-yuan" data-tab="edict">';
     html += '<div class="scroll-wrap"><div class="roller-v"></div>';
@@ -2278,7 +2311,7 @@
     html += '<button type="button" class="ed-tab" data-tab="xinglu" onclick="var p=this.closest(&quot;.ed-yuan&quot;);p.setAttribute(&quot;data-tab&quot;,&quot;xinglu&quot;);p.querySelectorAll(&quot;.ed-tab&quot;).forEach(function(t){t.classList.toggle(&quot;active&quot;,t.getAttribute(&quot;data-tab&quot;)===&quot;xinglu&quot;);});">主角行止</button>';
     html += '</div>';
     html += '<div class="head-center"><div class="hc-main">' + nf + '</div><div class="hc-sub">' + esc(subDate) + '</div></div>';
-    html += '<div class="head-right"><button type="button" class="link-btn" onclick="this.closest(&quot;.ed-yuan&quot;).querySelector(&quot;.arc-modal&quot;).classList.add(&quot;show&quot;);"><span>🗞</span>历史诏书<span class="n">' + esc(archiveCount) + '</span></button></div>';
+    html += '<div class="head-right"><button type="button" class="link-btn" data-desk-edict-archive="1"><span>🗞</span>历史诏书<span class="n">' + esc(archiveCount) + '</span></button></div>';
     html += '</div>';
     // ── 三栏主体 ──
     html += '<div class="silk-body">';
@@ -2343,7 +2376,7 @@
     // 历史诏书弹窗
     html += '<div class="arc-modal"><div class="arc-scrim" onclick="this.closest(&quot;.arc-modal&quot;).classList.remove(&quot;show&quot;);"></div>';
     html += '<div class="arc-card"><div class="arc-card-hd"><span class="ah-l"><span class="ah-seal">史</span>历 史 诏 书</span><span class="arc-x" onclick="this.closest(&quot;.arc-modal&quot;).classList.remove(&quot;show&quot;);">×</span></div>';
-    html += '<div class="arc-body">' + archiveHtml + '</div></div></div>';
+    html += '<div class="arc-body"></div></div></div>';
     html += '</div>';     // /silk
     html += '<div class="roller-v"></div></div>';     // /scroll-wrap
     html += '</section>';

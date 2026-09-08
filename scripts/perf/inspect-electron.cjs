@@ -15,7 +15,7 @@ const env = { ...process.env, TM_BRIDGE_TEST_ROOT: repo, TM_BRIDGE_TEST_MODE: 'p
   TM_PERF_INSPECT_CPU: args.includes('--cpu-profile') ? '1' : '' };
 delete env.ELECTRON_RUN_AS_NODE; delete env.TIANMING_TEST_EXPORTS;
 fs.writeFileSync(path.join(out, 'source.json'), JSON.stringify({ head: cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim(),
-  sourceHashes: Object.fromEntries(['web/tm-storage.js','web/tm-save-lifecycle.js','web/phase8-formal-map.js'].map(p => [p, crypto.createHash('sha256').update(fs.readFileSync(path.join(repo, p))).digest('hex')])) }, null, 2));
+  sourceHashes: Object.fromEntries(['web/tm-storage.js','web/tm-save-lifecycle.js','web/phase8-formal-map.js','web/phase8-formal-drafts.js','web/index.html'].map(p => [p, crypto.createHash('sha256').update(fs.readFileSync(path.join(repo, p))).digest('hex')])) }, null, 2));
 console.log('INTERACTIVE_EVIDENCE ' + out);
 const child = cp.spawn(require('electron'), [path.join(root, 'scripts/electron/bridge-main.cjs')], { cwd: repo, env, windowsHide: true, stdio: ['ignore','pipe','pipe'] });
 for (const [stream, name] of [[child.stdout,'stdout.log'],[child.stderr,'stderr.log']]) stream.pipe(fs.createWriteStream(path.join(out, name)));

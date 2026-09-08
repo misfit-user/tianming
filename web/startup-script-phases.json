@@ -487,6 +487,8 @@
       "platform": "any",
       "sideEffects": "legacy-unknown",
       "provides": [
+        "_tmAITextResult",
+        "_tmAIToolJSON",
         "robustParseJSON"
       ],
       "consumes": [],
@@ -2893,6 +2895,7 @@
         "_applyPolishedEdict",
         "_closeEdictMenu",
         "_edictEl",
+        "_edictPolishFailure",
         "_edictUiRoot",
         "_hidePolishedEdict",
         "_polishEdicts",

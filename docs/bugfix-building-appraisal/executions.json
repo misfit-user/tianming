@@ -1,0 +1,1853 @@
+{
+  "baseline": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+  "sourceHashes": {
+    "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+    "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+    "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+    "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8",
+    "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+    "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+    "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+    "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+    "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2"
+  },
+  "executions": [
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-appraisal-before-06803e3c-3f5c-41a9-a793-82b0fdf6010e",
+      "run": {
+        "label": "building-appraisal-before",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:36:55.760Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-building-appraisal-compat.js": "eafd15bae93fdd6c2e12fe265949ca460d9f2e67fa0b24a01e75c775f34dbf4a"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 2232.3432000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "21113fe78e4390b14ce03982413e6d8a307ffd2cf1c1a8600d46e9531e4784ee",
+          "exportedSha256": "21113fe78e4390b14ce03982413e6d8a307ffd2cf1c1a8600d46e9531e4784ee",
+          "text": "PASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS native Anthropic format is unchanged\n[smoke-building-appraisal-compat] {\"pass\":4,\"fail\":13,\"total\":17,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "be883bb083b2c9005f418c0ec76d7c27a54a937e1d1870326d554ecbb4b791ee",
+          "exportedSha256": "be883bb083b2c9005f418c0ec76d7c27a54a937e1d1870326d554ecbb4b791ee",
+          "text": "FAIL ordinary call succeeds while the same thinking endpoint can appraise thinking tool policy must not yield no-appraisal\n\nfalse !== true\n\nFAIL forced DeepSeek call advertises only the requested tool without mutating definitions The expression evaluated to a falsy value:\n\n  assert(!Object.hasOwn(h.requests[0].body, 'tool_choice'))\n\nFAIL unknown proxy exact incompatibility retries once without tool_choice Cannot read properties of undefined (reading 'name')\nFAIL failed fallback preserves HTTP status and does not repeat appraisal rounds preserve failure status\nFAIL UI shows actionable failed-request message, restores button and keeps proposal The expression evaluated to a falsy value:\n\n  assert(html.includes('401') && /密钥|权限/.test(html))\n\nFAIL successful UI shows validated appraisal and approval remains explicit The expression evaluated to a falsy value:\n\n  assert(h.elements._bmAppraiseResult.innerHTML.includes('有司核议：合理'))\n\nFAIL no structured appraisal is explained instead of exposing no-appraisal The expression evaluated to a falsy value:\n\n  assert(/未.*提交|没有.*核议|未.*结构/.test(h.elements._bmAppraiseResult.innerHTML))\n\nFAIL truncated reasoning output is diagnosed without another identical round Expected values to be strictly equal:\n+ actual - expected\n\n+ 'no-appraisal'\n- 'appraisal-truncated'\n\nFAIL empty or malformed appraisal cannot become a zero-cost approval Expected values to be strictly equal:\n\ntrue !== false\n\nFAIL wrong forced function is rejected Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL unparsable tool arguments never become a successful empty input Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL already-aborted call sends no native or fallback HTTP request Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'aborted'\n\nFAIL timeout cleans listeners and does not launch fallback after deadline Expected values to be strictly equal:\n\n2 !== 1\n\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-appraisal-after-4fded86f-c87b-497d-8bf1-f552fc1dbce1",
+      "run": {
+        "label": "building-appraisal-after",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:39:10.891Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-building-appraisal-compat.js": "eafd15bae93fdd6c2e12fe265949ca460d9f2e67fa0b24a01e75c775f34dbf4a",
+          "web/tm-ai-infra.js": "4953a3666eec072730768e34a6cc01cc25bd7f93156e43233c7fb4c5f3e1ffc8",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1190.7382000000002,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "1b4cdd39cc1ae16e8ea80f3859689fcaba2ecf1c37bf8f8c554b72a05542b6b5",
+          "exportedSha256": "1b4cdd39cc1ae16e8ea80f3859689fcaba2ecf1c37bf8f8c554b72a05542b6b5",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\n[smoke-building-appraisal-compat] {\"pass\":17,\"fail\":0,\"total\":17,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-appraisal-expanded-d2005765-9a48-4e1f-883c-e991c908f03b",
+      "run": {
+        "label": "building-appraisal-expanded",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:40:52.488Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-building-appraisal-compat.js": "5c968379931a5110288b7e41622c8b9ad99fca0bd16d944e677cbeff5ef284c5",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1520.2423,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "exportedSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\nPASS unconfigured secondary resolves to primary DeepSeek without request mismatch\nPASS read tools still run before forced final appraisal and critique\nPASS compatibility retry stops if user cancels while the error body is being read\nPASS repeated incompatibility cannot create an unbounded native retry loop\nPASS concurrent primary and secondary requests keep separate compatibility policy\nPASS native Gemini tool declaration and forced name are unchanged\n[smoke-building-appraisal-compat] {\"pass\":23,\"fail\":0,\"total\":23,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-agent-existing-87061564-2a90-4320-8e4a-4f5a58fc32c3",
+      "run": {
+        "label": "building-agent-existing",
+        "command": [
+          "node",
+          "web/scripts/smoke-custom-build-agent.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:40:56.026Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-building-appraisal-compat.js": "5c968379931a5110288b7e41622c8b9ad99fca0bd16d944e677cbeff5ef284c5",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 137.04309999999998,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "7035dc614d243b6566d81c31173474cd6b11008331fab85e6912cd5692c15722",
+          "exportedSha256": "7035dc614d243b6566d81c31173474cd6b11008331fab85e6912cd5692c15722",
+          "text": "\n[smoke-custom-build-agent] 77/77 通过\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e4ca047f53bf41b4bfe0604d4f495235916c11797318c5e694d24e6db3853d2c",
+          "exportedSha256": "e4ca047f53bf41b4bfe0604d4f495235916c11797318c5e694d24e6db3853d2c",
+          "text": "[building-works] 自拟效果越界已削/弃: economyBase.bogus、fortLevel(费不及城防之度)\n[building-works] 自拟效果越界已削/弃: economyBase.bogus、fortLevel(费不及城防之度)\n[building-works] 自拟效果越界已削/弃: economyBase.bogus、fortLevel(费不及城防之度)\n[building-works] 自拟效果越界已削/弃: economyBase.bogus、fortLevel(费不及城防之度)\n[building-works] 自拟效果越界已削/弃: strategicValue\n[building-works] 自拟效果越界已削/弃: strategicValue\n[building-works] 自拟效果越界已削/弃: strategicValue\n[building-works] 自拟效果越界已削/弃: strategicValue\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-abort-existing-d944c445-1dad-4db3-bcc0-f8e648b514e7",
+      "run": {
+        "label": "building-abort-existing",
+        "command": [
+          "node",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:40:58.184Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-building-appraisal-compat.js": "5c968379931a5110288b7e41622c8b9ad99fca0bd16d944e677cbeff5ef284c5",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 161.56849999999997,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "ffa2c117336ba7eb202765f4b0f54980887920ba20a713b1e71cfb2c9be0c02f",
+          "exportedSha256": "ffa2c117336ba7eb202765f4b0f54980887920ba20a713b1e71cfb2c9be0c02f",
+          "text": "[smoke-ai-abort-listener-cleanup] pass assertions=28\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-expanded-before-e8a6bd15-03b0-45e3-a88b-18c808e6c8c4",
+      "run": {
+        "label": "building-expanded-before",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js",
+          "--ref",
+          "6e02f7f34fcd0ea93600a69a3cfe1d473a840074"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:45:11.559Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 21174.467,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "b0470979ab9acb7d87a9dad3bfec7f26f04d3ffc7470da188f11d79aa4225fa4",
+          "exportedSha256": "b0470979ab9acb7d87a9dad3bfec7f26f04d3ffc7470da188f11d79aa4225fa4",
+          "text": "PASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS native Anthropic format is unchanged\nPASS native Gemini tool declaration and forced name are unchanged\n[smoke-building-appraisal-compat] {\"pass\":5,\"fail\":18,\"total\":23,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "d4944fdc0c4bf3d30d9facdef688286b9585f1f2ea0e40a5b4a477f834a4e391",
+          "exportedSha256": "d4944fdc0c4bf3d30d9facdef688286b9585f1f2ea0e40a5b4a477f834a4e391",
+          "text": "FAIL ordinary call succeeds while the same thinking endpoint can appraise thinking tool policy must not yield no-appraisal\n\nfalse !== true\n\nFAIL forced DeepSeek call advertises only the requested tool without mutating definitions The expression evaluated to a falsy value:\n\n  assert(!Object.hasOwn(h.requests[0].body, 'tool_choice'))\n\nFAIL unknown proxy exact incompatibility retries once without tool_choice Cannot read properties of undefined (reading 'name')\nFAIL failed fallback preserves HTTP status and does not repeat appraisal rounds preserve failure status\nFAIL UI shows actionable failed-request message, restores button and keeps proposal The expression evaluated to a falsy value:\n\n  assert(html.includes('401') && /密钥|权限/.test(html))\n\nFAIL successful UI shows validated appraisal and approval remains explicit The expression evaluated to a falsy value:\n\n  assert(h.elements._bmAppraiseResult.innerHTML.includes('有司核议：合理'))\n\nFAIL no structured appraisal is explained instead of exposing no-appraisal The expression evaluated to a falsy value:\n\n  assert(/未.*提交|没有.*核议|未.*结构/.test(h.elements._bmAppraiseResult.innerHTML))\n\nFAIL truncated reasoning output is diagnosed without another identical round Expected values to be strictly equal:\n+ actual - expected\n\n+ 'no-appraisal'\n- 'appraisal-truncated'\n\nFAIL empty or malformed appraisal cannot become a zero-cost approval Expected values to be strictly equal:\n\ntrue !== false\n\nFAIL wrong forced function is rejected Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL unparsable tool arguments never become a successful empty input Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL already-aborted call sends no native or fallback HTTP request Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'aborted'\n\nFAIL timeout cleans listeners and does not launch fallback after deadline Expected values to be strictly equal:\n\n2 !== 1\n\nFAIL unconfigured secondary resolves to primary DeepSeek without request mismatch Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL read tools still run before forced final appraisal and critique Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL compatibility retry stops if user cancels while the error body is being read Cannot read properties of undefined (reading 'code')\nFAIL repeated incompatibility cannot create an unbounded native retry loop Expected values to be strictly equal:\n\n2 !== 3\n\nFAIL concurrent primary and secondary requests keep separate compatibility policy The expression evaluated to a falsy value:\n\n  assert(!Object.hasOwn(secondary.body, 'tool_choice'))\n\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-electron-specific-4e9ffe70-952f-4017-84ec-c4c132e0899e",
+      "run": {
+        "label": "building-electron-specific",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--building-appraisal"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:45:22.310Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 15140.2515,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "5b85b15bd94f5ac084111a198960de05ad6d55aa95bcffbc6f5749ce1e69e1ec",
+          "exportedSha256": "a9f77eaa381e3d554d39cfbc7f38c8336b156470c0be76026cbd7ae675648ca7",
+          "text": "{\"mode\":\"building-appraisal\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"building-appraisal\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"building-production-modules\",\"status\":\"PASS\"},{\"name\":\"building-plain-ai-control\",\"status\":\"PASS\"},{\"name\":\"building-real-button-thinking-response\",\"status\":\"PASS\"},{\"name\":\"building-real-hard-gates-and-text-escaping\",\"status\":\"PASS\"},{\"name\":\"building-real-failure-feedback-and-retry-button\",\"status\":\"PASS\"},{\"name\":\"building-real-no-result-is-not-success\",\"status\":\"PASS\"},{\"name\":\"building-real-retry-recovers-with-proposal-intact\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-uyctO4\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\212f394f-4c68-447c-ad53-1b94a42152b9\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-arch-532721f3-8f5c-4f43-8e44-175164ae8449",
+      "run": {
+        "label": "building-final-arch",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:47:24.583Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 17765.7957,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "8ca43f93da8c0959876f1d3f18ffb47f61010791ae2b5379a68f4b3239d0e652",
+          "exportedSha256": "8ca43f93da8c0959876f1d3f18ffb47f61010791ae2b5379a68f4b3239d0e652",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (2.9s)\n[lint-arch-all] PASS  lint-dep-graph (1.1s)\n[lint-arch-all] PASS  lint-global-providers (3.7s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.2s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.2s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (5.9s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.7s)\n[lint-arch-all] FAIL  lint-file-size (0.4s)\n    [lint-file-size] 运行时代码 411 文件 · 超 3000 行的巨石 6 个\n    [lint-file-size] 预算内增长（提醒，不挡路）：\n      tm-player-core.js: 3437 → 3446 行（+9，预算内）\n    [lint-file-size] FAIL — 1 处：巨石只许拆、不许堆（alias+内联范式见 docs/arch-guards.md）\n      tm-ai-infra.js: 新巨石（3051 行 > 3000）——拆了再来\n[lint-arch-all] PASS  lint-control-bytes (0.3s)\n[lint-arch-all] PASS  lint-split-contracts (0.1s)\n[lint-arch-all] PASS  lint-split-stamps (0.1s)\n[lint-arch-all] PASS  lint-smoke-family-order (0.7s)\n[lint-arch-all] PASS  ref-check (1.2s)\n\n[lint-arch-all] FAIL — 1/13 项未过\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-startup-sync-005a706b-6d41-41cf-a6a9-616c30d41b6b",
+      "run": {
+        "label": "building-startup-sync",
+        "command": [
+          "node",
+          "web/scripts/build-startup-phase-manifest.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:47:35.024Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 240.14570000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+          "exportedSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+          "text": "[startup-phase-manifest] wrote startup-script-phases.json scripts=409 deferred=6\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-official-sync-cbc24d3e-76e4-48c9-abee-70c7ac305fdb",
+      "run": {
+        "label": "building-official-sync",
+        "command": [
+          "node",
+          "web/scripts/sync-official-scenarios.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:47:37.172Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra.js": "7ebfb0d927d1e751e665627407144d5c20acf5e1d20c370e2013394b480dece9",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1693.1385999999998,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+          "exportedSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+          "text": "[official-sync] sync PASS · sources=2 artifacts=9\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-json-refactor-530c9392-96bb-40ed-9dd6-a982008664b6",
+      "run": {
+        "label": "building-json-refactor",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:53:55.077Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "064664d62ce00fc507b70254eff062fa3551e69de39017151934f69203307acc",
+          "scripts/electron/building-appraisal-cases.cjs": "6c0e28325ecc4eec4d241f8cae8d66295dc250ab297333714d2575b76d1c1835",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "4cacd7b60086b124f5f87d0c67607e9a420318538a3d5871ca342656bf6d2425",
+          "web/tm-ai-infra.js": "8a29d9b4e968eba9acd05981e66a77cc6fa452044691a57825b857a71a0c9585",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1725.9796,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "exportedSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\nPASS unconfigured secondary resolves to primary DeepSeek without request mismatch\nPASS read tools still run before forced final appraisal and critique\nPASS compatibility retry stops if user cancels while the error body is being read\nPASS repeated incompatibility cannot create an unbounded native retry loop\nPASS concurrent primary and secondary requests keep separate compatibility policy\nPASS native Gemini tool declaration and forced name are unchanged\n[smoke-building-appraisal-compat] {\"pass\":23,\"fail\":0,\"total\":23,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-electron-visible-74411e55-aa8f-462f-a653-09ea3813d52f",
+      "run": {
+        "label": "building-electron-visible",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--building-appraisal"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:57:29.724Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 17257.4459,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "85c27ea255be458b87781b61821451f5a83830842b52b99786a29b45b2c93ef2",
+          "exportedSha256": "814132148d2d0635704d5ec5b6441566b96b0ea3c86b6f6a4cd6f69bdd9268fa",
+          "text": "{\"mode\":\"building-appraisal\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"building-appraisal\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"building-production-modules\",\"status\":\"PASS\"},{\"name\":\"building-modal-is-visible\",\"status\":\"PASS\"},{\"name\":\"building-plain-ai-control\",\"status\":\"PASS\"},{\"name\":\"building-real-button-thinking-response\",\"status\":\"PASS\"},{\"name\":\"building-real-hard-gates-and-text-escaping\",\"status\":\"PASS\"},{\"name\":\"building-real-failure-feedback-and-retry-button\",\"status\":\"PASS\"},{\"name\":\"building-real-no-result-is-not-success\",\"status\":\"PASS\"},{\"name\":\"building-real-retry-recovers-with-proposal-intact\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-tyvYVA\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\6404ee21-c6c4-4fb0-a483-65d21f34365e\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-target-58f2c6cd-17f9-4b69-b25c-4a5e0f65a4ea",
+      "run": {
+        "label": "building-final-target",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:58:38.590Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1577.2902,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "exportedSha256": "f427f40ce6b26c607b83d74fb1fc343f3ccc0fe789d38b38e02f5ef16171acd7",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\nPASS unconfigured secondary resolves to primary DeepSeek without request mismatch\nPASS read tools still run before forced final appraisal and critique\nPASS compatibility retry stops if user cancels while the error body is being read\nPASS repeated incompatibility cannot create an unbounded native retry loop\nPASS concurrent primary and secondary requests keep separate compatibility policy\nPASS native Gemini tool declaration and forced name are unchanged\n[smoke-building-appraisal-compat] {\"pass\":23,\"fail\":0,\"total\":23,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-smoke-f3b814cd-5cf6-4f00-a38b-7553bd4e6b7e",
+      "run": {
+        "label": "building-final-smoke",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:58:42.724Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 110264.4195,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "41720c7f4642fb0a960db645e68cab7d3b2956606e7867ded9b0c93e19ce3c7d",
+          "exportedSha256": "b3b584e135479b331d7e64271236a619b294c94d9ed40fda3614c5f3025fd572",
+          "text": "[ci-smokes] run=ed2e8b79-76a6-41fa-bc97-57429d0ff988 HEAD=6e02f7f34fcd0ea93600a69a3cfe1d473a840074 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-uWw28a\\smoke-report.json\n[run-smokes] 共 917 个 smoke · 选中 917 · 跳过 0 · 并发 8 · 超时 120s\n  [25/917] PASS    smoke-agent-mode-s2.js (0.2s)\n  [50/917] PASS    smoke-ai-structured-policy-actions.js (0.3s)\n  [75/917] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/917] PASS    smoke-battle-resolve.js (0.2s)\n  [125/917] PASS    smoke-changchao-ambient-isolation.js (0.2s)\n  [150/917] PASS    smoke-class-character-relations.js (0.2s)\n  [175/917] PASS    smoke-conspiracy-brewing-feed.js (0.1s)\n  [200/917] PASS    smoke-crisis-player-surface-bridge.js (0.2s)\n  [225/917] PASS    smoke-diebao-log.js (0.2s)\n  [250/917] PASS    smoke-edict-pardon.js (0.2s)\n  [275/917] PASS    smoke-endturn-narrative.js (0.2s)\n  [300/917] PASS    smoke-faction-ai-mainloop-bridge.js (0.2s)\n  [325/917] PASS    smoke-faction-npc-full-audit.js (0.6s)\n  [350/917] PASS    smoke-fiscal-reform-reconcile.js (0.2s)\n  [375/917] PASS    smoke-globalrules-entrench.js (0.2s)\n  [400/917] PASS    smoke-guozuo-junctures.js (0.2s)\n  [425/917] PASS    smoke-inflation-tax.js (0.2s)\n  [450/917] PASS    smoke-map-hierarchy-aggregate.js (0.2s)\n  [475/917] PASS    smoke-memory-compress-consumer.js (0.2s)\n  [500/917] PASS    smoke-memory-pipeline-continuity.js (0.2s)\n  [525/917] PASS    smoke-memory-temporal-validity.js (0.3s)\n  [550/917] PASS    smoke-memory-workshop-rollup-controls.js (0.3s)\n  [575/917] PASS    smoke-newui-routing.js (0.3s)\n  [600/917] PASS    smoke-office-appointment-sync.js (0.3s)\n  [625/917] PASS    smoke-office-tree-shape-normalize.js (0.5s)\n  [650/917] PASS    smoke-party-inference.js (0.3s)\n  [675/917] PASS    smoke-player-death-adjudicator.js (0.3s)\n  [700/917] PASS    smoke-public-treasury-a3.js (0.2s)\n  [725/917] PASS    smoke-renli-pilot-seed.js (0.2s)\n  [750/917] PASS    smoke-restricted-roster.js (0.2s)\n  [775/917] PASS    smoke-s8-talent-alert.js (0.2s)\n  [800/917] PASS    smoke-scenario-isolation.js (1.0s)\n  [824/917] FAIL    smoke-startup-phase-observability.js (0.5s)\n  [825/917] PASS    smoke-security-trust-boundary.js (2.8s)\n  [850/917] PASS    smoke-tianqi-official-cache-recovery.js (1.1s)\n  [875/917] PASS    smoke-wendui-active-audience.js (0.2s)\n  [900/917] PASS    smoke-workshop-runtime-truth-ui.js (0.2s)\n  [917/917] PASS    smoke-start-game-data-integrity.js (61.1s)\n\n[run-smokes] 完成：914 PASS · 1 FAIL · 0 SKIP · 2 WAIVED / 917 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 608s(并行墙钟更短)\n\n--- 失败聚类（1 簇）---\n  ×1  at checkExecSyncError (node:child_process:#:#)\n      smoke-startup-phase-observability.js\n\n--- 最慢 Top 10 ---\n  80.4s  smoke-full-turn-flow.js\n  61.1s  smoke-start-game-data-integrity.js\n  49.3s  smoke-perf-save-preparation.js\n  29.9s  smoke-deploy-manifest-atomicity.js\n  22.2s  smoke-workshop-lock-recovery.js\n  11.2s  smoke-character-location-travel.js\n  6.8s  smoke-party-goals-lifecycle.js\n  6.8s  smoke-tinyi-reissued.js\n  6.7s  smoke-tinyi-scenario-class-source.js\n  6.7s  smoke-tinyi-party-class-agenda.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-uWw28a/smoke-report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159",
+          "exportedSha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159",
+          "text": "[ci-smokes] FAIL smoke-evidence-runner-failed\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-arch-v2-ed39e43e-691b-4706-9ce1-9abb63d1378a",
+      "run": {
+        "label": "building-final-arch-v2",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T10:58:53.677Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 46528.816100000004,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "2c4fc2ee0d2a27262696a5ef12c367b6d72c0244c04e11eb523e8ba49f27df92",
+          "exportedSha256": "2c4fc2ee0d2a27262696a5ef12c367b6d72c0244c04e11eb523e8ba49f27df92",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (3.0s)\n[lint-arch-all] PASS  lint-dep-graph (1.3s)\n[lint-arch-all] PASS  lint-global-providers (9.4s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.4s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.4s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (27.6s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.7s)\n[lint-arch-all] PASS  lint-file-size (0.5s)\n[lint-arch-all] PASS  lint-control-bytes (0.5s)\n[lint-arch-all] PASS  lint-split-contracts (0.2s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] FAIL  lint-smoke-family-order (0.8s)\n    [lint-smoke-family-order] FAIL smoke-ai-abort-listener-cleanup.js::tm-ai-infra-json.js：实际提及序 tm-ai-infra.js → tm-ai-infra-json.js ≠ 契约序 tm-ai-infra-json.js → tm-ai-infra.js\n      smoke 消费拆分家族须按契约序提及/拼接（装载序防腐测试的可信度所系）\n[lint-arch-all] PASS  ref-check (1.2s)\n\n[lint-arch-all] FAIL — 1/13 项未过\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-bridge-a6f169d2-71ae-4030-a2a6-cec136ed3afc",
+      "run": {
+        "label": "building-final-bridge",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:00:08.835Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 31440.2602,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "ad0b4f843ad6ddb6d5471904b4eaf4389a504cc39d8fe427f0734a77259ff054",
+          "exportedSha256": "9bd60cbc74768cf3c1a8dbb8c2fac521b3f01452c842484c54c31e56b92df339",
+          "text": "{\"mode\":\"production\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"production\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"},{\"name\":\"canonical-world-and-receipt-committed-before-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-tYHT4Q\\\\production\"}}\n{\"mode\":\"test-exports\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"test-exports\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-tYHT4Q\\\\exports\"}}\n{\"mode\":\"restart\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"restart\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"canonical-receipt-and-folio-recover-after-real-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-tYHT4Q\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\a8ae1530-2a3e-4045-907f-d2f740628537\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-parity-ef20fe38-2de4-4817-b956-60ab84149e4f",
+      "run": {
+        "label": "building-final-parity",
+        "command": [
+          "node",
+          "web/scripts/verify-official-scenario-parity.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:00:20.597Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 4062.8997000000004,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+          "exportedSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+          "text": "[official-sync] parity PASS · sources=2 artifacts=9\n  ok·seeder/preview/reset artifacts registered\n  ok·tianqi7 builtin embeds the complete root JSON\n  ok·tianqi7 builtin remains reviewable compact output\n  ok·tianqi7 seeder embeds the complete root JSON\n  ok·tianqi7 editor preview embeds the complete root JSON\n  ok·editor reset embeds the complete Tianqi root JSON (embedded=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, root=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, differingKeys=)\n  ok·tianqi7 bundled JSON is byte-identical to root JSON\n  ok·shaosong builtin embeds the complete root JSON\n  ok·shaosong builtin remains reviewable compact output\n  ok·shaosong seeder embeds the complete root JSON\n  ok·shaosong editor preview embeds the complete root JSON\n  ok·shaosong bundled JSON is byte-identical to root JSON\n  ok·manifest.js equals manifest.json\n  ok·tianqi7 metadata exists\n  ok·tianqi7 metadata script sha256 is correct\n  ok·tianqi7 metadata script bytes is correct\n  ok·tianqi7 metadata source sha256 is correct\n  ok·tianqi7 metadata source bytes is correct\n  ok·tianqi7 metadata loader path is correct\n  ok·tianqi7 metadata counts are correct\n  ok·shaosong metadata exists\n  ok·shaosong metadata script sha256 is correct\n  ok·shaosong metadata script bytes is correct\n  ok·shaosong metadata source sha256 is correct\n  ok·shaosong metadata source bytes is correct\n  ok·shaosong metadata loader path is correct\n  ok·shaosong metadata counts are correct\nPASS assertions=27\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-hot-gates-a257c1d2-5564-4195-a701-3fe884dadba4",
+      "run": {
+        "label": "building-final-hot-gates",
+        "command": [
+          "node",
+          "web/scripts/verify-hot-builder-gates.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:00:27.840Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "96d6f9277f443a75db4fe749c8d76c541b7e8d1704ccb56e8a1f05d780d83117",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "c7014dea759558e6629ae241725bf2f51f07bd7cbe7aa0979175c79f32d95e00",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 4696.4841,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+          "exportedSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+          "text": "  ok·A·健康树全量构建通过（exit 0）\n  ok·A·feed 版本正确\n  ok·A·清单含 index.html\n  ok·A·清单含 a.js\n  ok·A·清单含 b.js\n  ok·A·清单含 styles.css\n  ok·A·清单含 changelog.json\n  ok·A·清单含 version.json\n  ok·A·清单含 bundled-scenarios/合成（官方）.json\n  ok·A·草案/自用剧本不进入热更\n  ok·A2·GLB 运行资产可进入热更\n  ok·A2·GLB 自动要求 1.3.4.10 壳层\n  ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝\n  ok·A2·1.3.4.12 可发布 ONNX 运行资产\n  ok·A2·ONNX 自动要求 1.3.4.12 壳层\n  ok·B·GATE-0 拦 --files 部分包\n  ok·B·危险旗标放行（调试用）\n  ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）\n  ok·D·GATE-2 拦必含文件缺失\n  ok·E·首次构建通过\n  ok·E·GATE-3 拦相同版本重发\n  ok·E·GATE-3 拦更低版本\n  ok·E·更高版本放行\n  ok·F·GATE-5 拦 version.json 戳不一致\n  ok·F·--skip-stamp-check 放行（调试用）\n  ok·F·GATE-5 拦 meta 缺失\n  ok·G·GATE-4 zip↔manifest 对账在构建路径上\nPASS assertions=27\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-startup-final-sync-a802cedd-9695-4c83-83f1-42374430869e",
+      "run": {
+        "label": "building-startup-final-sync",
+        "command": [
+          "node",
+          "web/scripts/build-startup-phase-manifest.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:03:41.897Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 218.13800000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+          "exportedSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+          "text": "[startup-phase-manifest] wrote startup-script-phases.json scripts=409 deferred=6\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-electron-final-c949ab9c-1f37-48f9-bafe-14c7726993f0",
+      "run": {
+        "label": "building-electron-final",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--building-appraisal"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:03:44.310Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 8598.5931,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "254158c84cd34eb74900080e81efb4635224da85c2e92d88d14b517e9988e62c",
+          "exportedSha256": "b82bcb054480bd45004f7ba4249d09ee532ed16a7b98f3ba12f443d4563f34e5",
+          "text": "{\"mode\":\"building-appraisal\",\"ok\":false,\"exitCode\":1,\"detail\":{\"complete\":true,\"ok\":false,\"mode\":\"building-appraisal\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"building-production-modules\",\"status\":\"PASS\"},{\"name\":\"building-modal-is-visible\",\"status\":\"PASS\"},{\"name\":\"building-plain-ai-control\",\"status\":\"PASS\"},{\"name\":\"building-real-button-thinking-response\",\"status\":\"PASS\"},{\"name\":\"building-real-hard-gates-and-text-escaping\",\"status\":\"PASS\"}],\"failures\":[\"AssertionError [ERR_ASSERTION]: {\\\"width\\\":533.2000122070312,\\\"height\\\":195.90000915527344,\\\"hit\\\":false,\\\"topId\\\":\\\"\\\",\\\"topClass\\\":\\\"tmjz-foot\\\"}\\n    at resultVisible (<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\scripts\\\\electron\\\\building-appraisal-cases.cjs:49:5)\\n    at async check (<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\scripts\\\\electron\\\\bridge-main.cjs:67:34)\\n    at async module.exports (<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\scripts\\\\electron\\\\building-appraisal-cases.cjs:63:3)\\n    at async WebContents.<anonymous> (<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\scripts\\\\electron\\\\bridge-main.cjs:111:47)\"],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-0W8RV7\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\28bbb3b5-24c3-492b-8ffe-fec1eff4a4eb\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-arch-v3-113c54b9-4e35-46e0-bc99-5169968c4525",
+      "run": {
+        "label": "building-final-arch-v3",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:03:55.132Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "dcccc5daf60250c632367db783dedd661243bff07b747d3de674a27e4c31fbf1",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "b19a683ba628fb7b28ca62bca737de3697e42ede3f06b751b5343a5aa5787cfb"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 16892.492,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "aab0e634b512a9038a2190dda03e9730be0294997ad088d703a710fdbecef48d",
+          "exportedSha256": "aab0e634b512a9038a2190dda03e9730be0294997ad088d703a710fdbecef48d",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (2.9s)\n[lint-arch-all] PASS  lint-dep-graph (0.9s)\n[lint-arch-all] PASS  lint-global-providers (3.8s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.2s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.2s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (5.4s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.5s)\n[lint-arch-all] PASS  lint-file-size (0.4s)\n[lint-arch-all] PASS  lint-control-bytes (0.3s)\n[lint-arch-all] PASS  lint-split-contracts (0.2s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (0.8s)\n[lint-arch-all] PASS  ref-check (0.9s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-electron-reveal-c353ec6b-fb78-44f7-821e-e2c531764dbb",
+      "run": {
+        "label": "building-electron-reveal",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--building-appraisal"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:05:52.187Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 10033.0849,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "b11b93dfaa39aa0724f9cc52aa8ce48ef4127a3d8bc02279c84cc4790df66508",
+          "exportedSha256": "4e0f82998f82bc458c596833d5d694e254e70fe1c02893b1c3b7c26e8647cf46",
+          "text": "{\"mode\":\"building-appraisal\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"building-appraisal\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"building-production-modules\",\"status\":\"PASS\"},{\"name\":\"building-modal-is-visible\",\"status\":\"PASS\"},{\"name\":\"building-plain-ai-control\",\"status\":\"PASS\"},{\"name\":\"building-real-button-thinking-response\",\"status\":\"PASS\"},{\"name\":\"building-real-hard-gates-and-text-escaping\",\"status\":\"PASS\"},{\"name\":\"building-success-result-visible\",\"status\":\"PASS\"},{\"name\":\"building-real-failure-feedback-and-retry-button\",\"status\":\"PASS\"},{\"name\":\"building-failure-result-visible\",\"status\":\"PASS\"},{\"name\":\"building-real-no-result-is-not-success\",\"status\":\"PASS\"},{\"name\":\"building-real-retry-recovers-with-proposal-intact\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-Ireqmb\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\0f3819fb-16c4-4c83-b383-4ae91655027a\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-reveal-target-77ccf764-6664-489c-99c1-f99365e2169b",
+      "run": {
+        "label": "building-reveal-target",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:06:03.193Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1730.641,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "92c1ddf60c1f464b8ddd3ec10a1a1698fee653503c31268a8e75c47d2f24e648",
+          "exportedSha256": "92c1ddf60c1f464b8ddd3ec10a1a1698fee653503c31268a8e75c47d2f24e648",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\nPASS unconfigured secondary resolves to primary DeepSeek without request mismatch\nPASS read tools still run before forced final appraisal and critique\nPASS compatibility retry stops if user cancels while the error body is being read\nPASS repeated incompatibility cannot create an unbounded native retry loop\nPASS concurrent primary and secondary requests keep separate compatibility policy\nPASS native Gemini tool declaration and forced name are unchanged\nPASS success and error replies are revealed without scrolling a closed dialog\n[smoke-building-appraisal-compat] {\"pass\":24,\"fail\":0,\"total\":24,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-startup-check-394e1c38-f5b6-4496-8595-1e953aab5d39",
+      "run": {
+        "label": "building-final-startup-check",
+        "command": [
+          "node",
+          "web/scripts/build-startup-phase-manifest.js",
+          "--check"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:07:55.798Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 285.3505,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "212a06293ab76f7d29d69cdd8f6793f40ee6e7d180ce9ce3b7efac96b6cfdc99",
+          "exportedSha256": "212a06293ab76f7d29d69cdd8f6793f40ee6e7d180ce9ce3b7efac96b6cfdc99",
+          "text": "[startup-phase-manifest] PASS scripts=409 deferred=6 phases={\"menu\":14,\"core\":80,\"world\":293,\"optional\":22}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-canonical-sync-2d3396c5-69da-4d22-9f83-36d576ce46ec",
+      "run": {
+        "label": "building-canonical-sync",
+        "command": [
+          "node",
+          "scripts/sync-hot-baseline.js",
+          "--write",
+          "--version",
+          "1.3.4.11",
+          "--asset-root",
+          "<user-profile>/Desktop/tianming",
+          "--temp-root",
+          "E:/tianming-perf-temp"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:07:58.198Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 41569.371,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "4055970f1158426fef601918825113817c54f010a599cf13c2f633937462a11a",
+          "exportedSha256": "0fefc66cf9eccf85a6081011a5769f689ef28b5183b3ed3d2735832059bc5992",
+          "text": "[hot-baseline] asset-root overlay files=410 bytes=806161938\nWROTE <user-profile>\\Desktop\\tianming-perf-round1\\web\\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=6\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-before-v24-7867ff31-c648-4642-8215-e1b7a741aee8",
+      "run": {
+        "label": "building-final-before-v24",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js",
+          "--ref",
+          "6e02f7f34fcd0ea93600a69a3cfe1d473a840074"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:08:08.959Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 24416.3268,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "7e1a1ec03154738f97e87de8f413cc655905f8ab344d9ff057a1855696be4950",
+          "exportedSha256": "7e1a1ec03154738f97e87de8f413cc655905f8ab344d9ff057a1855696be4950",
+          "text": "PASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS native Anthropic format is unchanged\nPASS native Gemini tool declaration and forced name are unchanged\n[smoke-building-appraisal-compat] {\"pass\":5,\"fail\":19,\"total\":24,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "4c68b003ed0983ec8d88c9364a5985b5fd576b746f05f02ffb02c08872f1e051",
+          "exportedSha256": "4c68b003ed0983ec8d88c9364a5985b5fd576b746f05f02ffb02c08872f1e051",
+          "text": "FAIL ordinary call succeeds while the same thinking endpoint can appraise thinking tool policy must not yield no-appraisal\n\nfalse !== true\n\nFAIL forced DeepSeek call advertises only the requested tool without mutating definitions The expression evaluated to a falsy value:\n\n  assert(!Object.hasOwn(h.requests[0].body, 'tool_choice'))\n\nFAIL unknown proxy exact incompatibility retries once without tool_choice Cannot read properties of undefined (reading 'name')\nFAIL failed fallback preserves HTTP status and does not repeat appraisal rounds preserve failure status\nFAIL UI shows actionable failed-request message, restores button and keeps proposal The expression evaluated to a falsy value:\n\n  assert(html.includes('401') && /密钥|权限/.test(html))\n\nFAIL successful UI shows validated appraisal and approval remains explicit The expression evaluated to a falsy value:\n\n  assert(h.elements._bmAppraiseResult.innerHTML.includes('有司核议：合理'))\n\nFAIL no structured appraisal is explained instead of exposing no-appraisal The expression evaluated to a falsy value:\n\n  assert(/未.*提交|没有.*核议|未.*结构/.test(h.elements._bmAppraiseResult.innerHTML))\n\nFAIL truncated reasoning output is diagnosed without another identical round Expected values to be strictly equal:\n+ actual - expected\n\n+ 'no-appraisal'\n- 'appraisal-truncated'\n\nFAIL empty or malformed appraisal cannot become a zero-cost approval Expected values to be strictly equal:\n\ntrue !== false\n\nFAIL wrong forced function is rejected Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL unparsable tool arguments never become a successful empty input Expected values to be strictly equal:\n\n1 !== 0\n\nFAIL already-aborted call sends no native or fallback HTTP request Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'aborted'\n\nFAIL timeout cleans listeners and does not launch fallback after deadline Expected values to be strictly equal:\n\n2 !== 1\n\nFAIL unconfigured secondary resolves to primary DeepSeek without request mismatch Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL read tools still run before forced final appraisal and critique Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL compatibility retry stops if user cancels while the error body is being read Cannot read properties of undefined (reading 'code')\nFAIL repeated incompatibility cannot create an unbounded native retry loop Expected values to be strictly equal:\n\n2 !== 3\n\nFAIL concurrent primary and secondary requests keep separate compatibility policy The expression evaluated to a falsy value:\n\n  assert(!Object.hasOwn(secondary.body, 'tool_choice'))\n\nFAIL success and error replies are revealed without scrolling a closed dialog Expected values to be strictly equal:\n\n0 !== 1\n\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-audit-de9cb41e-9200-4fde-b2ef-fbc5bca8ec9d",
+      "run": {
+        "label": "building-final-audit",
+        "command": [
+          "npm",
+          "audit",
+          "--omit=dev",
+          "--audit-level=high",
+          "--registry=https://registry.npmjs.org"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:09:27.473Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 16775.492700000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+          "exportedSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+          "text": "found 0 vulnerabilities\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+          "exportedSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+          "text": "npm warn Unknown project config \"electron_mirror\". This will stop working in the next major version of npm.\nnpm warn Unknown project config \"electron_builder_binaries_mirror\". This will stop working in the next major version of npm.\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-controlled-tls-c951519f-0562-4489-b5d7-731895d4bfcc",
+      "run": {
+        "label": "building-final-controlled-tls",
+        "command": [
+          "node",
+          "scripts/verify-remote-tls.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:09:38.716Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1166.4171,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+          "exportedSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+          "text": "PASS validated address remains pinned after DNS source changes; Host and SNI preserved\nPASS each redirect performs new validation and uses a separate connection\nPASS redirect private address is rejected before a connection to that hop\nPASS cross-origin credentials cannot follow redirect\nPASS untrusted TLS certificate is rejected, no HTTP request or silent retry\n{\"complete\":true,\"PASS\":5,\"FAIL\":0,\"SKIP\":0,\"WAIVED\":0,\"runtime\":\"v24.14.0\",\"platform\":\"win32\",\"scope\":\"controlled loopback TLS, actual main-safe-remote transport; not a production SSRF attack\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-release-8405df95-ce2b-4763-af0a-4001a762c9f4",
+      "run": {
+        "label": "building-final-release",
+        "command": [
+          "node",
+          "scripts/verify-release-contract.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:10:18.707Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1742.9027,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "50a7befac5fddce7eadee1950fc215a23ecbfd39e42cd15dac445b848dedaf57",
+          "exportedSha256": "50a7befac5fddce7eadee1950fc215a23ecbfd39e42cd15dac445b848dedaf57",
+          "text": "  ok·release-excludes schema\n  ok·canonical 热更基线是发布树 required file\n  ok·release-excludes 无重复\n  ok·安全排除项 _archive\n  ok·安全排除项 backups\n  ok·安全排除项 _screenshots\n  ok·安全排除项 test-results\n  ok·安全排除项 _codex_tmp\n  ok·安全排除项 dev-tools\n  ok·安全排除项 docs\n  ok·安全排除项 scripts\n  ok·安全排除项 tools\n  ok·安全排除项 godot\n  ok·安全排除项 .git\n  ok·安全排除项 node_modules\n  ok·安全排除项 .playwright-cli\n  ok·安全排除项 .cache\n  ok·安全排除项 .tmp\n  ok·安全排除项 tmp\n  ok·安全排除项 dist\n  ok·安全排除项 build\n  ok·安全排除项 release\n  ok·安全排除项 coverage\n  ok·安全排除项 .hot-update-staging\n  ok·安全排除项 _pw-scratch\n  ok·安全排除项 generated_images\n  ok·安全排除项 .vscode\n  ok·安全排除项 .bak-\n  ok·安全排除项 _codex\n  ok·安全排除项 .git-defunct-\n  ok·安全排除项 **/*.bak*\n  ok·安全排除项 **/*.log\n  ok·安全排除项 **/*.yml\n  ok·安全排除项 **/*.save.json\n  ok·安全排除项 **/_game-entry-shot.png\n  ok·安全排除项 **/_ingame*.png\n  ok·安全排除项 .claude/**\n  ok·安全排除项 output/**\n  ok·安全排除项 _audit_deadhandlers.py\n  ok·安全排除项 analyze_globals.py\n  ok·安全排除项 detect_globals.js\n  ok·安全排除项 scan_globals.js\n  ok·安全排除项 final_scan.sh\n  ok·安全排除项 scan.sh\n  ok·安全排除项 start-server.bat\n  ok·安全排除项 tm-tools.d.ts\n  ok·安全排除项 types.d.ts\n  ok·安全排除项 maps/**\n  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·安全排除项 preview-launch*.html\n  ok·安全排除项 preview-launch-assets/**\n  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·安全排除项 preview/shots/**\n  ok·安全排除项 preview/**/*verify*.png\n  ok·安全排除项 preview/home-ui-concepts/**\n  ok·安全排除项 preview/workshop-ui-concepts/**\n  ok·web 运行时引用/required files 未被误排：\n  ok·web 源体积/文件数在闸内：\n  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）\n  ok·发布树排除根目录游戏截图\n  ok·发布树排除根目录开发脚本与类型声明\n  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF\n  ok·发布树明确排除本机开发产物:.claude/launch.json\n  ok·发布树明确排除本机开发产物:output/playwright/shot.png\n  ok·发布树明确排除本机开发产物:maps/asia-map.png\n  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png\n  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png\n  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb\n  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx\n  ok·package-lock 根版本两处与 package.json 同版\n  ok·tracked mobile canonical version 与 buildVersion 同版\n  ok·electron-builder 消费 dir:_archive\n  ok·electron-builder 消费 dir:backups\n  ok·electron-builder 消费 dir:_screenshots\n  ok·electron-builder 消费 dir:test-results\n  ok·electron-builder 消费 dir:_codex_tmp\n  ok·electron-builder 消费 dir:dev-tools\n  ok·electron-builder 消费 dir:docs\n  ok·electron-builder 消费 dir:scripts\n  ok·electron-builder 消费 dir:tools\n  ok·electron-builder 消费 dir:godot\n  ok·electron-builder 消费 dir:.git\n  ok·electron-builder 消费 dir:node_modules\n  ok·electron-builder 消费 dir:.playwright-cli\n  ok·electron-builder 消费 dir:.cache\n  ok·electron-builder 消费 dir:.tmp\n  ok·electron-builder 消费 dir:tmp\n  ok·electron-builder 消费 dir:dist\n  ok·electron-builder 消费 dir:build\n  ok·electron-builder 消费 dir:release\n  ok·electron-builder 消费 dir:coverage\n  ok·electron-builder 消费 dir:.hot-update-staging\n  ok·electron-builder 消费 dir:_pw-scratch\n  ok·electron-builder 消费 dir:generated_images\n  ok·electron-builder 消费 dir:.vscode\n  ok·electron-builder 消费 prefix file:.bak-\n  ok·electron-builder 消费 prefix dir:.bak-\n  ok·electron-builder 消费 prefix file:_codex\n  ok·electron-builder 消费 prefix dir:_codex\n  ok·electron-builder 消费 prefix file:.git-defunct-\n  ok·electron-builder 消费 prefix dir:.git-defunct-\n  ok·electron-builder 消费 glob:**/*.bak*\n  ok·electron-builder 消费 glob:**/*.log\n  ok·electron-builder 消费 glob:**/*.yml\n  ok·electron-builder 消费 glob:**/*.save.json\n  ok·electron-builder 消费 glob:**/_game-entry-shot.png\n  ok·electron-builder 消费 glob:**/_ingame*.png\n  ok·electron-builder 消费 glob:.claude/**\n  ok·electron-builder 消费 glob:output/**\n  ok·electron-builder 消费 glob:_audit_deadhandlers.py\n  ok·electron-builder 消费 glob:analyze_globals.py\n  ok·electron-builder 消费 glob:detect_globals.js\n  ok·electron-builder 消费 glob:scan_globals.js\n  ok·electron-builder 消费 glob:final_scan.sh\n  ok·electron-builder 消费 glob:scan.sh\n  ok·electron-builder 消费 glob:start-server.bat\n  ok·electron-builder 消费 glob:tm-tools.d.ts\n  ok·electron-builder 消费 glob:types.d.ts\n  ok·electron-builder 消费 glob:maps/**\n  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·electron-builder 消费 glob:preview-launch*.html\n  ok·electron-builder 消费 glob:preview-launch-assets/**\n  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·electron-builder 消费 glob:preview/shots/**\n  ok·electron-builder 消费 glob:preview/**/*verify*.png\n  ok·electron-builder 消费 glob:preview/home-ui-concepts/**\n  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**\n  ok·electron-builder 消费 previewMockup 例外\n  ok·installer 固定携带热更新发布者公钥\n  ok·installer 携带回合分卷两阶段提交模块\n  ok·热更新固定公钥类型为 Ed25519\n  ok·三平台构建统一走受检 build-electron wrapper\n  ok·Windows builder 强制签名、编辑签名与更新发布者验证\n  ok·Windows 构建缺发布者/证书时 fail-closed\n  ok·Windows 保留仓主输出目录并锁定发布者/证书身份\n  ok·mac 使用平台本地可移植输出目录\n  ok·linux 使用平台本地可移植输出目录\n  ok·所有官方 JSON 均登记进统一生成器\n  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json\n  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json\n  ok·hot builder 消费共享 release-tree\n  ok·hot builder 收集战斗模型与本地语义模型扩展名\n  ok·新扩展名自动携带旧壳阻断所需 minAppVersion\n  ok·内容 OTA 构建器不再收集 main/preload 主进程代码\n  ok·热更新 manifest/feed 强制 Ed25519 发布者签名\n  ok·桌面壳层放行 collector 会发出的运行资产扩展名\n  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判\n  ok·Capgo/APK 消费共享 release-tree\n  ok·Capgo/APK staging 先生成官方剧本派生物\n  ok·Capacitor 只读取派生 www\n  ok·npm sync 强制 stage→cap sync→native hash verify\n  ok·open/run 不可绕过 sync gate\n  ok·native 仅容忍 Capacitor 两个注入文件\n  ok·native extra allowlist 仅放两项，其余仍 fail-closed\n  ok·派生目录已 ignore\n  ok·web canonical 热更基线未被 ignore\n  ok·canonical 热更基线存在且与 buildVersion 同版\n  ok·canonical 热更基线不含 main/preload 可执行桥\n  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产\n  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件\n  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n  ok·staging 拒绝清空 web 源码子目录\n  ok·staging 拒绝清空已有普通目录\n  ok·staging 仅放行已知 mobile/www 派生目录\n  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳\n  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n  ok·两阶段 release/Pages 静态契约\nPASS assertions=166 files=689 bytes=129142699\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-baseline-check-3f2e7b96-ce06-4d4f-9e9b-0d215ed152f4",
+      "run": {
+        "label": "building-final-baseline-check",
+        "command": [
+          "node",
+          "scripts/sync-hot-baseline.js",
+          "--check",
+          "--version",
+          "1.3.4.11",
+          "--temp-root",
+          "E:/tianming-perf-temp"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:10:22.517Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 971.5401,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+          "exportedSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+          "text": "PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-architecture-a4743af7-97f0-4539-af64-100face63ab5",
+      "run": {
+        "label": "building-final-architecture",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:10:25.742Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 16303.5862,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "81be82fa810fd559a219f745c82230c85b9e3420091686a3636d47f691f1e87f",
+          "exportedSha256": "81be82fa810fd559a219f745c82230c85b9e3420091686a3636d47f691f1e87f",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (2.7s)\n[lint-arch-all] PASS  lint-dep-graph (1.0s)\n[lint-arch-all] PASS  lint-global-providers (3.9s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.2s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.2s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (5.6s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.5s)\n[lint-arch-all] PASS  lint-file-size (0.3s)\n[lint-arch-all] PASS  lint-control-bytes (0.3s)\n[lint-arch-all] PASS  lint-split-contracts (0.1s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (0.5s)\n[lint-arch-all] PASS  ref-check (0.8s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-electron-standard-7bb69587-e257-4b2b-9037-f9312c987a47",
+      "run": {
+        "label": "building-final-electron-standard",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:10:36.071Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 18404.0122,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "81a3abe83db61379c48ca660f122375f400b7133f1ab248c48950c51466ab721",
+          "exportedSha256": "fb7b3743f6b2cb888e1f663932c243f04780f2aa96f293823d703f38fc859990",
+          "text": "{\"mode\":\"production\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"production\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"},{\"name\":\"canonical-world-and-receipt-committed-before-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-51P3D9\\\\production\"}}\n{\"mode\":\"test-exports\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"test-exports\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-51P3D9\\\\exports\"}}\n{\"mode\":\"restart\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"restart\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"canonical-receipt-and-folio-recover-after-real-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-51P3D9\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\16f44934-a3f5-462f-b040-dfda45731abd\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-final-smoke-v2-2ed1637f-a5d5-46cb-8bf0-7d9f1b58d0a8",
+      "run": {
+        "label": "building-final-smoke-v2",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:11:38.489Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 71023.4893,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "7799ef5af6e1e8fa7d442acf9f7d92555da255ae92b285e0175a254b4547eb3a",
+          "exportedSha256": "0be64ae0681b7127266e7c2d3a9dfdc22cf58e3b4fef1e29e2a7211f6a0cebf2",
+          "text": "[ci-smokes] run=954ec34b-1f99-4616-82db-3cec55d263e6 HEAD=6e02f7f34fcd0ea93600a69a3cfe1d473a840074 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-5D8mKG\\smoke-report.json\n[run-smokes] 共 917 个 smoke · 选中 917 · 跳过 0 · 并发 8 · 超时 120s\n  [25/917] PASS    smoke-agent-mode-s2.js (0.1s)\n  [50/917] PASS    smoke-ai-structured-policy-actions.js (0.2s)\n  [75/917] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/917] PASS    smoke-battle-resolve.js (0.1s)\n  [125/917] PASS    smoke-changchao-line-salvage.js (0.1s)\n  [150/917] PASS    smoke-class-character-ui.js (0.1s)\n  [175/917] PASS    smoke-conspiracy-brewing-feed.js (0.1s)\n  [200/917] PASS    smoke-crisis-player-surface-bridge.js (0.1s)\n  [225/917] PASS    smoke-diebao-log.js (0.2s)\n  [250/917] PASS    smoke-edict-pardon.js (0.2s)\n  [275/917] PASS    smoke-endturn-narrative.js (0.3s)\n  [300/917] PASS    smoke-faction-ai-mainloop-bridge.js (0.2s)\n  [325/917] PASS    smoke-faction-npc-intervention.js (0.4s)\n  [350/917] PASS    smoke-fiscal-target-alias-preflight.js (0.2s)\n  [375/917] PASS    smoke-globalrules-entrench.js (0.2s)\n  [400/917] PASS    smoke-guozuo-junctures.js (0.2s)\n  [425/917] PASS    smoke-inflation-tax.js (0.2s)\n  [450/917] PASS    smoke-map-hierarchy-aggregate.js (0.1s)\n  [475/917] PASS    smoke-memory-compress-consumer.js (0.2s)\n  [500/917] PASS    smoke-memory-pipeline-continuity.js (0.2s)\n  [525/917] PASS    smoke-memory-temporal-validity.js (0.2s)\n  [550/917] PASS    smoke-memory-workshop-rollup-controls.js (0.2s)\n  [575/917] PASS    smoke-newui-routing.js (0.2s)\n  [600/917] PASS    smoke-office-authority.js (0.2s)\n  [625/917] PASS    smoke-onboarding-help.js (0.1s)\n  [650/917] PASS    smoke-party-inference.js (0.1s)\n  [675/917] PASS    smoke-perf-map-render-path.js (2.9s)\n  [700/917] PASS    smoke-public-treasury-a3.js (0.1s)\n  [725/917] PASS    smoke-renli-prompt-context.js (0.1s)\n  [750/917] PASS    smoke-resume-point.js (0.2s)\n  [775/917] PASS    smoke-s8-talent-alert.js (0.2s)\n  [800/917] PASS    smoke-semantic-atomic-world-lease.js (0.4s)\n  [825/917] PASS    smoke-storage-local-fallback.js (0.3s)\n  [850/917] PASS    smoke-tianqi-official-cache-recovery.js (1.5s)\n  [875/917] PASS    smoke-wendui-active-audience.js (0.1s)\n  [900/917] PASS    smoke-workshop-ranks.js (0.2s)\n  [917/917] PASS    smoke-start-game-data-integrity.js (28.6s)\n\n[run-smokes] 完成：915 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 917 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 457s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  44.4s  smoke-full-turn-flow.js\n  28.6s  smoke-start-game-data-integrity.js\n  23.9s  smoke-perf-save-preparation.js\n  20.3s  smoke-deploy-manifest-atomicity.js\n  13.0s  smoke-workshop-lock-recovery.js\n  10.9s  smoke-character-location-travel.js\n  6.7s  smoke-tinyi-party-class-agenda.js\n  6.7s  smoke-tinyi-reissued.js\n  6.6s  smoke-tinyi-scenario-class-source.js\n  6.6s  smoke-class-demand-party-goals.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-5D8mKG/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":915,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":917}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-ci-wiring-contract-d30f7aba-1a70-415e-9fd8-1eb9f35170b4",
+      "run": {
+        "label": "building-ci-wiring-contract",
+        "command": [
+          "node",
+          "scripts/verify-release-workflow-contract.js"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? docs/bugfix-building-appraisal-2026-09-08.md\n?? docs/bugfix-building-appraisal/\n?? scripts/collect-building-appraisal-evidence.cjs\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:22:03.485Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "3f394697eec6c27246f0cca29a0e13667715a90bd555f5510e1f44fc7283b733",
+          "docs/bugfix-building-appraisal-2026-09-08.md": "069750cec090bdc7a8058969a6749bd08b83f2030b56859aef6d02d4a096ce03",
+          "docs/bugfix-building-appraisal/electron.json": "33cb15fd103ec646f6f37e443621070a4d4a16b605a358c6ac9f7ce5f5305473",
+          "docs/bugfix-building-appraisal/executions.json": "99a5e1b7f6243438a52755a3e083eaaff01d23c474af8d2f80c6c55b3203a9a8",
+          "docs/bugfix-building-appraisal/smoke.json": "b6235f42e9592d75dada65b6a2561930ade8325224301f98135718454cbee53d",
+          "scripts/collect-building-appraisal-evidence.cjs": "2ce4a62ef006c9933a931b47ff8865da7b7bfc55f2f5179fec2f1436b330d2b9",
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 200.02229999999997,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "6936f8753ea1bc2cea934469262b0ecf592ad3b7520a1ca5331dffd8e80e4e15",
+          "exportedSha256": "6936f8753ea1bc2cea934469262b0ecf592ad3b7520a1ca5331dffd8e80e4e15",
+          "text": "  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\building-ci-yaml-8b8e138a-7fd6-408c-999a-ea3dd4922f43",
+      "run": {
+        "label": "building-ci-yaml",
+        "command": [
+          "node",
+          "-e",
+          "const fs=require('fs'),assert=require('assert/strict'),yaml=require('js-yaml');const ci=yaml.load(fs.readFileSync('.github/workflows/ci.yml','utf8'));assert.deepEqual(ci.on.push.branches,['main']);assert.deepEqual(ci.on.pull_request.branches,['main']);const steps=ci.jobs['electron-bridge'].steps;assert.equal(steps.filter(s=>s.run==='node scripts/verify-electron-bridge.js --building-appraisal').length,1);console.log('PASS valid CI YAML; exact isolated appraisal command registered once; triggers unchanged');"
+        ],
+        "head": "6e02f7f34fcd0ea93600a69a3cfe1d473a840074",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-ai-abort-listener-cleanup.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-custom-build-agent.js\n M web/tm-player-core.js\n?? docs/bugfix-building-appraisal-2026-09-08.md\n?? docs/bugfix-building-appraisal/\n?? scripts/collect-building-appraisal-evidence.cjs\n?? scripts/electron/building-appraisal-cases.cjs\n?? web/scripts/smoke-building-appraisal-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T11:25:03.482Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "3f394697eec6c27246f0cca29a0e13667715a90bd555f5510e1f44fc7283b733",
+          "docs/bugfix-building-appraisal-2026-09-08.md": "069750cec090bdc7a8058969a6749bd08b83f2030b56859aef6d02d4a096ce03",
+          "docs/bugfix-building-appraisal/electron.json": "33cb15fd103ec646f6f37e443621070a4d4a16b605a358c6ac9f7ce5f5305473",
+          "docs/bugfix-building-appraisal/executions.json": "99a5e1b7f6243438a52755a3e083eaaff01d23c474af8d2f80c6c55b3203a9a8",
+          "docs/bugfix-building-appraisal/smoke.json": "b6235f42e9592d75dada65b6a2561930ade8325224301f98135718454cbee53d",
+          "scripts/collect-building-appraisal-evidence.cjs": "2ce4a62ef006c9933a931b47ff8865da7b7bfc55f2f5179fec2f1436b330d2b9",
+          "scripts/electron/bridge-main.cjs": "1a4886e9c75b455b5f9dfa31bc233bf2567022d9abb92314a5c63a433d0b02cc",
+          "scripts/electron/building-appraisal-cases.cjs": "0f0f204fbc305b93cfd905e074ce3dff9531de96652e5997ef11aa547928f1d2",
+          "scripts/verify-electron-bridge.js": "af12eb1b52513693fc54c0d1fb5865df4eab54e4817004d1cad048113920263a",
+          "web/.hot-update-manifest.json": "520024beec28615a9f28fd8145544c26aa2d63353d7bedd99d9cabe0350d5686",
+          "web/index.html": "84686cbef9a93554dec245939e32b1dc5d7581f46e6939abc64d348dc29ac7c7",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js": "fb5fecaad2d630bf4380619dd85124363effb4b973fa55a802d6778df41a47c7",
+          "web/scripts/smoke-building-appraisal-compat.js": "a15dc83734fa7adc5f9baa9930e5f1d9fbc93811e86723b31d7b10c172fa975b",
+          "web/startup-script-phases.json": "c098858f38a00452c8c792b48decc042cb9543cae8037424685b27c74cdfb9d4",
+          "web/tm-ai-infra-json.js": "a2ad65e519024c47985024526b6017086abdc1cdb68f28829d0996d64dc265da",
+          "web/tm-ai-infra.js": "9be5da21163ae6be8ca0f5b39ab4b4ce85f375744ac0404aec6a4a03ae7d5240",
+          "web/tm-custom-build-agent.js": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+          "web/tm-player-core.js": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 203.4814,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "c9accdd59fe9ce55706e8ae53f5261e8429190bd3809c407520288ce60f4cd83",
+          "exportedSha256": "c9accdd59fe9ce55706e8ae53f5261e8429190bd3809c407520288ce60f4cd83",
+          "text": "PASS valid CI YAML; exact isolated appraisal command registered once; triggers unchanged\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "exportedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    }
+  ]
+}

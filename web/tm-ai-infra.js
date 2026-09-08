@@ -775,6 +775,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
   var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
@@ -783,9 +784,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
   // Phase 7·补 id 参数·byId 拆分
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
 }
 
 /**
@@ -802,7 +801,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
  * @param {string} prompt - 提示词
  * @param {Array<{name:string, description:string, parameters:object}>} tools - 工具定义（JSON Schema parameters）
  * @param {{maxTok?:number, signal?:AbortSignal, tier?:string, forceTool?:string, allowText?:boolean}} [opts]
- * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean}>}
+ * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean, error?:object}>}
  *   - text: AI 文本输出（如有）
  *   - toolCalls: 解析后的工具调用列表·每项 {name, input(parsed object)}
  *   - fallback: true 表示走了文本→JSON 解析路径
@@ -839,38 +838,28 @@ async function callAIWithTools(prompt, tools, opts) {
   var maxTok = opts.maxTok || 2000;
   var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
 
-  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
-  function _fallbackPromptWithSchema() {
-    var schemaDesc = '【工具定义】API 不支持 tool_use·请按以下 JSON Schema 直接返回纯 JSON·必须包含 tool_call 字段:\n';
-    schemaDesc += '可用工具:\n';
-    tools.forEach(function(t) {
-      schemaDesc += '- ' + t.name + ': ' + (t.description || '') + '\n';
-      schemaDesc += '  参数: ' + JSON.stringify(t.parameters || {}) + '\n';
-    });
-    schemaDesc += '\n返回格式（必须是纯 JSON·不要 markdown 包裹）:\n';
-    schemaDesc += '{"tool_calls":[{"name":"<工具名>","input":{<符合 schema 的参数>}}]}\n';
-    if (opts.forceTool) schemaDesc += '\n本次必须使用工具: ' + opts.forceTool + '\n';
-    return prompt + '\n\n' + schemaDesc;
+  // Additive failure metadata: never return an Error/lastRaw (which may contain
+  // request contents or credentials) to a UI consumer. Existing callers can
+  // still inspect text/toolCalls; structured-only agents can stop failed rounds.
+  function _toolErrorInfo(error) {
+    var status = Number(error && error.status) || 0;
+    var code = (opts.signal && opts.signal.aborted) ? 'aborted' :
+      (error && error.code === 'tool-timeout') ? 'tool-timeout' :
+      (error && error.code === 'tool-choice-unsupported') ? 'tool-choice-unsupported' :
+      status ? 'tool-http-error' : 'tool-call-failed';
+    return { code: code, status: status, message: status ? ('HTTP ' + status) : code };
   }
-  async function _runFallback() {
+  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+  async function _runFallback(cause) {
     try {
-      var raw = await callAI(_fallbackPromptWithSchema(), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
-      var parsed = null;
-      try { parsed = robustParseJSON(raw); }
-      catch(_pe) { console.warn('[callAIWithTools/fallback] JSON 解析失败:', _pe); }
-      var calls = [];
-      if (parsed && Array.isArray(parsed.tool_calls)) {
-        parsed.tool_calls.forEach(function(c) {
-          if (c && c.name) calls.push({ name: c.name, input: c.input || c.arguments || {} });
-        });
-      } else if (parsed && parsed.name && parsed.input) {
-        // 兼容单调用形式
-        calls.push({ name: parsed.name, input: parsed.input });
-      }
-      return { text: String(raw||''), toolCalls: calls, fallback: true };
+      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+      var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
+      return { text: String(raw||''), toolCalls: calls, fallback: true,
+        error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
     } catch(_fe) {
-      console.warn('[callAIWithTools] fallback 也失败:', _fe);
-      return { text: '', toolCalls: [], fallback: true };
+      var info = _toolErrorInfo(_fe);
+      console.warn('[callAIWithTools] fallback 也失败:', info.code, info.status);
+      return { text: '', toolCalls: [], fallback: true, error: info };
     }
   }
 
@@ -930,26 +919,48 @@ async function callAIWithTools(prompt, tools, opts) {
     headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
     parseMode = 'openai';
   }
+  // Use the effective request URL, not the primary config when tier=secondary.
+  // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
+  if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
   // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
   var data;
   async function _toolFetchQueued() {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+    var timedOut = false;
+    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
     if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
     var onExternalAbort = function() { ctrl.abort(); };
     if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
     try {
-      var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
-      if (!resp.ok) {
-        var errT = '';
-        try { errT = await resp.text(); } catch(_){ }
-        console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + '): ' + errT.substring(0, 200));
-        var err = new Error('HTTP ' + resp.status);
-        err.status = resp.status;
-        err.toolFallback = true;
-        throw err;
+      var choiceRetried = false;
+      while (true) {
+        if (ctrl.signal.aborted) throw new Error('Aborted');
+        var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+        if (!resp.ok) {
+          var errT = '';
+          try { errT = await resp.text(); } catch(_){ }
+          var choiceUnsupported = resp.status === 400 && /thinking mode does not support (?:this )?tool_choice/i.test(errT);
+          // Unknown compatible proxies can expose the same policy. One repair,
+          // same timer/abort/queue slot; unrelated errors use the existing fallback.
+          if (choiceUnsupported && parseMode === 'openai' && !choiceRetried && body.tool_choice !== undefined) {
+            choiceRetried = true;
+            _tmAIToolJSON.omitChoice(body, opts.forceTool);
+            console.warn('[callAIWithTools] 思考模式不支持 tool_choice·省略该参数后重试一次');
+            continue;
+          }
+          console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
+          var err = new Error('HTTP ' + resp.status);
+          err.status = resp.status;
+          if (choiceUnsupported) err.code = 'tool-choice-unsupported';
+          throw err;
+        }
+        return await resp.json();
       }
-      return await resp.json();
+    } catch (error) {
+      if (timedOut && !(opts.signal && opts.signal.aborted)) {
+        var timeoutError = new Error('AI tool request timed out'); timeoutError.code = 'tool-timeout'; throw timeoutError;
+      }
+      throw error;
     } finally {
       clearTimeout(timer);
       if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
@@ -962,9 +973,10 @@ async function callAIWithTools(prompt, tools, opts) {
       data = await _toolFetchQueued();
     }
   } catch(e) {
-    try { if (typeof timer !== 'undefined') clearTimeout(timer); } catch(_) {}
-    console.warn('[callAIWithTools] fetch 异常·走 fallback:', e && e.message || e);
-    return await _runFallback();
+    var failure = _toolErrorInfo(e);
+    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+    console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
+    return await _runFallback(e);
   }
   if (data && data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, (opts && opts.id) || 'callAIWithTools');
   // ─── 解析响应·三路径分支 ───
@@ -994,17 +1006,13 @@ async function callAIWithTools(prompt, tools, opts) {
         if (Array.isArray(msg.tool_calls)) {
           msg.tool_calls.forEach(function(tc) {
             var fn = tc.function || {};
-            var input = {};
-            try { input = JSON.parse(fn.arguments || '{}'); }
-            catch(_pe) { console.warn('[callAIWithTools] tool_call arguments JSON 解析失败:', fn.arguments); }
-            if (fn.name) toolCalls.push({ name: fn.name, input: input });
+            var input = _tmAIToolJSON.decode(fn.arguments);
+            if (fn.name && input !== null) toolCalls.push({ name: fn.name, input: input });
           });
         }
         // 兼容某些代理把 function_call (单数·OpenAI 旧字段) 当作 tool_use 返回
         if (toolCalls.length === 0 && msg.function_call && msg.function_call.name) {
-          var _inp = {};
-          try { _inp = JSON.parse(msg.function_call.arguments || '{}'); } catch(_pe2) {}
-          toolCalls.push({ name: msg.function_call.name, input: _inp });
+          toolCalls.push({ name: msg.function_call.name, input: _tmAIToolJSON.decode(msg.function_call.arguments) });
         }
       }
       // 兼容某些代理直接返回 anthropic 风格 content[]·尝试解析
@@ -1017,18 +1025,10 @@ async function callAIWithTools(prompt, tools, opts) {
     }
   } catch(_parseE) {
     console.warn('[callAIWithTools] 响应解析异常·走 fallback:', _parseE);
-    return await _runFallback();
+    return await _runFallback(_parseE);
   }
   // 如果完全没有 toolCalls 且有 text·尝试从 text 抽取 JSON 作为兜底
-  if (toolCalls.length === 0 && text) {
-    try {
-      var maybeJson = null;
-      maybeJson = robustParseJSON(text);
-      if (maybeJson && Array.isArray(maybeJson.tool_calls)) {
-        maybeJson.tool_calls.forEach(function(c) { if (c && c.name) toolCalls.push({ name: c.name, input: c.input || {} }); });
-      }
-    } catch(_textParseE) {}
-  }
+  if (toolCalls.length === 0 && text) toolCalls = _tmAIToolJSON.parse(text);
   // 刀H2(2026-07-02·CC max_tokens 动态调整对照) · 纯增量字段:输出是否被 maxTok 截断(finish_reason)。
   //   调用方(如回合推演 agent)可据此提升输出上限重试;不读该字段的调用方一切如旧。
   var _truncH2 = false;
@@ -1037,6 +1037,7 @@ async function callAIWithTools(prompt, tools, opts) {
       || data.stop_reason === 'max_tokens'
       || (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'MAX_TOKENS'));
   } catch (_tH2E) {}
+  toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
   return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
 }
 
@@ -1166,9 +1167,7 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts2);
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAIMessages');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok2);
 }
 
 /**

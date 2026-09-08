@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-08T09:33:07.944Z",
+  "generatedAt": "2026-09-08T12:41:34.999Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "d905044e5d8a0ba65c03860bd615854e67e7e5fa4373534e6a60951026605e9e",
-      "size": 69199
+      "sha256": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+      "size": 69230
     },
     {
       "path": "INDEX.md",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
-      "size": 345831
+      "sha256": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+      "size": 345914
     },
     {
       "path": "styles.css",
@@ -3421,8 +3421,8 @@
     },
     {
       "path": "tm-ai-infra-json.js",
-      "sha256": "632952d4d968dcc0340069ccbeb2d8cdb0d0caf37d2cee77f6a152da165b726a",
-      "size": 9342
+      "sha256": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+      "size": 13623
     },
     {
       "path": "tm-ai-infra-model-detect.js",
@@ -3431,8 +3431,8 @@
     },
     {
       "path": "tm-ai-infra.js",
-      "sha256": "2af4819e5fe6578c0c1adc3e0b0052e9c67195f1d08e52f2eabd15cd615eb793",
-      "size": 161085
+      "sha256": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+      "size": 161640
     },
     {
       "path": "tm-ai-narrative-guards.js",
@@ -3791,8 +3791,8 @@
     },
     {
       "path": "tm-custom-build-agent.js",
-      "sha256": "77d1fe276a957fa3a1c9f0b9a4413077508e7aa49aae30cbf260b6cc3ea6e6cf",
-      "size": 41061
+      "sha256": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
+      "size": 41788
     },
     {
       "path": "tm-data-access.js",
@@ -4281,8 +4281,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "98efbc58d9790ae05412d293e832c051445c43c5402ce78a28bc4ca8215338c3",
-      "size": 134562
+      "sha256": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+      "size": 134786
     },
     {
       "path": "tm-guoku-panel.js",
@@ -4321,8 +4321,8 @@
     },
     {
       "path": "tm-hongyan-edict-ui.js",
-      "sha256": "717bde19d12d5f87c857385f30c6eab2726ecf72485f63208e2de408ff48e1dd",
-      "size": 23408
+      "sha256": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d",
+      "size": 27977
     },
     {
       "path": "tm-hongyan-office.js",
@@ -4816,8 +4816,8 @@
     },
     {
       "path": "tm-neitang-engine.js",
-      "sha256": "63e55bb38e3805c767e09f0e09a498ed4b4748ea9c8a572a8b4556463b56d90f",
-      "size": 69937
+      "sha256": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec",
+      "size": 70160
     },
     {
       "path": "tm-neitang-panel.js",
@@ -5026,8 +5026,8 @@
     },
     {
       "path": "tm-player-core.js",
-      "sha256": "c5cf5ef95c97a84143352104ce4ca3a0c46cd3a75ba59d17d15a77f61f78e724",
-      "size": 219985
+      "sha256": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8",
+      "size": 221783
     },
     {
       "path": "tm-player-settings.js",

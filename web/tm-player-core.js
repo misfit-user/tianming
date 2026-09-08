@@ -1392,6 +1392,15 @@ async function _dfAppraiseCustomBuild(divNameEnc) {
     var r = CBA ? await CBA.appraise(divName, { name: name, category: cat, description: desc }, { P: P }) : null;
     if (!r || !r.ok) {
       var why = (r && r.reason) || '未配置或未启用';
+      if (r && r.error && typeof _tmAiErrHuman === 'function') why = _tmAiErrHuman(r.error) || why;
+      if (r && r.reason === 'tool-choice-unsupported') why = '模型不接受当前工具调用参数，请核对营造所用的次要 API 与模型配置后重试';
+      else if (r && r.reason === 'tool-http-error' && r.error && r.error.status === 400) why = '核议请求被接口拒绝（HTTP 400），请核对营造所用的次要 API、模型与参数配置';
+      else if (r && r.reason === 'tool-timeout') why = '核议响应超时，本次已停止；请稍后重试或检查次要 API 的响应速度';
+      else if (r && r.reason === 'aborted') why = '本次核议已取消';
+      else if (r && r.reason === 'appraisal-truncated') why = '模型输出达到上限，未提交完整核议；请调整营造核议输出额度或换用兼容模型后重试';
+      else if (r && r.reason === 'appraisal-invalid') why = '模型核议缺少有效的可行性、造价或工期，本次未予采用，请重试';
+      else if (r && (r.reason === 'no-appraisal' || r.reason === 'no-resp' || r.reason === 'tool-response-invalid')) why = '模型未提交可用的结构化核议，请重试；普通问对可用不代表工具调用也兼容';
+      else if (r && (r.reason === 'tool-call-failed' || r.reason === 'call-failed')) why = '核议调用失败，请检查营造所用的次要 API 配置与网络后重试';
       if (box) box.innerHTML = '<div style="padding:8px;color:#8a4a3a;font-size:13px;">有司未能核议（' + escHtml(why) + '）——可直接「录入诏令」，由回合推演核定。</div>';
     } else {
       var a = r.appraisal;
@@ -1424,6 +1433,10 @@ async function _dfAppraiseCustomBuild(divNameEnc) {
     if (box) box.innerHTML = '<div style="padding:8px;color:#8a4a3a;font-size:13px;">核议异常：' + escHtml(String((e && e.message) || e)) + '</div>';
   } finally {
     if (btn) btn.disabled = false;
+    // The reply grows below the proposal inside a scrolling body; reveal it
+    // without stealing focus, including failures, but never scroll a closed dialog.
+    try { if (box && box.isConnected && typeof box.scrollIntoView === 'function') box.scrollIntoView({ block: 'nearest' }); }
+    catch (_scrollError) { console.warn('[custom-build] 核议结果滚动定位失败'); }
   }
 }
 

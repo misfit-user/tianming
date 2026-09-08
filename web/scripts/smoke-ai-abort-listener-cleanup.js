@@ -6,6 +6,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
+const jsonSource = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
 const source = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
 let passed = 0;
 function assert(condition, message) {
@@ -65,6 +66,7 @@ async function main() {
   ctx.window = ctx;
   ctx.globalThis = ctx;
   vm.createContext(ctx);
+  vm.runInContext(jsonSource, ctx, { filename: 'tm-ai-infra-json.js' });
   vm.runInContext(source, ctx, { filename: 'tm-ai-infra.js' });
   if (ctx._aiQueue && typeof ctx._aiQueue.enqueue === 'function') ctx._aiQueue.enqueue = (fn) => fn();
 

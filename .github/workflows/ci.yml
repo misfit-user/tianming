@@ -92,6 +92,10 @@ jobs:
           node node_modules/electron/install.js
       - name: Real sandbox bridge, desktop IPC and restart recovery
         run: node scripts/verify-electron-bridge.js
+      - name: Construction appraisal thinking tools and visible feedback
+        run: node scripts/verify-electron-bridge.js --building-appraisal
+      - name: Edict polish complete text and visible failure recovery
+        run: node scripts/verify-electron-bridge.js --edict-polish
       - name: Controlled TLS address binding and redirects
         run: node scripts/verify-remote-tls.js
       - name: Preserve Electron evidence (including startup failures)

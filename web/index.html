@@ -524,10 +524,10 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
 <script src="tm-qiju-ledger.js?v=2026070401"></script>
 <script src="tm-prompt-composer.js?v=2026052201"></script>
-<script src="tm-ai-infra-json.js?v=20260823-auditfix18-context"></script>
-<script src="tm-ai-infra.js?v=20260823-auditfix18-context"></script>
+<script src="tm-ai-infra-json.js?v=20260908-edict-polish"></script>
+<script src="tm-ai-infra.js?v=20260908-edict-polish"></script>
 <!-- 勿动位置·第二十三拆：json → infra → model-detect 必须连续按序装载(顶层函数型保序切割) -->
-<script src="tm-ai-infra-model-detect.js?v=20260823-auditfix18-context"></script>
+<script src="tm-ai-infra-model-detect.js?v=20260908-edict-polish"></script>
 <script src="tm-memory-trace.js?v=20260531-traceonly"></script>
 <script src="tm-memory-evidence-registry.js?v=20260531-evidence"></script>
 <script src="tm-memory-source-bound.js?v=20260601-sourcebound"></script>
@@ -622,10 +622,10 @@ console.log('天命游戏脚本开始加载...');
 <script>window.TMStartupPhases.transition('world', { boundary: 'tm-launch' });</script>
 <script src="tm-launch.js?v=20260711-scnimport"></script>
 <script src="tm-player-settings.js?v=20260622-wfswitches"></script>
-<script src="tm-player-core.js?v=2026062003-custombuild"></script>
-<script src="tm-hongyan-office.js?v=20260706-splitsync"></script>
-<script src="tm-game-ui-shell.js?v=20260706-splitsync"></script>
-<script src="tm-hongyan-edict-ui.js?v=20260706-splitsync"></script>
+<script src="tm-player-core.js?v=20260908-building-tools"></script>
+<script src="tm-hongyan-office.js?v=20260908-edict-polish"></script>
+<script src="tm-game-ui-shell.js?v=20260908-edict-polish"></script>
+<script src="tm-hongyan-edict-ui.js?v=20260908-edict-polish"></script>
 <script src="tm-game-loop.js?v=20260706-splitsync"></script>
 <script src="tm-game-loop-wentian-hardchange.js?v=20260706-splitsync"></script>
 <script src="tm-map-system.js?v=20260709"></script>
@@ -646,7 +646,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-border-invasion.js?v=20260721"></script><!-- 批二刀2·威胁→侵攻确定性接点·flag borderInvasionEnabled 默认OFF·高压3回合具象化入侵军 -->
 <script src="tm-coastal-raid.js?v=2026062001"></script><!-- P1-A3b 沿海袭击结算·激活死字段 coastalDefense -->
 <script src="tm-office-vacancy.js?v=2026062002"></script><!-- P1-C1 地方官缺写口·激活死字段 officeVacancy·A4 消费 officialSupply -->
-<script src="tm-custom-build-agent.js?v=2026062006"></script><!-- 自拟营建 agent·A1-A4·A5 多步(inspect/recall)+谏官对抗审·全走次要API -->
+<script src="tm-custom-build-agent.js?v=20260908-building-tools"></script><!-- 自拟营建 agent·A1-A4·A5 多步(inspect/recall)+谏官对抗审·全走次要API -->
 <script src="tm-endturn-province.js?v=2026050701"></script>
 <!-- R161 R7 (2026-05-04) tm-endturn-qiaozhi 从 tm-endturn-province 拆出·侨置 (~250 行) -->
 <script src="tm-endturn-qiaozhi.js?v=2026050701"></script>
@@ -860,9 +860,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-corruption-extras.js?v=20260706-split"></script>
 <script src="tm-lizhi-panel.js?v=2026042820"></script>
 <!-- R9 done (2026-05-04) tm-guoku-p2/p4/p5/p6 已全部 inline 入 engine·5 文件 → 1 -->
-<script src="tm-guoku-engine.js?v=20260811-auditfix1"></script>
+<script src="tm-guoku-engine.js?v=20260908-initial-fiscal-mirrors"></script>
 <script src="tm-guoku-panel.js?v=2026042823"></script>
-<script src="tm-neitang-engine.js?v=20260811-auditfix1"></script>
+<script src="tm-neitang-engine.js?v=20260908-initial-fiscal-mirrors"></script>
 <script src="tm-neitang-panel.js?v=20260709"></script>
 <script src="tm-char-economy-engine.js?v=2026042714"></script>
 <script src="tm-char-historical-profiles.js?v=2026042817"></script>

@@ -1475,6 +1475,8 @@
         if (_legacyExp !== null) GM.guoku.monthlyExpense = _legacyExp; // arch-ok：guoku 初始化写口
       }
     }
+    // 初始化是完整快照边界：不能等下一次财政结算才让顶栏/下游读到同一库存。
+    GM.guoku.money = GM.guoku.ledgers.money.stock; // arch-ok canonical guoku initialization owns scalar mirrors
     return { dynasty: dynasty, phase: phase, multiplier: mult };
   }
 

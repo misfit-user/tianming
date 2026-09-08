@@ -1,0 +1,1520 @@
+[
+  {
+    "file": "cpu-1.json",
+    "sourceSha256": "23d0c5873ff3676006393150de4210c52247ab42080fe126b67fbc0cf323075f",
+    "startTime": 21305486528,
+    "endTime": 21327790451,
+    "samples": 12723,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 17607.444
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 4572.526
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 50.071
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 35.417
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 26.444
+      },
+      {
+        "frame": {
+          "columnNumber": 0,
+          "functionName": "",
+          "lineNumber": 0,
+          "scriptId": "1879",
+          "url": ""
+        },
+        "sampledSelfMs": 4.463
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "_wrapFn",
+          "lineNumber": 532,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 2.27
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "fetch",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.712
+      },
+      {
+        "frame": {
+          "columnNumber": 16,
+          "functionName": "place",
+          "lineNumber": 114,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.689
+      },
+      {
+        "frame": {
+          "columnNumber": 39,
+          "functionName": "formalRuntimeChromeSignature",
+          "lineNumber": 2342,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.524
+      }
+    ]
+  },
+  {
+    "file": "cpu-10.json",
+    "sourceSha256": "13e06001336fb476996c0349b4eef07e92ad2681c3053efeefa3e491dda75505",
+    "startTime": 21573323182,
+    "endTime": 21603589153,
+    "samples": 17958,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 25028.442
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 2194.933
+      },
+      {
+        "frame": {
+          "columnNumber": 53,
+          "functionName": "",
+          "lineNumber": 2817,
+          "scriptId": "303",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-save-lifecycle.js?v=20260828-population-schema"
+        },
+        "sampledSelfMs": 932.486
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 905.233
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 570.621
+      },
+      {
+        "frame": {
+          "columnNumber": 118160,
+          "functionName": "invoke",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 465.134
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "invoke",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 78.181
+      },
+      {
+        "frame": {
+          "columnNumber": 49,
+          "functionName": "",
+          "lineNumber": 496,
+          "scriptId": "29",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-ui-foundation.js?v=2026050401"
+        },
+        "sampledSelfMs": 36.989
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "elementsFromPoint",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 30.274
+      },
+      {
+        "frame": {
+          "columnNumber": 26,
+          "functionName": "_mapHoverTick",
+          "lineNumber": 1832,
+          "scriptId": "404",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-map.js?v=20260706-split25"
+        },
+        "sampledSelfMs": 3.581
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "elementsFromPoint",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 3.156
+      },
+      {
+        "frame": {
+          "columnNumber": 18,
+          "functionName": "resolve",
+          "lineNumber": 22,
+          "scriptId": "1880",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-map-label-collide.js?v=20260705-noframe"
+        },
+        "sampledSelfMs": 3.075
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "_wrapFn",
+          "lineNumber": 532,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 1.903
+      },
+      {
+        "frame": {
+          "columnNumber": 27,
+          "functionName": "getAutoSaveSessionToken",
+          "lineNumber": 156,
+          "scriptId": "5",
+          "url": ""
+        },
+        "sampledSelfMs": 1.853
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "1879",
+          "url": ""
+        },
+        "sampledSelfMs": 1.796
+      },
+      {
+        "frame": {
+          "columnNumber": 25,
+          "functionName": "ensureAppended",
+          "lineNumber": 91,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.759
+      },
+      {
+        "frame": {
+          "columnNumber": 39,
+          "functionName": "formalRuntimeChromeSignature",
+          "lineNumber": 2342,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.728
+      },
+      {
+        "frame": {
+          "columnNumber": 50,
+          "functionName": "perfSpan.itemCount",
+          "lineNumber": 63,
+          "scriptId": "1880",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-map-label-collide.js?v=20260705-noframe"
+        },
+        "sampledSelfMs": 1.686
+      },
+      {
+        "frame": {
+          "columnNumber": 30,
+          "functionName": "clearMapSelection",
+          "lineNumber": 1717,
+          "scriptId": "404",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-map.js?v=20260706-split25"
+        },
+        "sampledSelfMs": 1.423
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "executeJavaScript",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.186
+      }
+    ]
+  },
+  {
+    "file": "cpu-11.json",
+    "sourceSha256": "920f09a5481aefff9fe73b9429179a03877b754e1ab7feb93c23881966a6ae25",
+    "startTime": 21604410032,
+    "endTime": 21642942569,
+    "samples": 23081,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 37137.91
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1225.452
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 152.254
+      },
+      {
+        "frame": {
+          "columnNumber": 28,
+          "functionName": "installEditorHook",
+          "lineNumber": 529,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 4.947
+      },
+      {
+        "frame": {
+          "columnNumber": 16,
+          "functionName": "place",
+          "lineNumber": 114,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 3.981
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "_wrapFn",
+          "lineNumber": 532,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 3.083
+      },
+      {
+        "frame": {
+          "columnNumber": 127233,
+          "functionName": "",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 2.489
+      },
+      {
+        "frame": {
+          "columnNumber": 17,
+          "functionName": "_stats",
+          "lineNumber": 272,
+          "scriptId": "21",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-perf.js?v=20260824-round20-observability"
+        },
+        "sampledSelfMs": 1.567
+      }
+    ]
+  },
+  {
+    "file": "cpu-12.json",
+    "sourceSha256": "5ed51126f9ce4fb902b80c141283ef8d133e6c15e907b6d4bb9433cc135456b3",
+    "startTime": 21643250471,
+    "endTime": 21665870018,
+    "samples": 13887,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 20068.766
+      },
+      {
+        "frame": {
+          "columnNumber": 53,
+          "functionName": "",
+          "lineNumber": 2817,
+          "scriptId": "303",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-save-lifecycle.js?v=20260828-population-schema"
+        },
+        "sampledSelfMs": 717.303
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 513.572
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 467.58
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 382.861
+      },
+      {
+        "frame": {
+          "columnNumber": 118160,
+          "functionName": "invoke",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 304.955
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "invoke",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 46.116
+      },
+      {
+        "frame": {
+          "columnNumber": 16,
+          "functionName": "add",
+          "lineNumber": 254,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 39.307
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "fitTopbar",
+          "lineNumber": 1506,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 16.323
+      },
+      {
+        "frame": {
+          "columnNumber": 26,
+          "functionName": "renderEventFeed",
+          "lineNumber": 772,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 8.224
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 8.059
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 7.646
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 5.431
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "getPeople",
+          "lineNumber": 250,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 4.988
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 3.814
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 2.97
+      },
+      {
+        "frame": {
+          "columnNumber": 26,
+          "functionName": "ensureMainShell",
+          "lineNumber": 1659,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 2.693
+      },
+      {
+        "frame": {
+          "columnNumber": 26,
+          "functionName": "",
+          "lineNumber": 223,
+          "scriptId": "403",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-topbar.js?v=20260621-optland"
+        },
+        "sampledSelfMs": 2.576
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "setTimeout",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.802
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "getBoundingClientRect",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.737
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "querySelectorAll",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.679
+      },
+      {
+        "frame": {
+          "columnNumber": 28,
+          "functionName": "ensurePreviewRail",
+          "lineNumber": 2278,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.657
+      },
+      {
+        "frame": {
+          "columnNumber": 34,
+          "functionName": "renderPreviewTopbarVars",
+          "lineNumber": 220,
+          "scriptId": "403",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-topbar.js?v=20260621-optland"
+        },
+        "sampledSelfMs": 1.606
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "personKey",
+          "lineNumber": 242,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.605
+      },
+      {
+        "frame": {
+          "columnNumber": 29,
+          "functionName": "ensureFormalChrome",
+          "lineNumber": 1029,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.582
+      },
+      {
+        "frame": {
+          "columnNumber": 30,
+          "functionName": "ensurePreviewTopbar",
+          "lineNumber": 1528,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.133
+      },
+      {
+        "frame": {
+          "columnNumber": 187,
+          "functionName": "",
+          "lineNumber": 336,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.127
+      },
+      {
+        "frame": {
+          "columnNumber": 28,
+          "functionName": "",
+          "lineNumber": 1521,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.093
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.05
+      }
+    ]
+  },
+  {
+    "file": "cpu-2.json",
+    "sourceSha256": "295fc6811b88a1293bd36756fc1253c870661e1e49e20b9bd4f8a59d216fd68b",
+    "startTime": 21351485300,
+    "endTime": 21371394157,
+    "samples": 11846,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 12230.208
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 5610.415
+      },
+      {
+        "frame": {
+          "columnNumber": 53,
+          "functionName": "",
+          "lineNumber": 2817,
+          "scriptId": "303",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-save-lifecycle.js?v=20260828-population-schema"
+        },
+        "sampledSelfMs": 777.053
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 508.458
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 418.374
+      },
+      {
+        "frame": {
+          "columnNumber": 118160,
+          "functionName": "invoke",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 296.648
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "invoke",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 47.179
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 9.672
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 6.849
+      },
+      {
+        "frame": {
+          "columnNumber": 16,
+          "functionName": "place",
+          "lineNumber": 114,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 2.156
+      },
+      {
+        "frame": {
+          "columnNumber": 127233,
+          "functionName": "",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 1.585
+      }
+    ]
+  },
+  {
+    "file": "cpu-3.json",
+    "sourceSha256": "a157fcf5f3792f0b9cbaf2079507070a308167b2b4c83bd0f68e6712be175e5d",
+    "startTime": 21371412056,
+    "endTime": 21391400920,
+    "samples": 11860,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 13488.973
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 6461.979
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 19.733
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 13.332
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "1879",
+          "url": ""
+        },
+        "sampledSelfMs": 2.646
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "updateVis",
+          "lineNumber": 95,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.81
+      }
+    ]
+  },
+  {
+    "file": "cpu-4.json",
+    "sourceSha256": "a7f41b02d1897bc5cf28c801f1338798dd450288ad9f589b236ec4f1ba25c043",
+    "startTime": 21391415437,
+    "endTime": 21419379070,
+    "samples": 16839,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 16123.953
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 9496.01
+      },
+      {
+        "frame": {
+          "columnNumber": 53,
+          "functionName": "",
+          "lineNumber": 2817,
+          "scriptId": "303",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-save-lifecycle.js?v=20260828-population-schema"
+        },
+        "sampledSelfMs": 942.138
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 531.162
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 472.488
+      },
+      {
+        "frame": {
+          "columnNumber": 118160,
+          "functionName": "invoke",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 289.258
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "invoke",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 45.356
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 40.154
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 21.17
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "remove",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.655
+      }
+    ]
+  },
+  {
+    "file": "cpu-5.json",
+    "sourceSha256": "1fca0b92b5a926362ddcf02291f5fb1761dfcf2724d8866c06c65c5bbe0afcc9",
+    "startTime": 21439157486,
+    "endTime": 21459783778,
+    "samples": 12561,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 13509.277
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 7074.946
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 25.753
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 14.393
+      },
+      {
+        "frame": {
+          "columnNumber": 16,
+          "functionName": "place",
+          "lineNumber": 114,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.528
+      }
+    ]
+  },
+  {
+    "file": "cpu-6.json",
+    "sourceSha256": "1e823c2a6ee82c409928e1077627464b5c2e0e5eafe6caf57281a73d870792ad",
+    "startTime": 21459819461,
+    "endTime": 21484225777,
+    "samples": 14813,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 12802.538
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 11495.934
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 39.312
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 35.693
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 25.748
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "getComputedStyle",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.728
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "executeJavaScript",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.664
+      },
+      {
+        "frame": {
+          "columnNumber": 20,
+          "functionName": "updateVis",
+          "lineNumber": 95,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.653
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.194
+      }
+    ]
+  },
+  {
+    "file": "cpu-7.json",
+    "sourceSha256": "5af08768ec1250fd808fb5024a9d8b29e822d7604de53b723fd094be076358e1",
+    "startTime": 21484301265,
+    "endTime": 21533284244,
+    "samples": 29408,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 31930.833
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 16149.417
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 548.858
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "remove",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 168.83
+      },
+      {
+        "frame": {
+          "columnNumber": 31,
+          "functionName": "isGameSurfaceVisible",
+          "lineNumber": 104,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 110.568
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 55.865
+      },
+      {
+        "frame": {
+          "columnNumber": 47,
+          "functionName": "document.addEventListener.passive",
+          "lineNumber": 298,
+          "scriptId": "246",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-char-arcs.js?v=2026042714"
+        },
+        "sampledSelfMs": 4.835
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "toggle",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.967
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "getElementById",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.884
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "send",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.771
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "setTimeout",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.726
+      },
+      {
+        "frame": {
+          "columnNumber": 44,
+          "functionName": "",
+          "lineNumber": 934,
+          "scriptId": "302",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-audio-theme.js?v=20260710-fontscale"
+        },
+        "sampledSelfMs": 1.701
+      },
+      {
+        "frame": {
+          "columnNumber": 24,
+          "functionName": "isGameVisible",
+          "lineNumber": 160,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.565
+      },
+      {
+        "frame": {
+          "columnNumber": 25,
+          "functionName": "ensureAppended",
+          "lineNumber": 91,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.337
+      },
+      {
+        "frame": {
+          "columnNumber": 15,
+          "functionName": "push",
+          "lineNumber": 4,
+          "scriptId": "1877",
+          "url": ""
+        },
+        "sampledSelfMs": 1.271
+      }
+    ]
+  },
+  {
+    "file": "cpu-8.json",
+    "sourceSha256": "11d23a49bdf0966cd5601724c07042b425645b1a7e12acac9ce9c218532b5abf",
+    "startTime": 21533358193,
+    "endTime": 21553300603,
+    "samples": 11907,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 12189.591
+      },
+      {
+        "frame": {
+          "columnNumber": 53,
+          "functionName": "",
+          "lineNumber": 2817,
+          "scriptId": "303",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-save-lifecycle.js?v=20260828-population-schema"
+        },
+        "sampledSelfMs": 2262.989
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1843.662
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(garbage collector)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1462.492
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1174.27
+      },
+      {
+        "frame": {
+          "columnNumber": 118160,
+          "functionName": "invoke",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 881.669
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "invoke",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 120.093
+      },
+      {
+        "frame": {
+          "columnNumber": 28,
+          "functionName": "installEditorHook",
+          "lineNumber": 529,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 3.643
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "setTimeout",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 2.007
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "executeJavaScript",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.177
+      }
+    ]
+  },
+  {
+    "file": "cpu-9.json",
+    "sourceSha256": "c1bc36c5c44de34f6cc0e30b1d7ed797d4373a8fe494938f311dc1b6632233dc",
+    "startTime": 21553334816,
+    "endTime": 21573298397,
+    "samples": 11876,
+    "sampledSelf": [
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(idle)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 17496.55
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "(program)",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 2455.494
+      },
+      {
+        "frame": {
+          "columnNumber": 127233,
+          "functionName": "",
+          "lineNumber": 1,
+          "scriptId": "4",
+          "url": "node:electron/js2c/sandbox_bundle"
+        },
+        "sampledSelfMs": 2.943
+      },
+      {
+        "frame": {
+          "columnNumber": 36,
+          "functionName": "ensureFormalRuntimeChrome",
+          "lineNumber": 2366,
+          "scriptId": "402",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/phase8-formal-bridge.js?v=20260706-split27"
+        },
+        "sampledSelfMs": 1.791
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "setTimeout",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.768
+      },
+      {
+        "frame": {
+          "columnNumber": 25,
+          "functionName": "ensureAppended",
+          "lineNumber": 91,
+          "scriptId": "414",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/tm-pause-fab.js?v=20260605-fab"
+        },
+        "sampledSelfMs": 1.765
+      },
+      {
+        "frame": {
+          "columnNumber": 28,
+          "functionName": "installEditorHook",
+          "lineNumber": 529,
+          "scriptId": "425",
+          "url": "file:///<user-profile>/Desktop/tianming-perf-round1/web/editor-division-deep.js?v=2026050301"
+        },
+        "sampledSelfMs": 1.43
+      },
+      {
+        "frame": {
+          "columnNumber": -1,
+          "functionName": "executeJavaScript",
+          "lineNumber": -1,
+          "scriptId": "0",
+          "url": ""
+        },
+        "sampledSelfMs": 1.366
+      }
+    ]
+  }
+]

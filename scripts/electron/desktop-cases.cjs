@@ -38,6 +38,23 @@ module.exports = async function({ win, root, temp, mode, controls, check }) {
     assert.equal((await call('loadProject', hashed[1])).success, true);
     assert.equal((await call('loadProject', { storageKey: '../escape' })).success, false);
   });
+  await check('autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk', async () => {
+    assert.equal(await js("typeof tianming.autoSaveJson"), 'function');
+    const data = { gameState: { turn: 8, _campaignId: 'text_fixture', _timelineId: 'tml_text_fixture', note: '中文 😀 e\u0301' } };
+    assert.equal((await call('autoSave', data)).success, true);
+    const file = path.join(saveDir, '__autosave__.json');
+    const objectEnvelope = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assert.equal((await call('autoSaveJson', JSON.stringify(data))).success, true);
+    const text = fs.readFileSync(file), envelope = JSON.parse(text.toString('utf8'));
+    assert.deepEqual(envelope.data, objectEnvelope.data);
+    assert.equal(envelope.sessionToken, objectEnvelope.sessionToken);
+    assert.equal(envelope.__tmAutoSaveEnvelope, 1);
+    assert(text.toString('utf8').startsWith('{"__tmDesktopSaveGeneration":'));
+    for (const invalid of ['{bad', 'null', '[]']) {
+      await assert.rejects(call('autoSaveJson', invalid));
+      assert.deepEqual(fs.readFileSync(file), text, 'invalid text must not alter the committed file');
+    }
+  });
   await check('manual-save-world-switch-barrier-and-late-real-ipc', async () => {
     // Controlled world fixtures and timing; actual loaded desktopDoSave, lease,
     // normalization, detached snapshot and immutable preload bridge are untouched.

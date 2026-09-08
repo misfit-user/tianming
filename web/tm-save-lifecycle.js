@@ -472,7 +472,10 @@ function _ensurePDefaults(P, GM) {
 }
 
 // 统一的存档前准备函数——所有存档路径都必须调用此函数
-function _prepareGMForSave(GM, P) {
+function _prepareGMForSave(GM, P, options) {
+  // Only canonical persistence omits mirrors that its output filter already drops.
+  // Legacy/direct callers retain the complete preparation contract.
+  var skipMirrors = options && options.omitDiscardedMirrors ? _tmSaveSnapshotSkipKeys() : {};
   var _liveGM = (typeof window !== 'undefined') ? window.GM : null;
   var _liveP = (typeof window !== 'undefined') ? window.P : null;
   GM = GM || (_liveGM ? _autoSaveSnapshotGM(_liveGM) : null);
@@ -504,28 +507,28 @@ function _prepareGMForSave(GM, P) {
   if (GM._tyrantHistory && GM._tyrantHistory.length > 0) GM._savedTyrantHistory = _safeClone(GM._tyrantHistory);
   if (GM._varMapping) GM._savedVarMapping = _safeClone(GM._varMapping);
   if (GM.harem) GM._savedHarem = _safeClone(GM.harem);
-  if (GM.families) GM._savedFamilies = _safeClone(GM.families);
+  if (!skipMirrors._savedFamilies && GM.families) GM._savedFamilies = _safeClone(GM.families);
   if (GM._varFormulas && GM._varFormulas.length > 0) GM._savedVarFormulas = _safeClone(GM._varFormulas);
   if (GM._foreshadows) GM._savedForeshadows = _safeClone(GM._foreshadows);
   if (GM._aiMemory) GM._savedAiMemory = _safeClone(GM._aiMemory);
   if (GM._sagaMemory) GM._savedSagaMemory = _safeClone(GM._sagaMemory);  // agent 多回合综合脉络·跨会话持久
   if (GM._agentRecentDirectives) GM._savedAgentRecentDirectives = _safeClone(GM._agentRecentDirectives);  // agent 近回合诏书/行止·多回合读·持久(与 LLM 规则库 _playerDirectives 分开·避免冲突)
   // R103·对话完整归档（被截断/压缩的老对话原文）
-  if (GM._convArchive && GM._convArchive.length > 0) GM._savedConvArchive = _safeClone(GM._convArchive);
+  if (!skipMirrors._savedConvArchive && GM._convArchive && GM._convArchive.length > 0) GM._savedConvArchive = _safeClone(GM._convArchive);
   // 矛盾演化系统
   if (GM._contradictions && GM._contradictions.length > 0) GM._savedContradictions = _safeClone(GM._contradictions);
   // 鸿雁传书+京城
-  if (GM.letters && GM.letters.length > 0) GM._savedLetters = _safeClone(GM.letters);
+  if (!skipMirrors._savedLetters && GM.letters && GM.letters.length > 0) GM._savedLetters = _safeClone(GM.letters);
   if (_tmHasOwn(GM, '_capital')) GM._savedCapital = GM._capital;
   if (_tmHasOwn(GM, '_currentTrend')) GM._savedTrend = GM._currentTrend;
   // 新增：保存更多运行时系统数据
-  if (GM.characterArcs && Object.keys(GM.characterArcs).length > 0) GM._savedCharacterArcs = _safeClone(GM.characterArcs);
+  if (!skipMirrors._savedCharacterArcs && GM.characterArcs && Object.keys(GM.characterArcs).length > 0) GM._savedCharacterArcs = _safeClone(GM.characterArcs);
   if (GM.playerDecisions && GM.playerDecisions.length > 0) GM._savedPlayerDecisions = _safeClone(GM.playerDecisions);
   if (GM.memoryArchive && GM.memoryArchive.length > 0) GM._savedMemoryArchive = _safeClone(GM.memoryArchive);
   if (GM.chronicleAfterwords && GM.chronicleAfterwords.length > 0) GM._savedChronicleAfterwords = _safeClone(GM.chronicleAfterwords);
   if (GM.customPolicies && GM.customPolicies.length > 0) GM._savedCustomPolicies = _safeClone(GM.customPolicies);
   if (GM.memoryAnchors && GM.memoryAnchors.length > 0) GM._savedMemoryAnchors = _safeClone(GM.memoryAnchors);
-  if (GM.provinceStats && Object.keys(GM.provinceStats).length > 0) GM._savedProvinceStats = _safeClone(GM.provinceStats);
+  if (!skipMirrors._savedProvinceStats && GM.provinceStats && Object.keys(GM.provinceStats).length > 0) GM._savedProvinceStats = _safeClone(GM.provinceStats);
   if (GM.eraState) GM._savedEraState = _safeClone(GM.eraState);
   if (GM.eraStateHistory && GM.eraStateHistory.length > 0) GM._savedEraStateHistory = _safeClone(GM.eraStateHistory);
   if (GM.postSystem) GM._savedPostSystem = _safeClone(GM.postSystem);
@@ -533,14 +536,14 @@ function _prepareGMForSave(GM, P) {
   if (P.vassalSystem) GM._savedVassalSystem = _safeClone(P.vassalSystem);
   if (P.titleSystem) GM._savedTitleSystem = _safeClone(P.titleSystem);
   if (P.buildingSystem) GM._savedBuildingSystem = _safeClone(P.buildingSystem);
-  if (P.adminHierarchy) GM._savedAdminHierarchy = _safeClone(P.adminHierarchy);
+  if (!skipMirrors._savedAdminHierarchy && P.adminHierarchy) GM._savedAdminHierarchy = _safeClone(P.adminHierarchy);
   if (P.keju) GM._savedKeju = _safeClone(P.keju);
   if (P.officialVassalMapping) GM._savedOfficialVassalMapping = _safeClone(P.officialVassalMapping);
   if (P.government) GM._savedGovernment = _safeClone(P.government);
   if (GM.eraNames) GM._savedEraNames = _safeClone(GM.eraNames);
   if (GM._aiScenarioDigest) GM._savedAiDigest = _safeClone(GM._aiScenarioDigest);
   // 诏令追踪
-  if (GM._edictTracker) GM._savedEdictTracker = _safeClone(GM._edictTracker);
+  if (!skipMirrors._savedEdictTracker && GM._edictTracker) GM._savedEdictTracker = _safeClone(GM._edictTracker);
   // 诏令草稿（玩家当前 tab 输入中的文字——防止存档丢失）
   var _eDrafts = {};
   ['edict-pol','edict-mil','edict-dip','edict-eco','edict-oth','xinglu-pub'].forEach(function(id) {
@@ -568,7 +571,7 @@ function _prepareGMForSave(GM, P) {
   if (GM.marchOrders) GM._savedMarchOrders = _safeClone(GM.marchOrders);
   if (GM.activeSieges) GM._savedActiveSieges = _safeClone(GM.activeSieges);
   if (GM.activeBattles) GM._savedActiveBattles = _safeClone(GM.activeBattles);
-  if (GM.battleHistory) GM._savedBattleHistory = _safeClone(GM.battleHistory);
+  if (!skipMirrors._savedBattleHistory && GM.battleHistory) GM._savedBattleHistory = _safeClone(GM.battleHistory);
   if (GM.activeWars) GM._savedActiveWars = _safeClone(GM.activeWars);
   if (GM.treaties) GM._savedTreaties = _safeClone(GM.treaties);
   if (GM._diplomaticMissions) GM._savedDiplomaticMissions = _safeClone(GM._diplomaticMissions);
@@ -599,10 +602,10 @@ function _prepareGMForSave(GM, P) {
   if (GM._pendingMemorialDeliveries && GM._pendingMemorialDeliveries.length > 0) GM._savedPendingMemDeliveries = _safeClone(GM._pendingMemorialDeliveries);
   if (GM._pendingNpcCorrespondence && GM._pendingNpcCorrespondence.length > 0) GM._savedPendingNpcCorr = _safeClone(GM._pendingNpcCorrespondence);
   if (GM._npcInternalActionHistory && GM._npcInternalActionHistory.length > 0) GM._savedNpcInternalActionHistory = _safeClone(GM._npcInternalActionHistory);
-  if (GM._npcActionLedger && GM._npcActionLedger.length > 0) GM._savedNpcActionLedger = _safeClone(GM._npcActionLedger);
+  if (!skipMirrors._savedNpcActionLedger && GM._npcActionLedger && GM._npcActionLedger.length > 0) GM._savedNpcActionLedger = _safeClone(GM._npcActionLedger);
   if (GM._npcPlans && GM._npcPlans.length > 0) GM._savedNpcPlans = _safeClone(GM._npcPlans);
   if (GM._npcDecisionDiagnostics && GM._npcDecisionDiagnostics.length > 0) GM._savedNpcDecisionDiagnostics = _safeClone(GM._npcDecisionDiagnostics.slice(-120));
-  if (GM._npcFactionAiTurnLedger) GM._savedNpcFactionAiTurnLedger = _safeClone(GM._npcFactionAiTurnLedger);
+  if (!skipMirrors._savedNpcFactionAiTurnLedger && GM._npcFactionAiTurnLedger) GM._savedNpcFactionAiTurnLedger = _safeClone(GM._npcFactionAiTurnLedger);
   if (GM._npcFactionLlmLedger) GM._savedNpcFactionLlmLedger = _safeClone(GM._npcFactionLlmLedger);
   if (GM._npcFactionLlmDispatchLedger) GM._savedNpcFactionLlmDispatchLedger = _safeClone(GM._npcFactionLlmDispatchLedger);
   if (GM._sc16FactionDirectives) GM._savedSc16FactionDirectives = _safeClone(GM._sc16FactionDirectives);
@@ -612,7 +615,7 @@ function _prepareGMForSave(GM, P) {
   if (GM._importedMemories && GM._importedMemories.length > 0) GM._savedImportedMemories = _safeClone(GM._importedMemories);
   if (GM._wentianHistory && GM._wentianHistory.length > 0) GM._savedWentianHistory = _safeClone(GM._wentianHistory);
   // 新增：记忆系统持久化（A1 + B2 + B1 校验器日志）
-  if (GM._memoryLayers && (GM._memoryLayers.L2 && GM._memoryLayers.L2.length || GM._memoryLayers.L3 && GM._memoryLayers.L3.length)) GM._savedMemoryLayers = _safeClone(GM._memoryLayers);
+  if (!skipMirrors._savedMemoryLayers && GM._memoryLayers && (GM._memoryLayers.L2 && GM._memoryLayers.L2.length || GM._memoryLayers.L3 && GM._memoryLayers.L3.length)) GM._savedMemoryLayers = _safeClone(GM._memoryLayers);
   if (GM._epitaphs && GM._epitaphs.length > 0) GM._savedEpitaphs = _safeClone(GM._epitaphs);
   if (GM._fakeDeathHolding && Object.keys(GM._fakeDeathHolding).length > 0) GM._savedFakeDeathHolding = _safeClone(GM._fakeDeathHolding);
   if (GM._fiscalValidatorLog && GM._fiscalValidatorLog.length > 0) GM._savedFiscalValidatorLog = _safeClone(GM._fiscalValidatorLog);
@@ -623,9 +626,9 @@ function _prepareGMForSave(GM, P) {
   if (GM._memoryArchiveFull && GM._memoryArchiveFull.length > 5000) {
     GM._memoryArchiveFull = GM._memoryArchiveFull.slice(-5000);
   }
-  if (GM._memoryArchiveFull && GM._memoryArchiveFull.length > 0) GM._savedMemoryArchiveFull = _safeClone(GM._memoryArchiveFull);
-  if (GM._causalGraph && (GM._causalGraph.nodes && GM._causalGraph.nodes.length || GM._causalGraph.edges && GM._causalGraph.edges.length)) GM._savedCausalGraph = _safeClone(GM._causalGraph);
-  if (GM._factionArcs && Object.keys(GM._factionArcs).length > 0) GM._savedFactionArcs = _safeClone(GM._factionArcs);
+  if (!skipMirrors._savedMemoryArchiveFull && GM._memoryArchiveFull && GM._memoryArchiveFull.length > 0) GM._savedMemoryArchiveFull = _safeClone(GM._memoryArchiveFull);
+  if (!skipMirrors._savedCausalGraph && GM._causalGraph && (GM._causalGraph.nodes && GM._causalGraph.nodes.length || GM._causalGraph.edges && GM._causalGraph.edges.length)) GM._savedCausalGraph = _safeClone(GM._causalGraph);
+  if (!skipMirrors._savedFactionArcs && GM._factionArcs && Object.keys(GM._factionArcs).length > 0) GM._savedFactionArcs = _safeClone(GM._factionArcs);
   if (GM._aiReflections && GM._aiReflections.length > 0) GM._savedAiReflections = _safeClone(GM._aiReflections);
   if (GM._lastTurnPredictions) GM._savedLastTurnPredictions = _safeClone(GM._lastTurnPredictions);
   // per-char：arcs + relationHistory
@@ -640,7 +643,7 @@ function _prepareGMForSave(GM, P) {
     });
     if (Object.keys(_charMemExt).length > 0) GM._savedCharMemExt = _charMemExt;
   }
-  if (GM._chronicle && GM._chronicle.length > 0) GM._savedChronicle = _safeClone(GM._chronicle);
+  if (!skipMirrors._savedChronicle && GM._chronicle && GM._chronicle.length > 0) GM._savedChronicle = _safeClone(GM._chronicle);
   if (GM._wdRewardPunish && GM._wdRewardPunish.length > 0) GM._savedWdRewardPunish = _safeClone(GM._wdRewardPunish);
   if (_tmHasOwn(GM, '_lastEvalTurn')) GM._savedLastEvalTurn = GM._lastEvalTurn;
   // 角色官制字段批量保存
@@ -671,7 +674,7 @@ function _prepareGMForSave(GM, P) {
   if (GM.mapData && GM.mapData.regions && GM.mapData.regions.length > 0) _mapForSave = GM.mapData;
   else if (typeof P !== 'undefined' && P && P.mapData && P.mapData.regions && P.mapData.regions.length > 0) _mapForSave = P.mapData;
   else if (typeof P !== 'undefined' && P && P.map && P.map.regions && P.map.regions.length > 0) _mapForSave = P.map;
-  if (_mapForSave) GM._savedMapData = _safeClone(_mapForSave);
+  if (!skipMirrors._savedMapData && _mapForSave) GM._savedMapData = _safeClone(_mapForSave);
   if (GM.npcContext) GM._savedNpcContext = _safeClone(GM.npcContext);
   if (GM.pendingConsequences && GM.pendingConsequences.length > 0) GM._savedPendingConsequences = _safeClone(GM.pendingConsequences);
   if (GM.factionRelations && GM.factionRelations.length > 0) GM._savedFactionRelations = _safeClone(GM.factionRelations);
@@ -680,22 +683,22 @@ function _prepareGMForSave(GM, P) {
   if (GM._factionUndercurrentsHistory && GM._factionUndercurrentsHistory.length > 0) GM._savedFacUndHist = _safeClone(GM._factionUndercurrentsHistory);
   if (GM._factionUndercurrents && GM._factionUndercurrents.length > 0) GM._savedFacUndercurrents = _safeClone(GM._factionUndercurrents);
   if (GM._approvedMemorials && GM._approvedMemorials.length > 0) GM._savedApprovedMemorials = _safeClone(GM._approvedMemorials);
-  if (GM._courtRecords && GM._courtRecords.length > 0) GM._savedCourtRecords = _safeClone(GM._courtRecords);
+  if (!skipMirrors._savedCourtRecords && GM._courtRecords && GM._courtRecords.length > 0) GM._savedCourtRecords = _safeClone(GM._courtRecords);
   if (GM._plotThreads && GM._plotThreads.length > 0) GM._savedPlotThreads = _safeClone(GM._plotThreads);
   if (GM._decisionEchoes && GM._decisionEchoes.length > 0) GM._savedDecisionEchoes = _safeClone(GM._decisionEchoes);
-  if (GM._edictSuggestions && GM._edictSuggestions.length > 0) GM._savedEdictSuggestions = _safeClone(GM._edictSuggestions);
+  if (!skipMirrors._savedEdictSuggestions && GM._edictSuggestions && GM._edictSuggestions.length > 0) GM._savedEdictSuggestions = _safeClone(GM._edictSuggestions);
   // 文事系统存档
-  if (GM.culturalWorks && GM.culturalWorks.length > 0) GM._savedCulturalWorks = _safeClone(GM.culturalWorks);
+  if (!skipMirrors._savedCulturalWorks && GM.culturalWorks && GM.culturalWorks.length > 0) GM._savedCulturalWorks = _safeClone(GM.culturalWorks);
   if (GM._forgottenWorks && GM._forgottenWorks.length > 0) GM._savedForgottenWorks = _safeClone(GM._forgottenWorks);
-  if (GM.factionRelationsMap && Object.keys(GM.factionRelationsMap).length > 0) GM._savedFactionRelationsMap = _safeClone(GM.factionRelationsMap);
-  if (GM._edictLifecycle && GM._edictLifecycle.length > 0) GM._savedEdictLifecycle = _safeClone(GM._edictLifecycle);
+  if (!skipMirrors._savedFactionRelationsMap && GM.factionRelationsMap && Object.keys(GM.factionRelationsMap).length > 0) GM._savedFactionRelationsMap = _safeClone(GM.factionRelationsMap);
+  if (!skipMirrors._savedEdictLifecycle && GM._edictLifecycle && GM._edictLifecycle.length > 0) GM._savedEdictLifecycle = _safeClone(GM._edictLifecycle);
   if (GM._activeRevolts && GM._activeRevolts.length > 0) GM._savedActiveRevolts = _safeClone(GM._activeRevolts);
   if (GM._revoltPrecursors && GM._revoltPrecursors.length > 0) GM._savedRevoltPrecursors = _safeClone(GM._revoltPrecursors);
-  if (GM._npcCommitments && Object.keys(GM._npcCommitments).length > 0) GM._savedNpcCommitments = _safeClone(GM._npcCommitments);
+  if (!skipMirrors._savedNpcCommitments && GM._npcCommitments && Object.keys(GM._npcCommitments).length > 0) GM._savedNpcCommitments = _safeClone(GM._npcCommitments);
   if (GM._secretMeetings && GM._secretMeetings.length > 0) GM._savedSecretMeetings = _safeClone(GM._secretMeetings);
   if (GM._achievements && GM._achievements.length > 0) GM._savedAchievements = _safeClone(GM._achievements);
   // 7.4: 历史索引
-  if (GM._historyIndex) GM._savedHistoryIndex = _safeClone(GM._historyIndex);
+  if (!skipMirrors._savedHistoryIndex && GM._historyIndex) GM._savedHistoryIndex = _safeClone(GM._historyIndex);
   if (GM._historyIndexCursor) GM._savedHistoryIndexCursor = GM._historyIndexCursor;
   // 确保所有字段有默认值
   _ensureGMDefaults(GM, P);
@@ -2566,21 +2569,7 @@ if (typeof document !== 'undefined'){
 
 // A-1·snapshot helper·浅拷顶 + 选择性深拷·明示 mutable / appendOnly / skip
 // 注·top-level function decl 通过 hoisting 自动 attach 到 window (sloppy mode)·无需占位
-function _autoSaveSnapshotGM(sourceGM, options){
-  options = options || {};
-  var _snapshotGM = sourceGM || (typeof GM !== 'undefined' ? GM : null);
-  if (!_snapshotGM) return null;
-  // append-only 字段·上层只 push·不改老元素·直接引用 (无 deepClone 成本)
-  var APPEND_ONLY = {
-    qijuHistory:1, jishiRecords:1, shijiHistory:1, evtLog:1, biannianItems:1,
-    officeChanges:1, eraStateHistory:1, conv:1, _chronicle:1, _chronicleTracks:1,
-    _turnReport:1, _foreshadows:1, allCharacters:1, summarizedTurns:1, _convArchive:1,
-    recentChaoyi:1, _ccHeldItems:1, _aiDispatchStats:1, _subcallTimings:1,
-    _pendingMartyrEvents:1, _pendingTinyiActions:1, _pendingTinyiTopics:1,
-    triggeredHistoryEvents:1, triggeredOffendEvents:1, rigidTriggers:1,
-    // L3·R5·改革召对历史·cap 50·append-only·不深拷
-    _kjpPrivateAudienceLog:1
-  };
+function _tmSaveSnapshotSkipKeys(){
   // skip·debug-only·崩溃恢复用不上·清掉省 100-300ms
   // 2026-06-10 追加三个纯冗余大块(真存档实测计 5.5MB+):
   //   _facIndex·派生反向索引·序列化后是与 chars 脱钩的死拷贝·读档即 rebuild(fullLoadGame)+每回合 render-finalize 重建
@@ -2595,7 +2584,7 @@ function _autoSaveSnapshotGM(sourceGM, options){
   //   DOM 草稿(_savedEdictDrafts)、逐角色聚合(_savedCharMemExt/_savedCharOfficeFields)、
   //   P 层孪生(_savedVassalSystem/_savedTitleSystem/_savedBuildingSystem/_savedKeju/_savedOfficialVassalMapping/_savedGovernment/_savedOfficeConfig·跨 GM/P)、
   //   截断切片(_savedNpcDecisionDiagnostics=slice(-120)·镜像≠活字段)、_savedRenli(并行线在飞·避让)。
-  var SKIP = {
+  return {
     _aiTelemetry:1, _debugSnapshots:1, _aiBranchDiag:1, _aiDiag:1,
     _sysCacheMode:1, _sysCacheLen:1, _saveMeta:1,
     // Promise/lease jobs may retain gmRef and form cycles; they are runtime coordination, never world state.
@@ -2613,6 +2602,24 @@ function _autoSaveSnapshotGM(sourceGM, options){
     //   (随通用快照持久化会致读档命中旧局缓存·已并 loadGen 入键作二保险)。
     _wgAllNamesCache:1, _wgAllNamesSigVal:1, _wgCourtTextCache:1, _wgCourtTextSigVal:1
   };
+}
+
+function _autoSaveSnapshotGM(sourceGM, options){
+  options = options || {};
+  var _snapshotGM = sourceGM || (typeof GM !== 'undefined' ? GM : null);
+  if (!_snapshotGM) return null;
+  // append-only 字段·上层只 push·不改老元素·直接引用 (无 deepClone 成本)
+  var APPEND_ONLY = {
+    qijuHistory:1, jishiRecords:1, shijiHistory:1, evtLog:1, biannianItems:1,
+    officeChanges:1, eraStateHistory:1, conv:1, _chronicle:1, _chronicleTracks:1,
+    _turnReport:1, _foreshadows:1, allCharacters:1, summarizedTurns:1, _convArchive:1,
+    recentChaoyi:1, _ccHeldItems:1, _aiDispatchStats:1, _subcallTimings:1,
+    _pendingMartyrEvents:1, _pendingTinyiActions:1, _pendingTinyiTopics:1,
+    triggeredHistoryEvents:1, triggeredOffendEvents:1, rigidTriggers:1,
+    // L3·R5·改革召对历史·cap 50·append-only·不深拷
+    _kjpPrivateAudienceLog:1
+  };
+  var SKIP = _tmSaveSnapshotSkipKeys();
   var out = {};
   for (var k in _snapshotGM) {
     if (!_snapshotGM.hasOwnProperty(k)) continue;
@@ -2669,7 +2676,7 @@ function _buildSaveState(options){
   var gmSnapshot = _autoSaveSnapshotGM(sourceGM, { detach: options.detach === true });
   var pWorking = deepClone(sourceP || {});
   if (options.prepare !== false && typeof _prepareGMForSave === 'function') {
-    var prepared = _prepareGMForSave(gmSnapshot, pWorking);
+    var prepared = _prepareGMForSave(gmSnapshot, pWorking, { omitDiscardedMirrors: true });
     if (!prepared) return null;
     gmSnapshot = _autoSaveSnapshotGM(prepared.GM, {
       reuseMutable: true,
@@ -2811,7 +2818,13 @@ async function _tmRunDesktopAutoSaveTick(options){
   var operation=Promise.resolve().then(async function(){
     try {
       _autoSaveSkipCount = 0;
-      var result = await window.tianming.autoSave(saveData);
+      // Optional shell capability: avoid contextBridge deep-copy/freeze of the
+      // large object graph. No persistent cache, changed frequency or live-world
+      // reads. Old shells keep their existing transport; errors never fall back
+      // to a second write. The main session/queue/rename protocol is unchanged.
+      var result = typeof window.tianming.autoSaveJson === 'function'
+        ? await window.tianming.autoSaveJson(JSON.stringify(saveData))
+        : await window.tianming.autoSave(saveData);
       if (!_tmDesktopAutoSaveResultOk(result)) throw _tmDesktopAutoSaveFailure(result);
       if (lastCommittedSnapshot !== sourceSnapshot || _lastCommittedSnapshotIdentity !== sourceIdentity
           || !_tmCommittedSnapshotMatchesLive()) {

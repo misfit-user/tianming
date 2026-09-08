@@ -1334,13 +1334,20 @@
     }
     state._lastFormalMapSig = _fmSig;
     var visibleRegions = visibleRegionsForScale(map, state.mapScale);  // 阶段2·按层级(天下/行省/府县)过滤
+    // Only this render owns the cache: duplicate IDs cannot alias, and later
+    // renders re-read geometry even when points are mutated in place.
+    var renderPaths = new Map();
+    function renderedPath(r) {
+      if (!renderPaths.has(r)) renderPaths.set(r, pathForRegion(r));
+      return renderPaths.get(r);
+    }
     var regionWashes = visibleRegions.map(function(r){
-      var d = pathForRegion(r);
+      var d = renderedPath(r);
       if (!d) return '';
       return '<path class="tmf-region-wash ming-region-wash" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '" fill="' + attr(regionColor(r)) + '" fill-rule="evenodd"></path>';
     }).join('');
     var regionHalos = visibleRegions.map(function(r){
-      var d = pathForRegion(r);
+      var d = renderedPath(r);
       if (!d) return '';
       return '<path class="tmf-region-halo ming-region-halo" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '"></path>';
     }).join('');
@@ -1349,7 +1356,7 @@
     var _regAreas = _labelLegacy ? [] : visibleRegions.map(regionTrueArea).filter(function(a){ return a > 0; }).sort(function(a, b){ return a - b; });
     var _regRef = _regAreas.length ? _regAreas[Math.floor(_regAreas.length * 0.55)] : 0;
     var regionPaths = visibleRegions.map(function(r){
-      var d = pathForRegion(r);
+      var d = renderedPath(r);
       if (!d) return '';
       var labelText = String(r.title || r.name || r.officialName || '');
       var facePath = '<path class="tmf-region ming-region" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '" fill="' + attr(regionColor(r)) + '" fill-rule="evenodd"></path>';

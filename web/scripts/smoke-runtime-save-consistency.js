@@ -33,7 +33,7 @@ const integrationBridge = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge
 const hujiEngine = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
 
 console.log('=== 1. unified save snapshot builder ===');
-const snapshotSrc = sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
+const snapshotSrc = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
 const builderSrc = sliceFn(lifecycle, 'function _buildSaveState(');
 const desktopResultSrc = sliceFn(lifecycle, 'function _tmDesktopAutoSaveResultOk(');
 ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽取');
@@ -76,7 +76,7 @@ ok(/_writeOk !== true[\s\S]*?throw new Error\('canonical 回合存档未原子�
   const markerAt = render.indexOf("localStorage.setItem('tm_autosave_mark'", batchAt);
   ok(markerAt > writesDoneAt && writesDoneAt > batchAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, markerAt + 300)), 'tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn');
 }
-ok(/var result = await window\.tianming\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
+ok(/var result =[\s\S]*?await window\.tianming\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
 ok(/_autoSaveLastSavedTurn = Number\(saveData\._saveMeta\.turn\)/.test(lifecycle), 'Electron 闲置跳存基线锚定已写 committed snapshot turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');

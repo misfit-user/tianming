@@ -1,0 +1,224 @@
+{
+  "source": "web\\dev-tools\\perf-round1\\inspect-f5e41ada-6c4c-43e1-a026-7b3fa370f343\\trace.json",
+  "sourceSha256": "e8901d38f44261792f5f970ada80f9d53edb04a538cbac62ce0735684256df66",
+  "data": {
+    "scope": "Computer Use observation; real production main/preload, isolated public state, external network denied. Tool observation intervals are NOT input latency or FPS.",
+    "sampleHash": null,
+    "scenario": "sc-jianyan1-1127-shaosong",
+    "root": "<user-profile>\\Desktop\\tianming-perf-round1",
+    "cpuProfiles": [
+      {
+        "name": "cpu-1.json",
+        "rendererEndMs": 177456.8999999985,
+        "samples": 30043
+      },
+      {
+        "name": "cpu-2.json",
+        "rendererEndMs": 197426.3999999985,
+        "samples": 12008
+      },
+      {
+        "name": "cpu-3.json",
+        "rendererEndMs": 229758.3999999985,
+        "samples": 19497
+      },
+      {
+        "name": "cpu-4.json",
+        "rendererEndMs": 251353.5,
+        "samples": 12833
+      },
+      {
+        "name": "cpu-5.json",
+        "rendererEndMs": 273884.5,
+        "samples": 13597
+      },
+      {
+        "name": "cpu-6.json",
+        "rendererEndMs": 293883.8999999985,
+        "samples": 12154
+      },
+      {
+        "name": "cpu-7.json",
+        "rendererEndMs": 313897.19999999925,
+        "samples": 12068
+      },
+      {
+        "name": "cpu-8.json",
+        "rendererEndMs": 334032.6000000015,
+        "samples": 12147
+      },
+      {
+        "name": "cpu-9.json",
+        "rendererEndMs": 371924,
+        "samples": 20089
+      },
+      {
+        "name": "cpu-10.json",
+        "rendererEndMs": 387708.1000000015,
+        "samples": 6759
+      },
+      {
+        "name": "cpu-11.json",
+        "rendererEndMs": 407734.3999999985,
+        "samples": 11745
+      },
+      {
+        "name": "cpu-12.json",
+        "rendererEndMs": 427740.6000000015,
+        "samples": 11679
+      }
+    ],
+    "trace": {
+      "events": [
+        {
+          "type": "pointerup",
+          "at": 151751,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 38.69999999925494
+        },
+        {
+          "type": "click",
+          "at": 151751.80000000075,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 38
+        },
+        {
+          "type": "pointerup",
+          "at": 210474.19999999925,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 29
+        },
+        {
+          "type": "click",
+          "at": 210474.80000000075,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 28.599999997764826
+        },
+        {
+          "type": "pointerup",
+          "at": 250798.3999999985,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 170.80000000074506
+        },
+        {
+          "type": "click",
+          "at": 250798.6000000015,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 170.59999999776483
+        },
+        {
+          "type": "pointerup",
+          "at": 320725.3999999985,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 271.20000000298023
+        },
+        {
+          "type": "click",
+          "at": 320725.80000000075,
+          "tag": "BUTTON",
+          "id": "",
+          "trusted": true,
+          "nextFrameMs": 270.80000000074506
+        }
+      ],
+      "longTasks": [
+        {
+          "start": 10475.89999999851,
+          "duration": 216
+        },
+        {
+          "start": 10692.10000000149,
+          "duration": 111224
+        },
+        {
+          "start": 121993.10000000149,
+          "duration": 678
+        },
+        {
+          "start": 125415.80000000075,
+          "duration": 1554
+        },
+        {
+          "start": 242068.8999999985,
+          "duration": 696
+        },
+        {
+          "start": 250787.1000000015,
+          "duration": 180
+        },
+        {
+          "start": 302069.69999999925,
+          "duration": 555
+        },
+        {
+          "start": 320725.19999999925,
+          "duration": 266
+        },
+        {
+          "start": 320992.19999999925,
+          "duration": 58
+        },
+        {
+          "start": 321059.5,
+          "duration": 99
+        },
+        {
+          "start": 323709.1000000015,
+          "duration": 80
+        },
+        {
+          "start": 362069,
+          "duration": 2285
+        },
+        {
+          "start": 367674.1000000015,
+          "duration": 1767
+        },
+        {
+          "start": 369477.3999999985,
+          "duration": 2445
+        },
+        {
+          "start": 372030.69999999925,
+          "duration": 3857
+        },
+        {
+          "start": 376396.3999999985,
+          "duration": 2157
+        },
+        {
+          "start": 378554,
+          "duration": 2535
+        },
+        {
+          "start": 381089.69999999925,
+          "duration": 455
+        }
+      ],
+      "timings": {},
+      "started": 10473.10000000149,
+      "complete": false,
+      "perf": {},
+      "work": {
+        "counters": {},
+        "gauges": {},
+        "activeSpans": []
+      }
+    },
+    "complete": true
+  }
+}

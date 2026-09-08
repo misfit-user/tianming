@@ -32,7 +32,7 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
   const lifecycle = read('tm-save-lifecycle.js');
   const core = read('tm-endturn-core.js');
   const render = read('tm-endturn-render.js');
-  const snapshotBuilder = extractFunction(lifecycle, 'function _autoSaveSnapshotGM(');
+  const snapshotBuilder = extractFunction(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + extractFunction(lifecycle, 'function _autoSaveSnapshotGM(');
   const persistenceBuilder = extractFunction(lifecycle, 'function _buildSaveState(');
   const transactionBoundary = extractBetween(core, 'function _tmCaptureEndTurnObject(', 'async function _tmCommitPreEndTurnRecoveryPoint(');
   const finalSave = extractFunction(render, 'function _endTurn_saveSnapshot(');

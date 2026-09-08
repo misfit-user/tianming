@@ -1,0 +1,976 @@
+{
+  "baseline": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+  "sourceHashes": {
+    "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+    "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec",
+    "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+    "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+    "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+    "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+    "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e"
+  },
+  "executions": [
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-arch-02a48cfd-e1a4-422e-a426-e76bddf0542e",
+      "run": {
+        "label": "workshop-arch",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:41:02.451Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 28981.2519,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[lint-arch-all] PASS  lint-gm-writes (3.4s)\n[lint-arch-all] PASS  lint-dep-graph (1.5s)\n[lint-arch-all] PASS  lint-global-providers (6.1s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.3s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (11.9s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.7s)\n[lint-arch-all] PASS  lint-file-size (0.6s)\n[lint-arch-all] PASS  lint-control-bytes (0.7s)\n[lint-arch-all] PASS  lint-split-contracts (0.3s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (1.1s)\n[lint-arch-all] PASS  ref-check (1.7s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-arch-final-dfdbae76-a92a-4161-8668-44c4a2eb63fd",
+      "run": {
+        "label": "workshop-arch-final",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:49:29.044Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 27760.126800000002,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[lint-arch-all] PASS  lint-gm-writes (3.1s)\n[lint-arch-all] PASS  lint-dep-graph (1.5s)\n[lint-arch-all] PASS  lint-global-providers (7.4s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.2s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (10.9s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.6s)\n[lint-arch-all] PASS  lint-file-size (0.6s)\n[lint-arch-all] PASS  lint-control-bytes (0.5s)\n[lint-arch-all] PASS  lint-split-contracts (0.2s)\n[lint-arch-all] PASS  lint-split-stamps (0.1s)\n[lint-arch-all] PASS  lint-smoke-family-order (1.0s)\n[lint-arch-all] PASS  ref-check (1.3s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-audit-31be24e0-1bbb-4656-9bbc-3be8ea503cca",
+      "run": {
+        "label": "workshop-audit",
+        "command": [
+          "npm",
+          "audit",
+          "--omit=dev",
+          "--audit-level=high",
+          "--registry=https://registry.npmjs.org"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:44:21.135Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 9543.6908,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "found 0 vulnerabilities\n",
+        "stderr.log": "npm warn Unknown project config \"electron_mirror\". This will stop working in the next major version of npm.\nnpm warn Unknown project config \"electron_builder_binaries_mirror\". This will stop working in the next major version of npm.\n"
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-builder-e413dc92-a891-4afc-b952-e0ee5e4ccb46",
+      "run": {
+        "label": "workshop-builder",
+        "command": [
+          "node",
+          "web/scripts/verify-hot-builder-gates.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:44:17.338Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 3089.9632,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "  ok·A·健康树全量构建通过（exit 0）\n  ok·A·feed 版本正确\n  ok·A·清单含 index.html\n  ok·A·清单含 a.js\n  ok·A·清单含 b.js\n  ok·A·清单含 styles.css\n  ok·A·清单含 changelog.json\n  ok·A·清单含 version.json\n  ok·A·清单含 bundled-scenarios/合成（官方）.json\n  ok·A·草案/自用剧本不进入热更\n  ok·A2·GLB 运行资产可进入热更\n  ok·A2·GLB 自动要求 1.3.4.10 壳层\n  ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝\n  ok·A2·1.3.4.12 可发布 ONNX 运行资产\n  ok·A2·ONNX 自动要求 1.3.4.12 壳层\n  ok·B·GATE-0 拦 --files 部分包\n  ok·B·危险旗标放行（调试用）\n  ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）\n  ok·D·GATE-2 拦必含文件缺失\n  ok·E·首次构建通过\n  ok·E·GATE-3 拦相同版本重发\n  ok·E·GATE-3 拦更低版本\n  ok·E·更高版本放行\n  ok·F·GATE-5 拦 version.json 戳不一致\n  ok·F·--skip-stamp-check 放行（调试用）\n  ok·F·GATE-5 拦 meta 缺失\n  ok·G·GATE-4 zip↔manifest 对账在构建路径上\nPASS assertions=27\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-electron-fixture-72d3c079-8863-4579-bdd3-49071c91edf2",
+      "run": {
+        "label": "workshop-electron-fixture",
+        "command": [
+          "node_modules/electron/dist/electron.exe",
+          "scripts/verify-workshop-config-fixture.cjs",
+          "<user-profile>/Downloads/tianming-scenario-editor-reset-export3.json"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:44:12.673Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 4053.8306,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "\r\n{\n  \"ok\": true,\n  \"checks\": [\n    {\n      \"name\": \"real sandbox bridge\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"guoku initial authored amount\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"neitang initial authored amount\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"guoku scalar synchronized at init boundary\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"neitang scalar synchronized at init boundary\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"authored minxin survives new game\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"all six ministries have real positions\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"named minister bound to intended seat\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"money mirrors match after startup\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"authored turn length honored\",\n      \"ok\": true\n    },\n    {\n      \"name\": \"input file remains byte-identical\",\n      \"ok\": true\n    }\n  ],\n  \"failures\": [],\n  \"state\": {\n    \"init\": {\n      \"guoku\": {\n        \"balance\": 3000000,\n        \"money\": 3000000,\n        \"stock\": 3000000\n      },\n      \"neitang\": {\n        \"balance\": 800000,\n        \"money\": 800000,\n        \"stock\": 800000\n      }\n    },\n    \"guoku\": {\n      \"balance\": 4484299,\n      \"money\": 4484299,\n      \"stock\": 4484299,\n      \"income\": 2045182,\n      \"expense\": 206961\n    },\n    \"neitang\": {\n      \"balance\": 740000,\n      \"money\": 740000,\n      \"stock\": 740000\n    },\n    \"minxin\": 85,\n    \"daysPerTurn\": 90,\n    \"departmentCount\": 19,\n    \"monthlyExpense\": 206961\n  }\n}\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-electron-standard-06b9eb3f-b4d7-4d22-8433-ec83abd263e9",
+      "run": {
+        "label": "workshop-electron-standard",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:40:54.046Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 36068.7811,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "{\"mode\":\"production\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"production\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"},{\"name\":\"canonical-world-and-receipt-committed-before-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-dIAGnn\\\\production\"}}\n{\"mode\":\"test-exports\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"test-exports\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-dIAGnn\\\\exports\"}}\n{\"mode\":\"restart\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"restart\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"canonical-receipt-and-folio-recover-after-real-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-dIAGnn\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\8660c0c7-28da-4bfe-bf74-7893eb88f504\\report.json\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-fiscal-remit-af5d41a3-43ab-4f2c-a21a-3a96db5cfa2d",
+      "run": {
+        "label": "workshop-fiscal-remit",
+        "command": [
+          "node",
+          "web/scripts/smoke-cascade-static-remit.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:38:51.189Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 196.30269999999996,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[smoke-cascade-static-remit] pass assertions=13\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-full-9121bb35-4699-44ef-9f8b-c3f030063f35",
+      "run": {
+        "label": "workshop-full",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:41:37.742Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 111548.8741,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[ci-smokes] run=76bdde6e-37e5-4bdd-b777-d17d3ab55cdd HEAD=dc7e187f988c6611aa9af833afc890a6df7f9d86 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-k4TRok\\smoke-report.json\n[run-smokes] 共 918 个 smoke · 选中 918 · 跳过 0 · 并发 8 · 超时 120s\n  [25/918] PASS    smoke-agent-mode-s2.js (0.2s)\n  [50/918] PASS    smoke-ai-structured-policy-detail-actions.js (0.2s)\n  [75/918] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/918] PASS    smoke-battle-resolve.js (0.2s)\n  [125/918] PASS    smoke-changchao-ambient-isolation.js (0.2s)\n  [150/918] PASS    smoke-class-character-relations.js (0.2s)\n  [175/918] PASS    smoke-conspiracy-brewing-feed.js (0.2s)\n  [200/918] PASS    smoke-crisis-player-surface-bridge.js (0.2s)\n  [225/918] PASS    smoke-diebao-log.js (0.2s)\n  [250/918] PASS    smoke-edict-pardon.js (0.2s)\n  [275/918] PASS    smoke-edict-polish-results.js (1.7s)\n  [300/918] PASS    smoke-event-collect.js (0.2s)\n  [325/918] PASS    smoke-faction-npc-llm-enrich-player-guard.js (0.1s)\n  [350/918] PASS    smoke-fiscal-recurring-coerce.js (0.2s)\n  [375/918] PASS    smoke-globalrules-build.js (0.2s)\n  [400/918] PASS    smoke-guozuo-collapse-proximity.js (0.2s)\n  [425/918] PASS    smoke-imprison-recognition.js (0.4s)\n  [450/918] PASS    smoke-map-editor-bookmarks-lifecycle.js (0.2s)\n  [475/918] PASS    smoke-memory-compress-consumer.js (0.2s)\n  [500/918] PASS    smoke-memory-loop-closure.js (0.3s)\n  [525/918] PASS    smoke-memory-temporal-validity.js (0.2s)\n  [550/918] PASS    smoke-memory-workshop-review-details.js (0.2s)\n  [575/918] PASS    smoke-newui-routing.js (0.2s)\n  [600/918] PASS    smoke-office-apply-resolve-vacate.js (0.2s)\n  [625/918] PASS    smoke-offtree-appoint-deterministic.js (0.3s)\n  [650/918] PASS    smoke-party-goals-scenario-variance.js (0.2s)\n  [675/918] PASS    smoke-phase8-map-live-panels.js (2.5s)\n  [700/918] PASS    smoke-prompt-budget-guards.js (0.7s)\n  [725/918] PASS    smoke-renli-military.js (0.2s)\n  [750/918] PASS    smoke-restored-deprecated-code-paths.js (0.2s)\n  [775/918] PASS    smoke-s7-office-ai-feed.js (0.2s)\n  [800/918] PASS    smoke-scenario-isolation.js (1.0s)\n  [825/918] PASS    smoke-startup-phase-observability.js (0.5s)\n  [850/918] PASS    smoke-tier4-landmines.js (0.2s)\n  [875/918] PASS    smoke-wdsusp-suspicion.js (0.2s)\n  [900/918] PASS    smoke-workshop-preflight-access.js (0.3s)\n  [916/918] FAIL    smoke-workshop-lock-recovery.js (25.5s)\n  [918/918] PASS    smoke-start-game-data-integrity.js (61.8s)\n\n[run-smokes] 完成：915 PASS · 1 FAIL · 0 SKIP · 2 WAIVED / 918 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 619s(并行墙钟更短)\n\n--- 失败聚类（1 簇）---\n  ×1  Error: stress admission deadline exceeded\n      smoke-workshop-lock-recovery.js\n\n--- 最慢 Top 10 ---\n  79.9s  smoke-full-turn-flow.js\n  61.8s  smoke-start-game-data-integrity.js\n  53.3s  smoke-perf-save-preparation.js\n  29.2s  smoke-deploy-manifest-atomicity.js\n  25.5s  smoke-workshop-lock-recovery.js\n  11.1s  smoke-character-location-travel.js\n  6.9s  smoke-party-goals-lifecycle.js\n  6.7s  smoke-tinyi-scenario-class-source.js\n  6.6s  smoke-tinyi-party-class-agenda.js\n  6.6s  smoke-class-demand-party-goals.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-k4TRok/smoke-report.json\n",
+        "stderr.log": "[ci-smokes] FAIL smoke-evidence-runner-failed\n"
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-full-final-71621789-be73-42c2-b857-c06867f9e0c5",
+      "run": {
+        "label": "workshop-full-final",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:46:21.962Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 99176.7837,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[ci-smokes] run=dfe68326-a257-45f8-b108-05e4f918d920 HEAD=dc7e187f988c6611aa9af833afc890a6df7f9d86 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-Ear4z1\\smoke-report.json\n[run-smokes] 共 918 个 smoke · 选中 918 · 跳过 0 · 并发 8 · 超时 120s\n  [25/918] PASS    smoke-agent-mode-s13.js (0.2s)\n  [50/918] PASS    smoke-ai-structured-policy-actions.js (0.2s)\n  [75/918] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/918] PASS    smoke-battle-resolve.js (0.2s)\n  [125/918] PASS    smoke-changchao-ambient-isolation.js (0.3s)\n  [150/918] PASS    smoke-class-character-ui.js (0.2s)\n  [175/918] PASS    smoke-conspiracy-brewing-feed.js (0.2s)\n  [200/918] PASS    smoke-crisis-player-surface-bridge.js (0.2s)\n  [225/918] PASS    smoke-diebao-log.js (0.2s)\n  [250/918] PASS    smoke-edict-pardon.js (0.2s)\n  [275/918] PASS    smoke-endturn-namespace-deps.js (0.2s)\n  [300/918] PASS    smoke-event-collect.js (0.2s)\n  [325/918] PASS    smoke-faction-npc-intervention.js (0.6s)\n  [350/918] PASS    smoke-fiscal-recurring-coerce.js (0.2s)\n  [375/918] PASS    smoke-globalrules-build.js (0.2s)\n  [400/918] PASS    smoke-guozuo-collapse-proximity.js (0.2s)\n  [425/918] PASS    smoke-imprison-recognition.js (0.2s)\n  [450/918] PASS    smoke-map-editor-bookmarks-lifecycle.js (0.2s)\n  [475/918] PASS    smoke-memory-character-stance.js (0.2s)\n  [500/918] PASS    smoke-memory-manifest.js (0.2s)\n  [525/918] PASS    smoke-memory-stance-netting.js (0.5s)\n  [550/918] PASS    smoke-memory-workshop-preinference.js (0.4s)\n  [575/918] PASS    smoke-newui-routing.js (0.3s)\n  [600/918] PASS    smoke-office-authority.js (0.2s)\n  [625/918] PASS    smoke-onboarding-help.js (0.3s)\n  [650/918] PASS    smoke-party-goals-scenario-variance.js (0.3s)\n  [675/918] PASS    smoke-player-natural-death-routing.js (0.2s)\n  [700/918] PASS    smoke-prompt-budget-guards.js (0.2s)\n  [725/918] PASS    smoke-renli-military.js (0.3s)\n  [750/918] PASS    smoke-restored-deprecated-code-paths.js (0.2s)\n  [775/918] PASS    smoke-s7-office-ai-feed.js (0.2s)\n  [800/918] PASS    smoke-semantic-atomic-world-lease.js (0.4s)\n  [825/918] PASS    smoke-startup-phase-observability.js (0.7s)\n  [850/918] PASS    smoke-tier4-landmines.js (0.3s)\n  [875/918] PASS    smoke-wdsusp-suspicion.js (0.2s)\n  [900/918] PASS    smoke-workshop-preflight-access.js (0.2s)\n  [918/918] PASS    smoke-start-game-data-integrity.js (42.4s)\n\n[run-smokes] 完成：916 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 918 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 621s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  68.1s  smoke-full-turn-flow.js\n  42.4s  smoke-start-game-data-integrity.js\n  39.8s  smoke-perf-save-preparation.js\n  27.4s  smoke-deploy-manifest-atomicity.js\n  19.3s  smoke-workshop-lock-recovery.js\n  11.0s  smoke-character-location-travel.js\n  6.8s  smoke-tinyi-reissued.js\n  6.7s  smoke-tinyi-party-class-agenda.js\n  6.7s  smoke-tinyi-scenario-class-source.js\n  6.7s  smoke-party-goals-lifecycle.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-Ear4z1/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":916,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":918}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-guoku-after-a014e186-357a-49cb-863a-f7fbd59cb450",
+      "run": {
+        "label": "workshop-guoku-after",
+        "command": [
+          "node",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:38:47.926Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 190.00080000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[smoke-guoku-legacy-fiscal-compat] pass assertions=17\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-guoku-before-fb12b846-683a-4eed-8dab-58cd04ec3454",
+      "run": {
+        "label": "workshop-guoku-before",
+        "command": [
+          "node",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:37:56.646Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 212.0466,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n",
+        "stderr.log": "<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-guoku-legacy-fiscal-compat.js:20\r\nfunction assert(cond, msg) { if (!cond) throw new Error('[smoke-guoku-legacy-fiscal-compat] ' + msg); }\r\n                                        ^\r\n\r\nError: [smoke-guoku-legacy-fiscal-compat] old money mirror must change at init boundary\r\n    at assert (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-guoku-legacy-fiscal-compat.js:20:47)\r\n    at Object.<anonymous> (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-guoku-legacy-fiscal-compat.js:67:18)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n"
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-hot-manifest-8ab2e52f-3ab6-4c67-97c6-f496bc9892b5",
+      "run": {
+        "label": "workshop-hot-manifest",
+        "command": [
+          "node",
+          "scripts/sync-hot-baseline.js",
+          "--write",
+          "--version",
+          "1.3.4.11",
+          "--asset-root",
+          "<user-profile>/Desktop/tianming",
+          "--temp-root",
+          "E:/tianming-perf-temp"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:40:51.899Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 44977.553,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[hot-baseline] asset-root overlay files=410 bytes=806161938\nWROTE <user-profile>\\Desktop\\tianming-perf-round1\\web\\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=3\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-lock-isolated-0f2870d5-2544-4617-9292-1014f0c8cafd",
+      "run": {
+        "label": "workshop-lock-isolated",
+        "command": [
+          "node",
+          "web/scripts/smoke-workshop-lock-recovery.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/.hot-update-manifest.json\n M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js\n?? scripts/verify-workshop-config-fixture.cjs",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:46:07.517Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "scripts/verify-workshop-config-fixture.cjs": "4662a695346dc037e6c03b159a76bc961ce14f013d45b7ea621e7df9462dc37e",
+          "web/.hot-update-manifest.json": "ada1d7d113d13550222da16301395c70b75605edc81d521c0c343042bf49b624",
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 13689.259600000001,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "INTERRUPTED owner-identity-published\nPASS owner crash restarts twice without changing package/index\nINTERRUPTED ticket-published\nPASS ticket crash restarts twice without changing package/index\nINTERRUPTED private-owner-before-write\nPASS private-owner crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nPASS published crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nINTERRUPTED reclaimer-during-dead-owner-removal\nPASS reclaimer death is itself recoverable, without fixed recovery sentinel\nINTERRUPTED journal-published\nPASS unproven legacy recovery marker preserves journal and original data\nPASS unknown legacy empty lock is never stolen or deleted\nPASS proven dead legacy PID migration\nPASS publication failure leaves package/index unchanged and can retry\nPASS release after commit is warning, same-process retry cleans ownership\nPASS release-claim after commit is warning, same-process retry cleans ownership\nPASS live owner cannot be stolen by multiple contenders\nPASS four real processes serialize 100 shared-index commits and release all claims\nSUMMARY {\"pass\":13,\"fail\":0,\"skip\":0,\"waived\":0}\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-neitang-after-a29abf91-45b4-41bf-bc08-f1efc5f7551c",
+      "run": {
+        "label": "workshop-neitang-after",
+        "command": [
+          "node",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:38:49.004Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 156.0842,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n[smoke-neitang-inner-treasury-compat] pass assertions=10\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-neitang-before-c4343e17-61ff-4933-895d-4a969f823974",
+      "run": {
+        "label": "workshop-neitang-before",
+        "command": [
+          "node",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:37:57.625Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 189.46210000000008,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n",
+        "stderr.log": "<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-neitang-inner-treasury-compat.js:19\r\nfunction assert(cond, msg) { if (!cond) throw new Error('[smoke-neitang-inner-treasury-compat] ' + msg); }\r\n                                        ^\r\n\r\nError: [smoke-neitang-inner-treasury-compat] money mirror must change at init boundary\r\n    at assert (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-neitang-inner-treasury-compat.js:19:47)\r\n    at Object.<anonymous> (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-neitang-inner-treasury-compat.js:60:18)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n"
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-office-minxin-f62eb623-d5b1-4dd2-97b3-f275a5040265",
+      "run": {
+        "label": "workshop-office-minxin",
+        "command": [
+          "node",
+          "web/scripts/smoke-office-tree-shape-normalize.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:38:50.031Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 297.84760000000006,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[smoke-office-tree-shape-normalize] pass assertions=36\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-parity-50a9d2af-7bb6-4d3b-8401-ad0c5feecebf",
+      "run": {
+        "label": "workshop-parity",
+        "command": [
+          "node",
+          "web/scripts/verify-official-scenario-parity.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:41:32.208Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 2801.5487000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "[official-sync] parity PASS · sources=2 artifacts=9\n  ok·seeder/preview/reset artifacts registered\n  ok·tianqi7 builtin embeds the complete root JSON\n  ok·tianqi7 builtin remains reviewable compact output\n  ok·tianqi7 seeder embeds the complete root JSON\n  ok·tianqi7 editor preview embeds the complete root JSON\n  ok·editor reset embeds the complete Tianqi root JSON (embedded=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, root=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, differingKeys=)\n  ok·tianqi7 bundled JSON is byte-identical to root JSON\n  ok·shaosong builtin embeds the complete root JSON\n  ok·shaosong builtin remains reviewable compact output\n  ok·shaosong seeder embeds the complete root JSON\n  ok·shaosong editor preview embeds the complete root JSON\n  ok·shaosong bundled JSON is byte-identical to root JSON\n  ok·manifest.js equals manifest.json\n  ok·tianqi7 metadata exists\n  ok·tianqi7 metadata script sha256 is correct\n  ok·tianqi7 metadata script bytes is correct\n  ok·tianqi7 metadata source sha256 is correct\n  ok·tianqi7 metadata source bytes is correct\n  ok·tianqi7 metadata loader path is correct\n  ok·tianqi7 metadata counts are correct\n  ok·shaosong metadata exists\n  ok·shaosong metadata script sha256 is correct\n  ok·shaosong metadata script bytes is correct\n  ok·shaosong metadata source sha256 is correct\n  ok·shaosong metadata source bytes is correct\n  ok·shaosong metadata loader path is correct\n  ok·shaosong metadata counts are correct\nPASS assertions=27\n",
+        "stderr.log": ""
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\workshop-release-5364835e-5517-4b0f-a905-12aba2abd148",
+      "run": {
+        "label": "workshop-release",
+        "command": [
+          "node",
+          "scripts/verify-release-contract.js"
+        ],
+        "head": "dc7e187f988c6611aa9af833afc890a6df7f9d86",
+        "status": "M web/index.html\n M web/scripts/smoke-guoku-legacy-fiscal-compat.js\n M web/scripts/smoke-neitang-inner-treasury-compat.js\n M web/tm-guoku-engine.js\n M web/tm-neitang-engine.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:41:35.818Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          "web/index.html": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+          "web/scripts/smoke-guoku-legacy-fiscal-compat.js": "90c70ae6d6597d76d5af52cb661796176a6416ad6a8ca1d3dc839d4ad8178d06",
+          "web/scripts/smoke-neitang-inner-treasury-compat.js": "471da801737e4620ee800c47b04af9d4352ceafb7393751378be9f09a0dce095",
+          "web/tm-guoku-engine.js": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+          "web/tm-neitang-engine.js": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1571.1496000000002,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": "  ok·release-excludes schema\n  ok·canonical 热更基线是发布树 required file\n  ok·release-excludes 无重复\n  ok·安全排除项 _archive\n  ok·安全排除项 backups\n  ok·安全排除项 _screenshots\n  ok·安全排除项 test-results\n  ok·安全排除项 _codex_tmp\n  ok·安全排除项 dev-tools\n  ok·安全排除项 docs\n  ok·安全排除项 scripts\n  ok·安全排除项 tools\n  ok·安全排除项 godot\n  ok·安全排除项 .git\n  ok·安全排除项 node_modules\n  ok·安全排除项 .playwright-cli\n  ok·安全排除项 .cache\n  ok·安全排除项 .tmp\n  ok·安全排除项 tmp\n  ok·安全排除项 dist\n  ok·安全排除项 build\n  ok·安全排除项 release\n  ok·安全排除项 coverage\n  ok·安全排除项 .hot-update-staging\n  ok·安全排除项 _pw-scratch\n  ok·安全排除项 generated_images\n  ok·安全排除项 .vscode\n  ok·安全排除项 .bak-\n  ok·安全排除项 _codex\n  ok·安全排除项 .git-defunct-\n  ok·安全排除项 **/*.bak*\n  ok·安全排除项 **/*.log\n  ok·安全排除项 **/*.yml\n  ok·安全排除项 **/*.save.json\n  ok·安全排除项 **/_game-entry-shot.png\n  ok·安全排除项 **/_ingame*.png\n  ok·安全排除项 .claude/**\n  ok·安全排除项 output/**\n  ok·安全排除项 _audit_deadhandlers.py\n  ok·安全排除项 analyze_globals.py\n  ok·安全排除项 detect_globals.js\n  ok·安全排除项 scan_globals.js\n  ok·安全排除项 final_scan.sh\n  ok·安全排除项 scan.sh\n  ok·安全排除项 start-server.bat\n  ok·安全排除项 tm-tools.d.ts\n  ok·安全排除项 types.d.ts\n  ok·安全排除项 maps/**\n  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·安全排除项 preview-launch*.html\n  ok·安全排除项 preview-launch-assets/**\n  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·安全排除项 preview/shots/**\n  ok·安全排除项 preview/**/*verify*.png\n  ok·安全排除项 preview/home-ui-concepts/**\n  ok·安全排除项 preview/workshop-ui-concepts/**\n  ok·web 运行时引用/required files 未被误排：\n  ok·web 源体积/文件数在闸内：\n  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）\n  ok·发布树排除根目录游戏截图\n  ok·发布树排除根目录开发脚本与类型声明\n  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF\n  ok·发布树明确排除本机开发产物:.claude/launch.json\n  ok·发布树明确排除本机开发产物:output/playwright/shot.png\n  ok·发布树明确排除本机开发产物:maps/asia-map.png\n  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png\n  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png\n  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb\n  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx\n  ok·package-lock 根版本两处与 package.json 同版\n  ok·tracked mobile canonical version 与 buildVersion 同版\n  ok·electron-builder 消费 dir:_archive\n  ok·electron-builder 消费 dir:backups\n  ok·electron-builder 消费 dir:_screenshots\n  ok·electron-builder 消费 dir:test-results\n  ok·electron-builder 消费 dir:_codex_tmp\n  ok·electron-builder 消费 dir:dev-tools\n  ok·electron-builder 消费 dir:docs\n  ok·electron-builder 消费 dir:scripts\n  ok·electron-builder 消费 dir:tools\n  ok·electron-builder 消费 dir:godot\n  ok·electron-builder 消费 dir:.git\n  ok·electron-builder 消费 dir:node_modules\n  ok·electron-builder 消费 dir:.playwright-cli\n  ok·electron-builder 消费 dir:.cache\n  ok·electron-builder 消费 dir:.tmp\n  ok·electron-builder 消费 dir:tmp\n  ok·electron-builder 消费 dir:dist\n  ok·electron-builder 消费 dir:build\n  ok·electron-builder 消费 dir:release\n  ok·electron-builder 消费 dir:coverage\n  ok·electron-builder 消费 dir:.hot-update-staging\n  ok·electron-builder 消费 dir:_pw-scratch\n  ok·electron-builder 消费 dir:generated_images\n  ok·electron-builder 消费 dir:.vscode\n  ok·electron-builder 消费 prefix file:.bak-\n  ok·electron-builder 消费 prefix dir:.bak-\n  ok·electron-builder 消费 prefix file:_codex\n  ok·electron-builder 消费 prefix dir:_codex\n  ok·electron-builder 消费 prefix file:.git-defunct-\n  ok·electron-builder 消费 prefix dir:.git-defunct-\n  ok·electron-builder 消费 glob:**/*.bak*\n  ok·electron-builder 消费 glob:**/*.log\n  ok·electron-builder 消费 glob:**/*.yml\n  ok·electron-builder 消费 glob:**/*.save.json\n  ok·electron-builder 消费 glob:**/_game-entry-shot.png\n  ok·electron-builder 消费 glob:**/_ingame*.png\n  ok·electron-builder 消费 glob:.claude/**\n  ok·electron-builder 消费 glob:output/**\n  ok·electron-builder 消费 glob:_audit_deadhandlers.py\n  ok·electron-builder 消费 glob:analyze_globals.py\n  ok·electron-builder 消费 glob:detect_globals.js\n  ok·electron-builder 消费 glob:scan_globals.js\n  ok·electron-builder 消费 glob:final_scan.sh\n  ok·electron-builder 消费 glob:scan.sh\n  ok·electron-builder 消费 glob:start-server.bat\n  ok·electron-builder 消费 glob:tm-tools.d.ts\n  ok·electron-builder 消费 glob:types.d.ts\n  ok·electron-builder 消费 glob:maps/**\n  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·electron-builder 消费 glob:preview-launch*.html\n  ok·electron-builder 消费 glob:preview-launch-assets/**\n  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·electron-builder 消费 glob:preview/shots/**\n  ok·electron-builder 消费 glob:preview/**/*verify*.png\n  ok·electron-builder 消费 glob:preview/home-ui-concepts/**\n  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**\n  ok·electron-builder 消费 previewMockup 例外\n  ok·installer 固定携带热更新发布者公钥\n  ok·installer 携带回合分卷两阶段提交模块\n  ok·热更新固定公钥类型为 Ed25519\n  ok·三平台构建统一走受检 build-electron wrapper\n  ok·Windows builder 强制签名、编辑签名与更新发布者验证\n  ok·Windows 构建缺发布者/证书时 fail-closed\n  ok·Windows 保留仓主输出目录并锁定发布者/证书身份\n  ok·mac 使用平台本地可移植输出目录\n  ok·linux 使用平台本地可移植输出目录\n  ok·所有官方 JSON 均登记进统一生成器\n  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json\n  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json\n  ok·hot builder 消费共享 release-tree\n  ok·hot builder 收集战斗模型与本地语义模型扩展名\n  ok·新扩展名自动携带旧壳阻断所需 minAppVersion\n  ok·内容 OTA 构建器不再收集 main/preload 主进程代码\n  ok·热更新 manifest/feed 强制 Ed25519 发布者签名\n  ok·桌面壳层放行 collector 会发出的运行资产扩展名\n  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判\n  ok·Capgo/APK 消费共享 release-tree\n  ok·Capgo/APK staging 先生成官方剧本派生物\n  ok·Capacitor 只读取派生 www\n  ok·npm sync 强制 stage→cap sync→native hash verify\n  ok·open/run 不可绕过 sync gate\n  ok·native 仅容忍 Capacitor 两个注入文件\n  ok·native extra allowlist 仅放两项，其余仍 fail-closed\n  ok·派生目录已 ignore\n  ok·web canonical 热更基线未被 ignore\n  ok·canonical 热更基线存在且与 buildVersion 同版\n  ok·canonical 热更基线不含 main/preload 可执行桥\n  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产\n  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件\n  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n  ok·staging 拒绝清空 web 源码子目录\n  ok·staging 拒绝清空已有普通目录\n  ok·staging 仅放行已知 mobile/www 派生目录\n  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳\n  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n  ok·两阶段 release/Pages 静态契约\nPASS assertions=166 files=689 bytes=129149465\n",
+        "stderr.log": ""
+      }
+    }
+  ],
+  "playerFixtureReports": [
+    {
+      "source": "electron-before.json",
+      "sourceSha256": "964a16eb2a86f34b1ad045e91f9a70ff8bac2ffb2cd4f4c1639fe7a7fd057bf9",
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "complete": true,
+      "ok": false,
+      "checks": [
+        {
+          "name": "real sandbox bridge",
+          "ok": true
+        },
+        {
+          "name": "guoku initial authored amount",
+          "ok": true
+        },
+        {
+          "name": "neitang initial authored amount",
+          "ok": true
+        },
+        {
+          "name": "guoku scalar synchronized at init boundary",
+          "ok": false
+        },
+        {
+          "name": "neitang scalar synchronized at init boundary",
+          "ok": false
+        },
+        {
+          "name": "authored minxin survives new game",
+          "ok": true
+        },
+        {
+          "name": "all six ministries have real positions",
+          "ok": true
+        },
+        {
+          "name": "named minister bound to intended seat",
+          "ok": true
+        },
+        {
+          "name": "money mirrors match after startup",
+          "ok": true
+        },
+        {
+          "name": "authored turn length honored",
+          "ok": true
+        },
+        {
+          "name": "input file remains byte-identical",
+          "ok": true
+        }
+      ],
+      "failures": [],
+      "initial": {
+        "guoku": {
+          "balance": 3000000,
+          "stock": 3000000
+        },
+        "neitang": {
+          "balance": 800000,
+          "stock": 800000
+        }
+      },
+      "guoku": {
+        "balance": 4484299,
+        "money": 4484299,
+        "stock": 4484299,
+        "income": 2045182,
+        "expense": 206961
+      },
+      "neitang": {
+        "balance": 740000,
+        "money": 740000,
+        "stock": 740000
+      },
+      "minxin": 85,
+      "daysPerTurn": 90,
+      "departmentCount": 19,
+      "definedDepartmentCount": 17,
+      "definedSeats": 64,
+      "monthlyExpense": {
+        "salary": 1961,
+        "army": 185000,
+        "imperial": 20000,
+        "royal": 0,
+        "total": 206961
+      }
+    },
+    {
+      "source": "electron-final.json",
+      "sourceSha256": "964a16eb2a86f34b1ad045e91f9a70ff8bac2ffb2cd4f4c1639fe7a7fd057bf9",
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "complete": true,
+      "ok": true,
+      "checks": [
+        {
+          "name": "real sandbox bridge",
+          "ok": true
+        },
+        {
+          "name": "guoku initial authored amount",
+          "ok": true
+        },
+        {
+          "name": "neitang initial authored amount",
+          "ok": true
+        },
+        {
+          "name": "guoku scalar synchronized at init boundary",
+          "ok": true
+        },
+        {
+          "name": "neitang scalar synchronized at init boundary",
+          "ok": true
+        },
+        {
+          "name": "authored minxin survives new game",
+          "ok": true
+        },
+        {
+          "name": "all six ministries have real positions",
+          "ok": true
+        },
+        {
+          "name": "named minister bound to intended seat",
+          "ok": true
+        },
+        {
+          "name": "money mirrors match after startup",
+          "ok": true
+        },
+        {
+          "name": "authored turn length honored",
+          "ok": true
+        },
+        {
+          "name": "input file remains byte-identical",
+          "ok": true
+        }
+      ],
+      "failures": [],
+      "initial": {
+        "guoku": {
+          "balance": 3000000,
+          "money": 3000000,
+          "stock": 3000000
+        },
+        "neitang": {
+          "balance": 800000,
+          "money": 800000,
+          "stock": 800000
+        }
+      },
+      "guoku": {
+        "balance": 4484299,
+        "money": 4484299,
+        "stock": 4484299,
+        "income": 2045182,
+        "expense": 206961
+      },
+      "neitang": {
+        "balance": 740000,
+        "money": 740000,
+        "stock": 740000
+      },
+      "minxin": 85,
+      "daysPerTurn": 90,
+      "departmentCount": 19,
+      "definedDepartmentCount": 17,
+      "definedSeats": 64,
+      "monthlyExpense": {
+        "salary": 1961,
+        "army": 185000,
+        "imperial": 20000,
+        "royal": 0,
+        "total": 206961
+      }
+    }
+  ],
+  "finalSmoke": {
+    "source": "web\\dev-tools\\arch-guard\\ci-Ear4z1\\smoke-report.json",
+    "sha256": "be42c8cf457b9526cfdf213a5ccc1802722cce5d0a0385e40d3c85d5248d7dbd",
+    "runId": "dfe68326-a257-45f8-b108-05e4f918d920",
+    "summary": {
+      "selected": 918,
+      "pass": 916,
+      "fail": 0,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "expected": 918,
+    "uniqueResults": 918
+  }
+}

@@ -784,6 +784,8 @@
       if (_itMoney !== null) { GM.neitang.balance = _itMoney; GM.neitang.ledgers.money.stock = _itMoney; } // arch-ok：本函数即 neitang 模型初始化写口（与上方剧本覆盖块同类）
     }
 
+    // 与国库相同，初值返回时三处金额必须一致，不等待下一次 tick 补镜像。
+    GM.neitang.money = GM.neitang.ledgers.money.stock; // arch-ok canonical neitang initialization owns scalar mirrors
     return { dynasty: dynasty, ratio: preset.ratio, balance: GM.neitang.balance };
   }
 

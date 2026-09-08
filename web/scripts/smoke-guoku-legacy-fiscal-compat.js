@@ -61,4 +61,16 @@ ctx.GM.guoku = undefined;
 GuokuEngine.initFromDynasty('明', 'peak', { guoku: { money: null, '库存折贯': 2500000 } });
 assertions += 1; assert(ctx.GM.guoku.balance === 2500000, 'null guoku.money must not shadow valid 库存折贯');
 
+// 初值写入返回前，旧标量不能继续向顶栏/下一个启动子系统暴露旧钱数。
+ctx.GM.guoku = { balance: 90000, money: 90000 };
+GuokuEngine.initFromDynasty('楚', 'peak', { fiscalConfig: { treasury: 3000000 } });
+assertions += 1; assert(ctx.GM.guoku.money === 3000000, 'old money mirror must change at init boundary');
+assertions += 1; assert(ctx.GM.guoku.balance === ctx.GM.guoku.money && ctx.GM.guoku.money === ctx.GM.guoku.ledgers.money.stock, 'all money mirrors must agree before a tax tick');
+ctx.GM.guoku = undefined;
+GuokuEngine.initFromDynasty('楚', 'peak', { guoku: { initialMoney: 0 }, fiscalConfig: { treasury: 3000000 } });
+assertions += 1; assert(ctx.GM.guoku.money === 0 && ctx.GM.guoku.ledgers.money.stock === 0, 'explicit zero stays zero');
+ctx.GM.guoku = undefined;
+GuokuEngine.initFromDynasty('楚', 'peak', { guoku: { initialMoney: 1.25 } });
+assertions += 1; assert(ctx.GM.guoku.money === 1.25, 'initial fractional currency must not be rounded');
+
 console.log('[smoke-guoku-legacy-fiscal-compat] pass assertions=' + assertions);

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-08T12:11:35.977Z",
+  "generatedAt": "2026-09-08T12:41:34.999Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
-      "size": 69204
+      "sha256": "44b02b6b5f530848de2f8f25ef32bd9b11a23de24813e4f795ce3a1451d5f989",
+      "size": 69230
     },
     {
       "path": "INDEX.md",
@@ -4281,8 +4281,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "98efbc58d9790ae05412d293e832c051445c43c5402ce78a28bc4ca8215338c3",
-      "size": 134562
+      "sha256": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
+      "size": 134786
     },
     {
       "path": "tm-guoku-panel.js",
@@ -4816,8 +4816,8 @@
     },
     {
       "path": "tm-neitang-engine.js",
-      "sha256": "63e55bb38e3805c767e09f0e09a498ed4b4748ea9c8a572a8b4556463b56d90f",
-      "size": 69937
+      "sha256": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec",
+      "size": 70160
     },
     {
       "path": "tm-neitang-panel.js",

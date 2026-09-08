@@ -7,7 +7,7 @@ const repo = argv.includes('--repo') ? path.resolve(argv[argv.indexOf('--repo') 
 const reportDir = path.join(root, 'web/dev-tools/electron-bridge', crypto.randomUUID());
 fs.mkdirSync(reportDir, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(require('os').tmpdir(), 'tm-bridge-series-'));
-const modes = argv.includes('--edict-polish') ? ['edict-polish'] : argv.includes('--building-appraisal') ? ['building-appraisal'] : argv.includes('--baseline') ? ['production', 'test-exports'] : ['production', 'test-exports', 'restart'];
+const modes = argv.includes('--authoring-regions') ? ['authoring-regions'] : argv.includes('--edict-polish') ? ['edict-polish'] : argv.includes('--building-appraisal') ? ['building-appraisal'] : argv.includes('--baseline') ? ['production', 'test-exports'] : ['production', 'test-exports', 'restart'];
 const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim(),
   status: cp.execFileSync('git', ['status', '--short'], { cwd: repo, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version,
   baseline: argv.includes('--baseline'), complete: false, results: [] };

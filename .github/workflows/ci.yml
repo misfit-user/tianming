@@ -96,6 +96,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --building-appraisal
       - name: Edict polish complete text and visible failure recovery
         run: node scripts/verify-electron-bridge.js --edict-polish
+      - name: Authoring region paths and real editor persistence
+        run: node scripts/verify-electron-bridge.js --authoring-regions
       - name: Controlled TLS address binding and redirects
         run: node scripts/verify-remote-tls.js
       - name: Preserve Electron evidence (including startup failures)

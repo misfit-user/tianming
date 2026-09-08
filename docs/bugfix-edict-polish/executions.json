@@ -1,0 +1,1264 @@
+{
+  "baseline": "2aba473385c9346bfc9905ee5019520f84a23c80",
+  "sourceHashes": {
+    "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+    "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+    "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d",
+    "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+    "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+    "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+    "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+    "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+    "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+    "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+    ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069"
+  },
+  "executions": [
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-arch-final-67cb301f-04e9-4583-843b-9b34e2799b4a",
+      "run": {
+        "label": "edict-arch-final",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:07:43.895Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 22758.466,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "60e19b927455b50f2f1bfc6d8192423da6d8ad88cb3e51df6030a115e0dcc87b",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (2.7s)\n[lint-arch-all] PASS  lint-dep-graph (1.3s)\n[lint-arch-all] PASS  lint-global-providers (4.7s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.3s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.4s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (8.3s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.8s)\n[lint-arch-all] PASS  lint-file-size (0.6s)\n[lint-arch-all] PASS  lint-control-bytes (0.6s)\n[lint-arch-all] PASS  lint-split-contracts (0.2s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (0.9s)\n[lint-arch-all] PASS  ref-check (1.5s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-arch-v2-e4382c17-c0fe-4979-82e1-533682aaa485",
+      "run": {
+        "label": "edict-arch-v2",
+        "command": [
+          "node",
+          "web/scripts/lint-arch-all.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:11.451Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 26728.1296,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "f8eb06b4bae203bab2ccbdca8656f5b73cc695ec36135faa681b14394e27dc1d",
+          "text": "[lint-arch-all] PASS  lint-gm-writes (3.8s)\n[lint-arch-all] PASS  lint-dep-graph (1.4s)\n[lint-arch-all] PASS  lint-global-providers (6.5s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.3s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (10.3s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (0.6s)\n[lint-arch-all] PASS  lint-file-size (0.6s)\n[lint-arch-all] PASS  lint-control-bytes (0.4s)\n[lint-arch-all] PASS  lint-split-contracts (0.2s)\n[lint-arch-all] PASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (0.8s)\n[lint-arch-all] PASS  ref-check (1.3s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-audit-85058792-6950-4517-b334-b846d4de454a",
+      "run": {
+        "label": "edict-audit",
+        "command": [
+          "npm",
+          "audit",
+          "--omit=dev",
+          "--audit-level=high",
+          "--registry=https://registry.npmjs.org"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:44.563Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 7471.3023,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+          "text": "found 0 vulnerabilities\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+          "text": "npm warn Unknown project config \"electron_mirror\". This will stop working in the next major version of npm.\nnpm warn Unknown project config \"electron_builder_binaries_mirror\". This will stop working in the next major version of npm.\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-baseline-final-04830375-2948-41e9-b4ae-571633f30519",
+      "run": {
+        "label": "edict-baseline-final",
+        "command": [
+          "node",
+          "web/scripts/smoke-edict-polish-results.js",
+          "--ref",
+          "2aba473385c9346bfc9905ee5019520f84a23c80"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:14:09.183Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 33121.846300000005,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "a777ca1977785f84b6fc015d80b277e5bb365017fd519961f59581fdf356564e",
+          "text": "PASS normal polish preserves input/world and chosen secondary, requires explicit adoption\nPASS Anthropic text blocks remain compatible\nPASS legacy callers keep their original return contract\nPASS manual retry after failure recovers\nPASS no configured key retains offline draft merge without fake AI success\nPASS disabled secondary stays on primary\nPASS same-turn world switch rejects old result and no retry enters new world\nPASS untrusted answer remains escaped\n{\"baseline\":\"2aba473385c9346bfc9905ee5019520f84a23c80\",\"pass\":8,\"fail\":17}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "3d717bf1c2898696c5d8bada807291d3b80635eefae9fe379e8f9651bf0c6e97",
+          "text": "FAIL reasoning-only truncation retries once with larger bounded budget and same prompt/model Expected values to be strictly equal:\n\n1 !== 2\n\nFAIL repeated length cannot loop or expose incomplete draft as publishable Expected values to be strictly equal:\n\n1 !== 2\n\nFAIL empty content gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-empty'\n\nFAIL whitespace gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-empty'\n\nFAIL reasoning without truncation gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-reasoning-only'\n\nFAIL content filtered gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-refused'\n\nFAIL refusal gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-refused'\n\nFAIL invalid content object gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-format'\n\nFAIL content blocks extract text only, never hidden reasoning The expression evaluated to a falsy value:\n\n  assert(h.panel.innerHTML.includes('诏曰：抚恤流民。'))\n\nFAIL HTTP 401 is not retried or mislabelled empty and does not display secret echo The expression evaluated to a falsy value:\n\n  assert(!h.panel.innerHTML.includes('fixture-secondary-key'))\n\nFAIL missing primary key still uses configured secondary Expected values to be strictly equal:\n\n0 !== 1\n\nFAIL duplicate clicks do not launch concurrent billable polish requests Expected values to be strictly equal:\n\n2 !== 1\n\nFAIL hide cancels request and late completion cannot reopen panel Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL edited draft is not replaced by stale result The expression evaluated to a falsy value:\n\n  assert(!h.panel.innerHTML.includes('edict-polished-text'))\n\nFAIL late success from same-turn old world cannot replace current polish or release its button Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL close and reopen ignores old response The expression evaluated to a falsy value:\n\n  assert(h.panel.innerHTML.includes('新结果'))\n\nFAIL compressed scaling cannot exceed retry output ceiling The expression evaluated to a falsy value:\n\n  assert(h.requests.every(r => r.body.max_tokens <= 8000))\n\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-builder-gates-1932fdfc-5d41-4d90-998a-aedfe7d13ef5",
+      "run": {
+        "label": "edict-builder-gates",
+        "command": [
+          "node",
+          "web/scripts/verify-hot-builder-gates.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:38.642Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 5052.281,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+          "text": "  ok·A·健康树全量构建通过（exit 0）\n  ok·A·feed 版本正确\n  ok·A·清单含 index.html\n  ok·A·清单含 a.js\n  ok·A·清单含 b.js\n  ok·A·清单含 styles.css\n  ok·A·清单含 changelog.json\n  ok·A·清单含 version.json\n  ok·A·清单含 bundled-scenarios/合成（官方）.json\n  ok·A·草案/自用剧本不进入热更\n  ok·A2·GLB 运行资产可进入热更\n  ok·A2·GLB 自动要求 1.3.4.10 壳层\n  ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝\n  ok·A2·1.3.4.12 可发布 ONNX 运行资产\n  ok·A2·ONNX 自动要求 1.3.4.12 壳层\n  ok·B·GATE-0 拦 --files 部分包\n  ok·B·危险旗标放行（调试用）\n  ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）\n  ok·D·GATE-2 拦必含文件缺失\n  ok·E·首次构建通过\n  ok·E·GATE-3 拦相同版本重发\n  ok·E·GATE-3 拦更低版本\n  ok·E·更高版本放行\n  ok·F·GATE-5 拦 version.json 戳不一致\n  ok·F·--skip-stamp-check 放行（调试用）\n  ok·F·GATE-5 拦 meta 缺失\n  ok·G·GATE-4 zip↔manifest 对账在构建路径上\nPASS assertions=27\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-electron-first-9934b119-0391-4c38-9064-8aa32f2c7d3d",
+      "run": {
+        "label": "edict-electron-first",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--edict-polish"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/index.html\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:06:30.969Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 12046.901,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "4ca8baedf5ca36c7bdf2095b0f982c3f4f8dbd0fff53efe92681a0c707dad345",
+          "text": "{\"mode\":\"edict-polish\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"edict-polish\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"edict-production-fixture-and-real-panel\",\"status\":\"PASS\"},{\"name\":\"edict-real-button-recovers-reasoning-truncation\",\"status\":\"PASS\"},{\"name\":\"edict-complete-result-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-raw-intent-kept-and-not-automatically-published\",\"status\":\"PASS\"},{\"name\":\"edict-empty-reply-shows-explicit-actionable-failure\",\"status\":\"PASS\"},{\"name\":\"edict-failure-card-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-real-retry-button-restores-answer\",\"status\":\"PASS\"},{\"name\":\"edict-auth-failure-does-not-expose-provider-echo\",\"status\":\"PASS\"},{\"name\":\"edict-late-response-after-hide-cannot-reopen\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-7LaVsj\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\bea101c4-79a4-42ef-a94e-f7ed9d826140\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-electron-standard-97392a04-8b12-42d3-88a2-d7e18d354ba3",
+      "run": {
+        "label": "edict-electron-standard",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:49.191Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 32954.3456,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "974b36d6ed7ea8bfeb416f6577a308c3b81281edc5c973b623642eb1edff8d34",
+          "text": "{\"mode\":\"production\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"production\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"},{\"name\":\"canonical-world-and-receipt-committed-before-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-lQ9WZN\\\\production\"}}\n{\"mode\":\"test-exports\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"test-exports\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-lQ9WZN\\\\exports\"}}\n{\"mode\":\"restart\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"restart\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"canonical-receipt-and-folio-recover-after-real-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-lQ9WZN\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\39e96bbe-6e95-4de9-9586-ad7bc0a853bc\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-electron-v2-a7d0393d-1c07-4fd5-96a8-eebd9dd40459",
+      "run": {
+        "label": "edict-electron-v2",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--edict-polish"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:30.737Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 17686.0779,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "72cfd73c7d028ded970914f642bdee1cdd7ac30948f77f69011f8c55820e17ac",
+          "text": "{\"mode\":\"edict-polish\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"edict-polish\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"edict-production-fixture-and-real-panel\",\"status\":\"PASS\"},{\"name\":\"edict-real-button-recovers-reasoning-truncation\",\"status\":\"PASS\"},{\"name\":\"edict-complete-result-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-raw-intent-kept-and-not-automatically-published\",\"status\":\"PASS\"},{\"name\":\"edict-empty-reply-shows-explicit-actionable-failure\",\"status\":\"PASS\"},{\"name\":\"edict-failure-card-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-retry-and-return-buttons-not-covered-by-backdrop\",\"status\":\"PASS\"},{\"name\":\"edict-real-retry-button-restores-answer\",\"status\":\"PASS\"},{\"name\":\"edict-auth-failure-does-not-expose-provider-echo\",\"status\":\"PASS\"},{\"name\":\"edict-late-response-after-hide-cannot-reopen\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-fk5sC1\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\1f3935db-db5e-47a9-98c1-c1ed4bd2fa16\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-electron-visible-6c74c01d-b22f-441a-93a9-293d4018d713",
+      "run": {
+        "label": "edict-electron-visible",
+        "command": [
+          "node",
+          "scripts/verify-electron-bridge.js",
+          "--edict-polish"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:08:57.511Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "123baf5365157ae68d1db1d903efb48f1fd1feda2bc29f75e873f39b05032fdd",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 18684.984200000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "1c9be3219848b9727a758cde77f6b8941bd240d3501de846181e0518f01ca112",
+          "text": "{\"mode\":\"edict-polish\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"edict-polish\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"edict-production-fixture-and-real-panel\",\"status\":\"PASS\"},{\"name\":\"edict-real-button-recovers-reasoning-truncation\",\"status\":\"PASS\"},{\"name\":\"edict-complete-result-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-raw-intent-kept-and-not-automatically-published\",\"status\":\"PASS\"},{\"name\":\"edict-empty-reply-shows-explicit-actionable-failure\",\"status\":\"PASS\"},{\"name\":\"edict-failure-card-is-visible\",\"status\":\"PASS\"},{\"name\":\"edict-real-retry-button-restores-answer\",\"status\":\"PASS\"},{\"name\":\"edict-auth-failure-does-not-expose-provider-echo\",\"status\":\"PASS\"},{\"name\":\"edict-late-response-after-hide-cannot-reopen\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-IRCrYe\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\a6badc72-b115-4d2e-8ed8-01d3b9a605ba\\report.json\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-existing-abort-6af7ce67-6cc2-4bd0-8407-98dec23e3945",
+      "run": {
+        "label": "edict-existing-abort",
+        "command": [
+          "node",
+          "web/scripts/smoke-ai-abort-listener-cleanup.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:46.308Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 186.84769999999992,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "ffa2c117336ba7eb202765f4b0f54980887920ba20a713b1e71cfb2c9be0c02f",
+          "text": "[smoke-ai-abort-listener-cleanup] pass assertions=28\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-existing-building-47fc1182-2375-46df-b47f-f80f40741612",
+      "run": {
+        "label": "edict-existing-building",
+        "command": [
+          "node",
+          "web/scripts/smoke-building-appraisal-compat.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:43.498Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1947.1069999999997,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "92c1ddf60c1f464b8ddd3ec10a1a1698fee653503c31268a8e75c47d2f24e648",
+          "text": "PASS ordinary call succeeds while the same thinking endpoint can appraise\nPASS forced DeepSeek call advertises only the requested tool without mutating definitions\nPASS other OpenAI-compatible providers keep named tool_choice\nPASS primary DeepSeek is not confused with a different secondary provider\nPASS unknown proxy exact incompatibility retries once without tool_choice\nPASS unrelated HTTP 400 retains bounded schema fallback rather than compatibility retry\nPASS failed fallback preserves HTTP status and does not repeat appraisal rounds\nPASS UI shows actionable failed-request message, restores button and keeps proposal\nPASS successful UI shows validated appraisal and approval remains explicit\nPASS no structured appraisal is explained instead of exposing no-appraisal\nPASS truncated reasoning output is diagnosed without another identical round\nPASS empty or malformed appraisal cannot become a zero-cost approval\nPASS wrong forced function is rejected\nPASS unparsable tool arguments never become a successful empty input\nPASS already-aborted call sends no native or fallback HTTP request\nPASS timeout cleans listeners and does not launch fallback after deadline\nPASS native Anthropic format is unchanged\nPASS unconfigured secondary resolves to primary DeepSeek without request mismatch\nPASS read tools still run before forced final appraisal and critique\nPASS compatibility retry stops if user cancels while the error body is being read\nPASS repeated incompatibility cannot create an unbounded native retry loop\nPASS concurrent primary and secondary requests keep separate compatibility policy\nPASS native Gemini tool declaration and forced name are unchanged\nPASS success and error replies are revealed without scrolling a closed dialog\n[smoke-building-appraisal-compat] {\"pass\":24,\"fail\":0,\"total\":24,\"network\":\"controlled fetch only\"}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-existing-decree-7e899d37-8544-451c-8a2f-772d54919167",
+      "run": {
+        "label": "edict-existing-decree",
+        "command": [
+          "node",
+          "web/scripts/smoke-edict-decree-whole.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:42.544Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 144.7183,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "163ec70b8e9eec65470eb5cc70fec00ae013a15ff08e40d8dac04effe197a146",
+          "text": "[smoke-edict-decree-whole] PASS 16 assertions\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-existing-polish-e9f093a6-17cf-4527-bc19-985525660e81",
+      "run": {
+        "label": "edict-existing-polish",
+        "command": [
+          "node",
+          "web/scripts/smoke-formal-edict-polish-scope.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:41.590Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 278.4561,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "4dbd4877676cd7f9efab716cec47344602803c2692426e663839a86b3b0bc368",
+          "text": "[smoke-formal-edict-polish-scope] PASS 16 assertions\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-full-final-8f244394-ee04-4695-9073-ecd78a490966",
+      "run": {
+        "label": "edict-full-final",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:11:38.690Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 107361.157,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "1a42b3f70ca5e0b94e2d91c680f2f30cc1985dc2aa589a8d221cd8a31c04dac6",
+          "text": "[ci-smokes] run=a13ea2a2-0351-4c55-acc3-bafd6938c75f HEAD=2aba473385c9346bfc9905ee5019520f84a23c80 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-mXdEVr\\smoke-report.json\n[run-smokes] 共 918 个 smoke · 选中 918 · 跳过 0 · 并发 8 · 超时 120s\n  [25/918] PASS    smoke-agent-mode-s2.js (0.2s)\n  [50/918] PASS    smoke-ai-structured-policy-actions.js (0.2s)\n  [75/918] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/918] PASS    smoke-battle-resolve.js (0.2s)\n  [125/918] PASS    smoke-changchao-line-salvage.js (0.1s)\n  [150/918] PASS    smoke-class-character-relations.js (0.2s)\n  [175/918] PASS    smoke-conspiracy-engine.js (0.3s)\n  [200/918] PASS    smoke-courtesy-address.js (0.2s)\n  [225/918] PASS    smoke-diebao-log.js (0.2s)\n  [250/918] PASS    smoke-edict-pardon.js (0.2s)\n  [275/918] PASS    smoke-endturn-namespace-deps.js (0.2s)\n  [300/918] PASS    smoke-event-collect.js (0.2s)\n  [325/918] PASS    smoke-faction-npc-intervention.js (0.5s)\n  [350/918] PASS    smoke-fiscal-reform-reconcile.js (0.1s)\n  [375/918] PASS    smoke-globalrules-build.js (0.2s)\n  [400/918] PASS    smoke-guozuo-collapse-proximity.js (0.2s)\n  [425/918] PASS    smoke-inflation-tax-namespace.js (0.2s)\n  [450/918] PASS    smoke-map-editor-bookmarks-lifecycle.js (0.2s)\n  [475/918] PASS    smoke-memory-character-stance.js (0.2s)\n  [500/918] PASS    smoke-memory-procedural-lessons.js (0.2s)\n  [525/918] PASS    smoke-memory-strengthen.js (0.2s)\n  [550/918] PASS    smoke-memory-workshop-review-details.js (0.2s)\n  [575/918] PASS    smoke-newui-routing.js (0.2s)\n  [600/918] PASS    smoke-office-apply-resolve-vacate.js (0.2s)\n  [625/918] PASS    smoke-offtree-appoint-deterministic.js (0.4s)\n  [650/918] PASS    smoke-party-goals-scenario-variance.js (0.2s)\n  [675/918] PASS    smoke-perf-map-render-path.js (2.6s)\n  [700/918] PASS    smoke-prompt-cache-proxy-claude.js (0.2s)\n  [725/918] PASS    smoke-renli-pilot-seed.js (0.2s)\n  [750/918] PASS    smoke-restored-deprecated-code-paths.js (0.2s)\n  [775/918] PASS    smoke-s7-office-ai-feed.js (0.2s)\n  [800/918] PASS    smoke-scenario-isolation.js (0.9s)\n  [825/918] PASS    smoke-startup-phase-observability.js (0.6s)\n  [850/918] PASS    smoke-tier4-landmines.js (0.3s)\n  [875/918] PASS    smoke-wdsusp-suspicion.js (0.2s)\n  [900/918] PASS    smoke-workshop-preflight-access.js (0.2s)\n  [918/918] PASS    smoke-start-game-data-integrity.js (60.9s)\n\n[run-smokes] 完成：916 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 918 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 588s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  74.3s  smoke-full-turn-flow.js\n  60.9s  smoke-start-game-data-integrity.js\n  45.4s  smoke-perf-save-preparation.js\n  25.2s  smoke-workshop-lock-recovery.js\n  23.3s  smoke-deploy-manifest-atomicity.js\n  11.2s  smoke-character-location-travel.js\n  6.8s  smoke-tinyi-party-class-agenda.js\n  6.8s  smoke-tinyi-reissued.js\n  6.8s  smoke-class-demand-party-goals.js\n  6.7s  smoke-party-goals-lifecycle.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-mXdEVr/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":916,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":918}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-full-smoke-db5b59b3-3300-42b8-b27e-353f6a754a84",
+      "run": {
+        "label": "edict-full-smoke",
+        "command": [
+          "node",
+          "web/scripts/ci-smokes.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:08:15.594Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 105565.712,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "89598d1fe7c9a93e6b0a6be4ad9098e8af00552f7dfab12ef82dcf46ec136c6f",
+          "text": "[ci-smokes] run=3d009681-282e-4ce1-bc76-79c4cd61f068 HEAD=2aba473385c9346bfc9905ee5019520f84a23c80 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-eWaMPP\\smoke-report.json\n[run-smokes] 共 918 个 smoke · 选中 918 · 跳过 0 · 并发 8 · 超时 120s\n  [25/918] PASS    smoke-agent-mode-s13.js (0.2s)\n  [50/918] PASS    smoke-ai-structured-policy-actions.js (0.2s)\n  [75/918] PASS    smoke-audit-manual-save-lease.js (0.2s)\n  [100/918] PASS    smoke-battle-resolve.js (0.2s)\n  [125/918] PASS    smoke-changchao-ambient-isolation.js (0.2s)\n  [150/918] PASS    smoke-class-character-ui.js (0.2s)\n  [175/918] PASS    smoke-conspiracy-brewing-feed.js (0.2s)\n  [200/918] PASS    smoke-crisis-player-surface-bridge.js (0.2s)\n  [225/918] PASS    smoke-dianzhang.js (0.2s)\n  [250/918] PASS    smoke-edict-pardon.js (0.2s)\n  [275/918] PASS    smoke-endturn-namespace-deps.js (0.2s)\n  [300/918] PASS    smoke-event-collect.js (0.2s)\n  [325/918] PASS    smoke-faction-npc-intervention.js (0.4s)\n  [350/918] PASS    smoke-fiscal-recurring-coerce.js (0.2s)\n  [375/918] PASS    smoke-globalrules-build.js (0.2s)\n  [400/918] PASS    smoke-guozuo-collapse-proximity.js (0.2s)\n  [425/918] PASS    smoke-inflation-tax-namespace.js (0.2s)\n  [450/918] PASS    smoke-map-editor-bookmarks-lifecycle.js (0.2s)\n  [475/918] PASS    smoke-memory-compress-consumer.js (0.2s)\n  [500/918] PASS    smoke-memory-manifest.js (0.2s)\n  [525/918] PASS    smoke-memory-stance-netting.js (0.3s)\n  [550/918] PASS    smoke-memory-relation-index.js (2.3s)\n  [575/918] PASS    smoke-newui-routing.js (0.2s)\n  [600/918] PASS    smoke-office-apply-resolve-vacate.js (0.2s)\n  [625/918] PASS    smoke-office-tree-shape-normalize.js (0.4s)\n  [650/918] PASS    smoke-party-goals-scenario-variance.js (0.2s)\n  [675/918] PASS    smoke-player-natural-death-routing.js (0.2s)\n  [700/918] PASS    smoke-pipeline-diff.js (3.5s)\n  [725/918] PASS    smoke-renli-military.js (0.3s)\n  [750/918] PASS    smoke-restored-deprecated-code-paths.js (0.2s)\n  [775/918] PASS    smoke-s4b-jingcha.js (3.8s)\n  [800/918] PASS    smoke-semantic-atomic-world-lease.js (0.5s)\n  [825/918] PASS    smoke-startup-phase-observability.js (0.7s)\n  [850/918] PASS    smoke-tianqi-map-runtime.js (1.5s)\n  [875/918] PASS    smoke-wdsusp-suspicion.js (0.2s)\n  [900/918] PASS    smoke-workshop-preflight-access.js (0.2s)\n  [918/918] PASS    smoke-start-game-data-integrity.js (51.6s)\n\n[run-smokes] 完成：916 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 918 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 604s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  57.8s  smoke-full-turn-flow.js\n  51.6s  smoke-start-game-data-integrity.js\n  37.9s  smoke-perf-save-preparation.js\n  23.7s  smoke-deploy-manifest-atomicity.js\n  23.6s  smoke-workshop-lock-recovery.js\n  10.9s  smoke-character-location-travel.js\n  6.7s  smoke-party-goals-lifecycle.js\n  6.6s  smoke-tinyi-reissued.js\n  6.6s  smoke-tinyi-party-class-agenda.js\n  6.6s  smoke-tinyi-scenario-class-source.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-eWaMPP/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":916,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":918}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-manifest-assets-e1a66e54-fe14-422f-8a59-582a196ff5b8",
+      "run": {
+        "label": "edict-manifest-assets",
+        "command": [
+          "node",
+          "scripts/sync-hot-baseline.js",
+          "--write",
+          "--version",
+          "1.3.4.11",
+          "--asset-root",
+          "<user-profile>/Desktop/tianming",
+          "--temp-root",
+          "E:/tianming-perf-temp"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:07:33.137Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 41660.558399999994,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "56f7bb26cd967dc7068ae1cb657579da416a4d8b77c05e27665296f9cba88c64",
+          "text": "[hot-baseline] asset-root overlay files=410 bytes=806161938\nWROTE <user-profile>\\Desktop\\tianming-perf-round1\\web\\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=410\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-manifest-final-6c8781b4-2a4d-4bcb-85e1-2acb5269b8d5",
+      "run": {
+        "label": "edict-manifest-final",
+        "command": [
+          "node",
+          "scripts/sync-hot-baseline.js",
+          "--write",
+          "--version",
+          "1.3.4.11",
+          "--asset-root",
+          "<user-profile>/Desktop/tianming",
+          "--temp-root",
+          "E:/tianming-perf-temp"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:52.920Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 44941.862,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "50fab47891d01102bc762fb6dae0fa920b730d3ff727e1140614764fad8c37a0",
+          "text": "[hot-baseline] asset-root overlay files=410 bytes=806161938\nWROTE <user-profile>\\Desktop\\tianming-perf-round1\\web\\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=1\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-official-parity-c5494188-044b-4808-ad7b-7856007596f5",
+      "run": {
+        "label": "edict-official-parity",
+        "command": [
+          "node",
+          "web/scripts/verify-official-scenario-parity.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:08:11.155Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 2997.9319,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+          "text": "[official-sync] parity PASS · sources=2 artifacts=9\n  ok·seeder/preview/reset artifacts registered\n  ok·tianqi7 builtin embeds the complete root JSON\n  ok·tianqi7 builtin remains reviewable compact output\n  ok·tianqi7 seeder embeds the complete root JSON\n  ok·tianqi7 editor preview embeds the complete root JSON\n  ok·editor reset embeds the complete Tianqi root JSON (embedded=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, root=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, differingKeys=)\n  ok·tianqi7 bundled JSON is byte-identical to root JSON\n  ok·shaosong builtin embeds the complete root JSON\n  ok·shaosong builtin remains reviewable compact output\n  ok·shaosong seeder embeds the complete root JSON\n  ok·shaosong editor preview embeds the complete root JSON\n  ok·shaosong bundled JSON is byte-identical to root JSON\n  ok·manifest.js equals manifest.json\n  ok·tianqi7 metadata exists\n  ok·tianqi7 metadata script sha256 is correct\n  ok·tianqi7 metadata script bytes is correct\n  ok·tianqi7 metadata source sha256 is correct\n  ok·tianqi7 metadata source bytes is correct\n  ok·tianqi7 metadata loader path is correct\n  ok·tianqi7 metadata counts are correct\n  ok·shaosong metadata exists\n  ok·shaosong metadata script sha256 is correct\n  ok·shaosong metadata script bytes is correct\n  ok·shaosong metadata source sha256 is correct\n  ok·shaosong metadata source bytes is correct\n  ok·shaosong metadata loader path is correct\n  ok·shaosong metadata counts are correct\nPASS assertions=27\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-official-sync-ac23402e-da35-4e2f-9e12-4700999cbf4f",
+      "run": {
+        "label": "edict-official-sync",
+        "command": [
+          "node",
+          "web/scripts/sync-official-scenarios.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:08:07.302Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 2925.8140000000003,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+          "text": "[official-sync] sync PASS · sources=2 artifacts=9\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-release-contract-a35d8511-019b-429f-a6f8-fc50e50fcc5a",
+      "run": {
+        "label": "edict-release-contract",
+        "command": [
+          "node",
+          "scripts/verify-release-contract.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:08:14.919Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 2234.6626,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "68e2fd4ec09b9fcf89900c2bcd99c74c76f04829b00824309c1ffc873cb4de96",
+          "text": "  ok·release-excludes schema\n  ok·canonical 热更基线是发布树 required file\n  ok·release-excludes 无重复\n  ok·安全排除项 _archive\n  ok·安全排除项 backups\n  ok·安全排除项 _screenshots\n  ok·安全排除项 test-results\n  ok·安全排除项 _codex_tmp\n  ok·安全排除项 dev-tools\n  ok·安全排除项 docs\n  ok·安全排除项 scripts\n  ok·安全排除项 tools\n  ok·安全排除项 godot\n  ok·安全排除项 .git\n  ok·安全排除项 node_modules\n  ok·安全排除项 .playwright-cli\n  ok·安全排除项 .cache\n  ok·安全排除项 .tmp\n  ok·安全排除项 tmp\n  ok·安全排除项 dist\n  ok·安全排除项 build\n  ok·安全排除项 release\n  ok·安全排除项 coverage\n  ok·安全排除项 .hot-update-staging\n  ok·安全排除项 _pw-scratch\n  ok·安全排除项 generated_images\n  ok·安全排除项 .vscode\n  ok·安全排除项 .bak-\n  ok·安全排除项 _codex\n  ok·安全排除项 .git-defunct-\n  ok·安全排除项 **/*.bak*\n  ok·安全排除项 **/*.log\n  ok·安全排除项 **/*.yml\n  ok·安全排除项 **/*.save.json\n  ok·安全排除项 **/_game-entry-shot.png\n  ok·安全排除项 **/_ingame*.png\n  ok·安全排除项 .claude/**\n  ok·安全排除项 output/**\n  ok·安全排除项 _audit_deadhandlers.py\n  ok·安全排除项 analyze_globals.py\n  ok·安全排除项 detect_globals.js\n  ok·安全排除项 scan_globals.js\n  ok·安全排除项 final_scan.sh\n  ok·安全排除项 scan.sh\n  ok·安全排除项 start-server.bat\n  ok·安全排除项 tm-tools.d.ts\n  ok·安全排除项 types.d.ts\n  ok·安全排除项 maps/**\n  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·安全排除项 preview-launch*.html\n  ok·安全排除项 preview-launch-assets/**\n  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·安全排除项 preview/shots/**\n  ok·安全排除项 preview/**/*verify*.png\n  ok·安全排除项 preview/home-ui-concepts/**\n  ok·安全排除项 preview/workshop-ui-concepts/**\n  ok·web 运行时引用/required files 未被误排：\n  ok·web 源体积/文件数在闸内：\n  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）\n  ok·发布树排除根目录游戏截图\n  ok·发布树排除根目录开发脚本与类型声明\n  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF\n  ok·发布树明确排除本机开发产物:.claude/launch.json\n  ok·发布树明确排除本机开发产物:output/playwright/shot.png\n  ok·发布树明确排除本机开发产物:maps/asia-map.png\n  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png\n  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png\n  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb\n  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx\n  ok·package-lock 根版本两处与 package.json 同版\n  ok·tracked mobile canonical version 与 buildVersion 同版\n  ok·electron-builder 消费 dir:_archive\n  ok·electron-builder 消费 dir:backups\n  ok·electron-builder 消费 dir:_screenshots\n  ok·electron-builder 消费 dir:test-results\n  ok·electron-builder 消费 dir:_codex_tmp\n  ok·electron-builder 消费 dir:dev-tools\n  ok·electron-builder 消费 dir:docs\n  ok·electron-builder 消费 dir:scripts\n  ok·electron-builder 消费 dir:tools\n  ok·electron-builder 消费 dir:godot\n  ok·electron-builder 消费 dir:.git\n  ok·electron-builder 消费 dir:node_modules\n  ok·electron-builder 消费 dir:.playwright-cli\n  ok·electron-builder 消费 dir:.cache\n  ok·electron-builder 消费 dir:.tmp\n  ok·electron-builder 消费 dir:tmp\n  ok·electron-builder 消费 dir:dist\n  ok·electron-builder 消费 dir:build\n  ok·electron-builder 消费 dir:release\n  ok·electron-builder 消费 dir:coverage\n  ok·electron-builder 消费 dir:.hot-update-staging\n  ok·electron-builder 消费 dir:_pw-scratch\n  ok·electron-builder 消费 dir:generated_images\n  ok·electron-builder 消费 dir:.vscode\n  ok·electron-builder 消费 prefix file:.bak-\n  ok·electron-builder 消费 prefix dir:.bak-\n  ok·electron-builder 消费 prefix file:_codex\n  ok·electron-builder 消费 prefix dir:_codex\n  ok·electron-builder 消费 prefix file:.git-defunct-\n  ok·electron-builder 消费 prefix dir:.git-defunct-\n  ok·electron-builder 消费 glob:**/*.bak*\n  ok·electron-builder 消费 glob:**/*.log\n  ok·electron-builder 消费 glob:**/*.yml\n  ok·electron-builder 消费 glob:**/*.save.json\n  ok·electron-builder 消费 glob:**/_game-entry-shot.png\n  ok·electron-builder 消费 glob:**/_ingame*.png\n  ok·electron-builder 消费 glob:.claude/**\n  ok·electron-builder 消费 glob:output/**\n  ok·electron-builder 消费 glob:_audit_deadhandlers.py\n  ok·electron-builder 消费 glob:analyze_globals.py\n  ok·electron-builder 消费 glob:detect_globals.js\n  ok·electron-builder 消费 glob:scan_globals.js\n  ok·electron-builder 消费 glob:final_scan.sh\n  ok·electron-builder 消费 glob:scan.sh\n  ok·electron-builder 消费 glob:start-server.bat\n  ok·electron-builder 消费 glob:tm-tools.d.ts\n  ok·electron-builder 消费 glob:types.d.ts\n  ok·electron-builder 消费 glob:maps/**\n  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·electron-builder 消费 glob:preview-launch*.html\n  ok·electron-builder 消费 glob:preview-launch-assets/**\n  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·electron-builder 消费 glob:preview/shots/**\n  ok·electron-builder 消费 glob:preview/**/*verify*.png\n  ok·electron-builder 消费 glob:preview/home-ui-concepts/**\n  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**\n  ok·electron-builder 消费 previewMockup 例外\n  ok·installer 固定携带热更新发布者公钥\n  ok·installer 携带回合分卷两阶段提交模块\n  ok·热更新固定公钥类型为 Ed25519\n  ok·三平台构建统一走受检 build-electron wrapper\n  ok·Windows builder 强制签名、编辑签名与更新发布者验证\n  ok·Windows 构建缺发布者/证书时 fail-closed\n  ok·Windows 保留仓主输出目录并锁定发布者/证书身份\n  ok·mac 使用平台本地可移植输出目录\n  ok·linux 使用平台本地可移植输出目录\n  ok·所有官方 JSON 均登记进统一生成器\n  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json\n  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json\n  ok·hot builder 消费共享 release-tree\n  ok·hot builder 收集战斗模型与本地语义模型扩展名\n  ok·新扩展名自动携带旧壳阻断所需 minAppVersion\n  ok·内容 OTA 构建器不再收集 main/preload 主进程代码\n  ok·热更新 manifest/feed 强制 Ed25519 发布者签名\n  ok·桌面壳层放行 collector 会发出的运行资产扩展名\n  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判\n  ok·Capgo/APK 消费共享 release-tree\n  ok·Capgo/APK staging 先生成官方剧本派生物\n  ok·Capacitor 只读取派生 www\n  ok·npm sync 强制 stage→cap sync→native hash verify\n  ok·open/run 不可绕过 sync gate\n  ok·native 仅容忍 Capacitor 两个注入文件\n  ok·native extra allowlist 仅放两项，其余仍 fail-closed\n  ok·派生目录已 ignore\n  ok·web canonical 热更基线未被 ignore\n  ok·canonical 热更基线存在且与 buildVersion 同版\n  ok·canonical 热更基线不含 main/preload 可执行桥\n  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产\n  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件\n  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n  ok·staging 拒绝清空 web 源码子目录\n  ok·staging 拒绝清空已有普通目录\n  ok·staging 仅放行已知 mobile/www 派生目录\n  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳\n  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n  ok·两阶段 release/Pages 静态契约\nPASS assertions=166 files=689 bytes=129148528\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-release-v2-3f2eaf9c-e9ec-4eb9-9699-40782f602402",
+      "run": {
+        "label": "edict-release-v2",
+        "command": [
+          "node",
+          "scripts/verify-release-contract.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:13:38.947Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "9ac4881346f041e999a08238b5da2996e9802a31d4b13e8b7bf4d525fb5a5b11",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1813.3335000000002,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "149c3568a1c7f82bd19ea47c444e9d454fe9946938d5617f8df7288e90bc5927",
+          "text": "  ok·release-excludes schema\n  ok·canonical 热更基线是发布树 required file\n  ok·release-excludes 无重复\n  ok·安全排除项 _archive\n  ok·安全排除项 backups\n  ok·安全排除项 _screenshots\n  ok·安全排除项 test-results\n  ok·安全排除项 _codex_tmp\n  ok·安全排除项 dev-tools\n  ok·安全排除项 docs\n  ok·安全排除项 scripts\n  ok·安全排除项 tools\n  ok·安全排除项 godot\n  ok·安全排除项 .git\n  ok·安全排除项 node_modules\n  ok·安全排除项 .playwright-cli\n  ok·安全排除项 .cache\n  ok·安全排除项 .tmp\n  ok·安全排除项 tmp\n  ok·安全排除项 dist\n  ok·安全排除项 build\n  ok·安全排除项 release\n  ok·安全排除项 coverage\n  ok·安全排除项 .hot-update-staging\n  ok·安全排除项 _pw-scratch\n  ok·安全排除项 generated_images\n  ok·安全排除项 .vscode\n  ok·安全排除项 .bak-\n  ok·安全排除项 _codex\n  ok·安全排除项 .git-defunct-\n  ok·安全排除项 **/*.bak*\n  ok·安全排除项 **/*.log\n  ok·安全排除项 **/*.yml\n  ok·安全排除项 **/*.save.json\n  ok·安全排除项 **/_game-entry-shot.png\n  ok·安全排除项 **/_ingame*.png\n  ok·安全排除项 .claude/**\n  ok·安全排除项 output/**\n  ok·安全排除项 _audit_deadhandlers.py\n  ok·安全排除项 analyze_globals.py\n  ok·安全排除项 detect_globals.js\n  ok·安全排除项 scan_globals.js\n  ok·安全排除项 final_scan.sh\n  ok·安全排除项 scan.sh\n  ok·安全排除项 start-server.bat\n  ok·安全排除项 tm-tools.d.ts\n  ok·安全排除项 types.d.ts\n  ok·安全排除项 maps/**\n  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·安全排除项 preview-launch*.html\n  ok·安全排除项 preview-launch-assets/**\n  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·安全排除项 preview/shots/**\n  ok·安全排除项 preview/**/*verify*.png\n  ok·安全排除项 preview/home-ui-concepts/**\n  ok·安全排除项 preview/workshop-ui-concepts/**\n  ok·web 运行时引用/required files 未被误排：\n  ok·web 源体积/文件数在闸内：\n  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）\n  ok·发布树排除根目录游戏截图\n  ok·发布树排除根目录开发脚本与类型声明\n  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF\n  ok·发布树明确排除本机开发产物:.claude/launch.json\n  ok·发布树明确排除本机开发产物:output/playwright/shot.png\n  ok·发布树明确排除本机开发产物:maps/asia-map.png\n  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png\n  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png\n  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb\n  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx\n  ok·package-lock 根版本两处与 package.json 同版\n  ok·tracked mobile canonical version 与 buildVersion 同版\n  ok·electron-builder 消费 dir:_archive\n  ok·electron-builder 消费 dir:backups\n  ok·electron-builder 消费 dir:_screenshots\n  ok·electron-builder 消费 dir:test-results\n  ok·electron-builder 消费 dir:_codex_tmp\n  ok·electron-builder 消费 dir:dev-tools\n  ok·electron-builder 消费 dir:docs\n  ok·electron-builder 消费 dir:scripts\n  ok·electron-builder 消费 dir:tools\n  ok·electron-builder 消费 dir:godot\n  ok·electron-builder 消费 dir:.git\n  ok·electron-builder 消费 dir:node_modules\n  ok·electron-builder 消费 dir:.playwright-cli\n  ok·electron-builder 消费 dir:.cache\n  ok·electron-builder 消费 dir:.tmp\n  ok·electron-builder 消费 dir:tmp\n  ok·electron-builder 消费 dir:dist\n  ok·electron-builder 消费 dir:build\n  ok·electron-builder 消费 dir:release\n  ok·electron-builder 消费 dir:coverage\n  ok·electron-builder 消费 dir:.hot-update-staging\n  ok·electron-builder 消费 dir:_pw-scratch\n  ok·electron-builder 消费 dir:generated_images\n  ok·electron-builder 消费 dir:.vscode\n  ok·electron-builder 消费 prefix file:.bak-\n  ok·electron-builder 消费 prefix dir:.bak-\n  ok·electron-builder 消费 prefix file:_codex\n  ok·electron-builder 消费 prefix dir:_codex\n  ok·electron-builder 消费 prefix file:.git-defunct-\n  ok·electron-builder 消费 prefix dir:.git-defunct-\n  ok·electron-builder 消费 glob:**/*.bak*\n  ok·electron-builder 消费 glob:**/*.log\n  ok·electron-builder 消费 glob:**/*.yml\n  ok·electron-builder 消费 glob:**/*.save.json\n  ok·electron-builder 消费 glob:**/_game-entry-shot.png\n  ok·electron-builder 消费 glob:**/_ingame*.png\n  ok·electron-builder 消费 glob:.claude/**\n  ok·electron-builder 消费 glob:output/**\n  ok·electron-builder 消费 glob:_audit_deadhandlers.py\n  ok·electron-builder 消费 glob:analyze_globals.py\n  ok·electron-builder 消费 glob:detect_globals.js\n  ok·electron-builder 消费 glob:scan_globals.js\n  ok·electron-builder 消费 glob:final_scan.sh\n  ok·electron-builder 消费 glob:scan.sh\n  ok·electron-builder 消费 glob:start-server.bat\n  ok·electron-builder 消费 glob:tm-tools.d.ts\n  ok·electron-builder 消费 glob:types.d.ts\n  ok·electron-builder 消费 glob:maps/**\n  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·electron-builder 消费 glob:preview-launch*.html\n  ok·electron-builder 消费 glob:preview-launch-assets/**\n  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·electron-builder 消费 glob:preview/shots/**\n  ok·electron-builder 消费 glob:preview/**/*verify*.png\n  ok·electron-builder 消费 glob:preview/home-ui-concepts/**\n  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**\n  ok·electron-builder 消费 previewMockup 例外\n  ok·installer 固定携带热更新发布者公钥\n  ok·installer 携带回合分卷两阶段提交模块\n  ok·热更新固定公钥类型为 Ed25519\n  ok·三平台构建统一走受检 build-electron wrapper\n  ok·Windows builder 强制签名、编辑签名与更新发布者验证\n  ok·Windows 构建缺发布者/证书时 fail-closed\n  ok·Windows 保留仓主输出目录并锁定发布者/证书身份\n  ok·mac 使用平台本地可移植输出目录\n  ok·linux 使用平台本地可移植输出目录\n  ok·所有官方 JSON 均登记进统一生成器\n  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json\n  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json\n  ok·hot builder 消费共享 release-tree\n  ok·hot builder 收集战斗模型与本地语义模型扩展名\n  ok·新扩展名自动携带旧壳阻断所需 minAppVersion\n  ok·内容 OTA 构建器不再收集 main/preload 主进程代码\n  ok·热更新 manifest/feed 强制 Ed25519 发布者签名\n  ok·桌面壳层放行 collector 会发出的运行资产扩展名\n  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判\n  ok·Capgo/APK 消费共享 release-tree\n  ok·Capgo/APK staging 先生成官方剧本派生物\n  ok·Capacitor 只读取派生 www\n  ok·npm sync 强制 stage→cap sync→native hash verify\n  ok·open/run 不可绕过 sync gate\n  ok·native 仅容忍 Capacitor 两个注入文件\n  ok·native extra allowlist 仅放两项，其余仍 fail-closed\n  ok·派生目录已 ignore\n  ok·web canonical 热更基线未被 ignore\n  ok·canonical 热更基线存在且与 buildVersion 同版\n  ok·canonical 热更基线不含 main/preload 可执行桥\n  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产\n  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件\n  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n  ok·staging 拒绝清空 web 源码子目录\n  ok·staging 拒绝清空已有普通目录\n  ok·staging 仅放行已知 mobile/www 派生目录\n  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳\n  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n  ok·两阶段 release/Pages 静态契约\nPASS assertions=166 files=689 bytes=129148992\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-target-baseline-c4d68585-d3bf-422d-9940-a5b76aa4b962",
+      "run": {
+        "label": "edict-target-baseline",
+        "command": [
+          "node",
+          "web/scripts/smoke-edict-polish-results.js",
+          "--ref",
+          "2aba473385c9346bfc9905ee5019520f84a23c80"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:06:46.766Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 1,
+        "signal": null,
+        "elapsedMs": 33739.9895,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "a777ca1977785f84b6fc015d80b277e5bb365017fd519961f59581fdf356564e",
+          "text": "PASS normal polish preserves input/world and chosen secondary, requires explicit adoption\nPASS Anthropic text blocks remain compatible\nPASS legacy callers keep their original return contract\nPASS manual retry after failure recovers\nPASS no configured key retains offline draft merge without fake AI success\nPASS disabled secondary stays on primary\nPASS same-turn world switch rejects old result and no retry enters new world\nPASS untrusted answer remains escaped\n{\"baseline\":\"2aba473385c9346bfc9905ee5019520f84a23c80\",\"pass\":8,\"fail\":17}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "3d717bf1c2898696c5d8bada807291d3b80635eefae9fe379e8f9651bf0c6e97",
+          "text": "FAIL reasoning-only truncation retries once with larger bounded budget and same prompt/model Expected values to be strictly equal:\n\n1 !== 2\n\nFAIL repeated length cannot loop or expose incomplete draft as publishable Expected values to be strictly equal:\n\n1 !== 2\n\nFAIL empty content gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-empty'\n\nFAIL whitespace gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-empty'\n\nFAIL reasoning without truncation gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-reasoning-only'\n\nFAIL content filtered gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-refused'\n\nFAIL refusal gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-refused'\n\nFAIL invalid content object gets a specific error without pointless automatic retry Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'ai-text-format'\n\nFAIL content blocks extract text only, never hidden reasoning The expression evaluated to a falsy value:\n\n  assert(h.panel.innerHTML.includes('诏曰：抚恤流民。'))\n\nFAIL HTTP 401 is not retried or mislabelled empty and does not display secret echo The expression evaluated to a falsy value:\n\n  assert(!h.panel.innerHTML.includes('fixture-secondary-key'))\n\nFAIL missing primary key still uses configured secondary Expected values to be strictly equal:\n\n0 !== 1\n\nFAIL duplicate clicks do not launch concurrent billable polish requests Expected values to be strictly equal:\n\n2 !== 1\n\nFAIL hide cancels request and late completion cannot reopen panel Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL edited draft is not replaced by stale result The expression evaluated to a falsy value:\n\n  assert(!h.panel.innerHTML.includes('edict-polished-text'))\n\nFAIL late success from same-turn old world cannot replace current polish or release its button Expected values to be strictly equal:\n\nfalse !== true\n\nFAIL close and reopen ignores old response The expression evaluated to a falsy value:\n\n  assert(h.panel.innerHTML.includes('新结果'))\n\nFAIL compressed scaling cannot exceed retry output ceiling The expression evaluated to a falsy value:\n\n  assert(h.requests.every(r => r.body.max_tokens <= 8000))\n\n"
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-target-final-1e60fa88-91f3-4c55-9db3-aa4d96ab2b59",
+      "run": {
+        "label": "edict-target-final",
+        "command": [
+          "node",
+          "web/scripts/smoke-edict-polish-results.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:06:44.348Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "c7cf9d5a57b902644f45d6fc4819e8ea69787851d8b7db9113c916b4e5fdc9ae",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "595271a7de814629654b55a8e9bdf8199c64f7818f63d548a0d99288582b24a6",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "fe6fe852232f408e101116a1f809580ae6f15f0a42ea35dfd5d1de5695bc5af0",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "eeb3f488363c711cac719b4ad05fbde66e132375fd2a19d4df8372daade9d415"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1663.6197,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "a5c1368ab83fe79f494eb62d82b5c7cbda57fec0a692c5efb39915bd305aee7d",
+          "text": "PASS normal polish preserves input/world and chosen secondary, requires explicit adoption\nPASS reasoning-only truncation retries once with larger bounded budget and same prompt/model\nPASS repeated length cannot loop or expose incomplete draft as publishable\nPASS empty content gets a specific error without pointless automatic retry\nPASS whitespace gets a specific error without pointless automatic retry\nPASS reasoning without truncation gets a specific error without pointless automatic retry\nPASS content filtered gets a specific error without pointless automatic retry\nPASS refusal gets a specific error without pointless automatic retry\nPASS invalid content object gets a specific error without pointless automatic retry\nPASS content blocks extract text only, never hidden reasoning\nPASS Anthropic text blocks remain compatible\nPASS legacy callers keep their original return contract\nPASS HTTP 401 is not retried or mislabelled empty and does not display secret echo\nPASS manual retry after failure recovers\nPASS missing primary key still uses configured secondary\nPASS no configured key retains offline draft merge without fake AI success\nPASS disabled secondary stays on primary\nPASS duplicate clicks do not launch concurrent billable polish requests\nPASS hide cancels request and late completion cannot reopen panel\nPASS same-turn world switch rejects old result and no retry enters new world\nPASS edited draft is not replaced by stale result\nPASS late success from same-turn old world cannot replace current polish or release its button\nPASS close and reopen ignores old response\nPASS compressed scaling cannot exceed retry output ceiling\nPASS untrusted answer remains escaped\n{\"baseline\":null,\"pass\":25,\"fail\":0}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    },
+    {
+      "directory": "web\\dev-tools\\perf-round1\\edict-target-v2-1ddb33f2-062e-4ac9-8e3e-9dfa1f947f0a",
+      "run": {
+        "label": "edict-target-v2",
+        "command": [
+          "node",
+          "web/scripts/smoke-edict-polish-results.js"
+        ],
+        "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+        "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.14.0",
+        "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+        "logicalCpus": 12,
+        "memoryBytes": 25480257536,
+        "startedAt": "2026-09-08T12:10:27.905Z",
+        "sourceHashes": {
+          "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+          "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+          "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+        },
+        "dirtyFileHashes": {
+          ".github/workflows/ci.yml": "15118652ac1e47016d7ead2b6ccbd45cbc59058584e2aab3fe0dbac941f2d069",
+          "scripts/electron/bridge-main.cjs": "51ba888fb2d55ed3b85e6ab08d35d0f5d503c0ee94cdc9eb485410541acc1098",
+          "scripts/electron/edict-polish-cases.cjs": "fce39ea3892b3197b3d25ae66e155db39e0ee502807c62cf19f5a1d16032027d",
+          "scripts/verify-electron-bridge.js": "209b418e50a77ed6c6fecc81cfa9988f3c85a3253ae8db5851821aac3702060a",
+          "web/.hot-update-manifest.json": "2615834197a9e3e1bc3e0d882fa72feab48160269fe274a1055026f13dd60ded",
+          "web/index.html": "9bebc506335870463235793bb429bebbb9d01c0f10d59a25eff07c4e9d8e3de0",
+          "web/scripts/smoke-edict-polish-results.js": "d9b48230da7357bff3cab23ec6e8d04c54f6cef6c393cac5f1b6c50020bd5303",
+          "web/startup-script-phases.json": "8f2190bc7edd8b15d291f78aa45a3fd4f89de02a85b580366fbbce771cd9901d",
+          "web/tm-ai-infra-json.js": "298c44dd103b3448e69060bb3e1b26c9d92a6bae1ccc667419cb96823fa973a8",
+          "web/tm-ai-infra.js": "e88c6381f2fdb2ab03c6ec173828901c43a9e7545c55a1c5108fd365783ecf33",
+          "web/tm-hongyan-edict-ui.js": "15fcea2218cfbc230ded7ea44979482cb83b10acf5a83ee9e26bf8c2820e830d"
+        },
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMs": 1912.4800999999998,
+        "complete": true
+      },
+      "logs": {
+        "stdout.log": {
+          "sourceSha256": "a5c1368ab83fe79f494eb62d82b5c7cbda57fec0a692c5efb39915bd305aee7d",
+          "text": "PASS normal polish preserves input/world and chosen secondary, requires explicit adoption\nPASS reasoning-only truncation retries once with larger bounded budget and same prompt/model\nPASS repeated length cannot loop or expose incomplete draft as publishable\nPASS empty content gets a specific error without pointless automatic retry\nPASS whitespace gets a specific error without pointless automatic retry\nPASS reasoning without truncation gets a specific error without pointless automatic retry\nPASS content filtered gets a specific error without pointless automatic retry\nPASS refusal gets a specific error without pointless automatic retry\nPASS invalid content object gets a specific error without pointless automatic retry\nPASS content blocks extract text only, never hidden reasoning\nPASS Anthropic text blocks remain compatible\nPASS legacy callers keep their original return contract\nPASS HTTP 401 is not retried or mislabelled empty and does not display secret echo\nPASS manual retry after failure recovers\nPASS missing primary key still uses configured secondary\nPASS no configured key retains offline draft merge without fake AI success\nPASS disabled secondary stays on primary\nPASS duplicate clicks do not launch concurrent billable polish requests\nPASS hide cancels request and late completion cannot reopen panel\nPASS same-turn world switch rejects old result and no retry enters new world\nPASS edited draft is not replaced by stale result\nPASS late success from same-turn old world cannot replace current polish or release its button\nPASS close and reopen ignores old response\nPASS compressed scaling cannot exceed retry output ceiling\nPASS untrusted answer remains escaped\n{\"baseline\":null,\"pass\":25,\"fail\":0}\n"
+        },
+        "stderr.log": {
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "text": ""
+        }
+      }
+    }
+  ]
+}

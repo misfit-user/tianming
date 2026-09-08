@@ -1,0 +1,121 @@
+{
+  "source": "web\\dev-tools\\electron-bridge\\1f3935db-db5e-47a9-98c1-c1ed4bd2fa16\\report.json",
+  "sourceSha256": "d641ac6cc8fa83e488743085751c05280429a486331f2e07ad2210898823d059",
+  "report": {
+    "runId": "1f3935db-db5e-47a9-98c1-c1ed4bd2fa16",
+    "repo": "<user-profile>\\Desktop\\tianming-perf-round1",
+    "head": "2aba473385c9346bfc9905ee5019520f84a23c80",
+    "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/index.html\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra.js\n M web/tm-hongyan-edict-ui.js\n?? scripts/electron/edict-polish-cases.cjs\n?? web/scripts/smoke-edict-polish-results.js",
+    "platform": "win32",
+    "node": "v24.14.0",
+    "baseline": false,
+    "complete": true,
+    "results": [
+      {
+        "mode": "edict-polish",
+        "ok": true,
+        "exitCode": 0,
+        "detail": {
+          "complete": true,
+          "ok": true,
+          "mode": "edict-polish",
+          "baseline": false,
+          "versions": {
+            "node": "20.18.3",
+            "acorn": "8.14.0",
+            "ada": "2.9.2",
+            "ares": "1.34.4",
+            "base64": "0.5.2",
+            "brotli": "1.0.9",
+            "cjs_module_lexer": "1.4.1",
+            "cldr": "44.1",
+            "icu": "74.2",
+            "llhttp": "8.1.2",
+            "modules": "130",
+            "napi": "9",
+            "nghttp2": "1.61.0",
+            "openssl": "0.0.0",
+            "simdutf": "5.6.4",
+            "tz": "2024a",
+            "undici": "6.21.1",
+            "unicode": "15.1",
+            "uv": "1.46.0",
+            "uvwasi": "0.0.21",
+            "v8": "13.0.245.25-electron.0",
+            "zlib": "1.3.0.1-motley",
+            "electron": "33.4.11",
+            "chrome": "130.0.6723.191"
+          },
+          "results": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-production-fixture-and-real-panel",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-real-button-recovers-reasoning-truncation",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-complete-result-is-visible",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-raw-intent-kept-and-not-automatically-published",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-empty-reply-shows-explicit-actionable-failure",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-failure-card-is-visible",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-retry-and-return-buttons-not-covered-by-backdrop",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-real-retry-button-restores-answer",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-auth-failure-does-not-expose-provider-echo",
+              "status": "PASS"
+            },
+            {
+              "name": "edict-late-response-after-hide-cannot-reopen",
+              "status": "PASS"
+            }
+          ],
+          "failures": [],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+          "temporaryUserData": "<user-profile>\\AppData\\Local\\Temp\\tm-bridge-series-fk5sC1\\production"
+        }
+      }
+    ],
+    "ok": true
+  }
+}

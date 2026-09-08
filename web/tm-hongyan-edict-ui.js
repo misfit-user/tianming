@@ -169,6 +169,8 @@ function _edictEl(id) {
 }
 
 function _hidePolishedEdict() {
+  var pending = _polishEdicts._pending;
+  if (pending) { _polishEdicts._pending = null; pending.controller.abort(); }
   var panel = _edictEl('edict-polished');
   if (panel) {
     panel.classList.remove('show');
@@ -178,6 +180,41 @@ function _hidePolishedEdict() {
 }
 
 // ── 有司润色：将各类诏令合并为正式诏书 ──
+function _edictPolishFailure(panel, error, tier) {
+  var code = (error && error.code) || 'edict-polish-failed';
+  var messages = {
+    'ai-text-truncated': '模型输出已达上限，诏书尚未完成；请换用输出额度更充足的润色模型后重试。',
+    'ai-text-reasoning-only': '模型只返回了思考过程，没有诏书正文；请检查所用模型的输出设置后重试。',
+    'ai-text-empty': '接口已响应，但正文为空；可重试，反复出现请检查所用模型。',
+    'ai-text-refused': '模型拒绝或过滤了本次润色；请检查草稿内容后重试。',
+    'ai-text-format': '接口返回的正文格式不受支持；请核对模型与兼容接口。',
+    'context_length_exceeded': '草稿与格式要求超过所用模型的上下文容量；请检查模型设置后重试。',
+    'edict-draft-changed': '等待期间草稿已修改，旧润色结果未采用；请按新草稿重新润色。'
+  };
+  var message = messages[code];
+  if (!message && typeof _tmAiErrHuman === 'function') message = _tmAiErrHuman(error);
+  panel.innerHTML = '';
+  panel.dataset.errorCode = code;
+  var card = document.createElement('div');
+  card.className = 'ed-polish-card loading';
+  var notice = document.createElement('p');
+  notice.textContent = '润色未完成（' + (tier === 'secondary' ? '次 API' : '主 API') + '）：' +
+    (message || '请求失败，请稍后重试或检查 AI 设置。') + ' 原始旨意已保留。';
+  card.appendChild(notice);
+  var actions = document.createElement('div');
+  actions.className = 'ed-scroll-actions';
+  var retry = document.createElement('button');
+  retry.type = 'button'; retry.className = 'ed-scroll-btn'; retry.textContent = '重试润色';
+  retry.addEventListener('click', function() { _polishEdicts(); });
+  actions.appendChild(retry);
+  var close = document.createElement('button');
+  close.type = 'button'; close.className = 'ed-scroll-btn'; close.textContent = '返回修改';
+  close.addEventListener('click', _hidePolishedEdict);
+  actions.appendChild(close);
+  card.appendChild(actions);
+  panel.appendChild(card);
+}
+
 async function _polishEdicts() {
   var cats = [
     { id: 'edict-pol', label: '\u653F\u4EE4' },
@@ -196,6 +233,9 @@ async function _polishEdicts() {
 
   var panel = _edictEl('edict-polished');
   if (!panel) return;
+  var previous = _polishEdicts._pending;
+  if (previous && previous.panel === panel && previous.current()) return;
+  if (previous) previous.controller.abort();
   panel.classList.add('show');
   panel.style.display = 'block';
   panel.innerHTML = '<div class="ed-polish-card loading">\u6709\u53F8\u6B63\u5728\u6DA6\u8272\u8BCF\u4E66\u2026\u2026</div>';
@@ -210,13 +250,29 @@ async function _polishEdicts() {
     plain: '\u767D\u8BDD\u6587\u8A00\uFF0C\u534A\u6587\u534A\u767D\uFF0C\u901A\u4FD7\u6613\u61C2\u4F46\u4FDD\u6301\u5E84\u91CD'
   }[style] || '';
 
-  if (!P.ai.key) {
+  var tier = (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : 'primary';
+  var config = typeof _getAITier === 'function' ? _getAITier(tier) : P.ai;
+  if (!config || !config.key) {
     var merged = parts.map(function(p) { return '\u3010' + p.label + '\u3011' + p.content; }).join('\n\n');
     _renderPolishedEdict(panel, merged);
     return;
   }
 
-  var sc = findScenarioById && findScenarioById(GM.sid);
+  var gm = GM, project = P;
+  var lease = typeof _tmCaptureWorldLease === 'function' ? _tmCaptureWorldLease() : null;
+  var controller = new AbortController();
+  var request = { panel: panel, controller: controller, current: function() {
+    return _polishEdicts._pending === request && !controller.signal.aborted && GM === gm && P === project &&
+      panel.isConnected !== false && _edictEl('edict-polished') === panel &&
+      (!lease || typeof _tmWorldLeaseCurrent !== 'function' || _tmWorldLeaseCurrent(lease));
+  } };
+  _polishEdicts._pending = request;
+  var inputs = cats.map(function(cat) { var el = _edictEl(cat.id); return { el: el, value: el ? el.value : '' }; });
+  var buttons = Array.prototype.slice.call(_edictUiRoot().querySelectorAll('.act-polish, .ed-polish-btn'));
+  buttons.forEach(function(button) { button._edictPolishOwner = request; button.disabled = true; });
+  delete panel.dataset.errorCode;
+  try {
+  var sc = typeof findScenarioById === 'function' && findScenarioById(GM.sid);
   var era = (sc && sc.era) || '';
   var dynasty = (sc && sc.dynasty) || '';
   var role = (P.playerInfo && P.playerInfo.characterName) || '\u7687\u5E1D';
@@ -253,12 +309,34 @@ async function _polishEdicts() {
     } catch (_edTcE) {}
   }
 
-  try {
-    var result = await callAI(prompt, 2000, null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 【降本2026-06-19】诏书润色(机械文体)走次 API
-    if (result) _renderPolishedEdict(panel, result);
-    else panel.innerHTML = '<div style="color:var(--color-foreground-muted);text-align:center;">\u6DA6\u8272\u672A\u8FD4\u56DE\u5185\u5BB9</div>';
+    var modelLimit = typeof _matchModelOutput === 'function' ? Number(_matchModelOutput(config.model)) * 1024 : 0;
+    var ceiling = Math.min(8000, modelLimit > 0 ? modelLimit : 8000);
+    var result;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      if (!request.current()) return;
+      try {
+        result = await callAI(prompt, attempt ? ceiling : 2000, controller.signal, tier,
+          { id: 'edict-polish', requireText: true, maxOutputTokens: ceiling, maxRetries: 1 });
+        break;
+      } catch (error) {
+        if (!request.current()) return;
+        if (error.code !== 'ai-text-truncated' || attempt || !(ceiling > error.maxTokens)) throw error;
+        panel.innerHTML = '<div class="ed-polish-card loading">正文输出被截断，有司正在补足输出额度后重试（1/1）……</div>';
+      }
+    }
+    if (!request.current()) return;
+    if (inputs.some(function(input) { return input.el && input.el.value !== input.value; }) || (styleEl && styleEl.value !== style)) {
+      _edictPolishFailure(panel, { code: 'edict-draft-changed' }, tier); return;
+    }
+    if (typeof result !== 'string' || !result.trim()) { _edictPolishFailure(panel, { code: 'ai-text-empty' }, tier); return; }
+    _renderPolishedEdict(panel, result);
   } catch(e) {
-    panel.innerHTML = '<div style="color:var(--vermillion-400);">\u6DA6\u8272\u5931\u8D25\uFF1A' + escHtml(e.message || '') + '</div>';
+    if (request.current()) _edictPolishFailure(panel, e, tier);
+  } finally {
+    if (_polishEdicts._pending === request) _polishEdicts._pending = null;
+    buttons.forEach(function(button) {
+      if (button._edictPolishOwner === request) { delete button._edictPolishOwner; button.disabled = false; }
+    });
   }
 }
 

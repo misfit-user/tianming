@@ -52,6 +52,42 @@ var _tmAIToolJSON = {
   }
 };
 
+// Opt-in final-text contract: never promote reasoning/refusal/partial text to a
+// publishable document. Legacy callAI/callAIMessages return values stay unchanged.
+function _tmAITextResult(data, strict, maxTokens) {
+  var choice = data && data.choices && data.choices[0];
+  var message = choice && choice.message;
+  if (!strict) {
+    if (message) return message.content;
+    if (data && Array.isArray(data.content)) return data.content.map(function(b) { return b.text || ''; }).join('');
+    return '';
+  }
+  var raw = message ? message.content : data && data.content;
+  var finish = (choice && choice.finish_reason) || (data && data.stop_reason) || '';
+  var reasoning = !!(message && (message.reasoning_content || message.reasoning));
+  var refused = !!(message && message.refusal) || /^(content_filter|refusal|safety)$/i.test(finish);
+  var text = typeof raw === 'string' ? raw : '';
+  if (Array.isArray(raw)) {
+    text = raw.map(function(part) {
+      if (!part || typeof part !== 'object') return '';
+      if (part.type === 'thinking' || part.type === 'reasoning') reasoning = true;
+      if (part.type === 'refusal') refused = true;
+      return (part.type === 'text' || part.type === 'output_text') && typeof part.text === 'string' ? part.text : '';
+    }).join('');
+  }
+  var code = refused ? 'ai-text-refused' : /^(length|max_tokens|max_output_tokens)$/i.test(finish) ? 'ai-text-truncated' :
+    (raw != null && typeof raw !== 'string' && !Array.isArray(raw)) ? 'ai-text-format' :
+    !text.trim() ? (reasoning ? 'ai-text-reasoning-only' : 'ai-text-empty') : '';
+  if (code) {
+    var error = new Error(code);
+    error.code = code;
+    error.maxTokens = maxTokens;
+    error.reasoningOnly = reasoning && !text.trim();
+    throw error; // No response body, thought text, URL or credential in this error.
+  }
+  return text;
+}
+
 function robustParseJSON(raw) {
   if (!raw) return null;
 

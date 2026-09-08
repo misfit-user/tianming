@@ -775,6 +775,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
   var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
@@ -783,9 +784,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
   // Phase 7·补 id 参数·byId 拆分
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
 }
 
 /**
@@ -1168,9 +1167,7 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts2);
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAIMessages');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok2);
 }
 
 /**

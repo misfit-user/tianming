@@ -332,8 +332,10 @@
           forceTool: forceLast ? 'submit_appraisal' : undefined,
           id: 'custom_build_appraise:r' + round
         });
-      } catch (e) { return { error: 'call-failed:' + (e && e.message) }; }
+      } catch (e) { return { error: 'call-failed', detail: { status: Number(e && e.status) || 0, message: 'AI request failed' } }; }
       if (!resp) return { error: 'no-resp' };
+      if (resp.error) return { error: resp.error.code || 'call-failed', detail: resp.error };
+      if (resp.truncated) return { error: 'appraisal-truncated' };
       var calls = Array.isArray(resp.toolCalls) ? resp.toolCalls : [];
       var ap = null;
       for (var i = 0; i < calls.length; i++) { if (calls[i] && calls[i].name === 'submit_appraisal') { ap = calls[i].input || {}; break; } }
@@ -349,6 +351,15 @@
       else transcript += '\n\n（请据上述径直调用 submit_appraisal 核议）';
     }
     return { error: 'no-appraisal' };
+  }
+
+  function _validAppraisal(ap) {
+    if (!ap || ['合理', '勉强', '不合理'].indexOf(ap.feasibility) < 0) return false;
+    return ['costActual', 'timeActual'].every(function(key) {
+      var value = ap[key];
+      return (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) &&
+        isFinite(Number(value)) && Number(value) >= 0;
+    });
   }
 
   // 缩放结构化效果（谏官回调过誉用·pct/abs 缩·minxin/corruption/upkeep/armory 不缩·abs 取整）
@@ -449,11 +460,12 @@
 
     // A5 多步核定：baseline 勘地注入 + agent 可再调 inspect_region/recall_precedent → 末轮逼 submit_appraisal（走次要 API）
     var decided = await _decideMultiStep(divName, req, ctx, inspection);
-    if (decided.error) { out.reason = decided.error; return out; }
+    if (decided.error) { out.reason = decided.error; if (decided.detail) out.error = decided.detail; return out; }
     out.fallback = !!decided.fallback;
     out.toolStats = decided.toolStats;
     var ap = decided.appraisal;
     if (!ap) { out.reason = 'no-appraisal'; return out; }
+    if (!_validAppraisal(ap)) { out.reason = 'appraisal-invalid'; return out; }
 
     // A5 谏官对抗审：审过誉/工期虚短·据评回调效果与工期（恒开·tier:secondary·失败不动·宁严勿宽·2026-07 斩旗转正删 customBuildCriticEnabled flag）
     try {

@@ -236,6 +236,169 @@
     });
   }
 
+  function _responseError(code, message) {
+    var e = new Error(message); e.code = 'authoring-response-' + code;
+    return e; // 不把响应正文/工具参数（可能含私密剧本内容）带进错误卡。
+  }
+  function _responseJSON(text) {
+    try { return JSON.parse(text); }
+    catch (_) { throw _responseError('invalid-json', 'API 返回内容不符合 JSON 格式，本轮工具未执行；请重试或检查中转响应格式。'); }
+  }
+  // 某些中转忽略非流式请求，成功响应实际为 SSE。只在收齐完整响应后交给现有工具解析器。
+  function _decodeResponse(text) {
+    var raw = String(text || '').replace(/^\uFEFF/, '').trim();
+    if (/^[\[{]/.test(raw)) {
+      var data = _responseJSON(raw);
+      if (data && data.error) throw _responseError('provider-error', 'API 返回错误结果，本轮工具未执行；请检查服务状态后重试。');
+      return data;
+    }
+    if (!/^(?:data:|event:|id:|retry:|:)/.test(raw)) throw _responseError('invalid-json', 'API 未返回有效 JSON 或事件流，本轮工具未执行；请检查中转响应格式。');
+    var kind = '', seen = false, done = false, finish = null, usage = null;
+    var message = { role: 'assistant', content: '', tool_calls: [] }, tools = new Map(), blocks = new Map(), parts = [];
+    function select(value) {
+      if (kind && kind !== value) throw _responseError('mixed-stream', 'API 混用了不同事件协议，本轮工具未执行。');
+      kind = value; seen = true;
+    }
+    function index(value) {
+      if (!Number.isInteger(value) || value < 0 || value > 1023) throw _responseError('invalid-index', 'API 工具片段序号无效，本轮工具未执行。');
+      return value;
+    }
+    function string(value) {
+      if (typeof value !== 'string') throw _responseError('invalid-fragment', 'API 工具片段格式无效，本轮工具未执行。');
+      return value;
+    }
+    function input(text) {
+      var value = _responseJSON(text);
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw _responseError('invalid-tool-input', 'API 工具参数不是完整对象，本轮工具未执行。');
+      return value;
+    }
+    function accept(payload, eventName) {
+      if (payload === '[DONE]') { done = true; return; }
+      if (done) throw _responseError('after-completion', 'API 在结束标记后仍返回内容，本轮工具未执行。');
+      var d = _responseJSON(payload);
+      if (!d || typeof d !== 'object') throw _responseError('invalid-event', 'API 事件格式无效，本轮工具未执行。');
+      if (d.error || d.type === 'error' || eventName === 'error') throw _responseError('provider-error', 'API 流中返回错误，本轮工具未执行；请检查服务状态后重试。');
+      if (Array.isArray(d.choices)) {
+        select('openai'); if (d.usage) usage = d.usage;
+        d.choices.forEach(function(c, pos) {
+          if ((c.index == null ? pos : c.index) !== 0) return; // 与原解析器一致，只消费第一候选。
+          var delta = c.delta || c.message || {};
+          if (delta.content != null) message.content += string(delta.content);
+          if (delta.tool_calls != null && !Array.isArray(delta.tool_calls)) throw _responseError('invalid-tools', 'API 工具列表格式无效，本轮工具未执行。');
+          (delta.tool_calls || []).forEach(function(tc, i) {
+            var key = index(tc.index == null && c.message ? i : tc.index), old = tools.get(key);
+            if (!old) { old = { id: '', type: 'function', function: { name: '', arguments: '' } }; tools.set(key, old); }
+            if (tc.id != null) { if (old.id && old.id !== tc.id) throw _responseError('changed-tool-id', 'API 工具片段身份不一致，本轮工具未执行。'); old.id = string(tc.id); }
+            var fn = tc.function || {};
+            if (fn.name != null) old.function.name += string(fn.name);
+            if (fn.arguments != null) old.function.arguments += string(fn.arguments);
+          });
+          if (c.finish_reason != null || c.stop_reason != null) finish = c.finish_reason || c.stop_reason;
+        });
+      } else if (Array.isArray(d.candidates)) {
+        select('gemini'); var candidate = d.candidates[0];
+        if (candidate && candidate.content && Array.isArray(candidate.content.parts)) parts = parts.concat(candidate.content.parts);
+        if (candidate && candidate.finishReason) finish = candidate.finishReason;
+        if (d.usageMetadata) usage = d.usageMetadata;
+      } else {
+        var type = d.type || eventName;
+        if (type === 'ping') return;
+        if (!/^(message_start|message_delta|message_stop|content_block_start|content_block_delta|content_block_stop)$/.test(type)) throw _responseError('unsupported-stream', 'API 事件协议不受当前端点支持，本轮工具未执行。');
+        select('anthropic');
+        if (type === 'message_start') usage = d.message && d.message.usage;
+        if (type === 'content_block_start') {
+          var k = index(d.index);
+          if (blocks.has(k)) throw _responseError('duplicate-block', 'API 重复开启同一工具片段，本轮工具未执行。');
+          blocks.set(k, { value: d.content_block || {}, json: '', stopped: false });
+        } else if (type === 'content_block_delta' || type === 'content_block_stop') {
+          var block = blocks.get(index(d.index));
+          if (!block || block.stopped) throw _responseError('invalid-block', 'API 工具片段顺序无效，本轮工具未执行。');
+          if (type === 'content_block_stop') block.stopped = true;
+          else if (d.delta && d.delta.type === 'input_json_delta') block.json += string(d.delta.partial_json);
+          else if (d.delta && d.delta.type === 'text_delta') block.value.text = (block.value.text || '') + string(d.delta.text);
+          // thinking/signature 片段不是工具参数，不交给写入层。
+        } else if (type === 'message_delta') { finish = d.delta && d.delta.stop_reason; if (d.usage) usage = d.usage; }
+        else if (type === 'message_stop') done = true;
+      }
+    }
+    var fields = [], eventName = '';
+    function flush() { if (fields.length) accept(fields.join('\n'), eventName); fields = []; eventName = ''; }
+    raw.split(/\r\n|\r|\n/).forEach(function(line) {
+      if (!line) { flush(); return; }
+      if (line[0] === ':') return;
+      var at = line.indexOf(':'), key = at < 0 ? line : line.slice(0, at), value = at < 0 ? '' : line.slice(at + 1).replace(/^ /, '');
+      if (key === 'data') fields.push(value); else if (key === 'event') eventName = value;
+    });
+    flush();
+    if (!seen || (!done && (!finish || kind === 'anthropic'))) throw _responseError('incomplete-stream', 'API 事件流未完整结束，本轮工具未执行；请重试。');
+    if (kind === 'openai') {
+      message.tool_calls = Array.from(tools.keys()).sort(function(a, b) { return a - b; }).map(function(k) {
+        var t = tools.get(k);
+        if (finish !== 'length' && finish !== 'max_tokens') { if (!t.function.name) throw _responseError('invalid-tool-name', 'API 工具名称不完整，本轮工具未执行。'); input(t.function.arguments || '{}'); }
+        return t;
+      });
+      return { choices: [{ message: message, finish_reason: finish }], usage: usage };
+    }
+    if (kind === 'gemini') return { candidates: [{ content: { parts: parts }, finishReason: finish }], usageMetadata: usage };
+    var content = Array.from(blocks.keys()).sort(function(a, b) { return a - b; }).map(function(k) {
+      var b = blocks.get(k);
+      if (finish !== 'max_tokens') {
+        if (!b.stopped) throw _responseError('incomplete-tool', 'API 工具片段未结束，本轮工具未执行。');
+        if (b.value.type === 'tool_use' && b.json) b.value.input = input(b.json);
+      }
+      return b.value;
+    });
+    return { content: content, stop_reason: finish, usage: usage };
+  }
+  function _readResponse(r, signal) {
+    // 原有模拟/桥接 Response 可只提供 json()；真实 Fetch Response 走受控正文读取。
+    if (typeof r.text !== 'function') return Promise.resolve().then(function() { return r.json(); });
+    var maxBytes = 64 * 1024 * 1024; // 兼容图像工具响应；避免损坏/无界中转把整个编辑器撑满。
+    if (!r.body || !r.body.getReader || typeof TextDecoder === 'undefined') return r.text().then(function(text) {
+      if (signal && signal.aborted) throw _abortError(signal.reason);
+      if (text.length > maxBytes) throw _responseError('too-large', 'API 返回内容过大，本轮工具未执行。');
+      return _decodeResponse(text);
+    });
+    var reader = r.body.getReader(), decoder = new TextDecoder(), chunks = [], bytes = 0, tail = '';
+    function terminal(text) {
+      if (!/\[DONE\]|message_stop/.test(text)) return false;
+      var events = text.replace(/\r\n|\r/g, '\n').split('\n\n'); events.pop(); // 只接受已结束的事件，不猜半个终止标记。
+      return events.some(function(event) {
+        var data = event.split('\n').filter(function(line) { return line.indexOf('data:') === 0; }).map(function(line) { return line.slice(5).replace(/^ /, ''); }).join('\n');
+        if (data === '[DONE]') return true;
+        try { return JSON.parse(data).type === 'message_stop'; } catch (_) { return false; }
+      });
+    }
+    return new Promise(function(resolve, reject) {
+      var settled = false;
+      function end(error, value, stopBody) {
+        if (settled) return; settled = true;
+        if (signal && signal.removeEventListener) signal.removeEventListener('abort', abort);
+        if (error || stopBody) { try { Promise.resolve(reader.cancel()).catch(function() {}); } catch (_) {} }
+        try { reader.releaseLock(); } catch (_) {} // 清理失败不覆盖原始读取错误。
+        chunks = []; if (error) reject(error); else resolve(value);
+      }
+      function abort() { end(_abortError(signal && signal.reason)); }
+      function read() {
+        reader.read().then(function(row) {
+          if (settled) return;
+          try {
+            if (row.done) { chunks.push(decoder.decode()); end(null, _decodeResponse(chunks.join(''))); return; }
+            bytes += row.value.byteLength;
+            if (bytes > maxBytes) throw _responseError('too-large', 'API 返回内容过大，本轮工具未执行。');
+            var piece = decoder.decode(row.value, { stream: true }); chunks.push(piece);
+            var probe = tail + piece;
+            if (terminal(probe)) { end(null, _decodeResponse(chunks.join('')), true); return; }
+            tail = probe.slice(-2048); read();
+          } catch (e) { end(e); }
+        }, function(e) { end(e); });
+      }
+      if (signal && signal.aborted) return abort();
+      if (signal && signal.addEventListener) signal.addEventListener('abort', abort, { once: true });
+      read();
+    });
+  }
+
   // 带重试/超时的 fetch（429 Retry-After·5xx/网络错误指数退避·AbortController 超时）
   function _fetchJSON(url, options, opts) {
     opts = opts || {};
@@ -260,26 +423,29 @@
         if (timer) clearTimeout(timer);
         if (onOuterAbort && outerSignal && outerSignal.removeEventListener) outerSignal.removeEventListener('abort', onOuterAbort);
       }
-      return global.fetch(url, fopt).then(function(r) {
-        cleanup();
-        if (r.status === 429 && n < maxRetries) {
-          var ra = parseInt((r.headers && r.headers.get && r.headers.get('Retry-After')) || '0', 10);
-          return _delay(ra > 0 ? ra * 1000 : Math.min(30000, base * Math.pow(2, n)), outerSignal).then(function() { return attempt(n + 1); });
-        }
+      return Promise.resolve().then(function() { return global.fetch(url, fopt); }).then(function(r) {
         if (!r.ok) {
           return r.text().then(function(t) {
             var err = new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 200));
             err.status = r.status;
-            if (r.status >= 500 && n < maxRetries) return _delay(base * Math.pow(2, n), outerSignal).then(function() { return attempt(n + 1); });
+            var ra = parseInt((r.headers && r.headers.get && r.headers.get('Retry-After')) || '0', 10);
+            if (r.status === 429 && ra > 0) err.retryAfterMs = ra * 1000;
             throw err;
           });
         }
-        return r.json();
+        return _readResponse(r, fopt.signal);
+      }).then(function(data) {
+        cleanup();
+        if (outerSignal && outerSignal.aborted) throw _abortError(outerSignal.reason);
+        if (timedOut) throw _abortError('timeout');
+        return data;
       }).catch(function(e) {
         cleanup();
         if (outerSignal && outerSignal.aborted) throw _abortError(outerSignal.reason);
-        if (e && e.status) throw e;               // 已分类的 HTTP 错误
-        if (n < maxRetries && (timedOut || !(e && e.aborted))) return _delay(base * Math.pow(2, n), outerSignal).then(function() { return attempt(n + 1); }); // 网络/超时
+        if (timedOut) { e = new Error('API 请求超时，完整响应未收到，请稍后重试。'); e.name = 'TimeoutError'; e.transient = true; }
+        if (e && /^authoring-response-/.test(e.code || '')) throw e; // 已确定的协议损坏不能当网络抖动反复调用。
+        var retryable = e && e.status ? (e.status === 429 || e.status >= 500) : (timedOut || !(e && e.aborted));
+        if (n < maxRetries && retryable) return _delay((e && e.retryAfterMs) || Math.min(30000, base * Math.pow(2, n)), outerSignal).then(function() { return attempt(n + 1); });
         throw e;
       });
     }
@@ -324,7 +490,11 @@
       headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key };
       body = _toOpenAI(conversation, system, tools, maxTok, cfg.model, cfg.temp);
     }
-    function _parseResp(data) { return gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data)); }
+    function _parseResp(data) {
+      var parsed = gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data));
+      if (parsed.truncated || parsed.badToolJson) parsed.toolCalls = []; // 整轮丢弃；由既有 loop 输出预算修复接手，不能执行半轮写入。
+      return parsed;
+    }
 
     function fallbackTextCall() {
       var prompt = _flattenConversation(system, conversation, tools);
@@ -335,6 +505,7 @@
           : { model: cfg.model, temperature: cfg.temp, max_tokens: maxTok, messages: [{ role: 'user', content: prompt }] };
       return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
         var parsed = _parseResp(data);
+        if (parsed.truncated || parsed.badToolJson) { parsed.fallback = true; return parsed; }
         var calls = parsed.toolCalls.length ? parsed.toolCalls : _parseJsonToolCalls(parsed.text);
         return { text: parsed.text, toolCalls: calls, fallback: true };
       });
@@ -342,6 +513,7 @@
 
     return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) }, opts).then(function(data) {
       var parsed = _parseResp(data);
+      if (parsed.truncated || parsed.badToolJson) return parsed;
       if (parsed.toolCalls.length) return parsed;
       var fromText = _parseJsonToolCalls(parsed.text); // 端点忽略 tools 但吐了 JSON
       if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true };
@@ -360,12 +532,12 @@
         });
       }
       var err = new Error(_ovf0 ? ('上下文超限（对话+工具已超过模型窗口）：' + _msg0.slice(0, 160)) : _classifyApiError(e));   // 网络/CORS/鉴权/路径 → 可操作中文提示
-      err.status = e && e.status; err.cause = e;
+      err.status = e && e.status; err.code = e && e.code; err.cause = e;
       err.overflow = _ovf0;
       // 韧性：标记可重试的瞬态错误（429/5xx/网络/超时）；鉴权(401/403)/路径(404)等非瞬态不重试
       var s = err.status;
       var networkish = !s && e && (e.name === 'TypeError' || /failed to fetch|networkerror|err_|load failed|aborted|timeout/i.test(String(e.message || '')));
-      err.transient = (s === 429) || (s >= 500) || !!networkish;
+      err.transient = !!(e && e.transient) || (s === 429) || (s >= 500) || !!networkish;
       throw err;
     });
   }

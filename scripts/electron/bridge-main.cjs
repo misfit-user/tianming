@@ -7,7 +7,7 @@ const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
 const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
-const visibleWindow = visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish';
+const visibleWindow = visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'relief-pilot' || mode === 'relief-inspect';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -65,7 +65,7 @@ function finish(error) {
   app.exit(report.ok ? 0 : 1);
 }
 async function check(name, fn) { await fn(); results.push({ name, status: 'PASS' }); }
-setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'performance-inspect' ? 1800000 : visiblePerformance ? 240000 : 75000);
+setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' ? 180000 : visiblePerformance ? 240000 : 75000);
 process.on('uncaughtException', finish); process.on('unhandledRejection', finish);
 app.on('browser-window-created', (_event, win) => {
   if (!visibleWindow) win.show = () => {};
@@ -111,6 +111,7 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'building-appraisal') await require('./building-appraisal-cases.cjs')({ win, temp, check });
       else if (mode === 'edict-polish') await require('./edict-polish-cases.cjs')({ win, temp, check });
       else if (mode === 'authoring-regions') await require('./authoring-region-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'relief-pilot' || mode === 'relief-inspect') await require('./relief-pilot-cases.cjs')({ win, root, temp, check, mode });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
       finish();
     } catch (error) { finish(error); }

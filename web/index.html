@@ -589,8 +589,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-indices.js?v=20260711-scnimport"></script>
 <script src="tm-world.js?v=20260621-renownfix"></script>
 <script src="tm-memorials.js?v=20260719-memsanitize"></script>
-<script src="tm-wendui.js?v=20260909-character-actions"></script>
-<script src="tm-wendui-persona-views.js?v=20260909-character-actions"></script>
+<script src="tm-wendui.js?v=20260909-rail-audience"></script>
+<script src="tm-wendui-persona-views.js?v=20260909-rail-audience"></script>
 <!-- 2026-05-21·狱中问对模式·6 动作 + AI 解析 + 频率限制 + 朝议反应 -->
 <script src="tm-wendui-prison.js?v=20260521-prison"></script>
 <!-- R161 R6 (2026-05-03) tm-office-system 从 tm-hongyan-office 拆出·官制 system (~700 行) -->
@@ -966,8 +966,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-content-manager-community.js?v=20260811-auditfix1"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
 <script src="preview/img/east-asia-basemap-data.js?v=20260514-formal-map"></script>
 <!-- 勿动位置·第二十七拆：phase8-formal-bridge-styles.js 必须紧接 phase8-formal-bridge.js【之前】装载(②a alias/bucket·装载期填 TM.__p8BridgeParts→origin 顶部 alias 回绑·错序即 installStyles=undefined·installFormalShell 同步调用崩) -->
-<script src="phase8-formal-bridge-styles.js?v=20260706-split27"></script>
-<script src="phase8-formal-bridge.js?v=20260706-split27"></script>
+<script src="phase8-formal-bridge-styles.js?v=20260909-rail-audience"></script>
+<script src="phase8-formal-bridge.js?v=20260909-rail-audience"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260621-optland"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
@@ -980,9 +980,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="phase8-formal-drafts-message-panels.js?v=20260909-character-actions"></script>
 <script src="phase8-formal-records.js?v=20260526-split-skeleton"></script>
 <script src="tm-renwu-tuzhi.js?v=20260909-character-actions"></script>
-<script src="phase8-formal-rightrail.js?v=20260706-split24"></script>
+<script src="phase8-formal-rightrail.js?v=20260909-rail-audience"></script>
 <!-- 勿动位置·第二十四拆：social 分片须紧随 origin 之后(②b origin-first 双向 bucket TM.__p8RailParts·错序=捕获 undefined 立崩)·契约见 scripts/lint-split-contracts.js -->
-<script src="phase8-formal-rightrail-social.js?v=20260706-split24"></script>
+<script src="phase8-formal-rightrail-social.js?v=20260909-rail-audience"></script>
 <script src="preview/scenario-editor-sandbox-bridge.js?v=20260524-scenario-editor-sandbox"></script>
 <!-- 正式界面「宝相团花」悬浮设置/暂停按钮·锚 #bar-time 下方·点击=Esc·仅 GM.running 显示 -->
 <script src="tm-pause-fab.js?v=20260605-fab"></script>

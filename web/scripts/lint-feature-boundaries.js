@@ -28,7 +28,10 @@ EAGER_REMOVALS.forEach((src) => assert(!eager.includes(src), `${src} must not re
 
 const declaredScripts = Object.values(manifest.features).flatMap((feature) => feature.scripts.map(featureBuild.scriptPath));
 EAGER_REMOVALS.forEach((src) => assert(declaredScripts.includes(src), `${src} must be owned by a declared feature`));
-assert(featureResult.scriptCount === EAGER_REMOVALS.length, 'first feature cohort must own exactly six deferred scripts');
+const RELIEF_SCRIPTS = ['tm-relief-governance.js', 'tm-relief-governance-ui.js'];
+assert(featureResult.scriptCount === EAGER_REMOVALS.length + RELIEF_SCRIPTS.length, 'exactly the original six plus the reviewed two relief providers may be deferred');
+assert(JSON.stringify((manifest.features.reliefGovernance.scripts || []).map(featureBuild.scriptPath)) === JSON.stringify(RELIEF_SCRIPTS), 'relief feature must own exactly its core and UI providers in order');
+RELIEF_SCRIPTS.forEach(src => assert(!eager.includes(src), `${src} must remain outside eager startup`));
 
 const loaderSource = fs.readFileSync(path.join(lib.WEB_ROOT, 'tm-feature-loader.js'), 'utf8');
 assert(!/(?:\beval\s*\(|new\s+Function\s*\()/.test(loaderSource), 'feature loader must not execute strings');

@@ -4,7 +4,7 @@
  * ①地图警示条/人物三按钮改接真面板(源码锚+可行处功能断言)
  * ②四官印(吏/民)+户口丁走奏报失真层口径(fixture 失真开→显据奏值·带 ReportedView 真桩执行)
  * ③批红裸写降级删除(缺 mutator 不裸写 m.status)
- * ④右栏徽标非静态 + 刷新签名并入 memorials/_pendingAudiences
+ * ④右栏只作导航，不以其他模块的统计数伪装待办 + 刷新签名保留 memorials/_pendingAudiences
  * ⑤window.openZhao/… 单点导出收口(真源=drafts)
  * ⑥切换双真相源经单一 setLegacyView 收敛 */
 const fs = require('fs'), path = require('path');
@@ -91,10 +91,10 @@ ok(count(draftsSrc, 'm.status = decision;') === 0, '③ deskStageMemorial 删除
 ok(/批红通道未就绪/.test(draftsSrc), '③ 缺 mutator 改 toast「批红通道未就绪」并 return 不改状态');
 ok(/window\._stageMemorialDecision === 'function'/.test(draftsSrc), '③ 保留 _stageMemorialDecision mutator 正路');
 
-// ── ④ 徽标非静态 + 刷新签名补字段 ──
-ok(/RAIL_DYNAMIC_BADGE_SLOTS\s*=\s*\{/.test(bridgeSrc) && /function railDynamicBadgeCount/.test(bridgeSrc), '④ 徽标动态计数槽 RAIL_DYNAMIC_BADGE_SLOTS + railDynamicBadgeCount 存在');
-ok(count(bridgeSrc, 'RAIL_DYNAMIC_BADGE_SLOTS[b[0]]') === 2, '④ 两条 rail 徽标生成经 RAIL_DYNAMIC_BADGE_SLOTS[b[0]] 动态槽·2处(非写死数字)');
-ok(/\['ol','issue','army','rumor'\]\.forEach/.test(bridgeSrc), '④ updateRailBadges 遍历四槽(待批奏疏/未决议题/军情/近事)填真值');
+// ── ④ 导航不再挂错位红泡；真实数量留在各自业务面板 ──
+ok(!/RAIL_DYNAMIC_BADGE_SLOTS|function railDynamicBadgeCount/.test(bridgeSrc), '④ 删除退役的跨模块角标计数器，而非继续读完数据再隐藏');
+ok((bridgeSrc.match(/data-phase8-badge="audience"/g)||[]).length===2, '④ 两条 rail 均仅生成对应真实请见的角标');
+ok(/function updateRailBadges/.test(bridgeSrc) && /_updateRailBadges: updateRailBadges/.test(bridgeSrc), '④ 保留旧刷新调用的兼容清理入口');
 ok(/listSig\(gm\.memorials\)/.test(bridgeSrc) && /_pendingAudiences/.test(bridgeSrc), '④ 刷新签名并入 memorials 长度摘要 + _pendingAudiences 长度');
 
 // ── ⑤ 全局名双设收口(单点导出=drafts) ──
@@ -117,7 +117,7 @@ ok(count(bridgeSrc, 'setLegacyView(false)') >= 2 && count(bridgeSrc, 'setLegacyV
 ok(/ensureRail = ensurePreviewRail/.test(bridgeSrc), '返①ㆍensurePreviewRail 为生效 rail(ensureRail 被其覆盖)');
 const previewRailFn = bridgeSrc.slice(bridgeSrc.indexOf('function ensurePreviewRail'), bridgeSrc.indexOf('ensureRail = ensurePreviewRail'));
 ok(/\['rumor',SVG_RUMOR,'风闻情报'/.test(previewRailFn) && /var SVG_RUMOR =/.test(previewRailFn), '返①ㆍ生效 rail 补 rumor(闻)槽+SVG_RUMOR·闻入口在生效 DOM 存在(非死rail)');
-ok(/RAIL_DYNAMIC_BADGE_SLOTS = \{[^}]*rumor:1/.test(bridgeSrc), '返①ㆍrumor ∈ 动态槽·生效 rail 徽标生成器发 data-phase8-badge=rumor(徽标真显示)');
+ok(!previewRailFn.includes('data-phase8-badge="rumor"'), '返①ㆍ风闻入口保留，但近事总数不冒充未读提醒');
 
 // 返② drafts 缺席=死按钮 → 降级 toast+回退 openModule(真跑包装器)
 function runWrapper(name){
@@ -133,13 +133,13 @@ ok(!!r2a.toasted && r2a.opened === 'memorial', '返②ㆍdrafts 缺席·openYueZ
 const r2b = runWrapper('openHongyanPreviewPanel');
 ok(!!r2b.toasted && r2b.opened === 'letter', '返②ㆍdrafts 缺席·openHongyan(人物传书)→toast+回退 openModule(letter)');
 
-// 返③ 纲徽标计数口径：只数待批·approved/rejected 不计
-const rdbcBody = bridgeSrc.slice(bridgeSrc.indexOf('function railDynamicBadgeCount'), bridgeSrc.indexOf('function updateRailBadges'));
-const rdbc = new Function('getMemorials', 'getIssues', 'issueIsResolved', 'collectRecentEvents', 'window',
-  rdbcBody + '\nreturn railDynamicBadgeCount;')(
-  function(){ return [{ status: 'pending' }, { status: 'approved' }, { status: 'rejected' }]; },
-  function(){ return []; }, function(){ return false; }, function(){ return []; }, { GM: {} });
-ok(rdbc('ol') === 1, '返③ㆍ纲徽标只数待批(pending/approved/rejected→1·非 getMemorials 全量3)');
+// 返③ 退役仅限右侧导航，不能误删其他面板的真实待批/未读提醒。
+const { functionSource } = require('./lib-perf-round1');
+const oldBadges = [{ removed:false, getAttribute(){return 'ol';}, remove(){this.removed=true;} }, { removed:false, getAttribute(){return 'pinned';}, remove(){this.removed=true;} }];
+let cleanedSelector = '';
+const clean = new Function('document', 'railAudienceCount', functionSource(bridgeSrc, 'updateRailBadges') + '\nreturn updateRailBadges;')({querySelectorAll(selector){cleanedSelector=selector;return oldBadges;}},()=>0);
+clean();clean();
+ok(oldBadges.every(b=>b.removed) && cleanedSelector === '#tm-right-rail .tm-rc-count, #tm-phase8-formal-rail .tmf-rail-count', '返③ㆍ兼容清理幂等且仅限两种右栏；不清真实奏疏/信件提醒');
 
 // 返④ listSig 状态敏感：原地改末条 status → 签名变；无 status 数组零回归
 const lsStart = bridgeSrc.indexOf('function listSig');

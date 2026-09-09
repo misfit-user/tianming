@@ -85,7 +85,7 @@ const manifest = {
     return out;
   }, {}),
   deferredChangesApproved: deferredScriptCount,
-  auditConclusion: 'Feature Loader V2 defers only six audited scripts behind explicit lifecycle and platform boundaries. All other classic scripts retain document order; adjacency alone is no longer emitted as a false dependency.',
+  auditConclusion: 'Feature Loader V2 owns ' + deferredScriptCount + ' explicitly declared deferred scripts. The original six remain deferred; relief providers load only for the issue panel or active saved cases. Eager classic scripts retain document order; adjacency is not a dependency.',
   scripts,
   features
 };

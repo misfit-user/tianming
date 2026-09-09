@@ -248,6 +248,7 @@ function _openShizhengDetail(issueId) {
   }
 
   panel.innerHTML = h;
+  if (window.TM && TM.ReliefGovernanceUI) TM.ReliefGovernanceUI.mountDetail(panel, issueId);
   det.appendChild(panel);
   document.body.appendChild(det);
 }

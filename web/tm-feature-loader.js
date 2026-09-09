@@ -5,7 +5,7 @@
 
   root.TM = root.TM || {};
 
-  var MANIFEST_SRC = 'feature-manifest.js?v=20260825-feature-loader-v2';
+  var MANIFEST_SRC = 'feature-manifest.js?v=20260909-hide-register';
   var DEFAULT_TIMEOUT_MS = 15000;
   var definitions = Object.create(null);
   var runtime = Object.create(null);

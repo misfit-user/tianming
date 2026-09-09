@@ -432,7 +432,7 @@ function clamp(v){return Math.max(0,Math.min(100,Number(v)||0));}
 function num(v,d){return (v==null||isNaN(Number(v)))?d:Number(v);}
 function _g(){return window.GM||{};}
 function _p(){return window.P||{};}
-function toast(m){ if(typeof window.toast==='function'&&window.toast!==toast){try{window.toast(m);return;}catch(e){}} var t=document.getElementById('tm-zhi-toast'); if(t){t.textContent=m;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},1900);} }
+function toast(m){ var ov=document.getElementById('tm-zhi-overlay'),t=document.getElementById('tm-zhi-toast'); if(t&&ov&&ov.style.display!=='none'){t.textContent=m;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2500);return;} if(typeof window.toast==='function'&&window.toast!==toast)window.toast(m); }
 var FACOLOR={'皇室':'#a8833a','阉党':'#8e6aa8','边镇':'#7a2018','清流':'#557f6f','东林':'#4a5e8a','后宫':'#c64a3e','无派系':'#9c8b6b'};
 function facColor(f){return FACOLOR[f]||'#a8833a';}
 function relWord(v){return v>=50?'莫逆':v>=25?'亲近':v<=-50?'死敌':v<=-25?'不睦':'一般';}
@@ -575,6 +575,7 @@ function findP(name){var l=PEOPLE();for(var i=0;i<l.length;i++)if(l[i].name===na
 
 /* ===================== 状态 ===================== */
 var state={sel:null,q:'',fac:'all',role:'all',sort:'loyalty',dead:false,tab:'overview',roleStat:'all',compare:null,compare2:null,view:'liezhuan',phSort:'loyalty',dtWin:6};
+var _panelWorld=null,_officeContext=null,_vacantOfficesOnly=false;
 var _zhiRosterRenderTimer=0;
 
 /* ===================== 立绘字形 / SVG 基件 ===================== */
@@ -604,7 +605,7 @@ function situationBanner(p){
 
 /* ===================== 名籍(roster) ===================== */
 function roleOf(p){if(p.faction==='后宫'||p.faction==='阉党')return 'harem';if(!p.officialTitle&&!p.title)return 'bu';if((p.military||0)>=(p.administration||0)&&(p.military||0)>=40)return 'mili';return 'civil';}
-function inCapital(p){return /京|宫|乾清|慈庆|东厂|阙下|内廷/.test(String(p.location||''));}
+function inCapital(p){return typeof _wdCanDirectAudience==='function'&&_wdCanDirectAudience(p._ref||p);}
 function computeStat(){var st={all:0,civil:0,mili:0,harem:0,bu:0,dead:0,jail:0};PEOPLE().forEach(function(p){if(p.alive===false){st.dead++;return;}if(p._imprisoned||p._exiled)st.jail++;var r=roleOf(p);if(r==='harem')st.harem++;else if(r==='mili'){st.mili++;st.all++;}else if(r==='bu')st.bu++;else{st.civil++;st.all++;}});return st;}
 function filtered(){
   var list=PEOPLE().slice();
@@ -683,12 +684,44 @@ function headActs(p){
   var _del='<button class="dact danger" onclick="TMZhi.deleteP(\''+esc(p.name).replace(/'/g,"\\'")+'\')">删除</button>';
   if(p.isPlayer)return '<button class="dact primary" onclick="TMZhi.act(\'mind\')">御览心志</button>'; // 君上不可删
   if(p.alive===false)return '<button class="dact primary" onclick="TMZhi.act(\'works\')">阅其遗著</button><button class="dact" onclick="TMZhi.zhuizeng(\''+esc(p.name).replace(/'/g,"\\'")+'\')">追赠</button>'+_del;
-  var cap=inCapital(p);
-  return '<button class="dact primary" onclick="TMZhi.act(\''+(cap?'wendui':'letter')+'\',\''+esc(p.name).replace(/'/g,"\\'")+'\')">'+(cap?'召入问对':'鸿雁传书')+'</button>'
-    +'<button class="dact" onclick="TMZhi.act(\'letter\',\''+esc(p.name).replace(/'/g,"\\'")+'\')">鸿雁传书</button>'
-    +'<button class="dact" onclick="TMZhi.act(\'office\')">官制任免</button>'
-    +'<button class="dact" onclick="TMZhi.pin(\''+esc(p.name).replace(/'/g,"\\'")+'\')">钉选</button>'
-    +_del;
+  return livingActions(p,false)+_del;
+}
+function livingActions(p,folio){
+  var cls=folio?'fact':'dact',pinned=isPinned(p.name);
+  return '<button class="'+cls+' primary'+(folio?' span':'')+'" data-zhi-action="wendui" onclick="TMZhi.act(\'wendui\')">召入问对</button>'
+    +'<button class="'+cls+'" data-zhi-action="letter" onclick="TMZhi.act(\'letter\')">鸿雁传书</button>'
+    +'<button class="'+cls+'" data-zhi-action="office" onclick="TMZhi.act(\'office\')">官制任免</button>'
+    +'<button class="'+cls+'" data-zhi-action="pin" aria-pressed="'+pinned+'" onclick="TMZhi.pin()">'+(pinned?'取消钉选':'钉选')+'</button>'
+    +(folio?'<button class="fact" data-zhi-action="relations" onclick="TMZhi.switchTab(\'relations\')">关系</button>':'');
+}
+
+function actionPerson(name){
+  if(_g()!==_panelWorld){toast('当前世界已改变，请重新打开人物图志');return null;}
+  var p=findP(name||state.sel),raw=p&&p._ref;
+  if(!raw){toast('未找到当前人物');return null;}
+  var matches=[],g=_g();
+  [g.chars,g.allCharacters].forEach(function(rows){(rows||[]).forEach(function(c){if(c&&c.name===p.name&&matches.indexOf(c)<0)matches.push(c);});});
+  if(matches.length!==1||matches[0]!==raw){toast('人物引用缺失或同名有歧义，暂不能代入操作');return null;}
+  return p;
+}
+function officeRecommendations(p){
+  var fit=window.TM&&TM.OfficeFit;
+  if(!fit||typeof fit.list!=='function')return '<div class="stub">任官参考尚未就绪，请重新打开。</div>';
+  var rows;
+  try{rows=fit.list(_g(),p._ref,{vacantOnly:_vacantOfficesOnly});}
+  catch(e){console.error('[TMZhi] office recommendations',e);return '<div class="stub">官职数据暂不能读取，未修改任何官职。</div>';}
+  _officeContext={world:_g(),tree:_g().officeTree,person:p._ref,rows:rows};
+  return '<section class="sec full"><div class="sec-t">任 官 参 考 · '+esc(p.name)+'</div>'
+    +'<div class="prose">依据当前剧本官职树，按基础能力六成、五常四成作参考排序。分数不是任命资格或履职保证；选任仍走原官制流程。</div>'
+    +'<label class="r-check" style="display:flex;gap:8px;align-items:center;font-size:13px;margin:12px 0"><input type="checkbox" data-zhi-vacant-only'+(_vacantOfficesOnly?' checked':'')+' onchange="TMZhi.filterOffices(this.checked)">仅看缺额 <span>（'+rows.length+' 职）</span></label>'
+    +(rows.length?rows.map(function(row,i){var pos=row.position;
+      return '<div class="zhi-office-fit" data-zhi-office-index="'+i+'" style="padding:12px 0;font-size:13px;line-height:1.6;border-top:1px solid var(--silk-edge)">'
+        +'<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:15px"><b>'+esc(pos.name)+' <small>'+esc(pos.rank||'')+'</small></b><b>适配 '+row.score.toFixed(1)+'</b></div>'
+        +'<div class="prose">'+esc(row.deptPath)+' · '+esc(row.profile)+'</div>'
+        +'<div class="prose">编制 '+row.stats.headCount+' · 实有 '+row.stats.actualCount+' · 缺额 '+row.stats.vacant+(row.stats.holders.length?' · 现任 '+esc(row.stats.holders.join('、')):'')+'</div>'
+        +'<details style="font-size:12px;color:var(--ink-soft);margin:7px 0"><summary>评分依据</summary>'+esc(row.basis)+(row.missing.length?'<br>未录字段暂按 50 估计：'+esc(row.missing.join('、')):'')+'</details>'
+        +'<button class="gbtn" data-zhi-office-pick="'+i+'"'+(row.stats.holders.indexOf(p.name)>=0?' disabled':'')+' onclick="TMZhi.pickOffice('+i+')">'+(row.stats.holders.indexOf(p.name)>=0?'已在此职':'进入官制选任')+'</button></div>';
+    }).join(''):'<div class="stub">'+(_vacantOfficesOnly?'当前官职树没有缺额。取消勾选可查看全部官职。':'当前剧本尚未配置可读取的官职树。')+'</div>')+'</section>';
 }
 function verdict(p){return '<div class="verdict"><p>'+esc(p.personalGoal||p.bio||'此人暂无判断记录。')+'</p></div>';}
 
@@ -1032,6 +1065,7 @@ function togglePin(name){var ps=getPinned(),i=ps.indexOf(name);if(i>=0)ps.splice
 
 function renderTab(p){
   switch(state.tab){
+    case 'office':return officeRecommendations(p);
     case 'identity':return tabIdentity(p);
     case 'mind':return tabMind(p);
     case 'relations':return tabRelations(p);
@@ -1052,7 +1086,8 @@ function renderMain(){
   if(state.compare){renderCompare();return;}
   var p=findP(state.sel)||PEOPLE()[0];if(!p){ms.innerHTML='<div class="stub" style="margin-top:60px">尚无人物数据。</div>';return;}
   state.sel=p.name;
-  var tabsHtml='<div class="tabs">'+TABS.map(function(t){return '<button class="tab'+(state.tab===t[0]?' active':'')+'" onclick="TMZhi.switchTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div>';
+  var tabs=p.alive!==false&&!p.isPlayer?TABS.concat([['office','任官参考']]):TABS;
+  var tabsHtml='<div class="tabs">'+tabs.map(function(t){return '<button class="tab'+(state.tab===t[0]?' active':'')+'" onclick="TMZhi.switchTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div>';
   ms.innerHTML=dossierHead(p)+verdict(p)+zhubiBlock(p)+tabsHtml+'<div class="detail">'+renderTab(p)+'</div>';
 }
 function renderFolio(){
@@ -1069,8 +1104,8 @@ function renderFolio(){
   var acts;
   if(p.isPlayer)acts='<button class="fact primary span" onclick="TMZhi.act(\'mind\')">御览心志</button>';
   else if(p.alive===false)acts='<button class="fact primary span" onclick="TMZhi.act(\'works\')">阅其遗著</button><button class="fact" onclick="TMZhi.zhuizeng(\''+esc(p.name).replace(/'/g,"\\'")+'\')">追赠昭雪</button>';
-  else acts='<button class="fact primary span" onclick="TMZhi.act(\''+(cap?'wendui':'letter')+'\',\''+esc(p.name).replace(/'/g,"\\'")+'\')">'+(cap?'召入问对':'鸿雁传书')+'</button><button class="fact" onclick="TMZhi.act(\'letter\',\''+esc(p.name).replace(/'/g,"\\'")+'\')">鸿雁传书</button><button class="fact" onclick="TMZhi.act(\'office\')">官制任免</button><button class="fact" onclick="TMZhi.pin(\''+esc(p.name).replace(/'/g,"\\'")+'\')">钉选</button><button class="fact" onclick="TMZhi.switchTab(\'relations\')">关系</button>';
-  var html=(getZhubi(p.name)?'<div class="fcard"><div class="ft">御 笔 朱 批</div><div style="font-size:12.5px;color:var(--vermilion);line-height:1.72;font-family:var(--zfont)">'+esc(getZhubi(p.name))+'</div></div>':'')+'<div class="fcard"><div class="ft">可 用 入 口</div><div class="actgrid">'+acts+'</div><div class="fnote">'+(cap?'此人在京，可即召问对。':p.alive===false?'此人已殁，仅存遗事遗著可考。':'此人在外，须以鸿雁传书。')+'</div></div>';
+  else acts=livingActions(p,true);
+  var html=(getZhubi(p.name)?'<div class="fcard"><div class="ft">御 笔 朱 批</div><div style="font-size:12.5px;color:var(--vermilion);line-height:1.72;font-family:var(--zfont)">'+esc(getZhubi(p.name))+'</div></div>':'')+'<div class="fcard"><div class="ft">可 用 入 口</div><div class="actgrid">'+acts+'</div><div class="fnote">'+(cap?'此人可在御前召对，仍须符合人物状态要求。':p.alive===false?'此人已殁，仅存遗事遗著可考。':'问对依所在地点与人物状态判定；远方可用鸿雁传书。')+'</div></div>';
   html+='<div class="fcard"><div class="ft">朝 堂 研 判</div><div style="padding:8px 10px;border-radius:6px;background:rgba(168,50,40,0.06);border-left:3px solid var(--cinnabar);margin-bottom:9px"><strong style="display:block;font-size:12px;color:var(--cinnabar-d)">'+vd[0]+'</strong><span style="font-size:11.5px;color:var(--ink-soft)">'+vd[1]+'</span></div><div class="risk-grid">'+[['忠诚',p.loyalty],['野心',p.ambition],['压力',p.stress],['康健',p.health],['名望',p.mingwang],['功名',p.gongming]].map(function(r){return '<div class="risk"><span>'+r[0]+'</span><b>'+(r[1]==null?'—':Math.round(r[1]))+'</b></div>';}).join('')+'</div></div>';
   html+='<div class="fcard"><div class="ft">关 系 焦 点</div>'+(rels.length?'<div class="relnet">'+rels.map(function(r){var cls=r.strength>=25?'good':r.strength<=-25?'bad':'neu';return '<div class="relrow" onclick="TMZhi.selectP(\''+esc(r.name).replace(/'/g,"\\'")+'\')"><span class="nm">'+esc(r.name)+'</span><span class="lbl '+cls+'">'+esc(r.label)+'</span><span class="sc">'+(r.strength>0?'+':'')+r.strength+'</span></div>';}).join('')+'</div>':'<div class="fnote">暂无显性关系。</div>')+'</div>';
   html+='<div class="fcard"><div class="ft">五 常 速 览</div><div style="display:flex;gap:14px;justify-content:center;padding:4px 0 14px">'+['仁','义','礼','智','信'].map(function(k){var v=(p.wuchang||{})[k],lv=v==null?'mid':v>=60?'hi':v>=30?'mid':'lo';return '<span class="wcdot '+lv+'">'+k+'<small>'+(v==null?'?':Math.round(v))+'</small></span>';}).join('')+'</div></div>';
@@ -1110,6 +1145,7 @@ function renderChips(){var alive=PEOPLE().filter(function(p){return p.alive!==fa
 function renderAll(){renderChips();renderFacOptions();renderViewTabs();renderStatbar();renderRoster();renderMain();renderFolio();}
 
 function openPanel(name){
+  _panelWorld=_g();_officeContext=null;_vacantOfficesOnly=false;
   loadPeople(true);
   buildOverlay();
   if(name&&findP(name))state.sel=name;
@@ -1120,7 +1156,7 @@ function openPanel(name){
   renderAll();
   if(!openPanel._esc){openPanel._esc=function(e){if(e.key==='Escape')closePanel();};document.addEventListener('keydown',openPanel._esc);}
 }
-function closePanel(){var ov=document.getElementById('tm-zhi-overlay');if(ov)ov.style.display='none';if(_zhiRosterRenderTimer){clearTimeout(_zhiRosterRenderTimer);_zhiRosterRenderTimer=0;}document.documentElement.style.overflow='';}
+function closePanel(){var ov=document.getElementById('tm-zhi-overlay');if(ov)ov.style.display='none';_officeContext=null;_panelWorld=null;if(_zhiRosterRenderTimer){clearTimeout(_zhiRosterRenderTimer);_zhiRosterRenderTimer=0;}document.documentElement.style.overflow='';}
 
 /* 交互 */
 var TMZhi={
@@ -1155,7 +1191,33 @@ var TMZhi={
     renderFacOptions();renderStatbar();renderRoster();renderMain();renderFolio();
     toast('已删除 '+name);
   },
-  switchTab:function(t){state.tab=t;renderMain();},
+  switchTab:function(t){state.tab=t;state.view='liezhuan';state.compare=null;state.compare2=null;renderViewTabs();renderMain();renderFolio();var ms=q('#tm-zhi-main');if(ms){var tabs=ms.querySelector('.tabs');if(tabs&&typeof tabs.scrollIntoView==='function')tabs.scrollIntoView({block:'start',inline:'nearest'});else ms.scrollTop=0;}},
+  filterOffices:function(checked){_vacantOfficesOnly=!!checked;if(actionPerson())this.switchTab('office');},
+  pickOffice:function(index){
+    var p=actionPerson(),ctx=_officeContext,row=ctx&&ctx.rows[index];
+    if(!p||!row)return false;
+    if(ctx.world!==_g()||ctx.tree!==_g().officeTree||ctx.person!==p._ref||typeof getOffNode!=='function'||getOffNode(row.path)!==row.position){toast('官职树已变化，请重新查看推荐');return false;}
+    // 现有选任器提交仍使用官署名+职位名；不把同名不同路径悄悄交给它首项匹配。
+    var all=TM.OfficeFit.list(_g(),p._ref);
+    if(all.filter(function(r){return r.deptName===row.deptName&&r.position.name===row.position.name;}).length!==1){toast('存在同名官署与官职，旧选任接口无法唯一定位，未作任命');return false;}
+    if(row.stats.holders.indexOf(p.name)>=0){toast('此人已在该职，不重复任命');return false;}
+    if(typeof _offOpenPicker!=='function'||typeof _offPickerFilter!=='function'){toast('官制选任系统未就绪');return false;}
+    try{
+      _offOpenPicker(row.path,row.deptName,row.position.name,row.position.holder||'');
+      var picker=document.getElementById('off-picker-modal'),input=document.getElementById('off-picker-search');
+      if(!picker||!input)throw new Error('office-picker-not-mounted');
+      if(typeof _OFF_PICKER!=='undefined'&&_OFF_PICKER&&!_OFF_PICKER.cands.some(function(c){return c===p._ref;})){
+        if(typeof _offClosePicker==='function')_offClosePicker();
+        toast('此人不在该职可选任名册内，请核对年龄、所属势力及现任情况');return false;
+      }
+      input.value=p.name;_offPickerFilter();
+      // 退出图志，不抬高选任器：其后的辞旧/兼任确认仍须按原层级显示。
+      var drafts=window.TMPhase8FormalBridge&&TMPhase8FormalBridge.drafts;
+      if(drafts&&typeof drafts.closeDeskOverlay==='function')drafts.closeDeskOverlay();
+      closePanel();
+      return true;
+    }catch(e){console.error('[TMZhi] office picker',e);toast('官制选任未能打开，请重试');return false;}
+  },
   setView:function(v){state.view=v;state.compare=null;renderViewTabs();renderMain();renderFolio();var ms=q('#tm-zhi-main');if(ms)ms.scrollTop=0;},
   filterFaction:function(f){state.fac=f;var sel=q('#tm-zhi-ffac');if(sel)sel.value=f;state.roleStat='all';var fd=factionData()[f];renderRoster();if(fd&&fd.lead)TMZhi.selectP(fd.lead.name);},
   setPhSort:function(k){state.phSort=k;renderPaihang();renderFolio();},
@@ -1174,13 +1236,21 @@ var TMZhi={
   act:function(kind,name){
     name=name||state.sel;
     try{
-      if(kind==='wendui'){ if(typeof openWenduiPick==='function'){closePanel();openWenduiPick(name);return;} }
-      if(kind==='letter'){ if(typeof window.GM!=='undefined'){GM._pendingLetterTo=name;} if(typeof switchGTab==='function'){closePanel();switchGTab(null,'gt-letter');return;} }
-      if(kind==='office'){ if(typeof switchGTab==='function'){closePanel();switchGTab(null,'gt-office');return;} }
+      if(kind==='wendui'||kind==='letter'||kind==='office'){
+        var p=actionPerson(name);if(!p)return false;
+        if(p.isPlayer||p.alive===false){toast('当前人物不能使用此入口');return false;}
+      }
+      if(kind==='wendui'&&typeof openWenduiPick==='function'){openWenduiPick(name);if(!document.getElementById('wd-pick-modal'))throw new Error('audience-picker-not-mounted');closePanel();return true;}
+      if(kind==='letter'){
+        var drafts=window.TMPhase8FormalBridge&&TMPhase8FormalBridge.drafts;
+        if(!drafts||typeof drafts.targetLetter!=='function')throw new Error('letter-entry-unavailable');
+        drafts.targetLetter(name);closePanel();return true;
+      }
+      if(kind==='office'){this.switchTab('office');return true;}
       if(kind==='mind'){ state.tab='pov'; renderMain(); return; }
       if(kind==='works'){ state.tab='works'; renderMain(); return; } // 阅其遗著→文事 tab（tabWorks 早已就绪·此前掉入空 toast）
-    }catch(e){}
-    toast('动作「'+kind+'」入口待接（运行时将路由到对应系统）');
+    }catch(e){console.error('[TMZhi] action '+kind,e);toast('入口暂未打开，请重试；未提交任何指令');return false;}
+    toast('当前入口尚未就绪');return false;
   },
   toast:toast,
   close:closePanel

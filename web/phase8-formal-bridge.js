@@ -2190,30 +2190,34 @@
     });
   }
 
-  // 右栏徽标动态计数槽·经 updateRailBadges 填真值(廉价标量·待批奏疏/未决议题/军情预警/近事)·非此列表的槽保持静态或无数字
-  var RAIL_DYNAMIC_BADGE_SLOTS = { ol:1, issue:1, army:1, rumor:1 };
-  function railDynamicBadgeCount(slot){
-    try {
-      if (slot === 'ol') return getMemorials().filter(function(m){ return !m.status || m.status === 'pending'; }).length;
-      if (slot === 'issue') return getIssues().filter(function(x){ return !issueIsResolved(x); }).length;
-      if (slot === 'army') { var g = window.GM || {}; return Array.isArray(g._junqingBrief) ? g._junqingBrief.length : 0; }
-      if (slot === 'rumor') return collectRecentEvents().length;
-    } catch(_) {}
-    return 0;
+  // 只显示入口内可找到、可处理的请见；不再用奏疏/议题/钉选/近事总量冒充导航待办。
+  function railAudienceCount(){
+    var rr = (window.TMPhase8FormalBridge || {}).rightrail;
+    if (!rr || typeof rr.pendingAudiences !== 'function') return 0;
+    return rr.pendingAudiences().count;
   }
+
   function updateRailBadges(){
-    var n = (state.pinnedPeople || []).length;
-    document.querySelectorAll('[data-phase8-badge="pinned"]').forEach(function(el){
-      el.textContent = n;
-      el.style.display = n ? '' : 'none';
+    var badges = document.querySelectorAll('#tm-right-rail .tm-rc-count, #tm-phase8-formal-rail .tmf-rail-count');
+    if (!badges.length) return;
+    var count = railAudienceCount();
+    badges.forEach(function(el){
+      if (el.getAttribute('data-phase8-badge') !== 'audience') { el.remove(); return; }
+      el.textContent = count ? String(count) : '';
+      el.style.display = count ? '' : 'none';
+      var button = el.parentNode;
+      var label = '问对与朝议' + (count ? ' · ' + count + ' 人请见待办' : '');
+      button.setAttribute('title', label);
+      button.setAttribute('aria-label', label);
+      button.setAttribute('data-tip', label);
     });
-    ['ol','issue','army','rumor'].forEach(function(slot){
-      var c = railDynamicBadgeCount(slot);
-      document.querySelectorAll('[data-phase8-badge="' + slot + '"]').forEach(function(el){
-        el.textContent = c;
-        el.style.display = c ? '' : 'none';
-      });
-    });
+  }
+
+  function openRailPanel(slot){
+    var showRequests = slot === 'issue' && railAudienceCount() > 0;
+    if (showRequests) state.rightIssueTab = 'wendui';
+    openPanel(slot);
+    if (showRequests) { var host = panelHost(); if (host) host.scrollTop = 0; }
   }
 
   function bindFormalEntryRedirects(){
@@ -2255,22 +2259,18 @@
       root.appendChild(rail);
     }
     var buttons = [
-      ['ol','纲','纲纪总览','6','hot'],
-      ['issue','政','问对与朝会','3','hot'],
-      ['policy','文','文事与科举','',''],
-      ['office','臣','钉选臣僚','pin',''],
-      ['army','军','军务边防','2','hot'],
-      ['map','图','舆图政区','',''],
-      ['finance','户','户部财计','','ok'],
-      ['rumor','闻','风闻情报','4',''],
-      ['archive','制','官制衙门','','']
+      ['ol','纲','阶层与党派','hot'],
+      ['issue','政','问对与朝议','hot'],
+      ['policy','文','文事与科举',''],
+      ['office','臣','钉选臣僚',''],
+      ['army','军','军务边防','hot'],
+      ['map','图','舆图政区',''],
+      ['finance','户','户部财计','ok'],
+      ['rumor','闻','风闻情报',''],
+      ['archive','制','官制衙门','']
     ];
     rail.innerHTML = '<div class="tmf-rail-cap">国事</div>' + buttons.map(function(b){
-      var badge = b[3] === 'pin'
-        ? '<span class="tmf-rail-count" data-phase8-badge="pinned"></span>'
-        : (RAIL_DYNAMIC_BADGE_SLOTS[b[0]] ? '<span class="tmf-rail-count" data-phase8-badge="' + esc(b[0]) + '"></span>'
-        : (b[3] ? '<span class="tmf-rail-count">' + esc(b[3]) + '</span>' : ''));
-      return '<button type="button" class="tmf-rail-btn ' + esc(b[4] || '') + '" data-slot="' + esc(b[0]) + '" title="' + esc(b[2]) + '" onclick="TMPhase8FormalBridge.openPanel(\'' + esc(b[0]) + '\')"><span>' + esc(b[1]) + '</span>' + badge + '</button>';
+      return '<button type="button" class="tmf-rail-btn ' + esc(b[3] || '') + '" data-slot="' + esc(b[0]) + '" title="' + esc(b[2]) + '" onclick="TMPhase8FormalBridge.openRailPanel(\'' + esc(b[0]) + '\')"><span>' + esc(b[1]) + '</span>' + (b[0] === 'issue' ? '<span class="tmf-rail-count" data-phase8-badge="audience" style="display:none"></span>' : '') + '</button>';
     }).join('');
     updateRailBadges();
     updateRailActive();
@@ -2302,27 +2302,23 @@
     var SVG_FINANCE = '<svg class="tm-rc-svg" viewBox="0 0 48 48"><rect x="6" y="8" width="36" height="32" fill="none" stroke="#8a6d2b" stroke-width="2.5" rx="1"/><rect x="6" y="20" width="36" height="2" fill="#6b5010"/><g stroke="#6b5010" stroke-width=".7"><line x1="10" y1="10" x2="10" y2="38"/><line x1="14.5" y1="10" x2="14.5" y2="38"/><line x1="19" y1="10" x2="19" y2="38"/><line x1="24" y1="10" x2="24" y2="38"/><line x1="29" y1="10" x2="29" y2="38"/><line x1="33.5" y1="10" x2="33.5" y2="38"/><line x1="38" y1="10" x2="38" y2="38"/></g><g fill="#d4be7a"><rect x="8.4" y="13" width="3.2" height="2.4" rx=".8"/><rect x="17.4" y="13" width="3.2" height="2.4" rx=".8"/><rect x="27.4" y="13" width="3.2" height="2.4" rx=".8"/><rect x="36.4" y="13" width="3.2" height="2.4" rx=".8"/><rect x="8.4" y="32" width="3.2" height="2.4" rx=".8"/><rect x="17.4" y="32" width="3.2" height="2.4" rx=".8"/><rect x="27.4" y="32" width="3.2" height="2.4" rx=".8"/><rect x="36.4" y="32" width="3.2" height="2.4" rx=".8"/></g></svg>';
     var SVG_ARCHIVE = '<svg class="tm-rc-svg" viewBox="0 0 48 48"><rect x="19" y="4" width="10" height="6.5" rx=".8" fill="#c04030" stroke="#d4be7a" stroke-width=".7"/><line x1="24" y1="10.5" x2="24" y2="14.5" stroke="#d4be7a" stroke-width=".9"/><line x1="9" y1="14.5" x2="39" y2="14.5" stroke="#d4be7a" stroke-width=".8"/><g fill="#d4be7a" stroke="#6b5010" stroke-width=".5"><rect x="7" y="16.5" width="8" height="5.5" rx=".6"/><rect x="20" y="16.5" width="8" height="5.5" rx=".6"/><rect x="33" y="16.5" width="8" height="5.5" rx=".6"/></g><line x1="4" y1="25" x2="44" y2="25" stroke="#d4be7a" stroke-width=".6"/><g fill="#8a6d2b"><rect x="3.5" y="25" width="6" height="4" rx=".4"/><rect x="10.5" y="25" width="6" height="4" rx=".4"/><rect x="17.5" y="25" width="6" height="4" rx=".4"/><rect x="24.5" y="25" width="6" height="4" rx=".4"/><rect x="31.5" y="25" width="6" height="4" rx=".4"/><rect x="38.5" y="25" width="6" height="4" rx=".4"/></g><g fill="#d4be7a"><circle cx="6.5" cy="35" r="1.1"/><circle cx="13.5" cy="35" r="1.1"/><circle cx="20.5" cy="35" r="1.1"/><circle cx="27.5" cy="35" r="1.1"/><circle cx="34.5" cy="35" r="1.1"/><circle cx="41.5" cy="35" r="1.1"/></g></svg>';
 
-    // 风闻情报·闻(生效 rail 原缺此槽·致 updateRailBadges 算闻计数却更新空 NodeList)·openPanel('rumor')→rightrail.renderRumorRich
+    // 风闻情报·闻：保留真实查看入口，不把近事总数伪装为未读待办。
     var SVG_RUMOR = '<svg class="tm-rc-svg" viewBox="0 0 48 48"><path d="M17 40 Q13 40 12 34 Q11 29 11 23 Q11 11 22 11 Q33 11 33 22 Q33 28 27 29 Q24 30 24 33 Q24 37 20 39 Q18 40 17 40 Z" fill="none" stroke="#d4be7a" stroke-width="1.6"/><path d="M17 22 Q17 17 22 17 Q27 17 27 22" fill="none" stroke="#d4be7a" stroke-width="1.3"/><g stroke="#c04030" stroke-width="1.2" fill="none"><path d="M36 15 Q39 20 39 24 Q39 28 36 33"/><path d="M40 11 Q45 18 45 24 Q45 30 40 37"/></g></svg>';
     var buttons = [
-      ['ol',SVG_OL,'纲纪总览','6','hot'],
-      ['issue',SVG_ISSUE,'政务问对','3','hot'],
-      ['policy',SVG_POLICY,'文事艺府','',''],
-      ['office',SVG_OFFICE,'百官人事','pin',''],
-      ['army',SVG_ARMY,'军务边防','2','hot'],
-      ['map',SVG_MAP,'舆图政区','',''],
-      ['finance',SVG_FINANCE,'户部财计','','ok'],
-      ['rumor',SVG_RUMOR,'风闻情报','',''],
-      ['archive',SVG_ARCHIVE,'官制衙门','','']
+      ['ol',SVG_OL,'阶层与党派','hot'],
+      ['issue',SVG_ISSUE,'问对与朝议','hot'],
+      ['policy',SVG_POLICY,'文事艺府',''],
+      ['office',SVG_OFFICE,'钉选臣僚',''],
+      ['army',SVG_ARMY,'军务边防','hot'],
+      ['map',SVG_MAP,'舆图政区',''],
+      ['finance',SVG_FINANCE,'户部财计','ok'],
+      ['rumor',SVG_RUMOR,'风闻情报',''],
+      ['archive',SVG_ARCHIVE,'官制衙门','']
     ];
     rail.innerHTML = '<div class="tm-rc-cap" aria-hidden="true">国事</div>' + buttons.map(function(b, i){
-      var badge = b[3] === 'pin'
-        ? '<span class="tm-rc-count" data-phase8-badge="pinned"></span>'
-        : (RAIL_DYNAMIC_BADGE_SLOTS[b[0]] ? '<span class="tm-rc-count" data-phase8-badge="' + esc(b[0]) + '"></span>'
-        : (b[3] ? '<span class="tm-rc-count">' + esc(b[3]) + '</span>' : ''));
       var divider = (i === 0 || i === 3 || i === 6) ? '<div class="tm-rc-divider" aria-hidden="true"></div>' : '';
       // b[1] 是 raw SVG·不转义
-      return '<button type="button" class="tm-rc-icon ' + esc(b[4] || '') + '" aria-label="' + esc(b[2]) + '" data-slot="' + esc(b[0]) + '" data-tip="' + esc(b[2]) + '" onclick="TMPhase8FormalBridge.openPanel(\'' + esc(b[0]) + '\')">' + b[1] + badge + '</button>' + divider;
+      return '<button type="button" class="tm-rc-icon ' + esc(b[3] || '') + '" aria-label="' + esc(b[2]) + '" data-slot="' + esc(b[0]) + '" data-tip="' + esc(b[2]) + '" onclick="TMPhase8FormalBridge.openRailPanel(\'' + esc(b[0]) + '\')">' + b[1] + (b[0] === 'issue' ? '<span class="tm-rc-count" data-phase8-badge="audience" style="display:none"></span>' : '') + '</button>' + divider;
     }).join('') + '<div class="tm-rc-spacer"></div>';
     updateRailBadges();
     updateRailActive();
@@ -2421,6 +2417,7 @@
     state.runtimeRefreshTimer = setTimeout(function(){
       state.runtimeRefreshTimer = 0;
       if (!ensureFormalRuntimeChrome(!!options.forceChrome)) return;
+      updateRailBadges();
       var sig = formalRuntimeRefreshSignature();
       if (!options.force && state.runtimeRefreshSig === sig) return;
       state.runtimeRefreshSig = sig;
@@ -2437,6 +2434,7 @@
     var original = window.closeWenduiModal;
     window.closeWenduiModal = function(){
       var ret = original.apply(this, arguments);
+      updateRailBadges();
       returnFormalHomeSoon();
       return ret;
     };
@@ -2664,6 +2662,7 @@
     _openShizhengPreviewPanel: openShizhengPreviewPanel,
     _handleModuleAction: handleModuleAction,
     _updateRailBadges: updateRailBadges,
+    openRailPanel: openRailPanel,
     _renderEventFeed: renderEventFeed,
     _openChaoyiMode: openChaoyiMode,
     _personNameKey: personNameKey,

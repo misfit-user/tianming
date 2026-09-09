@@ -8,6 +8,14 @@
   root.TM.Features.registerManifest({
     version: 1,
     features: {
+      reliefGovernance: {
+        scripts: ['tm-relief-governance.js?v=20260909-channels', 'tm-relief-governance-ui.js?v=20260909-hide-register'],
+        dependsOn: [],
+        platform: 'any',
+        loadPolicy: 'manual-inspection-only',
+        sideEffects: 'none',
+        provides: ['TM.ReliefGovernance', 'TM.ReliefGovernanceUI']
+      },
       browserTestHarness: {
         scripts: ['tm-test-harness.js?v=2026042714'],
         dependsOn: [],

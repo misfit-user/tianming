@@ -420,7 +420,7 @@
 
   function rightWenduiIsSeeker(p){
     if (!p || !rightIssueAtCourt(p)) return false;
-    if (p._mourning || p._lastMetTurn === ((window.GM && GM.turn) || 1)) return false;
+    if (p._mourning || p._lastMetTurn === ((window.GM && GM.turn) || 1) || p._lastAudienceDeniedTurn === ((window.GM && GM.turn) || 1)) return false;
     // 单一真源：走 tm-wendui 的 _wdDeriveAudienceAgenda(与旧 UI【有臣求见】筛选、与本文件 rightWenduiSeekReason 同源)。
     // agenda 依赖 _npcCommitments/_wdRewardPunish/loyalty/stress 等真实处境，只挂在真身上→照 :409 取真身。
     var realCh = (typeof findCharByName === 'function' && findCharByName(p.name)) || p;
@@ -528,13 +528,8 @@
       '</div>';
   }
 
-  function renderRightWenduiPanel(){
-    var people = rightIssuePeople();
-    var gm = window.GM || {};
-    var rawPendingAudiences = Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : [];
-    // 清洗谓词(保留使节/剧本预置/后妃/本朝在场者·滤除混入的明确异势力求见者)。写口统一走 tm-wendui 的唯一
-    // 清洗 mutator(按谓词·非 index)，与旧 UI/各删除点同口，杜绝两套 UI 各持 render-time index 删错人。
-    var _wdKeep = function(q){
+  // 名单与导航红泡共用的只读筛选；角标读取不能清洗队列、补主键或生成新的请见。
+  function rightWenduiKeepPending(q){
       if (!q || !q.name) return false;
       if (!q.isConsort) {
         // 阵营闸(2026-07-04)：滤除旧版混入的明确异势力求见者(外邦君主)·使节/剧本预置/空 faction 者放行·与 tm-wendui 渲染清洗同款
@@ -551,19 +546,38 @@
         try { p = window.findCharByName(q.name); } catch(_) {}
       }
       return !!(p && rightIssueIsPlayerConsort(p));
+  }
+
+  function rightWenduiPendingState(){
+    var gm = window.GM || {};
+    var people = rightIssuePeople();
+    var pendingAudiences = (Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : []).filter(rightWenduiKeepPending);
+    var queued = new Set();
+    pendingAudiences.forEach(function(q){
+      var p = findPerson(q.name);
+      queued.add(p ? personKey(p) : 'name:' + q.name);
+    });
+    var atCourt = people.filter(rightIssueAtCourt);
+    var seekers = atCourt.filter(function(p){ return !queued.has(personKey(p)) && !queued.has('name:' + p.name) && rightWenduiIsSeeker(p); });
+    var pending = new Set(queued);
+    seekers.forEach(function(p){ pending.add(personKey(p)); });
+    return {
+      queue: pendingAudiences,
+      seekers: seekers,
+      waiting: atCourt.filter(function(p){ return !pending.has(personKey(p)) && !pending.has('name:' + p.name); }),
+      away: people.filter(function(p){ return !rightIssueAtCourt(p); }),
+      count: pending.size
     };
-    var pendingAudiences;
+  }
+
+  function renderRightWenduiPanel(){
+    // 保留既有清洗写口及稳定 _qid；红泡与名单均由上方只读查询派生。
     if (typeof window._wdCleansePendingAudiences === 'function') {
-      window._wdCleansePendingAudiences(_wdKeep);   // 唯一写口·仅在真有剔除时写回
-      pendingAudiences = Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : [];
-    } else {
-      pendingAudiences = rawPendingAudiences.filter(_wdKeep);   // 兜底：mutator 未载入时不写回·仅供本次渲染
+      window._wdCleansePendingAudiences(rightWenduiKeepPending);
     }
     if (typeof window._wdEnsurePendingQids === 'function') window._wdEnsurePendingQids();   // 渲染前补 _qid(队列按钮按 _qid 定位·非 index)
-    var atCourt = people.filter(rightIssueAtCourt);
-    var seekers = atCourt.filter(rightWenduiIsSeeker);
-    var waiting = atCourt.filter(function(p){ return seekers.indexOf(p) < 0; });
-    var away = people.filter(function(p){ return !rightIssueAtCourt(p); });
+    var pending = rightWenduiPendingState();
+    var pendingAudiences = pending.queue, seekers = pending.seekers, waiting = pending.waiting, away = pending.away;
     var waitingBody = waiting.length ? rightWenduiHydratedList('tmrp-wd-grid', waiting, function(p){
       return rightWenduiPersonCard(p, 'wendui-pick', '');
     }) : '';
@@ -575,6 +589,7 @@
     var queueBody = pendingAudiences.length ? '<div class="tmrp-wd-list">' + pendingAudiences.map(rightWenduiQueueItem).join('') + '</div>' : '';
     var seekerBody = seekers.length ? rightWenduiHydratedList('tmrp-wd-list', seekers, rightWenduiRequestItem) : '';
     return '<div class="tmrp-issue-shell tmrp-wendui">' +
+      '<div class="tmrp-meta" data-wendui-pending-count="' + pending.count + '" title="同一人多条来意保留，人数不重复计算">尚有 ' + pending.count + ' 人请见 · 点选下列人物接见，或暂却／不见。</div>' +
       '<div class="tmrp-summary cols4">' +
         '<div class="tmrp-stat"><b>' + esc(pendingAudiences.length) + '</b><span>候见</span></div>' +
         '<div class="tmrp-stat"><b>' + esc(seekers.length) + '</b><span>求见</span></div>' +
@@ -1765,8 +1780,8 @@
 
   var titles = {
     pcdebug: 'Party/Class Observability',
-    ol: '纲纪总览',
-    issue: '政务问对',
+    ol: '阶层与党派',
+    issue: '问对与朝议',
     policy: '文事科举',
     office: '钉选臣僚',
     army: '军务边防',
@@ -2603,6 +2618,7 @@
   bridge.rightrail.titles = titles;
   bridge.rightrail.handleRightPanelAction = handleRightPanelAction;
   bridge.rightrail.bindRightPanelActions = bindRightPanelActions;
+  bridge.rightrail.pendingAudiences = rightWenduiPendingState;
   bridge.rightrail.rightCloseArmyFlyout = rightCloseArmyFlyout;
   bridge.rightrail.rightOpenArmyFlyout = rightOpenArmyFlyout;
   bridge.rightrail.refreshArmyFlyout = typeof refreshArmyFlyout === "function" ? refreshArmyFlyout : null;

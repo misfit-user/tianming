@@ -96,10 +96,21 @@ jobs:
         run: node scripts/verify-electron-bridge.js --building-appraisal
       - name: Edict polish complete text and visible failure recovery
         run: node scripts/verify-electron-bridge.js --edict-polish
+      - name: Edict settled text clarity, layout and draft preservation
+        run: node scripts/verify-electron-bridge.js --edict-clarity
+      - name: Character actions, office recommendations and existing appointment flow
+        run: node scripts/verify-electron-bridge.js --character-actions
+      - name: Right rail pending audiences, navigation and completion feedback
+        run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Authoring region paths and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-regions
       - name: Controlled TLS address binding and redirects
         run: node scripts/verify-remote-tls.js
+      - name: Relief pilot official scenarios, real UI and save recovery
+        run: |
+          node scripts/verify-electron-bridge.js --relief-pilot
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --relief-pilot --scenario sc-tianqi7-1627
       - name: Preserve Electron evidence (including startup failures)
         if: always()
         uses: actions/upload-artifact@v4

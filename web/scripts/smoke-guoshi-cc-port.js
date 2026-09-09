@@ -12,6 +12,8 @@ const path = require('path');
 const AA = require(path.join(__dirname, '..', 'editor-authoring-agent.js'));
 let pass = 0;
 function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw new Error('FAIL: ' + msg); } pass++; console.log('  ✓ ' + msg); }
+// 正文与 json() 必须是同一份数据；不能 text() 空串、json() 却返回另一套成功结果。
+function jsonResponse(value) { return new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } }); }
 
 (async function main() {
   // ───────── G1 · 预算核算修真 ─────────
@@ -454,7 +456,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   var _imgReq = null;
   global.fetch = function (u, o) {
     _imgReq = { url: u, body: JSON.parse(o.body) };
-    return Promise.resolve({ ok: true, status: 200, headers: { get: function () { return null; } }, json: function () { return Promise.resolve({ data: [{ b64_json: 'aGVsbG8=' }] }); }, text: function () { return Promise.resolve(''); } });
+    return Promise.resolve(jsonResponse({ data: [{ b64_json: 'aGVsbG8=' }] }));
   };
   var rG1 = await Promise.resolve(AA.dispatchTool(dG, 'generateImage', { path: 'characters.0.portrait', prompt: '明代登莱巡抚半身像·布面甲·沉稳' }));
   ok(rG1.ok === true && /images\/generations$/.test(_imgReq.url) && _imgReq.body.model === 'flux-1' && _imgReq.body.response_format === 'b64_json', 'H7 真调生图端点(模型/回参形制对)');
@@ -600,12 +602,12 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   console.log('— H13 Codex 面吸收 —');
   var _sumTxt = '①用户请求：补两名文官并规范势力名。②已完成：新增袁可立、毕自严，东林→东林党。③任务表：无未完项。④关键事实：characters 需 faction 字段挂 id。⑤错误与修正：一次 id 漏挂已补。⑥进行中：无。⑦下一步：等用户新需求。' + new Array(40).join('摘要正文补足字符');
   var _oldFetch13 = global.fetch;
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv13 = [];
   for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(60).join('内容'), toolCalls: [] });
   var rc13 = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13 && rc13.ok === true && rc13.after < rc13.before && /【前情摘要·上下文已压缩】/.test(rc13.conversation[0].text), 'H13 手动压缩：N 条→摘要头+近尾(真走 caller 管线)');
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] })); };
   var rc13b = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13b && rc13b.ok === false && rc13b.reason === 'thin', 'H13 摘要太薄按失败处理(原对话不动)');
   var rc13c = await AA.compactConversation([{ role: 'user', text: '短' }], AA.makeDraft({ name: '甲' }), {});
@@ -622,7 +624,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
 
   // ───────── H14 · 压缩保用户原话(Codex COMPACT_USER_MESSAGE 对照) ─────────
   console.log('— H14 压缩保用户原话 —');
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv14 = [
     { role: 'user', text: '【用户需求】\n给东林补两个能干的文官\n\n【草稿现状】\n（很长的构建附文·不该进原话）\n\n开始：先按需 getField 查看。' },
     { role: 'assistant', text: '好', toolCalls: [] },

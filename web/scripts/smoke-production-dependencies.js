@@ -46,7 +46,9 @@ test('production closure contains neither adm-zip nor a vulnerable YAML version'
   assert.equal(lock.packages['node_modules/js-yaml'].version, '4.3.2');
   // Inspect npm's actual installed runtime closure, not only the root dependency label.
   const npmCli = path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
-  const r = spawnSync(process.execPath, [npmCli, 'ls', '--omit=dev', '--all', '--json'], { cwd: root, encoding: 'utf8', timeout: 30000 });
+  const r = spawnSync(process.platform === 'win32' ? process.execPath : 'npm',
+    (process.platform === 'win32' ? [npmCli] : []).concat(['ls', '--omit=dev', '--all', '--json']),
+    { cwd: root, encoding: 'utf8', timeout: 30000 });
   assert.equal(r.status, 0, r.stderr);
   const names = [];
   function walk(n) { for (const [name, value] of Object.entries(n.dependencies || {})) { names.push(name); walk(value); } }

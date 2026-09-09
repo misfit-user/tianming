@@ -40,6 +40,7 @@ function harness() {
   c._dfGlobalRulesHtml = c._dfTalentCohortsHtml = () => ''; c.toast = value => notices.push(value);
   c._recordPlayerActionSignal = () => { signals++; }; c.CustomEvent = function() {};
   c._$ = id => nodes[id]; vm.createContext(c); vm.runInContext(lease + '\n' + ui + '\n' + adopt, c, { filename: 'actual-building-ui-and-lease.js' });
+  if (core.includes('orders.propose(')) vm.runInContext(read('tm-building-orders.js'), c, { filename: 'tm-building-orders.js' });
   function mount(name = '崇文馆') { c._dfBuildModal('同名府'); nodes._bmCustName.value = name; nodes._bmCustCat.value = 'cultural'; nodes._bmCustDesc.value = '召集学士修订典籍'; return nodes._dfBuildModal; }
   return { c, mount, notices, get nodes() { return nodes; }, get signals() { return signals; }, get approvals() { return approvals; },
     start: () => c._dfAppraiseCustomBuild(encodeURIComponent('同名府')),

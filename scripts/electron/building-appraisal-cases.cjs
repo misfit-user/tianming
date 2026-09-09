@@ -117,4 +117,5 @@ module.exports = async function({ win, temp, check }) {
     assert.equal(r.pending, false); assert.equal(r.suggestions, 0); assert.equal(r.retry, true); assert.equal(r.money, 50000);
     await js(`_dfCloseBuildModal()`);
   });
+  await require('./building-orders-cases.cjs')({win,temp,check});
 };

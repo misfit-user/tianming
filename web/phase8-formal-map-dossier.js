@@ -825,7 +825,7 @@
     var stCls = doing ? 'doing' : (neglected ? 'ni' : (damaged ? 'ni' : 'done'));
     var stTxt = doing ? '工 役 中' : (neglected ? '失 修' : (damaged ? '半 损' : '完 好'));
     return '<div class="bk-ye' + (bld._proposal ? ' nijian' : '') + '">' +
-      '<div class="ye-hd"><b>' + esc(bld.name) + '</b><span class="lv">' + (bld._proposal ? '候 诏' : esc((bld.isCustom ? '自拟 · ' : '') + (bld.level || 1) + ' 级')) + '</span><span class="st ' + stCls + '">' + (bld._proposal ? '候 诏' : stTxt) + '</span></div>' +
+      '<div class="ye-hd"><b>' + esc(bld.name) + '</b><span class="lv">' + (bld._proposal ? '营造案' : esc((bld.isCustom ? '自拟 · ' : '') + (bld.level || 1) + ' 级')) + '</span><span class="st ' + stCls + '">' + (bld._proposal ? esc(bld._proposalStatus || '候 诏') : stTxt) + '</span></div>' +
       (hasDisplayValue(bld.description) ? '<p>' + esc(compactText ? compactText(bld.description, 90) : String(bld.description).slice(0, 90)) + '</p>' : '') +
       (hasDisplayValue(bld.judgedEffects) && !labels.length ? '<p>' + esc(String(bld.judgedEffects).slice(0, 90)) + '</p>' : '') +
       (labels.length ? '<div class="fx">' + labels.map(function(x, i){ return '<em class="' + (i === labels.length - 1 && /维护/.test(x) ? 'cost' : '') + '">' + esc(x) + '</em>'; }).join('') + '</div>' : '') +
@@ -873,7 +873,9 @@
     var gm = window.GM || {};
     (Array.isArray(gm._edictSuggestions) ? gm._edictSuggestions : []).forEach(function(s){
       if (s && !s.used && s.from === divName && String(s.source || '') === '工程') {
-        cards.push(bkYeCard({ name: String(s.content || '营造案').slice(0, 24) + '…', _proposal: true, description: '已录入诏令建议库，候颁行后由有司核定费用、工期与效用。' }, P));
+        var order = window.TM && TM.BuildingOrders && TM.BuildingOrders.list(gm).find(function(o) { return o.id === s.buildingOrderId; });
+        var labels = { submitted: '待 核 办', unresolved: '未 开 工', rejected: '未 准', deferred: '缓 行', recovery_required: '待 恢 复' };
+        cards.push(bkYeCard({ name: order ? order.req.name : String(s.content || '营造案').slice(0, 24) + '…', _proposal: true, _proposalStatus: order && labels[order.status], description: order && order.receipt ? order.receipt.reason : '已录入诏令建议库，候颁行后由有司核定费用、工期与效用。' }, P));
       }
     });
     var canBuild = !!live && hasDisplayValue(divName);

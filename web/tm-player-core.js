@@ -1397,16 +1397,19 @@ function _dfSubmitBuild(divNameEnc, typeIdx, isCustom) {
   var modal = document.getElementById('_dfBuildModal');
   if (!_dfBuildContextCurrent(modal, divName)) { toast('当前局势已变化，请重新打开营造拟案'); return; }
   var content = '';
+  var orderReq, orderAppraisal = null;
   if (isCustom) {
     var name = (document.getElementById('_bmCustName')||{}).value || '';
     var cat = (document.getElementById('_bmCustCat')||{}).value || 'economic';
     var desc = (document.getElementById('_bmCustDesc')||{}).value || '';
     if (!name.trim() || !desc.trim()) { toast('请填写工役名目与规制'); return; }
     var catCN = _DF_BUILD_CAT_CN[cat] || cat;
+    orderReq = { name: name, category: cat, description: desc };
     content = '于 ' + divName + ' 修建【自定义 · ' + cat + '（' + catCN + '）】' + name + '：' + desc + '。——请AI判定此建筑的合理性、成本、工期与实际效果。';
     var pend = window._dfPendingAppraisal;
     if (pend && _dfBuildAppraisalCurrent(pend.op) && pend.appraisal.feasibility !== '不合理') {
       var a = pend.appraisal;
+      orderAppraisal = a;
       // 参考与请求同属原建议正文：旧/正式诏书的纳入、存档、润色、回合收集都沿用这份文本。
       // 不另立待执行队列；未纳入/未颁行的建议绝不视作已经开工。
       content += '\n【有司核议参考，尚未开工】' + a.feasibility + '；估造价 ' + a.costActual + ' 两；工期 ' + a.timeActual + ' 回合。';
@@ -1418,10 +1421,16 @@ function _dfSubmitBuild(divNameEnc, typeIdx, isCustom) {
   } else {
     var types = (P.buildingSystem && P.buildingSystem.buildingTypes) || [];
     var b = types[typeIdx]; if (!b) return;
+    orderReq = { name: b.name, category: b.category || 'economic', description: b.description || '' };
+    orderAppraisal = { costActual: finiteNumberOr(b.baseCost, 0), timeActual: finiteNumberOr(b.buildTime, 3), source: 'catalogue' };
     content = '于 ' + divName + ' 修建 ' + b.name + (finiteNumberOr(b.baseCost, 0) > 0 ? '（预计费用 '+b.baseCost+' 两，工期 '+finiteNumberOr(b.buildTime, 3)+' 回合）' : '') + '。——请AI按其描述综合判定实际效果。';
   }
+  var orders = window.TM && TM.BuildingOrders;
+  if (!orders) { toast('营造案登记未就绪，请重新加载后重试'); return; }
+  var proposal = orders.propose(GM, P, divName, orderReq, orderAppraisal, content);
+  if (!proposal.ok) { toast(proposal.reason); return; }
   if (!GM._edictSuggestions) GM._edictSuggestions = [];
-  GM._edictSuggestions.push({ source: '工程', from: divName, content: content, turn: GM.turn, used: false });
+  GM._edictSuggestions.push({ source: '工程', from: divName, topic: orderReq.name + '营造案', content: proposal.content, buildingOrderId: proposal.id, turn: GM.turn, used: false });
   // 建议不是已颁行命令，不提前向政治/阶层校准器登记 construction 行动。
   toast('已录入诏令建议库——请在诏令区纳入后颁诏');
   if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();

@@ -588,6 +588,7 @@
           npc_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
           character_memory_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
           edict_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          building_decisions: { type: 'array', items: { type: 'object', additionalProperties: true } },
           dialogue_commitment_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
           court_resolution_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
           fiscal_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
@@ -1079,9 +1080,9 @@
           return rescue;
         } catch(_d3Err) { _dbg('[SC1 D-3] simpler schema retry fail:', _d3Err); return null; }
       }
-      async function _runIncrementalSc1Retry(p1, missingFields) {
+      async function _runIncrementalSc1Retry(p1, missingFields, buildingBatch) {
         // Phase 7 Q4·应对 R-B 误判循环·只在 missing >3 才 retry·一次性
-        if (!Array.isArray(missingFields) || missingFields.length <= 3) {
+        if (!Array.isArray(missingFields) || (missingFields.length <= 3 && !buildingBatch)) {
           _dbg('[SC1 Inc Retry] missing<=3·skip retry·count=' + (missingFields||[]).length);
           return null;
         }
@@ -1098,11 +1099,13 @@
             + '上次推演只返回部分字段·缺少·' + missingFields.join(', ') + '\n'
             + '已有上下文 (R-A·应对语义矛盾·不要与此冲突)·' + _knownContext + '\n'
             + '请只返回 JSON·只含 缺失字段·**与上文逻辑一致**·不可重写已有字段。'
-            + '\nJSON 结构·{' + missingFields.map(function(k){ return '"' + k + '":' + (k === 'events' || /changes$|feedback$|adjustments$/.test(k) ? '[]' : '""'); }).join(',') + '}';
+            + '\nJSON 结构·{' + missingFields.map(function(k){ return '"' + k + '":' + (k === 'events' || /changes$|feedback$|adjustments$|decisions$/.test(k) ? '[]' : '""'); }).join(',') + '}';
+          if (buildingBatch && TM.BuildingOrders) prompt += TM.BuildingOrders.prompt(GM, buildingBatch, false);
           var body = { model: P.ai.model || 'gpt-4o', messages: [{role:'system',content:'Return strict JSON·only missing fields·conservative.'},{role:'user',content:prompt}], temperature: 0.25, max_tokens: _tok(2500) };
           if (_modelFamily === 'openai') body.response_format = { type: 'json_object' };
           var call = await _callEndturnAI(body, { id: 'sc1_inc_retry', label: 'SC1 增量补齐', expectedKeys: missingFields.slice(0, 3), priority: 'critical', timeoutMs: 45000, maxRetries: 0, repairTimeoutMs: 20000 });
           var parsed = (call && call.parse) ? call.parse.parsed : null;
+          if (buildingBatch && !TM.BuildingOrders.current(GM, P, buildingBatch, false)) return null;
           if (parsed && typeof parsed === 'object') {
             missingFields.forEach(function(k) {
               if (parsed[k] != null) p1[k] = parsed[k];
@@ -3696,6 +3699,8 @@
            + 'YOU MUST RETURN JSON ONLY. 不要包裹 markdown 代码块·不要前言·不要解释·不要附加任何 prose。\n'
            + '第一个字符必须是 `{`·最后一个字符必须是 `}`。任何非 JSON 字符都会导致整回合推演失败·后续 sc1b/sc1c/sc1d/sc2 等子调用会全部降级。\n'
            + '若某段叙事字段超出长度·宁可截短不要省略 JSON 结构。';
+      // FINAL RULE 的不可裁尾部；仍由下方原最终预算闸核算，不绕过上下文/输出上限。
+      if (TM.BuildingOrders) tp1 += TM.BuildingOrders.prompt(GM, ctx.input.buildingOrders, false);
       var _sc1Body = {model:P.ai.model||"gpt-4o",messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc1'))},{role:"user",content:tp1}],temperature:_sc1Temp,max_tokens:_tok(_sc1BaseTok)};
       // Phase 6 Q1·strict json_schema 优先 (P.ai.openaiStrict=true)·否则 json_object
       var _sc1Rf = _selectResponseFormat(_modelFamily, _buildSc1JsonSchema);
@@ -3793,6 +3798,7 @@
         }
       }
       if ((!p1 || !_hasSc1StructuredResult(p1)) && (!_sc1ExtraPassUsed || (P.conf && P.conf.sc1RepairUncapped === true))) {
+        _sc1ExtraPassUsed = true;
         var _rescuedSc1 = await _trySc1Rescue(_sc1CriticalError || 'primary SC1 empty');
         if (_rescuedSc1 && _rescuedSc1.parsed) {
           p1 = _rescuedSc1.parsed;
@@ -3801,6 +3807,11 @@
           _sc1CriticalError = null;
           if (typeof toast === 'function') toast('⚠ SC1主结构化不稳定·已用轻量结构化救援账本继续');
         }
+      }
+      if (p1 && TM.BuildingOrders && TM.BuildingOrders.missing(GM, P, ctx.input.buildingOrders, p1).length && !_sc1ExtraPassUsed) {
+        _sc1ExtraPassUsed = true; // 与既有增量修复/救援共用一次额度，不新增无界重问。
+        var _buildingFilled = await _runIncrementalSc1Retry(p1, ['building_decisions'], ctx.input.buildingOrders);
+        if (_buildingFilled) p1 = _buildingFilled;
       }
       GM._turnAiResults.subcall1_raw = c1;
       GM._turnAiResults.subcall1 = p1;

@@ -231,6 +231,9 @@ async function _polishEdicts() {
   });
   if (parts.length === 0) { toast('\u8BF7\u5148\u5728\u5404\u7C7B\u8BCF\u4EE4\u4E2D\u586B\u5199\u5185\u5BB9'); return; }
 
+  var buildingBinding = window.TM && TM.BuildingOrders ? TM.BuildingOrders.capturePolish(GM, P, parts.map(function(p) { return p.content; }).join('\n\n')) : null;
+  if (buildingBinding && buildingBinding.errors.length) { toast(buildingBinding.errors.join('；')); return; }
+
   var panel = _edictEl('edict-polished');
   if (!panel) return;
   var previous = _polishEdicts._pending;
@@ -254,7 +257,7 @@ async function _polishEdicts() {
   var config = typeof _getAITier === 'function' ? _getAITier(tier) : P.ai;
   if (!config || !config.key) {
     var merged = parts.map(function(p) { return '\u3010' + p.label + '\u3011' + p.content; }).join('\n\n');
-    _renderPolishedEdict(panel, merged);
+    _renderPolishedEdict(panel, merged, buildingBinding);
     return;
   }
 
@@ -329,7 +332,7 @@ async function _polishEdicts() {
       _edictPolishFailure(panel, { code: 'edict-draft-changed' }, tier); return;
     }
     if (typeof result !== 'string' || !result.trim()) { _edictPolishFailure(panel, { code: 'ai-text-empty' }, tier); return; }
-    _renderPolishedEdict(panel, result);
+    _renderPolishedEdict(panel, result, buildingBinding);
   } catch(e) {
     if (request.current()) _edictPolishFailure(panel, e, tier);
   } finally {
@@ -340,7 +343,8 @@ async function _polishEdicts() {
   }
 }
 
-function _renderPolishedEdict(panel, text) {
+function _renderPolishedEdict(panel, text, buildingBinding) {
+  panel._buildingOrderBinding = buildingBinding ? Object.assign({}, buildingBinding, { text: text }) : null;
   // 卷轴式·宣纸底+上下木轴+朱砂御玺+颁行天下
   panel.classList.add('show');
   panel.style.display = 'block';
@@ -365,6 +369,14 @@ function _applyPolishedEdict(mode) {
   if (!ta) return;
   var text = ta.value.trim();
   if (!text) { toast('\u8BCF\u4E66\u5185\u5BB9\u4E3A\u7A7A'); return; }
+  var buildingRefs = { refs: [], errors: [] };
+  if (window.TM && TM.BuildingOrders) {
+    var buildingPanel = _edictEl('edict-polished');
+    var buildingSource = ['edict-pol','edict-mil','edict-dip','edict-eco','edict-oth'].map(function(id) { var el = _edictEl(id); return el && el.value.trim(); }).filter(Boolean).join('\n\n');
+    buildingRefs = TM.BuildingOrders.polishedRefs(GM, buildingPanel && buildingPanel._buildingOrderBinding, text, buildingSource);
+    if (buildingRefs.errors.length && mode === 'replace') { toast(buildingRefs.errors.join('；')); return; }
+    if (buildingRefs.errors.length) buildingRefs.refs = []; // 手稿可保留文字，但不携带已失效执行绑定。
+  }
 
   // 升级 GM.edicts 为结构化数组·兼容老字符串数据
   if (!Array.isArray(GM.edicts)) GM.edicts = [];
@@ -415,6 +427,8 @@ function _applyPolishedEdict(mode) {
 
   var rec = {
     id: 'edict-' + _curTurn + '-' + Date.now() + '-' + polishVersion,
+    buildingOrderRefs: buildingRefs.refs,
+    buildingBindingText: buildingRefs.refs.length ? text : '',
     turn: _curTurn,
     time: (typeof getTSText === 'function') ? getTSText(_curTurn) : '',
     text: text,

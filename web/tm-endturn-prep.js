@@ -689,6 +689,8 @@ function _endTurn_collectInput() {
     }
   }
 
+  if (window.TM && TM.BuildingOrders) input.buildingOrders = TM.BuildingOrders.collect(GM, P, edicts);
+  else if (Object.keys(edicts).some(function(k) { return String(edicts[k] || '').indexOf('〔营造案 build-') >= 0; }) || (GM.edicts || []).some(function(e) { return e && e.turn === GM.turn && e.status === 'promulgated' && e.buildingOrderRefs && e.buildingOrderRefs.length; })) throw new Error('营造案核办模块未加载，已停止提交，请重新加载游戏');
   return input;
 }
 

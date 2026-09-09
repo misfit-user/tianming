@@ -622,10 +622,10 @@ console.log('天命游戏脚本开始加载...');
 <script>window.TMStartupPhases.transition('world', { boundary: 'tm-launch' });</script>
 <script src="tm-launch.js?v=20260711-scnimport"></script>
 <script src="tm-player-settings.js?v=20260622-wfswitches"></script>
-<script src="tm-player-core.js?v=20260909-building-channels"></script>
-<script src="tm-hongyan-office.js?v=20260908-edict-polish"></script>
-<script src="tm-game-ui-shell.js?v=20260908-edict-polish"></script>
-<script src="tm-hongyan-edict-ui.js?v=20260908-edict-polish"></script>
+<script src="tm-player-core.js?v=20260910-building-orders"></script>
+<script src="tm-hongyan-office.js?v=20260910-building-orders"></script>
+<script src="tm-game-ui-shell.js?v=20260910-building-orders"></script>
+<script src="tm-hongyan-edict-ui.js?v=20260910-building-orders"></script>
 <script src="tm-game-loop.js?v=20260706-splitsync"></script>
 <script src="tm-game-loop-wentian-hardchange.js?v=20260706-splitsync"></script>
 <script src="tm-map-system.js?v=20260709"></script>
@@ -647,6 +647,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-coastal-raid.js?v=2026062001"></script><!-- P1-A3b 沿海袭击结算·激活死字段 coastalDefense -->
 <script src="tm-office-vacancy.js?v=2026062002"></script><!-- P1-C1 地方官缺写口·激活死字段 officeVacancy·A4 消费 officialSupply -->
 <script src="tm-custom-build-agent.js?v=20260909-building-channels"></script><!-- 自拟营建 agent·A1-A4·A5 多步(inspect/recall)+谏官对抗审·全走次要API -->
+<script src="tm-building-orders.js?v=20260910-building-orders"></script><!-- 原诏书营造案·身份绑定/核办回执·不提供独立操作入口 -->
 <script src="tm-endturn-province.js?v=2026050701"></script>
 <!-- R161 R7 (2026-05-04) tm-endturn-qiaozhi 从 tm-endturn-province 拆出·侨置 (~250 行) -->
 <script src="tm-endturn-qiaozhi.js?v=2026050701"></script>
@@ -678,7 +679,7 @@ console.log('天命游戏脚本开始加载...');
 <!-- R110 (2026-04-25) 拆分 tm-endturn.js → prep + ai-infer + core -->
 <!-- R138 (2026-04-25) endturn-prep 再拆·启动 AI 规划独立成 tm-ai-planning -->
 <script src="tm-ai-planning.js?v=2026042816"></script>
-<script src="tm-endturn-prep.js?v=2026052810"></script>
+<script src="tm-endturn-prep.js?v=20260910-building-orders"></script>
 <script src="tm-class-engine.js?v=2026050102"></script>
 <script src="tm-minxin-ledger.js?v=20260601-minxin-ledger"></script>
 <script src="tm-class-minxin-bridge.js?v=20260601-class-minxin-bridge"></script>
@@ -701,13 +702,13 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
 <script src="tm-endturn-prompt.js?v=20260719-memsanitize"></script>
 <script src="tm-endturn-ai-sc1-budget.js?v=20260909-channels"></script>
-<script src="tm-endturn-ai.js?v=20260909-channels"></script>
-<script src="tm-endturn-apply.js?v=20260909-channels"></script>
-<script src="tm-endturn-apply-stages.js?v=20260909-channels"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-ai.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-apply.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-apply-stages.js?v=20260910-building-orders"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
 <script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
 <script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
 <script src="tm-endturn-record.js?v=2026052201"></script>
-<script src="tm-endturn-ai-infer.js?v=2026051801"></script>
+<script src="tm-endturn-ai-infer.js?v=20260910-building-orders"></script>
 <script src="tm-endturn-core.js?v=20260823-auditfix18-autosave"></script>
 <!-- slice 1·2026-05-07·endTurn 管道执行器骨架·feature flag P.flags.useNewPipeline 触发·见 web/docs/endturn-data-flow.md -->
 <script src="tm-endturn-pipeline-types.js?v=2026050701"></script>
@@ -717,10 +718,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-validity.js?v=2026051701"></script>
 <script src="tm-endturn-pipeline-steps.js?v=20260811-auditfix1"></script>
 <!-- 回合推演「模式 b · agent 模式」平行引擎(开关 agentModeEnabled 默认关)·详设 docs/agent-mode-design.md -->
-<script src="tm-endturn-agent-mode.js?v=20260909-channels"></script>
+<script src="tm-endturn-agent-mode.js?v=20260910-building-orders"></script>
 <script src="tm-endturn-agent-read-tools.js?v=20260719-r1349"></script>
 <script src="tm-wentian-agent.js?v=20260703-wtagent"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
-<script src="tm-endturn-agent-write-tools.js?v=20260719-agentparallel1"></script>
+<script src="tm-endturn-agent-write-tools.js?v=20260910-building-orders"></script>
 <script src="tm-endturn-agent-depth-tools.js?v=20260719-agentparallel1"></script>
 <script src="tm-endturn-agent-intent-plan.js?v=20260719-single-committer1"></script>
 <script src="tm-endturn-shiji-compose.js?v=20260706-shijivolumes"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
@@ -932,15 +933,15 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-diagnostics-panel.js?v=2026042714" defer></script>
 <script src="tm-checklist.js?v=2026042714" defer></script>
 <script src="tm-onboard-tools.js?v=2026042714" defer></script>
-<script src="tm-ai-schema.js?v=2026052201"></script>
-<script src="tm-ai-output-validator.js?v=2026052201"></script>
+<script src="tm-ai-schema.js?v=20260910-building-orders"></script>
+<script src="tm-ai-output-validator.js?v=20260910-building-orders"></script>
 <script src="tm-data-access.js?v=2026042714"></script>
 <!-- AI change 基础能力须在模块岛 bundle 之前加载：pathutils → army → narrative → generated applier。 -->
 <script src="tm-ai-change-pathutils.js?v=20260521-slice1"></script>
 <script src="tm-ai-change-army.js?v=20260521-slice2"></script>
 <script src="tm-ai-change-narrative.js?v=20260521-slice3"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
-<script src="generated/tm-ai-change-applier.bundle.js?v=20260825-module-island1"></script>
+<script src="generated/tm-ai-change-applier.bundle.js?v=20260910-building-orders"></script>
 <script src="tm-ai-npc-memorials.js?v=20260709"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=2026042714"></script>
@@ -971,9 +972,9 @@ console.log('天命游戏脚本开始加载...');
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260621-optland"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
-<script src="phase8-formal-map.js?v=20260909-building-channels"></script>
+<script src="phase8-formal-map.js?v=20260910-building-orders"></script>
 <!-- 勿动位置·第二十五拆：phase8-formal-map-dossier 必须【紧随 origin 之后】装载(②b origin-first 双向 bucket·origin 先导出 __p8MapParts→本片捕获回填) -->
-<script src="phase8-formal-map-dossier.js?v=20260909-building-channels"></script>
+<script src="phase8-formal-map-dossier.js?v=20260910-building-orders"></script>
 <script src="phase8-formal-modules.js?v=20260527-issuecard-aliases"></script>
 <script src="phase8-formal-drafts.js?v=20260909-character-actions"></script>
 <!-- 勿动位置·第二十六拆：phase8-formal-drafts-message-panels.js 必须【紧随】phase8-formal-drafts.js 装载(origin-first 双向 bucket·装载于 origin 之后回填) -->

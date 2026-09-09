@@ -58,7 +58,7 @@ function openShizhengTasks() {
   document.body.appendChild(overlay);
   if (window.TM && !TM.ReliefGovernanceUI && TM.Features) {
     var reliefLoad = document.createElement('button');
-    reliefLoad.textContent = '正在载入赈务试点…';
+    reliefLoad.textContent = '正在载入文书履行单…';
     reliefLoad.className = 'bt bsm';
     panel.firstElementChild.appendChild(reliefLoad);
     function loadRelief() {
@@ -68,7 +68,7 @@ function openShizhengTasks() {
         reliefLoad.remove(); TM.ReliefGovernanceUI.mountToolbar(panel);
       }).catch(function(error) {
         if (window.GM !== GM || !panel.isConnected) return;
-        reliefLoad.disabled = false; reliefLoad.textContent = '赈务组件未就绪 · 点击重试';
+        reliefLoad.disabled = false; reliefLoad.textContent = '文书履行单未就绪 · 点击重试';
         reliefLoad.title = String(error && error.message || error);
       });
     }

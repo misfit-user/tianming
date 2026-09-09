@@ -511,7 +511,7 @@ console.log('天命游戏脚本开始加载...');
 
 <script src="tm-env-detect.js?v=2026042714"></script>
 <script src="tm-platform.js?v=20260823-ipc1"></script>
-<script src="tm-feature-loader.js?v=20260909-relief"></script>
+<script src="tm-feature-loader.js?v=20260909-channels"></script>
 <!-- 固定虚拟分辨率+整体等比缩放适配（移植 Phase 2 重做）·仅 capacitor/?fit=1·须在 platform 后尽早加载防闪 -->
 <script src="tm-fixed-fit.js?v=20260723-modern-viewport-units"></script>
 <script src="tm-debug-logger.js?v=2026052801"></script>
@@ -582,7 +582,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-memory-agent-tools.js?v=20260618-s2"></script>
 <script src="tm-memory-steward.js?v=20260619-steward-s5"></script>
 <script src="tm-reflection-agent.js?v=20260623-metacog"></script>
-<script src="tm-edict-oversight.js?v=20260909-relief"></script>
+<script src="tm-edict-oversight.js?v=20260909-channels"></script>
 <script src="tm-history-advisor.js?v=20260619-histadv-s1"></script>
 <script src="tm-change-queue.js?v=20260828-reactivecascade"></script>
 <!-- R123+R124 (2026-04-25) 拆分 tm-index-world.js → indices + world + memorials + office-panel -->
@@ -661,7 +661,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-world-digest.js?v=20260630"></script><!-- 天下牵动·因果综述·W1a·把割裂的系统反应重组成连贯因果注入推演 -->
 <script src="tm-benji.js?v=20260823-storage1"></script><!-- 帝王本纪·终局回顾式修史(鼎革R1g·每12回合一卷串行修纂·flag benjiEnabled) -->
 <script src="tm-world-reactors.js?v=20260630"></script><!-- 世界反应总线·跨系统reactor·W2a军事→势力·flag-gated默认关 -->
-<script src="tm-endturn-systems.js?v=20260909-relief"></script>
+<script src="tm-endturn-systems.js?v=20260909-channels"></script>
 <script src="tm-endturn-ai-helpers.js?v=2026042714"></script>
 <script src="tm-endturn-ai-context.js?v=2026050401"></script>
 <script src="tm-history-events.js?v=20260719-histanchors"></script>
@@ -689,7 +689,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-player-action-signals.js?v=20260531-player-action-signals"></script>
 <script src="tm-class-character-relations.js?v=20260605-class-character-relations"></script>
 <script src="tm-minxin-pressure-actions.js?v=20260601-minxin-pressure-actions"></script>
-<script src="tm-minxin-commitment-tracker.js?v=20260909-relief"></script>
+<script src="tm-minxin-commitment-tracker.js?v=20260909-channels"></script>
 <script src="tm-minxin-responsibility-chain.js?v=20260601-minxin-responsibility-chain"></script>
 <script src="tm-minxin-hard-links.js?v=20260601-minxin-hard-links"></script>
 <script src="tm-minxin-hard-link-consumers.js?v=20260601-minxin-hard-link-consumers"></script>
@@ -700,10 +700,10 @@ console.log('天命游戏脚本开始加载...');
 <!-- DA-Q2 (2026-06-21)·史记 record 提示词共享 builder·sc1 与 agent deepen_narrative 同源零 drift·须先于 ai.js load -->
 <script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
 <script src="tm-endturn-prompt.js?v=20260719-memsanitize"></script>
-<script src="tm-endturn-ai-sc1-budget.js?v=20260909-relief"></script>
-<script src="tm-endturn-ai.js?v=20260909-relief"></script>
-<script src="tm-endturn-apply.js?v=20260909-relief"></script>
-<script src="tm-endturn-apply-stages.js?v=20260909-relief"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-ai-sc1-budget.js?v=20260909-channels"></script>
+<script src="tm-endturn-ai.js?v=20260909-channels"></script>
+<script src="tm-endturn-apply.js?v=20260909-channels"></script>
+<script src="tm-endturn-apply-stages.js?v=20260909-channels"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
 <script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
 <script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
 <script src="tm-endturn-record.js?v=2026052201"></script>
@@ -717,7 +717,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-validity.js?v=2026051701"></script>
 <script src="tm-endturn-pipeline-steps.js?v=20260811-auditfix1"></script>
 <!-- 回合推演「模式 b · agent 模式」平行引擎(开关 agentModeEnabled 默认关)·详设 docs/agent-mode-design.md -->
-<script src="tm-endturn-agent-mode.js?v=20260909-relief"></script>
+<script src="tm-endturn-agent-mode.js?v=20260909-channels"></script>
 <script src="tm-endturn-agent-read-tools.js?v=20260719-r1349"></script>
 <script src="tm-wentian-agent.js?v=20260703-wtagent"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
 <script src="tm-endturn-agent-write-tools.js?v=20260719-agentparallel1"></script>
@@ -854,7 +854,7 @@ console.log('天命游戏脚本开始加载...');
 <!-- R137 (2026-04-25) 拆 shell-extras → shell UI + 时政面板 -->
 <script src="tm-shell-extras.js?v=2026042714"></script>
 <script src="tm-houguong.js?v=20260601-hougong"></script>
-<script src="tm-shizheng-panel.js?v=20260909-relief"></script>
+<script src="tm-shizheng-panel.js?v=20260909-channels"></script>
 <script src="tm-corruption-engine.js?v=20260706-split"></script>
 <script src="tm-corruption-cases.js?v=20260706-split"></script>
 <script src="tm-corruption-extras.js?v=20260706-split"></script>
@@ -923,7 +923,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-thresholds.js?v=2026042714"></script>
 <script src="tm-fiscal-ui.js?v=2026042714"></script>
 <script src="tm-integration-bridge.js?v=20260822-auditfix17"></script>
-<script src="tm-fiscal-engine.js?v=20260909-relief"></script>
+<script src="tm-fiscal-engine.js?v=20260909-channels"></script>
 <script src="tm-invariants.js?v=2026042714"></script>
 <script src="tm-namespaces.js?v=2026042714"></script>
 <script src="tm-state.js?v=2026042714"></script>

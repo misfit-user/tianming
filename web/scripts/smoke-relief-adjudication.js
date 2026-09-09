@@ -1,101 +1,74 @@
 #!/usr/bin/env node
 'use strict';
-const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
-const {fresh,create,view,act,tick}=require('./smoke-relief-governance');
-let passed=0;
-async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
-function setup(){const c=fresh();for(const f of ['tm-edict-oversight.js','tm-minxin-commitment-tracker.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),c,{filename:f});return c;}
-function reply(c,extra={}){const a=c.TM.EdictOversight.activeEdicts(c.GM)[0];return JSON.stringify({reports:[{oid:a.oid,executionLevel:100,status:'done',relief:Object.assign({caseId:a.relief.issueId,revision:a.relief.revision,action:'wait',amount:0,minxinDelta:0,reason:'承办人要求核清灾户，尚不具备发放条件。'},extra)}]});}
+const assert=require('assert/strict');const {context,load,entries}=require('./lib-relief-channel-test');
+let passed=0;async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
+function setup(){const c=context();c.GM._edictTracker=[{id:'e1',content:'下拨河东银5000两赈济灾民，责成王明核实呈报。',status:'executing',turn:1,assignee:'王明',progressPercent:0}];return c;}
+function response(c,extra={}){return JSON.stringify({reports:[Object.assign({oid:'e0',executionLevel:25,status:'partial',reason:'承办已核实首批灾户，其余待核。',chainEffect:'核实首批灾户',nextAdvice:'请循诏书催办。'},extra)]});}
+function money(c){return JSON.stringify({guoku:c.GM.guoku,neitang:c.GM.neitang,orders:c.GM.transferOrders,minxin:c.GM.minxin});}
 (async()=>{
-await test('existing oversight batch includes true cash/officer context and no extra per-case call',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);let calls=0;
-  c.callAIMessages=async(messages,maxTokens,signal,tier,opts)=>{calls++;assert(messages[1].content.includes('"funded":20000'));assert(messages[1].content.includes('"id":"c1"'));assert(messages[1].content.includes('不是固定随机成功率'));assert.equal(opts.maxRetries,1);return reply(c);};
-  assert.equal(c.TM.EdictOversight.shouldHandle(c.GM),true);
-  assert.equal((await c.TM.EdictOversight.run(c.GM)).ok,true);assert.equal(calls,1);assert.equal(view(c,id).disbursed,0);
-  assert.notEqual(view(c,id).status,'completed'); // generic 100%/done cannot bypass the case owner
+await test('opening read-only relief records does not turn on any AI flag or add a request',()=>{
+  const c=setup();const before=JSON.stringify(c.GM);entries(c);assert.equal(JSON.stringify(c.GM),before);
+  assert.equal(c.TM.EdictOversight.shouldHandle(c.GM),false);
 });
-await test('different structured AI decisions really change execution, not only prose',async()=>{
-  const a=setup(),b=setup(),ia=create(a),ib=create(b);
-  for(const[c,id]of[[a,ia],[b,ib]]){act(c,id,'fund',{amount:20000});tick(c);}
-  a.callAIMessages=async()=>reply(a,{action:'blocked',reason:'承办呈报与既有拨付记录未能对应，需核对。'});
-  b.callAIMessages=async()=>reply(b,{action:'disburse',amount:5000,reason:'承办人先行救济已核实灾户，其余待核。'});
-  await a.TM.EdictOversight.run(a.GM);await b.TM.EdictOversight.run(b.GM);
-  assert.equal(view(a,ia).status,'blocked');assert.equal(view(b,ib).disbursed,5000);
-  assert.equal(a.GM.guoku.money,b.GM.guoku.money);
+await test('existing oversight uses original command/officer context and a single capped request',async()=>{
+  const c=setup();let calls=0;c.callAIMessages=async(ms,t,s,tier,o)=>{calls++;assert(ms[1].content.includes('责成王明'));assert(ms[1].content.includes('承办:王明'));assert.equal(o.maxRetries,1);assert.equal(o.id,'edict_oversight');return response(c);};
+  const before=money(c);await c.TM.EdictOversight.run(c.GM);assert.equal(calls,1);assert.equal(money(c),before);
+  assert.equal(entries(c)[0].progress,25);assert.equal(entries(c)[0].advice,'请循诏书催办。');
 });
-await test('concurrent oversight calls share the actual request and commit once',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);let release,calls=0;
-  const response=reply(c,{action:'complete',amount:20000,minxinDelta:2});
-  c.callAIMessages=()=>{calls++;return new Promise(r=>release=r);};
-  const a=c.TM.EdictOversight.run(c.GM),b=c.TM.EdictOversight.run(c.GM);assert.equal(a,b);release(response);await a;
-  assert.equal(calls,1);assert.equal(view(c,id).disbursed,20000);assert.equal(c.GM._minxinLedger.items.length,1);
+await test('different actual AI decisions update the existing tracker, not a second case model',async()=>{
+  for(const [st,p] of [['stalled',5],['partial',35]]){const c=setup();const before=money(c);c.callAIMessages=async()=>response(c,{status:st,executionLevel:p});
+    await c.TM.EdictOversight.run(c.GM);assert.equal(c.GM._edictTracker[0].status,st);assert.equal(entries(c)[0].progress,p);
+    assert.equal(c.GM.currentIssues.length,0);assert.equal(money(c),before);}
 });
-await test('same-turn world switch and load generation invalidate delayed results and errors',async()=>{
-  for(const change of ['gm','p','generation','timeline']){
-    const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);let release;
-    const response=reply(c,{action:'complete',amount:20000,minxinDelta:2}),old=c.GM;
-    c.callAIMessages=()=>new Promise(r=>release=r);const p=c.TM.EdictOversight.run(old);
-    if(change==='gm')c.GM=structuredClone(old);if(change==='p')c.P=structuredClone(c.P);if(change==='generation')c._tmLoadGen++;if(change==='timeline')c.GM._timelineId='fork';
-    release(response);assert.equal((await p).stale,true);assert.equal(c.TM.ReliefGovernance.view(old,id).disbursed,0);assert.equal(c.GM._minxinLedger,undefined);
-  }
+await test('concurrent runs share one actual request and one history update',async()=>{
+  const c=setup();let release,calls=0;c.callAIMessages=()=>{calls++;return new Promise(r=>release=r);};
+  const a=c.TM.EdictOversight.run(c.GM),b=c.TM.EdictOversight.run(c.GM);assert.equal(a,b);release(response(c));await a;
+  assert.equal(calls,1);assert.equal(c.GM._edictTracker[0]._chainEffects.length,1);assert.equal(c.GM._edictEfficacyHistory.length,1);
 });
-await test('in-flight personnel change cannot be overwritten by old assessment',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);let release;
-  const response=reply(c,{action:'complete',amount:20000,minxinDelta:2});c.callAIMessages=()=>new Promise(r=>release=r);
-  const p=c.TM.EdictOversight.run(c.GM);act(c,id,'reassign',{assigneeId:'c2'});release(response);await p;
-  assert.equal(view(c,id).disbursed,0);assert.equal(view(c,id).assigneeId,'c2');assert.equal(c.GM._minxinLedger,undefined);
+await test('same-turn world or identity changes reject delayed successful responses',async()=>{
+  for(const change of ['GM','P','generation','timeline']){const c=setup();let release;c.callAIMessages=()=>new Promise(r=>release=r);const old=c.GM,p=c.TM.EdictOversight.run(old);
+    if(change==='GM')c.GM=structuredClone(old);if(change==='P')c.P=structuredClone(c.P);if(change==='generation')c._tmLoadGen++;if(change==='timeline')c.GM._timelineId='fork';
+    const bytes=JSON.stringify(old);release(response(c));assert.equal((await p).stale,true);assert.equal(JSON.stringify(old),bytes);}
 });
-await test('transport/parse/schema failures remain technical and recover on a later run',async()=>{
-  for(const kind of ['transport','parse','identity','amount']){
-    const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);
-    c.callAIMessages=async()=>{if(kind==='transport')throw Error('isolated network failure');if(kind==='parse')return '{}';return reply(c,kind==='identity'?{caseId:'another-case'}:{action:'disburse',amount:20001});};
-    await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).disbursed,0);assert.equal(view(c,id).status,'executing');assert(view(c,id).lastTechnicalError);
-    c.callAIMessages=async()=>reply(c,{action:'complete',amount:20000,minxinDelta:1});await c.TM.EdictOversight.run(c.GM);
-    assert.equal(view(c,id).status,'completed');assert.equal(view(c,id).lastTechnicalError,'');
-  }
+await test('an old rejected network request cannot write failure state into another world',async()=>{
+  const c=setup();let reject;c.callAIMessages=()=>new Promise((r,j)=>reject=j);const old=c.GM,p=c.TM.EdictOversight.run(old);c.GM=structuredClone(old);
+  const bytes=JSON.stringify(old);reject(Error('isolated rejection'));assert.equal((await p).stale,true);assert.equal(JSON.stringify(old),bytes);
 });
-await test('AI cannot settle for an alive:false officer; reassignment permits later execution',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);c.GM.chars[0].alive=false;
-  c.callAIMessages=async()=>reply(c,{action:'complete',amount:20000,minxinDelta:1});await c.TM.EdictOversight.run(c.GM);
-  assert.equal(view(c,id).disbursed,0);act(c,id,'reassign',{assigneeId:'c2'});await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).status,'completed');
+await test('source edit, reassignment or reorder cannot redirect an in-flight report',async()=>{
+  for(const change of ['content','assignee','replace']){const c=setup();let release;c.callAIMessages=()=>new Promise(r=>release=r);const p=c.TM.EdictOversight.run(c.GM);
+    if(change==='replace')c.GM._edictTracker[0]={id:'e1',content:'另外一道赈务诏令',status:'pending',progressPercent:0};else c.GM._edictTracker[0][change]='新的旨意或承办人';
+    const before=JSON.stringify(c.GM._edictTracker);release(response(c));const result=await p;assert.equal(result.updated,0);assert.equal(JSON.stringify(c.GM._edictTracker),before);}
 });
-await test('explicitly linked commitment mirrors final outcome without another minxin signal',async()=>{
-  const c=setup(),id=create(c);c.GM._minxinCommitments={items:[{id:'promise-1',linkedIssue:id,status:'active',turn:1,createdTurn:1,history:[],measures:['relief']}],settlements:[],stats:{}};
-  act(c,id,'fund',{amount:20000});tick(c);c.TM.MinxinCommitmentTracker.tick(c.GM,{turn:c.GM.turn});assert.equal(c.GM._minxinLedger,undefined);
-  c.callAIMessages=async()=>reply(c,{action:'complete',amount:20000,minxinDelta:2});await c.TM.EdictOversight.run(c.GM);tick(c);
-  c.TM.MinxinCommitmentTracker.tick(c.GM,{turn:c.GM.turn});assert.equal(c.GM._minxinLedger.items.length,1);assert.equal(c.GM._minxinCommitments.items[0].status,'resolved');
+await test('unknown and repeated response slots do not add arbitrary or repeated effects',async()=>{
+  const c=setup();c.callAIMessages=async()=>JSON.stringify({reports:[{oid:'wrong',executionLevel:100},{oid:'e0',status:'partial',executionLevel:20,chainEffect:'首批核户'}, {oid:'e0',status:'done',executionLevel:100,chainEffect:'重复'}]});
+  await c.TM.EdictOversight.run(c.GM);assert.equal(c.GM._edictTracker[0].progressPercent,20);assert.equal(c.GM._edictTracker[0]._chainEffects.length,1);
 });
-await test('shrinking an unfunded remainder preserves receipts and allows honest completion',async()=>{
-  const c=setup(),id=create(c,{source:'neitang',amount:40000});act(c,id,'fund',{amount:30000});
-  assert.equal(act(c,id,'resize',{amount:20000}).ok,false);assert.equal(act(c,id,'resize',{amount:30000}).ok,true);tick(c);
-  c.callAIMessages=async()=>reply(c,{action:'complete',amount:30000,minxinDelta:1});await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).disbursed,30000);
+await test('network/parse failures preserve source commands and recover using the existing retry path',async()=>{
+  for(const bad of ['network','parse']){const c=setup();const before=JSON.stringify(c.GM._edictTracker),funds=money(c);
+    c.callAIMessages=async()=>{if(bad==='network')throw Error('test network');return '{}';};
+    assert.equal((await c.TM.EdictOversight.run(c.GM)).failed,true);assert.equal(JSON.stringify(c.GM._edictTracker),before);assert.equal(money(c),funds);
+    c.callAIMessages=async()=>response(c);assert.equal((await c.TM.EdictOversight.run(c.GM)).ok,true);assert.equal(entries(c)[0].progress,25);}
 });
-await test('AI may adjudicate overdue loss of trust, but never automatic or unbounded punishment',async()=>{
-  const c=setup(),id=create(c);tick(c,90);
-  assert.equal(c.GM._minxinLedger,undefined); // passage of time alone does not pick a political result
-  c.callAIMessages=async()=>reply(c,{action:'blocked',minxinDelta:-3,reason:'已过承诺期限而未筹款，灾民对朝廷承诺失去信任。'});
-  await c.TM.EdictOversight.run(c.GM);assert.equal(c.GM.adminHierarchy.realm.divisions[0].minxin,47);
-  tick(c);await c.TM.EdictOversight.run(c.GM);assert.equal(c.GM.adminHierarchy.realm.divisions[0].minxin,47); // exceeds remaining per-case penalty allowance
-  c.callAIMessages=async()=>reply(c,{action:'wait',minxinDelta:0,reason:'等待玩家重新安排，不能反复记同一失信损失。'});
-  await c.TM.EdictOversight.run(c.GM);assert.equal(c.GM._minxinLedger.items.length,1);
+await test('cancelled work never commits its late response',async()=>{
+  const c=setup(),ac=new AbortController();let release;c.callAIMessages=()=>new Promise(r=>release=r);
+  const p=c.TM.EdictOversight.run(c.GM,{signal:ac.signal});ac.abort();const before=JSON.stringify(c.GM);release(response(c));assert.equal((await p).stale,true);assert.equal(JSON.stringify(c.GM),before);
 });
-await test('milestone rewards require actual disbursement and share one per-case allowance',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);
-  c.callAIMessages=async()=>reply(c,{action:'disburse',amount:10000,minxinDelta:2,reason:'首批赈银发放得到灾户认可。'});
-  await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).disbursed,10000);
-  tick(c);c.callAIMessages=async()=>reply(c,{action:'complete',amount:10000,minxinDelta:4,reason:'全部发放。'});
-  await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).disbursed,10000); // 2 + 4 exceeds 5 total
-  c.callAIMessages=async()=>reply(c,{action:'complete',amount:10000,minxinDelta:3,reason:'剩余灾户得到赈济，结案。'});
-  await c.TM.EdictOversight.run(c.GM);assert.equal(view(c,id).status,'completed');assert.equal(view(c,id).rewardApplied,5);
-  assert.equal(new Set(c.GM._minxinLedger.items.map(x=>x.id)).size,2);
+await test('linked remote edicts require every actual letter to arrive, including recheck at commit',async()=>{
+  const c=setup();c.GM._edictTracker[0]._letterIds=['a','b'];c.GM._edictTracker[0].status='pending_delivery';
+  c.GM.letters=[{id:'a',status:'delivered'},{id:'b',status:'traveling'}];assert.equal(c.TM.EdictOversight.activeEdicts(c.GM).length,0);
+  c.GM.letters[1].status='delivered';assert.equal(c.TM.EdictOversight.activeEdicts(c.GM).length,1);
+  let release;c.callAIMessages=()=>new Promise(r=>release=r);const p=c.TM.EdictOversight.run(c.GM);c.GM.letters[1].status='blocked';release(response(c));
+  assert.equal((await p).updated,0);assert.equal(c.GM._edictTracker[0].progressPercent,0);
 });
-await test('player edits and background adjudication cannot enter an active world transaction',async()=>{
-  const c=setup(),id=create(c);act(c,id,'fund',{amount:20000});tick(c);const before=JSON.stringify(c.GM);
-  c.isWorldTransactionActive=()=>true;
-  assert.equal(act(c,id,'cancel').ok,false);assert.equal(c.TM.ReliefGovernance.setEnabled(c.GM,false).ok,false);
-  const snapshot=c.TM.ReliefGovernance.capture(c.GM,id);
-  assert.equal(c.TM.ReliefGovernance.applyAssessment(c.GM,snapshot,{action:'complete',amount:20000,minxinDelta:1,reason:'执行完毕'}).ok,false);
-  assert.equal(JSON.stringify(c.GM),before);
+await test('retired standalone commitments cannot create automatic legacy rewards',()=>{
+  const c=setup();load(c,'tm-minxin-commitment-tracker.js');
+  c.GM.currentIssues=[{id:'old-case',relief:{version:1,status:'completed'}}];
+  c.GM._minxinCommitments={items:[{id:'old-promise',linkedIssue:'old-case',status:'active',turn:1,createdTurn:1,history:[],measures:['relief']}],settlements:[],stats:{}};
+  c.GM.turn=10;c.TM.MinxinCommitmentTracker.tick(c.GM,{turn:10});assert.equal(c.GM._minxinLedger,undefined);assert.equal(c.GM._minxinCommitments.items[0].status,'active');
+});
+await test('the existing 15-item cap remains; no unbounded per-relief AI request loop',()=>{
+  const c=setup();c.GM._edictTracker=Array.from({length:70},(_,i)=>({id:'e'+i,content:'赈济灾民',status:'pending',turn:1}));
+  assert.equal(c.TM.EdictOversight.activeEdicts(c.GM).length,15);
 });
 console.log('relief-adjudication: '+passed+' PASS / 0 FAIL');
 })().catch(e=>{console.error(e);process.exitCode=1;});

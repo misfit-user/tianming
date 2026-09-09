@@ -2092,69 +2092,6 @@
   }
 
   // 固定支出入口：先验证全部资源和余额，再一次性落账。资金不足时不发生“有多少扣多少”。
-  // Cash-relief uses the same ledger owners, with a detached preparation and a
-  // synchronous joint publisher supplied by its case owner. No debit precedes
-  // case/receipt publication, and no partial spend is implicit.
-  function reliefBalance(spec) {
-    spec = spec || {};
-    var G = getGame(spec.gameRef), source = spec.source;
-    if (!G || ['guoku', 'neitang', 'local'].indexOf(source) < 0) return { ok: false, code: 'relief-source-invalid' };
-    var account = source === 'local' ? G.fiscal && G.fiscal.regions && G.fiscal.regions[spec.regionId] : G[source];
-    if (!account) return { ok: false, code: 'relief-account-missing', reason: '该账户尚无可核验账本，未发生扣款。' };
-    var stock = source === 'local' ? account.ledgers && account.ledgers.money
-      : account.ledgers && account.ledgers.money ? account.ledgers.money.stock : (account.money != null ? account.money : account.balance);
-    if (typeof stock !== 'number' || !Number.isFinite(stock) || stock < 0) return { ok: false, code: 'relief-account-invalid' };
-    if (source !== 'local' && ((account.money != null && account.money !== stock) || (account.balance != null && account.balance !== stock))) {
-      return { ok: false, code: 'relief-account-diverged', reason: '账户镜像与账本不一致，需先对账。' };
-    }
-    return { ok: true, available: stock };
-  }
-
-  function commitReliefPayment(spec, commit) {
-    spec = spec || {};
-    var balance = reliefBalance(spec), amount = spec.amount;
-    if (!balance.ok) return balance;
-    if (typeof commit !== 'function' || typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) return { ok: false, code: 'relief-payment-invalid' };
-    if (!spec.credit && amount > balance.available + 1e-9) return { ok: false, code: 'relief-insufficient-funds', available: balance.available };
-    var G = getGame(spec.gameRef), target, next, tag = spec.tag || '赈务';
-    try {
-      if (spec.source === 'local') {
-        target = G.fiscal.regions[spec.regionId]; next = clone(target);
-        next.ledgers.money = Math.max(0, balance.available + (spec.credit ? amount : -amount));
-        var audit = _ensureRegionTransferAudit(next);
-        var direction = spec.credit ? 'thisTurnIn' : 'thisTurnOut', bucket = spec.credit ? 'sources' : 'sinks';
-        audit[direction] = safeNumber(audit[direction], 0) + amount;
-        audit[bucket][tag] = safeNumber(audit[bucket][tag], 0) + amount;
-        audit.history.push({ turn: G.turn || 0, direction: spec.credit ? 'relief-refund' : 'relief-funded', amount: amount, tag: tag });
-        if (audit.history.length > 60) audit.history.splice(0, audit.history.length - 60);
-      } else {
-        target = G[spec.source]; next = clone(target);
-        var work = {}; work[spec.source] = next;
-        var ledgers = spec.source === 'guoku' ? ensureGuoku(work) : ensureNeitang(work);
-        if (spec.credit) {
-          ledgers.money.stock += amount;
-          ledgers.money.thisTurnIn = safeNumber(ledgers.money.thisTurnIn, 0) + amount;
-          ledgers.money.sources = ledgers.money.sources || {};
-          ledgers.money.sources[tag + '·退回'] = safeNumber(ledgers.money.sources[tag + '·退回'], 0) + amount;
-        } else {
-          // Binary residue below a cent must not create a positive insolvency
-          // deficit when an exact cent-sized installment exhausts this account.
-          var deducted = deductFromLedger(ledgers.money, Math.min(amount, ledgers.money.stock), tag);
-          if (!deducted || Math.abs(deducted.deducted - amount) > 1e-9 || deducted.deficit > 1e-9) throw new Error('relief-payment-not-full');
-        }
-        syncAccountScalars(next, ledgers);
-      }
-      var edits = Object.keys(next).map(function(key) { return { target: target, key: key, value: next[key] }; });
-      var receipt = { source: spec.source, regionId: spec.regionId, amount: amount, direction: spec.credit ? 'refund' : 'fund',
-        turn: G.turn || 0, before: balance.available, after: spec.source === 'local' ? next.ledgers.money : next.money, tag: tag };
-      var result = commit(edits, receipt);
-      if (!result || result.ok !== true || typeof result.then === 'function') throw new Error('relief-joint-commit-invalid');
-      return result;
-    } catch (error) {
-      return { ok: false, code: 'relief-payment-transaction-failed', reason: String(error && error.message || error) };
-    }
-  }
-
   function trySpendFromGuoku(spec) {
     spec = spec || {};
     var G = getGame(spec.gameRef);
@@ -2445,8 +2382,6 @@
     triggerPlayerSurvey: triggerPlayerSurvey,
     spendFromGuoku: spendFromGuoku,
     trySpendFromGuoku: trySpendFromGuoku,
-    reliefBalance: reliefBalance,
-    commitReliefPayment: commitReliefPayment,
     addToGuoku: addToGuoku,
     transferRegionToGuokuAtomic: transferRegionToGuokuAtomic,
     spendFromNeitang: spendFromNeitang,

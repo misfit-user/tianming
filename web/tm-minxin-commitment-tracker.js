@@ -368,22 +368,8 @@
     options = options || {};
     var turn = Number(options.turn != null ? options.turn : root.turn) || 0;
     if (!item || item.status === 'resolved' || item.status === 'failed') return null;
-    // An explicitly linked relief case has its own single AI-adjudicated ledger
-    // settlement. No content/name heuristic and no second automatic reward.
-    if (TM.ReliefGovernance && item.linkedIssue) {
-      var relief = TM.ReliefGovernance.view(root, item.linkedIssue);
-      if (relief) {
-        if (relief.status !== 'completed' && relief.status !== 'cancelled') return null;
-        item.status = relief.status === 'completed' ? 'resolved' : 'failed';
-        item.progress = relief.budget ? Math.round(relief.disbursed / relief.budget * 100) : 0;
-        item.lastSettlementTurn = turn;
-        var linked = { id: item.id + '-relief', commitmentId: item.id, linkedIssue: item.linkedIssue,
-          turn: turn, status: item.status, progress: item.progress, deltaTrue: 0,
-          reason: '履行单已结算，不重复计入民心', externalSettlementId: relief.settlement && relief.settlement.id || '' };
-        pushSettlement(root, item, linked);
-        return linked;
-      }
-    }
+    // Unreleased standalone pilot data is retained, not reinterpreted as a normal fulfilled promise.
+    if (item.linkedIssue && (root.currentIssues || []).some(function(i){return i && i.id === item.linkedIssue && i.relief && i.relief.version === 1;})) return null;
     if (turn <= Number(item.lastSettlementTurn || item.createdTurn || item.turn || 0)) return null;
     var ctx = executionContext(root, item);
     var status = 'progress';

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-09T08:28:13.928Z",
+  "generatedAt": "2026-09-09T09:40:30.130Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2146,8 +2146,8 @@
     },
     {
       "path": "feature-manifest.js",
-      "sha256": "a180f5faa7d24cf1b28782dcfa13dbe69ed9688a3debbe49e466ec3cf9b93b05",
-      "size": 2487
+      "sha256": "089b68eab49674826a19987c5f9eab42694f0a8935579ab435e6eb4409f7ddd6",
+      "size": 2481
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "a6e0b46dacdabe5936b074520b6f309dfdca796507ef879e4562abb42733af97",
-      "size": 69168
+      "sha256": "aee7814a5c3e51d69b38c5b96e611caa249ff32ad2a570067b459e6cc878730e",
+      "size": 69190
     },
     {
       "path": "INDEX.md",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "6712d2b065cd61b9f48421a0c7c52076c27f5b2798c8608a85d7ccc59c9aeb2a",
-      "size": 346315
+      "sha256": "7a1215ade98999510f1aa410bf83b55b2a6300accd28ec84ebe217f8ceb4fb6d",
+      "size": 346305
     },
     {
       "path": "styles.css",
@@ -3866,8 +3866,8 @@
     },
     {
       "path": "tm-edict-oversight.js",
-      "sha256": "3fc923d1ecfc0a5747958cb5bce59a46bb76e2c627c5dbb206da32e0618a97b9",
-      "size": 21585
+      "sha256": "491464a0e81d12fa9e956d58ed268f7932f8f40c393c6bfcd3e43a9c96719bf2",
+      "size": 18215
     },
     {
       "path": "tm-edict-parser.js",
@@ -3901,8 +3901,8 @@
     },
     {
       "path": "tm-endturn-agent-mode.js",
-      "sha256": "0e229222dcc8e5146e70b1781a43b7b05d426d2a64f57552a49a071a4a0fce3b",
-      "size": 113035
+      "sha256": "fb1b393e4a020aa79b45c318dcbaf09b5fba57bbe3b1009662f502baefc02326",
+      "size": 112778
     },
     {
       "path": "tm-endturn-agent-read-tools.js",
@@ -3936,8 +3936,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "918d71f961eed436a64d90126608f788b72b673dbdba90ad57c2191bdb57f91c",
-      "size": 404333
+      "sha256": "586013988f3b1397a9c9ab3ad5e17db3c5b367e3306d1bea1eba83852f8e6c71",
+      "size": 404340
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -4046,8 +4046,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "2cead6b9221af71a5ec04676f3659613cf6120e0987293acea59bf1ecb0dd365",
-      "size": 39837
+      "sha256": "d66e884b438f72ac5fa7b1145c42daa464daf10e2144cb19a9195e6129d53865",
+      "size": 39518
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -4216,8 +4216,8 @@
     },
     {
       "path": "tm-feature-loader.js",
-      "sha256": "6daa0bae6d2b64bc2853a783c99115802e46c0efb218ed524ee2a56d4dba744c",
-      "size": 22635
+      "sha256": "e2cef1608b4f9151c4a6bd612d9c5b90bd7ab2b7a56bc35c286a6083a3a8c6e8",
+      "size": 22637
     },
     {
       "path": "tm-feedback-loops.js",
@@ -4241,8 +4241,8 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "abacc976d956f224b6a0adf79c5cf18d762712d497be0b7e4c9ca6a332e2d3ae",
-      "size": 120756
+      "sha256": "24783e9d6b3817f5b8722f1a31d1807d4a3c08bafdf573002aaf1a771df991a4",
+      "size": 116253
     },
     {
       "path": "tm-fiscal-ui.js",
@@ -4776,8 +4776,8 @@
     },
     {
       "path": "tm-minxin-commitment-tracker.js",
-      "sha256": "04a689018f58d94a5568b24d91b4795fbad164d7de7a3e032a15869086d9ef30",
-      "size": 22524
+      "sha256": "f0cf9aca44957513e2b9cd3c07905d03633eb3de5e7b3f8551d26215bf2106f9",
+      "size": 21789
     },
     {
       "path": "tm-minxin-hard-link-consumers.js",
@@ -5101,13 +5101,13 @@
     },
     {
       "path": "tm-relief-governance-ui.js",
-      "sha256": "68dce5609d317e771a694dee406abbac3302edee4911aa6be18f301f2cae7f11",
-      "size": 12902
+      "sha256": "ce0f0bf82e336f7f59a1a25977fd9a6a80e72a86e5e797cbea2ccac324ce51ca",
+      "size": 6372
     },
     {
       "path": "tm-relief-governance.js",
-      "sha256": "350c481894941ce86098060d6819ea46ae93af6350af026858379f1653823d6c",
-      "size": 24109
+      "sha256": "f88063ddbfe8038be31a52bd85d11cf8be0bf18de4ff224c899f37124d570770",
+      "size": 7933
     },
     {
       "path": "tm-renli.js",
@@ -5151,8 +5151,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "5b2d8f82b0fac8795c20376a289e5790c74bedf681f2adbb9e74f23d82ad9ece",
-      "size": 169657
+      "sha256": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+      "size": 169395
     },
     {
       "path": "tm-save-manager.js",
@@ -5181,8 +5181,8 @@
     },
     {
       "path": "tm-shizheng-panel.js",
-      "sha256": "8c801c0d72a91b1f8aa1dbc7f97c77b359f422d63ff65c27e95ddefa749e6158",
-      "size": 67060
+      "sha256": "3dae599cf26c3adb8533796a3b6440464f4211bf12642da46a22a8e1ba0fb7ef",
+      "size": 67066
     },
     {
       "path": "tm-sidebar-ui.js",

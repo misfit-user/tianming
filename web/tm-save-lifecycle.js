@@ -2148,11 +2148,6 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
       throw (_turnDataRecovery.error || new Error('回合分卷恢复失败'));
     }
     _assertLoadLeaseCurrent();
-    if (GM._reliefPilot && GM._reliefPilot.enabled) {
-      await window.TM.Features.ensureRecoverable('reliefGovernance');
-      _assertLoadLeaseCurrent();
-      if (!window.TM.ReliefGovernance) throw new Error('赈务组件未就绪，读档未提交');
-    }
     // 每次从快照继续都建立子时间线；失败回滚可显式 preserveTimeline 复原原身份。
     if (!loadOptions.preserveTimeline) _tmForkLoadedTimeline(GM, loadOptions.source || 'load');
     if (typeof StateSnapshot !== 'undefined' && StateSnapshot && typeof StateSnapshot.recordTimeline === 'function') {

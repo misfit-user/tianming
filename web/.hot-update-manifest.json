@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-09T13:57:51.148Z",
+  "generatedAt": "2026-09-09T15:22:06.594Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "d740422d7e6032234320932dfffbb9a698d007c3e57185a24cf95445ec7b6f8d",
-      "size": 69257
+      "sha256": "1367ded84fe970fc2c8b02b76f0ac4d74f939aeafcb1283d35dc5073f984652a",
+      "size": 69292
     },
     {
       "path": "INDEX.md",
@@ -2631,8 +2631,8 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "d61f9dc52c47927904efa602ab2458fbca8b93f8c9983f45bbb56eb255fd1970",
-      "size": 90705
+      "sha256": "9d4cde2c7d74f2fa7534b34f77fc251318f3c00c46ae5485c9bc0cf222bebe85",
+      "size": 91300
     },
     {
       "path": "phase8-formal-map.js",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "dd192f27a2151bd2c9e4f49e028385fc94fa958cb26b23ab117e970587107897",
-      "size": 346325
+      "sha256": "c724b8409ac4526b5082c2f5a7ce8b767cb89b4a8c4875e21d50e181b28c4b37",
+      "size": 346488
     },
     {
       "path": "styles.css",
@@ -3546,8 +3546,8 @@
     },
     {
       "path": "tm-building-works.js",
-      "sha256": "f329a4de08eca73ed6d8b2e184378ba0048fc3af71127e886b243da2af559a54",
-      "size": 36124
+      "sha256": "c4e6fc24ba9451a5c54cfdba0aa2087762f948491f17c7a3d6bda57f53f92ed0",
+      "size": 36359
     },
     {
       "path": "tm-capacitor-boot.js",
@@ -3791,8 +3791,8 @@
     },
     {
       "path": "tm-custom-build-agent.js",
-      "sha256": "24a1437b05bd40d705496eaaae30a6bbc3bd7b9651ecaec8f1f8dcd47f974a0d",
-      "size": 41788
+      "sha256": "1a8654f60f40071d062d50cf3ebe1003119666737e3f1032020ea9b5a5083537",
+      "size": 42691
     },
     {
       "path": "tm-data-access.js",
@@ -5026,8 +5026,8 @@
     },
     {
       "path": "tm-player-core.js",
-      "sha256": "e290662f684eddb46c5c24ac233636e526a1b27b94e39abcab4e72c699137ae8",
-      "size": 221783
+      "sha256": "8eefdd2d9c85dcb7a6839f1d91ad56f37928f30d0068a7d356df36ae577b9bf2",
+      "size": 224635
     },
     {
       "path": "tm-player-settings.js",

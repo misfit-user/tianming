@@ -819,7 +819,7 @@
     var doing = bld.status === 'building';
     var neglected = bld.status === 'neglected';
     var damaged = bld.status === 'damaged';   // S6·半损态
-    var ledger = (bw && bw.buildingLedger && !doing && !bld._proposal) ? bw.buildingLedger(bld, typeDef) : null;   // S7·实入账(完工/半损卡显真贡献)
+    var ledger = (bw && bw.buildingLedger && !bld._proposal) ? bw.buildingLedger(bld, typeDef) : null;
     var total = Number(bld.timeActual) || Number(typeDef && typeDef.buildTime) || Math.max(1, Number(bld.remainingTurns) || 1);
     var prog = doing ? Math.round(Math.max(0, Math.min(1, (total - (Number(bld.remainingTurns) || 0)) / total)) * 100) : 100;
     var stCls = doing ? 'doing' : (neglected ? 'ni' : (damaged ? 'ni' : 'done'));
@@ -830,8 +830,11 @@
       (hasDisplayValue(bld.judgedEffects) && !labels.length ? '<p>' + esc(String(bld.judgedEffects).slice(0, 90)) + '</p>' : '') +
       (labels.length ? '<div class="fx">' + labels.map(function(x, i){ return '<em class="' + (i === labels.length - 1 && /维护/.test(x) ? 'cost' : '') + '">' + esc(x) + '</em>'; }).join('') + '</div>' : '') +
       // S7·营造可观测账：完工/半损卡显「实入账」(真为本地所添·非 per-level 规则) + 工成之利岁入
-      (ledger && ledger.applied && ledger.applied.length ? '<div style="margin-top:4px;font-size:12px;color:#5a4a32;">实入账：' + esc(ledger.applied.join(' · ')) + (ledger.flowPct > 0 ? ' · 岁入 +' + ledger.flowPct + '%/回合' : '') + '</div>' : '') +
-      (damaged ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 效用减半 · 库银可支半费则葺治复完</div>' : '') +
+      (!doing && ledger && ledger.applied && ledger.applied.length ? '<div style="margin-top:4px;font-size:12px;color:#5a4a32;">实入账：' + esc(ledger.applied.join(' · ')) + '</div>' : '') +
+      (ledger && ledger.flowPct > 0 ? '<div style="margin-top:3px;font-size:12px;color:#5a4a32;">工成之利：地方岁入 +' + ledger.flowPct + '%/回合（单建筑上限 6%）</div>' : '') +
+      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护：地方库银 ' + esc(ledger.upkeep) + ' 两/回合；不扣中央国库。</div>' : '') +
+      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库银足付修缮费 ' + esc(ledger.repairCost) + ' 两（造价 30%，至少 20 两）则自动葺治复完。</div>' : '') +
+      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修 · 工成之利暂停；地方库银恢复养护后复用。已入账的存量不再另加。</div>' : '') +
       (doing ? '<div class="gq"><div class="gq-bar"><i style="width:' + prog + '%"></i></div><em>余 ' + esc(bld.remainingTurns) + ' 回合</em></div>' : '') +
       '</div>';
   }

@@ -39,6 +39,8 @@ web/tm-ai-change-applier.js whitespace=blank-at-eol,blank-at-eof,space-before-ta
 web/tm-endturn-apply.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 刀C返工(2026-07-19)·onDismissal arity 契约锁随第3形参更新·此 smoke 亦历史 CRLF(同上契约·不把 CR 误报为 trailing)。
 web/scripts/smoke-ai-change-applier-baseline.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# 诏书清晰度回归沿用原 CRLF：继续检查真实行尾空格，不把 CR 本身算作空格。
+web/scripts/smoke-formal-module-modal-size.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 刀C返工三轮(2026-07-19·Codex复审)·派生缓存入存档 SKIP 黑名单·此文件亦历史 CRLF(同上契约)。
 web/tm-save-lifecycle.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 批甲「开闸醒世界」(2026-07-22)触及的历史 CRLF 文件：势力活世界总闸唯一写口 + _livingWorldOn 镜像随翻默认扩改·同上契约(检查真行尾空格·不把 CR 误报为 trailing)。

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-09T10:58:43.950Z",
+  "generatedAt": "2026-09-09T11:19:02.508Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "a413e43eee58278e70d6f0a4bd8ea8ee74145929bb5fb40fe9f4f33f629165b0",
-      "size": 69200
+      "sha256": "cd1f5b5581dbc9ff58187b7544b9b7d847d0822836304200527c3348a75f525f",
+      "size": 69206
     },
     {
       "path": "INDEX.md",
@@ -2626,8 +2626,8 @@
     },
     {
       "path": "phase8-formal-drafts.js",
-      "sha256": "43df6fb05dfee8b90278c3e53ef77e24ffefe5102c888652e13f878db4ad3b50",
-      "size": 212409
+      "sha256": "4f64633c385d3ebbf1d7e19ca503d017f0f44843a608722d7ea2f04bfacc1b62",
+      "size": 212630
     },
     {
       "path": "phase8-formal-map-dossier.js",

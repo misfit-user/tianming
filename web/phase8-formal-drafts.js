@@ -1488,8 +1488,8 @@
       'body.tm-phase8-formal .tm-bridge-panel{position:absolute;box-sizing:border-box;}',
       'body.tm-phase8-formal .tm-action-panel{left:58px;top:74px;width:min(1080px,calc(100vw - 132px));height:min(720px,calc(100vh - 118px));overflow:visible;transform:translateX(-12px);transition:transform .18s ease,opacity .18s ease;opacity:.98;}',
       'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel{transform:translateX(0);}',
-      'body.tm-phase8-formal .tm-action-panel.edict-shell{left:50%;top:54px;width:calc(100vw - 130px);height:calc(100vh - 104px);transform:translate(-50%,10px);}',
-      'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.edict-shell{transform:translate(-50%,0);}',
+      'body.tm-phase8-formal .tm-action-panel.edict-shell{left:65px;top:54px;width:calc(100vw - 130px);height:calc(100vh - 104px);transform:translateY(10px);opacity:1;}',
+      'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.edict-shell{transform:none;}',
       'body.tm-phase8-formal .tm-action-panel.memorial-shell{left:40px;right:40px;top:64px;width:auto;height:min(820px,calc(100vh - 94px));transform:none;}',
       'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.memorial-shell{transform:none;}',
       'body.tm-phase8-formal .tm-action-panel.letter-shell{left:50%;top:60px;width:min(1440px,calc(100vw - 64px));height:min(860px,calc(100vh - 90px));transform:translate(-50%,10px);}',
@@ -2110,14 +2110,14 @@
 + '.ed-yuan .edict-prom-card .epc-btn{font-family:inherit;font-size:12px;letter-spacing:0.04em;cursor:pointer;padding:5px 14px;border-radius:6px;border:1px solid rgba(168,131,58,0.4);background:rgba(255,252,243,0.6);color:#574733;transition:all .14s;}'
 + '.ed-yuan .edict-prom-card .epc-btn:hover{background:#fffdf6;border-color:#a8833a;color:#241d15;}'
 + '.ed-yuan .edict-prom-card .epc-note{font-size:11px;color:#9c8b6b;letter-spacing:0.02em;}'
-+ '.ed-yuan .erow{flex:1;min-height:0;position:relative;display:flex;gap:14px;padding:7px 6px 9px 10px;border-radius:6px;opacity:0;animation:edy-catIn .42s ease forwards;transition:background .22s ease;}'
++ '.ed-yuan .erow{flex:1;min-height:0;position:relative;display:flex;gap:14px;padding:7px 6px 9px 10px;border-radius:6px;opacity:1;animation:edy-catIn .42s ease backwards;transition:background .22s ease;}'
 + '.ed-yuan .erow[data-cat="政"]{--sc:#5a6fae;--sc-glow:rgba(90,111,174,0.16);}.ed-yuan .erow[data-cat="军"]{--sc:#a83228;--sc-glow:rgba(168,50,40,0.16);}.ed-yuan .erow[data-cat="外"]{--sc:#3f7a68;--sc-glow:rgba(63,122,104,0.16);}.ed-yuan .erow[data-cat="经"]{--sc:#9a7730;--sc-glow:rgba(154,119,48,0.18);}.ed-yuan .erow[data-cat="他"]{--sc:#7a6a52;--sc-glow:rgba(122,106,82,0.14);}'
 + '.ed-yuan .erow::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--sc,var(--gold));opacity:0;transform:scaleY(0.35);transform-origin:center;transition:opacity .22s,transform .22s;}'
 + '.ed-yuan .erow:focus-within::before{opacity:0.82;transform:scaleY(1);}'
 + '.ed-yuan .erow:focus-within{background:radial-gradient(135% 135% at 0% 50%,var(--sc-glow,rgba(168,131,58,0.08)),transparent 70%);}'
 + '.ed-yuan .erow:not(:last-child)::after{content:"";position:absolute;left:78px;right:8px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(168,131,58,0.28) 12%,rgba(168,131,58,0.28) 88%,transparent);}'
 + '.ed-yuan .seal-col{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px;width:52px;}'
-+ '.ed-yuan .seal-hint{font-size:10.5px;line-height:1.3;color:var(--ink-faint);text-align:center;opacity:0.78;transition:color .2s,opacity .2s;}'
++ '.ed-yuan .seal-hint{font-size:10.5px;line-height:1.3;color:var(--ink-soft);text-align:center;opacity:1;transition:color .2s,opacity .2s;}'
 + '.ed-yuan .erow:focus-within .seal-hint{color:var(--sc);opacity:1;}'
 + '.ed-yuan .cell-seal{flex:0 0 auto;position:relative;width:50px;height:50px;}'
 + '.ed-yuan .cell-seal::before{content:"";position:absolute;inset:4px;border:1.5px solid var(--sc,var(--gold-d));border-radius:4px;transform:rotate(45deg);background:rgba(255,253,243,0.4);box-shadow:inset 0 0 0 3px rgba(255,255,255,0.45),0 1px 2px rgba(80,56,24,0.18),0 0 10px var(--sc-glow,transparent);}'
@@ -2129,7 +2129,7 @@
 + '.ed-yuan .erow-body{flex:1;min-height:0;display:flex;flex-direction:column;}'
 + '.ed-yuan .cat-field{flex:1;min-height:44px;width:100%;font-family:var(--font);font-size:16px;line-height:1.95;color:var(--ink);background-color:#faf4e6;background-image:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 29px,rgba(168,131,58,0.10) 29px 30px);background-position:0 9px;border:none;border-radius:3px;padding:3px 7px;resize:none;outline:none;overflow-y:auto;scrollbar-width:none;transition:background .18s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}'
 + '.ed-yuan .cat-field::-webkit-scrollbar{width:0;height:0;display:none;}'
-+ '.ed-yuan .cat-field::placeholder{color:rgba(120,104,76,0.62);line-height:1.6;}'
++ '.ed-yuan .cat-field::placeholder{color:#796440;opacity:1;line-height:1.6;}'
 + '.ed-yuan .cat-field:focus{background-color:#fffdf6;}'
 + '.ed-yuan .ed-forecast{flex:0 0 auto;position:relative;font-size:11.5px;line-height:1.45;color:#3c6053;letter-spacing:0.02em;padding:3px 6px 0 16px;}'
 + '.ed-yuan .ed-forecast::before{content:"批";position:absolute;left:0;top:3px;font-size:10px;color:var(--cinnabar);border:1px solid var(--cinnabar);border-radius:2px;padding:0 1px;line-height:1.3;opacity:0.78;transform:rotate(-6deg);}'
@@ -2191,7 +2191,9 @@
 + '.ed-yuan .arc-item .a-mark{margin-right:5px;}'
 + '.ed-yuan .arc-item .a-assignee{color:var(--jade);font-size:12px;}'
 + '.ed-yuan .arc-item .a-fb{color:var(--ink-faint);font-size:12.5px;font-style:italic;margin-top:4px;padding-left:4px;}'
-+ '@keyframes edy-unroll{0%{opacity:0;transform:scaleX(0.62);filter:brightness(1.12);}60%{opacity:1;}100%{opacity:1;transform:scaleX(1);filter:none;}}'
+// 展开后回到原生文字绘制：不把整页文字留在缩放/滤镜的动画填充层；延迟入场仍保留首帧。
++ '.ed-yuan .silk,.ed-yuan .silk-head,.ed-yuan .col-sug,.ed-yuan .col-actions{animation-fill-mode:backwards;}'
++ '@keyframes edy-unroll{0%{opacity:0;transform:scaleX(0.62);filter:brightness(1.12);}60%{opacity:1;}100%{opacity:1;transform:none;filter:none;}}'
 + '@keyframes edy-rollerSettle{0%{opacity:0;transform:translateY(-10px) scaleY(0.9);}100%{opacity:1;transform:none;}}'
 + '@keyframes edy-headDrop{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:none;}}'
 + '@keyframes edy-colInL{from{opacity:0;transform:translateX(-22px);}to{opacity:1;transform:none;}}'

@@ -53,8 +53,27 @@ function openShizhengTasks() {
 
   html += '</div>';
   panel.innerHTML = html;
+  if (window.TM && TM.ReliefGovernanceUI) TM.ReliefGovernanceUI.mountToolbar(panel);
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
+  if (window.TM && !TM.ReliefGovernanceUI && TM.Features) {
+    var reliefLoad = document.createElement('button');
+    reliefLoad.textContent = '正在载入赈务试点…';
+    reliefLoad.className = 'bt bsm';
+    panel.firstElementChild.appendChild(reliefLoad);
+    function loadRelief() {
+      reliefLoad.disabled = true;
+      TM.Features.ensureRecoverable('reliefGovernance').then(function() {
+        if (window.GM !== GM || !panel.isConnected) return;
+        reliefLoad.remove(); TM.ReliefGovernanceUI.mountToolbar(panel);
+      }).catch(function(error) {
+        if (window.GM !== GM || !panel.isConnected) return;
+        reliefLoad.disabled = false; reliefLoad.textContent = '赈务组件未就绪 · 点击重试';
+        reliefLoad.title = String(error && error.message || error);
+      });
+    }
+    reliefLoad.addEventListener('click', loadRelief); loadRelief();
+  }
 }
 
 function closeShizhengTasks() {
@@ -248,6 +267,7 @@ function _openShizhengDetail(issueId) {
   }
 
   panel.innerHTML = h;
+  if (window.TM && TM.ReliefGovernanceUI) TM.ReliefGovernanceUI.mountDetail(panel, issueId);
   det.appendChild(panel);
   document.body.appendChild(det);
 }

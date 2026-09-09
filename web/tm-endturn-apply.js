@@ -5286,7 +5286,7 @@
             if (!tracker) {
               tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
             }
-            if (tracker) {
+            if (tracker && !tracker._reliefCaseId) {
               // 远方诏令——信使未送达前强制pending_delivery
               if (tracker._remoteTargets && tracker._letterIds && tracker._letterIds.length > 0) {
                 var _allDelivered = tracker._letterIds.every(function(lid) {

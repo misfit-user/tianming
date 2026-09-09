@@ -63,6 +63,11 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   // 同步旧子系统读取的年月日镜像；不得另算第二套时钟。
   try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn); }
   catch (_calendarSyncE) { try { console.warn('[endTurn] calendar sync failed:', _calendarSyncE); } catch (_) {} throw _calendarSyncE; }
+  if (GM._reliefPilot && GM._reliefPilot.enabled) {
+    if (!TM.ReliefGovernance) await TM.Features.ensureRecoverable('reliefGovernance');
+    var reliefClock = TM.ReliefGovernance.tick(GM, { days: monthRatio * 30, turn: GM.turn });
+    if (!reliefClock.ok) throw new Error(reliefClock.reason || reliefClock.code);
+  }
 
   // 6.01 腐败引擎回合演化（九源累积/衰减/真实感知更新/后果传导/揭发概率）
   try {

@@ -115,7 +115,7 @@
   // ── 活世界·势力③ agent 决策开关(agent 模式专属·绕过 LLM 升级互斥·默认关) ──
   function _agentLiveWorldOn(P) { P = P || root.P || {}; return (typeof root.agentLiveWorldOn === 'function') ? root.agentLiveWorldOn() : !!(P.conf && P.conf.agentLiveWorldEnabled); }
   // ── 切片3·跨回合一致·诏令督查开关(agent 模式专属·P.conf) ──
-  function _agentEdictOversightOn(P) { P = P || root.P || {}; return !!(P.conf && P.conf.agentEdictOversightEnabled); }
+  function _agentEdictOversightOn(P) { P = P || root.P || {}; return !!(P.conf && P.conf.agentEdictOversightEnabled) || !!(TM.ReliefGovernance && TM.ReliefGovernance.active(root.GM).length); }
 
   // ── 切片3·诏令登记兜底:把本回合玩家诏令登记进 GM._edictTracker(不依赖 pipeline prep)·使诏令督查/在办诏令档有数可追 ──
   //   真游戏 prep(tm-endturn-prep.js:363)已登记→此处**去重跳过**(防重复);prep 未跑(如直调/某路径)则补登记。形状对齐 prep。gate 在 edict-oversight 开关下(其消费者)·关则不动。
@@ -188,6 +188,7 @@
       if (EO && typeof EO.activeEdicts === 'function') {
         var act = EO.activeEdicts(gm) || [];
         if (act.length) parts.push('【在办诏令 · 跨回合追踪(颁布≠见效·须推演其本回合真实推进或被架空·勿当已完成/遗忘)】\n' + act.slice(0, 12).map(function (e) {
+          if (e.relief) return '· 赈务履行单 ' + e.oid + ' 由本回合既有督查阶段独占结算，本阶段不得重复拨款、发放或奖励民心。';
           return '· ' + (e.category ? '[' + e.category + ']' : '') + _brief(e.content, 60) + '｜下达 T' + e.issuedTurn + '(历 ' + e.age + ' 回)·进度' + e.progress + '%·' + e.status + (e.assignee ? '·承办' + e.assignee : '') + (e.lastFeedback ? '·前况:' + _brief(e.lastFeedback, 30) : '');
         }).join('\n'));
       }
@@ -1090,7 +1091,7 @@
       if (_eoClaim.ok) {
         try {
           _show('⟨执政⟩督查在办诏令…', 81);
-          await TM.EdictOversight.run(gm, { evidence: state.narrative || _synthNarrative(gm), tier: 'primary', maxTok: 2400, timeoutMs: 60000, signal: _agentSignal(ctx) });
+          await TM.EdictOversight.run(gm, { evidence: state.narrative || _synthNarrative(gm), tier: 'primary', maxTok: 2400, timeoutMs: 60000, signal: _agentSignal(ctx), ownedTurn: true });
           ctx.meta.agentTaskOwnership.edictRan = true;
         } catch (_eoRunE) { ctx.meta.agentTaskOwnership.edictError = String((_eoRunE && _eoRunE.message) || _eoRunE).slice(0, 160); }
       } else ctx.meta.agentTaskOwnership.edictSkipped = 'budget';

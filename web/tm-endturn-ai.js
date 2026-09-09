@@ -2708,6 +2708,7 @@
         // 包括：前回合未完成(executing/partial/obstructed)、本回合刚下延续(pending_delivery)的诏令
         // 要求 AI 在 edict_feedback 中对这些"旧诏"也给出进展或连锁效应
         var _longLivingEdicts = GM._edictTracker.filter(function(e) {
+          if (e._reliefCaseId) return false; // Cash-relief is adjudicated once by the existing oversight batch.
           if (e.turn >= GM.turn) return false;
           if (!e.status) return true;
           return e.status === 'executing' || e.status === 'partial' || e.status === 'obstructed' || e.status === 'pending_delivery';

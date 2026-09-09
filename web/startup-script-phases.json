@@ -9,8 +9,8 @@
     "world": 293,
     "optional": 22
   },
-  "deferredChangesApproved": 6,
-  "auditConclusion": "Feature Loader V2 defers only six audited scripts behind explicit lifecycle and platform boundaries. All other classic scripts retain document order; adjacency alone is no longer emitted as a false dependency.",
+  "deferredChangesApproved": 8,
+  "auditConclusion": "Feature Loader V2 owns 8 explicitly declared deferred scripts. The original six remain deferred; relief providers load only for the issue panel or active saved cases. Eager classic scripts retain document order; adjacency is not a dependency.",
   "scripts": [
     {
       "script": "tm-home-ui.js",
@@ -10660,6 +10660,21 @@
       "dependsOn": [],
       "provides": [
         "TM_OnlineUpdate"
+      ]
+    },
+    {
+      "feature": "reliefGovernance",
+      "scripts": [
+        "tm-relief-governance.js",
+        "tm-relief-governance-ui.js"
+      ],
+      "loadPolicy": "issue-panel-or-active-save",
+      "platform": "any",
+      "sideEffects": "none",
+      "dependsOn": [],
+      "provides": [
+        "TM.ReliefGovernance",
+        "TM.ReliefGovernanceUI"
       ]
     }
   ]

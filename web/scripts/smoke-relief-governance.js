@@ -2,7 +2,7 @@
 'use strict';
 // Supersedes the withdrawn standalone-command tests with actual channel/read-only contracts.
 const assert=require('assert/strict');
-const {context,prep,memorial,hongyan,court,tinyi,entries}=require('./lib-relief-channel-test');
+const {context,load,functions,prep,memorial,hongyan,court,tinyi,entries}=require('./lib-relief-channel-test');
 let passed=0;async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
 function unchanged(c,fn){const before=JSON.stringify(c.GM);const r=fn();assert.equal(JSON.stringify(c.GM),before);return r;}
 (async()=>{
@@ -97,6 +97,28 @@ await test('pagination is bounded; repeat views and save roundtrip preserve all 
   const a=unchanged(c,()=>c.TM.ReliefGovernance.list(c.GM,{limit:1000}));assert.equal(a.entries.length,50);assert.equal(a.total,65);
   const b=unchanged(c,()=>c.TM.ReliefGovernance.list(c.GM,{offset:50,limit:50}));assert.equal(b.entries.length,15);
   c.GM=JSON.parse(JSON.stringify(c.GM));assert.equal(c.TM.ReliefGovernance.list(c.GM).total,65);
+});
+await test('opening actual issue panel neither mounts the retired card nor fetches its providers',()=>{
+  for(const preloaded of [false,true])for(const hasRecords of [false,true]){
+    const c=context();let mounts=0,loads=0;
+    function node(){return{style:{},children:[],dataset:{},isConnected:true,appendChild(n){this.children.push(n);return n;},remove(){},addEventListener(){},
+      set innerHTML(v){this.html=v;this.children=[node(),node()];},get firstElementChild(){return this.children[0];}};}
+    c.document={body:node(),getElementById:()=>null,createElement:node};
+    c.TM.Features={ensureRecoverable(){loads++;return new Promise(()=>{});}};
+    if(preloaded)c.TM.ReliefGovernanceUI={mountToolbar(){mounts++;}};
+    if(hasRecords){c.GM._edictTracker=[{id:'e1',content:'赈济灾民',status:'executing'}];c.GM.currentIssues=[{id:'i1',title:'原有待议赈务',description:'由原渠道处理',status:'pending'}];}
+    functions(c,'tm-shizheng-panel.js',['openShizhengTasks','_renderShizhengCard']);
+    unchanged(c,()=>c.openShizhengTasks());
+    assert.equal(mounts,0);assert.equal(loads,0);
+    const panel=c.document.body.children[0].children[0];
+    assert(panel.html.includes(hasRecords?'原有待议赈务':'暂无要务'));
+    assert(!panel.html.includes('履行单'));
+  }
+});
+await test('cached legacy mount calls are harmless and cannot rebuild the removed card',()=>{
+  const c=context();load(c,'tm-relief-governance-ui.js');let used=false;
+  const panel=new Proxy({},{get(){used=true;throw Error('retired toolbar touched DOM');}});
+  unchanged(c,()=>c.TM.ReliefGovernanceUI.mountToolbar(panel));assert.equal(used,false);
 });
 console.log('relief-governance: '+passed+' PASS / 0 FAIL');
 })().catch(e=>{console.error(e);process.exitCode=1;});

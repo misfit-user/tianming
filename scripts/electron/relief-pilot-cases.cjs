@@ -7,22 +7,22 @@ module.exports=async function({win,temp,check,mode}){
   const sid=process.env.TM_RELIEF_SCENARIO || 'sc-jianyan1-1127-shaosong';
   async function guides(){await js(`(async()=>{await new Promise(r=>setTimeout(r,700));const g=document.getElementById('tm-firstturn-guide');if(g)Array.from(g.querySelectorAll('button')).find(b=>b.textContent==='开始临朝')?.click();TM_Changelog.markRead();TM_Changelog.close();Array.from(document.querySelectorAll('button')).filter(b=>b.textContent.trim()==='知道了').forEach(b=>b.click());await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true;})()`);}
   await check('relief-official-world-and-lazy-read-only-providers',async()=>{
-    const r=await js(`(async()=>{if(P.ai&&P.ai.key)throw Error('unexpected-player-key');await TMOfficialScenarioLoader.ensure(${JSON.stringify(sid)});P.conf.fixedSeed='relief-channels';doActualStart(${JSON.stringify(sid)});await _tmAwaitLoadBarrier();const lazy=!TM.ReliefGovernance;openShizhengTasks();await TM.Features.ensureRecoverable('reliefGovernance');window.__reliefTest={text:'赈济灾民，先核灾户、据实具奏，不得以奉旨充作办成。 😀 <script>非代码</script>'};return {sid:GM.sid,lazy,write:typeof TM.ReliefGovernance.create,payment:typeof FiscalEngine.commitReliefPayment};})()`);
-    assert.equal(r.sid,sid);assert.equal(r.lazy,true);assert.equal(r.write,'undefined');assert.equal(r.payment,'undefined');
+    const r=await js(`(async()=>{if(P.ai&&P.ai.key)throw Error('unexpected-player-key');await TMOfficialScenarioLoader.ensure(${JSON.stringify(sid)});P.conf.fixedSeed='relief-channels';doActualStart(${JSON.stringify(sid)});await _tmAwaitLoadBarrier();const lazy=!TM.ReliefGovernance,ensure=TM.Features.ensureRecoverable;let requests=0;TM.Features.ensureRecoverable=function(name){if(name==='reliefGovernance')requests++;return ensure.apply(this,arguments);};try{openShizhengTasks();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}finally{TM.Features.ensureRecoverable=ensure;}const autoLoaded=!!TM.ReliefGovernance;await TM.Features.ensureRecoverable('reliefGovernance');window.__reliefTest={text:'赈济灾民，先核灾户、据实具奏，不得以奉旨充作办成。 😀 <script>非代码</script>'};return {sid:GM.sid,lazy,requests,autoLoaded,write:typeof TM.ReliefGovernance.create,payment:typeof FiscalEngine.commitReliefPayment};})()`);
+    assert.equal(r.sid,sid);assert.equal(r.lazy,true);assert.equal(r.requests,0);assert.equal(r.autoLoaded,false);assert.equal(r.write,'undefined');assert.equal(r.payment,'undefined');
   });
   await guides();await js('(()=>{openShizhengTasks();return true;})()');win.show();
-  await check('relief-register-has-only-read-and-existing-channel-navigation',async()=>{
-    const r=await js(`(()=>{const box=document.querySelector('[data-relief-register]');const b=box.querySelector('[data-relief-channel=openZhao]'),r=b.getBoundingClientRect(),t=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {channels:box.querySelectorAll('[data-relief-channel]').length,forms:box.querySelectorAll('form,input,textarea,select').length,hit:t===b||b.contains(t),text:box.textContent};})()`);
-    assert.equal(r.channels,4);assert.equal(r.forms,0);assert.equal(r.hit,true,JSON.stringify(r));assert(!r.text.includes('确认筹款'));
+  await check('relief-register-is-absent-even-with-preloaded-providers',async()=>{
+    const r=await js(`(()=>{const p=document.getElementById('shizheng-tasks-overlay');return {exists:!!p,retired:p.querySelectorAll('[data-relief-register],[data-relief-channel],[data-relief-form]').length,text:p.textContent};})()`);
+    assert.equal(r.exists,true);assert.equal(r.retired,0);assert(!r.text.includes('履行单'));
   });
   if(mode==='relief-inspect'){win.setTitle('天命 · 原渠道履行单隔离测试');console.log('RELIEF_MOUSE_READY '+sid);await new Promise(r=>win.on('closed',r));return;}
   await check('relief-navigation-opens-the-actual-edict-screen-without-submitting',async()=>{
-    const r=await js(`(async()=>{const n=GM._edictTracker.length;document.querySelector('[data-relief-channel=openZhao]').click();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const input=document.querySelector('#tm-action-edict-overlay #edict-eco');input.value=__reliefTest.text;input.dispatchEvent(new Event('input',{bubbles:true}));return{input:!!input,same:n===GM._edictTracker.length};})()`);
+    const r=await js(`(async()=>{const n=GM._edictTracker.length;closeShizhengTasks();openZhao();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const input=document.querySelector('#tm-action-edict-overlay #edict-eco');input.value=__reliefTest.text;input.dispatchEvent(new Event('input',{bubbles:true}));return{input:!!input,same:n===GM._edictTracker.length};})()`);
     assert.deepEqual(r,{input:true,same:true});
     console.log('RELIEF_DRAFT_AFTER_INPUT '+JSON.stringify(await js(`(()=>({fields:Array.from(document.querySelectorAll('#edict-eco')).map(e=>({value:e.value,connected:e.isConnected,overlay:!!e.closest('.tm-desk-overlay')})),drafts:TM_PHASE8_FORMAL.edictDrafts}))()`)));
   });
   await check('relief-closing-draft-and-viewing-register-preserves-draft-and-world',async()=>{
-    const r=await js(`(()=>{TMPhase8FormalBridge.drafts.closeDeskOverlay();function graph(){const seen=new WeakMap();let seq=0;return JSON.stringify({GM,P},function(k,v){if(v&&typeof v==='object'){if(seen.has(v))return {$ref:seen.get(v)};seen.set(v,seq++);}return typeof v==='function'?String(v):v;});}__reliefTest.graph=graph;const before=graph();openShizhengTasks();const unchanged=before===graph();document.querySelector('[data-relief-channel=openZhao]').click();return{unchanged,draft:document.querySelector('#tm-action-edict-overlay #edict-eco').value};})()`);
+    const r=await js(`(()=>{TMPhase8FormalBridge.drafts.closeDeskOverlay();function graph(){const seen=new WeakMap();let seq=0;return JSON.stringify({GM,P},function(k,v){if(v&&typeof v==='object'){if(seen.has(v))return {$ref:seen.get(v)};seen.set(v,seq++);}return typeof v==='function'?String(v):v;});}__reliefTest.graph=graph;const before=graph();openShizhengTasks();const unchanged=before===graph();closeShizhengTasks();openZhao();return{unchanged,draft:document.querySelector('#tm-action-edict-overlay #edict-eco').value};})()`);
     console.log('RELIEF_DRAFT_AFTER_REOPEN '+JSON.stringify(r));
     assert.equal(r.unchanged,true);assert.equal(r.draft,await js('__reliefTest.text'));
   });
@@ -30,9 +30,9 @@ module.exports=async function({win,temp,check,mode}){
     const r=await js(`(()=>{const input=_endTurn_collectInput();const e=GM._edictTracker.find(x=>x.content===__reliefTest.text);if(!e)throw Error('missing-original-edict');__reliefTest.edictId=e.id;TMPhase8FormalBridge.drafts.closeDeskOverlay();const before=__reliefTest.graph();openShizhengTasks();const result=TM.ReliefGovernance.list(GM,{reliefOnly:false});return{input:input.edicts.economic,exists:result.entries.some(x=>x.sourceId===e.id),unchanged:before===__reliefTest.graph()};})()`);
     assert.equal(r.input,await js('__reliefTest.text'));assert.equal(r.exists,true);assert.equal(r.unchanged,true);
   });
-  await check('relief-real-UI-displays-text-not-HTML-and-expands-lazily',async()=>{
-    const r=await js(`(async()=>{const box=document.querySelector('[data-relief-register]');const item=Array.from(box.querySelectorAll('details')).find(d=>d.textContent.includes('不得以奉旨'));if(!item)throw Error('missing-source-row');const lazy=!item.dataset.built;item.querySelector('summary').click();await new Promise(r=>setTimeout(r,30));return{lazy,built:item.dataset.built,text:item.textContent,scripts:item.querySelectorAll('script').length};})()`);
-    assert.equal(r.lazy,true);assert.equal(r.built,'1');assert(r.text.includes('<script>非代码</script>'));assert.equal(r.scripts,0);
+  await check('populated-relief-sources-do-not-recreate-the-removed-UI',async()=>{
+    const r=await js(`(()=>{const before=__reliefTest.graph();openShizhengTasks();const p=document.getElementById('shizheng-tasks-overlay');return {same:before===__reliefTest.graph(),retired:document.querySelectorAll('[data-relief-register],[data-relief-channel]').length,text:p.textContent,source:GM._edictTracker.find(e=>e.id===__reliefTest.edictId)?.content};})()`);
+    assert.equal(r.same,true);assert.equal(r.retired,0);assert(!r.text.includes('履行单'));assert.equal(r.source,await js('__reliefTest.text'));
   });
   await check('relief-real-memorial-approval-keeps-stage-and-commit-timing',async()=>{
     const r=await js(`(()=>{const ch=GM.chars.find(c=>c.alive!==false&&!c.isPlayer&&c.name);const m={id:'isolated-channel-memo',from:ch.name,content:'请核河东灾户后赈济',type:'常务',turn:GM.turn,status:'pending',reply:''};GM.memorials.push(m);__reliefTest.memoId=m.id;_stageMemorialDecision(m,'approved','先核实，不许虚报');let e=TM.ReliefGovernance.list(GM).entries.find(x=>x.sourceId===m.id);const pending=e.status;_commitMemorialDecisions();e=TM.ReliefGovernance.list(GM).entries.find(x=>x.sourceId===m.id);return{pending,after:e.status,reply:e.reply};})()`);
@@ -51,14 +51,14 @@ module.exports=async function({win,temp,check,mode}){
     assert.deepEqual(r,{edict:true,memo:true,fork:true,standalone:false});
   });
   await guides();await js('(()=>{openShizhengTasks();return true;})()');
-  await check('relief-stale-open-row-after-world-switch-refuses-to-show-another-world',async()=>{
-    const r=await js(`(()=>{const old=GM,P0=P,box=document.querySelector('[data-relief-register]');GM=Object.assign({},old,{_timelineId:'isolated-other-world'});const b=Array.from(box.querySelectorAll('button')).find(b=>b.textContent==='刷新原记录');b.click();const text=box.textContent;GM=old;P=P0;return text;})()`);
-    assert(r.includes('世界已变化'));
+  await check('world-switch-still-invalidates-old-source-handles-without-recreating-a-card',async()=>{
+    const r=await js(`(()=>{const old=GM,entry=TM.ReliefGovernance.list(GM).entries[0];GM=Object.assign({},old,{_timelineId:'isolated-other-world'});const result=TM.ReliefGovernance.resolve(GM,entry);openShizhengTasks();const retired=!!document.querySelector('[data-relief-register]');GM=old;return {ok:result.ok,retired};})()`);
+    assert.deepEqual(r,{ok:false,retired:false});
   });
   await js('(async()=>{openShizhengTasks();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true;})()');
-  await check('relief-final-register-layout-and-hit-test',async()=>{
-    const r=await js(`(()=>{const box=document.querySelector('[data-relief-register]'),rect=box.getBoundingClientRect(),t=document.elementFromPoint(rect.x+20,rect.y+20);return{width:rect.width,height:rect.height,hit:t===box||box.contains(t),text:box.textContent};})()`);
-    assert(r.width>0&&r.height>0);assert.equal(r.hit,true);assert(r.text.includes('循原文书追踪'));
+  await check('original-issue-panel-remains-usable-without-the-extra-card',async()=>{
+    const r=await js(`(()=>{const p=document.getElementById('shizheng-tasks-overlay'),b=p.querySelector('button'),rect=b.getBoundingClientRect(),t=document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2);return {retired:!!p.querySelector('[data-relief-register]'),width:rect.width,hit:t===b||b.contains(t)};})()`);
+    assert.equal(r.retired,false);assert(r.width>0);assert.equal(r.hit,true);
   });
   fs.writeFileSync(path.join(temp,'relief-final.png'),(await win.webContents.capturePage()).toPNG());
   console.log('RELIEF_ELECTRON_SCENARIO '+sid);

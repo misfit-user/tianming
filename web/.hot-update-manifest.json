@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-09T09:40:30.130Z",
+  "generatedAt": "2026-09-09T10:58:43.950Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2146,8 +2146,8 @@
     },
     {
       "path": "feature-manifest.js",
-      "sha256": "089b68eab49674826a19987c5f9eab42694f0a8935579ab435e6eb4409f7ddd6",
-      "size": 2481
+      "sha256": "85ddac4bd93c6cfc7e84e1ccee1db1850b857df79c3e6df60fc990640de30a78",
+      "size": 2492
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "aee7814a5c3e51d69b38c5b96e611caa249ff32ad2a570067b459e6cc878730e",
-      "size": 69190
+      "sha256": "a413e43eee58278e70d6f0a4bd8ea8ee74145929bb5fb40fe9f4f33f629165b0",
+      "size": 69200
     },
     {
       "path": "INDEX.md",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "7a1215ade98999510f1aa410bf83b55b2a6300accd28ec84ebe217f8ceb4fb6d",
-      "size": 346305
+      "sha256": "7c6faa5aebeca22e548250f9c9a46ebd8b29d6f2b85f3c17f402fcf064153a8c",
+      "size": 346311
     },
     {
       "path": "styles.css",
@@ -4216,8 +4216,8 @@
     },
     {
       "path": "tm-feature-loader.js",
-      "sha256": "e2cef1608b4f9151c4a6bd612d9c5b90bd7ab2b7a56bc35c286a6083a3a8c6e8",
-      "size": 22637
+      "sha256": "6cda8e8b668be3c9e4e1a85791d0043f9d63f1c282e2713eec36ae583a574d70",
+      "size": 22642
     },
     {
       "path": "tm-feedback-loops.js",
@@ -5101,8 +5101,8 @@
     },
     {
       "path": "tm-relief-governance-ui.js",
-      "sha256": "ce0f0bf82e336f7f59a1a25977fd9a6a80e72a86e5e797cbea2ccac324ce51ca",
-      "size": 6372
+      "sha256": "fe15b52c53d8b150ed715b7baa99d851c4d91749dee5294025840ce0d1ead35b",
+      "size": 1046
     },
     {
       "path": "tm-relief-governance.js",
@@ -5181,8 +5181,8 @@
     },
     {
       "path": "tm-shizheng-panel.js",
-      "sha256": "3dae599cf26c3adb8533796a3b6440464f4211bf12642da46a22a8e1ba0fb7ef",
-      "size": 67066
+      "sha256": "ba859c6bcffd3137133bc40bba65de4180df93efb1a3158355e5ffac3594591a",
+      "size": 66090
     },
     {
       "path": "tm-sidebar-ui.js",

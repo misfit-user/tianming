@@ -1,5 +1,9 @@
 # 赈务试点纠偏（本地，未发布）
 
+> **后续界面裁定（2026-09-09）：** 仓主认为只读履行单仍是负担，已在 `codex/hide-relief-register` 从御案移除整块卡片和自动加载，不设置新开关或替代面板。下文的履行单 UI 描述保留为前次修改记录；原诏书、御批、鸿雁、朝议及存档数据不变。兼容的 `mountToolbar()` 为无操作，避免旧缓存调用重新建卡。
+
+本次删卡验证：19 组来源/隐藏回归、两官方剧本真实 Windows Electron 各 17 项、架构 13、对账 27、发布契约 166、构建夹具 27 均通过。全量仍为 922 个脚本：920 PASS / 0 FAIL / 0 SKIP / 2 WAIVED（7 项原有缺资产检查）。原始运行位于 `web/dev-tools/perf-round1/relief-card-*`；全量报告 `web/dev-tools/arch-guard/ci-BFQFBt/smoke-report.json`，runId `14fb7be1-200c-4f09-8da2-f62115fc6364`。修改前新增断言实际捕获了一次不应触发的加载（退出1），修改后通过；没有删除来源/账本/换局/存读档不变量。仅本地修改，未推送、合并或发布。
+
 起点 `a26665904802debc41a5068411dd5ff28d8002a4`，分支 `codex/relief-channel-followup`；读取并 fetch 后的 main 仍为 `14d477945f5ef78b913ed5f249b51c2002167d0f`。原工作树与此前三个提交保留。
 
 ## 1. 生产依赖

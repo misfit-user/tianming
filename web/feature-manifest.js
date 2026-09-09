@@ -9,10 +9,10 @@
     version: 1,
     features: {
       reliefGovernance: {
-        scripts: ['tm-relief-governance.js?v=20260909-channels', 'tm-relief-governance-ui.js?v=20260909-channels'],
+        scripts: ['tm-relief-governance.js?v=20260909-channels', 'tm-relief-governance-ui.js?v=20260909-hide-register'],
         dependsOn: [],
         platform: 'any',
-        loadPolicy: 'issue-panel-only',
+        loadPolicy: 'manual-inspection-only',
         sideEffects: 'none',
         provides: ['TM.ReliefGovernance', 'TM.ReliefGovernanceUI']
       },

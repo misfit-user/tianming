@@ -10668,7 +10668,7 @@
         "tm-relief-governance.js",
         "tm-relief-governance-ui.js"
       ],
-      "loadPolicy": "issue-panel-only",
+      "loadPolicy": "manual-inspection-only",
       "platform": "any",
       "sideEffects": "none",
       "dependsOn": [],

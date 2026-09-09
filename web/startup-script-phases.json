@@ -2230,6 +2230,7 @@
       "platform": "any",
       "sideEffects": "legacy-unknown",
       "provides": [
+        "TM",
         "buildOfficePowerMap",
         "queryOfficeDetail"
       ],

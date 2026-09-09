@@ -220,6 +220,81 @@
     return '〔官署详查·"' + (query || '全部') + '"〕\n' + rows.slice(0, cap).join('\n') + more;
   }
 
+  // 人物图志的只读任官参考。60% 才、40% 德沿用履职口径；领域权重仅用于推荐，
+  // 不参与任命裁定、履职结算或 AI 推演。优先读剧本 powers，无权力字段才按职责推断。
+  var FIT_PROFILES = {
+    general: { label: '综合政务', talents: { administration: .7, intelligence: .3 }, virtues: { yi: .28, xin: .28, li: .20, ren: .16, zhi: .08 } },
+    military: { label: '军事统御', talents: { military: .75, valor: .25 }, virtues: { yi: .30, zhi: .30, xin: .25, li: .10, ren: .05 } },
+    finance: { label: '财赋管理', talents: { management: .55, administration: .45 }, virtues: { xin: .35, yi: .30, ren: .20, li: .10, zhi: .05 } },
+    works: { label: '营造工程', talents: { management: .65, administration: .20, intelligence: .15 }, virtues: { xin: .35, yi: .25, ren: .20, zhi: .15, li: .05 } },
+    justice: { label: '刑狱裁断', talents: { administration: .55, intelligence: .45 }, virtues: { yi: .35, ren: .30, xin: .20, li: .10, zhi: .05 } },
+    diplomacy: { label: '宾礼交涉', talents: { diplomacy: .7, charisma: .3 }, virtues: { li: .35, xin: .25, zhi: .20, ren: .10, yi: .10 } },
+    ritual: { label: '礼制教化', talents: { intelligence: .55, administration: .25, charisma: .20 }, virtues: { li: .45, xin: .20, yi: .15, ren: .10, zhi: .10 } },
+    drafting: { label: '文书谋议', talents: { intelligence: .75, diplomacy: .25 }, virtues: { zhi: .35, li: .30, xin: .20, yi: .10, ren: .05 } },
+    supervision: { label: '监察纠察', talents: { intelligence: .5, administration: .5 }, virtues: { yi: .40, xin: .35, zhi: .15, li: .05, ren: .05 } }
+  };
+  var FIT_POWER = { militaryCommand: 'military', taxCollect: 'finance', works: 'works', judicial: 'justice', drafting: 'drafting', supervise: 'supervision', impeach: 'supervision', appointment: 'general', yinBu: 'general' };
+  var VIRTUE_LABEL = { ren: '仁', yi: '义', li: '礼', zhi: '智', xin: '信' };
+  function _fitProfiles(pos, dept) {
+    var keys = [];
+    _powersOf(pos).forEach(function (power) { var key = FIT_POWER[power]; if (key && keys.indexOf(key) < 0) keys.push(key); });
+    if (keys.length) return keys;
+    var text = [dept, pos.name, pos.duties, pos.desc].filter(Boolean).join(' ');
+    return [/兵|军|卫|武|都督|将/.test(text) ? 'military' : /财|赋|税|钱粮|度支|户部/.test(text) ? 'finance' : /营造|水利|工程|工部/.test(text) ? 'works' : /刑|狱|司法/.test(text) ? 'justice' : /监察|御史|弹劾/.test(text) ? 'supervision' : /外交|使节|宾客|鸿胪/.test(text) ? 'diplomacy' : /礼仪|教化|礼部|祭祀/.test(text) ? 'ritual' : /文书|起草|撰|修史|学士|侍读/.test(text) ? 'drafting' : 'general'];
+  }
+  function _fitNumber(value) {
+    if (typeof value !== 'number' && !(typeof value === 'string' && value.trim())) return null;
+    var n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : null;
+  }
+  function scoreOfficeFit(ch, pos, dept) {
+    var profiles = _fitProfiles(pos || {}, dept), talents = {}, virtues = {}, missing = [];
+    profiles.forEach(function (key) {
+      var p = FIT_PROFILES[key];
+      Object.keys(p.talents).forEach(function (k) { talents[k] = (talents[k] || 0) + p.talents[k] / profiles.length; });
+      Object.keys(p.virtues).forEach(function (k) { virtues[k] = (virtues[k] || 0) + p.virtues[k] / profiles.length; });
+    });
+    var talentScore = 0, virtueScore = 0;
+    Object.keys(talents).forEach(function (k) {
+      var n = _fitNumber(ch && ch[k]);
+      if (n == null) { n = 50; missing.push(ATTR_LABEL[k]); }
+      talentScore += n * talents[k];
+    });
+    Object.keys(virtues).forEach(function (k) {
+      var n = null, sources = ch ? [ch.wuchang, ch.wuchangOverride, ch.fiveConstants, ch.morals] : [];
+      sources.some(function (source) { return source && _WC_ALIAS[k].some(function (alias) { n = _fitNumber(source[alias]); return n != null; }); });
+      if (n == null) { n = 50; missing.push('五常' + VIRTUE_LABEL[k]); }
+      virtueScore += n * virtues[k];
+    });
+    function weights(values, labels) { return Object.keys(values).map(function (k) { return labels[k] + Math.round(values[k] * 100) + '%'; }).join('、'); }
+    return { score: Math.round((talentScore * .6 + virtueScore * .4) * 10) / 10, talentScore: talentScore, virtueScore: virtueScore,
+      profile: profiles.map(function (k) { return FIT_PROFILES[k].label; }).join(' / '),
+      basis: '才：' + weights(talents, ATTR_LABEL) + '；德：' + weights(virtues, VIRTUE_LABEL), missing: missing };
+  }
+  function recommendOffices(G, ch, opts) {
+    if (!G || !ch || !Array.isArray(G.officeTree)) return [];
+    var statsFor = _fn('_offPositionStats');
+    if (!statsFor) throw new Error('office-statistics-unavailable');
+    var rows = [], seen = new Set();
+    function walk(nodes, prefix, parents) {
+      (nodes || []).forEach(function (node, i) {
+        if (!node || seen.has(node)) return;
+        seen.add(node);
+        var path = prefix.concat(i), chain = parents.concat(node.name || '未名官署');
+        (node.positions || []).forEach(function (pos, pi) {
+          if (!pos || !pos.name) return;
+          // 既有统计器会迁移 holder 镜像；只给它独立副本，绝不改 live 官职树。
+          var stats = statsFor(JSON.parse(JSON.stringify(pos)));
+          if (opts && opts.vacantOnly && stats.vacant <= 0) return;
+          rows.push(Object.assign({ path: path.concat('p', pi), deptName: node.name || '', deptPath: chain.join(' / '), position: pos, stats: stats, order: rows.length }, scoreOfficeFit(ch, pos, chain.join(' '))));
+        });
+        if (Array.isArray(node.subs)) walk(node.subs, path.concat('s'), chain);
+      });
+    }
+    walk(G.officeTree, [], []);
+    return rows.sort(function (a, b) { return b.score - a.score || a.order - b.order; });
+  }
+  global.TM = global.TM || {};
+  global.TM.OfficeFit = { score: scoreOfficeFit, list: recommendOffices };
   global.buildOfficePowerMap = buildOfficePowerMap;
   global.queryOfficeDetail = queryOfficeDetail;
   if (typeof module !== 'undefined' && module.exports) module.exports = { buildOfficePowerMap: buildOfficePowerMap, queryOfficeDetail: queryOfficeDetail };

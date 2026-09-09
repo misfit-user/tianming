@@ -395,9 +395,14 @@ function openWenduiModal(name, mode, prefillMsg) {
       if (typeof toast === 'function') toast(_msg.split('\n')[0]);
       // 对远方者·直接跳传书
       if (!/已薨|下狱|流放|病重/.test(_reasons.join(''))) {
-        if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
-        if (typeof GM !== 'undefined') GM._pendingLetterTo = name;
-        setTimeout(function(){ if (typeof renderLetterPanel === 'function') renderLetterPanel(); }, 50);
+        var _letterBridge = window.TMPhase8FormalBridge && TMPhase8FormalBridge.drafts;
+        if (_letterBridge && typeof _letterBridge.targetLetter === 'function') {
+          _letterBridge.targetLetter(name);
+        } else {
+          if (typeof GM !== 'undefined') GM._pendingLetterTo = name;
+          if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
+          setTimeout(function(){ if (typeof renderLetterPanel === 'function') renderLetterPanel(); }, 50);
+        }
       }
       return;
     }

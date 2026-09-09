@@ -868,6 +868,7 @@
     if (!name) return;
     var gm = deskGM();
     gm._pendingLetterTo = name;
+    state.letterMultiMode = false;
     state.letterTarget = name;
     state.letterDraft = state.letterDraft || {};
     state.letterDraft.to = name;
@@ -2539,6 +2540,7 @@
   bridge.drafts.openZhaoPreviewPanel = openZhaoPreviewPanel;
   bridge.drafts.openYueZouPreviewPanel = openYueZouPreviewPanel;
   bridge.drafts.openHongyanPreviewPanel = openHongyanPreviewPanel;
+  bridge.drafts.targetLetter = deskTargetLetter;
   bridge.drafts.openShiluPreviewPanel = openShiluPreviewPanel;
   bridge.drafts.handleDeskAction = handleDeskAction;
   bridge.drafts.recordDeskActionSignal = recordDeskActionSignal;

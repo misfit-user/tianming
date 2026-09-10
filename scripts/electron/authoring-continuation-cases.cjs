@@ -26,6 +26,20 @@ module.exports = async function({ win, root, check }) {
       if(names.length===1&&names[0]==='selectMemories')return native(cmd('selectMemories',{names:[]}));
       p.round++;p.native=(p.native||0)+(b.tools?1:0);p.compat=(p.compat||0)+(b.tools?0:1);
       const done=cmd('finish',{summary:'所需条目已补齐并核验'}),edit=cmd('applyEdit',{path:'fiscalConfig.treasury',value:450});
+      if(p.mode==='reasoning-json'||p.mode==='reasoning-sse'){
+        const previous=b.messages.filter(m=>m.role==='assistant');
+        const valid=previous.every(m=>m.reasoning_content===p.sent[m.tool_calls[0].id]);
+        p.checkedTurns=(p.checkedTurns||0)+previous.length;
+        if(!b.tools||!valid){p.protocolMismatch=true;return new Response('Missing reasoning_content in assistant message',{status:400});}
+        const calls=p.round===1?[edit,cmd('applyPush',{path:'labels',value:{name:'once'}})]:[cmd('applyEdit',{path:'labels.once.text',value:'思考续轮已完成'}),done];
+        const thought='SYNTHETIC_OPAQUE_THOUGHT_'+p.round+'😀';p.sent=p.sent||{};p.sent[calls[0].id]=thought;
+        const m={content:'',reasoning_content:thought,tool_calls:calls.map(c=>({id:c.id,type:'function',function:{name:c.name,arguments:JSON.stringify(c.input)}}))};
+        if(p.mode==='reasoning-json')return response(m);
+        const events=[{choices:[{index:0,delta:{reasoning_content:thought.slice(0,12)}}]},
+          {choices:[{index:0,delta:{reasoning_content:thought.slice(12),tool_calls:m.tool_calls.map((c,index)=>({...c,index}))},finish_reason:'tool_calls'}]}];
+        return new Response(events.map(e=>'data: '+JSON.stringify(e)+'\\n\\n').join('')+'data: [DONE]\\n\\n',{headers:{'Content-Type':'text/event-stream'}});
+      }
+      if(p.mode==='reasoning-only')return response({content:null,reasoning_content:'SYNTHETIC_OPAQUE_THOUGHT_'+JSON.stringify({tool_calls:[edit]})});
       if(p.mode==='empty'){
         if(p.round===1)return native(edit,cmd('applyPush',{path:'labels',value:{name:'once'}}));
         return response({content:'接下来我会继续处理剩下的内容。'});
@@ -110,6 +124,21 @@ module.exports = async function({ win, root, check }) {
   await test('cancelling the compatibility request stops it without a late write or automatic retry', async () => {
     await fresh('cancel', 'cancel'); await send(); await until(`__relayTest.waiting===true`); await click(`TM_AuthoringAgentUI._ui.els.go`); await settled();
     assert.equal(await js(`__relayTest.cancelled && __relayTest.round===2 && TM_AuthoringAgentUI._ui._completion.status==='cancelled' && TM_SCENARIO_EDITOR_RESET_APP.state.scenario.fiscalConfig.treasury===100`), true);
+  });
+  for (const mode of ['reasoning-json', 'reasoning-sse']) await test(mode + ' real editor sends preserved thinking context and applies both steps only after approval', async () => {
+    await fresh(mode, mode); await send(); await settled();
+    const r = await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;return{rounds:__relayTest.round,compat:__relayTest.compat,checked:__relayTest.checkedTurns,mismatch:!!__relayTest.protocolMismatch,status:ui._completion.status,live:ui.adapter.getScenario().fiscalConfig.treasury,draft:ui.draft.fiscalConfig.treasury,labels:ui.draft.labels,visible:document.getElementById('tm-aa-panel').textContent};})()`);
+    assert.equal(r.rounds, 2); assert.equal(r.compat, 0); assert.equal(r.checked, 1); assert.equal(r.mismatch, false); assert.equal(r.status, 'completed');
+    assert.equal(r.live, 100); assert.equal(r.draft, 450); assert.deepEqual(r.labels, [{ name: 'once', text: '思考续轮已完成' }]); assert(!r.visible.includes('SYNTHETIC_OPAQUE_THOUGHT'));
+    await click(`TM_AuthoringAgentUI._ui.els.apply`);
+    const saved = await js(`(async()=>{const app=TM_SCENARIO_EDITOR_RESET_APP,p=await app.saveProjectSnapshot('思考续轮隔离存档');await app.loadProjectSnapshot(p.id);return{money:app.state.scenario.fiscalConfig.treasury,labels:app.state.scenario.labels,prompt:app.state.scenario.customPrompt};})()`);
+    assert.equal(saved.money, 450); assert.deepEqual(saved.labels, r.labels); assert.equal(saved.prompt, '玩家手工输入');
+  });
+  await test('thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text', async () => {
+    await fresh('thinking-only', 'reasoning-only'); await send(); await settled();
+    const r = await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;return{rounds:__relayTest.round,status:ui._completion.status,summary:ui.els.summary.textContent,live:ui.adapter.getScenario().fiscalConfig.treasury,draft:ui.draft.fiscalConfig.treasury};})()`);
+    assert.equal(r.rounds, 3); assert.equal(r.status, 'blocked'); assert.equal(r.live, 100); assert.equal(r.draft, 100);
+    assert.match(r.summary, /只返回了思考内容/); assert.match(r.summary, /正文 0 字/); assert(!r.summary.includes('SYNTHETIC_OPAQUE_THOUGHT'));
   });
   fs.writeFileSync(path.join(dir, 'authoring-continuation-results.json'), JSON.stringify({ results, pass: results.filter(r => r.status === 'PASS').length, fail: results.filter(r => r.status === 'FAIL').length }, null, 2));
   const failures = results.filter(r => r.status === 'FAIL'); if (failures.length) throw Error(failures.map(r => r.name + '\n' + r.error).join('\n'));

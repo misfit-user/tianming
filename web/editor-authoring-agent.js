@@ -3165,6 +3165,26 @@
     // 方向A · 鲁棒自愈：noToolCalls 先 nudge 再放弃；caller 瞬态错误退避重试
     var noToolNudges = 0, maxNoToolNudges = (opts.maxNoToolNudges != null ? opts.maxNoToolNudges : 2);
     var textToolFallback = !!(resume && resume.textToolFallback);
+    var apiDiagnostics = resume && Array.isArray(resume.apiDiagnostics) ? _agentClone(resume.apiDiagnostics).slice(-4) : [];
+    function assistantTurn(resp, text, calls) {
+      var turn = { role: 'assistant', text: text, toolCalls: calls };
+      // 与工具调用一起保存在会话/同案卷恢复材料；不得放入 transcript/onText/摘要。
+      if (resp && typeof resp.reasoningContent === 'string') turn.reasoningContent = resp.reasoningContent;
+      return turn;
+    }
+    function noToolSummary() {
+      var info = apiDiagnostics[apiDiagnostics.length - 1];
+      var reasons = { 'reasoning-only': 'API 只返回了思考内容，没有返回正文或工具调用', empty: 'API 返回了空的助手消息',
+        'unsupported-response': 'API 返回的消息协议未被当前端点识别，不能将其当作空回复或执行工具',
+        refusal: 'API 返回了拒绝/过滤结果', truncated: 'API 输出仍被截断，已达到本轮自动扩展输出上限',
+        'invalid-tool-arguments': 'API 返回的工具参数不是有效对象，整批调用未执行',
+        'text-only': 'API 返回了文本说明，但没有可执行的工具调用' };
+      var detail = info ? '（' + (info.format === 'json-compat' ? 'JSON兼容' : '原生') + '；结束原因 ' + info.finishReason
+        + '；正文 ' + info.textChars + ' 字，思考 ' + info.reasoningChars + ' 字）' : '';
+      return (info && reasons[info.kind] || 'API 未返回可执行的工具调用') + detail
+        + '。' + (maxNoToolNudges > 0 && noToolNudges >= maxNoToolNudges ? '兼容尝试已用尽' : '已停止兼容尝试')
+        + '，任务未完成。已完成的草稿保留，未自动应用；请将上述响应类型与模型名称一并反馈，或检查中转/模型的工具支持后继续，不必重做已完成部分。';
+    }
     var stepRetries = 0, maxStepRetries = (opts.maxStepRetries != null ? opts.maxStepRetries : 2);
     var retryBaseMs = opts.retryBaseMs || 800;
     var _curMaxTok = 0, _tokBumps = 0;   // 刀H1 · 输出截断自愈:检测到腰斩则输出上限×2重试(≤2次·bump后全程沿用)
@@ -3228,7 +3248,7 @@
     // 刀G8 · 终局失败保留已完成工作(CC「错误不炸掉会话」对照):reject 前把过程状态挂上错误对象·调用方可续
     function _fail(e) {
       try { e.partial = { conversation: conversation, transcript: transcript, todos: control.todoState.list.slice(), draft: draft, tokensUsed: tokensUsed, iterations: iterations,
-        sideEffects: control.sideEffects.slice(), toolReceipts: control.toolReceipts.slice(), metrics: Object.assign({},metrics), completion: completion('blocked'), resumeState: checkpoint() }; } catch (eP) {}
+        sideEffects: control.sideEffects.slice(), toolReceipts: control.toolReceipts.slice(), metrics: Object.assign({},metrics), apiDiagnostics: _agentClone(apiDiagnostics), completion: completion('blocked'), resumeState: checkpoint() }; } catch (eP) {}
       throw e;
     }
     function completion(status) {
@@ -3238,7 +3258,7 @@
     function checkpoint() {
       return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
-        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback });
+        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, apiDiagnostics: _agentClone(apiDiagnostics) });
     }
 
     function record(name, input, result) {
@@ -3268,6 +3288,7 @@
           stepRetries = 0;   // 成功一轮即重置：每个停顿点各容忍 maxStepRetries 次抖动
           var text = (resp && resp.text) || '';
           var calls = (resp && resp.toolCalls) || [];
+          if (resp && resp.responseInfo) { apiDiagnostics.push(_agentClone(resp.responseInfo)); if (apiDiagnostics.length > 4) apiDiagnostics.shift(); }
           if (resp && resp.fallback) textToolFallback = true;
           // 刀H1(CC max_tokens 动态调整对照) · 输出截断自愈:被 maxTok 腰斩(没调成工具/入参 JSON 斩断)
           //   → 输出上限×2重试本轮。斩断的响应整体弃置(完好的调用也未执行·重试无双跑)。
@@ -3280,9 +3301,9 @@
           }
           // 刀G1 · 不再零星累加(响应文本随消息入对话后由 _reqTokens 全量重估)
           if (text && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
-          if (control.aborted) { conversation.push({ role: 'assistant', text: text, toolCalls: [] }); stopReason = 'aborted'; return; }   // 刀E · API 返回后即停，不再施改
+          if (control.aborted) { conversation.push(assistantTurn(resp, text, [])); stopReason = 'aborted'; return; }   // 刀E · API 返回后即停，不再施改
           if (!calls.length) {
-            conversation.push({ role: 'assistant', text: text, toolCalls: [] });
+            conversation.push(assistantTurn(resp, text, []));
             // 刀G9 · 卡壳时若有用户插话:新指示本身就是推动力·直接注入重启(不耗 nudge 配额)
             if (_drainSteers()) return step();
             // 韧性：没调工具不直接放弃，先 nudge 推一把（卡住 → 重新发起）
@@ -3298,7 +3319,7 @@
               return step();
             }
             stopReason = 'noToolCalls';
-            _finishSummary = 'API 连续返回内容，但未返回可执行的工具调用，兼容尝试已用尽，任务未完成。已完成的草稿保留，未自动应用；请检查中转/模型的工具支持后继续，不必重做已完成部分。';
+            _finishSummary = noToolSummary();
             return;
           }
           var toolResults = [];
@@ -3453,7 +3474,7 @@
           }
           return _procCall().then(function () {
             // 控制工具已停止时，尾部调用没有执行；恢复对话只能保留有对应结果的调用。
-            conversation.push({ role: 'assistant', text: text, toolCalls: calls.slice(0, _ci) });
+            conversation.push(assistantTurn(resp, text, calls.slice(0, _ci)));
             conversation.push({ role: 'tool', toolResults: toolResults });
             _convRecount(); tokensUsed = _reqTokens();   // 刀G1 · 本轮消息已入对话·重算真实体量(70/90%提醒按真口径)
             // 刀G9 · 运行中插话:本轮工具结果落定后注入(下一轮模型即见)。finish 刚被接受的瞬间来了新话
@@ -3561,7 +3582,7 @@
         todos: control.todoState.list.slice(),
         completion: completion(state), resumed: !!resume,
         progress: { stalledRounds: stalledRounds, limit: noProgressLimit, lastTools: progressTools.slice() },
-        metrics: Object.assign({},metrics),
+        metrics: Object.assign({},metrics), apiDiagnostics: _agentClone(apiDiagnostics),
         resumeState: (!finished || stopReason === 'needsClarification' || stopReason === 'needsConfirmation') ? checkpoint() : null,
         summary: _finishSummary,   // 改动说明：做了什么+为什么
         notes: transcript.filter(function(t) { return t.name === 'note'; }).map(function(t) { return (t.input && t.input.text) || ''; }).filter(Boolean),

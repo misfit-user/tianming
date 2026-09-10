@@ -36,7 +36,8 @@
   }
 
   // ── 抽象 conversation → provider 消息 ──
-  // conversation 项：{role:'user',text,images?:[dataURL]} | {role:'assistant',text,toolCalls:[{id,name,input}]} | {role:'tool',toolResults:[{id,name,content}]}
+  // conversation 项：{role:'user',text,images?:[dataURL]} | {role:'assistant',text,reasoningContent?,toolCalls:[{id,name,input}]} | {role:'tool',toolResults:[{id,name,content}]}
+  // reasoningContent 是模型返回的续接字段，不是正文或工具指令；仅原样回传，不展示/写诊断。
   function _genId(i) { return 'call_' + Date.now().toString(36) + '_' + i; }
   // S2 · 视觉附件：user 消息可带 images[](dataURL)——三家 provider 各自映射为多模态 content
   function _imgParts(images) { return (Array.isArray(images) ? images : []).filter(function (u) { return /^data:image\//.test(String(u || '')); }).slice(0, 4); }
@@ -86,6 +87,9 @@
       }
       else if (turn.role === 'assistant') {
         var m = { role: 'assistant', content: turn.text || null };
+        // 思考模型的工具续轮需要完整 reasoning_content（空串也有字段语义）。
+        // 无 tools 的文本兼容请求不回传；其他 provider 的序列化器亦不混用此字段。
+        if (tools.length && typeof turn.reasoningContent === 'string') m.reasoning_content = turn.reasoningContent;
         if (turn.toolCalls && turn.toolCalls.length) {
           m.tool_calls = turn.toolCalls.map(function(tc) { return { id: tc.id, type: 'function', function: { name: tc.name, arguments: JSON.stringify(tc.input || {}) } }; });
         }
@@ -121,11 +125,13 @@
     return input;
   }
   function _parseOpenAI(data) {
-    var text = '', toolCalls = [], badToolJson = false;
+    var text = '', toolCalls = [], badToolJson = false, reasoningContent;
     if (data.choices && data.choices[0] && data.choices[0].message) {
       var msg = data.choices[0].message;
+      if (typeof msg.reasoning_content === 'string') reasoningContent = msg.reasoning_content;
       if (typeof msg.content === 'string') text = msg.content;
       else if (Array.isArray(msg.content)) text = msg.content.filter(function(b) { return b && b.type === 'text' && typeof b.text === 'string'; }).map(function(b) { return b.text; }).join('');
+      if (msg.tool_calls != null && !Array.isArray(msg.tool_calls)) badToolJson = true;
       var nativeCalls = Array.isArray(msg.tool_calls) ? msg.tool_calls : (msg.function_call ? [{ function: msg.function_call }] : []);
       nativeCalls.forEach(function(tc, i) {
         var fn = tc && tc.function || {}, input = {}, parsedOk = true;
@@ -136,7 +142,23 @@
     }
     if (!toolCalls.length && !badToolJson && Array.isArray(data.content)) return _parseAnthropic(data); // 代理直吐 anthropic content[]
     var fr = data.choices && data.choices[0] && (data.choices[0].finish_reason || data.choices[0].stop_reason);
-    return { text: text, toolCalls: toolCalls, truncated: fr === 'length' || fr === 'max_tokens', badToolJson: badToolJson };
+    return { text: text, toolCalls: toolCalls, reasoningContent: reasoningContent, truncated: fr === 'length' || fr === 'max_tokens', badToolJson: badToolJson };
+  }
+
+  // 可复制的响应诊断只含固定枚举/计数；不带原文、思考正文、工具参数、URL 或凭据。
+  function _responseInfo(data, parsed) {
+    var choice = data && data.choices && data.choices[0], msg = choice && choice.message;
+    var cand = data && data.candidates && data.candidates[0];
+    var protocol = msg ? 'openai' : (cand ? 'gemini' : (Array.isArray(data && data.content) ? 'anthropic' : 'unknown'));
+    var fr = (choice && (choice.finish_reason || choice.stop_reason)) || (cand && cand.finishReason) || (data && data.stop_reason);
+    var allowed = ['stop', 'tool_calls', 'function_call', 'length', 'max_tokens', 'content_filter', 'end_turn', 'tool_use', 'stop_sequence', 'STOP', 'MAX_TOKENS', 'SAFETY'];
+    var reasoningChars = typeof parsed.reasoningContent === 'string' ? parsed.reasoningContent.length : 0;
+    var textChars = typeof parsed.text === 'string' ? parsed.text.length : 0;
+    var kind = protocol === 'unknown' ? 'unsupported-response' : parsed.truncated ? 'truncated' : parsed.badToolJson ? 'invalid-tool-arguments'
+      : (msg && msg.refusal || fr === 'content_filter' || fr === 'SAFETY') ? 'refusal'
+      : parsed.toolCalls.length ? 'native-tools' : textChars ? 'text-only' : reasoningChars ? 'reasoning-only' : 'empty';
+    return { protocol: protocol, kind: kind, finishReason: allowed.indexOf(fr) >= 0 ? fr : 'unknown',
+      textChars: textChars, reasoningChars: reasoningChars, toolCalls: parsed.toolCalls.length, format: 'native' };
   }
 
   // ── 刀C · gemini 原生 provider（对标游戏 tm-ai-infra·第三方中转走 openai-compat 不受影响） ──
@@ -292,6 +314,7 @@
           if ((c.index == null ? pos : c.index) !== 0) return; // 与原解析器一致，只消费第一候选。
           var delta = c.delta || c.message || {};
           if (delta.content != null) message.content += string(delta.content);
+          if (delta.reasoning_content != null) message.reasoning_content = (message.reasoning_content || '') + string(delta.reasoning_content);
           if (delta.tool_calls != null && !Array.isArray(delta.tool_calls)) throw _responseError('invalid-tools', 'API 工具列表格式无效，本轮工具未执行。');
           (delta.tool_calls || []).forEach(function(tc, i) {
             var key = index(tc.index == null && c.message ? i : tc.index), old = tools.get(key);
@@ -515,6 +538,7 @@
       var parsed = gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data));
       parsed.usage = _reportedUsage(data);
       if (parsed.truncated || parsed.badToolJson) parsed.toolCalls = []; // 整轮丢弃；由既有 loop 输出预算修复接手，不能执行半轮写入。
+      parsed.responseInfo = _responseInfo(data, parsed);
       return parsed;
     }
 
@@ -531,9 +555,12 @@
       delete fbBody.tools; delete fbBody.tool_choice; delete fbBody.toolConfig;
       return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
         var parsed = _parseResp(data);
+        parsed.fallback = true; parsed.responseInfo.format = 'json-compat';
         if (parsed.truncated || parsed.badToolJson) { parsed.fallback = true; return parsed; }
         var calls = parsed.toolCalls.length ? parsed.toolCalls : _parseJsonToolCalls(parsed.text);
-        return { text: parsed.text, toolCalls: calls, fallback: true, usage: parsed.usage };
+        if (!parsed.toolCalls.length && calls.length) parsed.responseInfo.kind = 'text-json';
+        parsed.toolCalls = calls; parsed.responseInfo.toolCalls = calls.length;
+        return parsed;
       });
     }
 
@@ -543,7 +570,11 @@
       if (parsed.truncated || parsed.badToolJson) return parsed;
       if (parsed.toolCalls.length) return parsed;
       var fromText = _parseJsonToolCalls(parsed.text); // 端点忽略 tools 但吐了 JSON
-      if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true, usage: parsed.usage };
+      if (fromText.length) {
+        parsed.toolCalls = fromText; parsed.fallback = true;
+        parsed.responseInfo.kind = 'text-json'; parsed.responseInfo.toolCalls = fromText.length;
+        return parsed;
+      }
       return parsed; // 纯文本无工具 → 交给 loop 判 noToolCalls
     })).catch(handleFailure);
     function handleFailure(e) {

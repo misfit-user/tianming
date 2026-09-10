@@ -6,6 +6,11 @@
   var DEFAULT_SIZE = 'md';
   var DEFAULT_BODY = 'TM-ZCOOL-XiaoWei';
   var DEFAULT_TITLE = 'TM-ZCOOL-QingKe';
+  var MEMORIAL_INKS = [
+    { key:'ink', label:'深墨（默认）', ink:'#241d15', soft:'#493b2a', muted:'#62523c' },
+    { key:'black', label:'墨黑（高对比）', ink:'#181818', soft:'#303030', muted:'#484848' },
+    { key:'indigo', label:'靛青', ink:'#263e50', soft:'#304c61', muted:'#456079' }
+  ];
 
   function esc(v) {
     if (v == null) return '';
@@ -79,7 +84,7 @@
     { key:'renwu', label:'\u4eba\u7269\u56fe\u5fd7', desc:'\u4eba\u7269\u5361\u3001\u4eba\u7269\u8be6\u60c5\u3001\u53f3\u62bd\u5c49\u7b80\u8981', targets:['.renwu-page-container','.renwu-page-overlay','.char-detail-panel','.rwp-panel','.rwp-tab','.rwp-section'] },
     { key:'events', label:'\u4e8b\u4ef6\u680f', desc:'\u8fd1\u4e8b\u3001\u90b8\u62a5\u3001\u6d3b\u52a8\u8bb0\u5f55', targets:['.gs-news','.gs-news-item','.tm-cl-panel','.tm-cl-card','.event-panel','.scroll-archive'] },
     { key:'edict', label:'\u64b0\u5199\u8bcf\u4e66', desc:'\u8bcf\u4ee4\u7f16\u8f91\u3001\u5efa\u8bae\u5e93\u3001\u6da6\u8272', targets:['.ed-scroll','.edict-panel','.edict-input','.ed-src','.tm-edict','.imperial-edict'] },
-    { key:'memorial', label:'\u767e\u5b98\u594f\u758f', desc:'\u594f\u758f\u5361\u3001\u6279\u793a\u3001\u7559\u4e2d', targets:['.mem-panel','.mem-card','.memorial-card','.memorial-content','.bn-panel','.bn-card'] },
+    { key:'memorial', label:'\u767e\u5b98\u594f\u758f', desc:'\u594f\u758f\u5361\u3001\u6279\u793a\u3001\u7559\u4e2d', scaleTargets:['.zou-yuan'], targets:['.mem-panel','.mem-card','.memorial-card','.memorial-content','.bn-panel','.bn-card'] },
     { key:'court', label:'\u95ee\u5bf9\u671d\u8bae', desc:'\u95ee\u5bf9\u3001\u5e38\u671d\u3001\u5ef7\u8bae\u3001\u5fa1\u524d\u4f1a\u8bae', targets:['.wdp-panel','.wendui-chat-area','.wd-modal','.chaoyi-panel','.chaoyi-modal','.cy-panel','.qj-panel'] },
     { key:'letter', label:'\u9e3f\u96c1\u4f20\u4e66', desc:'\u6765\u4fe1\u3001\u5199\u4fe1\u3001\u4fe1\u7b3a\u6b63\u6587', targets:['.hy-panel','.lt-panel','.lt-npc-list','.letter-body','.lt-compose'] },
     { key:'history', label:'\u53f2\u5b98\u5b9e\u5f55', desc:'\u53f2\u8bb0\u3001\u7f16\u5e74\u3001\u8d77\u5c45\u6ce8\u3001\u7eaa\u4e8b\u3001\u56de\u5408\u7ed3\u679c', targets:['.qiju-panel','.qiju-record','.turn-modal','.turn-result','.turn-summary-bar','.narr-shizhengji','.narr-zhengwen','.post-turn-panel','.scroll-manager'] },
@@ -147,7 +152,7 @@
       var cur = scoped[s.key] || 'md';
       h += '<div class="tm-scope-size-card" data-scope="' + esc(s.key) + '"><div class="tm-scope-size-meta"><b>' + esc(s.label) + '</b><em>' + esc(s.desc) + '</em></div>' +
         sizeButtonRow(cur, function(k){ return "_tmApplyScopeSize('" + q(s.key) + "','" + q(k) + "', this)"; }, 'tm-scope-size-buttons') +
-        '</div>';
+        (s.key === 'memorial' ? memorialInkControl() : '') + '</div>';
     });
     h += '</div>';
     if (!compact) h += '</div>';
@@ -197,6 +202,7 @@
   function applyGlobalSize(size, el, silent) {
     var s = SIZE_SCALES[size] || SIZE_SCALES[DEFAULT_SIZE];
     var css = ':root{'
+      + '--tm-font-global-scale:' + s + ';'
       + '--text-xs:' + (SIZE_BASE.xs*s).toFixed(2) + 'rem;'
       + '--text-sm:' + (SIZE_BASE.sm*s).toFixed(2) + 'rem;'
       + '--text-base:' + (SIZE_BASE.base*s).toFixed(2) + 'rem;'
@@ -244,7 +250,7 @@
     var targets = scope.targets || [];
     if (!targets.length) return '';
     var varName = '--tm-size-' + scope.key;
-    var rootSel = targets.join(',');
+    var rootSel = targets.concat(scope.scaleTargets || []).join(',');
     var textSel = targets.map(function(s){ return s + ' :where(button,input,select,textarea,label,span,em,b,strong,p,li,td,th,.gs-panel-cnt,.gs-news-title,.tm-cl-title,.memorial-content,.letter-body,.qiju-text,.wendui-npc-bubble,.wendui-player-bubble)'; }).join(',');
     var titleSel = targets.map(function(s){ return s + ' :where(h1,h2,h3,h4,.gs-panel-title,.gs-drawer-title,.mem-title,.wdp-title,.hy-title,.bn-title,.rwp-name,.tm-cl-panel-title)'; }).join(',');
     var smallSel = targets.map(function(s){ return s + ' :where(small,.desc,.sub,.meta,.bar-var-name,.bar-var-trend,.rwp-meta,.lt-npc-title,.letter-meta,.qiju-turn)'; }).join(',');
@@ -282,6 +288,22 @@
     applyBodyFont(body, true);
     applyTitleFont(title, true);
     applyScopedSizes();
+    applyMemorialInk(readStore('tm.memorialInk', 'ink'), true);
+  }
+
+  function memorialInkControl() {
+    var current = readStore('tm.memorialInk', 'ink');
+    return '<label class="tm-memorial-ink-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px">文字颜色' +
+      '<select class="gs-font-select" data-memorial-ink aria-label="奏疏文字颜色" onchange="_tmApplyMemorialInk(this.value)">' +
+      MEMORIAL_INKS.map(function(p){ return '<option value="' + p.key + '"' + (p.key === current ? ' selected' : '') + '>' + p.label + '</option>'; }).join('') +
+      '</select></label>';
+  }
+  function applyMemorialInk(key, silent) {
+    // Presets only: stored/user strings cannot become arbitrary CSS.
+    var palette = MEMORIAL_INKS.filter(function(p){ return p.key === key; })[0] || MEMORIAL_INKS[0];
+    getStyle('_tmMemorialInkOverride').textContent = ':root{--tm-memorial-ink:' + palette.ink + ';--tm-memorial-ink-soft:' + palette.soft + ';--tm-memorial-ink-muted:' + palette.muted + ';}';
+    writeStore('tm.memorialInk', palette.key);
+    if (!silent) toastMsg('奏疏文字 · ' + palette.label);
   }
 
   window.TMThemeFont = {
@@ -294,6 +316,7 @@
     applyTheme: applyTheme,
     applySize: applyGlobalSize,
     applyScopeSize: applyScopeSize,
+    applyMemorialInk: applyMemorialInk,
     applyBodyFont: applyBodyFont,
     applyTitleFont: applyTitleFont
   };
@@ -301,6 +324,7 @@
   window._tmApplyTheme = applyTheme;
   window._tmApplySize = applyGlobalSize;
   window._tmApplyScopeSize = applyScopeSize;
+  window._tmApplyMemorialInk = applyMemorialInk;
   window._tmApplyBodyFont = applyBodyFont;
   window._tmApplyTitleFont = applyTitleFont;
 

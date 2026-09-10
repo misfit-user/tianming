@@ -5160,6 +5160,7 @@
       "provides": [
         "TMThemeFont",
         "_tmApplyBodyFont",
+        "_tmApplyMemorialInk",
         "_tmApplyScopeSize",
         "_tmApplySize",
         "_tmApplyTheme",

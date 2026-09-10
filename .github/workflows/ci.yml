@@ -98,6 +98,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --edict-polish
       - name: Edict settled text clarity, layout and draft preservation
         run: node scripts/verify-electron-bridge.js --edict-clarity
+      - name: Memorial list continuity, drafts and reading preferences
+        run: node scripts/verify-electron-bridge.js --memorial-reading
       - name: Character actions, office recommendations and existing appointment flow
         run: node scripts/verify-electron-bridge.js --character-actions
       - name: Right rail pending audiences, navigation and completion feedback

@@ -1,0 +1,349 @@
+{
+  "type": "tianming-guoshi-delivery-gates",
+  "baseline": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+  "codeHead": "484637d2a1f621f016b2a28ea66f1cbc76ec35aa",
+  "branch": "codex/fix-guoshi-reasoning-protocol",
+  "testedFiles": {
+    "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+    "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+    "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+    "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+    "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+    "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+    "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09",
+    "main-workshop-transaction.js": "9d1fbd2ccb770ae168db5919b62a634d62ed6165d268d695d4a071b75e1201c0",
+    "scripts/electron/memorial-reading-cases.cjs": "596dbbef41317c2f3642f50724826fc8f8caccb071b8f75086bead6a627daf7a",
+    "web/scripts/smoke-workshop-lock-recovery.js": "17c384c1b13ff0b0cb465c7a8bb7157b23088015c5c1866c16cff1375885c854"
+  },
+  "fullSuite": {
+    "report": "web/dev-tools/arch-guard/ci-owM5lq/smoke-report.json",
+    "runId": "31ec1a3d-b8cf-4ea7-adb5-a0929444f260",
+    "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+    "complete": true,
+    "summary": {
+      "selected": 937,
+      "pass": 935,
+      "fail": 0,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "uniqueResults": 937,
+    "waivedChecks": 7,
+    "sha256": "16716828a9e3c0a0ef2bb20db5551946c5c129fbee408ae993a34a3775804c69"
+  },
+  "records": [
+    {
+      "label": "delivery-lock-diagnostic",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "exit": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T16:40:16.327Z",
+      "elapsedMs": 26515,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-lock-diagnostic-b199c070-9506-4e24-ade3-b4dbba1e0e53",
+      "stdoutSha256": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+      "stderrSha256": "ba583b5469102f12a869d4a496fb4d2e4f0d4ee5c7a91286122bf672c5483802"
+    },
+    {
+      "label": "delivery-lock-single-stat",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:43:16.085Z",
+      "elapsedMs": 20843,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-lock-single-stat-3158dc92-052c-4f55-ae85-75aa777285f5",
+      "stdoutSha256": "920c5ff35ec2e46697c5c7ee6f988d110de3855afe079a52fd9e5ebacef755a2",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-memorial-visible",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:43:26.926Z",
+      "elapsedMs": 33096,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-memorial-visible-89e8b227-c44a-4138-af2d-e1243b9d15fa",
+      "stdoutSha256": "b69ab95cfaef1b30a19006882a9cbfedcb6eb369129cf121dc8475484fe5f5e2",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-final-electron-bridge",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:46:16.567Z",
+      "elapsedMs": 42737,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-final-electron-bridge-0d248d5d-0c7f-43ce-8bb9-900a8dff212c",
+      "stdoutSha256": "1f4bdb75973d68f5f34e18448951ef68ecdfb1094115de1a823c4fe8526a6ec6",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-lock-recheck",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:46:27.332Z",
+      "elapsedMs": 18618,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-lock-recheck-58f66900-8208-4149-92e2-5c4af20f665f",
+      "stdoutSha256": "6ebeeddf58e558adb77998656494bcec8b5f069e5825487ea95829fd2be7defc",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-related",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "workshop",
+        "--no-retry"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:46:47.189Z",
+      "elapsedMs": 26013,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-related-484d2205-2043-4dc5-a98a-ae54b6777c62",
+      "stdoutSha256": "22d2b887f0a0a160e3a9a3f9c2a8a96c29cef054e69da04f4e8851c6d6fa32be",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-final-electron-guoshi",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:47:00.616Z",
+      "elapsedMs": 38193,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-final-electron-guoshi-ffb41307-eb74-4469-a373-7a009dc8dd6b",
+      "stdoutSha256": "f3aea08857c2808ff6e7e4d2a7cf5ee7859ce4d220cf808448842fcbc9f10131",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-arch",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:47:14.361Z",
+      "elapsedMs": 111919,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-arch-3e54363a-c7fe-4e86-b8b0-825365764530",
+      "stdoutSha256": "03f66c6c3f9f2da00ae7e502ed2cefaa9caaea0ddc240ce4fda1e35fc47f5806",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-final-electron-memorial",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:47:40.155Z",
+      "elapsedMs": 25145,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-final-electron-memorial-5c64418a-e651-4bda-86de-057446b5c632",
+      "stdoutSha256": "67730b2dc106fae10de743d8445aa2205434059e36a93e3b640ca7d31d48cafd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-memorial-repeat",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:48:06.771Z",
+      "elapsedMs": 23083,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-memorial-repeat-74ec993d-d16b-4ad3-86f6-83b1d46a9f6d",
+      "stdoutSha256": "36d5083d4ec885fbc473d445c5685c293ad15e39b97d0265a686109c04a055a0",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-official-sync",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:07.421Z",
+      "elapsedMs": 3666,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-official-sync-336d0a3a-52c2-4497-ba2a-5fe62331d04c",
+      "stdoutSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-parity",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:12.336Z",
+      "elapsedMs": 4332,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-parity-494d5cc3-7496-4780-b253-8e8cacd5b896",
+      "stdoutSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-release-contract",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:17.750Z",
+      "elapsedMs": 3971,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-release-contract-f3b0f32f-681a-44a9-a3f8-22d473e48397",
+      "stdoutSha256": "49caa706c3c48820901c9879bfab81c81bdcf602c44619f1f136f6826db45c54",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-hot-check",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:22.889Z",
+      "elapsedMs": 1987,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-hot-check-b2343fc2-3ddc-4a3f-9568-b30d7a0af019",
+      "stdoutSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-hot-gates",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:26.007Z",
+      "elapsedMs": 5446,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-hot-gates-5a09a30d-6731-48df-a94e-b93abc5d0307",
+      "stdoutSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "delivery-audit",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:32.499Z",
+      "elapsedMs": 10502,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-audit-c0492109-d85e-4f57-a97c-9c141c3f7634",
+      "stdoutSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "stderrSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7"
+    },
+    {
+      "label": "delivery-full-smokes",
+      "head": "4ef5bd52e96ea236acc94cad519e5fd64fc16af8",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "exit": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T16:49:56.968Z",
+      "elapsedMs": 130818,
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/delivery-full-smokes-46eabb3a-6b59-465d-92c6-7e6f7aa1e622",
+      "stdoutSha256": "50a232ed464ce9636813a3ca2e46bb06413e202babecb899ac8a25ef5e86da74",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "limitations": [
+    "Controlled model responses only; exact player relay not provided.",
+    "Local tests here; new remote CI must validate actual PR head/merge preview.",
+    "Pages-only deployment; main-process change requires a future installer for installed clients."
+  ]
+}

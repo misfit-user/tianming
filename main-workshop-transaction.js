@@ -13,7 +13,10 @@ function createWorkshopTransactions(d) {
   function safe(target) {
     const full = path.resolve(target);
     for (let cursor = full; ; cursor = path.dirname(cursor)) {
-      if (fs.existsSync(cursor) && fs.lstatSync(cursor).isSymbolicLink()) throw new Error('workshop-symlink-rejected');
+      // Inspect once, without an existsSync+stat race/double filesystem walk.
+      // Only ENOENT means absent; access failures and broken symlinks stay closed.
+      try { if (fs.lstatSync(cursor).isSymbolicLink()) throw new Error('workshop-symlink-rejected'); }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
       if (cursor === path.dirname(cursor)) break;
     }
     return full;

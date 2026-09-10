@@ -80,8 +80,13 @@ module.exports = async function({ win, check }) {
     fs.writeFileSync(path.join(out,'default-1600.png'),(await win.webContents.capturePage()).toPNG());
   });
   await verify('existing settings render a functional bounded memorial text-color selector', async () => {
+    // Exercise visible text, and wait for its exact style within the existing
+    // UI deadline; two animation frames alone do not prove style settlement.
+    await js(`document.querySelector('.zou-yuan .ben-text').scrollIntoView({block:'center'})`);
     const value=await js(`(()=>{const d=document.createElement('div');d.id='mr-settings';d.innerHTML=TMThemeFont.renderControls();document.body.appendChild(d);const s=d.querySelector('[data-memorial-ink]');if(!s)return null;s.value='indigo';s.dispatchEvent(new Event('change',{bubbles:true}));return{options:[...s.options].map(o=>o.value),value:s.value,color:getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color,saved:localStorage.getItem('tm.memorialInk')}})()`);
-    await frame();const painted=await js(`getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color`);observations.push({inkImmediate:value&&value.color,inkPainted:painted});
+    await frame();const firstPaint=await js(`(()=>{const e=document.querySelector('.zou-yuan .ben-text');return{color:getComputedStyle(e).color,rect:e.getBoundingClientRect().toJSON(),rootInk:getComputedStyle(document.documentElement).getPropertyValue('--tm-memorial-ink'),visible:document.visibilityState}})()`);
+    await wait(`getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color==='rgb(38, 62, 80)'`);
+    const painted=await js(`getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color`);observations.push({inkImmediate:value&&value.color,inkFirstPaint:firstPaint,inkPainted:painted});
     assert(value);assert.deepEqual(value.options,['ink','black','indigo']);assert.equal(value.saved,'indigo');assert.equal(painted,'rgb(38, 62, 80)');
     await js(`document.getElementById('mr-settings')?.remove()`);
   });

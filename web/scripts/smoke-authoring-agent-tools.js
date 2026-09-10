@@ -386,6 +386,7 @@ function ok(cond, msg) {
     console.log('— S4: 旧编辑器 adapter —');
     let renderAllCalls = 0, saveScriptCalls = 0;
     const fakeG = {
+      TM: { legacyEditorDocument: { id: 'legacy-test-document' } },
       scriptData: { name: '原', factions: [{ name: '明' }], _phase6: 'keep' },
       renderAll: () => { renderAllCalls++; },
       saveScript: () => { saveScriptCalls++; }
@@ -410,8 +411,14 @@ function ok(cond, msg) {
     const resetAdapter = AA.makeResetEditorAdapter(fakeReset);
     ok(resetAdapter.isAvailable(), '新 adapter 在 RESET_APP 存在时可用');
     ok(resetAdapter.getScenario().name === '原新', '新 adapter 取 state.scenario');
+    let missingProtocolRejected = false;
+    try { resetAdapter.commit({ name: '不能走导入覆盖' }); } catch (e) { missingProtocolRejected = /安全案卷编辑协议/.test(e.message); }
+    ok(missingProtocolRejected && applied === null, '旧宿主缺少编辑协议时拒绝，不回退导入覆盖');
+    const editLease = { document: { id: 'test-document' }, revision: 0 };
+    fakeReset.TM_SCENARIO_EDITOR_RESET_APP.captureDocumentLease = () => editLease;
+    fakeReset.TM_SCENARIO_EDITOR_RESET_APP.commitScenarioEdit = (parsed, label, lease) => { applied = { parsed, label, lease }; return { ok: true }; };
     resetAdapter.commit({ name: '新剧本' });
-    ok(applied && applied.parsed.name === '新剧本' && /AI/.test(applied.label), 'commit 调 applyImportedScenario(draft,label)');
+    ok(applied && applied.parsed.name === '新剧本' && /国师/.test(applied.label) && applied.lease === editLease, 'commit 调独立 commitScenarioEdit 并传递实际租约');
 
     console.log('— S4: detectAdapter —');
     ok(AA.detectAdapter(fakeReset).id === 'scenario-editor-reset', 'detect 优先新编辑器');

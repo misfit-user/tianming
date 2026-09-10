@@ -14,6 +14,14 @@
 //       showToast/toggleEditorPreview/updateEditorPreview
 // ============================================================
 
+  // 旧编辑器载入时就地合并 scriptData，引用不变；为国师提供独立加载身份。
+  var _legacyDocumentPrefix = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2), _legacyDocumentSequence = 0;
+  function _beginLegacyEditorDocument() {
+    window.TM = window.TM || {};
+    window.TM.legacyEditorDocument = { id: _legacyDocumentPrefix + '-' + (++_legacyDocumentSequence) };
+  }
+  _beginLegacyEditorDocument();
+
   function openFullGenModal() {
     document.getElementById(
       'fullGenModal'
@@ -1236,6 +1244,7 @@
 
   // 将加载的数据合并到scriptData并刷新UI
   function _mergeAndRenderScriptData(d) {
+    _beginLegacyEditorDocument();
     if (typeof SchemaAdapter !== 'undefined' && d && (Array.isArray(d.events) || Array.isArray(d.relations) || Array.isArray(d.factionRelations) || Array.isArray(d.variables) || (SchemaAdapter.needsMilitaryMigration && SchemaAdapter.needsMilitaryMigration(d)))) {
       try {
         var _ad = SchemaAdapter.importScenario(d);

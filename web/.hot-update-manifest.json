@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-09T18:08:48.576Z",
+  "generatedAt": "2026-09-10T05:25:41.360Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2026,13 +2026,13 @@
     },
     {
       "path": "editor-authoring-agent-ui.js",
-      "sha256": "289ba1798611103a6c0bcd7640686c2e6386857973d5b1bbe3088275a211ebac",
-      "size": 204308
+      "sha256": "5ca35eb05e34bbc23ae762cad521e977ab2580674555cf3fc498a68121dfcc48",
+      "size": 210176
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "761784e028cdf9dc527b7a113c334a29d929f6eda99a629352e4f1a2875fdd67",
-      "size": 277915
+      "sha256": "ebf4a794f7f6be0cd264d8d3406f8c9d1b74e9933c2696c371a2d14ffac4011c",
+      "size": 280381
     },
     {
       "path": "editor-core.js",
@@ -2096,8 +2096,8 @@
     },
     {
       "path": "editor-fullgen.js",
-      "sha256": "d3fdcbe840524e2ef49d0fe02d6bd55d31e6506b2787a8b78807e019d09204cf",
-      "size": 149691
+      "sha256": "6d6e25d084b3f890aa65a13dcf334db975379adbad7d19022324507788f36438",
+      "size": 150171
     },
     {
       "path": "editor-game-systems.js",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "875786a2e83fc62d12f9bdddb96139c493d5653328310aadd2cc58ed3c01d5ff",
-      "size": 184672
+      "sha256": "5f0785f3f89f3c4edd80b7c497d0baaf028ab0d237bdacf11975207975e13c79",
+      "size": 184703
     },
     {
       "path": "editor.js",
@@ -3236,8 +3236,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-app.js",
-      "sha256": "4ec0ece674adf33354e1b2659591b4ec621a5cb8b3787099d9b08582f401d3dc",
-      "size": 1395140
+      "sha256": "c9a4f0bdd9c92def82d39403d009bc77d6b41ea7c3058f5e0a7d30282354f718",
+      "size": 1397687
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
@@ -3246,8 +3246,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "caf08a638db4f594611b7418631e8e7cba8031f5014ab671b1c2f777b11bfff9",
-      "size": 32310
+      "sha256": "ad660d2aee073cc9ed76e97e2011d90f1ae950c61c9f3cf3edc408790ad7aefa",
+      "size": 32339
     },
     {
       "path": "preview/scenario-editor-reset-style.css",

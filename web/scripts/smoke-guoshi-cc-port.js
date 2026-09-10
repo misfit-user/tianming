@@ -479,6 +479,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   });
   var permRound = 0;
   var permResult = await AA.runAuthoringLoop(permDraft, '只能改人物，尝试越权工具', {
+    toolPacks: ['bulk', 'map', 'media'], // 先授权工具，再验证原有 allowedCollections 边界。
     caller: function () {
       permRound++;
       if (permRound === 1) return Promise.resolve({ text: '', toolCalls: [
@@ -550,8 +551,8 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   ok((await ad9.openFile('proj:nope')) === false, 'H9 案卷不存在→false(UI 降级只读回看不误绑)');
   app9.state.currentProjectId = null;
   ok(ad9.getFileKey() === 'name:乙剧本', 'H9 未入库剧本弱键 name:<剧本名>');
-  var adL9 = AA.makeOldEditorAdapter({ scriptData: { name: '丙' }, saveScript: function () {} });
-  ok(adL9.getFileKey() === 'file:丙' && (await adL9.openFile('file:丙')) === true && (await adL9.openFile('file:丁')) === false, 'H9 旧编辑器单剧本·仅同键命中');
+  var adL9 = AA.makeOldEditorAdapter({ TM: { legacyEditorDocument: { id: 'current-load' } }, scriptData: { name: '丙' }, saveScript: function () {} });
+  ok(adL9.getFileKey() === 'legacy:current-load' && (await adL9.openFile(adL9.getFileKey())) === true && (await adL9.openFile('file:丙')) === false && (await adL9.openFile('legacy:other-load')) === false, 'H9 旧编辑器仅同加载键命中·同名旧弱键不证明身份');
   var uiSrc9 = require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-icons.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-render.js'), 'utf8');
   ok(uiSrc9.indexOf("'tm_aa_sessions'") >= 0 && uiSrc9.indexOf("'tm_aa_sessbody_'") >= 0 && uiSrc9.indexOf("'tm_aa_sess_active'") >= 0
     && 'tm_aa_sess_active'.indexOf('tm_aa_sessbody_') !== 0, 'H9 UI:索引/正文/指针三键分立(指针不带正文前缀·evict 不误清)');

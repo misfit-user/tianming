@@ -2984,6 +2984,16 @@
     // 虚构档去史实锚定、点出 world/worldSettings 容器、校验豁免「五常」。非 'fictional' 一律归史实。
     var worldKind = (opts.worldKind || (draft && draft.worldKind) || 'historical') === 'fictional' ? 'fictional' : 'historical';
     tools = _filterToolsByPacks(tools, userRequest, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    // 工具清单也是本次执行授权，不信任模型会自觉遵守只读/工具包边界。
+    var executableTools = Object.create(null), readOnlyRun = planOnly || reviewOnly || qaOnly || explainOnly;
+    tools.forEach(function(t) { if (t && t.name) executableTools[t.name] = true; });
+    function toolExecutionDenied(name) {
+      if (!Object.prototype.hasOwnProperty.call(executableTools, name)) return '本次模式未授权工具 ' + name + '，请使用本次提供的工具。';
+      var spec = AUTHORING_TOOL_REGISTRY && AUTHORING_TOOL_REGISTRY.get ? AUTHORING_TOOL_REGISTRY.get(name) : null;
+      if (!spec) spec = AUTHORING_TOOL_SPECS.filter(function(s) { return s.name === name; })[0];
+      if (readOnlyRun && spec && spec.effect !== 'read' && spec.effect !== 'control') return '只读模式禁止 ' + spec.effect + ' 操作：' + name;
+      return null;
+    }
     var system = explainOnly ? _buildExplainSystemPrompt(conventions) : (qaOnly ? _buildQaSystemPrompt(conventions) : (reviewOnly ? _buildReviewSystemPrompt(conventions, opts.reviewFocus, worldKind) : (planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions, worldKind, opts.microPlanConfirm !== false))));   // 刀③D1·微计划规则默认注入(opts.microPlanConfirm=false 关)
     var surfaces = _getFieldSurfaces(opts);   // 刀A · 规格（游戏运行时要什么）
     var editorContext = opts.editorContext || '';   // 上下文感知：编辑器当前焦点（模块/集合/选中实体）
@@ -3173,6 +3183,8 @@
             if (_ci >= calls.length || finishAccepted) return Promise.resolve();
             var c = calls[_ci++];
             return Promise.resolve().then(function () {
+              var modeDeny = toolExecutionDenied(c.name);
+              if (modeDeny) return { ok: false, errorCode: 'tool-not-authorized', reason: modeDeny };
               c._stateBefore = _toolStateHash(draft, c.name, c.input);
               if (c.name === 'finish') {
                 // 刀G9 · 有未处理的用户插话 → 不许收尾(新指示可能改变需求·队列随轮末注入·处理完自然放行)
@@ -3690,17 +3702,22 @@
   function makeOldEditorAdapter(g) {
     g = g || global;
     // S5 · 文件身份（CC session↔cwd 对照）：旧编辑器一页一剧本·无库可切，openFile 仅同键命中。
-    function _fileKey() { try { var sc = g.scriptData; return 'file:' + String((sc && (sc.id || sc.name)) || 'default'); } catch (e) { return 'file:default'; } }
+    function _fileKey() { var doc = g.TM && g.TM.legacyEditorDocument; return doc ? ('legacy:' + doc.id) : 'legacy:unsupported'; }
     return {
       id: 'legacy-editor',
       label: '剧本编辑器',
       isAvailable: function() { return typeof g.scriptData !== 'undefined' && g.scriptData && typeof g.saveScript === 'function'; },
       getScenario: function() { return g.scriptData; },
+      captureLease: function() { return { scenario: g.scriptData, document: g.TM && g.TM.legacyEditorDocument }; },
+      isLeaseCurrent: function(lease) { return !!lease && !!lease.document && lease.document === (g.TM && g.TM.legacyEditorDocument) && lease.scenario === g.scriptData; },
       getFileKey: _fileKey,
       getFileLabel: function() { try { var sc = g.scriptData; return String((sc && sc.name) || '当前剧本'); } catch (e) { return '当前剧本'; } },
-      openFile: function(key) { return Promise.resolve(String(key || '') === _fileKey()); },
+      openFile: function(key) { return Promise.resolve(!!(g.TM && g.TM.legacyEditorDocument) && String(key || '') === _fileKey()); },
       getContext: function() { return ''; },   // 旧编辑器 state 结构不同·暂不提供焦点上下文
-      commit: function(draft) {
+      commit: function(draft, lease) {
+        var doc = g.TM && g.TM.legacyEditorDocument;
+        if (!doc) throw new Error('旧编辑器缺少安全加载身份，请刷新页面后重试');
+        if (lease && (lease.scenario !== g.scriptData || lease.document !== doc)) { var stale = new Error('案卷已变化，未应用国师修改'); stale.code = 'editor-document-changed'; throw stale; }
         var sd = g.scriptData;
         // 就地替换（保留引用·所有闭包仍指向它）；draft 是完整深拷贝·不会洗字段
         Object.keys(sd).forEach(function(k) { delete sd[k]; });
@@ -3717,13 +3734,14 @@
     g = g || global;
     function app() { return g.TM_SCENARIO_EDITOR_RESET_APP; }
     // S5 · 文件身份（CC session↔cwd 对照）：入库案卷用 proj:<案卷id>（改名不漂移·可按键重开）；
-    //   未入库/官方直载的用 name:<剧本名>（弱键·只有恰好还开着才命中）。
+    //   未入库/官方直载用当前加载实例键；历史 name: 弱键只能回看，不能因同名自动续接。
     function _fileKey() {
       try {
         var a = app(), st = a && a.state;
         if (st && st.currentProjectId) return 'proj:' + String(st.currentProjectId);
         var sc = st && st.scenario;
-        return 'name:' + String((sc && sc.name) || '未命名剧本');
+        var lease = a && typeof a.captureDocumentLease === 'function' ? a.captureDocumentLease() : null;
+        return lease ? ('draft:' + lease.document.id) : ('name:' + String((sc && sc.name) || '未命名剧本'));
       } catch (e) { return 'name:未命名剧本'; }
     }
     return {
@@ -3731,6 +3749,8 @@
       label: '剧本编辑器（新）',
       isAvailable: function() { var a = app(); return !!(a && a.state && typeof a.applyImportedScenario === 'function'); },
       getScenario: function() { return app().state.scenario; },
+      captureLease: function() { var a = app(); return a && typeof a.captureDocumentLease === 'function' ? a.captureDocumentLease() : null; },
+      isLeaseCurrent: function(lease, unchanged) { var a = app(); return !!(a && typeof a.isDocumentLeaseCurrent === 'function' && a.isDocumentLeaseCurrent(lease, unchanged)); },
       getFileKey: _fileKey,
       getFileLabel: function() { try { var sc = app().state.scenario; return String((sc && sc.name) || '未命名剧本'); } catch (e) { return '未命名剧本'; } },
       // 会话切剧本（CC resume 切项目对照）：proj: 键走案卷库真载入；载不到（已删/库不可用）返回 false 交 UI 降级只读。
@@ -3770,9 +3790,12 @@
           return parts.join('，');
         } catch (e) { return ''; }
       },
-      commit: function(draft) {
-        app().applyImportedScenario(draft, 'AI 助手生成', { preserveFocus: true });
-        return { ok: true };
+      commit: function(draft, lease) {
+        var a = app();
+        if (!a || typeof a.commitScenarioEdit !== 'function' || typeof a.captureDocumentLease !== 'function') {
+          throw new Error('编辑器缺少安全案卷编辑协议，请刷新页面后重试（未回退到导入覆盖）');
+        }
+        return a.commitScenarioEdit(draft, '应用国师修改', lease || a.captureDocumentLease());
       }
     };
   }

@@ -1849,6 +1849,22 @@
     state.history = state.history.slice(0, 80);
   }
 
+  // 每次打开/导入/新建案卷更换身份；普通编辑、保存、撤销不把同案卷误判成换局。
+  // 不持久化此租约，也不以剧本名/id（可复制、可同名）证明当前加载实例。
+  var editorDocumentPrefix = 'document-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2),
+    editorDocumentSequence = 0, editorDocument = { id: editorDocumentPrefix + '-0' }, editorRevision = 0, editorOpenSequence = 0;
+  function beginEditorDocument() {
+    editorOpenSequence++;
+    editorDocument = { id: editorDocumentPrefix + '-' + (++editorDocumentSequence) };
+    editorRevision = 0;
+  }
+  function captureDocumentLease() {
+    return { document: editorDocument, revision: editorRevision, scenario: state.scenario };
+  }
+  function isDocumentLeaseCurrent(lease, unchanged) {
+    return !!lease && lease.document === editorDocument && (!unchanged ||
+      (lease.revision === editorRevision && lease.scenario === state.scenario));
+  }
   function resetEditTimeline() {
     state.undoStack = [];
     state.redoStack = [];
@@ -1860,6 +1876,7 @@
     var after = clone(state.scenario || {});
     var changed = stableString(before) !== stableString(after);
     if (changed) {
+      editorRevision++;
       state.undoStack.unshift({
         id: uniqueId('edit'),
         type: type,
@@ -2050,6 +2067,7 @@
 
   function launchScenarioWizard(spec) {
     var skeleton = buildWizardScenario(spec || {});
+    beginEditorDocument();
     state.scenario = skeleton;
     state.original = clone(skeleton);
     state.dirty = true;
@@ -2377,6 +2395,7 @@
 
   function startNewScenario(templateId) {
     var template = findStarterTemplate(templateId);
+    beginEditorDocument();
     state.scenario = buildStarterScenario(template.id);
     state.original = {};
     state.dirty = true;
@@ -2405,6 +2424,7 @@
   }
 
   function loadScenario(source) {
+    beginEditorDocument();
     if (source && typeof source === 'object') {
       state.scenario = clone(source);
       state.original = clone(source);
@@ -10558,6 +10578,7 @@
   }
 
   function restoreEditSnapshot(entry, scenario, label) {
+    editorRevision++;
     state.scenario = clone(scenario || {});
     state.historyCheckpoint = clone(state.scenario || {});
     state.selectedField = entry.selectedField && Object.prototype.hasOwnProperty.call(state.scenario || {}, entry.selectedField)
@@ -20849,15 +20870,20 @@
   }
 
   async function saveProjectSnapshot(label, options) {
+    var lease = captureDocumentLease();
     var snapshot = buildProjectSnapshot(label, options);
-    var index = state.projectLibrary.findIndex(function(item) { return item.id === snapshot.id; });
     var durable = await putProjectBody(snapshot);
+    var index = state.projectLibrary.findIndex(function(item) { return item.id === snapshot.id; });
     var meta = compactProjectMeta(snapshot);
     if (index >= 0) state.projectLibrary[index] = meta;
     else state.projectLibrary.unshift(meta);
     state.projectLibrary = state.projectLibrary.slice(0, 24);
+    writeProjectLibrary();
+    // 已提交的旧案卷快照留在库中，但迟到保存不能给新案卷改名、清 dirty 或换原始基线。
+    if (!isDocumentLeaseCurrent(lease, true)) return clone(snapshot);
+    if (options && options.newCopy) beginEditorDocument();
     state.currentProjectId = snapshot.id;
-    state.original = clone(state.scenario);
+    state.original = clone(snapshot.scenario);
     state.dirty = false;
     state.historyCheckpoint = clone(state.scenario || {});
     writeProjectLibrary();
@@ -20871,12 +20897,15 @@
   }
 
   async function loadProjectSnapshot(id) {
+    var openSequence = ++editorOpenSequence;
     var meta = state.projectLibrary.find(function(item) { return item.id === id; });
     var snapshot = await getProjectBody(id);
+    if (openSequence !== editorOpenSequence) return null; // 后来的打开/导入意图优先，旧磁盘响应不换案卷。
     if (!snapshot) {
       setStatus('未找到案卷快照：' + id, 'error');
       return null;
     }
+    beginEditorDocument();
     state.scenario = clone(snapshot.scenario || {});
     state.original = clone(snapshot.scenario || {});
     state.drafts = clone(snapshot.drafts || []);
@@ -21023,8 +21052,26 @@
     if (!state.modules.length) state.modules = [{ id: 'scenarioOpening', title: '剧本总览', topLevelKeys: Object.keys(state.scenario || {}), topLevelCount: Object.keys(state.scenario || {}).length }];
   }
 
+  function commitScenarioEdit(parsed, label, lease) {
+    if (!isDocumentLeaseCurrent(lease, true)) {
+      var stale = new Error('案卷或编辑状态已变化，未应用国师修改');
+      stale.code = 'editor-document-changed';
+      throw stale;
+    }
+    // 与“导入新案卷”分开：保留项目ID、原始对比基线、手工草稿和撤销历史。
+    var next = clone(parsed);
+    if (!next || typeof next !== 'object' || Array.isArray(next)) throw new Error('国师草稿必须是剧本对象');
+    state.scenario = next;
+    absorbOrphanScenarioKeys();
+    ensureModulesPopulated();
+    recordHistory('国师编辑', label || '应用修改');
+    renderAll();
+    return { ok: true };
+  }
+
   function applyImportedScenario(parsed, label, opts) {
     opts = opts || {};
+    beginEditorDocument();
     var prevMod = state.selectedModuleId, prevField = state.selectedField;
     var oldSc = state.scenario || {};
     var changed = [];
@@ -21095,6 +21142,7 @@
   }
 
   function resetToOfficial() {
+    beginEditorDocument();
     state.scenario = clone(DATA.scenario || {});
     state.original = clone(DATA.scenario || {});
     state.dirty = false;
@@ -22760,6 +22808,9 @@
     validateImportedScenario: validateImportedScenario,
     forceImportScenario: forceImportScenario,
     applyImportedScenario: applyImportedScenario,
+    captureDocumentLease: captureDocumentLease,
+    isDocumentLeaseCurrent: isDocumentLeaseCurrent,
+    commitScenarioEdit: commitScenarioEdit,
     setRailCollapsed: setRailCollapsed,
     toggleRailCollapsed: toggleRailCollapsed,
     isRailCollapsed: isRailCollapsed,

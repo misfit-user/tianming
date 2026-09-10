@@ -38,7 +38,7 @@ module.exports = async function({ win, root, check }) {
   async function send(text) {
     await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;ui.els.req.value=${JSON.stringify(text)};ui.els.req.dispatchEvent(new Event('input',{bubbles:true}));ui.els.go.click();})()`);
   }
-  await send('请把剧本名称和国库设定修改为测试值，并完成核验。');
+  await send('请批量把剧本名称和国库设定修改为测试值，并完成核验。');
   await until(`!TM_AuthoringAgentUI._ui.running && (!!TM_AuthoringAgentUI._ui._lastDiffs || !!document.querySelector('.tm-aa-errcard'))`);
   await check('authoring-stream-round39-finish-shows-real-diff-and-apply-button', async () => {
     const r = await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;return {round:__aaStream.round,error:!!document.querySelector('.tm-aa-errcard'),status:ui.els.status.textContent,diffs:ui._lastDiffs&&ui._lastDiffs.map(d=>d.path),applyVisible:ui.els.actions.style.display!=='none',hasPairedToolResults:__aaStream.bodies.slice(1).every(b=>b.hasToolResult),source:JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario),original:__aaStream.original};})()`);
@@ -75,7 +75,7 @@ module.exports = async function({ win, root, check }) {
     };
     if(!document.getElementById('tm-aa-panel')||!document.getElementById('tm-aa-panel').classList.contains('open'))document.getElementById('tm-aa-fab').click();TM_AuthoringAgentUI.permMode('review');
   })()`);
-  await send('请将国库存银改成450万并核验。'); await until(`!TM_AuthoringAgentUI._ui.running && !!document.querySelector('.tm-aa-errcard')`);
+  await send('请批量修改剧本名称并将国库存银改成450万，再核验。'); await until(`!TM_AuthoringAgentUI._ui.running && !!document.querySelector('.tm-aa-errcard')`);
   await check('authoring-stream-bad-tail-rejects-all-tools-and-shows-safe-retry', async () => {
     const r = await js(`({count:__aaStream.round,message:document.querySelector('.tm-aa-errcard').textContent,source:JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario),before:__aaStream.before,draft:TM_AuthoringAgentUI._ui.draft.fiscalConfig.treasury})`);
     assert.equal(r.count, 1); assert.equal(r.source, r.before); assert.equal(r.draft, 4000000); assert(r.message.includes('重试')); assert(!r.message.includes('PRIVATE-RESPONSE'));
@@ -88,7 +88,7 @@ module.exports = async function({ win, root, check }) {
     assert.equal(r.count, 2); assert.equal(r.money, 4500000); assert(r.status.includes('已应用到剧本'));
   });
   await js(`__aaStream.mode='cancel';__aaStream.round=0;__aaStream.before=JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario)`);
-  await send('请继续修改，但本次将停止。'); await until(`__aaStream.round===1 && TM_AuthoringAgentUI._ui.running`); await js(`TM_AuthoringAgentUI._ui.els.go.click()`); await until(`!TM_AuthoringAgentUI._ui.running`);
+  await send('请继续批量修改，但本次将停止。'); await until(`__aaStream.round===1 && TM_AuthoringAgentUI._ui.running`); await js(`TM_AuthoringAgentUI._ui.els.go.click()`); await until(`!TM_AuthoringAgentUI._ui.running`);
   await check('authoring-stream-real-stop-cancels-body-and-does-not-apply-prefix', async () => {
     assert.equal(await js(`__aaStream.cancelled===1 && __aaStream.round===1 && TM_AuthoringAgentUI._ui.draft.fiscalConfig.treasury===4500000 && JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario)===__aaStream.before`), true);
   });

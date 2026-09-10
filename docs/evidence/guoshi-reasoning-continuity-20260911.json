@@ -1,0 +1,906 @@
+{
+  "type": "tianming-guoshi-reasoning-continuity-evidence",
+  "baseline": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+  "codeCommit": "c30a64233bf336dc512a7a9dfb05904895c468b3",
+  "branch": "codex/fix-guoshi-reasoning-protocol",
+  "scope": "Local source and tests only; no actual relay/model response supplied; no remote writes or deployment.",
+  "sourceHashes": {
+    "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+    "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+    "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+    "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+    "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+    "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+    "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+  },
+  "testedSourceMatches": true,
+  "fullSuite": {
+    "runId": "f02ad1d1-2671-40e6-b1d9-eaf67847006c",
+    "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+    "complete": true,
+    "uniqueResults": 937,
+    "expected": 937,
+    "summary": {
+      "selected": 937,
+      "pass": 934,
+      "fail": 1,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "gateExit": 1,
+    "report": "web/dev-tools/arch-guard/ci-BUvZwm/smoke-report.json",
+    "reportSha256": "e6840baeefccf2e76b156c335cb2d2768f04452a2005d9d74fccfe0209489d11",
+    "failures": [
+      {
+        "name": "smoke-workshop-lock-recovery.js",
+        "exit": 1,
+        "ms": 26323
+      }
+    ],
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ]
+  },
+  "remote": {
+    "candidateTested": false,
+    "postmergeBaseRun": "https://github.com/misfit-user/tianming/actions/runs/34498575290",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": {
+      "guards": "success",
+      "mobile-release-contracts": "success",
+      "electron-bridge": "failure"
+    },
+    "failure": "memorial-reading color selector assertion (18 PASS/1 FAIL); not a candidate Guoshi result"
+  },
+  "records": [
+    {
+      "label": "reasoning-baseline",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-reasoning-continuity.js",
+        "--source-ref",
+        "ac7bba497e52116681693b8a763ac88680ddf5e8"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:15:22.533Z",
+      "exitCode": 1,
+      "signal": null,
+      "elapsedMs": 1056,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-baseline-9b6b3375-efb1-48b9-b4a9-aefe5fe3353b",
+      "logHashes": {
+        "stdout": "1301f16d84153384c4c55fe30923d24bec5fa1370f7494bc5eebab629a407b47",
+        "stderr": "655e0f4e5ed23b7254ba220766815910aba36b83fe12dccae822e16bba537f40"
+      },
+      "dirtyFileHashes": {
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      },
+      "summary": {
+        "pass": 2,
+        "fail": 9,
+        "skip": 0,
+        "waived": 0,
+        "sourceRef": "ac7bba497e52116681693b8a763ac88680ddf5e8"
+      }
+    },
+    {
+      "label": "reasoning-initial",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-reasoning-continuity.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:16:58.458Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 370,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-initial-f3517a26-7bef-40ba-8e46-6cfead5c8089",
+      "logHashes": {
+        "stdout": "5dbeed86831f530f2e3738cfd9468aaef0588f094cefcb93fc84380ba4fad770",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "web/editor-authoring-agent-provider.js": "1257f4b00027dc86ceda0acb4c9dd3eeca07b6f89de8c37881b612dac02458c7",
+        "web/editor-authoring-agent.js": "34b758bb9d23e60920e17ced9af0ce0b1eb5b35e914c63b88d33d17905768773",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      },
+      "summary": {
+        "pass": 11,
+        "fail": 0,
+        "skip": 0,
+        "waived": 0,
+        "sourceRef": "worktree"
+      }
+    },
+    {
+      "label": "reasoning-electron",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:18:07.577Z",
+      "exitCode": 1,
+      "signal": null,
+      "elapsedMs": 33807,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-electron-fd31cbe4-bcee-4ca7-ba9c-d761d54bc32a",
+      "logHashes": {
+        "stdout": "086a3efcd0a5efc169678a676ca5543956e9dd09eefc7c088d23351d24bb69af",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "7ea8b602d9ac6444a8dec3435d32e6508714baaa3169ee84a965ee0616c761d4",
+        "web/editor-authoring-agent-provider.js": "1257f4b00027dc86ceda0acb4c9dd3eeca07b6f89de8c37881b612dac02458c7",
+        "web/editor-authoring-agent.js": "34b758bb9d23e60920e17ced9af0ce0b1eb5b35e914c63b88d33d17905768773",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      },
+      "electron": {
+        "mode": "authoring-continuation",
+        "ok": false,
+        "passedChecks": 12,
+        "failures": [
+          "Error: no-tool response stops within budget and preserves staged work without applying it\nAssertionError [ERR_ASSERTION]: The input did not match the regular expression /工具.*兼容尝试已用尽/. Input:\n\n'本次改动说明任务未完成：API 返回了文本说明，但没有可执行的工具调用（JSON兼容；结束原因 stop；正文 15 字，思考 0 字）。已停止兼容尝试，任务未完成。已完成的草稿保留，未自动应用；请将上述响应类型与模型名称一并反馈，或检查中转/模型的工具支持后继续，不必重做已完成部分。继续未完成部分从当前剧本重新生成'\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:83:203\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:12:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:80:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:121:51)\nreasoning-json real editor sends preserved thinking context and applies both steps only after approval\nError: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\n    at node:electron/js2c/sandbox_bundle:2:127259\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121504)\n    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45997)\n    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:119481)\nreasoning-sse real editor sends preserved thinking context and applies both steps only after approval\nError: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\n    at node:electron/js2c/sandbox_bundle:2:127259\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121504)\n    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45997)\n    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:119481)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:144:89)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:121:51)"
+        ],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/32cf4cc9-1f3b-417a-bda2-7e34bed2d207/report.json"
+      }
+    },
+    {
+      "label": "reasoning-related",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--no-retry"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:18:18.542Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 8063,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-related-5959cea1-b30d-4a00-b4c5-3dbd1bbb8b95",
+      "logHashes": {
+        "stdout": "fc55f405a7dd68f2ae13858a3e472722bc80fe69ab3b5c42ef318d957f7e4878",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "7ea8b602d9ac6444a8dec3435d32e6508714baaa3169ee84a965ee0616c761d4",
+        "web/editor-authoring-agent-provider.js": "1257f4b00027dc86ceda0acb4c9dd3eeca07b6f89de8c37881b612dac02458c7",
+        "web/editor-authoring-agent.js": "34b758bb9d23e60920e17ced9af0ce0b1eb5b35e914c63b88d33d17905768773",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      }
+    },
+    {
+      "label": "reasoning-electron-corrected",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:19:49.325Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 37137,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-electron-corrected-20e2a9ac-7e17-4605-9f3f-f9546413d3ab",
+      "logHashes": {
+        "stdout": "748b8d72f8765ab691bd4bef270d13636b4eca5b51797ede257ba9174a3b801b",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "1257f4b00027dc86ceda0acb4c9dd3eeca07b6f89de8c37881b612dac02458c7",
+        "web/editor-authoring-agent.js": "26e66e222eccfe8d88f5766ad4965b73d2fa7564da9283f2cbcdcda43bcfc49e",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      },
+      "electron": {
+        "mode": "authoring-continuation",
+        "ok": true,
+        "passedChecks": 15,
+        "failures": [],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/f806bc10-c957-4c8e-83c2-d8c1f18f5c78/report.json"
+      }
+    },
+    {
+      "label": "reasoning-arch",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:19:59.919Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 39688,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-arch-4463d7fe-2a1b-4277-883a-db2bc41b018e",
+      "logHashes": {
+        "stdout": "657193ce71ae20d205418ed9d61587f373b606685b9678d9ed2e555a7dcccc25",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "1257f4b00027dc86ceda0acb4c9dd3eeca07b6f89de8c37881b612dac02458c7",
+        "web/editor-authoring-agent.js": "26e66e222eccfe8d88f5766ad4965b73d2fa7564da9283f2cbcdcda43bcfc49e",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "5d01b99d6f13740fa5253ce6d69fc2686c615c87ad9abcd4d9a08c8ecad06b52"
+      }
+    },
+    {
+      "label": "reasoning-final-baseline",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-reasoning-continuity.js",
+        "--source-ref",
+        "ac7bba497e52116681693b8a763ac88680ddf5e8"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:22:14.133Z",
+      "exitCode": 1,
+      "signal": null,
+      "elapsedMs": 946,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-final-baseline-56223617-c36b-4470-beb3-494b3bf0a21e",
+      "logHashes": {
+        "stdout": "f3f57c36753708dc1c13001eaed356df1978e8ec819151df8811a53ff4e1069e",
+        "stderr": "66d33090371ffb2edd675bdc6e8d1e97fb1193299df128a493d88813cbaf9306"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "summary": {
+        "pass": 3,
+        "fail": 10,
+        "skip": 0,
+        "waived": 0,
+        "sourceRef": "ac7bba497e52116681693b8a763ac88680ddf5e8"
+      }
+    },
+    {
+      "label": "reasoning-final-unit",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-reasoning-continuity.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:22:16.226Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 498,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-final-unit-7673c55a-0d9b-4033-a6b4-24aa2733aad9",
+      "logHashes": {
+        "stdout": "017670ac21892d28e0cfc4a33da67dc98e10e12d152604fc69caff63051116e7",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "summary": {
+        "pass": 13,
+        "fail": 0,
+        "skip": 0,
+        "waived": 0,
+        "sourceRef": "worktree"
+      }
+    },
+    {
+      "label": "reasoning-official-sync",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:22:17.796Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 3258,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-official-sync-0f1172da-a5d6-4809-8601-35176eb36489",
+      "logHashes": {
+        "stdout": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-hot-sync",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:22:48.047Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 70633,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-hot-sync-9319d311-b6b3-4710-93f1-c7f840d43407",
+      "logHashes": {
+        "stdout": "018e1632ba4bfe40f22dc12e0778a7d204900b871e2407b19bc2b9cf52e2d147",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-final-electron",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:22:58.702Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 34301,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-final-electron-92973b7e-2f09-484a-8ecc-aaa3a7ea4492",
+      "logHashes": {
+        "stdout": "29150bb2171decfef1d28a8edc5b452e286fce0aa1543f17d4904a392d22dac0",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "electron": {
+        "mode": "authoring-continuation",
+        "ok": true,
+        "passedChecks": 15,
+        "failures": [],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/9e6e939c-f208-42bb-b54d-6cfae4e3165c/report.json"
+      }
+    },
+    {
+      "label": "reasoning-electron-recovery",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:23:34.271Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 22744,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-electron-recovery-c5111e7e-8962-4964-a0bb-27f62688efbc",
+      "logHashes": {
+        "stdout": "6f12017e824a41e65b1a6835b8f5d8208faea5e7af2e828dc507c2611a9f9120",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "electron": {
+        "mode": "authoring-recovery",
+        "ok": true,
+        "passedChecks": 17,
+        "failures": [],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/44426e4a-c06a-4745-9252-338232520b97/report.json"
+      }
+    },
+    {
+      "label": "reasoning-final-arch",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:23:48.909Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 41487,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-final-arch-6f45b657-54fc-4700-a2cf-6dcaecae4c9a",
+      "logHashes": {
+        "stdout": "898c77b416338bfe5681cb41f6473888bb5039d0f9c376e02c5c8256c55b93cc",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-electron-boundaries",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:23:58.072Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 24022,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-electron-boundaries-34887f43-b860-4d20-bd03-f3a6cc609f0e",
+      "logHashes": {
+        "stdout": "f2d17b1f285946a063301fd661d64a2182553cfb0777fafb89ed7e1258b6e84e",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "electron": {
+        "mode": "authoring-boundaries",
+        "ok": true,
+        "passedChecks": 20,
+        "failures": [],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/8b34073d-f85e-4270-9d66-e274f71a1d52/report.json"
+      }
+    },
+    {
+      "label": "reasoning-electron-stream",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-stream"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:23.163Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 19649,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-electron-stream-12e9d4cc-28bf-4333-af55-21c9f2e16bba",
+      "logHashes": {
+        "stdout": "c15e44b69943f766c1300748d26714fa57415b3b02ef818fecd8ae81aec14cdc",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      },
+      "electron": {
+        "mode": "authoring-stream",
+        "ok": true,
+        "passedChecks": 12,
+        "failures": [],
+        "versions": "33.4.11",
+        "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+        "report": "web/dev-tools/electron-bridge/7f68788f-3a97-4ac2-bad9-a8251fbe76cb/report.json"
+      }
+    },
+    {
+      "label": "reasoning-parity",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:31.539Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 4162,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-parity-f9c61c40-a2f0-411f-8e63-10e2196ee7c4",
+      "logHashes": {
+        "stdout": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-release-contract",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:37.029Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 3302,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-release-contract-837511d1-6980-453c-8504-7c71faaef141",
+      "logHashes": {
+        "stdout": "49caa706c3c48820901c9879bfab81c81bdcf602c44619f1f136f6826db45c54",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-hot-gates",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:41.926Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 6530,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-hot-gates-e2f658c5-5d37-4e74-be7a-6d21f349560b",
+      "logHashes": {
+        "stdout": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-postmerge-observation",
+      "command": [
+        "gh",
+        "run",
+        "view",
+        "34498575290",
+        "--repo",
+        "misfit-user/tianming",
+        "--log-failed"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:46.124Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 3897,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-postmerge-observation-c7252c0a-0664-4086-8b96-f882197b1d12",
+      "logHashes": {
+        "stdout": "53a5161adcbbcf7b616bb9807c7f67d28b6df59c5df35f0ec63c94f9c671fa3c",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-dependency-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:24:49.393Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 6385,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-dependency-audit-9a434950-fd28-4c9e-a79c-5e9416fbe114",
+      "logHashes": {
+        "stdout": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+        "stderr": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-full-smokes",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:25:15.573Z",
+      "exitCode": 1,
+      "signal": null,
+      "elapsedMs": 108782,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-full-smokes-c769abdb-2977-4b56-bb74-bb007c056f54",
+      "logHashes": {
+        "stdout": "0aadc38baf08dd8cdd44b3a49225a07a32d921da122b1d08bafc909df7627401",
+        "stderr": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-hot-check",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:25:26.504Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 1738,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-hot-check-5c23fa4e-2008-42fa-8776-a4d6f544d412",
+      "logHashes": {
+        "stdout": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:25:29.303Z",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 258,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-diff-check-6787eae7-e9ef-440a-b831-adb0206aee89",
+      "logHashes": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dirtyFileHashes": {
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    },
+    {
+      "label": "reasoning-lock-control",
+      "command": [
+        "node",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "head": "ac7bba497e52116681693b8a763ac88680ddf5e8",
+      "workingTree": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? docs/bugfix-guoshi-reasoning-continuity-2026-09-11.md\n?? web/scripts/smoke-authoring-reasoning-continuity.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T16:29:18.138Z",
+      "exitCode": 1,
+      "signal": null,
+      "elapsedMs": 24258,
+      "complete": true,
+      "logDirectory": "web/dev-tools/perf-round1/reasoning-lock-control-bf18058c-8663-48de-bddc-9f814cfe6572",
+      "logHashes": {
+        "stdout": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+        "stderr": "6b5b8b1a02912fa79b20ae861e709835c290b08469c6936b08da3308276b2018"
+      },
+      "dirtyFileHashes": {
+        "docs/bugfix-guoshi-reasoning-continuity-2026-09-11.md": "8c5a6ebe6b9fa54d0b6489b09898e035b2b2689a85d319964eccaa188da9f7f7",
+        "scripts/electron/authoring-continuation-cases.cjs": "a812f324eb2b8db31f72ec6bce47cb0423fc29b0aee01e5cdd1c65ef97d4dd15",
+        "web/.hot-update-manifest.json": "e17d481817a482bef3743f3cb52a84e4d165e0dc1de014de9ba8ad36c506a764",
+        "web/editor-authoring-agent-provider.js": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
+        "web/editor-authoring-agent.js": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
+        "web/editor.html": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
+        "web/preview/scenario-editor-reset-preview.html": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
+        "web/scripts/smoke-authoring-reasoning-continuity.js": "dd71e64da15bd3d45d71a92a04197826508f661eed2eff56c2da04aab0b0ee09"
+      }
+    }
+  ]
+}

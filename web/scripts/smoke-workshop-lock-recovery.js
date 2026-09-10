@@ -4,6 +4,14 @@ const { createWorkshopTransactions } = require('../../main-workshop-transaction'
 function harness(base, fault) {
   const root = path.join(base, 'workshop'), packsRoot = path.join(root, 'packs'), indexFile = path.join(root, 'index.json');
   const io = Object.create(fs);
+  if (fault === 'inspection-denied') {
+    io.existsSync = file => file === root ? false : fs.existsSync(file);
+    io.lstatSync = file => { if (file === root) { const e = new Error('controlled path inspection denied'); e.code = 'EACCES'; throw e; } return fs.lstatSync(file); };
+  }
+  if (fault === 'broken-link') {
+    io.existsSync = file => file === root ? false : fs.existsSync(file);
+    io.lstatSync = file => file === root ? { isSymbolicLink: () => true } : fs.lstatSync(file);
+  }
   let critical = false;
   io.readFileSync = (file, ...rest) => {
     if (fault === 'stress' && file === indexFile && !critical) {
@@ -54,19 +62,31 @@ function harness(base, fault) {
     }
     return JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'));
   };
-  return { root, packsRoot, indexFile, tx: createWorkshopTransactions({ fs: io, path, crypto, root, packsRoot, indexFile,
+  const ioStats = {};
+  if (fault === 'stress') for (const name of ['existsSync', 'lstatSync', 'readdirSync', 'mkdirSync', 'readFileSync', 'openSync', 'fsyncSync', 'linkSync', 'unlinkSync', 'rmSync']) {
+    const fn = io[name];
+    io[name] = (...args) => {
+      const start = performance.now(), row = ioStats[name] || (ioStats[name] = { count: 0, ms: 0 }); row.count++;
+      try { return fn(...args); } finally { row.ms += performance.now() - start; }
+    };
+  }
+  return { root, packsRoot, indexFile, ioStats, tx: createWorkshopTransactions({ fs: io, path, crypto, root, packsRoot, indexFile,
     writeJsonAtomic: atomic, validate, normalizeId: id => /^[a-z-]+$/.test(id) ? id : 'invalid', publicInfo: (p, target) => ({ ...p, path: target, enabled: true }) }) };
 }
 if (process.argv[2] === '--child') {
   const [, , , base, fault] = process.argv;
   const h = harness(base, fault);
   if (fault === 'stress') {
+    const stats = { attempts: 0, commits: 0, busy: 0, io: h.ioStats };
     const deadline = Date.now() + 20000;
-    for (let i = 0; i < 25; i++) {
-      if (Date.now() > deadline) throw new Error('stress admission deadline exceeded');
-      try { h.tx.setEnabled('old-pack', i % 2 === 0); }
-      catch (e) { if (!/in-progress/.test(e.message)) throw e; i--; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2); }
-    }
+    try {
+      for (let i = 0; i < 25; i++) {
+        if (Date.now() > deadline) throw new Error('stress admission deadline exceeded');
+        stats.attempts++;
+        try { h.tx.setEnabled('old-pack', i % 2 === 0); stats.commits++; }
+        catch (e) { if (!/in-progress/.test(e.message)) throw e; stats.busy++; i--; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2); }
+      }
+    } finally { console.error('STRESS_DIAGNOSTIC ' + JSON.stringify(stats)); }
   } else if (fault === 'hold' || fault === 'journal') h.tx.install(path.join(base, 'incoming'), { overwrite: true });
   else h.tx.read();
   process.exit(0);
@@ -93,6 +113,9 @@ function crashed(base, fault) {
     const h = harness(base); assert.equal(h.tx.install(incoming).success, true);
     const indexBytes = fs.readFileSync(h.indexFile), pack = path.join(h.packsRoot, 'old-pack', 'content.txt');
     function intact() { assert.deepEqual(fs.readFileSync(h.indexFile), indexBytes); assert.equal(fs.readFileSync(pack, 'utf8'), 'old-content'); }
+    assert.throws(() => harness(base, 'inspection-denied').tx.read(), error => error.code === 'EACCES'); intact();
+    assert.throws(() => harness(base, 'broken-link').tx.read(), /symlink-rejected/); intact();
+    pass('one-shot ancestor inspection rejects denial and broken links without modifying package/index');
     for (const fault of ['owner', 'ticket', 'private-owner', 'published']) {
       crashed(base, fault); intact();
       assert.ok(fs.readdirSync(path.join(h.root, '.lock-owners')).length > 0, 'interrupted owner evidence exists');
@@ -138,6 +161,7 @@ function crashed(base, fault) {
     } finally { fs.writeFileSync(path.join(base, 'release'), 'go'); assert.equal(await holder.done, 0); }
     const workers = Array.from({ length: 4 }, () => spawn(base, 'stress'));
     const exits = await Promise.all(workers.map(worker => worker.done));
+    workers.forEach(worker => { for (const line of worker.errors.split(/\r?\n/).filter(s => s.startsWith('STRESS_DIAGNOSTIC '))) console.log(line); });
     exits.forEach((code, i) => assert.equal(code, 0, workers[i].errors));
     assert.equal(h.tx.read().packs.length, 1); assert.equal(fs.readFileSync(pack, 'utf8'), 'old-content');
     assert.equal(fs.readdirSync(path.join(h.root, '.lock-owners')).length, 0);

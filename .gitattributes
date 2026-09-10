@@ -74,3 +74,5 @@ web/tm-wendui.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 web/tm-endturn-followup.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 阴谋拓扑统一战役(刀丁2·2026-07-22)触及的历史 CRLF 文件：feudal 数值 scheme 迁独立 GM._feudalSchemes 自管账本·同上契约(检查真行尾空格·不把 CR 误报为 trailing)。
 web/tm-feudal-warfare.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# 国师缓存戳：保留入口历史混合行尾（592 CRLF / 2 LF）；继续检查实际行尾空格。
+web/preview/scenario-editor-reset-preview.html whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -171,7 +171,7 @@
   }
   function _recoveryButtons(container, record) {
     if (!container) return;
-    var actions = document.createElement('div'); actions.className = 'ec-acts';
+    var actions = document.createElement('div'); actions.className = 'ec-acts tm-aa-recovery-actions';
     var retry = document.createElement('button'); retry.type = 'button'; retry.className = 'ec-retry'; retry.textContent = ui._recovery ? '继续未完成部分' : '重试';
     retry.addEventListener('click', function() { _retryLast(record); }); actions.appendChild(retry);
     var restart = document.createElement('button'); restart.type = 'button'; restart.className = 'ec-restart'; restart.textContent = '从当前剧本重新生成';

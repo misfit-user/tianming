@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-10T11:07:43.960Z",
+  "generatedAt": "2026-09-10T14:26:42.926Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2011,13 +2011,13 @@
     },
     {
       "path": "editor-authoring-agent-provider.js",
-      "sha256": "d39bf457fc8d981f9cba6c7082e92d6943de1cf98ca2c2734f29129294dc686a",
-      "size": 36309
+      "sha256": "c0b72c88cce7b7aecd25f1048ee99a32ba0e5df9cc091fff43d520a508fd867e",
+      "size": 38133
     },
     {
       "path": "editor-authoring-agent-ui-icons.js",
-      "sha256": "cd42f72013ee18492a44b5389918114bc632d25775e3ea84ebc55696c41ce020",
-      "size": 51278
+      "sha256": "0bc17472cba02bcf425424b099ac7df3fe8e5b218c4f3a5225e23f2c4b51bb0b",
+      "size": 51977
     },
     {
       "path": "editor-authoring-agent-ui-render.js",
@@ -2026,13 +2026,13 @@
     },
     {
       "path": "editor-authoring-agent-ui.js",
-      "sha256": "9bb7329d55abb750d3d762630b48793f19bd1df7eb4feefdd54e0ab76806bf70",
-      "size": 220341
+      "sha256": "cc2edd6936afbab007a654d86b8b08caee255b91e52484893127f155199adf53",
+      "size": 220364
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "c87ed307ad72c5514dd7f062057c28c9eb07c857fc7eb04224a6000782e62c44",
-      "size": 302093
+      "sha256": "6f55cb6b0342d36e4abb917b7c3d18fe0776d89f2286d6b9b2b7d77eeb5e057e",
+      "size": 303309
     },
     {
       "path": "editor-core.js",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "fdecec887a1f43a6e0b427857a9afadadf48d42536d01cd5a6ce7c580fd27276",
-      "size": 184667
+      "sha256": "8f00d48c124a8d1c032edeba79d72e9976f79b0abd4b44681f63973fa40f4f07",
+      "size": 184707
     },
     {
       "path": "editor.js",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "046d39fbba04caa7937ef0a11668018d8d5a6f2fecc0c0e3952e9ca714ea2589",
-      "size": 69529
+      "sha256": "7e21394d9d3d5fcf83cf9f6116fbd4eda2f375fd4a3d0dd76ffdaa2d6023a600",
+      "size": 69526
     },
     {
       "path": "INDEX.md",
@@ -2621,13 +2621,13 @@
     },
     {
       "path": "phase8-formal-drafts-message-panels.js",
-      "sha256": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
-      "size": 131091
+      "sha256": "4c1a2d30cec309e78629f7508145f4df0162d9ab4a0982545c80aba4a958e08e",
+      "size": 134039
     },
     {
       "path": "phase8-formal-drafts.js",
-      "sha256": "924649aa8bca9d830af3880481fa25af8250db03a8f9d8caa559fc26bc59f2e5",
-      "size": 212714
+      "sha256": "f9806912043248b78691823f86967f1a403cb654905d42608759025cfb5bc134",
+      "size": 213869
     },
     {
       "path": "phase8-formal-map-dossier.js",
@@ -3236,8 +3236,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-app.js",
-      "sha256": "c9a4f0bdd9c92def82d39403d009bc77d6b41ea7c3058f5e0a7d30282354f718",
-      "size": 1397687
+      "sha256": "5e8f4e70b180dd8e8ca3c6b7124324d2cea5b06b3f454a67c1e99ed558e3c268",
+      "size": 1398458
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
@@ -3246,8 +3246,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "35fdbdbc6a6bfc929684b84c36a2d1eb1e71d1f30050a9159dacff38417c572f",
-      "size": 32303
+      "sha256": "1a72dd908fa31afeda99bbc86ffb1ef9851f59d2610223fc8f8671afbb62fbd2",
+      "size": 32343
     },
     {
       "path": "preview/scenario-editor-reset-style.css",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "bee7efe2b0079deccd18631e594a8a3b7d1e03f1a6c2c3ad9cfcf145cfc1b598",
-      "size": 347024
+      "sha256": "a15b767c45662c08f2f3db28948851812aaf93b89e275004f55b47a6d02d5952",
+      "size": 347055
     },
     {
       "path": "styles.css",
@@ -5256,8 +5256,8 @@
     },
     {
       "path": "tm-theme-font.js",
-      "sha256": "a7bd01bd045a5947e8c060ef3d48edbba5c53b8b7c11d834ca6b7193bdc8dc2e",
-      "size": 18774
+      "sha256": "8306871b9a8b375080eed797fcb279d4650a0916cda4c6390a346cce68b17ca1",
+      "size": 20472
     },
     {
       "path": "tm-three-systems-ext.js",

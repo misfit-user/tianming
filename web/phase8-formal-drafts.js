@@ -155,7 +155,14 @@
     ov.className = 'tm-desk-overlay tm-bridge-overlay show';
     ov.innerHTML = '<div class="tm-bridge-scrim" data-close-bridge="1"></div>' + html;
     var overlayWorld = window.GM;
+    if (id === 'tm-action-memorial-overlay') {
+      var memorialLease = typeof window._tmCaptureWorldLease === 'function' ? window._tmCaptureWorldLease() : null;
+      ov.__tmMemorialCurrent = function(){
+        return window.GM === overlayWorld && (!memorialLease || typeof window._tmWorldLeaseCurrent === 'function' && window._tmWorldLeaseCurrent(memorialLease));
+      };
+    }
     ov.addEventListener('click', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) { ov.remove(); return; }
       if (e.target === ov || (e.target && e.target.closest && e.target.closest('[data-close-bridge]'))) {
         closeDeskOverlay();
         return;
@@ -177,6 +184,7 @@
       handleDeskAction(btn.dataset.deskAction || btn.dataset.moduleAction, btn.dataset, id);
     });
     ov.addEventListener('input', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) return;
       var search = e.target && e.target.closest ? e.target.closest('[data-desk-letter-search]') : null;
       if (search) {
         state.letterSearch = String(search.value || '');
@@ -209,6 +217,7 @@
       if (edict) updateFormalEdictDraft(edict);
     });
     ov.addEventListener('change', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) return;
       var draft = e.target && e.target.closest ? e.target.closest('[data-letter-draft-field]') : null;
       if (draft) {
         updateFormalLetterDraft(draft);
@@ -287,6 +296,7 @@
 
   function captureDeskOverlayState(root){
     if (!root || !root.querySelectorAll) return;
+    if (root.id === 'tm-action-memorial-overlay' && (!root.__tmMemorialCurrent || !root.__tmMemorialCurrent())) return;
     // Collect all fields before cloning/publishing the same aggregate once.
     // Ordinary input/change still persists immediately; nesting and errors must
     // not leave later input trapped in a suspended-persistence state.
@@ -1182,12 +1192,14 @@
     } else if (action === 'publish-edict-desk') {
       deskPublishEdict();
     } else if (action === 'select-memorial-desk') {
+      captureDeskOverlayState(document.getElementById('tm-action-memorial-overlay'));
       state.memorialId = data.id || '';
-      openYueZouPreviewPanel();
+      if (!__p8mp.refreshFormalMemorialSelection(document.getElementById('tm-action-memorial-overlay'), false)) openYueZouPreviewPanel();
     } else if (action === 'memorial-unseal-desk') {
+      captureDeskOverlayState(document.getElementById('tm-action-memorial-overlay'));
       state.memorialOpened = state.memorialOpened || {};
       if (data.id) state.memorialOpened[data.id] = true;
-      openYueZouPreviewPanel();
+      if (!__p8mp.refreshFormalMemorialSelection(document.getElementById('tm-action-memorial-overlay'), true)) openYueZouPreviewPanel();
     } else if (action === 'memorial-filter-desk') {
       state.memorialFilter = data.filter || 'all';
       openYueZouPreviewPanel();

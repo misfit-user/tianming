@@ -15223,12 +15223,16 @@
   }
   function renderAdminFolio() {
     var ah = state.scenario.adminHierarchy;
-    if (!ah || typeof ah !== 'object') return genFolioCss() + '<div class="rwf2-wrap"><div class="rwf2-head">本剧本暂无行政区划层级。地块几何/归属见「地图绑定工坊」与地图编辑器。</div></div>';
-    var fks = Object.keys(ah);
-    var fk = (state._adminFaction && ah[state._adminFaction]) ? state._adminFaction : fks[0];
+    var keys = ah && typeof ah === 'object' && !Array.isArray(ah) ? Object.keys(ah) : [];
+    var fks = keys.filter(function(k) { var row = ah[k]; return row && typeof row === 'object' && !Array.isArray(row) && (row.divisions == null || Array.isArray(row.divisions)); });
+    if (!fks.length) {
+      state._adminCurDiv = null; // 只清理失效的视图选择，不删除或重写原始区划数据。
+      return genFolioCss() + '<div class="rwf2-wrap"><div class="rwf2-head">' + (keys.length || Array.isArray(ah) ? '行政区划数据格式无效，暂无可显示的势力；原数据已保留，请在高级字段中核对。' : '本剧本暂无行政区划层级。地块几何/归属见「地图绑定工坊」与地图编辑器。') + '</div></div>';
+    }
+    var fk = fks.indexOf(state._adminFaction) >= 0 ? state._adminFaction : fks[0];
     var divs = (ah[fk] && ah[fk].divisions) || [];
     var curId = state._adminDivId;
-    var curDiv = curId ? adminWalkFind(divs, curId) : (divs[0] || null);
+    var curDiv = (curId ? adminWalkFind(divs, curId) : null) || divs[0] || null;
     if (curDiv) curId = curDiv.id;
     state._adminCurDiv = curDiv;
     var facSel = '<select class="rwf2-ctl" data-admin-faction style="max-width:260px">' + fks.map(function (k) { return '<option value="' + escapeHtml(k) + '"' + (k === fk ? ' selected' : '') + '>' + escapeHtml(ah[k].factionName || k) + '（' + ((ah[k].divisions || []).length) + '）</option>'; }).join('') + '</select>';
@@ -15239,6 +15243,7 @@
     var toolRow = '<div style="margin:4px 2px 8px;font-size:12px;color:#574733;display:flex;align-items:center;gap:8px;flex-wrap:wrap">势力：' + facSel + viewTabs +
       (view === 'list' ? '<button class="adt-allbtn" data-editor-command="admin-expand-all" title="展开本势力所有府州">展开全部</button><button class="adt-allbtn" data-editor-command="admin-collapse-all" title="只看顶级省道">收起全部</button>' : '') +
       '<button class="adt-mapbtn" data-editor-command="launch-map-editor" title="打开地图编辑器：画地块几何 / 改归属 / 调省界，画完点返回写回">🗺 打开地图编辑器</button></div>';
+    if (fks.length !== keys.length) toolRow += '<div role="status" class="rwf2-head">部分势力区划格式无效，未参与显示；原数据已保留，请核对：' + escapeHtml(keys.filter(function(k) { return fks.indexOf(k) < 0; }).join('、')) + '</div>';
     if (view === 'tree') {
       var ocs = orgChartState('admin');
       if (ocs._initFk !== fk) { ocs.collapsed = {}; (divs || []).forEach(function (d) { if (d && d.children && d.children.length) ocs.collapsed[d.id] = 1; }); ocs._initFk = fk; }

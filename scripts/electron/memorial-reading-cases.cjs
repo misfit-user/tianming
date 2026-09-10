@@ -59,15 +59,18 @@ module.exports = async function({ win, check }) {
     assert.equal(await js(`GM.memorials[30].status`),'pending');
   });
   const fonts = () => js(`['.zf-title','.ben-text','.pizhu-ta','.aside .piaoni','.aside .chain-row p'].map(s=>parseFloat(getComputedStyle(document.querySelector('.zou-yuan '+s)).fontSize))`);
+  // CSS variable changes must be checked on a displayed frame, not an IPC timing
+  // accident. Keep immediate samples to expose (rather than hide) deferred paint.
+  const fontTokens = () => js(`(()=>{const p=getComputedStyle(document.querySelector('.zou-yuan')),r=getComputedStyle(document.documentElement);return{scope:p.getPropertyValue('--tm-size-memorial'),global:r.getPropertyValue('--tm-font-global-scale'),ink:r.getPropertyValue('--tm-memorial-ink')}})()`);
   await verify('per-memorial size changes all three columns and reply without flattening hierarchy', async () => {
-    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);const before=await fonts();
-    await js(`TMThemeFont.applyScopeSize('memorial','xl')`);const after=await fonts();observations.push({fontsBefore:before,scopedXL:after});
+    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);await frame();const before=await fonts();
+    await js(`TMThemeFont.applyScopeSize('memorial','xl')`);const immediate=await fonts();await frame();const after=await fonts();observations.push({fontsBefore:before,scopedImmediate:immediate,scopedXL:after,tokens:await fontTokens()});
     before.forEach((n,i)=>assert(Math.abs(after[i]/n-1.3)<0.015));assert(after[1]>after[0]);
   });
   await verify('global and scoped font scaling compose once and default restores original sizes', async () => {
-    const before=await fonts();await js(`TMThemeFont.applySize('xl',null,true)`);const after=await fonts();
+    const before=await fonts();await js(`TMThemeFont.applySize('xl',null,true)`);const immediate=await fonts();await frame();const after=await fonts();observations.push({globalBefore:before,globalImmediate:immediate,globalXL:after});
     before.forEach((n,i)=>assert(Math.abs(after[i]/n-1.3)<0.015));
-    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);const reset=await fonts();
+    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);await frame();const reset=await fonts();
     const original=observations.find(r=>r.fontsBefore).fontsBefore;reset.forEach((n,i)=>assert(Math.abs(n-original[i])<0.05));
   });
   await verify('default sidebar uses dark readable ink rather than faint low-contrast labels', async () => {
@@ -78,7 +81,8 @@ module.exports = async function({ win, check }) {
   });
   await verify('existing settings render a functional bounded memorial text-color selector', async () => {
     const value=await js(`(()=>{const d=document.createElement('div');d.id='mr-settings';d.innerHTML=TMThemeFont.renderControls();document.body.appendChild(d);const s=d.querySelector('[data-memorial-ink]');if(!s)return null;s.value='indigo';s.dispatchEvent(new Event('change',{bubbles:true}));return{options:[...s.options].map(o=>o.value),value:s.value,color:getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color,saved:localStorage.getItem('tm.memorialInk')}})()`);
-    assert(value);assert.deepEqual(value.options,['ink','black','indigo']);assert.equal(value.saved,'indigo');assert.equal(value.color,'rgb(38, 62, 80)');
+    await frame();const painted=await js(`getComputedStyle(document.querySelector('.zou-yuan .ben-text')).color`);observations.push({inkImmediate:value&&value.color,inkPainted:painted});
+    assert(value);assert.deepEqual(value.options,['ink','black','indigo']);assert.equal(value.saved,'indigo');assert.equal(painted,'rgb(38, 62, 80)');
     await js(`document.getElementById('mr-settings')?.remove()`);
   });
   await verify('reading settings restore after reopen; invalid color cannot inject CSS', async () => {

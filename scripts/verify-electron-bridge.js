@@ -26,8 +26,8 @@ try {
     const run = cp.spawnSync(runtime, [path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
     fs.writeFileSync(path.join(reportDir, mode + '.log'), (run.stdout || '') + (run.stderr || ''));
     const detail = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
-    const ok = run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;
-    report.results.push({ mode, ok, exitCode: run.status, error: run.error && run.error.message, detail });
+    const ok = !run.error && !run.signal && run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;
+    report.results.push({ mode, ok, exitCode: run.status, signal: run.signal || null, error: run.error && run.error.message, detail });
     console.log(JSON.stringify(report.results[report.results.length - 1]));
   }
   report.complete = true;

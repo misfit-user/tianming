@@ -117,6 +117,7 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'authoring-stream') await require('./authoring-stream-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-boundaries') await require('./authoring-boundary-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-recovery') await require('./authoring-recovery-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'authoring-efficiency') await require('./authoring-efficiency-cases.cjs')({ win, root, temp, check });
       else if (mode === 'relief-pilot' || mode === 'relief-inspect') await require('./relief-pilot-cases.cjs')({ win, root, temp, check, mode });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });
       finish();

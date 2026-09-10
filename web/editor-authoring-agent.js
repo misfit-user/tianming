@@ -1466,6 +1466,11 @@
       parameters: { type: 'object', properties: { convention: { type: 'string', description: '一句话约定，如"人名统一用明代官话""势力名带地名后缀"' } }, required: ['convention'] }
     },
     {
+      name: 'requestTools',
+      description: '需要未展示的既有工具时先申请，下一轮才可使用。不扩展本次权限。可申请：findReferences/listGaps/genReference/readSource/listSource/grepSource/checkHistory/useSkill/recordConvention/preflight/validateDraft/removeEntity/renameEntity/multiEdit/bulkAdd/bulkUpdate/statsAggregate/mapOverview/mapAssignOwner/renameRegion/copyField/generateImage/saveMemory/saveSkill/readQuickTestReport。',
+      parameters: { type: 'object', properties: { names: { type: 'array', items: { type: 'string' }, maxItems: 8 } }, required: ['names'] }
+    },
+    {
       name: 'finish',
       description: '结束本次编辑。默认 completed 必须校验通过且没有未解决的失败写入/任务；确实受阻时用 partial 或 blocked 并说明未完成项，不要谎称全部改好。',
       parameters: { type: 'object', properties: {
@@ -2017,6 +2022,13 @@
     packs.forEach(function(p) { allowed[p] = 1; });
     return tools.filter(function(t) { return !t || !t.name || !AGENT_TOOLS.some(function(a) { return a.name === t.name; }) || !!allowed[_toolPack(t.name)]; });
   }
+  function _initialStageTools(tools, request, opts) {
+    // 显式 caller 工具集/工具包视为调用方的选择，不能再偷偷改写。
+    if (opts && (opts.tools || opts.toolPacks === false || Array.isArray(opts.toolPacks))) return tools.slice();
+    var core = { getField:1,getFields:1,searchEntities:1,globalSearch:1,listCollection:1,describeSchema:1,fieldContract:1,applyEdit:1,applyPush:1,finish:1,todoWrite:1,note:1,askClarification:1,remonstrate:1,flagUncertain:1,requestTools:1 };
+    var relevant = selectToolPacks(request, {worldKind:'fictional'});
+    return tools.filter(function(t) { return core[t.name] || (t.name !== 'checkHistory' && _toolPack(t.name) !== 'core' && relevant.indexOf(_toolPack(t.name)) >= 0); });
+  }
   var AUTHORING_TOOL_SPECS = AGENT_TOOLS.map(function(t) {
     var effect = t.name === 'generateImage' ? 'external' : (_MUT_TOOLS[t.name] ? 'draft-write' : ((t.name === 'saveMemory' || t.name === 'saveSkill') ? 'memory-write' : (_READ_TOOLS[t.name] ? 'read' : 'control')));
     return Object.assign({}, t, {
@@ -2087,11 +2099,27 @@
   }
   function _toolStateJson(draft, name, input) {
     if (!_MUT_TOOLS[name]) return null;
+    input = input || {};
+    // 精确叶路径证据省去大人物集合的两次重复编码；写前外部修改守卫仍校验完整区段。
+    if (['applyEdit','applyPush','copyField','multiEdit'].indexOf(name) >= 0) {
+      var paths = name === 'multiEdit' ? (Array.isArray(input.edits) ? input.edits : []).map(function(e) { return e && e.path; }) : [name === 'copyField' ? input.to : input.path];
+      if (paths.length && paths.every(function(p) { return p && _pathRoot(p) !== 'map' && _pathRoot(p) !== 'mapData'; })) {
+        return JSON.stringify(paths.map(function(p) { var r = _resolvePath(draft,p); return { path:p,exists:!!r.exists,value:r.value,code:r.code || null }; }));
+      }
+    }
     var roots = _mutRoots(name, input);
     if (!roots) return JSON.stringify(draft);
     var seen = {}, state = {};
     roots.forEach(function(r) { if (r && !seen[r]) { seen[r] = 1; state[r] = draft && draft[r]; } });
     return JSON.stringify(state);
+  }
+  function _runtimeFieldSources(draft, field) {
+    if (field !== 'officeTree' && field !== 'government') return [];
+    var sources=[];
+    (Array.isArray(draft.factions)?draft.factions:[]).forEach(function(f,i){if(f && Array.isArray(f.officeTree) && f.officeTree.length)sources.push({path:'factions['+i+'].officeTree',faction:f.name||'',factionId:f.id||'',condition:'该势力为玩家所属势力时，开局最终优先使用其官制；只改顶层officeTree不会覆盖这里'});});
+    if(draft.government && Array.isArray(draft.government.nodes) && draft.government.nodes.length)sources.push({path:'government.nodes',condition:'含holder或officeTree为空时优先于顶层officeTree，之后仍服从玩家势力官制覆盖'});
+    sources.push({path:'officeTree',condition:'顶层旧兼容来源；如玩家势力自有官制，则最终被其覆盖。应先确认目标势力，再编辑对应路径。'});
+    return sources;
   }
   function _readRootsOf(name, input) {
     input = input || {};
@@ -2239,7 +2267,13 @@
                   db.close();
                   var rep = g.result && g.result.quickTest;
                   if (!rep) return resolve({ ok: false, reason: '尚无快测报告——请玩家在「正式沙盒测试」工作台点「快测·一键体检」(会真实消耗数轮 AI 调用·默认连跑 3 回合)·跑完再来读。' });
-                  resolve({ ok: true, report: rep, ageHint: '报告生成于 ' + (rep.createdAt || '?') + '·若你之后又改过草稿·报告反映的是旧版本' });
+                  var k=global.TM && global.TM.AgentKernel;
+                  var capturedDraft=JSON.stringify(draft);
+                  var fingerprint=k && k.fingerprintScenario ? k.fingerprintScenario(draft) : Promise.resolve(null);
+                  fingerprint.catch(function(){return null;}).then(function(fp){
+                    var source=rep.sourceFingerprint, matches=!!(fp && source && fp.algorithm===source.algorithm && fp.hash===source.hash && fp.bytes===source.bytes && capturedDraft===JSON.stringify(draft));
+                    resolve({ok:true,report:rep,matchesCurrentDraft:matches,ageHint:'报告生成于 '+(rep.createdAt || '?')+(matches?'·来源与当前草稿一致':'·来源不匹配或未绑定，仅作历史参考，不能证明当前草稿已通过快测')});
+                  });
                 };
                 g.onerror = function () { db.close(); resolve({ ok: false, reason: '快测报告读取失败' }); };
               } catch (eTx) { try { db.close(); } catch (_) {} resolve({ ok: false, reason: '快测报告读取异常: ' + ((eTx && eTx.message) || eTx) }); }
@@ -2315,7 +2349,7 @@
           var canonicalField = candidates.filter(function (f) { return sv.some(function (s) { return s && s.field === f; }); })[0] || requestedField;
           var hit = sv.filter(function (s) { return s && s.field === canonicalField; });
           if (!hit.length) return { ok: true, field: requestedField, inContract: false, note: '\u5b57\u6bb5\u300c' + requestedField + '\u300d\u4e0d\u5728\u6e38\u620f\u5b57\u6bb5\u5951\u7ea6\u4e2d\u2014\u2014\u53ef\u80fd\u662f\u81ea\u5b9a\u4e49/\u6269\u5c55\u5b57\u6bb5\uff0c\u6b63\u5f0f\u6e38\u620f\u4e0d\u76f4\u63a5\u8bfb\u53d6\u3002' };
-          return { ok: true, field: canonicalField, requestedField: requestedField, canonicalField: canonicalField, inContract: true, contracts: hit.map(function (s) { return { name: s.title, required: !!s.required, module: s.moduleId, gameUse: s.detail || '', usedByScenarios: s.sources || [] }; }) };
+          return { ok: true, field: canonicalField, requestedField: requestedField, canonicalField: canonicalField, inContract: true, runtimeSources:_runtimeFieldSources(draft,canonicalField), contracts: hit.map(function (s) { return { name: s.title, required: !!s.required, module: s.moduleId, gameUse: s.detail || '', usedByScenarios: s.sources || [] }; }) };
         }
         return { ok: true, count: sv.length, fields: sv.map(function (s) { return s.field + (s.title ? '(' + s.title + ')' : '') + (s.required ? '\u00b7\u5fc5\u9700' : ''); }) };
       }
@@ -2699,25 +2733,30 @@
   }
   // U1(Codex COMPACT_USER_MESSAGE_MAX_TOKENS 对照) · 压缩时逐字保留用户各轮原话：摘要难免失真·
   //   玩家的具体指令/设定是续作的地面真值。从后往前收(最新优先·tail 已保留的不重复)·剥构建附文
-  //   (【用户需求】标记头/草稿现状等)只留原话·每条截 600 字·总额 userKeep(默认 6000)字。
+  //   新消息带原话元数据，压缩头继续携带它；旧线程只剥明确的构建附文。不截掉半条指令。
   function _macroUserLines(conv, tailLen, userKeep) {
-    userKeep = userKeep || 6000;
+    userKeep = userKeep || 32000;
     var upto = Math.max(0, (conv || []).length - (tailLen || 0));
     var out = [], used = 0;
     for (var i = upto - 1; i >= 0; i--) {
       var m = conv[i]; if (!m || m.role !== 'user') continue;
+      var originals = Array.isArray(m.userInstructions) ? m.userInstructions : (typeof m.userInstruction === 'string' ? [m.userInstruction] : null);
+      if (originals) {
+        for (var oi = originals.length - 1; oi >= 0; oi--) { used += originals[oi].length; out.push(originals[oi]); }
+        continue;
+      }
       var t = String(m.text || '').replace(/^【曾附图 \d+ 张】/, '').trim();
       if (!t || /^【前情摘要/.test(t) || /^（预算提示/.test(t) || /^⚠ 已连续/.test(t)) continue;   // 注入类消息非玩家原话
       var mm = t.match(/^【[^】]{1,14}】\n?([\s\S]*)$/);
       var body = mm ? mm[1] : t;
-      var cut = body.search(/\n【|\n（在上面已改|\n（当前编辑上下文|\n（提示：/);
+      var cut = body.search(/\n\n【(?:草稿现状|当前编辑上下文|跨会话记忆|前情·最近|参考范例|规格缺口)|\n（在上面已改|\n（当前编辑上下文|\n（提示：/);
       if (cut > 0) body = body.slice(0, cut);
-      body = body.trim().slice(0, 600);
+      body = body.trim();
       if (!body) continue;
-      if (used + body.length > userKeep) break;
       used += body.length;
       out.push(body);
     }
+    if (used > userKeep) { var e = new Error('原始指令超过可完整保留的上下文，未压缩或丢弃；请拆分任务或新开对话。'); e.code = 'instruction-retention-limit'; throw e; }
     return out.reverse();
   }
   function _macroHead(summary, draft, surfaces, tailLen, userLines) {
@@ -2739,14 +2778,16 @@
     opts = opts || {};
     if (!Array.isArray(conversation) || conversation.length < 4) return Promise.resolve({ ok: false, reason: 'too-small' });
     var beforeN = conversation.length;
+    var tail = _compactTailSlice(conversation, opts.keepTail != null ? opts.keepTail : 6), originals;
+    try { originals = _macroUserLines(conversation, tail.length, opts.userKeep); }
+    catch (error) { return Promise.resolve({ ok: false, reason: error.code, detail: error.message }); }
     var flat = _flattenForSummary(conversation, opts.frac != null ? opts.frac : 0.45);
     var cfg = opts.cfg || loadEditorApiConfig();
     return callWithTools([{ role: 'user', text: _macroSummaryAsk(flat) }], _MACRO_SUM_TOOLS, { maxTok: 4000, maxRetries: 1, cfg: opts.cfg2 || _secondaryCfg() || cfg, system: _MACRO_SUM_SYS })
       .then(function (r) {
         var s = _macroPickSummary(r);
         if (s.length < 200) return { ok: false, reason: 'thin' };
-        var tail = _compactTailSlice(conversation, opts.keepTail != null ? opts.keepTail : 6);
-        var out = [{ role: 'user', text: _macroHead(s, draft, opts.surfaces || [], tail.length, _macroUserLines(conversation, tail.length, opts.userKeep)) }].concat(tail);
+        var out = [{ role: 'user', text: _macroHead(s, draft, opts.surfaces || [], tail.length, originals), userInstructions: originals }].concat(tail);
         return { ok: true, conversation: out, before: beforeN, after: out.length, summaryChars: s.length };
       });
   }
@@ -2877,6 +2918,7 @@
     var conventions = (opts.conventions != null ? opts.conventions : loadConventions()) || '';   // 方向B · 剧本约定
     var system = planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions);
     tools = _filterToolsByPacks(tools, userRequest, { worldKind: (draft && draft.worldKind) === 'fictional' ? 'fictional' : 'historical', toolPacks: opts.toolPacks });
+    if (!planOnly) tools = _initialStageTools(tools, userRequest, opts);
     var surfaces = _getFieldSurfaces(opts);
     var continuing = !!(Array.isArray(opts.priorConversation) && opts.priorConversation.length);
     var editorContext = opts.editorContext || '';
@@ -2999,7 +3041,19 @@
   function runAuthoringLoop(draft, userRequest, opts) {
     opts = opts || {};
     var resume = _readResume(opts.resumeState, 'loop', draft, false);
-    var caller = opts.caller || callWithTools;
+    var actualCaller = opts.caller || callWithTools;
+    var metrics = { logicalRequests:0,httpRequests:0,retries:0,responses:0,usageResponses:0,inputTokens:0,outputTokens:0,totalTokens:0,inputReports:0,outputReports:0,totalReports:0,incompleteUsage:false,requestElapsedMs:0 };
+    if (resume && resume.metrics) Object.assign(metrics,resume.metrics);
+    function addUsage(u) {
+      if (!u) { metrics.incompleteUsage = true; return; }
+      metrics.usageResponses++;
+      ['inputTokens','outputTokens','totalTokens'].forEach(function(k) { if (typeof u[k] === 'number' && Number.isFinite(u[k]) && u[k] >= 0) {metrics[k] += u[k];metrics[k.replace('Tokens','Reports')]++;} else metrics.incompleteUsage = true; });
+    }
+    function caller(conv, offered, options) {
+      metrics.logicalRequests++; var began = Date.now(), responses = 0;
+      var tracked = Object.assign({}, options, { onTelemetry: function(e) { if(e.type==='request'){metrics.httpRequests++;if(e.retry)metrics.retries++;}else if(e.type==='response'){responses++;metrics.responses++;addUsage(e.usage);} } });
+      return Promise.resolve().then(function(){return actualCaller(conv,offered,tracked);}).then(function(r){if(!responses){metrics.responses++;addUsage(r && r.usage);}return r;}).finally(function(){metrics.requestElapsedMs+=Date.now()-began;});
+    }
     var maxIterations = opts.maxIterations || 48;     // 刀D · 自主度：放宽到 48 轮·持续调用直到完成（UI 还会自动续接）
     var maxTokens = opts.maxTokens || 260000;         // 刀D · 自主度：token 预算放宽·覆盖长任务一次跑完
     var maxFinishAttempts = opts.maxFinishAttempts || 3;
@@ -3020,12 +3074,22 @@
     // 世界类型：史实(默认) / 虚构(架空·奇幻·武侠·未来·异世界等)。优先 opts.worldKind(UI 显式声明)，否则读剧本持久字段 draft.worldKind；
     // 虚构档去史实锚定、点出 world/worldSettings 容器、校验豁免「五常」。非 'fictional' 一律归史实。
     var worldKind = (opts.worldKind || (draft && draft.worldKind) || 'historical') === 'fictional' ? 'fictional' : 'historical';
+    if (planOnly || reviewOnly || qaOnly || explainOnly) tools=tools.concat(AGENT_TOOLS.filter(function(t){return t.name==='requestTools';}));
+    var allModeTools = tools.slice();
     tools = _filterToolsByPacks(tools, userRequest, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    var selectableTools = opts.tools || opts.toolPacks === false || Array.isArray(opts.toolPacks) ? tools.slice() : allModeTools;
+    if (!(planOnly || reviewOnly || qaOnly || explainOnly)) tools = _initialStageTools(tools, userRequest, opts);
+    if (resume && Array.isArray(resume.selectedTools)) tools = selectableTools.filter(function(t) { return resume.selectedTools.indexOf(t.name) >= 0; });
     // 工具清单也是本次执行授权，不信任模型会自觉遵守只读/工具包边界。
     var executableTools = Object.create(null), readOnlyRun = planOnly || reviewOnly || qaOnly || explainOnly;
     tools.forEach(function(t) { if (t && t.name) executableTools[t.name] = true; });
-    function toolExecutionDenied(name) {
-      if (!Object.prototype.hasOwnProperty.call(executableTools, name)) return '本次模式未授权工具 ' + name + '，请使用本次提供的工具。';
+    function enableTools(names) {
+      var added=[];
+      names.forEach(function(n){var t=selectableTools.filter(function(x){return x.name===n;})[0];if(t&&!executableTools[n]){tools.push(t);executableTools[n]=true;added.push(n);}});
+      _toolsTok = _estimateTokens(JSON.stringify(tools)); return added;
+    }
+    function toolExecutionDenied(name, issued) {
+      if (!Object.prototype.hasOwnProperty.call(issued, name)) return '本轮未提供工具 ' + name + '，如需该工具先用 requestTools 申请；只读和范围限制仍然有效。';
       var spec = AUTHORING_TOOL_REGISTRY && AUTHORING_TOOL_REGISTRY.get ? AUTHORING_TOOL_REGISTRY.get(name) : null;
       if (!spec) spec = AUTHORING_TOOL_SPECS.filter(function(s) { return s.name === name; })[0];
       if (readOnlyRun && spec && spec.effect !== 'read' && spec.effect !== 'control') return '只读模式禁止 ' + spec.effect + ' 操作：' + name;
@@ -3040,12 +3104,13 @@
     var priorConversation = resume ? resume.conversation : opts.priorConversation;
     if (Array.isArray(priorConversation) && priorConversation.length) {
       conversation = _agentClone(priorConversation);
-      var _fu = { role: 'user', text: _buildFollowUpUser(draft, userRequest, surfaces, editorContext) };
+      var _fu = { role: 'user', text: _buildFollowUpUser(draft, userRequest, surfaces, editorContext), userInstruction: String(userRequest || '') };
       if (_turnImages) _fu.images = _turnImages;
       conversation.push(_fu);
       try { _priorTokens = _estimateTokens(JSON.stringify(opts.priorConversation)); } catch (e) {}
     } else {
       var _iu = { role: 'user', text: explainOnly ? _buildExplainUser(draft, userRequest, surfaces, editorContext) : (qaOnly ? _buildQaUser(draft, userRequest, surfaces, editorContext) : (reviewOnly ? _buildReviewUser(draft, userRequest, surfaces, editorContext) : _buildInitialUser(draft, userRequest, surfaces, editorContext, exemplars, opts.memory || '', opts.runHistory || ''))) };
+      _iu.userInstruction = String(userRequest || '');
       if (_turnImages) _iu.images = _turnImages;
       conversation = [_iu];
     }
@@ -3057,7 +3122,7 @@
     var _sysTok = _estimateTokens(system);
     var _toolsTok = 0; try { _toolsTok = _estimateTokens(JSON.stringify(tools)); } catch (eTt) {}
     var _convTok = 0;
-    function _convRecount() { try { _convTok = _estimateTokens(JSON.stringify(conversation)); } catch (eCr) {} }
+    function _convRecount() { try { _convTok = _estimateTokens(JSON.stringify(conversation, function(k,v) { return k === 'userInstruction' || k === 'userInstructions' ? undefined : v; })); } catch (eCr) {} }
     function _reqTokens() { return _sysTok + _toolsTok + _convTok; }
     _convRecount();
     var tokensUsed = _reqTokens();
@@ -3091,6 +3156,8 @@
       if (!control.steers.length || control.aborted) return false;
       var _stB = control.steers.splice(0, control.steers.length);
       conversation.push({ role: 'user', text: '【用户在你工作期间发来新指示】\n' + _stB.map(function (s, si) { return (_stB.length > 1 ? (si + 1) + '. ' : '') + s; }).join('\n') + '\n（必须处理：完成当前这一步后立即按上述指示调整——它可能改变或追加原需求；处理完再 finish，勿忽略。）' });
+      conversation[conversation.length - 1].userInstructions = _stB.slice();
+      stalledRounds = 0;
       _steeredCount += _stB.length;
       record('steer', { texts: _stB }, { ok: true, queued: _stB.length });
       return true;
@@ -3105,6 +3172,7 @@
     var _seenReads = {};        // key=name|JSON(input) → {iter, writes}(写世代号=新鲜度)
     var _writeCount = resume ? resume.writeCount : 0;
     var _readOnlyStreak = 0, _spinWarned = 0;
+    var stalledRounds = 0, noProgressLimit = Math.max(3, Math.min(16, opts.noProgressLimit || 8)), observed = Object.create(null), progressEffects = Object.create(null), progressTools = [];
     var _editingMode = !planOnly && !reviewOnly && !qaOnly && !explainOnly;   // 只读模式纯勘察是本分·豁免
     // 刀G5(CC TodoWrite 对照) · 任务表:起跑重置·节流提醒(≥3轮未更新且有未完项·折叠进工具结果不伪造独立轮)
     var initialTodos = resume ? resume.todos : opts.initialTodos;
@@ -3127,9 +3195,10 @@
     var _macroKeepTail = (opts.macroKeepTail != null ? opts.macroKeepTail : 6);  // 压缩后保留的近尾原文条数
     function _applyMacroResult(summary, reasonTag) {
       var tail = _compactTailSlice(conversation, _macroKeepTail);
-      var head = _macroHead(summary, draft, surfaces, tail.length, _macroUserLines(conversation, tail.length, opts.macroUserKeep));
+      var originals = _macroUserLines(conversation, tail.length, opts.macroUserKeep);
+      var head = _macroHead(summary, draft, surfaces, tail.length, originals);
       conversation.length = 0;
-      conversation.push({ role: 'user', text: head });
+      conversation.push({ role: 'user', text: head, userInstructions: originals });
       for (var ti = 0; ti < tail.length; ti++) conversation.push(tail[ti]);
       _seenReads = {};   // "与第N轮相同"的轮次引用随压缩失效·全部作废
       _convRecount(); tokensUsed = _reqTokens();
@@ -3138,6 +3207,8 @@
     }
     function _macroCompact(reasonTag) {
       if (_macroTries >= 2 || _convTok < 6000) return Promise.resolve(false);   // 熔断 + 对话太小不救
+      try { _macroUserLines(conversation, _compactTailSlice(conversation, _macroKeepTail).length, opts.macroUserKeep); }
+      catch (e) { return Promise.reject(e); }
       _macroTries++;
       var flat = _flattenForSummary(conversation, _macroTries === 1 ? 0.45 : 0.2);   // 二次尝试再砍半(摘要请求自身超限的退路)
       if (typeof opts.onText === 'function') { try { opts.onText('（上下文过长，正在压缩前情摘要…）', iterations); } catch (eOt) {} }
@@ -3156,7 +3227,7 @@
     // 刀G8 · 终局失败保留已完成工作(CC「错误不炸掉会话」对照):reject 前把过程状态挂上错误对象·调用方可续
     function _fail(e) {
       try { e.partial = { conversation: conversation, transcript: transcript, todos: control.todoState.list.slice(), draft: draft, tokensUsed: tokensUsed, iterations: iterations,
-        sideEffects: control.sideEffects.slice(), toolReceipts: control.toolReceipts.slice(), completion: completion('blocked'), resumeState: checkpoint() }; } catch (eP) {}
+        sideEffects: control.sideEffects.slice(), toolReceipts: control.toolReceipts.slice(), metrics: Object.assign({},metrics), completion: completion('blocked'), resumeState: checkpoint() }; } catch (eP) {}
       throw e;
     }
     function completion(status) {
@@ -3166,7 +3237,7 @@
     function checkpoint() {
       return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
-        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice() });
+        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics) });
     }
 
     function record(name, input, result) {
@@ -3190,6 +3261,7 @@
       }
       if (tokensUsed >= maxTokens) { stopReason = 'tokenBudget'; return Promise.resolve(); }   // 刀G8 · 硬停挪到压缩之后(先自救再认命)
       iterations++;
+      var issuedTools = Object.assign({},executableTools);
       return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system, signal: control.signal }))
         .then(function(resp) {
           stepRetries = 0;   // 成功一轮即重置：每个停顿点各容忍 maxStepRetries 次抖动
@@ -3226,13 +3298,20 @@
           }
           var toolResults = [];
           var finishAccepted = false;
+          var roundProgress = false;
           var _ci = 0;
           function _procCall() {
             if (_ci >= calls.length || finishAccepted) return Promise.resolve();
             var c = calls[_ci++];
             return Promise.resolve().then(function () {
-              var modeDeny = toolExecutionDenied(c.name);
+              var modeDeny = toolExecutionDenied(c.name, issuedTools);
               if (modeDeny) return { ok: false, errorCode: 'tool-not-authorized', reason: modeDeny };
+              if (c.name === 'requestTools') {
+                var names = c.input && c.input.names;
+                if (!Array.isArray(names) || !names.length || names.length > 8 || names.some(function(n){return !selectableTools.some(function(t){return t.name===n;});})) return {ok:false,reason:'只能申请本次模式允许的既有工具（每次1至8项）'};
+                var added=enableTools(names); if(added.length)roundProgress=true;
+                return {ok:true,enabled:added,note:'下一轮按需使用；原范围/危险操作/只读边界不变'};
+              }
               c._stateJsonBefore = _toolStateJson(draft, c.name, c.input);
               c._stateBefore = c._stateJsonBefore == null ? null : _hashStateJson(c._stateJsonBefore);
               if (c.name === 'finish') {
@@ -3283,10 +3362,13 @@
               if (_READ_TOOLS[c.name]) {
                 var _rk = c.name + '|' + (function () { try { return JSON.stringify(c.input || {}); } catch (eRk) { return String(c.input); } })();
                 var _prevRead = _seenReads[_rk];
-                if (_prevRead && _prevRead.writes === _writeCount) {
+                var readValueKey = null;
+                if (c.name==='getField') readValueKey=_fpOf(_resolvePath(draft,c.input.path).value);
+                if (_prevRead && _prevRead.writes === _writeCount && (c.name!=='getField' || _prevRead.valueKey===readValueKey)) {
                   return { ok: true, unchanged: true, seenAtIteration: _prevRead.iter, reason: '\u7ed3\u679c\u4e0e\u7b2c ' + _prevRead.iter + ' \u8f6e\u5b8c\u5168\u76f8\u540c(\u671f\u95f4\u65e0\u4efb\u4f55\u5199\u5165)\u00b7\u8bf7\u76f4\u63a5\u5f15\u7528\u5148\u524d\u7ed3\u679c\u00b7\u52ff\u91cd\u590d\u67e5\u8be2' };
                 }
                 c._readKey = _rk;
+                c._readValueKey = readValueKey;
               }
               // \u5200G4 \u00b7 \u5199\u524d\u65b0\u9c9c\u5ea6\u5bf9\u7167:\u76ee\u6807\u533a\u6bb5\u6307\u7eb9\u2260\u4e0a\u6b21\u6240\u89c1 \u2192 \u5916\u90e8(\u7f16\u8f91\u5668/\u7528\u6237)\u6539\u8fc7\u00b7\u62d2\u5199\u8981\u6c42\u91cd\u8bfb(\u52ff\u8986\u76d6\u7528\u6237\u6539\u52a8)
               if (_MUT_TOOLS[c.name]) {
@@ -3317,6 +3399,13 @@
               var _spec = AUTHORING_TOOL_REGISTRY && AUTHORING_TOOL_REGISTRY.get ? AUTHORING_TOOL_REGISTRY.get(c.name) : null;
               if (!_spec) _spec = { name: c.name, effect: _MUT_TOOLS[c.name] ? 'draft-write' : (_READ_TOOLS[c.name] ? 'read' : 'control'), risk: 'low', version: '1' };
               var _changed = _MUT_TOOLS[c.name] ? (_ok && c._stateJsonBefore !== _stateJsonAfter) : (_ok && result.staged === true);
+              if (_changed && _MUT_TOOLS[c.name]) { roundProgress = true; observed = Object.create(null); enableTools(['validateDraft','preflight']); }
+              if (_changed && !_MUT_TOOLS[c.name]) { var effectKey=c.name+'|'+JSON.stringify(c.input || {});if(!progressEffects[effectKey]){progressEffects[effectKey]=true;roundProgress=true;} }
+              if (_READ_TOOLS[c.name] && _ok && !result.unchanged) {
+                var observation = c.name + '|' + JSON.stringify(c.input || {}) + '|' + (c._readValueKey || '');
+                if (!observed[observation]) { observed[observation] = true; roundProgress = true; }
+              }
+              progressTools.push(c.name); if (progressTools.length > 5) progressTools.shift();
               var _verified = _ok && (_spec.effect === 'read' || _spec.effect === 'control' || _spec.effect === 'memory-write' || !_MUT_TOOLS[c.name] || c._stateBefore === _stateAfter || _changed);
               if (_MUT_TOOLS[c.name] && result.changed == null) result.changed = _changed;
               var _receipt = global.TM && global.TM.AgentKernel && typeof global.TM.AgentKernel.makeReceipt === 'function'
@@ -3340,7 +3429,7 @@
               result.receipt = { id: _receipt.id || '', tool: _receipt.tool, ok: _receipt.ok, changed: _receipt.changed, verified: _receipt.verified };
               // \u5200G3 \u00b7 \u8bfb/\u5199\u8bb0\u8d26:\u6210\u529f\u8bfb\u8bb0\u5165 _seenReads(\u5e26\u5f53\u524d\u5199\u4e16\u4ee3)\u00b7\u6210\u529f\u5199\u63a8\u8fdb\u4e16\u4ee3\u53f7(\u5176\u540e\u540c\u53c2\u8bfb\u653e\u884c)
               if (result && result.ok !== false) {
-                if (c._readKey && !result.unchanged) _seenReads[c._readKey] = { iter: iterations, writes: _writeCount };
+                if (c._readKey && !result.unchanged) _seenReads[c._readKey] = { iter: iterations, writes: _writeCount, valueKey:c._readValueKey };
                 if (_MUT_TOOLS[c.name] && _receipt.changed) _writeCount++;
                 // \u5200G4 \u00b7 \u6307\u7eb9\u5237\u65b0:\u8bfb\u5230\u4ec0\u4e48/\u5199\u6210\u4ec0\u4e48\u90fd\u7b97"\u6700\u65b0\u6240\u89c1"(renameEntity \u8de8\u533a\u6bb5\u2192\u5168\u91cf\u5237\u65b0)
                 if (_MUT_TOOLS[c.name]) _refreshSnap(c.name === 'renameEntity' ? null : _mutRoots(c.name, c.input));
@@ -3397,6 +3486,9 @@
             }
             if (finishAccepted) { finished = !finishOutcome; stopReason = finishOutcome || (_clarifyResult ? 'needsClarification' : (_remonstrateResult ? 'needsConfirmation' : (_explainResult ? 'explained' : (_qaResult ? 'answered' : (_reviewResult ? 'reviewed' : (_planResult ? 'planned' : 'finish')))))); return; }
             if (finishAttempts >= maxFinishAttempts) { stopReason = 'finishBlocked'; return; }
+            stalledRounds = roundProgress ? 0 : stalledRounds + 1;
+            if (stalledRounds === 4) conversation.push({ role: 'user', text: '（进展提醒：连续4轮没有新读取结果或真实改动。请更换查询/修复方法；确实无法继续时用 partial/blocked 说明，不要重复同参调用。）' });
+            if (stalledRounds >= noProgressLimit) { stopReason = 'noProgress'; _finishSummary = '连续 ' + stalledRounds + ' 轮没有新事实或实际改动，已停止重复调用。最近工具：' + progressTools.join('、') + '。请补充具体信息后继续，或从当前剧本重新生成。'; return; }
             return step();
           });
         })
@@ -3435,7 +3527,7 @@
         control.signal.addEventListener('abort', _parentAbort, { once: true });
       }
       var _recallTimeout = _delay(6000, control.signal).then(function() { if (_recallCtrl) _recallCtrl.abort('memory-recall-timeout'); return ''; });
-      return Promise.race([_recallMemories(userRequest, opts.cfg, opts.caller, _recallSignal), _recallTimeout])
+      return Promise.race([_recallMemories(userRequest, opts.cfg, caller, _recallSignal), _recallTimeout])
         .catch(function () { return ''; })
         .then(function(v) {
           if (_parentAbort && control.signal && control.signal.removeEventListener) control.signal.removeEventListener('abort', _parentAbort);
@@ -3462,6 +3554,8 @@
         runTrace: _kernelRun ? _kernelRun.snapshot() : null,
         todos: control.todoState.list.slice(),
         completion: completion(state), resumed: !!resume,
+        progress: { stalledRounds: stalledRounds, limit: noProgressLimit, lastTools: progressTools.slice() },
+        metrics: Object.assign({},metrics),
         resumeState: (!finished || stopReason === 'needsClarification' || stopReason === 'needsConfirmation') ? checkpoint() : null,
         summary: _finishSummary,   // 改动说明：做了什么+为什么
         notes: transcript.filter(function(t) { return t.name === 'note'; }).map(function(t) { return (t.input && t.input.text) || ''; }).filter(Boolean),
@@ -3474,6 +3568,7 @@
       };
     }, function(err) {
       _releaseRun(control);
+      if (!err || !err.partial) return _fail(err instanceof Error ? err : new Error(String(err)));
       throw err;
     });
   }
@@ -3492,7 +3587,7 @@
     var state = _readResume(opts.resumeState, 'orchestrated', draft, true) || { request: userRequest, plan: null, steps: null, subResults: [], index: 0, pending: null };
     var followUp = userRequest !== state.request ? ('\n【玩家补充指示】' + userRequest) : '';
     var notify = function(p) { if (typeof opts.onSubtask === 'function') { try { opts.onSubtask(p); } catch (e) {} } };
-    function parts() { return state.subResults.map(function(s) { return s.result; }).concat(state.pending ? [state.pending] : []); }
+    function parts() { return [state.plan].concat(state.subResults.map(function(s) { return s.result; }), state.pending ? [state.pending] : []); }
     function wrap(done, last) {
       var steps = state.steps || [], summary = '已分解为 ' + steps.length + ' 个子任务，完成 ' + state.index + ' 个' + (done ? '' : '（流程未完成）');
       return _pipelineResult('orchestrated', draft, state, parts(), done, last, { orchestrated: steps.length > 1, steps: steps, subResults: state.subResults.slice(), summary: summary });
@@ -3542,16 +3637,18 @@
   function _editFinished(r) { return !!r && r.finished === true && r.stopReason === 'finish'; }
   function _pipelineResult(kind, draft, state, parts, done, last, extra) {
     var effects = [], receipts = [], failures = [], seenEffects = {}, seenReceipts = {};
+    var metrics = {};
     parts.filter(Boolean).forEach(function(r) {
       (r.sideEffects || []).forEach(function(f) { if (!f.id || !seenEffects[f.id]) { effects.push(f); if (f.id) seenEffects[f.id] = true; } });
       (r.toolReceipts || []).forEach(function(f) { if (!f.id || !seenReceipts[f.id]) { receipts.push(f); if (f.id) seenReceipts[f.id] = true; } });
       failures = failures.concat(r.completion && r.completion.unresolved || []);
+      Object.keys(r.metrics || {}).forEach(function(k){if(typeof r.metrics[k]==='number')metrics[k]=(metrics[k]||0)+r.metrics[k];else if(k==='incompleteUsage')metrics[k]=!!metrics[k]||r.metrics[k];});
     });
     var changed = receipts.filter(function(r) { return r.ok && r.changed && _MUT_TOOLS[r.tool]; }).length;
     var completion = { status: done ? (changed || effects.length ? 'completed' : 'unchanged') : (last && last.completion && last.completion.status || 'blocked'), changedWrites: changed, stagedEffects: effects.length,
       unresolved: done ? [] : failures, pendingTodos: last && last.completion && last.completion.pendingTodos || [] };
     return Object.assign({ draft: draft, finished: done, finalValidation: validateDraft(draft), stopReason: done ? 'finish' : (last && last.stopReason || 'blocked'),
-      completion: completion, sideEffects: effects, toolReceipts: receipts, resumeState: done ? null : _makeResume(kind, draft, state),
+      completion: completion, metrics:metrics, sideEffects: effects, toolReceipts: receipts, resumeState: done ? null : _makeResume(kind, draft, state),
       conversation: last && last.conversation || [], todos: last && last.todos || [], clarification: last && last.clarification, remonstrance: last && last.remonstrance }, extra || {});
   }
 

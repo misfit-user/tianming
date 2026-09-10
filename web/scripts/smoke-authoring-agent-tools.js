@@ -192,7 +192,7 @@ function ok(cond, msg) {
       { toolCalls: [{ name: 'flagUncertain', input: { path: 'characters.张居正.bio', reason: '生平细节部分靠推测' } }] },
       { toolCalls: [{ name: 'finish', input: { summary: '加入张居正，存疑处已标注' } }] }
     ]);
-    const resHC = await AA.runAuthoringLoop(draftHC, '加入张居正', { caller: callerHC });
+    const resHC = await AA.runAuthoringLoop(draftHC, '加入张居正', { caller: callerHC, toolPacks:['history'] });
     ok(resHC.finished && resHC.stopReason === 'finish', 'checkHistory 流程正常 finish');
     ok(resHC.transcript.some(t => t.name === 'checkHistory'), 'transcript 含 checkHistory 自核步骤');
     const hcStep = resHC.transcript.find(t => t.name === 'checkHistory');
@@ -227,7 +227,7 @@ function ok(cond, msg) {
       };
     }
     const draftCR = AA.makeDraft({ name: '初稿名', factions: [{ name: '甲' }], characters: [{ name: '张三', faction: '甲' }] });
-    const resCR = await AA.runWithCritics(draftCR, '设定一个甲势力开局', { caller: criticsCaller() });
+    const resCR = await AA.runWithCritics(draftCR, '设定一个甲势力开局', { caller: criticsCaller(), toolPacks:['history'] });
     ok(resCR.critiqued && resCR.steps.length === 4, '会审走完四阶段：拟稿+史官+谏官+修订');
     ok(resCR.steps[0].role === '国师·拟稿' && resCR.steps[0].result.finished, '①国师拟稿 finish');
     ok(resCR.steps[1].role === '史官·史实审' && !!resCR.steps[1].result.review, '②史官产出审阅报告');

@@ -317,7 +317,7 @@
           else if (d.delta && d.delta.type === 'input_json_delta') block.json += string(d.delta.partial_json);
           else if (d.delta && d.delta.type === 'text_delta') block.value.text = (block.value.text || '') + string(d.delta.text);
           // thinking/signature 片段不是工具参数，不交给写入层。
-        } else if (type === 'message_delta') { finish = d.delta && d.delta.stop_reason; if (d.usage) usage = d.usage; }
+        } else if (type === 'message_delta') { finish = d.delta && d.delta.stop_reason; if (d.usage) usage = Object.assign({}, usage || {}, d.usage); }
         else if (type === 'message_stop') done = true;
       }
     }
@@ -399,6 +399,17 @@
     });
   }
 
+  function _reportedUsage(data) {
+    var u = data && (data.usage || data.usageMetadata);
+    if (!u) return null;
+    function value(v) { return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null; }
+    var input = value(u.prompt_tokens != null ? u.prompt_tokens : (u.input_tokens != null ? u.input_tokens : u.promptTokenCount));
+    var output = value(u.completion_tokens != null ? u.completion_tokens : (u.output_tokens != null ? u.output_tokens : u.candidatesTokenCount));
+    var total = value(u.total_tokens != null ? u.total_tokens : u.totalTokenCount);
+    if (input === null && output === null && total === null) return null;
+    return { inputTokens: input, outputTokens: output, totalTokens: total, source: 'provider' };
+  }
+  function _telemetry(opts, event) { if (typeof opts.onTelemetry === 'function') { try { opts.onTelemetry(event); } catch (_) {} } }
   // 带重试/超时的 fetch（429 Retry-After·5xx/网络错误指数退避·AbortController 超时）
   function _fetchJSON(url, options, opts) {
     opts = opts || {};
@@ -423,7 +434,7 @@
         if (timer) clearTimeout(timer);
         if (onOuterAbort && outerSignal && outerSignal.removeEventListener) outerSignal.removeEventListener('abort', onOuterAbort);
       }
-      return Promise.resolve().then(function() { return global.fetch(url, fopt); }).then(function(r) {
+      return Promise.resolve().then(function() { _telemetry(opts, { type: 'request', retry: n > 0 }); return global.fetch(url, fopt); }).then(function(r) {
         if (!r.ok) {
           return r.text().then(function(t) {
             var err = new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 200));
@@ -438,6 +449,7 @@
         cleanup();
         if (outerSignal && outerSignal.aborted) throw _abortError(outerSignal.reason);
         if (timedOut) throw _abortError('timeout');
+        _telemetry(opts, { type: 'response', usage: _reportedUsage(data) });
         return data;
       }).catch(function(e) {
         cleanup();
@@ -492,6 +504,7 @@
     }
     function _parseResp(data) {
       var parsed = gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data));
+      parsed.usage = _reportedUsage(data);
       if (parsed.truncated || parsed.badToolJson) parsed.toolCalls = []; // 整轮丢弃；由既有 loop 输出预算修复接手，不能执行半轮写入。
       return parsed;
     }
@@ -507,7 +520,7 @@
         var parsed = _parseResp(data);
         if (parsed.truncated || parsed.badToolJson) { parsed.fallback = true; return parsed; }
         var calls = parsed.toolCalls.length ? parsed.toolCalls : _parseJsonToolCalls(parsed.text);
-        return { text: parsed.text, toolCalls: calls, fallback: true };
+        return { text: parsed.text, toolCalls: calls, fallback: true, usage: parsed.usage };
       });
     }
 
@@ -516,7 +529,7 @@
       if (parsed.truncated || parsed.badToolJson) return parsed;
       if (parsed.toolCalls.length) return parsed;
       var fromText = _parseJsonToolCalls(parsed.text); // 端点忽略 tools 但吐了 JSON
-      if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true };
+      if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true, usage: parsed.usage };
       return parsed; // 纯文本无工具 → 交给 loop 判 noToolCalls
     }).catch(function(e) {
       // 玩家停止属于控制流，不做文本兜底、不重试、不改写成“网络抖动”。

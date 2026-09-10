@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-10T06:51:31.540Z",
+  "generatedAt": "2026-09-10T11:05:39.160Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2011,8 +2011,8 @@
     },
     {
       "path": "editor-authoring-agent-provider.js",
-      "sha256": "0938876a6c01a77759ccc863192edd777a7628c789fd0a6c33cd62d5e74fd6db",
-      "size": 35179
+      "sha256": "d39bf457fc8d981f9cba6c7082e92d6943de1cf98ca2c2734f29129294dc686a",
+      "size": 36309
     },
     {
       "path": "editor-authoring-agent-ui-icons.js",
@@ -2026,13 +2026,13 @@
     },
     {
       "path": "editor-authoring-agent-ui.js",
-      "sha256": "5837b52128e03831a3d3ca34a7a831b22889012277a41b9f45bb097e03052373",
-      "size": 219276
+      "sha256": "9bb7329d55abb750d3d762630b48793f19bd1df7eb4feefdd54e0ab76806bf70",
+      "size": 220341
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "24d17a85c60578abbd8167d7dbdc12d6f63fdc62fd2f85ba4777f5275fc38e65",
-      "size": 291657
+      "sha256": "c87ed307ad72c5514dd7f062057c28c9eb07c857fc7eb04224a6000782e62c44",
+      "size": 302093
     },
     {
       "path": "editor-core.js",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "2c807935d582281360c656403b8322804d0f65a4974d4199cbf19568b81c93e8",
-      "size": 184708
+      "sha256": "fdecec887a1f43a6e0b427857a9afadadf48d42536d01cd5a6ce7c580fd27276",
+      "size": 184667
     },
     {
       "path": "editor.js",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "d740422d7e6032234320932dfffbb9a698d007c3e57185a24cf95445ec7b6f8d",
-      "size": 69257
+      "sha256": "71b695c05f4a17bc29042f47922777d7ce9886e9e1291a2a4dfac9852b620f13",
+      "size": 69249
     },
     {
       "path": "INDEX.md",
@@ -3246,8 +3246,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "fa233f647f8218baa7208d620cc90e5087c6b980d1e590bcce08b3dc93352065",
-      "size": 32344
+      "sha256": "35fdbdbc6a6bfc929684b84c36a2d1eb1e71d1f30050a9159dacff38417c572f",
+      "size": 32303
     },
     {
       "path": "preview/scenario-editor-reset-style.css",
@@ -3256,8 +3256,8 @@
     },
     {
       "path": "preview/scenario-editor-sandbox-bridge.js",
-      "sha256": "201d8c6c5c39624347878447c8c7112e65ab0615fd54b97be4aa9f2509a05e0c",
-      "size": 35474
+      "sha256": "940d42fb6c99dd28e9a328e4bc1664968ddb7932597008195540fae6ca77b115",
+      "size": 35893
     },
     {
       "path": "preview/settings-button-preview.html",
@@ -3396,8 +3396,8 @@
     },
     {
       "path": "tm-agent-kernel.js",
-      "sha256": "fd10d44786992af024f3fe26e8b29eb7f4c7712c20b8f61d1d3e44bc0ea7f6cb",
-      "size": 9567
+      "sha256": "81d355b9611d3f426c8ab99349ebdba4ac950a6bde8e7641aca61d056d4f7fec",
+      "size": 10289
     },
     {
       "path": "tm-ai-apply-deaths.js",

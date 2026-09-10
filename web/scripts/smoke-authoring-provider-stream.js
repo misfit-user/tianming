@@ -111,8 +111,9 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
   });
   await test('39-round real provider/agent loop reaches finish, retains edit and preserves original scenario', async () => {
     let n = 0;
-    const f = fixture(async () => { n++; return response(n === 39 ? oa('finish', { summary: '财政与地区设定已修改' }) : JSON.stringify(n === 38 ? json('applyEdit', { path: 'name', value: '新剧本名' }) : json('getField', { path: 'name' })), n === 39 ? 'text/event-stream' : 'application/json'); });
-    const original = { name: '原剧本名', factions: [], characters: [] }, draft = f.aa.makeDraft(original);
+    const f = fixture(async () => { n++; return response(n === 39 ? oa('finish', { summary: '财政与地区设定已修改' }) : JSON.stringify(n === 38 ? json('applyEdit', { path: 'name', value: '新剧本名' }) : json('getField', { path: 'auditFields.f'+n })), n === 39 ? 'text/event-stream' : 'application/json'); });
+    // 39轮协议回归模拟37项不同核查；重复同参空转另由效率专项拦截，不能为本测试关闭该保护。
+    const original = { name: '原剧本名', factions: [], characters: [], auditFields:Object.fromEntries(Array.from({length:37},(_,i)=>['f'+(i+1),i])) }, draft = f.aa.makeDraft(original);
     const r = await f.aa.runAuthoringLoop(draft, '改名', { cfg, maxIterations: 40, maxTokens: 1000000, noMemoryRecall: true, conventions: '', caller: (c, t, o) => f.aa.callWithTools(c, t, { ...o, maxRetries: 0 }) });
     assert(r.finished); assert.equal(r.stopReason, 'finish'); assert.equal(r.summary, '财政与地区设定已修改'); assert.equal(draft.name, '新剧本名'); assert.equal(original.name, '原剧本名'); assert.equal(n, 39);
     const diffs = f.aa.computeDiff(original, draft), committed = f.aa.applySelectedDiffs(original, draft, diffs); assert.equal(committed.name, '新剧本名'); assert.equal(original.name, '原剧本名');

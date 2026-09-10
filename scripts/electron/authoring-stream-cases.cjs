@@ -10,6 +10,7 @@ module.exports = async function({ win, root, check }) {
   await win.loadFile(path.join(root, 'web/preview/scenario-editor-reset-preview.html')); await ready();
   await js(`(()=>{
     const input={id:'stream-fixture',name:'流式回归原剧本',gameSettings:{startYear:1207,daysPerTurn:30},factions:[],characters:[],fiscalConfig:{treasury:3000000}};
+    input.auditFields=Object.fromEntries(Array.from({length:37},(_,i)=>['f'+(i+1),i]));
     window.__aaStream={original:JSON.stringify(input),round:0,mode:'long',cancelled:0,bodies:[]};
     TM_SCENARIO_EDITOR_RESET_APP.applyImportedScenario(input,'隔离流式回归');
     localStorage.setItem('tm_api',JSON.stringify({url:'https://authoring.invalid/v1',key:'isolated-stream-regression-only',model:'controlled',temp:0.2}));
@@ -22,7 +23,7 @@ module.exports = async function({ win, root, check }) {
       const event=d=>'data: '+JSON.stringify(d)+'\\n\\n';
       const finish=tool('finish',{summary:'已完成国库设定修改，并核对剧本字段。'});
       const edit=tool('multiEdit',{edits:[{path:'name',value:'流式国师修改结果'},{path:'fiscalConfig.treasury',value:p.mode==='recover'?4500000:4000000}]});
-      const selected=p.mode==='long'?(p.round<38?tool('getField',{path:'name'}):(p.round===38?edit:finish)):(p.round===1?edit:finish);
+      const selected=p.mode==='long'?(p.round<38?tool('getField',{path:'auditFields.f'+p.round}):(p.round===38?edit:finish)):(p.round===1?edit:finish);
       let raw=event({choices:[{index:0,delta:{tool_calls:[selected]}}]})+event({choices:[{index:0,delta:{},finish_reason:'tool_calls'}]})+'data: [DONE]\\n\\n';
       if(p.mode==='broken')raw=event({choices:[{delta:{tool_calls:[edit]}}]})+'data: {invalid PRIVATE-RESPONSE}\\n\\ndata: [DONE]\\n\\n';
       if(p.mode==='cancel')return new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event({choices:[{delta:{tool_calls:[edit]}}]})));},cancel(){p.cancelled++;}}),{headers:{'Content-Type':'text/event-stream'}});

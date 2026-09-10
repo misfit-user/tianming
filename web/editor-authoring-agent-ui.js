@@ -116,6 +116,7 @@
       var data = result || (error && error.partial);
       if (data) {
         ui._completion = data.completion || null;
+        if (data.metrics) ui._lastRunMeta={kind:method,metrics:data.metrics,tokensUsed:data.tokensUsed||0,tokensBreakdown:data.tokensBreakdown||null,iterations:data.iterations||0,ts:Date.now()};
         _captureSideEffects(data, true);
         ui._recovery = data.resumeState ? { method: method, state: data.resumeState, draft: draft, owner: owner, request: request,
           planOnly: !!options.planOnly, reviewOnly: !!options.reviewOnly, qaOnly: !!options.qaOnly, explainOnly: !!options.explainOnly } : null;
@@ -1898,15 +1899,21 @@
         + bar(b.system, tot, 'var(--ac)', '系统词')
         + bar(b.tools, tot, 'var(--warn)', '工具schema')
         + bar(b.conversation, tot, 'var(--ok)', '对话与结果')
-        + '<div style="font-size:12px;color:var(--tx2);margin:4px 0 10px">合计（=下次请求真实体量）：<b>' + fmt(tot) + '</b> tokens · 占预算上限 ' + Math.round(tot * 100 / budget) + '%（上限 ' + fmt(budget) + '·撞 85% 会自动宏压缩）</div>';
+        + '<div style="font-size:12px;color:var(--tx2);margin:4px 0 10px">下次请求体量估算：<b>' + fmt(tot) + '</b> tokens · 占预算上限 ' + Math.round(tot * 100 / budget) + '%（不是服务商账单；上限 ' + fmt(budget) + '·撞 85% 会自动宏压缩）</div>';
     } else {
       body += '<div style="color:var(--tx3);font-size:12px;margin-bottom:8px">（本会话还没跑过——跑一轮后这里显示真口径构成）</div>';
+    }
+    if (m && m.metrics) {
+      var measured=m.metrics;
+      body += '<div class="tm-aa-request-metrics" style="font-size:12px;margin:8px 0">本任务累计：逻辑请求 '+fmt(measured.logicalRequests)+' · HTTP尝试 '+fmt(measured.httpRequests)+' · 传输重试 '+fmt(measured.retries)
+        + '<br>服务商已报告：'+(measured.usageResponses ? ('输入 '+(measured.inputReports?fmt(measured.inputTokens):'未知')+' / 输出 '+(measured.outputReports?fmt(measured.outputTokens):'未知')+' tokens') : '未提供 usage（未知，不记为零消耗）')
+        + (measured.incompleteUsage ? ' · 数据不完整，仅统计已报告部分' : '')+'<br>请求累计经过时间 '+((measured.requestElapsedMs || 0)/1000).toFixed(1)+' 秒（含等待/并行，不是主线程阻塞时间或计费金额）</div>';
     }
     body += '<b style="font-size:12px">当前会话线程</b>'
       + '<div style="font-size:12px;color:var(--tx2)">消息 ' + ((ui.conversation && ui.conversation.length) || 0) + ' 条 · 线程体量约 ' + fmt(convTok) + ' tokens（续跑时计入下轮请求）</div>'
       + '<b style="font-size:12px;display:block;margin-top:8px">常驻注入面（每轮都发）</b>'
       + '<div style="font-size:12px;color:var(--tx2)">记忆清单候选 ~' + fmt(memTok) + ' · 技能清单 ~' + fmt(skillTok) + ' tokens（记忆正文只在被召回时注入·技能全文只在 useSkill 时展开）</div>';
-    _mgmtCard('用量 · 上下文（真口径 = 系统词 + 工具 schema + 全对话）', body, m ? ('最近一轮 ' + fmt(m.tokensUsed) + ' tokens · 占上限 ' + Math.round((m.tokensUsed || 0) * 100 / budget) + '%') : '暂无运行数据');
+    _mgmtCard('用量 · 上下文（估算与服务商报告分列）', body, m ? ('最近一轮约 ' + fmt(m.tokensUsed) + ' tokens · 占上限 ' + Math.round((m.tokensUsed || 0) * 100 / budget) + '%') : '暂无运行数据');
   }
 
   // 方向M · 运行历史/审计日志（持久·可搜·跨刷新存活·不存大快照避 quota·cap 50）
@@ -1958,7 +1965,7 @@
       applied: false
     };
     /* 用量卡数据：最近一轮的真口径构成(G1)与压缩/插话计数(所有模式都经此汇点) */
-    if (res && res.tokensUsed != null) ui._lastRunMeta = { kind: kind, tokensUsed: res.tokensUsed || 0, tokensBreakdown: res.tokensBreakdown || null, iterations: res.iterations || 0, macroCompactions: res.macroCompactions || 0, steered: res.steered || 0, ts: Date.now() };
+    if (res && (res.tokensUsed != null || res.metrics)) ui._lastRunMeta = { kind: kind, tokensUsed: res.tokensUsed || 0, tokensBreakdown: res.tokensBreakdown || null, metrics:res.metrics || null, iterations: res.iterations || 0, macroCompactions: res.macroCompactions || 0, steered: res.steered || 0, ts: Date.now() };
     var h = _loadHistory(); h.push(rec); _saveHistory(h);
     ui._lastRunId = rec.id;
     if (typeof ui._onHistoryChange === 'function') { try { ui._onHistoryChange(); } catch (e) {} }

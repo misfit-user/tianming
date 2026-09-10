@@ -39,7 +39,7 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
   await test('explicit editing subset rejects a known but unoffered write', async () => {
     const f = fixture(), d = f.aa.makeDraft({ name: '原' }); let n = 0;
     const r = await f.aa.runAuthoringLoop(d, '核对', { ...opts, tools: f.aa.AGENT_TOOLS.filter(t => ['getField', 'finish'].includes(t.name)), caller: async () => ({ toolCalls: ++n === 1 ? [attacks[0]] : [call('finish', { summary: '未修改' })] }) });
-    assert.equal(d.name, '原'); assert.equal(r.transcript[0].result.errorCode, 'tool-not-authorized'); assert(r.finished);
+    assert.equal(d.name, '原'); assert.equal(r.transcript[0].result.errorCode, 'tool-not-authorized'); assert.equal(r.finished, false); assert.equal(r.completion.status, 'blocked');
   });
   await test('approved editing still changes detached draft and stages memory for explicit commit', async () => {
     const f = fixture(), original = { name: '原' }, d = f.aa.makeDraft(original); let n = 0;

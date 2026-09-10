@@ -194,7 +194,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   ok(vBounce.length === 1 && vBounce[0].id === 'v2', 'G7 未完 todo 时 finish → 顶回(带项数与出路)');
   ok(vBounce[0].content.indexOf('补三将属性') >= 0 && vBounce[0].content.indexOf('todoWrite 更新任务表') >= 0, 'G7 顶回消息点名未完项+给"确不需要做"的出路');
   ok(rV.finished && rV.stopReason === 'finish' && rV.todos.length === 0, 'G7 完成任务表后 finish 放行·表已自动清');
-  // 7b: 只顶一次(防死循环)——agent 坚持 finish 第二次放行·剩余 todo 经 result.todos 交 UI
+  // 7b: 未完成不能靠反复finish抹掉；沿用有限finish尝试上限，明确受阻而非无限循环。
   var wq = 0;
   var rW = await AA.runAuthoringLoop(AA.makeDraft({ name: '甲' }), '固执收尾', {
     caller: function () {
@@ -203,7 +203,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
       return Promise.resolve({ text: '', toolCalls: [{ id: 'wf' + wq, name: 'finish', input: { summary: '就这样' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000
   });
-  ok(rW.finished && wq === 3, 'G7 顶回仅一次·坚持 finish 第二次放行(防死循环)');
+  ok(!rW.finished && wq === 4 && rW.stopReason === 'finishBlocked', 'G7 反复坚持仍不虚报完成·3次finish后受阻停止');
   ok(rW.todos.length === 1 && rW.todos[0].content === '某项', 'G7 未完项经 result.todos 交 UI(用户可见"没做完啥")');
   // 7c: noToolCalls nudge 感知任务表(点名未完项)
   var nq = 0;
@@ -494,7 +494,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
     allowedCollections: ['characters'], maxTokens: 5000000
   });
   var permDenied = permResult.transcript.filter(function(t) { return ['bulkUpdate', 'mapAssignOwner', 'renameRegion', 'copyField'].indexOf(t.name) >= 0; });
-  ok(permResult.finished && permDenied.length === 4 && permDenied.every(function(t) { return t.result && t.result.ok === false && /范围沙箱/.test(t.result.reason || ''); }), 'H7c 批量/地图/改名/复制四种旁路均被 allowedCollections 拦截');
+  ok(!permResult.finished && permResult.completion.status === 'blocked' && permDenied.length === 4 && permDenied.every(function(t) { return t.result && t.result.ok === false && /范围沙箱/.test(t.result.reason || ''); }), 'H7c 四种旁路被allowedCollections拦截，不能再虚报写入已完成');
   ok(permDraft.factions[0].name === '明' && permDraft.factions[0].power === 1 && permDraft.map.regions[0].name === '京师' && permDraft.map.regions[0].ownerKey === 'f1', 'H7c 越权调用未留下任何写入');
 
   // ───────── H7d · 并行会审停止覆盖全部在途 caller ─────────

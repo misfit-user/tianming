@@ -108,6 +108,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --authoring-stream
       - name: Guoshi project ownership and read-only execution (real Electron)
         run: node scripts/verify-electron-bridge.js --authoring-boundaries
+      - name: Guoshi truthful completion and same-project recovery (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-recovery
       - name: Controlled TLS address binding and redirects
         run: node scripts/verify-remote-tls.js
       - name: Relief pilot official scenarios, real UI and save recovery

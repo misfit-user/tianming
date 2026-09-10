@@ -112,6 +112,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --authoring-boundaries
       - name: Guoshi truthful completion and same-project recovery (real Electron)
         run: node scripts/verify-electron-bridge.js --authoring-recovery
+      - name: Guoshi relay continuation, readable controls and empty administration (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-continuation
       - name: Guoshi bounded progress, instruction retention and actual game consumption
         run: |
           node scripts/verify-electron-bridge.js --authoring-efficiency

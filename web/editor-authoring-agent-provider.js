@@ -26,7 +26,7 @@
   function _classifyApiError(e) {
     if (!e) return '未知错误';
     if (!e.status && ((e.name === 'TypeError') || /failed to fetch|networkerror|err_|load failed/i.test(e.message || ''))) {
-      return '无法连接到 API：网络不通、地址错误，或第三方中转未开启 CORS 跨域。桌面客户端内一般不受 CORS 限制；浏览器内需中转支持跨域。';
+      return '未收到完整 API 响应：连接可能被中转关闭、网络中断，或地址/跨域配置异常。请检查中转可用性；这不是“模型未调用工具”。';
     }
     if (e.status === 401 || e.status === 403) return 'API Key 无效或无权限（HTTP ' + e.status + '）。';
     if (e.status === 404) return 'API 地址不对（HTTP 404）：检查 URL 是否缺 /v1 或 /chat/completions。';
@@ -115,14 +115,22 @@
     return { text: text, toolCalls: toolCalls, truncated: data.stop_reason === 'max_tokens' };
   }
 
+  function _toolInput(value) {
+    var input = value === undefined ? {} : (typeof value === 'string' ? JSON.parse(value) : value);
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('tool-input-not-object');
+    return input;
+  }
   function _parseOpenAI(data) {
     var text = '', toolCalls = [], badToolJson = false;
     if (data.choices && data.choices[0] && data.choices[0].message) {
       var msg = data.choices[0].message;
-      if (msg.content) text = msg.content;
-      (msg.tool_calls || []).forEach(function(tc, i) {
-        var fn = tc.function || {}, input = {}, parsedOk = true;
-        try { input = JSON.parse(fn.arguments || '{}'); } catch (e) { parsedOk = false; badToolJson = true; }
+      if (typeof msg.content === 'string') text = msg.content;
+      else if (Array.isArray(msg.content)) text = msg.content.filter(function(b) { return b && b.type === 'text' && typeof b.text === 'string'; }).map(function(b) { return b.text; }).join('');
+      var nativeCalls = Array.isArray(msg.tool_calls) ? msg.tool_calls : (msg.function_call ? [{ function: msg.function_call }] : []);
+      nativeCalls.forEach(function(tc, i) {
+        var fn = tc && tc.function || {}, input = {}, parsedOk = true;
+        try { input = _toolInput(fn.arguments); } catch (e) { parsedOk = false; badToolJson = true; }
+        if (typeof fn.name !== 'string' || !fn.name) { parsedOk = false; badToolJson = true; }
         if (fn.name && parsedOk) toolCalls.push({ id: tc.id || _genId(i), name: fn.name, input: input });   // 斩断的调用不执行(勿以空入参乱跑)
       });
     }
@@ -178,10 +186,10 @@
 
   // 抠掉 ```json``` 围栏 / <json> 标签，便于从被包裹文本里解析工具调用（中转/模型常这么吐）。
   function _stripJsonWrappers(text) {
-    var s = String(text || '');
-    var fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    var s = String(text || '').trim();
+    var fence = s.match(/^```(?:json)?\s*([\s\S]*?)```$/i);
     if (fence) s = fence[1];
-    var tag = s.match(/<json>\s*([\s\S]*?)<\/json>/i);
+    var tag = s.match(/^<json>\s*([\s\S]*?)<\/json>$/i);
     if (tag) s = tag[1];
     return s;
   }
@@ -189,18 +197,18 @@
   // 从纯文本抠 {tool_calls:[{name,input}]}（端点忽略 tools 直接吐 JSON 时兜底）
   function _parseJsonToolCalls(text) {
     if (!text) return [];
-    var parsed = null;
+    // 仅接受完整命令信封；说明文字中的 JSON 示例不是待执行指令。
     try {
-      var unwrapped = _stripJsonWrappers(text);
-      parsed = (typeof extractJSON === 'function') ? extractJSON(unwrapped) : JSON.parse(unwrapped);
+      var parsed = JSON.parse(_stripJsonWrappers(text));
+      var entries = parsed && Array.isArray(parsed.tool_calls) ? parsed.tool_calls
+        : (parsed && typeof parsed.name === 'string' && Object.prototype.hasOwnProperty.call(parsed, 'input') ? [parsed] : []);
+      return entries.map(function(c, i) {
+        var fn = c && (c.function || c);
+        if (!fn || typeof fn.name !== 'string' || !fn.name) throw new Error('tool-name-missing');
+        var input = _toolInput(Object.prototype.hasOwnProperty.call(fn, 'input') ? fn.input : fn.arguments);
+        return { id: c.id || _genId(i), name: fn.name, input: input };
+      }); // 任一坏参数使整批失效，不能先执行前半批。
     } catch (e) { return []; }
-    var calls = [];
-    if (parsed && Array.isArray(parsed.tool_calls)) {
-      parsed.tool_calls.forEach(function(c, i) { if (c && c.name) calls.push({ id: _genId(i), name: c.name, input: c.input || c.arguments || {} }); });
-    } else if (parsed && parsed.name) {
-      calls.push({ id: _genId(0), name: parsed.name, input: parsed.input || {} });
-    }
-    return calls;
   }
 
   function _flattenConversation(system, conversation, tools) {
@@ -215,7 +223,7 @@
         (turn.toolResults || []).forEach(function(tr) { lines.push('【结果】' + tr.name + ': ' + tr.content); });
       }
     });
-    lines.push('\n可用工具: ' + tools.map(function(t) { return t.name + '(' + Object.keys((t.parameters && t.parameters.properties) || {}).join(',') + ')'; }).join(' / '));
+    lines.push('\n本轮可用工具及参数契约（不得调用清单之外的工具）: ' + JSON.stringify(tools));
     lines.push('只返回纯 JSON（不要 markdown）：{"tool_calls":[{"name":"<工具>","input":{...}}]}');
     return lines.join('\n');
   }
@@ -458,6 +466,7 @@
         if (e && /^authoring-response-/.test(e.code || '')) throw e; // 已确定的协议损坏不能当网络抖动反复调用。
         var retryable = e && e.status ? (e.status === 429 || e.status >= 500) : (timedOut || !(e && e.aborted));
         if (n < maxRetries && retryable) return _delay((e && e.retryAfterMs) || Math.min(30000, base * Math.pow(2, n)), outerSignal).then(function() { return attempt(n + 1); });
+        if (e && retryable) { e.retriesExhausted = true; e.attempts = n + 1; }
         throw e;
       });
     }
@@ -510,12 +519,16 @@
     }
 
     function fallbackTextCall() {
-      var prompt = _flattenConversation(system, conversation, tools);
-      var fbBody = gemini
-        ? { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: cfg.temp, maxOutputTokens: maxTok } }
-        : anthropic
-          ? { model: cfg.model, max_tokens: maxTok, messages: [{ role: 'user', content: prompt }] }
-          : { model: cfg.model, temperature: cfg.temp, max_tokens: maxTok, messages: [{ role: 'user', content: prompt }] };
+      var prompt = _flattenConversation('', conversation, tools), flat = [];
+      conversation.forEach(function(turn, i) {
+        var images = turn.role === 'user' ? _imgParts(turn.images) : [];
+        if (images.length) flat.push({ role: 'user', text: '第 ' + (i + 1) + ' 条用户消息的图片附件：' + (turn.text || ''), images: images });
+      });
+      flat.push({ role: 'user', text: prompt }); // 各轮图片保留各自上限及归属，不能合并后只留下前四张。
+      var fbBody = gemini ? _toGemini(flat, system, [], maxTok, cfg.temp)
+        : anthropic ? _toAnthropic(flat, system, [], maxTok, cfg.model)
+        : _toOpenAI(flat, system, [], maxTok, cfg.model, cfg.temp);
+      delete fbBody.tools; delete fbBody.tool_choice; delete fbBody.toolConfig;
       return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
         var parsed = _parseResp(data);
         if (parsed.truncated || parsed.badToolJson) { parsed.fallback = true; return parsed; }
@@ -524,35 +537,36 @@
       });
     }
 
-    return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) }, opts).then(function(data) {
+    var usedTextFallback = !!opts.textToolFallback;
+    return (usedTextFallback ? fallbackTextCall() : _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) }, opts).then(function(data) {
       var parsed = _parseResp(data);
       if (parsed.truncated || parsed.badToolJson) return parsed;
       if (parsed.toolCalls.length) return parsed;
       var fromText = _parseJsonToolCalls(parsed.text); // 端点忽略 tools 但吐了 JSON
       if (fromText.length) return { text: parsed.text, toolCalls: fromText, fallback: true, usage: parsed.usage };
       return parsed; // 纯文本无工具 → 交给 loop 判 noToolCalls
-    }).catch(function(e) {
+    })).catch(handleFailure);
+    function handleFailure(e) {
       // 玩家停止属于控制流，不做文本兜底、不重试、不改写成“网络抖动”。
       if ((opts.signal && opts.signal.aborted) || (e && e.aborted)) throw _abortError((opts.signal && opts.signal.reason) || (e && e.message));
       // 刀G8 · 超限识别:400+超窗文案 → 不做注定失败的文本兜底(更长)·标 overflow 供 loop 压缩自救
       var _msg0 = String((e && e.message) || '');
       var _ovf0 = !!(e && e.status === 400 && _OVERFLOW_RE.test(_msg0));
-      if (e && e.status === 400 && !_ovf0) {
-        return fallbackTextCall().catch(function (e2) {   // 兜底自身撞超限(拍平后更长)也标 overflow
-          var _m2 = String((e2 && e2.message) || '');
-          if (e2 && e2.status === 400 && _OVERFLOW_RE.test(_m2)) { var ef = new Error('上下文超限（对话+工具已超过模型窗口）：' + _m2.slice(0, 160)); ef.status = 400; ef.overflow = true; ef.cause = e2; throw ef; }
-          throw e2;
-        });
+      if (e && e.status === 400 && !_ovf0 && !usedTextFallback) {
+        usedTextFallback = true;
+        return fallbackTextCall().catch(handleFailure); // 文本兜底同样保留取消/超窗/重试耗尽语义，且只试一次。
       }
       var err = new Error(_ovf0 ? ('上下文超限（对话+工具已超过模型窗口）：' + _msg0.slice(0, 160)) : _classifyApiError(e));   // 网络/CORS/鉴权/路径 → 可操作中文提示
       err.status = e && e.status; err.code = e && e.code; err.cause = e;
+      err.retriesExhausted = !!(e && e.retriesExhausted); err.attempts = e && e.attempts;
+      if (err.retriesExhausted) err.message += '（本轮已尝试 ' + err.attempts + ' 次，已停止自动重试；已完成的草稿保留，可待连接恢复后继续。）';
       err.overflow = _ovf0;
       // 韧性：标记可重试的瞬态错误（429/5xx/网络/超时）；鉴权(401/403)/路径(404)等非瞬态不重试
       var s = err.status;
       var networkish = !s && e && (e.name === 'TypeError' || /failed to fetch|networkerror|err_|load failed|aborted|timeout/i.test(String(e.message || '')));
       err.transient = !!(e && e.transient) || (s === 429) || (s >= 500) || !!networkish;
       throw err;
-    });
+    }
   }
 
   /**
@@ -568,6 +582,9 @@
     var ping = [{ name: 'ping', description: '连通性测试·回声', parameters: { type: 'object', properties: { ok: { type: 'boolean', description: '固定填 true' } }, required: ['ok'] } }];
     return callWithTools('调用 ping 工具，参数 ok=true，确认连通。', ping, { cfg: cfg, maxTok: 64, maxRetries: 1, timeoutMs: 30000, signal: opts.signal })
       .then(function(r) {
+        if (!r || r.truncated || r.badToolJson || !r.toolCalls || r.toolCalls.length !== 1 || r.toolCalls[0].name !== 'ping' || r.toolCalls[0].input.ok !== true) {
+          return { ok: false, model: cfg.model, detail: 'API 已响应，但未返回有效的 ping 工具调用；普通聊天可用不代表国师工具调用可用，请核对中转和模型的工具支持。' };
+        }
         return {
           ok: true,
           provider: _isAnthropic(cfg.url) ? 'anthropic' : 'openai-compat',

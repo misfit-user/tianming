@@ -27,7 +27,11 @@ function harness(options = {}) {
   vm.createContext(c);
   for (const name of ['_getAITier', '_buildAIUrlForTier', '_buildAIUrl']) vm.runInContext(functionSource(read('tm-utils.js'), name), c);
   for (const file of ['tm-ai-infra-json.js', 'tm-ai-infra.js', 'tm-building-works.js', 'tm-custom-build-agent.js']) vm.runInContext(read(file), c, { filename: file });
-  vm.runInContext(functionSource(read('tm-player-core.js'), '_dfAppraiseCustomBuild'), c);
+  // UI now needs the real modal/world lease, not an unowned detached callback.
+  vm.runInContext(['_tmCaptureWorldLease', '_tmWorldLeaseCurrent'].map(n => functionSource(read('tm-post-turn-jobs.js'), n)).join('\n'), c);
+  const core = read('tm-player-core.js');
+  vm.runInContext(core.slice(core.indexOf('var _DF_BUILD_CAT_CN'), core.indexOf('/** 非直辖区划')), c);
+  elements._dfBuildModal = { isConnected: true, _dfBuildContext: { divName: '测试府', lease: c._tmCaptureWorldLease() } };
   c.escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   c._aiQueue.enqueue = fn => fn(); // no rate-limit wall-clock wait in deterministic HTTP tests
   c.fetch = async (url, init) => {
@@ -106,11 +110,12 @@ async function main() {
     assert.equal(h.elements._bmAppraise.disabled, false); assert.equal(h.elements._bmCustName.value, '崇文馆');
     assert(!h.c._dfPendingAppraisal); assert(!html.includes('准 奏 开 工'));
   });
-  await check('successful UI shows validated appraisal and approval remains explicit', async () => {
+  await check('successful UI shows validated appraisal and explicit original-channel adoption', async () => {
     const h = harness(), before = JSON.stringify(h.c.GM);
     await h.c._dfAppraiseCustomBuild(encodeURIComponent('测试府'));
     assert(h.elements._bmAppraiseResult.innerHTML.includes('有司核议：合理'));
-    assert(h.elements._bmAppraiseResult.innerHTML.includes('准 奏 开 工'));
+    assert(h.elements._bmAppraiseResult.innerHTML.includes('录 入 核 议 建 议'));
+    assert(!h.elements._bmAppraiseResult.innerHTML.includes('准 奏 开 工'));
     assert.equal(h.c._dfPendingAppraisal.req.name, '崇文馆'); assert.equal(h.elements._bmAppraise.disabled, false);
     assert.equal(JSON.stringify(h.c.GM), before);
   });

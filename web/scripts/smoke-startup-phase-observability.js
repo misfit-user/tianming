@@ -21,7 +21,9 @@ assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest s
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
 assert.strictEqual(manifest.deferredChangesApproved, 8, 'the original six and two explicit relief providers form the complete deferred set');
-assert.strictEqual(manifest.scriptCount, 409, 'Feature Loader V2 plus the AI applier bundle should reduce the eager startup chain from 416 to 409 scripts');
+assert.strictEqual(manifest.scriptCount, 410, '409 retained scripts plus the explicit building-order receipt owner form the complete eager set');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-building-orders.js').length, 1, 'the building-order owner must be loaded exactly once');
+assert(scriptNames.indexOf('tm-building-orders.js') > scriptNames.indexOf('tm-custom-build-agent.js'), 'the order owner follows its actual construction provider');
 assert(manifest.scripts.every((row) => row.lazySafe === false && row.loadPolicy === 'eager-ordered'), 'retained classic scripts should remain explicitly eager');
 assert(manifest.scripts.every((row) => Array.isArray(row.provides) && Array.isArray(row.consumes)), 'manifest should expose machine-readable provider and immediate-consumer inventories');
 assert(manifest.scripts.every((row) => row.mustLoadBefore.length === 0 && row.mustLoadAfter.length === 0), 'adjacent scripts must not be emitted as fake dependencies');

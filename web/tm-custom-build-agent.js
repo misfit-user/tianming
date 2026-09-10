@@ -1,7 +1,7 @@
 /* tm-custom-build-agent.js — 自拟营建 agent（A1 · 骨架 + 勘地 read 工具 + 单发核定）
  *
  * owner 拍板 2026-06-20：自拟营建改**真 agent**——按玩家描述，AI **当场**核定效果/工期/造价/可行性。
- *   闭环：玩家描述 →【请有司核议】→ 本 agent 当场核定 → 核议帖 → 玩家准奏即开工 → 注入回合推演。
+ *   当前闭环：玩家描述 →【请有司核议】→ 核议帖 → 录入诏令建议 → 纳入原诏书并颁行 → 回合正式落账。
  *   纪律（防玄幻）：**判断当场自由，落账走硬门**——agent 判断自由，effectsStructured 仍过
  *     sanitizeStructuredFx 白名单 + 费效封顶（A2）+ 工期 tick 完工入账（A3）。十两银修不出雄关，不因 agent 而废。
  *
@@ -322,17 +322,19 @@
     var stats = { rounds: 0, reads: 0 };
     var maxTok = (_conf().customBuildAgentMaxTok) || 1200;
     for (var round = 1; round <= maxR; round++) {
+      if (ctx.signal && ctx.signal.aborted) return { error: 'aborted' };
       stats.rounds = round;
       var forceLast = (round === maxR);   // 末轮逼核议·防空转
       var resp;
       try {
         resp = await cawt(transcript, tools, {
           maxTok: maxTok, tier: _TIER(), priority: 'normal',
-          timeoutMs: 60000, maxRetries: 1,
+          timeoutMs: 60000, maxRetries: 1, signal: ctx.signal,
           forceTool: forceLast ? 'submit_appraisal' : undefined,
           id: 'custom_build_appraise:r' + round
         });
       } catch (e) { return { error: 'call-failed', detail: { status: Number(e && e.status) || 0, message: 'AI request failed' } }; }
+      if (ctx.signal && ctx.signal.aborted) return { error: 'aborted' };
       if (!resp) return { error: 'no-resp' };
       if (resp.error) return { error: resp.error.code || 'call-failed', detail: resp.error };
       if (resp.truncated) return { error: 'appraisal-truncated' };
@@ -414,7 +416,7 @@
     var resp;
     try {
       resp = await cawt(L.join('\n'), [CRITIQUE_TOOL], {
-        maxTok: 500, tier: _TIER(), priority: 'normal', timeoutMs: 45000, maxRetries: 1,
+        maxTok: 500, tier: _TIER(), priority: 'normal', timeoutMs: 45000, maxRetries: 1, signal: ctx.signal,
         forceTool: 'critique', id: 'custom_build_critique'
       });
     } catch (e) { return null; }
@@ -450,6 +452,7 @@
     ctx = ctx || {};
     req = req || {};
     var out = { ok: false, fallback: false, appraisal: null, inspection: null };
+    if (ctx.signal && ctx.signal.aborted) { out.reason = 'aborted'; return out; }
     var cawt = root.callAIWithTools;
     if (typeof cawt !== 'function') { out.reason = 'no-cawt'; return out; }
     var hasKey = !!(root.P && root.P.ai && root.P.ai.key);
@@ -460,6 +463,7 @@
 
     // A5 多步核定：baseline 勘地注入 + agent 可再调 inspect_region/recall_precedent → 末轮逼 submit_appraisal（走次要 API）
     var decided = await _decideMultiStep(divName, req, ctx, inspection);
+    if (ctx.signal && ctx.signal.aborted) { out.reason = 'aborted'; return out; }
     if (decided.error) { out.reason = decided.error; if (decided.detail) out.error = decided.detail; return out; }
     out.fallback = !!decided.fallback;
     out.toolStats = decided.toolStats;
@@ -472,6 +476,7 @@
       var cri = await _critiqueAppraisal(req, ap, inspection, ctx);
       if (cri) { out.critique = cri.verdict; if (cri.applied) ap = cri.adjusted; }
     } catch (eC) {}
+    if (ctx.signal && ctx.signal.aborted) { out.reason = 'aborted'; return out; }
 
     // A2 落账硬门：判断当场自由，落账走硬门——AI 拟的 effectsStructured 必过 sanitizeStructuredFx
     //   （白名单 + 费效封顶）削正后才认；人话徽签走 fxLabels（与真实建筑同一路径·保「所见即所得」）。
@@ -524,7 +529,7 @@
   }
 
   /**
-   * approveBuild — A3 准奏开工：玩家准奏后即扣银 + 落库 + 注入回合推演（不隔绝）。
+   * approveBuild — 正式推演的营建落账接口（building_project 工具消费）；核议 UI 不得直接调用。
    *   · 扣银：从国库走 FiscalEngine.spendFromGuoku（硬核账·有欠账·不阻断·同募兵/军工用法）。
    *   · 落库：push division.buildings[] status=building（与 endturn-apply 同构）→ 过既有工期 tick → 完工入账
    *           （effectsStructured 已 A2 削正）。timeActual<1 → 钳为 1 回合（无瞬成魔法·保证过 tick 入账）。
@@ -543,15 +548,21 @@
     if (!div) { out.reason = 'no-div'; return out; }
 
     // 扣银（国库·皇帝准奏出帑）——走真引擎·有欠账不阻断（同募兵/军工）
-    var cost = _num(appraisal.costActual);
+    var cost = appraisal.costActual == null ? 0 : Number(appraisal.costActual);
+    if (!isFinite(cost) || cost < 0) { out.reason = 'invalid-cost'; return out; }
     var spentMoney = 0, deficit = 0;
     var FE = root.FiscalEngine;
-    if (cost > 0 && FE && typeof FE.spendFromGuoku === 'function') {
+    if (cost > 0) {
+      if (!FE || typeof FE.spendFromGuoku !== 'function') { out.reason = 'fiscal-engine-unavailable'; return out; }
       try {
-        var sp = FE.spendFromGuoku({ money: cost }, '营建·' + (req.name || divName));
+        var sp = FE.spendFromGuoku({ money: cost }, '营建·' + (req.name || divName), GM);
+        if (!sp || sp.ok !== true) { out.reason = 'spend-rejected:' + ((sp && sp.reason) || 'no-receipt'); return out; }
         var dm = sp && sp.deducted && sp.deducted.money;
-        if (dm) { spentMoney = _num(dm.deducted); deficit = _num(dm.deficit); }
-      } catch (e) { out.reason = 'spend-failed:' + (e && e.message); }  // 扣款异常不阻断开工
+        if (!dm || !isFinite(dm.deducted) || !isFinite(dm.deficit) || dm.deducted < 0 || dm.deficit < 0) {
+          out.reason = 'spend-invalid-receipt'; return out;
+        }
+        spentMoney = Number(dm.deducted); deficit = Number(dm.deficit);
+      } catch (e) { out.reason = 'spend-failed:' + (e && e.message); return out; }
     }
 
     // 落库（与 endturn-apply:3787 同构·过既有 tick）·timeActual≥1
@@ -564,7 +575,7 @@
       effectsStructured: (appraisal.effectsStructured && typeof appraisal.effectsStructured === 'object') ? appraisal.effectsStructured : null,
       costActual: cost || null, timeActual: _num(appraisal.timeActual) || rt,
       status: 'building', remainingTurns: rt, startTurn: _num(GM.turn),
-      _viaAgent: true   // 可观测：自拟营建 agent 准奏开工（非回合末 AI 核定）
+      _viaAgent: true   // 可观测：正式 agent 营建工具落账，非核议 UI 扣款
     };
     div.buildings.push(building);
     out.building = building;

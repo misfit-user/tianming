@@ -175,7 +175,17 @@
       // §4 sc1 写回（applyAITurnChanges + 各字段族 GM 落地·~4000 行）
       // ═══════════════════════════════════════════════════════════
       if(p1){
-        await ns.stages._applyCore_reconcile(ctx);
+        if (!TM.BuildingOrders && ctx.input.buildingOrders && ctx.input.buildingOrders.ids.length) throw new Error('营造案写回模块未加载，未执行旧版兼容写法');
+        if (TM.BuildingOrders) TM.BuildingOrders.protectOutput(GM, P, ctx.input.buildingOrders, p1);
+        var buildingTransaction = TM.BuildingOrders && TM.BuildingOrders.begin(GM, P, ctx.input.buildingOrders);
+        try {
+          if (TM.BuildingOrders) ctx.apply.buildingReceipts = TM.BuildingOrders.apply(GM, P, ctx.input.buildingOrders, p1, false);
+          await ns.stages._applyCore_reconcile(ctx);
+          if (buildingTransaction) buildingTransaction.commit();
+        } catch (buildingApplyError) {
+          if (buildingTransaction) buildingTransaction.rollback();
+          throw buildingApplyError;
+        }
 
         // v5·人物生成 B · 取消每回合 API 调用·改为玩家手动点击 pending 名时按需生成
         // scanMentionedCharacters 只允许登记 pending，不允许在回合推演中自动调用 AI 生成人物

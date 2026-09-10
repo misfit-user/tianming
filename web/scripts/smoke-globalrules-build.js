@@ -5,6 +5,7 @@
  * node scripts/smoke-globalrules-build.js
  */
 global.window = global;
+require('../tm-fiscal-engine.js'); // 真实扣款前置；不能以缺财政引擎的免费开工覆盖立制测试。
 var GR = require('../tm-globalrules.js');
 global.GlobalRules = GR;                 // applyCompletion 走 window.GlobalRules
 var CBA = require('../tm-custom-build-agent.js');
@@ -14,7 +15,7 @@ var pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 function freshDiv() { return { name: '应天', buildings: [] }; }
-function setup() { global.GM = { turn: 7, _chronicle: [] }; global.P = {}; }
+function setup() { global.GM = { turn: 7, _chronicle: [], guoku: { money: 100000, balance: 100000 } }; global.P = {}; }
 
 // 1·准奏一座「实学馆」（带 globalRule）→ GM._globalRules 立制 + 建筑挂名
 setup();
@@ -35,6 +36,7 @@ var appraisal = {
 var req = { name: '应天实学馆', category: 'cultural', description: '教算学格物火器医农政' };
 var res = CBA.approveBuild('应天', appraisal, req, { div: div, P: P, GM: GM });
 ok(res.ok === true, 'approveBuild 成功');
+ok(GM.guoku.money === 92000 && GM.guoku.balance === GM.guoku.ledgers.money.stock, '立制工程先经真实财政账扣款 8000');
 ok(div.buildings.length === 1 && div.buildings[0].status === 'building', '建筑落库 status=building');
 ok(!GR.find('实学之制'), '★工竣立制：准奏时不 register（制未成不先立）');
 ok(div.buildings[0]._globalRuleSpec && div.buildings[0]._globalRuleSpec.name === '实学之制', '准奏存 spec 于建筑之上');

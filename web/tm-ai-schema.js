@@ -155,6 +155,7 @@
     gongming_grants:  { type: 'array', desc: '功名出身授予（{name, action:menyin门荫/nazi捐纳/junggong军功/lijin吏进/enci特赐进士出身/honor加衔, honor?:庶吉士|科道(action=honor时), tier?, reason}）——奏荫、捐例、录军功、馆选庶吉士落此。异途(捐纳)/越次授清要会招清议' },
     merit_changes:    { type: 'array', desc: '功名(政绩)升降（{name, kind:achievement立功/failure失职, failureType:task_botched办砸/admin_failure地方失政/relief_failure救灾不力/reform_failure改革失败/grave_injustice冤案/delay_military贻误军机/military_defeat败绩/military_rout丧师/corruption_exposed贪腐案发, amount?, reason}）——立大功(平叛/改革成功/赈灾/营造)涨·砸大事按 failureType 减(责任人:战败主帅/改革推动者/救灾督抚)。功名=政绩·政争构陷不减' },
     building_changes: { type: 'array', desc: '建筑变动（build/custom_build/upgrade/destroy，需 territory+type；custom_build 须给 effectsStructured 白名单结构化效果·费效为度）' },
+    building_decisions: { type: 'array', desc: '原诏书营造案逐案裁定：requestId + decision(approve/defer/reject) + reason；引用核议或给 costActual/timeActual/effectsStructured，不另扣同笔造价' },
     region_status_changes: { type: 'array', desc: '地块状态变动（add/remove + region + name + kind:wonder/disaster/event/player + econPct±0.25 + minxinPerTurn±2 + durationTurns≤24·缺省永续）——奇观/天灾/兵燹/丰年/玩家地方善政落此' },
     vassal_changes:   { type: 'array', desc: '封臣关系变动（establish/break/change_tribute）' },
 

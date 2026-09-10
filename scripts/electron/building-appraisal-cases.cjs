@@ -13,12 +13,13 @@ module.exports = async function({ win, temp, check }) {
   await js(`(()=>{
     P.ai={key:'test-primary-only',url:'https://primary.invalid/v1',model:'gpt-4o',temp:0.2,secondary:{key:'test-secondary-only',url:'https://api.deepseek.com/v1',model:'deepseek-v4-flash'}};
     P.conf=P.conf||{}; P.conf.customBuildAgentRounds=1;
-    GM={turn:2,campaignId:'appraisal-fixture',timelineId:'appraisal-fixture',guoku:{money:100000},adminHierarchy:{test:{divisions:[{name:'测试府',buildings:[],economyBase:{commerceVolume:50000},populationDetail:{mouths:100000}}]}}};
+    GM={turn:2,_campaignId:'appraisal-fixture',_timelineId:'appraisal-fixture',vars:{},chars:[],facs:[],memorials:[],guoku:{money:100000},adminHierarchy:{test:{divisions:[{name:'测试府',buildings:[],economyBase:{commerceVolume:50000},populationDetail:{mouths:100000}}]}}};
     P.adminHierarchy=GM.adminHierarchy;
     window.__appraisalTest={mode:'success',requests:[],clicks:0};
     window.fetch=async function(url,init){
       if(!['https://api.deepseek.com/v1/chat/completions','https://primary.invalid/v1/chat/completions'].includes(String(url))) throw Error('test-external-network-denied');
       const b=JSON.parse(init.body);__appraisalTest.requests.push({url:String(url),body:b});
+      if(__appraisalTest.mode==='hold') await new Promise(resolve=>(__appraisalTest.held||=[]).push(resolve));
       const http=(status,message)=>new Response(JSON.stringify({error:{message}}),{status,headers:{'Content-Type':'application/json'}});
       if(__appraisalTest.mode==='auth')return http(401,'Unauthorized');
       if(b.tools&&Object.prototype.hasOwnProperty.call(b,'tool_choice'))return http(400,'Thinking mode does not support this tool_choice');
@@ -77,6 +78,44 @@ module.exports = async function({ win, temp, check }) {
   await check('building-real-retry-recovers-with-proposal-intact', async () => {
     await trigger('success');
     assert.equal(await js(`!!_dfPendingAppraisal && _dfPendingAppraisal.req.description==='召集学士修订典籍' && document.getElementById('_bmAppraiseResult').innerHTML.includes('有司核议：合理') && GM.guoku.money===100000`), true);
-    await js(`document.getElementById('_dfBuildModal').remove()`);
   });
+  await check('building-appraisal-action-only-enqueues-original-edict', async () => {
+    const r = await js(`(()=>{const b=document.querySelector('#_bmAppraiseResult button');if(!b||!b.textContent.includes('核 议 建 议'))throw Error('proposal-button-missing');b.click();return {money:GM.guoku.money,buildings:P.adminHierarchy.test.divisions[0].buildings.length,suggestions:GM._edictSuggestions,modal:!!document.getElementById('_dfBuildModal'),pending:!!window._dfPendingAppraisal};})()`);
+    assert.equal(r.money, 100000); assert.equal(r.buildings, 0); assert.equal(r.modal, false); assert.equal(r.pending, false);
+    assert.equal(r.suggestions.length, 1); assert(r.suggestions[0].content.includes('50000') && r.suggestions[0].content.includes('economyBase.commerceVolume'));
+  });
+  await check('building-formal-adoption-and-real-turn-input-preserve-reference', async () => {
+    await js(`TMPhase8FormalBridge.clearEdictDrafts();TMPhase8FormalBridge.drafts.openZhaoPreviewPanel();new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))`);
+    const r = await js(`(()=>{const b=document.querySelector('.tm-desk-overlay .edict-sug-adopt');if(!b)throw Error('formal-suggestion-missing');const rect=b.getBoundingClientRect(),hit=document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2);if(!(rect.width>0&&rect.height>0&&(hit===b||b.contains(hit))))throw Error('formal-suggestion-not-clickable');b.click();const menu=document.getElementById('_edictAdoptMenu');menu.querySelectorAll('button')[3].click();const input=_endTurn_collectInput();return {economic:input.edicts.economic,money:GM.guoku.money,buildings:P.adminHierarchy.test.divisions[0].buildings.length,tracked:GM._edictTracker.some(t=>t.content.includes('economyBase.commerceVolume'))};})()`);
+    assert(r.economic.includes('50000') && r.economic.includes('economyBase.commerceVolume')); assert.equal(r.tracked, true);
+    assert.equal(r.money, 100000); assert.equal(r.buildings, 0);
+    await js(`new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))`);
+    fs.writeFileSync(path.join(temp, 'building-original-edict.png'), (await win.webContents.capturePage()).toPNG());
+    await js(`TMPhase8FormalBridge.drafts.closeDeskOverlay()`);
+  });
+  await check('building-original-write-tool-pays-only-at-formal-execution', async () => {
+    const r = await js(`(async()=>{const spec={action:'start',region:'测试府',name:'崇文馆',category:'cultural',cost:50000,turns:4,effectsStructured:{abs:{'economyBase.commerceVolume':1000}}};const first=await TM.Endturn.AgentWriteTools.handle('building_project',spec,{GM});const second=await TM.Endturn.AgentWriteTools.handle('building_project',spec,{GM});return {first:first.ok,second:second.ok,money:GM.guoku.money,balance:GM.guoku.balance,stock:GM.guoku.ledgers.money.stock,buildings:P.adminHierarchy.test.divisions[0].buildings.length};})()`);
+    assert.equal(r.first, true); assert.equal(r.second, false); assert.equal(r.money, 50000); assert.equal(r.balance, r.money); assert.equal(r.stock, r.money); assert.equal(r.buildings, 1);
+  });
+  await check('building-real-close-cancels-and-reopened-world-keeps-only-new-reply', async () => {
+    await js(`(()=>{
+      window.__openBuildingFixture=(name)=>{_dfBuildModal('测试府');_dfBuildTab('cus');document.getElementById('_bmCustName').value=name;document.getElementById('_bmCustCat').value='cultural';document.getElementById('_bmCustDesc').value='修订典籍';};
+      __appraisalTest.mode='hold';__appraisalTest.held=[];__openBuildingFixture('旧局工程');document.getElementById('_bmAppraise').click();
+    })()`);
+    const waitHeld = async count => js(`(async()=>{const start=Date.now();while(__appraisalTest.held.length<${count}){if(Date.now()-start>12000)throw Error('held-request-missing');await new Promise(r=>setTimeout(r,20));}})()`);
+    await waitHeld(1);
+    await js(`(()=>{document.querySelector('#_dfBuildModal .tmjz-x').click();GM=Object.assign({},GM,{_timelineId:'new-world',_edictSuggestions:[]});P=Object.assign({},P);__openBuildingFixture('新局工程');document.getElementById('_bmAppraise').click();})()`);
+    await waitHeld(2);
+    await js(`__appraisalTest.mode='success';__appraisalTest.held[1]();`);
+    await js(`(async()=>{const start=Date.now();while(document.getElementById('_bmAppraise').disabled){if(Date.now()-start>12000)throw Error('new-result-missing');await new Promise(r=>setTimeout(r,20));}})()`);
+    await js(`__appraisalTest.held[0]();new Promise(r=>setTimeout(r,100))`);
+    const r = await js(`({pending:_dfPendingAppraisal.req.name,html:document.getElementById('_bmAppraiseResult').textContent,money:GM.guoku.money})`);
+    assert.equal(r.pending, '新局工程'); assert(r.html.includes('地方库银') && r.html.includes('不扣款')); assert.equal(r.money, 50000);
+  });
+  await check('building-real-input-change-invalidates-old-proposal', async () => {
+    const r = await js(`(()=>{const old=document.querySelector('#_bmAppraiseResult button');const d=document.getElementById('_bmCustDesc');d.value='新规制';d.dispatchEvent(new Event('input',{bubbles:true}));old.click();return {pending:!!window._dfPendingAppraisal,suggestions:GM._edictSuggestions.length,retry:!document.getElementById('_bmAppraise').disabled,money:GM.guoku.money};})()`);
+    assert.equal(r.pending, false); assert.equal(r.suggestions, 0); assert.equal(r.retry, true); assert.equal(r.money, 50000);
+    await js(`_dfCloseBuildModal()`);
+  });
+  await require('./building-orders-cases.cjs')({win,temp,check});
 };

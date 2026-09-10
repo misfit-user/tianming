@@ -57,7 +57,9 @@ ok(agent.indexOf('applyPush(_baDraft, input.collection, it)') >= 0, 'bulkAdd 逐
 console.log('— onApply · 元素级归一兜底 —');
 ok(ui.indexOf('function _coerceArrElem(') >= 0, '_coerceArrElem 存在');
 ok(ui.indexOf('function _coerceArrElem(') < ui.indexOf('function onApply('), '_coerceArrElem 定于 onApply 前');
-var applyBody = ui.slice(ui.indexOf('function onApply('), ui.indexOf('function onApply(') + 4200);
+// 取完整实际函数，不能因前方新增身份守卫而在固定4200字符处截掉原有成功摘要。
+var applyNode = require('acorn').parse(ui, { ecmaVersion: 'latest' }).body[0].expression.callee.body.body.find(function(n) { return n.type === 'FunctionDeclaration' && n.id.name === 'onApply'; });
+var applyBody = applyNode ? ui.slice(applyNode.start, applyNode.end) : '';
 ok(applyBody.indexOf('_coerceArrElem(it)') >= 0 && applyBody.indexOf('_dropN++') >= 0 && applyBody.indexOf('_fixN++') >= 0, 'onApply 数组集合元素级归一 + 修复/丢弃计数');
 ok(applyBody.indexOf('已自动修复 ') >= 0 && applyBody.indexOf(' 条无法解析条目') >= 0, 'apply 摘要体现「已自动修复 N 条·丢弃 M 条无法解析条目」');
 

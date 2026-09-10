@@ -12,6 +12,8 @@ const path = require('path');
 const AA = require(path.join(__dirname, '..', 'editor-authoring-agent.js'));
 let pass = 0;
 function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw new Error('FAIL: ' + msg); } pass++; console.log('  ✓ ' + msg); }
+// 正文与 json() 必须是同一份数据；不能 text() 空串、json() 却返回另一套成功结果。
+function jsonResponse(value) { return new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } }); }
 
 (async function main() {
   // ───────── G1 · 预算核算修真 ─────────
@@ -192,7 +194,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   ok(vBounce.length === 1 && vBounce[0].id === 'v2', 'G7 未完 todo 时 finish → 顶回(带项数与出路)');
   ok(vBounce[0].content.indexOf('补三将属性') >= 0 && vBounce[0].content.indexOf('todoWrite 更新任务表') >= 0, 'G7 顶回消息点名未完项+给"确不需要做"的出路');
   ok(rV.finished && rV.stopReason === 'finish' && rV.todos.length === 0, 'G7 完成任务表后 finish 放行·表已自动清');
-  // 7b: 只顶一次(防死循环)——agent 坚持 finish 第二次放行·剩余 todo 经 result.todos 交 UI
+  // 7b: 未完成不能靠反复finish抹掉；沿用有限finish尝试上限，明确受阻而非无限循环。
   var wq = 0;
   var rW = await AA.runAuthoringLoop(AA.makeDraft({ name: '甲' }), '固执收尾', {
     caller: function () {
@@ -201,7 +203,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
       return Promise.resolve({ text: '', toolCalls: [{ id: 'wf' + wq, name: 'finish', input: { summary: '就这样' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000
   });
-  ok(rW.finished && wq === 3, 'G7 顶回仅一次·坚持 finish 第二次放行(防死循环)');
+  ok(!rW.finished && wq === 4 && rW.stopReason === 'finishBlocked', 'G7 反复坚持仍不虚报完成·3次finish后受阻停止');
   ok(rW.todos.length === 1 && rW.todos[0].content === '某项', 'G7 未完项经 result.todos 交 UI(用户可见"没做完啥")');
   // 7c: noToolCalls nudge 感知任务表(点名未完项)
   var nq = 0;
@@ -454,7 +456,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   var _imgReq = null;
   global.fetch = function (u, o) {
     _imgReq = { url: u, body: JSON.parse(o.body) };
-    return Promise.resolve({ ok: true, status: 200, headers: { get: function () { return null; } }, json: function () { return Promise.resolve({ data: [{ b64_json: 'aGVsbG8=' }] }); }, text: function () { return Promise.resolve(''); } });
+    return Promise.resolve(jsonResponse({ data: [{ b64_json: 'aGVsbG8=' }] }));
   };
   var rG1 = await Promise.resolve(AA.dispatchTool(dG, 'generateImage', { path: 'characters.0.portrait', prompt: '明代登莱巡抚半身像·布面甲·沉稳' }));
   ok(rG1.ok === true && /images\/generations$/.test(_imgReq.url) && _imgReq.body.model === 'flux-1' && _imgReq.body.response_format === 'b64_json', 'H7 真调生图端点(模型/回参形制对)');
@@ -477,6 +479,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   });
   var permRound = 0;
   var permResult = await AA.runAuthoringLoop(permDraft, '只能改人物，尝试越权工具', {
+    toolPacks: ['bulk', 'map', 'media'], // 先授权工具，再验证原有 allowedCollections 边界。
     caller: function () {
       permRound++;
       if (permRound === 1) return Promise.resolve({ text: '', toolCalls: [
@@ -491,7 +494,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
     allowedCollections: ['characters'], maxTokens: 5000000
   });
   var permDenied = permResult.transcript.filter(function(t) { return ['bulkUpdate', 'mapAssignOwner', 'renameRegion', 'copyField'].indexOf(t.name) >= 0; });
-  ok(permResult.finished && permDenied.length === 4 && permDenied.every(function(t) { return t.result && t.result.ok === false && /范围沙箱/.test(t.result.reason || ''); }), 'H7c 批量/地图/改名/复制四种旁路均被 allowedCollections 拦截');
+  ok(!permResult.finished && permResult.completion.status === 'blocked' && permDenied.length === 4 && permDenied.every(function(t) { return t.result && t.result.ok === false && /范围沙箱/.test(t.result.reason || ''); }), 'H7c 四种旁路被allowedCollections拦截，不能再虚报写入已完成');
   ok(permDraft.factions[0].name === '明' && permDraft.factions[0].power === 1 && permDraft.map.regions[0].name === '京师' && permDraft.map.regions[0].ownerKey === 'f1', 'H7c 越权调用未留下任何写入');
 
   // ───────── H7d · 并行会审停止覆盖全部在途 caller ─────────
@@ -548,8 +551,8 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   ok((await ad9.openFile('proj:nope')) === false, 'H9 案卷不存在→false(UI 降级只读回看不误绑)');
   app9.state.currentProjectId = null;
   ok(ad9.getFileKey() === 'name:乙剧本', 'H9 未入库剧本弱键 name:<剧本名>');
-  var adL9 = AA.makeOldEditorAdapter({ scriptData: { name: '丙' }, saveScript: function () {} });
-  ok(adL9.getFileKey() === 'file:丙' && (await adL9.openFile('file:丙')) === true && (await adL9.openFile('file:丁')) === false, 'H9 旧编辑器单剧本·仅同键命中');
+  var adL9 = AA.makeOldEditorAdapter({ TM: { legacyEditorDocument: { id: 'current-load' } }, scriptData: { name: '丙' }, saveScript: function () {} });
+  ok(adL9.getFileKey() === 'legacy:current-load' && (await adL9.openFile(adL9.getFileKey())) === true && (await adL9.openFile('file:丙')) === false && (await adL9.openFile('legacy:other-load')) === false, 'H9 旧编辑器仅同加载键命中·同名旧弱键不证明身份');
   var uiSrc9 = require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-icons.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-render.js'), 'utf8');
   ok(uiSrc9.indexOf("'tm_aa_sessions'") >= 0 && uiSrc9.indexOf("'tm_aa_sessbody_'") >= 0 && uiSrc9.indexOf("'tm_aa_sess_active'") >= 0
     && 'tm_aa_sess_active'.indexOf('tm_aa_sessbody_') !== 0, 'H9 UI:索引/正文/指针三键分立(指针不带正文前缀·evict 不误清)');
@@ -600,12 +603,12 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
   console.log('— H13 Codex 面吸收 —');
   var _sumTxt = '①用户请求：补两名文官并规范势力名。②已完成：新增袁可立、毕自严，东林→东林党。③任务表：无未完项。④关键事实：characters 需 faction 字段挂 id。⑤错误与修正：一次 id 漏挂已补。⑥进行中：无。⑦下一步：等用户新需求。' + new Array(40).join('摘要正文补足字符');
   var _oldFetch13 = global.fetch;
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv13 = [];
   for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(60).join('内容'), toolCalls: [] });
   var rc13 = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13 && rc13.ok === true && rc13.after < rc13.before && /【前情摘要·上下文已压缩】/.test(rc13.conversation[0].text), 'H13 手动压缩：N 条→摘要头+近尾(真走 caller 管线)');
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] })); };
   var rc13b = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13b && rc13b.ok === false && rc13b.reason === 'thin', 'H13 摘要太薄按失败处理(原对话不动)');
   var rc13c = await AA.compactConversation([{ role: 'user', text: '短' }], AA.makeDraft({ name: '甲' }), {});
@@ -622,7 +625,7 @@ function ok(cond, msg) { if (!cond) { console.error('  ✗ FAIL: ' + msg); throw
 
   // ───────── H14 · 压缩保用户原话(Codex COMPACT_USER_MESSAGE 对照) ─────────
   console.log('— H14 压缩保用户原话 —');
-  global.fetch = function () { return Promise.resolve({ ok: true, status: 200, json: function () { return Promise.resolve({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] }); }, text: function () { return Promise.resolve(''); } }); };
+  global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv14 = [
     { role: 'user', text: '【用户需求】\n给东林补两个能干的文官\n\n【草稿现状】\n（很长的构建附文·不该进原话）\n\n开始：先按需 getField 查看。' },
     { role: 'assistant', text: '好', toolCalls: [] },

@@ -44,6 +44,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
     var ctx = {
       input: {
         edicts: edicts, xinglu: xinglu, memRes: memRes, oldVars: oldVars,
+        buildingOrders: externalCtx && externalCtx.input && externalCtx.input.buildingOrders || (TM.BuildingOrders ? TM.BuildingOrders.collect(GM, P, edicts || {}) : null),
         timeRatio: timeRatio
       },
       prompt: {

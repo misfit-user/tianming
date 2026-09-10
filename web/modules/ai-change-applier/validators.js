@@ -1192,6 +1192,9 @@ export function createValidators(deps) {
       var p = (c && c.path) || '';
       return /building|project|construction|item|works|edifice/i.test(p);
     });
+    if (!hasRelevant && global.TM && global.TM.BuildingOrders) {
+      hasRelevant = global.TM.BuildingOrders.verifyReceipts(G, global.P, aiOutput.construction_receipts, narrative);
+    }
     var warnings = [];
     if (buildKw && !hasRelevant) warnings.push({ kind: 'construction_build_missing', keyword: buildKw, snippet: _snippetAround(narrative, buildKw, 30) });
     if (destroyKw && !hasRelevant) warnings.push({ kind: 'construction_destroy_missing', keyword: destroyKw, snippet: _snippetAround(narrative, destroyKw, 30) });
@@ -1483,6 +1486,14 @@ export function createValidators(deps) {
       var k = (fa.kind === 'income') ? 'income' : 'expense';
       adjTotal[k][res] += Math.abs(parseFloat(fa.amount) || 0);
     });
+    // 营造专用写口已经扣付；这里只核验真实回执，绝不再次以 fiscal_adjustments 扣款。
+    if (global.TM && global.TM.BuildingOrders) {
+      (aiOutput.construction_receipts || []).forEach(function(r) {
+        if (r && r.committed && global.TM.BuildingOrders.verifyReceipts(G, global.P, [r], narrativeText)) {
+          adjTotal.expense.money += Math.max(0, Number(r.spent && r.spent.money) || 0);
+        }
+      });
+    }
     var mentTotal = { income: { money:0, grain:0, cloth:0 }, expense: { money:0, grain:0, cloth:0 } };
     mentioned.forEach(function(x){ mentTotal[x.kind][x.resource] += x.amount; });
 

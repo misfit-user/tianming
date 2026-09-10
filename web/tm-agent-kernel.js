@@ -181,7 +181,16 @@
     return run;
   }
 
+  // 同步冻结序列化输入，再异步SHA；只返回来源指纹，不持久化案卷正文或凭据。
+  function fingerprintScenario(value) {
+    var json;
+    try { json=JSON.stringify(value); } catch (e) { return Promise.reject(e); }
+    if (typeof json!=='string' || !root.crypto || !root.crypto.subtle || !root.TextEncoder) return Promise.resolve(null);
+    var bytes=new root.TextEncoder().encode(json), size=bytes.byteLength;
+    return root.crypto.subtle.digest('SHA-256',bytes).then(function(buffer){return{algorithm:'sha256-json-v1',bytes:size,hash:Array.from(new Uint8Array(buffer)).map(function(b){return b.toString(16).padStart(2,'0');}).join('')};});
+  }
   TM.AgentKernel = {
+    fingerprintScenario: fingerprintScenario,
     EFFECTS: EFFECTS.slice(),
     RISKS: RISKS.slice(),
     normalizeSpec: normalizeSpec,
@@ -194,4 +203,3 @@
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = TM.AgentKernel;
 })(typeof window !== 'undefined' ? window : globalThis);
-

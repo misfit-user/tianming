@@ -62,28 +62,172 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
   function _clone(o) { try { return JSON.parse(JSON.stringify(o)); } catch (e) { return o; } }   // 维度3 · 撤销快照
+  function _captureOwner() {
+    var adapter = ui.adapter;
+    return { adapter: adapter, lease: adapter && adapter.captureLease ? adapter.captureLease() : null,
+      scenario: adapter && adapter.getScenario ? adapter.getScenario() : null, fileKey: _fileKey(), label: _fileLabel() };
+  }
+  function _ownerCurrent(owner) {
+    if (!owner || owner.adapter !== ui.adapter) return false;
+    if (owner.adapter && owner.adapter.isLeaseCurrent) return owner.adapter.isLeaseCurrent(owner.lease);
+    // 旧嵌入适配器只能证明同一对象，不允许以同名案卷作为跨加载身份。
+    return !!owner.scenario && owner.adapter && owner.scenario === owner.adapter.getScenario();
+  }
+  function _ownerError() {
+    var error = new Error('案卷已切换或重新载入，原国师草稿仍保留但未应用。请查看原结果，或新开对话处理当前案卷。');
+    error.code = 'editor-document-changed';
+    return error;
+  }
+  function _contextReady() {
+    if (ui._sessionSwitch) { setStatus('正在切换案卷，请等待载入完成'); return false; }
+    var owner = ui._draftOwner || (ui.conversation && ui.conversation.length ? ui._conversationOwner : null);
+    if (!owner || _ownerCurrent(owner)) return true;
+    setStatus(_ownerError().message);
+    return false;
+  }
+  function _runOwned(method, draft, request, options) {
+    ui._lastErr = null; ui._partialApplyConfirmed = false; // 旧恢复按钮/部分应用确认不能授权新一轮结果。
+    var owner = ui._draftOwner, run = { owner: owner, draft: draft };
+    ui._activeUiRun = run;
+    ui._conversationOwner = owner;
+    options = Object.assign({}, options);
+    var recovery = ui._recovery;
+    if (recovery && recovery.method === method && recovery.draft === draft) {
+      if (!_recoveryReady(recovery)) { ui._activeUiRun = null; return Promise.reject(_recoveryError()); }
+      options.resumeState = recovery.state;
+    }
+    function current() { return ui._activeUiRun === run && draft === ui.draft && _ownerCurrent(owner); }
+    ['onStep', 'onText', 'onSubtask', 'onCritique'].forEach(function(key) {
+      var callback = options[key];
+      if (typeof callback !== 'function') return;
+      options[key] = function() {
+        if (!current()) { if (ui._activeUiRun === run && AA.abort) AA.abort(); return; }
+        return callback.apply(null, arguments);
+      };
+    });
+    function settle(result, error) {
+      var valid = current();
+      if (ui._activeUiRun === run) ui._activeUiRun = null;
+      if (!valid) {
+        // 单个内存恢复材料，不挂到新案卷会话，不自动续跑/应用，不复制正文到日志。
+        ui._staleResult = { owner: owner, result: result || (error && error.partial) || null, draft: draft };
+        throw _ownerError();
+      }
+      var data = result || (error && error.partial);
+      if (data) {
+        ui._completion = data.completion || null;
+        if (data.metrics) ui._lastRunMeta={kind:method,metrics:data.metrics,tokensUsed:data.tokensUsed||0,tokensBreakdown:data.tokensBreakdown||null,iterations:data.iterations||0,ts:Date.now()};
+        _captureSideEffects(data, true);
+        ui._recovery = data.resumeState ? { method: method, state: data.resumeState, draft: draft, owner: owner, request: request,
+          planOnly: !!options.planOnly, reviewOnly: !!options.reviewOnly, qaOnly: !!options.qaOnly, explainOnly: !!options.explainOnly } : null;
+        if (data.resumeState && Array.isArray(data.conversation) && data.conversation.length) ui.conversation = data.conversation;
+      }
+      if (error) throw error;
+      return result;
+    }
+    return Promise.resolve().then(function() {
+      if (!current()) throw _ownerError();
+      return AA[method](draft, request, options);
+    }).then(function(res) { return settle(res); }, function(err) { return settle(null, err); });
+  }
+  function _recoveryReady(recovery) {
+    if (!recovery || recovery.draft !== ui.draft || !_ownerCurrent(recovery.owner) || !AA.canResume || !AA.canResume(recovery.state, ui.draft)) return false;
+    if (ui.adapter.isLeaseCurrent && !ui.adapter.isLeaseCurrent(recovery.owner.lease, true)) return false;
+    try { return JSON.stringify(ui.baseScenario) === JSON.stringify(ui.adapter.getScenario()); } catch (_) { return false; }
+  }
+  function _recoveryError() {
+    var e = new Error('案卷、手工编辑或草稿已变化，不能直接续做。已保留未应用草稿；可在同一案卷确认后从当前内容重新生成。');
+    e.code = 'authoring-recovery-stale'; return e;
+  }
+  function _prepareRunDraft(method) {
+    var resume = ui._resumeNext; ui._resumeNext = false;
+    if (resume && ui._recovery && ui._recovery.method === method) return ui.draft;
+    return _startDraft();
+  }
+  function _autoApplyAllowed(res) { return !!(res && res.finished && res.completion && /^(completed|unchanged)$/.test(res.completion.status)); }
+  function _applyLabel(valid, diffs) {
+    if (!diffs.length && (ui._pendingSideEffects || []).length) return '批准记忆/技能（不改剧本）';
+    return valid ? '应用到剧本' : '仍有问题·确认应用';
+  }
+  function _renderIncomplete(res, kind, request) {
+    _beginReplyCard();
+    var status = res.completion && res.completion.status || 'blocked';
+    var label = status === 'cancelled' ? '已停止，任务未完成' : (status === 'partial' ? '仅部分完成' : '任务未完成');
+    var remaining = (res.completion && res.completion.unresolved || []).map(function(f) { return f.tool + '：' + (f.targets || []).join('、'); });
+    remaining = remaining.concat(res.completion && res.completion.pendingTodos || []);
+    renderSummary(label + (res.summary ? '：' + res.summary : '') + (remaining.length ? '\n未解决：' + remaining.slice(0, 8).join('；') : ''), res.notes, res.suggestedConventions, false);
+    if (res.clarification) { renderClarify(res.clarification.questions); ui._pendingClarify = true; }
+    else if (res.remonstrance) { renderRemonstrance(res.remonstrance); ui._pendingClarify = true; }
+    renderDiff(_draftDiff(), res.uncertainties);
+    renderValidation(res.finalValidation || AA.validateDraft(ui.draft));
+    ui._lastErr = { kind: kind, request: request || '', message: label, owner: ui._draftOwner };
+    _recoveryButtons(ui.els.summary, ui._lastErr);
+    var hasPending = (ui._lastDiffs || []).length > 0 || (ui._pendingSideEffects || []).length > 0;
+    ui.els.actions.style.display = hasPending ? '' : 'none';
+    ui.els.apply.textContent = '仅应用已有改动（任务未完成）';
+    ui.els.apply.className = 'warn';
+    ui.els.discard.textContent = '放弃本轮草稿';
+    setStatus(label + ' · 草稿未自动应用，可继续未完成部分或重新生成');
+  }
+  function _recoveryButtons(container, record) {
+    if (!container) return;
+    var actions = document.createElement('div'); actions.className = 'ec-acts';
+    var retry = document.createElement('button'); retry.type = 'button'; retry.className = 'ec-retry'; retry.textContent = ui._recovery ? '继续未完成部分' : '重试';
+    retry.addEventListener('click', function() { _retryLast(record); }); actions.appendChild(retry);
+    var restart = document.createElement('button'); restart.type = 'button'; restart.className = 'ec-restart'; restart.textContent = '从当前剧本重新生成';
+    restart.addEventListener('click', function() {
+      if (ui.running || ui._lastErr !== record || !_ownerCurrent(record.owner)) { setStatus('恢复入口已过期；请在当前案卷新开对话'); return; }
+      if (!record.restartConfirmed) { record.restartConfirmed = true; restart.textContent = '确认放弃未应用草稿并重来'; return; }
+      _clearDraft(); ui.conversation = null; ui._conversationOwner = null;
+      ui.els.req.value = record.request; _dispatchRetry(record.kind);
+    }); actions.appendChild(restart); container.appendChild(actions);
+  }
+  function _dispatchRetry(kind) {
+    if (kind === 'plan-execute') { if (ui.draft) executePlan(); else onGenerate(); }
+    else if (kind === 'review') runReview();
+    else if (kind === 'qa') runQaUI();
+    else if (kind === 'explain') runExplainUI();
+    else if (kind === 'orchestrate') runOrchestratedUI();
+    else if (kind === 'critics') runWithCriticsUI();
+    else onGenerate();
+  }
+  function _commitCurrent(scenario, owner) {
+    if (!_ownerCurrent(owner)) throw _ownerError();
+    var lease = ui.adapter.captureLease ? ui.adapter.captureLease() : null;
+    var result = ui.adapter.commit(scenario, lease);
+    if (!result || result.ok !== true) throw new Error('编辑器未确认应用成功');
+    return result;
+  }
   function _startDraft(source) {
+    ui._recovery = null; ui._completion = null; ui._partialApplyConfirmed = false;
     var live = source || (ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : {});
     ui.baseScenario = AA.makeDraft(live);
     ui.draft = AA.makeDraft(live);
+    ui._draftOwner = _captureOwner();
     ui._pendingSideEffects = [];
     return ui.draft;
   }
   function _setDraftFromBase(base, draft) {
+    ui._recovery = null; ui._completion = null;
     ui.baseScenario = AA.makeDraft(base || {});
     ui.draft = draft;
+    ui._draftOwner = _captureOwner();
     ui._pendingSideEffects = [];
     return ui.draft;
   }
   function _draftDiff() {
     return AA.computeDiff(ui.baseScenario || (ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : {}), ui.draft || {});
   }
-  function _clearDraft() { ui.draft = null; ui.baseScenario = null; ui._pendingSideEffects = []; }
+  function _clearDraft() { ui.draft = null; ui.baseScenario = null; ui._draftOwner = null; ui._staleResult = null; ui._pendingSideEffects = []; ui._recovery = null; ui._resumeNext = false; ui._completion = null; ui._lastErr = null; ui._partialApplyConfirmed = false; }
   function _captureSideEffects(res, append) {
     var fx = (res && Array.isArray(res.sideEffects)) ? res.sideEffects : [];
     if (!append) ui._pendingSideEffects = [];
     if (!Array.isArray(ui._pendingSideEffects)) ui._pendingSideEffects = [];
-    if (fx.length) ui._pendingSideEffects = ui._pendingSideEffects.concat(_clone(fx));
+    if (fx.length) {
+      var seen = {};
+      ui._pendingSideEffects.forEach(function(f) { if (f.id) seen[f.id] = true; });
+      _clone(fx).forEach(function(f) { if (!f.id || !seen[f.id]) { ui._pendingSideEffects.push(f); if (f.id) seen[f.id] = true; } });
+    }
     return ui._pendingSideEffects.length;
   }
 
@@ -1288,6 +1432,7 @@
   // 每轮跑完落盘到当前会话（无则新建）：meta 进索引·正文分键存（压缩副本·体量上限护 quota）
   function _saveSession(res, request, kind) {
     try {
+      if (ui._conversationOwner && !_ownerCurrent(ui._conversationOwner)) return;
       if (!res || !Array.isArray(res.conversation) || !res.conversation.length) return;
       var copy = JSON.parse(JSON.stringify(res.conversation));
       copy.forEach(function (m) { if (m && m.images && m.images.length) { m.text = '【曾附图 ' + m.images.length + ' 张】' + (m.text || ''); delete m.images; } });   // S2 · 像素不进 localStorage(体量)
@@ -1368,6 +1513,7 @@
       if (!cand || Date.now() - (cand.ts || 0) > SESS_FRESH_MS) return false;
       var body = _sessBody(cand.id); if (!body) return false;
       ui.conversation = body.conversation;
+      ui._conversationOwner = _captureOwner();
       ui._restoredTodos = Array.isArray(body.todos) ? body.todos : null;
       ui._sessId = cand.id;
       _renderConversation(body.conversation, cand);
@@ -1394,12 +1540,18 @@
     var meta = null;
     _sessIndex().forEach(function (m) { if (!meta && m && m.id === id) meta = m; });
     if (!meta) { setStatus('该会话已不存在'); return; }
-    var body = _sessBody(id), fk = _fileKey();
+    var body = _sessBody(id), fk = _fileKey(), switchOwner = {};
+    ui._sessionSwitch = switchOwner;
     function bind(viewOnly) {
+      if (ui._sessionSwitch !== switchOwner) return;
+      ui._sessionSwitch = null;
+      ui._conversationOwner = null;
+      if (!viewOnly && meta.fileKey !== _fileKey()) viewOnly = true;
       ui._pendingPlan = false; ui._pendingClarify = false; _clearDraft(); ui._autoCont = 0;
       if (ui._criticsArmed) _disarmCriticsVisual();
       if (body && !viewOnly) {
         ui.conversation = body.conversation;
+        ui._conversationOwner = _captureOwner();
         ui._restoredTodos = Array.isArray(body.todos) ? body.todos : null;
         ui._sessId = id;
         _sessPtrSet(meta.fileKey, id);
@@ -1544,13 +1696,16 @@
   }
   // S10(Codex·CC /compact 对照) · 手动压缩前情：跑的间隙把当前会话线程压成七段摘要（一次小结调用·优先次模）
   function runCompactUI() {
+    if (!_contextReady()) return;
     if (ui.running) { setStatus('运行中 · 等本轮结束再压缩'); return; }
     if (!ui.conversation || ui.conversation.length < 6) { setStatus('当前会话不长 · 无需压缩'); return; }
     var draft = ui.draft || (AA.makeDraft && ui.adapter && ui.adapter.getScenario ? AA.makeDraft(ui.adapter.getScenario()) : null);
     if (!draft || typeof AA.compactConversation !== 'function') { setStatus('压缩不可用'); return; }
     var beforeN = ui.conversation.length;
+    var compactOwner = ui._conversationOwner || _captureOwner(), compactConversation = ui.conversation;
     setStatus('正在压缩前情…（一次小结调用 · 优先走次要模型）');
     AA.compactConversation(ui.conversation, draft, {}).then(function (r) {
+      if (!_ownerCurrent(compactOwner) || ui.conversation !== compactConversation || ui.running) { setStatus('案卷或会话已变化，未替换当前前情'); return; }
       if (!r || !r.ok) { setStatus(r && r.reason === 'too-small' ? '对话太短 · 无需压缩' : '压缩失败（模型没给出可信摘要）· 原对话未动'); return; }
       ui.conversation = r.conversation;
       _saveSession({ conversation: r.conversation, todos: ui._restoredTodos || [], tokensUsed: 0 }, '压缩前情', null);
@@ -1744,15 +1899,21 @@
         + bar(b.system, tot, 'var(--ac)', '系统词')
         + bar(b.tools, tot, 'var(--warn)', '工具schema')
         + bar(b.conversation, tot, 'var(--ok)', '对话与结果')
-        + '<div style="font-size:12px;color:var(--tx2);margin:4px 0 10px">合计（=下次请求真实体量）：<b>' + fmt(tot) + '</b> tokens · 占预算上限 ' + Math.round(tot * 100 / budget) + '%（上限 ' + fmt(budget) + '·撞 85% 会自动宏压缩）</div>';
+        + '<div style="font-size:12px;color:var(--tx2);margin:4px 0 10px">下次请求体量估算：<b>' + fmt(tot) + '</b> tokens · 占预算上限 ' + Math.round(tot * 100 / budget) + '%（不是服务商账单；上限 ' + fmt(budget) + '·撞 85% 会自动宏压缩）</div>';
     } else {
       body += '<div style="color:var(--tx3);font-size:12px;margin-bottom:8px">（本会话还没跑过——跑一轮后这里显示真口径构成）</div>';
+    }
+    if (m && m.metrics) {
+      var measured=m.metrics;
+      body += '<div class="tm-aa-request-metrics" style="font-size:12px;margin:8px 0">本任务累计：逻辑请求 '+fmt(measured.logicalRequests)+' · HTTP尝试 '+fmt(measured.httpRequests)+' · 传输重试 '+fmt(measured.retries)
+        + '<br>服务商已报告：'+(measured.usageResponses ? ('输入 '+(measured.inputReports?fmt(measured.inputTokens):'未知')+' / 输出 '+(measured.outputReports?fmt(measured.outputTokens):'未知')+' tokens') : '未提供 usage（未知，不记为零消耗）')
+        + (measured.incompleteUsage ? ' · 数据不完整，仅统计已报告部分' : '')+'<br>请求累计经过时间 '+((measured.requestElapsedMs || 0)/1000).toFixed(1)+' 秒（含等待/并行，不是主线程阻塞时间或计费金额）</div>';
     }
     body += '<b style="font-size:12px">当前会话线程</b>'
       + '<div style="font-size:12px;color:var(--tx2)">消息 ' + ((ui.conversation && ui.conversation.length) || 0) + ' 条 · 线程体量约 ' + fmt(convTok) + ' tokens（续跑时计入下轮请求）</div>'
       + '<b style="font-size:12px;display:block;margin-top:8px">常驻注入面（每轮都发）</b>'
       + '<div style="font-size:12px;color:var(--tx2)">记忆清单候选 ~' + fmt(memTok) + ' · 技能清单 ~' + fmt(skillTok) + ' tokens（记忆正文只在被召回时注入·技能全文只在 useSkill 时展开）</div>';
-    _mgmtCard('用量 · 上下文（真口径 = 系统词 + 工具 schema + 全对话）', body, m ? ('最近一轮 ' + fmt(m.tokensUsed) + ' tokens · 占上限 ' + Math.round((m.tokensUsed || 0) * 100 / budget) + '%') : '暂无运行数据');
+    _mgmtCard('用量 · 上下文（估算与服务商报告分列）', body, m ? ('最近一轮约 ' + fmt(m.tokensUsed) + ' tokens · 占上限 ' + Math.round((m.tokensUsed || 0) * 100 / budget) + '%') : '暂无运行数据');
   }
 
   // 方向M · 运行历史/审计日志（持久·可搜·跨刷新存活·不存大快照避 quota·cap 50）
@@ -1804,7 +1965,7 @@
       applied: false
     };
     /* 用量卡数据：最近一轮的真口径构成(G1)与压缩/插话计数(所有模式都经此汇点) */
-    if (res && res.tokensUsed != null) ui._lastRunMeta = { kind: kind, tokensUsed: res.tokensUsed || 0, tokensBreakdown: res.tokensBreakdown || null, iterations: res.iterations || 0, macroCompactions: res.macroCompactions || 0, steered: res.steered || 0, ts: Date.now() };
+    if (res && (res.tokensUsed != null || res.metrics)) ui._lastRunMeta = { kind: kind, tokensUsed: res.tokensUsed || 0, tokensBreakdown: res.tokensBreakdown || null, metrics:res.metrics || null, iterations: res.iterations || 0, macroCompactions: res.macroCompactions || 0, steered: res.steered || 0, ts: Date.now() };
     var h = _loadHistory(); h.push(rec); _saveHistory(h);
     ui._lastRunId = rec.id;
     if (typeof ui._onHistoryChange === 'function') { try { ui._onHistoryChange(); } catch (e) {} }
@@ -2191,10 +2352,11 @@
   // 计划模式 · 批准后按计划执行（续规划线程、全工具）
   function executePlan() {
     if (ui.running || !ui.draft) return;
+    if (!_contextReady()) return;
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     setRunning(true);
     setStatus('正在按计划执行…');
-    AA.runAuthoringLoop(ui.draft, '按上面的计划执行这些改动；改完用 validateDraft 自查后调用 finish。', {
+    _runOwned('runAuthoringLoop', ui.draft, '按上面的计划执行这些改动；改完用 validateDraft 自查后调用 finish。', {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       priorConversation: ui.conversation,
       editorContext: _editorContext(),
@@ -2207,6 +2369,7 @@
       setRunning(false);
       ui.conversation = res.conversation;
       _captureSideEffects(res, true);
+      if (!res.finished) { _renderIncomplete(res, 'plan-execute', '按已批准的计划继续执行'); return; }
       _logRun('计划执行', '(按计划执行)', res);   // 方向M
       _beginReplyCard();
       renderSummary(res.summary, res.notes, res.suggestedConventions, true);   // UI·P · 流式
@@ -2214,7 +2377,7 @@
       renderValidation(res.finalValidation);
       ui.els.actions.style.display = '';
       ui.els.apply.className = res.finalValidation.ok ? '' : 'warn';
-      ui.els.apply.textContent = res.finalValidation.ok ? '应用到剧本' : '仍有问题·确认应用';
+      ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, ui._lastDiffs || []);
       ui.els.discard.textContent = '放弃';
       setStatus('已按计划执行（' + res.iterations + ' 轮）· 可应用 / 放弃 / 追问');
     }).catch(function(err) { renderError('plan-execute', '(按计划执行)', err); });   // UI·AC · 错误卡+重试
@@ -2223,15 +2386,16 @@
   // 方向D · 审阅模式：只读巡查 → 出体检报告（不产生可应用改动）。输入框文字（若有）作审阅重点。
   function runReview() {
     if (ui.running) return;
+    if (!_contextReady()) return;
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     var focus = (ui.els.req.value || '').trim();
     _appendUserMsg(focus || '审阅整个剧本', { kind: 'review', input: focus });   // UI·B 会话流 + UI·Y 重试派发
-    _startDraft();   // 只读快照（审阅不改它）
+    _prepareRunDraft('runAuthoringLoop');   // 重试复用原草稿/恢复点，正常审阅另起只读快照。
     ui.conversation = null; ui._pendingPlan = false;
     setRunning(true);
     setStatus('正在审阅剧本…（agent 只读巡查，出体检报告，可能需要数十秒）');
-    AA.runAuthoringLoop(ui.draft, focus, {
+    _runOwned('runAuthoringLoop', ui.draft, focus, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       reviewOnly: true,
       editorContext: _editorContext(),
@@ -2240,6 +2404,7 @@
     }).then(function(res) {
       setRunning(false);
       _captureSideEffects(res, false);
+      if (!res.finished) { _renderIncomplete(res, 'review', focus); return; }
       _logRun('审阅', focus || '(全面体检)', res);   // 方向M
       ui.els.req.value = ''; _autoGrowReq();
       _clearDraft();   // 审阅不产生可应用改动
@@ -2321,16 +2486,17 @@
   // 方向L · 剧本问答（只读）：玩家问关于剧本的问题，agent 查清后直接回答，不碰剧本
   function runQaUI() {
     if (ui.running) return;
+    if (!_contextReady()) return;
     var question = (ui.els.req.value || '').trim();
     if (!question) { setStatus('请先在输入框输入你想问的问题'); return; }
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(question, { kind: 'qa', input: question });   // UI·B 会话流 + UI·Y 重试派发
-    _startDraft();   // 只读快照
+    _prepareRunDraft('runAuthoringLoop');   // 只读快照或同案卷恢复点
     ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     setRunning(true);
     setStatus('正在查证并回答…（只读，不改剧本）');
-    AA.runAuthoringLoop(ui.draft, question, {
+    _runOwned('runAuthoringLoop', ui.draft, question, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       qaOnly: true,
       editorContext: _editorContext(),
@@ -2339,6 +2505,7 @@
     }).then(function(res) {
       setRunning(false);
       _logRun('问答', question, res);   // 方向M
+      if (!res.finished) { _renderIncomplete(res, 'qa', question); return; }
       _clearDraft(); ui.els.req.value = ''; _autoGrowReq();
       if (res.answer) {
         _beginReplyCard();
@@ -2359,15 +2526,16 @@
   // 方向N · 解释/教学（只读）：讲解剧本设计意图与机制脉络，给接手者 onboarding
   function runExplainUI() {
     if (ui.running) return;
+    if (!_contextReady()) return;
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
     var focus = (ui.els.req.value || '').trim();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(focus || '讲解剧本', { kind: 'explain', input: focus });   // UI·B 会话流 + UI·Y 重试派发
-    _startDraft();   // 只读快照
+    _prepareRunDraft('runAuthoringLoop');   // 只读快照或同案卷恢复点
     ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     setRunning(true);
     setStatus('正在通读剧本并讲解…（只读，不改剧本）');
-    AA.runAuthoringLoop(ui.draft, focus, {
+    _runOwned('runAuthoringLoop', ui.draft, focus, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       explainOnly: true,
       editorContext: _editorContext(),
@@ -2376,6 +2544,7 @@
     }).then(function(res) {
       setRunning(false);
       _logRun('讲解', focus || '(全面 onboarding)', res);
+      if (!res.finished) { _renderIncomplete(res, 'explain', focus); return; }
       _clearDraft(); ui.els.req.value = ''; _autoGrowReq();
       if (res.explanation) {
         _beginReplyCard();
@@ -2406,50 +2575,58 @@
   //   渲一张醒目错误卡（核心已 _classifyApiError 给中文可操作提示）+「重试」(按 kind 重跑) +「复制错误」。
   function renderError(kind, request, err) {
     setRunning(false);
-    ui._lastErr = { kind: kind, request: request || '', message: (err && err.message) || String(err || '未知错误') };
+    if (err && err.code === 'editor-document-changed') {
+      ui._lastErr = null; // 旧请求不能通过“重试”重新套到当前案卷。
+      if (ui.els && ui.els.actions) ui.els.actions.style.display = 'none';
+      setStatus(err.message);
+      return;
+    }
+    ui._lastErr = { kind: kind, request: request || '', message: (err && err.message) || String(err || '未知错误'), owner: ui._draftOwner };
     if (!ui.els) { setStatus('失败：' + ui._lastErr.message); return; }
     _beginReplyCard();   // 聊天化：错误也作为对话流里一张卡
     if (!ui.els.summary) { setStatus('失败：' + ui._lastErr.message); return; }
     ui.els.summary.innerHTML = '<div class="tm-aa-errcard">'
       + '<div class="ec-head">运行失败</div>'
       + '<div class="ec-msg">' + esc(ui._lastErr.message) + '</div>'
-      + '<div class="ec-acts"><button type="button" class="ec-retry">↻ 重试</button><button type="button" class="ec-copy">复制错误</button></div>'
+      + '<div class="ec-acts"><button type="button" class="ec-copy">复制错误</button></div>'
       + '</div>';
     ui.els.summary.style.display = '';
     if (ui.els.diffSec) ui.els.diffSec.style.display = 'none';
     if (ui.els.diff) ui.els.diff.style.display = 'none';
     if (ui.els.val) ui.els.val.style.display = 'none';
     if (ui.els.actions) ui.els.actions.style.display = 'none';
-    var rt = ui.els.summary.querySelector('.ec-retry');
-    if (rt) rt.addEventListener('click', _retryLast);
+    _recoveryButtons(ui.els.summary.querySelector('.tm-aa-errcard'), ui._lastErr);
     var cp = ui.els.summary.querySelector('.ec-copy');
     if (cp) cp.addEventListener('click', function() {
       try { navigator.clipboard.writeText(ui._lastErr.message).then(function() { cp.textContent = '✓ 已复制'; setTimeout(function() { cp.textContent = '复制错误'; }, 900); }, function() {}); } catch (e) {}
     });
-    setStatus('运行失败 · 可点「重试」重跑');
+    setStatus(ui._recovery ? '运行失败 · 已保留未应用草稿、任务与对话，可继续未完成部分' : '运行失败 · 可重试或从当前剧本重新生成');
   }
-  function _retryLast() {
+  function _retryLast(expected) {
     var e = ui._lastErr; if (!e || ui.running) return;
-    if (e.kind === 'plan-execute') { executePlan(); return; }   // 计划执行：草稿/线程仍在，直接重跑
+    if (expected && expected !== e) { setStatus('此恢复入口已过期'); return; }
+    if (!_contextReady() || !_ownerCurrent(e.owner)) return;
+    if (ui._recovery) {
+      if (!_recoveryReady(ui._recovery)) { setStatus(_recoveryError().message); return; }
+      if (ui.planMode && !ui._recovery.planOnly && !ui._recovery.reviewOnly && !ui._recovery.qaOnly && !ui._recovery.explainOnly && e.kind !== 'plan-execute') { setStatus('当前为问策，不能续做写入任务；请切换共审/放行或重新规划'); return; }
+      ui._resumeNext = true;
+    }
     ui.els.req.value = e.request || '';
     try { ui.els.req.dispatchEvent(new Event('input')); } catch (er) {}
-    if (e.kind === 'review') runReview();
-    else if (e.kind === 'qa') runQaUI();
-    else if (e.kind === 'explain') runExplainUI();
-    else if (e.kind === 'orchestrate') runOrchestratedUI();
-    else if (e.kind === 'critics') runWithCriticsUI();
-    else onGenerate();
+    _dispatchRetry(e.kind);
   }
 
   // 方向H · 子代理/任务分解：大需求先分解、再逐步在同一草稿上聚焦执行（共享草稿即合并）
   function runOrchestratedUI() {
     if (ui.running) return;
+    if (!_contextReady()) return;
+    if (ui.planMode) { setStatus('问策仅规划；分解执行前请切换为共审/放行，或先生成并批准计划。'); return; }
     var request = (ui.els.req.value || '').trim();
     if (!request) { setStatus('请先输入需求（大任务会被分解为多步执行）'); return; }
     if (!AA || typeof AA.runOrchestrated !== 'function') { setStatus('agent 核心未加载'); return; }
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(request, { kind: 'orchestrate', input: request });   // UI·B 会话流 + UI·Y 重试派发
-    _startDraft();
+    _prepareRunDraft('runOrchestrated');
     ui.conversation = null; ui._pendingPlan = false;
     setRunning(true);
     setStatus('正在分解任务…（先拆子任务，再逐步执行）');
@@ -2468,7 +2645,7 @@
         return '<div class="cl-item ' + st + '"><span class="cl-ic">' + ic + '</span>' + esc((k + 1) + '. ' + s) + '</div>';
       }).join('');
     }
-    AA.runOrchestrated(ui.draft, request, {
+    _runOwned('runOrchestrated', ui.draft, request, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
@@ -2486,6 +2663,7 @@
     }).then(function(res) {
       setRunning(false);
       _captureSideEffects(res, false);
+      if (!res.finished) { _renderIncomplete(res, 'orchestrate', request); return; }
       if (_clSteps.length) _renderChecklist(_clSteps.length, true);   // 全部 ✓
       _logRun('分解执行', request, res);   // 方向M
       ui.els.req.value = ''; _autoGrowReq();
@@ -2496,10 +2674,10 @@
       renderValidation(res.finalValidation);
       ui.els.actions.style.display = '';
       ui.els.apply.className = res.finalValidation.ok ? '' : 'warn';
-      ui.els.apply.textContent = res.finalValidation.ok ? '应用到剧本' : '仍有问题·确认应用';
+      ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, diffs);
       ui.els.discard.textContent = '放弃';
       setStatus((res.orchestrated ? '分解执行完成（' + res.steps.length + ' 步）' : '执行完成') + (res.stopReason === 'aborted' ? '·已中断' : '') + '· 可应用 / 放弃');
-      if (ui.autonomy === 'auto' && res.finalValidation.ok && diffs.length) { onApply(); }
+      if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && res.finalValidation.ok && diffs.length) { onApply(); }
     }).catch(function(err) { renderError('orchestrate', request, err); });   // UI·AC · 错误卡+重试
   }
 
@@ -2533,13 +2711,15 @@
     if (ui.els && ui.els.req && !ui._autoModeArmed) ui.els.req.placeholder = _REQ_PLACEHOLDER;
   }
   function runWithCriticsUI() {
+    if (!_contextReady()) return;
     if (ui.running) return;
+    if (ui.planMode) { setStatus('问策仅规划；三堂会审包含实际拟稿，请先切换为共审/放行。'); return; }
     var request = (ui.els.req.value || '').trim();
     if (!request) { _armCritics(); setStatus('三堂会审需要一个需求：先写下要新增/改什么，再点发送'); return; }
     if (!AA || typeof AA.runWithCritics !== 'function') { setStatus('agent 核心未加载'); return; }
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(request, { kind: 'critics', input: request });
-    _startDraft();
+    _prepareRunDraft('runWithCritics');
     ui.conversation = null; ui._pendingPlan = false;
     setRunning(true);
     setStatus('三堂会审 · 国师拟稿中…');
@@ -2555,7 +2735,7 @@
         + row(_phase.draft, '① 国师拟稿') + row(_phase.review, '② 史官查史实 + 谏官批平衡' + rv) + row(_phase.revise, '③ 国师据谏修订');
     }
     _render(false);
-    AA.runWithCritics(ui.draft, request, {
+    _runOwned('runWithCritics', ui.draft, request, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
@@ -2576,6 +2756,7 @@
       if (res.stopReason === 'needsConfirmation' && res.remonstrance) { _logRun('三堂会审', request, res); renderRemonstrance(res.remonstrance); setStatus('国师对此需求有异议（见上）· 调整需求后可重新发起三堂会审'); return; }
       if (res.stopReason === 'needsClarification' && res.clarification) { _logRun('三堂会审', request, res); renderClarify(res.clarification.questions); setStatus('国师拟稿前需澄清（见上）· 补充需求后可重新发起三堂会审'); return; }
       _captureSideEffects(res, false);
+      if (!res.finished) { _renderIncomplete(res, 'critics', request); return; }
       _info.hist = ((res.critiques && res.critiques.history && res.critiques.history.findings) || []).length;
       _info.bal = ((res.critiques && res.critiques.balance && res.critiques.balance.findings) || []).length;
       _phase.draft = 'done'; _phase.review = 'done'; _phase.revise = 'done'; _render(true);
@@ -2586,14 +2767,14 @@
       renderDiff(diffs);
       var val = res.finalValidation || AA.validateDraft(ui.draft);
       renderValidation(val);
-      if (diffs.length) {
+      if (diffs.length || (ui._pendingSideEffects || []).length) {
         ui.els.actions.style.display = '';
         ui.els.apply.className = val.ok ? '' : 'warn';
-        ui.els.apply.textContent = val.ok ? '应用到剧本' : '仍有问题·确认应用';
+        ui.els.apply.textContent = _applyLabel(val.ok, diffs);
         ui.els.discard.textContent = '放弃';
       }
-      setStatus('三堂会审完成 · ' + (res.revised ? '已据谏修订' : '两官无异议') + (diffs.length ? '：审阅 diff 后应用 / 放弃' : '：无改动'));
-      if (ui.autonomy === 'auto' && val.ok && diffs.length) { onApply(); }
+      setStatus('三堂会审完成 · ' + (res.revised ? '已据谏修订' : '两官无异议') + (diffs.length ? '：审阅 diff 后应用 / 放弃' : ((ui._pendingSideEffects || []).length ? '：记忆/技能待批准' : '：无改动')));
+      if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && val.ok && diffs.length) { onApply(); }
     }).catch(function(err) { renderError('critics', request, err); });
   }
   // 刀3 · 会审报告：史官 + 谏官两份意见并列展示（只读·让玩家看到博弈），修订后的 diff 在下方走应用审
@@ -2652,6 +2833,13 @@
 
   function onGenerate() {
     if (ui.running) return;
+    if (!_contextReady()) return;
+    if (ui._recovery && ui.draft && ui._recovery.method !== 'runAuthoringLoop') {
+      if (!_recoveryReady(ui._recovery)) { setStatus(_recoveryError().message); return; }
+      ui._resumeNext = true;
+      if (ui._recovery.method === 'runOrchestrated') { runOrchestratedUI(); return; }
+      if (ui._recovery.method === 'runWithCritics') { runWithCriticsUI(); return; }
+    }
     if (ui._criticsArmed) { _disarmCriticsVisual(); runWithCriticsUI(); return; }   // 刀3 · 已武装会审 → 改走三堂会审
     var request = (ui.els.req.value || '').trim();
     if (!request) { setStatus('请先输入需求'); return; }
@@ -2667,7 +2855,10 @@
     var planOnly = !!ui.planMode || !!(_autoSelection && _autoSelection.mode === 'plan');   // 权限问策或手动自动选模判为计划
     // 真·连续会话：只要对话线程还在就续接（哪怕上一轮已应用·draft 已清）。计划模式总从当前剧本起新计划。
     //   ——治「每发一条指令都是新对话」：之前续接还要求 ui.draft，应用后 draft 没了就被迫重置；现在线程贯穿整个会话。
-    var continuing = !planOnly && !!(ui.conversation && ui.conversation.length && !ui._pendingPlan);
+    var resuming = !!(ui._recovery && ui._recovery.method === 'runAuthoringLoop' && ui.draft);
+    if (resuming && !_recoveryReady(ui._recovery)) { setStatus(_recoveryError().message); return; }
+    var continuing = resuming || (!planOnly && !!(ui.conversation && ui.conversation.length && !ui._pendingPlan));
+    ui._resumeNext = false;
     var _attTxt = _attachPrefix();   // S2 · 文本附件内联为参考上下文
     var _imgs = _takeImages();       // S2 · 图片走视觉通道
     var _attN = (_imgs ? _imgs.length : 0) + _attState().files.length;
@@ -2682,7 +2873,7 @@
     var _rtd = (continuing && ui._restoredTodos && ui._restoredTodos.length) ? ui._restoredTodos : null;   // 刀H3 · 恢复的任务表一次性回灌
     ui._restoredTodos = null;
     _clearAttach();   // S2 · 附件随本轮发出·签行清空
-    AA.runAuthoringLoop(ui.draft, request + _attTxt, {
+    _runOwned('runAuthoringLoop', ui.draft, request + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       planOnly: planOnly,
       images: _imgs,
@@ -2707,7 +2898,8 @@
         ui._autoCont = (ui._autoCont || 0) + 1;
         setStatus('未完成（' + (res.stopReason === 'tokenBudget' ? '达 token 上限' : '达迭代上限') + '）· 自动继续 ' + ui._autoCont + '/3…（持续到完整结果）');
         ui.els.req.value = '继续完成上面尚未完成的改动，全部完成后再调用 finish，不要重复已做的。';
-        setTimeout(onGenerate, 60);   // 续接：ui.conversation 在 → onGenerate 走 continuing
+        var nextOwner = ui._draftOwner, nextConversation = ui.conversation;
+        setTimeout(function() { if (_ownerCurrent(nextOwner) && ui.conversation === nextConversation) onGenerate(); }, 60);
         return;
       }
       ui._autoCont = 0;
@@ -2731,26 +2923,32 @@
         ui.els.discard.textContent = '放弃计划';
         ui._pendingPlan = true;
         setStatus('已出计划（' + res.iterations + ' 轮）· 批准则按计划执行，或改需求重新规划');
+      } else if (planOnly) {
+        ui._pendingPlan = false;
+        ui.els.actions.style.display = 'none';
+        setStatus('问策结束（' + (stopMap[res.stopReason] || res.stopReason) + '）· 未生成可批准计划，未改动剧本');
       } else {                              // 普通：diff + 应用（进对话流回应卡）
+        if (!res.finished) { _renderIncomplete(res, 'generate', request); return; }
         _beginReplyCard();
         ui._pendingPlan = false;
         ui.els.discard.textContent = '放弃';
-        setStatus('结束（' + (stopMap[res.stopReason] || res.stopReason) + '·' + res.iterations + ' 轮·约 ' + res.tokensUsed + ' tokens）· 可继续追加需求，或应用/放弃');
+        setStatus('结束（' + (res.completion && res.completion.status === 'unchanged' ? '本轮未修改' : (stopMap[res.stopReason] || res.stopReason)) + '·' + res.iterations + ' 轮·约 ' + res.tokensUsed + ' tokens）· 可继续追加需求，或应用/放弃');
         renderSummary(res.summary, res.notes, res.suggestedConventions, true);   // UI·P · 流式
         var diffs = _draftDiff();
         renderDiff(diffs, res.uncertainties);   // 置信度标注：高亮没把握的改动
         renderValidation(res.finalValidation);
         ui.els.actions.style.display = '';
         ui.els.apply.className = res.finalValidation.ok ? '' : 'warn';
-        ui.els.apply.textContent = res.finalValidation.ok ? '应用到剧本' : '仍有问题·确认应用';
+        ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, diffs);
         // 方向F · 自主度「全自动」：校验通过且有改动则自动应用（无需玩家点）
-        if (ui.autonomy === 'auto' && res.finalValidation.ok && diffs.length) { onApply(); }
+        if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && res.finalValidation.ok && diffs.length) { onApply(); }
       }
     }).catch(function(err) { renderError('generate', request, err); });   // UI·AC · 错误卡+重试（重试走 onGenerate·仍按当前 planMode）
   }
 
   // UI·X · 逐条接受/拒绝：永远从实时剧本起只落接受 hunk；全接受也不能整份旧草稿覆盖用户并行编辑。
   function _applyScenario() {
+    if (!_ownerCurrent(ui._draftOwner)) throw _ownerError();
     var diffs = ui._lastDiffs || [], rej = ui._diffRejected || new Set();
     if (AA && typeof AA.applySelectedDiffs === 'function') {
       return AA.applySelectedDiffs(ui.adapter.getScenario(), ui.draft, diffs, function(d) { return !rej.has(d.__idx); });
@@ -2785,7 +2983,22 @@
     try { var p = JSON.parse(t); return (p && typeof p === 'object') ? p : null; } catch (e) { return null; }
   }
 
+  function _commitPendingSideEffects() {
+    var effects = ui._pendingSideEffects || [];
+    if (!effects.length) return 0;
+    if (!AA || typeof AA.commitSideEffects !== 'function') throw new Error('缺少记忆/技能提交器，未确认保存');
+    var result = AA.commitSideEffects(effects);
+    if (!result || result.ok !== true) throw new Error((result && result.error) || '记忆/技能提交未确认');
+    return effects.length;
+  }
   function onApply() {
+    if (ui.running || !_contextReady()) return;
+    var unfinished = !!(!ui._pendingClarify && !ui._pendingPlan && ui._completion && !/^(completed|unchanged|planned)$/.test(ui._completion.status));
+    if (unfinished && !ui._partialApplyConfirmed) {
+      ui._partialApplyConfirmed = true;
+      ui.els.apply.textContent = '确认应用部分结果并结束本轮草稿';
+      setStatus('任务尚未完成。再次确认只应用当前接受的改动；未完成项需另行处理。'); return;
+    }
     if (ui._pendingClarify) {   // 方向K · 提交澄清回答 → 续接 onGenerate（输入框里是玩家的回答）
       if (!(ui.els.req.value || '').trim()) { setStatus('请先在输入框回答问题'); return; }
       ui._pendingClarify = false;
@@ -2800,7 +3013,14 @@
     }
     try {
       var diffs = ui._lastDiffs || [], rej = ui._diffRejected || new Set();
-      if (!diffs.length) { setStatus('本轮没有可应用的改动'); return; }
+      if (!diffs.length) {
+        if (!(ui._pendingSideEffects || []).length) { setStatus('本轮没有可应用的改动'); return; }
+        var onlyEffects = _commitPendingSideEffects();
+        markLastApplied();
+        setStatus('已提交 ' + onlyEffects + ' 条记忆/技能，未改动剧本' + (unfinished ? '（任务仍有未完成项）' : ''));
+        if (ui._reply) { ui._reply.classList.add('applied'); var effectTag = ui._reply.querySelector('.reply-tag'); if (effectTag) effectTag.textContent = '✓ 记忆/技能已提交' + (unfinished ? '（任务未完成）' : ''); }
+        _freezeLastReply(); _clearDraft(); return;
+      }
       if (diffs.length && rej.size >= diffs.length) { setStatus('已拒绝全部改动，未应用'); return; }
       var _liveBefore = ui.adapter.getScenario();
       var _finalSc = _applyScenario();
@@ -2833,14 +3053,13 @@
         return;
       }
       _pushCheckpoint('应用前 ' + _ckptTime());   // 通过冲突与选择后校验后才建检查点
-      ui.adapter.commit(_finalSc);   // 应用前规范化：集合字段非数组→数组 + 数组内字符串条目 parse 修复/丢弃（修 agent 误设/双编码的集合，防下游遍历崩与坏数据写回）
-      var _fxN = (ui._pendingSideEffects || []).length;
-      if (_fxN && AA && typeof AA.commitSideEffects === 'function') {
-        var _fxCommit = AA.commitSideEffects(ui._pendingSideEffects);
-        if (!_fxCommit || _fxCommit.ok === false) {
-          try { ui.adapter.commit(_liveBefore); } catch (_) {}
-          throw new Error('剧本附带的记忆/技能提交失败，已回滚剧本：' + ((_fxCommit && _fxCommit.error) || '未知错误'));
-        }
+      _commitCurrent(_finalSc, ui._draftOwner);   // 逐项冲突合并后仍须由同一案卷确认提交。
+      var _fxN;
+      try { _fxN = _commitPendingSideEffects(); }
+      catch (effectError) {
+        try { _commitCurrent(_liveBefore, ui._draftOwner); }
+        catch (rollbackError) { throw new Error('记忆/技能提交失败；剧本回滚未确认，请检查当前案卷：' + (rollbackError && rollbackError.message || rollbackError)); }
+        throw new Error('剧本附带的记忆/技能提交失败，已回滚剧本：' + (effectError && effectError.message || effectError));
       }
       ui._pendingSideEffects = [];
       var partial = rej.size > 0;
@@ -2852,8 +3071,8 @@
         if (_app && typeof _app.markAgentTouched === 'function') _app.markAgentTouched(Object.keys(_touched));
         if (_firstPath && _app && typeof _app.revealPath === 'function') _app.revealPath(_firstPath);
       } catch (e) {}
-      setStatus('已应用到剧本 ✓' + (partial ? '（仅接受的改动·拒绝了 ' + rej.size + ' 处）' : '') + (_fxN ? '（并提交 ' + _fxN + ' 条记忆/技能）' : '') + ((_fixN || _dropN) ? '（已自动修复 ' + _fixN + ' 条' + (_dropN ? '·丢弃 ' + _dropN + ' 条无法解析条目' : '') + '）' : '') + '（可继续追问·同一会话）');
-      if (ui._reply) { ui._reply.classList.add('applied'); var _atag = ui._reply.querySelector('.reply-tag'); if (_atag) _atag.textContent = '✓ 已应用到剧本' + (partial ? '（拒绝 ' + rej.size + ' 处）' : ''); }
+      setStatus('已应用到剧本 ✓' + (unfinished ? '（仅应用部分结果，任务仍有未完成项）' : '') + (partial ? '（仅接受的改动·拒绝了 ' + rej.size + ' 处）' : '') + (_fxN ? '（并提交 ' + _fxN + ' 条记忆/技能）' : '') + ((_fixN || _dropN) ? '（已自动修复 ' + _fixN + ' 条' + (_dropN ? '·丢弃 ' + _dropN + ' 条无法解析条目' : '') + '）' : '') + '（可继续追问·同一会话）');
+      if (ui._reply) { ui._reply.classList.add('applied'); var _atag = ui._reply.querySelector('.reply-tag'); if (_atag) _atag.textContent = '✓ 已应用到剧本' + (unfinished ? '（任务未完成）' : '') + (partial ? '（拒绝 ' + rej.size + ' 处）' : ''); }
       _freezeLastReply();   // 聊天化：应用后冻结当前卡（按钮隐藏·成历史只读）
       _clearDraft();
       // 真·连续会话：应用后【保留】对话线程，下条指令在同一会话里续接（draft 已清·续接时从当前剧本新建）。
@@ -2867,7 +3086,9 @@
   }
 
   function onDiscard() {
+    if (ui.running) return;
     _clearDraft();
+    ui._conversationOwner = null;
     ui.conversation = null;   // 维度1 · 放弃后结束会话
     ui._pendingPlan = false;
     ui._pendingClarify = false;
@@ -2879,7 +3100,9 @@
   // 真·连续会话：另起新对话（清空当前线程+消息流；上一会话已存入历史·下次新对话会注入记忆延续）。
   function newConversation() {
     if (ui.running) { setStatus('运行中，请先停止再新开对话'); return; }
+    if (ui._sessionSwitch) { setStatus('正在切换案卷，请等待载入完成'); return; }
     _clearDraft(); ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
+    ui._conversationOwner = null;
     ui._restoredTodos = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 新对话=新会话·旧会话留侧栏可切回·指针置空(开面板不再拉回)
     if (ui._criticsArmed) _disarmCriticsVisual();   // 刀3 · 新对话清掉未用的会审武装
     if (ui._autoModeArmed) _disarmAutoVisual();
@@ -2892,7 +3115,7 @@
   function _ckptTime() { try { var d = new Date(); function p(n) { return (n < 10 ? '0' : '') + n; } return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); } catch (e) { return ''; } }
   function _pushCheckpoint(label) {
     if (!ui.adapter || typeof ui.adapter.getScenario !== 'function') return null;
-    var cp = { id: ++ui._ckptSeq, label: label || '检查点', when: _ckptTime(), snapshot: _clone(ui.adapter.getScenario()) };
+    var cp = { id: ++ui._ckptSeq, label: label || '检查点', when: _ckptTime(), owner: _captureOwner(), snapshot: AA.makeDraft(ui.adapter.getScenario()) };
     ui._checkpoints.push(cp);
     if (ui._checkpoints.length > MAX_CKPT) ui._checkpoints.shift();   // 淘汰最旧
     if (typeof ui._onCheckpointsChange === 'function') { try { ui._onCheckpointsChange(); } catch (e) {} }
@@ -2900,11 +3123,14 @@
   }
   // 撤销 = 弹出并恢复最近的检查点（回到上次应用/回退前）
   function undoLastApply() {
+    if (ui.running) { setStatus('运行中，请先停止再撤销'); return false; }
     if (!ui._checkpoints.length) { setStatus('无可撤销的检查点'); return false; }
     try {
-      var cp = ui._checkpoints.pop();
-      ui.adapter.commit(cp.snapshot);
+      var cp = ui._checkpoints[ui._checkpoints.length - 1];
+      _commitCurrent(cp.snapshot, cp.owner);
+      ui._checkpoints.pop();
       _clearDraft(); ui.conversation = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 剧本已回退·脱离当前会话(旧会话留档不删)
+      ui._conversationOwner = null;
       if (typeof ui._onCheckpointsChange === 'function') { try { ui._onCheckpointsChange(); } catch (e) {} }
       setStatus('已撤销，回到「' + cp.label + '」(' + cp.when + ') ↩');
       return true;
@@ -2918,13 +3144,16 @@
   }
   // 回到指定检查点（先把当前状态存一个"回退前"·使回退本身可再撤销）
   function restoreCheckpoint(id) {
+    if (ui.running) { setStatus('运行中，请先停止再回退'); return false; }
     var cp = null;
     for (var i = 0; i < ui._checkpoints.length; i++) { if (ui._checkpoints[i].id === id) { cp = ui._checkpoints[i]; break; } }
     if (!cp) { setStatus('找不到该检查点'); return false; }
     try {
+      if (!_ownerCurrent(cp.owner)) throw _ownerError();
       _pushCheckpoint('回退前 ' + _ckptTime());
-      ui.adapter.commit(_clone(cp.snapshot));
+      _commitCurrent(AA.makeDraft(cp.snapshot), cp.owner);
       _clearDraft(); ui.conversation = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 同上·回退后脱离会话(留档)
+      ui._conversationOwner = null;
       setStatus('已回到检查点「' + cp.label + '」(' + cp.when + ')');
       return true;
     } catch (e) { setStatus('回退失败：' + (e && e.message || e)); return false; }

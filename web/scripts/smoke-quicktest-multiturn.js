@@ -109,6 +109,8 @@ function makeCtx(plan) {
     return Promise.resolve();
   };
   vm.createContext(ctx);
+  ctx.crypto=require('crypto').webcrypto; ctx.TextEncoder=TextEncoder;
+  vm.runInContext(fs.readFileSync(path.join(ROOT,'tm-agent-kernel.js'),'utf8'),ctx,{filename:'tm-agent-kernel.js'});
   vm.runInContext(src, ctx, { filename: 'scenario-editor-sandbox-bridge.js' });
   return { ctx, idb };
 }
@@ -116,6 +118,12 @@ function makeCtx(plan) {
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function main() {
+  {
+    const {ctx,idb}=makeCtx({1:{}}),scenario={id:'frozen-report',name:'原始输入'},json=JSON.stringify(scenario);
+    const running=ctx.TM_SCENARIO_QUICKTEST.run(scenario,{turns:1,bootWaitMs:5,perTurnTimeoutMs:2000});scenario.name='启动之后被修改';await running;
+    const binding=idb.__store['quickTestReport:latest'].quickTest.sourceFingerprint;
+    ok(binding && binding.hash===require('crypto').createHash('sha256').update(json).digest('hex'),'报告指纹绑定开局前原输入，不绑定结束时可能变动的对象');
+  }
   // ═══ 1. 多回合 + 报告结构 + 按回合归因 + 黄判 ═══
   console.log('— 1: 三回合连跑·schema:2·体检累积按回合归因·黄判 —');
   {

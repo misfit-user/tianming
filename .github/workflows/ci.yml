@@ -104,6 +104,17 @@ jobs:
         run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Authoring region paths and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-regions
+      - name: Authoring streamed tools, final result, approval and real editor persistence
+        run: node scripts/verify-electron-bridge.js --authoring-stream
+      - name: Guoshi project ownership and read-only execution (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-boundaries
+      - name: Guoshi truthful completion and same-project recovery (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-recovery
+      - name: Guoshi bounded progress, instruction retention and actual game consumption
+        run: |
+          node scripts/verify-electron-bridge.js --authoring-efficiency
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --authoring-efficiency --scenario sc-jianyan1-1127-shaosong
       - name: Controlled TLS address binding and redirects
         run: node scripts/verify-remote-tls.js
       - name: Relief pilot official scenarios, real UI and save recovery

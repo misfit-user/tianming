@@ -954,7 +954,7 @@
     try { if (_agentAnomalyOn(P)) { var _anRes = await _anomalyScan(ctx, gm); if (_anRes) { _anomalyN = _anomalyNudge(_anRes); gm._agentAnomaly = _anRes; } } } catch (_anE) {}
     var _timeCtx = _timeContext(gm, resolutionTurn);   // 本回合时间(纪元年月+历时+时间相关后果指引)·显要处·让 agent 推演不脱离时间
     // 基线组装抽成可重拼的份件——T1 预算护栏按份裁剪后重拼(常量基线:系统词+偏差校正+本回合时间+玩家操作+冷门深查+跨回合记忆+在办诏令+依据·不随轮数膨胀)
-    var _bParts = { sys: _buildSystemPrompt(), bias: _biasInject, time: _timeCtx, ops: gm._turnPlayerOps || '', anomaly: _anomalyN, mem: _memDossier, edicts: _edictDossier, basis: basis };
+    var _bParts = { sys: _buildSystemPrompt() + (TM.BuildingOrders ? TM.BuildingOrders.prompt(gm, ctx.input.buildingOrders, true) : ''), bias: _biasInject, time: _timeCtx, ops: gm._turnPlayerOps || '', anomaly: _anomalyN, mem: _memDossier, edicts: _edictDossier, basis: basis };
     function _assembleBase() {
       return _bParts.sys + (_bParts.bias ? '\n' + _bParts.bias : '') + (_bParts.time ? '\n' + _bParts.time : '') + '\n\n' + (_bParts.ops ? _bParts.ops + '\n\n' : '') + (_bParts.anomaly ? _bParts.anomaly + '\n\n' : '') + (_bParts.mem ? _bParts.mem + '\n\n' : '') + (_bParts.edicts ? _bParts.edicts + '\n\n' : '') + _bParts.basis;
     }
@@ -1253,6 +1253,7 @@
     var _ch = gm._agentChronicle || {};
     // ⚠ _op 实际值:语义写工具(write-tools)报 'appoint'/'dismiss'(非 'appoint_official')·兼容两形(集成测实测炸出·d7 此前预置数据掩盖)
     var _personnel = (Array.isArray(gm._turnReport) ? gm._turnReport : []).filter(function (e) { return e && (e._op === 'appoint' || e._op === 'dismiss' || e._op === 'appoint_official' || e._op === 'dismiss_official'); }).map(function (e) { var _dis = /dismiss/.test(e._op || ''); return { name: String(e.path || '').replace(/^chars[\/.]/, '').replace(/^人事·?/, ''), change: e.reason || '', action: _dis ? 'dismiss' : 'appoint', _agent: true }; });
+    if (TM.BuildingOrders) TM.BuildingOrders.finish(gm, root.P || {}, ctx.input.buildingOrders, true);
     var aiResult = {
       agentMode: true,
       shizhengji: _ch.shizhengji || narrative || '',

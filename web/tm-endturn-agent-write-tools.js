@@ -349,6 +349,17 @@
   // ── ④ 建筑工程(兴工/拆毁)·兴工 push 工程(引擎 tick 自动完工入账)·拆毁复用 TM.BuildingWorks.revertBuilding(逆回经济效果)──
   function _semBuilding(gm, input, ctx) {
     if (!gm) return { ok: false, reason: '无存档' };
+    var BO = TM.BuildingOrders, batch = ctx && ctx.input && ctx.input.buildingOrders;
+    var managed = BO && batch && BO.matching(gm, root.P || {}, batch, input);
+    if (input.requestId || input.decision || managed) {
+      if (!BO || !batch) return { ok: false, reason: '营造案未从本回合原诏书提交' };
+      var disposition = Object.assign({}, input, { requestId: input.requestId || managed.id, decision: input.decision || 'approve' });
+      if (input.cost !== undefined) disposition.costActual = input.cost;
+      if (input.turns !== undefined) disposition.timeActual = input.turns;
+      var orderResult = BO.execute(gm, root.P || {}, batch, disposition, !!ctx.input._agentModeSelected);
+      if (orderResult.ok && orderResult.changed) _report(gm, { type: 'change', path: 'building-order.' + disposition.requestId, new: '已落账开工', reason: input.reason || '原诏书营造核办', turn: gm.turn || 0, _agent: true });
+      orderResult.verified = !!orderResult.ok; return orderResult;
+    }
     var action = String((input && input.action) || 'start').toLowerCase();
     var region = input && input.region;
     if (!region) return { ok: false, reason: '缺 region(地块名)' };
@@ -595,7 +606,7 @@
     { name: 'command_army', description: '军事指挥:募兵/调动/改将/创建/解散(走军队引擎·勿裸改armies)。armyName军名·soldiersDelta兵力增减·location移防·commander主将·action=create创建·state=disbanded解散。', parameters: { type: 'object', properties: { armyName: { type: 'string' }, soldiersDelta: { type: 'number' }, soldiers: { type: 'number' }, location: { type: 'string' }, commander: { type: 'string' }, action: { type: 'string' }, state: { type: 'string' }, faction: { type: 'string' }, reason: { type: 'string' } }, required: ['armyName'] } },
     { name: 'diplomatic_action', description: '外交战和(走外交引擎·勿裸改activeWars/stance):action=declare_war宣战(attacker/defender·可casusBelli)/make_peace议和(warId 或 attacker+defender定位)/set_relation设邦交(from/to + value绝对值或delta增减或type关系)。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'declare_war/make_peace/set_relation' }, attacker: { type: 'string' }, defender: { type: 'string' }, casusBelli: { type: 'string' }, warId: { type: 'string' }, from: { type: 'string' }, to: { type: 'string' }, value: { type: 'number' }, delta: { type: 'number' }, type: { type: 'string' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── ④ 建筑工程 ① 行政区划改制 ──
-    { name: 'building_project', description: '建筑工程(优先走 CustomBuildAgent.approveBuild 正式兴工账):action=start兴工(region地块开建·扣款入账·逐回合推进自动完工)/demolish拆毁(必须逆回已完工效果)。region地块名·name工程名·turns工期(默认3)·cost耗费·level等级。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'start/demolish' }, region: { type: 'string', description: '地块名' }, name: { type: 'string', description: '工程名' }, turns: { type: 'number' }, cost: { type: 'number' }, level: { type: 'number' }, category: { type: 'string' }, description: { type: 'string' }, judgedEffects: { type: 'string' }, effectsStructured: { type: 'object' }, reason: { type: 'string' } }, required: ['region'] } },
+    { name: 'building_project', description: '原诏书营造案必须带 requestId、decision(approve/defer/reject)、reason，原案费用/工期/效果可引用，不另扣同笔国库。非营造案的世界自走工程仍用action=start/demolish + region地块名 + name工程名 + turns工期 + cost耗费。', parameters: { type: 'object', properties: { requestId: { type: 'string' }, decision: { type: 'string', enum: ['approve','defer','reject'] }, action: { type: 'string', description: 'start/demolish' }, region: { type: 'string', description: '地块名' }, name: { type: 'string', description: '工程名' }, turns: { type: 'number' }, cost: { type: 'number' }, level: { type: 'number' }, category: { type: 'string' }, description: { type: 'string' }, judgedEffects: { type: 'string' }, effectsStructured: { type: 'object' }, reason: { type: 'string' } }, anyOf: [{required:['requestId']},{required:['region']}] } },
     { name: 'restructure_division', description: '行政区划事务(设府/废县/真实改隶/升降):action=modify(fields:name/regionType/level/governor/改隶用parentId)/add(需parent)/remove。根区划不可废/改隶；含下级或建筑的区划默认不可废，明确级联时 force=true。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'modify/add/remove' }, region: { type: 'string' }, fields: { type: 'object', description: 'name/regionType/level/governor/parentId' }, parent: { type: 'string', description: 'add 上级地块名' }, name: { type: 'string', description: 'add 新区划名' }, regionType: { type: 'string' }, level: { type: 'number' }, force: { type: 'boolean', description: 'remove 时明确允许级联废除非空区划' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── 舆地变迁:人物所在地 / 迁都 / 地块易主变色 ──
     { name: 'move_character', description: '更改人物所在地(移驻/赴任/在途)。name 人物名·location 目的地名·traveling=true 则记"正往(在途未到)"、false(默认)记"现居(已抵)"。用于人物因任职/出征/流放/还朝而移动。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, location: { type: 'string', description: '目的地(地名)' }, traveling: { type: 'boolean', description: 'true=在途未到/false=已抵(默认)' }, reason: { type: 'string' } }, required: ['name', 'location'] } },
@@ -631,6 +642,9 @@
   async function handle(name, input, ctx) {
     input = input || {};
     var gm = _GM(ctx);
+    if (name === 'adjust_treasury' && TM.BuildingOrders && TM.BuildingOrders.ownedPayment(ctx && ctx.input && ctx.input.buildingOrders, input)) {
+      return { ok: false, changed: false, name: name, text: '营造案造价由 building_project 唯一落账，禁止重复扣款' };
+    }
     var reason = input.reason || 'agent 推演';
     var r;
     var reportBefore = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;

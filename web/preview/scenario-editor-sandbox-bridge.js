@@ -459,6 +459,9 @@
 
   function runQuickTestFirstTurn(sc, opts) {
     opts = opts || {};
+    // 必须在开局规范化/回合推进前冻结原始测试输入；旧报告没有此字段则只能作历史参考。
+    var sourceFingerprint = global.TM && global.TM.AgentKernel && global.TM.AgentKernel.fingerprintScenario
+      ? global.TM.AgentKernel.fingerprintScenario(sc).catch(function(){return null;}) : Promise.resolve(null);
     var turnsWanted = Math.max(1, Math.min(10, parseInt(opts.turns, 10) || 3));
     var perTurnTimeoutMs = opts.perTurnTimeoutMs != null ? opts.perTurnTimeoutMs : 90000;
     var bootWaitMs = opts.bootWaitMs != null ? opts.bootWaitMs : 2000;
@@ -571,7 +574,7 @@
       if (phaseNote) report.note = report.note ? (report.note + '；' + phaseNote) : phaseNote;
       if (global.removeEventListener) { global.removeEventListener('error', onWinErr); global.removeEventListener('unhandledrejection', onWinErr); }
       report.verdict = quickTestVerdict(report);
-      return writeQuickTestReport(report).then(function (ok) {
+      return sourceFingerprint.then(function(fp){report.sourceFingerprint=fp;return writeQuickTestReport(report);}).then(function (ok) {
         try {
           if (typeof global.toast === 'function') {
             var v = report.verdict || {};

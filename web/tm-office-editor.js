@@ -44,12 +44,12 @@ function buildScenarioResetEditorSnapshot(scnId) {
   scenario.role = scenario.role || scenario.emperor || '';
   scenario.background = scenario.background || scenario.overview || scenario.desc || '';
   ['characters', 'factions', 'parties', 'classes', 'items', 'relations', 'events', 'rigidHistoryEvents', 'timeline', 'families'].forEach(function(key) {
-    var rows = _tmEditorBridgeRows(scnId, scenario, key);
-    if (rows.length || !Array.isArray(scenario[key])) scenario[key] = rows;
+    // 自有集合（包括空数组、分组 events/timeline）原样保留；只补有 sid 归属的旧记录。
+    if (!Object.prototype.hasOwnProperty.call(scenario, key)) scenario[key] = _tmEditorBridgeRows(scnId, scenario, key);
   });
-  ['map', 'mapData', 'adminHierarchy', 'officeTree', 'officeConfig', 'government', 'fiscalConfig', 'economyConfig', 'military', 'techTree', 'civicTree', 'variables', 'rules', 'mechanicsConfig'].forEach(function(key) {
-    if (scenario[key] == null && typeof P !== 'undefined' && P && P[key] != null) scenario[key] = _tmEditorBridgeClone(P[key]);
-  });
+  // P 的全局配置没有剧本归属证明，可能仍是上次载入的明代区划/官制。
+  // 新建入口会先改 GM.sid，故也不能以当前 sid 或显示名当作配置归属。
+  // 缺失配置保持缺失，由本卷创作补齐；不猜测迁移或清理已有案卷/P 中的数据。
   return scenario;
 }
 

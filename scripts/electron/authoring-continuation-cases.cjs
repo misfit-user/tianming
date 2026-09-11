@@ -10,6 +10,7 @@ module.exports = async function({ win, root, check }) {
     await js('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
   }
   async function test(name, fn) { try { await check(name, fn); results.push({ name, status: 'PASS' }); } catch (e) { results.push({ name, status: 'FAIL', error: e.stack }); } }
+  await require('./scenario-origin-cases.cjs')({ win, js, until, click, test });
   await win.loadFile(path.join(root, 'web/preview/scenario-editor-reset-preview.html'));
   await until(`document.body.dataset.scenarioEditorResetApp==='ready'`);
   await js(`(()=>{

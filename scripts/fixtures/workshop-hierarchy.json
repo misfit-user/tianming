@@ -1,0 +1,29 @@
+{
+  "id": "hierarchy-local-regression", "name": "层级编辑隔离试验", "emperor": "测试主君",
+  "gameSettings": { "startYear": 214, "daysPerTurn": 30 },
+  "playerInfo": { "name": "测试主君", "factionName": "测试势力" },
+  "government": { "name": "测试官制" }, "factions": [{ "id": "test-faction", "name": "测试势力" }], "characters": [],
+  "officeTree": [
+    { "id": "office-same", "name": "中枢", "positions": [{ "name": "中枢长官", "holder": "", "rank": "一品", "powers": { "supervise": true } }],
+      "subs": [{ "id": "office-same", "name": "尚书台", "positions": [{ "name": "尚书令", "rank": "二品", "holder": "" }], "subs": [
+        { "name": "选曹", "positions": [{ "name": "选曹郎", "rank": "六品", "holder": "" }], "subs": [] }
+      ] }]
+    },
+    { "name": "旧式枢府", "children": [
+      { "name": "枢府长官", "level": "三品", "holder": "（阙）" },
+      { "name": "旧式属署", "children": [{ "name": "属署主官", "level": "七品", "holder": "" }] }
+    ] }
+  ],
+  "adminHierarchy": {
+    "测试势力": { "factionName": "测试势力", "divisions": [
+      { "id": "same", "name": "甲州", "level": "province", "populationDetail": { "mouths": 1000 }, "children": [
+        { "id": "same", "name": "甲郡", "level": "prefecture", "populationDetail": { "mouths": 900 }, "children": [
+          { "name": "同名县", "level": "county", "populationDetail": { "mouths": 400 }, "minxinLocal": 58, "economyBase": { "farmland": 23 }, "children": [] },
+          { "name": "同名县", "level": "county", "populationDetail": { "mouths": 500 }, "minxinLocal": 41, "children": [] }
+        ] }
+      ] },
+      { "name": "乙州", "level": "province", "divisions": [ { "name": "乙郡", "divisions": [{ "name": "乙县", "minxinLocal": 67 }] } ] }
+    ] },
+    "另一势力": { "factionName": "另一势力", "divisions": [{ "id": "same", "name": "另一州", "children": [] }] }
+  }
+}

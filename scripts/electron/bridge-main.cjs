@@ -7,7 +7,7 @@ const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
 const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
-const visibleWindow = mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
+const visibleWindow = mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -115,6 +115,7 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'character-actions') await require('./character-actions-cases.cjs')({ win, check });
       else if (mode === 'rail-badges') await require('./rail-badges-cases.cjs')({ win, check });
       else if (mode === 'authoring-regions') await require('./authoring-region-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'workshop-hierarchy') await require('./workshop-hierarchy-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-stream') await require('./authoring-stream-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-boundaries') await require('./authoring-boundary-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-recovery') await require('./authoring-recovery-cases.cjs')({ win, root, temp, check });

@@ -5,11 +5,13 @@ module.exports = async function({ win, root, check }) {
   const js = s => win.webContents.executeJavaScript(s, true), results = [], dir = path.dirname(process.env.TM_BRIDGE_TEST_REPORT);
   const until = expr => js(`(async()=>{const start=performance.now();while(!(${expr})){if(performance.now()-start>20000)throw Error('continuation wait: '+${JSON.stringify(expr)});await new Promise(r=>setTimeout(r,20));}return true;})()`);
   async function click(expr) {
+    win.focus(); win.webContents.focus();
     const p = await js(`(async()=>{const e=${expr};if(!e)throw Error('missing test control');e.scrollIntoView({block:'center'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const b=e.getBoundingClientRect(),x=Math.round(b.x+b.width/2),y=Math.round(b.y+b.height/2);if(!e.contains(document.elementFromPoint(x,y)))throw Error('control not hit-testable');return{x,y};})()`);
     win.webContents.sendInputEvent({ type: 'mouseMove', ...p }); win.webContents.sendInputEvent({ type: 'mouseDown', button: 'left', clickCount: 1, ...p }); win.webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, ...p });
     await js('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
   }
   async function test(name, fn) { try { await check(name, fn); results.push({ name, status: 'PASS' }); } catch (e) { results.push({ name, status: 'FAIL', error: e.stack }); } }
+  await require('./scenario-origin-cases.cjs')({ win, js, until, click, test });
   await win.loadFile(path.join(root, 'web/preview/scenario-editor-reset-preview.html'));
   await until(`document.body.dataset.scenarioEditorResetApp==='ready'`);
   await js(`(()=>{
@@ -96,8 +98,14 @@ module.exports = async function({ win, root, check }) {
       fs.writeFileSync(path.join(dir, 'recovery-' + theme + '.png'), (await win.webContents.capturePage()).toPNG());
     }
     // Actual Tab navigation, not just a synthetic focus() assertion.
+    const beforeFocus = await js(`({documentFocused:document.hasFocus(),active:document.activeElement&&document.activeElement.className})`);
+    win.focus(); win.webContents.focus();
     await js(`TM_AuthoringAgentUI._ui.els.summary.querySelector('.ec-retry').focus()`);
+    await js(`new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))`);
+    assert.equal(await js(`document.hasFocus() && document.activeElement.classList.contains('ec-retry')`), true, 'Tab fixture owns keyboard focus before dispatch');
     win.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Tab' }); win.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Tab' });
+    await js(`new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))`);
+    fs.writeFileSync(path.join(dir, 'recovery-keyboard.json'), JSON.stringify({beforeFocus,after:await js(`({documentFocused:document.hasFocus(),active:document.activeElement.className,outline:getComputedStyle(document.activeElement).outlineStyle})`)}, null, 2));
     assert.equal(await js(`document.activeElement.classList.contains('ec-restart') && getComputedStyle(document.activeElement).outlineStyle!=='none'`), true);
     fs.writeFileSync(path.join(dir, 'recovery-colors.json'), JSON.stringify(samples, null, 2));
   });
@@ -105,6 +113,7 @@ module.exports = async function({ win, root, check }) {
     await js(`__relayTest={round:0,mode:'resume'}`); await click(`TM_AuthoringAgentUI._ui.els.summary.querySelector('.ec-retry')`); await settled();
     assert.equal(await js(`__relayTest.round===1 && __relayTest.compat===1 && __relayTest.seenDraft.labels===1 && __relayTest.seenDraft.money===450`), true);
     await click(`TM_AuthoringAgentUI._ui.els.apply`);
+    await until(`TM_AuthoringAgentUI._ui.adapter.getScenario().fiscalConfig.treasury===450`);
     const r = await js(`(async()=>{const app=TM_SCENARIO_EDITOR_RESET_APP,p=await app.saveProjectSnapshot('合成续做案卷');await app.loadProjectSnapshot(p.id);return{money:app.state.scenario.fiscalConfig.treasury,labels:app.state.scenario.labels,prompt:app.state.scenario.customPrompt};})()`);
     assert.equal(r.money, 450); assert.deepEqual(r.labels, [{ name: 'once', text: '已补齐' }]); assert.equal(r.prompt, '玩家手工输入');
   });
@@ -140,6 +149,7 @@ module.exports = async function({ win, root, check }) {
     assert.equal(r.rounds, 3); assert.equal(r.status, 'blocked'); assert.equal(r.live, 100); assert.equal(r.draft, 100);
     assert.match(r.summary, /只返回了思考内容/); assert.match(r.summary, /正文 0 字/); assert(!r.summary.includes('SYNTHETIC_OPAQUE_THOUGHT'));
   });
+  await require('./authoring-response-recovery-cases.cjs')({ win, js, until, click, test });
   fs.writeFileSync(path.join(dir, 'authoring-continuation-results.json'), JSON.stringify({ results, pass: results.filter(r => r.status === 'PASS').length, fail: results.filter(r => r.status === 'FAIL').length }, null, 2));
   const failures = results.filter(r => r.status === 'FAIL'); if (failures.length) throw Error(failures.map(r => r.name + '\n' + r.error).join('\n'));
 };

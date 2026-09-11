@@ -398,9 +398,9 @@
   // ═══════════════════════════════════════════════════════════════════
 
   // 区划人口读取器（字段在不同剧本可能略有出入·单点防御）
-  // TODO(确认): 对真实剧本(绍宋/天启)确认末级区划是否带 population.mouths
   function _getPop(node) {
     if (!node) return null;
+    if (node.populationDetail && typeof node.populationDetail.mouths === 'number') return node.populationDetail.mouths;
     var p = node.population;
     if (p && typeof p === 'object' && typeof p.mouths === 'number') return p.mouths;
     if (typeof p === 'number') return p;
@@ -409,7 +409,11 @@
     return null; // 未知人口·跳过比较·不误报
   }
 
-  /** ① 行政区划：父级人口 >= 子级人口之和（adminHierarchy 树·递归 .divisions） */
+  // 正式区划的子级是 children；旧国师生成的 divisions 只作兼容读取，勿双写。
+  function _adminChildren(node) {
+    return Array.isArray(node && node.children) && node.children.length ? node.children : (Array.isArray(node && node.divisions) ? node.divisions : []);
+  }
+  /** ① 行政区划：父级人口 >= 子级人口之和（势力根 divisions，区划 children） */
   function vAdminPopulation(draft) {
     var v = [];
     var h = draft && draft.adminHierarchy;
@@ -424,7 +428,7 @@
       (function walk(nodes) {
         nodes.forEach(function(n) {
           if (!n) return;
-          var kids = Array.isArray(n.divisions) ? n.divisions : [];
+          var kids = _adminChildren(n);
           if (kids.length) {
             var parentPop = _getPop(n);
             var sum = 0, allKnown = true;
@@ -507,7 +511,7 @@
       (function walk(nodes) {
         nodes.forEach(function(n) {
           if (!n) return;
-          var kids = Array.isArray(n.divisions) ? n.divisions : [];
+          var kids = _adminChildren(n);
           if (!kids.length && n.name && !regionNames[n.name]) orphans.push(n.name);
           if (kids.length) walk(kids);
         });
@@ -1490,7 +1494,7 @@
     party: { name: '', leader: '', members: '', desc: '' },
     class: { name: '', desc: '' },
     troop: { name: '', commander: '', faction: '', location: '', soldiers: 10000, type: '' },
-    division: { name: '', level: '', governor: '', population: { mouths: 0, households: 0 }, divisions: [] },
+    division: { id: '', name: '', level: '', governor: '', population: 0, populationDetail: { mouths: 0, households: 0 }, children: [] },
     // 官制节点是 officeTree[] 的元素，不是行政区划 division。官方天启剧本的
     // 形状以「部门 → positions[] → subs[]」为主，position 的 holder/员额/权责
     // 也属于可编辑数据；把它单列出来，避免模型把官制误套成 division。
@@ -1570,14 +1574,14 @@
       '- characters[]（人物）: ' + JSON.stringify(T.character) + '  ← faction 必须等于某个 factions[].name' + (fiction ? '；虚构世界人物请置 isFictional:true（标记为原创人物）' : ''),
       '- parties[]（党派）: ' + JSON.stringify(T.party) + ' / classes[]（阶层）: ' + JSON.stringify(T['class']),
       '- military.initialTroops[]（开局部队）: ' + JSON.stringify(T.troop) + '  ← commander=人物名, faction=势力名',
-      '- adminHierarchy{ "势力名":{ divisions:[ 区划 ] } }，区划递归含 .divisions；区划形如 ' + JSON.stringify(T.division),
+      '- adminHierarchy{ "势力名":{ factionName:"势力名", divisions:[ 区划 ] } }：只有势力根用 divisions[]，每个区划下级递归用 children[]；区划形如 ' + JSON.stringify(T.division) + '。旧稿的嵌套 divisions 须核对后整理为 children，不要双写。',
       '- officeTree[]（官制部门）: 每项是 ' + JSON.stringify(T.office) + '；官方天启格式以 .positions[]（官职，含 holder/rank/员额/俸禄/bindingHint/公帑/私入/权责）和 .subs[]（下级部门）递归，官制节点不要套用 division',
       '- mapData.regions[]（地图区域，每个有 .name）；末级区划的 name 应能对上某个 region.name',
       '- variables.base[]（变量）: ' + JSON.stringify(T.variable),
       '- events.historical[]/random[]（事件）: ' + JSON.stringify(T.event),
       '【硬约束】① 中文显示名（人物/势力/地名）保持中文，禁止英译。',
       '② 人物/军队/地点引用的势力名必须在 factions 中存在。',
-      '③ 行政区划父级 population.mouths 必须 >= 各子级 population.mouths 之和。'
+      '③ 行政区划父级 populationDetail.mouths（或数值 population）必须 >= 各子级人口之和。'
     ].join('\n');
   }
 
@@ -2028,6 +2032,13 @@
     var core = { getField:1,getFields:1,searchEntities:1,globalSearch:1,listCollection:1,describeSchema:1,fieldContract:1,applyEdit:1,applyPush:1,finish:1,todoWrite:1,note:1,askClarification:1,remonstrate:1,flagUncertain:1,requestTools:1 };
     var relevant = selectToolPacks(request, {worldKind:'fictional'});
     return tools.filter(function(t) { return core[t.name] || (t.name !== 'checkHistory' && _toolPack(t.name) !== 'core' && relevant.indexOf(_toolPack(t.name)) >= 0); });
+  }
+  function _runTools(tools, request, opts, readOnly, worldKind) {
+    // 编辑默认提供完整目录，不再要求模型猜测“本轮隐藏了什么”再申请。
+    // 明确的 caller 子集、工具包及只读模式仍是授权边界；不是删除权限检查。
+    if (!readOnly && opts.toolPacks == null) return tools.slice();
+    var selected = _filterToolsByPacks(tools, request, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    return readOnly ? selected : _initialStageTools(selected, request, opts);
   }
   var AUTHORING_TOOL_SPECS = AGENT_TOOLS.map(function(t) {
     var effect = t.name === 'generateImage' ? 'external' : (_MUT_TOOLS[t.name] ? 'draft-write' : ((t.name === 'saveMemory' || t.name === 'saveSkill') ? 'memory-write' : (_READ_TOOLS[t.name] ? 'read' : 'control')));
@@ -2917,8 +2928,7 @@
     var tools = planOnly ? _planTools() : (opts.tools || AGENT_TOOLS);
     var conventions = (opts.conventions != null ? opts.conventions : loadConventions()) || '';   // 方向B · 剧本约定
     var system = planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions);
-    tools = _filterToolsByPacks(tools, userRequest, { worldKind: (draft && draft.worldKind) === 'fictional' ? 'fictional' : 'historical', toolPacks: opts.toolPacks });
-    if (!planOnly) tools = _initialStageTools(tools, userRequest, opts);
+    tools = _runTools(tools, userRequest, opts, planOnly, (draft && draft.worldKind) === 'fictional' ? 'fictional' : 'historical');
     var surfaces = _getFieldSurfaces(opts);
     var continuing = !!(Array.isArray(opts.priorConversation) && opts.priorConversation.length);
     var editorContext = opts.editorContext || '';
@@ -3076,10 +3086,10 @@
     var worldKind = (opts.worldKind || (draft && draft.worldKind) || 'historical') === 'fictional' ? 'fictional' : 'historical';
     if (planOnly || reviewOnly || qaOnly || explainOnly) tools=tools.concat(AGENT_TOOLS.filter(function(t){return t.name==='requestTools';}));
     var allModeTools = tools.slice();
-    tools = _filterToolsByPacks(tools, userRequest, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    var readOnlyMode = planOnly || reviewOnly || qaOnly || explainOnly;
+    tools = _runTools(tools, userRequest, opts, readOnlyMode, worldKind);
     var selectableTools = opts.tools || opts.toolPacks === false || Array.isArray(opts.toolPacks) ? tools.slice() : allModeTools;
-    if (!(planOnly || reviewOnly || qaOnly || explainOnly)) tools = _initialStageTools(tools, userRequest, opts);
-    if (resume && Array.isArray(resume.selectedTools)) tools = selectableTools.filter(function(t) { return resume.selectedTools.indexOf(t.name) >= 0; });
+    if (resume && Array.isArray(resume.selectedTools) && (readOnlyMode || opts.toolPacks != null)) tools = selectableTools.filter(function(t) { return resume.selectedTools.indexOf(t.name) >= 0; });
     // 工具清单也是本次执行授权，不信任模型会自觉遵守只读/工具包边界。
     var executableTools = Object.create(null), readOnlyRun = planOnly || reviewOnly || qaOnly || explainOnly;
     tools.forEach(function(t) { if (t && t.name) executableTools[t.name] = true; });
@@ -3165,6 +3175,8 @@
     // 方向A · 鲁棒自愈：noToolCalls 先 nudge 再放弃；caller 瞬态错误退避重试
     var noToolNudges = 0, maxNoToolNudges = (opts.maxNoToolNudges != null ? opts.maxNoToolNudges : 2);
     var textToolFallback = !!(resume && resume.textToolFallback);
+    var explicitStream = !!(resume && resume.explicitStream); // 只记本任务已协商的传输方式，不写 API 设置。
+    var provenToolFormat = resume && resume.provenToolFormat || '';
     var apiDiagnostics = resume && Array.isArray(resume.apiDiagnostics) ? _agentClone(resume.apiDiagnostics).slice(-4) : [];
     function assistantTurn(resp, text, calls) {
       var turn = { role: 'assistant', text: text, toolCalls: calls };
@@ -3176,18 +3188,22 @@
       var info = apiDiagnostics[apiDiagnostics.length - 1];
       var reasons = { 'reasoning-only': 'API 只返回了思考内容，没有返回正文或工具调用', empty: 'API 返回了空的助手消息',
         'unsupported-response': 'API 返回的消息协议未被当前端点识别，不能将其当作空回复或执行工具',
-        refusal: 'API 返回了拒绝/过滤结果', truncated: 'API 输出仍被截断，已达到本轮自动扩展输出上限',
+        refusal: 'API 返回了拒绝/过滤结果', truncated: 'API 输出仍被截断，已达到本轮自动扩展输出上限', interrupted: 'API 服务中断了生成，未执行本轮工具',
         'invalid-tool-arguments': 'API 返回的工具参数不是有效对象，整批调用未执行',
         'text-only': 'API 返回了文本说明，但没有可执行的工具调用' };
       var detail = info ? '（' + (info.format === 'json-compat' ? 'JSON兼容' : '原生') + '；结束原因 ' + info.finishReason
         + '；正文 ' + info.textChars + ' 字，思考 ' + info.reasoningChars + ' 字）' : '';
+      if (stopReason === 'outputLimit') return (info && reasons[info.kind] || 'API 输出被截断') + detail
+        + '。已停止本轮输出重试，未切换工具协议，也未执行截断内容。已完成草稿保留；可继续处理下一步，不必重做。';
       return (info && reasons[info.kind] || 'API 未返回可执行的工具调用') + detail
-        + '。' + (maxNoToolNudges > 0 && noToolNudges >= maxNoToolNudges ? '兼容尝试已用尽' : '已停止兼容尝试')
+        + '。' + (maxNoToolNudges > 0 && noToolNudges >= maxNoToolNudges ? (textToolFallback ? '兼容尝试已用尽' : '响应重试已用尽') : '已停止响应重试')
         + '，任务未完成。已完成的草稿保留，未自动应用；请将上述响应类型与模型名称一并反馈，或检查中转/模型的工具支持后继续，不必重做已完成部分。';
     }
     var stepRetries = 0, maxStepRetries = (opts.maxStepRetries != null ? opts.maxStepRetries : 2);
     var retryBaseMs = opts.retryBaseMs || 800;
-    var _curMaxTok = 0, _tokBumps = 0;   // 刀H1 · 输出截断自愈:检测到腰斩则输出上限×2重试(≤2次·bump后全程沿用)
+    var _curMaxTok = Math.max(opts.maxTok || 3000, resume && resume.outputMaxTok || 0), _tokBumps = 0;
+    // 自动上限仍为16000；调用方已有更大显式预算时不得反向缩小。续做保留预算。
+    var _outputCeiling = Math.max(16000, _curMaxTok);
     var _budgetWarned = 0;   // 工具D · 预算反馈：分级提醒收尾(70%/90%)·避免硬撞 tokenBudget 半途而废
     // 刀G3(CC「File unchanged since last read」对照) · 重复读去重 + 纯勘察防打转
     var _seenReads = {};        // key=name|JSON(input) → {iter, writes}(写世代号=新鲜度)
@@ -3258,7 +3274,7 @@
     function checkpoint() {
       return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
-        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, apiDiagnostics: _agentClone(apiDiagnostics) });
+        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, explicitStream: explicitStream, provenToolFormat: provenToolFormat, outputMaxTok: _curMaxTok, apiDiagnostics: _agentClone(apiDiagnostics) });
     }
 
     function record(name, input, result) {
@@ -3283,27 +3299,32 @@
       if (tokensUsed >= maxTokens) { stopReason = 'tokenBudget'; return Promise.resolve(); }   // 刀G8 · 硬停挪到压缩之后(先自救再认命)
       iterations++;
       var issuedTools = Object.assign({},executableTools);
-      return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system, signal: control.signal, textToolFallback: textToolFallback }))
+      return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system, signal: control.signal, textToolFallback: textToolFallback, explicitStream: explicitStream }))
         .then(function(resp) {
           stepRetries = 0;   // 成功一轮即重置：每个停顿点各容忍 maxStepRetries 次抖动
           var text = (resp && resp.text) || '';
           var calls = (resp && resp.toolCalls) || [];
           if (resp && resp.responseInfo) { apiDiagnostics.push(_agentClone(resp.responseInfo)); if (apiDiagnostics.length > 4) apiDiagnostics.shift(); }
           if (resp && resp.fallback) textToolFallback = true;
+          if (resp && resp.explicitStream === true) explicitStream = true;
           // 刀H1(CC max_tokens 动态调整对照) · 输出截断自愈:被 maxTok 腰斩(没调成工具/入参 JSON 斩断)
           //   → 输出上限×2重试本轮。斩断的响应整体弃置(完好的调用也未执行·重试无双跑)。
-          if (resp && resp.truncated && (!calls.length || resp.badToolJson) && _tokBumps < 2 && !control.aborted) {
+          if (resp && resp.truncated && !control.aborted) {
+            if (_tokBumps >= 2 || _curMaxTok >= _outputCeiling) { stopReason = 'outputLimit'; _finishSummary = noToolSummary(); return; }
             _tokBumps++;
-            _curMaxTok = Math.min(16000, (_curMaxTok || opts.maxTok || 3000) * 2);
+            _curMaxTok = _tokBumps === 2 ? _outputCeiling : Math.min(_outputCeiling, _curMaxTok * 2);
+            if (_tokBumps === 1) conversation.push({ role: 'user', text: '上一响应因输出长度限制未完成，整轮未执行。保留全部原需求和既有草稿，本轮只完成下一步必要工具操作；大型改动分批继续，不要一次重写全案或重复已完成项。仍需逐项验证并如实收尾。' });
             if (typeof opts.onText === 'function') { try { opts.onText('（输出被截断·提升输出上限至 ' + _curMaxTok + ' 重试本轮…）', iterations); } catch (eB) {} }
             iterations--;
             return step();
           }
           // 刀G1 · 不再零星累加(响应文本随消息入对话后由 _reqTokens 全量重估)
-          if (text && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
+          if (text && !(resp && resp.interrupted) && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
           if (control.aborted) { conversation.push(assistantTurn(resp, text, [])); stopReason = 'aborted'; return; }   // 刀E · API 返回后即停，不再施改
           if (!calls.length) {
-            conversation.push(assistantTurn(resp, text, []));
+            var responseKind = resp && resp.responseInfo && resp.responseInfo.kind;
+            // 空/服务中断不是模型正文，不把占位或半轮内容加入下一次会话。
+            if (responseKind !== 'interrupted' && (text || resp && resp.reasoningContent)) conversation.push(assistantTurn(resp, text, []));
             // 刀G9 · 卡壳时若有用户插话:新指示本身就是推动力·直接注入重启(不耗 nudge 配额)
             if (_drainSteers()) return step();
             // 韧性：没调工具不直接放弃，先 nudge 推一把（卡住 → 重新发起）
@@ -3312,22 +3333,26 @@
               // 刀G7 · nudge 感知任务表:有未完项就点名(比泛泛"继续"更有的放矢)
               var _pNt = control.todoState.list.filter(function (t) { return t.status !== 'completed'; });
               var _pNtTxt = _pNt.length ? '任务表尚有 ' + _pNt.length + ' 项未完成（如「' + _pNt[0].content + '」）。' : '';
-              textToolFallback = true;
+              var retrySameProtocol = responseKind === 'empty' || responseKind === 'reasoning-only' || responseKind === 'interrupted';
+              if (retrySameProtocol) {
+                if (provenToolFormat) textToolFallback = provenToolFormat === 'json-compat';
+              } else textToolFallback = true;
               var terminal = explainOnly ? 'submitExplanation' : (qaOnly ? 'submitAnswer' : (reviewOnly ? 'submitReview' : (planOnly ? 'proposePlan' : 'finish')));
-              conversation.push({ role: 'user', text: '你刚才没有调用任何工具（或工具参数格式无效）。' + _pNtTxt + '本轮改用 JSON 工具兼容格式，只返回完整 {"tool_calls":[{"name":"工具名","input":{}}]} 信封，不要说明或示例。仅使用本轮可用工具，遵守其参数契约；已核验的改动不要重做。' + (readOnlyRun ? '当前为只读模式，不得修改剧本。' : '未完成部分继续调用已授权工具处理。') + '完成后调用 ' + terminal + ' 如实收尾；不得将未完成说成已完成。' });
-              if (typeof opts.onText === 'function') { try { opts.onText('（未收到有效工具调用，尝试 JSON 兼容格式 ' + noToolNudges + '/' + maxNoToolNudges + '；已完成草稿保留…）', iterations); } catch (e) {} }
-              return step();
+              conversation.push({ role: 'user', text: '上一响应未形成可执行工具，未执行本轮操作。' + _pNtTxt + (textToolFallback ? '本轮使用 JSON 工具兼容格式，只返回完整 {"tool_calls":[{"name":"工具名","input":{}}]} 信封，不要说明或示例。' : '本轮继续使用原生工具协议，只处理下一步必要操作，不要重复规划或重写全案。') + '仅使用本轮可用工具，遵守其参数契约；已核验的改动不要重做。' + (readOnlyRun ? '当前为只读模式，不得修改剧本。' : '未完成部分继续调用已授权工具处理。') + '完成后调用 ' + terminal + ' 如实收尾；不得将未完成说成已完成。' });
+              if (typeof opts.onText === 'function') { try { opts.onText('（未收到有效工具调用，' + (textToolFallback ? '尝试 JSON 兼容格式 ' : '重试原生工具协议 ') + noToolNudges + '/' + maxNoToolNudges + '；已完成草稿保留…）', iterations); } catch (e) {} }
+              return retrySameProtocol ? _delay(retryBaseMs * Math.pow(2, noToolNudges - 1), control.signal).then(step) : step();
             }
             stopReason = 'noToolCalls';
             _finishSummary = noToolSummary();
             return;
           }
+          provenToolFormat = textToolFallback ? 'json-compat' : 'native';
           var toolResults = [];
           var finishAccepted = false;
           var roundProgress = false;
           var _ci = 0;
           function _procCall() {
-            if (_ci >= calls.length || finishAccepted) return Promise.resolve();
+            if (_ci >= calls.length || finishAccepted || control.aborted) return Promise.resolve();
             var c = calls[_ci++];
             return Promise.resolve().then(function () {
               var modeDeny = toolExecutionDenied(c.name, issuedTools);

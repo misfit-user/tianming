@@ -58,20 +58,29 @@ module.exports = async function({ win, check }) {
     assert.equal(await js(`document.querySelector('[data-desk-memorial-reply]').value`),'待核查的朱批草稿（尚未触发input的快捷插入）');
     assert.equal(await js(`GM.memorials[30].status`),'pending');
   });
-  const fonts = () => js(`['.zf-title','.ben-text','.pizhu-ta','.aside .piaoni','.aside .chain-row p'].map(s=>parseFloat(getComputedStyle(document.querySelector('.zou-yuan '+s)).fontSize))`);
+  const fontsExpression = `['.zf-title','.ben-text','.pizhu-ta','.aside .piaoni','.aside .chain-row p'].map(s=>parseFloat(getComputedStyle(document.querySelector('.zou-yuan '+s)).fontSize))`;
+  const fonts = () => js(fontsExpression);
   // CSS variable changes must be checked on a displayed frame, not an IPC timing
   // accident. Keep immediate samples to expose (rather than hide) deferred paint.
   const fontTokens = () => js(`(()=>{const p=getComputedStyle(document.querySelector('.zou-yuan')),r=getComputedStyle(document.documentElement);return{scope:p.getPropertyValue('--tm-size-memorial'),global:r.getPropertyValue('--tm-font-global-scale'),ink:r.getPropertyValue('--tm-memorial-ink')}})()`);
+  // Inherited custom-property styles can still be pending after two frames on
+  // the CI renderer. Observe every size within the existing 3-second UI deadline;
+  // never treat a changed root token (or just the textarea) as a settled result.
+  const settledFonts = async expected => {
+    try { await wait(`${fontsExpression}.every((n,i)=>Math.abs(n-${JSON.stringify(expected)}[i])<0.05)`); }
+    catch (error) { observations.push({expectedFonts:expected,actualFonts:await fonts(),tokens:await fontTokens()});throw error; }
+    return fonts();
+  };
   await verify('per-memorial size changes all three columns and reply without flattening hierarchy', async () => {
     await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);await frame();const before=await fonts();
-    await js(`TMThemeFont.applyScopeSize('memorial','xl')`);const immediate=await fonts();await frame();const after=await fonts();observations.push({fontsBefore:before,scopedImmediate:immediate,scopedXL:after,tokens:await fontTokens()});
+    await js(`TMThemeFont.applyScopeSize('memorial','xl')`);const immediate=await fonts();await frame();const firstPaint=await fonts();const after=await settledFonts(before.map(n=>n*1.3));observations.push({fontsBefore:before,scopedImmediate:immediate,scopedFirstPaint:firstPaint,scopedXL:after,tokens:await fontTokens()});
     before.forEach((n,i)=>assert(Math.abs(after[i]/n-1.3)<0.015));assert(after[1]>after[0]);
   });
   await verify('global and scoped font scaling compose once and default restores original sizes', async () => {
-    const before=await fonts();await js(`TMThemeFont.applySize('xl',null,true)`);const immediate=await fonts();await frame();const after=await fonts();observations.push({globalBefore:before,globalImmediate:immediate,globalXL:after});
+    const before=await fonts();await js(`TMThemeFont.applySize('xl',null,true)`);const immediate=await fonts();await frame();const firstPaint=await fonts();const after=await settledFonts(before.map(n=>n*1.3));observations.push({globalBefore:before,globalImmediate:immediate,globalFirstPaint:firstPaint,globalXL:after});
     before.forEach((n,i)=>assert(Math.abs(after[i]/n-1.3)<0.015));
-    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);await frame();const reset=await fonts();
-    const original=observations.find(r=>r.fontsBefore).fontsBefore;reset.forEach((n,i)=>assert(Math.abs(n-original[i])<0.05));
+    await js(`TMThemeFont.applySize('md',null,true);TMThemeFont.applyScopeSize('memorial','md')`);await frame();
+    const original=observations.find(r=>r.fontsBefore).fontsBefore;const reset=await settledFonts(original);reset.forEach((n,i)=>assert(Math.abs(n-original[i])<0.05));
   });
   await verify('default sidebar uses dark readable ink rather than faint low-contrast labels', async () => {
     const colors=await js(`['.aside .piaoni','.aside .who-info span','.aside .chain-row p','.aside .imp-pending'].map(s=>getComputedStyle(document.querySelector('.zou-yuan '+s)).color)`);

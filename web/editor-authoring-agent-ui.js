@@ -2905,7 +2905,7 @@
       ui._autoCont = 0;
       _logRun(res.remonstrance ? '进谏' : (res.clarification ? '澄清' : (res.plan ? '计划' : '编辑')), request, res);   // 方向M · 记一条历史
       ui.els.req.value = ''; _autoGrowReq();
-      var stopMap = { finish: '完成', maxIterations: '达迭代上限', tokenBudget: '达 token 上限', finishBlocked: '校验未过·已停', noToolCalls: 'agent 未再操作', aborted: '已停止', planned: '已出计划', needsClarification: '需澄清', needsConfirmation: '需定夺' };
+      var stopMap = { finish: '完成', maxIterations: '达迭代上限', tokenBudget: '达 token 上限', outputLimit: '达单次输出上限', finishBlocked: '校验未过·已停', noToolCalls: 'agent 未再操作', aborted: '已停止', planned: '已出计划', needsClarification: '需澄清', needsConfirmation: '需定夺' };
       if (res.clarification) {              // 方向K · 交互式澄清：气泡 + 输入框作答续接（聊天化·无独立按钮）
         ui._pendingPlan = false; ui._pendingClarify = true;
         renderClarify(res.clarification.questions);

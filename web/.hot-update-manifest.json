@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-11T08:26:57.154Z",
+  "generatedAt": "2026-09-11T10:15:49.217Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2031,8 +2031,8 @@
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "e026c4b6e1f7c554d009b7244e636363cfec579535fe3904b345715046b54597",
-      "size": 307878
+      "sha256": "a74f0321d9412a50d6d2d932261f7aa1e204448a2317aae36627ba605e320eb4",
+      "size": 308340
     },
     {
       "path": "editor-core.js",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "dfef7311d47b95276034891536f74a5aa6b43d1f9fdd5e099637718a8cdd648f",
-      "size": 184711
+      "sha256": "bb86184e41c7e7c4516bc4d855189caf5d742616670dab76eb79cc8fe2a13c15",
+      "size": 184695
     },
     {
       "path": "editor.js",
@@ -3236,8 +3236,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-app.js",
-      "sha256": "5e8f4e70b180dd8e8ca3c6b7124324d2cea5b06b3f454a67c1e99ed558e3c268",
-      "size": 1398458
+      "sha256": "9f178a66801748b12aacea1586836055e7a2dda6d8ad525dcab866218d0fc6b8",
+      "size": 1412552
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
@@ -3246,8 +3246,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "46c3852b169f077fc4605f45859c808d6fd4c6da9c263534c22dbd120a50d7f4",
-      "size": 32341
+      "sha256": "b0922e0dae1f80ca0e7baf90149ac837b56e9608c296752ac4a5c9903b3cd5f6",
+      "size": 32321
     },
     {
       "path": "preview/scenario-editor-reset-style.css",

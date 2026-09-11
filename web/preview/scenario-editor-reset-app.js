@@ -959,7 +959,21 @@
     else if (field === 'events' && idx != null) { state._genSel = state._genSel || {}; state._genSel.events = idx; _clearRosterFilter('events'); }
     else if (field === 'variables' && idx != null) { state._genSel = state._genSel || {}; state._genSel.variables = idx; state._rulesTab = 'vars'; }
     else if (field === 'military' && parts[1] === 'initialTroops' && /^\d+$/.test(parts[2] || '')) { state._genSel = state._genSel || {}; state._genSel.troops = Number(parts[2]); state._milTab = 'troops'; _clearRosterFilter('troops'); }
-    else if (field === 'officeTree') { state._officeView = 'list'; }
+    else if (field === 'officeTree') {
+      state._officeView = 'tree';
+      var officePath = parts.slice(1).join('.'), officeRows = officeTreeEntries(state.scenario.officeTree);
+      var officeHit = officeRows.filter(function(r) { return officePath === r.path || officePath.indexOf(r.path + '.') === 0; }).pop();
+      if (officeHit) state._officeNodeId = officeHit.path;
+      orgChartState('office').collapsed = {};
+    } else if (field === 'adminHierarchy') {
+      var fullPath = parts.join('.'), hierarchy = state.scenario.adminHierarchy || {};
+      Object.keys(hierarchy).forEach(function(fk) {
+        var prefix = 'adminHierarchy.' + fk + '.divisions.';
+        if (fullPath.indexOf(prefix) !== 0) return;
+        var relative = fullPath.slice(prefix.length), hit = adminDivisionEntries(hierarchy[fk].divisions).filter(function(r) { return relative === r.path || relative.indexOf(r.path + '.') === 0; }).pop();
+        if (hit) { state._adminFaction = fk; state._adminDivPath = hit.path; state._adminView = 'tree'; orgChartState('admin').collapsed = {}; }
+      });
+    }
     if (idx != null) state.selectedEntityIndex = idx;
     renderAll();
     setTimeout(function () {
@@ -14605,6 +14619,7 @@
       else target[fld] = raw;
     }
     recordHistory(kind, ((target && target.name) || ('#' + i)) + ' · ' + fld);
+    if (kind === 'adminDiv') return; // 留住 blur 时正要点击的下级节点/新增按钮。
     var host = document.getElementById('module-primary-view'); if (host) host.innerHTML = modulePrimaryView(state.selectedModuleId) || ''; else renderAll();
   }
 
@@ -14804,7 +14819,7 @@
   }
 
   // ───────── 官制章：官职树（org chart，就地编辑各官职现任/员额/缺员）─────────
-  var OFT_CSS = '<style>' +
+  var OFT_CSS = GEN_TABS_CSS + '<style>' +
     '.oft-node{border-left:2px solid rgba(168,131,58,.4);margin:6px 0 6px 4px;padding-left:10px}' +
     '.oft-h{display:flex;align-items:baseline;gap:8px;margin:2px 0}' +
     '.oft-h b{font-size:14px;color:#7a2018}.oft-h span{font-size:11px;color:#9c8b6b}' +
@@ -14828,20 +14843,49 @@
     var summ = Array.isArray(val) ? '[' + val.length + ' 项]' : '{' + Object.keys(val).length + ' 键}';
     return '<span class="rwf2-ctl oft-obj" title="结构值 · 请在下方深度编辑台按 JSON 编辑">' + escapeHtml(summ) + '</span>';
   }
+  // 只投影原始路径，不在渲染时归一/拍平或双写；children 兼容判别与正式
+  // _offNormalizeTreeShape 一致，positions/subs 仍是新建官制的权威字段。
+  function officeChildEntries(node, path) {
+    var rows = [];
+    function append(key, kind) {
+      (Array.isArray(node && node[key]) ? node[key] : []).forEach(function(n, i) {
+        if (!isObject(n)) return;
+        var type = kind || ((Array.isArray(n.children) && n.children.length || Array.isArray(n.subs) || Array.isArray(n.positions)) ? 'department' : 'position');
+        rows.push({ node: n, path: path + '.' + key + '.' + i, type: type });
+      });
+    }
+    append('positions', 'position'); append('subs', 'department'); append('children');
+    return rows;
+  }
+  function officeTreeEntries(tree) {
+    var rows = [], ancestors = new Set();
+    function walk(entry, depth) {
+      if (!isObject(entry.node) || ancestors.has(entry.node)) return;
+      entry.depth = depth; rows.push(entry);
+      if (entry.type !== 'department') return;
+      ancestors.add(entry.node);
+      officeChildEntries(entry.node, entry.path).forEach(function(child) { child.parentPath = entry.path; walk(child, depth + 1); });
+      ancestors.delete(entry.node);
+    }
+    (Array.isArray(tree) ? tree : []).forEach(function(node, i) { walk({ node: node, path: String(i), type: 'department' }, 0); });
+    return rows;
+  }
+  function addOfficeSubdepartment(path) {
+    var parent = resolveOfficePath(path);
+    if (!isObject(parent)) { setStatus('目标官署已变更，请重新选择。', 'warn'); return null; }
+    if (parent.subs != null && !Array.isArray(parent.subs)) { setStatus('subs 不是数组，原值已保留，请先核对。', 'warn'); return null; }
+    if (!parent.subs) parent.subs = [];
+    var node = { id: uniqueId('office'), name: '新下属官署', desc: '', positions: [], subs: [] };
+    parent.subs.push(node);
+    state._officeNodeId = path + '.subs.' + (parent.subs.length - 1);
+    delete orgChartState('office').collapsed[path];
+    recordHistory('新增下属官署', parent.name || path); reRenderModulePrimary();
+    return clone(node);
+  }
   function officeNodeHtml(node, nodePath) {
-    var posRows = (node.positions || []).map(function (pos, j) {
-      var base = nodePath.concat(['positions', j]).join('.');
-      function ctl(field, val, ph, num) { return oftObjChip(val) || '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (field === 'vacancyCount' && Number(val) > 0 ? ' style="color:#a83228"' : '') + '>'; }
-      var row1 = '<div class="oft-pos">' + ctl('name', pos.name, '官职') + ctl('rank', pos.rank, '品级') + ctl('holder', pos.holder, '现任(空缺则留白)') + ctl('establishedCount', pos.establishedCount, '员额', true) + ctl('vacancyCount', pos.vacancyCount, '缺员', true) + '</div>';
-      function ctl2(field, val, ph, num) { return oftObjChip(val) || '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '" placeholder="' + ph + '">'; }
-      var hasExtra = ('salary' in pos) || ('perPersonSalary' in pos) || ('duties' in pos) || ('authority' in pos) || ('succession' in pos) || ('powers' in pos) || ('privateIncome' in pos);
-      var row2 = hasExtra ? '<div class="oft-pos2"><span class="oft-l">俸</span>' + ctl2('salary', pos.salary, '俸禄', true) + ctl2('perPersonSalary', pos.perPersonSalary, '俸注') + '<span class="oft-l">权</span>' + ctl2('authority', pos.authority, '权限') + ctl2('succession', pos.succession, '继任') + ('powers' in pos ? ctl2('powers', pos.powers, '权责') : '') + ('privateIncome' in pos ? ctl2('privateIncome', pos.privateIncome, '灰收') : '') + '</div>' + ('duties' in pos ? '<div class="oft-duties"><span class="oft-l">职责</span>' + ctl2('duties', pos.duties, '职责') + '</div>' : '') : '';
-      return row1 + row2;
-    }).join('');
-    var subs = (node.subs || []).map(function (sub, k) { return officeNodeHtml(sub, nodePath.concat(['subs', k])); }).join('');
-    return '<div class="oft-node"><div class="oft-h"><b>' + escapeHtml(node.name || '') + '</b><span>' + escapeHtml(node.desc || '') + '</span></div>' +
-      (posRows ? '<div class="oft-poshead"><span>官职</span><span>品级</span><span>现任</span><span>员额</span><span>缺员</span></div>' + posRows : '') +
-      (subs ? '<div class="oft-subs">' + subs + '</div>' : '') + '</div>';
+    var path = nodePath.join('.');
+    var subs = officeChildEntries(node, path).filter(function(r) { return r.type === 'department'; }).map(function(r) { return officeNodeHtml(r.node, r.path.split('.')); }).join('');
+    return '<div class="oft-node">' + officeNodeDetail(node, path, true) + (subs ? '<div class="oft-subs">' + subs + '</div>' : '') + '</div>';
   }
   function saveOfficeField(pathStr, field, raw) {
     var parts = String(pathStr).split('.').map(function (p) { return /^\d+$/.test(p) ? Number(p) : p; });
@@ -14849,9 +14893,10 @@
     for (var i = 0; i < parts.length; i++) { obj = obj && obj[parts[i]]; }
     if (!obj || typeof obj !== 'object') return;
     var old = obj[field];
+    if (old && typeof old === 'object') { setStatus('结构值请在高级字段中编辑；原值已保留。', 'warn'); return; }
     obj[field] = (typeof old === 'number' || field === 'establishedCount' || field === 'vacancyCount' || field === 'salary') ? (isFinite(parseFloat(raw)) ? parseFloat(raw) : 0) : raw;
     recordHistory('官制', (obj.name || field) + ' · ' + field);
-    var host = document.getElementById('module-primary-view'); if (host) host.innerHTML = modulePrimaryView(state.selectedModuleId) || '';
+    // blur 后不拆正在点击的树/新增按钮；下次切节点时刷新标签。
   }
   // ───────── 通用树状图(org-chart)·行政/官制共用·移植老编辑器布局+连线+平移缩放折叠·2026-06-05 ─────────
   var OC_CSS = '<style>' +
@@ -14862,7 +14907,9 @@
     '.oc-node:hover{border-color:#a8833a}' +
     '.oc-node.active{border-color:#a83228;box-shadow:0 0 0 2px rgba(168,50,40,.35)}' +
     '.oc-node b{display:block;font-size:13px;color:#7a2018;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-    '.oc-node em{display:block;font-size:10px;color:#9c8b6b;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.oc-node em{display:block;font-size:11px;color:#655036;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.oc-node.oc-position{border-left:3px solid #427966;background:#fffaf0}.oc-position b{color:#294f41}' +
+    '.oc-node.oc-department{border-top:3px solid #a8833a}.oc-node:focus-visible{outline:2px solid #7a2018;outline-offset:2px}' +
     '.oc-root{background:linear-gradient(120deg,#7a2018,#9a3b2a);border-color:#7a2018;cursor:default}' +
     '.oc-root b{color:#fbe7c8}.oc-root em{color:#e8cfae}' +
     '.oc-tog{position:absolute;right:-8px;bottom:-8px;width:18px;height:18px;line-height:15px;text-align:center;font-size:11px;border:1px solid #a8833a;border-radius:50%;background:#fff7e6;color:#7a2018;cursor:pointer;padding:0}' +
@@ -14878,24 +14925,25 @@
     var laid = [];
     var root = { id: '__root__', label: rootLabel, sub: rootSub, x: 0, y: 0, w: NODE_W, h: 0, depth: 0, children: [], isRoot: true };
     laid.push(root);
-    function build(arr, parentPath, parent, depth) {
+    function build(arr, parentPath, parent, depth, ancestors) {
       (arr || []).forEach(function (n, i) {
-        var path = parentPath.concat([cfg.childField, i]);
+        if (!n || typeof n !== 'object' || ancestors.indexOf(n) >= 0) return;
+        var path = depth === 1 ? [i] : parentPath.concat([cfg.childField, i]);
         var id = cfg.getId(n, depth === 1 ? [i] : path);
         var collapsed = !!ocs.collapsed[id];
-        var kids = (n && n[cfg.childField]) || [];
-        var ln = { node: n, id: id, label: cfg.getLabel(n), sub: cfg.getSub(n), x: 0, y: 0, w: NODE_W, h: 0, depth: depth, children: [], collapsed: collapsed, hasKids: kids.length > 0 };
+        var kids = cfg.getChildren ? cfg.getChildren(n) : (Array.isArray(n[cfg.childField]) ? n[cfg.childField] : []);
+        var ln = { node: n, id: id, label: cfg.getLabel(n), sub: cfg.getSub(n), type: cfg.getType ? cfg.getType(n) : '', x: 0, y: 0, w: NODE_W, h: 0, depth: depth, children: [], collapsed: collapsed, hasKids: kids.length > 0, childCount: kids.length };
         parent.children.push(ln); laid.push(ln);
-        if (!collapsed && kids.length) build(kids, depth === 1 ? [i] : path, ln, depth + 1);
+        if (!collapsed && kids.length) build(kids, path, ln, depth + 1, ancestors.concat([n]));
       });
     }
-    build(roots, [], root, 1);
-    laid.forEach(function (n) { n.h = 38 + (n.sub ? 15 : 0); });
-    function stw(ln) { if (!ln.children.length) return ln.w; var t = 0; ln.children.forEach(function (c, i) { if (i) t += GAP_X; t += stw(c); }); return Math.max(ln.w, t); }
+    build(roots, [], root, 1, []);
+    laid.forEach(function (n) { n.h = 38 + (n.sub ? 15 : 0) + (n.collapsed ? 15 : 0); });
+    function stw(ln) { if (ln.treeWidth != null) return ln.treeWidth; ln.stack = ln.children.length && (cfg.stackPositions && ln.children.every(function(c) { return c.type === 'position'; }) || cfg.stackLeaves && ln.children.every(function(c) { return !c.children.length; })); var t = 0; ln.children.forEach(function (c, i) { if (ln.stack) t = Math.max(t, stw(c)); else { if (i) t += GAP_X; t += stw(c); } }); return (ln.treeWidth = Math.max(ln.w, t)); }
     var maxH = {}; laid.forEach(function (n) { if (!maxH[n.depth] || n.h > maxH[n.depth]) maxH[n.depth] = n.h; });
     function assign(ln, leftX, topY) {
       var w = stw(ln); ln.x = leftX + (w - ln.w) / 2; ln.y = topY;
-      if (ln.children.length) { var cy = topY + (maxH[ln.depth] || ln.h) + GAP_Y, cx = leftX; ln.children.forEach(function (c) { var cw = stw(c); assign(c, cx, cy); cx += cw + GAP_X; }); }
+      if (ln.children.length) { var cy = topY + (maxH[ln.depth] || ln.h) + GAP_Y, cx = leftX; ln.children.forEach(function (c) { var cw = stw(c); assign(c, cx, cy); if (ln.stack) cy += c.h + 14; else cx += cw + GAP_X; }); }
     }
     assign(root, 30, 24);
     var maxX = 0, maxY = 0; laid.forEach(function (n) { maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h); });
@@ -14906,23 +14954,38 @@
     var ocs = orgChartState(kind);
     var L = buildOrgLayout(rootLabel, rootSub, roots, cfg, ocs);
     var lines = '';
-    (function draw(ln) { ln.children.forEach(function (c) { var x1 = ln.x + ln.w / 2, y1 = ln.y + ln.h, x2 = c.x + c.w / 2, y2 = c.y, my = (y1 + y2) / 2; lines += '<path d="M' + x1 + ',' + y1 + ' C' + x1 + ',' + my + ' ' + x2 + ',' + my + ' ' + x2 + ',' + y2 + '" fill="none" stroke="rgba(168,131,58,.45)" stroke-width="1.5"/>'; draw(c); }); })(L.root);
+    (function draw(ln) {
+      ln.children.forEach(function(c) {
+        var x1 = ln.x + ln.w / 2, y1 = ln.y + ln.h, x2 = c.x + c.w / 2, y2 = c.y, my = (y1 + y2) / 2;
+        // 纵列是同级，不是上下级链：每一项从父节点的侧干单独接入。
+        var edge = ln.stack ? 'M' + x1 + ',' + y1 + ' V' + (ln.children[0].y - 16) + ' H' + (c.x - 10) + ' V' + (c.y + c.h / 2) + ' H' + c.x : 'M' + x1 + ',' + y1 + ' V' + my + ' H' + x2 + ' V' + y2;
+        lines += '<path data-oc-parent="' + escapeHtml(ln.id) + '" data-oc-child="' + escapeHtml(c.id) + '" d="' + edge + '" fill="none" stroke="' + (c.type === 'position' ? '#7b9c86' : '#b39a62') + '" stroke-width="1.5"' + (c.type === 'position' ? ' stroke-dasharray="4,3"' : '') + '/>'; draw(c);
+      });
+    })(L.root);
     var nodes = L.laid.map(function (ln) {
       var pos = 'left:' + Math.round(ln.x) + 'px;top:' + Math.round(ln.y) + 'px;width:' + ln.w + 'px';
       if (ln.isRoot) return '<div class="oc-node oc-root" style="' + pos + '"><b>' + escapeHtml(ln.label || '') + '</b>' + (ln.sub ? '<em>' + escapeHtml(ln.sub) + '</em>' : '') + '</div>';
       var active = (cfg.selectedId != null && String(ln.id) === String(cfg.selectedId)) ? ' active' : '';
       var tog = ln.hasKids ? '<button class="oc-tog" data-editor-command="orgchart-collapse" data-oc-kind="' + kind + '" data-oc-id="' + escapeHtml(ln.id) + '" title="展开 / 收起下级">' + (ln.collapsed ? '＋' : '－') + '</button>' : '';
-      return '<div class="oc-node' + active + '" style="' + pos + '" data-editor-command="orgchart-pick" data-oc-kind="' + kind + '" data-oc-id="' + escapeHtml(ln.id) + '"><b>' + escapeHtml(ln.label || '') + '</b>' + (ln.sub ? '<em>' + escapeHtml(ln.sub) + '</em>' : '') + tog + '</div>';
+      return '<div class="oc-node oc-' + escapeHtml(ln.type) + active + '" role="button" tabindex="0" style="' + pos + '" data-editor-command="orgchart-pick" data-oc-kind="' + kind + '" data-oc-id="' + escapeHtml(ln.id) + '" title="' + escapeHtml(ln.label + ' · ' + ln.sub) + '"><b>' + escapeHtml(ln.label || '') + '</b>' + (ln.sub ? '<em>' + escapeHtml(ln.sub) + '</em>' : '') + (ln.collapsed ? '<em>下级 ' + ln.childCount + ' 项已折叠</em>' : '') + tog + '</div>';
     }).join('');
     var inner = '<div class="oc-inner" data-oc-inner="' + kind + '" style="transform:translate(' + ocs.panX + 'px,' + ocs.panY + 'px) scale(' + ocs.scale + ');width:' + L.w + 'px;height:' + L.h + 'px">' +
       '<svg width="' + L.w + '" height="' + L.h + '" style="position:absolute;top:0;left:0;pointer-events:none">' + lines + '</svg>' + nodes + '</div>';
-    var ctrls = '<div class="oc-ctrls"><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="0.12" title="放大">＋</button><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="-0.12" title="缩小">－</button><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="0" title="复位">⌂</button></div>';
+    var ctrls = '<div class="oc-ctrls"><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="0.12" title="放大">＋</button><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="-0.12" title="缩小">－</button><button data-editor-command="orgchart-zoom" data-oc-kind="' + kind + '" data-oc-d="0" title="复位">⌂</button><button data-editor-command="orgchart-fit" data-oc-kind="' + kind + '" title="查看全图">全</button></div>';
     ensureOrgPanListeners();
+    if (!ocs.initialized && typeof requestAnimationFrame === 'function') requestAnimationFrame(function() {
+      var wrap = document.querySelector('[data-oc-pan="' + kind + '"]'), element = wrap && wrap.querySelector('[data-oc-inner]');
+      if (!element || ocs.initialized || !wrap.clientWidth) return;
+      ocs.initialized = true; ocs.scale = Math.max(0.65, Math.min(1, (wrap.clientWidth - 24) / L.w));
+      ocs.panX = (wrap.clientWidth - L.w * ocs.scale) / 2; ocs.panY = 12;
+      element.style.transform = 'translate(' + ocs.panX + 'px,' + ocs.panY + 'px) scale(' + ocs.scale + ')';
+    });
     return '<div class="oc-wrap" data-oc-pan="' + kind + '">' + inner + ctrls + '<div class="oc-hint">拖拽平移 · ＋/－缩放 · 点节点编辑 · ＋/－圈展开收起</div></div>';
   }
   function ensureOrgPanListeners() {
     if (state._ocPanBound) return; state._ocPanBound = true;
     var pan = null;
+    document.addEventListener('keydown', function(e) { if (e.target && e.target.matches && e.target.matches('.oc-node[role="button"]') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); handleEditorCommand('orgchart-pick', e.target); } });
     document.addEventListener('mousedown', function (e) {
       var wrap = e.target && e.target.closest && e.target.closest('[data-oc-pan]');
       if (!wrap) return;
@@ -14939,18 +15002,25 @@
     });
     document.addEventListener('mouseup', function () { if (pan && pan.inner) { var w = pan.inner.closest('.oc-wrap'); if (w) w.classList.remove('oc-panning'); } pan = null; });
   }
-  function officeNodeDetail(node, pathStr) {
+  function officeNodeDetail(node, pathStr, compact) {
     if (!node) return '<div class="rwf2-empty">点左侧树节点编辑该衙门的官职</div>';
-    var posRows = (node.positions || []).map(function (pos, j) {
-      var base = pathStr + '.positions.' + j;
-      function ctl(field, val, ph, num) { return '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (field === 'vacancyCount' && Number(val) > 0 ? ' style="color:#a83228"' : '') + '>'; }
-      var row1 = '<div class="oft-pos">' + ctl('name', pos.name, '官职') + ctl('rank', pos.rank, '品级') + ctl('holder', pos.holder, '现任(空缺则留白)') + ctl('establishedCount', pos.establishedCount, '员额', true) + ctl('vacancyCount', pos.vacancyCount, '缺员', true) + '</div>';
+    var entry = compact ? null : officeTreeEntries(state.scenario.officeTree).find(function(r) { return r.path === pathStr; });
+    var isPosition = entry && entry.type === 'position';
+    var positions = isPosition ? [entry] : officeChildEntries(node, pathStr).filter(function(r) { return r.type === 'position'; });
+    var posRows = positions.map(function (row) {
+      var pos = row.node, base = row.path;
+      function ctl(field, val, ph, num) { return oftObjChip(val) || '<input ' + (num ? 'type="number" ' : '') + 'class="rwf2-ctl' + (num ? ' rwf2-num' : '') + '" data-office-path="' + base + '" data-office-field="' + field + '" value="' + escapeHtml(val == null ? '' : val) + '"' + (ph ? ' aria-label="' + ph + '" placeholder="' + ph + '"' : '') + (field === 'vacancyCount' && Number(val) > 0 ? ' style="color:#a83228"' : '') + '>'; }
+      var rankKey = 'rank' in pos ? 'rank' : ('level' in pos ? 'level' : 'rank');
+      var row1 = '<div class="oft-pos">' + ctl('name', pos.name, '官职') + ctl(rankKey, pos[rankKey], '品级') + ctl('holder', pos.holder, '现任(空缺则留白)') + ctl('establishedCount', pos.establishedCount, '员额', true) + ctl('vacancyCount', pos.vacancyCount, '缺员', true) + '</div>';
       var hasExtra = ('salary' in pos) || ('perPersonSalary' in pos) || ('duties' in pos) || ('authority' in pos) || ('succession' in pos) || ('powers' in pos) || ('privateIncome' in pos);
       var row2 = hasExtra ? '<div class="oft-pos2"><span class="oft-l">俸</span>' + ctl('salary', pos.salary, '俸禄', true) + ctl('perPersonSalary', pos.perPersonSalary, '俸注') + '<span class="oft-l">权</span>' + ctl('authority', pos.authority, '权限') + ctl('succession', pos.succession, '继任') + ('powers' in pos ? ctl('powers', pos.powers, '权责') : '') + ('privateIncome' in pos ? ctl('privateIncome', pos.privateIncome, '灰收') : '') + '</div>' + ('duties' in pos ? '<div class="oft-duties"><span class="oft-l">职责</span>' + ctl('duties', pos.duties, '职责') + '</div>' : '') : '';
       return row1 + row2;
     }).join('');
-    return '<div class="oft-node"><div class="oft-h"><b>' + escapeHtml(node.name || '') + '</b><span>' + escapeHtml(node.desc || '') + '</span>' +
-      '<button class="mini-ai" style="margin-left:auto" data-editor-command="office-add-pos" data-office-node="' + escapeHtml(pathStr) + '" title="往本衙门追加一行新官职">＋新增官职条目</button></div>' +
+    var controls = isPosition ? '<div class="oft-h">官职 · ' + escapeHtml(node.name || '') + '</div>' :
+      '<div class="oft-h"><label>官署 <input class="rwf2-ctl" aria-label="官署名称" data-office-path="' + escapeHtml(pathStr) + '" data-office-field="name" value="' + escapeHtml(node.name || '') + '"></label>' +
+      '<button class="mini-ai" data-editor-command="office-add-sub" data-office-node="' + escapeHtml(pathStr) + '">＋下属官署</button><button class="mini-ai" data-editor-command="office-add-pos" data-office-node="' + escapeHtml(pathStr) + '" title="往本衙门追加一行新官职">＋新增官职条目</button></div>' +
+      '<label class="rwf2-f">职责说明' + (oftObjChip(node.desc) || '<textarea class="rwf2-ctl" data-office-path="' + escapeHtml(pathStr) + '" data-office-field="desc">' + escapeHtml(node.desc || '') + '</textarea>') + '</label>';
+    return '<div class="oft-node">' + controls +
       (posRows ? '<div class="oft-poshead"><span>官职</span><span>品级</span><span>现任</span><span>员额</span><span>缺员</span></div>' + posRows : '<div class="rwf2-empty">本衙门暂无官职条目</div>') + '</div>';
   }
   function resolveOfficePath(pathStr) {
@@ -14963,24 +15033,29 @@
   function renderOfficeFolio() {
     var tree = state.scenario.officeTree;
     var govSec = configSection('government', '政体 · 选才升迁', GOV_LABELS, {});
-    if (!Array.isArray(tree) || !tree.length) return genFolioCss() + OFT_CSS + '<div class="rwf2-wrap"><div class="rwf2-head">官制 · 政体</div>' + govSec + '<div class="rwf2-head">本剧本暂无官职树。</div></div>';
-    var count = 0, vac = 0; (function walk(ns) { (ns || []).forEach(function (n) { (n.positions || []).forEach(function (p) { count += (Number(p.establishedCount) || 0); vac += (Number(p.vacancyCount) || 0); }); walk(n.subs); }); })(tree);
+    var entries = officeTreeEntries(tree), departments = entries.filter(function(r) { return r.type === 'department'; });
+    if (!Array.isArray(tree) || !tree.length) return genFolioCss() + OFT_CSS + '<div class="rwf2-wrap"><div class="rwf2-head">官制 · 政体</div>' + govSec + '<div class="rwf2-head">本剧本暂无官职树。</div><button class="ai-button" data-editor-command="office-add-root">＋新增官署</button></div>';
+    var count = 0, vac = 0; entries.forEach(function(r) { if (r.type !== 'position') return; var p = r.node; count += p.establishedCount == null ? 1 : Number(p.establishedCount) || 0; vac += p.vacancyCount == null ? (!p.holder || /^[（(]\s*阙/.test(String(p.holder)) ? 1 : 0) : Number(p.vacancyCount) || 0; });
     var view = state._officeView === 'tree' ? 'tree' : 'list';
     var tabbar = '<div class="facf-tabs">' +
       '<button class="facf-tab' + (view === 'list' ? ' on' : '') + '" data-editor-command="office-view" data-office-view="list">清单</button>' +
       '<button class="facf-tab' + (view === 'tree' ? ' on' : '') + '" data-editor-command="office-view" data-office-view="tree">树状图</button>' +
       '<button class="ai-button" style="margin-left:auto" data-editor-command="office-add-root" title="在官署树根部新增一个顶级衙门">＋新增官署</button>' +
     '</div>';
-    var headTxt = '官制 · ' + tree.length + ' 衙门 · 员额 ' + count + ' · 缺员 ' + vac + ' · ' + (view === 'tree' ? '拖拽平移·点节点编辑该衙门官职' : '各官职现任/员额/缺员可就地改');
+    var headTxt = '官制 · ' + departments.length + ' 衙门 · 员额 ' + count + ' · 缺员 ' + vac + ' · ' + (view === 'tree' ? '官署 → 下属官署 / 官职 · 点节点编辑或新增下级' : '各官职现任/员额/缺员可就地改');
     if (view === 'tree') {
-      var sel = state._officeNodeId || '0';
+      var sel = entries.some(function(r) { return r.path === state._officeNodeId; }) ? state._officeNodeId : (entries[0] && entries[0].path || '0');
       var selNode = resolveOfficePath(sel);
-      var cfg = { childField: 'subs', getId: function (n, path) { return path.join('.'); }, getLabel: function (n) { return n.name || '衙门'; }, getSub: function (n) { var c = (n.positions || []).length; return c ? c + ' 职' : ''; }, selectedId: sel };
-      var chart = renderOrgChart('office', (state.scenario.government && state.scenario.government.name) || '政体', '官署', tree, cfg);
+      state._officeNodeId = sel;
+      var byPath = Object.create(null), roots = [];
+      entries.forEach(function(r) { r.children = []; byPath[r.path] = r; if (r.parentPath && byPath[r.parentPath]) byPath[r.parentPath].children.push(r); else roots.push(r); });
+      var cfg = { getChildren: function(r) { return r.children; }, getId: function(r) { return r.path; }, getType: function(r) { return r.type; }, getLabel: function(r) { return r.node.name || '未命名'; }, getSub: function(r) { var n = r.node; return r.type === 'position' ? (n.rank || n.level || '官职') + ' · ' + (typeof n.holder === 'string' && n.holder || '空缺') : r.children.filter(function(c) { return c.type === 'position'; }).length + ' 职 · 下属 ' + r.children.filter(function(c) { return c.type === 'department'; }).length; }, selectedId: sel };
+      cfg.stackPositions = true;
+      var chart = renderOrgChart('office', (state.scenario.playerInfo && state.scenario.playerInfo.name) || state.scenario.emperor || '君主', (state.scenario.government && state.scenario.government.name) || '官制', roots, cfg);
       return genFolioCss() + OFT_CSS + OC_CSS + '<div class="rwf2-wrap">' + tabbar + '<div class="rwf2-head">' + headTxt + '</div>' + govSec +
         '<div class="rwf2-cols" style="grid-template-columns:1.5fr 1fr">' + chart + '<section class="rwf2-detail">' + officeNodeDetail(selNode, sel) + '</section></div></div>';
     }
-    var body = tree.map(function (n, i) { return officeNodeHtml(n, [i]); }).join('');
+    var body = tree.map(function (n, i) { return isObject(n) ? officeNodeHtml(n, [i]) : ''; }).join('');
     return genFolioCss() + OFT_CSS + '<div class="rwf2-wrap">' + tabbar + '<div class="rwf2-head">' + headTxt + '</div>' +
       govSec + '<div class="rwf2-detail">' + body + '</div></div>';
   }
@@ -15071,7 +15146,72 @@
     ['人口构成', ['populationDetail', 'byGender', 'byAge', 'byEthnicity', 'byFaith', 'baojia', 'bySettlement', 'fiscalDetail']],
     ['特征', ['specialResources', 'specialCulture', 'strategicValue', 'tags', 'leadingGentry', 'academies', 'tradeRoutes', 'religiousSites', 'recentDisasters', 'threats']]
   ];
-  function adminWalkFind(divs, id) { for (var i = 0; i < (divs || []).length; i++) { if (divs[i].id === id) return divs[i]; var f = adminWalkFind(divs[i].children, id); if (f) return f; } return null; }
+  function adminChildKey(node) { return Array.isArray(node && node.children) && node.children.length ? 'children' : (Array.isArray(node && node.divisions) && node.divisions.length ? 'divisions' : 'children'); }
+  function adminDivisionEntries(divs) {
+    var rows = [], ancestors = new Set();
+    function walk(nodes, prefix, depth) {
+      (Array.isArray(nodes) ? nodes : []).forEach(function(n, i) {
+        if (!isObject(n) || ancestors.has(n)) return;
+        var path = prefix ? prefix + '.' + i : String(i), key = adminChildKey(n);
+        rows.push({ node: n, path: path, depth: depth }); ancestors.add(n);
+        walk(n[key], path + '.' + key, depth + 1); ancestors.delete(n);
+      });
+    }
+    walk(divs, '', 0); return rows;
+  }
+  function adminWalkFind(divs, id) { var rows = adminDivisionEntries(divs).filter(function(r) { return r.node.id === id; }); return rows.length === 1 ? rows[0].node : null; }
+  function adminActiveRoot() {
+    var ah = state.scenario.adminHierarchy;
+    if (!isObject(ah)) return null;
+    var keys = Object.keys(ah).filter(function(k) { return isObject(ah[k]) && (ah[k].divisions == null || Array.isArray(ah[k].divisions)); });
+    var key = keys.indexOf(state._adminFaction) >= 0 ? state._adminFaction : keys[0];
+    return key == null ? null : { key: key, root: ah[key] };
+  }
+  function addAdminFaction(name) {
+    var faction = (Array.isArray(state.scenario.factions) ? state.scenario.factions : []).find(function(f) { return f && f.name === name; });
+    var ah = state.scenario.adminHierarchy;
+    if (!faction || !name || /^(?:__proto__|constructor|prototype)$/.test(name) || ah != null && !isObject(ah)) { setStatus('请选择剧本已有势力；无效的旧区划数据需先核对，未被覆盖。', 'warn'); return null; }
+    if (ah && Object.prototype.hasOwnProperty.call(ah, name)) { setStatus('此势力的区划根已存在，未覆盖。', 'warn'); return null; }
+    if (!ah) ah = state.scenario.adminHierarchy = {};
+    ah[name] = { factionName: name, divisions: [] }; state._adminFaction = name; state._adminDivPath = null;
+    recordHistory('新增势力区划根', name); reRenderModulePrimary(); return clone(ah[name]);
+  }
+  function addAdminDivision(parentPath) {
+    var active = adminActiveRoot();
+    if (!active) { setStatus('请先在高级字段创建势力区划根。', 'warn'); return null; }
+    var root = active.root, parent = parentPath == null ? root : readTreeValue(root.divisions, parentPath);
+    if (!isObject(parent)) { setStatus('目标区划已变更，请重新选择。', 'warn'); return null; }
+    if (parentPath != null && Array.isArray(parent.divisions) && parent.divisions.length) { setStatus('此区划使用旧式 divisions；请先点「整理旧式子级字段」。', 'warn'); return null; }
+    var key = parentPath == null ? 'divisions' : 'children';
+    if (parent[key] != null && !Array.isArray(parent[key])) { setStatus('下级字段不是数组，原值已保留，请先核对。', 'warn'); return null; }
+    if (!parent[key]) parent[key] = [];
+    var levels = ['country', 'province', 'prefecture', 'county', 'district'], pi = levels.indexOf(parent.level);
+    var node = { id: uniqueId('division'), name: '新下级区划', level: parentPath == null ? 'province' : levels[Math.min(levels.length - 1, pi < 0 ? 2 : pi + 1)], children: [] };
+    parent[key].push(node); state._adminFaction = active.key;
+    state._adminDivPath = (parentPath == null ? '' : parentPath + '.children.') + (parent[key].length - 1);
+    state._adminDivId = node.id;
+    delete orgChartState('admin').collapsed[parentPath];
+    state._adminExpanded = state._adminExpanded || {}; state._adminExpanded[parentPath] = 1;
+    recordHistory('新增区划', (parent.name || active.key) + ' → ' + node.name); reRenderModulePrimary(); return clone(node);
+  }
+  function normalizeLegacyAdminChildren() {
+    var next = clone(state.scenario.adminHierarchy), changed = 0, conflicts = [];
+    function walk(ds) { (Array.isArray(ds) ? ds : []).forEach(function(d) {
+      if (!isObject(d)) return;
+      if (Array.isArray(d.divisions)) {
+        if (d.children != null && !Array.isArray(d.children) || Array.isArray(d.children) && d.children.length && d.divisions.length && stableString(d.children) !== stableString(d.divisions)) { conflicts.push(d.name || d.id || '未命名区划'); return; }
+        if (!Array.isArray(d.children) || !d.children.length) d.children = d.divisions;
+        delete d.divisions; changed++;
+      }
+      walk(d.children);
+    }); }
+    Object.keys(next || {}).forEach(function(k) { if (isObject(next[k])) walk(next[k].divisions); });
+    if (conflicts.length) { setStatus('两套子级数据不一致，未作修改，请先核对：' + conflicts.join('、'), 'warn'); return { ok: false, conflicts: conflicts }; }
+    if (!changed) return { ok: true, changed: 0 };
+    state.scenario.adminHierarchy = next; state._adminDivPath = null; state._adminCurDiv = null;
+    recordHistory('整理旧式区划子级', changed + ' 处 divisions → children'); reRenderModulePrimary();
+    setStatus('已整理 ' + changed + ' 处子级字段；人口、经济、民心等原值保留，可撤销。', 'good'); return { ok: true, changed: changed };
+  }
   // ── 地图地块 ↔ 行政区划 对应（显形 + 校准）·2026-06-05 ─────────────
   function adminMapBindIndex() {
     var sc = state.scenario || {};
@@ -15084,7 +15224,7 @@
       (function dig(ds) {
         (ds || []).forEach(function (d) {
           if (d && d.name) { divList.push({ name: d.name, id: d.id, faction: node.factionName || fk }); divSet[d.name] = true; }
-          if (d) dig(d.children);
+          if (d) dig(d[adminChildKey(d)]);
         });
       })(node.divisions);
     });
@@ -15104,7 +15244,7 @@
       (node.divisions || []).forEach(function (d) {
         if (!d || !d.name) return;
         var covered = false;
-        (function dig(x) { if (!x) return; if (directBound[x.name]) covered = true; (x.children || []).forEach(dig); })(d);
+        (function dig(x) { if (!x) return; if (directBound[x.name]) covered = true; (x[adminChildKey(x)] || []).forEach(dig); })(d);
         topDivs.push({ name: d.name, faction: node.factionName || fk, covered: covered });
         if (!covered) topUnbound.push({ name: d.name, faction: node.factionName || fk });
       });
@@ -15207,18 +15347,20 @@
     reRenderModulePrimary();
     setStatus('校准完成：对齐 ' + fixed + ' 块，原已绑 ' + already + ' 块' + (miss ? '，仍有 ' + miss + ' 块无法自动匹配（可手动选区划）' : '') + '。', miss ? 'warn' : 'good');
   }
-  function adminTreeHtml(divs, curId, idx) {
+  function adminTreeHtml(divs, curId, idx, prefix) {
     var exp = state._adminExpanded || (state._adminExpanded = {});
-    return (divs || []).map(function (d) {
-      var on = d.id === curId ? ' active' : '';
-      var hasKids = d.children && d.children.length;
-      var open = hasKids && exp[d.id];
+    return (Array.isArray(divs) ? divs : []).map(function (d, i) {
+      if (!isObject(d)) return '';
+      var dp = prefix ? prefix + '.' + i : String(i), key = adminChildKey(d);
+      var on = dp === curId ? ' active' : '';
+      var hasKids = Array.isArray(d[key]) && d[key].length;
+      var open = hasKids && exp[dp] !== false;
       var tog = hasKids
-        ? '<button class="adt-tog" data-editor-command="admin-toggle-node" data-admin-node-id="' + escapeHtml(d.id || '') + '" title="展开 / 收起下辖府州">' + (open ? '▾' : '▸') + '</button>'
+        ? '<button class="adt-tog" data-editor-command="admin-toggle-node" data-admin-node-id="' + escapeHtml(dp) + '" title="展开 / 收起下级区划">' + (open ? '▾' : '▸') + '</button>'
         : '<span class="adt-tog adt-tog-leaf"></span>';
       return '<div class="adt-wrap"><div class="adt-row">' + tog +
-        '<button class="adt-node' + on + '" data-editor-command="admin-div-select" data-admin-div-id="' + escapeHtml(d.id || '') + '"><b>' + escapeHtml(d.name || '?') + '</b>' + (d.level ? '<span>' + escapeHtml(d.level) + '</span>' : '') + (d.governor ? '<span>· ' + escapeHtml(d.governor) + '</span>' : '') + adminBindBadge(d, idx) + (hasKids ? '<span class="adt-kc">辖' + d.children.length + '</span>' : '') + '</button></div>' +
-        (open ? '<div class="adt-children">' + adminTreeHtml(d.children, curId, idx) + '</div>' : '') + '</div>';
+        '<button class="adt-node' + on + '" data-editor-command="admin-div-select" data-admin-div-path="' + escapeHtml(dp) + '"><b>' + escapeHtml(d.name || '?') + '</b>' + (d.level ? '<span>' + escapeHtml(d.level) + '</span>' : '') + (d.governor ? '<span>· ' + escapeHtml(d.governor) + '</span>' : '') + adminBindBadge(d, idx) + (hasKids ? '<span class="adt-kc">辖' + d[key].length + '</span>' : '') + '</button></div>' +
+        (open ? '<div class="adt-children">' + adminTreeHtml(d[key], curId, idx, dp + '.' + key) + '</div>' : '') + '</div>';
     }).join('');
   }
   function renderAdminFolio() {
@@ -15227,28 +15369,36 @@
     var fks = keys.filter(function(k) { var row = ah[k]; return row && typeof row === 'object' && !Array.isArray(row) && (row.divisions == null || Array.isArray(row.divisions)); });
     if (!fks.length) {
       state._adminCurDiv = null; // 只清理失效的视图选择，不删除或重写原始区划数据。
-      return genFolioCss() + '<div class="rwf2-wrap"><div class="rwf2-head">' + (keys.length || Array.isArray(ah) ? '行政区划数据格式无效，暂无可显示的势力；原数据已保留，请在高级字段中核对。' : '本剧本暂无行政区划层级。地块几何/归属见「地图绑定工坊」与地图编辑器。') + '</div></div>';
+      var factions = (Array.isArray(state.scenario.factions) ? state.scenario.factions : []).filter(function(f) { return f && f.name; });
+      var create = factions.length && !keys.length && !Array.isArray(ah) ? '<label>势力 <select class="rwf2-ctl" id="admin-new-faction">' + factions.map(function(f) { return '<option>' + escapeHtml(f.name) + '</option>'; }).join('') + '</select></label><button class="ai-button" data-editor-command="admin-add-faction">建立该势力区划树</button>' : '';
+      return genFolioCss() + '<div class="rwf2-wrap"><div class="rwf2-head">' + (keys.length || Array.isArray(ah) ? '行政区划数据格式无效，暂无可显示的势力；原数据已保留，请在高级字段中核对。' : '本剧本暂无行政区划层级。地块几何/归属见「地图绑定工坊」与地图编辑器。') + '</div>' + create + '</div>';
     }
     var fk = fks.indexOf(state._adminFaction) >= 0 ? state._adminFaction : fks[0];
     var divs = (ah[fk] && ah[fk].divisions) || [];
-    var curId = state._adminDivId;
-    var curDiv = (curId ? adminWalkFind(divs, curId) : null) || divs[0] || null;
-    if (curDiv) curId = curDiv.id;
+    state._adminFaction = fk;
+    var rows = adminDivisionEntries(divs), curId = state._adminDivPath;
+    var selected = rows.find(function(r) { return r.path === curId; }) || rows[0];
+    var curDiv = selected ? selected.node : null;
+    curId = selected ? selected.path : null; state._adminDivPath = curId;
     state._adminCurDiv = curDiv;
     var facSel = '<select class="rwf2-ctl" data-admin-faction style="max-width:260px">' + fks.map(function (k) { return '<option value="' + escapeHtml(k) + '"' + (k === fk ? ' selected' : '') + '>' + escapeHtml(ah[k].factionName || k) + '（' + ((ah[k].divisions || []).length) + '）</option>'; }).join('') + '</select>';
     var bindIdx = adminMapBindIndex();
     var view = state._adminView === 'tree' ? 'tree' : 'list';
-    var detail = curDiv ? genDetail('adminDiv', curDiv, 0, ADMIN_DIV_GROUPS, ADMIN_DIV_LABELS, ADMIN_DIV_SUB) : '<div class="rwf2-empty">选择一个区划</div>';
+    var detail = curDiv ? '<button class="ai-button" data-editor-command="admin-add-child" data-admin-div-path="' + escapeHtml(curId) + '">＋添加下级区划</button>' + genDetail('adminDiv', curDiv, 0, ADMIN_DIV_GROUPS, ADMIN_DIV_LABELS, ADMIN_DIV_SUB) : '<div class="rwf2-empty">选择一个区划</div>';
     var viewTabs = '<button class="adt-allbtn' + (view === 'list' ? ' adt-on' : '') + '" data-editor-command="admin-view" data-admin-view="list">清单</button><button class="adt-allbtn' + (view === 'tree' ? ' adt-on' : '') + '" data-editor-command="admin-view" data-admin-view="tree">树状图</button>';
     var toolRow = '<div style="margin:4px 2px 8px;font-size:12px;color:#574733;display:flex;align-items:center;gap:8px;flex-wrap:wrap">势力：' + facSel + viewTabs +
-      (view === 'list' ? '<button class="adt-allbtn" data-editor-command="admin-expand-all" title="展开本势力所有府州">展开全部</button><button class="adt-allbtn" data-editor-command="admin-collapse-all" title="只看顶级省道">收起全部</button>' : '') +
+      '<button class="adt-allbtn" data-editor-command="admin-expand-all" title="展开本势力所有层级">展开全部</button><button class="adt-allbtn" data-editor-command="admin-collapse-all" title="只看顶级区划">收起全部</button><button class="adt-allbtn" data-editor-command="admin-add-root">＋顶级区划</button>' +
       '<button class="adt-mapbtn" data-editor-command="launch-map-editor" title="打开地图编辑器：画地块几何 / 改归属 / 调省界，画完点返回写回">🗺 打开地图编辑器</button></div>';
+    if (rows.some(function(r) { return Array.isArray(r.node.divisions); })) toolRow += '<div class="rwf2-head" role="status">发现旧式子级 divisions，已兼容显示；正式游戏使用 children。<button class="adt-allbtn" data-editor-command="admin-normalize-children">整理旧式子级字段</button></div>';
     if (fks.length !== keys.length) toolRow += '<div role="status" class="rwf2-head">部分势力区划格式无效，未参与显示；原数据已保留，请核对：' + escapeHtml(keys.filter(function(k) { return fks.indexOf(k) < 0; }).join('、')) + '</div>';
     if (view === 'tree') {
       var ocs = orgChartState('admin');
-      if (ocs._initFk !== fk) { ocs.collapsed = {}; (divs || []).forEach(function (d) { if (d && d.children && d.children.length) ocs.collapsed[d.id] = 1; }); ocs._initFk = fk; }
-      var acfg = { childField: 'children', getId: function (d) { return d.id; }, getLabel: function (d) { return d.name || '区划'; }, getSub: function (d) { return (d.level || '') + (d.governor ? ' · ' + d.governor : ''); }, selectedId: curId };
-      var chart = renderOrgChart('admin', ah[fk].factionName || fk, divs.length + ' 区划', divs, acfg);
+      if (ocs._initFk !== fk) { ocs.collapsed = {}; ocs.initialized = false; ocs._initFk = fk; }
+      var byPath = Object.create(null), roots = [];
+      rows.forEach(function(r) { r.children = []; byPath[r.path] = r; var parts = r.path.split('.'); parts.splice(-2); var parent = byPath[parts.join('.')]; if (parent) parent.children.push(r); else roots.push(r); });
+      var acfg = { getChildren: function(r) { return r.children; }, getId: function(r) { return r.path; }, getLabel: function(r) { return r.node.name || '区划'; }, getSub: function(r) { var d = r.node, names = { country: '国', province: '省／州', prefecture: '郡／府', county: '县', district: '乡／镇' }; return (names[d.level] || d.level || '') + (d.governor ? ' · ' + d.governor : '') + (r.children.length ? ' · 下辖 ' + r.children.length : ''); }, selectedId: curId };
+      acfg.stackLeaves = true;
+      var chart = renderOrgChart('admin', ah[fk].factionName || fk, rows.length + ' 区划', roots, acfg);
       return genFolioCss() + ADT_CSS + OC_CSS + '<div class="rwf2-wrap"><div class="rwf2-head">行政区划 · ' + escapeHtml(ah[fk].factionName || fk) + ' · ' + divs.length + ' 顶级区划 · 树状图：拖拽平移 · ＋/－圈展开府州 · 点节点编辑</div>' +
         toolRow + renderAdminBindBand(bindIdx) +
         '<div class="rwf2-cols" style="grid-template-columns:1.5fr 1fr">' + chart + '<section class="rwf2-detail">' + detail + '</section></div></div>';
@@ -21910,24 +22060,34 @@
     if (command === 'gen-folio-select') { var gk = target && target.dataset && target.dataset.genKind; var gi = Number(target && target.dataset && target.dataset.genI); if (gk) { (state._genSel = state._genSel || {})[gk] = gi; reRenderModulePrimary(); } }
     if (command === 'mil-tab') { state._milTab = target && target.dataset && target.dataset.milTab; reRenderModulePrimary(); }
     if (command === 'rules-tab') { state._rulesTab = target && target.dataset && target.dataset.rulesTab; reRenderModulePrimary(); }
-    if (command === 'admin-div-select') { state._adminDivId = target && target.dataset && target.dataset.adminDivId; reRenderModulePrimary(); }
+    if (command === 'admin-div-select') { state._adminDivPath = target && target.dataset && target.dataset.adminDivPath; reRenderModulePrimary(); }
+    if (command === 'admin-add-child') { addAdminDivision(target && target.dataset && target.dataset.adminDivPath); return; }
+    if (command === 'admin-add-root') { addAdminDivision(null); return; }
+    if (command === 'admin-add-faction') { var newFaction = document.getElementById('admin-new-faction'); if (newFaction) addAdminFaction(newFaction.value); return; }
+    if (command === 'admin-normalize-children') { normalizeLegacyAdminChildren(); return; }
     if (command === 'admin-calibrate-bindings') { calibrateAdminBindings(); return; }
     if (command === 'admin-toggle-band') { state._adminBandOpen = !state._adminBandOpen; reRenderModulePrimary(); return; }
-    if (command === 'admin-toggle-node') { var nid = target && target.dataset && target.dataset.adminNodeId; if (nid) { if (!state._adminExpanded) state._adminExpanded = {}; if (state._adminExpanded[nid]) delete state._adminExpanded[nid]; else state._adminExpanded[nid] = 1; reRenderModulePrimary(); } return; }
+    if (command === 'admin-toggle-node') { var nid = target && target.dataset && target.dataset.adminNodeId; if (nid != null) { if (!state._adminExpanded) state._adminExpanded = {}; state._adminExpanded[nid] = state._adminExpanded[nid] === false; reRenderModulePrimary(); } return; }
     if (command === 'admin-view') { state._adminView = (target && target.dataset && target.dataset.adminView) || 'list'; reRenderModulePrimary(); return; }
     if (command === 'office-view') { state._officeView = (target && target.dataset && target.dataset.officeView) || 'list'; reRenderModulePrimary(); return; }
     // 官制 folio 增补入口：新增顶级官署走 addTreeNode 的 officeTree 分支（先钉 selectedField）
-    if (command === 'office-add-root') { state.selectedField = 'officeTree'; state.selectedModuleId = inferModuleForField('officeTree'); addTreeNode(); return; }
+    if (command === 'office-add-root') { state.selectedField = 'officeTree'; state.selectedModuleId = inferModuleForField('officeTree'); if (state.scenario.officeTree == null) state.scenario.officeTree = []; addTreeNode(); return; }
+    if (command === 'office-add-sub') { addOfficeSubdepartment(target && target.dataset && target.dataset.officeNode); return; }
     // 往当前点选衙门（详情面板带 data-office-node 路径）追加一行新官职
     if (command === 'office-add-pos') { addOfficePositionRow(target && target.dataset && target.dataset.officeNode); return; }
     if (command === 'orgchart-pick') {
       var okind = target && target.dataset && target.dataset.ocKind, oid = target && target.dataset && target.dataset.ocId;
-      if (okind === 'admin') state._adminDivId = oid; else if (okind === 'office') state._officeNodeId = oid;
+      if (okind === 'admin') state._adminDivPath = oid; else if (okind === 'office') state._officeNodeId = oid;
       reRenderModulePrimary(); return;
     }
     if (command === 'orgchart-collapse') {
       var ckind = target && target.dataset && target.dataset.ocKind, cid = target && target.dataset && target.dataset.ocId;
       if (ckind && cid != null) { var ocs = orgChartState(ckind); if (ocs.collapsed[cid]) delete ocs.collapsed[cid]; else ocs.collapsed[cid] = 1; reRenderModulePrimary(); }
+      return;
+    }
+    if (command === 'orgchart-fit') {
+      var fitKind = target && target.dataset && target.dataset.ocKind, wrap = target && target.closest && target.closest('[data-oc-pan]'), inner = wrap && wrap.querySelector('[data-oc-inner]');
+      if (inner && fitKind) { var fit = orgChartState(fitKind), w = parseFloat(inner.style.width), h = parseFloat(inner.style.height); fit.scale = Math.max(0.1, Math.min(1, (wrap.clientWidth - 24) / w, (wrap.clientHeight - 36) / h)); fit.panX = (wrap.clientWidth - w * fit.scale) / 2; fit.panY = 12; reRenderModulePrimary(); }
       return;
     }
     if (command === 'orgchart-zoom') {
@@ -21938,7 +22098,8 @@
     if (command === 'admin-expand-all' || command === 'admin-collapse-all') {
       var expAll = command === 'admin-expand-all';
       state._adminExpanded = {};
-      if (expAll) { var ah0 = state.scenario.adminHierarchy || {}; var fk0 = (state._adminFaction && ah0[state._adminFaction]) ? state._adminFaction : Object.keys(ah0)[0]; (function dig(ds) { (ds || []).forEach(function (d) { if (d && d.children && d.children.length) { state._adminExpanded[d.id] = 1; dig(d.children); } }); })(((ah0[fk0] || {}).divisions) || []); }
+      var activeAdmin = adminActiveRoot(), chartState = orgChartState('admin'); chartState.collapsed = {};
+      adminDivisionEntries(activeAdmin && activeAdmin.root.divisions).forEach(function(r) { state._adminExpanded[r.path] = expAll; if (!expAll) chartState.collapsed[r.path] = 1; });
       reRenderModulePrimary(); return;
     }
     /* api-settings-modal 四命令已随 ⚙ 模态退役(2026-07-03) */
@@ -22401,7 +22562,7 @@
       var cso = event.target && event.target.closest && event.target.closest('[data-roster-sort]');
       if (cso) { rosterTBState(cso.getAttribute('data-roster-sort')).sort = cso.value; reRenderModulePrimary(); return; }
       var afe = event.target && event.target.closest && event.target.closest('[data-admin-faction]');
-      if (afe) { state._adminFaction = afe.value; state._adminDivId = null; reRenderModulePrimary(); }
+      if (afe) { state._adminFaction = afe.value; state._adminDivId = null; state._adminDivPath = null; reRenderModulePrimary(); }
     });
     document.addEventListener('change', function(event) {
       var rel = event.target && event.target.closest && event.target.closest('[data-frel-edit]');
@@ -22879,6 +23040,12 @@
     renderRulesFolio: renderRulesFolio,
     renderAdminFolio: renderAdminFolio,
     saveOfficeField: saveOfficeField,
+    officeTreeEntries: officeTreeEntries,
+    addOfficeSubdepartment: addOfficeSubdepartment,
+    adminDivisionEntries: adminDivisionEntries,
+    addAdminDivision: addAdminDivision,
+    addAdminFaction: addAdminFaction,
+    normalizeLegacyAdminChildren: normalizeLegacyAdminChildren,
     saveGenField: saveGenField,
     selectFrelEdge: selectFrelEdge,
     tapFrelNode: tapFrelNode,

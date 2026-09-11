@@ -429,11 +429,12 @@ function ok(cond, msg) {
     console.log('— S5: schema 指南 + 实体模板 —');
     const guide = AA.buildSchemaGuide();
     ok(/factions/.test(guide) && /characters/.test(guide) && /adminHierarchy/.test(guide), 'schema 指南列出主要实体');
-    ok(/population\.mouths/.test(guide) && /父级/.test(guide), 'schema 指南含区划父>=子人口约束');
+    ok(/populationDetail\.mouths/.test(guide) && /父级/.test(guide), 'schema 指南含正式区划父>=子人口约束');
     ok(/禁止英译/.test(guide), 'schema 指南含禁英译约束');
     ok(/factions\[\]\.name/.test(guide) || /必须等于某个 factions/.test(guide), 'schema 指南含势力引用约束');
     ok(AA.ENTITY_TEMPLATES.character && 'loyalty' in AA.ENTITY_TEMPLATES.character, 'ENTITY_TEMPLATES.character 含 loyalty 骨架');
-    ok(AA.ENTITY_TEMPLATES.division.population && 'mouths' in AA.ENTITY_TEMPLATES.division.population, 'ENTITY_TEMPLATES.division 含 population.mouths');
+    ok(AA.ENTITY_TEMPLATES.division.populationDetail && 'mouths' in AA.ENTITY_TEMPLATES.division.populationDetail && typeof AA.ENTITY_TEMPLATES.division.population === 'number', 'ENTITY_TEMPLATES.division 对齐官方 population 数值与 populationDetail.mouths');
+    ok(Array.isArray(AA.ENTITY_TEMPLATES.division.children) && !('divisions' in AA.ENTITY_TEMPLATES.division), '区划子级使用 children，不能继续指导 agent 写错 divisions');
 
     console.log('— S5: schema 指南进入 system（可缓存）+ 用户需求进 conversation —');
     let capSystem = '', capConv = null;

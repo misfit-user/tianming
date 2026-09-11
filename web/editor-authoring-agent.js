@@ -398,9 +398,9 @@
   // ═══════════════════════════════════════════════════════════════════
 
   // 区划人口读取器（字段在不同剧本可能略有出入·单点防御）
-  // TODO(确认): 对真实剧本(绍宋/天启)确认末级区划是否带 population.mouths
   function _getPop(node) {
     if (!node) return null;
+    if (node.populationDetail && typeof node.populationDetail.mouths === 'number') return node.populationDetail.mouths;
     var p = node.population;
     if (p && typeof p === 'object' && typeof p.mouths === 'number') return p.mouths;
     if (typeof p === 'number') return p;
@@ -409,7 +409,11 @@
     return null; // 未知人口·跳过比较·不误报
   }
 
-  /** ① 行政区划：父级人口 >= 子级人口之和（adminHierarchy 树·递归 .divisions） */
+  // 正式区划的子级是 children；旧国师生成的 divisions 只作兼容读取，勿双写。
+  function _adminChildren(node) {
+    return Array.isArray(node && node.children) && node.children.length ? node.children : (Array.isArray(node && node.divisions) ? node.divisions : []);
+  }
+  /** ① 行政区划：父级人口 >= 子级人口之和（势力根 divisions，区划 children） */
   function vAdminPopulation(draft) {
     var v = [];
     var h = draft && draft.adminHierarchy;
@@ -424,7 +428,7 @@
       (function walk(nodes) {
         nodes.forEach(function(n) {
           if (!n) return;
-          var kids = Array.isArray(n.divisions) ? n.divisions : [];
+          var kids = _adminChildren(n);
           if (kids.length) {
             var parentPop = _getPop(n);
             var sum = 0, allKnown = true;
@@ -507,7 +511,7 @@
       (function walk(nodes) {
         nodes.forEach(function(n) {
           if (!n) return;
-          var kids = Array.isArray(n.divisions) ? n.divisions : [];
+          var kids = _adminChildren(n);
           if (!kids.length && n.name && !regionNames[n.name]) orphans.push(n.name);
           if (kids.length) walk(kids);
         });
@@ -1490,7 +1494,7 @@
     party: { name: '', leader: '', members: '', desc: '' },
     class: { name: '', desc: '' },
     troop: { name: '', commander: '', faction: '', location: '', soldiers: 10000, type: '' },
-    division: { name: '', level: '', governor: '', population: { mouths: 0, households: 0 }, divisions: [] },
+    division: { id: '', name: '', level: '', governor: '', population: 0, populationDetail: { mouths: 0, households: 0 }, children: [] },
     // 官制节点是 officeTree[] 的元素，不是行政区划 division。官方天启剧本的
     // 形状以「部门 → positions[] → subs[]」为主，position 的 holder/员额/权责
     // 也属于可编辑数据；把它单列出来，避免模型把官制误套成 division。
@@ -1570,14 +1574,14 @@
       '- characters[]（人物）: ' + JSON.stringify(T.character) + '  ← faction 必须等于某个 factions[].name' + (fiction ? '；虚构世界人物请置 isFictional:true（标记为原创人物）' : ''),
       '- parties[]（党派）: ' + JSON.stringify(T.party) + ' / classes[]（阶层）: ' + JSON.stringify(T['class']),
       '- military.initialTroops[]（开局部队）: ' + JSON.stringify(T.troop) + '  ← commander=人物名, faction=势力名',
-      '- adminHierarchy{ "势力名":{ divisions:[ 区划 ] } }，区划递归含 .divisions；区划形如 ' + JSON.stringify(T.division),
+      '- adminHierarchy{ "势力名":{ factionName:"势力名", divisions:[ 区划 ] } }：只有势力根用 divisions[]，每个区划下级递归用 children[]；区划形如 ' + JSON.stringify(T.division) + '。旧稿的嵌套 divisions 须核对后整理为 children，不要双写。',
       '- officeTree[]（官制部门）: 每项是 ' + JSON.stringify(T.office) + '；官方天启格式以 .positions[]（官职，含 holder/rank/员额/俸禄/bindingHint/公帑/私入/权责）和 .subs[]（下级部门）递归，官制节点不要套用 division',
       '- mapData.regions[]（地图区域，每个有 .name）；末级区划的 name 应能对上某个 region.name',
       '- variables.base[]（变量）: ' + JSON.stringify(T.variable),
       '- events.historical[]/random[]（事件）: ' + JSON.stringify(T.event),
       '【硬约束】① 中文显示名（人物/势力/地名）保持中文，禁止英译。',
       '② 人物/军队/地点引用的势力名必须在 factions 中存在。',
-      '③ 行政区划父级 population.mouths 必须 >= 各子级 population.mouths 之和。'
+      '③ 行政区划父级 populationDetail.mouths（或数值 population）必须 >= 各子级人口之和。'
     ].join('\n');
   }
 

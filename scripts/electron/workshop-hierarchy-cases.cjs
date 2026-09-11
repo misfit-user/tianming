@@ -1,15 +1,29 @@
 'use strict';
 // Real production BrowserWindow/preload, fixture data, real mouse/keyboard events.
 // No live player data, relay, mocked bridge or claims about external model behavior.
-const assert = require('assert/strict'), path = require('path');
+const assert = require('assert/strict'), path = require('path'), fs = require('fs');
 module.exports = async function({ win, root, check }) {
   const fixture = require('../fixtures/workshop-hierarchy.json');
   const js = s => win.webContents.executeJavaScript(s, true);
+  const clickObservations = [], out = path.dirname(process.env.TM_BRIDGE_TEST_REPORT);
   const ready = () => js(`(async()=>{const end=Date.now()+10000;while(document.body.dataset.scenarioEditorResetApp!=='ready'){if(Date.now()>end)throw Error('editor not ready');await new Promise(r=>setTimeout(r,20));}return true;})()`);
   async function click(selector) {
     win.focus(); win.webContents.focus();
-    const p = await js(`(async()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('missing control '+${JSON.stringify(selector)});e.scrollIntoView({block:'center'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const b=e.getBoundingClientRect(),x=Math.round(b.x+b.width/2),y=Math.round(b.y+b.height/2);if(!e.contains(document.elementFromPoint(x,y)))throw Error('not hit-testable '+${JSON.stringify(selector)});return{x,y};})()`);
-    for (const type of ['mouseDown', 'mouseUp']) win.webContents.sendInputEvent({ type, button: 'left', clickCount: 1, ...p });
+    // The editor can replace a folio during the frames after a tab click. Query
+    // the current control and require a real hit target before sending input;
+    // never click a detached node, bypass an overlay, or force a DOM .click().
+    const p = await js(`(async()=>{const selector=${JSON.stringify(selector)},start=performance.now(),samples=[];while(true){
+      const e=document.querySelector(selector);if(e)e.scrollIntoView({block:'center'});
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      const current=document.querySelector(selector),b=current&&current.getBoundingClientRect(),x=b&&Math.round(b.x+b.width/2),y=b&&Math.round(b.y+b.height/2),hit=b&&document.elementFromPoint(x,y);
+      const ok=!!(current&&current.isConnected&&b.width>0&&b.height>0&&current.contains(hit));
+      const observation={ms:Math.round(performance.now()-start),replaced:e!==current,rect:b&&b.toJSON(),hit:hit&&{tag:hit.tagName,id:hit.id,classes:hit.className},ok};samples.push(observation);
+      if(ok||performance.now()-start>3000)return{ok,x,y,samples};
+    }})()`);
+    clickObservations.push({selector,...p});fs.writeFileSync(path.join(out,'workshop-hierarchy-clicks.json'),JSON.stringify(clickObservations,null,2));
+    if(!p.ok)fs.writeFileSync(path.join(out,'workshop-hierarchy-blocked.png'),(await win.webContents.capturePage()).toPNG());
+    assert(p.ok,'not hit-testable '+selector+': '+JSON.stringify(p.samples.at(-1)));
+    for (const type of ['mouseDown', 'mouseUp']) win.webContents.sendInputEvent({ type, button: 'left', clickCount: 1, x:p.x, y:p.y });
     await js('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
   }
   async function type(selector, value) {

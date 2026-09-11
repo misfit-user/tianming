@@ -1,0 +1,19 @@
+{
+  "type": "owned-liubei-reload-readback",
+  "at": "2026-09-11T08:56:05.435Z",
+  "name": "建安十九年·益州初定（刘备实操）",
+  "fields": 35,
+  "guoku": {
+    "balance": 300000,
+    "monthlyIncome": 30000,
+    "monthlyExpense": 25000
+  },
+  "characters": 4,
+  "factions": 4,
+  "players": [
+    "刘备"
+  ],
+  "officeNodes": 7,
+  "adminRoots": 2,
+  "providerScript": "../editor-authoring-agent-provider.js?v=20260911-wire-recovery1"
+}

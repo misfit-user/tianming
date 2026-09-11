@@ -524,10 +524,11 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
 <script src="tm-qiju-ledger.js?v=2026070401"></script>
 <script src="tm-prompt-composer.js?v=2026052201"></script>
-<script src="tm-ai-infra-json.js?v=20260908-edict-polish"></script>
-<script src="tm-ai-infra.js?v=20260908-edict-polish"></script>
+<script src="tm-ai-infra-json.js?v=20260911-player-feedback"></script>
+<script src="tm-ai-infra-retry.js?v=20260911-player-feedback"></script>
+<script src="tm-ai-infra.js?v=20260911-player-feedback"></script>
 <!-- 勿动位置·第二十三拆：json → infra → model-detect 必须连续按序装载(顶层函数型保序切割) -->
-<script src="tm-ai-infra-model-detect.js?v=20260908-edict-polish"></script>
+<script src="tm-ai-infra-model-detect.js?v=20260911-player-feedback"></script>
 <script src="tm-memory-trace.js?v=20260531-traceonly"></script>
 <script src="tm-memory-evidence-registry.js?v=20260531-evidence"></script>
 <script src="tm-memory-source-bound.js?v=20260601-sourcebound"></script>
@@ -696,19 +697,19 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-minxin-hard-link-consumers.js?v=20260601-minxin-hard-link-consumers"></script>
 <script src="tm-party-class-actors.js?v=20260601-party-class-actors"></script>
 <script src="tm-party-class-action-scheduler.js?v=20260601-party-class-action-scheduler"></script>
-<script src="tm-party-class-llm-calibrator.js?v=20260531-party-class-llm"></script>
+<script src="tm-party-class-llm-calibrator.js?v=20260911-player-feedback"></script>
 <!-- R209 (2026-05-04) Phase 7 P7-γ·§1 prompt 从 ai-infer 拆出·prompt 必先 load -->
 <!-- DA-Q2 (2026-06-21)·史记 record 提示词共享 builder·sc1 与 agent deepen_narrative 同源零 drift·须先于 ai.js load -->
 <script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
 <script src="tm-endturn-prompt.js?v=20260719-memsanitize"></script>
-<script src="tm-endturn-ai-sc1-budget.js?v=20260909-channels"></script>
-<script src="tm-endturn-ai.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-ai-sc1-budget.js?v=20260911-player-feedback"></script>
+<script src="tm-endturn-ai.js?v=20260911-player-feedback"></script>
 <script src="tm-endturn-apply.js?v=20260910-building-orders"></script>
 <script src="tm-endturn-apply-stages.js?v=20260910-building-orders"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
 <script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
 <script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
 <script src="tm-endturn-record.js?v=2026052201"></script>
-<script src="tm-endturn-ai-infer.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-ai-infer.js?v=20260911-player-feedback"></script>
 <script src="tm-endturn-core.js?v=20260823-auditfix18-autosave"></script>
 <!-- slice 1·2026-05-07·endTurn 管道执行器骨架·feature flag P.flags.useNewPipeline 触发·见 web/docs/endturn-data-flow.md -->
 <script src="tm-endturn-pipeline-types.js?v=2026050701"></script>
@@ -967,8 +968,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-content-manager-community.js?v=20260811-auditfix1"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
 <script src="preview/img/east-asia-basemap-data.js?v=20260514-formal-map"></script>
 <!-- 勿动位置·第二十七拆：phase8-formal-bridge-styles.js 必须紧接 phase8-formal-bridge.js【之前】装载(②a alias/bucket·装载期填 TM.__p8BridgeParts→origin 顶部 alias 回绑·错序即 installStyles=undefined·installFormalShell 同步调用崩) -->
-<script src="phase8-formal-bridge-styles.js?v=20260909-rail-audience"></script>
-<script src="phase8-formal-bridge.js?v=20260909-rail-audience"></script>
+<script src="phase8-formal-bridge-styles.js?v=20260911-player-feedback"></script>
+<script src="phase8-formal-bridge.js?v=20260911-player-feedback"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260621-optland"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
@@ -981,9 +982,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="phase8-formal-drafts-message-panels.js?v=20260910-memorial-reading"></script>
 <script src="phase8-formal-records.js?v=20260526-split-skeleton"></script>
 <script src="tm-renwu-tuzhi.js?v=20260909-character-actions"></script>
-<script src="phase8-formal-rightrail.js?v=20260909-rail-audience"></script>
+<script src="phase8-formal-rightrail.js?v=20260911-player-feedback"></script>
 <!-- 勿动位置·第二十四拆：social 分片须紧随 origin 之后(②b origin-first 双向 bucket TM.__p8RailParts·错序=捕获 undefined 立崩)·契约见 scripts/lint-split-contracts.js -->
-<script src="phase8-formal-rightrail-social.js?v=20260909-rail-audience"></script>
+<script src="phase8-formal-rightrail-social.js?v=20260911-player-feedback"></script>
 <script src="preview/scenario-editor-sandbox-bridge.js?v=20260910-efficiency1"></script>
 <!-- 正式界面「宝相团花」悬浮设置/暂停按钮·锚 #bar-time 下方·点击=Esc·仅 GM.running 显示 -->
 <script src="tm-pause-fab.js?v=20260605-fab"></script>

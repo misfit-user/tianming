@@ -11,7 +11,7 @@ const passed = { value: 0 };
 const assert = makeAssert(passed);
 
 // ── ① infra 源契约:callAIWithTools 返回带纯增量 truncated(三家 finish_reason) ──
-const infraSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 assert(/return \{ text: text, toolCalls: toolCalls, truncated: _truncH2 \};/.test(infraSrc), '① infra 工具调用返回带 truncated 字段(纯增量·不读则如旧)');
 assert(/finish_reason === 'length'/.test(infraSrc) && /data\.stop_reason === 'max_tokens'/.test(infraSrc) && /finishReason === 'MAX_TOKENS'/.test(infraSrc), '① 三家截断信号全覆盖(OpenAI/Anthropic/Gemini)');
 

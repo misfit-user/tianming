@@ -46,6 +46,10 @@ const LIST_ONLY = args.includes('--list');
 const RUN_ALL = args.includes('--all');
 const JOBS = parseInt(flagVal('--jobs', ''), 10) || Math.min(8, Math.max(2, os.cpus().length - 2));
 const TIMEOUT_MS = (parseInt(flagVal('--timeout', ''), 10) || 120) * 1000;
+// These checks have their own wall-clock contracts. Run them without unrelated
+// VM/IO-heavy smokes competing for resources; their internal concurrency, work,
+// assertions and timeouts stay unchanged. This is scheduling, never a waiver.
+const RESOURCE_ISOLATED = ['smoke-full-turn-flow.js', 'smoke-workshop-lock-recovery.js'];
 
 // ---- 发现 ----
 let smokes = fs.readdirSync(SCRIPTS_DIR).filter(n => /^smoke-.*\.js$/.test(n)).sort();
@@ -107,7 +111,8 @@ function signature(r) {
 }
 
 (async () => {
-  const queue = [...smokes];
+  const isolated = smokes.filter(name => RESOURCE_ISOLATED.includes(name));
+  const queue = smokes.filter(name => !RESOURCE_ISOLATED.includes(name));
   const results = [];
   let done = 0;
   async function worker() {
@@ -128,7 +133,12 @@ function signature(r) {
       }
     }
   }
-  await Promise.all(Array.from({ length: Math.min(JOBS, smokes.length) }, worker));
+  await Promise.all(Array.from({ length: Math.min(JOBS, queue.length) }, worker));
+  if (isolated.length) {
+    console.log('[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：' + isolated.join(', '));
+    queue.push(...isolated);
+    await worker();
+  }
 
   // —— flake 自愈（2026-07-06）：并行高负载下 DOM-stub/AI 超时类假阳性反复咬人（每轮全量都要人肉隔离重跑解释）。
   //    失败者串行重跑一次：过了标 flaky（可见不掩盖，报告/汇总单列）；失败 >15 视为真损坏不重跑；--no-retry 关闭。
@@ -190,6 +200,7 @@ function signature(r) {
     version: 2, complete: true, runId: RUN_ID, head: HEAD, expected: smokes,
     generatedAt: new Date().toISOString(),
     args: process.argv.slice(2),
+    scheduling: { parallelJobs: JOBS, resourceIsolated: isolated },
     summary: { selected: smokes.length, pass: cleanPasses, fail: fails.length + suspects.length, waived: waived.length, flaky: flakies.length, suspect: suspects.length, skipped: skipped.length },
     clusters: [...clusters.entries()].map(([sig, names]) => ({ sig, names })),
     results: results.map(r => ({ name: r.name, pass: r.pass, flaky: !!r.flaky, suspect: r.suspect, exit: r.exit, ms: r.ms, timedOut: r.timedOut, waivers: r.waivers, output: r.out })).sort((a, b) => a.name.localeCompare(b.name)),

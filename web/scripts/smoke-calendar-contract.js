@@ -15,7 +15,7 @@ function sliceFn(src, marker) {
   return src.slice(a, j);
 }
 
-const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const start = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
 const systems = fs.readFileSync(path.join(ROOT, 'tm-endturn-systems.js'), 'utf8');
 const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');

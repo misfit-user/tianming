@@ -35,7 +35,7 @@ assert(/GM\._memoryArchiveFull/.test(mechanics), 'recall compatibility alias sho
 const chaoyi = (read('tm-chaoyi-changchao-adapter.js') + read('tm-chaoyi-changchao.js') + read('tm-chaoyi-changchao-flows.js'));
 assert(/NpcMemorySystem\.recall\b/.test(chaoyi), 'old chaoyi recall caller should remain covered by compatibility alias');
 
-const infra = read('tm-ai-infra.js');
+const infra = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js'));
 assert(/function memoryEntryText\(entry\)/.test(infra), 'shared memoryEntryText helper should exist');
 assert(/function buildMemoryDiagnosticSnapshot\(G\)/.test(infra), 'memory diagnostic snapshot helper should exist');
 assert(/function recordMemoryDiagnostic\(kind,\s*payload\)/.test(infra), 'memory diagnostic recorder should exist');

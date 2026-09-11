@@ -37,7 +37,7 @@ const core = R('tm-endturn-core.js');
 const benji = R('tm-benji.js');
 const depth = R('tm-endturn-agent-depth-tools.js');
 const agent = R('tm-endturn-agent-mode.js');
-const aira = R('tm-ai-infra.js');
+const aira = (R('tm-ai-infra-retry.js') + '\n' + R('tm-ai-infra.js'));
 // B5 真跑 run() 需新 run() 契约的硬前置依赖(kernel 预算/唯一提交器)·真加载入沙箱·否则 run() 于 :874 早退到不了 cawt
 const agentKernel = R('tm-agent-kernel.js');
 const agentIntentPlan = R('tm-endturn-agent-intent-plan.js');

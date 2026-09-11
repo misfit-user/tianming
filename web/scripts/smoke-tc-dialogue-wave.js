@@ -42,7 +42,7 @@ const callRe  = /(?:global\.)?_buildTemporalConstraint\s*\(/;
 // ── Slice 0：infra 助手仍在(体系前提) ──
 function slice0_infra() {
   const start = PASS;
-  const infra = readSrc('tm-ai-infra.js');
+  const infra = (readSrc('tm-ai-infra-retry.js') + '\n' + readSrc('tm-ai-infra.js'));
   assert(/function _buildTemporalConstraint\s*\(ch, opts\)/.test(infra), 'tm-ai-infra.js 须定义 _buildTemporalConstraint(ch, opts)');
   assert(/function _tcScanMentionedNames\s*\(/.test(infra), 'tm-ai-infra.js 须定义 _tcScanMentionedNames 供各口复用');
   console.log('  [slice0-infra] ' + (PASS - start) + ' 断言通过');

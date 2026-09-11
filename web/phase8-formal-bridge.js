@@ -1489,15 +1489,12 @@
   ];
   function installTopbarRedesignStyle(){
     if (document.getElementById('tm-topbar-redesign')) return;
-    ['ma-shan-zheng','zcool-xiaowei'].forEach(function(f){
-      var l = document.createElement('link');
-      l.rel = 'stylesheet';
-      l.href = 'https://cdn.jsdelivr.net/npm/@fontsource/' + f + '/index.css';
-      document.head.appendChild(l);
-    });
     var st = document.createElement('style');
     st.id = 'tm-topbar-redesign';
-    st.textContent = TOPBAR_REDESIGN_CSS.join('\n');
+    // 使用 styles.css 已声明的同款本地字体；不再注入被正式 CSP 禁止的 CDN 样式。
+    st.textContent = TOPBAR_REDESIGN_CSS.join('\n')
+      .replace(/"Ma Shan Zheng"/g, '"TM-MaShanZheng","Ma Shan Zheng"')
+      .replace(/"ZCOOL XiaoWei"/g, '"TM-ZCOOL-XiaoWei","ZCOOL XiaoWei"');
     document.head.appendChild(st);
   }
   // 顶栏窄舞台自适应：读真实内容宽(scrollWidth) vs 舞台宽(clientWidth)·分级加 fit1/fit2 收缩。

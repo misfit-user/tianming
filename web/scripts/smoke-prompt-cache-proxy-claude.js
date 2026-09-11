@@ -21,7 +21,7 @@ const ROOT = path.resolve(__dirname, '..');
 let pass = 0;
 function assert(cond, msg) { if (!cond) throw new Error('FAIL: ' + msg); pass++; }
 
-const infraSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const aiSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 // ── [A] 行为：抽出真·_stripCacheControlFromBody 跑 ──

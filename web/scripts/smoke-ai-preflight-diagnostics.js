@@ -10,7 +10,7 @@ function assert(cond, msg) {
   passed++;
 }
 
-const infra = read('tm-ai-infra.js');
+const infra = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js'));
 const ai = read('tm-endturn-ai.js');
 const followup = read('tm-endturn-followup.js');
 const apply = read('generated/tm-ai-change-applier.bundle.js');

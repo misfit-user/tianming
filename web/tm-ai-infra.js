@@ -539,32 +539,6 @@ function checkPromptTokenBudget(promptText, onWarn) {
   };
 })(typeof window !== 'undefined' ? window : this);
 
-// ============================================================
-//  1.7.5 AI 调用基础设施（重试 + 超时 + 429 处理 + raw 保留）
-// ============================================================
-var _aiLastRaw = { url: '', body: null, response: null, error: null, ts: 0 };
-/**
- * 统一的 AI fetch 包装：3 次指数退避重试、180s 超时、429 读取 Retry-After、原始响应保留供 debug。
- * 返回已解析的 JSON。抛出时 error.lastRaw 含现场信息。
- */
-async function _aiFetchWithRetry(url, body, signal, opts) {
-  opts = opts || {};
-  var priority = opts.priority || 'normal';
-  // 所有 AI 调用走队列，受全局 maxConcurrent + minInterval 约束
-  return _aiQueue.enqueue(function() {
-    return _aiFetchWithRetryInner(url, body, signal, opts);
-  }, priority);
-}
-
-// 第三刀·超时按输出体量分级：只放宽不收紧（小请求维持 180s 零回归，大输出 sc1 等放宽到 600s 上限）。
-// 依据：生成 N 个 output token 约需 N×(20~40ms)，2 万 token 的 sc1 在慢模型/高负载第三方代理下 180s 根本不够，
-// 一超时就被原样重发，正是 retry 风暴的根源。调用方显式传 opts.timeoutMs 时一律尊重。
-function _aiComputeTimeout(maxTok, optsTimeoutMs) {
-  if (optsTimeoutMs != null) return optsTimeoutMs;
-  var t = Number(maxTok) || 2000;
-  return Math.min(200000, Math.max(30000, Math.round(t * 15)));
-}
-
 async function _aiFetchWithRetryInner(url, body, signal, opts) {
   opts = opts || {};
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
@@ -584,32 +558,43 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
   for (var attempt = 0; attempt <= maxRetries; attempt++) {
     var ctrl = new AbortController();
     var timedOut = false;
-    var timeoutAborter = function() { timedOut = true; ctrl.abort(); };
-    var externalAborter = function() { ctrl.abort(); };
+    var requestPhase = 'headers', timeoutError, rejectDeadline;
+    var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
+    var timeoutAborter = function() {
+      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
+      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
+      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+    };
+    var externalAborter = function() { var error = _aiCancelledError(signal); rejectDeadline(error); ctrl.abort(error); };
     var timer = setTimeout(timeoutAborter, timeoutMs);
     if (signal) {
-      if (signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); }
+      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
       signal.addEventListener('abort', externalAborter);
     }
     try {
-      var resp = await fetch(url, {
+      var resp = await Promise.race([fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify(body),
         signal: ctrl.signal
-      });
-      clearTimeout(timer);
+      }), deadline]);
+      requestPhase = 'body';
       // 429 速率限制：读 Retry-After 延迟
       if (resp.status === 429 && attempt < maxRetries) {
+        clearTimeout(timer);
+        if (resp.body && typeof resp.body.cancel === 'function') resp.body.cancel().catch(function() {});
         var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
         var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
         console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
-        await new Promise(function(r) { setTimeout(r, delay429); });
+        await _aiWaitForRetry(delay429, signal);
         continue;
       }
       if (!resp.ok) {
         var errText = '';
-        try { errText = await resp.text(); } catch(_e) {}
+        try { errText = await Promise.race([resp.text(), deadline]); } catch(_e) {}
+        if (timedOut) throw timeoutError;
+        if (signal && signal.aborted) throw _aiCancelledError(signal);
+        clearTimeout(timer);
         lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
         lastError.status = resp.status;
         _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
@@ -650,18 +635,23 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
         }
         // 5xx 可重试；4xx（除 429）不重试
         if (resp.status >= 500 && attempt < maxRetries) {
-          await new Promise(function(r) { setTimeout(r, 1000 * Math.pow(2, attempt)); });
+          await _aiWaitForRetry(1000 * Math.pow(2, attempt), signal);
           continue;
         }
         throw lastError;
       }
-      var data = await resp.json();
+      var data = await Promise.race([resp.json(), deadline]);
+      if (timedOut) throw timeoutError;
+      if (signal && signal.aborted) throw _aiCancelledError(signal);
+      clearTimeout(timer);
       _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
       // 记录缓存命中统计
       if (data && data.usage && typeof _recordCacheStats === 'function') _recordCacheStats(data.usage);
       return data;
     } catch(e) {
       clearTimeout(timer);
+      if (timedOut) e = timeoutError;
+      else if (signal && signal.aborted) e = _aiCancelledError(signal);
       lastError = e;
       // 外部 signal 主动中断——不重试
       if (signal && signal.aborted) throw e;
@@ -683,7 +673,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       if (attempt < maxRetries) {
         var delayRetry = 1000 * Math.pow(2, attempt);
         console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
-        await new Promise(function(r) { setTimeout(r, delayRetry); });
+        await _aiWaitForRetry(delayRetry, signal);
       } else {
         // 挂载最后的原始响应
         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
@@ -707,7 +697,9 @@ function _tmAiErrHuman(err) {
     var msg = String((err && err.message) || err || '');
     var m = msg.match(/HTTP (\d{3})/);
     var status = (err && err.status) || (m ? +m[1] : 0);
-    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的历史与规则超过模型上下文上限——系统已停止本次推演并回滚，没有提交半回合；请缩减持续法令/长期议题或提高模型上下文配置。';
+    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的规则与上下文超过配置上限' + (err && err.contextTokens ? '（当前 ' + Math.round(err.contextTokens / 1024) + 'K）' : '') + '，不能靠删减内容继续推演。请核对「设置 → AI · 模型」的上下文容量，或使用支持足够上下文的接口。';
+    if (err && err.code === 'AI_ABORTED') return '本次 AI 请求已取消，没有继续重试。';
+    if (err && err.code === 'AI_TIMEOUT') return 'AI 请求在' + (err.phase === 'body' ? '读取完整正文' : '等待响应头') + '时超过 ' + Math.round(err.timeoutMs / 1000) + ' 秒期限，未收到完整结果；这不能单凭日志判断为模型故障，可检查诊断后重试。';
     if (/API未配置|API地址未配置|未配置可用 API|未配置 API key/.test(msg)) return '尚未配置 AI 密钥或接口地址——请到「设置 → AI · 模型」填写 API 地址、模型名与密钥。';
     if (status === 401 || /invalid[ _]?api[ _]?key|incorrect api key|unauthorized|authentication/i.test(msg)) return 'AI 密钥无效或已过期（401）——请到「设置 → AI · 模型」核对密钥是否填对、是否仍有效。';
     if (status === 402 || /insufficient_quota|insufficient balance|exceeded your current quota|欠费|余额不足|quota/i.test(msg)) return 'AI 账户额度不足或欠费——请前往所用 API 平台查看余额充值，或更换密钥。';
@@ -1101,10 +1093,10 @@ async function callAISmart(prompt, maxTok, options) {
 
       return allContent;
     } catch(e) {
-      if (e && (e.code === 'mandatory_context_overflow' || e.code === 'context_length_exceeded')) throw e;
+      if ((signal && signal.aborted) || _aiErrorIsTerminal(e)) throw e;
       if (attemptCount < maxRetries) {
         console.warn('[AI Smart] 调用失败，重试中... (' + attemptCount + '/' + maxRetries + ')');
-        await new Promise(function(resolve) { setTimeout(resolve, 1000); }); // Wait 1s before retry
+        await _aiWaitForRetry(1000, signal);
         return await attemptCall();
       } else {
         throw e;

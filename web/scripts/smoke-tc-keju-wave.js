@@ -31,7 +31,7 @@ function baseCtx() {
 // ── Slice A：机制自检 ──
 function sliceA() {
   const start = PASS;
-  const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
   const si = infra.indexOf('function _buildTemporalConstraint(ch, opts)');
   const ei = infra.indexOf('/** 构建长期行动/长期诏书/长期政策摘要·注入推演 sysP');
   assert(si >= 0 && ei > si, 'tm-ai-infra.js 须含时空约束代码段');
@@ -155,7 +155,7 @@ function sliceC() {
     total += n;
   });
   assert(total === 32, '科举族总注入应=32（实=' + total + '）');
-  const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
   assert(/function _tcScanMentionedNames\s*\(/.test(infra), 'tm-ai-infra.js 须定义 _tcScanMentionedNames');
   console.log('  [sliceC] ' + (PASS - start) + ' 断言通过（32 口计数对账）');
 }

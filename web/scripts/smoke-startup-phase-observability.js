@@ -21,7 +21,9 @@ assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest s
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
 assert.strictEqual(manifest.deferredChangesApproved, 8, 'the original six and two explicit relief providers form the complete deferred set');
-assert.strictEqual(manifest.scriptCount, 410, '409 retained scripts plus the explicit building-order receipt owner form the complete eager set');
+assert.strictEqual(manifest.scriptCount, 411, '410 retained scripts plus the byte-preserving retry-helper split form the complete eager set');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-ai-infra-retry.js').length, 1, 'retry helpers load exactly once');
+assert.strictEqual(scriptNames.indexOf('tm-ai-infra-retry.js') + 1, scriptNames.indexOf('tm-ai-infra.js'), 'retry helpers directly precede their consumer');
 assert.strictEqual(scriptNames.filter((name) => name === 'tm-building-orders.js').length, 1, 'the building-order owner must be loaded exactly once');
 assert(scriptNames.indexOf('tm-building-orders.js') > scriptNames.indexOf('tm-custom-build-agent.js'), 'the order owner follows its actual construction provider');
 assert(manifest.scripts.every((row) => row.lazySafe === false && row.loadPolicy === 'eager-ordered'), 'retained classic scripts should remain explicitly eager');

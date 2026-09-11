@@ -113,6 +113,20 @@
     return -1;
   }
 
+  function assertMandatoryPrefix(system, completionTokens) {
+    // This is only a lower-bound preflight. It never trims instructions, alters
+    // output capacity, or replaces the final fully assembled request guard.
+    var report = measureRequest({ messages:[{role:'system',content:system || ''},{role:'user',content:''}] }, {completionTokens:completionTokens});
+    if (!report.ok) {
+      var error = new Error('SC1 mandatory system prefix exceeds configured context before inference');
+      error.code = 'mandatory_context_overflow'; error.contextTokens = report.contextTokens;
+      error.requiredInputTokens = report.inputTokens; error.inputTokenLimit = report.inputTokenLimit;
+      error.completionTokens = report.completionTokens;
+      throw error;
+    }
+    return report;
+  }
+
   function trimUserMessage(body, options, initialReport) {
     var userIndex = userMessageIndex(body);
     if (userIndex < 0) {
@@ -243,6 +257,7 @@
   }
 
   ns.measureSc1Request = measureRequest;
+  ns.assertSc1MandatoryPrefix = assertMandatoryPrefix;
   ns.finalizeSc1RequestBody = finalizeRequestBody;
   ns.createSc1ContextOverflowReducer = createContextOverflowReducer;
   ns.sc1ProductionCallOptions = productionCallOptions;

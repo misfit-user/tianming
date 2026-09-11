@@ -1,7 +1,7 @@
 // @ts-check
 /// <reference path="types.d.ts" />
 // tm-ai-infra-json.js — strict bounded JSON recovery shared by all AI transports.
-// Loaded after tm-utils and immediately before tm-ai-infra.js.
+// Loaded after tm-utils and before the ordered retry/infra family.
 
 // Tool JSON uses the same recovery and whitelist in native-text and fallback
 // responses. Pure helpers only: no requests, live-world writes or configuration.

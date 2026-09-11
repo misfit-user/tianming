@@ -1,0 +1,2938 @@
+{
+  "type": "tianming-workshop-hierarchy-local-evidence",
+  "generatedAt": "2026-09-11T10:28:14.325Z",
+  "base": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+  "mainAtStart": "0d301d8daaf214db792ffb2f44b2cf85bbed0732",
+  "branch": "codex/fix-workshop-hierarchy",
+  "head": "e35b98922d6e28acdde94b13f268dcacebcea412",
+  "sources": [
+    {
+      "path": "scripts/electron/authoring-continuation-cases.cjs",
+      "bytes": 17905,
+      "sha256": "15ee444c1da3098268ee94ce9cc8dffbc794e56a9c7e570c77d36b464fb39a56"
+    },
+    {
+      "path": "scripts/electron/bridge-main.cjs",
+      "bytes": 10914,
+      "sha256": "3b6fdccd9caa1eae45f37ba0ae66ec024e3e9e320484ad1086f9bf9ae393cdbe"
+    },
+    {
+      "path": "scripts/electron/workshop-hierarchy-cases.cjs",
+      "bytes": 7238,
+      "sha256": "bb2457ef8a2388521cc32fb9b526c29adf8e185d33cad84d66c25f6451c10e04"
+    },
+    {
+      "path": "scripts/fixtures/workshop-hierarchy.json",
+      "bytes": 1965,
+      "sha256": "503b86af47ba4c8cdd69cf639761f3fe1fe3a5a4cecabe6cc62572e490864636"
+    },
+    {
+      "path": "scripts/verify-electron-bridge.js",
+      "bytes": 4197,
+      "sha256": "78bc52a9b5d94d82781a080d432a282b7be352f360cd954eff95a57ddc6a0559"
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "bytes": 182592,
+      "sha256": "95404052cea5ad44ab5d2d623f5ad2a73513aa3c24c31b7fe7029cba29ea972a"
+    },
+    {
+      "path": "web/editor-authoring-agent.js",
+      "bytes": 308340,
+      "sha256": "a74f0321d9412a50d6d2d932261f7aa1e204448a2317aae36627ba605e320eb4"
+    },
+    {
+      "path": "web/editor.html",
+      "bytes": 184695,
+      "sha256": "bb86184e41c7e7c4516bc4d855189caf5d742616670dab76eb79cc8fe2a13c15"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-app.js",
+      "bytes": 1412552,
+      "sha256": "9f178a66801748b12aacea1586836055e7a2dda6d8ad525dcab866218d0fc6b8"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-preview.html",
+      "bytes": 32321,
+      "sha256": "b0922e0dae1f80ca0e7baf90149ac837b56e9608c296752ac4a5c9903b3cd5f6"
+    },
+    {
+      "path": "web/scripts/smoke-authoring-agent-tools.js",
+      "bytes": 51512,
+      "sha256": "afe65f6687cd4d2a7339c3308e8dc69c865cded77e11c5b6e4b7e97060a38c8f"
+    },
+    {
+      "path": "web/scripts/smoke-workshop-hierarchy.js",
+      "bytes": 9416,
+      "sha256": "124364581ffd3f4caa109af5186a8421606b1c2093e9d816d0e531c4ed6a9d6f"
+    }
+  ],
+  "mirror": [
+    {
+      "path": "web/editor-authoring-agent.js",
+      "equal": true,
+      "sha256": "a74f0321d9412a50d6d2d932261f7aa1e204448a2317aae36627ba605e320eb4"
+    },
+    {
+      "path": "web/editor.html",
+      "equal": true,
+      "sha256": "bb86184e41c7e7c4516bc4d855189caf5d742616670dab76eb79cc8fe2a13c15"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-app.js",
+      "equal": true,
+      "sha256": "9f178a66801748b12aacea1586836055e7a2dda6d8ad525dcab866218d0fc6b8"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-preview.html",
+      "equal": true,
+      "sha256": "b0922e0dae1f80ca0e7baf90149ac837b56e9608c296752ac4a5c9903b3cd5f6"
+    }
+  ],
+  "commands": [
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-agent-tools.js"
+      ],
+      "at": "2026-09-11T09:49:43.220Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-authoring-tools-a73cfc94-5afe-4175-b1cf-14889b7386e8/output.log",
+      "logSha256": "8931a6d871a1cdb4fe4d4684fd99fd7df284fba7fdf632a2c53bb0f8f977ad7a"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js",
+        "--source-ref",
+        "f03d7a2a"
+      ],
+      "at": "2026-09-11T09:31:32.972Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-baseline-053a4265-86d7-4c1e-8104-e60b392d84db/output.log",
+      "logSha256": "3cd5d7f30aba2b47ad520f7c8066eb395d414cdee2d28a942083b445a5cffbc0"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "at": "2026-09-11T09:47:04.153Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-baseline-check-a9c8d3fe-fcaf-40dd-be15-41f0c7bd4c51/output.log",
+      "logSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js",
+        "--source-ref",
+        "f03d7a2a"
+      ],
+      "at": "2026-09-11T09:44:46.678Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-baseline-final-902599b9-5edf-45b7-bf8f-2cc41b3563cd/output.log",
+      "logSha256": "9f728abfab43d0c13144a6b8b35e38fa027b9dfead36f3e9f77703e0bab3dc1b"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T09:31:05.040Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-behavior-bdf8722a-8de9-439c-b9ee-ee91f08541a5/output.log",
+      "logSha256": "26a58106f0d2eb3ead05fa07a892b61d40f96b9b2cfa20abeda8a6b575e16518"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T09:40:41.105Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-behavior-creation-a186e178-6b1a-403a-8ec4-77858a9db9e4/output.log",
+      "logSha256": "4683ce4cbfe708af961d3f0cbfe800fd51caba1413124e34f007f232131093d5"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T09:35:01.542Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-behavior-final-4e0e9eac-921f-4c99-98f3-50eda93b4b7e/output.log",
+      "logSha256": "26a58106f0d2eb3ead05fa07a892b61d40f96b9b2cfa20abeda8a6b575e16518"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "at": "2026-09-11T09:47:02.232Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-builder-05e578f2-86f6-4039-879d-d0f62ef20d9c/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T10:05:42.279Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-complete-electron-570bfd6f-e274-4b09-970a-6ce641b1807f/output.log",
+      "logSha256": "24f8b4ccccd93911f8222bd790333e3ce42b8dc4e6de3f71f85127b8fb312c6e"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T09:46:57.188Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-contract-ac08c06e-a8b7-40c6-a50d-d44769bc5746/output.log",
+      "logSha256": "e5c42fb4b5943d6a83126e2490ae80043706463182d1c387ba1d8c7d7d8e3258"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T10:22:21.402Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-arch-9544af35-4ad2-4cf0-9858-59f2deccdffa/output.log",
+      "logSha256": "92b142d4a373e38fb297493ec452f4e759c7e75c16b5d62f05390e667841a8f5"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "at": "2026-09-11T10:22:26.169Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-baseline-f8b86d63-aa36-419f-b250-8e2d2acc2304/output.log",
+      "logSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "at": "2026-09-11T10:21:23.275Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-boundaries-b0cf9581-90bf-47bf-86e7-70e22c305be3/output.log",
+      "logSha256": "43f556dfddd3cf62c65483f9e22ca9147e4a2ddb1d5b274cd6dac5eb0d05bd47"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T10:20:50.948Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-continuation-ab6a8f25-d021-464c-9abf-d1fa87b882ca/output.log",
+      "logSha256": "403a3402691238f24357efc71efa4e317a56929ec0ab773612a3c1dc5fe838cd"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T10:22:23.937Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-contract-bb596d98-00b1-4a0d-9677-1c8fb0a5d9fd/output.log",
+      "logSha256": "5e5b2bdd7cb1c1aec00c69076be75d6e2c778587fb2f0d9b6333431bb8f829d6"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T10:19:55.910Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-electron-244e1d2d-30f3-4151-8f3e-cfedef490676/output.log",
+      "logSha256": "d369a636bff102b867f9bb89ffb2e7177184e109ee4062ea20e16aaaefc4c632"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T10:19:29.326Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-full-1bc9e2a8-3b34-4435-8dc9-2229d64628e2/output.log",
+      "logSha256": "b28e5db4501a67cdd29ca0e1db0953bd5a10602e76ccd79d944f82aacfc3f871"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "at": "2026-09-11T10:21:51.085Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-delivery-recovery-fd9c3eb9-8db6-4717-942a-9895ba066cc6/output.log",
+      "logSha256": "17465bb183f5e3313b10d2feca7feeab6a56ac5d44af3fc38c38c7b6d28dc77e"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T09:35:10.895Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-electron-54dcaba8-fed8-41c6-9e49-e824684d2260/output.log",
+      "logSha256": "d748077cbef46213c7c5407b467c7da0a82cd0b50a76825f2d6dc505de4c5607"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T09:53:23.993Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-electron-final-cb35069b-fc5a-41fd-917c-33799112fd2b/output.log",
+      "logSha256": "d4e3bf3dde4b86cc80bd90ea4072ac6327b755f7755e3dbe101ddb6513de9102"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T09:37:50.900Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-electron-selection-db7f4c2d-4702-4034-b4e7-ac101095755e/output.log",
+      "logSha256": "5a67a5c5e45100d82b2160476966ddbeeac3b51b7804313e32bc6466105d95dc"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T09:36:16.630Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-electron-visible-f0f15b09-b2ef-43b5-b4f1-8e76e2b4b2f3/output.log",
+      "logSha256": "556588fe12f4db849f2766f3c4be9e2f790ee28a09451271940906ef70ed4fd8"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T09:51:34.572Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-final-arch-6ba6776e-31d4-430b-a429-9db16d20edd4/output.log",
+      "logSha256": "43710f3992ac4a2d5baa4e8c966e27895d5d638e939795f49038a9c32ac2ea35"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T10:08:23.814Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-final-evidence-electron-0a04c92e-86d4-4816-9204-e1b411c45adf/output.log",
+      "logSha256": "8d0c50841d10aec1021b9464e528d8e9d84fa647c90c1a08a22385587b3db6ee"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T10:26:14.923Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-focused-continuation-2816b4f6-8312-4766-9972-edd61547e830/output.log",
+      "logSha256": "7e03d8343f2019b38cf1c9ccf3f402a01ee4de79b305ab075159342da9f27eb3"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--workshop-hierarchy"
+      ],
+      "at": "2026-09-11T10:10:03.729Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-focused-electron-0854abc5-3b58-4f50-b4da-a16e8f13db77/output.log",
+      "logSha256": "a00ca0aa58aeaee62600b227363c5e8c6413c299749f5bb482e42257a87b2807"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T10:13:24.513Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-freeze-full-5b109345-81f5-45b1-9d8e-248fc0ec396b/output.log",
+      "logSha256": "a85d5c04f51eaf0a97eb22cfb730ef99a6d3187c485a7e54fee641e725ae8551"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T10:07:13.576Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-freeze-hot-8f09bbbb-91f9-41b1-be1c-50d24e44f8de/output.log",
+      "logSha256": "4dba4201cf86bde9a1b326ecd62f8fac4760cbc3ad4aded826825676c9ae6b7f"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T10:10:50.288Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-frozen-arch-d3c4e587-f82f-49b2-985d-cea4fc51ffe3/output.log",
+      "logSha256": "07d953e7a818fed0b7fc71c7ab2ba64d8f0b65adb3197bdc326f6714a0600ccf"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T10:10:34.061Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-frozen-contract-ef0efca8-e1f9-4404-a7c2-4f069a4b049e/output.log",
+      "logSha256": "744d5422637a880c06bd448b1681b3305c909cb0a1c615132ee3d3a3e746168a"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T10:09:55.600Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-frozen-module-046c1a0e-04f0-4a23-b14b-febfe358ad73/output.log",
+      "logSha256": "4683ce4cbfe708af961d3f0cbfe800fd51caba1413124e34f007f232131093d5"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T09:47:32.501Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-full-51ae1999-69d5-4fc9-914b-faf6980d2946/output.log",
+      "logSha256": "150c55f3bffa93f83f6c200d073282d833bba825291b4975e9cad84a008fce0c"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T09:52:17.992Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-full-final-8e531064-5e0b-438b-81b9-ad2247531772/output.log",
+      "logSha256": "6501106ec1b91381eddfb5ddd906c4960dd27f3c2676ae1b0079e0d621e6e935"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T09:31:58.381Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-gates-f776b0b9-9e38-4a06-8f8f-01496d953ab5/output.log",
+      "logSha256": "ac4abc6ca8b05cf1aa325fe8c32a2043ba646c82c2c95cc1a3516cff387e29d7"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T09:45:38.587Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-hot-sync-236a1fb5-8fa9-4735-8ac2-bba5e8a67755/output.log",
+      "logSha256": "018e1632ba4bfe40f22dc12e0778a7d204900b871e2407b19bc2b9cf52e2d147"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T09:30:14.879Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-initial-58513053-025b-4b35-a7de-7dc5a01871a5/output.log",
+      "logSha256": "a0ba7be461fd9b552473a44f9d30fca4059f8e497e01721d05332ae35e4465f2"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T10:00:55.487Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-isolated-full-2f455803-ab1a-4c9b-8130-9b71488e2f11/output.log",
+      "logSha256": "11c8403c0eeef63a4a93b6d048f636a246b725eeed71814b6694827655da6d1e"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T10:24:10.254Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-keyboard-continuation-e82b2617-d0c8-4319-8be4-8e75445ae318/output.log",
+      "logSha256": "051f77ede6faa3465208c7af0dbf5f52578bd3400402f3f1b524a1ed8c008251"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-hierarchy.js"
+      ],
+      "at": "2026-09-11T09:54:24.311Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-layout-666b171c-79ae-4dc9-a3f4-3be3e77257fe/output.log",
+      "logSha256": "4683ce4cbfe708af961d3f0cbfe800fd51caba1413124e34f007f232131093d5"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T10:02:06.526Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-layout-arch-6461382e-e4e7-485a-9674-3af662ad0256/output.log",
+      "logSha256": "790ac5b6a8600494fad5d4b9f8aeec4690b58f263f1d5e014669db2741e7d3c0"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "at": "2026-09-11T10:02:09.146Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-layout-baseline-dc2f0a8e-6ecd-4db2-b7f0-4c22245de1c9/output.log",
+      "logSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T10:02:07.934Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-layout-contract-ed3f0a76-e3f7-4808-8807-1e157badca4d/output.log",
+      "logSha256": "dcc906bdba58c15b1d42a2f9b645c8d1acb67cfe30c1fe5a501aa4e6b6c0d649"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T09:58:54.022Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-layout-hot-sync-4f9ed115-4cf6-46b4-89f3-0ca2bf14ae0c/output.log",
+      "logSha256": "25adc2bce03a0cb50f760b7febca801ee1d70262d7d40b9c96fc57d9a519a16e"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "at": "2026-09-11T09:57:19.317Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-lock-isolated-f09e8eb3-0199-4f89-9f17-0d2c96806710/output.log",
+      "logSha256": "ae3f91d9dc4c96664c132a6875d4320be58244aa9df4f33cdc0d0928633fc66c"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-agent-office-source.js"
+      ],
+      "at": "2026-09-11T09:35:02.295Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-office-source-6b52ef5e-9b3b-4c10-86da-17c5976b2b17/output.log",
+      "logSha256": "2f411c0db29d4bb0c09419eec85a2efa4eb2e7730fe2c709e71ea83ef2721fb1"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "at": "2026-09-11T09:46:55.127Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-parity-9a67d6b2-eb87-481a-9dfb-8804dc58d0f5/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T09:41:50.765Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-split-arch-73fcd955-6220-4ebd-bc07-2869524b45b9/output.log",
+      "logSha256": "29826f4af76c407fd1a82eab466ce5139d99064f5d0aaec83c6b6997df939a45"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "at": "2026-09-11T09:41:53.411Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-startup-6edb8591-8592-4c7c-af2d-64834c6416e9/output.log",
+      "logSha256": "0c5c0ef29754e87bebdfc2fc9a1d1b5c791d9bde1c720d9fe160d43ec8bb3fc1"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "at": "2026-09-11T09:41:52.839Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-sync-official-5ff65189-92cc-486f-838f-578ba800fe27/output.log",
+      "logSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T10:15:50.774Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-tabs-baseline-c0c664f6-e2be-41de-bdcc-f936d7801147/output.log",
+      "logSha256": "4dba4201cf86bde9a1b326ecd62f8fac4760cbc3ad4aded826825676c9ae6b7f"
+    },
+    {
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-full-turn-flow.js"
+      ],
+      "at": "2026-09-11T09:58:13.971Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/hierarchy-turn-isolated-b3ee3d7e-054d-41e2-9c90-7538cc6043d9/output.log",
+      "logSha256": "6819f4681a307966907527309469d13547cb4f9583eebac6fdf6765f5df2ec99"
+    }
+  ],
+  "reports": [
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-complete-electron-570bfd6f-e274-4b09-970a-6ce641b1807f/result.json",
+      "path": "web/dev-tools/electron-bridge/b6dade76-6b63-4197-9185-60f5152052df/report.json",
+      "sha256": "41459d6a1fafcf6deae1e2bfc4287ca91c241549b9dd753d6d6178d8362deeb6",
+      "report": {
+        "runId": "b6dade76-6b63-4197-9185-60f5152052df",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:30:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:29:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:118:47)"
+              ],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-Cv9OUY\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-delivery-boundaries-b0cf9581-90bf-47bf-86e7-70e22c305be3/result.json",
+      "path": "web/dev-tools/electron-bridge/17e7f964-15f3-4e68-b08a-34a58231b698/report.json",
+      "sha256": "358c5d3cdf6d1f5b6eee005a438ad684f45047007214df81305c2020a509e4b5",
+      "report": {
+        "runId": "17e7f964-15f3-4e68-b08a-34a58231b698",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "authoring-boundaries",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "authoring-boundaries",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "current-project edit preserves ID, original baseline, manual drafts and save/reload target",
+                  "status": "PASS"
+                },
+                {
+                  "name": "normal new import remains detached; unsaved same-name scenarios have different file keys",
+                  "status": "PASS"
+                },
+                {
+                  "name": "ordinary edits keep a lease; stale lease and changed revision both reject direct commit",
+                  "status": "PASS"
+                },
+                {
+                  "name": "A checkpoint cannot restore into B and remains available after rejected undo/restore",
+                  "status": "PASS"
+                },
+                {
+                  "name": "same-document checkpoint restore and undo preserve project association",
+                  "status": "PASS"
+                },
+                {
+                  "name": "same-field conflict is rejected; unrelated manual edit survives merge",
+                  "status": "PASS"
+                },
+                {
+                  "name": "late A model response after actual B load cannot apply, continue or bind a B session",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new conversation after stale result can edit the current B normally",
+                  "status": "PASS"
+                },
+                {
+                  "name": "completed draft also rejects a same-name reload before Apply",
+                  "status": "PASS"
+                },
+                {
+                  "name": "actual question-only UI refuses model writes but permits explicit plan approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "failed provider leaves source unchanged and next fresh request succeeds",
+                  "status": "PASS"
+                },
+                {
+                  "name": "legacy double-encoded draft normalization still reports actual repair/drop counts",
+                  "status": "PASS"
+                },
+                {
+                  "name": "finished read-only review with no pending draft does not block a fresh task on B",
+                  "status": "PASS"
+                },
+                {
+                  "name": "question-only permission also gates the orchestrate UI entry",
+                  "status": "PASS"
+                },
+                {
+                  "name": "question-only permission also gates the critics UI entry",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-aba1Dp\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-delivery-continuation-ab6a8f25-d021-464c-9abf-d1fa87b882ca/result.json",
+      "path": "web/dev-tools/electron-bridge/f1e9b007-3324-48af-b2f0-c2065e66eb72/report.json",
+      "sha256": "98c0d99c95086347c5a487dc29d5746aa6f505d74b9cdad3c72e3bc5802a906a",
+      "report": {
+        "runId": "f1e9b007-3324-48af-b2f0-c2065e66eb72",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "authoring-continuation",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "authoring-continuation",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real homepage bridge does not borrow global Ming configuration",
+                  "status": "PASS"
+                },
+                {
+                  "name": "desktop create click saves a clean scenario and opens the real editor without inherited offices",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty government/admin views render and modern blank starter remains era-neutral",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty administrative hierarchy is usable in both views; invalid rows are preserved and identified",
+                  "status": "PASS"
+                },
+                {
+                  "name": "no-tool response stops within budget and preserves staged work without applying it",
+                  "status": "PASS"
+                },
+                {
+                  "name": "mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload",
+                  "status": "PASS"
+                },
+                {
+                  "name": "after explicitly applying partial work, a new message edits the committed draft without replaying append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "connection failure is bounded and shown distinctly from a no-tool response",
+                  "status": "PASS"
+                },
+                {
+                  "name": "cancelling the compatibility request stops it without a late write or automatic retry",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-json real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-sse real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI transient empty response returns to native tools and only approval saves the single append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI exhausted empty compatibility returns to proven native; mouse continuation does not replay writes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI length limit is not no-tools; manual continuation retains the last budget and pending draft",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI repairs explicit auto rejection without dropping tools or changing thinking mode",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI full catalog and usage-only relay repair complete editing, approval and saved readback",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "Error: both recovery actions have readable opaque colors, spacing and keyboard focus in dark and light themes\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:102:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:12:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:86:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:51)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:146:89)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:51)"
+              ],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-eeXdqQ\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-delivery-electron-244e1d2d-30f3-4151-8f3e-cfedef490676/result.json",
+      "path": "web/dev-tools/electron-bridge/1416839e-4357-4adf-8346-264c17264097/report.json",
+      "sha256": "44659d622f34264cb0f42a9c2ee57612bfe0a7de490a2f2dd1d08336e046128b",
+      "report": {
+        "runId": "1416839e-4357-4adf-8346-264c17264097",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new-nested-seat-written-to-selected-department",
+                  "status": "PASS"
+                },
+                {
+                  "name": "admin-legacy-and-canonical-children-visible-without-auto-rewrite",
+                  "status": "PASS"
+                },
+                {
+                  "name": "duplicate-name-id-branch-edited-and-child-created-once",
+                  "status": "PASS"
+                },
+                {
+                  "name": "collapse-all-affects-chart-without-losing-data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "expand-all-restores-deep-nodes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "explicit-legacy-repair-keeps-original-metrics",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real-IndexedDB-reload-preserves-hierarchy-and-all-other-fields",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-Bb5ATx\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "full-smoke",
+      "command": "web/dev-tools/new-scenario/hierarchy-delivery-full-1bc9e2a8-3b34-4435-8dc9-2229d64628e2/result.json",
+      "path": "web/dev-tools/arch-guard/ci-FaP7Ju/smoke-report.json",
+      "sha256": "6273b680931981d9681f18591a509f627c39cf4710d938a57f47561a0b78c711",
+      "complete": true,
+      "runId": "90e8c515-c586-4684-9301-7d3281d857b1",
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "summary": {
+        "selected": 941,
+        "pass": 939,
+        "fail": 0,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "failures": [],
+      "waivers": [
+        {
+          "name": "smoke-audio-bgm.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/tianming-hegui.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/gucheng-junqi.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/changhe-zhangu.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/yunkai-wanli.mp3"
+            }
+          ]
+        },
+        {
+          "name": "smoke-mapeditor-ui.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/MaShanZheng-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-delivery-recovery-fd9c3eb9-8db6-4717-942a-9895ba066cc6/result.json",
+      "path": "web/dev-tools/electron-bridge/e135bc52-81b8-4731-8896-d234029785fd/report.json",
+      "sha256": "42115aede388715164951a8d5ef0132955dfaffae53dd33e8a14556e90e3efce",
+      "report": {
+        "runId": "e135bc52-81b8-4731-8896-d234029785fd",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "authoring-recovery",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "authoring-recovery",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "failed task retains draft, conversation and staged side effects without committing live data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real retry continues existing progress once; approval commits memory once and keeps original project",
+                  "status": "PASS"
+                },
+                {
+                  "name": "unresolved write never triggers automatic application or a completed UI state",
+                  "status": "PASS"
+                },
+                {
+                  "name": "manual partial application needs explicit confirmation and remains labelled incomplete",
+                  "status": "PASS"
+                },
+                {
+                  "name": "manual edits invalidate direct recovery; confirmed regeneration uses current live input",
+                  "status": "PASS"
+                },
+                {
+                  "name": "cross-project retry and old error-card handlers cannot act on a newer project/task",
+                  "status": "PASS"
+                },
+                {
+                  "name": "permission changes cannot revive an earlier write task under question-only mode",
+                  "status": "PASS"
+                },
+                {
+                  "name": "stop preserves completed draft work but only an explicit retry resumes with a new signal",
+                  "status": "PASS"
+                },
+                {
+                  "name": "orchestration UI retries only the interrupted subtask through the real provider",
+                  "status": "PASS"
+                },
+                {
+                  "name": "critic UI resumes the failed reviewer without replaying author or successful reviewer",
+                  "status": "PASS"
+                },
+                {
+                  "name": "memory-only approval failure leaves live scenario, pending work and memory storage intact",
+                  "status": "PASS"
+                },
+                {
+                  "name": "retrying memory-only approval persists once without committing or normalizing the scenario",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-QS9IYn\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-electron-54dcaba8-fed8-41c6-9e49-e824684d2260/result.json",
+      "path": "web/dev-tools/electron-bridge/c5220d4b-8fb6-4d5a-a487-a5efabb01760/report.json",
+      "sha256": "b92c1f45dc2b6cd6930ecbfb44f1ac63a4994e6d4a55a9a89bd969ce23896081",
+      "report": {
+        "runId": "c5220d4b-8fb6-4d5a-a487-a5efabb01760",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new-nested-seat-written-to-selected-department",
+                  "status": "PASS"
+                },
+                {
+                  "name": "admin-legacy-and-canonical-children-visible-without-auto-rewrite",
+                  "status": "PASS"
+                },
+                {
+                  "name": "duplicate-name-id-branch-edited-and-child-created-once",
+                  "status": "PASS"
+                },
+                {
+                  "name": "collapse-all-affects-chart-without-losing-data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "expand-all-restores-deep-nodes",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "Error: electron-bridge-timeout\n    at Timeout._onTimeout (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:68:25)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"
+              ],
+              "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-R3OxTZ\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-electron-final-cb35069b-fc5a-41fd-917c-33799112fd2b/result.json",
+      "path": "web/dev-tools/electron-bridge/20190c4b-f99d-4996-8453-b81ac3f6d51d/report.json",
+      "sha256": "c3e0eea922a8cc06de4952249ea92cc44f9eb4ba47c94622e04b98652816f285",
+      "report": {
+        "runId": "20190c4b-f99d-4996-8453-b81ac3f6d51d",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new-nested-seat-written-to-selected-department",
+                  "status": "PASS"
+                },
+                {
+                  "name": "admin-legacy-and-canonical-children-visible-without-auto-rewrite",
+                  "status": "PASS"
+                },
+                {
+                  "name": "duplicate-name-id-branch-edited-and-child-created-once",
+                  "status": "PASS"
+                },
+                {
+                  "name": "collapse-all-affects-chart-without-losing-data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "expand-all-restores-deep-nodes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "explicit-legacy-repair-keeps-original-metrics",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real-IndexedDB-reload-preserves-hierarchy-and-all-other-fields",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-h6dZsP\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-electron-selection-db7f4c2d-4702-4034-b4e7-ac101095755e/result.json",
+      "path": "web/dev-tools/electron-bridge/dacdd3d5-12ce-4ca3-94c8-ba475a5e2cea/report.json",
+      "sha256": "e77aa54b54dc902c021acfd6b1efb6e95c2c2f04b95bf4e2607abbf33cb9feea",
+      "report": {
+        "runId": "dacdd3d5-12ce-4ca3-94c8-ba475a5e2cea",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new-nested-seat-written-to-selected-department",
+                  "status": "PASS"
+                },
+                {
+                  "name": "admin-legacy-and-canonical-children-visible-without-auto-rewrite",
+                  "status": "PASS"
+                },
+                {
+                  "name": "duplicate-name-id-branch-edited-and-child-created-once",
+                  "status": "PASS"
+                },
+                {
+                  "name": "collapse-all-affects-chart-without-losing-data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "expand-all-restores-deep-nodes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "explicit-legacy-repair-keeps-original-metrics",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real-IndexedDB-reload-preserves-hierarchy-and-all-other-fields",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-YoLwg6\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-electron-visible-f0f15b09-b2ef-43b5-b4f1-8e76e2b4b2f3/result.json",
+      "path": "web/dev-tools/electron-bridge/36b349fe-362e-4930-a534-ab5fedeb5c5d/report.json",
+      "sha256": "3daf663f3179260cb1f21f62f33042cf50d01286a624c53bb196a32cff371f79",
+      "report": {
+        "runId": "36b349fe-362e-4930-a534-ab5fedeb5c5d",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '新下属新建考功署官署'\n- '新建考功署'\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:44:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:42:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:118:47)"
+              ],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-BruGPY\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-final-evidence-electron-0a04c92e-86d4-4816-9204-e1b411c45adf/result.json",
+      "path": "web/dev-tools/electron-bridge/3de0b7a4-4100-405d-bc8b-b17f872e8cf5/report.json",
+      "sha256": "a3b5f50fd03bb78b682e8dfd5d125a922dda3019daed253b4f1c455ae0bdce48",
+      "report": {
+        "runId": "3de0b7a4-4100-405d-bc8b-b17f872e8cf5",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "AssertionError [ERR_ASSERTION]: {\"module\":\"courtInstitutions\",\"count\":0,\"expected\":10,\"leaf\":false}\n\n0 !== 10\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:31:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\workshop-hierarchy-cases.cjs:29:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:118:47)"
+              ],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-nU26Lg\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-focused-continuation-2816b4f6-8312-4766-9972-edd61547e830/result.json",
+      "path": "web/dev-tools/electron-bridge/906fd77e-56ec-448a-8512-92af20366753/report.json",
+      "sha256": "1ab657247c0f7f5c60e8ab0558f1ce9031e9ff155c2e4a640fe2e4fe10ee271b",
+      "report": {
+        "runId": "906fd77e-56ec-448a-8512-92af20366753",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/authoring-continuation-cases.cjs\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "authoring-continuation",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "authoring-continuation",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real homepage bridge does not borrow global Ming configuration",
+                  "status": "PASS"
+                },
+                {
+                  "name": "desktop create click saves a clean scenario and opens the real editor without inherited offices",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty government/admin views render and modern blank starter remains era-neutral",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty administrative hierarchy is usable in both views; invalid rows are preserved and identified",
+                  "status": "PASS"
+                },
+                {
+                  "name": "no-tool response stops within budget and preserves staged work without applying it",
+                  "status": "PASS"
+                },
+                {
+                  "name": "both recovery actions have readable opaque colors, spacing and keyboard focus in dark and light themes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload",
+                  "status": "PASS"
+                },
+                {
+                  "name": "after explicitly applying partial work, a new message edits the committed draft without replaying append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "connection failure is bounded and shown distinctly from a no-tool response",
+                  "status": "PASS"
+                },
+                {
+                  "name": "cancelling the compatibility request stops it without a late write or automatic retry",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-json real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-sse real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI transient empty response returns to native tools and only approval saves the single append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI exhausted empty compatibility returns to proven native; mouse continuation does not replay writes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI length limit is not no-tools; manual continuation retains the last budget and pending draft",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI repairs explicit auto rejection without dropping tools or changing thinking mode",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI full catalog and usage-only relay repair complete editing, approval and saved readback",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-K3C6EC\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-focused-electron-0854abc5-3b58-4f50-b4da-a16e8f13db77/result.json",
+      "path": "web/dev-tools/electron-bridge/841693fa-2219-47b0-a5ff-9685f584a84c/report.json",
+      "sha256": "7f6f1629f4ee13d1b532f5e424621d8b3f37560ac02c3eafad9ffc3e819f91d8",
+      "report": {
+        "runId": "841693fa-2219-47b0-a5ff-9685f584a84c",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "workshop-hierarchy",
+            "ok": true,
+            "exitCode": 0,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": true,
+              "mode": "workshop-hierarchy",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-workshop-bridge-and-source-reading",
+                  "status": "PASS"
+                },
+                {
+                  "name": "office-chart-has-departments-subdepartments-and-seats",
+                  "status": "PASS"
+                },
+                {
+                  "name": "editing-name-does-not-swallow-add-subdepartment-click",
+                  "status": "PASS"
+                },
+                {
+                  "name": "new-nested-seat-written-to-selected-department",
+                  "status": "PASS"
+                },
+                {
+                  "name": "admin-legacy-and-canonical-children-visible-without-auto-rewrite",
+                  "status": "PASS"
+                },
+                {
+                  "name": "duplicate-name-id-branch-edited-and-child-created-once",
+                  "status": "PASS"
+                },
+                {
+                  "name": "collapse-all-affects-chart-without-losing-data",
+                  "status": "PASS"
+                },
+                {
+                  "name": "expand-all-restores-deep-nodes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "explicit-legacy-repair-keeps-original-metrics",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real-IndexedDB-reload-preserves-hierarchy-and-all-other-fields",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-zHmCwY\\production"
+            }
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "kind": "full-smoke",
+      "command": "web/dev-tools/new-scenario/hierarchy-freeze-full-5b109345-81f5-45b1-9d8e-248fc0ec396b/result.json",
+      "path": "web/dev-tools/arch-guard/ci-gmhFcr/smoke-report.json",
+      "sha256": "5feb90c98a77851a6892b9df10596f291f87d312e47bcb0e01c0dfc309575256",
+      "complete": true,
+      "runId": "33255938-70c7-48a1-a503-9ac3d3becd27",
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "summary": {
+        "selected": 941,
+        "pass": 939,
+        "fail": 0,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "failures": [],
+      "waivers": [
+        {
+          "name": "smoke-audio-bgm.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/tianming-hegui.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/gucheng-junqi.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/changhe-zhangu.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/yunkai-wanli.mp3"
+            }
+          ]
+        },
+        {
+          "name": "smoke-mapeditor-ui.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/MaShanZheng-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "full-smoke",
+      "command": "web/dev-tools/new-scenario/hierarchy-full-51ae1999-69d5-4fc9-914b-faf6980d2946/result.json",
+      "path": "web/dev-tools/arch-guard/ci-Ll3eXL/smoke-report.json",
+      "sha256": "1075c29a40bd72d334094ddef648ae3fef0e6dfa7f7553a27c83d4fa4421c2b9",
+      "complete": true,
+      "runId": "8d5d2068-c110-4da1-ad37-ca241ae6b2b2",
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "summary": {
+        "selected": 941,
+        "pass": 938,
+        "fail": 1,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "failures": [
+        {
+          "name": "smoke-authoring-agent-tools.js",
+          "pass": false,
+          "flaky": false,
+          "suspect": false,
+          "exit": 1,
+          "ms": 354,
+          "timedOut": false,
+          "waivers": [],
+          "output": "— makeDraft 沙箱隔离 —\n  ✓ makeDraft 深拷贝隔离·原对象不被改\n  ✓ draft 可独立修改\n— applyEdit 设值/建路径/拦截 —\n  ✓ applyEdit 按名导航设值 factions.明.leader\n  ✓ applyEdit 记录 old 值\n  ✓ applyEdit 创建缺失纯对象路径\n  ✓ applyEdit 拒绝 ai.key（blocklist）\n  ✓ applyEdit 拒绝 _ 前缀字段\n  ✓ applyEdit 拒绝 id\n  ✓ applyEdit 拒绝嵌套 .ai. 段\n— 路径安全：原型污染/强制写入也拒绝 —\n  ✓ applyEdit 拒绝危险路径 __proto__.tmGuoshiPolluted\n  ✓ applyPush 拒绝危险路径 __proto__.tmGuoshiPolluted\n  ✓ applyRemove 拒绝危险路径 __proto__.tmGuoshiPolluted\n  ✓ applyEdit 拒绝危险路径 constructor.prototype.tmGuoshiPolluted\n  ✓ applyPush 拒绝危险路径 constructor.prototype.tmGuoshiPolluted\n  ✓ applyRemove 拒绝危险路径 constructor.prototype.tmGuoshiPolluted\n  ✓ applyEdit 拒绝危险路径 worldSettings.prototype.tmGuoshiPolluted\n  ✓ applyPush 拒绝危险路径 worldSettings.prototype.tmGuoshiPolluted\n  ✓ applyRemove 拒绝危险路径 worldSettings.prototype.tmGuoshiPolluted\n  ✓ Object.prototype 未被污染\n— preflight 纯读取：不偷偷规范化草稿 —\n  ✓ preflight 前后输入逐字节一致\n  ✓ 缺 gameSettings 被报告为阻断而非静默补写\n  ✓ preflight 不回填人物 factionId\n— applyPush —\n  ✓ applyPush 向缺失数组创建并追加\n  ✓ applyPush 向已有数组追加\n— 坑 B：applyEdit 旁路 PathUtils 运行时副作用 —\n  ✓ draft.guoku.money 改为 999\n  ✓ 未触发 _syncCoreVarSideEffects（GM.guoku 原封不动）\n  ✓ loyalty 直接设为 99（未被 maxJump 拦截截成 70）\n  ✓ 未调用 setCharacterLoyalty/adjust（loyalty 拦截被旁路）\n  ✓ 未触发 _recordCharChange（GM.turnChanges 干净）\n— 校验器：admin-population（父>=子人口）—\n  ✓ 父(100) < 子之和(120) 被抓: [admin-population] [明] 省 人口 100 < 子级之和 120\n  ✓ 父(200) >= 子之和(120) 通过\n  ✓ 父人口未知时跳过比较·不误报\n— 校验器：faction-refs（势力引用合法）—\n  ✓ 人物引用不存在势力「清」被抓\n  ✓ 全部引用合法时通过\n— 校验器：region-coverage（区划↔地图）—\n  ✓ 孤儿末级区划「保定府」被抓\n— validateDraft 聚合 —\n  ✓ validateDraft 默认跑全部 5 组结构检查(含 timeline-compliance/char-completeness)\n  ✓ 聚合报告反映 faction-refs + char-completeness 双失败(残桩人物)\n— loop：注入 caller 驱动 NL→toolcall→改draft→finish —\n  ✓ loop 驱动 applyEdit 改了 draft.name\n  ✓ loop 经 finish 正常结束\n  ✓ loop 跑了 3 轮\n  ✓ transcript 含 validateDraft\n  ✓ 返回 finalValidation\n— 刀1：remonstrate 进谏 → 停机等定夺·不施改 —\n  ✓ remonstrate 触发 stopReason=needsConfirmation\n  ✓ remonstrate 视为本轮已收束(finished)\n  ✓ 返回 remonstrance.concern 异议内容\n  ✓ 返回 remonstrance.suggestion 替代方案\n  ✓ 返回 remonstrance.severity 硬伤类型\n  ✓ 进谏时未对 draft 施改(停下来等定夺)\n— 刀1：玩家坚持后 priorConversation 续接 → 正常执行 —\n  ✓ 玩家坚持后续接·正常 finish\n  ✓ 续接后按玩家坚持施改(进谏不阻断最终意志)\n— 刀2：checkHistory 自查证 + 低把握 flagUncertain + historyChecks 轨迹 —\n  ✓ checkHistory 流程正常 finish\n  ✓ transcript 含 checkHistory 自核步骤\n  ✓ checkHistory 回喂识别 1 条低把握(驱动 flagUncertain)\n  ✓ historyChecks 汇总 2 条自核声明\n  ✓ historyChecks 保留存疑判定\n  ✓ 低把握内容触发 flagUncertain·进 uncertainties\n— 刀3：对抗式三角色 runWithCritics（拟稿→史官+谏官→修订）—\n  ✓ 会审走完四阶段：拟稿+史官+谏官+修订\n  ✓ ①国师拟稿 finish\n  ✓ ②史官产出审阅报告\n  ✓ ③谏官产出审阅报告\n  ✓ 史官+谏官共 2 条意见汇总\n  ✓ 史官收到国师自核的低把握项(刀2 historyChecks 回灌史官)\n  ✓ ④有意见→国师据谏修订\n  ✓ 修订需求里回灌了史官谏官的审阅意见\n  ✓ 修订真正落到同一 draft（名字被改）\n— 刀3：会审无异议→拟稿即终稿（省修订调用）—\n  ✓ 无意见时不触发修订\n  ✓ 无意见时只跑三阶段（拟稿+史官+谏官，无修订）\n— loop：maxIterations 闸 —\n  ✓ maxIterations 闸生效（不会无限跑）\n— loop：空 toolCalls 先 nudge 再放弃（方向A 韧性）—\n  ✓ 无 toolCalls 先 nudge 2 次再停在 noToolCalls（1+2 轮·不立即放弃）\n— loop：nudge 后自愈（no-tool → 提示 → finish）—\n  ✓ noToolCalls 后经 nudge 自愈并 finish\n— loop：瞬态错误退避重试后自愈（方向A 韧性）—\n  ✓ 瞬态错误重试一次后自愈 finish\n— loop：非瞬态错误（401）快速失败·不重试 —\n  ✓ 非瞬态错误（401）不重试·一次即失败\n— callWithTools：anthropic 路径（mock fetch）—\n  ✓ callWithTools 解析 anthropic tool_use\n  ✓ anthropic endpoint 拼接 /v1/messages\n  ✓ anthropic 用 x-api-key header\n  ✓ anthropic tools 用 input_schema\n— callWithTools：openai-compat 路径（mock fetch）—\n  ✓ callWithTools 解析 openai tool_calls + 解 arguments JSON\n  ✓ openai endpoint 拼接 /chat/completions\n  ✓ openai 用 Bearer header\n  ✓ openai tools 用 function 包裹\n  ✓ openai tools 保留 applyEdit\n— callWithTools：缺 key 报错 —\n  ✓ 未配置 key 时 reject 提示配置 API\n— S3: 违规挡 finish → agent 自修 → finish —\n  ✓ finish 因违规被拦了 1 次\n  ✓ agent 据违规反馈自修了非法势力引用\n  ✓ 修复后再次 finish 通过\n  ✓ 共 4 轮(改→挡→修→finish)\n— S3: maxFinishAttempts 放弃 —\n  ✓ 一直不修·3 次后放弃(finishBlocked·不死循环)\n— S3: region-coverage 仅警告·不拦 finish —\n  ✓ region-coverage 有孤儿但属非 blocking·不拦 finish\n  ✓ finalValidation 仍诚实标记 region 违规\n— S3: token 预算闸 —\n  ✓ token 超预算时停在 tokenBudget\n  ✓ tokensUsed 记录累计估算\n— S4: computeDiff —\n  ✓ diff 抓到 name 改\n  ✓ diff 抓到嵌套数组元素改\n  ✓ diff 抓到新增数组元素\n  ✓ 无变更时 diff 为空\n  ✓ 默认 diff 完整返回 350 条，不再静默截断\n  ✓ 显式上限会标记 truncated\n  ✓ 不完整 diff 在应用端 fail closed\n— S4: 旧编辑器 adapter —\n  ✓ 旧 adapter 在 scriptData+saveScript 存在时可用\n  ✓ commit 就地替换·保留 scriptData 引用\n  ✓ commit 内容已替换\n  ✓ commit 不洗 draft 携带的字段\n  ✓ commit 触发 renderAll + saveScript\n— S4: 新编辑器 adapter —\n  ✓ 新 adapter 在 RESET_APP 存在时可用\n  ✓ 新 adapter 取 state.scenario\n  ✓ 旧宿主缺少编辑协议时拒绝，不回退导入覆盖\n  ✓ commit 调独立 commitScenarioEdit 并传递实际租约\n— S4: detectAdapter —\n  ✓ detect 优先新编辑器\n  ✓ detect 回退旧编辑器\n  ✓ 都不在时 detect 返回 null\n— S5: schema 指南 + 实体模板 —\n  ✓ schema 指南列出主要实体\n  ✗ FAIL: schema 指南含区划父>=子人口约束\n\n测试失败: FAIL: schema 指南含区划父>=子人口约束\n"
+        }
+      ],
+      "waivers": [
+        {
+          "name": "smoke-audio-bgm.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/tianming-hegui.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/gucheng-junqi.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/changhe-zhangu.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/yunkai-wanli.mp3"
+            }
+          ]
+        },
+        {
+          "name": "smoke-mapeditor-ui.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/MaShanZheng-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "full-smoke",
+      "command": "web/dev-tools/new-scenario/hierarchy-full-final-8e531064-5e0b-438b-81b9-ad2247531772/result.json",
+      "path": "web/dev-tools/arch-guard/ci-tXJdnS/smoke-report.json",
+      "sha256": "3fd63e533aa2be2aabf8fefab2ad72a7d7ba9e0522f578fb253670efd9c40b70",
+      "complete": true,
+      "runId": "cc069c4a-c82d-47d9-aa77-4f33aa839245",
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "summary": {
+        "selected": 941,
+        "pass": 937,
+        "fail": 2,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "failures": [
+        {
+          "name": "smoke-full-turn-flow.js",
+          "pass": false,
+          "flaky": false,
+          "suspect": false,
+          "exit": 1,
+          "ms": 76211,
+          "timedOut": false,
+          "waivers": [],
+          "output": "[full-turn-flow] FAIL timeout waiting for deferred AI payload\nstate={\"turn\":2,\"busy\":false,\"endTurnBusy\":false,\"chars\":203,\"factions\":22,\"memorials\":16,\"approvedMemorials\":1,\"letters\":11,\"qijuHistory\":3,\"shijiHistory\":0,\"lastShijiTurn\":null,\"courtMeter\":{\"thisTurnCount\":1,\"missedStreak\":0,\"diligentStreak\":0,\"lastCourtTurn\":2,\"byTurn\":{\"1\":1,\"2\":1}},\"courtRecords\":[{\"turn\":1,\"targetTurn\":1,\"phase\":\"in-turn\",\"topic\":\"早朝·辽饷与边备\"},{\"turn\":1,\"targetTurn\":2,\"phase\":\"post-turn\",\"topic\":\"朔朝·次月边饷部署\"}],\"pendingShiji\":{\"aiReady\":true,\"courtDone\":false,\"hasPayload\":true},\"pipeline\":[{\"step\":\"prep\",\"ok\":true,\"ms\":1472,\"error\":\"\"},{\"step\":\"plan-prefetch\",\"ok\":true,\"ms\":9,\"error\":\"\"},{\"step\":\"ai\",\"ok\":true,\"ms\":7,\"error\":\"\"},{\"step\":\"post-ai-edict\",\"ok\":true,\"ms\":2995,\"error\":\"\"},{\"step\":\"systems\",\"ok\":true,\"ms\":43784,\"error\":\"\"},{\"step\":\"render-and-finalize\",\"ok\":true,\"ms\":894,\"error\":\"\"},{\"step\":\"prepare-commit-barrier\",\"ok\":true,\"ms\":0,\"error\":\"\"}],\"aiCalls\":[{\"turn\":1,\"edictCategories\":[\"political\",\"military\",\"diplomatic\",\"economic\",\"other\"],\"xingluLength\":31,\"memorials\":16,\"currentCourtDecisions\":1,\"currentCourtRecords\":1,\"nextCourtRecords\":1}],\"turnResults\":[],\"playerActionSummary\":{\"turn\":1,\"minister\":\"袁崇焕\",\"memorials\":13,\"letters\":11,\"courtRecords\":1},\"postTurnCourtSummary\":{\"turn\":1,\"targetTurn\":2,\"courtRecords\":2},\"loadingTail\":[{\"turn\":2,\"msg\":\"应用决策变动\",\"pct\":93},{\"turn\":2,\"msg\":\"检查历史事件\",\"pct\":93.4},{\"turn\":2,\"msg\":\"检查职位与寿数\",\"pct\":93.7},{\"turn\":2,\"msg\":\"处理监听队列\",\"pct\":94},{\"turn\":2,\"msg\":\"清理回合缓存\",\"pct\":94.3},{\"turn\":2,\"msg\":\"回合阶段 6/7 · 生成史记弹窗\",\"pct\":78},{\"turn\":2,\"msg\":\"hide\",\"pct\":0},{\"turn\":2,\"msg\":\"回合阶段 7/7 · prepare-commit-barrier\",\"pct\":90}],\"toasts\":[\"杨鹤 来信·《请恤陕民疏》·都察院右副都御史臣杨鹤顿\",\"第1回合\",\"❌ 存档数据库初始化失败：stub·no-idb\",\"诏令需细化：征何税（商/盐/茶/市舶）？\",\"鸿雁：1 封新来函已抵达\"],\"errors\":[\"播放背景音乐失败: ReferenceError: Audio is not defined\",\"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\"[SaveDB] 初始化失败: Error: stub·no-idb\",\"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\"],\"warns\":[\"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\"[TMContentManager] web load workshop failed Error: 打开网页工坊库失败\",\"[TokenBudget] critical estimated=41945 budget=24576 contextK=32\",\"[perf.threshold] 捕获: [perf] corruption.tick 超阈值: 1080.00ms > 500ms\",\"  Error: [perf] corruption.tick 超阈值: 1080.00ms > 500ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\"[perf.threshold] 捕获: [perf] authority.tick 超阈值: 922.00ms > 400ms\",\"  Error: [perf] authority.tick 超阈值: 922.00ms > 400ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\"[endTurn systems] slow stage: 系统结算总耗时 43745ms \"],\"writeTurnData\":0,\"autoSave\":0}\nstate={\"turn\":2,\"busy\":false,\"endTurnBusy\":false,\"chars\":203,\"factions\":22,\"memorials\":16,\"approvedMemorials\":1,\"letters\":11,\"qijuHistory\":3,\"shijiHistory\":0,\"lastShijiTurn\":null,\"courtMeter\":{\"thisTurnCount\":1,\"missedStreak\":0,\"diligentStreak\":0,\"lastCourtTurn\":2,\"byTurn\":{\"1\":1,\"2\":1}},\"courtRecords\":[{\"turn\":1,\"targetTurn\":1,\"phase\":\"in-turn\",\"topic\":\"早朝·辽饷与边备\"},{\"turn\":1,\"targetTurn\":2,\"phase\":\"post-turn\",\"topic\":\"朔朝·次月边饷部署\"}],\"pendingShiji\":{\"aiReady\":true,\"courtDone\":false,\"hasPayload\":true},\"pipeline\":[{\"step\":\"prep\",\"ok\":true,\"ms\":1472,\"error\":\"\"},{\"step\":\"plan-prefetch\",\"ok\":true,\"ms\":9,\"error\":\"\"},{\"step\":\"ai\",\"ok\":true,\"ms\":7,\"error\":\"\"},{\"step\":\"post-ai-edict\",\"ok\":true,\"ms\":2995,\"error\":\"\"},{\"step\":\"systems\",\"ok\":true,\"ms\":43784,\"error\":\"\"},{\"step\":\"render-and-finalize\",\"ok\":true,\"ms\":894,\"error\":\"\"},{\"step\":\"prepare-commit-barrier\",\"ok\":true,\"ms\":0,\"error\":\"\"}],\"aiCalls\":[{\"turn\":1,\"edictCategories\":[\"political\",\"military\",\"diplomatic\",\"economic\",\"other\"],\"xingluLength\":31,\"memorials\":16,\"currentCourtDecisions\":1,\"currentCourtRecords\":1,\"nextCourtRecords\":1}],\"turnResults\":[],\"playerActionSummary\":{\"turn\":1,\"minister\":\"袁崇焕\",\"memorials\":13,\"letters\":11,\"courtRecords\":1},\"postTurnCourtSummary\":{\"turn\":1,\"targetTurn\":2,\"courtRecords\":2},\"loadingTail\":[{\"turn\":2,\"msg\":\"应用决策变动\",\"pct\":93},{\"turn\":2,\"msg\":\"检查历史事件\",\"pct\":93.4},{\"turn\":2,\"msg\":\"检查职位与寿数\",\"pct\":93.7},{\"turn\":2,\"msg\":\"处理监听队列\",\"pct\":94},{\"turn\":2,\"msg\":\"清理回合缓存\",\"pct\":94.3},{\"turn\":2,\"msg\":\"回合阶段 6/7 · 生成史记弹窗\",\"pct\":78},{\"turn\":2,\"msg\":\"hide\",\"pct\":0},{\"turn\":2,\"msg\":\"回合阶段 7/7 · prepare-commit-barrier\",\"pct\":90}],\"toasts\":[\"杨鹤 来信·《请恤陕民疏》·都察院右副都御史臣杨鹤顿\",\"第1回合\",\"❌ 存档数据库初始化失败：stub·no-idb\",\"诏令需细化：征何税（商/盐/茶/市舶）？\",\"鸿雁：1 封新来函已抵达\"],\"errors\":[\"播放背景音乐失败: ReferenceError: Audio is not defined\",\"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\"[SaveDB] 初始化失败: Error: stub·no-idb\",\"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\"],\"warns\":[\"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\"[TMContentManager] web load workshop failed Error: 打开网页工坊库失败\",\"[TokenBudget] critical estimated=41945 budget=24576 contextK=32\",\"[perf.threshold] 捕获: [perf] corruption.tick 超阈值: 1080.00ms > 500ms\",\"  Error: [perf] corruption.tick 超阈值: 1080.00ms > 500ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\"[perf.threshold] 捕获: [perf] authority.tick 超阈值: 922.00ms > 400ms\",\"  Error: [perf] authority.tick 超阈值: 922.00ms > 400ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\"[endTurn systems] slow stage: 系统结算总耗时 43745ms \"],\"writeTurnData\":0,\"autoSave\":0}\n    at main (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-full-turn-flow.js:463:11)\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:538:9)\n"
+        },
+        {
+          "name": "smoke-workshop-lock-recovery.js",
+          "pass": false,
+          "flaky": false,
+          "suspect": false,
+          "exit": 1,
+          "ms": 23641,
+          "timedOut": false,
+          "waivers": [],
+          "output": "PASS one-shot ancestor inspection rejects denial and broken links without modifying package/index\nINTERRUPTED owner-identity-published\nPASS owner crash restarts twice without changing package/index\nINTERRUPTED ticket-published\nPASS ticket crash restarts twice without changing package/index\nINTERRUPTED private-owner-before-write\nPASS private-owner crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nPASS published crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nINTERRUPTED reclaimer-during-dead-owner-removal\nPASS reclaimer death is itself recoverable, without fixed recovery sentinel\nINTERRUPTED journal-published\nPASS unproven legacy recovery marker preserves journal and original data\nPASS unknown legacy empty lock is never stolen or deleted\nPASS proven dead legacy PID migration\nPASS publication failure leaves package/index unchanged and can retry\nPASS release after commit is warning, same-process retry cleans ownership\nPASS release-claim after commit is warning, same-process retry cleans ownership\nPASS live owner cannot be stolen by multiple contenders\nSTRESS_DIAGNOSTIC {\"attempts\":145,\"commits\":22,\"busy\":123,\"io\":{\"lstatSync\":{\"count\":16759,\"ms\":9241.1777},\"mkdirSync\":{\"count\":580,\"ms\":925.9787999999783},\"readdirSync\":{\"count\":1054,\"ms\":1051.426400000009},\"rmSync\":{\"count\":145,\"ms\":835.7549000000013},\"existsSync\":{\"count\":176,\"ms\":114.32279999999898},\"readFileSync\":{\"count\":110,\"ms\":5298.281299999999},\"openSync\":{\"count\":22,\"ms\":26.530200000011632},\"fsyncSync\":{\"count\":22,\"ms\":60.438900000002036},\"linkSync\":{\"count\":22,\"ms\":149.08480000000165},\"unlinkSync\":{\"count\":44,\"ms\":80.63329999999803}}}\nSTRESS_DIAGNOSTIC {\"attempts\":146,\"commits\":20,\"busy\":126,\"io\":{\"lstatSync\":{\"count\":16773,\"ms\":9080.829000000134},\"mkdirSync\":{\"count\":584,\"ms\":5453.854400000006},\"readdirSync\":{\"count\":1066,\"ms\":1050.0711000000083},\"existsSync\":{\"count\":160,\"ms\":88.56719999999812},\"readFileSync\":{\"count\":100,\"ms\":745.23869999999},\"openSync\":{\"count\":20,\"ms\":39.70960000000436},\"fsyncSync\":{\"count\":20,\"ms\":63.28279999999776},\"linkSync\":{\"count\":20,\"ms\":119.68709999999848},\"unlinkSync\":{\"count\":40,\"ms\":46.31140000000394},\"rmSync\":{\"count\":146,\"ms\":926.2367999999896}}}\nSTRESS_DIAGNOSTIC {\"attempts\":151,\"commits\":17,\"busy\":134,\"io\":{\"lstatSync\":{\"count\":16689,\"ms\":9031.23150000014},\"mkdirSync\":{\"count\":604,\"ms\":5515.507500000043},\"readdirSync\":{\"count\":1097,\"ms\":1202.76100000005},\"rmSync\":{\"count\":151,\"ms\":887.6532999999997},\"existsSync\":{\"count\":136,\"ms\":70.03170000000057},\"readFileSync\":{\"count\":85,\"ms\":522.9787000000083},\"openSync\":{\"count\":17,\"ms\":31.655000000005487},\"fsyncSync\":{\"count\":17,\"ms\":91.87700000000291},\"linkSync\":{\"count\":17,\"ms\":109.17390000000023},\"unlinkSync\":{\"count\":34,\"ms\":56.26780000001213}}}\nSTRESS_DIAGNOSTIC {\"attempts\":80,\"commits\":25,\"busy\":55,\"io\":{\"lstatSync\":{\"count\":10932,\"ms\":3734.7689999999693},\"mkdirSync\":{\"count\":320,\"ms\":4855.399100000001},\"readdirSync\":{\"count\":581,\"ms\":299.895699999995},\"rmSync\":{\"count\":80,\"ms\":290.612},\"existsSync\":{\"count\":200,\"ms\":97.90270000000567},\"readFileSync\":{\"count\":125,\"ms\":621.2475999999966},\"openSync\":{\"count\":25,\"ms\":31.155900000000997},\"fsyncSync\":{\"count\":25,\"ms\":113.84579999999846},\"linkSync\":{\"count\":25,\"ms\":132.17639999999943},\"unlinkSync\":{\"count\":50,\"ms\":76.26299999999952}}}\nAssertionError [ERR_ASSERTION]: STRESS_DIAGNOSTIC {\"attempts\":145,\"commits\":22,\"busy\":123,\"io\":{\"lstatSync\":{\"count\":16759,\"ms\":9241.1777},\"mkdirSync\":{\"count\":580,\"ms\":925.9787999999783},\"readdirSync\":{\"count\":1054,\"ms\":1051.426400000009},\"rmSync\":{\"count\":145,\"ms\":835.7549000000013},\"existsSync\":{\"count\":176,\"ms\":114.32279999999898},\"readFileSync\":{\"count\":110,\"ms\":5298.281299999999},\"openSync\":{\"count\":22,\"ms\":26.530200000011632},\"fsyncSync\":{\"count\":22,\"ms\":60.438900000002036},\"linkSync\":{\"count\":22,\"ms\":149.08480000000165},\"unlinkSync\":{\"count\":44,\"ms\":80.63329999999803}}}\nC:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:84\r\n        if (Date.now() > deadline) throw new Error('stress admission deadline exceeded');\r\n                                   ^\r\n\r\nError: stress admission deadline exceeded\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:84:42)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n\n\n1 !== 0\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:165:39\n    at Array.forEach (<anonymous>)\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:165:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+        }
+      ],
+      "waivers": [
+        {
+          "name": "smoke-audio-bgm.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/tianming-hegui.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/gucheng-junqi.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/changhe-zhangu.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/yunkai-wanli.mp3"
+            }
+          ]
+        },
+        {
+          "name": "smoke-mapeditor-ui.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/MaShanZheng-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "full-smoke",
+      "command": "web/dev-tools/new-scenario/hierarchy-isolated-full-2f455803-ab1a-4c9b-8130-9b71488e2f11/result.json",
+      "path": "web/dev-tools/arch-guard/ci-EtQgaM/smoke-report.json",
+      "sha256": "30cbf7945f3690f892a56e84ea28bcba536f7a855ed3f87ae0b1e31013e85424",
+      "complete": true,
+      "runId": "8c146e8d-2ad4-47da-b434-b31b54e10a17",
+      "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+      "summary": {
+        "selected": 941,
+        "pass": 939,
+        "fail": 0,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "failures": [],
+      "waivers": [
+        {
+          "name": "smoke-audio-bgm.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/tianming-hegui.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/gucheng-junqi.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/changhe-zhangu.mp3"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/audio/bgm/yunkai-wanli.mp3"
+            }
+          ]
+        },
+        {
+          "name": "smoke-mapeditor-ui.js",
+          "waivers": [
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+            },
+            {
+              "code": "optional-asset-absent",
+              "path": "assets/fonts/MaShanZheng-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "electron",
+      "command": "web/dev-tools/new-scenario/hierarchy-keyboard-continuation-e82b2617-d0c8-4319-8be4-8e75445ae318/result.json",
+      "path": "web/dev-tools/electron-bridge/565b7859-84fc-4bb9-b674-727c0af818ab/report.json",
+      "sha256": "232ae8e650c9b2fee1e83574083ad284bbb11616d62a7f7b7b69b1e3482fd46c",
+      "report": {
+        "runId": "565b7859-84fc-4bb9-b674-727c0af818ab",
+        "repo": "C:\\Users\\37814\\Desktop\\tianming-perf-round1",
+        "head": "f03d7a2af0deecaff88900b194e4870668d0eee3",
+        "status": "M scripts/electron/authoring-continuation-cases.cjs\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-agent-tools.js\n?? docs/bugfix-workshop-hierarchy-2026-09-11.md\n?? scripts/electron/workshop-hierarchy-cases.cjs\n?? scripts/fixtures/\n?? web/scripts/smoke-workshop-hierarchy.js",
+        "platform": "win32",
+        "node": "v24.14.0",
+        "baseline": false,
+        "complete": true,
+        "results": [
+          {
+            "mode": "authoring-continuation",
+            "ok": false,
+            "exitCode": 1,
+            "signal": null,
+            "detail": {
+              "complete": true,
+              "ok": false,
+              "mode": "authoring-continuation",
+              "baseline": false,
+              "versions": {
+                "node": "20.18.3",
+                "acorn": "8.14.0",
+                "ada": "2.9.2",
+                "ares": "1.34.4",
+                "base64": "0.5.2",
+                "brotli": "1.0.9",
+                "cjs_module_lexer": "1.4.1",
+                "cldr": "44.1",
+                "icu": "74.2",
+                "llhttp": "8.1.2",
+                "modules": "130",
+                "napi": "9",
+                "nghttp2": "1.61.0",
+                "openssl": "0.0.0",
+                "simdutf": "5.6.4",
+                "tz": "2024a",
+                "undici": "6.21.1",
+                "unicode": "15.1",
+                "uv": "1.46.0",
+                "uvwasi": "0.0.21",
+                "v8": "13.0.245.25-electron.0",
+                "zlib": "1.3.0.1-motley",
+                "electron": "33.4.11",
+                "chrome": "130.0.6723.191"
+              },
+              "results": [
+                {
+                  "name": "locked-electron-runtime",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-webpreferences",
+                  "status": "PASS"
+                },
+                {
+                  "name": "observed-turn-data-protocol",
+                  "value": 2,
+                  "status": "PASS",
+                  "required": 2
+                },
+                {
+                  "name": "real-bridge-and-ipc",
+                  "status": "PASS"
+                },
+                {
+                  "name": "production-test-exports-boundary",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real homepage bridge does not borrow global Ming configuration",
+                  "status": "PASS"
+                },
+                {
+                  "name": "desktop create click saves a clean scenario and opens the real editor without inherited offices",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty government/admin views render and modern blank starter remains era-neutral",
+                  "status": "PASS"
+                },
+                {
+                  "name": "empty administrative hierarchy is usable in both views; invalid rows are preserved and identified",
+                  "status": "PASS"
+                },
+                {
+                  "name": "no-tool response stops within budget and preserves staged work without applying it",
+                  "status": "PASS"
+                },
+                {
+                  "name": "both recovery actions have readable opaque colors, spacing and keyboard focus in dark and light themes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "after explicitly applying partial work, a new message edits the committed draft without replaying append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "connection failure is bounded and shown distinctly from a no-tool response",
+                  "status": "PASS"
+                },
+                {
+                  "name": "cancelling the compatibility request stops it without a late write or automatic retry",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-json real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "reasoning-sse real editor sends preserved thinking context and applies both steps only after approval",
+                  "status": "PASS"
+                },
+                {
+                  "name": "thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI transient empty response returns to native tools and only approval saves the single append",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI exhausted empty compatibility returns to proven native; mouse continuation does not replay writes",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI length limit is not no-tools; manual continuation retains the last budget and pending draft",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI repairs explicit auto rejection without dropping tools or changing thinking mode",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real UI full catalog and usage-only relay repair complete editing, approval and saved readback",
+                  "status": "PASS"
+                },
+                {
+                  "name": "real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once",
+                  "status": "PASS"
+                }
+              ],
+              "failures": [
+                "Error: mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n100 !== 450\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:116:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:12:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:111:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:51)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-continuation-cases.cjs:152:89)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:51)"
+              ],
+              "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+              "temporaryUserData": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-bridge-series-a3EXHO\\production"
+            }
+          }
+        ],
+        "ok": false
+      }
+    }
+  ],
+  "native": {
+    "type": "computer-use actual original Electron window",
+    "scenario": "建安十九年·益州初定（刘备实操）",
+    "performed": [
+      "normal save-return-reopen",
+      "legacy admin six-field rename with UI action",
+      "normal save-return-reopen of converted data",
+      "list and chart hierarchy inspection",
+      "mouse selection of 郫县 and its own detail",
+      "mouse selection of 尚书令 and its own detail"
+    ],
+    "observed": {
+      "scenarioFields": 35,
+      "characters": 4,
+      "factions": 4,
+      "adminPlayerNodes": 21,
+      "rootMouths": 1350000,
+      "rootHouseholds": 270000,
+      "selectedCounty": "郫县",
+      "countyMouths": 70000,
+      "countyHouseholds": 14000,
+      "officeDepartments": 7,
+      "officeEstablished": 36
+    },
+    "notPerformed": [
+      "current relay multi-level regeneration",
+      "fully playable Liu Bei scenario",
+      "packaged Electron/Android/online release"
+    ],
+    "lastCosmeticChangesVerifiedBy": "latest isolated Electron report; reopened workshop required for existing page"
+  },
+  "externalWrites": [],
+  "agentToolProbe": {
+    "modelCalled": false,
+    "method": "Actual AuthoringAgent.dispatchTool with applyPush on isolated draft",
+    "pass": 6,
+    "paths": [
+      "officeTree",
+      "officeTree.0.subs",
+      "officeTree.0.subs.0.positions",
+      "adminHierarchy.own.divisions",
+      "adminHierarchy.own.divisions.0.children",
+      "adminHierarchy.own.divisions.0.children.0.children"
+    ],
+    "readback": {
+      "office": "属署官职",
+      "county": "县"
+    }
+  }
+}

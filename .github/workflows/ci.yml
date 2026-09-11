@@ -106,6 +106,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Authoring region paths and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-regions
+      - name: Workshop hierarchy, nested creation and saved editor readback
+        run: node scripts/verify-electron-bridge.js --workshop-hierarchy
       - name: Authoring streamed tools, final result, approval and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-stream
       - name: Guoshi project ownership and read-only execution (real Electron)

@@ -12,6 +12,7 @@ const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('g
   status: cp.execFileSync('git', ['status', '--short'], { cwd: repo, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version,
   baseline: argv.includes('--baseline'), complete: false, results: [] };
 try {
+  if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   const runtime = require('electron');
   if (!fs.existsSync(runtime)) throw new Error('electron-runtime-missing: run node node_modules/electron/install.js after npm ci --ignore-scripts');
   for (const mode of modes) {

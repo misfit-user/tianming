@@ -127,7 +127,7 @@ module.exports = async function({ win, root, check }) {
     assert.equal(r.author, before.author); assert.equal(r.history, before.history); assert.equal(r.balance, 2); assert.deepEqual(r.labels, [{ name: 'once' }]);
   });
   await test('memory-only approval failure leaves live scenario, pending work and memory storage intact', async () => {
-    await fresh('memory-only', 'memory', 'auto'); await send(); await done();
+    await fresh('memory-only', 'memory', 'review'); await send(); await done(); // 手动批准测共审；放行自动提交/失败由 autoapply 套件覆盖。
     const before = await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;__recoveryTest.source=JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario);return{pending:ui._pendingSideEffects.length,memory:TM.AuthoringAgent.memories.list().filter(m=>m.name==='only-memory-only').length,label:ui.els.apply.textContent,diffs:ui._lastDiffs.length};})()`);
     assert.equal(before.pending, 1); assert.equal(before.memory, 0); assert.equal(before.diffs, 0); assert.match(before.label, /记忆\/技能/);
     const r = await js(`(()=>{const real=Storage.prototype.setItem;try{Storage.prototype.setItem=function(){throw new Error('controlled-quota');};TM_AuthoringAgentUI._ui.els.apply.click();}finally{Storage.prototype.setItem=real;}return{unchanged:JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario)===__recoveryTest.source,pending:TM_AuthoringAgentUI._ui._pendingSideEffects.length,memory:TM.AuthoringAgent.memories.list().filter(m=>m.name==='only-memory-only').length,status:TM_AuthoringAgentUI._ui.els.status.textContent};})()`);

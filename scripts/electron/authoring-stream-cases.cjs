@@ -79,7 +79,7 @@ module.exports = async function({ win, root, check }) {
   await send('请批量修改剧本名称并将国库存银改成450万，再核验。'); await until(`!TM_AuthoringAgentUI._ui.running && !!document.querySelector('.tm-aa-errcard')`);
   await check('authoring-stream-bad-tail-rejects-all-tools-and-shows-safe-retry', async () => {
     const r = await js(`({count:__aaStream.round,message:document.querySelector('.tm-aa-errcard').textContent,source:JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario),before:__aaStream.before,draft:TM_AuthoringAgentUI._ui.draft.fiscalConfig.treasury})`);
-    assert.equal(r.count, 1); assert.equal(r.source, r.before); assert.equal(r.draft, 4000000); assert(r.message.includes('重试')); assert(!r.message.includes('PRIVATE-RESPONSE'));
+    assert.equal(r.count, 2); assert.equal(r.source, r.before); assert.equal(r.draft, 4000000); assert(r.message.includes('重试')); assert(!r.message.includes('PRIVATE-RESPONSE'));
   });
   await hittable(`document.querySelector('.tm-aa-errcard .ec-retry')`);
   fs.writeFileSync(path.join(path.dirname(process.env.TM_BRIDGE_TEST_REPORT), 'authoring-error-recovery.png'), (await win.webContents.capturePage()).toPNG());

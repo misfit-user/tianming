@@ -305,6 +305,15 @@
     try { return JSON.parse(text); }
     catch (_) { throw _responseError('invalid-json', 'API 返回内容不符合 JSON 格式，本轮工具未执行；请重试或检查中转响应格式。'); }
   }
+  function _eventPayloads(fields) {
+    var joined = fields.join('\n');
+    // 标准 SSE 多行 data 先整体解析。部分中转漏写事件间空行：仅当每行都是完整
+    // JSON / DONE 时兼容；不得抽取有效前缀、补括号或跳过任何损坏行。
+    if (fields.length < 2) return [joined];
+    try { JSON.parse(joined); return [joined]; } catch (_) {}
+    fields.forEach(function(field) { if (field !== '[DONE]') _responseJSON(field); });
+    return fields;
+  }
   // 某些中转忽略非流式请求，成功响应实际为 SSE。只在收齐完整响应后交给现有工具解析器。
   function _decodeResponse(text) {
     var raw = String(text || '').replace(/^\uFEFF/, '').trim();
@@ -327,6 +336,12 @@
     function string(value) {
       if (typeof value !== 'string') throw _responseError('invalid-fragment', 'API 工具片段格式无效，本轮工具未执行。');
       return value;
+    }
+    function merge(old, value, snapshot) {
+      value = string(value);
+      if (!snapshot) return old + value;
+      if (value.indexOf(old) !== 0) throw _responseError('conflicting-snapshot', 'API 完整消息与已收到的片段不一致，本轮工具未执行。');
+      return value; // message 是完整快照，不能像 delta 一样重复拼接名称/参数/正文。
     }
     function input(text) {
       var value = _responseJSON(text);
@@ -351,18 +366,21 @@
           if (candidate !== 0) return; // 不合并其他候选，也不选择任意第一个到达的候选。
           if (primaryInFrame) throw _responseError('duplicate-candidate', 'API 在同一事件中重复了主候选，本轮工具未执行。');
           primaryInFrame = true; sawPrimary = true;
-          var delta = c.delta || c.message || {};
-          if (delta.content != null) message.content += string(delta.content);
-          if (delta.reasoning_content != null) message.reasoning_content = (message.reasoning_content || '') + string(delta.reasoning_content);
+          var delta = c.delta || c.message || {}, snapshot = !c.delta && !!c.message, snapshotTools = new Set();
+          if (delta.content != null) message.content = merge(message.content, delta.content, snapshot);
+          if (delta.reasoning_content != null) message.reasoning_content = merge(message.reasoning_content || '', delta.reasoning_content, snapshot);
           if (delta.tool_calls != null && !Array.isArray(delta.tool_calls)) throw _responseError('invalid-tools', 'API 工具列表格式无效，本轮工具未执行。');
           (delta.tool_calls || []).forEach(function(tc, i) {
             var key = index(tc.index == null && c.message ? i : tc.index), old = tools.get(key);
+            if (snapshotTools.has(key)) throw _responseError('invalid-tools', 'API 在同一事件中重复了工具序号，本轮工具未执行。');
+            snapshotTools.add(key);
             if (!old) { old = { id: '', type: 'function', function: { name: '', arguments: '' } }; tools.set(key, old); }
             if (tc.id != null) { if (old.id && old.id !== tc.id) throw _responseError('changed-tool-id', 'API 工具片段身份不一致，本轮工具未执行。'); old.id = string(tc.id); }
             var fn = tc.function || {};
-            if (fn.name != null) old.function.name += string(fn.name);
-            if (fn.arguments != null) old.function.arguments += string(fn.arguments);
+            if (fn.name != null) old.function.name = merge(old.function.name, fn.name, snapshot);
+            if (fn.arguments != null) old.function.arguments = merge(old.function.arguments, fn.arguments, snapshot);
           });
+          if (snapshot && tools.size !== snapshotTools.size) throw _responseError('conflicting-snapshot', 'API 完整消息遗漏了先前的工具片段，本轮工具未执行。');
           if (c.finish_reason != null || c.stop_reason != null) finish = c.finish_reason || c.stop_reason;
         });
       } else if (Array.isArray(d.candidates)) {
@@ -392,7 +410,7 @@
       }
     }
     var fields = [], eventName = '';
-    function flush() { if (fields.length) accept(fields.join('\n'), eventName); fields = []; eventName = ''; }
+    function flush() { if (fields.length) _eventPayloads(fields).forEach(function(payload) { accept(payload, eventName); }); fields = []; eventName = ''; }
     raw.split(/\r\n|\r|\n/).forEach(function(line) {
       if (!line) { flush(); return; }
       if (line[0] === ':') return;
@@ -439,6 +457,8 @@
     var reader = r.body.getReader(), decoder = new TextDecoder(), chunks = [], bytes = 0, tail = '';
     function terminal(text) {
       if (!/\[DONE\]|message_stop/.test(text)) return false;
+      // 漏空行中转的 DONE 行也须完整收到换行；完整响应仍由解码器逐项校验。
+      if (/(^|\n)data: ?\[DONE\]\n/.test(text.replace(/\r\n|\r/g, '\n'))) return true;
       var events = text.replace(/\r\n|\r/g, '\n').split('\n\n'); events.pop(); // 只接受已结束的事件，不猜半个终止标记。
       return events.some(function(event) {
         var data = event.split('\n').filter(function(line) { return line.indexOf('data:') === 0; }).map(function(line) { return line.slice(5).replace(/^ /, ''); }).join('\n');
@@ -494,6 +514,7 @@
     var timeoutMs = opts.timeoutMs || 180000;
     var base = opts.retryBaseMs || 1000;
     var outerSignal = opts.signal || null;
+    var recovery = opts._responseRecovery || { used: false, attempts: 0 };
     function attempt(n) {
       if (outerSignal && outerSignal.aborted) return Promise.reject(_abortError(outerSignal.reason));
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -511,7 +532,7 @@
         if (timer) clearTimeout(timer);
         if (onOuterAbort && outerSignal && outerSignal.removeEventListener) outerSignal.removeEventListener('abort', onOuterAbort);
       }
-      return Promise.resolve().then(function() { _telemetry(opts, { type: 'request', retry: n > 0 }); return global.fetch(url, fopt); }).then(function(r) {
+      return Promise.resolve().then(function() { _telemetry(opts, { type: 'request', retry: recovery.attempts++ > 0 }); return global.fetch(url, fopt); }).then(function(r) {
         if (!r.ok) {
           return r.text().then(function(t) {
             var err = new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 200));
@@ -532,10 +553,20 @@
         cleanup();
         if (outerSignal && outerSignal.aborted) throw _abortError(outerSignal.reason);
         if (timedOut) { e = new Error('API 请求超时，完整响应未收到，请稍后重试。'); e.name = 'TimeoutError'; e.transient = true; }
-        if (e && /^authoring-response-/.test(e.code || '')) throw e; // 已确定的协议损坏不能当网络抖动反复调用。
+        if (e && /^authoring-response-/.test(e.code || '')) {
+          if (/^authoring-response-(invalid-json|incomplete-stream)$/.test(e.code)) {
+            if (!recovery.used) {
+              recovery.used = true;
+              _telemetry(opts, { type: 'response-retry', code: e.code, attempt: 1, limit: 1 });
+              return _delay(base, outerSignal).then(function() { return attempt(n); });
+            }
+            e.retriesExhausted = true; e.attempts = recovery.attempts;
+          }
+          throw e; // 只重取一次完整响应；不把协议冲突/服务端错误当网络抖动反复调用。
+        }
         var retryable = e && e.status ? (e.status === 429 || e.status >= 500) : (timedOut || !(e && e.aborted));
         if (n < maxRetries && retryable) return _delay((e && e.retryAfterMs) || Math.min(30000, base * Math.pow(2, n)), outerSignal).then(function() { return attempt(n + 1); });
-        if (e && retryable) { e.retriesExhausted = true; e.attempts = n + 1; }
+        if (e && retryable) { e.retriesExhausted = true; e.attempts = recovery.attempts; }
         throw e;
       });
     }
@@ -553,7 +584,7 @@
    * @returns {Promise<{text, toolCalls:Array<{id,name,input}>, fallback?:boolean}>}
    */
   function callWithTools(conversation, tools, opts) {
-    opts = opts || {};
+    opts = Object.assign({}, opts || {}, { _responseRecovery: { used: false, attempts: 0 } }); // 同一轮协议协商共用一次格式恢复额度及真实请求计数。
     if (typeof conversation === 'string') conversation = [{ role: 'user', text: conversation }];
     var cfg = opts.cfg || loadEditorApiConfig();
     var maxTok = opts.maxTok || 3000;

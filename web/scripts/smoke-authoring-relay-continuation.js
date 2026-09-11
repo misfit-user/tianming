@@ -96,7 +96,7 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
   });
   await test('native unsupported-tools fallback also has bounded network retries and preserves the error category', async () => {
     let n = 0; const { aa } = fixture(async () => { if (++n === 1) return new Response('tools unsupported', { status: 400 }); throw new TypeError('Failed to fetch'); });
-    await assert.rejects(aa.runAuthoringLoop(aa.makeDraft({ name: '原' }), '修改', options), e => e.retriesExhausted === true && e.attempts === 4 && /完整 API 响应/.test(e.message));
+    await assert.rejects(aa.runAuthoringLoop(aa.makeDraft({ name: '原' }), '修改', options), e => e.retriesExhausted === true && e.attempts === 5 && e.attempts === n && /完整 API 响应/.test(e.message)); // 包括最初的原生协议拒绝；实际请求上限仍是 5。
     assert.equal(n, 5);
     let denied = 0; const f = fixture(async () => { denied++; return new Response('unauthorized', { status: 401 }); });
     await assert.rejects(f.aa.runAuthoringLoop(f.aa.makeDraft({ name: '原' }), '修改', options), e => e.status === 401); assert.equal(denied, 1);

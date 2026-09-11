@@ -86,7 +86,7 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
   ]) await test(name + ' fails closed with an explicit response error, not a raw payload', async () => {
     let count = 0; const f = fixture(async () => { count++; return response(raw); });
     await assert.rejects(() => f.call({ maxRetries: 2, retryBaseMs: 1 }), e => /^authoring-response-/.test(e.code || '') && !e.message.includes('PRIVATE-CONTENT') && !e.message.includes('{bad'));
-    assert.equal(count, 1, 'deterministic malformed responses must not be retried as network errors');
+    assert.equal(count, name === 'provider error event' ? 1 : 2, 'one bounded full-response recovery only; never multiply network retries or execute a prefix');
   });
   await test('cancellation after headers cancels body reading and returns no executable tools', async () => {
     const ctrl = new AbortController(); let cancelled = 0;

@@ -118,6 +118,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --authoring-recovery
       - name: Guoshi relay continuation, readable controls and empty administration (real Electron)
         run: node scripts/verify-electron-bridge.js --authoring-continuation
+      - name: Verify authoring full-permission apply and response recovery
+        run: node scripts/verify-electron-bridge.js --authoring-autoapply
       - name: Guoshi bounded progress, instruction retention and actual game consumption
         run: |
           node scripts/verify-electron-bridge.js --authoring-efficiency

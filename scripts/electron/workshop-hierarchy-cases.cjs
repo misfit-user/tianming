@@ -34,11 +34,20 @@ module.exports = async function({ win, root, check }) {
     assert.equal(await js(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});return document.activeElement===e&&e.selectionStart===0&&e.selectionEnd===e.value.length;})()`), true, 'keyboard select-all settled before text insertion');
     await win.webContents.insertText(value);
   }
+  // Exercise the same narrow desktop viewport as the hosted Windows runner.
+  win.unmaximize(); win.setContentSize(1024,720);
   await win.loadFile(path.join(root, 'web/preview/scenario-editor-reset-preview.html')); await ready();
   await check('production-workshop-bridge-and-source-reading', async () => {
     assert.equal(await js(`typeof require==='undefined'&&tianming.isDesktop===true`), true);
     const r = await js(`TM.AuthoringAgent.dispatchTool({},'listSource',{filter:'office'})`); assert(r.ok && r.files.length > 0);
   });
+  // At <=1100px the initially open Guoshi is deliberately a floating panel.
+  // Close it via its real button before operating the folio underneath, just
+  // as a user must; do not strip classes or force clicks through the panel.
+  await click('#tm-aa-x');
+  const workspace = await js(`({width:innerWidth,height:innerHeight,agentOpen:document.querySelector('#tm-aa-panel').classList.contains('open'),docked:document.body.classList.contains('je-guoshi-docked')})`);
+  assert(workspace.width<=1100,'narrow desktop fixture');assert.equal(workspace.agentOpen,false);assert.equal(workspace.docked,false);
+  clickObservations.push({workspace});
   await js(`TM_SCENARIO_EDITOR_RESET_APP.applyImportedScenario(${JSON.stringify(fixture)},'隔离层级回归'); TM_SCENARIO_EDITOR_RESET_APP.revealModule('courtInstitutions');`);
   await click('[data-editor-command="office-view"][data-office-view="tree"]');
   await check('office-chart-has-departments-subdepartments-and-seats', async () => {

@@ -86,6 +86,8 @@
         } else messages.push({ role: 'user', content: turn.text || '' });
       }
       else if (turn.role === 'assistant') {
+        // 旧失败会话可能留有空占位；它既不是回复，也不是可回传的工具轮。
+        if (!turn.text && !turn.reasoningContent && !(turn.toolCalls && turn.toolCalls.length)) return;
         var m = { role: 'assistant', content: turn.text || null };
         // 思考模型的工具续轮需要完整 reasoning_content（空串也有字段语义）。
         // 无 tools 的文本兼容请求不回传；其他 provider 的序列化器亦不混用此字段。
@@ -151,10 +153,10 @@
     var cand = data && data.candidates && data.candidates[0];
     var protocol = msg ? 'openai' : (cand ? 'gemini' : (Array.isArray(data && data.content) ? 'anthropic' : 'unknown'));
     var fr = (choice && (choice.finish_reason || choice.stop_reason)) || (cand && cand.finishReason) || (data && data.stop_reason);
-    var allowed = ['stop', 'tool_calls', 'function_call', 'length', 'max_tokens', 'content_filter', 'end_turn', 'tool_use', 'stop_sequence', 'STOP', 'MAX_TOKENS', 'SAFETY'];
+    var allowed = ['stop', 'tool_calls', 'function_call', 'length', 'max_tokens', 'content_filter', 'end_turn', 'tool_use', 'stop_sequence', 'STOP', 'MAX_TOKENS', 'SAFETY', 'insufficient_system_resource', 'aborted'];
     var reasoningChars = typeof parsed.reasoningContent === 'string' ? parsed.reasoningContent.length : 0;
     var textChars = typeof parsed.text === 'string' ? parsed.text.length : 0;
-    var kind = protocol === 'unknown' ? 'unsupported-response' : parsed.truncated ? 'truncated' : parsed.badToolJson ? 'invalid-tool-arguments'
+    var kind = protocol === 'unknown' ? 'unsupported-response' : (fr === 'insufficient_system_resource' || fr === 'aborted') ? 'interrupted' : parsed.truncated ? 'truncated' : parsed.badToolJson ? 'invalid-tool-arguments'
       : (msg && msg.refusal || fr === 'content_filter' || fr === 'SAFETY') ? 'refusal'
       : parsed.toolCalls.length ? 'native-tools' : textChars ? 'text-only' : reasoningChars ? 'reasoning-only' : 'empty';
     return { protocol: protocol, kind: kind, finishReason: allowed.indexOf(fr) >= 0 ? fr : 'unknown',
@@ -365,7 +367,7 @@
     if (kind === 'openai') {
       message.tool_calls = Array.from(tools.keys()).sort(function(a, b) { return a - b; }).map(function(k) {
         var t = tools.get(k);
-        if (finish !== 'length' && finish !== 'max_tokens') { if (!t.function.name) throw _responseError('invalid-tool-name', 'API 工具名称不完整，本轮工具未执行。'); input(t.function.arguments || '{}'); }
+        if (['length', 'max_tokens', 'insufficient_system_resource', 'aborted'].indexOf(finish) < 0) { if (!t.function.name) throw _responseError('invalid-tool-name', 'API 工具名称不完整，本轮工具未执行。'); input(t.function.arguments || '{}'); }
         return t;
       });
       return { choices: [{ message: message, finish_reason: finish }], usage: usage };
@@ -537,8 +539,11 @@
     function _parseResp(data) {
       var parsed = gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data));
       parsed.usage = _reportedUsage(data);
-      if (parsed.truncated || parsed.badToolJson) parsed.toolCalls = []; // 整轮丢弃；由既有 loop 输出预算修复接手，不能执行半轮写入。
       parsed.responseInfo = _responseInfo(data, parsed);
+      parsed.interrupted = parsed.responseInfo.kind === 'interrupted';
+      if (parsed.truncated || parsed.badToolJson || parsed.interrupted) parsed.toolCalls = []; // 整轮丢弃；不得执行截断/中断响应的完整前缀。
+      parsed.responseInfo.toolCalls = parsed.toolCalls.length;
+      parsed.responseInfo.maxTokens = maxTok;
       return parsed;
     }
 
@@ -556,7 +561,7 @@
       return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
         var parsed = _parseResp(data);
         parsed.fallback = true; parsed.responseInfo.format = 'json-compat';
-        if (parsed.truncated || parsed.badToolJson) { parsed.fallback = true; return parsed; }
+        if (parsed.truncated || parsed.badToolJson || parsed.interrupted) { parsed.fallback = true; return parsed; }
         var calls = parsed.toolCalls.length ? parsed.toolCalls : _parseJsonToolCalls(parsed.text);
         if (!parsed.toolCalls.length && calls.length) parsed.responseInfo.kind = 'text-json';
         parsed.toolCalls = calls; parsed.responseInfo.toolCalls = calls.length;
@@ -564,10 +569,10 @@
       });
     }
 
-    var usedTextFallback = !!opts.textToolFallback;
-    return (usedTextFallback ? fallbackTextCall() : _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) }, opts).then(function(data) {
+    var usedTextFallback = !!opts.textToolFallback, choiceRepaired = false;
+    function nativeCall() { return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) }, opts).then(function(data) {
       var parsed = _parseResp(data);
-      if (parsed.truncated || parsed.badToolJson) return parsed;
+      if (parsed.truncated || parsed.badToolJson || parsed.interrupted) return parsed;
       if (parsed.toolCalls.length) return parsed;
       var fromText = _parseJsonToolCalls(parsed.text); // 端点忽略 tools 但吐了 JSON
       if (fromText.length) {
@@ -576,13 +581,21 @@
         return parsed;
       }
       return parsed; // 纯文本无工具 → 交给 loop 判 noToolCalls
-    })).catch(handleFailure);
+    }); }
+    return (usedTextFallback ? fallbackTextCall() : nativeCall()).catch(handleFailure);
     function handleFailure(e) {
       // 玩家停止属于控制流，不做文本兜底、不重试、不改写成“网络抖动”。
       if ((opts.signal && opts.signal.aborted) || (e && e.aborted)) throw _abortError((opts.signal && opts.signal.reason) || (e && e.message));
       // 刀G8 · 超限识别:400+超窗文案 → 不做注定失败的文本兜底(更长)·标 overflow 供 loop 压缩自救
       var _msg0 = String((e && e.message) || '');
       var _ovf0 = !!(e && e.status === 400 && _OVERFLOW_RE.test(_msg0));
+      // 与游戏工具链一致：这个明确的参数拒绝不等于模型不支持 tools。
+      // 只移除 auto；保留工具、历史思考、预算和取消，不关闭 thinking。
+      if (e && e.status === 400 && !anthropic && !gemini && !usedTextFallback && !choiceRepaired
+          && /thinking mode does not support (?:this )?tool_choice/i.test(_msg0)) {
+        choiceRepaired = true; delete body.tool_choice;
+        return nativeCall().catch(handleFailure);
+      }
       if (e && e.status === 400 && !_ovf0 && !usedTextFallback) {
         usedTextFallback = true;
         return fallbackTextCall().catch(handleFailure); // 文本兜底同样保留取消/超窗/重试耗尽语义，且只试一次。

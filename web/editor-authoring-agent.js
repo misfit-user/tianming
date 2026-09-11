@@ -3165,6 +3165,7 @@
     // 方向A · 鲁棒自愈：noToolCalls 先 nudge 再放弃；caller 瞬态错误退避重试
     var noToolNudges = 0, maxNoToolNudges = (opts.maxNoToolNudges != null ? opts.maxNoToolNudges : 2);
     var textToolFallback = !!(resume && resume.textToolFallback);
+    var provenToolFormat = resume && resume.provenToolFormat || '';
     var apiDiagnostics = resume && Array.isArray(resume.apiDiagnostics) ? _agentClone(resume.apiDiagnostics).slice(-4) : [];
     function assistantTurn(resp, text, calls) {
       var turn = { role: 'assistant', text: text, toolCalls: calls };
@@ -3176,18 +3177,22 @@
       var info = apiDiagnostics[apiDiagnostics.length - 1];
       var reasons = { 'reasoning-only': 'API 只返回了思考内容，没有返回正文或工具调用', empty: 'API 返回了空的助手消息',
         'unsupported-response': 'API 返回的消息协议未被当前端点识别，不能将其当作空回复或执行工具',
-        refusal: 'API 返回了拒绝/过滤结果', truncated: 'API 输出仍被截断，已达到本轮自动扩展输出上限',
+        refusal: 'API 返回了拒绝/过滤结果', truncated: 'API 输出仍被截断，已达到本轮自动扩展输出上限', interrupted: 'API 服务中断了生成，未执行本轮工具',
         'invalid-tool-arguments': 'API 返回的工具参数不是有效对象，整批调用未执行',
         'text-only': 'API 返回了文本说明，但没有可执行的工具调用' };
       var detail = info ? '（' + (info.format === 'json-compat' ? 'JSON兼容' : '原生') + '；结束原因 ' + info.finishReason
         + '；正文 ' + info.textChars + ' 字，思考 ' + info.reasoningChars + ' 字）' : '';
+      if (stopReason === 'outputLimit') return (info && reasons[info.kind] || 'API 输出被截断') + detail
+        + '。已停止本轮输出重试，未切换工具协议，也未执行截断内容。已完成草稿保留；可继续处理下一步，不必重做。';
       return (info && reasons[info.kind] || 'API 未返回可执行的工具调用') + detail
-        + '。' + (maxNoToolNudges > 0 && noToolNudges >= maxNoToolNudges ? '兼容尝试已用尽' : '已停止兼容尝试')
+        + '。' + (maxNoToolNudges > 0 && noToolNudges >= maxNoToolNudges ? (textToolFallback ? '兼容尝试已用尽' : '响应重试已用尽') : '已停止响应重试')
         + '，任务未完成。已完成的草稿保留，未自动应用；请将上述响应类型与模型名称一并反馈，或检查中转/模型的工具支持后继续，不必重做已完成部分。';
     }
     var stepRetries = 0, maxStepRetries = (opts.maxStepRetries != null ? opts.maxStepRetries : 2);
     var retryBaseMs = opts.retryBaseMs || 800;
-    var _curMaxTok = 0, _tokBumps = 0;   // 刀H1 · 输出截断自愈:检测到腰斩则输出上限×2重试(≤2次·bump后全程沿用)
+    var _curMaxTok = Math.max(opts.maxTok || 3000, resume && resume.outputMaxTok || 0), _tokBumps = 0;
+    // 自动上限仍为16000；调用方已有更大显式预算时不得反向缩小。续做保留预算。
+    var _outputCeiling = Math.max(16000, _curMaxTok);
     var _budgetWarned = 0;   // 工具D · 预算反馈：分级提醒收尾(70%/90%)·避免硬撞 tokenBudget 半途而废
     // 刀G3(CC「File unchanged since last read」对照) · 重复读去重 + 纯勘察防打转
     var _seenReads = {};        // key=name|JSON(input) → {iter, writes}(写世代号=新鲜度)
@@ -3258,7 +3263,7 @@
     function checkpoint() {
       return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
-        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, apiDiagnostics: _agentClone(apiDiagnostics) });
+        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, provenToolFormat: provenToolFormat, outputMaxTok: _curMaxTok, apiDiagnostics: _agentClone(apiDiagnostics) });
     }
 
     function record(name, input, result) {
@@ -3292,18 +3297,22 @@
           if (resp && resp.fallback) textToolFallback = true;
           // 刀H1(CC max_tokens 动态调整对照) · 输出截断自愈:被 maxTok 腰斩(没调成工具/入参 JSON 斩断)
           //   → 输出上限×2重试本轮。斩断的响应整体弃置(完好的调用也未执行·重试无双跑)。
-          if (resp && resp.truncated && (!calls.length || resp.badToolJson) && _tokBumps < 2 && !control.aborted) {
+          if (resp && resp.truncated && !control.aborted) {
+            if (_tokBumps >= 2 || _curMaxTok >= _outputCeiling) { stopReason = 'outputLimit'; _finishSummary = noToolSummary(); return; }
             _tokBumps++;
-            _curMaxTok = Math.min(16000, (_curMaxTok || opts.maxTok || 3000) * 2);
+            _curMaxTok = _tokBumps === 2 ? _outputCeiling : Math.min(_outputCeiling, _curMaxTok * 2);
+            if (_tokBumps === 1) conversation.push({ role: 'user', text: '上一响应因输出长度限制未完成，整轮未执行。保留全部原需求和既有草稿，本轮只完成下一步必要工具操作；大型改动分批继续，不要一次重写全案或重复已完成项。仍需逐项验证并如实收尾。' });
             if (typeof opts.onText === 'function') { try { opts.onText('（输出被截断·提升输出上限至 ' + _curMaxTok + ' 重试本轮…）', iterations); } catch (eB) {} }
             iterations--;
             return step();
           }
           // 刀G1 · 不再零星累加(响应文本随消息入对话后由 _reqTokens 全量重估)
-          if (text && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
+          if (text && !(resp && resp.interrupted) && typeof opts.onText === 'function') { try { opts.onText(text, iterations); } catch (e) {} }
           if (control.aborted) { conversation.push(assistantTurn(resp, text, [])); stopReason = 'aborted'; return; }   // 刀E · API 返回后即停，不再施改
           if (!calls.length) {
-            conversation.push(assistantTurn(resp, text, []));
+            var responseKind = resp && resp.responseInfo && resp.responseInfo.kind;
+            // 空/服务中断不是模型正文，不把占位或半轮内容加入下一次会话。
+            if (responseKind !== 'interrupted' && (text || resp && resp.reasoningContent)) conversation.push(assistantTurn(resp, text, []));
             // 刀G9 · 卡壳时若有用户插话:新指示本身就是推动力·直接注入重启(不耗 nudge 配额)
             if (_drainSteers()) return step();
             // 韧性：没调工具不直接放弃，先 nudge 推一把（卡住 → 重新发起）
@@ -3312,16 +3321,20 @@
               // 刀G7 · nudge 感知任务表:有未完项就点名(比泛泛"继续"更有的放矢)
               var _pNt = control.todoState.list.filter(function (t) { return t.status !== 'completed'; });
               var _pNtTxt = _pNt.length ? '任务表尚有 ' + _pNt.length + ' 项未完成（如「' + _pNt[0].content + '」）。' : '';
-              textToolFallback = true;
+              var retrySameProtocol = responseKind === 'empty' || responseKind === 'reasoning-only' || responseKind === 'interrupted';
+              if (retrySameProtocol) {
+                if (provenToolFormat) textToolFallback = provenToolFormat === 'json-compat';
+              } else textToolFallback = true;
               var terminal = explainOnly ? 'submitExplanation' : (qaOnly ? 'submitAnswer' : (reviewOnly ? 'submitReview' : (planOnly ? 'proposePlan' : 'finish')));
-              conversation.push({ role: 'user', text: '你刚才没有调用任何工具（或工具参数格式无效）。' + _pNtTxt + '本轮改用 JSON 工具兼容格式，只返回完整 {"tool_calls":[{"name":"工具名","input":{}}]} 信封，不要说明或示例。仅使用本轮可用工具，遵守其参数契约；已核验的改动不要重做。' + (readOnlyRun ? '当前为只读模式，不得修改剧本。' : '未完成部分继续调用已授权工具处理。') + '完成后调用 ' + terminal + ' 如实收尾；不得将未完成说成已完成。' });
-              if (typeof opts.onText === 'function') { try { opts.onText('（未收到有效工具调用，尝试 JSON 兼容格式 ' + noToolNudges + '/' + maxNoToolNudges + '；已完成草稿保留…）', iterations); } catch (e) {} }
-              return step();
+              conversation.push({ role: 'user', text: '上一响应未形成可执行工具，未执行本轮操作。' + _pNtTxt + (textToolFallback ? '本轮使用 JSON 工具兼容格式，只返回完整 {"tool_calls":[{"name":"工具名","input":{}}]} 信封，不要说明或示例。' : '本轮继续使用原生工具协议，只处理下一步必要操作，不要重复规划或重写全案。') + '仅使用本轮可用工具，遵守其参数契约；已核验的改动不要重做。' + (readOnlyRun ? '当前为只读模式，不得修改剧本。' : '未完成部分继续调用已授权工具处理。') + '完成后调用 ' + terminal + ' 如实收尾；不得将未完成说成已完成。' });
+              if (typeof opts.onText === 'function') { try { opts.onText('（未收到有效工具调用，' + (textToolFallback ? '尝试 JSON 兼容格式 ' : '重试原生工具协议 ') + noToolNudges + '/' + maxNoToolNudges + '；已完成草稿保留…）', iterations); } catch (e) {} }
+              return retrySameProtocol ? _delay(retryBaseMs * Math.pow(2, noToolNudges - 1), control.signal).then(step) : step();
             }
             stopReason = 'noToolCalls';
             _finishSummary = noToolSummary();
             return;
           }
+          provenToolFormat = textToolFallback ? 'json-compat' : 'native';
           var toolResults = [];
           var finishAccepted = false;
           var roundProgress = false;

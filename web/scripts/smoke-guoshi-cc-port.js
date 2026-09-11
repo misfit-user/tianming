@@ -216,7 +216,8 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
       return Promise.resolve({ text: '', toolCalls: [{ id: 'nf', name: 'finish', input: { summary: '完' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000
   });
-  var nNudge = rN.conversation.filter(function (m) { return m.role === 'user' && /没有调用任何工具/.test(m.text || ''); });
+  // 断言未完成事项确实进入后续请求，不依赖恢复提示的开头措辞。
+  var nNudge = rN.conversation.filter(function (m) { return m.role === 'user' && /任务表尚有/.test(m.text || '') && /本轮可用工具/.test(m.text || ''); });
   ok(nNudge.length === 1 && nNudge[0].text.indexOf('补齐某将') >= 0, 'G7 noToolCalls nudge 点名未完 todo(有的放矢)');
   ok(rN.finished, 'G7 nudge 后正常收尾');
 
@@ -333,7 +334,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
       return Promise.resolve({ text: '', toolCalls: [{ id: 'sdf', name: 'finish', input: { summary: '完' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000
   });
-  ok(!rS3.conversation.some(function (m) { return m.role === 'user' && /没有调用任何工具/.test(m.text || ''); }), 'G9 卡壳时插话顶替泛泛 nudge(不耗配额)');
+  ok(!rS3.conversation.some(function (m) { return m.role === 'user' && /本轮可用工具/.test(m.text || ''); }), 'G9 卡壳时插话顶替泛泛 nudge(不耗配额)');
   ok(rS3.finished && rS3.draft.name === '丁', 'G9 卡壳被插话重新推动·照办收尾');
   // 9e: UI 接线源契约(编辑器输入框运行中回车 → onSteer·运行态占位提示插话)
   var uiSrc = require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-icons.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-render.js'), 'utf8');
@@ -360,10 +361,10 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
       return Promise.resolve({ text: '', toolCalls: [{ id: 'hf', name: 'finish', input: { summary: '完' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000
   });
-  ok(seenTok[1] === 6000 && seenTok[2] === 12000 && seenTok[3] === 12000, 'H1 截断 → 输出上限 6000→12000 且 bump 后全程沿用(实测 ' + seenTok.slice(1).join('/') + ')');
+  ok(seenTok[1] === 6000 && seenTok[2] === 16000 && seenTok[3] === 16000, 'H1 两次扩展到既有16000上限且全程沿用(实测 ' + seenTok.slice(1).join('/') + ')');
   ok(rH.finished && rH.draft.name === '乙', 'H1 斩断响应整体弃置(「坏」未落地)·重试后正常改动落地');
   ok(rH.iterations === 2, 'H1 截断重试不计迭代(实 2 轮:改动+finish)');
-  // 3: bump 耗尽(2次)后不再无限重试·走正常 noToolCalls 路径收场
+  // 3: 截断不证明工具不受支持；两次扩展耗尽后停止，保留恢复点，不自动换JSON假装收尾。
   var hx = 0;
   var rH2 = await AA.runAuthoringLoop(AA.makeDraft({ name: '甲' }), '永远截断', {
     caller: function () {
@@ -372,7 +373,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
       return Promise.resolve({ text: '', toolCalls: [{ id: 'hxf', name: 'finish', input: { summary: '完' } }] });
     }, conventions: '', blockingChecks: [], maxTokens: 5000000, maxNoToolNudges: 1
   });
-  ok(rH2.finished && hx === 4, 'H1 bump 耗尽后第3次截断按 noToolCalls 处理(nudge→finish)·不无限重试');
+  ok(!rH2.finished && hx === 3 && rH2.stopReason === 'outputLimit' && rH2.resumeState, 'H1 第3次截断到限即停，保留恢复点且不执行第4次假成功');
 
   // ───────── H3 · 会话线程持久化/恢复(CC session resume 对照) ─────────
   console.log('— H3 会话恢复 —');

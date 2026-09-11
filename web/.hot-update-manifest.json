@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-11T05:01:47.221Z",
+  "generatedAt": "2026-09-11T05:57:57.548Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2011,8 +2011,8 @@
     },
     {
       "path": "editor-authoring-agent-provider.js",
-      "sha256": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256",
-      "size": 40826
+      "sha256": "0ba376869abe437a5b1449dfcb57c8501b420d8828e77fc49bcdb1163527e387",
+      "size": 41986
     },
     {
       "path": "editor-authoring-agent-ui-icons.js",
@@ -2026,13 +2026,13 @@
     },
     {
       "path": "editor-authoring-agent-ui.js",
-      "sha256": "cc2edd6936afbab007a654d86b8b08caee255b91e52484893127f155199adf53",
-      "size": 220364
+      "sha256": "fb0f9b7b926815b43b68a43e997d202d87bd322980b8443dd5d87ae3a30aa500",
+      "size": 220402
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e",
-      "size": 305178
+      "sha256": "3c8bba91ee932e08ee0fdc67d823306d3efd97ae9d9bf4bbdaa51eef3cee4c3a",
+      "size": 307197
     },
     {
       "path": "editor-core.js",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f",
-      "size": 184717
+      "sha256": "dfef7311d47b95276034891536f74a5aa6b43d1f9fdd5e099637718a8cdd648f",
+      "size": 184711
     },
     {
       "path": "editor.js",
@@ -3246,8 +3246,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46",
-      "size": 32355
+      "sha256": "f9521e7e105daca7fa18b7eb7deeccc8c4b885209e976f0d3b730194750fe246",
+      "size": 32349
     },
     {
       "path": "preview/scenario-editor-reset-style.css",

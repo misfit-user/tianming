@@ -141,6 +141,7 @@ module.exports = async function({ win, root, check }) {
     assert.equal(r.rounds, 3); assert.equal(r.status, 'blocked'); assert.equal(r.live, 100); assert.equal(r.draft, 100);
     assert.match(r.summary, /只返回了思考内容/); assert.match(r.summary, /正文 0 字/); assert(!r.summary.includes('SYNTHETIC_OPAQUE_THOUGHT'));
   });
+  await require('./authoring-response-recovery-cases.cjs')({ win, js, until, click, test });
   fs.writeFileSync(path.join(dir, 'authoring-continuation-results.json'), JSON.stringify({ results, pass: results.filter(r => r.status === 'PASS').length, fail: results.filter(r => r.status === 'FAIL').length }, null, 2));
   const failures = results.filter(r => r.status === 'FAIL'); if (failures.length) throw Error(failures.map(r => r.name + '\n' + r.error).join('\n'));
 };

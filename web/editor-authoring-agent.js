@@ -2029,6 +2029,13 @@
     var relevant = selectToolPacks(request, {worldKind:'fictional'});
     return tools.filter(function(t) { return core[t.name] || (t.name !== 'checkHistory' && _toolPack(t.name) !== 'core' && relevant.indexOf(_toolPack(t.name)) >= 0); });
   }
+  function _runTools(tools, request, opts, readOnly, worldKind) {
+    // 编辑默认提供完整目录，不再要求模型猜测“本轮隐藏了什么”再申请。
+    // 明确的 caller 子集、工具包及只读模式仍是授权边界；不是删除权限检查。
+    if (!readOnly && opts.toolPacks == null) return tools.slice();
+    var selected = _filterToolsByPacks(tools, request, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    return readOnly ? selected : _initialStageTools(selected, request, opts);
+  }
   var AUTHORING_TOOL_SPECS = AGENT_TOOLS.map(function(t) {
     var effect = t.name === 'generateImage' ? 'external' : (_MUT_TOOLS[t.name] ? 'draft-write' : ((t.name === 'saveMemory' || t.name === 'saveSkill') ? 'memory-write' : (_READ_TOOLS[t.name] ? 'read' : 'control')));
     return Object.assign({}, t, {
@@ -2917,8 +2924,7 @@
     var tools = planOnly ? _planTools() : (opts.tools || AGENT_TOOLS);
     var conventions = (opts.conventions != null ? opts.conventions : loadConventions()) || '';   // 方向B · 剧本约定
     var system = planOnly ? _buildPlanSystemPrompt(conventions) : _buildSystemPrompt(conventions);
-    tools = _filterToolsByPacks(tools, userRequest, { worldKind: (draft && draft.worldKind) === 'fictional' ? 'fictional' : 'historical', toolPacks: opts.toolPacks });
-    if (!planOnly) tools = _initialStageTools(tools, userRequest, opts);
+    tools = _runTools(tools, userRequest, opts, planOnly, (draft && draft.worldKind) === 'fictional' ? 'fictional' : 'historical');
     var surfaces = _getFieldSurfaces(opts);
     var continuing = !!(Array.isArray(opts.priorConversation) && opts.priorConversation.length);
     var editorContext = opts.editorContext || '';
@@ -3076,10 +3082,10 @@
     var worldKind = (opts.worldKind || (draft && draft.worldKind) || 'historical') === 'fictional' ? 'fictional' : 'historical';
     if (planOnly || reviewOnly || qaOnly || explainOnly) tools=tools.concat(AGENT_TOOLS.filter(function(t){return t.name==='requestTools';}));
     var allModeTools = tools.slice();
-    tools = _filterToolsByPacks(tools, userRequest, { worldKind: worldKind, toolPacks: opts.toolPacks });
+    var readOnlyMode = planOnly || reviewOnly || qaOnly || explainOnly;
+    tools = _runTools(tools, userRequest, opts, readOnlyMode, worldKind);
     var selectableTools = opts.tools || opts.toolPacks === false || Array.isArray(opts.toolPacks) ? tools.slice() : allModeTools;
-    if (!(planOnly || reviewOnly || qaOnly || explainOnly)) tools = _initialStageTools(tools, userRequest, opts);
-    if (resume && Array.isArray(resume.selectedTools)) tools = selectableTools.filter(function(t) { return resume.selectedTools.indexOf(t.name) >= 0; });
+    if (resume && Array.isArray(resume.selectedTools) && (readOnlyMode || opts.toolPacks != null)) tools = selectableTools.filter(function(t) { return resume.selectedTools.indexOf(t.name) >= 0; });
     // 工具清单也是本次执行授权，不信任模型会自觉遵守只读/工具包边界。
     var executableTools = Object.create(null), readOnlyRun = planOnly || reviewOnly || qaOnly || explainOnly;
     tools.forEach(function(t) { if (t && t.name) executableTools[t.name] = true; });
@@ -3165,6 +3171,7 @@
     // 方向A · 鲁棒自愈：noToolCalls 先 nudge 再放弃；caller 瞬态错误退避重试
     var noToolNudges = 0, maxNoToolNudges = (opts.maxNoToolNudges != null ? opts.maxNoToolNudges : 2);
     var textToolFallback = !!(resume && resume.textToolFallback);
+    var explicitStream = !!(resume && resume.explicitStream); // 只记本任务已协商的传输方式，不写 API 设置。
     var provenToolFormat = resume && resume.provenToolFormat || '';
     var apiDiagnostics = resume && Array.isArray(resume.apiDiagnostics) ? _agentClone(resume.apiDiagnostics).slice(-4) : [];
     function assistantTurn(resp, text, calls) {
@@ -3263,7 +3270,7 @@
     function checkpoint() {
       return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
-        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, provenToolFormat: provenToolFormat, outputMaxTok: _curMaxTok, apiDiagnostics: _agentClone(apiDiagnostics) });
+        gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, explicitStream: explicitStream, provenToolFormat: provenToolFormat, outputMaxTok: _curMaxTok, apiDiagnostics: _agentClone(apiDiagnostics) });
     }
 
     function record(name, input, result) {
@@ -3288,13 +3295,14 @@
       if (tokensUsed >= maxTokens) { stopReason = 'tokenBudget'; return Promise.resolve(); }   // 刀G8 · 硬停挪到压缩之后(先自救再认命)
       iterations++;
       var issuedTools = Object.assign({},executableTools);
-      return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system, signal: control.signal, textToolFallback: textToolFallback }))
+      return Promise.resolve(caller(conversation, tools, { maxTok: _curMaxTok || opts.maxTok, cfg: opts.cfg, system: system, signal: control.signal, textToolFallback: textToolFallback, explicitStream: explicitStream }))
         .then(function(resp) {
           stepRetries = 0;   // 成功一轮即重置：每个停顿点各容忍 maxStepRetries 次抖动
           var text = (resp && resp.text) || '';
           var calls = (resp && resp.toolCalls) || [];
           if (resp && resp.responseInfo) { apiDiagnostics.push(_agentClone(resp.responseInfo)); if (apiDiagnostics.length > 4) apiDiagnostics.shift(); }
           if (resp && resp.fallback) textToolFallback = true;
+          if (resp && resp.explicitStream === true) explicitStream = true;
           // 刀H1(CC max_tokens 动态调整对照) · 输出截断自愈:被 maxTok 腰斩(没调成工具/入参 JSON 斩断)
           //   → 输出上限×2重试本轮。斩断的响应整体弃置(完好的调用也未执行·重试无双跑)。
           if (resp && resp.truncated && !control.aborted) {
@@ -3340,7 +3348,7 @@
           var roundProgress = false;
           var _ci = 0;
           function _procCall() {
-            if (_ci >= calls.length || finishAccepted) return Promise.resolve();
+            if (_ci >= calls.length || finishAccepted || control.aborted) return Promise.resolve();
             var c = calls[_ci++];
             return Promise.resolve().then(function () {
               var modeDeny = toolExecutionDenied(c.name, issuedTools);

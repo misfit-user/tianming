@@ -136,5 +136,32 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
     const r = await aa.runAuthoringLoop(aa.makeDraft({ name: '原' }), '核验', { ...opts, onText: () => aa.abort() });
     assert.equal(n, 1); assert.equal(r.stopReason, 'aborted'); assert.equal(r.completion.status, 'cancelled');
   });
+  await test('default edit exposes every registered tool up front and listGaps does not need requestTools', async () => {
+    let packet;const f=fixture(async(_,init)=>{packet=JSON.parse(init.body);return reply([call('listGaps',{}),done]);});
+    const d=f.aa.makeDraft({name:'原'}),r=await f.aa.runAuthoringLoop(d,'核验现状',opts);
+    assert.deepEqual(packet.tools.map(t=>t.function.name).sort(),Array.from(f.aa.AGENT_TOOLS,t=>t.name).sort());
+    assert(r.finished);assert.equal(r.transcript[0].name,'listGaps');assert.notEqual(r.transcript[0].result.errorCode,'tool-not-authorized');assert(!r.transcript.some(t=>t.name==='requestTools'));
+  });
+  await test('run estimate includes the same full catalog and an explicit editing subset remains enforced', async () => {
+    const f=fixture(async()=>reply([done])),d=f.aa.makeDraft({name:'原'});
+    const full=f.aa.estimateRun(d,'核验现状',{conventions:''}),explicit=f.aa.estimateRun(d,'核验现状',{conventions:'',toolPacks:false});assert.equal(full.perCallInput,explicit.perCallInput);
+    const subset=f.aa.AGENT_TOOLS.filter(t=>['getField','finish'].includes(t.name));
+    const g=fixture(async()=>reply([call('applyEdit',{path:'name',value:'不允许'}),done]));
+    const guarded=await g.aa.runAuthoringLoop(d,'修改',{...opts,tools:subset});assert.equal(d.name,'原');assert.equal(guarded.transcript[0].result.errorCode,'tool-not-authorized');
+  });
+  await test('stopping after an executed tool prevents remaining calls; resume keeps real HTTP history paired', async () => {
+    let n=0,aa;const packets=[],f=fixture(async(_,init)=>{packets.push(JSON.parse(init.body));return ++n===1?reply([call('applyPush',{path:'labels',value:{name:'once'}},'first'),call('applyPush',{path:'labels',value:{name:'late'}},'late')],'tool_calls','',thought):reply([done]);});aa=f.aa;
+    const live={name:'原',labels:[]},d=aa.makeDraft(live),first=await aa.runAuthoringLoop(d,'先添加再检查',{...opts,onStep:s=>{if(s.name==='applyPush')aa.abort();}});
+    assert.equal(first.completion.status,'cancelled');assert.equal(d.labels.length,1,'remaining call must not execute after Stop');assert.equal(d.labels[0].name,'once');assert.equal(live.labels.length,0);assert(first.resumeState);
+    const next=await aa.runAuthoringLoop(d,'只继续检查',{...opts,resumeState:first.resumeState});assert(next.finished);assert.equal(n,2);assert.equal(d.labels.length,1);
+    for(let i=0;i<packets[1].messages.length;i++){const m=packets[1].messages[i];if(!m.tool_calls)continue;assert.equal(m.reasoning_content,thought);assert.deepEqual(m.tool_calls.map(c=>c.id),packets[1].messages.slice(i+1,i+1+m.tool_calls.length).map(m=>m.tool_call_id));}
+  });
+  await test('Stop cancels an in-flight native continuation; a fresh signal resumes without empty history or replay', async () => {
+    let n=0,ready,abortObserved=false;const waiting=new Promise(r=>{ready=r;}),packets=[];
+    const f=fixture(async(_,init)=>{const b=JSON.parse(init.body);packets.push(b);n++;if(n===1)return reply([call('applyPush',{path:'labels',value:{name:'once'}})],'tool_calls','',thought);if(n===2){ready();return new Promise((resolve,reject)=>init.signal.addEventListener('abort',()=>{abortObserved=true;const e=Error('player-stop');e.name='AbortError';reject(e);},{once:true}));}assert(!init.signal.aborted);assert(!b.messages.some(m=>m.role==='assistant'&&!m.content&&!m.reasoning_content&&!m.tool_calls));return reply([done]);});
+    const live={name:'原',labels:[]},d=f.aa.makeDraft(live),pending=f.aa.runAuthoringLoop(d,'添加后核对',opts);await waiting;f.aa.abort();const stopped=await pending;
+    assert(abortObserved);assert.equal(stopped.completion.status,'cancelled');assert(stopped.resumeState);assert.equal(n,2);assert.equal(d.labels.length,1);assert.equal(live.labels.length,0);
+    const resumed=await f.aa.runAuthoringLoop(d,'继续核验',{...opts,resumeState:stopped.resumeState});assert(resumed.finished);assert.equal(n,3);assert.equal(d.labels.length,1);assert.equal(packets[2].messages.find(m=>m.tool_calls).reasoning_content,thought);
+  });
   console.log(JSON.stringify({ pass, fail, skip: 0, waived: 0, sourceRef: ref || 'worktree' })); process.exitCode = fail ? 1 : 0;
 })().catch(e => { console.error(e.stack); process.exitCode = 1; });

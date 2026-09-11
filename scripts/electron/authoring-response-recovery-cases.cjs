@@ -12,7 +12,15 @@ module.exports = async function({ win, js, until, click, test }) {
       if(names.length===1&&names[0]==='setTitle')return out([tc('setTitle',{title:'隔离响应恢复'})]);
       if(names.length===1&&names[0]==='selectMemories')return out([tc('selectMemories',{names:[]})]);
       p.round++;p.packets.push({native:!!b.tools,budget:b.max_tokens,choice:b.tool_choice,emptyAssistant:b.messages.some(m=>m.role==='assistant'&&!m.content&&!m.reasoning_content&&!m.tool_calls)});
+      if(p.mode==='cancel-native'&&p.round===2){p.waiting=true;return new Promise((resolve,reject)=>init.signal.addEventListener('abort',()=>{p.cancelled=true;const e=Error('player-stop');e.name='AbortError';reject(e);},{once:true}));}
+      if(p.mode==='cancel-native'&&p.phase==='ready')p.paired=b.messages.every((m,i)=>!m.tool_calls||m.tool_calls.every((c,j)=>b.messages[i+1+j].tool_call_id===c.id));
       const finish=tc('finish',{summary:'完成本阶段核验'}),edit=tc('applyPush',{path:'labels',value:{name:'once',text:'已生成草稿'}});
+      if(p.mode==='usage-only'){
+        p.fullCatalog=p.fullCatalog!==false&&names.includes('listGaps')&&names.includes('preflight')&&names.includes('multiEdit');
+        if(!b.stream)return new Response('data: '+JSON.stringify({choices:[],usage:{total_tokens:3}})+'\\n\\ndata: [DONE]\\n\\n');
+        p.streamResults=(p.streamResults||0)+1;
+        return out(p.streamResults===1?[tc('listGaps',{}),edit]:[finish]);
+      }
       if(p.mode==='choice'&&b.tool_choice!==undefined)return new Response('Thinking mode does not support this tool_choice',{status:400});
       if(p.mode==='choice')return out([edit,finish]);
       if(p.round===1)return out([edit],'tool_calls','','SYNTHETIC_PRIVATE_REASONING');
@@ -24,11 +32,11 @@ module.exports = async function({ win, js, until, click, test }) {
       return out([],null);
     };
   })()`);
-  async function fresh(mode) {
+  async function fresh(mode, waitForCompletion=true) {
     await click(`document.getElementById('tm-aa-newchat')`);
     await js(`(()=>{TM_SCENARIO_EDITOR_RESET_APP.applyImportedScenario({id:'response-'+${JSON.stringify(mode)},name:'响应恢复隔离案卷',labels:[],characters:[],factions:[],customPrompt:'保留手工输入'},'响应恢复隔离案卷');__recoveryRelay={mode:${JSON.stringify(mode)},round:0,packets:[]};TM_AuthoringAgentUI.permMode('review');TM_AuthoringAgentUI._ui.els.req.value='增加 once 条目后检查并收尾，不要重复新增';})()`);
     await click(`TM_AuthoringAgentUI._ui.els.go`);
-    await until(`!TM_AuthoringAgentUI._ui.running && __recoveryRelay.round>0`);
+    if(waitForCompletion)await until(`!TM_AuthoringAgentUI._ui.running && __recoveryRelay.round>0`);
   }
   const read = () => js(`(()=>{const u=TM_AuthoringAgentUI._ui;return{packets:__recoveryRelay.packets,round:__recoveryRelay.round,status:u._completion.status,recovery:!!u._recovery,live:u.adapter.getScenario(),draft:u.draft,summary:u.els.summary.textContent};})()`);
   await test('real UI transient empty response returns to native tools and only approval saves the single append', async () => {
@@ -56,5 +64,20 @@ module.exports = async function({ win, js, until, click, test }) {
   });
   await test('real UI repairs explicit auto rejection without dropping tools or changing thinking mode', async () => {
     await fresh('choice'); const r=await read(); assert.equal(r.round,2); assert(r.packets.every(p=>p.native)); assert.equal(r.packets[1].choice,undefined); assert.equal(r.status,'completed'); assert.equal(r.live.labels.length,0); assert.equal(r.draft.labels.length,1);
+  });
+  await test('real UI full catalog and usage-only relay repair complete editing, approval and saved readback',async()=>{
+    await fresh('usage-only');const r=await read();assert.equal(r.round,3,'one negotiation, then reuse the proven stream transport');assert.equal(r.status,'completed');assert.equal(r.draft.labels.length,1);assert.equal(r.live.labels.length,0);
+    assert.equal(await js(`__recoveryRelay.fullCatalog===true && __recoveryRelay.streamResults===2 && !TM_AuthoringAgentUI._ui.els.log.textContent.includes('tool-not-authorized')`),true);
+    await click(`TM_AuthoringAgentUI._ui.els.apply`);
+    const saved=await js(`(async()=>{const a=TM_SCENARIO_EDITOR_RESET_APP,p=await a.saveProjectSnapshot('空流修复隔离案卷');await a.loadProjectSnapshot(p.id);return a.state.scenario;})()`);
+    assert.deepEqual(saved.labels,[{name:'once',text:'已生成草稿'}]);assert.equal(saved.customPrompt,'保留手工输入');
+  });
+  await test('real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once',async()=>{
+    await fresh('cancel-native',false);await until(`__recoveryRelay.waiting`);await click(`TM_AuthoringAgentUI._ui.els.go`);
+    await until(`!TM_AuthoringAgentUI._ui.running`);const first=await read();assert.equal(first.status,'cancelled');assert.equal(first.draft.labels.length,1);assert.equal(first.live.labels.length,0);assert(first.recovery);assert.equal(await js(`__recoveryRelay.cancelled`),true);
+    await js(`__recoveryRelay.phase='ready'`);await click(`TM_AuthoringAgentUI._ui.els.summary.querySelector('.ec-retry')`);await until(`!TM_AuthoringAgentUI._ui.running && __recoveryRelay.round>2`);
+    const r=await read();assert.equal(r.status,'completed');assert.equal(r.round,3);assert(r.packets.every(p=>p.native&&!p.emptyAssistant));assert.equal(await js(`__recoveryRelay.paired`),true);assert.equal(r.draft.labels.length,1);assert.equal(r.live.labels.length,0);
+    await click(`TM_AuthoringAgentUI._ui.els.apply`);
+    const saved=await js(`(async()=>{const a=TM_SCENARIO_EDITOR_RESET_APP,p=await a.saveProjectSnapshot('中断续做隔离案卷');await a.loadProjectSnapshot(p.id);return a.state.scenario;})()`);assert.equal(saved.labels.length,1);assert.equal(saved.customPrompt,'保留手工输入');
   });
 };

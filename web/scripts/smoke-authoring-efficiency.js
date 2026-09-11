@@ -29,9 +29,9 @@ let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log
   const conv=[{role:'user',text:'x'.repeat(8000),userInstruction:'x'.repeat(8000)},...Array.from({length:7},()=>({role:'assistant',text:'进度',toolCalls:[]}))],before=JSON.stringify(conv);
   const r=await aa.compactConversation(conv,{name:'原'},{userKeep:6000,cfg:{url:'https://controlled.invalid',key:'test-only',model:'m'}});assert.equal(r.ok,false);assert.equal(r.reason,'instruction-retention-limit');assert.equal(calls,0);assert.equal(JSON.stringify(conv),before);
  });
- await test('staged tools reduce first request and explicitly expand without executing same-response unoffered calls',async()=>{
+ await test('explicit staged tools reduce first request and expand without executing same-response unoffered calls',async()=>{
   const{aa}=fixture(),d={name:'原',labels:[]};let n=0,initial;
-  const r=await aa.runAuthoringLoop(d,'修改名称',{noMemoryRecall:true,conventions:'',maxTokens:1000000,caller:(c,t)=>{n++;if(n===1){initial=t.map(x=>x.name);return reply(call('requestTools',{names:['multiEdit']}),call('multiEdit',{edits:[{path:'name',value:'越过本轮'}]}));}if(n===2){assert(t.some(x=>x.name==='multiEdit'));assert.equal(d.name,'原');return reply(call('multiEdit',{edits:[{path:'name',value:'新'}]}));}return reply(finish);}});
+  const r=await aa.runAuthoringLoop(d,'修改名称',{noMemoryRecall:true,conventions:'',toolPacks:true,maxTokens:1000000,caller:(c,t)=>{n++;if(n===1){initial=t.map(x=>x.name);return reply(call('requestTools',{names:['multiEdit']}),call('multiEdit',{edits:[{path:'name',value:'越过本轮'}]}));}if(n===2){assert(t.some(x=>x.name==='multiEdit'));assert.equal(d.name,'原');return reply(call('multiEdit',{edits:[{path:'name',value:'新'}]}));}return reply(finish);}});
   assert(initial.length<24);assert(!initial.includes('multiEdit'));assert(r.transcript.some(t=>t.name==='multiEdit'&&t.result.errorCode==='tool-not-authorized'));assert(r.finished);assert.equal(d.name,'新');
   const ro=await aa.runAuthoringLoop(d,'只读',{...opts,planOnly:true,caller:()=>reply(call('requestTools',{names:['applyEdit']}),call('proposePlan',{steps:['请玩家批准']}))});assert.equal(d.name,'新');assert(ro.transcript[0].result.ok===false);
  });

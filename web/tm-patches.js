@@ -652,7 +652,7 @@ openSettings=function(){
     // 2026-07-10 \u65B0\u624B\u6307\u5F15\uFF1A\u5199\u7ED9\u5B8C\u5168\u6CA1\u63A5\u89E6\u8FC7 AI / API \u7684\u73A9\u5BB6\u2014\u2014\u5148\u8BB2\u53BB\u54EA\u5F04\u8D26\u53F7\uFF0C\u518D\u9010\u680F\u8BB2\u600E\u4E48\u586B
     '<div style="font-size:0.75rem;color:var(--txt-d);line-height:1.65;margin:-0.2rem 0 0.55rem;">\u6E38\u620F\u5267\u60C5\u7531 AI \u5927\u6A21\u578B\u63A8\u6F14\uFF0C\u9700\u81EA\u5907\u4E00\u4E2A AI \u63A5\u53E3\u8D26\u53F7\uFF08\u6E38\u620F\u672C\u8EAB\u4E0D\u542B AI \u670D\u52A1\uFF09\u3002\u4ECE\u6CA1\u63A5\u89E6\u8FC7\uFF1F\u7167\u4E09\u6B65\u8D70\uFF1A<b>\u2460 \u6CE8\u518C</b>\u2014\u2014\u6311\u4E00\u5BB6 AI \u670D\u52A1\u5546\u5B98\u7F51\u6CE8\u518C\u8D26\u53F7\uFF08\u5982 DeepSeek\u3001OpenAI\uFF0C\u6216\u4EFB\u4E00 OpenAI \u517C\u5BB9\u4E2D\u8F6C\u7AD9\uFF09\uFF1B<b>\u2461 \u62FF\u5BC6\u94A5</b>\u2014\u2014\u5728\u5176\u5B98\u7F51\u300CAPI Keys\u300D\u9875\u521B\u5EFA\u4E00\u4E2A\u5BC6\u94A5\uFF0C\u5E76\u786E\u4FDD\u8D26\u6237\u6709\u5C11\u91CF\u4F59\u989D\uFF1B<b>\u2462 \u56DE\u6765\u586B</b>\u2014\u2014\u5728\u4E0B\u9762\u300C\u670D\u52A1\u5546\u300D\u91CC\u9009\u4E2D\u4F60\u6CE8\u518C\u7684\u90A3\u5BB6\uFF0C\u5730\u5740\u4F1A\u81EA\u52A8\u586B\u597D\uFF0CModel_ID \u548C Key \u81EA\u5DF1\u586B\u4E0A\uFF0C\u70B9\u300C\u6D4B\u8BD5\u8FDE\u63A5\u300D\u9A8C\u8BC1\uFF0C\u518D\u70B9\u300C\u4FDD\u5B58\u300D\u3002</div>'+
     "<div class=\"rw\"><div class=\"fd\"><label>\u670D\u52A1\u5546\uFF08\u9009\u4E00\u5BB6\u81EA\u52A8\u586B\u5730\u5740\uFF09</label><select id=\"s-prov\" onchange=\"sProvPreset(this.value)\"><option value=\"\">（请选择服务商）</option>"+_sProvOptions()+"</select></div><div class=\"fd\"><label>Key\uFF08API \u5BC6\u94A5\uFF0C\u76F8\u5F53\u4E8E\u5BC6\u7801\u00B7\u52FF\u5916\u6CC4\uFF09</label><input type=\"password\" id=\"s-key\" value=\""+(P.ai.key||"")+"\" placeholder=\"\u5728\u670D\u52A1\u5546\u5B98\u7F51\u300CAPI Keys\u300D\u9875\u521B\u5EFA\uFF0C\u591A\u4EE5 sk- \u5F00\u5934\"></div></div>"+
-    "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740\uFF08Base URL\u00B7\u670D\u52A1\u5546\u7684\u63A5\u53E3\u7F51\u5740\uFF09</label><input id=\"s-url\" value=\""+(_sAiVirgin()?"":(P.ai.url||""))+"\" placeholder=\"\u5982 https://api.deepseek.com/v1\uFF0C\u4E00\u822C\u4EE5 /v1 \u7ED3\u5C3E\"></div><div class=\"fd\"><label>Model_ID</label><input id=\"s-model\" value=\""+(_sAiVirgin()?"":(P.ai.model||""))+"\" placeholder=\"ep-......\u4E0D\u662FLLM\u540D\u79F0\"></div></div>"+
+    "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740\uFF08Base URL\u00B7\u670D\u52A1\u5546\u7684\u63A5\u53E3\u7F51\u5740\uFF09</label><input id=\"s-url\" value=\""+(_sAiVirgin()?"":(P.ai.url||""))+"\" placeholder=\"\u5982 https://api.deepseek.com/v1\uFF0C\u4E00\u822C\u4EE5 /v1 \u7ED3\u5C3E\"></div><div class=\"fd\"><label>Model_ID</label><input id=\"s-model\" value=\""+(_sAiVirgin()?"":escHtml(P.ai.model||""))+"\" placeholder=\"ep-......\u4E0D\u662FLLM\u540D\u79F0\"></div></div>"+
     '<div style="font-size:0.72rem;color:var(--txt-d);line-height:1.6;margin:-0.3rem 0 0.4rem;">\u4E09\u680F\u5185\u5BB9\u90FD\u6765\u81EA\u4F60\u6CE8\u518C\u7684\u670D\u52A1\u5546\uFF1A\u5730\u5740\u89C1\u5176\u6587\u6863\u300CAPI \u63A5\u53E3 / Base URL\u300D\uFF0CModel_ID \u89C1\u5176\u300C\u6A21\u578B\u5217\u8868\u300D\uFF08\u6CE8\u610F\uFF1A\u4E2A\u522B\u670D\u52A1\u5546\u586B\u7684\u4E0D\u662F\u6A21\u578B\u540D\u2014\u2014\u5982\u706B\u5C71\u65B9\u821F\u7528\u63A8\u7406\u63A5\u5165\u70B9\u7684\u73A9\u5BB6\u8981\u586B <b>ep- \u5F00\u5934\u7684\u63A5\u5165\u70B9 ID</b>\uFF0C\u9009\u4E2D\u65B9\u821F\u9884\u8BBE\u4F1A\u6709\u8BE6\u7EC6\u63D0\u793A\uFF09\u3002\u652F\u6301 OpenAI \u517C\u5BB9\u4E2D\u8F6C\u7AD9\uFF0C\u5730\u5740\u586B\u5176 base URL \u5373\u53EF\uFF1B\u6CA1\u5217\u8FDB\u9884\u8BBE\u7684\u670D\u52A1\u53EA\u8981\u63D0\u4F9B OpenAI \u517C\u5BB9\u63A5\u53E3\uFF0C\u624B\u52A8\u586B\u5730\u5740\u4E5F\u80FD\u901A\uFF08\u552F\u4E00\u4F8B\u5916\u662F Azure OpenAI\uFF0C\u8DEF\u5F84\u7ED3\u6784\u7279\u6B8A\uFF0C\u6682\u4E0D\u652F\u6301\uFF09\u3002</div>'+
     '<div style="font-size:0.72rem;color:var(--txt-d);line-height:1.6;margin:-0.1rem 0 0.5rem;">\u5B89\u5168\u8BBE\u5B9A\uFF1A\u8BC1\u4E66\u6821\u9A8C\u59CB\u7EC8\u4E25\u683C\u542F\u7528\uFF0C\u8BC1\u4E66\u65E0\u6548\u7684\u4E2D\u8F6C\u7AD9\u4F1A\u88AB\u62D2\u7EDD\u3002</div>'+
     "<div class=\"rw\"><div class=\"fd q\"><label>Temp</label><input type=\"number\" id=\"s-temp\" value=\""+(_sAiVirgin()?"":(P.ai.temp||0.8))+"\" step=\"0.1\" placeholder=\"\u9ED8\u8BA4 0.8\"></div><div class=\"fd q\"><label>\u8BB0\u5FC6</label><input type=\"number\" id=\"s-mem\" value=\""+(_sAiVirgin()?"":(P.ai.mem||20))+"\" placeholder=\"\u9ED8\u8BA4 20\"></div><div class=\"fd q\"><label>\u4E0A\u4E0B\u6587(K)</label><input type=\"number\" id=\"s-ctx\" value=\""+((P.conf.contextSizeK||0)>0?P.conf.contextSizeK:"")+"\" placeholder=\"\u7559\u7A7A=\u81EA\u52A8\" min=\"0\" title=\"\u6A21\u578B\u4E0A\u4E0B\u6587\u7A97\u53E3\u5927\u5C0F(K tokens)\u3002\u7559\u7A7A\u62160=\u81EA\u52A8\u68C0\u6D4B\"></div></div>"+
@@ -682,7 +682,7 @@ openSettings=function(){
       return "<div class=\"settings-section\" style=\"border-left:3px solid var(--indigo-400,#4a6fa5);\"><h4 style=\"color:#92acd0;\">\u6B21\u8981 API\u00B7\u5FEB\u6A21\u578B\u8DEF\u7531" + badge + "</h4>"+
         "<div style=\"font-size:0.72rem;color:var(--txt-d);margin:-0.3rem 0 0.5rem;line-height:1.55;\">\u7528\u4E8E\u95EE\u5BF9\u00B7\u4E09\u79CD\u671D\u8BAE\u00B7\u6587\u4E8B\u52BF\u529B\u5B50\u8C03\u7528\u7B49\u6B21\u8981\u573A\u666F\u3002\u4E3B\u63A8\u6F14\u59CB\u7EC8\u8D70\u4E3B API\u3002</div>"+
         "<div class=\"rw\"><div class=\"fd\"><label>\u670D\u52A1\u5546\uFF08\u9009\u4E00\u5BB6\u81EA\u52A8\u586B\u5730\u5740\uFF09</label><select id=\"s-sec-prov\" onchange=\"sProvPreset(this.value,'sec')\"><option value=\"\">（请选择服务商）</option>"+_sProvOptions()+"</select></div><div class=\"fd\"><label>Key</label><input type=\"password\" id=\"s-sec-key\" value=\""+(sec.key||"")+"\" placeholder=\"\u7559\u7A7A\u5219\u56DE\u9000\u4E3B API\"></div></div>"+
-        "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740</label><input id=\"s-sec-url\" value=\""+(sec.url||"")+"\" placeholder=\"https://api.openai.com/v1\"></div><div class=\"fd\"><label>Model_ID</label><input id=\"s-sec-model\" value=\""+(sec.model||"")+"\" placeholder=\"ep-......\u4E0D\u662FLLM\u540D\u79F0\"></div></div>"+
+        "<div class=\"rw\"><div class=\"fd\"><label>\u5730\u5740</label><input id=\"s-sec-url\" value=\""+(sec.url||"")+"\" placeholder=\"https://api.openai.com/v1\"></div><div class=\"fd\"><label>Model_ID</label><input id=\"s-sec-model\" value=\""+escHtml(sec.model||"")+"\" placeholder=\"ep-......\u4E0D\u662FLLM\u540D\u79F0\"></div></div>"+
         "<div style=\"font-size:0.7rem;color:var(--txt-d);margin:-0.2rem 0 0.3rem;\">\u63A8\u8350\uFF1Agpt-4o-mini \u00B7 claude-haiku-4-5 \u00B7 deepseek-chat \u00B7 gemini-2.5-flash</div>"+
         "<div style=\"display:flex;gap:0.3rem;margin-top:0.4rem;flex-wrap:wrap;\"><button class=\"bt bs bsm\" onclick=\"sTestSecondaryConn()\">\u6D4B\u8BD5\u8FDE\u63A5</button><button class=\"bt bp bsm\" onclick=\"sSaveSecondaryAPI()\">\u4FDD\u5B58</button>"+
         (hasKey ? "<button class=\"bt bd bsm\" onclick=\"sClearSecondaryAPI()\">\u6E05\u9664</button>" : "") +
@@ -1382,6 +1382,7 @@ openSettings=function(){
 
     "<button class=\"bt bp\" onclick=\"sSaveAll()\" style=\"width:100%;padding:0.7rem;font-size:1rem;\">\u4FDD\u5B58\u6240\u6709\u8BBE\u7F6E</button>";
 
+  if (window.TM && TM.APISettings) TM.APISettings.mount();
   _settingsBuildTabs();
   setTimeout(function(){
     var p=_$("s-prov");if(p&&P.ai.provider)p.value=P.ai.provider;
@@ -1403,7 +1404,7 @@ openSettings=function(){
 /** 显示当前上下文窗口检测信息 */
 function _sShowCtxInfo() {
   var el = _$('s-ctx-info'); if (!el) return;
-  var model = P.ai.model || '(未设置)';
+  var model = escHtml(P.ai.model || '(未设置)');
   var k = getModelContextSizeK();
   var layer = P.conf._ctxDetectLayer || '未探测';
   var manual = (P.conf.contextSizeK && P.conf.contextSizeK > 0);
@@ -1527,6 +1528,7 @@ var DEFAULT_RULES="1.\u6570\u503C\u5408\u7406 2.\u89D2\u8272\u72EC\u7ACB 3.\u621
 
 function _sApplyPrimaryApiFields(){
   P.ai.key=_$("s-key")?_$("s-key").value:"";P.ai.url=_$("s-url")?_$("s-url").value:"";P.ai.model=_$("s-model")?_$("s-model").value:"";var _tv=parseFloat(_$("s-temp")?_$("s-temp").value:"");P.ai.temp=isNaN(_tv)?0.8:_tv;var _mv=parseInt(_$("s-mem")?_$("s-mem").value:"");P.ai.mem=isNaN(_mv)?20:_mv;P.ai.provider=_$("s-prov")?_$("s-prov").value:"openai";
+  if (window.TM && TM.APISettings) TM.APISettings.read('primary', P.ai);
 }
 function sSaveAPI(){
   _sApplyPrimaryApiFields();
@@ -1550,7 +1552,10 @@ function sSaveAll(){
     var _sm=_$("s-sec-model")?_$("s-sec-model").value.trim():"";
     var _sp=_$("s-sec-prov")?_$("s-sec-prov").value:"openai";
     if(!P.ai)P.ai={};
-    if(_sk||_su||_sm) P.ai.secondary={key:_sk,url:_su,model:_sm,provider:_sp};
+    if(_sk||_su||_sm) {
+      P.ai.secondary={key:_sk,url:_su,model:_sm,provider:_sp};
+      if (window.TM && TM.APISettings) TM.APISettings.read('secondary', P.ai.secondary);
+    }
     else if(P.ai) delete P.ai.secondary;
   }
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
@@ -1606,19 +1611,7 @@ function sSaveAll(){
 }
 
 async function sDetectModels(){
-  var key=_$("s-key")?_$("s-key").value:"";var baseUrl=_$("s-url")?_$("s-url").value:"";
-  if(!key||!baseUrl){toast("\u586B\u5199Key\u548C\u5730\u5740");return;}
-  var st=_$("s-status");if(st)st.textContent="\u68C0\u6D4B\u4E2D...";
-  var modelsUrl=baseUrl.replace(/\/+$/,"");
-  if(modelsUrl.indexOf("/chat/completions")>=0)modelsUrl=modelsUrl.replace("/chat/completions","/models");
-  else{var vm=modelsUrl.match(/(.*\/v\d+)/);modelsUrl=vm?vm[1]+"/models":modelsUrl+"/models";}
-  try{
-    var resp=await fetch(modelsUrl,{method:"GET",headers:{"Authorization":"Bearer "+key}});
-    if(!resp.ok){_$("s-models").style.display="flex";_$("s-models").innerHTML="<span class=\"model-chip\" onclick=\"sPickModel('gpt-4o',this)\">gpt-4o</span><span class=\"model-chip\" onclick=\"sPickModel('deepseek-chat',this)\">deepseek-chat</span><span class=\"model-chip\" onclick=\"sPickModel('claude-3-5-sonnet-20241022',this)\">claude-3-5-sonnet</span>";if(st)st.textContent="\u63A5\u53E3\u4E0D\u53EF\u7528\uFF0C\u5DF2\u663E\u793A\u5E38\u7528";return;}
-    var data=await resp.json();var models=[];
-    if(data.data&&Array.isArray(data.data))models=data.data.map(function(m){return m.id||"";}).filter(Boolean).sort();
-    if(models.length>0){_$("s-models").style.display="flex";var cur=_$("s-model")?_$("s-model").value:"";_$("s-models").innerHTML=models.map(function(m){return "<span class=\"model-chip"+(m===cur?" active":"")+"\" onclick=\"sPickModel('"+m+"',this)\">"+m+"</span>";}).join("");if(st)st.innerHTML="<span style=\"color:var(--green);\">\u2705 "+models.length+"\u6A21\u578B</span>";}
-  }catch(err){if(st)st.textContent="\u5931\u8D25: "+err.message;_$("s-models").style.display="flex";_$("s-models").innerHTML="<span class=\"model-chip\" onclick=\"sPickModel('gpt-4o',this)\">gpt-4o</span><span class=\"model-chip\" onclick=\"sPickModel('deepseek-chat',this)\">deepseek-chat</span>";}
+  if(window.TM&&TM.APISettings)return TM.APISettings.detect('primary');
 }
 function sPickModel(m,el){var inp=_$("s-model");if(inp)inp.value=m;document.querySelectorAll("#s-models .model-chip").forEach(function(c){c.classList.remove("active");});if(el)el.classList.add("active");}
 
@@ -1631,6 +1624,7 @@ function sSaveSecondaryAPI(){
   if(!P.ai)P.ai={};
   if(sk||su||sm){
     P.ai.secondary={key:sk,url:su,model:sm,provider:sp};
+    if (window.TM && TM.APISettings) TM.APISettings.read('secondary', P.ai.secondary);
     toast("\u2705 \u6B21 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E");
   } else {
     delete P.ai.secondary;
@@ -1661,33 +1655,7 @@ function sToggleSecondaryEnabled(on){
 }
 
 async function sDetectSecondaryModels(){
-  var key=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
-  var baseUrl=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
-  if(!key||!baseUrl){toast("\u586B\u5199\u6B21 API Key \u548C\u5730\u5740");return;}
-  var st=_$("s-sec-status");if(st)st.textContent="\u68C0\u6D4B\u4E2D\u2026";
-  var modelsUrl=baseUrl.replace(/\/+$/,"");
-  if(modelsUrl.indexOf("/chat/completions")>=0)modelsUrl=modelsUrl.replace("/chat/completions","/models");
-  else{var vm=modelsUrl.match(/(.*\/v\d+)/);modelsUrl=vm?vm[1]+"/models":modelsUrl+"/models";}
-  try{
-    var resp=await fetch(modelsUrl,{method:"GET",headers:{"Authorization":"Bearer "+key}});
-    if(!resp.ok){
-      var ml=_$("s-sec-models");
-      if(ml){ml.style.display="flex";ml.innerHTML="<span class=\"model-chip\" onclick=\"sPickSecModel('gpt-4o-mini',this)\">gpt-4o-mini</span><span class=\"model-chip\" onclick=\"sPickSecModel('claude-haiku-4-5',this)\">claude-haiku-4-5</span><span class=\"model-chip\" onclick=\"sPickSecModel('deepseek-chat',this)\">deepseek-chat</span>";}
-      if(st)st.textContent="\u63A5\u53E3\u4E0D\u53EF\u7528\u00B7\u5DF2\u663E\u793A\u5E38\u7528\u5FEB\u6A21\u578B";
-      return;
-    }
-    var data=await resp.json();var models=[];
-    if(data.data&&Array.isArray(data.data))models=data.data.map(function(m){return m.id||"";}).filter(Boolean).sort();
-    if(models.length>0){
-      var ml2=_$("s-sec-models");
-      if(ml2){ml2.style.display="flex";var cur=_$("s-sec-model")?_$("s-sec-model").value:"";ml2.innerHTML=models.map(function(m){return "<span class=\"model-chip"+(m===cur?" active":"")+"\" onclick=\"sPickSecModel('"+m+"',this)\">"+m+"</span>";}).join("");}
-      if(st)st.innerHTML="<span style=\"color:var(--green);\">\u2705 "+models.length+" \u4E2A\u6A21\u578B</span>";
-    }
-  }catch(err){
-    if(st)st.textContent="\u5931\u8D25\uFF1A"+err.message;
-    var ml3=_$("s-sec-models");
-    if(ml3){ml3.style.display="flex";ml3.innerHTML="<span class=\"model-chip\" onclick=\"sPickSecModel('gpt-4o-mini',this)\">gpt-4o-mini</span><span class=\"model-chip\" onclick=\"sPickSecModel('claude-haiku-4-5',this)\">claude-haiku-4-5</span>";}
-  }
+  if(window.TM&&TM.APISettings)return TM.APISettings.detect('secondary');
 }
 
 function sPickSecModel(m,el){

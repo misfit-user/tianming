@@ -9,7 +9,7 @@
 //       _toggleSecondaryEnabled/_testSecondaryAPI/_probeClearCache
 // ============================================================
 
-function closeSettings(){_$("settings-bg").classList.remove("show");}
+function closeSettings(){if(window.TM&&TM.APISettings)TM.APISettings.close();_$("settings-bg").classList.remove("show");}
 
 // ============================================================
 // 模型能力校验面板·防欺骗·M3 支持双 tier

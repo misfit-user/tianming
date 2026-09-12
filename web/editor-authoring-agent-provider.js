@@ -612,6 +612,8 @@
       body = _toOpenAI(conversation, system, tools, maxTok, cfg.model, cfg.temp);
       if (opts.explicitStream === true) body.stream = true;
     }
+    try { if (global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, cfg, gemini ? 'gemini' : anthropic ? 'anthropic' : 'openai'); }
+    catch (optionError) { return Promise.reject(optionError); }
     function _parseResp(data) {
       var parsed = gemini ? _parseGemini(data) : (anthropic ? _parseAnthropic(data) : _parseOpenAI(data));
       parsed.usage = _reportedUsage(data);
@@ -638,6 +640,7 @@
         : anthropic ? _toAnthropic(flat, system, [], maxTok, cfg.model)
         : _toOpenAI(flat, system, [], maxTok, cfg.model, cfg.temp);
       delete fbBody.tools; delete fbBody.tool_choice; delete fbBody.toolConfig;
+      if (global.TM && global.TM.AIOptions) fbBody = global.TM.AIOptions.apply(fbBody, cfg, gemini ? 'gemini' : anthropic ? 'anthropic' : 'openai');
       if (!anthropic && !gemini && (streamRepaired || opts.explicitStream === true)) fbBody.stream = true;
       return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
         var parsed = _parseResp(data);

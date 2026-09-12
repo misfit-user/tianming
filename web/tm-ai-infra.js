@@ -542,7 +542,7 @@ function checkPromptTokenBudget(promptText, onWarn) {
 async function _aiFetchWithRetryInner(url, body, signal, opts) {
   opts = opts || {};
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
-  var timeoutMs = _aiComputeTimeout(body && body.max_tokens, opts.timeoutMs);
+  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
   // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
   var key = opts.apiKey || P.ai.key;
   var lastError = null;
@@ -663,7 +663,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
       //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
       if (timedOut) {
-        var _bigReq = !!(body && body.max_tokens && body.max_tokens > 8000);
+        var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
         if (_bigReq || attempt >= 1) {
           if (!e.lastRaw) e.lastRaw = _aiLastRaw;
           throw e;
@@ -773,6 +773,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, 'openai');
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
   // Phase 7·补 id 参数·byId 拆分
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
@@ -911,6 +912,7 @@ async function callAIWithTools(prompt, tools, opts) {
     headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
     parseMode = 'openai';
   }
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, parseMode);
   // Use the effective request URL, not the primary config when tier=secondary.
   // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
   if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
@@ -1157,6 +1159,7 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
   if (opts.timeoutMs != null) fetchOpts2.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfgM, 'openai');
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts2);
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAIMessages');
   return _tmAITextResult(data, opts.requireText === true, _scaledTok2);
@@ -1179,7 +1182,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     _finalizedBody = opts.finalizedBodyDetached === true
       ? opts.finalizedBody
       : JSON.parse(JSON.stringify(opts.finalizedBody));
-    var _exactMax = Number(_finalizedBody.max_tokens);
+    var _exactMax = Number(_finalizedBody.max_completion_tokens != null ? _finalizedBody.max_completion_tokens : _finalizedBody.max_tokens);
     if (!Number.isFinite(_exactMax) || _exactMax <= 0) throw new Error('流式 finalizedBody.max_tokens 非法');
     maxTok = Math.floor(_exactMax);
   }
@@ -1227,6 +1230,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
       max_tokens: _scaledTok
     };
     if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
+    if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
     _bodyCore.stream = true;
     var resp = await fetch(url, {
       method: 'POST',
@@ -1312,7 +1316,7 @@ async function callAIBodyStream(finalizedBody, opts) {
     skipQueue: true
   });
   var run = function() {
-    return _callAIMessagesStreamDirect(exactBody.messages, exactBody.max_tokens, streamOpts);
+    return _callAIMessagesStreamDirect(exactBody.messages, exactBody.max_completion_tokens != null ? exactBody.max_completion_tokens : exactBody.max_tokens, streamOpts);
   };
   if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
     return run();

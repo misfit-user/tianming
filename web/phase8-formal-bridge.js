@@ -2211,6 +2211,11 @@
   }
 
   function openRailPanel(slot){
+    var panel = document.getElementById('rpanel');
+    if (state.activeSlot === slot) {
+      if (slot === 'archive' && document.body.classList.contains('tm-phase8-office-single')) { showHome(); return; }
+      if (panel && panel.classList.contains('show')) { closeRightDrawer(); return; }
+    }
     var showRequests = slot === 'issue' && railAudienceCount() > 0;
     if (showRequests) state.rightIssueTab = 'wendui';
     openPanel(slot);
@@ -2287,6 +2292,7 @@
       rail.setAttribute('aria-label', '国事侧栏');
       root.appendChild(rail);
     }
+    if (rail.dataset.formalRailBuilt === '1' && rail.querySelector('[data-slot="archive"]')) { updateRailBadges(); updateRailActive(); return; }
     // 2026-05-27·右侧栏图标 SVG 化·参见 web/preview/right-rail-icons-preview.html v4
     // 立意·司南罗盘 / 衙门殿宇 / 竹简卷 / 朝班一品紫 / 双半合符 / 鱼鳞图册 / 算盘 / 官制树
     // 第 2 参从汉字字符改 SVG raw string·esc(b[1]) 改 raw b[1]·不转义
@@ -2317,6 +2323,7 @@
       // b[1] 是 raw SVG·不转义
       return '<button type="button" class="tm-rc-icon ' + esc(b[3] || '') + '" aria-label="' + esc(b[2]) + '" data-slot="' + esc(b[0]) + '" data-tip="' + esc(b[2]) + '" onclick="TMPhase8FormalBridge.openRailPanel(\'' + esc(b[0]) + '\')">' + b[1] + (b[0] === 'issue' ? '<span class="tm-rc-count" data-phase8-badge="audience" style="display:none"></span>' : '') + '</button>' + divider;
     }).join('') + '<div class="tm-rc-spacer"></div>';
+    rail.dataset.formalRailBuilt = '1';
     updateRailBadges();
     updateRailActive();
   }

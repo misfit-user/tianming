@@ -1,0 +1,656 @@
+{
+  "schema": 1,
+  "scope": "Seven requested UI/settings repairs. Isolated production Electron and synthetic HTTP; no player credentials, saves, paid inference, push or deployment.",
+  "branch": "codex/fix-seven-ui-settings",
+  "base": "235711963ce263d4c92962728914de49f62aa58a",
+  "generatedAt": "2026-09-12T04:04:12.849Z",
+  "sources": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "bytes": 7443,
+      "sha256": "c5defa9c9f6057343fab50105f5f52a315a99b3beea6c43733a6a047fba867da"
+    },
+    {
+      "file": "scripts/electron/bridge-main.cjs",
+      "bytes": 11334,
+      "sha256": "92d6e16f8f9f585aa3acd2e6249d8b77ec97c8ef2a4976a2efcc717ed0a4d797"
+    },
+    {
+      "file": "scripts/electron/rail-badges-cases.cjs",
+      "bytes": 7103,
+      "sha256": "58367e9baaa470ef013dedd94fbfab4fd4449b5d9326150d0c8c8b03eaebbc0a"
+    },
+    {
+      "file": "scripts/electron/seven-api-cases.cjs",
+      "bytes": 8022,
+      "sha256": "07da2a11e64fa2820163abef0cd6efa7eb710e45c4441134150e301ecf3fd6cc"
+    },
+    {
+      "file": "scripts/electron/seven-ui-cases.cjs",
+      "bytes": 12430,
+      "sha256": "46490e9a53bc4c3c53a8d5331dcdeb8a748c1236d458a589bb2eaed7c5cd5044"
+    },
+    {
+      "file": "scripts/verify-electron-bridge.js",
+      "bytes": 4434,
+      "sha256": "eb4ff73bb576174b6a9f0a66e747d19f7553b948ff1e6e9611edc42a9e9bb725"
+    },
+    {
+      "file": "web/.hot-update-manifest.json",
+      "bytes": 183206,
+      "sha256": "be2ed7bffd8b71d8cf7288c1ef735ee74e63d76435f71b2fcfb8fda220559c2a"
+    },
+    {
+      "file": "web/editor-authoring-agent-provider.js",
+      "bytes": 49220,
+      "sha256": "1ae2059223e9b11dd55bfb98effabb157329f7392e472eb50560aa79edc9cf4d"
+    },
+    {
+      "file": "web/editor-authoring-agent.js",
+      "bytes": 308796,
+      "sha256": "677b23b7eb64adad3b7acac83bd0289f5d0519704ecb063596303c67092a7a30"
+    },
+    {
+      "file": "web/editor.html",
+      "bytes": 184772,
+      "sha256": "3cc3b0102dd408a64f31f000d8df955a8c85672de2eeba14746286c3e655e532"
+    },
+    {
+      "file": "web/index.html",
+      "bytes": 69753,
+      "sha256": "63555c4dfd2433c287290f7d80d8cf25ab9e537b6cf13fd8fdbf891fc38f801f"
+    },
+    {
+      "file": "web/phase8-formal-bridge.js",
+      "bytes": 183920,
+      "sha256": "b3c6a49c02e3534ee5376296a4ed8ba75c02dbdc3a7b66370c307686c92fc20e"
+    },
+    {
+      "file": "web/phase8-formal-drafts.js",
+      "bytes": 215149,
+      "sha256": "0af92d489392b5851f5e6208c67a37ee9bd28696615be1813012e2ca026a6c6a"
+    },
+    {
+      "file": "web/preview/scenario-editor-reset-preview.html",
+      "bytes": 32370,
+      "sha256": "6e3060349e0224e1b6f915594d1ac8742d5db1408f2bdb747cde47e6fc5926db"
+    },
+    {
+      "file": "web/scripts/smoke-api-models-thinking.js",
+      "bytes": 9032,
+      "sha256": "ca9c0642914e1ca9809d317e7656b57a0bdce87d48810ed23b3f18e682885f19"
+    },
+    {
+      "file": "web/scripts/smoke-authoring-thinking-settings.js",
+      "bytes": 3133,
+      "sha256": "33fe98805b975d919b8caab2edd372b990f33857b8a29fc638048f5f97a3f40f"
+    },
+    {
+      "file": "web/scripts/smoke-right-rail-badge-semantics.js",
+      "bytes": 11592,
+      "sha256": "0c0ed83b42222a599165a12f248af096a95b9550000540feaf7c4653e7c02015"
+    },
+    {
+      "file": "web/scripts/smoke-runtime-save-consistency.js",
+      "bytes": 47666,
+      "sha256": "ff45f0ef8925b1090a4ee1d82fefbafff64f7a1f154d525d2b16ed9acdc57c92"
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "bytes": 4513,
+      "sha256": "11dbc1529d8be83ac5fd0d9a2f498e773487057dd2a6abb28db50aa688036bed"
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "bytes": 349343,
+      "sha256": "73e594324c7c2b0204049168a2e1734f3cb3f35476a4fbcada624ddc94176a40"
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "bytes": 162280,
+      "sha256": "9c9e6a661fd04edbb638b2198325d49b11383560163d869512ec109b7b25ac75"
+    },
+    {
+      "file": "web/tm-ai-request-options.js",
+      "bytes": 5713,
+      "sha256": "885eba9e935fb4ed0bbf07aefb03632c7a86768602e673de500ae2360c8785d0"
+    },
+    {
+      "file": "web/tm-api-models.js",
+      "bytes": 5115,
+      "sha256": "58ae5e2c093d18bccfa99706d5aaa66b0bc464e50d70f506430691451be9492d"
+    },
+    {
+      "file": "web/tm-api-settings.js",
+      "bytes": 8025,
+      "sha256": "bd939256cd0c4ebffd0f5f3dc788ae8bf7ba78de42b76ddf96487c79316a87dd"
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "bytes": 11860,
+      "sha256": "d14dd0c00cc49b232bb34d3b19ad6361b0fba2964bf64f130c161c842196168a"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "bytes": 407263,
+      "sha256": "669a58009bc9404aa21290bba1ba9866111422522b83ab7f3ab5432ef8b3d91b"
+    },
+    {
+      "file": "web/tm-endturn-province.js",
+      "bytes": 120105,
+      "sha256": "4295a59fa0b0749937eb09804f15d12097da2bdb263ac419610d5c30f3eae24c"
+    },
+    {
+      "file": "web/tm-guoku-panel.js",
+      "bytes": 68210,
+      "sha256": "3f8fb5f3f5f8a03abc40528535de638d95fdde5ea6a259f538db90cf09de4454"
+    },
+    {
+      "file": "web/tm-help-social.js",
+      "bytes": 64516,
+      "sha256": "fcd8123bdeae62b8ac7bc9d324251e998217b8c47b7c63a1d0ecb668f8e64577"
+    },
+    {
+      "file": "web/tm-neitang-panel.js",
+      "bytes": 27565,
+      "sha256": "f330750ddb87f39f3d58913a38d647f522c0d77a00a8e3fc848bd248c24dbe00"
+    },
+    {
+      "file": "web/tm-patches.js",
+      "bytes": 190462,
+      "sha256": "88aa1fe41c63801f7149add8fca292010c2608e81a85a40d7edd0fb39e71f1b6"
+    },
+    {
+      "file": "web/tm-player-settings.js",
+      "bytes": 33312,
+      "sha256": "85e500a3e12871080ad9d3a0c4af3c25564462bac80795a5da49f4167815b4e9"
+    },
+    {
+      "file": "web/tm-topbar-vars.js",
+      "bytes": 95517,
+      "sha256": "36c167234e0064e7487e22cbae9ea80edbe1ffb69885a59fe3da8bfa3f08cf70"
+    },
+    {
+      "file": "web/tm-utils.js",
+      "bytes": 99341,
+      "sha256": "41530d8a279abdeb8c47c54574ae2bbffc1d1d35743e0b53d58a4a179434bbb2"
+    },
+    {
+      "file": "web/tm-var-drawers.js",
+      "bytes": 119446,
+      "sha256": "762e5cd27e0dc38032f0267d31abc7a72a1f2ff5205b538f2f6e54a1d42c9eb2"
+    }
+  ],
+  "checks": [
+    {
+      "label": "seven-all-electron-first-c13f1c1f-d8d3-41e8-b351-977066309808",
+      "at": "2026-09-11T17:30:33.552Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-all-electron-first-c13f1c1f-d8d3-41e8-b351-977066309808/output.log",
+      "logSha256": "1f14e88b78d5be3185c85bc90d3c9c77924078eceaa38ff629e417dd2191ccfe",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/3d88f2e4-4971-4af3-a57e-82b256b6f8fa/report.json",
+        "sha256": "50d5ab0cffc7bb8ac0dc3a518474501696386c5b8841afd97c31ed34d364c1b9",
+        "ok": true,
+        "cases": 21,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-all-electron-visual-d302cf78-6863-4a9b-81e5-ed629e1a8866",
+      "at": "2026-09-11T17:33:08.561Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-all-electron-visual-d302cf78-6863-4a9b-81e5-ed629e1a8866/output.log",
+      "logSha256": "fa3f0293b67a7c70f5a627180f8d57fe86df929b99fa577a7b7f6c9056c07565",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/3c58e133-03e5-44d1-94dc-7debfeaf809c/report.json",
+        "sha256": "848d4d490f4037beb39c827114ab7332a1d7c1bd338fd0d86dc6c23f20230652",
+        "ok": true,
+        "cases": 21,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-api-arch-131591b8-edd2-4bfc-8cfb-259acfda2e70",
+      "at": "2026-09-11T17:27:52.954Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-api-arch-131591b8-edd2-4bfc-8cfb-259acfda2e70/output.log",
+      "logSha256": "2f06d124553acd8582aac2e5cbaf1eb584a229833f3c1bd35646767119cf91b0"
+    },
+    {
+      "label": "seven-api-unit-final-f5dbf662-fcb2-4f52-be18-76d897877eeb",
+      "at": "2026-09-11T17:39:10.455Z",
+      "command": "web/scripts/smoke-api-models-thinking.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-api-unit-final-f5dbf662-fcb2-4f52-be18-76d897877eeb/output.log",
+      "logSha256": "082a1c7061e4c077794d8658e718c43dff474cc58d1a9cd54f76ab6041197701"
+    },
+    {
+      "label": "seven-api-unit-first-682af9ab-d541-423e-884a-92cf1558c378",
+      "at": "2026-09-11T17:26:30.974Z",
+      "command": "web/scripts/smoke-api-models-thinking.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-api-unit-first-682af9ab-d541-423e-884a-92cf1558c378/output.log",
+      "logSha256": "daba37b627f081c1ee041199dcc464ccec3ea9ab54bec218411ae5606b9ff631"
+    },
+    {
+      "label": "seven-api-unit-v2-797a87ca-b0b9-402e-b7bd-de63c907671b",
+      "at": "2026-09-11T17:27:17.378Z",
+      "command": "web/scripts/smoke-api-models-thinking.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-api-unit-v2-797a87ca-b0b9-402e-b7bd-de63c907671b/output.log",
+      "logSha256": "5a9e0e1fb517b2627b2f5458a3663b783efd431ec7edfc1b734cee8ed05a887b"
+    },
+    {
+      "label": "seven-canonical-write-8ac81b10-4363-45f6-b532-9e6c979e0d99",
+      "at": "2026-09-11T17:41:29.391Z",
+      "command": "scripts/sync-hot-baseline.js --write --version 1.3.4.11 --asset-root C:/Users/37814/Desktop/tianming --temp-root E:/tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-canonical-write-8ac81b10-4363-45f6-b532-9e6c979e0d99/output.log",
+      "logSha256": "6550d4521d9c58b58e6d4a464e36c45e8ebf54ad22eed2ae8942ac00232f042a"
+    },
+    {
+      "label": "seven-final-arch-a03ecc0d-26bf-42f5-ad3e-e9823686b0dd",
+      "at": "2026-09-11T17:45:46.928Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-arch-a03ecc0d-26bf-42f5-ad3e-e9823686b0dd/output.log",
+      "logSha256": "d65a8cd69e055395f52852a02e0e3c898ef140ce1679a7c935d80c341cb73725"
+    },
+    {
+      "label": "seven-final-canonical-95c286d5-57b2-4a3a-8a2b-8b5f5407107e",
+      "at": "2026-09-11T17:47:40.325Z",
+      "command": "scripts/sync-hot-baseline.js --check --version 1.3.4.11 --asset-root C:/Users/37814/Desktop/tianming --temp-root E:/tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-canonical-95c286d5-57b2-4a3a-8a2b-8b5f5407107e/output.log",
+      "logSha256": "9e8f41f2b31e3c647745ea09f4ab0ae11efce039a93e70941891e8f25f5875fd"
+    },
+    {
+      "label": "seven-final-electron-96b0e9b0-d726-40a5-85a4-369f8f89980b",
+      "at": "2026-09-11T17:44:10.620Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-electron-96b0e9b0-d726-40a5-85a4-369f8f89980b/output.log",
+      "logSha256": "3221b1dc08131c368bba92110cda83c6ea6db6370e5736519ac9bcd60d3bb133",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/aa959ebc-8e3d-4066-88bd-b44572dd9c25/report.json",
+        "sha256": "edf737d7934c40e8bc1e1ff530ba03d83dffd27ced10a787395e4ef9f1f568b1",
+        "ok": true,
+        "cases": 23,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-final-hot-builder-17c1bfe1-82f9-43a3-a1c3-337433f5769e",
+      "at": "2026-09-11T17:45:56.220Z",
+      "command": "scripts/verify-hot-builder-gates.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-hot-builder-17c1bfe1-82f9-43a3-a1c3-337433f5769e/output.log",
+      "logSha256": "ba80de98b62746058cd48f0095beb58e852773922c13a791b47534c9fff9b0ff"
+    },
+    {
+      "label": "seven-final-hot-builder-correct-47bcf609-51a7-4b11-9b13-bc11e06ee0c6",
+      "at": "2026-09-11T17:46:43.714Z",
+      "command": "web/scripts/verify-hot-builder-gates.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-hot-builder-correct-47bcf609-51a7-4b11-9b13-bc11e06ee0c6/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+    },
+    {
+      "label": "seven-final-parity-984ec34b-3180-452c-be8b-d40b22121a2d",
+      "at": "2026-09-11T17:45:51.984Z",
+      "command": "web/scripts/verify-official-scenario-parity.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-parity-984ec34b-3180-452c-be8b-d40b22121a2d/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+    },
+    {
+      "label": "seven-final-release-54936e52-cef1-4085-81d5-68a42aebc190",
+      "at": "2026-09-11T17:45:55.348Z",
+      "command": "scripts/verify-release-contract.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-final-release-54936e52-cef1-4085-81d5-68a42aebc190/output.log",
+      "logSha256": "8fa457b631f882cc5d6850bbd9820efd0f9481f5cf4f46f0fbba4dcf3636bc1b"
+    },
+    {
+      "label": "seven-full-final-0edc2da1-dd5d-4e1c-953a-54ecb8f2bae3",
+      "at": "2026-09-11T17:45:19.474Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-full-final-0edc2da1-dd5d-4e1c-953a-54ecb8f2bae3/output.log",
+      "logSha256": "7968a9f6bf694f11a018c4b147854111a33c5de52830df729963feaa72b201e5",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-9Q90UN/smoke-report.json",
+        "sha256": "719b922ebb4783ec4ac8f4e5b019da906183e0ce66386dc3a84475caf47b73cb",
+        "summary": {
+          "selected": 950,
+          "pass": 945,
+          "fail": 3,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        },
+        "failures": [
+          {
+            "name": "smoke-right-rail-badge-semantics.js",
+            "ms": 1410,
+            "exit": 1,
+            "output": "PASS ensureRail counts three actual people, not six unrelated issues\nPASS ensureRail preserves all nine actual navigation slots\nPASS ensureRail uses labels matching the actual drawer content\nPASS ensureRail clicks retain their original destinations\nPASS ensureRail does not read or mutate memorial/event/issue data for badges\nPASS ensureRail repeated refresh and world switch hide zero without stale counts\nevalmachine.<anonymous>:59\r\n    if (rail.dataset.formalRailBuilt === '1' && rail.querySelector('[data-slot=\"archive\"]')) { updateRailBadges(); updateRailActive(); return; }\r\n                     ^\r\n\r\nTypeError: Cannot read properties of undefined (reading 'formalRailBuilt')\r\n    at Object.ensurePreviewRail (evalmachine.<anonymous>:59:22)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-right-rail-badge-semantics.js:50:28)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n"
+          },
+          {
+            "name": "smoke-runtime-save-consistency.js",
+            "ms": 388,
+            "exit": 1,
+            "output": "=== 1. unified save snapshot builder ===\n  ok - _autoSaveSnapshotGM + _buildSaveState 可抽取\n  ok - Electron autoSave 显式区分业务成功与 resolve({success:false})\n  ok - IDB 外壳保持 {GM,P}\n  ok - project 外壳保持 P+gameState\n  ok - 两种外壳均剥离主/次 API key\n  ok - 两种外壳复用 selective GM snapshot\n  ok - 浏览器导出走统一纯 builder\n  ok - 桌面手动存档走统一纯 builder\n  ok - pre_endturn 从点击时事务引用走统一 detached builder\n  ok - 残局发布以 detached 模式复用统一 builder\n  ok - 生产存档写口无裸 deepClone(GM)\n  ok - 端回合不再重复调用 SaveManager.autoSave 覆盖 slot_0\n  ok - canonical batch failure preserves the pre_endturn recovery marker\n  ok - slot index is published only after the canonical batch commits\n  ok - tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn\n  ok - 60s Electron autoSave 仅在业务成功后推进成功时钟\n  ok - Electron 闲置跳存基线锚定已写 committed snapshot turn\n  ok - 端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口\n  ok - 端回合 detached save 捕获 GM/P/loadGen/pre snapshotId\n  ok - 后台等待后先验租约·builder 在 detached snapshot 上准备\n  ok - autosave/slot_0 共用代际租约与单一批量事务\n  ok - _endTurn_render 只渲染·不再在 Phase5 前启动存档\n  ok - normal 路径在 Phase5/J1 后只声明提交屏障\n  ok - deferred 路径在 Phase5/openers 后复用共享提交屏障\n  ok - deferred 路径显式阻止 core 提前落库\n  ok - normal/deferred 两条路径复用同一幂等存档 promise\n  ok - normal 提交屏障严格等待最终存档后才 commit\n  ok - SaveDB 同步冻结 canonical payload，并在异步准备前及真正 put 前复验 writeGuard\n  ok - 60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线\n  ok - 主进程串行化固定 .tmp 的所有 auto-save IPC\n  ok - Electron canonical auto-save 在 write/rename 间按 session token 复验\n  ok - preload + 读档 + 新局共同切换 auto-save session\n  ok - receipt recovery failure aborts before the loaded world can fork its timeline\n  ok - state-mutating load migrations propagate into the load transaction instead of failing open\n  ok - integration bridge is aggregation-only; Huji and CorruptionEngine own simulation time\n  ok - desktop and auto-save envelope fields are stripped before P/GM become runtime state\n  ok - 回合分卷先暂存·receipt 与世界同事务提交·仅在 commit 后发布\n  ok - 读档按世界身份租约补发独立 receipt，并只删除轻量事务记录\n  ok - 读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法\n  ok - hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障\n  ok - 正常分卷发布不再解压、重压并重写两个 canonical 世界\n  ok - 财政、问对和地图派生状态在事务内最终化\n  ok - commit 后 UI 渲染跳过所有已知状态准备入口\n=== 2. pre_endturn two-phase + strict validator ===\n  ok - marker pending -> committed 两阶段\n  ok - snapshotId 同时进入 marker/state/IDB record\n  ok - pre_endturn 写事务绑定 GM/P/loadGen/turn/sid/snapshotId lease\n  ok - SaveDB 在异步 open/gzip 前同步固化 snapshot JSON\n  ok - 启动恢复要求 marker 严格校验\n  ok - 校验/读取失败保留 autosave 安全回退\n  ok - 完全匹配 committed 三方可恢复\n  ok - marker snapshotId 错配拒绝\n  ok - record turn 错配拒绝\n  ok - pending marker 拒绝\n=== 3. sSaveAll atomic API persistence ===\n  ok - sSaveAll 不再提前调用 sSaveAPI 写旧 secondary\n  ok - API 单项保存不再以纯 P 覆盖对局中的桌面恢复档\n  ok - 主 API 单项保存统一 tm_api + saveP\n  ok - 次 API 单项保存统一 tm_api + saveP\n  ok - saveP / 编辑器返回不再以纯 P 覆盖 Electron canonical 恢复档\n  ok - Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner\nevalmachine.<anonymous>:3\r\n  if (window.TM && TM.APISettings) TM.APISettings.read('primary', P.ai);\r\n  ^\r\n\r\nReferenceError: window is not defined\r\n    at _sApplyPrimaryApiFields (evalmachine.<anonymous>:3:3)\r\n    at sSaveAll (evalmachine.<anonymous>:8:3)\r\n    at evalmachine.<anonymous>:73:1\r\n    at Script.runInContext (node:vm:149:12)\r\n    at Object.runInContext (node:vm:301:6)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-runtime-save-consistency.js:217:6)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n\r\nNode.js v24.14.0\r\n"
+          },
+          {
+            "name": "smoke-startup-phase-observability.js",
+            "ms": 659,
+            "exit": 1,
+            "output": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: 410 retained scripts plus the byte-preserving retry-helper split form the complete eager set\r\n\r\n414 !== 411\r\n\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-startup-phase-observability.js:24:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 414,\r\n  expected: 411,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+          }
+        ]
+      }
+    },
+    {
+      "label": "seven-full-final2-4fc74bf6-28c9-4c88-8c39-faf272dccc45",
+      "status": "UNVERIFIED",
+      "reason": "No completed command receipt or output log; not counted as a passing run."
+    },
+    {
+      "label": "seven-full-final3-3023b82c-01f3-4547-b419-37b9230830f8",
+      "at": "2026-09-12T04:00:58.543Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-full-final3-3023b82c-01f3-4547-b419-37b9230830f8/output.log",
+      "logSha256": "7f8f22d73f20f88c96fe7e9bc35b06dcb7e68377c46dd821588337c4702128d8",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-qA3Szc/smoke-report.json",
+        "sha256": "e88c61433f2ff2901325ab898c57fa3f12a48788c99d27b735c2462b40cc1b2c",
+        "summary": {
+          "selected": 950,
+          "pass": 948,
+          "fail": 0,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        },
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-guoshi-thinking-16e110fb-1194-4cf4-96e1-c3c446cb1f03",
+      "at": "2026-09-11T17:39:09.609Z",
+      "command": "web/scripts/smoke-authoring-thinking-settings.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-guoshi-thinking-16e110fb-1194-4cf4-96e1-c3c446cb1f03/output.log",
+      "logSha256": "870c7b3b9b3a94f7475177936f4eeef9b8e095979934a42b9236eeed4ac9a119"
+    },
+    {
+      "label": "seven-native-pointer-64634bb0-24c3-4cb2-a9c9-35a6b9964dc3",
+      "at": "2026-09-11T17:34:32.437Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-native-pointer-64634bb0-24c3-4cb2-a9c9-35a6b9964dc3/output.log",
+      "logSha256": "519ea876431a0da7b62fd1e88ea414cbb873df97ce38cfe2be913a599d25a64e",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/6bf9b609-e61d-4ebe-aa72-e4b44e3ca2f0/report.json",
+        "sha256": "b43186901994b68bad595f265e6344706882839148f35a1cf6e9042068e9054f",
+        "ok": false,
+        "cases": 21,
+        "failures": [
+          "Error: real mouse right-click can reach both treasury cards while a detail is already open\nAssertionError [ERR_ASSERTION]: {\"x\":0,\"y\":0,\"hit\":false,\"cover\":\"<html lang=\\\"zh-CN\\\" data-tm-home-ui-error=\\\"desk\\\" style=\\\"font-size: 19.2px;\\\" data-tm-home-shortcuts=\\\"1\\\"><head>\\n<meta charset=\\\"UTF-8\\\">\\n<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\"}\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:24:7\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:9:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:20:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:75:28)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)"
+        ]
+      }
+    },
+    {
+      "label": "seven-provider-existing-b83ab269-de48-4614-ad30-f408098ce2a0",
+      "at": "2026-09-11T17:31:39.272Z",
+      "command": "web/scripts/smoke-authoring-provider-stream.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-provider-existing-b83ab269-de48-4614-ad30-f408098ce2a0/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f"
+    },
+    {
+      "label": "seven-rail-final-e9a990a3-4924-4a1b-bd40-3ff90669e4fc",
+      "at": "2026-09-12T03:57:12.756Z",
+      "command": "scripts/verify-electron-bridge.js --rail-badges",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-rail-final-e9a990a3-4924-4a1b-bd40-3ff90669e4fc/output.log",
+      "logSha256": "7e1887b0a5a7cbc25fe79167763cb5be0022d4d0b2ca90038dc150085674af03",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/8f62e318-0173-4402-b9b4-8c857a0b87ab/report.json",
+        "sha256": "8307d335b5a8c59f7191a7f0018e2a5cc688829b6f792a65086e3a1057af1f9f",
+        "ok": true,
+        "cases": 15,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-rail-fixture-ea96fcb3-ccaf-4c56-afc4-ddf95cad9bfe",
+      "at": "2026-09-11T17:48:02.395Z",
+      "command": "web/scripts/smoke-right-rail-badge-semantics.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-rail-fixture-ea96fcb3-ccaf-4c56-afc4-ddf95cad9bfe/output.log",
+      "logSha256": "dc9bc4e945a7d1e430e781220d9ac7758b78a39a9249bbc5836448519c605d5a"
+    },
+    {
+      "label": "seven-real-animated-0ab679ac-02e0-4809-b803-43604878e72b",
+      "at": "2026-09-11T17:36:46.119Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-real-animated-0ab679ac-02e0-4809-b803-43604878e72b/output.log",
+      "logSha256": "124a2e646de9d5765938b3d0cfcdc84a0ec832dccb5ca22c7c709be5283efcdf",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/d3afc617-b9cd-4134-bc4a-6704457faf80/report.json",
+        "sha256": "2c4f17a45f75786036c6280a449577ef5003b6bb48b90d29326e87bcddb10afa",
+        "ok": true,
+        "cases": 23,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-regression-edict-6fa7852b-3e7a-4af4-a3a9-51b526ede006",
+      "at": "2026-09-12T03:56:14.610Z",
+      "command": "scripts/verify-electron-bridge.js --edict-polish",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-regression-edict-6fa7852b-3e7a-4af4-a3a9-51b526ede006/output.log",
+      "logSha256": "f6133ee63aa24554abf4a27984eab9d2dddf0bed04b6034d54abff05a80729ef",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/d624fec2-f7db-4e38-876d-c3767b37f377/report.json",
+        "sha256": "3a681a2ea60d2fc22fcd8fbe087e282ff9eccef197e445a4e709d4ce52ab48b7",
+        "ok": true,
+        "cases": 15,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-regression-rail-c8d41425-129d-4c15-b307-cdd360628c92",
+      "at": "2026-09-12T03:54:43.709Z",
+      "command": "scripts/verify-electron-bridge.js --rail-badges",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-regression-rail-c8d41425-129d-4c15-b307-cdd360628c92/output.log",
+      "logSha256": "367361df2b07c133c18ce82c1b74d6c9d941fa0843c02a5ccc5a5acdab6d8502",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/67318b49-27f8-4724-b4b4-e580b798f3f6/report.json",
+        "sha256": "ad782d0d7f18a26c367c188ac0992762a1748e45511f1761b8467b5a42dbd7ff",
+        "ok": false,
+        "cases": 8,
+        "failures": [
+          "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\rail-badges-cases.cjs:29:252\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\rail-badges-cases.cjs:29:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:116:40)"
+        ]
+      }
+    },
+    {
+      "label": "seven-save-fixture-55f13793-45b0-4020-8dfa-bcb0f62a5cf6",
+      "at": "2026-09-11T17:48:00.855Z",
+      "command": "web/scripts/smoke-runtime-save-consistency.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-save-fixture-55f13793-45b0-4020-8dfa-bcb0f62a5cf6/output.log",
+      "logSha256": "26bfe1c4c3048207ad5458b799c2d876cb2dcf70a94a6c034bb41265fc2d7e12"
+    },
+    {
+      "label": "seven-sc1-existing-6a640de0-d07c-4171-8344-9d66bb640592",
+      "at": "2026-09-11T17:31:37.949Z",
+      "command": "web/scripts/smoke-sc1-stream-final-budget.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-sc1-existing-6a640de0-d07c-4171-8344-9d66bb640592/output.log",
+      "logSha256": "e41653ec24180fd571ce2d3c0baca5dda9327faf8d8bcb22ca315435ab757432"
+    },
+    {
+      "label": "seven-startup-fixture-70fbf2f6-255d-4153-a24d-145304e90e17",
+      "at": "2026-09-11T17:48:44.678Z",
+      "command": "web/scripts/smoke-startup-phase-observability.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-startup-fixture-70fbf2f6-255d-4153-a24d-145304e90e17/output.log",
+      "logSha256": "7b59c37796edb8823e6a5f270e7ecf1b36c8c9ffd5ab2578442640a662d2969f"
+    },
+    {
+      "label": "seven-ui-arch-first-6807f9dd-ebc1-44c0-8f3a-014fad5e1748",
+      "at": "2026-09-11T17:08:04.996Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-ui-arch-first-6807f9dd-ebc1-44c0-8f3a-014fad5e1748/output.log",
+      "logSha256": "7b0c12d21b4d2c409e0c2e5df0508a710b2bd02bd5e46a7ac624965322a418ca"
+    },
+    {
+      "label": "seven-ui-baseline-ae46f26a-d75e-4fd8-926e-e8047ad3f205",
+      "at": "2026-09-11T16:33:40.215Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-ui-baseline-ae46f26a-d75e-4fd8-926e-e8047ad3f205/output.log",
+      "logSha256": "13a51722d6b8226c1468a848bf06055fe5aa8434f4628f89e733d54fd5cfd91b",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/e7cabbc8-06bb-42fe-84de-297cc31822c0/report.json",
+        "sha256": "62fbd5939f65b546825ff85db50967f23f8aafc5e6a7d520369eab8c4782c2fd",
+        "ok": false,
+        "cases": 5,
+        "failures": [
+          "Error: treasury details replace one another, including repeat opening and blank close\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    [\n      'guoku-drawer-ov'\n    ],\n    [\n+     'guoku-drawer-ov',\n+     'neitang-drawer-ov'\n+   ],\n+   [\n+     'guoku-drawer-ov',\n+     'neitang-drawer-ov'\n+   ],\n+   [\n+     'guoku-drawer-ov',\n-     'neitang-drawer-ov'\n-   ],\n-   [\n-     'guoku-drawer-ov'\n-   ],\n-   [\n      'neitang-drawer-ov'\n    ]\n  ]\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:20:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:18:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\nright-clicking topbar targets opens only the latest detail\nError: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\n    at node:electron/js2c/sandbox_bundle:2:127259\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121504)\n    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45997)\n    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:119481)\n\nfiscal split table displays the current region name without rewriting stable IDs or ledger values\nAssertionError [ERR_ASSERTION]: The input did not match the regular expression /应天府/. Input:\n\n'央地分账 1 区· 当前预设：qiyun_cunliu明清起运存留省名义实征留存起运合规div_synthetic_yingtian10.0万7.0万1.0万4.0万72%'\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:29:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:27:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\npopulation quickstats read explicit households and distinguish missing data from a real zero\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'0户' !== '28万户'\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:34:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:32:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\nhelp switches content in place without moving or rebuilding the scrolled topic list\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.every(x=>x.same&&x.count===1))\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:39:5\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:36:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\nright-rail second click closes; another button switches and an explicit open remains idempotent\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    true,\n+   true,\n-   false,\n    true,\n    true\n  ]\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:44:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:42:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\noffice rail opens its standalone view and second click returns home\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    true,\n+   true\n-   false\n  ]\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:47:280\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:46:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\ndeleting edict advice keeps the exact form, drafts, selection and remaining suggestion nodes\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.sameOverlay&&r.sameField&&r.focused)\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:52:5\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:49:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n\nsequential advice removal targets original indices and reaches an honest empty state\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.same&&r.used)\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:55:518\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:54:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:58:28)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)"
+        ]
+      }
+    },
+    {
+      "label": "seven-ui-behavior-fixed-e2d12528-545a-430b-a96f-93e56e7f0235",
+      "at": "2026-09-11T16:44:17.838Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-ui-behavior-fixed-e2d12528-545a-430b-a96f-93e56e7f0235/output.log",
+      "logSha256": "0428e5949991d264325728cdb6410ccc9a6343413c505bc13a53002af2f0d3ad",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/9c7bda76-9124-4349-b7ad-2fb996198dee/report.json",
+        "sha256": "4b22f6a252d946ae918121139ca694b8e77e98ec814ed2cfc0b891d9f58c9521",
+        "ok": false,
+        "cases": 13,
+        "failures": [
+          "Error: right-clicking topbar targets opens only the latest detail\nError: Error: missing topbar guoku\n    at <anonymous>:1:206\n    at <anonymous>:1:474\n    at <anonymous>:1:535\n    at js (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:5:203)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:24:13\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:7:35)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:23:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:58:28)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)"
+        ]
+      }
+    },
+    {
+      "label": "seven-ui-first-fixed-e1cbbf9f-f0bb-40f0-923a-f0785be79b8a",
+      "at": "2026-09-11T16:42:24.775Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-ui-first-fixed-e1cbbf9f-f0bb-40f0-923a-f0785be79b8a/output.log",
+      "logSha256": "a80500e53560d4ab631e891dd0db1999afc063b29d14925c2d386c91d32adb9c",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/8902a939-892d-4f49-a894-1da26ab55bf7/report.json",
+        "sha256": "4a4f9c541744367e3c592579735f9b4daf08888745dc852b330a4e4bc90c5cf9",
+        "ok": false,
+        "cases": 5,
+        "failures": [
+          "Error: EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline'\".\n\n    at <anonymous>:1:44\n    at <anonymous>:1:1345\n    at js (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:5:223)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\seven-ui-cases.cjs:8:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:125:37)"
+        ]
+      }
+    },
+    {
+      "label": "seven-ui-six-fixed-ad6def45-1a0c-4eca-a8a2-ae3a924e785e",
+      "at": "2026-09-11T16:58:11.119Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-ui-six-fixed-ad6def45-1a0c-4eca-a8a2-ae3a924e785e/output.log",
+      "logSha256": "53c66af877bbaa381c6740666bfa88075ada144728440deea5c01b0a0c9ec017",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/4d0c1baa-c17c-40b4-871d-b35fdd8d912f/report.json",
+        "sha256": "34ba521f66c9d8e6f47ba16bbb3861c6ea672da94a082ce3d35400937ac3fa6b",
+        "ok": true,
+        "cases": 14,
+        "failures": []
+      }
+    }
+  ],
+  "images": [
+    {
+      "file": "web/dev-tools/electron-bridge/aa959ebc-8e3d-4066-88bd-b44572dd9c25/seven-help.png",
+      "bytes": 410551,
+      "sha256": "df117d1c664d260a91b301e33a2d58a05b3cef1b37e605d1b9849038aa1250c4"
+    },
+    {
+      "file": "web/dev-tools/electron-bridge/aa959ebc-8e3d-4066-88bd-b44572dd9c25/seven-edict.png",
+      "bytes": 979589,
+      "sha256": "c31d61c43886effb4324ac04792192d2bddaecdd632e001f1d11cafc944f3ce4"
+    },
+    {
+      "file": "web/dev-tools/electron-bridge/aa959ebc-8e3d-4066-88bd-b44572dd9c25/seven-api-settings.png",
+      "bytes": 707750,
+      "sha256": "d046d0e20ce3cbea1c993297730b5fd755878bb1e865a81baf88f59fdcab0c98"
+    },
+    {
+      "file": "web/dev-tools/electron-bridge/aa959ebc-8e3d-4066-88bd-b44572dd9c25/seven-treasury.png",
+      "bytes": 544944,
+      "sha256": "df658e83aa9a9cec79f98c17cc6dcaf4e38813bab2607aac3386f5fd63b4ca50"
+    }
+  ]
+}

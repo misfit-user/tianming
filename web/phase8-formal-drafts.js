@@ -1800,7 +1800,7 @@
 
   function renderEdictSuggestionItem(x, index){
     var realIndex = x.realIndex == null ? index : x.realIndex;
-    return '<article class="edict-sug-v2">' +
+    return '<article class="edict-sug-v2" data-edict-suggestion-index="' + attr(realIndex) + '">' +
       edictSuggestionPortraitHtml(x) +
       '<div><b>【' + esc(x.source || '御案') + (x.from ? ' · ' + esc(x.from) : '') + '】</b>' +
       (x.topic ? '<p style="margin-bottom:2px;color:#c9a045;font-style:italic;">〔' + esc(x.topic) + '〕</p>' : '') +
@@ -1985,8 +1985,24 @@
 
   function dismissFormalEdictSuggestion(realIndex){
     var list = formalEdictSuggestionList();
+    if (!Number.isInteger(realIndex) || realIndex < 0 || realIndex >= list.length || !list[realIndex]) return;
     if (list[realIndex]) list[realIndex].used = true;
-    openZhaoPreviewPanel();
+    var overlay = document.getElementById('tm-action-edict-overlay');
+    if (!overlay) return; // 删除建议不是重新打开圣旨页的命令。
+    var row = overlay.querySelector('[data-edict-suggestion-index="' + realIndex + '"]');
+    var lostFocus = row && row.contains(document.activeElement);
+    var next = row && (row.nextElementSibling || row.previousElementSibling);
+    if (row) row.remove();
+    var menu = document.getElementById('_edictAdoptMenu'); if (menu) menu.remove();
+    var count = getEdictSuggestionRows().length;
+    var badge = overlay.querySelector('.col-sug-t small'); if (badge) badge.textContent = count + ' 条';
+    var host = overlay.querySelector('.sug-list');
+    if (!count && host) host.innerHTML = '<article class="edict-sug-v2 edict-sug-empty"><div><b>暂无御案建议</b><p>召开朝议、问对或处理奏疏后，可摘入诏书草拟。</p></div></article>';
+    if (lostFocus) {
+      var target = next && next.querySelector('.edict-sug-delete');
+      if (target) target.focus({ preventScroll:true });
+      else if (host) { host.tabIndex = -1; host.focus({ preventScroll:true }); }
+    }
   }
 
   function showFormalEdictAdoptMenu(evt, realIndex){

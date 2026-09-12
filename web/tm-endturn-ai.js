@@ -323,6 +323,7 @@
           max_tokens: _tok(opts.repairTokens || 6000)
         };
         if (originalBody.response_format) repairBody.response_format = originalBody.response_format;
+        if (global.TM && global.TM.AIOptions) repairBody = global.TM.AIOptions.inheritForRepair(repairBody, originalBody);
         if (typeof _aiFetchWithRetry !== "function") throw new Error("AI queue unavailable for JSON repair");
         var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, {
           apiKey: opts.key,
@@ -377,6 +378,7 @@
       opts = _mergeCallPolicy(opts && opts.id, opts || {});
       var callUrl = opts.url || url;
       var key = opts.key || (P.ai && P.ai.key);
+      var _thinkingCfg = P.ai;
       // 速度批一2026-07-21·机械/格式化子调用分流次要快模型(玩家配了才生效·未配零变化)：
       // 实录sc1d/丰化sc19/快照sc28/审查sc27_review+sc27/记忆落写memwrite/收编consolidate/压缩×3——
       // 高判断的 sc0/sc1/sc2_prose/sc15 一律不动仍走主模型
@@ -388,9 +390,12 @@
         if (_secCfg && _secCfg.tier === 'secondary') {
           callUrl = _buildAIUrlForTier('secondary');
           key = _secCfg.key;
+          _thinkingCfg = _secCfg;
           if (body && body.model) body.model = _secCfg.model;
         }
       }
+      // SC1 is already finalized with its thinking settings; never alter audited bytes here.
+      if (opts.id !== 'sc1' && global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, _thinkingCfg, 'openai');
       var label = opts.label || 'endturn';
       var started = Date.now();
       var data = null;
@@ -3716,6 +3721,7 @@
       // 所有记忆、sc1q、anomaly、JSON 规则与 response schema 都已加入后，才做唯一可信的最终整包预算。
       // 预算同时保留 completion 空间；组件层 mustKeep 不得让最终 API 请求突破模型物理上下文。
       var _sc1FinalBudgetOptions = { completionTokens: _sc1BaseTok };
+      if (global.TM && global.TM.AIOptions) _sc1Body = global.TM.AIOptions.apply(_sc1Body, P.ai, 'openai');
       var _sc1Finalized = ns.finalizeSc1RequestBody(_sc1Body, _sc1FinalBudgetOptions);
       _sc1Body = _sc1Finalized.body;
       var _sc1OverflowReducer = ns.createSc1ContextOverflowReducer(_sc1FinalBudgetOptions);

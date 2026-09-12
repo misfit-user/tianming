@@ -42,6 +42,7 @@ function openNeitangPanel() {
     document.body.appendChild(ov);
   }
   renderNeitangPanel();
+  document.querySelectorAll('.var-drawer-overlay.open').forEach(function(other) { if (other !== ov) other.classList.remove('open'); });
   ov.classList.add('open');
 }
 

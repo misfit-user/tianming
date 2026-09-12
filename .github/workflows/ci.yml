@@ -106,6 +106,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Player feedback army search, local fonts and fatal turn boundary
         run: node scripts/verify-electron-bridge.js --player-feedback
+      - name: Treasury, help, rail, edict continuity and primary-secondary API controls
+        run: node scripts/verify-electron-bridge.js --seven-ui
       - name: Authoring region paths and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-regions
       - name: Workshop hierarchy, nested creation and saved editor readback

@@ -214,6 +214,7 @@ ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifec
     console: { warn() {} }, parseInt, parseFloat, isNaN
   };
   vm.createContext(ctx);
+  ctx.window = ctx; // Settings owners run in the browser; optional APISettings is absent in this legacy-save fixture.
   vm.runInContext(applySrc + '\n' + allSrc + '\nsSaveAll();', ctx);
   const apiWrites = writes.filter(w => w[0] === 'tm_api');
   ok(apiWrites.length === 1, '保存全部只原子写 tm_api 一次');

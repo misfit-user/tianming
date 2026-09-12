@@ -52,7 +52,7 @@
       configured && finitePositive(configured.contextK, 0) * 1024);
     if (!contextTokens) contextTokens = 32768;
     var completionTokens = finitePositive(options.completionTokens,
-      finitePositive(body && body.max_tokens, Math.floor(contextTokens * 0.25)));
+      finitePositive(body && (body.max_completion_tokens != null ? body.max_completion_tokens : body.max_tokens), Math.floor(contextTokens * 0.25)));
     completionTokens = Math.min(completionTokens, Math.max(1, contextTokens - 1));
     var protocolReserve = Math.max(128, Math.ceil((body && body.messages && body.messages.length || 0) * 8));
     var contextInputLimit = contextTokens - completionTokens;
@@ -90,7 +90,12 @@
       tool_choice:body && body.tool_choice,
       functions:body && body.functions
     });
-    var inputTokens = messageTokens + schemaTokens + budget.protocolReserve;
+    var thinkingFields = {};
+    ['thinking','reasoning','reasoning_effort','enable_thinking','extra_body'].forEach(function(key) {
+      if (body && body[key] !== undefined) thinkingFields[key] = body[key];
+    });
+    var thinkingTokens = Object.keys(thinkingFields).length ? estimateRequestTokens(thinkingFields) : 0;
+    var inputTokens = messageTokens + schemaTokens + thinkingTokens + budget.protocolReserve;
     return {
       inputTokens:inputTokens,
       messageTokens:messageTokens,

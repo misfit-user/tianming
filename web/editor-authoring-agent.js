@@ -831,6 +831,8 @@
       key: src.key || '',
       url: (src.url || '').replace(/\/+$/, ''),
       model: src.model || 'gpt-4o',
+      thinking: src.thinking,
+      thinkingProtocol: src.thinkingProtocol,
       model2: src.model2 || '',   // 次要模型(杂活分工:会审两官/前情摘要等·空=同主模型)
       temp: (src.temp != null) ? src.temp : 0.7
     };

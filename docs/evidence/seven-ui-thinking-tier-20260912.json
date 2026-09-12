@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "scope": "Seven-fix follow-up: preserve primary/secondary thinking preferences across the actual quick-test override and restore path. Native workbench P00 audit files are excluded.",
+  "branch": "codex/fix-seven-ui-settings",
+  "base": "c229f076821bae1d633e9bf97ba9d68b9ba48366",
+  "generatedAt": "2026-09-12T04:33:47.229Z",
+  "sources": [
+    {
+      "file": "web/.hot-update-manifest.json",
+      "bytes": 183206,
+      "sha256": "801823686390317011ce814916cb6189419251ee62db7bc1f304b7386c949a97"
+    },
+    {
+      "file": "web/index.html",
+      "bytes": 69752,
+      "sha256": "047728f848a8be9cead59c99f577a0774f145dbfa31573ac508318c7322f5865"
+    },
+    {
+      "file": "web/preview/scenario-editor-sandbox-bridge.js",
+      "bytes": 36709,
+      "sha256": "d10505105c3d8a5a07829b956870795c089ae02eaa7e11ae594a21e00d0f954e"
+    },
+    {
+      "file": "web/scripts/smoke-quicktest-multiturn.js",
+      "bytes": 19016,
+      "sha256": "e5db8c83ceadc56fadb5b628fafb41da6ae5a8bc072bb521d175a57960789854"
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "bytes": 4513,
+      "sha256": "ce91948d0256b75aa5451e282ec14e9189a3d9561db7000ee3a332492d697f07"
+    }
+  ],
+  "checks": [
+    {
+      "label": "seven-tier-arch-d05418d5-cbd1-4004-917c-05cd4de48cea",
+      "at": "2026-09-12T04:26:36.490Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-arch-d05418d5-cbd1-4004-917c-05cd4de48cea/output.log",
+      "logSha256": "9171fba2bd7097cd45b7054e31c596cc92e56c2f387bf4c32d9cb6b95ec32cf3"
+    },
+    {
+      "label": "seven-tier-arch-final-52501986-3941-488c-b5af-660b800a5525",
+      "at": "2026-09-12T04:27:56.423Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-arch-final-52501986-3941-488c-b5af-660b800a5525/output.log",
+      "logSha256": "ea47713ff5a2a610c030534809b4d25aea11c55f5222037da154b6d7405ca4bf"
+    },
+    {
+      "label": "seven-tier-baseline-55b5fa2b-01d6-493f-a2c0-e6da81bd2c78",
+      "at": "2026-09-12T04:26:09.940Z",
+      "command": "web/scripts/smoke-quicktest-multiturn.js --source-ref c229f076",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-baseline-55b5fa2b-01d6-493f-a2c0-e6da81bd2c78/output.log",
+      "logSha256": "446f9bbd9afb95b2d4513797a83cf062d9c44855fbd008adf7201519a19f09ff"
+    },
+    {
+      "label": "seven-tier-builder-bf134a72-a198-446a-bae7-3fa14c6876e3",
+      "at": "2026-09-12T04:30:02.779Z",
+      "command": "web/scripts/verify-hot-builder-gates.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-builder-bf134a72-a198-446a-bae7-3fa14c6876e3/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+    },
+    {
+      "label": "seven-tier-canonical-check-d7c7495f-99db-4253-9995-463e68cbc959",
+      "at": "2026-09-12T04:31:00.567Z",
+      "command": "scripts/sync-hot-baseline.js --check --version 1.3.4.11 --asset-root C:/Users/37814/Desktop/tianming --temp-root E:/tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-canonical-check-d7c7495f-99db-4253-9995-463e68cbc959/output.log",
+      "logSha256": "9e8f41f2b31e3c647745ea09f4ab0ae11efce039a93e70941891e8f25f5875fd"
+    },
+    {
+      "label": "seven-tier-canonical-write-82d4f80a-283c-4ec8-82ff-f94060836c9c",
+      "at": "2026-09-12T04:27:44.925Z",
+      "command": "scripts/sync-hot-baseline.js --write --version 1.3.4.11 --asset-root C:/Users/37814/Desktop/tianming --temp-root E:/tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-canonical-write-82d4f80a-283c-4ec8-82ff-f94060836c9c/output.log",
+      "logSha256": "31ec73b92532ea719219b1a2bb872ae5f1d1c846d1bbdc7c22cee34efcace40e"
+    },
+    {
+      "label": "seven-tier-electron-80ce85ec-79ef-4c97-a52f-5a805a3cd4f3",
+      "at": "2026-09-12T04:28:15.057Z",
+      "command": "scripts/verify-electron-bridge.js --seven-ui",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-electron-80ce85ec-79ef-4c97-a52f-5a805a3cd4f3/output.log",
+      "logSha256": "43e127378da06180c867d3c7ac949e8c2c352ba9db816abb53ba07e0636385d4",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/ed676afa-2457-4ae0-836b-98bd2377ba03/report.json",
+        "sha256": "d4affb7dd266b22ae035c3070349e11f7d83d8a5986a9c64936f0e3629e90c43",
+        "ok": true,
+        "cases": 23,
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-tier-fixed-258814cd-6481-4545-ac21-529c6ce14d2d",
+      "at": "2026-09-12T04:26:14.095Z",
+      "command": "web/scripts/smoke-quicktest-multiturn.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-fixed-258814cd-6481-4545-ac21-529c6ce14d2d/output.log",
+      "logSha256": "2223830bd7a299cbd4b6d69e0e5167684296abd759ada47d0d061b27cece4cab"
+    },
+    {
+      "label": "seven-tier-full-final-4942ab01-17f5-4ccc-9d90-4759da34996e",
+      "at": "2026-09-12T04:31:49.920Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-full-final-4942ab01-17f5-4ccc-9d90-4759da34996e/output.log",
+      "logSha256": "2cc982f2910e287089e2b500ed91b1ef5ce9e959d3176beaa3991a984cf21fbd",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-uyzAk8/smoke-report.json",
+        "sha256": "f5f678de0f82603592da4b3c0352c0beb5996798b0dfac62f39b175708ba3302",
+        "summary": {
+          "selected": 950,
+          "pass": 948,
+          "fail": 0,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        },
+        "failures": []
+      }
+    },
+    {
+      "label": "seven-tier-parity-83afa4e6-3355-4e39-bed1-ab4aca5842d4",
+      "at": "2026-09-12T04:29:54.528Z",
+      "command": "web/scripts/verify-official-scenario-parity.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-parity-83afa4e6-3355-4e39-bed1-ab4aca5842d4/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+    },
+    {
+      "label": "seven-tier-release-ce2e4e32-3f4a-4076-a695-7e04ba7e536b",
+      "at": "2026-09-12T04:29:57.931Z",
+      "command": "scripts/verify-release-contract.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/seven-tier-release-ce2e4e32-3f4a-4076-a695-7e04ba7e536b/output.log",
+      "logSha256": "f720be34386a78b9965bc5668d37e528162918bd574d2d886d5d1cb7f126f5a2"
+    }
+  ],
+  "images": []
+}

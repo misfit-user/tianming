@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-11T17:41:24.595Z",
+  "generatedAt": "2026-09-12T04:27:42.214Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "63555c4dfd2433c287290f7d80d8cf25ab9e537b6cf13fd8fdbf891fc38f801f",
-      "size": 69753
+      "sha256": "047728f848a8be9cead59c99f577a0774f145dbfa31573ac508318c7322f5865",
+      "size": 69752
     },
     {
       "path": "INDEX.md",
@@ -3256,8 +3256,8 @@
     },
     {
       "path": "preview/scenario-editor-sandbox-bridge.js",
-      "sha256": "940d42fb6c99dd28e9a328e4bc1664968ddb7932597008195540fae6ca77b115",
-      "size": 35893
+      "sha256": "d10505105c3d8a5a07829b956870795c089ae02eaa7e11ae594a21e00d0f954e",
+      "size": 36709
     },
     {
       "path": "preview/settings-button-preview.html",

@@ -500,10 +500,14 @@
         if (typeof global._useSecondaryTier !== 'function' || !global._useSecondaryTier()) return false;
         var sec = global.P && global.P.ai && global.P.ai.secondary;
         if (!sec || !sec.key || !sec.url) return false;
-        _origAi = { key: global.P.ai.key, url: global.P.ai.url, model: global.P.ai.model };
+        _origAi = { key: global.P.ai.key, url: global.P.ai.url, model: global.P.ai.model,
+          thinking: global.P.ai.thinking, thinkingProtocol: global.P.ai.thinkingProtocol,
+          hasThinking: Object.prototype.hasOwnProperty.call(global.P.ai, 'thinking'),
+          hasThinkingProtocol: Object.prototype.hasOwnProperty.call(global.P.ai, 'thinkingProtocol') };
         global.P.ai.key = sec.key;
         global.P.ai.url = sec.url;
         if (sec.model) global.P.ai.model = sec.model;
+        global.P.ai.thinking = sec.thinking; global.P.ai.thinkingProtocol = sec.thinkingProtocol; // arch-ok temporary quick-test tier config, restored below without persistence
         report.aiTier = 'secondary';
         return true;
       } catch (_) { return false; }
@@ -515,6 +519,8 @@
           global.P.ai.key = _origAi.key;
           global.P.ai.url = _origAi.url;
           global.P.ai.model = _origAi.model;
+          if (_origAi.hasThinking) global.P.ai.thinking = _origAi.thinking; else delete global.P.ai.thinking; // arch-ok restore the exact pre-test optional config
+          if (_origAi.hasThinkingProtocol) global.P.ai.thinkingProtocol = _origAi.thinkingProtocol; else delete global.P.ai.thinkingProtocol; // arch-ok restore the exact pre-test optional config
         }
       } catch (_) {}
       _origAi = null;

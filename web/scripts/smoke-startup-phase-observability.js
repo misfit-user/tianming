@@ -25,11 +25,11 @@ assert.strictEqual(manifest.scriptCount, 414, '411 retained scripts plus the thr
 for (const name of ['tm-ai-request-options.js', 'tm-api-models.js', 'tm-api-settings.js']) {
   assert.strictEqual(scriptNames.filter((src) => src === name).length, 1, name + ' is loaded exactly once');
 }
-assert(scriptNames.indexOf('tm-ai-request-options.js') < scriptNames.indexOf('tm-ai-infra.js'), 'thinking policy loads before its transport consumers');
 assert(scriptNames.indexOf('tm-api-models.js') < scriptNames.indexOf('tm-api-settings.js'), 'model discovery loads before its settings controls');
 assert(scriptNames.indexOf('tm-api-settings.js') < scriptNames.indexOf('tm-patches.js'), 'settings controls load before the settings renderer');
 assert.strictEqual(scriptNames.filter((name) => name === 'tm-ai-infra-retry.js').length, 1, 'retry helpers load exactly once');
 assert.strictEqual(scriptNames.indexOf('tm-ai-infra-retry.js') + 1, scriptNames.indexOf('tm-ai-infra.js'), 'retry helpers directly precede their consumer');
+assert(scriptNames.indexOf('tm-ai-request-options.js') < scriptNames.indexOf('tm-ai-infra.js'), 'thinking policy loads before its transport consumers');
 assert.strictEqual(scriptNames.filter((name) => name === 'tm-building-orders.js').length, 1, 'the building-order owner must be loaded exactly once');
 assert(scriptNames.indexOf('tm-building-orders.js') > scriptNames.indexOf('tm-custom-build-agent.js'), 'the order owner follows its actual construction provider');
 assert(manifest.scripts.every((row) => row.lazySafe === false && row.loadPolicy === 'eager-ordered'), 'retained classic scripts should remain explicitly eager');

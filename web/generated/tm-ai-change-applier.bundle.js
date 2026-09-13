@@ -870,7 +870,7 @@
       } else if (field === "environment_actions") {
         if (item.policyId) params.policyId = item.policyId;
       } else if (field === "institution_changes") {
-        params.officeName = item.officeName || item.name || item.institutionName || "新司";
+        params.officeName = item.officeName || item.name || item.institutionName || "";
         params.rank = item.rank || 5;
         params.duties = item.duties || item.description || "";
         if (item.region) params.region = item.region;
@@ -921,6 +921,22 @@
       if (!action) return null;
       _normalizeDynamicInstitutions(G);
       if (action === "create") {
+        if (typeof parser.executeOfficeCreation === "function") {
+          var parentDept = item.subordinateTo || item.parentDept || "";
+          var declared = {
+            action: "reform",
+            reformDetail: "增设",
+            dept: parentDept || params.officeName,
+            newDept: parentDept ? params.officeName : "",
+            deptId: item.deptId,
+            deptPath: item.deptPath,
+            positions: item.positions || [],
+            newRank: params.rank,
+            reason: params.duties || ""
+          };
+          var result = parser.executeOfficeCreation([declared], Object.assign({}, params, { createdBy: "ai-structured-policy" }));
+          return Object.assign({ action: "create", name: params.officeName }, result || { ok: false, reason: "官制创建没有返回回执" });
+        }
         if (typeof parser.registerDynamicInstitution !== "function") return null;
         var spec = {
           name: params.officeName || item.name || item.institutionName || "新司",
@@ -978,7 +994,7 @@
           var result = null;
           var ok = false;
           var action = field === "institution_changes" ? _aiInstitutionLifecycleAction(item) : "";
-          if (!(field === "institution_changes" && action === "abolish")) {
+          if (!(field === "institution_changes" && (action === "abolish" || action === "create" && typeof parser.executeOfficeCreation === "function"))) {
             try {
               edictResult = parser.tryExecute(text, params, meta);
               ok = !!(edictResult && edictResult.ok !== false);
@@ -991,7 +1007,7 @@
             lifecycle = _applyAIInstitutionLifecycleChange(item, params);
             if (lifecycleAttempted) ok = !!(lifecycle && lifecycle.ok);
           }
-          result = { ok, edict: edictResult, lifecycle };
+          result = { ok, edict: edictResult, lifecycle, reason: lifecycle && lifecycle.reason || edictResult && edictResult.reason || "" };
           G._aiStructuredPolicyActions.push({
             turn: G.turn || 0,
             field,

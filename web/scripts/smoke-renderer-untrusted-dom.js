@@ -7,7 +7,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const electronSource = fs.readFileSync(path.join(ROOT, 'tm-electron.js'), 'utf8');
-const infraSource = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSource = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const startSource = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
 const indexSource = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const attacks = [

@@ -16,7 +16,7 @@ console.log('smoke-imageapi-url');
 /* ── §A ImageAPI 行为 ─────────────────────────────────────────── */
 console.log('— §A · ImageAPI.normalizeUrl / getConfig —');
 (function () {
-  var src = read('tm-ai-infra.js');
+  var src = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js'));
   var start = src.indexOf('var ImageAPI = {');
   var end = src.indexOf('\n};', start);
   ok(start >= 0 && end > start, 'ImageAPI 切片边界在');
@@ -66,7 +66,7 @@ console.log('— §B · 国师 generateImage 镜像 —');
   var agent = read('editor-authoring-agent.js');
   ok(agent.indexOf('generations|edits|variations') >= 0, '国师侧同规归一化正则在(完整端点不双拼)');
   ok(/_loadImageApiConfig/.test(agent) && /loadEditorApiConfig\(\)\.key/.test(agent), '国师侧 Key 留空回退主 API Key');
-  var infra = read('tm-ai-infra.js');
+  var infra = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js'));
   ok(/normalizeUrl/.test(infra) && /editor-authoring-agent\.js generateImage 有同规镜像/.test(infra), '两侧镜像互注防漂移');
 })();
 

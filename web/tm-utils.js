@@ -2058,6 +2058,8 @@ function _getAITier(tier) {
       key: _s.key,
       url: _s.url,
       model: _s.model || P.ai.model || 'gpt-4o-mini',
+      thinking: _s.thinking,
+      thinkingProtocol: _s.thinkingProtocol,
       tier: 'secondary'
     };
   }
@@ -2065,6 +2067,8 @@ function _getAITier(tier) {
     key: (P.ai && P.ai.key) || '',
     url: (P.ai && P.ai.url) || '',
     model: (P.ai && P.ai.model) || 'gpt-4o',
+    thinking: P.ai && P.ai.thinking,
+    thinkingProtocol: P.ai && P.ai.thinkingProtocol,
     tier: 'primary'
   };
 }

@@ -21,7 +21,8 @@ const path = require('path');
 const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 const BRIDGE = path.join(ROOT, 'preview', 'scenario-editor-sandbox-bridge.js');
-const src = fs.readFileSync(BRIDGE, 'utf8');
+const sourceRef = process.argv.includes('--source-ref') ? process.argv[process.argv.indexOf('--source-ref') + 1] : null;
+const src = sourceRef ? require('child_process').execFileSync('git', ['show', sourceRef + ':web/preview/scenario-editor-sandbox-bridge.js'], { cwd:path.resolve(ROOT, '..'), encoding:'utf8' }) : fs.readFileSync(BRIDGE, 'utf8');
 
 let passed = 0, failed = 0;
 function ok(cond, msg) { if (cond) { passed++; console.log('  ✓ ' + msg); } else { failed++; console.error('  ✗ ' + msg); } }
@@ -251,6 +252,22 @@ async function main() {
     await ctx.TM_SCENARIO_QUICKTEST.run({ id: 'sc6c', name: 'V' }, { turns: 1, bootWaitMs: 5, perTurnTimeoutMs: 2000 });
     await wait(20);
     ok(ctx.P.ai.key === 'primary-key' && ctx.P.ai.model === 'big', '回合抛错路径亦还原 P.ai(finish 全路径)');
+  }
+
+  // Explicit thinking belongs to the selected API, even when quick-test routes it through the primary transport slot.
+  for (const [mainThinking, secondaryThinking] of [[true,false],[false,true],[true,undefined],[undefined,false]]) {
+    const { ctx } = makeCtx({ 1:{}, 2:{} });
+    ctx._useSecondaryTier = () => true; ctx.URL = URL;
+    ctx.P.ai.model = 'deepseek-chat'; ctx.P.ai.secondary.model = 'qwen3-235b-a22b';
+    if (mainThinking !== undefined) { ctx.P.ai.thinking = mainThinking; ctx.P.ai.thinkingProtocol = 'deepseek'; }
+    if (secondaryThinking !== undefined) { ctx.P.ai.secondary.thinking = secondaryThinking; ctx.P.ai.secondary.thinkingProtocol = 'qwen'; }
+    const original = JSON.stringify(ctx.P.ai), had = Object.prototype.hasOwnProperty.call(ctx.P.ai, 'thinking');
+    vm.runInContext(fs.readFileSync(path.join(ROOT,'tm-ai-request-options.js'),'utf8'),ctx,{filename:'tm-ai-request-options.js'});
+    const seen = [], runTurn = ctx._endTurnInternal;
+    ctx._endTurnInternal = () => { seen.push(ctx.TM.AIOptions.apply({model:ctx.P.ai.model,max_tokens:4000},ctx.P.ai,'openai')); return runTurn(); };
+    await ctx.TM_SCENARIO_QUICKTEST.run({id:'thinking-route',name:'思考路由'}, {turns:2,bootWaitMs:5,perTurnTimeoutMs:2000});
+    ok(seen.length===2 && seen.every(body=>body.enable_thinking===secondaryThinking && body.thinking===undefined), '快测使用副 API thinking='+secondaryThinking+'，不串主 API='+mainThinking);
+    ok(JSON.stringify(ctx.P.ai)===original && Object.prototype.hasOwnProperty.call(ctx.P.ai,'thinking')===had, '快测后原样恢复主 API 与默认字段存在性');
   }
 
   // ═══ 7. 刀C·runById console 入口 ═══

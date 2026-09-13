@@ -1318,10 +1318,12 @@
       var modeName = {tang_three:'唐三分（州留/道留/中央）',qiyun_cunliu:'明清起运存留',song_cash:'宋钱入中央',custom:'自定'}[preset||'qiyun_cunliu'];
       clh += '<div style="color:var(--txt-d);">' + _esc(modeName||'') + '</div>';
       // 表头
-      clh += '<table style="width:100%;margin-top:4px;font-size:0.71rem;"><tr style="color:var(--gold-500);"><td>省</td><td>名义</td><td>实征</td><td>留存</td><td>起运</td><td>合规</td></tr>';
+      clh += '<table style="width:100%;margin-top:4px;font-size:0.71rem;"><tr style="color:var(--gold-500);"><td>地区</td><td>名义</td><td>实征</td><td>留存</td><td>起运</td><td>合规</td></tr>';
       rids.slice(0, 15).forEach(function(rid) {
-        var r = G.fiscal.regions[rid];
-        clh += '<tr><td>' + _esc(rid) + '</td>';
+        var r = G.fiscal.regions[rid] || {};
+        var region = (Array.isArray(G.regions) ? G.regions : []).find(function(row) { return row && (String(row.id) === rid || row.name === rid); });
+        var regionName = (region && region.name) || r.regionName || r.name || (/^div_/.test(rid) ? '地区未载' : rid);
+        clh += '<tr><td title="' + _esc(rid) + '">' + _esc(regionName) + '</td>';
         clh += '<td>' + _fmt(r.claimedRevenue||0) + '</td>';
         clh += '<td>' + _fmt(r.actualRevenue||0) + '</td>';
         clh += '<td>' + _fmt(r.retainedBudget||0) + '</td>';

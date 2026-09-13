@@ -831,6 +831,8 @@
       key: src.key || '',
       url: (src.url || '').replace(/\/+$/, ''),
       model: src.model || 'gpt-4o',
+      thinking: src.thinking,
+      thinkingProtocol: src.thinkingProtocol,
       model2: src.model2 || '',   // 次要模型(杂活分工:会审两官/前情摘要等·空=同主模型)
       temp: (src.temp != null) ? src.temp : 0.7
     };
@@ -3061,7 +3063,14 @@
     }
     function caller(conv, offered, options) {
       metrics.logicalRequests++; var began = Date.now(), responses = 0;
-      var tracked = Object.assign({}, options, { onTelemetry: function(e) { if(e.type==='request'){metrics.httpRequests++;if(e.retry)metrics.retries++;}else if(e.type==='response'){responses++;metrics.responses++;addUsage(e.usage);} } });
+      var tracked = Object.assign({}, options, { onTelemetry: function(e) {
+        if(e.type==='request'){metrics.httpRequests++;if(e.retry)metrics.retries++;}
+        else if(e.type==='response'){responses++;metrics.responses++;addUsage(e.usage);}
+        else if(e.type==='response-retry') {
+          metrics.incompleteUsage = true; // 损坏响应仍可能计费，不能声称统计完整。
+          if(typeof opts.onText==='function') opts.onText('（响应格式异常或事件流断开，本轮未执行工具；正在重试完整响应 1/1，已完成草稿保留…）', iterations);
+        }
+      } });
       return Promise.resolve().then(function(){return actualCaller(conv,offered,tracked);}).then(function(r){if(!responses){metrics.responses++;addUsage(r && r.usage);}return r;}).finally(function(){metrics.requestElapsedMs+=Date.now()-began;});
     }
     var maxIterations = opts.maxIterations || 48;     // 刀D · 自主度：放宽到 48 轮·持续调用直到完成（UI 还会自动续接）

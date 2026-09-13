@@ -76,3 +76,8 @@ web/tm-endturn-followup.js whitespace=blank-at-eol,blank-at-eof,space-before-tab
 web/tm-feudal-warfare.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # 国师缓存戳：保留入口历史混合行尾（592 CRLF / 2 LF）；继续检查实际行尾空格。
 web/preview/scenario-editor-reset-preview.html whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Player feedback retry split retains the existing CRLF bytes; real trailing spaces still fail.
+web/tm-ai-infra-retry.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-cost-panel-ui.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-final-completion.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-phase7-ux-collapse.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

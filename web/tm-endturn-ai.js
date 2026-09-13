@@ -55,8 +55,10 @@
 
     var _tokCp = (typeof getCompressionParams === "function") ? getCompressionParams() : { scale: 1.0, contextK: 32 };
     function _getEffectiveOutputLimit() {
-      if (P.conf.maxOutputTokens && P.conf.maxOutputTokens > 0) return P.conf.maxOutputTokens;
-      if (P.conf._detectedMaxOutput && P.conf._detectedMaxOutput > 0) return P.conf._detectedMaxOutput;
+      var manual = Number(P.conf.maxOutputTokens), detected = Number(P.conf._detectedMaxOutput);
+      if (Number.isFinite(manual) && manual > 0) return manual;
+      var currentKey = String(P.ai.model || '').trim() + '@' + String(P.ai.url || '');
+      if (P.conf._ctxCacheKey === currentKey && Number.isFinite(detected) && detected > 0) return detected;
       if (typeof _matchModelOutput === "function") {
         var wl = _matchModelOutput(P.ai.model || "");
         if (wl > 0) return wl * 1024;
@@ -321,6 +323,7 @@
           max_tokens: _tok(opts.repairTokens || 6000)
         };
         if (originalBody.response_format) repairBody.response_format = originalBody.response_format;
+        if (global.TM && global.TM.AIOptions) repairBody = global.TM.AIOptions.inheritForRepair(repairBody, originalBody);
         if (typeof _aiFetchWithRetry !== "function") throw new Error("AI queue unavailable for JSON repair");
         var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, {
           apiKey: opts.key,
@@ -375,6 +378,7 @@
       opts = _mergeCallPolicy(opts && opts.id, opts || {});
       var callUrl = opts.url || url;
       var key = opts.key || (P.ai && P.ai.key);
+      var _thinkingCfg = P.ai;
       // 速度批一2026-07-21·机械/格式化子调用分流次要快模型(玩家配了才生效·未配零变化)：
       // 实录sc1d/丰化sc19/快照sc28/审查sc27_review+sc27/记忆落写memwrite/收编consolidate/压缩×3——
       // 高判断的 sc0/sc1/sc2_prose/sc15 一律不动仍走主模型
@@ -386,9 +390,12 @@
         if (_secCfg && _secCfg.tier === 'secondary') {
           callUrl = _buildAIUrlForTier('secondary');
           key = _secCfg.key;
+          _thinkingCfg = _secCfg;
           if (body && body.model) body.model = _secCfg.model;
         }
       }
+      // SC1 is already finalized with its thinking settings; never alter audited bytes here.
+      if (opts.id !== 'sc1' && global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, _thinkingCfg, 'openai');
       var label = opts.label || 'endturn';
       var started = Date.now();
       var data = null;
@@ -791,6 +798,10 @@
     var _modelTemp = ctx.subcalls._modelTemp;
     var _modelFamily = ctx.subcalls._modelFamily;
 
+    // 必需系统前缀都装不下时，不先花多轮 SC0/记忆调用再等最终预算失败。
+    // 这里只预检不可删的下界；后面的完整 schema/正文预算仍原样执行。
+    ns.assertSc1MandatoryPrefix(sysPFor('sc1'), Math.min(_effectiveOutCap || 16384, 16384));
+
     // §2 Sub-call 注册化基础设施（_runSubcall + 共享变量声明）
     // ═══════════════════════════════════════════════════════════
       // 3.3: Sub-call注册化——共享变量前置声明 + 管线描述 + 执行包装器
@@ -946,7 +957,8 @@
           } catch(_scErr) {
             var _errInfo = _formatAIError(_scErr);
             _dbg('[' + name + '] 第' + (_attempt+1) + '次执行失败:', _scErr.message);
-            if (_attempt >= _retries) {
+            var _terminalError = typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_scErr);
+            if (_attempt >= _retries || _terminalError) {
               var _elapsed = Date.now() - _start;
               GM._subcallTimings[id] = _elapsed;
               _stats.totalTime += _elapsed;
@@ -969,7 +981,7 @@
                     error: _errInfo.message,
                     status: _errInfo.status,
                     snippet: _errInfo.snippet,
-                    attempts: _retries + 1,
+                    attempts: _attempt + 1,
                     ms: _elapsed
                   });
                 }
@@ -977,13 +989,14 @@
               console.warn('[EndturnSubcall] failed after retries:', id, name, _errInfo.message, _errInfo.status || '');
               if (typeof toast === 'function') {
                 var _brief = _errInfo.status ? ('HTTP ' + _errInfo.status + ' ' + _errInfo.message) : _errInfo.message;
-                toast('\u26A0 ' + name + '失败：' + String(_brief || '').slice(0, 80) + '；本回合会继续，详见AI诊断');
+                toast('\u26A0 ' + name + '失败：' + String(_brief || '').slice(0, 80) + (id === 'sc1' && _terminalError ? '；主推演中止，详见AI诊断' : '；本回合会继续，详见AI诊断'));
               }
-              console.warn('[' + name + '] 重试' + _retries + '次后仍失败');
+              console.warn('[' + name + '] 重试' + _attempt + '次后仍失败');
               try {
                 if (typeof setAIBranchDiagnostic === 'function') setAIBranchDiagnostic(id, 'failed', _errInfo.message);
               } catch(_branchFailErr) { try { console.warn('[AIDiagnostic] branch failed failed:', _branchFailErr); } catch(_) {} }
-              if (typeof _isCriticalPostTurnJob === 'function' && _isCriticalPostTurnJob({ id: id })) throw _scErr;
+              if ((id === 'sc1' && _terminalError) || (typeof _isCriticalPostTurnJob === 'function' && _isCriticalPostTurnJob({ id: id }))) throw _scErr;
+              return;
             }
           }
         }
@@ -3708,6 +3721,7 @@
       // 所有记忆、sc1q、anomaly、JSON 规则与 response schema 都已加入后，才做唯一可信的最终整包预算。
       // 预算同时保留 completion 空间；组件层 mustKeep 不得让最终 API 请求突破模型物理上下文。
       var _sc1FinalBudgetOptions = { completionTokens: _sc1BaseTok };
+      if (global.TM && global.TM.AIOptions) _sc1Body = global.TM.AIOptions.apply(_sc1Body, P.ai, 'openai');
       var _sc1Finalized = ns.finalizeSc1RequestBody(_sc1Body, _sc1FinalBudgetOptions);
       _sc1Body = _sc1Finalized.body;
       var _sc1OverflowReducer = ns.createSc1ContextOverflowReducer(_sc1FinalBudgetOptions);
@@ -3733,6 +3747,8 @@
           data1 = { choices: [{ message: { content: c1 } }] };
           // 流式模式无 usage·不记 token
         } catch(_se) {
+          var _streamCompatibility = [400,422].indexOf(Number(_se && _se.status)) >= 0 && /stream|response_format|json_schema/i.test(String(_se && _se.message || ''));
+          if (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_se) && !_streamCompatibility) throw _se;
           _dbg('[SC1 stream] failed·fallback to fetch:', _se);
           _sc1CriticalError = _se;
           _streamSC1 = false;
@@ -3743,9 +3759,12 @@
           _sc1Call = await _callEndturnAI(_sc1Body, ns.sc1ProductionCallOptions('结构化数据', _sc1OverflowReducer));
           data1 = _sc1Call.data;
           c1 = _sc1Call.raw || '';
+          _sc1CriticalError = null;
         } catch(_sc1FetchErr) {
           // Phase 6 Q1-3·strict json_schema 失败 → 自动 fallback to json_object 重试一次
           var _isStrictErr = (_sc1Body.response_format && _sc1Body.response_format.type === 'json_schema')
+            && [400,422].indexOf(Number(_sc1FetchErr && _sc1FetchErr.status)) >= 0
+            && /response_format|json_schema|strict/i.test(String(_sc1FetchErr && _sc1FetchErr.message || ''))
             && !(_sc1FetchErr && _sc1FetchErr.contextOverflow);
           if (_isStrictErr) {
             console.warn('[SC1] strict json_schema 失败·fallback to json_object:', _sc1FetchErr && _sc1FetchErr.message);
@@ -3755,6 +3774,7 @@
               _sc1Call = await _callEndturnAI(_sc1Body, ns.sc1ProductionCallOptions('结构化数据·fallback', _sc1OverflowReducer));
               data1 = _sc1Call.data;
               c1 = _sc1Call.raw || '';
+              _sc1CriticalError = null;
               if (GM && GM._turnAiResults) GM._turnAiResults._sc1StrictFallback = true;
             } catch(_sc1Retry) {
               _sc1CriticalError = _sc1Retry;
@@ -3770,6 +3790,7 @@
           }
         }
       }
+      if (_sc1CriticalError && typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_sc1CriticalError)) throw _sc1CriticalError;
       p1=null; // 赋值到外层声明的p1
       try {
         if (data1) _checkTruncated(data1, '结构化数据');

@@ -145,6 +145,13 @@
     return _startDraft();
   }
   function _autoApplyAllowed(res) { return !!(res && res.finished && res.completion && /^(completed|unchanged)$/.test(res.completion.status)); }
+  function _autoApplyFinished(res, validation) {
+    // 所有写入入口共用：按结束时的权限判断，且仍走同一冲突/校验/案卷确认提交。
+    // 完成的记忆/技能也属于放行范围；失败、澄清、只读计划及部分草稿绝不自动提交。
+    if (ui.autonomy !== 'auto' || ui.planMode || ui._pendingClarify || ui._pendingPlan || !_autoApplyAllowed(res)) return;
+    if (!validation || !validation.ok || !((ui._lastDiffs || []).length || (ui._pendingSideEffects || []).length)) return;
+    onApply();
+  }
   function _applyLabel(valid, diffs) {
     if (!diffs.length && (ui._pendingSideEffects || []).length) return '批准记忆/技能（不改剧本）';
     return valid ? '应用到剧本' : '仍有问题·确认应用';
@@ -2380,6 +2387,7 @@
       ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, ui._lastDiffs || []);
       ui.els.discard.textContent = '放弃';
       setStatus('已按计划执行（' + res.iterations + ' 轮）· 可应用 / 放弃 / 追问');
+      _autoApplyFinished(res, res.finalValidation);
     }).catch(function(err) { renderError('plan-execute', '(按计划执行)', err); });   // UI·AC · 错误卡+重试
   }
 
@@ -2677,7 +2685,7 @@
       ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, diffs);
       ui.els.discard.textContent = '放弃';
       setStatus((res.orchestrated ? '分解执行完成（' + res.steps.length + ' 步）' : '执行完成') + (res.stopReason === 'aborted' ? '·已中断' : '') + '· 可应用 / 放弃');
-      if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && res.finalValidation.ok && diffs.length) { onApply(); }
+      _autoApplyFinished(res, res.finalValidation);
     }).catch(function(err) { renderError('orchestrate', request, err); });   // UI·AC · 错误卡+重试
   }
 
@@ -2774,7 +2782,7 @@
         ui.els.discard.textContent = '放弃';
       }
       setStatus('三堂会审完成 · ' + (res.revised ? '已据谏修订' : '两官无异议') + (diffs.length ? '：审阅 diff 后应用 / 放弃' : ((ui._pendingSideEffects || []).length ? '：记忆/技能待批准' : '：无改动')));
-      if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && val.ok && diffs.length) { onApply(); }
+      _autoApplyFinished(res, val);
     }).catch(function(err) { renderError('critics', request, err); });
   }
   // 刀3 · 会审报告：史官 + 谏官两份意见并列展示（只读·让玩家看到博弈），修订后的 diff 在下方走应用审
@@ -2941,7 +2949,7 @@
         ui.els.apply.className = res.finalValidation.ok ? '' : 'warn';
         ui.els.apply.textContent = _applyLabel(res.finalValidation.ok, diffs);
         // 方向F · 自主度「全自动」：校验通过且有改动则自动应用（无需玩家点）
-        if (ui.autonomy === 'auto' && _autoApplyAllowed(res) && res.finalValidation.ok && diffs.length) { onApply(); }
+        _autoApplyFinished(res, res.finalValidation);
       }
     }).catch(function(err) { renderError('generate', request, err); });   // UI·AC · 错误卡+重试（重试走 onGenerate·仍按当前 planMode）
   }

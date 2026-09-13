@@ -95,7 +95,7 @@ ML.aggregateTrue(GM);
 ok(GM.minxin.trueIndex < 99, '④ 直写缓存被聚合冲掉=死路实证（守卫红线的机理背书）');
 
 // ── ⑤ 探测持久化收口的沙箱安全：无 saveP 环境静默跳过 ──
-const infraSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 ok(/function _persistProbeConf\(\)/.test(infraSrc) && /typeof saveP === 'function'/.test(infraSrc), '⑤ 探测持久化存在且 guarded（无 saveP 沙箱安全）');
 
 console.log('\n[smoke-ledger-consistency] ' + (failed === 0 ? 'PASS' : 'FAIL') + ' — ' + passed + ' passed, ' + failed + ' failed');

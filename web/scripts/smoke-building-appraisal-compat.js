@@ -26,7 +26,7 @@ function harness(options = {}) {
   c.window = c; c.globalThis = c;
   vm.createContext(c);
   for (const name of ['_getAITier', '_buildAIUrlForTier', '_buildAIUrl']) vm.runInContext(functionSource(read('tm-utils.js'), name), c);
-  for (const file of ['tm-ai-infra-json.js', 'tm-ai-infra.js', 'tm-building-works.js', 'tm-custom-build-agent.js']) vm.runInContext(read(file), c, { filename: file });
+  for (const file of ['tm-ai-infra-json.js', 'tm-ai-infra-retry.js', 'tm-ai-infra.js', 'tm-building-works.js', 'tm-custom-build-agent.js']) vm.runInContext(read(file), c, { filename: file });
   // UI now needs the real modal/world lease, not an unowned detached callback.
   vm.runInContext(['_tmCaptureWorldLease', '_tmWorldLeaseCurrent'].map(n => functionSource(read('tm-post-turn-jobs.js'), n)).join('\n'), c);
   const core = read('tm-player-core.js');

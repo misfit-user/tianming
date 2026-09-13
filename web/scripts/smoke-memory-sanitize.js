@@ -213,7 +213,7 @@ const WG = sandbox.TM.MemoryWriteGate;
 console.log('\n[P0-1] 读侧 _buildTemporalConstraint');
 (function () {
   setGM({ turn: 4, chars: [{ name: WEI, alive: true }] });
-  const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
   const blk = sliceBlock(infra, '  if (ch && Array.isArray(ch._memory) && ch._memory.length > 0) {');
   ok(!!blk && blk.indexOf('_tmFilterMemories') >= 0, '读侧块已接 _tmFilterMemories');
   const runReadSide = new Function('ch', 'lines', 'GM', '_tmFilterMemories', blk + '\n return lines;');

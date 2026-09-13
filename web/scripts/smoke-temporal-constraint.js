@@ -19,7 +19,7 @@ function assert(cond, msg) { if (!cond) { console.error('FAIL: ' + msg); process
 
 // ── 抽出整段时空约束代码（_buildTemporalConstraint..._tcScanMentionedNames，含 _TC_OFFICE_TIERS 声明）──
 function extractBlock() {
-  const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
   const si = infra.indexOf('function _buildTemporalConstraint(ch, opts)');
   const ei = infra.indexOf('/** 构建长期行动/长期诏书/长期政策摘要·注入推演 sysP');
   if (si < 0 || ei < 0 || ei <= si) throw new Error('无法定位时空约束代码段');
@@ -205,7 +205,7 @@ function sliceB() {
   const facSrc = fs.readFileSync(path.join(ROOT, 'tm-faction-npc-llm-decision.js'), 'utf8').replace(/\s+/g, ' ');
   assert(/_buildTemporalConstraint\s*\([^)]*clauseOnly/.test(facSrc), 'faction 决策须用 clauseOnly 版');
   // 助手确已定义于 infra
-  const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
   assert(/function _tcScanMentionedNames\s*\(/.test(infra), 'tm-ai-infra.js 须定义 _tcScanMentionedNames 供四入口复用');
   console.log('  [sliceB] ' + (PASS - start) + ' 断言通过（四入口 grep + 真传递）');
 }

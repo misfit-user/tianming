@@ -291,7 +291,7 @@ async function main() {
     'tm-economy-engine-currency.js',
     'tm-economy-engine.js',
     'tm-huji-engine.js',
-    'tm-ai-infra.js',
+    'tm-ai-infra-retry.js', 'tm-ai-infra.js',
     'tm-endturn-ai-sc1-budget.js',
     'tm-keju-runtime-keyi.js',
     'tm-feudal-warfare.js',

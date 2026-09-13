@@ -15,7 +15,7 @@ function check(name,fn){try{fn();passed++;console.log('PASS',name);}catch(e){fai
 function harness(){
   const elements=new Map(),badges=[],calls=[];let reads=0;
   function badge(owner,slot,cls){const b={owner,slot,cls,textContent:'',style:{},removed:false,getAttribute:k=>k==='data-phase8-badge'?slot:null,parentNode:{attrs:{},setAttribute(k,v){this.attrs[k]=v;}},remove(){this.removed=true;}};badges.push(b);return b;}
-  function node(id){let html='';const n={id,style:{},setAttribute(){},querySelector(){return null;},appendChild(child){elements.set(child.id,child);},remove(){elements.delete(this.id);badges.filter(b=>b.owner===this.id).forEach(b=>b.remove());},
+  function node(id){let html='';const n={id,style:{},dataset:{},setAttribute(){},querySelector(s){return s==='[data-slot="archive"]'&&html.includes('data-slot="archive"')?{}:null;},appendChild(child){elements.set(child.id,child);},remove(){elements.delete(this.id);badges.filter(b=>b.owner===this.id).forEach(b=>b.remove());},
     get innerHTML(){return html;},set innerHTML(v){html=v;badges.filter(b=>b.owner===this.id).forEach(b=>b.remove());for(const m of v.matchAll(/<span class="(tm-rc-count|tmf-rail-count)"(?: data-phase8-badge="([^"]+)")?/g))badge(this.id,m[2],m[1]);}};return n;}
   const parent=node('parent');
   const doc={querySelector:s=>s==='.gs-rail-right'?parent:null,getElementById:id=>elements.get(id)||null,createElement:()=>node(''),

@@ -36,6 +36,7 @@ const ctx = {
     minxin: { trueIndex: 55 },
     guoku: { money: 5000000 },
     chars: [],
+    officeTree: [],
     corruption: { overall: 30 },
     _pendingMemorials: [],
     _pendingClarifications: [],
@@ -56,6 +57,8 @@ function load(file) {
 
 // R12b 后·tm-phase-c-patches.js 已 inline 入 tm-edict-parser.js；机构拨款走 production FiscalEngine。
 load('tm-fiscal-engine.js');
+load('tm-office-creation.js');
+load('tm-office-reform.js');
 load('tm-edict-parser.js');
 
 // PhaseC.init() 现在是 no-op (OVERRIDEs 已 inline 入 v1)·调用兼容性保持
@@ -115,6 +118,7 @@ assert(r2.ok, 'office_reform approve returns ok');
 eq(ctx.GM.dynamicInstitutions.length, 1, 'office_reform approve registers institution (OVERRIDE side-effect)');
 eq(ctx.GM.dynamicInstitutions[0].name, '都察院', 'institution name from draftParams.officeName');
 eq(ctx.GM.dynamicInstitutions[0].rank, 3, 'institution rank from draftParams.rank');
+assert(ctx.GM.officeTree.some(n => n.name === '都察院'), 'approved institution also lands in the authoritative office tree');
 assert(ctx.GM.dynamicInstitutions[0].id.indexOf('inst_') === 0, 'institution id prefixed inst_');
 
 // ══════════════════════════════════════════════════════════════

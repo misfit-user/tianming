@@ -167,7 +167,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
       personnelChanges = Array.isArray(ctx.record.personnelChanges) ? ctx.record.personnelChanges : [];
       hourenXishuo = ctx.record.hourenXishuo || "";
     }
-    catch(err){shizhengji="\u5931\u8D25:"+err.message;zhengwen="\u9519\u8BEF";}
+    // 已逃出子调用恢复边界的错误必须交回 core 回滚，不能伪装成叙事继续提交。
+    catch(err){throw err;}
   }else{
     Object.keys(GM.vars).forEach(function(n){GM.vars[n].value=clamp(GM.vars[n].value+Math.floor(random()*7)-3,GM.vars[n].min,GM.vars[n].max);});
     shizhengji="\u56FD\u5BB6\u53D8\u5316\u4E2D";zhengwen="\u65F6\u5149\u6D41\u901D";playerStatus="\u5982\u5E38";

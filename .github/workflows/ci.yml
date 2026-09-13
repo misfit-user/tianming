@@ -102,8 +102,14 @@ jobs:
         run: node scripts/verify-electron-bridge.js --memorial-reading
       - name: Character actions, office recommendations and existing appointment flow
         run: node scripts/verify-electron-bridge.js --character-actions
+      - name: Edict office creation, recursive tree, appointment target and native save recovery
+        run: node scripts/verify-electron-bridge.js --office-writeback
       - name: Right rail pending audiences, navigation and completion feedback
         run: node scripts/verify-electron-bridge.js --rail-badges
+      - name: Player feedback army search, local fonts and fatal turn boundary
+        run: node scripts/verify-electron-bridge.js --player-feedback
+      - name: Treasury, help, rail, edict continuity and primary-secondary API controls
+        run: node scripts/verify-electron-bridge.js --seven-ui
       - name: Authoring region paths and real editor persistence
         run: node scripts/verify-electron-bridge.js --authoring-regions
       - name: Workshop hierarchy, nested creation and saved editor readback
@@ -116,6 +122,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --authoring-recovery
       - name: Guoshi relay continuation, readable controls and empty administration (real Electron)
         run: node scripts/verify-electron-bridge.js --authoring-continuation
+      - name: Verify authoring full-permission apply and response recovery
+        run: node scripts/verify-electron-bridge.js --authoring-autoapply
       - name: Guoshi bounded progress, instruction retention and actual game consumption
         run: |
           node scripts/verify-electron-bridge.js --authoring-efficiency

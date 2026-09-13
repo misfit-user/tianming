@@ -512,10 +512,12 @@ async function detectModelContextSize(opts) {
 function _finishDetect(k, layer, cacheKey, maxOutputTok, tier) {
   // M3·tier 特化·次 API 用 _secondary 后缀字段·不污染主
   var _sfx = (tier === 'secondary') ? '_secondary' : '';
+  // 新模型只探得上下文时，不给旧模型的输出上限盖上新的身份；仍由下方原写口收笔。
+  var _sameOutputOwner = P.conf['_ctxCacheKey' + _sfx] === cacheKey;
   P.conf['_detectedContextK' + _sfx] = k;
   P.conf['_ctxCacheKey' + _sfx] = cacheKey;
   P.conf['_ctxDetectLayer' + _sfx] = layer;
-  if (maxOutputTok && maxOutputTok > 0) P.conf['_detectedMaxOutput' + _sfx] = maxOutputTok;
+  if ((maxOutputTok && maxOutputTok > 0) || !_sameOutputOwner) P.conf['_detectedMaxOutput' + _sfx] = maxOutputTok > 0 ? maxOutputTok : 0;
   _ctxLog('最终结果[' + (tier||'primary') + ']: 上下文' + k + 'K, 输出上限' + (maxOutputTok||0) + ' tokens (' + layer + ')');
   _persistProbeConf();
 }
@@ -1062,15 +1064,21 @@ async function listAvailableModels(opts) {
  * @returns {number} K tokens
  */
 function getModelContextSizeK() {
-  if (P.conf.contextSizeK && P.conf.contextSizeK > 0) return P.conf.contextSizeK; // 手动覆写最高
+  var player = typeof P !== 'undefined' && P || {}, conf = player.conf || {}, ai = player.ai || {};
+  var manual = Number(conf.contextSizeK);
+  if (Number.isFinite(manual) && manual > 0) return manual; // 手动覆写最高，不擅自放大
   // 自动路径:取「探测值」与「按当前模型名查白名单」的较大值——
   //   不同玩家用不同模型·各取其真实窗口;无须先跑探测即可享受模型真实窗口;
   //   取较大值防探测自报层偏低(如模型谎报 64K 而实为 128K)。手动覆写仍可强制压低(应对受限代理)。
-  var k = (P.conf._detectedContextK && P.conf._detectedContextK > 0) ? P.conf._detectedContextK : 0;
+  // 与异步探测使用同一身份：切换模型/中转后，旧值不能继续约束新请求。
+  // 无身份的旧缓存保留在设置里，但不冒充当前模型容量。
+  var currentKey = String(ai.model || '').trim() + '@' + String(ai.url || '');
+  var detected = Number(conf._detectedContextK);
+  var k = conf._ctxCacheKey === currentKey && Number.isFinite(detected) && detected > 0 ? detected : 0;
   try {
     if (typeof _matchModelCtx === 'function') {
-      var _mk = _matchModelCtx((P.ai && P.ai.model) || '');
-      if (_mk && _mk > k) k = _mk;
+      var _mk = Number(_matchModelCtx(ai.model || ''));
+      if (Number.isFinite(_mk) && _mk > k) k = _mk;
     }
   } catch (_mkE) {}
   return k > 0 ? k : 32; // 全未知模型的保守默认

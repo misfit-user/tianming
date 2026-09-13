@@ -60,6 +60,8 @@
   var _rightAdminRenderSeq = 0;
   var _rightOfficeRenderSeq = 0;
   var _rightWenduiRenderSeq = 0;
+  var _rightArmySearch = null;
+  var _rightArmySearchSeq = 0;
 
   // ── late-bound wrappers for orchestration calls (bridge.X / window.X) ─
   function openPanel(slot){ return bridge.openPanel(slot); }
@@ -703,6 +705,60 @@
     return rightArmyFirst(a, ['name','id'], '未名部队');
   }
 
+  function rightArmyCommander(a){
+    return rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
+  }
+
+  function rightArmyLocation(a){
+    return rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+  }
+
+  function rightArmySearchState(){
+    var g = window.GM, p = window.P, gen = window._tmLoadGen || 0;
+    var identity = JSON.stringify([g && g.sid, g && g._campaignId, g && g._timelineId]);
+    if (!_rightArmySearch || _rightArmySearch.gm !== g || _rightArmySearch.p !== p || _rightArmySearch.gen !== gen || _rightArmySearch.identity !== identity) {
+      _rightArmySearch = { gm:g, p:p, gen:gen, identity:identity, query:'', token:'army-search-' + (++_rightArmySearchSeq) };
+    }
+    return _rightArmySearch;
+  }
+
+  function rightArmySearchText(value){
+    var text = String(value == null ? '' : value);
+    if (text.normalize) text = text.normalize('NFKC');
+    return text.toLowerCase().trim();
+  }
+
+  function rightFilterArmyRows(rows, query){
+    var words = rightArmySearchText(query).split(/\s+/).filter(Boolean);
+    if (!words.length) return rows;
+    return rows.filter(function(row){
+      var a = row.army;
+      var text = rightArmySearchText([rightArmyName(a), a && a.id, rightArmyCommander(a), rightArmyLocation(a), rightArmyType(a)].join(' '));
+      return words.every(function(word){ return text.indexOf(word) >= 0; });
+    });
+  }
+
+  function rightUpdateArmySearch(input){
+    var shell = input && input.closest && input.closest('[data-army-search-owner]');
+    var search = rightArmySearchState();
+    if (!shell || !shell.isConnected || shell.getAttribute('data-army-search-owner') !== search.token) return;
+    search.query = String(input.value || '');
+    var rows = rightArmyRowsForRender(rightArmyList());
+    var found = rightFilterArmyRows(rows, search.query);
+    var list = shell.querySelector('[data-army-list-token]');
+    if (!list) return;
+    // Invalidate the older deferred hydration before replacing only the list.
+    // Keep the input node, IME composition, focus and selection intact.
+    list.setAttribute('data-army-list-token', 'army-' + (++_rightArmyRenderSeq));
+    list.innerHTML = found.length ? rightArmyGroupsHtml(rightBuildArmyGroups(found), state.selectedArmy)
+      : '<div class="tmrp-empty">未找到匹配部队，请换个名称、统帅、驻地或兵种。</div>';
+    list.scrollTop = 0;
+    var count = shell.querySelector('[data-army-search-count]');
+    if (count) count.textContent = '显示 ' + found.length + ' / ' + rows.length + ' 支';
+    var clear = shell.querySelector('[data-army-search-clear]');
+    if (clear) clear.disabled = !search.query;
+  }
+
   function rightArmyKey(a, idx){
     return String(rightArmyFirst(a, ['id','name'], 'army-' + idx));
   }
@@ -803,8 +859,8 @@
           var a = row.army;
           var key = row.key;
           var active = key === selectedKey;
-          var commander = rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
-          var location = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+          var commander = rightArmyCommander(a);
+          var location = rightArmyLocation(a);
           return '<button type="button" class="tmrp-person ' + (active ? 'active' : '') + '" data-right-action="army-select" data-id="' + attr(key) + '">' +
             '<span class="tmrp-avatar">军</span><span><b>' + esc(rightArmyName(a)) + '</b><span>' + esc(commander) + ' · ' + esc(location) + '</span></span><small>' + esc(rightArmyFmtNum(row.soldiers)) + '</small></button>';
         }).join('');
@@ -1061,10 +1117,12 @@
     var selectedRow = rightFindArmyRow(rows, state.selectedArmy) || rows[0] || null;
     if (selectedRow) state.selectedArmy = selectedRow.key;
     var selectedKey = selectedRow ? selectedRow.key : '';
-    var groups = rightBuildArmyGroups(rows);
+    var search = rightArmySearchState();
+    var found = rightFilterArmyRows(rows, search.query);
+    var groups = rightBuildArmyGroups(found);
     var listToken = 'army-' + (++_rightArmyRenderSeq);
     var armyTab = state.rightArmyTab === 'overview' ? 'overview' : 'roster';   // 页签早判·默认名册(行12=玩家找的就是名册)·概览页不渲名册不排水合
-    var deferredList = rows.length > RIGHT_ARMY_INITIAL_ROWS;
+    var deferredList = found.length > RIGHT_ARMY_INITIAL_ROWS;
     var syncGroups = deferredList ? rightSliceArmyGroups(groups, RIGHT_ARMY_INITIAL_ROWS) : groups;
     if (deferredList && armyTab === 'roster') rightScheduleArmyListHydration(listToken, groups, selectedKey);
     var armyAlerts = rows.map(function(row){
@@ -1086,8 +1144,10 @@
         (armyAlerts.length > 5 ? '<div class="tmrp-meta">另有 ' + esc(armyAlerts.length - 5) + ' 部待察。</div>' : '') + '</section>'
       : '<section class="tmrp-card"><div class="tmrp-card-title"><span>军情概览</span><small>诸军态势</small></div><div class="tmrp-meta">诸军暂无士气、粮饷或兵变之虞，边防大体安稳。点名册中部队，可于左侧展开军情明细。</div></section>';
     // 页签分栏(2026-07-11·玩家反馈行12——名册压在概览下方要滑动·不够明显)：概览/部队名册两页·镜像 issue-tab 惯例
-    var rosterCard = '<section class="tmrp-card"><div class="tmrp-card-title"><span>部队名册</span><small>点部队·左侧展开军情</small></div>' +
-      (rows.length ? '<div class="tmrp-scroll compact tmrp-army-list" data-army-list-token="' + attr(listToken) + '">' + rightArmyGroupsHtml(syncGroups, selectedKey) + (deferredList ? '<div class="tmrp-meta">余下部队正在载入...</div>' : '') + '</div>' : '<div class="tmrp-empty">麾下暂无军队。</div>') +
+    var rosterCard = '<section class="tmrp-card" data-army-search-owner="' + attr(search.token) + '"><div class="tmrp-card-title"><span>部队名册</span><small>点部队·左侧展开军情</small></div>' +
+      '<div style="display:flex;gap:6px;align-items:center;margin:4px 0 7px"><input type="search" data-army-search aria-label="搜索部队名称、统帅、驻地或兵种" placeholder="搜索部队 / 统帅 / 驻地 / 兵种" value="' + attr(search.query) + '" style="min-width:0;flex:1;width:100%;padding:8px 10px;border:1px solid #8e7547;border-radius:3px;background:#1e1810;color:#f3e5bf;font:inherit;font-size:13px"><button type="button" class="tmrp-btn" data-army-search-clear' + (search.query ? '' : ' disabled') + '>清除</button></div>' +
+      '<div class="tmrp-meta" data-army-search-count role="status" aria-live="polite">显示 ' + esc(found.length) + ' / ' + esc(rows.length) + ' 支</div>' +
+      '<div class="tmrp-scroll compact tmrp-army-list" data-army-list-token="' + attr(listToken) + '">' + (found.length ? rightArmyGroupsHtml(syncGroups, selectedKey) + (deferredList ? '<div class="tmrp-meta">余下部队正在载入...</div>' : '') : '<div class="tmrp-empty">' + (rows.length ? '未找到匹配部队，请换个搜索词。' : '麾下暂无军队。') + '</div>') + '</div>' +
       '</section>';
     return '<div class="tmrp-army-shell">' +
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(armies.length) + '</b><span>军队</span></div><div class="tmrp-stat"><b>' + esc(rightArmyFmtNum(total)) + '</b><span>总兵力</span></div><div class="tmrp-stat"><b>' + esc(avgMorale + '/' + avgTraining) + '</b><span>士气/训练</span></div></div>' +
@@ -2600,7 +2660,17 @@
   function bindRightPanelActions(host){
     if (!host || host.__phase8RightPanelActions) return;
     host.__phase8RightPanelActions = true;
+    host.addEventListener('compositionstart', function(e){ if (e.target && e.target.matches('[data-army-search]')) e.target._tmArmyComposing = true; });
+    host.addEventListener('compositionend', function(e){ if (e.target && e.target.matches('[data-army-search]')) { e.target._tmArmyComposing = false; rightUpdateArmySearch(e.target); } });
+    host.addEventListener('input', function(e){ if (e.target && e.target.matches('[data-army-search]') && !e.isComposing && !e.target._tmArmyComposing) rightUpdateArmySearch(e.target); });
     host.addEventListener('click', function(e){
+      var clear = e.target && e.target.closest ? e.target.closest('[data-army-search-clear]') : null;
+      if (clear) {
+        e.preventDefault(); e.stopPropagation();
+        var shell = clear.closest('[data-army-search-owner]'), input = shell && shell.querySelector('[data-army-search]');
+        if (input) { input.value = ''; rightUpdateArmySearch(input); input.focus(); }
+        return;
+      }
       var btn = e.target && e.target.closest ? e.target.closest('[data-right-action]') : null;
       if (!btn) return;
       e.preventDefault();

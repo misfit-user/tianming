@@ -7,7 +7,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const jsonSource = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
-const source = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const source = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 let passed = 0;
 function assert(condition, message) {
   if (!condition) throw new Error('[smoke-ai-abort-listener-cleanup] ' + message);
@@ -85,7 +85,7 @@ async function main() {
     await ctx._aiFetchWithRetryInner('https://example.invalid/v1', { max_tokens: 10 }, retrySignal, { apiKey: 'k', maxRetries: 2, timeoutMs: 5000 });
   } catch (error) { retryError = error; }
   assert(retryError && attempts === 3, 'network errors exercise every configured retry attempt');
-  assert(retrySignal.activeCount === 0 && retrySignal.addCount === 3 && retrySignal.removeCount === 3, 'every failed retry cleans its own listener');
+  assert(retrySignal.activeCount === 0 && retrySignal.addCount === 5 && retrySignal.removeCount === 5, 'three requests and two cancellable waits clean every external listener');
 
   ctx.fetch = async (_url, options) => new Promise((_resolve, reject) => {
     options.signal.addEventListener('abort', () => reject(new Error('request aborted')), { once: true });

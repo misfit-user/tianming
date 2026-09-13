@@ -9,7 +9,7 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 const zoneSource = fs.readFileSync(path.join(ROOT, 'tm-context-zones.js'), 'utf8');
 const compilerSource = fs.readFileSync(path.join(ROOT, 'tm-memory-context-compiler.js'), 'utf8');
-const infraSource = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSource = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const coreSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const endturnAiSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 

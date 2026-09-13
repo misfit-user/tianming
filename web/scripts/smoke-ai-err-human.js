@@ -13,7 +13,7 @@ let A = 0, F = 0;
 function ok(cond, msg) { if (cond) { A++; console.log('  ✓ ' + msg); } else { F++; console.log('  ✗ ' + msg); } }
 
 // ── 提取真函数 ──
-const infraSrc = fs.readFileSync(path.join(W, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(W, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(W, 'tm-ai-infra.js'), 'utf8'));
 const fnStart = infraSrc.indexOf('function _tmAiErrHuman(err)');
 ok(fnStart > 0, 'tm-ai-infra.js 含 _tmAiErrHuman 定义');
 let depth = 0, fnEnd = -1;

@@ -990,7 +990,10 @@ function _handleBarVarClick(varKey) {
     }
   };
   var h = handlers[varKey];
-  if (h) h();
+  if (h) {
+    document.querySelectorAll('.var-drawer-overlay.open').forEach(function(ov) { if (ov.id !== varKey + '-drawer-ov') ov.classList.remove('open'); });
+    h();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

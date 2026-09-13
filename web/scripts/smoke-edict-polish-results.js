@@ -32,7 +32,7 @@ function harness(serve = () => http(answer('诏曰：清查田亩，抚恤流民
   c.window = c; c.globalThis = c; vm.createContext(c);
   for (const name of ['_getAITier', '_useSecondaryTier', '_buildAIUrlForTier', '_buildAIUrl']) vm.runInContext(functionSource(read('tm-utils.js'), name), c);
   for (const name of ['_tmCaptureWorldLease', '_tmWorldLeaseCurrent']) vm.runInContext(functionSource(read('tm-post-turn-jobs.js'), name), c);
-  for (const file of ['tm-ai-infra-json.js', 'tm-ai-infra.js', 'tm-ai-infra-model-detect.js', 'tm-hongyan-edict-ui.js']) vm.runInContext(read(file), c, { filename: file });
+  for (const file of ['tm-ai-infra-json.js', 'tm-ai-infra-retry.js', 'tm-ai-infra.js', 'tm-ai-infra-model-detect.js', 'tm-hongyan-edict-ui.js']) vm.runInContext(read(file), c, { filename: file });
   c.getCompressionParams = () => ({ scale: 1 });
   c.escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   c._aiQueue.enqueue = fn => fn();

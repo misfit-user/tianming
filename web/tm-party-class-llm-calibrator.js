@@ -615,6 +615,7 @@
       priority: options.priority || 'background',
       timeoutMs: timeoutMs,
       maxRetries: options.maxRetries != null ? options.maxRetries : 1,
+      requireText: true, // 使用完整正文契约：兼容 text 分段，拒绝思考/拒答/截断写回。
       id: 'party-class-llm-calibrator'
     };
     if (typeof global.callAIMessages === 'function') {

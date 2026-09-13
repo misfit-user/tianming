@@ -46,6 +46,7 @@ function openGuokuPanel() {
     });
     document.body.appendChild(ov);
   }
+  document.querySelectorAll('.var-drawer-overlay.open').forEach(function(other) { if (other !== ov) other.classList.remove('open'); });
   ov.classList.add('open');   // 先打开抽屉（防止 render 抛错导致抽屉不弹）
   // 确保三账已初始化（首次打开时 CascadeTax 可能尚未跑过）
   try {

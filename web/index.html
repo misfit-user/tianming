@@ -634,12 +634,13 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-map-system.js?v=20260709"></script>
 <!-- R134 (2026-04-25) tm-dynamic-systems 拆分 → dynamic + save-manager + help-social -->
 <script src="tm-dynamic-systems.js?v=2026042714"></script>
-<script src="tm-save-manager.js?v=20260811-auditfix1"></script>
+<script src="tm-save-manager.js?v=20260913-autosave-opt-in"></script>
 <script src="tm-resume-point.js?v=20260705"></script><!-- 残局接演·发布 payload 构造（Wave4 slice-1·存档→resume 工坊包） -->
 <script src="tm-help-social.js?v=20260912-seven-ui"></script>
 <!-- R122+R130 拆分 tm-economy-military.js → economy + military + feudal -->
 <script src="tm-economy.js?v=20260707-nestflat"></script>
-<script src="tm-military.js?v=2026042714"></script>
+<script src="tm-military.js?v=20260913-campaign"></script>
+<script src="tm-battle-contract.js?v=20260913-campaign"></script><!-- shared battle contract must follow the military writer -->
 <script src="tm-feudal.js?v=20260707-deadcode"></script>
 <script src="tm-feudal-warfare.js?v=20260707-deadcode"></script>
 <script src="tm-event-system.js?v=20260709"></script>
@@ -665,7 +666,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-world-digest.js?v=20260630"></script><!-- 天下牵动·因果综述·W1a·把割裂的系统反应重组成连贯因果注入推演 -->
 <script src="tm-benji.js?v=20260823-storage1"></script><!-- 帝王本纪·终局回顾式修史(鼎革R1g·每12回合一卷串行修纂·flag benjiEnabled) -->
 <script src="tm-world-reactors.js?v=20260630"></script><!-- 世界反应总线·跨系统reactor·W2a军事→势力·flag-gated默认关 -->
-<script src="tm-endturn-systems.js?v=20260909-channels"></script>
+<script src="tm-endturn-systems.js?v=20260913-campaign"></script>
 <script src="tm-endturn-ai-helpers.js?v=2026042714"></script>
 <script src="tm-endturn-ai-context.js?v=2026050401"></script>
 <script src="tm-history-events.js?v=20260719-histanchors"></script>
@@ -705,11 +706,11 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
 <script src="tm-endturn-prompt.js?v=20260913-office-create"></script>
 <script src="tm-endturn-ai-sc1-budget.js?v=20260912-seven-ui"></script>
-<script src="tm-endturn-ai.js?v=20260912-seven-ui"></script>
+<script src="tm-endturn-ai.js?v=20260913-campaign"></script>
 <script src="tm-endturn-apply.js?v=20260913-office-create"></script>
 <script src="tm-endturn-apply-stages.js?v=20260913-office-create"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
-<script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
-<script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
+<script src="tm-endturn-followup-helpers.js?v=20260913-campaign"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
+<script src="tm-endturn-followup.js?v=20260913-campaign"></script>
 <script src="tm-endturn-record.js?v=2026052201"></script>
 <script src="tm-endturn-ai-infer.js?v=20260911-player-feedback"></script>
 <script src="tm-endturn-core.js?v=20260823-auditfix18-autosave"></script>
@@ -721,10 +722,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-validity.js?v=2026051701"></script>
 <script src="tm-endturn-pipeline-steps.js?v=20260811-auditfix1"></script>
 <!-- 回合推演「模式 b · agent 模式」平行引擎(开关 agentModeEnabled 默认关)·详设 docs/agent-mode-design.md -->
-<script src="tm-endturn-agent-mode.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-agent-mode.js?v=20260913-campaign"></script>
 <script src="tm-endturn-agent-read-tools.js?v=20260719-r1349"></script>
 <script src="tm-wentian-agent.js?v=20260703-wtagent"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
-<script src="tm-endturn-agent-write-tools.js?v=20260910-building-orders"></script>
+<script src="tm-endturn-agent-write-tools.js?v=20260913-campaign"></script>
 <script src="tm-endturn-agent-depth-tools.js?v=20260719-agentparallel1"></script>
 <script src="tm-endturn-agent-intent-plan.js?v=20260719-single-committer1"></script>
 <script src="tm-endturn-shiji-compose.js?v=20260706-shijivolumes"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
@@ -735,8 +736,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-theme-font.js?v=20260910-memorial-reading"></script>
 <script src="tm-api-models.js?v=20260912-seven-ui"></script>
 <script src="tm-api-settings.js?v=20260912-seven-ui"></script>
-<script src="tm-patches.js?v=20260912-seven-ui"></script>
-<script src="tm-patches-start.js?v=20260912-seven-ui"></script><!-- 立项拆分：剧本启动链(_tmStart*/开场仪典/startGame/doActualStart)·紧挨 patches 之后保序·勿动位置 -->
+<script src="tm-patches.js?v=20260913-campaign"></script>
+<script src="tm-patches-start.js?v=20260913-campaign"></script><!-- 立项拆分：剧本启动链(_tmStart*/开场仪典/startGame/doActualStart)·紧挨 patches 之后保序·勿动位置 -->
 <!-- R17-R22: 从 tm-patches.js 抽离的子模块（加载在 patches 之后覆盖原版） -->
 <script src="tm-military-ui.js?v=2026042714"></script>
 <script src="tm-world-view.js?v=2026042714"></script>
@@ -744,10 +745,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-three-systems-ext.js?v=2026042714"></script>
 <script src="tm-army-units.js?v=2026061900"></script><!-- 御驾亲征接入 Phase0·army.composition→units[] 编制地基 -->
 <script src="tm-armory.js?v=2026062000"></script><!-- 军备/武库库存·GM.guoku.armory 五类军备(甲胄/兵刃/弓弩/火器/战马)·募兵从武库支取 -->
-<script src="tm-battle-adapter.js?v=2026061901"></script><!-- 御驾亲征接入 Phase1·units[]→startBattle(config) 适配器 -->
-<script src="tm-battle-embed.js?v=2026062000"></script><!-- 御驾亲征接入 Phase1·iframe 嵌入战术战斗(web/battle/) -->
-<script src="tm-battle-resolve.js?v=2026062001"></script><!-- 御驾亲征接入 Phase2·抽象带预测器 + 战术result→battleResult 夹带/回填 -->
-<script src="tm-battle-turn.js?v=2026062002"></script><!-- 御驾亲征接入 Phase2·活线咽喉拦截+会战阶段(flag GM._yujiaQinzheng·默认OFF) -->
+<script src="tm-battle-adapter.js?v=20260913-battle3"></script><!-- 御驾亲征接入 Phase1·units[]→startBattle(config) 适配器 -->
+<script src="tm-battle-embed.js?v=20260913-battle3"></script><!-- 御驾亲征接入 Phase1·iframe 嵌入战术战斗(web/battle/) -->
+<script src="tm-battle-resolve.js?v=20260913-battle3"></script><!-- 御驾亲征接入 Phase2·抽象带预测器 + 战术result→battleResult 夹带/回填 -->
+<script src="tm-battle-turn.js?v=20260913-battle3"></script><!-- 御驾亲征接入 Phase2·活线咽喉拦截+会战阶段(flag GM._yujiaQinzheng·默认OFF) -->
 <!-- 2026-05-10·Phase D1·势力 paradigm utility·必须在所有 faction 模块之前 -->
 <script src="tm-faction-paradigm.js?v=2026051001"></script>
 <!-- 2026-05-10·Phase F1·char personality hints·让 NPC 决策按人格调权 -->
@@ -849,11 +850,11 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-tinyi-v3.js?v=2026070401"></script>
 <script src="tm-tinyi-v3-edict-personnel.js?v=2026070401"></script><!-- 立项拆分二切：§9草诏拟旨+§10廷推·须在 origin 与 -parties 之间保序·勿动位置 -->
 <script src="tm-tinyi-v3-parties.js?v=2026070401"></script>
-<script src="tm-char-autogen.js?v=20260528-chardelete"></script>
+<script src="tm-char-autogen.js?v=20260913-autosave-opt-in"></script>
 <script src="tm-bgm-config.js?v=2026051201"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260710-fontscale"></script>
-<script src="tm-save-lifecycle.js?v=20260828-population-schema"></script>
+<script src="tm-save-lifecycle.js?v=20260913-autosave-opt-in"></script>
 <script src="tm-save-close-flush.js?v=20260825-close-drain"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260913-office-create"></script>
 <script src="tm-topbar-vars.js?v=20260912-seven-ui"></script>
@@ -866,7 +867,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-corruption-extras.js?v=20260706-split"></script>
 <script src="tm-lizhi-panel.js?v=2026042820"></script>
 <!-- R9 done (2026-05-04) tm-guoku-p2/p4/p5/p6 已全部 inline 入 engine·5 文件 → 1 -->
-<script src="tm-guoku-engine.js?v=20260908-initial-fiscal-mirrors"></script>
+<script src="tm-guoku-engine.js?v=20260913-campaign"></script>
 <script src="tm-guoku-panel.js?v=20260912-seven-ui"></script>
 <script src="tm-neitang-engine.js?v=20260908-initial-fiscal-mirrors"></script>
 <script src="tm-neitang-panel.js?v=20260912-seven-ui"></script>
@@ -946,7 +947,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-change-army.js?v=20260521-slice2"></script>
 <script src="tm-ai-change-narrative.js?v=20260521-slice3"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
-<script src="generated/tm-ai-change-applier.bundle.js?v=20260913-office-create"></script>
+<script src="generated/tm-ai-change-applier.bundle.js?v=20260913-campaign"></script>
 <script src="tm-ai-npc-memorials.js?v=20260709"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=20260912-seven-ui"></script>

@@ -40,6 +40,16 @@
     return 1;
   }
 
+  // 营葬银由已结算的战果派生；亲征延期/重试/Agent同口，无战回合自清。这里只维护费用镜像，不直接改库存。
+  function syncBattleCasualtyBonus(game) {
+    var g = game || global.GM, ms = global.MilitarySystems;
+    if (!g || !ms || !ms.turnBattleCasualties || !ms.battlePlayerFaction) return 0;
+    var totals = ms.turnBattleCasualties(g), pf = ms.battlePlayerFaction(g);
+    var amount = Math.round(Math.max(0, Number(totals[pf]) || 0) * 5);
+    g.guoku = g.guoku || {}; g.guoku._battleCasualtyBonus = amount; // arch-ok: GuokuEngine owns fiscal display/expense mirrors, no stock mutation
+    return amount;
+  }
+
   var BANKRUPTCY_STAGES = [
     { stage:1, id:'cash_warning',       name:'帑廪告急',     event:'第一阶段：帑廪告急，支出逼近库底。' },
     { stage:2, id:'salary_arrears',     name:'欠俸积压',     event:'第二阶段：百官欠俸，廉耻渐薄。' },
@@ -2318,6 +2328,7 @@
 
   global.GuokuEngine = {
     tick: tick,
+    syncBattleCasualtyBonus: syncBattleCasualtyBonus,
     ensureModel: ensureGuokuModel,
     getMonthRatio: getMonthRatio,
     Sources: Sources,

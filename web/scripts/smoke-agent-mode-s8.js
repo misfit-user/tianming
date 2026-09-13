@@ -16,7 +16,7 @@ require(path.join(ROOT, 'tm-ai-change-pathutils.js'));
 require(path.join(ROOT, 'tm-endturn-agent-write-tools.js'));
 const WT = globalThis.TM.Endturn.AgentWriteTools;
 
-assert(WT.defs().length === 16, '16 工具(3 通用 + treasury/appoint/dismiss/fiscal_item/remove + command_army/diplomatic_action/building_project/restructure_division + move_character/relocate_capital/change_region_owner/adjust_region_state)');
+assert(WT.defs().length === 17 && WT.isToolName('resolve_battle'), '17 工具：保留16个原工具，增加真实战斗登记resolve_battle');
 assert(WT.isToolName('adjust_treasury') && WT.isToolName('remove_field') && WT.isToolName('adjust_fiscal_item') && WT.isToolName('command_army') && WT.isToolName('diplomatic_action') && WT.isToolName('building_project') && WT.isToolName('restructure_division'), 'isToolName 认全部语义工具(含四域)');
 
 function makeGM() { return { turn: 7, guoku: { balance: 1000000, money: 1000000, grain: 500000 }, chars: [{ id: 'c1', name: '张三' }], _turnReport: [] }; }
@@ -111,7 +111,7 @@ function makeGM() { return { turn: 7, guoku: { balance: 1000000, money: 1000000,
   var gmM = { turn: 7, armies: [{ name: '关宁军', soldiers: 80000 }], _turnReport: [] }; var mc = { GM: gmM };
   var armyCh = null; globalThis.applyAIArmyChange = function (ch) { armyCh = ch; return { ok: true, name: ch.armyName }; };
   r = await WT.handle('command_army', { armyName: '关宁军', soldiersDelta: 20000, location: '宁远', reason: '募兵移防' }, mc);
-  assert(r.ok && armyCh.armyName === '关宁军' && armyCh.soldiersDelta === 20000 && armyCh.location === '宁远', 'command_army 募兵+调动→applyAIArmyChange(armyName/soldiersDelta/location)');
+  assert(r.ok && armyCh.armyName === '关宁军' && armyCh.soldiers_delta === 20000 && armyCh.location === '宁远', 'command_army 募兵+调动→applyAIArmyChange(armyName/soldiers_delta/location)');
   assert(gmM._turnReport.some(function (e) { return e._op === 'army'; }), 'command_army 报账');
   r = await WT.handle('command_army', { reason: 'x' }, mc);
   assert(!r.ok && /armyName/.test(r.result.reason || ''), 'command_army 缺 armyName → 拒');

@@ -631,7 +631,7 @@ openSettings=function(){
       function pill(want, label){ return '<button class="bt '+((on===want)?'bp':'bs')+' bsm" data-yjqz="'+(want?1:0)+'" onclick="_tmSetYujiaQinzheng('+want+',this)" style="flex:1;">'+label+'</button>'; }
       function pillOb(want, label){ return '<button class="bt '+((obOn===want)?'bp':'bs')+' bsm" data-yjob="'+(want?1:0)+'" onclick="_tmSetYujiaObserve('+want+',this)" style="flex:1;">'+label+'</button>'; }
       return '<div class="settings-section"><h4>御驾亲征 · 战术战斗</h4>'
-        + '<div style="font-size:0.78rem;color:var(--txt-d);margin:-0.2rem 0 0.4rem;">开启后，直辖之师接敌可<b>御驾亲征·亲操此战</b>（实时战术战斗），战果回填庙堂；关闭则一律庙算决之。本局存档生效。</div>'
+        + '<div style="font-size:0.78rem;color:var(--txt-d);margin:-0.2rem 0 0.4rem;">开启后，直辖之师实际接敌可<b>御驾亲征·亲操此战</b>，战果回填庙堂。会保留完整军事事件推演，不受标准／精简深度和SC18 lite裁剪；Agent战斗同样接入。关闭则一律庙算。本局生效，军卡“必亲征”不能代替此总开关。</div>'
         + '<div style="display:flex;gap:0.3rem;">' + pill(true,'开启 · 亲征') + pill(false,'关闭 · 庙算') + '</div>'
         + '<div style="font-size:0.78rem;color:var(--txt-d);margin:0.6rem 0 0.4rem;">他方战事旁观：开启后，与朕无涉之战每回合末可<b>遣人观之</b>（战况重演·不改战果）。</div>'
         + '<div style="display:flex;gap:0.3rem;">' + pillOb(true,'开启 · 观之') + pillOb(false,'关闭 · 不观') + '</div>'

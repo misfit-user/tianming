@@ -1035,7 +1035,7 @@
       // --- Sub-call 1.8: 军事态势专项推演 --- [full only]
       function(){ return _runSubcall('sc18', '军事态势', 'full', async function() {
       // Phase 3 Q5·SC18 lite variant·P.ai.sc18Lite=true 走 war_probability 单字段·~70% token 节省
-      var _sc18Lite = !!(P.ai && P.ai.sc18Lite === true);
+      var _sc18Lite = !!(P.ai && P.ai.sc18Lite === true) && !(window.TMBattleTurn && window.TMBattleTurn.enabled(GM));
       if (_sc18Lite) {
         try {
           var _facsLi = (GM.facs || []).filter(function(f){ return f && !f.player; }).slice(0, 6);
@@ -1141,6 +1141,7 @@
         tp18 += '\n请返回JSON：{"military_situation":"全局军事态势分析(200字)","border_threats":"边境威胁评估(150字)","army_morale_analysis":"各军士气分析和风险(100字)","supplementary_army_changes":[{"name":"部队","faction":"所属","soldiers_delta":0,"morale_delta":0,"composition":[{"type":"兵种名","count":人数}],"equipment":[{"name":"装备名","count":数量}],"equipmentCondition":"装备状况·简陋/一般/优良","quality":"兵质","reason":"兵种/装备/兵质仅在实际变动时填(如扩编火器营/换装红衣大炮/整训提升)·否则省略这几项"}],"faction_military_actions":[{"faction":"势力名","action":"军事行动30字","targetFaction":"目标势力可空","casualties":0,"outcome":"结果30字","rationale":"动机30字"}],"recruitment_costs":[{"name":"新建军名","silver":0,"grain":0,"cloth":0,"reason":"募兵开销·依兵额兵种与本朝财力估算·量入为出"}],"war_probability":"下回合爆发战争的概率和方向(80字)"}';
         tp18 += '\n\u82e5\u672c\u56de\u5408\u660e\u786e\u53d1\u751f\u4e00\u573a\u53ef\u843d\u5730\u6218\u6597/\u5360\u57ce\uff0c\u8fd8\u5fc5\u987b\u8fd4\u56de battleResult:{winnerFactionId,loserFactionId,occupiedCityIds,casualties:{attacker,defender},affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}],attackerArmyId,defenderArmyId,commanderFate:{name,outcome},postBattleEffects[]}.\u82e5\u591a\u573a\u6218\u6597\uff0c\u9009\u6700\u91cd\u5927\u4e00\u573a\u5199 battleResult\uff0c\u5176\u4f59\u7559\u5728 faction_military_actions\u3002';
         var _sc18Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc18'))},{role:"user",content:tp18}], temperature:0.7, max_tokens:_tok(12000)};
+        if (window.TMBattleTurn && window.TMBattleTurn.enabled(GM)) _sc18Body.messages[1].content += '\n亲征事件规则优先：本回合每一场涉及玩家军队的实际接战均须进入 battleResults 数组（元素形状同 battleResult，并带唯一battleId），不可只取全局最大一场。未接战则[]，行军/疾病损耗不算接战。同场勿再在 supplementary_army_changes 或 faction_military_actions 重复扣伤亡；旧单场 battleResult 与数组同ID只会结算一次。';
         if (_modelFamily === 'openai') _sc18Body.response_format = { type: 'json_object' };
         var _sc18Call = await _callFollowupAI(_sc18Body, { id: 'sc18', label: '军事变动', priority: 'normal' });
         {
@@ -1150,76 +1151,20 @@
           var p18 = _p18Parse ? _p18Parse.parsed : null;
           if (p18) {
             var _battleResultCasualtyFactions = {};
-            // Phase 3 Q6·battleResult 后验·荒诞战役 reject
-            if (p18.battleResult) {
-              var _br = p18.battleResult;
-              var _brErr = [];
-              try {
-                // 1·casualties·attacker/defender 兵力不能超军队总员的 8 倍·或负数
-                var _brCasA = parseInt(_br.casualties && _br.casualties.attacker) || 0;
-                var _brCasD = parseInt(_br.casualties && _br.casualties.defender) || 0;
-                if (_brCasA < 0 || _brCasD < 0) _brErr.push('casualties 负数');
-                if (_brCasA > 5000000 || _brCasD > 5000000) _brErr.push('casualties 单方 >500万·不合理');
-                // 2·commanderFate·name 必须存在且 alive (commanderFate 引用的角色不能凭空死/降)
-                if (_br.commanderFate && _br.commanderFate.name) {
-                  var _cName = _br.commanderFate.name;
-                  var _cChar = (GM.chars||[]).find(function(c){ return c && c.name === _cName; });
-                  if (!_cChar) _brErr.push('commanderFate.name 角色不存在·' + _cName);
-                  else if (_cChar.alive === false) _brErr.push('commanderFate 引用已死角色·' + _cName);
-                }
-                // 3·affectedArmies·每条 loss 必须 ≥0 且 ≤ army.soldiers·armyId 必须存在
-                if (Array.isArray(_br.affectedArmies)) {
-                  _br.affectedArmies.forEach(function(aa) {
-                    if (!aa) return;
-                    if (parseInt(aa.loss) < 0) _brErr.push('affectedArmies.loss 负数 (army=' + (aa.armyId||'?') + ')');
-                    var _a = (GM.armies||[]).find(function(x){ return x && (x.id === aa.armyId || x.name === aa.armyId); });
-                    if (!_a && aa.armyId) _brErr.push('affectedArmies.armyId 不存在·' + aa.armyId);
-                    if (_a && parseInt(aa.loss) > _a.soldiers * 1.2) _brErr.push('affectedArmies.loss 超军队员 1.2x·army=' + (aa.armyId||'?'));
-                  });
-                }
-                // 4·winnerFactionId / loserFactionId 必须存在于 GM.facs
-                var _findFac = function(id) { return id && (GM.facs||[]).find(function(f){ return f && (f.id === id || f.name === id); }); };
-                if (_br.winnerFactionId && !_findFac(_br.winnerFactionId)) _brErr.push('winnerFactionId 不存在·' + _br.winnerFactionId);
-                if (_br.loserFactionId && !_findFac(_br.loserFactionId)) _brErr.push('loserFactionId 不存在·' + _br.loserFactionId);
-              } catch(_brValE) { _brErr.push('validate exception: ' + _brValE.message); }
-              if (_brErr.length > 0) {
-                _dbg('[sc18 battleResult] REJECT·' + _brErr.length + ' errors:', _brErr.join('; '));
-                if (typeof recordSubcallError === 'function') recordSubcallError('sc18', 'battleResult_validate', new Error(_brErr.join('; ').slice(0, 200)));
-                // 标记 + 跳 applyBattleResult·防止荒诞战报落库
-                p18._battleResultRejected = true;
-                p18._battleResultRejectReasons = _brErr;
-                p18.battleResult = null;  // 清空·下游 if (p18.battleResult) 自动跳过
-              }
+            // 统一消费单场/多场结果，校验、亲征延期与最终落地同口；坏的一场不污染其他场。
+            if (window.MilitarySystems && MilitarySystems.consumeBattleResults) {
+              var _battleBatch = MilitarySystems.consumeBattleResults(p18, GM);
+              _battleResultCasualtyFactions = _battleBatch.casualtyFactions;
+              _battleBatch.rejected.forEach(function(rejected) {
+                if (typeof recordSubcallError === 'function') recordSubcallError('sc18', 'battleResult_validate', new Error(rejected.errors.join('；')));
+              });
+              _battleBatch.accepted.forEach(function(entry) {
+                var receipt = entry.receipt;
+                if (receipt && receipt.ok && !receipt.duplicate && typeof addEB === 'function') addEB('军事', '战报结构化落地：' + receipt.result.winner + '胜' + receipt.result.loser);
+              });
             }
-            if (p18.battleResult && typeof MilitarySystems !== 'undefined' && MilitarySystems.applyBattleResult) {
-              var _phase5Battle = MilitarySystems.applyBattleResult(p18.battleResult, GM);
-              if (_phase5Battle && _phase5Battle.ok && typeof addEB === 'function') {
-                addEB('\u519b\u4e8b', '\u6218\u62a5\u7ed3\u6784\u5316\u843d\u5730\uff1a' + (_phase5Battle.result.winner || '') + '\u80dc' + (_phase5Battle.result.loser || ''));
-              }
-              if (_phase5Battle && _phase5Battle.ok && _phase5Battle.result) {
-                (_phase5Battle.result.affectedArmies || []).forEach(function(ba) {
-                  var bf = ba && (ba.faction || ba.owner || '');
-                  var bl = Math.max(0, parseInt(ba && ba.loss) || 0);
-                  if (bf && bl > 0) _battleResultCasualtyFactions[bf] = (_battleResultCasualtyFactions[bf] || 0) + bl;
-                });
-                if (Object.keys(_battleResultCasualtyFactions).length === 0 && p18.battleResult.casualties) {
-                  var _brCas = p18.battleResult.casualties || {};
-                  var _brWinner = p18.battleResult.winnerFactionId || p18.battleResult.winnerFaction || p18.battleResult.winner || '';
-                  var _brLoser = p18.battleResult.loserFactionId || p18.battleResult.loserFaction || p18.battleResult.loser || '';
-                  if (_brWinner && ((parseInt(_brCas.attacker) || 0) > 0)) _battleResultCasualtyFactions[_brWinner] = parseInt(_brCas.attacker) || 0;
-                  if (_brLoser && ((parseInt(_brCas.defender) || 0) > 0)) _battleResultCasualtyFactions[_brLoser] = parseInt(_brCas.defender) || 0;
-                }
-              }
-            }
-            // 刀二·战争耗国库：本回合玩家阵亡→营葬犒赏银（补 guoku._battleCasualtyBonus 悬空读钩·guoku-engine:357 已等·_battleResultCasualtyFactions 每回合重置=无战自清）
-            try {
-              var _k2PlayerFac = (P && P.playerInfo && P.playerInfo.factionName) || GM.playerFactionName || GM.playerFaction || '';
-              var _k2Kia = 0;
-              Object.keys(_battleResultCasualtyFactions).forEach(function(_fk){ if (_tmIsPlayerFactionNameForAi(_fk, _k2PlayerFac)) _k2Kia += (_battleResultCasualtyFactions[_fk] || 0); });
-              GM.guoku = GM.guoku || {};
-              GM.guoku._battleCasualtyBonus = Math.round(Math.max(0, _k2Kia) * 5); // 营葬银 ~5两/阵亡·owner 可调
-              if (_k2Kia > 0 && typeof addEB === 'function') addEB('军务', '阵亡'+_k2Kia+'·发营葬犒赏银'+Math.round(_k2Kia*5)+'两(户部支)');
-            } catch(_k2e) {}
+            // 刀二·战争耗国库：统一从已落地战果核账；亲征结束后军事写口会再同步，不用尚未执行的预测数扣库。
+            if (window.GuokuEngine && window.GuokuEngine.syncBattleCasualtyBonus) window.GuokuEngine.syncBattleCasualtyBonus(GM);
             if (p18.supplementary_army_changes && Array.isArray(p18.supplementary_army_changes)) {
               p18.supplementary_army_changes.forEach(function(ac) {
                 if (!ac.name) return;

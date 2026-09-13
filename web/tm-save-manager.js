@@ -606,6 +606,9 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
     html += '<button class="bt bs bsm" onclick="publishCurrentAsResume(this)" style="padding:var(--space-2) var(--space-3);" title="把此局发到在线工坊，他人可从此接演续写">'+_ic('chronicle',14)+' 发为残局</button>';
   }
   html += '<button class="bt bs bsm" onclick="openSaveCompare()" style="padding:var(--space-2) var(--space-3);">\u2696 \u5BF9\u6BD4\u5377\u5B97</button>';
+  if (typeof _tmHasNativeFs === 'function' && _tmHasNativeFs() && typeof window.desktopLoadAutoSave === 'function') {
+    html += '<button class="bt bs bsm" onclick="loadDesktopAutoSave()" style="padding:var(--space-2) var(--space-3);" title="手动恢复桌面定时备份；不会自动进入上一局">桌面自动存档</button>';
+  }
   html += '<label class="bt bs" style="cursor:pointer;padding:var(--space-2) var(--space-4);">';
   html += _ic('load',14) + ' 调入外卷';
   html += '<input type="file" id="import-save-file" accept=".json" style="display:none;">';
@@ -766,6 +769,21 @@ function saveToSlot(slotId) {
       Promise.resolve(p).then(afterSave, function() { resolve(false); });
     }, 450);
   });
+  });
+}
+
+// UI 入口复用桌面读档事务；启动不调用它，也不消费/删除备份。
+window.desktopLoadAutoSave=async function(){
+  return typeof window.desktopLoadSave === 'function' ? window.desktopLoadSave({ desktopAutoSave: true }) : false;
+};
+
+function loadDesktopAutoSave() {
+  if (typeof window.desktopLoadAutoSave !== 'function') { toast('桌面自动存档入口未就绪'); return; }
+  showScrollConfirm({
+    title: '读取桌面自动存档？',
+    body: '恢复最近一次桌面定时备份。当前尚未保存的进度将被替换；原自动存档不会删除。',
+    okText: '读取备份',
+    onOk: function() { window.desktopLoadAutoSave(); }
   });
 }
 

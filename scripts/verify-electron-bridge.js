@@ -15,6 +15,11 @@ try {
   if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   if (argv.includes('--seven-ui')) modes.splice(0, modes.length, 'seven-ui');
   if (argv.includes('--office-writeback')) modes.splice(0, modes.length, 'office-writeback');
+  if (argv.includes('--startup-autosave')) modes.splice(0, modes.length, 'startup-autosave');
+  if (argv.includes('--personal-campaign')) modes.splice(0, modes.length, 'personal-campaign');
+  if (argv.includes('--tactical-terrain')) modes.splice(0, modes.length, 'tactical-terrain');
+  if (argv.includes('--tactical-phase2')) modes.splice(0, modes.length, 'tactical-phase2');
+  if (argv.includes('--tactical-units')) modes.splice(0, modes.length, 'tactical-units');
   const runtime = require('electron');
   if (!fs.existsSync(runtime)) throw new Error('electron-runtime-missing: run node node_modules/electron/install.js after npm ci --ignore-scripts');
   for (const mode of modes) {

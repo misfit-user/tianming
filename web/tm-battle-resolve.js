@@ -10,8 +10,9 @@
   /* 单军战力(优先用主游戏 calculateArmyStrength 保平衡一致·否则复刻基础公式·node 可测) */
   function armyStrength(a, GMref) {
     if (!a) return 0;
-    if (typeof window !== 'undefined' && window.MilitarySystems && typeof window.MilitarySystems.calculateArmyStrength === 'function') {
-      try { var v = window.MilitarySystems.calculateArmyStrength(a, {}); if (v != null && isFinite(v)) return v; } catch (e) {}
+    var calculate = typeof window !== 'undefined' && (window.calculateArmyStrength || (window.MilitarySystems && window.MilitarySystems.calculateArmyStrength));
+    if (typeof calculate === 'function') {
+      try { var v = calculate(a, {}); if (v != null && isFinite(v)) return v; } catch (e) {}
     }
     var s = Math.max(0, Math.round(a.soldiers || a.strength || a.size || 0)); if (!s) return 0;
     var morale = a.morale != null ? a.morale : 60, training = a.training != null ? a.training : 50, supply = a.supply != null ? a.supply : 75;
@@ -45,7 +46,7 @@
     };
   }
 
-  var FATE = { safe: 'survived', fled: 'routed', killed: 'killed', captured: 'captured', wounded: 'wounded' };
+  var FATE = { safe: 'survived', fled: 'fled', killed: 'killed', captured: 'captured', wounded: 'injured' };
 
   /* §6 战术 result(§13.6) → 主游戏 battleResult JSON。夹带:decisive 损失夹进带·不翻胜负;swing+flipped 用战术实况。 */
   function tacticalToBattleResult(tac, ctx) {
@@ -84,14 +85,27 @@
       var orig = origById[aid], surv = Math.max(0, orig - loss);
       return { armyId: aid, loss: loss, state: surv <= 0 ? 'destroyed' : undefined };
     }).filter(function (x) { return x.loss > 0 || x.state; });
-    /* 将领命运:每军主将 → 战术 commanders 按名取 fate */
-    var fateByName = {}; (tac.commanders || []).forEach(function (c) { if (c && c.name) fateByName[c.name] = c.fate; });
+    /* 人物ID/母军/阵营优先，只有唯一旧名字可以兜底；同名敌我将不能互相覆盖。 */
+    var tacCommanders = (tac.commanders || []).filter(function(c) { return c && c.name; });
     var commanderFates = [];
     [].concat(pArmies, eArmies).forEach(function (a) {
-      if (a && a.commander && fateByName[a.commander]) {
-        var out = FATE[fateByName[a.commander]] || 'survived';
-        if (out !== 'survived') commanderFates.push({ name: a.commander, outcome: out, armyId: a.id });
-      }
+      if (!a) return;
+      var ref = a.commander, cid = a.commanderId || a.commanderCharacterId || a.generalId || a.leaderId || (ref && typeof ref === 'object' && (ref.id || ref.characterId)), name = ref && typeof ref === 'object' ? ref.name : ref;
+      var side = pIds[a.id] ? 'ming' : 'jin';
+      var matches = tacCommanders.filter(function(c) {
+        if (c.side && c.side !== side) return false;
+        if (cid && c.characterId) return String(cid) === String(c.characterId);
+        if (c.parentArmyId != null || (c.armyIds && c.armyIds.length)) return String(c.parentArmyId) === String(a.id) || (c.armyIds || []).some(function(id) { return String(id) === String(a.id); });
+        return c.name === name;
+      });
+      if (matches.length !== 1) return;
+      var match = matches[0], out = FATE[match.fate] || 'survived';
+      if (out !== 'survived') commanderFates.push({ name: match.name, characterId: match.characterId || cid || '', outcome: out, armyId: a.id });
+    });
+    commanderFates.forEach(function(fate) { // 多位主将命运都交给既有军事写口，不仅处理数组第一位
+      var entry = affected.find(function(row) { return row.armyId === fate.armyId; });
+      if (!entry) { entry = { armyId: fate.armyId, loss: 0 }; affected.push(entry); }
+      entry.commander = fate.name; entry.commanderFate = fate;
     });
     var out = {
       affectedArmies: affected,
@@ -110,17 +124,22 @@
      * 翻盘则剥除(原胜方的占领不再发生·翻盘方的领土后果走下回合正常战略传导·O1)。 */
     var ab = ctx.abstractBr || null;
     if (ab && typeof ab === 'object') {
+      if (ab._applierAftermathPending) out._applierAftermathPending = true;
       var abBattleId = ab.battleId != null ? ab.battleId : ab.id;
       if (abBattleId != null) out.battleId = abBattleId;
       var atkId = ab.attackerArmyId || ab.attackerArmy || ab.attacker;
       var defId = ab.defenderArmyId || ab.defenderArmy || ab.defender;
+      var ms = typeof window !== 'undefined' && window.MilitarySystems, game = ctx.GM || (typeof window !== 'undefined' && window.GM);
+      if (ms && ms.findBattleArmy) { var atk = ms.findBattleArmy(atkId, game || {}), def = ms.findBattleArmy(defId, game || {}); if (atk) atkId = atk.id || atk.name; if (def) defId = def.id || def.name; }
       if (atkId != null) out.attackerArmyId = atkId;
       if (defId != null) out.defenderArmyId = defId;
       var abW = String(ab.winnerFactionId || ab.winnerFaction || ab.winner || '');
       var abL = String(ab.loserFactionId || ab.loserFaction || ab.loser || '');
       var pf = String(ctx.playerFactionName || '');
+      if (ms && ms.battleFactionName) { abW = ms.battleFactionName(abW, game); abL = ms.battleFactionName(abL, game); pf = ms.battleFactionName(pf, game); }
       var abPlayerWon = (pf && abW === pf) ? true : ((pf && abL === pf) ? false : null);
       if (abPlayerWon != null && abPlayerWon === playerWon) {
+        if (ab.huangweiDelta != null) out.huangweiDelta = ab.huangweiDelta;
         if (Array.isArray(ab.occupiedCityIds) && ab.occupiedCityIds.length) out.occupiedCityIds = ab.occupiedCityIds.slice();
         if (Array.isArray(ab.postBattleEffects) && ab.postBattleEffects.length) out.postBattleEffects = ab.postBattleEffects.slice();
         var mag = Number(ab.warScoreDelta != null ? ab.warScoreDelta : ab.decisiveness);

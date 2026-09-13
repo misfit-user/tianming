@@ -7,7 +7,7 @@ const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
 const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
-const visibleWindow = mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
+const visibleWindow = mode === 'tactical-units' || mode === 'tactical-phase2' || mode === 'tactical-terrain' || mode === 'personal-campaign' || mode === 'startup-autosave' || mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -28,6 +28,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
     if (method !== 'handle') return typeof ipc[method] === 'function' ? ipc[method].bind(ipc) : ipc[method];
     return (channel, handler) => ipc.handle(channel, async (...args) => {
       const result = await handler(...args); // real trusted sender check and implementation
+      if (channel === 'load-auto-save' && mode === 'startup-autosave') controls.startupAutoSaveReads = (controls.startupAutoSaveReads || 0) + 1;
       if (channel === 'save-project' && controls.saveGate) { controls.saveArrived = true; await controls.saveGate; }
       return result;
     });
@@ -124,6 +125,11 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'authoring-autoapply') await require('./authoring-autoapply-cases.cjs')({ win, root, temp, check });
       else if (mode === 'seven-ui') await require('./seven-ui-cases.cjs')({ win, root, temp, check });
       else if (mode === 'office-writeback') await require('./office-writeback-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'startup-autosave') await require('./startup-autosave-cases.cjs')({ win, root, temp, controls, check });
+      else if (mode === 'personal-campaign') await require('./personal-campaign-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'tactical-terrain') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'tactical-phase2') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check, phase2: true });
+      else if (mode === 'tactical-units') await require('./tactical-units-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-efficiency') await require('./authoring-efficiency-cases.cjs')({ win, root, temp, check });
       else if (mode === 'relief-pilot' || mode === 'relief-inspect') await require('./relief-pilot-cases.cjs')({ win, root, temp, check, mode });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });

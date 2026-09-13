@@ -21,7 +21,9 @@ assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest s
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
 assert.strictEqual(manifest.deferredChangesApproved, 8, 'the original six and two explicit relief providers form the complete deferred set');
-assert.strictEqual(manifest.scriptCount, 415, 'the retained 414 scripts plus the office creation contract form the complete eager set');
+assert.strictEqual(manifest.scriptCount, 416, 'the retained 415 scripts plus the shared battle contract form the complete eager set');
+assert.strictEqual(scriptNames.indexOf('tm-military.js')+1,scriptNames.indexOf('tm-battle-contract.js'),'shared battle contract immediately follows its canonical writer');
+assert.strictEqual(scriptNames.filter(name=>name==='tm-battle-contract.js').length,1,'battle contract loads exactly once');
 assert.strictEqual(scriptNames.filter((name) => name === 'tm-office-creation.js').length, 1, 'office creation loads exactly once');
 assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-office-reform.js'), 'creation contract precedes its structural writer');
 assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-edict-parser.js'), 'creation contract precedes natural-language edict dispatch');

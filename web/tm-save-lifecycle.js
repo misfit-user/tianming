@@ -826,6 +826,11 @@ function _tmShowDesktopLoadFallback(files) {
   }
   var actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:0.8rem;margin-top:1rem';
+  actions.appendChild(_tmDesktopSaveButton('桌面自动存档', '', function() {
+    if (typeof loadDesktopAutoSave === 'function') loadDesktopAutoSave();
+    else window.desktopLoadSave({ desktopAutoSave: true });
+  }));
+  actions.lastChild.className = 'btn';
   actions.appendChild(_tmDesktopSaveButton('从文件导入', '', function() { importSaveFile(); }));
   actions.lastChild.className = 'btn';
   actions.appendChild(_tmDesktopSaveButton('返回', '', function() { showMain(); }));
@@ -2233,14 +2238,21 @@ if(_tmHasNativeFs()){
   window.desktopLoadSave=async function(name){
     showLoading("\u8BFB\u53D6\u5B58\u6863...",30);
     try{
-      var r=await window.tianming.loadProject(name);
+      var isAuto = !!(name && name.desktopAutoSave === true);
+      var r=isAuto ? await window.tianming.loadAutoSave() : await window.tianming.loadProject(name);
       if(r.success&&r.data){
+        var savedGame = r.data.gameState && (r.data.gameState.GM || r.data.gameState);
+        if (isAuto && (!savedGame || !savedGame.running)) { hideLoading(); toast('暂无可恢复的桌面自动存档'); return false; }
         showLoading("\u6062\u590D...",70);
-        try { await fullLoadGame(r.data, { source: 'desktop-save' }); }
-        catch (_lpE) { console.error('[loadProject] 恢复失败', _lpE); toast('恢复失败: ' + (_lpE.message||_lpE)); }
+        try {
+          await fullLoadGame(r.data, { source: isAuto ? 'desktop-autosave-manual' : 'desktop-save', autoSaveSessionToken: isAuto ? (r.sessionToken || '') : '' });
+          if (isAuto && typeof closeSaveManager === 'function') closeSaveManager();
+          return true;
+        }
+        catch (_lpE) { console.error('[loadProject] 恢复失败', _lpE); toast('恢复失败: ' + (_lpE.message||_lpE)); return false; }
         finally { hideLoading(); }
-      }else{hideLoading();toast("\u52A0\u8F7D\u5931\u8D25");}
-    }catch(e){hideLoading();toast("\u5931\u8D25: "+e.message);}
+      }else{hideLoading();toast(isAuto ? '暂无可恢复的桌面自动存档' : "\u52A0\u8F7D\u5931\u8D25");return false;}
+    }catch(e){hideLoading();toast("\u5931\u8D25: "+e.message);return false;}
   };
 
   window.desktopDeleteSave=async function(ref){
@@ -2924,15 +2936,10 @@ if(_tmHasNativeFs()){
     try{
       var r=await window.tianming.loadAutoSave();
       if(r.success&&r.data){
-        if(r.data.gameState&&r.data.gameState.running){
-          // 有运行中的游戏——提示恢复
-          if(confirm("\u68C0\u6D4B\u5230\u81EA\u52A8\u5B58\u6863 (T"+(r.data.gameState.turn||1)+")\uFF0C\u662F\u5426\u6062\u590D\uFF1F")){
-            showLoading("\u6062\u590D...",50);
-            try { await fullLoadGame(r.data, { autoSaveSessionToken: r.sessionToken || '', source: 'desktop-autosave' }); }
-            catch (_restE) { console.error('[autoRestore] 恢复失败', _restE); toast('恢复失败: ' + (_restE.message||_restE)); }
-            finally { hideLoading(); }
-          }
-        } else if(r.data.scenarios&&r.data.scenarios.length>0){
+        var savedGame = r.data.gameState && (r.data.gameState.GM || r.data.gameState);
+        // 保留在菜单，由“读取存档 → 桌面自动存档”主动恢复；不再每次弹出系统确认框。
+        if(savedGame&&savedGame.running) return;
+        if(r.data.scenarios&&r.data.scenarios.length>0){
           // 没有运行中的游戏但有剧本数据——静默恢复P结构
           var data=r.data;
           for(var key in data){

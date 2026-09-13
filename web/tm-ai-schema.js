@@ -164,7 +164,7 @@
     // ──────────────────────────────────────────────
     office_changes: {
       type: 'array',
-      desc: '官制人事变动（appoint/dismiss/promote/demote/transfer/evaluate/reform）',
+      desc: '官制人事变动（appoint/dismiss/promote/demote/transfer/evaluate/reform）；设立部门用reform+reformDetail:"增设"+dept，不填虚构position；下属部门另填newDept；官职表用positions:[{name,rank,count}]，先建部门/官职后任命。同名部门须deptId或deptPath',
       requiredSubFields: ['action'],
       consumedBy: ['endturn:11115']
     },

@@ -610,7 +610,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-office-powermap.js?v=20260909-character-actions"></script>
 <script src="tm-office-dutystate.js?v=20260620-officeact"></script>
 <script src="tm-office-authority.js?v=20260620-officeact"></script>
-<script src="tm-office-reform.js?v=20260620-officeact"></script>
+<script src="tm-office-creation.js?v=20260913-office-create"></script>
+<script src="tm-office-reform.js?v=20260913-office-create"></script>
 <script src="tm-office-charter.js?v=20260721"></script><!-- 设衙门批一·设衙章程演绎层(拟制期AI拟正名/职掌/官职表/首任荐单/开办费·裁定准落全结构·flag officeCharterEnabled默认关) -->
 <script src="tm-office-recall-agent.js?v=20260620-officeact"></script>
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
@@ -677,7 +678,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-memory-anchors.js?v=2026042714"></script>
 <script src="tm-chronicle-system.js?v=20260820-auditfix9"></script>
 <script src="tm-number-parser.js?v=20260824-round19"></script>
-<script src="tm-endturn-edict.js?v=20260622-movefix"></script>
+<script src="tm-endturn-edict.js?v=20260913-office-create"></script>
 <!-- R110 (2026-04-25) 拆分 tm-endturn.js → prep + ai-infer + core -->
 <!-- R138 (2026-04-25) endturn-prep 再拆·启动 AI 规划独立成 tm-ai-planning -->
 <script src="tm-ai-planning.js?v=2026042816"></script>
@@ -702,11 +703,11 @@ console.log('天命游戏脚本开始加载...');
 <!-- R209 (2026-05-04) Phase 7 P7-γ·§1 prompt 从 ai-infer 拆出·prompt 必先 load -->
 <!-- DA-Q2 (2026-06-21)·史记 record 提示词共享 builder·sc1 与 agent deepen_narrative 同源零 drift·须先于 ai.js load -->
 <script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
-<script src="tm-endturn-prompt.js?v=20260719-memsanitize"></script>
+<script src="tm-endturn-prompt.js?v=20260913-office-create"></script>
 <script src="tm-endturn-ai-sc1-budget.js?v=20260912-seven-ui"></script>
 <script src="tm-endturn-ai.js?v=20260912-seven-ui"></script>
-<script src="tm-endturn-apply.js?v=20260910-building-orders"></script>
-<script src="tm-endturn-apply-stages.js?v=20260910-building-orders"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-apply.js?v=20260913-office-create"></script>
+<script src="tm-endturn-apply-stages.js?v=20260913-office-create"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
 <script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
 <script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
 <script src="tm-endturn-record.js?v=2026052201"></script>
@@ -854,7 +855,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-audio-theme.js?v=20260710-fontscale"></script>
 <script src="tm-save-lifecycle.js?v=20260828-population-schema"></script>
 <script src="tm-save-close-flush.js?v=20260825-close-drain"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
-<script src="tm-office-editor.js?v=20260911-scenario-origin"></script>
+<script src="tm-office-editor.js?v=20260913-office-create"></script>
 <script src="tm-topbar-vars.js?v=20260912-seven-ui"></script>
 <!-- R137 (2026-04-25) 拆 shell-extras → shell UI + 时政面板 -->
 <script src="tm-shell-extras.js?v=2026042714"></script>
@@ -891,7 +892,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-economy-engine.js?v=20260828-edictledger"></script>
 <script src="tm-central-local-engine.js?v=20260709"></script>
 <script src="tm-huji-engine.js?v=20260828-population-schema"></script>
-<script src="tm-edict-parser.js?v=20260828-population-schema"></script>
+<script src="tm-edict-parser.js?v=20260913-office-create"></script>
 <script src="tm-huji-deep-fill.js?v=20260822-auditfix14"></script>
 <script src="tm-huji-runtime-bridge.js?v=20260822-auditfix17"></script>
 <script src="tm-huji-governance-loop.js?v=20260602-huji-governance-loop"></script>
@@ -937,7 +938,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-diagnostics-panel.js?v=2026042714" defer></script>
 <script src="tm-checklist.js?v=2026042714" defer></script>
 <script src="tm-onboard-tools.js?v=2026042714" defer></script>
-<script src="tm-ai-schema.js?v=20260910-building-orders"></script>
+<script src="tm-ai-schema.js?v=20260913-office-create"></script>
 <script src="tm-ai-output-validator.js?v=20260910-building-orders"></script>
 <script src="tm-data-access.js?v=2026042714"></script>
 <!-- AI change 基础能力须在模块岛 bundle 之前加载：pathutils → army → narrative → generated applier。 -->
@@ -945,7 +946,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-change-army.js?v=20260521-slice2"></script>
 <script src="tm-ai-change-narrative.js?v=20260521-slice3"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
-<script src="generated/tm-ai-change-applier.bundle.js?v=20260910-building-orders"></script>
+<script src="generated/tm-ai-change-applier.bundle.js?v=20260913-office-create"></script>
 <script src="tm-ai-npc-memorials.js?v=20260709"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=20260912-seven-ui"></script>

@@ -781,6 +781,52 @@
     };
   }
 
+  function _parsedOfficeCreation(text) {
+    var creation = global.TM && global.TM.OfficeCreation;
+    return creation && creation.fromEdict ? creation.fromEdict(text, global.GM && global.GM.officeTree) : null;
+  }
+
+  function _executeOfficeCreation(changes, params) {
+    params = params || {};
+    var G = global.GM, creation = global.TM && global.TM.OfficeCreation;
+    if (!G || !creation || typeof global.applyReformToTree !== 'function') return { ok: false, reason: '官制创建入口未加载，未施行' };
+    var checked = creation.preflight(G.officeTree, changes);
+    if (!checked.ok) { if (global.addEB) global.addEB('官制未施行', checked.summary); return { ok: false, reason: checked.summary }; }
+    var pending = false, applied = 0, results = [];
+    changes.forEach(function (row) {
+      var reform = creation.normalize(row), plan = creation.prepare(G.officeTree, reform);
+      var adjudication = typeof global.officeFlagOn === 'function' && global.officeFlagOn('officeReformAdjudicationEnabled');
+      if (adjudication) {
+        var queued = global.enqueuePendingReform(G, reform, G.turn || 0);
+        pending = true; results.push({ pending: true, dept: reform.newDept || reform.dept, queued: !!queued });
+        if (global.addEB) global.addEB('官制拟议', '设立之议已入拟制，待廷议裁定：' + (reform.newDept || reform.dept) + (reform.position ? '／' + reform.position : ''));
+        return;
+      }
+      if (!plan.ok) { results.push({ ok: false, reason: plan.summary }); return; }
+      if (plan.unchanged) { results.push({ unchanged: true, dept: reform.dept }); if (global.addEB) global.addEB('官制核对', '官制已在册，无须重复设立：' + plan.path.join('／')); return; }
+      if (plan.postOnly || plan.existing) {
+        var direct = global.applyReformToTree(G, reform); results.push(direct); if (direct.applied) applied++;
+        if (global.addEB) global.addEB(direct.applied ? '官制改革' : '官制未施行', direct.summary);
+        return;
+      }
+      var existing = _findDynamicInstitutionByName(reform.newDept || reform.dept);
+      if (existing && existing._officeTreeLinked && existing._officeTreeNodeId !== plan.node.id) existing = null;
+      if (existing) {
+        var linked = global.applyReformToTree(G, reform);
+        if (linked.applied) { existing._officeTreeNodeId = linked.nodeId; existing._officeTreeLinked = true; applied++; }
+        results.push(linked); return;
+      }
+      var inst = registerDynamicInstitution({ name: reform.newDept || reform.dept, rank: params.rank || reform.newRank || 5,
+        duties: params.duties || reform.reason || '', subordinateTo: reform.newDept ? reform.dept : null,
+        region: params.region || 'central', staffSize: params.staffSize || 20,
+        annualBudget: params.annualBudget != null ? params.annualBudget : 50000, fundingSource: params.fundingSource || 'guoku.central',
+        createdBy: params.createdBy || 'edict', officeReform: reform });
+      results.push(inst); if (inst && inst._officeTreeLinked) applied++;
+    });
+    var failure = results.find(function (r) { return r && (r.ok === false || (r.applied === false && !r.unchanged)); });
+    return { ok: !failure, pending: pending, applied: applied, results: results, reason: failure && (failure.reason || failure.summary) || '' };
+  }
+
   function _isOfficeAbolishText(text) {
     text = String(text || '');
     return /裁撤|裁革|裁汰|废止|废除|撤销|罢撤|罢废|并归|归并/.test(text) &&
@@ -1094,6 +1140,15 @@
       aiEntry: function(params) {
         if (!global.GM.officeTree) return false;
         var edictText = params && params._edictText || '';
+        var creation = _parsedOfficeCreation(edictText);
+        if (creation && creation.blocked) return { ok: false, reason: creation.reason };
+        if (params && params.officeName && !(params && /^(abolish|supervise)$/.test(params.action || '')) && !_isOfficeAbolishText(edictText)) {
+          var declaredParent = params.subordinateTo || params.parentDept;
+          return _executeOfficeCreation([{ action: 'reform', reformDetail: '增设', dept: declaredParent || params.officeName,
+            newDept: declaredParent ? params.officeName : '', positions: params.positions || [], newRank: params.rank,
+            deptId: params.deptId, deptPath: params.deptPath, reason: params.duties || params.reason || '' }], params);
+        }
+        if (creation && creation.changes.length && !(params && /^(abolish|supervise)$/.test(params.action || ''))) return _executeOfficeCreation(creation.changes, params || {});
         params = Object.assign({}, _inferOfficeReformFromText(edictText), _inferOfficeAbolishFromText(edictText), _inferInstSupervisionFromText(edictText), params || {});
         if (!params.officeName) params.officeName = params.institutionName || params.name || params.target || '';
         if (!params.officeName) return false;
@@ -1268,6 +1323,7 @@
   }
 
   function _detectType(text) {
+    if (_parsedOfficeCreation(text)) return 'office_reform';
     if (/完整币制|币制改革|统一钱法|银本位|白银本位|赋役折银|海外银|银流|开海通商|海商纳银|接受宝钞|纸钞折纳|官府收纳.*钞/.test(text)) return 'currency_reform';
     if (/迁民出山|退耕还林|技术投入|水利技术|灾后恢复|水毁田土|环境承载|省水农具/.test(text)) return 'environment_policy';
     if (/财政博弈|地方财政博弈|长期财政追踪|财政追踪|岁终核验|足额起运|起运.*存留.*贪墨/.test(text)) return 'central_local_finance';
@@ -1488,29 +1544,22 @@
     if (!G._pendingMemorials) return { ok: false };
     var memo = G._pendingMemorials.find(function(m) { return m.id === memoId; });
     if (!memo) return { ok: false, reason: '未找到奏疏' };
-    // R12b inline (原 phase-c-patches OVERRIDE side-effect)·官制类 approve 时·自动注册 dynamicInstitution
-    if (memo.typeKey === 'office_reform' && decision === 'approve') {
-      var assentParams = Object.assign({}, memo.draftParams || {}, modifications || {});
-      if (assentParams.officeName) {
-        registerDynamicInstitution({
-          name: assentParams.officeName,
-          rank: assentParams.rank || 5,
-          duties: assentParams.duties || '',
-          region: (assentParams.details && assentParams.details.region) || 'central',
-          staffSize: (assentParams.details && assentParams.details.staffSize) || 20,
-          fundingSource: (assentParams.details && assentParams.details.fundingSource) || 'guoku.central',
-          annualBudget: (assentParams.details && assentParams.details.annualBudget) || 50000,
-          createdBy: 'memorial_approved_' + memoId
-        });
-      }
-    }
+    // 官制也只从 aiEntry 执行一次；先注册浅台账会绕过结构预检，并在重复批复时再次扣开办费。
     if (decision === 'approve') {
       memo.status = 'approved';
       // 执行
       var type = EDICT_TYPES[memo.typeKey];
       if (type && type.aiEntry) {
         var params = _buildMemorialExecParams(memo, modifications);
+        if (memo.typeKey === 'office_reform') { params = Object.assign({}, params.details || {}, params, { createdBy: 'memorial_approved_' + memoId }); }
         memo.executionResult = type.aiEntry(params);
+      }
+      if (memo.typeKey === 'office_reform' && memo.executionResult && typeof memo.executionResult === 'object') {
+        memo.executionStatus = memo.executionResult.ok === false ? 'failed' : memo.executionResult.pending ? 'pending' : 'executed';
+        if (memo.executionStatus !== 'executed') {
+          if (global.addEB) global.addEB('诏令', memo.executionStatus === 'pending' ? '官制之议已受理，待廷议裁定' : '官制未施行：' + (memo.executionResult.reason || '写回失败'));
+          return { ok: memo.executionStatus === 'pending', status: memo.status, executionStatus: memo.executionStatus, reason: memo.executionResult.reason || '' };
+        }
       }
       if (global.addEB) global.addEB('诏令', memo.typeName + ' 已施行');
     } else if (decision === 'reject') {
@@ -1919,7 +1968,7 @@
       subordinateTo: spec.subordinateTo || null,
       staffSize: spec.staffSize || 20,
       publicTreasuryBinding: spec.fundingSource || 'guoku.central',
-      annualBudget: spec.annualBudget || 50000,
+      annualBudget: spec.annualBudget != null ? spec.annualBudget : 50000,
       headOfficial: spec.headOfficial || null,
       createdTurn: G.turn || 0,
       createdBy: spec.createdBy || 'edict',
@@ -1940,6 +1989,11 @@
       if (global.addEB) global.addEB('机构', '设 ' + inst.name + ' 之议入拟制·待廷议裁定（官制活化·改制归官制树·不另立机构）');
       _recordInstitutionLifecycleEvent(inst, 'pending_reform', { source: inst.createdBy || 'edict' });
       return inst;
+    }
+    if (spec.officeReform) {
+      var officeApplied = typeof global.applyReformToTree === 'function' ? global.applyReformToTree(G, spec.officeReform) : null;
+      if (!officeApplied || !officeApplied.applied) return { ok: false, reason: officeApplied && officeApplied.summary || '官制创建未落地，未扣款' };
+      inst._officeTreeNodeId = officeApplied.nodeId; inst._officeTreeLinked = true;
     }
     G.dynamicInstitutions.push(inst);
     if (hq > 75 && typeof G.huangquan === 'object') {
@@ -2079,6 +2133,11 @@
     if (!G.dynamicInstitutions) return;
     var inst = G.dynamicInstitutions.find(function(i){return i.id===instId;});
     if (!inst) return;
+    if (inst.stage === 'abolished') return inst;
+    if (inst._officeTreeLinked && inst._officeTreeNodeId) {
+      var removed = typeof global.applyReformToTree === 'function' ? global.applyReformToTree(G, { action: 'reform', reformDetail: '裁撤', dept: inst.name, deptId: inst._officeTreeNodeId }) : null;
+      if (!removed || (!removed.applied && !removed.unchanged)) { if (global.addEB) global.addEB('官制未施行', removed && removed.summary || '官制裁撤入口未加载'); return false; }
+    }
     inst.stage = 'abolished';
     inst.abolishedTurn = G.turn || 0;
     if (global.addEB) global.addEB('机构', inst.name + ' 已废');
@@ -2204,6 +2263,7 @@
     },
     // R12b inline·原 phase-c-patches APPEND
     registerDynamicInstitution: registerDynamicInstitution,
+    executeOfficeCreation: _executeOfficeCreation,
     abolishInstitution: abolishInstitution,
     advanceInstitutionLifecycle: advanceInstitutionLifecycle,
     getInstitutionLifecycleView: getInstitutionLifecycleView,

@@ -102,6 +102,8 @@ jobs:
         run: node scripts/verify-electron-bridge.js --memorial-reading
       - name: Character actions, office recommendations and existing appointment flow
         run: node scripts/verify-electron-bridge.js --character-actions
+      - name: Edict office creation, recursive tree, appointment target and native save recovery
+        run: node scripts/verify-electron-bridge.js --office-writeback
       - name: Right rail pending audiences, navigation and completion feedback
         run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Player feedback army search, local fonts and fatal turn boundary

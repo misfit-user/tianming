@@ -1184,7 +1184,8 @@ function processEdictEffects(allEdictText, edictCategory) {
       var edictResult = EdictParser.tryExecute(allEdictText, {}, { category: edictCategory });
       if (edictResult && edictResult.pathway) {
         GM._lastEdictClassification = edictResult;
-        var typeLabel = edictResult.typeKey ? (EdictParser.EDICT_TYPES[edictResult.typeKey] ? EdictParser.EDICT_TYPES[edictResult.typeKey].name : edictResult.typeKey) : '';
+        var classification = edictResult.classification || edictResult;
+        var typeLabel = classification.typeKey ? (EdictParser.EDICT_TYPES[classification.typeKey] ? EdictParser.EDICT_TYPES[classification.typeKey].name : classification.typeKey) : '';
         if (edictResult.pathway === 'memorial') {
           var drafter = edictResult.memo && edictResult.memo.drafter || '有司';
           var msg1 = '〔' + typeLabel + '〕旨意已下，' + drafter + ' 下回合具奏';
@@ -1194,6 +1195,12 @@ function processEdictEffects(allEdictText, edictCategory) {
           var q = (edictResult.clarification && edictResult.clarification.questions && edictResult.clarification.questions[0]) || '圣意具体如何？';
           if (typeof addEB === 'function') addEB('诏令', '侍臣问疑：' + q);
           if (typeof toast === 'function') toast('诏令需细化：' + q);
+        } else if (edictResult.ok && edictResult.executionResult && edictResult.executionResult.pending) {
+          if (typeof addEB === 'function') addEB('诏令', '〔' + typeLabel + '〕已入拟制，待廷议裁定；尚未正式设立');
+          if (typeof toast === 'function') toast('官制之议待廷议裁定');
+        } else if (!edictResult.ok && classification.typeKey === 'office_reform' && edictResult.executionResult && edictResult.executionResult.reason) {
+          if (typeof addEB === 'function') addEB('官制未施行', edictResult.executionResult.reason);
+          if (typeof toast === 'function') toast('官制未施行：' + edictResult.executionResult.reason);
         } else if (edictResult.ok && edictResult.pathway === 'direct') {
           var msg2 = '〔' + typeLabel + '〕已直断施行' + (edictResult.isP1 ? '（P1 特殊）' : '');
           if (typeof addEB === 'function') addEB('诏令', msg2);

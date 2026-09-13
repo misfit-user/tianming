@@ -21,7 +21,10 @@ assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest s
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
 assert.strictEqual(manifest.deferredChangesApproved, 8, 'the original six and two explicit relief providers form the complete deferred set');
-assert.strictEqual(manifest.scriptCount, 414, '411 retained scripts plus the three model-discovery/thinking modules form the complete eager set');
+assert.strictEqual(manifest.scriptCount, 415, 'the retained 414 scripts plus the office creation contract form the complete eager set');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-office-creation.js').length, 1, 'office creation loads exactly once');
+assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-office-reform.js'), 'creation contract precedes its structural writer');
+assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-edict-parser.js'), 'creation contract precedes natural-language edict dispatch');
 for (const name of ['tm-ai-request-options.js', 'tm-api-models.js', 'tm-api-settings.js']) {
   assert.strictEqual(scriptNames.filter((src) => src === name).length, 1, name + ' is loaded exactly once');
 }

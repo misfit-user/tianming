@@ -27,6 +27,7 @@
   function _countPowers(p) { var n = 0, pw = p && p.powers; if (pw) POWER_KEYS.forEach(function (k) { if (pw[k]) n++; }); return n; }
 
   function _reformKind(reform) {
+    if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) return 'add';
     var d = String((reform && reform.reformDetail) || (reform && reform.kind) || '');
     if (/增设|新设|增置|创设/.test(d)) return 'add';
     if (/裁撤|废除|罢省|省并|裁/.test(d)) return (reform && reform.position) ? 'abolishPos' : 'abolishDept';
@@ -188,8 +189,28 @@
    * @param {object} reform { reformDetail, dept, position?, newDept?, newRank?, reason? }
    * @returns {{applied:boolean, summary:string}}
    */
-  function applyReformToTree(GM, reform) {
+  function applyReformToTree(GM, reform, options) {
     if (!GM || !GM.officeTree) return { applied: false, summary: '无官制' };
+    if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
+      var creation = global.TM.OfficeCreation, canonical = creation.normalize(reform), charter = reform._charter;
+      if (charter && charter.name && !(canonical.position && !canonical.newDept) && !_treeHasName(GM.officeTree, charter.name)) {
+        if (canonical.newDept) canonical.newDept = charter.name; else canonical.dept = charter.name;
+      }
+      var plan = creation.prepare(GM.officeTree, canonical, charter ? _charterPositions(charter, !!reform._charterDiscount) : null);
+      if (!plan.ok) return { applied: false, summary: plan.summary, code: plan.code };
+      if (plan.unchanged) return { applied: false, unchanged: true, summary: '官制已在册，无须重复设立：' + plan.path.join('／'), nodeId: plan.node.id };
+      if (options && options.preview) return { applied: false, canApply: true, summary: plan.summary };
+      if (!plan.existing) {
+        if (plan.parent) { if (!Array.isArray(plan.parent.subs)) plan.parent.subs = []; plan.parent.subs.push(plan.node); }
+        else GM.officeTree.push(plan.node); // arch-ok: existing office-reform owner is the canonical department-structure writer
+        if (charter && charter.desc) plan.node.desc = charter.desc;
+      }
+      if (!Array.isArray(plan.node.positions)) plan.node.positions = [];
+      plan.additions.forEach(function (p) { plan.node.positions.push(p); });
+      if (charter) reform._charterLanded = plan.additions.map(function (p) { return p.name; });
+      _recordDz(GM, plan.postOnly ? canonical.dept + '/' + canonical.position : plan.node.name, plan.node.name);
+      return { applied: true, summary: plan.summary, nodeId: plan.node.id };
+    }
     var kind = _reformKind(reform), tree = GM.officeTree, dept = reform.dept, pos = reform.position, newDept = reform.newDept;
     if (kind === 'add') {
       if (pos) {
@@ -224,6 +245,15 @@
       return { applied: removed, summary: removed ? ('裁撤' + dept + pos) : ('未找到' + dept + pos) };
     }
     if (kind === 'abolishDept') {
+      if (reform.deptId) {
+        var matches = []; _walkTree(tree, function (n) { if (n.id === reform.deptId) matches.push(n); });
+        if (matches.length === 0) return { applied: false, unchanged: true, summary: '目标官署已不在树中' };
+        if (matches.length !== 1) return { applied: false, summary: '官署 ID 不唯一，未裁撤' };
+        var target = matches[0];
+        (function vacate(nd) { (nd.positions || []).forEach(function (p) { if (p.holder) _vacateHolder(GM, nd.name, p.name, p.holder); }); (nd.subs || []).forEach(vacate); })(target);
+        (function remove(ns) { var index = ns.indexOf(target); if (index >= 0) { ns.splice(index, 1); return; } ns.forEach(function (n) { if (n.subs) remove(n.subs); }); })(tree);
+        _abolishDz(GM, target.name); return { applied: true, summary: '裁撤' + target.name };
+      }
       _walkTree(tree, function (n) { if (n.name === dept) (function collect(nd) { (nd.positions || []).forEach(function (p) { if (p.holder) _vacateHolder(GM, nd.name, p.name, p.holder); }); (nd.subs || []).forEach(collect); })(n); });
       GM.officeTree = tree.filter(function (d) { return d.name !== dept; });
       (function delSub(ns) { ns.forEach(function (n) { if (n.subs) { n.subs = n.subs.filter(function (s) { return s.name !== dept; }); delSub(n.subs); } }); })(GM.officeTree);
@@ -258,7 +288,14 @@
     return (hw + hq) / 2;
   }
   function _difficultyOf() { var P = global.P || {}; return DIFF_MAP[(P.conf && P.conf.difficulty) || ''] || 'standard'; }
-  function _reformKey(oc) { return (oc.reformDetail || '') + '|' + (oc.dept || '') + '|' + (oc.position || '') + '|' + (oc.newDept || ''); }
+  function _reformKey(oc) {
+    var key = (oc.reformDetail || '') + '|' + (oc.dept || '') + '|' + (oc.position || '') + '|' + (oc.newDept || '');
+    if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(oc)) {
+      key += '|' + JSON.stringify([oc.deptId || '', oc.deptPath || [], oc.newRank || '', oc.positions || [],
+        oc.establishedCount, oc.headCount, oc.count, oc.salary, oc.powers, oc.authority]);
+    }
+    return key;
+  }
   // AI verdict 护栏：机械 band 是地板·AI 只能更严(加阻)不能更宽(放水)。准0<部分1<拖2<驳3
   var _VRANK = { '准': 0, '部分': 1, '拖': 2, '驳': 3 };
   function _matchAiVerdict(list, item) {
@@ -277,10 +314,14 @@
   // 玩家改制诏入拟制态队列（去重·不即落）
   function enqueuePendingReform(GM, oc, turn) {
     if (!GM || !oc) return null;
+    if (global.TM && global.TM.OfficeCreation) oc = global.TM.OfficeCreation.normalize(oc) || oc;
     if (!Array.isArray(GM._pendingReforms)) GM._pendingReforms = [];
     var key = _reformKey(oc);
-    if (GM._pendingReforms.some(function (r) { return r.status === '拟制中' && r._key === key; })) return null;
+    if (GM._pendingReforms.some(function (r) { return r.status === '拟制中' && _reformKey(r) === key; })) return null;
     var item = { _key: key, reformDetail: oc.reformDetail, dept: oc.dept, position: oc.position || '', newDept: oc.newDept || '', newRank: oc.newRank || '', reason: oc.reason || '', proposedTurn: (turn != null ? turn : (GM.turn || 0)), status: '拟制中', stalls: 0 };
+    ['positions', 'deptId', 'deptPath', 'establishedCount', 'headCount', 'count', 'salary', 'powers', 'authority'].forEach(function (key) {
+      if (oc[key] !== undefined) item[key] = JSON.parse(JSON.stringify(oc[key]));
+    });
     GM._pendingReforms.push(item);
     return item;
   }
@@ -306,6 +347,16 @@
         else aiNote = '·廷议无异议';                                                                                                                                          // AI 更宽则被机械护栏吞(不放水)
       }
       var who = r.affected.map(function (a) { return a.holder; }).join('、');
+      if ((band === '准' || band === '部分') && global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(item)) {
+        if (band === '部分' && item._charter) item._charterDiscount = true;
+        var preflight = applyReformToTree(GM, item, { preview: true });
+        if (!preflight.canApply) {
+          item.status = preflight.unchanged ? '已在册' : '未施行';
+          if (addEB) addEB(preflight.unchanged ? '官制核对' : '官制未施行', preflight.summary);
+          results.push({ item: item, band: item.status, applied: false, unchanged: !!preflight.unchanged, reason: preflight.summary });
+          return; // 结构未获实际落地时不扣开办费，也不虚报“准行”。
+        }
+      }
       // 章程开办费国库闸(设衙门批一)：裁定虽准·帑廪不支→按拖处置(有司执奏·拖满则寝)·树不动银不扣
       if ((band === '准' || band === '部分') && item._charter && item._charter.setupCost && !_spendGuoku(GM, item._charter.setupCost, '开衙·' + (item._charter.name || item.dept))) {
         item.stalls = (item.stalls || 0) + 1;

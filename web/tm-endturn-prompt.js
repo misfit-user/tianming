@@ -3714,6 +3714,8 @@
     sysP += '\n    玩家诏令中提及"增设某某""裁撤某某""将某某更名为某某""拆分某某为某某"→必须在office_changes中输出对应reform动作';
     sysP += '\n    增设新官职→reform + reformDetail:"增设" + dept:所属部门 + position:新官职名';
     sysP += '\n    增设新部门→reform + reformDetail:"增设" + dept:新部门名';
+    sysP += '\n    新部门附带官职表→positions:[{name:"官职名",rank:"品级",count:编制数}]；不得为部门硬填position，任命另用appoint且安排在创建之后。';
+    sysP += '\n    新设下属部门→dept:实际父部门名 + newDept:新部门名；父部门同名时给deptId或完整deptPath。已落地结构不重复创建，未获准不得宣称已设立。';
     sysP += '\n    裁撤→reform + reformDetail:"裁撤" + dept:被裁部门名';
     sysP += '\n    改名→reform + reformDetail:"改名" + dept:旧名 + newDept:新名';
     sysP += '\n    拆分→reform + reformDetail:"拆分" + dept:原部门名 + splitInto:[{name,positions:[]},...]';

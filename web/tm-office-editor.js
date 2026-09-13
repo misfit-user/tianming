@@ -1350,7 +1350,7 @@ function _officeBuildTree(collapsed, opts) {
           nodeW: W, nodeH: H};
 }
 
-// v10·嵌套群组四层树 Emperor → Group → Dept → Pos（群组纵叠）
+// v10·群组纵叠，部门递归展开 subs 与 positions（沿用正式 s/p 路径）。
 // opts: { courtKey, subTab, collapsed, W_DEPT, W_POS, H_DEPT, H_POS, H_GROUP, H_EMP }
 function _officeBuildTreeV10(opts) {
   opts = opts || {};
@@ -1372,7 +1372,6 @@ function _officeBuildTreeV10(opts) {
 
   // 优先用 opts.officeTree（GM.officeTree），fallback 到 P.officeTree 以兼容旧调用
   var depts = opts.officeTree || P.officeTree || [];
-  var _collapseMap = opts.collapsedSrc || collapsed || {};
   // 分类（不在 tm-audio-theme.js 中硬编 map·依赖 window._officeClassifyDept）
   var classify = (typeof _officeClassifyDept === 'function') ? _officeClassifyDept : function(){ return { court:'central', group:'sijian' }; };
 
@@ -1399,6 +1398,31 @@ function _officeBuildTreeV10(opts) {
   // Emperor 虚根
   var emperor = { type:'emperor', node:null, children:[], parent:null, w:EMP_W, h:EMP_H, depth:0, path:[] };
 
+  function buildDept(dept, path, parent, ancestors) {
+    if (!dept || typeof dept !== 'object' || ancestors.indexOf(dept) !== -1) return null;
+    var isCollapsed = !!collapsed[JSON.stringify(path)];
+    var node = {
+      type:'dept', node:dept, path:path, deptIdx:path[0],
+      collapsed:isCollapsed, children:[], parent:parent,
+      w:DEPT_W, h:DEPT_H, depth:parent.depth + 1
+    };
+    if (!isCollapsed) {
+      (Array.isArray(dept.positions) ? dept.positions : []).forEach(function(p, pi){
+        if (!p || typeof p !== 'object') return;
+        node.children.push({
+          type:'pos', node:p, deptName:dept.name, deptIdx:path[0], posIdx:pi,
+          path:path.concat(['p', pi]), children:[], parent:node,
+          w:POS_W, h:POS_H, depth:node.depth + 1
+        });
+      });
+      (Array.isArray(dept.subs) ? dept.subs : []).forEach(function(sub, si){
+        var child = buildDept(sub, path.concat(['s', si]), node, ancestors.concat([dept]));
+        if (child) node.children.push(child);
+      });
+    }
+    return node;
+  }
+
   // 构造群组子树
   var groupNodes = [];
   GROUP_ORDER.forEach(function(g){
@@ -1409,23 +1433,8 @@ function _officeBuildTreeV10(opts) {
       children:[], parent:emperor, w:0, h:GROUP_H, depth:1
     };
     bucket.forEach(function(cd){
-      var key = JSON.stringify([cd.idx]);
-      var isCollapsed = !!collapsed[key];
-      var deptNode = {
-        type:'dept', node:cd.dept, path:[cd.idx], deptIdx:cd.idx,
-        collapsed:isCollapsed, children:[], parent:gNode,
-        w:DEPT_W, h:DEPT_H, depth:2
-      };
-      if (!isCollapsed) {
-        (cd.dept.positions || []).forEach(function(p, pi){
-          deptNode.children.push({
-            type:'pos', node:p, deptName:cd.dept.name, deptIdx:cd.idx, posIdx:pi,
-            path:[cd.idx, 'p', pi], children:[], parent:deptNode,
-            w:POS_W, h:POS_H, depth:3
-          });
-        });
-      }
-      gNode.children.push(deptNode);
+      var deptNode = buildDept(cd.dept, [cd.idx], gNode, []);
+      if (deptNode) gNode.children.push(deptNode);
     });
     groupNodes.push(gNode);
   });
@@ -1445,14 +1454,12 @@ function _officeBuildTreeV10(opts) {
   var yCursor = EMP_H + V_GAP;
   groupNodes.forEach(function(gNode) {
     var groupY = yCursor;
-    var deptY = groupY + GROUP_H + V_GAP_GROUP;
-    var posY = deptY + DEPT_H + V_GAP;
-    var hasExp = gNode.children.some(function(d){ return d.children.length > 0; });
+    var groupBottom = groupY + GROUP_H;
 
     function assignXY(n, leftX) {
       if (n.type === 'group') n.y = groupY;
-      else if (n.type === 'dept') n.y = deptY;
-      else if (n.type === 'pos') n.y = posY;
+      else n.y = n.parent.y + n.parent.h + (n.parent.type === 'group' ? V_GAP_GROUP : V_GAP);
+      groupBottom = Math.max(groupBottom, n.y + n.h);
 
       if (!n.children.length) {
         var slotW = (n.type === 'pos') ? (POS_W + H_GAP) : (DEPT_W + DEPT_GAP);
@@ -1475,8 +1482,15 @@ function _officeBuildTreeV10(opts) {
     }
     assignXY(gNode, 0);
 
-    if (hasExp) yCursor = posY + POS_H + V_GAP * 1.4;
-    else yCursor = deptY + DEPT_H + V_GAP * 1.4;
+    // 子部门的子树可能比直属部门卡宽；群组边框与画布必须包住全部后代。
+    var minX = Infinity, maxX = -Infinity;
+    function measure(n) {
+      minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x + n.w);
+      n.children.forEach(measure);
+    }
+    gNode.children.forEach(measure);
+    if (isFinite(minX)) { gNode.x = minX - 20; gNode.w = maxX - minX + 40; }
+    yCursor = groupBottom + V_GAP * 1.4;
   });
 
   // 水平居中所有群组到同一 cx（等于皇帝 cx）
@@ -1498,13 +1512,8 @@ function _officeBuildTreeV10(opts) {
   var canvasHeight = groupNodes.length > 0 ? yCursor : (EMP_H + V_GAP * 2);
 
   var flat = [emperor];
-  groupNodes.forEach(function(gNode){
-    flat.push(gNode);
-    gNode.children.forEach(function(d){
-      flat.push(d);
-      d.children.forEach(function(p){ flat.push(p); });
-    });
-  });
+  function flatten(n) { flat.push(n); n.children.forEach(flatten); }
+  groupNodes.forEach(flatten);
 
   return {
     flat: flat,

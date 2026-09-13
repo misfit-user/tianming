@@ -2789,12 +2789,20 @@
         }
         // 处理官制变动（AI可任命/罢免官员）
         if (p1.office_changes && Array.isArray(p1.office_changes) && GM.officeTree) {
+          if (window.TM && TM.OfficeCreation) p1.office_changes = p1.office_changes.map(function (oc) { return TM.OfficeCreation.normalize(oc) || oc; });
           // 官制活化 Slice④ 拟制态捕获：adjudication 开时·reform oc 入队(拟制中)·不即落·关则原样(3340 即落·零回归)
           if (typeof officeFlagOn === 'function' && officeFlagOn('officeReformAdjudicationEnabled') && typeof enqueuePendingReform === 'function') {
             p1.office_changes = p1.office_changes.filter(function (oc) { if (oc && oc.action === 'reform' && oc.reformDetail) { enqueuePendingReform(GM, oc); return false; } return true; });
           }
           var _officeMoveExitMap = _tmBuildOfficeMoveExitMap(GM, p1);
           p1.office_changes.forEach(function(oc) {
+            if (!oc || typeof oc !== 'object') return;
+            if (window.TM && TM.OfficeCreation && TM.OfficeCreation.isCreation(oc)) {
+              var _createdOffice = typeof applyReformToTree === 'function' ? applyReformToTree(GM, oc) : { applied: false, summary: '官制创建入口未加载' };
+              addEB(_createdOffice.applied ? '官制改革' : (_createdOffice.unchanged ? '官制核对' : '官制未施行'), _createdOffice.summary);
+              if (!_createdOffice.applied && !_createdOffice.unchanged && typeof _tmRecordSemanticFailure === 'function') _tmRecordSemanticFailure('office_creation', oc.newDept || oc.dept || '', _createdOffice.summary);
+              return;
+            }
             if (!oc.dept || !oc.position || !oc.action) return;
             var _ocMatchedTree = false; // 单一真相源:树是否精确匹配·未匹配则回退写人物 officialTitle
             // 单一真相源·robust 解析:AI 官衔常啰嗦(如"内阁首辅·建极殿大学士"·树座名"首辅·建极殿大学士"),

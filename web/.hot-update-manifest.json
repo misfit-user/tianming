@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-13T05:29:08.010Z",
+  "generatedAt": "2026-09-14T06:27:56.085Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -1866,8 +1866,8 @@
     },
     {
       "path": "battle/_BUNDLED_FROM.txt",
-      "sha256": "2ffd2a9af2a9e546763b87769907d3844bc7fce39e5d0ad790925644ab7a1ae0",
-      "size": 135
+      "sha256": "5b670ee326d815e1eb4622e1d095cd6f29d91d85b44cda5d5b0e9865454d62e0",
+      "size": 660
     },
     {
       "path": "battle/assets/models/soldier_v3_opt.glb",
@@ -1911,8 +1911,78 @@
     },
     {
       "path": "battle/index.html",
-      "sha256": "ae01d313d80799156fe40dc7cb4bf0f6ad9291b2ed507dcbd0936d51d4bd342d",
-      "size": 364292
+      "sha256": "24200c706640af47c7d12dbbea3616d02f215e6e0a03b24d196dc0bf016fc8fd",
+      "size": 381242
+    },
+    {
+      "path": "battle/render-resolution.js",
+      "sha256": "12f33bb231b9f2ed9f4f523de63f20bc933acbc2be6c44c6478b97fbe0cef298",
+      "size": 1704
+    },
+    {
+      "path": "battle/terrain-assets.js",
+      "sha256": "bff1c3757f16ebedc09f264e420767da5884e115046a4582068985382272b8cc",
+      "size": 6402
+    },
+    {
+      "path": "battle/terrain-frame-cache.js",
+      "sha256": "a702ca66a0e365777ce4872545b0ab51562c035f03758d7f235d2d2c25524b1c",
+      "size": 3785
+    },
+    {
+      "path": "battle/terrain-landscape.js",
+      "sha256": "2a12f8959a6a67ee61e509aa7ff8c9ec4b8aefa4184e253bcad19569e46fc621",
+      "size": 13196
+    },
+    {
+      "path": "battle/terrain-motion.js",
+      "sha256": "2fc02cc4651565e766fd723591ad2daa05426d2a56580acae99a2e25cc4bd84f",
+      "size": 3439
+    },
+    {
+      "path": "battle/terrain-navigation.js",
+      "sha256": "2ca36487bcd88be0623fd3c993f4301a084d47de71afd677c34c23718d815de5",
+      "size": 10636
+    },
+    {
+      "path": "battle/terrain-props.js",
+      "sha256": "19e8ac24490203dddbeebec7298704253bdc1bafc0cacf0e3b69742903fcb3cd",
+      "size": 8348
+    },
+    {
+      "path": "battle/terrain-shadows.js",
+      "sha256": "a18dc72ce54521523afa035c017f1fcb649ac4f93bab70a3dfabf5e0bcc8e687",
+      "size": 6643
+    },
+    {
+      "path": "battle/terrain-world.js",
+      "sha256": "83ba5fb22330f2a77727a734cdf05a2e98fcf907621e3dafc643aeb71619cb34",
+      "size": 12694
+    },
+    {
+      "path": "battle/unit-assets.js",
+      "sha256": "47b66646d2cf5926a299056edaf858d28f6835fec090959e31d7db6bc776059a",
+      "size": 13302
+    },
+    {
+      "path": "battle/unit-command.js",
+      "sha256": "b98fbeb3a32f7ac6ce7b223cdae986f0c69045b2e7e2504f40ca817355874070",
+      "size": 3253
+    },
+    {
+      "path": "battle/unit-impostors.js",
+      "sha256": "5bb8c0691afa2569d28c15f1fd09482a25f94fab5d5f52c00329e349ea80d8de",
+      "size": 11261
+    },
+    {
+      "path": "battle/unit-render.js",
+      "sha256": "fd5e9a748d790a9f07547c8970cb34a46a35a4e420555ba5d8254a708e6bbbd2",
+      "size": 8866
+    },
+    {
+      "path": "battle/unit-visibility.js",
+      "sha256": "6d4037f4c5396733076c3946d7620313fd4b8e78156f70097ce546df82924bc6",
+      "size": 1005
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
@@ -1936,8 +2006,8 @@
     },
     {
       "path": "changelog.json",
-      "sha256": "b892b5c1edf9b3a29cb82bba1ecbac60a6157f265e17b0762de9dad3268e90d7",
-      "size": 1011562
+      "sha256": "f3da0e496aeb76516a3595f48568d4292d77e7f581cd70c181d32ace26caf91d",
+      "size": 1013082
     },
     {
       "path": "data/maps/default-map.json",
@@ -2136,8 +2206,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "3cc3b0102dd408a64f31f000d8df955a8c85672de2eeba14746286c3e655e532",
-      "size": 184772
+      "sha256": "7b5145ab66ef17f25b3954a3496512bbad654f62d706fd31b9fdc1d059b98da0",
+      "size": 184870
     },
     {
       "path": "editor.js",
@@ -2151,8 +2221,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "74df03f9442c9c10f2a6473dbe25ea30ac5a41f2d5c2021c8b52f8d1fcee64c0",
-      "size": 337986
+      "sha256": "a06bc496a5f17cafca28564e511039f3c69b3e2c78b789dafd44d7112c493792",
+      "size": 338306
     },
     {
       "path": "icon.png",
@@ -2161,8 +2231,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "7cc40cb2afa3e3dbbf2a0fa3b8f7c7674c5acbb5ba63def9fdd009ca457936c2",
-      "size": 69821
+      "sha256": "b838558e3588768a25ee5ad787d99591e5eba6649e1a6a46005dd4ff020daecb",
+      "size": 69955
     },
     {
       "path": "INDEX.md",
@@ -2596,8 +2666,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "57cd7b88ebfcbf63633e055c6e7c248d72f65e5d1794186da0ae9f00794dca38",
-      "size": 89612
+      "sha256": "d788cedd3c8f8495cae5f1eca3a775b0130e6c2d5dd191720dce8612d25da2b8",
+      "size": 90103
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -3381,8 +3451,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "5647a55594035731eb9f20e9dc6fbc1aad960ca12ce9afb4ba1c567a7ce4cf63",
-      "size": 349898
+      "sha256": "99279b1bf69db9d092a32ce6b2c24c9e268b177a0da465b7d2b7b10fa073c02f",
+      "size": 350496
     },
     {
       "path": "styles.css",
@@ -3526,23 +3596,28 @@
     },
     {
       "path": "tm-battle-adapter.js",
-      "sha256": "b2aa64dfabd72d4ed64a4317709d87e2e6b89aeab0fb3193c6256529100f95d5",
-      "size": 27746
+      "sha256": "68789e3be44ca7b17ccefada9384ffcd52a4266e0ec9060e986e779156abb7c1",
+      "size": 29024
+    },
+    {
+      "path": "tm-battle-contract.js",
+      "sha256": "67871f7a971c93f6a77b0ac8bacaf108db9f01fee243fc5d04ae735af4d2a574",
+      "size": 9509
     },
     {
       "path": "tm-battle-embed.js",
-      "sha256": "89d01645dce66682ad45bd12d2d81d8034e99709dc16c56f0e10745b53ca4600",
-      "size": 3533
+      "sha256": "84561e64f6c1ba613302f27eee3b97da02cab0e3d986e6cad613526bf73a7467",
+      "size": 5122
     },
     {
       "path": "tm-battle-resolve.js",
-      "sha256": "6827378609e455ddcd88169cb9529db1222e293a12e11c14cf64525ade94cb79",
-      "size": 10789
+      "sha256": "8aeeec73db97d2f0c310759a7f94cd0007c19c12695e4149b53cd633489ebdc3",
+      "size": 12594
     },
     {
       "path": "tm-battle-turn.js",
-      "sha256": "4587f261371606d4890445cac65e959d7dbda8ffdaae40903fe92804a0d4ee69",
-      "size": 39789
+      "sha256": "a2c6b5c0f213b514c04246e0b2084939a50f75faf8f3c9ec1c1e0986d4e64f71",
+      "size": 42947
     },
     {
       "path": "tm-benji.js",
@@ -3646,8 +3721,8 @@
     },
     {
       "path": "tm-char-autogen.js",
-      "sha256": "baf00f1d6c9dfb44e73e5a54e60076c8e1e4b0f4a9e1519bf80def7054fc00f2",
-      "size": 105726
+      "sha256": "c5c0c0cc6fe79cd98c7d881eefd390f76ebdfd995f6375e5d7e11bad60a916bd",
+      "size": 106599
     },
     {
       "path": "tm-char-economy-engine.js",
@@ -3926,8 +4001,8 @@
     },
     {
       "path": "tm-endturn-agent-mode.js",
-      "sha256": "a27476846c1d9934e338c895e40a7f0c24c1772dd35fa854047a9e8dbff3a0ac",
-      "size": 112971
+      "sha256": "0c1eee9f4ecfaa9a0c55018a6da2b13d6ecd5be917faed9ecf05890005731fb4",
+      "size": 113330
     },
     {
       "path": "tm-endturn-agent-read-tools.js",
@@ -3936,8 +4011,8 @@
     },
     {
       "path": "tm-endturn-agent-write-tools.js",
-      "sha256": "369a385ac908b6464451708852659d1548d50b72c98b783593f008a63f139398",
-      "size": 59220
+      "sha256": "506eb56e01b634962830d3d9044ded45f54d165e1149086163fda79ebdab6405",
+      "size": 62574
     },
     {
       "path": "tm-endturn-ai-context.js",
@@ -3961,8 +4036,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "669a58009bc9404aa21290bba1ba9866111422522b83ab7f3ab5432ef8b3d91b",
-      "size": 407263
+      "sha256": "67a33be9ca05caf58746aa2743b52bd97d2374d9ca2a2f557bf583ecef6ab5ed",
+      "size": 407506
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -3991,8 +4066,8 @@
     },
     {
       "path": "tm-endturn-followup.js",
-      "sha256": "a83e8788d52e95608f670078881794f2379471e26f14eaf7371347f87bb5c867",
-      "size": 298856
+      "sha256": "58f538791053ee00a22b65ad95e829e60756b14c72a134c2a781f69d92a6ba7d",
+      "size": 294734
     },
     {
       "path": "tm-endturn-helpers.js",
@@ -4071,8 +4146,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "d66e884b438f72ac5fa7b1145c42daa464daf10e2144cb19a9195e6129d53865",
-      "size": 39518
+      "sha256": "db38a9287937bfd5a2ed8b9320e7c5b9109654ae1404e541d5de3cd3df43bd82",
+      "size": 39857
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -4306,8 +4381,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "97150a682d7ccba7ead1b5e662db77c093b4d12dd5f1c8dfb30f42c1b394fa2d",
-      "size": 134786
+      "sha256": "5f220dca15fd96688aa58700b3dd8fcb5db9f97c8f7ff274066e6849ca4c9295",
+      "size": 135497
     },
     {
       "path": "tm-guoku-panel.js",
@@ -4796,8 +4871,8 @@
     },
     {
       "path": "tm-military.js",
-      "sha256": "af31e5d4236ee48519333c354c805deee7954858a9d8c142fbf5792c70d89be5",
-      "size": 141342
+      "sha256": "0cf1dfc2d9f43526766fcdfe5ca78358d2efa7e852eecb528b00260662f3be1b",
+      "size": 142485
     },
     {
       "path": "tm-minxin-commitment-tracker.js",
@@ -5026,8 +5101,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "88aa1fe41c63801f7149add8fca292010c2608e81a85a40d7edd0fb39e71f1b6",
-      "size": 190462
+      "sha256": "f4c215990129687111d3276b6e887bdc6a38f83f47ba9f387abc7259395a4700",
+      "size": 190590
     },
     {
       "path": "tm-pause-fab.js",
@@ -5181,13 +5256,13 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
-      "size": 169395
+      "sha256": "4c12782a9e8670a13e312a67c95955001e03c727c08ad0b33c67bb14934a0834",
+      "size": 169931
     },
     {
       "path": "tm-save-manager.js",
-      "sha256": "09bc09cca6a82fba8321d11f0af7ab045f2e1036e5527948ad7f752100faf68b",
-      "size": 49827
+      "sha256": "053960182e21d5f0661aab2f464e6edbef18cfbc0b880052145ed720edb9b56b",
+      "size": 50845
     },
     {
       "path": "tm-semantic-recall.js",

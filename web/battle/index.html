@@ -363,6 +363,11 @@
   <div id="settings">
     <label class="opt">敌将<select id="persona"><option value="huangtaiji">老练沉雄</option><option value="daishan">勇猛轻进</option><option value="defend">持重据守</option></select></label>
     <label class="opt">天候<select id="weather"><option value="clear">晴</option><option value="snow">风雪</option><option value="fog">大雾</option></select></label>
+    <label class="opt">画质<select id="optGraphics"><option value="balanced">均衡 · 分级细节</option><option value="high">精细 · 双级投影</option><option value="low">省电 · 关闭投影</option></select></label>
+    <label class="opt" title="自动仅降低纯软件显卡的3D渲染分辨率；文字、操作界面和实际兵额不变。原分辨率可能更慢。">3D分辨率<select id="optResolution"><option value="auto">自动 · 软件显卡兼容</option><option value="native">原分辨率 · 清晰优先</option></select></label>
+    <label class="opt"><input type="checkbox" id="optShadows" checked>投影</label>
+    <label class="opt" title="软件渲染时按当前3D分辨率复用地形与深度，部队和水面仍实时绘制；硬件多重采样时禁用以保留边缘质量"><input type="checkbox" id="optFrameCache" checked>静景缓存</label>
+    <span id="graphicsNotice" role="status" style="font-size:12px;color:var(--ink-dim)"></span>
     <label class="opt"><input type="checkbox" id="optDefect" checked>倒戈</label>
     <label class="opt"><input type="checkbox" id="optAudio" checked>战鼓</label>
     <label class="opt"><input type="checkbox" id="optDuel" checked>单挑</label>
@@ -390,6 +395,20 @@
   <div class="cmp-grid" id="cmpGrid"></div>
   <div class="cmp-foot"><span id="cmpHint">①选战役 ②点选阵列上/下阵（御营必出） ③出阵布战。</span><button class="act" id="cmpGo">出 阵 ▶</button></div>
 </div></div>
+<script src="terrain-world.js?v=20260914-battle7"></script>
+<script src="terrain-navigation.js?v=20260914-battle7"></script>
+<script src="terrain-motion.js?v=20260914-battle7"></script>
+<script src="unit-command.js?v=20260914-battle7"></script>
+<script src="unit-assets.js?v=20260914-battle7"></script>
+<script src="terrain-assets.js?v=20260914-battle7"></script>
+<script src="terrain-shadows.js?v=20260914-battle7"></script>
+<script src="terrain-frame-cache.js?v=20260914-battle7"></script>
+<script src="render-resolution.js?v=20260914-battle7"></script>
+<script src="terrain-props.js?v=20260914-battle7"></script>
+<script src="unit-visibility.js?v=20260914-battle7"></script>
+<script src="unit-impostors.js?v=20260914-battle7"></script>
+<script src="unit-render.js?v=20260914-battle7"></script>
+<script src="terrain-landscape.js?v=20260914-battle7"></script>
 <script>
 "use strict";
 /* ===========================================================
@@ -491,6 +510,7 @@ function fireCd(u){const s=SUB[u.sub]||{},base=CFG.fireCd[(s.base==="art")?"art"
 /* ===== 地形×兵种差异化矩阵：同一地形对骑/弓骑/步/弓炮影响各异 ===== */
 function terrKey(u){return (SUB[u.sub]&&SUB[u.sub].kite)?"horse":u.type;}
 function terrMove(u){const t=terrainAt(u.x,u.y),k=terrKey(u);                 // 移动系数
+  if(TERR&&TERR.tactical){const b=TERR.tactical.crossingAt(u.x,u.y);if(b)return b.kind==='bridge'?1:(k==='cav'?.72:.82);}
   if(t==="river")return k==="cav"?0.42:0.52;
   if(t==="forest")return k==="cav"?0.4:k==="horse"?0.48:k==="art"?0.55:(u.type==="step"?0.8:0.86);   // 林中骑兵寸步难行·步兵尚可
   if(t==="marsh")return k==="cav"?0.42:k==="horse"?0.48:k==="art"?0.48:(u.type==="step"?0.68:0.76);   // 沼泽陷骑陷炮
@@ -525,18 +545,9 @@ const SKILL={
  sizhan:  {cn:"死战",cd:30,dur:7, ic:"✠",desc:"背水死战——本阵士气填满、岿然不溃、近战暴起。"},
  zhenfu:  {cn:"镇抚",cd:26,dur:0, ic:"❖",desc:"临阵镇抚——约束诸军、收拢溃卒、提振士气体力。"},
 };
-function skillFor(u){if(u._skill)return u._skill;const g=u.gen||{},sub=u.sub;let id;
-  if(u.emperor)id="duzhan";
-  else if(sub==="horse")id="huima";
-  else if(u.type==="art")id="cuifeng";
-  else if(sub==="musket"||sub==="crossbow"||sub==="bow")id="huogong";
-  else if((g.int||0)>=82&&(g.int||0)>=(g.valor||0)+4&&(g.int||0)>=(g.mil||0))id="zhenfu";   // ★智略为长之将(含智将英雄)→镇抚(约束整军·收溃)
-  else if(sub==="spear"||sub==="halberd")id=(g.valor>=90?"sizhan":g.valor>=86?"xianzhen":"juma");   // ★绝勇枪将→死战
-  else if(u.type==="cav")id=(g.valor>=88?"hengsao":"xianzhen");   // ★万人敌骑将→横扫
-  else id=((g.mil||60)>=80?"tiebi":(g.valor||60)>=82?"xianzhen":"tiebi");
-  u._skill=id;return id;}
+function skillFor(u){u._skill=TMBattleCommand.skill(u);return u._skill;} // 由当前能力/兵种派生，伤后或换将不能沿用旧缓存；不执行任意文本技能。
 function skillReady(u){return (u._skillCd||0)<=0;}
-function fireSkill(u){if(!u||u.state==="rout"||!skillReady(u))return false;const id=skillFor(u),d=SKILL[id];u._skillCd=d.cd;
+function fireSkill(u){if(!u||!u.alive||u._genDead||u.state==="rout"||!skillReady(u))return false;const id=skillFor(u),d=SKILL[id];u._skillCd=d.cd;
   if(id==="xianzhen"){u._xianzhenUntil=state.time+d.dur;for(const f of foes(u.side))if(dist(f,u)<200){f.mor=clamp(f.mor-16,0,100);f._hitThisTick=true;}spawnFx("duel",u.x,u.y);shake(7);}
   else if(id==="tiebi"){for(const a of fighting(u.side))if(dist(a,u)<210)a._tiebiUntil=state.time+d.dur;u.stance="hold";u.order="hold";u.target=null;u.tx=u.x;u.ty=u.y;spawnFx("inspire",u.x,u.y);}
   else if(id==="huogong"){u._fireUntil=state.time+d.dur;spawnFx("blast",u.x,u.y);}
@@ -546,7 +557,7 @@ function fireSkill(u){if(!u||u.state==="rout"||!skillReady(u))return false;const
   else if(id==="duzhan"){for(const a of fighting(u.side))a.mor=clamp(a.mor+16,0,100);spawnFx("inspire",u.x,u.y);shake(8);}
   else if(id==="hengsao"){u._xianzhenUntil=state.time+d.dur;for(const f of foes(u.side))if(dist(f,u)<185){f.mor=clamp(f.mor-18,0,100);f._hitThisTick=true;f.soldiers=Math.max(0,f.soldiers-Math.round(f.soldiers*0.02));}spawnFx("impact",u.x,u.y);shake(8);}   // 横扫:周遭披靡+本将冲杀大增
   else if(id==="sizhan"){u.mor=100;u._tiebiUntil=state.time+d.dur;u._xianzhenUntil=state.time+d.dur;spawnFx("duel",u.x,u.y);shake(5);}   // 死战:气满+不溃+暴起
-  else if(id==="zhenfu"){for(const a of fighting(u.side))if(dist(a,u)<240){if(a.state==="rout"&&!a._shattered&&a.mor>22){a.state="shaken";a.order=null;a.tx=a.x;a.ty=a.y;}a.mor=clamp(a.mor+18,0,100);a.sta=clamp(a.sta+10,0,100);a._tiebiUntil=state.time+5;}spawnFx("inspire",u.x,u.y);}   // 镇抚:收溃+提气体力
+  else if(id==="zhenfu"){for(const a of units)if(a.alive&&a.side===u.side&&dist(a,u)<240&&!a._shattered){if(a.state==="rout"&&a.mor>22){a.state="shaken";a.order=null;a.tx=a.x;a.ty=a.y;}a.mor=clamp(a.mor+18,0,100);a.sta=clamp(a.sta+10,0,100);a._tiebiUntil=state.time+5;}spawnFx("inspire",u.x,u.y);}   // 镇抚需包含可收拢的溃军，不能先由fighting过滤掉。
   floater(u.x,u.y,d.cn+"！",(id==="huogong"||id==="cuifeng")?"#e0742a":(id==="hengsao"?"#e0584a":"#e8c64a"));playSfx("horn");
   log(`${u.name}（${u.gen?u.gen.n:""}）施 <b>${d.cn}</b>！`,u.side==="ming"?"fate":u.side);return true;}
 const PERSONA={
@@ -554,19 +565,23 @@ const PERSONA={
   daishan:{label:"代善",aggr:.97,cunning:.28,caut:.08,line:"代善纵八旗铁骑<b>四面直冲</b>，鼓噪渡河，锋锐而阵脚已露。"},
   defend:{label:"岳讬",aggr:.2,cunning:.55,caut:.93,line:"岳讬据北岸<b>按兵据险</b>，列楯固守，诱我先渡浑河。"},
 };
-let TERR=null;
+let TERR=null,NAV=null,MOTION=null;
 function riverYAt(x){if(!TERR||!TERR.river)return 1e9;const p=TERR.river;for(let i=0;i<p.length-1;i++)if(x>=p[i].x&&x<=p[i+1].x){const t=(x-p[i].x)/(p[i+1].x-p[i].x);return p[i].y+(p[i+1].y-p[i].y)*t;}return p[p.length-1].y;}
-function terrainAt(x,y){if(!TERR)return"plain";if(TERR.river&&Math.abs(y-riverYAt(x))<TERR.riverW/2)return"river";for(const h of TERR.hills)if(Math.hypot(x-h.x,y-h.y)<h.r)return"hill";for(const f of TERR.forests)if(Math.hypot(x-f.x,y-f.y)<f.r)return"forest";if(TERR.ponds)for(const p of TERR.ponds)if(Math.hypot(x-p.x,y-p.y)<p.r)return"marsh";if(TERR.coast){if(TERR.coast.leftX!=null&&x<TERR.coast.leftX)return"marsh";if(TERR.coast.rightX!=null&&x>TERR.coast.rightX)return"marsh";}if(MAP&&MAP.features)for(const f of MAP.features)if(f.t==="marsh"&&Math.hypot(x-f.x,y-f.y)<f.r)return"marsh";return"plain";}
-function inForest(x,y){if(!TERR)return false;for(const f of TERR.forests)if(Math.hypot(x-f.x,y-f.y)<f.r)return true;return false;}
+function terrainAt(x,y){if(!TERR)return"plain";if(TERR.tactical)return TERR.tactical.surfaceAt(x,y);if(TERR.river&&Math.abs(y-riverYAt(x))<TERR.riverW/2)return"river";for(const h of TERR.hills)if(Math.hypot(x-h.x,y-h.y)<h.r)return"hill";for(const f of TERR.forests)if(Math.hypot(x-f.x,y-f.y)<f.r)return"forest";if(TERR.ponds)for(const p of TERR.ponds)if(Math.hypot(x-p.x,y-p.y)<p.r)return"marsh";if(TERR.coast){if(TERR.coast.leftX!=null&&x<TERR.coast.leftX)return"marsh";if(TERR.coast.rightX!=null&&x>TERR.coast.rightX)return"marsh";}if(MAP&&MAP.features)for(const f of MAP.features)if(f.t==="marsh"&&Math.hypot(x-f.x,y-f.y)<f.r)return"marsh";return"plain";}
+function inForest(x,y){if(!TERR)return false;if(TERR.tactical)return TERR.tactical.forestAt(x,y);for(const f of TERR.forests)if(Math.hypot(x-f.x,y-f.y)<f.r)return true;return false;}
 let units=[],floaters=[],shots=[],fx=[],decals=[],duels=[],state={},start0={},sel=new Set(),terrainCanvas=null;let duelAccum=0;
 let terrainCanvas3D=null,_bakeFlat=false;   // ★3D:扁平 albedo 地形纹理(无浮雕方向阴影/无隆起域·光照交给 WebGL shader)+ 烤制开关
-const $=id=>document.getElementById(id),cv=$("cv");let ctx=cv.getContext("2d");const _cvCtx=ctx;   // ctx 可切换:3D 模式下临时指向离屏 sceneCtx 渲染世界层(再切回 _cvCtx 画 HUD)
+function battleGraphicsProfile(gl){if(!gl)return{renderer:'Canvas2D',software:true};const e=gl.getExtension('WEBGL_debug_renderer_info'),renderer=String(e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER));return{renderer,software:/SwiftShader|llvmpipe|software|Microsoft Basic Render|WARP/i.test(renderer)};}
+const $=id=>document.getElementById(id),cv=$("cv"),_cpuHUD=(()=>{try{return battleGraphicsProfile($('gl').getContext('webgl',{antialias:true,alpha:false})).software;}catch(_){return true;}})();let ctx=cv.getContext("2d",{willReadFrequently:_cpuHUD});const _cvCtx=ctx; // 正常显卡仍走GPU，仅软件渲染器选择CPU HUD。
 let RENDER3D=true;   // ★真3D总开关(默认开·按 V 切 2.5D·WebGL 不可用时 R3D.ensure() 返false 自动回退2.5D)
 let UNITS3D=true;    // ★真3D兵模总开关(实例化逐兵·按 B 切回 2D drawMen·LOD 仅近景启用·资产/扩展缺失自动回退)
 let _units3dOn=false;   // 每帧门控:RENDER3D&&UNITS3D&&R3D.unitsReady&&近景·此帧用 3D 兵模并抑制 2D drawMen 绘制(_men 位置仍算)
 let camYaw=0;           // ★3D相机方位角(绕焦点公转·Q/E转·全战式自由转角)·0=向北看(默认)·平移/拖拽随之对齐
 let keyrot=0;           // Q/E 持续旋转
 let _activeBattleConfig=null,_battleUnits0=null;   // ★接入主天命:当前注入战斗的 config(非空=嵌入态)+ 开局花名册快照(供结算回填·含被全歼者)
+const _TM_EMBEDDED=window.parent&&window.parent!==window;
+let _battleSessionId=null,_battleLoopStarted=false,_benchedBattleUnits=[];
+function _ensureBattleLoop(){if(!_battleLoopStarted){_battleLoopStarted=true;requestAnimationFrame(loop);}}
 let DPR=Math.min(2,window.devicePixelRatio||1),W=innerWidth,H=innerHeight;
 let cam={x:WORLD.w/2,y:WORLD.h*0.7,zoom:0.32};
 const PITCH=0.74;   // ★斜俯角:纵深(世界y)按此压缩→战场呈斜视(非纯俯视)·全战式视角·纯渲染/输入变换不碰sim
@@ -942,7 +957,13 @@ function genMap(seed){
         for(const f of _F){if(f.t==="camp"||f.t==="town"){if(_cb.leftX!=null){const _l=_cb.leftX+(f.r||0)+_pad;if(f.x<_l)f.x=_l;}if(_cb.rightX!=null){const _r=_cb.rightX-(f.r||0)-_pad;if(f.x>_r)f.x=_r;}}}}
       return _F;}};
 }
-function loadMap(id){MAP=(id==="proc")?genMap(_GENSEED):(MAPS[id]||MAPS.hunhe);if(id==="proc"&&$("weather"))$("weather").value=MAP.weather;WORLD={w:MAP.w,h:MAP.h};TERR=MAP.terr(WORLD.w,WORLD.h);MAP._obj=MAP.objective?MAP.objective(WORLD.w,WORLD.h):null;MAP.features=MAP.feats?MAP.feats(WORLD.w,WORLD.h):[];buildObjectives();buildStructures();buildTerrain();}
+function loadMap(id){MAP=(id==="proc")?genMap(_GENSEED):(MAPS[id]||MAPS.hunhe);if(id==="proc"&&$("weather"))$("weather").value=MAP.weather;
+  if(MAP._proc){const t=TMBattleTerrain.create(_GENSEED,Object.assign({},_GENPROFILE||{},{weather:MAP.weather}));WORLD={w:t.w,h:t.h};MAP.w=t.w;MAP.h=t.h;TERR=Object.assign({},t,{tactical:t});MAP._obj=t.objective;MAP._objs=[t.objective].concat(t.crossings.map(b=>({x:b.x,y:b.y,r:b.width+250,name:b.kind==='bridge'?'木梁渡桥':'浅滩渡口',key:b.kind})));
+    const capital=(_GENPROFILE&&_GENPROFILE.provinceMeta||{}).capitalName;MAP.features=t.hamlets.map((p,i)=>Object.assign({t:'town',name:i===0&&capital?capital:'沿岸村落'},p));MAP.labels={riverName:'河川',hills:[],forests:[]};
+  }else{WORLD={w:MAP.w,h:MAP.h};TERR=MAP.terr(WORLD.w,WORLD.h);MAP._obj=MAP.objective?MAP.objective(WORLD.w,WORLD.h):null;MAP.features=MAP.feats?MAP.feats(WORLD.w,WORLD.h):[];buildObjectives();buildStructures();}
+  NAV=TERR.tactical?TMBattleNavigation.create(TERR.tactical):null;MOTION=NAV?TMBattleMotion.create(NAV,text=>log(String(text).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'),'fate')):null;buildTerrain();}
+function _battleWaypoint(u,p){return MOTION?MOTION.waypoint(u,p,state.time):Object.assign({ok:true},p);}
+function _battleMove(u,x,y){if(MOTION)MOTION.move(u,x,y);else{u.x=x;u.y=y;}}
 /* ★结构化地形(向《全战三国》看齐·纯渲染数据·绝不入 terrainAt → 不碰 sim/确定性):
    农田阡陌 + 道路网 + 村落聚邑 + 跨河桥 + 地表分区 + 山坡梯田。用独立本地 rng(种子异或·不扰 richTerr 山林流·绝不触 Math.random)。
    生成于 loadMap(此时 MAP.features/labels 已就绪·可锚定城/营/渡口),挂在 TERR 上供 drawTerrain 读。 */
@@ -1049,11 +1070,11 @@ function pickFoeInRange(u){const R=rng(u),smoke=SUB[u.sub]&&SUB[u.sub].smoke;let
   else sc=-d;
   if(sc>bs){bs=sc;best=f;}}return best;}
 function vetInit(q){return /百战/.test(q||"")?72:/精锐|劲旅/.test(q||"")?60:/精兵/.test(q||"")?45:/新兵|新募|老弱|疲|羸|乌合/.test(q||"")?13:26;}   // 历练初值按出身派生(集成版从 composition/quality 展开队时一次性算)
-function auraRange(g){return g&&g.gen?140+(g.gen.int||60)*1.5:(g&&g.emperor?260:0);}   // ★将领光环半径:智力决定范围
+function auraRange(g){return g&&g.gen?140+(g.gen.int??60)*1.5:(g&&g.emperor?260:0);}   // 智力0不可被默认60覆盖
 function computeAuras(){   // ★将领与部队分开:每位将领一道指挥光环(智→范围·军→程度)·影响范围内友军·取最强不叠加
   for(const u of units){u._lead=0;u._auraM=0;}
-  for(const g of units){if(!g.alive||!g.gen||g.state==="rout"||!(g._hero||g.emperor))continue;   // ★将兵分离:只有「将领英雄单位」与御营发出指挥光环
-    const boss=g._marshal||g.emperor,R=auraRange(g),R2=R*R,sB=(g.gen.mil||60)/100*0.40*(boss?1.25:1),mB=(g.gen.mil||60)/100*3.6*(boss?1.4:1);   // 军事→战力增益+士气回复(光环源变少·略加强以撑住麾下)
+  for(const g of units){if(!g.alive||g._genDead||!g.gen||g.state==="rout"||!(g._hero||g.emperor))continue;   // 殁/俘/重伤将领不继续提供光环
+    const boss=g._marshal||g.emperor,R=auraRange(g),R2=R*R,sB=(g.gen.mil??60)/100*0.40*(boss?1.25:1),mB=(g.gen.mil??60)/100*3.6*(boss?1.4:1);
     for(const a of units){if(!a.alive||a.side!==g.side||a.state==="rout")continue;const dx=a.x-g.x,dy=a.y-g.y;if(dx*dx+dy*dy<=R2){if(sB>a._lead)a._lead=sB;if(mB>a._auraM)a._auraM=mB;}}}
 }
 function scareVal(u){if(u.state==="rout")return 0;if(u.emperor)return 2.8;if(u._hero&&u.gen&&(u.gen.valor||0)>=85)return 2.2;if(hasFlag(u,"scare"))return 1.9;const sb=u.sub;if(sb==="heavy")return 2.2;if(sb==="shock"&&u._charging)return 1.6;if(/精锐|百战|劲旅/.test(u.quality||"")&&u.type==="cav")return 1.3;return 0;}   // ★威慑值(全战 scare/terror):铁骑/猛将/御营/致惧flag(战象类)慑临近之敌
@@ -1066,22 +1087,23 @@ function computeScare(){state._scare=null;const scary=[];for(const u of units)if
    其源阵列降为「麾下部队」(主将退为裨将·靠主将指挥光环作战)·其余阵列就近归入某将麾下。 */
 function spawnGenerals(){
   for(const side of ["ming","jin"]){
-    const pool=units.filter(u=>u.side===side&&u.gen&&u.gen.n&&!u.emperor&&!u._hero);
-    if(pool.length<2)continue;
-    pool.sort((a,b)=>((b._marshal?1e6:0)+(b.gen.valor||0)+(b.gen.mil||0))-((a._marshal?1e6:0)+(a.gen.valor||0)+(a.gen.mil||0)));
-    const n=clamp(Math.round(pool.length/3),2,4);
-    for(let k=0;k<n;k++){const src=pool[k],g=Object.assign({},src.gen),fv=_faceVec(side),_hj=(_nz(k*3.1+src.x*0.01)-0.5)*46;   // ★英雄前置沿对阵轴朝敌·jitter沿侧轴(N默认exact:x得jitter·y前置-72)
-      const hero={type:"cav",sub:"shock",side,name:g.n,gen:g,_hero:true,_marshal:!!src._marshal,emperor:false,
+    const pool=TMBattleCommand.candidates(units,side);
+    for(const c of pool){const src=c.src,g={...c.gen},k=units.filter(u=>u.side===side&&u._hero).length,fv=_faceVec(side),_hj=(_nz(k*3.1+src.x*0.01)-0.5)*46;
+      let hero=units.find(u=>u._hero&&u.side===side&&u.commandKey===c.key);
+      if(!hero){
+      hero={type:"cav",sub:"shock",side,name:g.n,gen:g,_hero:true,_marshal:!!src._marshal,emperor:false,commandKey:c.key,commandArmyIds:c.armyIds.slice(),
         soldiers:36,soldiers0:36,mor:100,leadership:100,training:92,quality:"精锐",supply:100,
         x:clamp(src.x+fv.x*72+(_dirHoriz()?0:_hj),30,WORLD.w-30),y:clamp(src.y+fv.y*72+(_dirHoriz()?_hj:0),30,WORLD.h-30),
         facing:_faceAng(side),id:"g_"+side+"_"+k,vet:66,vet0:66,sta:100,ammo:999,
         _inspireCd:0,_duelCd:0,_archeryCd:0,_chargeRun:0,_skillCd:0,_field:true,_holdFire:false,_prio:"near",
         state:"steady",stance:"line",order:null,tx:null,ty:null,target:null,hidden:false,alive:true,_fcd:0,_meleeT:0,
         commander:null,_retinue:false};
-      src.gen={n:"裨将",valor:48,mil:50,int:52};src._retinue=true;src.commander=hero.id;src._marshal=false;
       units.push(hero);}
+      for(const aid of c.armyIds)if(!hero.commandArmyIds.includes(aid))hero.commandArmyIds.push(aid);
+      for(const t of c.cohorts){t.gen={n:"裨将",role:"deputy",valor:48,mil:50,int:52};t._retinue=true;t.commander=hero.id;t._marshal=false;}
+    }
     const heroes=units.filter(u=>u.side===side&&u._hero);
-    for(const t of units){if(t.side!==side||t._hero||t.emperor||t.commander)continue;let bh=null,bd=1e9;for(const h of heroes){const dd=dist(t,h);if(dd<bd){bd=dd;bh=h;}}if(bh)t.commander=bh.id;}
+    for(const t of units){if(t.side!==side||t._hero||t.emperor||t.commander||t.commandKey)continue;let bh=null,bd=1e9;for(const h of heroes){const dd=dist(t,h);if(dd<bd){bd=dd;bh=h;}}if(bh)t.commander=bh.id;}
   }
 }
 /* ★全军士气/崩溃(向《全战:三国》看齐)：「本方正在输」→全军持续夺气;主帅/统帅尽失→大恐。
@@ -1143,7 +1165,7 @@ function inspire(u){if(!u||(u._inspireCd||0)>0)return false;u._inspireCd=24;cons
 let last=0,aiAccum=0,capAccum=0,defAccum=0,panelAccum=0,objAccum=0,keypan={x:0,y:0};
 let _corpses=[],_dying=[],_debris=[],_rlast=0,_rdt=0.016;   // 逐兵世界空间:留尸/倒地动画/弃甲列 + 帧率无关插值
 const TEMPO=0.66;   // 全局节奏：默认更慢，更耐看(2×/3×/4× 以此为基)
-function loop(ts){const dt=Math.min(0.05,(ts-(last||ts))/1000)*(state.paused?0:state.speed)*TEMPO*((state._slowmo&&performance.now()<state._slowmo)?0.35:1);last=ts;
+function loop(ts){R3D.observeFrame(ts);const dt=Math.min(0.05,(ts-(last||ts))/1000)*(state.paused?0:state.speed)*TEMPO*((state._slowmo&&performance.now()<state._slowmo)?0.35:1);last=ts;
   if(cam._goal){cam.x+=(cam._goal.x-cam.x)*0.2;cam.y+=(cam._goal.y-cam.y)*0.2;clampCam();if(Math.hypot(cam._goal.x-cam.x,cam._goal.y-cam.y)<8)cam._goal=null;}
   if(state.follow){const _fa=[...sel].map(byId).filter(u=>u&&u.alive);if(_fa.length)cam._goal={x:_fa.reduce((s,u)=>s+u.x,0)/_fa.length,y:_fa.reduce((s,u)=>s+u.y,0)/_fa.length};else state.follow=false;}   // 镜头跟随选中阵列
   if(keyrot){camYaw+=keyrot*0.028;}   // ★Q/E 旋转方位角
@@ -1151,10 +1173,12 @@ function loop(ts){const dt=Math.min(0.05,(ts-(last||ts))/1000)*(state.paused?0:s
   if(state.edge&&(state.edge.x||state.edge.y)){const c=Math.cos(camYaw),s=Math.sin(camYaw);cam.x+=(state.edge.x*c-state.edge.y*s)*13/cam.zoom;cam.y+=(state.edge.x*s+state.edge.y*c)*13/cam.zoom;clampCam();}
   if(!state.paused&&!state.over)step(dt);draw();requestAnimationFrame(loop);}
 function step(dt){
+  if(MOTION)MOTION.beginStep(units);
   state.time+=dt;
   aiAccum+=dt;if(aiAccum>0.6){aiAccum=0;enemyAI();}
   for(const u of units)if(u.alive)moveUnit(u,dt);
   computeAuras();computeArmyMorale();computeScare();resolveMelee(dt);stepShots(dt);separate();
+  if(MOTION)MOTION.endStep(units);
   for(const u of units){if(!u.alive)continue;
     if(u._inspireCd>0)u._inspireCd-=dt;if(u._duelCd>0)u._duelCd-=dt;if(u._archeryCd>0)u._archeryCd-=dt;if(u._wallCd>0)u._wallCd-=dt;if(u._vigorCd>0)u._vigorCd-=dt;if(u._skillCd>0)u._skillCd-=dt;
     if(u._burnUntil>state.time){u.mor=clamp(u.mor-CFG.burnRate*dt,0,100);u._hitThisTick=true;if(Math.random()<dt*3)spawnFx("hit",u.x+(Math.random()*30-15),u.y+(Math.random()*20-10));}
@@ -1190,26 +1214,26 @@ function turnTo(u,goal,dt){let dd=goal-u.facing;while(dd>Math.PI)dd-=Math.PI*2;w
 function moveUnit(u,dt){
   u._inMelee=false;if(u.hidden){return;}
   const sp=unitSpd(u)*terrMove(u)*(u.sta<25?0.8:1)*(u._vigorUntil>state.time?1.25:1)*(state.weather==="snow"?0.9:1);
-  if(u.state==="rout"){u.facing=ang(u,_routGoal(u));const rs=unitSpd(u)*1.2*slopeMove(u);u.x+=Math.cos(u.facing)*rs*dt;u.y+=Math.sin(u.facing)*rs*dt;return;}   // ★溃逃奔己方后缘(换轴·N向逐字节等价)
+  if(u.state==="rout"){const p=_battleWaypoint(u,_routGoal(u));if(!p.ok)return;u.facing=ang(u,p);const rs=unitSpd(u)*1.2*slopeMove(u);_battleMove(u,u.x+Math.cos(u.facing)*rs*dt,u.y+Math.sin(u.facing)*rs*dt);return;}
   if(u._balk)return;
   // ★散兵放风筝(全战 skirmish):无令的弓手/游骑遇敌近身→边射边后撤(结阵hold/受令攻/受令移者不动·玩家可定身)
   if(isShooter(u)&&u.type!=="art"&&u.order!=="attack"&&u.stance!=="hold"&&u.tx==null&&u.ammo>0){
     const threat=visibleFoes(u.side).find(f=>f.state!=="rout"&&f.type!=="art"&&dist(f,u)<CFG.engage+72);
-    if(threat){const aw=Math.atan2(u.y-threat.y,u.x-threat.x);u.x=clamp(u.x+Math.cos(aw)*sp*dt*1.15,24,WORLD.w-24);u.y=clamp(u.y+Math.sin(aw)*sp*dt*1.15,24,WORLD.h-24);
+    if(threat){const aw=Math.atan2(u.y-threat.y,u.x-threat.x),p=_battleWaypoint(u,{x:clamp(u.x+Math.cos(aw)*300,50,WORLD.w-50),y:clamp(u.y+Math.sin(aw)*300,50,WORLD.h-50)});if(p.ok){const aa=ang(u,p);_battleMove(u,clamp(u.x+Math.cos(aa)*sp*dt*1.15,24,WORLD.w-24),clamp(u.y+Math.sin(aa)*sp*dt*1.15,24,WORLD.h-24));}
       u.facing=ang(u,threat);const ft=pickFoeInRange(u);if(ft&&!u._holdFire){u._fcd=(u._fcd||0)-dt;if(u._fcd<=0){fire(u,ft);u._fcd=fireCd(u);}}u._inMelee=false;return;}
   }
   if(isShooter(u)&&u.order==="attack"&&u.ammo>0){const t=byId(u.target);
-    if(t&&t.alive&&!t.hidden){const d=dist(u,t);turnTo(u,ang(u,t),dt);if(d<=rng(u)){u._fcd=(u._fcd||0)-dt;if(u._fcd<=0){fire(u,t);u._fcd=fireCd(u);}return;}u.x+=Math.cos(u.facing)*sp*dt;u.y+=Math.sin(u.facing)*sp*dt;return;}else u.order=null;}
+    if(t&&t.alive&&!t.hidden){const d=dist(u,t);if(d<=rng(u)){turnTo(u,ang(u,t),dt);u._fcd=(u._fcd||0)-dt;if(u._fcd<=0){fire(u,t);u._fcd=fireCd(u);}return;}const p=_battleWaypoint(u,t);if(p.ok){turnTo(u,ang(u,p),dt);_battleMove(u,u.x+Math.cos(u.facing)*sp*dt,u.y+Math.sin(u.facing)*sp*dt);}return;}else u.order=null;}
   if(isShooter(u)&&u.ammo>0&&!u._holdFire&&u.order!=="attack"&&(u.tx==null||u.stance==="hold"||(SUB[u.sub]&&SUB[u.sub].kite))){const ft=pickFoeInRange(u);if(ft){turnTo(u,ang(u,ft),dt);u._fcd=(u._fcd||0)-dt;if(u._fcd<=0){fire(u,ft);u._fcd=fireCd(u);}}}
   let tx=u.tx,ty=u.ty,tgt=null;
   if(u.order==="attack"){tgt=byId(u.target);if(tgt&&tgt.alive){tx=tgt.x;ty=tgt.y;}else{u.order=null;tgt=null;}}
-  if(tx==null)return;const d=Math.hypot(tx-u.x,ty-u.y);turnTo(u,Math.atan2(ty-u.y,tx-u.x),dt);const stop=tgt?CFG.engage-6:10;
+  if(tx==null)return;let d=Math.hypot(tx-u.x,ty-u.y);const p=_battleWaypoint(u,{x:tx,y:ty});if(!p.ok)return;if(p.arrived&&p.adjusted&&!tgt)d=0;turnTo(u,ang(u,p),dt);const stop=tgt?CFG.engage-6:10;
   if(d>stop){let v=sp*slopeMove(u);const og=terrainAt(u.x,u.y);   // ★坡度调速
     if(u.type==="cav"){const head=Math.atan2(ty-u.y,tx-u.x);let he=head-u.facing;while(he>Math.PI)he-=Math.PI*2;while(he<-Math.PI)he+=Math.PI*2;   // ★骑兵奔驰蓄速:直线对正才加速·急转/缠斗/力竭则缓
       if(Math.abs(he)<0.45&&!u._inMelee&&(u.sta==null||u.sta>15))u._gallop=Math.min(1,(u._gallop||0)+dt*CFG.gallopRamp);else u._gallop=Math.max(0,(u._gallop||0)-dt*CFG.gallopDecay);
       v*=CFG.gallopBase+(u._gallop||0)*CFG.gallopGain;}
     if(tgt&&u.type==="cav"&&d<230&&!u._chargedOn&&(og==="plain"||og==="hill")&&(u.sta==null||u.sta>22)){u._charging=true;u._chargeRun=Math.min(CFG.chargeRunMax,(u._chargeRun||0)+dt);v*=1.62;   /* ★力竭体力≤22不能发起冲锋·须养锐(全战:exhausted can't charge) */ if(Math.random()<0.4)spawnFx("trail",u.x-Math.cos(u.facing)*22,u.y-Math.sin(u.facing)*22);}
-    u.x=clamp(u.x+Math.cos(u.facing)*v*dt,20,WORLD.w-20);u.y=clamp(u.y+Math.sin(u.facing)*v*dt,20,WORLD.h-20);
+    _battleMove(u,clamp(u.x+Math.cos(u.facing)*v*dt,20,WORLD.w-20),clamp(u.y+Math.sin(u.facing)*v*dt,20,WORLD.h-20));
     if(!u._charging&&u.type!=="art"&&(u.sta==null||u.sta>20)&&Math.random()<dt*1.6){const _tt=terrainAt(u.x,u.y);if(_tt==="plain"||_tt==="hill")spawnFx("march",u.x-Math.cos(u.facing)*15,u.y-Math.sin(u.facing)*15);}}
   else if(!tgt){u.tx=null;u.ty=null;u._charging=false;u._chargeRun=0;u._gallop=Math.max(0,(u._gallop||0)-dt*CFG.gallopDecay);if(u._faceOnArrive!=null){u.facing=u._faceOnArrive;u._faceOnArrive=null;}}
 }
@@ -1278,7 +1302,7 @@ function meleePair(a,b,dt){
 }
 function duel(w,l,adv,dt){if(adv<1.25||!w._hero||!l._hero||!w.gen||!l.gen||l._genDead)return;   // ★阵中斩将只在将领英雄相搏时
   const p=(CFG.duelBase+Math.max(0,(w.gen.valor-l.gen.valor))/100*CFG.duelValor)*dt*clamp(adv-1,0,1.5);
-  if(Math.random()<p){l._genDead=true;state.duels=(state.duels||0)+1;const fate=Math.random()<0.5?"阵斩":"生擒";l.mor=clamp(l.mor-32,0,100);l._hitThisTick=true;const nm=l.gen.n;l.gen={n:nm+"(殁)",valor:30,mil:30,int:40};
+  if(Math.random()<p){l._genDead=true;state.duels=(state.duels||0)+1;const fate=Math.random()<0.5?"阵斩":"生擒";l._genFate=fate==="阵斩"?"killed":"captured";l.mor=clamp(l.mor-32,0,100);l._hitThisTick=true;const nm=l.gen.n;l.gen={...l.gen,n:nm+(fate==="阵斩"?"(殁)":"(俘)"),valor:30,mil:30,int:40};
     floater(l.x,l.y,fate+"主将！","#e8c64a");spawnFx("duel",l.x,l.y);shake(12);playSfx("duel");log(`${w.name}（${w.gen.n}）阵中<b>${fate}</b>敌将 ${nm}！${l.name}夺气！`,"fate");banner("阵 斩",w.gen.n+" "+fate+" "+nm,"kill");}}
 function eligibleDuel(u){return u&&u.alive&&u._hero&&u.gen&&!u._genDead&&!u._dueling&&(u._duelCd||0)<=0&&u.state!=="rout";}   // ★单挑只在将领英雄之间
 function startDuel(a,b){a._dueling=b.id;b._dueling=a.id;const hp=u=>Math.round(50+u.gen.valor*0.6+clamp(u.mor-50,-40,40)*0.25);duels.push({a:a.id,b:b.id,ha:hp(a),hb:hp(b),h0a:hp(a),h0b:hp(b),t:0});log(`<b>⚔ 单挑</b>：${a.name}「${a.gen.n}」对阵 ${b.name}「${b.gen.n}」，阵前斗将！`,"fate");playSfx("duel");shake(8);spawnFx("duel",(a.x+b.x)/2,(a.y+b.y)/2);}
@@ -1294,17 +1318,19 @@ function stepDuels(dt){for(const d of duels){if(d._done)continue;const a=byId(d.
   duels=duels.filter(d=>!d._done);}
 function endDuel(d,winner,loser){d._done=true;const a=byId(d.a),b=byId(d.b);if(a){a._dueling=null;a._duelCd=CFG.duelCd;}if(b){b._dueling=null;b._duelCd=CFG.duelCd;}
   if(winner&&loser){const fate=Math.random()<0.45?"阵斩":Math.random()<0.62?"生擒":"重伤";loser._genDead=true;state.duels=(state.duels||0)+1;const nm=loser.gen.n;
-    loser.gen={n:nm+(fate==="重伤"?"(伤)":"(殁)"),valor:32,mil:32,int:40};loser.mor=clamp(loser.mor-30,0,100);loser._hitThisTick=true;winner.mor=clamp(winner.mor+12,0,100);
+    loser._genFate=fate==="阵斩"?"killed":fate==="生擒"?"captured":"wounded";loser.gen={...loser.gen,n:nm+(fate==="重伤"?"(伤)":fate==="生擒"?"(俘)":"(殁)"),valor:32,mil:32,int:40};loser.mor=clamp(loser.mor-30,0,100);loser._hitThisTick=true;winner.mor=clamp(winner.mor+12,0,100);
     floater(loser.x,loser.y,fate+"！","#e8c64a");spawnFx("duel",loser.x,loser.y);shake(13);playSfx("duel");log(`<b>⚔ ${winner.gen.n} ${fate} ${nm}！</b>${loser.name}夺气，${winner.name}士气大振！`,"fate");banner("斩 将",winner.gen.n+" "+fate+" "+nm,"kill");state._slowmo=performance.now()+550;if(loser._marshal){for(const al of fighting(loser.side))al.mor=clamp(al.mor-16,0,100);log("<b>主帅授首！</b>"+sideCN(loser.side)+"全军夺气！","fate");banner("主帅授首",sideCN(loser.side)+"全军夺气","kill");}}
   else if(a&&b)log(`${a.gen.n}与${b.gen.n}斗将数合，不分胜负，各归本阵。`,a.side);}
-function spawnReinf(r){for(const u of r.units){const id="r"+(state.reinfId=(state.reinfId||0)+1),sub=u.sub||assignSub(u,99);
+function spawnReinf(r){for(const u of r.units){const id=u._battleReserveId||"r"+(state.reinfId=(state.reinfId||0)+1),sub=u.sub||assignSub(u,99);
   var tx,ty;   /* ★援军入场目标沿主轴内移·N默认exact(ty=H*0.6|0.42·tx=u.x) */
   if(!_battleDir||_battleDir==="N"){ty=r.side==="ming"?WORLD.h*0.6:WORLD.h*0.42;tx=u.x;}
   else if(_battleDir==="S"){ty=r.side==="ming"?WORLD.h*0.4:WORLD.h*0.58;tx=u.x;}
   else if(_battleDir==="E"){tx=r.side==="ming"?WORLD.w*0.4:WORLD.w*0.58;ty=u.y;}
   else{tx=r.side==="ming"?WORLD.w*0.6:WORLD.w*0.42;ty=u.y;}
-  units.push({...u,id,sub,soldiers0:u.soldiers,training:u.training||60,supply:u.supply||80,quality:u.quality||"普通",vet:vetInit(u.quality),vet0:vetInit(u.quality),sta:100,ammo:isShooterSub(sub)?ammoCapSub(sub):999,_inspireCd:0,_duelCd:0,_archeryCd:0,_chargeRun:0,_holdFire:false,_prio:"near",facing:_faceAng(r.side),state:"steady",stance:"line",order:"move",tx:tx,ty:ty,target:null,hidden:false,alive:true,_fcd:0,_meleeT:0});}
-  log(`<b>${r.side==="ming"?"我军援至":sideCN("jin")+"援至"}</b>：${r.units.map(u=>u.name).join("、")} 自${r.side==="ming"?"南":"北"}面杀到！`,"fate");shake(11);playSfx("horn");banner(r.side==="ming"?"援军抵达":"敌援抵达",r.units.map(u=>u.name).join("、"),r.side==="ming"?"aid":"kill");}
+  const reinforcement={...u,_srcId:u.id??null,id,side:r.side,sub,soldiers0:u.soldiers,training:u.training||60,supply:u.supply||80,quality:u.quality||"普通",vet:vetInit(u.quality),vet0:vetInit(u.quality),sta:100,ammo:isShooterSub(sub)?ammoCapSub(sub):999,_inspireCd:0,_duelCd:0,_archeryCd:0,_chargeRun:0,_holdFire:false,_prio:"near",facing:_faceAng(r.side),state:"steady",stance:"line",order:"move",tx:tx,ty:ty,target:null,hidden:false,alive:true,_fcd:0,_meleeT:0};
+  if(NAV){const p=NAV.nearest(reinforcement)||NAV.nearest(TERR.tactical.deployment(r.side));if(p){reinforcement.x=p.x;reinforcement.y=p.y;}}units.push(reinforcement);}
+  spawnGenerals();if(_battleUnits0){const ids=new Set(_battleUnits0.map(u=>u.id));for(const u of units)if(!ids.has(u.id))_battleUnits0.push(TMBattleCommand.snapshot(u));}
+  log(`<b>${r.side==="ming"?"我军援至":sideCN("jin")+"援至"}</b>：${r.units.map(u=>u.name).join("、")} 自后方杀到！`,"fate");shake(11);playSfx("horn");banner(r.side==="ming"?"援军抵达":"敌援抵达",r.units.map(u=>u.name).join("、"),r.side==="ming"?"aid":"kill");}
 function checkReinf(){if(!state.reinf)return;for(const r of state.reinf)if(!r.done&&state.time>=r.t){r.done=true;spawnReinf(r);}}
 function revealAmbush(h){if(!h.hidden)return;h.hidden=false;h._forceReveal=false;spawnFx("reveal",h.x,h.y);shake(9);playSfx("horn");log(`${h.name} 自林中杀出，<b>中伏</b>！`,h.side);banner("中 伏",h.name+" 自林杀出",h.side==="ming"?"aid":"kill");
   for(const f of foes(h.side))if(dist(f,h)<CFG.ambushR){f.mor=clamp(f.mor-CFG.ambushSurprise,0,100);f._hitThisTick=true;}}
@@ -1431,7 +1457,7 @@ function victoryCheck(){if(state.over)return;let res=null;
     else res={t:"日暮·两罢",p:`鏖战竟日，两军俱疲，各自鸣金。胜负未分，天下之势犹未可知。`,win:false};}
   if(res){state.over=true;stopDrums();playSfx(res.win?"win":"lose");showOver(res);}}
 function showOver(res){if(res&&typeof res.win==="boolean"&&typeof state!=="undefined"&&state)state._finalVerdict={outcome:res.win?"win":"loss"};   /* ★裁定单一真相源:victoryCheck/代战的最终胜负存此·UI与battleResult共用·杜绝二套公式重算 */
-  if(_activeBattleConfig&&typeof window!=="undefined"&&window.parent&&window.parent!==window){try{window.parent.postMessage({type:"battleResult",result:_collectResult()},"*");}catch(_){}}   /* ★接入:嵌入态战斗落幕→回吐 result 给主游戏 */
+  if(_activeBattleConfig&&_TM_EMBEDDED){try{window.parent.postMessage({type:"battleResult",sessionId:_battleSessionId,result:_collectResult()},"*");}catch(_){}} // 嵌入态唯一战果回传
   $("overT").textContent=res.t;$("overT").style.color=res.win?"#4f7a3a":"#a8342a";const k=state.kia||{ming:0,jin:0};
   const oo=MAP&&MAP._obj,so=state.obj||{},objLine=oo?`　|　${oo.name}：${so.owner?(so.owner==="ming"?"我据":"敌据"):"未决"}`:"";
   $("overP").innerHTML=res.p+`<br><br><b>战报</b>　歼敌 ${k.jin||0} · 我损 ${k.ming||0} · 斩将 ${state.duels||0}${objLine}<br>${sideCN("ming")}余 ${liveTroops("ming")} · ${sideCN("jin")}余 ${liveTroops("jin")}`;$("over").style.display="flex";log(`【${res.t}】${res.p}`,"fate");}
@@ -1456,9 +1482,9 @@ function draw(){
   }
   {const gt=ctx.createLinearGradient(0,0,0,WORLD.h*0.24);gt.addColorStop(0,"rgba(90,114,144,0.075)");gt.addColorStop(1,"rgba(90,114,144,0)");ctx.fillStyle=gt;ctx.fillRect(0,0,WORLD.w,WORLD.h*0.24);   // ★敌我半场淡染(学三国Demo·上敌蓝/下我绿)便于辨向
    const gb=ctx.createLinearGradient(0,WORLD.h*0.76,0,WORLD.h);gb.addColorStop(0,"rgba(96,140,80,0)");gb.addColorStop(1,"rgba(96,140,80,0.085)");ctx.fillStyle=gb;ctx.fillRect(0,WORLD.h*0.76,WORLD.w,WORLD.h*0.24);}
-  {const ct=performance.now()/1000;for(let i=0;i<4;i++){const cx=(((i*0.41+ct*0.010)%1.35)-0.18)*WORLD.w,cy=(0.16+i*0.22)*WORLD.h+Math.sin(ct*0.09+i*1.7)*WORLD.h*0.05,rw=WORLD.w*(0.30+(i%2)*0.13),g=ctx.createRadialGradient(cx,cy,rw*0.12,cx,cy,rw*0.5);g.addColorStop(0,"rgba(16,12,7,0.11)");g.addColorStop(1,"rgba(16,12,7,0)");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rw*0.5,rw*0.27,0,0,7);ctx.fill();}}
+  {if(!draw._cloudStamp){const c=document.createElement('canvas');c.width=1024;c.height=554;const g=c.getContext('2d',{willReadFrequently:true}),shade=g.createRadialGradient(512,277,123,512,277,512);shade.addColorStop(0,'rgba(16,12,7,.11)');shade.addColorStop(1,'rgba(16,12,7,0)');g.fillStyle=shade;g.beginPath();g.ellipse(512,277,512,277,0,0,7);g.fill();draw._cloudStamp=c;}const ct=performance.now()/1000;for(let i=0;i<4;i++){const cx=(((i*.41+ct*.010)%1.35)-.18)*WORLD.w,cy=(.16+i*.22)*WORLD.h+Math.sin(ct*.09+i*1.7)*WORLD.h*.05,rw=WORLD.w*(.30+(i%2)*.13);ctx.drawImage(draw._cloudStamp,cx-rw*.5,cy-rw*.27,rw,rw*.54);}}
   for(const dc of decals){ctx.fillStyle=dc.pool?"rgba(94,20,14,.5)":dc.b?"rgba(120,30,22,.45)":"rgba(45,36,24,.5)";ctx.beginPath();ctx.ellipse(dc.x,dc.y,dc.r,dc.r*(dc.pool?0.62:0.82),0,0,7);ctx.fill();}
-  if(state.phase==="deploy"){const dy=WORLD.h*0.6;ctx.fillStyle="rgba(120,170,90,.10)";ctx.fillRect(0,dy,WORLD.w,WORLD.h-dy);ctx.strokeStyle="rgba(120,200,110,.5)";ctx.lineWidth=5;ctx.setLineDash([28,18]);ctx.beginPath();ctx.moveTo(0,dy);ctx.lineTo(WORLD.w,dy);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="rgba(60,110,50,.5)";ctx.font="52px serif";ctx.textAlign="center";ctx.fillText("◤ 布 阵 区 ◢",WORLD.w/2,dy+50);}
+  if(state.phase==="deploy"){const polygon=TERR&&TERR.tactical?TMBattleNavigation.deploymentPolygon(TERR.tactical,'ming'):[{x:0,y:WORLD.h*.6},{x:WORLD.w,y:WORLD.h*.6},{x:WORLD.w,y:WORLD.h},{x:0,y:WORLD.h}];ctx.fillStyle="rgba(120,170,90,.10)";ctx.strokeStyle="rgba(120,200,110,.5)";ctx.lineWidth=5;ctx.setLineDash([28,18]);ctx.beginPath();polygon.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.stroke();ctx.setLineDash([]);}
   if(MAP&&MAP._objs&&MAP._objs.length){const pulse=0.10+0.06*Math.sin(performance.now()/520);  // 夺要控制圈(多要地逐个)
     for(let k=0;k<MAP._objs.length;k++){const o=MAP._objs[k],so=(state.objs&&state.objs[k])||(k===0?(state.obj||{}):{}),pre=so.owner==="ming"?"224,160,96":so.owner==="jin"?"126,156,196":"200,180,120";
       ctx.fillStyle="rgba("+pre+","+pulse.toFixed(3)+")";ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,7);ctx.fill();
@@ -1508,9 +1534,10 @@ function drawCmdOverlay(){const now=performance.now();ctx.save();ctx.lineCap="ro
     else{ctx.strokeStyle="rgba(255,224,138,"+(0.5+0.35*pr).toFixed(2)+")";ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,rr,0,7);ctx.stroke();}}}
   for(const id of sel){const u=byId(id);if(!u||!u.alive)continue;const s=w2s(u.x,u.y);if(_scrOff(s))continue;const rr=_scrR(u),pl=0.62+0.38*Math.sin(now/300);
     if(isShooter(u)){const e=w2s(u.x+rng(u),u.y);ctx.strokeStyle="rgba(150,205,150,.26)";ctx.lineWidth=1.4;ctx.setLineDash([5,8]);ctx.beginPath();ctx.arc(s.x,s.y,Math.hypot(e.x-s.x,e.y-s.y),0,7);ctx.stroke();ctx.setLineDash([]);}   // 射程环(投影近似)
-    const t=u.order==="attack"?byId(u.target):null,tx=t?t.x:u.tx,ty=t?t.y:u.ty;                  // 行军/攻击线 + 落点
-    if(tx!=null){const d=w2s(tx,ty);if(!_scrOff(d)){const col=t?"rgba(236,96,76,.95)":"rgba(130,222,176,.95)";
-      ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.setLineDash([9,6]);ctx.lineDashOffset=-((now/45)%15);ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(d.x,d.y);ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;
+    const t=u.order==="attack"?byId(u.target):null,adjusted=u._navStatus==='adjusted'&&u._navGoal,tx=t?t.x:adjusted?adjusted.x:u.tx,ty=t?t.y:adjusted?adjusted.y:u.ty;                  // 路径、调整后落点与命令反馈同源
+    if(tx!=null){const d=w2s(tx,ty);if(!_scrOff(d)){const col=u._navStatus==='blocked'?"rgba(236,96,76,.95)":NAV&&(!u._navRoute||!u._navRoute.length)?"rgba(205,194,158,.7)":t?"rgba(236,96,76,.95)":"rgba(130,222,176,.95)";
+      ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.setLineDash([9,6]);ctx.lineDashOffset=-((now/45)%15);ctx.beginPath();ctx.moveTo(s.x,s.y);if(NAV&&u._navRoute&&u._navRoute.length){for(const point of u._navRoute.slice(u._navCursor||1)){const q=w2s(point.x,point.y);if(!_scrOff(q))ctx.lineTo(q.x,q.y);}}else ctx.lineTo(d.x,d.y);ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;
+      if(u._navStatus==='blocked'){ctx.fillStyle=col;ctx.font='13px serif';ctx.fillText(u._navReason==='search-budget'?'请分段行军':'无路可达',d.x,d.y-16);}
       ctx.fillStyle=col;ctx.strokeStyle=col;ctx.lineWidth=2;
       if(t){ctx.font="bold 20px serif";ctx.fillText("⚔",d.x,d.y+7);}                              // 攻击靶(目标本体另在下方红高亮)
       else{ctx.beginPath();ctx.arc(d.x,d.y,8,0,7);ctx.stroke();ctx.beginPath();ctx.arc(d.x,d.y,2.6,0,7);ctx.fill();if(u._faceOnArrive!=null){const sa=_scrAng(tx,ty,u._faceOnArrive);_chev(d.x+Math.cos(sa)*15,d.y+Math.sin(sa)*15,sa,7);}}}}   // 移动落点环+到位朝向箭
@@ -1543,9 +1570,10 @@ function drawDuelHUD(){if(!duels.length)return;let y=92;for(const d of duels){co
   ctx.textAlign="right";ctx.fillText((b.gen?b.gen.n:"")+"·勇"+(b.gen?b.gen.valor:""),x+w-8,y+15);y+=38;}}
 function _menN(u){return clamp(Math.round(u.soldiers/10),12,u.type==="cav"?80:130);}   // ★更多卒填满更大方队(渲染层·不改sim)
 function _menSlots(u){const {W0,D0}=tokenWH(u),n=_menN(u),cols=Math.max(2,Math.ceil(Math.sqrt(n*W0/D0))),rows=Math.ceil(n/cols),out=[];   // 局部松散槽位·填满牌足迹
+  if(u._slotsCache&&u._slotsCache.n===n&&u._slotsCache.w===W0&&u._slotsCache.d===D0)return u._slotsCache.slots;
   const sx=(W0-2)/Math.max(1,cols-1||1),sy=(D0-4)/Math.max(1,rows-1||1);
   for(let i=0;i<n;i++){const r=Math.floor(i/cols),c=i%cols,rw=Math.min(cols,n-r*cols);out.push({x:(c-(rw-1)/2)*sx+(r%2?sx*0.3:0),y:-D0/2+2+r*sy});}   // 梅花错列·更像人群
-  return out;}
+  u._slotsCache={n,w:W0,d:D0,slots:out};return out;}
 function drawFormation(u){
   const cav=u.type==="cav",art=u.type==="art",{W0,D0}=tokenWH(u),mel=u._inMelee&&u.state!=="rout",sub=u.sub,now=performance.now(),tf=tfr(u);
   ctx.save();ctx.translate(u.x,u.y);
@@ -1565,7 +1593,7 @@ function drawFormation(u){
   if(u.stance==="square"){ctx.save();if(!_far)ctx.globalAlpha*=0.5;ctx.strokeStyle="rgba(150,170,205,.9)";ctx.lineWidth=2.2;ctx.strokeRect(-W0/2-5,-D0/2-5,W0+10,D0+10);ctx.restore();}
   else if(u.stance==="loose"){ctx.save();if(!_far)ctx.globalAlpha*=0.5;ctx.strokeStyle="rgba(198,172,108,.8)";ctx.lineWidth=1.4;ctx.setLineDash([3,4]);ctx.strokeRect(-W0/2-6,-D0/2-6,W0+12,D0+12);ctx.setLineDash([]);ctx.restore();}
   const figC=u.emperor?"#f4e6ad":u.side==="ming"?"#ecdcc4":"#d4dce4",figD=u.emperor?"#7c5d1a":u.side==="ming"?"#6a2a1e":"#26303c";
-  if(art){ctx.fillStyle="#3a2c18";ctx.beginPath();ctx.ellipse(0,12,16,5,0,0,7);ctx.fill();ctx.fillStyle="#241b10";ctx.fillRect(-7,-8,14,20);ctx.fillRect(-3,-19,6,13);ctx.fillStyle="rgba(255,255,255,.12)";ctx.fillRect(-7,-8,5,20);ctx.strokeStyle="#15100a";ctx.lineWidth=3.2;ctx.beginPath();ctx.arc(-10,11,6,0,7);ctx.moveTo(16,11);ctx.arc(10,11,6,0,7);ctx.stroke();ctx.fillStyle=figC;for(const dx of[-23,23,-27,27]){ctx.beginPath();ctx.arc(dx,-4,2.4,0,7);ctx.fill();}}   // 火炮:始终绘炮位(无逐兵·远近皆显)
+  if(art&&!(_units3dOn&&R3D.generatedUnits)){ctx.fillStyle="#3a2c18";ctx.beginPath();ctx.ellipse(0,12,16,5,0,0,7);ctx.fill();ctx.fillStyle="#241b10";ctx.fillRect(-7,-8,14,20);ctx.fillRect(-3,-19,6,13);ctx.fillStyle="rgba(255,255,255,.12)";ctx.fillRect(-7,-8,5,20);ctx.strokeStyle="#15100a";ctx.lineWidth=3.2;ctx.beginPath();ctx.arc(-10,11,6,0,7);ctx.moveTo(16,11);ctx.arc(10,11,6,0,7);ctx.stroke();ctx.fillStyle=figC;for(const dx of[-23,23,-27,27]){ctx.beginPath();ctx.arc(dx,-4,2.4,0,7);ctx.fill();}}   // 真实3D炮替代平贴炮位，兼容2D回退。
   // 步骑逐兵已在世界空间 drawMen(u) 绘(长枪林/骑枪/弓铳随人海流动)
   if(!u.hidden){const fx0=-W0/2+6,fy0=-D0/2;ctx.strokeStyle=bd;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(fx0,fy0+2);ctx.lineTo(fx0,fy0-16);ctx.stroke();   // 将旗
     const fl=u.emperor?"#e8c64a":u.side==="ming"?"#c0392b":"#5a7290",wv=Math.sin(now/200+u.x*0.04)*1.6;
@@ -1607,6 +1635,7 @@ function _nz(s){const x=Math.sin(s*12.9898)*43758.5453;return x-Math.floor(x);} 
 /* ★逐兵·世界空间层：个体兵卒在世界坐标 lerp 流向「牌足迹按朝向旋转」的槽位——行军时拖尾、驻足时收拢、变阵重组、接敌前探、溃散乱奔；伤亡从「朝敌正面」先掉并在阵地留尸。人定身大小(不随减员缩)，阵随减员收紧。纯渲染·_nz 不耗随机流。 */
 const _MAN_FACE_OFF=-Math.PI/2;   // ★兵模朝向校正(模型 Y-up→Z-up 后的固定朝向偏移·按实拍微调)
 function buildUnitInstances(){
+  if(R3D.generatedUnits)return TMBattleUnitRenderer.instances(units,{cam,W,H,frustum:TMBattleUnitVisibility.frustum(R3D.projection),impostors:R3D.impostorsAvailable,EX:R3D.EXAG,quality:R3D.graphics,project:R3D.project,heightAt:elevAt,now:performance.now(),corpses:_corpses,dying:_dying});
   const groups={foot:[],cav:[],bow:[],gun:[],crossbow:[],cavbow:[],dead:[]},MAXI=8000,EX=R3D.EXAG,now=performance.now();
   const zMul=clamp(0.12/cam.zoom,1,1.8);   // ★缩远时兵略放大(保可见·≤1.8×不过度)→方队成可辨兵块·治zoomout看不见军队
   const SC_FOOT=(62/2.79)*zMul,SC_CAV=(84/2.97)*zMul;   // ★步兵高≈62·骑兵(含马)高≈84世界单位(稍大)·×缩放下限
@@ -1649,13 +1678,14 @@ function updateMenCrowd(){
     for(let i=0;i<u._men.length;i++){const m=u._men[i],s0=sl[i]||sl[sl.length-1]||{x:0,y:0},lx=s0.x+m.dx,ly=s0.y+m.dy;
       m._tx=u.x+tf*(lx*ct-ly*st);m._ty=u.y+tf*(lx*st+ly*ct);
       if(rout){m._tx+=(_nz(m.ph*3+i)-0.5)*36;m._ty+=(_nz(m.ph*5+i)-0.5)*36;}   // 溃散个体乱奔
+      if(MOTION){m._navExiting=!!u._navExiting;const p=MOTION.crowdTarget(m,u,{x:m._tx,y:m._ty});m._tx=p.x;m._ty=p.y;}
       all.push(m);const gx=Math.floor(m.x/CELL),gy=Math.floor(m.y/CELL),key=gx*100003+gy;let c=grid.get(key);if(!c){c=[];grid.set(key,c);}c.push(m);}
   }
   const sepR=13,COH=Math.min(0.5,dt*7),SEP=Math.min(1.1,dt*55);
   for(let a=0;a<all.length;a++){const m=all[a];let sx=0,sy=0;const gx=Math.floor(m.x/CELL),gy=Math.floor(m.y/CELL);
     for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){const c=grid.get((gx+ox)*100003+(gy+oy));if(!c)continue;
       for(let j=0;j<c.length;j++){const n=c[j];if(n===m)continue;const dx=m.x-n.x,dy=m.y-n.y,d2=dx*dx+dy*dy;if(d2<sepR*sepR&&d2>0.04){const d=Math.sqrt(d2),w=(sepR-d)/d;sx+=dx*w;sy+=dy*w;}}}
-    m.x+=(m._tx-m.x)*COH+sx*SEP;m.y+=(m._ty-m.y)*COH+sy*SEP;}   // 寻位+碰撞分离=个体移动+碰撞体积
+    const nx=m.x+(m._tx-m.x)*COH+sx*SEP,ny=m.y+(m._ty-m.y)*COH+sy*SEP;if(MOTION)MOTION.crowdMove(m,nx,ny,m._navExiting);else{m.x=nx;m.y=ny;}}   // 散兵同样不能穿屋或踏入深水。
 }
 function drawMen(u){
   if(u.type==="art"||(u.hidden&&u.side!=="ming"))return;
@@ -1811,7 +1841,7 @@ function drawFx(){const now=performance.now();fx=fx.filter(f=>now-f.t<(f.life||6
     else if(f.type==="hit"){ctx.fillStyle=`rgba(150,40,28,${.7*(1-k)})`;ctx.beginPath();ctx.arc(f.x,f.y,3+k*12,0,7);ctx.fill();}}}
 function drawWeather(){const t=performance.now(),wx=state.weather;
   // 高天光晕：暖/寒按天候·添一分时辰与纵深(晴天亦现·极淡不夺地表色)
-  {const lc=wx==="snow"?"rgba(214,228,244,0.055)":wx==="fog"?"rgba(206,210,216,0.05)":"rgba(250,236,198,0.045)",sg=ctx.createRadialGradient(W*0.5,-H*0.10,H*0.18,W*0.5,H*0.22,H*0.95);sg.addColorStop(0,lc);sg.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=sg;ctx.fillRect(0,0,W,H);}
+  {const key=[wx,W,H,DPR].join(':');if(!drawWeather._glow||drawWeather._glow.key!==key){const c=document.createElement('canvas');c.width=Math.round(W*DPR);c.height=Math.round(H*DPR);const g=c.getContext('2d',{willReadFrequently:true});g.scale(DPR,DPR);const lc=wx==='snow'?'rgba(214,228,244,0.055)':wx==='fog'?'rgba(206,210,216,0.05)':'rgba(250,236,198,0.045)',sg=g.createRadialGradient(W*.5,-H*.10,H*.18,W*.5,H*.22,H*.95);sg.addColorStop(0,lc);sg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=sg;g.fillRect(0,0,W,H);drawWeather._glow={key,canvas:c};}ctx.drawImage(drawWeather._glow.canvas,0,0,W,H);}
   if(wx==="snow"){
     const gust=Math.sin(t/2600)*0.6+Math.sin(t/870)*0.22;ctx.strokeStyle="rgba(236,243,253,1)";   // 远近两层斜掠风雪+阵风
     for(let i=0;i<165;i++){const far=i%3===0,sp=(far?0.5:1.05)+(i%5)*0.12,wind=2.0+gust,x=((i*97.3+t*sp*0.018*60+t*wind*0.012*60)%(W+60))-30,y=((i*61.7+t*sp*0.030*60)%(H+50))-25,len=(far?3:7)*sp;
@@ -1825,9 +1855,10 @@ function drawMinimap(){
   const m=mm(),now=performance.now();ctx.fillStyle="rgba(18,12,7,.86)";ctx.fillRect(m.x,m.y,m.w,m.h);ctx.strokeStyle="#7c5d27";ctx.lineWidth=2;ctx.strokeRect(m.x-1,m.y-1,m.w+2,m.h+2);ctx.strokeStyle="rgba(200,162,74,.5)";ctx.lineWidth=1;ctx.strokeRect(m.x+2,m.y+2,m.w-4,m.h-4);ctx.fillStyle="#c8a24a";ctx.font="11px serif";ctx.textAlign="center";ctx.fillText("舆 图",m.x+m.w/2,m.y-5);
   const sx=m.w/WORLD.w,sy=m.h/WORLD.h;
   ctx.save();ctx.beginPath();ctx.rect(m.x+2,m.y+2,m.w-4,m.h-4);ctx.clip();   // 裁剪到图框内·标记不外溢
+  if(TERR.tactical&&terrainCanvas){const key=[m.w,m.h,DPR].join(':');if(!drawMinimap._terrain||drawMinimap._terrain.source!==terrainCanvas||drawMinimap._terrain.key!==key){const c=document.createElement('canvas');c.width=Math.round(m.w*DPR);c.height=Math.round(m.h*DPR);c.getContext('2d',{willReadFrequently:true}).drawImage(terrainCanvas,0,0,c.width,c.height);drawMinimap._terrain={key,source:terrainCanvas,canvas:c};}ctx.drawImage(drawMinimap._terrain.canvas,m.x,m.y,m.w,m.h);}
   if(TERR.river&&TERR.river.length){ctx.strokeStyle="rgba(70,120,160,.7)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(m.x+TERR.river[0].x*sx,m.y+TERR.river[0].y*sy);for(const p of TERR.river)ctx.lineTo(m.x+p.x*sx,m.y+p.y*sy);ctx.stroke();}   // ★proc 图约28%无河(river=null)→须守卫(否则 drawMinimap 抛错停 rAF=卡死+无小地图)
-  for(const h of TERR.hills){ctx.fillStyle="rgba(150,115,60,.4)";ctx.beginPath();ctx.arc(m.x+h.x*sx,m.y+h.y*sy,h.r*sx,0,7);ctx.fill();}
-  for(const f of TERR.forests){ctx.fillStyle="rgba(60,95,50,.5)";ctx.beginPath();ctx.arc(m.x+f.x*sx,m.y+f.y*sy,f.r*sx,0,7);ctx.fill();}
+  if(!TERR.tactical){for(const h of TERR.hills){ctx.fillStyle="rgba(150,115,60,.4)";ctx.beginPath();ctx.arc(m.x+h.x*sx,m.y+h.y*sy,h.r*sx,0,7);ctx.fill();}
+  for(const f of TERR.forests){ctx.fillStyle="rgba(60,95,50,.5)";ctx.beginPath();ctx.arc(m.x+f.x*sx,m.y+f.y*sy,f.r*sx,0,7);ctx.fill();}}
   if(MAP&&MAP._objs){const pp=0.55+0.45*Math.sin(now/430);for(let k=0;k<MAP._objs.length;k++){const o=MAP._objs[k],so=(state.objs&&state.objs[k])||(k===0?(state.obj||{}):{});ctx.strokeStyle=so.owner==="ming"?"#e0a060":so.owner==="jin"?"#9ec3e0":"#e8d28a";ctx.lineWidth=1.5;ctx.globalAlpha=0.55+0.45*Math.abs(pp);ctx.beginPath();ctx.arc(m.x+o.x*sx,m.y+o.y*sy,5,0,7);ctx.stroke();ctx.globalAlpha=1;}}
   for(const u of units){if(!u.alive)continue;if(u.hidden&&u.side!=="ming")continue;const bx=m.x+u.x*sx,by=m.y+u.y*sy;
     if(u.emperor){ctx.save();ctx.translate(bx,by);ctx.rotate(Math.PI/4);ctx.fillStyle="#e8c64a";ctx.fillRect(-3,-3,6,6);ctx.restore();ctx.strokeStyle="rgba(232,198,74,"+(0.4+0.4*Math.abs(Math.sin(now/300))).toFixed(2)+")";ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(bx,by,6.5,0,7);ctx.stroke();continue;}
@@ -1835,7 +1866,9 @@ function drawMinimap(){
     if(u.side==="ming"&&sel.has(u.id)){ctx.strokeStyle="rgba(150,245,150,.95)";ctx.lineWidth=1.4;ctx.strokeRect(bx-3.5,by-3.5,7,7);}}
   {const seen={};for(const r of (state.reinf||[])){if(r.done||seen[r.side])continue;seen[r.side]=1;const edgeY=r.side==="ming"?m.y+m.h-4:m.y+4,dir=r.side==="ming"?-1:1,pp=0.35+0.65*Math.abs(Math.sin(now/360)),ex=m.x+m.w*0.5,col=r.side==="ming"?"230,166,96":"158,195,224";ctx.fillStyle="rgba("+col+","+pp.toFixed(2)+")";ctx.beginPath();ctx.moveTo(ex,edgeY);ctx.lineTo(ex-5,edgeY+dir*7);ctx.lineTo(ex+5,edgeY+dir*7);ctx.closePath();ctx.fill();}}   // 援军临边脉动箭标(我自南·敌自北)
   ctx.restore();
-  const l=cam.x-W/2/cam.zoom,t=cam.y-H/2/cam.zoom,vw=W/cam.zoom,vh=H/cam.zoom;ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=1;ctx.strokeRect(m.x+l*sx,m.y+t*sy,vw*sx,vh*sy);
+  ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=1;
+  if(TERR.tactical&&RENDER3D&&R3D.ready){if(!drawMinimap._view||now-drawMinimap._at>160){drawMinimap._view=[[0,130],[W,130],[W,H*.72],[0,H*.72]].map(p=>R3D.unproject(p[0],p[1]));drawMinimap._at=now;}ctx.save();ctx.beginPath();ctx.rect(m.x,m.y,m.w,m.h);ctx.clip();ctx.beginPath();drawMinimap._view.forEach((p,i)=>{const x=m.x+p.x*sx,y=m.y+p.y*sy;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.closePath();ctx.stroke();ctx.restore();}
+  else{const l=cam.x-W/2/cam.zoom,t=cam.y-H/2/cam.zoom,vw=W/cam.zoom,vh=H/cam.zoom;ctx.strokeRect(m.x+l*sx,m.y+t*sy,vw*sx,vh*sy);}
 }
 function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 /* 生物群系主题：三图不同调色板/植被/水色/光照，去同质化 */
@@ -1962,7 +1995,7 @@ function drawBridges(c){if(!TERR.bridges)return;for(const b of TERR.bridges)draw
    从山丘派生连续高程场 → 定向阳光着色(坡向明暗)+山体投影+高程分色(谷地草→山腹→裸岩→雪峰/秃岩)。
    把"平面圆判定"的同一批地形数据·渲成 3D 起伏的视觉。微起伏用坐标 sin(本地确定性·不触 Math.random)。*/
 function _hex(s){s=(''+s).replace('#','');return [parseInt(s.slice(0,2),16)||0,parseInt(s.slice(2,4),16)||0,parseInt(s.slice(4,6),16)||0];}
-function elevAt(wx,wy){const hills=(TERR&&TERR.hills)||[];let z=0;for(let i=0;i<hills.length;i++){const h=hills[i],dx=wx-h.x,dy=wy-h.y,r=h.r,d2=dx*dx+dy*dy;if(d2<r*r){const t=1-Math.sqrt(d2)/r;z+=r*0.11*t*t*(3-2*t);}}return z;}   // ★峰系数0.11=更缓坡(~16°·避崖)·配大半径MU(随图)→峰仍高(非陡崖·峰/半径比小→坡缓)·渲染层高程·供浮雕/单位抬升·sim不读
+function elevAt(wx,wy){if(TERR&&TERR.tactical)return TERR.tactical.heightAt(wx,wy);const hills=(TERR&&TERR.hills)||[];let z=0;for(let i=0;i<hills.length;i++){const h=hills[i],dx=wx-h.x,dy=wy-h.y,r=h.r,d2=dx*dx+dy*dy;if(d2<r*r){const t=1-Math.sqrt(d2)/r;z+=r*0.11*t*t*(3-2*t);}}return z;}   // 网格/兵模/坡度/鼠标共同读取真实地面。
 function drawRelief(c){const W=WORLD.w,H=WORLD.h,T=TH(),hills=TERR.hills||[];
   const cs=Math.max(64,Math.round(Math.max(W,H)/170)),GX=Math.ceil(W/cs)+2,GY=Math.ceil(H/cs)+2;
   const EG=new Float32Array(GX*GY);let maxZ=1;
@@ -1997,6 +2030,7 @@ function draw3DHill(c,h){const r=h.r,T=TH(),rise=r*0.82,N=16,cMid=_hex(T.hill[1]
   c.fillStyle="rgba(255,250,232,.2)";c.beginPath();c.ellipse(h.x-r*0.09,h.y-rise*0.95,r*0.15,r*0.11,0,0,7);c.fill();}   // 峰顶受光
 function draw3DHills(c){const hs=[...(TERR.hills||[])].sort((a,b)=>a.y-b.y);for(const h of hs)draw3DHill(c,h);}   // 北→南依次绘·南(近)压北(远)
 function drawTerrain(c){const L=(MAP&&MAP.labels)||{},hasRiver=!!(TERR&&TERR.river&&TERR.riverW>0),F=(MAP&&MAP.features)||[];_TH=(MAP&&MAP.theme)||DEFAULT_THEME;const T=_TH;
+  if(TERR&&TERR.tactical){TMBattleLandscape.drawMap(c,TERR.tactical);return;}
   const AF=Math.max(1,(WORLD.w*WORLD.h)/17.68e6);   // ★地面装饰随面积缩放(密度恒定·根治"放大即变稀")
   drawRelief(c);        // ★高程光照浮雕(3D起伏地形·替代平面渐变+离散圆山)
   drawGroundZones(c);   // ★地表分区底色(草甸/犁褐/灌丛各成片·轻染于浮雕上)
@@ -2024,7 +2058,7 @@ function drawTerrain(c){const L=(MAP&&MAP.labels)||{},hasRiver=!!(TERR&&TERR.riv
   const vg=c.createRadialGradient(WORLD.w/2,WORLD.h/2,WORLD.h*.42,WORLD.w/2,WORLD.h/2,WORLD.h*.8);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,T.vignette);c.fillStyle=vg;c.fillRect(0,0,WORLD.w,WORLD.h);
 }
 function buildTerrain(){const HR=Math.max(2,Math.ceil(Math.max(WORLD.w,WORLD.h)/4800));terrainCanvas=document.createElement("canvas");terrainCanvas.width=Math.ceil(WORLD.w/HR);terrainCanvas.height=Math.ceil(WORLD.h*PITCH/HR);const c=terrainCanvas.getContext("2d");c.scale(1/HR,PITCH/HR);drawTerrain(c);}   // ★地形预压PITCH纵深→逐帧均匀缩放blit走快路(避各向异性drawImage慢路·恢复帧率)   // ★HR自适应:大图降烤制分辨率·封顶画布~4800px·控内存与烤时(地形为远景底·略软无碍)
-function buildTerrain3D(){const HR=Math.max(2,Math.ceil(Math.max(WORLD.w,WORLD.h)/3600));terrainCanvas3D=document.createElement("canvas");terrainCanvas3D.width=Math.ceil(WORLD.w/HR);terrainCanvas3D.height=Math.ceil(WORLD.h/HR);const c=terrainCanvas3D.getContext("2d");c.scale(1/HR,1/HR);_bakeFlat=true;try{drawTerrain(c);}finally{_bakeFlat=false;}}   // ★扁平 albedo(未压PITCH·无方向阴影/隆起·光照交给shader)
+function buildTerrain3D(){if(TERR&&TERR.tactical){terrainCanvas3D=TMBattleLandscape.bake(TERR.tactical);return;}const HR=Math.max(2,Math.ceil(Math.max(WORLD.w,WORLD.h)/3600));terrainCanvas3D=document.createElement("canvas");terrainCanvas3D.width=Math.ceil(WORLD.w/HR);terrainCanvas3D.height=Math.ceil(WORLD.h/HR);const c=terrainCanvas3D.getContext("2d");c.scale(1/HR,1/HR);_bakeFlat=true;try{drawTerrain(c);}finally{_bakeFlat=false;}}   // 3D使用纯地表；树、桥、房屋不再烤平。
 
 /* ★★真3D渲染器(WebGL·向《全战三国》看齐):高程网格(elevAt)+定向阳光+雾+天空 透视渲地形;
    世界层(单位/特效)每帧渲到离屏 sceneCv→作动态纹理贴同一网格(随高程起伏·山体自然遮挡)。
@@ -2032,8 +2066,11 @@ function buildTerrain3D(){const HR=Math.max(2,Math.ceil(Math.max(WORLD.w,WORLD.h
 const R3D=(function(){
   const EXAG=1.7,FOV=0.82,PITCH3=0.6;   // ★起伏(配大底盘缓坡山·避陡崖·仍立体)
   let gl=null,ready=false,progT,progU,progS,skyBuf,mesh=null,texTerr,texScene,sceneCv,sceneCtx,mapKey="",glcv=null;
+  let terrainProps=null,texDetail=null,propsDetail=null,shadowMaps=null,frameCache=null,frameCacheEnabled=true,rasterInfo=null,graphics='balanced',shadowsEnabled=true,contextHandlers=false,gpuEpoch=0;
   let _mvp=null,_inv=null,_bb=null,_savedZoom=null,_gw=0,_gh=0;
-  function _resize(){const W2=glcv.clientWidth||W,H2=glcv.clientHeight||H,gw=Math.round(W2),gh=Math.round(H2);if(gw===_gw&&gh===_gh)return;_gw=gw;_gh=gh;   // ★只在尺寸变化时重分配(避每帧 realloc GPU 缓冲·DPR=1 控上传量)
+  let resolutionMode='auto',resolutionInfo=null;const resolutionBudget=TMBattleResolution.create();
+  function _resize(){const W2=glcv.clientWidth||W,H2=glcv.clientHeight||H;resolutionInfo=TMBattleResolution.size(W2,H2,!!(rasterInfo&&rasterInfo.software),resolutionMode,resolutionBudget.pixels);const gw=resolutionInfo.width,gh=resolutionInfo.height;if(gw===_gw&&gh===_gh)return;_gw=gw;_gh=gh;
+    if($('graphicsNotice')&&rasterInfo&&rasterInfo.software)$('graphicsNotice').textContent=resolutionInfo.scale<1?'软件显卡兼容：3D '+gw+'×'+gh+'，文字保持清晰；可切回原分辨率':'软件显卡兼容：原分辨率，关闭多重采样';
     glcv.width=gw;glcv.height=gh;sceneCv.width=gw;sceneCv.height=gh;gl.bindTexture(gl.TEXTURE_2D,texScene);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gw,gh,0,gl.RGBA,gl.UNSIGNED_BYTE,null);}   // 预分配 texScene·后续 texSubImage2D 更新无重分配
   const M4={
     persp(f,a,n,F){const t=1/Math.tan(f/2);return new Float32Array([t/a,0,0,0,0,t,0,0,0,0,(F+n)/(n-F),-1,0,0,2*F*n/(n-F),0]);},
@@ -2047,37 +2084,42 @@ const R3D=(function(){
       o[3]=-a[1]*a[6]*a[11]+a[1]*a[7]*a[10]+a[5]*a[2]*a[11]-a[5]*a[3]*a[10]-a[9]*a[2]*a[7]+a[9]*a[3]*a[6];o[7]=a[0]*a[6]*a[11]-a[0]*a[7]*a[10]-a[4]*a[2]*a[11]+a[4]*a[3]*a[10]+a[8]*a[2]*a[7]-a[8]*a[3]*a[6];o[11]=-a[0]*a[5]*a[11]+a[0]*a[7]*a[9]+a[4]*a[1]*a[11]-a[4]*a[3]*a[9]-a[8]*a[1]*a[7]+a[8]*a[3]*a[5];o[15]=a[0]*a[5]*a[10]-a[0]*a[6]*a[9]-a[4]*a[1]*a[10]+a[4]*a[2]*a[9]+a[8]*a[1]*a[6]-a[8]*a[2]*a[5];
       let det=a[0]*o[0]+a[1]*o[4]+a[2]*o[8]+a[3]*o[12];if(!det)return o;det=1/det;for(let i=0;i<16;i++)o[i]*=det;return o;}
   };
-  function shd(t,src){const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw"shader:"+gl.getShaderInfoLog(s);return s;}
+  function shd(t,src){if(t===gl.FRAGMENT_SHADER&&!gl.getShaderPrecisionFormat(t,gl.HIGH_FLOAT).precision)src=src.replace(/precision highp float/g,'precision mediump float');const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw"shader:"+gl.getShaderInfoLog(s);return s;}
   function prog(v,f){const p=gl.createProgram();gl.attachShader(p,shd(gl.VERTEX_SHADER,v));gl.attachShader(p,shd(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw"link:"+gl.getProgramInfoLog(p);return p;}
   function mktex(){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return t;}
-  function init(){try{glcv=document.getElementById("gl");gl=glcv.getContext("webgl",{antialias:true,alpha:false})||glcv.getContext("experimental-webgl");if(!gl)return false;gl.getExtension("OES_element_index_uint");
-    progT=prog(`attribute vec3 aPos;attribute vec3 aNrm;attribute vec2 aUV;uniform mat4 uMVP;uniform vec2 uCam;varying vec2 vUV;varying vec3 vN;varying float vD;void main(){vUV=aUV;vN=aNrm;vD=distance(aPos.xy,uCam);gl_Position=uMVP*vec4(aPos,1.0);}`,
-      `precision mediump float;varying vec2 vUV;varying vec3 vN;varying float vD;uniform sampler2D uTex;uniform vec3 uSun;uniform vec3 uSky;uniform float uFn;uniform float uFf;void main(){vec3 a=texture2D(uTex,vUV).rgb;float d=max(dot(normalize(vN),normalize(uSun)),0.0);vec3 c=a*(0.55+0.8*d);float f=clamp((vD-uFn)/(uFf-uFn),0.0,1.0);c=mix(c,uSky,f*0.9);gl_FragColor=vec4(c,1.0);}`);
+  function init(){try{glcv=document.getElementById("gl");gl=glcv.getContext('webgl',{antialias:true,alpha:false})||glcv.getContext('experimental-webgl');if(!gl||gl.isContextLost())return false;gl.getExtension('OES_element_index_uint');
+    const {renderer,software}=battleGraphicsProfile(gl);
+    if(software&&gl.getContextAttributes().antialias){const old=glcv,fresh=old.cloneNode(false),lose=gl.getExtension('WEBGL_lose_context'),next=fresh.getContext('webgl',{antialias:false,alpha:false});if(next){old.replaceWith(fresh);if(lose)lose.loseContext();glcv=fresh;gl=next;contextHandlers=false;gl.getExtension('OES_element_index_uint');}}
+    rasterInfo={renderer,software,antialias:gl.getContextAttributes().antialias,samples:gl.getParameter(gl.SAMPLES)}; // 软件显卡关闭多重采样；3D倍率另由显式策略控制，几何与清晰HUD不变。
+    if(!contextHandlers){contextHandlers=true;glcv.addEventListener('webglcontextlost',e=>{e.preventDefault();gpuEpoch++;ready=false;});glcv.addEventListener('webglcontextrestored',()=>{gl=null;ready=false;mapKey='';mesh=null;_gw=0;_gh=0;unitsReady=false;_uLoadStarted=false;uProg=null;extInst=null;unitRenderer=null;Object.keys(uMeshes).forEach(k=>delete uMeshes[k]);terrainProps=null;propsDetail=null;shadowMaps=null;frameCache=null;});}
+    progT=prog(TMBattleLandscape.vertex,TMBattleLandscape.fragment);texDetail=TMBattleLandscape.detailTexture(gl);terrainProps=TMBattleLandscape.makeRenderer(gl,prog);
+    propsDetail=TMBattleProps.create(gl,prog);shadowMaps=TMBattleShadows.create(gl,prog);shadowMaps.setQuality(shadowsEnabled?graphics:'low');frameCache=!gl.getContextAttributes().antialias?TMBattleFrameCache.create(gl,prog):null; // 保留硬件MSAA；WebGL1单样本缓存不得偷偷降低地物边缘质量。
+    if($('graphicsNotice'))$('graphicsNotice').textContent=software?'软件显卡兼容：正在适配3D分辨率':!propsDetail?'显卡兼容模式：简化地物':!shadowMaps.stats.supported?'显卡兼容模式：保留光照，关闭投影':'';if($('optFrameCache')){$('optFrameCache').disabled=!frameCache;$('optFrameCache').checked=!!frameCache&&frameCacheEnabled;}
     progU=prog(`attribute vec3 aPos;uniform mat4 uMVP;uniform vec4 uBB;varying vec2 vT;void main(){vT=(aPos.xy-uBB.xy)/uBB.zw;gl_Position=uMVP*vec4(aPos,1.0);}`,
       `precision mediump float;varying vec2 vT;uniform sampler2D uTex;void main(){if(vT.x<0.0||vT.x>1.0||vT.y<0.0||vT.y>1.0)discard;vec4 c=texture2D(uTex,vec2(vT.x,vT.y));if(c.a<0.02)discard;gl_FragColor=vec4(c.rgb,c.a);}`);
     progS=prog(`attribute vec2 aP;varying float vy;void main(){vy=aP.y;gl_Position=vec4(aP,0.999,1.0);}`,
       `precision mediump float;varying float vy;uniform vec3 uTop;uniform vec3 uBot;void main(){gl_FragColor=vec4(mix(uBot,uTop,clamp(vy*0.5+0.5,0.0,1.0)),1.0);}`);
     skyBuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,skyBuf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
-    texTerr=mktex();texScene=mktex();sceneCv=document.createElement("canvas");sceneCtx=sceneCv.getContext("2d");return true;
+    texTerr=mktex();texScene=mktex();sceneCv=document.createElement("canvas");sceneCtx=sceneCv.getContext("2d",{willReadFrequently:software});return true; // 仅软件GPU采用CPU-backed上传；硬件路径保留跨上下文GPU纹理。
   }catch(e){console.warn("R3D init fail",e);gl=null;return false;}}
-  function buildMesh(){const GX=210,GY=Math.max(70,Math.round(210*WORLD.h/WORLD.w)),sx=WORLD.w/(GX-1),sy=WORLD.h/(GY-1),pos=[],nrm=[],uv=[],idx=[];   // ★网格加密(210)→大图山体平滑不成块状崖
+  function buildMesh(){if(mesh)for(const k of ['pos','nrm','uv','ib'])gl.deleteBuffer(mesh[k]);const tw=TERR&&TERR.tactical,GX=tw?tw.nx:210,GY=tw?tw.ny:Math.max(70,Math.round(210*WORLD.h/WORLD.w)),sx=WORLD.w/(GX-1),sy=WORLD.h/(GY-1),pos=[],nrm=[],uv=[],idx=[];
     const Hf=(i,j)=>EXAG*elevAt(Math.min(WORLD.w,Math.max(0,i*sx)),Math.min(WORLD.h,Math.max(0,j*sy)));
-    for(let j=0;j<GY;j++)for(let i=0;i<GX;i++){const wx=i*sx,wy=j*sy,z=Hf(i,j);pos.push(wx,wy,z);const hl=Hf(i-1,j),hr=Hf(i+1,j),hd=Hf(i,j-1),hu=Hf(i,j+1);let nx=hl-hr,ny=hd-hu,nz=2*sx,nl=Math.hypot(nx,ny,nz)||1;nrm.push(nx/nl,ny/nl,nz/nl);uv.push(i/(GX-1),j/(GY-1));}
+    for(let j=0;j<GY;j++)for(let i=0;i<GX;i++){const wx=i*sx,wy=j*sy,z=Hf(i,j);pos.push(wx,wy,z);const hl=Hf(i-1,j),hr=Hf(i+1,j),hd=Hf(i,j-1),hu=Hf(i,j+1);let nx=(hl-hr)/(2*sx),ny=(hd-hu)/(2*sy),nz=1,nl=Math.hypot(nx,ny,nz)||1;nrm.push(nx/nl,ny/nl,nz/nl);uv.push(i/(GX-1),j/(GY-1));}
     for(let j=0;j<GY-1;j++)for(let i=0;i<GX-1;i++){const a=j*GX+i,b=a+1,c=a+GX,d=c+1;idx.push(a,b,c,b,d,c);}
     function vb(arr){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.STATIC_DRAW);return b;}
-    const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(idx),gl.STATIC_DRAW);mesh={pos:vb(pos),nrm:vb(nrm),uv:vb(uv),ib,n:idx.length};}
+    const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idx),gl.STATIC_DRAW);mesh={pos:vb(pos),nrm:vb(nrm),uv:vb(uv),ib,n:idx.length};}
   function bindMesh(p,withN){gl.bindBuffer(gl.ARRAY_BUFFER,mesh.pos);const aP=gl.getAttribLocation(p,"aPos");gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
     if(withN){gl.bindBuffer(gl.ARRAY_BUFFER,mesh.nrm);const aN=gl.getAttribLocation(p,"aNrm");if(aN>=0){gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);}
       gl.bindBuffer(gl.ARRAY_BUFFER,mesh.uv);const aU=gl.getAttribLocation(p,"aUV");if(aU>=0){gl.enableVertexAttribArray(aU);gl.vertexAttribPointer(aU,2,gl.FLOAT,false,0,0);}}
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.ib);}
-  function ensure(){if(!gl){if(!init())return false;}if(UNITS3D)_loadUnits();const key=MAP?MAP.name+WORLD.w+"x"+WORLD.h:"";
-    if(key!==mapKey&&MAP&&TERR){mapKey=key;buildTerrain3D();buildMesh();gl.bindTexture(gl.TEXTURE_2D,texTerr);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,terrainCanvas3D);ready=true;}
+  function ensure(){if(!gl){if(!init())return false;}if(UNITS3D)_loadUnits();const key=MAP?MAP.name+WORLD.w+"x"+WORLD.h+(TERR&&TERR.tactical?TERR.tactical.key:''):"";
+    if(key!==mapKey&&MAP&&TERR){mapKey=key;terrainProps.dispose();buildTerrain3D();buildMesh();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texTerr);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,terrainCanvas3D);ready=true;}
     return ready;}
   function cam3(){const dist=Math.max(280,Math.min(200000,(H*0.5/Math.tan(FOV*0.5))/Math.max(0.003,cam.zoom)));   // ★dist下限280(放最大能怼近兵)·上限200000+zoom下限0.003(特大图能拉远看全)·透视dist↔2D zoom对齐
     const czg=EXAG*elevAt(cam.x,cam.y);   // ★看点高度跟踪相机下方地面(原硬编码180→近景时eye低于180致朝天看·修)
     const dh=dist*Math.cos(PITCH3),dv=dist*Math.sin(PITCH3),yw=(typeof camYaw==="number")?camYaw:0;   // ★方位角绕焦点公转(camYaw·0=向北)
     const eye=[cam.x+Math.sin(yw)*dh,cam.y+Math.cos(yw)*dh,czg+dv],center=[cam.x,cam.y,czg];
-    const P=M4.persp(FOV,glcv.width/Math.max(1,glcv.height),40,Math.max(70000,dist*2.4)),V=M4.lookAt(eye,center,[0,0,1]);
+    const P=M4.persp(FOV,W/Math.max(1,H),40,Math.max(70000,dist*2.4)),V=M4.lookAt(eye,center,[0,0,1]); // 投影按CSS视口，缩放后的像素取整不得偏移点选坐标。
     return {mvp:M4.mul(P,V),eye,dist};}
   function computeBB(){const inv=_inv;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,ok=false;
     if(inv)for(const c of [[-1,-1],[1,-1],[-1,1],[1,1]]){const n=M4.tp(inv,c[0],c[1],-1),f=M4.tp(inv,c[0],c[1],1),n3=[n[0]/n[3],n[1]/n[3],n[2]/n[3]],f3=[f[0]/f[3],f[1]/f[3],f[2]/f[3]],dz=f3[2]-n3[2];if(Math.abs(dz)<1e-6)continue;const t=(0-n3[2])/dz;if(t<0||t>2.2)continue;const wx=n3[0]+(f3[0]-n3[0])*t,wy=n3[1]+(f3[1]-n3[1])*t;x0=Math.min(x0,wx);y0=Math.min(y0,wy);x1=Math.max(x1,wx);y1=Math.max(y1,wy);ok=true;}
@@ -2085,7 +2127,7 @@ const R3D=(function(){
     const mx=(x1-x0)*0.08,my=(y1-y0)*0.08;x0-=mx;x1+=mx;y0-=my;y1+=my;x0=Math.max(-300,x0);y0=Math.max(-300,y0);x1=Math.min(WORLD.w+300,x1);y1=Math.min(WORLD.h+300,y1);
     return {x0,y0,w:Math.max(1,x1-x0),h:Math.max(1,y1-y0)};}
   /* ===== 真3D兵模:实例化逐兵渲染(LOD单网格+顶点烤色·ANGLE_instanced_arrays·共用地形深度) ===== */
-  let extInst=null,uProg=null,unitsReady=false,uInstBuf=null,_uLoadStarted=false;const uMeshes={};   // key('foot'/'cav') -> geo
+  let extInst=null,uProg=null,unitsReady=false,uInstBuf=null,_uLoadStarted=false,unitRenderer=null;const uMeshes={};   // 原GLB仅作兼容回退
   const _CT={5120:Int8Array,5121:Uint8Array,5122:Int16Array,5123:Uint16Array,5125:Uint32Array,5126:Float32Array};
   const _NC={SCALAR:1,VEC2:2,VEC3:3,VEC4:4};
   function _accLOD(json,bin,i){const a=json.accessors[i],bv=json.bufferViews[a.bufferView],TA=_CT[a.componentType],comp=_NC[a.type],cB=TA.BYTES_PER_ELEMENT,elem=comp*cB,stride=bv.byteStride||elem,base=bin.byteOffset+(bv.byteOffset||0)+(a.byteOffset||0);
@@ -2119,8 +2161,8 @@ const R3D=(function(){
     function vbf(a){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,a instanceof Float32Array?a:new Float32Array(a),gl.STATIC_DRAW);return b;}
     const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,I.arr,gl.STATIC_DRAW);
     return {pos:vbf(P.arr),nrm:vbf(N.arr),col:vbf(col),ib:ib,n:I.arr.length,itype:I.ct===5125?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT};}
-  function _loadOne(url,key){fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(buf=>{const g=_buildGeo(buf);if(g){_mkUProg();uMeshes[key]=g;if(key==='foot')unitsReady=true;}}).catch(()=>{});}
-  function _loadUnits(){if(_uLoadStarted)return;_uLoadStarted=true;_loadOne('assets/models/unit_lod.glb','foot');_loadOne('assets/models/unit_cav.glb','cav');_loadOne('assets/models/unit_bow.glb','bow');_loadOne('assets/models/unit_gun.glb','gun');_loadOne('assets/models/unit_crossbow.glb','crossbow');_loadOne('assets/models/unit_cavbow.glb','cavbow');_loadOne('assets/models/unit_dead.glb','dead');}   // ★兵种网格:步兵/骑兵/弓/火枪/弩/骑射/阵亡
+  function _loadOne(url,key){const epoch=gpuEpoch;fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(buf=>{if(epoch!==gpuEpoch||!gl||gl.isContextLost())return;const g=_buildGeo(buf);if(g){_mkUProg();uMeshes[key]=g;if(key==='foot')unitsReady=true;}}).catch(()=>{});}
+  function _loadUnits(){if(_uLoadStarted)return;_uLoadStarted=true;if(typeof TMBattleUnitRenderer!=='undefined'){try{unitRenderer=TMBattleUnitRenderer.create(gl,prog,{software:rasterInfo&&rasterInfo.software});if(unitRenderer){unitsReady=true;return;}}catch(e){console.warn('[BattleUnits] generated renderer fallback',e.message);}}_loadOne('assets/models/unit_lod.glb','foot');_loadOne('assets/models/unit_cav.glb','cav');_loadOne('assets/models/unit_bow.glb','bow');_loadOne('assets/models/unit_gun.glb','gun');_loadOne('assets/models/unit_crossbow.glb','crossbow');_loadOne('assets/models/unit_cavbow.glb','cavbow');_loadOne('assets/models/unit_dead.glb','dead');}
   function _bindGeo(geo){const aP=gl.getAttribLocation(uProg,"aPos");gl.bindBuffer(gl.ARRAY_BUFFER,geo.pos);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
     const aN=gl.getAttribLocation(uProg,"aNrm");gl.bindBuffer(gl.ARRAY_BUFFER,geo.nrm);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
     const aC=gl.getAttribLocation(uProg,"aCol");gl.bindBuffer(gl.ARRAY_BUFFER,geo.col);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);}
@@ -2137,13 +2179,21 @@ const R3D=(function(){
     extInst.vertexAttribDivisorANGLE(ai,0);extInst.vertexAttribDivisorANGLE(ap,0);extInst.vertexAttribDivisorANGLE(at,0);if(an>=0)extInst.vertexAttribDivisorANGLE(an,0);   // ★复位divisor免污染地形
     gl.disableVertexAttribArray(ai);gl.disableVertexAttribArray(ap);gl.disableVertexAttribArray(at);if(an>=0)gl.disableVertexAttribArray(an);}
   function _drawUnits(groups){if(!unitsReady||!groups)return;if(!extInst){extInst=gl.getExtension("ANGLE_instanced_arrays");if(!extInst){unitsReady=false;return;}}
+    if(unitRenderer){unitRenderer.draw(groups,_mvp,shadowMaps,camYaw);return;}
     gl.useProgram(uProg);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(true);gl.disable(gl.BLEND);
     gl.uniformMatrix4fv(gl.getUniformLocation(uProg,"uMVP"),false,_mvp);gl.uniform3fv(gl.getUniformLocation(uProg,"uSun"),[-0.5,-0.6,0.62]);
     for(const key in groups)_drawGroup(uMeshes[key],groups[key]);}
   return {
     get ready(){return ready;},
     get unitsReady(){return unitsReady;},
+    get generatedUnits(){return !!unitRenderer;},get unitStats(){return unitRenderer&&unitRenderer.stats;},get graphics(){return graphics;},get impostorsAvailable(){return!!unitRenderer&&unitRenderer.impostorsAvailable;},
+    get frameCacheStats(){return frameCache&&frameCache.stats;},get context(){return gl;},get rasterInfo(){return rasterInfo;},setFrameCache(value){frameCacheEnabled=!!value;if(frameCache)frameCache.invalidate();},get projection(){return _mvp;},
+    get resolution(){return resolutionInfo&&{...resolutionInfo};},setResolution(value){resolutionMode=TMBattleResolution.mode(value);resolutionBudget.reset();_gw=0;if(frameCache)frameCache.invalidate();},
+    observeFrame(time){if(resolutionBudget.frame(time,!!(ready&&RENDER3D&&rasterInfo&&rasterInfo.software&&resolutionMode==='auto'))){_gw=0;if(frameCache)frameCache.invalidate();}},
     get EXAG(){return EXAG;},
+    get landscapeStats(){if(!terrainProps)return null;const old=terrainProps.stats,detail=propsDetail&&propsDetail.stats;return{...old,vertices:old.vertices+(detail?detail.triangles*3:0),detail,shadow:shadowMaps&&shadowMaps.stats,graphics};},
+    setGraphics(value){graphics=['low','balanced','high'].includes(value)?value:'balanced';if(shadowMaps)shadowMaps.setQuality(shadowsEnabled?graphics:'low');if($('optShadows'))$('optShadows').disabled=graphics==='low';},
+    setShadows(value){shadowsEnabled=!!value;if(shadowMaps)shadowMaps.setQuality(shadowsEnabled?graphics:'low');},
     loadUnits(){_loadUnits();},
     drawUnits(list){_drawUnits(list);},
     ensure(){return ensure();},
@@ -2153,18 +2203,26 @@ const R3D=(function(){
       const scX=sceneCv.width/_bb.w,scY=sceneCv.height/_bb.h;sceneCtx.setTransform(scX,0,0,scY,-_bb.x0*scX,-_bb.y0*scY);
       _savedZoom=cam.zoom;cam.zoom=Math.min(scX,scY);ctx=sceneCtx;},
     endScene(){ctx=_cvCtx;if(_savedZoom!=null){cam.zoom=_savedZoom;_savedZoom=null;}},
-    render(){if(!ready)return;gl.viewport(0,0,glcv.width,glcv.height);
+    render(){if(!ready)return;const tactical=TERR&&TERR.tactical;
+      if(tactical){terrainProps.prepare(tactical,EXAG,!!propsDetail);shadowMaps.update(tactical,cam,(matrix,program,area)=>{gl.useProgram(program);bindMesh(program,false);gl.uniformMatrix4fv(gl.getUniformLocation(program,'uMVP'),false,matrix);gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_SHORT,0);terrainProps.shadow(matrix,program);if(propsDetail)propsDetail.shadow(tactical,EXAG,matrix,area,graphics);});}
+      const cm=cam3();_mvp=cm.mvp;_inv=M4.inv(_mvp);const useCache=!!(tactical&&frameCache&&frameCacheEnabled),cachePass=useCache&&frameCache.begin([mapKey,graphics,shadowsEnabled,shadowMaps.stats.draws,..._mvp].join(':'),glcv.width,glcv.height),cached=useCache&&frameCache.ready;
+      if(!cached||cachePass){
+      gl.viewport(0,0,glcv.width,glcv.height);
       const SKT=[0.50,0.64,0.80],SKB=[0.80,0.84,0.85];gl.clearColor(SKB[0],SKB[1],SKB[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
       gl.disable(gl.DEPTH_TEST);gl.useProgram(progS);gl.bindBuffer(gl.ARRAY_BUFFER,skyBuf);const sap=gl.getAttribLocation(progS,"aP");gl.enableVertexAttribArray(sap);gl.vertexAttribPointer(sap,2,gl.FLOAT,false,0,0);gl.uniform3fv(gl.getUniformLocation(progS,"uTop"),SKT);gl.uniform3fv(gl.getUniformLocation(progS,"uBot"),SKB);gl.drawArrays(gl.TRIANGLES,0,6);
       gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
-      const cm=cam3();_mvp=cm.mvp;_inv=M4.inv(_mvp);
       gl.useProgram(progT);bindMesh(progT,true);gl.uniformMatrix4fv(gl.getUniformLocation(progT,"uMVP"),false,_mvp);gl.uniform2f(gl.getUniformLocation(progT,"uCam"),cam.x,cam.y);gl.uniform3fv(gl.getUniformLocation(progT,"uSun"),[-0.5,-0.6,0.62]);gl.uniform3fv(gl.getUniformLocation(progT,"uSky"),[(SKT[0]+SKB[0])/2,(SKT[1]+SKB[1])/2,(SKT[2]+SKB[2])/2]);gl.uniform1f(gl.getUniformLocation(progT,"uFn"),cm.dist*0.55);gl.uniform1f(gl.getUniformLocation(progT,"uFf"),cm.dist*1.7);
-      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texTerr);gl.uniform1i(gl.getUniformLocation(progT,"uTex"),0);gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_INT,0);
+      gl.uniform1f(gl.getUniformLocation(progT,'uModern'),TERR&&TERR.tactical?1:0);gl.uniform1f(gl.getUniformLocation(progT,'uFn'),cm.dist*1.1);gl.uniform1f(gl.getUniformLocation(progT,'uFf'),cm.dist*2.7);
+      shadowMaps.bind(progT,!!tactical);
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,texDetail);gl.uniform1i(gl.getUniformLocation(progT,'uDetail'),1);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texTerr);gl.uniform1i(gl.getUniformLocation(progT,"uTex"),0);gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_SHORT,0);
+      if(tactical){terrainProps.render(tactical,EXAG,_mvp,cam,cm.dist,0,!!propsDetail,shadowMaps,'static');if(propsDetail)propsDetail.render(tactical,EXAG,_mvp,cam,cm.dist,shadowMaps,graphics,(x,y)=>this.project(x,y));}
+      }if(cachePass)frameCache.end();if(cached){frameCache.draw();if(!cachePass&&propsDetail)propsDetail.idle();}gl.viewport(0,0,glcv.width,glcv.height);
       gl.bindTexture(gl.TEXTURE_2D,texScene);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,gl.RGBA,gl.UNSIGNED_BYTE,sceneCv);   // 更新无重分配(预分配于 _resize)
       gl.useProgram(progU);bindMesh(progU,false);gl.uniformMatrix4fv(gl.getUniformLocation(progU,"uMVP"),false,_mvp);gl.uniform4f(gl.getUniformLocation(progU,"uBB"),_bb.x0,_bb.y0,_bb.w,_bb.h);
-      gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texScene);gl.uniform1i(gl.getUniformLocation(progU,"uTex"),0);gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_INT,0);gl.depthMask(true);gl.disable(gl.BLEND);},
-    project(wx,wy){if(!_mvp)return {x:-9999,y:-9999};const z=EXAG*elevAt(wx,wy),p=M4.tp(_mvp,wx,wy,z);if(p[3]<=0)return {x:-9999,y:-9999};return {x:(p[0]/p[3]*0.5+0.5)*W,y:(1-(p[1]/p[3]*0.5+0.5))*H};},
-    unproject(sx,sy){if(!_inv)return {x:cam.x,y:cam.y};const nx=2*sx/W-1,ny=1-2*sy/H,n=M4.tp(_inv,nx,ny,-1),f=M4.tp(_inv,nx,ny,1),n3=[n[0]/n[3],n[1]/n[3],n[2]/n[3]],f3=[f[0]/f[3],f[1]/f[3],f[2]/f[3]],dz=f3[2]-n3[2];if(Math.abs(dz)<1e-6)return {x:cam.x,y:cam.y};const t=(0-n3[2])/dz;return {x:n3[0]+(f3[0]-n3[0])*t,y:n3[1]+(f3[1]-n3[1])*t};}
+      gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texScene);gl.uniform1i(gl.getUniformLocation(progU,"uTex"),0);gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_SHORT,0);gl.depthMask(true);gl.disable(gl.BLEND);
+      if(tactical)terrainProps.render(tactical,EXAG,_mvp,cam,cm.dist,performance.now()/1000,!!propsDetail,shadowMaps,'water');},
+    project(wx,wy,height){if(!_mvp)return {x:-9999,y:-9999};const z=EXAG*elevAt(wx,wy)+(height||0),p=M4.tp(_mvp,wx,wy,z);if(p[3]<=0)return {x:-9999,y:-9999};return {x:(p[0]/p[3]*0.5+0.5)*W,y:(1-(p[1]/p[3]*0.5+0.5))*H};},
+    unproject(sx,sy){if(!_inv)return {x:cam.x,y:cam.y};const nx=2*sx/W-1,ny=1-2*sy/H,n=M4.tp(_inv,nx,ny,-1),f=M4.tp(_inv,nx,ny,1),n3=[n[0]/n[3],n[1]/n[3],n[2]/n[3]],f3=[f[0]/f[3],f[1]/f[3],f[2]/f[3]];return TMBattleTerrain.raycast(n3,f3,(x,y)=>EXAG*elevAt(x,y),TERR&&TERR.tactical,EXAG)||{x:cam.x,y:cam.y};}
   };
 })();
 
@@ -2196,7 +2254,7 @@ cv.addEventListener("pointermove",e=>{
   if(press.button===2){if(Math.hypot(wp.x-press.wx,wp.y-press.wy)>14*cam.zoom||mode==="ori"){mode="ori";state.ori={a:{x:press.wx,y:press.wy},b:wp};}return;}
   if(!mode){const moved=Math.hypot(e.clientX-press.sx,e.clientY-press.sy);if(moved>7){clearTimeout(lpTimer);mode=(state.phase==="deploy"&&press.onUnit)?"place":(press.onUnit||press.shift)?"box":(e.pointerType==="touch")?"pan":"box";if(mode==="box")state.box={a:{x:press.wx,y:press.wy},b:wp};}}
   if(mode==="box")state.box.b=wp;
-  else if(mode==="place"&&press.unit){press.unit.x=clamp(wp.x,30,WORLD.w-30);press.unit.y=clamp(wp.y,riverYAt(wp.x)+70,WORLD.h-30);}
+  else if(mode==="place"&&press.unit&&press.unit.side==='ming'&&!state.observe){if(MOTION)MOTION.place(press.unit,wp);else{press.unit.x=clamp(wp.x,30,WORLD.w-30);press.unit.y=clamp(wp.y,riverYAt(wp.x)+70,WORLD.h-30);}}
   else if(mode==="pan"){cam._goal=null;const wa=s2w(lastPan.x,lastPan.y),wb=s2w(e.clientX,e.clientY);cam.x+=wa.x-wb.x;cam.y+=wa.y-wb.y;clampCam();lastPan={x:e.clientX,y:e.clientY};}   // ★抓取式平移(s2w基·随转角自动正确)
 });
 function endPointer(e){pointers.delete(e.pointerId);clearTimeout(lpTimer);
@@ -2216,7 +2274,7 @@ function handleClick(p,shift){const hit=unitAt(p);
   if(hit&&hit.side==="ming"&&hit.state!=="rout"&&!hit._balk){if(shift){sel.has(hit.id)?sel.delete(hit.id):sel.add(hit.id);}else{sel.clear();sel.add(hit.id);}refreshPanel();}
   else if(sel.size&&state.phase!=="deploy")issueOrderAt(p);
   else if(hit&&hit.side==="jin")$("hint").innerHTML=`敌 · <b>${hit.name}</b>（${hit.gen.n} 勇${hit.gen.valor}/军${hit.gen.mil}）${subName(hit)} ${hit.soldiers}众 士气${Math.round(hit.mor)}`;}
-function issueOrderAt(p){if(state.phase==="deploy")return;const arr=ctrlSel();if(!arr.length)return;const hit=unitAt(p);
+function issueOrderAt(p){if(state.phase==="deploy")return;const arr=ctrlSel();if(!arr.length)return;if(NAV)arr.forEach(u=>{NAV.reset(u);u._navNotice=null;u._navStatus='waiting';u._navGoal=null;u._navRoute=[];});const hit=unitAt(p);
   if(hit&&hit.side!=="ming"){for(const u of arr){u.order="attack";u.target=hit.id;u.tx=hit.x;u.ty=hit.y;if(u.hidden)u._forceReveal=true;if(u.type==="cav")u.stance="charge";}spawnFx("atkmark",hit.x,hit.y);$("hint").innerHTML=`<b>突击</b> ${hit.name}！绕其侧背更狠。`;}
   else{const cx=arr.reduce((s,u)=>s+u.x,0)/arr.length,cy=arr.reduce((s,u)=>s+u.y,0)/arr.length,face=Math.atan2(p.y-cy,p.x-cx);for(const u of arr){u.order="move";u.target=null;if(u.hidden)u._forceReveal=true;if(u.stance!=="hold")u.stance="line";u.tx=clamp(p.x+(u.x-cx),20,WORLD.w-20);u.ty=clamp(p.y+(u.y-cy),20,WORLD.h-20);u._faceOnArrive=face;}spawnFx("movemark",p.x,p.y);$("hint").innerHTML="结队行军……（保持阵形）";}}
 function formationOrder(line){const arr=ctrlSel();if(!arr.length)return;const a=line.a,b=line.b;let dx=b.x-a.x,dy=b.y-a.y;const len=Math.hypot(dx,dy)||1;let nx=-dy/len,ny=dx/len;if((arr[0].side==="ming"&&ny>0)||(arr[0].side==="jin"&&ny<0)){nx=-nx;ny=-ny;}const face=Math.atan2(ny,nx);
@@ -2227,7 +2285,8 @@ function showTip(e,u){const tip=$("tip");
   if(!u){if(state.phase==="compose"||state.over){tip.style.display="none";return;}                 // 空地→地形信息
     const wp=s2w(e.clientX,e.clientY),info=TERR_INFO[terrainAt(wp.x,wp.y)];if(!info){tip.style.display="none";return;}
     tip.innerHTML=`<b>${info[0]}</b><br><span style="color:var(--ink-dim)">${info[1]}</span>`;tip.style.display="block";tip.style.left=Math.min(e.clientX+14,innerWidth-228)+"px";tip.style.top=(e.clientY+14)+"px";return;}
-  tip.innerHTML=`<b>${u.name}</b>（${u.gen?u.gen.n:"—"}）<br>${subName(u)} · ${u.soldiers}众 · 士气${Math.round(u.mor)} · 体力${Math.round(u.sta!=null?u.sta:100)}<br>${u.gen?`勇武${u.gen.valor} 军事${u.gen.mil} 智谋${u.gen.int}`:""}<br>训练${u.training} ${u.quality}${u.hidden?" · <b>埋伏中</b>":""} ${terrainAt(u.x,u.y)!=="plain"?"·"+({river:"渡河",hill:"高地",forest:"林中"})[terrainAt(u.x,u.y)]:""}`;
+  tip.replaceChildren();const title=document.createElement('b');title.textContent=u.name;tip.append(title);const leader=u.commander&&byId(u.commander),g=leader?leader.gen:u.commandGen||u.gen;
+  for(const line of [`${subName(u)} · ${u.soldiers}众 · 士气${Math.round(u.mor)} · 体力${Math.round(u.sta??100)}`,TMBattleCommand.description(g),`本阵战法：${SKILL[skillFor(u)].cn}（按能力与兵种派生）`,`训练${u.training} ${u.quality}${u.hidden?' · 埋伏中':''}`]){tip.append(document.createElement('br'),document.createTextNode(line));}
   tip.style.display="block";tip.style.left=Math.min(e.clientX+14,innerWidth-216)+"px";tip.style.top=(e.clientY+14)+"px";}
 
 /* ---------- 命令面板 + 编队 ---------- */
@@ -2396,6 +2455,8 @@ function relayoutMing(){const ming=units.filter(u=>u.side==="ming"&&!u._hero),n=
   ming.forEach((u,i)=>{const r=(i/cols)|0,cc=i%cols,nC=Math.min(cols,n-r*cols),fo=(cc-(nC-1)/2)*sx,dp=(r-(rows-1)/2)*sy;if(_dirHoriz()){u.x=an.cx+dp;u.y=an.cy+fo;}else{u.x=an.cx+fo;u.y=an.cy+dp;}});
   for(const h of units.filter(u=>u.side==="ming"&&u._hero)){const ret=units.filter(t=>t.commander===h.id&&t.alive);if(ret.length){const fv=_faceVec("ming");h.x=clamp(ret.reduce((s,t)=>s+t.x,0)/ret.length+fv.x*58,30,WORLD.w-30);h.y=clamp(ret.reduce((s,t)=>s+t.y,0)/ret.length+fv.y*58,30,WORLD.h-30);}}}   // ★将领英雄立于麾下朝敌之前(沿对阵轴)
 function composeConfirm(){const benched=units.filter(u=>u.side==="ming"&&!u._field&&!u.emperor).length;
+  for(const h of units.filter(u=>u.side==='ming'&&u._hero))h._field=units.some(u=>u.side==='ming'&&!u._hero&&u._field&&u.commander===h.id); // 无部曲出阵的主将随军留营，不凭空独自出战。
+  _benchedBattleUnits=units.filter(u=>u.side==="ming"&&!u._field&&!u.emperor); // 留营者不是阵亡，回填须保留
   units=units.filter(u=>!(u.side==="ming"&&!u._field&&!u.emperor));relayoutMing();
   start0.ming=units.filter(u=>u.side==="ming").reduce((s,u)=>s+u.soldiers,0);
   state.phase="deploy";if($("compose"))$("compose").style.display="none";
@@ -2407,28 +2468,36 @@ if($("compose")){
 if($("compose")){const pp=$("compose").querySelector(".cmp-presets");if(pp)pp.addEventListener("click",e=>{const b=e.target.closest("[data-preset]");if(b)composePreset(b.dataset.preset);});}
 $("persona").onchange=()=>{if(state.time<0.1&&(state.phase==="deploy"||state.phase==="compose")){state.persona=$("persona").value;const _l=(MAP.lead||PERSONA[state.persona].label),_en=$("enemyName");if(_en)_en.textContent=_l;$("intent").innerHTML=PERSONA[state.persona].line.replace(/皇太极|代善|岳讬/g,_l);}else start();};
 $("btnSettings").onclick=()=>{const s=$("settings");s.style.display=s.style.display==="flex"?"none":"flex";};
+if($('optGraphics')){try{const saved=localStorage.getItem('tm_battle_graphics_v1');if(['low','balanced','high'].includes(saved))$('optGraphics').value=saved;}catch(_){}R3D.setGraphics($('optGraphics').value);$('optGraphics').onchange=()=>{const q=$('optGraphics').value;R3D.setGraphics(q);try{localStorage.setItem('tm_battle_graphics_v1',q);}catch(_){}};}
+if($('optResolution')){try{$('optResolution').value=TMBattleResolution.mode(localStorage.getItem('tm_battle_resolution_v1'));}catch(_){}R3D.setResolution($('optResolution').value);$('optResolution').onchange=()=>{const mode=TMBattleResolution.mode($('optResolution').value);R3D.setResolution(mode);try{localStorage.setItem('tm_battle_resolution_v1',mode);}catch(_){}};}
+if($('optShadows')){try{$('optShadows').checked=localStorage.getItem('tm_battle_shadows_v1')!=='off';}catch(_){}R3D.setShadows($('optShadows').checked);$('optShadows').onchange=()=>{R3D.setShadows($('optShadows').checked);try{localStorage.setItem('tm_battle_shadows_v1',$('optShadows').checked?'on':'off');}catch(_){}};}
+if($('optFrameCache')){try{$('optFrameCache').checked=localStorage.getItem('tm_battle_frame_cache_v1')!=='off';}catch(_){}R3D.setFrameCache($('optFrameCache').checked);$('optFrameCache').onchange=()=>{R3D.setFrameCache($('optFrameCache').checked);try{localStorage.setItem('tm_battle_frame_cache_v1',$('optFrameCache').checked?'on':'off');}catch(_){}};}
 if($("weather"))$("weather").onchange=()=>{if(state.phase==="deploy"&&state.time<0.1)state.weather=$("weather").value;else start();};
 if($("scene"))$("scene").onchange=start;
 function start(opts){opts=opts||{};
+  if(_TM_EMBEDDED&&_activeBattleConfig&&!opts.armies)opts=_activeBattleConfig; // 重入不可换成内置萨尔浒名册
+  _benchedBattleUnits=[];
   const mapId=$("scene")?$("scene").value:"hunhe";loadMap(mapId);
   if(opts.sideName)MAP.sideName=opts.sideName;if(opts.lead)MAP.lead=opts.lead;   // ★接入:攻守 faction 名/敌帅覆盖(朝代中立)
   units=scenario(opts.armies?{M:opts.armies.ming,J:opts.armies.jin}:null).map((u,i)=>{const sub=u.sub||assignSub(u,i);return {...u,_srcId:(u.id!=null?u.id:null),id:"u"+i,sub,soldiers0:u.soldiers,leadership:u.mor,training:u.training||60,supply:u.supply||80,quality:u.quality||"普通",vet:vetInit(u.quality),vet0:vetInit(u.quality),sta:100,ammo:isShooterSub(sub)?ammoCapSub(sub):999,_inspireCd:0,_duelCd:0,_archeryCd:0,_chargeRun:0,_skillCd:0,_field:true,_holdFire:false,_prio:"near",facing:_faceAng(u.side),state:"steady",stance:"line",order:null,tx:null,ty:null,target:null,hidden:false,alive:true,_fcd:0,_meleeT:0};});
   units.forEach(u=>{if(u.emperor)u._marshal=true;if(hasFlag(u,"elite")){u.mor=clamp((u.mor||70)+8,0,100);u.leadership=u.mor;}});const _jm=units.find(u=>u.side==="jin"&&u.gen&&PERSONA[$("persona").value]&&u.gen.n===PERSONA[$("persona").value].label)||units.filter(u=>u.side==="jin").sort((a,b)=>(b.gen?b.gen.mil:0)-(a.gen?a.gen.mil:0))[0];if(_jm)_jm._marshal=true;
   spawnGenerals();   // ★抽出将领英雄单位·源阵列降麾下
-  _battleUnits0=units.map(u=>({id:u.id,_srcId:u._srcId,parentArmyId:u.parentArmyId!=null?u.parentArmyId:null,side:u.side,genName:u.gen?u.gen.n:null,emperor:!!u.emperor}));   // ★接入:开局花名册快照(结算回填·含战中被全歼移除者)
+  _battleUnits0=units.map(TMBattleCommand.snapshot);   // 稳定人物ID与指挥军群随开局快照保存；不把裨将作为战略人物写回。
   start0={ming:units.filter(u=>u.side==="ming").reduce((s,u)=>s+u.soldiers,0),jin:units.filter(u=>u.side==="jin").reduce((s,u)=>s+u.soldiers,0)};
   state={paused:true,phase:"compose",speed:1,over:false,captured:false,time:0,map:mapId,persona:$("persona").value,box:null,ori:null,groups:{},kia:{ming:0,jin:0},duels:0,hover:null,_aiSetup:false,edge:null,
     weather:($("weather")?$("weather").value:"clear"),reinfId:0,reinf:MAP.reinf(WORLD.w,WORLD.h)};
   sel.clear();floaters=[];shots=[];fx=[];decals=[];duels=[];_corpses=[];_dying=[];_debris=[];aiAccum=capAccum=defAccum=panelAccum=objAccum=duelAccum=0;cam={x:WORLD.w/2,y:WORLD.h*0.5,zoom:clamp(((W||1280)/WORLD.w)*0.92,0.085,0.4)};stopDrums();   // ★开局镜头居中+拉远展现辽阔疆场(floor降至0.085容大图)
+  if(TERR&&TERR.tactical){const d=_dirVec(),front=units.filter(u=>u.side==='ming'&&!u._hero),span=front.length>1?Math.max(...front.map(u=>_sideC(u)))-Math.min(...front.map(u=>_sideC(u)))+3000:6000;cam={x:WORLD.w/2-d.x*WORLD.h*.07,y:WORLD.h/2-d.y*WORLD.h*.07,zoom:Math.min(.15,(W||1280)*.75/Math.max(8500,span))};camYaw=_battleDir==='E'?-Math.PI/2:_battleDir==='W'?Math.PI/2:_battleDir==='S'?Math.PI:0;}
   $("over").style.display="none";$("log").innerHTML="";$("tip").style.display="none";setSpeed(1);$("btnPlay").textContent="▶ 开战";$("btnPlay").classList.add("go");refreshPanel();renderGroups();
   const _lead=(MAP.lead||PERSONA[state.persona].label),_en=$("enemyName");if(_en)_en.textContent=_lead;$("intent").innerHTML=PERSONA[state.persona].line.replace(/皇太极|代善|岳讬/g,_lead);   // 守卫:首次 start 后 #intent 重写已销毁 #enemyName，再战/重开不可再裸访问
-  const intro=MAP.intro(start0);log(intro.a,"big");log(`${intro.b} 敌将 ${_lead} 督师。`,"jin");
+  const intro=MAP.intro(start0);if(opts.armies){const escape=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));log(`${escape(sideCN('ming'))} ${start0.ming}众，${escape(sideCN('jin'))} ${start0.jin}众，于${escape(MAP.name||'此地')}列阵。`,"big");log(`敌将 ${escape(_lead)} 督师。将领资料取自本局人物，地形与天候由当前战场决定。`,"jin");}else{log(intro.a,"big");log(`${intro.b} 敌将 ${_lead} 督师。`,"jin");}
   if($("compose")){$("compose").style.display="flex";renderCompose();}
   updateHUD();
 }
 /* ===== 接入主天命:startBattle(config) 入口 + result 契约(§13.6) + postMessage 嵌入层(iframe) =====
    独立原型可被主游戏以 iframe 加载,postMessage 传 config 进、回吐 result 出;非嵌入(直接打开)时此层静默。 */
 function startBattle(config){config=config||{};_activeBattleConfig=config;   // ★主游戏注入:armies花名册/地图种子/天候/faction名/敌帅/地形档
+  for(const side of ['ming','jin'])if(!config.armies||!Array.isArray(config.armies[side])||!config.armies[side].some(u=>u&&Number.isFinite(Number(u.soldiers))&&Number(u.soldiers)>0))throw Error('未提供有效的交战双方名册');
   ['title','over','tip'].forEach(function(i){var e=document.getElementById(i);if(e)e.style.display='none';});   // ★嵌入:隐藏标题屏/结算/提示·直奔列阵
   if(config.mapSeed!=null)_GENSEED=(config.mapSeed>>>0)||1;
   _GENPROFILE=(config.terrainProfile||config.weather)?Object.assign({},config.terrainProfile||{},config.weather?{weather:config.weather}:{}):null;   // 省地形档→genMap(dens/biome/weather/provinceMeta)
@@ -2436,35 +2505,43 @@ function startBattle(config){config=config||{};_activeBattleConfig=config;   // 
   if($("scene"))$("scene").value=config.mapId||"proc";                        // proc=genMap(_GENSEED)·或固定图id(hunhe/songjin/yaoshan)
   if(config.weather&&$("weather"))$("weather").value=config.weather;
   start({armies:config.armies,sideName:config.sideName,lead:config.lead,emperorSide:config.emperorSide});
+  if(_TM_EMBEDDED){document.querySelectorAll('#compose .scen,#cmpEnemy,#cmpWeather,#persona,#weather,#btnRestart').forEach(e=>{e.disabled=true;e.title='本场军队、地形与天候由主游戏决定';});}
+  _ensureBattleLoop();
   if(config.observe&&typeof state!=="undefined"&&state){state.observe=true;try{banner("旁观战事","此战非御驾所将·天命自定·唯观之","aid");}catch(_o){}}   // ★旁观(O12·战况重演):封指挥·战果主游戏侧丢弃
   if(config.reserves&&typeof state!=="undefined"&&state){   // ★溢出队(>35/方)→援军波次涌入(接 reinf·从友方后缘·分波抱团)
     var waves=[],_hz=_dirHoriz();["ming","jin"].forEach(function(side){var res=config.reserves[side]||[];if(!res.length)return;   // ★援军自己方后缘沿主轴入场(jin=dir侧·ming对侧)·侧轴铺开·N默认=旧式南北缘
       var per=12,edge=(side==="jin")?(0.5+_rearSign()*0.47):(0.5-_rearSign()*0.47);
       for(var i=0;i<res.length;i+=per){var chunk=res.slice(i,i+per),wi=i/per;
         waves.push({t:38+wi*42,side:side,done:false,units:chunk.map(function(u,j){var sp=0.30+0.40*(chunk.length>1?j/(chunk.length-1):0.5);var o={};for(var k in u)if(u.hasOwnProperty(k))o[k]=u[k];o.side=side;if(_hz){o.x=clamp(WORLD.w*edge,40,WORLD.w-40);o.y=clamp(WORLD.h*sp,40,WORLD.h-40);}else{o.x=clamp(WORLD.w*sp,40,WORLD.w-40);o.y=clamp(WORLD.h*edge,40,WORLD.h-40);}return o;})});}});
+    for(const [i,w] of waves.entries())for(const [j,u] of w.units.entries()){u._battleReserveId='reserve:'+w.side+':'+i+':'+j;_battleUnits0.push(TMBattleCommand.snapshot({...u,id:u._battleReserveId,_srcId:u.id}));}
     if(waves.length)state.reinf=(state.reinf||[]).concat(waves);
   }
   return {ok:true,map:MAP&&MAP.name,units:units.length,reinfWaves:(state&&state.reinf&&state.reinf.length)||0};
 }
 function _collectResult(){                                                    // ★§13.6 result 契约:逐队幸存/将领命运/要地/御营/对账损失
   const byid={};for(const u of units)byid[u.id]=u;
-  const reg=_battleUnits0||units.map(u=>({id:u.id,_srcId:u._srcId,parentArmyId:u.parentArmyId!=null?u.parentArmyId:null,side:u.side,genName:u.gen?u.gen.n:null,emperor:!!u.emperor}));
+  for(const u of _benchedBattleUnits)byid[u.id]=u;
+  for(const w of state.reinf||[])if(!w.done)for(const u of w.units||[])if(u._battleReserveId)byid[u._battleReserveId]=u; // 尚未入场的预备队完整幸存，不参与场上伤亡。
+  const reg=_battleUnits0||units.map(TMBattleCommand.snapshot);
   const outcome=(state._finalVerdict&&state._finalVerdict.outcome)||(state.captured?"loss":(broken("jin")&&!broken("ming"))?"win":broken("ming")?"loss":(armyPower("ming")>=armyPower("jin")?"win":"loss"));   // ★复用 victoryCheck/代战 落定的裁定(含要地加成)·仅裸调无裁定时回退原公式·绝不二套重算
   return {
     outcome, flipped:false,                                                  /* flipped 待抽象带预测器(§13.2)接入后判 swing 翻盘 */
     units:reg.map(r=>{const u=byid[r.id];return {id:r._srcId!=null?r._srcId:r.id,parentArmyId:r.parentArmyId,side:r.side,survivors:u?Math.max(0,Math.round(u.soldiers||0)):0};}),   // 全歼者 survivors=0
-    commanders:reg.filter(r=>r.genName).map(r=>{const u=byid[r.id];return {id:r._srcId!=null?r._srcId:r.id,name:r.genName,side:r.side,fate:(r.emperor&&state.captured)?"captured":!u?"killed":u.state==="rout"?"fled":"safe"};}),
+    commanders:TMBattleCommand.fates(reg,byid,state.captured),
     objective:{holder:(state.obj&&state.obj.owner)||null,points:(MAP&&MAP._objs&&MAP._objs.length>1)?MAP._objs.map(function(o,k){return {name:o.name,key:o.key||"hill",holder:((state.objs&&state.objs[k])||{}).owner||null};}):undefined},   // ★多要地控制表(单点省略·§13.6扩)
     emperorSafe:!state.captured,
     casualtiesBySide:{ming:Math.max(0,(start0?start0.ming:0)-liveTroops("ming")),jin:Math.max(0,(start0?start0.jin:0)-liveTroops("jin"))}
   };
 }
 try{if(typeof window!=="undefined"){
-  window.addEventListener("message",function(e){const d=(e&&e.data)||{};
-    if(d.type==="startBattle"){try{startBattle(d.config);}catch(err){_battleDir=null;try{window.parent.postMessage({type:"battleError",error:String((err&&err.message)||err)},"*");}catch(_){}}}
-    else if(d.type==="abort"){_battleDir=null;try{window.parent.postMessage({type:"battleAborted"},"*");}catch(_){}}   // 放弃→主游戏侧转抽象自动解算·清来向(standalone残留堵)
+  window.addEventListener("message",function(e){if(!_TM_EMBEDDED||e.source!==window.parent)return;const d=(e&&e.data)||{};
+    if(d.type==="startBattle"){try{
+      if(!_battleSessionId||_battleSessionId!==d.sessionId){startBattle(d.config);_battleSessionId=d.sessionId||'legacy';}
+      window.parent.postMessage({type:"battleStarted",sessionId:d.sessionId},"*");
+    }catch(err){_battleDir=null;try{window.parent.postMessage({type:"battleError",sessionId:d.sessionId,error:String((err&&err.message)||err)},"*");}catch(_){}}}
+    else if(d.type==="abort"&&(!d.sessionId||d.sessionId===_battleSessionId)){_battleDir=null;try{window.parent.postMessage({type:"battleAborted",sessionId:_battleSessionId},"*");}catch(_){}}
   });
-  if(window.parent&&window.parent!==window){try{window.parent.postMessage({type:"battleReady"},"*");}catch(_){}}   // 就绪握手
+  if(_TM_EMBEDDED)window.addEventListener('error',function(e){window.parent.postMessage({type:'battleError',sessionId:_battleSessionId,error:e.message||'战场脚本异常'},'*');});
 }}catch(_){}
 function log(html,cls){const d=document.createElement("div");d.className=(cls||"")+(html.includes("<b>")?" big":"");d.innerHTML=html;const L=$("log");L.appendChild(d);L.scrollTop=L.scrollHeight;}
 if($("scene")&&$("weather")){const dm=MAPS[$("scene").value];if(dm&&dm.weather)$("weather").value=dm.weather;}
@@ -2491,10 +2568,16 @@ if($("scene")&&$("weather")){const dm=MAPS[$("scene").value];if(dm&&dm.weather)$
   const r=$("pauseResume");if(r)r.onclick=function(){p.classList.remove("show");if(typeof setPlay==="function")setPlay(false);};
   const h=$("pauseHome");if(h)h.onclick=function(){p.classList.remove("show");const o=$("over");if(o)o.style.display="none";try{start();}catch(_){}if(window._showTitle)window._showTitle();};
 })();
-start();requestAnimationFrame(loop);
+if(!_TM_EMBEDDED){start();_ensureBattleLoop();}
+else{ // 嵌入态不先启动内置大军/标题3D；等真实名册，避免无关GPU初始化阻塞握手。
+  $('title').style.display='none';
+  document.addEventListener('DOMContentLoaded',function(){window.parent.postMessage({type:'battleReady'},'*');},{once:true});
+  $('pauseHome').onclick=function(){window.parent.postMessage({type:'battleAborted',sessionId:_battleSessionId},'*');};
+}
 /* ===== 标题屏 · 3D 镇屏卫士(展示位 · 零依赖手写WebGL · 与战斗渲染/sim 完全无关 · 失败优雅隐藏) ===== */
 (function(){
   var cvs=document.getElementById('heroGL'), titleEl=document.getElementById('title');
+  if(_TM_EMBEDDED){if(cvs)cvs.style.display='none';return;}
   if(!cvs||!titleEl) return;
   var hgl=null; try{ hgl=cvs.getContext('webgl',{antialias:true,alpha:true,premultipliedAlpha:false})||cvs.getContext('experimental-webgl'); }catch(_){}
   if(!hgl){ cvs.style.display='none'; return; }

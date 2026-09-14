@@ -7,24 +7,38 @@
 (function () {
   'use strict';
   var pending = [];   // 本回合延后的玩家势力战斗
+  var activeRun = null, activeGame = null;
 
   function W() { return (typeof window !== 'undefined') ? window : null; }
-  function enabled(GM) { return !!(GM && (GM._yujiaQinzheng || (GM.settings && GM.settings.yujiaQinzheng))); }
+  function enabled(GM) { return !!(GM && (typeof GM._yujiaQinzheng === 'boolean' ? GM._yujiaQinzheng : (GM.settings && GM.settings.yujiaQinzheng))); }
   function playerFaction(GM) {
     var w = W(), P = w && w.P;
-    return (P && P.playerInfo && P.playerInfo.factionName) || (GM && GM.playerFaction) || null;
+    if (w && w.MilitarySystems && w.MilitarySystems.battlePlayerFaction) return w.MilitarySystems.battlePlayerFaction(GM);
+    return (P && P.playerInfo && P.playerInfo.factionName) || (GM && (GM.playerFactionName || GM.playerFaction)) || null;
   }
   function findArmy(GM, id) {
     if (!GM || !Array.isArray(GM.armies)) return null;
-    for (var i = 0; i < GM.armies.length; i++) if (GM.armies[i] && GM.armies[i].id === id) return GM.armies[i];
+    var ms = W() && W().MilitarySystems;
+    if (ms && ms.findBattleArmy) return ms.findBattleArmy(id, GM);
+    for (var i = 0; i < GM.armies.length; i++) if (GM.armies[i] && (GM.armies[i].id === id || GM.armies[i].name === id)) return GM.armies[i];
     return null;
+  }
+  function participants(br, GM) {
+    var ms = W() && W().MilitarySystems;
+    if (ms && ms.battleParticipants) return ms.battleParticipants(br, GM);
+    return (br.affectedArmies || []).map(function(e) { return { army: findArmy(GM, e.armyId || e.name || e.id), entry: e, side: e.side }; }).filter(function(e) { return e.army; });
+  }
+  function sameBattle(a, b) { return a === b || !!(a && b && (a.battleId || a.id) && String(a.battleId || a.id) === String(b.battleId || b.id)); }
+  function sameFaction(a, b, GM) {
+    var ms = W() && W().MilitarySystems;
+    return ms && ms.battleFactionName ? ms.battleFactionName(a, GM) === ms.battleFactionName(b, GM) : a === b;
   }
   function involvesPlayer(br, GM) {
     if (!br || !enabled(GM)) return false;
     if (br._fromTactical) return false;                          // 战术回填的不再拦(防环)
     var pf = playerFaction(GM); if (!pf) return false;
-    var aa = br.affectedArmies || [];
-    for (var i = 0; i < aa.length; i++) { var a = findArmy(GM, aa[i].armyId); if (a && a.faction === pf) return true; }
+    var aa = participants(br, GM);
+    for (var i = 0; i < aa.length; i++) { var a = aa[i].army; if (a && sameFaction(a.faction, pf, GM)) return true; }
     return (br.winnerFactionId === pf || br.loserFactionId === pf);
   }
 
@@ -32,16 +46,22 @@
   function maybeDefer(br, GM) {
     if (!involvesPlayer(br, GM)) return false;
     var pf = playerFaction(GM), pArmies = [], eArmies = [];
-    (br.affectedArmies || []).forEach(function (aa) { var a = findArmy(GM, aa.armyId); if (a) { (a.faction === pf ? pArmies : eArmies).push(a); } });
+    participants(br, GM).forEach(function (aa) { var a = aa.army; if (a) { (sameFaction(a.faction, pf, GM) ? pArmies : eArmies).push(a); } });
     if (!pArmies.length) return false;                           // 没解析到玩家军→不拦(安全)
+    var ms = W() && W().MilitarySystems;
+    if (ms && ms.ensureBattleId) ms.ensureBattleId(br, GM);
+    if (ms && ms.findSettledBattle && ms.findSettledBattle(br, GM)) return false;
+    if (pending.some(function(item) { return item.game === GM && sameBattle(item.battleResult, br); })) return true;
     var prov = (pArmies[0] && (pArmies[0].location || pArmies[0].garrison)) || '';
-    pending.push({ battleResult: br, playerArmies: pArmies, enemyArmies: eArmies, provinceName: prov });
-    try { GM._pendingAbstractBattles = GM._pendingAbstractBattles || []; GM._pendingAbstractBattles.push(br); } catch (e) {}   // ★持久化镜像(随存档)·会战阶段中断也不丢→recoverPending 抽象兜底
+    pending.push({ battleResult: br, playerArmies: pArmies, enemyArmies: eArmies, provinceName: prov, game: GM });
+    try { GM._pendingAbstractBattles = GM._pendingAbstractBattles || []; if (!GM._pendingAbstractBattles.some(function(old) { return sameBattle(old, br); })) GM._pendingAbstractBattles.push(br); } catch (e) {}   // ★持久化镜像(随存档)·会战阶段中断也不丢→recoverPending 抽象兜底
     return true;
   }
-  function dropPersisted(GM, br) { try { var arr = GM && GM._pendingAbstractBattles; if (Array.isArray(arr)) { var i = arr.indexOf(br); if (i >= 0) arr.splice(i, 1); } } catch (e) {} }
+  function dropPersisted(GM, br) { try { var arr = GM && GM._pendingAbstractBattles; if (Array.isArray(arr)) { for (var i = arr.length - 1; i >= 0; i--) if (sameBattle(arr[i], br)) arr.splice(i, 1); } } catch (e) {} }
   function recoverPending(GM) {   /* 排空持久化残留(上回合会战阶段中断遗留)→抽象兜底落地·该战不丢 */
-    try { var arr = GM && GM._pendingAbstractBattles; if (Array.isArray(arr) && arr.length) { arr.splice(0).forEach(function (br) { try { applyReal(br, GM); } catch (e) {} }); } } catch (e) {}
+    if (activeRun && activeGame === GM) return;
+    var arr = GM && GM._pendingAbstractBattles;
+    if (Array.isArray(arr)) arr.slice().forEach(function(br) { try { var r = applyReal(br, GM); if (!r || r.ok !== false) dropPersisted(GM,br); } catch (e) { if (W() && W().console) W().console.warn('[会战恢复] 尚未落地，保留待恢复战果', e); } });
   }
 
   /* 会战缴获:战果应用后一次(防双扣 _spoilsDone)·胜方从败方参战部队装备缴获入武库(玩家败则己方折损) */
@@ -69,11 +89,22 @@
   }
   function applyReal(br, GM) {
     var w = W(), MS = w && w.MilitarySystems;
+    if (w && w.GM && w.GM !== GM) return { ok: false, reason: 'stale-game' }; // 读入另一存档后旧异步战果不得写入
     var fn = MS && (MS._origApplyBattleResult || MS.applyBattleResult);
-    if (typeof fn === 'function') { try { fn.call(MS, br, GM); } catch (e) {} }
-    _spoils(br, GM);
-    _gainPostBattleVeterancy(br, GM);   // 战后历练(玩家军·按减员率·仅御驾亲征流程→flag-gated)
-    _postBattleRetreat(br, GM);         // O2 战后溃退(败方退最近友控邻省/被围重损请降·仅御驾亲征流程→flag-gated)
+    var applied = typeof fn === 'function' ? fn.call(MS, br, GM) : null;
+    if (applied && (applied.ok === false || applied.duplicate)) return applied;
+    var outcome = applied && applied.result ? Object.assign({}, br, applied.result) : br;
+    _spoils(outcome, GM);
+    _gainPostBattleVeterancy(outcome, GM);
+    _postBattleRetreat(outcome, GM);
+    (GM && GM.activeBattles || []).forEach(function(battle) {
+      if (sameBattle(battle, br) || sameBattle(battle.battleResult || battle.structuredVerdict || battle.structuredResult, br)) {
+        battle.phase = 'resolved'; battle.result = applied && applied.result || outcome;
+        if (w.TMBattleAdapter && w.TMBattleAdapter.stampResultContext) w.TMBattleAdapter.stampResultContext(battle.result, battle, GM);
+        GM._turnBattleResults = GM._turnBattleResults || []; if (!GM._turnBattleResults.some(function(r) { return sameBattle(r, battle.result); })) GM._turnBattleResults.push(battle.result); // arch-ok: battle settlement owns the resolved battle report
+      }
+    });
+    return applied;
   }
 
   /* ── O2 撤退/追击(v2·§9):败方军沿邻接退最近友控邻省·无路可退=被围(重损/低士气请降)。
@@ -154,8 +185,9 @@
   }
   function emperorName(GM) {   /* 皇帝角色(朝代中立:role/officialTitle==='皇帝'·不锁单朝) */
     if (!GM || !Array.isArray(GM.chars)) return null;
-    for (var i = 0; i < GM.chars.length; i++) { var c = GM.chars[i]; if (c && !c.dead && (c.role === '皇帝' || c.officialTitle === '皇帝')) return c.name || c['姓名'] || null; }
-    return null;
+    var living = GM.chars.filter(function(c) { return c && !c.dead && c.alive !== false; });
+    var c = living.find(function(c) { return c.isPlayer || (GM.playerCharId && c.id === GM.playerCharId); }) || living.find(function(c) { return c.role === '皇帝' || c.officialTitle === '皇帝'; });
+    return c && (c.name || c['姓名']) || null;
   }
   function emperorArmyId(GM, pArmies) {
     /* 御营=御驾亲征者所在军:① 皇帝亲领(commander===皇帝名) ② 标御营/亲军名 ③ 御驾随最大军(兜底) */
@@ -204,19 +236,20 @@
   var STRAT = { aggressive: { p: 1.12, e: 1.15 }, cautious: { p: 0.85, e: 0.92 } };
   function applyDelegate(item, strategy, GM) {
     var br = item.battleResult;
-    if (!strategy || !(br && br.affectedArmies)) { applyReal(br, GM); return; }
+    if (!strategy || !br) return applyReal(br, GM);
     var pIds = {}; item.playerArmies.forEach(function (a) { if (a) pIds[a.id] = true; });
     var swift = (strategy === 'swift'), good = swift && (Math.random() < 0.5);
     var f = STRAT[strategy] || { p: 1, e: 1 };
     var scaled = {}; for (var k in br) if (br.hasOwnProperty(k)) scaled[k] = br[k];
-    scaled.affectedArmies = (br.affectedArmies || []).map(function (aa) {
-      var isP = !!pIds[aa.armyId], mul = swift ? (isP ? (good ? 0.9 : 1.3) : (good ? 1.4 : 0.8)) : (isP ? f.p : f.e);
+    var rows = participants(br, GM).map(function(p) { return Object.assign({}, p.entry, { armyId: p.army.id || p.army.name, side: p.side }); });
+    scaled.affectedArmies = (rows.length ? rows : (br.affectedArmies || [])).map(function (aa) {
+      var army = findArmy(GM, aa.armyId), isP = !!pIds[army && army.id || aa.armyId], mul = swift ? (isP ? (good ? 0.9 : 1.3) : (good ? 1.4 : 0.8)) : (isP ? f.p : f.e);
       var o = {}; for (var k2 in aa) if (aa.hasOwnProperty(k2)) o[k2] = aa[k2];
       o.loss = Math.max(0, Math.round((aa.loss || 0) * mul)); return o;
     });
     scaled._strategy = strategy;
     scaled.affectedArmies.forEach(function (aa) { var a = findArmy(GM, aa.armyId); if (a) a._battleResultTurn = undefined; });
-    applyReal(scaled, GM);
+    return applyReal(scaled, GM);
   }
   function mkBtn(t, c) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.style.cssText = 'font:14px serif;color:#fff;background:' + c + ';border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:9px 14px;cursor:pointer;'; return b; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); }
@@ -450,14 +483,15 @@
   /* 会战阶段:逐场处理延后队列(管线 step 调·flag 关时 pending 恒空=no-op) */
   function runPending(GM) {
     GM = GM || (W() && W().GM);
+    if (activeRun && activeGame === GM) return activeRun;
     if (!pending.length) { recoverPending(GM); return _offerObserve(GM); }   // 无新战仍排空持久化残留→抽象兜底·再offer他方战事旁观(O12)
-    var queue = pending.splice(0);
+    var queue = pending.splice(0).filter(function(item) { return !item.game || item.game === GM; });
     var w = W();
     var reports = [];   // 会战战报小结(整编归伍·informational)累计
     var _learn = (w && w.TMArmyUnits && typeof w.TMArmyUnits.learnUnknownTypes === 'function')
       ? Promise.resolve().then(function () { return w.TMArmyUnits.learnUnknownTypes(GM); }).catch(function () {})   // ★第4层:会战前补学生僻兵种(次级LLM记忆化·flag-gated·无key/无生僻则no-op)→兵牌tacClass精确
       : Promise.resolve();
-    return queue.reduce(function (chain, item) {
+    var run = queue.reduce(function (chain, item) {
       return chain.then(function () {
         var preS = {}; (item.playerArmies || []).forEach(function (a) { if (a) preS[a.id] = Math.max(0, +(a.soldiers || a.strength || 0) || 0); });   // 战前兵力快照→算战损
         return Promise.resolve().then(function () {
@@ -471,29 +505,31 @@
             : promptCombatChoice(item, band);
           return _pick.then(function (pick) {
             var choice = (pick && pick.choice) || 'delegate', strategy = pick && pick.strategy;
-            if (choice !== 'fight' || !w.TMBattleAdapter || !w.TMBattleEmbed || !w.TMBattleResolve) {
-              applyDelegate(item, strategy, GM); return;                 // 委之(方略拨原结果)/件缺→落地
+            if (choice !== 'fight' || !item.enemyArmies.length || !w.TMBattleAdapter || !w.TMBattleEmbed || !w.TMBattleResolve) {
+              return applyDelegate(item, strategy, GM);                 // 委之(方略拨原结果)/件缺→落地
             }
             var cfg = w.TMBattleAdapter.buildBattleConfig(item.playerArmies, item.enemyArmies, {
               provinceName: item.provinceName, playerFactionName: pf, enemyFactionName: ef, GM: GM,
               emperorArmyId: emperorArmyId(GM, item.playerArmies)
             });
             return w.TMBattleEmbed.launch(cfg).then(function (tac) {
-              if (!tac) { applyDelegate(item, null, GM); return; }        // 放弃→委之(原结果)
+              if (!tac || tac.error || !/^(win|loss|draw)$/.test(tac.outcome || '') || !Array.isArray(tac.units)) return applyDelegate(item, null, GM); // 放弃/启动错误不是战败；回原庙算
               var br = w.TMBattleResolve.tacticalToBattleResult(tac, {
                 playerArmies: item.playerArmies, enemyArmies: item.enemyArmies, band: band,
                 playerFactionName: pf, enemyFactionName: ef,
-                abstractBr: item.battleResult              // 抽象原产战果→战略字段透传(占城翻省/战后效应·胜负一致才承接·翻盘剥除)
+                abstractBr: item.battleResult, GM: GM     // 抽象原产战果→战略字段透传(占城翻省/战后效应·胜负一致才承接·翻盘剥除)
               });
               (br.affectedArmies || []).forEach(function (aa) { var a = findArmy(GM, aa.armyId); if (a) a._battleResultTurn = undefined; });   // 清防双扣标→强制应用战术战果
-              applyReal(br, GM);
+              return applyReal(br, GM);
             });
           });
         }).catch(function (e) {
-          try { applyDelegate(item, null, GM); } catch (_) {}            // ★单场出错→抽象兜底落地·该战绝不丢
-        }).then(function () { dropPersisted(GM, item.battleResult); _collectReport(reports, item, preS, GM); });  // 结算完→撤持久化镜像 + 收战报
+          return applyDelegate(item, null, GM);                          // 单场出错尝试原庙算；仍失败则保留存档镜像
+        }).then(function (result) { if (!result || result.ok !== false) { dropPersisted(GM, item.battleResult); _collectReport(reports, item, preS, GM); } });
       });
-    }, _learn).then(function () { return showBattleReport(reports, GM); }).then(function () { return _offerObserve(GM); }).then(function () { recoverPending(GM); });     // ★seed=_learn(会战前补学生僻兵种) + 战报小结(整编归伍·补员交互) + 他方战事旁观(O12) + 末了排空残留→抽象兜底
+    }, _learn).then(function () { return showBattleReport(reports, GM); }).then(function () { return _offerObserve(GM); });
+    var tracked = run.then(function() { if (activeRun === tracked) { activeRun = null; activeGame = null; } recoverPending(GM); }, function(error) { if (activeRun === tracked) { activeRun = null; activeGame = null; } throw error; });
+    activeRun = tracked; activeGame = GM; return tracked;
   }
 
   /* 包裹单一咽喉 MilitarySystems.applyBattleResult(bulletproof·幂等) */
@@ -505,11 +541,11 @@
     MS.applyBattleResult = function (br, root) {
       try {
         var GM = root || (W() && W().GM) || null;
-        if (maybeDefer(br, GM)) return undefined;                   // 涉玩家+开启→延后·跳过立即抽象结算
+        if (maybeDefer(br, GM)) return { ok: false, deferred: true, battleId: br.battleId || br.id || null }; // 延后不冒充已落地
         _snapshotObserve(br, GM);                                   // O12:纯NPC战·旁观开启→变异前快照名册(抽象照常落地·会战阶段可重演)
       } catch (e) { /* 拦截出错→退回原咽喉·绝不弄坏战斗 */ }
       var _r = orig.call(this, br, root);
-      _spoils(br, root || (W() && W().GM));                         // 透传战(flag关/非玩家)→战果应用后缴获
+      if (!(_r && _r.duplicate)) _spoils(br, root || (W() && W().GM)); // 重试不重复缴获
       return _r;
     };
     MS._battleHookInstalled = true;
@@ -517,6 +553,7 @@
   }
 
   var API = {
+    enabled: enabled,
     runPending: runPending, installHook: installHook, maybeDefer: maybeDefer, applyDelegate: applyDelegate,
     recoverPending: recoverPending, emperorArmyId: emperorArmyId, emperorName: emperorName,
     replenishQuote: replenishQuote, applyReplenish: applyReplenish,

@@ -5760,6 +5760,15 @@
         return;
       }
       var r = api.applyBattleResult(aiOutput.battleResult, G);
+      if (r && r.deferred) {
+        aiOutput.battleResult._applierAftermathPending = true;
+        if (applied) {
+          applied.semantic = applied.semantic || {};
+          applied.semantic.battleResultDeferred = 1;
+        }
+        return;
+      }
+      if (r && r.duplicate && arguments[3] !== r.result) return;
       if (r && r.ok) {
         if (applied) {
           if (!applied.semantic) applied.semantic = {};

@@ -13,8 +13,10 @@
   }
 
   /* 主将名 → 战斗 gen{n,valor,mil,int}(翻 GM.chars·缺则中庸默认·永不崩) */
-  function genFor(commander, GMref, commanderId) {
-    var name = commander || '';
+  function resolveCommander(commander, GMref, commanderId) {
+    var object = commander && typeof commander === 'object' ? commander : null;
+    var name = String(object ? (object.name || object['姓名'] || '') : (commander || '')).trim();
+    commanderId = commanderId || (object && (object.id || object.characterId || object.charId)) || '';
     var g = GMref || (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
     var c = null;
     if (g && Array.isArray(g.chars) && (name || commanderId)) {
@@ -30,17 +32,33 @@
         if (nameMatches.length === 1) c = nameMatches[0];
       }
     }
-    function pick(o, keys, d) { for (var k = 0; k < keys.length; k++) { if (o && o[keys[k]] != null) return o[keys[k]]; } return d; }
+    return { character: c, name: name, requestedId: commanderId };
+  }
+  function genFor(commander, GMref, commanderId) {
+    var resolved = resolveCommander(commander, GMref, commanderId), c = resolved.character, name = resolved.name, defaultStats = [];
+    function pick(o, keys, d) {
+      var pools = o ? [o, o.abilities, o.stats, o.attributes, o.capabilities] : [];
+      for (var p = 0; p < pools.length; p++) for (var k = 0; k < keys.length; k++) {
+        var raw = pools[p] && pools[p][keys[k]];
+        if ((typeof raw !== 'number' && typeof raw !== 'string') || String(raw).trim() === '') continue;
+        var n = Number(raw); if (Number.isFinite(n)) return Math.max(0, Math.min(100, Math.round(n)));
+      }
+      defaultStats.push(keys[0]); return d;
+    }
     return {
       n: (c && (c.name || c['姓名'])) || name || '裨将',
-      valor: c ? Math.round(pick(c, ['valor', '武力', '勇武'], 60)) : 60,
-      mil: c ? Math.round(pick(c, ['military', '军事', '统率', '将略'], 62)) : 62,
-      int: c ? Math.round(pick(c, ['intelligence', '智力', '智'], 55)) : 55
+      characterId: c ? String(c.id || c.characterId || c.charId || '') : '',
+      recognized: !!c, role: name || c || resolved.requestedId ? 'commander' : 'deputy',
+      available: !(c && (c.alive === false || c.dead === true || c.capturedBy)),
+      defaultStats: defaultStats,
+      valor: pick(c, ['valor', '武力', '勇武', '武勇'], 60),
+      mil: pick(c, ['military', '军事', '统率', '将略', 'mil'], 62),
+      int: pick(c, ['intelligence', '智力', '智谋', '智', 'int'], 55)
     };
   }
   /* 麾下分队主官(裨将·主将的削弱影子·避免每队都成具名英雄) */
   function deputyGen(gen) {
-    return { n: '裨将', valor: Math.max(38, (gen.valor || 60) - 18), mil: Math.max(38, (gen.mil || 62) - 14), int: Math.max(38, (gen.int || 55) - 8) };
+    return { n: '裨将', role: 'deputy', valor: Math.max(38, gen.valor - 18), mil: Math.max(38, gen.mil - 14), int: Math.max(38, gen.int - 8) };
   }
 
   /* 装备态→品质降级(武库供械不足→战术战斗品质降·与 calculateArmyStrength equipMod 呼应) */
@@ -89,6 +107,7 @@
       var isEmp = emperorArmyId != null && (a.id === emperorArmyId);
       us.filter(function (u) { return u && Number(u.men) > 0; }).forEach(function (u, i) {
         var tok = unitToToken(u, a, i === 0 ? gen : dep);
+        tok.commandGen = gen; tok.commandKey = gen.characterId ? 'id:' + gen.characterId : 'army:' + a.id;
         if (isEmp && i === 0) tok.emperor = true;   // 御营=御驾亲征者所在军的首队(天子亲临·护住御营)
         out.push(tok);
       });
@@ -346,7 +365,7 @@
     var weather = opts.weather || deriveWeather(G, provinceName);                            // 未显式给→由季节推导(冬→雪·春秋按省址+回合确定性小概率雾)
     var ming = sideTokens(playerArmies, G, opts.emperorArmyId);
     var jin = sideTokens(enemyArmies, G, null);
-    var enemyLead = (enemyArmies && enemyArmies[0] && enemyArmies[0].commander) || '敌帅';
+    var enemyLead = jin.length && jin[0].commandGen ? jin[0].commandGen.n : '敌帅';
     var mSel = selectOnField(ming, ONFIELD_CAP), jSel = selectOnField(jin, ONFIELD_CAP);   // 兵种分层取样(非按队序截断)
     var tp = terrainProfile(terrainTag);                                                    // {dens,biome,语义位} 或 null
     var pMeta = provinceMeta(G, p0, (enemyArmies && enemyArmies[0]) || null, provinceName, terrainTag);   // 省实况(省会/资源/海岸方位/敌军来向)
@@ -374,7 +393,7 @@
 
   var API = {
     buildBattleConfig: buildBattleConfig, sideTokens: sideTokens, unitToToken: unitToToken, selectOnField: selectOnField, degradeQualityByEquip: degradeQualityByEquip,
-    genFor: genFor, qualityFromVet: qualityFromVet, provinceSeed: provinceSeed, terrainProfile: terrainProfile,
+    genFor: genFor, resolveCommander: resolveCommander, qualityFromVet: qualityFromVet, provinceSeed: provinceSeed, terrainProfile: terrainProfile,
     resolveTerrainTag: resolveTerrainTag, deriveWeather: deriveWeather, seasonOf: seasonOf,
     provinceMeta: provinceMeta, stampResultContext: stampResultContext,
     ONFIELD_CAP: ONFIELD_CAP

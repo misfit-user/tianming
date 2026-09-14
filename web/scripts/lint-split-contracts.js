@@ -14,6 +14,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** index.html 入口的拆分家族（含 origin 自身·按应有顺序） */
 const CONTRACTS = [
+  ['tm-military.js', 'tm-battle-contract.js'], // 新战斗契约扩展须紧邻原写口，同对象注册
   // 第一拆+第八拆(二切)：tm-tinyi-v3 四片
   ['tm-tinyi-v3-persona.js', 'tm-tinyi-v3.js', 'tm-tinyi-v3-edict-personnel.js', 'tm-tinyi-v3-parties.js'],
   // 第二拆：tm-chaoyi-changchao 三片
@@ -71,6 +72,7 @@ const CONTRACTS = [
 
 /** editor.html 入口的拆分家族（编辑器侧巨石） */
 const EDITOR_CONTRACTS = [
+  ['tm-military.js', 'tm-battle-contract.js'],
   // 第十八拆(真 IIFE ui-bucket 范式)：editor-authoring-agent-ui 三片·icons 在 origin【前】(叶子·发布_icon/injectStyles/_TOOL_ICON)
   //   render 在 origin【后】(纯消费·读 ui 共享单例+origin 助手)·origin 反向 shim 委托两侧。preview 双入口同步(未被本 lint 校验)
   ['editor-authoring-agent-ui-icons.js', 'editor-authoring-agent-ui.js', 'editor-authoring-agent-ui-render.js'],

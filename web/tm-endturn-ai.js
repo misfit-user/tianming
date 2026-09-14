@@ -725,7 +725,7 @@
       military_situation: { type: 'string' }, war_probability: { type: 'array', items: { type: 'object', additionalProperties: true } },
       supplementary_army_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
       faction_military_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      battleResult: { type: 'object', additionalProperties: true }, power_balance_shift: { type: 'string' }
+      battleResult: { type: 'object', additionalProperties: true }, battleResults: { type: 'array', items: { type: 'object', additionalProperties: true } }, power_balance_shift: { type: 'string' }
     }, required: [] } };
   }
   function _buildSc2JsonSchema() {
@@ -911,6 +911,7 @@
       GM._aiDispatchStats.errors = Number(GM._aiDispatchStats.errors) || 0;
       async function _runSubcall(id, name, minDepth, fn) {
         var _depthOrder = {lite:0, standard:1, full:2};
+        if (id === 'sc18' && window.TMBattleTurn && window.TMBattleTurn.enabled(GM)) minDepth = 'lite'; // 亲征事件不可被分析深度开关裁掉
         if (_depthOrder[_aiDepth] < _depthOrder[minDepth]) {
           _dbg('[' + id + '] 跳过(depth=' + _aiDepth + '<' + minDepth + ')');
           if (typeof setAIBranchDiagnostic === 'function') setAIBranchDiagnostic(id, 'skipped', 'depth=' + _aiDepth + '<' + minDepth);

@@ -15,6 +15,11 @@ try {
   if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   if (argv.includes('--seven-ui')) modes.splice(0, modes.length, 'seven-ui');
   if (argv.includes('--office-writeback')) modes.splice(0, modes.length, 'office-writeback');
+  if (argv.includes('--startup-autosave')) modes.splice(0, modes.length, 'startup-autosave');
+  if (argv.includes('--personal-campaign')) modes.splice(0, modes.length, 'personal-campaign');
+  if (argv.includes('--tactical-terrain')) modes.splice(0, modes.length, 'tactical-terrain');
+  if (argv.includes('--tactical-phase2')) modes.splice(0, modes.length, 'tactical-phase2');
+  if (argv.includes('--tactical-units')) modes.splice(0, modes.length, 'tactical-units');
   const runtime = require('electron');
   if (!fs.existsSync(runtime)) throw new Error('electron-runtime-missing: run node node_modules/electron/install.js after npm ci --ignore-scripts');
   for (const mode of modes) {
@@ -24,9 +29,14 @@ try {
     const env = { ...process.env, TM_BRIDGE_TEST_ROOT: repo, TM_BRIDGE_TEST_REPORT: file, TM_BRIDGE_TEST_MODE: mode, TM_BRIDGE_TEST_BASELINE: report.baseline ? '1' : '0', TM_BRIDGE_TEST_USERDATA: userData };
     delete env.ELECTRON_RUN_AS_NODE;
     delete env.TIANMING_TEST_EXPORTS;
+    if (argv.includes('--trace-gpu')) env.TM_BRIDGE_TACTICAL_TRACE = '1';
+    if (argv.includes('--foreground')) env.TM_BRIDGE_TACTICAL_FOREGROUND = '1';
+    if (argv.includes('--profile-tactical')) env.TM_BRIDGE_TACTICAL_PROFILE = '1';
     if (argv.includes('--scenario')) env.TM_RELIEF_SCENARIO = argv[argv.indexOf('--scenario') + 1];
     if (argv.includes('--relief-inspect-small')) env.TM_RELIEF_SMALL_FIXTURE = '1';
-    const run = cp.spawnSync(runtime, [path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
+    // Full ES-driver stress is distinct from Chromium's ordinary software WebGL fallback.
+    const electronArgs = argv.includes('--software-gpu') ? ['--use-gl=angle', '--use-angle=swiftshader'] : argv.includes('--software-webgl') ? ['--disable-gpu'] : [];
+    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
     fs.writeFileSync(path.join(reportDir, mode + '.log'), (run.stdout || '') + (run.stderr || ''));
     const detail = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
     const ok = !run.error && !run.signal && run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;

@@ -2,11 +2,11 @@
   "version": 2,
   "source": "index.html",
   "generatedBy": "web/scripts/build-startup-phase-manifest.js",
-  "scriptCount": 415,
+  "scriptCount": 416,
   "phaseCounts": {
     "menu": 14,
     "core": 83,
-    "world": 296,
+    "world": 297,
     "optional": 22
   },
   "deferredChangesApproved": 8,
@@ -3248,8 +3248,10 @@
         "_validatePreEndturnSnapshot",
         "closeSaveManager",
         "deleteSaveSlot",
+        "desktopLoadAutoSave",
         "exportSaveSlot",
         "importSaveFileToSlot",
+        "loadDesktopAutoSave",
         "loadPreEndturnSnapshot",
         "loadSaveSlot",
         "openSaveCompare",
@@ -3418,8 +3420,23 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-feudal.js",
+      "script": "tm-battle-contract.js",
       "order": 112,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-feudal.js",
+      "order": 113,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3477,7 +3494,7 @@
     },
     {
       "script": "tm-feudal-warfare.js",
-      "order": 113,
+      "order": 114,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3503,7 +3520,7 @@
     },
     {
       "script": "tm-event-system.js",
-      "order": 114,
+      "order": 115,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3521,7 +3538,7 @@
     },
     {
       "script": "tm-storage.js",
-      "order": 115,
+      "order": 116,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3539,7 +3556,7 @@
     },
     {
       "script": "tm-endturn-helpers.js",
-      "order": 116,
+      "order": 117,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3596,7 +3613,7 @@
     },
     {
       "script": "tm-border-risk.js",
-      "order": 117,
+      "order": 118,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3613,7 +3630,7 @@
     },
     {
       "script": "tm-border-invasion.js",
-      "order": 118,
+      "order": 119,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3630,7 +3647,7 @@
     },
     {
       "script": "tm-coastal-raid.js",
-      "order": 119,
+      "order": 120,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3647,7 +3664,7 @@
     },
     {
       "script": "tm-office-vacancy.js",
-      "order": 120,
+      "order": 121,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3664,7 +3681,7 @@
     },
     {
       "script": "tm-custom-build-agent.js",
-      "order": 121,
+      "order": 122,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3682,7 +3699,7 @@
     },
     {
       "script": "tm-building-orders.js",
-      "order": 122,
+      "order": 123,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3697,7 +3714,7 @@
     },
     {
       "script": "tm-endturn-province.js",
-      "order": 123,
+      "order": 124,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3755,7 +3772,7 @@
     },
     {
       "script": "tm-endturn-qiaozhi.js",
-      "order": 124,
+      "order": 125,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3775,7 +3792,7 @@
     },
     {
       "script": "tm-ai-apply-deaths.js",
-      "order": 125,
+      "order": 126,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3793,7 +3810,7 @@
     },
     {
       "script": "tm-sidebar-ui.js",
-      "order": 126,
+      "order": 127,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3828,7 +3845,7 @@
     },
     {
       "script": "tm-renwu-ui.js",
-      "order": 127,
+      "order": 128,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3870,7 +3887,7 @@
     },
     {
       "script": "tm-shiji-qiju-ui.js",
-      "order": 128,
+      "order": 129,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3918,7 +3935,7 @@
     },
     {
       "script": "tm-court-meter.js",
-      "order": 129,
+      "order": 130,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3944,7 +3961,7 @@
     },
     {
       "script": "tm-conspiracy.js",
-      "order": 130,
+      "order": 131,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3961,7 +3978,7 @@
     },
     {
       "script": "tm-globalrules.js",
-      "order": 131,
+      "order": 132,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3979,7 +3996,7 @@
     },
     {
       "script": "tm-dianzhang.js",
-      "order": 132,
+      "order": 133,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -3996,7 +4013,7 @@
     },
     {
       "script": "tm-world-digest.js",
-      "order": 133,
+      "order": 134,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4013,7 +4030,7 @@
     },
     {
       "script": "tm-benji.js",
-      "order": 134,
+      "order": 135,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4030,7 +4047,7 @@
     },
     {
       "script": "tm-world-reactors.js",
-      "order": 135,
+      "order": 136,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4047,7 +4064,7 @@
     },
     {
       "script": "tm-endturn-systems.js",
-      "order": 136,
+      "order": 137,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4064,7 +4081,7 @@
     },
     {
       "script": "tm-endturn-ai-helpers.js",
-      "order": 137,
+      "order": 138,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4092,7 +4109,7 @@
     },
     {
       "script": "tm-endturn-ai-context.js",
-      "order": 138,
+      "order": 139,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4109,7 +4126,7 @@
     },
     {
       "script": "tm-history-events.js",
-      "order": 139,
+      "order": 140,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4144,7 +4161,7 @@
     },
     {
       "script": "tm-tianji.js",
-      "order": 140,
+      "order": 141,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4161,7 +4178,7 @@
     },
     {
       "script": "tm-junqing-brief.js",
-      "order": 141,
+      "order": 142,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4178,7 +4195,7 @@
     },
     {
       "script": "tm-xinjun-observe.js",
-      "order": 142,
+      "order": 143,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4195,7 +4212,7 @@
     },
     {
       "script": "tm-post-turn-jobs.js",
-      "order": 143,
+      "order": 144,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4236,7 +4253,7 @@
     },
     {
       "script": "tm-arcs.js",
-      "order": 144,
+      "order": 145,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4257,7 +4274,7 @@
     },
     {
       "script": "tm-memory-anchors.js",
-      "order": 145,
+      "order": 146,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4281,7 +4298,7 @@
     },
     {
       "script": "tm-chronicle-system.js",
-      "order": 146,
+      "order": 147,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4309,7 +4326,7 @@
     },
     {
       "script": "tm-number-parser.js",
-      "order": 147,
+      "order": 148,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4326,7 +4343,7 @@
     },
     {
       "script": "tm-endturn-edict.js",
-      "order": 148,
+      "order": 149,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4359,7 +4376,7 @@
     },
     {
       "script": "tm-ai-planning.js",
-      "order": 149,
+      "order": 150,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4383,7 +4400,7 @@
     },
     {
       "script": "tm-endturn-prep.js",
-      "order": 150,
+      "order": 151,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4410,7 +4427,7 @@
     },
     {
       "script": "tm-class-engine.js",
-      "order": 151,
+      "order": 152,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4428,7 +4445,7 @@
     },
     {
       "script": "tm-minxin-ledger.js",
-      "order": 152,
+      "order": 153,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4446,23 +4463,6 @@
     },
     {
       "script": "tm-class-minxin-bridge.js",
-      "order": 153,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-party-goals.js",
       "order": 154,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4479,8 +4479,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-party-class-tuning.js",
+      "script": "tm-party-goals.js",
       "order": 155,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-party-class-tuning.js",
+      "order": 156,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4498,7 +4515,7 @@
     },
     {
       "script": "tm-party-class-ecology.js",
-      "order": 156,
+      "order": 157,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4516,7 +4533,7 @@
     },
     {
       "script": "tm-social-political-signals.js",
-      "order": 157,
+      "order": 158,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4534,23 +4551,6 @@
     },
     {
       "script": "tm-player-action-signals.js",
-      "order": 158,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-class-character-relations.js",
       "order": 159,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4567,8 +4567,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-minxin-pressure-actions.js",
+      "script": "tm-class-character-relations.js",
       "order": 160,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-minxin-pressure-actions.js",
+      "order": 161,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4586,7 +4603,7 @@
     },
     {
       "script": "tm-minxin-commitment-tracker.js",
-      "order": 161,
+      "order": 162,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4604,7 +4621,7 @@
     },
     {
       "script": "tm-minxin-responsibility-chain.js",
-      "order": 162,
+      "order": 163,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4622,7 +4639,7 @@
     },
     {
       "script": "tm-minxin-hard-links.js",
-      "order": 163,
+      "order": 164,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4640,7 +4657,7 @@
     },
     {
       "script": "tm-minxin-hard-link-consumers.js",
-      "order": 164,
+      "order": 165,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4658,23 +4675,6 @@
     },
     {
       "script": "tm-party-class-actors.js",
-      "order": 165,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-party-class-action-scheduler.js",
       "order": 166,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4691,7 +4691,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-party-class-llm-calibrator.js",
+      "script": "tm-party-class-action-scheduler.js",
       "order": 167,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4708,7 +4708,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-record-specs.js",
+      "script": "tm-party-class-llm-calibrator.js",
       "order": 168,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4725,7 +4725,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-prompt.js",
+      "script": "tm-endturn-record-specs.js",
       "order": 169,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4742,23 +4742,8 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-ai-sc1-budget.js",
+      "script": "tm-endturn-prompt.js",
       "order": 170,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-endturn-ai.js",
-      "order": 171,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4774,7 +4759,22 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-apply.js",
+      "script": "tm-endturn-ai-sc1-budget.js",
+      "order": 171,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-endturn-ai.js",
       "order": 172,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4791,7 +4791,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-apply-stages.js",
+      "script": "tm-endturn-apply.js",
       "order": 173,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4808,7 +4808,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-followup-helpers.js",
+      "script": "tm-endturn-apply-stages.js",
       "order": 174,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4825,7 +4825,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-followup.js",
+      "script": "tm-endturn-followup-helpers.js",
       "order": 175,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4842,7 +4842,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-record.js",
+      "script": "tm-endturn-followup.js",
       "order": 176,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4859,8 +4859,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-ai-infer.js",
+      "script": "tm-endturn-record.js",
       "order": 177,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-endturn-ai-infer.js",
+      "order": 178,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4877,7 +4894,7 @@
     },
     {
       "script": "tm-endturn-core.js",
-      "order": 178,
+      "order": 179,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4916,7 +4933,7 @@
     },
     {
       "script": "tm-endturn-pipeline-types.js",
-      "order": 179,
+      "order": 180,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4931,7 +4948,7 @@
     },
     {
       "script": "tm-endturn-mode-contract.js",
-      "order": 180,
+      "order": 181,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4948,7 +4965,7 @@
     },
     {
       "script": "tm-endturn-timing-ledger.js",
-      "order": 181,
+      "order": 182,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -4966,23 +4983,6 @@
     },
     {
       "script": "tm-endturn-pipeline-executor.js",
-      "order": 182,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-endturn-validity.js",
       "order": 183,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -4999,7 +4999,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-pipeline-steps.js",
+      "script": "tm-endturn-validity.js",
       "order": 184,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5016,7 +5016,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-agent-mode.js",
+      "script": "tm-endturn-pipeline-steps.js",
       "order": 185,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5033,7 +5033,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-agent-read-tools.js",
+      "script": "tm-endturn-agent-mode.js",
       "order": 186,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5050,7 +5050,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-wentian-agent.js",
+      "script": "tm-endturn-agent-read-tools.js",
       "order": 187,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5067,7 +5067,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-agent-write-tools.js",
+      "script": "tm-wentian-agent.js",
       "order": 188,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5084,7 +5084,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-agent-depth-tools.js",
+      "script": "tm-endturn-agent-write-tools.js",
       "order": 189,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5101,7 +5101,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-agent-intent-plan.js",
+      "script": "tm-endturn-agent-depth-tools.js",
       "order": 190,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5118,8 +5118,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-endturn-shiji-compose.js",
+      "script": "tm-endturn-agent-intent-plan.js",
       "order": 191,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-endturn-shiji-compose.js",
+      "order": 192,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5141,7 +5158,7 @@
     },
     {
       "script": "tm-endturn-render.js",
-      "order": 192,
+      "order": 193,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5170,7 +5187,7 @@
     },
     {
       "script": "tm-endturn-progress.js",
-      "order": 193,
+      "order": 194,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5190,7 +5207,7 @@
     },
     {
       "script": "tm-endturn-loading.js",
-      "order": 194,
+      "order": 195,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5205,7 +5222,7 @@
     },
     {
       "script": "tm-theme-font.js",
-      "order": 195,
+      "order": 196,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5229,23 +5246,6 @@
     },
     {
       "script": "tm-api-models.js",
-      "order": 196,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-api-settings.js",
       "order": 197,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5262,8 +5262,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-patches.js",
+      "script": "tm-api-settings.js",
       "order": 198,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-patches.js",
+      "order": 199,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5334,7 +5351,7 @@
     },
     {
       "script": "tm-patches-start.js",
-      "order": 199,
+      "order": 200,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5387,7 +5404,7 @@
     },
     {
       "script": "tm-military-ui.js",
-      "order": 200,
+      "order": 201,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5409,7 +5426,7 @@
     },
     {
       "script": "tm-world-view.js",
-      "order": 201,
+      "order": 202,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5432,7 +5449,7 @@
     },
     {
       "script": "editor-details.js",
-      "order": 202,
+      "order": 203,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5466,7 +5483,7 @@
     },
     {
       "script": "tm-three-systems-ext.js",
-      "order": 203,
+      "order": 204,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5488,7 +5505,7 @@
     },
     {
       "script": "tm-army-units.js",
-      "order": 204,
+      "order": 205,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5505,7 +5522,7 @@
     },
     {
       "script": "tm-armory.js",
-      "order": 205,
+      "order": 206,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5522,7 +5539,7 @@
     },
     {
       "script": "tm-battle-adapter.js",
-      "order": 206,
+      "order": 207,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5539,7 +5556,7 @@
     },
     {
       "script": "tm-battle-embed.js",
-      "order": 207,
+      "order": 208,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5556,7 +5573,7 @@
     },
     {
       "script": "tm-battle-resolve.js",
-      "order": 208,
+      "order": 209,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5573,7 +5590,7 @@
     },
     {
       "script": "tm-battle-turn.js",
-      "order": 209,
+      "order": 210,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5592,23 +5609,6 @@
     },
     {
       "script": "tm-faction-paradigm.js",
-      "order": 210,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-faction-personality.js",
       "order": 211,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5625,7 +5625,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-settings.js",
+      "script": "tm-faction-personality.js",
       "order": 212,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5642,7 +5642,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-news-bridge.js",
+      "script": "tm-faction-npc-settings.js",
       "order": 213,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5659,8 +5659,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-action-engine.js",
+      "script": "tm-faction-npc-news-bridge.js",
       "order": 214,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-faction-action-engine.js",
+      "order": 215,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -5678,23 +5695,6 @@
     },
     {
       "script": "tm-faction-goal-stack.js",
-      "order": 215,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-faction-npc-intervention.js",
       "order": 216,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5711,7 +5711,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-llm-enrich.js",
+      "script": "tm-faction-npc-intervention.js",
       "order": 217,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5728,7 +5728,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-llm-decision.js",
+      "script": "tm-faction-npc-llm-enrich.js",
       "order": 218,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5745,7 +5745,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-diplomacy.js",
+      "script": "tm-faction-npc-llm-decision.js",
       "order": 219,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5762,7 +5762,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-negotiation.js",
+      "script": "tm-faction-diplomacy.js",
       "order": 220,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5779,7 +5779,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-decision-tools.js",
+      "script": "tm-negotiation.js",
       "order": 221,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5796,7 +5796,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-in-turn-driver.js",
+      "script": "tm-faction-decision-tools.js",
       "order": 222,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5813,7 +5813,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-dispatcher.js",
+      "script": "tm-faction-npc-in-turn-driver.js",
       "order": 223,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5830,7 +5830,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-index.js",
+      "script": "tm-faction-npc-dispatcher.js",
       "order": 224,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5847,7 +5847,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-health.js",
+      "script": "tm-faction-index.js",
       "order": 225,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5864,7 +5864,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-economy.js",
+      "script": "tm-faction-derived-health.js",
       "order": 226,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5881,7 +5881,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-cohesion.js",
+      "script": "tm-faction-derived-economy.js",
       "order": 227,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5898,7 +5898,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-strength.js",
+      "script": "tm-faction-derived-cohesion.js",
       "order": 228,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5915,7 +5915,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-memorial.js",
+      "script": "tm-faction-derived-strength.js",
       "order": 229,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5932,7 +5932,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-edict.js",
+      "script": "tm-faction-npc-memorial.js",
       "order": 230,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5949,7 +5949,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-chaoyi.js",
+      "script": "tm-faction-npc-edict.js",
       "order": 231,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5966,7 +5966,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-office.js",
+      "script": "tm-faction-npc-chaoyi.js",
       "order": 232,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -5983,7 +5983,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-guoku.js",
+      "script": "tm-faction-npc-office.js",
       "order": 233,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6000,7 +6000,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-membership.js",
+      "script": "tm-faction-npc-guoku.js",
       "order": 234,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6017,8 +6017,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-three-systems-ui.js",
+      "script": "tm-faction-membership.js",
       "order": 235,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-three-systems-ui.js",
+      "order": 236,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6064,7 +6081,7 @@
     },
     {
       "script": "tm-char-arcs.js",
-      "order": 236,
+      "order": 237,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6084,7 +6101,7 @@
     },
     {
       "script": "tm-keju-learning-traits.js",
-      "order": 237,
+      "order": 238,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6101,7 +6118,7 @@
     },
     {
       "script": "tm-keju-tier.js",
-      "order": 238,
+      "order": 239,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6126,7 +6143,7 @@
     },
     {
       "script": "tm-keju-presets.js",
-      "order": 239,
+      "order": 240,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6146,7 +6163,7 @@
     },
     {
       "script": "tm-keju-paradigm-presets.js",
-      "order": 240,
+      "order": 241,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6165,7 +6182,7 @@
     },
     {
       "script": "tm-keju-paradigm.js",
-      "order": 241,
+      "order": 242,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6193,7 +6210,7 @@
     },
     {
       "script": "tm-keju-reform-llm.js",
-      "order": 242,
+      "order": 243,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6249,7 +6266,7 @@
     },
     {
       "script": "tm-keju-paradigm-panel-render.js",
-      "order": 243,
+      "order": 244,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6270,7 +6287,7 @@
     },
     {
       "script": "tm-keju-paradigm-panel.js",
-      "order": 244,
+      "order": 245,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6327,7 +6344,7 @@
     },
     {
       "script": "tm-keju-topic-router.js",
-      "order": 245,
+      "order": 246,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6347,7 +6364,7 @@
     },
     {
       "script": "tm-keju-examiner-view.js",
-      "order": 246,
+      "order": 247,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6365,7 +6382,7 @@
     },
     {
       "script": "tm-keju-tension.js",
-      "order": 247,
+      "order": 248,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6387,7 +6404,7 @@
     },
     {
       "script": "tm-keju-corruption.js",
-      "order": 248,
+      "order": 249,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6406,7 +6423,7 @@
     },
     {
       "script": "tm-keju-question-ui.js",
-      "order": 249,
+      "order": 250,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6429,7 +6446,7 @@
     },
     {
       "script": "tm-keju-budget-ui.js",
-      "order": 250,
+      "order": 251,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6446,7 +6463,7 @@
     },
     {
       "script": "tm-keju-dianshi-events.js",
-      "order": 251,
+      "order": 252,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6468,7 +6485,7 @@
     },
     {
       "script": "tm-keju-mentor.js",
-      "order": 252,
+      "order": 253,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6490,7 +6507,7 @@
     },
     {
       "script": "tm-keju-disciple-graph.js",
-      "order": 253,
+      "order": 254,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6514,7 +6531,7 @@
     },
     {
       "script": "tm-keju-disciple-memorial.js",
-      "order": 254,
+      "order": 255,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6535,7 +6552,7 @@
     },
     {
       "script": "tm-keju-cohort-meet.js",
-      "order": 255,
+      "order": 256,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6554,7 +6571,7 @@
     },
     {
       "script": "tm-keju-yanguan-attribution.js",
-      "order": 256,
+      "order": 257,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6573,7 +6590,7 @@
     },
     {
       "script": "tm-keju-yanguan-qingyi.js",
-      "order": 257,
+      "order": 258,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6592,7 +6609,7 @@
     },
     {
       "script": "tm-keju-reform-memorial.js",
-      "order": 258,
+      "order": 259,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6612,7 +6629,7 @@
     },
     {
       "script": "tm-keju-reform-evolution.js",
-      "order": 259,
+      "order": 260,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6653,7 +6670,7 @@
     },
     {
       "script": "tm-keju-reform-presets-history.js",
-      "order": 260,
+      "order": 261,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6674,7 +6691,7 @@
     },
     {
       "script": "tm-keju-special-exams.js",
-      "order": 261,
+      "order": 262,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6698,7 +6715,7 @@
     },
     {
       "script": "tm-keju-scandal.js",
-      "order": 262,
+      "order": 263,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6721,7 +6738,7 @@
     },
     {
       "script": "tm-keju-event-hooks.js",
-      "order": 263,
+      "order": 264,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6746,7 +6763,7 @@
     },
     {
       "script": "tm-keju-enke-player-initiative.js",
-      "order": 264,
+      "order": 265,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6776,7 +6793,7 @@
     },
     {
       "script": "tm-keju-enke.js",
-      "order": 265,
+      "order": 266,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6832,7 +6849,7 @@
     },
     {
       "script": "tm-keju-wuju.js",
-      "order": 266,
+      "order": 267,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6899,7 +6916,7 @@
     },
     {
       "script": "tm-keju-tongzi.js",
-      "order": 267,
+      "order": 268,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6955,7 +6972,7 @@
     },
     {
       "script": "tm-keju-school-network.js",
-      "order": 268,
+      "order": 269,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7019,7 +7036,7 @@
     },
     {
       "script": "tm-keju-reform-rollback.js",
-      "order": 269,
+      "order": 270,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7046,7 +7063,7 @@
     },
     {
       "script": "tm-keju-reformer-bio.js",
-      "order": 270,
+      "order": 271,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7080,7 +7097,7 @@
     },
     {
       "script": "tm-keju-reform-apply.js",
-      "order": 271,
+      "order": 272,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7120,7 +7137,7 @@
     },
     {
       "script": "tm-keju-allocation.js",
-      "order": 272,
+      "order": 273,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7143,7 +7160,7 @@
     },
     {
       "script": "tm-keju-activation.js",
-      "order": 273,
+      "order": 274,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7163,7 +7180,7 @@
     },
     {
       "script": "tm-keju-indicators.js",
-      "order": 274,
+      "order": 275,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7186,7 +7203,7 @@
     },
     {
       "script": "tm-keju.js",
-      "order": 275,
+      "order": 276,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7243,7 +7260,7 @@
     },
     {
       "script": "tm-chaoyi.js",
-      "order": 276,
+      "order": 277,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7292,7 +7309,7 @@
     },
     {
       "script": "tm-official-scenario-seeder.js",
-      "order": 277,
+      "order": 278,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7309,7 +7326,7 @@
     },
     {
       "script": "tm-electron.js",
-      "order": 278,
+      "order": 279,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7347,7 +7364,7 @@
     },
     {
       "script": "tm-keju-runtime.js",
-      "order": 279,
+      "order": 280,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7402,7 +7419,7 @@
     },
     {
       "script": "tm-keju-runtime-keyi.js",
-      "order": 280,
+      "order": 281,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7470,7 +7487,7 @@
     },
     {
       "script": "tm-chaoyi-tinyi.js",
-      "order": 281,
+      "order": 282,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7515,7 +7532,7 @@
     },
     {
       "script": "tm-chaoyi-yuqian.js",
-      "order": 282,
+      "order": 283,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7554,7 +7571,7 @@
     },
     {
       "script": "tm-chaoyi-changchao-adapter.js",
-      "order": 283,
+      "order": 284,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7600,7 +7617,7 @@
     },
     {
       "script": "tm-chaoyi-changchao.js",
-      "order": 284,
+      "order": 285,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7705,7 +7722,7 @@
     },
     {
       "script": "tm-chaoyi-changchao-flows.js",
-      "order": 285,
+      "order": 286,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7753,7 +7770,7 @@
     },
     {
       "script": "tm-tinyi-v3-persona.js",
-      "order": 286,
+      "order": 287,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7842,7 +7859,7 @@
     },
     {
       "script": "tm-tinyi-v3.js",
-      "order": 287,
+      "order": 288,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7982,7 +7999,7 @@
     },
     {
       "script": "tm-tinyi-v3-edict-personnel.js",
-      "order": 288,
+      "order": 289,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8048,7 +8065,7 @@
     },
     {
       "script": "tm-tinyi-v3-parties.js",
-      "order": 289,
+      "order": 290,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8134,7 +8151,7 @@
     },
     {
       "script": "tm-char-autogen.js",
-      "order": 290,
+      "order": 291,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8164,7 +8181,7 @@
     },
     {
       "script": "tm-bgm-config.js",
-      "order": 291,
+      "order": 292,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8184,7 +8201,7 @@
     },
     {
       "script": "tm-audio-theme.js",
-      "order": 292,
+      "order": 293,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8215,7 +8232,7 @@
     },
     {
       "script": "tm-save-lifecycle.js",
-      "order": 293,
+      "order": 294,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8340,7 +8357,7 @@
     },
     {
       "script": "tm-save-close-flush.js",
-      "order": 294,
+      "order": 295,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8359,7 +8376,7 @@
     },
     {
       "script": "tm-office-editor.js",
-      "order": 295,
+      "order": 296,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8441,7 +8458,7 @@
     },
     {
       "script": "tm-topbar-vars.js",
-      "order": 296,
+      "order": 297,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8512,7 +8529,7 @@
     },
     {
       "script": "tm-shell-extras.js",
-      "order": 297,
+      "order": 298,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8535,7 +8552,7 @@
     },
     {
       "script": "tm-houguong.js",
-      "order": 298,
+      "order": 299,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8553,7 +8570,7 @@
     },
     {
       "script": "tm-shizheng-panel.js",
-      "order": 299,
+      "order": 300,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8598,7 +8615,7 @@
     },
     {
       "script": "tm-corruption-engine.js",
-      "order": 300,
+      "order": 301,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8615,7 +8632,7 @@
     },
     {
       "script": "tm-corruption-cases.js",
-      "order": 301,
+      "order": 302,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8630,7 +8647,7 @@
     },
     {
       "script": "tm-corruption-extras.js",
-      "order": 302,
+      "order": 303,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8648,7 +8665,7 @@
     },
     {
       "script": "tm-lizhi-panel.js",
-      "order": 303,
+      "order": 304,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8699,7 +8716,7 @@
     },
     {
       "script": "tm-guoku-engine.js",
-      "order": 304,
+      "order": 305,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8716,7 +8733,7 @@
     },
     {
       "script": "tm-guoku-panel.js",
-      "order": 305,
+      "order": 306,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8762,7 +8779,7 @@
     },
     {
       "script": "tm-neitang-engine.js",
-      "order": 306,
+      "order": 307,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8779,7 +8796,7 @@
     },
     {
       "script": "tm-neitang-panel.js",
-      "order": 307,
+      "order": 308,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8807,7 +8824,7 @@
     },
     {
       "script": "tm-char-economy-engine.js",
-      "order": 308,
+      "order": 309,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8824,7 +8841,7 @@
     },
     {
       "script": "tm-char-historical-profiles.js",
-      "order": 309,
+      "order": 310,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8845,23 +8862,6 @@
     },
     {
       "script": "tm-char-historical-wave-01.js",
-      "order": 310,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "HISTORICAL_CHAR_PROFILES"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-char-historical-wave-02.js",
       "order": 311,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8878,7 +8878,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-03.js",
+      "script": "tm-char-historical-wave-02.js",
       "order": 312,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8895,7 +8895,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-04.js",
+      "script": "tm-char-historical-wave-03.js",
       "order": 313,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8912,7 +8912,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-05.js",
+      "script": "tm-char-historical-wave-04.js",
       "order": 314,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8929,7 +8929,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-06.js",
+      "script": "tm-char-historical-wave-05.js",
       "order": 315,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8946,7 +8946,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-07.js",
+      "script": "tm-char-historical-wave-06.js",
       "order": 316,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8963,7 +8963,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-08.js",
+      "script": "tm-char-historical-wave-07.js",
       "order": 317,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8980,7 +8980,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-09.js",
+      "script": "tm-char-historical-wave-08.js",
       "order": 318,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -8997,7 +8997,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-10.js",
+      "script": "tm-char-historical-wave-09.js",
       "order": 319,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9014,7 +9014,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-11.js",
+      "script": "tm-char-historical-wave-10.js",
       "order": 320,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9031,7 +9031,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-char-historical-wave-12.js",
+      "script": "tm-char-historical-wave-11.js",
       "order": 321,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9048,8 +9048,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-ceming.js",
+      "script": "tm-char-historical-wave-12.js",
       "order": 322,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "HISTORICAL_CHAR_PROFILES"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-ceming.js",
+      "order": 323,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9066,7 +9083,7 @@
     },
     {
       "script": "tm-char-economy-ui.js",
-      "order": 323,
+      "order": 324,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9085,7 +9102,7 @@
     },
     {
       "script": "tm-char-full-schema.js",
-      "order": 324,
+      "order": 325,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9102,7 +9119,7 @@
     },
     {
       "script": "tm-economy-engine-currency.js",
-      "order": 325,
+      "order": 326,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9120,7 +9137,7 @@
     },
     {
       "script": "tm-economy-engine.js",
-      "order": 326,
+      "order": 327,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9141,7 +9158,7 @@
     },
     {
       "script": "tm-central-local-engine.js",
-      "order": 327,
+      "order": 328,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9158,7 +9175,7 @@
     },
     {
       "script": "tm-huji-engine.js",
-      "order": 328,
+      "order": 329,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9176,7 +9193,7 @@
     },
     {
       "script": "tm-edict-parser.js",
-      "order": 329,
+      "order": 330,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9195,7 +9212,7 @@
     },
     {
       "script": "tm-huji-deep-fill.js",
-      "order": 330,
+      "order": 331,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9212,7 +9229,7 @@
     },
     {
       "script": "tm-huji-runtime-bridge.js",
-      "order": 331,
+      "order": 332,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9230,7 +9247,7 @@
     },
     {
       "script": "tm-huji-governance-loop.js",
-      "order": 332,
+      "order": 333,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9248,7 +9265,7 @@
     },
     {
       "script": "tm-edict-complete.js",
-      "order": 333,
+      "order": 334,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9268,7 +9285,7 @@
     },
     {
       "script": "tm-env-recovery-fill.js",
-      "order": 334,
+      "order": 335,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9285,7 +9302,7 @@
     },
     {
       "script": "tm-authority-engines.js",
-      "order": 335,
+      "order": 336,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9307,23 +9324,6 @@
     },
     {
       "script": "tm-building-works.js",
-      "order": 336,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-talent-cohorts.js",
       "order": 337,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9340,7 +9340,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-talent-bottlenecks.js",
+      "script": "tm-talent-cohorts.js",
       "order": 338,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9357,7 +9357,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-talent-building-bridge.js",
+      "script": "tm-talent-bottlenecks.js",
       "order": 339,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9374,7 +9374,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-talent-backlash.js",
+      "script": "tm-talent-building-bridge.js",
       "order": 340,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9391,7 +9391,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-field-pipelines.js",
+      "script": "tm-talent-backlash.js",
       "order": 341,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9408,7 +9408,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-region-status.js",
+      "script": "tm-field-pipelines.js",
       "order": 342,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9425,7 +9425,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-renli.js",
+      "script": "tm-region-status.js",
       "order": 343,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9442,7 +9442,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-reported-view.js",
+      "script": "tm-renli.js",
       "order": 344,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9459,7 +9459,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-social-foundation.js",
+      "script": "tm-reported-view.js",
       "order": 345,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9476,8 +9476,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-authority-complete.js",
+      "script": "tm-social-foundation.js",
       "order": 346,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-authority-complete.js",
+      "order": 347,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9494,23 +9511,6 @@
     },
     {
       "script": "tm-revolt-entity.js",
-      "order": 347,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-revolt-inference.js",
       "order": 348,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9527,7 +9527,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-party-inference.js",
+      "script": "tm-revolt-inference.js",
       "order": 349,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9544,7 +9544,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-captive-court.js",
+      "script": "tm-party-inference.js",
       "order": 350,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9561,8 +9561,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-historical-presets.js",
+      "script": "tm-captive-court.js",
       "order": 351,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-historical-presets.js",
+      "order": 352,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9579,7 +9596,7 @@
     },
     {
       "script": "tm-prophecy.js",
-      "order": 352,
+      "order": 353,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9596,7 +9613,7 @@
     },
     {
       "script": "tm-region-enrich.js",
-      "order": 353,
+      "order": 354,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9613,7 +9630,7 @@
     },
     {
       "script": "tm-audit.js",
-      "order": 354,
+      "order": 355,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9630,7 +9647,7 @@
     },
     {
       "script": "tm-feedback-loops.js",
-      "order": 355,
+      "order": 356,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9648,7 +9665,7 @@
     },
     {
       "script": "tm-event-bus.js",
-      "order": 356,
+      "order": 357,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9667,7 +9684,7 @@
     },
     {
       "script": "tm-class-mobility.js",
-      "order": 357,
+      "order": 358,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9684,7 +9701,7 @@
     },
     {
       "script": "tm-authority-deep.js",
-      "order": 358,
+      "order": 359,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9701,7 +9718,7 @@
     },
     {
       "script": "tm-player-tools.js",
-      "order": 359,
+      "order": 360,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9722,7 +9739,7 @@
     },
     {
       "script": "tm-ledger-paper.js",
-      "order": 360,
+      "order": 361,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9739,7 +9756,7 @@
     },
     {
       "script": "tm-authority-ui.js",
-      "order": 361,
+      "order": 362,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9761,7 +9778,7 @@
     },
     {
       "script": "tm-ethnic-religion.js",
-      "order": 362,
+      "order": 363,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9778,7 +9795,7 @@
     },
     {
       "script": "tm-edict-thresholds.js",
-      "order": 363,
+      "order": 364,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9797,7 +9814,7 @@
     },
     {
       "script": "tm-fiscal-ui.js",
-      "order": 364,
+      "order": 365,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9816,7 +9833,7 @@
     },
     {
       "script": "tm-integration-bridge.js",
-      "order": 365,
+      "order": 366,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9834,7 +9851,7 @@
     },
     {
       "script": "tm-fiscal-engine.js",
-      "order": 366,
+      "order": 367,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9854,23 +9871,6 @@
     },
     {
       "script": "tm-invariants.js",
-      "order": 367,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-namespaces.js",
       "order": 368,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9887,7 +9887,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-state.js",
+      "script": "tm-namespaces.js",
       "order": 369,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9904,7 +9904,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-diff.js",
+      "script": "tm-state.js",
       "order": 370,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9921,7 +9921,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-hooks-tracker.js",
+      "script": "tm-diff.js",
       "order": 371,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9938,8 +9938,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-diagnostics-panel.js",
+      "script": "tm-hooks-tracker.js",
       "order": 372,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-diagnostics-panel.js",
+      "order": 373,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9957,23 +9974,6 @@
     },
     {
       "script": "tm-checklist.js",
-      "order": 373,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-onboard-tools.js",
       "order": 374,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -9990,8 +9990,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-ai-schema.js",
+      "script": "tm-onboard-tools.js",
       "order": 375,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-ai-schema.js",
+      "order": 376,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10008,7 +10025,7 @@
     },
     {
       "script": "tm-ai-output-validator.js",
-      "order": 376,
+      "order": 377,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10025,7 +10042,7 @@
     },
     {
       "script": "tm-data-access.js",
-      "order": 377,
+      "order": 378,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10042,23 +10059,6 @@
     },
     {
       "script": "tm-ai-change-pathutils.js",
-      "order": 378,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "tm-ai-change-army.js",
       "order": 379,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -10075,7 +10075,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-ai-change-narrative.js",
+      "script": "tm-ai-change-army.js",
       "order": 380,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -10092,8 +10092,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "generated/tm-ai-change-applier.bundle.js",
+      "script": "tm-ai-change-narrative.js",
       "order": 381,
+      "phase": "world",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "generated/tm-ai-change-applier.bundle.js",
+      "order": 382,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10110,7 +10127,7 @@
     },
     {
       "script": "tm-ai-npc-memorials.js",
-      "order": 382,
+      "order": 383,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10129,7 +10146,7 @@
     },
     {
       "script": "tm-var-drawers.js",
-      "order": 383,
+      "order": 384,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10159,7 +10176,7 @@
     },
     {
       "script": "editor-division-deep.js",
-      "order": 384,
+      "order": 385,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10180,7 +10197,7 @@
     },
     {
       "script": "editor-office-deep.js",
-      "order": 385,
+      "order": 386,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10197,7 +10214,7 @@
     },
     {
       "script": "editor-presets.js",
-      "order": 386,
+      "order": 387,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10217,7 +10234,7 @@
     },
     {
       "script": "bundled-scenarios/manifest.js",
-      "order": 387,
+      "order": 388,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10232,7 +10249,7 @@
     },
     {
       "script": "tm-official-scenario-loader.js",
-      "order": 388,
+      "order": 389,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10249,7 +10266,7 @@
     },
     {
       "script": "tm-changelog.js",
-      "order": 389,
+      "order": 390,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10266,7 +10283,7 @@
     },
     {
       "script": "tm-online-client.js",
-      "order": 390,
+      "order": 391,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10283,7 +10300,7 @@
     },
     {
       "script": "tm-workshop-covers.js",
-      "order": 391,
+      "order": 392,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10300,7 +10317,7 @@
     },
     {
       "script": "tm-zip-store.js",
-      "order": 392,
+      "order": 393,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10317,7 +10334,7 @@
     },
     {
       "script": "tm-content-manager.js",
-      "order": 393,
+      "order": 394,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10338,7 +10355,7 @@
     },
     {
       "script": "tm-content-manager-community.js",
-      "order": 394,
+      "order": 395,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10355,7 +10372,7 @@
     },
     {
       "script": "preview/img/east-asia-basemap-data.js",
-      "order": 395,
+      "order": 396,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10372,7 +10389,7 @@
     },
     {
       "script": "phase8-formal-bridge-styles.js",
-      "order": 396,
+      "order": 397,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10389,7 +10406,7 @@
     },
     {
       "script": "phase8-formal-bridge.js",
-      "order": 397,
+      "order": 398,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10417,21 +10434,6 @@
     },
     {
       "script": "phase8-formal-topbar.js",
-      "order": 398,
-      "phase": "optional",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "phase8-formal-map.js",
       "order": 399,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
@@ -10446,7 +10448,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "phase8-formal-map-dossier.js",
+      "script": "phase8-formal-map.js",
       "order": 400,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
@@ -10461,8 +10463,23 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "phase8-formal-modules.js",
+      "script": "phase8-formal-map-dossier.js",
       "order": 401,
+      "phase": "optional",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "phase8-formal-modules.js",
+      "order": 402,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10479,7 +10496,7 @@
     },
     {
       "script": "phase8-formal-drafts.js",
-      "order": 402,
+      "order": 403,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10505,7 +10522,7 @@
     },
     {
       "script": "phase8-formal-drafts-message-panels.js",
-      "order": 403,
+      "order": 404,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10523,7 +10540,7 @@
     },
     {
       "script": "phase8-formal-records.js",
-      "order": 404,
+      "order": 405,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10538,7 +10555,7 @@
     },
     {
       "script": "tm-renwu-tuzhi.js",
-      "order": 405,
+      "order": 406,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10559,7 +10576,7 @@
     },
     {
       "script": "phase8-formal-rightrail.js",
-      "order": 406,
+      "order": 407,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10576,7 +10593,7 @@
     },
     {
       "script": "phase8-formal-rightrail-social.js",
-      "order": 407,
+      "order": 408,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10594,7 +10611,7 @@
     },
     {
       "script": "preview/scenario-editor-sandbox-bridge.js",
-      "order": 408,
+      "order": 409,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10611,7 +10628,7 @@
     },
     {
       "script": "tm-pause-fab.js",
-      "order": 409,
+      "order": 410,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10629,7 +10646,7 @@
     },
     {
       "script": "tm-capacitor-boot.js",
-      "order": 410,
+      "order": 411,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10646,7 +10663,7 @@
     },
     {
       "script": "tm-touch-gestures.js",
-      "order": 411,
+      "order": 412,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10661,7 +10678,7 @@
     },
     {
       "script": "tm-pinch-pan.js",
-      "order": 412,
+      "order": 413,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10679,7 +10696,7 @@
     },
     {
       "script": "tm-hover-fulltext.js",
-      "order": 413,
+      "order": 414,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10697,7 +10714,7 @@
     },
     {
       "script": "tm-startup-contract.js",
-      "order": 414,
+      "order": 415,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",

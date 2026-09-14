@@ -41,6 +41,9 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   if (typeof BattleEngine !== 'undefined' && BattleEngine._getConfig().enabled) {
     try { await Promise.resolve(BattleEngine.resolveAllBattles()); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'BattleEngine] 结算失败:') : console.error('[BattleEngine] 结算失败:', e); throw e; }
   }
+  // 旧引擎本阶段新产的会战也须在推进回合/财政结算前裁决；SC18已清空时为空操作。
+  if (window.TMBattleTurn && window.TMBattleTurn.runPending) await window.TMBattleTurn.runPending(GM);
+  if (window.GuokuEngine && window.GuokuEngine.syncBattleCasualtyBonus) window.GuokuEngine.syncBattleCasualtyBonus(GM);
 
   // 3. 通过子回合调度器执行分层结算（daily→monthly→perturn）
   showLoading("更新数据",92);

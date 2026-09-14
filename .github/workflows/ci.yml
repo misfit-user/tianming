@@ -92,6 +92,16 @@ jobs:
           node node_modules/electron/install.js
       - name: Real sandbox bridge, desktop IPC and restart recovery
         run: node scripts/verify-electron-bridge.js
+      - name: Desktop startup stays on menu and autosave recovery is opt-in
+        run: node scripts/verify-electron-bridge.js --startup-autosave
+      - name: Personal campaign real trigger, tactical result and fallback
+        run: node scripts/verify-electron-bridge.js --personal-campaign
+      - name: Tactical landscape profiles, picking and real WebGL rendering
+        run: node scripts/verify-electron-bridge.js --tactical-terrain
+      - name: Tactical routing, detailed assets, shadows and GPU recovery
+        run: node scripts/verify-electron-bridge.js --tactical-phase2
+      - name: Tactical troop models and commander abilities
+        run: node scripts/verify-electron-bridge.js --tactical-units
       - name: Construction appraisal thinking tools and visible feedback
         run: node scripts/verify-electron-bridge.js --building-appraisal
       - name: Edict polish complete text and visible failure recovery

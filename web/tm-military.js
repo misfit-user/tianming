@@ -105,12 +105,12 @@ function calculateArmyStrength(army, context) {
   var _qmStr = String(army.quality || ''); var qualityMod = /精锐|精兵|百战|劲旅/.test(_qmStr) ? 1.3 : /新兵|新募|老弱|疲|羸|乌合/.test(_qmStr) ? 0.7 : 1.0;
 
   // 将领加成（军事能力+智力综合）
-  var commanderMod = 1.0;
-  if (army.commander) {
-    var commander = typeof findCharByName === 'function' ? findCharByName(army.commander) : null;
-    if (commander) {
-      var military = commander.military || commander.valor || 50;
-      var intel = commander.intelligence || 50;
+  var commanderMod = 1.0, battleAdapter = typeof window !== 'undefined' && window.TMBattleAdapter;
+  if (army.commander || army.commanderId) {
+    var commander = battleAdapter ? battleAdapter.resolveCommander(army.commander, GM, army.commanderId || army.commanderCharacterId || army.generalId || army.leaderId).character : typeof findCharByName === 'function' ? findCharByName(army.commander) : null;
+    if (commander && commander.alive !== false && !commander.capturedBy) {
+      var military = battleAdapter ? battleAdapter.genFor(commander, GM).mil : (commander.military ?? commander.valor ?? 50);
+      var intel = battleAdapter ? battleAdapter.genFor(commander, GM).int : (commander.intelligence ?? 50);
       commanderMod = 1 + (military * 0.7 + intel * 0.3) / 200; // 1.0-1.5
     }
   }
@@ -598,6 +598,7 @@ var MilitarySystems = (function(global) {
     return Array.isArray(G.armies) ? G.armies : [];
   }
 
+
   function _findArmy(ref, G) {
     if (!ref) return null;
     var key = String(ref);
@@ -627,9 +628,9 @@ var MilitarySystems = (function(global) {
     return true;
   }
 
-  function _findChar(name, G) {
-    if (!name || !Array.isArray(G.chars)) return null;
-    return G.chars.find(function(c) { return c && c.name === name; }) || null;
+  function _findChar(name, G, id) {
+    if (window.TMBattleAdapter) return window.TMBattleAdapter.resolveCommander(name, G, id).character;
+    var matches = (Array.isArray(G.chars) ? G.chars : []).filter(function(c) { return c && (id ? String(c.id || c.characterId || c.charId) === String(id) : c.name === name); }); return matches.length === 1 ? matches[0] : null;
   }
 
   // #26·战争闭环:一场战果按胜负推进对应战争 warScore·越 ±100 触发议和(调 CasusBelliSystem.endWar 上停战期)·原 warScore 恒 0 只读不写·endWar 零调用
@@ -921,7 +922,7 @@ var MilitarySystems = (function(global) {
       army._battleResultTurn = G.turn || 0;
       army._battleResultBattleId = result.battleId;
       var commanderName = String(entry.commander || army.commander || '').trim();
-      var commander = commanderName ? _findChar(commanderName, G) : null;
+      var commander = _findChar(commanderName, G, (entry.commanderFate && entry.commanderFate.characterId) || army.commanderId || army.commanderCharacterId || army.generalId || army.leaderId);
       var commanderFate = entry.commanderFate || null;
       if (!commanderFate && br.commanderFate && String(br.commanderFate.name || '') === commanderName) commanderFate = br.commanderFate;
       if (commander && commanderFate && commanderFate.name) {
@@ -1030,7 +1031,7 @@ var MilitarySystems = (function(global) {
     result.defenderLoss = sawSideEntry.defender ? appliedLossBySide.defender : defenderLoss;
     var fate = br.commanderFate || null;
     if (fate && fate.name) {
-      var ch = _findChar(fate.name, G);
+      var ch = _findChar(fate.name, G, fate.characterId);
       var outcome = String(fate.outcome || 'survived');
       if (ch && !handledCommanders[fate.name]) {
         ch._battleFate = outcome;
@@ -1122,7 +1123,7 @@ var MilitarySystems = (function(global) {
     validatePayArrearsAdjustment: validatePayArrearsAdjustment,
     applyPayArrearsPressure: applyPayArrearsPressure,
     settleArmyArrears: settleArmyArrears,
-    applyBattleResult: applyBattleResult,
+    applyBattleResult: applyBattleResult, findBattleArmy: _findArmy,
     _readConstant: _readConstant
   };
 
@@ -1201,7 +1202,7 @@ var BattleEngine = (function() {
     context = context || {};
     if (context.battleResult || context.structuredVerdict) {
       var structured = MilitarySystems.applyBattleResult(context.battleResult || context.structuredVerdict, context.root || (typeof GM !== 'undefined' ? GM : null));
-      if (structured && structured.ok) return structured.result;
+      if (structured && (structured.deferred || structured.ok)) return structured.deferred ? structured : structured.result;
     }
     var cfg = _getConfig();
     if (!cfg.enabled && !(context && context.forceCompute)) return null; // 未启用战斗引擎，回退AI自由裁量(forceCompute=确定性战果 opt-in 旁路·只算战损不需全引擎)
@@ -1367,13 +1368,13 @@ var BattleEngine = (function() {
     if (!cfg.enabled) return;
 
     GM.activeBattles.forEach(function(battle) {
-      if (battle.phase === 'resolved') return; // 已结算
+      if (battle.phase === 'resolved' || battle.phase === 'awaiting-command') return; // 已结算/会战持有，不重复产出
       if (battle.phase === 'march') return;    // 行军中，未接战
 
       var structuredVerdict = battle.battleResult || battle.structuredVerdict || battle.structuredResult;
       if (structuredVerdict) {
         var structured = MilitarySystems.applyBattleResult(structuredVerdict, GM);
-        if (structured && structured.ok) {
+        if (structured && structured.deferred) battle.phase = 'awaiting-command'; else if (structured && structured.ok) {
           battle.phase = 'resolved';
           battle.result = structured.result;
           window.TMBattleAdapter.stampResultContext(structured.result, battle, GM);
@@ -1405,6 +1406,7 @@ var BattleEngine = (function() {
 
       if (result) {
         window.TMBattleAdapter.stampResultContext(result, battle, GM);
+        if (MilitarySystems.dispatchComputedBattle && MilitarySystems.dispatchComputedBattle(battle, result, attackerArmy, defenderArmy, GM)) return;
         // 应用伤亡到军队
         attackerArmy.soldiers = Math.max(0, (attackerArmy.soldiers || 0) - result.attackerLoss);
         defenderArmy.soldiers = Math.max(0, (defenderArmy.soldiers || 0) - result.defenderLoss);

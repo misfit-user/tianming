@@ -17,24 +17,24 @@ module.exports=async function({frame,win,check,reportDir}){
   await call(`(()=>{$('btnPlay').click();})()`);await delay(100);await call(`(()=>{if(!state.paused)$('btnPlay').click();const p=TERR.tactical.hamlets[0];cam.x=p.x;cam.y=p.y+400;cam.zoom=.42;camYaw=.35;$('optGraphics').value='high';$('optGraphics').dispatchEvent(new Event('change'));draw();})()`);await delay(150);
   const high=(await win.webContents.capturePage());fs.writeFileSync(path.join(reportDir,'phase2-village-high.png'),high.toPNG());
   await check('high graphics allocates both shadow cascades and renders detailed instances',async()=>{
-    const r=await call('R3D.landscapeStats');assert(r.detail&&r.detail.instancing);assert(r.detail.lodCounts[0]>0);assert(r.shadow.supported&&r.shadow.enabled);assert.deepEqual(r.shadow.sizes,[2048,1024]);assert.equal(await call(`$('gl').getContext('webgl').getError()`),0);metrics.high=r;
+    const r=await call('R3D.landscapeStats');assert(r.detail&&r.detail.instancing);assert(r.detail.lodCounts[0]>0);assert(r.shadow.supported&&r.shadow.enabled);assert.deepEqual(r.shadow.sizes,[2048,1024]);assert.equal(await call(`R3D.context.getError()`),0);metrics.high=r;
   });
   await call(`$('optShadows').click();draw();`);await delay(120);const unshadowed=await win.webContents.capturePage();
   await check('shadow checkbox changes real image pixels while keeping the same high-detail geometry',async()=>{
     const r=await call('R3D.landscapeStats');assert(!r.shadow.enabled);assert.equal(r.graphics,'high');assert.equal(r.detail.triangles,metrics.high.detail.triangles);assert.deepEqual(r.detail.lodCounts,metrics.high.detail.lodCounts);const a=high.toBitmap(),b=unshadowed.toBitmap(),size=high.getSize();let changed=0,samples=0;for(let y=Math.floor(size.height*.28);y<size.height*.65;y++)for(let x=Math.floor(size.width*.25);x<size.width*.75;x++){const k=(y*size.width+x)*4;const diff=Math.abs(a[k]-b[k])+Math.abs(a[k+1]-b[k+1])+Math.abs(a[k+2]-b[k+2]);if(diff>25)changed++;samples++;}assert(changed>1000,'shadow pixel delta '+changed);metrics.shadowPixels={changed,samples};
   });
   await call(`$('optShadows').click();$('optGraphics').value='low';$('optGraphics').dispatchEvent(new Event('change'));draw();`);
-  await check('power-saving control uses distant LOD and releases shadow allocations',async()=>{const r=await call('R3D.landscapeStats');assert.equal(r.graphics,'low');assert(!r.shadow.enabled);assert.equal(r.shadow.cascades,0);assert.equal(r.detail.lodCounts[0]+r.detail.lodCounts[1],0);assert(r.detail.lodCounts[2]>0);assert.equal(await call(`$('gl').getContext('webgl').getError()`),0);metrics.low=r;});
+  await check('power-saving control uses distant LOD and releases shadow allocations',async()=>{const r=await call('R3D.landscapeStats');assert.equal(r.graphics,'low');assert(!r.shadow.enabled);assert.equal(r.shadow.cascades,0);assert.equal(r.detail.lodCounts[0]+r.detail.lodCounts[1],0);assert(r.detail.lodCounts[2]>0);assert.equal(await call(`R3D.context.getError()`),0);metrics.low=r;});
   await call(`(()=>{$('optGraphics').value='high';$('optGraphics').dispatchEvent(new Event('change'));const p=TERR.tactical.props.find(p=>p.kind==='tree');cam.x=p.x;cam.y=p.y+250;cam.zoom=.75;camYaw=.5;draw();})()`);await delay(150);
   fs.writeFileSync(path.join(reportDir,'phase2-forest-close.png'),(await win.webContents.capturePage()).toPNG());
   await check('close forest at high quality remains responsive',async()=>{const r=await call(`new Promise(resolve=>{const times=[];let last=performance.now();function sample(now){times.push(now-last);last=now;if(times.length===35){times.sort((a,b)=>a-b);resolve({median:times[17],p95:times[32]});}else requestAnimationFrame(sample);}requestAnimationFrame(sample);})`);assert(r.median<80&&r.p95<160,JSON.stringify(r));metrics.highForestFrames=r;});
   await call(`$('optGraphics').value='balanced';$('optGraphics').dispatchEvent(new Event('change'));draw();`);
   await check('context loss falls back to a usable map and restores geometry without changing soldiers',async()=>{
     const before=await call('units.reduce((n,u)=>n+u.soldiers,0)');
-    await call(`window.__loseTerrainContext=$('gl').getContext('webgl').getExtension('WEBGL_lose_context');if(!__loseTerrainContext)throw Error('context-loss test extension missing');__loseTerrainContext.loseContext();`);await delay(120);
+    await call(`window.__loseTerrainContext=R3D.context.getExtension('WEBGL_lose_context');if(!__loseTerrainContext)throw Error('context-loss test extension missing');__loseTerrainContext.loseContext();`);await delay(120);
     assert(await call('!R3D.ready&&!!terrainCanvas&&terrainCanvas.width>0'));
     await call('__loseTerrainContext.restoreContext();');const end=Date.now()+12000;let ready=false;while(Date.now()<end){ready=await call('R3D.ready&&R3D.unitsReady&&R3D.landscapeStats.detail.drawn>0');if(ready)break;await delay(40);}assert(ready,'GPU scene did not restore');
-    assert.equal(await call('units.reduce((n,u)=>n+u.soldiers,0)'),before);assert.equal(await call(`$('gl').getContext('webgl').getError()`),0);metrics.contextRestored=true;
+    assert.equal(await call('units.reduce((n,u)=>n+u.soldiers,0)'),before);assert.equal(await call(`R3D.context.getError()`),0);metrics.contextRestored=true;
   });
   fs.writeFileSync(path.join(reportDir,'phase2-metrics.json'),JSON.stringify(metrics,null,2));
 };

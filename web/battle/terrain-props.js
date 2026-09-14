@@ -46,7 +46,7 @@
     }
     function shadow(world,ex,matrix,area,quality){const l=loc(shadowProgram);gl.useProgram(shadowProgram);gl.uniformMatrix4fv(l.u.uMVP,false,matrix);gl.uniform2f(l.u.uCam,area.x,area.y);for(const [id,g] of batches(world,ex,area,area.radius*1.7+1500,quality,area,null))draw(shadowProgram,mesh(g.kind,g.lod,g.variant),g.items,'shadow:'+id);}
     function destroy(){for(const m of meshes.values())gl.deleteBuffer(m.buffer);meshes.clear();for(const b of uploads.values())gl.deleteBuffer(b.buffer);uploads.clear();gl.deleteProgram(program);gl.deleteProgram(shadowProgram);locations.clear();}
-    return{render,shadow,destroy,get stats(){return{instancing:true,drawn,triangles,lodCounts:lodCounts.slice(),geometryBuffers:meshes.size,uploadBytes,bufferAllocations:allocations};}};
+    return{render,shadow,destroy,idle(){uploadBytes=0;},get stats(){return{instancing:true,drawn,triangles,lodCounts:lodCounts.slice(),geometryBuffers:meshes.size,uploadBytes,bufferAllocations:allocations};}};
   }
   root.TMBattleProps={create};
 })(window);

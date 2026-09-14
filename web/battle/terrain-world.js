@@ -50,7 +50,14 @@
     const coast={};if(profile.coast||profile.island){if(profile.island||(profile.provinceMeta||{}).oceanSide==='left')coast.leftX=w*.07;else coast.rightX=w*.93;if(profile.island)coast.rightX=w*.93;}
     function coastX(side,y){const wav=70*Math.sin(y/h*23+phase)+45*Math.sin(y/h*51);return coast[side]+(side==='leftX'?1:-1)*wav;}
     function seaDepth(x,y){return Math.max(coast.leftX==null?-1e6:coastX('leftX',y)-x,coast.rightX==null?-1e6:x-coastX('rightX',y));}
-    const isWater=(x,y)=>seaDepth(x,y)>0||(riverInfo(x,y).distance<riverW*.5&&!crossingAt(x,y));
+    // Conservative broad phase: distant land cannot touch the river or wavering coast.
+    // The narrow phase retains the exact original segment and crossing rule, not a coarse water mask.
+    const waterBounds=river.reduce((b,p)=>({x0:Math.min(b.x0,p.x-riverW*.5),x1:Math.max(b.x1,p.x+riverW*.5),y0:Math.min(b.y0,p.y-riverW*.5),y1:Math.max(b.y1,p.y+riverW*.5)}),{x0:Infinity,x1:-Infinity,y0:Infinity,y1:-Infinity});
+    function isWater(x,y){
+      if(((coast.leftX!=null&&x<coast.leftX+115)||(coast.rightX!=null&&x>coast.rightX-115))&&seaDepth(x,y)>0)return true;
+      if(x<waterBounds.x0||x>waterBounds.x1||y<waterBounds.y0||y>waterBounds.y1)return false;
+      return riverInfo(x,y).distance<riverW*.5&&!crossingAt(x,y);
+    }
     const hills=[],forests=[],ponds=[];
     // Ridges flank a broad manoeuvre basin; low shoulders rather than disconnected circular cones.
     for(let i=0;i<12;i++){const side=i%2?.86:.14,main=.08+(i>>1)*.166,p=axis(side+(R()-.5)*.09,main);hills.push({...p,r:2200+R()*1900,height:((desert?360:550)+R()*850)*(.65+density*1.2),stretch:1.25+R()*.6});}

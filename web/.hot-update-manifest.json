@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.4.11",
   "entry": "index.html",
-  "generatedAt": "2026-09-13T13:42:50.747Z",
+  "generatedAt": "2026-09-14T06:27:56.085Z",
   "files": [
     {
       "path": "_preview_map.json",
@@ -1911,8 +1911,13 @@
     },
     {
       "path": "battle/index.html",
-      "sha256": "84f3f75967f1b82452951f125a99aa90a898977c7580ad617ad6009f7e53c38d",
-      "size": 375259
+      "sha256": "24200c706640af47c7d12dbbea3616d02f215e6e0a03b24d196dc0bf016fc8fd",
+      "size": 381242
+    },
+    {
+      "path": "battle/render-resolution.js",
+      "sha256": "12f33bb231b9f2ed9f4f523de63f20bc933acbc2be6c44c6478b97fbe0cef298",
+      "size": 1704
     },
     {
       "path": "battle/terrain-assets.js",
@@ -1920,9 +1925,14 @@
       "size": 6402
     },
     {
+      "path": "battle/terrain-frame-cache.js",
+      "sha256": "a702ca66a0e365777ce4872545b0ab51562c035f03758d7f235d2d2c25524b1c",
+      "size": 3785
+    },
+    {
       "path": "battle/terrain-landscape.js",
-      "sha256": "aba1b73bfc7ab2e4052d35a38ef07a485ff2107506fe35403fddc40e74269413",
-      "size": 13156
+      "sha256": "2a12f8959a6a67ee61e509aa7ff8c9ec4b8aefa4184e253bcad19569e46fc621",
+      "size": 13196
     },
     {
       "path": "battle/terrain-motion.js",
@@ -1936,8 +1946,8 @@
     },
     {
       "path": "battle/terrain-props.js",
-      "sha256": "aa00629f9e49170c4bd88909a11d4c6ffb5817a6a3394f34b3f678cde46fa5be",
-      "size": 8325
+      "sha256": "19e8ac24490203dddbeebec7298704253bdc1bafc0cacf0e3b69742903fcb3cd",
+      "size": 8348
     },
     {
       "path": "battle/terrain-shadows.js",
@@ -1946,13 +1956,13 @@
     },
     {
       "path": "battle/terrain-world.js",
-      "sha256": "b7806bba6987eac5cdd7940e7db90e2a5fa3e3571b5f960af06efb16cd478e7d",
-      "size": 12057
+      "sha256": "83ba5fb22330f2a77727a734cdf05a2e98fcf907621e3dafc643aeb71619cb34",
+      "size": 12694
     },
     {
       "path": "battle/unit-assets.js",
-      "sha256": "1512c5fc2430dd2dcbc9aab9d23295a28efe4a9e5ff3fe1f1e23174defa7a3d8",
-      "size": 10911
+      "sha256": "47b66646d2cf5926a299056edaf858d28f6835fec090959e31d7db6bc776059a",
+      "size": 13302
     },
     {
       "path": "battle/unit-command.js",
@@ -1960,9 +1970,19 @@
       "size": 3253
     },
     {
+      "path": "battle/unit-impostors.js",
+      "sha256": "5bb8c0691afa2569d28c15f1fd09482a25f94fab5d5f52c00329e349ea80d8de",
+      "size": 11261
+    },
+    {
       "path": "battle/unit-render.js",
-      "sha256": "2d09d158be3ab9c3d7083711f0c93ddf64e0d7a4ebc74ef1c413ba7273e93364",
-      "size": 7451
+      "sha256": "fd5e9a748d790a9f07547c8970cb34a46a35a4e420555ba5d8254a708e6bbbd2",
+      "size": 8866
+    },
+    {
+      "path": "battle/unit-visibility.js",
+      "sha256": "6d4037f4c5396733076c3946d7620313fd4b8e78156f70097ce546df82924bc6",
+      "size": 1005
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
@@ -1986,8 +2006,8 @@
     },
     {
       "path": "changelog.json",
-      "sha256": "af826a8e5400e6735b783a7b5380acdf6c2cf16efee015435d169a13c86b93c5",
-      "size": 1012805
+      "sha256": "f3da0e496aeb76516a3595f48568d4292d77e7f581cd70c181d32ace26caf91d",
+      "size": 1013082
     },
     {
       "path": "data/maps/default-map.json",
@@ -2211,7 +2231,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "54c831111790552524d5b309dbfdaf245f0aafdedf78a841181dfaada0c94122",
+      "sha256": "b838558e3588768a25ee5ad787d99591e5eba6649e1a6a46005dd4ff020daecb",
       "size": 69955
     },
     {
@@ -3586,7 +3606,7 @@
     },
     {
       "path": "tm-battle-embed.js",
-      "sha256": "a0eb3df9cdbc46e1b98e67e73e7241d5d7dcf47243c2d08870ffaed6edadf1dc",
+      "sha256": "84561e64f6c1ba613302f27eee3b97da02cab0e3d986e6cad613526bf73a7467",
       "size": 5122
     },
     {

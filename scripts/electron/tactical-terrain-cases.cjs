@@ -4,7 +4,7 @@ module.exports=async function({win,check,phase2}){
   const js=code=>win.webContents.executeJavaScript(code,true),delay=ms=>new Promise(r=>setTimeout(r,ms)),reportDir=path.dirname(process.env.TM_BRIDGE_TEST_REPORT);
   async function until(fn,label){const end=Date.now()+12000;while(Date.now()<end){const r=await fn();if(r)return r;await delay(35);}throw Error('not reached: '+label);}
   win.show();win.focus();await until(()=>js('!!(window.TMBattleEmbed&&window.TMBattleTurn&&MilitarySystems._battleHookInstalled&&MilitarySystems.validateBattleResult)&&document.readyState==="complete"'),'production battle embed');
-  const errors=[];win.webContents.on('console-message',(_,level,message)=>{if(level>=2)errors.push(message);});
+  const errors=[];win.webContents.on('console-message',(_,level,message)=>{if(level>=1)errors.push(message);});
   await js(`window.__terrainMessages=[];addEventListener('message',e=>{if(e.data&&/^battle/.test(e.data.type||''))__terrainMessages.push(e.data);});`);
   const cases=[{biome:'verdant',dir:'N'},{biome:'plain',dir:'E'},{biome:'snow',dir:'S',weather:'snow'},{biome:'desert',dir:'W'},{biome:'wetland',dir:'N',coast:true},{biome:'verdant',dir:'N',fort:true}];
   const observations=[];
@@ -18,7 +18,8 @@ module.exports=async function({win,check,phase2}){
     const call=code=>frame.executeJavaScript(code,true);
     await call(`$('cmpGo').click()`);
     await check(p.biome+'/'+p.dir+' real shared height, water, props and GPU draw',async()=>{
-      const r=await call(`(()=>{const t=TERR.tactical;return{key:t.key,props:t.props.length,houses:t.props.filter(p=>p.kind==='house').length,stats:R3D.landscapeStats,fields:t.fields.length,army:units.filter(u=>!u._hero).reduce((n,u)=>n+u.soldiers,0),error:$('gl').getContext('webgl').getError(),height:elevAt(t.objective.x,t.objective.y),sameHeight:t.heightAt(t.objective.x,t.objective.y)===elevAt(t.objective.x,t.objective.y),crossings:t.crossings.map(b=>({kind:b.kind,move:terrMove({x:b.x,y:b.y,type:'step',sub:'spear'})}))};})()`);
+      const r=await call(`(()=>{const t=TERR.tactical;return{key:t.key,props:t.props.length,houses:t.props.filter(p=>p.kind==='house').length,stats:R3D.landscapeStats,fields:t.fields.length,army:units.filter(u=>!u._hero).reduce((n,u)=>n+u.soldiers,0),error:R3D.context.getError(),height:elevAt(t.objective.x,t.objective.y),sameHeight:t.heightAt(t.objective.x,t.objective.y)===elevAt(t.objective.x,t.objective.y),crossings:t.crossings.map(b=>({kind:b.kind,move:terrMove({x:b.x,y:b.y,type:'step',sub:'spear'})}))};})()`);
+      fs.writeFileSync(path.join(reportDir,'draw-'+index+'.json'),JSON.stringify({result:r,errors},null,2));
       assert(r.stats&&r.stats.vertices>10000);assert(r.props<8000);assert(r.houses>0);assert(r.fields>0);assert.equal(r.error,0);assert(r.sameHeight);assert.equal(r.army,8000);assert(r.crossings.every(b=>b.move>=(b.kind==='bridge'?1:.8)));
       observations.push({...p,...r,startupMs:Date.now()-launched});
     });
@@ -27,7 +28,10 @@ module.exports=async function({win,check,phase2}){
       fs.writeFileSync(path.join(reportDir,'picking-'+index+'.json'),JSON.stringify(r,null,2));
       assert(r.some(p=>p.objective));assert(r.find(p=>p.objective).error<6,'visible objective picking error '+r.find(p=>p.objective).error);assert(r.every(p=>p.screenError<.3),'ray must hit the same screen pixel, including occluded background points');observations[index].maxPickingError=r.find(p=>p.objective).error;
     });
+    if(index===0)await require('./tactical-cache-cases.cjs')({frame,check,reportDir});
     await check(p.biome+'/'+p.dir+' visible-frame timing stays bounded',async()=>{
+      if(index===0&&process.env.TM_BRIDGE_TACTICAL_TRACE==='1'){const trace=require('electron').contentTracing;await trace.startRecording({categoryFilter:'devtools.timeline,blink,cc,gpu,disabled-by-default-devtools.timeline',traceOptions:'record-until-full'});await delay(2000);await trace.stopRecording(path.join(reportDir,'gpu-trace.json'));}
+      const gpu=await call(`(()=>{const gl=R3D.context,e=gl.getExtension('WEBGL_debug_renderer_info');return{renderer:e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),width:gl.canvas.width,height:gl.canvas.height,css:{W,H},units:R3D.unitStats,landscape:R3D.landscapeStats};})()`);fs.writeFileSync(path.join(reportDir,'gpu-'+index+'.json'),JSON.stringify(gpu,null,2));
       const r=await call(`new Promise(resolve=>{const times=[];let last=performance.now();function sample(now){times.push(now-last);last=now;if(times.length===45){times.sort((a,b)=>a-b);resolve({median:times[22],p95:times[42]});}else requestAnimationFrame(sample);}requestAnimationFrame(sample);})`);
       assert(r.median<80&&r.p95<160,'frame intervals '+JSON.stringify(r));observations[index].frameMs=r;
     });

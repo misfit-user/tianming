@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var BATTLE_URL = 'battle/index.html?v=20260913-battle3'; // 带缓存戳，避免旧iframe协议配新主游戏
+  var BATTLE_URL = 'battle/index.html?v=20260914-battle7'; // 带缓存戳，避免旧iframe协议配新主游戏
   var START_TIMEOUT = 12000;
 
   function launch(config) {

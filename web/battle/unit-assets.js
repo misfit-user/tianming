@@ -4,10 +4,10 @@
 (function(root,factory){'use strict';const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.TMBattleUnitAssets=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
   const kinds=['spear','sword','halberd','shock','heavy','horse','bow','crossbow','musket','cannon','guard','general','dead'];
-  const cache=new Map(),C={cloth:[.52,.20,.13],metal:[.26,.29,.30],edge:[.58,.58,.51],gold:[.64,.47,.23],skin:[.69,.49,.33],wood:[.34,.22,.12],leather:[.16,.12,.09],hair:[.10,.09,.08],horse:[.37,.24,.15],dark:[.08,.09,.09]};
+  const cache=new Map(),indexedCache=new Map(),C={cloth:[.52,.20,.13],metal:[.26,.29,.30],edge:[.58,.58,.51],gold:[.64,.47,.23],skin:[.69,.49,.33],wood:[.34,.22,.12],leather:[.16,.12,.09],hair:[.10,.09,.08],horse:[.37,.24,.15],dark:[.08,.09,.09]};
   function kindFor(u){if(u._hero||u.emperor)return'general';if(kinds.includes(u.sub))return u.sub;return{step:'spear',cav:'shock',bow:'bow',art:'cannon',guard:'guard'}[u.type]||'spear';}
   function generate(kind,lod){
-    if(!kinds.includes(kind))kind='spear';lod=Math.max(0,Math.min(2,lod|0));const key=kind+':'+lod;if(cache.has(key))return cache.get(key);
+    if(!kinds.includes(kind))kind='spear';lod=Math.max(0,Math.min(3,lod|0));const key=kind+':'+lod;if(cache.has(key))return cache.get(key);
     const vertices=[],min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],features=[];let part=0,material=0;
     const seg=lod===0?10:lod===1?7:4,ring=lod===0?5:lod===1?3:2;
     function tri(a,b,c,color){const u=b.map((v,i)=>v-a[i]),v=c.map((v,i)=>v-a[i]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],l=Math.hypot(...n);if(l<1e-9)return;for(const p of [a,b,c]){for(let j=0;j<3;j++){min[j]=Math.min(min[j],p[j]);max[j]=Math.max(max[j],p[j]);}vertices.push(...p,n[0]/l,n[1]/l,n[2]/l,...color,part,material);}}
@@ -50,7 +50,23 @@
       if(['bow','horse','crossbow'].includes(weapon))withPart(0,0,()=>{box(-.19,y+1.28,.23,.09,.27,.08,C.leather);if(lod<2)for(let i=0;i<4;i++)tube([-.25+i*.038,y+1.43,.23],[-.25+i*.038,y+1.81,.25],.007,.007,C.wood,3);});
     }
     const mounted=['shock','heavy','horse','general'].includes(kind);
-    if(mounted){
+    if(lod===3){
+      features.push('distant-silhouette');
+      if(kind==='cannon'){box(0,.44,.08,.37,.14,.78,C.wood);tube([0,.77,.54],[0,.91,-1.18],.17,.12,C.metal,4);for(const x of [-.54,.54])tube([x-.06,.35,.15],[x+.06,.35,.15],.35,.35,C.wood,6);}
+      else{
+        const y=mounted?.90:0;
+        if(mounted){ellipsoid(0,1.00,.13,.31,.36,.76,C.horse,4,2);tube([0,1.06,-.37],[0,1.71,-.72],.22,.14,C.horse,4);box(0,1.62,-.85,.13,.16,.25,C.horse);for(const x of [-.23,.23])for(const z of [-.44,.58])box(x,.44,z,.052,.44,.069,C.horse);}
+        for(const x of [-.16,.16])withPart(x<0?1:2,1,()=>box(mounted?x*2:x,y+.48,.015,.085,.37,.11,C.cloth));
+        withPart(0,1,()=>box(0,y+1.20,0,.27,.35,.19,C.cloth));withPart(0,2,()=>{box(0,y+1.38,-.02,.28,.16,.21,C.metal);ellipsoid(0,y+1.85,0,.15,.17,.15,C.skin,4,2);tube([0,y+1.94,0],[0,y+2.12,0],.18,.015,C.metal,4);});
+        withPart(4,2,()=>{if(['sword','dead'].includes(kind)){blade([.32,y+1.15,-.28],[.32,y+2.02,-.44],.035,C.edge);tube([-.37,y+1.12,-.29],[-.37,y+1.12,-.34],.31,.31,C.wood,5);}
+          else if(['bow','horse'].includes(kind)){tube([.30,y+.68,-.34],[.57,y+1.28,-.34],.025,.025,C.wood,3);tube([.57,y+1.28,-.34],[.30,y+1.85,-.34],.025,.025,C.wood,3);}
+          else if(kind==='crossbow'){box(.33,y+1.15,-.5,.04,.04,.33,C.wood);tube([-.02,y+1.16,-.72],[.70,y+1.16,-.72],.024,.024,C.metal,4);}
+          else if(kind==='musket')tube([.33,y+1.15,-.12],[.33,y+1.15,-1.05],.035,.022,C.metal,4);
+          else{tube([.34,y+.15,-.27],[.34,y+2.88,-.41],.017,.012,C.wood,3);blade([.34,y+2.87,-.41],[.34,y+3.1,-.41],.047,C.edge);}
+        });
+        if(kind==='general')withPart(8,1,()=>quad([-.3,y+1.51,.22],[.3,y+1.51,.22],[.38,y+.39,.45],[-.38,y+.39,.45],C.cloth));
+      }
+    }else if(mounted){
       features.push('horse','rider');withPart(0,3,()=>{ellipsoid(0,1.02,.12,.32,.41,.78,C.horse);tube([0,1.16,-.37],[0,1.76,-.70],.27,.16,C.horse);ellipsoid(0,1.73,-.83,.16,.20,.29,C.horse);ellipsoid(0,1.57,-1.02,.13,.12,.22,C.horse);for(const side of [-1,1])tube([side*.105,1.88,-.71],[side*.12,2.13,-.68],.045,.005,C.horse,4);tube([0,1.09,.83],[0,.44,1.09],.10,.025,C.hair,6);});
       for(const side of [-1,1])for(const front of [-1,1])withPart((side===front)?6:7,3,()=>{const x=side*.24,z=front*.49;tube([x,1.08,z],[x,.43,z+.04],.09,.06,C.horse,6);tube([x,.43,z+.04],[x,.09,z-.03],.054,.041,C.horse,6);material=0;box(x,.075,z-.05,.065,.075,.105,C.hair);});
       withPart(0,1,()=>{box(0,1.37,.07,.34,.06,.34,C.cloth);for(const side of [-1,1])box(side*.34,1.10,.13,.032,.27,.33,C.cloth);});
@@ -65,5 +81,6 @@
     if(kind==='dead'){min.fill(Infinity);max.fill(-Infinity);for(let i=0;i<vertices.length;i+=11){const y=vertices[i+1],z=vertices[i+2];vertices[i+1]=.48-z;vertices[i+2]=-y;const ny=vertices[i+4],nz=vertices[i+5];vertices[i+4]=-nz;vertices[i+5]=-ny;vertices[i+9]=0;for(let j=0;j<3;j++){min[j]=Math.min(min[j],vertices[i+j]);max[j]=Math.max(max[j],vertices[i+j]);}}}
     const model={kind,lod,stride:11,vertices:new Float32Array(vertices),count:vertices.length/11,triangles:vertices.length/33,height:mounted?3.14:kind==='cannon'?1.15:2.2,features:[...new Set(features)],bounds:{min,max}};cache.set(key,model);return model;
   }
-  return{kinds,generate,kindFor};
+  function indexed(kind,lod){const m=generate(kind,lod),key=m.kind+':'+m.lod;if(indexedCache.has(key))return indexedCache.get(key);const unique=new Map(),v=[],indices=new Uint16Array(m.count),bits=new Uint32Array(m.vertices.buffer,m.vertices.byteOffset,m.vertices.length);for(let i=0;i<m.count;i++){const row=m.vertices.subarray(i*11,i*11+11),k=bits.subarray(i*11,i*11+11).join(',');let index=unique.get(k);if(index===undefined){index=unique.size;unique.set(k,index);v.push(...row);}indices[i]=index;}const r={...m,vertices:new Float32Array(v),indices,uniqueVertices:unique.size};indexedCache.set(key,r);return r;}
+  return{kinds,generate,indexed,kindFor};
 });

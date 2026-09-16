@@ -191,6 +191,7 @@
    */
   function applyReformToTree(GM, reform, options) {
     if (!GM || !GM.officeTree) return { applied: false, summary: '无官制' };
+    if (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM) && !global.TM.NativeWorld.allowed(GM, 'reform', reform.authorityFactionId || GM.startContext.playerFactionId, reform.regionId, options && options.actorCharacterId)) return {applied:false,code:'native-reform-authority-denied',summary:'当前政治授权不允许此处改制'};
     if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
       var creation = global.TM.OfficeCreation, canonical = creation.normalize(reform), charter = reform._charter;
       if (charter && charter.name && !(canonical.position && !canonical.newDept) && !_treeHasName(GM.officeTree, charter.name)) {
@@ -198,6 +199,10 @@
       }
       var plan = creation.prepare(GM.officeTree, canonical, charter ? _charterPositions(charter, !!reform._charterDiscount) : null);
       if (!plan.ok) return { applied: false, summary: plan.summary, code: plan.code };
+      if (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM)) {
+        plan.node.authorityFactionId = plan.parent && plan.parent.authorityFactionId || GM.startContext.playerFactionId;
+        plan.additions.forEach(function(p){p.holderId=null;});
+      }
       if (plan.unchanged) return { applied: false, unchanged: true, summary: '官制已在册，无须重复设立：' + plan.path.join('／'), nodeId: plan.node.id };
       if (options && options.preview) return { applied: false, canApply: true, summary: plan.summary };
       if (!plan.existing) {

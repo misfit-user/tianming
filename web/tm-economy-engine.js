@@ -1458,7 +1458,19 @@
     return GM.fiscal.peasantBurden[regionId];
   }
 
+  function declaredTaxCollection(){return typeof CascadeTax!=='undefined'&&CascadeTax.isUnified&&CascadeTax.isUnified(GM,'player');}
+  function syncCollectionBurden(){
+    var report=GM.guoku&&GM.guoku.taxCollection;if(!report||!report.period||!report.regions)return null;
+    if(!GM.fiscal)GM.fiscal={};var byRegion={}; // arch-ok: EconFiscalLinkage initializes its derived burden view, not a treasury balance.
+    report.regions.forEach(function(row){
+      var money=row.resources.money,detail=row.collection.money,rates=[];
+      ['money','grain','cloth'].forEach(function(k){var regular=Number(row.resources[k].collectedRevenue)||0,extra=Number(row.collection[k].extraCollected)||0;if(regular>0)rates.push(extra/regular);});
+      byRegion[row.id]={regionId:row.id,period:report.period,flowBasis:'actual',nominal:money.claimedRevenue,regularPaid:money.collectedRevenue,peasantActual:money.collectedRevenue+detail.extraCollected,officialReceived:money.actualRevenue,extraPaid:detail.extraCollected,resources:row.collection,assessments:row.resources,levyLevels:{county:rates.length?Math.max.apply(Math,rates):0,prefecture:0,province:0,landlord:0,converter:0},pocketedByLocal:detail.withheldByAgent.clerk+detail.withheldByAgent.official,pocketedByLandlord:detail.withheldByAgent.power,pocketedByConverter:0,source:'cascade-collection'};
+    });
+    GM.fiscal.peasantBurden=byRegion;return report; // arch-ok: EconFiscalLinkage owns this projection of the canonical collection receipt; no funds are posted here.
+  }
   function calcPeasantBurden(regionId, nominalTax, mr) {
+    if(declaredTaxCollection()){syncCollectionBurden();return ensurePeasantBurden(regionId);}
     mr = mr || 1;
     var b = ensurePeasantBurden(regionId);
     b.nominal = nominalTax;
@@ -1528,6 +1540,7 @@
   }
 
   function allocateRegionTax(regionId, nominalTax, mr) {
+    if(declaredTaxCollection())return {localAmt:0,parentAmt:0,centerAmt:0,skipped:'cascade-already-owns-tax-receipts'};
     mr = mr || 1;
     var r = ensureRegionFiscal(regionId);
     var b = calcPeasantBurden(regionId, nominalTax, mr);
@@ -1573,41 +1586,86 @@
     if (!GM.transferOrders) GM.transferOrders = [];
   }
 
-  // 玩家诏令 / AI 建议 创建下拨
+  // Resolve existing accounts only. A missing region must not create a shadow
+  // property on an array that disappears when the campaign is saved.
+  function transferDestination(id) {
+    var hierarchy = GM.adminHierarchy || {};
+    var queue = Array.isArray(hierarchy) ? hierarchy.slice() : Object.values(hierarchy);
+    var visited = new Set(), matches = [];
+    while (queue.length) {
+      var node = queue.shift();
+      if (!node || typeof node !== 'object' || visited.has(node)) continue;
+      visited.add(node);
+      if (node.id === id && node.fiscal && node.fiscal.ledgers && node.fiscal.ledgers.money && Number.isFinite(node.fiscal.ledgers.money.stock)) matches.push(node);
+      ['children', 'divisions', 'subs', 'subRegions'].forEach(function(k) { if (Array.isArray(node[k])) queue.push.apply(queue, node[k]); });
+    }
+    if (matches.length > 1) return null;
+    if (matches.length === 1) return { account: matches[0], canonical: false };
+    var canonical = GM.fiscal && GM.fiscal.regions && GM.fiscal.regions[id];
+    if (canonical && canonical.ledgers && Number.isFinite(canonical.ledgers.money)) {
+      return { account: canonical, canonical: true };
+    }
+    var rows = GM.regions;
+    var region = Array.isArray(rows) ? rows.find(function(r) { return r && r.id === id; }) : rows && rows[id];
+    if (region && region.fiscal && region.fiscal.ledgers && region.fiscal.ledgers.money && Number.isFinite(region.fiscal.ledgers.money.stock)) {
+      return { account: region, canonical: false };
+    }
+    return null;
+  }
+
+  function restoreTransferObject(target, saved) {
+    Object.keys(target).forEach(function(k) { if (!Object.prototype.hasOwnProperty.call(saved, k)) delete target[k]; });
+    Object.keys(saved).forEach(function(k) { target[k] = saved[k]; });
+  }
+
+  // 玩家诏令 / AI 建议 创建下拨；先核目标与资金，成功扣款后才发布订单。
   function createTransferOrder(spec) {
-    ensureTransferOrderState();
+    spec = spec || {};
+    var amount = Number(spec.amount), from = spec.fromAccount || 'guoku.money';
+    if (!Number.isFinite(amount) || amount <= 0 || typeof spec.toRegion !== 'string' || !transferDestination(spec.toRegion)) {
+      return { success: false, reason: '调拨金额或目标账本无效' };
+    }
+    if (['guoku.money', 'neitang.money'].indexOf(from) < 0 || (spec.toAccount && spec.toAccount !== 'regional')) {
+      return { success: false, reason: '不支持的调拨账户' };
+    }
+    var source = GM[from.split('.')[0]], api = global.FiscalEngine;
+    var available = source && source.ledgers && source.ledgers.money ? source.ledgers.money.stock : source && (source.money != null ? source.money : source.balance);
+    if (!source || !Number.isFinite(available) || available < amount || !api ||
+        (source.money != null && source.money !== available) || (source.balance != null && source.balance !== available)) {
+      return { success: false, reason: '源账户资金不足、账本不一致或结算器未就绪' };
+    }
+    var months = spec.durationMonths == null ? 3 : Number(spec.durationMonths);
+    if (!Number.isFinite(months) || months <= 0) return { success: false, reason: '调拨期限无效' };
+    var turns = Math.max(1, Math.ceil(typeof global.turnsForMonths === 'function' ? global.turnsForMonths(months) : months));
     var order = {
       id: 'to_' + GM.turn + '_' + Math.random().toString(36).slice(2, 6),
-      fromAccount: spec.fromAccount || 'guoku.money',
-      toRegion:    spec.toRegion || null,
-      toAccount:   spec.toAccount || 'regional',
-      amount:      spec.amount || 0,
+      fromAccount: from,
+      toRegion:    spec.toRegion,
+      toAccount:   'regional',
+      amount:      amount,
       purpose:     spec.purpose || '赈济',
       status:      'pending',
       createTurn:  GM.turn,
       startTurn:   GM.turn + 1,
-      expectedEndTurn: GM.turn + ((typeof global.turnsForMonths === 'function') ? global.turnsForMonths(spec.durationMonths || 3) : Math.max(1, Math.floor(spec.durationMonths || 3))),
+      expectedEndTurn: GM.turn + turns,
       deliveredAmount: 0,
+      processedAmount: 0,
+      lostAmount: 0,
       lossRate:    0  // 运输损耗
     };
-    GM.transferOrders.push(order);
-
-    // 立即扣源
-    if (order.fromAccount === 'guoku.money' && GM.guoku) {
-      if (GM.guoku.balance < order.amount) {
-        order.status = 'failed';
-        order.failReason = '帑廪不足';
-        return { success: false, reason: '帑廪不足' };
-      }
-      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: order.amount }, '银钱调度'); // 收口·走真账
-    } else if (order.fromAccount === 'neitang.money' && GM.neitang) {
-      if (GM.neitang.balance < order.amount) {
-        order.status = 'failed';
-        order.failReason = '内帑不足';
-        return { success: false, reason: '内帑不足' };
-      }
-      if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromNeitang) FiscalEngine.spendFromNeitang({ money: order.amount }, '银钱调度'); // 收口·走真账
-      else GM.neitang.balance -= order.amount; // 沙箱兜底
+    var saved = JSON.parse(JSON.stringify(source));
+    try {
+      var payment = from === 'guoku.money'
+        ? api.trySpendFromGuoku({ amounts: { money: amount }, sinkTag: '钱款调拨', requireFullAmount: true })
+        : api.spendFromNeitang({ money: amount }, '钱款调拨');
+      var paid = payment && payment.deducted && payment.deducted.money;
+      if (paid && typeof paid === 'object') paid = paid.deducted;
+      if (!payment || !payment.ok || !Number.isFinite(paid) || Math.abs(paid - amount) > 1e-7) throw new Error('未足额扣款');
+      ensureTransferOrderState();
+      GM.transferOrders.push(order);
+    } catch (error) {
+      restoreTransferObject(source, saved);
+      return { success: false, reason: String(error && error.message || error) };
     }
     return { success: true, order: order };
   }
@@ -1620,31 +1678,48 @@
         o.status = 'pending';
         return;
       }
-      o.status = 'transit';
-
-      // 按期发放（每回合一份）
-      var totalTurns = Math.max(1, o.expectedEndTurn - o.startTurn);
-      var perTurn = o.amount / totalTurns;
-      // 运输损耗（腐败 + 距离）
-      var corruptionLoss = safe((GM.corruption && GM.corruption.subDepts.provincial || {}).true, 0) / 100 * 0.15;
-      var thisDelivery = perTurn * (1 - corruptionLoss);
-
-      // 交付到目标
-      if (o.toRegion) {
-        var r = ensureRegionFiscal(o.toRegion);
-        r.fiscal.ledgers.money.stock += thisDelivery;
-        r.publicTreasury.balance = r.fiscal.ledgers.money.stock;
-      }
-      o.deliveredAmount += thisDelivery;
-      o.lossRate = corruptionLoss;
-
-      if (GM.turn >= o.expectedEndTurn) {
-        o.status = 'completed';
-        if (typeof addEB === 'function') {
-          addEB('朝代', '拨银毕：' + o.purpose + '（' + Math.round(o.deliveredAmount / 10000) + ' 万两）',
-            { credibility: 'high' });
+      var destination = transferDestination(o.toRegion);
+      if (!destination || !Number.isFinite(o.amount) || o.amount <= 0) return;
+      var totalTurns = Math.max(1, o.expectedEndTurn - o.startTurn + 1);
+      var scheduled = o.amount * clamp((GM.turn - o.startTurn + 1) / totalTurns, 0, 1);
+      // Old saves record net delivery and a loss rate; infer already processed
+      // principal once, without issuing a second copy of delivered funds.
+      var processed = Number.isFinite(o.processedAmount) ? o.processedAmount
+        : Math.min(o.amount, (Number(o.deliveredAmount) || 0) / Math.max(0.01, 1 - clamp(Number(o.lossRate) || 0, 0, 0.99)));
+      var gross = Math.max(0, Math.min(o.amount - processed, scheduled - processed));
+      if (gross <= 1e-8) { if (processed >= o.amount - 1e-8) o.status = 'completed'; return; }
+      var depts = GM.corruption && GM.corruption.subDepts;
+      var corruptionLoss = clamp(Number(depts && depts.provincial && depts.provincial.true) || 0, 0, 100) / 100 * 0.15;
+      var lost = gross * corruptionLoss, thisDelivery = gross - lost;
+      var target = destination.account, before = JSON.parse(JSON.stringify(target)), orderBefore = JSON.parse(JSON.stringify(o));
+      try {
+        if (destination.canonical) {
+          target.ledgers.money += thisDelivery;
+          target.ledgerAudit = target.ledgerAudit || {};
+          var audit = target.ledgerAudit.money = target.ledgerAudit.money || { thisTurnIn: 0, thisTurnOut: 0, sources: {}, sinks: {}, history: [] };
+          audit.thisTurnIn = (Number(audit.thisTurnIn) || 0) + thisDelivery;
+          audit.sources = audit.sources || {};
+          audit.sources['钱款调拨'] = (Number(audit.sources['钱款调拨']) || 0) + thisDelivery;
+        } else {
+          var ledger = target.fiscal.ledgers.money;
+          ledger.stock += thisDelivery;
+          ledger.thisTurnIn = (Number(ledger.thisTurnIn) || 0) + thisDelivery;
+          ledger.sources = ledger.sources || {};
+          ledger.sources['钱款调拨'] = (Number(ledger.sources['钱款调拨']) || 0) + thisDelivery;
+          if (target.publicTreasury && target.publicTreasury.money) {
+            target.publicTreasury.money.stock = (Number(target.publicTreasury.money.stock) || 0) + thisDelivery;
+            target.publicTreasury.money.available = (Number(target.publicTreasury.money.available) || 0) + thisDelivery;
+          } else if (target.publicTreasury) target.publicTreasury.balance = ledger.stock;
         }
+        o.processedAmount = processed + gross;
+        o.lostAmount = (Number.isFinite(o.lostAmount) ? o.lostAmount : Math.max(0, processed - (Number(o.deliveredAmount) || 0))) + lost;
+        o.deliveredAmount = (Number(o.deliveredAmount) || 0) + thisDelivery;
+        o.lossRate = corruptionLoss;
+        o.status = o.processedAmount >= o.amount - 1e-8 ? 'completed' : 'transit';
+      } catch (error) {
+        restoreTransferObject(target, before); restoreTransferObject(o, orderBefore); throw error;
       }
+      if (o.status === 'completed' && typeof addEB === 'function') addEB('财政', '钱款调拨完成：' + o.purpose, { credibility: 'high' });
     });
 
     // 清理超老的 completed/failed（保留最近 30）
@@ -1663,6 +1738,11 @@
     var chars = GM.chars || [];
     var totalPaid = 0;
     chars.forEach(function(ch) {
+      if (typeof CharEconEngine !== 'undefined' && CharEconEngine.isDeclaredCharacterEconomy && CharEconEngine.isDeclaredCharacterEconomy(ch)) {
+        var received = CharEconEngine.settleSalaryReceipts(ch);
+        if (received && received.received) totalPaid += received.received.money || 0;
+        return;
+      }
       if (!ch.officialTitle || ch.retired || ch.dead) return;
       if (typeof CharEconEngine === 'undefined') return;
       try {
@@ -1720,10 +1800,12 @@
   // ═════════════════════════════════════════════════════════════
 
   function distributeIllicitIncome(mr) {
+    if(declaredTaxCollection())return; // Aggregate collection losses do not identify a named official's personal assets.
     if (typeof CharEconEngine === 'undefined') return;
     if (!GM.corruption) return;
     var chars = GM.chars || [];
     chars.forEach(function(ch) {
+      if (CharEconEngine.isDeclaredCharacterEconomy && CharEconEngine.isDeclaredCharacterEconomy(ch)) return;
       if (!ch.officialTitle || ch.retired || ch.dead) return;
       if ((ch.integrity || 50) > 65) return;  // 清官不贪
       try {
@@ -1827,6 +1909,13 @@
 
   // 民心受百姓负担影响
   function applyBurdenToMinxin(mr) {
+    if(declaredTaxCollection()){
+      var report=syncCollectionBurden();if(!report||report.period.turn!==(GM.turn||0)||GM.fiscal._collectionBurdenTurnKey===report.period.turnKey)return;
+      var rates=[];['money','grain','cloth'].forEach(function(k){var base=Number(report.totals.grossCollected[k])||0;if(base>0)rates.push((Number(report.totals.collection[k].extraCollected)||0)/base);});
+      var pressure=rates.length?Math.max.apply(Math,rates):0;GM.fiscal.extraCollectionPressure=pressure;
+      if(pressure>0&&typeof TM!=='undefined'&&TM.MinxinLedger&&TM.MinxinLedger.recordAndApply){TM.MinxinLedger.recordAndApply(GM,{sourceSystem:'fiscal-collection',kind:'taxation',delta:-pressure*4*report.period.days/30,reason:'正额之外又有征取，民间负担加重'});GM.fiscal._collectionBurdenTurnKey=report.period.turnKey;}
+      return;
+    }
     if (!GM.minxin || !GM.fiscal || !GM.fiscal.peasantBurden) return;
     var burdens = Object.values(GM.fiscal.peasantBurden);
     if (burdens.length === 0) return;
@@ -2084,8 +2173,11 @@
     if (!sc) return null;
     var depth = (sc.adminHierarchy && sc.adminHierarchy.depth) || 3;
     var levelNames = (sc.adminHierarchy && sc.adminHierarchy.levelNames) || ['道','州','县'];
-    var regions = _getRegionsArray(sc);
-    if (!regions.length && global.GM) regions = _getRegionsArray(global.GM);
+    // Levels are runtime bookkeeping, not edits to the reusable scenario template.
+    // An editor inspecting another world must not touch the current live world's tree.
+    var game = global.GM;
+    var regions = game && game.running && game.sid === sc.id ? _getRegionsArray(game) : [];
+    if (!regions.length) regions = _getRegionsArray(sc).map(function(r) { return Object.assign({}, r); });
     // 建立 id → level 映射
     var byId = {};
     regions.forEach(function(r) { if (r && r.id) byId[r.id] = r; });

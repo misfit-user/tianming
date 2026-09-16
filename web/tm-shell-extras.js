@@ -48,11 +48,8 @@
     wp.setAttribute('data-panel-key','weather');
     var _dateForWeather = (typeof calcDateFromTurn === 'function') ? calcDateFromTurn(GM.turn || 1) : null;
     var _mon = (_dateForWeather && (_dateForWeather.lunarMonth || _dateForWeather.solarMonth)) || (((GM.turn||1)-1)%12)+1;
-    var _seas='秋',_seasTxt='秋分',_seasDesc='鸿雁南飞';
-    if(_mon>=3&&_mon<=5){_seas='春';_seasTxt=['孟春','仲春','季春'][_mon-3];_seasDesc=['东风解冻','雷乃发声','萍始生'][_mon-3];}
-    else if(_mon>=6&&_mon<=8){_seas='夏';_seasTxt=['孟夏','仲夏','季夏'][_mon-6];_seasDesc=['蝼蝈鸣','蜩始鸣','腐草为萤'][_mon-6];}
-    else if(_mon>=9&&_mon<=11){_seas='秋';_seasTxt=['孟秋','仲秋','季秋'][_mon-9];_seasDesc=['凉风至','鸿雁来','草木黄落'][_mon-9];}
-    else{_seas='冬';var _wi=(_mon===12?0:_mon+1);_seasTxt=['孟冬','仲冬','季冬'][_wi];_seasDesc=['水始冰','蚯蚓结','鸡始乳'][_wi];}
+    var _weather=typeof _tmSeasonFromDate==='function'?_tmSeasonFromDate(_dateForWeather):{season:'',name:'',description:''};
+    var _seas=_weather.season,_seasTxt=_weather.name,_seasDesc=_weather.description;
     var _disasterTxt = '风调雨顺';
     if (GM.activeDisasters && GM.activeDisasters.length) _disasterTxt = (GM.activeDisasters[0].name || GM.activeDisasters[0].type || '异常');
     wp.innerHTML = '<div class="gs-panel-hdr"><div class="gs-panel-title">四 时 物 候</div><span class="gs-panel-cnt">'+_seasTxt+'</span></div>'
@@ -652,7 +649,7 @@
       var sCls = stress>=80?'crit':stress>=60?'warn':'';
       var sBadge = (sCls) ? '<span class="gs-cd-stress '+sCls+'" title="压力'+stress+'">'+(stress>=80?'崩':stress>=60?'紧':'压')+'</span>' : '';
       var officeT = c.officialTitle || c.title || '布衣';
-      var rankT = (typeof c.rankLevel === 'number') ? (c.rankLevel<=3?'正一品':c.rankLevel<=5?'正三品':c.rankLevel<=8?'正五品':'九品') : '';
+      var rankT = typeof getCharacterRankLabel==='function' ? getCharacterRankLabel(c,GM) : '';
       var fac = c.faction || '';
       // 情绪
       var mood = c.mood || c.currentMood || '';

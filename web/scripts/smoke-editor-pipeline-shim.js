@@ -18,14 +18,19 @@ ok(/window\.GameHooks = \{ on: function\(\)\{\}/.test(html), 'GameHooks.on = no-
 
 // 垫片必须在 defer 引擎脚本之前(否则裸调先抛)
 var shimIdx = html.indexOf('window.SettlementPipeline = {');
-var firstEngineIdx = html.indexOf('src="tm-mechanics.js"');
-var militaryIdx = html.search(/src="tm-military\.js(?:\?[^" ]*)?"/);
+function scriptIndex(name) {
+  var refs = Array.from(html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g));
+  var ref = refs.find(function(m) { return m[1].split(/[?#]/)[0] === name; });
+  return ref ? ref.index : -1;
+}
+var firstEngineIdx = scriptIndex('tm-mechanics.js');
+var militaryIdx = scriptIndex('tm-military.js');
 ok(shimIdx > 0 && firstEngineIdx > 0 && shimIdx < firstEngineIdx, '垫片位于 tm-mechanics.js 之前(parse 时先执行)');
 ok(shimIdx > 0 && militaryIdx > 0 && shimIdx < militaryIdx, '垫片位于 tm-military.js 之前');
 
 // 确认那 4 个有顶层无守卫 register 的引擎文件确被 editor.html 加载(垫片确有必要)
 ['tm-mechanics.js', 'tm-mechanics-world.js', 'tm-military.js', 'tm-feudal.js'].forEach(function (f) {
-  ok(new RegExp('src="' + f.replace(/\./g,'\\.') + '(?:\\?[^" ]*)?"').test(html), 'editor.html 加载 ' + f + '(含缓存戳，仍需垫片护其顶层 register)');
+  ok(scriptIndex(f) > 0, 'editor.html 加载 ' + f + '(需垫片护其顶层 register)');
 });
 
 console.log('\nsmoke-editor-pipeline-shim ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));

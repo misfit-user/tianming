@@ -1,9 +1,11 @@
 // @ts-check
 /// <reference path="../../types.d.ts" />
 // Behavior-preserving core migrated from the former origin classic script.
+import { createFiscalPosting } from './fiscal-posting.js';
 export function createCore(deps) {
   if (!deps || !deps.global) throw new Error('[AIChangeApplier] core dependencies missing');
   var global = deps.global;
+  var _FiscalPosting = createFiscalPosting(global);
   var _modules = { validators: null, reconcile: null };
 
   'use strict';
@@ -160,38 +162,15 @@ export function createCore(deps) {
   // ═══════════════════════════════════════════════════════════════════
 
   function _ensurePublicTreasuryResource(entity, resource) {
-    var treasury = _ensurePublicTreasury(entity);
-    if (!treasury) return null;
-    if (!treasury[resource]) treasury[resource] = { stock: 0, quota: 0, used: 0, available: 0, deficit: 0 };
-    return treasury[resource];
+    return entity ? _FiscalPosting.regionResource(entity, resource) : null;
   }
 
   function _readFiscalStock(target, resource) {
-    if (!target) return 0;
-    if (target.stock !== undefined || target.available !== undefined || target.quota !== undefined || target.deficit !== undefined) {
-      if (target.stock !== undefined) return Number(target.stock) || 0;
-      return Number(target.available) || 0;
-    }
-    if (resource === 'money') {
-      if (target.money !== undefined) return Number(target.money) || 0;
-      if (target.balance !== undefined) return Number(target.balance) || 0;
-    }
-    return Number(target[resource]) || 0;
+    return _FiscalPosting.readStock(target, resource);
   }
 
-  function _writeFiscalStock(target, resource, value) {
-    if (!target) return;
-    value = Number(value) || 0;
-    if (target.stock !== undefined || target.available !== undefined || target.quota !== undefined || target.deficit !== undefined) {
-      target.stock = value;
-      if (target.available !== undefined) target.available = value;
-      return;
-    }
-    target[resource] = value;
-    if (resource === 'money') target.balance = value;
-    if (target.ledgers && target.ledgers[resource]) {
-      target.ledgers[resource].stock = value;
-    }
+  function _writeFiscalStock(target, resource, value, meta) {
+    return _FiscalPosting.writeStock(target, resource, value, meta);
   }
 
   function _findChar(name) {
@@ -1089,6 +1068,7 @@ export function createCore(deps) {
     var G = global.GM;
     if (!G) return { ok: false };
     if (!aiOutput || typeof aiOutput !== 'object') return { ok: false };
+    _FiscalPosting.begin();
 
     var _validatorBaseline = _captureValidatorBaseline(G);
     // 先把 char_updates.alive/dead 规范化；end-turn dispatcher 会预先在原 p1 上做同一步并延后
@@ -1196,10 +1176,12 @@ export function createCore(deps) {
 
     // 4.5 地方官自主治理（localActions）—— 央地财政方案 Phase 3.3 discretionary
     // schema: { region, type:'disaster_relief|public_works_water|public_works_road|education|granary_stockpile|military_prep|charity_local|illicit', amount, reason, proposer }
-    (aiOutput.localActions || []).forEach(function(la) {
+    (aiOutput.localActions || []).forEach(function(la, localActionIndex) {
       if (!la || !la.region || !la.type) return;
       var div = _findDivisionByNameOrId(G, la.region);
       if (!div) { applied.failed.push({localAction:la, reason:'region not found'}); return; }
+      var privateLedger = global.TM && global.TM.CharacterEconomyLedger;
+      if (privateLedger && privateLedger.handleLocalDiversion(div, la, localActionIndex, applied.failed, G._turnReport)) return;
       if (!div.fiscal) div.fiscal = {};
       if (!div.fiscal.expenditures) div.fiscal.expenditures = { fixed:[], discretionary:[], imperial:[], illicit:[], downstream:[] };
       var bucket = (la.type === 'illicit') ? 'illicit' : 'discretionary';
@@ -1750,7 +1732,7 @@ export function createCore(deps) {
         }
       }
     })();
-    (aiOutput.fiscal_adjustments || []).forEach(function(fa) {
+    (aiOutput.fiscal_adjustments || []).forEach(function(fa, fiscalIndex) {
       if (!fa) return;
       // ★ fiscal 容差归一(2026-06-02·bug A)：AI 常用中文/自然名指账户与收支·若不归一则 target 解析为 null·
       //   此条 fiscal 静默漏账(财政死账真凶之一)。映射常见别名到 guoku/neitang/province: 与 income/expense。
@@ -1805,10 +1787,14 @@ export function createCore(deps) {
           fa._coercedOneTime = true;
         }
       }
+      var posting = _FiscalPosting.identity(G, Object.assign({}, fa, { resource: resource }), fiscalIndex);
       var entry = {
-        id: 'fa_' + (G.turn||0) + '_' + Math.random().toString(36).slice(2,6),
+        id: posting.id,
+        _postingSignature: posting.signature,
         name: fa.name || '',
         category: fa.category || '',
+        sourceTag: fa.sourceTag || '',
+        sourceName: fa.sourceName || '',
         resource: resource,
         amount: amount,
         reason: fa.reason || '',
@@ -1909,6 +1895,11 @@ export function createCore(deps) {
         entry.action = 'add';
       }
       if (target && containerKey) {
+        if (_FiscalPosting.findPosted(target[containerKey], posting)) {
+          fiscalCount++;
+          applied.semantic.fiscal_adjustments_replayed = (applied.semantic.fiscal_adjustments_replayed || 0) + 1;
+          return;
+        }
         target[containerKey].push(entry);
         fiscalCount++;
         // ★ 刀②·转账对嫌疑留痕：两笔照落·不动银·仅按对告警一次(供 playtest 核是否单边节流/增支误记成两库搬家)
@@ -1944,18 +1935,17 @@ export function createCore(deps) {
               actualApplied = cur;
               shortfall = amount - cur;
               executionStatus = 'partial';
-              _writeFiscalStock(stockTarget, resource, 0);
             } else {
               // 足额
               actualApplied = amount;
               shortfall = 0;
               executionStatus = 'completed';
-              _writeFiscalStock(stockTarget, resource, cur - amount);
             }
-          } else {
-            // 收入：直接加（若原为负·可抹平债务）
-            _writeFiscalStock(stockTarget, resource, cur + amount);
           }
+          _writeFiscalStock(stockTarget, resource, cur + (fa.kind === 'income' ? actualApplied : -actualApplied), {
+            game: G, target: fa.target, region: /^province:/.test(fa.target) ? immediateTarget : null,
+            entry: entry, kind: fa.kind, shortfall: shortfall
+          });
           if ((immediateTarget === G.guoku || immediateTarget === G.neitang) && resource === 'money') immediateTarget.balance = immediateTarget.money;
         }
         // 条目标记实际应用量+亏欠量+执行状态
@@ -1969,6 +1959,7 @@ export function createCore(deps) {
         if (shortfall > 0) {
           if (!G._fiscalShortfalls) G._fiscalShortfalls = [];
           G._fiscalShortfalls.push({
+            id: entry.id,
             turn: G.turn || 0,
             target: fa.target, resource: resource,
             name: entry.name, reason: entry.reason,
@@ -2254,7 +2245,8 @@ export function createCore(deps) {
 
     // ── 16. 财政三字段强制同步·防 money/balance/ledgers.stock 跑偏 ──
     // 多个引擎(applier/FixedExpense/AuthorityComplete/AuthorityEngines/Keju)各自写不同字段·此处兜底对齐
-    try { if (typeof _syncFiscalScalars === 'function') _syncFiscalScalars(G); } catch(_syE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_syE, 'applier] fiscal sync:') : console.warn('[applier] fiscal sync:', _syE); }
+    if (typeof _syncFiscalScalars === 'function') _syncFiscalScalars(G);
+    _FiscalPosting.syncStatements(G);
 
     return { ok: true, applied: applied };
   }
@@ -2982,6 +2974,8 @@ export function createCore(deps) {
       _alreadyResolvedState: _alreadyResolvedState,
       _readFiscalStock: _readFiscalStock,
       _writeFiscalStock: _writeFiscalStock,
+      _fiscalPostingIdentity: _FiscalPosting.identity,
+      _findFiscalPosting: _FiscalPosting.findPosted,
       onAppointment: onAppointment,
       onDismissal: onDismissal,
       _findEntity: _findEntity,

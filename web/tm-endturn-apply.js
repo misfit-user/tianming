@@ -4315,6 +4315,7 @@
           var _pNameW = (P.playerInfo && P.playerInfo.characterName) || '';
           p1.cultural_works.forEach(function(w) {
             if (!w || !w.author || !w.content || !w.title) return;
+            if (typeof _tmFindPresetCulturalWork === 'function' && _tmFindPresetCulturalWork(GM,w)) return;
             // ── 玩家保护：作者是玩家——除非玩家在本回合诏令中明确命自己作，否则过滤 ──
             if (_pNameW && w.author === _pNameW) {
               // 检查 motivation 是否 commissioned（由玩家诏令命作）
@@ -4541,13 +4542,15 @@
             // 应用 currentEffects 到资源/阶层
             if (u.currentEffects && typeof u.currentEffects === 'object') {
               Object.keys(u.currentEffects).forEach(function(k) {
+                if (/^(stateTreasury|privateTreasury|guoku|neitang)(?:\.(money|grain|cloth))?$/.test(k)) {
+                  _tmRecordSemanticFailure('fiscal',u.edictId,'诏令收支须另具财务凭据，本项尚未入账');
+                  return;
+                }
                 var v = parseFloat(u.currentEffects[k]) || 0;
                 entry.totalEffects[k] = (entry.totalEffects[k] || 0) + v;
                 // 已有变量：直接应用
                 if (GM.vars && GM.vars[k]) {
                   GM.vars[k].value = Math.max(GM.vars[k].min || 0, Math.min(GM.vars[k].max || 999999999, (GM.vars[k].value || 0) + v));
-                } else if (k === 'stateTreasury' && typeof GM.stateTreasury === 'number') {
-                  GM.stateTreasury = Math.max(0, GM.stateTreasury + v);
                 }
               });
             }
@@ -5221,7 +5224,7 @@
           if (P.timeline) {
             var _allTL = [].concat(P.timeline.past||[]).concat(P.timeline.future||[]);
             p1.timeline_triggers.forEach(function(tt) {
-              if (!tt.name) return;
+              if (!tt || !tt.name) return;
               var evt = _allTL.find(function(t) { return (t.name === tt.name || t.event === tt.name) && !t.triggered; });
               if (evt) {
                 evt.triggered = true;
@@ -5233,14 +5236,16 @@
             });
           }
           // 2. 也查找编辑器定义的事件（GM.events）
-          if (GM.events && GM.events.length > 0) {
+          if ((GM.events && GM.events.length > 0) || (GM.nativeWorld && GM.nativeWorld.events && GM.nativeWorld.events.length)) {
             p1.timeline_triggers.forEach(function(tt) {
-              if (!tt.name) return;
-              var gmEvt = GM.events.find(function(e) { return e.name === tt.name && !e.triggered; });
+              if (!tt || (!tt.name && !tt.eventId)) return;
+              var gmEvt = (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM)) ? global.TM.NativeWorld.resolveEvent(GM,tt) : GM.events.find(function(e) { return e.name === tt.name && !e.triggered; });
+              if(gmEvt&&gmEvt.triggered)return;
               if (gmEvt) {
                 gmEvt.triggered = true;
                 gmEvt.triggeredTurn = GM.turn;
                 gmEvt.triggeredResult = tt.result || '';
+                if(global.TM&&global.TM.NativeWorld&&global.TM.NativeWorld.enabled(GM)&&!global.TM.NativeWorld.eventVisible(GM,gmEvt))return;
                 // v0.2\u00B7\u4E8B\u4EF6\u5E76\u5165\u5FA1\u6848\u65F6\u653F:\u88AB AI \u89E6\u53D1\u7684\u7F16\u8F91\u5668\u4E8B\u4EF6\u82E5\u5E26 choices(\u5F85\u73A9\u5BB6\u51B3\u65AD)\u2192 \u8FDB currentIssues \u5FA1\u6848\u65F6\u653F\u00B7\u8BA9\u73A9\u5BB6\u5728\u90A3\u91CC\u6289\u62E9(\u5F00\u5173\u5F00\u00B7\u590D\u7528\u5F00\u5C40\u4E8B\u4EF6 issue \u7ED3\u6784)\u3002
                 //   \u65E0 choices(\u7EAF\u53D9\u4E8B/\u7EAF effect \u4E8B\u4EF6)\u2192 \u8D70\u539F addEB \u4E8B\u4EF6\u680F\u64AD\u62A5(\u8FD1\u4E8B\u901A\u77E5)\u3002\u5F00\u5173\u5173 \u2192 \u5168\u8D70\u539F addEB(\u96F6\u56DE\u5F52)\u3002
                 // 选项来源:choices(开局/史实式·tianqi7 用此)优先·playerChoices(剧本作者玩家选项·{label,consequence})兜底映射→choice 结构。

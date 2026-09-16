@@ -8,7 +8,7 @@
 (function (root) {
   'use strict';
   var TM = root.TM || (root.TM = {});
-  var EFFECTS = ['read', 'draft-write', 'runtime-write', 'memory-write', 'external', 'control'];
+  var EFFECTS = ['read', 'draft-write', 'runtime-write', 'memory-write', 'project-stage', 'external', 'control'];
   var RISKS = ['low', 'medium', 'high', 'critical'];
 
   function _own(o, k) { return !!o && Object.prototype.hasOwnProperty.call(o, k); }

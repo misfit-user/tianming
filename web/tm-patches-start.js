@@ -39,6 +39,74 @@ function _tmStartSidRows(key, sid, sc) {
   return rows;
 }
 
+/** Build the current world's initial manuscripts from its scenario, without AI enrichment or template mutation. */
+function _tmSeedCulturalWorks(source, sid) {
+  source = source || {};
+  var result = [], ids = Object.create(null), titles = Object.create(null);
+  [source.culturalWorks, source.presetWorks, source.culturalConfig && source.culturalConfig.presetWorks].forEach(function(rows) {
+    (Array.isArray(rows) ? rows : []).forEach(function(row) {
+      if (!row || (row.sid && sid && row.sid !== sid)) return;
+      var work = typeof row === 'string' ? {title:row,author:'无名',content:''} : _tmStartClone(row);
+      if (!work || typeof work !== 'object') return;
+      if (!work.title) work.title = work.name || '';
+      if (!work.title) return;
+      if (!work.author) work.author = work.creator || '无名';
+      if (typeof work.isForbidden !== 'boolean') work.isForbidden = false;
+      if (typeof work.isPreserved !== 'boolean') work.isPreserved = false;
+      if (!Array.isArray(work.appreciatedBy)) work.appreciatedBy = [];
+      if (!Array.isArray(work.echoResponses)) work.echoResponses = [];
+      var key = String(work.author).trim() + '\n' + String(work.title).trim();
+      if ((work.id && ids[work.id]) || titles[key]) return;
+      if (!work.id) {
+        var hash = 2166136261, identity = String(sid || '') + '\n' + key;
+        for (var i=0;i<identity.length;i++) { hash ^= identity.charCodeAt(i); hash = Math.imul(hash,16777619); }
+        work.id = 'preset_work_' + (hash >>> 0).toString(16);
+      }
+      work._scenarioPreset = true;
+      ids[work.id] = true; titles[key] = true;
+      result.push(work);
+    });
+  });
+  return result;
+}
+
+/** Saved scenario data precedes the installed catalogue; an existing runtime collection is never reseeded. */
+function _tmSavedCulturalSource(config, sid) {
+  config = config || {};
+  var rows = Array.isArray(config.scenarios) ? config.scenarios : [];
+  var saved = rows.find(function(sc) { return sc && sc.id === sid; });
+  if (saved) return saved;
+  if (config.scenario && (!sid || config.scenario.id === sid)) return config.scenario;
+  if (Array.isArray(config.culturalWorks) || Array.isArray(config.presetWorks) || config.culturalConfig) return config;
+  return typeof findScenarioById === 'function' && sid ? findScenarioById(sid) || {} : {};
+}
+
+function _tmFindPresetCulturalWork(world, candidate) {
+  if (!world || !candidate) return null;
+  return (world.culturalWorks || []).find(function(work) {
+    return work && work._scenarioPreset && ((candidate.id && candidate.id === work.id)
+      || (String(candidate.title || '').trim() === String(work.title || '').trim()
+        && String(candidate.author || '').trim() === String(work.author || '').trim()));
+  }) || null;
+}
+
+function _tmCulturalRestoreOptions(config, world) {
+  return {
+    present: Object.prototype.hasOwnProperty.call(world, 'culturalWorks'),
+    archived: Object.prototype.hasOwnProperty.call(world, '_forgottenWorks') || Object.prototype.hasOwnProperty.call(world, '_savedForgottenWorks'),
+    source: _tmSavedCulturalSource(config, world.sid), sid: world.sid
+  };
+}
+
+function _tmRestoredCulturalWorks(world, restore) {
+  var rows = restore && restore.present ? world.culturalWorks : world._savedCulturalWorks;
+  if (restore && !restore.present && !Object.prototype.hasOwnProperty.call(world, '_savedCulturalWorks')) {
+    var legacy = Array.isArray(world.works) ? world.works : (Array.isArray(world.wenshiWorks) ? world.wenshiWorks : null);
+    rows = legacy || (restore.archived ? [] : _tmSeedCulturalWorks(restore.source, restore.sid));
+  }
+  return Array.isArray(rows) ? rows : [];
+}
+
 function _tmStartVariableRows(source) {
   if (!source) return [];
   if (Array.isArray(source)) return source;
@@ -307,6 +375,7 @@ function _tmStartRepairRuntimeData(sid, sc, reason) {
 function _tmStartDynastyContext(sc) {
   var dynasty = (sc && (sc.dynasty || sc.era)) || (typeof GM !== 'undefined' && GM && GM.eraState && GM.eraState.dynasty) || '';
   var phase = (typeof GM !== 'undefined' && GM && GM.eraState && GM.eraState.dynastyPhase) || 'peak';
+  if (phase === 'late' || phase === 'declining') phase = 'decline';
   return { dynasty: dynasty, phase: phase };
 }
 
@@ -351,7 +420,10 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
   try {
     if (typeof CascadeTax !== 'undefined' && CascadeTax && typeof CascadeTax.collect === 'function'
         && GM && GM.adminHierarchy && (GM.adminHierarchy.player || Object.keys(GM.adminHierarchy).length)) {
-      CascadeTax.collect({ faction: 'player', turnDays: 30 });
+      var startBudget = typeof CascadeTax.previewBudget === 'function' ? CascadeTax.previewBudget({game:GM,faction:'player',turnDays:(sc && sc.time && sc.time.daysPerTurn) || 10}) : null;
+      if (startBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {
+        CascadeTax.applyBudgetSnapshot({ game: GM, faction: 'player', budget: startBudget, turnDays: startBudget.period.days });
+      } else CascadeTax.collect({ faction: 'player', turnDays: 30 });
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-fiscal'); } catch(_) {} }
 
@@ -360,19 +432,35 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
   try {
     if (typeof TM !== 'undefined' && TM.Renli) {
       if (typeof TM.Renli.ensurePilotSeeds === 'function') TM.Renli.ensurePilotSeeds(GM);
-      if (typeof TM.Renli.endturnTick === 'function') TM.Renli.endturnTick(GM, typeof P !== 'undefined' ? P : null);
+      if (sc && sc.populationConfig && sc.populationConfig.accounting && sc.populationConfig.accounting.schema === 'tm-population-ledger/2' && typeof TM.Renli.prime === 'function') TM.Renli.prime(GM, typeof P !== 'undefined' ? P : null);
+      else if (typeof TM.Renli.endturnTick === 'function') TM.Renli.endturnTick(GM, typeof P !== 'undefined' ? P : null);
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-renli'); } catch(_) {} }
 
   try {
     if (GM.turn === 1 && !GM._neitangPresetDone && typeof NeitangEngine !== 'undefined' && typeof NeitangEngine.initFromDynasty === 'function') {
-      NeitangEngine.initFromDynasty(ctx.dynasty, ctx.phase, sc || {});
+      NeitangEngine.initFromDynasty(ctx.dynasty, ctx.phase, sc || {}, { budget: startBudget });
       GM._neitangPresetDone = true;
       fixed.push('neitang');
     } else if (typeof NeitangEngine !== 'undefined' && typeof NeitangEngine.ensureModel === 'function') {
       NeitangEngine.ensureModel();
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-neitang'); } catch(_) {} }
+
+  try {
+    if (typeof FiscalEngine !== 'undefined' && typeof FiscalEngine.initializePublicTreasuries === 'function') {
+      var publicOpening = FiscalEngine.initializePublicTreasuries({game:GM,scenario:sc});
+      if (!publicOpening.ok) throw new Error('public-treasury-opening: '+(publicOpening.missing||[]).join(', '));
+      if (!publicOpening.legacy) fixed.push('public-treasuries');
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-public-treasuries'); } catch(_) {} }
+  try {
+    if (typeof MilitarySystems !== 'undefined' && typeof MilitarySystems.initializeArmyArrears === 'function') {
+      var arrearsOpening = MilitarySystems.initializeArmyArrears({game:GM,scenario:sc});
+      if (arrearsOpening.ok) { if (arrearsOpening.registered) fixed.push('military-arrears'); }
+      else console.warn('[StartMilitaryArrears]', arrearsOpening.missing);
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-military-arrears'); } catch(_) {} }
 
   try {
     if (typeof HujiEngine !== 'undefined' && typeof HujiEngine.init === 'function') {
@@ -394,6 +482,12 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
       if (_tmStartBindMap(mapSource)) fixed.push('map');
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-map'); } catch(_) {} }
+
+  try {
+    if (typeof BorderRisk !== 'undefined' && typeof BorderRisk.prime === 'function') {
+      BorderRisk.prime(GM, typeof P !== 'undefined' ? P : null);
+    }
+  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-military-budget'); } catch(_) {} }
 
   if (fixed.length) {
     try { console.warn('[StartRuntimePrime]', { reason: reason || '', fixed: fixed }); } catch(_) {}
@@ -509,6 +603,10 @@ async function _tmStartCheckOpeningHistory(sc, requestToken) {
 }
 
 startGame=async function(sid){
+  if (window.TM && TM.NativeStart) {
+    if (TM.NativeStart.busy()) { toast('新局正在提交，请稍候再选择'); return; }
+    TM.NativeStart.cancel(false);
+  }
   var _startRequestToken = Number(window._tmStartRequestEpoch || 0) + 1;
   window._tmStartRequestEpoch = _startRequestToken;
   if (typeof window._tmStartOpeningCleanup === 'function') {
@@ -537,8 +635,17 @@ startGame=async function(sid){
   }
   var sc=_tmStartFindScenario(sid, 'startGame-pre') || findScenarioById(sid);
   if(!sc){_tmStartRestoreSelectionAfterFailure(_startRequestToken);toast("\u672A\u627E\u5230");return;}
+  if (sc.nativeStart) {
+    if (!(window.TM && TM.NativeStart)) { _tmStartRestoreSelectionAfterFailure(_startRequestToken); toast('原生身份选择模块未加载'); return; }
+    await TM.NativeStart.open(sc, _startRequestToken);
+    return;
+  }
   if (!_tmStartValidateScenarioBeforeLaunch(sc)) { _tmStartRestoreSelectionAfterFailure(_startRequestToken); return; }
   if (!_tmStartConfirmModelRequirementsBeforeLaunch(sc)) { _tmStartRestoreSelectionAfterFailure(_startRequestToken); return; }
+  // Opening fallback/history correction is presentation for this launch, not an
+  // edit of the immutable catalog template. Nested runtime collections are cloned
+  // by doActualStart's existing owner; do not duplicate the whole world here.
+  sc = Object.assign({}, sc);
   _$("scn-page").classList.remove("show");
   _$("launch").style.display="none";
 
@@ -1101,8 +1208,15 @@ function doActualStart(sid, requestToken){
   // 初始化GM（完整版，包含所有必要属性）
   var sc=_tmStartFindScenario(sid, 'doActualStart-find') || findScenarioById(sid);
   if(!sc){toast("\u672A\u627E\u5230");return;}
+  var _caps = sc.scenarioCompatibility && sc.scenarioCompatibility.requiredCapabilities;
+  if (_caps && ((_caps.populationViews && !(window.ClassEngine && ClassEngine.supportsPopulationViews)) || (_caps.scenarioActions && !(window.TM && TM.ScenarioEffects)) || (_caps.factionDelivery && !(window.TM && TM.FactionNpcGuoku && TM.FactionNpcGuoku.transferToPlayer && window.FiscalEngine && FiscalEngine.tryAddToGuoku)))) {
+    toast('此剧本需要人口观察与事件执行兼容补丁，请先完成接入后再新开局。');
+    if (typeof hideLoading === 'function') hideLoading();
+    return;
+  }
+  if (sc.nativeStart && !window.__tmNativePreparation) throw new Error('多身份剧本必须通过原生选择与隔离提交入口');
   _tmResetScenarioScopedConfig(P);
-  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};GM._campaignId=(typeof window._tmNewCampaignId==='function')?window._tmNewCampaignId():('tmc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14));GM._timelineId=(typeof window._tmNewTimelineId==='function')?window._tmNewTimelineId():('tml_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14));if(_prevSaveName)GM.saveName=_prevSaveName; // arch-ok new-game constructor owns campaign/timeline identity and the initial GM aggregate
+  var _prevSaveName=GM.saveName||'';GM={running:true,sid:sid,turn:1,culturalWorks:_tmSeedCulturalWorks(sc,sid),_forgottenWorks:[],vars:{},rels:{},chars:[],facs:[],items:[],armies:[],evtLog:[],conv:[],busy:false,memorials:[],qijuHistory:[],jishiRecords:[],biannianItems:[],officeTree:P.officeTree?deepClone(P.officeTree):[],wenduiTarget:null,wenduiHistory:{},officeChanges:[],shijiHistory:[],allCharacters:[],classes:[],parties:[],techTree:[],civicTree:[],autoSummary:"",summarizedTurns:[],currentDay:0,eraName:"",eraNames:[],eraState:sc.eraState?deepClone(sc.eraState):(P.eraState?deepClone(P.eraState):{politicalUnity:0.7,centralControl:0.6,legitimacySource:'hereditary',socialStability:0.6,economicProsperity:0.6,culturalVibrancy:0.7,bureaucracyStrength:0.6,militaryProfessionalism:0.5,landSystemType:'mixed',dynastyPhase:'peak',contextDescription:''}),taxPressure:52,playerAbilities:{management:0,military:0,scholarship:0,politics:0},currentIssues:[],pendingConsequences:[],memoryAnchors:[],provinceStats:{},playerPendingTasks:[],playerCharacterId:null,regentSignal:null,regentState:{},npcContext:null,turnChanges:{variables:[],characters:[],factions:[],parties:[],classes:[],military:[],map:[]},_listeners:{},_changeQueue:[],triggeredHistoryEvents:{},rigidTriggers:{},offendGroupScores:{},activeRebounds:[],triggeredOffendEvents:{},_indices:null,postSystem:null,mapData:null,eraStateHistory:[],factionRelations:[],factionEvents:[],_tyrantDecadence:0,_tyrantHistory:[],_varMapping:null,stateTreasury:0,privateTreasury:0,_bankruptcyTurns:0,enYuanRecords:[],patronNetwork:[],activeSchemes:[],schemeCooldowns:{},eventCooldowns:{},yearlyChronicles:[],activeBattles:[],battleHistory:[],_turnBattleResults:[],activeWars:[],treaties:[],marchOrders:[],activeSieges:[],_rngCheckpoints:[]};GM._campaignId=(typeof window._tmNewCampaignId==='function')?window._tmNewCampaignId():('tmc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14));GM._timelineId=(typeof window._tmNewTimelineId==='function')?window._tmNewTimelineId():('tml_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14));if(_prevSaveName)GM.saveName=_prevSaveName; // arch-ok new-game constructor owns campaign/timeline identity and the initial GM aggregate
   GM.playerInfo = deepClone(sc.playerInfo || P.playerInfo || {}); // arch-ok new-game constructor owns initial live player snapshot
   GM._isFreshNewGame = true; // arch-ok new-game constructor owns fresh-game lifecycle flag
   try { if (typeof _tmRotateDesktopAutoSaveSession === 'function') _tmRotateDesktopAutoSaveSession('new-game'); }
@@ -1430,6 +1544,12 @@ function doActualStart(sid, requestToken){
       GM.letters = (GM.letters||[]).filter(function(x){return x && x._sid!==sid;});
       sc.openingLetters.forEach(function(x){var c=deepClone(x); c._sid=sid; if(c.isOpening==null)c.isOpening=true; GM.letters.push(c);});
     }
+    if (Array.isArray(sc.openingRumors) && typeof addEB === 'function') {
+      sc.openingRumors.forEach(function(x){
+        if (!x || !x.content || (GM.evtLog || []).some(function(e){ return x.id && e.ref === x.id; })) return;
+        addEB(x.type || '风议', x.content, { credibility: x.credibility || 'low', source: x.source || '', subject: x.subject || '', ref: x.id || '' });
+      });
+    }
     if(Array.isArray(sc.openingAudiences)){
       // 问对「阶下待见」运行时读 GM._pendingAudiences；开局远来求见(使节·告急·特请·非在京者动态浮现不了)由 openingAudiences 预置·打 sid·幂等。
       if (typeof _wdCleansePendingAudiences === 'function' && Array.isArray(GM._pendingAudiences)) _wdCleansePendingAudiences(function(x){return x && x._sid!==sid;});   // 唯一清洗写口(剔本 sid 旧预置)
@@ -1590,7 +1710,7 @@ function doActualStart(sid, requestToken){
   GM.parties=(P.parties||[]).filter(function(p){return p.sid===sid;}).map(function(p){return deepClone(p);});
   GM.techTree=(P.techTree||[]).filter(function(t){return t.sid===sid;}).map(function(t){var c=deepClone(t);c.unlocked=false;return c;});
   GM.civicTree=(P.civicTree||[]).filter(function(c){return c.sid===sid;}).map(function(c){var cp=deepClone(c);cp.adopted=false;return cp;});
-  GM.events=(P.events||[]).filter(function(e){return e.sid===sid;}).map(function(e){var ev=deepClone(e);if(ev.triggered===undefined)ev.triggered=false;return ev;});
+  GM.events=(P.events||[]).filter(function(e){return e.sid===sid && e.runtimePolicy!=="tm-scenario-decision/1";}).map(function(e){var ev=deepClone(e);if(ev.triggered===undefined)ev.triggered=false;return ev;});
   // 单一真相源(剧本隔离根治):刚性史事此前只存在于跨剧本累积的 P.rigidHistoryEvents(官方天启快照常驻·sid=天启)·
   // GM 没有对应数组→处理器/AI 被迫读 P 库→玩绍宋时会看到/触发天启的「魏忠贤自缢」等剧本事件。此处给当前局
   // 建一份只含本剧本的干净副本·让 gameplay 只读 GM(单剧本世界)·不再伸手进多剧本的 P 库。
@@ -1657,7 +1777,7 @@ function doActualStart(sid, requestToken){
       // 初始化门第等级（若缺失）
       // familyTier: 'imperial'=皇族宗室 | 'noble'=世家大族 | 'gentry'=地方士族 | 'common'=寒门
       if (!c.familyTier) {
-        if (c.isPlayer) c.familyTier = 'imperial';
+        if (c.isPlayer && !sc.startContext) c.familyTier = 'imperial';
         else if (c.title && /王|公|侯|伯/.test(c.title)) c.familyTier = 'noble';
         else c.familyTier = 'common'; // 默认寒门，开局后由AI丰富
       }
@@ -1674,6 +1794,7 @@ function doActualStart(sid, requestToken){
 
   // ── 标记玩家角色 & 玩家势力 ──
   (function _markPlayer() {
+    if (sc.startContext && window.TM && TM.NativeWorld) { TM.NativeWorld.initialize(GM, P, sc); return; }
     var pi = P.playerInfo;
     if (!pi) return;
     var pName = (pi.characterName || '').trim();
@@ -1952,7 +2073,7 @@ function doActualStart(sid, requestToken){
   }
 
   // 单一真相源:开局去重人物+从树回填officialTitle+派生任职者(与读档一致)
-  try { if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({ importSeats: true, dedupChars: true, force: true }); } catch (_e) {}
+  try { if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({ importSeats: true, dedupChars: !sc.startContext, force: true }); } catch (_e) {}
 
   // 构建索引系统（性能优化）
   showLoading('\u6784\u5EFA\u7D22\u5F15...', 50);
@@ -2012,6 +2133,11 @@ function doActualStart(sid, requestToken){
   _tmStartRepairRuntimeData(sid, sc, 'before-start-hook');
   _tmStartPrimeFormalRuntime(sid, sc, 'before-start-hook');
   GameHooks.run('startGame:after', sid);
+  // Scenario opt-in: materialize existing registration states before the first playable view.
+  if(sc.populationConfig && sc.populationConfig.initializeRegistrationAtStart===true){
+    if(!window.TM || !TM.HujiRuntimeBridge || typeof TM.HujiRuntimeBridge.maintain!=='function')throw Error('registration startup bridge unavailable');
+    TM.HujiRuntimeBridge.maintain(GM,{source:'new-game-registration',scenario:sc,applyHardEffects:false});
+  }
 
   // 5.1: 剧本完整度预检（非阻断式警告）
   var _checkWarnings = [];
@@ -2050,6 +2176,8 @@ function doActualStart(sid, requestToken){
   }
   hideLoading();
   enterGame();
+  // Opt-in authored decisions have one event queue, including their first-turn presentation.
+  if (_caps && _caps.scenarioActions && typeof checkHistoryEvents === "function") checkHistoryEvents();
   _tmStartRefreshFormalShell();
 
   if (_hasStartAI) {
@@ -2068,6 +2196,7 @@ function doActualStart(sid, requestToken){
 
   // 初始化科举制度（由AI判断是否启用）
   initKejuSystem(sc);
+  if (window.TM && TM.NativeWorld && sc.startContext) TM.NativeWorld.finishInitialization(GM);
 
   // 新局初始化全部完成后建立第一份稳定桌面自动档基线；timer 自身不再抓取 live GM/P。
   try {

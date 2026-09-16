@@ -55,13 +55,16 @@
         var existing = GM.partyState[p.name] || {};
         GM.partyState[p.name] = {
           name: p.name,
-          influence: (typeof p.influence === 'number') ? p.influence : (existing.influence || 30),
-          cohesion: (typeof p.cohesion === 'number') ? p.cohesion : (existing.cohesion || 50),
+          influence: (typeof p.influence === 'number') ? p.influence : (typeof existing.influence === 'number' ? existing.influence : 30),
+          cohesion: (typeof p.cohesion === 'number') ? p.cohesion : (typeof existing.cohesion === 'number' ? existing.cohesion : 50),
           reputationBalance: existing.reputationBalance !== undefined ? existing.reputationBalance : 0,  // -100..100 清名/恶名
           alliedWith: Array.isArray(p.allies) ? p.allies.slice() : (existing.alliedWith || []),
           conflictWith: Array.isArray(p.enemies) ? p.enemies.slice() : (existing.conflictWith || []),
           neutralWith: Array.isArray(p.neutrals) ? p.neutrals.slice() : (existing.neutralWith || []),
           officeCount: existing.officeCount || 0,
+          officeWeight: typeof existing.officeWeight === 'number' ? existing.officeWeight : (existing.officeCount || 0),
+          standing: existing.standing,
+          _officeCountInitialized: existing._officeCountInitialized === true,
           recentImpeachWin: existing.recentImpeachWin || 0,
           recentImpeachLose: existing.recentImpeachLose || 0,
           recentPolicyWin: existing.recentPolicyWin || 0,
@@ -349,43 +352,61 @@
     });
   }
 
-  // —— 党派状态更新 ——
-  function _updatePartyState() {
-    if (!global.GM || !Array.isArray(GM.parties) || GM.parties.length === 0) return;
-    if (!GM.partyState) initPartyState();
-    var turn = GM.turn || 1;
-
-    // 1. 统计各党在官位树中的人数 (iterate officeTree recursively)
-    var partyOfficeCounts = {};
-    (function walk(nodes) {
-      if (!Array.isArray(nodes)) return;
-      nodes.forEach(function(n) {
-        (n.positions || []).forEach(function(p) {
-          var holders = [];
-          if (p.holder) holders.push(p.holder);
-          if (Array.isArray(p.actualHolders)) {
-            p.actualHolders.forEach(function(ah){ if (ah && ah.name && holders.indexOf(ah.name) < 0) holders.push(ah.name); });
-          }
-          holders.forEach(function(charName) {
-            var ch = GM.chars && GM.chars.find(function(c){ return c.name === charName; });
-            if (!ch || !ch.party) return;
-            partyOfficeCounts[ch.party] = (partyOfficeCounts[ch.party] || 0) + 1;
-          });
-        });
-        if (n.subs) walk(n.subs);
+  // Each occupied seat counts once per living, identified holder; concurrent seats count separately.
+  // The rank of a party uses authored authority weights, while officeCount remains a literal seat count.
+  function partyOfficeSnapshot(G) {
+    var counts=Object.create(null),weights=Object.create(null),byId=Object.create(null),byName=Object.create(null),partyNames=Object.create(null),seenNodes=[],seenPositions=[],seenPositionIds=Object.create(null);
+    (G.parties||[]).forEach(function(p){if(p&&p.name){partyNames[p.name]=p.name;if(p.id)partyNames[p.id]=p.name;}});
+    (G.chars||[]).forEach(function(c){if(!c)return;if(c.id!=null){var id=String(c.id);if(!byId[id])byId[id]=[];byId[id].push(c);}if(c.name){if(!byName[c.name])byName[c.name]=[];byName[c.name].push(c);}});
+    function resolve(holder){
+      if(!holder||holder.generated===false)return null;
+      var id=holder.characterId!=null?String(holder.characterId).trim():'',rows=id?byId[id]:byName[holder.name];
+      if(!rows||rows.length!==1)return null;var ch=rows[0];return ch.alive===false||ch.dead===true?null:ch;
+    }
+    function walk(nodes){(nodes||[]).forEach(function(n){
+      if(!n||seenNodes.indexOf(n)>=0)return;seenNodes.push(n);
+      (n.positions||[]).forEach(function(p){
+        if(!p||seenPositions.indexOf(p)>=0)return;seenPositions.push(p);
+        var pid=p.id==null?'':String(p.id);if(pid&&seenPositionIds[pid])return;if(pid)seenPositionIds[pid]=true;
+        var holders=Array.isArray(p.actualHolders)?p.actualHolders:[{characterId:p.holderId,name:p.holder}].concat((p.additionalHolders||[]).map(function(name,i){return {characterId:(p.additionalHolderIds||[])[i],name:name};}));
+        var weight=typeof p.partyStandingWeight==='number'&&isFinite(p.partyStandingWeight)&&p.partyStandingWeight>=0?p.partyStandingWeight:1,seen=[];
+        holders.forEach(function(h){var ch=resolve(h);if(!ch||seen.indexOf(ch)>=0)return;seen.push(ch);var party=partyNames[ch.party];if(!party)return;counts[party]=(counts[party]||0)+1;weights[party]=Math.round(((weights[party]||0)+weight)*1000000)/1000000;});
       });
-    })(GM.officeTree || []);
+      if(Array.isArray(n.subs))walk(n.subs);if(Array.isArray(n.children))walk(n.children);
+    });}walk(G.officeTree||[]);return {counts:counts,weights:weights};
+  }
+  function primePartyStrife() {
+    if(!global.GM)return {initialized:false,reason:'no-game'};
+    if(typeof GM.partyStrife==='number'&&isFinite(GM.partyStrife))return {initialized:false,reason:'saved-value',value:GM.partyStrife};
+    var cfg=global.P&&P.mechanicsConfig&&P.mechanicsConfig.partyPolitics,initial=cfg&&cfg.initialStrife;
+    if(typeof initial!=='number'||!isFinite(initial)||initial<0||initial>100)return {initialized:false,reason:'no-valid-declaration'};
+    GM.partyStrife=initial; // arch-ok ThreeSystemsExt initializes an explicitly declared party-politics value and preserves existing save values
+    return {initialized:true,value:initial};
+  }
+
+  function partyHasOfficeBaseline(ps){return !!(ps&&(ps._officeCountInitialized===true||(typeof ps.officeCount==='number'&&isFinite(ps.officeCount)&&['governing','opposition','marginal'].indexOf(ps.standing)>=0)));}
+
+  // —— 党派状态更新 ——
+  function _updatePartyState(options) {
+    if (!global.GM || !Array.isArray(GM.parties) || GM.parties.length === 0) return;
+    options=options||{};
+    initPartyState();
+    var turn = GM.turn || 1, initializing=options.initialize===true;
+    var hadBaseline=GM.parties.some(function(p){return p&&partyHasOfficeBaseline(GM.partyState[p.name]);}),quiet={};
+    var snapshot=partyOfficeSnapshot(GM),partyOfficeCounts=snapshot.counts;
 
     // 2. 更新每个党派的 partyState
     GM.parties.forEach(function(p) {
       if (!p || !p.name) return;
       extendCharacterSocialFields_PartyMembers(p);
       var ps = GM.partyState[p.name];
-      if (!ps) { initPartyState(true); ps = GM.partyState[p.name]; }
+      if (!ps) { initPartyState(); ps = GM.partyState[p.name]; }
       if (!ps) return;
       var prevCount = ps.officeCount || 0;
       var newCount = partyOfficeCounts[p.name] || 0;
-      var delta = newCount - prevCount;
+      var prior=partyHasOfficeBaseline(ps)||hadBaseline;
+      quiet[p.name]=initializing||!prior;
+      var delta = !quiet[p.name] ? newCount - prevCount : 0;
       // 官位变化 → influence 推导
       if (delta !== 0) {
         ps.influence = Math.max(0, Math.min(100, ps.influence + delta * 3));
@@ -393,7 +414,12 @@
         ps.historyLog.push({ turn: turn, type: 'officeShift', delta: delta, influenceDelta: delta * 3 });
         if (ps.historyLog.length > 20) ps.historyLog = ps.historyLog.slice(-20);
       }
-      ps.officeCount = newCount;
+      if(!initializing||!prior){ps.officeCount=newCount;ps.officeWeight=snapshot.weights[p.name]||0;}
+      else if(typeof ps.officeWeight!=='number')ps.officeWeight=prevCount;
+      ps._officeCountInitialized=true;
+      ps.officeCountBasis='living-materialized-seats';
+      ps.officeCountNote='按具名在任者所占官位计数，兼任不同官位分别计；未具名与已故不计。';
+      if(quiet[p.name])return; // A baseline refresh must not consume either side of a pending canonical/engine numeric change.
       // 反响衰减
       ps.recentImpeachWin = Math.max(0, (ps.recentImpeachWin || 0) * 0.7);
       ps.recentImpeachLose = Math.max(0, (ps.recentImpeachLose || 0) * 0.7);
@@ -417,22 +443,25 @@
     //    此前党派只有数值没有「朝局地位」——占官最多也不过 influence±3·在野边缘化无任何后果。
     //    齿①：秉政党的基础阶层「朝中有人」小幅缓升（走 gateSatisfaction 总闸·<70 才升不推顶）；
     //    齿②：边缘党的基础阶层戳 _marginalPatronTurn·由 SocialFoundation.tickClassRadical ⑦ 项抬离心。
+    var politics=global.P&&P.mechanicsConfig&&P.mechanicsConfig.partyPolitics;
+    var configuredFloor=politics&&politics.governingWeightFloor;
+    var governingWeightFloor=typeof configuredFloor==='number'&&isFinite(configuredFloor)&&configuredFloor>0?configuredFloor:null;
     var maxOffice = 0;
     GM.parties.forEach(function(p) {
       if (!p || !p.name || !GM.partyState[p.name]) return;
-      var c = GM.partyState[p.name].officeCount || 0;
+      var c = GM.partyState[p.name].officeWeight || 0;
       if (c > maxOffice) maxOffice = c;
     });
     GM.parties.forEach(function(p) {
       if (!p || !p.name) return;
       var ps = GM.partyState[p.name];
       if (!ps) return;
-      var oc = ps.officeCount || 0;
+      var oc = ps.officeWeight || 0;
       var standing;
-      if (maxOffice > 0 && oc > 0 && oc >= maxOffice * 0.7) standing = 'governing';
+      if ((governingWeightFloor !== null && oc >= governingWeightFloor) || (governingWeightFloor === null && maxOffice > 0 && oc > 0 && oc >= maxOffice * 0.7)) standing = 'governing';
       else if (oc > 0 || (ps.influence || 0) >= 25) standing = 'opposition';
       else standing = 'marginal';
-      if (ps.standing && ps.standing !== standing) {
+      if (!quiet[p.name] && ps.standing && ps.standing !== standing) {
         ps.historyLog = ps.historyLog || [];
         ps.historyLog.push({ turn: turn, type: 'standing', from: ps.standing, to: standing, reason: '朝局更迭' });
         if (ps.historyLog.length > 20) ps.historyLog = ps.historyLog.slice(-20);
@@ -441,7 +470,7 @@
         try {
           if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember && Array.isArray(GM.chars)) {
             var _smFrom = ps.standing, _smTxt, _smEmo, _smImp;
-            if (standing === 'governing') { _smTxt = '吾党秉政·朝中要职过半在握'; _smEmo = '喜'; _smImp = 7; }
+            if (standing === 'governing') { _smTxt = '吾党声势渐盛，议事又多故旧相援'; _smEmo = '喜'; _smImp = 7; }
             else if (_smFrom === 'governing') { _smTxt = '吾党失柄·见逐于朝堂中枢'; _smEmo = '怒'; _smImp = 8; }
             else if (standing === 'marginal') { _smTxt = '吾党于朝中日渐边缘·同志零落'; _smEmo = '忧'; _smImp = 6; }
             else { _smTxt = '吾党重列朝堂·渐有声势'; _smEmo = '喜'; _smImp = 5; }
@@ -459,6 +488,7 @@
       }
       ps.standing = standing;
       p.standing = standing;
+      if(quiet[p.name])return;
       var sb = p.socialBase || p.social_base || p.baseClasses;
       var sbList = Array.isArray(sb) ? sb : (typeof sb === 'string' ? sb.split(/[、,，\/]/) : []);
       var baseNames = [];
@@ -885,7 +915,9 @@
       // 2. 省份-势力反向索引
       buildProvinceOwnerIndex();
       // 3. 党派量化状态
+      primePartyStrife();
       initPartyState();
+      _updatePartyState({initialize:true});
       // 4. 军队
       if (Array.isArray(GM.armies)) GM.armies.forEach(extendArmyFields);
       // 5. 敌对势力军队兜底
@@ -1076,6 +1108,9 @@
     // 波2 回合循环
     updateFactionState: _updateFactionState,
     updatePartyState: _updatePartyState,
+    primePartyState: function(){return _updatePartyState({initialize:true});},
+    primePartyStrife: primePartyStrife,
+    partyOfficeSnapshot: partyOfficeSnapshot,
     updateMilitaryState: _updateMilitaryState,
     updateThreeSystemsOnEndTurn: updateThreeSystemsOnEndTurn,
     // 波3 NPC AI 决策器
@@ -1104,21 +1139,27 @@
     if (!sc || !Array.isArray(sc.openingLetters) || sc.openingLetters.length === 0) { GM._openingLettersActivated = true; return; }
     if (!Array.isArray(GM.letters)) GM.letters = [];
     var _days = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30);
+    var playerInfo = GM.playerInfo || P.playerInfo || {};
+    var playerName = playerInfo.characterName || sc.emperor || '天子';
     sc.openingLetters.forEach(function(tpl) {
       if (!tpl || !tpl.from) return;
       // 若此信已存在(按 from+subjectLine 去重)则跳过
-      if (GM.letters.some(function(l){ return l._fromOpeningLetter && l.from === tpl.from && l.subjectLine === tpl.subjectLine; })) return;
+      var subject = tpl.subjectLine || tpl.title || '';
+      var existing = GM.letters.find(function(l){
+        return l && ((tpl.id && l.id === tpl.id) || ((l.isOpening || l._fromOpeningLetter) && l.from === tpl.from && (l.subjectLine || l.title || '') === subject));
+      });
+      if (existing && existing._fromOpeningLetter) return;
       var letter = {
         id: 'op_ltr_' + (tpl.from || '') + '_' + Math.random().toString(36).slice(2, 6),
         from: tpl.from,
-        to: tpl.to || '朱由检',
+        to: tpl.to || playerName,
         fromLocation: tpl.fromLocation || '',
         toLocation: tpl.toLocation || '京师',
         letterType: tpl.letterType || 'personal',
         urgency: tpl.urgency || 'normal',
         // R: 字段名统一为 _cipher（渲染端读 l._cipher，下划线开头表"非剧情字段"惯例）
         _cipher: tpl.cipher || tpl._cipher || 'none',
-        subjectLine: tpl.subjectLine || '',
+        subjectLine: subject,
         content: tpl.content || '',
         suggestion: tpl.suggestion || '',
         sentTurn: 1,
@@ -1132,6 +1173,14 @@
         _background: tpl._background || '',
         isOpening: true
       };
+      if (existing) {
+        // The start constructor may already have copied the scenario row. Fill its runtime envelope without adding a second letter or resetting a read/replied letter.
+        Object.keys(letter).forEach(function(k){
+          if (existing[k] == null || existing[k] === '') existing[k] = letter[k];
+        });
+        existing._fromOpeningLetter = true;
+        return;
+      }
       GM.letters.push(letter);
       // 记忆：上书者记下此次陈奏
       try {
@@ -1156,7 +1205,7 @@
         text: '【开局·鸿雁】' + tpl.from + ' 自 ' + (tpl.fromLocation||'远方') + ' 来书：' + (tpl.subjectLine || '').slice(0, 40),
         tags: ['开局', '传书', tpl.from || '']
       });
-      console.log('[开局信件激活] ' + tpl.from + ' → ' + (tpl.to || '朱由检'));
+      console.log('[开局信件激活] ' + tpl.from + ' → ' + (tpl.to || playerName));
     });
     GM._openingLettersActivated = true;
   }

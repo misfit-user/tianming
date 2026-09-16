@@ -92,7 +92,8 @@ function sha256Buffer(buf) {
 }
 
 function publicKeyFingerprint(key) {
-  const der = crypto.createPublicKey(key).export({ type: 'spki', format: 'der' });
+  const publicKey = key instanceof crypto.KeyObject && key.type === 'public' ? key : crypto.createPublicKey(key);
+  const der = publicKey.export({ type: 'spki', format: 'der' });
   return sha256Buffer(der).slice(0, 24);
 }
 

@@ -1084,7 +1084,7 @@
       var events = tmfRenwuEvents(p);
       return '<div class="renwu-panel active"><div class="renwu-grid-2"><section class="renwu-sec"><div class="renwu-sec-title">仕途面板</div>' + tmfRenwuListRows([
         ['现职', p.office || p.title || '未仕'],
-        ['品秩', p.rank || p.role || '未记'],
+        ['品秩', p.rank || '未记'],
         ['入仕节点', p.joinTurn || p.entry || '未详'],
         ['可任方向', tmfRenwuText((p.role || '未记') + ' · ' + (p.stance || p.position || tmfRenwuFaction(p)), '未记')],
         ['所在', p.location || p.status || '未记'],
@@ -1098,7 +1098,7 @@
       return '<div class="renwu-panel active"><section class="renwu-sec"><div class="renwu-sec-title">身份档案</div><div class="renwu-id-grid">' + idRows.map(function(r){ return '<div class="renwu-id-cell"><span>' + esc(r[0]) + '</span><b>' + esc(tmfRenwuText(r[1], '未记')) + '</b></div>'; }).join('') + '</div></section>' +
       '<section class="renwu-sec"><div class="renwu-sec-title">公开身份</div>' + tmfRenwuListRows([
         ['官职', p.office || p.title || '未仕'],
-        ['品秩', p.rank || p.role || '未记'],
+        ['品秩', p.rank || '未记'],
         ['所属', tmfRenwuFaction(p)],
         ['门类', tmfRenwuGroup(p)],
         ['位置', p.location || '未记'],
@@ -1171,7 +1171,7 @@
         ['姓名', p.name || '未名'],
         ['字/号', p.courtesy || p.zi || p.styleName || '未记'],
         ['官职', p.office || p.title || '未仕'],
-        ['品秩', p.rank || p.role || '未记'],
+        ['品秩', p.rank || '未记'],
         ['所属', tmfRenwuFaction(p)],
         ['门类', tmfRenwuGroup(p)],
         ['所在', p.location || '未记'],

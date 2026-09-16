@@ -324,6 +324,15 @@
     // 玩家手删黑名单·撞同名直接拒绝重生 (永不重生·硬编码·AI 不可干涉)
     if (isCharNameDeleted(name)) return null;
 
+    // historical-agency-v21: reject before acquiring the per-name generation lock.
+    var agency = global.TM && global.TM.HistoricalAgency;
+    var openHistory = !!(agency && agency.isPlayerDriven());
+    var knownProfile = openHistory ? agency.findProfile(name) : null;
+    if (openHistory && (knownProfile || opts.birthYear != null || opts.deathYear != null)) {
+      var preflight = agency.temporalEligibility(Object.assign({name:name}, opts, knownProfile || {}));
+      if (!preflight.ok) throw new Error(preflight.reason);
+    }
+
     // 并发锁：若同名正在生成中，等待其完成（避免重复 API 调用）
     if (!GM._generatingChars) GM._generatingChars = {};
     if (GM._generatingChars[name]) {
@@ -529,6 +538,7 @@
       '  "timeAnomaly": false\n' +
       '}\n\u53EA\u8F93\u51FA JSON\u3002';
 
+    if (openHistory) prompt += agency.promptText() + '\n史实人物返回birthYear、deathYear（未知卒年可空）；出生年不得为迎合当前年份而改写，无法确认时返回error。';
     // ─── 时空锁定·按 status 动态拼 ───
     if (timelineStatus !== 'unknown') {
       prompt += '\n\n【时间线绝对锁定】当前游戏 ' + year + ' 年·剧本起 ' + scnStart + ' 年。\n';
@@ -589,10 +599,16 @@
 
         if (!data || typeof data !== 'object') throw new Error('\u89E3\u6790\u5931\u8D25');
         if (data.error) {
+          if (openHistory) throw new Error('史实不可现：' + data.error);
           // AI 拒绝生成（如史实已故）
           var _errMsg=data.error||'';var _help='';if(/\u53F2\u5B9E\u4E0D\u53EF\u73B0|\u5DF2\u4ED9|\u672A\u751F|\u8FC7\u4E16|\u53BB\u4E16|\u672A\u51FA\u751F|\u5C1A\u672A/.test(_errMsg)){var _stat=(birthY&&year<birthY)?'\u5C1A\u672A\u51FA\u751F':((deathY&&year>deathY)?'\u5DF2\u4ED9\u901D':'\u4E0D\u5728\u4E16');var _bi=(birthY?'\u00B7\u751F '+birthY:'')+(deathY?'\u00B7\u5352 '+deathY:'');_help='\uFF1A\u6B64\u4EBA\u4E8E '+year+' \u5E74'+_stat+_bi+'\u3002\u5EFA\u8BAE\uFF1A\u20460\u6362\u540C\u671D\u4EBA\u7269\u00B7\u20461\u8BBE\u7F6E\u4E2D\u5207\u201C\u6F14\u4E49\u6A21\u5F0F\u201D';}else{_help='\uFF1A'+_errMsg;}throw new Error('\u5386\u53F2\u4E0D\u53EF\u73B0'+_help);
         }
 
+        if (openHistory && (data.isHistorical || knownProfile || opts.isHistoricalHint)) {
+          var temporal = agency.temporalEligibility(Object.assign({name:name}, data, knownProfile || {}), {year:year});
+          if (!temporal.ok) throw new Error('史实不可现：' + temporal.reason);
+          if (temporal.age != null) data.age = temporal.age;
+        }
         // 拼装 char 对象
         var bio = data.bio || '';
         // 时空裂痕段·跨时空时硬补充(防 AI 漏写)
@@ -770,6 +786,7 @@
         };
 
         if (!GM.chars) GM.chars = [];
+        if (openHistory && data.isHistorical) { newChar.birthYear = data.birthYear; newChar.deathYear = data.deathYear; }
         createRuntimeCharacter(newChar);
 
         // 直接注册索引·O(1) 而非 O(N) 重建（previous envoy 场景的同类修）

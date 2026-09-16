@@ -75,8 +75,10 @@ test('real dossier card shows capped flow even without a stock delta, and truthf
   const f = fixture(); Object.assign(f.c, { esc: String, hasDisplayValue: v => v != null && v !== '', compactText: String });
   vm.runInContext(card, f.c, { filename: 'phase8-formal-map-dossier.js:bkYeCard' });
   const b = { name: '城墙', level: 5, status: 'completed', costActual: 100000 };
-  let html = f.c.bkYeCard(b, f.c.P); assert(html.includes('+6%/回合') && !html.includes('+15%')); assert(html.includes('地方库银 3000 两/回合'));
+  let html = f.c.bkYeCard(b, f.c.P); assert(html.includes('+6%/回合') && !html.includes('+15%')); assert(html.includes('地方库款 3000 两/回合'));
   b.status = 'damaged'; html = f.c.bkYeCard(b, f.c.P); assert(!html.includes('+6%')); assert(html.includes('修缮费 30000 两'));
   b.status = 'neglected'; html = f.c.bkYeCard(b, f.c.P); assert(!html.includes('+6%')); assert(html.includes('工成之利暂停'));
+  f.c.CurrencyUnit = { getUnit: () => ({ money: '贯' }) }; b.status = 'damaged';
+  html = f.c.bkYeCard(b, f.c.P); assert(html.includes('地方库款 3000 贯/回合') && html.includes('修缮费 30000 贯')); assert(!html.includes('30000 两'));
 });
 console.log(JSON.stringify({ pass, fail, skip: 0, waived: 0 })); process.exitCode = fail ? 1 : 0;

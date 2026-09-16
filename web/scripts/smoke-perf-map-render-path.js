@@ -12,7 +12,10 @@ for (const [geometry, d] of [
   [{ points: [[0, 0], [10, 0], [0, 10]] }, expected],
   [{ points: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 10 }] }, expected],
   [{ polygon: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 10 }] }, expected],
+  [{ polygon: [[0, 0], [10, 0], [0, 10]] }, expected],
+  [{ points: [0, 0, 10, 0, 0, 10] }, expected],
   [{ coords: [0, 0, 10, 0, 0, 10] }, expected],
+  [{ coords: ['0', '0', '10', '0', '0', '10'] }, expected],
   [{ points: [] }, ''], [{ points: [{ x: NaN, y: 1 }] }, '']
 ]) check('geometry ' + Object.keys(geometry)[0] + ' ' + d, () => {
   for (const legacy of [false, true]) {

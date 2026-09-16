@@ -836,6 +836,12 @@ function _calcOverCollectRate() {
 // 回退到老的 hukou × landTaxRate 估算·兼容 cascade 未跑过的早期回合
 // ═══════════════════════════════════════════════════════
 function computeTaxThreeNumber(nominalParam) {
+  if(typeof FiscalEngine!=='undefined'&&FiscalEngine.readAccountStatement&&typeof CascadeTax!=='undefined'&&CascadeTax.isUnified&&CascadeTax.isUnified(GM,'player')){
+    var statement=FiscalEngine.readAccountStatement({game:GM,account:GM.guoku,scope:'central'});
+    var period=statement.account.accounting,turn=period&&period.turn!=null?period.turn:GM.turn||0;
+    var current=GM._lastCascadeTaxTurn===turn&&GM._lastCascadeSummary;
+    if(statement.budget)return FiscalStatement.taxThree(current||statement.budget.totals);
+  }
   var c = GM.corruption || {};
   var _baseCorr = (c.trueIndex != null ? c.trueIndex : 30);
   var fc = ((c.subDepts && c.subDepts.fiscal) || {}).true;
@@ -877,7 +883,8 @@ function computeTaxThreeNumber(nominalParam) {
       gaps: {
         clerk:    floatingCollection,                // 浮收 → 州县吏胥
         official: skimmed,                            // 被贪 → 各级私分
-        power:    lostTransit                         // 路耗 → 豪强抵偿/路途流失
+        power:    0,
+        transit:  lostTransit                         // 在途损耗单列，不等同豪强侵占
       },
       _source: 'cascade'
     };
@@ -888,7 +895,7 @@ function computeTaxThreeNumber(nominalParam) {
   if (!nominal) {
     return { nominal: 0, actualReceived: 0, peasantPaid: 0,
              leakageRate: 0, overCollectRate: 0, totalLoss: 0,
-             gaps: { clerk:0, official:0, power:0 }, _source: 'fallback_zero' };
+             gaps: { clerk:0, official:0, power:0, transit:0 }, _source: 'fallback_zero' };
   }
   var leakageRate = Math.min(0.7, (fc + pc) / 200 * 0.7);
   var actualReceived = nominal * (1 - leakageRate);
@@ -908,7 +915,8 @@ function computeTaxThreeNumber(nominalParam) {
     gaps: {
       clerk:    totalLoss * clerkRatio,
       official: totalLoss * officialRatio,
-      power:    totalLoss * powerRatio
+      power:    totalLoss * powerRatio,
+      transit:  0
     },
     _source: 'fallback_estimate'
   };
@@ -916,7 +924,9 @@ function computeTaxThreeNumber(nominalParam) {
 
 function renderTaxThreeNumberBlock(nominal, opts) {
   opts = opts || {};
-  var f = computeTaxThreeNumber(nominal);
+  var f = opts.data || computeTaxThreeNumber(nominal);
+  var gapLabels = opts.gapLabels || {clerk:'州县吏胥',official:'各级私分',power:f.collectionDeclared?'豪强截留':'豪强抵偿',transit:'在途损耗',unallocated:'未分计'};
+  var gapText = function(key) { return String(gapLabels[key] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
   var label = opts.label || '正赋钱粮';
   var unit = opts.unit || '两';
   var fmt = function(v) {
@@ -952,11 +962,18 @@ function renderTaxThreeNumberBlock(nominal, opts) {
     html += '<div style="margin-top:0.6rem;padding-top:0.4rem;border-top:1px dashed var(--color-border-subtle);">';
     html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-bottom:0.3rem;">差额去向（' + fmt(f.totalLoss) + ' ' + unit + '）</div>';
     html += '<div style="display:grid;grid-template-columns:auto 1fr auto;gap:2px 12px;font-size:0.72rem;color:var(--txt-d);">';
-    html += '<span>州县吏胥</span><span style="text-align:right;">' + fmt(f.gaps.clerk) + '</span><span>' + Math.round(f.gaps.clerk/f.totalLoss*100) + '%</span>';
-    html += '<span>各级私分</span><span style="text-align:right;">' + fmt(f.gaps.official) + '</span><span>' + Math.round(f.gaps.official/f.totalLoss*100) + '%</span>';
-    html += '<span>豪强抵偿</span><span style="text-align:right;">' + fmt(f.gaps.power) + '</span><span>' + Math.round(f.gaps.power/f.totalLoss*100) + '%</span>';
+    html += '<span>' + gapText('clerk') + '</span><span style="text-align:right;">' + fmt(f.gaps.clerk) + '</span><span>' + Math.round(f.gaps.clerk/f.totalLoss*100) + '%</span>';
+    html += '<span>' + gapText('official') + '</span><span style="text-align:right;">' + fmt(f.gaps.official) + '</span><span>' + Math.round(f.gaps.official/f.totalLoss*100) + '%</span>';
+    html += '<span>' + gapText('power') + '</span><span style="text-align:right;">' + fmt(f.gaps.power) + '</span><span>' + Math.round(f.gaps.power/f.totalLoss*100) + '%</span>';
+    html += '<span>' + gapText('transit') + '</span><span style="text-align:right;">' + fmt(f.gaps.transit || 0) + '</span><span>' + Math.round((f.gaps.transit || 0)/f.totalLoss*100) + '%</span>';
+    if(f.collectionDeclared)html+='<span>'+gapText('unallocated')+'</span><span style="text-align:right;">'+fmt(f.gaps.unallocated||0)+'</span><span>'+Math.round((f.gaps.unallocated||0)/f.totalLoss*100)+'%</span>';
     html += '</div>';
     html += '</div>';
+  }
+
+  if(f.governmentScope==='central-and-regional'){
+    html+='<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--txt-d);">官收合计中央上供与地方留用。民间额外实缴 '+fmt(f.extraCollected||0)+' '+unit+'。</div>';
+    var nc=f.notCollected;if(nc)html+='<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--txt-d);">尚未征到：豪强抗纳 '+fmt(nc.resistance||0)+'，其余欠征 '+fmt(nc.other||0)+' '+unit+'；另有核减及征前损折 '+fmt(nc.assessmentReduction||0)+' '+unit+'。未缴之数不列入截留差额。</div>';
   }
 
   // 视觉化水槽（条形图）

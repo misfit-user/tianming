@@ -406,15 +406,23 @@
       events: []
     };
 
+    if (rules.accounting && rules.accounting.schema === 'tm-market-ledger/2') {
+      G.currency.accounting = JSON.parse(JSON.stringify(rules.accounting)); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      G.currency.accounting.referenceMouths = Math.max(1,Number(rules.accounting.referenceMouths)||1); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+    }
     // 启用币种 + 默认初始化
     ['gold','silver','copper','iron','shell'].forEach(function(k) {
       if (enabled[k]) {
         G.currency.coins[k].enabled = true;
-        G.currency.coins[k].stock = _defaultStock(k, dynasty);
+        var declaredCoin = rules.initialCoins && rules.initialCoins[k];
+        G.currency.coins[k].stock = declaredCoin && Number.isFinite(Number(declaredCoin.stock)) ? Math.max(0,Number(declaredCoin.stock)) : _defaultStock(k, dynasty); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
         G.currency.coins[k].rawReserve = G.currency.coins[k].stock * 0.1;
         // 典型成色
         if (k === 'silver') G.currency.coins[k].purity = 0.93;
         if (k === 'copper') G.currency.coins[k].purity = 1.0;
+        if (declaredCoin) ['rawReserve','purity','hoardingPressure','privateMintShare'].forEach(function(field){
+          if(declaredCoin[field]!=null && isFinite(Number(declaredCoin[field])))G.currency.coins[k][field]=Math.max(0,Number(declaredCoin[field])); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+        });
       }
     });
 
@@ -436,6 +444,7 @@
       G.currency.mintAgencies.push(makeMintAgency({ id:'mint_central_silver', name:'宝源局', type:'central', coinType:'silver', capacity:50000, purityStandard:0.93 }));
     }
 
+    if (Array.isArray(rules.mintAgencies)) G.currency.mintAgencies = rules.mintAgencies.map(makeMintAgency); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
     // 海外银流——仅明清启用
     if (dynasty === '明' || dynasty === '清' || rules.foreignFlowEnabled) {
       G.currency.foreignFlow.enabled = true;
@@ -444,6 +453,11 @@
     // 市场初始化粮价（结合年景）
     G.currency.market.yearFortune = 1.0 + (Math.random() - 0.5) * 0.4;
     G.currency.market.grainPrice = 100 * (1 / G.currency.market.yearFortune);
+    if (G.currency.accounting) {
+      Object.keys(rules.initialMarket||{}).forEach(function(key){var val=rules.initialMarket[key];if(typeof val==='number'&&isFinite(val))G.currency.market[key]=val;}); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      G.currency.market.baseGrainPrice=Number(G.currency.market.baseGrainPrice)||G.currency.market.grainPrice; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      G.currency.accounting.referenceCopperStock=G.currency.coins.copper.stock; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+    }
   }
 
   function _inferStandard(dynasty) {
@@ -471,6 +485,10 @@
   function _mintCycle(ctx, mr) {
     var C = global.GM.currency;
     if (!C || !C.mintAgencies) return;
+    var declared = CURRENCY_LEDGER_V2(global.GM), mintTurn = Number(ctx.turn!=null?ctx.turn:global.GM.turn)||0;
+    if(declared && !(Number(mr)>0))return;
+    if(declared && C._lastDeclaredMintTurn===mintTurn)return;
+    var beforeMint=declared?JSON.stringify(C):null;
     var totalSeigniorage = 0;
     C.mintAgencies.forEach(function(agency) {
       if (!agency.enabled) return;
@@ -492,6 +510,16 @@
       totalSeigniorage += actualOutput * agency.seignioragePerUnit;
       agency.staffing = Math.max(0, agency.staffing - 1 * mr);
     });
+    if(declared){
+      var amount=totalSeigniorage/Math.max(1,Number(C.accounting.coinPerMoney)||1000);
+      if(amount>0){
+        var writer=global.FiscalEngine && global.FiscalEngine.tryAddToGuoku;
+        var credited=writer?writer({gameRef:global.GM,amounts:{money:amount,grain:0,cloth:0},sourceTag:'铸钱净息'}):null;
+        if(!credited||!credited.ok){global.GM.currency=JSON.parse(beforeMint);throw new Error('mint-credit-failed');} // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      }
+      C._lastDeclaredMintTurn=mintTurn; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      return;
+    }
     // 铸币利润入国库
     if (totalSeigniorage > 0 && global.GM.guoku) {
       var gk = global.GM.guoku;
@@ -605,7 +633,26 @@
   //  Ⅴ 市场博弈
   // ═══════════════════════════════════════════════════════════════════
 
+  function CURRENCY_LEDGER_V2(G){return !!(G&&G.currency&&G.currency.accounting&&G.currency.accounting.schema==='tm-market-ledger/2');}
+  function declaredFoodBalance(G){
+    var supply=0,demand=0,mouths=0,ready=0,tree=G.adminHierarchy&&G.adminHierarchy.player;
+    (function walk(nodes){(nodes||[]).forEach(function(n){if(n.children&&n.children.length)return walk(n.children);var pd=n.populationDetail||n.population||{},rg=G.renli&&G.renli.byRegion&&G.renli.byRegion[n.id];mouths+=Math.max(0,Number(pd.mouths)||0);if(rg&&rg.ready){ready++;supply+=Math.max(0,Number(rg.grainOutput)||0);demand+=Math.max(0,(Number(rg.foodNeed)||0)-(Number(rg.otherFoodEquivalent)||0));}});})(tree&&tree.divisions);
+    return {supply:supply,demand:demand,mouths:mouths,ready:ready};
+  }
+  function updateDeclaredMarket(G,mr){
+    var C=G.currency,m=C.market,turn=Number(G.turn)||0;if(!(Number(mr)>0)||m._declaredPriceTurn===turn)return;
+    var balance=declaredFoodBalance(G);if(!balance.ready)return;
+    var month=Number(G.month || (G.time&&G.time.month))||1;
+    var seasonal=(month>=3&&month<=5)?1.12:(month>=9&&month<=11)?.92:1;
+    var ratio=balance.demand/Math.max(1,balance.supply),base=Number(m.baseGrainPrice)||350;
+    var target=base*Math.pow(Math.max(.2,Math.min(5,ratio)),.45)*seasonal;
+    var weight=Math.max(0,Math.min(1,Number(mr)*.15));
+    m.grainPrice=Math.max(1,m.grainPrice*(1-weight)+target*weight); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+    m.inflation=m.grainPrice/base-1;m.seasonalFactor=seasonal;m.annualGrainSupply=balance.supply;m.annualGrainNeed=balance.demand; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+    m._declaredPriceTurn=turn; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+  }
   function _updateMarket(ctx, mr) {
+    if(CURRENCY_LEDGER_V2(global.GM)){updateDeclaredMarket(global.GM,mr);return;}
     var C = global.GM.currency;
     if (!C) return;
     var m = C.market;
@@ -663,6 +710,11 @@
     if (!C) return;
     var G = global.GM;
     var pop = (G.vars && G.vars.pop) || 1000000;
+    if(CURRENCY_LEDGER_V2(G)){
+      var balance=declaredFoodBalance(G), ref=C.accounting;
+      C.market.moneySupplyRatio=(C.coins.copper.stock/Math.max(1,ref.referenceCopperStock)) / Math.max(.1,(balance.mouths||ref.referenceMouths)/ref.referenceMouths); // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+      return;
+    }
     var economicActivity = pop * 2; // 人均年 2 贯活动量
     var copperStock = C.coins.copper.stock * (1 - (C.coins.copper.hoardingPressure || 0));
     var silverStock = C.coins.silver.enabled ? C.coins.silver.stock * (C.market.silverToCopperRate || 1000) : 0;
@@ -1029,6 +1081,7 @@
 
   function _updateGrainPriceAtomic(G, mr) {
     if (!G || !G.currency || !G.currency.market) return;
+    if(CURRENCY_LEDGER_V2(G)){updateDeclaredMarket(G,mr);return;}
     var m = G.currency.market;
     var supply = 0;
     if (G.regions) {

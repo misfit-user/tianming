@@ -102,14 +102,15 @@
     if (!body) return;
     var G = global.GM || {}; var P = G.population || {};
     if (!P.national) { body.innerHTML = '<div class="vd-empty">户口未初始化</div>'; return; }
-    if (subt) subt.textContent = '户 ' + _fmt(P.national.households) + ' · 口 ' + _fmt(P.national.mouths) + ' · 丁 ' + _fmt(P.national.ding);
+    var publicPopulation = global.HujiEngine && typeof global.HujiEngine.getPopulationView === 'function' ? global.HujiEngine.getPopulationView({root:G}) : P.national;
+    if (subt) subt.textContent = '户 ' + _fmt(publicPopulation.households) + ' · 口 ' + _fmt(publicPopulation.mouths) + ' · 丁 ' + _fmt(publicPopulation.ding);
     var html = '';
 
     // § 总览
     html += '<section class="vd-section"><div class="vd-overview">';
-    html += '<div class="vd-ov-row"><span class="vd-ov-label">户数</span><span class="vd-ov-value">' + _fmt(P.national.households) + '</span></div>';
-    html += '<div class="vd-ov-row"><span class="vd-ov-label">人口</span><span class="vd-ov-value">' + _fmt(P.national.mouths) + '</span></div>';
-    html += '<div class="vd-ov-row"><span class="vd-ov-label">丁壮</span><span class="vd-ov-value">' + _fmt(P.national.ding) + '</span></div>';
+    html += '<div class="vd-ov-row"><span class="vd-ov-label">户数</span><span class="vd-ov-value">' + _fmt(publicPopulation.households) + '</span></div>';
+    html += '<div class="vd-ov-row"><span class="vd-ov-label">人口</span><span class="vd-ov-value">' + _fmt(publicPopulation.mouths) + '</span></div>';
+    html += '<div class="vd-ov-row"><span class="vd-ov-label">丁壮</span><span class="vd-ov-value">' + _fmt(publicPopulation.ding) + '</span></div>';
     html += '<div class="vd-ov-row"><span class="vd-ov-label">逃户</span><span class="vd-ov-value" style="color:var(--amber-400);">' + _fmt(P.fugitives||0) + '</span></div>';
     html += '<div class="vd-ov-row"><span class="vd-ov-label">隐户</span><span class="vd-ov-value" style="color:var(--amber-400);">' + _fmt(P.hiddenCount||0) + '</span></div>';
     if (P.meta && P.meta.registrationAccuracy !== undefined) {
@@ -1313,6 +1314,7 @@
     var preset = G.fiscalConfig && G.fiscalConfig.centralLocalRules && G.fiscalConfig.centralLocalRules.preset;
     if (G.fiscal && G.fiscal.regions) {
       var rids = Object.keys(G.fiscal.regions);
+      var regionLabels = global.PhaseG4 && global.PhaseG4.regionLabelsForDisplay ? global.PhaseG4.regionLabelsForDisplay(G) : null;
       var clh = '<div style="font-size:0.74rem;">';
       clh += '<div>· 当前预设：<b>' + _esc(preset||'qiyun_cunliu') + '</b></div>';
       var modeName = {tang_three:'唐三分（州留/道留/中央）',qiyun_cunliu:'明清起运存留',song_cash:'宋钱入中央',custom:'自定'}[preset||'qiyun_cunliu'];
@@ -1322,7 +1324,7 @@
       rids.slice(0, 15).forEach(function(rid) {
         var r = G.fiscal.regions[rid] || {};
         var region = (Array.isArray(G.regions) ? G.regions : []).find(function(row) { return row && (String(row.id) === rid || row.name === rid); });
-        var regionName = (region && region.name) || r.regionName || r.name || (/^div_/.test(rid) ? '地区未载' : rid);
+        var regionName = (regionLabels && regionLabels[rid]) || (region && region.name) || r.regionName || r.name || (/^div_/.test(rid) ? '地区未载' : rid);
         clh += '<tr><td title="' + _esc(rid) + '">' + _esc(regionName) + '</td>';
         clh += '<td>' + _fmt(r.claimedRevenue||0) + '</td>';
         clh += '<td>' + _fmt(r.actualRevenue||0) + '</td>';

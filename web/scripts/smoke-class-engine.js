@@ -227,7 +227,7 @@ assert(uprisingRoot.minxin.alerts[0].missedCount >= 1, 'missing response should 
 assert(uprisingRoot.minxin.alertResponseLog.some(function(x){ return x && x.action === 'missed'; }), 'missing response should write missed log');
 
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const classScriptPos = indexHtml.indexOf('tm-class-engine.js?v=2026050102');
+const classScriptPos = indexHtml.indexOf('tm-class-engine.js');
 const inferScriptPos = indexHtml.indexOf('tm-endturn-ai-infer.js');
 assert(classScriptPos >= 0, 'index.html missing tm-class-engine.js');
 assert(inferScriptPos >= 0, 'index.html missing tm-endturn-ai-infer.js');

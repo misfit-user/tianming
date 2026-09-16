@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');const root=path.resolve(__dirname,'..');let checks=0;const ok=(v,n)=>{assert(v,n);checks++;};
+const c={console,Date,Math,JSON,Number,setTimeout(){},clearTimeout(){}};c.window=c;c.globalThis=c;vm.createContext(c);
+const s={id:'coins',dynasty:'唐',fiscalConfig:{currencyRules:{accounting:{schema:'tm-market-ledger/2',coinPerMoney:1000,referenceMouths:10000},initialStandard:'copper_cloth',enabledCoins:{copper:true},initialCoins:{copper:{stock:100000000,rawReserve:1000000}},initialMarket:{grainPrice:350,baseGrainPrice:350,yearFortune:1},mintAgencies:[{id:'mine',name:'官铸钱监',coinType:'copper',capacity:100000,staffing:100,costPerUnit:.9,seignioragePerUnit:.1}]}}};
+c.GM={turn:1,sid:s.id,month:1,guoku:{money:500},adminHierarchy:{player:{divisions:[{id:'a',populationDetail:{mouths:10000}}]}},renli:{byRegion:{a:{ready:true,grainOutput:50000,foodNeed:55000,otherFoodEquivalent:5000}}}};c.P={scenarios:[s]};c.findScenarioById=()=>s;
+vm.runInContext(fs.readFileSync(path.join(root,'tm-economy-engine-currency.js'),'utf8'),c);
+c.FiscalEngine={tryAddToGuoku({amounts}){c.GM.guoku.money+=amounts.money;return{ok:true};}};
+c.CurrencyEngine.init(s);ok(c.GM.currency.coins.copper.stock===100000000,'explicit circulation stock');ok(c.GM.currency.market.grainPrice===350,'deterministic market initial value');ok(c.GM.currency.mintAgencies[0].name==='官铸钱监','configured contemporary money office');ok(!JSON.stringify(c.GM.currency).includes('宝泉局'),'no invented Ming mint in declared ancient setup');
+c.CurrencyEngine.tick({turn:1,monthRatio:1/3});ok(Math.abs(c.GM.guoku.money-(500+10/3))<.00001,'mint coin income converts wen to guan');const once=c.GM.guoku.money,coins=c.GM.currency.coins.copper.stock;c.CurrencyEngine.tick({turn:1,monthRatio:1/3});ok(c.GM.guoku.money===once&&c.GM.currency.coins.copper.stock===coins,'same period mint credited once');
+ok(c.GM.currency.market.grainPrice===350,'annual stone supply and demand do not use 180 per mouth');const p=c.GM.currency.market.grainPrice;c.CurrencyEngine._updateGrainPriceAtomic(c.GM,1/3);ok(c.GM.currency.market.grainPrice===p,'second price path does not double update one period');
+c.GM.turn=2;c.GM.renli.byRegion.a.grainOutput=25000;c.CurrencyEngine._updateGrainPriceAtomic(c.GM,1/3);ok(c.GM.currency.market.grainPrice>350&&c.GM.currency.market.grainPrice<400,'actual harvest loss has a bounded directional price effect');ok(c.GM.currency.market.moneySupplyRatio>0.99&&c.GM.currency.market.moneySupplyRatio<1.01,'circulation stock is not compared with income in incompatible units');
+const stocks=()=>JSON.stringify(Object.fromEntries(Object.entries(c.GM.currency.coins).map(([k,v])=>[k,{stock:v.stock,rawReserve:v.rawReserve}])));
+const money=c.GM.guoku.money;c.GM.turn=3;const stockBefore=stocks(),mintBefore=c.GM.currency._lastDeclaredMintTurn;
+c.FiscalEngine.tryAddToGuoku=()=>({ok:false});c.CurrencyEngine.tick({turn:3,monthRatio:1/3});
+ok(c.GM.guoku.money===money,'failed mint credit adds no public cash');
+ok(stocks()===stockBefore,'failed credit restores minted coins and consumed raw reserves');
+ok(c.GM.currency._lastDeclaredMintTurn===mintBefore,'failed credit leaves mint period retryable');
+c.GM.turn=4;const priceBefore=c.GM.currency.market.grainPrice,priceTurn=c.GM.currency.market._declaredPriceTurn;
+c.CurrencyEngine.tick({turn:4,monthRatio:0});c.CurrencyEngine._updateGrainPriceAtomic(c.GM,0);
+ok(c.GM.currency._lastDeclaredMintTurn===mintBefore&&stocks()===stockBefore,'zero duration does not consume mint allowance');
+ok(c.GM.currency.market.grainPrice===priceBefore&&c.GM.currency.market._declaredPriceTurn===priceTurn,'zero duration does not move price or consume price period');
+console.log('[smoke-declared-currency-ledger] PASS '+checks+' assertions');

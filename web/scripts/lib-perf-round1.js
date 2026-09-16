@@ -52,12 +52,13 @@ function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
   const stage = { innerHTML: '', dataset: {}, querySelector() { return this.innerHTML.includes('tmf-formal-map') ? {} : null; } };
   const work = { paths: 0, layouts: 0, chrome: 0, features: 0 };
   const c = {
-    console, performance, Map, state: {}, document: { getElementById: () => ({}) },
+    console, performance, Map, state: {}, _mapRenderMemo: null, document: { getElementById: () => ({}) },
     mapStage: () => stage, isGameVisible: () => true,
     map: { id: 'fixture', regions, width: 1200, height: 720, oceans: [] },
     getMapData() { return c.map; }, requestMapLabelFeature() { work.features++; },
     mapIdentity: m => m.id, resolveBasemap: () => null, generatedBasemapLayer: () => '',
     canonicalOwnerKey: r => r.owner || '', regionColor: r => r.color || '#abc', GRADE_BANDS: {},
+    ownerKey: r => r.owner || '', ownerName: r => r.factionName || r.ownerName || r.owner || '', findFaction: () => null,
     esc: s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])),
     regionTrueArea: () => 100, _tmAreaFont: () => 15, labelAnchor: () => ({ x: 5, y: 7 }),
     factionLabelLayer: () => '<g>faction</g>', sentinelLayer: () => '<g>sentinel</g>',
@@ -66,7 +67,7 @@ function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
     __TM_LABEL_LEGACY: legacyLabels
   };
   c.attr = c.esc; c.window = c; vm.createContext(c);
-  const names = ['pathForRegion', 'centerForRegion', 'actualCenter', 'regionTier', 'levelsForScale', 'visibleRegionsForScale', 'formalMapSignature', 'renderFormalMap'];
+  const names = ['pathForRegion', 'pointsForRegion', 'centerForRegion', 'actualCenter', 'regionTier', 'levelsForScale', 'visibleRegionsForScale', 'regionRelief', 'formalMapSignature', 'buildMapSurface', 'renderFormalMap'];
   vm.runInContext(names.map(n => functionSource(source, n)).join('\n'), c, { filename: 'phase8-formal-map.js:actual-functions' });
   const actualPath = c.pathForRegion;
   c.pathForRegion = r => { work.paths++; return actualPath(r); };
@@ -83,6 +84,11 @@ function declarations(source, variables = []) {
   return ast.body.filter(n => n.type === 'FunctionDeclaration' || n.type === 'VariableDeclaration' && n.declarations.every(d => variables.includes(d.id.name)))
     .map(n => source.slice(n.start, n.end)).join('\n');
 }
+function culturalRestoreSource(root = ROOT) {
+  const source = read(root, 'web/tm-patches-start.js');
+  return ['_tmStartClone', '_tmSeedCulturalWorks', '_tmSavedCulturalSource', '_tmFindPresetCulturalWork', '_tmCulturalRestoreOptions', '_tmRestoredCulturalWorks']
+    .map(name => functionSource(source, name)).join('\n');
+}
 function saveBuilder(root = ROOT) {
   const source = read(root, 'web/tm-save-lifecycle.js'), drafts = { 'edict-pol': { value: '保留正在输入的诏令😀e\u0301' } };
   const work = { clones: 0, cloneMs: 0 };
@@ -94,6 +100,7 @@ function saveBuilder(root = ROOT) {
   const load = (code, file) => vm.runInContext(code, c, { filename: file });
   load(declarations(read(root, 'web/tm-utils.js'), ['_rngState', '_rngSeed']), 'tm-utils.js:actual-functions');
   load(read(root, 'web/tm-huji-engine.js'), 'tm-huji-engine.js');
+  load(culturalRestoreSource(root), 'tm-patches-start.js:actual-cultural-restore');
   load(declarations(source, ['SAVE_SCHEMA_VERSION', '_MIGRATIONS', 'PREF_CONF_KEYS']), 'tm-save-lifecycle.js:actual-functions-and-migrations');
   load(read(root, 'web/tm-chronicle-system.js'), 'tm-chronicle-system.js');
   for (const [file, name] of [['web/tm-event-system.js', 'StoryEventBus'], ['web/tm-help-social.js', 'OpinionSystem'], ['web/tm-feudal-warfare.js', 'WarWeightSystem']]) {
@@ -128,4 +135,4 @@ function controlledWorld(scenario, longHistory = false) {
   gm._memoryLayers = { L2: rows(), L3: rows() }; gm._causalGraph = { nodes: rows(), edges: [] };
   return { gm, p };
 }
-module.exports = { ROOT, read, functionSource, storage, mapRenderer, officialScenarios, saveBuilder, controlledWorld };
+module.exports = { ROOT, read, functionSource, storage, mapRenderer, officialScenarios, culturalRestoreSource, saveBuilder, controlledWorld };

@@ -284,6 +284,9 @@
         changed = true;
       }
     });
+    var resolved = _resolveLivingCommanderName(global.GM, commander);
+    var nextId = resolved.ok && resolved.char ? (resolved.char.id || '') : '';
+    if (army.commanderId !== nextId) { army.commanderId = nextId; changed = true; }
     return changed;
   }
 
@@ -354,6 +357,17 @@
     // 名匹配失败但 AI 另给了主帅 → 按主帅反查那支军（防「后金军」这类含糊名漏改真军）。
     if (!army && commanderInput) army = _findArmyForAIChange(G, commanderInput);
 
+    var commandTicket = null;
+    var commandAuthority = global.TM && global.TM.CommandAuthority;
+    if (army && army.commandChain && army.commandChain.mode === 'receipt' && !commandAuthority) return {ok:false,pending:true,reason:'军令交接尚待核验'};
+    if (army && commandAuthority) {
+      commandTicket = commandAuthority.prepare(army, change, opts);
+      if (commandTicket.duplicate) return { ok:true, changed:false, duplicate:true, army:army };
+      if (!commandTicket.allowed) {
+        change = commandAuthority.withoutCommand(change);
+        commanderFields = null; commanderInput = null; factionInput = null;
+      }
+    }
     if (!army) {
       var _forceCreate = (change.action === 'create' || change.create === true || change.isNewArmy === true);
       if (delta <= 0 && !_forceCreate) return { ok:false, reason:'army not found', name:name };
@@ -553,8 +567,11 @@
       }
     }
 
+    if (commandTicket && commandTicket.allowed && commandTicket.orderId) {
+      commandAuthority.commit(army, commandTicket); changed = true;
+    }
     if (changed) _refreshMilitaryViews(G);
-    return { ok:true, army:army, created:created, changed:changed };
+    return { ok:true, army:army, created:created, changed:changed, pending:!!(commandTicket && commandTicket.pending), orderId:commandTicket && commandTicket.orderId, reason:commandTicket && commandTicket.reason };
   }
 
   function _applyAIArmyChangeList(list, source, opts) {

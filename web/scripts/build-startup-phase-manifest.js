@@ -85,7 +85,7 @@ const manifest = {
     return out;
   }, {}),
   deferredChangesApproved: deferredScriptCount,
-  auditConclusion: 'Feature Loader V2 owns ' + deferredScriptCount + ' explicitly declared deferred scripts. The original six remain deferred; relief providers load only for the issue panel or active saved cases. Eager classic scripts retain document order; adjacency is not a dependency.',
+  auditConclusion: 'Feature Loader V2 owns ' + deferredScriptCount + ' explicitly declared deferred scripts. The original six remain deferred; pure territory layout joins the formal map feature; relief providers load only for the issue panel or active saved cases. Eager classic scripts retain document order; adjacency is not a dependency.',
   scripts,
   features
 };

@@ -96,60 +96,7 @@ function analyzeBattleStrategy(attacker, defender, context) {
  * @returns {number}
  */
 function calculateArmyStrength(army, context) {
-  if (!army || army.destroyed) return 0;
-  var ctx = context || {};
-
-  var baseStrength = army.soldiers || army.strength || 1000;
-  var moraleMod = 0.5 + _armyMorale(army) / 200;       // 0.5-1.0
-  var trainingMod = 0.5 + (army.training || 50) / 200;    // 0.5-1.0
-  var _qmStr = String(army.quality || ''); var qualityMod = /精锐|精兵|百战|劲旅/.test(_qmStr) ? 1.3 : /新兵|新募|老弱|疲|羸|乌合/.test(_qmStr) ? 0.7 : 1.0;
-
-  // 将领加成（军事能力+智力综合）
-  var commanderMod = 1.0, battleAdapter = typeof window !== 'undefined' && window.TMBattleAdapter;
-  if (army.commander || army.commanderId) {
-    var commander = battleAdapter ? battleAdapter.resolveCommander(army.commander, GM, army.commanderId || army.commanderCharacterId || army.generalId || army.leaderId).character : typeof findCharByName === 'function' ? findCharByName(army.commander) : null;
-    if (commander && commander.alive !== false && !commander.capturedBy) {
-      var military = battleAdapter ? battleAdapter.genFor(commander, GM).mil : (commander.military ?? commander.valor ?? 50);
-      var intel = battleAdapter ? battleAdapter.genFor(commander, GM).int : (commander.intelligence ?? 50);
-      commanderMod = 1 + (military * 0.7 + intel * 0.3) / 200; // 1.0-1.5
-    }
-  }
-
-  // 补给加成（0.5无补给~1.2满补给）
-  var supplyMod = 1.0;
-  if (army.supplyRatio !== undefined) {
-    supplyMod = 0.5 + (army.supplyRatio || 0) * 0.7; // 0.5-1.2
-  } else if (army.supply != null) {
-    // 字段分裂修：supplyRatio(0-1) 仅补给/行军系统启用时填；日常维护/UI/AI 用的是 supply(0-100)。
-    // 无 supplyRatio 时按 supply 折算同一曲线，断粮军真正减战力（原先恒满补给=补给纯摆设）。
-    supplyMod = 0.5 + (Math.max(0, Math.min(100, Number(army.supply) || 0)) / 100) * 0.7; // 0.5-1.2
-  }
-
-  // 地形加成（从P.battleConfig读取，防守方额外+10%）
-  var terrainMod = 1.0;
-  if (ctx.terrain && P.battleConfig && P.battleConfig.terrainModifiers) {
-    var tMod = P.battleConfig.terrainModifiers[ctx.terrain];
-    if (tMod) terrainMod = ctx.isDefender ? (tMod.defender || 1.0) : (tMod.attacker || 1.0);
-  } else if (ctx.isDefender) {
-    terrainMod = 1.1; // 默认防守方+10%
-  }
-
-  // 兵种克制（简化：从unitTypes配置读取）
-  var unitMod = 1.0;
-  if (army.type && ctx.enemyType && P.battleConfig && P.battleConfig.unitTypes) {
-    var unitDef = P.battleConfig.unitTypes.find(function(u) { return u.id === army.type; });
-    if (unitDef && unitDef.strong_against && unitDef.strong_against.indexOf(ctx.enemyType) >= 0) unitMod = 1.25;
-    if (unitDef && unitDef.weak_against && unitDef.weak_against.indexOf(ctx.enemyType) >= 0) unitMod = 0.75;
-  }
-
-  var fortMod = 1.0;
-  if (ctx.isDefender && army.fortification) fortMod = 1 + Math.min(0.3, (Number(army.fortification) || 0) / 100 * 0.3); // fortify accumulates; rewards defending
-
-  // 装备加成（武库供械·军备简陋则战力降·接军工供应链 S6·equipmentCondition 由募兵从武库支取时定）
-  var _eqc = String(army.equipmentCondition || army.equipmentStatus || army.equipmentLevel || '');
-  var equipMod = /精良|优良|齐整|精整/.test(_eqc) ? 1.06 : /严重不足|匮乏|奇缺/.test(_eqc) ? 0.68 : /简陋|破败|朽钝/.test(_eqc) ? 0.82 : /不足|短缺/.test(_eqc) ? 0.9 : 1.0;
-
-  return baseStrength * moraleMod * trainingMod * qualityMod * commanderMod * supplyMod * terrainMod * unitMod * fortMod * equipMod;
+  return (typeof window !== 'undefined' ? window : globalThis).TM.__militaryParts.calculateArmyStrength(army, context);
 }
 
 // 推荐战术
@@ -417,23 +364,26 @@ var MilitarySystems = (function(global) {
 
   function getMilitarySystemForArmy(army, root) {
     army = army || {};
-    var systems = getMilitarySystems(root);
-    var keys = [
-      army.militarySystemId, army.systemId, army.militarySystem,
-      army.armyType, army.type, army.branch, army.paymentModel
-    ].filter(Boolean).map(function(v) { return String(v).toLowerCase(); });
+    var systems = getMilitarySystems(root), explicit = army.militarySystemId || army.systemId || army.militarySystem;
+    if (explicit) {
+      var declared = systems.filter(function(s) { return s.id === String(explicit) || s.name === String(explicit); });
+      return declared.length === 1 ? declared[0] : _normalizeSystem({ id: 'unclassified', name: '未定兵制' }, 0);
+    }
+    var keys = [army.armyType, army.type, army.branch, army.paymentModel].filter(Boolean).map(function(v) { return String(v).toLowerCase(); });
     for (var i = 0; i < systems.length; i++) {
       var s = systems[i];
       var hay = [s.id, s.name, s.recruitmentType, s.salaryType].map(function(v) { return String(v).toLowerCase(); });
       if (keys.some(function(k) { return hay.indexOf(k) >= 0; })) return s;
     }
+    // Unbound legacy campaigns retain their historical fallback until migrated.
     return systems[0] || _normalizeSystem(null, 0);
   }
 
   function payArrearsBaseline(army, root) {
     army = army || {};
     var cfg = _readConstant('militaryPayArrearsBaseline', root) || {};
-    var months = Math.max(0, Math.round(Number(army.payArrearsMonths || 0)));
+    var ledgerView = global.TM && global.TM.MilitaryArrears && global.TM.MilitaryArrears.view({game:_root(root),army:army});
+    var months = ledgerView && ledgerView.known ? ledgerView.months : Math.max(0, Math.round(Number(army.payArrearsMonths || 0)));
     var moralePerMonth = Number(cfg.moralePerMonth);
     var loyaltyPerMonth = Number(cfg.loyaltyPerMonth);
     var routeMoraleBelow = Number(cfg.routeMoraleBelow);
@@ -519,6 +469,7 @@ var MilitarySystems = (function(global) {
     options = options || {};
     var G = _root(root);
     var turn = Number(G.turn || global.GM && global.GM.turn || 0) || 0;
+    if (global.TM && global.TM.MilitaryArrears) global.TM.MilitaryArrears.syncArmy({game:G,army:army});
     var base = payArrearsBaseline(army, G);
     if (base.months <= 0) return { ok: true, skipped: true, reason: 'no-arrears', baseline: base };
     if (!options.force && army._payArrearsAppliedTurn === turn && army._payArrearsAppliedMonths === base.months) {
@@ -554,6 +505,19 @@ var MilitarySystems = (function(global) {
   function settleArmyArrears(army, opts) {
     opts = opts || {};
     if (!army) return { ok: false, reason: 'missing-army' };
+    var arrears = global.TM && global.TM.MilitaryArrears;
+    if (arrears) {
+      var result = arrears.settle({game:opts.game || global.GM,army:army,months:opts.months,transactionId:opts.transactionId,_faultInjector:opts._faultInjector});
+      if (!result.ok || result.duplicate) return result;
+      var completed = result.monthsCleared || 0;
+      if (completed > 0) {
+        army.morale = _clamp100(_armyMorale(army) + Math.min(15, 4 * completed));
+        army.loyalty = _clamp100((army.loyalty == null ? 60 : Number(army.loyalty)) + Math.min(10, 2 * completed));
+        army.mutinyRisk = Math.max(0, (Number(army.mutinyRisk) || 0) - 10 * completed);
+      }
+      army._lastArrearsSettleTurn = Number((opts.game || global.GM || {}).turn || 0);
+      return result;
+    }
     var months = Math.max(0, Math.round(Number(army.payArrearsMonths || 0)));
     var want = (opts.months != null) ? Math.min(months, Math.max(0, Math.round(Number(opts.months)))) : months;
     if (want <= 0) return { ok: true, monthsCleared: 0, cost: { money: 0, grain: 0, cloth: 0 }, note: '无欠饷可补' };
@@ -566,9 +530,14 @@ var MilitarySystems = (function(global) {
       grain: Math.max(0, Math.round(soldiers * gPer * want)),
       cloth: Math.max(0, Math.round(soldiers * cPer * want))
     };
+    // Older isolated clients can still pay a whole debt; partial payment needs the
+    // liability owner to retain the exact unpaid remainder instead of losing it.
+    var fallbackRoot = opts.game || global.GM || {}, fallbackAccount = fallbackRoot.guoku || {};
+    if (['money','grain','cloth'].some(function(k) {var led=fallbackAccount.ledgers&&fallbackAccount.ledgers[k],have=led&&led.stock!=null?Number(led.stock):Number(fallbackAccount[k]!=null?fallbackAccount[k]:k==='money'?fallbackAccount.balance:0);return !isFinite(cost[k]) || (cost[k]>0 && (!isFinite(have)||have<cost[k]));})) return {ok:false,reason:'arrears-ledger-required-for-partial-payment',cost:cost,monthsCleared:0,remaining:months};
     var spend = (global.FiscalEngine && typeof global.FiscalEngine.spendFromGuoku === 'function')
       ? global.FiscalEngine.spendFromGuoku({ money: cost.money, grain: cost.grain, cloth: cost.cloth }, '补饷·' + (army.name || '军'))
       : null;
+    if (!spend || spend.ok === false) return {ok:false,reason:'arrears-payment-unavailable',cost:cost,monthsCleared:0,remaining:months};
     var ded = (spend && spend.deducted) || {};
     var frac = 1;
     if (spend) {
@@ -576,8 +545,7 @@ var MilitarySystems = (function(global) {
       if (cost.grain > 0 && ded.grain) frac = Math.min(frac, ded.grain.deducted / cost.grain);
       if (cost.cloth > 0 && ded.cloth) frac = Math.min(frac, ded.cloth.deducted / cost.cloth);
     }
-    var cleared = Math.max(0, Math.min(want, Math.round(want * frac)));
-    if (cleared <= 0 && frac > 0) cleared = 1;           // 付了点就认一月·不让钱白扣
+    var cleared = Math.max(0, Math.min(want, Math.floor(want * frac + 1e-9)));
     army.payArrearsMonths = Math.max(0, months - cleared);
     army.morale = _clamp100(_armyMorale(army) + Math.min(15, 4 * cleared));
     army.loyalty = _clamp100((army.loyalty == null ? 60 : Number(army.loyalty)) + Math.min(10, 2 * cleared));
@@ -1123,6 +1091,8 @@ var MilitarySystems = (function(global) {
     validatePayArrearsAdjustment: validatePayArrearsAdjustment,
     applyPayArrearsPressure: applyPayArrearsPressure,
     settleArmyArrears: settleArmyArrears,
+    initializeArmyArrears: function(o) {return global.TM && global.TM.MilitaryArrears ? global.TM.MilitaryArrears.initialize(o) : {ok:false,missing:['military-arrears-module']};},
+    getArmyArrearsView: function(army,root) {return global.TM && global.TM.MilitaryArrears ? global.TM.MilitaryArrears.view({game:root||global.GM,army:army}) : {known:false,months:null,amounts:null};},
     applyBattleResult: applyBattleResult, findBattleArmy: _findArmy,
     _readConstant: _readConstant
   };
@@ -1490,15 +1460,13 @@ var MarchSystem = (function() {
     };
   }
 
-  /**
-   * 创建行军命令
-   * @param {Object} army - 军队对象
-   * @param {string} from - 出发地
-   * @param {string} to - 目的地
-   * @param {Object} [aiGeoData] - AI地理推演数据(无地图模式) {routeKm, terrainDifficulty, hasOfficialRoad, estimatedDaysBase}
+  /** 创建 army 从 from 到 to 的行军命令。
+   * aiGeoData 提供无图地理参数与 commandReceipt；获准后仍按道路与天数推进。
    * @returns {Object|null} marchOrder
    */
   function createMarchOrder(army, from, to, aiGeoData) {
+    var ticket = typeof TM !== 'undefined' && TM.CommandAuthority && TM.CommandAuthority.prepareMarch(army,to,aiGeoData);
+    if ((army.commandChain && army.commandChain.mode === 'receipt' && !ticket) || (ticket && !ticket.allowed)) return null;
     var cfg = _getConfig();
     if (!cfg.enabled) return null;
 
@@ -1510,6 +1478,7 @@ var MarchSystem = (function() {
     if (mapEnabled && typeof findPath === 'function') {
       // ═══ 地图模式：A*寻路 ═══
       var pathResult = findPath(from, to, { avoidEnemy: true, faction: army.faction });
+      if (!pathResult || !Array.isArray(pathResult.path) || pathResult.path.length < 2) return null;
       if (pathResult) {
         path = pathResult.path || [];
         var distance = path.length;
@@ -1573,6 +1542,7 @@ var MarchSystem = (function() {
 
     army.destination = to;
     army.state = 'marching';
+    if (ticket) TM.CommandAuthority.commit(army, ticket);
 
     addEB('行军', army.name + '从' + from + '出发前往' + to + '，预计' + marchDays + '天(' + marchTurns + '回合)到达。' + routeDesc);
     _dbg('[March]', army.name, from, '→', to, marchDays + '天/' + marchTurns + '回合');
@@ -1660,9 +1630,7 @@ var MarchSystem = (function() {
     return 1.0;
   }
 
-  // ★Wave2·军令移防(2026-07-07·玩家侧军令动词)：玩家对自家驻防军队下移防令·复用整套行军机器
-  //   (A*寻路/无图估算·advanceAll 逐回合推进·抵达自动接防·抽屉/过回合报告/部队详情三面已可视)。
-  //   校验后拒单诚实给因：闸关/查无此军/非我军/驻地不明/已在途/同地/地图模式无路可达(勿造瞬移单)。
+  // 玩家移防：先核对驻防、道路与军中回报，再交由行军系统推进。
   function orderMarch(armyRef, to) {
     var cfg = _getConfig();
     if (!cfg.enabled) return { ok: false, reason: '行军系统未启用（设置→玩法机制·深化可开）' };
@@ -1687,6 +1655,8 @@ var MarchSystem = (function() {
       try { pr = findPath(from, to, { avoidEnemy: true, faction: army.faction }); } catch (_prE) { pr = null; }
       if (!pr || !pr.path || !pr.path.length) return { ok: false, reason: '无路可达' + to + '（道路不通或为敌境所阻）' };
     }
+    var pending = typeof TM !== 'undefined' && TM.CommandAuthority && TM.CommandAuthority.requestMarch(army,to);
+    if (pending) return pending;
     var order = createMarchOrder(army, from, to, null);
     if (!order) return { ok: false, reason: '军令未能成行' };
     return { ok: true, order: order };

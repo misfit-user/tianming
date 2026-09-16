@@ -1370,7 +1370,7 @@ export function createReconcile(deps) {
       var message = String(error && (error.message || error) || 'validator exception');
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
       else console.warn('[applier] ' + name + ' validator:', error);
-      if (aiOutput && aiOutput._strictValidation === true) {
+      if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
         if (!Array.isArray(applied.failed)) applied.failed = [];
         applied.failed.push({ validator: name, reason: 'validator exception', details: [message] });
       }

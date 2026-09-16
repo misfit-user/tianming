@@ -122,6 +122,15 @@
       addon = _kjpDefaultAddon();
     }
 
+    // Explicit scenario rules take precedence over dynasty defaults. Clone later when building live state.
+    var overrides = P.keju.paradigmOverrides;
+    if (overrides && typeof overrides === 'object' && !Array.isArray(overrides)) {
+      addon = Object.assign({}, addon);
+      ['subjects','examInterval','retakePolicy','candidateRules','examinerRules','quota','rankingRule','allocationRules','graduateTitle','cohortBondStrength','mentorLineage','schoolIntegration','taxPrivilege','shadow','clanPrivilege','ceremony','penalties','language','ideology'].forEach(function(key){
+        if (Object.prototype.hasOwnProperty.call(overrides, key)) addon[key] = overrides[key];
+      });
+    }
+
     // tiers·复用 P.keju.tiers (已经过 _kjUpgradeTier·Stage 1 升级)
     var rawTiers = Array.isArray(P.keju.tiers) ? P.keju.tiers : (basePreset ? basePreset.tiers : []);
     var paradigmTiers = rawTiers.map(_kjpUpgradeTierToParadigm).filter(function(t) { return !!t; });

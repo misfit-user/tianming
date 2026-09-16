@@ -41,7 +41,8 @@ const USER_DATA_DIR = app.getPath('userData');
 const BUNDLED_SCENARIOS_DIR = path.join(APP_ROOT_DIR, 'scenarios');
 const OFFICIAL_SCENARIO_FILES = [
   '天启七年·九月（官方）.json',
-  '绍宋·建炎元年八月（官方）.json'
+  '绍宋·建炎元年八月（官方）.json',
+  '晚唐·开成五年（官方）.json'
 ];
 
 // Writable runtime data must live under userData. Packaged builds may place
@@ -3381,6 +3382,8 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
 });
 
 // --- 系统对话框：导入 ---
+const exportVerifiedArtifact = require('./main-artifact-export.js').createArtifactExporter({dialog,window:()=>mainWindow,writeFileAtomic});
+ipcMain.handle('dialog-export-artifact', (_event, bytes, meta) => exportVerifiedArtifact(bytes, meta));
 ipcMain.handle('dialog-import', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',

@@ -1,6 +1,6 @@
 {
   "name": "tianming",
-  "version": "1.3.411",
+  "version": "1.3.500",
   "description": "天命 AI历史模拟推演",
   "main": "main.js",
   "scripts": {
@@ -29,10 +29,10 @@
   "build": {
     "appId": "com.tianming.history",
     "productName": "天命",
-    "buildVersion": "1.3.4.11",
-    "artifactName": "天命-1.3.4.11-${arch}.${ext}",
+    "buildVersion": "1.3.5.0",
+    "artifactName": "天命-1.3.5.0-${arch}.${ext}",
     "directories": {
-      "output": "E:\\版本\\测试版1.3.4.11"
+      "output": "E:\\版本\\测试版1.3.5.0"
     },
     "publish": [
       {
@@ -45,6 +45,7 @@
       "main-impl.js",
       "main-json-file.js",
       "main-image-file.js",
+      "main-artifact-export.js",
       "main-turn-data-commit.js",
       "main-workshop-transaction.js",
       "main-workshop-lock.js",
@@ -99,6 +100,9 @@
       "!web/.claude/**",
       "!web/output/**",
       "!web/_audit_deadhandlers.py",
+      "!web/_yan_harness.html",
+      "!web/_preview_map.json",
+      "!web/_shaosong_map_for_edit.json",
       "!web/analyze_globals.py",
       "!web/detect_globals.js",
       "!web/scan_globals.js",
@@ -132,7 +136,8 @@
       "web/preview/img/**/*",
       "!web/preview/**/_*",
       "scenarios/天启七年·九月（官方）.json",
-      "scenarios/绍宋·建炎元年八月（官方）.json"
+      "scenarios/绍宋·建炎元年八月（官方）.json",
+      "scenarios/晚唐·开成五年（官方）.json"
     ],
     "win": {
       "target": [

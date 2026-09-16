@@ -1,0 +1,22 @@
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');let n=0;
+const source=fs.readFileSync(path.join(__dirname,'smoke-treasury-account-books.js'),'utf8').replace(/^#![^\n]*\n/,''),end=source.indexOf('let {c,scenario,elements}=fixture()');assert(end>0);
+const fixture=new Function('require','__dirname',source.slice(0,end)+'\nreturn fixture;')(require,__dirname);
+const near=(a,b,msg)=>{assert(Math.abs(a-b)<.002,msg+': '+a+' / '+b);n++;},ok=(v,msg)=>{assert(v,msg);n++;};
+const {c}=fixture(),g=c.GM,cfg=g.facs[0].fiscalConfig;
+cfg.fixedExpense.recurringExpenses=[];cfg.centralLocalRules.defaultPerTax={qiyun:.5,cunliu:.5};
+const army={id:'river-watch',name:'河口守兵',faction:'唐',soldiers:10,monthlyMoneyPayPerSoldier:12,monthlyGrainPayPerSoldier:3,monthlyClothPayPerSoldier:.6,funding:{factionId:'唐',regionId:'A',localShare:.4,localShareByResource:{money:.2,grain:1,cloth:.5}}};
+g.armies=[army];const snapshot=JSON.stringify(g),b=c.CascadeTax.previewBudget({game:g,turnDays:10});
+for(const [k,central,local]of [['money',32,8],['grain',0,10],['cloth',1,1]]){near(b.expenses.central[k],central,'resource-specific central '+k);near(b.expenses.local[k],local,'resource-specific local '+k);near(b.expenses.total[k],central+local,'funding does not create a second army cost '+k);}
+ok(JSON.stringify(g)===snapshot,'mixed resource budget preview is pure');
+c.CascadeTax.collect({game:g,turnDays:10});const moneyBefore=g.guoku.money,grainBefore=g.guoku.grain,paid=c.FixedExpense.collect({game:g,turnDays:10});
+ok(paid.ok,'real settlement accepts resource-specific funding');near(paid.deducted.central.money,32,'central actually pays money');near(paid.deducted.local.grain,10,'local store actually pays grain');near(grainBefore,g.guoku.grain,'central grain remains untouched');near(moneyBefore-g.guoku.money,32,'central ledger debits same amount');
+const after=JSON.stringify(g);ok(c.FixedExpense.collect({game:g,turnDays:10}).skipped==='already-collected-this-turn','retry is idempotent');ok(JSON.stringify(g)===after,'retry changes neither local nor central stock');
+delete army.funding.localShareByResource;const legacy=c.CascadeTax.previewBudget({game:g,turnDays:10});for(const [k,total]of [['money',40],['grain',10],['cloth',2]])near(legacy.expenses.local[k],total*.4,'existing single funding share preserved '+k);
+army.funding.localShareByResource={money:2,grain:-1};const clamped=c.CascadeTax.previewBudget({game:g,turnDays:10});near(clamped.expenses.local.money,40,'share over one capped');near(clamped.expenses.local.grain,0,'negative share capped');near(clamped.expenses.local.cloth,.8,'missing resource uses existing default share');
+army.location='A';army.funding.localShare=1;army.funding.localShareByResource={money:.2,grain:1,cloth:.5};
+c.IntegrationBridge={getLeafDivisions:(hierarchy,key)=>hierarchy[key]?.divisions||[]};
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../tm-border-risk.js'),'utf8'),c);
+const pressure=c.BorderRisk.monthlyAccounts(g,c.P),central=pressure.accounts['faction:唐'],local=pressure.accounts['region:A'];
+ok(!!central&&!!local,'military pressure resolves separate central and local accounts');near(central.cost.money,96,'military pressure uses actual central cash obligation');near(local.cost.money,24,'military pressure does not apply old full-local cash share');near(central.cost.grain,0,'pressure does not demand central grain when supplied locally');near(local.cost.grain,30,'local pressure retains its grain obligation');near(central.cost.cloth,3,'cloth pressure follows its own funding share');
+console.log('[smoke-army-resource-funding] PASS '+n+' assertions');

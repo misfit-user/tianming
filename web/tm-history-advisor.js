@@ -72,6 +72,9 @@
       + '【铁律】①不修改玩家任何决定(玩家有权选择)·你只供"下回合让 AI 自然演绎后果"·②**每条偏离必须引证一个真实历史先例(precedent)**——史上谁/何时类似之举、结果如何·据此判反噬·**严禁编造史实**·拿不准就说"史无明确先例"而非杜撰·'
       + (strict ? '③严格史实模式·尽量锚定下方【时代参考资料】·引证须与之相合·' : '③轻度史实模式·允许据通史常识引证·但仍须真实可考·')
       + '④反噬具体到主体(哪朝臣/党派/外族/阶层)与方式(弹劾/兵变/民变/叛盟/物议/经济失序/瘟疫)·现实合理>戏剧夸张·烈度匹配偏离程度。仅返回 JSON。';
+    // historical-agency-v21
+    var agency = global.TM && global.TM.HistoricalAgency;
+    if (agency && agency.isPlayerDriven()) sys = agency.advisorInstruction();
     var u = '【T' + c.turn + ' 玩家诏令原文】\n  ' + c.edictText + '\n\n';
     if (c.narrative) u += '【本回合推演叙事节选】\n' + String(c.narrative).slice(0, 1600) + '\n\n';
     var rh = _recentHistory(GM);
@@ -83,6 +86,7 @@
       + '"precedent":"引证的真实历史先例(史上谁/何时类似之举→结果如何·50字·拿不准则\\"史无明确先例\\")",'
       + '"realisticConsequence":"现实中朝堂/民间/外族应如何反应·涉哪些具体主体·何种方式·烈度(50字)",'
       + '"manifestIn":1-3}]}·若完全合史 deviations 返回空数组[]·不硬找。';
+    if (agency && agency.isPlayerDriven()) u = u.replace('若完全合史 deviations 返回空数组[]·不硬找。', '当前条件允许且无额外后果则返回空数组；不同于原史本身不是错误。');
     return { system: sys, user: u, turn: c.turn };
   }
 

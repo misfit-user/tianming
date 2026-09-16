@@ -1,0 +1,45 @@
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert'),crypto=require('crypto');
+const W=path.resolve(__dirname,'../..'),s=JSON.parse(fs.readFileSync(path.join(W,'scenarios/晚唐·开成五年（官方）.json'),'utf8')),copy=x=>JSON.parse(JSON.stringify(x)),RES=['money','grain','cloth'];let checks=0;
+const ok=(v,m)=>{assert(v,m);checks++;},near=(a,b,m,eps=.25)=>ok(Math.abs(a-b)<eps,m+': '+a+' / '+b);
+ok(s._version>=25,'current fiscal content revision present');
+const g={sid:s.id,turn:1,turnDays:10,playerInfo:copy(s.playerInfo),facs:copy(s.factions),chars:copy(s.characters),officeTree:copy(s.officeTree),adminHierarchy:copy(s.adminHierarchy),armies:copy(s.military.initialTroops),fiscalConfig:copy(s.fiscalConfig),guoku:{money:s.guoku.initialMoney,grain:s.guoku.initialGrain,cloth:s.guoku.initialCloth},neitang:{money:s.neitang.initialMoney,grain:s.neitang.initialGrain,cloth:s.neitang.initialCloth},publicTreasuryConfig:copy(s.publicTreasuryConfig)};
+const c={GM:g,P:{time:copy(s.time),playerInfo:copy(s.playerInfo),fiscalConfig:copy(s.fiscalConfig)},console:{log(){},warn(){},error(){}},Math,JSON,Date,setTimeout(){},clearTimeout(){},_getDaysPerTurn:()=>10,findScenarioById:()=>s};c.window=c;c.globalThis=c;vm.createContext(c);
+for(const file of ['tm-field-pipelines.js','tm-public-treasury.js','tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-fiscal-engine.js'])vm.runInContext(fs.readFileSync(path.join(W,'web',file),'utf8'),c,{filename:file});
+ok(c.FiscalEngine.initializePublicTreasuries({game:g,scenario:s}).ok,'declared physical stores initialize');
+const hash=()=>crypto.createHash('sha256').update(JSON.stringify(g)).digest('hex'),initialHash=hash(),annual=c.CascadeTax.previewBudget({game:g,turnDays:360}),ten=c.CascadeTax.previewBudget({game:g,turnDays:10}),month=c.CascadeTax.previewBudget({game:g,turnDays:30});
+ok(hash()===initialHash,'all fiscal views remain read-only');
+for(const k of RES){near(annual.totals.central[k],ten.totals.central[k]*36,'annual/ten-day income '+k);near(month.expenses.central[k],ten.expenses.central[k]*3,'monthly/ten-day expenses '+k);near(annual.totals.grossCollected[k],annual.totals.central[k]+annual.totals.localRetain[k]+annual.totals.skimmed[k]+annual.totals.lostTransit[k],'collection reconciles all destinations '+k);near(annual.expenses.total[k],annual.expenses.central[k]+annual.expenses.local[k]+annual.expenses.internal[k]-annual.expenses.transfers[k],'internal transfer excluded from final consumption '+k);}
+const taxIds=['land_silver','salt_iron','salt_hedong','salt_sichuan','salt_retained','tea','wine','commerce','maritime','mining','land_grain','land_cloth'];
+const taxRows=id=>annual.regions.flatMap(r=>r.taxes.filter(t=>t.id===id));
+for(const id of taxIds)ok(taxRows(id).some(t=>t.collected>0),'authored tax actually produces receipts '+id);
+for(const id of ['salt_retained','mining']){near(taxRows(id).reduce((a,t)=>a+t.central,0),0,'locally reserved revenue never enters central store '+id);ok(taxRows(id).some(t=>t.local>0),'local tax retained '+id);}
+const namesByTax=id=>annual.regions.filter(r=>r.taxes.some(t=>t.id===id&&t.collected>0)).map(r=>r.id);
+ok(JSON.stringify(namesByTax('salt_hedong'))===JSON.stringify(['河中府']),'two-pool salt belongs to actual producing prefecture');
+near(taxRows('salt_hedong').reduce((a,t)=>a+t.nominal,0),1000000,'historical million-guan quota is the assessment, not a guaranteed receipt');
+ok(taxRows('salt_hedong').reduce((a,t)=>a+t.central+t.local,0)<1000000,'collection friction remains after correcting the statutory quota');
+ok(namesByTax('salt_iron').every(id=>!namesByTax('salt_retained').includes(id)),'central and reserved sea salt areas do not double count');
+ok(namesByTax('maritime').length===1&&namesByTax('maritime')[0]==='广州','small maritime receipt not spread to landlocked prefectures');
+ok(!namesByTax('tea').includes('京兆府·长安')&&!namesByTax('mining').includes('天德军'),'commodity taxes have real geographic scope');
+const cfg=g.facs.find(f=>f.id==='唐朝廷').fiscalConfig;
+ok(cfg.taxList.length===12&&new Set(cfg.taxList.map(t=>t.id)).size===12,'all twelve independent tax IDs retain their own bases and rates');
+ ok(cfg.taxList.every(t=>['tianfu','yanlizhuan','quanShui','shipaiShui','mining'].includes(t.sourceTag)),'taxes use shared fiscal categories');
+ok(!cfg.fixedExpense.recurringExpenses.some(r=>r.id==='central-works-唐朝廷'),'removed broad expense is not paid alongside its replacements');
+const wineCosts=cfg.fixedExpense.recurringExpenses.filter(r=>r.id.startsWith('wine-production-'));near(wineCosts.reduce((a,r)=>a+r.monthly.money*12,0),520000,'gross wine receipts have explicit brewing costs');
+ok(!wineCosts.some(r=>['京兆府·长安','太原府','扬州'].includes(r.regionId)),'stopped capital monopoly and yeast-tax areas have no fictitious brewery charge');
+near(taxRows('wine').reduce((a,t)=>a+t.central+t.local,0)-520000,1040000,'wine net profit is not added again as a second revenue');
+const centralItems=annual.expenses.items.filter(r=>r.funding==='central');ok(new Set(centralItems.map(r=>r.name)).size>=90,'central services, offices and armies retain distinct payable items');
+ ok(centralItems.filter(r=>r.category==='army').every(r=>r.sourceTag==='junxiang')&&centralItems.filter(r=>r.category==='administration').every(r=>r.sourceTag==='fenglu'),'army and staff share the official expense contract');
+near(annual.expenses.army.grain,7479000,'troop grain rations not multiplied when cash support changes');near(annual.expenses.army.cloth,2535000,'troop cloth allowance not duplicated');
+for(const a of g.armies.filter(a=>a.faction==='唐朝廷'))ok(!!a.funding.localShareByResource,'resource-specific military payer '+a.id);
+const primary=c.FiscalEngine.getConsolidatedView({game:g,factionId:'唐朝廷'}),stocks=Object.fromEntries(RES.map(k=>[k,primary.resources[k].stock]));
+const received=c.CascadeTax.collect({game:g,turnDays:10}),paid=c.FixedExpense.collect({game:g,turnDays:10});ok(received.ok&&paid.ok,'real collection and payment consume the new source');
+const after=c.FiscalEngine.getConsolidatedView({game:g,factionId:'唐朝廷'});
+for(const k of RES){near(after.resources[k].stock-stocks[k],ten.totals.central[k]+ten.totals.localRetain[k]-paid.deducted.central[k]-paid.deducted.local[k]-paid.deducted.internal[k]+ten.expenses.transfers[k],'consolidated actual stock conservation '+k);}
+ok(Object.values(g.guoku.ledgers.money.sourceDetails).flat().filter(r=>r.amount>0).length===8,'all eight central cash tax items post under common categories');
+ near(g.guoku.expenses.junxiang/36,paid.turnExpense.army.money,'shared military category matches central ten-day obligation');
+ near(g.guoku.expenses.fenglu/36,paid.turnExpense.salary.money,'shared payroll category includes paid officials and clerical staff');
+const settledHash=hash();ok(c.CascadeTax.collect({game:g,turnDays:10}).skipped==='already-collected-this-turn','same-period revenue retry rejected');ok(c.FixedExpense.collect({game:g,turnDays:10}).skipped==='already-collected-this-turn','same-period expense retry rejected');ok(hash()===settledHash,'retry creates no extra public or private funds');
+const tea=cfg.taxList.find(t=>t.id==='tea');tea.enabled=false;const withoutTea=c.CascadeTax.previewBudget({game:g,turnDays:360});near(annual.totals.central.money-withoutTea.totals.central.money,taxRows('tea').reduce((a,t)=>a+t.central,0),'disabling a tax removes precisely that real income');
+ok(!annual.expenses.warnings.length,'all regional payers resolve');
+console.log('[smoke-tang840-fiscal-detail] PASS '+checks+' assertions');

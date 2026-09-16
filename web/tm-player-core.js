@@ -602,20 +602,21 @@ function _showWorkDetail(idx) {
   if (w.narrativeContext) {
     html += '<div style="font-size:0.82rem;color:var(--color-foreground-secondary);background:var(--bg-2);padding:0.5rem 0.7rem;border-radius:var(--radius-sm);margin-bottom:0.6rem;line-height:1.7;"><b style="color:' + cat.color + ';">创作背景：</b>' + escHtml(w.narrativeContext) + '</div>';
   }
+  if (w.circulation) html += '<div style="font-size:0.82rem;line-height:1.7;margin-bottom:0.6rem;"><b>传写：</b>' + escHtml(w.circulation) + '</div>';
   // 元数据
   html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px 12px;font-size:0.72rem;margin-bottom:0.6rem;">';
-  html += '<div><b style="color:' + cat.color + ';">触发：</b>' + cat.label + (w.trigger ? ' · ' + w.trigger : '') + '</div>';
+  html += '<div><b style="color:' + cat.color + ';">缘起：</b>' + cat.label + (w.trigger ? ' · ' + w.trigger : '') + '</div>';
   html += '<div><b style="color:var(--gold-400);">文体：</b>' + genreLbl + (w.subtype ? ' · ' + w.subtype : '') + '</div>';
   if (w.mood) html += '<div><b>情绪：</b>' + w.mood + '</div>';
   if (w.theme) html += '<div><b>题材：</b>' + w.theme + '</div>';
   if (w.motivation) html += '<div><b>动机：</b>' + w.motivation + '</div>';
   if (w.elegance) html += '<div><b>雅俗：</b>' + w.elegance + '</div>';
-  html += '<div><b>质量：</b>' + (w.quality || 0) + '</div>';
-  html += '<div><b>风险：</b>' + (w.politicalRisk || 'low') + '</div>';
+  html += '<div><b>质量：</b>' + (Number(w.quality) > 0 ? Number(w.quality) : '未品') + '</div>';
+  html += '<div><b>风险：</b>' + ({low:'平和',medium:'有议论',high:'争议甚广'}[w.politicalRisk || 'low'] || escHtml(w.politicalRisk)) + '</div>';
   if (w.isPreserved) html += '<div style="color:var(--gold-400);">★ 传世之作</div>';
   if (w.isForbidden) html += '<div style="color:var(--vermillion-400);">⚠ 已查禁</div>';
   html += '</div>';
-  if (w.politicalImplication) html += '<div style="font-size:0.78rem;color:var(--vermillion-400);margin-bottom:0.5rem;padding:0.3rem 0.5rem;background:rgba(192,57,43,0.08);border-radius:4px;">政治暗讽：' + escHtml(w.politicalImplication) + '</div>';
+  if (w.politicalImplication) html += '<div style="font-size:0.78rem;color:var(--vermillion-400);margin-bottom:0.5rem;padding:0.3rem 0.5rem;background:rgba(192,57,43,0.08);border-radius:4px;">弦外之意：' + escHtml(w.politicalImplication) + '</div>';
   if (w.dedicatedTo && w.dedicatedTo.length) html += '<div style="font-size:0.72rem;color:var(--color-foreground-muted);">赠：' + w.dedicatedTo.map(escHtml).join('、') + '</div>';
   // 玩家操作
   html += '<div style="display:flex;gap:6px;margin-top:0.8rem;flex-wrap:wrap;justify-content:flex-end;">';
@@ -658,13 +659,13 @@ function _workAction(idx, action) {
   var content = '';
   if (action === 'appreciate') content = '赐阅 ' + w.author + '《' + w.title + '》，表嘉赏之意';
   else if (action === 'inscribe') content = '御题 ' + w.author + '《' + w.title + '》——亲笔题跋或作序，准其刊行';
-  else if (action === 'echo') content = '命 ' + w.author + ' 或朝中文臣追和《' + w.title + '》——再作一篇次韵酬答';
-  else if (action === 'circulate') content = '将 ' + w.author + '《' + w.title + '》传抄行世，刻本广布';
+  else if (action === 'echo') content = '命朝中文臣追和《' + w.title + '》——再作一篇次韵酬答';
+  else if (action === 'circulate') content = '将 ' + w.author + '《' + w.title + '》缮写副本，传抄流布';
   else if (action === 'ban') content = '查禁 ' + w.author + '《' + w.title + '》——此作' + (w.politicalImplication ? '有' + w.politicalImplication + '之嫌，' : '') + '不宜流布';
   else if (action === 'unban') content = '解禁 ' + w.author + '《' + w.title + '》——准其重新流布，刊本发还';
   if (content) {
-    GM._edictSuggestions.push({ source: '\u6587\u4E8B', from: w.author, content: content, turn: GM.turn, used: false });
-    _recordPlayerActionSignal('edict', content, { source: 'cultural-work-action', action: action, actor: w.author, topic: w.title || '' });
+    GM._edictSuggestions.push({ source: '\u6587\u4E8B', from: '御前', custodian: w.custodian || '', content: content, turn: GM.turn, used: false });
+    _recordPlayerActionSignal('edict', content, { source: 'cultural-work-action', action: action, actor: (GM.playerInfo && GM.playerInfo.characterName) || '御前', topic: w.title || '' });
     toast('已录入诏令建议库');
     if (typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
   }
@@ -1687,11 +1688,8 @@ function renderLeftPanel(){
   if(_wSeal && _wName){
     var _dateForWeather=(typeof calcDateFromTurn==='function')?calcDateFromTurn(GM.turn||1):null;
     var _mon=(_dateForWeather&&(_dateForWeather.lunarMonth||_dateForWeather.solarMonth))||(((GM.turn||1)-1)%12)+1; // 1..12
-    var _s='春',_sTxt='春分',_sDesc='桃李始华';
-    if(_mon>=3&&_mon<=5){_s='春';_sTxt=['孟春','仲春','季春'][_mon-3];_sDesc=['立春·东风解冻','春分·雷乃发声','谷雨·萍始生'][_mon-3];}
-    else if(_mon>=6&&_mon<=8){_s='夏';_sTxt=['孟夏','仲夏','季夏'][_mon-6];_sDesc=['立夏·蝼蝈鸣','夏至·蜩始鸣','大暑·腐草为萤'][_mon-6];}
-    else if(_mon>=9&&_mon<=11){_s='秋';_sTxt=['孟秋','仲秋','季秋'][_mon-9];_sDesc=['立秋·凉风至','秋分·鸿雁来','霜降·草木黄落'][_mon-9];}
-    else {_s='冬';var _wi=(_mon===12?0:_mon+1);_sTxt=['孟冬','仲冬','季冬'][_wi];_sDesc=['立冬·水始冰','冬至·蚯蚓结','大寒·鸡始乳'][_wi];}
+    var _weather=typeof _tmSeasonFromDate==='function'?_tmSeasonFromDate(_dateForWeather):{season:'',name:'',description:''};
+    var _s=_weather.season,_sTxt=_weather.name,_sDesc=_weather.description;
     _wSeal.textContent=_s;
     _wName.textContent=_sTxt;
     if(_wDesc)_wDesc.textContent=_sDesc;
@@ -2017,6 +2015,8 @@ function openGaiyuanModal(){
     P.time.enableEraName=true;
     saveP();renderLeftPanel();
     toast("改元为"+name+"元年");
+    closeGenericModal();
+    if(document.getElementById('tm-action-edict-overlay') && typeof window.openZhao==='function') window.openZhao();
   });
 }
 // ============================================================
@@ -2374,7 +2374,8 @@ function openCharDetail(charName) {
   h += '</div>';
   if (ch.title || ch.officialTitle) {
     h += '<div class="qp-title">' + escHtml(ch.officialTitle || ch.title || '');
-    if (ch.rankLevel) h += ' · ' + (typeof rankLevelToText === 'function' ? rankLevelToText(ch.rankLevel) : '品级'+ch.rankLevel);
+    var _rankText=typeof getCharacterRankLabel==='function'?getCharacterRankLabel(ch,GM):'';
+    if (_rankText) h += ' · ' + esc(_rankText);
     h += '</div>';
   }
   h += '<div class="qp-location-line">';
@@ -2720,7 +2721,8 @@ function openCharRenwuPage(charName) {
   // 官职
   if (ch.title || ch.officialTitle) {
     h += '<div class="rwp-title"><b>' + escHtml(ch.officialTitle || ch.title || '') + '</b>';
-    if (ch.rankLevel) h += ' · ' + (typeof rankLevelToText === 'function' ? rankLevelToText(ch.rankLevel) : '品级'+ch.rankLevel);
+    var _rankText=typeof getCharacterRankLabel==='function'?getCharacterRankLabel(ch,GM):'';
+    if (_rankText) h += ' · ' + esc(_rankText);
     h += '</div>';
   }
   // mini tags
@@ -2957,7 +2959,8 @@ function openCharRenwuPage(charName) {
   h += '<div class="rwp-duo">';
   h += '<div class="rwp-duo-col public"><div class="rwp-duo-header">官 职 身 份</div>';
   h += '<div class="rwp-duo-row"><span class="label">官职</span><span class="val">'+escHtml(ch.officialTitle||ch.title||'—')+'</span></div>';
-  if (ch.rankLevel) h += '<div class="rwp-duo-row"><span class="label">品级</span><span class="val">'+(typeof rankLevelToText==='function'?rankLevelToText(ch.rankLevel):'品级'+ch.rankLevel)+'</span></div>';
+  var _rankText=typeof getCharacterRankLabel==='function'?getCharacterRankLabel(ch,GM):'';
+  if (_rankText) h += '<div class="rwp-duo-row"><span class="label">品级</span><span class="val">'+esc(_rankText)+'</span></div>';
   if (ch.officeDuties) h += '<div class="rwp-duo-row"><span class="label">职事</span><span class="val">'+escHtml(ch.officeDuties)+'</span></div>';
   if (ch.superior) h += '<div class="rwp-duo-row"><span class="label">上司</span><span class="val">'+escHtml(ch.superior)+'</span></div>';
   if (ch.concurrentTitle) h += '<div class="rwp-duo-row"><span class="label">兼衔</span><span class="val">'+escHtml(ch.concurrentTitle)+'</span></div>';
@@ -3049,7 +3052,8 @@ function openCharRenwuPage(charName) {
           var isSelf = cc.name === ch.name;
           var nmCls = isSelf ? 'var(--gold-300)' : (cc.party && cc.party === ch.party ? 'var(--celadon-300)' : 'var(--ink-50)');
           var roleTxt = cc.name === ch.name ? '（本人）' : '';
-          var rkTxt = cc.rankLevel ? ('·'+(typeof rankLevelToText==='function'?rankLevelToText(cc.rankLevel):'品'+cc.rankLevel)) : '';
+          var _rankText=typeof getCharacterRankLabel==='function'?getCharacterRankLabel(cc,GM):'';
+          var rkTxt = _rankText ? '·'+esc(_rankText) : '';
           h += '<div style="font-size:12px;line-height:1.8;">· <b style="color:'+nmCls+';">'+escHtml(cc.name)+'</b>'+roleTxt
              + '（'+escHtml(cc.officialTitle||cc.title||'')+rkTxt+'）</div>';
         });

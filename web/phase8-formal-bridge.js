@@ -641,11 +641,11 @@
       if (!item) return;
       opts = opts || {};
       var t = eventTurn(item, opts.turn || turn);
-      if (scope < 999 && t < minTurn) return;
+      if (t > turn || (scope < 999 && t < minTurn)) return;
       pushRow({
         turn: t,
         type: opts.type || type || item.type || item.kind || '近事',
-        title: opts.title || item.title || item.name || item.topic || item.head || item.kind || '未题',
+        title: opts.title || item.title || item.name || item.topic || item.head || item.event || item.subjectLine || item.kind || compactText(item.text || item.content || '', 24) || type || '近事',
         text: opts.text || item.text || item.desc || item.description || item.content || item.summary || item.body || item.narrative || '',
         time: opts.time || item.time || item.date || item.raisedDate || item.resolvedDate || getTurnText(t),
         detail: opts.detail || item.detail || item.impact || item.note || item.result || item.narrative || item.description || item.content || item.summary || item.body || '',
@@ -663,7 +663,11 @@
       ['annals','近事']
     ].forEach(function(pair){
       var k = pair[0];
-      if (Array.isArray(gm[k])) gm[k].forEach(function(x){ add(x, pair[1]); });
+      if (Array.isArray(gm[k])) gm[k].forEach(function(x){
+        // Scenario event seeds describe possibilities. Only events that have happened belong in news.
+        if (k === 'events' && x && (x.triggered === false || (x.type === 'conditional' && x.triggered !== true) || Number(x.triggerTurn) > turn)) return;
+        add(x, pair[1]);
+      });
     });
     if (window.EB && Array.isArray(EB.items)) EB.items.forEach(function(x){ add(x, '邸报'); });
     if (Array.isArray(gm.currentIssues)) gm.currentIssues.slice(0, 8).forEach(function(x){
@@ -938,7 +942,7 @@
     if (!endturn) {
       endturn = document.createElement('div');
       endturn.id = 'endturn';
-      endturn.innerHTML = '<button type="button" class="et-big">诏　付　有　司<span class="sub">联志已决　付之有司</span></button>';
+      endturn.innerHTML = '<button type="button" class="et-big">诏　付　有　司<span class="sub">朕志已决　付之有司</span></button>';
       document.body.appendChild(endturn);
     }
     var btn = endturn.querySelector('.et-big');
@@ -1616,11 +1620,13 @@
     try { if (typeof findScenarioById === 'function' && window.GM && GM.sid) _sc = findScenarioById(GM.sid); } catch(_e0) {}
     var _dyn = (_sc && _sc.dynasty) || (window.P && P.dynasty) || '';
     var _ruler = (_sc && _sc.emperor) || '';
+    var _nativeIdentity = window.TM && TM.NativeWorld && TM.NativeWorld.enabled(window.GM) ? TM.NativeWorld.info(GM) : null;
+    if (_nativeIdentity) { _dyn = _nativeIdentity.faction.name; _ruler = _nativeIdentity.character.name + ' · ' + (_nativeIdentity.character.title || _nativeIdentity.character.officialTitle || ''); }
     var sealEl = document.getElementById('tmf-tb-seal');
     var dynEl = document.getElementById('tmf-tb-dyn');
     var rulerEl = document.getElementById('tmf-tb-ruler');
     if (sealEl) sealEl.textContent = _dyn ? String(_dyn).slice(0, 1) : '—';
-    if (dynEl) dynEl.textContent = _dyn ? ('大' + String(_dyn).replace(/^大/, '')) : '本朝';
+    if (dynEl) dynEl.textContent = _nativeIdentity ? _dyn : (_dyn ? ('大' + String(_dyn).replace(/^大/, '')) : '本朝');
     if (rulerEl) rulerEl.textContent = _ruler || '';
     // 合一时历：主历串（已含年号·季·月·干支日）+ 节气并入 sub（撤掉独立节候）
     var main = document.getElementById('tmf-tb-time-main');
@@ -2292,7 +2298,9 @@
       rail.setAttribute('aria-label', '国事侧栏');
       root.appendChild(rail);
     }
-    if (rail.dataset.formalRailBuilt === '1' && rail.querySelector('[data-slot="archive"]')) { updateRailBadges(); updateRailActive(); return; }
+    if (rail.dataset.formalRailBuilt === '1' && rail.querySelector('[data-slot="archive"]')) {
+      updateRailBadges(); updateRailActive(); return;
+    }
     // 2026-05-27·右侧栏图标 SVG 化·参见 web/preview/right-rail-icons-preview.html v4
     // 立意·司南罗盘 / 衙门殿宇 / 竹简卷 / 朝班一品紫 / 双半合符 / 鱼鳞图册 / 算盘 / 官制树
     // 第 2 参从汉字字符改 SVG raw string·esc(b[1]) 改 raw b[1]·不转义

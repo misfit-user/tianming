@@ -2,7 +2,15 @@
 const cp = require('child_process'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const { discover, validateReport } = require('./lib-smoke-evidence');
 const WEB = path.join(__dirname, '..');
+function parseJobs(args) {
+  const index=args.indexOf('--jobs');
+  if(index<0)return [];
+  const jobs=Number(args[index+1]);
+  if(!Number.isInteger(jobs)||jobs<1||jobs>8)throw new Error('CI jobs must be an integer from 1 to 8');
+  return ['--jobs',String(jobs)];
+}
 function main() {
+  const schedulingArgs=parseJobs(process.argv.slice(2));
   const runId = crypto.randomUUID();
   const head = cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: WEB, encoding: 'utf8' }).trim();
   const tests = discover();
@@ -10,7 +18,7 @@ function main() {
   const dir = fs.mkdtempSync(path.join(parent, 'ci-'));
   const reportFile = path.join(dir, 'smoke-report.json');
   console.log('[ci-smokes] run=' + runId + ' HEAD=' + head + ' report=' + reportFile);
-  const child = cp.spawnSync(process.execPath, [path.join(__dirname, 'run-smokes.js'), '--all', '--no-retry', '--run-id', runId, '--report', reportFile], { stdio: 'inherit', cwd: WEB, windowsHide: true });
+  const child = cp.spawnSync(process.execPath, [path.join(__dirname, 'run-smokes.js'), '--all', '--no-retry', '--run-id', runId, '--report', reportFile, ...schedulingArgs], { stdio: 'inherit', cwd: WEB, windowsHide: true });
   if (child.error || child.signal || child.status !== 0) throw new Error('smoke-evidence-runner-failed');
   if (cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: WEB, encoding: 'utf8' }).trim() !== head
       || JSON.stringify(discover()) !== JSON.stringify(tests)) throw new Error('smoke-evidence-source-changed');
@@ -20,4 +28,4 @@ function main() {
   return result;
 }
 if (require.main === module) { try { main(); } catch (error) { console.error('[ci-smokes] FAIL ' + error.message); process.exitCode = 1; } }
-module.exports = { main };
+module.exports = { main, parseJobs };

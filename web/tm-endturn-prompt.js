@@ -428,11 +428,9 @@
     }
     // 改换门庭引导（通用·让人物随推演叛降/归附/反正改投他势力·非随机·须叙事 justify）
     tp += '【人物改换门庭——可用·但须本回合情节使然，勿无缘无故】若有人物因兵败出降、principled 归正、城破被俘、获救反正、胁从等**当回合事由**而改投他势力，用 allegiance_changes 落实：[{character:人名, newFaction:目标势力名, reason:缘由, type:defect(主动叛投)/surrender(兵败降)/return(反正归正)/capture(被俘)/rescue(获救)/coerced(胁从)}]。忠诚低、欠饷、孤立无援、大势已去、宿怨在心者尤易动摇；但改换必有事由，不可凭空易帜。\n';
-    // 双层国库状态
-    if (P.economyConfig && P.economyConfig.dualTreasury) {
-      var _tLine = '【国库/内库】国库:' + (GM.stateTreasury||0) + ' 内库:' + (GM.privateTreasury||0);
-      if ((GM._bankruptcyTurns||0) > 0) _tLine += ' ⚠ 财政危机第' + GM._bankruptcyTurns + '回合';
-      _mechResults.push(_tLine);
+    // 财政上下文与库藏面板使用同一字段及期间；预计额不是已到库钱物。
+    if (typeof FiscalEngine !== 'undefined' && FiscalEngine.readFiscalContext && (GM.guoku || GM.neitang)) {
+      _mechResults.push('【国库/内库收支簿】金额单位、账期与预计/实绩以册内字段为准；库存和预计收支分别解释，不将跨库移交当新增国用。\n' + JSON.stringify(FiscalEngine.readFiscalContext({game:GM})));
     }
     if (typeof MarchSystem !== 'undefined' && MarchSystem._getConfig().enabled) {
       var _marchPrompt = MarchSystem.getPromptInjection();
@@ -1240,7 +1238,10 @@
 
     // ── S7·官制新机制 AI 喂料补盲（权臣坐大/京察黜陟/怀才不遇·纯 prompt 注入·flag 关时数据恒空天然门控零回归·2026-07-01）──
     // S7-1: 权臣坐大——引擎已判定的权臣喂 AI（powerMinisterEnabled 关时 GM.huangquan.powerMinister 恒 null·不注入）
-    if (GM.huangquan && GM.huangquan.powerMinister && GM.huangquan.powerMinister.name) {
+    if (GM.huangquan && GM.huangquan.powerMinister && GM.huangquan.powerMinister.mode === 'institutional') {
+      tp += '\n【宫廷权柄】' + (GM.huangquan.powerMinister.description || '近臣居要职，军政交接须问实际承办者。') + '\n既有利害不替任何人预定善恶、夺位或结局；不得替玩家决定猜忌、亲疏和行动。\n';
+    }
+    if (GM.huangquan && GM.huangquan.powerMinister && GM.huangquan.powerMinister.name && GM.huangquan.powerMinister.mode !== 'institutional') {
       var _s7pm = GM.huangquan.powerMinister;
       var _s7pmc = GM.chars && GM.chars.find(function (c) { return c && c.name === _s7pm.name; });
       tp += '\n【权臣坐大·皇权旁落警讯（叙事须体现）】\n';
@@ -2257,6 +2258,11 @@
       historicalCharLimit = '\n\u5386\u53F2\u4EBA\u7269\u9650\u5236:\u4E2D\u56FD\u53E4\u4EE3\u5168\u90E8\u5386\u53F2\u540D\u81E3\u90FD\u6709\u6982\u7387\u51FA\u73B0\u3002';
     }
 
+    // historical-agency-v21: replace contradictory mode blocks before any prompt consumer sees them.
+    if (typeof TM !== 'undefined' && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(sc)) {
+      gameModeDesc = '\n\n' + TM.HistoricalAgency.modeDescription(_mp.mode, sc);
+      historicalCharLimit = TM.HistoricalAgency.promptText(sc);
+    }
     var _promptComposer = (typeof TM !== 'undefined' && TM.PromptComposer) ? TM.PromptComposer : null;
     // [1A·sysBlocks·2026-06-02] offset-marker 分块：下方 sysP += 链零改动，仅在块边界采样 length 切片。
     // _segs 按代码序保留段（1B/1C 据此按 profile 选段丢段），join(_segs.text)===sysP 由切片连续性构造保证。
@@ -3458,6 +3464,7 @@
       sysP += '\n\u8BF7\u6839\u636E\u4E0A\u8FF0\u5404\u5C42\u7EA7\u5B98\u5458\u7684\u80FD\u529B\u3001\u5FE0\u8BDA\u5EA6\u548C\u7A7A\u7F3A\u60C5\u51B5\uFF0C\u81EA\u884C\u5224\u65AD\u8BCF\u4EE4\u7684\u6267\u884C\u7A0B\u5EA6\u548C\u963B\u529B\u6765\u6E90\u3002';
       sysP += '\nedict_feedback\u8981\u6C42\uFF1Aassignee\u5FC5\u586B\u8D1F\u8D23\u6267\u884C\u7684\u5177\u4F53\u5B98\u5458\u540D\uFF1Bfeedback\u5E94\u8BE6\u7EC6\u63CF\u8FF0\u6267\u884C\u8FC7\u7A0B\uFF08\u8C01\u505A\u4E86\u4EC0\u4E48\u3001\u8FDB\u5C55\u5982\u4F55\u3001\u963B\u529B\u6765\u6E90\uFF09\uFF0C\u4E0D\u8981\u7B3C\u7EDF\u6982\u62EC';
     }
+    if (typeof TM !== 'undefined' && TM.CommandAuthority) sysP += '\n' + TM.CommandAuthority.getPrompt();
     // 2.5: 注入建筑产出报告
     if (GM._buildingOutputReport) {
       sysP += '\n\n【本回合建筑经济产出】';

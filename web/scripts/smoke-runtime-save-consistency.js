@@ -14,7 +14,7 @@ function sliceFn(src, marker) {
   return src.slice(a, j);
 }
 
-const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
+const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const core = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
 const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
@@ -134,12 +134,13 @@ ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[
   const hydrateAt = loadImpl.indexOf('await ChronicleSystem.hydrateDurableRecords(GM, P)');
   const receiptAt = loadImpl.indexOf('await _recoverPendingTurnDataPublish()');
   const forkAt = loadImpl.indexOf('_tmForkLoadedTimeline(GM');
-  const enableAt = loadImpl.indexOf('GM.busy = false');
+  const enableAt = loadImpl.indexOf('GM.busy = !!loadOptions.nativeStart');
   const showWorldAt = loadImpl.indexOf('_$("G").style.display="grid"');
   const enterAt = loadImpl.indexOf('enterGame()');
   ok(/function fullLoadGame\(data, loadOptions\)[\s\S]*?window\._tmLoadBarrier = barrier/.test(lifecycle)
     && hydrateAt >= 0 && receiptAt > hydrateAt && forkAt > receiptAt && enableAt > forkAt
-    && showWorldAt > enableAt && enterAt > showWorldAt,
+    && showWorldAt > enableAt && enterAt > showWorldAt
+    && /await loadOptions.beforeCommit\([\s\S]*?GM.busy = false/.test(lifecycle),
   '读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法');
   ok(/GM\.busy = true;[\s\S]*?GM\._loadHydrationPending = true;/.test(loadImpl)
     && /function _tmAwaitLoadBarrier\(\)[\s\S]*?result !== true[\s\S]*?throw new Error/.test(lifecycle)

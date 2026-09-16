@@ -19,6 +19,13 @@
 (function(global) {
   'use strict';
 
+  var _semanticScriptUrl = global.document && global.document.currentScript && global.document.currentScript.src;
+  function semanticAssetURL(relative) {
+    var base = _semanticScriptUrl || (global.document && global.document.baseURI) || (global.location && global.location.href);
+    if (!base) return relative;
+    try { return new URL(relative, base).href; } catch (_) { return relative; }
+  }
+
   var STATE = {
     enabled: false,        // 玩家开关
     modelReady: false,     // 模型加载完成
@@ -108,7 +115,7 @@
   function _tryStartWorker(initOpts) {
     return new Promise(function (resolve) {
       var w;
-      try { w = new Worker('./tm-semantic-worker.js', { type: 'module' }); }
+      try { w = new Worker(semanticAssetURL('./tm-semantic-worker.js'), { type: 'module' }); }
       catch (e) { return resolve(null); }
       var settled = false;
       var aliveTimer = setTimeout(function () { finish(null, 'alive timeout'); }, 15000);
@@ -191,7 +198,7 @@
       // P9.1·P9.2 模型加载策略
       // (a) Electron 端·若本地预打包 vendor/models 存在·优先用本地
       // (b) 网页端·首选 hf-mirror.com（CN 友好）·失败回退 huggingface.co
-      var localModelRoot = './vendor/models/';
+      var localModelRoot = semanticAssetURL('./vendor/models/');
       var localModelPath = localModelRoot + STATE.modelName + '/';
       var hasLocalModel = await probeSemanticAsset(localModelPath + 'config.json') &&
                            await probeSemanticAsset(localModelPath + 'tokenizer.json') &&
@@ -237,6 +244,9 @@
       // 拖住主线程致过回合动画冻结(模型反复加载失败重试)·故仅在 http(s) 下启用浏览器缓存(2026-06-14)
       var _tmCacheOk = (typeof location !== 'undefined' && location && (location.protocol === 'http:' || location.protocol === 'https:'));
       transformers.env.useBrowserCache = _tmCacheOk;
+      var wasm = transformers.env.backends && transformers.env.backends.onnx && transformers.env.backends.onnx.wasm;
+      if (!wasm) throw new Error('bundled ONNX WASM configuration unavailable');
+      wasm.wasmPaths = semanticAssetURL('./vendor/transformers/');
       if (hasLocalModel) {
         // 完全离线·从本地 vendor 加载
         transformers.env.localModelPath = localModelRoot;

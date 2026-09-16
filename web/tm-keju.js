@@ -991,6 +991,9 @@ async function pickHistoricalCandidates(exam) {
   if (!P.ai || !P.ai.key) return [];
 
   var year = GM.year || (P.time && P.time.year) || 1600;
+  // historical-agency-v21
+  var agency = (typeof TM !== 'undefined') && TM.HistoricalAgency;
+  var openHistory = !!(agency && agency.isPlayerDriven());
   var window = _kejuHistoricalWindow();
   var mode = (P.conf && P.conf.gameMode) || 'yanyi';
 
@@ -1041,6 +1044,10 @@ async function pickHistoricalCandidates(exam) {
   try {
     // 条2·本局死者独立成段并入 prompt 排除(不与官员名单抢 slice 额度·保证死者恒在排除段)
     if (deadNames.length) prompt += '\n\u3010\u786C\u89C4\u5219\u00B7\u52FF\u590D\u6D3B\u3011\u672C\u5C40\u5DF2\u6545\u8005\u4E25\u7981\u4F5C\u4E3A\u8003\u751F\uFF08\u4E0B\u5217\u672C\u5C40\u5DF2\u6B7B\uFF09\uFF1A' + deadNames.slice(0, 30).join('\u3001') + (deadNames.length > 30 ? '\u7B49' : '');
+    if (openHistory) {
+      prompt = prompt.replace(/时间约束：[^\n]*/, '时间约束：只能选择当前 '+year+'年已经出生且在世、符合应试年龄的本朝人物；无前后年份容差。');
+      prompt += agency.promptText() + '\n每位候选必须返回真实birthYear及deathYear（未知卒年可空），不得改写生卒年或以任意年龄伪装未来人。';
+    }
     var _tokBudget = (P.conf && P.conf.maxOutputTokens) || (P.conf && P.conf._detectedMaxOutput) || 4000;
     // 时空约束·不适用：此口为史实检索器·契约要求返回真实名臣+史料原文摘引且只取应考(在世)候选·注入平行时空约束(别信史实记忆)会与其契约直接冲突并诱发虚构·targeted书卒/时间线既成之害在此口不成立·故不注入
     var raw = await callAISmart(prompt, _tokBudget, { maxRetries: 2 });
@@ -1050,6 +1057,11 @@ async function pickHistoricalCandidates(exam) {
     // 条1·判定口径：GM 人物册有明确死亡记录者(alive===false||dead)一律剔除防复活；不在册的史实名臣按 prompt 硬规则(应试年龄20-55+year前后活跃 era-gate)视为应考在世·GM 无据判其死·不在此后置硬闸内。
     var valid = parsed.filter(function(c){
       if (!c || !c.name) return false;
+      if (openHistory) {
+        var temporal = agency.temporalEligibility(c, {year:year, minAge:18, maxAge:60});
+        if (!temporal.ok) return false;
+        c.age = temporal.age;
+      }
       if (usedNames.indexOf(c.name) >= 0) return false;
       // 条1·硬闸·本局已故者名单命中一律剔除（不查官职·直查生死·防 AI 复活本局死者）
       if (_deadKeys[_kjNormNameKey(c.name)]) { try { console.warn('[科举·滤] 丢弃本局已故候选(名单命中):', c.name); } catch(_){} return false; }
@@ -1058,7 +1070,7 @@ async function pickHistoricalCandidates(exam) {
       // 条1·硬闸·GM 在册且已死者(alive===false||dead)一律剔除（防名单未命中的别名/异写死者复活）
       if (_existCh && (_existCh.alive === false || _existCh.dead)) { try { console.warn('[科举·滤] 丢弃本局已故候选(GM在册已死):', c.name); } catch(_){} return false; }
       // 条4·off-GM 史实候选后置校验时代窗(strict/light 模式)·防 AI 塞窗外年份/跨朝代人物(era-gate 不只写在提示词)
-      if (!_existCh && window != null) {
+      if (!_existCh && window != null && !openHistory) {
         // 条3·era-gate fail-closed·coerce 数字字符串·缺失/null/非有限值一律拒收(不 fail-open)
         var _hym = c.historicalYearMet;
         if (typeof _hym === 'string' && _hym.trim() !== '') _hym = Number(_hym);

@@ -639,8 +639,9 @@ function showPrompt(message, defaultValue, callback) {
   var cancelBtn = document.createElement('button');
   cancelBtn.textContent = '取消';
   cancelBtn.className = 'bt';
+  var closePrompt = function() { if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(overlay); else overlay.remove(); };
   cancelBtn.onclick = function() {
-    overlay.remove();
+    closePrompt();
     if (callback) callback(null);
   };
 
@@ -649,7 +650,7 @@ function showPrompt(message, defaultValue, callback) {
   okBtn.className = 'bt bp';
   okBtn.onclick = function() {
     var val = input.value;
-    overlay.remove();
+    closePrompt();
     if (callback) callback(val);
   };
 
@@ -669,7 +670,8 @@ function showPrompt(message, defaultValue, callback) {
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 
-  setTimeout(function() { input.focus(); }, 100);
+  if (typeof _tmPresentModal === 'function') _tmPresentModal(overlay, cancelBtn.onclick, input);
+  else setTimeout(function() { if (overlay.isConnected !== false) input.focus(); }, 100);
 }
 
 // ============================================================
@@ -1520,6 +1522,7 @@ function _tmIsAtPlayerLocation(ch) {
 
 /** 模糊查找角色（精确→去空格标点→前2字唯一→别名→null） */
 function _fuzzyFindChar(name) {
+  if (typeof TM !== 'undefined' && TM.StartContracts && typeof GM !== 'undefined' && GM.startContext) return TM.StartContracts.resolveCharacter(GM,name);
   if (!name || !GM.chars) return null;
   var n = String(name).trim();
   try {

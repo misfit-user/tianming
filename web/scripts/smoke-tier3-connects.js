@@ -30,11 +30,12 @@ ok(runCtx({turn:1, activeWars:[]}).indexOf('【当前战事】') < 0, '无战事
 
 // ── 簇3#6 主帅阵亡 morale + fortification 消费方 ──
 const mil = read('tm-military.js');
+const strengthSource = read('tm-battle-contract.js');
 ok(/var _cmLoss = \(outcome === 'killed'[\s\S]{0,80}\? 18 : 10;/.test(mil), '★主帅折损军心剧挫(killed/captured -18·余 -10)');
 ok(/army\.mutinyRisk = Math\.min\(100, \(army\.mutinyRisk \|\| 0\) \+ 10\)/.test(mil), '主帅折损 mutinyRisk +10');
-ok(/var fortMod = 1\.0;/.test(mil) && /unitMod \* fortMod\b/.test(mil), '★fortification 接入战力(守城加成·完成 Tier-1 fortify·fortMod 乘入战力公式·后追加 equipMod 故不锁尾分号)');
+ok(/var fortMod = 1\.0;/.test(strengthSource) && /unitMod \* fortMod\b/.test(strengthSource), '★fortification 接入战力(守城加成·完成 Tier-1 fortify·fortMod 乘入战力公式·后追加 equipMod 故不锁尾分号)');
 // fortification 行为验证
-const cas = sliceFn(mil, 'function calculateArmyStrength(');
+const cas = sliceFn(strengthSource, 'function calculateArmyStrength(');
 function strength(army, ctxArg){
   const c = { Math:Math, Number:Number, console:console, P:{}, findCharByName:function(){return null;}, _armyMorale:function(a){return 60;} };
   vm.createContext(c);

@@ -82,8 +82,105 @@
     return '危';
   }
 
+
+  // Opt-in scenario budget model. No shape area/count taxation and no currency conversion.
+  function _computeScenarioBudget(fac, entry) {
+    var cfg = fac.fiscalProfile;
+    var G = global.GM || {}, kinds = ['money','grain','cloth'];
+    var rates = cfg.ratesPerPersonYear || {};
+    var nodeById = {}, owned = [], seen = {};
+    function visit(node, rootOwner) {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node.children) && node.children.length) { node.children.forEach(function(n){ visit(n,rootOwner); }); return; }
+      if (node.id) nodeById[node.id] = node;
+      if (rootOwner === fac.id || rootOwner === fac.name) owned.push(node);
+    }
+    Object.keys(G.adminHierarchy || {}).forEach(function(key){
+      var root = G.adminHierarchy[key] || {};
+      (root.divisions || []).forEach(function(n){ visit(n,root.factionId || root.name || key); });
+    });
+    // Live ownership takes precedence; population comes from the live administrative leaf.
+    var liveMap = G.mapData || G.map;
+    if (liveMap && Array.isArray(liveMap.regions)) {
+      owned = [];
+      liveMap.regions.forEach(function(r){
+        var owner = r.currentOwner || r.owner || r.factionId;
+        if (owner !== fac.id && owner !== fac.name) return;
+        var node = nodeById[r.adminBinding] || nodeById[r.mapRegionId] || nodeById[r.id] || r.data;
+        if (node) owned.push(node);
+      });
+    }
+    var population=0, weightedPopulation=0, locations=0;
+    if (cfg.offMap !== true) owned.forEach(function(n){
+      var id=n.id || n.mapRegionId; if (!id || seen[id]) return; seen[id]=true;
+      var pop=Math.max(0,_safeNum(n.population && n.population.mouths));
+      var prosperity=Number.isFinite(n.prosperity) ? _clamp(n.prosperity,0,100) : 50;
+      var registrationFactor=1;
+      if(cfg.applyRegistrationLoss===true){
+        var pipes=global.TM && global.TM.FieldPipes;
+        if(!pipes || typeof pipes.fleeTaxPenalty!=='function')throw Error('scenario-budget requires FieldPipes registration loss');
+        registrationFactor=1-_clamp(_safeNum(pipes.fleeTaxPenalty(n)),0,0.35);
+      }
+      population+=pop; weightedPopulation+=pop*(0.70+prosperity*0.004)*registrationFactor; locations++;
+    });
+    var income={}, expense={}, army={}, civil={}, officeMoney=0;
+    (fac.officeTree || []).forEach(function(d){
+      if (d.faction !== fac.id && d.faction !== fac.name) return;
+      (d.positions || []).forEach(function(p){
+        if (p.faction !== d.faction || !p.holderId) return;
+        var ch=(G.chars || []).find(function(c){return c && c.id===p.holderId;});
+        if (!ch || ch.alive===false || ch.dead===true || (ch.faction!==fac.id && ch.faction!==fac.name)) return;
+        officeMoney+=Math.max(0,_safeNum(p.salary))*12;
+      });
+    });
+    var share=_clamp(_safeNum(cfg.civilExpenseShare),0,0.95);
+    kinds.forEach(function(k){
+      income[k]=Math.round(weightedPopulation*Math.max(0,_safeNum(rates[k]))*100)/100;
+      var field='monthly'+k.charAt(0).toUpperCase()+k.slice(1)+'PayPerSoldier';
+      army[k]=(entry.armies || []).reduce(function(sum,a){
+        if (!a || a.destroyed || (a.faction!==fac.id && a.faction!==fac.name)) return sum;
+        return sum+Math.max(0,_safeNum(a.soldiers))*Math.max(0,_safeNum(a[field]))*12;
+      },0);
+      army[k]=Math.round(army[k]*100)/100; civil[k]=Math.round(income[k]*share*100)/100;
+      expense[k]=Math.round((army[k]+civil[k]+(k==='money'?officeMoney:0))*100)/100;
+    });
+    var worst=0;
+    kinds.forEach(function(k){worst=Math.max(worst,income[k]>0?Math.max(0,expense[k]/income[k]-1):(expense[k]>0?2:0));});
+    var arrears=(entry.metrics && entry.metrics.armyCount)>0 ? (entry.metrics.arrearsArmies||0)/entry.metrics.armyCount : 0;
+    var stress=_clamp(Math.round(worst*30+arrears*40),0,100);
+    return { militaryStrength:_safeNum(entry.metrics && entry.metrics.totalSoldiers),
+      annualMilitaryCost:army.money, annualMilitaryCostBreakdown:army,
+      annualTaxIncome:income.money, annualTaxBreakdown:income,
+      annualRevenueResources:income, annualExpenseResources:expense,
+      annualCivilExpenseResources:civil, annualOfficeCostMoney:officeMoney,
+      netFlow:income.money-expense.money, fiscalStress:stress, economyHealth:100-stress,
+      governanceFactor:population>0?weightedPopulation/population:0,
+      labels:{economyHealth:_label(100-stress)},
+      _source:{model:'tm-fiscal-profile/1',modeledPopulation:population,weightedPopulation:weightedPopulation,
+        territoryCount:locations,armyCount:(entry.armies||[]).length,offMap:cfg.offMap===true,
+        currencyConversion:false,registrationLossApplied:cfg.applyRegistrationLoss===true,shapeCountDoesNotSetTaxBase:true,stockScope:cfg.stockScope||''}
+    };
+  }
+
+  function _computeUnifiedBudget(fac, entry) {
+    var b=global.CascadeTax.previewBudget({faction:fac.id || fac.name,turnDays:360}),income=b.annual.central,expense=b.annual.expenses.central;
+    var stress=0,months=0,count=0;
+    ['money','grain','cloth'].forEach(function(k){stress=Math.max(stress,income[k]>0?Math.max(0,expense[k]/income[k]-1)*35:(expense[k]>0?65:0));});
+    (entry.armies||[]).forEach(function(a){if(a&&!a.destroyed){months+=Math.max(0,_safeNum(a.payArrearsMonths));count++;}});
+    stress=_clamp(Math.round(stress+(count?months/count*12:0)),0,100);
+    return {militaryStrength:_safeNum(entry.metrics&&entry.metrics.totalSoldiers),annualMilitaryCost:b.annual.expenses.army.money,
+      annualMilitaryCostBreakdown:b.annual.expenses.army,annualTaxIncome:income.money,annualTaxBreakdown:income,
+      annualRevenueResources:income,annualExpenseResources:expense,annualLocalRevenueResources:b.annual.localRetain,
+      annualLocalExpenseResources:b.annual.expenses.local,annualGovernmentRevenueResources:{money:income.money+b.annual.localRetain.money,grain:income.grain+b.annual.localRetain.grain,cloth:income.cloth+b.annual.localRetain.cloth},
+      annualCivilExpenseResources:b.annual.expenses.administration,annualOfficeCostMoney:b.annual.expenses.salary.money,
+      netFlow:income.money-expense.money,fiscalStress:stress,economyHealth:100-stress,labels:{economyHealth:_label(100-stress)},
+      _source:{model:'tm-fiscal-ledger/2',territoryCount:b.regions.length,daysPerYear:360,daysPerMonth:30,currencyConversion:false,sharedRegionalTaxBase:true}};
+  }
+
   function _computeOne(fac, entry) {
     if (!fac || !entry) return null;
+    if (global.CascadeTax && global.CascadeTax.isUnified && global.CascadeTax.isUnified(global.GM,fac.id || fac.name)) return _computeUnifiedBudget(fac,entry);
+    if (fac.fiscalProfile && fac.fiscalProfile.schema === "tm-fiscal-profile/1") return _computeScenarioBudget(fac,entry);
     var paradigm = _detectParadigm(fac.name, fac);
     var taxCoef = TAX_COEF[paradigm] || TAX_COEF.generic;
     var costCoef = SOLDIER_COST[paradigm] || SOLDIER_COST.generic;

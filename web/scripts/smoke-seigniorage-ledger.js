@@ -15,7 +15,9 @@ console.log('smoke-seigniorage-ledger');
 
 const eco = (fs.readFileSync(path.join(ROOT, 'tm-economy-engine-currency.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-economy-engine.js'), 'utf8'));
 const mintSrc = sliceFn(eco, 'function _mintCycle(');
+const accountingSrc = sliceFn(eco, 'function CURRENCY_LEDGER_V2(');
 ok(!!mintSrc, '_mintCycle 抽取成功');
+ok(!!accountingSrc, '装载真实的记账模式判定，保持旧剧本铸钱回归');
 ok(/typeof gk\.ledgers\.money === 'object'/.test(mintSrc) && /_ml\.stock =/.test(mintSrc), '源契约:入库走 money ledger.stock(对象守卫)');
 ok(mintSrc.indexOf('gk.ledgers.money += ') < 0, '源契约:旧 gk.ledgers.money += number 已清');
 
@@ -38,7 +40,7 @@ ctx.global = { GM: {
   guoku: { ledgers: { money: { stock:1000, thisTurnIn:0, sources:{}, sinks:{} } }, balance:1000, money:1000, sources:{} }
 }};
 vm.createContext(ctx);
-vm.runInContext(mintSrc + '\nthis.run = function(){ _mintCycle({turn:5}, 1); };', ctx);
+vm.runInContext(accountingSrc + '\n' + mintSrc + '\nthis.run = function(){ _mintCycle({turn:5}, 1); };', ctx);
 ctx.run();
 const g = ctx.global.GM.guoku;
 ok(typeof g.ledgers.money === 'object', '★ 账本仍是对象(未被字符串覆写)');

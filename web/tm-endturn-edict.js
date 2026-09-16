@@ -1116,7 +1116,7 @@ function computeExecutionPipeline(edictText, edictCategory) {
     var fKey = stage.functionKey;
     if (!fKey && edictCategory) {
       var catMap = { '政令': 'central_admin', '军令': 'military', '外交': 'diplomacy', '经济': 'finance' };
-      fKey = catMap[edictCategory] || null;
+      fKey = (stage.functionKeyByCategory || catMap)[edictCategory] || null;
     }
 
     // 查找对口官员——仅收集信息，不计算通过率
@@ -1126,8 +1126,10 @@ function computeExecutionPipeline(edictText, edictCategory) {
         var ch = (typeof findCharByName === 'function') ? findCharByName(officer.holder) : null;
         if (ch) {
           officerName = ch.name;
-          ability = ch.ability || ch.intelligence || 50;
-          loyalty = ch.loyalty || 50;
+          var skill = fKey === 'military' || (!stage.functionKey && edictCategory === '军令') ? 'military' : 'administration';
+          ability = ch[skill] != null ? Number(ch[skill]) : (ch.ability != null ? Number(ch.ability) : (ch.intelligence != null ? Number(ch.intelligence) : 50));
+          if (!isFinite(ability)) ability = 50;
+          loyalty = ch.loyalty != null && isFinite(Number(ch.loyalty)) ? Number(ch.loyalty) : 50;
         }
       } else {
         note = '空缺';
@@ -1143,8 +1145,10 @@ function computeExecutionPipeline(edictText, edictCategory) {
     });
   }
 
+  if (typeof TM !== 'undefined' && TM.CommandAuthority) stages = stages.concat(TM.CommandAuthority.pipeline(edictText));
   // 生成摘要字符串——纯信息，供AI判断
   var summary = stages.map(function(s) {
+    if (s.authoritySummary) return s.authoritySummary;
     var desc = s.name + '(';
     if (s.officer) desc += s.officer + ' 能力' + s.ability + ' 忠诚' + s.loyalty;
     else if (s.note) desc += s.note;
@@ -1171,6 +1175,7 @@ function processEdictEffects(allEdictText, edictCategory) {
     }
   } catch(_rE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rE, '\u8BCF\u4EE4\u5F81\u8BCF') : console.warn('[\u8BCF\u4EE4\u5F81\u8BCF]', _rE); }
 
+  if (typeof TM !== 'undefined' && TM.CommandAuthority) TM.CommandAuthority.observeEdict(allEdictText);
   // 收集执行管线信息（如果有配置）
   var execResult = computeExecutionPipeline(allEdictText, edictCategory);
 

@@ -51,6 +51,11 @@ async function _init(opts) {
   // Cache API 的 put 仅支持 http/https 请求·file:///capacitor:// 等非 http 协议下启用会反复抛错并拖住线程·仅 http(s) 启用(2026-06-14)
   var _tmCacheOk = (typeof location !== 'undefined' && location && (location.protocol === 'http:' || location.protocol === 'https:'));
   transformers.env.useBrowserCache = _tmCacheOk;
+  var wasm = transformers.env.backends && transformers.env.backends.onnx && transformers.env.backends.onnx.wasm;
+  if (!wasm) throw new Error('bundled ONNX WASM configuration unavailable');
+  var localWasmRoot = './vendor/transformers/';
+  try { if (self.location && self.location.href) localWasmRoot = new URL(localWasmRoot, self.location.href).href; } catch (_) {}
+  wasm.wasmPaths = localWasmRoot;
   if (opts.hasLocalModel) {
     transformers.env.localModelPath = opts.localModelRoot || './vendor/models/';
     transformers.env.allowLocalModels = true;

@@ -92,7 +92,13 @@
     // 权臣
     if (G.huangquan && G.huangquan.powerMinister) {
       var pm = G.huangquan.powerMinister;
-      obs.push('权臣：' + pm.name + '（权重 ' + Math.round(pm.weight||0) + '），皇权指数 ' + Math.round(G.huangquan.index||0));
+      if(pm.mode==='institutional'){
+        var reader=global.AuthorityEngines&&global.AuthorityEngines.readPowerMinisterStatus,state=reader?reader(pm,G):null;
+        if(!state||state.active||state.pending){
+          var offices=state&&state.officeNames||[],armies=state&&state.armyIds||[];
+          obs.push('现任职掌：'+pm.name+(offices.length?'任'+offices.join('、'):'职掌待核')+(armies.length?'；仍有'+armies.length+'军由其经手交割':'')+'。'+(pm.description||'所据官职与实际交接各有凭据，不先断其将夺位或失势。'));
+        }
+      }else obs.push('权臣：'+pm.name+(typeof pm.weight==='number'&&isFinite(pm.weight)?'（权重 '+Math.round(pm.weight)+'）':'')+'，皇权指数 '+Math.round(G.huangquan.index||0));
     }
     // 民心
     if (G.minxin) {

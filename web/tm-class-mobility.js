@@ -83,6 +83,8 @@
 
   /** 会昌毁佛（845年）级联 */
   function _checkHuichangDestructBuddhism(ctx) {
+    // historical-agency-v21: do not paste a fixed historical aggregate over a player's current policy.
+    if (global.TM && global.TM.HistoricalAgency && global.TM.HistoricalAgency.isPlayerDriven()) return;
     var G = global.GM;
     if (!G) return;
     if (G._huichangDone) return;

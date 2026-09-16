@@ -14,12 +14,27 @@ const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('g
 try {
   if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   if (argv.includes('--seven-ui')) modes.splice(0, modes.length, 'seven-ui');
+  if (argv.includes('--native-start-entry')) modes.splice(0, modes.length, 'native-start-entry', 'native-start-restart');
+  if (argv.includes('--native-workbench-assets')) modes.splice(0, modes.length, 'native-start-workbench-assets', 'native-start-workbench-restart');
+  if (argv.includes('--native-workbench-flow')) modes.splice(0, modes.length, 'native-start-workbench-flow');
+  if (argv.includes('--native-workbench-tasks')) modes.splice(0, modes.length, 'native-start-workbench-tasks', 'native-start-workbench-tasks-restart');
+  if (argv.includes('--native-workbench-permissions')) modes.splice(0, modes.length, 'native-start-workbench-permissions');
+  if (argv.includes('--native-map-hits')) modes.splice(0, modes.length, 'native-start-map-hits');
+  if (argv.includes('--native-legacy-official')) modes.splice(0, modes.length, 'native-start-legacy-tianqi7', 'native-start-legacy-tianqi7-restart', 'native-start-legacy-shaosong', 'native-start-legacy-shaosong-restart');
+  if (argv.includes('--neutral-atlas')) modes.splice(0, modes.length, 'native-start-neutral-atlas');
+  if (argv.includes('--native-start-faults')) modes.splice(0, modes.length, 'native-start-faults');
+  if (argv.includes('--native-start-preparation')) modes.splice(0, modes.length, 'native-start-preparation');
+  if (argv.includes('--native-start-core')) modes.splice(0, modes.length, 'native-start-core');
+  if (argv.includes('--native-start-isolation')) modes.splice(0, modes.length, 'native-start-isolation');
   if (argv.includes('--office-writeback')) modes.splice(0, modes.length, 'office-writeback');
   if (argv.includes('--startup-autosave')) modes.splice(0, modes.length, 'startup-autosave');
   if (argv.includes('--personal-campaign')) modes.splice(0, modes.length, 'personal-campaign');
   if (argv.includes('--tactical-terrain')) modes.splice(0, modes.length, 'tactical-terrain');
   if (argv.includes('--tactical-phase2')) modes.splice(0, modes.length, 'tactical-phase2');
   if (argv.includes('--tactical-units')) modes.splice(0, modes.length, 'tactical-units');
+  if (argv.includes('--strategic-map')) modes.splice(0, modes.length, 'strategic-map');
+  if (argv.includes('--map-tiers')) modes.splice(0, modes.length, 'map-tiers');
+  if (argv.includes('--startup-mode')) modes.splice(0, modes.length, 'startup-mode');
   const runtime = require('electron');
   if (!fs.existsSync(runtime)) throw new Error('electron-runtime-missing: run node node_modules/electron/install.js after npm ci --ignore-scripts');
   for (const mode of modes) {
@@ -32,15 +47,19 @@ try {
     if (argv.includes('--trace-gpu')) env.TM_BRIDGE_TACTICAL_TRACE = '1';
     if (argv.includes('--foreground')) env.TM_BRIDGE_TACTICAL_FOREGROUND = '1';
     if (argv.includes('--profile-tactical')) env.TM_BRIDGE_TACTICAL_PROFILE = '1';
+    if (argv.includes('--profile-map')) env.TM_BRIDGE_MAP_PROFILE = '1';
     if (argv.includes('--scenario')) env.TM_RELIEF_SCENARIO = argv[argv.indexOf('--scenario') + 1];
+    if (argv.includes('--map-fixture')) env.TM_MAP_FIXTURE = path.resolve(argv[argv.indexOf('--map-fixture') + 1]);
+    if (argv.includes('--neutral-atlas')) env.TM_NEUTRAL_ATLAS_ZIP = path.resolve(argv[argv.indexOf('--neutral-atlas') + 1]);
     if (argv.includes('--relief-inspect-small')) env.TM_RELIEF_SMALL_FIXTURE = '1';
     // Full ES-driver stress is distinct from Chromium's ordinary software WebGL fallback.
     const electronArgs = argv.includes('--software-gpu') ? ['--use-gl=angle', '--use-angle=swiftshader'] : argv.includes('--software-webgl') ? ['--disable-gpu'] : [];
-    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
+    const modeStartedAt = Date.now();
+    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : mode === 'native-start-neutral-atlas' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
     fs.writeFileSync(path.join(reportDir, mode + '.log'), (run.stdout || '') + (run.stderr || ''));
     const detail = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
     const ok = !run.error && !run.signal && run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;
-    report.results.push({ mode, ok, exitCode: run.status, signal: run.signal || null, error: run.error && run.error.message, detail });
+    report.results.push({ mode, ok, startedAt:new Date(modeStartedAt).toISOString(),elapsedMs:Date.now()-modeStartedAt,exitCode: run.status, signal: run.signal || null, error: run.error && run.error.message, detail });
     console.log(JSON.stringify(report.results[report.results.length - 1]));
   }
   report.complete = true;

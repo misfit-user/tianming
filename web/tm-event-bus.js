@@ -89,7 +89,7 @@
     // 权威类
     { id:'authority.tyrant.activated',    name:'暴君症候活',    test:function(G){return G.huangwei&&G.huangwei.tyrantSyndrome&&G.huangwei.tyrantSyndrome.active && !G.huangwei.tyrantSyndrome._eventFired;} },
     { id:'authority.lostCrisis.activated',name:'失威危机活',    test:function(G){return G.huangwei&&G.huangwei.lostAuthorityCrisis&&G.huangwei.lostAuthorityCrisis.active && !G.huangwei.lostAuthorityCrisis._eventFired;} },
-    { id:'authority.powerMinister.rise',  name:'权臣坐大',      test:function(G){return G.huangquan&&G.huangquan.powerMinister && !G.huangquan.powerMinister._eventFired;} },
+    { id:'authority.powerMinister.rise',  name:'权臣坐大',      test:function(G){return G.huangquan&&G.huangquan.powerMinister && G.huangquan.powerMinister.mode!=='institutional' && !G.huangquan.powerMinister._eventFired;} },
     { id:'authority.rebellion.upgrade',   name:'民变升级',      test:function(G){return G.minxin&&(G.minxin.revolts||[]).some(function(r){return r.level>=3 && r.status==='ongoing' && !r._eventFired;});} },
     // 监察/环境/诏令
     { id:'audit.fraud.exposed',           name:'查出舞弊',      test:function(G){var a=G.auditSystem;return a&&a.activeAudits&&a.activeAudits.some(function(au){return au.status==='completed' && au.found && !au._eventFired;});} },
@@ -340,7 +340,7 @@
         var ongoing = G.minxin.revolts.filter(function(r){return r.status==='ongoing';}).length;
         if (ongoing > 0) lines.push('【民变】' + ongoing + ' 起');
       }
-      if (G.huangquan && G.huangquan.powerMinister) lines.push('【权臣】' + G.huangquan.powerMinister.name + '（控 ' + (G.huangquan.powerMinister.controlLevel||0).toFixed(2) + '）');
+      if (G.huangquan && G.huangquan.powerMinister) {var pm=G.huangquan.powerMinister;lines.push(pm.mode==='institutional'?'【职掌与交接】'+pm.name+'：'+(pm.description||'所任职掌与掌兵交割，以在册任命及实际回执为准。'):'【权臣】'+pm.name+'（控 '+(pm.controlLevel||0).toFixed(2)+'）');}
       if (G.huangwei && G.huangwei.tyrantSyndrome && G.huangwei.tyrantSyndrome.active) lines.push('【暴君症候】活跃');
       if (G.huangwei && G.huangwei.lostAuthorityCrisis && G.huangwei.lostAuthorityCrisis.active) lines.push('【失威危机】活跃');
       if (G._leakageState && G._leakageState.loss > 0) lines.push('【漏损】本月 ' + G._leakageState.loss + ' 钱');

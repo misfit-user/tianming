@@ -2,7 +2,7 @@
 'use strict';
 /* smoke-memory-strengthen — 记忆⇄推演双向再加强五刀（2026-07-04）防腐线。
  * §A1 点名必入+相关性选忆(逻辑副本+契约)   §A2 在场恩怨对照(逻辑副本+契约)
- * §B1 政柄更迭入党人记忆(逻辑副本+契约)     §B2 运动升相入党魁记忆(vm 实跑行为)
+ * §B1 政柄更迭入党人记忆(vm真实消费者+写口)     §B2 运动升相入党魁记忆(vm 实跑行为)
  * §B3 目击者传播(逻辑副本+契约) */
 var fs = require('fs');
 var path = require('path');
@@ -90,51 +90,80 @@ console.log('— §A2 · 在场恩怨对照 —');
   ok(/对手戏优先于独角戏/.test(src) && /if \(_withCount > 0\)/.test(src), '契约:演出指令仅在有对照时注入');
 })();
 
-/* ── §B1 · 政柄更迭入党人记忆(逻辑副本) ───────────────────────── */
-console.log('— §B1 · 政柄更迭入党人记忆 —');
+/* ── §B1 · 政柄更迭入党人记忆(真实消费者与写口) ─────────────── */
+console.log('— §B1 · 政柄更迭入党人记忆(行为) —');
 (function () {
-  // 复制自 tm-three-systems-ext.js standing 变更块
-  function standingMemory(fromStanding, toStanding, party, chars, rememberFn) {
-    var _smTxt, _smEmo, _smImp;
-    if (toStanding === 'governing') { _smTxt = '吾党秉政·朝中要职过半在握'; _smEmo = '喜'; _smImp = 7; }
-    else if (fromStanding === 'governing') { _smTxt = '吾党失柄·见逐于朝堂中枢'; _smEmo = '怒'; _smImp = 8; }
-    else if (toStanding === 'marginal') { _smTxt = '吾党于朝中日渐边缘·同志零落'; _smEmo = '忧'; _smImp = 6; }
-    else { _smTxt = '吾党重列朝堂·渐有声势'; _smEmo = '喜'; _smImp = 5; }
-    var members = chars.filter(function(mc) {
-      return mc && mc.alive !== false && !mc.isPlayer && (mc.party === party.name || (party.leader && mc.name === party.leader));
-    }).sort(function(x, y) {
-      return ((party.leader && y.name === party.leader) ? 1 : 0) - ((party.leader && x.name === party.leader) ? 1 : 0);
-    }).slice(0, 5);
-    members.forEach(function(mc) {
-      var _isLd = party.leader && mc.name === party.leader;
-      rememberFn(mc.name, _smTxt + '（' + party.name + '）', _smEmo, _isLd ? Math.min(9, _smImp + 1) : _smImp);
-    });
-    return members.length;
-  }
-  var got;
-  var rec = function(n, e, emo, imp) { got.push({ name: n, event: e, emo: emo, imp: imp }); };
-  var party = { name: '清流', leader: '李三才' };
+  var got = [];
+  var party = { id: 'clear', name: '清流', leader: '李三才', influence: 10, cohesion: 50 };
+  // 把党魁放在普通成员之后，必须真实排序才能优先入选五人。
   var chars = [
-    { name: '李三才', party: '清流' }, { name: '赵南星', party: '清流' }, { name: '客卿', party: '他党' },
-    { name: '亡者', party: '清流', alive: false }, { name: '帝', party: '清流', isPlayer: true },
-    { name: 'members2', party: '清流' }, { name: 'm3', party: '清流' }, { name: 'm4', party: '清流' }, { name: 'm5', party: '清流' }
+    { id: 'zhao', name: '赵南星', party: '清流' },
+    { id: 'm2', name: 'members2', party: '清流' }, { id: 'm3', name: 'm3', party: '清流' },
+    { id: 'm4', name: 'm4', party: '清流' }, { id: 'm5', name: 'm5', party: '清流' },
+    { id: 'leader', name: '李三才', party: '清流' },
+    { id: 'other', name: '客卿', party: '他党' },
+    { id: 'dead', name: '亡者', party: '清流', alive: false },
+    { id: 'player', name: '帝', party: '清流', isPlayer: true }
   ];
-  got = [];
-  var n1 = standingMemory('opposition', 'governing', party, chars, rec);
-  ok(n1 === 5 && got.length === 5, '秉政·至多5人入记忆 (得 ' + n1 + ')');
-  ok(got[0].name === '李三才' && got[0].imp === 8 && got[0].emo === '喜', '党魁必first且重要度+1(7→8)');
-  ok(got.every(function(g) { return g.event.indexOf('秉政') >= 0; }), '秉政文本');
-  ok(!got.some(function(g) { return g.name === '亡者' || g.name === '帝' || g.name === '客卿'; }), '死者/玩家/他党不写');
-  got = [];
-  standingMemory('governing', 'marginal', party, chars, rec);
-  ok(got[0].emo === '怒' && got[0].imp === 9 && got[0].event.indexOf('失柄') >= 0, '失柄·怒·魁 imp9(8+1)');
-  got = [];
-  standingMemory('marginal', 'opposition', party, chars, rec);
-  ok(got[0].event.indexOf('重列朝堂') >= 0 && got[1].imp === 5, '边缘→在野·重列朝堂·员 imp5');
+  var game = {
+    turn: 1, parties: [party, { id: 'other-party', name: '他党', influence: 40, cohesion: 50 }],
+    chars: chars, classes: [], officeTree: [{ id: 'court', positions: [
+      { id: 'minor-seat', holderId: 'zhao', holder: '赵南星', partyStandingWeight: 0.2 },
+      { id: 'other-seat', holderId: 'other', holder: '客卿', partyStandingWeight: 3 }
+    ] }]
+  };
+  var ctx = { GM: game, P: {}, console: { log: function(){}, warn: function(){}, error: function(){} },
+    Math: Math, JSON: JSON, Date: Date, setTimeout: function(){}, clearTimeout: function(){} };
+  ctx.window = ctx; ctx.global = ctx; ctx.globalThis = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(read('tm-mechanics-memory.js'), ctx, { filename: 'tm-mechanics-memory.js' });
+  vm.runInContext(read('tm-three-systems-ext.js'), ctx, { filename: 'tm-three-systems-ext.js' });
+  var runtime = ctx.ThreeSystemsExt, realRemember = ctx.NpcMemorySystem.remember;
+  ok(typeof realRemember === 'function', '真实 NpcMemorySystem.remember 写口已加载');
+  ctx.NpcMemorySystem.remember = function(name, event, emotion, importance, who, meta) {
+    got.push({ name: name, event: event, emo: emotion, imp: importance, who: who, meta: meta });
+    return realRemember.apply(ctx.NpcMemorySystem, arguments);
+  };
 
-  var src = read('tm-three-systems-ext.js');
-  ok(/政柄更迭入党人记忆/.test(src) && /吾党失柄·见逐于朝堂中枢/.test(src), '契约:B1 块在 standing 真变闸内');
-  ok(src.indexOf('吾党秉政·朝中要职过半在握') > 0 && /NpcMemorySystem\.remember\(mc\.name/.test(src), '契约:走 NpcMemorySystem(近窗去重)');
+  runtime.primePartyState();
+  ok(game.partyState['清流'].standing === 'opposition', '开局真实少量席位建立在野态');
+  ok(got.length === 0 && !(game._memoryArchiveFull || []).length, '开局基线不调用记忆写口也不产生全量归档');
+  ok(chars.every(function(ch) { return !(ch._memory || []).length; }), '开局所有人物记忆保持空白');
+  runtime.primePartyState();
+  ok(got.length === 0 && party.influence === 10, '重复进入不补写开局胜利或影响力收益');
+
+  game.officeTree[0].positions.push({ id: 'central-seat', holderId: 'leader', holder: '李三才', partyStandingWeight: 3 });
+  game.turn = 2;
+  runtime.updatePartyState();
+  ok(game.partyState['清流'].standing === 'governing', '真实任官触发在野到秉政');
+  ok(got.length === 5, '秉政·真实消费者至多5人入记忆 (得 ' + got.length + ')');
+  ok(got[0].name === '李三才' && got[0].imp === 8 && got[0].emo === '喜', '党魁必first且重要度+1(7→8)');
+  ok(got.every(function(g) { return g.event.indexOf('（清流）') >= 0 && g.emo === '喜'; }), '秉政记忆带实际党派与相应情绪，不绑定虚构过半文案');
+  ok(!got.some(function(g) { return g.name === '亡者' || g.name === '帝' || g.name === '客卿'; }), '死者/玩家/他党不写');
+  ok(got.every(function(g) { return g.who === '朝局' && g.meta && g.meta.type === 'political'; }), '真实记忆写口保留朝局与political类型');
+  var leader = chars.filter(function(ch) { return ch.id === 'leader'; })[0];
+  ok(leader._memory.length === 1 && leader._memory[0].importance === 8 && leader._memory[0].type === 'political', '党魁记忆真实落入近窗');
+  ok(game._memoryArchiveFull.length === 5, '五名党人记忆真实进入全量归档');
+  var memoryCount = leader._memory.length, archiveCount = game._memoryArchiveFull.length, emitted = got[0];
+  realRemember.call(ctx.NpcMemorySystem, emitted.name, emitted.event, emitted.emo, emitted.imp, emitted.who, emitted.meta);
+  ok(leader._memory.length === memoryCount && game._memoryArchiveFull.length === archiveCount, '同一政治事件由真实NpcMemorySystem近窗去重，不重复归档');
+  game.turn = 3;
+  runtime.updatePartyState();
+  ok(got.length === 5 && game._memoryArchiveFull.length === 5, 'standing不变不再次调用记忆写口');
+
+  got = [];
+  game.officeTree[0].positions = game.officeTree[0].positions.filter(function(p) { return p.id === 'other-seat'; });
+  game.turn = 4;
+  runtime.updatePartyState();
+  ok(game.partyState['清流'].standing === 'marginal', '真实失官触发秉政到边缘');
+  ok(got.length === 5 && got[0].emo === '怒' && got[0].imp === 9 && got[0].event.indexOf('失柄') >= 0, '失柄·怒·魁 imp9(8+1)');
+
+  got = [];
+  game.officeTree[0].positions.push({ id: 'return-seat', holderId: 'zhao', holder: '赵南星', partyStandingWeight: 0.2 });
+  game.turn = 5;
+  runtime.updatePartyState();
+  ok(game.partyState['清流'].standing === 'opposition', '真实复任触发边缘到在野');
+  ok(got.length === 5 && got[0].event.indexOf('重列朝堂') >= 0 && got[1].imp === 5, '边缘→在野·重列朝堂·员 imp5');
 })();
 
 /* ── §B2 · 运动升相入党魁记忆(vm 实跑行为) ────────────────────── */

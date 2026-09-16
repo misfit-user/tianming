@@ -49,3 +49,23 @@ function _aiWaitForRetry(ms, signal) {
     if (signal) signal.addEventListener('abort', cancel, { once:true });
   });
 }
+
+// Request-protocol compatibility helpers, loaded before the transport.
+// 把 body.messages 里「带 cache_control 的数组型 content」拍回纯字符串·返回是否真剥离了（仅动含 cache_control 的，真·多模态数组不碰）
+function _stripCacheControlFromBody(body) {
+  if (!body || !Array.isArray(body.messages)) return false;
+  var stripped = false;
+  for (var i = 0; i < body.messages.length; i++) {
+    var m = body.messages[i];
+    if (m && Array.isArray(m.content) && m.content.some(function(b){ return b && b.cache_control; })) {
+      m.content = m.content.map(function(b){ return (b && typeof b.text === 'string') ? b.text : ''; }).join('');
+      stripped = true;
+    }
+  }
+  return stripped;
+}
+
+function _isContextLengthResponse(status, text) {
+  if (Number(status) !== 400) return false;
+  return /context(?:_|\s|-)*(?:length|window)|maximum context|too many (?:input )?tokens|prompt (?:is )?too long|token limit|上下文.{0,8}(?:过长|超限)|超出.{0,8}(?:上下文|token)/i.test(String(text || ''));
+}

@@ -63,6 +63,147 @@
     return (config && config.initial && typeof config.initial === 'object') ? config.initial : {};
   }
 
+
+  var POPULATION_LEDGER_FIELDS = ['registeredMouths','registeredHouseholds','registeredDing',
+    'taxableMouths','taxableHouseholds','hiddenDing','fledDing','baselineExemptDing'];
+
+  function _populationAccounting(root, scenario) {
+    root = root || global.GM || {};
+    var configured = scenario || root.scenario || root.scriptData || global.P || {};
+    return (root.population && root.population.accounting) ||
+      (root.populationConfig && root.populationConfig.accounting) ||
+      (configured.populationConfig && configured.populationConfig.accounting) || {};
+  }
+
+  function isPopulationLedgerV2(root, scenario) {
+    return _populationAccounting(root, scenario).schema === 'tm-population-ledger/2';
+  }
+
+  function _ledgerNumber(row, key, fallback) {
+    var value = row && row[key];
+    if (value == null || value === '' || !isFinite(Number(value))) return fallback == null ? null : fallback;
+    return Math.max(0, Math.round(Number(value)));
+  }
+
+  // Pure view: public registration and economic residents are separate measures.
+  // No setter, normalization, hidden-person inference, or national write occurs here.
+  function getPopulationView(options) {
+    options = options || {};
+    var G = options.root || global.GM || {};
+    var v2 = isPopulationLedgerV2(G, options.scenario);
+    var rows = [], matched = true;
+    var groups = _factionLeafGroups(G);
+    var region = options.region;
+    var faction = options.factionId != null ? options.factionId : options.faction;
+    function addNode(node) {
+      if (!node || typeof node !== 'object') return;
+      var data = node.data && typeof node.data === 'object' ? node.data : node;
+      var children = data.children || data.divisions || data.subs;
+      if (Array.isArray(children) && children.length) { children.forEach(addNode); return; }
+      var pd = data.populationDetail || data.population || data;
+      if (typeof pd === 'number') pd = {mouths:pd};
+      rows.push(pd || {});
+    }
+    if (!v2 && region == null && faction == null) rows.push(G.population && G.population.national || {});
+    else if (region && typeof region === 'object') addNode(region);
+    else if (region != null && region !== '') {
+      var resolved = _resolvePopulationTarget(G,{factionId:faction,regionId:region},groups);
+      matched = !!(resolved.ok && resolved.leaf);
+      if (matched) addNode(resolved.leaf);
+    } else if (faction != null && faction !== '') {
+      matched = false;
+      groups.forEach(function(group) {
+        if (_populationGroupAliases(group).map(_normPopulationName).indexOf(_normPopulationName(faction)) >= 0) {
+          group.leaves.forEach(addNode); matched = true;
+        }
+      });
+    } else {
+      var player = groups.find(function(group) { return group.isPlayer; });
+      if (player) player.leaves.forEach(addNode);
+      else if (_hasExplicitPlayerIdentity(G, G.adminHierarchy)) matched = false;
+      else rows.push(G.population && G.population.national || {});
+    }
+    var totals = {actualMouths:0,actualHouseholds:0,actualDing:0,hiddenCount:0,fugitives:0};
+    POPULATION_LEDGER_FIELDS.forEach(function(key) { totals[key] = 0; });
+    var complete = matched;
+    rows.forEach(function(row) {
+      totals.actualMouths += _ledgerNumber(row,'mouths',0);
+      totals.actualHouseholds += _ledgerNumber(row,'households',0);
+      totals.actualDing += _ledgerNumber(row,'ding',0);
+      totals.hiddenCount += _ledgerNumber(row,'hiddenCount',_ledgerNumber(row,'hidden',0));
+      totals.fugitives += _ledgerNumber(row,'fugitives',0);
+      POPULATION_LEDGER_FIELDS.forEach(function(key) {
+        var value = _ledgerNumber(row,key,null);
+        if (v2 && /^(registered|taxable)/.test(key) && value == null) complete = false;
+        totals[key] += value == null ? 0 : value;
+      });
+    });
+    var registeredDisplay = v2 && _populationAccounting(G,options.scenario).displayBasis === 'registered';
+    return Object.assign(totals, {
+      schema:v2 ? 'tm-population-ledger/2' : 'legacy',
+      displayBasis:registeredDisplay ? 'registered' : 'legacy',
+      mouths:registeredDisplay ? totals.registeredMouths : totals.actualMouths,
+      households:registeredDisplay ? totals.registeredHouseholds : totals.actualHouseholds,
+      ding:registeredDisplay ? totals.registeredDing : totals.actualDing,
+      known:matched, complete:complete, regionCount:rows.length
+    });
+  }
+
+  // Canonical status write: fleeing does not erase the old registration, while
+  // hiding or discovery moves entries out of or into the registered tax roll.
+  function applyRegistrationStatusChange(options) {
+    options = options || {};
+    var G = options.root || global.GM || {};
+    if (!isPopulationLedgerV2(G,options.scenario)) return {ok:false,reason:'legacy-accounting'};
+    var pd = options.detail || (options.region && (options.region.populationDetail || options.region.population));
+    if (!pd || typeof pd !== 'object') return {ok:false,reason:'population-detail-missing'};
+    var isHidden = options.status === 'hidden';
+    if (!isHidden && options.status !== 'fled') return {ok:false,reason:'status-invalid'};
+    var mKey = isHidden ? 'hiddenCount' : 'fugitives', dKey = isHidden ? 'hiddenDing' : 'fledDing';
+    var oldM = _ledgerNumber(pd,mKey,0), oldD = _ledgerNumber(pd,dKey,0);
+    var allM = _ledgerNumber(pd,'mouths',0), allH = _ledgerNumber(pd,'households',0), allD = _ledgerNumber(pd,'ding',0);
+    var ratio = Number(pd.mouthsPerDing);
+    var mpd = Math.max(1,isFinite(ratio) && ratio > 0 ? ratio : allM / Math.max(1,allD));
+    var mph = Math.max(1,allM / Math.max(1,allH));
+    var dm, dd;
+    if (options.deltaDing != null) { dd = Math.round(Number(options.deltaDing)); dm = Math.round(dd * mpd); }
+    else if (options.deltaMouths != null) {
+      dm = Math.round(Number(options.deltaMouths));
+      dd = Math.round(dm * (oldM > 0 ? oldD / oldM : 1 / mpd));
+    } else return {ok:false,reason:'delta-missing'};
+    if (!isFinite(dm) || !isFinite(dd)) return {ok:false,reason:'delta-invalid'};
+    var otherM = _ledgerNumber(pd,isHidden?'fugitives':'hiddenCount',0);
+    var otherD = _ledgerNumber(pd,isHidden?'fledDing':'hiddenDing',0);
+    var nextM = Math.max(0,Math.min(allM-otherM,oldM+dm));
+    var nextD = Math.max(0,Math.min(allD-otherD,oldD+dd));
+    if (dm > 0 && nextM-oldM < dm) nextD = oldD + Math.round(dd * (nextM-oldM) / dm);
+    if (dd > 0 && nextD-oldD < dd) nextM = oldM + Math.round(dm * (nextD-oldD) / dd);
+    dm = nextM-oldM; dd = nextD-oldD;
+    var dh = Math.round(dm / mph);
+    pd[mKey] = nextM; pd[dKey] = nextD;
+    if (isHidden) pd.hidden = nextM;
+    [['registeredMouths',allM,dm],['registeredHouseholds',allH,dh],['registeredDing',allD,dd],
+      ['taxableMouths',allM,dm],['taxableHouseholds',allH,dh]].forEach(function(item) {
+      if (!isHidden && item[0].indexOf('registered') === 0) return;
+      var before = _ledgerNumber(pd,item[0],null);
+      if (before != null) pd[item[0]] = Math.max(0,Math.min(item[1],before-item[2]));
+    });
+    if (options.region) _syncLeafPopulationMirrors(options.region,pd);
+    return {ok:true,appliedDing:dd,appliedMouths:dm,appliedHouseholds:dh};
+  }
+
+  function _resizePopulationLedger(pd, beforeMouths, beforeDing, beforeHouseholds) {
+    if (!isPopulationLedgerV2(global.GM)) return;
+    POPULATION_LEDGER_FIELDS.concat(['hiddenCount','fugitives']).forEach(function(key) {
+      var before = _ledgerNumber(pd,key,null);
+      if (before == null) return;
+      var kind = /Ding$/.test(key) ? 'ding' : /Households$/.test(key) ? 'households' : 'mouths';
+      var prior = kind === 'ding' ? beforeDing : kind === 'households' ? beforeHouseholds : beforeMouths;
+      pd[key] = Math.max(0,Math.min(_ledgerNumber(pd,kind,0),Math.round(before * _ledgerNumber(pd,kind,0) / Math.max(1,prior))));
+    });
+    pd.hidden = _ledgerNumber(pd,'hiddenCount',0);
+  }
+
   function _recordPopulationSchemaDiagnostics(gm, diagnostics) {
     if (!gm || !diagnostics || !diagnostics.length) return;
     if (!Array.isArray(gm._schemaNormalizationDiagnostics)) gm._schemaNormalizationDiagnostics = [];
@@ -432,6 +573,7 @@
     var G = global.GM;
     if (!G) return;
     if (G.population && G.population._inited) {
+      if (sc && sc.populationConfig && sc.populationConfig.accounting) G.population.accounting = Object.assign({},sc.populationConfig.accounting); // arch-ok: 户籍权威写口继承明确人口账口径
       // 补齐缺失字段
       if (!G.population.byCategory) G.population.byCategory = {};
       if (!G.population.byLegalStatus) G.population.byLegalStatus = {};
@@ -471,6 +613,7 @@
 
     G.population = {
       _inited: true,
+      accounting: config.accounting ? Object.assign({},config.accounting) : undefined,
       dynasty: dynasty,
       national: { households: households, mouths: mouths, ding: ding },
       byCategory: _initByCategory(config, households, mouths, ding),
@@ -1057,12 +1200,15 @@
 
   function _leafPopulationTotals(leaves) {
     var totals = { mouths:0, households:0, ding:0 };
+    var v2 = isPopulationLedgerV2(global.GM);
+    if (v2) POPULATION_LEDGER_FIELDS.forEach(function(key) { totals[key] = 0; });
     (leaves || []).forEach(function(leaf) {
       var detail = leaf && leaf.populationDetail;
       if (!detail) return;
       totals.mouths += Math.max(0, Number(detail.mouths) || 0);
       totals.households += Math.max(0, Number(detail.households) || 0);
       totals.ding += Math.max(0, Number(detail.ding) || 0);
+      if (v2) POPULATION_LEDGER_FIELDS.forEach(function(key) { totals[key] += _ledgerNumber(detail,key,0); });
     });
     totals.mouths = Math.round(totals.mouths);
     totals.households = Math.round(totals.households);
@@ -1115,6 +1261,7 @@
     var world = _ensureWorldPopulationSummary(G);
     var aliveKeys = Object.create(null);
     var total = { mouths:0, households:0, ding:0 };
+    if (isPopulationLedgerV2(G)) POPULATION_LEDGER_FIELDS.forEach(function(key) { total[key] = 0; });
     (groups || []).forEach(function(group) {
       var entry = _factionPopulationEntry(G, group);
       var national = _leafPopulationTotals(group.leaves);
@@ -1127,6 +1274,7 @@
       total.mouths += national.mouths;
       total.households += national.households;
       total.ding += national.ding;
+      if (isPopulationLedgerV2(G)) POPULATION_LEDGER_FIELDS.forEach(function(key) { total[key] += national[key] || 0; });
     });
     Object.keys(world.byFaction).forEach(function(key) {
       if (!aliveKeys[key]) delete world.byFaction[key];
@@ -1140,6 +1288,14 @@
   // 详设 docs/population-bottom-up-redesign-2026-06.md §2.1-2.2。S2 再接粮食供需/生活/赋役，S3 调粮。
   function _syncLeafPopulationMirrors(leaf, detail) {
     if (!leaf || !detail) return;
+    if (isPopulationLedgerV2(global.GM)) {
+      detail.actualMouths = detail.mouths;
+      if (leaf.population && typeof leaf.population === 'object' && leaf.population !== detail) {
+        POPULATION_LEDGER_FIELDS.concat(['actualMouths']).forEach(function(key) {
+          if (detail[key] != null) leaf.population[key] = detail[key];
+        });
+      }
+    }
     if (typeof leaf.population === 'number') {
       leaf.population = detail.mouths;
     } else if (leaf.population && typeof leaf.population === 'object' && leaf.population !== detail) {
@@ -1312,6 +1468,7 @@
     P.national.mouths = totals.mouths; // arch-ok: 叶级人口结构聚合玩家全国人口
     P.national.households = totals.households; // arch-ok: 叶级人口结构聚合玩家全国户数
     P.national.ding = totals.ding; // arch-ok: 叶级人口结构聚合玩家全国丁口
+    if (isPopulationLedgerV2(G)) Object.assign(P.national,totals,{actualMouths:totals.mouths}); // arch-ok: 户籍权威写口聚合居民在籍可征三账
     P.byAge = demographic.byAge; // arch-ok: 叶级人口结构派生全国年龄视图
     P.ageLayers = Object.assign({}, demographic.byAge); // arch-ok: 叶级人口结构派生兼容年龄视图
     P.agePyramidFine = Object.assign({}, demographic.byAge, { // arch-ok: 叶级人口结构派生精细年龄视图
@@ -1325,6 +1482,7 @@
       total:_sumObj(demographic.byGender),
       ratio:(Number(demographic.byGender.male) || 0) / Math.max(1, Number(demographic.byGender.female) || 0)
     }; // arch-ok: 叶级人口结构派生兼容性别视图
+    if (isPopulationLedgerV2(G)) _refreshWorldPopulationSummary(G,groups);
     return { ok:true, national:totals, byAge:demographic.byAge, byGender:demographic.byGender };
   }
 
@@ -1332,7 +1490,8 @@
     if (!P.national || typeof P.national !== 'object') P.national = {};
     P.national.mouths = 0; // arch-ok: 领土灭失时清零玩家全国人口真值
     P.national.households = 0; // arch-ok: 领土灭失时清零玩家全国户数真值
-    P.national.ding = 0; // arch-ok: 领土灭失时清零玩家全国丁口真值
+    P.national.ding = 0; // arch-ok: 领土灭失时清零玩家全国丁口
+    if (isPopulationLedgerV2(global.GM)) POPULATION_LEDGER_FIELDS.concat(['actualMouths']).forEach(function(key) { P.national[key] = 0; }); // arch-ok: 领土灭失时户籍权威写口清零三账真值
     P.byRegion = {}; // arch-ok: 领土灭失时清除旧地区人口代理
     P.byAge = {}; // arch-ok: 领土灭失时清零玩家年龄视图
     P.ageLayers = {}; // arch-ok: 领土灭失时清零兼容年龄视图
@@ -1432,6 +1591,7 @@
         var pd = leaf && leaf.populationDetail;
         if (!pd) return;
         var mouths = Number(pd.mouths) || 0;
+        var ledgerBeforeDing = Number(pd.ding) || 0, ledgerBeforeHouseholds = Number(pd.households) || 0;
         if (mouths <= 0) return;
         _ensureLeafDemographicBuckets(leaf, pd);
         var minxin = Number(leaf.minxin);
@@ -1472,6 +1632,7 @@
         pd.households = Math.round(pd.mouths / Math.max(1, leafMouthsPerHousehold));
         pd.ding = Math.round(pd.mouths * leafDingRatio);
         _advanceLeafDemographicBuckets(leaf, pd, births, deaths, mr);
+        _resizePopulationLedger(pd,mouths,ledgerBeforeDing,ledgerBeforeHouseholds);
         _syncLeafPopulationMirrors(leaf, pd);
         if (group.isPlayer) _syncPlayerLegacyRow(P, leaf, pd);
         leaf.yearlyBirths = (Number(leaf.yearlyBirths) || 0) + births;
@@ -1625,6 +1786,7 @@
       var detail = leaf.populationDetail;
       var mouthsBefore = Math.max(0, Math.round(Number(detail.mouths) || 0));
       var dingBefore = Math.max(0, Math.round(Number(detail.ding) || 0));
+      var householdsBefore = _ledgerNumber(detail,'households',0);
       var mouthsPerHousehold = mouthsBefore / Math.max(1, Number(detail.households) || 0);
       var mouthLoss = index === leaves.length - 1
         ? Math.min(mouthsBefore, remainingMouthLoss)
@@ -1636,6 +1798,7 @@
       detail.ding = Math.max(0, dingBefore - dingLoss);
       detail.households = detail.mouths > 0 ? Math.round(detail.mouths / Math.max(1, mouthsPerHousehold)) : 0;
       _resizeLeafDemographicBuckets(leaf, detail, detail.mouths);
+      _resizePopulationLedger(detail,mouthsBefore,dingBefore,householdsBefore);
       leaf.yearlyDeaths = (Number(leaf.yearlyDeaths) || 0) + mouthLoss;
       if (!Array.isArray(leaf.populationLossLedger)) leaf.populationLossLedger = [];
       if (mouthLoss || dingLoss) {
@@ -2179,6 +2342,10 @@
       detail.mouths = mouthsBefore - flow;
       detail.households = householdsBefore - householdFlow;
       detail.ding = dingBefore - dingFlow;
+      var ledgerBefore = {};
+      if (isPopulationLedgerV2(global.GM)) POPULATION_LEDGER_FIELDS.concat(['hiddenCount','fugitives']).forEach(function(key) { ledgerBefore[key] = _ledgerNumber(detail,key,0); });
+      _resizePopulationLedger(detail,mouthsBefore,dingBefore,householdsBefore);
+      Object.keys(ledgerBefore).forEach(function(key) { bundle[key] = (bundle[key] || 0) + ledgerBefore[key] - _ledgerNumber(detail,key,0); });
       var resized = _resizeLeafDemographicBuckets(leaf, detail, detail.mouths);
       _syncLeafPopulationMirrors(leaf, detail);
       leaf.yearlyNetMigration = (Number(leaf.yearlyNetMigration) || 0) - flow;
@@ -2204,6 +2371,9 @@
     detail.mouths = Math.max(0, Math.round(Number(detail.mouths) || 0)) + Math.max(0, Math.round(Number(bundle.mouths) || 0));
     detail.households = Math.max(0, Math.round(Number(detail.households) || 0)) + Math.max(0, Math.round(Number(bundle.households) || 0));
     detail.ding = Math.max(0, Math.round(Number(detail.ding) || 0)) + Math.max(0, Math.round(Number(bundle.ding) || 0));
+    if (isPopulationLedgerV2(global.GM)) POPULATION_LEDGER_FIELDS.concat(['hiddenCount','fugitives']).forEach(function(key) {
+      if (bundle[key] != null) detail[key] = _ledgerNumber(detail,key,0) + _ledgerNumber(bundle,key,0);
+    });
     detail.byAge = Object.assign({}, buckets.byAge);
     detail.byGender = Object.assign({}, buckets.byGender);
     Object.keys(bundleAge).forEach(function(key) { detail.byAge[key] = (Number(detail.byAge[key]) || 0) + bundleAge[key]; });
@@ -2311,7 +2481,7 @@
 
   function _bundleShare(bundle, index, scalarShares, bucketState) {
     var share = {};
-    ['mouths', 'households', 'ding'].forEach(function(field) {
+    Object.keys(scalarShares).forEach(function(field) {
       share[field] = scalarShares[field][index] || 0;
     });
     share.byAge = _takeExactBucketShare(bucketState.byAge, share.mouths);
@@ -2373,6 +2543,9 @@
       households:_allocateExactIntegers(bundle.households, targetNames.map(function() { return 1; })),
       ding:_allocateExactIntegers(bundle.ding, targetNames.map(function() { return 1; }))
     };
+    if (isPopulationLedgerV2(G)) POPULATION_LEDGER_FIELDS.concat(['hiddenCount','fugitives']).forEach(function(key) {
+      scalarShares[key] = _allocateExactIntegers(_ledgerNumber(bundle,key,0),targetNames.map(function() { return 1; }));
+    });
     var bucketState = {
       byAge:{ values:Object.assign({}, bundle.byAge), total:bundle.mouths },
       byGender:{ values:Object.assign({}, bundle.byGender), total:bundle.mouths }
@@ -2387,6 +2560,10 @@
         byAge:share.byAge,
         byGender:share.byGender
       };
+      if (isPopulationLedgerV2(G)) {
+        POPULATION_LEDGER_FIELDS.concat(['hiddenCount','fugitives']).forEach(function(key) { detail[key] = share[key] || 0; });
+        detail.actualMouths = detail.mouths;
+      }
       return {
         id:stableId,
         name:name,
@@ -2554,7 +2731,11 @@
       legal.huangji = huangji;
       detail.byLegalStatus = legal;
       leaf.byLegalStatus = legal;
-      _setLeafHiddenMouths(leaf, hiddenBefore[index] - discoveredMouths);
+      if (isPopulationLedgerV2(G)) {
+        var statusResult = applyRegistrationStatusChange({root:G,detail:detail,region:leaf,status:'hidden',deltaMouths:-discoveredMouths,cause:options.cause});
+        discoveredHouseholds = Math.max(0,-statusResult.appliedHouseholds);
+        discoveredDing = Math.max(0,-statusResult.appliedDing);
+      } else _setLeafHiddenMouths(leaf, hiddenBefore[index] - discoveredMouths);
       if (!Array.isArray(leaf.populationRegistrationLedger)) leaf.populationRegistrationLedger = [];
       leaf.populationRegistrationLedger.push({
         turn:Number(G.turn) || 0,
@@ -2582,6 +2763,7 @@
       ding:registered.ding
     });
     if (P.meta.registrationLedger.length > 80) P.meta.registrationLedger.splice(0, P.meta.registrationLedger.length - 80);
+    if (isPopulationLedgerV2(G)) { syncDemographicViews(); _refreshWorldPopulationSummary(G,groups); }
     return Object.assign({ ok:true, factionId:group.factionId, hiddenRemaining:P.hiddenCount }, registered);
   }
 
@@ -2636,9 +2818,11 @@
     var P = global.GM && global.GM.population;
     if (!P) return '';
     var lines = ['【户口】'];
-    lines.push('朝代：' + P.dynasty + '；全国：户 ' + _fmt(P.national.households) + '，口 ' + _fmt(P.national.mouths) + '，丁 ' + _fmt(P.national.ding));
-    if (P.fugitives > 10000) lines.push('逃户：' + _fmt(P.fugitives));
-    if (P.hiddenCount > 10000) lines.push('隐户：' + _fmt(P.hiddenCount));
+    var view = getPopulationView({root:global.GM});
+    lines.push('朝代：' + P.dynasty + '；' + (view.displayBasis === 'registered' ? '在籍' : '全国') + '：户 ' + _fmt(view.households) + '，口 ' + _fmt(view.mouths) + '，丁 ' + _fmt(view.ding));
+    if (view.displayBasis === 'registered') lines.push('居民估计 ' + _fmt(view.actualMouths) + '口；当前可征 ' + _fmt(view.taxableHouseholds) + '户。估计与册籍覆盖的差额不得全部认作逃隐。');
+    if (P.fugitives > 10000) lines.push((view.displayBasis === 'registered' ? '逃口：' : '逃户：') + _fmt(P.fugitives));
+    if (P.hiddenCount > 10000) lines.push((view.displayBasis === 'registered' ? '估隐口：' : '隐户：') + _fmt(P.hiddenCount));
     if (P.deepFieldEffects && P.deepFieldEffects.serviceAgeDing) {
       lines.push('适役丁口：' + _fmt(P.deepFieldEffects.serviceAgeDing) + '；族教压力 ' + Math.round((P.deepFieldEffects.ethnicityFaithPressure || 0) * 100) + '%');
     }
@@ -2703,6 +2887,9 @@
 
   global.HujiEngine = {
     init: init,
+    isPopulationLedgerV2: isPopulationLedgerV2,
+    getPopulationView: getPopulationView,
+    applyRegistrationStatusChange: applyRegistrationStatusChange,
     tick: tick,
     applyPopulationLoss: applyPopulationLoss,
     transferPopulation: transferPopulation,

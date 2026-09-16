@@ -1339,6 +1339,21 @@ var GoalSatisfactionSystem = {
     return 'survival';
   },
 
+  /** 只读本人钱财；旧内帑/受托库镜像和缺数不能作为个人贫富。 */
+  _privateMoney: function(c) {
+    var resources = c.resources || {}, accounts = [resources.privateWealth, resources.private, c.privateWealth];
+    for (var i = 0; i < accounts.length; i++) {
+      var account = accounts[i];
+      if (!account || typeof account !== 'object' || account.isNeitang || account.isReadOnly) continue;
+      if (account.known === false) return null;
+      var value = account.money != null ? account.money : account.cash;
+      if (value == null) continue;
+      if (typeof value === 'string' && value.trim() !== '') value = Number(value);
+      return typeof value === 'number' && isFinite(value) ? value : null;
+    }
+    return null;
+  },
+
   /** 每回合更新所有NPC的目标满足度 */
   update: function() {
     if (!GM.chars) return;
@@ -1356,7 +1371,9 @@ var GoalSatisfactionSystem = {
         delta = (c.title || c.officialTitle) ? 1 : -1;
         if ((c.ambition || 50) > 70 && !c.title) delta -= 1;
       } else if (type === 'wealth') {
-        delta = (GM.stateTreasury || 0) > 0 ? 0.5 : -1;
+        var personalMoney = GoalSatisfactionSystem._privateMoney(c);
+        if (personalMoney === null) return;
+        delta = personalMoney > 0 ? 0.5 : -1;
       } else if (type === 'loyalty') {
         delta = (GM.eraState && GM.eraState.socialStability > 0.6) ? 1 : -0.5;
       } else if (type === 'reform') {

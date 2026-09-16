@@ -104,6 +104,11 @@
   }
 
   function consumeFiscal(root, snapshot, turn) {
+    if(global.CascadeTax&&global.CascadeTax.isUnified&&global.CascadeTax.isUnified(root,'player')){
+      var statement=global.FiscalEngine.readAccountStatement({game:root,account:root.guoku,scope:'central'}),a=statement.account;
+      var canonical={turn:turn,plannedIncome:statement.budget.totals.central.money,actualIncome:a.turnIncome,remittedIncome:a.turnIncome,flowBasis:a.flowBasis,period:clone(a.accounting),source:'canonical-fiscal-ledger'};
+      root.guoku.minxinConsumer=canonical;root.fiscal=root.fiscal||{};root.fiscal.minxinConsumer=clone(canonical);return clone(canonical);
+    }
     root.guoku = root.guoku && typeof root.guoku === 'object' ? root.guoku : {};
     root.fiscal = root.fiscal && typeof root.fiscal === 'object' ? root.fiscal : {};
     var hard = snapshot.summary && snapshot.summary.fiscal || {};
@@ -182,6 +187,25 @@
   }
 
   function consumeHukou(root, snapshot, turn) {
+    if (global.HujiEngine && global.HujiEngine.isPopulationLedgerV2 && global.HujiEngine.isPopulationLedgerV2(root)) {
+      var view = global.HujiEngine.getPopulationView({root:root});
+      root.hukou = root.hukou || {};
+      Object.assign(root.hukou,{
+        registeredHouseholds:view.registeredHouseholds,registeredMouths:view.registeredMouths,
+        registeredDing:view.registeredDing,registeredTotal:view.registeredMouths,
+        actualMouths:view.actualMouths,taxableMouths:view.taxableMouths,taxableHouseholds:view.taxableHouseholds,
+        effectiveTaxHouseholds:view.taxableHouseholds,
+        taxBaseRatio:view.registeredHouseholds ? view.taxableHouseholds/view.registeredHouseholds : 0
+      });
+      root.hukou.minxinConsumer = {
+        turn:turn, registeredHouseholds:view.registeredHouseholds, registeredMouths:view.registeredMouths,
+        hiddenHouseholds:root.hukou.hiddenHouseholds || 0, refugees:view.fugitives,
+        effectiveTaxHouseholds:view.taxableHouseholds,
+        taxBaseRatio:view.registeredHouseholds ? view.taxableHouseholds/view.registeredHouseholds : 0,
+        source:'minxin-hard-link-consumer'
+      };
+      return clone(root.hukou.minxinConsumer);
+    }
     root.hukou = root.hukou && typeof root.hukou === 'object' ? root.hukou : {};
     root.population = root.population && typeof root.population === 'object' ? root.population : {};
     var hard = snapshot.summary && snapshot.summary.hukou || {};

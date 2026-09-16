@@ -40,7 +40,9 @@ function mkCtx(over) {
   }, over || {});
   ctx.window = ctx; ctx.global = ctx; ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(slice, ctx, { filename: 'royalclan-slice.js' });
+  // Load the actual mode discriminator and its exported consumer together.
+  vm.runInContext(src, ctx, { filename: 'tm-neitang-engine.js' });
+  ctx.applyRoyalClanPressure = ctx.NeitangEngine.applyRoyalClanPressure;
   return ctx;
 }
 

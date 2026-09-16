@@ -34,6 +34,12 @@ const ENTRIES = [
     filename: '绍宋·建炎元年八月（官方）.json',
     id: 'sc-jianyan1-1127-shaosong',
     builtin: 'scenarios/shaosong-jianyan-1127.js'
+  },
+  {
+    key: 'tang840',
+    filename: '晚唐·开成五年（官方）.json',
+    id: 'sc-tang840-840',
+    builtin: 'scenarios/tang840-840.js'
   }
 ];
 

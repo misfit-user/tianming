@@ -532,7 +532,9 @@
         if (timer) clearTimeout(timer);
         if (onOuterAbort && outerSignal && outerSignal.removeEventListener) outerSignal.removeEventListener('abort', onOuterAbort);
       }
-      return Promise.resolve().then(function() { _telemetry(opts, { type: 'request', retry: recovery.attempts++ > 0 }); return global.fetch(url, fopt); }).then(function(r) {
+      return Promise.resolve().then(function() {
+        if(typeof opts.beforeRequest==='function')return opts.beforeRequest({bodyBytes:new TextEncoder().encode(String(fopt.body||'')).length,retry:recovery.attempts>0});
+      }).then(function() { if(outerSignal&&outerSignal.aborted)throw _abortError(outerSignal.reason); _telemetry(opts, { type: 'request', retry: recovery.attempts++ > 0 }); return global.fetch(url, fopt); }).then(function(r) {
         if (!r.ok) {
           return r.text().then(function(t) {
             var err = new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 200));

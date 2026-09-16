@@ -134,6 +134,13 @@ jobs:
         run: node scripts/verify-electron-bridge.js --authoring-continuation
       - name: Verify authoring full-permission apply and response recovery
         run: node scripts/verify-electron-bridge.js --authoring-autoapply
+      - name: Strategic map territory labels, native input and rendering performance
+        run: |
+          node scripts/verify-electron-bridge.js --strategic-map
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --strategic-map --scenario sc-jianyan1-1127-shaosong
+      - name: Startup mode continuation and full native menu flow
+        run: node scripts/verify-electron-bridge.js --startup-mode
       - name: Guoshi bounded progress, instruction retention and actual game consumption
         run: |
           node scripts/verify-electron-bridge.js --authoring-efficiency

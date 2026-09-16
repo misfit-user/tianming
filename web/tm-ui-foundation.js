@@ -123,6 +123,71 @@ function tmIcon(id, size, className) {
  * ============================================================ */
 function gv(id){var el=document.getElementById(id);return el?el.value.trim():"";}
 
+// 同一发起界面上的后续弹窗共享层级与焦点，关闭时不碰下面的御案或草稿。
+var _tmModalLayers = [];
+function _tmTopModalLayer(){
+  _tmModalLayers = _tmModalLayers.filter(function(x){ return x.node.isConnected !== false; });
+  return _tmModalLayers[_tmModalLayers.length - 1] || null;
+}
+function _tmModalFocus(node){
+  if (node && node.isConnected !== false && typeof node.focus === 'function') {
+    try { node.focus({preventScroll:true}); } catch(_) { node.focus(); }
+  }
+}
+function _tmModalFocusables(ov){
+  if (!ov.querySelectorAll) return [];
+  return Array.prototype.filter.call(ov.querySelectorAll('button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])'), function(n){
+    var s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(n) : n.style || {};
+    return s.display !== 'none' && s.visibility !== 'hidden';
+  });
+}
+function _tmPresentModal(ov, onCancel, initialFocus){
+  if (!ov) return;
+  _tmTopModalLayer();
+  var own = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(ov) : ov.style || {};
+  var top = Math.max(1100, Number(own.zIndex) || 0), opener = document.activeElement;
+  function consider(n){
+    if (!n || n === ov) return;
+    var s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(n) : n.style || {};
+    if (s.display === 'none' || s.visibility === 'hidden') return;
+    var z = Number(s.zIndex); if (isFinite(z)) top = Math.max(top, z);
+  }
+  if (document.querySelectorAll) Array.prototype.forEach.call(document.querySelectorAll('.tm-desk-overlay,.tmf-module-overlay,.generic-modal-overlay,[data-tm-modal-layer]'), consider);
+  for (var p = opener; p && p !== document.body; p = p.parentElement) consider(p);
+  ov.style.zIndex = String(top + 1);
+  ov.tabIndex = -1;
+  if (ov.setAttribute) { ov.setAttribute('data-tm-modal-layer', '1'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); }
+  var entry = {node:ov, opener:opener, cancel:onCancel};
+  ov.__tmModalLayer = entry;
+  _tmModalLayers.push(entry);
+  var target = typeof initialFocus === 'string' ? (ov.querySelector && ov.querySelector(initialFocus)) : initialFocus;
+  if (!target && ov.querySelector) target = ov.querySelector('[autofocus],input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled])');
+  _tmModalFocus(target || _tmModalFocusables(ov)[0] || ov);
+}
+function _tmCloseModalLayer(ov){
+  if (!ov) return;
+  var entry = ov.__tmModalLayer, top = _tmTopModalLayer();
+  ov.remove();
+  _tmModalLayers = _tmModalLayers.filter(function(x){ return x.node !== ov && x.node.isConnected !== false; });
+  if (entry && entry === top) {
+    var next = _tmTopModalLayer();
+    _tmModalFocus(entry.opener && entry.opener.isConnected !== false ? entry.opener : next && next.node);
+  }
+}
+document.addEventListener('keydown', function(e){
+  var top = _tmTopModalLayer(); if (!top) return;
+  if (e.key === 'Escape') {
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (typeof top.cancel === 'function') top.cancel();
+    return;
+  }
+  if (e.key !== 'Tab') return;
+  var items = _tmModalFocusables(top.node), active = document.activeElement, first = items[0], last = items[items.length - 1];
+  if (!items.length || (!e.shiftKey && (active === last || !top.node.contains(active))) || (e.shiftKey && (active === first || !top.node.contains(active)))) {
+    e.preventDefault(); _tmModalFocus(e.shiftKey ? last || top.node : first || top.node);
+  }
+}, true);
+
 function openGenericModal(title,bodyHTML,onSave){
   // 后朝进行中·排队延后（史记弹窗之后再依次弹出）
   if (typeof _isPostTurnActive === 'function' && _isPostTurnActive()) {
@@ -135,9 +200,13 @@ function openGenericModal(title,bodyHTML,onSave){
     '<div class="generic-modal-body">'+bodyHTML+'</div>'+
     '<div class="generic-modal-footer"><button class="bt bs" onclick="closeGenericModal()">取消</button><button class="bt bp" id="gm-save-btn">保存</button></div></div>';
   document.body.appendChild(ov);
-  document.getElementById("gm-save-btn").onclick=onSave;
+  (ov.querySelector ? ov.querySelector("#gm-save-btn") : document.getElementById("gm-save-btn")).onclick=onSave;
+  _tmPresentModal(ov, closeGenericModal);
 }
-function closeGenericModal(){var ov=document.getElementById("gm-overlay");if(ov)ov.remove();}
+function closeGenericModal(){
+  var rows=_tmModalLayers.filter(function(x){return x.node.id==="gm-overlay" && x.node.isConnected !== false;});
+  _tmCloseModalLayer(rows.length?rows[rows.length-1].node:document.getElementById("gm-overlay"));
+}
 
 /** showModal/closeModal 兼容层 — 多个子系统使用此API显示信息弹窗 */
 function showModal(title, bodyHTML, onClose) {
@@ -147,7 +216,8 @@ function showModal(title, bodyHTML, onClose) {
     '<div class="generic-modal-body">'+bodyHTML+'</div>'+
     '<div class="generic-modal-footer"><button class="bt bp" onclick="closeModal()">确定</button></div></div>';
   document.body.appendChild(ov);
-  if(onClose){document.querySelector('#gm-overlay .bt.bp').onclick=function(){closeModal();onClose();};}
+  if(onClose){(ov.querySelector?ov.querySelector('.bt.bp'):document.querySelector('#gm-overlay .bt.bp')).onclick=function(){closeModal();onClose();};}
+  _tmPresentModal(ov, closeModal);
 }
 function closeModal(){closeGenericModal();}
 

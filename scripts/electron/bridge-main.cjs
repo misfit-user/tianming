@@ -7,7 +7,7 @@ const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
 const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
-const visibleWindow = mode === 'tactical-units' || mode === 'tactical-phase2' || mode === 'tactical-terrain' || mode === 'personal-campaign' || mode === 'startup-autosave' || mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
+const visibleWindow = mode.indexOf('native-start-') === 0 || mode === 'map-tiers' || mode === 'startup-mode' || mode === 'strategic-map' || mode === 'tactical-units' || mode === 'tactical-phase2' || mode === 'tactical-terrain' || mode === 'personal-campaign' || mode === 'startup-autosave' || mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -16,6 +16,7 @@ const deny = () => { throw new Error('test-external-network-denied'); };
 for (const name of ['http', 'https']) { require(name).request = deny; require(name).get = deny; }
 net.request = deny; net.fetch = deny; global.fetch = deny;
 const results = [], failures = [];
+const bridgeStartedAt = Date.now();
 const controls = {};
 let performanceReport;
 const windowOptions = [];
@@ -59,15 +60,19 @@ function finish(error) {
   if (finished) return; finished = true;
   if (error) failures.push(String(error.stack || error));
   const report = { complete: true, ok: failures.length === 0, mode, baseline, versions: process.versions, results, failures,
-    securityScope: 'real unpackaged production main/preload; '+(visibleWindow ? 'visible' : 'hidden')+' window; temporary userData; external network denied; '+(mode === 'authoring-regions' && process.env.TM_AUTHORING_REGION_FIXTURE ? 'read-only user-supplied scenario clone' : 'no player data'),
+    timing: { startedAt: new Date(bridgeStartedAt).toISOString(), assertionsFinishedAt: new Date().toISOString(), elapsedMs: Date.now()-bridgeStartedAt, nodeUptimeSeconds: process.uptime() },
+    securityScope: 'real unpackaged production main/preload; '+(visibleWindow ? 'visible' : 'hidden')+' window; temporary userData; '+(mode==='native-start-live-authoring'?'configured-provider-only test transport; selected local API configuration read-only; synthetic world, no player saves':'external network denied; '+(mode === 'authoring-regions' && process.env.TM_AUTHORING_REGION_FIXTURE ? 'read-only user-supplied scenario clone' : 'no player data')),
     temporaryUserData: temp, performance: performanceReport };
-  fs.writeFileSync(process.env.TM_BRIDGE_TEST_REPORT, JSON.stringify(report, null, 2) + '\n');
+  const reportText=JSON.stringify(report,null,2)+'\n';
+  fs.writeFileSync(process.env.TM_BRIDGE_TEST_REPORT, mode==='native-start-live-authoring'&&global.__tmNativeLiveAcceptance ? global.__tmNativeLiveAcceptance.redact(reportText) : reportText);
+  process.stdout.write('BRIDGE_EXIT_REQUESTED '+JSON.stringify({mode,at:new Date().toISOString(),code:report.ok?0:1})+'\n');
   // This exits the disposable gate process, not the application's production quit path.
   app.exit(report.ok ? 0 : 1);
 }
 async function check(name, fn) { await fn(); results.push({ name, status: 'PASS' }); }
-setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' ? 180000 : visiblePerformance ? 240000 : 75000);
+setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'native-start-live-authoring' ? 570000 : mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' || mode === 'native-start-neutral-atlas' ? 180000 : visiblePerformance ? 240000 : 75000);
 process.on('uncaughtException', finish); process.on('unhandledRejection', finish);
+process.on('exit', code => { if (finished) process.stdout.write('BRIDGE_NODE_EXIT '+JSON.stringify({mode,at:new Date().toISOString(),code})+'\n'); });
 app.on('browser-window-created', (_event, win) => {
   if (!visibleWindow) win.show = () => {};
   win.setFullScreen = () => {};
@@ -124,12 +129,28 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'authoring-continuation') await require('./authoring-continuation-cases.cjs')({ win, root, temp, check });
       else if (mode === 'authoring-autoapply') await require('./authoring-autoapply-cases.cjs')({ win, root, temp, check });
       else if (mode === 'seven-ui') await require('./seven-ui-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'native-start-entry' || mode === 'native-start-restart') await require('./native-start-entry-cases.cjs')({ win, root, temp, check, results, mode });
+      else if (mode === 'native-start-workbench-assets' || mode === 'native-start-workbench-restart') await require('./native-workbench-asset-cases.cjs')({ win, root, temp, check, results, mode });
+      else if (mode === 'native-start-workbench-flow') await require('./native-workbench-flow-cases.cjs')({ win, root, temp, check, results, controls });
+      else if (mode === 'native-start-workbench-permissions') await require('./native-workbench-permission-cases.cjs')({ win, root, temp, check, results, controls });
+      else if (mode === 'native-start-map-hits') await require('./native-map-hit-cases.cjs')({ win, root, temp, check, results, controls });
+      else if (mode.indexOf('native-start-legacy-') === 0) await require('./native-legacy-official-cases.cjs')({ win, root, temp, check, results, controls, mode });
+      else if (mode === 'native-start-neutral-atlas') await require('./native-neutral-atlas-cases.cjs')({ win, root, temp, check, results, controls, mode });
+      else if (mode === 'native-start-live-authoring') await require('./native-live-authoring-cases.cjs')({ win, root, temp, check, results, controls, mode });
+      else if (mode === 'native-start-workbench-tasks' || mode === 'native-start-workbench-tasks-restart') await require('./native-workbench-task-cases.cjs')({ win, root, temp, check, results, mode });
+      else if (mode === 'native-start-faults') await require('./native-start-fault-cases.cjs')({ win, root, temp, check, results });
+      else if (mode === 'native-start-preparation') await require('./native-start-preparation-cases.cjs')({ win, root, temp, check, results });
+      else if (mode === 'native-start-core') await require('./native-start-core-cases.cjs')({ win, root, temp, check, results });
+      else if (mode === 'native-start-isolation') await require('./native-start-isolation-cases.cjs')({ win, root, temp, check, results });
       else if (mode === 'office-writeback') await require('./office-writeback-cases.cjs')({ win, root, temp, check });
       else if (mode === 'startup-autosave') await require('./startup-autosave-cases.cjs')({ win, root, temp, controls, check });
       else if (mode === 'personal-campaign') await require('./personal-campaign-cases.cjs')({ win, root, temp, check });
       else if (mode === 'tactical-terrain') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check });
       else if (mode === 'tactical-phase2') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check, phase2: true });
       else if (mode === 'tactical-units') await require('./tactical-units-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'strategic-map') await require('./strategic-map-cases.cjs')({ win, root, temp, check, baseline });
+      else if (mode === 'map-tiers') await require('./map-tier-cases.cjs')({ win, root, temp, check, baseline });
+      else if (mode === 'startup-mode') await require('./startup-mode-cases.cjs')({ win, root, temp, check, baseline });
       else if (mode === 'authoring-efficiency') await require('./authoring-efficiency-cases.cjs')({ win, root, temp, check });
       else if (mode === 'relief-pilot' || mode === 'relief-inspect') await require('./relief-pilot-cases.cjs')({ win, root, temp, check, mode });
       else if (!baseline) await require('./desktop-cases.cjs')({ win, root, temp, mode, controls, check });

@@ -9,6 +9,10 @@
   var TM = global.TM = global.TM || {};
   var MAX_OPERATIONS = 80;
   var DEFAULT_MOUTHS_PER_HOUSEHOLD = 5;
+  var LEDGER_FIELDS = ['registeredMouths','registeredHouseholds','registeredDing','taxableMouths','taxableHouseholds','hiddenDing','fledDing','baselineExemptDing'];
+  function explicitPopulation(root, scenario) {
+    return !!(global.HujiEngine && typeof global.HujiEngine.isPopulationLedgerV2 === 'function' && global.HujiEngine.isPopulationLedgerV2(root,scenario));
+  }
 
   function perfCount(name, delta) {
     var perf = TM && TM.perf;
@@ -338,7 +342,7 @@
     });
   }
 
-  function detailFromRegion(region) {
+  function detailFromRegion(region, root, config) {
     region = region || {};
     var raw = region.populationDetail || region.population || region.hukou || {};
     if (typeof raw === 'number') raw = { mouths: raw };
@@ -355,7 +359,9 @@
     if (!dingValue.found && mouths) ding = round(mouths * 0.30);
     var hidden = round(hiddenValue.value);
     var fugitives = round(fugitiveValue.value);
-    return {
+    var ledger = {};
+    if (explicitPopulation(root,{populationConfig:config})) LEDGER_FIELDS.forEach(function(key) { ledger[key] = round(firstDefinedFinite([raw[key]],0).value); });
+    return Object.assign(ledger, {
       households: households,
       mouths: mouths,
       ding: ding,
@@ -364,7 +370,7 @@
       byAge: clone(raw.byAge || region.byAge || {}),
       byGender: clone(raw.byGender || region.byGender || {}),
       byLegalStatus: clone(raw.byLegalStatus || region.byLegalStatus || {})
-    };
+    });
   }
 
   function hasExplicitFiniteField(object, fields) {
@@ -389,6 +395,8 @@
     var initial = (config && config.initial) || {};
     var byRegion = {};
     var totals = { households: 0, mouths: 0, ding: 0, hiddenCount: 0, fugitives: 0 };
+    var v2 = explicitPopulation(root,{populationConfig:config});
+    if (v2) LEDGER_FIELDS.forEach(function(key) { totals[key] = 0; });
     var byAge = {};
     var byGender = {};
     var byLegalStatus = {};
@@ -399,13 +407,14 @@
         && regionHasAuthoritativeAux(region, ['hiddenCount', 'hidden', 'hiddenPopulation', 'unregistered']);
       fugitiveAuthorityComplete = fugitiveAuthorityComplete
         && regionHasAuthoritativeAux(region, ['fugitives', 'refugees', 'escapees', 'taoohu']);
-      var d = detailFromRegion(region);
+      var d = detailFromRegion(region,root,config);
       var id = String(region.id || region.name || ('region-' + idx));
       totals.households += d.households;
       totals.mouths += d.mouths;
       totals.ding += d.ding;
       totals.hiddenCount += d.hiddenCount;
       totals.fugitives += d.fugitives;
+      if (v2) LEDGER_FIELDS.forEach(function(key) { totals[key] += d[key] || 0; });
       addNumericBuckets(byAge, d.byAge);
       addNumericBuckets(byGender, d.byGender);
       addPopulationBreakdown(byLegalStatus, d.byLegalStatus);
@@ -438,6 +447,7 @@
         region.population.ding = canonical.ding;
         region.population.hiddenCount = canonical.hiddenCount;
         region.population.fugitives = canonical.fugitives;
+        if (v2) LEDGER_FIELDS.forEach(function(key) { region.population[key] = canonical[key]; });
       }
       // byRegion 是叶级权威表；值与 division.populationDetail 保持同一引用，
       // 任何保甲、逃户或人口治理修改都会真正落到行政区账本。
@@ -486,8 +496,14 @@
     }
     var hiddenCount = emptyAuthoritativePlayer ? 0 : (options.authoritativePlayerPopulation === true ? totals.hiddenCount : Math.max(totals.hiddenCount, scenarioHidden, existingHidden));
     var fugitives = emptyAuthoritativePlayer ? 0 : (options.authoritativePlayerPopulation === true ? totals.fugitives : Math.max(totals.fugitives, existingFugitives));
+    var national = { households:households, mouths:mouths, ding:ding };
+    if (v2) {
+      national.actualMouths = mouths;
+      LEDGER_FIELDS.forEach(function(key) { national[key] = useRegionalTruth ? (totals[key] || 0) : round(firstDefinedFinite([initial[key],root.population && root.population.national && root.population.national[key]],0).value); });
+    }
     return {
-      national: { households: households, mouths: mouths, ding: ding },
+      ledgerV2:v2,
+      national: national,
       hiddenCount: hiddenCount,
       fugitives: fugitives,
       regionalHidden: totals.hiddenCount,
@@ -564,6 +580,20 @@
     var national = aggregate.national;
     var hiddenHouseholds = estimateHiddenHouseholds(aggregate.hiddenCount, national);
     var fugitiveHouseholds = estimateHiddenHouseholds(aggregate.fugitives, national);
+    if (aggregate.ledgerV2) {
+      var registered = {mouths:national.registeredMouths,households:national.registeredHouseholds,ding:national.registeredDing};
+      var hidden = {mouths:aggregate.hiddenCount,households:hiddenHouseholds,ding:national.hiddenDing};
+      var fled = {mouths:aggregate.fugitives,households:fugitiveHouseholds,ding:national.fledDing};
+      var legal = {huangji:{name:'在籍在地'},taoohu:{name:'籍内逃口'},yinhu:{name:'查估隐口'},unrecorded:{name:'未详入册'}};
+      ['mouths','households','ding'].forEach(function(key) {
+        var f = Math.min(round(registered[key]),round(fled[key]));
+        var h = Math.min(round(hidden[key]),Math.max(0,round(national[key])-round(registered[key])));
+        legal.huangji[key] = Math.max(0,round(registered[key])-f);
+        legal.taoohu[key] = f; legal.yinhu[key] = h;
+        legal.unrecorded[key] = Math.max(0,round(national[key])-round(registered[key])-h);
+      });
+      return legal;
+    }
     var extras = clone(aggregate.byLegalStatus || {});
     ['huangji', 'baiji', 'taohu', 'yinhu'].forEach(function(key) { delete extras[key]; });
     function legalWeights(field, total, hiddenValue, fugitiveValue) {
@@ -608,7 +638,12 @@
     var fugitiveHouseholds = estimateHiddenHouseholds(aggregate.fugitives, national);
     var hiddenTaxCap = round(national.households * 0.65);
     var taxHiddenHouseholds = Math.min(hiddenTaxCap, hiddenHouseholds + fugitiveHouseholds);
-    var effectiveTaxHouseholds = Math.max(0, national.households - taxHiddenHouseholds);
+    var v2 = aggregate.ledgerV2;
+    var effectiveTaxHouseholds = v2 ? round(national.taxableHouseholds) : Math.max(0,national.households-taxHiddenHouseholds);
+    var registeredHouseholds = v2 ? round(national.registeredHouseholds) : national.households;
+    var registeredMouths = v2 ? round(national.registeredMouths) : national.mouths;
+    var registeredDing = v2 ? round(national.registeredDing) : national.ding;
+    if (v2) root.population.accounting = Object.assign({},getPopulationConfig(root,options).accounting || {schema:'tm-population-ledger/2',displayBasis:'registered'});
     root.population.national = Object.assign({}, root.population.national || {}, national, {
       hiddenCount: aggregate.hiddenCount,
       fugitives: aggregate.fugitives,
@@ -635,22 +670,25 @@
     });
     root.population.byCategory = materializeCategories(root, getPopulationConfig(root, options), aggregate);
     root.population.byLegalStatus = materializeLegalStatus(root, aggregate);
-    root.hukou.registeredHouseholds = national.households;
-    root.hukou.registeredMouths = national.mouths;
-    root.hukou.registeredDing = national.ding;
-    root.hukou.registeredTotal = national.mouths;
-    root.hukou.ding = national.ding;
+    root.hukou.registeredHouseholds = registeredHouseholds;
+    root.hukou.registeredMouths = registeredMouths;
+    root.hukou.registeredDing = registeredDing;
+    root.hukou.registeredTotal = registeredMouths;
+    root.hukou.ding = registeredDing;
+    if (v2) { root.hukou.mouths = registeredMouths; root.hukou.actualMouths = national.mouths; root.hukou.taxableMouths = national.taxableMouths; root.hukou.taxableHouseholds = effectiveTaxHouseholds; }
     root.hukou.estimatedHidden = aggregate.hiddenCount;
     root.hukou.hiddenHouseholds = hiddenHouseholds;
     root.hukou.refugees = aggregate.fugitives;
     root.hukou.fugitives = aggregate.fugitives;
     root.hukou.fugitiveHouseholds = fugitiveHouseholds;
     root.hukou.effectiveTaxHouseholds = effectiveTaxHouseholds;
-    root.hukou.taxBaseRatio = national.households ? Number((effectiveTaxHouseholds / Math.max(1, national.households)).toFixed(3)) : 0;
+    root.hukou.taxBaseRatio = registeredHouseholds ? Number((effectiveTaxHouseholds / Math.max(1,registeredHouseholds)).toFixed(3)) : 0;
     return {
-      registeredHouseholds: national.households,
-      registeredMouths: national.mouths,
-      registeredDing: national.ding,
+      registeredHouseholds: registeredHouseholds,
+      registeredMouths: registeredMouths,
+      registeredDing: registeredDing,
+      actualMouths: national.mouths,
+      taxableMouths: v2 ? national.taxableMouths : undefined,
       hiddenCount: aggregate.hiddenCount,
       hiddenHouseholds: hiddenHouseholds,
       fugitives: aggregate.fugitives,
@@ -820,6 +858,12 @@
     return priorBase;
   }
 
+  function unifiedFiscal(root, options) {
+    if(global.CascadeTax&&typeof global.CascadeTax.isUnified==='function')return global.CascadeTax.isUnified(root,'player');
+    var sc=getScenario(root,options)||{},p=root.playerInfo||(global.P||{}).playerInfo||{},fac=(root.facs||[]).find(function(f){return f&&(f.id===p.factionId||f.name===p.factionName||f.isPlayer);});
+    var cfg=Object.assign({},(global.P||{}).fiscalConfig,sc.fiscalConfig,root.fiscalConfig,fac&&fac.fiscalConfig);
+    return !!(cfg.accounting&&cfg.accounting.schema==='tm-fiscal-ledger/2');
+  }
   function applyFiscalHardEffect(root, hukou, options) {
     root.guoku = root.guoku && typeof root.guoku === 'object' ? root.guoku : {};
     root.fiscal = root.fiscal && typeof root.fiscal === 'object' ? root.fiscal : {};
@@ -827,16 +871,20 @@
     var taxBaseRatio = clamp(hukou.taxBaseRatio != null ? hukou.taxBaseRatio : 1, 0, 1);
     var hiddenPressure = 1 - taxBaseRatio;
     var fugitivePressure = hukou.registeredMouths ? clamp((Number(hukou.fugitives) || 0) / Math.max(1, hukou.registeredMouths), 0, 0.5) : 0;
-    var collectionMultiplier = round2(clamp(taxBaseRatio - hiddenPressure * 0.08 - fugitivePressure * 0.18, 0.22, 1));
+    var scenario = getScenario(root,options) || {};
+    var playerFac = (root.facs || []).find(function(f) { return f && (f.isPlayer || String(f.id) === String(root.playerFactionId || '')); });
+    var fiscalConfig = (playerFac && playerFac.fiscalConfig) || root.fiscalConfig || scenario.fiscalConfig || {};
+    var explicitTax = unifiedFiscal(root, options); // Per-tax CascadeTax already consumes registered bases or its one legacy-base flee adjustment.
+    var collectionMultiplier = explicitTax ? 1 : round2(clamp(taxBaseRatio - hiddenPressure * 0.08 - fugitivePressure * 0.18, 0.22, 1));
     var monthlyBase = baseIncomeValue(root, 'monthlyIncome', root.guoku.monthlyIncome || root.guoku.turnIncome || root.fiscal.expectedRevenue || 0);
     var turnBase = baseIncomeValue(root, 'turnIncome', root.guoku.turnIncome || root.guoku.monthlyIncome || root.fiscal.expectedRevenue || 0);
     var monthly = round(monthlyBase * collectionMultiplier);
     var turnIncome = round(turnBase * collectionMultiplier);
-    root.guoku.monthlyIncome = monthly;
-    root.guoku.turnIncome = turnIncome;
-    root.guoku.plannedMonthlyIncome = monthlyBase;
-    root.guoku.plannedTurnIncome = turnBase;
-    root.guoku.actualTaxRate = Math.min(number(root.guoku.actualTaxRate, 1) || 1, collectionMultiplier);
+    if (!explicitTax) {
+      root.guoku.monthlyIncome = monthly;root.guoku.turnIncome = turnIncome;
+      root.guoku.plannedMonthlyIncome = monthlyBase;root.guoku.plannedTurnIncome = turnBase;
+      root.guoku.actualTaxRate = Math.min(number(root.guoku.actualTaxRate, 1) || 1, collectionMultiplier);
+    }
     root.fiscal.effectiveRevenue = turnIncome;
     root.fiscal.hujiCollectionMultiplier = collectionMultiplier;
     var effect = {
@@ -1147,6 +1195,7 @@
   function enforceAfterFiscalTick(root, options) {
     root = pickRoot(root);
     options = options || {};
+    if(unifiedFiscal(root,options))return {ok:true,skipped:'per-tax-ledger-already-applied',adjustment:0};
     var hard = ensureHardEffectStore(root);
     var fiscal = hard.fiscal || (root.guoku && root.guoku.hujiHardEffects) || (root.fiscal && root.fiscal.hujiHardEffects) || null;
     if (!fiscal || !fiscal.collectionMultiplier) return { ok: false, reason: 'no-fiscal-hard-effect' };

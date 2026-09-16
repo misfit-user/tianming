@@ -1,10 +1,264 @@
 // GENERATED FILE — run: npm run build:renderer-modules
 
 (() => {
+  // web/modules/ai-change-applier/fiscal-posting.js
+  function createFiscalPosting(global) {
+    "use strict";
+    var RES = ["money", "grain", "cloth"], pending = [];
+    function num(v) {
+      var n = Number(v);
+      return isFinite(n) ? n : 0;
+    }
+    function clone(v) {
+      return JSON.parse(JSON.stringify(v));
+    }
+    function round(v) {
+      return Math.round(v * 1e8) / 1e8;
+    }
+    function isBox(a) {
+      return a && (a.stock !== void 0 || a.available !== void 0 || a.quota !== void 0 || a.deficit !== void 0);
+    }
+    function readStock(a, resource) {
+      if (!a) return 0;
+      if (isBox(a)) return a.stock !== void 0 ? num(a.stock) : num(a.available);
+      var led = a.ledgers && a.ledgers[resource];
+      if (led && led.stock !== void 0) return num(led.stock);
+      return resource === "money" && a.money === void 0 ? num(a.balance) : num(a[resource]);
+    }
+    function regionResource(region, resource) {
+      if (!region.publicTreasury) {
+        region.publicTreasury = {};
+        var priorPeriod = region.fiscal && (region.fiscal.accounting || region.fiscal.period);
+        if (priorPeriod) region.publicTreasury.accounting = clone(priorPeriod);
+      }
+      var account = region.publicTreasury, previous = region.fiscal && region.fiscal.ledgers && region.fiscal.ledgers[resource];
+      if (!account[resource]) {
+        account[resource] = previous ? clone(previous) : { stock: 0, quota: 0, used: 0, available: 0, deficit: 0 };
+      } else if (account[resource].stock === void 0 && previous && previous.stock !== void 0) {
+        account[resource].stock = previous.stock;
+      }
+      return account[resource];
+    }
+    function factionFor(G, region) {
+      var player = G.playerInfo || (global.P || {}).playerInfo || {}, key = player.factionId || player.factionName || "player";
+      if (region) {
+        var sc = G.scenario || G.scriptData || {}, cfg = G.publicTreasuryConfig || sc.publicTreasuryConfig || {};
+        var def = (cfg.accounts || []).find(function(a) {
+          return a.source && a.source.kind === "region" && a.source.id === region.id;
+        });
+        var owner = region.currentOwner || region.owner || region.factionId || def && def.factionId;
+        if (!owner) {
+          let contains = function(nodes) {
+            return (nodes || []).some(function(n) {
+              return n === region || ["children", "subs", "divisions", "subRegions"].some(function(k) {
+                return Array.isArray(n[k]) && contains(n[k]);
+              });
+            });
+          };
+          if (!Array.isArray(G.adminHierarchy)) Object.keys(G.adminHierarchy || {}).some(function(id) {
+            var root = G.adminHierarchy[id];
+            if (!contains(Array.isArray(root) ? root : root && root.divisions)) return false;
+            owner = root.factionId || (id === "player" ? key : id);
+            return true;
+          });
+        }
+        if (owner) key = owner;
+      }
+      return (G.facs || []).find(function(f) {
+        return f.id === key || f.name === key;
+      }) || { id: key };
+    }
+    function periodFor(G, account, scope, faction) {
+      var p = global.P || {}, cfg = Object.assign({}, p.fiscalConfig, (G.scenario || G.scriptData || {}).fiscalConfig, G.fiscalConfig, faction.fiscalConfig);
+      var old = account.accounting || account.period, key = String(G.sid || "") + ":" + String(G.turn || 0);
+      if (old && old.turnKey === key && old.days > 0) return clone(old);
+      var days = num(G.turnDays) || num(cfg.daysPerTurn) || num(p.turnDays) || num((p.fiscalConfig || {}).daysPerTurn);
+      if (!days && typeof global._getDaysPerTurn === "function") days = num(global._getDaysPerTurn());
+      var unified = global.CascadeTax && typeof global.CascadeTax.isUnified === "function" ? global.CascadeTax.isUnified(G, faction.id) : cfg.accounting && cfg.accounting.schema === "tm-fiscal-ledger/2";
+      var result = { turn: G.turn || 0, turnKey: key, days: days || 30, daysPerMonth: 30, daysPerYear: unified || scope === "internal" ? 360 : 365 };
+      if (cfg.unit || account.unit) result.unit = clone(cfg.unit || account.unit);
+      return result;
+    }
+    function ensureLedgers(account, region) {
+      if (!region && !account.ledgers) account.ledgers = {};
+      var books = region ? account : account.ledgers;
+      RES.forEach(function(k) {
+        var stock = region ? readStock(regionResource(region, k), k) : readStock(account, k);
+        if (!books[k]) books[k] = {};
+        var b = books[k];
+        if (b.stock === void 0) b.stock = stock;
+        ["thisTurnIn", "thisTurnOut", "lastTurnIn", "lastTurnOut", "deficit"].forEach(function(f) {
+          if (b[f] === void 0) b[f] = 0;
+        });
+        ["sources", "sinks", "sourceDetails", "sinkDetails", "deficitDetails"].forEach(function(f) {
+          if (!b[f]) b[f] = {};
+        });
+        if (b.available === void 0) b.available = b.stock;
+      });
+      return books;
+    }
+    function roll(account, books, period) {
+      var old = account.accounting || account.period;
+      if (old && old.turnKey != null && old.turnKey !== period.turnKey) RES.forEach(function(k) {
+        var b = books[k];
+        b.lastTurnIn = num(b.thisTurnIn);
+        b.lastTurnOut = num(b.thisTurnOut);
+        b.thisTurnIn = 0;
+        b.thisTurnOut = 0;
+        b.sources = {};
+        b.sinks = {};
+        b.sourceDetails = {};
+        b.sinkDetails = {};
+      });
+      account.accounting = clone(period);
+    }
+    function tagFor(entry, scope, direction) {
+      var S = global.FiscalStatement;
+      var labels = S ? S.labels(scope, direction) : scope === "internal" ? { other: "其他" } : { qita: "其他" };
+      var candidate = entry.sourceTag || entry.category || "";
+      var key = Object.keys(labels).find(function(k) {
+        return k === candidate || labels[k] === candidate;
+      });
+      if (!key && direction === "out" && S) key = S.expenseKey({ sourceTag: candidate, category: entry.category }, scope);
+      key = key || (scope === "internal" ? "other" : "qita");
+      return { key, label: labels[key] || "其他" };
+    }
+    function addDetail(ledger, field, key, entry, amount) {
+      if (!amount) return;
+      if (!ledger[field][key]) ledger[field][key] = [];
+      var row = ledger[field][key].find(function(r) {
+        return r.id === entry.id;
+      });
+      if (!row) {
+        row = { id: entry.id, name: entry.name, amount: 0 };
+        ledger[field][key].push(row);
+      }
+      row.amount = round(row.amount + amount);
+    }
+    function mirrorRegion(region) {
+      if (!region.fiscal) region.fiscal = {};
+      if (!region.fiscal.ledgers) region.fiscal.ledgers = {};
+      var a = region.publicTreasury, f = region.fiscal;
+      RES.forEach(function(k) {
+        if (!f.ledgers[k]) f.ledgers[k] = {};
+        ["stock", "available", "deficit", "thisTurnIn", "thisTurnOut", "lastTurnIn", "lastTurnOut", "sources", "sinks", "sourceDetails", "sinkDetails", "deficitDetails"].forEach(function(field) {
+          if (a[k][field] !== void 0) f.ledgers[k][field] = clone(a[k][field]);
+        });
+      });
+      f.accounting = clone(a.accounting);
+      f.flowBasis = a.flowBasis;
+    }
+    function postStock(target, resource, value, meta) {
+      if (!target || !meta || !meta.game || !meta.entry) throw Error("fiscal posting metadata required");
+      if (!isFinite(value)) throw Error("non-finite fiscal stock");
+      var G = meta.game, region = meta.region || null, scope = meta.target === "neitang" ? "internal" : "central", faction = factionFor(G, region);
+      var account = region ? region.publicTreasury : target, books = ensureLedgers(account, region);
+      var before = num(books[resource].stock), delta = round(value - before), unpaid = Math.max(0, num(meta.shortfall));
+      if (meta.kind === "income" ? delta < 0 : delta > 0) throw Error("fiscal posting direction mismatch");
+      roll(account, books, periodFor(G, account, scope, faction));
+      var led = books[resource], paid = Math.abs(delta), direction = meta.kind === "income" ? "in" : "out";
+      var tag = tagFor(meta.entry, scope, direction), field = direction === "in" ? "sources" : "sinks", key = direction === "in" ? tag.key : tag.label;
+      led.stock = value;
+      led.available = direction === "in" ? round(num(led.available) + paid) : Math.max(0, round(num(led.available) - paid));
+      led[direction === "in" ? "thisTurnIn" : "thisTurnOut"] = round(num(led[direction === "in" ? "thisTurnIn" : "thisTurnOut"]) + paid);
+      if (paid) led[field][key] = round(num(led[field][key]) + paid);
+      var S = global.FiscalStatement;
+      if (direction === "out") {
+        if (unpaid) {
+          led.deficit = round(num(led.deficit) + unpaid);
+          led.sinks[key + "_欠"] = round(num(led.sinks[key + "_欠"]) + unpaid);
+        }
+        if (S) S.recordExpense(led, { expenseId: meta.entry.id, name: meta.entry.name, sourceTag: tag.key, funding: scope === "internal" ? "internal" : "central" }, paid, unpaid);
+        else {
+          addDetail(led, "sinkDetails", tag.key, meta.entry, paid);
+          addDetail(led, "deficitDetails", tag.key, meta.entry, unpaid);
+        }
+      } else if (S) S.recordFlow(led, scope, direction, tag.key, meta.entry.id, meta.entry.name, paid);
+      else addDetail(led, "sourceDetails", tag.key, meta.entry, paid);
+      account.flowBasis = "actual";
+      if (region) mirrorRegion(region);
+      else {
+        account[resource] = value;
+        if (resource === "money") account.balance = value;
+      }
+      if (!pending.some(function(r) {
+        return r.account === account;
+      })) pending.push({ game: G, account, region, scope, faction });
+    }
+    function writeStock(target, resource, value, meta) {
+      try {
+        return postStock(target, resource, value, meta);
+      } catch (error) {
+        error.fiscalPosting = true;
+        throw error;
+      }
+    }
+    function signature(fa) {
+      return JSON.stringify([fa.target, fa.kind, fa.resource || "money", fa.name || "", fa.category || "", fa.sourceTag || "", num(fa.amount), !!fa.recurring, fa.reason || "", fa.stopAfterTurn || null]);
+    }
+    function hash(text) {
+      var h = 2166136261;
+      for (var i = 0; i < text.length; i++) {
+        h ^= text.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0).toString(36);
+    }
+    function identity(G, fa, index, namespace) {
+      var sig = signature(fa), prefix = (namespace || "fa") + ":" + String(G.sid || "") + ":" + String(G.turn || 0) + ":";
+      return { id: fa.id ? String(fa.id) : prefix + String(index) + ":" + hash(sig), resource: fa.resource || "money", signature: sig };
+    }
+    function findPosted(list, posting) {
+      var previous = (list || []).find(function(e) {
+        return e && e.id === posting.id && (e.resource || "money") === posting.resource && e._postingSignature;
+      });
+      if (previous && previous._postingSignature !== posting.signature) {
+        var error = Error("fiscal posting id conflict: " + posting.id);
+        error.fiscalPosting = true;
+        throw error;
+      }
+      return previous || null;
+    }
+    function syncStatements(G) {
+      var engine = global.FiscalEngine, S = global.FiscalStatement, budgets = {}, player = factionFor(G);
+      if (!engine || typeof engine.syncAccountStatement !== "function" || !S) {
+        pending = [];
+        return;
+      }
+      pending.filter(function(r) {
+        return r.game === G;
+      }).forEach(function(row) {
+        var account = row.region ? row.region.fiscal : row.account;
+        var id = row.faction.id, budget = budgets[id] || (id === player.id ? G.guoku && G.guoku.budgetPreview : row.faction.budgetPreview);
+        var result = engine.syncAccountStatement({ game: G, faction: id, account, scope: row.scope, budget, actual: true });
+        if (result && result.budget) budgets[id] = result.budget;
+        if (row.region && result && result.budget) {
+          ["unit", "turnDays", "lastDelta", "flowBasis", "accounting", "sources", "expenses", "sourcesDetail", "expensesDetail"].forEach(function(k) {
+            row.account[k] = clone(account[k]);
+          });
+          RES.forEach(function(k) {
+            var suffix = k === "money" ? "" : k.charAt(0).toUpperCase() + k.slice(1);
+            ["turn", "monthly", "annual"].forEach(function(p) {
+              ["Income", "Expense"].forEach(function(d) {
+                var field = p + suffix + d;
+                row.account[field] = account[field];
+              });
+            });
+          });
+        }
+      });
+      pending = [];
+    }
+    return { begin: function() {
+      pending = [];
+    }, readStock, writeStock, regionResource, identity, findPosted, syncStatements };
+  }
+
   // web/modules/ai-change-applier/core.js
   function createCore(deps) {
     if (!deps || !deps.global) throw new Error("[AIChangeApplier] core dependencies missing");
     var global = deps.global;
+    var _FiscalPosting = createFiscalPosting(global);
     var _modules = { validators: null, reconcile: null };
     "use strict";
     var _PathUtils = deps.pathUtils;
@@ -160,36 +414,13 @@
       return entity.publicTreasury;
     }
     function _ensurePublicTreasuryResource(entity, resource) {
-      var treasury = _ensurePublicTreasury(entity);
-      if (!treasury) return null;
-      if (!treasury[resource]) treasury[resource] = { stock: 0, quota: 0, used: 0, available: 0, deficit: 0 };
-      return treasury[resource];
+      return entity ? _FiscalPosting.regionResource(entity, resource) : null;
     }
     function _readFiscalStock(target, resource) {
-      if (!target) return 0;
-      if (target.stock !== void 0 || target.available !== void 0 || target.quota !== void 0 || target.deficit !== void 0) {
-        if (target.stock !== void 0) return Number(target.stock) || 0;
-        return Number(target.available) || 0;
-      }
-      if (resource === "money") {
-        if (target.money !== void 0) return Number(target.money) || 0;
-        if (target.balance !== void 0) return Number(target.balance) || 0;
-      }
-      return Number(target[resource]) || 0;
+      return _FiscalPosting.readStock(target, resource);
     }
-    function _writeFiscalStock(target, resource, value) {
-      if (!target) return;
-      value = Number(value) || 0;
-      if (target.stock !== void 0 || target.available !== void 0 || target.quota !== void 0 || target.deficit !== void 0) {
-        target.stock = value;
-        if (target.available !== void 0) target.available = value;
-        return;
-      }
-      target[resource] = value;
-      if (resource === "money") target.balance = value;
-      if (target.ledgers && target.ledgers[resource]) {
-        target.ledgers[resource].stock = value;
-      }
+    function _writeFiscalStock(target, resource, value, meta) {
+      return _FiscalPosting.writeStock(target, resource, value, meta);
     }
     function _findChar(name) {
       var G = global.GM;
@@ -1084,6 +1315,7 @@
       var G = global.GM;
       if (!G) return { ok: false };
       if (!aiOutput || typeof aiOutput !== "object") return { ok: false };
+      _FiscalPosting.begin();
       var _validatorBaseline = _captureValidatorBaseline(G);
       var _deathNormalization = typeof global.normalizeAIWriteBackDeaths === "function" ? global.normalizeAIWriteBackDeaths(aiOutput, { source: "applyAITurnChanges" }) : { added: [], routed: [], failed: [], normalized: 0 };
       if (typeof preflightAIWriteBack === "function") preflightAIWriteBack(aiOutput, { source: "applyAITurnChanges" });
@@ -1180,13 +1412,15 @@
           }
         }
       });
-      (aiOutput.localActions || []).forEach(function(la) {
+      (aiOutput.localActions || []).forEach(function(la, localActionIndex) {
         if (!la || !la.region || !la.type) return;
         var div = _findDivisionByNameOrId(G, la.region);
         if (!div) {
           applied.failed.push({ localAction: la, reason: "region not found" });
           return;
         }
+        var privateLedger = global.TM && global.TM.CharacterEconomyLedger;
+        if (privateLedger && privateLedger.handleLocalDiversion(div, la, localActionIndex, applied.failed, G._turnReport)) return;
         if (!div.fiscal) div.fiscal = {};
         if (!div.fiscal.expenditures) div.fiscal.expenditures = { fixed: [], discretionary: [], imperial: [], illicit: [], downstream: [] };
         var bucket = la.type === "illicit" ? "illicit" : "discretionary";
@@ -1757,7 +1991,7 @@
           }
         }
       })();
-      (aiOutput.fiscal_adjustments || []).forEach(function(fa) {
+      (aiOutput.fiscal_adjustments || []).forEach(function(fa, fiscalIndex) {
         if (!fa) return;
         if (fa.target != null) {
           var _ft = String(fa.target).trim();
@@ -1798,10 +2032,14 @@
             fa._coercedOneTime = true;
           }
         }
+        var posting = _FiscalPosting.identity(G, Object.assign({}, fa, { resource }), fiscalIndex);
         var entry = {
-          id: "fa_" + (G.turn || 0) + "_" + Math.random().toString(36).slice(2, 6),
+          id: posting.id,
+          _postingSignature: posting.signature,
           name: fa.name || "",
           category: fa.category || "",
+          sourceTag: fa.sourceTag || "",
+          sourceName: fa.sourceName || "",
           resource,
           amount,
           reason: fa.reason || "",
@@ -1893,6 +2131,11 @@
           entry.action = "add";
         }
         if (target && containerKey) {
+          if (_FiscalPosting.findPosted(target[containerKey], posting)) {
+            fiscalCount++;
+            applied.semantic.fiscal_adjustments_replayed = (applied.semantic.fiscal_adjustments_replayed || 0) + 1;
+            return;
+          }
           target[containerKey].push(entry);
           fiscalCount++;
           if (fa._transferPairSuspect && !_transferPairSeen[fa._transferPairId]) {
@@ -1919,16 +2162,20 @@
                 actualApplied = cur;
                 shortfall = amount - cur;
                 executionStatus = "partial";
-                _writeFiscalStock(stockTarget, resource, 0);
               } else {
                 actualApplied = amount;
                 shortfall = 0;
                 executionStatus = "completed";
-                _writeFiscalStock(stockTarget, resource, cur - amount);
               }
-            } else {
-              _writeFiscalStock(stockTarget, resource, cur + amount);
             }
+            _writeFiscalStock(stockTarget, resource, cur + (fa.kind === "income" ? actualApplied : -actualApplied), {
+              game: G,
+              target: fa.target,
+              region: /^province:/.test(fa.target) ? immediateTarget : null,
+              entry,
+              kind: fa.kind,
+              shortfall
+            });
             if ((immediateTarget === G.guoku || immediateTarget === G.neitang) && resource === "money") immediateTarget.balance = immediateTarget.money;
           }
           if (entry.recurring) entry.lastSettledTurn = G.turn || 0;
@@ -1939,6 +2186,7 @@
           if (shortfall > 0) {
             if (!G._fiscalShortfalls) G._fiscalShortfalls = [];
             G._fiscalShortfalls.push({
+              id: entry.id,
               turn: G.turn || 0,
               target: fa.target,
               resource,
@@ -2253,11 +2501,8 @@
       } catch (_deE) {
         window.TM && TM.errors && TM.errors.capture ? TM.errors.capture(_deE, "applier] death epitaph:") : console.warn("[applier] death epitaph:", _deE);
       }
-      try {
-        if (typeof _syncFiscalScalars === "function") _syncFiscalScalars(G);
-      } catch (_syE) {
-        window.TM && TM.errors && TM.errors.capture ? TM.errors.capture(_syE, "applier] fiscal sync:") : console.warn("[applier] fiscal sync:", _syE);
-      }
+      if (typeof _syncFiscalScalars === "function") _syncFiscalScalars(G);
+      _FiscalPosting.syncStatements(G);
       return { ok: true, applied };
     }
     function applyAITurnChanges(aiOutput) {
@@ -3030,6 +3275,8 @@
         _alreadyResolvedState,
         _readFiscalStock,
         _writeFiscalStock,
+        _fiscalPostingIdentity: _FiscalPosting.identity,
+        _findFiscalPosting: _FiscalPosting.findPosted,
         onAppointment,
         onDismissal,
         _findEntity: _findEntity2,
@@ -3053,6 +3300,8 @@
     var _alreadyResolvedState = core._alreadyResolvedState;
     var _readFiscalStock = core._readFiscalStock;
     var _writeFiscalStock = core._writeFiscalStock;
+    var _fiscalPostingIdentity = core._fiscalPostingIdentity;
+    var _findFiscalPosting = core._findFiscalPosting;
     var onAppointment = core.onAppointment;
     var onDismissal = core.onDismissal;
     function _textMentionsName(text, nm, allNames) {
@@ -4514,8 +4763,11 @@
         if (!G.guoku) G.guoku = {};
         var containerKey = w.kind === "income" ? "extraIncome" : "extraExpense";
         if (!G.guoku[containerKey]) G.guoku[containerKey] = [];
+        var posting = _fiscalPostingIdentity(G, { target: "guoku", kind: w.kind, resource: w.resource, amount: w.shortfall, reason: String(w.mentioned) + ":" + String(w.adjusted) }, w.kind + ":" + w.resource, "fa_autopatch");
+        if (_findFiscalPosting(G.guoku[containerKey], posting)) return;
         var patch = {
-          id: "fa_autopatch_" + (G.turn || 0) + "_" + Math.random().toString(36).slice(2, 5),
+          id: posting.id,
+          _postingSignature: posting.signature,
           name: "叙事脱节补录·" + (w.kind === "income" ? "入" : "出"),
           category: "校验补录",
           resource: w.resource,
@@ -4531,16 +4783,19 @@
         var cur = _readFiscalStock(G.guoku, w.resource);
         var actual;
         if (w.kind === "income") {
-          _writeFiscalStock(G.guoku, w.resource, cur + w.shortfall);
           actual = w.shortfall;
           patch.shortfall = 0;
         } else {
-          actual = Math.min(cur, w.shortfall);
-          if (cur > 0) {
-            _writeFiscalStock(G.guoku, w.resource, cur - actual);
-          }
+          actual = Math.min(Math.max(0, cur), w.shortfall);
           patch.shortfall = w.shortfall - actual;
         }
+        _writeFiscalStock(G.guoku, w.resource, cur + (w.kind === "income" ? actual : -actual), {
+          game: G,
+          target: "guoku",
+          entry: patch,
+          kind: w.kind,
+          shortfall: patch.shortfall
+        });
         if (w.resource === "money") G.guoku.balance = G.guoku.money;
         patch.applied = actual;
       });
@@ -5975,7 +6230,7 @@
         var message = String(error && (error.message || error) || "validator exception");
         if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, "applier] " + name + " validator:");
         else console.warn("[applier] " + name + " validator:", error);
-        if (aiOutput && aiOutput._strictValidation === true) {
+        if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
           if (!Array.isArray(applied.failed)) applied.failed = [];
           applied.failed.push({ validator: name, reason: "validator exception", details: [message] });
         }

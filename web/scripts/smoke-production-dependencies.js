@@ -49,7 +49,7 @@ test('production closure contains neither adm-zip nor a vulnerable YAML version'
   const r = spawnSync(process.platform === 'win32' ? process.execPath : 'npm',
     (process.platform === 'win32' ? [npmCli] : []).concat(['ls', '--omit=dev', '--all', '--json']),
     { cwd: root, encoding: 'utf8', timeout: 30000 });
-  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.status, 0, JSON.stringify({ error:r.error && r.error.message, signal:r.signal, stderr:r.stderr }));
   const names = [];
   function walk(n) { for (const [name, value] of Object.entries(n.dependencies || {})) { names.push(name); walk(value); } }
   walk(JSON.parse(r.stdout));

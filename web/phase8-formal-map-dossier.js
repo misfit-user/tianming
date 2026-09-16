@@ -140,6 +140,24 @@
     return idx.byRegion[String(r.id || r.name || '')] || null;
   }
 
+  // Cache only within a synchronous render batch; each later action reads the current tax bases.
+  var fiscalReadBatch = null;
+  function currentFactionBudget(fid){
+    var g = typeof GM !== 'undefined' ? GM : null;
+    if (!g || typeof CascadeTax === 'undefined' || !CascadeTax.previewBudget) return null;
+    if (!fiscalReadBatch || fiscalReadBatch.game !== g || fiscalReadBatch.turn !== g.turn) {
+      fiscalReadBatch = {game:g, turn:g.turn, values:{}};
+      var batch = fiscalReadBatch;
+      var clear = function(){if(fiscalReadBatch === batch) fiscalReadBatch=null;};
+      if (typeof queueMicrotask === 'function') queueMicrotask(clear); else setTimeout(clear,0);
+    }
+    if (!Object.prototype.hasOwnProperty.call(fiscalReadBatch.values,fid)) fiscalReadBatch.values[fid] = CascadeTax.previewBudget({game:g,faction:fid,turnDays:360});
+    return fiscalReadBatch.values[fid];
+  }
+  function resourceText(row){
+    if (!row) return '';
+    return ['money','grain','cloth'].map(function(k,i){return ppValue(Number(row[k])||0)+['贯','石','匹'][i];}).join(' · ');
+  }
   function regionBundle(r){
     var base = Object.assign({}, (r && r.admin) || {}, (r && r.data) || {});
     var liveDivision = findLiveAdminDivision(r);
@@ -201,6 +219,11 @@
       if (_sc && (_sc.alive === false || _sc.dead === true)) { data.governor = ''; data.official = ''; data.governorVacant = true; }   // 静态主官已殁→出缺(死字段曾显死人)
       else if (!hasValue(_sg) && hasValue(_officePos)) { data.governorVacant = true; }                                                  // 有治理官职却无人→出缺
       else if (_sc) { data.governorChar = _sc.name; }                                                                                   // 静态主官在世(官职串格式异)→兜底保留+可取属性
+    }
+    if (window.GM && window.GM.publicTreasuryConfig && data.governorVacant && _officePos) {
+      var declaredOffice=null;
+      (function find(nodes){(nodes||[]).forEach(function(d){(d.positions||[]).forEach(function(p){if(p.name===_officePos&&(p.regionId===(liveDivision&&liveDivision.id)||!p.regionId))declaredOffice=p;});find(d.subs||d.children);});})(window.GM.officeTree);
+      if (declaredOffice && declaredOffice.occupancyStatus==='unrecorded') {data.governorVacant=false;data.governor='任官未详';data.official='任官未详';}
     }
     var pop = assignKnown({},
       plainObject(base.populationDetail),
@@ -292,6 +315,13 @@
         liveStats && liveStats.publicTreasury && liveStats.publicTreasury.cloth && liveStats.publicTreasury.cloth.stock
       );
       if (hasValue(_clothStock)) treasury.cloth = _clothStock;
+    }
+    // Read the declared entity ledger, including an explicit zero or unknown balance.
+    if (window.GM && window.GM.publicTreasuryConfig && window.GM.publicTreasuryConfig.schema === 'tm-public-treasury/2'
+        && window.FiscalEngine && window.FiscalEngine.getAccountView) {
+      var treasuryNode=liveDivision||base, treasuryRef=(treasuryNode.children&&treasuryNode.children.length?'pool:':'region:')+String(treasuryNode.id||base.id||'');
+      var treasuryView=window.FiscalEngine.getAccountView({game:window.GM,ref:treasuryRef});
+      ['money','grain','cloth'].forEach(function(k){treasury[k]=treasuryView.resources[k].known?treasuryView.resources[k].stock:'未具数';});
     }
     var economy = assignKnown({},
       plainObject(base.economyBase),
@@ -457,6 +487,26 @@
       data.corruptionLocal = corruption;
       data.corruption = corruption;
     }
+    var popView = null;
+    if (typeof HujiEngine !== 'undefined' && HujiEngine.getPopulationView) {
+      popView = HujiEngine.getPopulationView({root:typeof GM !== 'undefined' ? GM : {}, region:liveDivision || (r && r.id), factionId:ownerKey(r)});
+      if (popView.displayBasis === 'registered') {
+        pop = Object.assign({},pop,{mouths:popView.mouths,households:popView.households,ding:popView.ding,actualMouths:popView.actualMouths,taxableMouths:popView.taxableMouths,taxableHouseholds:popView.taxableHouseholds});
+        data.population = pop.mouths;
+      }
+    }
+    var budget = currentFactionBudget(ownerKey(r));
+    if (budget && Array.isArray(budget.regions)) {
+      var ids = {};
+      (function walk(n){if(!n)return;var cs=n.children||n.divisions;if(cs&&cs.length)cs.forEach(walk);else ids[n.id||n.name]=true;})(liveDivision || r);
+      var matching = budget.regions.filter(function(x){return ids[x.id];});
+      if (matching.length) {
+        var resources = {};
+        ['money','grain','cloth'].forEach(function(k){resources[k]={};matching.forEach(function(row){Object.keys(row.resources[k]).forEach(function(field){resources[k][field]=(resources[k][field]||0)+(Number(row.resources[k][field])||0);});});});
+        fiscal = Object.assign({},fiscal,resources.money,{resources:resources,period:budget.period,isForecast:true});
+        data.taxRevenue=fiscal.actualRevenue;
+      }
+    }
     data.liveVitals = vitals;
     data.populationDetail = pop;
     data.fiscalDetail = fiscal;
@@ -615,6 +665,31 @@
     return html ? '<div class="bk-chips">' + html + '</div>' : '';
   }
   // 年龄结构 {young/ding/old:{count,ratio}} → "少壮 X / 丁壮 X / 老弱 X"(专用格式化·绕开泛型 dump·免 old 被误译"旧值"+count/ratio 吐原文)
+  function bkTerrainText(v){
+    var labels = { plains:'平原', plain:'平原', hills:'丘陵', hill:'丘陵', mountains:'山地', mountain:'山地', plateau:'高原', basin:'盆地', desert:'沙漠', steppe:'草原', grassland:'草原', forest:'林地', coast:'滨海', coastal:'滨海', river:'河谷', valley:'河谷', wetland:'泽地', marsh:'泽地', water:'水域', sea:'海域', ocean:'海域', island:'岛屿', tundra:'寒原' };
+    if (Array.isArray(v)) return v.map(bkTerrainText).filter(Boolean).join('、');
+    if (v && typeof v === 'object') return bkTerrainText(v.name || v.label || v.type || '');
+    var text = String(v || '').trim();
+    return labels[text] || (/^[a-z][a-z0-9_-]*$/i.test(text) ? '' : text);
+  }
+  function bkDemographicBreakdown(data, key){
+    var info = data.demographicAccounting || {};
+    if (Array.isArray(info.unverifiedBreakdowns) && info.unverifiedBreakdowns.indexOf(key) >= 0) return null;
+    return data[key];
+  }
+  function bkPopulationGroup(v, kind){
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return v;
+    var labels = kind === 'faith' ? { folk:'民间祠祀', buddhist:'佛教', taoist:'道教', confucian:'儒学礼教', islam:'伊斯兰教', christian:'基督宗教', nestorian:'景教', hindu:'印度诸教', shinto:'神祇祭祀', shaman:'萨满信俗', other:'其他信俗' } : { han:'汉人', tujue:'突厥诸部', tubo:'吐蕃诸部', xiyu:'西域诸族', nanzhao:'西南诸族', mongol:'蒙古诸部', manchu:'满洲', hui:'回回', tibetan:'藏人', uyghur:'回鹘', japanese:'日本诸族', korean:'朝鲜半岛诸族', khmer:'高棉', other:'其他族属' };
+    var keys = Object.keys(v).filter(function(k){ return v[k] != null; });
+    var ratios = keys.length > 0 && keys.every(function(k){ return typeof v[k] === 'number' && v[k] >= 0 && v[k] <= 1; });
+    return keys.map(function(k){
+      var entry = v[k], label = (entry && typeof entry === 'object' && (entry.name || entry.label)) || labels[k] || (/[\u3400-\u9fff]/.test(k) ? k : (kind === 'faith' ? '未详信俗' : '未详族属'));
+      var value = entry && typeof entry === 'object' ? firstValue(entry.count, entry.mouths, entry.ratio) : entry;
+      var ratio = ratios || (entry && typeof entry === 'object' && entry.count == null && entry.mouths == null && entry.ratio != null);
+      return label + ' ' + (ratio ? (Math.round(Number(value) * 1000) / 10) + '%' : mapNum(value));
+    }).join(' / ');
+  }
+  // Age ranges and known category names are displayed without leaking schema keys.
   function fmtByAge(a){
     if (!a || typeof a !== 'object' || Array.isArray(a)) return a;
     var AGE = { infant: '婴孩', child: '幼弱', young: '少壮', ding: '丁壮', adult: '丁壮', old: '老弱', elder: '耆老' };
@@ -625,7 +700,9 @@
     keys.forEach(function(k){
       var g = a[k], cnt = (g && typeof g === 'object') ? g.count : g;
       if (cnt == null || cnt === '') return;
-      parts.push((AGE[k] || fieldLabel(k)) + ' ' + mapNum(cnt));
+      var range = k.match(/^age_(\d+)_(\d+|plus)$/);
+      var label = AGE[k] || (range ? range[1] + (range[2] === 'plus' ? '岁以上' : '—' + range[2] + '岁') : fieldLabel(k));
+      parts.push(label + ' ' + mapNum(cnt));
     });
     return parts.length ? parts.join(' / ') : a;
   }
@@ -820,6 +897,7 @@
     var neglected = bld.status === 'neglected';
     var damaged = bld.status === 'damaged';   // S6·半损态
     var ledger = (bw && bw.buildingLedger && !bld._proposal) ? bw.buildingLedger(bld, typeDef) : null;
+    var moneyUnit = typeof CurrencyUnit !== 'undefined' && CurrencyUnit.getUnit ? CurrencyUnit.getUnit().money : (P && P.fiscalConfig && P.fiscalConfig.unit && P.fiscalConfig.unit.money) || '两';
     var total = Number(bld.timeActual) || Number(typeDef && typeDef.buildTime) || Math.max(1, Number(bld.remainingTurns) || 1);
     var prog = doing ? Math.round(Math.max(0, Math.min(1, (total - (Number(bld.remainingTurns) || 0)) / total)) * 100) : 100;
     var stCls = doing ? 'doing' : (neglected ? 'ni' : (damaged ? 'ni' : 'done'));
@@ -832,9 +910,9 @@
       // S7·营造可观测账：完工/半损卡显「实入账」(真为本地所添·非 per-level 规则) + 工成之利岁入
       (!doing && ledger && ledger.applied && ledger.applied.length ? '<div style="margin-top:4px;font-size:12px;color:#5a4a32;">实入账：' + esc(ledger.applied.join(' · ')) + '</div>' : '') +
       (ledger && ledger.flowPct > 0 ? '<div style="margin-top:3px;font-size:12px;color:#5a4a32;">工成之利：地方岁入 +' + ledger.flowPct + '%/回合（单建筑上限 6%）</div>' : '') +
-      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护：地方库银 ' + esc(ledger.upkeep) + ' 两/回合；不扣中央国库。</div>' : '') +
-      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库银足付修缮费 ' + esc(ledger.repairCost) + ' 两（造价 30%，至少 20 两）则自动葺治复完。</div>' : '') +
-      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修 · 工成之利暂停；地方库银恢复养护后复用。已入账的存量不再另加。</div>' : '') +
+      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护用钱：地方库款 ' + esc(ledger.upkeep) + ' ' + esc(moneyUnit) + '/回合</div>' : '') +
+      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库款足付修缮费 ' + esc(ledger.repairCost) + ' ' + esc(moneyUnit) + '（造价 30%，至少 20 ' + esc(moneyUnit) + '）则自动葺治复完。</div>' : '') +
+      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修停用，工成之利暂停，候地方修缮后再启。</div>' : '') +
       (doing ? '<div class="gq"><div class="gq-bar"><i style="width:' + prog + '%"></i></div><em>余 ' + esc(bld.remainingTurns) + ' 回合</em></div>' : '') +
       '</div>';
   }
@@ -902,7 +980,7 @@
     var cpHtml = (cp.count > 0 || Number(cp.score) > 0) ? bkLan([
       bkRow('阶层压力', hasDisplayValue(cp.score) ? cp.score + ' / 100' : '', Number(cp.score) >= 50 ? 'zhu' : ''),
       bkRow('牵动阶层', cp.classNames.join('、')),
-      bkRow('最近近因', cp.reason)
+      bkRow('地方处境', cp.reason)
     ], true) : '';
     var head = bkHead({
       seal: '御览', round: false, kind: '方 志',
@@ -916,9 +994,9 @@
           if (!hasDisplayValue(gn)) return '';
           var gc = (data.governorChar && typeof findCharByName === 'function') ? findCharByName(data.governorChar) : null;
           var adm = (gc && hasDisplayValue(gc.administration)) ? ' <span style="opacity:.65;font-size:0.92em;">政' + esc(gc.administration) + '</span>' : '';
-          return '<span class="bk-pill" title="' + op + ' · 当任主官(绑官职持有人·随任免更新)">' + op + ' <b>' + esc(gn) + '</b>' + adm + '</span>';
+          return '<span class="bk-pill" title="' + op + ' · 当任主官">' + op + ' <b>' + esc(gn) + '</b>' + adm + '</span>';
         })(),
-        hasDisplayValue(firstValue(data.terrain, r && r.terrain)) ? '<span class="bk-pill">' + esc(firstValue(data.terrain, r && r.terrain)) + '</span>' : '',
+        hasDisplayValue(firstValue(data.terrain, r && r.terrain)) ? '<span class="bk-pill">' + esc(bkTerrainText(firstValue(data.terrain, r && r.terrain))) + '</span>' : '',
         hasDisplayValue(data.taxLevel) ? '<span class="bk-pill">税 <b>' + esc(data.taxLevel) + '</b></span>' : ''
       ]
     });
@@ -930,8 +1008,8 @@
       bkStat('吏治', hasDisplayValue(corr) ? offS : '', (gradeOf('office', offS) || {}).mark || '', gradeIsWarn('office', gradeOf('office', offS)), 'corr')
     ]);
     var hukou = bkLan([
-      bkRow('在册口数', firstValue(data.population, b.pop.mouths)),
-      bkRow('在册户', b.pop.households),
+      bkRow(data.demographicAccounting && data.demographicAccounting.basis === 'existing-game-population-domain-with-legal-status-partitions' ? '口数（含逃隐）' : '在册口数', firstValue(data.population, b.pop.mouths)),
+      bkRow(data.demographicAccounting && data.demographicAccounting.basis === 'existing-game-population-domain-with-legal-status-partitions' ? '户数' : '在册户', b.pop.households),
       (function(){
         var rp = _reportedPop(r);
         if (rp && rp.ding != null && Number(rp.conceal) > 0 && hasDisplayValue(b.pop.ding)) {
@@ -941,14 +1019,16 @@
           var RVd = window.TM && TM.ReportedView;
           var _veiled = RVd && RVd.active(window.P || null) && !RVd.revealed('renli', 'region.' + String((r && (r.id || r.name)) || ''));
           var tt = _veiled
-            ? '督抚奏报口径 · 真丁口须遣员核查、门生密报方得掀见'
-            : '督抚奏报口径 · 真丁口 ' + ppValue(b.pop.ding) + '（约瞒报 ' + cP + '%·聚光核验）';
+            ? '地方奏报口径 · 真丁口须遣员核查、门生密报方得掀见'
+            : '地方奏报口径 · 真丁口 ' + ppValue(b.pop.ding) + '（约瞒报 ' + cP + '%·聚光核验）';
           return '<div class="bk-lr" data-bk-cause="ding" title="' + attr(tt) + '"><span class="bk-k">丁口 <small style="opacity:.65">据报</small></span><span class="bk-v">' + esc(ppValue(rp.ding)) + '</span></div>';
         }
         return bkRow('丁口', b.pop.ding, null, 'ding');
       })(),
-      bkRow('逃户', b.pop.fugitives, 'zhu', 'fugitive'),
-      bkRow('隐户', b.pop.hiddenCount, 'zhu', 'hidden'),
+      bkRow(data.demographicAccounting && data.demographicAccounting.hiddenCountUnit === 'mouths' ? '逃散人口（估）' : '逃户', b.pop.fugitives, 'zhu', 'fugitive'),
+      bkRow(data.demographicAccounting && data.demographicAccounting.hiddenCountUnit === 'mouths' ? '隐匿人口（估）' : '隐户', b.pop.hiddenCount, 'zhu', 'hidden'),
+      b.pop.actualMouths != null ? bkRow('居民估数', b.pop.actualMouths + ' 口') : '',
+      b.pop.taxableHouseholds != null ? bkRow('当前应税户', b.pop.taxableHouseholds) : '',
       bkRow('承载上限', data.carryingCapacity),
       bkRow('保甲', data.baojia),
       bkRow('繁荣', firstValue(data.prosperity, r && r.prosperity), null, 'prosperity'),
@@ -956,22 +1036,25 @@
       (hasDisplayValue(data.development) && String(data.development) !== String(firstValue(data.prosperity, r && r.prosperity)) ? bkRow('发展', data.development) : ''),  // P2-2·同上
       bkRow('不稳', data.unrest, 'zhu')
     ]) + bkChips([
-      ['性别', data.byGender], ['年龄', fmtByAge(data.byAge)], ['族群', data.byEthnicity],
-      ['信仰', data.byFaith], ['聚落', fmtBySettlement(data.bySettlement)], ['宗教场所', data.religiousSites]
-    ]) + cpHtml;
+      ['性别', bkDemographicBreakdown(data, 'byGender')], ['年龄', fmtByAge(bkDemographicBreakdown(data, 'byAge'))], ['族群', bkPopulationGroup(bkDemographicBreakdown(data, 'byEthnicity'), 'ethnicity')],
+      ['信仰', bkPopulationGroup(bkDemographicBreakdown(data, 'byFaith'), 'faith')], ['聚落', fmtBySettlement(bkDemographicBreakdown(data, 'bySettlement'))], ['宗教场所', bkDemographicBreakdown(data, 'religiousSites')]
+    ]) + (data.demographicAccounting && data.demographicAccounting.basis === 'existing-game-population-domain-with-legal-status-partitions' ? '<p class="bk-census-note">所列口数已含逃隐，实居之众尚未尽详。细分簿籍未备。</p>' : '') + cpHtml;
     var caifu = bkLan([
-      bkRow('应征', b.fiscal.claimedRevenue),
-      bkRow('实征', b.fiscal.actualRevenue, null, 'tax'),
-      bkRow('起运中枢', b.fiscal.remittedToCenter),
-      bkRow('留用地方', b.fiscal.retainedBudget),
-      bkRow('合规率', pctValueIfPresent(b.fiscal.compliance), null, 'compliance'),
+      bkRow(b.fiscal.isForecast ? '岁计应征钱' : '应征', b.fiscal.claimedRevenue),
+      bkRow(b.fiscal.isForecast ? '岁计可入钱' : '实征', b.fiscal.actualRevenue, null, 'tax'),
+      bkRow(b.fiscal.isForecast ? '岁计解送钱' : '起运中枢', b.fiscal.remittedToCenter),
+      bkRow(b.fiscal.isForecast ? '岁计留用钱' : '留用地方', b.fiscal.retainedBudget),
+      b.fiscal.resources ? bkRow('岁计可入粮', b.fiscal.resources.grain.actualRevenue + ' 石') : '',
+      b.fiscal.resources ? bkRow('岁计可入帛', b.fiscal.resources.cloth.actualRevenue + ' 匹') : '',
+      bkRow('征到比例', pctValueIfPresent(b.fiscal.compliance), null, 'compliance'),
       bkRow('截留率', pctValueIfPresent(b.fiscal.skimmingRate), 'zhu', 'skim'),
-      bkRow('财政自主', pctValueIfPresent(b.fiscal.autonomy)),
+      bkRow('财政自主', pctValueIfPresent(firstValue(b.fiscal.autonomyLevel,b.fiscal.autonomy))),
       bkRow('税负', firstValue(b.fiscal.taxBurden, data.taxBurden)),
       bkRow('税级', data.taxLevel),
-      bkRow('库藏银', b.treasury.money),
+      bkRow('库钱', b.treasury.money),
+      bkRow('掌藏记', data.custodyNote),
       bkRow('库藏粮', b.treasury.grain),
-      bkRow('库藏布', b.treasury.cloth),
+      bkRow('库帛', b.treasury.cloth),
       bkRow('本回合银产', b.fiscal.moneyOutput, 'jin'),
       bkRow('本回合粮产', b.fiscal.grainOutput, 'jin'),
       bkRow('豪强', _magnateLabel(b.liveStats), 'zhu', 'magnate')
@@ -1018,13 +1101,13 @@
       bkRow('备注', firstValue(data.note, r && r.note))
     ]);
     var fengwu = bkWuGrid([
-      ['耕地', econ.farmland], ['商贸', econ.commerceVolume], ['商系数', econ.commerceCoefficient],
+      ['耕地', econ.farmland], ['商贸', econ.commerceVolume], ['商贸盛衰', econ.commerceCoefficient],
       ['盐课', econ.saltProduction], ['矿课', econ.mineralProduction], ['马政', econ.horseProduction],
       ['渔课', econ.fishingProduction], ['皇庄', econ.imperialFarmland], ['海贸', econ.maritimeTradeVolume],
       ['织造', assets.zhizao], ['矿场', assets.kuangchang], ['御窑', assets.yuyao],
       ['驿站', econ.postRelays], ['道路', econ.roadQuality]
     ]) + bkLan([
-      bkRow('地势', firstValue(data.terrain, r && r.terrain)),
+      bkRow('地势', bkTerrainText(firstValue(data.terrain, r && r.terrain))),
       bkRow('特殊资源', firstValue(data.specialResources, r && r.resources)),
       bkRow('特殊文化', data.specialCulture),
       bkRow('商路', data.tradeRoutes),
@@ -1072,19 +1155,21 @@
       if (!ld || !ld.renliSeed) return;
       var GMr = (window.GM && GM.renli && GM.renli.byRegion) ? GM.renli.byRegion : null;
       var rid = String(r.id || r.name || '');
-      var rg = GMr ? (GMr[rid] || (r.name ? GMr[r.name] : null)) : null;
+      var rg = window.TM && TM.Renli && TM.Renli.forMapRegion ? TM.Renli.forMapRegion(window.GM,r) : (GMr ? GMr[rid] : null);
       var pd = ld.populationDetail || null;
       var alloc = pd && pd.alloc ? pd.alloc : null;
       var pol = rg && rg.levyPolicy ? rg.levyPolicy : null;
       yizheng = bkLan([
         bkRow('役负率', rg && hasDisplayValue(rg.corveeRate) ? Math.round(Number(rg.corveeRate) * 100) + '%' : '', (rg && Number(rg.corveeRate) > 0.35) ? 'zhu' : ''),
+        rg && rg.physicalRoleRate != null ? bkRow('全体劳力役占', Math.round(rg.physicalRoleRate*100) + '%') : '',
         bkRow('地力', rg ? rg.soil : ''),
         bkRow('水利', rg ? rg.waterworks : ''),
         bkRow('在耕田亩', rg ? rg.cultivatedLand : ''),
         bkRow('抛荒田亩', rg ? rg.fallowLand : '', 'zhu'),
-        bkRow('本回合粮产', rg ? rg.grainOutput : '', 'jin'),
-        bkRow('缺粮', rg ? rg.foodDeficit : '', 'zhu'),
-        // 刀C·官报对照：督抚奏报口径（reported·可粉饰）vs 上列真值——瞒报显著则标红示警
+        bkRow(ld.renliSeed.accounting === 'explicit-ding' ? '岁计粮产' : '本回合粮产', rg ? rg.grainOutput : '', 'jin'),
+        rg && rg.otherFoodEquivalent != null ? bkRow('牧渔等食物当量', rg.otherFoodEquivalent + ' 石口粮') : '',
+        bkRow(ld.renliSeed.accounting === 'explicit-ding' ? '本地产食缺口' : '缺粮', rg ? rg.foodDeficit : '', 'zhu'),
+        // 刀C·官报对照：地方奏报口径（reported·可粉饰）vs 上列真值——瞒报显著则标红示警
         // 失真层S4翻转(拍板①)：失真层开且该地未揭→对照行升为主口径·不泄瞒报%与「实情见上」·揭后照旧对照
         (function(){
           var rep = (window.GM && GM.renli && GM.renli.reported) ? (GM.renli.reported[rid] || (r.name ? GM.renli.reported[r.name] : null)) : null;
@@ -1093,21 +1178,21 @@
           var RVy = window.TM && TM.ReportedView;
           var _veiledY = RVy && RVy.active(window.P || null) && !RVy.revealed('renli', 'region.' + String(rid || (r && r.name) || ''));
           if (_veiledY) {
-            return bkRow('督抚奏报', '役负' + Math.round((Number(rep.corveeRate)||0)*100) + '% · 抛荒' + Math.round((Number(rep.fallowShare)||0)*100) + '%　〔诸数皆有司口径·实情须遣员核查〕', '');
+            return bkRow('地方奏报', '役负' + Math.round((Number(rep.corveeRate)||0)*100) + '% · 抛荒' + Math.round((Number(rep.fallowShare)||0)*100) + '%　〔诸数皆有司口径·实情须遣员核查〕', '');
           }
-          return bkRow('督抚奏报', '役负' + Math.round((Number(rep.corveeRate)||0)*100) + '% · 抛荒' + Math.round((Number(rep.fallowShare)||0)*100) + '%' + (cz > 0.12 ? ('　〔瞒报~' + Math.round(cz*100) + '%·实情见上〕') : '　〔与实情相符〕'), cz > 0.12 ? 'zhu' : '');
+          return bkRow('地方奏报', '役负' + Math.round((Number(rep.corveeRate)||0)*100) + '% · 抛荒' + Math.round((Number(rep.fallowShare)||0)*100) + '%' + (cz > 0.12 ? ('　〔瞒报~' + Math.round(cz*100) + '%·实情见上〕') : '　〔与实情相符〕'), cz > 0.12 ? 'zhu' : '');
         })(),
         alloc ? bkRow('丁分配', '务农 ' + ppValue(alloc.farm) + ' · 应役 ' + ppValue(alloc.corvee) + ' · 应征 ' + ppValue(alloc.draft) + ' · 优免 ' + ppValue(alloc.exempt)) : '',
         pd ? bkRow('册载丁', pd.registeredDing) : '',
         pd ? bkRow('优免丁', pd.exemptDing, 'zhu') : '',
         pd ? bkRow('诡寄丁', pd.commendedDing, 'zhu') : '',
-        bkRow('逃户', b.pop.fugitives, 'zhu', 'fugitive'),
-        bkRow('隐户', b.pop.hiddenCount, 'zhu', 'hidden'),
-        pol ? bkRow('现行则例', String(pol.strength || 'normal') + (Number(pol.remitTurns) > 0 ? ' · 蠲免余 ' + pol.remitTurns + ' 回合' : '')) : ''
+        bkRow(data.demographicAccounting && data.demographicAccounting.hiddenCountUnit === 'mouths' ? '逃散人口（估）' : '逃户', b.pop.fugitives, 'zhu', 'fugitive'),
+        bkRow(data.demographicAccounting && data.demographicAccounting.hiddenCountUnit === 'mouths' ? '隐匿人口（估）' : '隐户', b.pop.hiddenCount, 'zhu', 'hidden'),
+        pol ? bkRow('现行则例', ({light:'轻役',normal:'常役',heavy:'重役'}[pol.strength] || '常役') + (Number(pol.remitTurns) > 0 ? ' · 蠲免余 ' + pol.remitTurns + ' 回合' : '')) : ''
       ], true);
     })();
     var juans = [
-      ['bk-hukou', '一', '户口志', '黄册口算', '户', hukou],
+      ['bk-hukou', '一', '户口志', '户口簿籍', '户', hukou],
       ['bk-yizheng', '二', '役政志', '徭役农政 · 丁田', '役', yizheng],
       ['bk-caifu', '三', '财赋志', '岁入库藏', '赋', caifu],
       ['bk-junbei', '四', '军备志', '戎政边防', '军', junbei],
@@ -1366,9 +1451,9 @@
     });
     var stats = bkStats([
       bkStat('领地', p.regions.length ? p.regions.length + ' 块' : '', p.regions.slice(0, 2).map(regionTitle).join('、')),
-      bkStat('总兵', firstValue(p.troops, runtimeFactionValue(f, 'militaryStrength'), f.militaryStrength), '势力/地块聚合'),
+      bkStat('总兵', firstValue(p.troops, runtimeFactionValue(f, 'militaryStrength'), f.militaryStrength), '所辖诸军'),
       bkStat('户口', firstValue(p.regions.length ? p.pop : '', runtimeFactionValue(f, 'population'), f.population), '所辖合计'),
-      bkStat('实收', p.regions.length ? p.revenue : factionFinanceValue(f, p), '财赋'),
+      bkStat('财赋', p.regions.length ? p.revenue : factionFinanceValue(f, p), '钱账'),
       bkStat('民心', p.avgMood, '所辖均值', isFinite(Number(p.avgMood)) && Number(p.avgMood) < 50)
     ]);
     var junchen = '';
@@ -1420,14 +1505,30 @@
       bkRow('禁忌动作', f.tabooMoves, 'zhu')
     ], true);
     var tre = f.treasury && typeof f.treasury === 'object' ? f.treasury : null;
+    if (window.GM && window.GM.publicTreasuryConfig && window.GM.publicTreasuryConfig.schema === 'tm-public-treasury/2' && window.FiscalEngine && window.FiscalEngine.getConsolidatedView) {
+      var liveTreasury=window.FiscalEngine.getConsolidatedView({game:window.GM,factionId:f.id||f.name,scope:f.isUnifiedPolity===false?'regional':'central'});
+      tre={};['money','grain','cloth'].forEach(function(k){tre[k]=liveTreasury.resources[k].known?liveTreasury.resources[k].stock:'未具数';});
+      tre.note=f.isUnifiedPolity===false?'分藏各地，按本地议定用途支给。':'总库与已拨诸署余存合计，仍各按储处掌管。';
+    }
     var ecoPol = f.economicPolicy && typeof f.economicPolicy === 'object' ? f.economicPolicy : null;
     var succ = f.succession && typeof f.succession === 'object' ? f.succession : null;
     var fpop = f.population && typeof f.population === 'object' ? f.population : null;
-    var caiji = bkLan([
+    var annualBudget = currentFactionBudget(f.id || f.name || key);
+    var annualFinance = annualBudget ? bkLan([
+      bkRow('岁计中枢收入', resourceText(annualBudget.totals.central)),
+      bkRow('岁计地方留用', resourceText(annualBudget.totals.localRetain)),
+      bkRow('岁计中枢支出', resourceText(annualBudget.expenses.central)),
+      bkRow('岁计地方支出', resourceText(annualBudget.expenses.local)),
+      annualBudget.expenses.internal ? bkRow('岁计内廷支用', resourceText(annualBudget.expenses.internal)) : '',
+      annualBudget.expenses.total ? bkRow('岁计公用总支', resourceText(annualBudget.expenses.total)) : '',
+      bkRow('其中养兵', resourceText(annualBudget.expenses.army)),
+      bkRow('赋入出处', f.economyDescription)
+    ]) : '';
+    var caiji = annualFinance + bkLan([
       bkRow('经济', factionFinanceValue(f, p)),
-      bkRow('库藏银', tre ? tre.money : factionTreasuryValue(f, p)),
+      bkRow('库钱', tre ? tre.money : factionTreasuryValue(f, p)),
       bkRow('库藏粮', firstValue(tre && tre.grain, p.regions.length ? p.grain : '')),
-      bkRow('库藏布', tre && tre.cloth),
+      bkRow('库帛', tre && tre.cloth),
       bkRow('战马', tre && tre.horses, 'jin'),
       bkRow('库藏注', tre && tre.note),
       fpop ? bkRow('编户 / 实口', [mapNum(fpop.registered), mapNum(fpop.actual)].filter(function(s){ return s && s !== '未记'; }).join(' / ')) : '',

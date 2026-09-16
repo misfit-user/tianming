@@ -338,7 +338,12 @@ if(window.tianming&&window.tianming.isDesktop){
     window._pendingStartPayload.saveName=saveName;
     // Show mode selection panel
     var panel=_desktopPanel('选择游戏模式', '存档：'+saveName);
-    var modes=_desktopElement('div'); modes.style.cssText='padding:0.5rem 0 1rem';
+    // Long scenario-specific mode descriptions and expanded references must not
+    // push continuation outside main-view's 80vh viewport. Only the body scrolls.
+    panel.classList.add('pnl-mode-setup');
+    panel.style.cssText='display:flex;flex-direction:column;height:80vh;box-sizing:border-box';
+    panel.firstElementChild.style.flex='0 0 auto';
+    var modes=_desktopElement('div', 'pnl-mode-body'); modes.style.cssText='padding:0.5rem 0.2rem 0.75rem 0;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain';
     function addMode(id, mode, title, desc, notes, selected){
       var opt=_desktopElement('div', 'mode-opt'); opt.id=id;
       opt.style.cssText='border:2px solid '+(selected?'var(--gold)':'var(--bdr)')+';border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.6rem;cursor:pointer;'+(selected?'background:rgba(200,160,60,0.12)':'');
@@ -347,9 +352,16 @@ if(window.tianming&&window.tianming.isDesktop){
       notes.forEach(function(note){ var n=_desktopElement('div', '', '• '+note); n.style.cssText='color:var(--txt-d);font-size:0.75rem;margin-top:0.25rem'; opt.appendChild(n); });
       opt.addEventListener('click', function(){ window._pendingSelectMode(opt, mode); }); modes.appendChild(opt);
     }
+    // historical-agency-v21
+    if (window.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(scn)) {
+      addMode('mo-yanyi','yanyi','演义模式',TM.HistoricalAgency.modeDescription('yanyi',scn),['人物属于当前时代，后续大事不预定'],true);
+      addMode('mo-light','light_hist','轻度史实',TM.HistoricalAgency.modeDescription('light_hist',scn),['核查时代条件，尊重玩家所定年号与施政'],false);
+      addMode('mo-strict','strict_hist','严格史实',TM.HistoricalAgency.modeDescription('strict_hist',scn),['考据用于既往经历和制度，不替玩家规定结局'],false);
+    } else {
     addMode('mo-yanyi','yanyi','演义模式','小说化演绎，AI可自由发挥，情节更富戏剧性',['历史名臣：中国古代全部历史名臣都有概率出现'],true);
     addMode('mo-light','light_hist','轻度史实','大事件遵历史，细节可演绎，平衡历史与趣味',['历史名臣：仅出现剧本开始年份前后200年内的历史名臣','每回合推演后进行历史检查，校正明显史实错误'],false);
     addMode('mo-strict','strict_hist','严格史实','严格遵守史实，不得改变历史走向',['历史名臣：仅出现剧本开始年份前后100年内的历史名臣','每回合推演前检索参考数据库，强制遵循史实'],false);
+    }
     var strictOptions=_desktopElement('div'); strictOptions.id='strict-mode-options'; strictOptions.style.cssText='display:none;margin-top:1rem;padding:1rem;background:rgba(0,0,0,0.2);border-radius:8px';
     strictOptions.appendChild(_desktopElement('div', '', '📚 参考数据库（可选）'));
     strictOptions.appendChild(_desktopElement('div', '', '提供史料文本作为AI推演的参考依据'));
@@ -357,6 +369,7 @@ if(window.tianming&&window.tianming.isDesktop){
     strictOptions.appendChild(_desktopElement('div', '', '💡 提示：可输入正史记载、大事年表等，AI将严格参照此内容推演'));
     modes.appendChild(strictOptions); panel.appendChild(modes);
     var footer=_desktopFooter(panel);
+    footer.style.cssText='flex:0 0 auto;margin-top:0.6rem;padding-top:0.75rem;background:var(--bg-0)';
     var startButton=_desktopButton('▶ 开始', 'bt bp', function(){ window.desktopDoStart(); }); startButton.id='start-mode-btn'; footer.appendChild(startButton);
     footer.appendChild(_desktopButton('返回', 'bt bs', function(){ window.desktopBackToStartPanel(); }));
     window._pendingStartMode='yanyi';

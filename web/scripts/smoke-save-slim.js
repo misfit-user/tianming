@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { culturalRestoreSource } = require('./lib-perf-round1');
 const ROOT = path.resolve(__dirname, '..');
 let A = 0;
 function ok(c, m){ if(!c) throw new Error('FAIL: '+m); A++; console.log('  ✓ '+m); }
@@ -18,6 +19,7 @@ console.log('smoke-save-slim');
 
 const save = fs.readFileSync(path.join(ROOT,'tm-save-lifecycle.js'),'utf8');
 const mgr  = fs.readFileSync(path.join(ROOT,'tm-save-manager.js'),'utf8');
+const culturalSrc = culturalRestoreSource(path.resolve(ROOT, '..'));
 
 // ─────────────────────────────────────────────────────────
 // 案一·导出写口紧凑(静态)
@@ -54,7 +56,9 @@ const restoreSrc = sliceFn(save, 'function _restoreSavedFields(');
 const hasOwnSrc = sliceFn(save, 'function _tmHasOwn(');
 ok(!!restoreSrc, '案二·恢复函数抽取成功');
 ok(!!hasOwnSrc, '案二·安全自有字段判定函数抽取成功');
-DEDUP.forEach(function(k){ ok(new RegExp('if\\s*\\(\\s*GM\\.'+k+'\\b').test(restoreSrc), '案二·'+k+' 恢复为条件式'); });
+DEDUP.filter(k => k !== '_savedCulturalWorks').forEach(function(k){ ok(new RegExp('if\\s*\\(\\s*GM\\.'+k+'\\b').test(restoreSrc), '案二·'+k+' 恢复为条件式'); });
+// Cultural restoration now delegates to a source-aware helper. Its conditional semantics
+// are exercised below rather than requiring the former literal if(GM._savedCulturalWorks).
 
 // ─────────────────────────────────────────────────────────
 // 案二·运行时·快照跳过去重镜像·活字段仍在·保留镜像仍在
@@ -87,18 +91,20 @@ ok('_savedCharMemExt' in out && deepEq(out._savedCharMemExt, ctx.GM._savedCharMe
 // ─────────────────────────────────────────────────────────
 // 案二·读端等价·老档(含镜像) vs 新档(仅活字段) 经 _restoreSavedFields 结果一致
 // ─────────────────────────────────────────────────────────
-function restoreOn(gm){
-  const c = { GM: JSON.parse(JSON.stringify(gm)), P: {}, setTimeout:function(){}, clearTimeout:function(){} };
+function restoreOn(gm, project = {}){
+  const c = { GM: JSON.parse(JSON.stringify(gm)), P: JSON.parse(JSON.stringify(project)), deepClone:v=>JSON.parse(JSON.stringify(v)), setTimeout:function(){}, clearTimeout:function(){} };
   c.window = c; c.global = c;
   vm.createContext(c);
-  vm.runInContext(hasOwnSrc + '\n' + restoreSrc + '\n_restoreSavedFields();\nthis.RES = GM;', c);
+  vm.runInContext(hasOwnSrc + '\n' + culturalSrc + '\n' + restoreSrc + '\nvar workOptions = _tmCulturalRestoreOptions(P, GM);\n_restoreSavedFields({culturalWorks:workOptions});\nthis.RES = GM;', c);
   return c.RES;
 }
-const liveVal = { _convArchive:[{c:1},{c:2}], letters:[{l:9}], _courtRecords:[{r:1}] };
+const liveVal = { _convArchive:[{c:1},{c:2}], letters:[{l:9}], _courtRecords:[{r:1}],
+  culturalWorks:[{id:'work-preserved',title:'原文抄卷',author:'韩愈',content:'连贯原文。😀e\u0301',isForbidden:true,appreciatedBy:['御前'],_scenarioPreset:true}] };
 const oldSave = Object.assign({ turn:9 }, liveVal, {
   _savedConvArchive: JSON.parse(JSON.stringify(liveVal._convArchive)),
   _savedLetters: JSON.parse(JSON.stringify(liveVal.letters)),
-  _savedCourtRecords: JSON.parse(JSON.stringify(liveVal._courtRecords))
+  _savedCourtRecords: JSON.parse(JSON.stringify(liveVal._courtRecords)),
+  _savedCulturalWorks: JSON.parse(JSON.stringify(liveVal.culturalWorks))
 });
 const newSave = Object.assign({ turn:9 }, liveVal); // 去重后：只有活字段·无 _saved* 镜像
 const rOld = restoreOn(oldSave);
@@ -107,9 +113,20 @@ ok(deepEq(rOld._convArchive, rNew._convArchive), '案二·恢复后 _convArchive
 ok(deepEq(rOld.letters, rNew.letters), '案二·恢复后 letters 老档==新档');
 ok(deepEq(rOld._courtRecords, rNew._courtRecords), '案二·恢复后 _courtRecords 老档==新档');
 ok(deepEq(rOld._convArchive, liveVal._convArchive), '案二·恢复值==存档活字段值(无损)');
+ok(deepEq(rOld.culturalWorks, rNew.culturalWorks), '案二·恢复后 culturalWorks 老档==新档');
+ok(deepEq(rOld.culturalWorks, liveVal.culturalWorks), '案二·作品正文、查禁和品评字段逐项无损');
 // 恢复后 _saved* 镜像均被清(老档路径)·新档本就无
-['_savedConvArchive','_savedLetters','_savedCourtRecords'].forEach(function(k){
+['_savedConvArchive','_savedLetters','_savedCourtRecords','_savedCulturalWorks'].forEach(function(k){
   ok(!(k in rOld), '案二·老档恢复后清除镜像 '+k);
 });
+
+const preset = {id:'scenario-presets',culturalWorks:[{id:'initial-work',author:'旧人',title:'初始抄本',content:'不得盖回玩家现存作品。'}]};
+const project = {scenarios:[preset]};
+const stale = {sid:preset.id,culturalWorks:liveVal.culturalWorks,_savedCulturalWorks:preset.culturalWorks};
+ok(deepEq(restoreOn(stale,project).culturalWorks,liveVal.culturalWorks), '案二·已有校订与查禁优先于旧镜像及剧本原文');
+ok(deepEq(restoreOn({sid:preset.id,culturalWorks:[],_savedCulturalWorks:preset.culturalWorks},project).culturalWorks,[]), '案二·显式空集合不会被镜像或模板重新填入');
+ok(deepEq(restoreOn({sid:preset.id,_savedCulturalWorks:[]},project).culturalWorks,[]), '案二·旧格式空镜像仍为空');
+ok(deepEq(restoreOn({sid:preset.id,_savedCulturalWorks:liveVal.culturalWorks},project).culturalWorks,liveVal.culturalWorks), '案二·仅有旧镜像的作品完整恢复');
+ok(restoreOn({sid:preset.id},project).culturalWorks[0].content===preset.culturalWorks[0].content, '案二·从未存在的集合才播种正文');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

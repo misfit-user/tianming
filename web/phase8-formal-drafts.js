@@ -553,7 +553,7 @@
     actionText = String(actionText || '').trim();
     if (!actionText) return false;
     recordDeskPlayerActionHistory(gm, actionText);
-    deskDecision('player_action', actionText, '已记入主角行止，过回合推演会读取其人物、皇威、民心影响');
+    deskDecision('player_action', actionText, '已录入起居注，留待史官续记');
     recordDeskActionSignal('player-action-desk', {
       id: 'xinglu-' + (gm.turn || 1),
       topic: '主角行止',
@@ -649,7 +649,7 @@
     var edictType = 'policy';
     try { if (typeof window.classifyEdict === 'function') edictType = window.classifyEdict(body) || edictType; } catch(_) {}
     var typeText = deskValue('[data-desk-edict-type]', '诏令') || '诏令';
-    var receiver = deskValue('[data-desk-edict-receiver]', '内阁、六部、都察院') || '内阁、六部、都察院';
+    var receiver = deskValue('[data-desk-edict-receiver]', '中枢及有关有司') || '中枢及有关有司';
     var title = compactText(body.replace(/\s+/g, ' '), 32) || '御前诏令';
     var forecast = null;
     try { if (typeof window.generateEdictForecast === 'function') forecast = window.generateEdictForecast(edictType); } catch(_) {}
@@ -693,7 +693,7 @@
         targetId: 'xinglu-' + entry.id
       }, 'phase8-edict-player-action');
     }
-    deskDecision('edict', body, '已进入诏令追踪，后续过回合推演会读取执行与阻力');
+    deskDecision('edict', body, '诏令已付有司，候报办理情形');
     recordDeskActionSignal('publish-edict-desk', {
       id: entry.id,
       topic: title,
@@ -719,7 +719,7 @@
     state.playerAction = '';
     clearFormalDraftStore(['edictDraft', 'edictDrafts', 'playerAction']);
     deskRefreshLegacy();
-    toast('诏令已颁行，过回合会进入执行推演');
+    toast('诏令已颁付有司');
     openZhaoPreviewPanel();
   }
 
@@ -1068,7 +1068,7 @@
     if (multiOn) { state.letterMultiMode = false; state.letterMultiTargets = []; }
     saveFormalDraftsToGM(false);
     deskRefreshLegacy();
-    toast(multiCount ? ('已群发 ' + multiCount + ' 函') : (draftOnly ? '鸿雁草稿已保存' : '信函已发出，驿递系统会继续结算'));
+    toast(multiCount ? ('已群发 ' + multiCount + ' 函') : (draftOnly ? '鸿雁草稿已保存' : '信已付驿，静候回音'));
     openHongyanPreviewPanel();
   }
 
@@ -1082,7 +1082,7 @@
     deskRemember(to, '御前留记：' + compactText(body, 80), '平', 4);
     deskRecord('人物记忆', to, body, ['鸿雁','人物记忆']);
     deskRefreshLegacy();
-    toast('已写入人物记忆');
+    toast('已作御前留记');
   }
 
   function deskSelectRecord(id){
@@ -2317,8 +2317,8 @@
     var icon = typeof window.tmIcon === 'function' ? window.tmIcon : function(){ return ''; };
     var cats = [
       {id:'edict-pol', keys:['policy','political'], cat:'政', cs1:'政', cs2:'令', hint:'朝政·吏治', placeholder:'请输入政令诏书内容……\n例如：着吏部澄清铨选、起复废籍贤良、纠劾贪墨之吏，以正朝纲。'},
-      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：诏蓟辽督师整饬关宁防务、缮治城堡、核实兵额，毋得虚冒。'},
-      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：谕宣大抚镇羁縻插汉诸部、慎启边衅，以市赏怀远人。'},
+      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：命边将修葺城防，接济戍军，具报沿途粮运所需。'},
+      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：遣使往聘，商议互市与边民往来，约定会谈之地。'},
       {id:'edict-eco', keys:['finance','economic','economy'], cat:'经', cs1:'经', cs2:'济', hint:'税赋·漕运', placeholder:'请输入经济诏书内容……\n例如：诏免被灾州县积逋钱粮、开常平仓平粜、停不急之征。'},
       {id:'edict-oth', keys:['other','private'], cat:'他', cs1:'其', cs2:'他', hint:'礼制·恩典', placeholder:'请输入其他诏书内容……\n例如：诏修两朝实录、旌表忠孝节义、蠲免逋负、肆赦天下。'}
     ];
@@ -2361,7 +2361,7 @@
     });
     if (_promThisTurn.length) {
       html += '<div class="edict-prom-card">';
-      html += '<div class="epc-hd"><span class="epc-seal">颁</span><b>本回合已颁行诏书</b><em>已合并各类旨意 · 将作为一道完整诏书整体推演</em></div>';
+      html += '<div class="epc-hd"><span class="epc-seal">颁</span><b>本回合已颁行诏书</b><em>各类旨意合为一诏 · 已付有司承行</em></div>';
       _promThisTurn.forEach(function(e){
         html += '<div class="epc-body wd-selectable">' + fullHongyanText(e.text, '（空）', 'epc-text') + '</div>';
         html += '<div class="epc-acts">' + actionBtn('撤回改拟', 'edict-prom-revoke-desk', { id:e.id || '' }, 'epc-btn') + '<span class="epc-note">如需修改·撤回后全文放回「政令」草拟·可重新润色颁行</span></div>';
@@ -2455,21 +2455,21 @@
     var left = deskTabs(['诏令','草稿','旧诏'], 0) + deskList(issueItems, '暂无可纳入诏令的御案议题。', { action:'add-edict-desk' });
     var main = '<h3 class="tm-desk-title">诏令草拟</h3>' +
       '<div class="tm-desk-field"><span>诏令类型</span><select data-desk-edict-type><option>敕令</option><option>谕旨</option><option>诰命</option><option>手诏</option><option>密旨</option></select></div>' +
-      '<div class="tm-desk-field"><span>收受衙门</span><input data-desk-edict-receiver value="内阁、六部、都察院"></div>' +
+      '<div class="tm-desk-field"><span>收受衙门</span><input data-desk-edict-receiver value="中枢及有关有司"></div>' +
       '<div class="tm-desk-field"><span>关联议题</span><input data-desk-edict-issue value="' + attr((issues[0] && issues[0].title) || '御案待裁') + '"></div>' +
       '<textarea aria-label="诏令正文" data-desk-edict-body>' + esc(draft.join('\n')) + '</textarea>' +
-      '<div class="tm-desk-actions">' + deskAction('颁行诏令','publish-edict-desk',{}, true) + deskAction('交内阁票拟','save-edict-desk',{ stage:'review' }) + deskAction('存为草稿','save-edict-desk',{ stage:'draft' }) + deskAction('清空草诏','clear-edict-desk') + '</div>' +
-      '<h4 class="tm-desk-subtitle">旧诏令页职能</h4>' +
-      '<table class="tm-desk-table"><tr><th>项目</th><th>承接内容</th></tr><tr><td>合法性</td><td>校验皇权、诏令通过率、衙门承接能力</td></tr><tr><td>执行链</td><td>皇帝 → 内阁/司礼监 → 六部 → 地方/军镇</td></tr><tr><td>结果</td><td>写入近事、史官实录、变量影响与人物态度</td></tr></table>';
+      '<div class="tm-desk-actions">' + deskAction('颁行诏令','publish-edict-desk',{}, true) + deskAction('交中枢拟议','save-edict-desk',{ stage:'review' }) + deskAction('存为草稿','save-edict-desk',{ stage:'draft' }) + deskAction('清空草诏','clear-edict-desk') + '</div>' +
+      '<h4 class="tm-desk-subtitle">奉诏行事</h4>' +
+      '<table class="tm-desk-table"><tr><th>项目</th><th>办理事宜</th></tr><tr><td>核议</td><td>候中枢核议，有关有司奉行</td></tr><tr><td>承办</td><td>御前 → 中枢及有关有司 → 州县、军镇</td></tr><tr><td>复奏</td><td>候有司奉行复奏</td></tr></table>';
     var right = '<h4 class="tm-desk-subtitle">诏令影响预估</h4>' + deskStats([
       ['待纳议题', issues.length + ' 件'],
       ['草诏段落', draft.length + ' 条'],
       ['本回合', getTurnText(window.GM && GM.turn)],
       ['后续归档', '近事 / 实录']
     ]) + '<h4 class="tm-desk-subtitle">风险</h4>' +
-      deskCard('票拟阻滞', '诏令过宽或财源不明时，内阁、户部、兵部可能推诿或要求复议。') +
-      deskCard('可联动', '可从此处转入朝议、奏疏批复、史官实录与人物记忆。');
-    openDeskOverlay('tm-zhao-overlay', deskPanelShell('edict', '撰写诏书', '承接旧 UI「诏令」标签页：草拟、校验、下发、留档', left, main, right));
+      deskCard('票拟阻滞', '事有窒碍，候中枢及有关有司具奏请旨。') +
+      deskCard('案牍备查', '历次诏令及奉行文书，留案备查。');
+    openDeskOverlay('tm-zhao-overlay', deskPanelShell('edict', '撰写诏书', '草拟诏令，交议、颁行与留案', left, main, right));
   }
 
   function openYueZouPreviewPanel(){
@@ -2485,16 +2485,16 @@
     var main = '<h3 class="tm-desk-title">奏疏批阅</h3>' +
       deskRows([['题名', selected.title || '暂无奏疏'], ['具奏', selected.from || '臣工'], ['衙门', selected.dept || '通政司'], ['状态', selected.status || '待批']]) +
       deskCard('奏疏正文', selected.text || '暂无正文。') +
-      '<h4 class="tm-desk-subtitle">朱批</h4><textarea aria-label="朱批" data-desk-memorial-reply>着有关衙门速核，限期具册。若事涉军国钱粮，令内阁会同户部、兵部并议。</textarea>' +
+      '<h4 class="tm-desk-subtitle">朱批</h4><textarea aria-label="朱批" data-desk-memorial-reply>着有关衙门速核，限期具册。若事涉军国钱粮，令中枢会同有关有司并议。</textarea>' +
       '<div class="tm-desk-actions">' + deskAction('准奏','memorial-decision-desk',{ id:selected.id || '', decision:'approved' }, true) + deskAction('驳回','memorial-decision-desk',{ id:selected.id || '', decision:'rejected' }) + deskAction('批示','memorial-decision-desk',{ id:selected.id || '', decision:'annotated' }) + deskAction('留中','memorial-decision-desk',{ id:selected.id || '', decision:'hold' }) + deskAction('转朝议','memorial-decision-desk',{ id:selected.id || '', decision:'court_debate' }) + deskAction('拟诏','memorial-edict-desk',{ id:selected.id || '' }) + '</div>';
-    var right = '<h4 class="tm-desk-subtitle">旧奏疏页侧栏</h4>' + deskStats([
+    var right = '<h4 class="tm-desk-subtitle">奏疏案目</h4>' + deskStats([
       ['待批', mems.length + ' 件'],
       ['急件', mems.filter(function(x){ return /急|urgent|high/i.test(String(x.status) + String(x.title)); }).length + ' 件'],
       ['可转议', getIssues().length + ' 项'],
       ['归档', '史官 / 近事']
-    ]) + deskCard('筛选', '按急缓、衙门、人物、地区、变量、是否已批分类。') +
-      deskCard('批复后', '写入近事、御案时政、人物记忆与史官档案。');
-    openDeskOverlay('tm-zoushu-overlay', deskPanelShell('memorial', '百官奏疏', '承接旧 UI「奏疏」标签页：筛选、阅览、朱批、转议', left, main, right));
+    ]) + deskCard('筛选', '可按急缓、衙门、具奏人及批阅情形查阅。') +
+      deskCard('批复后', '候有司奉行复奏。');
+    openDeskOverlay('tm-zoushu-overlay', deskPanelShell('memorial', '百官奏疏', '百官呈奏，御览批答', left, main, right));
   }
 
   function openHongyanPreviewPanel(){

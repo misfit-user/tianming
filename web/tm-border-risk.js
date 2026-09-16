@@ -16,8 +16,8 @@
   var HOSTILE_TYPES = ['敌对', '战争', '敌视', '交战', 'hostile', 'war', '侵略'];
 
   // 某 faction(按 name)的敌对势力集——把 borderThreatAgg 的「对玩家」判定 generalize 到任意 faction 视角。
-  function _hostileFactionsOf(facName, playerFacName) {
-    var G = global.GM || {};
+  function _hostileFactionsOf(facName, playerFacName, game) {
+    var G = game || global.GM || {};
     var rels = G.factionRelations || [];
     return (G.facs || []).filter(function (f) {
       if (!f || !f.name || f.name === facName) return false;
@@ -39,10 +39,10 @@
     var t = Number(leaf.troops);
     if (isFinite(t) && t >= 0) return t;
     var d = leaf.data || {};
-    var gm = d.governanceMilitary || {};
+    var gm = leaf.governanceMilitary || d.governanceMilitary || {};
     t = Number(gm.standingArmy);
     if (isFinite(t) && t >= 0) return t;
-    t = Number(d.garrison);
+    t = Number(leaf.garrison != null ? leaf.garrison : d.garrison);
     return (isFinite(t) && t >= 0) ? t : 0;
   }
 
@@ -115,9 +115,9 @@
     });
   }
 
-  function tickBorderRisk() {
-    var P = global.P || {};
-    var G = global.GM;
+  function tickBorderRisk(game, profile) {
+    var P = profile || global.P || {};
+    var G = game && game.adminHierarchy ? game : global.GM;
     if (!G || !G.adminHierarchy) return;
     var IB = global.IntegrationBridge;
     if (!IB || typeof IB.getLeafDivisions !== 'function') return;    // 无取叶能力·静默跳过
@@ -127,7 +127,7 @@
 
     Object.keys(ah).forEach(function (facId) {
       var ownerFacName = (facId === 'player') ? playerFacName : facId;
-      var hostiles = _hostileFactionsOf(ownerFacName, playerFacName);
+      var hostiles = _hostileFactionsOf(ownerFacName, playerFacName,G);
       var threatScore = 0;
       if (hostiles.length) {
         var sum = 0;
@@ -143,15 +143,18 @@
       for (var i = 0; i < leaves.length; i++) {
         var leaf = leaves[i];
         if (!leaf) continue;
-        if (threatScore <= 0) { leaf.borderRisk = 0; touched++; continue; }   // 无敌邻·腹地太平
+        var localThreat = _frontierThreat(G,P,leaf,hostiles,threatScore);
+        if (localThreat === null) { leaf.borderRisk=null; touched++; continue; }
+        if (localThreat <= 0) { leaf.borderRisk = 0; touched++; continue; }   // 无敌邻·腹地太平
         var pd = leaf.populationDetail || {};
         var mouths = Number(pd.mouths) || 0;
-        var troops = _leafTroops(leaf);
+        var troops = _stationed(G,leaf).reduce(function(n,a){return n+Math.max(0,Number(a.soldiers)||0);},0);
+        if (!Array.isArray(G.armies)) troops=_leafTroops(leaf);
         var fortify = Number(leaf.defenseBonus) || 0;                 // A4·边防工事加成(自拟营建/烽燧巡检写)·每档≈2000驻军之防(关隘抵众)
         var expected = Math.max(500, mouths * 0.005);                 // 应有驻军 ~0.5% 丁口
         var defenseRatio = Math.max(0, Math.min(1, (troops + fortify * 2000) / expected));
         // 边境风险 = 敌强 × 本地空虚度(驻军满仍留 30% 残险·因敌在侧)
-        leaf.borderRisk = Math.round(threatScore * (1 - defenseRatio * 0.7));
+        leaf.borderRisk = Math.round(localThreat * (1 - defenseRatio * 0.7));
         touched++;
       }
     });
@@ -171,7 +174,7 @@
     return (isFinite(r) && r > 0) ? r : 0;
   }
 
-  function tickArmyPressure() {
+  function legacyArmyPressure() {
     var G = global.GM;
     if (!G || !G.adminHierarchy) return;
     var IB = global.IntegrationBridge;
@@ -200,8 +203,129 @@
     });
   }
 
+
+  function _num(v) { return v===null||v===undefined||v===''||!isFinite(Number(v)) ? null : Number(v); }
+  function _facName(G,key) { var f=(G.facs||G.factions||[]).find(function(x){return x && (x.id===key||x.name===key);});return f&&f.name||key; }
+  function _stationed(G,leaf) {
+    var id=String(leaf.mapRegionId||leaf.regionId||leaf.id||leaf.name||'');
+    return (G.armies||[]).filter(function(a){return a && !a.destroyed && (String(a.location||a.garrison||a.regionHint||'')===id);});
+  }
+  function _frontierThreat(G,P,leaf,hostiles,fallback) {
+    var map=G.mapData||P.map||{}, regions=map.regions;
+    if(!Array.isArray(regions)||!regions.length)return fallback;
+    var id=String(leaf.mapRegionId||leaf.id||leaf.name||''), region=regions.find(function(r){return r && String(r.id)===id;});
+    if(!region)return null;
+    var explicit=leaf.securityContext && _num(leaf.securityContext.externalPressure);
+    var edges=Array.isArray(region.neighbors)?region.neighbors:(map.adjacencyGraph&&map.adjacencyGraph[id]);
+    if(!Array.isArray(edges))return explicit==null?null:Math.max(0,Math.min(100,explicit));
+    var threat=explicit==null?0:explicit;
+    edges.forEach(function(neighbor){
+      var target=regions.find(function(r){return r && String(r.id)===String(neighbor.id||neighbor);});
+      if(!target)return;
+      var owner=_facName(G,target.currentOwner||target.owner||target.factionId||target.ownerKey);
+      var enemy=hostiles.find(function(f){return _facName(G,f.id||f.name)===owner;});
+      if(enemy)threat=Math.max(threat,Math.max(0,Number(enemy.strength)||50));
+    });
+    return Math.max(0,Math.min(100,threat));
+  }
+  function _monthlyCost(G,a) {
+    if(global.FixedExpense && typeof global.FixedExpense.armyMonthlyCost==='function')return global.FixedExpense.armyMonthlyCost(a,{game:G,faction:a.payingFactionId||a.factionId||a.faction});
+    var out={}, fields={money:'monthlyMoneyPayPerSoldier',grain:'monthlyGrainPayPerSoldier',cloth:'monthlyClothPayPerSoldier'};
+    Object.keys(fields).forEach(function(k){var rate=_num(a[fields[k]]), upkeep=a.monthlyUpkeep&&_num(a.monthlyUpkeep[k]);out[k]=rate!=null?Math.max(0,Number(a.soldiers)||0)*rate:upkeep;});
+    return out;
+  }
+  function _militaryAccounts(G,P) {
+    var IB=global.IntegrationBridge, rows=[], groups={}, preview={};
+    Object.keys(G.adminHierarchy||{}).forEach(function(factionKey){
+      var branch=G.adminHierarchy[factionKey]||{}, owner=_facName(G,branch.factionId||branch.name||(factionKey==='player'?P.playerInfo&&P.playerInfo.factionName:factionKey));
+      var leaves=IB&&IB.getLeafDivisions?IB.getLeafDivisions(G.adminHierarchy,factionKey):[];
+      leaves.forEach(function(leaf){rows.push({leaf:leaf,id:String(leaf.id||leaf.name),owner:owner,factionKey:factionKey});});
+      if(global.CascadeTax&&typeof global.CascadeTax.previewBudget==='function'){
+        try{var budget=global.CascadeTax.previewBudget({game:G,faction:factionKey,turnDays:30});if(budget && budget.totals)preview[owner]=budget;}catch(_){}
+      }
+    });
+    function account(faction,regionId) {
+      faction=_facName(G,faction);var key=regionId?'region:'+regionId:'faction:'+faction;
+      if(groups[key])return groups[key];
+      var budget=preview[faction], row=regionId&&rows.find(function(r){return r.id===regionId&&r.owner===faction;}), leaf=row&&row.leaf, fiscal=leaf&&(leaf.fiscal||{}), budgetRow=regionId&&budget&&(budget.regions||[]).find(function(r){return String(r.id)===regionId;});
+      var leafIds=[];
+      if(regionId && global.CascadeTax && typeof global.CascadeTax.fundingRegionIds==='function')leafIds=global.CascadeTax.fundingRegionIds({game:G,faction:faction,regionId:regionId})||[];
+      if(regionId && !leafIds.length && row)leafIds=[row.id];
+      var budgetRows=budget&&(budget.regions||[]).filter(function(r){return leafIds.indexOf(String(r.id))>=0;})||[];
+      var resource={money:null,grain:null,cloth:null};
+      Object.keys(resource).forEach(function(k){
+        if(regionId){
+          var specific=fiscal&&fiscal.militaryBudget;
+          if(specific&&_num(specific[k])!=null)resource[k]=Number(specific[k])*30/Math.max(1,Number(specific.periodDays)||30);
+          else if(budgetRows.length && budgetRows.every(function(r){return r.resources && r.resources[k] && _num(r.resources[k].retainedBudget)!=null;}))resource[k]=budgetRows.reduce(function(n,r){return n+Number(r.resources[k].retainedBudget);},0);
+          else if(fiscal&&fiscal.resources&&fiscal.resources[k]&&fiscal.period&&fiscal.period.days)resource[k]=Number(fiscal.resources[k].retainedBudget)*30/Number(fiscal.period.days);
+          else if(fiscal&&fiscal.annualResources&&fiscal.annualResources[k])resource[k]=Number(fiscal.annualResources[k].retainedBudget)/12;
+          else if(k==='money'&&leaf){var raw=fiscal&&_num(fiscal.retainedBudget);if(raw!=null&&fiscal.period&&fiscal.period.days)resource[k]=raw*30/Number(fiscal.period.days);else if(leaf.fiscalDetail&&_num(leaf.fiscalDetail.retainedBudget)!=null)resource[k]=Number(leaf.fiscalDetail.retainedBudget)/12;}
+        } else if(budget&&budget.totals&&budget.totals.central)resource[k]=_num(budget.totals.central[k]);
+        if(resource[k]!=null)resource[k]=Math.max(0,resource[k]);
+      });
+      return groups[key]={key:key,factionId:faction,regionId:regionId||null,leafIds:leafIds,regionalResources:budgetRows,capacity:resource,cost:{money:0,grain:0,cloth:0},missing:[],budget:budget};
+    }
+    var byStation={}, unresolvedArmies=[];
+    (G.armies||[]).filter(function(a){return a&&!a.destroyed;}).forEach(function(a){
+      var station=rows.find(function(r){return String(a.location||a.garrison||a.regionHint||'')===r.id;}), funding=a.funding||{}, payer=_facName(G,funding.factionId||a.payingFactionId||a.factionId||a.faction);
+      if(!station){unresolvedArmies.push(a.id||a.name);return;}
+      var share=_num(funding.localShare);
+      if(share==null)share=a.fiscalFunding==='local'?1:0;
+      share=Math.max(0,Math.min(1,share));
+      var localShares={},centralShares={};
+      ['money','grain','cloth'].forEach(function(k){var declared=_num(funding.localShareByResource&&funding.localShareByResource[k]);localShares[k]=declared==null?share:Math.max(0,Math.min(1,declared));centralShares[k]=1-localShares[k];});
+      var parts=[];if(Object.keys(localShares).some(function(k){return localShares[k]>0;}))parts.push({account:account(payer,String(funding.regionId||station.id)),shares:localShares});if(Object.keys(centralShares).some(function(k){return centralShares[k]>0;}))parts.push({account:account(payer,null),shares:centralShares});
+      var cost=_monthlyCost(G,a)||{};
+      parts.forEach(function(part){Object.keys(part.account.cost).forEach(function(k){if(!part.shares[k])return;var amount=_num(cost[k]);if(amount==null){part.account.missing.push(a.id+':'+k+'军费');return;}part.account.cost[k]+=Math.max(0,amount)*part.shares[k];});});
+      byStation[station.id]=byStation[station.id]||[];Array.prototype.push.apply(byStation[station.id],parts);
+    });
+    Object.keys(groups).forEach(function(k){
+      var g=groups[k], worst=0;
+      Object.keys(g.cost).forEach(function(resource){
+        var due=g.cost[resource], available=g.capacity[resource];
+        if(due<=0)return;
+        if(available==null){g.missing.push(resource+'预算');return;}
+        // Other ordinary expenditure also competes with the army for a central budget.
+        if(!g.regionId&&g.budget&&g.budget.expenses&&g.budget.expenses.central){var all=_num(g.budget.expenses.central[resource]);if(all!=null)available=Math.max(0,available-Math.max(0,all-due));}
+        g.capacity[resource]=available;
+        worst=Math.max(worst,available>0?due/available:Infinity);
+      });
+      g.ready=g.missing.length===0;g.pressure=g.ready?Math.min(100,Math.round(worst*60)):null;
+      delete g.budget;
+    });
+    return {rows:rows,accounts:groups,byStation:byStation,hasBudgetPreview:Object.keys(preview).length>0,unresolvedArmies:unresolvedArmies};
+  }
+  function tickArmyPressure(game,profile) {
+    var G=game&&game.adminHierarchy?game:global.GM, P=profile||global.P||{};
+    if(!G||!G.adminHierarchy)return;
+    if(!Array.isArray(G.armies)){legacyArmyPressure();return;}
+    var state=_militaryAccounts(G,P), missing=[];
+    if(!state.hasBudgetPreview && !(G.armies||[]).some(function(a){return a && a.funding && (a.funding.localShare!=null||a.funding.localShareByResource);})){legacyArmyPressure();return;}
+    state.rows.forEach(function(row){
+      var leaf=row.leaf, parts=state.byStation[row.id]||[], unique=[];
+      parts.forEach(function(p){if(!unique.some(function(g){return g.key===p.account.key;}))unique.push(p.account);});
+      Object.keys(state.accounts).forEach(function(k){var g=state.accounts[k];if(g.regionId && g.leafIds.indexOf(row.id)>=0 && !unique.some(function(x){return x.key===g.key;}))unique.push(g);});
+      var stationed=_stationed(G,leaf);
+      var ready=unique.every(function(g){return g.ready;});
+      leaf.armyPressure=ready?(unique.length?Math.max.apply(null,unique.map(function(g){return g.pressure;})):0):null;
+      var localCost=0,localCapacity=null;
+      unique.filter(function(g){return g.regionId && g.leafIds.indexOf(row.id)>=0;}).forEach(function(g){
+        var own=g.regionalResources.find(function(r){return String(r.id)===row.id;}), cap=own&&own.resources&&own.resources.money&&_num(own.resources.money.retainedBudget);
+        var share=g.capacity.money>0 && cap!=null?cap/g.capacity.money:1/Math.max(1,g.leafIds.length);
+        localCost+=g.cost.money*share;if(cap!=null)localCapacity=cap;
+      });
+      leaf.localMilitaryCost=Math.round(localCost);
+      leaf.retainedNet=localCapacity!=null?Math.round((localCapacity-localCost)*12):null;
+      leaf.militaryPressureDetail={ready:ready,periodDays:30,stationedSoldiers:stationed.reduce(function(n,a){return n+(Number(a.soldiers)||0);},0),accounts:unique.map(function(g){return {factionId:g.factionId,regionId:g.regionId,contributingRegionIds:g.leafIds,cost:g.cost,capacity:g.capacity,pressure:g.pressure,missing:g.missing};}),missing:[]};
+      if(!ready)missing.push(row.id);
+    });
+    return {regions:state.rows.length,missing:missing,unresolvedArmies:state.unresolvedArmies};
+  }
+  function prime(game,profile){tickBorderRisk(game,profile);return tickArmyPressure(game,profile);}
+
   global.BorderRisk = { tick: tickBorderRisk, tickArmyPressure: tickArmyPressure, _hostileFactionsOf: _hostileFactionsOf,
-    tickThreatVarLink: tickThreatVarLink, _threatVarOf: _threatVarOf, _isAtWarWithPlayer: _isAtWarWithPlayer };
+    tickThreatVarLink: tickThreatVarLink, _threatVarOf: _threatVarOf, _isAtWarWithPlayer: _isAtWarWithPlayer, prime:prime, monthlyAccounts:_militaryAccounts };
 
   // 挂 SettlementPipeline·边患聚合(17) → 威胁变量联动(17.5·须先于边境风险取值) → 边境风险(18) → 军费负担(19)
   if (global.SettlementPipeline && typeof global.SettlementPipeline.register === 'function') {

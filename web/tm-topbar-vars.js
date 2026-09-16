@@ -126,7 +126,7 @@ function _renderGuoku() {
   var cloth = _rvC.shown;
   var _rvAny = _rvM.distorted || _rvG.distorted || _rvC.distorted;
   var phase = money < -(g.annualIncome || 1) * 0.5 ? 'bankrupt' : '';
-  var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
+  var U = (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM)) ? (g.unit || {}) : ((typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' });
   var turnDays = g.turnDays || 30;
   var incomeLabel = turnDays === 30 ? '月入' : '回合入';
   var expenseLabel = turnDays === 30 ? '月支' : '回合支';
@@ -189,7 +189,7 @@ function _renderNeitang() {
   var money = _barAccountStock(n, 'money');
   var grain = _barAccountStock(n, 'grain');
   var cloth = _barAccountStock(n, 'cloth');
-  var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
+  var U = (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM)) ? (n.unit || {}) : ((typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' });
   var turnDays = (GM.guoku && GM.guoku.turnDays) || n.turnDays || 30;
   var incomeLabel = turnDays === 30 ? '月入' : '回合入';
   var expenseLabel = turnDays === 30 ? '月支' : '回合支';
@@ -251,15 +251,18 @@ function _renderNeitang() {
 function _renderHukou() {
   // 优先读新聚合（IntegrationBridge 写入 GM.population.national），fallback 老 hukou
   var pop = (GM.population && GM.population.national) || {};
+  if (typeof HujiEngine !== 'undefined' && typeof HujiEngine.getPopulationView === 'function') pop = HujiEngine.getPopulationView({root:GM});
   var legacy = GM.hukou || {};
   // 失真层S4·据奏(拍板①)：黄册口算历来少报——丁口户数瞒减避税役·逃户隐户更报少遮失政·全键 bad 方向
-  var _hvM = _barReported('national.mouths', pop.mouths || legacy.registeredTotal || 0, 'bad', 'renli');
+  var _hvM = _barReported('national.mouths', pop.displayBasis === 'registered' ? pop.mouths : (pop.mouths || legacy.registeredTotal || 0), 'bad', 'renli');
   var total = _hvM.shown;
   var households = _barReported('national.households', pop.households || 0, 'bad', 'renli').shown;
   var ding = _barReported('national.ding', pop.ding || 0, 'bad', 'renli').shown;
   var fugitives = _barReported('national.fugitives', (GM.population && GM.population.fugitives) || 0, 'bad', 'renli').shown;
   var hidden = _barReported('national.hidden', (GM.population && GM.population.hiddenCount) || legacy.estimatedHidden || 0, 'bad', 'renli').shown;
-  var initial = (GM.scenarioMetadata && GM.scenarioMetadata.initialPopulation) || total;
+  var initial = pop.displayBasis === 'registered'
+    ? ((GM.scenarioMetadata && GM.scenarioMetadata.initialRegisteredPopulation) || total)
+    : ((GM.scenarioMetadata && GM.scenarioMetadata.initialPopulation) || total);
   var phase = total < initial * 0.5 ? 'depopulation' : '';
   return {
     value: _barFmtNum(total),
@@ -273,9 +276,9 @@ function _renderHukou() {
         ['口',     _barFmtNum(total)],
         ['户',     _barFmtNum(households)],
         ['丁',     _barFmtNum(ding)],
-        ['逃户',   _barFmtNum(fugitives)],
-        ['隐户',   _barFmtNum(hidden)],
-        ['隐户率', total > 0 ? ((hidden / (total + hidden)) * 100).toFixed(1) + '%' : '—']
+        [pop.displayBasis === 'registered' ? '逃口' : '逃户', _barFmtNum(fugitives)],
+        [pop.displayBasis === 'registered' ? '估隐口' : '隐户', _barFmtNum(hidden)],
+        [pop.displayBasis === 'registered' ? '估隐比例' : '隐户率', pop.displayBasis === 'registered' ? (pop.actualMouths > 0 ? (hidden/pop.actualMouths*100).toFixed(1)+'%' : '—') : (total > 0 ? ((hidden/(total+hidden))*100).toFixed(1)+'%' : '—')]
       ],
       note: _hvM.distorted ? '黄册所载皆有司之奏——实情须密报、查案方得掀见。点击查看户口详情' : '点击查看户口详情'
     }
@@ -381,8 +384,9 @@ function _renderMinxin() {
 function _renderHuangquan() {
   var h = GM.huangquan || {};
   var idx = h.index || 0;
-  var phase = idx < 35 ? 'ministerDominance' : idx < 75 ? 'balance' : 'absolutism';
-  var phaseNames = { ministerDominance:'权臣专政', balance:'制衡', absolutism:'专制' };
+  var independent = typeof AuthorityEngines !== 'undefined' && AuthorityEngines.isIndependentAuthorityLedger && AuthorityEngines.isIndependentAuthorityLedger();
+  var phase = idx < 35 ? 'ministerDominance' : idx < (independent ? 70 : 75) ? 'balance' : 'absolutism';
+  var phaseNames = independent ? { ministerDominance:'诏命受制', balance:'多方议行', absolutism:'权柄集中' } : { ministerDominance:'权臣专政', balance:'制衡', absolutism:'专制' };
   var sd = h.subDims || {};
   var pm = h.powerMinister;
   return {
@@ -391,7 +395,7 @@ function _renderHuangquan() {
     phase: phase,
     tip: {
       title: '皇权',
-      phase: phaseNames[phase] + '段' + (phase === 'balance' ? '（最佳）' : ''),
+      phase: phaseNames[phase] + (independent ? '' : '段' + (phase === 'balance' ? '（最佳）' : '')),
       rows: [
         ['皇权指数', Math.round(idx) + ' / 100'],
         ['中央',    Math.round((sd.central||{}).value || 0)],
@@ -399,7 +403,7 @@ function _renderHuangquan() {
         ['军队',    Math.round((sd.military||{}).value || 0)],
         ['内廷',    Math.round((sd.imperial||{}).value || 0)]
       ].concat(pm ? [['权臣',pm.name || '某氏']] : []),
-      note: phase === 'absolutism' ? '专制段：诏书须详尽（时地人钱考），大臣多献媚' :
+      note: independent ? '百司承旨、地方奉行、诸军听令与内廷出入各有轻重。须察四处权柄所归，不能仅凭一个总数判断诏命能否施行。' : phase === 'absolutism' ? '专制段：诏书须详尽（时地人钱考），大臣多献媚' :
             phase === 'balance'    ? '制衡段（最佳）：诏书可简略，大臣补全方案' :
             '权臣段：诏书可能被驳回/修改/篡改'
     }
@@ -511,13 +515,14 @@ function renderTopBarVars() {
 function _openHujiPanel() {
   if (typeof HujiEngine === 'undefined' || !GM.population) return;
   var P = GM.population;
+  var publicPopulation = typeof HujiEngine.getPopulationView === 'function' ? HujiEngine.getPopulationView({root:GM}) : P.national;
   var body = '<div style="max-width:680px;font-family:inherit;">';
   body += '<div style="font-size:1.1rem;color:var(--gold-300);margin-bottom:0.8rem;letter-spacing:0.1em;">户口 · 徭役 · 兵役</div>';
   body += '<div style="font-size:0.8rem;color:var(--ink-300);margin-bottom:0.6rem;">朝代：' + P.dynasty + '</div>';
   body += '<table style="width:100%;font-size:0.8rem;border-collapse:collapse;">';
-  body += '<tr><td>户</td><td>' + (P.national.households >= 10000 ? (P.national.households/10000).toFixed(1)+'万' : P.national.households) + '</td>';
-  body += '<td>口</td><td>' + (P.national.mouths >= 10000 ? (P.national.mouths/10000).toFixed(0)+'万' : P.national.mouths) + '</td>';
-  body += '<td>丁</td><td>' + (P.national.ding >= 10000 ? (P.national.ding/10000).toFixed(0)+'万' : P.national.ding) + '</td></tr>';
+  body += '<tr><td>户</td><td>' + (publicPopulation.households >= 10000 ? (publicPopulation.households/10000).toFixed(1)+'万' : publicPopulation.households) + '</td>';
+  body += '<td>口</td><td>' + (publicPopulation.mouths >= 10000 ? (publicPopulation.mouths/10000).toFixed(0)+'万' : publicPopulation.mouths) + '</td>';
+  body += '<td>丁</td><td>' + (publicPopulation.ding >= 10000 ? (publicPopulation.ding/10000).toFixed(0)+'万' : publicPopulation.ding) + '</td></tr>';
   body += '<tr><td>逃户</td><td colspan="3" style="color:var(--amber-400);">' + P.fugitives + '</td></tr>';
   body += '</table>';
   if (typeof _renderHujiRuntimeBridge === 'function') body += _renderHujiRuntimeBridge();
@@ -1031,6 +1036,7 @@ function _openVarPanelWithSubsystems(title, varKey) {
 
 // ── 帑廪：包含货币+央地+借贷 ──
 function _renderGuokuFullPanel() {
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) return TM.NativeFiscalUI.render(GM, 'public');
   var g = GM.guoku || {}; var h = '';
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">帑廪账本</div>';
   h += '<table style="width:100%;font-size:0.8rem;"><tr><td>现余</td><td>' + _barFmtNum(g.money||g.balance||0) + ' 两</td>';
@@ -1068,6 +1074,7 @@ function _renderGuokuFullPanel() {
   return h;
 }
 function _renderNeitangFullPanel() {
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) return TM.NativeFiscalUI.render(GM, 'private');
   var n = GM.neitang || {}; var h = '';
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">内帑账本</div>';
   h += '<table style="width:100%;font-size:0.8rem;"><tr><td>现余</td><td>' + _barFmtNum(n.money||n.balance||0) + '</td>';
@@ -1079,11 +1086,12 @@ function _renderNeitangFullPanel() {
 function _renderHukouFullPanel() {
   var P = GM.population; var h = '';
   if (!P || !P.national) return '<div style="color:#d4be7a;">户口未初始化</div>';
+  var publicPopulation = typeof HujiEngine !== 'undefined' && typeof HujiEngine.getPopulationView === 'function' ? HujiEngine.getPopulationView({root:GM}) : P.national;
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">户口总览</div>';
   h += '<table style="width:100%;font-size:0.8rem;">';
-  h += '<tr><td>户</td><td>' + _barFmtNum(P.national.households) + '</td>';
-  h += '<td>口</td><td>' + _barFmtNum(P.national.mouths) + '</td>';
-  h += '<td>丁</td><td>' + _barFmtNum(P.national.ding) + '</td></tr>';
+  h += '<tr><td>户</td><td>' + _barFmtNum(publicPopulation.households) + '</td>';
+  h += '<td>口</td><td>' + _barFmtNum(publicPopulation.mouths) + '</td>';
+  h += '<td>丁</td><td>' + _barFmtNum(publicPopulation.ding) + '</td></tr>';
   h += '<tr><td>逃户</td><td colspan="5" style="color:var(--amber-400);">' + (P.fugitives||0) + '</td></tr></table>';
   // 环境承载力
   if (GM.environment) {
@@ -1381,8 +1389,11 @@ function _renderMinxinFullPanel() {
 // ── 皇权：包含奏疏+抗疏+权臣+执行率 ──
 function _renderHuangquanFullPanel() {
   var hq = GM.huangquan || {}; var h = '';
+  var independent = typeof AuthorityEngines !== 'undefined' && AuthorityEngines.isIndependentAuthorityLedger && AuthorityEngines.isIndependentAuthorityLedger();
+  var shown = independent && typeof hq.index === 'number' ? hq.index : hq.index || 50;
+  var phaseLabel = independent ? _renderHuangquan().tip.phase : hq.phase || 'moderate';
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">皇权指数</div>';
-  h += '<div style="font-size:0.82rem;">' + Math.round(hq.index||50) + ' / 100 · 段位 ' + (hq.phase||'moderate');
+  h += '<div style="font-size:0.82rem;">' + Math.round(shown) + ' / 100 · ' + phaseLabel;
   if (hq.executionRate) h += ' · 诏令执行率 ' + (hq.executionRate*100).toFixed(0) + '%';
   h += '</div>';
   // 四维

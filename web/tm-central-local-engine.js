@@ -748,8 +748,8 @@
         compliance: rf.compliance,
         autonomyLevel: rf.autonomyLevel,
         skimmingRate: rf.skimmingRate,
-        remittedThisYear: rf.annualReport.remitted,
-        skimmedThisYear: rf.annualReport.skimmed
+        remittedThisYear: rf.annualReport ? (Number(rf.annualReport.remitted) || 0) : 0,
+        skimmedThisYear: rf.annualReport ? (Number(rf.annualReport.skimmed) || 0) : 0
       };
     });
   }
@@ -763,8 +763,8 @@
     var problematic = reports.filter(function(r) { return r.compliance < 0.6 || r.autonomyLevel > 0.6; });
     if (problematic.length > 0) {
       lines.push('合规危险区域：' + problematic.slice(0, 5).map(function(r) {
-        return r.regionId + '(合规' + (r.compliance*100).toFixed(0) + '%';
-        + '/自治' + (r.autonomyLevel*100).toFixed(0) + '%)';
+        return r.regionId + '(合规' + (r.compliance*100).toFixed(0) + '%'
+          + '/自治' + (r.autonomyLevel*100).toFixed(0) + '%)';
       }).join('、'));
     }
     var auditCoverage = G.fiscal.auditSystem && G.fiscal.auditSystem.coverageRatio;

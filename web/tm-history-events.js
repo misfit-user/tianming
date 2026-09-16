@@ -29,6 +29,8 @@
  * - 事件去重（已触发不再触发）
  */
 function checkHistoryEvents() {
+  // historical-agency-v21: player-driven scenarios do not replay scheduled historical outcomes.
+  if (typeof TM !== 'undefined' && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven()) return;
   // 剧本隔离根治：gameplay 只读当前局 GM.rigidHistoryEvents(doActualStart 已建的单剧本干净副本)·
   // 绝不读跨剧本累积的 P.rigidHistoryEvents 库(官方天启快照常驻·会让绍宋触发天启的「魏忠贤自缢」等)。
   // 旧存档无 GM.rigidHistoryEvents 时按当前 sid 过滤 P 兜底(纵深防御)。
@@ -74,7 +76,7 @@ function checkHistoryEvents() {
       //   ②演义也照旧硬弹：与"由玩家改写历史"调性冲突→演义按结构化条件触发·可全关；轻度/严格史实维持现状。
       //   ③写好的 trigger 从不生效：字符串 trigger 被当注记→改用通用结构化条件(triggerCondAll/requiresDead)求值。
       // (0) 注定之死已由玩家以别法了结(如提前处决)→记为已了结·不重复弹/不重复级联
-      if (event.deathTarget && _rigidDeathTargetAlreadyDead(event.deathTarget)) {
+      if ((event.deathTargetId||event.deathTarget) && _rigidDeathTargetAlreadyDead(event.deathTargetId||event.deathTarget)) {
         GM.triggeredHistoryEvents[event.id] = { turn: GM.turn, resolved: 'already-dead' }; // arch-ok 本文件自有触发记录表·同 line 85 既有写口
         return;
       }
@@ -90,6 +92,10 @@ function checkHistoryEvents() {
 
       // (2) 结构化"史实注定死亡"：当场置死 + 全级联(复用 applyOneDeath)·不再等下游叙事扫描兜底
       _applyRigidHistoryDeath(event);
+      if (typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM)) {
+        if(!TM.NativeWorld.eventVisible(GM,event))return;
+        if(!TM.NativeWorld.eventChoiceAllowed(GM,event)){if(typeof addEB==='function')addEB('史事',event.name||event.title||'世界事件');return;}
+      }
 
       // 显示事件选择界面（v0.2·事件并入御案时政:开关开 → 收编进 currentIssues·关 → 原独立事件框·零回归）
       if (typeof _eventAdjudicationOn === 'function' && _eventAdjudicationOn() && typeof _pushHistoryEventToIssues === 'function') {
@@ -118,6 +124,7 @@ function _rigidDeathTargetAlreadyDead(name) {
 function _rigidHistoryEventShouldFire(event) {
   var mode = (typeof P !== 'undefined' && P.conf && P.conf.gameMode) || 'yanyi';
   // 轻度/严格史实：维持现状——时间门过了就弹(不加条件门·历史照旧推进)
+  if (event.conditionPolicy === 'always') return _rigidHistoryConditionHolds(event);
   if (mode === 'light_hist' || mode === 'strict_hist') return true;
   // 演义：玩家可一键全关这类"注定事件"(由我改写历史)
   if (typeof P !== 'undefined' && P.conf && P.conf.rigidHistEventsOff) return false;
@@ -127,6 +134,7 @@ function _rigidHistoryEventShouldFire(event) {
 
 /** 结构化条件求值(通用)：requiresDead / requiresAlive / triggerCondAll[{path,op,val}] 全满足才 true；无条件→true */
 function _rigidHistoryConditionHolds(event) {
+  if (event && event.executionGuards && typeof TM !== 'undefined' && TM.ScenarioEffects && !TM.ScenarioEffects.guard(event)) return false;
   if (!event) return true;
   // 依赖：指定角色须已死(如"客氏杖毙"须"魏忠贤已死")
   if (Array.isArray(event.requiresDead)) {
@@ -186,6 +194,7 @@ function _rigidResolvePath(path) {
 /** 按名找角色(复用运行时全局·模糊+精确·测试环境缺省时回落 GM.chars 线性查) */
 function _rigidFindChar(name) {
   if (!name) return null;
+  if(typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM))return TM.NativeWorld.resolveCharacter(GM,name);
   if (typeof _fuzzyFindChar === 'function') { var c = _fuzzyFindChar(name); if (c) return c; }
   if (typeof findCharByName === 'function') { var c2 = findCharByName(name); if (c2) return c2; }
   var arr = (typeof GM !== 'undefined' && Array.isArray(GM.chars)) ? GM.chars : [];
@@ -194,14 +203,14 @@ function _rigidFindChar(name) {
 
 /** 结构化史实死亡：deathTarget 当场置死 + 全级联(复用 applyOneDeath)·治"死亡靠下游叙事扫描·晚一回合/漏词永不死" */
 function _applyRigidHistoryDeath(event) {
-  if (!event || !event.deathTarget) return;
+  if (!event || (!event.deathTarget&&!event.deathTargetId)) return;
   var reason = event.deathReason || event.name || '史实注定'; // 史实注定
   try {
     if (typeof applyOneDeath === 'function') {
-      applyOneDeath({ name: event.deathTarget, reason: reason });
+      applyOneDeath({ name: event.deathTarget, characterId:event.deathTargetId, reason: reason });
     } else {
       // 极端回落(applyOneDeath 缺位)：至少置死·免"注定死者仍活蹦乱跳"的尸政
-      var c = _rigidFindChar(event.deathTarget);
+      var c = _rigidFindChar(event.deathTargetId||event.deathTarget);
       if (c && c.alive !== false) { c.alive = false; c.dead = true; c.deathReason = reason; c.deathTurn = (typeof GM !== 'undefined' && GM.turn) || 0; }
     }
   } catch (e) {
@@ -263,8 +272,10 @@ if (typeof window !== 'undefined') { window._tcAppendDivergence = _tcAppendDiver
  * branch{name,description,impact} → choice{text,desc,effect,aiHint}·effect=impact(固定·_chooseIssueOption 兜底)·开关开则 AI 据局面裁
  */
 function _historyEventToIssue(event) {
-  return {
+  var issue = {
     id: 'hist_' + (event.id || 'x'),
+    _scenarioEventId: event.runtimePolicy === 'tm-scenario-decision/1' ? event.id : '',
+    _scenarioSid: (typeof GM !== 'undefined' && GM.sid) || '',
     title: event.name || '历史事件',
     description: event.narrative || event.description || '',
     category: '史实',
@@ -276,6 +287,8 @@ function _historyEventToIssue(event) {
       return { text: b.name || '应对', desc: b.description || '', effect: b.impact || null, aiHint: b.aiHint || '' };
     })
   };
+  if(typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM))issue.sourceHistoryEventId=event.id;
+  return issue;
 }
 function _pushHistoryEventToIssues(event) {
   try {
@@ -319,7 +332,7 @@ function showHistoryEventModal(event) {
       }
 
       // 显示影响预览
-      if (branch.impact) {
+      if (branch.impact && !(event.runtimePolicy === "tm-scenario-decision/1" && branch.runtimeActions)) {
         html += '<div style="font-size: 0.8rem; color: var(--txt-s);">影响：';
         var impacts = [];
         Object.keys(branch.impact).forEach(function(key) {
@@ -357,9 +370,27 @@ function applyEventBranch(eventId, branchIdx) {
   }
 
   var branch = event.branches[branchIdx];
+  var nativeEvent=typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM),eventRecord=nativeEvent&&GM.triggeredHistoryEvents&&GM.triggeredHistoryEvents[eventId],claim=null;
+  if(nativeEvent){
+    if(!eventRecord||!TM.NativeWorld.eventChoiceAllowed(GM,event))return{ok:false,code:'native-event-choice-denied'};
+    if(eventRecord.branchApplied)return{ok:true,noChange:true};
+    claim=TM.NativeWorld.claimEvent(GM,eventId);if(!claim)return{ok:false,code:'native-event-choice-busy'};
+  }
+  try {
 
+  var _scenarioOutcome = null;
+  if (event.runtimePolicy === 'tm-scenario-decision/1') {
+    if (typeof TM === 'undefined' || !TM.ScenarioEffects) { toast('本剧本执行接口尚未就绪'); return {ok:false}; }
+    _scenarioOutcome = TM.ScenarioEffects.apply(event, branch);
+    if (!_scenarioOutcome.ok) { toast(_scenarioOutcome.error); return _scenarioOutcome; }
+    if (_scenarioOutcome.duplicate) return _scenarioOutcome;
+  }
   // 应用影响
-  if (branch.impact) {
+  if(nativeEvent){
+    if(typeof branch.effect==='function')throw new Error('原生资料事件不执行嵌入脚本');
+    Object.keys(branch.impact||{}).forEach(function(k){if(['__proto__','prototype','constructor'].indexOf(k)>=0||typeof branch.impact[k]!=='number'||!Number.isFinite(branch.impact[k]))throw new Error('原生事件影响字段无效：'+k);});
+  }
+  if (branch.impact && !_scenarioOutcome) {
     Object.keys(branch.impact).forEach(function(key) {
       var val = branch.impact[key];
 
@@ -383,6 +414,7 @@ function applyEventBranch(eventId, branchIdx) {
       console.error('Event branch effect error:', e);
     }
   }
+  if(nativeEvent)eventRecord.branchApplied={index:branchIdx,turn:GM.turn};
 
   // 记录到编年
   if (GM.biannianItems) {
@@ -391,7 +423,7 @@ function applyEventBranch(eventId, branchIdx) {
       year: getCurrentYear(),
       month: getCurrentMonth(),
       title: event.name + '：' + branch.name,
-      content: branch.description || '',
+      content: (branch.description || '') + (_scenarioOutcome ? TM.ScenarioEffects.formatReceipt(_scenarioOutcome.receipt) : ''),
       type: 'history_event'
     });
   }
@@ -409,6 +441,8 @@ function applyEventBranch(eventId, branchIdx) {
 
   toast('✅ ' + branch.name);
   closeModal();
+  return _scenarioOutcome || undefined;
+  } finally {if(nativeEvent)TM.NativeWorld.releaseEvent(GM,claim);}
 }
 
 // ============================================================
@@ -633,3 +667,193 @@ function getCurrentMonth() {
   var monthOffset = Math.floor((((GM.turn || 1) - 1) * dpv) / 30);
   return ((P.time.startMonth || 1) - 1 + monthOffset) % 12 + 1;
 }
+
+// Opt-in, data-driven decision effects. All physical operations use existing subsystem APIs.
+(function(global) {
+  'use strict';
+  var TM = global.TM = global.TM || {};
+  var kinds = ['money', 'grain', 'cloth'];
+  var snapshots = ['guoku','armies','classes','parties','chars','minxin','fiscalConfig','_fiscalDirty','_lastTaxReform','vars','facs','_factionDiplomacyLog','_factionDiplomacySeq','triggeredHistoryEvents'];
+  function clone(x) { return x === undefined ? undefined : JSON.parse(JSON.stringify(x)); }
+  function need(v, message) { if (!v) throw Error(message); }
+  function rows(key) { return Array.isArray(global.GM && global.GM[key]) ? global.GM[key] : []; }
+  function one(key, id) { var matches = rows(key).filter(function(x) { return x && (x.id === id || x.name === id); }); return matches.length === 1 ? matches[0] : null; }
+  function living(ch) { return !!(ch && ch.alive !== false && !ch.dead); }
+  function proposalFrom(eventId, factionId) {
+    var G=global.GM || {}, record=G.triggeredHistoryEvents && G.triggeredHistoryEvents[eventId];
+    var op=record && record.decision && (record.decision.operations || []).find(function(o){return o.type==='proposal' && o.result && o.result.targetId===factionId;});
+    var fac=one('facs',factionId), prop=op && fac && (fac._incomingProposals || []).find(function(p){return p.id===op.result.proposalId;});
+    return prop || null;
+  }
+  function playerFaction() {
+    var G = global.GM || {}, pi = G.playerInfo || (global.P && global.P.playerInfo) || {};
+    var pc = rows('chars').find(function(c) { return c && (c.id === G.playerCharacterId || c.isPlayer); });
+    return pc && pc.faction || pi.factionId || pi.factionName;
+  }
+  function guard(event) {
+    var G = global.GM || {}, g = event.executionGuards || {};
+    if (g.playerFaction && playerFaction() !== g.playerFaction) return false;
+    if (event.sid && G.sid && event.sid !== G.sid) return false;
+    if (!(g.decisions || []).every(function(spec) {
+      var prior=G.triggeredHistoryEvents && G.triggeredHistoryEvents[spec.eventId];
+      return prior && prior.decision && (!spec.branchIds || spec.branchIds.indexOf(prior.decision.branchId)>=0);
+    })) return false;
+    if (!(g.proposals || []).every(function(spec) {
+      var p=proposalFrom(spec.eventId,spec.factionId);
+      if(!p)return false;
+      var status=p.status==='pending' && Number(G.turn)>Number(p.turn)+4 ? 'expired' : p.status;
+      return spec.statuses.indexOf(status)>=0;
+    })) return false;
+    if (!(event.requiresAlive || []).every(function(n) { return living(one('chars', n)); })) return false;
+    if (!(g.offices || []).every(function(spec) {
+      var c = one('chars', spec.characterId);
+      var title=c && Object.prototype.hasOwnProperty.call(c,'officialTitle') ? c.officialTitle : c && (c.title || c.role);
+      return living(c) && typeof title==='string' && title.indexOf(spec.includes)>=0;
+    })) return false;
+    if (!(g.leaders || []).every(function(spec) {
+      var c = one('chars', spec.characterId), f = one('facs', spec.factionId);
+      return living(c) && f && (f.leader === c.name || f.leaderId === c.id);
+    })) return false;
+    if (!(g.owners || []).every(function(spec) {
+      var map = G.mapData || G.map || {}, rs = map.regions || [];
+      var r = rs.find(function(x) { return x && x.id === spec.regionId; });
+      return r && (r.controller || r.owner) === spec.factionId;
+    })) return false;
+    return true;
+  }
+  function amount(v) { need(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1e9, '支出数额无效'); return v; }
+  function restoreObject(target, source) {
+    Object.keys(target).forEach(function(k) { if (!Object.prototype.hasOwnProperty.call(source, k)) delete target[k]; });
+    Object.keys(source).forEach(function(k) {
+      var next = source[k];
+      if (next && typeof next === 'object' && target[k] && typeof target[k] === 'object' && Array.isArray(next) === Array.isArray(target[k])) restoreObject(target[k], next);
+      else target[k] = clone(next);
+    });
+    if (Array.isArray(source)) target.length = source.length;
+  }
+  function capture(G) { var s = {}; snapshots.forEach(function(k) { s[k] = { had: Object.prototype.hasOwnProperty.call(G, k), value: clone(G[k]) }; }); return s; }
+  function restore(G, state) {
+    snapshots.forEach(function(k) { var s = state[k]; if (!s.had) delete G[k]; else if (G[k] && typeof G[k] === 'object' && s.value && typeof s.value === 'object') restoreObject(G[k], s.value); else G[k] = clone(s.value); }); // arch-ok: 同步场景事务失败时恢复已捕获的参与子树；前向更新走各子系统写口。
+  }
+  function prepare(event, branch) {
+    var G = global.GM, costs = { money: 0, grain: 0, cloth: 0 }, actions = branch.runtimeActions || [], plans = [];
+    need(G && guard(event), '当事人、任职或管辖已变化，请重新议处');
+    need(typeof global._rigidHistoryConditionHolds !== 'function' || global._rigidHistoryConditionHolds(event), '本案条件尚未满足');
+    need(Array.isArray(actions) && actions.length <= 16, '分支操作清单无效');
+    var seen = {};
+    actions.forEach(function(a) {
+      need(a && typeof a.type === 'string', '缺少操作类型');
+      var p = { spec: a };
+      if (a.type === 'spend') {
+        need(global.FiscalEngine && typeof global.FiscalEngine.trySpendFromGuoku === 'function', '国库支出接口尚未就绪');
+        p.amounts = {};
+        kinds.forEach(function(k) { p.amounts[k] = amount(a.amounts && a.amounts[k] !== undefined ? a.amounts[k] : 0); costs[k] += p.amounts[k]; });
+      } else if (a.type === 'armyArrears') {
+        need(global.MilitarySystems && typeof global.MilitarySystems.settleArmyArrears === 'function', '军饷结算接口尚未就绪');
+        var ar = one('armies', a.armyId);
+        need(ar && !ar.destroyed && ar.faction === playerFaction(), '部队已撤销或不属当前玩家');
+        need(!ar.commanderId || living(one('chars', ar.commanderId)), '部队指挥者已不在任');
+        need(!seen['army:' + ar.id], '同一部队不能重复申请补饷'); seen['army:' + ar.id] = true;
+        p.army = ar;
+        p.months = Math.min(Math.max(0, Math.round(Number(ar.payArrearsMonths) || 0)), Math.round(amount(a.months)));
+        p.amounts = {};
+        kinds.forEach(function(k) {
+          var field = 'monthly' + k.charAt(0).toUpperCase() + k.slice(1) + 'PayPerSoldier';
+          var fallback = { money: 0.5, grain: 0.3, cloth: 0.02 }[k];
+          var rate = ar[field] == null ? fallback : amount(Number(ar[field]));
+          p.amounts[k] = Math.max(0, Math.round((Number(ar.soldiers) || 0) * rate * p.months)); costs[k] += p.amounts[k];
+        });
+      } else if (a.type === 'taxRate') {
+        need(global.FiscalEngine && typeof global.FiscalEngine.applyPlayerTaxReform === 'function', '税制接口尚未就绪');
+        var cfg = G.fiscalConfig && G.fiscalConfig.taxList ? G.fiscalConfig : global.P && global.P.fiscalConfig;
+        need(cfg && (cfg.taxList || []).some(function(t) { return t.id === a.taxId; }), '对应税目已被撤销');
+        need(typeof a.rate === 'number' && a.rate >= 0 && a.rate <= 1 && Number.isFinite(a.rate), '税率无效');
+        need(!seen['tax:' + a.taxId], '同一税目不能重复调整'); seen['tax:' + a.taxId] = true;
+      } else if (a.type === 'classChange') {
+        need(TM.ClassEngine && typeof TM.ClassEngine.applyClassChange === 'function', '阶层接口尚未就绪');
+        p.cls = one('classes', a.classId);
+        need(p.cls && p.cls.faction === playerFaction(), '受影响阶层不属本局玩家');
+        need(typeof a.satisfaction === 'number' && Math.abs(a.satisfaction) <= 12 && Number.isFinite(a.satisfaction), '阶层变化超出幅度');
+      } else if (a.type === 'proposal') {
+        need(TM.FactionDiplomacy && typeof TM.FactionDiplomacy.recordProposals === 'function', '交涉接口尚未就绪');
+        p.from = one('facs', playerFaction()); p.to = one('facs', a.factionId);
+        need(p.from && p.to && p.from.id !== p.to.id, '交涉对象无效');
+        need(['deal','ultimatum','joint_action'].indexOf(a.proposalType) >= 0, '交涉类型无效');
+        need(typeof a.terms === 'string' && a.terms.length > 0 && a.terms.length <= 60, '交涉条款过长或为空');
+      } else if (a.type === 'factionDelivery') {
+        need(TM.FactionNpcGuoku && typeof TM.FactionNpcGuoku.transferToPlayer === 'function','方镇交付接口尚未就绪');
+        p.from=one('facs',a.factionId);p.proposal=proposalFrom(a.proposalEventId,a.factionId);
+        need(p.from && p.from.id!==playerFaction() && p.proposal && p.proposal.status==='accepted','本次输纳尚未得到对方同意');
+        need(!p.proposal._settledResourceTransferId,'同一回书已经办理交付');
+        p.amounts={};kinds.forEach(function(k){p.amounts[k]=amount(a.amounts && a.amounts[k]!==undefined?a.amounts[k]:0);need(Number(p.from.treasury && p.from.treasury[k])>=p.amounts[k],'对方现有钱粮不足，交付未完成');});
+      } else throw Error('不支持的操作类型：' + a.type);
+      plans.push(p);
+    });
+    kinds.forEach(function(k) {
+      if (!costs[k]) return;
+      var account = G.guoku || {}, ledger = account.ledgers && account.ledgers[k], stock = ledger && Number(ledger.stock);
+      need(Number.isFinite(stock) && stock >= costs[k], '国库' + ({ money:'钱',grain:'粮',cloth:'帛' }[k]) + '不足，本次操作未执行');
+      if (Number.isFinite(Number(account[k]))) need(Number(account[k]) >= costs[k], '国库账目尚需同步');
+    });
+    Object.keys(branch.impact || {}).forEach(function(k) { need(G.vars && G.vars[k] && typeof branch.impact[k] === 'number' && Number.isFinite(branch.impact[k]), '分支进度变量无效：' + k); });
+    return { costs: costs, plans: plans };
+  }
+  function apply(event, branch) {
+    var G = global.GM || {}, record = G.triggeredHistoryEvents && G.triggeredHistoryEvents[event.id];
+    if (record && record.decision) return { ok: true, duplicate: true, receipt: clone(record.decision) };
+    if (!record) return { ok: false, error: '本案尚未送达，不能提前执行' };
+    var state, prep;
+    try {
+      prep = prepare(event, branch); state = capture(G);
+      var receipts = [];
+      prep.plans.forEach(function(p) {
+        var a = p.spec, result;
+        if (a.type === 'spend') result = global.FiscalEngine.trySpendFromGuoku({ amounts: p.amounts, requireFullAmount: true, sinkTag: a.reason || event.name, gameRef: G });
+        else if (a.type === 'armyArrears') result = global.MilitarySystems.settleArmyArrears(p.army, { months: p.months });
+        else if (a.type === 'taxRate') result = global.FiscalEngine.applyPlayerTaxReform({ op: 'rate', taxId: a.taxId, rate: a.rate });
+        else if (a.type === 'classChange') result = TM.ClassEngine.applyClassChange(G, p.cls, { name:p.cls.name, satisfaction_delta:a.satisfaction, reason:a.reason || event.name }, { source:'scenario-decision', turn:G.turn });
+        else if (a.type === 'proposal') {
+          result = TM.FactionDiplomacy.recordProposals(p.from, [{ toFactionId:p.to.id, toFaction:p.to.name, type:a.proposalType, terms:a.terms, rationale:a.reason || event.name }], G.turn || 1);
+          need(result && result.recorded === 1, '交涉文书未送达'); result.ok = true;
+          var prop=(p.to._incomingProposals || []).filter(function(x){return x.fromId===p.from.id && x.terms===a.terms && x.turn===(G.turn||1);}).pop();
+          need(prop,'交涉收讫不存在');result.proposalId=prop.id;result.targetId=p.to.id;
+        }
+        else if(a.type==='factionDelivery')result=TM.FactionNpcGuoku.transferToPlayer({factionId:p.from.id,proposalId:p.proposal.id,amounts:p.amounts,transferId:event.id+':'+branch.id,reason:a.reason||event.name});
+        need(result && result.ok === true, '操作未完成：' + a.type);
+        receipts.push({ type:a.type, result:clone(result) });
+      });
+      Object.keys(branch.impact || {}).forEach(function(k) { var v = G.vars[k]; v.value = Math.max(v.min == null ? 0 : v.min, Math.min(v.max == null ? 100 : v.max, Number(v.value || 0) + branch.impact[k])); }); // arch-ok: 历史事件原生写口在操作成功后提交已校验的政策变量与进度。
+      var decision = { schema:'tm-scenario-decision/1', branchId:branch.id, turn:G.turn || 1, costs:prep.costs, operations:receipts };
+      G.triggeredHistoryEvents[event.id].decision = decision; // arch-ok: 本历史事件模块独占已触发事件的选择收讫，防重复办理。
+      return { ok:true, receipt:clone(decision) };
+    } catch (error) { if (state) restore(G, state); return { ok:false, error:error.message || String(error) }; }
+  }
+  function resolveIssue(issue, index) {
+    var G = global.GM || {};
+    if (!issue || issue._scenarioSid !== G.sid || issue.status === 'resolved') return { ok:false, error:'要务不属于当前局或已完成' };
+    var event = (G.rigidHistoryEvents || []).find(function(e) { return e && e.id === issue._scenarioEventId; });
+    if (!event || !event.branches || !event.branches[index]) return { ok:false, error:'原始分支不存在' };
+    if(!guard(event)) {
+      issue.status='withdrawn';issue.withdrawnTurn=G.turn||1;issue.withdrawalReason='当事人、任职或管辖已变化，原案停止照原条件办理。';
+      if(typeof global.toast==='function')global.toast(issue.withdrawalReason);
+      return {ok:false,withdrawn:true,error:issue.withdrawalReason};
+    }
+    var outcome = global.applyEventBranch(event.id, index);
+    if (!outcome || !outcome.ok) return outcome;
+    issue.status = 'resolved'; issue.resolvedTurn = G.turn || 1; issue.chosenOption = index; issue.chosenText = event.branches[index].name;
+    issue.executionReceipt = clone(outcome.receipt); return outcome;
+  }
+  function formatReceipt(receipt) {
+    if(!receipt)return '';
+    var out=[];var costs=receipt.costs||{};
+    if(kinds.some(function(k){return costs[k]>0;}))out.push('已从国库支付：'+kinds.filter(function(k){return costs[k]>0;}).map(function(k){return ({money:'钱',grain:'粮',cloth:'帛'}[k])+costs[k];}).join('、'));
+    (receipt.operations||[]).forEach(function(op){var r=op.result||{};
+      if(op.type==='armyArrears')out.push('已清欠饷'+r.monthsCleared+'个月');
+      if(op.type==='taxRate'&&r.change)out.push(r.change.name+'已改为原税率的'+Math.round(r.change.newRate/Math.max(.000001,r.change.oldRate)*100)+'%');
+      if(op.type==='classChange'&&r.applied)out.push(r.className+'满意度'+(r.applied.satisfaction>=0?'+':'')+r.applied.satisfaction);
+      if(op.type==='proposal')out.push('交涉文书已送达，等待对方答复');
+      if(op.type==='factionDelivery')out.push('已收到'+r.factionName+'交付的钱粮，双方库存同步扣增');
+    });return out.length?'\n\n【本次办理收讫】'+out.join('；')+'。':'';
+  }
+  TM.ScenarioEffects = { version:1, guard:guard, prepare:prepare, apply:apply, resolveIssue:resolveIssue, formatReceipt:formatReceipt };
+})(typeof window !== 'undefined' ? window : globalThis);

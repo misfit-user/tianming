@@ -6,9 +6,10 @@
 
   var OFFICIAL = [
     { filename: '天启七年·九月（官方）' },
-    { filename: '绍宋·建炎元年八月（官方）' }
+    { filename: '绍宋·建炎元年八月（官方）' },
+    { filename: '晚唐·开成五年（官方）' }
   ];
-  var BUNDLE_URL = 'tm-official-scenario-bundle.js?v=20260620-armory-materials';
+  var BUNDLE_URL = 'tm-official-scenario-bundle.js?v=20260916-release1350';
   var ensurePromise = null;
   var bundlePromise = null;
 

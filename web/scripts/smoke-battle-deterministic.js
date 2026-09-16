@@ -18,6 +18,7 @@ vm.createContext(ctx);
 // 先载 tm-utils.js(createSubRng/uid/_rngState 真源·确定性核算依赖)·再载 tm-military.js
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8'), ctx, { filename: 'tm-utils.js' });
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-military.js'), 'utf8'), ctx, { filename: 'tm-military.js' });
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-battle-contract.js'), 'utf8'), ctx, { filename: 'tm-battle-contract.js' });
 const MS = ctx.MilitarySystems;
 
 console.log('smoke-battle-deterministic');
@@ -31,7 +32,7 @@ function freshGM() {
 }
 const atk = () => ctx.GM.armies[0];
 const def = () => ctx.GM.armies[1];
-function brAbsurd() { return { winner: '后金', loser: '明朝廷', attacker: '关宁军', defender: '八旗', terrain: 'plains', casualties: { attacker: 999999, defender: 200 } }; }
+function brAbsurd() { return { battleId: 'deterministic-fixture', winner: '后金', loser: '明朝廷', attacker: '关宁军', defender: '八旗', terrain: 'plains', casualties: { attacker: 999999, defender: 200 } }; }
 
 // ── ② 默认 ON(2026-07-05 翻默认):无 flag → 引擎接管离谱伤亡 ──
 freshGM(); ctx.P = { conf: {}, battleConfig: {} };

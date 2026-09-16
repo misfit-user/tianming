@@ -88,11 +88,15 @@ console.log('— S3 · 校准器(行为) —');
   load(ctx, 'tm-engine-constants.js');
   load(ctx, 'tm-class-engine.js');
   load(ctx, 'tm-party-goals.js');
+  load(ctx, 'tm-fiscal-statements.js');
+  load(ctx, 'tm-fiscal-engine.js');
   load(ctx, 'tm-party-class-llm-calibrator.js');
   var Cal = ctx.TM && ctx.TM.PartyClassLlmCalibrator;
   ok(Cal && typeof Cal.buildSnapshot === 'function' && typeof Cal.applyResult === 'function', '校准器 API 可用');
   var GMx = {
-    turn: 7, stateTreasury: 123456,
+    turn: 7, stateTreasury: -999,
+    guoku: { money:123456, grain:20, cloth:3, unit:{money:'贯',grain:'石',cloth:'匹'}, turnDays:10, flowBasis:'forecast', expenses:{fenglu:1200,junxiang:3600} },
+    neitang: { money:200, grain:4, cloth:1, unit:{money:'贯',grain:'石',cloth:'匹'}, turnDays:10, flowBasis:'forecast' },
     _legitimacy: { clout: 61, pop: 44, flag: 'clout-heavy' },
     classes: [{
       name: '自耕农', satisfaction: 38, influence: 30,
@@ -115,7 +119,9 @@ console.log('— S3 · 校准器(行为) —');
   ok(sp.recentImpeach && sp.recentImpeach.win === 1.4, '党派快照带弹劾近况');
   ok(Array.isArray(sp.alliedWith) && sp.alliedWith[0] === '复社' && sp.conflictWith[0] === '阉党', '党派快照带 runtime 盟敌');
   ok(snap.legitimacy && snap.legitimacy.clout === 61, '快照带天命权重');
-  ok(snap.fiscalNote && snap.fiscalNote.stateTreasury === 123456, '快照带国库一行');
+  ok(snap.fiscalNote && snap.fiscalNote.guoku.money === 123456 && snap.fiscalNote.stateTreasury === undefined, '快照读取共同国库字段，忽略过期别名');
+  ok(snap.fiscalNote.guoku.unit.money==='贯' && snap.fiscalNote.guoku.grain===20 && snap.fiscalNote.guoku.expenses.junxiang===3600, '快照保留单位、粮账和军饷类别');
+  ok(snap.fiscalNote.neitang.money===200 && snap.fiscalNote.neitang.flowBasis==='forecast', '快照读取内帑与预算标记');
   Cal.applyResult(GMx, { faction_updates: [{ faction: '后金', strengthDelta: 90, economyDelta: -50 }] }, { turn: 7 });
   var fac = GMx.factions[0];
   ok(fac.strength === 58, 'faction 幅度闸:strengthDelta 90 截到 +8 (得 ' + fac.strength + ')');

@@ -9,6 +9,8 @@ export function createValidators(deps) {
   var _alreadyResolvedState = core._alreadyResolvedState;
   var _readFiscalStock = core._readFiscalStock;
   var _writeFiscalStock = core._writeFiscalStock;
+  var _fiscalPostingIdentity = core._fiscalPostingIdentity;
+  var _findFiscalPosting = core._findFiscalPosting;
   var onAppointment = core.onAppointment;
   var onDismissal = core.onDismissal;
 
@@ -1531,8 +1533,11 @@ export function createValidators(deps) {
       if (!G.guoku) G.guoku = {};
       var containerKey = (w.kind === 'income') ? 'extraIncome' : 'extraExpense';
       if (!G.guoku[containerKey]) G.guoku[containerKey] = [];
+      var posting = _fiscalPostingIdentity(G, { target: 'guoku', kind: w.kind, resource: w.resource, amount: w.shortfall, reason: String(w.mentioned) + ':' + String(w.adjusted) }, w.kind + ':' + w.resource, 'fa_autopatch');
+      if (_findFiscalPosting(G.guoku[containerKey], posting)) return;
       var patch = {
-        id: 'fa_autopatch_' + (G.turn||0) + '_' + Math.random().toString(36).slice(2,5),
+        id: posting.id,
+        _postingSignature: posting.signature,
         name: '叙事脱节补录·' + (w.kind === 'income' ? '入' : '出'),
         category: '校验补录',
         resource: w.resource,
@@ -1550,17 +1555,16 @@ export function createValidators(deps) {
       var actual;
       if (w.kind === 'income') {
         // 入：直接加（可抹平负债）
-        _writeFiscalStock(G.guoku, w.resource, cur + w.shortfall);
         actual = w.shortfall;
         patch.shortfall = 0;
       } else {
         // 出：拨到见底
-        actual = Math.min(cur, w.shortfall);
-        if (cur > 0) {
-          _writeFiscalStock(G.guoku, w.resource, cur - actual);
-        }
+        actual = Math.min(Math.max(0, cur), w.shortfall);
         patch.shortfall = w.shortfall - actual;
       }
+      _writeFiscalStock(G.guoku, w.resource, cur + (w.kind === 'income' ? actual : -actual), {
+        game: G, target: 'guoku', entry: patch, kind: w.kind, shortfall: patch.shortfall
+      });
       if (w.resource === 'money') G.guoku.balance = G.guoku.money;
       patch.applied = actual;
     });

@@ -34,6 +34,22 @@
   'use strict';
 
   function _gm() { return global.GM || null; }
+  // Preparation-only projection of already explicit IDs. No live-world lookup, transfer, history or events.
+  function projectLabels(entity, faction, kind) {
+    if (!entity || !faction || !faction.id) throw new Error('明确势力标签投影缺少实体或稳定 ID');
+    if (kind === 'character') {
+      if (entity.factionId !== faction.id) throw new Error('人物标签投影不能改变国籍');
+      entity.faction = faction.name;
+    } else if (kind === 'army') {
+      if (entity.ownerFactionId !== faction.id) throw new Error('部队标签投影不能改变所有者');
+      entity.faction = faction.name; entity.factionId = faction.id;
+      if ('owner' in entity) delete entity.owner;
+    } else if (kind === 'map-region') {
+      if ((entity.controllerFactionId || entity.sovereignFactionId) !== faction.id) throw new Error('地图标签投影不能改变主权或控制权');
+      entity.owner = faction.name; entity.factionId = faction.id;
+    } else throw new Error('不支持的势力标签投影类型');
+    return entity;
+  }
   function _now() { var g = _gm(); return (g && g.turn) || 0; }
   function _emit(name, payload) {
     try {
@@ -203,6 +219,7 @@
     opts = opts || {};
     var newName = newFacName || '';
     var resolved = _resolveAssignmentTarget(newName, opts);
+    if (_gm() && _gm().startContext && newName && !resolved.target) return false;
     if (resolved.explicitId && !resolved.target) {
       try { console.warn('[FactionMembership.assignArmy] 目标势力 ID "' + resolved.explicitId + '" 不在 GM.facs·拒绝写入'); } catch(_){}
       return false;
@@ -226,6 +243,7 @@
     } else {
       army.factionId = '';
     }
+    if (Object.prototype.hasOwnProperty.call(army, 'ownerFactionId')) army.ownerFactionId = army.factionId;
 
     _ensureHistory(army);
     army._factionHistory.push({
@@ -591,6 +609,7 @@
 
   global.TM = global.TM || {};
   global.TM.FactionMembership = {
+    projectLabels: projectLabels,
     assignChar: assignChar,
     unassignChar: unassignChar,
     assignArmy: assignArmy,

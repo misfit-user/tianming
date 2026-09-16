@@ -40,33 +40,6 @@ function enterGame(){
   try { makeEntitiesReactive(); }
   catch (_reactiveE) { _tmStartupIssue('实体响应式初始化失败', _reactiveE, true); }
 
-  // 官职公库：从 publicTreasuryInit 初始化 live publicTreasury（首回合/存档加载）
-  try {
-    if (GM.officeTree) {
-      _initOfficePublicTreasury(GM.officeTree);
-      if (GM.turn === 1) console.log('[enterGame] 官职公库初始化完成');
-    }
-  } catch(_opE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_opE, 'enterGame] 官职公库初始化失败') : console.warn('[enterGame] 官职公库初始化失败', _opE); }
-
-  // 角色私产：按 wealth 字符串+品级推算填入 resources.privateWealth
-  try {
-    _initCharacterPrivateWealth(GM.chars || []);
-    if (GM.turn === 1) console.log('[enterGame] 角色私产初始化完成');
-  } catch(_pwE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pwE, 'enterGame] 角色私产初始化失败') : console.warn('[enterGame] 角色私产初始化失败', _pwE); }
-
-  // 角色公库镜像：按 officialTitle 绑定到官职·读其 publicTreasury.money.stock
-  try {
-    var _cEng = (typeof CharEconEngine !== 'undefined') ? CharEconEngine : null;
-    if (_cEng && typeof _cEng.updatePublicTreasuryMirror === 'function' && GM.chars) {
-      GM.chars.forEach(function(ch){
-        if (!ch || ch.alive === false) return;
-        try { _cEng.ensureCharResources(ch); } catch(_eR){ if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_eR, 'enterGame.ensureCharResources'); }
-        try { _cEng.updatePublicTreasuryMirror(ch); } catch(_eM){ if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_eM, 'enterGame.updatePublicTreasuryMirror'); }
-      });
-      if (GM.turn === 1) console.log('[enterGame] 角色公库镜像刷新完成');
-    }
-  } catch(_mpE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_mpE, 'enterGame] 角色公库镜像失败') : console.warn('[enterGame] 角色公库镜像失败', _mpE); }
-
   // 首次进入游戏（turn=1 且未初始化过腐败预设）→ 按朝代预设初始化腐败
   try {
     if (GM.turn === 1 && !GM._corruptionPresetDone && typeof CorruptionEngine !== 'undefined') {
@@ -133,6 +106,44 @@ function enterGame(){
       if (GM.turn === 1) console.log('[enterGame] economyBase 初始化 ' + _ebCount + ' 个 division');
     }
   } catch(e) { _tmStartupIssue('economyBase 初始化失败', e, true); }
+
+  // Declared entity accounts are established before office custody and private views.
+  try {
+    if (typeof FiscalEngine !== 'undefined' && typeof FiscalEngine.initializePublicTreasuries === 'function') {
+      var publicScenario = typeof findScenarioById === 'function' ? findScenarioById(GM.sid) : null;
+      var publicResult = FiscalEngine.initializePublicTreasuries({game:GM,scenario:publicScenario});
+      if (!publicResult.ok) throw new Error((publicResult.missing||[]).join(', '));
+    }
+  } catch(e) { _tmStartupIssue('府库归属核验失败', e, true); }
+
+  // 官职公库：从 publicTreasuryInit 初始化 live publicTreasury（首回合/存档加载）
+  try {
+    if (GM.officeTree) {
+      _initOfficePublicTreasury(GM.officeTree);
+      if (GM.turn === 1) console.log('[enterGame] 官职公库初始化完成');
+    }
+  } catch(_opE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_opE, 'enterGame] 官职公库初始化失败') : console.warn('[enterGame] 官职公库初始化失败', _opE); }
+
+  // 角色私产：按 wealth 字符串+品级推算填入 resources.privateWealth
+  try {
+    _initCharacterPrivateWealth(GM.chars || []);
+    if (GM.turn === 1) console.log('[enterGame] 角色私产初始化完成');
+  } catch(_pwE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_pwE, 'enterGame] 角色私产初始化失败') : console.warn('[enterGame] 角色私产初始化失败', _pwE); }
+
+  // 角色公库镜像：按 officialTitle 绑定到官职·读其 publicTreasury.money.stock
+  try {
+    var _cEng = (typeof CharEconEngine !== 'undefined') ? CharEconEngine : null;
+    if (_cEng && typeof _cEng.updatePublicTreasuryMirror === 'function' && GM.chars) {
+      GM.chars.forEach(function(ch){
+        if (!ch || ch.alive === false) return;
+        try { _cEng.ensureCharResources(ch); } catch(_eR){ if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_eR, 'enterGame.ensureCharResources'); }
+        try { _cEng.updatePublicTreasuryMirror(ch); } catch(_eM){ if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_eM, 'enterGame.updatePublicTreasuryMirror'); }
+      });
+      if (GM.turn === 1) console.log('[enterGame] 角色公库镜像刷新完成');
+    }
+  } catch(_mpE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_mpE, 'enterGame] 角色公库镜像失败') : console.warn('[enterGame] 角色公库镜像失败', _mpE); }
+
+
 
   // 同样首回合预跑 FixedExpense.preview·只算不扣·让 turnExpense/monthlyExpense 显示新校准
   try {
@@ -317,11 +328,19 @@ function enterGame(){
         GM.adminHierarchy ? ('键=' + Object.keys(GM.adminHierarchy).join(',') +
           '·player.divisions 长度=' + (GM.adminHierarchy.player && GM.adminHierarchy.player.divisions ? GM.adminHierarchy.player.divisions.length : '(无 player.divisions)')) : '(空)');
     }
-    if (typeof CascadeTax !== 'undefined' && typeof CascadeTax.collect === 'function') {
+    // Loading native balances is not a new fiscal period. Legacy starts retain their budget snapshot path.
+    var nativeBalances = window.TM && TM.NativeWorld && TM.NativeWorld.enabled(GM);
+    var _entryBudget = null;
+    if (!nativeBalances && typeof CascadeTax !== 'undefined' && typeof CascadeTax.previewBudget === 'function') {
+      _entryBudget = CascadeTax.previewBudget({game:GM,faction:'player',turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
+    }
+    if (_entryBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {
+      CascadeTax.applyBudgetSnapshot({game:GM,faction:'player',budget:_entryBudget,turnDays:_entryBudget.period.days});
+    } else if (!nativeBalances && typeof CascadeTax !== 'undefined' && typeof CascadeTax.collect === 'function') {
       try { CascadeTax.collect(); } catch(_ctInitE) { _tmStartupIssue('CascadeTax 首轮征税失败', _ctInitE, true); }
     }
     // 固定支出：俸禄+军饷+宫廷（endTurn 本来每回合跑·此处补首回合）
-    if (typeof FixedExpense !== 'undefined' && typeof FixedExpense.collect === 'function') {
+    if (!nativeBalances && !_entryBudget && typeof FixedExpense !== 'undefined' && typeof FixedExpense.collect === 'function') {
       try {
         var _feR = FixedExpense.collect();
         if (GM.turn === 1) console.log('[enterGame-T1] FixedExpense 首回合结算:', _feR && _feR.turnExpense);
@@ -748,9 +767,12 @@ function _renderZhaozhengCenter() {
 
   // 快捷状态摘要
   html += '<div class="zz-summary">';
-  var _treasury = GM.stateTreasury || 0;
+  var _account = GM.guoku || {}, _cashLedger = _account.ledgers && _account.ledgers.money;
+  var _cashValue = _cashLedger && Object.prototype.hasOwnProperty.call(_cashLedger, 'stock') ? _cashLedger.stock : (_account.money != null ? _account.money : _account.balance);
+  var _treasury = typeof _cashValue === 'number' && isFinite(_cashValue) ? _cashValue : null;
+  var _moneyUnit = (_account.unit && _account.unit.money) || (P.fiscalConfig && P.fiscalConfig.unit && P.fiscalConfig.unit.money) || '';
   var _wars = GM.activeWars ? GM.activeWars.length : 0;
-  html += '<span>\u56FD\u5E93 ' + Math.round(_treasury) + '</span>';
+  html += '<span>\u56FD\u5E93 ' + (_treasury == null ? '未具数' : Math.round(_treasury)) + (_moneyUnit ? ' ' + escHtml(_moneyUnit) : '') + '</span>';
   if (_wars > 0) html += '<span style="color:var(--vermillion-400);">\u6218\u4E89 ' + _wars + '</span>';
   html += '</div>';
 

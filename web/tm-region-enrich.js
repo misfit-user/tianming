@@ -421,6 +421,21 @@
 
   /** 兵权归属判定 */
   function assessMilitaryPower(G) {
+    var pm=G&&G.huangquan&&G.huangquan.powerMinister;
+    if((pm&&pm.mode==='institutional')||(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional')){
+      var info=G.playerInfo||(global.P&&global.P.playerInfo)||{},fid=info.factionId||info.factionName||G.playerFactionId||'',facs=G.facs||G.factions||[],controllers=[];
+      function sameFaction(a){if(!fid||!a||a===fid)return true;return facs.some(function(f){return f&&(f.id===fid||f.name===fid)&&(f.id===a||f.name===a);});}
+      (G.armies||[]).forEach(function(a){
+        if(!a||a.destroyed||!sameFaction(a.factionId||a.faction||a.ownerFactionId)||!a.commandChain||a.commandChain.mode!=='receipt')return;
+        (a.commandChain.custodians||[]).forEach(function(c){
+          var id=c&&(c.characterId||c.id),ch=(G.chars||[]).find(function(ch){return ch&&ch.id===id;});
+          if(!ch||ch.alive===false||!sameFaction(ch.factionId||ch.faction||ch.ownerFactionId))return;
+          var entry=controllers.find(function(r){return r.characterId===id;});if(!entry){entry={characterId:id,name:ch.name,armyIds:[],officeIds:[]};controllers.push(entry);}
+          if(a.id&&entry.armyIds.indexOf(a.id)<0)entry.armyIds.push(a.id);if(c.officeId&&entry.officeIds.indexOf(c.officeId)<0)entry.officeIds.push(c.officeId);
+        });
+      });
+      return {holder:'institutional',risk:null,controllers:controllers,description:controllers.length?'在册诸军由'+controllers.map(function(c){return c.name;}).join('、')+'等分掌，调发与易帅须查各军交割回执。':'各军掌事者尚待核明，不凭朝中一人之势推定全军归属。'};
+    }
     if (!G.huangquan) return { holder: 'emperor', risk: 0 };
     var hqMil = G.huangquan.subDims && G.huangquan.subDims.military ? G.huangquan.subDims.military.value : G.huangquan.index;
     if (hqMil >= 75) return { holder: 'emperor', risk: 0, description:'兵权归于皇帝' };

@@ -42,11 +42,23 @@ module.exports=async function({win,check}){
     assert.match(r.text,/应天府/);assert(!r.text.includes('div_synthetic_yingtian'));assert(r.unchanged);
   });
   await visible('#guoku-body');await screen('seven-treasury');
+  await test('treasury and yearly report resolve nested live region names instead of snapshot names or internal IDs',async()=>{
+    const r=await js(`(()=>{const old={regions:GM.regions,admin:GM.adminHierarchy,history:GM.guoku.history};let annualOverlay;try{GM.regions=[];GM.adminHierarchy={player:{divisions:[{id:'div_parent',name:'江南',children:[{id:'div_synthetic_yingtian',name:'应天府'}]}]}};const before=JSON.stringify(GM.fiscal);openGuokuPanel();const text=Array.from(document.querySelectorAll('#guoku-body section')).find(e=>e.textContent.includes('央地分账'))?.textContent;GM.guoku.history={yearlyArchive:[{year:1,totalIncome:1,totalExpense:0,bySource:{},bySink:{}}]};const children=new Set(document.body.children);PhaseG4.openYearlyReport();annualOverlay=Array.from(document.body.children).find(e=>!children.has(e));return{text,annual:annualOverlay?.textContent,unchanged:before===JSON.stringify(GM.fiscal)};}finally{GM.regions=old.regions;GM.adminHierarchy=old.admin;GM.guoku.history=old.history;if(annualOverlay)annualOverlay.remove();}})()`);
+    assert.match(r.text,/应天府/);assert.match(r.annual,/应天府/);assert(!r.text.includes('div_synthetic_yingtian')&&!r.annual.includes('div_synthetic_yingtian'));assert(r.unchanged);
+  });
   await js(`document.querySelectorAll('.var-drawer-overlay.open').forEach(e=>e.classList.remove('open'))`);
   await test('population quickstats read explicit households and distinguish missing data from a real zero',async()=>{
     const r=await js(`(()=>{const items=[{population:1510000,households:280000},{population:1510000,populationDetail:{households:280000}},{population:{mouths:1510000,households:0}},{population:1510000},{population:0},{population:1510000,registeredHouseholds:'28万户，151万口'},{population:1510000,households:0,registeredHouseholds:'28万户'}];return items.map(d=>{const before=JSON.stringify(d),el=document.createElement('div');el.innerHTML=_peRenderQuickStats(d);return{unit:el.querySelector('.tm-div-qs-sub').textContent,value:el.querySelector('.tm-div-qs-val').textContent,unchanged:before===JSON.stringify(d)};});})()`);
     assert.equal(r[0].unit,'28万户');assert.equal(r[1].unit,'28万户');assert.equal(r[2].unit,'0户');assert.match(r[3].unit,/未载|未知/);assert.match(r[4].unit,/未载|未知/);assert.equal(r[4].value,'0');assert(r.every(x=>x.unchanged));
     assert.equal(r[5].unit,'28万户');assert.equal(r[6].unit,'0户');
+  });
+  await test('the actual Tianqi Yingtian fiscal detail shows its recorded households through the full detail entry',async()=>{
+    const sc=JSON.parse(fs.readFileSync(path.join(__dirname,'../../scenarios/天启七年·九月（官方）.json'),'utf8'));
+    const nodes=[];function walk(a){for(const d of a||[]){nodes.push(d);walk(d.children);walk(d.divisions);}}walk(sc.adminHierarchy.player.divisions);
+    const div=nodes.find(d=>d.id==='div_pref_ming_02_01');assert(div&&div.populationDetail.households===290164);
+    const r=await js(`(()=>{const old=GM.adminHierarchy,div=${JSON.stringify(div)};try{GM.adminHierarchy={player:{divisions:[div]}};const before=JSON.stringify(div.populationDetail);openDivisionDetail(div.id);const card=document.querySelector('#tm-div-detail-root .tm-div-qs');return{text:card?.textContent,value:card?.querySelector('.tm-div-qs-val').textContent,sub:card?.querySelector('.tm-div-qs-sub').textContent,unchanged:before===JSON.stringify(div.populationDetail)};}finally{GM.adminHierarchy=old;}})()`);
+    assert.equal(r.value,'151万');assert.equal(r.sub,'29万户');assert(r.unchanged);
+    await visible('#tm-div-detail-root');await screen('seven-population');await js(`closeGenericModal()`);
   });
   await test('help switches content in place without moving or rebuilding the scrolled topic list',async()=>{
     await js(`openHelp('overview')`);await settle();
@@ -54,6 +66,11 @@ module.exports=async function({win,check}){
     assert(r.every(x=>x.same&&x.count===1));assert(r.every(x=>x.scroll===x.before));assert(r.every(x=>Math.abs(x.height-x.oldHeight)<1&&Math.abs(x.width-x.oldWidth)<1&&Math.abs(x.y-x.oldY)<1),JSON.stringify(r));
   });
   await visible('#help-overlay');await screen('seven-help');
+  await test('real help navigation click keeps the same overlay, topic button position and navigation scroll',async()=>{
+    const point=await js(`(()=>{const ov=document.getElementById('help-overlay'),nav=ov.querySelector('.generic-modal').firstElementChild;const box=nav.getBoundingClientRect();const button=Array.from(nav.querySelectorAll('button[data-help-topic]')).find(e=>{const r=e.getBoundingClientRect();return r.top>=box.top&&r.bottom<=box.bottom&&e.dataset.helpTopic!==ov.dataset.helpTopic;});if(!button)throw Error('no visible help topic');const r=button.getBoundingClientRect(),x=Math.round(r.left+r.width/2),y=Math.round(r.top+r.height/2),hit=document.elementFromPoint(x,y);window.__sixHelp={ov,nav,button,top:nav.scrollTop,y:r.y,w:r.width,h:r.height};return{x,y,hit:button===hit||button.contains(hit)};})()`);
+    assert(point.hit);for(const type of ['mouseDown','mouseUp'])win.webContents.sendInputEvent({type,button:'left',x:point.x,y:point.y,clickCount:1});await settle();
+    const r=await js(`(()=>{const s=__sixHelp,r=s.button.getBoundingClientRect();return{same:s.ov===document.getElementById('help-overlay')&&s.nav.isConnected&&s.button.isConnected,scroll:s.nav.scrollTop-s.top,y:r.y-s.y,w:r.width-s.w,h:r.height-s.h};})()`);assert(r.same);for(const k of ['scroll','y','w','h'])assert(Math.abs(r[k])<1,JSON.stringify(r));
+  });
   await js(`closeHelp()`);
   await test('right-rail second click closes; another button switches and an explicit open remains idempotent',async()=>{
     const r=await js(`(()=>{const b=TMPhase8FormalBridge,states=[];b._closeRightDrawer();const rail=document.querySelector('#tm-right-rail [data-slot="army"]');rail.click();states.push(document.getElementById('rpanel').classList.contains('show'));document.querySelector('#tm-right-rail [data-slot="army"]').click();states.push(document.getElementById('rpanel').classList.contains('show'));document.querySelector('#tm-right-rail [data-slot="finance"]').click();states.push(document.getElementById('rpanel').classList.contains('show'));b.openPanel('finance');states.push(document.getElementById('rpanel').classList.contains('show'));return{states,connected:rail.isConnected};})()`);
@@ -68,12 +85,13 @@ module.exports=async function({win,check}){
     assert(r.sameOverlay&&r.sameField&&r.focused);assert.match(r.value,/保留正在撰写/);assert.equal(r.start,3);assert.equal(r.end,9);assert.equal(r.scroll,r.top);assert.equal(r.count,'2 条');assert.equal(r.remaining,2);assert.deepEqual(r.used,[false,true,false]);
   });
   await test('sequential advice removal targets original indices and reaches an honest empty state',async()=>{
-    const r=await js(`(()=>{const ov=document.getElementById('tm-action-edict-overlay'),field=ov.querySelector('#edict-pol');TMPhase8FormalBridge.dismissEdictSuggestion(0);TMPhase8FormalBridge.dismissEdictSuggestion(2);return{same:field===document.querySelector('#tm-action-edict-overlay #edict-pol'),used:GM._edictSuggestions.every(x=>x.used),empty:document.querySelector('#tm-action-edict-overlay .sug-list').textContent,count:document.querySelector('#tm-action-edict-overlay .col-sug-t small').textContent};})()`);assert(r.same&&r.used);assert.match(r.empty,/暂无御案建议/);assert.equal(r.count,'0 条');
+    const r=await js(`(()=>{const ov=document.getElementById('tm-action-edict-overlay'),field=ov.querySelector('#edict-pol');ov.querySelector('[data-edict-suggestion-index="0"] .edict-sug-delete').click();ov.querySelector('[data-edict-suggestion-index="2"] .edict-sug-delete').click();return{same:field===document.querySelector('#tm-action-edict-overlay #edict-pol'),used:GM._edictSuggestions.every(x=>x.used),empty:document.querySelector('#tm-action-edict-overlay .sug-list').textContent,count:document.querySelector('#tm-action-edict-overlay .col-sug-t small').textContent};})()`);assert(r.same&&r.used);assert.match(r.empty,/暂无御案建议/);assert.equal(r.count,'0 条');
   });
   await visible('#tm-action-edict-overlay #edict-pol');await settle();await new Promise(r=>setTimeout(r,300));await screen('seven-edict');
   await test('edict deletion and draft survive the completed opening animation',async()=>{
     const r=await js(`(()=>{const ov=document.getElementById('tm-action-edict-overlay');return{value:ov.querySelector('#edict-pol').value,count:ov.querySelector('.col-sug-t small').textContent,used:GM._edictSuggestions.map(e=>!!e.used)};})()`);assert.match(r.value,/保留正在撰写/);assert.equal(r.count,'0 条');assert(r.used.every(Boolean));
   });
-  await require('./seven-api-cases.cjs')({win,check});
+  try { await require('./seven-api-cases.cjs')({win,check}); }
+  catch(e) { failures.push('API settings and transport\n'+e.stack); }
   if(failures.length)throw Error(failures.join('\n\n'));
 };

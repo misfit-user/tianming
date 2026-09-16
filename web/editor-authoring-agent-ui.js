@@ -91,6 +91,12 @@
     ui._activeUiRun = run;
     ui._conversationOwner = owner;
     options = Object.assign({}, options);
+    if(ui._workbenchTask){
+      if(method!=='runAuthoringLoop')return Promise.reject(new Error('持久预算任务请使用标准国师执行；并行会审尚未接入这份调用预算'));
+      options.workbenchTask=Object.assign({},ui._workbenchTask);options.noMemoryRecall=true;
+      if(ui._workbenchCheckpoint){var savedCheckpoint=ui._workbenchCheckpoint;Object.keys(draft).forEach(function(k){delete draft[k];});Object.assign(draft,AA.makeDraft(savedCheckpoint.draft));options.initialTodos=savedCheckpoint.todos||[];if(Array.isArray(savedCheckpoint.conversation))options.priorConversation=savedCheckpoint.conversation;options.editorContext=(options.editorContext||'')+'；从已校验的持久检查点继续，已完成的操作不要重放。';ui._workbenchCheckpoint=null;}
+    }
+    if(options.workbenchTask)ui._budgetedRun=true;
     var recovery = ui._recovery;
     if (recovery && recovery.method === method && recovery.draft === draft) {
       if (!_recoveryReady(recovery)) { ui._activeUiRun = null; return Promise.reject(_recoveryError()); }
@@ -149,7 +155,11 @@
     // 所有写入入口共用：按结束时的权限判断，且仍走同一冲突/校验/案卷确认提交。
     // 完成的记忆/技能也属于放行范围；失败、澄清、只读计划及部分草稿绝不自动提交。
     if (ui.autonomy !== 'auto' || ui.planMode || ui._pendingClarify || ui._pendingPlan || !_autoApplyAllowed(res)) return;
-    if (!validation || !validation.ok || !((ui._lastDiffs || []).length || (ui._pendingSideEffects || []).length)) return;
+    if (!validation || !validation.ok) {
+      setStatus('放行未自动应用：一致性检查未通过，草稿已保留' + (validation && validation.violations && validation.violations.length ? '：' + validation.violations.slice(0, 2).join('；') : '；请先完成校验'));
+      return;
+    }
+    if (!((ui._lastDiffs || []).length || (ui._pendingSideEffects || []).length)) return;
     onApply();
   }
   function _applyLabel(valid, diffs) {
@@ -1637,6 +1647,7 @@
   // S8(CC ai-title 对照) · 会话首轮跑完后异步起短标题：走次要模型（没配则主模型）·一次结构化小调用·
   //   静默失败保持首句标题·玩家改过名(titleKind=custom)绝不覆盖。
   function _autoTitle(id, request, summary) {
+    if(ui._workbenchTask||ui._budgetedRun)return; // Task-budgeted runs do not issue uncounted auxiliary title requests.
     try {
       if (!AA || typeof AA.callWithTools !== 'function' || typeof AA.loadEditorApiConfig !== 'function') return;
       var cfg = AA.loadEditorApiConfig() || {};
@@ -2999,7 +3010,7 @@
     if (!result || result.ok !== true) throw new Error((result && result.error) || '记忆/技能提交未确认');
     return effects.length;
   }
-  function onApply() {
+  async function onApply() {
     if (ui.running || !_contextReady()) return;
     var unfinished = !!(!ui._pendingClarify && !ui._pendingPlan && ui._completion && !/^(completed|unchanged|planned)$/.test(ui._completion.status));
     if (unfinished && !ui._partialApplyConfirmed) {
@@ -3061,7 +3072,13 @@
         return;
       }
       _pushCheckpoint('应用前 ' + _ckptTime());   // 通过冲突与选择后校验后才建检查点
-      _commitCurrent(_finalSc, ui._draftOwner);   // 逐项冲突合并后仍须由同一案卷确认提交。
+      var _workbench=global.TM&&global.TM.AuthoringExtensions&&global.TM.AuthoringExtensions.getWorkbench();
+      if(_finalSc.authoringWorkbench&&_workbench){
+        if(rej.size||(ui._pendingSideEffects||[]).length)throw new Error('地图、归属、引用属于同一操作包，不能部分应用或混合记忆写入；请整包审阅');
+        setRunning(true);setStatus('正在校验并原子提交地图操作包…');
+        try { await _workbench.commitDraft(_finalSc,ui._draftOwner); }
+        finally { setRunning(false); }
+      } else _commitCurrent(_finalSc, ui._draftOwner);   // 逐项冲突合并后仍须由同一案卷确认提交。
       var _fxN;
       try { _fxN = _commitPendingSideEffects(); }
       catch (effectError) {
@@ -3109,6 +3126,7 @@
   function newConversation() {
     if (ui.running) { setStatus('运行中，请先停止再新开对话'); return; }
     if (ui._sessionSwitch) { setStatus('正在切换案卷，请等待载入完成'); return; }
+    ui._workbenchTask=null;ui._workbenchCheckpoint=null;ui._budgetedRun=false;
     _clearDraft(); ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     ui._conversationOwner = null;
     ui._restoredTodos = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 新对话=新会话·旧会话留侧栏可切回·指针置空(开面板不再拉回)

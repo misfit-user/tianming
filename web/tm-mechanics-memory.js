@@ -8,6 +8,7 @@
 // ============================================================
 function _tmMemoryCanonName(name) {
   if (!name) return name;
+  if (typeof TM !== 'undefined' && TM.StartContracts && GM.startContext) { var nativeChar=TM.StartContracts.resolveCharacter(GM,name); return nativeChar ? nativeChar.id : ''; }
   try {
     if (typeof canonicalizeCharName === 'function') return canonicalizeCharName(name) || name;
   } catch (_) {}
@@ -25,6 +26,7 @@ function _tmMemoryCanonNameArray(list) {
 }
 
 function _tmMemoryFindChar(name) {
+  if (typeof TM !== 'undefined' && TM.StartContracts && GM.startContext) return TM.StartContracts.resolveCharacter(GM,name);
   name = _tmMemoryCanonName(name);
   try {
     if (typeof findCharByName === 'function') {

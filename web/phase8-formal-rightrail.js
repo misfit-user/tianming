@@ -710,7 +710,10 @@
   }
 
   function rightArmyLocation(a){
-    return rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+    var value = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+    var regions = (typeof GM !== 'undefined' && GM && GM.mapData && GM.mapData.regions) || [];
+    var region = regions.find(function(r){ return r && (r.id === value || r.name === value); });
+    return (region && region.name) || rightArmyFirst(a, ['locationName','garrisonName'], value);
   }
 
   function rightArmySearchState(){
@@ -953,8 +956,17 @@
 
   function rightArmyMoneyText(a){
     var value = rightArmyFirst(a, ['salary','annualSalary','yearlySalary','upkeep','cost','monthlyCost'], '');
+    var labels = {money:'钱',grain:'粮',cloth:'帛',silver:'银'};
+    if (Array.isArray(value)) {
+      return value.map(function(row){
+        if (!row || typeof row !== 'object') return String(row == null ? '' : row);
+        var kind = row.resource || row.type || row.name || row.currency || '';
+        var amount = row.amount != null ? row.amount : row.value;
+        return (labels[kind] || kind) + ' ' + rightArmyFmtNum(amount) + (row.unit || '') + (row.period ? '／' + row.period : '');
+      }).filter(Boolean).join(' / ') || '未录';
+    }
     if (value && typeof value === 'object') {
-      return Object.keys(value).map(function(k){ return k + ' ' + rightArmyFmtNum(value[k]); }).join(' / ');
+      return Object.keys(value).map(function(k){ return (labels[k] || k) + ' ' + rightArmyFmtNum(value[k]); }).join(' / ');
     }
     if (value !== '') return isFinite(Number(value)) ? rightArmyFmtNum(value) : value;
     return '未录';
@@ -984,7 +996,7 @@
     var mutiny = rightArmyPercent(a, ['mutinyRisk','rebellionRisk'], 0);
     var hot = morale < 45 || supply < 35 || mutiny >= 55;
     var commander = rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
-    var location = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+    var location = rightArmyLocation(a);
     var activity = rightArmyActivityText(rightArmyFirst(a, ['activity','state','status','currentAction'], '驻防'));
     // 行军可视化(Wave2·右栏详情卡):在途军队「当前动态」附趋向目的地+进度(取 GM.marchOrders 真进度·同朝野内情抽屉/过回合报告一致)
     try {
@@ -1001,11 +1013,12 @@
       '<div><span>装备</span><b>' + esc(rightArmyEquipmentText(a)) + '</b></div>' +
       '</div>' +
       rightArmyRows([['当前动态', activity], ['说明', desc], ['所属', rightArmyFaction(a) || '未录'], ['补给/兵变险', Math.round(supply) + ' / ' + Math.round(mutiny)]]) +
+      ((window.TM && TM.CommandAuthority && TM.CommandAuthority.enabled(a)) ? '<div class="tm-command-context" style="font-size:13px;white-space:pre-wrap;line-height:1.8;padding:10px 0;">' + esc(TM.CommandAuthority.describe(a)) + '</div>' : '') +
       rightArmyBar('士气', morale) + rightArmyBar('训练', training) + rightArmyBar('忠诚', loyalty) + rightArmyBar('控制', control) +
       '<table class="tmrp-data-table"><thead><tr><th>项目</th><th>明细</th></tr></thead><tbody>' +
       '<tr><td>兵种构成</td><td>' + esc(rightArmyCompositionText(a.composition || a.unitsComposition || a.units)) + '</td></tr>' +
       '<tr><td>编制（队）</td><td>' + rightArmyUnitsHtml(a) + '</td></tr>' +
-      '<tr><td>岁饷</td><td>' + esc(rightArmyMoneyText(a)) + '</td></tr>' +
+      '<tr><td>饷给</td><td>' + esc(rightArmyMoneyText(a)) + '</td></tr>' +
       '<tr><td>军需</td><td>' + esc(rightArmyFirst(a, ['logistics','supplyState','supplyDepotId'], '未录')) + '</td></tr>' +
       '</tbody></table>' +
       '<div class="tmrp-action-row">' +
@@ -1076,7 +1089,7 @@
       var _lv4regs = revolts.filter(function(r){ return (Number(r.level)||0) >= 4; }).map(function(r){ return r.region || '某地'; }).slice(0, 2).join('、');
       junctures.push('民变已至「起义」' + (_lv4regs ? '（' + _lv4regs + '）' : '') + '·距改朝只欠一线——剿抚迟则天命移');
     }
-    if (pm && cl > 0.9) junctures.push((pm.name || '权臣') + '权柄已逾九分·距废立篡夺只欠一线——制衡迟则神器易主');
+    if (pm && pm.mode !== 'institutional' && cl > 0.9) junctures.push((pm.name || '权臣') + '权柄已逾九分·距废立篡夺只欠一线——制衡迟则神器易主');
     var _builtRebs = (Array.isArray(G._activeRevolts) ? G._activeRevolts : []).filter(function(r){ return r && r.organizationType === 'builtState'; });
     if (_builtRebs.length) junctures.push((_builtRebs[0].leaderName || _builtRebs[0].name || '巨寇') + '已成建制立国之势·问鼎只在旦夕');
     var juncHtml = junctures.slice(0, 3).map(function(t){ return '<div class="tmrp-step" style="color:#c9645a;"><b>一步之遥</b>' + esc(t) + '</div>'; }).join('');
@@ -1506,37 +1519,34 @@
   }
 
   function rightWorks(){
-    var gm = window.GM || {};
-    var p = window.P || {};
-    var works = [];
-    function push(w, author, source, sourceIndex){
-      if (!w) return;
-      var meta = { _source: source || '', _sourceIndex: sourceIndex == null ? -1 : sourceIndex };
-      if (typeof w === 'string') {
-        works.push(Object.assign({ title: w, author: author || '无名', content: '', quality: 0 }, meta));
-      } else {
-        works.push(Object.assign({ author: author || w.author || '无名' }, w, meta));
-      }
+    var gm = window.GM || {}, p = window.P || {}, works = [], seen = Object.create(null);
+    function push(w, author, source, index){
+      if (!w || (w.sid && gm.sid && w.sid !== gm.sid)) return;
+      var row = typeof w === 'string' ? {title:w,author:author || '无名',content:'',quality:0} : Object.assign({author:author || w.author || w.creator || '无名'},w);
+      var key = row.id || (String(row.author || '') + '\n' + String(row.title || row.name || ''));
+      if (seen[key]) return;
+      seen[key] = true;
+      works.push(Object.assign(row,{_source:source,_sourceIndex:index}));
     }
-    [
-      ['GM.culturalWorks', gm.culturalWorks],
-      ['GM.works', gm.works],
-      ['GM.wenshiWorks', gm.wenshiWorks],
-      ['P.culturalWorks', p.culturalWorks],
-      ['P.presetWorks', p.presetWorks],
-      ['P.culturalConfig.presetWorks', p.culturalConfig && p.culturalConfig.presetWorks]
-    ].forEach(function(pair){
-      var source = pair[0];
-      var list = Array.isArray(pair[1]) ? pair[1] : [];
-      list.forEach(function(w, idx){ push(w, null, source, idx); });
-    });
-    if (!works.length) {
-      getPeople().forEach(function(c){
-        ['works','writings','documents','memorials'].forEach(function(k){
-          (Array.isArray(c && c[k]) ? c[k] : []).forEach(function(w, idx){ push(w, c.name, 'person.' + (c && c.name || '') + '.' + k, idx); });
-        });
+    function add(rows, source){ (Array.isArray(rows) ? rows : []).forEach(function(w,index){push(w,null,source,index);}); }
+    // The live collection is authoritative even when the player has deliberately emptied it.
+    if (Array.isArray(gm.culturalWorks)) {
+      add(gm.culturalWorks,'GM.culturalWorks');
+      if (gm.running || gm.sid || works.length) return works;
+    }
+    add(gm.works,'GM.works'); add(gm.wenshiWorks,'GM.wenshiWorks');
+    if (works.length) return works;
+    var sc = (Array.isArray(p.scenarios) ? p.scenarios : []).find(function(s){return s && s.id === gm.sid;});
+    if (!sc && p.scenario && (!gm.sid || p.scenario.id === gm.sid)) sc = p.scenario;
+    sc = sc || p;
+    add(sc.culturalWorks,'scenario.culturalWorks');
+    add(sc.presetWorks,'scenario.presetWorks');
+    add(sc.culturalConfig && sc.culturalConfig.presetWorks,'scenario.culturalConfig.presetWorks');
+    if (!works.length) getPeople().forEach(function(c){
+      ['works','writings','documents','memorials'].forEach(function(k){
+        (Array.isArray(c && c[k]) ? c[k] : []).forEach(function(w,index){push(w,c.name,'person.' + (c && c.name || '') + '.' + k,index);});
       });
-    }
+    });
     return works;
   }
 
@@ -1567,7 +1577,7 @@
     var kejuBadge = pk.currentExam ? '科举进行中' : (kejuEnabled ? ('进士 ' + jinshiCount + ' 名') : '未开科');
     return '<div class="tmrp-wenshi-shell">' +
       '<section class="tmrp-card tmrp-keju-hero">' +
-        '<div class="tmrp-card-title"><span>科举</span><small>开科取士·贡士·殿试·授官</small></div>' +
+        '<div class="tmrp-card-title"><span>科举</span><small>取士·考校·放榜·铨授</small></div>' +
         '<div class="tmrp-meta">' + esc(kejuBadge) + (pk.examSubjects ? ' · ' + esc(pk.examSubjects) : '') + '</div>' +
         '<div class="tmrp-action-row"><button type="button" class="tmrp-btn primary" data-right-action="keju-open">入科举主面板</button></div>' +
       '</section>' +
@@ -1589,7 +1599,7 @@
           '<div class="tmrp-card-title"><span>' + esc(title) + '</span><small>' + esc(rightWorkGenreLabel(w.genre || w.type)) + ' · ' + esc(w.triggerCategory || w.category || '文苑') + '</small></div>' +
           '<div class="tmrp-meta">' + esc(author) + ' · ' + esc(w.date || ('T' + (w.turn || '?'))) + ' · ' + esc(w.location || '未录') + '</div>' +
           '<div class="tmrp-meta">' + esc(excerpt || '暂无正文') + '</div>' +
-          '<div class="tmrp-chip-list"><span class="tmrp-pill">品 ' + esc(Math.round(Number(w.quality) || 0)) + '</span><span class="tmrp-pill">' + esc(rightWorkRiskLabel(w.politicalRisk || w.risk)) + '</span>' + (w.theme ? '<span class="tmrp-pill">' + esc(w.theme) + '</span>' : '') + '</div>' +
+          '<div class="tmrp-chip-list"><span class="tmrp-pill">' + esc(Number(w.quality) > 0 ? '品 ' + Math.round(Number(w.quality)) : '未品') + '</span><span class="tmrp-pill">' + esc(rightWorkRiskLabel(w.politicalRisk || w.risk)) + '</span>' + (w.theme ? '<span class="tmrp-pill">' + esc(w.theme) + '</span>' : '') + '</div>' +
           rightArmyRows([['创作背景', w.narrativeContext || w.background], ['政治暗线', w.politicalImplication || w.implication]]) +
           '<div class="tmrp-action-row"><button type="button" class="tmrp-btn" data-right-action="work-detail" data-index="' + attr(i) + '">详情</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="appreciate">赏析</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="inscribe">题序</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="echo">追和</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="circulate">传抄</button>' + (w.isForbidden ? '<button type="button" class="tmrp-btn primary" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="unban">解禁</button>' : '<button type="button" class="tmrp-btn ' + (hot ? 'primary' : '') + '" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="ban">查禁</button>') + '</div>' +
           '</div></section>';
@@ -1625,7 +1635,7 @@
       return;
     }
     var labels = { appreciate:'赐阅赏析', inscribe:'御题赐序', echo:'追和', circulate:'传抄', ban:'查禁', unban:'解禁' };
-    rightAddEdictSuggestion('文事艺府', w.author || '文苑', labels[wa] || wa, (labels[wa] || wa) + '《' + (w.title || w.name || '无题') + '》');
+    rightAddEdictSuggestion('文事艺府', '御前', labels[wa] || wa, (labels[wa] || wa) + '《' + (w.title || w.name || '无题') + '》');
     toast('已纳入诏书建议库：' + (labels[wa] || wa));
   }
 
@@ -1693,7 +1703,7 @@
     var hot = list.filter(function(item){ return /危|乱|叛|灾|兵|饷|腐|急|警|hot|warn/i.test(String(item.type || '') + String(item.title || '') + String(item.text || '')); }).length;
     return '<div class="tmrp-rumor-shell">' +
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(list.length) + '</b><span>风闻</span></div><div class="tmrp-stat"><b>' + esc(hot) + '</b><span>待察</span></div><div class="tmrp-stat"><b>' + esc(state.eventLookback || 3) + '</b><span>回合</span></div></div>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>风闻情报</span><small>近事、邸报、人物与势力活动摘要</small></div><div class="tmrp-meta">这里读取事件栏同源数据，不另造静态传闻。可继续转入史官实录查看完整档案。</div></section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>风闻情报</span><small>近事、邸报、人物与势力活动摘要</small></div><div class="tmrp-meta">街巷传言、臣僚私语与远方来报汇于此处。言之凿凿，也未必就是实情。</div></section>' +
       (list.length ? '<div class="tmrp-scroll tall">' + list.map(function(item){
         var cls = /危|乱|叛|灾|兵|饷|腐|急|警|hot|warn/i.test(String(item.type || '') + String(item.title || '') + String(item.text || '')) ? 'hot' : '';
         return '<section class="tmrp-card ' + cls + '"><div class="tmrp-card-title"><span>' + esc(item.title || '未题') + '</span><small>' + esc(item.type || '近事') + ' · T' + esc(item.turn || '') + '</small></div><div class="tmrp-meta">' + esc(item.text || item.detail || item.time || '') + '</div></section>';

@@ -113,8 +113,15 @@
 
   function dispatchSecretEdict(targetOfficial, edictType, content) {
     var G = global.GM;
-    if (!G._secretEdicts) G._secretEdicts = [];
+    if(!G)return {ok:false,reason:'尚无可承办的朝政'};
     var pm = G.huangquan && G.huangquan.powerMinister;
+    if(pm&&pm.mode==='institutional'){
+      var recipient=(G.chars||[]).find(function(c){return c&&(c.id===targetOfficial||c.name===targetOfficial);});
+      if(!recipient||recipient.alive===false)return {ok:false,reason:'承办人不在册或已故'};
+      if(!global.AuthorityEngines||!global.AuthorityEngines.draftPowerMinisterInstruction)return {ok:false,applied:false,requiresResolution:true,reason:'请拟密谕，俟承办回报再定'};
+      return global.AuthorityEngines.draftPowerMinisterInstruction({game:G,action:'secret_edict',content:'拟密谕'+recipient.name+'：'+(content||'请具明所议职掌、行事凭据与回报期限，俟御前审定。')});
+    }
+    if (!G._secretEdicts) G._secretEdicts = [];
     if (!pm) return { ok: false, reason: '无需密诏' };
     var target = (G.chars || []).find(function(c){return c.name===targetOfficial;});
     if (!target || target.alive === false) return { ok: false, reason: '目标不存在' };

@@ -444,6 +444,7 @@
     defaultAffinity = parseFloat(defaultAffinity);
     if (!isFinite(defaultAffinity)) defaultAffinity = 0.5;
 
+    if (TM.NativeWorld && TM.NativeWorld.enabled(source) && TM.NativeScope) return TM.NativeScope.coupleClass(source, cls, delta, {weight:weight,defaultAffinity:defaultAffinity,reason:options.reason});
     var applied = [];
     var total = 0;
     supportList.forEach(function(entry) {
@@ -635,6 +636,7 @@
     if (defaultAffinity === undefined || defaultAffinity === null || defaultAffinity === '') defaultAffinity = 0.5;
     defaultAffinity = parseFloat(defaultAffinity);
     if (!isFinite(defaultAffinity)) defaultAffinity = 0.5;
+    if(TM.NativeWorld&&TM.NativeWorld.enabled(source)&&TM.NativeScope)return TM.NativeScope.coupleParty(source,outcome||{},{deltas:partyDeltas,weight:weight,defaultAffinity:defaultAffinity,gate:gateSatisfaction,refresh:refreshClassPhase,source:options.source});
     var turn = parseTurnNumber(source.turn || options.turn);
     var applied = [];
     var total = 0;
@@ -1031,6 +1033,32 @@
     };
   }
 
+  // Authored social groups are observations over existing ledgers, never additional population buckets.
+  function readPopulationView(cls, root) {
+    var view = cls && cls.populationView;
+    if (!view || view.schema !== 'tm-class-population-view/1') return null;
+    var pop = root.population || {}, national = Number(pop.national && pop.national.mouths) || 0;
+    var total = 0, valid = true;
+    if (view.source === 'classBuckets') {
+      Object.keys(view.weights || {}).forEach(function(key) {
+        var weight = Number(view.weights[key]), bucket = pop.byClass && pop.byClass[key];
+        if (!Number.isFinite(weight) || weight < 0 || weight > 1 || !bucket) { valid = false; return; }
+        total += Math.max(0, Number(bucket.mouths) || 0) * weight;
+      });
+    } else if (view.source === 'national') {
+      var share = Number(view.share);
+      valid = Number.isFinite(share) && share >= 0 && share <= 1;
+      total = national * (valid ? share : 0);
+    } else if (view.source === 'armies') {
+      var factor = Number(view.share);
+      valid = Number.isFinite(factor) && factor >= 0 && factor <= 1;
+      (root.armies || []).forEach(function(a) {
+        if (a && !a.destroyed && (a.faction === cls.faction || a.factionId === cls.faction)) total += Math.max(0, Number(a.soldiers) || 0) * (valid ? factor : 0);
+      });
+    } else valid = false;
+    return { mouths: valid ? Math.min(Math.max(0, national), Math.max(0, Math.round(total))) : 0, valid: valid, source: view.source };
+  }
+
   function syncPopulationBridge(root, options) {
     var source = ensureRootContainers(root);
     options = options || {};
@@ -1049,6 +1077,17 @@
     classes.forEach(function(cls) {
       if (!cls || typeof cls !== 'object') return;
       ensureClassRuntime(cls);
+      var view = readPopulationView(cls, source);
+      if (view) {
+        cls._populationMouths = view.mouths;
+        cls._populationShare = nationalMouths > 0 ? view.mouths / nationalMouths : 0;
+        cls._populationBridgeMode = view.valid ? "observation" : "invalid-observation";
+        if (options.writeSize !== false) cls.size = formatSizeText(cls._populationShare) + "（交叉观察）";
+        result.bridged++; result.refreshed++;
+        result.classes.push({ name:cls.name, keys:resolvePopulationKeys(cls, source), mouths:view.mouths, observation:true, valid:view.valid });
+        result.alerts.push(refreshClassPhase(source, cls));
+        return;
+      }
       var keys = resolvePopulationKeys(cls, source);
       var current = sumBuckets(pop, keys);
       var share = readExplicitPopulationShare(cls);
@@ -1169,6 +1208,7 @@
 
   var api = {
     currentVersion: 1,
+    supportsPopulationViews: true,
     bootstrap: bootstrap,
     refresh: refresh,
     syncPopulationBridge: syncPopulationBridge,

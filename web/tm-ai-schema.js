@@ -69,7 +69,7 @@
     // ──────────────────────────────────────────────
     character_deaths: {
       type: 'array',
-      desc: '让真实在册角色死亡（唯一存亡写口；含玩家→继统裁决或游戏结束）',
+      desc: '让真实在册角色死亡（唯一存亡写口；含玩家→继统裁决或游戏结束）。附characterId稳定ID；同名人物不得仅凭name推断目标',
       requiredSubFields: ['name'],
       consumedBy: ['endturn:9636', 'endturn:14205']
     },

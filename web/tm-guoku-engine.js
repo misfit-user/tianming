@@ -93,9 +93,9 @@
   function ensureGuokuModel() {
     if (!GM.guoku) GM.guoku = {};
     var g = GM.guoku;
-    if (g.balance === undefined) g.balance = 1000000;
-    if (g.monthlyIncome === undefined) g.monthlyIncome = 80000;
-    if (g.monthlyExpense === undefined) g.monthlyExpense = 75000;
+    if (g.balance === undefined) g.balance = unifiedFiscalActive() ? (Number.isFinite(Number(g.money)) ? Number(g.money) : 0) : 1000000; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+    if (g.monthlyIncome === undefined) g.monthlyIncome = unifiedFiscalActive() ? 0 : 80000; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+    if (g.monthlyExpense === undefined) g.monthlyExpense = unifiedFiscalActive() ? 0 : 75000; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
     if (g.annualIncome === undefined) g.annualIncome = g.monthlyIncome * 12;
     if (g.lastDelta === undefined) g.lastDelta = 0;
     if (g.trend === undefined) g.trend = 'stable';
@@ -104,13 +104,14 @@
     if (!g.ledgers) g.ledgers = {};
     ['money','grain','cloth'].forEach(function(k) {
       if (!g.ledgers[k]) {
-        g.ledgers[k] = { stock:0, lastTurnIn:0, lastTurnOut:0,
+        g.ledgers[k] = { stock:Number(k === 'money' ? g.balance : g[k]) || 0, lastTurnIn:0, lastTurnOut:0, // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
                          sources:{}, sinks:{}, history:[] };
       }
       if (g.ledgers[k].history === undefined) g.ledgers[k].history = [];
     });
     // 同步 money.stock 与 balance
-    if (g.ledgers.money.stock === 0 && g.balance !== 0) g.ledgers.money.stock = g.balance;
+    if (!unifiedFiscalActive() && g.ledgers.money.stock === 0 && g.balance !== 0) g.ledgers.money.stock = g.balance; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+    if (unifiedFiscalActive()) {g.balance=Number(g.ledgers.money.stock)||0;g.money=g.balance;} // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
 
     if (!g.unit) g.unit = { money:'两', grain:'石', cloth:'匹' };
     if (!g.sources) g.sources = { tianfu:0, dingshui:0, caoliang:0, yanlizhuan:0,
@@ -562,6 +563,10 @@
   // ═════════════════════════════════════════════════════════════
 
   function computeTaxFlow(annualNominal) {
+    if(unifiedFiscalActive()){
+      var b=global.CascadeTax.previewBudget({faction:'player',turnDays:360}),n=b.annual.nominal.money,actual=b.annual.central.money+b.annual.localRetain.money;
+      return {nominal:n,actualReceived:actual,peasantPaid:b.annual.grossCollected.money,leakageRate:n>0?Math.max(0,1-actual/n):0,overCollectRate:0,purchasingPower:1,compliance:1,huangquanMult:1};
+    }
     // 腐败漏损率
     var leakageRate = 0;
     var overCollectRate = 0;
@@ -613,9 +618,9 @@
   // 月度结算
   // ═════════════════════════════════════════════════════════════
 
-  function _isRecurringFiscalEntryActive(entry) {
+  function _isRecurringFiscalEntryActive(entry, fiscalTurn) {
     if (!entry || !entry.recurring) return false;
-    var turn = GM.turn || 0;
+    var turn = fiscalTurn != null ? fiscalTurn : (GM.turn || 0);
     if (entry.stopAfterTurn !== undefined && entry.stopAfterTurn !== null &&
         turn > Number(entry.stopAfterTurn)) return false;
     if (entry.lastSettledTurn === turn) return false;
@@ -637,19 +642,25 @@
 
   function _applyRecurringFiscalEntries(container, mr) {
     var result = { moneyIn: 0, moneyOut: 0 };
-    var turn = GM.turn || 0;
+    var turn = unifiedFiscalActive() && container.accounting && container.accounting.turn != null ? container.accounting.turn : (GM.turn || 0);
     function applyList(list, kind) {
-      (list || []).forEach(function(entry) {
-        if (!_isRecurringFiscalEntryActive(entry)) return;
+      (list || []).forEach(function(entry, entryIndex) {
+        if (!_isRecurringFiscalEntryActive(entry, turn)) return;
         var resource = (entry.resource === 'grain' || entry.resource === 'cloth') ? entry.resource : 'money';
-        var amount = Math.max(0, Number(entry.amount) || 0) / 12 * mr;
+        var annual = Number(entry.amount); if (!Number.isFinite(annual) || annual <= 0) return;
+        var amount = annual / 12 * mr;
         if (amount <= 0) return;
         var ledger = _ensureLedger(container, resource);
-        var label = entry.name || entry.category || (kind === 'income' ? 'recurring income' : 'recurring expense');
+        var statement = global.FiscalStatement, direction = kind === 'income' ? 'in' : 'out', scope = 'central';
+        var tag = statement ? statement.flowTag(entry,scope,direction) : null;
+        var label = tag ? (kind === 'income' ? tag.key : tag.label) : entry.name || entry.category || (kind === 'income' ? 'recurring income' : 'recurring expense');
+        if (statement && !entry.id) entry.id = 'recurring-'+scope+'-'+kind+'-'+turn+'-'+entryIndex;
         if (kind === 'income') {
           ledger.stock = (Number(ledger.stock) || 0) + amount;
           ledger.thisTurnIn = (Number(ledger.thisTurnIn) || 0) + amount;
           ledger.sources[label] = (Number(ledger.sources[label]) || 0) + amount;
+          if (statement) statement.recordFlow(ledger,scope,'in',label,entry.id,entry.name || tag.label,amount);
+          if (ledger.available != null) ledger.available = Math.min(ledger.stock,(Number(ledger.available)||0)+amount);
           if (resource === 'money') result.moneyIn += amount;
         } else {
           // 扣账不打负·落0+记欠(与 deductFromLedger 同语义)——旧写法直打负余额·同一国库账里
@@ -664,6 +675,8 @@
             ledger.sinks[label + '_欠'] = (Number(ledger.sinks[label + '_欠']) || 0) + _short;
             ledger.deficit = (Number(ledger.deficit) || 0) + _short;
           }
+          if (statement) statement.recordExpense(ledger,{expenseId:entry.id,name:entry.name || tag.label,sourceTag:tag.key,funding:scope==='internal'?'internal':'central'},_ded,_short);
+          if (ledger.available != null) ledger.available = Math.max(0,Math.min(ledger.stock,(Number(ledger.available)||0)-_ded));
           if (resource === 'money') result.moneyOut += _ded;
         }
         if (resource === 'money') {
@@ -679,10 +692,39 @@
     return result;
   }
 
+  function unifiedFiscalActive() {
+    return !!(global.CascadeTax && global.CascadeTax.isUnified && global.CascadeTax.isUnified(GM,'player'));
+  }
+  function monthlySettleUnified(mr) {
+    var g=GM.guoku,days=Math.max(0.001,mr*30),year=360,resources={};
+    _applyRecurringFiscalEntries(g,mr);
+    ['money','grain','cloth'].forEach(function(k){
+      var led=g.ledgers[k],suffix=k==='money'?'':k.charAt(0).toUpperCase()+k.slice(1);
+      var income=Number(led.thisTurnIn)||0,expense=Number(led.thisTurnOut)||0;
+      g[k]=led.stock;if(k==='money')g.balance=led.stock; // arch-ok guoku period summary synchronizes its authoritative resource ledgers
+      g['turn'+suffix+'Income']=income;g['turn'+suffix+'Expense']=expense; // arch-ok guoku owner derives period resource totals from ledgers
+      g['monthly'+suffix+'Income']=income/mr;g['monthly'+suffix+'Expense']=expense/mr; // arch-ok guoku owner derives period resource totals from ledgers
+      g['annual'+suffix+'Income']=income*year/days;g['annual'+suffix+'Expense']=expense*year/days; // arch-ok guoku owner derives period resource totals from ledgers
+      led.lastTurnIn=income;led.lastTurnOut=expense;
+      resources[k]={income:income,expense:expense,stock:Number(led.stock)||0,deficit:Number(led.deficit)||0};
+    });
+    g.turnDays=days;g.lastDelta=g.turnIncome-g.turnExpense; // arch-ok guoku settlement owns period and actual net cash flow
+    global.FiscalEngine.syncAccountStatement({game:GM,account:g,scope:'central',actual:true,turnDays:days}); // arch-ok guoku settlement derives source and expense views
+    g.trend=g.lastDelta>g.annualIncome*.01?'up':(g.lastDelta < -g.annualIncome*.01?'down':'stable'); // arch-ok guoku settlement derives its balance trend
+    var entries=g.history.monthly,last=entries[entries.length-1];
+    var period=g.accounting||g.period, fiscalTurn=period&&period.turnKey!=null?period.turnKey:GM.turn;
+    var row={turn:GM.turn,fiscalTurn:fiscalTurn,periodDays:days,balance:g.balance,income:g.monthlyIncome,expense:g.monthlyExpense,periodIncome:g.turnIncome,periodExpense:g.turnExpense,delta:g.lastDelta,resources:resources};
+    if(last&&last.fiscalTurn===fiscalTurn)entries[entries.length-1]=row;else entries.push(row);
+    if(entries.length>720)g.history.monthly=entries.slice(-720); // arch-ok guoku settlement bounds its own ledger history
+    checkBankruptcy(mr);
+  }
+
   function monthlySettle(mr) {
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.tick(GM, {turnDays:(mr == null ? getMonthRatio() : mr)*30}, 'public');
     mr = mr || getMonthRatio();
     ensureGuokuModel();
     var g = GM.guoku;
+    if (unifiedFiscalActive()) return monthlySettleUnified(mr);
 
     // 计算八源年度名义收入
     var totalIncomeAnnual = 0;
@@ -1199,6 +1241,7 @@
   var Actions = {
     // 加派（临时提高税率）
     extraTax: function(rate) {
+      if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.actionSupport(GM);
       ensureGuokuModel();
       var g = GM.guoku;
       rate = clamp(finiteNumberOr(rate, 0.3), 0, 1.0);
@@ -1216,6 +1259,7 @@
 
     // 开仓放粮（紧急赈济）·region 可选(国赈全境/指定区赈该区/未指定赈全部在灾)
     openGranary: function(scale, region) {
+      if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.actionSupport(GM);
       ensureGuokuModel();
       var g = GM.guoku;
       scale = scale || 'regional';
@@ -1341,8 +1385,13 @@
 
     // 提取最近 12 月数据汇总
     var recent = g.history.monthly.slice(-12);
-    var totalIn = 0, totalOut = 0;
-    recent.forEach(function(m) { totalIn += m.income || 0; totalOut += m.expense || 0; });
+    var totalIn = 0, totalOut = 0, resourceTotals={},coveredDays=0;
+    if(unifiedFiscalActive()){
+      var remaining=360;
+      g.history.monthly.slice().reverse().some(function(m){var days=Math.max(.001,Number(m.periodDays)||30),take=Math.min(days,remaining),share=take/days;
+        totalIn+=(Number(m.periodIncome)||0)*share;totalOut+=(Number(m.periodExpense)||0)*share;remaining-=take;coveredDays+=take;
+        ['money','grain','cloth'].forEach(function(k){if(!resourceTotals[k])resourceTotals[k]={income:0,expense:0};var r=(m.resources||{})[k]||{};resourceTotals[k].income+=(Number(r.income)||0)*share;resourceTotals[k].expense+=(Number(r.expense)||0)*share;});return remaining<=0;});
+    }else recent.forEach(function(m) { totalIn += m.income || 0; totalOut += m.expense || 0; });
 
     var archive = {
       year: year,
@@ -1350,6 +1399,8 @@
       totalExpense: totalOut,
       netChange: totalIn - totalOut,
       finalBalance: g.balance,
+      periodDays: unifiedFiscalActive()?coveredDays:360,
+      resources: resourceTotals,
       sources: Object.assign({}, g.sources),
       expenses: Object.assign({}, g.expenses),
       bankruptcyMonths: g.bankruptcy.consecutiveMonths,
@@ -1359,11 +1410,12 @@
         cloth: g.ledgers.cloth.stock
       }
     };
-    g.history.yearly.push(archive);
+    var priorYear=g.history.yearly[g.history.yearly.length-1];
+    if(unifiedFiscalActive()&&priorYear&&priorYear.year===year)g.history.yearly[g.history.yearly.length-1]=archive;else g.history.yearly.push(archive); // arch-ok: 本库归档写口按年替换同一本决算。
     if (g.history.yearly.length > 40) g.history.yearly = g.history.yearly.slice(-40);
     if (typeof addEB === 'function') {
       var status = archive.netChange >= 0 ? '岁有余' : '岁亏';
-      addEB('朝代', year + '年度决算：' + status + Math.round(Math.abs(archive.netChange)/10000) + '万两', {
+      addEB('朝代', year + '年度决算：' + status + Math.round(Math.abs(archive.netChange)/10000) + '万' + ((g.unit&&g.unit.money)||'两'), {
         credibility: 'high'
       });
     }
@@ -1485,6 +1537,13 @@
         if (_legacyExp !== null) GM.guoku.monthlyExpense = _legacyExp; // arch-ok：guoku 初始化写口
       }
     }
+    if (unifiedFiscalActive()) {
+      var account=GM.guoku, meta=scenarioOverride&&scenarioOverride.guoku||{};
+      ['displayName','accountScope','custodyNote'].forEach(function(k){if(meta[k]!=null)account[k]=meta[k];}); // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+      account.turnIncome=0;account.turnExpense=0;account.lastDelta=0; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+      account.monthlyIncome=0;account.monthlyExpense=0;account.annualIncome=0; // arch-ok: 本库写口维护自己的初始化存量或真实交割归档；外部收支仍经 FiscalEngine。
+      ['money','grain','cloth'].forEach(function(k){var led=account.ledgers[k];led.thisTurnIn=0;led.thisTurnOut=0;led.sources={};led.sinks={};});
+    }
     // 初始化是完整快照边界：不能等下一次财政结算才让顶栏/下游读到同一库存。
     GM.guoku.money = GM.guoku.ledgers.money.stock; // arch-ok canonical guoku initialization owns scalar mirrors
     return { dynasty: dynasty, phase: phase, multiplier: mult };
@@ -1496,6 +1555,7 @@
   // ═════════════════════════════════════════════════════════════
 
   function applyTyrantFiscalDistortion(mr) {
+    if (unifiedFiscalActive()) return; // ReportedView carries misleading reports; no phantom resource stock.
     if (!GM.huangwei || !GM.guoku) return;
     if (GM.huangwei.index < 90) return;
     var monthlyIncome = GM.guoku.monthlyIncome || 0;
@@ -1510,6 +1570,7 @@
   }
 
   function applyTaxMinxinFeedback(mr) {
+    if (unifiedFiscalActive()) return; // Local tax/role burdens consume assessed taxes; the legacy cash-per-capita heuristic is a different model.
     if (!GM.minxin || !GM.guoku) return;
     var g = GM.guoku;
     var overCollect = (GM.fiscal && GM.fiscal.floatingCollectionRate) || 0;
@@ -1543,6 +1604,7 @@
   }
 
   function updateRegionalAccounts(mr, totalMonthlyIncome, totalMonthlyExpense) {
+    if(unifiedFiscalActive())return; // Local publicTreasury/fiscal ledgers are authoritative; do not create population-apportioned shadow stocks.
     if (!GM.guoku.byRegion) GM.guoku.byRegion = {};
     if (GM.adminHierarchy && GM._lastCascadeTurn === GM.turn) {
       var seen = {};
@@ -1603,7 +1665,7 @@
   function updateGrainClothFlow(mr) {
     var g = GM.guoku;
     if (!g.ledgers) return;
-    if (GM._lastCascadeTurn === GM.turn) {
+    if (GM._lastCascadeTurn === GM.turn || unifiedFiscalActive()) {
       var grainL = g.ledgers.grain, clothL = g.ledgers.cloth;
       if (grainL) {
         grainL.history = grainL.history || [];
@@ -2021,15 +2083,16 @@
 
   async function aiFiscalAdvisor() {
     if (!isAIAvailable()) return { available: false, analysis: _ruleBasedFiscalAdvisor() };
-    var g = GM.guoku || {}, n = GM.neitang || {};
+    var g = global.FiscalEngine.readAccountStatement({game:GM,account:GM.guoku,scope:'central'}).account, n = global.FiscalEngine.readAccountStatement({game:GM,account:GM.neitang,scope:'internal'}).account;
+    var unit=g.unit||{money:'两',grain:'石',cloth:'匹'};
     var reform = (g.ongoingReforms || []).map(function(o) { return (FISCAL_REFORMS[o.id] || {}).name; }).join('、') || '无';
     var completed = (g.completedReforms || []).map(function(id) { return (FISCAL_REFORMS[id] || {}).name; }).join('、') || '无';
     var cabal = ((GM.corruption || {}).entrenchedFactions || []).map(function(f) { return f.name; }).join('、') || '无';
     var prompt = '你扮演户部尚书，为陛下参议财政大计。以奏疏体（200 字内，文言雅训），分析三项：1) 帑廪现况断言（岁有余/岁亏/危殆）2) 当务之急：加派/开仓/借贷/减赋/裁员/发钞/改革，择一二。3) 副作用预警。\n\n当前时局：'
-      + '\n- 帑廪 ' + Math.round(g.balance || 0) + ' 两（年入 ' + Math.round(g.annualIncome || 0) + '）'
+      + '\n- 帑廪 ' + Math.round(g.money != null ? g.money : g.balance || 0) + unit.money + '（年入 ' + Math.round(g.annualIncome || 0) + '）'
       + '\n- 月入 ' + Math.round(g.monthlyIncome || 0) + '，月支 ' + Math.round(g.monthlyExpense || 0)
       + '\n- 实征率 ' + Math.round(finiteNumberOr(g.actualTaxRate, 1) * 100) + '%'
-      + '\n- 内帑 ' + Math.round(n.balance || 0) + ' 两'
+      + '\n- 内帑 ' + Math.round(n.money != null ? n.money : n.balance || 0) + unit.money
       + '\n- 皇权 ' + Math.round(finiteNumberOr((GM.huangquan || {}).index, 50)) + '，皇威 ' + Math.round(finiteNumberOr((GM.huangwei || {}).index, 50))
       + '\n- 民心 ' + Math.round(finiteNumberOr((GM.minxin || {}).trueIndex, 50))
       + '\n- 粮价 ' + finiteNumberOr((GM.prices || {}).grain, 1).toFixed(2) + ' ×'
@@ -2037,11 +2100,18 @@
       + '\n- 腐败集团：' + cabal
       + '\n- 破产：' + (g.bankruptcy && g.bankruptcy.active ? '已连续 ' + Math.round(g.bankruptcy.consecutiveMonths || 0) + ' 月' : '否')
       + '\n\n直接输出奏疏（"臣户部尚书某某谨奏……"），不含解释。';
+    prompt+='\n本期'+g.turnDays+'日；'+(g.flowBasis==='forecast'?'以下为预算，尚未实收实支':'以下为账册记载')+'。钱粮布分别计量，不自动折钱。国库岁支分类：'+JSON.stringify(g.expenses||{})+'；内帑岁支分类：'+JSON.stringify(n.expenses||{})+'。库存与预算区分，跨库转拨不是新增税收。';
     try { var text = await callAI(prompt, 600); return { available: true, analysis: (text || '').trim() }; }
     catch(e) { console.warn('[guoku] aiFiscalAdvisor:', e.message); return { available: false, analysis: _ruleBasedFiscalAdvisor(), error: e.message }; }
   }
 
   function _ruleBasedFiscalAdvisor() {
+    if (unifiedFiscalActive()) {
+      var b=global.CascadeTax.previewBudget({game:GM,faction:'player',turnDays:30}), gk=GM.guoku||{}, parts=[];
+      if (!b) return '臣请先令有司具呈征支全册，再议筹画。';
+      ['money','grain','cloth'].forEach(function(k){var income=b.totals.central[k]||0,expense=b.expenses.central[k]||0,unit=b.period.unit[k],name=k==='money'?'钱':k==='grain'?'粮':'帛';parts.push(name+'月拟入'+Math.round(income)+unit+'，拟支'+Math.round(expense)+unit+'，'+(income>=expense?'可余':'尚缺')+Math.round(Math.abs(income-expense))+unit);});
+      return '臣据现行征支册计，'+parts.join('；')+'。款物未到，不可先作见储。请先核欠支与转运缓急，宫中、军储及百司各守支给凭由；如须加征或移用，俟明诏再行。';
+    }
     var g = GM.guoku || {};
     var balance = finiteNumberOr(g.balance, 0), annual = finiteNumberOr(g.annualIncome, 1);
     var h = finiteNumberOr((GM.huangquan || {}).index, 50);
@@ -2115,7 +2185,7 @@
     if (typeof getCurrentYear === 'function') return getCurrentYear();
     var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
     var baseYear = (typeof P !== 'undefined' && P.time && typeof P.time.year === 'number') ? P.time.year : 0;
-    return baseYear + Math.floor(Math.max(0, (GM.turn || 1) - 1) * dpv / 365);
+    return baseYear + Math.floor(Math.max(0, (GM.turn || 1) - 1) * dpv / (unifiedFiscalActive() ? 360 : 365));
   }
   function _getYearCum(direction) {
     if (!GM.neitang._transferYearCum) GM.neitang._transferYearCum = {};
@@ -2137,7 +2207,8 @@
   // p6 inline·NeitangEngine wraps (条件 if NeitangEngine 已加载)
   if (typeof NeitangEngine !== 'undefined' && NeitangEngine.Actions) {
     var _origTransferIn = NeitangEngine.Actions.transferFromGuoku;
-    NeitangEngine.Actions.transferFromGuoku = function(amount) {
+    NeitangEngine.Actions.transferFromGuoku = function(amount, options) {
+      if (unifiedFiscalActive()) return _origTransferIn.call(this, amount, options);
       var rules = (GM.neitang && GM.neitang.neicangRules) || {};
       var limits = (rules.transferLimits || {}).guokuToNeicang || {};
       if (limits.maxPerTransfer && amount > limits.maxPerTransfer) {
@@ -2154,7 +2225,8 @@
       return r;
     };
     var _origRescue = NeitangEngine.Actions.rescueGuoku;
-    NeitangEngine.Actions.rescueGuoku = function(amount) {
+    NeitangEngine.Actions.rescueGuoku = function(amount, options) {
+      if (unifiedFiscalActive()) return _origRescue.call(this, amount, options);
       var rules = (GM.neitang && GM.neitang.neicangRules) || {};
       var limits = (rules.transferLimits || {}).neicangToGuoku || {};
       if (limits.maxPerTransfer && amount > limits.maxPerTransfer) {
@@ -2173,6 +2245,8 @@
   }
 
   function processFixedDeductions(mr) {
+    // Unified budgets settle named recurring expenses and transfers through the fiscal owner.
+    if (unifiedFiscalActive()) return;
     if (!GM.neitang || !GM.neitang.neicangRules) return;
     var deds = GM.neitang.neicangRules.fixedDeductions;
     if (!Array.isArray(deds) || deds.length === 0) return;
@@ -2291,6 +2365,7 @@
   }
 
   function tick(context) {
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.tick(GM, context, 'public');
     ensureGuokuModel();
     var mr = (context && context._monthRatio) || getMonthRatio();
     if (context) context._guokuMonthRatio = mr;

@@ -23,7 +23,7 @@ function assertOneOf(actual, list, msg) {
 }
 
 function fakeEl() {
-  return { classList:{add(){},remove(){},toggle(){},contains(){return false}}, style:{cssText:''}, appendChild(c){return c}, removeChild(c){return c}, insertBefore(c){return c}, setAttribute(){}, getAttribute(){return null}, addEventListener(){}, removeEventListener(){}, querySelector(){return fakeEl()}, querySelectorAll(){return[]}, children:[], childNodes:[], firstChild:null, parentNode:null, innerHTML:'', textContent:'', value:'', dataset:{} };
+  return { getBoundingClientRect(){return {left:0,top:0,right:1200,bottom:900,width:1200,height:900};}, classList:{add(){},remove(){},toggle(){},contains(){return false}}, style:{cssText:''}, appendChild(c){return c}, removeChild(c){return c}, insertBefore(c){return c}, setAttribute(){}, getAttribute(){return null}, addEventListener(){}, removeEventListener(){}, querySelector(){return fakeEl()}, querySelectorAll(){return[]}, offsetWidth:1200, offsetHeight:900, children:[], childNodes:[], firstChild:null, parentNode:null, innerHTML:'', textContent:'', value:'', dataset:{} };
 }
 
 const sandbox = {

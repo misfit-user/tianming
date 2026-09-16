@@ -46,7 +46,7 @@
 
     meData.divisions.forEach(function(d){
       gm.regions.push(divisionToRegion(d, meData));
-      if (splitExclaves && d.extraPolygons && d.extraPolygons.length){
+      if (splitExclaves && d.logicalRegionId !== d.id && d.extraPolygons && d.extraPolygons.length){
         d.extraPolygons.forEach(function(p, i){
           if (!p || p.length < 3) return;
           gm.regions.push(divisionToRegion(d, meData, {
@@ -108,7 +108,25 @@
       troops = d.publicTreasuryInit.troops;
     }
 
+    var compound = null;
+    if (d.logicalRegionId === d.id && !override.idSuffix) {
+      var parts = [[poly].concat(d.holes || [])];
+      (d.extraPolygons || []).forEach(function(p,i){
+        if (p && p.length >= 3) parts.push([p].concat((d.extraPolygonHoles || [])[i] || []));
+      });
+      compound={parts:parts,path:parts.reduce(function(out,p){
+        return out.concat(p.map(function(r){return 'M'+r.map(function(q){return q.join(',');}).join(' L')+' Z';}));
+      },[]).join(' ')};
+    }
     return {
+      logicalRegionId: compound ? d.id : undefined,
+      path: compound ? compound.path : undefined,
+      d: compound ? compound.path : undefined,
+      points: compound ? poly.map(function(p){return p.slice();}) : undefined,
+      holes: compound ? (d.holes || []) : undefined,
+      extraPolygons: compound ? (d.extraPolygons || []) : undefined,
+      extraPolygonHoles: compound ? (d.extraPolygonHoles || []) : undefined,
+      geometry: compound ? {type:compound.parts.length>1?'MultiPolygon':'Polygon',coordinates:compound.parts.length>1?compound.parts:compound.parts[0]} : undefined,
       id: d.id + (override.idSuffix || ''),
       name: d.name + (override.nameSuffix || ''),
       type: 'poly',
@@ -401,10 +419,11 @@
     var ah = scenario.adminHierarchy;
 
     // 几何索引·多键登记·官方剧本 div↔region 是松链接(div.name 常等于 region.adminBinding)
-    var geomById = {};
+    var geomById = {}, logicalById = {};
     function regKey(k, poly){ if (k != null && k !== '' && geomById[k] == null && poly && poly.length >= 3) geomById[k] = poly; }
     regions.forEach(function(r){
       if (!r) return;
+      if (r.logicalRegionId === r.id) [r.id,r.mapRegionId,r.name,r.adminBinding].forEach(function(k){if(k)logicalById[k]=r;});
       var poly = regionToPolygon(r);
       if (!poly || poly.length < 3) return;
       regKey(r.id, poly); regKey(r.mapRegionId, poly); regKey(r.name, poly); regKey(r.adminBinding, poly); regKey(r.sourceId, poly);
@@ -421,6 +440,10 @@
     function attachGeom(nd){
       var g = geomById[nd.mapRegionId] || geomById[nd.id] || geomById[nd.name] || geomById[nd.adminBinding];
       if (g && g.length >= 3) nd.polygon = g;
+      var lr=logicalById[nd.mapRegionId] || logicalById[nd.id] || logicalById[nd.name];
+      if(lr){nd.logicalRegionId=nd.id;nd.holes=JSON.parse(JSON.stringify(lr.holes||[]));
+        nd.extraPolygons=JSON.parse(JSON.stringify(lr.extraPolygons||[]));
+        nd.extraPolygonHoles=JSON.parse(JSON.stringify(lr.extraPolygonHoles||[]));}
     }
     function walkDivs(divs, facId){
       (divs || []).forEach(function(d){

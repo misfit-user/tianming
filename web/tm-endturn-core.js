@@ -1412,6 +1412,7 @@ EndTurnHooks.register('after', function() {
     checkPrompt += '· 反噬要具体到主体（哪个朝臣/哪个党派/哪个外族/哪个阶层）和方式（弹劾/兵变/民变/叛盟/物议/经济失序/瘟疫等）\n';
     checkPrompt += '· 现实合理>戏剧化夸张·后果烈度要匹配偏离程度（小逾矩→朝议哗然·大违制→社稷动摇）\n\n';
 
+    if (window.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(sc)) checkPrompt = TM.HistoricalAgency.advisorInstruction(sc);
     checkPrompt += '【T' + _turnSnapshot + '玩家诏令原文】\n  ' + _edictText + '\n\n';
     if (_histSnapshot) checkPrompt += '【本回合推演叙事节选】\n' + _histSnapshot.slice(0, 1800) + '\n\n';
     if(mode==="strict_hist" && P.conf.refText) checkPrompt += '【时代参考资料】\n' + P.conf.refText.slice(0, 1500) + '\n\n';
@@ -1427,7 +1428,7 @@ EndTurnHooks.register('after', function() {
     checkPrompt += '    }\n';
     checkPrompt += '  ]\n';
     checkPrompt += '}\n';
-    checkPrompt += '若玩家诏令完全合史·deviations 返回空数组 []·不要硬找问题。';
+    checkPrompt += (window.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(sc)) ? '措施在当前条件下可行且无额外后果时，deviations返回空数组；不按原史并非错误。' : '若玩家诏令完全合史·deviations 返回空数组 []·不要硬找问题。';
 
     var resp = await callAISmart(checkPrompt, 1500, {
       temperature: 0.3, maxRetries: 2, priority: 'background', timeoutMs: 60000, fetchMaxRetries: 1,
@@ -1759,6 +1760,8 @@ EndTurnHooks.registerFragment('historical-deviations', function(ctx) {
 // fragment·游戏模式·PREFIX (原 hook 11 _origPrompt11)
 // 注意 position='prefix'·prompt-builder 把它注入 sysP 之前·保留原 hook 的 modePrefix + origPrompt 语义
 EndTurnHooks.registerFragment('game-mode', function(ctx) {
+  // historical-agency-v21
+  if (window.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven()) return TM.HistoricalAgency.modeDescription((P.conf && P.conf.gameMode) || 'yanyi') + TM.HistoricalAgency.promptText();
   var mode = (typeof P !== 'undefined' && P.conf && P.conf.gameMode) || 'yanyi';
   var modePrefix = '';
   if (mode === 'yanyi') {

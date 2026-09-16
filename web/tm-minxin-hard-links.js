@@ -219,6 +219,13 @@
     var cd = ensureObject(div, 'corveeDetail');
     var truth = getTruth(root, div);
     var corr = localCorruption(root, div);
+    var unified=!!(global.CascadeTax&&global.CascadeTax.isUnified&&global.CascadeTax.isUnified(root,'player'));
+    if(unified){
+      if(!div.fiscal)div.fiscal=Object.assign({},fd);
+      var previous=div._minxinHardLink,base=Number(div.fiscal.compliance);if(!isFinite(base))base=1;
+      var change=previous&&isFinite(Number(previous.truth))?(truth-Number(previous.truth))*0.0072:0;
+      div.fiscal.compliance=fd.compliance=Math.round(clamp(base+change,0,1)*10000)/10000;
+    }
     var factor = taxFactor(div);
     var households = Math.max(1, Number(pd.households) || 1);
     var mouths = Math.max(1, Number(pd.mouths) || Number(div.population) || 1);
@@ -251,13 +258,11 @@
       pd.fugitives = Math.max(0, Math.round((Number(pd.fugitives) || 0) + fugitiveGain));
       div._minxinHardLinkPopulationTurn = turn;
     }
-    fd.claimedRevenue = Math.round(claimed);
-    fd.actualRevenue = actual;
-    fd.remittedToCenter = remitted;
-    fd.retainedBudget = Math.max(0, actual - remitted); // P0-1(2026-06-20): 留用地方=实征-起运·此前漏写致面板「留用地方」恒空
-    fd.skimmingRate = round2(skimming);
-    fd.compliance = round2(collection * 100);
-    fd.minxinCollectionMultiplier = round2(collection);
+    if(!unified){
+      fd.claimedRevenue=Math.round(claimed);fd.actualRevenue=actual;fd.remittedToCenter=remitted;
+      fd.retainedBudget=Math.max(0,actual-remitted);fd.skimmingRate=round2(skimming);fd.compliance=round2(collection*100);
+    }
+    fd.minxinCollectionMultiplier=unified?div.fiscal.compliance:round2(collection);
     md.recruitmentEfficiency = round2(recruitmentEfficiency);
     md.availableRecruits = availableRecruits;
     md.draftResistance = round2(draftResistance);
@@ -374,10 +379,13 @@
     try { _stampMagnate(root); } catch (_e) {}
     var leaves = getLeafDivisions(root).filter(function(div) { return div && typeof div === 'object'; });
     var impacts = leaves.map(function(div) { return calcRegion(root, div, { turn: turn }); });
+    var declaredBudget=global.CascadeTax&&global.CascadeTax.isUnified&&global.CascadeTax.isUnified(root,'player')?global.CascadeTax.previewBudget({game:root}):null;
+    if(declaredBudget)impacts.forEach(function(impact){var row=declaredBudget.regions.find(function(r){return r.id===impact.regionId;});if(!row)return;var values=row.resources.money;impact.fiscal=Object.assign({},values,{period:clone(declaredBudget.period),resources:clone(row.resources),collection:clone(row.collection)});impact.collectionMultiplier=values.claimedRevenue>0?values.collectedRevenue/values.claimedRevenue:0;});
     // 守恒归一(2026-07-03)：新分化项(豪强/灾情)单边压实征·会系统性拉低全国总额。
     // 按 claimed 加权把总额校回旧公式水平：K=Σ(claimed·base)/Σ(claimed·next)·夹[0.85,1.18]·
     // 善治省实征高于均值·劣治省低于——只重排不减总。
     var sBase = 0, sNext = 0;
+    if(!declaredBudget){
     leaves.forEach(function (l) {
       var r = l._mxhlRatios; var fd = l.fiscalDetail;
       if (!r || !fd) return;
@@ -399,6 +407,7 @@
         row.fiscal.actualRevenue = Math.max(0, Math.round((Number(row.fiscal.actualRevenue) || 0) * K));
         row.fiscal.remittedToCenter = Math.max(0, Math.round((Number(row.fiscal.remittedToCenter) || 0) * K));
       });
+    }
     }
     store.turn = turn;
     store.regionImpacts = impacts;

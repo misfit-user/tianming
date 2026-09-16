@@ -2546,7 +2546,7 @@
           "\"factionsAffected\":{\"契丹\":{\"relation_delta\":-5,\"attitude_shift\":\"hostile\",\"reason\":\"对此诏令的反应\"}},"+
           "\"partiesAffected\":{\"东林党\":{\"influence_delta\":-8,\"agenda_impact\":\"反对/支持/不关心\",\"reason\":\"态度依据\"}},"+
           "\"resistanceDescription\":\"阻力来源与形态描述(如'江南士绅联名抗税，地方胥吏怠工截留')\","+
-          "\"currentEffects\":{\"stateTreasury\":-50000,\"民心_江南\":-5},"+
+          "\"currentEffects\":{\"民心_江南\":-5},"+
           "\"unintendedConsequences\":\"意外后果(如'户部对账发现库银实际仅入库一半，其余被胥吏截留')\","+
           "\"pilotRegion\":\"试点地名(改革类必填)\","+
           "\"expansionRegions\":[\"已推广地区\"],"+
@@ -2570,7 +2570,7 @@
         // 任命+走位（若 toLocation ≠ ch.location 会自动启动走位·到期自动就任）
         "\"office_assignments\":[{\"name\":\"角色名\",\"post\":\"职位\",\"dept\":\"部门\",\"action\":\"appoint/dismiss/transfer\",\"concurrent\":false,\"fromLocation\":\"原地(可选)\",\"toLocation\":\"任职地(不同于原地则走位)\",\"estimatedDays\":30,\"reason\":\"原因；若为兼职/兼任/加兼须写明并置 concurrent:true\"}],"+
         // 岁入岁出动态增删（派人经商、大工程、新税目等）
-        "\"fiscal_adjustments\":[{\"action\":\"add/update/stop/remove\",\"target\":\"guoku/neitang/province:某省\",\"kind\":\"income/expense\",\"resource\":\"money/grain/cloth\",\"category\":\"商贸/工程/赈济/军饷/杂税\",\"name\":\"项目名(如:派郑和下西洋商队)\",\"amount\":50000,\"reason\":\"依据/推演得出\",\"recurring\":true,\"stopAfterTurn\":null}],"+
+        "\"fiscal_adjustments\":[{\"id\":\"财政项目稳定ID；更新沿用原ID，不同收支项使用不同ID\",\"action\":\"add/update/stop/remove\",\"target\":\"guoku/neitang/province:某省\",\"kind\":\"income/expense\",\"resource\":\"money/grain/cloth\",\"category\":\"商贸/工程/赈济/军饷/杂税\",\"name\":\"项目名(如:漕渠修浚)\",\"amount\":50000,\"reason\":\"依据/推演得出\",\"recurring\":true,\"stopAfterTurn\":null}],"+
         "\"tax_reforms\":[{\"op\":\"rate/add/remove\",\"taxId\":\"既有税目id(rate/remove时必填)\",\"rate\":0.05,\"tax\":{\"id\":\"新税id\",\"name\":\"税名\",\"base\":\"税基\",\"rate\":0.02,\"storeAs\":\"money\"},\"reason\":\"税制改革原因\"}],"+
         // 专题政策动作：只记录 AI 明确推出的硬政策，applier 会经 EdictParser 复用诏令政务桥落账
         "\"currency_adjustments\":[{\"action\":\"ban_private_mint/issue_paper/abolish_paper/debase_coin\",\"paperName\":\"会子/宝钞(可选)\",\"coinType\":\"copper/silver/iron/gold(可选)\",\"amount\":1000000,\"reserveRatio\":0.3,\"reason\":\"依据\"}],"+
@@ -2594,6 +2594,7 @@
         // ★ P11.2B 诏令冲突链（KokoroMemo graph.py 范式·8 边类型缩为 4 种）
         "\"edict_relations\":[{\"from\":\"诏令编码或简称(如 T15-E03 / 盐法)\",\"to\":\"另一诏令编码或简称\",\"type\":\"supersedes/contradicts/continues/elaborates\",\"reason\":\"为何这样关联(40字)\"}]" +
         "}";
+      tp1 += '\n财政字段约定：诏令执行的国库、内帑、地方库收付一律逐项填 fiscal_adjustments（target、kind、resource、amount、reason）；一次性收付 recurring:false，年例 recurring:true。currentEffects仅写非财务变量，不能另写库款余额；同一笔费用不得在两处重复申报。';
       // SC1 只负责结构化账本；实录/时政记交给 sc1d 专项成文，避免主推演同时承载长文本。
       try {
         tp1 = tp1.replace(/"turn_summary":"[^"]*",\s*"shilu_text":"[\s\S]*?",\s*"szj_title":"[\s\S]*?",\s*"shizhengji":"[\s\S]*?",\s*"szj_summary":"[\s\S]*?",/,
@@ -3114,8 +3115,8 @@
             tp1 += '\n\n【★ 财政亏欠·上回合库不足未付】';
             _unresolved.slice(0, 12).forEach(function(s){
               var _tg = s.target === 'guoku' ? '帑廪' : s.target === 'neitang' ? '内帑' : s.target;
-              var _rl = s.resource === 'grain' ? '粮' : s.resource === 'cloth' ? '布' : '银';
-              tp1 += '\n  · T' + s.turn + ' ' + _tg + '(' + _rl + ')【' + (s.name||'') + '】请 ' + s.requested + ' · 仅拨 ' + s.applied + ' · 亏欠 ' + s.shortfall + (s.reason?'（'+s.reason+'）':'');
+              var _rl = s.resource === 'grain' ? '粮' : s.resource === 'cloth' ? '布' : '钱';
+              tp1 += '\n  · T' + s.turn + ' ' + _tg + '(' + _rl + ')【' + (s.name||'') + '】'+(s.id?'凭据 '+s.id+' · ':'')+'请 ' + s.requested + ' · 仅拨 ' + s.applied + ' · 亏欠 ' + s.shortfall + (s.reason?'（'+s.reason+'）':'');
             });
             tp1 += '\n  ※ 本回合 AI 必须就以上亏欠给出后果：';
             tp1 += '\n      - 赏赐亏欠 → 受赏者/势力不满或失望，npc_actions/关系下滑，可能 loyalty -5~-15';
@@ -3123,7 +3124,7 @@
             tp1 += '\n      - 赈济亏欠 → 饥荒扩散/民变概率↑，地方 region 民心下滑，新增 pendingCrisis';
             tp1 += '\n      - 工程/专款亏欠 → 工期停滞，project_updates 标 halted，工匠罢工';
             tp1 += '\n      - 外交赔款亏欠 → 敌方 faction 恼怒，可能宣战或报复，边境 hostility↑';
-            tp1 += '\n      - 如本回合已补齐（通过新的 fiscal_adjustments），标 _fiscalShortfalls[i].resolved=true（通过 anyPathChanges）';
+            tp1 += '\n      - 旧欠以共同账本 deficit / deficitDetails 的原凭据ID和实际支付记录核对；不能把同名新支出直接算成偿清旧欠，也不能只改 resolved 冒充销账。未取得冲欠凭据时仍按尚欠叙事。';
             tp1 += '\n      - 玩家可能下诏筹款（加税/借贷/抄家/鬻爵），AI 须判定执行阻力';
           }
         }
@@ -3143,8 +3144,9 @@
               var _corrTrue = (_v.corruption.trueIndex != null) ? _v.corruption.trueIndex : ((_v.corruption.overall != null) ? _v.corruption.overall : ((_v.corruption.index != null) ? _v.corruption.index : (_v.corruption.value || 0)));
               tp1 += '\n  吏治：真 ' + Math.round(_corrTrue) + ' / 视 ' + Math.round(_v.corruption.perceivedIndex||_corrTrue||0);
             }
-            if (_v.guoku)     tp1 += '\n  帑廪：钱 ' + Math.round((_v.guoku.money||0)/10000) + ' 万两 · 粮 ' + Math.round((_v.guoku.grain||0)/10000) + ' 万石 · 布 ' + Math.round((_v.guoku.cloth||0)/10000) + ' 万匹 · 月入 ' + Math.round((GM.guoku && GM.guoku.monthlyIncome||0)/10000) + ' 万';
-            if (_v.neitang)   tp1 += '\n  内帑：钱 ' + Math.round((_v.neitang.money||0)/10000) + ' 万两 · 粮 ' + Math.round((GM.neitang && GM.neitang.grain||0)/10000) + ' 万石 · 布 ' + Math.round((GM.neitang && GM.neitang.cloth||0)/10000) + ' 万匹 · 皇庄 ' + Math.round(_v.neitang.huangzhuangAcres||0) + ' 亩';
+            if ((_v.guoku || _v.neitang) && typeof FiscalEngine !== 'undefined' && FiscalEngine.readFiscalContext) {
+              tp1 += '\n  国库、内库征支：' + JSON.stringify(FiscalEngine.readFiscalContext({game:GM})) + '。按各库 unit、turnDays、flowBasis 解读；预计额尚未交割，不能视作现存。';
+            }
             // 本回合税收级联摘要（帮助 AI 了解自然结算已完成什么）
             try {
               if (_v.fiscalDynamic && Array.isArray(_v.fiscalDynamic.active) && _v.fiscalDynamic.active.length > 0) {

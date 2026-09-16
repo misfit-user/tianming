@@ -291,11 +291,12 @@ function toggleListDept(deptIdx) {
 
 // 统计部门（含子部门）的编制/实有/空缺
 function _officeCountDept(d) {
-  var r = { posCount:0, filCount:0, vacCount:0 };
+  var r = { posCount:0, filCount:0, vacCount:0, unrecordedCount:0 };
   (function _walk(node){
     (node.positions||[]).forEach(function(p){
       r.posCount++;
-      if (p.holder) r.filCount++;
+      if (p.occupancyStatus==='unrecorded'){r.filCount++;r.unrecordedCount++;}
+      else if (p.holder) r.filCount++;
       else r.vacCount++;
     });
     (node.subs||[]).forEach(_walk);
@@ -306,8 +307,8 @@ function _officeCountDept(d) {
 // 筛选通过判断·列表视图用
 function _officePosMatchFilter(p, mode) {
   if (p && p._pendingEdict && p._pendingEdict.turn === (GM && GM.turn)) return true;
-  if (mode === 'empty') return !p.holder;
-  if (mode === 'filled') return !!p.holder;
+  if (mode === 'empty') return !p.holder&&p.occupancyStatus!=='unrecorded';
+  if (mode === 'filled') return !!p.holder||p.occupancyStatus==='unrecorded';
   return true;
 }
 
@@ -522,7 +523,7 @@ function _renderOfficeTreeList(container) {
     var cls = (typeof _officeClassifyDept === 'function') ? _officeClassifyDept(d) : { court:'central', group:'sijian' };
     (d.positions||[]).forEach(function(p){
       perCourt[cls.court].pos++;
-      if (!p.holder) perCourt[cls.court].vac++;
+      if (!p.holder&&p.occupancyStatus!=='unrecorded') perCourt[cls.court].vac++;
     });
   });
 
@@ -716,7 +717,7 @@ function _ogRenderDeptCard(fi, idx, NW, cardH, pathStr) {
 
   var psCount = (nd.positions || []).length;
   var subCount = (nd.subs || []).length;
-  var vacCount = (nd.positions||[]).filter(function(p){return !p.holder;}).length;
+  var vacCount = (nd.positions||[]).filter(function(p){return !p.holder&&p.occupancyStatus!=='unrecorded';}).length;
   var filledCount = psCount - vacCount;
   var canCollapse = (psCount + subCount > 0) && !isEmperor;
   var isColl = fi.collapsed;
@@ -813,6 +814,7 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
   if (typeof _offMigratePosition === 'function') _offMigratePosition(nd);
 
   var _holder = nd.holder ? findCharByName(nd.holder) : null;
+  var _unrecorded=nd.occupancyStatus==='unrecorded'&&!_holder;
   var _deptName = fi.parent && fi.parent.node ? (fi.parent.node.name||'') : '';
   var _parentFunc = fi.parent && fi.parent.node && fi.parent.node.functions ? (fi.parent.node.functions[0]||'') : '';
 
@@ -840,7 +842,7 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
   var _mainBtn = '';
   if (nd.holder) {
     _mainBtn = '<button class="og-pos-action-btn change" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'' + escHtml(nd.holder||'').replace(/'/g,"\\'") + '\')" title="\u6539\u6362\u5728\u4EFB\u8005">\u6539 \u6362</button>';
-  } else if (_unmat > 0 && _ac > 0) {
+  } else if (!_unrecorded && _unmat > 0 && _ac > 0) {
     _mainBtn = '<button class="og-pos-action-btn concretize" onclick="event.stopPropagation();if(typeof _offMaterialize===\'function\')_offMaterialize(\'' + _safeDept + '\',\'' + _safePos + '\')" title="\u5177\u8C61\u5316">\u5177 \u8C61</button>';
   } else {
     _mainBtn = '<button class="og-pos-action-btn appoint" onclick="event.stopPropagation();_offOpenPicker(' + _safePath + ',\'' + _safeDept + '\',\'' + _safePos + '\',\'\')" title="\u4EFB\u547D">\u4EFB \u547D</button>';
@@ -854,7 +856,7 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
     _holderCls = _loy >= 70 ? 'loyal' : _loy < 35 ? 'danger' : 'mid';
   }
 
-  var _isVacantCard = !_holder;
+  var _isVacantCard = !_holder&&!_unrecorded;
   // 状态识别：丁忧守制（已存在数据）·其他（告病/权摄/兼任/贬谪/致仕）为未来扩展预留 CSS
   var _stateCls = '';
   var _stateBadge = '';
@@ -934,6 +936,8 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
       html += '<div class="og-pos-sub-line">' + subLine.map(function(p, i){ return (i>0?'<span class="sep">\u00B7</span>':'') + p; }).join('') + '</div>';
     }
     html += '</div>';
+  } else if (_unrecorded) {
+    html += '<div class="og-pos-holder-info"><div class="og-pos-name-line">任官未详</div><div class="og-pos-sub-line">官署照常供职，掌官姓名未载。</div></div>';
   } else if (_listMode) {
     // 列表模式·空缺·极简只显警告·对齐预览
     html += '<div style="flex:1;text-align:center;padding:14px 0;font-style:italic;letter-spacing:0.3em;color:var(--ink-300,#7a6e54);font-size:13px;">\u3014 \u7A7A \u7F3A \u00B7 \u5F85 \u8865 \u3015</div>';
@@ -958,6 +962,8 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
     html += '<span class="og-stat-box"><span class="lbl">\u519B</span><span class="v">' + (_holder.military||50) + '</span><span class="og-stat-bar-mini" style="--w:' + (_holder.military||50) + '%;"></span></span>';
     html += '<span class="og-stat-box loy ' + _loyCls + '"><span class="lbl">\u5FE0</span><span class="v">' + _loyVal + '</span><span class="og-stat-bar-mini" style="--w:' + _loyVal + '%;"></span></span>';
     html += '</div>';
+  } else if (_unrecorded) {
+    html += '';
   } else if (!_listMode) {
     html += '<div class="og-empty-msg">\u6B64\u804C\u65E0\u4EBA\u00B7\u653F\u52A1\u505C\u6EDE</div>';
   } else {
@@ -1114,7 +1120,7 @@ function _renderOfficeTreeSVG(container) {
   for (var _ci = 0; _ci < flat.length; _ci++) {
     var _cfi = flat[_ci];
     if (_cfi.type !== 'pos') continue;
-    if (_cfi.node && _cfi.node.holder) filCount++;
+    if (_cfi.node && (_cfi.node.holder||_cfi.node.occupancyStatus==='unrecorded')) filCount++;
     else empCount++;
   }
   var allCount = empCount + filCount;
@@ -1125,8 +1131,8 @@ function _renderOfficeTreeSVG(container) {
     if (fi.type !== 'pos') return true;
     if (fi.node && fi.node._pendingEdict && fi.node._pendingEdict.turn === GM.turn) return true;
     if (_kw && typeof _officePosMatchKw === 'function' && !_officePosMatchKw(fi.node, _kw)) return false;
-    if (_fm === 'empty') return !fi.node.holder;
-    if (_fm === 'filled') return !!fi.node.holder;
+    if (_fm === 'empty') return !fi.node.holder&&fi.node.occupancyStatus!=='unrecorded';
+    if (_fm === 'filled') return !!fi.node.holder||fi.node.occupancyStatus==='unrecorded';
     return true;
   }
 
@@ -1371,7 +1377,7 @@ function _renderOfficeTreeSVG(container) {
 function _ogRenderDeptCardV10(fi, courtKey) {
   var nd = fi.node;
   var psCount = (nd.positions||[]).length;
-  var vac = (nd.positions||[]).filter(function(p){ return !p.holder; }).length;
+  var vac = (nd.positions||[]).filter(function(p){ return !p.holder&&p.occupancyStatus!=='unrecorded'; }).length;
   var actual = psCount - vac;
   var seal = (nd.seal || (nd.name||'\u00B7').replace(/\s/g,'').slice(0,1));
   var themeCls = courtKey === 'inner' ? ' theme-inner' : (courtKey === 'region' ? ' theme-region' : '');

@@ -331,6 +331,18 @@
 
   function _kjG3ApplyWuxiangshiRewards(wujinshi) {
     if (!wujinshi) return;
+    var privateLedger = typeof TM !== 'undefined' && TM.CharacterEconomyLedger;
+    var declared = privateLedger && privateLedger.isDeclared(wujinshi);
+    var cashReceipt = null;
+    if (declared) {
+      var awards = {'武状元':500,'武榜眼':300,'武探花':200};
+      var award = awards[wujinshi.graduateTitle] || 100;
+      var paymentId = 'wuju-reward:' + String(GM.sid || '') + ':' + String(wujinshi._wujuYear || GM.turn || 0) + ':' + String(wujinshi.id || wujinshi.name);
+      cashReceipt = privateLedger.transferFromPublic(wujinshi, {id:paymentId,fundId:privateLedger.factionAccountRef(wujinshi),amount:{money:award},kind:'examReward',reason:'武试赏赐'});
+      if (!cashReceipt.ok || cashReceipt.duplicate) return cashReceipt;
+      if (wujinshi._wuRewardRecognitionId === paymentId) return cashReceipt;
+      wujinshi._wuRewardRecognitionId = paymentId;
+    }
     if (!wujinshi.resources) {
       wujinshi.resources = {
         privateWealth: { money:0, grain:0, cloth:0 },
@@ -340,22 +352,23 @@
     }
     var t = wujinshi.graduateTitle;
     if (t === '武状元') {
-      wujinshi.resources.privateWealth.money += 500;
+      if (!declared) wujinshi.resources.privateWealth.money += 500;
       wujinshi.resources.fame = (wujinshi.resources.fame || 0) + 30;
       wujinshi._gifts = ['金甲', '玉弓', '战马', '银符'];
     } else if (t === '武榜眼') {
-      wujinshi.resources.privateWealth.money += 300;
+      if (!declared) wujinshi.resources.privateWealth.money += 300;
       wujinshi.resources.fame = (wujinshi.resources.fame || 0) + 20;
       wujinshi._gifts = ['银甲', '角弓', '战马'];
     } else if (t === '武探花') {
-      wujinshi.resources.privateWealth.money += 200;
+      if (!declared) wujinshi.resources.privateWealth.money += 200;
       wujinshi.resources.fame = (wujinshi.resources.fame || 0) + 15;
       wujinshi._gifts = ['皮甲', '步弓', '战马'];
     } else {
-      wujinshi.resources.privateWealth.money += 100;
+      if (!declared) wujinshi.resources.privateWealth.money += 100;
       wujinshi.resources.fame = (wujinshi.resources.fame || 0) + 8;
       wujinshi._gifts = ['皮甲'];
     }
+    if (declared) return cashReceipt;
   }
 
   // ─── §8·派镇·scan GM.officeTree ───

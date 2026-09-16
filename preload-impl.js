@@ -179,6 +179,7 @@ contextBridge.exposeInMainWorld('tianming', {
   // === 系统对话框 ===
   dialogExport: (data, opts) =>
     ipcRenderer.invoke('dialog-export', data, opts),
+  exportArtifact: (bytes, meta) => ipcRenderer.invoke('dialog-export-artifact', bytes, meta),
 
   dialogImport: () =>
     ipcRenderer.invoke('dialog-import'),

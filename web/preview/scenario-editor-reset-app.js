@@ -1717,7 +1717,16 @@
     });
   }
 
-  function putProjectBody(snapshot) {
+  function putProjectBody(snapshot, options) {
+    if (global.TM && global.TM.ProjectAssets && snapshot.scenario) {
+      return global.TM.ProjectAssets.saveProject(snapshot, Object.assign({}, options || {}, {expected:snapshot.workbenchRoot || {revision:0,worldHash:null}})).then(function() {
+        return global.TM.ProjectAssets.getProject(snapshot.id);
+      }).then(function(saved) {
+        snapshot.workbenchRoot = clone(saved.workbenchRoot);
+        projectMemoryBodies[snapshot.id] = clone(snapshot);
+        return true;
+      }); // CAS/permission/quota failures remain failures; never clear dirty state on a conflict.
+    }
     projectMemoryBodies[snapshot.id] = clone(snapshot);
     // 修假成功：返回是否真落盘(IndexedDB)。db 不可用/出错→false(仅会话内存)，让调用方如实告诉用户而非谎报已存。
     return openProjectDb().then(function(db) {
@@ -1734,6 +1743,7 @@
   }
 
   function getProjectBody(id) {
+    if (global.TM && global.TM.ProjectAssets) return global.TM.ProjectAssets.getProject(id);
     if (projectMemoryBodies[id]) return Promise.resolve(clone(projectMemoryBodies[id]));
     return openProjectDb().then(function(db) {
       if (!db) return null;
@@ -21027,7 +21037,8 @@
   async function saveProjectSnapshot(label, options) {
     var lease = captureDocumentLease();
     var snapshot = buildProjectSnapshot(label, options);
-    var durable = await putProjectBody(snapshot);
+    if (snapshot.id === state.currentProjectId && state.workbenchRoot) snapshot.workbenchRoot = clone(state.workbenchRoot);
+    var durable = await putProjectBody(snapshot, {guard:function(){return isDocumentLeaseCurrent(lease,true);}});
     var index = state.projectLibrary.findIndex(function(item) { return item.id === snapshot.id; });
     var meta = compactProjectMeta(snapshot);
     if (index >= 0) state.projectLibrary[index] = meta;
@@ -21038,6 +21049,7 @@
     if (!isDocumentLeaseCurrent(lease, true)) return clone(snapshot);
     if (options && options.newCopy) beginEditorDocument();
     state.currentProjectId = snapshot.id;
+    state.workbenchRoot = clone(snapshot.workbenchRoot || null);
     state.original = clone(snapshot.scenario);
     state.dirty = false;
     state.historyCheckpoint = clone(state.scenario || {});
@@ -21073,6 +21085,7 @@
     state.fieldNotes = clone(snapshot.fieldNotes || {});
     state.history = clone(snapshot.history || []);
     state.currentProjectId = snapshot.id;
+    state.workbenchRoot = clone(snapshot.workbenchRoot || null);
     state.dirty = false;
     state.validationRan = false;
     var militaryHealNote = healScalarCorruptedMilitary();
@@ -21222,6 +21235,18 @@
     recordHistory('国师编辑', label || '应用修改');
     renderAll();
     return { ok: true };
+  }
+
+  async function commitWorkbenchDraft(parsed, label, lease, taskGuard) {
+    if(!state.currentProjectId || !isDocumentLeaseCurrent(lease,true)) throw new Error('案卷已变化，未提交地图操作包');
+    var snapshot=buildProjectSnapshot(state.scenario.name||'当前案卷');
+    snapshot.scenario=clone(parsed);snapshot.workbenchRoot=clone(state.workbenchRoot||{revision:0,worldHash:null});
+    await putProjectBody(snapshot,Object.assign({},taskGuard||{},{guard:function(){return isDocumentLeaseCurrent(lease,true);}}));
+    // IDB root is now durable; the synchronous owner below is the only live editor writer.
+    try { commitScenarioEdit(parsed,label,lease); }
+    catch(error) { state.workbenchRoot=clone(snapshot.workbenchRoot); throw new Error('案卷库已提交，但界面刷新失败，请重新载入案卷；不得重放操作：'+error.message); }
+    state.workbenchRoot=clone(snapshot.workbenchRoot);state.original=clone(parsed);state.dirty=false;
+    writeStoredDraft();renderWorkspaceMeta();return{ok:true,revision:snapshot.workbenchRoot.revision,worldHash:snapshot.workbenchRoot.worldHash};
   }
 
   function applyImportedScenario(parsed, label, opts) {
@@ -22977,6 +23002,7 @@
     captureDocumentLease: captureDocumentLease,
     isDocumentLeaseCurrent: isDocumentLeaseCurrent,
     commitScenarioEdit: commitScenarioEdit,
+    commitWorkbenchDraft: commitWorkbenchDraft,
     setRailCollapsed: setRailCollapsed,
     toggleRailCollapsed: toggleRailCollapsed,
     isRailCollapsed: isRailCollapsed,

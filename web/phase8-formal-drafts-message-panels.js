@@ -92,12 +92,6 @@
     try { if (typeof window.findCharByName === 'function') return window.findCharByName(m.from); } catch(_) {}
     return null;
   }
-  function memOpener(m){
-    var f = String(m.from || '');
-    if (/^[一-龥]{2,4}$/.test(f) && !/(司|厂|监|部|院|寺|军|民|塘报|有司|衙|生员|士民|联名)/.test(f)) return '臣' + f + '谨奏：';
-    return '';
-  }
-
   // 折子 (左·奏牍架)
   function renderMemFolderYuan(m, activeId){
     var tm = memTypeYuan(m.type), g = memorialGroupKey(m), secret = memIsSecret(m);
@@ -163,7 +157,6 @@
     state.memorialReplies = state.memorialReplies || {};
     if (Object.prototype.hasOwnProperty.call(state.memorialReplies, replyId)) reply = state.memorialReplies[replyId];
     var body = m.text || m.content || '暂无正文。';
-    var opener = memOpener(m);
     var held = memHeldTurns(m);
     var longBody = body.length > 180;
     var bodyHtml = longBody
@@ -175,9 +168,7 @@
     return memBenHead(m, tm, g) +
       (g === 'held' && held > 0 ? '<div class="held-banner' + (held >= 2 ? ' warn' : '') + '"><b>已留中 ' + held + ' 回合</b>' + (held >= 2 ? '　·　' + esc(m.from || '具题人') + '恐焦虑续奏，或求见当面追问' : '　·　御前暂存，可继续保留或下发') + '</div>' : '') +
       '<div class="ben-body"><div class="ben-paper">' +
-        (opener ? '<div class="bp-open">' + esc(opener) + '</div>' : '') +
         bodyHtml +
-        '<div class="bp-close">臣不胜屏营待命之至，谨奏。</div>' +
       '</div></div>' +
       '<div class="ben-foot">' +
         '<div class="pizhu-lbl"><b>朱 批</b>' + (done ? '<small>已批 · 朱批归档</small>' : '<small>御笔朱批，下发有司</small>') + '</div>' +
@@ -219,7 +210,7 @@
     aside += '<div class="card"><div class="card-hd"><span class="ci">拟</span>辅臣拟议<span class="hd-note">辅臣之见 · 可采可驳</span></div><div class="card-bd">' +
       (niyi ? '<div class="piaoni">' + esc(niyi) + '<span class="pn-from">—— 辅臣 拟议</span></div>'
             + (g !== 'done' ? '<button type="button" class="piaoni-take" data-niyi="' + attr(niyi) + '" onclick="var t=document.getElementById(&quot;' + _replyId + '&quot;);if(t){if(!t.readOnly){var n=this.getAttribute(&quot;data-niyi&quot;);t.value=t.value?t.value+&quot;　&quot;+n:n;t.focus();}}">采拟议入朱批</button>' : '')
-            : '<div class="piaoni" style="color:var(--ink-faint)">辅臣拟议将于推演时由辅臣拟具（带其立场私心，可采可驳）。<span class="pn-from">—— 待本回辅臣拟议</span></div>') +
+            : '<div class="piaoni" style="color:var(--ink-faint)">辅臣尚未呈议。<span class="pn-from">—— 候议</span></div>') +
     '</div></div>';
     // 具题之臣
     aside += '<div class="card"><div class="card-hd"><span class="ci">臣</span>具题之臣</div><div class="card-bd">' +
@@ -236,7 +227,7 @@
       memChainRow('源', '来源', '奏疏 · ' + esc(memTypeYuan(m.type).label) + (m.subtype ? ' · ' + esc(m.subtype) : '')) +
       memChainRow('批', '批复', '准奏 / 驳回 / 留中 / 转有司 / 发廷议') +
       memChainRow('行', '执行', '君主 → 中枢辅臣 → 有司 → 州县地方') +
-      memChainRow('档', '归档', '写入近事 · 人物记忆 · 史官实录') +
+      memChainRow('档', '归档', '朱批与来奏留案备查') +
     '</div></div></div>';
     // 批后结果 (仅已批回显·不事前预估)
     if (g === 'done') {
@@ -244,7 +235,7 @@
         memFollowups(m).map(function(r){ return memChainRow(r[0].slice(0, 1), r[0], esc(r[1])); }).join('') +
       '</div></div></div>';
     } else {
-      aside += '<div class="card"><div class="card-hd"><span class="ci">果</span>批后结果</div><div class="card-bd"><div class="imp-pending">尚未批复。<br>朱批下发后，此处回显该折引发的<b>实际</b>影响（民心 / 财政 / 人物 / 边事…）。<br><span class="imp-note">后果应自然发生 · 不事前预告</span></div></div></div>';
+      aside += '<div class="card"><div class="card-hd"><span class="ci">果</span>批后结果</div><div class="card-bd"><div class="imp-pending">此折尚候御批。<br>奉旨后，候有关有司<b>奉行复奏</b>。<br><span class="imp-note">来奏留案候旨</span></div></div></div>';
     }
     return aside;
   }

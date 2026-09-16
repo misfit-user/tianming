@@ -18,15 +18,24 @@ async function main() {
   const platform = { win: Platform.WINDOWS, mac: Platform.MAC, linux: Platform.LINUX }[platformName];
   if (!platform) throw new Error('--platform 仅允许 win/mac/linux');
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  const policy = platformBuildConfig(pkg, platformName, process.env);
+  const unsignedTest = process.argv.includes('--unsigned-test');
+  if (unsignedTest && platformName !== 'win') throw new Error('--unsigned-test 仅用于仓主明确要求的 Windows 测试安装包');
+  // Explicit owner opt-in for standalone test installers only. The production
+  // policy, package defaults and installer auto-update verification stay signed.
+  const policy = unsignedTest ? { publisher: '', config: {
+    directories: { output: pkg.build.directories.output },
+    win: { ...pkg.build.win, forceCodeSigning: false, signAndEditExecutable: true, verifyUpdateCodeSignature: true }
+  } } : platformBuildConfig(pkg, platformName, process.env);
+  if (unsignedTest) console.warn('[windows-signature] UNSIGNED TEST: Windows may show an unknown-publisher warning; not eligible for the signed production publisher.');
   const targets = createTargets([platform], null, platformName === 'win' ? 'x64' : null);
   const artifacts = await build({
     projectDir: ROOT,
+    prepackaged: arg('prepackaged', undefined),
     targets,
     config: policy.config,
     publish: 'never'
   });
-  if (platformName === 'win') {
+  if (platformName === 'win' && !unsignedTest) {
     const verified = verifyWindowsArtifacts(artifacts, policy.publisher);
     verified.forEach(row => console.log('[windows-signature] PASS·' + row.file + '·' + row.signature.subject));
   }

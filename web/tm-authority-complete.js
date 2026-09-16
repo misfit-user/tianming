@@ -155,17 +155,20 @@
     var G = global.GM;
     if (!G.huangquan || !G.chars) return null;
     // 已有权臣？
-    if (G.huangquan.powerMinister && G.huangquan.powerMinister.name) {
-      var existing = G.chars.find(function(c) { return c.name === G.huangquan.powerMinister.name && c.alive !== false; });
-      if (existing) return G.huangquan.powerMinister;
-      // 已故：清除
+    if (G.huangquan.powerMinister) {
+      var prior=G.huangquan.powerMinister,reader=global.AuthorityEngines&&global.AuthorityEngines.readPowerMinisterStatus;
+      var state=reader?reader(prior,G):{active:G.chars.some(function(c){return c&&(prior.characterId?c.id===prior.characterId:c.name===prior.name)&&c.alive!==false&&c.officialTitle&&!_OFF_TENURE_RETIRE_RE.test(c.officialTitle);})};
+      if(state.pending)return prior;
+      if(state.active){if(!prior.mode&&global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional')prior.mode='institutional';if(state.characterId)prior.characterId=state.characterId;if(state.character)prior.name=state.character.name;return prior;}
       G.huangquan.powerMinister = null;
     }
+    if(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional')return null;
     // 候选：长期在宰相/首辅位，野心高；
     // 宦官专权(2026-07-02)：内廷近侍(role==='eunuch'·引擎通用字段)居高品要职(三四品以上·品级经 TMPromotion 解析·
     //   掌印/秉笔等专名归剧本数据)亦可坐大——与外朝权臣同闸(powerMinisterEnabled)同弧(截留/自拟/篡位)·事件文案区分内竖。
     var candidates = G.chars.filter(function(c) {
       if (c.alive === false) return false;
+      if(global.AuthorityEngines&&global.AuthorityEngines.readPowerMinisterEligibility){var eligibility=global.AuthorityEngines.readPowerMinisterEligibility(c,G);if(!eligibility.eligible||(c._tenureMonths||0)<24||(c.ambition||50)<65)return false;c._pmInnerCourt=eligibility.innerCourt;return true;}
       var title = c.officialTitle || '';
       var outer = /宰相|丞相|首辅|摄政|大将军|太师/.test(title);
       var inner = false;
@@ -188,6 +191,7 @@
     var pm = candidates[0];
     G.huangquan.powerMinister = {
       name: pm.name,
+      characterId: pm.id,
       activatedTurn: ctx.turn,
       controlLevel: 0.3,
       faction: [],
@@ -204,8 +208,11 @@
     if (!G.huangquan) return;
     var pm = G.huangquan.powerMinister;
     if (!pm) return;
-    var ch = G.chars && G.chars.find(function(c) { return c.name === pm.name; });
-    if (!ch || ch.alive === false) { G.huangquan.powerMinister = null; return; }
+    var status=global.AuthorityEngines&&global.AuthorityEngines.readPowerMinisterStatus?global.AuthorityEngines.readPowerMinisterStatus(pm,G):null;
+    if(status&&status.pending)return;
+    var ch = status?status.character:G.chars&&G.chars.find(function(c){return pm.characterId?c.id===pm.characterId:c.name===pm.name;});
+    if (!ch || ch.alive === false || (status&&!status.active)) { G.huangquan.powerMinister = null; return; }
+    if(pm.mode==='institutional'||(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional'))return;
     // controlLevel 随时间上升（若皇权弱）
     // ③·D2 余级联：缙绅离心（clout 加权合法性崩·权贵弃君）→ 权贵倒向强人·权臣坐大加速（+50%·默认 1 回归安全·纯读 _legitimacy·不碰皇权）
     var _pmLegBoost = (G._legitimacy && G._legitimacy.flag === '缙绅离心') ? 1.5 : 1;
@@ -269,6 +276,7 @@
 
   function _powerMinisterEndgame(pm, mode, ctx) {
     var G = global.GM;
+    if((pm&&pm.mode==='institutional')||(G&&G.huangquan&&G.huangquan.powerMinister&&G.huangquan.powerMinister.mode==='institutional')||(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional'))return {ok:false,requiresResolution:true,reason:'职掌交接须据实际处分与承办回报核定'};
     if (mode === 'usurpation') {
       // ★宦官专权 S2c·劫主废立（2026-07-06）：内竖与外朝篡位分流·innerCourt 具名。
       // 鼎革R1d（2026-07-07·owner 铁律「禅代不死则游戏未终」）：篡位/劫主废立不再是终局阈值弹屏——
@@ -493,6 +501,7 @@
     var pm = hq && hq.powerMinister;
     var targetName = req.targetName || req.name || (pm && pm.name);
     if (!targetName) return { ok: false, reason: 'missing power minister target' };
+    if(pm&&pm.mode==='institutional'){if(!global.AuthorityEngines||!global.AuthorityEngines.draftPowerMinisterInstruction)return {ok:false,applied:false,requiresResolution:true,reason:'请拟诏查议，俟承办回报再定'};return global.AuthorityEngines.draftPowerMinisterInstruction({action:action,targetName:targetName,content:req.instruction||req.text});}
     if (action === 'purge' || action === 'execute' || action === 'exile') {
       var ch = (G.chars || []).find(function(c) { return c && c.name === targetName; });
       if (ch) {
@@ -740,6 +749,7 @@
     else if (type === 'lost_authority') result = _handleLostAuthorityAction(action, req);
     else if (type === 'revolt') result = _handleRevoltAction(action, req);
     else if (type === 'corruption_case') result = _handleCorruptionCaseAction(action, req);
+    if(result&&result.applied===false)return result;
     _recordCrisisPlayerAction(type, action, !!(result && result.ok), {
       target: req.targetName || req.memoId || req.revoltId || req.caseId || '',
       source: meta.source || req.source || 'player',
@@ -779,6 +789,7 @@
       source: meta.source || ('surface-' + channel),
       channel: channel
     }));
+    if(result&&result.applied===false)return Object.assign({channel:channel,request:req},result);
     var ledger = _ensureCrisisSurfaceLedger();
     if (ledger) {
       ledger.push({
@@ -1340,6 +1351,9 @@
     var G = global.GM;
     var hq = G.huangquan;
     if (!hq || !hq.subDims) return;
+    // Explicit dimensions are independent state. Authorized authority events and
+    // dimension writers change them; missing fiscal data cannot manufacture control.
+    if (global.AuthorityEngines && global.AuthorityEngines.isIndependentAuthorityLedger && global.AuthorityEngines.isIndependentAuthorityLedger()) return;
     // central：朝廷百官敬畏度
     hq.subDims.central.value = Math.max(0, Math.min(100, hq.index * 0.9 + (hq.ministers && hq.ministers.ironGrip ? 10 : 0)));
     // provincial：地方听令度
@@ -1554,6 +1568,7 @@
   function init() {
     _initMinxinMatrix();
     _ensureHuangquanSubDims();
+    if(global.GM&&global.GM.huangquan&&global.GM.huangquan.powerMinister)_detectPowerMinister({turn:global.GM.turn||0});
   }
 
   // AI 上下文扩展
@@ -1566,7 +1581,8 @@
     if (q && q.id !== 'normal') lines.push('【君主原型】' + q.name + '（' + q.description + '）');
     // 权臣
     if (G.huangquan && G.huangquan.powerMinister) {
-      lines.push('【权臣】' + G.huangquan.powerMinister.name + ' 控制度 ' + (G.huangquan.powerMinister.controlLevel * 100).toFixed(0) + '%');
+      var pm=G.huangquan.powerMinister;
+      lines.push(pm.mode==='institutional'?'【职掌与交接】'+pm.name+'：'+(pm.description||'所掌职事依在任官署与实际传令关系核定，处分须经承办与交割。'):'【权臣】'+pm.name+' 控制度 '+(pm.controlLevel*100).toFixed(0)+'%');
     }
     // 民变分级
     var mx = G.minxin;
@@ -1602,7 +1618,10 @@
     computeEdictExecutionRate: computeEdictExecutionRate,
     getExtendedAIContext: getExtendedAIContext,
     tickOfficeTenure: _tickOfficeTenure,
+    refreshHuangquanDimensions: _tickHuangquanSubDims,
     detectPowerMinister: _detectPowerMinister,
+    tickPowerMinister: _tickPowerMinister,
+    reconcilePowerMinister: function(){return _detectPowerMinister({turn:(global.GM&&global.GM.turn)||0});},
     isPowerMinisterEnabled: _powerMinisterEnabled,
     powerMinisterEndgame: _powerMinisterEndgame,   // 刀丁4·供 ConspiracyEngine palace_coup 复用 R1d 废帝(usurpation)·勿另起终局路
 

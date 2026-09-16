@@ -350,28 +350,21 @@
     if (!r) return '';
     if (r.d) return r.d;
     if (r.path) return r.path;
-    var pts = [];
-    if (Array.isArray(r.points)) pts = r.points.map(function(p){ return Array.isArray(p) ? {x:p[0], y:p[1]} : p; });
-    else if (Array.isArray(r.polygon)) pts = r.polygon;
-    else if (Array.isArray(r.coords)) {
-      for (var i = 0; i < r.coords.length - 1; i += 2) pts.push({ x: r.coords[i], y: r.coords[i + 1] });
-    }
-    pts = pts.filter(function(p){ return p && isFinite(p.x) && isFinite(p.y); });
+    var pts = pointsForRegion(r);
     if (!pts.length) return '';
-    return 'M' + pts.map(function(p){ return Number(p.x).toFixed(1) + ' ' + Number(p.y).toFixed(1); }).join(' L') + ' Z';
+    var main = 'M' + pts.map(function(p){ return Number(p.x).toFixed(1) + ' ' + Number(p.y).toFixed(1); }).join(' L') + ' Z';
+    var extra = (Array.isArray(r.extraPolygons) ? r.extraPolygons : []).map(function(poly){
+      if (!Array.isArray(poly)) return ''; var ring = poly.map(function(p){ return Array.isArray(p) ? {x:p[0],y:p[1]} : p; }).filter(function(p){ return p && isFinite(p.x) && isFinite(p.y); });
+      return ring.length >= 3 ? ' M' + ring.map(function(p){ return Number(p.x).toFixed(1) + ' ' + Number(p.y).toFixed(1); }).join(' L') + ' Z' : '';
+    }).join('');
+    return main + extra;
   }
 
   function centerForRegion(r){
     if (!r) return { x: 0, y: 0 };
     if (Array.isArray(r.center)) return { x: Number(r.center[0]) || 0, y: Number(r.center[1]) || 0 };
     if (r.centroid) return { x: Number(r.centroid.x) || 0, y: Number(r.centroid.y) || 0 };
-    var pts = [];
-    if (Array.isArray(r.points)) pts = r.points.map(function(p){ return Array.isArray(p) ? {x:p[0], y:p[1]} : p; });
-    else if (Array.isArray(r.polygon)) pts = r.polygon;
-    else if (Array.isArray(r.coords)) {
-      for (var i = 0; i < r.coords.length - 1; i += 2) pts.push({ x: r.coords[i], y: r.coords[i + 1] });
-    }
-    pts = pts.filter(function(p){ return p && isFinite(p.x) && isFinite(p.y); });
+    var pts = pointsForRegion(r);
     if (!pts.length) return { x: 0, y: 0 };
     return pts.reduce(function(acc, p){ acc.x += Number(p.x); acc.y += Number(p.y); return acc; }, { x: 0, y: 0, n: pts.length });
   }
@@ -379,10 +372,10 @@
   function pointsForRegion(r){
     var pts = [];
     if (!r) return pts;
-    if (Array.isArray(r.points)) pts = r.points.map(function(p){ return Array.isArray(p) ? {x:p[0], y:p[1]} : p; });
-    else if (Array.isArray(r.polygon)) pts = r.polygon;
-    else if (Array.isArray(r.coords)) {
-      for (var i = 0; i < r.coords.length - 1; i += 2) pts.push({ x: r.coords[i], y: r.coords[i + 1] });
+    var input = Array.isArray(r.points) ? r.points : Array.isArray(r.polygon) ? r.polygon : Array.isArray(r.coords) ? r.coords : null;
+    if (input) {
+      if (typeof input[0] === 'number' || typeof input[0] === 'string') { for (var i = 0; i < input.length - 1; i += 2) pts.push({ x: input[i], y: input[i + 1] }); }
+      else pts = input.map(function(p){ return Array.isArray(p) ? { x: p[0], y: p[1] } : p; });
     } else {
       var d = String(r.d || r.path || '');
       var nums = d.match(/-?\d+(?:\.\d+)?/g) || [];
@@ -419,7 +412,7 @@
   //   本文件只留「region 适配层」：pointsForRegion 取环 + WeakMap 按几何签名缓存(几何静态·frozen 剧本对象亦安全)。
   //   引擎未加载时全部安全回落(面积→bbox·锚点→actualCenter·字号→min·亮色→null)·不崩。
   function getTMGeo(){ return (typeof window !== 'undefined' && window.TMMapLabelGeo) || null; }
-  function _tmGeoSig(pts){ return pts.length + (pts.length ? (':' + pts[0].x.toFixed(1) + ',' + pts[0].y.toFixed(1)) : ''); }
+  function _tmGeoSig(pts){ return JSON.stringify(pts); }
   var _tmAreaCache = (typeof WeakMap !== 'undefined') ? new WeakMap() : null;
   var _tmAnchorCache = (typeof WeakMap !== 'undefined') ? new WeakMap() : null;
   function invalidateMapLabelGeometryCaches(){
@@ -429,6 +422,7 @@
   // region 真面积(缓存·shoelace)·引擎缺失或无点→回落 bbox 面积。
   function regionTrueArea(r){
     if (!r) return 0;
+    if (window.TMMapRealmLayout) { var shape = window.TMMapRealmLayout.region(r); if (shape && shape.area > 0) return shape.area; }
     var pts = pointsForRegion(r), sig = _tmGeoSig(pts);
     var geo = getTMGeo();
     if (geo && _tmAreaCache) { var hit = _tmAreaCache.get(r); if (hit && hit.sig === sig) return hit.area; }
@@ -440,6 +434,7 @@
   // region 标签锚点(缓存·polylabel 内接圆心)·引擎缺失/无点→回落 actualCenter。
   function labelAnchor(r){
     if (!r) return { x: 0, y: 0 };
+    if (window.TMMapRealmLayout) { var anchor = window.TMMapRealmLayout.anchor(r); if (anchor) return anchor; }
     var pts = pointsForRegion(r), sig = _tmGeoSig(pts);
     var geo = getTMGeo();
     if (geo && _tmAnchorCache) { var hit = _tmAnchorCache.get(r); if (hit && hit.sig === sig) return hit.anchor; }
@@ -894,7 +889,7 @@
 
   function bestLiveFaction(mapFaction, key, name){
     var want = factionTokens(mapFaction, key, name);
-    var live = liveFactionList();
+    var live = _mapRenderMemo ? (_mapRenderMemo.live || (_mapRenderMemo.live = liveFactionList())) : liveFactionList();
     var best = null;
     var bestScore = 0;
     live.forEach(function(f){
@@ -934,7 +929,11 @@
     return merged;
   }
 
+  var _mapRenderMemo = null;
   function findFaction(key, name){
+    if (!normKey(key) && !normKey(name)) return null;
+    var memoKey = String(key || '') + '\u0000' + String(name || '');
+    if (_mapRenderMemo && _mapRenderMemo.factions.has(memoKey)) return _mapRenderMemo.factions.get(memoKey);
     var fmap = factionsMap();
     var mapHit = null;
     var stableKey = key || '';
@@ -949,14 +948,18 @@
       if (mapHit) stableKey = mapHit.id || stableKey;
     }
     var liveHit = bestLiveFaction(mapHit, stableKey || key, name || (mapHit && (mapHit.label || mapHit.name)));
-    if (mapHit || liveHit) return mergeFactionData(mapHit, liveHit, stableKey || (mapHit && mapHit.id) || key || '');
-    return null;
+    var result = (mapHit || liveHit) ? mergeFactionData(mapHit, liveHit, stableKey || (mapHit && mapHit.id) || key || '') : null;
+    if (_mapRenderMemo) _mapRenderMemo.factions.set(memoKey, result);
+    return result;
   }
 
   // heatColor 三档插值已删（2026-06-11）——着色统一走 GRADE_BANDS 五档（gradeOf）。
 
   function classPressureForRegion(r){
     var gm = window.GM || {};
+    if (window.TM && TM.ClassMinxinBridge && typeof TM.ClassMinxinBridge.regionSnapshot === 'function') {
+      return TM.ClassMinxinBridge.regionSnapshot(gm, r);
+    }
     var wanted = regionNameKeys(r).map(regionKeyNorm).filter(Boolean);
     var rows = [];
     function regionHit(item){
@@ -1016,7 +1019,17 @@
     return (f && (f.color || f.line)) || r.factionColor || r.color || '#b7914f';
   }
 
-  function ownerGroups(map){
+  function regionRelief(r){
+    var terrain = String(r.terrain || (r.data && r.data.terrain) || '').toLowerCase();
+    if (/山|高原|mountain|plateau/.test(terrain)) return 'mountain';
+    if (/林|forest|wood/.test(terrain)) return 'forest';
+    if (/丘|hill/.test(terrain)) return 'hill';
+    if (/漠|沙|desert/.test(terrain)) return 'desert';
+    if (/草|grass|steppe/.test(terrain)) return 'grass';
+    return '';
+  }
+
+  function ownerGroups(map, deferLayout){
     var legacy = (typeof window !== 'undefined' && window.__TM_LABEL_LEGACY);
     var groups = {};
     (map && map.regions || []).forEach(function(r){
@@ -1027,7 +1040,7 @@
       if (!groups[key]) {
         var f = findFaction(key, r.factionName || r.ownerName);   // 势力本色(mode 无关·数据视图下也用势力色标名)
         var fc = (f && (f.color || f.line)) || r.factionColor || r.color || regionColor(r);
-        groups[key] = { key: key, name: ownerName(r), color: regionColor(r), factionColor: fc, x: 0, y: 0, n: 0, area: 0, minX: c.x, maxX: c.x, minY: c.y, maxY: c.y, _biggest: null, _bigArea: -1, _wx: 0, _wy: 0, _wsum: 0, _regs: [] };
+        groups[key] = { key: key, name: ownerName(r), short: f && (f.shortName || f.short) || '', color: regionColor(r), factionColor: fc, x: 0, y: 0, n: 0, area: 0, minX: c.x, maxX: c.x, minY: c.y, maxY: c.y, _biggest: null, _bigArea: -1, _wx: 0, _wy: 0, _wsum: 0, _regs: [] };
       }
       var g = groups[key];
       var ext = regionExtent(r);
@@ -1046,10 +1059,19 @@
     });
     return Object.keys(groups).map(function(k){
       var g = groups[k];
+      if (deferLayout) return g;
       var avgx = g.x / Math.max(1, g.n), avgy = g.y / Math.max(1, g.n);
       // 势力名锚点：全领土居中(面积加权质心·落域内则用之)·否则吸附最近本势力地块内接圆心(保证在领土内)
       if (legacy) { g.x = avgx; g.y = avgy; }
-      else { var a = _factionLabelAnchor(g, avgx, avgy); g.x = a.x; g.y = a.y; }
+      else if (window.TMMapRealmLayout) {
+        var name = realmFactionName(g), opts = { maxFont: Math.min(Number(map.width) || 1200, Number(map.height) || 720) * .115 };
+        g.fit = window.TMMapRealmLayout.fit(g._regs, name, opts);
+        if ((!g.fit || g.fit.size < 12) && g.short && g.short !== name) {
+          var shortFit = window.TMMapRealmLayout.fit(g._regs, g.short, opts);
+          if (shortFit && (!g.fit || shortFit.size > g.fit.size * 1.25)) g.fit = shortFit;
+        }
+        var placed = g.fit || _factionLabelAnchor(g, avgx, avgy); g.x = placed.x; g.y = placed.y;
+      } else { var a = _factionLabelAnchor(g, avgx, avgy); g.x = a.x; g.y = a.y; }
       g.span = Math.sqrt(Math.pow(Math.max(0, g.maxX - g.minX), 2) + Math.pow(Math.max(0, g.maxY - g.minY), 2));
       g._regs = null;
       return g;
@@ -1079,9 +1101,11 @@
     return { x: avgx, y: avgy };
   }
 
-  function factionLabelLayer(map){
+  function factionLabelLayer(map, band){
     var legacy = (typeof window !== 'undefined' && window.__TM_LABEL_LEGACY);
+    if (!legacy && window.TMMapRealmLayout && (band || state.mapScale) !== 'realm') return '';
     var groups = ownerGroups(map);
+    var stage = mapStage(), screenScale = stage ? mapViewportMetrics(stage, map).ratio * ((state.mapView && state.mapView.scale) || 1) : 1;
     var maxArea = Math.max.apply(null, groups.map(function(g){ return Number(g.area || 0); }).concat([1]));
     var maxN = Math.max.apply(null, groups.map(function(g){ return Number(g.n || 0); }).concat([1]));
     var maxSpan = Math.max.apply(null, groups.map(function(g){ return Number(g.span || 0); }).concat([1]));
@@ -1092,6 +1116,9 @@
     var maxA = facAreas.length ? Math.max.apply(null, facAreas) : 1;
     return groups.map(function(g){
       var name = realmFactionName(g), nlen = String(name).length || 1;
+      if (!legacy && window.TMMapRealmLayout) {
+        return fittedMapLabel(g.fit, name, { factionKey: g.key, tier: 'realm', priority: Math.sqrt(g.area) }, screenScale);
+      }
       var size = (legacy && geo) ? geo.legacyFactionSize(Number(g.area||0), maxArea, Number(g.n||0), maxN, Number(g.span||0), maxSpan, nlen) : realmLabelSize(Number(g.area||0), minA, maxA);
       var rotate = realmLabelRotation(g.key || name);
       var lw = Math.max(size * 1.05, nlen * size * 1.12), lh = size * 1.25;   // 纯文字盒(无框·含 .34em 字距)·供防重叠
@@ -1100,6 +1127,35 @@
       return '<g class="tmf-faction-label" data-faction-key="' + attr(g.key) + '" data-fs="' + attr(size) + '" data-lw="' + attr(Math.round(lw)) + '" data-lh="' + attr(Math.round(lh)) + '" data-ax="' + attr(Math.round(g.x)) + '" data-ay="' + attr(Math.round(g.y)) + '" data-pr="' + attr(size) + '" style="' + style + '" transform="translate(' + attr(g.x) + ' ' + attr(g.y) + ') rotate(' + attr(rotate) + ')" onclick="TMPhase8FormalBridge.openFactionByKey(\'' + attr(g.key) + '\')">' +
         '<text class="main" x="0" y="0" text-anchor="middle">' + esc(name) + '</text>' +
       '</g>';
+    }).join('');
+  }
+
+  function fittedMapLabel(fit, name, meta, screenScale){
+    if (!fit) return '';
+    var fs = fit.size, text = fit.text, angle = fit.angle, hidden = fs * screenScale < 3;
+    var glyphs = fit.vertical ? Array.from(text).map(function(ch, i){
+      return '<text class="main" x="0" y="' + attr((i - (Array.from(text).length - 1) / 2) * fs * 1.12) + '">' + esc(ch) + '</text>';
+    }).join('') : '<text class="main" x="0" y="0" textLength="' + attr(fit.textWidth) + '" lengthAdjust="spacing">' + esc(text) + '</text>';
+    var extra = meta.factionKey ? ' role="button" tabindex="' + (hidden ? '-1' : '0') + '" data-faction-key="' + attr(meta.factionKey) + '"' : ' data-region-id="' + attr(meta.regionId) + '" data-region-index="' + attr(meta.regionIndex) + '" data-label-group="' + attr(meta.group) + '"';
+    return '<g class="tmf-territory-fit ' + (meta.factionKey ? 'tmf-faction-label tmf-realm-fit' : 'tmf-region-label ming-label') + (hidden ? ' tmf-collide-hidden' : '') + '"' + extra + ' aria-hidden="' + hidden + '" aria-label="' + attr(name) + '" data-label-tier="' + attr(meta.tier) + '" data-full-name="' + attr(name) + '" data-fs="' + attr(fs) + '" data-lw="' + attr(fit.lw) + '" data-lh="' + attr(fit.lh) + '" data-obb="' + attr([fit.width, fit.height, angle].join(',')) + '" data-ink-width="' + attr(fit.width - fs * .2) + '" data-ink-height="' + attr(fit.height - fs * .2) + '" data-ax="' + attr(fit.x) + '" data-ay="' + attr(fit.y) + '" data-pr="' + attr(meta.priority || fs) + '" style="--realm-label-size:' + attr(fs) + 'px" transform="translate(' + attr(fit.x) + ' ' + attr(fit.y) + ') rotate(' + attr(angle) + ')"><title>' + esc(name) + '</title><g class="tmf-realm-ink">' + glyphs + '</g></g>';
+  }
+
+  function administrativeLabelGroups(map, adminGroups, tier){
+    var grouped = new Map();
+    adminGroups.forEach(function(item){
+      var r = item.region, index = map.regions.indexOf(r), key = tier === 'region' ? item.group : 'region:' + index;
+      if (!grouped.has(key)) grouped.set(key, { key: key, name: tier === 'region' ? item.label : r.title || r.name || r.officialName || '', regions: [], representative: r, index: index, area: 0 });
+      var g = grouped.get(key); g.regions.push(r); g.area += regionTrueArea(r);
+    });
+    return Array.from(grouped.values());
+  }
+  function administrativeLabelLayer(map, visibleRegions, adminGroups, tier){
+    var G = window.TMMapRealmLayout; tier = tier || state.mapScale;
+    if (!G || tier === 'realm') return '';
+    var ratio = mapViewportMetrics(mapStage(), map).ratio * ((state.mapView && state.mapView.scale) || 1), maxFont = Math.min(Number(map.width) || 1200, Number(map.height) || 720) * (tier === 'region' ? .06 : .035);
+    return administrativeLabelGroups(map, adminGroups, tier).map(function(g){
+      var fit = G.fit(g.regions, g.name, { maxFont: maxFont, resolution: tier === 'region' ? 72 : 56 });
+      return fittedMapLabel(fit, g.name, { regionId: g.representative.id || g.representative.name, regionIndex: g.index, group: g.key, tier: tier, priority: Math.sqrt(g.area) }, ratio);
     }).join('');
   }
 
@@ -1176,7 +1232,7 @@
     if (band !== state.mapScale){
       state.mapScale = band;
       updateMapChrome();
-      renderFormalMapSoon();  // 异步重渲(画新层级·避免 applyMapTransform 内同步递归)
+      if (!activatePreparedMapLayer(band)) renderFormalMapSoon();
     }
   }
 
@@ -1184,7 +1240,7 @@
     var v = state.mapView || { scale: 1, tx: 0, ty: 0 };
     v.scale = Math.max(0.72, Math.min(4.2, Number(v.scale || 1) * (factor || 1)));
     state.mapView = v;
-    applyMapTransform();
+    scheduleMapTransform();
   }
 
   function resetMapView(){
@@ -1234,15 +1290,16 @@
   // perf round7: 地图 dirty 签名·捕捉所有影响 SVG 输出的运行时输入(mapId/模式/比例 + 逐区
   // 归属键 canonicalOwnerKey + 填色 regionColor)。几何/标签运行时不变故不入签名。供 renderFormalMap
   // 守卫与等价性脚本(__formalMapSignature)共用。
-  function formalMapSignature(map){
+  function formalMapSignature(map, band){
     map = map || getMapData();
     if (!map || !Array.isArray(map.regions)) return '';
     // 2026-06-11: 哨牌文本并入签名——同档异分(民心 46→48 同「忧」色不变)时哨牌数值也要跟上，
     // 否则地图色对、牌上数字 stale。owner 视图无哨牌、贡献空串、签名与旧版等价。
     var _sentinelMode = (state.mapMode && state.mapMode !== 'owner' && GRADE_BANDS[state.mapMode]) ? state.mapMode : '';
-    return mapIdentity(map) + '|' + (state.mapMode || '') + '|' + (state.mapScale || '') + '|' + map.regions.map(function(r){
-      return (r.id || r.name || '') + ':' + canonicalOwnerKey(r) + ':' + regionColor(r) + (_sentinelMode ? ':' + modeScore(r, _sentinelMode) : '');
-    }).join(',');
+    return mapIdentity(map) + '|' + map.width + 'x' + map.height + '|' + resolveBasemap(map) + '|' + (state.mapMode || '') + '|' + (band == null ? state.mapScale || '' : band) + '|' + map.regions.map(function(r){
+      var shape = window.TMMapRealmLayout && window.TMMapRealmLayout.region(r), f = findFaction(ownerKey(r), r.factionName || r.ownerName);
+      return (r.id || r.name || '') + ':' + canonicalOwnerKey(r) + ':' + regionColor(r) + ':' + regionRelief(r) + ':' + regionTier(r) + ':' + JSON.stringify([r.parentId,r.circuitId,r.circuitName,r.provinceId,r.provinceName,r.province]) + ':' + (r.title || r.name || r.officialName || '') + ':' + ownerName(r) + ':' + (f && (f.shortName || f.short) || '') + ':' + (shape ? shape.version : '') + (_sentinelMode ? ':' + modeScore(r, _sentinelMode) : '');
+    }).join(',') + '|' + JSON.stringify(map.circuitRegistry || []);
   }
 
   // ── 阶段2·分级显示：按 mapScale(天下/行省/府县)过滤 region 层级 ──
@@ -1272,7 +1329,64 @@
     }
     return filtered;
   }
+  // One prepared world, three retained surfaces. Only render-state lives here;
+  // nothing is written into the scenario or save. World/content changes discard it.
+  var _preparedMapLayers = null, _mapPreparationSerial = 0;
+  function prepareMapLayers(map, key){
+    var G = window.TMMapRealmLayout;
+    if (!G || !G.prepare || window.__TM_LABEL_LEGACY) return null;
+    if (_preparedMapLayers && _preparedMapLayers.map === map && _preparedMapLayers.key === key) return _preparedMapLayers;
+    if (_preparedMapLayers && _preparedMapLayers.map !== map && _preparedMapLayers.pending) G.clear();
+    var record = { map: map, key: key, ready: false, surfaces: {}, pending: null, serial: ++_mapPreparationSerial }, jobs = [], boundaries = [];
+    _preparedMapLayers = record;
+    var extent = Math.min(Number(map.width) || 1200, Number(map.height) || 720);
+    ownerGroups(map, true).forEach(function(g){
+      var name = realmFactionName(g), options = { maxFont: extent * .115 };
+      jobs.push({ regions: g._regs, text: name, options: options });
+      if (g.short && g.short !== name) jobs.push({ regions: g._regs, text: g.short, options: options });
+    });
+    ['realm', 'region', 'prefecture'].forEach(function(tier){
+      var visible = visibleRegionsForScale(map, tier), admin = G.administrativeGroups({ regions: visible, circuitRegistry: map.circuitRegistry }, visible.map(canonicalOwnerKey));
+      boundaries.push({ tier: tier, items: tier === 'prefecture' ? admin.map(function(g, i){ return { region: g.region, owner: g.owner, group: String(i) }; }) : admin });
+      if (tier !== 'realm') administrativeLabelGroups(map, admin, tier).forEach(function(g){ jobs.push({ regions: g.regions, text: g.name, options: { maxFont: extent * (tier === 'region' ? .06 : .035), resolution: tier === 'region' ? 72 : 56 } }); });
+    });
+    var layoutPending = G.prepare(jobs, boundaries, function(value){
+      if (_preparedMapLayers !== record) return;
+      var stage = mapStage(), message = stage && stage.querySelector('.tmf-map-loading');
+      if (message) message.textContent = '舆图准备中 · 缓存三层边界与地名 ' + Math.round(value * 100) + '%';
+    });
+    record.pending = layoutPending;
+    record.ready = !record.pending;
+    if (record.pending) record.pending.then(function(ok){
+      if (_preparedMapLayers !== record) return;
+      record.pending = null; record.ready = ok;
+      if (ok) renderFormalMapSoon(); else _preparedMapLayers = null;
+    });
+    return record;
+  }
+  function splitMapLabelSurface(camera){
+    var svg = camera.querySelector('.ming-map-svg'), overlay = svg.cloneNode(false);
+    var surface = document.createElement('div'); surface.className = 'tmf-prepared-map-surface';
+    overlay.id = 'tmf-map-labels'; overlay.classList.add('tmf-map-label-overlay');
+    overlay.removeAttribute('data-tmf-composited');
+    var world = document.createElementNS('http://www.w3.org/2000/svg', 'g'); world.id = 'tmf-label-world';
+    ['.tmf-region-texts', '.tmf-faction-label-layer', '.tmf-sentinel-layer'].forEach(function(selector){ var layer = svg.querySelector(selector); if (layer) world.appendChild(layer); });
+    overlay.appendChild(world); surface.appendChild(camera); surface.appendChild(overlay);
+    return surface;
+  }
+  function activatePreparedMapLayer(band){
+    var record = _preparedMapLayers, stage = mapStage();
+    if (!record || !record.ready || !record.surfaces[band] || !stage || record.map !== getMapData()) return false;
+    if (stage.firstElementChild !== record.surfaces[band] || (stage.children && stage.children.length !== 1)) stage.replaceChildren(record.surfaces[band]);
+    state._lastFormalMapSig = record.key + '|tier:' + band;
+    var sub = document.querySelector('#tmf-map-legend .map-legend-sub'); if (sub) sub.textContent = mapScaleNote();
+    bindRegionPathEvents(record.map); scheduleLabelLayout();
+    return true;
+  }
   function renderFormalMap(){
+    var previousMemo = _mapRenderMemo;
+    _mapRenderMemo = { factions: new Map(), live: null };
+    try {
     var shell = document.getElementById('tm-phase8-main-shell');
     var stage = mapStage();
     if (!shell || !stage || !isGameVisible()) {
@@ -1315,7 +1429,6 @@
     var oceans = Array.isArray(map.oceans) ? map.oceans : [];
     var mapId = mapIdentity(map);
     var basemap = resolveBasemap(map);
-    var basemapLayer = generatedBasemapLayer(map, basemap);
     // perf round7 (2026-06-10): dirty-guard·原版每次 stage.innerHTML 全量重建整张地图 SVG
     // (逐区 ×3 算 path·解析+布局+绘制)·实测每次 ~300ms。但运行时几何/标签不变·只
     // regionColor/canonicalOwnerKey/mapMode/mapScale 影响输出。addEB/问对开关/多数
@@ -1323,7 +1436,7 @@
     // owner 函数已 round7 索引故签名廉价·与上次相同则只刷廉价 chrome(图例/警示/检索/transform)·
     // 跳过昂贵 SVG 重建。归属/数值/模式一变签名即变→正常重建。编辑器走独立渲染路径不受影响·
     // 载新图/换剧本 mapId 变或首渲无签名→必重建。bridge.map.invalidateFormalMap() 为强制逃生阀。
-    var _fmSig = formalMapSignature(map);
+    var _contentSig = formalMapSignature(map, ''), _fmSig = _contentSig + '|tier:' + (state.mapScale || '');
     if (state._lastFormalMapSig === _fmSig && stage.querySelector('#tmf-formal-map')) {
       applyMapTransform();
       updateMapChrome();
@@ -1332,8 +1445,53 @@
       syncMapSearch(map);
       return;
     }
+    var prepared = window.TMMapRealmLayout && window.TMMapRealmLayout.prepare ? prepareMapLayers(map, _contentSig) : null;
+    if (prepared && !prepared.ready) {
+      if (stage.dataset.preparingMap !== mapId) {
+        stage.dataset.preparingMap = mapId;
+        stage.innerHTML = '<div class="tmf-map-loading" role="status">舆图准备中 · 正在缓存天下、省道、府州的边界与地名…</div>';
+      }
+      return;
+    }
+    delete stage.dataset.preparingMap;
+    if (prepared) {
+      ['realm', 'region', 'prefecture'].forEach(function(band){
+        if (!prepared.surfaces[band]) {
+          var holder = document.createElement('div'); holder.innerHTML = buildMapSurface(map, width, height, basemap, band);
+          prepared.surfaces[band] = splitMapLabelSurface(holder.firstElementChild);
+        }
+      });
+      if (!prepared.measured) {
+        var surfaces = ['realm', 'region', 'prefecture'].map(function(band){ return prepared.surfaces[band]; });
+        surfaces.forEach(function(surface){ surface.style.visibility = 'hidden'; });
+        stage.replaceChildren.apply(stage, surfaces);
+        measureRealmText(stage);
+        stage.__phase8CameraSize = { width: stage.clientWidth, height: stage.clientHeight };
+        surfaces.forEach(function(surface){ surface.style.visibility = ''; });
+        prepared.measured = true;
+      }
+      activatePreparedMapLayer(state.mapScale || 'region');
+    } else stage.innerHTML = buildMapSurface(map, width, height, basemap, state.mapScale);
     state._lastFormalMapSig = _fmSig;
-    var visibleRegions = visibleRegionsForScale(map, state.mapScale);  // 阶段2·按层级(天下/行省/府县)过滤
+    stage.dataset.width = String(width);
+    stage.dataset.height = String(height);
+    stage.dataset.mapId = mapId;
+    applyMapTransform();
+    updateMapChrome();
+    renderLegend(map);
+    renderMapAlerts(map);
+    syncMapSearch(map);
+    bindRegionPathEvents(map);
+    scheduleLabelLayout();
+    } finally { _mapRenderMemo = previousMemo; }
+  }
+  function buildMapSurface(map, width, height, basemap, band){
+    var oceans = Array.isArray(map.oceans) ? map.oceans : [];
+    var basemapLayer = generatedBasemapLayer(map, basemap);
+    var visibleRegions = visibleRegionsForScale(map, band);
+    var layout = window.TMMapRealmLayout;
+    var adminGroups = layout && layout.administrativeGroups({ regions: visibleRegions, circuitRegistry: map.circuitRegistry }, visibleRegions.map(canonicalOwnerKey));
+    var tierMesh = adminGroups && layout.boundaryMesh(band === 'prefecture' ? adminGroups.map(function(g, i){ return { region: g.region, owner: g.owner, group: String(i) }; }) : adminGroups, band);
     // Only this render owns the cache: duplicate IDs cannot alias, and later
     // renders re-read geometry even when points are mutated in place.
     var renderPaths = new Map();
@@ -1344,17 +1502,18 @@
     var regionWashes = visibleRegions.map(function(r){
       var d = renderedPath(r);
       if (!d) return '';
-      return '<path class="tmf-region-wash ming-region-wash" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '" fill="' + attr(regionColor(r)) + '" fill-rule="evenodd"></path>';
+      return '<path class="tmf-region-wash ming-region-wash" data-relief="' + regionRelief(r) + '" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '" fill="' + attr(regionColor(r)) + '" fill-rule="evenodd"></path>';
     }).join('');
-    var regionHalos = visibleRegions.map(function(r){
+    var regionHalos = tierMesh ? '' : visibleRegions.map(function(r){
       var d = renderedPath(r);
       if (!d) return '';
       return '<path class="tmf-region-halo ming-region-halo" data-id="' + attr(r.id || r.name || '') + '" data-region-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '"></path>';
     }).join('');
     // ① 地名动态字号：面积参考取可见地块真面积的 ~55 百分位(≈「典型省」·base 对齐它)·预排一次
     var _labelLegacy = (typeof window !== 'undefined' && window.__TM_LABEL_LEGACY);
-    var _regAreas = _labelLegacy ? [] : visibleRegions.map(regionTrueArea).filter(function(a){ return a > 0; }).sort(function(a, b){ return a - b; });
+    var _regAreas = _labelLegacy || layout ? [] : visibleRegions.map(regionTrueArea).filter(function(a){ return a > 0; }).sort(function(a, b){ return a - b; });
     var _regRef = _regAreas.length ? _regAreas[Math.floor(_regAreas.length * 0.55)] : 0;
+    var regionTexts = [];
     var regionPaths = visibleRegions.map(function(r){
       var d = renderedPath(r);
       if (!d) return '';
@@ -1363,21 +1522,25 @@
       if (_labelLegacy) {
         var c0 = actualCenter(r);
         var lw0 = Math.max(34, Math.min(96, labelText.length * 13 + 18));
-        return facePath + '<g class="tmf-region-label ming-label" transform="translate(' + attr(c0.x) + ' ' + attr(c0.y) + ')"><rect x="' + attr(-lw0 / 2) + '" y="-10" width="' + attr(lw0) + '" height="20"></rect><text x="0" y="0">' + esc(labelText) + '</text></g>';
+        regionTexts.push('<g class="tmf-region-label ming-label" transform="translate(' + attr(c0.x) + ' ' + attr(c0.y) + ')"><rect x="' + attr(-lw0 / 2) + '" y="-10" width="' + attr(lw0) + '" height="20"></rect><text x="0" y="0">' + esc(labelText) + '</text></g>');
+        return facePath;
       }
       // 地名 ∝ 地块面积(平滑幂律 k=0.32) + polylabel 内接圆心锚点(凹/沿海不落域外) + 牌匾随字号缩放
+      if (layout) return facePath;
       var raw = _tmAreaFont(regionTrueArea(r), _regRef, 15, 0.32, 4, 24);
       if (!labelText || raw < 9) return facePath;             // <~9px 直接不画(极小地块让位·可读性下限)
       var fs = Math.round(raw * 10) / 10;
       var a = labelAnchor(r);
       var chars = labelText.length || 1;
-      var rw = Math.max(fs + 12, Math.round(chars * fs * 0.62 + fs * 0.9));
+      var rw = Math.max(fs + 12, Math.round((window.TMMapRealmLayout ? window.TMMapRealmLayout.textAspect(labelText) : chars * 1.12) * fs + fs * 0.3));
       var rh = Math.round(fs + 8);
-      return facePath +
+      regionTexts.push(
         '<g class="tmf-region-label ming-label" data-region-id="' + attr(r.id || r.name || '') + '" data-fs="' + fs + '" data-lw="' + rw + '" data-lh="' + rh + '" data-ax="' + attr(Math.round(a.x)) + '" data-ay="' + attr(Math.round(a.y)) + '" data-pr="' + fs + '" transform="translate(' + attr(a.x) + ' ' + attr(a.y) + ')">' +
           '<text x="0" y="0" style="font-size:' + fs + 'px">' + esc(labelText) + '</text>' +
-        '</g>';
+        '</g>');
+      return facePath;
     }).join('');
+    if (adminGroups && !_labelLegacy) regionTexts = [administrativeLabelLayer(map, visibleRegions, adminGroups, band)];
     var oceanPaths = oceans.map(function(r){
       var d = pathForRegion(r);
       if (!d) return '';
@@ -1385,36 +1548,38 @@
       return '<path class="tmf-ocean ming-ocean ming-ocean-region" data-id="' + attr(r.id || r.name || '') + '" d="' + attr(d) + '" fill-rule="evenodd"></path>' +
         '<text class="tmf-ocean-label ming-ocean-label" x="' + attr(c.x) + '" y="' + attr(c.y) + '">' + esc(r.title || r.name || '') + '</text>';
     }).join('');
-    stage.innerHTML =
+    return (
       '<div class="ming-map-camera">' +
-      '<svg id="tmf-formal-map" class="ming-map-svg" viewBox="0 0 ' + width + ' ' + height + '" role="img">' +
+      '<svg id="tmf-formal-map" class="ming-map-svg' + (tierMesh ? ' tmf-tier-mesh' : '') + '" viewBox="0 0 ' + width + ' ' + height + '" role="img">' +
         '<defs>' +
-          '<filter id="tmfPaperNoise"><feTurbulence type="fractalNoise" baseFrequency=".92" numOctaves="2" result="n"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .07"/></feComponentTransfer></filter>' +
+          // Small vector tiles stay sharp while panning; no full-map turbulence render target.
+          '<pattern id="tmf-paper-fibres" width="71" height="67" patternUnits="userSpaceOnUse"><path d="M3 6h1 M24 14h2 M56 4h1 M12 42h2 M46 36h1 M65 54h2 M31 60h1 M8 23h1 M39 9h1 M20 52h1" stroke="#402c16" stroke-opacity=".12" stroke-width=".7"/><path d="M7 11l8 1 M35 26l12-1 M5 58l11 1 M53 47l9-1" fill="none" stroke="#fff1d0" stroke-opacity=".2" stroke-width=".5"/></pattern>' +
+          '<pattern id="tmf-sea-lines" width="68" height="52" patternUnits="userSpaceOnUse"><path d="M4 12q8-3 16 0t16 0 M37 38q7-3 14 0t14 0" fill="none" stroke="#789a95" stroke-opacity=".16" stroke-width=".6"/></pattern>' +
+          // Cartographic terrain symbols reflect declared region terrain, not invented elevation data.
+          '<pattern id="tmf-relief-mountain" width="52" height="44" patternUnits="userSpaceOnUse"><path d="M4 20l9-12 11 12M28 41l8-10 10 10" fill="none" stroke="#443d28" stroke-width=".8"/><path d="M13 8l3 12h8zM36 31l2 10h8z" fill="#75613c" fill-opacity=".7"/></pattern>' +
+          '<pattern id="tmf-relief-forest" width="40" height="38" patternUnits="userSpaceOnUse"><path d="M7 17l4-7 4 7zM11 17v3M26 32l4-8 4 8zM30 32v3" fill="#45624a" fill-opacity=".5" stroke="#344937" stroke-width=".6"/></pattern>' +
+          '<pattern id="tmf-relief-hill" width="44" height="32" patternUnits="userSpaceOnUse"><path d="M3 12q7-10 15 0M24 27q7-9 15 0" fill="none" stroke="#685437" stroke-width=".8"/></pattern>' +
+          '<pattern id="tmf-relief-desert" width="43" height="37" patternUnits="userSpaceOnUse"><path d="M3 10q9-6 17 0M20 28q8-6 17 0M10 17h1M34 5h1" fill="none" stroke="#927348" stroke-width=".8"/></pattern>' +
+          '<pattern id="tmf-relief-grass" width="37" height="35" patternUnits="userSpaceOnUse"><path d="M6 12l-2-4m2 4v-6m0 6l3-4M25 29l-2-4m2 4v-6m0 6l3-4" fill="none" stroke="#586341" stroke-width=".7"/></pattern>' +
+          '<linearGradient id="tmf-sea-paper" x2=".3" y2="1"><stop stop-color="#c1c7a9"/><stop offset=".56" stop-color="#a4b9a6"/><stop offset="1" stop-color="#7e9c95"/></linearGradient>' +
           '<radialGradient id="tmf-ming-paper" cx="52%" cy="46%" r="66%"><stop offset="0" stop-color="#e1be73" stop-opacity=".18"/><stop offset=".72" stop-color="#8b632f" stop-opacity=".06"/><stop offset="1" stop-color="#000000" stop-opacity="0"/></radialGradient>' +
           '<radialGradient id="tmf-east-sea" cx="62%" cy="52%" r="75%"><stop offset="0" stop-color="#617c6f" stop-opacity=".18"/><stop offset=".62" stop-color="#466a61" stop-opacity=".08"/><stop offset="1" stop-color="#1c2b2c" stop-opacity="0"/></radialGradient>' +
         '</defs>' +
         '<g id="tmf-map-world" class="tmf-map-world ming-map-world">' +
           '<rect class="tmf-map-paper-fill" x="0" y="0" width="' + width + '" height="' + height + '"></rect>' +
+          '<rect class="tmf-sea-lines" x="0" y="0" width="' + width + '" height="' + height + '" fill="url(#tmf-sea-lines)" pointer-events="none"></rect>' +
           basemapLayer +
           oceanPaths +
-          '<g class="tmf-region-washes">' + regionWashes + '</g>' +
           '<g class="tmf-region-halos">' + regionHalos + '</g>' +
           '<g class="tmf-region-layer ming-admin-layer">' + regionPaths + '</g>' +
-          '<g class="tmf-faction-label-layer">' + factionLabelLayer(map) + '</g>' +
+          '<g class="tmf-region-washes" pointer-events="none">' + regionWashes + '</g>' +
+          (tierMesh ? '<g class="tmf-tier-boundaries" data-tier="' + attr(band) + '" data-hidden-edges="' + tierMesh.hidden + '" data-major-edges="' + tierMesh.majorCount + '" data-minor-edges="' + tierMesh.minorCount + '" pointer-events="none"><path class="tmf-border-minor" d="' + tierMesh.minor + '"></path><path class="tmf-border-major" d="' + tierMesh.major + '"></path></g>' : '') +
+          '<g class="tmf-region-texts">' + regionTexts.join('') + '</g>' +
+          '<g class="tmf-faction-label-layer">' + factionLabelLayer(map, band) + '</g>' +
           '<g class="tmf-sentinel-layer">' + sentinelLayer(map) + '</g>' +
           '<rect class="tmf-map-grain" x="0" y="0" width="' + width + '" height="' + height + '"></rect>' +
         '</g>' +
-      '</svg></div>';
-    stage.dataset.width = String(width);
-    stage.dataset.height = String(height);
-    stage.dataset.mapId = mapId;
-    applyMapTransform();
-    updateMapChrome();
-    renderLegend(map);
-    renderMapAlerts(map);
-    syncMapSearch(map);
-    bindRegionPathEvents(map);
-    scheduleLabelLayout();      // P1·首渲后算标签防重叠+LOD
+      '</svg></div>');
   }
 
   function renderLegend(map){
@@ -1517,20 +1682,45 @@
     return v;
   }
   function applyMapTransform(){
+    _syncScaleLevelFromZoom();
     var world = document.getElementById('tmf-map-world');
     if (!world) return;
     var v = clampMapView(state.mapView || { scale: 1, tx: 0, ty: 0 });
-    world.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
     var stage = mapStage();
+    var svg = world.ownerSVGElement, camera = svg && svg.parentElement;
+    if (camera && camera.classList.contains('ming-map-camera')) {
+      // Move the retained HTML/SVG surface on the compositor instead of repainting
+      // every province path for each SVG-group translation. Account for meet letterboxing.
+      var W = Number(state._mapVBW) || 1200, H = Number(state._mapVBH) || 720;
+      var size = stage && stage.__phase8CameraSize;
+      var sw = size ? size.width : camera.clientWidth, sh = size ? size.height : camera.clientHeight, ratio = Math.min(sw / W, sh / H);
+      var ox = (sw - W * ratio) / 2, oy = (sh - H * ratio) / 2;
+      var transform = 'translate(' + (v.tx * ratio + ox * (1 - v.scale)).toFixed(3) + 'px,' + (v.ty * ratio + oy * (1 - v.scale)).toFixed(3) + 'px) scale(' + v.scale.toFixed(4) + ')';
+      if (camera.style.transform !== transform) camera.style.transform = transform;
+      if (svg.dataset.tmfComposited !== '1') svg.dataset.tmfComposited = '1';
+    } else world.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
+    // Labels remain SVG vectors in the unscaled viewport, never enlarged compositor pixels.
+    var labelWorld = document.getElementById('tmf-label-world');
+    if (labelWorld && labelWorld !== world) labelWorld.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
     if (stage) stage.classList.toggle('zoomed', v.scale > 1.35);
-    _syncScaleLevelFromZoom();  // 阶段3·缩放跨阈值自动切层级(CK3)
     scheduleLabelLayout();      // P1·缩放/平移结束后防抖重算标签防重叠+LOD
+  }
+
+  function mapViewportMetrics(stage, map){
+    var rect = stage.__phase8ViewportRect || (stage.__phase8ViewportRect = stage.getBoundingClientRect()), width = Number(map.width || 1200), height = Number(map.height || 720);
+    var ratio = Math.min(rect.width / width, rect.height / height) || 1;
+    return { ratio: ratio, left: rect.left + (rect.width - width * ratio) / 2, top: rect.top + (rect.height - height * ratio) / 2 };
   }
 
   // 拖拽性能（治拖拽卡顿）：把 applyMapTransform（含 DOM 写 + _syncScaleLevelFromZoom）rAF 节流·
   // 一帧多次 pointermove 合并为一次 transform 应用·避免每次指针事件都 setAttribute+跨阈值检查。
-  var _mapTransformRaf = 0;
+  var _mapTransformRaf = 0, _mapMotionTimer = 0;
   function scheduleMapTransform(){
+    var stage = mapStage();
+    if (stage) {
+      stage.classList.add('tmf-map-moving'); clearTimeout(_mapMotionTimer);
+      _mapMotionTimer = setTimeout(function(){ stage.classList.remove('tmf-map-moving'); stage.__phase8ViewportRect = null; }, 180);
+    }
     if (_mapTransformRaf) return;
     _mapTransformRaf = (window.requestAnimationFrame || function(cb){ return setTimeout(cb, 16); })(function(){
       _mapTransformRaf = 0;
@@ -1542,17 +1732,46 @@
   //   只在缩放/平移结束 + 重渲后防抖重算(非每帧)。__TM_LABEL_LEGACY→整体跳过(还原改前全显)·
   //   __TM_LABEL_NOCOLLIDE→仅走 LOD 门跳碰撞(调试)。引擎未加载则安全跳过(标签全显·不崩)。
   var _labelLayoutTimer = 0;
+  var _mapFontEpoch = 0;
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function(){ _mapFontEpoch++; scheduleLabelLayout(); });
+  function measureRealmText(stage){
+    if (!stage || !stage.querySelectorAll) return;
+    // Font fallbacks and small-font hinting can exceed the nominal em box.
+    // Measure real glyphs once per SVG/font epoch, then center and shrink within
+    // the already-verified territory rectangle. All reads precede DOM writes.
+    var pending = [];
+    stage.querySelectorAll('.tmf-territory-fit').forEach(function(g){
+      if (g.dataset.fontEpoch === String(_mapFontEpoch)) return;
+      var ink = g.querySelector('.tmf-realm-ink'); if (!ink) return;
+      var box = ink.getBBox(); if (!(box.width > 0 && box.height > 0)) return;
+      var s = Math.min(1, Number(g.dataset.inkWidth) / box.width, Number(g.dataset.inkHeight) / box.height);
+      pending.push({ g: g, ink: ink, scale: s, width: box.width * s, height: box.height * s, x: -(box.x + box.width / 2) * s, y: -(box.y + box.height / 2) * s });
+    });
+    pending.forEach(function(entry){
+      entry.ink.setAttribute('transform', 'translate(' + entry.x + ' ' + entry.y + ') scale(' + entry.scale + ')');
+      entry.g.dataset.inkScale = String(entry.scale);
+      var angle = Number(String(entry.g.dataset.obb || '0,0,0').split(',')[2]) || 0, c = Math.abs(Math.cos(angle * Math.PI / 180)), s = Math.abs(Math.sin(angle * Math.PI / 180));
+      entry.g.dataset.obb = [entry.width, entry.height, angle].join(',');
+      entry.g.dataset.lw = String(entry.width * c + entry.height * s);
+      entry.g.dataset.lh = String(entry.width * s + entry.height * c);
+      entry.g.dataset.fontEpoch = String(_mapFontEpoch);
+    });
+  }
   function scheduleLabelLayout(){
     clearTimeout(_labelLayoutTimer);
     _labelLayoutTimer = setTimeout(resolveLabelLayout, 90);
   }
   function resolveLabelLayout(){
     if (typeof window !== 'undefined' && window.__TM_LABEL_LEGACY) return;
+    // Apply screen-size LOD after measuring the actual glyphs.
+    measureRealmText(mapStage());
     var C = (typeof window !== 'undefined') && window.TMMapLabelCollide;
     if (!C || !C.resolve) return;
     C.resolve(mapStage(), (state.mapView && state.mapView.scale) || 1, state.mapScale || 'region',
-      { noCollide: (typeof window !== 'undefined' && window.__TM_LABEL_NOCOLLIDE) });
+      { minPx: 3, pad: .5, noCollide: (typeof window !== 'undefined' && window.__TM_LABEL_NOCOLLIDE) });
   }
+
+
 
   function regionPathFromPoint(e){
     if (!e) return null;
@@ -1699,7 +1918,7 @@
         _tipRow('近因', cp.reason);
     } else if (mode === 'yizheng') {
       var GMv = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
-      var rgv = (GMv && GMv.renli && GMv.renli.byRegion) ? (GMv.renli.byRegion[(r && (r.id || r.regionId || r.name)) || ''] || (r && r.name ? GMv.renli.byRegion[r.name] : null)) : null;
+      var rgv = (GMv && GMv.renli && GMv.renli.byRegion) ? (window.TM && TM.Renli && TM.Renli.forMapRegion ? TM.Renli.forMapRegion(GMv,r) : GMv.renli.byRegion[(r && (r.id || r.regionId || r.name)) || '']) : null;
       rows = _tipRow('役负', grade ? grade.mark + ' · ' + (isFinite(Number(score)) ? Number(score) + '%' : '—') : score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
         _tipRow('抛荒', rgv && hasDisplayValue(rgv.fallowLand) && Number(rgv.fallowLand) > 0 ? ppValue(rgv.fallowLand) + ' 亩' : '') +
         _tipRow('逃户', b.pop.fugitives, 'zhu') +
@@ -1715,6 +1934,22 @@
     var stage = mapStage();
     if (!stage || stage.__phase8MapBound) return;
     stage.__phase8MapBound = true;
+    var viewportFrame = 0, viewportObserver = null;
+    function onMapViewportResize(){
+      if (!stage.isConnected) { if (viewportObserver) viewportObserver.disconnect(); window.removeEventListener('resize', onMapViewportResize); return; }
+      if (viewportFrame) return;
+      viewportFrame = requestAnimationFrame(function(){
+        viewportFrame = 0;
+        var rect = stage.getBoundingClientRect(), key = rect.width.toFixed(2) + 'x' + rect.height.toFixed(2) + '@' + (window.devicePixelRatio || 1);
+        stage.__phase8ViewportRect = rect;
+        stage.__phase8CameraSize = { width: stage.clientWidth, height: stage.clientHeight };
+        if (!(rect.width > 0 && rect.height > 0) || stage.__phase8ViewportKey === key) return;
+        stage.__phase8ViewportKey = key; state._lastFormalMapSig = null;
+        applyMapTransform(); renderFormalMapSoon();
+      });
+    }
+    window.addEventListener('resize', onMapViewportResize);
+    if (window.ResizeObserver) { viewportObserver = new ResizeObserver(onMapViewportResize); viewportObserver.observe(stage); }
     function clearMapSelection(){
       try {
         var sel = window.getSelection && window.getSelection();
@@ -1727,30 +1962,45 @@
     }
     stage.addEventListener('selectstart', preventMapSelection, { passive: false });
     stage.addEventListener('dragstart', preventMapSelection, { passive: false });
+    var pressedRealm = null;
+    function activateRealm(e){
+      // Pointer capture retargets the release/click to the stage; remember the
+      // original country hit, but never activate it after an actual drag.
+      var label = e.target && e.target.closest && e.target.closest('.tmf-realm-fit[data-faction-key]');
+      if (e.type === 'click') { label = label || pressedRealm; pressedRealm = null; }
+      if (!label || !label.isConnected || state.dragSuppressClick || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault(); e.stopImmediatePropagation(); bridge.openFactionByKey(label.dataset.factionKey);
+    }
+    stage.addEventListener('click', activateRealm);
+    stage.addEventListener('keydown', activateRealm);
     stage.addEventListener('wheel', function(e){
       e.preventDefault();
+      if (!e.deltaY || (_preparedMapLayers && !_preparedMapLayers.ready)) return;
       var map = getMapData();
       if (!map) return;
-      var rect = stage.getBoundingClientRect();
-      var width = Number(map.width || stage.dataset.width || 1200);
-      var height = Number(map.height || stage.dataset.height || 720);
-      var x = (e.clientX - rect.left) / rect.width * width;
-      var y = (e.clientY - rect.top) / rect.height * height;
+      var viewport = mapViewportMetrics(stage, map);
+      var x = (e.clientX - viewport.left) / viewport.ratio;
+      var y = (e.clientY - viewport.top) / viewport.ratio;
       var old = state.mapView.scale || 1;
-      var next = Math.max(.85, Math.min(3.4, old * (e.deltaY < 0 ? 1.14 : .88)));
+      // Trackpads emit many tiny deltas: a fixed notch per event races through tiers.
+      var pixels = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? (stage.__phase8CameraSize && stage.__phase8CameraSize.height || 720) : 1);
+      var next = Math.max(.85, Math.min(3.4, old * Math.exp(-Math.max(-100, Math.min(100, pixels)) * .002)));
       state.mapView.tx = x - (x - (state.mapView.tx || 0)) * (next / old);
       state.mapView.ty = y - (y - (state.mapView.ty || 0)) * (next / old);
       state.mapView.scale = next;
-      applyMapTransform();
+      scheduleMapTransform();
     }, { passive: false });
     stage.addEventListener('pointerdown', function(e){
       if (e.button !== 0) return;
       if (e.pointerType === 'touch') return; // 触屏 pan/缩放交给 attachPinchPan(touch 事件)·避免 pointer+touch 双重平移
+      stage.__phase8ViewportRect = null;
+      pressedRealm = e.target && e.target.closest && e.target.closest('.tmf-realm-fit[data-faction-key]');
       if (e.cancelable) e.preventDefault();
       clearMapSelection();
       state.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, tx: state.mapView.tx || 0, ty: state.mapView.ty || 0, moved: false };
       stage.setPointerCapture(e.pointerId);
       stage.classList.add('dragging');
+      var tip = document.getElementById('tmf-map-tip'); if (tip) tip.classList.remove('show');
     });
     stage.addEventListener('pointermove', function(e){
       if (!state.drag || state.drag.id !== e.pointerId) return;
@@ -1758,9 +2008,9 @@
       if (!map) return;
       // 每次读 rect：stage 的 rect 不受 world 组 transform 影响(不会 layout thrash)·且拖拽中窗口/容器 resize 时坐标仍准。
       // 性能收益全在下方 applyMapTransform 的 rAF 节流·不靠缓存 rect。
-      var rect = stage.getBoundingClientRect();
-      var dx = (e.clientX - state.drag.x) / rect.width * Number(map.width || 1200);
-      var dy = (e.clientY - state.drag.y) / rect.height * Number(map.height || 720);
+      var viewport = mapViewportMetrics(stage, map);
+      var dx = (e.clientX - state.drag.x) / viewport.ratio;
+      var dy = (e.clientY - state.drag.y) / viewport.ratio;
       if (!state.drag.moved && Math.abs(dx) + Math.abs(dy) > 2) { // 只在首次越过阈值时清一次选中·非每帧
         state.drag.moved = true;
         clearMapSelection();
@@ -1779,6 +2029,7 @@
         setTimeout(function(){ state.dragSuppressClick = false; }, 0);
       }
     });
+    stage.addEventListener('pointercancel', function(){ pressedRealm = null; state.drag = null; stage.classList.remove('dragging'); });
     // 触屏：单指拖动平移 + 双指捏合缩放（复用 wheel 的内容单位换算与 zoom-at-anchor 公式）
     if (window.TM && typeof TM.attachPinchPan === 'function') {
       TM.attachPinchPan(stage, {
@@ -1787,21 +2038,21 @@
           var rect = stage.getBoundingClientRect();
           if (!rect.width || !rect.height) return;
           if (!state.mapView) state.mapView = { scale: 1, tx: 0, ty: 0 };
-          var width = Number(map.width || 1200), height = Number(map.height || 720);
+          var viewport = mapViewportMetrics(stage, map);
           if (g.panDX || g.panDY) {
-            state.mapView.tx = (state.mapView.tx || 0) + g.panDX / rect.width * width;
-            state.mapView.ty = (state.mapView.ty || 0) + g.panDY / rect.height * height;
+            state.mapView.tx = (state.mapView.tx || 0) + g.panDX / viewport.ratio;
+            state.mapView.ty = (state.mapView.ty || 0) + g.panDY / viewport.ratio;
           }
           if (g.zoom && g.zoom !== 1) {
-            var ax = (g.cx - rect.left) / rect.width * width;
-            var ay = (g.cy - rect.top) / rect.height * height;
+            var ax = (g.cx - viewport.left) / viewport.ratio;
+            var ay = (g.cy - viewport.top) / viewport.ratio;
             var old = state.mapView.scale || 1;
             var next = Math.max(.85, Math.min(3.4, old * g.zoom));
             state.mapView.tx = ax - (ax - (state.mapView.tx || 0)) * (next / old);
             state.mapView.ty = ay - (ay - (state.mapView.ty || 0)) * (next / old);
             state.mapView.scale = next;
           }
-          applyMapTransform();
+          scheduleMapTransform();
         },
         onEnd: function(g){
           if (g && g.moved) { state.dragSuppressClick = true; setTimeout(function(){ state.dragSuppressClick = false; }, 60); }
@@ -1835,6 +2086,7 @@
       var e = _hoverEvt; if (!e) return;
       var tip = document.getElementById('tmf-map-tip');
       if (!tip) return;
+      if (state.drag || (e.buttons & 1)) { tip.classList.remove('show'); return; }
       var path = regionPathFromPoint(e);
       if (!path) { tip.classList.remove('show'); _hoverLastKey = null; return; }
       // 位置每帧跟随鼠标（廉价·无 innerHTML 重建）·右/下越界翻转
@@ -2332,13 +2584,13 @@
     var border = parseLevelWord(firstValue(data.borderRisk, data.warRisk), NaN);
     var score;
     if (!isFinite(pressure) && !isFinite(border)) {
-      score = hasDisplayValue(data.threats) ? 50 : 25;
+      score = hasDisplayValue(data.threats) ? 50 : NaN;
     } else {
       score = Math.max(isFinite(pressure) ? pressure : 0, isFinite(border) ? border : 0);
       if (hasDisplayValue(data.threats)) score = Math.min(100, score + 8);
     }
-    if (live._revoltActive) score = Math.max(score, 78);
-    if (live._warZone) score = Math.max(score, 86);
+    if (live._revoltActive) score = Math.max(isFinite(score) ? score : 0, 78);
+    if (live._warZone) score = Math.max(isFinite(score) ? score : 0, 86);
     // 活态军情（2026-06-13 死字段修）：驻军兵变险/欠饷/低气/缺粮——军务舆图须反映当下危局，
     // 而非只读开局静态威胁词（armyPressure/borderRisk）。取绑定活军(GM.armies)的最坏一项。
     var liveArmies = (b.army && b.army.liveArmies) || [];
@@ -2352,7 +2604,8 @@
       var _sup = Number(_a.supply); if (isFinite(_sup) && _sup < 35) _s = Math.max(_s, (35 - _sup) * 1.4);
       if (_s > garrisonStress) garrisonStress = _s;
     }
-    if (garrisonStress > 0) score = Math.max(score, Math.min(100, garrisonStress));
+    if (garrisonStress > 0) score = Math.max(isFinite(score) ? score : 0, Math.min(100, garrisonStress));
+    if (!isFinite(score)) return null;
     var troops = Number(firstValue(data.garrison, b.army.troops, r && r.troops, 0)) || 0;
     var mouths = Number(firstValue(b.pop.mouths, data.population, 0)) || 0;
     if (score >= 60 && mouths > 0 && troops / mouths < 0.004) score = Math.min(100, score + 6);
@@ -2403,8 +2656,8 @@
     var GMx = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
     if (!GMx || !GMx.renli || !GMx.renli.byRegion) return null;
     var br = GMx.renli.byRegion;
-    var rg = br[(r && (r.id || r.regionId || r.name)) || ''] || (r && r.name ? br[r.name] : null);
-    if (!rg) return null;
+    var rg = window.TM && TM.Renli && typeof TM.Renli.forMapRegion === 'function' ? TM.Renli.forMapRegion(GMx,r) : br[(r && (r.id || r.regionId || r.name)) || ''];
+    if (!rg || rg.ready === false || rg.corveeRate === null) return null;
     var corvee = Number(rg.corveeRate);
     var fallowShare = 0, cult = Number(rg.cultivatedLand), fallow = Number(rg.fallowLand);
     if (isFinite(cult) && isFinite(fallow) && (cult + fallow) > 0) fallowShare = fallow / (cult + fallow);
@@ -2417,7 +2670,7 @@
     var GMx = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
     if (!GMx || !GMx.renli || !GMx.renli.reported) return null;
     var rid = (r && (r.id || r.regionId || r.name)) || '';
-    return GMx.renli.reported[rid] || (r && r.name ? GMx.renli.reported[r.name] : null) || null;
+    return GMx.renli.reported[rid] || null;
   }
   // 五档色板（深色舆图底·对比≥3:1·档字供哨牌/图例·色不孤行）
   var GRADE_BANDS = {
@@ -2578,7 +2831,8 @@
   bridge.map.__labelAnchor = labelAnchor;
   bridge.map.__requestMapLabelFeature = requestMapLabelFeature;
   // perf round7: 强制下次 renderFormalMap 重建 SVG(清 dirty 签名)·供几何变更等绕过守卫
-  bridge.map.invalidateFormalMap = function(){ try { state._lastFormalMapSig = null; } catch(_){} };
+  bridge.map.invalidateFormalMap = function(){ try { state._lastFormalMapSig = null; _preparedMapLayers = null; } catch(_){} };
+  bridge.map.preparationStatus = function(){ var p = _preparedMapLayers; return p ? { serial: p.serial, ready: p.ready, layers: Object.keys(p.surfaces).length, mapId: mapIdentity(p.map) } : null; };
   bridge.map.invalidateMapLabelGeometryCaches = invalidateMapLabelGeometryCaches;
   bridge.map.onMapLabelFeatureReady = function(){
     invalidateMapLabelGeometryCaches();

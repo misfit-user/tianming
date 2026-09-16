@@ -457,6 +457,7 @@ function openSaveManager() {
   // 先显示加载占位
   ov.innerHTML = '<div class="generic-modal scroll-panel" style="max-width:780px;text-align:center;padding:3rem;"><div class="scroll-manager-header">〔 案 卷 目 录 〕</div><div style="color:var(--color-foreground-muted);margin-top:2rem;">展卷中……</div></div>';
   document.body.appendChild(ov);
+  if (typeof _tmPresentModal === 'function') _tmPresentModal(ov, closeSaveManager);
 
   // 异步从 IndexedDB 加载全部存档元信息
   TM_SaveDB.list().then(function(dbSaves) {
@@ -629,7 +630,8 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
 
 function closeSaveManager() {
   var ov = document.getElementById('save-manager-overlay');
-  if (ov) ov.remove();
+  if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(ov);
+  else if (ov) ov.remove();
 }
 
 // P12: 存档对比——选择两个存档比较关键指标
@@ -652,9 +654,11 @@ function openSaveCompare() {
     var ov = document.createElement('div');
     ov.className = 'generic-modal-overlay';
     ov.id = 'save-compare-overlay';
-    ov.onclick = function(e) { if (e.target === ov) ov.remove(); };
+    var closeCompare = function(){ if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(ov); else ov.remove(); };
+    ov.onclick = function(e) { if (e.target === ov) closeCompare(); };
     ov.innerHTML = '<div class="generic-modal" style="max-width:580px;">' + html + '</div>';
     document.body.appendChild(ov);
+    if (typeof _tmPresentModal === 'function') _tmPresentModal(ov, closeCompare);
   }).catch(function() { toast('加载存档列表失败'); });
 }
 
@@ -713,13 +717,17 @@ function showScrollConfirm(opts) {
     '<button class="' + okCls + ' bsm" id="_rpc_ok">' + _saveEsc(opts.okText || '确认') + '</button>' +
     '</div></div>';
   document.body.appendChild(ov);
-  var cleanup = function() { ov.remove(); };
+  var cleanup = function() { if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(ov); else ov.remove(); };
   ov.addEventListener('click', function(e) { if (e.target === ov) cleanup(); });
   ov.querySelector('#_rpc_cancel').onclick = function() { cleanup(); if (opts.onCancel) opts.onCancel(); };
   ov.querySelector('#_rpc_ok').onclick = function() { cleanup(); if (opts.onOk) opts.onOk(); };
-  var escHandler = function(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', escHandler); cleanup(); if (opts.onCancel) opts.onCancel(); } };
-  document.addEventListener('keydown', escHandler);
-  setTimeout(function() { var ok = ov.querySelector('#_rpc_ok'); if (ok) ok.focus(); }, 80);
+  if (typeof _tmPresentModal === 'function') {
+    _tmPresentModal(ov, function(){ cleanup(); if (opts.onCancel) opts.onCancel(); }, '#_rpc_cancel');
+  } else {
+    var escHandler = function(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', escHandler); cleanup(); if (opts.onCancel) opts.onCancel(); } };
+    document.addEventListener('keydown', escHandler);
+    setTimeout(function() { var ok = ov.querySelector('#_rpc_ok'); if (ok && ov.isConnected !== false) ok.focus(); }, 80);
+  }
 }
 
 // 玉玺按压动画——屏幕中央

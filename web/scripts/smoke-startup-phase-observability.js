@@ -20,8 +20,18 @@ const scriptNames = Array.from(html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+\.j
 assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest should cover every external JavaScript loaded by index.html');
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
-assert.strictEqual(manifest.deferredChangesApproved, 8, 'the original six and two explicit relief providers form the complete deferred set');
-assert.strictEqual(manifest.scriptCount, 416, 'the retained 415 scripts plus the shared battle contract form the complete eager set');
+assert.strictEqual(manifest.deferredChangesApproved, 9, 'the original six, two relief providers and pure realm layout form the complete deferred set');
+const nativeModules=['tm-start-contracts.js','libs/polygon-clipping-0.15.7.min.js','tm-map-workbench.js','tm-map-workbench-client.js','tm-start-compiler.js','tm-start-world.js','tm-native-fiscal-adapter.js','tm-native-scope.js','tm-native-fiscal-ui.js','tm-start-preparation-document.js','tm-start-preparation.js','tm-start-commit.js','tm-start-selector.js','tm-save-world-validation.js'];
+const fiscalModules=['tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-public-treasury.js','tm-military-arrears.js','tm-command-authority.js'];
+assert.strictEqual(manifest.scriptCount, 416+nativeModules.length+fiscalModules.length, 'retain the 416 existing scripts plus the declared native-start and fiscal providers');
+fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
+assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');
+nativeModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+assert(!scriptNames.includes('tm-start-preparation-runtime.js'),'the opaque initializer must not run in the live game window');
+assert(scriptNames.indexOf('tm-start-contracts.js')<scriptNames.indexOf('tm-start-compiler.js'),'native contracts precede their compiler');
+assert(scriptNames.indexOf('tm-start-compiler.js')<scriptNames.indexOf('tm-start-selector.js'),'native compiler precedes the chooser');
+assert.strictEqual(scriptNames.indexOf('tm-save-world-validation.js')+1,scriptNames.indexOf('tm-save-lifecycle.js'),'the preserved save-validation family stays adjacent');
 assert.strictEqual(scriptNames.indexOf('tm-military.js')+1,scriptNames.indexOf('tm-battle-contract.js'),'shared battle contract immediately follows its canonical writer');
 assert.strictEqual(scriptNames.filter(name=>name==='tm-battle-contract.js').length,1,'battle contract loads exactly once');
 assert.strictEqual(scriptNames.filter((name) => name === 'tm-office-creation.js').length, 1, 'office creation loads exactly once');
@@ -41,7 +51,7 @@ assert(manifest.scripts.every((row) => row.lazySafe === false && row.loadPolicy 
 assert(manifest.scripts.every((row) => Array.isArray(row.provides) && Array.isArray(row.consumes)), 'manifest should expose machine-readable provider and immediate-consumer inventories');
 assert(manifest.scripts.every((row) => row.mustLoadBefore.length === 0 && row.mustLoadAfter.length === 0), 'adjacent scripts must not be emitted as fake dependencies');
 assert(Array.isArray(manifest.features) && manifest.features.length === 5, 'startup manifest exposes the original four and the relief pilot feature');
-assert.strictEqual(manifest.features.reduce((count, row) => count + row.scripts.length, 0), 8, 'feature definitions own exactly eight deferred scripts');
+assert.strictEqual(manifest.features.reduce((count, row) => count + row.scripts.length, 0), 9, 'feature definitions own exactly nine declared deferred scripts');
 assert(!scriptNames.includes('tm-relief-governance.js') && !scriptNames.includes('tm-relief-governance-ui.js'), 'relief must not add work to the eager startup chain');
 
 const sandbox = { console, Date, Math, JSON, performance, Promise, window: {} };

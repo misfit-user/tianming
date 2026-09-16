@@ -123,6 +123,11 @@ function _tmFindPlayerCharRaw() {
 }
 
 function getRuntimePlayerInfo() {
+  if (typeof TM !== 'undefined' && TM.NativeWorld && typeof GM !== 'undefined' && TM.NativeWorld.enabled(GM)) {
+    var nativeInfo = TM.NativeWorld.info(GM);
+    return Object.assign({}, GM.playerInfo, {characterId:nativeInfo.character.id,characterName:nativeInfo.character.name,
+      factionId:nativeInfo.faction.id,factionName:nativeInfo.faction.name,characterTitle:nativeInfo.character.title || nativeInfo.character.officialTitle || ''});
+  }
   if (typeof GM !== 'undefined' && GM && GM.playerInfo && typeof GM.playerInfo === 'object') return GM.playerInfo;
   if (typeof P !== 'undefined' && P && P.playerInfo && typeof P.playerInfo === 'object') return P.playerInfo;
   return {};
@@ -699,6 +704,7 @@ function removeScenarioFromIndex(id) {
 // 快速查询函数（O(1) 复杂度）
 /** @param {string} name @returns {Object|undefined} 角色对象 */
 function findCharByName(name) {
+  if (typeof TM !== 'undefined' && TM.NativeWorld && typeof GM !== 'undefined' && TM.NativeWorld.enabled(GM)) return TM.NativeWorld.resolveCharacter(GM,name);
   if (!name) return undefined;
   if (!GM._indices || !GM._indices.charByName || typeof GM._indices.charByName.get !== 'function') {
     buildIndices();
@@ -1374,6 +1380,12 @@ var WorldHelper = {
     if (!Array.isArray(G.chars)) G.chars = [];
     var registered = _repairRegisteredChar(G, data, options);
     if (registered) return registered;
+    // historical-agency-v21: the common ingress also covers direct AI additions and fallbacks.
+    var agency = global.TM && global.TM.HistoricalAgency;
+    if (G === global.GM && agency && agency.isPlayerDriven() && data && (data.isHistorical === true || agency.findProfile(data.name))) {
+      var temporal = agency.temporalEligibility(data, {year:G.year});
+      if (!temporal.ok) throw new Error('史实不可现：' + temporal.reason);
+    }
     var ch = _normalizeChar(data, options);
     var counterBefore = G._entityIdCounters && G._entityIdCounters.char;
     var countersExisted = !!G._entityIdCounters;
@@ -1490,6 +1502,7 @@ var WorldHelper = {
   function getPlayerCharacter(world) {
     var G = world || (typeof GM !== 'undefined' ? GM : null);
     if (!G || !Array.isArray(G.chars)) return null;
+    if (TM.NativeWorld && TM.NativeWorld.enabled(G)) return TM.NativeWorld.info(G).character;
     var info = G.playerInfo && typeof G.playerInfo === 'object' ? G.playerInfo : null;
     var id = info && info.characterId != null ? String(info.characterId).trim() : '';
     if (id) {
@@ -1558,9 +1571,12 @@ var WorldHelper = {
     if (!to.id || !String(to.id).trim()) return { ok: false, reason: 'heir-stable-id-missing' };
     var current = getPlayerCharacter(G);
     if (current && current !== from) return { ok: false, reason: 'old-ruler-not-current-player' };
+    var nativeIdentity = TM.NativeWorld && TM.NativeWorld.enabled(G) ? TM.NativeWorld.info(G) : null;
+    if (nativeIdentity && (!G.nativeWorld.authority || G.nativeWorld.authority.roleKind !== 'headOfState')) return {ok:false,reason:'native-succession-role-not-defined'};
 
     var charSnapshots = G.chars.map(function(ch) { return { ref: ch, state: cloneValue(ch) }; });
     var snapshot = {
+      nativeContext: cloneValue(G.startContext), nativeAuthority: cloneValue(G.nativeWorld && G.nativeWorld.authority), nativeRevocations: cloneValue(G.nativeWorld && G.nativeWorld.revokedAuthorityCharacters), playerCharacterId: G.playerCharacterId,
       playerInfo: cloneValue(G.playerInfo), playerInfoOwn: Object.prototype.hasOwnProperty.call(G, 'playerInfo'),
       officeTree: cloneValue(G.officeTree), officeOwn: Object.prototype.hasOwnProperty.call(G, 'officeTree'),
       harem: cloneValue(G.harem), haremOwn: Object.prototype.hasOwnProperty.call(G, 'harem'),
@@ -1586,15 +1602,16 @@ var WorldHelper = {
         if (title && title !== '皇帝' && to.formerTitles.indexOf(title) < 0) to.formerTitles.push(title);
       });
       to._preAccessionOffice = vacated.vacated || [];
-      to.role = '皇帝';
-      to.officialTitle = options.newOfficialTitle || '皇帝';
-      to.title = options.newTitle || '皇帝';
+      var nativeTitle = nativeIdentity && ((G.nativeWorld.ruleset.config.government || {}).headOfStateTitle || G.nativeWorld.authority.headTitle || from.officialTitle || from.title || to.title || '元首');
+      to.role = nativeIdentity ? 'headOfState' : '皇帝';
+      to.officialTitle = options.newOfficialTitle || nativeTitle || '皇帝';
+      to.title = options.newTitle || nativeTitle || '皇帝';
       if (options.reason === 'abdication') {
         if (!Array.isArray(from.formerTitles)) from.formerTitles = [];
         if (from.title && from.title !== '太上皇' && from.formerTitles.indexOf(from.title) < 0) from.formerTitles.push(from.title);
-        from.role = '太上皇';
-        from.officialTitle = '太上皇';
-        from.title = options.oldRulerTitle || '太上皇';
+        from.role = nativeIdentity ? 'formerHeadOfState' : '太上皇';
+        from.officialTitle = nativeIdentity ? (options.oldRulerTitle || '前任元首') : '太上皇';
+        from.title = options.oldRulerTitle || (nativeIdentity ? '前任元首' : '太上皇');
       }
       var baseInfo = G.playerInfo && typeof G.playerInfo === 'object' ? G.playerInfo
         : ((typeof P !== 'undefined' && P && P.playerInfo) ? cloneValue(P.playerInfo) : {});
@@ -1602,10 +1619,18 @@ var WorldHelper = {
         characterId: String(to.id), characterName: to.name,
         characterTitle: to.title || to.officialTitle || '',
         characterBio: to.bio || '', characterPersonality: to.personality || '',
-        factionId: to.factionId || '', factionName: to.faction || ''
+        factionId: nativeIdentity ? nativeIdentity.faction.id : to.factionId || '', factionName: nativeIdentity ? nativeIdentity.faction.name : to.faction || ''
       });
+      if (nativeIdentity) {
+        G.startContext.currentPlayerCharacterId = to.id;
+        G.playerCharacterId = to.id;
+        G.nativeWorld.authority.characterId = to.id;
+        G.nativeWorld.revokedAuthorityCharacters = (G.nativeWorld.revokedAuthorityCharacters || []).filter(function(id){return id!==to.id;}).concat([from.id]);
+        G.startContext.successions = (G.startContext.successions || []).concat([{fromId:from.id,toId:to.id,turn:G.turn,reason:options.reason || 'succession'}]);
+      }
       (G.facs || []).forEach(function(fac) {
         if (!fac) return;
+        if (nativeIdentity) { if (fac.id === nativeIdentity.faction.id) { fac.leaderId = to.id; fac.leaderCharacterId = to.id; fac.leader = to.name; } return; }
         var oldMatches = (from.id && String(fac.leaderId || '') === String(from.id))
           || (!fac.leaderId && fac.leader === from.name)
           || (fac.isPlayer && to.faction && fac.name === to.faction);
@@ -1619,6 +1644,7 @@ var WorldHelper = {
       invalidateSuccessionCaches(G);
       return { ok: true, from: from, to: to, vacated: vacated.vacated || [] };
     } catch (error) {
+      if (nativeIdentity) { G.startContext = snapshot.nativeContext; G.nativeWorld.authority = snapshot.nativeAuthority; G.nativeWorld.revokedAuthorityCharacters = snapshot.nativeRevocations; G.playerCharacterId = snapshot.playerCharacterId; }
       charSnapshots.forEach(function(row) { restoreObject(row.ref, row.state); });
       snapshot.facs.forEach(function(row) { restoreObject(row.ref, row.state); });
       if (snapshot.playerInfoOwn) G.playerInfo = snapshot.playerInfo; else delete G.playerInfo;

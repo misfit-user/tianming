@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const G=require('../tm-map-realm-layout.js'),{functionSource}=require('./lib-perf-round1');
+const src=fs.readFileSync(path.join(__dirname,'../phase8-formal-map.js'),'utf8');
+(async()=>{
+  const ring=Array.from({length:180},(_,i)=>{const t=i/180*Math.PI*2,r=i%3?90:45;return{x:Math.cos(t)*r,y:Math.sin(t)*r};}),pack={rings:[ring],bounds:{minX:-90,minY:-90,maxX:90,maxY:90}};
+  function exhaustive(x,y){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)inside=!inside;}return inside;}
+  for(let x=-100;x<=100;x+=3.125)for(let y=-100;y<=100;y+=3.125)assert.equal(G.contains([pack],x,y),exhaustive(x,y));
+  for(const p of ring)assert.equal(G.contains([pack],p.x,p.y),exhaustive(p.x,p.y));
+  console.log('PASS indexed containment exactly matches exhaustive concave polygon and edge points');
+  const a={id:'a',points:[[0,0],[120,0],[120,100],[0,100]]},b={id:'b',points:[[120,0],[240,0],[240,100],[120,100]]};
+  const jobs=[{regions:[a,b],text:'天下',options:{maxFont:40}},{regions:[a,b],text:'省道',options:{maxFont:30,resolution:72}},{regions:[a],text:'甲州',options:{maxFont:20,resolution:56}}];
+  const rows=[{region:a,owner:'A',group:'P'},{region:b,owner:'A',group:'P'}],meshes=['realm','region','prefecture'].map(tier=>({items:rows,tier}));
+  const expected=jobs.map(j=>G.fit(j.regions,j.text,j.options)),edges=meshes.map(j=>G.boundaryMesh(j.items,j.tier));G.clear();
+  const first=G.prepare(jobs,meshes);assert(first instanceof Promise);assert.equal(await first,true);
+  assert.deepEqual(jobs.map(j=>G.fit(j.regions,j.text,j.options)),expected);assert.deepEqual(meshes.map(j=>G.boundaryMesh(j.items,j.tier)),edges);assert.equal(G.prepare(jobs,meshes),null);
+  console.log('PASS preload preserves exact geometry, font placement and all three meshes; reuse needs no task');
+  a.points[1][0]=119;assert.equal(await G.prepare(jobs,meshes),true);assert.equal(G.prepare(jobs,meshes),null);
+  G.clear();const stale=G.prepare(jobs,meshes);G.clear();assert.equal(await stale,false);assert.equal(G.stats.cachedLayouts,0);
+  console.log('PASS in-place geometry invalidation and stale preparation cancellation');
+  const map={},surfaces={realm:{id:'realm'},region:{id:'region'},prefecture:{id:'prefecture'}},stage={firstElementChild:null,swaps:0,replaceChildren(n){this.firstElementChild=n;this.swaps++;}};
+  let live=map;const state={},ctx=vm.createContext({_preparedMapLayers:{map,key:'world1',ready:true,surfaces},mapStage:()=>stage,getMapData:()=>live,state,document:{querySelector:()=>null},bindRegionPathEvents(){},scheduleLabelLayout(){}});
+  vm.runInContext(functionSource(src,'activatePreparedMapLayer'),ctx);
+  for(const tier of ['realm','region','prefecture','region','realm'])assert.equal(ctx.activatePreparedMapLayer(tier),true);
+  assert.equal(stage.firstElementChild,surfaces.realm);assert.equal(stage.swaps,5);ctx.activatePreparedMapLayer('realm');assert.equal(stage.swaps,5);
+  live={};assert.equal(ctx.activatePreparedMapLayer('realm'),false);assert.equal(stage.swaps,5);
+  console.log('PASS tier switching reuses original surfaces and never reuses another world');
+  let callback,scheduled=0,applied=0;const raf=vm.createContext({_mapTransformRaf:0,mapStage:()=>null,window:{requestAnimationFrame(fn){callback=fn;scheduled++;return 1;}},applyMapTransform(){applied++;}});
+  vm.runInContext(functionSource(src,'scheduleMapTransform'),raf);for(let i=0;i<50;i++)raf.scheduleMapTransform();assert.equal(scheduled,1);callback();assert.equal(applied,1);
+  console.log('PASS 50 input updates coalesce to one camera update per frame');
+})().catch(error=>{console.error('FAIL',error);process.exitCode=1;});

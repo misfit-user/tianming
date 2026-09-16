@@ -442,8 +442,19 @@
     return { ok: true, path: path, old: old, new: r.parent[r.key], delta: delta, reason: reason };
   }
 
+  function _isPresetWorkTextWrite(obj, path, patch) {
+    var parts = String(path || '').replace(/^GM\./i,'').replace(/\[(\d+)\]/g,'.$1').split('.');
+    if (parts[0] !== 'culturalWorks' || parts.length < 2) return false;
+    var resolved = _resolvePath(obj, parts.slice(0,2).join('.'));
+    if (!resolved.value || !resolved.value._scenarioPreset) return false;
+    var fields = ['id','title','name','author','creator','content','text','preview','background','narrativeContext','description'];
+    if (parts.length > 2) return fields.indexOf(parts[2]) >= 0;
+    return patch && typeof patch === 'object' && fields.some(function(key){return Object.prototype.hasOwnProperty.call(patch,key);});
+  }
+
   function _applyPathSet(obj, path, value, reason) {
     path = _normalizeCoreVarPath(path);
+    if (_isPresetWorkTextWrite(obj,path,value)) return {ok:false,path:path,reason:'scenario manuscript text is immutable'};
     if (_isPathBlocked(path)) return { ok: false, path: path, reason: 'blocked' };
     var valueGate = _validateNestedJsonValue(path, value, 0);
     if (!valueGate.ok) return { ok: false, path: path, reason: valueGate.reason };
@@ -618,6 +629,7 @@
    */
   function _applyPathMerge(obj, path, patch, reason) {
     path = _normalizeCoreVarPath(path);
+    if (_isPresetWorkTextWrite(obj,path,patch)) return {ok:false,path:path,reason:'scenario manuscript text is immutable'};
     if (_isPathBlocked(path)) return { ok: false, path: path, reason: 'blocked' };
     var gate = _validateMergePatch(path, patch, 0);
     if (!gate.ok) return { ok: false, path: path, reason: gate.reason };
@@ -725,6 +737,11 @@
       if (/^(?:facs|factions)\.[^.]+\.leaderInfo\.(?:name|leader|ruler)(?:\.|$)/i.test(p)) return true;
       if (/^(?:parties|partyState)\.[^.]+\.(?:leader|head|leaderName|leader_name|ruler|newLeader|new_leader)(?:\.|$)/i.test(p)) return true;
       if (/^armies\.[^.]+\.(?:commander|commanderName|commanderDisplayName|commander_name|general|generalName|leader|leaderName|commandingOfficer|chiefCommander|chiefGeneral|mainGeneral|newCommander|newGeneral)(?:\.|$)/i.test(p)) return true;
+      if (/^commandOrders(?:\.|$)/i.test(p) || /^armies\.[^.]+\.commandChain(?:\.|$)/i.test(p)) return true;
+      if (/^armies\.[^.]+\.(?:destination|location|garrison)(?:\.|$)/i.test(p)) {
+        var key = segs[1], a = (global.GM && global.GM.armies || []).find(function(a,i) { return String(i) === key || a.id === key || a.name === key; });
+        if (a && a.commandChain && a.commandChain.mode === 'receipt') return true;
+      }
       if (/^officeTree(?:\.|$).*\.(?:holder|actualHolders)(?:\.|$)/i.test(p)) return true;
       if (/^(?:adminHierarchy|regionMap|provinceStats)(?:\.|$).*\.(?:governor|governorName|officialPosition)(?:\.|$)/i.test(p)) return true;
       // 刀C·C3(2026-07-19)·敏感人物字段(失势向量)不得借万能键(anyPathChanges/changes)绕过 char_update 来源判据·须走 char_updates(经 _mergeUpdatesToEntity C3 闸)。

@@ -4,7 +4,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),cp=require('child_process'),assert=require('assert/strict'),{EventEmitter}=require('events');
 const root=path.resolve(__dirname,'../..'),at=process.argv.indexOf('--source-ref'),ref=at>=0?process.argv[at+1]:null;
 const source=ref?cp.execFileSync('git',['show',ref+':web/scripts/run-smokes.js'],{cwd:root,encoding:'utf8'}):fs.readFileSync(path.join(__dirname,'run-smokes.js'),'utf8');
-const names=['smoke-a-normal.js','smoke-b-normal.js','smoke-full-turn-flow.js','smoke-workshop-lock-recovery.js'];
+const names=['smoke-a-normal.js','smoke-b-normal.js','smoke-deploy-manifest-atomicity.js','smoke-full-turn-flow.js','smoke-perf-save-preparation.js','smoke-production-dependencies.js','smoke-start-game-data-integrity.js','smoke-workshop-lock-recovery.js'];
 async function run(failName){
  const active=new Set(),seen=[],overlaps=[],watchdogs=[];let saved,normalPeak=0;
  return new Promise((resolve,reject)=>{
@@ -26,8 +26,8 @@ async function run(failName){
  });
 }
 (async()=>{
- const good=await run();assert.equal(good.code,0);assert.deepEqual(good.seen.slice().sort(),names);assert.deepEqual(good.overlaps,[],'hard-deadline checks must never overlap another smoke');assert.equal(good.normalPeak,2,'ordinary jobs must still run concurrently');assert.equal(good.saved.summary.selected,4);assert.equal(good.saved.summary.pass,4);assert.equal(good.saved.summary.skipped,0);assert(good.watchdogs.every(ms=>ms===120000),'original per-script hard deadline retained');
+ const good=await run();assert.equal(good.code,0);assert.deepEqual(good.seen.slice().sort(),names);assert.deepEqual(good.overlaps,[],'hard-deadline checks must never overlap another smoke');assert.equal(good.normalPeak,2,'ordinary jobs must still run concurrently');assert.equal(good.saved.summary.selected,names.length);assert.equal(good.saved.summary.pass,names.length);assert.equal(good.saved.summary.skipped,0);assert(good.watchdogs.every(ms=>ms===120000),'original per-script hard deadline retained');
  console.log('PASS complete discovery, ordinary parallelism, exclusive barriers and original deadlines');
- const bad=await run(names[3]);assert.equal(bad.code,1);assert.equal(bad.saved.summary.fail,1);assert.equal(bad.seen.length,4,'no hidden retry under --no-retry');assert.equal(bad.saved.results.find(r=>r.name===names[3]).pass,false);assert.deepEqual(bad.overlaps,[]);
+ const bad=await run(names[3]);assert.equal(bad.code,1);assert.equal(bad.saved.summary.fail,1);assert.equal(bad.seen.length,names.length,'no hidden retry under --no-retry');assert.equal(bad.saved.results.find(r=>r.name===names[3]).pass,false);assert.deepEqual(bad.overlaps,[]);
  console.log('PASS isolated failure remains red and is neither skipped nor silently retried');
 })().catch(e=>{console.error(e);process.exitCode=1;});

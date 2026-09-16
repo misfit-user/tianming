@@ -49,14 +49,15 @@
       },
       formalMapLabels: {
         scripts: [
-          'tm-map-label-geo.js?v=20260705-noframe',
-          'tm-map-label-collide.js?v=20260705-noframe'
+          'tm-map-label-geo.js?v=20260915-zoom-preload',
+          'tm-map-realm-layout.js?v=20260915-zoom-preload',
+          'tm-map-label-collide.js?v=20260915-zoom-preload'
         ],
         dependsOn: [],
         platform: 'any',
         loadPolicy: 'first-formal-map-render',
         sideEffects: 'none',
-        provides: ['TMMapLabelGeo', 'TMMapLabelCollide'],
+        provides: ['TMMapLabelGeo', 'TMMapRealmLayout', 'TMMapLabelCollide'],
         init: function () {
           var map = root.TMFormalBridge && root.TMFormalBridge.map;
           if (map && typeof map.onMapLabelFeatureReady === 'function') map.onMapLabelFeatureReady();

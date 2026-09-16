@@ -384,24 +384,6 @@ function _recordCacheStats(usage) {
 //   个别代理不认 cache_control 字段会回 400。撞到就由 _aiFetchWithRetryInner 脱字段重试一次，
 //   并把本会话停用闸置位（_maybeCacheSys / buildCachedMessages 读它），之后整局不再打标记，自愈不复发。
 var _aiCacheCtrlDisabled = false;
-// 把 body.messages 里「带 cache_control 的数组型 content」拍回纯字符串·返回是否真剥离了（仅动含 cache_control 的，真·多模态数组不碰）
-function _stripCacheControlFromBody(body) {
-  if (!body || !Array.isArray(body.messages)) return false;
-  var stripped = false;
-  for (var i = 0; i < body.messages.length; i++) {
-    var m = body.messages[i];
-    if (m && Array.isArray(m.content) && m.content.some(function(b){ return b && b.cache_control; })) {
-      m.content = m.content.map(function(b){ return (b && typeof b.text === 'string') ? b.text : ''; }).join('');
-      stripped = true;
-    }
-  }
-  return stripped;
-}
-
-function _isContextLengthResponse(status, text) {
-  if (Number(status) !== 400) return false;
-  return /context(?:_|\s|-)*(?:length|window)|maximum context|too many (?:input )?tokens|prompt (?:is )?too long|token limit|上下文.{0,8}(?:过长|超限)|超出.{0,8}(?:上下文|token)/i.test(String(text || ''));
-}
 
 /**
  * 构建缓存友好的 messages：字节级前缀稳定·变动内容在尾部
@@ -1992,6 +1974,16 @@ function lunarMonthName(m){ return _LUNAR_MONTHS[(m-1)%12]||('第'+m+'月'); }
 /** 农历日名 */
 function lunarDayName(d){ return _LUNAR_DAYS[(d-1)%30]||('第'+d+'日'); }
 
+/** 农历一至三月为春；物候随月份展示，不冒充当天节气。 */
+function _tmSeasonFromDate(di){
+  var m=di&&Number(di.lunarMonth);
+  if(!(m>=1&&m<=12))m=1;
+  var q=Math.floor((m-1)/3),i=(m-1)%3;
+  var season=['春','夏','秋','冬'][q];
+  var desc=[['东风解冻','雷乃发声','萍始生'],['蝼蝈鸣','蜩始鸣','腐草为萤'],['凉风至','鸿雁来','草木黄落'],['水始冰','蚯蚓结','鸡始乳']];
+  return {season:season,name:['孟','仲','季'][i]+season,description:desc[q][i]};
+}
+
 function getEraDisplay(y,mo,dy){
   var eraList=(GM.eraNames||[]);var best=null;
   eraList.forEach(function(e){
@@ -2010,11 +2002,11 @@ function getEraDisplay(y,mo,dy){
  * 从回合号计算完整日期信息
  *
  * 关键设计：同时追踪公历（阳历）和农历日期
- * - 公历日期用于干支日计算（天文学精确）
+ * - 公历起点可用于干支日计算；农历起点未作公历换算时不推定干支日
  * - 农历日期用于游戏显示（历史感）
- * - P.time.startMonth/startDay = 公历起始日期（用于推算）
+ * - P.time.calendar=lunar 时 startMonth/startDay 也是农历起点
  * - P.time.startLunarMonth/startLunarDay = 对应的农历日期（用于显示）
- *   若未设置，默认按公历月-1近似
+ *   未指定农历且不是 lunar 配置时，保留旧的公历月-1近似
  *
  * @returns {{adYear,solarMonth,solarDay,lunarMonth,lunarDay,season,eraInfo,gzYearStr,gzDayStr,reignYear}}
  */
@@ -2031,12 +2023,13 @@ function getCurrentGameDay(){
 function calcDateFromTurn(turn){
   if(!P.time) return {adYear:0,solarMonth:1,solarDay:1,lunarMonth:1,lunarDay:1,season:'春',gzYearStr:'',gzDayStr:''};
   var t=P.time;
-  // 公历起始日期（用于干支计算）
+  var isLunar=t.calendar==='lunar';
+  // 旧阳历配置保留公历推进；农历配置的月日以农历字段为准。
   var solarM=(Number(t.startMonth)>=1&&Number(t.startMonth)<=12)?Math.floor(Number(t.startMonth)):1;
   var solarD=(Number(t.startDay)>=1&&Number(t.startDay)<=31)?Math.floor(Number(t.startDay)):1;
-  // 农历起始日期（用于显示；未设置则从公历近似推算）
-  var lunarM=t.startLunarMonth||(solarM>1?solarM-1:12);
-  var lunarD=t.startLunarDay||solarD;
+  // 显式农历配置不可再把正月近似减成腊月。
+  var lunarM=(Number(t.startLunarMonth)>=1&&Number(t.startLunarMonth)<=12)?Math.floor(Number(t.startLunarMonth)):(isLunar?solarM:(solarM>1?solarM-1:12));
+  var lunarD=(Number(t.startLunarDay)>=1&&Number(t.startLunarDay)<=30)?Math.floor(Number(t.startLunarDay)):Math.min(solarD,30);
   var baseYear=(t.year!=null&&isFinite(Number(t.year)))?Number(t.year):((t.startYear!=null&&isFinite(Number(t.startYear)))?Number(t.startYear):1);
 
   // 每回合推进天数（统一用 _getDaysPerTurn）
@@ -2058,35 +2051,33 @@ function calcDateFromTurn(turn){
   }
 
   // === 农历日期推进（用于显示）===
-  // 农历简化：每月29或30日交替（平均29.53日）
+  // 沿用每月三十日的游戏历推进；这里不作真实朔闰换算。
   var ly=baseYear, lm=lunarM, ld=lunarD+totalDays;
   while(ld>30){ld-=30;lm++;}
-  // 农历年份跟公历年份对齐（简化处理）
   while(lm>12){lm-=12;ly++;}
-  // 注意：农历年份用公历年份（因为年号/干支年都基于公历）
-  ly=sy;
+  // 农历年在正月进位；未声明农历的旧配置保留原公历年契约。
+  var displayYear=isLunar?ly:sy;
 
   // 季节由农历月份决定
   var season=_SEASON_FROM_MONTH[lm]||'春';
 
-  // 干支年：用公历年
-  var gzY=gzYear(sy);
-  // 干支日：用精确的公历日期（这是正确的！）
-  var gzD=gzDay(sy,sm,sd);
+  var gzY=gzYear(displayYear);
+  // 没有公历对照的农历起点不能推定干支日。
+  var gzD=(!isLunar&&t.enableGanzhiDay!==false)?gzDay(sy,sm,sd):'';
 
-  // 年号：用公历年+农历月日判断
+  // 年号：随当前历法的年份与农历月日判断
   var eraInfo=null;
   if(t.enableEraName&&GM.eraNames&&GM.eraNames.length){
-    eraInfo=getEraDisplay(sy,lm,ld);
+    eraInfo=getEraDisplay(displayYear,lm,ld);
   }
 
   // 年号年数
   var _beforeAnniversary = (sm < solarM) || (sm === solarM && sd < solarD);
-  var reignYear=(t.reignY!=null?Number(t.reignY):1)+Math.max(0, sy-baseYear-(_beforeAnniversary?1:0));
+  var reignYear=(t.reignY!=null?Number(t.reignY):1)+Math.max(0,isLunar?ly-baseYear:sy-baseYear-(_beforeAnniversary?1:0));
 
   return {
-    adYear:sy, solarMonth:sm, solarDay:sd,
-    lunarMonth:lm, lunarDay:ld, season:season,
+    adYear:displayYear, solarYear:sy, solarMonth:sm, solarDay:sd,
+    lunarYear:ly, lunarMonth:lm, lunarDay:ld, season:season, calendar:isLunar?'lunar':'solar',
     eraInfo:eraInfo, gzYearStr:gzY, gzDayStr:gzD,
     reignYear:reignYear
   };
@@ -2096,7 +2087,8 @@ function calcDateFromTurn(turn){
   var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null), timeConfig = null; try { timeConfig = (typeof P !== 'undefined' && P) ? P.time : null; } catch (_) {}
   if (!G || typeof calcDateFromTurn !== 'function' || !timeConfig) return null; // 缺 P.time 时保留旧档镜像，不写 adYear=0 占位
   var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
-  G.year = Number(di.adYear); G.month = isFinite(Number(di.solarMonth)) ? Number(di.solarMonth) : 1; G.day = isFinite(Number(di.solarDay)) ? Number(di.solarDay) : 1; return { year: G.year, month: G.month, day: G.day };
+  var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
+  G.year = Number(di.adYear); G.month = isFinite(Number(month)) ? Number(month) : 1; G.day = isFinite(Number(day)) ? Number(day) : 1; return { year: G.year, month: G.month, day: G.day };
 }
 
 function _tmTimeDisplayParts(turn){
@@ -2122,18 +2114,19 @@ function _tmTimeDisplayParts(turn){
   } else {
     main+=di.season+_mn; // 春正月、夏六月、秋八月等
   }
-  // 干支日（始终显示）
-  main+=di.gzDayStr+'日';
+  // 显式关闭干支日或没有公历对照时，直接显示农历日。
+  main+=(t.enableGanzhiDay!==false&&di.gzDayStr)?di.gzDayStr+'日':lunarDayName(di.lunarDay);
 
   // === 副格式（tooltip）===
   var tipParts=[];
-  // 公元日期（精确公历）
-  var adStr=(di.adYear<0?'公元前'+Math.abs(di.adYear):('公元'+di.adYear))+'年'+di.solarMonth+'月'+di.solarDay+'日';
+  // 农历配置未提供公历对照，不能将同一组月日伪装成公历日期。
+  var adStr=(di.adYear<0?'公元前'+Math.abs(di.adYear):('公元'+di.adYear))+'年';
+  if(t.calendar!=='lunar')adStr+=di.solarMonth+'月'+di.solarDay+'日';
   tipParts.push(adStr);
   // 农历日期（中文）
-  tipParts.push(lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
+  tipParts.push('农历'+lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
   // 干支年
-  tipParts.push(di.gzYearStr+'年');
+  if(t.enableGanzhiYear!==false)tipParts.push(di.gzYearStr+'年');
 
   return { main:main, tip:tipParts.join(' | ') };
 }

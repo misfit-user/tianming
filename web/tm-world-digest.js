@@ -158,7 +158,14 @@
     if (hw != null && hw <= 30) warns.push({ sev: 80 + (30 - hw), domain: '皇权', line: '君威 ' + Math.round(hw) + '·已衰，号令恐难行，权臣阴谋易乘隙' });
     var pm = GM.huangquan && GM.huangquan.powerMinister;
     var pmName = pm && (typeof pm === 'string' ? pm : pm.name);
-    if (pmName) warns.push({ sev: 78, domain: '皇权', line: '权臣 ' + pmName + ' 坐大，若不制衡恐架空君权' });
+    if(pmName&&pm.mode==='institutional'){
+      var reader=typeof AuthorityEngines!=='undefined'&&AuthorityEngines.readPowerMinisterStatus,status=reader?reader(pm,GM):null;
+      if(!status||status.active||status.pending){
+        var offices=status&&status.officeNames||[],armies=status&&status.armyIds||[],sources=[];
+        if(offices.length)sources.push('在册职掌为'+offices.join('、'));if(armies.length)sources.push('仍掌'+armies.length+'军的传令与交割');
+        warns.push({sev:0,domain:'朝局',kind:'institutional',line:pmName+'：'+(sources.length?sources.join('；')+'。':'职掌尚待核明。')+'任免与易帅须看实际承办及交割，不能凭疑势预断废立。'});
+      }
+    }else if (pmName) warns.push({ sev: 78, domain: '皇权', line: '权臣 ' + pmName + ' 坐大，若不制衡恐架空君权' });
 
     // 6·阴谋将发（ripe·与 aiContextBlock 互见·此处纳入统一威胁前瞻）
     var plots = Array.isArray(GM._activePlots) ? GM._activePlots.filter(function (p) { return p && p.stage === 'ripe'; }) : [];
@@ -172,7 +179,9 @@
     var top = previewData(GM, opts);
     if (!top.length) return '';
     var s = '\n【天下气运·若不干预之趋势】（按当前态势前瞻：君上本回合若不出手，势将如此牵动；逆之即「改命」。仅前瞻参考·实际由本回合作为与推演定）\n';
-    top.forEach(function (w) { s += '· [' + w.domain + '] ' + w.line + '\n'; });
+    var observations=top.filter(function(w){return w.kind==='institutional';}),warnings=top.filter(function(w){return w.kind!=='institutional';});
+    if(!warnings.length)s='';warnings.forEach(function (w) { s += '· [' + w.domain + '] ' + w.line + '\n'; });
+    if(observations.length){s+='\n【现任职掌】\n';observations.forEach(function(w){s+='· '+w.line+'\n';});}
     return s;
   }
 

@@ -534,18 +534,20 @@
     chars.forEach(function(c) {
       if (!c) return;
       if (!c.name) { noName++; return; }
-      if (seen[c.name]) dup.push(c.name); else seen[c.name] = true;
+      var identity = draft.nativeStart ? c.id : c.name;
+      if (!identity || seen[identity]) dup.push(identity || c.name); else seen[identity] = true;
       if (c.isPlayer) players++;
     });
     // 注：officialTitle 是角色的描述性字段（可能记历史官职），不代表实际任职；"死人占职"由 runtime-office（holder 须在世）抓，此处不据 officialTitle 误报。
     if (noName) v.push(noName + ' 个角色缺 name（运行时会渲染异常）');
-    if (dup.length) v.push('重名角色（运行时按名索引会冲突）: ' + dup.slice(0, 5).join('/') + (dup.length > 5 ? '…' : ''));
+    if (dup.length) v.push((draft.nativeStart ? '原生角色缺少或重复稳定 ID: ' : '重名角色（运行时按名索引会冲突）: ') + dup.slice(0, 5).join('/') + (dup.length > 5 ? '…' : ''));
     return { ok: v.length === 0, violations: v, details: { total: chars.length, dup: dup.length, noName: noName, players: players } };
   }
   /** ⑤ 官制 holder 一致性（对齐 tm-invariants 'officeTree'）：holder 须为存在且在世的角色 */
   function vRuntimeOffice(draft) {
     var v = [];
     var tree = draft && draft.officeTree;
+    if (draft && draft.nativeStart) tree = (Array.isArray(tree) ? tree : []).concat(Object.keys(draft.officeRegistryByFaction || {}).reduce(function(out, id) { return out.concat(draft.officeRegistryByFaction[id] || []); }, []));
     if (!Array.isArray(tree) || !tree.length) return { ok: true, violations: [], details: { skipped: '无 officeTree' } };
     var charByName = {};
     (draft.characters || []).forEach(function(c) { if (c && c.name) charByName[c.name] = c; });
@@ -554,10 +556,12 @@
       (nodes || []).forEach(function(n) {
         if (!n) return;
         (n.positions || []).forEach(function(p) {
-          if (p && p.holder && p.holder !== '空缺' && p.holder !== '') {
-            var ch = charByName[p.holder];
-            if (!ch) phantom.push(p.holder);
-            else if (ch.alive === false) dead.push(p.holder);
+          var holder = p && (draft.nativeStart && p.holderId != null ? p.holderId : p.holder);
+          if (holder && holder !== '空缺') {
+            var ch = draft.nativeStart ? (draft.characters || []).find(function(c) { return c.id === holder; }) : charByName[holder];
+            if (!ch && draft.nativeStart && !p.holderId) { var matches = (draft.characters || []).filter(function(c) { return c.name === holder; }); if (matches.length === 1) ch = matches[0]; }
+            if (!ch) phantom.push(holder);
+            else if (ch.alive === false || (draft.nativeStart && (ch.dead || ch.status === 'dead' || ch.status === '死亡'))) dead.push(holder);
           }
         });
         if (Array.isArray(n.subs)) walk(n.subs);
@@ -577,6 +581,7 @@
     var chars = Array.isArray(draft.characters) ? draft.characters : [];
     if (!facs.length) v.push('没有任何势力 factions（运行时无从加载势力面）');
     if (!chars.length) v.push('没有任何角色 characters');
+    else if (draft.nativeStart) v = v.concat(vNativeStart(draft).violations);
     else if (!chars.some(function(c) { return c && c.isPlayer; })) v.push('没有标记 isPlayer 的玩家角色（运行时无主角入口）');
     return { ok: v.length === 0, violations: v, details: { factions: facs.length, characters: chars.length } };
   }
@@ -672,10 +677,15 @@
   // validateDraft 默认跑这几个结构检查（轻量·供频繁自查）；运行时检查(runtime-*)只在 preflight 跑（finish 前体检）。
   // timeline-compliance(平行时空时点) + char-completeness(史实人物五常/绑定) 是 2026-06 绍宋整局教训沉淀的关。
   var _defaultChecks = ['admin-population', 'faction-refs', 'region-coverage', 'timeline-compliance', 'char-completeness'];
+  function vNativeStart(draft) {
+    if (!_WORKBENCH || typeof _WORKBENCH.inspectDraft !== 'function') return { ok: false, violations: ['此入口未加载原生制作工作台，不能认证新开局契约'] };
+    return _WORKBENCH.inspectDraft(draft);
+  }
+  _checks['native-start'] = vNativeStart;
 
   /** 聚合校验·返回 {ok, violations, results, stats}（沿用 tm-invariants 报告形状） */
   function validateDraft(draft, groupName) {
-    var groups = groupName ? [groupName] : _defaultChecks;
+    var groups = groupName ? [groupName] : _defaultChecks.concat(draft && draft.nativeStart ? ['native-start'] : []);
     var all = [];
     var results = {};
     groups.forEach(function(g) {
@@ -1995,11 +2005,15 @@
   }
 
   // 工具B · 所有致变工具的唯一注册表。权限、指纹、写后回读共用，新增工具不会再漏过范围沙箱。
+  var _WORKBENCH = global.TM && global.TM.AuthoringExtensions && global.TM.AuthoringExtensions.getWorkbench();
+  var _WORKBENCH_TOOLS = _WORKBENCH ? _WORKBENCH.specs : [];
+  AGENT_TOOLS = AGENT_TOOLS.concat(_WORKBENCH_TOOLS);
   var _MUT_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, bulkUpdate: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1, renameEntity: 1, generateImage: 1, copyField: 1 };
   var _WRITE_TOOLS = _MUT_TOOLS;   // 兼容旧内部命名；不得另建第二份名单
   // 刀G3(2026-07-02·CC 对照) · 只读/致变工具表：重复读去重与"纯勘察打转"检测共用。
   //   validateDraft/preflight 亦只读——结果随草稿变·但去重有"期间零写入"守卫·天然安全。
   var _READ_TOOLS = { getField: 1, getFields: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listCollection: 1, describeSchema: 1, listGaps: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, mapOverview: 1, checkHistory: 1, validateDraft: 1, preflight: 1, statsAggregate: 1, readQuickTestReport: 1 };
+  _WORKBENCH_TOOLS.forEach(function(t){if(t.effect==='read')_READ_TOOLS[t.name]=1;if(t.effect==='draft-write')_MUT_TOOLS[t.name]=1;});
   var _TOOL_PACK_BY_NAME = {
     mapOverview: 'map', mapAssignOwner: 'map', renameRegion: 'map',
     genReference: 'history', readSource: 'history', listSource: 'history', grepSource: 'history', checkHistory: 'history',
@@ -2009,6 +2023,7 @@
     saveMemory: 'knowledge', saveSkill: 'knowledge'
   };
   function _toolPack(name) { return _TOOL_PACK_BY_NAME[name] || 'core'; }
+  _WORKBENCH_TOOLS.forEach(function(t){_TOOL_PACK_BY_NAME[t.name]=/Source/.test(t.name)?'history':/Sandbox|Preview|Checks|compileStart/.test(t.name)?'sandbox':'map';});
   function selectToolPacks(request, opts) {
     opts = opts || {};
     if (Array.isArray(opts.toolPacks)) return ['core'].concat(opts.toolPacks).filter(function(v, i, a) { return a.indexOf(v) === i; });
@@ -2043,7 +2058,7 @@
     return readOnly ? selected : _initialStageTools(selected, request, opts);
   }
   var AUTHORING_TOOL_SPECS = AGENT_TOOLS.map(function(t) {
-    var effect = t.name === 'generateImage' ? 'external' : (_MUT_TOOLS[t.name] ? 'draft-write' : ((t.name === 'saveMemory' || t.name === 'saveSkill') ? 'memory-write' : (_READ_TOOLS[t.name] ? 'read' : 'control')));
+    var effect = t.effect || (t.name === 'generateImage' ? 'external' : (_MUT_TOOLS[t.name] ? 'draft-write' : ((t.name === 'saveMemory' || t.name === 'saveSkill') ? 'memory-write' : (_READ_TOOLS[t.name] ? 'read' : 'control'))));
     return Object.assign({}, t, {
       effect: effect, domain: _toolPack(t.name), pack: _toolPack(t.name),
       risk: /removeEntity|renameEntity|renameRegion/.test(t.name) ? 'high' : (effect === 'read' || effect === 'control' ? 'low' : 'medium'),
@@ -2086,6 +2101,8 @@
   function canResume(handle, draft) { try { return !!_readResume(handle, handle && handle.kind, draft, false); } catch (_) { return false; } }
   function _writeTargets(name, input) {
     input = input || {};
+    var workbenchTargets = _WORKBENCH && typeof _WORKBENCH.writeTargets === 'function' ? _WORKBENCH.writeTargets(name, input) : null;
+    if (workbenchTargets && workbenchTargets.length) return workbenchTargets;
     function field(p) { return 'field:' + String(p || '').replace(/\[(\d+)\]/g, '.$1'); }
     if (name === 'applyEdit' || name === 'generateImage' || name === 'removeEntity') return [field(input.path)];
     if (name === 'copyField') return [field(input.to)];
@@ -2196,6 +2213,10 @@
 
   function dispatchTool(draft, name, input, surfaces, runCtx) {
     input = input || {};
+    if(_WORKBENCH_TOOLS.some(function(t){return t.name===name;})) {
+      if(!runCtx||!runCtx.workbench)return {ok:false,errorCode:'workbench-context-required',reason:'工作台工具只能在已保存案卷的真实国师运行中调用'};
+      return _WORKBENCH.dispatch(name,input,draft,runCtx.workbench);
+    }
     switch (name) {
       case 'applyEdit': return applyEdit(draft, input.path, input.value, { reason: input.reason });
       case 'applyPush': return applyPush(draft, input.path, input.value);
@@ -3001,12 +3022,14 @@
       case 'bulkAdd': case 'bulkUpdate': return [_topOf(input.collection)];
       case 'multiEdit': return (Array.isArray(input.edits) ? input.edits : []).map(function(e) { return _topOf(e && e.path); });
       case 'mapAssignOwner': case 'renameRegion': return ['map', 'mapData'];
+      case 'applyMapOperations': case 'rebindScenario': return null;
       case 'renameEntity': return null;
       default: return [];
     }
   }
   function _permCheck(name, input, perms) {   // 返回拦截原因(字符串)或 null(放行)
     if (!perms || !_MUT_TOOLS[name]) return null;
+    if(Array.isArray(perms.allowedRegionIds)&&['proposeMapOperations','applyMapOperations','rebindScenario','buildArtifact','addSource','cancelTask','resumeTask'].indexOf(name)<0)return '本次只授权指定地块：请使用受范围校验的地图操作工具；普通字段/全局工具不能绕过地块限制。';
     if (_DESTRUCTIVE_TOOLS[name] && perms.allowDestructive === false) {
       return '危险操作保护已开启：删除/改名（' + name + '）被禁用。如确需请玩家在权限里允许危险操作。';
     }
@@ -3071,6 +3094,7 @@
           if(typeof opts.onText==='function') opts.onText('（响应格式异常或事件流断开，本轮未执行工具；正在重试完整响应 1/1，已完成草稿保留…）', iterations);
         }
       } });
+      if(opts.workbenchTask&&control.workbench){tracked.beforeRequest=function(info){return _WORKBENCH.reserveCall(control.workbench,info.bodyBytes);};}
       return Promise.resolve().then(function(){return actualCaller(conv,offered,tracked);}).then(function(r){if(!responses){metrics.responses++;addUsage(r && r.usage);}return r;}).finally(function(){metrics.requestElapsedMs+=Date.now()-began;});
     }
     var maxIterations = opts.maxIterations || 48;     // 刀D · 自主度：放宽到 48 轮·持续调用直到完成（UI 还会自动续接）
@@ -3080,7 +3104,7 @@
     var _gateBaseline = resume ? resume.gateBaseline : _gateCounts(draft);
     var qualityGateOn = opts.qualityGate !== false || !!(resume && resume.qualityGateOn);
     if (resume) blockingChecks = blockingChecks.concat(resume.blockingChecks || []).filter(function(v, i, a) { return a.indexOf(v) === i; });
-    var perms = { allowedCollections: opts.allowedCollections || null, allowDestructive: opts.allowDestructive !== false };   // 方向F · 权限（默认无限制·全放行）
+    var perms = { allowedCollections: opts.allowedCollections || null, allowedRegionIds:opts.allowedRegionIds||null, allowDestructive: opts.allowDestructive !== false };   // 方向F · 权限（默认无限制·全放行）
     var planOnly = !!opts.planOnly;   // 计划模式：只读 + proposePlan，不动手
     var reviewOnly = !!opts.reviewOnly;   // 方向D · 审阅模式：只读 + submitReview，不动剧本
     var qaOnly = !!opts.qaOnly;   // 方向L · 问答模式：只读 + submitAnswer，不动剧本
@@ -3089,6 +3113,7 @@
     if (resume && resume.mode !== runMode) { var modeError = new Error('恢复模式与原任务不一致，请保持原模式或重新生成'); modeError.code = 'authoring-resume-mode-mismatch'; throw modeError; }
     if (resume) _readResume(opts.resumeState, 'loop', draft, true);
     var tools = explainOnly ? _explainTools() : (qaOnly ? _qaTools() : (reviewOnly ? _reviewTools() : (planOnly ? _planTools() : (opts.tools || AGENT_TOOLS))));
+    if(planOnly||reviewOnly||qaOnly||explainOnly)tools=tools.concat(_WORKBENCH_TOOLS.filter(function(t){return t.effect==='read'&&!tools.some(function(old){return old.name===t.name;});}));
     var conventions = (opts.conventions != null ? opts.conventions : loadConventions()) || '';   // 方向B · 剧本约定（每次 run 注入·等价 CLAUDE.md）
     // 世界类型：史实(默认) / 虚构(架空·奇幻·武侠·未来·异世界等)。优先 opts.worldKind(UI 显式声明)，否则读剧本持久字段 draft.worldKind；
     // 虚构档去史实锚定、点出 world/worldSettings 容器、校验豁免「五常」。非 'fictional' 一律归史实。
@@ -3168,6 +3193,9 @@
         else if (_localCtrl && !_localCtrl.signal.aborted) _localCtrl.abort(reason || 'aborted');
       }
     };   // 刀E · 真 AbortSignal 中断在途 fetch；外部副作用只暂存到 sideEffects
+    if(_WORKBENCH)control.workbench=_WORKBENCH.capture({readOnly:readOnlyRun,permissions:perms,signal:control.signal});
+    if(control.workbench&&opts.workbenchTask)control.workbench.task=opts.workbenchTask;
+    if(opts.workbenchTask&&(!control.workbench||(opts.workbenchTask.projectId&&opts.workbenchTask.projectId!==control.workbench.projectId)))return Promise.reject(new Error('预算任务不属于当前已保存案卷，未发送 API 请求'));
     _registerRun(control);
     // 刀G9 · 排空插话队列 → 包装成一条 user 消息注入(CC wrapCommandText 语义:必须处理·勿忽略)
     var _steeredCount = 0;
@@ -3474,7 +3502,7 @@
               if (!_receipt.id) _receipt.id = control.effectPrefix + ':receipt:' + control.toolReceipts.length;
               control.toolReceipts.push(_receipt);
               delete c._stateJsonBefore; // 完整比较值只活于这一次调用，不进入对话/回执/日志。
-              if (_editingMode && (_MUT_TOOLS[c.name] || _spec.effect === 'memory-write') && !result.aborted) {
+              if (_editingMode && (_MUT_TOOLS[c.name] || _spec.effect === 'memory-write' || _spec.effect === 'project-stage') && !result.aborted) {
                 var targets = _writeTargets(c.name, c.input);
                 if (_ok && _verified) {
                   control.failures.forEach(function(f) { f.targets = f.targets.filter(function(t) { return targets.indexOf(t) < 0; }); });
@@ -3486,11 +3514,11 @@
               }
               if (_kernelRun && _kernelRun.trace && typeof _kernelRun.trace.add === 'function') _kernelRun.trace.add('tool_receipt', _receipt);
               // 模型只需紧凑回执；完整 ToolReceipt 留在本轮结果/trace，避免每轮上下文膨胀。
-              result.receipt = { id: _receipt.id || '', tool: _receipt.tool, ok: _receipt.ok, changed: _receipt.changed, verified: _receipt.verified };
+              result.receipt = Object.assign({}, _spec.effect==='project-stage' ? result.receipt : {}, { id: _receipt.id || '', tool: _receipt.tool, ok: _receipt.ok, changed: _receipt.changed, verified: _receipt.verified });
               // \u5200G3 \u00b7 \u8bfb/\u5199\u8bb0\u8d26:\u6210\u529f\u8bfb\u8bb0\u5165 _seenReads(\u5e26\u5f53\u524d\u5199\u4e16\u4ee3)\u00b7\u6210\u529f\u5199\u63a8\u8fdb\u4e16\u4ee3\u53f7(\u5176\u540e\u540c\u53c2\u8bfb\u653e\u884c)
               if (result && result.ok !== false) {
                 if (c._readKey && !result.unchanged) _seenReads[c._readKey] = { iter: iterations, writes: _writeCount, valueKey:c._readValueKey };
-                if (_MUT_TOOLS[c.name] && _receipt.changed) _writeCount++;
+                if ((_MUT_TOOLS[c.name] || _spec.effect==='project-stage') && _receipt.changed) _writeCount++;
                 // \u5200G4 \u00b7 \u6307\u7eb9\u5237\u65b0:\u8bfb\u5230\u4ec0\u4e48/\u5199\u6210\u4ec0\u4e48\u90fd\u7b97"\u6700\u65b0\u6240\u89c1"(renameEntity \u8de8\u533a\u6bb5\u2192\u5168\u91cf\u5237\u65b0)
                 if (_MUT_TOOLS[c.name]) _refreshSnap(c.name === 'renameEntity' ? null : _mutRoots(c.name, c.input));
                 else if (_READ_TOOLS[c.name] && !result.unchanged) { var _rr0 = _readRootsOf(c.name, c.input); if (_rr0.length) _refreshSnap(_rr0); }
@@ -3544,6 +3572,12 @@
                 }
               }
             }
+            if(opts.workbenchTask&&control.workbench&&!readOnlyRun&&!control._checkpointing){
+              control._checkpointing=true;
+              return _WORKBENCH.checkpoint(control.workbench,{draft:draft,todos:control.todoState.list,receipts:control.toolReceipts.slice(-12),conversation:_agentClone(conversation)}).then(function(){control._checkpointing=false;return _afterRound();});
+            }
+            return _afterRound();
+            function _afterRound(){
             if (finishAccepted) { finished = !finishOutcome; stopReason = finishOutcome || (_clarifyResult ? 'needsClarification' : (_remonstrateResult ? 'needsConfirmation' : (_explainResult ? 'explained' : (_qaResult ? 'answered' : (_reviewResult ? 'reviewed' : (_planResult ? 'planned' : 'finish')))))); return; }
             if (finishAttempts >= maxFinishAttempts) { stopReason = 'finishBlocked'; return; }
             stalledRounds = roundProgress ? 0 : stalledRounds + 1;
@@ -3551,10 +3585,12 @@
             if (stalledRounds === 4) conversation.push({ role: 'user', text: '（进展提醒：连续4轮没有新读取结果或真实改动。请更换查询/修复方法；确实无法继续时用 partial/blocked 说明，不要重复同参调用。）' });
             if (stalledRounds >= noProgressLimit) { stopReason = 'noProgress'; _finishSummary = '连续 ' + stalledRounds + ' 轮没有新事实或实际改动，已停止重复调用。最近工具：' + progressTools.join('、') + '。请补充具体信息后继续，或从当前剧本重新生成。'; return; }
             return step();
+            }
           });
         })
         .catch(function(e) {
           if (control.aborted) { stopReason = 'aborted'; return; }
+          if(e&&e.code==='task-budget'){stopReason='taskBudget';finishOutcome='partial';_finishSummary='任务调用或字节预算已用尽，已完成检查点保留；未完成部分没有自动重试或扩额。';return;}
           if (e && e.overflow) {   // 刀G8 · 超限自愈(CC 两层恢复的层二):压缩前情后重试本轮·不计迭代
             iterations--;
             return _macroCompact('overflow').then(function (did) {
@@ -3576,7 +3612,9 @@
         });
     }
 
-    return Promise.resolve().then(function () {
+    return Promise.resolve().then(function(){
+      if(control.workbench&&opts.workbenchTask)return _WORKBENCH.taskPermissions(control.workbench).then(function(scope){if(Array.isArray(scope))perms.allowedRegionIds=Array.isArray(perms.allowedRegionIds)?perms.allowedRegionIds.filter(function(id){return scope.indexOf(id)>=0;}):scope;});
+    }).then(function () {
       /* M刀(CC memdir 对照) · 记忆召回：仅新会话首轮·6s 超时·失败静默跳过不阻塞主流程 */
       if (Array.isArray(priorConversation) && priorConversation.length) return '';
       if (opts.noMemoryRecall) return '';
@@ -3599,8 +3637,9 @@
         conversation[0].text += '\n\n' + memBlk;
         _convRecount(); tokensUsed = _reqTokens();
       }
-    }).then(step).then(function() {
+    }).then(step).then(async function() {
       _releaseRun(control);   // 刀E · 成功/正常中止均注销本运行，不影响并行会审的其他句柄
+      if(opts.workbenchTask&&control.workbench)await _WORKBENCH.settleTask(control.workbench,finished?(readOnlyRun?'paused':'awaitingApproval'):stopReason==='taskBudget'?'partial':stopReason==='aborted'?'paused':'blocked');
       var state = finished ? (stopReason === 'finish' ? (_writeCount || control.sideEffects.length ? 'completed' : 'unchanged') : stopReason) : (finishOutcome || (stopReason === 'aborted' ? 'cancelled' : 'blocked'));
       return {
         draft: draft, transcript: transcript, conversation: conversation,
@@ -3627,8 +3666,9 @@
         // 刀2 · 自查证轨迹：国师写入前自核的史实声明（供玩家审 + 后续史官重点复核低把握项）
         historyChecks: transcript.filter(function(t) { return t.name === 'checkHistory'; }).reduce(function(acc, t) { return acc.concat((t.input && t.input.facts) || []); }, [])
       };
-    }, function(err) {
+    }, async function(err) {
       _releaseRun(control);
+      if(opts.workbenchTask&&control.workbench)await _WORKBENCH.settleTask(control.workbench,control.aborted?'paused':'blocked');
       if (!err || !err.partial) return _fail(err instanceof Error ? err : new Error(String(err)));
       throw err;
     });

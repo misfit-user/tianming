@@ -29,7 +29,12 @@ EAGER_REMOVALS.forEach((src) => assert(!eager.includes(src), `${src} must not re
 const declaredScripts = Object.values(manifest.features).flatMap((feature) => feature.scripts.map(featureBuild.scriptPath));
 EAGER_REMOVALS.forEach((src) => assert(declaredScripts.includes(src), `${src} must be owned by a declared feature`));
 const RELIEF_SCRIPTS = ['tm-relief-governance.js', 'tm-relief-governance-ui.js'];
-assert(featureResult.scriptCount === EAGER_REMOVALS.length + RELIEF_SCRIPTS.length, 'exactly the original six plus the reviewed two relief providers may be deferred');
+const REALM_LAYOUT = 'tm-map-realm-layout.js';
+assert(featureResult.scriptCount === EAGER_REMOVALS.length + RELIEF_SCRIPTS.length + 1, 'only the original six, two relief providers and the pure realm layout may be deferred');
+assert(JSON.stringify(manifest.features.formalMapLabels.scripts.map(featureBuild.scriptPath)) === JSON.stringify(['tm-map-label-geo.js', REALM_LAYOUT, 'tm-map-label-collide.js']), 'formal map must own exactly its three geometry/layout/collision providers in order');
+assert(!eager.includes(REALM_LAYOUT), 'territory layout must not add work to eager startup');
+const realmSource = fs.readFileSync(path.join(lib.WEB_ROOT, REALM_LAYOUT), 'utf8');
+assert(!/\b(?:GM|P)\s*(?:\.|\[)|\b(?:fetch|XMLHttpRequest|WebSocket|localStorage)\b/.test(realmSource), 'realm layout stays pure: no game state, storage or network access');
 assert(JSON.stringify((manifest.features.reliefGovernance.scripts || []).map(featureBuild.scriptPath)) === JSON.stringify(RELIEF_SCRIPTS), 'relief feature must own exactly its core and UI providers in order');
 RELIEF_SCRIPTS.forEach(src => assert(!eager.includes(src), `${src} must remain outside eager startup`));
 

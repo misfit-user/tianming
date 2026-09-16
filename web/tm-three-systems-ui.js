@@ -188,6 +188,9 @@
         var _loc=a.garrison||a.location||'',_dest=a.destination||'';
         if(_loc||_dest){ html += '<span class="tm-army-full tm-fulltext-source"'+fullTextAttr((_loc?'\u9a7b '+_loc:'')+(_dest?' \u8d74 '+_dest:''))+' style="margin-left:auto;color:var(--txt-s);white-space:nowrap;">'+(_loc?'\u9a7b '+esc(_loc):'')+(_dest?' \u2192 '+esc(_dest):'')+'</span>'; }
         html += '</div>';
+        if (global.TM && TM.CommandAuthority && TM.CommandAuthority.enabled(a)) {
+          html += '<div class="tm-command-context" style="font-size:0.76rem;line-height:1.8;white-space:pre-wrap;padding:0.5rem 0;color:var(--txt-s);">' + esc(TM.CommandAuthority.describe(a)) + '</div>';
+        }
         // 编制·兵种构成 chips
         if (Array.isArray(a.composition) && a.composition.length) {
           var _ct=a.composition.reduce(function(s,c){return s+((c&&c.count)||0);},0)||1;
@@ -297,6 +300,13 @@
     var dest = prompt('调 '+aname+' 赴何处?', '');
     if (!dest) return;
     var a = (global.GM && GM.armies || []).find(function(x){return x.name === aname;});
+    var authority = global.TM && TM.CommandAuthority;
+    if (a && a.commandChain && a.commandChain.mode === 'receipt' && !authority) { _toast('军令交接尚待核验'); return; }
+    if (a && authority && authority.enabled(a)) {
+      authority.request(a, {destination:dest}, {text:'调' + aname + '赴' + dest});
+      _pushEdict('谕：调 ' + aname + ' 赴 ' + dest + '，令军中覆报点集与开拔日期。', '调兵');
+      _toast('军令已发，候军中回报'); return;
+    }
     if (a) {
       a.destination = dest;
       a.state = 'marching';
@@ -318,15 +328,17 @@
     var _MS = global.MilitarySystems || (global.TM && global.TM.MilitarySystems);
     if (a && _MS && typeof _MS.settleArmyArrears === 'function') {
       var r = _MS.settleArmyArrears(a, {});
-      var c = (r && r.cost) || { money:0, grain:0, cloth:0 };
-      _pushEdict('谕：户部拨银 '+(c.money||0)+' 两'+(c.grain?'·粮 '+c.grain+' 石':'')+'·发 '+aname+' 积欠 '+_arrears+' 月军饷·安定军心。', '发饷');
-      _toast(r && r.monthsCleared > 0
-        ? ('已发饷·清欠 '+r.monthsCleared+' 月·耗银 '+(c.money||0)+(r.shortfall>0 ? '（国库不足·欠 '+Math.round(r.shortfall)+'）' : ''))
-        : '无欠饷可补');
+      if (!r || !r.ok) { _toast('补饷未能交割：'+(r&&r.reason||'账簿未齐')); return; }
+      if (r.duplicate) { _toast('此笔补饷已交割，不重复支取'); return; }
+      var paid=r.paid||{},ded=r.deducted||{},left=r.remainingAmounts||{};
+      ['money','grain','cloth'].forEach(function(k){if(paid[k]==null)paid[k]=ded[k]&&ded[k].deducted||0;});
+      var unit=(global.GM&&GM.guoku&&GM.guoku.unit&&GM.guoku.unit.money)||'钱';
+      var paidText='钱 '+paid.money+' '+unit+'·粮 '+paid.grain+' 石·帛 '+paid.cloth+' 匹';
+      if(paid.money||paid.grain||paid.cloth)_pushEdict('补饷交割：'+aname+'已实付'+paidText+'。尚欠钱 '+(left.money||0)+'、粮 '+(left.grain||0)+'、帛 '+(left.cloth||0)+'，原承付库续记待筹。', '发饷');
+      _toast((paid.money||paid.grain||paid.cloth?'已付'+paidText:'本次未能支给')+(r.remaining>0?'；尚有 '+r.remaining+' 月未清，钱 '+(left.money||0)+'、粮 '+(left.grain||0)+'、帛 '+(left.cloth||0):'；旧饷已清'));
     } else {
       _pushEdict('谕：户部速拨银两·发 '+aname+' 积欠军饷·安定军心。', '发饷');
-      if (a) { a.payArrearsMonths = 0; a.mutinyRisk = Math.max(0, (a.mutinyRisk||0) - 30); }
-      _toast('饷已清·兵变险大减');
+      _toast('补饷诏已记，待库司完成实际交割');
     }
   }
   // 活人将才候选(同势力优先·按武略降序·剔现任·只列在世)→易将下拉
@@ -401,6 +413,14 @@
     if (!ch || ch.alive === false || ch.dead === true) { _toast('此人已殁或查无此人·不可拜将'); return; }   // ★死人/幽灵守卫
     var a = (global.GM && GM.armies || []).find(function(x){return x.name === aname;});
     if (!a) { _toast('未找到部队'); return; }
+    var authority = global.TM && TM.CommandAuthority;
+    if (a.commandChain && a.commandChain.mode === 'receipt' && !authority) { _toast('军令交接尚待核验'); return; }
+    if (authority && authority.enabled(a)) {
+      authority.request(a, {commander:name}, {text:'拟以' + name + '领' + aname});
+      _pushEdict('谕：以 ' + name + ' 领 ' + aname + '，军中具报交接情形。', '易将');
+      try { if (typeof closeGenericModal === 'function') closeGenericModal(); } catch (_) {}
+      _toast('任命已发，候交接回报'); return;
+    }
     // 直写主字段 + 4 读取别名(与引擎 _armyCurrentCommander 读取集一致)·清死亡卸职标记
     a.commander = name; a.commanderName = name; a.general = name; a.leader = name;
     a.commanderAlive = true; a._commanderLost = false;

@@ -26,7 +26,7 @@ async function run(failName){
  });
 }
 (async()=>{
- const good=await run();assert.equal(good.code,0);assert.deepEqual(good.seen.slice().sort(),names);assert.deepEqual(good.overlaps,[],'hard-deadline checks must never overlap another smoke');assert.equal(good.normalPeak,2,'ordinary jobs must still run concurrently');assert.equal(good.saved.summary.selected,names.length);assert.equal(good.saved.summary.pass,names.length);assert.equal(good.saved.summary.skipped,0);assert(good.watchdogs.every(ms=>ms===120000),'original per-script hard deadline retained');
+ const good=await run();assert.equal(good.code,0);assert.deepEqual(good.seen.slice().sort(),names);assert.deepEqual(good.overlaps,[],'hard-deadline checks must never overlap another smoke');assert.equal(good.normalPeak,2,'ordinary jobs must still run concurrently');assert.equal(good.saved.summary.selected,names.length);assert.equal(good.saved.summary.pass,names.length);assert.equal(good.saved.summary.skipped,0);assert.equal(good.watchdogs.filter(ms=>ms===300000).length,1,'only full-map save parity receives the bounded larger fixture allowance');assert.equal(good.watchdogs.filter(ms=>ms===120000).length,names.length-1,'all other script deadlines retained');
  console.log('PASS complete discovery, ordinary parallelism, exclusive barriers and original deadlines');
  const bad=await run(names[3]);assert.equal(bad.code,1);assert.equal(bad.saved.summary.fail,1);assert.equal(bad.seen.length,names.length,'no hidden retry under --no-retry');assert.equal(bad.saved.results.find(r=>r.name===names[3]).pass,false);assert.deepEqual(bad.overlaps,[]);
  console.log('PASS isolated failure remains red and is neither skipped nor silently retried');

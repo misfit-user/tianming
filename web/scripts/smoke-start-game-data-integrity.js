@@ -54,8 +54,17 @@ function installNodeExtras(win) {
   };
 }
 
+let disposeGame = function() {};
 function loadGame() {
+  // Each case owns a VM. Release its timers before the next complete game boots.
+  disposeGame();
   const env = helpers.makeStubs();
+  const pending = new Set(), intervals = new Set();
+  env.win.setTimeout = function(fn, ms, ...args) { const id = setTimeout(function(){ pending.delete(id); fn(...args); }, ms); pending.add(id); return id; };
+  env.win.clearTimeout = function(id) { pending.delete(id); clearTimeout(id); };
+  env.win.setInterval = function(fn, ms, ...args) { const id = setInterval(fn, ms, ...args); intervals.add(id); return id; };
+  env.win.clearInterval = function(id) { intervals.delete(id); clearInterval(id); };
+  disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
   installNodeExtras(env.win);
   const sandbox = vm.createContext(env.win);
   const scripts = helpers.parseIndexHtmlScripts();

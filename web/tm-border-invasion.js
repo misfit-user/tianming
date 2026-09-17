@@ -267,7 +267,7 @@
             if (!a2) { blocked++; return; }
             var lf2 = leafByName(mv.target);
             if (!lf2) { blocked++; return; }
-            a2.location = lf2.name; a2.garrison = lf2.name;
+            a2.location = lf2.name; a2.garrison = lf2.name; if (window.TMMapLocations) window.TMMapLocations.sync(a2, 'army', undefined, lf2.name);
             _eb('「' + fac.name + '」铁骑深入·进逼' + lf2.name); applied++; return;
           }
           case 'withdraw': {

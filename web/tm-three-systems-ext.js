@@ -79,6 +79,7 @@
   // ====== 省份-势力反向索引 ======
   // 从 GM.provinceStats 和 GM.facs[i].territories 重建双向索引
   function buildProvinceOwnerIndex() {
+    if (global.TM && global.TM.FactionMembership && global.TM.FactionMembership.migrateProvinceOwnership) return global.TM.FactionMembership.migrateProvinceOwnership();
     if (!global.GM) return;
     GM._provinceToFaction = {};
     // 1. 从 provinceStats.owner 拉
@@ -101,6 +102,7 @@
   function getFactionProvinces(factionName) {
     if (!global.GM) return [];
     if (!GM._provinceToFaction) buildProvinceOwnerIndex();
+    if (global.TM && global.TM.FactionMembership && global.TM.FactionMembership.getProvinces) return global.TM.FactionMembership.getProvinces(factionName);
     var out = [];
     Object.keys(GM._provinceToFaction).forEach(function(p) {
       if (GM._provinceToFaction[p] === factionName) out.push(p);
@@ -113,12 +115,13 @@
     if (!global.GM || !provinceName) return false;
     if (!GM._provinceToFaction) buildProvinceOwnerIndex();
     if (global.TM && global.TM.FactionMembership && global.TM.FactionMembership.assignProvince) {
+      var previousOwner = GM._provinceToFaction[provinceName] || '';
       var ok = global.TM.FactionMembership.assignProvince(provinceName, newOwnerName || '', { reason: reason || '', silent: true });
       // 旧 emit·保留 province:ownerChange 事件名 (订阅者依赖)
       if (ok) {
         try {
           if (global.GameEventBus && typeof global.GameEventBus.emit === 'function') {
-            global.GameEventBus.emit('province:ownerChange', { province: provinceName, from: GM._provinceToFaction[provinceName], to: newOwnerName, reason: reason || '' });
+            global.GameEventBus.emit('province:ownerChange', { province: provinceName, from: previousOwner, to: newOwnerName, reason: reason || '' });
           }
         } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-three-systems-ext');}catch(_){}}
       }
@@ -537,6 +540,7 @@
           a.location = a.destination;
           a.destination = '';
           a.state = 'garrison';
+          if (window.TMMapLocations) window.TMMapLocations.sync(a, 'army', GM, a.location);
         }
       } else if (a.state === 'sieging') {
         a.supply = Math.max(0, a.supply - Math.round(daysPerTurn * 0.5));

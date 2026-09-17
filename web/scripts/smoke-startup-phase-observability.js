@@ -23,7 +23,7 @@ assert.strictEqual(manifest.version, 2, 'startup manifest should use the explici
 assert.strictEqual(manifest.deferredChangesApproved, 9, 'the original six, two relief providers and pure realm layout form the complete deferred set');
 const nativeModules=['tm-start-contracts.js','libs/polygon-clipping-0.15.7.min.js','tm-map-workbench.js','tm-map-workbench-client.js','tm-start-compiler.js','tm-start-world.js','tm-native-fiscal-adapter.js','tm-native-scope.js','tm-native-fiscal-ui.js','tm-start-preparation-document.js','tm-start-preparation.js','tm-start-commit.js','tm-start-selector.js','tm-save-world-validation.js'];
 const fiscalModules=['tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-public-treasury.js','tm-military-arrears.js','tm-command-authority.js'];
-assert.strictEqual(manifest.scriptCount, 416+nativeModules.length+fiscalModules.length, 'retain the 416 existing scripts plus the declared native-start and fiscal providers');
+assert.strictEqual(manifest.scriptCount, 417+nativeModules.length+fiscalModules.length, 'retain the 416 existing scripts and live map-location provider plus the declared native-start and fiscal providers');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

@@ -131,7 +131,7 @@ var CSS = [
 '#tm-zhi-overlay .seal-mark svg{display:block;width:100%;height:100%;transform:rotate(-2deg);}',
 '#tm-zhi-overlay .dh-seal-on .seal-mark{width:24px;height:24px;}',
 '#tm-zhi-overlay .dh-seal-on .seal-mark svg{transform:rotate(4deg);}',
-'#tm-zhi-overlay .dh-pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}',
+'#tm-zhi-overlay .dh-pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 88px 8px 0;}',
 '#tm-zhi-overlay .dh-pill{font-size:12px;padding:3px 11px;border-radius:11px;border:1px solid rgba(168,131,58,0.34);background:rgba(255,252,242,0.65);color:var(--ink-soft);}',
 '#tm-zhi-overlay .dh-pill.fac{border-color:rgba(74,94,138,0.4);color:var(--indigo);background:rgba(74,94,138,0.08);}',
 '#tm-zhi-overlay .dh-pill.rank{border-color:var(--gold-d);color:var(--gold-d);background:rgba(168,131,58,0.1);}',
@@ -543,8 +543,86 @@ function adaptBlood(c){
 function adaptWorks(c){var GM=_g(),w=(GM.culturalWorks||[]).filter(function(x){return x.author===c.name;});return w.map(function(x){return {title:x.title,genre:(typeof _WENYUAN_GENRES!=='undefined'&&_WENYUAN_GENRES[x.genre])||x.genre,turn:x.turn,quality:x.quality,mood:x.mood,preserved:x.isPreserved};});}
 function adaptCareer(c){return Array.isArray(c.career)?c.career.map(function(x){return typeof x==='string'?{title:x}:{year:x.year||x.date,title:x.title,desc:x.desc||x.note,milestone:x.milestone};}):[];}
 /* 全部官职(主⊕兼)数组·走 office-system 真源·回退本地字段·供显示多职 */
+/* Reader-only reference cache. Never stored in GM/P or passed to AI context. */
+var _zhiReferenceCache=Object.create(null);
+function _zhiReferenceKey(c){
+  var path=c&&c.historicalSourceRef;
+  return typeof path==='string'&&/^assets\/reference\/[a-zA-Z0-9_-]+\.json$/.test(path)?path:'';
+}
+function _zhiLoadReference(p){
+  var c=p&&p._ref,key=_zhiReferenceKey(c);
+  if(!key||_zhiReferenceCache[key]||typeof fetch!=='function')return;
+  var item={loading:true,data:null,error:''};_zhiReferenceCache[key]=item;
+  fetch(key).then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.json();}).then(function(data){
+    if(!data||data.schemaVersion!==1||data.scenarioId!==c.sid||!data.characters)throw new Error('史料文件与剧本不匹配');
+    item.data=data;
+  }).catch(function(err){item.error='史料参考文件读取失败：'+String(err&&err.message||err);}).then(function(){
+    item.loading=false;
+    var current=findP(state.sel);
+    if(state.tab==='sources'&&current&&(_zhiReferenceKey(current._ref)===key||_zhiWuchangReferenceKey(current._ref)===key))renderMain();
+  });
+}
+function _zhiSourceParagraph(text){return '<div class="prose" style="white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0;font-size:14px;line-height:1.95;color:var(--ink-soft)">'+esc(String(text||''))+'</div>';}
+function _zhiSourceLink(url){
+  return typeof url==='string'&&/^https:\/\/[^\s]+$/.test(url)?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="font-family:inherit;font-size:12px;color:var(--cinnabar-d)">查看原始出处 ↗</a>':'';
+}
+function tabSources(p){
+  var c=p._ref||{},key=_zhiReferenceKey(c),cache=key&&_zhiReferenceCache[key],data=cache&&cache.data;
+  var entry=data&&data.scenarioId===c.sid&&data.characters[c.historicalSourceKey||c.id];
+  var html='<section class="sec full" data-zhi-sources><div class="sec-t">史 料 与 校 勘</div>'+_zhiSourceParagraph('这里是玩家阅览的史家资料，不是人物记忆。后事、异文和任命日待考分别标注；不会据此预定本局未来。');
+  if(c.isFictional===true||c.type==='fictional')html+=_zhiSourceParagraph('此人为剧本虚构角色，不配造古籍原文。'+(c.fictionalSources||[]).join('；'));
+  if(entry){
+    if(entry.status==='original-pending')html+=_zhiSourceParagraph('原文待核：已找到资料线索，但未完成可靠逐字释读，不以转述冒充原文。');
+    (entry.quotes||[]).forEach(function(q,i){html+='<article data-zhi-original><h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">'+esc((i+1)+'．'+q.book)+'</h4>'+_zhiSourceParagraph(q.text)+_zhiSourceLink(q.url)+'</article>';});
+    if(entry.note)html+='<h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">时点、异文与写入边界</h4>'+_zhiSourceParagraph(entry.note);
+    (entry.references||[]).forEach(function(q){html+=_zhiSourceParagraph(q.book)+_zhiSourceLink(q.url);});
+  }else{
+    var sources=[];['sourceNotes','sources','historicalSources'].forEach(function(k){var a=c[k];if(Array.isArray(a))a.forEach(function(x){if(typeof x==='string'&&x.trim()&&sources.indexOf(x)<0)sources.push(x);});});
+    sources.forEach(function(x){html+=_zhiSourceParagraph(x);});
+    if(cache&&cache.loading)html+=_zhiSourceParagraph('正在读取独立史料参考文件……');
+    else if(cache&&cache.error)html+=_zhiSourceParagraph(cache.error+' 已保留人物自带的参考条目。');
+    else if(!sources.length&&!c.isFictional)html+=_zhiSourceParagraph('暂未嵌入可靠原文。');
+  }
+  if(c.officeEvidenceNote)html+='<h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">官职校记</h4>'+_zhiSourceParagraph(c.officeEvidenceNote);
+  html+='</section><section class="sec full"><div class="sec-t">已 录 资 料 <small>未证内容保持未知，不由立绘或数值反推</small></div>';
+  [['表字',c.zi],['家族',c.family],['父',c.father],['母',c.mother],['生年',c.birthYear],['生辰记载',c.birthTime],['籍贯／出生地',c.birthplace],['学业',c.learning],['外貌依据',c.appearance],['爱好',c.hobbies],['技能说明',Array.isArray(c.skills)?c.skills.join('、'):c.skills]].forEach(function(row){if(row[1]!=null&&row[1]!=='')html+='<div class="row"><span class="k">'+esc(row[0])+'</span><span class="v" style="overflow-wrap:anywhere">'+esc(String(row[1]))+'</span></div>';});
+  (c.familyMembers||[]).forEach(function(m){if(m&&m.name)html+=_zhiSourceParagraph((m.relation||'亲属')+'：'+m.name+(m.note?'；'+m.note:''));});
+  return html+'</section>'+_zhiWuchangAssessment(c);
+}
+function _zhiHonoraryPills(p){
+  var a=p&&p._ref&&p._ref.honoraryTitles,seen=Object.create(null);
+  if(!Array.isArray(a))return '';
+  return a.filter(function(x){if(typeof x!=='string'||!x.trim()||seen[x])return false;seen[x]=true;return true;}).map(function(t){return '<span class="dh-pill" data-zhi-honorary title="加衔或身份称号；不据此占有中央实职或重复计俸">衔 '+esc(t)+'</span>';}).join('');
+}
+
+function _zhiWuchangCarrier(c){
+  var a=c&&c.wuchangAssessment;
+  if(!a||a.version!==1||typeof a.reference!=='string')return null;
+  return {sid:c.sid,historicalSourceRef:a.reference};
+}
+function _zhiWuchangReferenceKey(c){return _zhiReferenceKey(_zhiWuchangCarrier(c));}
+function _zhiWuchangAssessment(c){
+  var key=_zhiWuchangReferenceKey(c),a=c&&c.wuchangAssessment;
+  if(!key)return '';
+  var item=_zhiReferenceCache[key],data=item&&item.data;
+  var entry=data&&data.scenarioId===c.sid&&data.characters[a.key||c.id];
+  var html='<section class="sec full" data-zhi-wuchang-assessment><div class="sec-t">五 常 评 定 依 据</div>';
+  html+=_zhiSourceParagraph('这里记录剧本开局的编者评定，不是古籍中的数字或对古人的测量。当前五常以人物面板为准；本局行为可以改变其后表现。');
+  if(entry){
+    var labels={H:'证据较直接',M:'有解释空间',L:'证据有限／人设估值',F:'虚构设定'};
+    ['仁','义','礼','智','信'].forEach(function(k){
+      html+='<div class="row"><span class="k">'+k+'</span><span class="v">开局 '+esc(String(entry.initialScores[k]))+' · '+esc(labels[entry.confidence[k]]||'未注明')+'</span></div>';
+    });
+    html+=_zhiSourceParagraph(entry.note);
+    (entry.sources||[]).forEach(function(s){html+=_zhiSourceParagraph(s.book)+_zhiSourceLink(s.url);});
+  }else if(item&&item.loading)html+=_zhiSourceParagraph('正在读取逐人评定依据……');
+  else if(item&&item.error)html+=_zhiSourceParagraph(item.error+' 人物的五常数值仍然保留。');
+  else html+=_zhiSourceParagraph('尚未读取到本人的评定条目。');
+  return html+'</section>';
+}
+
 function _zhiOfficeTitles(c){
-  try{if(typeof _offGetCharOfficeTitles==='function'){var a=_offGetCharOfficeTitles(c);if(a&&a.length)return a;}}catch(e){}
+  try{if(typeof _offGetCharOfficeTitles==='function'){var a=_offGetCharOfficeTitles(c,{displayOnly:true});if(a&&a.length)return a;}}catch(e){}
   var arr=[];if(c&&c.officialTitle)arr.push(c.officialTitle);
   if(c&&Array.isArray(c.concurrentTitles))c.concurrentTitles.forEach(function(t){if(t&&arr.indexOf(t)<0)arr.push(t);});
   return arr;
@@ -704,14 +782,14 @@ function renderStatbar(){var st=computeStat(),cells=[['all',st.all,'在世'],['c
 function renderFacOptions(){var facs=[];PEOPLE().forEach(function(p){if(facs.indexOf(p.faction)<0)facs.push(p.faction);});var s=q('#tm-zhi-ffac');if(s)s.innerHTML='<option value="all">全部党派</option>'+facs.map(function(f){return '<option value="'+esc(f)+'"'+(state.fac===f?' selected':'')+'>'+esc(f)+'</option>';}).join('');}
 
 /* ===================== 列传·头屏 + 页签 ===================== */
-var TABS=[['overview','总览'],['identity','身份'],['mind','心绪'],['relations','关系'],['benji','纪传'],['family','家族'],['memory','记忆'],['works','文事'],['pov','视角']];
+var TABS=[['overview','总览'],['identity','身份'],['mind','心绪'],['relations','关系'],['benji','纪传'],['family','家族'],['memory','记忆'],['works','文事'],['pov','视角'],['sources','史料与校勘']];
 function dossierHead(p){
   var hearts=[['忠诚',p.loyalty,false],['野心',p.ambition,p.ambition>=75],['压力',p.stress,p.stress>=65],['康健',p.health,p.health<40]];
   var colophon=esc((p.personality||p.stance||'').slice(0,20));
   return '<div class="dossier-head"><div class="dh-loy">'+loyRing(p.loyalty,74)+'<div class="lbl">忠诚</div></div>'
     +'<div class="dh-mountwrap"><div class="dh-mount"><div class="dh-portrait">'+faceHtml(p)+'<span class="dh-seal-on">'+sealMark(p)+'</span></div><div class="dh-mount-cap">立 轴 · 立 绘</div></div>'+(colophon?'<div class="dh-colophon">'+colophon+'</div>':'')+'</div>'
     +'<div class="dh-info"><div class="dh-titleline"><h2>'+esc(p.name)+'</h2>'+sealMark(p)+(p.zi?'<span class="zi">字 '+esc(p.zi)+'</span>':'')+'<span class="age">'+(p.age||'?')+'岁 · '+esc(p.gender||'')+'</span></div>'
-    +'<div class="dh-pills"><span class="dh-pill fac">'+esc(p.faction)+'</span>'+(p.party?'<span class="dh-pill">'+esc(p.party)+'</span>':'')+(p.rank?'<span class="dh-pill rank">'+esc(p.rank)+'</span>':'')+_zhiOfficePills(p)+'</div>'
+    +'<div class="dh-pills"><span class="dh-pill fac">'+esc(p.faction)+'</span>'+(p.party?'<span class="dh-pill">'+esc(p.party)+'</span>':'')+(p.rank?'<span class="dh-pill rank">'+esc(p.rank)+'</span>':'')+_zhiOfficePills(p)+_zhiHonoraryPills(p)+'</div>'
     +situationBanner(p)
     +'<div class="dh-hearts">'+hearts.map(function(h){return '<div class="dh-heart'+(h[2]?' warn':'')+'"><b>'+(h[1]==null?'—':Math.round(h[1]))+'</b><span>'+h[0]+'</span></div>';}).join('')+'</div>'
     +'<div class="dh-acts">'+headActs(p)+'</div></div></div>';
@@ -1110,6 +1188,7 @@ function renderTab(p){
     case 'family':return tabFamily(p);
     case 'memory':return tabMemory(p);
     case 'works':return tabWorks(p);
+    case 'sources':return tabSources(p);
     case 'pov':return tabPov(p);
     default:return tabOverview(p);
   }
@@ -1123,9 +1202,12 @@ function renderMain(){
   if(state.compare){renderCompare();return;}
   var p=findP(state.sel)||PEOPLE()[0];if(!p){ms.innerHTML='<div class="stub" style="margin-top:60px">尚无人物数据。</div>';return;}
   state.sel=p.name;
+  if(state.tab==='sources'){_zhiLoadReference(p);var carrier=_zhiWuchangCarrier(p._ref);if(carrier)_zhiLoadReference({_ref:carrier});}
   var tabs=p.alive!==false&&!p.isPlayer?TABS.concat([['office','任官参考']]):TABS;
   var tabsHtml='<div class="tabs">'+tabs.map(function(t){return '<button class="tab'+(state.tab===t[0]?' active':'')+'" onclick="TMZhi.switchTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div>';
   ms.innerHTML=dossierHead(p)+verdict(p)+zhubiBlock(p)+tabsHtml+'<div class="detail">'+renderTab(p)+'</div>';
+  var selected=ms.querySelector('.tabs .tab.active'),strip=selected&&selected.parentElement;
+  if(strip&&typeof strip.getBoundingClientRect==='function'&&typeof selected.getBoundingClientRect==='function'){var tr=strip.getBoundingClientRect(),br=selected.getBoundingClientRect();if(br.right>tr.right)strip.scrollLeft+=br.right-tr.right+8;else if(br.left<tr.left)strip.scrollLeft-=tr.left-br.left+8;}
 }
 function renderFolio(){
   var fo=q('#tm-zhi-folio');if(!fo)return;
@@ -1146,6 +1228,7 @@ function renderFolio(){
   html+='<div class="fcard"><div class="ft">朝 堂 研 判</div><div style="padding:8px 10px;border-radius:6px;background:rgba(168,50,40,0.06);border-left:3px solid var(--cinnabar);margin-bottom:9px"><strong style="display:block;font-size:12px;color:var(--cinnabar-d)">'+vd[0]+'</strong><span style="font-size:11.5px;color:var(--ink-soft)">'+vd[1]+'</span></div><div class="risk-grid">'+[['忠诚',p.loyalty],['野心',p.ambition],['压力',p.stress],['康健',p.health],['名望',p.mingwang],['功名',p.gongming]].map(function(r){return '<div class="risk"><span>'+r[0]+'</span><b>'+(r[1]==null?'—':Math.round(r[1]))+'</b></div>';}).join('')+'</div></div>';
   html+='<div class="fcard"><div class="ft">关 系 焦 点</div>'+(rels.length?'<div class="relnet">'+rels.map(function(r){var cls=r.strength>=25?'good':r.strength<=-25?'bad':'neu';return '<div class="relrow" onclick="TMZhi.selectP(\''+esc(r.name).replace(/'/g,"\\'")+'\')"><span class="nm">'+esc(r.name)+'</span><span class="lbl '+cls+'">'+esc(r.label)+'</span><span class="sc">'+relScoreText(r.strength)+'</span></div>';}).join('')+'</div>':'<div class="fnote">暂无显性关系。</div>')+'</div>';
   html+='<div class="fcard"><div class="ft">五 常 速 览</div><div style="display:flex;gap:14px;justify-content:center;padding:4px 0 14px">'+['仁','义','礼','智','信'].map(function(k){var v=(p.wuchang||{})[k],lv=v==null?'mid':v>=60?'hi':v>=30?'mid':'lo';return '<span class="wcdot '+lv+'">'+k+'<small>'+(v==null?'?':Math.round(v))+'</small></span>';}).join('')+'</div></div>';
+  if(p._ref&&p._ref.wuchangAssessment)html+='<div style="padding:8px 10px;font-size:12px;color:var(--ink-faint)">五常为游戏化评定，依据与证据强弱见「史料与校勘」。</div>';
   fo.innerHTML=html;
 }
 

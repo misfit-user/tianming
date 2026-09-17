@@ -1567,6 +1567,7 @@ var MarchSystem = (function() {
           _army2.garrison = order.to;
           _army2.destination = '';
           _army2.state = 'garrison';
+          if (window.TMMapLocations) window.TMMapLocations.sync(_army2, 'army', GM, order.to);
           _army2._arrivedTurn = GM.turn || 0;
           _army2.supplyRatio = Math.max(0.3, 1.0 - (order.totalDays / 1000) * 0.3);
         }

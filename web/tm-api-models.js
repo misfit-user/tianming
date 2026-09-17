@@ -36,8 +36,8 @@
       var entries = new Map(), tokens = new Set(), partial = false;
       for (var page = 0; page < 20; page++) {
         if (ctrl.signal.aborted) throw fail('请求已取消');
-        var resp = await (options.fetch || global.fetch)(target.url.href, {
-          method: 'GET', headers: headers, signal: ctrl.signal, redirect: 'error', cache: 'no-store', credentials: 'omit'
+        var resp = await (options.fetch || global._tmAIFetch || global.fetch)(target.url.href, {
+          method: 'GET', headers: headers, signal: ctrl.signal, timeoutMs: options.timeoutMs || 20000, redirect: 'error', cache: 'no-store', credentials: 'omit'
         });
         if (!resp.ok) throw fail('模型列表 HTTP ' + resp.status + '；请检查地址、密钥或模型列表权限');
         var data; try { data = await resp.json(); } catch (_) { throw fail('模型列表不是有效 JSON，可能是网页地址或中转响应异常'); }
@@ -62,7 +62,7 @@
     }
     try { return await Promise.race([read(), aborted]); }
     catch (e) {
-      if (e && (e.name === 'AbortError' || /^模型列表|^响应没有/.test(e.message || ''))) throw e;
+      if (e && (e.name === 'AbortError' || /^AI_MOBILE_/.test(e.code || '') || e.code === 'AI_TIMEOUT' || /^模型列表|^响应没有/.test(e.message || ''))) throw e;
       throw fail('无法拉取模型列表，请检查网络、跨域许可或地址；仍可手动填写 Model_ID');
     } finally {
       clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancel); ctrl.signal.removeEventListener('abort', stop);

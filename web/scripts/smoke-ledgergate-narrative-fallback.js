@@ -24,7 +24,7 @@ function makeCtx() {
   ctx._warns = warns;
   ctx.findCharByName = (name) => (ctx.GM && ctx.GM.chars || []).find(c => c && c.name === name) || null;
   vm.createContext(ctx);
-  ['tm-ai-change-pathutils.js', 'tm-ai-change-army.js', 'tm-ai-change-narrative.js']
+  ['tm-map-system.js', 'tm-faction-membership.js', 'tm-ai-change-pathutils.js', 'tm-ai-change-army.js', 'tm-ai-change-narrative.js']
     .forEach(f => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f }));
   return ctx;
 }

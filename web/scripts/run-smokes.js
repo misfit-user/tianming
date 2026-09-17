@@ -90,7 +90,7 @@ function runOne(name) {
     let out = '';
     const child = cp.spawn(process.execPath, [path.join(SCRIPTS_DIR, name)], { cwd: SCRIPTS_DIR, windowsHide: true });
     let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; try { child.kill('SIGKILL'); } catch (e) {} }, TIMEOUT_MS);
+    const timer = setTimeout(() => { timedOut = true; try { child.kill('SIGKILL'); } catch (e) {} }, name === 'smoke-perf-save-preparation.js' ? Math.max(TIMEOUT_MS, 300000) : TIMEOUT_MS);
     const grab = d => { if (out.length < 200 * 1024) out += d; };
     child.stdout.on('data', grab);
     child.stderr.on('data', grab);

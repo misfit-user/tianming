@@ -8,7 +8,7 @@
   "limits": {
     "minFiles": 300,
     "maxFiles": 25000,
-    "maxTotalBytes": 1887436800,
+    "maxTotalBytes": 2306867200,
     "maxSingleFileBytes": 268435456
   }
 }

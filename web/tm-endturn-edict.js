@@ -444,6 +444,21 @@ function _findPositionInOfficeTree(posName) {
 
 function _edictCloneState(value) {
   if (value == null || typeof value !== 'object') return value;
+  // GM/P 事务回滚快照：剔掉运行期不可序列化字段再 clone——
+  // _postTurnJobs/_postTurnDetachedJobs/_turnAiResults 内含 Promise·structuredClone 抛后
+  // JSON.stringify 回退会遇 Promise→{}→…→循环引用 TypeError(报 _postTurnJobs.pending.N.*.gmRef)。
+  // 参考 tm-endturn-core.js _tmCaptureEndTurnObject 对同名键的处理。
+  if (value === (typeof GM !== 'undefined' ? GM : null) || value === (typeof P !== 'undefined' ? P : null)) {
+    var _stripped = {};
+    try {
+      Object.keys(value).forEach(function(k) {
+        if (k === '_postTurnJobs' || k === '_postTurnDetachedJobs' || k === '_turnAiResults') return;
+        _stripped[k] = value[k];
+      });
+    } catch (_sE) { _stripped = value; }
+    if (typeof deepClone === 'function') return deepClone(_stripped);
+    return JSON.parse(JSON.stringify(_stripped));
+  }
   if (typeof deepClone === 'function') return deepClone(value);
   return JSON.parse(JSON.stringify(value));
 }
@@ -462,7 +477,9 @@ function _edictRestoreState(target, snapshot) {
     }
     return target;
   }
+  var preserveRuntime = target === (typeof GM !== 'undefined' ? GM : null) || target === (typeof P !== 'undefined' ? P : null);
   Object.keys(target || {}).forEach(function(key) {
+    if (preserveRuntime && (key === '_postTurnJobs' || key === '_postTurnDetachedJobs' || key === '_turnAiResults')) return;
     if (!Object.prototype.hasOwnProperty.call(snapshot || {}, key)) delete target[key];
   });
   Object.keys(snapshot || {}).forEach(function(key) {

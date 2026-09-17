@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' https: http://127.0.0.1:* http://localhost:*; media-src 'self' data: blob: https: http:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <!-- 正在运行的包版本·与代码同包同发·footer 与在线版更新提示都读这里（发版工具自动盖戳） -->
-<meta name="tm-version" content="1.3.5.0">
+<meta name="tm-version" content="1.3.5.1">
 <title>天命 · AI历史模拟</title>
 <script>
 (function(){
@@ -256,7 +256,7 @@
   </div>
   <!-- 底部栏 -->
   <div class="home-foot">
-    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.5.0</span></div>
+    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.5.1</span></div>
     <div class="f-mid" id="home-foot-mid">春 分<span class="dot">◆</span>太 平<span class="dot">◆</span>河 清 海 晏</div>
     <div class="f-right">
       <span><kbd>↵</kbd> 开 卷</span>
@@ -645,6 +645,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-game-loop.js?v=20260916-release1350"></script>
 <script src="tm-game-loop-wentian-hardchange.js?v=20260916-release1350"></script>
 <script src="tm-map-system.js?v=20260709"></script>
+<script src="tm-map-locations.js?v=20260917location2"></script>
 <!-- R134 (2026-04-25) tm-dynamic-systems 拆分 → dynamic + save-manager + help-social -->
 <script src="tm-dynamic-systems.js?v=2026042714"></script>
 <script src="tm-save-manager.js?v=20260916-release1350"></script>
@@ -993,8 +994,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-content-manager-community.js?v=20260811-auditfix1"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
 <script src="preview/img/east-asia-basemap-data.js?v=20260514-formal-map"></script>
 <!-- 勿动位置·第二十七拆：phase8-formal-bridge-styles.js 必须紧接 phase8-formal-bridge.js【之前】装载(②a alias/bucket·装载期填 TM.__p8BridgeParts→origin 顶部 alias 回绑·错序即 installStyles=undefined·installFormalShell 同步调用崩) -->
-<script src="phase8-formal-bridge-styles.js?v=20260916-release1350"></script>
-<script src="phase8-formal-bridge.js?v=20260916-release1350"></script>
+<script src="phase8-formal-bridge-styles.js?v=20260917-prefecture-labels"></script>
+<script src="phase8-formal-bridge.js?v=20260917-prefecture-labels"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260916-release1350"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
